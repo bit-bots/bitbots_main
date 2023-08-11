@@ -1,10 +1,7 @@
-.PHONY : basler doc install pip pre-commit pull-all pull-init pull-files rosdep status update
+.PHONY : basler install pip pre-commit pull-all pull-init pull-files rosdep status update
 
 basler:
 	scripts/make_basler.sh
-
-doc:
-	scripts/build-doc.py
 
 install: pull-init
 	scripts/make_basler.sh
