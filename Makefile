@@ -1,4 +1,4 @@
-.PHONY : basler doc pip-install pre-commit pull-all pull-init rosdep-install status update
+.PHONY : basler doc install pip-install pre-commit pull-all pull-init rosdep-install status update
 
 basler:
 	test -d basler_drivers || git clone git@git.mafiasi.de:Bit-Bots/basler_drivers.git
@@ -6,6 +6,9 @@ basler:
 
 doc:
 	scripts/build-doc.py
+
+install: pull-init
+	update
 
 pip-install:
 	pip install --upgrade -r requirements/dev.txt
