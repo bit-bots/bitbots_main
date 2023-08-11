@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-import traceback
-
 import rclpy
 from rclpy.node import Node
 import copy
