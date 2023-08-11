@@ -1,6 +1,5 @@
 from controller import Supervisor, Keyboard, Node
 
-import rclpy
 from rclpy.node import Node as RclpyNode
 from geometry_msgs.msg import Quaternion, Pose, Point, Twist
 from gazebo_msgs.msg import ModelStates
@@ -251,7 +250,7 @@ class SupervisorController:
         axis, angle = transforms3d.quaternions.quat2axangle([quat[3], quat[0], quat[1], quat[2]])
         self.set_robot_axis_angle(axis, angle, name)
 
-    def set_robot_position(self, pos, name="amy"):        
+    def set_robot_position(self, pos, name="amy"):
         if name in self.translation_fields:
             self.translation_fields[name].setSFVec3f(list(pos))
 
