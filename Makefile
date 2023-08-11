@@ -1,4 +1,4 @@
-.PHONY : basler install pip pre-commit pull-all pull-init pull-files rosdep status update
+.PHONY : basler install pip pre-commit pull-all pull-init pull-files rosdep status update vs-code
 
 basler:
 	scripts/make_basler.sh
@@ -34,3 +34,6 @@ status:
 
 update: pull-all
 	scripts/make_update.sh
+
+vs-code:
+	scripts/make_vscode.sh
