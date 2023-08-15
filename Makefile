@@ -4,7 +4,6 @@ basler:
 	scripts/make_basler.sh
 
 install: pull-init
-	scripts/make_basler.sh
 	scripts/make_update.sh
 
 pip:
