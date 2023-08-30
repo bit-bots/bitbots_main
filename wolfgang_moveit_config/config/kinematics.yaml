@@ -7,7 +7,6 @@ RightLeg:
   kinematics_solver_search_resolution: 0.00001
   kinematics_solver_timeout: 0.01
 Legs:
-  kinematics_solver: bio_ik/BioIKKinematicsPlugin
   kinematics_solver_search_resolution: 0.0001
   kinematics_solver_timeout: 0.005
 RightArm:
@@ -19,7 +18,6 @@ LeftArm:
   kinematics_solver_search_resolution: 0.00001
   kinematics_solver_timeout: 0.01
 Arms:
-  kinematics_solver: bio_ik/BioIKKinematicsPlugin
   kinematics_solver_search_resolution: 0.00001
   kinematics_solver_timeout: 0.01
 Head:
@@ -27,6 +25,5 @@ Head:
   kinematics_solver_search_resolution: 0.001
   kinematics_solver_timeout: 0.001
 All:
-  kinematics_solver: bio_ik/BioIKKinematicsPlugin
   kinematics_solver_search_resolution: 0.005
   kinematics_solver_timeout: 0.005
