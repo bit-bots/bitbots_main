@@ -36,9 +36,6 @@
 [submodule "humanoid_league_msgs"]
 	path = humanoid_league_msgs
 	url = ../../bit-bots/humanoid_league_msgs.git
-[submodule "humanoid_league_visualization"]
-	path = humanoid_league_visualization
-	url = ../../bit-bots/humanoid_league_visualization.git
 [submodule "udp_bridge"]
 	path = udp_bridge
 	url = ../../bit-bots/udp_bridge.git
