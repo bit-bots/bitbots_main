@@ -6,18 +6,18 @@
 #define BITBOTS_LOCALIZATION_OBSERVATIONMODEL_H
 
 #include <particle_filter/ParticleFilter.h>
-#include <bitbots_localization/RobotState.h>
-#include <bitbots_localization/map.h>
-#include <bitbots_localization/config.h>
-#include <bitbots_localization/tools.h>
-#include <soccer_vision_3d_msgs/msg/goalpost_array.hpp>
-#include <soccer_vision_3d_msgs/msg/field_boundary.hpp>
-#include <soccer_vision_3d_msgs/msg/marking_array.hpp>
-#include <soccer_vision_3d_msgs/msg/goalpost.hpp>
-#include <soccer_vision_3d_msgs/msg/marking_intersection.hpp>
+
+#include <bitbots_localization/RobotState.hpp>
+#include <bitbots_localization/config.hpp>
+#include <bitbots_localization/map.hpp>
+#include <bitbots_localization/tools.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <sensor_msgs/point_cloud2_iterator.hpp>
-
+#include <soccer_vision_3d_msgs/msg/field_boundary.hpp>
+#include <soccer_vision_3d_msgs/msg/goalpost.hpp>
+#include <soccer_vision_3d_msgs/msg/goalpost_array.hpp>
+#include <soccer_vision_3d_msgs/msg/marking_array.hpp>
+#include <soccer_vision_3d_msgs/msg/marking_intersection.hpp>
 
 namespace sm = sensor_msgs;
 namespace bl = bitbots_localization;
@@ -25,19 +25,16 @@ namespace sv3dm = soccer_vision_3d_msgs;
 
 namespace bitbots_localization {
 class RobotPoseObservationModel : public particle_filter::ObservationModel<RobotState> {
-
  public:
-
   /**
    * empty
    */
   RobotPoseObservationModel(std::shared_ptr<Map> map_lines, std::shared_ptr<Map> map_goals,
-                            std::shared_ptr<Map> map_field_boundary,
-                            std::shared_ptr<bl::Config> config);
+                            std::shared_ptr<Map> map_field_boundary, std::shared_ptr<bl::Config> config);
 
   /**
    *
-   * @param state Reference to the state that has to be weightened.
+   * @param state Reference to the state that has to be weighted.
    * @return weight for the given state.
    */
   double measure(const RobotState &state) const override;
@@ -65,12 +62,9 @@ class RobotPoseObservationModel : public particle_filter::ObservationModel<Robot
   bool measurements_available() override;
 
  private:
-
-  double calculate_weight_for_class(
-    const RobotState &state,
-    const std::vector<std::pair<double, double>> &last_measurement,
-    std::shared_ptr<Map> map,
-    double element_weight) const;
+  double calculate_weight_for_class(const RobotState &state,
+                                    const std::vector<std::pair<double, double>> &last_measurement,
+                                    std::shared_ptr<Map> map, double element_weight) const;
 
   std::vector<std::pair<double, double>> last_measurement_lines_;
 
@@ -85,8 +79,7 @@ class RobotPoseObservationModel : public particle_filter::ObservationModel<Robot
   std::shared_ptr<Map> map_field_boundary_;
 
   std::shared_ptr<bl::Config> config_;
-
 };
-};
+};  // namespace bitbots_localization
 
-#endif //BITBOTS_LOCALIZATION_OBSERVATIONMODEL_H
+#endif  // BITBOTS_LOCALIZATION_OBSERVATIONMODEL_H

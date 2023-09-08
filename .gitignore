@@ -195,3 +195,6 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# Ruff cache
+.ruff_cache

@@ -5,13 +5,12 @@
 #ifndef BITBOTS_LOCALIZATION_STATEDISTRIBUTION_H
 #define BITBOTS_LOCALIZATION_STATEDISTRIBUTION_H
 
-#include <utility>
-
 #include <particle_filter/CRandomNumberGenerator.h>
 #include <particle_filter/StateDistribution.h>
-#include <bitbots_localization/RobotState.h>
-#include <rclcpp/rclcpp.hpp>
 
+#include <bitbots_localization/RobotState.hpp>
+#include <rclcpp/rclcpp.hpp>
+#include <utility>
 
 namespace bitbots_localization {
 
@@ -29,14 +28,12 @@ class RobotStateDistribution : public particle_filter::StateDistribution<RobotSt
   double min_y_;
   double max_y_;
   std::pair<double, double> initial_robot_pose_;
-
 };
 
 class RobotStateDistributionStartLeft : public particle_filter::StateDistribution<RobotState> {
  public:
-  RobotStateDistributionStartLeft(
-    particle_filter::CRandomNumberGenerator &random_number_generator,
-    std::pair<double, double> field_size);
+  RobotStateDistributionStartLeft(particle_filter::CRandomNumberGenerator &random_number_generator,
+                                  std::pair<double, double> field_size);
 
   const RobotState draw() const override;
 
@@ -47,9 +44,8 @@ class RobotStateDistributionStartLeft : public particle_filter::StateDistributio
 
 class RobotStateDistributionStartRight : public particle_filter::StateDistribution<RobotState> {
  public:
-  RobotStateDistributionStartRight(
-    particle_filter::CRandomNumberGenerator &random_number_generator,
-    std::pair<double, double> field_size);
+  RobotStateDistributionStartRight(particle_filter::CRandomNumberGenerator &random_number_generator,
+                                   std::pair<double, double> field_size);
 
   const RobotState draw() const override;
 
@@ -71,7 +67,6 @@ class RobotStateDistributionLeftHalf : public particle_filter::StateDistribution
   double max_x_;
   double min_y_;
   double max_y_;
-
 };
 
 class RobotStateDistributionRightHalf : public particle_filter::StateDistribution<RobotState> {
@@ -87,14 +82,11 @@ class RobotStateDistributionRightHalf : public particle_filter::StateDistributio
   double max_x_;
   double min_y_;
   double max_y_;
-
 };
 
 class RobotStateDistributionPosition : public particle_filter::StateDistribution<RobotState> {
  public:
-  RobotStateDistributionPosition(particle_filter::CRandomNumberGenerator &random_number_generator,
-                                 double x,
-                                 double y);
+  RobotStateDistributionPosition(particle_filter::CRandomNumberGenerator &random_number_generator, double x, double y);
 
   const RobotState draw() const override;
 
@@ -102,14 +94,11 @@ class RobotStateDistributionPosition : public particle_filter::StateDistribution
   particle_filter::CRandomNumberGenerator random_number_generator_;
   double x_;
   double y_;
-
 };
 
 class RobotStateDistributionPose : public particle_filter::StateDistribution<RobotState> {
  public:
-  RobotStateDistributionPose(particle_filter::CRandomNumberGenerator &random_number_generator,
-                             double x,
-                             double y,
+  RobotStateDistributionPose(particle_filter::CRandomNumberGenerator &random_number_generator, double x, double y,
                              double t);
 
   const RobotState draw() const override;
@@ -119,8 +108,7 @@ class RobotStateDistributionPose : public particle_filter::StateDistribution<Rob
   double x_;
   double y_;
   double t_;
-
 };
-};
+};  // namespace bitbots_localization
 
-#endif //BITBOTS_LOCALIZATION_STATEDISTRIBUTION_H
+#endif  // BITBOTS_LOCALIZATION_STATEDISTRIBUTION_H

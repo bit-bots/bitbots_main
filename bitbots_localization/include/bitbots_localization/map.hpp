@@ -5,17 +5,13 @@
 #ifndef BITBOTS_LOCALIZATION_MAP_H
 #define BITBOTS_LOCALIZATION_MAP_H
 
-#include <rclcpp/rclcpp.hpp>
+#include <bitbots_localization/RobotState.hpp>
+#include <bitbots_localization/tools.hpp>
 #include <geometry_msgs/msg/point.hpp>
-
-#include <bitbots_localization/RobotState.h>
-#include <geometry_msgs/msg/point.hpp>
-#include <bitbots_localization/tools.h>
 #include <nav_msgs/msg/occupancy_grid.hpp>
-
-#include <opencv2/opencv.hpp>
 #include <opencv2/imgproc.hpp>
-
+#include <opencv2/opencv.hpp>
+#include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 
 namespace gm = geometry_msgs;
@@ -23,12 +19,11 @@ namespace bl = bitbots_localization;
 
 namespace bitbots_localization {
 /**
-* @class Map
-* @brief Stores a map for a messurement class (e.g. a map of the lines)
-*/
+ * @class Map
+ * @brief Stores a map for a messurement class (e.g. a map of the lines)
+ */
 class Map {
  public:
-
   /**
    * @param name of the environment. (E.g. webots)
    * @param type of the map. (E.g. lines)
@@ -38,21 +33,18 @@ class Map {
 
   cv::Mat map;
 
-  std::vector<double> provideRating(const RobotState &state,
-                                    const std::vector<std::pair<double, double>> &observations);
+  std::vector<double> provideRating(const RobotState& state,
+                                    const std::vector<std::pair<double, double>>& observations);
 
   double get_occupancy(double x, double y);
 
-  std::pair<double, double> observationRelative(std::pair<double, double> observation,
-                                                double stateX,
-                                                double stateY,
+  std::pair<double, double> observationRelative(std::pair<double, double> observation, double stateX, double stateY,
                                                 double stateT);
 
   nav_msgs::msg::OccupancyGrid get_map_msg(std::string frame_id, int threshold = -1);
 
  private:
-    double out_of_map_value_;
-
+  double out_of_map_value_;
 };
-};
-#endif //BITBOTS_LOCALIZATION_MAP_H
+};      // namespace bitbots_localization
+#endif  // BITBOTS_LOCALIZATION_MAP_H
