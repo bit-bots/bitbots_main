@@ -1,8 +1,8 @@
 import numpy as np
 import tf2_ros as tf2
-from rclpy.time import Time
-from humanoid_league_msgs.msg import GameState, RobotControlState
 from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
+from humanoid_league_msgs.msg import GameState, RobotControlState
+from rclpy.time import Time
 
 
 class CheckFallen(AbstractDecisionElement):
@@ -81,11 +81,8 @@ class GettingUpState(AbstractDecisionElement):
     """
 
     def __init__(self, blackboard, dsd, parameters=None):
-        super(GettingUpState, self).__init__(blackboard, dsd, parameters)
-        self.get_up_states = [
-            RobotControlState.FALLING,
-            RobotControlState.FALLEN,
-            RobotControlState.GETTING_UP]
+        super().__init__(blackboard, dsd, parameters)
+        self.get_up_states = [RobotControlState.FALLING, RobotControlState.FALLEN, RobotControlState.GETTING_UP]
 
     def perform(self, reevaluate=False):
         self.clear_debug_data()
@@ -102,7 +99,6 @@ class GettingUpState(AbstractDecisionElement):
 
     def get_reevaluate(self):
         return True
-
 
 
 class CheckGameStateReceived(AbstractDecisionElement):
@@ -129,13 +125,13 @@ class CheckGameStateReceived(AbstractDecisionElement):
 
 class GameStateDecider(AbstractDecisionElement):
     def __init__(self, blackboard, dsd, parameters=None):
-        super(GameStateDecider, self).__init__(blackboard, dsd, parameters)
+        super().__init__(blackboard, dsd, parameters)
         self.game_states = {
-            0: 'INITIAL',
-            1: 'READY',
-            2: 'SET',
-            3: 'PLAYING',
-            4: 'FINISHED',
+            0: "INITIAL",
+            1: "READY",
+            2: "SET",
+            3: "PLAYING",
+            4: "FINISHED",
         }
 
     def perform(self, reevaluate=False):
@@ -171,18 +167,18 @@ class SecondaryStateDecider(AbstractDecisionElement):
     """
 
     def __init__(self, blackboard, dsd, parameters=None):
-        super(SecondaryStateDecider, self).__init__(blackboard, dsd, parameters)
+        super().__init__(blackboard, dsd, parameters)
         self.secondary_game_states = {
-            0: 'NORMAL',
-            1: 'PENALTYSHOOT',  # should not happen during halftime or extra time
-            2: 'OVERTIME',
-            3: 'TIMEOUT',
-            4: 'DIRECT_FREEKICK',
-            5: 'INDIRECT_FREEKICK',
-            6: 'PENALTYKICK',
-            7: 'CORNER_KICK',
-            8: 'GOAL_KICK',
-            9: 'THROW_IN',
+            0: "NORMAL",
+            1: "PENALTYSHOOT",  # should not happen during halftime or extra time
+            2: "OVERTIME",
+            3: "TIMEOUT",
+            4: "DIRECT_FREEKICK",
+            5: "INDIRECT_FREEKICK",
+            6: "PENALTYKICK",
+            7: "CORNER_KICK",
+            8: "GOAL_KICK",
+            9: "THROW_IN",
         }
 
     def perform(self, reevaluate=False):
@@ -222,7 +218,7 @@ class SecondaryStateTeamDecider(AbstractDecisionElement):
     """
 
     def __init__(self, blackboard, dsd, parameters=None):
-        super(SecondaryStateTeamDecider, self).__init__(blackboard, dsd)
+        super().__init__(blackboard, dsd)
         self.team_id = self.blackboard.gamestate.get_team_id()
 
     def perform(self, reevaluate=False):
@@ -230,12 +226,12 @@ class SecondaryStateTeamDecider(AbstractDecisionElement):
         # we have to handle penalty shoot differently because the message is strange
         if state_number == GameState.STATE_PENALTYSHOOT:
             if self.blackboard.gamestate.has_kickoff():
-                return 'OUR'
-            return 'OTHER'
+                return "OUR"
+            return "OTHER"
         else:
             if self.blackboard.gamestate.get_secondary_team() == self.team_id:
-                return 'OUR'
-            return 'OTHER'
+                return "OUR"
+            return "OTHER"
 
     def get_reevaluate(self):
         """
@@ -252,8 +248,7 @@ class CheckPenalized(AbstractDecisionElement):
         """
         Determines if the robot is penalized by the game controller.
         """
-        self.publish_debug_data("Seconds since unpenalized",
-                                self.blackboard.gamestate.get_seconds_since_unpenalized())
+        self.publish_debug_data("Seconds since unpenalized", self.blackboard.gamestate.get_seconds_since_unpenalized())
         if self.blackboard.gamestate.get_is_penalized():
             return "YES"
         elif self.blackboard.gamestate.get_seconds_since_unpenalized() < 1:
@@ -272,7 +267,7 @@ class WalkedSinceLastInit(AbstractDecisionElement):
     """
 
     def __init__(self, blackboard, dsd, parameters=None):
-        super(WalkedSinceLastInit, self).__init__(blackboard, dsd, parameters)
+        super().__init__(blackboard, dsd, parameters)
         self.distance_threshold = parameters.get("dist", 0.5)
 
     def perform(self, reevaluate=False):
@@ -281,23 +276,28 @@ class WalkedSinceLastInit(AbstractDecisionElement):
             return "YES"
 
         if self.blackboard.last_init_odom_transform is None:
-            return "YES" # We don't know the last init state so we say that we moved away from it
+            return "YES"  # We don't know the last init state so we say that we moved away from it
 
         try:
             odom_transform = self.blackboard.tf_buffer.lookup_transform(
-                self.blackboard.odom_frame,
-                self.blackboard.base_footprint_frame,
-                Time(seconds=0, nanoseconds=0))
+                self.blackboard.odom_frame, self.blackboard.base_footprint_frame, Time(seconds=0, nanoseconds=0)
+            )
         except (tf2.LookupException, tf2.ConnectivityException, tf2.ExtrapolationException) as e:
-            self.blackboard.node.get_logger().error(f"Reset localization to last init state, because we got up and have no tf: {e}")
+            self.blackboard.node.get_logger().error(
+                f"Reset localization to last init state, because we got up and have no tf: {e}"
+            )
             # We assume that we didn't walk if the tf lookup fails
             return "YES"
 
         walked_distance = np.linalg.norm(
-            np.array([odom_transform.transform.translation.x,
-                      odom_transform.transform.translation.y]) \
-                        - np.array([self.blackboard.last_init_odom_transform.transform.translation.x,
-                                    self.blackboard.last_init_odom_transform.transform.translation.y]))
+            np.array([odom_transform.transform.translation.x, odom_transform.transform.translation.y])
+            - np.array(
+                [
+                    self.blackboard.last_init_odom_transform.transform.translation.x,
+                    self.blackboard.last_init_odom_transform.transform.translation.y,
+                ]
+            )
+        )
 
         if walked_distance < self.distance_threshold:
             return "NO"
