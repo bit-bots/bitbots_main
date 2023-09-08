@@ -12,7 +12,6 @@ If you are not already using Ubuntu 22.04, consider installing it on your system
 **1. Setup and Install ROS 2**
 
 - Follow this guide and when it comes to the section **Install ROS 2 packages**, install the recommended ``ros-iron-desktop``: https://docs.ros.org/en/iron/Installation/Ubuntu-Install-Debians.html
-- Follow the instructions on https://packages.bit-bots.de/
 - Install additional dependencies:
 
 .. code-block:: bash
