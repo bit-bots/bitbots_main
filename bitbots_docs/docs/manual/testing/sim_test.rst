@@ -26,7 +26,7 @@ Test Imu in RViz
 Test the complete software stack in simulation
 ----------------------------------------------
 
-- Start simulator_teamplayer *without* game controller (robot will walk in and do it's thing):
+- Start simulator_teamplayer *without* game controller (robot will walk in and do its thing):
 
     .. code-block:: bash
 
