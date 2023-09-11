@@ -1,7 +1,6 @@
 #!/bin/bash
 
 META=$(dirname $(dirname $(realpath $0)))
-rm -rf $META/bitbots_vision/bitbots_vision/models/fcnn03 $META/bitbots_vision/bitbots_vision/models/fcnn031 $META/bitbots_vision/bitbots_vision/models/fcnn032 $META/bitbots_vision/bitbots_vision/models/classifier01
-wget -r -N -np -nH -P $META/bitbots_vision/bitbots_vision --reject "index.html*" "https://data.bit-bots.de/models/"
+wget --no-verbose --show-progress --recursive --timestamping --no-parent --no-host-directories --directory-prefix=$META/bitbots_vision/bitbots_vision --reject "index.html*" "https://data.bit-bots.de/models/"
 
-wget -r -N -np -nH -P $META/bitbots_motion/bitbots_rl_motion --reject "index.html*" "https://data.bit-bots.de/rl_walk_models/"
+wget --no-verbose --show-progress --recursive --timestamping --no-parent --no-host-directories --directory-prefix=$META/bitbots_motion/bitbots_rl_motion --reject "index.html*" "https://data.bit-bots.de/rl_walk_models/"
