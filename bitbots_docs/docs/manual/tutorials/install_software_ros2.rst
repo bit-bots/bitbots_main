@@ -17,6 +17,8 @@ If you are not already using Ubuntu 22.04, consider installing it on your system
 .. code-block:: bash
 
   sudo apt install \
+  clang-format \
+  cppcheck \
   python3-colcon-clean \
   python3-colcon-common-extensions \
   python3-pip \
