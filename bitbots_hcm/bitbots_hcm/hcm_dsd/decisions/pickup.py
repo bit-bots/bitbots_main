@@ -1,4 +1,5 @@
 from bitbots_hcm.hcm_dsd.decisions import AbstractHCMDecisionElement
+from humanoid_league_speaker.speaker import speak
 
 from humanoid_league_msgs.msg import RobotControlState
 
@@ -18,6 +19,8 @@ class PickedUp(AbstractHCMDecisionElement):
                 abs(self.blackboard.smooth_accel[0]) < self.blackboard.pickup_accel_threshold and \
                 abs(self.blackboard.smooth_accel[1]) < self.blackboard.pickup_accel_threshold:
             self.blackboard.current_state = RobotControlState.PICKED_UP
+            if not reevaluate:
+                speak("Picked up!", self.blackboard.speak_publisher, priority=50)
             # we do an action sequence to go to walkready and stay in picked up state
             return "PICKED_UP"
 

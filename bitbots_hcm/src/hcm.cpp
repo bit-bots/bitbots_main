@@ -202,7 +202,7 @@ public:
     current_imu_ = msg;
   }
 
-  void loop() {
+  void tick() {
     // update all input to the HCM
     hcm_py_.attr("set_imu")(ros2_python_extension::toPython(current_imu_));
     hcm_py_.attr("set_pressure_left")(ros2_python_extension::toPython<bitbots_msgs::msg::FootPressure>(current_pressure_left_));
@@ -215,7 +215,7 @@ public:
     hcm_py_.attr("set_animation_requested")(animation_requested_);
     hcm_py_.attr("set_last_animation_goal_time")(ros2_python_extension::toPython<builtin_interfaces::msg::Time>(last_animation_goal_time_));
     // run HCM
-    hcm_py_.attr("loop")();
+    hcm_py_.attr("tick")();
     // update current HCM state for joint mutex
     py::object result = hcm_py_.attr("get_state")();
     current_state_ = result.cast<int>();
@@ -277,7 +277,7 @@ int main(int argc, char** argv) {
     auto current_time = node->get_clock()->now();
     if (current_time > last_time) {
       last_time = current_time;
-      node->loop();
+      node->tick();
       rate.sleep();
     }
     // really short sleep to not waste cpu time

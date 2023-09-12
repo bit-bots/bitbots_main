@@ -50,9 +50,5 @@ class StayRecord(AbstractStay):
     pass
 
 
-class StayShutDown(AbstractStay):
-    def perform(self):
-        self.blackboard.current_state = RobotControlState.HCM_OFF
-
 class StayKicking(AbstractStay):
     pass

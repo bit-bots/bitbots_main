@@ -63,7 +63,7 @@ class AbstractPlayAnimation(AbstractActionElement):
             timeout_sec=self.blackboard.node.get_parameter('hcm.anim_server_wait_time').get_parameter_value().double_value)
         if not first_try:
             server_running = False
-            while not server_running and not self.blackboard.shut_down_request and rclpy.ok():
+            while not server_running and rclpy.ok():
                 self.blackboard.node.get_logger().warn(
                                       "Animation Action Server not running! Motion can not work without animation action server. "
                                       "Will now wait until server is accessible!",
@@ -77,8 +77,12 @@ class AbstractPlayAnimation(AbstractActionElement):
         goal = PlayAnimation.Goal()
         goal.animation = anim
         goal.hcm = True  # the animation is from the hcm
-        self.blackboard.animation_action_current_goal = self.blackboard.animation_action_client.send_goal_async(goal)
+        self.blackboard.animation_action_current_goal = self.blackboard.animation_action_client.send_goal_async(
+            goal, feedback_callback=self.kick_feedback_cb)
         return True
+
+    def kick_feedback_cb(self, msg: PlayAnimation.Feedback):
+        self.blackboard.last_kick_feedback = self.blackboard.node.get_clock().now()
 
     def animation_finished(self):
         return self.blackboard.animation_action_current_goal.cancelled() or self.blackboard.animation_action_current_goal.done()

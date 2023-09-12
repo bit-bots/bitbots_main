@@ -1,34 +1,23 @@
 /**:
   ros__parameters:
-    #Pressure sensors
+    # Pressure sensors
     pressure_sensors_installed: False
-    foot_zero_service: "set_foot_zero"
+
+    # IMU
+    imu_timeout_duration: 0.5 # time without messages from the IMU till error is produced [s]
 
     # Motors
     motor_off_time: 30000000.0 # time of no use or updates when the hcm goes to soft off
     motor_timeout_duration: 0.5 # time without messages from the servos till error is produced [s]
 
-    imu_timeout_duration: 0.5 # time without messages from the IMU till error is produced [s]
-
     #Animations
     anim_server_wait_time: 1.0 # time the hcm waits for animation server
     animations:
-      walkready: "walkready"
-      walkready_sim: "walkready_sim"
       falling_front: "falling_front"
       falling_back: "falling_back"
       falling_left: "falling_left"
       falling_right: "falling_right"
-      stand_up_front: "stand_up_front"
-      stand_up_back: "stand_up_back"
-      stand_up_left: "turning_back_left"
-      stand_up_right: "turning_back_right"
-      sit_down: "sit"
-      penalty: "walkready"
-      motor_off: "sit"
-      init: "init"
       anim_package: "wolfgang_animations"
-      walkready_pose_threshold: 50.0 # [deg]
 
     # Falling
     stand_up_active: true # enables the robot to stand up automatically

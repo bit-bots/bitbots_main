@@ -1,13 +1,6 @@
-#ShutDownProcedure
-$PickedUp
-    PICKED_UP --> @TurnMotorsOff, @StayShutDown
-    ON_GROUND --> @PlayAnimationSitDown, @TurnMotorsOff, @StayShutDown
-
 -->HCM
 $StartHCM
-    NOT_WALKREADY --> @Wait + time:0.1 + r:false, @PlayAnimationDynup + direction:walkready + initial:true + r:false
-    SHUTDOWN_REQUESTED --> #ShutDownProcedure
-    SHUTDOWN_WHILE_HARDWARE_PROBLEM --> @StayShutDown
+    START_UP --> @Wait + time:0.1 + r:false, @PlayAnimationDynup + direction:walkready + initial:true + r:false
     RUNNING --> $Stop
         STOPPED -->  @ForceStopWalking, @PlayAnimationDynup + direction:walkready + initial:true + r:false, @StayStopped
         FREE -->$Record
