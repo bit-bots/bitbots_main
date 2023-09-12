@@ -29,6 +29,7 @@ class AbstractPlayAnimation(AbstractActionElement):
 
             # try to start animation
             sucess = self.start_animation(anim)
+
             # if we fail, we need to abort this action
             if not sucess:
                 self.blackboard.node.get_logger().error("Could not start animation. Will abort play animation action!")
@@ -76,38 +77,11 @@ class AbstractPlayAnimation(AbstractActionElement):
         goal = PlayAnimation.Goal()
         goal.animation = anim
         goal.hcm = True  # the animation is from the hcm
-        self.blackboard.animation_action_current_goal = self.blackboard.animation_action_client.send_goal_async(goal, feedback_callback=self.blackboard.last_kick_feedback_callback)
+        self.blackboard.animation_action_current_goal = self.blackboard.animation_action_client.send_goal_async(goal)
         return True
 
     def animation_finished(self):
         return self.blackboard.animation_action_current_goal.cancelled() or self.blackboard.animation_action_current_goal.done()
-
-class PlayAnimationStandUpFront(AbstractPlayAnimation):
-    def chose_animation(self):
-        self.blackboard.current_state = RobotControlState.GETTING_UP
-        self.blackboard.node.get_logger().info("PLAYING STAND UP FRONT ANIMATION")
-        return self.blackboard.stand_up_front_animation
-
-
-class PlayAnimationStandUpBack(AbstractPlayAnimation):
-    def chose_animation(self):
-        self.blackboard.current_state = RobotControlState.GETTING_UP
-        self.blackboard.node.get_logger().info("PLAYING STAND UP BACK ANIMATION")
-        return self.blackboard.stand_up_back_animation
-
-
-class PlayAnimationStandUpLeft(AbstractPlayAnimation):
-    def chose_animation(self):
-        self.blackboard.current_state = RobotControlState.GETTING_UP
-        self.blackboard.node.get_logger().info("PLAYING STAND UP LEFT ANIMATION")
-        return self.blackboard.stand_up_left_animation
-
-
-class PlayAnimationStandUpRight(AbstractPlayAnimation):
-    def chose_animation(self):
-        self.blackboard.current_state = RobotControlState.GETTING_UP
-        self.blackboard.node.get_logger().info("PLAYING STAND UP RIGHT ANIMATION")
-        return self.blackboard.stand_up_right_animation
 
 
 class PlayAnimationFallingLeft(AbstractPlayAnimation):
@@ -132,26 +106,6 @@ class PlayAnimationFallingBack(AbstractPlayAnimation):
     def chose_animation(self):
         self.blackboard.node.get_logger().info("PLAYING FALLING BACK ANIMATION")
         return self.blackboard.falling_animation_back
-
-
-class PlayAnimationStopped(AbstractPlayAnimation):
-    def chose_animation(self):
-        return self.blackboard.stop_animation
-
-
-class PlayAnimationWalkready(AbstractPlayAnimation):
-    def chose_animation(self):
-        return self.blackboard.walkready_animation
-
-
-class PlayAnimationSitDown(AbstractPlayAnimation):
-    def chose_animation(self):
-        return self.blackboard.sit_down_animation
-
-
-class PlayAnimationMotorOff(AbstractPlayAnimation):
-    def chose_animation(self):
-        return self.blackboard.motor_off_animation
 
 
 class PlayAnimationDynup(AbstractActionElement):
@@ -190,9 +144,7 @@ class PlayAnimationDynup(AbstractActionElement):
 
     def start_animation(self):
         """
-        This will NOT wait by itself. You have to check
-        animation_finished()
-        by yourself.
+        This will NOT wait by itself. You have to check animation_finished() by yourself.
         :return:
         """
 

@@ -1,0 +1,177 @@
+from rclpy.time import Time
+
+from bitbots_hcm.hcm_dsd.decisions import AbstractHCMDecisionElement
+from humanoid_league_msgs.msg import RobotControlState
+
+
+class CheckMotors(AbstractHCMDecisionElement):
+    """
+    Checks if we are getting information from the motors.
+    Since the HCM is not able to work without motor connection, we will stop if there are no values.
+    Needs to be checked before other sensors, since they also need the power to be able to response
+    """
+
+    def __init__(self, blackboard, dsd, parameters=None):
+        super().__init__(blackboard, dsd, parameters)
+        self.last_different_msg_time = Time(seconds=int(0), nanoseconds=0 % 1 * 1e9)
+        self.had_problem = False
+
+    def perform(self, reevaluate=False):
+        self.clear_debug_data()
+        if self.blackboard.visualization_active:
+            # we will have no problems with hardware in visualization
+            return "OKAY"
+
+        # we check if the values are actually changing, since the joint_state controller will publish the same message
+        # even if there is no connection anymore. But we don't want to go directly to hardware error if we just
+        # have a small break, since this can happen often due to loose cabling
+        if self.blackboard.previous_joint_state is not None and self.blackboard.current_joint_state is not None \
+                and (self.blackboard.previous_joint_state.effort != self.blackboard.current_joint_state.effort
+                or self.blackboard.previous_joint_state.position != self.blackboard.current_joint_state.position) \
+                and not self.blackboard.servo_diag_error:
+            self.last_different_msg_time = self.blackboard.node.get_clock().now()
+
+        if self.blackboard.simulation_active:
+            # Some simulators will give exact same joint messages which look like errors, so ignore this case
+            if self.blackboard.last_motor_update_time != Time(seconds=int(0), nanoseconds=0 % 1 * 1e9):
+                return "OKAY"
+            else:
+                return "MOTORS_NOT_STARTED"
+        else:
+            if self.blackboard.servo_overload:
+                return "OVERLOAD"
+
+        # check if we want to turn the motors off after not using them for a longer time
+        if self.blackboard.last_motor_goal_time is not None \
+                and self.blackboard.node.get_clock().now().nanoseconds / 1e9 - self.blackboard.last_motor_goal_time.nanoseconds / 1e9 \
+                > self.blackboard.motor_off_time:
+            self.blackboard.node.get_logger().warn("Didn't recieve goals for " + str(
+                self.blackboard.motor_off_time) + " seconds. Will shut down the motors and wait for commands.", throttle_duration_sec=5)
+            self.publish_debug_data("Time since last motor goals",
+                                    self.blackboard.node.get_clock().now().nanoseconds / 1e9 - self.blackboard.last_motor_goal_time.nanoseconds / 1e9)
+            self.blackboard.current_state = RobotControlState.MOTOR_OFF
+            # we do an action sequence to turn off the motors and stay in motor off
+            return "TURN_OFF"
+
+        # see if we get no messages or always the exact same
+        if self.blackboard.node.get_clock().now().nanoseconds / 1e9 - self.last_different_msg_time.nanoseconds / 1e9 > self.blackboard.motor_timeout_duration:
+            if self.blackboard.is_power_on:
+                if (self.blackboard.current_state == RobotControlState.STARTUP and
+                        self.blackboard.node.get_clock().now().nanoseconds / 1e9 - self.blackboard.start_time.nanoseconds / 1e9 < 10):
+                    # we are still in startup phase, just wait and dont complain
+                    return "MOTORS_NOT_STARTED"
+                else:
+                    # tell that we have a hardware problem
+                    self.had_problem = True
+                    # wait for motors to connect
+                    self.blackboard.current_state = RobotControlState.HARDWARE_PROBLEM
+                    return "PROBLEM"
+            else:
+                # we have to turn the motors on
+                return "TURN_ON"
+
+        if self.had_problem:
+            # had problem before, just tell that this is solved now
+            self.blackboard.node.get_logger().info("Motors are now connected. Will resume.")
+            self.had_problem = False
+
+        # motors are on and we can continue
+        return "OKAY"
+
+    def get_reevaluate(self):
+        return True
+
+
+class CheckIMU(AbstractHCMDecisionElement):
+    """
+    Checks if we are getting information from the IMU.
+    Since the HCM can not detect falls without it, we will shut everything down if we dont have an imu.
+    """
+
+    def __init__(self, blackboard, dsd, parameters=None):
+        super().__init__(blackboard, dsd, parameters)
+        self.last_msg = None
+        self.last_different_msg_time = Time(seconds=int(0), nanoseconds=0 % 1 * 1e9)
+        self.had_problem = False
+
+    def perform(self, reevaluate=False):
+        if self.blackboard.visualization_active:
+            # In visualization, we do not have an IMU. Therefore, return OKAY to ignore that.
+            return "OKAY"
+
+        # we will get always the same message if there is no connection, so check if it differs
+        if self.last_msg is not None and self.blackboard.imu_msg is not None \
+                and not self.last_msg.orientation == self.blackboard.imu_msg.orientation \
+                and not self.blackboard.imu_diag_error:
+            self.last_different_msg_time = self.blackboard.node.get_clock().now()
+        self.last_msg = self.blackboard.imu_msg
+
+        if self.blackboard.simulation_active:
+            # Some simulators will give exact same IMU messages which look like errors, so ignore this case
+            if self.last_msg:
+                return "OKAY"
+            else:
+                return "IMU_NOT_STARTED"
+
+        if self.blackboard.node.get_clock().now().nanoseconds / 1e9 - self.last_different_msg_time.nanoseconds / 1e9 > self.blackboard.imu_timeout_duration:
+            if self.blackboard.current_state == RobotControlState.STARTUP and self.blackboard.node.get_clock().now().nanoseconds / 1e9 - \
+                    self.blackboard.start_time.nanoseconds / 1e9 < 10:
+                # wait for the IMU to start
+                return "IMU_NOT_STARTED"
+            else:
+                self.blackboard.current_state = RobotControlState.HARDWARE_PROBLEM
+                self.had_problem = True
+                return "PROBLEM"
+
+        if self.had_problem:
+            # had problem before, just tell that this is solved now
+            self.blackboard.node.get_logger().info("IMU is now connected. Will resume.")
+            self.had_problem = False
+
+        return "OKAY"
+
+    def get_reevaluate(self):
+        return True
+
+
+class CheckPressureSensor(AbstractHCMDecisionElement):
+    """
+    Checks connection to pressure sensors.
+    """
+
+    def __init__(self, blackboard, dsd, parameters=None):
+        super().__init__(blackboard, dsd, parameters)
+        self.last_pressure_values = None
+        self.last_different_msg_time = Time(seconds=int(0), nanoseconds=0 % 1 * 1e9)
+        self.had_problem = False
+
+    def perform(self, reevaluate=False):
+        if self.blackboard.visualization_active:
+            # no pressure sensors is visualization, but thats okay
+            return "OKAY"
+
+        if not self.blackboard.pressure_sensors_installed:
+            # no pressure sensors installed, no check necessary
+            return "OKAY"
+        if not self.blackboard.pressure_diag_error:
+            self.last_different_msg_time = self.blackboard.node.get_clock().now()
+
+        if self.blackboard.node.get_clock().now().nanoseconds / 1e9 - self.last_different_msg_time.nanoseconds / 1e9 > 0.1:
+            if self.blackboard.current_state == RobotControlState.STARTUP and self.blackboard.node.get_clock().now().nanoseconds / 1e9 - \
+                    self.blackboard.start_time.nanoseconds / 1e9 < 10:
+                # wait for the pressure sensors to start
+                self.blackboard.current_state = RobotControlState.STARTUP
+                return "PRESSURE_NOT_STARTED"
+            else:
+                self.blackboard.current_state = RobotControlState.HARDWARE_PROBLEM
+                return "PROBLEM"
+
+        if self.had_problem:
+            # had problem before, just tell that this is solved now
+            self.blackboard.node.get_logger().info("Pressure sensors are now connected. Will resume.")
+            self.had_problem = False
+
+        return "OKAY"
+
+    def get_reevaluate(self):
+        return True

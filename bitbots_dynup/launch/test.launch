@@ -3,7 +3,6 @@
   <let name="tf_prefix" value="$(eval '\'$(env ROS_NAMESPACE not_defined)\' if \'$(env ROS_NAMESPACE not_defined)\' != \'not_defined\' else \'\'')"/>
   <arg name="sim" default="false"/>
   <arg name="viz" default="false"/>
-  <arg name="robot_type" default="wolfgang"/>
 
   <let if="$(env IS_ROBOT false)" name="taskset" value="taskset -c 3,4"/>
   <let unless="$(env IS_ROBOT false)" name="taskset" value=""/>

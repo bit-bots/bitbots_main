@@ -190,14 +190,6 @@ public:
     current_joint_state_ = msg;
   }
 
-  void cop_l_callback(geometry_msgs::msg::PointStamped msg) {
-    current_cop_right_ = msg;
-  }
-
-  void cop_r_callback(geometry_msgs::msg::PointStamped msg) {
-    current_cop_left_ = msg;
-  }
-
   void pressure_l_callback(bitbots_msgs::msg::FootPressure msg) {
     current_pressure_left_ = msg;
   }
@@ -215,8 +207,6 @@ public:
     hcm_py_.attr("set_imu")(ros2_python_extension::toPython(current_imu_));
     hcm_py_.attr("set_pressure_left")(ros2_python_extension::toPython<bitbots_msgs::msg::FootPressure>(current_pressure_left_));
     hcm_py_.attr("set_pressure_right")(ros2_python_extension::toPython<bitbots_msgs::msg::FootPressure>(current_pressure_right_));
-    hcm_py_.attr("set_cop")(ros2_python_extension::toPython<geometry_msgs::msg::PointStamped>(current_cop_left_), false);
-    hcm_py_.attr("set_cop")(ros2_python_extension::toPython<geometry_msgs::msg::PointStamped>(current_cop_right_), true);
     hcm_py_.attr("set_last_motor_update_time")(ros2_python_extension::toPython<builtin_interfaces::msg::Time>(current_joint_state_.header.stamp));
     hcm_py_.attr("set_current_joint_state")(ros2_python_extension::toPython<sensor_msgs::msg::JointState>(current_joint_state_));
     hcm_py_.attr("set_last_walking_goal_time")(ros2_python_extension::toPython<builtin_interfaces::msg::Time>(last_walking_time_));

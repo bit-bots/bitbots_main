@@ -38,7 +38,7 @@ $StartHCM
                                     FALLING_BACK --> @CancelGoals, @FallingPoseBack + duration:0.5
                                     NOT_FALLING --> $Sitting
                                         YES --> @PlayAnimationDynup + direction:rise
-                                        NO --> $ExternalAnimation
+                                        NO --> $PlayingExternalAnimation
                                             ANIMATION_RUNNING --> @StayAnimationRunning
                                             FREE --> $Walking
                                                 STOP_WALKING --> @StopWalking

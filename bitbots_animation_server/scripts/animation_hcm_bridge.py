@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+
+"""
+This script subscribes to the topic "animation" and publishes the received joint commands to the motor command topic, skipping the HCM.
+"""
+
 import rclpy
 from rclpy.node import Node
 from bitbots_msgs.msg import JointCommand

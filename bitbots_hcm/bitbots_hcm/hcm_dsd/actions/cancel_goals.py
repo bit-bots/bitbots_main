@@ -4,6 +4,9 @@ from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 
 class CancelGoals(AbstractActionElement):
+    """
+    Cancels all animation, dynup and move_base goals
+    """
 
     def __init__(self, blackboard, dsd, parameters=None):
         super().__init__(blackboard, dsd, parameters)
@@ -21,6 +24,6 @@ class CancelGoals(AbstractActionElement):
             except:
                 pass
 
-        self.blackboard.cancel_move_base_goal()
+        self.blackboard.cancel_path_planning()
         self.pop()
 

@@ -14,15 +14,10 @@ class StopWalking(AbstractActionElement):
         self.blackboard: HcmBlackboard
 
     def perform(self, reevaluate=False):
-        if self.blackboard.current_time.to_sec() - self.blackboard.last_walking_goal_time.to_sec() < 0.1:
-            msg = Twist()
-            msg.linear.x = 0.0
-            msg.linear.y = 0.0
-            msg.angular.z = 0.0
-            msg.angular.x = -1.0
-            self.blackboard.walk_pub.publish(msg)
-        else:
-            self.pop()
+        msg = Twist()
+        msg.angular.x = -1.0
+        self.blackboard.walk_pub.publish(msg)
+        self.pop()
 
 
 class ForceStopWalking(AbstractActionElement):

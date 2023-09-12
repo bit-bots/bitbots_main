@@ -2,18 +2,14 @@
 
 import os
 import threading
+
 import rclpy
 from ament_index_python import get_package_share_directory
 from bitbots_hcm.hcm_dsd.hcm_blackboard import HcmBlackboard
-from bitbots_msgs.action import Dynup
-from bitbots_msgs.msg import FootPressure
 from bitbots_utils.utils import get_parameters_from_ros_yaml
 from builtin_interfaces.msg import Time as TimeMsg
 from diagnostic_msgs.msg import DiagnosticArray
-from dynamic_stack_decider.dsd import DSD
 from geometry_msgs.msg import PointStamped
-from humanoid_league_msgs.action import PlayAnimation
-from humanoid_league_msgs.msg import RobotControlState, Audio
 from humanoid_league_speaker.speaker import speak
 from rcl_interfaces.msg import Parameter as ParameterMsg
 from rclpy.action import ActionClient
@@ -26,6 +22,12 @@ from rclpy.time import Time
 from ros2_numpy import numpify
 from sensor_msgs.msg import Imu, JointState
 from std_msgs.msg import Bool
+
+from bitbots_msgs.action import Dynup
+from bitbots_msgs.msg import FootPressure
+from dynamic_stack_decider.dsd import DSD
+from humanoid_league_msgs.action import PlayAnimation
+from humanoid_league_msgs.msg import Audio, RobotControlState
 
 
 class HardwareControlManager:
@@ -60,8 +62,6 @@ class HardwareControlManager:
         self.simulation_active = self.node.get_parameter("simulation_active")
         # dsd
         self.blackboard = HcmBlackboard(self.node)
-        self.blackboard.animation_action_client = ActionClient(self.node, PlayAnimation, 'animation')
-        self.blackboard.dynup_action_client = ActionClient(self.node, Dynup, 'dynup')
         dirname = os.path.dirname(os.path.realpath(__file__)) + "/hcm_dsd"
         self.dsd = DSD(self.blackboard, "debug/dsd/hcm", node=self.node)
         self.dsd.register_actions(os.path.join(dirname, 'actions'))
@@ -115,7 +115,6 @@ class HardwareControlManager:
                 if self.hcm_deactivated:
                     self.blackboard.current_state = RobotControlState.CONTROLLABLE
                 else:
-                    self.blackboard.current_time = self.node.get_clock().now()
                     try:
                         self.dsd.update()
                     except IndexError:
@@ -132,7 +131,6 @@ class HardwareControlManager:
         # now wait for it finishing the shutdown procedure
         while not self.blackboard.current_state == RobotControlState.HCM_OFF:
             # we still have to update everything
-            self.blackboard.current_time = self.node.get_clock().now()
             self.dsd.update()
             self.hcm_state_publisher.publish(self.blackboard.current_state)
             self.node.get_clock().sleep_for(Duration(seconds=0.01))
@@ -158,12 +156,6 @@ class HardwareControlManager:
     def set_current_joint_state(self, joint_state_msg_serialized):
         self.blackboard.previous_joint_state = self.blackboard.current_joint_state
         self.blackboard.current_joint_state = deserialize_message(joint_state_msg_serialized, JointState)
-
-    def set_cop(self, cop_msg_serialized, left):
-        if left:
-            self.blackboard.cop_l_msg = deserialize_message(cop_msg_serialized, PointStamped)
-        else:
-            self.blackboard.cop_r_msg = deserialize_message(cop_msg_serialized, PointStamped)
 
     def set_pressure_left(self, pressure_msg_serialized):
         msg: FootPressure = deserialize_message(pressure_msg_serialized, FootPressure)

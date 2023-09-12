@@ -42,6 +42,9 @@
     # smoothing threshold for classifier
     smooth_threshold: 0.04
 
+    fallen_orientation_thresh: 60.0 # Lean (degrees) after which we consider the robot fallen on this side
+    fallen_angular_velocity_thresh: 0.2 # Angular velocity (rad/s) under which we consider the robot as not moving (the fall is over and we are lying on the ground)
+
     pick_up_accel_threshold: 7.0
 
     falling:
