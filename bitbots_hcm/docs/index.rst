@@ -53,7 +53,7 @@ How the HCM works
 
 The HCM uses a DSD to decide what the state of the robot is and to decide on the actions that should be performed.
 This state is then published as a ROS message (`/robot_state`).
-To see which state is which, you have to look at the message definition (`rosmsg show humanoid_league_msgs/RobotControlState`).
+To see which state is which, you have to look at the message definition (`ros2 interface show humanoid_league_msgs/msg/RobotControlState`).
 
 The HCM subscribes to all joint goal topics of the different software parts.
 Dependend on its state, it forwards the goals or not.
@@ -62,21 +62,11 @@ Sensor data is not influenced by the HCM, since it does not need to be mutexed.
 How the HCM is started
 ----------------------
 
-The easiest way to start the HCM is to launch the complete motion (`roslaunch bitbots_bringup motion_standalone.launch`).
+The easiest way to start the HCM is to launch the complete motion (`ros2 launch bitbots_bringup motion_standalone.launch`).
 For debugging it is sometimes better to launch the single parts by themselves.
-The HCM needs the animation server (`roslaunch bitbots_animation_server animation.launch`) to work because it is needed to perform falling and stand up animations.
-To be able to actually control the hardware, ros_control needs to run (`roslaunch bitbots_ros_control ros_control_standalone.launch`).
-Finally launch the HCM itself (`roslaunch bitbots_hcm hcm_standalone.launch`).
-
-How to retrain the falling classification
------------------------------------------
-
-All necessary scripts are in the `training folder`. Previous labeled datasets can be found `here <https://cloud.mafiasi.de/s/o6YW3eTWXqnLrkt>`_.
-
-The `label.py` script allows to label either online on a robot or on a prerecorded rosbag.
-
-The `train.py` script allows to train the classifier.
-
+The HCM needs the animation server (`ros2 launch bitbots_animation_server animation.launch`) to work because it is needed to perform falling and stand up animations.
+To be able to actually control the hardware, ros_control needs to run (`ros2 launch bitbots_ros_control ros_control_standalone.launch`).
+Finally launch the HCM itself (`ros2 launch bitbots_hcm hcm_standalone.launch`).
 
 
 What to do when it does not work
@@ -84,7 +74,7 @@ What to do when it does not work
 
 1. Is `ros_control` running? Do you recieve joint states (`/joint_states`) or IMU data (`/imu/data_raw`)?
 2. What is the state of the HCM (`rostopic echo /robot_state`)? The number has to be matched with the message
-   description (`rosmsg show humanoid_league_msgs/RobotControlState`).
+   description (`ros2 interface show humanoid_league_msgs/msg/RobotControlState`).
 3. The visualization of the DSD is possible with the standard DSD visualization using the rqt plugin.
    There you can see exactly which decision is responsible for the current behavior and then you can look into the code.
 
