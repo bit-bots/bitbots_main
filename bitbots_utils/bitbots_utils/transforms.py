@@ -39,8 +39,15 @@ def sixd2quat(sixd):
     return mat2quat(mat)
 
 
-def quat2fused(q):
-    q_xyzw = wxyz2xyzw(q)
+def quat2fused(q, order='wxyz'):
+    # Check quaternion order
+    if order == 'xyzw':
+        q_xyzw = q
+    elif order == 'wxyz':
+        q_xyzw = wxyz2xyzw(q)
+    else:
+        raise ValueError('Unknown quaternion order: {}'.format(order))
+
     # Fused yaw of Quaternion
     fused_yaw = 2.0 * math.atan2(q_xyzw[2],
                                  q_xyzw[3])  # Output of atan2 is [-tau/2,tau/2], so this expression is in [-tau,tau]
@@ -68,7 +75,7 @@ def quat2fused(q):
     return fused_roll, fused_pitch, fused_yaw, hemi
 
 
-# Conversion: Fused angles (3D/4D) --> Quaternion
+# Conversion: Fused angles (3D/4D) --> Quaternion (wxyz)
 def fused2quat(fusedRoll, fusedPitch, fusedYaw, hemi):
     # Precalculate the sine values
     sth = math.sin(fusedPitch)
