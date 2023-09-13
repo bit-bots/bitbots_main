@@ -33,11 +33,13 @@ move_head:
     tilt_speed:
       type: double
       default_value: 6.0
+      description: "Tilt speed for the look at action"
       validation:
         bounds<>: [0.0, 8.0]
     pan_speed:
       type: double
       default_value: 6.0
+      description: "Pan speed for the look at action"
       validation:
         bounds<>: [0.0, 8.0]
 
@@ -46,10 +48,12 @@ move_head:
     # search pattern speed
     tilt_speed:
       type: double
+      description: "Tilt speed for the search pattern"
       default_value: 3.0
 
     pan_speed:
       type: double
+      description: "Pan speed for the search pattern"
       default_value: 3.0
 
     # Max values for the search pattern
@@ -86,10 +90,12 @@ move_head:
   search_pattern_penalty:
     tilt_speed:
       type: double
+      description: "Tilt speed for the search pattern"
       default_value: 1.0
 
     pan_speed:
       type: double
+      description: "Pan speed for the search pattern"
       default_value: 2.0
 
     pan_max:
@@ -109,6 +115,7 @@ move_head:
     scan_lines:
       type: int
       default_value: 2
+      description: "Number of scan horizontal lines for the search pattern"
       validation:
         gt_eq<>: [1]
 
@@ -122,10 +129,12 @@ move_head:
   search_pattern_field_features:
     tilt_speed:
       type: double
+      description: "Tilt speed for the search pattern"
       default_value: 3.0
 
     pan_speed:
       type: double
+      description: "Pan speed for the search pattern"
       default_value: 3.0
 
     pan_max:
@@ -145,6 +154,7 @@ move_head:
     scan_lines:
       type: int
       default_value: 2
+      description: "Number of scan horizontal lines for the search pattern"
       validation:
         gt_eq<>: [1]
 
@@ -158,10 +168,12 @@ move_head:
   front_search_pattern:
     tilt_speed:
       type: double
+      description: "Tilt speed for the search pattern"
       default_value: 3.0
 
     pan_speed:
       type: double
+      description: "Pan speed for the search pattern"
       default_value: 3.0
 
     pan_max:
@@ -181,6 +193,7 @@ move_head:
     scan_lines:
       type: int
       default_value: 2
+      description: "Number of scan horizontal lines for the search pattern"
       validation:
         gt_eq<>: [1]
 
@@ -194,10 +207,12 @@ move_head:
   look_forward:
     tilt_speed:
       type: double
+      description: "Tilt speed for the search pattern"
       default_value: 3.0
 
     pan_speed:
       type: double
+      description: "Pan speed for the search pattern"
       default_value: 3.0
 
     pan_max:
@@ -217,6 +232,7 @@ move_head:
     scan_lines:
       type: int
       default_value: 2
+      description: "Number of scan horizontal lines for the search pattern"
       validation:
         gt_eq<>: [1]
 

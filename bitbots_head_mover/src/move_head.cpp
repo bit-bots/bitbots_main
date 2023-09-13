@@ -39,34 +39,36 @@ using std::placeholders::_1;
 using namespace std::chrono_literals;
 
 namespace move_head {
+
+#define DEG_TO_RAD M_PI / 180
+
 using LookAtGoal = bitbots_msgs::action::LookAt;
 using LookAtGoalHandle = rclcpp_action::ServerGoalHandle<LookAtGoal>;
 
 class HeadMover {
   std::shared_ptr<rclcpp::Node> node_;
 
-  // declare subscriber and publisher
+  // Declare subscriber
   rclcpp::Subscription<humanoid_league_msgs::msg::HeadMode>::SharedPtr
     head_mode_subscriber_;
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr
     joint_state_subscriber_;
 
+  // Declare publisher
   rclcpp::Publisher<bitbots_msgs::msg::JointCommand>::SharedPtr
     position_publisher_;
 
-  // declare tf
+  // Declare tf
   std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
-
   std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
 
-  // declare variables
-  humanoid_league_msgs::msg::HeadMode head_mode_;
-  sensor_msgs::msg::JointState current_joint_state_;
+  // Declare variables
+  uint head_mode_;
+  std::shared_ptr<sensor_msgs::msg::JointState> current_joint_state_;
   bitbots_msgs::msg::JointCommand pos_msg_;
-  double DEG_TO_RAD = M_PI / 180;
   geometry_msgs::msg::PoseWithCovarianceStamped tf_precision_pose_;
 
-  // declare robot model and planning scene
+  // Declare robot model and planning scene for moveit
   robot_model_loader::RobotModelLoaderPtr loader_;
   moveit::core::RobotModelPtr robot_model_;
   moveit::core::RobotStatePtr robot_state_;
@@ -74,21 +76,25 @@ class HeadMover {
   planning_scene_monitor::PlanningSceneMonitorPtr planning_scene_monitor_;
   planning_scene::PlanningScenePtr planning_scene_;
 
-  // declare params
+  // Declare parameters and parameter listener
   move_head::Params params_;
   std::shared_ptr<move_head::ParamListener> param_listener_;
 
+  // Declare timer that executes the main loop
   rclcpp::TimerBase::SharedPtr timer_;
 
+  // Declare variable for the current search pattern
   std::vector<std::pair<double, double>> pattern_;
-  uint prev_head_mode_;
+  // Store previous head mode
+  uint prev_head_mode_ = -1;
 
-  double threshold_;
+  // Declare variables for the current search patterns parameters
+  double threshold_ = 0;
   int index_ = 0;
-  double pan_speed_;
-  double tilt_speed_;
+  double pan_speed_ = 0;
+  double tilt_speed_ = 0;
 
-  // action server
+  // Action server for the look at action
   rclcpp_action::Server<LookAtGoal>::SharedPtr action_server_;
   bool action_running_ = false;
 
@@ -96,15 +102,20 @@ public:
   HeadMover() {
     node_ = std::make_shared<rclcpp::Node>("head_mover");
 
+    // Initialize publisher for head motor goals
     position_publisher_ =
       node_->create_publisher<bitbots_msgs::msg::JointCommand>(
       "head_motor_goals", 10);
+
+    // Initialize subscriber for head mode
     head_mode_subscriber_ =
       node_->create_subscription<humanoid_league_msgs::msg::HeadMode>(
       "head_mode", 10,
       [this](const humanoid_league_msgs::msg::HeadMode::SharedPtr msg) {
         head_mode_callback(msg);
       });
+
+    // Initialize subscriber for the current joint states of the robot
     joint_state_subscriber_ =
       node_->create_subscription<sensor_msgs::msg::JointState>(
       "joint_states", 10,
@@ -112,12 +123,15 @@ public:
         joint_state_callback(msg);
       });
 
-    // load parameters from config
+    // Create parameter listener and load initial set of parameters
     param_listener_ = std::make_shared<move_head::ParamListener>(node_);
     params_ = param_listener_->get_params();
 
+    // Create a seperate node for moveit, this way we can use rqt to change parameters,
+    // because some moveit parameters break the gui
     auto moveit_node = std::make_shared<rclcpp::Node>("moveit_head_mover_node");
 
+    // Get the parameters from the move_group node
     auto parameters_client =
       std::make_shared<rclcpp::SyncParametersClient>(node_, "/move_group");
     while (!parameters_client->wait_for_service(1s)) {
@@ -132,14 +146,15 @@ public:
         "service not available, waiting again...");
     }
 
+    // Extract the robot_description
     rcl_interfaces::msg::ListParametersResult parameter_list =
       parameters_client->list_parameters(
       {"robot_description_kinematics"},
       10);
+
+    // Set the robot description parameters in the moveit node
     auto copied_parameters =
       parameters_client->get_parameters(parameter_list.names);
-
-    // set the parameters to our node
     for (auto & parameter : copied_parameters) {
       moveit_node->declare_parameter(
         parameter.get_name(),
@@ -147,8 +162,9 @@ public:
       moveit_node->set_parameter(parameter);
     }
 
+
+    // Load robot description / robot model into moveit
     std::string robot_description = "robot_description";
-    // get the robot description from the blackboard
     loader_ = std::make_shared<robot_model_loader::RobotModelLoader>(
       robot_model_loader::RobotModelLoader(
         moveit_node, robot_description,
@@ -161,13 +177,16 @@ public:
         "blackboard (bitbots_bringup base.launch)?",
         robot_description.c_str());
     }
+
+    // Recreate robot state
     robot_state_.reset(new moveit::core::RobotState(robot_model_));
     robot_state_->setToDefaultValues();
 
+    // Recreate collision state
     collision_state_.reset(new moveit::core::RobotState(robot_model_));
     collision_state_->setToDefaultValues();
 
-    // get planning scene for collision checking
+    // Get planning scene for collision checking
     planning_scene_monitor_ =
       std::make_shared<planning_scene_monitor::PlanningSceneMonitor>(
       moveit_node, loader_);
@@ -178,7 +197,7 @@ public:
         "failed to connect to planning scene");
     }
 
-    // prepare the pos_msg
+    // Prepare the pos_msg with default values
     pos_msg_.joint_names = {"HeadPan", "HeadTilt"};
     pos_msg_.positions = {0, 0};
     pos_msg_.velocities = {0, 0};
@@ -186,15 +205,14 @@ public:
       params_.max_acceleration_pan};
     pos_msg_.max_currents = {-1, -1};
 
-    // apparently tf_listener is necessary but unused
+    // Create tf buffer and listener to update it
     tf_buffer_ = std::make_shared<tf2_ros::Buffer>(node_->get_clock());
     tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
 
-    prev_head_mode_ = -1;
+    // Initialize variables
     threshold_ = params_.position_reached_threshold * DEG_TO_RAD;
-    pan_speed_ = 0;
-    tilt_speed_ = 0;
 
+    // Initialize action server for look at action
     action_server_ = rclcpp_action::create_server<LookAtGoal>(
       node_, "look_at_goal",
       std::bind(
@@ -203,6 +221,7 @@ public:
       std::bind(&HeadMover::handle_cancel, this, std::placeholders::_1),
       std::bind(&HeadMover::handle_accepted, this, std::placeholders::_1));
 
+    // Initialize timer for main loop
     timer_ = rclcpp::create_timer(
       node_, node_->get_clock(), 10ms,
       [this] {behave();});
@@ -210,20 +229,29 @@ public:
 
   void head_mode_callback(
     const humanoid_league_msgs::msg::HeadMode::SharedPtr msg) {
-    head_mode_ = *msg;
+    head_mode_ = msg->head_mode;
   }
 
   void joint_state_callback(const sensor_msgs::msg::JointState::SharedPtr msg) {
-    current_joint_state_ = *msg;
+    current_joint_state_ = msg;
   }
 
+  /***
+   * @brief Handles the goal request for the look at action
+   *
+   * @param uuid
+   * @param goal
+  */
   rclcpp_action::GoalResponse handle_goal(
     const rclcpp_action::GoalUUID & uuid,
     std::shared_ptr<const LookAtGoal::Goal> goal) {
-    RCLCPP_INFO(node_->get_logger(), "Received goal request");
+
+    // Avoid unused parameter warning
     (void)uuid;
+    RCLCPP_DEBUG(node_->get_logger(), "Received goal request");
+
+    // Bring the goal point into the planning frame
     geometry_msgs::msg::PointStamped new_point;
-    // check if goal is in range collision wise
     try {
       new_point = tf_buffer_->transform(
         goal->look_at_position,
@@ -235,12 +263,16 @@ public:
         ex.what());
       return rclcpp_action::GoalResponse::REJECT;
     }
+
+    // Get the motor goals that are needed to look at the point
     std::pair<double, double> pan_tilt =
       get_motor_goals_from_point(new_point.point);
+
+    // Check whether the goal is in range pan and tilt wise
     bool goal_not_in_range =
       check_head_collision(pan_tilt.first, pan_tilt.second);
-    // check whether the goal is in range pan and tilt wise
 
+    // Check whether the action goal is valid and can be executed
     if (action_running_ || goal_not_in_range ||
       !(params_.max_pan[0] < pan_tilt.first &&
       pan_tilt.first < params_.max_pan[1]) ||
@@ -254,13 +286,16 @@ public:
 
   rclcpp_action::CancelResponse handle_cancel(
     const std::shared_ptr<LookAtGoalHandle> goal_handle) {
-    RCLCPP_INFO(node_->get_logger(), "Received request to cancel goal");
+    // Avoid unused parameter warning
     (void)goal_handle;
+    RCLCPP_INFO(node_->get_logger(), "Received request to cancel goal");
+    // Set the action_running_ flag to false, so that the action can be executed again
     action_running_ = false;
     return rclcpp_action::CancelResponse::ACCEPT;
   }
 
   void handle_accepted(const std::shared_ptr<LookAtGoalHandle> goal_handle) {
+    // Spawn a new thread that executes the look at action until we reach the goal
     std::thread{
       std::bind(&HeadMover::execute_look_at, this, std::placeholders::_1),
       goal_handle}
@@ -268,34 +303,50 @@ public:
   }
 
   void execute_look_at(const std::shared_ptr<LookAtGoalHandle> goal_handle) {
+    // Yeah seems like we are executing the action
     action_running_ = true;
 
     RCLCPP_INFO(node_->get_logger(), "Executing goal");
+
+    // Get the goal from the goal handle
     const auto goal = goal_handle->get_goal();
+
+    // Create feedback and result messages
     auto feedback = std::make_shared<LookAtGoal::Feedback>();
-    bool success =
-      false;    // checks whether we look at the position we want to look at
+    // Flag that indicates whether the action was successful yet
+    bool success = false;
     auto result = std::make_shared<LookAtGoal::Result>();
 
-    while (!success) {
+    // Execute the action until we reach the goal or the action is canceled
+    while (!success && rclcpp::ok()) {
       RCLCPP_INFO(node_->get_logger(), "Looking at point");
+
+      // Check if the action was canceled and if so, set the result accordingly
       if (goal_handle->is_canceling()) {
         goal_handle->canceled(result);
         RCLCPP_INFO(node_->get_logger(), "Goal was canceled");
         return;
       }
-      // look at point
+
+      // Look at the goal point
       success = look_at(goal->look_at_position);
+
+      // Publish feedback to the client
       goal_handle->publish_feedback(
         feedback);    // TODO: currently feedback is empty
     }
+
+    // If we reach this point, the action was successful
     if (rclcpp::ok()) {
       result->success = true;
       goal_handle->succeed(result);
       RCLCPP_INFO(node_->get_logger(), "Goal succeeded");
     }
+
+    // Set the action_running_ flag to false, so that the action can be executed again
     action_running_ = false;
   }
+
 
   double calculate_lower_speed(
     double delta_fast_joint,
@@ -308,6 +359,7 @@ public:
       return 0;
     }
   }
+
 
   bool send_motor_goals(
     double pan_position,
@@ -376,6 +428,7 @@ public:
       std::clamp(tilt, params_.max_tilt[0], params_.max_tilt[1]);
     return std::make_pair(new_pan, new_tilt);
   }
+  
   bool avoid_collision_on_path(
     double goal_pan,
     double goal_tilt,
@@ -459,11 +512,11 @@ public:
   std::pair<double, double> get_head_position() {
     double head_pan;
     double head_tilt;
-    for (size_t i = 0; i < current_joint_state_.name.size(); i++) {
-      if (current_joint_state_.name[i] == "HeadPan") {
-        head_pan = current_joint_state_.position[i];
-      } else if (current_joint_state_.name[i] == "HeadTilt") {
-        head_tilt = current_joint_state_.position[i];
+    for (size_t i = 0; i < current_joint_state_->name.size(); i++) {
+      if (current_joint_state_->name[i] == "HeadPan") {
+        head_pan = current_joint_state_->position[i];
+      } else if (current_joint_state_->name[i] == "HeadTilt") {
+        head_tilt = current_joint_state_->position[i];
       }
     }
     return {head_pan, head_tilt};
@@ -686,7 +739,7 @@ public:
   }
 
   void behave() {
-    uint curr_head_mode = head_mode_.head_mode;
+    uint curr_head_mode = head_mode_;
 
     params_ = param_listener_->get_params();
 
