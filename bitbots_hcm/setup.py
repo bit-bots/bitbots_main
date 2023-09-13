@@ -27,6 +27,7 @@ setup(
     ],
     scripts=[
         'scripts/hcm_led.py',
+        'scripts/pause.py',
     ],
     install_requires=[
         'launch',
