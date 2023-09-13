@@ -26,36 +26,45 @@ public:
     : Node("hcm_cpp",
            rclcpp::NodeOptions().allow_undeclared_parameters(true).automatically_declare_parameters_from_overrides(
                true)) {
-    // these are provided by the launch and not in the yaml file therefore we need to handle them seperatly
+
+    // These are provided by the launch and not in the yaml file therefore we need to handle them seperatly
     bool use_sim_time, simulation_active, visualization_active;
     this->get_parameter("use_sim_time", use_sim_time);
     this->get_parameter("simulation_active", simulation_active);
     this->get_parameter("visualization_active", visualization_active);
 
+    // HCM state
     current_state_ = humanoid_league_msgs::msg::RobotControlState::STARTUP;
 
+    // Sensor states
     current_imu_ = sensor_msgs::msg::Imu();
     current_pressure_left_ = bitbots_msgs::msg::FootPressure();
     current_pressure_right_ = bitbots_msgs::msg::FootPressure();
-    current_cop_left_ = geometry_msgs::msg::PointStamped();
-    current_cop_right_ = geometry_msgs::msg::PointStamped();
     current_joint_state_ = sensor_msgs::msg::JointState();
+
+    // Walking state
     last_walking_time_ = builtin_interfaces::msg::Time();
+
+    // Animation state
     record_active_ = false;
     external_animation_running_ = false;
     animation_requested_ = false;
     last_animation_goal_time_ = builtin_interfaces::msg::Time();
 
-    // from bitbots_hcm.humanoid_control_module import HardwareControlManager
+    // Initialize HCM logic
+    // Import Python module
+    // "from bitbots_hcm.humanoid_control_module import HardwareControlManager"
     auto hcm_module = py::module::import("bitbots_hcm.humanoid_control_module");
+
+    // Create HCM object
     // hcm = HardwareControlManager()
     hcm_py_ = hcm_module.attr("HardwareControlManager")(use_sim_time, simulation_active, visualization_active);
 
-    // create goal publisher
+    // Create publishers
     pub_controller_command_ = this->create_publisher<bitbots_msgs::msg::JointCommand>("DynamixelController/command", 1);
     pub_robot_state_ = this->create_publisher<humanoid_league_msgs::msg::RobotControlState>("robot_state", 1);
 
-    // create subscriber motor goals
+    // Create subscribers for goals
     anim_sub_ = this->create_subscription<humanoid_league_msgs::msg::Animation>(
         "animation", 1, std::bind(&HCM_CPP::animation_callback, this, _1));
     dynup_sub_ = this->create_subscription<bitbots_msgs::msg::JointCommand>(
@@ -69,63 +78,66 @@ public:
     walk_sub_ = this->create_subscription<bitbots_msgs::msg::JointCommand>(
         "walking_motor_goals", 1, std::bind(&HCM_CPP::walking_goal_callback, this, _1));
 
-    // subscriber for high frequency topics
+    // Create subscriber for high frequency sensor data
     joint_state_sub_ = this->create_subscription<sensor_msgs::msg::JointState>(
-        "joint_states", 1, std::bind(&HCM_CPP::joint_state_callback, this, _1));
-    cop_l_sub_ = this->create_subscription<geometry_msgs::msg::PointStamped>(
-        "cop_l", 1, std::bind(&HCM_CPP::cop_l_callback, this, _1));
-    cop_r_sub_ = this->create_subscription<geometry_msgs::msg::PointStamped>(
-        "cop_r", 1, std::bind(&HCM_CPP::cop_l_callback, this, _1));
+      "joint_states", 1, std::bind(&HCM_CPP::joint_state_callback, this, _1));
     pressure_l_sub_ = this->create_subscription<bitbots_msgs::msg::FootPressure>(
-        "foot_pressure_left/filtered", 1, std::bind(&HCM_CPP::pressure_l_callback, this, _1));
+      "foot_pressure_left/filtered", 1, std::bind(&HCM_CPP::pressure_l_callback, this, _1));
     pressure_r_sub_ = this->create_subscription<bitbots_msgs::msg::FootPressure>(
-        "foot_pressure_right/filtered", 1, std::bind(&HCM_CPP::pressure_r_callback, this, _1));
-    imu_sub_ =
-        this->create_subscription<sensor_msgs::msg::Imu>("imu/data", 1, std::bind(&HCM_CPP::imu_callback, this, _1));
+      "foot_pressure_right/filtered", 1, std::bind(&HCM_CPP::pressure_r_callback, this, _1));
+    imu_sub_ = this->create_subscription<sensor_msgs::msg::Imu>(
+      "imu/data", 1, std::bind(&HCM_CPP::imu_callback, this, _1));
   }
 
   void animation_callback(humanoid_league_msgs::msg::Animation msg) {
     // The animation server is sending us goal positions for the next keyframe
     last_animation_goal_time_ = msg.header.stamp;
 
+    // Check if the message is an animation request
     if (msg.request) {
       RCLCPP_INFO(this->get_logger(), "Got Animation request. HCM will try to get controllable now.");
-      // animation has to wait
-      // dsd should try to become controllable
+      // Animation has to wait
+      // DSD should try to become controllable
       animation_requested_ = true;
       return;
     }
+
+    // TODO: REWORK MUTEX
+
+    // Check if the message is the start of an animation
     if (msg.first) {
       if (msg.hcm) {
-        // coming from ourselves
-        // we don't have to do anything, since we must be in the right state
+        // This was an animation from the DSD
+        // We don't have to do anything, since we must be in the right state
       } else {
-        // coming from outside
-        // check if we can run an animation now
+        // Coming from outside
+        // Check if we can run an animation now
         if (current_state_ != humanoid_league_msgs::msg::RobotControlState::CONTROLLABLE) {
           RCLCPP_WARN(this->get_logger(), "HCM is not controllable, animation refused.");
         } else {
-          // we're already controllable, go to animation running
+          // We're already controllable, go to animation running
           external_animation_running_ = true;
         }
       }
     }
 
+    // Check if the message is the end of an animation
     if (msg.last) {
       if (msg.hcm) {
         // This was an animation from the DSD
-        // we don't have to do anything, since we must be in the right state
+        // We don't have to do anything, since we must be in the right state
       } else {
-        // this is the last frame, we want to tell the DSD that we're finished with the animations
+        // This is the last frame, we want to tell the DSD that we're finished with the animations
         external_animation_running_ = false;
         if (msg.position.points.size() == 0) {
-          // probably this was just to tell us we're finished
+          // Probably this was just to tell us we're finished
           // we don't need to set another position to the motors
           return;
         }
       }
     }
-    // forward positions to motors, if some where transmitted
+
+    // Forward joint positions to motors
     if (msg.position.points.size() > 0 && current_state_ != humanoid_league_msgs::msg::RobotControlState::GETTING_UP) {
       bitbots_msgs::msg::JointCommand out_msg = bitbots_msgs::msg::JointCommand();
       out_msg.positions = msg.position.points[0].positions;
@@ -232,8 +244,6 @@ private:
   sensor_msgs::msg::Imu current_imu_;
   bitbots_msgs::msg::FootPressure current_pressure_left_;
   bitbots_msgs::msg::FootPressure current_pressure_right_;
-  geometry_msgs::msg::PointStamped current_cop_left_;
-  geometry_msgs::msg::PointStamped current_cop_right_;
   sensor_msgs::msg::JointState current_joint_state_;
   builtin_interfaces::msg::Time last_walking_time_;
   bool record_active_;
