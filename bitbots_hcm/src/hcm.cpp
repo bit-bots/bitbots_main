@@ -215,7 +215,9 @@ public:
   }
 
   void tick() {
-    // update all input to the HCM
+    // Performs one tick of the HCM DSD
+
+    // Pass all the data nessesary data to the python module
     hcm_py_.attr("set_imu")(ros2_python_extension::toPython(current_imu_));
     hcm_py_.attr("set_pressure_left")(ros2_python_extension::toPython<bitbots_msgs::msg::FootPressure>(current_pressure_left_));
     hcm_py_.attr("set_pressure_right")(ros2_python_extension::toPython<bitbots_msgs::msg::FootPressure>(current_pressure_right_));
@@ -226,33 +228,49 @@ public:
     hcm_py_.attr("set_external_animation_running")(external_animation_running_);
     hcm_py_.attr("set_animation_requested")(animation_requested_);
     hcm_py_.attr("set_last_animation_goal_time")(ros2_python_extension::toPython<builtin_interfaces::msg::Time>(last_animation_goal_time_));
-    // run HCM
+
+    // Run HCM Python DSD code
     hcm_py_.attr("tick")();
-    // update current HCM state for joint mutex
+
+    // Pull the current robot state from the python module
+    // It is used to perform the joint mutex
     py::object result = hcm_py_.attr("get_state")();
     current_state_ = result.cast<int>();
-    // publish current state
+
+    // Publish current robot state
     humanoid_league_msgs::msg::RobotControlState state_msg = humanoid_league_msgs::msg::RobotControlState();
     state_msg.state = current_state_;
     pub_robot_state_->publish(state_msg);
   }
 
 private:
+  // Python interpreter
   py::scoped_interpreter python_;
+  // Python hcm module
   py::object hcm_py_;
+  // The current robot state
   int current_state_;
+
+  // Sensor states
   sensor_msgs::msg::Imu current_imu_;
   bitbots_msgs::msg::FootPressure current_pressure_left_;
   bitbots_msgs::msg::FootPressure current_pressure_right_;
   sensor_msgs::msg::JointState current_joint_state_;
+
+  // Walking state
   builtin_interfaces::msg::Time last_walking_time_;
+
+  // Animation states
   bool record_active_;
   bool external_animation_running_;
   bool animation_requested_;
   builtin_interfaces::msg::Time last_animation_goal_time_;
 
+  // Publishers
   rclcpp::Publisher<bitbots_msgs::msg::JointCommand>::SharedPtr pub_controller_command_;
   rclcpp::Publisher<humanoid_league_msgs::msg::RobotControlState>::SharedPtr pub_robot_state_;
+
+  // Subscribers
   rclcpp::Subscription<humanoid_league_msgs::msg::Animation>::SharedPtr anim_sub_;
   rclcpp::Subscription<bitbots_msgs::msg::JointCommand>::SharedPtr dynup_sub_;
   rclcpp::Subscription<bitbots_msgs::msg::JointCommand>::SharedPtr head_sub_;
