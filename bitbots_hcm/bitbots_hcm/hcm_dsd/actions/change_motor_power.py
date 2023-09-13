@@ -1,17 +1,14 @@
-from bitbots_hcm.hcm_dsd.hcm_blackboard import HcmBlackboard
+from bitbots_hcm.hcm_dsd.actions import AbstractHCMActionElement
 from std_srvs.srv import SetBool
 
-from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
-
-class AbstractChangeMotorPower(AbstractActionElement):
+class AbstractChangeMotorPower(AbstractHCMActionElement):
     """
     Switches motor power using the service call of the hardware interface.
     """
 
     def __init__(self, blackboard, dsd, parameters=None):
         super().__init__(blackboard, dsd, parameters)
-        self.blackboard: HcmBlackboard
 
         if not self.blackboard.visualization_active and not self.blackboard.simulation_active:
             # In visualization and simulation, we cannot disable motors

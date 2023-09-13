@@ -1,15 +1,16 @@
-from bitbots_hcm.hcm_dsd.hcm_blackboard import HcmBlackboard
-
-from dynamic_stack_decider.abstract_action_element import AbstractActionElement
+from bitbots_hcm.hcm_dsd.actions import AbstractHCMActionElement
 
 
-class SetFootZero(AbstractActionElement):
+class SetFootZero(AbstractHCMActionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super().__init__(blackboard, dsd, parameters)
-        self.blackboard: HcmBlackboard
         self.first_perform = True
 
     def perform(self, reevaluate=False):
+        # Just to be sure, we do not want to reevaluate
+        self.do_not_reevaluate()
+
+        # We only want to execute this once
         if self.first_perform:
             # Executing this once is sufficient
             self.first_perform = False

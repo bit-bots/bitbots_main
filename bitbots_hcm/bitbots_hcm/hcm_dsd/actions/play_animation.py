@@ -1,21 +1,18 @@
-from action_msgs.msg import GoalStatus
-from bitbots_hcm.hcm_dsd.hcm_blackboard import HcmBlackboard
-
 import rclpy
+from action_msgs.msg import GoalStatus
+from bitbots_hcm.hcm_dsd.actions import AbstractHCMActionElement
+
 from bitbots_msgs.action import Dynup
-from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 from humanoid_league_msgs.action import PlayAnimation
-from humanoid_league_msgs.msg import RobotControlState
 
 
-class AbstractPlayAnimation(AbstractActionElement):
+class AbstractPlayAnimation(AbstractHCMActionElement):
     """
     Abstract class to create actions for playing animations
     """
 
     def __init__(self, blackboard, dsd, parameters=None):
         super().__init__(blackboard, dsd, parameters)
-        self.blackboard: HcmBlackboard
         self.first_perform = True
 
     def perform(self, reevaluate=False):
@@ -91,43 +88,49 @@ class AbstractPlayAnimation(AbstractActionElement):
 class PlayAnimationFallingLeft(AbstractPlayAnimation):
     def chose_animation(self):
         self.blackboard.node.get_logger().info("PLAYING FALLING LEFT ANIMATION")
-        return self.blackboard.falling_animation_left
+        return self.blackboard.animation_name_falling_left
 
 
 class PlayAnimationFallingRight(AbstractPlayAnimation):
     def chose_animation(self):
         self.blackboard.node.get_logger().info("PLAYING FALLING RIGHT ANIMATION")
-        return self.blackboard.falling_animation_right
+        return self.blackboard.animation_name_falling_right
 
 
 class PlayAnimationFallingFront(AbstractPlayAnimation):
     def chose_animation(self):
         self.blackboard.node.get_logger().info("PLAYING FALLING FRONT ANIMATION")
-        return self.blackboard.falling_animation_front
+        return self.blackboard.animation_name_falling_front
 
 
 class PlayAnimationFallingBack(AbstractPlayAnimation):
     def chose_animation(self):
         self.blackboard.node.get_logger().info("PLAYING FALLING BACK ANIMATION")
-        return self.blackboard.falling_animation_back
+        return self.blackboard.animation_name_falling_back
 
 
-class PlayAnimationDynup(AbstractActionElement):
+class PlayAnimationTurningBackLeft(AbstractPlayAnimation):
+    def chose_animation(self):
+        self.blackboard.node.get_logger().info("TURNING LYING ON THE LEFT SIDE AND TURNING BACK TO GET UP")
+        return self.blackboard.animation_name_turning_back_left
+
+class PlayAnimationTurningBackRight(AbstractPlayAnimation):
+    def chose_animation(self):
+        self.blackboard.node.get_logger().info("TURNING LYING ON THE RIGHT SIDE AND TURNING BACK TO GET UP")
+        return self.blackboard.animation_name_turning_back_right
+
+
+class PlayAnimationDynup(AbstractHCMActionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super().__init__(blackboard, dsd, parameters)
-        self.blackboard: HcmBlackboard
         self.direction = parameters.get('direction')
         self.first_perform = True
-
-        # A parameter 'initial' is passed when dynup is called during the startup phase,
-        # in this case we do not want to set the state to GETTING_UP.
-        initial = parameters.get('initial', False)
-        if not initial:
-            self.blackboard.current_state = RobotControlState.GETTING_UP
 
     def perform(self, reevaluate=False):
         # deactivate falling since it will be wrongly detected
         self.do_not_reevaluate()
+
+        # We only want to execute this once
         if self.first_perform:
             # get the animation that should be played
             # defined by implementations of this abstract class
@@ -167,6 +170,7 @@ class PlayAnimationDynup(AbstractActionElement):
             else:
                 self.blackboard.node.get_logger().warn("Dynup server did not start.")
                 return False
+
         goal = Dynup.Goal()
         goal.direction = self.direction
         self.blackboard.dynup_action_current_goal = self.blackboard.dynup_action_client.send_goal_async(goal)
