@@ -7,9 +7,9 @@ $StartHCM
             RECORD_ACTIVE --> @RobotStateRecord, @Wait
             FREE --> $CheckMotors
                 MOTORS_NOT_STARTED --> @RobotStateStartup, @WaitForMotorStartup
-                OVERLOAD --> @PlayAnimationDynup + direction:descend, @TurnMotorsOff, @Wait
+                OVERLOAD --> @RobotStateMotorOff, @CancelGoals, @StopWalking, @PlayAnimationDynup + direction:descend, @TurnMotorsOff, @Wait
                 PROBLEM --> @RobotStateHardwareProblem, @WaitForMotors
-                TURN_OFF --> @RobotStateMotorOff + @PlayAnimationDynup + direction:descend, @TurnMotorsOff, @Wait
+                TURN_OFF --> @RobotStateMotorOff, @CancelGoals, @StopWalking, @PlayAnimationDynup + direction:descend, @TurnMotorsOff, @Wait
                 TURN_ON --> @TurnMotorsOn, @PlayAnimationDynup + direction:rise
                 OKAY --> $CheckIMU
                     IMU_NOT_STARTED --> @RobotStateStartup, @WaitForIMUStartup
@@ -22,8 +22,8 @@ $StartHCM
                             ON_GROUND --> $Fallen
                                 FALLEN_FRONT --> @RobotStateFallen, @CancelGoals, @StopWalking, @RobotStateGettingUp, @PlayAnimationDynup + direction:front
                                 FALLEN_BACK --> @RobotStateFallen, @CancelGoals, @StopWalking, @RobotStateGettingUp, @SetFootZero, @PlayAnimationDynup + direction:back
-                                FALLEN_RIGHT --> @RobotStateFallen, @CancelGoals, @StopWalking, @RobotStateGettingUp, @PlayAnimationTurningBackRight
-                                FALLEN_LEFT --> @RobotStateFallen, @CancelGoals, @StopWalking, @RobotStateGettingUp, @PlayAnimationTurningBackLeft
+                                FALLEN_RIGHT --> @RobotStateFallen, @CancelGoals, @StopWalking, @PlayAnimationTurningBackRight
+                                FALLEN_LEFT --> @RobotStateFallen, @CancelGoals, @StopWalking, @PlayAnimationTurningBackLeft
                                 NOT_FALLEN --> $Falling
                                     FALLING_LEFT --> @RobotStateFalling, @CancelGoals, @StopWalking, @PlayAnimationFallingLeft, @Wait
                                     FALLING_RIGHT --> @RobotStateFalling, @CancelGoals, @StopWalking, @PlayAnimationFallingRight, @Wait

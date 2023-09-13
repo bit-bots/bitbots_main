@@ -102,8 +102,6 @@ public:
       return;
     }
 
-    // TODO: REWORK MUTEX
-
     // Check if the message is the start of an animation
     if (msg.first) {
       if (msg.hcm) {
@@ -137,8 +135,12 @@ public:
       }
     }
 
-    // Forward joint positions to motors
-    if (msg.position.points.size() > 0 && current_state_ != humanoid_league_msgs::msg::RobotControlState::GETTING_UP) {
+    // Forward joint positions to motors if there are any and we're in the right state
+    if (msg.position.points.size() > 0 && (
+        current_state_ == humanoid_league_msgs::msg::RobotControlState::CONTROLLABLE ||
+        current_state_ == humanoid_league_msgs::msg::RobotControlState::ANIMATION_RUNNING ||
+        current_state_ == humanoid_league_msgs::msg::RobotControlState::FALLING ||
+        current_state_ == humanoid_league_msgs::msg::RobotControlState::FALLEN)) {
       bitbots_msgs::msg::JointCommand out_msg = bitbots_msgs::msg::JointCommand();
       out_msg.positions = msg.position.points[0].positions;
       out_msg.joint_names = msg.position.joint_names;
@@ -162,18 +164,21 @@ public:
 
   void dynup_callback(const bitbots_msgs::msg::JointCommand msg) {
     if (current_state_ == humanoid_league_msgs::msg::RobotControlState::STARTUP ||
-        current_state_ == humanoid_league_msgs::msg::RobotControlState::FALLEN ||
         current_state_ == humanoid_league_msgs::msg::RobotControlState::GETTING_UP ||
+        current_state_ == humanoid_league_msgs::msg::RobotControlState::MOTOR_OFF ||
+        current_state_ == humanoid_league_msgs::msg::RobotControlState::PICKED_UP ||
         current_state_ == humanoid_league_msgs::msg::RobotControlState::CONTROLLABLE) {
       pub_controller_command_->publish(msg);
     }
   }
+
   void head_goal_callback(const bitbots_msgs::msg::JointCommand msg) {
     if (current_state_ == humanoid_league_msgs::msg::RobotControlState::CONTROLLABLE ||
         current_state_ == humanoid_league_msgs::msg::RobotControlState::WALKING) {
       pub_controller_command_->publish(msg);
     }
   }
+
   void kick_goal_callback(const bitbots_msgs::msg::JointCommand msg) {
     if (current_state_ == humanoid_league_msgs::msg::RobotControlState::KICKING ||
         current_state_ == humanoid_league_msgs::msg::RobotControlState::CONTROLLABLE) {
@@ -181,6 +186,7 @@ public:
       pub_controller_command_->publish(msg);
     }
   }
+
   void record_goal_callback(const bitbots_msgs::msg::JointCommand msg) {
     if (msg.joint_names.size() == 0) {
       // record tells us that its finished
@@ -190,6 +196,7 @@ public:
       pub_controller_command_->publish(msg);
     }
   }
+  
   void walking_goal_callback(bitbots_msgs::msg::JointCommand msg) {
     last_walking_time_ = msg.header.stamp;
     if (current_state_ == humanoid_league_msgs::msg::RobotControlState::CONTROLLABLE ||
