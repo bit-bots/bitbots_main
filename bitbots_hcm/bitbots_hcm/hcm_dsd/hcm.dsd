@@ -1,41 +1,38 @@
 -->HCM
 $StartHCM
-    START_UP --> @Wait + time:0.1 + r:false, @PlayAnimationDynup + direction:walkready + initial:true + r:false
+    START_UP --> @RobotStateStartup, @Wait + time:0.1 + r:false, @PlayAnimationDynup + direction:walkready + r:false
     RUNNING --> $Stop
-        STOPPED -->  @ForceStopWalking, @PlayAnimationDynup + direction:walkready + initial:true + r:false, @StayStopped
+        STOPPED --> @CancelGoals, @StopWalking, @PlayAnimationDynup + direction:walkready + r:false, @Wait
         FREE -->$Record
-            RECORD_ACTIVE --> @StayRecord
+            RECORD_ACTIVE --> @RobotStateRecord, @Wait
             FREE --> $CheckMotors
-                MOTORS_NOT_STARTED --> @WaitForMotorStartup
-                OVERLOAD --> @PlayAnimationDynup + direction:descend, @TurnMotorsOff, @StayMotorsOff
-                PROBLEM --> @WaitForMotors
-                TURN_OFF --> @PlayAnimationDynup + direction:descend, @TurnMotorsOff, @StayMotorsOff
+                MOTORS_NOT_STARTED --> @RobotStateStartup, @WaitForMotorStartup
+                OVERLOAD --> @PlayAnimationDynup + direction:descend, @TurnMotorsOff, @Wait
+                PROBLEM --> @RobotStateHardwareProblem, @WaitForMotors
+                TURN_OFF --> @RobotStateMotorOff + @PlayAnimationDynup + direction:descend, @TurnMotorsOff, @Wait
                 TURN_ON --> @TurnMotorsOn, @PlayAnimationDynup + direction:rise
                 OKAY --> $CheckIMU
-                    IMU_NOT_STARTED --> @WaitForIMUStartup
-                    PROBLEM --> @WaitForIMU
+                    IMU_NOT_STARTED --> @RobotStateStartup, @WaitForIMUStartup
+                    PROBLEM --> @RobotStateHardwareProblem, @WaitForIMU
                     OKAY --> $CheckPressureSensor
-                        PRESSURE_NOT_STARTED --> @WaitForPressureStartup
-                        PROBLEM --> @WaitForPressure
+                        PRESSURE_NOT_STARTED --> @RobotStateStartup, @WaitForPressureStartup
+                        PROBLEM --> @RobotStateHardwareProblem, @WaitForPressure
                         OKAY --> $PickedUp
-                            PICKED_UP --> @PlayAnimationDynup + direction:walkready, @StayPickedUp
+                            PICKED_UP --> @RobotStatePickedUp, @PlayAnimationDynup + direction:walkready, @Wait
                             ON_GROUND --> $Fallen
-                                FALLEN_FRONT --> @CancelGoals, @PlayAnimationDynup + direction:front
-                                FALLEN_BACK --> @CancelGoals, @SetFootZero, @PlayAnimationDynup + direction:back
-                                FALLEN_RIGHT --> @CancelGoals, @TurnRightToBack + duration:1.5, @PlayAnimationDynup + direction:back
-                                FALLEN_LEFT --> @CancelGoals, @TurnLeftToBack + duration:1.5, @PlayAnimationDynup + direction:back
+                                FALLEN_FRONT --> @RobotStateFallen, @CancelGoals, @StopWalking, @RobotStateGettingUp, @PlayAnimationDynup + direction:front
+                                FALLEN_BACK --> @RobotStateFallen, @CancelGoals, @StopWalking, @RobotStateGettingUp, @SetFootZero, @PlayAnimationDynup + direction:back
+                                FALLEN_RIGHT --> @RobotStateFallen, @CancelGoals, @StopWalking, @RobotStateGettingUp, @PlayAnimationTurningBackRight
+                                FALLEN_LEFT --> @RobotStateFallen, @CancelGoals, @StopWalking, @RobotStateGettingUp, @PlayAnimationTurningBackLeft
                                 NOT_FALLEN --> $Falling
-                                    FALLING_LEFT --> @CancelGoals, @FallingPoseLeft + duration:0.5
-                                    FALLING_RIGHT --> @CancelGoals, @FallingPoseRight + duration:0.5
-                                    FALLING_FRONT --> @CancelGoals, @FallingPoseFront + duration:0.5
-                                    FALLING_BACK --> @CancelGoals, @FallingPoseBack + duration:0.5
-                                    NOT_FALLING --> $Sitting
-                                        YES --> @PlayAnimationDynup + direction:rise
-                                        NO --> $PlayingExternalAnimation
-                                            ANIMATION_RUNNING --> @StayAnimationRunning
-                                            FREE --> $Walking
-                                                STOP_WALKING --> @StopWalking
-                                                STAY_WALKING --> @StayWalking
-                                                NOT_WALKING --> $Kicking
-                                                    KICKING --> @StayKicking
-                                                    NOT_KICKING --> @StayControlable
+                                    FALLING_LEFT --> @RobotStateFalling, @CancelGoals, @StopWalking, @PlayAnimationFallingLeft, @Wait
+                                    FALLING_RIGHT --> @RobotStateFalling, @CancelGoals, @StopWalking, @PlayAnimationFallingRight, @Wait
+                                    FALLING_FRONT --> @RobotStateFalling, @CancelGoals, @StopWalking, @PlayAnimationFallingFront, @Wait
+                                    FALLING_BACK --> @RobotStateFalling, @CancelGoals, @StopWalking, @PlayAnimationFallingBack, @Wait
+                                    NOT_FALLING --> $PlayingExternalAnimation
+                                        ANIMATION_RUNNING --> @StopWalking, @RobotStateAnimationRunning, @Wait
+                                        FREE --> $RecentWalkingGoals
+                                            STAY_WALKING --> @RobotStateWalking, @Wait
+                                            NOT_WALKING --> $RecentKickGoals
+                                                KICKING --> @RobotStateKicking, @Wait
+                                                NOT_KICKING --> @RobotStateControllable, @Wait

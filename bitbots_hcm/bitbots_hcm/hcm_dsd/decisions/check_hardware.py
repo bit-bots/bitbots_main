@@ -49,7 +49,6 @@ class CheckMotors(AbstractHCMDecisionElement):
                 self.blackboard.motor_off_time) + " seconds. Will shut down the motors and wait for commands.", throttle_duration_sec=5)
             self.publish_debug_data("Time since last motor goals",
                                     self.blackboard.node.get_clock().now().nanoseconds / 1e9 - self.blackboard.last_motor_goal_time.nanoseconds / 1e9)
-            self.blackboard.current_state = RobotControlState.MOTOR_OFF
             # we do an action sequence to turn off the motors and stay in motor off
             return "TURN_OFF"
 
@@ -64,7 +63,6 @@ class CheckMotors(AbstractHCMDecisionElement):
                     # tell that we have a hardware problem
                     self.had_problem = True
                     # wait for motors to connect
-                    self.blackboard.current_state = RobotControlState.HARDWARE_PROBLEM
                     return "PROBLEM"
             else:
                 # we have to turn the motors on
@@ -119,7 +117,6 @@ class CheckIMU(AbstractHCMDecisionElement):
                 # wait for the IMU to start
                 return "IMU_NOT_STARTED"
             else:
-                self.blackboard.current_state = RobotControlState.HARDWARE_PROBLEM
                 self.had_problem = True
                 return "PROBLEM"
 
@@ -160,10 +157,8 @@ class CheckPressureSensor(AbstractHCMDecisionElement):
             if self.blackboard.current_state == RobotControlState.STARTUP and self.blackboard.node.get_clock().now().nanoseconds / 1e9 - \
                     self.blackboard.start_time.nanoseconds / 1e9 < 10:
                 # wait for the pressure sensors to start
-                self.blackboard.current_state = RobotControlState.STARTUP
                 return "PRESSURE_NOT_STARTED"
             else:
-                self.blackboard.current_state = RobotControlState.HARDWARE_PROBLEM
                 return "PROBLEM"
 
         if self.had_problem:

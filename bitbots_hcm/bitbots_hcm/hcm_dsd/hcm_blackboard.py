@@ -72,14 +72,14 @@ class HcmBlackboard():
         self.record_active: bool = False
 
         # Get animation parameters
-        self.falling_animation_front = self.node.get_parameter("animations.falling_front").value
-        self.falling_animation_back = self.node.get_parameter("animations.falling_back").value
-        self.falling_animation_left = self.node.get_parameter("animations.falling_left").value
-        self.falling_animation_right = self.node.get_parameter("animations.falling_right").value
+        self.animation_name_falling_front: str = self.node.get_parameter("animations.falling_front").value
+        self.animation_name_falling_back: str = self.node.get_parameter("animations.falling_back").value
+        self.animation_name_falling_left: str = self.node.get_parameter("animations.falling_left").value
+        self.animation_name_falling_right: str = self.node.get_parameter("animations.falling_right").value
+        self.animation_name_turning_back_left: str = self.node.get_parameter("animations.turning_back_left").value
+        self.animation_name_turning_back_right: str = self.node.get_parameter("animations.turning_back_right").value
 
-        # Motors
-
-        # State
+        # Motor State
         # Initialize with current time, or motors will be turned off on start
         self.last_motor_goal_time: Time = self.node.get_clock().now()
         self.last_motor_update_time =  Time()
@@ -87,7 +87,7 @@ class HcmBlackboard():
         self.previous_joint_state: Optional[JointState] = None
         self.is_power_on: bool = False
 
-        # Parameters
+        # Motor Parameters
         self.motor_timeout_duration: float = self.node.get_parameter("motor_timeout_duration").value
         self.motor_off_time: float = self.node.get_parameter("motor_off_time").value
         self.imu_timeout_duration: float = self.node.get_parameter("imu_timeout_duration").value

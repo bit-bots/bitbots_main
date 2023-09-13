@@ -16,7 +16,6 @@ class StartHCM(AbstractHCMDecisionElement):
     def perform(self, reevaluate=False):
         if self.is_initial:
             self.is_initial = False
-            self.blackboard.current_state = RobotControlState.STARTUP
             return "START_UP"
         return "RUNNING"
 

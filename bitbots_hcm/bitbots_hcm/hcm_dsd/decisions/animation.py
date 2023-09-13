@@ -10,7 +10,6 @@ class Record(AbstractHCMDecisionElement):
 
     def perform(self, reevaluate=False):
         if self.blackboard.record_active:
-            self.blackboard.current_state = RobotControlState.RECORD
             return "RECORD_ACTIVE"
         else:
             # robot is not recording
@@ -27,7 +26,6 @@ class PlayingExternalAnimation(AbstractHCMDecisionElement):
 
     def perform(self, reevaluate=False):
         if self.blackboard.external_animation_running:
-            self.blackboard.current_state = RobotControlState.ANIMATION_RUNNING
             return "ANIMATION_RUNNING"
         else:
             return "FREE"

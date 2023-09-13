@@ -36,22 +36,18 @@ class Fallen(AbstractHCMDecisionElement):
         # Decides which side is facing downwards.
         if fused_pitch > self.fallen_orientation_thresh:
             self.blackboard.node.get_logger().info("FALLEN TO THE FRONT")
-            self.blackboard.current_state = RobotControlState.FALLEN
             return "FALLEN_FRONT"
 
         if fused_pitch < -self.fallen_orientation_thresh:
             self.blackboard.node.get_logger().info("FALLEN TO THE BACK")
-            self.blackboard.current_state = RobotControlState.FALLEN
             return "FALLEN_BACK"
 
         if fused_roll > self.fallen_orientation_thresh:
             self.blackboard.node.get_logger().info("FALLEN TO THE RIGHT")
-            self.blackboard.current_state = RobotControlState.FALLEN
             return "FALLEN_RIGHT"
 
         if fused_roll < -self.fallen_orientation_thresh:
             self.blackboard.node.get_logger().info("FALLEN TO THE LEFT")
-            self.blackboard.current_state = RobotControlState.FALLEN
             return "FALLEN_LEFT"
 
         return "NOT_FALLEN"

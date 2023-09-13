@@ -17,6 +17,8 @@
       falling_back: "falling_back"
       falling_left: "falling_left"
       falling_right: "falling_right"
+      turning_back_left: "turning_back_left"
+      turning_back_right: "turning_back_right"
       anim_package: "wolfgang_animations"
 
     # Falling

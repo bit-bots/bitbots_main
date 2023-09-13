@@ -97,10 +97,6 @@ class Falling(AbstractHCMDecisionElement):
         if FallDirection.STABLE in results_list:
             result = FallDirection.STABLE
 
-        # Check if we are falling at all
-        if result != FallDirection.STABLE and not reevaluate:
-            self.blackboard.current_state = RobotControlState.FALLING
-
         # Return the appropriate result
         if result == FallDirection.STABLE:
             return "NOT_FALLING"
