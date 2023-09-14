@@ -18,6 +18,7 @@
   <depend>backward_ros</depend>
   <depend>bitbots_docs</depend>
   <depend>bitbots_msgs</depend>
+  <depend>bitbots_localization</depend>
   <depend>humanoid_league_msgs</depend>
   <depend>rclcpp</depend>
   <depend>std_msgs</depend>
@@ -31,5 +32,4 @@
     </bitbots_documentation>
     <build_type>ament_cmake</build_type>
   </export>
-
-  </package>
+</package>
