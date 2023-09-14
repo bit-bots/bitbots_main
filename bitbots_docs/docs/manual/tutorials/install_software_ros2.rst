@@ -120,3 +120,5 @@ In case you are not using the bash shell, replace ``~/.bashrc`` and ``bash`` wit
   alias sc='source \$COLCON_WS/install/setup.bash'
   alias sa='sr && sc'
   EOF
+
+- Configure the robot hostnames, see :ref:`configure-hostnames`.
