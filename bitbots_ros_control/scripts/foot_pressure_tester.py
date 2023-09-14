@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
-import rclpy
-from bitbots_msgs.msg import FootPressure
 import argparse
 import random
 import tkinter
+
+import rclpy
+from bitbots_msgs.msg import FootPressure
 from rclpy.node import Node
 
 parser = argparse.ArgumentParser()

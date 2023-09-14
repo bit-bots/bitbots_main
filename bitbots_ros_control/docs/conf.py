@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Full list of options at http://www.sphinx-doc.org/en/master/config
 
@@ -10,8 +9,8 @@
 #
 import os
 import sys
-import catkin_pkg.package
 
+import catkin_pkg.package
 from exhale import utils
 
 package_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -181,7 +180,7 @@ intersphinx_mapping = {"https://docs.python.org/": None}
 todo_include_todos = True
 
 # -- RST Standard variables ---------------------------------------------------
-rst_prolog = ".. |project| replace:: {}\n".format(project)
+rst_prolog = f".. |project| replace:: {project}\n"
 rst_prolog += ".. |description| replace:: {}\n".format(catkin_package.description.replace("\n\n", "\n"))
 rst_prolog += ".. |modindex| replace:: {}\n".format(
     ":ref:`modindex`" if num_files_py > 0 else "Python module index is not available"

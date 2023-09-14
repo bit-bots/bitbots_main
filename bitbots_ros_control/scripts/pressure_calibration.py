@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 import rclpy
-from rclpy.node import Node
 from bitbots_msgs.srv import FootScale
+from rclpy.node import Node
 from std_srvs.srv import Empty
 
 CALIBRATION_WEIGHT = 0.850 * 9.81
@@ -33,7 +33,7 @@ node.get_logger().info("found all services")
 
 node.get_logger().info("Welcome to the foot calibration suite. ")
 node.get_logger().info(
-    "default calibration weight is {} kg. Change the code when using a different weight.".format(CALIBRATION_WEIGHT)
+    f"default calibration weight is {CALIBRATION_WEIGHT} kg. Change the code when using a different weight."
 )
 
 

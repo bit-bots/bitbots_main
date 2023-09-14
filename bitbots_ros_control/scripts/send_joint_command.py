@@ -3,11 +3,9 @@
 import argparse
 
 import rclpy
-from rclpy.node import Node
-from rclpy.duration import Duration
-
 from bitbots_msgs.msg import JointCommand
-
+from rclpy.duration import Duration
+from rclpy.node import Node
 
 DYNAMIXEL_CMD_TOPIC = "/DynamixelController/command"
 
@@ -103,12 +101,12 @@ def main():
     pub = node.create_publisher(JointCommand, DYNAMIXEL_CMD_TOPIC, 1)
 
     while pub.get_subscription_count() < 1:
-        node.get_logger().info("Waiting until subscribers connect to {}".format(DYNAMIXEL_CMD_TOPIC), once=True)
+        node.get_logger().info(f"Waiting until subscribers connect to {DYNAMIXEL_CMD_TOPIC}", once=True)
         node.get_clock().sleep_for(Duration(seconds=0.5))
     # just to make sure
     node.get_clock().sleep_for(Duration(seconds=1))
 
-    node.get_logger().info("Sending controller commands of type {} now.".format(args.command))
+    node.get_logger().info(f"Sending controller commands of type {args.command} now.")
     print(joint_command)
 
     while rclpy.ok():

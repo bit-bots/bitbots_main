@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 import rclpy
-from rclpy.node import Node
-from std_srvs.srv import Empty
 from bitbots_msgs.msg import Buttons
 from rclpy.duration import Duration
+from rclpy.node import Node
+from std_srvs.srv import Empty
 
 rclpy.init(args=None)
 node = Node("zero_on_button")
