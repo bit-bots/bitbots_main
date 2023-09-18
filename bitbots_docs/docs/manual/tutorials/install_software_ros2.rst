@@ -1,31 +1,34 @@
 Software installation with ROS2
 ===============================
 
-In this tutorial, we will learn how to install ROS2 Rolling Ridley on Ubuntu 22.04 and build our software stack.
+In this tutorial, we will learn how to install ROS2 Iron Irwini on Ubuntu 22.04 and build our software stack.
 
 **0. Use Ubuntu 22.04**
 
 As ROS works best on Ubuntu, we are using this distribution.
-Currently, ROS2 Rolling runs on Ubuntu 22.04.
+Currently, ROS2 Iron runs on Ubuntu 22.04.
 If you are not already using Ubuntu 22.04, consider installing it on your system (perhaps as a dual boot), alternately you can run it in a virtual machine (not recommended, as recently we had some issues with it; https://www.virtualbox.org/) or use the ROS2 docker (https://github.com/timonegk/rosdocked)
 
 **1. Setup and Install ROS 2**
 
-- Follow this guide and when it comes to the section **Install ROS 2 packages**, install the recommended ``ros-rolling-desktop``: https://docs.ros.org/en/rolling/Installation/Ubuntu-Install-Debians.html
-- Follow the instructions on https://packages.bit-bots.de/
+- Follow this guide and when it comes to the section **Install ROS 2 packages**, install the recommended ``ros-iron-desktop-full``: https://docs.ros.org/en/iron/Installation/Ubuntu-Install-Debians.html
 - Install additional dependencies:
 
 .. code-block:: bash
 
   sudo apt install \
+  clang-format \
+  cppcheck \
   python3-colcon-clean \
   python3-colcon-common-extensions \
   python3-pip \
   python3-rosdep \
-  ros-rolling-plotjuggler-ros \
-  ros-rolling-rmw-cyclonedds-cpp \
-  ros-rolling-rqt-robot-monitor \
-  ros-rolling-rqt-runtime-monitor
+  ros-iron-plotjuggler-ros \
+  ros-iron-rmw-cyclonedds-cpp \
+  ros-iron-rqt-robot-monitor \
+  ros-iron-rqt-runtime-monitor
+
+- Run ``sudo rosdep init`` to initialize ``rosdep``, a tool that helps you install system dependencies for ROS packages.
 
 **2. Install Webots**
 
@@ -47,31 +50,22 @@ If you are not already using Ubuntu 22.04, consider installing it on your system
     - Clone the code repository with: ``git clone git@github.com:bit-bots/bitbots_meta.git``
       Confirm the host key by typing ``yes``, if asked.
     - Move into the newly created directory with: ``cd bitbots_meta``
-    - Clone all sub-repositories and other files by running: ``make pull-init``
-- If you want to run the robot's cameras on your system, also run the following command: ``make basler`` Confirm the host key by typing ``yes``, if asked.
+    - Clone all sub-repositories and other files by running: ``make install``
+      This will take a while, as it downloads all the code and other files from our repositories and additionally installs all missing dependencies (using rosdep and pip).
+      Finally, it will register pre-commit hooks (automatic code-formatting and warnings), which will be run every time you commit code to our repositories.
+    - *Only for Bit-Bots members*: To use the robot's cameras, also run the following command to download and install the Basler Pylon camera drivers: ``make basler``
+      Confirm the host key by typing ``yes``, if asked.
 
-**4. Install additional dependencies**
+**4. Setup colcon workspace**
 
-We need to install the requirements of our software. Most of these can be automatically installed
-with ``rosdep``. In the ``bitbots_meta`` folder, simply run ``sudo rosdep init`` followed by ``rosdep update`` and ``rosdep install --rosdistro=rolling --from-paths . --ignore-src -y``.
-
-We also need to install some python packages using ``pip``, the python package manager.
-
-- Upgrade python package manager: ``pip3 install pip -U``
-- Optionally if you want you can setup a local venv with: ``python -m venv venv-bitbots && source venv-bitbots/bin/activate``
-  **HINT**: the sourcing of the ``venv`` is required in every newly opened terminal!
-- Install required python packages: ``pip3 install --user -r requirements.txt``
-
-**5. Setup colcon workspace**
-
-`Colcon <https://docs.ros.org/en/rolling/Tutorials/Colcon-Tutorial.html>`_ is the tool provided by ROS 2 to build and install our ROS packages, so that they can be launched later.
+`Colcon <https://docs.ros.org/en/iron/Tutorials/Beginner-Client-Libraries/Colcon-Tutorial.html>`_ is the tool provided by ROS 2 to build and install our ROS packages, so that they can be launched later.
 The colcon workspace is where your source code gets build and where we use colcon.
 
 - Create colcon workspace directory (typically ``~/colcon_ws/``)
     - Create directory with: ``mkdir -p ~/colcon_ws/src``
     - Link our software contained in the bitbots_meta repo to the newly created ``src`` directory with: ``ln -s ~/git/bitbots/bitbots_meta/ ~/colcon_ws/src/bitbots_meta``
 
-**6. Final touches**
+**5. Final touches**
 
 To let your system know where it should find all the ROS 2 dependencies and packages and to add colored output etc., we add a little bit of config to your ``~/.bashrc`` file, which will be run every time you open a new terminal.
 In case you are not using the bash shell, replace ``~/.bashrc`` and ``bash`` with your shell's configuration file.
@@ -87,7 +81,7 @@ In case you are not using the bash shell, replace ``~/.bashrc`` and ``bash`` wit
   export RCUTILS_COLORIZED_OUTPUT=1
   export RCUTILS_CONSOLE_OUTPUT_FORMAT="[{severity}] [{name}]: {message} ({function_name}() at {file_name}:{line_number})"
   export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
-  source /opt/ros/rolling/setup.bash
+  source /opt/ros/iron/setup.bash
   eval "\$(register-python-argcomplete3 ros2)"
   eval "\$(register-python-argcomplete3 colcon)"
   EOF
@@ -116,7 +110,7 @@ In case you are not using the bash shell, replace ``~/.bashrc`` and ``bash`` wit
   alias cc='cdc && colcon clean packages --packages-select'
   alias cca='cdc && colcon clean packages'
 
-  alias sr='source /opt/ros/rolling/setup.bash'
+  alias sr='source /opt/ros/iron/setup.bash'
   alias sc='source \$COLCON_WS/install/setup.bash'
   alias sa='sr && sc'
   EOF
