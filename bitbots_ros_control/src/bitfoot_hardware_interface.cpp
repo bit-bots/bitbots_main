@@ -1,13 +1,10 @@
-#include <bitbots_ros_control/bitfoot_hardware_interface.h>
-#include <bitbots_ros_control/utils.h>
+#include <bitbots_ros_control/bitfoot_hardware_interface.hpp>
+#include <bitbots_ros_control/utils.hpp>
 
 namespace bitbots_ros_control {
 
-BitFootHardwareInterface::BitFootHardwareInterface(rclcpp::Node::SharedPtr nh,
-                                                   std::shared_ptr<DynamixelDriver> &driver,
-                                                   int id,
-                                                   std::string topic_name,
-                                                   std::string name) {
+BitFootHardwareInterface::BitFootHardwareInterface(rclcpp::Node::SharedPtr nh, std::shared_ptr<DynamixelDriver> &driver,
+                                                   int id, std::string topic_name, std::string name) {
   nh_ = nh;
   driver_ = driver;
   id_ = id;
@@ -17,7 +14,7 @@ BitFootHardwareInterface::BitFootHardwareInterface(rclcpp::Node::SharedPtr nh,
 
 bool BitFootHardwareInterface::init() {
   current_pressure_.resize(4, std::vector<double>());
-  data_ = (uint8_t *) malloc(16 * sizeof(uint8_t));
+  data_ = (uint8_t *)malloc(16 * sizeof(uint8_t));
   pressure_pub_ = nh_->create_publisher<bitbots_msgs::msg::FootPressure>(topic_name_, 1);
   diagnostic_pub_ = nh_->create_publisher<diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 10);
   return true;
@@ -32,11 +29,11 @@ void BitFootHardwareInterface::read(const rclcpp::Time &t, const rclcpp::Duratio
   bool read_successful = true;
   if (driver_->readMultipleRegisters(id_, 36, 16, data_)) {
     for (int i = 0; i < 4; i++) {
-      int32_t pres = dxlMakedword(dxlMakeword(data_[i * 4], data_[i * 4 + 1]),
-                                  dxlMakeword(data_[i * 4 + 2], data_[i * 4 + 3]));
-      float pres_d = (float) pres;
+      int32_t pres =
+          dxlMakedword(dxlMakeword(data_[i * 4], data_[i * 4 + 1]), dxlMakeword(data_[i * 4 + 2], data_[i * 4 + 3]));
+      float pres_d = (float)pres;
       // we directly provide raw data since the scaling has to be calibrated by another node for every robot anyway
-      current_pressure_[i].push_back((double) pres_d);
+      current_pressure_[i].push_back((double)pres_d);
     }
   } else {
     RCLCPP_ERROR_THROTTLE(nh_->get_logger(), *nh_->get_clock(), 3000, "Could not read %s", name_.c_str());
@@ -107,7 +104,7 @@ void BitFootHardwareInterface::read(const rclcpp::Time &t, const rclcpp::Duratio
     }
     std::vector<diagnostic_msgs::msg::KeyValue> keyValues = std::vector<diagnostic_msgs::msg::KeyValue>();
     // iterate through map and save it into values
-    for (auto const &ent1: map) {
+    for (auto const &ent1 : map) {
       diagnostic_msgs::msg::KeyValue key_value = diagnostic_msgs::msg::KeyValue();
       key_value.key = ent1.first;
       key_value.value = ent1.second;
@@ -122,4 +119,4 @@ void BitFootHardwareInterface::read(const rclcpp::Time &t, const rclcpp::Duratio
 
 // we dont write anything to the pressure sensors
 void BitFootHardwareInterface::write(const rclcpp::Time &t, const rclcpp::Duration &dt) {}
-}
+}  // namespace bitbots_ros_control

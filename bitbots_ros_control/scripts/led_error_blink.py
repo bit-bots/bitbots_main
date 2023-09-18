@@ -1,18 +1,17 @@
 #!/usr/bin/env python3
 
 import rclpy
-from rclpy.node import Node
-from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus
 from bitbots_msgs.srv import Leds
-from std_msgs.msg import ColorRGBA
-from rclpy.node import Node
+from diagnostic_msgs.msg import DiagnosticStatus
 from rclpy.duration import Duration
+from rclpy.node import Node
+from std_msgs.msg import ColorRGBA
 
 BLINK_DURATION = 0.2
 ERROR_TIMEOUT = 1
 
 rclpy.init(args=None)
-node = Node('led_error_blink')
+node = Node("led_error_blink")
 
 last_hardware_error_time = None
 # true means warning, false error

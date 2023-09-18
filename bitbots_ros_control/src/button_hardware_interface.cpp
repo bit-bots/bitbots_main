@@ -1,11 +1,8 @@
-#include <bitbots_ros_control/button_hardware_interface.h>
+#include <bitbots_ros_control/button_hardware_interface.hpp>
 
 namespace bitbots_ros_control {
-ButtonHardwareInterface::ButtonHardwareInterface(rclcpp::Node::SharedPtr nh,
-                                                 std::shared_ptr<DynamixelDriver> &driver,
-                                                 int id,
-                                                 std::string topic,
-                                                 int read_rate) {
+ButtonHardwareInterface::ButtonHardwareInterface(rclcpp::Node::SharedPtr nh, std::shared_ptr<DynamixelDriver> &driver,
+                                                 int id, std::string topic, int read_rate) {
   nh_ = nh;
   driver_ = driver;
   id_ = id;
@@ -14,7 +11,7 @@ ButtonHardwareInterface::ButtonHardwareInterface(rclcpp::Node::SharedPtr nh,
 }
 
 bool ButtonHardwareInterface::init() {
-  data_ = (uint8_t *) malloc(3 * sizeof(uint8_t));
+  data_ = (uint8_t *)malloc(3 * sizeof(uint8_t));
   button_pub_ = nh_->create_publisher<bitbots_msgs::msg::Buttons>(topic_, 1);
   diagnostic_pub_ = nh_->create_publisher<diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 10);
   return true;
@@ -25,8 +22,7 @@ void ButtonHardwareInterface::read(const rclcpp::Time &t, const rclcpp::Duration
    * Reads the buttons
    */
   counter_ = (counter_ + 1) % read_rate_;
-  if (counter_ != 0)
-    return;
+  if (counter_ != 0) return;
   bool read_successful = true;
   if (driver_->readMultipleRegisters(id_, 76, 3, data_)) {
     bitbots_msgs::msg::Buttons msg;
@@ -62,4 +58,4 @@ void ButtonHardwareInterface::read(const rclcpp::Time &t, const rclcpp::Duration
 
 // we don't write anything to the buttons
 void ButtonHardwareInterface::write(const rclcpp::Time &t, const rclcpp::Duration &dt) {}
-}
+}  // namespace bitbots_ros_control

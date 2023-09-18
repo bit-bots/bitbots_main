@@ -3,10 +3,9 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import ColorRGBA, Float64
-from rclpy.node import Node
 
 rclpy.init(args=None)
-node = Node('battery_led')
+node = Node("battery_led")
 
 pub = node.create_publisher(ColorRGBA, "/led2", 1)
 

@@ -1,26 +1,22 @@
 #ifndef BITBOTS_ROS_CONTROL_INCLUDE_BITBOTS_ROS_CONTROL_BITFOOT_HARDWARE_INTERFACE_H_
 #define BITBOTS_ROS_CONTROL_INCLUDE_BITBOTS_ROS_CONTROL_BITFOOT_HARDWARE_INTERFACE_H_
 
+#include <dynamixel_driver.h>
+
+#include <bitbots_msgs/msg/foot_pressure.hpp>
+#include <bitbots_ros_control/hardware_interface.hpp>
+#include <diagnostic_msgs/msg/diagnostic_array.hpp>
+#include <diagnostic_msgs/msg/diagnostic_status.hpp>
+#include <humanoid_league_msgs/msg/audio.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <string>
 
-#include <humanoid_league_msgs/msg/audio.hpp>
-#include <diagnostic_msgs/msg/diagnostic_status.hpp>
-#include <diagnostic_msgs/msg/diagnostic_array.hpp>
-#include <bitbots_msgs/msg/foot_pressure.hpp>
-#include <bitbots_ros_control/hardware_interface.h>
-
-#include <dynamixel_driver.h>
-
 namespace bitbots_ros_control {
 
-class BitFootHardwareInterface : public bitbots_ros_control::HardwareInterface{
+class BitFootHardwareInterface : public bitbots_ros_control::HardwareInterface {
  public:
-  explicit BitFootHardwareInterface(rclcpp::Node::SharedPtr nh,
-                                    std::shared_ptr<DynamixelDriver> &driver,
-                                    int id,
-                                    std::string topic_name,
-                                    std::string name);
+  explicit BitFootHardwareInterface(rclcpp::Node::SharedPtr nh, std::shared_ptr<DynamixelDriver> &driver, int id,
+                                    std::string topic_name, std::string name);
 
   bool init();
 
@@ -43,7 +39,6 @@ class BitFootHardwareInterface : public bitbots_ros_control::HardwareInterface{
   bitbots_msgs::msg::FootPressure msg_;
   rclcpp::Publisher<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr diagnostic_pub_;
   uint8_t *data_;
-
 };
-}
+}  // namespace bitbots_ros_control
 #endif
