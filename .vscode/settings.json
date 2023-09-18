@@ -2,6 +2,7 @@
     "autoDocstring.docstringFormat": "sphinx",
     "cSpell.language": "en,de-de,lorem",
     "cSpell.words": [
+        "ansible",
         "autoconnect",
         "basler",
         "bitbot",
@@ -39,6 +40,7 @@
         "imwrite",
         "isolcpus",
         "isort",
+        "Joern",
         "jupyter",
         "Kalman",
         "linalg",
@@ -72,11 +74,13 @@
         "scipy",
         "seaborn",
         "segmentations",
+        "ssid",
         "taskset",
         "teamplayer",
         "teleop",
         "THROWIN",
         "timespec",
+        "TLDR",
         "tqdm",
         "unpenalized",
         "urdf",
@@ -92,5 +96,6 @@
     ],
     "files.autoSave": "onFocusChange",
     "files.insertFinalNewline": true,
-    "python.analysis.typeCheckingMode": "basic"
+    "python.analysis.typeCheckingMode": "basic",
+    "esbonio.sphinx.confDir": "",
 }

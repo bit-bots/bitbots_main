@@ -1,0 +1,26 @@
+{
+    "recommendations": [
+        "cschlosser.doxdocgen",  // Generates doxygen comments
+        "DavidAnson.vscode-markdownlint",  // Lints markdown files
+        "DotJoshJohnson.xml",  // XML support
+        "eamodio.gitlens",  // Extended git highlighting
+        "lextudio.restructuredtext",  // Rendering rst files in preview
+        "mohsen1.prettify-json",  // JSON formatting
+        "ms-azuretools.vscode-docker",  // Docker support
+        "MS-CEINTL.vscode-language-pack-de",  // German language pack
+        "ms-iot.vscode-ros",  // ROS support
+        "ms-python.python",  // Python support
+        "ms-python.vscode-pylance",  // Python support
+        "ms-vscode.cmake-tools",  // CMake support
+        "ms-vscode.cpptools-extension-pack",  // C++ support
+        "ms-vscode.cpptools-themes",  // C++ support
+        "ms-vscode.cpptools",  // C++ support
+        "njpwerner.autodocstring",  // Generates docstrings
+        "streetsidesoftware.code-spell-checker-german",  // Spell checker
+        "streetsidesoftware.code-spell-checker",  // Spell checker
+        "tamasfe.even-better-toml",  // TOML support
+        "trond-snekvik.simple-rst",  // Syntax highlighting for rst files
+        "twxs.cmake",  // CMake support
+        "zxh404.vscode-proto3",  // Protobuf support
+    ]
+}
