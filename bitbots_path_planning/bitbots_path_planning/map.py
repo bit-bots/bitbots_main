@@ -1,40 +1,36 @@
-from typing import List, Tuple
-
 import cv2
 import numpy as np
 import soccer_vision_3d_msgs.msg as sv3dm
 import tf2_ros as tf2
 from geometry_msgs.msg import Point
+from humanoid_league_msgs.msg import PoseWithCertaintyStamped
 from nav_msgs.msg import OccupancyGrid
 from rclpy.node import Node
 from ros2_numpy import msgify, numpify
 from tf2_geometry_msgs import PointStamped
-
-from humanoid_league_msgs.msg import PoseWithCertaintyStamped
 
 
 class Map:
     """
     Costmap that keeps track of obstacles like the ball or other robots.
     """
+
     def __init__(self, node: Node, buffer: tf2.Buffer) -> None:
         self.node = node
         self.buffer = buffer
-        self.resolution: int = self.node.declare_parameter('map.resolution', 20).value
-        self.size: Tuple[float, float] = (
-            self.node.declare_parameter('map.size.x', 11.0).value,
-            self.node.declare_parameter('map.size.y', 8.0).value
+        self.resolution: int = self.node.declare_parameter("map.resolution", 20).value
+        self.size: tuple[float, float] = (
+            self.node.declare_parameter("map.size.x", 11.0).value,
+            self.node.declare_parameter("map.size.y", 8.0).value,
         )
-        self.map: np.ndarray = np.ones(
-            (np.array(self.size)*self.resolution).astype(int),
-            dtype=np.int8)
-        self.frame: str = self.node.declare_parameter('map.planning_frame', 'map').value
-        self.ball_buffer: List[Point] = []
-        self.robot_buffer: List[sv3dm.Robot] = []
-        self.config_ball_diameter: float = self.node.declare_parameter('map.ball_diameter', 0.13).value
-        self.config_inflation_blur: int = self.node.declare_parameter('map.inflation.blur', 13).value
-        self.config_inflation_dialation: int = self.node.declare_parameter('map.inflation.dialte', 3).value
-        self.config_obstacle_value: int = self.node.declare_parameter('map.obstacle_value', 50).value
+        self.map: np.ndarray = np.ones((np.array(self.size) * self.resolution).astype(int), dtype=np.int8)
+        self.frame: str = self.node.declare_parameter("map.planning_frame", "map").value
+        self.ball_buffer: list[Point] = []
+        self.robot_buffer: list[sv3dm.Robot] = []
+        self.config_ball_diameter: float = self.node.declare_parameter("map.ball_diameter", 0.13).value
+        self.config_inflation_blur: int = self.node.declare_parameter("map.inflation.blur", 13).value
+        self.config_inflation_dialation: int = self.node.declare_parameter("map.inflation.dialte", 3).value
+        self.config_obstacle_value: int = self.node.declare_parameter("map.obstacle_value", 50).value
 
     def set_ball(self, ball: PoseWithCertaintyStamped) -> None:
         """
@@ -46,7 +42,7 @@ class Map:
         try:
             self.ball_buffer = [self.buffer.transform(point, self.frame).point]
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
-                self.node.get_logger().warn(str(e))
+            self.node.get_logger().warn(str(e))
 
     def _render_balls(self) -> None:
         """
@@ -59,13 +55,14 @@ class Map:
                 self.to_map_space(ball.x, ball.y)[::-1],
                 round(self.config_ball_diameter * self.resolution),
                 self.config_obstacle_value,
-                -1)
+                -1,
+            )
 
     def set_robots(self, robots: sv3dm.RobotArray):
         """
         Adds a given robot array to the robot buffer
         """
-        new_buffer: List[sv3dm.Robot] = []
+        new_buffer: list[sv3dm.Robot] = []
         robot: sv3dm.Robot
         for robot in robots.robots:
             point = PointStamped()
@@ -75,7 +72,7 @@ class Map:
                 robot.bb.center.position = self.buffer.transform(point, self.frame).point
                 new_buffer.append(robot)
             except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
-                    self.node.get_logger().warn(str(e))
+                self.node.get_logger().warn(str(e))
         self.robot_buffer = new_buffer
 
     def _render_robots(self) -> None:
@@ -89,9 +86,10 @@ class Map:
                 self.to_map_space(robot.bb.center.position.x, robot.bb.center.position.y)[::-1],
                 round(max(numpify(robot.bb.size)[:2]) * self.resolution),
                 self.config_obstacle_value,
-                -1)
+                -1,
+            )
 
-    def to_map_space(self, x: float, y: float) -> Tuple[int, int]:
+    def to_map_space(self, x: float, y: float) -> tuple[int, int]:
         """
         Maps a point (x, y in meters) to corresponding pixel on the costmap
         """
@@ -110,10 +108,7 @@ class Map:
         """
         Origin of the costmap in meters
         """
-        return np.array([
-            -self.map.shape[0] / self.resolution / 2,
-            -self.map.shape[1] / self.resolution / 2
-        ])
+        return np.array([-self.map.shape[0] / self.resolution / 2, -self.map.shape[1] / self.resolution / 2])
 
     def clear(self) -> None:
         """
@@ -128,14 +123,10 @@ class Map:
         idx = self.map == 1
         map = cv2.dilate(
             self.map.astype(np.uint8),
-            np.ones((
-                self.config_inflation_dialation,
-                self.config_inflation_dialation), np.uint8),
-            iterations=2)
-        self.map[idx] = cv2.blur(
-            map,
-            (self.config_inflation_blur, self.config_inflation_blur)
-        ).astype(np.int8)[idx]
+            np.ones((self.config_inflation_dialation, self.config_inflation_dialation), np.uint8),
+            iterations=2,
+        )
+        self.map[idx] = cv2.blur(map, (self.config_inflation_blur, self.config_inflation_blur)).astype(np.int8)[idx]
 
     def update(self) -> None:
         """

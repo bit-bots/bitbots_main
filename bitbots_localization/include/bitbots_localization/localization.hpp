@@ -5,63 +5,56 @@
 #ifndef BITBOTS_LOCALIZATION_LOCALIZATION_H
 #define BITBOTS_LOCALIZATION_LOCALIZATION_H
 
-#include <vector>
-#include <memory>
-#include <iterator>
-#include <chrono>
-#include <thread>
-
-#include <rclcpp/rclcpp.hpp>
-#include <std_srvs/srv/trigger.hpp>
-
-#include <Eigen/Core>
-
-#include <std_msgs/msg/color_rgba.hpp>
-#include <visualization_msgs/msg/marker.hpp>
-#include <visualization_msgs/msg/marker_array.hpp>
-#include <geometry_msgs/msg/point.hpp>
-#include <geometry_msgs/msg/point32.hpp>
-#include <geometry_msgs/msg/pose.hpp>
-#include <geometry_msgs/msg/pose_stamped.hpp>
-#include <geometry_msgs/msg/pose_array.hpp>
-#include <geometry_msgs/msg/pose_with_covariance.hpp>
-#include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
-#include <geometry_msgs/msg/transform_stamped.hpp>
-#include <geometry_msgs/msg/twist.hpp>
-#include <sensor_msgs/msg/camera_info.hpp>
-#include <soccer_vision_3d_msgs/msg/goalpost_array.hpp>
-#include <soccer_vision_3d_msgs/msg/field_boundary.hpp>
-
-#include <tf2_ros/transform_listener.h>
-#include <tf2_ros/transform_broadcaster.h>
+#include <message_filters/subscriber.h>
+#include <particle_filter/CRandomNumberGenerator.h>
+#include <particle_filter/ParticleFilter.h>
+#include <particle_filter/gaussian_mixture_model.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Transform.h>
 #include <tf2/convert.h>
 #include <tf2/utils.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/message_filter.h>
-#include <message_filters/subscriber.h>
+#include <tf2_ros/transform_broadcaster.h>
+#include <tf2_ros/transform_listener.h>
 
-#include <particle_filter/ParticleFilter.h>
-#include <particle_filter/gaussian_mixture_model.h>
-#include <particle_filter/CRandomNumberGenerator.h>
-
-#include <bitbots_localization/config.h>
-#include <bitbots_localization/map.h>
-#include <bitbots_localization/ObservationModel.h>
-#include <bitbots_localization/MotionModel.h>
-#include <bitbots_localization/StateDistribution.h>
-#include <bitbots_localization/Resampling.h>
-#include <bitbots_localization/RobotState.h>
-
+#include <Eigen/Core>
+#include <bitbots_localization/MotionModel.hpp>
+#include <bitbots_localization/ObservationModel.hpp>
+#include <bitbots_localization/Resampling.hpp>
+#include <bitbots_localization/RobotState.hpp>
+#include <bitbots_localization/StateDistribution.hpp>
+#include <bitbots_localization/config.hpp>
+#include <bitbots_localization/map.hpp>
 #include <bitbots_localization/srv/reset_filter.hpp>
 #include <bitbots_localization/srv/set_paused.hpp>
-#include <bitbots_localization/tools.h>
-
+#include <bitbots_localization/tools.hpp>
+#include <chrono>
 #include <cv_bridge/cv_bridge.hpp>
+#include <geometry_msgs/msg/point.hpp>
+#include <geometry_msgs/msg/point32.hpp>
+#include <geometry_msgs/msg/pose.hpp>
+#include <geometry_msgs/msg/pose_array.hpp>
+#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <geometry_msgs/msg/pose_with_covariance.hpp>
+#include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
+#include <geometry_msgs/msg/transform_stamped.hpp>
+#include <geometry_msgs/msg/twist.hpp>
 #include <image_transport/image_transport.hpp>
+#include <iterator>
+#include <memory>
+#include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/camera_info.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
+#include <soccer_vision_3d_msgs/msg/field_boundary.hpp>
+#include <soccer_vision_3d_msgs/msg/goalpost_array.hpp>
+#include <std_msgs/msg/color_rgba.hpp>
+#include <std_srvs/srv/trigger.hpp>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#include <thread>
+#include <vector>
+#include <visualization_msgs/msg/marker.hpp>
+#include <visualization_msgs/msg/marker_array.hpp>
 
 namespace sm = sensor_msgs;
 namespace gm = geometry_msgs;
@@ -69,16 +62,14 @@ namespace pf = particle_filter;
 namespace bl = bitbots_localization;
 namespace sv3dm = soccer_vision_3d_msgs;
 
-
 namespace bitbots_localization {
-  using namespace std::placeholders;
+using namespace std::placeholders;
 
 /**
-* @class Localization
-* @brief Includes the ROS interface, configuration and main loop of the Bit-Bots RoboCup localization.
-*/
+ * @class Localization
+ * @brief Includes the ROS interface, configuration and main loop of the Bit-Bots RoboCup localization.
+ */
 class Localization : public rclcpp::Node {
-
  public:
   explicit Localization();
 
@@ -114,7 +105,7 @@ class Localization : public rclcpp::Node {
    * Callback for goal posts messurements
    * @param msg Message containing the goal posts.
    */
-  void GoalPostsCallback(const sv3dm::msg::GoalpostArray &msg); //TODO
+  void GoalPostsCallback(const sv3dm::msg::GoalpostArray &msg);  // TODO
 
   /**
    * Callback for the relative field boundary messurements
@@ -196,9 +187,11 @@ class Localization : public rclcpp::Node {
   rclcpp::Time last_stamp_lines_pc = rclcpp::Time(0);
   rclcpp::Time last_stamp_goals = rclcpp::Time(0);
   rclcpp::Time last_stamp_fb_points = rclcpp::Time(0);
-  rclcpp::Time last_stamp_all_measurements  = rclcpp::Time(0);
-  builtin_interfaces::msg::Time map_odom_tf_last_published_time_ = builtin_interfaces::msg::Time(rclcpp::Time(0, 0, RCL_ROS_TIME));
-  builtin_interfaces::msg::Time localization_tf_last_published_time_ = builtin_interfaces::msg::Time(rclcpp::Time(0, 0, RCL_ROS_TIME));
+  rclcpp::Time last_stamp_all_measurements = rclcpp::Time(0);
+  builtin_interfaces::msg::Time map_odom_tf_last_published_time_ =
+      builtin_interfaces::msg::Time(rclcpp::Time(0, 0, RCL_ROS_TIME));
+  builtin_interfaces::msg::Time localization_tf_last_published_time_ =
+      builtin_interfaces::msg::Time(rclcpp::Time(0, 0, RCL_ROS_TIME));
 
   std::string odom_frame_, base_footprint_frame_, map_frame_, publishing_frame_;
 
@@ -253,12 +246,9 @@ class Localization : public rclcpp::Node {
    * @param map map for this class
    * @param publisher ros publisher for the type visualization_msgs::msg::Marker
    */
-  void publish_debug_rating(
-    std::vector<std::pair<double, double>>    measurements,
-    double scale,
-    const char name[24],
-    std::shared_ptr<Map> map,
-    rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr &publisher);
+  void publish_debug_rating(std::vector<std::pair<double, double>> measurements, double scale, const char name[24],
+                            std::shared_ptr<Map> map,
+                            rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr &publisher);
 
   /**
    * Updates the messurements for all classes
@@ -280,6 +270,6 @@ class Localization : public rclcpp::Node {
   bool robot_moved = false;
   int timer_callback_count_ = 0;
 };
-};
+};  // namespace bitbots_localization
 
-#endif //BITBOTS_LOCALIZATION_LOCALIZATION_H
+#endif  // BITBOTS_LOCALIZATION_LOCALIZATION_H

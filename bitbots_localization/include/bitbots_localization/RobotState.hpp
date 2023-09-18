@@ -5,19 +5,19 @@
 #ifndef BITBOTS_LOCALIZATION_ROBOTSTATE_H
 #define BITBOTS_LOCALIZATION_ROBOTSTATE_H
 
-#include <cmath>
 #include <particle_filter/ParticleFilter.h>
-#include <vector>
-#include <Eigen/Core>
 #include <tf2/LinearMath/Quaternion.h>
-#include <bitbots_localization/tools.h>
 
+#include <Eigen/Core>
+#include <bitbots_localization/tools.hpp>
+#include <cmath>
+#include <vector>
 
 namespace bitbots_localization {
 /**
-* @class RobotState
-* @brief Sample state for a particle filter that localizes the Robot.
-*/
+ * @class RobotState
+ * @brief Sample state for a particle filter that localizes the Robot.
+ */
 class RobotState {
  public:
   RobotState();
@@ -56,24 +56,19 @@ class RobotState {
   double calcDistance(const RobotState &state) const;
 
   static void convertParticleListToEigen(const std::vector<particle_filter::Particle<RobotState> *> &particle_list,
-                                         Eigen::MatrixXd &matrix,
-                                         const bool ignore_explorers);
+                                         Eigen::MatrixXd &matrix, const bool ignore_explorers);
 
   bool is_explorer_;
 
-  visualization_msgs::msg::Marker renderMarker(std::string n_space,
-                                          std::string frame,
-                                          rclcpp::Duration lifetime,
-                                          std_msgs::msg::ColorRGBA color,
-                                          rclcpp::Time stamp) const;
+  visualization_msgs::msg::Marker renderMarker(std::string n_space, std::string frame, rclcpp::Duration lifetime,
+                                               std_msgs::msg::ColorRGBA color, rclcpp::Time stamp) const;
 
  private:
-
   double m_XPos;
   double m_YPos;
   double m_SinTheta;
   double m_CosTheta;
 };
-};
+};  // namespace bitbots_localization
 
-#endif //BITBOTS_LOCALIZATION_ROBOTSTATE_H
+#endif  // BITBOTS_LOCALIZATION_ROBOTSTATE_H

@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 
-import rclpy
-from rclpy.node import Node
 import sys
-from geometry_msgs.msg import PoseWithCovarianceStamped
 
+import rclpy
+from geometry_msgs.msg import PoseWithCovarianceStamped
 
 """
 This script simulates precision messages coming from a perfect localization.
@@ -12,20 +11,28 @@ This script simulates precision messages coming from a perfect localization.
 
 
 if __name__ == "__main__":
+    rclpy.init()
+    node = rclpy.create_node("rviz_localization_sim")
 
-    rclpy.init(args=None)
-
-    pose_publisher = self.create_publisher(PoseWithCovarianceStamped, 'pose_with_covariance', 1, latch=True)
-    rate = self.create_rate(20)  # rate of 20 Hz
+    pose_publisher = node.create_publisher(PoseWithCovarianceStamped, "pose_with_covariance", 10)
 
     pose = PoseWithCovarianceStamped()
-    pose.header.frame_id = 'map'
-    if len(sys.argv) > 1 and sys.argv[1] == '--bad':
+    pose.header.frame_id = "map"
+
+    if len(sys.argv) > 1 and sys.argv[1] == "--bad":
         pose.pose.covariance[0] = 100
         pose.pose.covariance[7] = 100
         pose.pose.covariance[35] = 100
 
-    while rclpy.ok():
-        pose.header.stamp = self.get_clock().now()
+    def timer_callback():
+        pose.header.stamp = node.get_clock().now().to_msg()
         pose_publisher.publish(pose)
-        rate.sleep()
+
+    timer = node.create_timer(0.05, timer_callback)  # 20 Hz
+
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+
+    node.destroy_node()
