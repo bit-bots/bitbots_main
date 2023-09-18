@@ -1,5 +1,4 @@
 .. _configure-hostnames:
-
 Configure host names
 --------------------
 
