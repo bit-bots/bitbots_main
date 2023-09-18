@@ -21,7 +21,7 @@ role:
   explanation: ""
 position_number:
   options: [0, 1, 2]
-  type: str
+  type: int
   explanation: "0 = center, 1 = left, 2 = right"
 monitoring_host_ip:
   type: ipaddress.IPv4Address
