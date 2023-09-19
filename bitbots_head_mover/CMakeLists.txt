@@ -21,7 +21,6 @@ find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
-find_package(tf2_kdl REQUIRED)
 find_package(tf2_ros REQUIRED)
 
 set(CMAKE_BUILD_TYPE Debug)
