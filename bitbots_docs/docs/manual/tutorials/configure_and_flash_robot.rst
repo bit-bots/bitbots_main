@@ -31,12 +31,12 @@ Flashing
 Flashing is the process of preparing a robot for the next game and starting the correct software.
 
 .. note::
-   Does DNS not resolve ``nuc*``? See :ref:`configure-hostnames` to fix this.
+   Does DNS not resolve ``nuc*``? See :doc:`configure_hostnames` to fix this.
 
 At a competition, follow these steps:
 
 #. **Configure Wi-Fi networks for fields:**
-   This needs to be done before the competition at the team area (see :ref:`configure-competition-wifi`)!
+   This needs to be done before the competition at the team area (see :doc:`competition_wifi`)!
 
 #. **Checkout the latest code:**
    In your local `bitbots_meta <https://github.com/bit-bots/bitbots_meta>`_ repo run:
@@ -93,7 +93,7 @@ Our Ansible setup is able to configure the following aspects of the robot:
 - Configuration of low level system parameters for better performance
 - Setup/Configuration of the ``bitbots`` user account on the robot
 - Network/IP configuration including:
-   - Configuration of competition Wi-Fi networks (see :ref:`configure-competition-wifi`)
+   - Configuration of competition Wi-Fi networks (see :doc:`competition_wifi`)
    - Configuration of USB-Ethernet adapter as slave of a bridge interface, to allow for removal without losing the interface utilized by ros/dds
    - Configuration of custom MTU of 9000 (jumbo frames) for Ethernet connection to the basler camera
 - Setup of custom apt repositories/packages (e.g. `packages.bit-bots.de <https://packages.bit-bots.de>`_ if applicable)
@@ -109,7 +109,7 @@ To run the whole setup on a specific robot execute the following in the ansible 
 Ansible will execute the playbook with the ``bitbots`` user on the robots and will ask for its password to be able to utilize ``sudo``.
 
 .. note::
-   Does DNS not resolve ``nuc*``? See :ref:`configure-hostnames` to fix this.
+   Does DNS not resolve ``nuc*``? See :doc:`configure_hostnames` to fix this.
 
 
 LEGACY: Sync/Build the software using the ``robot_compile`` tool:

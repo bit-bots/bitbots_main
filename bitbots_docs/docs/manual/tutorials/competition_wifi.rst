@@ -1,4 +1,3 @@
-.. _configure-competition-wifi:
 Configuration of competition Wi-Fi
 ==================================
 
