@@ -631,8 +631,6 @@ class DebugImageComponent(IVisionComponent):
         opponents = (255, 255, 102)  # cyan
         misc_obstacles = (160, 160, 160)  # grey
         goalposts = (255, 255, 255)  # white
-        field_boundary = (0, 0, 255)  # red
-        field_boundary_convex = (0, 255, 255)  # yellow
         lines = (255, 0, 0)  # blue
 
     def __init__(self, node):
