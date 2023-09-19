@@ -101,11 +101,8 @@ class ROSInterface():
         self.compute_real_time_factor()
 
     def run_simulation(self, duration=None, sleep=0):
-        start_time = self.node.get_clock().now().seconds_nanoseconds()[0] + \
-                     self.node.get_clock().now().seconds_nanoseconds()[1] / 1e9
-        while rclpy.ok() and (duration is None or (self.node.get_clock().now().seconds_nanoseconds()[0] +
-                                                   self.node.get_clock().now().seconds_nanoseconds()[1] / 1e9)
-                              - start_time < duration):
+        start_time = self.node.get_clock().now().nanoseconds / 1e9
+        while rclpy.ok() and (duration is None or (self.node.get_clock().now().nanoseconds / 1e9) - start_time < duration):
             self.step()
             time.sleep(sleep)
 
