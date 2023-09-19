@@ -159,7 +159,7 @@ class PlayAnimationDynup(AbstractHCMActionElement):
             timeout_sec=self.blackboard.node.get_parameter('hcm.anim_server_wait_time').get_parameter_value().double_value)
         if not first_try:
             server_running = False
-            while not server_running and not self.blackboard.shut_down_request and rclpy.ok():
+            while not server_running and rclpy.ok():
                 self.blackboard.node.get_logger().warn(
                                       "Dynup Action Server not running! Dynup cannot work without dynup server!"
                                       "Will now wait until server is accessible!",
