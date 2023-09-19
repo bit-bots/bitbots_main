@@ -53,19 +53,19 @@ class GameStatusCapsule:
         return self.gamestate.rival_score
 
     def get_seconds_since_own_goal(self):
-        return float(self.node.get_clock().now().seconds_nanoseconds()[0] + self.node.get_clock().now().seconds_nanoseconds()[1]/1e9) - self.last_goal_from_us_time
+        return self.node.get_clock().now().nanoseconds / 1e9 - self.last_goal_from_us_time
 
     def get_seconds_since_any_goal(self):
-        return float(self.node.get_clock().now().seconds_nanoseconds()[0] + self.node.get_clock().now().seconds_nanoseconds()[1]/1e9) - self.last_goal_time
+        return self.node.get_clock().now().nanoseconds / 1e9 - self.last_goal_time
 
     def get_seconds_remaining(self):
         # Time from the message minus time passed since receiving it
-        return max(self.gamestate.seconds_remaining - (float(self.node.get_clock().now().seconds_nanoseconds()[0] + self.node.get_clock().now().seconds_nanoseconds()[1]/1e9) - self.last_update), 0)
+        return max(self.gamestate.seconds_remaining - (self.node.get_clock().now().nanoseconds / 1e9 - self.last_update), 0)
 
     def get_secondary_seconds_remaining(self):
         """Seconds remaining for things like kickoff"""
         # Time from the message minus time passed since receiving it
-        return max(self.gamestate.secondary_seconds_remaining - (float(self.node.get_clock().now().seconds_nanoseconds()[0] + self.node.get_clock().now().seconds_nanoseconds()[1]/1e9) - self.last_update), 0)
+        return max(self.gamestate.secondary_seconds_remaining - (self.node.get_clock().now().nanoseconds / 1e9 - self.last_update), 0)
 
     def get_seconds_since_last_drop_ball(self):
         """Returns the seconds since the last drop in"""
@@ -73,10 +73,10 @@ class GameStatusCapsule:
             return None
         else:
             # Time from the message plus seconds passed since receiving it
-            return self.gamestate.drop_in_time + (float(self.node.get_clock().now().seconds_nanoseconds()[0] + self.node.get_clock().now().seconds_nanoseconds()[1]/1e9) - self.last_update)
+            return self.gamestate.drop_in_time + (self.node.get_clock().now().nanoseconds / 1e9 - self.last_update)
 
     def get_seconds_since_unpenalized(self):
-        return float(self.node.get_clock().now().seconds_nanoseconds()[0] + self.node.get_clock().now().seconds_nanoseconds()[1]/1e9) - self.unpenalized_time
+        return self.node.get_clock().now().nanoseconds / 1e9 - self.unpenalized_time
 
     def get_is_penalized(self):
         return self.gamestate.penalized
@@ -92,14 +92,14 @@ class GameStatusCapsule:
 
     def gamestate_callback(self, gs: GameState):
         if self.gamestate.penalized and not gs.penalized:
-            self.unpenalized_time = float(self.node.get_clock().now().seconds_nanoseconds()[0] + self.node.get_clock().now().seconds_nanoseconds()[1]/1e9)
+            self.unpenalized_time = self.node.get_clock().now().nanoseconds / 1e9
 
         if gs.own_score > self.gamestate.own_score:
-            self.last_goal_from_us_time = float(self.node.get_clock().now().seconds_nanoseconds()[0] + self.node.get_clock().now().seconds_nanoseconds()[1]/1e9)
-            self.last_goal_time = float(self.node.get_clock().now().seconds_nanoseconds()[0] + self.node.get_clock().now().seconds_nanoseconds()[1]/1e9)
+            self.last_goal_from_us_time = self.node.get_clock().now().nanoseconds / 1e9
+            self.last_goal_time = self.node.get_clock().now().nanoseconds / 1e9
 
         if gs.rival_score > self.gamestate.rival_score:
-            self.last_goal_time = float(self.node.get_clock().now().seconds_nanoseconds()[0] + self.node.get_clock().now().seconds_nanoseconds()[1]/1e9)
+            self.last_goal_time = self.node.get_clock().now().nanoseconds / 1e9
 
         if gs.secondary_state_mode == 2 and self.gamestate.secondary_state_mode != 2 \
                 and gs.game_state == GameState.GAMESTATE_PLAYING:
@@ -114,5 +114,5 @@ class GameStatusCapsule:
         if self.free_kick_kickoff_team is not None:
             gs.has_kick_off = self.free_kick_kickoff_team == self.team_id
 
-        self.last_update = float(self.node.get_clock().now().seconds_nanoseconds()[0] + self.node.get_clock().now().seconds_nanoseconds()[1]/1e9)
+        self.last_update = self.node.get_clock().now().nanoseconds / 1e9
         self.gamestate = gs

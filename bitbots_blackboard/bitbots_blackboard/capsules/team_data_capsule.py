@@ -145,8 +145,7 @@ class TeamDataCapsule:
         :param action: An action from humanoid_league_msgs/Strategy"""
         assert action in self.actions
         self.strategy.action = action
-        self.action_update = float(self.node.get_clock().now().seconds_nanoseconds()[0] +
-                                   self.node.get_clock().now().seconds_nanoseconds()[1] / 1e9)
+        self.action_update = self.node.get_clock().now().nanoseconds / 1e9
 
     def get_action(self) -> Tuple[int, float]:
         return self.strategy.action, self.action_update
@@ -161,8 +160,7 @@ class TeamDataCapsule:
 
         self.role = role
         self.strategy.role = self.roles_mapping[role]
-        self.role_update = float(self.node.get_clock().now().seconds_nanoseconds()[0] +
-                                 self.node.get_clock().now().seconds_nanoseconds()[1] / 1e9)
+        self.role_update = self.node.get_clock().now().nanoseconds / 1e9
 
     def get_role(self) -> Tuple[int, float]:
         return self.strategy.role, self.role_update
@@ -170,8 +168,7 @@ class TeamDataCapsule:
     def set_kickoff_strategy(self, strategy: int):
         assert strategy in [Strategy.SIDE_LEFT, Strategy.SIDE_MIDDLE, Strategy.SIDE_RIGHT]
         self.strategy.offensive_side = strategy
-        self.strategy_update = float(self.node.get_clock().now().seconds_nanoseconds()[0] +
-                                     self.node.get_clock().now().seconds_nanoseconds()[1] / 1e9)
+        self.strategy_update = self.node.get_clock().now().nanoseconds / 1e9
 
     def get_kickoff_strategy(self) -> Tuple[int, float]:
         return self.strategy.offensive_side, self.strategy_update
