@@ -112,8 +112,6 @@ class YOEOVision(Node):
             self._vision_components.append(yoeo.GoalpostDetectionComponent(self))
         if new_config["component_line_detection_active"]:
             self._vision_components.append(yoeo.LineDetectionComponent(self))
-        if new_config["component_field_boundary_detection_active"]:
-            self._vision_components.append(yoeo.FieldBoundaryDetectionComponent(self))
         if new_config["component_field_detection_active"]:
             self._vision_components.append(yoeo.FieldDetectionComponent(self))
         if new_config["component_debug_image_active"]:

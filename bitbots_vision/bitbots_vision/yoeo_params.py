@@ -74,7 +74,6 @@ gen.add("component_ball_detection_active", bool, description="Activate/Deactivat
 gen.add("component_camera_cap_check_active", bool, description="Activate/Deactivate the camera cap check component")
 gen.add("component_debug_image_active", bool, description="Activate/Deactivate the debug image component")
 gen.add("component_field_detection_active", bool, description="Activate/Deactivate the field detection component")
-gen.add("component_field_boundary_detection_active", bool, description="Activate/Deactivate the field boundary detection component")
 gen.add("component_goalpost_detection_active", bool, description="Activate/Deactivate the goalpost detection component")
 gen.add("component_line_detection_active", bool, description="Activate/Deactivate the line detection component")
 gen.add("component_obstacle_detection_active", bool, description="Activate/Deactivate the obstacle detection component")
