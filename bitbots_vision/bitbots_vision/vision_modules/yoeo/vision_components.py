@@ -7,8 +7,8 @@ from rclpy.node import Node
 from sensor_msgs.msg import Image
 from typing import Dict, Optional, List, Tuple
 from humanoid_league_msgs.msg import Audio, GameState
-from soccer_vision_2d_msgs.msg import BallArray, FieldBoundary, GoalpostArray, RobotArray, Robot
-from bitbots_vision.vision_modules import field_boundary, color, debug, \
+from soccer_vision_2d_msgs.msg import BallArray, GoalpostArray, RobotArray, Robot
+from bitbots_vision.vision_modules import color, debug, \
     obstacle, ros_utils, candidate
 
 from . import detectors, object_manager, yoeo_handlers
@@ -41,42 +41,6 @@ class DebugImageFactory:
     def _create_new_debug_image(cls, config: Dict) -> None:
         cls._debug_image = debug.DebugImage(config['component_debug_image_active'])
         cls._config = config
-
-
-class YOEOFieldBoundaryDetectorFactory:
-    """
-    Factory class that handles the lifetime of field_boundary.FieldBoundaryDetector objects used in the YOEO field
-    boundary detection.
-    """
-    _field_boundary_detector: Optional[field_boundary.FieldBoundaryDetector] = None
-    _field_boundary_detector_search_method: Optional[str] = None
-    _yoeo_id: Optional[int] = None
-
-    @classmethod
-    def get(cls, config: Dict) -> field_boundary.FieldBoundaryDetector:
-        """
-        Get an instance of field_boundary.FieldBoundaryDetector.
-        """
-        if cls._new_field_boundary_detector_has_to_be_created(config):
-            cls._create_new_field_boundary_detector(config)
-        return cls._field_boundary_detector
-
-    @classmethod
-    def _new_field_boundary_detector_has_to_be_created(cls, config: Dict) -> bool:
-        return cls._field_boundary_detector is None \
-            or cls._field_boundary_detector_search_method != config['field_boundary_detector_search_method'] \
-            or cls._yoeo_id != object_manager.YOEOObjectManager.get_id()
-
-    @classmethod
-    def _create_new_field_boundary_detector(cls, config: Dict) -> None:
-        field_boundary_detector_class = field_boundary.FieldBoundaryDetector.get_by_name(
-            config['field_boundary_detector_search_method']
-        )
-        field_detector = detectors.FieldSegmentation(object_manager.YOEOObjectManager.get())
-
-        cls._field_boundary_detector = field_boundary_detector_class(config, field_detector)
-        cls._field_boundary_detector_search_method = config['field_boundary_detector_search_method']
-        cls._yoeo_id = object_manager.YOEOObjectManager.get_id()
 
 
 class YOEOObstacleDetectorFactory:
@@ -272,7 +236,6 @@ class BallDetectionComponent(IVisionComponent):
         self._ball_detector: Optional[detectors.BallDetector] = None
         self._debug_image: Optional[debug.DebugImage] = None
         self._debug_mode: bool = False
-        self._field_boundary_detector: Optional[field_boundary.FieldBoundaryDetector] = None
         self._node: Node = node
         self._publisher: Optional[rclpy.publisher.Publisher] = None
 
@@ -280,7 +243,6 @@ class BallDetectionComponent(IVisionComponent):
         self._ball_detector = detectors.BallDetector(object_manager.YOEOObjectManager.get())
         self._debug_image = DebugImageFactory.get(config)
         self._debug_mode = debug_mode
-        self._field_boundary_detector = YOEOFieldBoundaryDetectorFactory.get(config)
 
         self._register_publisher(config)
         self._config = config
@@ -297,24 +259,16 @@ class BallDetectionComponent(IVisionComponent):
 
     def run(self, image_msg: Image) -> None:
         candidates = self._get_best_ball_candidates()
-        candidates_within_convex_fb = self._filter_for_best_candidates_within_convex_field_boundary(candidates)
-        final_candidates = self._filter_by_candidate_threshold(candidates_within_convex_fb)
+        final_candidates = self._filter_by_candidate_threshold(candidates)
         self._publish_balls_message(image_msg, final_candidates)
 
         if self._debug_mode:
             self._add_candidates_to_debug_image(candidates)
-            self._add_candidates_within_convex_fb_to_debug_image(candidates_within_convex_fb)
+            self._add_candidates_within_convex_fb_to_debug_image(candidates)
             self._add_final_candidates_to_debug_image(final_candidates)
 
     def _get_best_ball_candidates(self) -> List[candidate.Candidate]:
         return self._ball_detector.get_top_candidates(count=self._config['ball_candidate_max_count'])
-
-    def _filter_for_best_candidates_within_convex_field_boundary(self, candidates: List[candidate.Candidate]) \
-            -> List[candidate.Candidate]:
-        return self._field_boundary_detector.candidates_under_convex_field_boundary(
-            candidates,
-            self._config['ball_candidate_field_boundary_y_offset']
-        )
 
     def _filter_by_candidate_threshold(self, candidates: List[candidate.Candidate]) \
             -> List[candidate.Candidate]:
@@ -335,7 +289,7 @@ class BallDetectionComponent(IVisionComponent):
         self._debug_image.draw_ball_candidates(candidates, DebugImageComponent.Colors.ball, thickness=3)
 
     def set_image(self, image: np.ndarray) -> None:
-        self._field_boundary_detector.set_image(image)
+        pass
 
 
 class GoalpostDetectionComponent(IVisionComponent):
@@ -347,7 +301,6 @@ class GoalpostDetectionComponent(IVisionComponent):
         self._config: Dict = {}
         self._debug_image: Optional[debug.DebugImage] = None
         self._debug_mode: bool = False
-        self._field_boundary_detector: Optional[field_boundary.FieldBoundaryDetector] = None
         self._goalpost_detector: Optional[detectors.GoalpostDetector] = None
         self._node: Node = node
         self._publisher: Optional[rclpy.publisher.Publisher] = None
@@ -355,7 +308,6 @@ class GoalpostDetectionComponent(IVisionComponent):
     def configure(self, config: Dict, debug_mode: bool) -> None:
         self._debug_image = DebugImageFactory.get(config)
         self._debug_mode = debug_mode
-        self._field_boundary_detector = YOEOFieldBoundaryDetectorFactory.get(config)
         self._goalpost_detector = detectors.GoalpostDetector(object_manager.YOEOObjectManager.get())
 
         self._register_publisher(config)
@@ -373,22 +325,14 @@ class GoalpostDetectionComponent(IVisionComponent):
 
     def run(self, image_msg: Image) -> None:
         candidates = self._get_candidates()
-        final_candidates = self._get_candidates_within_convex_field_boundary(candidates)
-        self._publish_goalposts_message(image_msg, final_candidates)
+        self._publish_goalposts_message(image_msg, candidates)
 
         if self._debug_mode:
             self._add_candidates_to_debug_image(self._goalpost_detector.get_candidates())
-            self._add_final_candidates_to_debug_image(final_candidates)
+            self._add_final_candidates_to_debug_image(candidates)
 
     def _get_candidates(self) -> List[candidate.Candidate]:
         return self._goalpost_detector.get_candidates()
-
-    def _get_candidates_within_convex_field_boundary(self, candidates: List[candidate.Candidate]) \
-            -> List[candidate.Candidate]:
-        return self._field_boundary_detector.candidates_under_convex_field_boundary(
-            candidates,
-            self._config['goal_post_field_boundary_y_offset']
-        )
 
     def _publish_goalposts_message(self, image_msg: Image, candidates: List[candidate.Candidate]) -> None:
         goalpost_messages = [ros_utils.build_goal_post_msg(candidate) for candidate in candidates]
@@ -402,67 +346,7 @@ class GoalpostDetectionComponent(IVisionComponent):
         self._debug_image.draw_obstacle_candidates(candidates, DebugImageComponent.Colors.goalposts, thickness=3)
 
     def set_image(self, image: np.ndarray) -> None:
-        self._field_boundary_detector.set_image(image)
-
-
-class FieldBoundaryDetectionComponent(IVisionComponent):
-    """
-    This component carries out the field boundary detection using YOEO.
-    """
-
-    def __init__(self, node: Node):
-        self._config: Dict = {}
-        self._debug_image: Optional[debug.DebugImage] = None
-        self._debug_mode: bool = False
-        self._field_boundary_detector: Optional[field_boundary.FieldBoundaryDetector] = None
-        self._node: Node = node
-        self._publisher: Optional[rclpy.publisher.Publisher] = None
-
-    def configure(self, config: Dict, debug_mode: bool) -> None:
-        self._debug_image = DebugImageFactory.get(config)
-        self._debug_mode = debug_mode
-        self._field_boundary_detector = YOEOFieldBoundaryDetectorFactory.get(config)
-
-        self._register_publisher(config)
-        self._config = config
-
-    def _register_publisher(self, new_config: Dict) -> None:
-        self._publisher = ros_utils.create_or_update_publisher(
-            self._node,
-            self._config,
-            new_config,
-            self._publisher,
-            'ROS_field_boundary_msg_topic',
-            FieldBoundary
-        )
-
-    def run(self, image_msg: Image) -> None:
-        convex_field_boundary_points = self._get_convex_field_boundary_points()
-        self._publish_field_boundary_msg(image_msg, convex_field_boundary_points)
-
-        if self._debug_mode:
-            self._add_field_boundary_to_debug_image()
-            self._add_convex_field_boundary_to_debug_image(convex_field_boundary_points)
-
-    def _get_convex_field_boundary_points(self) -> List[Tuple[int, int]]:
-        return self._field_boundary_detector.get_convex_field_boundary_points()
-
-    def _publish_field_boundary_msg(self, image_msg: Image, field_boundary_points: List[Tuple[int, int]]) -> None:
-        field_boundary_msg = ros_utils.build_field_boundary_msg(image_msg.header, field_boundary_points)
-        self._publisher.publish(field_boundary_msg)
-
-    def _add_field_boundary_to_debug_image(self) -> None:
-        field_boundary = self._field_boundary_detector.get_field_boundary_points()
-        self._debug_image.draw_field_boundary(field_boundary, DebugImageComponent.Colors.field_boundary)
-
-    def _add_convex_field_boundary_to_debug_image(self, convex_field_boundary_points: List[Tuple[int, int]]) -> None:
-        self._debug_image.draw_field_boundary(
-            convex_field_boundary_points,
-            DebugImageComponent.Colors.field_boundary_convex
-        )
-
-    def set_image(self, image: np.ndarray) -> None:
-        self._field_boundary_detector.set_image(image)
+        pass
 
 
 class LineDetectionComponent(IVisionComponent):

@@ -5,7 +5,6 @@ bitbots_vision:
     component_camera_cap_check_active: true # activate a one-time check whether the camera cap is still on the camera
     component_debug_image_active: false # activate the debug image
     component_field_detection_active: true # activate the field detection
-    component_field_boundary_detection_active: false # activate the field boundary detection
     component_goalpost_detection_active: false      # activate the goalpost detection
     component_line_detection_active: true           # activate the line detection
     component_obstacle_detection_active: true       # activate the obstacle detection
