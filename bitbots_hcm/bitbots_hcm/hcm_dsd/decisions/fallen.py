@@ -31,7 +31,7 @@ class Fallen(AbstractHCMDecisionElement):
             return "NOT_FALLEN"
 
         # Convert quaternion to fused angles
-        fused_roll, fused_pitch, _ = quat2fused(self.blackboard.quaternion, order="xyzw")
+        fused_roll, fused_pitch, _, _ = quat2fused(self.blackboard.quaternion, order="xyzw")
 
         # Decides which side is facing downwards.
         if fused_pitch > self.fallen_orientation_thresh:

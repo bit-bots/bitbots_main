@@ -47,7 +47,7 @@ class Falling(AbstractHCMDecisionElement):
         angular_velocity = self.blackboard.gyro
 
         # Convert orientation to fused angles
-        fused_roll, fused_pitch, _ = quat2fused(self.blackboard.quaternion, order="xyzw")
+        fused_roll, fused_pitch, _, _ = quat2fused(self.blackboard.quaternion, order="xyzw")
 
         # setting the fall quantification function
         roll_fall_quantification = self.calc_fall_quantification(
