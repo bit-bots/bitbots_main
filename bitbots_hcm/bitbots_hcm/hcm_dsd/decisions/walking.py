@@ -9,7 +9,11 @@ class RecentWalkingGoals(AbstractHCMDecisionElement):
     """
 
     def perform(self, reevaluate=False):
-        if self.blackboard.node.get_clock().now().nanoseconds / 1e9 - self.blackboard.last_walking_goal_time.nanoseconds / 1e9 < 0.1:
+        time_delta = self.blackboard.node.get_clock().now().nanoseconds / 1e9 - self.blackboard.last_walking_goal_time.nanoseconds / 1e9
+        # Log the time delta between now and the last walking goal
+        self.publish_debug_data("Last Walking Goal Time Delta", time_delta)
+        # If the time delta is smaller enough, we are still walking
+        if time_delta < 0.1:
             # we are walking and can stay like this
             return "STAY_WALKING"
         else:
