@@ -39,6 +39,7 @@ def anim_run(anim=None, hcm=False):
     goal.animation = anim
     goal.hcm = hcm
 
+    print(f"Sending animation {anim} to {'hcm' if hcm else 'motion'}.")
     state: PlayAnimation.Result  = anim_client.send_goal(goal).result
 
     print(f"Animation {anim} {['failed', 'successfully finished'][int(state.successful)]}.")
