@@ -41,7 +41,7 @@ class HardwareControlManager:
         for parameter_msg in parameter_msgs:
             parameters.append(Parameter.from_parameter_msg(parameter_msg))
         if use_sim_time:
-            parameters.append(Parameter("use_sime_time", type_=Parameter.Type.BOOL, value=True))
+            parameters.append(Parameter("use_sim_time", type_=Parameter.Type.BOOL, value=True))
         if simulation_active:
             parameters.append(Parameter("simulation_active", type_=Parameter.Type.BOOL, value=True))
         if visualization_active:
