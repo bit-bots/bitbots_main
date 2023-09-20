@@ -93,7 +93,7 @@ class HcmBlackboard():
         self.imu_timeout_duration: float = self.node.get_parameter("imu_timeout_duration").value
 
         # Walking state
-        self.last_walking_goal_time = self.node.get_clock().now()
+        self.last_walking_goal_time: Optional[Time] = None
 
         # Falling
         # Paramerters
@@ -102,7 +102,7 @@ class HcmBlackboard():
 
         # Kicking
         # State
-        self.last_kick_feedback: Optional[Time] = None
+        self.last_kick_goal_time: Optional[Time] = None
 
         # IMU state
         self.imu_msg: Optional[Imu] = None

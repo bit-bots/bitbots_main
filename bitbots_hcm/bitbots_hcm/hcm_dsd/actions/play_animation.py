@@ -75,14 +75,16 @@ class AbstractPlayAnimation(AbstractHCMActionElement):
         goal.animation = anim
         goal.hcm = True  # the animation is from the hcm
         self.blackboard.animation_action_current_goal = self.blackboard.animation_action_client.send_goal_async(
-            goal, feedback_callback=self.kick_feedback_cb)
+            goal, feedback_callback=self.animation_feedback_cb)
         return True
 
-    def kick_feedback_cb(self, msg: PlayAnimation.Feedback):
-        self.blackboard.last_kick_feedback = self.blackboard.node.get_clock().now()
+    def animation_feedback_cb(self, msg):
+        feedback: PlayAnimation.Feedback = msg.feedback
+        self.publish_debug_data("Animation Percent Done", str(feedback.percent_done))
 
     def animation_finished(self):
-        return self.blackboard.animation_action_current_goal.cancelled() or self.blackboard.animation_action_current_goal.done()
+        return (self.blackboard.animation_action_current_goal.done() and self.blackboard.animation_action_current_goal.result().status == GoalStatus.STATUS_SUCCEEDED) \
+                or self.blackboard.animation_action_current_goal.cancelled()
 
 
 class PlayAnimationFallingLeft(AbstractPlayAnimation):
@@ -173,8 +175,13 @@ class PlayAnimationDynup(AbstractHCMActionElement):
 
         goal = Dynup.Goal()
         goal.direction = self.direction
-        self.blackboard.dynup_action_current_goal = self.blackboard.dynup_action_client.send_goal_async(goal)
+        self.blackboard.dynup_action_current_goal = self.blackboard.dynup_action_client.send_goal_async(
+            goal, feedback_callback=self.animation_feedback_cb)
         return True
+
+    def animation_feedback_cb(self, msg):
+        feedback: Dynup.Feedback = msg.feedback
+        self.publish_debug_data("Dynup Percent Done", str(feedback.percent_done))
 
     def animation_finished(self):
         return (self.blackboard.dynup_action_current_goal.done() and self.blackboard.dynup_action_current_goal.result().status == GoalStatus.STATUS_SUCCEEDED) \

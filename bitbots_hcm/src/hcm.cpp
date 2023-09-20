@@ -45,6 +45,9 @@ public:
     // Walking state
     last_walking_time_ = builtin_interfaces::msg::Time();
 
+    // Kick state
+    last_kick_time_ = builtin_interfaces::msg::Time();
+
     // Animation state
     record_active_ = false;
     external_animation_running_ = false;
@@ -180,6 +183,7 @@ public:
   }
 
   void kick_goal_callback(const bitbots_msgs::msg::JointCommand msg) {
+    last_kick_time_ = msg.header.stamp;
     if (current_state_ == humanoid_league_msgs::msg::RobotControlState::KICKING ||
         current_state_ == humanoid_league_msgs::msg::RobotControlState::CONTROLLABLE) {
       // we can perform a kick
@@ -196,7 +200,7 @@ public:
       pub_controller_command_->publish(msg);
     }
   }
-  
+
   void walking_goal_callback(bitbots_msgs::msg::JointCommand msg) {
     last_walking_time_ = msg.header.stamp;
     if (current_state_ == humanoid_league_msgs::msg::RobotControlState::CONTROLLABLE ||
@@ -231,6 +235,7 @@ public:
     hcm_py_.attr("set_last_motor_update_time")(ros2_python_extension::toPython<builtin_interfaces::msg::Time>(current_joint_state_.header.stamp));
     hcm_py_.attr("set_current_joint_state")(ros2_python_extension::toPython<sensor_msgs::msg::JointState>(current_joint_state_));
     hcm_py_.attr("set_last_walking_goal_time")(ros2_python_extension::toPython<builtin_interfaces::msg::Time>(last_walking_time_));
+    hcm_py_.attr("set_last_kick_goal_time")(ros2_python_extension::toPython<builtin_interfaces::msg::Time>(last_kick_time_));
     hcm_py_.attr("set_record_active")(record_active_);
     hcm_py_.attr("set_external_animation_running")(external_animation_running_);
     hcm_py_.attr("set_animation_requested")(animation_requested_);
@@ -266,6 +271,9 @@ private:
 
   // Walking state
   builtin_interfaces::msg::Time last_walking_time_;
+
+  // Kick state
+  builtin_interfaces::msg::Time last_kick_time_;
 
   // Animation states
   bool record_active_;
