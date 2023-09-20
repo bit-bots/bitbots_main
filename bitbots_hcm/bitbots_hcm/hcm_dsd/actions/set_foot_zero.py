@@ -16,7 +16,7 @@ class SetFootZero(AbstractHCMActionElement):
             self.first_perform = False
             try:
                 self.blackboard.foot_zero_service.wait_for_service(0.5)
-                self.blackboard.foot_zero_service()
+                self.blackboard.foot_zero_service.call_async({})
             except:
                 self.blackboard.node.get_logger().warn("No foot zeroing service accessible, will not reset sensors")
 
