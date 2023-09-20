@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 import sys
+import threading
 
 import rclpy
 from actionlib_msgs.msg import GoalStatus
 from rclpy.action import ActionClient
+from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 
 from humanoid_league_msgs.action import PlayAnimation
@@ -11,6 +13,12 @@ from humanoid_league_msgs.action import PlayAnimation
 
 def anim_run(anim=None, hcm=False):
     node = Node("run_animation")
+
+    # Create own executor for Python part
+    multi_executor = MultiThreadedExecutor(num_threads=4)
+    multi_executor.add_node(node)
+    spin_thread = threading.Thread(target=multi_executor.spin, args=(), daemon=True)
+    spin_thread.start()
 
     anim_client = ActionClient(node, PlayAnimation, 'animation')
 
@@ -31,30 +39,12 @@ def anim_run(anim=None, hcm=False):
     goal.animation = anim
     goal.hcm = hcm
 
-    # todo not .send_goal does never return
-    state = anim_client.send_goal_async(goal)
-    if state == GoalStatus.PENDING:
-        print('Pending')
-    elif state == GoalStatus.ACTIVE:
-        print('Active')
-    elif state == GoalStatus.PREEMPTED:
-        print('Preempted')
-    elif state == GoalStatus.SUCCEEDED:
-        print('Succeeded')
-    elif state == GoalStatus.ABORTED:
-        print('Aborted')
-    elif state == GoalStatus.REJECTED:
-        print('Rejected')
-    elif state == GoalStatus.PREEMPTING:
-        print('Preempting')
-    elif state == GoalStatus.RECALLING:
-        print('Recalling')
-    elif state == GoalStatus.RECALLED:
-        print('Recalled')
-    elif state == GoalStatus.LOST:
-        print('Lost')
-    else:
-        print('Unknown state', state)
+    state: PlayAnimation.Result  = anim_client.send_goal(goal).result
+
+    print(f"Animation {anim} {['failed', 'successfully finished'][int(state.successful)]}.")
+
+    node.destroy_node()
+    rclpy.shutdown()
 
 
 if __name__ == '__main__':
