@@ -5,7 +5,6 @@ from abc import ABC, abstractmethod
 from typing import List
 
 from bitbots_vision.vision_modules.candidate import CandidateFinder, Candidate
-from bitbots_vision.vision_modules.field_boundary import IFieldDetector
 from . import yoeo_handlers
 
 
@@ -195,7 +194,7 @@ class BackgroundSegmentation(SegmentationTemplate):
         return self._yoeo_handler.get_segmentation_mask_for("background")
 
 
-class FieldSegmentation(SegmentationTemplate, IFieldDetector):
+class FieldSegmentation(SegmentationTemplate):
     """
     YOEO Field Segmentation class.
     """
