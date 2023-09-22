@@ -4,7 +4,6 @@ import numpy as np
 
 from rclpy import logging
 from cv_bridge import CvBridge
-from bitbots_vision.vision_modules import ros_utils
 
 logger = logging.get_logger('bitbots_vision')
 
