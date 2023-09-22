@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import numpy as np
 from abc import ABC, abstractmethod
+import numpy as np
 from typing import List
 
 from bitbots_vision.vision_modules.candidate import CandidateFinder, Candidate

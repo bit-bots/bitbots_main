@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import numpy as np
 import rclpy
+
 from abc import ABC, abstractmethod
 from rclpy.node import Node
 from sensor_msgs.msg import Image
 from typing import Dict, Optional, List, Tuple
+
 from humanoid_league_msgs.msg import Audio, GameState
 from soccer_vision_2d_msgs.msg import BallArray, GoalpostArray, RobotArray, Robot
 from bitbots_vision.vision_modules import color, debug, \
