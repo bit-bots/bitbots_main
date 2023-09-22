@@ -13,7 +13,6 @@ bitbots_vision:
 
     ROS_audio_msg_topic: "speak" # ROS topic of the audio message
     ROS_img_msg_topic: "camera/image_proc" # ROS topic of the image message
-    ROS_field_boundary_msg_topic: "field_boundary_in_image" # ROS topic of the field boundary message
     ROS_ball_msg_topic: "balls_in_image" # ROS topic of the ball message
     ROS_goal_posts_msg_topic: "goal_posts_in_image" # ROS topic of the goal posts message
     ROS_obstacle_msg_topic: "robots_in_image" # ROS topic of the obstacles message
@@ -27,11 +26,8 @@ bitbots_vision:
     yoeo_conf_threshold: 0.5  # YOEO confidence threshold
     yoeo_framework: 'tvm'  # The neural network framework that should be used ['openvino', 'onnx', 'pytorch', 'tvm']
 
-    ball_candidate_field_boundary_y_offset: 0 # Threshold in which ball candidates over the field boundary are allowed.
     ball_candidate_rating_threshold: 0.5 # A threshold for the minimum candidate rating
     ball_candidate_max_count: 1 # The maximum number of balls that should be published
-
-    goal_post_field_boundary_y_offset: 10 # Maximum distance between field boundary and goal post
 
     red_color_detector_h_zero_crossing: true # Whether the red color detector interval includes the hue zero-crossing
     red_color_detector_lower_values_h: 146 # Lower bound for the red color detector hue
@@ -49,19 +45,8 @@ bitbots_vision:
     blue_color_detector_upper_values_s: 170 # Upper bound for the blue color detector saturation
     blue_color_detector_upper_values_v: 225 # Upper bound for the blue color detector value/brightness
 
-    field_boundary_detector_search_method: "iteration" # Method for finding the field boundary (iteration, reversed, downsampling_reversed, binary)
-    field_boundary_detector_vertical_steps: 30 # Number of steps on each scanline
-    field_boundary_detector_horizontal_steps: 30 # Number of scanlines
-    field_boundary_detector_roi_height: 2 # Region Of Interest height in which we are looking for green
-    field_boundary_detector_roi_width: 2 # Region Of Interest width in which we are looking for green
-    field_boundary_detector_roi_increase: 0.1 # Value that increases the region of interest if it is located lower in the image
-    field_boundary_detector_green_threshold: 30 # Threshold of green in the area covered by the kernel
-    field_boundary_detector_head_tilt_threshold: 20 # Threshold for the dynamic search method, that describes the head angle at which we are switching between the iteration and the reversed search method.
-
     obstacle_finder_method: "convex" # Method for the obstacle finder (distance, convex or step)
     obstacle_color_threshold: 4 # An obstacle is defined as blue/red if it contains more blue or red than this threshold (amount of pixels in per mille)
-    obstacle_field_boundary_diff_threshold: 20 # Minimal distance between detected and convex field boundary to accept it as obstacle
-    obstacle_candidate_field_boundary_offset: 30 # Fixed height of obstacles above the field boundary
     obstacle_candidate_min_width: 15 # Minimum width of an obstacle
     obstacle_candidate_max_width: 150 # Maximum width of an obstacle
     obstacle_finder_step_length: 5 # Length of an object detection step along the field boundary

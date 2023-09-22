@@ -82,7 +82,6 @@ gen.add("vision_blind_threshold", int, description="Brightness threshold under w
 
 gen.add("ROS_audio_msg_topic", str, description="ROS topic of the audio message")
 gen.add("ROS_img_msg_topic", str, description="ROS topic of the image message")
-gen.add("ROS_field_boundary_msg_topic", str, description="ROS topic of the field boundary message")
 gen.add("ROS_ball_msg_topic", str, description="ROS topic of the ball message")
 gen.add("ROS_goal_posts_msg_topic", str, description="ROS topic of the goal posts message")
 gen.add("ROS_obstacle_msg_topic", str, description="ROS topic of the obstacles message")
@@ -96,11 +95,8 @@ gen.add("yoeo_nms_threshold", float, description="YOEO Non-maximum suppression t
 gen.add("yoeo_conf_threshold", float, description="YOEO confidence threshold", min=0.0, max=1.0)
 gen.add("yoeo_framework", str, description="The neural network framework that should be used ['pytorch', 'openvino', 'onnx', 'tvm']")
 
-gen.add("ball_candidate_field_boundary_y_offset", int, description="Threshold in which ball candidates over the field boundary are allowed.", min=0, max=800)
 gen.add("ball_candidate_rating_threshold", float, description="A threshold for the minimum candidate rating", min=0.0, max=1.0)
 gen.add("ball_candidate_max_count", int, description="The maximum number of balls that should be published", min=0, max=50)
-
-gen.add("goal_post_field_boundary_y_offset", int, description="Maximum distance between field boundary and goal post", min=1, max=600)
 
 gen.add("red_color_detector_h_zero_crossing", bool, description="Whether or not the red color detector interval includes the hue zero-crossing")
 gen.add("red_color_detector_lower_values_h", int, description="Lower bound for the red color detector hue", min=0, max=255)
@@ -118,19 +114,9 @@ gen.add("blue_color_detector_upper_values_h", int, description="Upper bound for 
 gen.add("blue_color_detector_upper_values_s", int, description="Upper bound for the blue color detector saturation", min=0, max=255)
 gen.add("blue_color_detector_upper_values_v", int, description="Upper bound for the blue color detector value/brightness", min=0, max=255)
 
-gen.add("field_boundary_detector_search_method", str, description="Method for finding the field boundary (iteration, reversed, downsampling_reversed, binary)")
-gen.add("field_boundary_detector_vertical_steps", int, description="Number of steps on each scanline", min=1, max=480)
-gen.add("field_boundary_detector_horizontal_steps", int, description="Number of scanlines", min=1, max=640)
-gen.add("field_boundary_detector_roi_height", int, description="Region Of Interest height in which we are looking for green", min=1, max=100)
-gen.add("field_boundary_detector_roi_width", int, description="Region Of Interest width in which we are looking for green", min=1, max=100)
-gen.add("field_boundary_detector_roi_increase", float, description="Value that increases the region of interest if it is located lower in the image", min=0, max=1.0)
-gen.add("field_boundary_detector_green_threshold", int, description="Threshold of green in the area covered by the kernel", min=0, max=1000)
-
 gen.add("obstacle_finder_method", str, description="Method for the obstacle finder (distance, convex or step)")
 gen.add("obstacle_color_threshold", int, description="An obstacle is defined as blue/red if it contains more blue or red than this threshold (amount of pixels in per mille)", min=0, max=255)
 gen.add("obstacle_white_threshold", int, description="An obstacle that contains more white than this threshold and is not colored, is an goalpost in the conventional approach", min=0, max=255)
-gen.add("obstacle_field_boundary_diff_threshold", int, description="Minimal distance between detected and convex field boundary to accept it as obstacle", min=0, max=200)
-gen.add("obstacle_candidate_field_boundary_offset", int, description="Fixed height of obstacles above the field boundary", min=0, max=500)
 gen.add("obstacle_candidate_min_width", int, description="Minimum width of an obstacle", min=1, max=640)
 gen.add("obstacle_candidate_max_width", int, description="Maximum width of an obstacle", min=1, max=640)
 gen.add("obstacle_finder_step_length", int, description="Length of an object detection step along the field boundary", min=1, max=640)
