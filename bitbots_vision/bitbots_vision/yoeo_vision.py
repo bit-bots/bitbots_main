@@ -104,10 +104,7 @@ class YOEOVision(Node):
         if new_config["component_ball_detection_active"]:
             self._vision_components.append(yoeo.BallDetectionComponent(self))
         if new_config["component_obstacle_detection_active"]:
-            if yoeo.YOEOObjectManager.is_team_color_detection_supported():
-                self._vision_components.append(yoeo.RobotDetectionComponent(self))
-            else:
-                self._vision_components.append(yoeo.HSVRobotDetectionComponent(self))
+            self._vision_components.append(yoeo.RobotDetectionComponent(self))
         if new_config["component_goalpost_detection_active"]:
             self._vision_components.append(yoeo.GoalpostDetectionComponent(self))
         if new_config["component_line_detection_active"]:

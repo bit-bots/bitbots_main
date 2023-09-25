@@ -14,9 +14,6 @@ class ModelConfig:
     def get_segmentation_classes(self) -> List[str]:
         return self._config['segmentation']['classes']
 
-    def team_colors_are_provided(self) -> bool:
-        return self._config['detection'].get('team_colors', False)
-
     def get_robot_class_ids(self) -> List[int]:
         ids = []
         for i, c in enumerate(self.get_detection_classes()):
