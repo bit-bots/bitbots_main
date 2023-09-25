@@ -8,9 +8,9 @@
     <let unless="$(env IS_ROBOT false)" name="taskset" value=""/>
 
     <group unless="$(var sim)">
-        <node pkg="bitbots_vision" exec="yoeo_vision" name="bitbots_vision" output="screen" launch-prefix="$(var taskset)">
+        <node pkg="bitbots_vision" exec="vision" name="bitbots_vision" output="screen" launch-prefix="$(var taskset)">
             <!-- Set vision config -->
-            <param from="$(find-pkg-share bitbots_vision)/config/yoeo_visionparams.yaml" />
+            <param from="$(find-pkg-share bitbots_vision)/config/visionparams.yaml" />
 
             <!-- Set debug params-->
             <param name="vision_publish_debug_image" value="$(var debug)" />
@@ -19,9 +19,9 @@
     </group>
     <!-- Start the YOEO vision in sim configuration-->
     <group if="$(var sim)">
-        <node pkg="bitbots_vision" exec="yoeo_vision" name="bitbots_vision" output="screen" launch-prefix="$(var taskset)">
+        <node pkg="bitbots_vision" exec="vision" name="bitbots_vision" output="screen" launch-prefix="$(var taskset)">
             <!-- Set vision config -->
-            <param from="$(find-pkg-share bitbots_vision)/config/yoeo_visionparams_sim.yaml"/>
+            <param from="$(find-pkg-share bitbots_vision)/config/visionparams_sim.yaml"/>
 
             <!-- Set debug params-->
             <param name="vision_publish_debug_image" value="$(var debug)" />

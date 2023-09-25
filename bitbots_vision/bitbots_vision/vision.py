@@ -11,7 +11,7 @@ from typing import Dict, List
 from bitbots_vision.vision_modules import ros_utils
 from bitbots_vision.vision_modules import yoeo
 
-from .yoeo_params import gen
+from .params import gen
 
 logger = rclpy.logging.get_logger('bitbots_vision')
 
