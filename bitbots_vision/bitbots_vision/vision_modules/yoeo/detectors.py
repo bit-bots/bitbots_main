@@ -68,18 +68,6 @@ class GoalpostDetector(DetectorTemplate):
         return self._yoeo_handler.get_detection_candidates_for("goalpost")
 
 
-class RobotDetector(DetectorTemplate):
-    """
-    YOEO Robot Detection class.
-    """
-
-    def __init__(self, yoeo_handler: yoeo_handlers.IYOEOHandler):
-        super().__init__(yoeo_handler)
-
-    def get_candidates(self) -> List[Candidate]:
-        return self._yoeo_handler.get_detection_candidates_for("robot")
-
-
 class BlueRobotDetector(DetectorTemplate):
     """
     YOEO Robot Detection class for blue robots.
