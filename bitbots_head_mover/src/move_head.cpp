@@ -480,10 +480,10 @@ public:
     // Calculate path by performing linear interpolation between the current and the goal position
     std::vector<std::pair<double, double>> pan_and_tilt_steps;
     for (int i = 0; i < step_count; i++) {
-      pan_and_tilt_steps[i].first =
-        current_pan + (goal_pan - current_pan) / step_count * i;
-      pan_and_tilt_steps[i].second =
-        current_tilt + (goal_tilt - current_tilt) / step_count * i;
+      pan_and_tilt_steps.push_back({
+        current_pan + (goal_pan - current_pan) / step_count * i,
+        current_tilt + (goal_tilt - current_tilt) / step_count * i
+      });
     }
 
     // Check if we have collisions on our path
