@@ -3,7 +3,6 @@ include:
     - bitbots_behavior:
         - bitbots_blackboard
         - bitbots_body_behavior
-        - bitbots_head_mover
     - bitbots_lowlevel:
         - bitbots_buttons
         - bitbots_ros_control
@@ -22,6 +21,7 @@ include:
         - bitbots_dynamic_kick
         - bitbots_dynup
         - bitbots_hcm
+        - bitbots_head_mover
         - bitbots_moveit_bindings
         - bitbots_odometry
         - bitbots_quintic_walk
