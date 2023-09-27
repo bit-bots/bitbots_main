@@ -599,6 +599,10 @@ public:
     double tilt,
     double min_pan,
     double max_pan) {
+    // Handle edge case where we do not need to interpolate
+    if (steps == 0) {
+      return {};
+    }
     // Add one to the step count as we need to include the min and max pan values
     steps += 1;
     // Create a vector that stores the interpolated steps
