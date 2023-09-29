@@ -89,7 +89,7 @@ int main(int argc, char *argv[]) {
         status.level = diagnostic_msgs::msg::DiagnosticStatus::WARN;
         status.message = "Bus runs not at specified frequency";
       }
-      array = std::vector<diagnostic_msgs::msg::DiagnosticStatus>();
+      std::vector array = std::vector<diagnostic_msgs::msg::DiagnosticStatus>();
       array.push_back(status);
       array_msg.status = array;
       diagnostic_pub->publish(array_msg);
