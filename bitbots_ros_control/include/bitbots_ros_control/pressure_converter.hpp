@@ -15,7 +15,6 @@
 #include <std_srvs/srv/empty.hpp>
 
 class PressureConverter {
-
  public:
   PressureConverter(rclcpp::Node::SharedPtr nh, char side);
 

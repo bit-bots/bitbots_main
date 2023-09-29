@@ -1,8 +1,8 @@
-#include <bitbots_ros_control/utils.h>
+#include <bitbots_ros_control/utils.hpp>
 
 namespace bitbots_ros_control {
 
-bool stringToControlMode(rclcpp::Node::SharedPtr nh, std::string _control_modestr, ControlMode &control_mode) {
+bool stringToControlMode(rclcpp::Node::SharedPtr nh, const std::string& _control_modestr, ControlMode& control_mode) {
   /**
    * Helper method to parse strings to corresponding control modes
    */
@@ -24,25 +24,24 @@ bool stringToControlMode(rclcpp::Node::SharedPtr nh, std::string _control_modest
   }
 }
 
-void speakError(const rclcpp::Publisher<humanoid_league_msgs::msg::Audio>::SharedPtr speak_pub, std::string text) {
+void speakError(const rclcpp::Publisher<humanoid_league_msgs::msg::Audio>::SharedPtr speak_pub,
+                const std::string& text) {
   /**
-    *  Helper method to send a message for text-to-speech output
-    */
+   *  Helper method to send a message for text-to-speech output
+   */
   humanoid_league_msgs::msg::Audio msg = humanoid_league_msgs::msg::Audio();
   msg.text = text;
   msg.priority = 100;
   speak_pub->publish(msg);
 }
 
-uint16_t dxlMakeword(uint64_t a, uint64_t b) {
-  return uint16_t(uint8_t(a & 0xff) | uint16_t(uint8_t(b & 0xff)) << 8);
-}
+uint16_t dxlMakeword(uint64_t a, uint64_t b) { return uint16_t(uint8_t(a & 0xff) | uint16_t(uint8_t(b & 0xff)) << 8); }
 
 uint32_t dxlMakedword(uint64_t a, uint64_t b) {
   return uint32_t(uint16_t(a & 0xffff) | uint32_t(uint16_t(b & 0xffff) << 16));
 }
 
-float dxlMakeFloat(uint8_t *data) {
+float dxlMakeFloat(uint8_t* data) {
   float f;
   uint32_t b = dxlMakedword(dxlMakeword(data[0], data[1]), dxlMakeword(data[2], data[3]));
   memcpy(&f, &b, sizeof(f));
@@ -51,22 +50,32 @@ float dxlMakeFloat(uint8_t *data) {
 
 std::string gyroRangeToString(uint8_t range) {
   switch (range) {
-    case 0:return "250 deg/s";
-    case 1:return "500 deg/s";
-    case 2:return "1000 deg/s";
-    case 3:return "2000 deg/s";
-    default:return "invalid range, defaulting to 2000 deg/s";
+    case 0:
+      return "250 deg/s";
+    case 1:
+      return "500 deg/s";
+    case 2:
+      return "1000 deg/s";
+    case 3:
+      return "2000 deg/s";
+    default:
+      return "invalid range, defaulting to 2000 deg/s";
   }
 }
 
 std::string accelRangeToString(uint8_t range) {
   switch (range) {
-    case 0:return "2G";
-    case 1:return "4G";
-    case 2:return "8G";
-    case 3:return "16G";
-    default:return "invalid range, defaulting to 16G";
+    case 0:
+      return "2G";
+    case 1:
+      return "4G";
+    case 2:
+      return "8G";
+    case 3:
+      return "16G";
+    default:
+      return "invalid range, defaulting to 16G";
   }
 }
 
-}
+}  // namespace bitbots_ros_control

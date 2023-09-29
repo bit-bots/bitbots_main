@@ -83,9 +83,12 @@ class ImuHardwareInterface : public bitbots_ros_control::HardwareInterface {
 
   int diag_counter_;
 
-  void setIMURanges(const std::shared_ptr<bitbots_msgs::srv::IMURanges::Request> req, std::shared_ptr<bitbots_msgs::srv::IMURanges::Response> resp);
-  void calibrateGyro(const std::shared_ptr<std_srvs::srv::Empty::Request> req, std::shared_ptr<std_srvs::srv::Empty::Response> resp);
-  void resetGyroCalibration(const std::shared_ptr<std_srvs::srv::Empty::Request> req, std::shared_ptr<std_srvs::srv::Empty::Response> resp);
+  void setIMURanges(const std::shared_ptr<bitbots_msgs::srv::IMURanges::Request> req,
+                    std::shared_ptr<bitbots_msgs::srv::IMURanges::Response> resp);
+  void calibrateGyro(const std::shared_ptr<std_srvs::srv::Empty::Request> req,
+                     std::shared_ptr<std_srvs::srv::Empty::Response> resp);
+  void resetGyroCalibration(const std::shared_ptr<std_srvs::srv::Empty::Request> req,
+                            std::shared_ptr<std_srvs::srv::Empty::Response> resp);
   void setComplementaryFilterParams(const std::shared_ptr<bitbots_msgs::srv::ComplementaryFilterParams::Request> req,
                                     std::shared_ptr<bitbots_msgs::srv::ComplementaryFilterParams::Response> resp);
   void calibrateAccel(const std::shared_ptr<std_srvs::srv::Empty::Request> req,
@@ -94,8 +97,9 @@ class ImuHardwareInterface : public bitbots_ros_control::HardwareInterface {
                             std::shared_ptr<std_srvs::srv::Empty::Response> resp);
   void readAccelCalibration(const std::shared_ptr<bitbots_msgs::srv::AccelerometerCalibration::Request> req,
                             std::shared_ptr<bitbots_msgs::srv::AccelerometerCalibration::Response> resp);
-  void setAccelCalibrationThreshold(const std::shared_ptr<bitbots_msgs::srv::SetAccelerometerCalibrationThreshold::Request> req,
-                                    std::shared_ptr<bitbots_msgs::srv::SetAccelerometerCalibrationThreshold::Response> resp);
+  void setAccelCalibrationThreshold(
+      const std::shared_ptr<bitbots_msgs::srv::SetAccelerometerCalibrationThreshold::Request> req,
+      std::shared_ptr<bitbots_msgs::srv::SetAccelerometerCalibrationThreshold::Response> resp);
 };
 }  // namespace bitbots_ros_control
 #endif

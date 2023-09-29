@@ -1,25 +1,23 @@
 #ifndef BITBOTS_ROS_CONTROL_INCLUDE_BITBOTS_ROS_CONTROL_WOLFGANG_HARDWARE_INTERFACE_H_
 #define BITBOTS_ROS_CONTROL_INCLUDE_BITBOTS_ROS_CONTROL_WOLFGANG_HARDWARE_INTERFACE_H_
 
-#include <thread>
-
-#include <rclcpp/rclcpp.hpp>
-#include <bitbots_ros_control/utils.h>
-#include <bitbots_ros_control/core_hardware_interface.h>
-#include <bitbots_ros_control/imu_hardware_interface.h>
-#include <bitbots_ros_control/leds_hardware_interface.h>
-#include <bitbots_ros_control/dynamixel_servo_hardware_interface.h>
-#include <bitbots_ros_control/bitfoot_hardware_interface.h>
-#include <bitbots_ros_control/button_hardware_interface.h>
-#include <bitbots_ros_control/leds_hardware_interface.h>
-#include <bitbots_ros_control/hardware_interface.h>
+#include <bitbots_ros_control/bitfoot_hardware_interface.hpp>
+#include <bitbots_ros_control/button_hardware_interface.hpp>
+#include <bitbots_ros_control/core_hardware_interface.hpp>
+#include <bitbots_ros_control/dynamixel_servo_hardware_interface.hpp>
+#include <bitbots_ros_control/hardware_interface.hpp>
+#include <bitbots_ros_control/imu_hardware_interface.hpp>
+#include <bitbots_ros_control/leds_hardware_interface.hpp>
+#include <bitbots_ros_control/utils.hpp>
 #include <rcl_interfaces/msg/list_parameters_result.hpp>
+#include <rclcpp/rclcpp.hpp>
+#include <thread>
 
 namespace bitbots_ros_control {
 
 class WolfgangHardwareInterface {
  public:
-  WolfgangHardwareInterface(rclcpp::Node::SharedPtr nh);
+  explicit WolfgangHardwareInterface(rclcpp::Node::SharedPtr nh);
 
   bool init();
 
@@ -44,8 +42,8 @@ class WolfgangHardwareInterface {
   bool core_present_;
   bool current_power_status_;
   bool last_power_status_;
-  CoreHardwareInterface* core_interface_;
+  CoreHardwareInterface *core_interface_;
 };
-}
+}  // namespace bitbots_ros_control
 
-#endif //BITBOTS_ROS_CONTROL_INCLUDE_BITBOTS_ROS_CONTROL_WOLFGANG_HARDWARE_INTERFACE_H_
+#endif  // BITBOTS_ROS_CONTROL_INCLUDE_BITBOTS_ROS_CONTROL_WOLFGANG_HARDWARE_INTERFACE_H_

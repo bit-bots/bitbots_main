@@ -1,26 +1,25 @@
 #ifndef BITBOTS_ROS_CONTROL_INCLUDE_BITBOTS_ROS_CONTROL_CORE_HARDWARE_INTERFACE_H_
 #define BITBOTS_ROS_CONTROL_INCLUDE_BITBOTS_ROS_CONTROL_CORE_HARDWARE_INTERFACE_H_
 
-#include <rclcpp/rclcpp.hpp>
-#include <string>
-
-#include <diagnostic_msgs/msg/diagnostic_status.hpp>
-#include <diagnostic_msgs/msg/diagnostic_array.hpp>
-
-#include <bitbots_ros_control/utils.h>
-
 #include <dynamixel_driver.h>
+
+#include <bitbots_ros_control/hardware_interface.hpp>
+#include <bitbots_ros_control/utils.hpp>
+#include <diagnostic_msgs/msg/diagnostic_array.hpp>
+#include <diagnostic_msgs/msg/diagnostic_status.hpp>
+#include <rclcpp/rclcpp.hpp>
 #include <std_msgs/msg/bool.hpp>
 #include <std_msgs/msg/float64.hpp>
 #include <std_msgs/msg/float64_multi_array.hpp>
 #include <std_srvs/srv/set_bool.hpp>
-#include <bitbots_ros_control/hardware_interface.h>
+#include <string>
 
 namespace bitbots_ros_control {
 
-class CoreHardwareInterface : public bitbots_ros_control::HardwareInterface{
+class CoreHardwareInterface : public bitbots_ros_control::HardwareInterface {
  public:
-  explicit CoreHardwareInterface(rclcpp::Node::SharedPtr nh,std::shared_ptr<DynamixelDriver> &driver, int id, int read_rate);
+  explicit CoreHardwareInterface(rclcpp::Node::SharedPtr nh, std::shared_ptr<DynamixelDriver> &driver, int id,
+                                 int read_rate);
 
   bool get_power_status();
 
@@ -32,7 +31,8 @@ class CoreHardwareInterface : public bitbots_ros_control::HardwareInterface{
 
  private:
   rclcpp::Node::SharedPtr nh_;
-  bool switch_power(std::shared_ptr<std_srvs::srv::SetBool::Request> req, std::shared_ptr<std_srvs::srv::SetBool::Response> resp);
+  bool switch_power(std::shared_ptr<std_srvs::srv::SetBool::Request> req,
+                    std::shared_ptr<std_srvs::srv::SetBool::Response> resp);
 
   std::shared_ptr<DynamixelDriver> driver_;
 
@@ -63,5 +63,5 @@ class CoreHardwareInterface : public bitbots_ros_control::HardwareInterface{
 
   rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr power_switch_service_;
 };
-}
+}  // namespace bitbots_ros_control
 #endif

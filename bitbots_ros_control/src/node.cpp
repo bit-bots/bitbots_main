@@ -1,9 +1,10 @@
-#include <controller_manager/controller_manager.hpp>
-#include <bitbots_ros_control/wolfgang_hardware_interface.h>
 #include <signal.h>
-#include <thread>
-#include <rclcpp/rclcpp.hpp>
+
+#include <bitbots_ros_control/wolfgang_hardware_interface.hpp>
+#include <controller_manager/controller_manager.hpp>
 #include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
+#include <rclcpp/rclcpp.hpp>
+#include <thread>
 
 sig_atomic_t volatile request_shutdown = 0;
 
@@ -18,7 +19,8 @@ int main(int argc, char *argv[]) {
 
   // initialize ros
   rclcpp::init(argc, argv);
-  rclcpp::NodeOptions options = rclcpp::NodeOptions().automatically_declare_parameters_from_overrides(true).allow_undeclared_parameters(true);
+  rclcpp::NodeOptions options =
+      rclcpp::NodeOptions().automatically_declare_parameters_from_overrides(true).allow_undeclared_parameters(true);
   rclcpp::Node::SharedPtr nh = rclcpp::Node::make_shared("wolfgang_hardware_interface", options);
 
   // create hardware interfaces
@@ -30,9 +32,9 @@ int main(int argc, char *argv[]) {
 
   // diagnostics
   int diag_counter = 0;
-  rclcpp::Publisher<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr diagnostic_pub = nh->create_publisher<diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 10);
+  rclcpp::Publisher<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr diagnostic_pub =
+      nh->create_publisher<diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 10);
   diagnostic_msgs::msg::DiagnosticArray array_msg = diagnostic_msgs::msg::DiagnosticArray();
-  std::vector<diagnostic_msgs::msg::DiagnosticStatus> array = std::vector<diagnostic_msgs::msg::DiagnosticStatus>();
   diagnostic_msgs::msg::DiagnosticStatus status = diagnostic_msgs::msg::DiagnosticStatus();
   // add prefix PS for pressure sensor to sort in diagnostic analyser
   status.name = "BUSBus";
@@ -50,7 +52,6 @@ int main(int argc, char *argv[]) {
   rclcpp::experimental::executors::EventsExecutor exec;
   exec.add_node(nh);
 
-
   while (!request_shutdown || nh->get_clock()->now().seconds() - stop_time.seconds() < 5) {
     //
     // read
@@ -64,7 +65,7 @@ int main(int argc, char *argv[]) {
     if (first_update) {
       first_update = false;
     } else {
-      //todo replaced controller part, if necessary
+      // todo replaced controller part, if necessary
     }
 
     //
@@ -81,7 +82,7 @@ int main(int argc, char *argv[]) {
     if (diag_counter % 100 == 0) {
       // check if we are staying the correct cycle time. warning if we only get half
       array_msg.header.stamp = nh->get_clock()->now();
-      if (rate.period() < std::chrono::nanoseconds (int(1e9 * (1 / control_loop_hz) * 2))) {
+      if (rate.period() < std::chrono::nanoseconds(int(1e9 * (1 / control_loop_hz) * 2))) {
         status.level = diagnostic_msgs::msg::DiagnosticStatus::OK;
         status.message = "";
       } else {

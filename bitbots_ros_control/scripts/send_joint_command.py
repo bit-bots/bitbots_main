@@ -3,11 +3,9 @@
 import argparse
 
 import rclpy
-from rclpy.node import Node
-from rclpy.duration import Duration
-
 from bitbots_msgs.msg import JointCommand
-
+from rclpy.duration import Duration
+from rclpy.node import Node
 
 DYNAMIXEL_CMD_TOPIC = "/DynamixelController/command"
 
@@ -33,7 +31,7 @@ class PredefinedCommands:
         "RHipPitch",
         "RKnee",
         "RAnklePitch",
-        "RAnkleRoll"
+        "RAnkleRoll",
     ]
     __velocity__ = 5.0
     __accelerations__ = -1.0
@@ -44,7 +42,8 @@ class PredefinedCommands:
         velocities=[__velocity__] * len(__ids__),
         accelerations=[__accelerations__] * len(__ids__),
         max_currents=[__max_currents__] * len(__ids__),
-        positions=[0.0] * len(__ids__))
+        positions=[0.0] * len(__ids__),
+    )
 
     Walkready = JointCommand(
         joint_names=__ids__,
@@ -72,16 +71,23 @@ class PredefinedCommands:
             -1.0059,  # RKnee
             0.4512,  # RAnklePitch
             -0.0625,  # RAnkleRoll
-        ])
+        ],
+    )
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Send a bitbots_msgs/JointCommand to our ros-control node in a loop")
-    parser.add_argument("--once", action="store_true", default=False,
-                        help="Only send the message once instead of in a loop")
-    parser.add_argument("-c", "--command", type=str, help="Command to send. Use one of the available choices",
-                        choices=[c for c in PredefinedCommands.__dict__ if not c.startswith("__")],
-                        default="Zero")
+    parser.add_argument(
+        "--once", action="store_true", default=False, help="Only send the message once instead of in a loop"
+    )
+    parser.add_argument(
+        "-c",
+        "--command",
+        type=str,
+        help="Command to send. Use one of the available choices",
+        choices=[c for c in PredefinedCommands.__dict__ if not c.startswith("__")],
+        default="Zero",
+    )
 
     return parser.parse_args()
 
@@ -95,12 +101,12 @@ def main():
     pub = node.create_publisher(JointCommand, DYNAMIXEL_CMD_TOPIC, 1)
 
     while pub.get_subscription_count() < 1:
-        node.get_logger().info("Waiting until subscribers connect to {}".format(DYNAMIXEL_CMD_TOPIC), once=True)
+        node.get_logger().info(f"Waiting until subscribers connect to {DYNAMIXEL_CMD_TOPIC}", once=True)
         node.get_clock().sleep_for(Duration(seconds=0.5))
     # just to make sure
     node.get_clock().sleep_for(Duration(seconds=1))
 
-    node.get_logger().info("Sending controller commands of type {} now.".format(args.command))
+    node.get_logger().info(f"Sending controller commands of type {args.command} now.")
     print(joint_command)
 
     while rclpy.ok():
@@ -110,6 +116,7 @@ def main():
 
         if args.once:
             return
+
 
 if __name__ == "__main__":
     main()

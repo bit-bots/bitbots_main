@@ -1,30 +1,27 @@
 #ifndef BITBOTS_ROS_CONTROL_INCLUDE_BITBOTS_ROS_CONTROL_SERVO_BUS_INTERFACE_H_
 #define BITBOTS_ROS_CONTROL_INCLUDE_BITBOTS_ROS_CONTROL_SERVO_BUS_INTERFACE_H_
 
-#include <rclcpp/rclcpp.hpp>
-#include <string>
+#include <dynamixel_driver.h>
 
-#include <std_msgs/msg/bool.hpp>
-#include <humanoid_league_msgs/msg/audio.hpp>
-#include <sensor_msgs/msg/joint_state.hpp>
-#include <diagnostic_msgs/msg/diagnostic_status.hpp>
+#include <bitbots_msgs/msg/joint_torque.hpp>
+#include <bitbots_ros_control/hardware_interface.hpp>
+#include <bitbots_ros_control/utils.hpp>
+#include <bitset>
 #include <diagnostic_msgs/msg/diagnostic_array.hpp>
+#include <diagnostic_msgs/msg/diagnostic_status.hpp>
+#include <humanoid_league_msgs/msg/audio.hpp>
+#include <rcl_interfaces/msg/list_parameters_result.hpp>
+#include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/joint_state.hpp>
 #include <std_msgs/msg/bool.hpp>
 #include <std_msgs/msg/int32_multi_array.hpp>
-#include <bitbots_msgs/msg/joint_torque.hpp>
-#include <rcl_interfaces/msg/list_parameters_result.hpp>
-#include <bitbots_ros_control/hardware_interface.h>
+#include <string>
 
-#include <bitbots_ros_control/utils.h>
-#include <dynamixel_driver.h>
-#include <bitset>
-
-
-namespace bitbots_ros_control  {
+namespace bitbots_ros_control {
 
 class ServoBusInterface : public bitbots_ros_control::HardwareInterface {
  public:
-  explicit ServoBusInterface(rclcpp::Node::SharedPtr nh,std::shared_ptr<DynamixelDriver> &driver,
+  explicit ServoBusInterface(rclcpp::Node::SharedPtr nh, std::shared_ptr<DynamixelDriver> &driver,
                              std::vector<std::tuple<int, std::string, float, float, std::string>> servos);
   ~ServoBusInterface();
   bool init();
@@ -37,11 +34,8 @@ class ServoBusInterface : public bitbots_ros_control::HardwareInterface {
   void syncWritePWM();
 
   void switchDynamixelControlMode();
-  diagnostic_msgs::msg::DiagnosticStatus createServoDiagMsg(int id,
-                                                       char level,
-                                                       std::string message,
-                                                       std::map<std::string, std::string> map,
-                                                       std::string name);
+  diagnostic_msgs::msg::DiagnosticStatus createServoDiagMsg(int id, char level, std::string message,
+                                                            std::map<std::string, std::string> map, std::string name);
   void processVte(bool success);
 
   bool goal_torque_;
@@ -94,7 +88,7 @@ class ServoBusInterface : public bitbots_ros_control::HardwareInterface {
   std::vector<uint8_t> joint_ids_;
   std::vector<double> joint_mounting_offsets_;
   std::vector<double> joint_offsets_;
-  std::vector<std::string> joint_groups_; // The group name for each joint
+  std::vector<std::string> joint_groups_;  // The group name for each joint
 
   std::vector<double> goal_position_;
   std::vector<double> goal_effort_;
@@ -129,7 +123,6 @@ class ServoBusInterface : public bitbots_ros_control::HardwareInterface {
   int reading_successes_;
   rclcpp::Publisher<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr diagnostic_pub_;
   rclcpp::Publisher<humanoid_league_msgs::msg::Audio>::SharedPtr speak_pub_;
-
 };
-}
-#endif //BITBOTS_ROS_CONTROL_INCLUDE_BITBOTS_ROS_CONTROL_SERVO_BUS_INTERFACE_H_
+}  // namespace bitbots_ros_control
+#endif  // BITBOTS_ROS_CONTROL_INCLUDE_BITBOTS_ROS_CONTROL_SERVO_BUS_INTERFACE_H_

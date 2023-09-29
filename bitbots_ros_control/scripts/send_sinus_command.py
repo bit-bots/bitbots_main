@@ -3,9 +3,6 @@
 import math
 
 import rclpy
-from rclpy.node import Node
-
-import rclpy
 from bitbots_msgs.msg import JointCommand
 from rclpy.node import Node
 
@@ -21,7 +18,7 @@ if __name__ == "__main__":
     msg = JointCommand(joint_names=[JOINT_NAME], velocities=[-1], accelerations=[-1], max_currents=[-1])
 
     rclpy.init(args=None)
-    node = Node('sinus_command')
+    node = Node("sinus_command")
     pub = node.create_publisher(JointCommand, DYNAMIXEL_CMD_TOPIC, 1)
 
     def tick():

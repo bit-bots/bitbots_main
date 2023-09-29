@@ -10,11 +10,11 @@ class HardwareInterface {
  public:
   virtual bool init() = 0;
 
-  virtual void read(const rclcpp::Time &t, const rclcpp::Duration &dt) {};
+  virtual void read(const rclcpp::Time &t, const rclcpp::Duration &dt){};
 
-  virtual void write(const rclcpp::Time &t, const rclcpp::Duration &dt) {};
+  virtual void write(const rclcpp::Time &t, const rclcpp::Duration &dt){};
 
-  virtual ~HardwareInterface() {};
+  virtual ~HardwareInterface(){};
 };
-}
-#endif //BITBOTS_ROS_CONTROL_INCLUDE_BITBOTS_ROS_CONTROL_HARDWARE_INTERFACE_H_
+}  // namespace bitbots_ros_control
+#endif  // BITBOTS_ROS_CONTROL_INCLUDE_BITBOTS_ROS_CONTROL_HARDWARE_INTERFACE_H_
