@@ -1,17 +1,18 @@
-#include <fstream>
-#include <iostream>
-#include <numeric>
-#include <rclcpp/rclcpp.hpp>
+#include <tf2_ros/transform_broadcaster.h>
 #include <yaml-cpp/emitter.h>
 #include <yaml-cpp/yaml.h>
+
+#include <ament_index_cpp/get_package_share_directory.hpp>
+#include <bitbots_msgs/msg/foot_pressure.hpp>
+#include <bitbots_msgs/srv/foot_scale.hpp>
+#include <fstream>
 #include <geometry_msgs/msg/point_stamped.hpp>
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <geometry_msgs/msg/wrench_stamped.hpp>
+#include <iostream>
+#include <numeric>
+#include <rclcpp/rclcpp.hpp>
 #include <std_srvs/srv/empty.hpp>
-#include <tf2_ros/transform_broadcaster.h>
-#include <bitbots_msgs/msg/foot_pressure.hpp>
-#include <bitbots_msgs/srv/foot_scale.hpp>
-#include <ament_index_cpp/get_package_share_directory.hpp>
 
 class PressureConverter {
 
@@ -46,13 +47,10 @@ class PressureConverter {
 
   void pressureCallback(bitbots_msgs::msg::FootPressure pressure_raw);
   void resetZeroAndScaleValues();
-  bool zeroCallback(const std::shared_ptr<std_srvs::srv::Empty::Request> req, std::shared_ptr<std_srvs::srv::Empty::Response> resp);
-  bool scaleCallback(const std::shared_ptr<bitbots_msgs::srv::FootScale::Request> req, std::shared_ptr<bitbots_msgs::srv::FootScale::Response> resp);
+  bool zeroCallback(const std::shared_ptr<std_srvs::srv::Empty::Request> req,
+                    std::shared_ptr<std_srvs::srv::Empty::Response> resp);
+  bool scaleCallback(const std::shared_ptr<bitbots_msgs::srv::FootScale::Request> req,
+                     std::shared_ptr<bitbots_msgs::srv::FootScale::Response> resp);
   void collectMessages();
   void saveYAML();
 };
-
-
-
-
-

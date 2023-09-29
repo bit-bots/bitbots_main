@@ -5,8 +5,9 @@ import math
 import rclpy
 from rclpy.node import Node
 
+import rclpy
 from bitbots_msgs.msg import JointCommand
-
+from rclpy.node import Node
 
 DYNAMIXEL_CMD_TOPIC = "/DynamixelController/command"
 JOINT_NAME = "LAnkleRoll"
@@ -14,14 +15,10 @@ PUBLISH_RATE = 1000
 
 # sin function
 FREQUENCY = 0.5
-AMPLITUDE = 72 #degree
+AMPLITUDE = 72  # degree
 
 if __name__ == "__main__":
-    msg = JointCommand(
-        joint_names=[JOINT_NAME],
-        velocities=[-1],
-        accelerations=[-1],
-        max_currents=[-1])
+    msg = JointCommand(joint_names=[JOINT_NAME], velocities=[-1], accelerations=[-1], max_currents=[-1])
 
     rclpy.init(args=None)
     node = Node('sinus_command')
@@ -31,8 +28,8 @@ if __name__ == "__main__":
         time = node.get_clock().now()
         position = math.radians(AMPLITUDE) * math.sin(2 * math.pi * FREQUENCY * time.nanoseconds / 1e9)
 
-        msg.header.stamp = time
-        msg.positions=[position]
+        msg.header.stamp = time.to_msg()
+        msg.positions = [position]
         pub.publish(msg)
 
     node.create_timer(1.0 / PUBLISH_RATE, lambda _: tick())

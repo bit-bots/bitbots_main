@@ -45,7 +45,8 @@ set(SOURCES
         src/node.cpp
         src/servo_bus_interface.cpp
         src/utils.cpp
-        src/wolfgang_hardware_interface.cpp include/bitbots_ros_control/hardware_interface.h)
+        src/wolfgang_hardware_interface.cpp
+        include/bitbots_ros_control/hardware_interface.hpp)
 
 enable_bitbots_docs()
 
