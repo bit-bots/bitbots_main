@@ -503,6 +503,81 @@ class RobotDetectionComponent(IVisionComponent):
         return color_detector
 
 
+class NoTeamColorRobotDetectionComponent(IVisionComponent):
+    """
+    This component carries out the robot detection using YOEO, albeit not detecting any team colors. Instead, all
+    robots are mapped to the "misc" class.
+    """
+
+    def __init__(self, node: Node):
+        super().__init__(node)
+
+    def __init__(self, node: Node):
+        self._config: Dict = {}
+        self._debug_image: Optional[debug.DebugImage] = None
+        self._debug_mode: bool = False
+
+        self._robot_detector: Optional[candidate.CandidateFinder] = None
+
+        self._node: Node = node
+        self._publisher: Optional[rclpy.publisher.Publisher] = None
+
+    def configure(self, config: Dict, debug_mode: bool) -> None:
+        self._debug_image = DebugImageFactory.get(config)
+        self._debug_mode = debug_mode
+
+        self._robot_detector = detectors.RobotDetector(object_manager.YOEOObjectManager.get())
+
+        self._register_publisher(config)
+        self._config = config
+
+    def _register_publisher(self, new_config: Dict) -> None:
+        self._publisher = ros_utils.create_or_update_publisher(
+            self._node,
+            self._config,
+            new_config,
+            self._publisher,
+            'ROS_obstacle_msg_topic',
+            RobotArray
+        )
+
+    def run(self, image_msg: Image) -> None:
+        obstacle_msgs: List[Robot] = []
+        self._add_robot_obstacles_to(obstacle_msgs)
+
+        self._publish_obstacles_message(image_msg, obstacle_msgs)
+
+        if self._debug_mode:
+            self._add_robot_objects_to_debug_image()
+
+    @staticmethod
+    def _create_obstacle_messages(obstacle_type: Robot, candidates: List[candidate.Candidate]) -> List[Robot]:
+        return [ros_utils.build_robot_msg(obstacle_candidate, obstacle_type) for obstacle_candidate in candidates]
+
+    def _add_robot_obstacles_to(self, obstacle_msgs: List[Robot]) -> None:
+        robot_candidates = self._robot_detector.get_candidates()
+        robot_candidate_messages = self._create_obstacle_messages(
+            Robot().attributes.TEAM_UNKNOWN,
+            robot_candidates
+        )
+        obstacle_msgs.extend(robot_candidate_messages)
+
+    def _publish_obstacles_message(self, image_msg: Image, obstacle_msgs: List[Robot]) -> None:
+        obstacles_msg = ros_utils.build_robot_array_msg(image_msg.header, obstacle_msgs)
+        self._publisher.publish(obstacles_msg)
+
+    def _add_robot_objects_to_debug_image(self) -> None:
+        robot_candidates = self._robot_detector.get_candidates()
+        self._debug_image.draw_obstacle_candidates(
+            robot_candidates,
+            DebugImageComponent.Colors.misc_obstacles,
+            thickness=3
+        )
+
+    def set_image(self, image: np.ndarray) -> None:
+        self._robot_detector.set_image(image)
+
+
 class DebugImageComponent(IVisionComponent):
     """
     This component handles and publishes the debug image.
