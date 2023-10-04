@@ -478,7 +478,7 @@ class RobotDetectionComponent(IVisionComponent):
         remaining_candidates = self._misc_detector.get_candidates()
         self._debug_image.draw_obstacle_candidates(
             remaining_candidates,
-            DebugImageComponent.Colors.misc_obstacles,
+            DebugImageComponent.Colors.unknown_obstacles,
             thickness=3
         )
 
@@ -506,7 +506,7 @@ class RobotDetectionComponent(IVisionComponent):
 class NoTeamColorRobotDetectionComponent(IVisionComponent):
     """
     This component carries out the robot detection using YOEO, albeit not detecting any team colors. Instead, all
-    robots are mapped to the "misc" class.
+    robots are mapped to the "unknown" class.
     """
 
     def __init__(self, node: Node):
@@ -570,7 +570,7 @@ class NoTeamColorRobotDetectionComponent(IVisionComponent):
         robot_candidates = self._robot_detector.get_candidates()
         self._debug_image.draw_obstacle_candidates(
             robot_candidates,
-            DebugImageComponent.Colors.misc_obstacles,
+            DebugImageComponent.Colors.unknown_obstacles,
             thickness=3
         )
 
@@ -588,7 +588,7 @@ class DebugImageComponent(IVisionComponent):
         ball = (0, 255, 0)  # green
         team_mates = (153, 51, 255)  # magenta
         opponents = (255, 255, 102)  # cyan
-        misc_obstacles = (160, 160, 160)  # grey
+        unknown_obstacles = (160, 160, 160)  # grey
         goalposts = (255, 255, 255)  # white
         lines = (255, 0, 0)  # blue
 
