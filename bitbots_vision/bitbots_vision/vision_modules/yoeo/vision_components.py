@@ -379,7 +379,7 @@ class RobotDetectionComponent(IVisionComponent):
         self._debug_image: Optional[debug.DebugImage] = None
         self._debug_mode: bool = False
 
-        self._misc_detector: Optional[candidate.CandidateFinder] = None
+        self._unknown_detector: Optional[candidate.CandidateFinder] = None
         self._opponents_detector: Optional[candidate.CandidateFinder] = None
         self._team_mates_detector: Optional[candidate.CandidateFinder] = None
 
@@ -442,7 +442,7 @@ class RobotDetectionComponent(IVisionComponent):
         obstacle_msgs.extend(opponent_candidate_messages)
 
     def _add_remaining_obstacles_to(self, obstacle_msgs: List[Robot]) -> None:
-        remaining_candidates = self._misc_detector.get_candidates()
+        remaining_candidates = self._unknown_detector.get_candidates()
         remaining_candidate_messages = self._create_obstacle_messages(
             Robot().attributes.TEAM_UNKNOWN,
             remaining_candidates
@@ -475,7 +475,7 @@ class RobotDetectionComponent(IVisionComponent):
         )
 
     def _add_remaining_objects_to_debug_image(self) -> None:
-        remaining_candidates = self._misc_detector.get_candidates()
+        remaining_candidates = self._unknown_detector.get_candidates()
         self._debug_image.draw_obstacle_candidates(
             remaining_candidates,
             DebugImageComponent.Colors.unknown_obstacles,
@@ -485,12 +485,12 @@ class RobotDetectionComponent(IVisionComponent):
     def set_image(self, image: np.ndarray) -> None:
         self._team_mates_detector.set_image(image)
         self._opponents_detector.set_image(image)
-        self._misc_detector.set_image(image)
+        self._unknown_detector.set_image(image)
 
     def _configure_detectors(self, config: Dict, own_color: int, opponent_color: int) -> None:
         self._team_mates_detector = self._select_detector_based_on(own_color)
         self._opponents_detector = self._select_detector_based_on(opponent_color)
-        self._misc_detector = self._select_detector_based_on(None)
+        self._unknown_detector = self._select_detector_based_on(None)
 
     @classmethod
     def _select_detector_based_on(cls, team_color: Optional[int]):
