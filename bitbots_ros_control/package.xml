@@ -27,7 +27,6 @@
   <depend>controller_manager</depend>
   <depend>dynamixel_workbench_toolbox</depend>
   <depend>hardware_interface</depend>
-  <depend>humanoid_league_msgs</depend>
   <depend>humanoid_league_speaker</depend>
   <depend>pluginlib</depend>
   <depend>rclcpp</depend>

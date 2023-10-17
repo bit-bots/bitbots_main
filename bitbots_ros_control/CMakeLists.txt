@@ -16,7 +16,6 @@ find_package(controller_manager REQUIRED)
 find_package(diagnostic_msgs REQUIRED)
 find_package(dynamixel_workbench_toolbox REQUIRED)
 find_package(hardware_interface REQUIRED)
-find_package(humanoid_league_msgs REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(realtime_tools REQUIRED)
@@ -62,7 +61,6 @@ ament_target_dependencies(ros_control
         diagnostic_msgs
         dynamixel_workbench_toolbox
         hardware_interface
-        humanoid_league_msgs
         pluginlib
         rclcpp
         realtime_tools
@@ -85,7 +83,6 @@ ament_target_dependencies(pressure_converter
         diagnostic_msgs
         dynamixel_workbench_toolbox
         hardware_interface
-        humanoid_league_msgs
         pluginlib
         rclcpp
         realtime_tools
@@ -105,7 +102,6 @@ ament_export_dependencies(controller_interface)
 ament_export_dependencies(controller_manager)
 ament_export_dependencies(dynamixel_workbench_toolbox)
 ament_export_dependencies(hardware_interface)
-ament_export_dependencies(humanoid_league_msgs)
 ament_export_dependencies(pluginlib)
 ament_export_dependencies(realtime_tools)
 ament_export_dependencies(std_msgs)

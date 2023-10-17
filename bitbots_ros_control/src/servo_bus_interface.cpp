@@ -13,7 +13,7 @@ ServoBusInterface::ServoBusInterface(rclcpp::Node::SharedPtr nh, std::shared_ptr
 
 bool ServoBusInterface::init() {
   diagnostic_pub_ = nh_->create_publisher<diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 10);
-  speak_pub_ = nh_->create_publisher<humanoid_league_msgs::msg::Audio>("/speak", 1);
+  speak_pub_ = nh_->create_publisher<bitbots_msgs::msg::Audio>("/speak", 1);
 
   lost_servo_connection_ = false;
   read_vt_counter_ = 0;

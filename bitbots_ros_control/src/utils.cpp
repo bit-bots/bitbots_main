@@ -24,12 +24,11 @@ bool stringToControlMode(rclcpp::Node::SharedPtr nh, const std::string& _control
   }
 }
 
-void speakError(const rclcpp::Publisher<humanoid_league_msgs::msg::Audio>::SharedPtr speak_pub,
-                const std::string& text) {
+void speakError(const rclcpp::Publisher<bitbots_msgs::msg::Audio>::SharedPtr speak_pub, const std::string& text) {
   /**
    *  Helper method to send a message for text-to-speech output
    */
-  humanoid_league_msgs::msg::Audio msg = humanoid_league_msgs::msg::Audio();
+  bitbots_msgs::msg::Audio msg = bitbots_msgs::msg::Audio();
   msg.text = text;
   msg.priority = 100;
   speak_pub->publish(msg);

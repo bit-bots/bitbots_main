@@ -9,7 +9,6 @@
 #include <diagnostic_msgs/msg/diagnostic_array.hpp>
 #include <diagnostic_msgs/msg/diagnostic_status.hpp>
 #include <hardware_interface/sensor_interface.hpp>
-#include <humanoid_league_msgs/msg/audio.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <string>
 

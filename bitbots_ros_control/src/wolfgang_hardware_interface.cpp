@@ -13,7 +13,7 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(rclcpp::Node::SharedPtr nh)
   core_present_ = false;
   last_power_status_ = false;
   current_power_status_ = false;
-  speak_pub_ = nh->create_publisher<humanoid_league_msgs::msg::Audio>("/speak", 1);
+  speak_pub_ = nh->create_publisher<bitbots_msgs::msg::Audio>("/speak", 1);
 
   // load parameters
   nh_->get_parameter("only_imu", only_imu_);

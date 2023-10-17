@@ -32,7 +32,7 @@ class WolfgangHardwareInterface {
   // two dimensional list of all hardware interfaces, sorted by port
   std::vector<std::vector<bitbots_ros_control::HardwareInterface *>> interfaces_;
   DynamixelServoHardwareInterface servo_interface_;
-  rclcpp::Publisher<humanoid_league_msgs::msg::Audio>::SharedPtr speak_pub_;
+  rclcpp::Publisher<bitbots_msgs::msg::Audio>::SharedPtr speak_pub_;
 
   // prevent unnecessary error when power is turned on
   bool first_ping_error_;
