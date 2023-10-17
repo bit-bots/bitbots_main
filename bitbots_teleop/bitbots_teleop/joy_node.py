@@ -3,19 +3,16 @@
 import threading
 
 import rclpy
-from humanoid_league_msgs.action import PlayAnimation
 from rclpy.duration import Duration
 from rclpy.node import Node
 from rclpy.action import ActionClient
 import copy
 
-from pathlib import Path
-from sensor_msgs.msg import Joy
+from bitbots_msgs.action import PlayAnimation
+from bitbots_msgs.msg import Audio
+from bitbots_msgs.msg import JointCommand, HeadMode
 from geometry_msgs.msg import Twist
-from humanoid_league_msgs.msg import Audio, HeadMode
-from bitbots_msgs.msg import JointCommand
-
-#from bitbots_animation_server.action import PlayAnimationAction
+from sensor_msgs.msg import Joy
 
 
 class JoyNode(Node):

@@ -4,12 +4,12 @@ import argparse
 import sys
 
 import rclpy
+
+from bitbots_msgs.msg import Animation, JointCommand
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
-from std_msgs.msg import Float64MultiArray
 from sensor_msgs.msg import JointState
-from bitbots_msgs.msg import JointCommand
-from humanoid_league_msgs.msg import Animation
+from std_msgs.msg import Float64MultiArray
 
 
 class MotorVizHelper(Node):

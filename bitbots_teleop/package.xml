@@ -12,13 +12,12 @@
   <license>MIT</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
-  <depend>rclpy</depend>
-  <depend>humanoid_league_msgs</depend>
-  <depend>bitbots_msgs</depend>
-  <depend>bitbots_docs</depend>
-  <depend>tf_transformations</depend>
 
-  <exec_depend>std_msgs</exec_depend>
+  <depend>bitbots_docs</depend>
+  <depend>bitbots_msgs</depend>
+  <depend>rclpy</depend>
+  <depend>std_msgs</depend>
+  <depend>tf_transformations</depend>
 
   <export>
     <bitbots_documentation>
