@@ -53,7 +53,7 @@ How the HCM works
 
 The HCM uses a DSD to decide what the state of the robot is and to decide on the actions that should be performed.
 This state is then published as a ROS message (`/robot_state`).
-To see which state is which, you have to look at the message definition (`ros2 interface show humanoid_league_msgs/msg/RobotControlState`).
+To see which state is which, you have to look at the message definition (`ros2 interface show bitbots_msgs/msg/RobotControlState`).
 
 The HCM subscribes to all joint goal topics of the different software parts.
 Dependend on its state, it forwards the goals or not.
@@ -74,7 +74,7 @@ What to do when it does not work
 
 1. Is `ros_control` running? Do you recieve joint states (`/joint_states`) or IMU data (`/imu/data_raw`)?
 2. What is the state of the HCM (`rostopic echo /robot_state`)? The number has to be matched with the message
-   description (`ros2 interface show humanoid_league_msgs/msg/RobotControlState`).
+   description (`ros2 interface show bitbots_msgs/msg/RobotControlState`).
 3. The visualization of the DSD is possible with the standard DSD visualization using the rqt plugin.
    There you can see exactly which decision is responsible for the current behavior and then you can look into the code.
 

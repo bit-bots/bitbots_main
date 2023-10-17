@@ -9,7 +9,7 @@ from rclpy.node import Node
 from bitbots_msgs.msg import JointCommand
 
 # List of all joint names. Do not change the order as it is important for Gazebo
-from humanoid_league_msgs.msg import Animation
+from bitbots_msgs.msg import Animation
 
 JOINT_NAMES = ['HeadPan', 'HeadTilt', 'LShoulderPitch', 'LShoulderRoll', 'LElbow', 'RShoulderPitch',
                'RShoulderRoll', 'RElbow', 'LHipYaw', 'LHipRoll', 'LHipPitch', 'LKnee', 'LAnklePitch',

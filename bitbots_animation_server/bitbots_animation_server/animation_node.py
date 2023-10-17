@@ -18,9 +18,8 @@ from bitbots_animation_server.animation import Animation
 from bitbots_animation_server.animation import parse
 from bitbots_animation_server.resource_manager import ResourceManager
 from bitbots_animation_server.spline_animator import SplineAnimator
-from humanoid_league_msgs.action import PlayAnimation
-from humanoid_league_msgs.msg import Animation as AnimationMsg
-from humanoid_league_msgs.msg import RobotControlState
+from bitbots_msgs.action import PlayAnimation
+from bitbots_msgs.msg import Animation as AnimationMsg, RobotControlState
 
 
 class AnimationNode(Node):

@@ -3,17 +3,17 @@
 #include <chrono>
 #include <thread>
 #include <rclcpp/rclcpp.hpp>
+#include "bitbots_msgs/msg/animation.hpp"
 #include "bitbots_msgs/msg/foot_pressure.hpp"
 #include "bitbots_msgs/msg/joint_command.hpp"
-#include "geometry_msgs/msg/point_stamped.hpp"
-#include "humanoid_league_msgs/msg/animation.hpp"
-#include "humanoid_league_msgs/msg/robot_control_state.hpp"
-#include "sensor_msgs/msg/joint_state.hpp"
-#include "sensor_msgs/msg/imu.hpp"
+#include "bitbots_msgs/msg/robot_control_state.hpp"
 #include "builtin_interfaces/msg/time.hpp"
-#include <ros2_python_extension/serialization.hpp>
+#include "geometry_msgs/msg/point_stamped.hpp"
+#include "sensor_msgs/msg/imu.hpp"
+#include "sensor_msgs/msg/joint_state.hpp"
 #include "std_msgs/msg/header.hpp"
 #include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
+#include <ros2_python_extension/serialization.hpp>
 
 
 using std::placeholders::_1;
@@ -34,7 +34,7 @@ public:
     this->get_parameter("visualization_active", visualization_active);
 
     // HCM state
-    current_state_ = humanoid_league_msgs::msg::RobotControlState::STARTUP;
+    current_state_ = bitbots_msgs::msg::RobotControlState::STARTUP;
 
     // Sensor states
     current_imu_ = sensor_msgs::msg::Imu();
@@ -65,10 +65,10 @@ public:
 
     // Create publishers
     pub_controller_command_ = this->create_publisher<bitbots_msgs::msg::JointCommand>("DynamixelController/command", 1);
-    pub_robot_state_ = this->create_publisher<humanoid_league_msgs::msg::RobotControlState>("robot_state", 1);
+    pub_robot_state_ = this->create_publisher<bitbots_msgs::msg::RobotControlState>("robot_state", 1);
 
     // Create subscribers for goals
-    anim_sub_ = this->create_subscription<humanoid_league_msgs::msg::Animation>(
+    anim_sub_ = this->create_subscription<bitbots_msgs::msg::Animation>(
         "animation", 1, std::bind(&HCM_CPP::animation_callback, this, _1));
     dynup_sub_ = this->create_subscription<bitbots_msgs::msg::JointCommand>(
         "dynup_motor_goals", 1, std::bind(&HCM_CPP::dynup_callback, this, _1));
@@ -92,7 +92,7 @@ public:
       "imu/data", 1, std::bind(&HCM_CPP::imu_callback, this, _1));
   }
 
-  void animation_callback(humanoid_league_msgs::msg::Animation msg) {
+  void animation_callback(bitbots_msgs::msg::Animation msg) {
     // The animation server is sending us goal positions for the next keyframe
     last_animation_goal_time_ = msg.header.stamp;
 
@@ -113,7 +113,7 @@ public:
       } else {
         // Coming from outside
         // Check if we can run an animation now
-        if (current_state_ != humanoid_league_msgs::msg::RobotControlState::CONTROLLABLE) {
+        if (current_state_ != bitbots_msgs::msg::RobotControlState::CONTROLLABLE) {
           RCLCPP_WARN(this->get_logger(), "HCM is not controllable, animation refused.");
         } else {
           // We're already controllable, go to animation running
@@ -140,10 +140,10 @@ public:
 
     // Forward joint positions to motors if there are any and we're in the right state
     if (msg.position.points.size() > 0 && (
-        current_state_ == humanoid_league_msgs::msg::RobotControlState::CONTROLLABLE ||
-        current_state_ == humanoid_league_msgs::msg::RobotControlState::ANIMATION_RUNNING ||
-        current_state_ == humanoid_league_msgs::msg::RobotControlState::FALLING ||
-        current_state_ == humanoid_league_msgs::msg::RobotControlState::FALLEN)) {
+        current_state_ == bitbots_msgs::msg::RobotControlState::CONTROLLABLE ||
+        current_state_ == bitbots_msgs::msg::RobotControlState::ANIMATION_RUNNING ||
+        current_state_ == bitbots_msgs::msg::RobotControlState::FALLING ||
+        current_state_ == bitbots_msgs::msg::RobotControlState::FALLEN)) {
       bitbots_msgs::msg::JointCommand out_msg = bitbots_msgs::msg::JointCommand();
       out_msg.positions = msg.position.points[0].positions;
       out_msg.joint_names = msg.position.joint_names;
@@ -166,26 +166,26 @@ public:
   }
 
   void dynup_callback(const bitbots_msgs::msg::JointCommand msg) {
-    if (current_state_ == humanoid_league_msgs::msg::RobotControlState::STARTUP ||
-        current_state_ == humanoid_league_msgs::msg::RobotControlState::GETTING_UP ||
-        current_state_ == humanoid_league_msgs::msg::RobotControlState::MOTOR_OFF ||
-        current_state_ == humanoid_league_msgs::msg::RobotControlState::PICKED_UP ||
-        current_state_ == humanoid_league_msgs::msg::RobotControlState::CONTROLLABLE) {
+    if (current_state_ == bitbots_msgs::msg::RobotControlState::STARTUP ||
+        current_state_ == bitbots_msgs::msg::RobotControlState::GETTING_UP ||
+        current_state_ == bitbots_msgs::msg::RobotControlState::MOTOR_OFF ||
+        current_state_ == bitbots_msgs::msg::RobotControlState::PICKED_UP ||
+        current_state_ == bitbots_msgs::msg::RobotControlState::CONTROLLABLE) {
       pub_controller_command_->publish(msg);
     }
   }
 
   void head_goal_callback(const bitbots_msgs::msg::JointCommand msg) {
-    if (current_state_ == humanoid_league_msgs::msg::RobotControlState::CONTROLLABLE ||
-        current_state_ == humanoid_league_msgs::msg::RobotControlState::WALKING) {
+    if (current_state_ == bitbots_msgs::msg::RobotControlState::CONTROLLABLE ||
+        current_state_ == bitbots_msgs::msg::RobotControlState::WALKING) {
       pub_controller_command_->publish(msg);
     }
   }
 
   void kick_goal_callback(const bitbots_msgs::msg::JointCommand msg) {
     last_kick_time_ = msg.header.stamp;
-    if (current_state_ == humanoid_league_msgs::msg::RobotControlState::KICKING ||
-        current_state_ == humanoid_league_msgs::msg::RobotControlState::CONTROLLABLE) {
+    if (current_state_ == bitbots_msgs::msg::RobotControlState::KICKING ||
+        current_state_ == bitbots_msgs::msg::RobotControlState::CONTROLLABLE) {
       // we can perform a kick
       pub_controller_command_->publish(msg);
     }
@@ -203,8 +203,8 @@ public:
 
   void walking_goal_callback(bitbots_msgs::msg::JointCommand msg) {
     last_walking_time_ = msg.header.stamp;
-    if (current_state_ == humanoid_league_msgs::msg::RobotControlState::CONTROLLABLE ||
-        current_state_ == humanoid_league_msgs::msg::RobotControlState::WALKING) {
+    if (current_state_ == bitbots_msgs::msg::RobotControlState::CONTROLLABLE ||
+        current_state_ == bitbots_msgs::msg::RobotControlState::WALKING) {
       pub_controller_command_->publish(msg);
     }
   }
@@ -250,7 +250,7 @@ public:
     current_state_ = result.cast<int>();
 
     // Publish current robot state
-    humanoid_league_msgs::msg::RobotControlState state_msg = humanoid_league_msgs::msg::RobotControlState();
+    bitbots_msgs::msg::RobotControlState state_msg = bitbots_msgs::msg::RobotControlState();
     state_msg.state = current_state_;
     pub_robot_state_->publish(state_msg);
   }
@@ -283,10 +283,10 @@ private:
 
   // Publishers
   rclcpp::Publisher<bitbots_msgs::msg::JointCommand>::SharedPtr pub_controller_command_;
-  rclcpp::Publisher<humanoid_league_msgs::msg::RobotControlState>::SharedPtr pub_robot_state_;
+  rclcpp::Publisher<bitbots_msgs::msg::RobotControlState>::SharedPtr pub_robot_state_;
 
   // Subscribers
-  rclcpp::Subscription<humanoid_league_msgs::msg::Animation>::SharedPtr anim_sub_;
+  rclcpp::Subscription<bitbots_msgs::msg::Animation>::SharedPtr anim_sub_;
   rclcpp::Subscription<bitbots_msgs::msg::JointCommand>::SharedPtr dynup_sub_;
   rclcpp::Subscription<bitbots_msgs::msg::JointCommand>::SharedPtr head_sub_;
   rclcpp::Subscription<bitbots_msgs::msg::JointCommand>::SharedPtr kick_sub_;

@@ -4,7 +4,7 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import ColorRGBA
 
-from humanoid_league_msgs.msg import RobotControlState
+from bitbots_msgs.msg import RobotControlState
 
 
 BLINK_DURATION = 0.2

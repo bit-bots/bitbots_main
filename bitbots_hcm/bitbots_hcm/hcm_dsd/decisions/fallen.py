@@ -4,7 +4,7 @@ import numpy as np
 from bitbots_hcm.hcm_dsd.decisions import AbstractHCMDecisionElement
 from bitbots_utils.transforms import quat2fused
 
-from humanoid_league_msgs.msg import RobotControlState
+from bitbots_msgs.msg import RobotControlState
 
 
 class Fallen(AbstractHCMDecisionElement):

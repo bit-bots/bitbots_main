@@ -13,7 +13,7 @@ OdometryFuser::OdometryFuser() : Node("OdometryFuser"),
                                  tf_buffer_(std::make_unique<tf2_ros::Buffer>(this->get_clock())),
                                  tf_listener_(std::make_shared<tf2_ros::TransformListener>(*tf_buffer_, this)),
                                  support_state_cache_(100),
-                                 imu_sub_(this, "imu/data"),
+                                 imu_sub_(this, "imu_head/data"),
                                  motion_odom_sub_(this, "motion_odometry"),
                                  br_(std::make_unique<tf2_ros::TransformBroadcaster>(this)),
                                  sync_(message_filters::Synchronizer<SyncPolicy>(SyncPolicy(50), imu_sub_, motion_odom_sub_)){
@@ -28,8 +28,6 @@ OdometryFuser::OdometryFuser() : Node("OdometryFuser"),
   this->get_parameter("odom_frame", odom_frame_);
   this->declare_parameter<std::string>("rotation_frame", "rotation");
   this->get_parameter("rotation_frame", rotation_frame_);
-  this->declare_parameter<std::string>("imu_frame", "imu_frame");
-  this->get_parameter("imu_frame", imu_frame_);
 
   walk_support_state_sub_ =
       this->create_subscription<biped_interfaces::msg::Phase>("walk_support_state",
@@ -89,7 +87,7 @@ void OdometryFuser::loop() {
   tf2::Transform imu_mounting_offset;
   try {
     geometry_msgs::msg::TransformStamped imu_mounting_transform = tf_buffer_->lookupTransform(
-        base_link_frame_, imu_frame_, fused_time_);
+        imu_data_.header.frame_id, base_link_frame_, fused_time_);
     fromMsg(imu_mounting_transform.transform, imu_mounting_offset);
   } catch (tf2::TransformException &ex) {
     RCLCPP_ERROR(this->get_logger(), "Not able to use the IMU%s", ex.what());

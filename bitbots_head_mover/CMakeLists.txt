@@ -12,7 +12,7 @@ find_package(bio_ik REQUIRED)
 find_package(bio_ik_msgs REQUIRED)
 find_package(bitbots_msgs REQUIRED)
 find_package(generate_parameter_library REQUIRED)
-find_package(humanoid_league_msgs REQUIRED)
+find_package(bitbots_msgs REQUIRED)
 find_package(moveit_core REQUIRED)
 find_package(moveit_msgs REQUIRED)
 find_package(moveit_ros_planning REQUIRED)
@@ -47,7 +47,6 @@ bio_ik
 bio_ik_msgs
 bitbots_msgs
 generate_parameter_library
-humanoid_league_msgs
 moveit_core
 moveit_msgs
 moveit_ros_planning

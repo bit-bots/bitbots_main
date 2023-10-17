@@ -10,10 +10,10 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/time.hpp>
 
+#include <bitbots_msgs/msg/head_mode.hpp>
 #include <bitbots_msgs/msg/joint_command.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
-#include <humanoid_league_msgs/msg/head_mode.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
 #include <std_msgs/msg/string.hpp>
 
@@ -49,7 +49,7 @@ class HeadMover {
   std::shared_ptr<rclcpp::Node> node_;
 
   // Declare subscriber
-  rclcpp::Subscription<humanoid_league_msgs::msg::HeadMode>::SharedPtr
+  rclcpp::Subscription<bitbots_msgs::msg::HeadMode>::SharedPtr
     head_mode_subscriber_;
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr
     joint_state_subscriber_;
@@ -109,9 +109,9 @@ public:
 
     // Initialize subscriber for head mode
     head_mode_subscriber_ =
-      node_->create_subscription<humanoid_league_msgs::msg::HeadMode>(
+      node_->create_subscription<bitbots_msgs::msg::HeadMode>(
       "head_mode", 10,
-      [this](const humanoid_league_msgs::msg::HeadMode::SharedPtr msg) {
+      [this](const bitbots_msgs::msg::HeadMode::SharedPtr msg) {
         head_mode_callback(msg);
       });
 
@@ -232,7 +232,7 @@ public:
    * @brief Callback used to update the head mode
    */
   void head_mode_callback(
-    const humanoid_league_msgs::msg::HeadMode::SharedPtr msg) {
+    const bitbots_msgs::msg::HeadMode::SharedPtr msg) {
     head_mode_ = msg->head_mode;
   }
 
@@ -870,7 +870,7 @@ public:
     // Check if the head mode changed and if so, update the search pattern
     if (prev_head_mode_ != curr_head_mode) {
       switch (curr_head_mode) {
-        case humanoid_league_msgs::msg::HeadMode::BALL_MODE:  // 0
+        case bitbots_msgs::msg::HeadMode::BALL_MODE:  // 0
           pan_speed_ = params_.search_pattern.pan_speed;
           tilt_speed_ = params_.search_pattern.tilt_speed;
           pattern_ =
@@ -882,7 +882,7 @@ public:
             params_.search_pattern.tilt_max[1],
             params_.search_pattern.reduce_last_scanline);
           break;
-        case humanoid_league_msgs::msg::HeadMode::BALL_MODE_PENALTY:  // 11
+        case bitbots_msgs::msg::HeadMode::BALL_MODE_PENALTY:  // 11
           pan_speed_ = params_.search_pattern_penalty.pan_speed;
           tilt_speed_ = params_.search_pattern_penalty.tilt_speed;
           pattern_ =
@@ -895,7 +895,7 @@ public:
             params_.search_pattern.reduce_last_scanline);
           break;
 
-        case humanoid_league_msgs::msg::HeadMode::FIELD_FEATURES:  // 3
+        case bitbots_msgs::msg::HeadMode::FIELD_FEATURES:  // 3
           pan_speed_ = params_.search_pattern_field_features.pan_speed;
           tilt_speed_ = params_.search_pattern_field_features.tilt_speed;
           pattern_ =
@@ -908,7 +908,7 @@ public:
             params_.search_pattern.reduce_last_scanline);
           break;
 
-        case humanoid_league_msgs::msg::HeadMode::LOOK_FRONT:  // 13
+        case bitbots_msgs::msg::HeadMode::LOOK_FRONT:  // 13
           pan_speed_ = params_.front_search_pattern.pan_speed;
           tilt_speed_ = params_.front_search_pattern.tilt_speed;
           pattern_ =
@@ -921,7 +921,7 @@ public:
             params_.search_pattern.reduce_last_scanline);
           break;
 
-        case humanoid_league_msgs::msg::HeadMode::LOOK_FORWARD:  // 7
+        case bitbots_msgs::msg::HeadMode::LOOK_FORWARD:  // 7
           pan_speed_ = params_.look_forward.pan_speed;
           tilt_speed_ = params_.look_forward.tilt_speed;
           pattern_ = generatePattern(
@@ -947,8 +947,8 @@ public:
     // if this is not the case, perform the search pattern
     if (!action_running_ &&
       curr_head_mode !=
-      humanoid_league_msgs::msg::HeadMode::DONT_MOVE)          // here DONT_MOVE
-                                                               // is implemented
+      bitbots_msgs::msg::HeadMode::DONT_MOVE)          // here DONT_MOVE
+                                                       // is implemented
     {
       // Store the current head mode as the previous head mode to detect changes
       prev_head_mode_ = curr_head_mode;

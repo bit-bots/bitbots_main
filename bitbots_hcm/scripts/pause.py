@@ -2,10 +2,10 @@
 # -*- coding:utf-8 -*-
 import rclpy
 from rclpy.node import Node
-from humanoid_league_msgs.msg import Audio
 from std_msgs.msg import Bool
 
 from bitbots_msgs.srv import ManualPenalize
+from bitbots_msgs.msg import Audio
 from humanoid_league_speaker.speaker import speak
 
 

@@ -7,17 +7,15 @@ from ament_index_python import get_package_share_directory
 from geometry_msgs.msg import PointStamped, Twist
 from rclpy.action import ActionClient
 from rclpy.node import Node
-from rclpy.time import Time
 from rclpy.task import Future
+from rclpy.time import Time
 from sensor_msgs.msg import Imu, JointState
 from std_msgs.msg import Empty as EmptyMsg
 from std_srvs.srv import Empty as EmptySrv
 from std_srvs.srv import SetBool
 
-from bitbots_msgs.action import Dynup
-from bitbots_msgs.msg import JointCommand
-from humanoid_league_msgs.action import PlayAnimation
-from humanoid_league_msgs.msg import Audio, RobotControlState
+from bitbots_msgs.action import Dynup, PlayAnimation
+from bitbots_msgs.msg import Audio, RobotControlState
 
 
 class HcmBlackboard():

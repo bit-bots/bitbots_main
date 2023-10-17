@@ -2,8 +2,7 @@ import rclpy
 from action_msgs.msg import GoalStatus
 from bitbots_hcm.hcm_dsd.actions import AbstractHCMActionElement
 
-from bitbots_msgs.action import Dynup
-from humanoid_league_msgs.action import PlayAnimation
+from bitbots_msgs.action import Dynup, PlayAnimation
 
 
 class AbstractPlayAnimation(AbstractHCMActionElement):

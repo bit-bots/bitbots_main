@@ -1,7 +1,5 @@
 from bitbots_hcm.hcm_dsd.decisions import AbstractHCMDecisionElement
 
-from humanoid_league_msgs.msg import RobotControlState
-
 
 class Record(AbstractHCMDecisionElement):
     """

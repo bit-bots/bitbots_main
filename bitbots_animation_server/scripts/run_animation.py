@@ -3,12 +3,11 @@ import sys
 import threading
 
 import rclpy
-from actionlib_msgs.msg import GoalStatus
 from rclpy.action import ActionClient
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 
-from humanoid_league_msgs.action import PlayAnimation
+from bitbots_msgs.action import PlayAnimation
 
 
 def anim_run(anim=None, hcm=False):

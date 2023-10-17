@@ -27,10 +27,10 @@ https://github.com/Rhoban/model/
 #include <sensor_msgs/msg/imu.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <moveit_msgs/msg/robot_state.hpp>
-#include "humanoid_league_msgs/msg/robot_control_state.hpp"
-#include "bitbots_msgs/msg/joint_command.hpp"
-#include "bitbots_msgs/msg/foot_pressure.hpp"
 #include "biped_interfaces/msg/phase.hpp"
+#include "bitbots_msgs/msg/foot_pressure.hpp"
+#include "bitbots_msgs/msg/joint_command.hpp"
+#include "bitbots_msgs/msg/robot_control_state.hpp"
 
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <tf2/LinearMath/Vector3.h>
@@ -102,7 +102,7 @@ class WalkNode : public rclcpp::Node {
    * Sets the current state of the robot
    * @param msg The current state
    */
-  void robotStateCb(humanoid_league_msgs::msg::RobotControlState::SharedPtr msg);
+  void robotStateCb(bitbots_msgs::msg::RobotControlState::SharedPtr msg);
 
   WalkEngine *getEngine();
   WalkIK *getIk();
@@ -175,7 +175,7 @@ class WalkNode : public rclcpp::Node {
 
   rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr step_sub_;
   rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_sub_;
-  rclcpp::Subscription<humanoid_league_msgs::msg::RobotControlState>::SharedPtr robot_state_sub_;
+  rclcpp::Subscription<bitbots_msgs::msg::RobotControlState>::SharedPtr robot_state_sub_;
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_sub_;
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr kick_sub_;
   rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_sub_;

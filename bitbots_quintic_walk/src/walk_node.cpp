@@ -74,7 +74,7 @@ WalkNode::WalkNode(const std::string ns, std::vector<rclcpp::Parameter> paramete
   this->get_parameter("odom_frame", odom_frame_);
 
   // init variables
-  robot_state_ = humanoid_league_msgs::msg::RobotControlState::CONTROLLABLE;
+  robot_state_ = bitbots_msgs::msg::RobotControlState::CONTROLLABLE;
   current_request_.linear_orders = {0, 0, 0};
   current_request_.angular_z = 0;
   current_request_.stop_walk = true;
@@ -104,7 +104,7 @@ WalkNode::WalkNode(const std::string ns, std::vector<rclcpp::Parameter> paramete
     "cmd_vel",
     1,
     std::bind(&WalkNode::cmdVelCb, this, _1));
-  robot_state_sub_ = this->create_subscription<humanoid_league_msgs::msg::RobotControlState>(
+  robot_state_sub_ = this->create_subscription<bitbots_msgs::msg::RobotControlState>(
     "robot_state",
     1,
     std::bind(&WalkNode::robotStateCb, this, _1));
@@ -164,8 +164,8 @@ void WalkNode::run() {
   double dt = getTimeDelta();
   // necessary as timer in simulation does not work correctly https://github.com/ros2/rclcpp/issues/465
   if (dt != 0.0) {
-    if (robot_state_==humanoid_league_msgs::msg::RobotControlState::FALLING
-        || robot_state_==humanoid_league_msgs::msg::RobotControlState::GETTING_UP) {
+    if (robot_state_==bitbots_msgs::msg::RobotControlState::FALLING
+        || robot_state_==bitbots_msgs::msg::RobotControlState::GETTING_UP) {
       // the robot fell, we have to reset everything and do nothing else
       walk_engine_.reset();
       stabilizer_.reset();
@@ -174,9 +174,9 @@ void WalkNode::run() {
       /* Our robots will soon^TM be able to sit down and stand up autonomously, when sitting down the motors are
        * off but will turn on automatically which is why MOTOR_OFF is a valid walkable state. */
       // TODO Figure out a better way than having integration knowledge that HCM will play an animation to stand up
-      current_request_.walkable_state = robot_state_==humanoid_league_msgs::msg::RobotControlState::CONTROLLABLE ||
-          robot_state_==humanoid_league_msgs::msg::RobotControlState::WALKING ||
-          robot_state_==humanoid_league_msgs::msg::RobotControlState::MOTOR_OFF;
+      current_request_.walkable_state = robot_state_==bitbots_msgs::msg::RobotControlState::CONTROLLABLE ||
+          robot_state_==bitbots_msgs::msg::RobotControlState::WALKING ||
+          robot_state_==bitbots_msgs::msg::RobotControlState::MOTOR_OFF;
 
       // reset when we start walking, otherwise PID controller will use old I value
       if ((last_request_.linear_orders[0]==0 && last_request_.linear_orders[1]==0 && last_request_.angular_z==0)
@@ -534,7 +534,7 @@ void WalkNode::checkPhaseRestAndReset() {
   }
 }
 
-void WalkNode::robotStateCb(const humanoid_league_msgs::msg::RobotControlState::SharedPtr msg) {
+void WalkNode::robotStateCb(const bitbots_msgs::msg::RobotControlState::SharedPtr msg) {
   robot_state_ = msg->state;
 }
 

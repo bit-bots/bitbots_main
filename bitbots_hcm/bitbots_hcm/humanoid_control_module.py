@@ -21,10 +21,9 @@ from ros2_numpy import numpify
 from sensor_msgs.msg import Imu, JointState
 from std_msgs.msg import Bool
 
-from bitbots_msgs.msg import FootPressure
+from bitbots_msgs.action import PlayAnimation
+from bitbots_msgs.msg import FootPressure, RobotControlState
 from dynamic_stack_decider.dsd import DSD
-from humanoid_league_msgs.action import PlayAnimation
-from humanoid_league_msgs.msg import Audio, RobotControlState
 
 
 class HardwareControlManager:

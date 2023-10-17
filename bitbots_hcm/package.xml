@@ -23,7 +23,6 @@
   <depend>bitbots_robot_description</depend>
   <depend>bitbots_utils</depend>
   <depend>geometry_msgs</depend>
-  <depend>humanoid_league_msgs</depend>
   <depend>pybind11-dev</depend>
   <depend>python3-numpy</depend>
   <depend>python3-sklearn</depend>

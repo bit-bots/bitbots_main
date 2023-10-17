@@ -10,7 +10,6 @@ find_package(bitbots_docs REQUIRED)
 find_package(bitbots_msgs REQUIRED)
 find_package(builtin_interfaces REQUIRED)
 find_package(geometry_msgs REQUIRED)
-find_package(humanoid_league_msgs REQUIRED)
 find_package(pybind11 REQUIRED)
 find_package(Python3 REQUIRED)
 find_package(PythonLibs REQUIRED)
@@ -34,7 +33,6 @@ ament_target_dependencies(HCM
     bitbots_msgs
     builtin_interfaces
     geometry_msgs
-    humanoid_league_msgs
     rclcpp
     ros2_python_extension
     sensor_msgs
