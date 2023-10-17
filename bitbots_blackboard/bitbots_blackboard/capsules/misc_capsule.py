@@ -11,7 +11,7 @@ from rclpy.node import Node
 from rclpy.publisher import Publisher
 from std_msgs.msg import Bool
 
-from humanoid_league_msgs.msg import HeadMode, RobotControlState
+from bitbots_msgs.msg import HeadMode, RobotControlState
 from bitbots_utils.utils import get_parameters_from_other_node
 
 class MiscCapsule:

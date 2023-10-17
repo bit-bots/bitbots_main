@@ -15,7 +15,7 @@ from rclpy.time import Time
 from ros2_numpy import numpify
 from std_msgs.msg import Float32
 
-from humanoid_league_msgs.msg import Strategy, TeamData
+from bitbots_msgs.msg import Strategy, TeamData
 from bitbots_utils.utils import get_parameters_from_other_node
 
 
@@ -142,7 +142,7 @@ class TeamDataCapsule:
     def set_action(self, action: int):
         """Set the action of this robot
 
-        :param action: An action from humanoid_league_msgs/Strategy"""
+        :param action: An action from bitbots_msgs/Strategy"""
         assert action in self.actions
         self.strategy.action = action
         self.action_update = self.node.get_clock().now().nanoseconds / 1e9

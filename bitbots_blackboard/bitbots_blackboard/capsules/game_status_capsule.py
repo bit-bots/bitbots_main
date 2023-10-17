@@ -6,8 +6,8 @@ Provides information about the current game state.
 """
 from rclpy.node import Node
 
+from bitbots_msgs.msg import GameState
 from bitbots_utils.utils import get_parameters_from_other_node
-from humanoid_league_msgs.msg import GameState
 
 
 class GameStatusCapsule:

@@ -9,8 +9,7 @@ from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.duration import Duration
 from rclpy.node import Node
 
-from bitbots_msgs.action import Dynup, LookAt
-from humanoid_league_msgs.action import PlayAnimation
+from bitbots_msgs.action import Dynup, LookAt, PlayAnimation
 
 
 class AnimationCapsule:

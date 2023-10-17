@@ -28,7 +28,6 @@
     <exec_depend>bio_ik_msgs</exec_depend>
     <exec_depend>bitbots_msgs</exec_depend>
     <exec_depend>geometry_msgs</exec_depend>
-    <exec_depend>humanoid_league_msgs</exec_depend>
     <exec_depend>sensor_msgs</exec_depend>
     <exec_depend>soccer_vision_3d_msgs</exec_depend>
     <exec_depend>std_msgs</exec_depend>

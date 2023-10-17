@@ -15,18 +15,18 @@
 
   <license>MIT</license>
 
+  <depend>bitbots_blackboard</depend>
+  <depend>bitbots_convenience_frames</depend>
+  <depend>bitbots_msgs</depend>
   <depend>bitbots_utils</depend>
+  <depend>dynamic_stack_decider</depend>
+  <depend>geometry_msgs</depend>
   <depend>python3-numpy</depend>
   <depend>rclpy</depend>
+  <depend>ros2_numpy</depend>
+  <depend>soccer_vision_3d_msgs</depend>
   <depend>tf_transformations</depend>
-  <exec_depend>bitbots_blackboard</exec_depend>
-  <exec_depend>bitbots_convenience_frames</exec_depend>
-  <exec_depend>dynamic_stack_decider</exec_depend>
-  <exec_depend>geometry_msgs</exec_depend>
-  <exec_depend>humanoid_league_msgs</exec_depend>
-  <exec_depend>ros2_numpy</exec_depend>
-  <exec_depend>soccer_vision_3d_msgs</exec_depend>
-  <exec_depend>tf2</exec_depend>
+  <depend>tf2</depend>
 
 
   <export>

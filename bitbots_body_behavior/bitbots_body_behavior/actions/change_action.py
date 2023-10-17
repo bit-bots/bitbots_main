@@ -1,5 +1,5 @@
 from dynamic_stack_decider import AbstractActionElement
-from humanoid_league_msgs.msg import Strategy
+from bitbots_msgs.msg import Strategy
 
 from bitbots_blackboard.blackboard import BodyBlackboard
 

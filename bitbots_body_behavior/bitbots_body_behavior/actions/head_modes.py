@@ -4,7 +4,7 @@ from rclpy.clock import ClockType
 from bitbots_blackboard.blackboard import BodyBlackboard
 
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
-from humanoid_league_msgs.msg import HeadMode
+from bitbots_msgs.msg import HeadMode
 from bitbots_msgs.action import LookAt
 
 

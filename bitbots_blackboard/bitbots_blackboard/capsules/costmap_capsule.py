@@ -64,11 +64,11 @@ class CostmapCapsule:
 
     def robot_callback(self, msg: RobotArray):
         """
-        Callback with new obstacles
+        Callback with new robot detections
         """
         # Init a new obstacle costmap
         obstacle_map = np.zeros_like(self.costmap)
-        # Iterate over all obstacles
+        # Iterate over all robots
         robot: Robot
         for robot in msg.robots:
             # Convert position to array index

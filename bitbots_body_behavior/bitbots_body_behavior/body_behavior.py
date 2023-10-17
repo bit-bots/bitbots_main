@@ -23,7 +23,7 @@ from soccer_vision_3d_msgs.msg import RobotArray
 from bitbots_tf_listener import TransformListener
 
 from dynamic_stack_decider.dsd import DSD
-from humanoid_league_msgs.msg import GameState, RobotControlState, TeamData
+from bitbots_msgs.msg import GameState, RobotControlState, TeamData
 
 
 class BodyDSD:

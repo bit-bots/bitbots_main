@@ -2,7 +2,7 @@ from bitbots_blackboard.blackboard import BodyBlackboard
 
 from dynamic_stack_decider.abstract_decision_element import \
     AbstractDecisionElement
-from humanoid_league_msgs.msg import GameState
+from bitbots_msgs.msg import GameState
 
 
 class SecondaryStateDecider(AbstractDecisionElement):
