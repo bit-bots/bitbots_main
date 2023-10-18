@@ -18,9 +18,8 @@ from soccer_vision_3d_msgs.msg import Ball, BallArray
 from std_msgs.msg import Header
 from std_srvs.srv import Trigger
 from tf2_geometry_msgs import PointStamped
-
 from bitbots_tf_listener import TransformListener
-from humanoid_league_msgs.msg import PoseWithCertaintyStamped
+from bitbots_msgs.msg import PoseWithCertaintyStamped
 
 
 class BallWrapper():

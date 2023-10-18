@@ -2,7 +2,6 @@ import numpy as np
 import tf2_ros as tf2
 import tf2_geometry_msgs
 
-from humanoid_league_msgs.msg import TeamData
 from std_msgs.msg import Header
 import rclpy
 from rclpy.time import Time
@@ -15,6 +14,7 @@ import soccer_vision_3d_msgs.msg as sv3dm
 import soccer_vision_attribute_msgs.msg as svam
 import tf2_ros as tf2
 from ros2_numpy import numpify
+from bitbots_msgs.msg import TeamData
 from bitbots_tf_listener import TransformListener
 
 
