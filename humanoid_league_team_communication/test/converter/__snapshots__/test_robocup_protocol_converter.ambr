@@ -1,3 +1,4 @@
+# serializer version: 1
 # name: test_setup_of_from_message_converter
   dict({
     'action_mapping': dict({
