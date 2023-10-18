@@ -45,7 +45,6 @@ include:
         - humanoid_league_map_generator
         - humanoid_league_speaker
         - humanoid_league_team_communication
-    - humanoid_league_msgs
     - lib:
         - audio_common
         - bio_ik
