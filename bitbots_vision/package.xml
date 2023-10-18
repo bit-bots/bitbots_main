@@ -26,17 +26,18 @@
 
   <buildtool_depend>rosidl_default_generators</buildtool_depend>
   <exec_depend>rosidl_default_runtime</exec_depend>
-  <depend>rclpy</depend>
-  <depend>std_msgs</depend>
-  <depend>sensor_msgs</depend>
+  <depend>bitbots_msgs</depend>
+  <depend>bitbots_utils</depend>
   <depend>geometry_msgs</depend>
   <depend>image_transport</depend>
   <depend>python3-numpy</depend>
   <depend>python3-opencv</depend>
   <depend>python3-yaml</depend>
+  <depend>rclpy</depend>
+  <depend>sensor_msgs</depend>
   <depend>soccer_vision_2d_msgs</depend>
-  <depend>bitbots_msgs</depend>
-  <depend>bitbots_utils</depend>
+  <depend>std_msgs</depend>
+  <depend>vision_opencv</depend>
   
   <export>
     <bitbots_documentation>
