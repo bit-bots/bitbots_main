@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import rclpy
-from humanoid_league_msgs.msg import \
+from bitbots_msgs.msg import \
     ObstacleInImageArray, BallInImageArray, \
     GoalPostInImageArray
 from geometry_msgs.msg import Point, PolygonStamped

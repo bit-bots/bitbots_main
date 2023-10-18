@@ -11,7 +11,7 @@ from copy import deepcopy
 from cv_bridge import CvBridge
 from threading import Thread, Lock
 from sensor_msgs.msg import Image
-from humanoid_league_msgs.msg import Audio, GameState
+from bitbots_msgs.msg import Audio, GameState
 from soccer_vision_2d_msgs.msg import BallArray, FieldBoundary, GoalpostArray, RobotArray, MarkingArray
 from bitbots_vision.vision_modules import lines, field_boundary, color, debug, \
     obstacle, yolo_handler, ros_utils, candidate
