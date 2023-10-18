@@ -3,9 +3,12 @@ project(bitbots_msgs)
 
 find_package(ament_cmake REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
-find_package(std_msgs REQUIRED)
+find_package(action_msgs REQUIRED)
+find_package(bitbots_docs REQUIRED)
+find_package(geometry_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
-#find_package(bitbots_docs REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(trajectory_msgs REQUIRED)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -49,6 +52,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/SetObjectPose.srv"
   "srv/SetObjectPosition.srv"
   DEPENDENCIES
+  action_msgs
   geometry_msgs
   sensor_msgs
   std_msgs
