@@ -13,9 +13,9 @@
 
   <depend>bitbots_blackboard</depend>
   <depend>bitbots_localization</depend>
+  <depend>bitbots_msgs</depend>
   <depend>dynamic_stack_decider</depend>
   <depend>geometry_msgs</depend>
-  <depend>humanoid_league_msgs</depend>
   <depend>rclpy</depend>
   <depend>std_msgs</depend>
   

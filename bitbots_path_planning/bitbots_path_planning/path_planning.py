@@ -1,9 +1,9 @@
 import rclpy
 import soccer_vision_3d_msgs.msg as sv3dm
 import tf2_ros as tf2
+from bitbots_msgs.msg import PoseWithCertaintyStamped
 from bitbots_tf_listener import TransformListener
 from geometry_msgs.msg import PoseStamped, Twist
-from humanoid_league_msgs.msg import PoseWithCertaintyStamped
 from nav_msgs.msg import OccupancyGrid, Path
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.duration import Duration

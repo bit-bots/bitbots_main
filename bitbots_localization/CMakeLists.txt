@@ -11,7 +11,6 @@ find_package(backward_ros REQUIRED)
 find_package(Boost COMPONENTS filesystem REQUIRED)
 find_package(builtin_interfaces REQUIRED)
 find_package(cv_bridge REQUIRED)
-find_package(humanoid_league_msgs REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(particle_filter REQUIRED)
@@ -80,7 +79,6 @@ ament_target_dependencies(localization
   rclcpp
   Boost
   cv_bridge
-  humanoid_league_msgs
   image_transport
   nav_msgs
   OpenCV

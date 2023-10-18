@@ -3,9 +3,9 @@ import os
 
 import rclpy
 from ament_index_python import get_package_share_directory
+from bitbots_msgs.msg import GameState, RobotControlState
 from dynamic_stack_decider.dsd import DSD
 from geometry_msgs.msg import PoseWithCovarianceStamped
-from humanoid_league_msgs.msg import GameState, RobotControlState
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 

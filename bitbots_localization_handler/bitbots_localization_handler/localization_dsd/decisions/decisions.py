@@ -1,7 +1,7 @@
 import numpy as np
 import tf2_ros as tf2
+from bitbots_msgs.msg import GameState, RobotControlState
 from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
-from humanoid_league_msgs.msg import GameState, RobotControlState
 from rclpy.time import Time
 
 

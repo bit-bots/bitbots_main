@@ -7,9 +7,9 @@
   <maintainer email="git@flova.de">Florian Vahl</maintainer>
   <license>MIT</license>
 
+  <depend>bitbots_msgs</depend>
   <depend>bitbots_tf_listener</depend>
   <depend>geometry_msgs</depend>
-  <depend>humanoid_league_msgs</depend>
   <depend>nav_msgs</depend>
   <depend>python3-numpy</depend>
   <depend>python3-opencv</depend>

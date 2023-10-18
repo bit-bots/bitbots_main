@@ -2,8 +2,8 @@ import cv2
 import numpy as np
 import soccer_vision_3d_msgs.msg as sv3dm
 import tf2_ros as tf2
+from bitbots_msgs.msg import PoseWithCertaintyStamped
 from geometry_msgs.msg import Point
-from humanoid_league_msgs.msg import PoseWithCertaintyStamped
 from nav_msgs.msg import OccupancyGrid
 from rclpy.node import Node
 from ros2_numpy import msgify, numpify
