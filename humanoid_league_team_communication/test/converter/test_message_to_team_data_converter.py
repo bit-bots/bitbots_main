@@ -28,14 +28,14 @@ def test_convert_ball_pose(snapshot, message_with_ball):
     assert str(team_data.ball_absolute) == snapshot
 
 
-def test_convert_robots_to_obstacles(snapshot, message_with_other_robots, team_data_with_header):
+def test_convert_robots(snapshot, message_with_other_robots, team_data_with_header):
     team_data = convert_from_message(message_with_other_robots, team_data_with_header)
 
-    assert team_data.obstacles.header == team_data_with_header.header
-    assert team_data.obstacles.obstacles[0].type == RobotRelative.ROBOT_CYAN
-    assert team_data.obstacles.obstacles[1].type == RobotRelative.ROBOT_MAGENTA
+    assert team_data.robots.header == team_data_with_header.header
+    assert team_data.robots.robots[0].type == RobotRelative.ROBOT_CYAN
+    assert team_data.robots.robots[1].type == RobotRelative.ROBOT_MAGENTA
 
-    assert str(team_data.obstacles) == snapshot
+    assert str(team_data.robots) == snapshot
 
 
 def test_convert_time_to_ball(message):

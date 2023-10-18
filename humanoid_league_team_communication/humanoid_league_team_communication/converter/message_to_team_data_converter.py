@@ -25,8 +25,8 @@ class MessageToTeamDataConverter:
 
         # @TODO: change TeamData field/type to robots
         # see: https://github.com/bit-bots/humanoid_league_misc/issues/125
-        team_data.obstacles = self.convert_robots_to_obstacles(message.others, message.other_robot_confidence)
-        team_data.obstacles.header = team_data.header
+        team_data.robots = self.convert_robots(message.others, message.other_robot_confidence)
+        team_data.robots.header = team_data.header
 
         return self.convert_optional_fields(message, team_data)
 
@@ -46,19 +46,19 @@ class MessageToTeamDataConverter:
 
         return team_data
 
-    def convert_robots_to_obstacles(self, message_robots: List[Proto.Robot],
-                                    message_robot_confidence: List[float]) -> RobotRelativeArray:
-        relative_obstacles = RobotRelativeArray()
+    def convert_robots(self, message_robots: List[Proto.Robot],
+                       message_robot_confidence: List[float]) -> RobotRelativeArray:
+        relative_robots = RobotRelativeArray()
         for index, robot in enumerate(message_robots):
-            obstacle = RobotRelative(player_number=robot.player_id, type=self.team_mapping[robot.team])
-            obstacle.pose.pose = self.convert_robot_pose(robot)
+            robot_relative = RobotRelative(player_number=robot.player_id, type=self.team_mapping[robot.team])
+            robot_relative.pose.pose = self.convert_robot_pose(robot)
 
             if index < len(message_robot_confidence):
-                obstacle.pose.confidence = message_robot_confidence[index]
+                robot_relative.pose.confidence = message_robot_confidence[index]
 
-            relative_obstacles.obstacles.append(obstacle)
+            relative_robots.robots.append(robot_relative)
 
-        return relative_obstacles
+        return relative_robots
 
     def convert_ball_pose(self, message_ball_pose: Proto.Ball) -> PoseWithCovariance:
         ball = PoseWithCovariance()
