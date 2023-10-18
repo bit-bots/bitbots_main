@@ -70,12 +70,6 @@ dynamic_stack_decider:
   debian: *dynamic_stack_decider
   fedora: *dynamic_stack_decider
 
-humanoid_league_msgs:
-  ubuntu: &humanoid_league_msgs
-    source:
-      uri: https://raw.githubusercontent.com/bit-bots/humanoid_league_msgs/master/.rdmanifest
-  debian: *humanoid_league_msgs
-  fedora: *humanoid_league_msgs
 
 humanoid_league_gazebo_world:
   ubuntu: &humanoid_league_gazebo_world
