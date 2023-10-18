@@ -13,7 +13,7 @@ from rcl_interfaces.msg import Parameter, SetParametersResult
 from rclpy.node import Node
 from rclpy.publisher import Publisher
 
-from humanoid_league_msgs.msg import Audio
+from bitbots_msgs.msg import Audio
 
 
 def speak(text: str, publisher: Publisher, priority: int = 20, speaking_active: bool = True) -> None:

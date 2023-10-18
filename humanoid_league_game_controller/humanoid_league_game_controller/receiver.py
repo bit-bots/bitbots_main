@@ -16,8 +16,8 @@ from construct import Container, ConstError
 from rclpy import logging
 from rclpy.node import Node
 from std_msgs.msg import Bool
-from humanoid_league_msgs.msg import GameState as GameStateMsg
 from humanoid_league_game_controller.gamestate import GameState, ReturnData, GAME_CONTROLLER_RESPONSE_VERSION
+from bitbots_msgs.msg import GameState as GameStateMsg
 from bitbots_utils.utils import get_parameters_from_other_node
 
 logger = logging.get_logger('humanoid_league_game_controller')

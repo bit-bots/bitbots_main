@@ -12,7 +12,7 @@ from soccer_vision_3d_msgs.msg import Robot, RobotArray
 from soccer_vision_attribute_msgs.msg import Confidence, Robot as RobotAttributes
 from std_msgs.msg import Header
 
-from humanoid_league_msgs.msg import GameState, Strategy
+from bitbots_msgs.msg import GameState, Strategy
 
 own_team_id = 1
 own_team_color = TeamColor(own_team_id)

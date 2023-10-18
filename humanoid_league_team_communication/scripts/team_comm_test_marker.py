@@ -1,29 +1,28 @@
 #!/usr/bin/env python3
 
-import rclpy
-from rclpy.node import Node
 import copy
 import math
 
-from interactive_markers.interactive_marker_server import InteractiveMarkerServer
-from interactive_markers.menu_handler import MenuHandler
-from transforms3d.affines import compose, decompose
-from transforms3d.quaternions import quat2mat, mat2quat
-from visualization_msgs.msg import InteractiveMarker, InteractiveMarkerControl, Marker
-from humanoid_league_msgs.msg import ObstacleRelative, ObstacleRelativeArray, TeamData
-from geometry_msgs.msg import Pose, Point, Quaternion, Vector3, PoseWithCovariance
-from tf2_geometry_msgs import PointStamped
-from tf_transformations import euler_from_quaternion
-import tf2_ros
 import numpy as np
+import rclpy
+import tf2_ros
+from geometry_msgs.msg import (Point, Pose, PoseWithCovariance, Quaternion,
+                               Vector3)
+from interactive_markers.interactive_marker_server import \
+    InteractiveMarkerServer
+from interactive_markers.menu_handler import MenuHandler
+from rclpy.node import Node
+from transforms3d.affines import compose, decompose
+from transforms3d.quaternions import quat2mat
+from visualization_msgs.msg import (InteractiveMarker,
+                                    InteractiveMarkerControl, Marker)
+
+from bitbots_msgs.msg import TeamData
 
 ROBOT_HEIGHT = 0.8
 ROBOT_DIAMETER = 0.2
 ROBOT_SPEED = 0.3
 BALL_DIAMETER = 0.13
-OBSTACLE_NUMBER = 4
-OBSTACLE_HEIGT = 0.8
-OBSTACLE_DIAMETER = 0.2
 
 
 class TeamCommMarker:

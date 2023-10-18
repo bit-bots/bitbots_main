@@ -14,7 +14,7 @@ import threading
 import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, DurabilityPolicy
-from humanoid_league_msgs.msg import GameState as GameStateMsg
+from bitbots_msgs.msg import GameState as GameStateMsg
 from bitbots_utils.utils import get_parameters_from_other_node
 
 

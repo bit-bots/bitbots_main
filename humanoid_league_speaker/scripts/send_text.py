@@ -3,7 +3,7 @@
 import argparse
 
 import rclpy
-from humanoid_league_msgs.msg import Audio
+from bitbots_msgs.msg import Audio
 
 if __name__ == '__main__':
     rclpy.init(args=None)

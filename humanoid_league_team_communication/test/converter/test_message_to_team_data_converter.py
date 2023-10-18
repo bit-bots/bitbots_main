@@ -3,7 +3,7 @@ import pytest
 from humanoid_league_team_communication.converter.robocup_protocol_converter import RobocupProtocolConverter, TeamColor
 from std_msgs.msg import Header
 
-from humanoid_league_msgs.msg import ObstacleRelative, Strategy, TeamData
+from bitbots_msgs.msg import RobotRelative, Strategy, TeamData
 
 own_team_id = 1
 own_team_color = TeamColor(own_team_id)
@@ -32,8 +32,8 @@ def test_convert_robots_to_obstacles(snapshot, message_with_other_robots, team_d
     team_data = convert_from_message(message_with_other_robots, team_data_with_header)
 
     assert team_data.obstacles.header == team_data_with_header.header
-    assert team_data.obstacles.obstacles[0].type == ObstacleRelative.ROBOT_CYAN
-    assert team_data.obstacles.obstacles[1].type == ObstacleRelative.ROBOT_MAGENTA
+    assert team_data.obstacles.obstacles[0].type == RobotRelative.ROBOT_CYAN
+    assert team_data.obstacles.obstacles[1].type == RobotRelative.ROBOT_MAGENTA
 
     assert str(team_data.obstacles) == snapshot
 

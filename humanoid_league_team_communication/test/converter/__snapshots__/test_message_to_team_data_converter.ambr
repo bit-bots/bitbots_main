@@ -24,23 +24,23 @@
 # ---
 # name: test_convert_empty_message
   '''
-  humanoid_league_msgs.msg.TeamData(header=std_msgs.msg.Header(stamp=builtin_interfaces.msg.Time(sec=0, nanosec=0), frame_id=''), robot_id=0, state=0, robot_position=geometry_msgs.msg.PoseWithCovariance(pose=geometry_msgs.msg.Pose(position=geometry_msgs.msg.Point(x=0.0, y=0.0, z=0.0), orientation=geometry_msgs.msg.Quaternion(x=0.0, y=0.0, z=0.0, w=1.0)), covariance=array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+  bitbots_msgs.msg.TeamData(header=std_msgs.msg.Header(stamp=builtin_interfaces.msg.Time(sec=0, nanosec=0), frame_id=''), robot_id=0, state=0, robot_position=geometry_msgs.msg.PoseWithCovariance(pose=geometry_msgs.msg.Pose(position=geometry_msgs.msg.Point(x=0.0, y=0.0, z=0.0), orientation=geometry_msgs.msg.Quaternion(x=0.0, y=0.0, z=0.0, w=1.0)), covariance=array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
          0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
          0., 0.])), ball_absolute=geometry_msgs.msg.PoseWithCovariance(pose=geometry_msgs.msg.Pose(position=geometry_msgs.msg.Point(x=0.0, y=0.0, z=0.0), orientation=geometry_msgs.msg.Quaternion(x=0.0, y=0.0, z=0.0, w=1.0)), covariance=array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
          0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
-         0., 0.])), obstacles=humanoid_league_msgs.msg.ObstacleRelativeArray(header=std_msgs.msg.Header(stamp=builtin_interfaces.msg.Time(sec=0, nanosec=0), frame_id=''), obstacles=[]), time_to_position_at_ball=0.0, strategy=humanoid_league_msgs.msg.Strategy(role=0, action=0, offensive_side=0))
+         0., 0.])), obstacles=bitbots_msgs.msg.RobotRelativeArray(header=std_msgs.msg.Header(stamp=builtin_interfaces.msg.Time(sec=0, nanosec=0), frame_id=''), obstacles=[]), time_to_position_at_ball=0.0, strategy=bitbots_msgs.msg.Strategy(role=0, action=0, offensive_side=0))
   '''
 # ---
 # name: test_convert_robots_to_obstacles
   '''
-  humanoid_league_msgs.msg.ObstacleRelativeArray(header=std_msgs.msg.Header(stamp=builtin_interfaces.msg.Time(sec=1000, nanosec=0), frame_id=''), obstacles=[humanoid_league_msgs.msg.ObstacleRelative(type=3, player_number=4, pose=humanoid_league_msgs.msg.PoseWithCertainty(pose=geometry_msgs.msg.PoseWithCovariance(pose=geometry_msgs.msg.Pose(position=geometry_msgs.msg.Point(x=3.5999999046325684, y=1.7999999523162842, z=0.0), orientation=geometry_msgs.msg.Quaternion(x=0.0, y=0.0, z=0.8134154978551709, w=0.5816830991605519)), covariance=array([1.20000005, 4.19999981, 0.        , 0.        , 0.        ,
+  bitbots_msgs.msg.RobotRelativeArray(header=std_msgs.msg.Header(stamp=builtin_interfaces.msg.Time(sec=1000, nanosec=0), frame_id=''), obstacles=[bitbots_msgs.msg.RobotRelative(type=3, player_number=4, pose=bitbots_msgs.msg.PoseWithCertainty(pose=geometry_msgs.msg.PoseWithCovariance(pose=geometry_msgs.msg.Pose(position=geometry_msgs.msg.Point(x=3.5999999046325684, y=1.7999999523162842, z=0.0), orientation=geometry_msgs.msg.Quaternion(x=0.0, y=0.0, z=0.8134154978551709, w=0.5816830991605519)), covariance=array([1.20000005, 4.19999981, 0.        , 0.        , 0.        ,
          7.19999981, 2.20000005, 5.19999981, 0.        , 0.        ,
          0.        , 8.19999981, 0.        , 0.        , 0.        ,
          0.        , 0.        , 0.        , 0.        , 0.        ,
          0.        , 0.        , 0.        , 0.        , 0.        ,
          0.        , 0.        , 0.        , 0.        , 0.        ,
          3.20000005, 6.19999981, 0.        , 0.        , 0.        ,
-         9.19999981])), confidence=0.0), width=0.0, height=0.0), humanoid_league_msgs.msg.ObstacleRelative(type=2, player_number=2, pose=humanoid_league_msgs.msg.PoseWithCertainty(pose=geometry_msgs.msg.PoseWithCovariance(pose=geometry_msgs.msg.Pose(position=geometry_msgs.msg.Point(x=3.5999999046325684, y=1.7999999523162842, z=0.0), orientation=geometry_msgs.msg.Quaternion(x=0.0, y=0.0, z=0.8134154978551709, w=0.5816830991605519)), covariance=array([1.20000005, 4.19999981, 0.        , 0.        , 0.        ,
+         9.19999981])), confidence=0.0), width=0.0, height=0.0), bitbots_msgs.msg.RobotRelative(type=2, player_number=2, pose=bitbots_msgs.msg.PoseWithCertainty(pose=geometry_msgs.msg.PoseWithCovariance(pose=geometry_msgs.msg.Pose(position=geometry_msgs.msg.Point(x=3.5999999046325684, y=1.7999999523162842, z=0.0), orientation=geometry_msgs.msg.Quaternion(x=0.0, y=0.0, z=0.8134154978551709, w=0.5816830991605519)), covariance=array([1.20000005, 4.19999981, 0.        , 0.        , 0.        ,
          7.19999981, 2.20000005, 5.19999981, 0.        , 0.        ,
          0.        , 8.19999981, 0.        , 0.        , 0.        ,
          0.        , 0.        , 0.        , 0.        , 0.        ,

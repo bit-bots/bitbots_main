@@ -15,10 +15,10 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <depend>std_msgs</depend>
-  <depend>humanoid_league_msgs</depend>
-  <depend>espeak</depend>
   <depend>bitbots_docs</depend>
+  <depend>bitbots_msgs</depend>
+  <depend>espeak</depend>
+  <depend>std_msgs</depend>
 
   <export>
     <bitbots_documentation>

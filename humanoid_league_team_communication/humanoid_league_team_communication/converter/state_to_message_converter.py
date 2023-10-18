@@ -3,9 +3,9 @@ import transforms3d
 from numpy import double
 from typing import Callable, List, Optional, Tuple
 
-from rclpy.time import Time
+from bitbots_msgs.msg import GameState, Strategy
 from geometry_msgs.msg import PointStamped, PoseStamped, PoseWithCovarianceStamped, Quaternion, Twist
-from humanoid_league_msgs.msg import GameState, Strategy
+from rclpy.time import Time
 from soccer_vision_3d_msgs.msg import Robot, RobotArray
 
 import humanoid_league_team_communication.robocup_extension_pb2 as Proto

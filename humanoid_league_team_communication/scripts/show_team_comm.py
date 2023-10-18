@@ -7,7 +7,7 @@ import rclpy
 from rclpy.node import Node
 from rclpy.time import Time, Duration
 from rclpy.constants import S_TO_NS
-from humanoid_league_msgs.msg import TeamData, Strategy
+from bitbots_msgs.msg import TeamData, Strategy
 from transforms3d.euler import quat2euler
 
 print_msg = """

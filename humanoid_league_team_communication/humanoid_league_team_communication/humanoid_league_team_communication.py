@@ -9,9 +9,9 @@ from typing import List, Optional, Tuple
 import rclpy
 from rclpy.executors import MultiThreadedExecutor
 from ament_index_python.packages import get_package_share_directory
+from bitbots_msgs.msg import GameState, Strategy, TeamData
 from bitbots_utils.utils import get_parameter_dict, get_parameters_from_other_node
 from geometry_msgs.msg import PoseWithCovarianceStamped, Twist, TwistWithCovarianceStamped
-from humanoid_league_msgs.msg import GameState, Strategy, TeamData
 from numpy import double
 from rclpy.duration import Duration
 from rclpy.node import Node

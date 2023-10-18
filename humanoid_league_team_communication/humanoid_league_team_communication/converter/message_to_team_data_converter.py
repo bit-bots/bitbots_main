@@ -5,7 +5,7 @@ from geometry_msgs.msg import PoseWithCovariance
 from numpy import double
 
 import humanoid_league_team_communication.robocup_extension_pb2 as Proto
-from humanoid_league_msgs.msg import ObstacleRelative, ObstacleRelativeArray, TeamData
+from bitbots_msgs.msg import RobotRelative, RobotRelativeArray, TeamData
 
 
 class MessageToTeamDataConverter:
@@ -47,10 +47,10 @@ class MessageToTeamDataConverter:
         return team_data
 
     def convert_robots_to_obstacles(self, message_robots: List[Proto.Robot],
-                                    message_robot_confidence: List[float]) -> ObstacleRelativeArray:
-        relative_obstacles = ObstacleRelativeArray()
+                                    message_robot_confidence: List[float]) -> RobotRelativeArray:
+        relative_obstacles = RobotRelativeArray()
         for index, robot in enumerate(message_robots):
-            obstacle = ObstacleRelative(player_number=robot.player_id, type=self.team_mapping[robot.team])
+            obstacle = RobotRelative(player_number=robot.player_id, type=self.team_mapping[robot.team])
             obstacle.pose.pose = self.convert_robot_pose(robot)
 
             if index < len(message_robot_confidence):
