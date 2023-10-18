@@ -6,3 +6,5 @@ fabric  # Manages SSH sessions for the deploy tool
 pre-commit  # Installs and runs pre-commit hooks for git
 rich  # Rich terminal output
 ruff  # Python linting
+syrupy  # Python snapshot testing
+pytest-mock   # Mocking for pytest
