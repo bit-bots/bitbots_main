@@ -65,6 +65,7 @@
         "pyplot",
         "rclcpp",
         "rclpy",
+        "Rhoban",
         "robocup",
         "RoboCup",
         "rosbag",
