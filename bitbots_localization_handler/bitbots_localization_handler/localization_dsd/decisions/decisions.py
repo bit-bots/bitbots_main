@@ -142,7 +142,7 @@ class GameStateDecider(AbstractDecisionElement):
         """
         game_state_number = self.blackboard.gamestate.get_gamestate()
 
-        if game_state_number == GameState.GAMESTATE_INITAL:
+        if game_state_number == GameState.GAMESTATE_INITIAL:
             return "INITIAL"
         elif game_state_number == GameState.GAMESTATE_READY:
             return "READY"
@@ -325,7 +325,7 @@ class InitialToReady(AbstractDecisionElement):
         game_state_number = self.blackboard.gamestate.get_gamestate()
         self.previous_game_state_number = game_state_number
 
-        if previous_game_state_number == GameState.GAMESTATE_INITAL and game_state_number == GameState.GAMESTATE_READY:
+        if previous_game_state_number == GameState.GAMESTATE_INITIAL and game_state_number == GameState.GAMESTATE_READY:
             return "YES"
         else:
             return "NO"
