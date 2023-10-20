@@ -16,11 +16,6 @@
       <param name="use_sim_time" value="$(var sim)"/>
     </node>
 
-    <!-- launch the convenience frames -->
-    <include file="$(find-pkg-share bitbots_convenience_frames)/launch/convenience_frames.launch">
-      <arg name="sim" value="$(var sim)"/>
-    </include>
-
     <!-- launch the odometry -->
     <include file="$(find-pkg-share bitbots_odometry)/launch/odometry.launch">
       <arg name="sim" value="$(var sim)"/>

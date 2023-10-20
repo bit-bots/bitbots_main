@@ -18,7 +18,6 @@
     <exec_depend>audio_common</exec_depend>
     <exec_depend>bitbots_basler_camera</exec_depend>
     <exec_depend>bitbots_body_behavior</exec_depend>
-    <exec_depend>bitbots_convenience_frames</exec_depend>
     <exec_depend>bitbots_dynamic_kick</exec_depend>
     <exec_depend>bitbots_dynup</exec_depend>
     <exec_depend>bitbots_hcm</exec_depend>
