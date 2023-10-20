@@ -70,6 +70,8 @@ def launch_setup(context, *args, **kwargs):
         "moveit_controller_manager": "moveit_simple_controller_manager/MoveItSimpleControllerManager",
     }
 
+    sensor_config = load_yaml(f"{robot_type.perform(context)}_moveit_config", "config/sensors_3d.yaml")
+
     trajectory_execution = {
         "moveit_manage_controllers": True,
         "trajectory_execution.allowed_execution_duration_scaling": 1.2,
@@ -113,23 +115,28 @@ def launch_setup(context, *args, **kwargs):
                     arguments=['--ros-args', '--log-level', 'WARN']
                     )
 
-    move_group_node = Node(package='moveit_ros_move_group',
-                           executable='move_group',
-                           # output='screen',
-                           # hacky merging dicts
-                           parameters=[{
-                               'robot_description': robot_description,
-                               'robot_description_semantic': robot_description_semantic_config,
-                               'robot_description_kinematics': kinematics_yaml,
-                               'publish_robot_description_semantic': True,
-                               'use_sim_time': sim
-                           },
-                               ompl_planning_pipeline_config,
-                               trajectory_execution,
-                               moveit_controllers,
-                               planning_scene_monitor_parameters, ],
-                           arguments=['--ros-args', '--log-level', 'WARN']
-                           )  # todo joint limits
+    move_group_node = Node(
+        package='moveit_ros_move_group',
+        executable='move_group',
+        # output='screen',
+        # hacky merging dicts
+        parameters=[
+            {   
+                'robot_description': robot_description,
+                'robot_description_semantic': robot_description_semantic_config,
+                'robot_description_kinematics': kinematics_yaml,
+                'publish_robot_description_semantic': True,
+                'use_sim_time': sim,
+                'octomap_resolution': 0.01,
+            },
+            ompl_planning_pipeline_config,
+            trajectory_execution,
+            moveit_controllers,
+            planning_scene_monitor_parameters,
+            sensor_config
+        ],
+        arguments=['--ros-args', '--log-level', 'WARN']
+        )  # todo joint limits
     return [move_group_node, rsp_node]
 
 
