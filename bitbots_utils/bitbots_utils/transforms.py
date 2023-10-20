@@ -125,4 +125,4 @@ def compute_imu_orientation_from_world(robot_quat_in_world):
 
 
 def quat_from_yaw(yaw: float) -> Quaternion:
-    return msgify(Quaternion, wxyz2xyzw(euler2quat(0, 0, yaw, axes='szxy')))
+    return msgify(Quaternion, wxyz2xyzw(euler2quat(yaw, 0, 0, axes='szxy')))
