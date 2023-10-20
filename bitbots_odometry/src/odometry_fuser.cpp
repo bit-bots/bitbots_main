@@ -13,7 +13,7 @@ OdometryFuser::OdometryFuser() : Node("OdometryFuser"),
                                  tf_buffer_(std::make_unique<tf2_ros::Buffer>(this->get_clock())),
                                  tf_listener_(std::make_shared<tf2_ros::TransformListener>(*tf_buffer_, this)),
                                  support_state_cache_(100),
-                                 imu_sub_(this, "imu_head/data"),
+                                 imu_sub_(this, "imu/data"),
                                  motion_odom_sub_(this, "motion_odometry"),
                                  br_(std::make_unique<tf2_ros::TransformBroadcaster>(this)),
                                  sync_(message_filters::Synchronizer<SyncPolicy>(SyncPolicy(50), imu_sub_, motion_odom_sub_)){
@@ -43,19 +43,46 @@ OdometryFuser::OdometryFuser() : Node("OdometryFuser"),
   fused_time_ = rclcpp::Time(0, 0, RCL_ROS_TIME);
 }
 
+
+/**
+ * @brief Waits for the transforms to be available
+ * @return true if the transforms are not available yet and we need to wait
+ */
 bool OdometryFuser::wait_for_tf() {
-  // wait for transforms from joints
-  if (!tf_buffer_->canTransform(l_sole_frame_,
-                                   base_link_frame_,
-                                   rclcpp::Time(0, 0, RCL_ROS_TIME),
-                                   rclcpp::Duration::from_nanoseconds(1*1e9))
-      && rclcpp::ok()) {
-    // don't spam directly with warnings, since it is normal that it will take a second to get the transform
-    if ((this->now() - start_time_).seconds() > 10) {
-      RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 30000, "Waiting for transforms from robot joints");
+  try {
+    // Frames to check
+    std::vector<std::string> frames = {base_link_frame_, l_sole_frame_, r_sole_frame_};
+
+    // Apply tf_buffer->_frameExists to all frames and check if all are available otherwise return false (functional)
+    if(!std::all_of(frames.begin(), frames.end(), [this](std::string frame) {return tf_buffer_->_frameExists(frame);})) {
+      // Wait for 1 second
+      rclcpp::sleep_for(std::chrono::seconds(1));
+      // Return true to indicate that we need to wait
+      return true;
+    }
+
+    // Check if we can transform from base_link to all other frames
+    if(!std::all_of(
+      frames.begin(), 
+      frames.end(), 
+      [this](std::string frame) {
+        return tf_buffer_->canTransform(
+          base_link_frame_,
+          frame, 
+          rclcpp::Time(0), 
+          rclcpp::Duration::from_nanoseconds(1e9));
+      })){
+      // Return that we need to wait
+      return true;
     }
     return false;
   }
+  catch(const std::exception& e)
+  {
+    RCLCPP_ERROR(this->get_logger(), "Error while waiting for transforms: %s \n", e.what());
+  }
+  // Wait for 1 second
+  rclcpp::sleep_for(std::chrono::seconds(1));
   return true;
 }
 
@@ -90,7 +117,7 @@ void OdometryFuser::loop() {
         imu_data_.header.frame_id, base_link_frame_, fused_time_);
     fromMsg(imu_mounting_transform.transform, imu_mounting_offset);
   } catch (tf2::TransformException &ex) {
-    RCLCPP_ERROR(this->get_logger(), "Not able to use the IMU%s", ex.what());
+    RCLCPP_ERROR(this->get_logger(), "Not able to use the IMU: %s", ex.what());
   }
 
   // get imu transform without yaw
@@ -249,8 +276,11 @@ int main(int argc, char **argv) {
   auto node = std::make_shared<OdometryFuser>();
   rclcpp::experimental::executors::EventsExecutor exec;
   exec.add_node(node);
-  while(!node->wait_for_tf()){
+  for(int i = 0; node->wait_for_tf() && rclcpp::ok(); i++) {
      exec.spin_some();
+     if (i > 0) {
+      RCLCPP_ERROR(node->get_logger(), "Waiting for transforms\n");
+     }
   }
   rclcpp::Duration timer_duration = rclcpp::Duration::from_seconds(1.0 / 100.0);
   rclcpp::TimerBase::SharedPtr timer = rclcpp::create_timer(node, node->get_clock(), timer_duration, [node]() -> void {node->loop();});
