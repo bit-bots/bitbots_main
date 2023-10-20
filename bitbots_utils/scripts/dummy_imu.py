@@ -11,7 +11,7 @@ class DummyImu(Node):
         super().__init__('DummyImu')
         self.pub = self.create_publisher(Imu, '/imu/data', 1)
         self.msg = Imu()
-        self.msg.header.frame_id = 'imu'
+        self.msg.header.frame_id = 'imu_frame'
         self.msg.orientation.w = 1.0
 
     def loop(self):
