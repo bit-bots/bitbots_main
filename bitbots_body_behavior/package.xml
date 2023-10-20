@@ -16,7 +16,6 @@
   <license>MIT</license>
 
   <depend>bitbots_blackboard</depend>
-  <depend>bitbots_convenience_frames</depend>
   <depend>bitbots_msgs</depend>
   <depend>bitbots_utils</depend>
   <depend>dynamic_stack_decider</depend>
