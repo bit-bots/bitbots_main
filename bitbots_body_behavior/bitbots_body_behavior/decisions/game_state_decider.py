@@ -26,7 +26,7 @@ class GameStateDecider(AbstractDecisionElement):
 
         game_state_number = self.blackboard.gamestate.get_gamestate()
         #todo this is a temporary hack to make GUI work
-        if game_state_number == GameState.GAMESTATE_INITAL:
+        if game_state_number == GameState.GAMESTATE_INITIAL:
             return "INITIAL"
         elif game_state_number == GameState.GAMESTATE_READY:
             return "READY"

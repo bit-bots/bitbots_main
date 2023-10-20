@@ -22,7 +22,7 @@ class GameStatusCapsule:
         self.free_kick_kickoff_team = None
 
     def is_game_state_equals(self, value):
-        assert value in [GameState.GAMESTATE_PLAYING, GameState.GAMESTATE_FINISHED, GameState.GAMESTATE_INITAL,
+        assert value in [GameState.GAMESTATE_PLAYING, GameState.GAMESTATE_FINISHED, GameState.GAMESTATE_INITIAL,
                          GameState.GAMESTATE_READY, GameState.GAMESTATE_SET]
         return value == self.get_gamestate()
 
