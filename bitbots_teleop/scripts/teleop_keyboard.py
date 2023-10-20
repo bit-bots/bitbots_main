@@ -2,7 +2,6 @@
 
 # This script was based on the teleop_twist_keyboard package
 # original code can be found at https://github.com/ros-teleop/teleop_twist_keyboard
-import math
 import os
 import threading
 
@@ -16,97 +15,12 @@ from bitbots_utils.transforms import quat_from_yaw
 
 import sys, select, termios, tty
 from rclpy.action import ActionClient
-from bitbots_msgs.action import Kick
-from geometry_msgs.msg import Vector3, Quaternion
+from bitbots_msgs.action import Kick, Dynup
+from geometry_msgs.msg import Vector3
 from std_msgs.msg import Bool
 from std_srvs.srv import Empty
-from tf_transformations import quaternion_from_euler
-import argparse
 
-# the following encodes walkready poses for various robots. could be done more nicely via some config
 
-__walkready_joints__ = {
-    "wolfgang":
-        [("HeadPan", 0.0),
-         ("HeadTilt", 0.0),
-         ("LShoulderPitch", math.radians(75.27)),
-         ("LShoulderRoll", 0.0),
-         ("LElbow", math.radians(35.86)),
-         ("RShoulderPitch", math.radians(-75.58)),
-         ("RShoulderRoll", 0.0),
-         ("RElbow", math.radians(-36.10)),
-         ("LHipYaw", -0.0112),
-         ("LHipRoll", 0.0615),
-         ("LHipPitch", 0.4732),
-         ("LKnee", 1.0058),
-         ("LAnklePitch", -0.4512),
-         ("LAnkleRoll", 0.0625),
-         ("RHipYaw", 0.0112),
-         ("RHipRoll", -0.0615),
-         ("RHipPitch", -0.4732),
-         ("RKnee", -1.0059),
-         ("RAnklePitch", 0.4512),
-         ("RAnkleRoll", -0.0625)],
-    "robotis_op2":
-        [("LElbow", math.radians(-60)),
-         ("RElbow", math.radians(60)),
-         ("LShoulderPitch", math.radians(120.0)),
-         ("RShoulderPitch", math.radians(-120.0))],
-    "op3":
-        [("l_el", math.radians(-140)),
-         ("r_el", math.radians(140)),
-         ("l_sho_pitch", math.radians(-135)),
-         ("r_sho_pitch", math.radians(135)),
-         ("l_sho_roll", math.radians(-90)),
-         ("r_sho_roll", math.radians(90))],
-    "nao":
-        [("LShoulderPitch", 1.57),
-         ("RShoulderPitch", 1.57),
-         ('LShoulderRoll', 0.3),
-         ('RShoulderRoll', -0.3)],
-    "rfc":
-        [("LeftElbow", math.radians(-90.0)),
-         ("RightElbow", math.radians(90.0)),
-         ("LeftShoulderPitch [shoulder]", math.radians(45.0),),
-         ("RightShoulderPitch [shoulder]", math.radians(-45.0))],
-    "chape":
-        [("leftElbowYaw", math.radians(-160)),
-         ("rightElbowYaw", math.radians(160)),
-         ("leftShoulderPitch[shoulder]", math.radians(75.27)),
-         ("rightShoulderPitch[shoulder]", math.radians(75.58)),
-         ("leftShoulderYaw", math.radians(-75.58)),
-         ("rightShoulderYaw", math.radians(75.58))],
-    "mrl_hsl":
-        [("Shoulder-L [shoulder]", math.radians(60.0)),
-         ("Shoulder-R [shoulder]", math.radians(-60.0)),
-         ("UpperArm-L", math.radians(10.0)),
-         ("UpperArm-R", math.radians(-10.0)),
-         ("LowerArm-L", math.radians(-135.0)),
-         ("LowerArm-R", math.radians(135.0))],
-    "nugus":
-        [("left_elbow_pitch", math.radians(-120)),
-         ("right_elbow_pitch", math.radians(-120)),
-         ("left_shoulder_pitch [shoulder]", math.radians(120)),
-         ("right_shoulder_pitch [shoulder]", math.radians(120)),
-         ("left_shoulder_roll", math.radians(20)),
-         ("right_shoulder_roll", math.radians(-20))],
-    "sahrv74":
-        [("left_shoulder_pitch [shoulder]", math.radians(60.0)),
-         ("right_shoulder_pitch [shoulder]", math.radians(60.0)),
-         ("left_shoulder_roll", math.radians(10.0)),
-         ("right_shoulder_roll", math.radians(10.0)),
-         ("left_elbow", math.radians(-135.0)),
-         ("right_elbow", math.radians(-135.0))],
-    "bez":
-        [("left_arm_motor_0 [shoulder]", math.radians(0)),
-         ("right_arm_motor_0 [shoulder]", math.radians(0)),
-         ("left_arm_motor_1", math.radians(170)),
-         ("right_arm_motor_1", math.radians(170))]
-}
-
-__velocity__ = 5.0
-__accelerations__ = -1.0
-__max_currents__ = -1.0
 
 msg = """
 BitBots Teleop
@@ -185,29 +99,6 @@ class TeleopKeyboard(Node):
 
         self.settings = termios.tcgetattr(sys.stdin)
 
-        parser = argparse.ArgumentParser()
-        parser.add_argument('--robot-type',
-                            help="Which robot type is used {wolfgang, op2, op3, nao, rfc, chape, mrl_hsl}",
-                            default="wolfgang")
-        args, unknown = parser.parse_known_args()
-        robot_type = args.robot_type
-        if robot_type not in ["wolfgang", "op2", "op3", "nao", "rfc", "chape", "mrl_hsl"]:
-            self.get_logger().fatal(
-                f"Robot type {robot_type} not known. Should be one of [wolfgang, op2, op3, nao, rfc, chape, mrl_hsl]")
-            exit()
-
-        # generate walkready command
-        joint_names = []
-        joint_positions = []
-        for joint_tuple in __walkready_joints__[robot_type]:
-            joint_names.append(joint_tuple[0])
-            joint_positions.append(joint_tuple[1])
-        self.walkready = JointCommand(
-            joint_names=joint_names,
-            velocities=[__velocity__] * len(joint_names),
-            accelerations=[__accelerations__] * len(joint_names),
-            max_currents=[__max_currents__] * len(joint_names),
-            positions=joint_positions)
 
         # Walking Part
         self.pub = self.create_publisher(Twist, 'cmd_vel', 1)
@@ -242,7 +133,6 @@ class TeleopKeyboard(Node):
         self.head_tilt_step = 0.05
 
         self.walk_kick_pub = self.create_publisher(Bool, "kick", 1)
-        self.joint_pub = self.create_publisher(JointCommand, "DynamixelController/command", 1)
 
         self.reset_robot = self.create_client(Empty, "/reset_pose")
         self.reset_ball = self.create_client(Empty, "/reset_ball")
@@ -250,7 +140,16 @@ class TeleopKeyboard(Node):
         print(msg)
 
         self.frame_prefix = "" if os.environ.get("ROS_NAMESPACE") is None else os.environ.get("ROS_NAMESPACE") + "/"
-        self.client = ActionClient(self, Kick, 'dynamic_kick')
+
+        self.dynup_client = ActionClient(self, Dynup, 'dynup')
+        if not self.dynup_client.wait_for_server(timeout_sec=5.0):
+            self.get_logger().error('Kick action server not available after waiting 5 seconds')
+
+        self.kick_client = ActionClient(self, Kick, 'dynamic_kick')
+        if not self.kick_client.wait_for_server(timeout_sec=5.0):
+            self.get_logger().error('Kick action server not available after waiting 5 seconds')
+
+
 
     def getKey(self):
         tty.setraw(sys.stdin.fileno())
@@ -258,6 +157,14 @@ class TeleopKeyboard(Node):
         key = sys.stdin.read(1)
         termios.tcsetattr(sys.stdin, termios.TCSADRAIN, self.settings)
         return key
+    
+    def getWalkready(self):
+        goal = Dynup.Goal()
+        goal.direction = "walkready"
+        result: Dynup.Result = self.dynup_client.send_goal(goal).result
+        if not result.successful:
+            self.get_logger().error("Could not execute walkready animation")
+        return result.successful
 
     def generate_kick_goal(self, x, y, direction):
         kick_goal = Kick.Goal()
@@ -297,40 +204,40 @@ class TeleopKeyboard(Node):
                     self.head_pub.publish(self.head_msg)
                 elif key == 'y':
                     # kick left forward
-                    self.client.send_goal_async(self.generate_kick_goal(0.2, 0.1, 0))
+                    self.kick_client.send_goal_async(self.generate_kick_goal(0.2, 0.1, 0))
                 elif key == '<':
                     # kick left side ball left
-                    self.client.send_goal_async(self.generate_kick_goal(0.2, 0.1, -1.57))
+                    self.kick_client.send_goal_async(self.generate_kick_goal(0.2, 0.1, -1.57))
                 elif key == '>':
                     # kick left side ball center
-                    self.client.send_goal_async(self.generate_kick_goal(0.2, 0, -1.57))
+                    self.kick_client.send_goal_async(self.generate_kick_goal(0.2, 0, -1.57))
                 elif key == 'c':
                     # kick right forward
-                    self.client.send_goal_async(self.generate_kick_goal(0.2, -0.1, 0))
+                    self.kick_client.send_goal_async(self.generate_kick_goal(0.2, -0.1, 0))
                 elif key == 'v':
                     # kick right side ball right
-                    self.client.send_goal_async(self.generate_kick_goal(0.2, -0.1, 1.57))
+                    self.kick_client.send_goal_async(self.generate_kick_goal(0.2, -0.1, 1.57))
                 elif key == 'V':
                     # kick right side ball center
-                    self.client.send_goal_async(self.generate_kick_goal(0.2, 0, 1.57))
+                    self.kick_client.send_goal_async(self.generate_kick_goal(0.2, 0, 1.57))
                 elif key == "x":
                     # kick center forward
-                    self.client.send_goal_async(self.generate_kick_goal(0.2, 0, 0))
+                    self.kick_client.send_goal_async(self.generate_kick_goal(0.2, 0, 0))
                 elif key == "X":
                     # kick center backwards
-                    self.client.send_goal_async(self.generate_kick_goal(-0.2, 0, 0))
+                    self.kick_client.send_goal_async(self.generate_kick_goal(-0.2, 0, 0))
                 elif key == "b":
                     # kick left backwards
-                    self.client.send_goal_async(self.generate_kick_goal(-0.2, 0.1, 0))
+                    self.kick_client.send_goal_async(self.generate_kick_goal(-0.2, 0.1, 0))
                 elif key == "n":
                     # kick right backwards
-                    self.client.send_goal_async(self.generate_kick_goal(-0.2, -0.1, 0))
+                    self.kick_client.send_goal_async(self.generate_kick_goal(-0.2, -0.1, 0))
                 elif key == "B":
                     # kick left backwards
-                    self.client.send_goal_async(self.generate_kick_goal(0, 0.14, -1.57))
+                    self.kick_client.send_goal_async(self.generate_kick_goal(0, 0.14, -1.57))
                 elif key == "N":
                     # kick right backwards
-                    self.client.send_goal_async(self.generate_kick_goal(0, -0.14, 1.57))
+                    self.kick_client.send_goal_async(self.generate_kick_goal(0, -0.14, 1.57))
                 elif key == 'Y':
                     # kick left walk
                     self.walk_kick_pub.publish(Bool(data=False))
@@ -339,8 +246,7 @@ class TeleopKeyboard(Node):
                     self.walk_kick_pub.publish(Bool(data=True))
                 elif key == 'F':
                     # play walkready animation
-                    self.walkready.header.stamp = self.get_clock().now().to_msg()
-                    self.joint_pub.publish(self.walkready)
+                    self.getWalkready()
                 elif key == 'r':
                     # reset robot in sim
                     try:
