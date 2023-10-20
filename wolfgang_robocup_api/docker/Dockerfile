@@ -88,7 +88,7 @@ RUN ln -s /robocup-logs $HOME/rosbags
 
 # Setup runtime
 ENV DEBIAN_FRONTEND=readline
-ENV ROS_LOCALHOST_ONLY=1
+ENV ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST
 ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 COPY entrypoint.sh /usr/local/bin/entrypoint
 ENTRYPOINT ["/usr/local/bin/entrypoint"]
