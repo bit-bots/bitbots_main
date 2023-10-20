@@ -120,13 +120,6 @@ bitbots_hardware_rqt:
   debian: *bitbots_hardware_rqt
   fedora: *bitbots_hardware_rqt
 
-bitbots_convenience_frames:
-  ubuntu: &bitbots_convenience_frames
-    source:
-      uri: https://raw.githubusercontent.com/bit-bots/bitbots_misc/master/bitbots_convenience_frames/.rdmanifest
-  debian: *bitbots_convenience_frames
-  fedora: *bitbots_convenience_frames
-
 bitbots_teleop:
   ubuntu: &bitbots_teleop
     source:
