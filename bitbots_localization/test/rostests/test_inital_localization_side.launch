@@ -1,5 +1,5 @@
 <launch>
-    <test pkg="bitbots_localization" exec="test_inital_localization_side.py" test-name="test_inital_localization_side"/>
+    <test pkg="bitbots_localization" exec="test_initial_localization_side.py" test-name="test_initial_localization_side"/>
 
     <!-- load the general simulator and motion -->
     <include file="$(find-pkg-share bitbots_utils)/launch/simulator.launch">
