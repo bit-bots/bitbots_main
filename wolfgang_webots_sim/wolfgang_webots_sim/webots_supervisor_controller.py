@@ -117,7 +117,7 @@ class SupervisorController:
                 self.ros_node.get_logger().warn("Proto has joint without name", once=True)
             # substract the "Joint" keyword due to naming convention
             if name[-5:] != "Joint":
-                self.ros_node.get_logger().warn(f"Joint names are expected to end with \"Joint\". {name} does not.", once=True)
+                self.ros_node.get_logger().warn(f"Joint names are expected to end with \"Joint\". \"{name}\" does not.", once=True)
             name = name[:-5]
             joint_dict[name] = node
             # the joints dont have children but an "endpoint" that we need to search through
