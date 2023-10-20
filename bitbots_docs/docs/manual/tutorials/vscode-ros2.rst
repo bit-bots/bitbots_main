@@ -70,8 +70,6 @@ An example vscode launch configuration and the corresponding python lauch file c
                         "base_link_frame": "base_link",
                         "odom_frame": "odom",
                         "map_frame": "map",
-                        "ball_frame": "ball",
-                        "ball_approach_frame": "ball_approach_frame",
                         "base_footprint_frame": "base_footprint"
                     }],
                 remappings=[("/head_motor_goals", "/DynamixelController/command")]
