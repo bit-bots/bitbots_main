@@ -10,7 +10,6 @@ include:
     - bitbots_misc:
         - bitbots_basler_camera
         - bitbots_bringup
-        - bitbots_convenience_frames
         - bitbots_extrinsic_calibration
         - bitbots_ipm
         - bitbots_teleop
