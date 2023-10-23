@@ -1,7 +1,6 @@
 {
     "author": "Unknown",
-    "description": "Edit me!",
-    "hostname": "nuc1",
+    "description": "An animation that mitigates the damage of a fall on the front, by pulling the arms in.",
     "keyframes": [
         {
             "duration": 0.01,

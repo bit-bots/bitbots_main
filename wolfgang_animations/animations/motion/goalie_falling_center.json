@@ -1,7 +1,6 @@
 {
     "author": "Unknown",
-    "description": "Edit me!",
-    "hostname": "TheArchives",
+    "description": "Results in the goalie splitting its legs, so it blocks the goal. DO NOT RUN THIS ON THE ACTUAL ROBOT (sim only).",
     "keyframes": [
         {
             "duration": 0.1,
@@ -33,6 +32,6 @@
         }
     ],
     "last_edited": "2021-05-06 10:29:41.094173",
-    "name": "None yet",
+    "name": "Goalie falling center",
     "version": 0
 }

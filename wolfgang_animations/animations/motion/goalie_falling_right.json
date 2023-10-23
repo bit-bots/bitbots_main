@@ -1,37 +1,36 @@
 {
     "author": "Unknown",
-    "description": "Edit me!",
-    "hostname": "TheArchives",
+    "description": "Results in the goalie falling to the right with an extended right arm.",
     "keyframes": [
-{
- "duration": 0.1,
- "goals": {
- "HeadPan" : 0.0,
- "HeadTilt" : 0.0,
- "LHipYaw" : -0.0006957411352730921,
- "LHipRoll" : 2.4179578166451106,
- "LHipPitch" : 6.875494,
- "LKnee" : 0.0,
- "LAnklePitch" : 6.875494,
- "LAnkleRoll" : 2.6736751638781087,
- "LShoulderPitch" : -179,
- "LShoulderRoll" : 0.0,
- "LElbow" : -90,
- "RHipYaw" : 0.00077231963918347,
- "RHipRoll" : -5.162227874600987,
- "RHipPitch" : -30.848050774485884,
- "RKnee" : -120.81746642070242,
- "RAnklePitch" : 51.9689807724419,
- "RAnkleRoll" : -6.850795653242464,
- "RShoulderPitch" : 179,
- "RShoulderRoll" : 0.0,
- "RElbow" : 90
-},
- "name": "generated frame",
- "pause": 0.0
- }
+        {
+        "duration": 0.1,
+        "goals": {
+        "HeadPan" : 0.0,
+        "HeadTilt" : 0.0,
+        "LHipYaw" : -0.0006957411352730921,
+        "LHipRoll" : 2.4179578166451106,
+        "LHipPitch" : 6.875494,
+        "LKnee" : 0.0,
+        "LAnklePitch" : 6.875494,
+        "LAnkleRoll" : 2.6736751638781087,
+        "LShoulderPitch" : -179,
+        "LShoulderRoll" : 0.0,
+        "LElbow" : -90,
+        "RHipYaw" : 0.00077231963918347,
+        "RHipRoll" : -5.162227874600987,
+        "RHipPitch" : -30.848050774485884,
+        "RKnee" : -120.81746642070242,
+        "RAnklePitch" : 51.9689807724419,
+        "RAnkleRoll" : -6.850795653242464,
+        "RShoulderPitch" : 179,
+        "RShoulderRoll" : 0.0,
+        "RElbow" : 90
+        },
+        "name": "generated frame",
+        "pause": 0.0
+        }
     ],
     "last_edited": "2021-05-06 10:29:41.094173",
-    "name": "None yet",
+    "name": "Goalie Falling Right",
     "version": 0
 }

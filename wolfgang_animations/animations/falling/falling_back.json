@@ -1,7 +1,6 @@
 {
     "author": "Tanja",
     "description": "",
-    "hostname": "compi-u",
     "keyframes": [
         {
             "duration": 0.01,
@@ -27,7 +26,7 @@
                 "RShoulderPitch": 0.0,
                 "RShoulderRoll": 0.0
             },
-            "name": "walkready",
+            "name": "keyframe_1",
             "pause": 0.2
         }
     ],

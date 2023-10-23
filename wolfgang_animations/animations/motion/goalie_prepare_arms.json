@@ -1,7 +1,6 @@
 {
     "author": "Unknown",
-    "description": "Edit me!",
-    "hostname": "TheArchives",
+    "description": "Puts up the arms of the robot so it can throw itself on the ground to block the goal faster. (For simulation penalty shootouts)",
     "keyframes": [
         {
             "duration": 1.0,
@@ -33,6 +32,6 @@
         }
     ],
     "last_edited": "2021-05-06 10:29:41.094173",
-    "name": "None yet",
+    "name": "Goalie Prepare Arms",
     "version": 0
 }

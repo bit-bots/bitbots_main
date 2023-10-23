@@ -1,7 +1,6 @@
 {
     "author": "Marc",
     "description": "Sit robot down",
-    "hostname": "marc",
     "keyframes": [
         {
             "duration": 1.0,

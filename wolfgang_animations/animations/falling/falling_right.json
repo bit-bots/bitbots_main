@@ -1,7 +1,6 @@
 {
     "author": "Unknown",
-    "description": "Edit me!",
-    "hostname": "Skynet",
+    "description": "An animation that mitigates the damage of a fall on the right side.",
     "keyframes": [
         {
             "duration": 0.01,

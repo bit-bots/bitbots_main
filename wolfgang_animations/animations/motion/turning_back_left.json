@@ -1,7 +1,6 @@
 {
     "author": "Unknown", 
-    "description": "Edit me!", 
-    "hostname": "compi-t", 
+    "description": "Turns the robot on the back, when it lies on its left side.", 
     "keyframes": [
         {
             "duration": 1.0, 

@@ -1,36 +1,35 @@
 {
- "author": "walkready_script", 
- "description": "none",
- "hostname": "tams159", 
- "keyframes": [ 
- { 
- "duration": 1.0, 
- "goals": { 
- "HeadPan" : 0.0,
- "HeadTilt" : 0.0,
- "LHipYaw" : -0.00014488551936841167,
- "LHipRoll" : 5.843569741199503,
- "LHipPitch" : 16.921439726925605,
- "LKnee" : 63.779899882296974,
- "LAnklePitch" : -31.85822805341032,
- "LAnkleRoll" : 5.843636389466469,
- "LShoulderPitch" : 75.27910266806222,
- "LShoulderRoll" : -0.020062925889149368,
- "LElbow" : 35.86471433552932,
- "RHipYaw" : 0.000308978186241276,
- "RHipRoll" : -5.563113355828915,
- "RHipPitch" : -16.845416637922956,
- "RKnee" : -63.811661089644105,
- "RAnklePitch" : 31.965934474853857,
- "RAnkleRoll" : -6.850938895767449,
- "RShoulderPitch" : -75.58926547530199,
- "RShoulderRoll" : 0.019571467194590405,
- "RElbow" : -36.10375237446914
-},
- "name": "generated frame", 
- "pause": 0.5 
- }
- ], 
- "name": "walkready", 
-"version": 0 
-} 
+    "author": "walkready_script",
+    "description": "Walkready pose in simulation",
+    "keyframes": [
+        {
+            "duration": 1.0,
+            "goals": {
+                "HeadPan": 0.0,
+                "HeadTilt": 0.0,
+                "LHipYaw": -0.00014488551936841167,
+                "LHipRoll": 5.843569741199503,
+                "LHipPitch": 16.921439726925605,
+                "LKnee": 63.779899882296974,
+                "LAnklePitch": -31.85822805341032,
+                "LAnkleRoll": 5.843636389466469,
+                "LShoulderPitch": 75.27910266806222,
+                "LShoulderRoll": -0.020062925889149368,
+                "LElbow": 35.86471433552932,
+                "RHipYaw": 0.000308978186241276,
+                "RHipRoll": -5.563113355828915,
+                "RHipPitch": -16.845416637922956,
+                "RKnee": -63.811661089644105,
+                "RAnklePitch": 31.965934474853857,
+                "RAnkleRoll": -6.850938895767449,
+                "RShoulderPitch": -75.58926547530199,
+                "RShoulderRoll": 0.019571467194590405,
+                "RElbow": -36.10375237446914
+            },
+            "name": "generated frame",
+            "pause": 0.5
+        }
+    ],
+    "name": "walkready",
+    "version": 0
+}
