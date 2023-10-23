@@ -273,6 +273,16 @@ class RobotController:
             self.accel_head.enable(self.timestep)
             self.gyro_head = self.robot_node.getDevice("imu_head gyro")
             self.gyro_head.enable(self.timestep)
+
+            self.accel_l_foot = self.robot_node.getDevice("imu_l_foot accelerometer")
+            self.accel_l_foot.enable(self.timestep)
+            self.gyro_l_foot = self.robot_node.getDevice("imu_l_foot gyro")
+            self.gyro_l_foot.enable(self.timestep)
+
+            self.accel_r_foot = self.robot_node.getDevice("imu_r_foot accelerometer")
+            self.accel_r_foot.enable(self.timestep)
+            self.gyro_r_foot = self.robot_node.getDevice("imu_r_foot gyro")
+            self.gyro_r_foot.enable(self.timestep)
         self.camera = self.robot_node.getDevice(camera_name)
         self.camera_counter = 0
         if self.camera_active:
@@ -299,9 +309,13 @@ class RobotController:
                 "camera_optical_frame").get_parameter_value().string_value
             self.head_imu_frame = self.ros_node.get_parameter("head_imu_frame").get_parameter_value().string_value
             self.pub_js = self.ros_node.create_publisher(JointState, base_ns + "joint_states", 1)
+
             self.pub_imu = self.ros_node.create_publisher(Imu, base_ns + "imu/data_raw", 1)
 
-            self.pub_imu_head = self.ros_node.create_publisher(Imu, base_ns + "imu_head/data", 1)
+            self.pub_imu_head = self.ros_node.create_publisher(Imu, base_ns + "imu_head/data_raw", 1)
+            self.pub_imu_l_foot = self.ros_node.create_publisher(Imu, base_ns + "imu_l_foot/data_raw", 1)
+            self.pub_imu_r_foot = self.ros_node.create_publisher(Imu, base_ns + "imu_r_foot/data_raw", 1)
+
             self.pub_cam = self.ros_node.create_publisher(Image, base_ns + "camera/image_proc", 1)
             self.pub_cam_info = self.ros_node.create_publisher(CameraInfo, base_ns + "camera/camera_info", 1)
 
@@ -440,22 +454,31 @@ class RobotController:
     def publish_joint_states(self):
         self.pub_js.publish(self.get_joint_state_msg())
 
-    def get_imu_msg(self, head=False):
+    def get_imu_msg(self, which="torso"):
         msg = Imu()
         msg.header.stamp = Time(seconds=int(self.time), nanoseconds=self.time % 1 * 1e9).to_msg()
-        if head:
-            msg.header.frame_id = self.head_imu_frame
-        else:
+        if which == "torso":
             msg.header.frame_id = self.imu_frame
-
-        # change order because webots has different axis
-        if head:
+            accel_vels = self.accel.getValues()
+            msg.linear_acceleration.x = accel_vels[0]
+            msg.linear_acceleration.y = accel_vels[1]
+            msg.linear_acceleration.z = accel_vels[2]
+        elif which == "head":
+            # change order because rotated frames in webots are weired
+            msg.header.frame_id = self.head_imu_frame
             accel_vels = self.accel_head.getValues()
             msg.linear_acceleration.x = accel_vels[2]
             msg.linear_acceleration.y = -accel_vels[0]
             msg.linear_acceleration.z = -accel_vels[1]
-        else:
-            accel_vels = self.accel.getValues()
+        elif which == "l_foot":
+            msg.header.frame_id = self.l_sole_frame
+            accel_vels = self.accel_l_foot.getValues()
+            msg.linear_acceleration.x = accel_vels[0]
+            msg.linear_acceleration.y = accel_vels[1]
+            msg.linear_acceleration.z = accel_vels[2]
+        elif which == "r_foot":
+            msg.header.frame_id = self.r_sole_frame
+            accel_vels = self.accel_r_foot.getValues()
             msg.linear_acceleration.x = accel_vels[0]
             msg.linear_acceleration.y = accel_vels[1]
             msg.linear_acceleration.z = accel_vels[2]
@@ -465,12 +488,7 @@ class RobotController:
         if msg.linear_acceleration.x == 0 and msg.linear_acceleration.y == 0 and msg.linear_acceleration.z == 0:
             msg.linear_acceleration.z = 0.001
 
-        if head:
-            gyro_vels = self.gyro_head.getValues()
-            msg.angular_velocity.x = gyro_vels[2]
-            msg.angular_velocity.y = -gyro_vels[0]
-            msg.angular_velocity.z = -gyro_vels[1]
-        else:
+        if which == "torso":
             gyro_vels = self.gyro.getValues()
             msg.angular_velocity.x = gyro_vels[0]
             msg.angular_velocity.y = gyro_vels[1]
@@ -478,12 +496,30 @@ class RobotController:
                 msg.angular_velocity.z = gyro_vels[2]
             else:
                 msg.angular_velocity.z = 0.0
+        elif which == "head":
+            gyro_vels = self.gyro_head.getValues()
+            msg.angular_velocity.x = gyro_vels[2]
+            msg.angular_velocity.y = -gyro_vels[0]
+            msg.angular_velocity.z = -gyro_vels[1]
+        elif which == "l_foot":
+            gyro_vels = self.gyro_l_foot.getValues()
+            msg.angular_velocity.x = gyro_vels[0]
+            msg.angular_velocity.y = gyro_vels[1]
+            msg.angular_velocity.z = gyro_vels[2]
+        elif which == "r_foot":
+            gyro_vels = self.gyro_r_foot.getValues()
+            msg.angular_velocity.x = gyro_vels[0]
+            msg.angular_velocity.y = gyro_vels[1]
+            msg.angular_velocity.z = gyro_vels[2]
         return msg
 
     def publish_imu(self):
-        self.pub_imu.publish(self.get_imu_msg(head=False))
+        self.pub_imu.publish(self.get_imu_msg())
         if self.is_wolfgang:
-            self.pub_imu_head.publish(self.get_imu_msg(head=True))
+            self.pub_imu_head.publish(self.get_imu_msg(which="head"))
+            self.pub_imu_l_foot.publish(self.get_imu_msg(which="l_foot"))
+            self.pub_imu_r_foot.publish(self.get_imu_msg(which="r_foot"))
+
 
     def publish_camera(self):
         img_msg = Image()
