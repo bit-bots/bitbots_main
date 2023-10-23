@@ -56,7 +56,7 @@ class AbstractPlayAnimation(AbstractHCMActionElement):
             self.blackboard.node.get_logger().warn("Tried to play an animation with an empty name!")
             return False
         first_try = self.blackboard.animation_action_client.wait_for_server(
-            timeout_sec=self.blackboard.node.get_parameter('hcm.anim_server_wait_time').get_parameter_value().double_value)
+            timeout_sec=self.blackboard.node.get_parameter('hcm.anim_server_wait_time').value)
         if not first_try:
             server_running = False
             while not server_running and rclpy.ok():
@@ -157,12 +157,12 @@ class PlayAnimationDynup(AbstractHCMActionElement):
         """
 
         first_try = self.blackboard.dynup_action_client.wait_for_server(
-            timeout_sec=self.blackboard.node.get_parameter('hcm.anim_server_wait_time').get_parameter_value().double_value)
+            timeout_sec=self.blackboard.node.get_parameter('hcm.anim_server_wait_time').value)
         if not first_try:
             server_running = False
             while not server_running and rclpy.ok():
                 self.blackboard.node.get_logger().warn(
-                                      "Dynup Action Server not running! Dynup cannot work without dynup server!"
+                                      "Dynup Action Server not running! Dynup cannot work without dynup server! "
                                       "Will now wait until server is accessible!",
                                       throttle_duration_sec=10.0)
                 server_running = self.blackboard.dynup_action_client.wait_for_server(timeout_sec=1)

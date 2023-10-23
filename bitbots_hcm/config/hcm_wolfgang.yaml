@@ -10,8 +10,8 @@
     motor_off_time: 30000000.0 # time of no use or updates when the hcm goes to soft off
     motor_timeout_duration: 0.5 # time without messages from the servos till error is produced [s]
 
-    #Animations
-    anim_server_wait_time: 1.0 # time the hcm waits for animation server
+    # Animations
+    anim_server_wait_time: 10.0 # time the hcm waits for animation server
     animations:
       falling_front: "falling_front"
       falling_back: "falling_back"
