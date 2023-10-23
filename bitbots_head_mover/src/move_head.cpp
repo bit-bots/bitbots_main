@@ -375,18 +375,18 @@ public:
   /**
    * @brief Slows down the speed of the joint that needs to travel less distance so both joints reach the goal at the same time
    *
-   * @param delta_fast_joint The delta of the joint that needs to travel less distance and therefore reaches the goal faster
-   * @param delta_my_joint The delta of the joint that needs to travel more distance and therefore reaches the goal slower
+   * @param delta_faster_joint The delta of the joint that needs to travel less distance and therefore reaches the goal faster
+   * @param delta_joint The delta of the joint that needs to travel more distance and therefore reaches the goal slower
    * @param speed The maximum speed of the faster joint (the joint that needs to travel less distance)
    * @return double The adjusted speed of the faster joint
    */
   double calculate_lower_speed(
-    double delta_fast_joint,
-    double delta_my_joint,
+    double delta_faster_joint,
+    double delta_joint,
     double speed) {
     double estimated_time = delta_fast_joint / speed;
     if (estimated_time != 0) {
-      return delta_my_joint / estimated_time;
+      return delta_joint / estimated_time;
     } else {
       return 0;
     }
