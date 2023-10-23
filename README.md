@@ -44,7 +44,7 @@ Other scripts are available in the `scripts` folder, [documented here](scripts/R
 
 The naming prefix of submodules indicates the scope of the packages.
 
-* bitbots_ : specific RoboCup code of our team which follows interface specification of humanoid_league_msgs
+* bitbots_ : specific RoboCup code of our team
 * humanoid_league_ : packages which are useful for all teams in the RoboCup Humanoid League, e.g. visualization tools and game controller
 * no prefix : packages which are useful in general and usable outside of RoboCup
 * lib : folder for third party libraries that need to be build from source

@@ -9,7 +9,6 @@ include:
     - bitbots_misc:
         - bitbots_basler_camera
         - bitbots_bringup
-        - bitbots_convenience_frames
         - bitbots_extrinsic_calibration
         - bitbots_ipm
         - bitbots_teleop
@@ -45,7 +44,6 @@ include:
         - humanoid_league_map_generator
         - humanoid_league_speaker
         - humanoid_league_team_communication
-    - humanoid_league_msgs
     - lib:
         - audio_common
         - bio_ik
