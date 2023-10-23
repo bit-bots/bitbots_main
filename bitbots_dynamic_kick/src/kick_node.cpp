@@ -260,6 +260,8 @@ rclcpp_action::CancelResponse KickNode::cancelCb(std::shared_ptr<rclcpp_action::
 }
 
 void KickNode::acceptedCb(const std::shared_ptr<KickGoalHandle> goal) {
+  // Set flag so no other goal can be accepted
+  currently_kicking_ = true;
   // this needs to return quickly to avoid blocking the executor, so spin up a new thread
   std::thread{std::bind(&KickNode::executeCb, this, std::placeholders::_1), goal}.detach();
 }
@@ -269,6 +271,10 @@ rclcpp_action::GoalResponse KickNode::goalCb(
     std::shared_ptr<const bitbots_msgs::action::Kick::Goal> goal) {
   RCLCPP_INFO(this->get_logger(), "Received goal request");
   (void) uuid;
+  if (currently_kicking_) {
+    RCLCPP_INFO(this->get_logger(), "Already kicking, rejecting new goal");
+    return rclcpp_action::GoalResponse::REJECT;
+  }
   return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 
@@ -312,6 +318,8 @@ void KickNode::executeCb(const std::shared_ptr<KickGoalHandle> goal_handle) {
     result->result = bitbots_msgs::action::Kick::Result::SUCCESS;
     goal_handle->succeed(result);
   }
+  // Reset flag so new goals can be accepted
+  currently_kicking_ = false;
 }
 
 void KickNode::loopEngine(const std::shared_ptr<rclcpp_action::ServerGoalHandle<bitbots_msgs::action::Kick>> goal_handle) {

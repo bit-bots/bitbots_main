@@ -101,6 +101,7 @@ class KickNode : public rclcpp::Node{
   moveit::core::RobotStatePtr goal_state_;
   moveit::core::RobotStatePtr current_state_;
   OnSetParametersCallbackHandle::SharedPtr callback_handle_;
+  bool currently_kicking_ = false;
 
   std::string base_link_frame_, base_footprint_frame_, l_sole_frame_, r_sole_frame_;
 
