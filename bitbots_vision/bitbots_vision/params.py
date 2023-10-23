@@ -98,28 +98,4 @@ gen.add("yoeo_framework", str, description="The neural network framework that sh
 gen.add("ball_candidate_rating_threshold", float, description="A threshold for the minimum candidate rating", min=0.0, max=1.0)
 gen.add("ball_candidate_max_count", int, description="The maximum number of balls that should be published", min=0, max=50)
 
-gen.add("red_color_detector_h_zero_crossing", bool, description="Whether or not the red color detector interval includes the hue zero-crossing")
-gen.add("red_color_detector_lower_values_h", int, description="Lower bound for the red color detector hue", min=0, max=255)
-gen.add("red_color_detector_lower_values_s", int, description="Lower bound for the red color detector saturation", min=0, max=255)
-gen.add("red_color_detector_lower_values_v", int, description="Lower bound for the red color detector value/brightness", min=0, max=255)
-gen.add("red_color_detector_upper_values_h", int, description="Upper bound for the red color detector hue", min=0, max=255)
-gen.add("red_color_detector_upper_values_s", int, description="Upper bound for the red color detector saturation", min=0, max=255)
-gen.add("red_color_detector_upper_values_v", int, description="Upper bound for the red color detector value/brightness", min=0, max=255)
-
-gen.add("blue_color_detector_h_zero_crossing", bool, description="Whether or not the blue color detector interval includes the hue zero-crossing")
-gen.add("blue_color_detector_lower_values_h", int, description="Lower bound for the blue color detector hue", min=0, max=255)
-gen.add("blue_color_detector_lower_values_s", int, description="Lower bound for the blue color detector saturation", min=0, max=255)
-gen.add("blue_color_detector_lower_values_v", int, description="Lower bound for the blue color detector value/brightness", min=0, max=255)
-gen.add("blue_color_detector_upper_values_h", int, description="Upper bound for the blue color detector hue", min=0, max=255)
-gen.add("blue_color_detector_upper_values_s", int, description="Upper bound for the blue color detector saturation", min=0, max=255)
-gen.add("blue_color_detector_upper_values_v", int, description="Upper bound for the blue color detector value/brightness", min=0, max=255)
-
-gen.add("obstacle_finder_method", str, description="Method for the obstacle finder (distance, convex or step)")
-gen.add("obstacle_color_threshold", int, description="An obstacle is defined as blue/red if it contains more blue or red than this threshold (amount of pixels in per mille)", min=0, max=255)
-gen.add("obstacle_white_threshold", int, description="An obstacle that contains more white than this threshold and is not colored, is an goalpost in the conventional approach", min=0, max=255)
-gen.add("obstacle_candidate_min_width", int, description="Minimum width of an obstacle", min=1, max=640)
-gen.add("obstacle_candidate_max_width", int, description="Maximum width of an obstacle", min=1, max=640)
-gen.add("obstacle_finder_step_length", int, description="Length of an object detection step along the field boundary", min=1, max=640)
-gen.add("obstacle_finder_value_increase", float, description="Factor of the impact of the height of the field boundary on the distance threshold", min=0, max=10.0)
-
 gen.add("caching", bool, description="Used to deactivate caching for profiling reasons")
