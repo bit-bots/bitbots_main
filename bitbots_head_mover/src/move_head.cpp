@@ -384,7 +384,7 @@ public:
     double delta_faster_joint,
     double delta_joint,
     double speed) {
-    double estimated_time = delta_fast_joint / speed;
+    double estimated_time = delta_faster_joint / speed;
     if (estimated_time != 0) {
       return delta_joint / estimated_time;
     } else {
