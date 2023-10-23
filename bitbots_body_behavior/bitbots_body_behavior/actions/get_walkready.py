@@ -46,7 +46,7 @@ class GetWalkready(AbstractActionElement):
         if not server_running:
             while not server_running and rclpy.ok():
                 self.blackboard.node.get_logger().warn(
-                                      "Dynup Action Server not running! Dynup cannot work without dynup server!"
+                                      "Dynup Action Server not running! Dynup cannot work without dynup server! "
                                       "Will now wait until server is accessible!",
                                       throttle_duration_sec=10.0)
                 server_running = self.blackboard.animation.dynup_action_client.wait_for_server(timeout_sec=1)
