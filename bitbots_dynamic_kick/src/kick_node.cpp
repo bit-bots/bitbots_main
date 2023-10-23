@@ -314,54 +314,50 @@ void KickNode::executeCb(const std::shared_ptr<KickGoalHandle> goal_handle) {
   }
 }
 
-double KickNode::getTimeDelta() {
-  // compute actual time delta that happened
-  double dt;
-  double current_ros_time = this->get_clock()->now().seconds();
-
-  // first call needs to be handled specially
-  if (last_ros_update_time_ == 0) {
-    last_ros_update_time_ = current_ros_time;
-    return 0.001;
-  }
-
-  dt = current_ros_time - last_ros_update_time_;
-  // this can happen due to floating point precision or in simulation
-  if (dt == 0) {
-    RCLCPP_WARN(this->get_logger(), "dynamic kick: dt was 0");
-    dt = 0.001;
-  }
-  last_ros_update_time_ = current_ros_time;
-
-  return dt;
-}
-
 void KickNode::loopEngine(const std::shared_ptr<rclcpp_action::ServerGoalHandle<bitbots_msgs::action::Kick>> goal_handle) {
-  /* Do the loop as long as nothing cancels it */
-  double dt;
-  rclcpp::Time next_loop_time;
-  rclcpp::Time last_time = this->get_clock()->now();
-  while (rclcpp::ok()) {
-    next_loop_time = last_time + rclcpp::Duration::from_seconds(1.0 / engine_rate_);
-    last_time = this->get_clock()->now();
-    if (this->get_clock()->sleep_until(next_loop_time)) {
-      dt = getTimeDelta();
-      std::optional<bitbots_splines::JointGoals> motor_goals = kickStep(dt);
+  // Store the time of the last execution
+  auto last_time = this->get_clock()->now();
+  auto next_execution_time {last_time};
 
-      /* Publish feedback to the client */
+  // Loop to perform the kick trajectory
+  while (rclcpp::ok()) {
+    // Store time of this step
+    auto step_time = this->get_clock()->now();
+
+    // Check if enough time has passed to execute the next step
+    if (step_time >= next_execution_time) {
+      
+      // Determine the next execution time
+      next_execution_time = step_time + rclcpp::Duration::from_seconds(1.0 / engine_rate_);
+
+      // Get the time since the last execution
+      auto dt = step_time - last_time;
+
+      // Calculate the kick joint goals
+      std::optional<bitbots_splines::JointGoals> motor_goals = kickStep(dt.seconds());
+
+      // Publish feedback to the client
       auto feedback = std::make_shared<bitbots_msgs::action::Kick::Feedback>();
       feedback->percent_done = engine_.getPercentDone();
       feedback->chosen_foot = engine_.isLeftKick() ?
                               bitbots_msgs::action::Kick::Feedback::FOOT_LEFT
-                                                   : bitbots_msgs::action::Kick::Feedback::FOOT_RIGHT;
+                                                    : bitbots_msgs::action::Kick::Feedback::FOOT_RIGHT;
       goal_handle->publish_feedback(feedback);
 
+      // Send the joint goals to the robot
+      joint_goal_publisher_->publish(getJointCommand(motor_goals.value()));
+
+      // Break if the kick is finished
       if (feedback->percent_done >= 100) {
         break;
       }
-      joint_goal_publisher_->publish(getJointCommand(motor_goals.value()));
+
+      // Store the time of this execution
+      last_time = step_time;
+
     } else {
-      usleep(1);
+      // Sleep one millisecond to avoid busy waiting
+      std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
   }
 }

@@ -134,11 +134,6 @@ class KickNode : public rclcpp::Node{
   void publishSupportFoot(bool is_left_kick);
 
   /**
-   * Helper method to achieve correctly sampled rate
-   */
-  double getTimeDelta();
-
-  /**
    * Get JointCommand message for JointGoals
    */
   bitbots_msgs::msg::JointCommand getJointCommand(const bitbots_splines::JointGoals &goals);
