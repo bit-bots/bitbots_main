@@ -16,7 +16,7 @@ from bitbots_utils.transforms import quat_from_yaw
 import sys, select, termios, tty
 from rclpy.action import ActionClient
 from bitbots_msgs.action import Kick, Dynup
-from geometry_msgs.msg import Vector3
+from geometry_msgs.msg import Point, Vector3
 from std_msgs.msg import Bool
 from std_srvs.srv import Empty
 
@@ -170,7 +170,7 @@ class TeleopKeyboard(Node):
         kick_goal = Kick.Goal()
         kick_goal.header.stamp = self.get_clock().now().to_msg()
         kick_goal.header.frame_id = self.frame_prefix + "base_footprint"
-        kick_goal.ball_position = Vector3(x=float(x), y=float(y), z=0.0)
+        kick_goal.ball_position = Point(x=float(x), y=float(y), z=0.0)
         kick_goal.kick_direction = quat_from_yaw(direction)
         kick_goal.kick_speed = 1.0
         return kick_goal
