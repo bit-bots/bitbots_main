@@ -1,4 +1,4 @@
-YOEO-based Vision (September 2023)
+YOEO-based Vision (October 2023)
 ============================
 
 Description
@@ -50,6 +50,7 @@ looks like this:
             - robot_red
             - robot_blue
             - robot_unknown
+    team_colors: true
 
     segmentation:
         classes:
@@ -59,8 +60,12 @@ looks like this:
 
 Of course, the actual class names need to be adapted to your specific YOEO variant. The following names are supported:
 
-* Object detection: 'ball', 'goalpost', 'robot_red', 'robot_blue', 'robot_unknown'
+* Object detection: 'ball', 'goalpost', 'robot', 'robot_red', 'robot_blue', 'robot_unknown'
 * Semantic segmentation: 'background', 'lines', 'field'
+
+If 'team_colors' is set to true, the robot class has to be split into 'robot_red', 'robot_blue' and 'robot_unknown'. In
+all other cases, a single 'robot' class is expected and no team color detection will be available. Instead, all robots
+are detected as 'unknown'.
 
 How to Add New Classes?
 -----------------------
