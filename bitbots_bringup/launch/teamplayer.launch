@@ -19,6 +19,11 @@
         <arg name="sim" value="$(var sim)" />
     </include>
 
+    <!-- load the robot description -->
+    <include file="$(find-pkg-share bitbots_robot_description)/launch/load_robot_description.launch">
+        <arg name="sim" value="$(var sim)"/>
+    </include>
+
     <!-- load the motion -->
     <group if="$(var motion)">
         <include file="$(find-pkg-share bitbots_bringup)/launch/motion.launch">
