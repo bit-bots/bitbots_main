@@ -678,19 +678,18 @@ void DynupEngine::setGoals(const DynupRequest &goals) {
   // we re-request the values every time because they can be changed by dynamic reconfigure
   // and re-requesting them is fast enough
   double foot_distance, trunk_x_final, trunk_pitch, trunk_height;
-  bool walking_running = false;
   std::vector<rclcpp::Parameter> walking_params;
-  if (walking_param_client_->service_is_ready()) {
-    walking_params = walking_param_client_->get_parameters({"engine.trunk_pitch",
-                                                            "engine.trunk_height",
-                                                            "engine.foot_distance",
-                                                            "engine.trunk_x_offset"},
-                                                           std::chrono::duration<int64_t, std::milli>(10));
-    // when the walking was killed, service_is_ready is still true but the parameters come back empty
-    walking_running = !walking_params.empty();
-  }
+  // Gat params and wait for walking to be ready
+  walking_params = walking_param_client_->get_parameters({"engine.trunk_pitch",
+                                                          "engine.trunk_height",
+                                                          "engine.foot_distance",
+                                                          "engine.trunk_x_offset"},
+                                                          std::chrono::seconds(10));
 
-  if (walking_running) {
+  // when the walking was killed, service_is_ready is still true but the parameters come back empty
+  if (walking_params.empty()) {
+    RCLCPP_WARN(node_->get_logger(), "Walking is not running, using default parameters for walkready.");
+  } else {
     for (auto &param: walking_params) {
       if (param.get_name() == "engine.trunk_pitch") {
         trunk_pitch = param.get_value<double>();
@@ -709,8 +708,6 @@ void DynupEngine::setGoals(const DynupRequest &goals) {
     params_["trunk_height"] = rclcpp::Parameter("trunk_height", trunk_height);
     params_["foot_distance"] = rclcpp::Parameter("foot_distance", foot_distance);
     params_["trunk_x_final"] = rclcpp::Parameter("trunk_x_final", trunk_x_final);
-  } else {
-    RCLCPP_WARN(node_->get_logger(), "Walking is not running, using default parameters for walkready.");
   }
 
   if (goals.direction == "front") {
