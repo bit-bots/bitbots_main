@@ -106,7 +106,7 @@ def launch_setup(context, *args, **kwargs):
     rsp_node = Node(package='robot_state_publisher',
                     executable='robot_state_publisher',
                     respawn=True,
-                    # output='screen',
+                    output='screen',
                     parameters=[{
                         'robot_description': robot_description,
                         'publish_frequency': 100.0,
@@ -118,7 +118,7 @@ def launch_setup(context, *args, **kwargs):
     move_group_node = Node(
         package='moveit_ros_move_group',
         executable='move_group',
-        # output='screen',
+        output='screen',
         # hacky merging dicts
         parameters=[
             {   
