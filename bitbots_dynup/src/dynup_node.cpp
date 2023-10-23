@@ -341,10 +341,10 @@ bitbots_dynup::msg::DynupPoses DynupNode::getCurrentPoses() {
   bitbots_dynup::msg::DynupPoses msg;
   try {
     //0.2 second timeout for transformations
-    geometry_msgs::msg::Transform l_foot_transformed = tf_buffer_->lookupTransform(r_sole_frame_, l_sole_frame_, time, tf2::durationFromSec(0.2)).transform;
-    geometry_msgs::msg::Transform r_foot_transformed = tf_buffer_->lookupTransform(base_link_frame_, r_sole_frame_, time, tf2::durationFromSec(0.2)).transform;
-    geometry_msgs::msg::Transform l_hand_transformed = tf_buffer_->lookupTransform(base_link_frame_, l_wrist_frame_, time, tf2::durationFromSec(0.2)).transform;
-    geometry_msgs::msg::Transform r_hand_transformed = tf_buffer_->lookupTransform(base_link_frame_, r_wrist_frame_, time, tf2::durationFromSec(0.2)).transform;
+    geometry_msgs::msg::Transform l_foot_transformed = tf_buffer_->lookupTransform(r_sole_frame_, l_sole_frame_, time, tf2::durationFromSec(1.0)).transform;
+    geometry_msgs::msg::Transform r_foot_transformed = tf_buffer_->lookupTransform(base_link_frame_, r_sole_frame_, time, tf2::durationFromSec(1.0)).transform;
+    geometry_msgs::msg::Transform l_hand_transformed = tf_buffer_->lookupTransform(base_link_frame_, l_wrist_frame_, time, tf2::durationFromSec(1.0)).transform;
+    geometry_msgs::msg::Transform r_hand_transformed = tf_buffer_->lookupTransform(base_link_frame_, r_wrist_frame_, time, tf2::durationFromSec(1.0)).transform;
 
     std::function transform2pose =  [](geometry_msgs::msg::Transform transform) {
       geometry_msgs::msg::Pose pose;
