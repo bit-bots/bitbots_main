@@ -40,6 +40,7 @@ class OdometryFuser : public rclcpp::Node {
   std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
   rclcpp::Time fused_time_;
   std::string base_link_frame_, r_sole_frame_, l_sole_frame_, odom_frame_, rotation_frame_, imu_frame_;
+  bool imu_data_received_ = false;
 
   rclcpp::Subscription<biped_interfaces::msg::Phase>::SharedPtr walk_support_state_sub_;
   rclcpp::Subscription<biped_interfaces::msg::Phase>::SharedPtr kick_support_state_sub_;
