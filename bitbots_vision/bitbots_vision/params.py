@@ -76,7 +76,7 @@ gen.add("component_debug_image_active", bool, description="Activate/Deactivate t
 gen.add("component_field_detection_active", bool, description="Activate/Deactivate the field detection component")
 gen.add("component_goalpost_detection_active", bool, description="Activate/Deactivate the goalpost detection component")
 gen.add("component_line_detection_active", bool, description="Activate/Deactivate the line detection component")
-gen.add("component_obstacle_detection_active", bool, description="Activate/Deactivate the obstacle detection component")
+gen.add("component_robot_detection_active", bool, description="Activate/Deactivate the robot detection component")
 
 gen.add("vision_blind_threshold", int, description="Brightness threshold under which the vision thinks, that someone forgot the camera cap", min=0, max=765)
 

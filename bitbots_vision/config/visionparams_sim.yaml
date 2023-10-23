@@ -7,7 +7,7 @@ bitbots_vision:
     component_field_detection_active: true # activate the field detection
     component_goalpost_detection_active: false      # activate the goalpost detection
     component_line_detection_active: true           # activate the line detection
-    component_obstacle_detection_active: true       # activate the obstacle detection
+    component_robot_detection_active: true       # activate the robot detection
 
     vision_blind_threshold: 30 # Brightness threshold under which the vision thinks, that someone forgot the camera cap
 
