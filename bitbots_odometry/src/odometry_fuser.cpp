@@ -10,7 +10,7 @@ imu (rX, rY)
 // TODO Doku
 
 OdometryFuser::OdometryFuser() : Node("OdometryFuser"),
-                                 tf_buffer_(std::make_unique<tf2_ros::Buffer>(this->get_clock())),
+                                 tf_buffer_(std::make_shared<tf2_ros::Buffer>(this->get_clock())),
                                  tf_listener_(std::make_shared<tf2_ros::TransformListener>(*tf_buffer_, this)),
                                  support_state_cache_(100),
                                  imu_sub_(this, "imu/data"),
@@ -43,50 +43,14 @@ OdometryFuser::OdometryFuser() : Node("OdometryFuser"),
   fused_time_ = rclcpp::Time(0, 0, RCL_ROS_TIME);
 }
 
-
-/**
- * @brief Waits for the transforms to be available
- * @return true if the transforms are not available yet and we need to wait
- */
-bool OdometryFuser::wait_for_tf() {
-  try {
-    // Frames to check
-    std::vector<std::string> frames = {base_link_frame_, l_sole_frame_, r_sole_frame_};
-
-    // Apply tf_buffer->_frameExists to all frames and check if all are available otherwise return false (functional)
-    if(!std::all_of(frames.begin(), frames.end(), [this](std::string frame) {return tf_buffer_->_frameExists(frame);})) {
-      // Wait for 1 second
-      rclcpp::sleep_for(std::chrono::seconds(1));
-      // Return true to indicate that we need to wait
-      return true;
-    }
-
-    // Check if we can transform from base_link to all other frames
-    if(!std::all_of(
-      frames.begin(), 
-      frames.end(), 
-      [this](std::string frame) {
-        return tf_buffer_->canTransform(
-          base_link_frame_,
-          frame, 
-          rclcpp::Time(0), 
-          rclcpp::Duration::from_nanoseconds(1e9));
-      })){
-      // Return that we need to wait
-      return true;
-    }
-    return false;
-  }
-  catch(const std::exception& e)
-  {
-    RCLCPP_ERROR(this->get_logger(), "Error while waiting for transforms: %s \n", e.what());
-  }
-  // Wait for 1 second
-  rclcpp::sleep_for(std::chrono::seconds(1));
-  return true;
-}
-
 void OdometryFuser::loop() {
+  bitbots_utils::wait_for_tf(
+    this->get_logger(),
+    this->get_clock(),
+    this->tf_buffer_, 
+    {base_link_frame_, r_sole_frame_, l_sole_frame_}, 
+    base_link_frame_);
+
   // get motion_odom transform
   tf2::Transform motion_odometry;
   tf2::fromMsg(odom_data_.pose.pose, motion_odometry);
@@ -283,12 +247,7 @@ int main(int argc, char **argv) {
   auto node = std::make_shared<OdometryFuser>();
   rclcpp::experimental::executors::EventsExecutor exec;
   exec.add_node(node);
-  for(int i = 0; node->wait_for_tf() && rclcpp::ok(); i++) {
-     exec.spin_some();
-     if (i > 0) {
-      RCLCPP_ERROR(node->get_logger(), "Waiting for transforms\n");
-     }
-  }
+
   rclcpp::Duration timer_duration = rclcpp::Duration::from_seconds(1.0 / 100.0);
   rclcpp::TimerBase::SharedPtr timer = rclcpp::create_timer(node, node->get_clock(), timer_duration, [node]() -> void {node->loop();});
 
