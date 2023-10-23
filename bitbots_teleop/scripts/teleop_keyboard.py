@@ -143,7 +143,7 @@ class TeleopKeyboard(Node):
 
         self.dynup_client = ActionClient(self, Dynup, 'dynup')
         if not self.dynup_client.wait_for_server(timeout_sec=5.0):
-            self.get_logger().error('Kick action server not available after waiting 5 seconds')
+            self.get_logger().error('Dynup action server not available after waiting 5 seconds')
 
         self.kick_client = ActionClient(self, Kick, 'dynamic_kick')
         if not self.kick_client.wait_for_server(timeout_sec=5.0):
