@@ -23,8 +23,6 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Animation.msg"
   "msg/Audio.msg"
   "msg/Buttons.msg"
-  "msg/ColorLookupTable.msg"
-  "msg/Config.msg"
   "msg/Cpu.msg"
   "msg/Filesystem.msg"
   "msg/FootPressure.msg"

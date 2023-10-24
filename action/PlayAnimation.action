@@ -1,16 +1,17 @@
-# goal definition
+# Goal definition
 
-# name of the animation
+# Name of the animation
 string animation
 
-# if the animation comes from the hardware control manager, it should be played directly, interrupting other animations and walking
-# it's probably falling or standing up
+# If the animation call comes from the hardware control manager, 
+# it should be played directly, interrupting other animations and walking
+# It's probably falling or standing up
 bool hcm
 
 ---
-#result definition
+# Result definition
 bool successful
 
 ---
-#feedback
+# Feedback
 uint8 percent_done

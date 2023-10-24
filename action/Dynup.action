@@ -1,10 +1,10 @@
-# goal definition
+# Goal definition
 string direction
 
 ---
-#result definition
+# Result definition
 bool successful
 
 ---
-#feedback
+# Feedback
 uint8 percent_done
