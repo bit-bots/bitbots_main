@@ -1,5 +1,5 @@
 //
-// Created by judith on 08.03.19.
+// Created by Judith on 08.03.19.
 //
 
 #ifndef BITBOTS_LOCALIZATION_LOCALIZATION_H
@@ -24,7 +24,6 @@
 #include <bitbots_localization/Resampling.hpp>
 #include <bitbots_localization/RobotState.hpp>
 #include <bitbots_localization/StateDistribution.hpp>
-#include <bitbots_localization/config.hpp>
 #include <bitbots_localization/map.hpp>
 #include <bitbots_localization/srv/reset_filter.hpp>
 #include <bitbots_localization/srv/set_paused.hpp>
@@ -55,6 +54,8 @@
 #include <vector>
 #include <visualization_msgs/msg/marker.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
+
+#include "localization_parameters.hpp"
 
 namespace sm = sensor_msgs;
 namespace gm = geometry_msgs;
@@ -90,25 +91,25 @@ class Localization : public rclcpp::Node {
                              std::shared_ptr<bl::srv::ResetFilter::Response> res);
 
   /**
-   * Callback for new parameters
-   * @param parameters the updated parameters.
+   * Checks if we have new params and if so reconfigures the filter
+   * @param force_reload If true, the filter is reconfigured even if no new params are available
    */
-  rcl_interfaces::msg::SetParametersResult onSetParameters(const std::vector<rclcpp::Parameter> &parameters);
+  void updateParams(bool force_reload = false);
 
   /**
-   * Callback for the line point cloud messurements
+   * Callback for the line point cloud measurements
    * @param msg Message containing the line point cloud.
    */
   void LinePointcloudCallback(const sm::msg::PointCloud2 &msg);
 
   /**
-   * Callback for goal posts messurements
+   * Callback for goal posts measurements
    * @param msg Message containing the goal posts.
    */
   void GoalPostsCallback(const sv3dm::msg::GoalpostArray &msg);  // TODO
 
   /**
-   * Callback for the relative field boundary messurements
+   * Callback for the relative field boundary measurements
    * @param msg Message containing the field boundary points.
    */
   void FieldboundaryCallback(const sv3dm::msg::FieldBoundary &msg);
@@ -140,13 +141,16 @@ class Localization : public rclcpp::Node {
   void reset_filter(int distribution, double x, double y, double angle);
 
  private:
+  // Declare parameter listener and struct from the generate_parameter_library
+  bitbots_localization::ParamListener param_listener_;
+  // Datastructure to hold all parameters, which is build from the schema in the 'parameters.yaml'
+  bitbots_localization::Params config_;
+
   rclcpp::Subscription<sm::msg::PointCloud2>::SharedPtr line_point_cloud_subscriber_;
   rclcpp::Subscription<sv3dm::msg::GoalpostArray>::SharedPtr goal_subscriber_;
   rclcpp::Subscription<sv3dm::msg::FieldBoundary>::SharedPtr fieldboundary_subscriber_;
 
   rclcpp::Subscription<gm::msg::PoseWithCovarianceStamped>::SharedPtr rviz_initial_pose_subscriber_;
-
-  OnSetParametersCallbackHandle::SharedPtr param_callback_handle_;
 
   rclcpp::Publisher<gm::msg::PoseWithCovarianceStamped>::SharedPtr pose_with_covariance_publisher_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr pose_particles_publisher_;
@@ -193,8 +197,6 @@ class Localization : public rclcpp::Node {
   builtin_interfaces::msg::Time localization_tf_last_published_time_ =
       builtin_interfaces::msg::Time(rclcpp::Time(0, 0, RCL_ROS_TIME));
 
-  std::string odom_frame_, base_footprint_frame_, map_frame_, publishing_frame_;
-
   /**
    * Runs the filter for one step
    */
@@ -209,9 +211,7 @@ class Localization : public rclcpp::Node {
 
   gmms::GaussianMixtureModel pose_gmm_;
   particle_filter::CRandomNumberGenerator random_number_generator_;
-  std::shared_ptr<bl::Config> config_;
   std_msgs::msg::ColorRGBA marker_color;
-  bool first_configuration_ = true;
 
   /**
    * Publishes the position as a transform
@@ -234,13 +234,13 @@ class Localization : public rclcpp::Node {
   void publish_particle_markers();
 
   /**
-   * Publishes the rating visualizations for each meassurement class
+   * Publishes the rating visualizations for each measurement class
    */
   void publish_ratings();
 
   /**
-   * Publishes the rating visualizations for a abitray messurement class
-   * @param measurements all measurements of the messurement class
+   * Publishes the rating visualizations for a arbitrary measurement class
+   * @param measurements all measurements of the measurement class
    * @param scale scale of the markers
    * @param name name of the class
    * @param map map for this class

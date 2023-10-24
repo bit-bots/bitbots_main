@@ -8,7 +8,6 @@
 #include <particle_filter/ParticleFilter.h>
 
 #include <bitbots_localization/RobotState.hpp>
-#include <bitbots_localization/config.hpp>
 #include <bitbots_localization/map.hpp>
 #include <bitbots_localization/tools.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
@@ -18,6 +17,8 @@
 #include <soccer_vision_3d_msgs/msg/goalpost_array.hpp>
 #include <soccer_vision_3d_msgs/msg/marking_array.hpp>
 #include <soccer_vision_3d_msgs/msg/marking_intersection.hpp>
+
+#include "localization_parameters.hpp"
 
 namespace sm = sensor_msgs;
 namespace bl = bitbots_localization;
@@ -30,7 +31,7 @@ class RobotPoseObservationModel : public particle_filter::ObservationModel<Robot
    * empty
    */
   RobotPoseObservationModel(std::shared_ptr<Map> map_lines, std::shared_ptr<Map> map_goals,
-                            std::shared_ptr<Map> map_field_boundary, std::shared_ptr<bl::Config> config);
+                            std::shared_ptr<Map> map_field_boundary, const bitbots_localization::Params &config);
 
   /**
    *
@@ -78,7 +79,7 @@ class RobotPoseObservationModel : public particle_filter::ObservationModel<Robot
   std::shared_ptr<Map> map_goals_;
   std::shared_ptr<Map> map_field_boundary_;
 
-  std::shared_ptr<bl::Config> config_;
+  bitbots_localization::Params config_;
 };
 };  // namespace bitbots_localization
 

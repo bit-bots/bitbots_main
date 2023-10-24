@@ -1,7 +1,7 @@
 <launch>
     <!-- define parameters -->
     <arg name="tf_prefix" default=""/>
-    <arg name="sim" default="false" description="true: activates simulation time, switches to simulation color settings and deactivates launching of an image provider" />
+    <arg name="sim" default="false" description="true: activates simulation time and might load different parameters"/>
     <arg unless="$(var sim)" name="fieldname" default="bangkok" description="Loads field settings (feldraum, webots, gazebo, bangkok, spl)." />
     <arg if="$(var sim)" name="fieldname" default="webots" description="Loads field settings (feldraum, webots, gazebo, bangkok)." />
 
@@ -17,12 +17,12 @@
         <!-- load field specific paramters -->
         <param from="$(find-pkg-share bitbots_localization)/config/fields/$(var fieldname)/config.yaml"/>
 
-        <param name="fieldname" value="$(var fieldname)"/>
+        <param name="field.name" value="$(var fieldname)"/>
         <!-- load correct frames for namespace -->
-        <param name="odom_frame" value="$(var tf_prefix)odom"/>
-        <param name="base_footprint_frame" value="$(var tf_prefix)base_footprint"/>
-        <param name="map_frame" value="$(var tf_prefix)map"/>
-        <param name="publishing_frame" value="$(var tf_prefix)localization_raw"/>
+        <param name="ros.odom_frame" value="$(var tf_prefix)odom"/>
+        <param name="ros.base_footprint_frame" value="$(var tf_prefix)base_footprint"/>
+        <param name="ros.map_frame" value="$(var tf_prefix)map"/>
+        <param name="ros.publishing_frame" value="$(var tf_prefix)localization_raw"/>
         <param name="use_sim_time" value="$(var sim)"/>
     </node>
 
