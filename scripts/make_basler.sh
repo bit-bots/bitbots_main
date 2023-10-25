@@ -14,12 +14,17 @@ BLAZE_VERSION="1.5.0"
 # Check let the user confirm that they read the license agreement on the basler website and are fine with it.
 echo "You need to confirm that you read the license agreements for pylon $PYLON_VERSION and the blaze supplementary package $BLAZE_VERSION on the basler download page (https://www.baslerweb.com/en/downloads/software-downloads/) and are fine with it."
 
-# Ask the user if they want to continue and break if they don't
-read -p "Do you want to continue? [y/N] " -n 1 -r
+# Check -y flag for automatic confirmation in the ci
+if [[ $1 == "-y" ]]; then
+    echo "Automatic confirmation detected. Continuing..."
+else
+    # Ask the user if they want to continue and break if they don't
+    read -p "Do you want to continue? [y/N] " -n 1 -r
 
-if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    echo "Aborting..."
-    exit 1
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo "Aborting..."
+        exit 1
+    fi
 fi
 
 # Check if we have an internet connection

@@ -1,7 +1,7 @@
 .PHONY : basler install pip pre-commit pull-all pull-init pull-files rosdep status update
 
 basler:
-	scripts/make_basler.sh
+	scripts/make_basler.sh $(ARGS)
 
 install: pull-init
 	scripts/make_update.sh
