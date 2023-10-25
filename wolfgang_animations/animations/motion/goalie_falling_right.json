@@ -1,6 +1,6 @@
 {
     "author": "Unknown",
-    "description": "Results in the goalie falling to the right with an extended right arm.",
+    "description": "Results in the goalie falling to the right with an extended right arm. DO NOT RUN THIS ON THE ACTUAL ROBOT (sim only).",
     "keyframes": [
         {
         "duration": 0.1,
