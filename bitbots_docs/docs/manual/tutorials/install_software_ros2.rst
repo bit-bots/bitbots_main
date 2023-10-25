@@ -53,8 +53,8 @@ If you are not already using Ubuntu 22.04, consider installing it on your system
     - Clone all sub-repositories and other files by running: ``make install``
       This will take a while, as it downloads all the code and other files from our repositories and additionally installs all missing dependencies (using rosdep and pip).
       Finally, it will register pre-commit hooks (automatic code-formatting and warnings), which will be run every time you commit code to our repositories.
-    - *Only for Bit-Bots members*: To use the robot's cameras, also run the following command to download and install the Basler Pylon camera drivers: ``make basler``
-      Confirm the host key by typing ``yes``, if asked.
+    - To use the robot's cameras, also run the following command to download and install the Basler Pylon camera drivers: ``make basler``
+      Confirm with the properitary license agreement by typing ``y``, and later enter your passwort (sudo) if asked.
 
 **4. Setup colcon workspace**
 
