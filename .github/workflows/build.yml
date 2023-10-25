@@ -20,7 +20,7 @@ jobs:
       - name: Pull our software
         run: make pull-init
       - name: Install proprietary basler drivers
-        run: make basler ARGS="-y"
+        run: make basler ARGS="-ci"
       - name: Install packages via rosdep
         run: |
           rosdep update

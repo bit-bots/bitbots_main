@@ -14,8 +14,8 @@ BLAZE_VERSION="1.5.0"
 # Check let the user confirm that they read the license agreement on the basler website and are fine with it.
 echo "You need to confirm that you read the license agreements for pylon $PYLON_VERSION and the blaze supplementary package $BLAZE_VERSION on the basler download page (https://www.baslerweb.com/en/downloads/software-downloads/) and are fine with it."
 
-# Check -y flag for automatic confirmation in the ci
-if [[ $1 == "-y" ]]; then
+# Check -ci flag for automatic confirmation in the ci
+if [[ $1 == "-ci" ]]; then
     echo "Automatic confirmation detected. Continuing..."
 else
     # Ask the user if they want to continue and break if they don't
@@ -27,8 +27,8 @@ else
     fi
 fi
 
-# Check if we have an internet connection
-if ! ping -q -c 1 -W 1 google.com >/dev/null; then
+# Check if we have an internet connection, except in the ci as azure does not support ping by design
+if [[ $1 != "-ci" ]] && ! ping -q -c 1 -W 1 google.com >/dev/null; then
     echo "No internet connection. Please check your internet connection to install the basler drivers."
     exit 1
 fi
