@@ -54,7 +54,7 @@ else
     # Extract the pylon driver
     tar -xzf /tmp/pylon_${PYLON_VERSION}.tar.gz -C /tmp
     # Install the pylon driver
-    sudo apt install /tmp/pylon_${PYLON_VERSION}*.deb
+    sudo apt install /tmp/pylon_${PYLON_VERSION}*.deb -y
 fi
 
 # Check if the correct blaze supplementary package BLAZE_VERSION is installed (apt)
@@ -65,5 +65,5 @@ else
     # Download the blaze supplementary package to temp folder
     wget --no-verbose --show-progress $BLAZE_DOWNLOAD_URL -O /tmp/pylon-blaze-supplementary-package_${BLAZE_VERSION}.deb
     # Install the blaze supplementary package
-    sudo apt install /tmp/pylon-blaze-supplementary-package_${BLAZE_VERSION}*.deb
+    sudo apt install /tmp/pylon-blaze-supplementary-package_${BLAZE_VERSION}*.deb -y
 fi
