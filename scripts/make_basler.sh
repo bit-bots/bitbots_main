@@ -35,7 +35,7 @@ fi
 
 # Check if the urls exist
 if ! curl --output /dev/null --silent --head --fail "$PYLON_DOWNLOAD_URL"; then
-    echo "Pylon download url does not exist. Please check the url. The website might have changed."
+    echo "Pylon download url does not exist. Please check the url and update the 'PYLON_DOWNLOAD_URL' variable in the 'make_basler.sh' script. The website might have changed."
     exit 1
 fi
 
