@@ -268,10 +268,10 @@ class GoalpostDetectionComponent(IVisionComponent):
         self._publisher.publish(goalposts_message)
 
     def _add_candidates_to_debug_image(self, candidates: List[candidate.Candidate]) -> None:
-        self._debug_image.draw_obstacle_candidates(candidates, DebugImageComponent.Colors.goalposts, thickness=1)
+        self._debug_image.draw_robot_candidates(candidates, DebugImageComponent.Colors.goalposts, thickness=1)
 
     def _add_final_candidates_to_debug_image(self, candidates: List[candidate.Candidate]) -> None:
-        self._debug_image.draw_obstacle_candidates(candidates, DebugImageComponent.Colors.goalposts, thickness=3)
+        self._debug_image.draw_robot_candidates(candidates, DebugImageComponent.Colors.goalposts, thickness=3)
 
     def set_image(self, image: np.ndarray) -> None:
         pass
@@ -409,76 +409,79 @@ class RobotDetectionComponent(IVisionComponent):
             self._config,
             new_config,
             self._publisher,
-            'ROS_obstacle_msg_topic',
+            'ROS_robot_msg_topic',
             RobotArray
         )
 
     def run(self, image_msg: Image) -> None:
-        obstacle_msgs: List[Robot] = []
-        self._add_team_mates_to(obstacle_msgs)
-        self._add_opponents_to(obstacle_msgs)
-        self._add_remaining_obstacles_to(obstacle_msgs)
+        robots_msgs: List[Robot] = []
+        self._add_team_mates_to(robots_msgs)
+        self._add_opponents_to(robots_msgs)
+        self._add_remaining_obstacles_to(robots_msgs)
 
-        self._publish_obstacles_message(image_msg, obstacle_msgs)
+        self._publish_robots_message(image_msg, robots_msgs)
 
         if self._debug_mode:
-            self._add_obstacles_to_debug_image()
+            self._add_robots_to_debug_image()
 
-    def _add_team_mates_to(self, obstacle_msgs: List[Robot]) -> None:
+    def _add_team_mates_to(self, robots_msgs: List[Robot]) -> None:
         team_mate_candidates = self._team_mates_detector.get_candidates()
-        team_mate_candidate_messages = self._create_obstacle_messages(Robot().attributes.TEAM_OWN, team_mate_candidates)
-        obstacle_msgs.extend(team_mate_candidate_messages)
+        team_mate_candidate_messages = self._create_robots_messages(
+            Robot().attributes.TEAM_OWN, 
+            team_mate_candidates
+        )
+        robots_msgs.extend(team_mate_candidate_messages)
 
     @staticmethod
-    def _create_obstacle_messages(obstacle_type: Robot, candidates: List[candidate.Candidate]) -> List[Robot]:
-        return [ros_utils.build_robot_msg(obstacle_candidate, obstacle_type) for obstacle_candidate in candidates]
+    def _create_robots_messages(robot_type: Robot, candidates: List[candidate.Candidate]) -> List[Robot]:
+        return [ros_utils.build_robot_msg(obstacle_candidate, robot_type) for obstacle_candidate in candidates]
 
-    def _add_opponents_to(self, obstacle_msgs: List[Robot]) -> None:
+    def _add_opponents_to(self, robot_msgs: List[Robot]) -> None:
         opponent_candidates = self._opponents_detector.get_candidates()
-        opponent_candidate_messages = self._create_obstacle_messages(
+        opponent_candidate_messages = self._create_robots_messages(
             Robot().attributes.TEAM_OPPONENT,
             opponent_candidates
         )
-        obstacle_msgs.extend(opponent_candidate_messages)
+        robot_msgs.extend(opponent_candidate_messages)
 
-    def _add_remaining_obstacles_to(self, obstacle_msgs: List[Robot]) -> None:
+    def _add_remaining_obstacles_to(self, robot_msgs: List[Robot]) -> None:
         remaining_candidates = self._unknown_detector.get_candidates()
-        remaining_candidate_messages = self._create_obstacle_messages(
+        remaining_candidate_messages = self._create_robots_messages(
             Robot().attributes.TEAM_UNKNOWN,
             remaining_candidates
         )
-        obstacle_msgs.extend(remaining_candidate_messages)
+        robot_msgs.extend(remaining_candidate_messages)
 
-    def _publish_obstacles_message(self, image_msg: Image, obstacle_msgs: List[Robot]) -> None:
-        obstacles_msg = ros_utils.build_robot_array_msg(image_msg.header, obstacle_msgs)
-        self._publisher.publish(obstacles_msg)
+    def _publish_robots_message(self, image_msg: Image, robot_msgs: List[Robot]) -> None:
+        robots_msg = ros_utils.build_robot_array_msg(image_msg.header, robot_msgs)
+        self._publisher.publish(robots_msg)
 
-    def _add_obstacles_to_debug_image(self) -> None:
+    def _add_robots_to_debug_image(self) -> None:
         self._add_team_mates_to_debug_image()
         self._add_opponents_to_debug_image()
         self._add_remaining_objects_to_debug_image()
 
     def _add_team_mates_to_debug_image(self) -> None:
         team_mate_candidates = self._team_mates_detector.get_candidates()
-        self._debug_image.draw_obstacle_candidates(
+        self._debug_image.draw_robot_candidates(
             team_mate_candidates,
-            DebugImageComponent.Colors.team_mates,
+            DebugImageComponent.Colors.robot_team_mates,
             thickness=3
         )
 
     def _add_opponents_to_debug_image(self) -> None:
         opponent_candidates = self._opponents_detector.get_candidates()
-        self._debug_image.draw_obstacle_candidates(
+        self._debug_image.draw_robot_candidates(
             opponent_candidates,
-            DebugImageComponent.Colors.opponents,
+            DebugImageComponent.Colors.robot_opponents,
             thickness=3
         )
 
     def _add_remaining_objects_to_debug_image(self) -> None:
         remaining_candidates = self._unknown_detector.get_candidates()
-        self._debug_image.draw_obstacle_candidates(
+        self._debug_image.draw_robot_candidates(
             remaining_candidates,
-            DebugImageComponent.Colors.unknown_obstacles,
+            DebugImageComponent.Colors.robot_unknown,
             thickness=3
         )
 
@@ -537,40 +540,40 @@ class NoTeamColorRobotDetectionComponent(IVisionComponent):
             self._config,
             new_config,
             self._publisher,
-            'ROS_obstacle_msg_topic',
+            'ROS_robot_msg_topic',
             RobotArray
         )
 
     def run(self, image_msg: Image) -> None:
-        obstacle_msgs: List[Robot] = []
-        self._add_robot_obstacles_to(obstacle_msgs)
+        robot_msgs: List[Robot] = []
+        self._add_robots_to(robot_msgs)
 
-        self._publish_obstacles_message(image_msg, obstacle_msgs)
+        self._publish_robots_message(image_msg, robot_msgs)
 
         if self._debug_mode:
-            self._add_robot_objects_to_debug_image()
+            self._add_robots_to_debug_image()
 
-    @staticmethod
-    def _create_obstacle_messages(obstacle_type: Robot, candidates: List[candidate.Candidate]) -> List[Robot]:
-        return [ros_utils.build_robot_msg(obstacle_candidate, obstacle_type) for obstacle_candidate in candidates]
-
-    def _add_robot_obstacles_to(self, obstacle_msgs: List[Robot]) -> None:
+    def _add_robots_to(self, robot_msgs: List[Robot]) -> None:
         robot_candidates = self._robot_detector.get_candidates()
-        robot_candidate_messages = self._create_obstacle_messages(
+        robot_candidate_messages = self._create_robot_messages(
             Robot().attributes.TEAM_UNKNOWN,
             robot_candidates
         )
-        obstacle_msgs.extend(robot_candidate_messages)
+        robot_msgs.extend(robot_candidate_messages)
 
-    def _publish_obstacles_message(self, image_msg: Image, obstacle_msgs: List[Robot]) -> None:
-        obstacles_msg = ros_utils.build_robot_array_msg(image_msg.header, obstacle_msgs)
-        self._publisher.publish(obstacles_msg)
+    @staticmethod
+    def _create_robot_messages(robot_type: Robot, candidates: List[candidate.Candidate]) -> List[Robot]:
+        return [ros_utils.build_robot_msg(robot_candidate, robot_type) for robot_candidate in candidates]
+    
+    def _publish_robots_message(self, image_msg: Image, robot_msgs: List[Robot]) -> None:
+        robots_msg = ros_utils.build_robot_array_msg(image_msg.header, robot_msgs)
+        self._publisher.publish(robots_msg)
 
-    def _add_robot_objects_to_debug_image(self) -> None:
+    def _add_robots_to_debug_image(self) -> None:
         robot_candidates = self._robot_detector.get_candidates()
-        self._debug_image.draw_obstacle_candidates(
+        self._debug_image.draw_robot_candidates(
             robot_candidates,
-            DebugImageComponent.Colors.unknown_obstacles,
+            DebugImageComponent.Colors.robot_unknown,
             thickness=3
         )
 
@@ -586,9 +589,9 @@ class DebugImageComponent(IVisionComponent):
     class Colors:
         # BGR
         ball = (0, 255, 0)  # green
-        team_mates = (153, 51, 255)  # magenta
-        opponents = (255, 255, 102)  # cyan
-        unknown_obstacles = (160, 160, 160)  # grey
+        robot_team_mates = (153, 51, 255)  # magenta
+        robot_opponents = (255, 255, 102)  # cyan
+        robot_unknown = (160, 160, 160)  # grey
         goalposts = (255, 255, 255)  # white
         lines = (255, 0, 0)  # blue
 

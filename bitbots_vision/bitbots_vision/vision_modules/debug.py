@@ -57,16 +57,16 @@ class DebugImage:
                            color,
                            thickness=thickness)
 
-    def draw_obstacle_candidates(self, obstacle_candidates, color, thickness=1):
+    def draw_robot_candidates(self, robot_candidates, color, thickness=1):
         """
-        Draws a bounding box for every given obstacle.
+        Draws a bounding box for every given robot.
 
-        :param obstacle_candidates: list of list of obstacle candidates with the type Candidate
+        :param robot_candidates: list of list of robot candidates with the type Candidate
         :param color: color of the outline
         :param thickness: thickness of the outline
         """
         if not self.active: return
-        for candidate in obstacle_candidates:
+        for candidate in robot_candidates:
             if candidate:
                 cv2.rectangle(self._debug_image,
                               candidate.get_upper_left_point(),
@@ -133,7 +133,7 @@ class DebugImage:
         }
 
         :param debug_image_description: List of dicts contains the style and the date for each object/class that we debug
-        In the dict 'type' refers to the type that we want to draw. Some types are ['obstacle', 'field_boundary', 'ball', 'line_point', 'line_segment'].
+        In the dict 'type' refers to the type that we want to draw. Some types are ['robot', 'field_boundary', 'ball', 'line_point', 'line_segment'].
         The key 'color' defines the color as BRG. For most types this is the border color.
         The key 'thickness' refers to the border thickness.
         The data, so the candidates we want to draw are defined with the 'data' key.
@@ -144,7 +144,7 @@ class DebugImage:
             self.set_image(image)
         # Define the draw functions for each type
         draw_functions = {
-            'obstacle' : self.draw_obstacle_candidates,
+            'robot' : self.draw_robot_candidates,
             'field_boundary': self.draw_field_boundary,
             'ball' : self.draw_ball_candidates,
             'line_point' : self.draw_points,
