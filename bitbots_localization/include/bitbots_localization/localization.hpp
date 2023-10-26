@@ -12,6 +12,7 @@
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Transform.h>
 #include <tf2/convert.h>
+#include <tf2/time.h>
 #include <tf2/utils.h>
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/message_filter.h>
@@ -143,7 +144,7 @@ class Localization : public rclcpp::Node {
  private:
   // Declare parameter listener and struct from the generate_parameter_library
   bitbots_localization::ParamListener param_listener_;
-  // Datastructure to hold all parameters, which is build from the schema in the 'parameters.yaml'
+  // Data structure to hold all parameters, which is build from the schema in the 'parameters.yaml'
   bitbots_localization::Params config_;
 
   rclcpp::Subscription<sm::msg::PointCloud2>::SharedPtr line_point_cloud_subscriber_;
@@ -251,7 +252,7 @@ class Localization : public rclcpp::Node {
                             rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr &publisher);
 
   /**
-   * Updates the messurements for all classes
+   * Updates the measurements for all classes
    */
   void updateMeasurements();
 
