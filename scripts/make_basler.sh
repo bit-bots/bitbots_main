@@ -16,7 +16,7 @@ echo "You need to confirm that you read the license agreements for pylon $PYLON_
 
 # Check -ci flag for automatic confirmation in the ci
 if [[ $1 == "-ci" ]]; then
-    echo "Automatic confirmation detected. Continuing..."
+    echo "Running in a CI environment, continuing..."
 else
     # Ask the user if they want to continue and break if they don't
     read -p "Do you want to continue? [y/N] " -n 1 -r
