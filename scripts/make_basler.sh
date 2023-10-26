@@ -11,8 +11,8 @@ PYLON_VERSION="7.4.0"
 BLAZE_DOWNLOAD_URL="https://www2.baslerweb.com/media/downloads/software/tof_software/pylon-supplementary-package-for-blaze-1.5.0.def07388_amd64.deb"
 BLAZE_VERSION="1.5.0"
 
-# Check let the user confirm that they read the license agreement on the basler website and are fine with it.
-echo "You need to confirm that you read the license agreements for pylon $PYLON_VERSION and the blaze supplementary package $BLAZE_VERSION on the basler download page (https://www.baslerweb.com/en/downloads/software-downloads/) and are fine with it."
+# Check let the user confirm that they read the license agreement on the basler website and agree with it.
+echo "You need to confirm that you read the license agreements for pylon $PYLON_VERSION and the blaze supplementary package $BLAZE_VERSION on the basler download page (https://www.baslerweb.com/en/downloads/software-downloads/) and agree with it."
 
 # Check -ci flag for automatic confirmation in the ci
 if [[ $1 == "-ci" ]]; then
