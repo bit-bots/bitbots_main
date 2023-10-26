@@ -2,8 +2,8 @@
 
 # robot without known color
 uint8 ROBOT_UNDEFINED = 1
-uint8 ROBOT_MAGENTA = 2
-uint8 ROBOT_CYAN = 3
+uint8 ROBOT_RED = 2
+uint8 ROBOT_BLUE = 3
 
 uint8 type
 
