@@ -1,0 +1,24 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      // Set include paths so the editor can find the c++ header files for the auto completion
+      // The Bit-Bots specific environment variable COLCON_WS is utilized here and needs to be set
+      "includePath": [
+        "${env:COLCON_WS}/install/*/include/**",
+        "${workspaceFolder}/**/include/**",
+        "/opt/ros/${env:ROS_DISTRO}/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++17"
+    }
+  ],
+  "version": 4
+}
