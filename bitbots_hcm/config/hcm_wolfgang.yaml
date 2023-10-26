@@ -19,11 +19,10 @@
       falling_right: "falling_right"
       turning_back_left: "turning_back_left"
       turning_back_right: "turning_back_right"
-      anim_package: "wolfgang_animations"
 
     # Falling
     stand_up_active: true # Enables the robot to stand up automatically
-    falling_active: true # Enables the check for falling and coresponding counter meassurements
+    falling_active: true # Enables the check for falling and corresponding counter measurements
     # Threshold tighter --> earlier reaction but more false positives, e.g. while walking
     # Threshold softer --> too late reaction
     falling_thresh_gyro_pitch: 7.0 # > gyroY
