@@ -32,8 +32,8 @@ def test_convert_robots(snapshot, message_with_other_robots, team_data_with_head
     team_data = convert_from_message(message_with_other_robots, team_data_with_header)
 
     assert team_data.robots.header == team_data_with_header.header
-    assert team_data.robots.robots[0].type == RobotRelative.ROBOT_CYAN
-    assert team_data.robots.robots[1].type == RobotRelative.ROBOT_MAGENTA
+    assert team_data.robots.robots[0].type == RobotRelative.ROBOT_BLUE
+    assert team_data.robots.robots[1].type == RobotRelative.ROBOT_RED
 
     assert str(team_data.robots) == snapshot
 
