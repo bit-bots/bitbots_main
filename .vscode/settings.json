@@ -192,4 +192,8 @@
     // Tell the ROS extension where to find the setup.bash
     // This also utilizes the COLCON_WS environment variable, which needs to be set
     "ros.rosSetupScript": "${env:COLCON_WS}/install/setup.bash",
+
+    // DO NOT COMMIT THESE ABSOLUTE PYTHON PATHS:
+    
+
 }
