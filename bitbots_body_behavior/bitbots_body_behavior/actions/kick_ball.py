@@ -1,5 +1,3 @@
-from geometry_msgs.msg import Quaternion
-
 from bitbots_blackboard.blackboard import BodyBlackboard
 from bitbots_msgs.action import Kick
 from bitbots_utils.transforms import quat_from_yaw
