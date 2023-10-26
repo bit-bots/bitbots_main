@@ -1,5 +1,4 @@
 include:
-    - basler_drivers
     - bitbots_behavior:
         - bitbots_blackboard
         - bitbots_body_behavior

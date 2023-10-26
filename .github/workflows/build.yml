@@ -19,6 +19,8 @@ jobs:
         run: git config --global --add safe.directory /__w/bitbots_meta/bitbots_meta
       - name: Pull our software
         run: make pull-init
+      - name: Install proprietary basler drivers
+        run: make basler ARGS="-ci"
       - name: Install packages via rosdep
         run: |
           rosdep update
@@ -26,8 +28,6 @@ jobs:
           # Small hack to make rosdep install all dependencies at once
           # See https://github.com/ros-infrastructure/rosdep/issues/671
           bash -c "sudo apt install -y $(rosdep check --from-paths . --ignore-src --rosdistro iron | sed -n 's/^apt\s\+//p' | tr '\n' ' ')"
-      - name: Ignore pylon camera because of proprietary drivers
-        run: touch lib/pylon-ros-camera/AMENT_IGNORE
       - name: Set up colcon workspace
         run: |
           mkdir -p /colcon_ws/src
