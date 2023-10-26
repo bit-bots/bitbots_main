@@ -20,14 +20,14 @@ You should see a `ROS2.iron` in the lower left corner.
 
 Now you should be able to build the code with `Ctrl+Shift+B`
 
-You can use muliple commands with `Ctrl+Shift+P` and then type `ROS`.
+You can use multiple commands with `Ctrl+Shift+P` and then type `ROS`.
 
 Debugging
 ~~~~~~~~~
 You can debug launch files but only ones that are written in Python. 
-These cannot include further xml lauch files. 
-It makes sense to create a small test lauch with only the node that you want to debug and start the rest independently.
-An example vscode launch configuration and the corresponding python lauch file can be seen below:
+These cannot include further xml launch files. 
+It makes sense to create a small test launch with only the node that you want to debug and start the rest independently.
+An example vscode launch configuration and the corresponding python launch file can be seen below:
 
 .. code-block:: json
 
@@ -76,5 +76,3 @@ An example vscode launch configuration and the corresponding python lauch file c
                 )
 
         return LaunchDescription([node])
-
-

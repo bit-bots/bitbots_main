@@ -46,11 +46,6 @@ The main repository is `bitbots_meta <https://github.com/bit-bots/bitbots_meta>`
 
     manual/hardware/mechanics/*
 
-`Package Documentations <http://doku.bit-bots.de/package/>`_
+`Package Documentations <https://docs.bit-bots.de/package/>`_
 
-`Internal Documentation <http://doku.bit-bots.de/private/>`_
-
-.. toctree::
-   :caption: Too meta for me
-
-   manual/todolist
+`Internal Documentation <https://docs.bit-bots.de/private/>`_
