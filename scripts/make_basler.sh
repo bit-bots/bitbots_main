@@ -27,28 +27,27 @@ else
     fi
 fi
 
-# Check if we have an internet connection, except in the ci as azure does not support ping by design
-if [[ $1 != "-ci" ]] && ! ping -q -c 1 -W 1 google.com >/dev/null; then
-    echo "No internet connection. Please check your internet connection to install the basler drivers."
-    exit 1
-fi
-
-# Check if the urls exist
-if ! curl --output /dev/null --silent --head --fail "$PYLON_DOWNLOAD_URL"; then
-    echo "Pylon download url does not exist. Please check the url and update the 'PYLON_DOWNLOAD_URL' variable in the 'make_basler.sh' script. The website might have changed."
-    exit 1
-fi
-
-if ! curl --output /dev/null --silent --head --fail "$BLAZE_DOWNLOAD_URL"; then
-    echo "Blaze download url does not exist. Please check the url and update the 'BLAZE_DOWNLOAD_URL' variable in the 'make_basler.sh' script. The website might have changed."
-    exit 1
-fi
+# Create function to check if we have an internet connection
+function check_internet_connection () {
+    # Check if we have an internet connection, except in the ci as azure does not support ping by design
+    if [[ $1 != "-ci" ]] && ! ping -q -c 1 -W 1 google.com >/dev/null; then
+        echo "No internet connection. Please check your internet connection to install the basler drivers."
+        exit 1
+    fi
+}
 
 # Check if the correct pylon driver PYLON_VERSION is installed (apt)
 if apt list pylon --installed | grep -q $PYLON_VERSION; then
     echo "Pylon driver $PYLON_VERSION is already installed."
 else
     echo "Pylon driver $PYLON_VERSION is not installed. Installing..."
+    # Check if we have an internet connection
+    check_internet_connection $1
+    # Check if the url exist
+    if ! curl --output /dev/null --silent --head --fail "$PYLON_DOWNLOAD_URL"; then
+        echo "Pylon download url does not exist. Please check the url and update the 'PYLON_DOWNLOAD_URL' variable in the 'make_basler.sh' script. The website might have changed."
+        exit 1
+    fi
     # Download the pylon driver to temp folder
     wget --no-verbose --show-progress $PYLON_DOWNLOAD_URL -O /tmp/pylon_${PYLON_VERSION}.tar.gz
     # Extract the pylon driver
@@ -62,6 +61,13 @@ if apt list pylon-supplementary-package-for-blaze --installed | grep -q $BLAZE_V
     echo "Blaze supplementary package $BLAZE_VERSION is already installed."
 else
     echo "Blaze supplementary package $BLAZE_VERSION is not installed. Installing..."
+    # Check if we have an internet connection
+    check_internet_connection $1
+    # Check if the url exist
+    if ! curl --output /dev/null --silent --head --fail "$BLAZE_DOWNLOAD_URL"; then
+        echo "Blaze download url does not exist. Please check the url and update the 'BLAZE_DOWNLOAD_URL' variable in the 'make_basler.sh' script. The website might have changed."
+        exit 1
+    fi
     # Download the blaze supplementary package to temp folder
     wget --no-verbose --show-progress $BLAZE_DOWNLOAD_URL -O /tmp/pylon-blaze-supplementary-package_${BLAZE_VERSION}.deb
     # Install the blaze supplementary package
