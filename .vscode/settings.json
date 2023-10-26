@@ -178,7 +178,8 @@
         "variant": "cpp"
     },
 
-    // Dont override the paths "python.autoComplete.extraPaths"
+    // Paths for the ROS python packages. Both in the Workspace and in the ROS installation
+    // The Bit-Bots specific environment variable COLCON_WS is utilized here and needs to be set 
     "python.autoComplete.extraPaths": [
         "${env:COLCON_WS}/install/*/lib/python3*/site-packages",
         "${env:COLCON_WS}/build/*",
@@ -193,5 +194,8 @@
         "/opt/ros/${env:ROS_DISTRO}/lib/python3*/site-packages",
     ],
     "cmake.configureOnOpen": false,
+
+    // Tell the ROS extension where to find the setup.bash
+    // This also utilizes the COLCON_WS environment variable, which needs to be set
     "ros.rosSetupScript": "${env:COLCON_WS}/install/setup.bash",
 }
