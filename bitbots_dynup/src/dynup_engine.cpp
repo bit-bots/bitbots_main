@@ -678,7 +678,7 @@ void DynupEngine::setGoals(const DynupRequest &goals) {
   // we re-request the values every time because they can be changed by dynamic reconfigure
   // and re-requesting them is fast enough
   std::vector<rclcpp::Parameter> walking_params;
-  // Gat params and wait for walking to be ready
+  // Get params and wait for walking to be ready
   walking_params = walking_param_client_->get_parameters({"engine.trunk_pitch",
                                                           "engine.trunk_height",
                                                           "engine.foot_distance",
