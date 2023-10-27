@@ -25,7 +25,6 @@
   <depend>geometry_msgs</depend>
   <depend>pybind11-dev</depend>
   <depend>python3-numpy</depend>
-  <depend>python3-sklearn</depend>
   <depend>python3-transforms3d</depend>
   <depend>rclpy</depend>
   <depend>ros2_numpy</depend>
