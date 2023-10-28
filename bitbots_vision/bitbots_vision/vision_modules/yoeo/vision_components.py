@@ -589,9 +589,12 @@ class DebugImageComponent(IVisionComponent):
     class Colors:
         # BGR
         ball = (0, 255, 0)  # green
-        robot_team_mates = (255, 0, 0)  # blue
-        robot_opponents = (0, 0, 255)  # red
+        robot_team_mates = (255, 255, 102)  # cyan
+        robot_opponents = (153, 51, 255)  # magenta
         robot_unknown = (160, 160, 160)  # grey
+        team_mates = (153, 51, 255)  # magenta
+        opponents = (255, 255, 102)  # cyan
+        unknown_obstacles = (160, 160, 160)  # grey
         goalposts = (255, 255, 255)  # white
         lines = (255, 0, 0)  # blue
 
