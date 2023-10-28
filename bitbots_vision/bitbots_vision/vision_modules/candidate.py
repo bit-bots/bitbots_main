@@ -5,7 +5,6 @@ if TYPE_CHECKING:
     import numpy as np
 
 import abc
-import rclpy
 from rclpy import logging
 
 logger = logging.get_logger('vision_candidate')
@@ -240,9 +239,7 @@ class CandidateFinder(object):
     The abstract class :class:`.CandidateFinder` requires its subclasses to implement the methods
     :meth:`.get_candidates`,  :meth:`.compute` and :meth:`set_image`.
 
-    Examples of such subclasses are :class:`bitbots_vision.vision_modules.obstacle.ObstacleDetector` and
-    :class:`bitbots_vision.vision_modules.yolo_handler.YoloBallDetector`.
-    They produce a set of so called *Candidates* which are instances of the class :class:`bitbots_vision.vision_modules.candidate.Candidate`.
+    CandidateFinder implementations produce a set of so called *Candidates* which are instances of the class :class:`bitbots_vision.vision_modules.candidate.Candidate`.
     """
 
     def __init__(self):
