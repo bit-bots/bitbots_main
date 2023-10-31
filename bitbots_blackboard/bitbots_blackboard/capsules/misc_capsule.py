@@ -1,29 +1,35 @@
 """
-BehaviourBlackboardCapsule
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+MiscCapsule
+^^^^^^^^^^^
+
+Capsule for miscellaneous things that don't fit anywhere else.
 """
 from typing import Optional
 
 from rclpy.duration import Duration
-from rclpy.publisher import Publisher
 from rclpy.node import Node
-import tf2_ros as tf2
+from rclpy.publisher import Publisher
+from std_msgs.msg import Bool
 
-from humanoid_league_msgs.msg import HeadMode, RobotControlState
+from bitbots_msgs.msg import HeadMode, RobotControlState
 from bitbots_utils.utils import get_parameters_from_other_node
 
-class BlackboardCapsule:
+class MiscCapsule:
     def __init__(self, node: Node):
         self.node = node
-        self.head_pub: Optional[Publisher] = None
-        gamestate_settings = get_parameters_from_other_node(self.node, 'parameter_blackboard', ['role', 'position_number'])
-        self.duty: str = gamestate_settings['role']
-        self.position_number: int = gamestate_settings['position_number']
-        self.state: Optional[RobotControlState] = None
+        self.head_pub = node.create_publisher(HeadMode, "head_mode", 10)
 
-        self.tf_buffer = tf2.Buffer(cache_time=Duration(seconds=30.0))
-        self.tf_listener = tf2.TransformListener(self.tf_buffer, self.node)
+        # Config
+        gamestate_settings = get_parameters_from_other_node(
+            self.node, 'parameter_blackboard', ['bot_id', 'position_number'])
+
+        self.position_number: int = gamestate_settings['position_number']
+        self.bot_id: int = gamestate_settings['bot_id']
+
+        self.robot_control_state: Optional[RobotControlState] = None
         self.timers = dict()
+
+        self.hcm_deactivate_pub = node.create_publisher(Bool, "hcm_deactivate", 1)
 
     #####################
     # ## Tracking Part ##
@@ -39,10 +45,10 @@ class BlackboardCapsule:
     ###################
 
     def robot_state_callback(self, msg: RobotControlState):
-        self.state = msg
+        self.robot_control_state = msg
 
     def is_currently_walking(self) -> bool:
-        return self.state is not None and self.state.state == RobotControlState.WALKING
+        return self.robot_control_state is not None and self.robot_control_state.state == RobotControlState.WALKING
 
     #############
     # ## Timer ##
@@ -95,4 +101,3 @@ class BlackboardCapsule:
         if timer_name not in self.timers:
             return True  # Don't wait for a non-existing Timer
         return self.node.get_clock().now() > self.timers[timer_name]
-

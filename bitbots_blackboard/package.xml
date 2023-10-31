@@ -1,5 +1,6 @@
-<?xml version='1.0' encoding='utf-8'?>
-<package format="2">
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
     <name>bitbots_blackboard</name>
     <version>1.5.3</version>
     <description>The bitbots_blackboard is used to share information
@@ -8,7 +9,7 @@
         there is a team_data_capsule dealing with messages received
         from other robots, a world_model_capsule containing various
         information about objects (balls, goals) on the field and a
-        blackboard capsule containing general information about the
+        misc capsule containing general information about the
         state of actions or perceptions by the robot.
     </description>
 
@@ -18,20 +19,21 @@
 
     <license>MIT</license>
 
-    <depend>rclpy</depend>
     <build_depend>bitbots_docs</build_depend>
+    <depend>bitbots_tf_listener</depend>
+    <depend>bitbots_utils</depend>
+    <depend>python3-numpy</depend>
+    <depend>rclpy</depend>
+    <depend>tf_transformations</depend>
+    <exec_depend>bio_ik_msgs</exec_depend>
+    <exec_depend>bitbots_msgs</exec_depend>
+    <exec_depend>geometry_msgs</exec_depend>
+    <exec_depend>sensor_msgs</exec_depend>
+    <exec_depend>soccer_vision_3d_msgs</exec_depend>
     <exec_depend>std_msgs</exec_depend>
     <exec_depend>std_srvs</exec_depend>
-    <exec_depend>sensor_msgs</exec_depend>
-    <exec_depend>geometry_msgs</exec_depend>
-    <exec_depend>tf2</exec_depend>
     <exec_depend>tf2_geometry_msgs</exec_depend>
-    <exec_depend>bio_ik_msgs</exec_depend>
-    <exec_depend>humanoid_league_msgs</exec_depend>
-    <exec_depend>soccer_vision_3d_msgs</exec_depend>
-    <exec_depend>bitbots_msgs</exec_depend>
-    <depend>tf_transformations</depend>
-    <depend>python3-numpy</depend>
+    <exec_depend>tf2</exec_depend>
 
     <export>
         <bitbots_documentation>

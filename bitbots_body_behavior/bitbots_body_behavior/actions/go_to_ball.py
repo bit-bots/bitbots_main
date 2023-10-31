@@ -1,5 +1,5 @@
-from actionlib_msgs.msg import GoalStatus
 from bitbots_blackboard.blackboard import BodyBlackboard
+from bitbots_blackboard.capsules.pathfinding_capsule import BallGoalType
 from geometry_msgs.msg import Vector3
 from rclpy.duration import Duration
 from std_msgs.msg import ColorRGBA
@@ -16,7 +16,7 @@ class GoToBall(AbstractActionElement):
         if 'target' not in parameters.keys():
             self.blackboard.node.get_logger().error('The parameter "target" could not be used to decide whether map information is accesible')
         else:
-            self.target = parameters['target']
+            self.target = BallGoalType(parameters['target'])
 
         self.blocking = parameters.get('blocking', True)
         self.distance = parameters.get('distance', self.blackboard.config['ball_approach_dist'])

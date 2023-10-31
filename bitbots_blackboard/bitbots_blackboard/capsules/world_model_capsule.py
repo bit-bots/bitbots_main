@@ -20,10 +20,11 @@ from geometry_msgs.msg import (PoseStamped, PoseWithCovarianceStamped,
 from rclpy.clock import ClockType
 from rclpy.duration import Duration
 from rclpy.time import Time
+from ros2_numpy import numpify, msgify
 from std_msgs.msg import Header
 from std_srvs.srv import Trigger
-from tf2_geometry_msgs import PointStamped
 from tf_transformations import euler_from_quaternion
+from tf2_geometry_msgs import PointStamped, Point
 
 
 class WorldModelCapsule:
@@ -32,8 +33,6 @@ class WorldModelCapsule:
         self.body_config = get_parameter_dict(self._blackboard.node, "body")
         # This pose is not supposed to be used as robot pose. Just as precision measurement for the TF position.
         self.pose = PoseWithCovarianceStamped()
-        self.tf_buffer = tf2.Buffer(cache_time=Duration(seconds=30))
-        self.tf_listener = tf2.TransformListener(self.tf_buffer, self._blackboard.node)
 
         self.odom_frame: str = self._blackboard.node.get_parameter('odom_frame').value
         self.map_frame: str = self._blackboard.node.get_parameter('map_frame').value
@@ -82,7 +81,7 @@ class WorldModelCapsule:
         self.ball_twist_publisher = self._blackboard.node.create_publisher(TwistStamped, 'debug/ball_twist', 1)
         self.used_ball_pub = self._blackboard.node.create_publisher(PointStamped, 'debug/used_ball', 1)
         self.which_ball_pub = self._blackboard.node.create_publisher(Header, 'debug/which_ball_is_used', 1)
-   
+
 
     ############
     ### Ball ###
@@ -131,7 +130,7 @@ class WorldModelCapsule:
                 return self.ball_map
             else:
                 teammate_ball = self._blackboard.team_data.get_teammate_ball()
-                if teammate_ball is not None and self.tf_buffer.can_transform(self.base_footprint_frame,
+                if teammate_ball is not None and self._blackboard.tf_buffer.can_transform(self.base_footprint_frame,
                                                                               teammate_ball.header.frame_id,
                                                                               teammate_ball.header.stamp,
                                                                               timeout=Duration(seconds=0.2)):
@@ -161,7 +160,7 @@ class WorldModelCapsule:
     def get_ball_position_uv(self) -> Tuple[float, float]:
         ball = self.get_best_ball_point_stamped()
         try:
-            ball_bfp = self.tf_buffer.transform(ball, self.base_footprint_frame, timeout=Duration(seconds=0.2)).point
+            ball_bfp = self._blackboard.tf_buffer.transform(ball, self.base_footprint_frame, timeout=Duration(seconds=0.2)).point
         except (tf2.ExtrapolationException) as e:
             self._blackboard.node.get_logger().warn(e)
             self._blackboard.node.get_logger().error('Severe transformation problem concerning the ball!')
@@ -185,9 +184,6 @@ class WorldModelCapsule:
             u, v = ball_pos
         return math.atan2(v, u)
 
-    def get_ball_speed(self) -> TwistStamped:
-        raise NotImplementedError
-
     def ball_filtered_callback(self, msg: PoseWithCovarianceStamped):
         self.ball_filtered = msg
 
@@ -201,9 +197,9 @@ class WorldModelCapsule:
 
         ball_buffer = PointStamped(header=msg.header, point=msg.pose.pose.position)
         try:
-            self.ball = self.tf_buffer.transform(ball_buffer, self.base_footprint_frame, timeout=Duration(seconds=1.0))
-            self.ball_odom = self.tf_buffer.transform(ball_buffer, self.odom_frame, timeout=Duration(seconds=1.0))
-            self.ball_map = self.tf_buffer.transform(ball_buffer, self.map_frame, timeout=Duration(seconds=1.0))
+            self.ball = self._blackboard.tf_buffer.transform(ball_buffer, self.base_footprint_frame, timeout=Duration(seconds=1.0))
+            self.ball_odom = self._blackboard.tf_buffer.transform(ball_buffer, self.odom_frame, timeout=Duration(seconds=1.0))
+            self.ball_map = self._blackboard.tf_buffer.transform(ball_buffer, self.map_frame, timeout=Duration(seconds=1.0))
             # Set timestamps to zero to get the newest transform when this is transformed later
             self.ball_odom.header.stamp = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME).to_msg()
             self.ball_map.header.stamp = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME).to_msg()
@@ -237,8 +233,8 @@ class WorldModelCapsule:
                 point_b.point.y = msg.twist.twist.linear.y
                 point_b.point.z = msg.twist.twist.linear.z
                 # transform start and endpoint of velocity vector
-                point_a = self.tf_buffer.transform(point_a, self.map_frame, timeout=Duration(seconds=1.0))
-                point_b = self.tf_buffer.transform(point_b, self.map_frame, timeout=Duration(seconds=1.0))
+                point_a = self._blackboard.tf_buffer.transform(point_a, self.map_frame, timeout=Duration(seconds=1.0))
+                point_b = self._blackboard.tf_buffer.transform(point_b, self.map_frame, timeout=Duration(seconds=1.0))
                 # build new twist using transform vector
                 self.ball_twist_map = TwistStamped(header=msg.header)
                 self.ball_twist_map.header.frame_id = self.map_frame
@@ -323,45 +319,45 @@ class WorldModelCapsule:
     def pose_callback(self, pos: PoseWithCovarianceStamped):
         self.pose = pos
 
-    def get_current_position(self) -> Tuple[float, float, float]:
+    def get_current_position(self, frame_id: Optional[str] = None) -> Optional[Tuple[float, float, float]]:
         """
-        Returns the current position as determined by the localization
-        :returns x,y,theta
+        Returns the current position as determined by the localization or odometry
+        depending on the given frame_id
+        :param frame_id: The frame_id to use for the position (e.g. 'map' or 'odom'), will default to map_frame
+        :returns x,y,theta:
         """
-        transform = self.get_current_position_transform()
+        transform = self.get_current_position_transform(frame_id or self.map_frame)
         if transform is None:
             return None
-        orientation = transform.transform.rotation
-        theta = euler_from_quaternion([orientation.x, orientation.y, orientation.z, orientation.w])[2]
+        theta = euler_from_quaternion(numpify(transform.transform.rotation))[2]
         return transform.transform.translation.x, transform.transform.translation.y, theta
 
-    def get_current_position_pose_stamped(self) -> PoseStamped:
+    def get_current_position_pose_stamped(self, frame_id: Optional[str] = None) -> Optional[PoseStamped]:
         """
-        Returns the current position as determined by the localization as a PoseStamped
+        Returns the current position as determined by the localization or odometry as a PoseStamped
+        depending on the given frame_id
+        :param frame_id: The frame_id to use for the position (e.g. 'map' or 'odom'), will default to map_frame
         """
-        transform = self.get_current_position_transform()
+        transform = self.get_current_position_transform(frame_id or self.map_frame)
         if transform is None:
             return None
         ps = PoseStamped()
         ps.header = transform.header
-        ps.pose.position.x = transform.transform.translation.x
-        ps.pose.position.y = transform.transform.translation.y
-        ps.pose.position.z = transform.transform.translation.z
-        ps.pose.orientation = transform.transform.rotation
+        ps.pose.position = msgify(Point, numpify(transform.transform.translation))
         return ps
 
-    def get_current_position_transform(self) -> TransformStamped:
+    def get_current_position_transform(self, frame_id: str) -> TransformStamped:
         """
-        Returns the current position as determined by the localization as a TransformStamped
+        Returns the current position as determined by the localization or odometry as a TransformStamped
+        depending on the given frame_id
+        :param frame_id: The frame_id to use for the position (e.g. 'map' or 'odom'), will default to map_frame
         """
         try:
-            # get the most recent transform
-            transform = self.tf_buffer.lookup_transform(self.map_frame, self.base_footprint_frame,
+            return self._blackboard.tf_buffer.lookup_transform(frame_id, self.base_footprint_frame,
                                                         Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME))
         except (tf2.LookupException, tf2.ConnectivityException, tf2.ExtrapolationException) as e:
             self._blackboard.node.get_logger().warn(str(e))
             return None
-        return transform
 
     def get_localization_precision(self) -> Tuple[float, float, float]:
         """
@@ -391,13 +387,13 @@ class WorldModelCapsule:
         Returns whether we can transform into and from the map frame.
         """
         # if we can do this, we should be able to transform the ball
-        # (unless the localization dies in the next 0.2 seconds)
+        # (unless the localization died during the last 1.0 seconds)
         try:
-            t = self._blackboard.node.get_clock().now() - Duration(seconds=0.3)
-        except TypeError as e:
-            self._blackboard.node.get_logger().error(e)
+            t = self._blackboard.node.get_clock().now() - Duration(seconds=1.0)
+        except ValueError as e:
+            self._blackboard.node.get_logger().error(str(e))
             t = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME)
-        return self.tf_buffer.can_transform(self.base_footprint_frame, self.map_frame, t)
+        return self._blackboard.tf_buffer.can_transform(self.base_footprint_frame, self.map_frame, t)
 
     ##########
     # Common #

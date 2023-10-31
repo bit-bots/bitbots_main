@@ -67,12 +67,12 @@ class GoToCornerKickPosition(AbstractActionElement):
         elif self.mode == "others":
             # use fixed position rather than standing between ball and goal since there is the goal post
             # x dependent on role position
-            if self.blackboard.blackboard.duty == "defense":
+            if self.blackboard.team_data.role == "defense":
                 # close to post
                 x_from_goal_line = 0.5
             else:
                 # offense players further away based on their position number
-                x_from_goal_line = 1.5 + self.blackboard.blackboard.position_number
+                x_from_goal_line = 1.5 + self.blackboard.misc.position_number
             x = x_from_goal_line - (field_length / 2)
             # 1 m away on the side line
             y = sign * ((field_width / 2) - 1)
@@ -80,6 +80,12 @@ class GoToCornerKickPosition(AbstractActionElement):
 
         pose_msg.pose.position.x = x
         pose_msg.pose.position.y = y
-        pose_msg.pose.orientation = Quaternion(*quaternion_from_euler(0, 0, yaw))
+        quaternion = Quaternion()
+        x, y, z, w = quaternion_from_euler(0, 0, yaw)
+        quaternion.x = x
+        quaternion.y = y
+        quaternion.z = z
+        quaternion.w = w
+        pose_msg.pose.orientation = quaternion
 
         self.blackboard.pathfinding.publish(pose_msg)

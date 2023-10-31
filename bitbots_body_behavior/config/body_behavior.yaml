@@ -57,7 +57,7 @@
 
       # When the ball has not been seen for `ball_lost_time` seconds,
       # it is considered lost and will be searched
-      ball_lost_time: 8.0
+      ball_lost_time: 3.0
 
       # The orientation threshold defining which range (in Degrees) is acceptable as aligned to the goal (in each direction)
       goal_alignment_orientation_threshold: 20.0
@@ -135,7 +135,7 @@
       # Duration for which the robot pauses between reorientation runs.
       reorientation_pause_duration: 30.0
 
-      # minimal difference between the current and the last movebase goal to actually send a new goal.
+      # minimal difference between the current and the last path planning goal to actually send a new goal.
       pathfinding_position_threshold: 0.3
       pathfinding_orientation_threshold: 10.0
 
@@ -148,7 +148,7 @@
       # Range in which the ball far approach point is counted as reached
       ball_far_approach_position_thresh: 0.2
 
-      # We reapproach the ball after it has moved further away than this distance. This includes movig to the far approach position. Balls further away are also recognized as obstacles.
+      # We reapproach the ball after it has moved further away than this distance. This includes moveing to the far approach position.
       ball_reapproach_dist: 1.0
 
       # Distance at which the ball is normally approached
@@ -178,10 +178,13 @@
       kickoff_min_ball_movement: 0.5
 
       # dribble action
-      dribble_max_speed_x: 0.25
-      dribble_max_speed_y: 0.08
-      dribble_p: 0.75
-      dribble_accel_x: 0.001
+      dribble_max_speed_x: 0.03
+      dribble_max_speed_y: 0.05
+      # Ball angle at which we stop moving forward
+      dribble_ball_heading_x_vel_zero_point: 30
+      dribble_p: 0.8
+      dribble_accel_x: 0.01
+      dribble_accel_y: 0.01
 
       # dribble decision
       dribble_orient_threshold: 0.5

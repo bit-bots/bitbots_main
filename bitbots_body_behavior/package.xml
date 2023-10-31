@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
-<package format="2">
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
   <name>bitbots_body_behavior</name>
   <version>1.7.0</version>
   <description>The bitbots_body_behavior package determines the
@@ -14,17 +15,17 @@
 
   <license>MIT</license>
 
-  <depend>rclpy</depend>
-  <exec_depend>bitbots_blackboard</exec_depend>
-  <exec_depend>bitbots_convenience_frames</exec_depend>
-  <exec_depend>dynamic_stack_decider</exec_depend>
-  <exec_depend>geometry_msgs</exec_depend>
-  <exec_depend>humanoid_league_msgs</exec_depend>
-  <exec_depend>ros2_numpy</exec_depend>
-  <exec_depend>soccer_vision_3d_msgs</exec_depend>
-  <exec_depend>tf2</exec_depend>
-  <depend>tf_transformations</depend>
+  <depend>bitbots_blackboard</depend>
+  <depend>bitbots_msgs</depend>
+  <depend>bitbots_utils</depend>
+  <depend>dynamic_stack_decider</depend>
+  <depend>geometry_msgs</depend>
   <depend>python3-numpy</depend>
+  <depend>rclpy</depend>
+  <depend>ros2_numpy</depend>
+  <depend>soccer_vision_3d_msgs</depend>
+  <depend>tf_transformations</depend>
+  <depend>tf2</depend>
 
 
   <export>

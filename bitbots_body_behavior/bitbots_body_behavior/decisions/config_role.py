@@ -12,7 +12,7 @@ class ConfigRole(AbstractDecisionElement):
     blackboard: BodyBlackboard
     def __init__(self, blackboard, dsd, parameters=None):
         super().__init__(blackboard, dsd, parameters)
-        self.role = self.blackboard.blackboard.duty
+        self.role = self.blackboard.team_data.role
 
     def perform(self, reevaluate=False):
         assert self.role in self.blackboard.config['roles'], "No valid role specified"

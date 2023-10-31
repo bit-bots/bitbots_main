@@ -1,8 +1,6 @@
 from bitbots_blackboard.blackboard import BodyBlackboard
-from geometry_msgs.msg import Quaternion
-from tf_transformations import quaternion_from_euler
-
 from bitbots_msgs.action import Kick
+from bitbots_utils.transforms import quat_from_yaw
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 
@@ -92,9 +90,7 @@ class KickBallDynamic(AbstractKickAction):
                             self.kick_length,
                             self.angular_range)
 
-                goal.kick_direction = Quaternion(**dict(zip(
-                    "xyzw",
-                    quaternion_from_euler(0, 0, kick_direction))))
+                goal.kick_direction = quat_from_yaw(kick_direction)
 
                 self.blackboard.kick.kick(goal)
                 self._goal_sent = True

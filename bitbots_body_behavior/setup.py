@@ -23,13 +23,9 @@ setup(
         ('share/' + package_name + '/decisions' ,
             glob.glob(package_name + '/decisions/*.py')),
         ('share/' + package_name,
-            [package_name+'/main.dsd'])
+            glob.glob(package_name + '/*.dsd')),
     ],
-    scripts=[
-        'scripts/backup_behavior.py',
-        'scripts/fake_plan.py',
-        'scripts/show_world_model_objects.py'
-    ],
+    scripts=[],
     install_requires=[
         'launch',
         'setuptools',
