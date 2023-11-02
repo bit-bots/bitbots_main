@@ -2,7 +2,7 @@
 # RoboCup 2022 Bangkok #
 ########################
 
-# Settings override for the Webots simulator field
+# Settings override for the RoboCup 2022 Bangkok field
 
 bitbots_localization:
   ros__parameters:

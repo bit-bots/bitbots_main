@@ -78,7 +78,6 @@ Localization::Localization()
                            std::bind(&Localization::run_filter_one_step, this));
 }
 
-// TODO handle parameter reloading
 void Localization::updateParams(bool force_reload) {
   // Check if we don't need to update the parameters
   if (!force_reload and !param_listener_.is_old(config_)) {
