@@ -147,12 +147,14 @@ class Localization : public rclcpp::Node {
   // Data structure to hold all parameters, which is build from the schema in the 'parameters.yaml'
   bitbots_localization::Params config_;
 
+  // Declare subscribers
   rclcpp::Subscription<sm::msg::PointCloud2>::SharedPtr line_point_cloud_subscriber_;
   rclcpp::Subscription<sv3dm::msg::GoalpostArray>::SharedPtr goal_subscriber_;
   rclcpp::Subscription<sv3dm::msg::FieldBoundary>::SharedPtr fieldboundary_subscriber_;
 
   rclcpp::Subscription<gm::msg::PoseWithCovarianceStamped>::SharedPtr rviz_initial_pose_subscriber_;
 
+  // Declare publishers
   rclcpp::Publisher<gm::msg::PoseWithCovarianceStamped>::SharedPtr pose_with_covariance_publisher_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr pose_particles_publisher_;
   rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr lines_publisher_;
@@ -161,35 +163,43 @@ class Localization : public rclcpp::Node {
   rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr fieldboundary_ratings_publisher_;
   rclcpp::Publisher<nav_msgs::msg::OccupancyGrid>::SharedPtr field_publisher_;
 
+  // Declare services
   rclcpp::Service<bl::srv::ResetFilter>::SharedPtr reset_service_;
   rclcpp::Service<bl::srv::SetPaused>::SharedPtr pause_service_;
+
+  // Declare timers
   rclcpp::TimerBase::SharedPtr publishing_timer_;
+
+  // Declare tf2 objects
   std::unique_ptr<tf2_ros::Buffer> tfBuffer;
   std::shared_ptr<tf2_ros::TransformListener> tfListener;
   std::shared_ptr<tf2_ros::TransformBroadcaster> br;
 
+  // Declare particle filter components
   std::shared_ptr<pf::ImportanceResampling<RobotState>> resampling_;
   std::shared_ptr<RobotPoseObservationModel> robot_pose_observation_model_;
   std::shared_ptr<RobotMotionModel> robot_motion_model_;
+  std::shared_ptr<particle_filter::ParticleFilter<RobotState>> robot_pf_;
+
+  // Declare initial state distributions
   std::shared_ptr<RobotStateDistributionStartLeft> robot_state_distribution_start_left_;
   std::shared_ptr<RobotStateDistributionStartRight> robot_state_distribution_start_right_;
   std::shared_ptr<RobotStateDistributionRightHalf> robot_state_distribution_right_half_;
   std::shared_ptr<RobotStateDistributionLeftHalf> robot_state_distribution_left_half_;
   std::shared_ptr<RobotStateDistributionPosition> robot_state_distribution_position_;
   std::shared_ptr<RobotStateDistributionPose> robot_state_distribution_pose_;
-  std::shared_ptr<particle_filter::ParticleFilter<RobotState>> robot_pf_;
+
+  // Declare filter estimate
   RobotState estimate_;
   std::vector<double> estimate_cov_;
 
-  bool resampled_ = false;
-
+  // Declare input message buffers
   sm::msg::PointCloud2 line_pointcloud_relative_;
   sv3dm::msg::GoalpostArray goal_posts_relative_;
   sv3dm::msg::FieldBoundary fieldboundary_relative_;
-  sm::msg::CameraInfo cam_info_;
 
+  // Declare time stamps
   rclcpp::Time last_stamp_lines = rclcpp::Time(0);
-  rclcpp::Time last_stamp_lines_pc = rclcpp::Time(0);
   rclcpp::Time last_stamp_goals = rclcpp::Time(0);
   rclcpp::Time last_stamp_fb_points = rclcpp::Time(0);
   rclcpp::Time last_stamp_all_measurements = rclcpp::Time(0);
@@ -198,21 +208,31 @@ class Localization : public rclcpp::Node {
   builtin_interfaces::msg::Time localization_tf_last_published_time_ =
       builtin_interfaces::msg::Time(rclcpp::Time(0, 0, RCL_ROS_TIME));
 
+  // Declare robot movement variables
+  geometry_msgs::msg::Vector3 linear_movement_;
+  geometry_msgs::msg::Vector3 rotational_movement_;
+
+  // Keep track of the odometry transform in the last step
+  geometry_msgs::msg::TransformStamped previousOdomTransform_;
+
+  // Flag that checks if the robot is moving
+  bool robot_moved = false;
+
+  // Keep track of the number of filter steps
+  int timer_callback_count_ = 0;
+
+  // Maps for the different measurement classes
+  std::shared_ptr<Map> lines_;
+  std::shared_ptr<Map> goals_;
+  std::shared_ptr<Map> field_boundary_;
+
+  // RNG that is used for the different sampling steps
+  particle_filter::CRandomNumberGenerator random_number_generator_;
+
   /**
    * Runs the filter for one step
    */
   void run_filter_one_step();
-
-  std::shared_ptr<Map> lines_;
-  std::shared_ptr<Map> goals_;
-  std::shared_ptr<Map> field_boundary_;
-  std::shared_ptr<Map> corner_;
-  std::shared_ptr<Map> t_crossings_map_;
-  std::shared_ptr<Map> crosses_map_;
-
-  gmms::GaussianMixtureModel pose_gmm_;
-  particle_filter::CRandomNumberGenerator random_number_generator_;
-  std_msgs::msg::ColorRGBA marker_color;
 
   /**
    * Publishes the position as a transform
@@ -260,16 +280,6 @@ class Localization : public rclcpp::Node {
    * Gets the and convert motion / odometry information
    */
   void getMotion();
-
-  geometry_msgs::msg::TransformStamped transformOdomBaseLink;
-  bool initialization = true;
-
-  geometry_msgs::msg::Vector3 linear_movement_;
-  geometry_msgs::msg::Vector3 rotational_movement_;
-  geometry_msgs::msg::TransformStamped previousOdomTransform_;
-  bool new_linepoints_ = false;
-  bool robot_moved = false;
-  int timer_callback_count_ = 0;
 };
 };  // namespace bitbots_localization
 

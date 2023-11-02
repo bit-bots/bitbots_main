@@ -50,8 +50,8 @@ double RobotPoseObservationModel::measure(const RobotState &state) const {
                    ((1 - scoring_config.field_boundary.factor) +
                     scoring_config.field_boundary.factor * particle_weight_field_boundary));
 
-  if (weight < min_weight_) {
-    weight = min_weight_;
+  if (weight < config_.particle_filter.weighting.min_weight) {
+    weight = config_.particle_filter.weighting.min_weight;
   }
 
   // reduce weight if particle is too far outside of the field:
@@ -101,9 +101,7 @@ std::vector<std::pair<double, double>> RobotPoseObservationModel::get_measuremen
   return last_measurement_field_boundary_;
 }
 
-void RobotPoseObservationModel::set_min_weight(double min_weight) { min_weight_ = min_weight; }
-
-double RobotPoseObservationModel::get_min_weight() const { return min_weight_; }
+double RobotPoseObservationModel::get_min_weight() const { return config_.particle_filter.weighting.min_weight; }
 
 void RobotPoseObservationModel::clear_measurement() {
   last_measurement_lines_.clear();

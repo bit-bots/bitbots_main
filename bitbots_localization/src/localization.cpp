@@ -106,7 +106,6 @@ void Localization::updateParams(bool force_reload) {
 
   // Init observation model
   robot_pose_observation_model_.reset(new RobotPoseObservationModel(lines_, goals_, field_boundary_, config_));
-  robot_pose_observation_model_->set_min_weight(config_.particle_filter.weighting.min_weight);
 
   // Init motion model
   auto drift_config = config_.particle_filter.drift;
@@ -166,7 +165,6 @@ void Localization::updateParams(bool force_reload) {
 
 void Localization::run_filter_one_step() {
   timer_callback_count_++;
-  resampled_ = false;
 
   // Check for new parameters and recreate necessary components if needed
   updateParams();
@@ -194,7 +192,6 @@ void Localization::run_filter_one_step() {
   // Check if its resampling time!
   if (timer_callback_count_ % config_.particle_filter.resampling_interval == 0) {
     robot_pf_->resample();
-    resampled_ = true;
   }
   // Publish transforms
   publish_transforms();
@@ -298,7 +295,7 @@ void Localization::reset_filter(int distribution, double x, double y, double ang
 
 void Localization::updateMeasurements() {
   // Sets the measurements in the observation model
-  if (line_pointcloud_relative_.header.stamp != last_stamp_lines_pc && config_.particle_filter.scoring.lines.factor) {
+  if (line_pointcloud_relative_.header.stamp != last_stamp_lines && config_.particle_filter.scoring.lines.factor) {
     robot_pose_observation_model_->set_measurement_lines_pc(line_pointcloud_relative_);
   }
   if (config_.particle_filter.scoring.goal.factor && goal_posts_relative_.header.stamp != last_stamp_goals) {
@@ -310,15 +307,14 @@ void Localization::updateMeasurements() {
   }
 
   // Set timestamps to mark past messages
-  last_stamp_lines_pc = line_pointcloud_relative_.header.stamp;
+  last_stamp_lines = line_pointcloud_relative_.header.stamp;
   last_stamp_goals = goal_posts_relative_.header.stamp;
   last_stamp_fb_points = fieldboundary_relative_.header.stamp;
   // Maximum time stamp of the last measurements
-  last_stamp_all_measurements = std::max({last_stamp_lines_pc, last_stamp_goals, last_stamp_fb_points});
+  last_stamp_all_measurements = std::max({last_stamp_lines, last_stamp_goals, last_stamp_fb_points});
 }
 
 void Localization::getMotion() {
-  robot_moved = false;
   geometry_msgs::msg::TransformStamped transformStampedNow;
 
   try {
@@ -356,6 +352,7 @@ void Localization::getMotion() {
                     rotational_movement_.z / time_delta >= config_.misc.min_motion_angular;
     } else {
       RCLCPP_WARN(this->get_logger(), "Time step delta of zero encountered! This should not happen!");
+      robot_moved = false;
     }
 
     // Set the variable for the transform of the previous step to the transform of the current step, because we finished
@@ -423,6 +420,7 @@ void Localization::publish_transforms() {
     localization_transform.transform.rotation.z = q.z();
     localization_transform.transform.rotation.w = q.w();
 
+    // Check if a transform for the current timestamp was already published
     if (localization_tf_last_published_time_ != localization_transform.header.stamp) {
       // Do not resend a transform for the same timestamp
       localization_tf_last_published_time_ = localization_transform.header.stamp;
@@ -446,6 +444,7 @@ void Localization::publish_transforms() {
 
     RCLCPP_DEBUG(this->get_logger(), "Transform %s", geometry_msgs::msg::to_yaml(map_odom_transform).c_str());
 
+    // Check if a transform for the current timestamp was already published
     if (map_odom_tf_last_published_time_ != map_odom_transform.header.stamp) {
       // Do not resend a transform for the same timestamp
       map_odom_tf_last_published_time_ = map_odom_transform.header.stamp;

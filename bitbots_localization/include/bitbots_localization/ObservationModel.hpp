@@ -54,8 +54,6 @@ class RobotPoseObservationModel : public particle_filter::ObservationModel<Robot
 
   std::vector<std::pair<double, double>> get_measurement_field_boundary() const;
 
-  void set_min_weight(double min_weight);
-
   double get_min_weight() const override;
 
   void clear_measurement();
@@ -67,18 +65,17 @@ class RobotPoseObservationModel : public particle_filter::ObservationModel<Robot
                                     const std::vector<std::pair<double, double>> &last_measurement,
                                     std::shared_ptr<Map> map, double element_weight) const;
 
+  // Measurements
   std::vector<std::pair<double, double>> last_measurement_lines_;
-
   std::vector<std::pair<double, double>> last_measurement_goal_;
-
   std::vector<std::pair<double, double>> last_measurement_field_boundary_;
 
-  double min_weight_ = 0;
-
+  // Reference to the maps for the different classes
   std::shared_ptr<Map> map_lines_;
   std::shared_ptr<Map> map_goals_;
   std::shared_ptr<Map> map_field_boundary_;
 
+  // Parameters
   bitbots_localization::Params config_;
 };
 };  // namespace bitbots_localization
