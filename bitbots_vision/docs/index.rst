@@ -4,8 +4,8 @@ Welcome to |project|'s documentation!
 Description
 -----------
 
-This is the vision ROS package of the Hamburg Bit-Bots. A description of the current, YOEO-based vision can be found
-here: :doc:`manual/yoeo_vision`. For the old legacy vision, look here: :doc:`manual/legacy_vision`.
+This is the vision ROS package of the Hamburg Bit-Bots. A detailed description of the current, YOEO-based vision can be 
+found here: :doc:`manual/yoeo_vision`.
 
 Launchscripts
 -------------

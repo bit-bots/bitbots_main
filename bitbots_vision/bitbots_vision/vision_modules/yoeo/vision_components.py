@@ -2,14 +2,15 @@ from __future__ import annotations
 
 import numpy as np
 import rclpy
+
 from abc import ABC, abstractmethod
 from rclpy.node import Node
 from sensor_msgs.msg import Image
 from typing import Dict, Optional, List, Tuple
+
 from humanoid_league_msgs.msg import Audio, GameState
 from soccer_vision_2d_msgs.msg import BallArray, GoalpostArray, RobotArray, Robot
-from bitbots_vision.vision_modules import color, debug, \
-    obstacle, ros_utils, candidate
+from bitbots_vision.vision_modules import debug, ros_utils, candidate
 
 from . import detectors, object_manager, yoeo_handlers
 
@@ -41,79 +42,6 @@ class DebugImageFactory:
     def _create_new_debug_image(cls, config: Dict) -> None:
         cls._debug_image = debug.DebugImage(config['component_debug_image_active'])
         cls._config = config
-
-
-class YOEOObstacleDetectorFactory:
-    """
-    Factory class that handles the lifetime of obstacle.ColorObstacleDetector objects used in the YOEO obstacle
-    detection.
-    """
-    _config: Dict = {}
-    _blue_color_detector: Optional[color.HsvSpaceColorDetector] = None
-    _red_color_detector: Optional[color.HsvSpaceColorDetector] = None
-    _robot_detector = None
-    _yoeo_id: Optional[int] = None
-
-    @classmethod
-    def get(cls,
-            config: Dict,
-            color: Optional[int] = None,
-            subtractors: Optional[List[obstacle.ColorObstacleDetector]] = None) \
-            -> obstacle.ColorObstacleDetector:
-        """
-        Get an instance of obstacle.ColorObstacleDetector with the specified parameters.
-        """
-        if cls._new_robot_detector_has_to_be_created():
-            cls._create_new_robot_detector()
-
-        if cls._new_red_color_detector_has_to_be_created(config):
-            cls._create_new_red_color_detector(config)
-
-        if cls._new_blue_color_detector_has_to_be_created(config):
-            cls._create_new_blue_color_detector(config)
-
-        color_detector = cls._select_detector_based_on(color)
-
-        return obstacle.ColorObstacleDetector(
-            cls._robot_detector,
-            color_detector,
-            threshold=config['obstacle_color_threshold'],
-            subtractors=subtractors)
-
-    @classmethod
-    def _new_robot_detector_has_to_be_created(cls) -> bool:
-        return cls._robot_detector is None or cls._yoeo_id != object_manager.YOEOObjectManager.get_id()
-
-    @classmethod
-    def _create_new_robot_detector(cls) -> None:
-        cls._robot_detector = detectors.RobotDetector(object_manager.YOEOObjectManager.get())
-        cls._yoeo_id = object_manager.YOEOObjectManager.get_id()
-
-    @classmethod
-    def _new_red_color_detector_has_to_be_created(cls, config: Dict) -> bool:
-        return ros_utils.config_param_change(cls._config, config, r'^red_color_detector_')
-
-    @classmethod
-    def _create_new_red_color_detector(cls, config) -> None:
-        cls._red_color_detector = color.HsvSpaceColorDetector(config, "red")
-
-    @classmethod
-    def _new_blue_color_detector_has_to_be_created(cls, config: Dict) -> bool:
-        return ros_utils.config_param_change(cls._config, config, r'^blue_color_detector_')
-
-    @classmethod
-    def _create_new_blue_color_detector(cls, config) -> None:
-        cls._blue_color_detector = color.HsvSpaceColorDetector(config, "blue")
-
-    @classmethod
-    def _select_detector_based_on(cls, color: Optional[int]):
-        if color == GameState.BLUE:
-            color_detector = cls._blue_color_detector
-        elif color == GameState.RED:
-            color_detector = cls._red_color_detector
-        else:
-            color_detector = None
-        return color_detector
 
 
 class IVisionComponent(ABC):
@@ -340,10 +268,10 @@ class GoalpostDetectionComponent(IVisionComponent):
         self._publisher.publish(goalposts_message)
 
     def _add_candidates_to_debug_image(self, candidates: List[candidate.Candidate]) -> None:
-        self._debug_image.draw_obstacle_candidates(candidates, DebugImageComponent.Colors.goalposts, thickness=1)
+        self._debug_image.draw_robot_candidates(candidates, DebugImageComponent.Colors.goalposts, thickness=1)
 
     def _add_final_candidates_to_debug_image(self, candidates: List[candidate.Candidate]) -> None:
-        self._debug_image.draw_obstacle_candidates(candidates, DebugImageComponent.Colors.goalposts, thickness=3)
+        self._debug_image.draw_robot_candidates(candidates, DebugImageComponent.Colors.goalposts, thickness=3)
 
     def set_image(self, image: np.ndarray) -> None:
         pass
@@ -441,20 +369,19 @@ class FieldDetectionComponent(IVisionComponent):
         pass  # Nothing should happen here
 
 
-class RobotDetectionComponentTemplate(IVisionComponent):
+class RobotDetectionComponent(IVisionComponent):
     """
-        This template carries out the robot detection using YOEO. Abstract method "_configure_detectors" needs to be
-        implemented.
-        """
+    This component carries out the robot detection using YOEO with team color detection done by YOEO.
+    """
 
     def __init__(self, node: Node):
         self._config: Dict = {}
         self._debug_image: Optional[debug.DebugImage] = None
         self._debug_mode: bool = False
 
-        self._misc_obstacles_detector: Optional[obstacle.CandidateFinder] = None
-        self._opponents_detector: Optional[obstacle.CandidateFinder] = None
-        self._team_mates_detector: Optional[obstacle.CandidateFinder] = None
+        self._unknown_detector: Optional[candidate.CandidateFinder] = None
+        self._opponents_detector: Optional[candidate.CandidateFinder] = None
+        self._team_mates_detector: Optional[candidate.CandidateFinder] = None
 
         self._node: Node = node
         self._publisher: Optional[rclpy.publisher.Publisher] = None
@@ -482,104 +409,91 @@ class RobotDetectionComponentTemplate(IVisionComponent):
             self._config,
             new_config,
             self._publisher,
-            'ROS_obstacle_msg_topic',
+            'ROS_robot_msg_topic',
             RobotArray
         )
 
     def run(self, image_msg: Image) -> None:
-        obstacle_msgs: List[Robot] = []
-        self._add_team_mates_to(obstacle_msgs)
-        self._add_opponents_to(obstacle_msgs)
-        self._add_remaining_obstacles_to(obstacle_msgs)
+        robots_msgs: List[Robot] = []
+        self._add_team_mates_to(robots_msgs)
+        self._add_opponents_to(robots_msgs)
+        self._add_remaining_obstacles_to(robots_msgs)
 
-        self._publish_obstacles_message(image_msg, obstacle_msgs)
+        self._publish_robots_message(image_msg, robots_msgs)
 
         if self._debug_mode:
-            self._add_obstacles_to_debug_image()
+            self._add_robots_to_debug_image()
 
-    def _add_team_mates_to(self, obstacle_msgs: List[Robot]) -> None:
+    def _add_team_mates_to(self, robots_msgs: List[Robot]) -> None:
         team_mate_candidates = self._team_mates_detector.get_candidates()
-        team_mate_candidate_messages = self._create_obstacle_messages(Robot().attributes.TEAM_OWN, team_mate_candidates)
-        obstacle_msgs.extend(team_mate_candidate_messages)
+        team_mate_candidate_messages = self._create_robots_messages(
+            Robot().attributes.TEAM_OWN, 
+            team_mate_candidates
+        )
+        robots_msgs.extend(team_mate_candidate_messages)
 
     @staticmethod
-    def _create_obstacle_messages(obstacle_type: Robot, candidates: List[candidate.Candidate]) -> List[Robot]:
-        return [ros_utils.build_robot_msg(obstacle_candidate, obstacle_type) for obstacle_candidate in candidates]
+    def _create_robots_messages(robot_type: Robot, candidates: List[candidate.Candidate]) -> List[Robot]:
+        return [ros_utils.build_robot_msg(obstacle_candidate, robot_type) for obstacle_candidate in candidates]
 
-    def _add_opponents_to(self, obstacle_msgs: List[Robot]) -> None:
+    def _add_opponents_to(self, robot_msgs: List[Robot]) -> None:
         opponent_candidates = self._opponents_detector.get_candidates()
-        opponent_candidate_messages = self._create_obstacle_messages(
+        opponent_candidate_messages = self._create_robots_messages(
             Robot().attributes.TEAM_OPPONENT,
             opponent_candidates
         )
-        obstacle_msgs.extend(opponent_candidate_messages)
+        robot_msgs.extend(opponent_candidate_messages)
 
-    def _add_remaining_obstacles_to(self, obstacle_msgs: List[Robot]) -> None:
-        remaining_candidates = self._misc_obstacles_detector.get_candidates()
-        remaining_candidate_messages = self._create_obstacle_messages(
+    def _add_remaining_obstacles_to(self, robot_msgs: List[Robot]) -> None:
+        remaining_candidates = self._unknown_detector.get_candidates()
+        remaining_candidate_messages = self._create_robots_messages(
             Robot().attributes.TEAM_UNKNOWN,
             remaining_candidates
         )
-        obstacle_msgs.extend(remaining_candidate_messages)
+        robot_msgs.extend(remaining_candidate_messages)
 
-    def _publish_obstacles_message(self, image_msg: Image, obstacle_msgs: List[Robot]) -> None:
-        obstacles_msg = ros_utils.build_robot_array_msg(image_msg.header, obstacle_msgs)
-        self._publisher.publish(obstacles_msg)
+    def _publish_robots_message(self, image_msg: Image, robot_msgs: List[Robot]) -> None:
+        robots_msg = ros_utils.build_robot_array_msg(image_msg.header, robot_msgs)
+        self._publisher.publish(robots_msg)
 
-    def _add_obstacles_to_debug_image(self) -> None:
+    def _add_robots_to_debug_image(self) -> None:
         self._add_team_mates_to_debug_image()
         self._add_opponents_to_debug_image()
         self._add_remaining_objects_to_debug_image()
 
     def _add_team_mates_to_debug_image(self) -> None:
         team_mate_candidates = self._team_mates_detector.get_candidates()
-        self._debug_image.draw_obstacle_candidates(
+        self._debug_image.draw_robot_candidates(
             team_mate_candidates,
-            DebugImageComponent.Colors.team_mates,
+            DebugImageComponent.Colors.robot_team_mates,
             thickness=3
         )
 
     def _add_opponents_to_debug_image(self) -> None:
         opponent_candidates = self._opponents_detector.get_candidates()
-        self._debug_image.draw_obstacle_candidates(
+        self._debug_image.draw_robot_candidates(
             opponent_candidates,
-            DebugImageComponent.Colors.opponents,
+            DebugImageComponent.Colors.robot_opponents,
             thickness=3
         )
 
     def _add_remaining_objects_to_debug_image(self) -> None:
-        remaining_candidates = self._misc_obstacles_detector.get_candidates()
-        self._debug_image.draw_obstacle_candidates(
+        remaining_candidates = self._unknown_detector.get_candidates()
+        self._debug_image.draw_robot_candidates(
             remaining_candidates,
-            DebugImageComponent.Colors.misc_obstacles,
+            DebugImageComponent.Colors.robot_unknown,
             thickness=3
         )
 
     def set_image(self, image: np.ndarray) -> None:
         self._team_mates_detector.set_image(image)
         self._opponents_detector.set_image(image)
-        self._misc_obstacles_detector.set_image(image)
-
-    @abstractmethod
-    def _configure_detectors(self, config: Dict, own_color: int, opponent_color: int) -> None:
-        """
-        Template method to be implemented. Instantiate and configure detectors.
-        """
-        ...
-
-
-class RobotDetectionComponent(RobotDetectionComponentTemplate):
-    """
-    This component carries out the robot detection using YOEO with team color detection done by YOEO.
-    """
-
-    def __int__(self, node: Node):
-        super().__init__(node)
+        self._unknown_detector.set_image(image)
 
     def _configure_detectors(self, config: Dict, own_color: int, opponent_color: int) -> None:
         self._team_mates_detector = self._select_detector_based_on(own_color)
         self._opponents_detector = self._select_detector_based_on(opponent_color)
-        self._misc_obstacles_detector = self._select_detector_based_on(None)
+        self._unknown_detector = self._select_detector_based_on(None)
 
     @classmethod
     def _select_detector_based_on(cls, team_color: Optional[int]):
@@ -592,31 +506,79 @@ class RobotDetectionComponent(RobotDetectionComponentTemplate):
         return color_detector
 
 
-class HSVRobotDetectionComponent(RobotDetectionComponentTemplate):
+class NoTeamColorRobotDetectionComponent(IVisionComponent):
     """
-    This component carries out the robot detection using YOEO with team color detection based on HSV detectors.
+    This component carries out the robot detection using YOEO, albeit not detecting any team colors. Instead, all
+    robots are mapped to the "unknown" class.
     """
 
     def __init__(self, node: Node):
         super().__init__(node)
 
-    def _configure_detectors(self, config: Dict, own_color: int, opponent_color: int) -> None:
-        self._team_mates_detector = YOEOObstacleDetectorFactory.get(
-            config=config,
-            color=own_color,
-            subtractors=None
+    def __init__(self, node: Node):
+        self._config: Dict = {}
+        self._debug_image: Optional[debug.DebugImage] = None
+        self._debug_mode: bool = False
+
+        self._robot_detector: Optional[candidate.CandidateFinder] = None
+
+        self._node: Node = node
+        self._publisher: Optional[rclpy.publisher.Publisher] = None
+
+    def configure(self, config: Dict, debug_mode: bool) -> None:
+        self._debug_image = DebugImageFactory.get(config)
+        self._debug_mode = debug_mode
+
+        self._robot_detector = detectors.RobotDetector(object_manager.YOEOObjectManager.get())
+
+        self._register_publisher(config)
+        self._config = config
+
+    def _register_publisher(self, new_config: Dict) -> None:
+        self._publisher = ros_utils.create_or_update_publisher(
+            self._node,
+            self._config,
+            new_config,
+            self._publisher,
+            'ROS_robot_msg_topic',
+            RobotArray
         )
-        self._opponents_detector = YOEOObstacleDetectorFactory.get(
-            config=config,
-            color=opponent_color,
-            subtractors=[self._team_mates_detector]
+
+    def run(self, image_msg: Image) -> None:
+        robot_msgs: List[Robot] = []
+        self._add_robots_to(robot_msgs)
+
+        self._publish_robots_message(image_msg, robot_msgs)
+
+        if self._debug_mode:
+            self._add_robots_to_debug_image()
+
+    def _add_robots_to(self, robot_msgs: List[Robot]) -> None:
+        robot_candidates = self._robot_detector.get_candidates()
+        robot_candidate_messages = self._create_robot_messages(
+            Robot().attributes.TEAM_UNKNOWN,
+            robot_candidates
         )
-        self._misc_obstacles_detector = YOEOObstacleDetectorFactory.get(
-            config=config,
-            color=None,
-            subtractors=[self._team_mates_detector,
-                         self._opponents_detector]
+        robot_msgs.extend(robot_candidate_messages)
+
+    @staticmethod
+    def _create_robot_messages(robot_type: Robot, candidates: List[candidate.Candidate]) -> List[Robot]:
+        return [ros_utils.build_robot_msg(robot_candidate, robot_type) for robot_candidate in candidates]
+    
+    def _publish_robots_message(self, image_msg: Image, robot_msgs: List[Robot]) -> None:
+        robots_msg = ros_utils.build_robot_array_msg(image_msg.header, robot_msgs)
+        self._publisher.publish(robots_msg)
+
+    def _add_robots_to_debug_image(self) -> None:
+        robot_candidates = self._robot_detector.get_candidates()
+        self._debug_image.draw_robot_candidates(
+            robot_candidates,
+            DebugImageComponent.Colors.robot_unknown,
+            thickness=3
         )
+
+    def set_image(self, image: np.ndarray) -> None:
+        self._robot_detector.set_image(image)
 
 
 class DebugImageComponent(IVisionComponent):
@@ -627,9 +589,12 @@ class DebugImageComponent(IVisionComponent):
     class Colors:
         # BGR
         ball = (0, 255, 0)  # green
+        robot_team_mates = (255, 255, 102)  # cyan
+        robot_opponents = (153, 51, 255)  # magenta
+        robot_unknown = (160, 160, 160)  # grey
         team_mates = (153, 51, 255)  # magenta
         opponents = (255, 255, 102)  # cyan
-        misc_obstacles = (160, 160, 160)  # grey
+        unknown_obstacles = (160, 160, 160)  # grey
         goalposts = (255, 255, 255)  # white
         lines = (255, 0, 0)  # blue
 

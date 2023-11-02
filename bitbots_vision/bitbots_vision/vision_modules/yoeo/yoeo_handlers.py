@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 import os
 import rclpy
-import yaml
+
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from typing import List, Dict, Tuple, Optional
