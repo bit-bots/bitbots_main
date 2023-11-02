@@ -57,8 +57,6 @@ std_msgs
 tf2_geometry_msgs
 tf2_kdl
 tf2_ros
-
-
 )
 
 install(TARGETS

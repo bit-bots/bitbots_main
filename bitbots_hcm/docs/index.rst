@@ -73,7 +73,7 @@ What to do when it does not work
 --------------------------------
 
 1. Is `ros_control` running? Do you recieve joint states (`/joint_states`) or IMU data (`/imu/data_raw`)?
-2. What is the state of the HCM (`rostopic echo /robot_state`)? The number has to be matched with the message
+2. What is the state of the HCM (`ros2 topic echo /robot_state`)? The number has to be matched with the message
    description (`ros2 interface show bitbots_msgs/msg/RobotControlState`).
 3. The visualization of the DSD is possible with the standard DSD visualization using the rqt plugin.
    There you can see exactly which decision is responsible for the current behavior and then you can look into the code.

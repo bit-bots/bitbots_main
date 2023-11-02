@@ -12,7 +12,7 @@ from bitbots_hcm.hcm_dsd.actions import AbstractHCMActionElement
 
 class Wait(AbstractHCMActionElement):
     """
-    This action does nothing. If a time is given, it will wait for that time.before it pops itself.
+    This action does nothing. If a time is given, it will wait for that time before it pops itself.
     """
 
     def __init__(self, blackboard, dsd, parameters=None):
