@@ -91,16 +91,17 @@ void Localization::updateParams(bool force_reload) {
   config_ = param_listener_.get_params();
 
   // Check if measurement type is used and load the correct map for that
-  if (config_.particle_filter.scoring.lines_factor) {
-    lines_.reset(new Map(config_.field.name, "lines.png", -10.0));
+  if (config_.particle_filter.scoring.lines.factor) {
+    lines_.reset(new Map(config_.field.name, "lines.png", config_.particle_filter.scoring.lines.out_of_field_score));
     // Publish the line map once
     field_publisher_->publish(lines_->get_map_msg(config_.ros.map_frame));
   }
-  if (config_.particle_filter.scoring.goal_factor) {
-    goals_.reset(new Map(config_.field.name, "goals.png", -10.0));
+  if (config_.particle_filter.scoring.goal.factor) {
+    goals_.reset(new Map(config_.field.name, "goals.png", config_.particle_filter.scoring.goal.out_of_field_score));
   }
-  if (config_.particle_filter.scoring.field_boundary_factor) {
-    field_boundary_.reset(new Map(config_.field.name, "field_boundary.png", -10.0));
+  if (config_.particle_filter.scoring.field_boundary.factor) {
+    field_boundary_.reset(new Map(config_.field.name, "field_boundary.png",
+                                  config_.particle_filter.scoring.field_boundary.out_of_field_score));
   }
 
   // Init observation model
@@ -297,13 +298,13 @@ void Localization::reset_filter(int distribution, double x, double y, double ang
 
 void Localization::updateMeasurements() {
   // Sets the measurements in the observation model
-  if (line_pointcloud_relative_.header.stamp != last_stamp_lines_pc && config_.particle_filter.scoring.lines_factor) {
+  if (line_pointcloud_relative_.header.stamp != last_stamp_lines_pc && config_.particle_filter.scoring.lines.factor) {
     robot_pose_observation_model_->set_measurement_lines_pc(line_pointcloud_relative_);
   }
-  if (config_.particle_filter.scoring.goal_factor && goal_posts_relative_.header.stamp != last_stamp_goals) {
+  if (config_.particle_filter.scoring.goal.factor && goal_posts_relative_.header.stamp != last_stamp_goals) {
     robot_pose_observation_model_->set_measurement_goalposts(goal_posts_relative_);
   }
-  if (config_.particle_filter.scoring.field_boundary_factor &&
+  if (config_.particle_filter.scoring.field_boundary.factor &&
       fieldboundary_relative_.header.stamp != last_stamp_fb_points) {
     robot_pose_observation_model_->set_measurement_field_boundary(fieldboundary_relative_);
   }
@@ -499,17 +500,17 @@ void Localization::publish_particle_markers() {
 }
 
 void Localization::publish_ratings() {
-  if (config_.particle_filter.scoring.lines_factor) {
+  if (config_.particle_filter.scoring.lines.factor) {
     // Publish line ratings
     publish_debug_rating(robot_pose_observation_model_->get_measurement_lines(), 0.1, "line_ratings", lines_,
                          line_ratings_publisher_);
   }
-  if (config_.particle_filter.scoring.goal_factor) {
+  if (config_.particle_filter.scoring.goal.factor) {
     // Publish goal ratings
     publish_debug_rating(robot_pose_observation_model_->get_measurement_goals(), 0.2, "goal_ratings", goals_,
                          goal_ratings_publisher_);
   }
-  if (config_.particle_filter.scoring.field_boundary_factor) {
+  if (config_.particle_filter.scoring.field_boundary.factor) {
     // Publish field boundary ratings
     publish_debug_rating(robot_pose_observation_model_->get_measurement_field_boundary(), 0.2, "field_boundary_ratings",
                          field_boundary_, fieldboundary_ratings_publisher_);

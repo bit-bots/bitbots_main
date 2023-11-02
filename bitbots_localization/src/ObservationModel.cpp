@@ -45,10 +45,10 @@ double RobotPoseObservationModel::measure(const RobotState &state) const {
   auto scoring_config = config_.particle_filter.scoring;
 
   // Calculate weight for the particle
-  double weight = (((1 - scoring_config.lines_factor) + scoring_config.lines_factor * particle_weight_lines) *
-                   ((1 - scoring_config.goal_factor) + scoring_config.goal_factor * particle_weight_goal) *
-                   ((1 - scoring_config.field_boundary_factor) +
-                    scoring_config.field_boundary_factor * particle_weight_field_boundary));
+  double weight = (((1 - scoring_config.lines.factor) + scoring_config.lines.factor * particle_weight_lines) *
+                   ((1 - scoring_config.goal.factor) + scoring_config.goal.factor * particle_weight_goal) *
+                   ((1 - scoring_config.field_boundary.factor) +
+                    scoring_config.field_boundary.factor * particle_weight_field_boundary));
 
   if (weight < min_weight_) {
     weight = min_weight_;

@@ -38,9 +38,15 @@ bitbots_localization:
         out_of_field_weight_decrease: 0.01
         out_of_field_range: 0.5 
       scoring:
-        lines_factor: 1.0
-        goal_factor: 0.0
-        field_boundary_factor: 0.0
+        lines:
+          factor: 1.0
+          out_of_field_score: 0.0
+        goal:
+          factor: 0.0
+          out_of_field_score: 0.0
+        field_boundary:
+          factor: 0.0
+          out_of_field_score: 0.0
       confidences:
         line_element: 0.01
         goal_element: 0.0
