@@ -42,7 +42,7 @@ class Controller:
         # Accumulator for the angular error
         self.angular_error_accumulator = 0
 
-    def step(self, path: Path) -> tuple(Twist, PointStamped):
+    def step(self, path: Path) -> tuple[Twist, PointStamped]:
         """
         Calculates a command velocity based on a given path
         """
