@@ -1,18 +1,22 @@
-from bitbots_hcm.hcm_dsd.actions import AbstractHCMActionElement
+from abc import abstractmethod, ABC
 
 from bitbots_msgs.msg import RobotControlState
 
+from bitbots_hcm.hcm_dsd.actions import AbstractHCMActionElement
 
-class AbstractRobotState(AbstractHCMActionElement):
+
+class AbstractRobotState(AbstractHCMActionElement, ABC):
     """
     Abstract class to create actions which just stay on top of the stack
     and set the robot state accordingly.
     """
+
+    @abstractmethod
     def get_state(self) -> RobotControlState:
         """
         Returns the state which should be set. This will be implemented by the subclasses.
         """
-        raise NotImplementedError
+        pass
 
     def perform(self, reevaluate=False):
         # Just to be sure, we do not reevaluate
