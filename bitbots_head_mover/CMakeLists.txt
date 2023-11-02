@@ -41,23 +41,21 @@ target_link_libraries(move_head
 
 ament_target_dependencies(
   move_head
-#head_capsule
-backward_ros
-bio_ik
-bio_ik_msgs
-bitbots_msgs
-generate_parameter_library
-moveit_core
-moveit_msgs
-moveit_ros_planning
-moveit_ros_planning_interface
-rclcpp
-sensor_msgs
-std_msgs
-tf2_geometry_msgs
-tf2_kdl
-tf2_ros
-)
+  backward_ros
+  bio_ik
+  bio_ik_msgs
+  bitbots_msgs
+  generate_parameter_library
+  moveit_core
+  moveit_msgs
+  moveit_ros_planning
+  moveit_ros_planning_interface
+  rclcpp
+  sensor_msgs
+  std_msgs
+  tf2_geometry_msgs
+  tf2_kdl
+  tf2_ros)
 
 install(TARGETS
   move_head
