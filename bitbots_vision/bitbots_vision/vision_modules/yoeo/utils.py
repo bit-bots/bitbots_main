@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import rclpy
+
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Tuple, Optional, List

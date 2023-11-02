@@ -1,7 +1,7 @@
 import os.path as osp
 import rclpy
-from typing import Optional, Dict
 
+from typing import Optional, Dict
 
 from bitbots_vision.vision_modules import ros_utils
 from . import yoeo_handlers

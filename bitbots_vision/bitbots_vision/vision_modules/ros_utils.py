@@ -219,27 +219,6 @@ def build_robot_msg(obstacle, obstacle_color=None):
     return obstacle_msg
 
 
-def build_field_boundary_msg(header, field_boundary):
-    """
-    Builds a FieldBoundary message containing the field boundary.
-
-    :param header: ros header of the new message. Mostly the header of the image
-    :param field_boundary: List of tuples containing the field boundary points.
-    :return: FieldBoundary message
-    """
-    # Create message
-    field_boundary_msg = FieldBoundary()
-    # Add header
-    field_boundary_msg.header = header
-    # Add field boundary points
-    for point in field_boundary:
-        p = Point2D()
-        p.x = float(point[0])
-        p.y = float(point[1])
-        field_boundary_msg.points.append(p)
-    return field_boundary_msg
-
-
 def build_marking_array_msg(header, marking_segments):
     """
     Builds a MarkingArray message that consists of marking segments.

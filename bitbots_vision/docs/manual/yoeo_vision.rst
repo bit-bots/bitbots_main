@@ -1,4 +1,4 @@
-YOEO-based Vision (May 2023)
+YOEO-based Vision (October 2023)
 ============================
 
 Description
@@ -64,8 +64,8 @@ Of course, the actual class names need to be adapted to your specific YOEO varia
 * Semantic segmentation: 'background', 'lines', 'field'
 
 If 'team_colors' is set to true, the robot class has to be split into 'robot_red', 'robot_blue' and 'robot_unknown'. In
-all other cases, a single 'robot' class is expected, and the team color detection will automatically fall back to the HSV
-detectors used in the legacy, non-YOEO-based vision.
+all other cases, a single 'robot' class is expected and no team color detection will be available. Instead, all robots
+are detected as 'unknown'.
 
 How to Add New Classes?
 -----------------------
