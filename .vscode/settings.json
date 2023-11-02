@@ -105,7 +105,8 @@
         "yolo",
         "yolov"
     ],
-    "files.autoSave": "onFocusChange",
+    "files.autoSave": "afterDelay",
+    "files.autoSaveDelay": 500,
     "files.insertFinalNewline": true,
     "python.analysis.typeCheckingMode": "off",
     "esbonio.sphinx.confDir": "",
