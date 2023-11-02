@@ -41,7 +41,7 @@ void wait_for_tf(
         continue;
       }
 
-      // Check if we can transform from base_link to all given frames
+      // Check if we can transform from the given root frame to all given frames
       if(!std::all_of(
         frames.begin(), 
         frames.end(), 
