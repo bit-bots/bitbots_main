@@ -1,3 +1,3 @@
-# bitbots\_tools
+# Bitbots Tools
 
-a bundle of tools used by our build process and for debugging
+a bundle of tools for e.g. building the documentation, testing, etc..
