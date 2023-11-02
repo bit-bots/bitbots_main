@@ -11,7 +11,7 @@
     </include>
 
     <include file="$(find-pkg-share bitbots_head_mover)/launch/head_mover.launch">
-        <param name="use_sim_time" value="$(var sim)" />
+        <arg name="sim" value="$(var sim)"/>
     </include>
 
 </launch>
