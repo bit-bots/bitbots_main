@@ -28,7 +28,7 @@ void wait_for_tf(
   // Store the beginning time
   auto start_time = clock->now();
 
-  // Endless loop with increasing counter
+  // Endless loop
   while(rclcpp::ok()) {
     try {
       // Check if the frame we want to transform is known yet
