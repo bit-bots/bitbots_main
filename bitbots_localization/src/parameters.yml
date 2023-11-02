@@ -100,7 +100,7 @@ bitbots_localization:
           gt_eq<>: [0.0]
       starting_multiplier:
         type: double
-        description: "Starting diffusion multiplier value. This can be used to increase the diffusion at after initialization, which can help with initial exploration and convergence"
+        description: "Starting diffusion multiplier value. This can be used to increase the diffusion shortly after initialization, which can help with initial exploration and convergence"
         validation:
           gt_eq<>: [0.0]
       starting_steps_with_higher_diffusion:
