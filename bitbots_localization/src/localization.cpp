@@ -344,10 +344,17 @@ void Localization::getMotion() {
     rotational_movement_.z =
         tf2::getYaw(transformStampedNow.transform.rotation) - tf2::getYaw(previousOdomTransform_.transform.rotation);
 
+    // Get the time delta between the two transforms
+    double time_delta = rclcpp::Time(transformStampedNow.header.stamp).seconds() -
+                        rclcpp::Time(previousOdomTransform_.header.stamp).seconds();
+
     // Check if robot moved
-    if (linear_movement_.x > config_.misc.min_motion_linear or linear_movement_.y > config_.misc.min_motion_linear or
-        rotational_movement_.z > config_.misc.min_motion_angular) {
-      robot_moved = true;
+    if (time_delta > 0) {
+      robot_moved = linear_movement_.x / time_delta >= config_.misc.min_motion_linear or
+                    linear_movement_.y / time_delta >= config_.misc.min_motion_linear or
+                    rotational_movement_.z / time_delta >= config_.misc.min_motion_angular;
+    } else {
+      RCLCPP_WARN(this->get_logger(), "Time step delta of zero encountered! This should not happen!");
     }
 
     // Set the variable for the transform of the previous step to the transform of the current step, because we finished

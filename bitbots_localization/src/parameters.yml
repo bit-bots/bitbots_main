@@ -12,12 +12,12 @@ bitbots_localization:
         bounds<>: [0, 100]
     min_motion_linear:
       type: double
-      description: "Minimum linear motion which is considered to be a movement. This is relevant if we want to deactivate the filter if no movement is detected"
+      description: "Minimum linear motion (m/s) which is considered to be a movement. This is relevant if we want to deactivate the filter if no movement is detected"
       validation:
         bounds<>: [0.0, 1.0]
     min_motion_angular:
       type: double
-      description: "Minimum angular motion which is considered to be a movement. This is relevant if we want to deactivate the filter if no movement is detected"
+      description: "Minimum angular motion (rad/s) which is considered to be a movement. This is relevant if we want to deactivate the filter if no movement is detected"
       validation:
         bounds<>: [0.0, 1.0]
     filter_only_with_motion:
