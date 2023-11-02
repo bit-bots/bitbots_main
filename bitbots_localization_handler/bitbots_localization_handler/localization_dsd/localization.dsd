@@ -20,9 +20,8 @@ $CheckPickup
             GAMESTATE_RECEIVED --> $CheckPenalized
                 YES --> @LocalizationStop, @DoNothing
                 JUST_UNPENALIZED --> @InitSide, @LocalizationStart, @DoNothing
-                NO --> $GameStateDecider
-                    READY --> $InitialToReady
-                        YES --> @InitSide, @DoNothing
-                        NO --> @DoNothing
-                    SET --> #InitSet
-                    ELSE --> @DoNothing
+                NO --> $InitialToReady
+                    YES --> @InitSide, @DoNothing
+                    NO --> $GameStateDecider
+                        SET --> #InitSet
+                        ELSE --> @DoNothing

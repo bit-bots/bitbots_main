@@ -150,7 +150,13 @@ class InitialToReady(AbstractLocalizationDecisionElement):
         game_state_number = self.blackboard.gamestate.get_gamestate()
         self.previous_game_state_number = game_state_number
 
+        self.publish_debug_data("Previous game state", previous_game_state_number)
+        self.publish_debug_data("Current game state", game_state_number)
+
         if previous_game_state_number == GameState.GAMESTATE_INITIAL and game_state_number == GameState.GAMESTATE_READY:
             return "YES"
         else:
             return "NO"
+
+    def get_reevaluate(self):
+        return True
