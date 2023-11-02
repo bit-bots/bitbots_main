@@ -60,7 +60,9 @@ class InitPosition(AbstractInitialize):
             self.blackboard.node.get_logger().info("Localization reset service not available, waiting again...")
         self.blackboard.reset_filter_proxy.call_async(
             ResetFilter.Request(
-                init_mode=ResetFilter.Request.POSITION, x=self.blackboard.poseX, y=self.blackboard.poseY
+                init_mode=ResetFilter.Request.POSITION,
+                x=self.blackboard.robot_pose.pose.pose.position.x,
+                y=self.blackboard.robot_pose.pose.pose.position.y,
             )
         )
         return self.pop()
