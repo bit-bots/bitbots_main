@@ -38,3 +38,9 @@ analyzers:
       startswith: ['SYSTEM']
       timeout: 1.0
       find_and_remove_prefix: ['SYSTEM']
+    #Pressure:
+    #  type: diagnostic_aggregator/GenericAnalyzer
+    #  path: Pressure
+    #  startswith: ['PS']
+    #  timeout: 0.2
+    #  find_and_remove_prefix: ['PS']
