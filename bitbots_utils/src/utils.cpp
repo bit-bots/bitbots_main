@@ -9,6 +9,7 @@ namespace bitbots_utils
  * @param clock The clock to use for time
  * @param tf_buffer The tf buffer to use
  * @param frames The tf frames to wait for
+ * @param root_frame The root frame to transform from
  * @param check_interval Interval in which to check for the frames
  * @param warn_duration Duration after which to warn if the frames are not available
  * @param warn_interval Interval in which to keep warning if the frames are not available
