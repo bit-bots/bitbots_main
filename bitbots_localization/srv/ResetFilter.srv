@@ -1,15 +1,20 @@
+# Service to initialize localization
+
+# Request
+# Localization mode (e.g. START_RIGHT)
 int64 init_mode
-float32 x
-float32 y
-float32 angle
+
+# Some modes (e.g. POSITION) require additional information
+float32 x # in meters
+float32 y # in meters
+float32 angle # in radians
 
 # Constants
-int64 START_RIGHT=0
-int64 LEFT_HALF=1
-int64 RIGHT_HALF=2
-int64 POSITION=3
-int64 POSE=4
+int64 START_RIGHT=0  # Start at the sideline on the right half facing inwards (default game start)
+int64 LEFT_HALF=1  # Start somewhere on the left half
+int64 RIGHT_HALF=2  # Start somewhere on the right half
+int64 POSITION=3  # Start at a specific position with unknown orientation
+int64 POSE=4  # Start at a specific position and orientation
 
 ---
-bool success
-
+bool success # True if the localization was initialized successfully
