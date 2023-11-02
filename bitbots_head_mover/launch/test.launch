@@ -1,7 +1,6 @@
 <launch>
     <arg name="sim" default="false"/>
     <arg name="viz" default="false"/>
-    <arg name="depends_only" default="false" />
     <arg name="tf_prefix" default=""/>
 
     <group unless="$(var sim)">
@@ -53,9 +52,7 @@
         </include>
     </group>
 
-    <group unless="$(var depends_only)">
-        <include file="$(find-pkg-share bitbots_head_mover)/launch/head_mover.launch" >
-            <arg name="sim" value="$(var sim)"/>
-        </include>
-    </group>
+    <include file="$(find-pkg-share bitbots_head_mover)/launch/head_mover.launch" >
+        <arg name="sim" value="$(var sim)"/>
+    </include>
 </launch>
