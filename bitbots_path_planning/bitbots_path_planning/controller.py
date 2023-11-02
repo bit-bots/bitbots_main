@@ -5,7 +5,7 @@ from geometry_msgs.msg import Twist
 from nav_msgs.msg import Path
 from rclpy.node import Node
 from ros2_numpy import numpify
-from tf2_geometry_msgs import Pose, PoseStamped
+from tf2_geometry_msgs import PointStamped, Pose, PoseStamped
 from tf_transformations import euler_from_quaternion
 
 
@@ -42,7 +42,7 @@ class Controller:
         # Accumulator for the angular error
         self.angular_error_accumulator = 0
 
-    def step(self, path: Path) -> Twist:
+    def step(self, path: Path) -> tuple(Twist, PointStamped):
         """
         Calculates a command velocity based on a given path
         """
@@ -165,7 +165,12 @@ class Controller:
         # Store the last command velocity
         self.last_cmd_vel = cmd_vel
 
-        return cmd_vel
+        # Create a carrot message for visualization
+        carrot_point = PointStamped()
+        carrot_point.header.frame_id = path.header.frame_id
+        carrot_point.point = goal_pose.position
+
+        return cmd_vel, carrot_point
 
     def _get_yaw(self, pose: Pose) -> float:
         """
