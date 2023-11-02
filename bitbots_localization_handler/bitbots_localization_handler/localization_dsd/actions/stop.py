@@ -1,9 +1,8 @@
-from dynamic_stack_decider.abstract_action_element import AbstractActionElement
-
 from bitbots_localization.srv import SetPaused
+from bitbots_localization_handler.localization_dsd.actions import AbstractLocalizationActionElement
 
 
-class AbstractLocalizationPause(AbstractActionElement):
+class AbstractLocalizationPause(AbstractLocalizationActionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super().__init__(blackboard, dsd, parameters=parameters)
 
@@ -34,7 +33,7 @@ class LocalizationStart(AbstractLocalizationPause):
         return self.pop()
 
 
-class DoNothing(AbstractActionElement):
+class DoNothing(AbstractLocalizationActionElement):
     def perform(self, reevaluate=False):
         self.blackboard.node.get_logger().debug("Doing nothing")
         return

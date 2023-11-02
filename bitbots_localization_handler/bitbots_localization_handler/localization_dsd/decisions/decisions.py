@@ -1,11 +1,12 @@
 import numpy as np
 import tf2_ros as tf2
 from bitbots_msgs.msg import GameState, RobotControlState
-from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
 from rclpy.time import Time
 
+from bitbots_localization_handler.localization_dsd.decisions import AbstractLocalizationDecisionElement
 
-class CheckFallen(AbstractDecisionElement):
+
+class CheckFallen(AbstractLocalizationDecisionElement):
     """
     Checks if robot is fallen
     """
@@ -21,7 +22,7 @@ class CheckFallen(AbstractDecisionElement):
         return True
 
 
-class CheckFalling(AbstractDecisionElement):
+class CheckFalling(AbstractLocalizationDecisionElement):
     """
     Checks if robot is falling
     """
@@ -37,7 +38,7 @@ class CheckFalling(AbstractDecisionElement):
         return True
 
 
-class CheckGettingUp(AbstractDecisionElement):
+class CheckGettingUp(AbstractLocalizationDecisionElement):
     """
     Checks if robot is getting up
     """
@@ -53,7 +54,7 @@ class CheckGettingUp(AbstractDecisionElement):
         return True
 
 
-class CheckPickup(AbstractDecisionElement):
+class CheckPickup(AbstractLocalizationDecisionElement):
     """
     Checks if robot is picked up
     """
@@ -75,7 +76,7 @@ class CheckPickup(AbstractDecisionElement):
         return True
 
 
-class GettingUpState(AbstractDecisionElement):
+class GettingUpState(AbstractLocalizationDecisionElement):
     """
     Checks if the robot falls, stands up or is freshly standing
     """
@@ -101,7 +102,7 @@ class GettingUpState(AbstractDecisionElement):
         return True
 
 
-class CheckGameStateReceived(AbstractDecisionElement):
+class CheckGameStateReceived(AbstractLocalizationDecisionElement):
     """
     Checks if gamestate from gamecontroller is received.
 
@@ -123,7 +124,7 @@ class CheckGameStateReceived(AbstractDecisionElement):
         return True
 
 
-class GameStateDecider(AbstractDecisionElement):
+class GameStateDecider(AbstractLocalizationDecisionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super().__init__(blackboard, dsd, parameters)
         self.game_states = {
@@ -160,7 +161,7 @@ class GameStateDecider(AbstractDecisionElement):
         return True
 
 
-class SecondaryStateDecider(AbstractDecisionElement):
+class SecondaryStateDecider(AbstractLocalizationDecisionElement):
     """
     Decides in which secondary state the game is currently in. The mode of the secondary state is handled in the
     game controller receiver, so the behavior does ont need to deal with this.
@@ -212,7 +213,7 @@ class SecondaryStateDecider(AbstractDecisionElement):
         return True
 
 
-class SecondaryStateTeamDecider(AbstractDecisionElement):
+class SecondaryStateTeamDecider(AbstractLocalizationDecisionElement):
     """
     Decides if our team or the other team is allowed to execute the secondary state.
     """
@@ -240,7 +241,7 @@ class SecondaryStateTeamDecider(AbstractDecisionElement):
         return True
 
 
-class CheckPenalized(AbstractDecisionElement):
+class CheckPenalized(AbstractLocalizationDecisionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super().__init__(blackboard, dsd, parameters)
 
@@ -261,7 +262,7 @@ class CheckPenalized(AbstractDecisionElement):
         return True
 
 
-class WalkedSinceLastInit(AbstractDecisionElement):
+class WalkedSinceLastInit(AbstractLocalizationDecisionElement):
     """
     Decides if we walked significantly since our last initialization
     """
@@ -311,7 +312,7 @@ class WalkedSinceLastInit(AbstractDecisionElement):
         return True
 
 
-class InitialToReady(AbstractDecisionElement):
+class InitialToReady(AbstractLocalizationDecisionElement):
     """
     Decides if the ready phase was just started coming from initial
     """
