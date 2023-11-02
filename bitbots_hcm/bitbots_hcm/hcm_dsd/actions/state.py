@@ -16,7 +16,7 @@ class AbstractRobotState(AbstractHCMActionElement, ABC):
         """
         Returns the state which should be set. This will be implemented by the subclasses.
         """
-        pass
+        raise NotImplementedError()
 
     def perform(self, reevaluate=False):
         # Just to be sure, we do not reevaluate
