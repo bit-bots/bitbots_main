@@ -218,7 +218,8 @@ void Localization::SetInitialPositionCallback(const gm::msg::PoseWithCovarianceS
   double yaw = tf2::getYaw(pose_in_map.pose.pose.orientation);
 
   // Reset filter
-  reset_filter(4, pose_in_map.pose.pose.position.x, pose_in_map.pose.pose.position.y, yaw);
+  reset_filter(bl::srv::ResetFilter::Request::POSE, pose_in_map.pose.pose.position.x, pose_in_map.pose.pose.position.y,
+               yaw);
 }
 bool Localization::set_paused_callback(const std::shared_ptr<bl::srv::SetPaused::Request> req,
                                        std::shared_ptr<bl::srv::SetPaused::Response> res) {
@@ -233,9 +234,9 @@ bool Localization::set_paused_callback(const std::shared_ptr<bl::srv::SetPaused:
 
 bool Localization::reset_filter_callback(const std::shared_ptr<bl::srv::ResetFilter::Request> req,
                                          std::shared_ptr<bl::srv::ResetFilter::Response> res) {
-  if (req->init_mode == 3) {
+  if (req->init_mode == bl::srv::ResetFilter::Request::POSITION) {
     reset_filter(req->init_mode, req->x, req->y);
-  } else if (req->init_mode == 4) {
+  } else if (req->init_mode == bl::srv::ResetFilter::Request::POSE) {
     reset_filter(req->init_mode, req->x, req->y, req->angle);
   } else {
     reset_filter(req->init_mode);
