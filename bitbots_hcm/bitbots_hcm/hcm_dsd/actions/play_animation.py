@@ -117,7 +117,7 @@ class PlayAnimationTurningBackLeft(AbstractPlayAnimation):
 
 class PlayAnimationTurningBackRight(AbstractPlayAnimation):
     def chose_animation(self):
-        self.blackboard.node.get_logger().info("TURNING LYING ON THE RIGHT SIDE AND TURNING BACK TO GET UP")
+        self.blackboard.node.get_logger().info("LYING ON THE RIGHT SIDE AND TURNING TO THE BACK TO GET UP")
         return self.blackboard.animation_name_turning_back_right
 
 
