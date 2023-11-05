@@ -1,6 +1,6 @@
 import math
 
-from rclpy.impl.rcutils_logger import RcutilsLogger as Logger#
+from rclpy.impl.rcutils_logger import RcutilsLogger as Logger
 from rclpy.clock import Clock
 
 from sensor_msgs.msg import JointState
