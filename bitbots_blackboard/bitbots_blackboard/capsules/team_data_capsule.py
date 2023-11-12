@@ -9,7 +9,6 @@ from geometry_msgs.msg import PointStamped, Pose
 from rclpy.clock import ClockType
 from rclpy.duration import Duration
 from rclpy.node import Node
-from rclpy.publisher import Publisher
 from rclpy.time import Time
 from ros2_numpy import numpify
 from std_msgs.msg import Float32

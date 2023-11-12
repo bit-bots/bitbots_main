@@ -8,7 +8,6 @@ from typing import Optional
 
 from rclpy.duration import Duration
 from rclpy.node import Node
-from rclpy.publisher import Publisher
 from std_msgs.msg import Bool
 
 from bitbots_msgs.msg import HeadMode, RobotControlState

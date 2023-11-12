@@ -1,5 +1,3 @@
-from typing import Optional
-
 from bitbots_blackboard.capsules.animation_capsule import AnimationCapsule
 from bitbots_blackboard.capsules.misc_capsule import MiscCapsule
 from bitbots_blackboard.capsules.game_status_capsule import GameStatusCapsule
@@ -9,10 +7,8 @@ from bitbots_blackboard.capsules.team_data_capsule import TeamDataCapsule
 from bitbots_blackboard.capsules.world_model_capsule import WorldModelCapsule
 from bitbots_blackboard.capsules.costmap_capsule import CostmapCapsule
 from bitbots_utils.utils import get_parameter_dict
-from rclpy.action import ActionClient
 from rclpy.node import Node
 import tf2_ros as tf2
-from rclpy.publisher import Publisher
 
 
 class BodyBlackboard:

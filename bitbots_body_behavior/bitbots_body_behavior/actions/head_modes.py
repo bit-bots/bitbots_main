@@ -1,6 +1,4 @@
 import rclpy
-from rclpy.time import Time
-from rclpy.clock import ClockType
 from bitbots_blackboard.blackboard import BodyBlackboard
 
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
