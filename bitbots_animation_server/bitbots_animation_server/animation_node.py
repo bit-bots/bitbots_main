@@ -83,7 +83,7 @@ class AnimationNode(Node):
             num_tries = 0
             while rclpy.ok() and self.hcm_state != 0 and num_tries < 10:
                 num_tries += 1
-                self.get_logger().info("HCM not controllable. Waiting... (try " + str(num_tries) + ")")
+                self.get_logger().info(f"HCM not controllable. Waiting... (try {num_tries})")
                 self.get_clock().sleep_until(self.get_clock().now() + Duration(seconds=0.1))
 
             if self.hcm_state != 0:

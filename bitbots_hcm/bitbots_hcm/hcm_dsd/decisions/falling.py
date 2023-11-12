@@ -36,7 +36,7 @@ class Falling(AbstractHCMDecisionElement):
 
 
     def perform(self, reevaluate=False):
-        """Checks if the robot is currently falling and in which direction. """
+        """Checks if the robot is currently falling and in which direction."""
         # Check if detection is active
         if not self.blackboard.falling_detection_active:
             return "NOT_FALLING"
