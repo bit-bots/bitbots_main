@@ -2,7 +2,6 @@
 TeamDataCapsule
 ^^^^^^^^^^^^^^^
 """
-import math
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
@@ -202,7 +201,7 @@ class TeamDataCapsule:
         if teammate_ball is not None:
             return Time.from_msg(teammate_ball.header.stamp)
         else:
-            return Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME)
+            return Time(clock_type=ClockType.ROS_TIME)
 
     def teammate_ball_is_valid(self):
         """Returns true if a teammate has seen the ball accurately enough"""

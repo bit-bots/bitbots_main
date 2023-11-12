@@ -1,9 +1,11 @@
+from abc import abstractmethod, ABC
+
 from bitbots_blackboard.blackboard import BodyBlackboard
 
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 
-class AbstractPlayAnimation(AbstractActionElement):
+class AbstractPlayAnimation(AbstractActionElement, ABC):
     """
     Abstract class to create actions for playing animations
     """
@@ -39,6 +41,7 @@ class AbstractPlayAnimation(AbstractActionElement):
             # we are finished playing this animation
             return self.pop()
 
+    @abstractmethod
     def get_animation_name(self) -> str:
         # this is what has to be implemented returning the animation to play
         raise NotImplementedError

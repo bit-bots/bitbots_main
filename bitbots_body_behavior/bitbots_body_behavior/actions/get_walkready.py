@@ -1,5 +1,4 @@
 import rclpy
-from action_msgs.msg import GoalStatus
 from bitbots_blackboard.blackboard import BodyBlackboard
 
 from bitbots_msgs.action import Dynup
