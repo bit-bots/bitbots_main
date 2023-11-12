@@ -81,14 +81,14 @@ class HumanoidLeagueTeamCommunication:
         self.gamestate: Optional[GameState] = None
         self.pose: Optional[PoseWithCovarianceStamped] = None
         self.cmd_vel: Optional[Twist] = None
-        self.cmd_vel_time = Time(nanoseconds=0, clock_type=self.node.get_clock().clock_type)
+        self.cmd_vel_time = Time(clock_type=self.node.get_clock().clock_type)
         self.ball: Optional[PointStamped] = None
         self.ball_velocity: Tuple[float, float, float] = (0, 0, 0)
         self.ball_covariance: List[double] = []
         self.strategy: Optional[Strategy] = None
-        self.strategy_time = Time(nanoseconds=0, clock_type=self.node.get_clock().clock_type)
+        self.strategy_time = Time(clock_type=self.node.get_clock().clock_type)
         self.time_to_ball: Optional[float] = None
-        self.time_to_ball_time = Time(nanoseconds=0, clock_type=self.node.get_clock().clock_type)
+        self.time_to_ball_time = Time(clock_type=self.node.get_clock().clock_type)
         self.seen_robots: Optional[RobotArray] = None
         self.move_base_goal: Optional[PoseStamped] = None
 
