@@ -59,8 +59,14 @@ install(DIRECTORY bitbots_hcm/hcm_dsd/decisions DESTINATION share/${PROJECT_NAME
 
 install(FILES bitbots_hcm/hcm_dsd/hcm.dsd DESTINATION share/${PROJECT_NAME}/hcm_dsd)
 
-install(FILES bitbots_hcm/hcm_dsd/hcm.dsd DESTINATION share/${PROJECT_NAME})
+if(BUILD_TESTING)
+  find_package(ament_cmake_pytest REQUIRED)
 
+  ament_add_pytest_test(hcm_py_test test/pytest
+    PYTHON_EXECUTABLE "${PYTHON_EXECUTABLE}"
+    APPEND_ENV PYTHONPATH=${CMAKE_CURRENT_BINARY_DIR}
+  )
+endif()
 
 ament_python_install_package(${PROJECT_NAME})
 ament_package()
