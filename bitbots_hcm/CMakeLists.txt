@@ -53,9 +53,11 @@ install(DIRECTORY config
 
 install(DIRECTORY scripts/ USE_SOURCE_PERMISSIONS DESTINATION lib/${PROJECT_NAME})
 
-install(DIRECTORY bitbots_hcm/hcm_dsd/actions DESTINATION share/${PROJECT_NAME} FILES_MATCHING PATTERN "*.py")
+install(DIRECTORY bitbots_hcm/hcm_dsd/actions DESTINATION share/${PROJECT_NAME}/hcm_dsd FILES_MATCHING PATTERN "*.py")
 
-install(DIRECTORY bitbots_hcm/hcm_dsd/decisions DESTINATION share/${PROJECT_NAME} FILES_MATCHING PATTERN "*.py")
+install(DIRECTORY bitbots_hcm/hcm_dsd/decisions DESTINATION share/${PROJECT_NAME}/hcm_dsd FILES_MATCHING PATTERN "*.py")
+
+install(FILES bitbots_hcm/hcm_dsd/hcm.dsd DESTINATION share/${PROJECT_NAME}/hcm_dsd)
 
 install(FILES bitbots_hcm/hcm_dsd/hcm.dsd DESTINATION share/${PROJECT_NAME})
 

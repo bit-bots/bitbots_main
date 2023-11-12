@@ -65,7 +65,7 @@ class HardwareControlManager:
         # Create Dynamic Stack Decider
         self.dsd = DSD(self.blackboard, "debug/dsd/hcm", node=self.node)
         # Get the path to the python actions and decisions
-        dirname = os.path.dirname(os.path.realpath(__file__)) + "/hcm_dsd"
+        dirname = os.path.join(get_package_share_directory('bitbots_hcm'), "hcm_dsd")
         # Register actions and decisions
         self.dsd.register_actions(os.path.join(dirname, 'actions'))
         self.dsd.register_decisions(os.path.join(dirname, 'decisions'))
