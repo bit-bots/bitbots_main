@@ -1,7 +1,5 @@
 from bitbots_hcm.hcm_dsd.decisions import AbstractHCMDecisionElement
 
-from bitbots_msgs.msg import RobotControlState
-
 
 class RecentKickGoals(AbstractHCMDecisionElement):
     """
@@ -21,7 +19,7 @@ class RecentKickGoals(AbstractHCMDecisionElement):
 
         # If the time delta is smaller enough, we are still kicking
         if time_delta < 0.1:
-            # we are walking and can stay like this
+            # we are kicking and can stay like this
             return "KICKING"
         else:
             return "NOT_KICKING"

@@ -1,3 +1,5 @@
+from abc import abstractmethod, ABC
+
 import rclpy
 from action_msgs.msg import GoalStatus
 from bitbots_hcm.hcm_dsd.actions import AbstractHCMActionElement
@@ -5,7 +7,7 @@ from bitbots_hcm.hcm_dsd.actions import AbstractHCMActionElement
 from bitbots_msgs.action import Dynup, PlayAnimation
 
 
-class AbstractPlayAnimation(AbstractHCMActionElement):
+class AbstractPlayAnimation(AbstractHCMActionElement, ABC):
     """
     Abstract class to create actions for playing animations
     """
@@ -38,6 +40,7 @@ class AbstractPlayAnimation(AbstractHCMActionElement):
             # we are finished playing this animation
             return self.pop()
 
+    @abstractmethod
     def chose_animation(self):
         # this is what has to be implemented returning the animation to play
         raise NotImplementedError

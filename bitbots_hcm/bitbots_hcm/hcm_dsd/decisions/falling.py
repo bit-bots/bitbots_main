@@ -6,8 +6,6 @@ from bitbots_hcm.hcm_dsd.decisions import AbstractHCMDecisionElement
 from bitbots_utils.transforms import quat2fused
 from rclpy.duration import Duration
 
-from bitbots_msgs.msg import RobotControlState
-
 
 class FallDirection(Enum):
     STABLE = 0

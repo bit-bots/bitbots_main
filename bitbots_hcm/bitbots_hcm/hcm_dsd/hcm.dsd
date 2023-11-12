@@ -1,16 +1,15 @@
 -->HCM
 $StartHCM
-    START_UP --> @RobotStateStartup, @Wait + time:0.1 + r:false, @PlayAnimationDynup + direction:walkready + r:false
+    START_UP --> @RobotStateStartup, @Wait + time:0.1 + r:false, @PlayAnimationDynup + direction:walkready, @Wait
     RUNNING --> $Stop
-        STOPPED --> @CancelGoals, @StopWalking, @PlayAnimationDynup + direction:walkready + r:false, @Wait
-        FREE -->$Record
+        STOPPED --> @CancelGoals, @StopWalking, @PlayAnimationDynup + direction:walkready, @Wait
+        FREE -->$RecordAnimation
             RECORD_ACTIVE --> @RobotStateRecord, @Wait
             FREE --> $CheckMotors
                 MOTORS_NOT_STARTED --> @RobotStateStartup, @WaitForMotorStartup
-                OVERLOAD --> @RobotStateMotorOff, @CancelGoals, @StopWalking, @PlayAnimationDynup + direction:descend, @TurnMotorsOff, @Wait
+                OVERLOAD --> @RobotStateMotorOff, @CancelGoals, @StopWalking, @PlayAnimationFallingFront, @TurnMotorsOff, @Wait
                 PROBLEM --> @RobotStateHardwareProblem, @WaitForMotors
-                TURN_OFF --> @RobotStateMotorOff, @CancelGoals, @StopWalking, @PlayAnimationDynup + direction:descend, @TurnMotorsOff, @Wait
-                TURN_ON --> @TurnMotorsOn, @PlayAnimationDynup + direction:rise
+                TURN_ON --> @TurnMotorsOn, @PlayAnimationDynup + direction:walkready, @Wait
                 OKAY --> $CheckIMU
                     IMU_NOT_STARTED --> @RobotStateStartup, @WaitForIMUStartup
                     PROBLEM --> @RobotStateHardwareProblem, @WaitForIMU

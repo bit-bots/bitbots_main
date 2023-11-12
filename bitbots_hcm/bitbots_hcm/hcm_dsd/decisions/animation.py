@@ -1,7 +1,7 @@
 from bitbots_hcm.hcm_dsd.decisions import AbstractHCMDecisionElement
 
 
-class Record(AbstractHCMDecisionElement):
+class RecordAnimation(AbstractHCMDecisionElement):
     """
     Decides if the robot is currently recording animations
     """

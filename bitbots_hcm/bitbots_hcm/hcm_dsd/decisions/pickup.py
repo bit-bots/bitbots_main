@@ -1,8 +1,6 @@
 from bitbots_hcm.hcm_dsd.decisions import AbstractHCMDecisionElement
 from humanoid_league_speaker.speaker import speak
 
-from bitbots_msgs.msg import RobotControlState
-
 
 class PickedUp(AbstractHCMDecisionElement):
     """

@@ -232,7 +232,6 @@ public:
     hcm_py_.attr("set_imu")(ros2_python_extension::toPython(current_imu_));
     hcm_py_.attr("set_pressure_left")(ros2_python_extension::toPython<bitbots_msgs::msg::FootPressure>(current_pressure_left_));
     hcm_py_.attr("set_pressure_right")(ros2_python_extension::toPython<bitbots_msgs::msg::FootPressure>(current_pressure_right_));
-    hcm_py_.attr("set_last_motor_update_time")(ros2_python_extension::toPython<builtin_interfaces::msg::Time>(current_joint_state_.header.stamp));
     hcm_py_.attr("set_current_joint_state")(ros2_python_extension::toPython<sensor_msgs::msg::JointState>(current_joint_state_));
     hcm_py_.attr("set_last_walking_goal_time")(ros2_python_extension::toPython<builtin_interfaces::msg::Time>(last_walking_time_));
     hcm_py_.attr("set_last_kick_goal_time")(ros2_python_extension::toPython<builtin_interfaces::msg::Time>(last_kick_time_));

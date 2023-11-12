@@ -23,4 +23,3 @@ class CancelGoals(AbstractHCMActionElement):
 
         self.blackboard.cancel_path_planning()
         self.pop()
-

@@ -1,7 +1,5 @@
 from bitbots_hcm.hcm_dsd.decisions import AbstractHCMDecisionElement
 
-from bitbots_msgs.msg import RobotControlState
-
 
 class RecentWalkingGoals(AbstractHCMDecisionElement):
     """

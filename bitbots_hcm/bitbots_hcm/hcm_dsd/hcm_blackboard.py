@@ -32,7 +32,7 @@ class HcmBlackboard():
         # Get parameters
         self.simulation_active: bool = self.node.get_parameter('simulation_active').value
         self.visualization_active: bool = self.node.get_parameter('visualization_active').value
-        self.pickup_accel_threshold: float = 1000.0  # TODO: make this a parameter
+        self.pickup_accel_threshold: float = self.node.get_parameter('pick_up_accel_threshold').value
         self.pressure_sensors_installed: bool = self.node.get_parameter('pressure_sensors_installed').value
 
         # Create services
@@ -58,10 +58,6 @@ class HcmBlackboard():
         self.not_much_smoothed_gyro = numpy.array([0, 0, 0])
         self.quaternion = numpy.array([0, 0, 0, 1.0])
 
-        # Pressure sensors
-        # Initialize values high to prevent wrongly thinking the robot is picked up during start or in simulation
-        self.pressures: List[float] = [100.0] * 8
-
         # Animation
         # Animation states
         self.animation_requested: bool = False
@@ -78,11 +74,9 @@ class HcmBlackboard():
         self.animation_name_turning_back_right: str = self.node.get_parameter("animations.turning_back_right").value
 
         # Motor State
-        # Initialize with current time, or motors will be turned off on start
-        self.last_motor_goal_time: Time = self.node.get_clock().now()
-        self.last_motor_update_time =  Time()
         self.current_joint_state: Optional[JointState] = None
         self.previous_joint_state: Optional[JointState] = None
+        self.last_different_joint_state_time: Optional[Time] = None
         self.is_power_on: bool = False
 
         # Motor Parameters
@@ -104,6 +98,14 @@ class HcmBlackboard():
 
         # IMU state
         self.imu_msg: Optional[Imu] = None
+        self.previous_imu_msg: Optional[Imu] = None
+        self.last_different_imu_state_time: Optional[Time] = None
+
+        # Pressure sensors
+        # Initialize values high to prevent wrongly thinking the robot is picked up during start or in simulation
+        self.pressures: List[float] = [100.0] * 8
+        self.previous_pressures: List[float] = self.pressures.copy()
+        self.last_different_pressure_state_time: Optional[Time] = None
 
         # Diagnostics state
         self.servo_diag_error: bool = False
