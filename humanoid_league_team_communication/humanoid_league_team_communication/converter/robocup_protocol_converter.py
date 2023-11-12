@@ -46,8 +46,8 @@ class RobocupProtocolConverter:
 
         self.proto_to_team_data_team_mapping = {
             Proto.Team.UNKNOWN_TEAM: RobotRelative.ROBOT_UNDEFINED,
-            Proto.Team.BLUE: RobotRelative.ROBOT_CYAN,
-            Proto.Team.RED: RobotRelative.ROBOT_MAGENTA
+            Proto.Team.BLUE: RobotRelative.ROBOT_BLUE,
+            Proto.Team.RED: RobotRelative.ROBOT_RED
         }
         self.state_to_proto_team_mapping = {
             RobotAttributes.TEAM_OWN: Proto.Team.RED if own_team_color == TeamColor.RED else Proto.Team.BLUE,
