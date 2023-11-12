@@ -19,7 +19,7 @@ class AbstractInitialize(AbstractLocalizationActionElement):
                     self.blackboard.last_init_odom_transform = self.blackboard.tf_buffer.lookup_transform(
                         self.blackboard.odom_frame,
                         self.blackboard.base_footprint_frame,
-                        Time(seconds=0, nanoseconds=0),
+                        Time(),
                         Duration(seconds=1.0),
                     )  # wait up to 1 second for odom data
             except (tf2.LookupException, tf2.ConnectivityException, tf2.ExtrapolationException) as e:
