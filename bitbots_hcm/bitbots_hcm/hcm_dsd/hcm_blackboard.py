@@ -1,10 +1,7 @@
-import json
-import os
 from typing import List, Optional
 
 import numpy
-from ament_index_python import get_package_share_directory
-from geometry_msgs.msg import PointStamped, Twist
+from geometry_msgs.msg import Twist
 from rclpy.action import ActionClient
 from rclpy.node import Node
 from rclpy.task import Future
