@@ -20,7 +20,7 @@ def init(node: Node):
     # Create DSD
     dsd = DSD(blackboard, "debug/dsd/localization", node)
     # Get the location of the package to load the dsd files
-    dirname = get_package_share_directory("bitbots_localization_handler")
+    dirname = os.path.join(get_package_share_directory("bitbots_localization_handler"), "localization_dsd")
     # Register dsd related files
     dsd.register_actions(os.path.join(dirname, "actions"))
     dsd.register_decisions(os.path.join(dirname, "decisions"))
