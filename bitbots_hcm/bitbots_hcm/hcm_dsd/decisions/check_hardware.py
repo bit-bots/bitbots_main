@@ -30,7 +30,7 @@ class CheckMotors(AbstractHCMDecisionElement):
             return "OKAY"
 
         if self.blackboard.simulation_active:
-            # Some simulators will give exact same joint messages could look like errors, 
+            # Some simulators will give the exact same joint messages, which could look like errors,
             # as the real world ros controller will always publish the same message if there is no connection
             # so we will just the check if the message is changing in simulation
             if self.blackboard.current_joint_state is None:
