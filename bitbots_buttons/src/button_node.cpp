@@ -1,9 +1,9 @@
 #include <signal.h>
 
 #include <bitbots_localization/srv/reset_filter.hpp>
+#include <bitbots_msgs/msg/audio.hpp>
 #include <bitbots_msgs/msg/buttons.hpp>
 #include <bitbots_msgs/srv/manual_penalize.hpp>
-#include <humanoid_league_msgs/msg/audio.hpp>
 #include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <std_msgs/msg/bool.hpp>
@@ -41,7 +41,7 @@ class ButtonNode : public rclcpp::Node {
     button3_time_ = 0.0;
 
     // --- Initialize Topics ---
-    speak_pub_ = this->create_publisher<humanoid_league_msgs::msg::Audio>("/speak", 1);
+    speak_pub_ = this->create_publisher<bitbots_msgs::msg::Audio>("/speak", 1);
     shoot_publisher_ = this->create_publisher<std_msgs::msg::Bool>("/shoot_button", 1);
 
     if (manual_penalty_mode_) {
@@ -176,7 +176,7 @@ class ButtonNode : public rclcpp::Node {
      *  Helper method to send a message for text-to-speech output
      */
     if (speak_) {
-      humanoid_league_msgs::msg::Audio msg = humanoid_league_msgs::msg::Audio();
+      bitbots_msgs::msg::Audio msg = bitbots_msgs::msg::Audio();
       msg.text = text;
       msg.priority = 100;
       speak_pub_->publish(msg);
@@ -199,7 +199,7 @@ class ButtonNode : public rclcpp::Node {
   double button2_time_;
   double button3_time_;
 
-  rclcpp::Publisher<humanoid_league_msgs::msg::Audio>::SharedPtr speak_pub_;
+  rclcpp::Publisher<bitbots_msgs::msg::Audio>::SharedPtr speak_pub_;
   rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr shoot_publisher_;
   rclcpp::Client<bitbots_msgs::srv::ManualPenalize>::SharedPtr manual_penalize_client_;
   rclcpp::Client<std_srvs::srv::Empty>::SharedPtr foot_zero_client_;

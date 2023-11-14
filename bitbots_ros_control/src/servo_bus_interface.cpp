@@ -13,7 +13,7 @@ ServoBusInterface::ServoBusInterface(rclcpp::Node::SharedPtr nh, std::shared_ptr
 
 bool ServoBusInterface::init() {
   diagnostic_pub_ = nh_->create_publisher<diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 10);
-  speak_pub_ = nh_->create_publisher<humanoid_league_msgs::msg::Audio>("/speak", 1);
+  speak_pub_ = nh_->create_publisher<bitbots_msgs::msg::Audio>("/speak", 1);
 
   lost_servo_connection_ = false;
   read_vt_counter_ = 0;
@@ -562,8 +562,7 @@ bool ServoBusInterface::syncReadPositions() {
   /**
    * Reads all position information with a single sync read
    */
-  bool success;
-  success = driver_->syncRead("Present_Position", data_sync_read_positions_);
+  bool success = driver_->syncRead("Present_Position", data_sync_read_positions_);
   if (success) {
     for (int i = 0; i < joint_count_; i++) {
       // TODO test if this is required
@@ -587,8 +586,7 @@ bool ServoBusInterface::syncReadVelocities() {
   /**
    * Reads all velocity information with a single sync read
    */
-  bool success;
-  success = driver_->syncRead("Present_Velocity", data_sync_read_velocities_);
+  bool success = driver_->syncRead("Present_Velocity", data_sync_read_velocities_);
   if (success) {
     for (int i = 0; i < joint_count_; i++) {
       current_velocity_[i] = driver_->convertValue2Velocity(joint_ids_[i], data_sync_read_velocities_[i]);
@@ -601,8 +599,7 @@ bool ServoBusInterface::syncReadEfforts() {
   /**
    * Reads all effort information with a single sync read
    */
-  bool success;
-  success = driver_->syncRead("Present_Current", data_sync_read_efforts_);
+  bool success = driver_->syncRead("Present_Current", data_sync_read_efforts_);
   if (success) {
     for (int i = 0; i < joint_count_; i++) {
       current_effort_[i] = driver_->convertValue2Torque(joint_ids_[i], data_sync_read_efforts_[i]);
@@ -615,8 +612,7 @@ bool ServoBusInterface::syncReadPWMs() {
   /**
    * Reads all PWM information with a single sync read
    */
-  bool success;
-  success = driver_->syncRead("Present_PWM", data_sync_read_pwms_);
+  bool success = driver_->syncRead("Present_PWM", data_sync_read_pwms_);
   if (success) {
     for (int i = 0; i < joint_count_; i++) {
       // the data is in int16
@@ -632,8 +628,7 @@ bool ServoBusInterface::syncReadError() {
   /**
    * Reads all error bytes with a single sync read
    */
-  bool success;
-  success = driver_->syncRead("Hardware_Error_Status", data_sync_read_error_);
+  bool success = driver_->syncRead("Hardware_Error_Status", data_sync_read_error_);
   if (success) {
     for (int i = 0; i < joint_count_; i++) {
       current_error_[i] = data_sync_read_error_[i];

@@ -9,29 +9,10 @@ node = Node("battery_led")
 
 pub = node.create_publisher(ColorRGBA, "/led2", 1)
 
-led_full = ColorRGBA()
-led_full.a = 1.0
-led_full.r = 0.0
-led_full.g = 0.0
-led_full.b = 1.0
-
-led_mid = ColorRGBA()
-led_mid.a = 1.0
-led_mid.r = 0.0
-led_mid.g = 1.0
-led_mid.b = 0.0
-
-led_low = ColorRGBA()
-led_low.a = 1.0
-led_low.r = 1.0
-led_low.g = 0.0
-led_low.b = 0.0
-
-led_no = ColorRGBA()
-led_no.a = 1.0
-led_no.r = 0.0
-led_no.g = 0.0
-led_no.b = 0.0
+led_full = ColorRGBA(a=1.0, r=0.0, g=0.0, b=1.0)
+led_mid = ColorRGBA(a=1.0, r=0.0, g=1.0, b=0.0)
+led_low = ColorRGBA(a=1.0, r=1.0, g=0.0, b=0.0)
+led_no = ColorRGBA(a=1.0, r=0.0, g=0.0, b=0.0)
 
 
 def vbat_cb(msg: Float64):

@@ -21,12 +21,13 @@ if __name__ == "__main__":
     node = Node("sinus_command")
     pub = node.create_publisher(JointCommand, DYNAMIXEL_CMD_TOPIC, 1)
 
-    rate = node.create_rate(PUBLISH_RATE)
-    while rclpy.ok():
+    def tick():
         time = node.get_clock().now()
-        position = math.radians(AMPLITUDE) * math.sin(2 * math.pi * FREQUENCY * time.to_sec())
+        position = math.radians(AMPLITUDE) * math.sin(2 * math.pi * FREQUENCY * time.nanoseconds / 1e9)
 
         msg.header.stamp = time.to_msg()
         msg.positions = [position]
         pub.publish(msg)
-        rate.sleep()
+
+    node.create_timer(1.0 / PUBLISH_RATE, lambda _: tick())
+    rclpy.spin(node)

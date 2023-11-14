@@ -35,7 +35,6 @@ int main(int argc, char *argv[]) {
   rclcpp::Publisher<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr diagnostic_pub =
       nh->create_publisher<diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 10);
   diagnostic_msgs::msg::DiagnosticArray array_msg = diagnostic_msgs::msg::DiagnosticArray();
-  std::vector<diagnostic_msgs::msg::DiagnosticStatus> array;
   diagnostic_msgs::msg::DiagnosticStatus status = diagnostic_msgs::msg::DiagnosticStatus();
   // add prefix PS for pressure sensor to sort in diagnostic analyser
   status.name = "BUSBus";
@@ -90,7 +89,7 @@ int main(int argc, char *argv[]) {
         status.level = diagnostic_msgs::msg::DiagnosticStatus::WARN;
         status.message = "Bus runs not at specified frequency";
       }
-      array.clear();
+      std::vector array = std::vector<diagnostic_msgs::msg::DiagnosticStatus>();
       array.push_back(status);
       array_msg.status = array;
       diagnostic_pub->publish(array_msg);

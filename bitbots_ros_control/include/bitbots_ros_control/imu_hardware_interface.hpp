@@ -77,6 +77,12 @@ class ImuHardwareInterface : public bitbots_ros_control::HardwareInterface {
   rclcpp::Service<bitbots_msgs::srv::SetAccelerometerCalibrationThreshold>::SharedPtr
       set_accel_calib_threshold_service_;
 
+  rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr imu_pub_;
+  rclcpp::Publisher<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr diagnostic_pub_;
+  sensor_msgs::msg::Imu imu_msg_;
+
+  int diag_counter_;
+
   void setIMURanges(const std::shared_ptr<bitbots_msgs::srv::IMURanges::Request> req,
                     std::shared_ptr<bitbots_msgs::srv::IMURanges::Response> resp);
   void calibrateGyro(const std::shared_ptr<std_srvs::srv::Empty::Request> req,
@@ -94,10 +100,6 @@ class ImuHardwareInterface : public bitbots_ros_control::HardwareInterface {
   void setAccelCalibrationThreshold(
       const std::shared_ptr<bitbots_msgs::srv::SetAccelerometerCalibrationThreshold::Request> req,
       std::shared_ptr<bitbots_msgs::srv::SetAccelerometerCalibrationThreshold::Response> resp);
-  rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr imu_pub_;
-  rclcpp::Publisher<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr diagnostic_pub_;
-  sensor_msgs::msg::Imu imu_msg_;
-  int diag_counter_;
 };
 }  // namespace bitbots_ros_control
 #endif

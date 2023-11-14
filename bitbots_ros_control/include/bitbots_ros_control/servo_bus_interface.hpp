@@ -3,13 +3,13 @@
 
 #include <dynamixel_driver.h>
 
+#include <bitbots_msgs/msg/audio.hpp>
 #include <bitbots_msgs/msg/joint_torque.hpp>
 #include <bitbots_ros_control/hardware_interface.hpp>
 #include <bitbots_ros_control/utils.hpp>
 #include <bitset>
 #include <diagnostic_msgs/msg/diagnostic_array.hpp>
 #include <diagnostic_msgs/msg/diagnostic_status.hpp>
-#include <humanoid_league_msgs/msg/audio.hpp>
 #include <rcl_interfaces/msg/list_parameters_result.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
@@ -122,7 +122,7 @@ class ServoBusInterface : public bitbots_ros_control::HardwareInterface {
   int reading_errors_;
   int reading_successes_;
   rclcpp::Publisher<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr diagnostic_pub_;
-  rclcpp::Publisher<humanoid_league_msgs::msg::Audio>::SharedPtr speak_pub_;
+  rclcpp::Publisher<bitbots_msgs::msg::Audio>::SharedPtr speak_pub_;
 };
 }  // namespace bitbots_ros_control
 #endif  // BITBOTS_ROS_CONTROL_INCLUDE_BITBOTS_ROS_CONTROL_SERVO_BUS_INTERFACE_H_

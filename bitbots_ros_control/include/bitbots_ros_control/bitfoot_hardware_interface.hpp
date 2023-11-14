@@ -7,7 +7,6 @@
 #include <bitbots_ros_control/hardware_interface.hpp>
 #include <diagnostic_msgs/msg/diagnostic_array.hpp>
 #include <diagnostic_msgs/msg/diagnostic_status.hpp>
-#include <humanoid_league_msgs/msg/audio.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <string>
 

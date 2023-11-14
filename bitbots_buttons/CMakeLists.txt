@@ -12,7 +12,6 @@ find_package(backward_ros REQUIRED)
 find_package(bitbots_docs REQUIRED)
 find_package(bitbots_msgs REQUIRED)
 find_package(bitbots_localization REQUIRED)
-find_package(humanoid_league_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(test_msgs REQUIRED)
@@ -23,7 +22,6 @@ ament_target_dependencies(button_node
         backward_ros
         bitbots_msgs
         bitbots_localization
-        humanoid_league_msgs
         rclcpp
         std_msgs
         std_srvs
@@ -41,7 +39,6 @@ ament_export_dependencies(std_msgs)
 ament_export_dependencies(ament_cmake)
 ament_export_dependencies(bitbots_docs)
 ament_export_dependencies(bitbots_msgs)
-ament_export_dependencies(humanoid_league_msgs)
 ament_export_dependencies(std_msgs)
 ament_export_include_directories(${INCLUDE_DIRS})
 
