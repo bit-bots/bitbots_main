@@ -1,8 +1,9 @@
 import random
 
-from bitbots_blackboard.blackboard import BodyBlackboard
+from geometry_msgs.msg import Twist
 from rclpy.duration import Duration
 
+from bitbots_blackboard.blackboard import BodyBlackboard
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 
@@ -25,12 +26,15 @@ class WalkInPlace(AbstractActionElement):
 
         self.start_time = self.blackboard.node.get_clock().now()
 
+        # Cancel the path planning if it is running
+        self.blackboard.pathfinding.cancel_goal()
+
     def perform(self, reevaluate=False):
         self.publish_debug_data("duration", self.duration)
         if self.duration is not None and (self.blackboard.node.get_clock().now() - self.start_time) >= Duration(seconds=self.duration):
             return self.pop()
 
-        self.blackboard.pathfinding.cancel_goal()
+        self.blackboard.pathfinding.direct_cmd_vel_pub.publish(Twist())
 
 
 class Stand(WalkInPlace):
@@ -38,6 +42,7 @@ class Stand(WalkInPlace):
 
     def __init__(self, blackboard, dsd, parameters=None):
         super().__init__(blackboard, dsd, parameters)
+        # Cancel the path planning if it is running
         self.blackboard.pathfinding.cancel_goal()
 
     def perform(self, reevaluate=False):

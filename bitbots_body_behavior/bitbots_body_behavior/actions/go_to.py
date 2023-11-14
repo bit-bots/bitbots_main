@@ -5,9 +5,9 @@ import tf2_geometry_msgs
 
 from rclpy.duration import Duration
 from bitbots_blackboard.blackboard import BodyBlackboard
-from geometry_msgs.msg import Quaternion, PoseStamped
-from tf_transformations import quaternion_from_euler
+from geometry_msgs.msg import PoseStamped
 
+from bitbots_utils.transforms import quat_from_yaw
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 
@@ -31,9 +31,7 @@ class GoToRelativePosition(AbstractActionElement):
             goal_pose.pose.position.x = self.point[0]
             goal_pose.pose.position.y = self.point[1]
             goal_pose.pose.position.z = 0.0
-
-            x, y, z, w = quaternion_from_euler(0, 0, math.radians(self.point[2]))
-            goal_pose.pose.orientation = Quaternion(x=x, y=y, z=z, w=w)
+            goal_pose.pose.orientation = quat_from_yaw(math.radians(self.point[2]))
 
             try:
                 self.odom_goal_pose = self.blackboard.tf_buffer.transform(
@@ -57,10 +55,7 @@ class GoToAbsolutePosition(AbstractActionElement):
     blackboard: BodyBlackboard
 
     def __init__(self, blackboard, dsd, parameters=None):
-        """Go to an absolute position on the field
-        :param dsd:
-
-        """
+        """Go to an absolute position on the field"""
         super(GoToAbsolutePosition, self).__init__(blackboard, dsd)
         self.point = parameters
 
@@ -72,19 +67,14 @@ class GoToAbsolutePosition(AbstractActionElement):
         pose_msg.pose.position.x = self.point[0]
         pose_msg.pose.position.y = self.point[1]
         pose_msg.pose.position.z = 0
-
-        rotation = quaternion_from_euler(0, 0, math.radians(self.point[2]))
-        pose_msg.pose.orientation = Quaternion(*rotation)
+        pose_msg.pose.orientation = quat_from_yaw(math.radians(self.point[2]))
 
         self.blackboard.pathfinding.publish(pose_msg)
 
 
 class GoToOwnGoal(GoToAbsolutePosition):
     def __init__(self, blackboard, dsd, parameters=None):
-        """Go to the own goal
-        :param dsd:
-
-        """
+        """Go to the own goal"""
         super(GoToOwnGoal, self).__init__(blackboard, dsd, parameters)
         self.point = (
             self.blackboard.world_model.get_map_based_own_goal_center_xy()[0],
@@ -95,10 +85,7 @@ class GoToOwnGoal(GoToAbsolutePosition):
 
 class GoToEnemyGoal(GoToAbsolutePosition):
     def __init__(self, blackboard, dsd, parameters=None):
-        """Go to the enemy goal
-        :param dsd:
-
-        """
+        """Go to the enemy goal"""
         super(GoToEnemyGoal, self).__init__(blackboard, dsd, parameters)
         self.point = (
             self.blackboard.world_model.get_map_based_opp_goal_center_xy()[0],
@@ -109,8 +96,6 @@ class GoToEnemyGoal(GoToAbsolutePosition):
 
 class GoToCenterpoint(GoToAbsolutePosition):
     def __init__(self, blackboard, dsd, parameters=None):
-        """Go to the center of the field and look towards the enemy goal
-        :param dsd:
-        """
+        """Go to the center of the field and look towards the enemy goal"""
         super(GoToCenterpoint, self).__init__(blackboard, dsd, parameters)
         self.point = 0, 0, 0

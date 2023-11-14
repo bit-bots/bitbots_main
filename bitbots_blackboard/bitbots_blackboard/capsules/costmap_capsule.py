@@ -12,7 +12,6 @@ if TYPE_CHECKING:
 
 import matplotlib.pyplot as plt
 import numpy as np
-import ros2_numpy
 import tf2_ros as tf2
 from bitbots_utils.utils import (get_parameter_dict,
                                  get_parameters_from_other_node)
@@ -22,11 +21,12 @@ from PIL import Image, ImageDraw
 from rclpy.clock import ClockType
 from rclpy.duration import Duration
 from rclpy.time import Time
+from ros2_numpy import numpify, msgify
 from scipy.interpolate import griddata
 from scipy.ndimage import gaussian_filter
 from soccer_vision_3d_msgs.msg import Robot, RobotArray
-from tf2_geometry_msgs import PointStamped
 from tf_transformations import euler_from_quaternion, quaternion_from_euler
+from tf2_geometry_msgs import PointStamped
 
 
 class CostmapCapsule:
@@ -64,11 +64,11 @@ class CostmapCapsule:
 
     def robot_callback(self, msg: RobotArray):
         """
-        Callback with new obstacles
+        Callback with new robot detections
         """
         # Init a new obstacle costmap
         obstacle_map = np.zeros_like(self.costmap)
-        # Iterate over all obstacles
+        # Iterate over all robots
         robot: Robot
         for robot in msg.robots:
             # Convert position to array index
@@ -95,7 +95,7 @@ class CostmapCapsule:
         normalized_costmap = (255 - ((self.costmap - np.min(self.costmap)) / (
                     np.max(self.costmap) - np.min(self.costmap))) * 255 / 2.1).astype(np.int8).T
         # Build the OccupancyGrid message
-        msg: OccupancyGrid = ros2_numpy.msgify(
+        msg: OccupancyGrid = msgify(
             OccupancyGrid,
             normalized_costmap,
             info=MapMetaData(
@@ -124,9 +124,9 @@ class CostmapCapsule:
         for pose in self._blackboard.team_data.get_active_teammate_poses(count_goalies=False):
             # Get positions
             goal_position = np.array([self.field_length / 2, 0, 0])  # position of the opponent goal
-            teammate_position = ros2_numpy.numpify(pose.position)
+            teammate_position = numpify(pose.position)
             # Get vector
-            vector_teammate_to_goal = goal_position - ros2_numpy.numpify(pose.position)
+            vector_teammate_to_goal = goal_position - numpify(pose.position)
             # Position between robot and goal but 1m away from the robot
             pass_pos = vector_teammate_to_goal / np.linalg.norm(vector_teammate_to_goal) * pass_dist + teammate_position
             # Convert position to array index
@@ -169,7 +169,7 @@ class CostmapCapsule:
             return 0.0
 
         point = PointStamped()
-        point.header.stamp = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME).to_msg()
+        point.header.stamp = Time(clock_type=ClockType.ROS_TIME).to_msg()
         point.header.frame_id = self.base_footprint_frame
         point.point.x = x
         point.point.y = y
@@ -310,7 +310,7 @@ class CostmapCapsule:
             return 0.0
 
         pose = PoseStamped()
-        pose.header.stamp = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME).to_msg()
+        pose.header.stamp = Time(clock_type=ClockType.ROS_TIME).to_msg()
         pose.header.frame_id = self.base_footprint_frame
         pose.pose.position.x = float(x)
         pose.pose.position.y = float(y)
@@ -324,8 +324,7 @@ class CostmapCapsule:
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
             self._blackboard.node.get_logger().warn(e)
             return 0.0
-        d = euler_from_quaternion(
-            [pose.pose.orientation.x, pose.pose.orientation.y, pose.pose.orientation.z, pose.pose.orientation.w])[2]
+        d = euler_from_quaternion(numpify(pose.pose.orientation))[2]
         return self.get_cost_of_kick(pose.pose.position.x, pose.pose.position.y, d, kick_length, angular_range)
 
     def get_cost_of_kick(self, x: float, y: float, direction: float, kick_length: float, angular_range: float) -> float:

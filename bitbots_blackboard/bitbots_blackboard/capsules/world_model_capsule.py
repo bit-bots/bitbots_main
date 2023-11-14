@@ -20,10 +20,11 @@ from geometry_msgs.msg import (PoseStamped, PoseWithCovarianceStamped,
 from rclpy.clock import ClockType
 from rclpy.duration import Duration
 from rclpy.time import Time
+from ros2_numpy import numpify, msgify
 from std_msgs.msg import Header
 from std_srvs.srv import Trigger
-from tf2_geometry_msgs import PointStamped
 from tf_transformations import euler_from_quaternion
+from tf2_geometry_msgs import PointStamped, Point
 
 
 class WorldModelCapsule:
@@ -40,13 +41,13 @@ class WorldModelCapsule:
 
         self.ball = PointStamped()  # The ball in the base footprint frame
         self.ball_odom = PointStamped()  # The ball in the odom frame (when localization is not usable)
-        self.ball_odom.header.stamp = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME).to_msg()
+        self.ball_odom.header.stamp = Time(clock_type=ClockType.ROS_TIME).to_msg()
         self.ball_odom.header.frame_id = self.odom_frame
         self.ball_map = PointStamped()  # The ball in the map frame (when localization is usable)
-        self.ball_map.header.stamp = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME).to_msg()
+        self.ball_map.header.stamp = Time(clock_type=ClockType.ROS_TIME).to_msg()
         self.ball_map.header.frame_id = self.map_frame
         self.ball_teammate = PointStamped()
-        self.ball_teammate.header.stamp = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME).to_msg()
+        self.ball_teammate.header.stamp = Time(clock_type=ClockType.ROS_TIME).to_msg()
         self.ball_teammate.header.frame_id = self.map_frame
         self.ball_lost_time = Duration(seconds=self._blackboard.node.get_parameter('body.ball_lost_time').value)
         self.ball_twist_map: Optional[TwistStamped] = None
@@ -56,8 +57,8 @@ class WorldModelCapsule:
         self.reset_ball_filter = self._blackboard.node.create_client(Trigger, 'ball_filter_reset')
 
         self.counter: int = 0
-        self.ball_seen_time = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME)
-        self.ball_seen_time_teammate = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME)
+        self.ball_seen_time = Time(clock_type=ClockType.ROS_TIME)
+        self.ball_seen_time_teammate = Time(clock_type=ClockType.ROS_TIME)
         self.ball_seen: bool = False
         self.ball_seen_teammate: bool = False
         parameters = get_parameters_from_other_node(
@@ -183,9 +184,6 @@ class WorldModelCapsule:
             u, v = ball_pos
         return math.atan2(v, u)
 
-    def get_ball_speed(self) -> TwistStamped:
-        raise NotImplementedError
-
     def ball_filtered_callback(self, msg: PoseWithCovarianceStamped):
         self.ball_filtered = msg
 
@@ -203,8 +201,8 @@ class WorldModelCapsule:
             self.ball_odom = self._blackboard.tf_buffer.transform(ball_buffer, self.odom_frame, timeout=Duration(seconds=1.0))
             self.ball_map = self._blackboard.tf_buffer.transform(ball_buffer, self.map_frame, timeout=Duration(seconds=1.0))
             # Set timestamps to zero to get the newest transform when this is transformed later
-            self.ball_odom.header.stamp = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME).to_msg()
-            self.ball_map.header.stamp = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME).to_msg()
+            self.ball_odom.header.stamp = Time(clock_type=ClockType.ROS_TIME).to_msg()
+            self.ball_map.header.stamp = Time(clock_type=ClockType.ROS_TIME).to_msg()
             self.ball_seen_time = Time.from_msg(msg.header.stamp)
             self.ball_publisher.publish(self.ball)
             self.ball_seen = True
@@ -261,11 +259,11 @@ class WorldModelCapsule:
         :type reset_ball_filter: bool, optional
         """
         if own:  # Forget own ball
-            self.ball_seen_time = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME)
+            self.ball_seen_time = Time(clock_type=ClockType.ROS_TIME)
             self.ball = PointStamped()
 
         if team:  # Forget team ball
-            self.ball_seen_time_teammate = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME)
+            self.ball_seen_time_teammate = Time(clock_type=ClockType.ROS_TIME)
             self.ball_teammate = PointStamped()
 
         if reset_ball_filter:  # Reset the ball filter
@@ -331,8 +329,7 @@ class WorldModelCapsule:
         transform = self.get_current_position_transform(frame_id or self.map_frame)
         if transform is None:
             return None
-        orientation = transform.transform.rotation
-        theta = euler_from_quaternion([orientation.x, orientation.y, orientation.z, orientation.w])[2]
+        theta = euler_from_quaternion(numpify(transform.transform.rotation))[2]
         return transform.transform.translation.x, transform.transform.translation.y, theta
 
     def get_current_position_pose_stamped(self, frame_id: Optional[str] = None) -> Optional[PoseStamped]:
@@ -346,10 +343,7 @@ class WorldModelCapsule:
             return None
         ps = PoseStamped()
         ps.header = transform.header
-        ps.pose.position.x = transform.transform.translation.x
-        ps.pose.position.y = transform.transform.translation.y
-        ps.pose.position.z = transform.transform.translation.z
-        ps.pose.orientation = transform.transform.rotation
+        ps.pose.position = msgify(Point, numpify(transform.transform.translation))
         return ps
 
     def get_current_position_transform(self, frame_id: str) -> TransformStamped:
@@ -360,7 +354,7 @@ class WorldModelCapsule:
         """
         try:
             return self._blackboard.tf_buffer.lookup_transform(frame_id, self.base_footprint_frame,
-                                                        Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME))
+                                                        Time(clock_type=ClockType.ROS_TIME))
         except (tf2.LookupException, tf2.ConnectivityException, tf2.ExtrapolationException) as e:
             self._blackboard.node.get_logger().warn(str(e))
             return None
@@ -398,7 +392,7 @@ class WorldModelCapsule:
             t = self._blackboard.node.get_clock().now() - Duration(seconds=1.0)
         except ValueError as e:
             self._blackboard.node.get_logger().error(str(e))
-            t = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME)
+            t = Time(clock_type=ClockType.ROS_TIME)
         return self._blackboard.tf_buffer.can_transform(self.base_footprint_frame, self.map_frame, t)
 
     ##########

@@ -1,9 +1,11 @@
+from abc import abstractmethod, ABC
+
 from bitbots_blackboard.blackboard import BodyBlackboard
 
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 
-class AbstractPlayAnimation(AbstractActionElement):
+class AbstractPlayAnimation(AbstractActionElement, ABC):
     """
     Abstract class to create actions for playing animations
     """
@@ -39,6 +41,7 @@ class AbstractPlayAnimation(AbstractActionElement):
             # we are finished playing this animation
             return self.pop()
 
+    @abstractmethod
     def get_animation_name(self) -> str:
         # this is what has to be implemented returning the animation to play
         raise NotImplementedError
@@ -46,35 +49,35 @@ class AbstractPlayAnimation(AbstractActionElement):
 
 class PlayAnimationGoalieArms(AbstractPlayAnimation):
     def get_animation_name(self):
-        return self.blackboard.goalie_arms_animation
+        return self.blackboard.animation.goalie_arms_animation
 
 
 class PlayAnimationGoalieFallRight(AbstractPlayAnimation):
     def get_animation_name(self):
         self.blackboard.node.get_logger().info("PLAYING GOALIE FALLING RIGHT ANIMATION")
-        return self.blackboard.goalie_falling_right_animation
+        return self.blackboard.animation.goalie_falling_right_animation
 
 
 class PlayAnimationGoalieFallLeft(AbstractPlayAnimation):
     def get_animation_name(self):
         self.blackboard.node.get_logger().info("PLAYING GOALIE FALLING LEFT ANIMATION")
-        return self.blackboard.goalie_falling_left_animation
+        return self.blackboard.animation.goalie_falling_left_animation
 
 class PlayAnimationGoalieFallCenter(AbstractPlayAnimation):
     def get_animation_name(self):
         self.blackboard.node.get_logger().info("PLAYING GOALIE FALLING CENTER ANIMATION")
-        return self.blackboard.goalie_falling_center_animation
+        return self.blackboard.animation.goalie_falling_center_animation
 
 
 class PlayAnimationCheering(AbstractPlayAnimation):
     def get_animation_name(self):
         self.blackboard.node.get_logger().info("PLAYING CHEERING ANIMATION")
-        return self.blackboard.cheering_animation
+        return self.blackboard.animation.cheering_animation
 
 
 class PlayAnimationInit(AbstractPlayAnimation):
     def get_animation_name(self):
-        return self.blackboard.init_animation
+        return self.blackboard.animation.init_animation
 
 
 class PlayAnimationInitInSim(PlayAnimationInit):

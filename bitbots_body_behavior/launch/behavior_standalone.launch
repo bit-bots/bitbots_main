@@ -3,7 +3,7 @@
     <arg name="sim" default="false" />
     <arg name="dsd_file" default="main.dsd" description="The behavior dsd file that should be used" />
 
-    <include file="$(find-pkg-share bitbots_utils)/launch/base.launch">
+    <include file="$(find-pkg-share bitbots_utils)/launch/parameter_blackboard.launch">
         <arg name="sim" value="$(var sim)" />
     </include>
 
