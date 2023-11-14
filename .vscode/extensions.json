@@ -22,5 +22,6 @@
         "trond-snekvik.simple-rst",  // Syntax highlighting for rst files
         "twxs.cmake",  // CMake support
         "zxh404.vscode-proto3",  // Protobuf support
+        "Mastermori.dsd", // DSD support
     ]
 }
