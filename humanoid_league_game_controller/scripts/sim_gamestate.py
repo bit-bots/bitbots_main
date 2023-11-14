@@ -2,25 +2,24 @@
 
 # This script was based on the teleop_twist_keyboard package
 # original code can be found at https://github.com/ros-teleop/teleop_twist_keyboard
-# The script provides a simple mechanism to test robot behaviour in different game states,
+# The script provides a simple mechanism to test robot behavior in different game states,
 # when no game controller is running
 
 import sys
 import select
 import termios
 import tty
-import threading
 
 import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, DurabilityPolicy
-from humanoid_league_msgs.msg import GameState as GameStateMsg
+from bitbots_msgs.msg import GameState as GameStateMsg
 from bitbots_utils.utils import get_parameters_from_other_node
 
 
 class SimGamestate(Node):
     msg = """Setting the GameState by entering a number:
-0: GAMESTATE_INITAL=0
+0: GAMESTATE_INITIAL=0
 1: GAMESTATE_READY=1
 2: GAMESTATE_SET=2
 3: GAMESTATE_PLAYING=3

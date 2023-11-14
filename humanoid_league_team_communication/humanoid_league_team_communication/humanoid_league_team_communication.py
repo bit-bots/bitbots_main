@@ -9,9 +9,9 @@ from typing import List, Optional, Tuple
 import rclpy
 from rclpy.executors import MultiThreadedExecutor
 from ament_index_python.packages import get_package_share_directory
+from bitbots_msgs.msg import GameState, Strategy, TeamData
 from bitbots_utils.utils import get_parameter_dict, get_parameters_from_other_node
 from geometry_msgs.msg import PoseWithCovarianceStamped, Twist, TwistWithCovarianceStamped
-from humanoid_league_msgs.msg import GameState, Strategy, TeamData
 from numpy import double
 from rclpy.duration import Duration
 from rclpy.node import Node
@@ -81,14 +81,14 @@ class HumanoidLeagueTeamCommunication:
         self.gamestate: Optional[GameState] = None
         self.pose: Optional[PoseWithCovarianceStamped] = None
         self.cmd_vel: Optional[Twist] = None
-        self.cmd_vel_time = Time(nanoseconds=0, clock_type=self.node.get_clock().clock_type)
+        self.cmd_vel_time = Time(clock_type=self.node.get_clock().clock_type)
         self.ball: Optional[PointStamped] = None
         self.ball_velocity: Tuple[float, float, float] = (0, 0, 0)
         self.ball_covariance: List[double] = []
         self.strategy: Optional[Strategy] = None
-        self.strategy_time = Time(nanoseconds=0, clock_type=self.node.get_clock().clock_type)
+        self.strategy_time = Time(clock_type=self.node.get_clock().clock_type)
         self.time_to_ball: Optional[float] = None
-        self.time_to_ball_time = Time(nanoseconds=0, clock_type=self.node.get_clock().clock_type)
+        self.time_to_ball_time = Time(clock_type=self.node.get_clock().clock_type)
         self.seen_robots: Optional[RobotArray] = None
         self.move_base_goal: Optional[PoseStamped] = None
 

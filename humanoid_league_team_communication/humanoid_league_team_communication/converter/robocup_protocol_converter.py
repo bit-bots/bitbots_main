@@ -1,12 +1,13 @@
 from enum import IntEnum
 
-from humanoid_league_team_communication.converter.message_to_team_data_converter import MessageToTeamDataConverter
-from humanoid_league_team_communication.converter.state_to_message_converter import StateToMessageConverter
-
-from humanoid_league_msgs.msg import ObstacleRelative, Strategy
+import humanoid_league_team_communication.robocup_extension_pb2 as Proto
+from humanoid_league_team_communication.converter.message_to_team_data_converter import \
+    MessageToTeamDataConverter
+from humanoid_league_team_communication.converter.state_to_message_converter import \
+    StateToMessageConverter
 from soccer_vision_attribute_msgs.msg import Robot as RobotAttributes
 
-import humanoid_league_team_communication.robocup_extension_pb2 as Proto
+from bitbots_msgs.msg import RobotRelative, Strategy
 
 
 class TeamColor(IntEnum):
@@ -44,9 +45,9 @@ class RobocupProtocolConverter:
         )
 
         self.proto_to_team_data_team_mapping = {
-            Proto.Team.UNKNOWN_TEAM: ObstacleRelative.ROBOT_UNDEFINED,
-            Proto.Team.BLUE: ObstacleRelative.ROBOT_CYAN,
-            Proto.Team.RED: ObstacleRelative.ROBOT_MAGENTA
+            Proto.Team.UNKNOWN_TEAM: RobotRelative.ROBOT_UNDEFINED,
+            Proto.Team.BLUE: RobotRelative.ROBOT_BLUE,
+            Proto.Team.RED: RobotRelative.ROBOT_RED
         }
         self.state_to_proto_team_mapping = {
             RobotAttributes.TEAM_OWN: Proto.Team.RED if own_team_color == TeamColor.RED else Proto.Team.BLUE,

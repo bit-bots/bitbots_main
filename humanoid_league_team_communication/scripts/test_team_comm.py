@@ -5,8 +5,8 @@ This script publishes dummy values for ball, goalpost, position and obstacles fo
 
 import rclpy
 import numpy
+from bitbots_msgs.msg import GameState, Strategy
 from geometry_msgs.msg import Point, Pose, PoseWithCovariance, PoseWithCovarianceStamped, Quaternion, TransformStamped
-from humanoid_league_msgs.msg import GameState, Strategy
 from soccer_vision_3d_msgs.msg import Robot, RobotArray
 from soccer_vision_attribute_msgs.msg import Robot as RobotAttributes
 from tf2_ros import StaticTransformBroadcaster

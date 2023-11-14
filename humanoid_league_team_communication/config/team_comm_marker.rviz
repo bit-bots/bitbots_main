@@ -299,13 +299,6 @@ Visualization Manager:
       Topic: /move_base/current_goal
       Unreliable: false
       Value: true
-    - Class: rviz/Axes
-      Enabled: true
-      Length: 0.30000001192092896
-      Name: Axes
-      Radius: 0.019999999552965164
-      Reference Frame: approach_frame
-      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
