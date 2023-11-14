@@ -74,6 +74,7 @@ class TeamDataCapsule:
         self.data_timeout: float = self.node.get_parameter("team_data_timeout").value
         self.ball_max_covariance: float  = self.node.get_parameter("ball_max_covariance").value
         self.ball_lost_time: float = Duration(seconds=self.node.get_parameter('body.ball_lost_time').value)
+        
         self.localization_precision_threshold_x_sdev: float = self.node.get_parameter(
             'body.localization_precision_threshold.x_sdev').value
         self.localization_precision_threshold_y_sdev: float = self.node.get_parameter(
@@ -232,7 +233,9 @@ class TeamDataCapsule:
                     if robot_x_std_dev < self.localization_precision_threshold_x_sdev and \
                             robot_y_std_dev < self.localization_precision_threshold_y_sdev and \
                             robot_theta_std_dev < self.localization_precision_threshold_theta_sdev:
-                        robot_dist = self.get_robot_ball_euclidean_distance(teamdata)
+                        robot_dist = np.linalg.norm(
+                            numpify(teamdata.ball_absolute.pose.position) - \
+                            numpify(teamdata.robot_position.pose.position)) 
                         if robot_dist < best_robot_dist:
                             best_ball = PointStamped()
                             best_ball.header = teamdata.header
