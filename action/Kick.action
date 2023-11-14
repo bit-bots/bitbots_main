@@ -1,5 +1,5 @@
-# goal definition
-# the kick tries to kick the ball at ball_position, wherever that position may be
+# Goal definition
+# The kick tries to kick the ball at ball_position, wherever that position may be
 std_msgs/Header header
 geometry_msgs/Point ball_position
 geometry_msgs/Quaternion kick_direction
@@ -7,15 +7,16 @@ float64 kick_speed
 bool unstable
 
 ---
-# result definition
+# Result definition
 uint8 SUCCESS=0
 uint8 UNREACHABLE=1
 uint8 ABORTED=2
 uint8 REJECTED=3
+
 uint8 result
 
 ---
-# feedback definition
+# Feedback definition
 uint8 FOOT_LEFT=0
 uint8 FOOT_RIGHT=1
 uint8 chosen_foot

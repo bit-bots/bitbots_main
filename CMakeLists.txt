@@ -3,9 +3,12 @@ project(bitbots_msgs)
 
 find_package(ament_cmake REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
-find_package(std_msgs REQUIRED)
+find_package(action_msgs REQUIRED)
+find_package(bitbots_docs REQUIRED)
+find_package(geometry_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
-#find_package(bitbots_docs REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(trajectory_msgs REQUIRED)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -13,15 +16,29 @@ if(BUILD_TESTING)
 endif()
 
 rosidl_generate_interfaces(${PROJECT_NAME}
+  "action/Dynup.action"
+  "action/Kick.action"
+  "action/LookAt.action"
+  "action/PlayAnimation.action"
+  "msg/Animation.msg"
+  "msg/Audio.msg"
   "msg/Buttons.msg"
-  "msg/ColorLookupTable.msg"
-  "msg/Config.msg"
   "msg/Cpu.msg"
   "msg/Filesystem.msg"
   "msg/FootPressure.msg"
+  "msg/GameState.msg"
+  "msg/HeadMode.msg"
   "msg/JointCommand.msg"
   "msg/JointTorque.msg"
   "msg/NetworkInterface.msg"
+  "msg/PoseWithCertainty.msg"
+  "msg/PoseWithCertaintyArray.msg"
+  "msg/PoseWithCertaintyStamped.msg"
+  "msg/RobotControlState.msg"
+  "msg/RobotRelative.msg"
+  "msg/RobotRelativeArray.msg"
+  "msg/Strategy.msg"
+  "msg/TeamData.msg"
   "msg/Workload.msg"
   "srv/AccelerometerCalibration.srv"
   "srv/ComplementaryFilterParams.srv"
@@ -32,12 +49,12 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/SetAccelerometerCalibrationThreshold.srv"
   "srv/SetObjectPose.srv"
   "srv/SetObjectPosition.srv"
-  "action/Dynup.action"
-  "action/Kick.action"
-  "action/LookAt.action"
   DEPENDENCIES
+  action_msgs
+  geometry_msgs
   sensor_msgs
   std_msgs
+  trajectory_msgs
 )
 
 include(${CMAKE_BINARY_DIR}/../bitbots_docs/enable_bitbots_docs.cmake)
