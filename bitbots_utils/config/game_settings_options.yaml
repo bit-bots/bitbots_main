@@ -16,7 +16,7 @@ team_color:
   type: int
   explanation: "0 is blue, 1 is red"
 role:
-  options: ['goalie', 'offense', 'defense', 'penalty']
+  options: ['goalie', 'offense', 'defense']
   type: str
   explanation: ""
 position_number:

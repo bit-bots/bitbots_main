@@ -50,7 +50,7 @@
             <arg name="sim" value="$(var sim)"/>
         </include>
     </group>
-    
+
     <!-- launch localization or fake localization -->
     <group if="$(var localization)">
         <include file="$(find-pkg-share bitbots_localization)/launch/localization.launch">
@@ -81,7 +81,7 @@
 
     <!-- launch audio processing -->
     <group if="$(var audio)">
-        <include file="$(find-pkg-share bitbots_utils)/launch/audio.launch">
+        <include file="$(find-pkg-share bitbots_bringup)/launch/audio.launch">
             <arg name="sim" value="$(var sim)" />
         </include>
     </group>

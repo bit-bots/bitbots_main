@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-import threading
-
 import rclpy
 from rclpy.node import Node
 from rclpy.executors import MultiThreadedExecutor
@@ -13,7 +11,7 @@ class DummyImu(Node):
         super().__init__('DummyImu')
         self.pub = self.create_publisher(Imu, '/imu/data', 1)
         self.msg = Imu()
-        self.msg.header.frame_id = 'imu'
+        self.msg.header.frame_id = 'imu_frame'
         self.msg.orientation.w = 1.0
 
     def loop(self):

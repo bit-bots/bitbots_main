@@ -4,12 +4,12 @@ import argparse
 import sys
 
 import rclpy
+
+from bitbots_msgs.msg import Animation, JointCommand
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
-from std_msgs.msg import Float64MultiArray
 from sensor_msgs.msg import JointState
-from bitbots_msgs.msg import JointCommand
-from humanoid_league_msgs.msg import Animation
+from std_msgs.msg import Float64MultiArray
 
 
 class MotorVizHelper(Node):
@@ -109,7 +109,7 @@ class MotorVizHelper(Node):
             self.joint_command_msg.positions[self.joint_names.index(name)] = msg.position.points[0].positions[i]
             self.joint_command_msg.velocities[self.joint_names.index(name)] = -1
 
-    def update_joint_states(self, msg):
+    def update_joint_states(self, msg: JointState):
         for i in range(len(msg.joint_names)):
             name = msg.joint_names[i]
             if msg.velocities[i] == -1:

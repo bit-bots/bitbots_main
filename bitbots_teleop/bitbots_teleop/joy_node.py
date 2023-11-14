@@ -3,19 +3,16 @@
 import threading
 
 import rclpy
-from humanoid_league_msgs.action import PlayAnimation
 from rclpy.duration import Duration
 from rclpy.node import Node
 from rclpy.action import ActionClient
 import copy
 
-from pathlib import Path
-from sensor_msgs.msg import Joy
+from bitbots_msgs.action import PlayAnimation
+from bitbots_msgs.msg import Audio
+from bitbots_msgs.msg import JointCommand, HeadMode
 from geometry_msgs.msg import Twist
-from humanoid_league_msgs.msg import Audio, HeadMode
-from bitbots_msgs.msg import JointCommand
-
-#from bitbots_animation_server.action import PlayAnimationAction
+from sensor_msgs.msg import Joy
 
 
 class JoyNode(Node):
@@ -145,13 +142,13 @@ class JoyNode(Node):
         msg.head_mode = mode
         self.head_mode_pub.publish(msg)
 
-    def denormalize_joy(self, gain, axis, msg, deadzone=0.0):
+    def denormalize_joy(self, gain, axis, msg: Joy, deadzone=0.0):
         if abs(msg.axes[axis]) > deadzone:
             return gain * msg.axes[axis]
         else:
             return 0
 
-    def joy_cb(self, msg):
+    def joy_cb(self, msg: Joy):
         # forward and sideward walking with left joystick
         self.walk_msg.linear.x = float(self.denormalize_joy(
             self.config['walking']['gain_x'],
@@ -220,7 +217,6 @@ def main():
     rclpy.init(args=None)
     node = JoyNode()
     rclpy.spin(node)
-
     node.destroy_node()
     rclpy.shutdown()
 

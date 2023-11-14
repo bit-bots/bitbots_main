@@ -1,13 +1,14 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-    <name>bitbots_utils</name>
+    <name>bitbots_robot_description</name>
     <version>2.3.1</version>
-    <description>The bitbots_utils package is a collection of util classes used in many ROS packages from
-        the Hamburg Bit-Bots.
+    <description>
+        The bitbots_robot_description package includes utilities to launch the robot description,
+        robot state publisher and the robot calibration.
     </description>
 
-    <maintainer email="7sell@informatik.uni-hamburg.de">Finn-Thorben Sell</maintainer>
+    <maintainer email="git@flova.de">Florian Vahl</maintainer>
     <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
     <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
     <license>MIT</license>
@@ -15,12 +16,10 @@
     <buildtool_depend>ament_cmake</buildtool_depend>
 
     <depend>bitbots_docs</depend>
-    <depend>python3-yaml</depend>
-    <depend>python3-transforms3d</depend>
-    <depend>demo_nodes_cpp</depend>
-    <depend>python3-numpy</depend>
-    <depend>geometry_msgs</depend>
-    <depend>ros2_numpy</depend>
+    <depend>bitbots_extrinsic_calibration</depend>
+    <depend>moveit_ros_move_group</depend>
+    <depend>robot_state_publisher</depend>
+    <depend>xacro</depend>
 
     <export>
         <bitbots_documentation>

@@ -3,7 +3,7 @@
 Launch these commands in parallel:
 
 ```bash
-ros2 launch bitbots_utils audio.launch
+ros2 launch bitbots_bringup audio.launch
 ros2 bag record /audio/audio /audio/audio_info
 ```
 
