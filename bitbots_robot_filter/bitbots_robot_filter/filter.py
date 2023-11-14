@@ -2,7 +2,6 @@ import numpy as np
 import tf2_ros as tf2
 import tf2_geometry_msgs
 
-from humanoid_league_msgs.msg import TeamData
 from std_msgs.msg import Header
 import rclpy
 from rclpy.time import Time
@@ -13,8 +12,8 @@ from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from geometry_msgs.msg import Pose
 import soccer_vision_3d_msgs.msg as sv3dm
 import soccer_vision_attribute_msgs.msg as svam
-import tf2_ros as tf2
 from ros2_numpy import numpify
+from bitbots_msgs.msg import TeamData
 from bitbots_tf_listener import TransformListener
 
 
@@ -65,7 +64,6 @@ class RobotFilter(Node):
             lambda robot: abs((self.get_clock().now() - Time.from_msg(robot[1])).nanoseconds) < self.robot_storage_time,
             self.robots))
 
-
         # Add Team Mates
         def build_robot_detection_from_team_data(msg: TeamData) -> sv3dm.Robot:
             robot = sv3dm.Robot()
@@ -104,7 +102,8 @@ class RobotFilter(Node):
             old_robot: sv3dm.Robot
             for old_robot, stamp in self.robots:
                 # Check if there is another robot in memory close to it
-                if np.linalg.norm(numpify(robot.bb.center.position) - numpify(old_robot.bb.center.position)) > self.robot_merge_distance:
+                distance = np.linalg.norm(numpify(robot.bb.center.position) - numpify(old_robot.bb.center.position))
+                if distance > self.robot_merge_distance:
                     cleaned_robots.append((old_robot, stamp))
             # Update our robot list with a new list that does not contain the duplicates
             self.robots = cleaned_robots
