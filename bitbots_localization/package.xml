@@ -9,7 +9,6 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
   <depend>backward_ros</depend>
-  <depend>bitbots_blackboard</depend>
   <depend>bitbots_docs</depend>
   <depend>boost</depend>
   <depend>builtin_interfaces</depend>
