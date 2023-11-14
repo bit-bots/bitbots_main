@@ -1,9 +1,9 @@
 import rclpy
 import soccer_vision_3d_msgs.msg as sv3dm
 import tf2_ros as tf2
+from bitbots_msgs.msg import PoseWithCertaintyStamped
 from bitbots_tf_listener import TransformListener
-from geometry_msgs.msg import PoseStamped, Twist
-from humanoid_league_msgs.msg import PoseWithCertaintyStamped
+from geometry_msgs.msg import PointStamped, PoseStamped, Twist
 from nav_msgs.msg import OccupancyGrid, Path
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.duration import Duration
@@ -69,6 +69,7 @@ class PathPlanning(Node):
         self.cmd_vel_pub = self.create_publisher(Twist, "cmd_vel", 1)
         self.costmap_pub = self.create_publisher(OccupancyGrid, "costmap", 1)
         self.path_pub = self.create_publisher(Path, "path", 1)
+        self.carrot_pub = self.create_publisher(PointStamped, "carrot", 1)
 
         # Timer that updates the path and command velocity at a given rate
         self.create_timer(
@@ -83,15 +84,22 @@ class PathPlanning(Node):
         Performs a single step of the path planning
         """
         try:
+            # Update the map with the latest ball and robot positions
             self.map.update()
+            # Publish the costmap for visualization
             self.costmap_pub.publish(self.map.to_msg())
 
             if self.planner.active():
+                # Calculate the path to the goal pose considering the current map
                 path = self.planner.step()
+                # Publish the path for visualization
                 self.path_pub.publish(path)
-
-                cmd_vel = self.controller.step(path)
+                # Calculate the command velocity to follow the given path
+                cmd_vel, carrot_point = self.controller.step(path)
+                # Publish the walk command to control the robot
                 self.cmd_vel_pub.publish(cmd_vel)
+                # Publish the carrot point for visualization
+                self.carrot_pub.publish(carrot_point)
         except Exception as e:
             self.get_logger().error(f"Caught exception during calculation of path planning step: {e}")
 

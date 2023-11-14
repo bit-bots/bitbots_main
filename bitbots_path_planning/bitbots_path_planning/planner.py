@@ -27,7 +27,7 @@ class Planner:
         """
         Updates the goal pose
         """
-        pose.header.stamp = Time().to_msg()
+        pose.header.stamp = Time(clock_type=self.node.get_clock().clock_type).to_msg()
         self.goal = pose
 
     def cancel(self) -> None:

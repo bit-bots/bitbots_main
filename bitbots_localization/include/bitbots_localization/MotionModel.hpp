@@ -31,7 +31,7 @@ class RobotMotionModel : public particle_filter::MovementModel<RobotState> {
 
    */
   RobotMotionModel(const particle_filter::CRandomNumberGenerator &random_number_generator, double diffuse_xStdDev,
-                   double diffuse_yStdDev, double diffuse_tStdDev, double diffuse_multiplicator,
+                   double diffuse_yStdDev, double diffuse_tStdDev, double diffuse_multiplier,
                    Eigen::Matrix<double, 3, 2> drift_cov);
 
   /**
@@ -48,7 +48,7 @@ class RobotMotionModel : public particle_filter::MovementModel<RobotState> {
    */
   void diffuse(RobotState &state) const override;
 
-  double diffuse_multiplicator_;
+  double diffuse_multiplier_;
 
  protected:
  private:

@@ -6,32 +6,13 @@
 
 bitbots_localization:
   ros__parameters:
-
-    #############################
-    # Initial pose of the robot #
-    #############################
-
-    # Initialize at sideline
-    # TODO better parameters
-    initial_robot_x1: 2.5
-    initial_robot_y1: 3.0
-    initial_robot_t1: -1.5
-    initial_robot_x2: 2.5
-    initial_robot_y2: -3.0
-    initial_robot_t2: 1.57
-
-    # Inertial single point position
-    initial_robot_x: -2.0
-    initial_robot_y: 0.0
-    initial_robot_t: 0.0
-
-    ##################
-    # Field settings #
-    ##################
-
-    # Field size
-    field_x: 9.0
-    field_y: 6.0
-
-    # Padding
-    field_padding: 0.7
+    field:
+      size:
+        x: 9.0
+        y: 6.0
+      padding: 0.7
+      initialization:
+        single_pose:
+          x: -2.0
+          y: 0.0
+          t: 0.0

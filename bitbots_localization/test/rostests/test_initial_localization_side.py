@@ -5,7 +5,7 @@ from geometry_msgs.msg import PoseWithCovarianceStamped
 
 
 class TestInitialLocalizationSide(WebotsTestCase):
-    def test_inital_localization_side(self):
+    def test_initial_localization_side(self):
         # Check if we heard from the localization
         sub = MockSubscriber(
             "/pose_with_covariance",

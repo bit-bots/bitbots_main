@@ -8,9 +8,9 @@ namespace bitbots_localization {
 
 RobotMotionModel::RobotMotionModel(const particle_filter::CRandomNumberGenerator &random_number_generator,
                                    double diffuse_xStdDev, double diffuse_yStdDev, double diffuse_tStdDev,
-                                   double diffuse_multiplicator, Eigen::Matrix<double, 3, 2> drift_cov)
+                                   double diffuse_multiplier, Eigen::Matrix<double, 3, 2> drift_cov)
     : particle_filter::MovementModel<RobotState>(),
-      diffuse_multiplicator_(diffuse_multiplicator),
+      diffuse_multiplier_(diffuse_multiplier),
       random_number_generator_(random_number_generator),
       diffuse_xStdDev_(diffuse_xStdDev),
       diffuse_yStdDev_(diffuse_yStdDev),
@@ -45,9 +45,9 @@ void RobotMotionModel::drift(RobotState &state, geometry_msgs::msg::Vector3 line
 }
 
 void RobotMotionModel::diffuse(RobotState &state) const {
-  state.setXPos(state.getXPos() + sample(diffuse_xStdDev_) * diffuse_multiplicator_);
-  state.setYPos(state.getYPos() + sample(diffuse_yStdDev_) * diffuse_multiplicator_);
-  double theta = state.getTheta() + sample(diffuse_tStdDev_) * diffuse_multiplicator_;
+  state.setXPos(state.getXPos() + sample(diffuse_xStdDev_) * diffuse_multiplier_);
+  state.setYPos(state.getYPos() + sample(diffuse_yStdDev_) * diffuse_multiplier_);
+  double theta = state.getTheta() + sample(diffuse_tStdDev_) * diffuse_multiplier_;
   state.setTheta(theta);
 }
 

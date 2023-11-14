@@ -8,7 +8,7 @@ namespace bitbots_localization {
 
 RobotPoseObservationModel::RobotPoseObservationModel(std::shared_ptr<Map> map_lines, std::shared_ptr<Map> map_goals,
                                                      std::shared_ptr<Map> map_field_boundary,
-                                                     std::shared_ptr<bl::Config> config)
+                                                     const bitbots_localization::Params &config)
     : particle_filter::ObservationModel<RobotState>() {
   map_lines_ = map_lines;
   map_goals_ = map_goals;
@@ -33,29 +33,34 @@ double RobotPoseObservationModel::calculate_weight_for_class(
 }
 
 double RobotPoseObservationModel::measure(const RobotState &state) const {
-  double particle_weight_lines =
-      calculate_weight_for_class(state, last_measurement_lines_, map_lines_, config_->line_element_confidence);
-  double particle_weight_goal =
-      calculate_weight_for_class(state, last_measurement_goal_, map_goals_, config_->goal_element_confidence);
-  double particle_weight_field_boundary = calculate_weight_for_class(
-      state, last_measurement_field_boundary_, map_field_boundary_, config_->field_boundary_element_confidence);
+  double particle_weight_lines = calculate_weight_for_class(state, last_measurement_lines_, map_lines_,
+                                                            config_.particle_filter.confidences.line_element);
+  double particle_weight_goal = calculate_weight_for_class(state, last_measurement_goal_, map_goals_,
+                                                           config_.particle_filter.confidences.goal_element);
+  double particle_weight_field_boundary =
+      calculate_weight_for_class(state, last_measurement_field_boundary_, map_field_boundary_,
+                                 config_.particle_filter.confidences.field_boundary_element);
 
-  double weight =
-      (((1 - config_->lines_factor) + config_->lines_factor * particle_weight_lines) *
-       ((1 - config_->goals_factor) + config_->goals_factor * particle_weight_goal) *
-       ((1 - config_->field_boundary_factor) + config_->field_boundary_factor * particle_weight_field_boundary));
+  // Get relevant config values
+  auto scoring_config = config_.particle_filter.scoring;
 
-  if (weight < min_weight_) {
-    weight = min_weight_;
+  // Calculate weight for the particle
+  double weight = (((1 - scoring_config.lines.factor) + scoring_config.lines.factor * particle_weight_lines) *
+                   ((1 - scoring_config.goal.factor) + scoring_config.goal.factor * particle_weight_goal) *
+                   ((1 - scoring_config.field_boundary.factor) +
+                    scoring_config.field_boundary.factor * particle_weight_field_boundary));
+
+  if (weight < config_.particle_filter.weighting.min_weight) {
+    weight = config_.particle_filter.weighting.min_weight;
   }
 
   // reduce weight if particle is too far outside of the field:
-  float range = config_->out_of_field_range;
-  if (state.getXPos() > (config_->field_x + config_->field_padding) / 2 + range ||
-      state.getXPos() < -(config_->field_x + config_->field_padding) / 2 - range ||
-      state.getYPos() > (config_->field_y + config_->field_padding) / 2 + range ||
-      state.getYPos() < -(config_->field_y + config_->field_padding) / 2 - range) {
-    weight = weight - config_->out_of_field_weight_decrease;
+  float range = config_.particle_filter.weighting.out_of_field_range;
+  if (state.getXPos() > (config_.field.size.x + config_.field.padding) / 2 + range ||
+      state.getXPos() < -(config_.field.size.x + config_.field.padding) / 2 - range ||
+      state.getYPos() > (config_.field.size.y + config_.field.padding) / 2 + range ||
+      state.getYPos() < -(config_.field.size.y + config_.field.padding) / 2 - range) {
+    weight = weight - config_.particle_filter.weighting.out_of_field_weight_decrease;
   }
 
   return weight;  // exponential?
@@ -96,9 +101,7 @@ std::vector<std::pair<double, double>> RobotPoseObservationModel::get_measuremen
   return last_measurement_field_boundary_;
 }
 
-void RobotPoseObservationModel::set_min_weight(double min_weight) { min_weight_ = min_weight; }
-
-double RobotPoseObservationModel::get_min_weight() const { return min_weight_; }
+double RobotPoseObservationModel::get_min_weight() const { return config_.particle_filter.weighting.min_weight; }
 
 void RobotPoseObservationModel::clear_measurement() {
   last_measurement_lines_.clear();
