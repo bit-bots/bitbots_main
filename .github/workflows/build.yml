@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - name: Set up ROS ecosystem
-        uses: ros-tooling/setup-ros@v0.3
+        uses: ros-tooling/setup-ros@v0.7
       - name: Check out repository
         uses: actions/checkout@v3
       - name: Configure git to trust repository
