@@ -237,9 +237,8 @@ class TeamDataCapsule:
                             numpify(teamdata.ball_absolute.pose.position) - \
                             numpify(teamdata.robot_position.pose.position)) 
                         if robot_dist < best_robot_dist:
-                            best_ball = PointStamped()
-                            best_ball.header = teamdata.header
-                            best_ball.point.x = teamdata.ball_absolute.pose.position.x
-                            best_ball.point.y = teamdata.ball_absolute.pose.position.y
+                            best_ball = PointStamped(
+                                header=teamdata.header, 
+                                point=teamdata.ball_absolute.pose.position)
                             best_robot_dist = robot_dist
         return best_ball
