@@ -1,4 +1,0 @@
-Documenation TODOs
-==================
-
-.. todolist::
