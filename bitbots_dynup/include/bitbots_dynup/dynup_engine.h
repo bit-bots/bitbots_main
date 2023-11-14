@@ -1,19 +1,19 @@
 #ifndef BITBOTS_DYNUP_INCLUDE_BITBOTS_DYNUP_DYNUP_ENGINE_H_
 #define BITBOTS_DYNUP_INCLUDE_BITBOTS_DYNUP_DYNUP_ENGINE_H_
 
-#include <string>
-#include <optional>
-#include <cmath>
-#include <rclcpp/rclcpp.hpp>
+#include "dynup_stabilizer.h"
+#include <bitbots_dynup/msg/dynup_engine_debug.hpp>
+#include <bitbots_splines/abstract_engine.h>
+#include <bitbots_splines/pose_spline.h>
 #include <bitbots_splines/smooth_spline.h>
 #include <bitbots_splines/spline_container.h>
-#include <bitbots_splines/pose_spline.h>
-#include <bitbots_splines/abstract_engine.h>
-#include <bitbots_dynup/msg/dynup_engine_debug.hpp>
-#include <tf2/convert.h>
+#include <cmath>
+#include <optional>
+#include <rclcpp/rclcpp.hpp>
+#include <string>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#include <tf2/convert.h>
 #include <visualization_msgs/msg/marker.hpp>
-#include "dynup_stabilizer.h"
 
 namespace bitbots_dynup {
 
@@ -25,10 +25,6 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
 
   DynupResponse update(double dt) override;
 
-  /*
-   * Add current position, target position and current position to splines so that they describe a smooth
-   * curve to the ball and back
-   */
   void setGoals(const DynupRequest &goals) override;
 
   /*

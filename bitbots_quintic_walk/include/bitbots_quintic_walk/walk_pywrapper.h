@@ -5,16 +5,16 @@
 #include <map>
 #include <iostream>
 #include "bitbots_quintic_walk/walk_utils.h"
-#include <geometry_msgs/msg/pose_array.hpp>
-#include <geometry_msgs/msg/twist.hpp>
 #include <bitbots_msgs/msg/foot_pressure.hpp>
 #include <bitbots_msgs/msg/joint_command.hpp>
-#include <humanoid_league_msgs/msg/robot_control_state.hpp>
+#include <bitbots_msgs/msg/robot_control_state.hpp>
+#include <cmath>
+#include <geometry_msgs/msg/pose_array.hpp>
+#include <geometry_msgs/msg/twist.hpp>
+#include <pybind11/complex.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-#include <pybind11/complex.h>
 #include <ros2_python_extension/serialization.hpp>
-#include <cmath>
 
 namespace py = pybind11;
 using namespace ros2_python_extension;

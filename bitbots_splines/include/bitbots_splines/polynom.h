@@ -15,7 +15,7 @@ namespace bitbots_splines {
 /**
  * Polynom
  *
- * Simple one dimentional 
+ * Simple one dimensional 
  * polynom class for spline 
  * generation
  */
@@ -23,7 +23,7 @@ class Polynom {
  public:
 
   /**
-   * Default and inital degree initialization
+   * Default and initial degree initialization
    */
   Polynom();
   explicit Polynom(unsigned int degree);
@@ -73,7 +73,7 @@ class Polynom {
  private:
 
   /**
-   * Polynom coeficients
+   * Polynom coefficients
    */
   std::vector<double> coefs_;
 };

@@ -18,7 +18,6 @@ find_package(control_msgs REQUIRED)
 find_package(control_toolbox REQUIRED)
 find_package(generate_parameter_library REQUIRED)
 find_package(geometry_msgs REQUIRED)
-find_package(humanoid_league_msgs REQUIRED)
 find_package(moveit_ros_planning_interface REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
@@ -70,7 +69,6 @@ ament_target_dependencies(WalkNode
         control_msgs
         control_toolbox
         geometry_msgs
-        humanoid_league_msgs
         moveit_ros_planning_interface
         nav_msgs
         rclcpp
@@ -99,7 +97,6 @@ ament_target_dependencies(libpy_quintic_walk PUBLIC
         control_msgs
         control_toolbox
         geometry_msgs
-        humanoid_league_msgs
         moveit_ros_planning_interface
         nav_msgs
         rclcpp

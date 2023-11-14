@@ -147,9 +147,9 @@ bool PyWalkWrapper::is_left_support(){
 }
 
 void PyWalkWrapper::set_robot_state(int state) {
-  humanoid_league_msgs::msg::RobotControlState state_msg;
+  bitbots_msgs::msg::RobotControlState state_msg;
   state_msg.state = state;
-  walk_node_->robotStateCb(std::make_shared<humanoid_league_msgs::msg::RobotControlState>(state_msg));
+  walk_node_->robotStateCb(std::make_shared<bitbots_msgs::msg::RobotControlState>(state_msg));
 }
 
 void PyWalkWrapper::set_parameter(py::bytes parameter_msg) {

@@ -365,7 +365,7 @@ void WalkEngine::reset(WalkState state,
       buildStartStepTrajectories();
     } else if (state == WalkState::STOP_MOVEMENT) {
       buildStopMovementTrajectories();
-    } else if (state == WalkState::START_STEP) {
+    } else if (state == WalkState::STOP_STEP) {
       buildStopStepTrajectories();
     } else if (state == WalkState::KICK) {
       buildKickTrajectories();
@@ -399,7 +399,7 @@ void WalkEngine::reset(WalkState state,
       buildStartStepTrajectories();
     } else if (state == WalkState::STOP_MOVEMENT) {
       buildStopMovementTrajectories();
-    } else if (state == WalkState::START_STEP) {
+    } else if (state == WalkState::STOP_STEP) {
       buildStopStepTrajectories();
     } else if (state == WalkState::KICK) {
       buildKickTrajectories();

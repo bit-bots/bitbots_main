@@ -2,35 +2,26 @@
 ResourceManager
 ^^^^^^^^^^^^^^^
 
-The ResourceManager module provides functions for file searching in a
-Darwin Project. Thus, it is possible to find resources without knowing
-the current location in the file system.
-
-This module provides the global methods :func:`find_resource`,
-:func:`find_anim` and :func:`find` which use a single global instance
-of the :class:`ResourceManager`. Thereby, files that have once been
-discovered do not have to be searched again.
+The ResourceManager module provides functions to search and list animations for a given robot.
+Thus, it is possible to find resources without knowing the current location in the file system.
 """
 
-import os.path
+import os
 from os.path import abspath, dirname, exists, join, normpath
 from os import walk
-import rclpy
 from ament_index_python import get_package_share_directory
-from rclpy.node import Node
 
 
-class ResourceManager(object):
+class ResourceManager:
 
-    def __init__(self, node:Node):
-        node.declare_parameter("robot_type", "wolfgang")
-        anim_package = node.get_parameter('robot_type').get_parameter_value().string_value + "_animations"
-
-        path = get_package_share_directory(anim_package)
-        self.basepath = abspath(path + "/animations")
+    def __init__(self, robot_type: str):
+        # Get the path to the animations folder
+        self.basepath = abspath(os.path.join(
+            get_package_share_directory(robot_type + "_animations"),
+            "animations"))
 
         self.cache = {}
-        self.files = []  # Animations cached for find_all_animations
+        self.files = []
         self.names = []  # Plain animation names, without filename-extension
         self.animpath = self._get_animpath()
 
@@ -117,19 +108,6 @@ class ResourceManager(object):
 
         return result
 
-    def generate_find(self, basepath):
-        """ Return a find function that automatically adds a basepath to
-        each name
-        :param basepath: The path to add to each file
-        :type basepath: String
-
-        The returned function takes one argument which will be added to the
-        basepath before calling the normal "find" method without optional
-        arguments.
-        """
-        path = normpath(basepath)
-        return lambda name: self.find(join(path, name))
-
     def find_animation(self, name):
         """
         Find an animation in <robot_name>_animations/animations/*. The filename
@@ -176,26 +154,3 @@ class ResourceManager(object):
         if not self.files or force_reload:
             self.find_all_animations(force_reload)
         return dict(zip(self.names, self.files))
-
-    def find_all_animation_names(self, force_reload=False):
-        """ Same as find_all_animations, but returns a sorted set of the animations
-        for use in the record-ui
-        """
-        if not self.names or force_reload:
-            self.find_all_animations(force_reload)
-        return sorted(set(self.names))
-
-    def is_animation_name(self, name, force_reload=False):
-        """Check if a name belongs to a saved animation
-        """
-        if not self.names or force_reload:
-            self.find_all_animations(force_reload=True)
-        return name in self.names
-
-_RM = None  # type: ResourceManager
-# Shortcut to search for animations
-def find_all_animations_by_name(node, *args, **kwargs):
-    global _RM
-    if not _RM:
-        _RM = ResourceManager(node)
-    return _RM.find_all_animations_by_name(*args, **kwargs)

@@ -10,7 +10,6 @@ find_package(bitbots_docs REQUIRED)
 find_package(bitbots_msgs REQUIRED)
 find_package(builtin_interfaces REQUIRED)
 find_package(geometry_msgs REQUIRED)
-find_package(humanoid_league_msgs REQUIRED)
 find_package(pybind11 REQUIRED)
 find_package(Python3 REQUIRED)
 find_package(PythonLibs REQUIRED)
@@ -34,7 +33,6 @@ ament_target_dependencies(HCM
     bitbots_msgs
     builtin_interfaces
     geometry_msgs
-    humanoid_league_msgs
     rclcpp
     ros2_python_extension
     sensor_msgs
@@ -55,14 +53,20 @@ install(DIRECTORY config
 
 install(DIRECTORY scripts/ USE_SOURCE_PERMISSIONS DESTINATION lib/${PROJECT_NAME})
 
-install(DIRECTORY bitbots_hcm/classifier DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY bitbots_hcm/hcm_dsd/actions DESTINATION share/${PROJECT_NAME}/hcm_dsd FILES_MATCHING PATTERN "*.py")
 
-install(DIRECTORY bitbots_hcm/hcm_dsd/actions DESTINATION share/${PROJECT_NAME} FILES_MATCHING PATTERN "*.py")
+install(DIRECTORY bitbots_hcm/hcm_dsd/decisions DESTINATION share/${PROJECT_NAME}/hcm_dsd FILES_MATCHING PATTERN "*.py")
 
-install(DIRECTORY bitbots_hcm/hcm_dsd/decisions DESTINATION share/${PROJECT_NAME} FILES_MATCHING PATTERN "*.py")
+install(FILES bitbots_hcm/hcm_dsd/hcm.dsd DESTINATION share/${PROJECT_NAME}/hcm_dsd)
 
-install(FILES bitbots_hcm/hcm_dsd/hcm.dsd DESTINATION share/${PROJECT_NAME})
+if(BUILD_TESTING)
+  find_package(ament_cmake_pytest REQUIRED)
 
+  ament_add_pytest_test(hcm_py_test test/pytest
+    PYTHON_EXECUTABLE "${PYTHON_EXECUTABLE}"
+    APPEND_ENV PYTHONPATH=${CMAKE_CURRENT_BINARY_DIR}
+  )
+endif()
 
 ament_python_install_package(${PROJECT_NAME})
 ament_package()

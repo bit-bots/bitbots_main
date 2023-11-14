@@ -16,9 +16,7 @@ find_package(control_msgs REQUIRED)
 find_package(control_toolbox REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(geometry_msgs REQUIRED)
-find_package(humanoid_league_msgs REQUIRED)
 find_package(moveit_ros_planning_interface REQUIRED)
-find_package(nav_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(rot_conv REQUIRED)
@@ -61,9 +59,7 @@ ament_target_dependencies(KickNode
         control_msgs
         control_toolbox
         geometry_msgs
-        humanoid_league_msgs
         moveit_ros_planning_interface
-        nav_msgs
         rclcpp
         rot_conv
         sensor_msgs
@@ -92,9 +88,7 @@ target_link_libraries(KickNode "${cpp_typesupport_target}")
 #        control_msgs
 #        control_toolbox
 #        geometry_msgs
-#        humanoid_league_msgs
 #        moveit_ros_planning_interface
-#        nav_msgs
 #        rclcpp
 #        ros2_python_extension
 #        rot_conv

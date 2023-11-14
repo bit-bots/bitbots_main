@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
+
+"""
+This script subscribes to the topic "animation" and publishes the received joint commands to the motor command topic, skipping the HCM.
+"""
+
 import rclpy
 from rclpy.node import Node
-from rclpy.duration import Duration
 from bitbots_msgs.msg import JointCommand
 
 # List of all joint names. Do not change the order as it is important for Gazebo
-from humanoid_league_msgs.msg import Animation
+from bitbots_msgs.msg import Animation
 
 JOINT_NAMES = ['HeadPan', 'HeadTilt', 'LShoulderPitch', 'LShoulderRoll', 'LElbow', 'RShoulderPitch',
                'RShoulderRoll', 'RElbow', 'LHipYaw', 'LHipRoll', 'LHipPitch', 'LKnee', 'LAnklePitch',
@@ -26,8 +30,6 @@ class AnimationHcmBridge(Node):
 
         self.create_subscription(Animation, "animation", self.animation_cb, 10)
 
-        rclpy.spin(self)
-
     def animation_cb(self, msg: Animation):
         self.joint_command_msg.header.stamp = self.get_clock().now().to_msg()
         for i in range(len(msg.position.joint_names)):
@@ -40,3 +42,4 @@ class AnimationHcmBridge(Node):
 
 if __name__ == '__main__':
     bridge = AnimationHcmBridge()
+    rclpy.spin(bridge)

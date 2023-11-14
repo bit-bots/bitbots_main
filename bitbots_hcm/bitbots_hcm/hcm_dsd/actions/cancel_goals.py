@@ -1,13 +1,13 @@
-from bitbots_hcm.hcm_dsd.hcm_blackboard import HcmBlackboard
-
-from dynamic_stack_decider.abstract_action_element import AbstractActionElement
+from bitbots_hcm.hcm_dsd.actions import AbstractHCMActionElement
 
 
-class CancelGoals(AbstractActionElement):
+class CancelGoals(AbstractHCMActionElement):
+    """
+    Cancels all animation, dynup and move_base goals
+    """
 
     def __init__(self, blackboard, dsd, parameters=None):
         super().__init__(blackboard, dsd, parameters)
-        self.blackboard: HcmBlackboard
 
     def perform(self):
         if self.blackboard.animation_action_current_goal is not None:
@@ -21,6 +21,5 @@ class CancelGoals(AbstractActionElement):
             except:
                 pass
 
-        self.blackboard.cancel_move_base_goal()
+        self.blackboard.cancel_path_planning()
         self.pop()
-

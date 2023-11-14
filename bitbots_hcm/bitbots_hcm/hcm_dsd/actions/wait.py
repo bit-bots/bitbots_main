@@ -7,31 +7,31 @@ Wait
 
 Just waits for something (i.e. that preconditions will be fullfilled)
 """
-from bitbots_hcm.hcm_dsd.hcm_blackboard import HcmBlackboard
-
-from dynamic_stack_decider.abstract_action_element import AbstractActionElement
+from bitbots_hcm.hcm_dsd.actions import AbstractHCMActionElement
 
 
-class Wait(AbstractActionElement):
+class Wait(AbstractHCMActionElement):
     """
-    This action waits a specified time before it pops itself
+    This action does nothing. If a time is given, it will wait for that time before it pops itself.
     """
 
     def __init__(self, blackboard, dsd, parameters=None):
         """
         :param parameters['time']: Time to wait in seconds
         """
-        super().__init__(blackboard, dsd)
-        self.blackboard: HcmBlackboard
-        self.time = float(self.blackboard.node.get_clock().now().seconds_nanoseconds()[0]  \
-                           + self.blackboard.node.get_clock().now().seconds_nanoseconds()[1]/1e9) \
-                            + float(parameters['time'])
+        super().__init__(blackboard, dsd, parameters)
+        self.duration = parameters.get("time", None)
+        self.start_time = self.blackboard.node.get_clock().now().nanoseconds / 1e9
 
     def perform(self, reevaluate=False):
         """
         Only pop when the wait-time has elapsed
         """
 
-        if self.time < float(self.blackboard.node.get_clock().now().seconds_nanoseconds()[0] \
-                             + self.blackboard.node.get_clock().now().seconds_nanoseconds()[1]/1e9):
+        # Return directly if we want to wait infinitely
+        if self.duration is None:
+            return
+
+        # Pop if the time has elapsed
+        if self.blackboard.node.get_clock().now().nanoseconds / 1e9 > self.start_time + self.duration:
             self.pop()

@@ -101,6 +101,7 @@ class KickNode : public rclcpp::Node{
   moveit::core::RobotStatePtr goal_state_;
   moveit::core::RobotStatePtr current_state_;
   OnSetParametersCallbackHandle::SharedPtr callback_handle_;
+  bool currently_kicking_ = false;
 
   std::string base_link_frame_, base_footprint_frame_, l_sole_frame_, r_sole_frame_;
 
@@ -132,11 +133,6 @@ class KickNode : public rclcpp::Node{
    * @param is_left_kick Whether the left foot is the current kicking foot, meaning it is in the air
    */
   void publishSupportFoot(bool is_left_kick);
-
-  /**
-   * Helper method to achieve correctly sampled rate
-   */
-  double getTimeDelta();
 
   /**
    * Get JointCommand message for JointGoals

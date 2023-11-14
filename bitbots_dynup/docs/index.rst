@@ -30,9 +30,9 @@ Since the arms are lacking degrees of freedom, the IK solver is set to also cons
 
 How to test it
 --------------
-To test the dynup system, simply start the test script with :code:`roslaunch bitbots_dynup test.launch sim:=true`.
+To test the dynup system, simply start the test script with :code:`ros2 launch bitbots_dynup test.launch sim:=true`.
 The :code:`sim` parameter is only required, if the system is tested in simulation, otherwise omit it.
-To execute the motion, run the following command: :code:`rosrun bitbots_dynup dummy_client.py <direction>`, replacing :code:`<direction>` with one of the six directions mentioned above.
+To execute the motion, run the following command: :code:`ros2 run bitbots_dynup dummy_client.py <direction>`, replacing :code:`<direction>` with one of the six directions mentioned above.
 
 
 

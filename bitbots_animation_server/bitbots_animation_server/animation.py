@@ -18,8 +18,8 @@ class Animation:
     """
 
     def __init__(self, name, keyframes, default_interpolator=None):
-        self.name = name
-        self.keyframes = keyframes
+        self.name: str = name
+        self.keyframes: list(Keyframe) = keyframes
         self.default_interpolator = default_interpolator
 
 
@@ -37,7 +37,7 @@ def parse(info):
     return anim
 
 
-def as_dict(anim):
+def as_dict(anim: Animation):
     """
     Convert an animation to builtin python types to
     make it serializable to formats like ``json``.

@@ -2,13 +2,11 @@
 # -*- coding:utf-8 -*-
 import rclpy
 from rclpy.node import Node
-from humanoid_league_msgs.msg import Audio
 from std_msgs.msg import Bool
 
 from bitbots_msgs.srv import ManualPenalize
-from humanoid_league_msgs.msg import GameState
+from bitbots_msgs.msg import Audio
 from humanoid_league_speaker.speaker import speak
-from rclpy.executors import ExternalShutdownException
 
 
 class Pause(object):
@@ -29,21 +27,14 @@ class Pause(object):
         self.pause_publisher = self.node.create_publisher(Bool, "pause", 10)  # todo latch
         self.speak_publisher = self.node.create_publisher(Audio, "speak", 10)
 
-        while rclpy.ok():
-            try:
-                rclpy.spin_once(self.node)
-            except (ExternalShutdownException, KeyboardInterrupt):
-                exit(0)
+        rclpy.spin(self.node)
 
-    def manual_update(self, req:ManualPenalize.Request, resp:ManualPenalize.Response):
-        if req.penalize == 0:
-            # off
+    def manual_update(self, req: ManualPenalize.Request, resp: ManualPenalize.Response):
+        if req.penalize == ManualPenalize.Request.OFF:
             self.penalty_manual = False
-        elif req.penalize == 1:
-            # on
+        elif req.penalize == ManualPenalize.Request.ON:
             self.penalty_manual = True
-        elif req.penalize == 2:
-            # switch
+        elif req.penalize == ManualPenalize.Request.SWITCH:
             self.penalty_manual = not self.penalty_manual
         else:
             self.node.get_logger().error("Manual penalize call with unspecified request")

@@ -1,10 +1,10 @@
-from moveit_msgs.srv import GetPositionFK, GetPositionIK
-from bitbots_moveit_bindings.libbitbots_moveit_bindings import BitbotsMoveitBindings
-from rclpy.serialization import serialize_message, deserialize_message
-from rcl_interfaces.msg import Parameter
-from bio_ik_msgs.srv import GetIK
 from bio_ik_msgs.msg import IKRequest
-from sensor_msgs.msg import JointState
+from bio_ik_msgs.srv import GetIK
+from bitbots_moveit_bindings.libbitbots_moveit_bindings import \
+    BitbotsMoveitBindings
+from moveit_msgs.srv import GetPositionFK, GetPositionIK
+from rcl_interfaces.msg import Parameter
+from rclpy.serialization import deserialize_message, serialize_message
 
 # this state is only used for IK and FK calls and does not listen to current joint_states
 ik_fk_state = None

@@ -1,16 +1,10 @@
 from io import BytesIO
 
-import rclpy
-from rclpy.node import Node
-from std_msgs.msg import Int64
-
-from bitbots_dynup.py_dynup import PyDynupWrapper, spin_once
 from bitbots_dynup.msg import DynupPoses
-from bitbots_msgs.msg import JointCommand, FootPressure
-from geometry_msgs.msg import Twist, Pose, PoseArray
-from sensor_msgs.msg import Imu, JointState
-from std_msgs.msg import String
-from nav_msgs.msg import Odometry
+from bitbots_dynup.py_dynup import PyDynupWrapper, spin_once
+from geometry_msgs.msg import PoseArray
+
+from bitbots_msgs.msg import JointCommand
 
 
 class PyDynup(object):

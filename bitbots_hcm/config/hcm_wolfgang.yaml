@@ -1,62 +1,40 @@
 /**:
   ros__parameters:
-    #Pressure sensors
+    # Pressure sensors
     pressure_sensors_installed: False
-    foot_zero_service: "set_foot_zero"
+
+    # IMU
+    imu_timeout_duration: 0.5 # time without messages from the IMU till error is produced [s]
 
     # Motors
     motor_off_time: 30000000.0 # time of no use or updates when the hcm goes to soft off
     motor_timeout_duration: 0.5 # time without messages from the servos till error is produced [s]
 
-    imu_timeout_duration: 0.5 # time without messages from the IMU till error is produced [s]
-
-    #Animations
-    anim_server_wait_time: 1.0 # time the hcm waits for animation server
+    # Animations
+    anim_server_wait_time: 10.0 # time the hcm waits for animation server
     animations:
-      walkready: "walkready"
-      walkready_sim: "walkready_sim"
       falling_front: "falling_front"
       falling_back: "falling_back"
       falling_left: "falling_left"
       falling_right: "falling_right"
-      stand_up_front: "stand_up_front"
-      stand_up_back: "stand_up_back"
-      stand_up_left: "turning_back_left"
-      stand_up_right: "turning_back_right"
-      sit_down: "sit"
-      penalty: "walkready"
-      motor_off: "sit"
-      init: "init"
-      anim_package: "wolfgang_animations"
-      walkready_pose_threshold: 50.0 # [deg]
+      turning_back_left: "turning_back_left"
+      turning_back_right: "turning_back_right"
 
     # Falling
-    stand_up_active: true # enables the robot to stand up automatically
-    falling_active: true # enables the check for falling and coresponding counter meassurements
-    #Grenzwerte schärfer --> fruehere Reaktion aber haeufigere Fehlinterpretation, zb. beim Laufen
-    #Grenzwerte sanfter --> zu spaete Raktion
+    stand_up_active: true # Enables the robot to stand up automatically
+    falling_active: true # Enables the check for falling and corresponding counter measurements
+    # Threshold tighter --> earlier reaction but more false positives, e.g. while walking
+    # Threshold softer --> too late reaction
     falling_thresh_gyro_pitch: 7.0 # > gyroY
     falling_thresh_gyro_roll: 7.0 # > gyroX
     falling_thresh_orient_roll: 60.0 # > Point of no return in degrees
     falling_thresh_orient_pitch: 45.0 # > Point of no return in degrees
-    # smoothing threshold for classifier
+    # Duration in seconds in which the robot has to be in a falling state to trigger the fall
     smooth_threshold: 0.04
 
+    # Fallen
+    fallen_orientation_thresh: 60.0 # Lean (degrees) after which we consider the robot fallen on this side
+    fallen_angular_velocity_thresh: 0.2 # Angular velocity (rad/s) under which we consider the robot as not moving (the fall is over and we are lying on the ground)
+
+    # Pick up
     pick_up_accel_threshold: 7.0
-
-    falling:
-
-      #falling animations
-      "falling_front": "falling_front"
-      "falling_back": "falling_back"
-      "falling_left": "falling_left"
-      "falling_right": "falling_right"
-
-      "wolfgang":
-
-        #Grenzwerte müssen auf härterem boden auch härter eingestellt werden,
-        #dies erfolgt mit dem boden_koeffizient
-        "ground_coefficient": 1.0  #WEICH(kunstrasen Spielfeld)= 1.0 , HART(teppich Spielfeld)= 1.25
-
-        #false = motoren werden bei fallerkennung abgeschaltet
-        "dyn_falling_active": true

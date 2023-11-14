@@ -6,10 +6,11 @@ if (NOT CMAKE_CXX_STANDARD)
     set(CMAKE_CXX_STANDARD 17)
 endif ()
 
-find_package(Eigen3 REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(biped_interfaces REQUIRED)
 find_package(bitbots_docs REQUIRED)
+find_package(bitbots_utils REQUIRED)
+find_package(Eigen3 REQUIRED)
 find_package(generate_parameter_library REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(message_filters REQUIRED)
@@ -43,38 +44,40 @@ target_link_libraries(
 ## Specify libraries to link a library or executable target against
 ament_target_dependencies(
   motion_odometry
-  tf2_eigen
-  tf2
-  nav_msgs
-  message_filters
-  tf2_geometry_msgs
+  ament_cmake
   biped_interfaces
-  geometry_msgs
   bitbots_docs
+  bitbots_utils
+  generate_parameter_library
+  geometry_msgs
+  message_filters
+  nav_msgs
+  rclcpp
   rot_conv
   sensor_msgs
+  tf2
+  tf2_eigen
+  tf2_geometry_msgs
   tf2_ros
-  ament_cmake
-  generate_parameter_library
-  rclcpp
 )
 
 ament_target_dependencies(
   odometry_fuser
-  tf2_eigen
-  tf2
-  nav_msgs
-  message_filters
-  tf2_geometry_msgs
+  ament_cmake
   biped_interfaces
-  geometry_msgs
   bitbots_docs
+  bitbots_utils
+  Eigen3
+  geometry_msgs
+  message_filters
+  nav_msgs
+  rclcpp
   rot_conv
   sensor_msgs
+  tf2
+  tf2_eigen
+  tf2_geometry_msgs
   tf2_ros
-  ament_cmake
-  rclcpp
-  Eigen3
 )
 
 enable_bitbots_docs()
@@ -86,6 +89,9 @@ install(TARGETS odometry_fuser
         DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY launch
+        DESTINATION share/${PROJECT_NAME})
+
+install(DIRECTORY config
         DESTINATION share/${PROJECT_NAME})
 
 ament_package()
