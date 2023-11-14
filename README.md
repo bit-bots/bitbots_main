@@ -1,7 +1,8 @@
 # Bit-Bots containers
-A collection of docker containers used in various capacities.
 
-- [jenkins](./jenkins) A periodically rebuilt container that includes all plugins needed by our Jenkins instance 
-    ([ci.bit-bots.de](http://ci.bit-bots.de)).
-- [bitbots_builder](./bitbots_builder) A container image which is able to compile and document our codebase.
-    It exists so that we don't need to reinstall all dependencies whenever a build is triggered.
+This repository contains the necessary files to build the containers used by the bit-bots.
+
+## HLVS
+
+This folder contains the necessary files to build the humanoid league virtual season container.
+It contains all robot software and interfaces with the simulation using the [hlvs_player](https://github.com/ros-sports/hlvs_player) interface.
