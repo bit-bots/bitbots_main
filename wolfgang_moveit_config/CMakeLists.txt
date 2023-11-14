@@ -17,19 +17,12 @@ link_directories(${LIBRARY_DIRS})
 
 set(LIBS ${ament_cmake_LIBRARIES})
 
-install(DIRECTORY launch
-  DESTINATION share/${PROJECT_NAME}
-  PATTERN "setup_assistant.launch"
-  EXCLUDE)
 install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
 
 ament_export_dependencies(ament_cmake)
 ament_export_include_directories(${INCLUDE_DIRS})
 
 install(DIRECTORY config
-        DESTINATION share/${PROJECT_NAME})
-
-install(DIRECTORY launch
         DESTINATION share/${PROJECT_NAME})
 
 ament_package()

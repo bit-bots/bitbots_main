@@ -1,7 +1,6 @@
 {
     "author": "Unknown", 
-    "description": "Edit me!", 
-    "hostname": "timon-ubuntu", 
+    "description": "Standup animation from the front",
     "keyframes": [
         {
             "duration": 0.001, 
@@ -544,6 +543,6 @@
         }
     ], 
     "last_edited": "2019-07-03 15:51:35.504961", 
-    "name": "None yet", 
+    "name": "Standup Front", 
     "version": "0"
 }
