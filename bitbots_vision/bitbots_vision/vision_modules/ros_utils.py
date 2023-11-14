@@ -4,7 +4,7 @@ from rclpy import logging
 from rclpy.node import Node
 from cv_bridge import CvBridge
 from vision_msgs.msg import BoundingBox2D, Pose2D, Point2D
-from humanoid_league_msgs.msg import Audio
+from bitbots_msgs.msg import Audio
 from soccer_vision_2d_msgs.msg import Ball, BallArray, FieldBoundary, Goalpost, GoalpostArray, Robot, RobotArray, MarkingArray, MarkingSegment
 from soccer_vision_attribute_msgs.msg import Robot as RobotAttributes
 from bitbots_utils.utils import get_parameters_from_other_node

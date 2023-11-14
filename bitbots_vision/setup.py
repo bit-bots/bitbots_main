@@ -16,8 +16,6 @@ setup(
         ('share/' + package_name, ['package.xml']),
         ('share/' + package_name + "/config",
             glob.glob('config/*.yaml')),
-        ('share/' + package_name + "/config/color_lookup_tables",
-            glob.glob('config/color_lookup_tables/*.pickle')),
         ('share/' + package_name + '/launch',
             glob.glob('launch/*.launch')),
         *[('share/' + package_name + '/' + os.path.dirname(file), [file]) for file in glob.glob('models/**/**/*.*', recursive=True)],
@@ -32,7 +30,6 @@ setup(
     entry_points={
         'console_scripts': [
             'vision = bitbots_vision.vision:main',
-            'yoeo_vision = bitbots_vision.yoeo_vision:main',
         ],
     }
 )
