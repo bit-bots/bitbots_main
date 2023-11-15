@@ -340,6 +340,29 @@ class SupervisorController:
                 msg.name.append(robot_name + "_head")
                 msg.pose.append(head_pose)
 
+                l_foot_node = robot_node.getFromProtoDef("l_foot")
+                l_foot_position = l_foot_node.getPosition()
+                l_foot_orientation = l_foot_node.getOrientation()
+                l_foot_orientation_quat = transforms3d.quaternions.mat2quat(np.reshape(l_foot_orientation, (3, 3)))
+                l_foot_pose = Pose()
+                l_foot_pose.position = Point(x=l_foot_position[0], y=l_foot_position[1], z=l_foot_position[2])
+                l_foot_pose.orientation = Quaternion(x=l_foot_orientation_quat[1], y=l_foot_orientation_quat[2],
+                                                     z=l_foot_orientation_quat[3], w=l_foot_orientation_quat[0])
+                msg.name.append(robot_name + "_l_foot")
+                msg.pose.append(l_foot_pose)
+
+                r_foot_node = robot_node.getFromProtoDef("r_foot")
+                r_foot_position = r_foot_node.getPosition()
+                r_foot_orientation = r_foot_node.getOrientation()
+                r_foot_orientation_quat = transforms3d.quaternions.mat2quat(np.reshape(r_foot_orientation, (3, 3)))
+                r_foot_pose = Pose()
+                r_foot_pose.position = Point(x=r_foot_position[0], y=r_foot_position[1], z=r_foot_position[2])
+                r_foot_pose.orientation = Quaternion(x=r_foot_orientation_quat[1], y=r_foot_orientation_quat[2],
+                                                     z=r_foot_orientation_quat[3], w=r_foot_orientation_quat[0])
+                msg.name.append(robot_name + "_r_foot")
+                msg.pose.append(r_foot_pose)
+
+
             if self.ball is not None:
                 ball_position = self.ball.getField("translation").getSFVec3f()
                 ball_pose = Pose()
