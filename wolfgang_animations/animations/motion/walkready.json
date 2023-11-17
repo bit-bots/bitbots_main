@@ -1,36 +1,35 @@
 {
     "author": "walkready_script",
-    "description": "none",
-    "hostname": "tams159",
+    "description": "Walkready pose",
     "keyframes": [
-    {
-    "duration": 1.0,
-    "goals": {
-    "HeadPan" : 0.0,
-    "HeadTilt" : 0.0,
-    "LShoulderPitch" : 34.341900058232895,
-    "LShoulderRoll" : -0.10187296337477583,
-    "LElbow" : 17.4089039999328,
-    "RShoulderPitch" : -34.52380590822163,
-    "RShoulderRoll" : 0.10154916169401929,
-    "RElbow" : -17.44692966568184,
-    "LHipYaw" : -0.9420455109052479,
-    "LHipRoll" : 4.156114615225981,
-    "LHipPitch" : 42.51810038124632,
-    "LKnee" : 76.46280204571194,
-    "LAnklePitch" : -31.726953021845897,
-    "LAnkleRoll" : 4.261305249797921,
-    "RHipYaw" : 1.3537998702115084,
-    "RHipRoll" : -5.959789935735837,
-    "RHipPitch" : -42.127449488675886,
-    "RKnee" : -75.79323597048764,
-    "RAnklePitch" : 31.484250845285846,
-    "RAnkleRoll" : -7.3988993750834995
-   },
-    "name": "generated frame",
-    "pause": 0.5
-    }
+        {
+            "duration": 1.0,
+            "goals": {
+                "HeadPan": 0.0,
+                "HeadTilt": 0.0,
+                "LShoulderPitch": 34.341900058232895,
+                "LShoulderRoll": -0.10187296337477583,
+                "LElbow": 17.4089039999328,
+                "RShoulderPitch": -34.52380590822163,
+                "RShoulderRoll": 0.10154916169401929,
+                "RElbow": -17.44692966568184,
+                "LHipYaw": -0.9420455109052479,
+                "LHipRoll": 4.156114615225981,
+                "LHipPitch": 42.51810038124632,
+                "LKnee": 76.46280204571194,
+                "LAnklePitch": -31.726953021845897,
+                "LAnkleRoll": 4.261305249797921,
+                "RHipYaw": 1.3537998702115084,
+                "RHipRoll": -5.959789935735837,
+                "RHipPitch": -42.127449488675886,
+                "RKnee": -75.79323597048764,
+                "RAnklePitch": 31.484250845285846,
+                "RAnkleRoll": -7.3988993750834995
+            },
+            "name": "generated frame",
+            "pause": 0.5
+        }
     ],
     "name": "walkready",
-   "version": 0
-   }
+    "version": 0
+}

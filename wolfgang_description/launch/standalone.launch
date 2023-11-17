@@ -2,8 +2,11 @@
 
   <group>
     <include file="$(find-pkg-share wolfgang_description)/launch/rviz.launch"/>
-    <include file="$(find-pkg-share bitbots_utils)/launch/base.launch"/>
+    <include file="$(find-pkg-share bitbots_utils)/launch/parameter_blackboard.launch"/>
+    <include file="$(find-pkg-share bitbots_robot_description)/launch/load_robot_description.launch"/>
   </group>
+
+
 
   <!-- We do not have a robot connected, so publish fake joint states -->
   <node name="joint_state_publisher_gui" pkg="joint_state_publisher_gui" exec="joint_state_publisher_gui">
