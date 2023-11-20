@@ -47,13 +47,7 @@ MotionOdometry::MotionOdometry() : Node("MotionOdometry"),
   previous_support_link_ = r_sole_frame_;
   start_time_ = this->now();
 
-    // use foot pressure information, put into different package later
-  pressure_l_sub_ = this->create_subscription<bitbots_msgs::msg::FootPressure>(
-        "foot_pressure_left/raw", 1, std::bind(&MotionOdometry::pressure_l_callback, this, _1));
-  pressure_r_sub_ = this->create_subscription<bitbots_msgs::msg::FootPressure>(
-        "foot_pressure_right/raw", 1, std::bind(&MotionOdometry::pressure_r_callback, this, _1));
-  pub_foot_pressure_support_state_ = this->create_publisher<biped_interfaces::msg::Phase>("foot_pressure/walk_support_state", 1);
-  curr_stance_.phase = 2;
+
 
 }
 
@@ -70,28 +64,6 @@ void MotionOdometry::loop() {
   rclcpp::Time cycle_start_time = this->now();
   config_ = param_listener_.get_params();
 
-  int curr_stand_left = curr_stand_left_;
-  int prev_stand_left = prev_stand_left_;
-
-  int curr_stand_right = curr_stand_right_;
-  int prev_stand_right = prev_stand_right_;
-
-  biped_interfaces::msg::Phase phase;
-    if ( curr_stand_left_ && curr_stand_right_){
-      phase.phase = 2;
-    }
-    else if (curr_stand_left_ && ! curr_stand_right_){
-      phase.phase = 1;
-    }
-      else if (!curr_stand_left_ && curr_stand_right_){
-      phase.phase = 0;
-    }
-  if (phase.phase != curr_stance_.phase){
-    curr_stance_.phase = phase.phase;
-    phase.header.stamp = this->now();
-
-    pub_foot_pressure_support_state_->publish(phase);
-  }
   // check if step finished, meaning left->right or right->left support. double support is skipped
   // the support foot change is published when the joint goals for the last movements are published.
   // it takes some time till the joints actually reach this position, this can create some offset
@@ -204,7 +176,7 @@ void MotionOdometry::loop() {
 void MotionOdometry::supportCallback(const biped_interfaces::msg::Phase::SharedPtr msg) {
   current_support_state_ = msg->phase;
   current_support_state_time_ = msg->header.stamp;
-
+  
   // remember if we received first support state, only remember left or right
   if (previous_support_state_ == -1 && current_support_state_ != biped_interfaces::msg::Phase::DOUBLE_STANCE) {
     std::string current_support_link;
@@ -237,28 +209,6 @@ void MotionOdometry::odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg) 
   current_odom_msg_ = *msg;
 }
 
-  void MotionOdometry::pressure_l_callback(bitbots_msgs::msg::FootPressure msg) {
-    float_t summed_pressure = msg.left_back +msg.left_front + msg.right_front + msg.right_back;
-      prev_stand_left_ = curr_stand_left_;
-    if (summed_pressure > 20){
-      curr_stand_left_ = true;
-    }
-    else{
-      curr_stand_left_ = false;
-    }
-
-  }
-
-  void MotionOdometry::pressure_r_callback(bitbots_msgs::msg::FootPressure msg) {
-    float_t summed_pressure = msg.left_back +msg.left_front + msg.right_front + msg.right_back;
-      prev_stand_right_ = curr_stand_right_;
-    if (summed_pressure > 20){
-      curr_stand_right_ = true;
-    }
-    else{
-      curr_stand_right_ = false;
-    }
-  }
 
 }
 

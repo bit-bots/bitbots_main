@@ -51,19 +51,6 @@ class MotionOdometry : public rclcpp::Node {
   std::string current_support_link_;
   rclcpp::Time start_time_;
 
-    // put this in other package later
-  rclcpp::Subscription<bitbots_msgs::msg::FootPressure>::SharedPtr pressure_l_sub_;
-  rclcpp::Subscription<bitbots_msgs::msg::FootPressure>::SharedPtr pressure_r_sub_;
-  rclcpp::Publisher<biped_interfaces::msg::Phase>::SharedPtr pub_foot_pressure_support_state_;
-    
-  void pressure_l_callback(bitbots_msgs::msg::FootPressure msg);
-  void pressure_r_callback(bitbots_msgs::msg::FootPressure msg);
-  int curr_stand_left_;
-  int curr_stand_right_;
-  int prev_stand_right_;
-  int prev_stand_left_;
-  biped_interfaces::msg::Phase curr_stance_;
-
 };
 
 }
