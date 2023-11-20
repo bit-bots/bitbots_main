@@ -9,6 +9,7 @@ endif ()
 find_package(ament_cmake REQUIRED)
 find_package(biped_interfaces REQUIRED)
 find_package(bitbots_docs REQUIRED)
+find_package(bitbots_msgs REQUIRED)
 find_package(bitbots_utils REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(generate_parameter_library REQUIRED)
@@ -47,6 +48,7 @@ ament_target_dependencies(
   ament_cmake
   biped_interfaces
   bitbots_docs
+  bitbots_msgs
   bitbots_utils
   generate_parameter_library
   geometry_msgs
