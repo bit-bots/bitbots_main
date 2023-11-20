@@ -2,6 +2,7 @@
 filterpy
 pip
 pytorchyolo
+transforms3d
 git+https://github.com/SammyRamone/stable-baselines3.git
 git+https://github.com/bit-bots/deep_quintic.git
 git+https://github.com/Flova/pyastar2d
