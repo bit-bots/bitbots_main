@@ -1,4 +1,4 @@
-name: Code style checks with pre-commit
+name: Code style checks
 
 on:
   pull_request:

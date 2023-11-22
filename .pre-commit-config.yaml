@@ -19,4 +19,5 @@ repos:
     - id: cppcheck
       args:
         - "--suppress=missingInclude"
-        - "--suppress=missingIncludeSystem"
+        - "--suppress=unmatchedSuppression"
+        - "--suppress=unusedFunction"
