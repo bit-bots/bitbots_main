@@ -4,12 +4,11 @@ AnimationCapsule
 
 Communicates with the animation action server and plays predefined animations.
 """
+from bitbots_msgs.action import Dynup, LookAt, PlayAnimation
 from rclpy.action import ActionClient
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.duration import Duration
 from rclpy.node import Node
-
-from bitbots_msgs.action import Dynup, LookAt, PlayAnimation
 
 
 class AnimationCapsule:
@@ -25,17 +24,9 @@ class AnimationCapsule:
         self.cheering_animation: str = self.node.get_parameter("Animations.Misc.cheering").value
         self.init_animation: str = self.node.get_parameter("Animations.Misc.init").value
 
-        self.animation_client = ActionClient(
-            node,
-            PlayAnimation,
-            'animation',
-            callback_group=ReentrantCallbackGroup())
+        self.animation_client = ActionClient(node, PlayAnimation, "animation", callback_group=ReentrantCallbackGroup())
 
-        self.dynup_action_client = ActionClient(
-            node,
-            Dynup,
-            "dynup",
-            callback_group=ReentrantCallbackGroup())
+        self.dynup_action_client = ActionClient(node, Dynup, "dynup", callback_group=ReentrantCallbackGroup())
 
         self.lookat_action_client = ActionClient(node, LookAt, "look_at_goal")
 
@@ -56,15 +47,16 @@ class AnimationCapsule:
 
         if not self.animation_client.wait_for_server(Duration(seconds=10)):
             self.node.get_logger().error(
-                "Animation Action Server not running! Motion can not work without animation action server.")
+                "Animation Action Server not running! Motion can not work without animation action server."
+            )
             return False
 
         goal = PlayAnimation.Goal()
         goal.animation = animation
         goal.hcm = from_hcm  # the animation is from the hcm
         self.animation_client.send_goal_async(goal).add_done_callback(
-            lambda future: future.result().get_result_async().add_done_callback(
-                lambda _: self.__done_cb()))
+            lambda future: future.result().get_result_async().add_done_callback(lambda _: self.__done_cb())
+        )
 
         self.active = True
 

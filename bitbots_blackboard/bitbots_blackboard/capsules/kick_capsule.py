@@ -9,15 +9,14 @@ from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from bitbots_blackboard.blackboard import BodyBlackboard
 
+from bitbots_msgs.action import Kick
 from rclpy.action import ActionClient
+from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.duration import Duration
 from rclpy.time import Time
-from rclpy.callback_groups import ReentrantCallbackGroup
-
-from bitbots_msgs.action import Kick
 
 
-class KickCapsule():
+class KickCapsule:
     __blackboard: "BodyBlackboard"
 
     last_feedback: Optional[Kick.Feedback] = None
@@ -39,14 +38,18 @@ class KickCapsule():
 
     def connect(self):
         topic = self.__blackboard.config["dynamic_kick"]["topic"]
-        self.__blackboard.node.get_logger().info("Connecting {}.KickCapsule to bitbots_dynamic_kick ({})"
-                      .format(str(self.__blackboard.__class__).split(".")[-1], topic))
-        self.__action_client = ActionClient(self.__blackboard.node, Kick, topic, callback_group=ReentrantCallbackGroup())
-        self.__connected = self.__action_client.wait_for_server(
-            self.__blackboard.config["dynamic_kick"]["wait_time"])
+        self.__blackboard.node.get_logger().info(
+            "Connecting {}.KickCapsule to bitbots_dynamic_kick ({})".format(
+                str(self.__blackboard.__class__).split(".")[-1], topic
+            )
+        )
+        self.__action_client = ActionClient(
+            self.__blackboard.node, Kick, topic, callback_group=ReentrantCallbackGroup()
+        )
+        self.__connected = self.__action_client.wait_for_server(self.__blackboard.config["dynamic_kick"]["wait_time"])
 
         if not self.__connected:
-            self.__blackboard.node.get_logger().error("No dynamic_kick server running on {}".format(topic))
+            self.__blackboard.node.get_logger().error(f"No dynamic_kick server running on {topic}")
 
     def kick(self, goal: Kick.Goal):
         """
@@ -57,14 +60,15 @@ class KickCapsule():
         if not self.__connected:
             # try to connect again
             self.__connected = self.__action_client.wait_for_server(
-                Duration(seconds=self.__blackboard.config["dynamic_kick"]["wait_time"]))
+                Duration(seconds=self.__blackboard.config["dynamic_kick"]["wait_time"])
+            )
             if not self.__connected:
                 raise RuntimeError("Not connected to any dynamic_kick server")
 
         self.is_currently_kicking = True
         self.__action_client.send_goal_async(goal, self.__feedback_cb).add_done_callback(
-            lambda future: future.result().get_result_async().add_done_callback(
-                lambda _: self.__done_cb()))
+            lambda future: future.result().get_result_async().add_done_callback(lambda _: self.__done_cb())
+        )
 
         self.last_goal = goal
         self.last_goal_sent = self.__blackboard.node.get_clock().now()

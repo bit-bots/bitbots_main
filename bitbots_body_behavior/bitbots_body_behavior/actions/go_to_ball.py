@@ -1,28 +1,30 @@
-from bitbots_blackboard.blackboard import BodyBlackboard
-from bitbots_blackboard.capsules.pathfinding_capsule import BallGoalType
+from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 from geometry_msgs.msg import Vector3
 from rclpy.duration import Duration
 from std_msgs.msg import ColorRGBA
 from visualization_msgs.msg import Marker
 
-from dynamic_stack_decider.abstract_action_element import AbstractActionElement
+from bitbots_blackboard.blackboard import BodyBlackboard
+from bitbots_blackboard.capsules.pathfinding_capsule import BallGoalType
 
 
 class GoToBall(AbstractActionElement):
     blackboard: BodyBlackboard
+
     def __init__(self, blackboard, dsd, parameters=None):
-        super(GoToBall, self).__init__(blackboard, dsd, parameters)
+        super().__init__(blackboard, dsd, parameters)
 
-        if 'target' not in parameters.keys():
-            self.blackboard.node.get_logger().error('The parameter "target" could not be used to decide whether map information is accesible')
+        if "target" not in parameters.keys():
+            self.blackboard.node.get_logger().error(
+                'The parameter "target" could not be used to decide whether map information is accesible'
+            )
         else:
-            self.target = BallGoalType(parameters['target'])
+            self.target = BallGoalType(parameters["target"])
 
-        self.blocking = parameters.get('blocking', True)
-        self.distance = parameters.get('distance', self.blackboard.config['ball_approach_dist'])
+        self.blocking = parameters.get("blocking", True)
+        self.distance = parameters.get("distance", self.blackboard.config["ball_approach_dist"])
 
     def perform(self, reevaluate=False):
-
         pose_msg = self.blackboard.pathfinding.get_ball_goal(self.target, self.distance)
         self.blackboard.pathfinding.publish(pose_msg)
 

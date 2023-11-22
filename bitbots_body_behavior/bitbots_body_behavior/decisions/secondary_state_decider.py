@@ -1,8 +1,7 @@
-from bitbots_blackboard.blackboard import BodyBlackboard
-
-from dynamic_stack_decider.abstract_decision_element import \
-    AbstractDecisionElement
 from bitbots_msgs.msg import GameState
+from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
+
+from bitbots_blackboard.blackboard import BodyBlackboard
 
 
 class SecondaryStateDecider(AbstractDecisionElement):
@@ -10,9 +9,11 @@ class SecondaryStateDecider(AbstractDecisionElement):
     Decides in which secondary state the game is currently in. The mode of the secondary state is handled in the
     game controller receiver, so the behavior does ont need to deal with this.
     """
+
     blackboard: BodyBlackboard
+
     def __init__(self, blackboard, dsd, parameters=None):
-        super(SecondaryStateDecider, self).__init__(blackboard, dsd, parameters)
+        super().__init__(blackboard, dsd, parameters)
 
     def perform(self, reevaluate=False):
         state_number = self.blackboard.gamestate.get_secondary_state()
@@ -49,9 +50,11 @@ class SecondaryStateTeamDecider(AbstractDecisionElement):
     """
     Decides if our team or the other team is allowed to execute the secondary state.
     """
+
     blackboard: BodyBlackboard
+
     def __init__(self, blackboard, dsd, parameters=None):
-        super(SecondaryStateTeamDecider, self).__init__(blackboard, dsd)
+        super().__init__(blackboard, dsd)
         self.team_id = self.blackboard.gamestate.get_team_id()
 
     def perform(self, reevaluate=False):
@@ -59,12 +62,12 @@ class SecondaryStateTeamDecider(AbstractDecisionElement):
         # we have to handle penalty shoot differently because the message is strange
         if state_number == GameState.STATE_PENALTYSHOOT:
             if self.blackboard.gamestate.has_kickoff():
-                return 'OUR'
-            return 'OTHER'
+                return "OUR"
+            return "OTHER"
         else:
             if self.blackboard.gamestate.get_secondary_team() == self.team_id:
-                return 'OUR'
-            return 'OTHER'
+                return "OUR"
+            return "OTHER"
 
     def get_reevaluate(self):
         """
@@ -77,18 +80,20 @@ class SecondaryStateModeDecider(AbstractDecisionElement):
     """
     Decides which mode in the secondary state we are.
     """
+
     blackboard: BodyBlackboard
+
     def __init__(self, blackboard, dsd, parameters=None):
-        super(SecondaryStateModeDecider, self).__init__(blackboard, dsd)
+        super().__init__(blackboard, dsd)
 
     def perform(self, reevaluate=False):
         state_mode = self.blackboard.gamestate.get_secondary_state_mode()
         if state_mode == GameState.MODE_PREPARATION:
-            return 'PREPARATION'
+            return "PREPARATION"
         elif state_mode == GameState.MODE_PLACING:
-            return 'PLACING'
+            return "PLACING"
         elif state_mode == GameState.MODE_END:
-            return 'END'
+            return "END"
 
     def get_reevaluate(self):
         return True

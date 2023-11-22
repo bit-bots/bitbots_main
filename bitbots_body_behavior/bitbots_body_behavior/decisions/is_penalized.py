@@ -1,11 +1,11 @@
-from bitbots_blackboard.blackboard import BodyBlackboard
+from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
 
-from dynamic_stack_decider.abstract_decision_element import \
-    AbstractDecisionElement
+from bitbots_blackboard.blackboard import BodyBlackboard
 
 
 class IsPenalized(AbstractDecisionElement):
     blackboard: BodyBlackboard
+
     def __init__(self, blackboard, dsd, parameters=None):
         super().__init__(blackboard, dsd, parameters)
 
@@ -13,8 +13,7 @@ class IsPenalized(AbstractDecisionElement):
         """
         Determines if the robot is penalized by the game controller.
         """
-        self.publish_debug_data("Seconds since unpenalized",
-                                self.blackboard.gamestate.get_seconds_since_unpenalized())
+        self.publish_debug_data("Seconds since unpenalized", self.blackboard.gamestate.get_seconds_since_unpenalized())
         if self.blackboard.gamestate.get_is_penalized():
             return "YES"
         elif self.blackboard.gamestate.get_seconds_since_unpenalized() < 1:

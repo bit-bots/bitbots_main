@@ -1,18 +1,18 @@
 import math
+
 import numpy as np
+from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
+from ros2_numpy import numpify
+from tf_transformations import euler_from_quaternion
 
 from bitbots_blackboard.blackboard import BodyBlackboard
-from tf_transformations import euler_from_quaternion
-from ros2_numpy import numpify
-
-from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
 
 
 class ReachedPathPlanningGoalPosition(AbstractDecisionElement):
     blackboard: BodyBlackboard
 
     def __init__(self, blackboard, dsd, parameters=None):
-        super(ReachedPathPlanningGoalPosition, self).__init__(blackboard, dsd, parameters)
+        super().__init__(blackboard, dsd, parameters)
         self.frame_id = parameters.get("frame_id", self.blackboard.map_frame)
         self.threshold = parameters.get("threshold")
 
@@ -42,7 +42,7 @@ class AlignedToPathPlanningGoal(AbstractDecisionElement):
     blackboard: BodyBlackboard
 
     def __init__(self, blackboard, dsd, parameters=None):
-        super(AlignedToPathPlanningGoal, self).__init__(blackboard, dsd, parameters)
+        super().__init__(blackboard, dsd, parameters)
         self.orientation_threshold = self.blackboard.config["goal_alignment_orientation_threshold"]  # [deg]
         self.frame_id = parameters.get("frame_id", self.blackboard.map_frame)
 

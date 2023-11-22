@@ -1,14 +1,14 @@
-from bitbots_blackboard.blackboard import BodyBlackboard
-
-from dynamic_stack_decider.abstract_decision_element import \
-    AbstractDecisionElement
 from bitbots_msgs.msg import GameState
+from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
+
+from bitbots_blackboard.blackboard import BodyBlackboard
 
 
 class GameStateDecider(AbstractDecisionElement):
     blackboard: BodyBlackboard
+
     def __init__(self, blackboard, dsd, parameters=None):
-        super(GameStateDecider, self).__init__(blackboard, dsd, parameters)
+        super().__init__(blackboard, dsd, parameters)
 
     def perform(self, reevaluate=False):
         """
@@ -18,7 +18,7 @@ class GameStateDecider(AbstractDecisionElement):
         """
 
         game_state_number = self.blackboard.gamestate.get_gamestate()
-        #todo this is a temporary hack to make GUI work
+        # todo this is a temporary hack to make GUI work
         if game_state_number == GameState.GAMESTATE_INITIAL:
             return "INITIAL"
         elif game_state_number == GameState.GAMESTATE_READY:

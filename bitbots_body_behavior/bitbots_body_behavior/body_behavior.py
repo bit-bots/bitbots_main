@@ -10,20 +10,20 @@ Starts the body behavior
 
 import os
 
-import tf2_ros as tf2
 import rclpy
+import tf2_ros as tf2
 from ament_index_python import get_package_share_directory
-from bitbots_blackboard.blackboard import BodyBlackboard
+from bitbots_msgs.msg import GameState, RobotControlState, TeamData
+from bitbots_tf_listener import TransformListener
+from dynamic_stack_decider.dsd import DSD
 from geometry_msgs.msg import PoseWithCovarianceStamped, Twist, TwistWithCovarianceStamped
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.duration import Duration
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 from soccer_vision_3d_msgs.msg import RobotArray
-from bitbots_tf_listener import TransformListener
 
-from dynamic_stack_decider.dsd import DSD
-from bitbots_msgs.msg import GameState, RobotControlState, TeamData
+from bitbots_blackboard.blackboard import BodyBlackboard
 
 
 class BodyDSD:

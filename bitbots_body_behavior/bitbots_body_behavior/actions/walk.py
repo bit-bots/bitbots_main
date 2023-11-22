@@ -1,7 +1,6 @@
-from rclpy.duration import Duration
-from geometry_msgs.msg import Twist
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
-
+from geometry_msgs.msg import Twist
+from rclpy.duration import Duration
 
 
 class WalkForward(AbstractActionElement):

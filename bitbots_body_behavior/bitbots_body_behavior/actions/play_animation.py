@@ -1,8 +1,8 @@
-from abc import abstractmethod, ABC
-
-from bitbots_blackboard.blackboard import BodyBlackboard
+from abc import ABC, abstractmethod
 
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
+
+from bitbots_blackboard.blackboard import BodyBlackboard
 
 
 class AbstractPlayAnimation(AbstractActionElement, ABC):
@@ -11,7 +11,7 @@ class AbstractPlayAnimation(AbstractActionElement, ABC):
     """
 
     def __init__(self, blackboard, dsd, parameters=None):
-        super(AbstractPlayAnimation, self).__init__(blackboard, dsd, parameters=None)
+        super().__init__(blackboard, dsd, parameters=None)
         self.blackboard: BodyBlackboard
 
         self.first_perform = True
@@ -62,6 +62,7 @@ class PlayAnimationGoalieFallLeft(AbstractPlayAnimation):
     def get_animation_name(self):
         self.blackboard.node.get_logger().info("PLAYING GOALIE FALLING LEFT ANIMATION")
         return self.blackboard.animation.goalie_falling_left_animation
+
 
 class PlayAnimationGoalieFallCenter(AbstractPlayAnimation):
     def get_animation_name(self):

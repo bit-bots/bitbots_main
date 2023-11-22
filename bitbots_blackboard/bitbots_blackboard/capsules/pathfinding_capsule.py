@@ -13,15 +13,14 @@ if TYPE_CHECKING:
     from bitbots_blackboard.blackboard import BodyBlackboard
 
 import numpy as np
+from bitbots_utils.transforms import quat_from_yaw
+from bitbots_utils.utils import get_parameters_from_other_node
 from geometry_msgs.msg import Point, PoseStamped, Twist
 from rclpy.node import Node
 from ros2_numpy import numpify
-from std_msgs.msg import Empty, Bool
+from std_msgs.msg import Bool, Empty
 from tf_transformations import euler_from_quaternion
 from visualization_msgs.msg import Marker
-
-from bitbots_utils.transforms import quat_from_yaw
-from bitbots_utils.utils import get_parameters_from_other_node
 
 
 # Type of pathfinding goal relative to the ball
@@ -35,9 +34,9 @@ class PathfindingCapsule:
     def __init__(self, blackboard: "BodyBlackboard", node: Node):
         self.node = node
         self._blackboard = blackboard
-        self.map_frame: str = self.node.get_parameter('map_frame').value
-        self.position_threshold: str = self.node.get_parameter('body.pathfinding_position_threshold').value
-        self.orientation_threshold: str = self.node.get_parameter('body.pathfinding_orientation_threshold').value
+        self.map_frame: str = self.node.get_parameter("map_frame").value
+        self.position_threshold: str = self.node.get_parameter("body.pathfinding_position_threshold").value
+        self.orientation_threshold: str = self.node.get_parameter("body.pathfinding_orientation_threshold").value
         self.direct_cmd_vel_pub = self.node.create_publisher(Twist, "cmd_vel", 1)
         self.pathfinding_pub = node.create_publisher(PoseStamped, "goal_pose", 1)
         self.pathfinding_cancel_pub = node.create_publisher(Empty, "pathfinding/cancel", 1)
@@ -47,9 +46,8 @@ class PathfindingCapsule:
         self.avoid_ball: bool = True
         self.current_cmd_vel = Twist()
         self.orient_to_ball_distance: float = get_parameters_from_other_node(
-            self.node,
-            'bitbots_path_planning',
-            ['controller.orient_to_goal_distance'])["controller.orient_to_goal_distance"]
+            self.node, "bitbots_path_planning", ["controller.orient_to_goal_distance"]
+        )["controller.orient_to_goal_distance"]
 
     def publish(self, msg: PoseStamped):
         """
@@ -99,9 +97,11 @@ class PathfindingCapsule:
         """
         # only send new request if previous request is finished or first update
         # also verify that the ball and the localization are reasonably recent/accurate
-        if self._blackboard.world_model.ball_has_been_seen() and \
-                self._blackboard.world_model.localization_precision_in_threshold():
-            ball_target = self.get_ball_goal(BallGoalType.MAP, self._blackboard.config['ball_approach_dist'])
+        if (
+            self._blackboard.world_model.ball_has_been_seen()
+            and self._blackboard.world_model.localization_precision_in_threshold()
+        ):
+            ball_target = self.get_ball_goal(BallGoalType.MAP, self._blackboard.config["ball_approach_dist"])
             own_position = self._blackboard.world_model.get_current_position_pose_stamped()
             self._blackboard.team_data.own_time_to_ball = self.time_from_pose_to_pose(own_position, ball_target)
         else:
@@ -121,9 +121,10 @@ class PathfindingCapsule:
             _, _, start_theta = self._blackboard.world_model.get_current_position()
             goal_theta = euler_from_quaternion(numpify(goal_pose.pose.orientation))[2]
             start_goal_theta_diff = (abs(start_theta - goal_theta) + math.tau / 2) % math.tau - math.tau / 2
-            start_goal_theta_cost = start_goal_theta_diff * self._blackboard.config[
-                'time_to_ball_cost_start_to_goal_angle']
-            total_cost = path_length * self._blackboard.config['time_to_ball_cost_per_meter'] + start_goal_theta_cost
+            start_goal_theta_cost = (
+                start_goal_theta_diff * self._blackboard.config["time_to_ball_cost_start_to_goal_angle"]
+            )
+            total_cost = path_length * self._blackboard.config["time_to_ball_cost_per_meter"] + start_goal_theta_cost
         else:
             # calculate how much we need to turn to start walking along the path
             _, _, start_theta = self._blackboard.world_model.get_current_position()
@@ -132,10 +133,13 @@ class PathfindingCapsule:
             # calculate how much we need to turn to turn at the end of the path
             goal_theta = euler_from_quaternion(numpify(goal_pose.pose.orientation))[2]
             goal_theta_diff = (abs(goal_theta - path_theta) + math.tau / 2) % math.tau - math.tau / 2
-            start_theta_cost = start_theta_diff * self._blackboard.config['time_to_ball_cost_start_angle']
-            goal_theta_cost = goal_theta_diff * self._blackboard.config['time_to_ball_cost_goal_angle']
-            total_cost = path_length * self._blackboard.config['time_to_ball_cost_per_meter'] + \
-                         start_theta_cost + goal_theta_cost
+            start_theta_cost = start_theta_diff * self._blackboard.config["time_to_ball_cost_start_angle"]
+            goal_theta_cost = goal_theta_diff * self._blackboard.config["time_to_ball_cost_goal_angle"]
+            total_cost = (
+                path_length * self._blackboard.config["time_to_ball_cost_per_meter"]
+                + start_theta_cost
+                + goal_theta_cost
+            )
         return total_cost
 
     def get_ball_goal(self, target: BallGoalType, distance: float) -> PoseStamped:

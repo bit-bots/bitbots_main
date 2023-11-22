@@ -5,6 +5,8 @@ TeamDataCapsule
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
+from bitbots_msgs.msg import Strategy, TeamData
+from bitbots_utils.utils import get_parameters_from_other_node
 from geometry_msgs.msg import PointStamped, Pose
 from rclpy.clock import ClockType
 from rclpy.duration import Duration
@@ -13,12 +15,8 @@ from rclpy.time import Time
 from ros2_numpy import numpify
 from std_msgs.msg import Float32
 
-from bitbots_msgs.msg import Strategy, TeamData
-from bitbots_utils.utils import get_parameters_from_other_node
-
 
 class TeamDataCapsule:
-
     def __init__(self, node: Node):
         self.node = node
 
@@ -27,12 +25,12 @@ class TeamDataCapsule:
         self.time_to_ball_publisher = node.create_publisher(Float32, "time_to_ball", 2)
 
         # Retrieve game settings from parameter blackboard
-        params = get_parameters_from_other_node(self.node, 'parameter_blackboard', ['role'])
-        self.role = params['role']
+        params = get_parameters_from_other_node(self.node, "parameter_blackboard", ["role"])
+        self.role = params["role"]
 
         # Data
         # indexed with one to match robot ids
-        self.team_data : Dict[TeamData] = {}
+        self.team_data: Dict[TeamData] = {}
         for i in range(1, 7):
             self.team_data[i] = TeamData()
         self.team_strategy = dict()
@@ -41,14 +39,14 @@ class TeamDataCapsule:
 
         # Mapping
         self.roles_mapping = {
-            'striker': Strategy.ROLE_STRIKER,
-            'offense': Strategy.ROLE_STRIKER,
-            'supporter': Strategy.ROLE_SUPPORTER,
-            'defender': Strategy.ROLE_DEFENDER,
-            'defense': Strategy.ROLE_DEFENDER,
-            'other': Strategy.ROLE_OTHER,
-            'goalie': Strategy.ROLE_GOALIE,
-            'idle': Strategy.ROLE_IDLING
+            "striker": Strategy.ROLE_STRIKER,
+            "offense": Strategy.ROLE_STRIKER,
+            "supporter": Strategy.ROLE_SUPPORTER,
+            "defender": Strategy.ROLE_DEFENDER,
+            "defense": Strategy.ROLE_DEFENDER,
+            "other": Strategy.ROLE_OTHER,
+            "goalie": Strategy.ROLE_GOALIE,
+            "idle": Strategy.ROLE_IDLING,
         }
 
         # Possible actions
@@ -60,7 +58,7 @@ class TeamDataCapsule:
             Strategy.ACTION_WAITING,
             Strategy.ACTION_SEARCHING,
             Strategy.ACTION_KICKING,
-            Strategy.ACTION_LOCALIZING
+            Strategy.ACTION_LOCALIZING,
         }
 
         # The strategy which is communicated to the other robots
@@ -72,31 +70,38 @@ class TeamDataCapsule:
 
         # Config
         self.data_timeout: float = self.node.get_parameter("team_data_timeout").value
-        self.ball_max_covariance: float  = self.node.get_parameter("ball_max_covariance").value
-        self.ball_lost_time: float = Duration(seconds=self.node.get_parameter('body.ball_lost_time').value)
-        
+        self.ball_max_covariance: float = self.node.get_parameter("ball_max_covariance").value
+        self.ball_lost_time: float = Duration(seconds=self.node.get_parameter("body.ball_lost_time").value)
+
         self.localization_precision_threshold_x_sdev: float = self.node.get_parameter(
-            'body.localization_precision_threshold.x_sdev').value
+            "body.localization_precision_threshold.x_sdev"
+        ).value
         self.localization_precision_threshold_y_sdev: float = self.node.get_parameter(
-            'body.localization_precision_threshold.y_sdev').value
+            "body.localization_precision_threshold.y_sdev"
+        ).value
         self.localization_precision_threshold_theta_sdev: float = self.node.get_parameter(
-            'body.localization_precision_threshold.theta_sdev').value
+            "body.localization_precision_threshold.theta_sdev"
+        ).value
 
     def is_valid(self, data: TeamData) -> bool:
         """
         Checks if a team data message from a given robot is valid.
         Meaning is is not too old and the robot is not penalized.
         """
-        return self.node.get_clock().now() - Time.from_msg(data.header.stamp) < Duration(seconds=self.data_timeout) \
-               and data.state != TeamData.STATE_PENALIZED
+        return (
+            self.node.get_clock().now() - Time.from_msg(data.header.stamp) < Duration(seconds=self.data_timeout)
+            and data.state != TeamData.STATE_PENALIZED
+        )
 
     def is_goalie_handling_ball(self):
-        """ Returns true if the goalie is going to the ball."""
+        """Returns true if the goalie is going to the ball."""
         data: TeamData
         for data in self.team_data.values():
-            if self.is_valid(data) \
-                    and data.strategy.role == Strategy.ROLE_GOALIE \
-                    and data.strategy.action in [Strategy.ACTION_GOING_TO_BALL, Strategy.ACTION_KICKING]:
+            if (
+                self.is_valid(data)
+                and data.strategy.role == Strategy.ROLE_GOALIE
+                and data.strategy.action in [Strategy.ACTION_GOING_TO_BALL, Strategy.ACTION_KICKING]
+            ):
                 return True
         return False
 
@@ -123,16 +128,20 @@ class TeamDataCapsule:
             # data should not be outdated, from a robot in play, only goalie if desired,
             # x and y covariance values should be below threshold. orientation covariance of ball does not matter
             # covariance is a 6x6 matrix as array. 0 is x, 7 is y
-            if self.is_valid(data) and (
-                    data.strategy.role != Strategy.ROLE_GOALIE or count_goalies) \
-                    and data.ball_absolute.covariance[0] < self.ball_max_covariance \
-                    and data.ball_absolute.covariance[7] < self.ball_max_covariance:
+            if (
+                self.is_valid(data)
+                and (data.strategy.role != Strategy.ROLE_GOALIE or count_goalies)
+                and data.ball_absolute.covariance[0] < self.ball_max_covariance
+                and data.ball_absolute.covariance[7] < self.ball_max_covariance
+            ):
                 if use_time_to_ball:
                     distances.append(data.time_to_position_at_ball)
                 else:
-                    distances.append(np.linalg.norm(
-                        numpify(data.ball_absolute.pose.position) - \
-                        numpify(data.robot_position.pose.position)))
+                    distances.append(
+                        np.linalg.norm(
+                            numpify(data.ball_absolute.pose.position) - numpify(data.robot_position.pose.position)
+                        )
+                    )
         for rank, distance in enumerate(sorted(distances)):
             if own_ball_distance < distance:
                 return rank + 1
@@ -155,7 +164,7 @@ class TeamDataCapsule:
         :param role: String describing the role, possible values are:
             ['goalie', 'offense', 'defense']
         """
-        assert role in ['goalie', 'offense', 'defense']
+        assert role in ["goalie", "offense", "defense"]
 
         self.role = role
         self.strategy.role = self.roles_mapping[role]
@@ -173,7 +182,7 @@ class TeamDataCapsule:
         return self.strategy.offensive_side, self.strategy_update
 
     def get_active_teammate_poses(self, count_goalies: bool = False) -> List[Pose]:
-        """ Returns the poses of all playing robots """
+        """Returns the poses of all playing robots"""
         poses = []
         data: TeamData
         for data in self.team_data.values():
@@ -230,15 +239,16 @@ class TeamDataCapsule:
             stamp = teamdata.header.stamp
             if self.node.get_clock().now() - Time.from_msg(stamp) < self.ball_lost_time:
                 if ball_x_std_dev < self.ball_max_covariance and ball_y_std_dev < self.ball_max_covariance:
-                    if robot_x_std_dev < self.localization_precision_threshold_x_sdev and \
-                            robot_y_std_dev < self.localization_precision_threshold_y_sdev and \
-                            robot_theta_std_dev < self.localization_precision_threshold_theta_sdev:
+                    if (
+                        robot_x_std_dev < self.localization_precision_threshold_x_sdev
+                        and robot_y_std_dev < self.localization_precision_threshold_y_sdev
+                        and robot_theta_std_dev < self.localization_precision_threshold_theta_sdev
+                    ):
                         robot_dist = np.linalg.norm(
-                            numpify(teamdata.ball_absolute.pose.position) - \
-                            numpify(teamdata.robot_position.pose.position)) 
+                            numpify(teamdata.ball_absolute.pose.position)
+                            - numpify(teamdata.robot_position.pose.position)
+                        )
                         if robot_dist < best_robot_dist:
-                            best_ball = PointStamped(
-                                header=teamdata.header, 
-                                point=teamdata.ball_absolute.pose.position)
+                            best_ball = PointStamped(header=teamdata.header, point=teamdata.ball_absolute.pose.position)
                             best_robot_dist = robot_dist
         return best_ball

@@ -6,12 +6,12 @@ Capsule for miscellaneous things that don't fit anywhere else.
 """
 from typing import Optional
 
+from bitbots_msgs.msg import HeadMode, RobotControlState
+from bitbots_utils.utils import get_parameters_from_other_node
 from rclpy.duration import Duration
 from rclpy.node import Node
 from std_msgs.msg import Bool
 
-from bitbots_msgs.msg import HeadMode, RobotControlState
-from bitbots_utils.utils import get_parameters_from_other_node
 
 class MiscCapsule:
     def __init__(self, node: Node):
@@ -20,10 +20,11 @@ class MiscCapsule:
 
         # Config
         gamestate_settings = get_parameters_from_other_node(
-            self.node, 'parameter_blackboard', ['bot_id', 'position_number'])
+            self.node, "parameter_blackboard", ["bot_id", "position_number"]
+        )
 
-        self.position_number: int = gamestate_settings['position_number']
-        self.bot_id: int = gamestate_settings['bot_id']
+        self.position_number: int = gamestate_settings["position_number"]
+        self.bot_id: int = gamestate_settings["bot_id"]
 
         self.robot_control_state: Optional[RobotControlState] = None
         self.timers = dict()

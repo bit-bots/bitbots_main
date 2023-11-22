@@ -1,12 +1,13 @@
-from bitbots_blackboard.blackboard import BodyBlackboard
+from bitbots_utils.transforms import quat_from_yaw
+from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 from tf2_geometry_msgs import PoseStamped
 
-from dynamic_stack_decider.abstract_action_element import AbstractActionElement
-from bitbots_utils.transforms import quat_from_yaw
+from bitbots_blackboard.blackboard import BodyBlackboard
 
 
 class AbstractGoToPassPosition(AbstractActionElement):
     blackboard: BodyBlackboard
+
     def __init__(self, blackboard, dsd, accept, parameters=None):
         super().__init__(blackboard, dsd, parameters)
         self.max_x = self.blackboard.config["supporter_max_x"]
