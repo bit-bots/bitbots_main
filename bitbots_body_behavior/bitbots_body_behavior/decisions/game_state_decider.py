@@ -9,13 +9,6 @@ class GameStateDecider(AbstractDecisionElement):
     blackboard: BodyBlackboard
     def __init__(self, blackboard, dsd, parameters=None):
         super(GameStateDecider, self).__init__(blackboard, dsd, parameters)
-        self.game_states = {
-            0: 'INITIAL',
-            1: 'READY',
-            2: 'SET',
-            3: 'PLAYING',
-            4: 'FINISHED',
-        }
 
     def perform(self, reevaluate=False):
         """
@@ -26,7 +19,7 @@ class GameStateDecider(AbstractDecisionElement):
 
         game_state_number = self.blackboard.gamestate.get_gamestate()
         #todo this is a temporary hack to make GUI work
-        if game_state_number == GameState.GAMESTATE_INITAL:
+        if game_state_number == GameState.GAMESTATE_INITIAL:
             return "INITIAL"
         elif game_state_number == GameState.GAMESTATE_READY:
             return "READY"

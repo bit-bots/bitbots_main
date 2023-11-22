@@ -169,7 +169,7 @@ class CostmapCapsule:
             return 0.0
 
         point = PointStamped()
-        point.header.stamp = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME).to_msg()
+        point.header.stamp = Time(clock_type=ClockType.ROS_TIME).to_msg()
         point.header.frame_id = self.base_footprint_frame
         point.point.x = x
         point.point.y = y
@@ -310,7 +310,7 @@ class CostmapCapsule:
             return 0.0
 
         pose = PoseStamped()
-        pose.header.stamp = Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME).to_msg()
+        pose.header.stamp = Time(clock_type=ClockType.ROS_TIME).to_msg()
         pose.header.frame_id = self.base_footprint_frame
         pose.pose.position.x = float(x)
         pose.pose.position.y = float(y)

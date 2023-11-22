@@ -2,7 +2,6 @@
 TeamDataCapsule
 ^^^^^^^^^^^^^^^
 """
-import math
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
@@ -10,7 +9,6 @@ from geometry_msgs.msg import PointStamped, Pose
 from rclpy.clock import ClockType
 from rclpy.duration import Duration
 from rclpy.node import Node
-from rclpy.publisher import Publisher
 from rclpy.time import Time
 from ros2_numpy import numpify
 from std_msgs.msg import Float32
@@ -76,6 +74,7 @@ class TeamDataCapsule:
         self.data_timeout: float = self.node.get_parameter("team_data_timeout").value
         self.ball_max_covariance: float  = self.node.get_parameter("ball_max_covariance").value
         self.ball_lost_time: float = Duration(seconds=self.node.get_parameter('body.ball_lost_time').value)
+        
         self.localization_precision_threshold_x_sdev: float = self.node.get_parameter(
             'body.localization_precision_threshold.x_sdev').value
         self.localization_precision_threshold_y_sdev: float = self.node.get_parameter(
@@ -202,7 +201,7 @@ class TeamDataCapsule:
         if teammate_ball is not None:
             return Time.from_msg(teammate_ball.header.stamp)
         else:
-            return Time(seconds=0, nanoseconds=0, clock_type=ClockType.ROS_TIME)
+            return Time(clock_type=ClockType.ROS_TIME)
 
     def teammate_ball_is_valid(self):
         """Returns true if a teammate has seen the ball accurately enough"""
@@ -234,11 +233,12 @@ class TeamDataCapsule:
                     if robot_x_std_dev < self.localization_precision_threshold_x_sdev and \
                             robot_y_std_dev < self.localization_precision_threshold_y_sdev and \
                             robot_theta_std_dev < self.localization_precision_threshold_theta_sdev:
-                        robot_dist = self.get_robot_ball_euclidean_distance(teamdata)
+                        robot_dist = np.linalg.norm(
+                            numpify(teamdata.ball_absolute.pose.position) - \
+                            numpify(teamdata.robot_position.pose.position)) 
                         if robot_dist < best_robot_dist:
-                            best_ball = PointStamped()
-                            best_ball.header = teamdata.header
-                            best_ball.point.x = teamdata.ball_absolute.pose.position.x
-                            best_ball.point.y = teamdata.ball_absolute.pose.position.y
+                            best_ball = PointStamped(
+                                header=teamdata.header, 
+                                point=teamdata.ball_absolute.pose.position)
                             best_robot_dist = robot_dist
         return best_ball

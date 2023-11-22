@@ -1,4 +1,3 @@
-import math
 import numpy as np
 from bitbots_blackboard.blackboard import BodyBlackboard
 from geometry_msgs.msg import Twist
