@@ -24,7 +24,7 @@ MotionOdometry::MotionOdometry() : Node("MotionOdometry"),
   previous_support_state_ = -1;
 
   walk_support_state_sub_ =
-      this->create_subscription<biped_interfaces::msg::Phase>("walk_support_state",
+      this->create_subscription<biped_interfaces::msg::Phase>("foot_pressure/walk_support_state",
                                                               1,
                                                               std::bind(&MotionOdometry::supportCallback,
                                                                         this, _1));

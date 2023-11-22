@@ -23,6 +23,7 @@ find_package(tf2 REQUIRED)
 find_package(tf2_eigen REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
+find_package(std_msgs REQUIRED)
 
 generate_parameter_library(
   odometry_parameters
@@ -67,12 +68,14 @@ ament_target_dependencies(
   tf2_eigen
   tf2_geometry_msgs
   tf2_ros
+  std_msgs
 )
 
 ament_target_dependencies(
   walk_support_state_detector
   bitbots_msgs
   biped_interfaces
+  std_msgs
 )
 
 ament_target_dependencies(
