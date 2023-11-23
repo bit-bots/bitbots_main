@@ -24,7 +24,7 @@ led_set_time = None
 led_serv = node.create_client(Leds, "/set_leds")
 red_request = Leds.Request()
 red_leds_array = []
-for i in range(3):
+for _i in range(3):
     red_led = ColorRGBA()
     red_led.r = 1.0
     red_led.a = 1.0
@@ -33,7 +33,7 @@ for i in range(3):
 red_request.leds = red_leds_array
 
 orange_leds_array = []
-for i in range(3):
+for _i in range(3):
     orange_led = ColorRGBA()
     orange_led.r = 1.0
     orange_led.g = 0.5
