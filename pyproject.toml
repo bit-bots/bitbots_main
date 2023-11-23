@@ -3,4 +3,12 @@ line-length = 120
 
 [tool.ruff]
 line-length = 120
-select = ["F", "E", "W", "I", "N", "UP"]
+ # Never enforce `E501` (line length violations), as black takes care of this.
+ignore = ["E501"]
+# Additionally enable the following rules
+# - pycodestyle warnings (`W`)
+# - flake8-bugbear warnings (`B`)
+# - isort import sorting (`I`)
+# - pep8-naming convenrtions (`N`)
+# - pyupgrade prefer newer language constructs (`UP`)
+select = ["F", "E", "B", "W", "I", "N", "UP"]
