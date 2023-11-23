@@ -3,14 +3,10 @@ name: "\U0001F680 Feature request"
 about: Suggest an idea for this project
 labels: 'enhancement'
 ---
+# Summary
+<!--- Provide a general summary of the feature request -->
 
-<!--
-Thank you for suggesting an idea to make us better.
-
-Please fill in as much of the template below as you're able.
--->
-
-## Is your feature request related to a problem? Please describe.
+## Is your feature request related to a problem?
 <!-- Please describe the problem you are trying to solve. -->
 
 ## Describe the solution you'd like
@@ -18,5 +14,4 @@ Please fill in as much of the template below as you're able.
 
 ## Describe alternatives you've considered
 <!-- Please describe alternative solutions or features you have considered. -->
-<!-- This is not strictly neccessary but helps all of us get a different point-of-view -->
-
+<!-- This is not strictly necessary but helps all of us get a different point-of-view -->
