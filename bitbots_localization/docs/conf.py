@@ -28,11 +28,11 @@ def count_files():
     num_py = 0
     num_cpp = 0
 
-    for root, dirs, files in os.walk(os.path.join(package_dir, "src")):
+    for _root, _dirs, files in os.walk(os.path.join(package_dir, "src")):
         for f in files:
             if f.endswith(".py"):
                 num_py += 1
-    for root, dirs, files in os.walk(os.path.join(package_dir, "include")):
+    for _root, _dirs, files in os.walk(os.path.join(package_dir, "include")):
         for f in files:
             if f.endswith(".h") or f.endswith(".hpp"):
                 num_cpp += 1
