@@ -31,7 +31,6 @@ include:
         - bitbots_path_planning
     - bitbots_tools:
         - bitbots_docs
-        - bitbots_test
     - bitbots_vision:
         - bitbots_vision
     - bitbots_world_model:
