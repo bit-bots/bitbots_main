@@ -10,23 +10,21 @@ from typing import TYPE_CHECKING, List, Optional, Tuple
 if TYPE_CHECKING:
     from bitbots_blackboard.blackboard import BodyBlackboard
 
-import matplotlib.pyplot as plt
 import numpy as np
 import tf2_ros as tf2
-from bitbots_utils.utils import (get_parameter_dict,
-                                 get_parameters_from_other_node)
+from bitbots_utils.utils import get_parameter_dict, get_parameters_from_other_node
 from geometry_msgs.msg import Point, Pose, PoseStamped, Quaternion
 from nav_msgs.msg import MapMetaData, OccupancyGrid
 from PIL import Image, ImageDraw
 from rclpy.clock import ClockType
 from rclpy.duration import Duration
 from rclpy.time import Time
-from ros2_numpy import numpify, msgify
+from ros2_numpy import msgify, numpify
 from scipy.interpolate import griddata
 from scipy.ndimage import gaussian_filter
 from soccer_vision_3d_msgs.msg import Robot, RobotArray
-from tf_transformations import euler_from_quaternion, quaternion_from_euler
 from tf2_geometry_msgs import PointStamped
+from tf_transformations import euler_from_quaternion, quaternion_from_euler
 
 
 class CostmapCapsule:
@@ -35,23 +33,21 @@ class CostmapCapsule:
         self._node = blackboard.node
         self.body_config = get_parameter_dict(self._blackboard.node, "body")
 
-        self.map_frame: str = self._blackboard.node.get_parameter('map_frame').value
-        self.base_footprint_frame: str = self._blackboard.node.get_parameter('base_footprint_frame').value
+        self.map_frame: str = self._blackboard.node.get_parameter("map_frame").value
+        self.base_footprint_frame: str = self._blackboard.node.get_parameter("base_footprint_frame").value
 
         parameters = get_parameters_from_other_node(
-            self._blackboard.node,
-            "/parameter_blackboard",
-            ["field_length", "field_width", "goal_width"])
+            self._blackboard.node, "/parameter_blackboard", ["field_length", "field_width", "goal_width"]
+        )
         self.field_length: float = parameters["field_length"]
         self.field_width: float = parameters["field_width"]
         self.goal_width: float = parameters["goal_width"]
-        self.map_margin: float = self.body_config['map_margin']
-        self.obstacle_costmap_smoothing_sigma: float = self.body_config['obstacle_costmap_smoothing_sigma']
-        self.obstacle_cost: float = self.body_config['obstacle_cost']
-
+        self.map_margin: float = self.body_config["map_margin"]
+        self.obstacle_costmap_smoothing_sigma: float = self.body_config["obstacle_costmap_smoothing_sigma"]
+        self.obstacle_cost: float = self.body_config["obstacle_cost"]
 
         # Publisher for visualization in RViZ
-        self.costmap_publisher = self._blackboard.node.create_publisher(OccupancyGrid, 'debug/costmap', 1)
+        self.costmap_publisher = self._blackboard.node.create_publisher(OccupancyGrid, "debug/costmap", 1)
 
         self.base_costmap: Optional[np.ndarray] = None  # generated once in constructor field features
         self.costmap: Optional[np.ndarray] = None  # updated on the fly based on the base_costmap
@@ -60,7 +56,6 @@ class CostmapCapsule:
         # Calculates the base costmap and gradient map based on it
         self.calc_base_costmap()
         self.calc_gradients()
-
 
     def robot_callback(self, msg: RobotArray):
         """
@@ -75,8 +70,7 @@ class CostmapCapsule:
             idx_x, idx_y = self.field_2_costmap_coord(robot.bb.center.position.x, robot.bb.center.position.y)
             # TODO inflate
             # Draw obstacle with smoothing independent weight on obstacle costmap
-            obstacle_map[idx_x, idx_y] = \
-                self.obstacle_cost * self.obstacle_costmap_smoothing_sigma
+            obstacle_map[idx_x, idx_y] = self.obstacle_cost * self.obstacle_costmap_smoothing_sigma
         # Smooth obstacle map
         obstacle_map = gaussian_filter(obstacle_map, self.obstacle_costmap_smoothing_sigma)
         # Get pass offsets
@@ -92,8 +86,11 @@ class CostmapCapsule:
         Publishes the costmap for rviz
         """
         # Normalize costmap to match the rviz color scheme in a good way
-        normalized_costmap = (255 - ((self.costmap - np.min(self.costmap)) / (
-                    np.max(self.costmap) - np.min(self.costmap))) * 255 / 2.1).astype(np.int8).T
+        normalized_costmap = (
+            (255 - ((self.costmap - np.min(self.costmap)) / (np.max(self.costmap) - np.min(self.costmap))) * 255 / 2.1)
+            .astype(np.int8)
+            .T
+        )
         # Build the OccupancyGrid message
         msg: OccupancyGrid = msgify(
             OccupancyGrid,
@@ -105,7 +102,9 @@ class CostmapCapsule:
                         x=-self.field_length / 2 - self.map_margin,
                         y=-self.field_width / 2 - self.map_margin,
                     )
-                )))
+                ),
+            ),
+        )
         # Change the frame to allow namespaces
         msg.header.frame_id = self.map_frame
         # Publish
@@ -144,10 +143,18 @@ class CostmapCapsule:
         :param y: Y Position relative to the center point. (Positive is towards the left when we face the enemy goal)
         :return: The x index of the coresponding costmap slot, The y index of the coresponding costmap slot
         """
-        idx_x = int(min(((self.field_length + self.map_margin * 2) * 10) - 1,
-                        max(0, (x + self.field_length / 2 + self.map_margin) * 10)))
-        idx_y = int(min(((self.field_width + self.map_margin * 2) * 10) - 1,
-                        max(0, (y + self.field_width / 2 + self.map_margin) * 10)))
+        idx_x = int(
+            min(
+                ((self.field_length + self.map_margin * 2) * 10) - 1,
+                max(0, (x + self.field_length / 2 + self.map_margin) * 10),
+            )
+        )
+        idx_y = int(
+            min(
+                ((self.field_width + self.map_margin * 2) * 10) - 1,
+                max(0, (y + self.field_width / 2 + self.map_margin) * 10),
+            )
+        )
         return idx_x, idx_y
 
     def calc_gradients(self):
@@ -189,76 +196,85 @@ class CostmapCapsule:
         This costmap includes a gradient towards the enemy goal and high costs outside the playable area
         """
         # Get parameters
-        goalpost_safety_distance: float = self.body_config["goalpost_safety_distance"] # offset in y direction from the goalpost
-        keep_out_border: float = self.body_config["keep_out_border"] # dangerous border area
-        in_field_value_our_side: float = self.body_config["in_field_value_our_side"] # start value on our side
-        corner_value: float = self.body_config["corner_value"] # cost in a corner
-        goalpost_value: float = self.body_config["goalpost_value"] # cost at a goalpost
-        goal_value: float = self.body_config["goal_value"] # cost in the goal
+        goalpost_safety_distance: float = self.body_config[
+            "goalpost_safety_distance"
+        ]  # offset in y direction from the goalpost
+        keep_out_border: float = self.body_config["keep_out_border"]  # dangerous border area
+        in_field_value_our_side: float = self.body_config["in_field_value_our_side"]  # start value on our side
+        corner_value: float = self.body_config["corner_value"]  # cost in a corner
+        goalpost_value: float = self.body_config["goalpost_value"]  # cost at a goalpost
+        goal_value: float = self.body_config["goal_value"]  # cost in the goal
 
         # Create Grid
         grid_x, grid_y = np.mgrid[
-            0:self.field_length + self.map_margin * 2:(self.field_length + self.map_margin * 2) * 10j,
-            0:self.field_width + self.map_margin * 2:(self.field_width + self.map_margin * 2) * 10j]
+            0 : self.field_length + self.map_margin * 2 : (self.field_length + self.map_margin * 2) * 10j,
+            0 : self.field_width + self.map_margin * 2 : (self.field_width + self.map_margin * 2) * 10j,
+        ]
 
         fix_points: List[Tuple[Tuple[float, float], float]] = []
 
         # Add base points
-        fix_points.extend([
-            # Corner points of the map (including margin)
-            ((-self.map_margin, -self.map_margin),
-             corner_value + in_field_value_our_side),
-            ((self.field_length + self.map_margin, -self.map_margin),
-             corner_value + in_field_value_our_side),
-            ((-self.map_margin, self.field_width + self.map_margin),
-             corner_value + in_field_value_our_side),
-            ((self.field_length + self.map_margin, self.field_width + self.map_margin),
-             corner_value + in_field_value_our_side),
-            # Corner points of the field
-            ((0, 0),
-             corner_value + in_field_value_our_side),
-            ((self.field_length, 0),
-             corner_value),
-            ((0, self.field_width),
-             corner_value + in_field_value_our_side),
-            ((self.field_length, self.field_width),
-             corner_value),
-            # Points in the field that pull the gradient down, so we don't play always in the middle
-            ((keep_out_border, keep_out_border),
-             in_field_value_our_side),
-            ((keep_out_border, self.field_width - keep_out_border),
-             in_field_value_our_side),
-        ])
+        fix_points.extend(
+            [
+                # Corner points of the map (including margin)
+                ((-self.map_margin, -self.map_margin), corner_value + in_field_value_our_side),
+                ((self.field_length + self.map_margin, -self.map_margin), corner_value + in_field_value_our_side),
+                ((-self.map_margin, self.field_width + self.map_margin), corner_value + in_field_value_our_side),
+                (
+                    (self.field_length + self.map_margin, self.field_width + self.map_margin),
+                    corner_value + in_field_value_our_side,
+                ),
+                # Corner points of the field
+                ((0, 0), corner_value + in_field_value_our_side),
+                ((self.field_length, 0), corner_value),
+                ((0, self.field_width), corner_value + in_field_value_our_side),
+                ((self.field_length, self.field_width), corner_value),
+                # Points in the field that pull the gradient down, so we don't play always in the middle
+                ((keep_out_border, keep_out_border), in_field_value_our_side),
+                ((keep_out_border, self.field_width - keep_out_border), in_field_value_our_side),
+            ]
+        )
 
         # Add goal area (including the dangerous parts on the side of the goal)
-        fix_points.extend([
-            ((self.field_length, self.field_width / 2 - self.goal_width / 2),
-             goalpost_value),
-            ((self.field_length, self.field_width / 2 + self.goal_width / 2),
-             goalpost_value),
-            ((self.field_length, self.field_width / 2 - self.goal_width / 2 + goalpost_safety_distance),
-             goal_value),
-            ((self.field_length, self.field_width / 2 + self.goal_width / 2 - goalpost_safety_distance),
-             goal_value),
-            ((self.field_length + self.map_margin,
-              self.field_width / 2 - self.goal_width / 2 - goalpost_safety_distance),
-             -0.2),
-            ((self.field_length + self.map_margin,
-              self.field_width / 2 + self.goal_width / 2 + goalpost_safety_distance),
-             -0.2),
-        ])
+        fix_points.extend(
+            [
+                ((self.field_length, self.field_width / 2 - self.goal_width / 2), goalpost_value),
+                ((self.field_length, self.field_width / 2 + self.goal_width / 2), goalpost_value),
+                (
+                    (self.field_length, self.field_width / 2 - self.goal_width / 2 + goalpost_safety_distance),
+                    goal_value,
+                ),
+                (
+                    (self.field_length, self.field_width / 2 + self.goal_width / 2 - goalpost_safety_distance),
+                    goal_value,
+                ),
+                (
+                    (
+                        self.field_length + self.map_margin,
+                        self.field_width / 2 - self.goal_width / 2 - goalpost_safety_distance,
+                    ),
+                    -0.2,
+                ),
+                (
+                    (
+                        self.field_length + self.map_margin,
+                        self.field_width / 2 + self.goal_width / 2 + goalpost_safety_distance,
+                    ),
+                    -0.2,
+                ),
+            ]
+        )
 
         # Apply map margin to fixpoints
         fix_points = [((p[0][0] + self.map_margin, p[0][1] + self.map_margin), p[1]) for p in fix_points]
 
         # Interpolate the keypoints from above to form the costmap
-        interpolated = griddata([p[0] for p in fix_points], [p[1] for p in fix_points], (grid_x, grid_y),
-                                method='linear')
+        interpolated = griddata(
+            [p[0] for p in fix_points], [p[1] for p in fix_points], (grid_x, grid_y), method="linear"
+        )
 
         # Smooth the costmap to get more continus gradients
-        self.base_costmap = gaussian_filter(
-            interpolated,
-            self.body_config["base_costmap_smoothing_sigma"])
+        self.base_costmap = gaussian_filter(interpolated, self.body_config["base_costmap_smoothing_sigma"])
         self.costmap = self.base_costmap.copy()
 
     def get_gradient_at_field_position(self, x: float, y: float) -> Tuple[float, float]:
@@ -286,7 +302,7 @@ class CostmapCapsule:
         :param y: Field coordiante in the y direction
         """
         # for debugging only
-        #if False and self.costmap.sum() > 0:
+        # if False and self.costmap.sum() > 0:
         #    # Create Grid
         #    grid_x, grid_y = np.mgrid[0:self.field_length:self.field_length * 10j,
         #                     0:self.field_width:self.field_width * 10j]
@@ -338,7 +354,7 @@ class CostmapCapsule:
         """
 
         # create a mask in the size of the costmap consisting of 8-bit values initialized as 0
-        mask = Image.new('L', (self.costmap.shape[1], self.costmap.shape[0]))
+        mask = Image.new("L", (self.costmap.shape[1], self.costmap.shape[0]))
 
         # draw kick area on mask with ones
         maskd = ImageDraw.Draw(mask)
@@ -375,7 +391,9 @@ class CostmapCapsule:
         """
         return self.get_cost_of_kick_relative(0, 0, direction, kick_length, angular_range)
 
-    def get_best_kick_direction(self, min_angle: float, max_angle: float, num_kick_angles: int, kick_length: float, angular_range: float) -> float:
+    def get_best_kick_direction(
+        self, min_angle: float, max_angle: float, num_kick_angles: int, kick_length: float, angular_range: float
+    ) -> float:
         """
         Returns the best kick direction in the given range
         :param min_angle: The minimum angle of the kick
@@ -386,16 +404,17 @@ class CostmapCapsule:
         """
         # list of possible kick directions, sorted by absolute value to
         # prefer forward kicks to side kicks if their costs are equal
-        kick_directions = sorted(np.linspace(min_angle,
-                                             max_angle,
-                                             num=num_kick_angles), key=abs)
+        kick_directions = sorted(np.linspace(min_angle, max_angle, num=num_kick_angles), key=abs)
 
         # get the kick direction with the least cost
-        kick_direction = kick_directions[np.argmin([self.get_current_cost_of_kick(direction=direction,
-                                                                                  kick_length=kick_length,
-                                                                                  angular_range=angular_range)
-                                                    for direction in kick_directions])]
+        kick_direction = kick_directions[
+            np.argmin(
+                [
+                    self.get_current_cost_of_kick(
+                        direction=direction, kick_length=kick_length, angular_range=angular_range
+                    )
+                    for direction in kick_directions
+                ]
+            )
+        ]
         return kick_direction
-
-
-

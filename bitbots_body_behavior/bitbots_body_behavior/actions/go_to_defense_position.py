@@ -1,30 +1,32 @@
 import math
 
 import numpy as np
-from bitbots_blackboard.blackboard import BodyBlackboard
+from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 from geometry_msgs.msg import Quaternion
 from tf2_geometry_msgs import PoseStamped
 from tf_transformations import quaternion_from_euler
 
-from dynamic_stack_decider.abstract_action_element import AbstractActionElement
+from bitbots_blackboard.blackboard import BodyBlackboard
 
 
 class GoToDefensePosition(AbstractActionElement):
     blackboard: BodyBlackboard
+
     def __init__(self, blackboard, dsd, parameters=None):
-        super(GoToDefensePosition, self).__init__(blackboard, dsd, parameters)
+        super().__init__(blackboard, dsd, parameters)
 
         # Also apply offset from the ready positions to the defense positions
-        role_positions = self.blackboard.config['role_positions']
+        role_positions = self.blackboard.config["role_positions"]
         try:
-            generalized_role_position = \
-                role_positions[self.blackboard.team_data.role]["active"][str(self.blackboard.misc.position_number)]
-        except KeyError:
-            raise KeyError('Role position for {} not specified in config'.format(self.blackboard.team_data.role))
+            generalized_role_position = role_positions[self.blackboard.team_data.role]["active"][
+                str(self.blackboard.misc.position_number)
+            ]
+        except KeyError as e:
+            raise KeyError(f"Role position for {self.blackboard.team_data.role} not specified in config") from e
 
         self.y_offset = generalized_role_position[1] * self.blackboard.world_model.field_width / 2
         # optional parameter which goes into the block position at a certain distance to the ball
-        self.mode = parameters.get('mode', None)
+        self.mode = parameters.get("mode", None)
 
     def perform(self, reevaluate=False):
         # The defense position should be a position between the ball and the own goal.

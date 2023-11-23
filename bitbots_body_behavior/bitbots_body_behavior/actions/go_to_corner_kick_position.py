@@ -1,20 +1,21 @@
 import math
 
-from bitbots_blackboard.blackboard import BodyBlackboard
+from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 from geometry_msgs.msg import Quaternion
 from tf2_geometry_msgs import PoseStamped
 from tf_transformations import quaternion_from_euler
 
-from dynamic_stack_decider.abstract_action_element import AbstractActionElement
+from bitbots_blackboard.blackboard import BodyBlackboard
 
 
 class GoToCornerKickPosition(AbstractActionElement):
     blackboard: BodyBlackboard
+
     def __init__(self, blackboard, dsd, parameters=None):
         super().__init__(blackboard, dsd, parameters)
 
         # optional parameter which goes into the block position at a certain distance to the ball
-        self.mode = parameters.get('mode', None)
+        self.mode = parameters.get("mode", None)
         if self.mode is None or self.mode not in ("striker", "supporter", "others"):
             self.blackboard.node.get_logger().error("mode for corner kick not specified")
             exit()

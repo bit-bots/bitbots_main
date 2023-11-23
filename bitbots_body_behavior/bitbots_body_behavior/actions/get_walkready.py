@@ -1,15 +1,16 @@
 import rclpy
-from bitbots_blackboard.blackboard import BodyBlackboard
-
 from bitbots_msgs.action import Dynup
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
+
+from bitbots_blackboard.blackboard import BodyBlackboard
 
 
 class GetWalkready(AbstractActionElement):
     blackboard: BodyBlackboard
+
     def __init__(self, blackboard, dsd, parameters=None):
         super().__init__(blackboard, dsd, parameters)
-        self.direction = 'walkready'
+        self.direction = "walkready"
         self.first_perform = True
         self.active = False
 
@@ -45,9 +46,10 @@ class GetWalkready(AbstractActionElement):
         if not server_running:
             while not server_running and rclpy.ok():
                 self.blackboard.node.get_logger().warn(
-                                      "Dynup Action Server not running! Dynup cannot work without dynup server! "
-                                      "Will now wait until server is accessible!",
-                                      throttle_duration_sec=10.0)
+                    "Dynup Action Server not running! Dynup cannot work without dynup server! "
+                    "Will now wait until server is accessible!",
+                    throttle_duration_sec=10.0,
+                )
                 server_running = self.blackboard.animation.dynup_action_client.wait_for_server(timeout_sec=1)
             if server_running:
                 self.blackboard.node.get_logger().warn("Dynup server now running, 'get_walkready' action will go on.")
@@ -61,8 +63,10 @@ class GetWalkready(AbstractActionElement):
         self.active = True
         self.dynup_action_current_goal = self.blackboard.animation.dynup_action_client.send_goal_async(goal)
         self.dynup_action_current_goal.add_done_callback(
-            lambda future: future.result().get_result_async().add_done_callback(
-                lambda result_future: self.__done_cb(result_future)))
+            lambda future: future.result()
+            .get_result_async()
+            .add_done_callback(lambda result_future: self.__done_cb(result_future))
+        )
         return True
 
     def __done_cb(self, result_future):

@@ -1,12 +1,11 @@
 import math
 from typing import Optional
 
-from bitbots_blackboard.blackboard import BodyBlackboard
-from geometry_msgs.msg import PoseStamped, Twist
-from geometry_msgs.msg import Quaternion
-
 from bitbots_utils.transforms import quat_from_yaw
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
+from geometry_msgs.msg import PoseStamped, Twist
+
+from bitbots_blackboard.blackboard import BodyBlackboard
 
 
 class TurnAround(AbstractActionElement):
@@ -14,7 +13,7 @@ class TurnAround(AbstractActionElement):
         super().__init__(blackboard, dsd, parameters)
         self.blackboard: BodyBlackboard
 
-        self.orientation_thresh = parameters.get('thresh', 0.5)
+        self.orientation_thresh = parameters.get("thresh", 0.5)
         pose = self.blackboard.world_model.get_current_position()
 
         if pose is None:
@@ -26,7 +25,7 @@ class TurnAround(AbstractActionElement):
 
         self.pose_msg = self.create_pose_msg(self.blackboard.map_frame, x, y, self.theta)
 
-    def create_pose_msg(self ,frame, x, y, theta):
+    def create_pose_msg(self, frame, x, y, theta):
         pose_msg = PoseStamped()
         pose_msg.header.stamp = self.blackboard.node.get_clock().now().to_msg()
         pose_msg.header.frame_id = frame
@@ -53,14 +52,15 @@ class Turn(AbstractActionElement):
     Turns with up to max speed for a given duration.
     The sign of max speed indicates the direction (positive = left, negative = right).
     """
+
     def __init__(self, blackboard, dsd, parameters=None):
         super().__init__(blackboard, dsd, parameters)
         self.blackboard: BodyBlackboard
         self.current_rotation_vel = 0.0
-        self.max_speed = parameters.get('max_speed', 0.3)
+        self.max_speed = parameters.get("max_speed", 0.3)
 
         # Check if the have a duration
-        self.duration: Optional[float] = parameters.get('duration', None)
+        self.duration: Optional[float] = parameters.get("duration", None)
         self.start_time = self.blackboard.node.get_clock().now()
 
         # Cancel the path planning if it is running

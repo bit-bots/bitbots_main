@@ -1,19 +1,19 @@
 import math
 
-from bitbots_blackboard.blackboard import BodyBlackboard
+from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
 
-from dynamic_stack_decider.abstract_decision_element import \
-    AbstractDecisionElement
+from bitbots_blackboard.blackboard import BodyBlackboard
 
 
 class AlignedToGoal(AbstractDecisionElement):
     blackboard: BodyBlackboard
+
     def __init__(self, blackboard, dsd, parameters=None):
-        super(AlignedToGoal, self).__init__(blackboard, dsd, parameters)
-        self.goalpost_safety_distance = self.blackboard.config['goalpost_safety_distance']
+        super().__init__(blackboard, dsd, parameters)
+        self.goalpost_safety_distance = self.blackboard.config["goalpost_safety_distance"]
         self.field_length = self.blackboard.world_model.field_length
         self.goal_width = self.blackboard.world_model.goal_width
-        self.max_kick_angle = self.blackboard.config['max_kick_angle']
+        self.max_kick_angle = self.blackboard.config["max_kick_angle"]
 
     def perform(self, reevaluate=False):
         """
@@ -25,7 +25,7 @@ class AlignedToGoal(AbstractDecisionElement):
 
         # Check if we know our position
         if current_pose is None:
-            return 'NO'
+            return "NO"
 
         # Get maximum kick angle relative to our base footprint
         angle_difference_right = current_pose[2] - self.max_kick_angle
@@ -33,14 +33,18 @@ class AlignedToGoal(AbstractDecisionElement):
 
         # Calculate the intersection of the left most kick with the goal line right of the center of the goal. dist_left represents the y coordinate of the intersection.
         if math.cos(angle_difference_left) > 0:
-            dist_left = current_pose[1] + (math.sin(angle_difference_left)) * (( -current_pose[0] + self.field_length / 2) / (math.cos(angle_difference_left)))
+            dist_left = current_pose[1] + (math.sin(angle_difference_left)) * (
+                (-current_pose[0] + self.field_length / 2) / (math.cos(angle_difference_left))
+            )
         else:
             # Set None if no intersection can be found in the desired direction
             dist_left = None
 
         # Do this also for the right most kick in a similar way
         if math.cos(angle_difference_right) > 0:
-            dist_right = current_pose[1] + (math.sin(angle_difference_right)) * (( -current_pose[0] + self.field_length / 2) / (math.cos(angle_difference_right)))
+            dist_right = current_pose[1] + (math.sin(angle_difference_right)) * (
+                (-current_pose[0] + self.field_length / 2) / (math.cos(angle_difference_right))
+            )
         else:
             # Set None if no intersection can be found in the desired direction
             dist_right = None

@@ -1,5 +1,4 @@
-from dynamic_stack_decider.abstract_decision_element import \
-    AbstractDecisionElement
+from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
 
 
 class DoOnce(AbstractDecisionElement):
@@ -9,10 +8,10 @@ class DoOnce(AbstractDecisionElement):
 
     def perform(self, reevaluate=False):
         if self.done:
-            return 'DONE'
+            return "DONE"
         else:
             self.done = True
-            return 'NOT_DONE'
+            return "NOT_DONE"
 
     def get_reevaluate(self):
         return False
