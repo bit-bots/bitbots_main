@@ -47,6 +47,7 @@ target_link_libraries(
 target_link_libraries(
   walk_support_state_detector
   rclcpp::rclcpp
+  odometry_parameters
 )
 
 ## Specify libraries to link a library or executable target against
@@ -75,6 +76,7 @@ ament_target_dependencies(
   walk_support_state_detector
   bitbots_msgs
   biped_interfaces
+  generate_parameter_library
   std_msgs
 )
 

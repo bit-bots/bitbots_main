@@ -1,8 +1,10 @@
 #include <bitbots_odometry/walk_support_state_detector.h>
 namespace bitbots_odometry {
 
-WalkSupportStateDetector::WalkSupportStateDetector() : Node("WalkSupportStateDetector")
+WalkSupportStateDetector::WalkSupportStateDetector() : Node("WalkSupportStateDetector"),
+param_listener_(get_node_parameters_interface())
 {
+  config_ = param_listener_.get_params();
         //debug
         pub_foot_pressure_debug_l_ = this->create_publisher<std_msgs::msg::Float64>("foot_pressure/filtered_l", 1);
  pub_foot_pressure_debug_r_ = this->create_publisher<std_msgs::msg::Float64>("foot_pressure/filtered_r", 1);   
@@ -24,6 +26,7 @@ WalkSupportStateDetector::WalkSupportStateDetector() : Node("WalkSupportStateDet
 }
 
 void WalkSupportStateDetector::loop() {
+  config_ = param_listener_.get_params();
   int curr_stand_left = curr_stand_left_;
   int prev_stand_left = prev_stand_left_;
 
@@ -34,10 +37,10 @@ void WalkSupportStateDetector::loop() {
     if ( curr_stand_left_ && curr_stand_right_){
       phase.phase = 2;
     }
-    else if (curr_stand_left_ && ! curr_stand_right_){//} && (up_r_ + rclcpp::Duration::from_nanoseconds(int(0.1*step_duration_r_))) < this->now()){
+    else if (curr_stand_left_ && ! curr_stand_right_ && (up_r_ + rclcpp::Duration::from_nanoseconds(int(0.1*step_duration_r_))) < this->now()){
       phase.phase = 0;
     }
-      else if (!curr_stand_left_ && curr_stand_right_){//} &&(up_r_ + rclcpp::Duration::from_nanoseconds(int(0.1*step_duration_r_))) < this->now()){
+      else if (!curr_stand_left_ && curr_stand_right_ &&(up_r_ + rclcpp::Duration::from_nanoseconds(int(0.1*step_duration_r_))) < this->now()){
       phase.phase = 1;
     }
   if (phase.phase != curr_stance_.phase){
@@ -51,7 +54,7 @@ void WalkSupportStateDetector::loop() {
 
   void WalkSupportStateDetector::pressure_l_callback(bitbots_msgs::msg::FootPressure msg) {
     float_t summed_pressure = msg.left_back +msg.left_front + msg.right_front + msg.right_back;
-    pressure_filtered_left_ = (1-k)*summed_pressure + k*pressure_filtered_left_;
+    pressure_filtered_left_ = (1-config_.k)*summed_pressure + config_.k*pressure_filtered_left_;
     prev_stand_left_ = curr_stand_left_;
     std_msgs::msg::Float64 pressure_msg;
     pressure_msg.data = pressure_filtered_left_;
@@ -64,7 +67,7 @@ void WalkSupportStateDetector::loop() {
     }
     else{
         if (curr_stand_left_ != false){
-        step_duration_l_ = (1-k)*(this->now().nanoseconds() - up_l_.nanoseconds()) + k*step_duration_l_;
+        step_duration_l_ = (1-config_.m)*(this->now().nanoseconds() - up_l_.nanoseconds()) + config_.m*step_duration_l_;
       curr_stand_left_ = false;
         }
     }
@@ -73,7 +76,7 @@ void WalkSupportStateDetector::loop() {
 
   void WalkSupportStateDetector::pressure_r_callback(bitbots_msgs::msg::FootPressure msg) {
     float_t summed_pressure = msg.left_back +msg.left_front + msg.right_front + msg.right_back;
-    pressure_filtered_right_ = (1-k)*summed_pressure + k*pressure_filtered_right_;
+    pressure_filtered_right_ = (1-config_.k)*summed_pressure + config_.k*pressure_filtered_right_;
     prev_stand_right_ = curr_stand_right_;
      std_msgs::msg::Float64 pressure_msg;
     pressure_msg.data = pressure_filtered_right_;
@@ -87,7 +90,7 @@ void WalkSupportStateDetector::loop() {
     }
     else{
         if (curr_stand_right_ != false){
-        step_duration_r_ = (1-k)*(this->now().nanoseconds() - up_r_.nanoseconds()) + k*step_duration_r_;
+        step_duration_r_ = (1-config_.m)*(this->now().nanoseconds() - up_r_.nanoseconds()) + config_.m*step_duration_r_;
       curr_stand_right_ = false;
         }
     }

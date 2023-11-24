@@ -40,3 +40,22 @@ motion_odometry:
     default_value: false,
     description:  "Should odom tf be published"
   }
+
+  k: {
+    type: double,
+    default_value: 0.95,
+    description: "Factor for lowpass filtering the foot pressure",
+    validation: {
+      bounds<>: [0.0, 1.0]
+    }
+  }
+
+      
+  m: {
+    type: double,
+    default_value: 0.95,
+    description: "Factor for lowpass filtering the step duration",
+    validation: {
+      bounds<>: [0.0, 1.0]
+    }
+  }
