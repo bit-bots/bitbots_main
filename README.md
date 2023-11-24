@@ -10,7 +10,7 @@ This is the vision ROS package of the Hamburg Bit-Bots.
 
 The vision is able to detect balls, lines, the field itself, the field boundary, goal posts, teammates, enemies and other obstacles.
 
-For further information and getting started, see the documentation of this package at our website: [doku.bit-bots.de](http://doku.bit-bots.de/package/bitbots_vision/latest/index.html)
+For further information and getting started, see the documentation of this package at our website: [docs.bit-bots.de](https://docs.bit-bots.de/package/bitbots_vision/latest/index.html)
 
 An earlier version of this pipeline is presented in our paper [An Open Source Vision Pipeline Approach for RoboCup Humanoid Soccer](https://robocup.informatik.uni-hamburg.de/wp-content/uploads/2019/06/vision_paper.pdf).
 When you use this pipeline or parts of it, please cite it.
