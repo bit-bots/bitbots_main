@@ -1,7 +1,0 @@
-<launch>
-    <arg name="camera" default="true" description="true: launches an image provider to get images from a camera" />
-
-    <include if="$(arg camera)" file="$(find bitbots_bringup)/launch/basler_camera.launch" />
-
-    <executable cmd="ros2 bag record -o /tmp/tmpbag.bag camera/image_proc camera_info" output="screen" />
-</launch>
