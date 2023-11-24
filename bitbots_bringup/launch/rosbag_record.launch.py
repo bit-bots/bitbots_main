@@ -1,5 +1,3 @@
-from typing import List
-
 import os
 
 from datetime import datetime
@@ -9,7 +7,7 @@ from launch.actions import DeclareLaunchArgument, ExecuteProcess, OpaqueFunction
 from launch.substitutions import EnvironmentVariable, LaunchConfiguration, PathJoinSubstitution
 
 
-TOPICS_TO_RECORD: List[str] = [
+TOPICS_TO_RECORD: list[str] = [
     '/animation',
     '/audio/audio_info',
     '/audio/audio',
@@ -96,6 +94,8 @@ def generate_action(context):
     sim_value = LaunchConfiguration('sim').perform(context)
     sim_time = ['--use-sim-time'] if sim_value == 'true' else []
 
+    node_name = 'ros2_bag_record'
+
     main_process = ExecuteProcess(
         # Constructing the complete command
         cmd=[
@@ -106,13 +106,13 @@ def generate_action(context):
             '-o', output_directory,
 
             # Other options
-            '--node-name', 'ros2_bag_record',
+            '--node-name', node_name,
             '--include-hidden-topics',
             '--include-unpublished-topics',
             '--polling-interval', '1000',
         ] + sim_time + TOPICS_TO_RECORD,
         output='screen',
-        name='ros2_bag_record',
+        name=node_name,
         shell=True
     )
     return [main_process]
