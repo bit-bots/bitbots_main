@@ -5,10 +5,7 @@ WalkSupportStateDetector::WalkSupportStateDetector() : Node("WalkSupportStateDet
 param_listener_(get_node_parameters_interface())
 {
   config_ = param_listener_.get_params();
-        //debug
-        pub_foot_pressure_debug_l_ = this->create_publisher<std_msgs::msg::Float64>("foot_pressure/filtered_l", 1);
- pub_foot_pressure_debug_r_ = this->create_publisher<std_msgs::msg::Float64>("foot_pressure/filtered_r", 1);   
-    // use foot pressure information, put into different package later
+
   pressure_l_sub_ = this->create_subscription<bitbots_msgs::msg::FootPressure>(
         "foot_pressure_left/raw", 1, std::bind(&WalkSupportStateDetector::pressure_l_callback, this, _1));
   pressure_r_sub_ = this->create_subscription<bitbots_msgs::msg::FootPressure>(
@@ -17,11 +14,10 @@ param_listener_(get_node_parameters_interface())
   curr_stance_.phase = 2;
   pressure_filtered_right_ = 0;
   pressure_filtered_left_ = 0;
-  k = 0.85;
   step_duration_r_ = 0;
-  up_r_ = this->now(); // this is not true
+  up_r_ = this->now(); 
     step_duration_l_ = 0;
-  up_l_ = this->now(); // this is not true
+  up_l_ = this->now(); 
 
 }
 
@@ -58,7 +54,6 @@ void WalkSupportStateDetector::loop() {
     prev_stand_left_ = curr_stand_left_;
     std_msgs::msg::Float64 pressure_msg;
     pressure_msg.data = pressure_filtered_left_;
-    pub_foot_pressure_debug_l_->publish(pressure_msg);
     if (pressure_filtered_left_ > config_.summed_pressure_threshold){
         if (curr_stand_left_ != true){
             up_l_ = this->now();
@@ -80,8 +75,6 @@ void WalkSupportStateDetector::loop() {
     prev_stand_right_ = curr_stand_right_;
      std_msgs::msg::Float64 pressure_msg;
     pressure_msg.data = pressure_filtered_right_;
-    pub_foot_pressure_debug_r_->publish(pressure_msg);
-
     if (pressure_filtered_right_ > config_.summed_pressure_threshold){
         if (curr_stand_right_ != true){
             up_r_ = this->now();

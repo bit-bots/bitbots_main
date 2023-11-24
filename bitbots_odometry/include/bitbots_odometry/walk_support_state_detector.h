@@ -16,8 +16,7 @@ class WalkSupportStateDetector: public rclcpp::Node {
   rclcpp::Subscription<bitbots_msgs::msg::FootPressure>::SharedPtr pressure_l_sub_;
   rclcpp::Subscription<bitbots_msgs::msg::FootPressure>::SharedPtr pressure_r_sub_;
   rclcpp::Publisher<biped_interfaces::msg::Phase>::SharedPtr pub_foot_pressure_support_state_;
-  rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr pub_foot_pressure_debug_l_;
-rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr pub_foot_pressure_debug_r_;
+
   void pressure_l_callback(bitbots_msgs::msg::FootPressure msg);
   void pressure_r_callback(bitbots_msgs::msg::FootPressure msg);
   int curr_stand_left_;
@@ -26,8 +25,7 @@ rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr pub_foot_pressure_debug_r_;
   int prev_stand_left_;
   float_t pressure_filtered_left_;
   float_t pressure_filtered_right_;
-  float_t k;
-  float_t m;
+
   long step_duration_r_;
   rclcpp::Time up_r_;
 
