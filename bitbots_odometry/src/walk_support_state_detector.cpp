@@ -37,10 +37,10 @@ void WalkSupportStateDetector::loop() {
     if ( curr_stand_left_ && curr_stand_right_){
       phase.phase = 2;
     }
-    else if (curr_stand_left_ && ! curr_stand_right_ && (up_r_ + rclcpp::Duration::from_nanoseconds(int(0.1*step_duration_r_))) < this->now()){
+    else if (curr_stand_left_ && ! curr_stand_right_ && (up_r_ + rclcpp::Duration::from_nanoseconds(int(config_.temporal_step_offset*step_duration_r_))) < this->now()){
       phase.phase = 0;
     }
-      else if (!curr_stand_left_ && curr_stand_right_ &&(up_r_ + rclcpp::Duration::from_nanoseconds(int(0.1*step_duration_r_))) < this->now()){
+      else if (!curr_stand_left_ && curr_stand_right_ &&(up_r_ + rclcpp::Duration::from_nanoseconds(int(config_.temporal_step_offset*step_duration_r_))) < this->now()){
       phase.phase = 1;
     }
   if (phase.phase != curr_stance_.phase){
@@ -59,7 +59,7 @@ void WalkSupportStateDetector::loop() {
     std_msgs::msg::Float64 pressure_msg;
     pressure_msg.data = pressure_filtered_left_;
     pub_foot_pressure_debug_l_->publish(pressure_msg);
-    if (pressure_filtered_left_ > 50){
+    if (pressure_filtered_left_ > config_.summed_pressure_threshold){
         if (curr_stand_left_ != true){
             up_l_ = this->now();
         
@@ -82,7 +82,7 @@ void WalkSupportStateDetector::loop() {
     pressure_msg.data = pressure_filtered_right_;
     pub_foot_pressure_debug_r_->publish(pressure_msg);
 
-    if (pressure_filtered_right_ > 50){
+    if (pressure_filtered_right_ > config_.summed_pressure_threshold){
         if (curr_stand_right_ != true){
             up_r_ = this->now();
         
