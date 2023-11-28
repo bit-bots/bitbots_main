@@ -1,5 +1,5 @@
 from bitbots_msgs.msg import Strategy
-from dynamic_stack_decider import AbstractActionElement
+from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 from bitbots_blackboard.blackboard import BodyBlackboard
 
