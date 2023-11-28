@@ -10,6 +10,7 @@ include:
         - bitbots_bringup
         - bitbots_extrinsic_calibration
         - bitbots_ipm
+        - bitbots_robot_description
         - bitbots_teleop
         - bitbots_tf_listener
         - bitbots_utils
