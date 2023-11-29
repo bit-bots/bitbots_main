@@ -3,14 +3,18 @@
 basler:
 	scripts/make_basler.sh $(ARGS)
 
-install: pull-init
-	scripts/make_update.sh
+install: pull-init basler update
+
+master:
+	git submodule foreach -q --recursive 'branch="$$(git config -f $$toplevel/.gitmodules submodule.$$name.branch)"; [ "$$branch" = "" ] && git switch -q master || git switch -q $$branch'
 
 pip:
-	scripts/make_pip.sh
+	# Install and upgrade pip dependencies
+	pip install --upgrade -r requirements/dev.txt
 
 pre-commit:
-	scripts/make_pre-commit.sh
+	# Install pre-commit hooks for all submodules that have a .pre-commit-config.yaml file
+	git submodule foreach -q --recursive "test -f .pre-commit-config.yaml && pre-commit install || :"
 
 pull-all:
 	git pull
@@ -26,10 +30,11 @@ pull-files:
 	scripts/pull_files.bash
 
 rosdep:
-	scripts/make_rosdep.sh
+	# Update rosdep and install dependencies from meta directory
+	rosdep update
+	rosdep install -iry --from-paths .
 
 status:
 	scripts/git_status.bash
 
-update: pull-all
-	scripts/make_update.sh
+update: pull-all rosdep pip pre-commit
