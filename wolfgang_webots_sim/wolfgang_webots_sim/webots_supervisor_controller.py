@@ -359,7 +359,9 @@ class SupervisorController:
                 r_foot_pose.position = Point(x=r_foot_position[0], y=r_foot_position[1], z=r_foot_position[2])
                 r_foot_pose.orientation = Quaternion(x=r_foot_orientation_quat[1], y=r_foot_orientation_quat[2],
                                                      z=r_foot_orientation_quat[3], w=r_foot_orientation_quat[0])
+                
                 msg.r_foot_pose = r_foot_pose
+                msg.header.stamp = self.ros_node.get_clock().now()
 
 
             # if self.ball is not None:
