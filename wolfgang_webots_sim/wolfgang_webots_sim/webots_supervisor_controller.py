@@ -361,7 +361,11 @@ class SupervisorController:
                                                      z=r_foot_orientation_quat[3], w=r_foot_orientation_quat[0])
                 
                 msg.r_foot_pose = r_foot_pose
-                msg.header.stamp = self.ros_node.get_clock().now().to_msg()
+
+                seconds = int(self.time)
+                nanosec = int((self.time - seconds) * 1e9)
+                msg.header.stamp = Time(seconds=seconds, nanoseconds=nanosec).to_msg()
+                
 
 
             # if self.ball is not None:
