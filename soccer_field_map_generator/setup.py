@@ -15,11 +15,13 @@ setup(
     zip_safe=True,
     maintainer='florian',
     maintainer_email='git@flova.de',
-    description='TODO: Package description',
-    license='TODO: License declaration',
+    description='A package to generate a soccer field map using a gui or cli',
+    license='Apache License 2.0',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'gui = soccer_field_map_generator.gui:main',
+            'cli = soccer_field_map_generator.cli:main',
         ],
     },
 )

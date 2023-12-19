@@ -7,8 +7,8 @@ from PIL import Image, ImageTk
 from tkinter import filedialog
 from tkinter import ttk
 
-from generator import MapTypes, MarkTypes, FieldFeatureStyles, generate_map_image, generate_metadata, load_config_file
-from humanoid_league_misc.soccer_field_map_generator.soccer_field_map_generator.tooltip import Tooltip
+from soccer_field_map_generator.generator import MapTypes, MarkTypes, FieldFeatureStyles, generate_map_image, generate_metadata, load_config_file
+from soccer_field_map_generator.tooltip import Tooltip
 
 
 class MapGeneratorParamInput(tk.Frame):
@@ -351,7 +351,11 @@ class MapGeneratorGUI:
         self.canvas.image = img  # To prevent garbage collection
 
 
-if __name__ == "__main__":
+def main():
     root = tk.Tk()
     app = MapGeneratorGUI(root)
     root.mainloop()
+
+
+if __name__ == '__main__':
+    main()
