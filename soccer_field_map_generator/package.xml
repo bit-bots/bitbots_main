@@ -3,11 +3,16 @@
 <package format="3">
   <name>soccer_field_map_generator</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
-  <maintainer email="git@flova.de">florian</maintainer>
-  <license>TODO: License declaration</license>
+  <description>A package to generate a soccer field map using a gui or cli</description>
+  <maintainer email="git@flova.de">Florian Vahl</maintainer>
+  <license>Apache License 2.0</license>
 
-  <depend>rclpy</depend>
+  <depend>python3-opencv</depend>
+  <depend>python3-numpy</depend>
+  <depend>python3-tk</depend>
+  <depend>python3-yaml</depend>
+  <depend>python3-pil</depend>
+  <depend>python3-scipy</depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
