@@ -7,12 +7,21 @@ from PIL import Image, ImageTk
 from tkinter import filedialog
 from tkinter import ttk
 
-from soccer_field_map_generator.generator import MapTypes, MarkTypes, FieldFeatureStyles, generate_map_image, generate_metadata, load_config_file
+from soccer_field_map_generator.generator import (
+    MapTypes,
+    MarkTypes,
+    FieldFeatureStyles,
+    generate_map_image,
+    generate_metadata,
+    load_config_file,
+)
 from soccer_field_map_generator.tooltip import Tooltip
 
 
 class MapGeneratorParamInput(tk.Frame):
-    def __init__(self, parent, update_hook: callable, parameter_definitions: dict[str, dict]):
+    def __init__(
+        self, parent, update_hook: callable, parameter_definitions: dict[str, dict]
+    ):
         tk.Frame.__init__(self, parent)
 
         # Keep track of parameter definitions, GUI elements and the input values
@@ -26,7 +35,9 @@ class MapGeneratorParamInput(tk.Frame):
             label = ttk.Label(self, text=parameter_definition["label"])
             if parameter_definition["type"] == bool:
                 variable = tk.BooleanVar(value=parameter_definition["default"])
-                ui_element = ttk.Checkbutton(self, command=update_hook, variable=variable)
+                ui_element = ttk.Checkbutton(
+                    self, command=update_hook, variable=variable
+                )
             elif parameter_definition["type"] == int:
                 variable = tk.IntVar(value=parameter_definition["default"])
                 ui_element = ttk.Entry(self, textvariable=variable)
@@ -50,20 +61,26 @@ class MapGeneratorParamInput(tk.Frame):
             # Add ui elements to the dict
             self.parameter_ui_elements[parameter_name] = {
                 "label": label,
-                "ui_element": ui_element
+                "ui_element": ui_element,
             }
 
             # Store variable for later state access
             self.parameter_values[parameter_name] = variable
 
-
         # Create layout
         for i, parameter_name in enumerate(parameter_definitions.keys()):
-            self.parameter_ui_elements[parameter_name]["label"].grid(row=i, column=0, sticky="e")
-            self.parameter_ui_elements[parameter_name]["ui_element"].grid(row=i, column=1, sticky="w")
+            self.parameter_ui_elements[parameter_name]["label"].grid(
+                row=i, column=0, sticky="e"
+            )
+            self.parameter_ui_elements[parameter_name]["ui_element"].grid(
+                row=i, column=1, sticky="w"
+            )
 
     def get_parameters(self):
-        return {parameter_name: parameter_value.get() for parameter_name, parameter_value in self.parameter_values.items()}
+        return {
+            parameter_name: parameter_value.get()
+            for parameter_name, parameter_value in self.parameter_values.items()
+        }
 
     def get_parameter(self, parameter_name):
         return self.parameter_values[parameter_name].get()
@@ -73,7 +90,7 @@ class MapGeneratorGUI:
     def __init__(self, root: tk.Tk):
         # Set ttk theme
         s = ttk.Style()
-        s.theme_use('clam')
+        s.theme_use("clam")
 
         # Set window title and size
         self.root = root
@@ -83,154 +100,168 @@ class MapGeneratorGUI:
         # Create GUI elements
 
         # Title
-        self.title = ttk.Label(self.root, text="Soccer Map Generator", font=("TkDefaultFont", 16))
+        self.title = ttk.Label(
+            self.root, text="Soccer Map Generator", font=("TkDefaultFont", 16)
+        )
 
         # Parameter Input
-        self.parameter_input = MapGeneratorParamInput(self.root, self.update_map, {
-            "map_type": {
-                "type": MapTypes,
-                "default": MapTypes.LINE,
-                "label": "Map Type",
-                "tooltip": "Type of the map we want to generate"
+        self.parameter_input = MapGeneratorParamInput(
+            self.root,
+            self.update_map,
+            {
+                "map_type": {
+                    "type": MapTypes,
+                    "default": MapTypes.LINE,
+                    "label": "Map Type",
+                    "tooltip": "Type of the map we want to generate",
+                },
+                "penalty_mark": {
+                    "type": bool,
+                    "default": True,
+                    "label": "Penalty Mark",
+                    "tooltip": "Whether or not to draw the penalty mark",
+                },
+                "center_point": {
+                    "type": bool,
+                    "default": True,
+                    "label": "Center Point",
+                    "tooltip": "Whether or not to draw the center point",
+                },
+                "goal_back": {
+                    "type": bool,
+                    "default": True,
+                    "label": "Goal Back",
+                    "tooltip": "Whether or not to draw the back area of the goal",
+                },
+                "stroke_width": {
+                    "type": int,
+                    "default": 5,
+                    "label": "Stoke Width",
+                    "tooltip": "Width (in px) of the shapes we draw",
+                },
+                "field_length": {
+                    "type": int,
+                    "default": 900,
+                    "label": "Field Length",
+                    "tooltip": "Length of the field in cm",
+                },
+                "field_width": {
+                    "type": int,
+                    "default": 600,
+                    "label": "Field Width",
+                    "tooltip": "Width of the field in cm",
+                },
+                "goal_depth": {
+                    "type": int,
+                    "default": 60,
+                    "label": "Goal Depth",
+                    "tooltip": "Depth of the goal in cm",
+                },
+                "goal_width": {
+                    "type": int,
+                    "default": 260,
+                    "label": "Goal Width",
+                    "tooltip": "Width of the goal in cm",
+                },
+                "goal_area_length": {
+                    "type": int,
+                    "default": 100,
+                    "label": "Goal Area Length",
+                    "tooltip": "Length of the goal area in cm",
+                },
+                "goal_area_width": {
+                    "type": int,
+                    "default": 300,
+                    "label": "Goal Area Width",
+                    "tooltip": "Width of the goal area in cm",
+                },
+                "penalty_mark_distance": {
+                    "type": int,
+                    "default": 150,
+                    "label": "Penalty Mark Distance",
+                    "tooltip": "Distance of the penalty mark from the goal line in cm",
+                },
+                "center_circle_diameter": {
+                    "type": int,
+                    "default": 150,
+                    "label": "Center Circle Diameter",
+                    "tooltip": "Diameter of the center circle in cm",
+                },
+                "border_strip_width": {
+                    "type": int,
+                    "default": 100,
+                    "label": "Border Strip Width",
+                    "tooltip": "Width of the border strip around the field in cm",
+                },
+                "penalty_area_length": {
+                    "type": int,
+                    "default": 200,
+                    "label": "Penalty Area Length",
+                    "tooltip": "Length of the penalty area in cm",
+                },
+                "penalty_area_width": {
+                    "type": int,
+                    "default": 500,
+                    "label": "Penalty Area Width",
+                    "tooltip": "Width of the penalty area in cm",
+                },
+                "field_feature_size": {
+                    "type": int,
+                    "default": 30,
+                    "label": "Field Feature Size",
+                    "tooltip": "Size of the field features in cm",
+                },
+                "mark_type": {
+                    "type": MarkTypes,
+                    "default": MarkTypes.CROSS,
+                    "label": "Mark Type",
+                    "tooltip": "Type of the marks (penalty mark, center point)",
+                },
+                "field_feature_style": {
+                    "type": FieldFeatureStyles,
+                    "default": FieldFeatureStyles.EXACT,
+                    "label": "Field Feature Style",
+                    "tooltip": "Style of the field features",
+                },
+                "distance_map": {
+                    "type": bool,
+                    "default": False,
+                    "label": "Distance Map",
+                    "tooltip": "Whether or not to draw the distance map",
+                },
+                "distance_decay": {
+                    "type": float,
+                    "default": 0.0,
+                    "label": "Distance Decay",
+                    "tooltip": "Exponential decay applied to the distance map",
+                },
+                "invert": {
+                    "type": bool,
+                    "default": True,
+                    "label": "Invert",
+                    "tooltip": "Invert the final image",
+                },
             },
-            "penalty_mark": {
-                "type": bool,
-                "default": True,
-                "label": "Penalty Mark",
-                "tooltip": "Whether or not to draw the penalty mark"
-            },
-            "center_point": {
-                "type": bool,
-                "default": True,
-                "label": "Center Point",
-                "tooltip": "Whether or not to draw the center point"
-            },
-            "goal_back": {
-                "type": bool,
-                "default": True,
-                "label": "Goal Back",
-                "tooltip": "Whether or not to draw the back area of the goal"
-            },
-            "stroke_width": {
-                "type": int,
-                "default": 5,
-                "label": "Stoke Width",
-                "tooltip": "Width (in px) of the shapes we draw"
-            },
-            "field_length": {
-                "type": int,
-                "default": 900,
-                "label": "Field Length",
-                "tooltip": "Length of the field in cm"
-            },
-            "field_width": {
-                "type": int,
-                "default": 600,
-                "label": "Field Width",
-                "tooltip": "Width of the field in cm"
-            },
-            "goal_depth": {
-                "type": int,
-                "default": 60,
-                "label": "Goal Depth",
-                "tooltip": "Depth of the goal in cm"
-            },
-            "goal_width": {
-                "type": int,
-                "default": 260,
-                "label": "Goal Width",
-                "tooltip": "Width of the goal in cm"
-            },
-            "goal_area_length": {
-                "type": int,
-                "default": 100,
-                "label": "Goal Area Length",
-                "tooltip": "Length of the goal area in cm"
-            },
-            "goal_area_width": {
-                "type": int,
-                "default": 300,
-                "label": "Goal Area Width",
-                "tooltip": "Width of the goal area in cm"
-            },
-            "penalty_mark_distance": {
-                "type": int,
-                "default": 150,
-                "label": "Penalty Mark Distance",
-                "tooltip": "Distance of the penalty mark from the goal line in cm"
-            },
-            "center_circle_diameter": {
-                "type": int,
-                "default": 150,
-                "label": "Center Circle Diameter",
-                "tooltip": "Diameter of the center circle in cm"
-            },
-            "border_strip_width": {
-                "type": int,
-                "default": 100,
-                "label": "Border Strip Width",
-                "tooltip": "Width of the border strip around the field in cm"
-            },
-            "penalty_area_length": {
-                "type": int,
-                "default": 200,
-                "label": "Penalty Area Length",
-                "tooltip": "Length of the penalty area in cm"
-            },
-            "penalty_area_width": {
-                "type": int,
-                "default": 500,
-                "label": "Penalty Area Width",
-                "tooltip": "Width of the penalty area in cm"
-            },
-            "field_feature_size": {
-                "type": int,
-                "default": 30,
-                "label": "Field Feature Size",
-                "tooltip": "Size of the field features in cm"
-            },
-            "mark_type": {
-                "type": MarkTypes,
-                "default": MarkTypes.CROSS,
-                "label": "Mark Type",
-                "tooltip": "Type of the marks (penalty mark, center point)"
-            },
-            "field_feature_style": {
-                "type": FieldFeatureStyles,
-                "default": FieldFeatureStyles.EXACT,
-                "label": "Field Feature Style",
-                "tooltip": "Style of the field features"
-            },
-            "distance_map": {
-                "type": bool,
-                "default": False,
-                "label": "Distance Map",
-                "tooltip": "Whether or not to draw the distance map"
-            },
-            "distance_decay": {
-                "type": float,
-                "default": 0.0,
-                "label": "Distance Decay",
-                "tooltip": "Exponential decay applied to the distance map"
-            },
-            "invert": {
-                "type": bool,
-                "default": True,
-                "label": "Invert",
-                "tooltip": "Invert the final image"
-            }
-        })
+        )
 
         # Generate Map Button
-        self.save_map_button = ttk.Button(self.root, text="Save Map", command=self.save_map)
+        self.save_map_button = ttk.Button(
+            self.root, text="Save Map", command=self.save_map
+        )
 
         # Save metadata checkbox
         self.save_metadata = tk.BooleanVar(value=True)
-        self.save_metadata_checkbox = ttk.Checkbutton(self.root, text="Save Metadata", variable=self.save_metadata)
+        self.save_metadata_checkbox = ttk.Checkbutton(
+            self.root, text="Save Metadata", variable=self.save_metadata
+        )
 
         # Load and save config buttons
-        self.load_config_button = ttk.Button(self.root, text="Load Config", command=self.load_config)
-        self.save_config_button = ttk.Button(self.root, text="Save Config", command=self.save_config)
+        self.load_config_button = ttk.Button(
+            self.root, text="Load Config", command=self.load_config
+        )
+        self.save_config_button = ttk.Button(
+            self.root, text="Save Config", command=self.save_config
+        )
 
         # Canvas to display the generated map
         self.canvas = tk.Canvas(self.root, width=800, height=600)
@@ -258,9 +289,10 @@ class MapGeneratorGUI:
     def load_config(self):
         # Prompt the user to select a file (force yaml)
         file = filedialog.askopenfile(
-            mode='r',
+            mode="r",
             defaultextension=".yaml",
-            filetypes=(("yaml file", "*.yaml"), ("All Files", "*.*")))
+            filetypes=(("yaml file", "*.yaml"), ("All Files", "*.*")),
+        )
         if file:
             # Load the config file
             config = load_config_file(file)
@@ -270,7 +302,9 @@ class MapGeneratorGUI:
                 return
             # Set the parameters in the gui
             for parameter_name, parameter_value in config.items():
-                self.parameter_input.parameter_values[parameter_name].set(parameter_value)
+                self.parameter_input.parameter_values[parameter_name].set(
+                    parameter_value
+                )
             # Update the map
             self.update_map()
 
@@ -279,28 +313,31 @@ class MapGeneratorGUI:
         parameters = self.parameter_input.get_parameters()
         # Open a file dialog to select the file
         file = filedialog.asksaveasfile(
-            mode='w',
+            mode="w",
             defaultextension=".yaml",
-            filetypes=(("yaml file", "*.yaml"), ("All Files", "*.*")))
+            filetypes=(("yaml file", "*.yaml"), ("All Files", "*.*")),
+        )
         if file:
             # Add header
             file.write("# Map Generator Config\n")
             file.write("# This file was generated by the map generator GUI\n\n")
             # Save the parameters in this format:
-            yaml.dump({
-                "header": {
-                    "version": "1.0",
-                    "type": "map_generator_config"
+            yaml.dump(
+                {
+                    "header": {"version": "1.0", "type": "map_generator_config"},
+                    "parameters": parameters,
                 },
-                "parameters": parameters
-            }, file, sort_keys=False)
+                file,
+                sort_keys=False,
+            )
             print(f"Saved config to {file.name}")
 
     def save_map(self):
         file = filedialog.asksaveasfile(
-            mode='w',
+            mode="w",
             defaultextension=".png",
-            filetypes=(("png file", "*.png"), ("All Files", "*.*")))
+            filetypes=(("png file", "*.png"), ("All Files", "*.*")),
+        )
         if file:
             print(f"Saving map to {file.name}")
 
@@ -311,18 +348,24 @@ class MapGeneratorGUI:
                 # Save metadata
                 if self.save_metadata.get():
                     # Save the metadata in this format:
-                    metadata = generate_metadata(parameters, os.path.basename(file.name))
+                    metadata = generate_metadata(
+                        parameters, os.path.basename(file.name)
+                    )
                     # Save metadata in the same folder as the map
-                    metadata_file = os.path.join(os.path.dirname(file.name), "map_server.yaml")
+                    metadata_file = os.path.join(
+                        os.path.dirname(file.name), "map_server.yaml"
+                    )
                     with open(metadata_file, "w") as f:
                         yaml.dump(metadata, f, sort_keys=False)
                     print(f"Saved metadata to {metadata_file}")
 
-
                 # Show success box and ask if we want to open it with the default image viewer
-                if tk.messagebox.askyesno("Success", "Map saved successfully. Do you want to open it?"):
+                if tk.messagebox.askyesno(
+                    "Success", "Map saved successfully. Do you want to open it?"
+                ):
                     import platform
                     import subprocess
+
                     if platform.system() == "Windows":
                         subprocess.Popen(["start", file.name], shell=True)
                     elif platform.system() == "Darwin":
@@ -345,7 +388,10 @@ class MapGeneratorGUI:
         # Display the generated map on the canvas
         img = Image.fromarray(image)
         # Resize to fit canvas while keeping aspect ratio
-        img.thumbnail((self.canvas.winfo_width(), self.canvas.winfo_height()), Image.Resampling.LANCZOS)
+        img.thumbnail(
+            (self.canvas.winfo_width(), self.canvas.winfo_height()),
+            Image.Resampling.LANCZOS,
+        )
         img = ImageTk.PhotoImage(img)
         self.canvas.create_image(0, 0, anchor=tk.NW, image=img)
         self.canvas.image = img  # To prevent garbage collection
@@ -357,5 +403,5 @@ def main():
     root.mainloop()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

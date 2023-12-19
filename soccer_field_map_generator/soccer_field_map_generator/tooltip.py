@@ -2,7 +2,7 @@ import tkinter as tk
 
 
 class Tooltip:
-    '''
+    """
     It creates a tooltip for a given widget as the mouse goes on it.
 
     see:
@@ -30,16 +30,18 @@ class Tooltip:
       Tested on Ubuntu 16.04/16.10, running Python 3.5.2
 
     TODO: themes styles support
-    '''
+    """
 
-    def __init__(self, widget,
-                 *,
-                 bg='#FFFFEA',
-                 pad=(5, 3, 5, 3),
-                 text='widget info',
-                 waittime=400,
-                 wraplength=250):
-
+    def __init__(
+        self,
+        widget,
+        *,
+        bg="#FFFFEA",
+        pad=(5, 3, 5, 3),
+        text="widget info",
+        waittime=400,
+        wraplength=250
+    ):
         self.waittime = waittime  # in miliseconds, originally 500
         self.wraplength = wraplength  # in pixels, originally 180
         self.widget = widget
@@ -70,16 +72,15 @@ class Tooltip:
             self.widget.after_cancel(id_)
 
     def show(self):
-        def tip_pos_calculator(widget, label,
-                               *,
-                               tip_delta=(10, 5), pad=(5, 3, 5, 3)):
-
+        def tip_pos_calculator(widget, label, *, tip_delta=(10, 5), pad=(5, 3, 5, 3)):
             w = widget
 
             s_width, s_height = w.winfo_screenwidth(), w.winfo_screenheight()
 
-            width, height = (pad[0] + label.winfo_reqwidth() + pad[2],
-                             pad[1] + label.winfo_reqheight() + pad[3])
+            width, height = (
+                pad[0] + label.winfo_reqwidth() + pad[2],
+                pad[1] + label.winfo_reqheight() + pad[3],
+            )
 
             mouse_x, mouse_y = w.winfo_pointerxy()
 
@@ -96,7 +97,6 @@ class Tooltip:
             offscreen = (x_delta, y_delta) != (0, 0)
 
             if offscreen:
-
                 if x_delta:
                     x1 = mouse_x - tip_delta[0] - width
 
@@ -126,20 +126,18 @@ class Tooltip:
         # Leaves only the label and removes the app window
         self.tw.wm_overrideredirect(True)
 
-        win = tk.Frame(self.tw,
-                       background=bg,
-                       borderwidth=0)
-        label = tk.Label(win,
-                          text=self.text,
-                          justify=tk.LEFT,
-                          background=bg,
-                          relief=tk.SOLID,
-                          borderwidth=0,
-                          wraplength=self.wraplength)
+        win = tk.Frame(self.tw, background=bg, borderwidth=0)
+        label = tk.Label(
+            win,
+            text=self.text,
+            justify=tk.LEFT,
+            background=bg,
+            relief=tk.SOLID,
+            borderwidth=0,
+            wraplength=self.wraplength,
+        )
 
-        label.grid(padx=(pad[0], pad[2]),
-                   pady=(pad[1], pad[3]),
-                   sticky=tk.NSEW)
+        label.grid(padx=(pad[0], pad[2]), pady=(pad[1], pad[3]), sticky=tk.NSEW)
         win.grid()
 
         x, y = tip_pos_calculator(widget, label)
