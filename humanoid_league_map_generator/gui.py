@@ -7,6 +7,8 @@ import math
 import numpy as np
 from scipy import ndimage
 from enum import Enum
+import yaml
+import os
 
 
 class MapTypes(Enum):
@@ -36,7 +38,7 @@ class MapGeneratorParamInput(tk.Frame):
         self.parameter_ui_elements: dict[str, dict[str, ttk.Widget]] = {}
         self.parameter_values: dict[str, tk.Variable] = {}
 
-        # Generate GUI elements for all parameters                      
+        # Generate GUI elements for all parameters
         for parameter_name, parameter_definition in parameter_definitions.items():
             # Create GUI elements
             label = ttk.Label(self, text=parameter_definition["label"])
@@ -58,7 +60,7 @@ class MapGeneratorParamInput(tk.Frame):
                 ui_element.bind("<<ComboboxSelected>>", update_hook)
             else:
                 raise NotImplementedError("Parameter type not implemented")
-        
+
             self.parameter_values[parameter_name] = variable
 
             # Add to dict
@@ -71,10 +73,10 @@ class MapGeneratorParamInput(tk.Frame):
         for i, parameter_name in enumerate(parameter_definitions.keys()):
             self.parameter_ui_elements[parameter_name]["label"].grid(row=i, column=0, sticky="e")
             self.parameter_ui_elements[parameter_name]["ui_element"].grid(row=i, column=1, sticky="w")
-    
+
     def get_parameters(self):
         return {parameter_name: parameter_value.get() for parameter_name, parameter_value in self.parameter_values.items()}
-    
+
     def get_parameter(self, parameter_name):
         return self.parameter_values[parameter_name].get()
 
@@ -93,11 +95,8 @@ class MapGeneratorGUI:
 
         # Create GUI elements
 
-        # Output folder
-        self.output_label = ttk.Label(self.root, text="Output Folder:")
-        self.output_folder = tk.StringVar()
-        self.output_entry = ttk.Entry(self.root, textvariable=self.output_folder)
-        self.output_button = ttk.Button(self.root, text="Browse", command=self.browse_output_folder)
+        # Title
+        self.title = ttk.Label(self.root, text="Soccer Map Generator", font=("TkDefaultFont", 16))
 
         # Parameter Input
         self.parameter_input = MapGeneratorParamInput(self.root, self.update_map, {
@@ -230,52 +229,108 @@ class MapGeneratorGUI:
         })
 
         # Generate Map Button
-        self.generate_button = ttk.Button(self.root, text="Generate Map", command=self.update_map)
+        self.generate_button = ttk.Button(self.root, text="Save Map", command=self.save)
+
+        # Save metadata checkbox
+        self.save_metadata = tk.BooleanVar(value=True)
+        self.save_metadata_checkbox = ttk.Checkbutton(self.root, text="Save Metadata", variable=self.save_metadata)
+
 
         # Canvas to display the generated map
         self.canvas = tk.Canvas(self.root, width=800, height=600)
 
         # Layout
 
-
-        # Output folder
-        self.output_label.grid(row=0, column=0, sticky="e")
-        self.output_entry.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
-        self.output_button.grid(row=0, column=2, padx=5, pady=5)
-
         # Parameter input and generate button
-        self.parameter_input.grid(row=1, column=0, columnspan=3, pady=10)
-        self.generate_button.grid(row=2, column=0, columnspan=3, pady=10)
+        self.title.grid(row=0, column=0, columnspan=2, pady=10, padx=10)
+        self.parameter_input.grid(row=1, column=0, columnspan=2, pady=10, padx=10)
+        self.save_metadata_checkbox.grid(row=2, column=0, columnspan=1, pady=10)
+        self.generate_button.grid(row=2, column=1, columnspan=1, pady=10)
 
         # Preview
-        self.canvas.grid(row=0, column=3, rowspan=3)
+        self.canvas.grid(row=0, column=2, rowspan=3)
 
         # Color in which we want to draw the lines
         self.primary_color = (255, 255, 255)  # white
 
         # Render initial map
-        self.root.update()  # We need to call update() first 
+        self.root.update()  # We need to call update() first
         self.update_map()
-        
 
-    def browse_output_folder(self):
-        folder = filedialog.askdirectory()
-        if folder:
-            self.output_folder.set(folder)
+
+    def save(self):
+        file = filedialog.asksaveasfile(mode='w', defaultextension=".png")
+        if file:
+            print(f"Saving map to {file.name}")
+
+            # Generate and save the map
+            generated_map = self.generate_map_image()
+            if cv2.imwrite(file.name, generated_map):
+                # Save metadata
+                if self.save_metadata.get():
+                    # Save the metadata in this format:
+                    metadata = self.generate_metadata(os.path.basename(file.name))
+                    # Save metadata in the same folder as the map
+                    metadata_file = os.path.join(os.path.dirname(file.name), "metadata.yaml")
+                    with open(metadata_file, "w") as f:
+                        yaml.dump(metadata, f, sort_keys=False)
+                    print(f"Saved metadata to {metadata_file}")
+
+
+                # Show success box and ask if we want to open it with the default image viewer
+                if tk.messagebox.askyesno("Success", "Map saved successfully. Do you want to open it?"):
+                    import platform
+                    import subprocess
+                    if platform.system() == "Windows":
+                        subprocess.Popen(["start", file.name], shell=True)
+                    elif platform.system() == "Darwin":
+                        subprocess.Popen(["open", file.name])
+                    else:
+                        subprocess.Popen(["xdg-open", file.name])
+            else:
+                # Show error box
+                tk.messagebox.showerror("Error", "Could not save map to file")
+
+    def generate_metadata(self, image_name: str) -> dict:
+        # Get the parameters from the user input
+        parameters = self.parameter_input.get_parameters()
+
+        # Get the field dimensions in cm
+        field_dimensions = np.array([parameters["field_length"], parameters["field_width"], 0])
+        # Add the border strip
+        field_dimensions[:2] += 2 * parameters["border_strip_width"]
+        # Get the origin
+        origin = -field_dimensions / 2
+        # Convert to meters
+        origin /= 100
+
+        # Generate the metadata
+        metadata = {
+            "image": image_name,
+            "resolution": 0.01,
+            "origin": origin.tolist(),
+            "occupied_thresh": 0.99,
+            "free_thresh": 0.196,
+            "negate": int(parameters["invert"])
+        }
+        return metadata
 
     def update_map(self, *args):
         # Generate and display the map on the canvas
-        generated_map = self.generate_map_image()
-        self.display_map(generated_map)
+        try:
+            generated_map = self.generate_map_image()
+            self.display_map(generated_map)
+        except tk.TclError as e:
+            print(f"Invalid input for map generation. '{e}'")
 
     def drawCross(self, img, point, color, width=5, length=15):
-        half_width = width // 2 + width % 2
-        vertical_start = (point[0] - half_width, point[1] - length)
-        vertical_end = (point[0] + half_width, point[1] + length)
-        horizontal_start = (point[0] - length, point[1] - half_width)
-        horizontal_end = (point[0] + length, point[1] + half_width)
-        img = cv2.rectangle(img, vertical_start, vertical_end, color, -1)
-        img = cv2.rectangle(img, horizontal_start, horizontal_end, color, -1)
+        half_width = width // 2
+        vertical_start = (point[0], point[1] - length)
+        vertical_end = (point[0], point[1] + length)
+        horizontal_start = (point[0] - length, point[1])
+        horizontal_end = (point[0] + length, point[1])
+        img = cv2.line(img, vertical_start, vertical_end, color, width)
+        img = cv2.line(img, horizontal_start, horizontal_end, color, width)
 
     def blurDistance(self, image, blur_factor):
         if blur_factor <= 0:  # Skip blur
@@ -304,29 +359,30 @@ class MapGeneratorGUI:
         return out_img
 
     def generate_map_image(self):
-        target = MapTypes(self.parameter_input.get_parameters()["map_type"])
-        mark_type = MarkTypes(self.parameter_input.get_parameters()["mark_type"])
-        field_feature_style = FieldFeatureStyles(self.parameter_input.get_parameters()["field_feature_style"])
+        parameters = self.parameter_input.get_parameters()
+        target = MapTypes(parameters["map_type"])
+        mark_type = MarkTypes(parameters["mark_type"])
+        field_feature_style = FieldFeatureStyles(parameters["field_feature_style"])
 
-        penalty_mark = self.parameter_input.get_parameters()["penalty_mark"]
-        center_point = self.parameter_input.get_parameters()["center_point"]
-        goal_back = self.parameter_input.get_parameters()["goal_back"]  # Draw goal back area
+        penalty_mark = parameters["penalty_mark"]
+        center_point = parameters["center_point"]
+        goal_back = parameters["goal_back"]  # Draw goal back area
 
-        stroke_width = self.parameter_input.get_parameters()["stroke_width"]
-        field_length = self.parameter_input.get_parameters()["field_length"]
-        field_width = self.parameter_input.get_parameters()["field_width"]
-        goal_depth = self.parameter_input.get_parameters()["goal_depth"]
-        goal_width = self.parameter_input.get_parameters()["goal_width"]
-        goal_area_length = self.parameter_input.get_parameters()["goal_area_length"]
-        goal_area_width = self.parameter_input.get_parameters()["goal_area_width"]
-        penalty_mark_distance = self.parameter_input.get_parameters()["penalty_mark_distance"]
-        center_circle_diameter = self.parameter_input.get_parameters()["center_circle_diameter"]
-        border_strip_width = self.parameter_input.get_parameters()["border_strip_width"]
-        penalty_area_length = self.parameter_input.get_parameters()["penalty_area_length"]
-        penalty_area_width = self.parameter_input.get_parameters()["penalty_area_width"]
-        field_feature_size = self.parameter_input.get_parameters()["field_feature_size"]
-        blur_factor = self.parameter_input.get_parameters()["blur_factor"]
-        invert = self.parameter_input.get_parameters()["invert"]
+        stroke_width = parameters["stroke_width"]
+        field_length = parameters["field_length"]
+        field_width = parameters["field_width"]
+        goal_depth = parameters["goal_depth"]
+        goal_width = parameters["goal_width"]
+        goal_area_length = parameters["goal_area_length"]
+        goal_area_width = parameters["goal_area_width"]
+        penalty_mark_distance = parameters["penalty_mark_distance"]
+        center_circle_diameter = parameters["center_circle_diameter"]
+        border_strip_width = parameters["border_strip_width"]
+        penalty_area_length = parameters["penalty_area_length"]
+        penalty_area_width = parameters["penalty_area_width"]
+        field_feature_size = parameters["field_feature_size"]
+        blur_factor = parameters["blur_factor"]
+        invert = parameters["invert"]
         color = self.primary_color
 
         # Size of complete turf field (field with outside borders)
@@ -391,7 +447,7 @@ class MapGeneratorGUI:
                                     goalpost_right_2[1])
 
 
-        
+
         # Create black image in the correct size
         img = np.zeros(image_size, np.uint8)
 
@@ -454,12 +510,12 @@ class MapGeneratorGUI:
 
             # Draw fieldboundary
             img = cv2.rectangle(
-                img, 
-                (100, 100), 
-                (image_size[1] + 100, image_size[0] + 100), 
+                img,
+                (100, 100),
+                (image_size[1] + 100, image_size[0] + 100),
                 color,
                 stroke_width)
-            
+
         if target in [MapTypes.CORNERS, MapTypes.FIELD_FEATURES] and field_feature_style == FieldFeatureStyles.EXACT:
             # draw outline corners
             # top left
@@ -572,7 +628,7 @@ class MapGeneratorGUI:
             img = cv2.line(img, goal_area_right_start,
                                     (goal_area_right_start[0] - field_feature_size, goal_area_right_start[1]),
                                     color, stroke_width)
-            
+
             # bottom
             img = cv2.line(img, (goal_area_right_start[0], goal_area_right_end[1] - field_feature_size // 2),
                                     (goal_area_right_start[0], goal_area_right_end[1] + field_feature_size // 2),
@@ -580,7 +636,7 @@ class MapGeneratorGUI:
             img = cv2.line(img, (goal_area_right_start[0], goal_area_right_end[1]),
                                     (goal_area_right_start[0] - field_feature_size, goal_area_right_end[1]),
                                     color, stroke_width)
-            
+
             # draw center line to side line t crossings
             # top
             img = cv2.line(img, (middle_line_start[0] - field_feature_size // 2, middle_line_start[1]),
@@ -598,7 +654,7 @@ class MapGeneratorGUI:
                                     (middle_line_end[0], middle_line_end[1] - field_feature_size),
                                     color, stroke_width)
 
-                                            
+
 
         if target in [MapTypes.TCROSSINGS, MapTypes.FIELD_FEATURES] and field_feature_style == FieldFeatureStyles.BLOB:
             # draw blobs for goal areas
@@ -613,7 +669,7 @@ class MapGeneratorGUI:
 
         if target in [MapTypes.CROSSES, MapTypes.FIELD_FEATURES] and field_feature_style == FieldFeatureStyles.EXACT:
             # penalty marks
-            if penalty_mark: 
+            if penalty_mark:
                 self.drawCross(img, penalty_mark_left, color, stroke_width, field_feature_size // 2)
                 self.drawCross(img, penalty_mark_right, color, stroke_width, field_feature_size // 2)
 
