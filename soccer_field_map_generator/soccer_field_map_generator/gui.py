@@ -8,7 +8,7 @@ from tkinter import filedialog
 from tkinter import ttk
 
 from generator import MapTypes, MarkTypes, FieldFeatureStyles, generate_map_image, generate_metadata, load_config_file
-from tooltip import Tooltip
+from humanoid_league_misc.soccer_field_map_generator.soccer_field_map_generator.tooltip import Tooltip
 
 
 class MapGeneratorParamInput(tk.Frame):
