@@ -110,103 +110,103 @@ class MapGeneratorGUI:
                 "type": bool,
                 "default": True,
                 "label": "Penalty Mark",
-                "tooltip": "Draw penalty mark"
+                "tooltip": "Whether or not to draw the penalty mark"
             },
             "center_point": {
                 "type": bool,
                 "default": True,
                 "label": "Center Point",
-                "tooltip": "Draw center point"
+                "tooltip": "Whether or not to draw the center point"
             },
             "goal_back": {
                 "type": bool,
                 "default": True,
                 "label": "Goal Back",
-                "tooltip": "Draw goal back area"
+                "tooltip": "Whether or not to draw the back area of the goal"
             },
             "stroke_width": {
                 "type": int,
                 "default": 5,
                 "label": "Stoke Width",
-                "tooltip": "Width of the shapes we draw"
+                "tooltip": "Width (in px) of the shapes we draw"
             },
             "field_length": {
                 "type": int,
                 "default": 900,
                 "label": "Field Length",
-                "tooltip": "Length of the field"
+                "tooltip": "Length of the field in cm"
             },
             "field_width": {
                 "type": int,
                 "default": 600,
                 "label": "Field Width",
-                "tooltip": "Width of the field"
+                "tooltip": "Width of the field in cm"
             },
             "goal_depth": {
                 "type": int,
                 "default": 60,
                 "label": "Goal Depth",
-                "tooltip": "Depth of the goal"
+                "tooltip": "Depth of the goal in cm"
             },
             "goal_width": {
                 "type": int,
                 "default": 260,
                 "label": "Goal Width",
-                "tooltip": "Width of the goal"
+                "tooltip": "Width of the goal in cm"
             },
             "goal_area_length": {
                 "type": int,
                 "default": 100,
                 "label": "Goal Area Length",
-                "tooltip": "Length of the goal area"
+                "tooltip": "Length of the goal area in cm"
             },
             "goal_area_width": {
                 "type": int,
                 "default": 300,
                 "label": "Goal Area Width",
-                "tooltip": "Width of the goal area"
+                "tooltip": "Width of the goal area in cm"
             },
             "penalty_mark_distance": {
                 "type": int,
                 "default": 150,
                 "label": "Penalty Mark Distance",
-                "tooltip": "Distance of the penalty mark from the goal"
+                "tooltip": "Distance of the penalty mark from the goal line in cm"
             },
             "center_circle_diameter": {
                 "type": int,
                 "default": 150,
                 "label": "Center Circle Diameter",
-                "tooltip": "Diameter of the center circle"
+                "tooltip": "Diameter of the center circle in cm"
             },
             "border_strip_width": {
                 "type": int,
                 "default": 100,
                 "label": "Border Strip Width",
-                "tooltip": "Width of the border strip"
+                "tooltip": "Width of the border strip around the field in cm"
             },
             "penalty_area_length": {
                 "type": int,
                 "default": 200,
                 "label": "Penalty Area Length",
-                "tooltip": "Length of the penalty area"
+                "tooltip": "Length of the penalty area in cm"
             },
             "penalty_area_width": {
                 "type": int,
                 "default": 500,
                 "label": "Penalty Area Width",
-                "tooltip": "Width of the penalty area"
+                "tooltip": "Width of the penalty area in cm"
             },
             "field_feature_size": {
                 "type": int,
                 "default": 30,
                 "label": "Field Feature Size",
-                "tooltip": "Size of the field features"
+                "tooltip": "Size of the field features in cm"
             },
             "mark_type": {
                 "type": MarkTypes,
                 "default": MarkTypes.CROSS,
                 "label": "Mark Type",
-                "tooltip": "Type of the marks"
+                "tooltip": "Type of the marks (penalty mark, center point)"
             },
             "field_feature_style": {
                 "type": FieldFeatureStyles,
@@ -218,13 +218,13 @@ class MapGeneratorGUI:
                 "type": float,
                 "default": 0.0,
                 "label": "Blur Factor",
-                "tooltip": "Blur factor"
+                "tooltip": "Magic value to blur the distance map"
             },
             "invert": {
                 "type": bool,
                 "default": False,
                 "label": "Invert",
-                "tooltip": "Invert the image"
+                "tooltip": "Invert the final image"
             }
         })
 
