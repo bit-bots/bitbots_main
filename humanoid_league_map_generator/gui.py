@@ -1,14 +1,14 @@
-import tkinter as tk
-from tkinter import ttk
-from tkinter import filedialog
-from PIL import Image, ImageTk
 import cv2
 import math
 import numpy as np
-from scipy import ndimage
-from enum import Enum
-import yaml
 import os
+import tkinter as tk
+import yaml
+from enum import Enum
+from PIL import Image, ImageTk
+from scipy import ndimage
+from tkinter import filedialog
+from tkinter import ttk
 
 from tooltip import Tooltip
 
@@ -22,9 +22,11 @@ class MapTypes(Enum):
     TCROSSINGS = "tcrossings"
     CROSSES = "crosses"
 
+
 class MarkTypes(Enum):
     POINT = "point"
     CROSS = "cross"
+
 
 class FieldFeatureStyles(Enum):
     EXACT = "exact"
@@ -221,11 +223,17 @@ class MapGeneratorGUI:
                 "label": "Field Feature Style",
                 "tooltip": "Style of the field features"
             },
-            "blur_factor": {
+            "distance_map": {
+                "type": bool,
+                "default": False,
+                "label": "Distance Map",
+                "tooltip": "Whether or not to draw the distance map"
+            },
+            "distance_decay": {
                 "type": float,
                 "default": 0.0,
-                "label": "Blur Factor",
-                "tooltip": "Magic value to blur the distance map"
+                "label": "Distance Decay",
+                "tooltip": "Exponential decay applied to the distance map"
             },
             "invert": {
                 "type": bool,
@@ -385,8 +393,16 @@ class MapGeneratorGUI:
         except tk.TclError as e:
             print(f"Invalid input for map generation. '{e}'")
 
+    def display_map(self, image):
+        # Display the generated map on the canvas
+        img = Image.fromarray(image)
+        # Resize to fit canvas while keeping aspect ratio
+        img.thumbnail((self.canvas.winfo_width(), self.canvas.winfo_height()), Image.Resampling.LANCZOS)
+        img = ImageTk.PhotoImage(img)
+        self.canvas.create_image(0, 0, anchor=tk.NW, image=img)
+        self.canvas.image = img  # To prevent garbage collection
+
     def drawCross(self, img, point, color, width=5, length=15):
-        half_width = width // 2
         vertical_start = (point[0], point[1] - length)
         vertical_end = (point[0], point[1] + length)
         horizontal_start = (point[0] - length, point[1])
@@ -394,28 +410,25 @@ class MapGeneratorGUI:
         img = cv2.line(img, vertical_start, vertical_end, color, width)
         img = cv2.line(img, horizontal_start, horizontal_end, color, width)
 
-    def blurDistance(self, image, blur_factor):
+    def drawDistance(self, image, decay_factor):
         # Calc distances
-        distance_map = 255 - ndimage.distance_transform_edt(255 - image)
+        distance_map = ndimage.distance_transform_edt(255 - image)
 
-        # Maximum field distance
-        maximum_size = math.sqrt(image.shape[0] ** 2 + image.shape[1] ** 2)
+        # Activation function that leads to a faster decay at the beginning
+        # and a slower decay at the end and is parameterized by the decay factor
+        if not math.isclose(decay_factor, 0):
+            distance_map = np.exp(-distance_map * decay_factor * 0.1)
+        else:
+            distance_map = -distance_map
 
-        # Get the value to a value from 0 to 1
-        distance_map = (distance_map / maximum_size)
-
-        # Magic value please change it
-        beta = (1 - blur_factor) * 10
-
-        # Activation function
-        distance_map = distance_map ** (2 * beta)
-
-        # Scale up
-        distance_map = cv2.normalize(distance_map, None, alpha=0, beta=100, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
-
-        # To img
-        out_img = 100 - distance_map.astype(np.uint8)
-        return out_img
+        # Scale to bounds of uint8 (0-255)
+        return cv2.normalize(
+            distance_map,
+            None,
+            alpha=0,
+            beta=255,
+            norm_type=cv2.NORM_MINMAX,
+            dtype=cv2.CV_64F).astype(np.uint8)
 
     def generate_map_image(self):
         parameters = self.parameter_input.get_parameters()
@@ -440,7 +453,8 @@ class MapGeneratorGUI:
         penalty_area_length = parameters["penalty_area_length"]
         penalty_area_width = parameters["penalty_area_width"]
         field_feature_size = parameters["field_feature_size"]
-        blur_factor = parameters["blur_factor"]
+        distance_map = parameters["distance_map"]
+        distance_decay = parameters["distance_decay"]
         invert = parameters["invert"]
         color = self.primary_color
 
@@ -713,8 +727,6 @@ class MapGeneratorGUI:
                                     (middle_line_end[0], middle_line_end[1] - field_feature_size),
                                     color, stroke_width)
 
-
-
         if target in [MapTypes.TCROSSINGS, MapTypes.FIELD_FEATURES] and field_feature_style == FieldFeatureStyles.BLOB:
             # draw blobs for goal areas
             img = cv2.circle(img, goal_area_left_start, field_feature_size, color, -1)
@@ -756,24 +768,15 @@ class MapGeneratorGUI:
             img = cv2.circle(img, (middle_point[0], middle_point[1] + center_circle_diameter), field_feature_size, color,
                                     -1)
 
-        # Blur
-        if blur_factor > 0:
-            img = self.blurDistance(img, blur_factor) # TODO
+        # Create distance map
+        if distance_map:
+            img = self.drawDistance(img, distance_decay)
 
         # Invert
         if invert:
             img = 255 - img
 
         return img
-
-    def display_map(self, image):
-        # Display the generated map on the canvas
-        img = Image.fromarray(image)
-        # Resize to fit canvas while keeping aspect ratio
-        img.thumbnail((self.canvas.winfo_width(), self.canvas.winfo_height()), Image.Resampling.LANCZOS)
-        img = ImageTk.PhotoImage(img)
-        self.canvas.create_image(0, 0, anchor=tk.NW, image=img)
-        self.canvas.image = img  # To prevent garbage collection
 
 
 if __name__ == "__main__":
