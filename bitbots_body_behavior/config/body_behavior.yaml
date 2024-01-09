@@ -112,8 +112,8 @@
       # The value describes the offset in meters from the goal line.
       block_position_goal_offset: 0.15
 
-      # this factor defines how extreme the goalie reacts to a ball offset
-      block_position_gradient_factor: 4.0
+      # This is the radius in which the goalie is able to block the ball
+      block_radius_robot: 0.2
 
       # configurations for the use of bitbots_dynamic_kick package
       dynamic_kick:
