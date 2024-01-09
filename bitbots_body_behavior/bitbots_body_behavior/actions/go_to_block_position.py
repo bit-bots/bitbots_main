@@ -47,6 +47,6 @@ class GoToBlockPosition(AbstractActionElement):
         self.blackboard.pathfinding.publish(pose_msg)
 
     def _stay_in_front_of_goal(self, y):
-        # keeps the y-values of the position in between of the goalposts.
-        # this ensures, that y is in [-self.blackboard.world_model.goal_width / 2, self.blackboard.world_model.goal_width / 2].
+        # Keeps the y-values of the position in between of the goalposts.
+        # This ensures, that y is in [-self.blackboard.world_model.goal_width / 2, self.blackboard.world_model.goal_width / 2].
         return max(-self.blackboard.world_model.goal_width / 2, min(self.blackboard.world_model.goal_width / 2, y))
