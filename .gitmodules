@@ -108,3 +108,7 @@
 	path = lib/soccer_ipm
 	url = ../../ros-sports/soccer_ipm.git
 	branch = rolling
+[submodule "lib/soccer_field_map_generator"]
+	path = lib/soccer_field_map_generator
+	url = ../../ros-sports/soccer_field_map_generator.git
+        branch = rolling 
