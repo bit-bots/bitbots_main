@@ -19,11 +19,11 @@ As such you can lookup some of the needed requirements there.
 
 .. code-block:: bash
 
-  mkdir -p "$USER/colcon_ws/src"
-  cd "$USER/colcon_ws/src"
+  mkdir -p "~/colcon_ws/src"
+  cd "~/colcon_ws/src"
   git clone git@github.com:bit-bots/bitbots_meta.git && cd bitbots_meta
   make pull-init
-  pip install -r colcon_ws/src/bitbots_meta/requirements/dev.txt
+  pip install -r bitbots_meta/requirements/dev.txt
 
 - set PATH and COLCON_WS (see `section 5 <https://docs.bit-bots.de/meta/manual/tutorials/install_software_ros2.html>`_)
 
@@ -44,6 +44,7 @@ We can start the Webots simulator with the following command:
 This should start the simulation environment in the Webots simulator, while also starting all necessary
 nodes of the robot software (walking, vision, etc.).
 In the simulator we should see a field with a single robot.
+``rl`` is short for ``ros2 launch`` and can be used as an alias as described in `section 5 <https://docs.bit-bots.de/meta/manual/tutorials/install_software_ros2.html>`_.
 
 With ``game_controller:=false`` we ensure, that the game_controller_listener is not started as well, but instead
 we will simulate the current gamestate by our own script (in another terminal):
