@@ -1,6 +1,7 @@
 import math
 
 import numpy as np
+from bitbots_utils.transforms import quat_from_yaw
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 from tf2_geometry_msgs import PoseStamped
 
@@ -49,7 +50,7 @@ class GoToBlockPosition(AbstractActionElement):
         angle_bisector = opening_angle / 2  # of the angle between the goalpost
 
         goalie_pos = self._get_robot_pose(
-            angle_bisector, ball_to_line_distance, self.left_goalpost_position, self.right_goalpost_position
+            angle_bisector, ball_to_line_distance, ball_position
         )
 
         goalie_pos = self._cut_goalie_pos(goalie_pos, ball_position)
@@ -60,7 +61,9 @@ class GoToBlockPosition(AbstractActionElement):
 
         pose_msg.pose.position.x = float(goalie_pos[0])
         pose_msg.pose.position.y = float(goalie_pos[1])
-        pose_msg.pose.orientation.w = 1.0  # TODO: Change orientation
+
+        yaw = self._calc_turn_to_ball_angle(ball_position, goalie_pos)
+        pose_msg.pose.orientation = quat_from_yaw(yaw)
 
         self.blackboard.pathfinding.publish(pose_msg)
 
@@ -83,18 +86,17 @@ class GoToBlockPosition(AbstractActionElement):
         opening_angle_ball = ball_angle_right - ball_angle_left  # Subtract to get the opening angle
         return opening_angle_ball
 
-    def _get_robot_pose(self, angle_bisector, ball_to_line_distance, ball_pos):
+    def _get_robot_pose(self, angle_bisector: float, ball_to_line_distance: float, ball_pos: tuple) -> tuple[float, float]:
         """
         Calculates the position where the robot should be to block the ball.
         The position is the place where the circle of the robot blocking radius is touching both lines
         from the ball to the goalposts. So the goal is completely guarded.
 
         Args:
-            angle_bisector (float): bisector angle of the ball with goalposts
-            ball_to_line_distance (float): distance of the ball to the goal line
+            angle_bisector: bisector angle of the ball with goalposts
+            ball_to_line_distance: distance of the ball to the goal line
+            ball_pos: ball position in world koordinate system
 
-        Returns:
-            list: goalie_pos
         """
         left_goalpost_to_ball = math.dist(self.left_goalpost_position, ball_pos)
         right_goalpost_to_ball = math.dist(self.right_goalpost_position, ball_pos)
@@ -115,7 +117,8 @@ class GoToBlockPosition(AbstractActionElement):
             angle_to_bisector = angle_of_left_goalpost_to_ball - angle_bisector  # here right goalpost angle used
             goalie_x = ball_pos[0] - wanted_distance_robot_to_ball * np.cos(angle_to_bisector)
             goalie_y = ball_pos[1] + wanted_distance_robot_to_ball * np.sin(angle_to_bisector)
-        return [goalie_x, goalie_y]
+        # calculate the angle, the robot needs to turn to look at the ball
+        return (goalie_x, goalie_y)
 
     def _cut_goalie_pos(self, goalie_pos, ball_pos):
         """
@@ -128,19 +131,26 @@ class GoToBlockPosition(AbstractActionElement):
         Returns:
             list: goalie_pos
         """
+        goalie_pos_x, goalie_pos_y = goalie_pos
         penalty_area_length = 2.0  # TODO: Look for world_model parameter
         # cut if goalie is behind the goal happens when the ball is too close to the corner
-        if goalie_pos[0] < -self.blackboard.world_model.field_length / 2:
-            goalie_pos[0] = -self.blackboard.world_model.field_length / 2 + self.block_position_goal_offset
+        if goalie_pos_x < -self.blackboard.world_model.field_length / 2:
+            goalie_pos_x = -self.blackboard.world_model.field_length / 2 + self.block_position_goal_offset
             # instead put goalie to goalpost position
             if ball_pos[1] > 0:
-                goalie_pos[1] = self.blackboard.world_model.goal_width / 2
+                goalie_pos_y = self.blackboard.world_model.goal_width / 2
             else:
-                goalie_pos[1] = -self.blackboard.world_model.goal_width / 2
+                goalie_pos_y = -self.blackboard.world_model.goal_width / 2
         # cut so goalie does not leave goalkeeper area
-        goalie_pos[0] = np.clip(
-            goalie_pos[0],
+        goalie_pos_x = np.clip(
+            goalie_pos_x,
             -self.blackboard.world_model.field_length / 2,
             -self.blackboard.world_model.field_length / 2 + penalty_area_length,
         )
-        return goalie_pos
+        return (goalie_pos_x, goalie_pos_y)
+    
+    def _calc_turn_to_ball_angle(self, ball_pos, goalie_pos):
+        robot_to_ball_x = ball_pos[0] - goalie_pos[0]
+        robot_to_ball_y = ball_pos[1] - goalie_pos[1]
+        angle = np.arctan2(robot_to_ball_y, robot_to_ball_x) 
+        return angle
