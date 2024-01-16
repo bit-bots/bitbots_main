@@ -111,4 +111,7 @@
 [submodule "lib/soccer_field_map_generator"]
 	path = lib/soccer_field_map_generator
 	url = ../../ros-sports/soccer_field_map_generator.git
-        branch = rolling 
+	branch = rolling 
+[submodule "lib/game_controller_hl"]
+	path = lib/game_controller_hl
+	url = ../../ros-sports/game_controller_hl.git

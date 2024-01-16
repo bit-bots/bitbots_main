@@ -39,8 +39,6 @@ include:
         - bitbots_robot_filter
     - dynamic_stack_decider
     - humanoid_league_misc:
-        - humanoid_league_game_controller
-        - humanoid_league_map_generator
         - humanoid_league_speaker
         - humanoid_league_team_communication
     - lib:
@@ -48,8 +46,10 @@ include:
         - bio_ik
         - bio_ik_msgs
         - biped_interfaces
-        - DynamixelSDK
         - dynamixel-workbench
+        - DynamixelSDK
+        - game_controller_hl
+        - game_controller_hl_interfaces
         - humanoid_base_footprint
         - imu_tools
         - ipm
