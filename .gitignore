@@ -191,3 +191,14 @@ ENV/
 
 # Ruff cache
 .ruff_cache
+
+ansible_robots
+ansible_labor
+ansible
+bitbots_docs_internal
+
+**/.idea
+
+**/__pycache__
+**/cmake-build-*
+
