@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<launch>
+    <!-- Get launch params-->
+    <arg name="sim" default="false" description="true: activates simulation time, switches to simulation color settings and deactivates launching of an image provider" />
+    <arg name="camera" default="true" description="true: launches an image provider to get images from a camera (unless sim:=true)" />
+    <arg name="debug" default="false" description="true: activates publishing of several debug images" />
+
+    <!-- Load the global parameters-->
+    <include file="$(find-pkg-share bitbots_utils)/launch/parameter_blackboard.launch">
+        <arg name="sim" value="$(var sim)" />
+    </include>
+
+    <!-- Start the vision-->
+    <include file="$(find-pkg-share bitbots_bringup)/launch/vision.launch">
+        <arg name="sim" value="$(var sim)" />
+        <arg name="camera" value="$(var camera)" />
+        <arg name="debug" value="$(var debug)" />
+    </include>
+</launch>

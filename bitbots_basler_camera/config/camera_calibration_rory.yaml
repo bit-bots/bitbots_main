@@ -1,0 +1,26 @@
+image_width: 2048
+image_height: 1536
+camera_name: rory
+camera_matrix:
+  rows: 3
+  cols: 3
+  data: [1375.1829 ,    0.     , 1029.66004,
+            0.     , 1368.29278,  737.49413,
+            0.     ,    0.     ,    1.     ]
+distortion_model: plumb_bob
+distortion_coefficients:
+  rows: 1
+  cols: 5
+  data: [-0.301933, 0.091117, 0.000846, -0.000364, 0.000000]
+rectification_matrix:
+  rows: 3
+  cols: 3
+  data: [1., 0., 0.,
+         0., 1., 0.,
+         0., 0., 1.]
+projection_matrix:
+  rows: 3
+  cols: 4
+  data: [1113.67957,    0.     , 1029.85802,    0.     ,
+            0.     , 1223.88452,  731.02425,    0.     ,
+            0.     ,    0.     ,    1.     ,    0.     ]

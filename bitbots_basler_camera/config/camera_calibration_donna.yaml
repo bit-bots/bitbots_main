@@ -1,0 +1,26 @@
+image_width: 2048
+image_height: 1536
+camera_name: donna
+camera_matrix:
+  rows: 3
+  cols: 3
+  data: [1335.78345,    0.     , 1033.29364,
+            0.     , 1333.18344,  745.35427,
+            0.     ,    0.     ,    1.     ]
+distortion_model: plumb_bob
+distortion_coefficients:
+  rows: 1
+  cols: 5
+  data: [-0.287767, 0.085446, 0.000707, 0.000772, 0.000000]
+rectification_matrix:
+  rows: 3
+  cols: 3
+  data: [1., 0., 0.,
+         0., 1., 0.,
+         0., 0., 1.]
+projection_matrix:
+  rows: 3
+  cols: 4
+  data: [1083.23975,    0.     , 1040.58478,    0.     ,
+            0.     , 1192.89355,  740.66495,    0.     ,
+            0.     ,    0.     ,    1.     ,    0.     ]

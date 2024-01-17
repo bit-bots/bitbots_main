@@ -1,0 +1,21 @@
+image_width: 2048
+image_height: 1536
+camera_name: meldody
+
+camera_matrix:
+      rows: 3
+      cols: 3
+      data: [2471.8929089066833, 0.0, 1403.0939646261957, 0.0, 2149.206433340881, 1392.571705372463, 0.0, 0.0, 1.0]
+distortion_model: plumb_bob
+distortion_coefficients:
+      rows: 1
+      cols: 5
+      data: [-0.7340780034927321, -0.1274620090723443, -0.1977961736726639, -0.08260762121385543, 0.0]
+rectification_matrix:
+      rows: 3
+      cols: 3
+      data: [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
+projection_matrix:
+      rows: 3
+      cols: 4
+      data: [2470.685791015625, 0.0, 1402.4088505824184, 0.0, 0.0, 2322.943115234375, 1379.9772878384829, 0.0, 0.0, 0.0, 1.0, 0.0]

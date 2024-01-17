@@ -1,0 +1,18 @@
+---
+# See http://doku.bit-bots.de/meta/manual/software/ci.html#make-package-resolvable-in-ci
+check-presence-script: '#!/bin/bash
+
+  test -d $BITBOTS_CATKIN_WORKSPACE/src/system_monitor'
+depends:
+- message_generation
+- rospy
+- roslib
+- message_runtime
+- std_msgs
+- python3-psutil
+- bitbots_docs
+exec-path: bitbots_misc-master/system_monitor
+install-script: '#!/bin/bash
+
+  cp -r . $BITBOTS_CATKIN_WORKSPACE/src/system_monitor'
+uri: https://github.com/bit-bots/bitbots_misc/archive/refs/heads/master.tar.gz

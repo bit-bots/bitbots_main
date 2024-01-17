@@ -1,0 +1,5 @@
+<launch>
+    <node pkg="system_monitor" exec="monitor" output="screen">
+        <param from="$(find-pkg-share system_monitor)/config/config.yaml"/>
+    </node>
+</launch>
