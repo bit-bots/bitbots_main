@@ -1,0 +1,46 @@
+analyzers:
+  ros__parameters:
+    pub_rate: 10.0 # Optional
+    path: '' # Optional, prepended to all diagnostic output
+    Servos:
+      type: diagnostic_aggregator/GenericAnalyzer
+      path: Servos
+      startswith: [ 'DS']
+      timeout: 0.2
+      find_and_remove_prefix: ['DS']
+    Core:
+      type: diagnostic_aggregator/GenericAnalyzer
+      path: Core
+      startswith: ['CORE']
+      timeout: 0.5
+      find_and_remove_prefix: ['CORE']
+    IMU:
+      type: diagnostic_aggregator/GenericAnalyzer
+      path: Imu
+      startswith: ['IMU']
+      timeout: 0.5
+      find_and_remove_prefix: ['IMU']
+    Buttons:
+      type: diagnostic_aggregator/GenericAnalyzer
+      path: Buttons
+      startswith: ['BUTTON']
+      timeout: 0.5
+      find_and_remove_prefix: ['BUTTON']
+    Bus:
+      type: diagnostic_aggregator/GenericAnalyzer
+      path: Bus
+      startswith: ['BUS']
+      timeout: 0.5
+      find_and_remove_prefix: ['BUS']
+    System:
+      type: diagnostic_aggregator/GenericAnalyzer
+      path: System
+      startswith: ['SYSTEM']
+      timeout: 1.0
+      find_and_remove_prefix: ['SYSTEM']
+    #Pressure:
+    #  type: diagnostic_aggregator/GenericAnalyzer
+    #  path: Pressure
+    #  startswith: ['PS']
+    #  timeout: 0.2
+    #  find_and_remove_prefix: ['PS']

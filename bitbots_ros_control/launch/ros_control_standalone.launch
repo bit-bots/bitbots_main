@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="sim" default="false"/>
+    <arg name="torqueless_mode" default="false"/>
+    <arg name="only_imu" default="false"/>
+    <arg name="only_pressure" default="false"/>
+    <arg name="robot_type" default="wolfgang"/>
+
+    <include file="$(find-pkg-share bitbots_utils)/launch/parameter_blackboard.launch" >
+        <arg name="sim" value="$(var sim)"/>
+    </include>
+
+    <include file="$(find-pkg-share bitbots_robot_description)/launch/load_robot_description.launch" >
+        <arg name="sim" value="$(var sim)"/>
+        <arg name="robot_type" value="$(var robot_type)"/>
+    </include>
+
+    <include file="$(find-pkg-share bitbots_ros_control)/launch/ros_control.launch">
+        <arg name="sim" value="$(var sim)"/>
+        <arg name="torqueless_mode" value="$(var torqueless_mode)"/>
+        <arg name="only_imu" value="$(var only_imu)"/>
+        <arg name="only_pressure" value="$(var only_pressure)"/>
+    </include>
+</launch>

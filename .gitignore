@@ -13,7 +13,6 @@
 .idea/workspace.xml
 .idea/tasks.xml
 .idea/*
-.vscode/*
 
 # Sensitive or high-churn files:
 .idea/dataSources/
@@ -191,7 +190,3 @@ ENV/
 
 # Rope project settings
 .ropeproject
-
-
-/bitbots_body_behaviour/scripts/behaviour_graph.png
-
