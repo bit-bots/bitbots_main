@@ -1,0 +1,4 @@
+std_msgs/ColorRGBA[] leds
+---
+# return previous color of leds in case the caller wants to reset them to this color
+std_msgs/ColorRGBA[] previous_leds
