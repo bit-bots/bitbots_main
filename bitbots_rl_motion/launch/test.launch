@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="sim" default="false"/>
+  <arg name="use_darwin" default="false"/>
+
+  <let if="$(env IS_ROBOT false)" name="taskset" value="taskset -c 3,4"/>
+  <let unless="$(env IS_ROBOT false)" name="taskset" value=""/>
+
+  <include file="$(find-pkg-share bitbots_utils)/launch/parameter_blackboard.launch" >
+      <arg name="sim" value="$(var sim)"/>
+  </include>
+
+  <include file="$(find-pkg-share bitbots_robot_description)/launch/load_robot_description.launch" >
+      <arg name="sim" value="$(var sim)"/>
+  </include>
+
+  <!-- launch the base footprint -->
+  <node pkg="humanoid_base_footprint" exec="base_footprint" output="screen">
+    <param name="support_state_topics" value="[walk_support_state, dynamic_kick_support_state]"/>
+    <param name="use_sim_time" value="$(var sim)"/>
+  </node>
+
+  <!-- launch the odometry -->
+  <include file="$(find-pkg-share bitbots_odometry)/launch/odometry.launch">
+    <arg name="sim" value="$(var sim)"/>
+  </include>
+
+  <group unless="$(var use_darwin)">
+      <group unless="$(var sim)">
+        <include file="$(find-pkg-share bitbots_ros_control)/launch/ros_control.launch" />
+      </group>
+  </group>
+
+  <group if="$(var sim)">
+    <node pkg="bitbots_rl_motion" exec="rl_walk.py" output="screen" launch-prefix="$(var taskset)">
+        <remap from="/walking_motor_goals" to="/DynamixelController/command"/>
+        <param from="$(find-pkg-share bitbots_rl_motion)/config/rl_walk_sim.yaml"/>
+    </node>
+  </group>
+  <group unless="$(var sim)">
+    <node pkg="bitbots_rl_motion" exec="rl_walk.py" output="screen" launch-prefix="$(var taskset)">
+        <param from="$(find-pkg-share bitbots_rl_motion)/config/rl_walk_real.yaml"/>
+    </node>
+  </group>
+
+
+</launch>

@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<launch>
+
+    <arg name="sim" default="false" description="Disables some checks for hardware, since we are in simulation."/>
+    <arg name="viz" default="false" description="Disables all checks for hardware, since we are in visualization."/>
+    <arg name="wolfgang" default="true"/>
+
+    <let if="$(env IS_ROBOT false)" name="taskset" value="taskset -c 1"/>
+    <let unless="$(env IS_ROBOT false)" name="taskset" value=""/>
+
+    <group if="$(var wolfgang)">
+        <node pkg="bitbots_hcm" exec="HCM" args="" output="screen" launch-prefix="$(var taskset)">
+            <param name="use_sim_time" value="$(var sim)" />
+            <param name="simulation_active" value="$(var sim)" />
+            <param name="visualization_active" value="$(var viz)" />
+        </node>
+    </group>
+
+    <node pkg="bitbots_hcm" exec="pause.py" />
+
+    <group unless="$(var sim)">
+        <node pkg="bitbots_hcm" exec="hcm_led.py" />
+    </group>
+
+</launch>

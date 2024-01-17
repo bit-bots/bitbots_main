@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+<launch>
+  <let name="tf_prefix" value="$(eval '\'$(env ROS_NAMESPACE not_defined)\' if \'$(env ROS_NAMESPACE not_defined)\' != \'not_defined\' else \'\'')"/>
+  <arg name="sim" default="false"/>
+  <arg name="viz" default="false"/>
+  <arg name="robot_type" default="wolfgang"/>
+
+  <let if="$(env IS_ROBOT false)" name="taskset" value="taskset -c 3,4"/>
+  <let unless="$(env IS_ROBOT false)" name="taskset" value=""/>
+
+  <include file="$(find-pkg-share bitbots_utils)/launch/parameter_blackboard.launch" >
+    <arg name="sim" value="$(var sim)"/>
+  </include>
+
+  <include file="$(find-pkg-share bitbots_robot_description)/launch/load_robot_description.launch" >
+    <arg name="sim" value="$(var sim)"/>
+    <arg name="robot_type" value="$(var robot_type)"/>
+  </include>
+
+  <group unless="$(var sim)">
+    <group unless="$(var viz)">
+      <include file="$(find-pkg-share bitbots_ros_control)/launch/ros_control.launch" />
+      <node pkg="bitbots_dynup" exec="DynupNode" output="screen" launch-prefix="$(var taskset)">
+        <param name="base_link_frame" value="$(var tf_prefix)base_link"/>
+        <param name="r_sole_frame" value="$(var tf_prefix)r_sole"/>
+        <param name="l_sole_frame" value="$(var tf_prefix)l_sole"/>
+        <param name="r_wrist_frame" value="$(var tf_prefix)r_wrist"/>
+        <param name="l_wrist_frame" value="$(var tf_prefix)l_wrist"/>
+        <param from="$(find-pkg-share bitbots_dynup)/config/dynup_robot.yaml"/>
+        <remap from="/dynup_motor_goals" to="/DynamixelController/command"/>
+      </node>
+    </group>
+  </group>
+
+  <group if="$(var sim)">
+    <node pkg="bitbots_dynup" exec="DynupNode" output="screen" launch-prefix="$(var taskset)">
+      <param name="base_link_frame" value="$(var tf_prefix)base_link"/>
+      <param name="r_sole_frame" value="$(var tf_prefix)r_sole"/>
+      <param name="l_sole_frame" value="$(var tf_prefix)l_sole"/>
+      <param name="r_wrist_frame" value="$(var tf_prefix)r_wrist"/>
+      <param name="l_wrist_frame" value="$(var tf_prefix)l_wrist"/>
+      <remap from="/dynup_motor_goals" to="/DynamixelController/command"/>
+      <param from="$(find-pkg-share bitbots_dynup)/config/dynup_sim.yaml"/>
+    </node>
+  </group>
+
+  <group if="$(var viz)">
+    <node pkg="bitbots_utils" exec="motor_goals_viz_helper.py" args="--all" />
+    <node pkg="bitbots_dynup" exec="DynupNode" output="screen" launch-prefix="$(var taskset)">
+      <param name="base_link_frame" value="$(var tf_prefix)base_link"/>
+      <param name="r_sole_frame" value="$(var tf_prefix)r_sole"/>
+      <param name="l_sole_frame" value="$(var tf_prefix)l_sole"/>
+      <param name="r_wrist_frame" value="$(var tf_prefix)r_wrist"/>
+      <param name="l_wrist_frame" value="$(var tf_prefix)l_wrist"/>
+      <param from="$(find-pkg-share bitbots_dynup)/config/dynup_robot.yaml"/>
+    </node>
+    <node pkg="rviz2" exec="rviz2" output="screen" args="-d $(find-pkg-share wolfgang_description)/config/wolfgang.rviz" />
+    <node pkg="bitbots_utils" exec="dummy_imu.py"/>
+  </group>
+
+
+</launch>

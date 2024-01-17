@@ -1,0 +1,28 @@
+<launch>
+    <arg name="sim" default="false" description="Disables checks for hardware, since we are in simulation."/>
+
+    <include file="$(find-pkg-share bitbots_utils)/launch/parameter_blackboard.launch">
+        <arg name="sim" value="$(var sim)"/>
+    </include>
+
+    <include file="$(find-pkg-share bitbots_robot_description)/launch/load_robot_description.launch" >
+        <arg name="sim" value="$(var sim)"/>
+    </include>
+
+    <group unless="$(var sim)">
+        <include file="$(find-pkg-share bitbots_ros_control)/launch/ros_control.launch" />
+    </group>
+
+    <include file="$(find-pkg-share bitbots_animation_server)/launch/animation.launch">
+        <arg name="sim" value="$(var sim)"/>
+    </include>
+
+    <include file="$(find-pkg-share bitbots_hcm)/launch/hcm.launch">
+        <arg name="sim" value="$(var sim)"/>
+    </include>
+
+    <include file="$(find-pkg-share bitbots_dynup)/launch/dynup.launch">
+        <arg name="sim" value="$(var sim)"/>
+    </include>
+
+</launch>

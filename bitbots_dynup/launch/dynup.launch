@@ -1,0 +1,27 @@
+<launch>
+    <let name="tf_prefix" value="$(eval '\'$(env ROS_NAMESPACE not_defined)\' if \'$(env ROS_NAMESPACE not_defined)\' != \'not_defined\' else \'\'')"/>
+    <arg name="sim" default="false"/>
+    <let if="$(env IS_ROBOT false)" name="taskset" value="taskset -c 3,4"/>
+    <let unless="$(env IS_ROBOT false)" name="taskset" value=""/>
+
+    <group unless="$(var sim)">
+        <node pkg="bitbots_dynup" exec="DynupNode" output="screen" launch-prefix="$(var taskset)">
+            <param name="base_link_frame" value="$(var tf_prefix)base_link"/>
+            <param name="r_sole_frame" value="$(var tf_prefix)r_sole"/>
+            <param name="l_sole_frame" value="$(var tf_prefix)l_sole"/>
+            <param name="r_wrist_frame" value="$(var tf_prefix)r_wrist"/>
+            <param name="l_wrist_frame" value="$(var tf_prefix)l_wrist"/>
+            <param from="$(find-pkg-share bitbots_dynup)/config/dynup_robot.yaml" />
+        </node>
+    </group>
+    <group if="$(var sim)">
+        <node pkg="bitbots_dynup" exec="DynupNode" output="screen" launch-prefix="$(var taskset)">
+            <param name="base_link_frame" value="$(var tf_prefix)base_link"/>
+            <param name="r_sole_frame" value="$(var tf_prefix)r_sole"/>
+            <param name="l_sole_frame" value="$(var tf_prefix)l_sole"/>
+            <param name="r_wrist_frame" value="$(var tf_prefix)r_wrist"/>
+            <param name="l_wrist_frame" value="$(var tf_prefix)l_wrist"/>
+            <param from="$(find-pkg-share bitbots_dynup)/config/dynup_sim.yaml"/>
+        </node>
+    </group>
+</launch>

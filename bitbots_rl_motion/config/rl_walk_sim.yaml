@@ -1,0 +1,3 @@
+rl_walk:
+  ros__parameters:
+    model_folder: 'webots_neu'
