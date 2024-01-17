@@ -189,8 +189,5 @@ ENV/
 # Rope project settings
 .ropeproject
 
-# auto-generated documentation
-**/docs/_build
-**/docs/_out
-**/docs/cppapi
-**/docs/pyapi
+# Ruff cache
+.ruff_cache

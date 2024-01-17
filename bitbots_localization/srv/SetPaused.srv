@@ -1,0 +1,4 @@
+# Pauses and unpauses the localisation system e.g. if the robot falls down.
+bool paused
+---
+bool success
