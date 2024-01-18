@@ -32,7 +32,9 @@ pull-files:
 rosdep:
 	# Update rosdep and install dependencies from meta directory
 	rosdep update
-	rosdep install -iry --from-paths ..
+	# Small hack to make rosdep install all dependencies at once
+	# See https://github.com/ros-infrastructure/rosdep/issues/671
+	bash -c "sudo apt install -y $(rosdep check --from-paths .. --ignore-src --rosdistro iron | sed -n 's/^apt\s\+//p' | tr '\n' ' ')"
 
 status:
 	vcs status ..
