@@ -1,6 +1,6 @@
 .PHONY : basler install pip pre-commit pull-all pull-init pull-files rosdep status update
 
-HTTPS_FLAG := --use-https
+HTTPS := ""
 
 basler:
 	scripts/make_basler.sh $(ARGS)
@@ -25,7 +25,7 @@ pull-all:
 
 pull-init:
 	git pull
-ifeq ($(filter $(HTTPS_FLAG),$(filter-out $<,$(MAKECMDGOALS))),$(HTTPS_FLAG))
+ifeq ($(HTTPS), true)
 	awk '{sub("git@github.com:", "https://github.com/"); print "  " $$0}' workspace.repos | vcs import .. --skip-existing
 else
 	vcs import .. --skip-existing < workspace.repos

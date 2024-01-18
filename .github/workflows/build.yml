@@ -22,7 +22,7 @@ jobs:
           mkdir -p /colcon_ws/src
           ln -s $(realpath .) /colcon_ws/src/bitbots_meta
       - name: Pull our software
-        run: make pull-init --use-https
+        run: make pull-init HTTPS=true
         working-directory: /colcon_ws/src/bitbots_meta
       - name: Install proprietary basler drivers
         run: make basler ARGS="-ci"
