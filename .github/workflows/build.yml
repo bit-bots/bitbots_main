@@ -19,7 +19,7 @@ jobs:
         run: git config --global --add safe.directory /__w/bitbots_meta/bitbots_meta
       - name: Set up colcon workspace
         run: |
-          mkdir -p /colcon_ws/src/bitbots_meta
+          mkdir -p /colcon_ws/src
           mv $(realpath .) /colcon_ws/src/bitbots_meta
       - name: Pull our software
         run: make pull-init HTTPS=true
