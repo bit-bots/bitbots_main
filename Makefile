@@ -6,7 +6,7 @@ basler:
 install: pull-init basler update
 
 master:
-	git submodule foreach -q --recursive 'branch="$$(git config -f $$toplevel/.gitmodules submodule.$$name.branch)"; [ "$$branch" = "" ] && git switch -q master || git switch -q $$branch'
+	vcs import .. < workspace.repos
 
 pip:
 	# Install and upgrade pip dependencies
@@ -14,16 +14,16 @@ pip:
 
 pre-commit:
 	# Install pre-commit hooks for all submodules that have a .pre-commit-config.yaml file
-	git submodule foreach -q --recursive "test -f .pre-commit-config.yaml && pre-commit install || :"
+	pre-commit install
 
 pull-all:
 	git pull
-	scripts/pull_all.sh
+	vcs pull ..
 	scripts/pull_files.bash
 
 pull-init:
 	git pull
-	scripts/pull_init.sh
+	vcs import .. < workspace.repos
 	scripts/pull_files.bash
 
 pull-files:
@@ -32,9 +32,9 @@ pull-files:
 rosdep:
 	# Update rosdep and install dependencies from meta directory
 	rosdep update
-	rosdep install -iry --from-paths .
+	rosdep install -iry --from-paths ..
 
 status:
-	scripts/git_status.bash
+	vcs status ..
 
 update: pull-all rosdep pip pre-commit
