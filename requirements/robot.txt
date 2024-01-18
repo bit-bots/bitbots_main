@@ -1,0 +1,6 @@
+# This file is used for installation of dependencies on the robot
+-r common.txt  # Includes all common dependencies
+mycroft-mimic3-tts
+pydot
+pyopencl
+pyttsx3

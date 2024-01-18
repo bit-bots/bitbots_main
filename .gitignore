@@ -207,3 +207,13 @@ bitbots_docs_internal
 bitbots_vision/models/
 
 **/.*.
+.idea/*
+*.pyc
+.pyenv2/*
+.pyenv3/*
+
+ansible_robots/*
+doc_internal/*
+doku/*
+
+
