@@ -1,0 +1,18 @@
+#VRML_SIM R2022b utf8
+# license: Apache License 2.0
+# license url: http://www.apache.org/licenses/LICENSE-2.0
+# tags: hidden
+# Extracted from: wolfgang.urdf
+
+EXTERNPROTO "../Wolfgang_textures/WolfgangPlastic.proto"
+
+PROTO Wolfgang_camera_side_basler_wolfgang_v2_2_rightMesh [
+]
+{
+  Shape {
+    appearance WolfgangPlastic {}
+    geometry Mesh {
+      url["camera_side_basler_wolfgang_v2.2_right.stl"]
+    }
+  }
+}

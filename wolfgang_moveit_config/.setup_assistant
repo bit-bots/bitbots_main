@@ -1,0 +1,11 @@
+moveit_setup_assistant_config:
+  URDF:
+    package: wolfgang_description
+    relative_path: urdf/robot.urdf
+    xacro_args: ""
+  SRDF:
+    relative_path: config/wolfgang.srdf
+  CONFIG:
+    author_name: Marc Bestmann
+    author_email: bestmann@informatik.uni-hamburg.de
+    generated_timestamp: 1601969583

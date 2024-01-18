@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>wolfgang_animations</name>
+  <version>1.0.3</version>
+  <description>Animation files for the wolfgang robot</description>
+
+  <maintainer email="6stelter@informatik.uni-hamburg.de">Sebastian Stelter</maintainer>
+  <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+  
+  <author email="6stelter@informatik.uni-hamburg.de">Sebastian Stelter</author>
+
+  <license>MIT</license>
+
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>bitbots_docs</depend>
+
+  <export>
+    <bitbots_documentation>
+      <status>starts</status>
+    </bitbots_documentation>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

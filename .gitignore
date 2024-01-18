@@ -198,7 +198,7 @@ ansible_labor
 ansible
 bitbots_docs_internal
 
-**/.idea
+**/.ideacache
 
 **/__pycache__
 **/cmake-build-*
@@ -206,3 +206,4 @@ bitbots_docs_internal
 # Neural Network Model Path
 bitbots_vision/models/
 
+**/.*.

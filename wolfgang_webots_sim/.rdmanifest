@@ -1,0 +1,22 @@
+---
+# See http://doku.bit-bots.de/meta/manual/software/ci.html#make-package-resolvable-in-ci
+check-presence-script: '#!/bin/bash
+
+  test -d $BITBOTS_CATKIN_WORKSPACE/src/wolfgang_webots_sim'
+depends:
+- bitbots_docs
+- bitbots_msgs
+- gazebo_msgs
+- imu_complementary_filter
+- nav_msgs
+- rosgraph_msgs
+- rospy
+- sensor_msgs
+- std_msgs
+- urdf
+- xvfb
+exec-path: wolfgang_robot-master/wolfgang_webots_sim
+install-script: '#!/bin/bash
+
+  cp -r . $BITBOTS_CATKIN_WORKSPACE/src/wolfgang_webots_sim'
+uri: https://github.com/bit-bots/wolfgang_robot/archive/refs/heads/master.tar.gz

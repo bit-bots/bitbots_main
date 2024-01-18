@@ -1,0 +1,91 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="gui" default="true" description="Whether or not to launch webots with rendering"/>
+    <arg name="headless" default="false"
+         description="If true, launches webots completely headless with a virtual frame buffer"/>
+    <arg name="num_robots" default="4"
+         description="Number of robots for which a ROS controller is started. 1 if multi_robot=True "/>
+    <arg name="multi_robot" default="false" description="Start world with either one or four robots"/>
+    <arg name="sim_port" default="1234" description="Port used for the simulator communication. Relevant if multiple simulations are run at the same time"/>
+    <arg name="camera" default="true" description="Turn on or off the camera (to speed up if only motion is required)"/>
+    <arg name="recognition" default="false" description="Turn on or off automatic recognition for collection of training data"/>
+    <arg name="robot_type" default="wolfgang" description="What type of robot should be used"/>
+
+    <let name="multi_robot_flag" value="$(eval '\'--multi-robot\' if \'$(var multi_robot)\'==\'true\' else \'\'')"/>
+    <let name="gui_flag" value="$(eval '\'\' if \'$(var gui)\'==\'true\' else \'--nogui\'')"/>
+    <let name="headless_flag" value="$(eval '\'--headless\' if \'$(var headless)\'==\'true\' else \'\'')"/>
+
+    <!-- source nessessary files for webots -->
+    <set_env name="WEBOTS_HOME" value="$(env WEBOTS_HOME /usr/local/webots)"/>
+    <set_env name="LD_LIBRARY_PATH" value="$(env LD_LIBRARY_PATH):$(env WEBOTS_HOME)/lib/controller"/>
+    <!-- Change the python version here if you want to use a different version of python -->
+    <set_env name="PYTHONPATH" value="$(env PYTHONPATH):$(env WEBOTS_HOME)/lib/controller/python310"/>
+
+    <!-- start simulation and supervisor either with or without gui -->
+    <node pkg="wolfgang_webots_sim" exec="start_simulator.py" name="webots_sim"
+          output="screen" args="$(var multi_robot_flag) $(var gui_flag) $(var headless_flag) --sim-port $(var sim_port) --robot-type $(var robot_type)"/>
+    <node pkg="wolfgang_webots_sim" exec="start_webots_ros_supervisor.py" name="webots_ros_supervisor" output="screen" args="--sim-port $(var sim_port)"/>
+
+    <group unless="$(var multi_robot)">
+        <include file="$(find-pkg-share wolfgang_webots_sim)/launch/single_robot_controller.launch">
+            <arg name="camera" value="$(var camera)"/>
+            <arg name="sim_port" value="$(var sim_port)"/>
+            <arg name="recognition" value="$(var recognition)"/>
+            <arg name="robot_type" value="$(var robot_type)"/>
+        </include>
+        <include file="$(find-pkg-share wolfgang_webots_sim)/launch/imu_filter_sim.launch"/>
+    </group>
+
+    <!-- case for multiple robots -->
+    <group if="$(var multi_robot)">
+        <!-- start single controllers based on num_robots as ros or void controller -->
+        <group>
+            <push_ros_namespace namespace="amy"/>
+            <include file="$(find-pkg-share wolfgang_webots_sim)/launch/single_robot_controller.launch">
+                <arg name="robot_name" value="amy"/>
+                <arg name="tf_prefix" value="amy/"/>
+                <arg name="sim_port" value="$(var sim_port)"/>
+                <arg name="void_controller" value="$(eval '\'$(var num_robots)\' &lt; 1')"/>
+                <arg name="camera" value="$(var camera)"/>
+                <arg name="recognition" value="$(var recognition)"/>
+            </include>
+            <include file="$(find-pkg-share wolfgang_webots_sim)/launch/imu_filter_sim.launch" />
+        </group>
+        <group>
+            <push_ros_namespace namespace="rory"/>
+            <include file="$(find-pkg-share wolfgang_webots_sim)/launch/single_robot_controller.launch">
+                <arg name="robot_name" value="rory"/>
+                <arg name="tf_prefix" value="rory/"/>
+                <arg name="sim_port" value="$(var sim_port)"/>
+                <arg name="void_controller" value="$(eval '\'$(var num_robots)\' &lt; 2')"/>
+                <arg name="camera" value="$(var camera)"/>
+                <arg name="recognition" value="$(var recognition)"/>
+            </include>
+            <include file="$(find-pkg-share wolfgang_webots_sim)/launch/imu_filter_sim.launch" />
+        </group>
+        <group>
+            <push_ros_namespace namespace="jack"/>
+            <include file="$(find-pkg-share wolfgang_webots_sim)/launch/single_robot_controller.launch">
+                <arg name="robot_name" value="jack"/>
+                <arg name="tf_prefix" value="jack/"/>
+                <arg name="sim_port" value="$(var sim_port)"/>
+                <arg name="void_controller" value="$(eval '\'$(var num_robots)\' &lt; 3')"/>
+                <arg name="camera" value="$(var camera)"/>
+                <arg name="recognition" value="$(var recognition)"/>
+            </include>
+            <include file="$(find-pkg-share wolfgang_webots_sim)/launch/imu_filter_sim.launch" />
+        </group>
+        <group>
+            <push_ros_namespace namespace="donna"/>
+            <include file="$(find-pkg-share wolfgang_webots_sim)/launch/single_robot_controller.launch">
+                <arg name="robot_name" value="donna"/>
+                <arg name="tf_prefix" value="donna/"/>
+                <arg name="sim_port" value="$(var sim_port)"/>
+                <arg name="void_controller" value="$(eval '\'$(var num_robots)\' &lt; 4')"/>
+                <arg name="camera" value="$(var camera)"/>
+                <arg name="recognition" value="$(var recognition)"/>
+            </include>
+            <include file="$(find-pkg-share wolfgang_webots_sim)/launch/imu_filter_sim.launch" />
+        </group>
+    </group>
+</launch>

@@ -1,0 +1,72 @@
+#VRML_SIM R2021b utf8
+DEF world_info WorldInfo {
+  basicTimeStep 32
+  optimalThreadCount 1
+  physicsDisableTime 0.1
+  physicsDisableLinearThreshold 0.1
+  physicsDisableAngularThreshold 0.1
+  contactProperties [
+    ContactProperties {
+      material1 "grass"
+      coulombFriction [
+        0.5
+      ]
+      softCFM 0.03
+    }
+    ContactProperties {
+      material1 "grass"
+      material2 "robocup soccer ball"
+      coulombFriction [
+        0.5
+      ]
+      bounce 0.76
+      softCFM 0.05
+    }
+    ContactProperties {
+      material2 "robocup soccer ball"
+      bounce 0.76
+    }
+  ]
+}
+Viewpoint {
+  orientation 0.14 -0.605 -0.784 2.78
+  position -2.20 4.06 1.5
+}
+TexturedBackground {
+  texture "stadium_dry"
+}
+TexturedBackgroundLight {
+  texture "stadium_dry"
+}
+
+DEF wolfgang WolfgangOptimization {
+  translation -0.9968797400586715 2.9921102788692946 0.4274542359577024
+  rotation 0.12198099937775954 0.12935172908461096 -0.9840674600725422 1.5869763401625028
+  name "wolfgang"
+  controller "<extern>"
+  supervisor TRUE
+}
+
+DEF refbot WolfgangOptimization {
+  translation 0.9968797400586715 2.9921102788692946 0.4274542359577024
+  rotation 0.12198099937775954 0.12935172908461096 -0.9840674600725422 1.5869763401625028
+  name "refbot"
+  controller "void"
+  selfCollision FALSE
+  enableBoundingObject FALSE
+  enablePhysics FALSE
+  enableFootSensors FALSE
+  transparency 0.5
+}
+
+DEF free_camera FreeCamera{
+  name "free_camera"
+  controller "void"
+}
+
+Floor {
+  rotation 1 0 0 1.57
+  contactMaterial "grass"
+  size 100 100
+  tileSize 2 2
+}

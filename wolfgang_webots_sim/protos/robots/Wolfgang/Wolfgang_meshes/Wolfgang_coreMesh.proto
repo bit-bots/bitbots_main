@@ -1,0 +1,18 @@
+#VRML_SIM R2022b utf8
+# license: Apache License 2.0
+# license url: http://www.apache.org/licenses/LICENSE-2.0
+# tags: hidden
+# Extracted from: wolfgang.urdf
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/appearances/protos/Pcb.proto"
+
+PROTO Wolfgang_coreMesh [
+]
+{
+  Shape {
+    appearance Pcb {}
+    geometry Mesh {
+      url["core.stl"]
+    }
+  }
+}

@@ -1,0 +1,18 @@
+#VRML_SIM R2022b utf8
+# license: Apache License 2.0
+# license url: http://www.apache.org/licenses/LICENSE-2.0
+# tags: hidden
+# Extracted from: wolfgang.urdf
+
+EXTERNPROTO "../Wolfgang_textures/WolfgangMetal.proto"
+
+PROTO Wolfgang_basler_ace_gige_c-mount_v01Mesh [
+]
+{
+  Shape {
+    appearance WolfgangMetal {}
+    geometry Mesh {
+      url["basler_ace_gige_c-mount_v01.stl"]
+    }
+  }
+}

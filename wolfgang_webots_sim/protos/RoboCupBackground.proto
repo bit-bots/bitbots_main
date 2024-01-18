@@ -1,0 +1,45 @@
+#VRML_SIM R2022b utf8
+# template language: javascript
+PROTO RoboCupBackground [
+  field SFString{"stadium_dry", "shanghai_riverside", "ulmer_muenster", "sunset_jhbcentral", "sepulchral_chapel_rotunda","paul_lobe_haus", "kiara_1_dawn"}
+                 texture      "stadium_dry"  # Defines the texture of the background.
+  field SFFloat  luminosity   1            # Is `Background.luminosity`.
+  field SFBool   skybox       TRUE         # Specifies if the `texture` field is used to define the skybox shown in the scene background.
+  field MFColor  skyColor     [0 0 0]      # Defines the background color in case the `skybox` field is `FALSE`.
+]
+{
+    %<
+
+    const path = 'backgrounds';
+    const texture = fields.texture.value
+    const extension = 'png'
+    let topTexture;
+    if (texture === 'stadium_dry')
+      topTexture = 'stadium';
+    else
+      topTexture = texture;
+    >%
+
+  Background {
+    skyColor IS skyColor
+    backUrl [
+    %<= '"' + path + '/' + texture + '_back.' + extension + '"' >%
+    ]
+    bottomUrl [
+    %<= '"' + path + '/' + texture + '_bottom.' + extension + '"' >%
+    ]
+    frontUrl [
+    %<= '"' + path + '/' + texture + '_front.' + extension + '"' >%
+    ]
+    leftUrl [
+    %<= '"' + path + '/' + texture + '_left.' + extension + '"' >%
+    ]
+    rightUrl [
+    %<= '"' + path + '/' + texture + '_right.' + extension + '"' >%
+    ]
+    topUrl [
+    %<= '"' + path + '/' + topTexture + '_top.' + extension + '"' >%
+    ]
+    luminosity IS luminosity
+  }
+}
