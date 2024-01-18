@@ -3,6 +3,14 @@ repositories:
     type: git
     url: git@github.com:bit-bots/bitbots_meta.git
     version: monorepo
+  lib/dynamic_stack_decider:
+    type: git
+    url: git@github.com:bit-bots/dynamic_stack_decider.git
+    version: master
+  lib/udp_bridge:
+    type: git
+    url: git@github.com:bit-bots/udp_bridge.git
+    version: master
   lib/bio_ik_msgs:
     type: git
     url: git@github.com:bit-bots/bio_ik_msgs.git
