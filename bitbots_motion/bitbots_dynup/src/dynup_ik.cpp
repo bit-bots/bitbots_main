@@ -25,12 +25,9 @@ void DynupIK::reset() {
   }
 }
 
-void DynupIK::setDirection(std::string direction) {
-  direction_ = direction;
-}
+void DynupIK::setDirection(std::string direction) { direction_ = direction; }
 
 bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
-
   /* ik options is basically the command which we send to bio_ik and which describes what we want to do */
   auto ik_options = kinematics::KinematicsQueryOptions();
   ik_options.return_approximate_solution = true;
@@ -45,35 +42,23 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
   bool success;
   goal_state_->updateLinkTransforms();
 
-  success = goal_state_->setFromIK(l_leg_joints_group_,
-                                   left_foot_goal_msg,
-                                   0.005,
-                                   moveit::core::GroupStateValidityCallbackFn(),
-                                   ik_options);
+  success = goal_state_->setFromIK(l_leg_joints_group_, left_foot_goal_msg, 0.005,
+                                   moveit::core::GroupStateValidityCallbackFn(), ik_options);
 
   goal_state_->updateLinkTransforms();
 
-  success &= goal_state_->setFromIK(r_leg_joints_group_,
-                                    right_foot_goal_msg,
-                                    0.005,
-                                    moveit::core::GroupStateValidityCallbackFn(),
-                                    ik_options);
+  success &= goal_state_->setFromIK(r_leg_joints_group_, right_foot_goal_msg, 0.005,
+                                    moveit::core::GroupStateValidityCallbackFn(), ik_options);
 
   goal_state_->updateLinkTransforms();
 
-  success &= goal_state_->setFromIK(l_arm_joints_group_,
-                                    left_hand_goal_msg,
-                                    0.005,
-                                    moveit::core::GroupStateValidityCallbackFn(),
-                                    ik_options);
+  success &= goal_state_->setFromIK(l_arm_joints_group_, left_hand_goal_msg, 0.005,
+                                    moveit::core::GroupStateValidityCallbackFn(), ik_options);
 
   goal_state_->updateLinkTransforms();
 
-  success &= goal_state_->setFromIK(r_arm_joints_group_,
-                                    right_hand_goal_msg,
-                                    0.005,
-                                    moveit::core::GroupStateValidityCallbackFn(),
-                                    ik_options);
+  success &= goal_state_->setFromIK(r_arm_joints_group_, right_hand_goal_msg, 0.005,
+                                    moveit::core::GroupStateValidityCallbackFn(), ik_options);
   if (success) {
     /* retrieve joint names and associated positions from  */
     std::vector<std::string> joint_names = all_joints_group_->getActiveJointModelNames();
@@ -87,10 +72,10 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
     /* sets head motors to correct positions, as the IK will return random values for those unconstrained motors. */
     for (size_t i = result.first.size(); i-- > 0;) {
       if (result.first[i] == "HeadPan") {
-        if (direction_ == "walkready"){
-            // remove head from the goals so that we can move it freely
-            result.first.erase(result.first.begin() + i);
-            result.second.erase(result.second.begin() + i);
+        if (direction_ == "walkready") {
+          // remove head from the goals so that we can move it freely
+          result.first.erase(result.first.begin() + i);
+          result.second.erase(result.second.begin() + i);
         } else {
           result.second[i] = 0;
         }
@@ -102,7 +87,7 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
             result.second[i] = 1.0;
           } else if (direction_ == "back") {
             result.second[i] = -1.5;
-          } else if (direction_ == "walkready"){
+          } else if (direction_ == "walkready") {
             // remove head from the goals so that we can move it freely
             result.first.erase(result.first.begin() + i);
             result.second.erase(result.second.begin() + i);
@@ -118,16 +103,12 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
     return {};
   }
 }
-void DynupIK::useStabilizing(bool use) {
-  use_stabilizing_ = use;
-}
+void DynupIK::useStabilizing(bool use) { use_stabilizing_ = use; }
 
 void DynupIK::setCurrentJointStates(sensor_msgs::msg::JointState::SharedPtr jointStates) {
   current_joint_states_ = jointStates;
 }
 
-moveit::core::RobotStatePtr DynupIK::get_goal_state() {
-    return goal_state_;
-}
+moveit::core::RobotStatePtr DynupIK::get_goal_state() { return goal_state_; }
 
-}
+}  // namespace bitbots_dynup

@@ -3,14 +3,14 @@ This code is largely based on the original code by Quentin "Leph" Rouxel and Tea
 The original files can be found at:
 https://github.com/Rhoban/model/
 */
+#include "bitbots_splines/combination.h"
+
 #include <limits>
 #include <stdexcept>
-#include "bitbots_splines/combination.h"
 
 namespace bitbots_splines {
 
-unsigned long Combination::binomialCoefficient(
-    size_t k, size_t n) {
+unsigned long Combination::binomialCoefficient(size_t k, size_t n) {
   if (n == 0 || k == 0) {
     return 1;
   }
@@ -29,9 +29,7 @@ unsigned long Combination::binomialCoefficient(
   if (pascal_triangle_.count(pair) == 0) {
     unsigned long val_1 = binomialCoefficient(k - 1, n - 1);
     unsigned long val_2 = binomialCoefficient(k, n - 1);
-    unsigned long test =
-        std::numeric_limits<unsigned long>::max()
-            - val_1;
+    unsigned long test = std::numeric_limits<unsigned long>::max() - val_1;
     if (val_2 < test) {
       pascal_triangle_[pair] = val_1 + val_2;
     } else {
@@ -90,5 +88,4 @@ bool Combination::incrIndexes(size_t i) {
   }
 }
 
-}
-
+}  // namespace bitbots_splines

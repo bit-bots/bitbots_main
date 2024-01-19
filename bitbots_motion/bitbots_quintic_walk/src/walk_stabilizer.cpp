@@ -2,7 +2,7 @@
 
 namespace bitbots_quintic_walk {
 
-WalkStabilizer::WalkStabilizer(std::string ns){
+WalkStabilizer::WalkStabilizer(std::string ns) {
   pitch_node_ = rclcpp::Node::make_shared(ns + "walk_pid_trunk_fused_pitch");
   roll_node_ = rclcpp::Node::make_shared(ns + "walk_pid_trunk_fused_roll");
   // ensure that there is no unecessary infos from the PID nodes
@@ -45,7 +45,8 @@ WalkResponse WalkStabilizer::stabilize(const WalkResponse &response, const rclcp
   tf2::Matrix3x3(response.support_foot_to_trunk.getRotation()).getRPY(goal_roll, goal_pitch, goal_yaw);
 
   tf2::Quaternion quat_msg = response.support_foot_to_trunk.getRotation();
-  Eigen::Quaterniond goal_orientation_eigen = Eigen::Quaterniond(quat_msg.getW(), quat_msg.getX(), quat_msg.getY(), quat_msg.getZ());
+  Eigen::Quaterniond goal_orientation_eigen =
+      Eigen::Quaterniond(quat_msg.getW(), quat_msg.getX(), quat_msg.getY(), quat_msg.getZ());
 
   // compute orientation with fused angles for PID control
   rot_conv::FusedAngles goal_fused = rot_conv::FusedFromQuat(goal_orientation_eigen);
@@ -67,4 +68,4 @@ WalkResponse WalkStabilizer::stabilize(const WalkResponse &response, const rclcp
 
   return stabilized_response;
 }
-} // namespace bitbots_quintic_walk
+}  // namespace bitbots_quintic_walk

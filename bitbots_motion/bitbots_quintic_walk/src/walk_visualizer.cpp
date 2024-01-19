@@ -1,30 +1,26 @@
 #include "bitbots_quintic_walk/walk_visualizer.h"
 
 namespace bitbots_quintic_walk {
-WalkVisualizer::WalkVisualizer(rclcpp::Node::SharedPtr node) : node_(node){
+WalkVisualizer::WalkVisualizer(rclcpp::Node::SharedPtr node) : node_(node) {
   marker_id_ = 1;
   /* debug publisher */
-  
+
   pub_debug_ = node_->create_publisher<bitbots_quintic_walk::msg::WalkDebug>("walk_debug", 1);
   pub_engine_debug_ = node_->create_publisher<bitbots_quintic_walk::msg::WalkEngineDebug>("walk_engine_debug", 1);
   pub_debug_marker_ = node_->create_publisher<visualization_msgs::msg::Marker>("walk_debug_marker", 1);
 
-
-  node_->declare_parameter<std::string>("base_link_frame",  "base_link");
-  node_->get_parameter("base_link_frame",  base_link_frame_);
-  node_->declare_parameter<std::string>("r_sole_frame",  "r_sole");
-  node_->get_parameter("r_sole_frame",  r_sole_frame_);
-  node_->declare_parameter<std::string>("l_sole_frame",  "l_sole");
-  node_->get_parameter("l_sole_frame",  l_sole_frame_);
-
+  node_->declare_parameter<std::string>("base_link_frame", "base_link");
+  node_->get_parameter("base_link_frame", base_link_frame_);
+  node_->declare_parameter<std::string>("r_sole_frame", "r_sole");
+  node_->get_parameter("r_sole_frame", r_sole_frame_);
+  node_->declare_parameter<std::string>("l_sole_frame", "l_sole");
+  node_->get_parameter("l_sole_frame", l_sole_frame_);
 }
 
-void WalkVisualizer::init(moveit::core::RobotModelPtr kinematic_model) {
-  kinematic_model_ = kinematic_model;
-}
+void WalkVisualizer::init(moveit::core::RobotModelPtr kinematic_model) { kinematic_model_ = kinematic_model; }
 
 void WalkVisualizer::publishEngineDebug(WalkResponse response) {
-  //only do something if someone is listing
+  // only do something if someone is listing
   if (pub_engine_debug_->get_subscription_count() == 0 && pub_debug_marker_->get_subscription_count() == 0) {
     return;
   }
@@ -64,7 +60,6 @@ void WalkVisualizer::publishEngineDebug(WalkResponse response) {
     b = 0;
     a = 1;
   }
-
 
   // times
   msg.phase_time = response.phase;
@@ -107,7 +102,6 @@ void WalkVisualizer::publishEngineDebug(WalkResponse response) {
   msg.footstep_next.y = response.support_to_next.getOrigin()[1];
   tf2::Matrix3x3(response.support_to_next.getRotation()).getRPY(roll, pitch, yaw);
   msg.footstep_next.z = yaw;
-
 
   // engine output
   geometry_msgs::msg::Pose pose_msg;
@@ -152,10 +146,9 @@ void WalkVisualizer::publishEngineDebug(WalkResponse response) {
   pub_engine_debug_->publish(msg);
 }
 
-void WalkVisualizer::publishIKDebug(WalkResponse response,
-                                    moveit::core::RobotStatePtr current_state,
+void WalkVisualizer::publishIKDebug(WalkResponse response, moveit::core::RobotStatePtr current_state,
                                     bitbots_splines::JointGoals joint_goals) {
-  //only do something if someone is listing
+  // only do something if someone is listing
   if (pub_debug_->get_subscription_count() == 0 && pub_debug_marker_->get_subscription_count() == 0) {
     return;
   }
@@ -207,7 +200,6 @@ void WalkVisualizer::publishIKDebug(WalkResponse response,
   }
   publishArrowMarker("ik_left", base_link_frame_, pose_left_result, 0, 1, 0, 1);
   publishArrowMarker("ik_right", base_link_frame_, pose_right_result, 1, 0, 0, 1);
-
 
   // IK offsets
   tf2::Vector3 support_off;
@@ -306,9 +298,8 @@ void WalkVisualizer::publishIKDebug(WalkResponse response,
   pub_debug_->publish(msg);
 }
 
-void WalkVisualizer::publishArrowMarker(std::string name_space,
-                                        std::string frame,
-                                        geometry_msgs::msg::Pose pose, float r, float g, float b, float a) {
+void WalkVisualizer::publishArrowMarker(std::string name_space, std::string frame, geometry_msgs::msg::Pose pose,
+                                        float r, float g, float b, float a) {
   visualization_msgs::msg::Marker marker_msg;
   marker_msg.header.stamp = node_->now();
   marker_msg.header.frame_id = frame;
@@ -338,7 +329,7 @@ void WalkVisualizer::publishArrowMarker(std::string name_space,
 }
 
 void WalkVisualizer::publishWalkMarkers(WalkResponse response) {
-  //publish markers
+  // publish markers
   visualization_msgs::msg::Marker marker_msg;
   marker_msg.header.stamp = node_->now();
   if (response.is_left_support_foot) {
@@ -354,7 +345,7 @@ void WalkVisualizer::publishWalkMarkers(WalkResponse response) {
   scale.y = 0.10;
   scale.z = 0.01;
   marker_msg.scale = scale;
-  //last step
+  // last step
   marker_msg.ns = "last_step";
   marker_msg.id = 1;
   std_msgs::msg::ColorRGBA color;
@@ -376,7 +367,7 @@ void WalkVisualizer::publishWalkMarkers(WalkResponse response) {
   marker_msg.pose = pose;
   pub_debug_marker_->publish(marker_msg);
 
-  //last step center
+  // last step center
   marker_msg.ns = "step_center";
   marker_msg.id = marker_id_;
   scale.x = 0.01;
@@ -409,4 +400,4 @@ void WalkVisualizer::publishWalkMarkers(WalkResponse response) {
   marker_id_++;
 }
 
-}
+}  // namespace bitbots_quintic_walk

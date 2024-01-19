@@ -60,12 +60,8 @@ KickPositions Stabilizer::stabilize(const KickPositions &positions, const rclcpp
   return stabilized_positions;
 }
 
-void Stabilizer::useCop(bool use) {
-  use_cop_ = use;
-}
+void Stabilizer::useCop(bool use) { use_cop_ = use; }
 
-void Stabilizer::setRobotModel(moveit::core::RobotModelPtr model) {
-  kinematic_model_ = std::move(model);
-}
+void Stabilizer::setRobotModel(moveit::core::RobotModelPtr model) { kinematic_model_ = std::move(model); }
 
-}
+}  // namespace bitbots_dynamic_kick

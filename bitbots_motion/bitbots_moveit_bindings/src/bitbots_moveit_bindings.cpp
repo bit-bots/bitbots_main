@@ -14,11 +14,11 @@
 #include <moveit_msgs/srv/get_position_fk.hpp>
 #include <moveit_msgs/srv/get_position_ik.hpp>
 #include <rclcpp/duration.hpp>
+#include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
 #include <rclcpp/logger.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <ros2_python_extension/serialization.hpp>
 #include <tf2_eigen/tf2_eigen.hpp>
-#include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
 
 #include "rcl_interfaces/srv/get_parameters.hpp"
 namespace py = pybind11;
@@ -26,8 +26,8 @@ using namespace std::chrono_literals;
 using std::placeholders::_1;
 
 class BitbotsMoveitBindings {
-public:
-  BitbotsMoveitBindings(std::string node_name, std::vector<py::bytes> parameter_msgs = {}) {
+ public:
+  BitbotsMoveitBindings(std::string node_name, std::vector<py::bytes> parameter_msgs) {
     // initialize rclcpp if not already done
     if (!rclcpp::contexts::get_global_default_context()->is_valid()) {
       rclcpp::init(0, nullptr);
@@ -262,7 +262,7 @@ public:
     return ros2_python_extension::toPython<sensor_msgs::msg::JointState>(joint_state);
   }
 
-private:
+ private:
   robot_model_loader::RobotModelLoaderPtr loader_;
   moveit::core::RobotModelPtr robot_model_;
   moveit::core::RobotStatePtr robot_state_;
@@ -272,21 +272,14 @@ private:
   std::shared_ptr<rclcpp::experimental::executors::EventsExecutor> exec_;
   std::thread t_;
 
-  static tf2::Vector3 p(const geometry_msgs::msg::Point& p) {
-    return tf2::Vector3(p.x, p.y, p.z);
-  }
+  static tf2::Vector3 p(const geometry_msgs::msg::Point& p) { return tf2::Vector3(p.x, p.y, p.z); }
 
-  static tf2::Vector3 p(const geometry_msgs::msg::Vector3& p) {
-    return tf2::Vector3(p.x, p.y, p.z);
-  }
+  static tf2::Vector3 p(const geometry_msgs::msg::Vector3& p) { return tf2::Vector3(p.x, p.y, p.z); }
 
-  static tf2::Quaternion q(const geometry_msgs::msg::Quaternion& q) {
-    return tf2::Quaternion(q.x, q.y, q.z, q.w);
-  }
+  static tf2::Quaternion q(const geometry_msgs::msg::Quaternion& q) { return tf2::Quaternion(q.x, q.y, q.z, q.w); }
 
   static double w(double w, double def = 1.0) {
-    if (w == 0 || !std::isfinite(w))
-      w = def;
+    if (w == 0 || !std::isfinite(w)) w = def;
     return w;
   }
 

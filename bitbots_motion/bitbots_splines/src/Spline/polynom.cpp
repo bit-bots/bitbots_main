@@ -4,37 +4,25 @@ The original files can be found at:
 https://github.com/Rhoban/model/
 */
 #include "bitbots_splines/polynom.h"
+
 #include "bitbots_splines/newton_binomial.h"
 
 namespace bitbots_splines {
 
-Polynom::Polynom() :
-    coefs_() {
-}
-Polynom::Polynom(unsigned int degree) :
-    coefs_() {
+Polynom::Polynom() : coefs_() {}
+Polynom::Polynom(unsigned int degree) : coefs_() {
   for (size_t i = 0; i < degree + 1; i++) {
     coefs_.push_back(0.0);
   }
 }
 
-const std::vector<double> &Polynom::getCoefs() const {
-  return coefs_;
-}
-std::vector<double> &Polynom::getCoefs() {
-  return coefs_;
-}
+const std::vector<double> &Polynom::getCoefs() const { return coefs_; }
+std::vector<double> &Polynom::getCoefs() { return coefs_; }
 
-const double &Polynom::operator()(size_t index) const {
-  return coefs_.at(index);
-}
-double &Polynom::operator()(size_t index) {
-  return coefs_.at(index);
-}
+const double &Polynom::operator()(size_t index) const { return coefs_.at(index); }
+double &Polynom::operator()(size_t index) { return coefs_.at(index); }
 
-size_t Polynom::degree() const {
-  return coefs_.size() - 1;
-}
+size_t Polynom::degree() const { return coefs_.size() - 1; }
 
 double Polynom::pos(double x) const {
   double xx = 1.0;
@@ -111,5 +99,4 @@ std::ostream &operator<<(std::ostream &os, const Polynom &p) {
   return os;
 }
 
-}
-
+}  // namespace bitbots_splines

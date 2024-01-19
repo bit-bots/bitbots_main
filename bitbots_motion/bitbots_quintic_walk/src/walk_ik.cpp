@@ -13,7 +13,7 @@ void WalkIK::init(moveit::core::RobotModelPtr kinematic_model) {
   goal_state_->setToDefaultValues();
   bool ik_reset;
   node_->get_parameter("node.ik_reset", ik_reset);
-  if (ik_reset){
+  if (ik_reset) {
     reset();
   }
 }
@@ -42,16 +42,16 @@ bitbots_splines::JointGoals WalkIK::calculate(const WalkResponse &ik_goals) {
   // we have to do this otherwise there is an error
   goal_state_->updateLinkTransforms();
 
-  success = goal_state_->setFromIK(left_leg_joints_group_,
-                                   left_foot_goal_msg,
-                                   ik_timeout_,
+  success = goal_state_->setFromIK(left_leg_joints_group_, left_foot_goal_msg, ik_timeout_,
                                    moveit::core::GroupStateValidityCallbackFn());
   goal_state_->updateLinkTransforms();
 
-  success &= goal_state_->setFromIK(right_leg_joints_group_,
-                                    right_foot_goal_msg,
-                                    ik_timeout_,
+  success &= goal_state_->setFromIK(right_leg_joints_group_, right_foot_goal_msg, ik_timeout_,
                                     moveit::core::GroupStateValidityCallbackFn());
+
+  if (!success) {
+    RCLCPP_ERROR(node_->get_logger(), "IK failed with no solution found");
+  }
 
   std::vector<std::string> joint_names = legs_joints_group_->getActiveJointModelNames();
   std::vector<double> joint_goals;
@@ -75,20 +75,14 @@ void WalkIK::reset() {
   }
 }
 
-void WalkIK::setIKTimeout(double timeout) {
-  ik_timeout_ = timeout;
-}
+void WalkIK::setIKTimeout(double timeout) { ik_timeout_ = timeout; }
 
-const std::vector<std::string> &WalkIK::getLeftLegJointNames() {
-  return left_leg_joints_group_->getJointModelNames();
-}
+const std::vector<std::string> &WalkIK::getLeftLegJointNames() { return left_leg_joints_group_->getJointModelNames(); }
 
 const std::vector<std::string> &WalkIK::getRightLegJointNames() {
   return right_leg_joints_group_->getJointModelNames();
 }
 
-moveit::core::RobotStatePtr WalkIK::get_goal_state() {
-  return goal_state_;
-}
+moveit::core::RobotStatePtr WalkIK::get_goal_state() { return goal_state_; }
 
-} // namespace bitbots_quintic_walk
+}  // namespace bitbots_quintic_walk

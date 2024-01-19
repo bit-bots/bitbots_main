@@ -2,40 +2,39 @@
 
 namespace bitbots_dynup {
 
-Stabilizer::Stabilizer(std::string ns){
-    pitch_node_ = rclcpp::Node::make_shared(ns + "dynup_pid_trunk_fused_pitch");
-    roll_node_ = rclcpp::Node::make_shared(ns + "dynup_pid_trunk_fused_roll");
-    pitch_node_->get_logger().set_level(rclcpp::Logger::Level::Warn);
-    roll_node_->get_logger().set_level(rclcpp::Logger::Level::Warn);
+Stabilizer::Stabilizer(std::string ns) {
+  pitch_node_ = rclcpp::Node::make_shared(ns + "dynup_pid_trunk_fused_pitch");
+  roll_node_ = rclcpp::Node::make_shared(ns + "dynup_pid_trunk_fused_roll");
+  pitch_node_->get_logger().set_level(rclcpp::Logger::Level::Warn);
+  roll_node_->get_logger().set_level(rclcpp::Logger::Level::Warn);
 
-    pitch_node_->declare_parameter<double>("p", 0.0);
-    pitch_node_->declare_parameter<double>("i", 0.0);
-    pitch_node_->declare_parameter<double>("d", 0.0);
-    pitch_node_->declare_parameter<double>("i_clamp_max", 0.0);
-    pitch_node_->declare_parameter<double>("i_clamp_min", 0.0);
-    pitch_node_->declare_parameter<bool>("antiwindup", false);
-    roll_node_->declare_parameter<double>("p", 0.0);
-    roll_node_->declare_parameter<double>("i", 0.0);
-    roll_node_->declare_parameter<double>("d", 0.0);
-    roll_node_->declare_parameter<double>("i_clamp_max", 0.0);
-    roll_node_->declare_parameter<double>("i_clamp_min", 0.0);
-    roll_node_->declare_parameter<bool>("antiwindup", false);
+  pitch_node_->declare_parameter<double>("p", 0.0);
+  pitch_node_->declare_parameter<double>("i", 0.0);
+  pitch_node_->declare_parameter<double>("d", 0.0);
+  pitch_node_->declare_parameter<double>("i_clamp_max", 0.0);
+  pitch_node_->declare_parameter<double>("i_clamp_min", 0.0);
+  pitch_node_->declare_parameter<bool>("antiwindup", false);
+  roll_node_->declare_parameter<double>("p", 0.0);
+  roll_node_->declare_parameter<double>("i", 0.0);
+  roll_node_->declare_parameter<double>("d", 0.0);
+  roll_node_->declare_parameter<double>("i_clamp_max", 0.0);
+  roll_node_->declare_parameter<double>("i_clamp_min", 0.0);
+  roll_node_->declare_parameter<bool>("antiwindup", false);
 
-    pid_trunk_pitch_ = std::make_shared<control_toolbox::PidROS>(pitch_node_, "");
-    pid_trunk_roll_ = std::make_shared<control_toolbox::PidROS>(roll_node_, "");
-    pid_trunk_pitch_->initPid();
-    pid_trunk_roll_->initPid();
+  pid_trunk_pitch_ = std::make_shared<control_toolbox::PidROS>(pitch_node_, "");
+  pid_trunk_roll_ = std::make_shared<control_toolbox::PidROS>(roll_node_, "");
+  pid_trunk_pitch_->initPid();
+  pid_trunk_roll_->initPid();
 
-    imu_ = std::make_shared<sensor_msgs::msg::Imu>();
-    imu_->orientation.w = 1;
+  imu_ = std::make_shared<sensor_msgs::msg::Imu>();
+  imu_->orientation.w = 1;
 
-    reset();
+  reset();
 }
 
 void Stabilizer::reset() {
   pid_trunk_pitch_->reset();
   pid_trunk_roll_->reset();
-
 }
 
 DynupResponse Stabilizer::stabilize(const DynupResponse &ik_goals, const rclcpp::Duration &dt) {
@@ -56,17 +55,17 @@ DynupResponse Stabilizer::stabilize(const DynupResponse &ik_goals, const rclcpp:
 
     // compute orientation with fused angles for PID control
     tf2::Quaternion quat_msg = trunk_goal.getRotation();
-    Eigen::Quaterniond goal_orientation_eigen = Eigen::Quaterniond(quat_msg.getW(), quat_msg.getX(), quat_msg.getY(), quat_msg.getZ());
+    Eigen::Quaterniond goal_orientation_eigen =
+        Eigen::Quaterniond(quat_msg.getW(), quat_msg.getX(), quat_msg.getY(), quat_msg.getZ());
     rot_conv::FusedAngles goal_fused = rot_conv::FusedFromQuat(goal_orientation_eigen);
 
     // adapt trunk based on PID controller
     goal_fused.fusedPitch +=
         pid_trunk_pitch_->computeCommand(goal_fused.fusedPitch - current_orientation.fusedPitch, dt);
-    goal_fused.fusedRoll +=
-        pid_trunk_roll_->computeCommand(goal_fused.fusedRoll - current_orientation.fusedRoll, dt);
+    goal_fused.fusedRoll += pid_trunk_roll_->computeCommand(goal_fused.fusedRoll - current_orientation.fusedRoll, dt);
 
     is_stable_ = (abs(goal_fused.fusedPitch - current_orientation.fusedPitch) < stable_threshold_) &&
-        (abs(goal_fused.fusedRoll - current_orientation.fusedRoll) < stable_threshold_);
+                 (abs(goal_fused.fusedRoll - current_orientation.fusedRoll) < stable_threshold_);
 
     tf2::Quaternion corrected_orientation;
     Eigen::Quaterniond goal_orientation_eigen_corrected = rot_conv::QuatFromFused(goal_fused);
@@ -96,19 +95,14 @@ DynupResponse Stabilizer::stabilize(const DynupResponse &ik_goals, const rclcpp:
 void Stabilizer::setParams(std::map<std::string, rclcpp::Parameter> params) {
   use_stabilizing_ = params["stabilizing"].get_value<bool>();
   stable_threshold_ = params["stable_threshold"].get_value<double>();
-
 }
 
-bool Stabilizer::isStable() {
-  return is_stable_;
-}
+bool Stabilizer::isStable() { return is_stable_; }
 
-void Stabilizer::setImu(sensor_msgs::msg::Imu::SharedPtr imu) {
-  imu_ = imu;
-}
+void Stabilizer::setImu(sensor_msgs::msg::Imu::SharedPtr imu) { imu_ = imu; }
 
 void Stabilizer::setRSoleToTrunk(geometry_msgs::msg::TransformStamped r_sole_to_trunk) {
   r_sole_to_trunk_ = r_sole_to_trunk;
 }
 
-}
+}  // namespace bitbots_dynup

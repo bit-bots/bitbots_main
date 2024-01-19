@@ -47,14 +47,10 @@ bitbots_splines::JointGoals KickIK::calculate(const KickPositions &positions) {
 
   // call IK two times, since we have two legs
   // we don't listen to the return value since BioIK always returns true
-  goal_state_->setFromIK(support_foot_group,
-                         trunk_to_support_foot_goal,
-                         0.01);
+  goal_state_->setFromIK(support_foot_group, trunk_to_support_foot_goal, 0.01);
   goal_state_->updateLinkTransforms();
 
-  goal_state_->setFromIK(flying_foot_group,
-                         trunk_to_flying_foot_goal,
-                         0.01);
+  goal_state_->setFromIK(flying_foot_group, trunk_to_flying_foot_goal, 0.01);
 
   std::vector<std::string> joint_names = legs_joints_group_->getActiveJointModelNames();
   std::vector<double> joint_goals;
@@ -67,4 +63,4 @@ bitbots_splines::JointGoals KickIK::calculate(const KickPositions &positions) {
   return result;
 }
 
-}
+}  // namespace bitbots_dynamic_kick

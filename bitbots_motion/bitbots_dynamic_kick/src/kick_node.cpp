@@ -3,14 +3,15 @@
 namespace bitbots_dynamic_kick {
 using namespace std::chrono_literals;
 
-
-KickNode::KickNode(const std::string &ns, std::vector<rclcpp::Parameter> parameters) :
-    Node(ns + "dynamic_kick", rclcpp::NodeOptions().allow_undeclared_parameters(true).parameter_overrides(parameters).automatically_declare_parameters_from_overrides(true)),
-    engine_(SharedPtr(this)),
-    stabilizer_(ns),
-    visualizer_(ns + "debug/dynamic_kick", SharedPtr(this)),
-    tf_buffer_(std::make_unique<tf2_ros::Buffer>(this->get_clock())) {
-
+KickNode::KickNode(const std::string &ns, std::vector<rclcpp::Parameter> parameters)
+    : Node(ns + "dynamic_kick", rclcpp::NodeOptions()
+                                    .allow_undeclared_parameters(true)
+                                    .parameter_overrides(parameters)
+                                    .automatically_declare_parameters_from_overrides(true)),
+      engine_(SharedPtr(this)),
+      stabilizer_(ns),
+      visualizer_(ns + "debug/dynamic_kick", SharedPtr(this)),
+      tf_buffer_(std::make_unique<tf2_ros::Buffer>(this->get_clock())) {
   tf_buffer_->setUsingDedicatedThread(true);
   // get all kinematics parameters from the move_group node if they are not set manually via constructor
   std::string check_kinematic_parameters;
@@ -21,13 +22,11 @@ KickNode::KickNode(const std::string &ns, std::vector<rclcpp::Parameter> paramet
         RCLCPP_ERROR(this->get_logger(), "Interrupted while waiting for the service. Exiting.");
         rclcpp::shutdown();
       }
-      RCLCPP_INFO_THROTTLE(this->get_logger(),
-                           *this->get_clock(),
-                           10 * 1e9,
+      RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 10 * 1e9,
                            "Can't copy parameters from move_group node. Service not available, waiting again...");
     }
-    rcl_interfaces::msg::ListParametersResult
-        parameter_list = parameters_client->list_parameters({"robot_description_kinematics"}, 10);
+    rcl_interfaces::msg::ListParametersResult parameter_list =
+        parameters_client->list_parameters({"robot_description_kinematics"}, 10);
     auto copied_parameters = parameters_client->get_parameters(parameter_list.names);
     // set the parameters to our node
     this->set_parameters(copied_parameters);
@@ -106,30 +105,23 @@ KickNode::KickNode(const std::string &ns, std::vector<rclcpp::Parameter> paramet
   engine_.setRobotState(current_state_);
 
   joint_goal_publisher_ = this->create_publisher<bitbots_msgs::msg::JointCommand>("kick_motor_goals", 1);
-  support_foot_publisher_ =
-      this->create_publisher<biped_interfaces::msg::Phase>("dynamic_kick_support_state", 1);
+  support_foot_publisher_ = this->create_publisher<biped_interfaces::msg::Phase>("dynamic_kick_support_state", 1);
 
-  cop_l_subscriber_ = this
-      ->create_subscription<geometry_msgs::msg::PointStamped>("cop_l", 1, std::bind(&KickNode::copLCallback, this, std::placeholders::_1));
-  cop_r_subscriber_ = this
-      ->create_subscription<geometry_msgs::msg::PointStamped>("cop_r", 1, std::bind(&KickNode::copRCallback, this, std::placeholders::_1));
-  joint_state_subscriber_ = this->create_subscription<sensor_msgs::msg::JointState>("joint_states",
-                                                                                     1,
-                                                                                     std::bind(&KickNode::jointStateCallback,
-                                                                                               this,
-                                                                                               std::placeholders::_1));
-  server_ = rclcpp_action::create_server<bitbots_msgs::action::Kick>(this,
-                                                                     "dynamic_kick",
-                                                                     std::bind(&KickNode::goalCb,
-                                                                               this, std::placeholders::_1, std::placeholders::_2),
-                                                                     std::bind(&KickNode::cancelCb,
-                                                                               this, std::placeholders::_1),
-                                                                     std::bind(&KickNode::acceptedCb,
-                                                                               this,std::placeholders::_1));
+  cop_l_subscriber_ = this->create_subscription<geometry_msgs::msg::PointStamped>(
+      "cop_l", 1, std::bind(&KickNode::copLCallback, this, std::placeholders::_1));
+  cop_r_subscriber_ = this->create_subscription<geometry_msgs::msg::PointStamped>(
+      "cop_r", 1, std::bind(&KickNode::copRCallback, this, std::placeholders::_1));
+  joint_state_subscriber_ = this->create_subscription<sensor_msgs::msg::JointState>(
+      "joint_states", 1, std::bind(&KickNode::jointStateCallback, this, std::placeholders::_1));
+  server_ = rclcpp_action::create_server<bitbots_msgs::action::Kick>(
+      this, "dynamic_kick", std::bind(&KickNode::goalCb, this, std::placeholders::_1, std::placeholders::_2),
+      std::bind(&KickNode::cancelCb, this, std::placeholders::_1),
+      std::bind(&KickNode::acceptedCb, this, std::placeholders::_1));
 
-   callback_handle_ = this->add_on_set_parameters_callback(std::bind(&KickNode::onSetParameters, this, std::placeholders::_1));
+  callback_handle_ =
+      this->add_on_set_parameters_callback(std::bind(&KickNode::onSetParameters, this, std::placeholders::_1));
 
-  RCLCPP_INFO(this->get_logger(),"Initialized Kick and waiting for actions");
+  RCLCPP_INFO(this->get_logger(), "Initialized Kick and waiting for actions");
   rclcpp::spin(SharedPtr(this));
 }
 
@@ -140,7 +132,7 @@ void KickNode::copLCallback(const geometry_msgs::msg::PointStamped::SharedPtr co
   stabilizer_.cop_left = cop->point;
 }
 
-void KickNode::copRCallback(const geometry_msgs::msg::PointStamped::SharedPtr  cop) {
+void KickNode::copRCallback(const geometry_msgs::msg::PointStamped::SharedPtr cop) {
   if (cop->header.frame_id != r_sole_frame_) {
     RCLCPP_ERROR_STREAM(this->get_logger(), "cop_r not in " << r_sole_frame_ << " frame! Stabilizing will not work.");
   }
@@ -154,7 +146,7 @@ void KickNode::jointStateCallback(const sensor_msgs::msg::JointState::SharedPtr 
 }
 
 rcl_interfaces::msg::SetParametersResult KickNode::onSetParameters(const std::vector<rclcpp::Parameter> &parameters) {
-  for (const auto &parameter: parameters) {
+  for (const auto &parameter : parameters) {
     if (parameter.get_name() == "engine_rate") {
       engine_rate_ = parameter.as_int();
     } else if (parameter.get_name() == "foot_rise") {
@@ -175,8 +167,6 @@ rcl_interfaces::msg::SetParametersResult KickNode::onSetParameters(const std::ve
       normal_config_.move_trunk_time = parameter.as_double();
     } else if (parameter.get_name() == "raise_foot_time") {
       normal_config_.raise_foot_time = parameter.as_double();
-    } else if (parameter.get_name() == "kick_windup_distance") {
-      normal_config_.kick_windup_distance = parameter.as_double();
     } else if (parameter.get_name() == "move_to_ball_time") {
       normal_config_.move_to_ball_time = parameter.as_double();
     } else if (parameter.get_name() == "kick_time") {
@@ -207,8 +197,7 @@ rcl_interfaces::msg::SetParametersResult KickNode::onSetParameters(const std::ve
   return result;
 }
 
-bool KickNode::init(const bitbots_msgs::action::Kick::Goal &goal_msg,
-                    std::string &error_string) {
+bool KickNode::init(const bitbots_msgs::action::Kick::Goal &goal_msg, std::string &error_string) {
   /* currently, the ball must always be in the base_footprint frame */
   if (goal_msg.header.frame_id != base_footprint_frame_) {
     RCLCPP_ERROR_STREAM(this->get_logger(), "Goal should be in " << base_footprint_frame_ << " frame");
@@ -239,7 +228,8 @@ bool KickNode::init(const bitbots_msgs::action::Kick::Goal &goal_msg,
   /* Set engines goal_msg and start calculating */
   KickGoals goals;
   goals.ball_position = {goal_msg.ball_position.x, goal_msg.ball_position.y, goal_msg.ball_position.z};
-  goals.kick_direction = {goal_msg.kick_direction.w, goal_msg.kick_direction.x, goal_msg.kick_direction.y, goal_msg.kick_direction.z};
+  goals.kick_direction = {goal_msg.kick_direction.w, goal_msg.kick_direction.x, goal_msg.kick_direction.y,
+                          goal_msg.kick_direction.z};
   goals.kick_speed = goal_msg.kick_speed;
   goals.trunk_to_base_footprint = trunk_to_base_footprint;
   engine_.setGoals(goals);
@@ -253,9 +243,10 @@ bool KickNode::init(const bitbots_msgs::action::Kick::Goal &goal_msg,
   return true;
 }
 
-rclcpp_action::CancelResponse KickNode::cancelCb(std::shared_ptr<rclcpp_action::ServerGoalHandle<bitbots_msgs::action::Kick>> goal) {
+rclcpp_action::CancelResponse KickNode::cancelCb(
+    std::shared_ptr<rclcpp_action::ServerGoalHandle<bitbots_msgs::action::Kick>> goal) {
   RCLCPP_INFO(this->get_logger(), "Received request to cancel goal");
-  (void) goal;
+  (void)goal;
   return rclcpp_action::CancelResponse::ACCEPT;
 }
 
@@ -266,11 +257,10 @@ void KickNode::acceptedCb(const std::shared_ptr<KickGoalHandle> goal) {
   std::thread{std::bind(&KickNode::executeCb, this, std::placeholders::_1), goal}.detach();
 }
 
-rclcpp_action::GoalResponse KickNode::goalCb(
-    const rclcpp_action::GoalUUID &uuid,
-    std::shared_ptr<const bitbots_msgs::action::Kick::Goal> goal) {
+rclcpp_action::GoalResponse KickNode::goalCb(const rclcpp_action::GoalUUID &uuid,
+                                             std::shared_ptr<const bitbots_msgs::action::Kick::Goal> goal) {
   RCLCPP_INFO(this->get_logger(), "Received goal request");
-  (void) uuid;
+  (void)uuid;
   if (currently_kicking_) {
     RCLCPP_INFO(this->get_logger(), "Already kicking, rejecting new goal");
     return rclcpp_action::GoalResponse::REJECT;
@@ -322,10 +312,11 @@ void KickNode::executeCb(const std::shared_ptr<KickGoalHandle> goal_handle) {
   currently_kicking_ = false;
 }
 
-void KickNode::loopEngine(const std::shared_ptr<rclcpp_action::ServerGoalHandle<bitbots_msgs::action::Kick>> goal_handle) {
+void KickNode::loopEngine(
+    const std::shared_ptr<rclcpp_action::ServerGoalHandle<bitbots_msgs::action::Kick>> goal_handle) {
   // Store the time of the last execution
   auto last_time = this->get_clock()->now();
-  auto next_execution_time {last_time};
+  auto next_execution_time{last_time};
 
   // Loop to perform the kick trajectory
   while (rclcpp::ok()) {
@@ -334,7 +325,6 @@ void KickNode::loopEngine(const std::shared_ptr<rclcpp_action::ServerGoalHandle<
 
     // Check if enough time has passed to execute the next step
     if (step_time >= next_execution_time) {
-      
       // Determine the next execution time
       next_execution_time = step_time + rclcpp::Duration::from_seconds(1.0 / engine_rate_);
 
@@ -347,9 +337,8 @@ void KickNode::loopEngine(const std::shared_ptr<rclcpp_action::ServerGoalHandle<
       // Publish feedback to the client
       auto feedback = std::make_shared<bitbots_msgs::action::Kick::Feedback>();
       feedback->percent_done = engine_.getPercentDone();
-      feedback->chosen_foot = engine_.isLeftKick() ?
-                              bitbots_msgs::action::Kick::Feedback::FOOT_LEFT
-                                                    : bitbots_msgs::action::Kick::Feedback::FOOT_RIGHT;
+      feedback->chosen_foot = engine_.isLeftKick() ? bitbots_msgs::action::Kick::Feedback::FOOT_LEFT
+                                                   : bitbots_msgs::action::Kick::Feedback::FOOT_RIGHT;
       goal_handle->publish_feedback(feedback);
 
       // Send the joint goals to the robot
@@ -431,19 +420,13 @@ bitbots_msgs::msg::JointCommand KickNode::stepWrapper(double dt) {
   }
 }
 
-double KickNode::getProgress() {
-  return engine_.getPercentDone() / 100.0;
-}
+double KickNode::getProgress() { return engine_.getPercentDone() / 100.0; }
 
-geometry_msgs::msg::Pose KickNode::getTrunkPose() {
-  return engine_.getTrunkPose();
-}
+geometry_msgs::msg::Pose KickNode::getTrunkPose() { return engine_.getTrunkPose(); }
 
-bool KickNode::isLeftKick() {
-  return engine_.isLeftKick();
-}
+bool KickNode::isLeftKick() { return engine_.isLeftKick(); }
 
-}
+}  // namespace bitbots_dynamic_kick
 
 int main(int argc, char *argv[]) {
   /* Setup ROS node */

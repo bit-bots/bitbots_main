@@ -21,3 +21,5 @@ repos:
         - "--suppress=missingInclude"
         - "--suppress=unmatchedSuppression"
         - "--suppress=unusedFunction"
+        - "--suppress=unusedStructMember"
+        - "--suppress=useStlAlgorithm"

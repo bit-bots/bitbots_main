@@ -1,17 +1,17 @@
+#include <pybind11/embed.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-#include <pybind11/embed.h>
+
+#include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
 #include <rclcpp/qos.hpp>
 #include <rclcpp/serialization.hpp>
 #include <tf2_msgs/msg/tf_message.hpp>
-#include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
-
 #include <utility>
 
 namespace py = pybind11;
 
 class TransformListener {
-public:
+ public:
   TransformListener(py::object node, py::object py_wrapper) {
     // initialize rclcpp if not already done
     if (!rclcpp::contexts::get_global_default_context()->is_valid()) {
@@ -19,7 +19,7 @@ public:
     }
 
     // get node name from python node object
-    rcl_node_t *node_handle = (rcl_node_t*) node.attr("handle").attr("pointer").cast<size_t>();
+    rcl_node_t *node_handle = (rcl_node_t *)node.attr("handle").attr("pointer").cast<size_t>();
     const char *node_name = rcl_node_get_name(node_handle);
     // create node with name <python_node_name>_tf_listener
     node_ = std::make_shared<rclcpp::Node>((std::string(node_name) + "_tf_listener").c_str());
@@ -48,9 +48,7 @@ public:
   }
 
   // callbacks
-  void tf_callback(const tf2_msgs::msg::TFMessage::SharedPtr msg) {
-    common_callback(msg, set_transform_);
-  }
+  void tf_callback(const tf2_msgs::msg::TFMessage::SharedPtr msg) { common_callback(msg, set_transform_); }
 
   void tf_static_callback(const tf2_msgs::msg::TFMessage::SharedPtr msg) {
     common_callback(msg, set_transform_static_);
@@ -66,10 +64,8 @@ public:
       // this is the actual serialization
       serializer.serialize_message(&transform, &serialized_transform);
       auto rcl_serialized_transform = serialized_transform.get_rcl_serialized_message();
-      py::bytes py_serialized_transform = {
-          reinterpret_cast<const char *>(rcl_serialized_transform.buffer),
-          rcl_serialized_transform.buffer_length
-      };
+      py::bytes py_serialized_transform = {reinterpret_cast<const char *>(rcl_serialized_transform.buffer),
+                                           rcl_serialized_transform.buffer_length};
       // we have to acquire the GIL to be able to call python functions
       {
         // we need PyGILState_Ensure and py::gil_scoped_acquire because of a bug
@@ -88,7 +84,7 @@ public:
     thread_->join();
   }
 
-private:
+ private:
   std::shared_ptr<rclcpp::Node> node_;
   std::shared_ptr<std::thread> thread_;
   std::shared_ptr<rclcpp::experimental::executors::EventsExecutor> executor_;

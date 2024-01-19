@@ -3,26 +3,22 @@ This code is largely based on the original code by Quentin "Leph" Rouxel and Tea
 The original files can be found at:
 https://github.com/Rhoban/model/
 */
-#include <stdexcept>
-#include <algorithm>
-#include <math.h>
 #include "bitbots_splines/smooth_spline.h"
+
+#include <math.h>
+
+#include <algorithm>
+#include <stdexcept>
 
 namespace bitbots_splines {
 
-void SmoothSpline::addPoint(double time, double position,
-                            double velocity, double acceleration) {
-  points_.push_back({time, position,
-                     velocity, acceleration});
+void SmoothSpline::addPoint(double time, double position, double velocity, double acceleration) {
+  points_.push_back({time, position, velocity, acceleration});
   computeSplines();
 }
 
-const std::vector<SmoothSpline::Point> &SmoothSpline::points() const {
-  return points_;
-}
-std::vector<SmoothSpline::Point> &SmoothSpline::points() {
-  return points_;
-}
+const std::vector<SmoothSpline::Point> &SmoothSpline::points() const { return points_; }
+std::vector<SmoothSpline::Point> &SmoothSpline::points() { return points_; }
 
 void SmoothSpline::computeSplines() {
   Spline::splines_.clear();
@@ -30,27 +26,16 @@ void SmoothSpline::computeSplines() {
     return;
   }
 
-  std::sort(
-      points_.begin(),
-      points_.end(),
-      [](const Point &p_1, const Point &p_2) -> bool {
-        return p_1.time < p_2.time;
-      });
+  std::sort(points_.begin(), points_.end(),
+            [](const Point &p_1, const Point &p_2) -> bool { return p_1.time < p_2.time; });
 
   for (size_t i = 1; i < points_.size(); i++) {
     double time = points_[i].time - points_[i - 1].time;
     if (time > 0.00001) {
-      Spline::splines_.push_back({
-                                     polynomFit(time,
-                                                points_[i - 1].position,
-                                                points_[i - 1].velocity,
-                                                points_[i - 1].acceleration,
-                                                points_[i].position,
-                                                points_[i].velocity,
-                                                points_[i].acceleration),
-                                     points_[i - 1].time,
-                                     points_[i].time
-                                 });
+      Spline::splines_.push_back(
+          {polynomFit(time, points_[i - 1].position, points_[i - 1].velocity, points_[i - 1].acceleration,
+                      points_[i].position, points_[i].velocity, points_[i].acceleration),
+           points_[i - 1].time, points_[i].time});
     }
   }
 }
@@ -62,12 +47,7 @@ void SmoothSpline::importCallBack() {
   }
 
   double t_begin = Spline::splines_.front().min;
-  points_.push_back({
-                        t_begin,
-                        Spline::pos(t_begin),
-                        Spline::vel(t_begin),
-                        Spline::acc(t_begin)
-                    });
+  points_.push_back({t_begin, Spline::pos(t_begin), Spline::vel(t_begin), Spline::acc(t_begin)});
 
   for (size_t i = 1; i < size; i++) {
     double t_1 = Spline::splines_[i - 1].max;
@@ -79,12 +59,8 @@ void SmoothSpline::importCallBack() {
     double vel_2 = Spline::vel(t_2);
     double acc_2 = Spline::acc(t_2);
 
-    if (
-        fabs(t_2 - t_1) < 0.0001 &&
-            fabs(pos_2 - pos_1) < 0.0001 &&
-            fabs(vel_2 - vel_1) < 0.0001 &&
-            fabs(acc_2 - acc_1) < 0.0001
-        ) {
+    if (fabs(t_2 - t_1) < 0.0001 && fabs(pos_2 - pos_1) < 0.0001 && fabs(vel_2 - vel_1) < 0.0001 &&
+        fabs(acc_2 - acc_1) < 0.0001) {
       points_.push_back({t_1, pos_1, vel_1, acc_1});
     } else {
       points_.push_back({t_1, pos_1, vel_1, acc_1});
@@ -93,20 +69,13 @@ void SmoothSpline::importCallBack() {
   }
 
   double t_end = Spline::splines_.back().max;
-  points_.push_back({
-                        t_end,
-                        Spline::pos(t_end),
-                        Spline::vel(t_end),
-                        Spline::acc(t_end)
-                    });
+  points_.push_back({t_end, Spline::pos(t_end), Spline::vel(t_end), Spline::acc(t_end)});
 }
 
-Polynom SmoothSpline::polynomFit(double t,
-                                 double pos_1, double vel_1, double acc_1,
-                                 double pos_2, double vel_2, double acc_2) const {
+Polynom SmoothSpline::polynomFit(double t, double pos_1, double vel_1, double acc_1, double pos_2, double vel_2,
+                                 double acc_2) const {
   if (t <= 0.00001) {
-    throw std::logic_error(
-        "SmoothSpline invalid spline interval");
+    throw std::logic_error("SmoothSpline invalid spline interval");
   }
   double t_2 = t * t;
   double t_3 = t_2 * t;
@@ -140,5 +109,4 @@ std::string SmoothSpline::getDebugString() {
   return output;
 }
 
-}
-
+}  // namespace bitbots_splines

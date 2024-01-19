@@ -1,8 +1,12 @@
 #include <pybind11/embed.h>
-#include <iostream>
+
 #include <chrono>
-#include <thread>
+#include <iostream>
+#include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <ros2_python_extension/serialization.hpp>
+#include <thread>
+
 #include "bitbots_msgs/msg/animation.hpp"
 #include "bitbots_msgs/msg/foot_pressure.hpp"
 #include "bitbots_msgs/msg/joint_command.hpp"
@@ -12,21 +16,17 @@
 #include "sensor_msgs/msg/imu.hpp"
 #include "sensor_msgs/msg/joint_state.hpp"
 #include "std_msgs/msg/header.hpp"
-#include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
-#include <ros2_python_extension/serialization.hpp>
-
 
 using std::placeholders::_1;
 namespace py = pybind11;
 namespace bitbots_hcm {
 
 class HCM_CPP : public rclcpp::Node {
-public:
+ public:
   explicit HCM_CPP()
-    : Node("hcm_cpp",
-           rclcpp::NodeOptions().allow_undeclared_parameters(true).automatically_declare_parameters_from_overrides(
-               true)) {
-
+      : Node("hcm_cpp",
+             rclcpp::NodeOptions().allow_undeclared_parameters(true).automatically_declare_parameters_from_overrides(
+                 true)) {
     // These are provided by the launch and not in the yaml file therefore we need to handle them seperatly
     bool use_sim_time, simulation_active, visualization_active;
     this->get_parameter("use_sim_time", use_sim_time);
@@ -83,13 +83,13 @@ public:
 
     // Create subscriber for high frequency sensor data
     joint_state_sub_ = this->create_subscription<sensor_msgs::msg::JointState>(
-      "joint_states", 1, std::bind(&HCM_CPP::joint_state_callback, this, _1));
+        "joint_states", 1, std::bind(&HCM_CPP::joint_state_callback, this, _1));
     pressure_l_sub_ = this->create_subscription<bitbots_msgs::msg::FootPressure>(
-      "foot_pressure_left/filtered", 1, std::bind(&HCM_CPP::pressure_l_callback, this, _1));
+        "foot_pressure_left/filtered", 1, std::bind(&HCM_CPP::pressure_l_callback, this, _1));
     pressure_r_sub_ = this->create_subscription<bitbots_msgs::msg::FootPressure>(
-      "foot_pressure_right/filtered", 1, std::bind(&HCM_CPP::pressure_r_callback, this, _1));
-    imu_sub_ = this->create_subscription<sensor_msgs::msg::Imu>(
-      "imu/data", 1, std::bind(&HCM_CPP::imu_callback, this, _1));
+        "foot_pressure_right/filtered", 1, std::bind(&HCM_CPP::pressure_r_callback, this, _1));
+    imu_sub_ =
+        this->create_subscription<sensor_msgs::msg::Imu>("imu/data", 1, std::bind(&HCM_CPP::imu_callback, this, _1));
   }
 
   void animation_callback(bitbots_msgs::msg::Animation msg) {
@@ -139,11 +139,10 @@ public:
     }
 
     // Forward joint positions to motors if there are any and we're in the right state
-    if (msg.position.points.size() > 0 && (
-        current_state_ == bitbots_msgs::msg::RobotControlState::CONTROLLABLE ||
-        current_state_ == bitbots_msgs::msg::RobotControlState::ANIMATION_RUNNING ||
-        current_state_ == bitbots_msgs::msg::RobotControlState::FALLING ||
-        current_state_ == bitbots_msgs::msg::RobotControlState::FALLEN)) {
+    if (msg.position.points.size() > 0 && (current_state_ == bitbots_msgs::msg::RobotControlState::CONTROLLABLE ||
+                                           current_state_ == bitbots_msgs::msg::RobotControlState::ANIMATION_RUNNING ||
+                                           current_state_ == bitbots_msgs::msg::RobotControlState::FALLING ||
+                                           current_state_ == bitbots_msgs::msg::RobotControlState::FALLEN)) {
       bitbots_msgs::msg::JointCommand out_msg = bitbots_msgs::msg::JointCommand();
       out_msg.positions = msg.position.points[0].positions;
       out_msg.joint_names = msg.position.joint_names;
@@ -209,36 +208,34 @@ public:
     }
   }
 
-  void joint_state_callback(sensor_msgs::msg::JointState msg) {
-    current_joint_state_ = msg;
-  }
+  void joint_state_callback(sensor_msgs::msg::JointState msg) { current_joint_state_ = msg; }
 
-  void pressure_l_callback(bitbots_msgs::msg::FootPressure msg) {
-    current_pressure_left_ = msg;
-  }
+  void pressure_l_callback(bitbots_msgs::msg::FootPressure msg) { current_pressure_left_ = msg; }
 
-  void pressure_r_callback(bitbots_msgs::msg::FootPressure msg) {
-    current_pressure_right_ = msg;
-  }
+  void pressure_r_callback(bitbots_msgs::msg::FootPressure msg) { current_pressure_right_ = msg; }
 
-  void imu_callback(sensor_msgs::msg::Imu msg) {
-    current_imu_ = msg;
-  }
+  void imu_callback(sensor_msgs::msg::Imu msg) { current_imu_ = msg; }
 
   void tick() {
     // Performs one tick of the HCM DSD
 
     // Pass all the data nessesary data to the python module
     hcm_py_.attr("set_imu")(ros2_python_extension::toPython(current_imu_));
-    hcm_py_.attr("set_pressure_left")(ros2_python_extension::toPython<bitbots_msgs::msg::FootPressure>(current_pressure_left_));
-    hcm_py_.attr("set_pressure_right")(ros2_python_extension::toPython<bitbots_msgs::msg::FootPressure>(current_pressure_right_));
-    hcm_py_.attr("set_current_joint_state")(ros2_python_extension::toPython<sensor_msgs::msg::JointState>(current_joint_state_));
-    hcm_py_.attr("set_last_walking_goal_time")(ros2_python_extension::toPython<builtin_interfaces::msg::Time>(last_walking_time_));
-    hcm_py_.attr("set_last_kick_goal_time")(ros2_python_extension::toPython<builtin_interfaces::msg::Time>(last_kick_time_));
+    hcm_py_.attr("set_pressure_left")(
+        ros2_python_extension::toPython<bitbots_msgs::msg::FootPressure>(current_pressure_left_));
+    hcm_py_.attr("set_pressure_right")(
+        ros2_python_extension::toPython<bitbots_msgs::msg::FootPressure>(current_pressure_right_));
+    hcm_py_.attr("set_current_joint_state")(
+        ros2_python_extension::toPython<sensor_msgs::msg::JointState>(current_joint_state_));
+    hcm_py_.attr("set_last_walking_goal_time")(
+        ros2_python_extension::toPython<builtin_interfaces::msg::Time>(last_walking_time_));
+    hcm_py_.attr("set_last_kick_goal_time")(
+        ros2_python_extension::toPython<builtin_interfaces::msg::Time>(last_kick_time_));
     hcm_py_.attr("set_record_active")(record_active_);
     hcm_py_.attr("set_external_animation_running")(external_animation_running_);
     hcm_py_.attr("set_animation_requested")(animation_requested_);
-    hcm_py_.attr("set_last_animation_goal_time")(ros2_python_extension::toPython<builtin_interfaces::msg::Time>(last_animation_goal_time_));
+    hcm_py_.attr("set_last_animation_goal_time")(
+        ros2_python_extension::toPython<builtin_interfaces::msg::Time>(last_animation_goal_time_));
 
     // Run HCM Python DSD code
     hcm_py_.attr("tick")();
@@ -254,7 +251,7 @@ public:
     pub_robot_state_->publish(state_msg);
   }
 
-private:
+ private:
   // Python interpreter
   py::scoped_interpreter python_;
   // Python hcm module
@@ -300,15 +297,14 @@ private:
 };
 }  // namespace bitbots_hcm
 
-void thread_spin(rclcpp::experimental::executors::EventsExecutor::SharedPtr executor){
-  executor->spin();
-}
+void thread_spin(rclcpp::experimental::executors::EventsExecutor::SharedPtr executor) { executor->spin(); }
 
 int main(int argc, char** argv) {
   rclcpp::init(argc, argv);
   auto node = std::make_shared<bitbots_hcm::HCM_CPP>();
 
-  rclcpp::experimental::executors::EventsExecutor::SharedPtr exec = std::make_shared<rclcpp::experimental::executors::EventsExecutor>();
+  rclcpp::experimental::executors::EventsExecutor::SharedPtr exec =
+      std::make_shared<rclcpp::experimental::executors::EventsExecutor>();
   exec->add_node(node);
   std::thread thread_obj(thread_spin, exec);
 

@@ -3,11 +3,11 @@
 /**
  * Read a ROS message from a serialized string.
  */
-template<typename M>
+template <typename M>
 M from_python(const std::string &str_msg) {
   size_t serial_size = str_msg.size();
-  //todo
-  // boost::shared_array<uint8_t> buffer(new uint8_t[serial_size]);
+  // todo
+  //  boost::shared_array<uint8_t> buffer(new uint8_t[serial_size]);
   for (size_t i = 0; i < serial_size; ++i) {
     buffer[i] = str_msg[i];
   }
@@ -20,11 +20,11 @@ M from_python(const std::string &str_msg) {
 /**
  * Write a ROS message into a serialized string.
  */
-template<typename M>
+template <typename M>
 std::string to_python(const M &msg) {
   size_t serial_size = ros::serialization::serializationLength(msg);
-  //todo
-  // boost::shared_array<uint8_t> buffer(new uint8_t[serial_size]);
+  // todo
+  //  boost::shared_array<uint8_t> buffer(new uint8_t[serial_size]);
   ros::serialization::OStream stream(buffer.get(), serial_size);
   ros::serialization::serialize(stream, msg);
   std::string str_msg;
@@ -98,18 +98,14 @@ bool PyKickWrapper::set_goal(const std::string &goal_str, const std::string &joi
   return kick_node_->init(goal, error_string);
 }
 
-double PyKickWrapper::get_progress() {
-  return kick_node_->getProgress();
-}
+double PyKickWrapper::get_progress() { return kick_node_->getProgress(); }
 
 moveit::py_bindings_tools::ByteString PyKickWrapper::get_trunk_pose() {
   std::string trunk_pose_str = to_python<geometry_msgs::msg::Pose>(kick_node_->getTrunkPose());
   return moveit::py_bindings_tools::serializeMsg(trunk_pose_str);
 }
 
-bool PyKickWrapper::is_left_kick() {
-  return kick_node_->isLeftKick();
-}
+bool PyKickWrapper::is_left_kick() { return kick_node_->isLeftKick(); }
 /*
 BOOST_PYTHON_MODULE (py_dynamic_kick) {
   using namespace boost::python;

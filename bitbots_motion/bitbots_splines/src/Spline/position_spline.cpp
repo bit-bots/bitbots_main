@@ -34,16 +34,10 @@ tf2::Vector3 PositionSpline::getAcc(double time) {
   return acc;
 }
 
-SmoothSpline *PositionSpline::x() {
-  return &x_;
-}
+SmoothSpline *PositionSpline::x() { return &x_; }
 
-SmoothSpline *PositionSpline::y() {
-  return &y_;
-}
+SmoothSpline *PositionSpline::y() { return &y_; }
 
-SmoothSpline *PositionSpline::z() {
-  return &z_;
-}
+SmoothSpline *PositionSpline::z() { return &z_; }
 
-}
+}  // namespace bitbots_splines

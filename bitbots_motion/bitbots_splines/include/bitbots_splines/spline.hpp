@@ -6,8 +6,9 @@ https://github.com/Rhoban/model/
 #ifndef BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_SPLINE_HPP_
 #define BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_SPLINE_HPP_
 
-#include <vector>
 #include <iostream>
+#include <vector>
+
 #include "polynom.h"
 
 namespace bitbots_splines {
@@ -15,12 +16,11 @@ namespace bitbots_splines {
 /**
  * Spline
  *
- * Generic one dimentional 
+ * Generic one dimentional
  * polynomial spline generator
  */
 class Spline {
  public:
-
   /**
    * Internal spline part structure
    * with a polynom valid on an interval
@@ -79,8 +79,7 @@ class Spline {
    * Add a part with given polynom
    * and min/max time range
    */
-  void addPart(const Polynom &poly,
-               double min, double max);
+  void addPart(const Polynom &poly, double min, double max);
 
   /**
    * Replace this spline part with the
@@ -89,7 +88,6 @@ class Spline {
   void copyData(const Spline &sp);
 
  protected:
-
   /**
    * Spline part container
    */
@@ -102,24 +100,20 @@ class Spline {
   virtual void importCallBack();
 
  private:
-
   /**
    * Return spline interpolation of given value and
    * used given polynom evaluation function
    * (member function pointer)
    */
-  double interpolation(double x,
-                       double(Polynom::*func)(double) const) const;
+  double interpolation(double x, double (Polynom::*func)(double) const) const;
 
   /**
    * Return interpolation with x
    * bound between 0 and 1
    */
-  double interpolationMod(double x,
-                          double(Polynom::*func)(double) const) const;
+  double interpolationMod(double x, double (Polynom::*func)(double) const) const;
 };
 
-}
+}  // namespace bitbots_splines
 
 #endif
-
