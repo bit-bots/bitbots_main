@@ -1,6 +1,7 @@
 #ifndef BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALK_VISUALIZER_H_
 #define BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALK_VISUALIZER_H_
 
+#include <moveit/robot_state/robot_state.h>
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Transform.h>
@@ -8,7 +9,6 @@
 
 #include <bitbots_quintic_walk/walk_engine.hpp>
 #include <bitbots_quintic_walk/walk_utils.hpp>
-#include <moveit/robot_state/robot_state.hpp>
 #include <moveit_msgs/msg/robot_state.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <tf2_eigen/tf2_eigen.hpp>
