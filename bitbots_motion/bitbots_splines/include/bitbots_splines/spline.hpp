@@ -9,7 +9,7 @@ https://github.com/Rhoban/model/
 #include <iostream>
 #include <vector>
 
-#include "polynom.h"
+#include "polynom.hpp"
 
 namespace bitbots_splines {
 

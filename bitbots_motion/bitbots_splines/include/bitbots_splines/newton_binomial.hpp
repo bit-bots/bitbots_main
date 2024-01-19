@@ -6,8 +6,8 @@ https://github.com/Rhoban/model/
 #ifndef BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_NEWTON_BINOMIAL_H_
 #define BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_NEWTON_BINOMIAL_H_
 
-#include "combination.h"
-#include "polynom.h"
+#include "combination.hpp"
+#include "polynom.hpp"
 
 namespace bitbots_splines {
 
