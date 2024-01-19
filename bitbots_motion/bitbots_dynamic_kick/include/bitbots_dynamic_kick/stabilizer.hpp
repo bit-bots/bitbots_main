@@ -9,8 +9,8 @@
 #include <geometry_msgs/msg/pose.hpp>
 #include <optional>
 
-#include "kick_utils.h"
-#include "visualizer.h"
+#include "kick_utils.hpp"
+#include "visualizer.hpp"
 
 namespace bitbots_dynamic_kick {
 

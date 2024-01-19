@@ -15,7 +15,7 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <visualization_msgs/msg/marker.hpp>
 
-#include "dynup_stabilizer.h"
+#include "dynup_stabilizer.hpp"
 
 namespace bitbots_dynup {
 

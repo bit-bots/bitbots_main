@@ -11,7 +11,7 @@
 #include <tf2_eigen/tf2_eigen.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
-#include "dynup_utils.h"
+#include "dynup_utils.hpp"
 
 namespace bitbots_dynup {
 
