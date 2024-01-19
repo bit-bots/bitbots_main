@@ -6,6 +6,8 @@ https://github.com/Rhoban/model/
 #ifndef BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_COMBINATION_H_
 #define BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_COMBINATION_H_
 
+#include <stddef.h>
+
 #include <map>
 #include <vector>
 
