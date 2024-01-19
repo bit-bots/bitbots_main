@@ -3,7 +3,7 @@
 namespace bitbots_dynup {
 using namespace std::chrono_literals;
 
-DynupNode::DynupNode(const std::string ns, std::vector<rclcpp::Parameter> parameters)
+DynupNode::DynupNode(const std::string &ns, std::vector<rclcpp::Parameter> parameters)
     : Node(ns + "dynup", rclcpp::NodeOptions()
                              .allow_undeclared_parameters(true)
                              .parameter_overrides(parameters)
