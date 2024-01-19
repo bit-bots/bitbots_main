@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding:utf-8 -*-
 """
 This code provides a gamecontroller client for the RoboCup Humanoid League.
 
@@ -10,47 +9,48 @@ This code provides a gamecontroller client for the RoboCup Humanoid League.
 
 import socket
 import time
-import rclpy
 
-from construct import Container, ConstError
+import rclpy
+from bitbots_utils.utils import get_parameters_from_other_node
+from construct import ConstError, Container
 from rclpy import logging
 from rclpy.node import Node
 from std_msgs.msg import Bool
-from humanoid_league_game_controller.gamestate import GameState, ReturnData, GAME_CONTROLLER_RESPONSE_VERSION
-from bitbots_msgs.msg import GameState as GameStateMsg
-from bitbots_utils.utils import get_parameters_from_other_node
 
-logger = logging.get_logger('humanoid_league_game_controller')
+from bitbots_msgs.msg import GameState as GameStateMsg
+from humanoid_league_game_controller.gamestate import GAME_CONTROLLER_RESPONSE_VERSION, GameState, ReturnData
+
+logger = logging.get_logger("humanoid_league_game_controller")
 
 
 class GameStateReceiver(Node):
-    """ This class puts up a simple UDP Server which receives the
+    """This class puts up a simple UDP Server which receives the
     *addr* parameter to listen to the packages from the game_controller.
 
     If it receives a package it will be interpreted with the construct data
     structure and the :func:`on_new_gamestate` will be called with the content.
 
-    After this we send a package back to the GC """
+    After this we send a package back to the GC"""
 
     def __init__(self):
-        super().__init__('game_controller', automatically_declare_parameters_from_overrides=True)
+        super().__init__("game_controller", automatically_declare_parameters_from_overrides=True)
 
-        params = get_parameters_from_other_node(self, "parameter_blackboard", ['team_id', 'bot_id'])
-        self.team_number = params['team_id']
-        self.player_number = params['bot_id']
-        logger.info('We are playing as player {} in team {}'.format(self.player_number, self.team_number))
+        params = get_parameters_from_other_node(self, "parameter_blackboard", ["team_id", "bot_id"])
+        self.team_number = params["team_id"]
+        self.player_number = params["bot_id"]
+        logger.info(f"We are playing as player {self.player_number} in team {self.team_number}")
 
-        self.state_publisher = self.create_publisher(GameStateMsg, 'gamestate', 1)
+        self.state_publisher = self.create_publisher(GameStateMsg, "gamestate", 1)
 
         self.man_penalize = False
         self.game_controller_lost_time = 20
-        self.game_controller_connected_publisher = self.create_publisher(Bool, 'game_controller_connected', 1)
+        self.game_controller_connected_publisher = self.create_publisher(Bool, "game_controller_connected", 1)
 
         # The address listening on and the port for sending back the robots meta data
-        listen_host = self.get_parameter('listen_host').value
-        listen_port = self.get_parameter('listen_port').value
+        listen_host = self.get_parameter("listen_host").value
+        listen_port = self.get_parameter("listen_port").value
         self.addr = (listen_host, listen_port)
-        self.answer_port = self.get_parameter('answer_port').value
+        self.answer_port = self.get_parameter("answer_port").value
 
         # The state and time we received last form the GC
         self.state = None
@@ -63,7 +63,7 @@ class GameStateReceiver(Node):
         self._open_socket()
 
     def _open_socket(self):
-        """ Creates the socket """
+        """Creates the socket"""
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.socket.bind(self.addr)
@@ -72,17 +72,17 @@ class GameStateReceiver(Node):
         self.socket2.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
     def receive_forever(self):
-        """ Waits in a loop that is terminated by setting self.running = False """
+        """Waits in a loop that is terminated by setting self.running = False"""
         while True:
             try:
                 self.receive_once()
-            except IOError as e:
+            except OSError as e:
                 logger.warn("Error while sending keepalive: " + str(e))
 
     def receive_once(self):
-        """ Receives a package and interprets it.
-            Calls :func:`on_new_gamestate`
-            Sends an answer to the GC """
+        """Receives a package and interprets it.
+        Calls :func:`on_new_gamestate`
+        Sends an answer to the GC"""
         try:
             data, peer = self.socket.recvfrom(GameState.sizeof())
 
@@ -122,42 +122,51 @@ class GameStateReceiver(Node):
                 self.game_controller_connected_publisher.publish(msg2)
 
     def answer_to_gamecontroller(self, peer):
-        """ Sends a life sign to the game controller """
+        """Sends a life sign to the game controller"""
         return_message = 0 if self.man_penalize else 2
 
-        data = Container(header=b"RGrt",
-                         version=GAME_CONTROLLER_RESPONSE_VERSION,
-                         team=self.team_number,
-                         player=self.player_number,
-                         message=return_message)
+        data = Container(
+            header=b"RGrt",
+            version=GAME_CONTROLLER_RESPONSE_VERSION,
+            team=self.team_number,
+            player=self.player_number,
+            message=return_message,
+        )
         try:
             destination = peer[0], self.answer_port
-            logger.debug('Sending answer to {} port {}'.format(destination[0], destination[1]))
+            logger.debug(f"Sending answer to {destination[0]} port {destination[1]}")
             self.socket.sendto(ReturnData.build(data), destination)
         except Exception as e:
             logger.error("Network Error: %s" % str(e))
 
     def on_new_gamestate(self, state):
-        """ Is called with the new game state after receiving a package.
-            The information is processed and published as a standard message to a ROS topic.
-            :param state: Game State
+        """Is called with the new game state after receiving a package.
+        The information is processed and published as a standard message to a ROS topic.
+        :param state: Game State
         """
 
-        is_own_team = lambda number: number == self.team_number
+        def is_own_team(number):
+            return number == self.team_number
+
         own_team = self.select_team_by(is_own_team, state.teams)
 
-        is_not_own_team = lambda number: number != self.team_number
+        def is_not_own_team(number):
+            return number != self.team_number
+
         rival_team = self.select_team_by(is_not_own_team, state.teams)
 
         if not own_team or not rival_team:
-            logger.error('Team {} not playing, only {} and {}'.format(self.team_number, state.teams[0].team_number,
-                                                                      state.teams[1].team_number))
+            logger.error(
+                "Team {} not playing, only {} and {}".format(
+                    self.team_number, state.teams[0].team_number, state.teams[1].team_number
+                )
+            )
             return
 
         try:
             me = own_team.players[self.player_number - 1]
         except IndexError:
-            logger.error('Robot {} not playing'.format(self.player_number))
+            logger.error(f"Robot {self.player_number} not playing")
             return
 
         msg = GameStateMsg()
@@ -218,5 +227,5 @@ def main(args=None):
         rclpy.shutdown()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

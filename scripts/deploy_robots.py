@@ -2,7 +2,7 @@
 from deploy.deploy_robots import DeployRobots
 from deploy.misc import print_err
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     try:
         DeployRobots()
     except KeyboardInterrupt:

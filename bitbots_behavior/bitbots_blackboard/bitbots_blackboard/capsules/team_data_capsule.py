@@ -5,7 +5,6 @@ TeamDataCapsule
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
-from bitbots_msgs.msg import Strategy, TeamData
 from bitbots_utils.utils import get_parameters_from_other_node
 from geometry_msgs.msg import PointStamped, Pose
 from rclpy.clock import ClockType
@@ -14,6 +13,8 @@ from rclpy.node import Node
 from rclpy.time import Time
 from ros2_numpy import numpify
 from std_msgs.msg import Float32
+
+from bitbots_msgs.msg import Strategy, TeamData
 
 
 class TeamDataCapsule:

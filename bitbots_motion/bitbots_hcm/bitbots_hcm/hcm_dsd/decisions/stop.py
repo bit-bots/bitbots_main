@@ -1,5 +1,6 @@
 from bitbots_hcm.hcm_dsd.decisions import AbstractHCMDecisionElement
 
+
 class Stop(AbstractHCMDecisionElement):
     """
     Handles manual stops

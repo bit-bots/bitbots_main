@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 
-import numpy as np
-from matplotlib import pyplot as plt
 import collections
 
+import numpy as np
+from matplotlib import pyplot as plt
 
-def PolyCoefficients(x, coeffs):
-    """ Returns a polynomial for ``x`` values for the ``coeffs`` provided.
+
+def poly_coefficients(x, coeffs):
+    """Returns a polynomial for ``x`` values for the ``coeffs`` provided.
 
     The coefficients must be in ascending order (``x**0`` to ``x**o``).
     """
@@ -14,11 +15,11 @@ def PolyCoefficients(x, coeffs):
     # print('This is a polynomial of order' + str(o))
     y = 0
     for i in range(o):
-        y += coeffs[i] * x ** i
+        y += coeffs[i] * x**i
     return y
 
 
-def readSplineDataFromFile(filename):
+def read_spline_data_from_file(filename):
     d = {}
     with open(filename) as file:
         for line in file:
@@ -41,11 +42,11 @@ def readSplineDataFromFile(filename):
     return d
 
 
-data = readSplineDataFromFile("/tmp/spline_export")
-oderedData = collections.OrderedDict(sorted(data.items()))
+data = read_spline_data_from_file("/tmp/spline_export")
+odered_data = collections.OrderedDict(sorted(data.items()))
 position = 1
-for name in oderedData:
-    if (not "foot_" in name) and (not "trunk_" in name):
+for name in odered_data:
+    if ("foot_" not in name) and ("trunk_" not in name):
         continue
 
     plt.subplot(4, 3, position)
@@ -56,7 +57,7 @@ for name in oderedData:
         coeffs = poly[3]
         x = np.linspace(min, max)
 
-        plt.plot(x, PolyCoefficients(x, coeffs))
+        plt.plot(x, poly_coefficients(x, coeffs))
     plt.title(name)
     position += 1
 

@@ -1,13 +1,11 @@
 from enum import IntEnum
 
-import humanoid_league_team_communication.robocup_extension_pb2 as Proto
-from humanoid_league_team_communication.converter.message_to_team_data_converter import \
-    MessageToTeamDataConverter
-from humanoid_league_team_communication.converter.state_to_message_converter import \
-    StateToMessageConverter
 from soccer_vision_attribute_msgs.msg import Robot as RobotAttributes
 
+import humanoid_league_team_communication.robocup_extension_pb2 as Proto  # noqa: N812
 from bitbots_msgs.msg import RobotRelative, Strategy
+from humanoid_league_team_communication.converter.message_to_team_data_converter import MessageToTeamDataConverter
+from humanoid_league_team_communication.converter.state_to_message_converter import StateToMessageConverter
 
 
 class TeamColor(IntEnum):
@@ -16,7 +14,6 @@ class TeamColor(IntEnum):
 
 
 class RobocupProtocolConverter:
-
     def __init__(self, own_team_color: TeamColor):
         self.role_mapping = (
             (Proto.Role.ROLE_UNDEFINED, Strategy.ROLE_UNDEFINED),
@@ -47,7 +44,7 @@ class RobocupProtocolConverter:
         self.proto_to_team_data_team_mapping = {
             Proto.Team.UNKNOWN_TEAM: RobotRelative.ROBOT_UNDEFINED,
             Proto.Team.BLUE: RobotRelative.ROBOT_BLUE,
-            Proto.Team.RED: RobotRelative.ROBOT_RED
+            Proto.Team.RED: RobotRelative.ROBOT_RED,
         }
         self.state_to_proto_team_mapping = {
             RobotAttributes.TEAM_OWN: Proto.Team.RED if own_team_color == TeamColor.RED else Proto.Team.BLUE,
@@ -62,7 +59,9 @@ class RobocupProtocolConverter:
             "side_mapping": dict(self.side_mapping),
         }
 
-        reverse_mapping = lambda mapping: dict((b, a) for a, b in mapping)
+        def reverse_mapping(mapping):
+            return dict((b, a) for a, b in mapping)
+
         state_to_proto_mappings = {
             "team_mapping": self.state_to_proto_team_mapping,
             "role_mapping": reverse_mapping(self.role_mapping),

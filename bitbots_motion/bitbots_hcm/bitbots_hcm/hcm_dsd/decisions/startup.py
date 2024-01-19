@@ -5,6 +5,7 @@ class StartHCM(AbstractHCMDecisionElement):
     """
     Initializes HCM.
     """
+
     def __init__(self, blackboard, dsd, parameters=None):
         super().__init__(blackboard, dsd, parameters)
         self.is_initial = True

@@ -1,21 +1,23 @@
 import math
 
 import numpy as np
-from bitbots_hcm.hcm_dsd.decisions import AbstractHCMDecisionElement
 from bitbots_utils.transforms import quat2fused
 
-from bitbots_msgs.msg import RobotControlState
+from bitbots_hcm.hcm_dsd.decisions import AbstractHCMDecisionElement
 
 
 class Fallen(AbstractHCMDecisionElement):
     """
     Decides if the robot is fallen and lying on the ground
     """
+
     def __init__(self, blackboard, dsd, parameters=None):
         super().__init__(blackboard, dsd, parameters)
 
         # Get parameters
-        self.fallen_orientation_thresh = math.radians(self.blackboard.node.get_parameter("fallen_orientation_thresh").value)
+        self.fallen_orientation_thresh = math.radians(
+            self.blackboard.node.get_parameter("fallen_orientation_thresh").value
+        )
         self.fallen_angular_velocity_thresh = self.blackboard.node.get_parameter("fallen_angular_velocity_thresh").value
 
     def perform(self, reevaluate=False):

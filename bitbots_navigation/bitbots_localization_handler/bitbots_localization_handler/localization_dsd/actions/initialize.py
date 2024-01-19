@@ -1,8 +1,8 @@
 import tf2_ros as tf2
+from bitbots_localization.srv import ResetFilter
 from rclpy.duration import Duration
 from rclpy.time import Time
 
-from bitbots_localization.srv import ResetFilter
 from bitbots_localization_handler.localization_dsd.actions import AbstractLocalizationActionElement
 
 

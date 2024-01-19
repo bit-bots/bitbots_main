@@ -1,4 +1,4 @@
-from bitbots_splines.polynom import Polynom, pos, vel, acc, jerk
+from bitbots_splines.polynom import Polynom, acc, jerk, pos, vel
 
 
 class Point:
@@ -17,7 +17,6 @@ class SplinePart:
 
 
 class SmoothSpline:
-
     def __init__(self):
         self.points = []
         self.splines_parts = []
@@ -42,13 +41,20 @@ class SmoothSpline:
         for i in range(0, len(self.points)):
             time = self.points[i].time - self.points[i - 1].time
             if time > 0.00001:
-                self.splines_parts.append(SplinePart(
-                    self.polynom_fit(time,
-                                     self.points[i - 1].position, self.points[i - 1].velocity,
-                                     self.points[i - 1].acceleration,
-                                     self.points[i].position, self.points[i].velocity, self.points[i].acceleration),
-                    self.points[i - 1].time,
-                    self.points[i].time)
+                self.splines_parts.append(
+                    SplinePart(
+                        self.polynom_fit(
+                            time,
+                            self.points[i - 1].position,
+                            self.points[i - 1].velocity,
+                            self.points[i - 1].acceleration,
+                            self.points[i].position,
+                            self.points[i].velocity,
+                            self.points[i].acceleration,
+                        ),
+                        self.points[i - 1].time,
+                        self.points[i].time,
+                    )
                 )
 
     def polynom_fit(self, t, pos1, vel1, acc1, pos2, vel2, acc2):
@@ -58,7 +64,7 @@ class SmoothSpline:
         """
         if t <= 0.00001:
             print("SmoothSpline invalid spline interval")
-            exit
+            raise ValueError()
 
         t2 = t * t
         t3 = t2 * t
@@ -70,7 +76,8 @@ class SmoothSpline:
         p.coefs.append(acc1 / 2)
         p.coefs.append(-(-acc2 * t2 + 3 * acc1 * t2 + 8 * vel2 * t + 12 * vel1 * t - 20 * pos2 + 20 * pos1) / (2 * t3))
         p.coefs.append(
-            (-2 * acc2 * t2 + 3 * acc1 * t2 + 14 * vel2 * t + 16 * vel1 * t - 30 * pos2 + 30 * pos1) / (2 * t4))
+            (-2 * acc2 * t2 + 3 * acc1 * t2 + 14 * vel2 * t + 16 * vel1 * t - 30 * pos2 + 30 * pos1) / (2 * t4)
+        )
         p.coefs.append(-(-acc2 * t2 + acc1 * t2 + 6 * vel2 * t + 6 * vel1 * t - 12 * pos2 + 12 * pos1) / (2 * t5))
 
         return p
@@ -88,20 +95,20 @@ class SmoothSpline:
             x = self.splines_parts[-1].max
 
         # Bijection spline search
-        indexLow = 0
-        indexUp = len(self.splines_parts) - 1
-        while indexLow != indexUp:
-            index = int((indexUp + indexLow) / 2)
+        index_low = 0
+        index_up = len(self.splines_parts) - 1
+        while index_low != index_up:
+            index = int((index_up + index_low) / 2)
             if x < self.splines_parts[index].min:
-                indexUp = index - 1
+                index_up = index - 1
             elif x > self.splines_parts[index].max:
-                indexLow = index + 1
+                index_low = index + 1
             else:
-                indexUp = index
-                indexLow = index
+                index_up = index
+                index_low = index
 
         # Compute and return spline value
-        return func(x - self.splines_parts[indexUp].min, self.splines_parts[indexUp].polynom.coefs)
+        return func(x - self.splines_parts[index_up].min, self.splines_parts[index_up].polynom.coefs)
 
     def pos(self, t):
         return self.interpolation(t, pos)

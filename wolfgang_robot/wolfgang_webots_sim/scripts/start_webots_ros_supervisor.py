@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-import os
 import argparse
+import os
 import threading
 
 import rclpy
@@ -10,7 +10,7 @@ from wolfgang_webots_sim.webots_supervisor_controller import SupervisorControlle
 
 class SupervisorNode:
     def __init__(self, simulator_port):
-        self.node = Node('supervisor_node')
+        self.node = Node("supervisor_node")
 
         os.environ["WEBOTS_CONTROLLER_URL"] = f"ipc://{simulator_port}/supervisor_robot"
 
@@ -24,7 +24,7 @@ class SupervisorNode:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--sim-port', help="port of the simulation", default="1234")
+    parser.add_argument("--sim-port", help="port of the simulation", default="1234")
     args, _ = parser.parse_known_args()
 
     rclpy.init()

@@ -9,11 +9,12 @@ from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from bitbots_blackboard.blackboard import BodyBlackboard
 
-from bitbots_msgs.action import Kick
 from rclpy.action import ActionClient
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.duration import Duration
 from rclpy.time import Time
+
+from bitbots_msgs.action import Kick
 
 
 class KickCapsule:

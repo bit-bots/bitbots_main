@@ -7,18 +7,16 @@ Thus, it is possible to find resources without knowing the current location in t
 """
 
 import os
-from os.path import abspath, dirname, exists, join, normpath
 from os import walk
+from os.path import abspath, dirname, exists, join, normpath
+
 from ament_index_python import get_package_share_directory
 
 
 class ResourceManager:
-
     def __init__(self, robot_type: str):
         # Get the path to the animations folder
-        self.basepath = abspath(os.path.join(
-            get_package_share_directory(robot_type + "_animations"),
-            "animations"))
+        self.basepath = abspath(os.path.join(get_package_share_directory(robot_type + "_animations"), "animations"))
 
         self.cache = {}
         self.files = []
@@ -73,9 +71,12 @@ class ResourceManager:
 
                 path = next_path
         if not folders:
-            return IOError("Resource '%s' not found. folders was empty, \
-                only filename provided" % (filename))
-        return IOError("Resource '%s' not found" % (str(folders) + filename))
+            return OSError(
+                "Resource '%s' not found. folders was empty, \
+                only filename provided"
+                % (filename)
+            )
+        return OSError("Resource '%s' not found" % (str(folders) + filename))
 
     def find(self, name, filename=""):
         """
@@ -117,7 +118,7 @@ class ResourceManager:
         return self.find(self.animpath, "%s.json" % name)
 
     def find_resource(self, name):
-        """ Finds a resource relative to self.basepath """
+        """Finds a resource relative to self.basepath"""
         return self.find(name)
 
     def _get_animpath(self):
@@ -132,16 +133,16 @@ class ResourceManager:
         return anim_dirs
 
     def find_all_animations(self, force_reload=False):
-        """ Finds all animations in the animations-directory
+        """Finds all animations in the animations-directory
 
         returns a list of all animation-paths in the system.
         """
         if not self.files or force_reload:
-            path = self.find_resource('animations/')
+            path = self.find_resource("animations/")
             for root, _, filenames in os.walk(path):
                 for f in filenames:
-                    name, dot, extension = f.rpartition('.')
-                    if extension == 'json':
+                    name, dot, extension = f.rpartition(".")
+                    if extension == "json":
                         self.files.append(os.path.join(root, f))
                         self.names.append(name)
         return self.files

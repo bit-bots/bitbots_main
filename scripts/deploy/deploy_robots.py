@@ -1,18 +1,25 @@
-from typing import Optional
-
 import argparse
 import os
+from typing import Optional
 
-from rich.prompt import Prompt
-
-from deploy.misc import *
+from deploy.misc import (
+    CONSOLE,
+    LOGLEVEL,
+    ArgumentParserShowTargets,
+    get_connections_from_targets,
+    print_bit_bot,
+    print_debug,
+    print_err,
+    print_known_targets,
+    print_success,
+)
 from deploy.tasks import AbstractTask, AbstractTaskWhichRequiresSudo, Build, Configure, Install, Launch, Sync
-
+from rich.prompt import Prompt
 
 # TODO: Install this script as a command line tool
 
 
-class DeployRobots():
+class DeployRobots:
     def __init__(self):
         self._bitbots_meta_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         print_debug(f"Bit-Bots meta path: {self._bitbots_meta_path}")
@@ -21,7 +28,7 @@ class DeployRobots():
         # Handle arguments
         self._args = self._parse_arguments()
         LOGLEVEL.CURRENT = LOGLEVEL.CURRENT + self._args.verbose - self._args.quiet
-        
+
         print_debug(f"Arguments: {self._args}")
 
         if self._args.show_targets:
@@ -31,7 +38,7 @@ class DeployRobots():
             print_bit_bot()
 
         self._tasks = self._register_tasks()
-        self._sudo_password : Optional[str] = self._optionally_ask_for_and_set_sudo_password()
+        self._sudo_password: Optional[str] = self._optionally_ask_for_and_set_sudo_password()
 
         # Execute tasks on all given targets
         self.run_tasks()
@@ -42,33 +49,65 @@ class DeployRobots():
             "This script provides 5 tasks: sync, install, configure, build, launch. "
             "By default, it runs all tasks. You can select a subset of tasks by using the corresponding flags."
             "For example, to only run the sync and build task, use the -sb."
-            )
+        )
 
         # Positional arguments
         parser.add_argument(
             "targets",
             type=str,
-            help="The targets to deploy to. Multiple targets can be specified separated by commas. 'ALL' can be used to target all known robots."
-            )
+            help="The targets to deploy to. Multiple targets can be specified separated by commas. 'ALL' can be used to target all known robots.",
+        )
 
         parser.add_argument("--show-targets", action="store_true", help="Show all known targets and exit.")
 
         # Task arguments
-        parser.add_argument("-s", "--sync", dest="only_sync", action="store_true", help="Only synchronize (copy) files from you to the target machine")
-        parser.add_argument("-i", "--install", dest="only_install", action="store_true", help="Only install ROS dependencies on the target")
-        parser.add_argument("-c", "--configure", dest="only_configure", action="store_true", help="Only configure the target machine")
-        parser.add_argument("-b", "--build", dest="only_build", action="store_true", help="Only build on the target machine")
-        parser.add_argument("-l", "--launch", dest="only_launch", action="store_true", help="Only launch teamplayer software on the target")
+        parser.add_argument(
+            "-s",
+            "--sync",
+            dest="only_sync",
+            action="store_true",
+            help="Only synchronize (copy) files from you to the target machine",
+        )
+        parser.add_argument(
+            "-i",
+            "--install",
+            dest="only_install",
+            action="store_true",
+            help="Only install ROS dependencies on the target",
+        )
+        parser.add_argument(
+            "-c", "--configure", dest="only_configure", action="store_true", help="Only configure the target machine"
+        )
+        parser.add_argument(
+            "-b", "--build", dest="only_build", action="store_true", help="Only build on the target machine"
+        )
+        parser.add_argument(
+            "-l",
+            "--launch",
+            dest="only_launch",
+            action="store_true",
+            help="Only launch teamplayer software on the target",
+        )
 
         # Optional arguments
-        parser.add_argument("-p", "--package", default='', help="Synchronize and build only the given ROS package")
+        parser.add_argument("-p", "--package", default="", help="Synchronize and build only the given ROS package")
         parser.add_argument("-u", "--user", default="bitbots", help="The user to connect to the target machines with")
         parser.add_argument("-w", "--workspace", default="~/colcon_ws", help="The workspace to deploy to")
-        parser.add_argument("--clean", action="store_true", help="Clean complete workspace (source and install, ...) before syncing and building")
+        parser.add_argument(
+            "--clean",
+            action="store_true",
+            help="Clean complete workspace (source and install, ...) before syncing and building",
+        )
         parser.add_argument("--clean-src", action="store_true", help="Clean source directory before syncing")
-        parser.add_argument("--clean-build", action="store_true", help="Clean workspace before building. If --package is given, clean only that package")
+        parser.add_argument(
+            "--clean-build",
+            action="store_true",
+            help="Clean workspace before building. If --package is given, clean only that package",
+        )
         parser.add_argument("--connection-timeout", default=10, help="Timeout to establish SSH connections in seconds.")
-        parser.add_argument("--print-bit-bot", action="store_true", default=False, help="Print our logo at script start")
+        parser.add_argument(
+            "--print-bit-bot", action="store_true", default=False, help="Print our logo at script start"
+        )
         parser.add_argument("-v", "--verbose", action="count", default=0, help="More output")
         parser.add_argument("-q", "--quiet", action="count", default=0, help="Less output")
 
@@ -98,9 +137,14 @@ class DeployRobots():
 
         :return: The sudo password.
         """
-        tasks_with_sudo: list[AbstractTaskWhichRequiresSudo] = [task for task in self._tasks if isinstance(task, AbstractTaskWhichRequiresSudo)]
+        tasks_with_sudo: list[AbstractTaskWhichRequiresSudo] = [
+            task for task in self._tasks if isinstance(task, AbstractTaskWhichRequiresSudo)
+        ]
         if tasks_with_sudo:
-            sudo_password =  Prompt.ask(f"Please enter the sudo password for the remote machine (required for {[task.__class__.__name__ for task in tasks_with_sudo]})", password=True)
+            sudo_password = Prompt.ask(
+                f"Please enter the sudo password for the remote machine (required for {[task.__class__.__name__ for task in tasks_with_sudo]})",
+                password=True,
+            )
             for task in tasks_with_sudo:
                 task.set_sudo_password(sudo_password)
 
@@ -113,29 +157,29 @@ class DeployRobots():
         tasks = []
 
         if self._args.sync:
-            tasks.append(Sync(
-                self._bitbots_meta_path,
-                self._args.workspace,
-                self._args.package,
-                self._args.clean_src,
-            ))
+            tasks.append(
+                Sync(
+                    self._bitbots_meta_path,
+                    self._args.workspace,
+                    self._args.package,
+                    self._args.clean_src,
+                )
+            )
 
         if self._args.install:
-            tasks.append(Install(
-                self._args.workspace
-            ))
+            tasks.append(Install(self._args.workspace))
 
         if self._args.configure:
-            tasks.append(Configure(
-                self._args.workspace
-            ))
+            tasks.append(Configure(self._args.workspace))
 
         if self._args.build:
-            tasks.append(Build(
-                self._args.workspace,
-                self._args.package,
-                self._args.clean_build,
-            ))
+            tasks.append(
+                Build(
+                    self._args.workspace,
+                    self._args.package,
+                    self._args.clean_build,
+                )
+            )
 
         if self._args.launch:
             tasks.append(Launch("teamplayer"))
@@ -150,11 +194,11 @@ class DeployRobots():
         current_task = 1  # Track current task for status output
 
         # Get connection
-        with CONSOLE.status(f"[bold blue][TASK {current_task}/{num_tasks}] Connecting to targets via SSH", spinner="point"):
+        with CONSOLE.status(
+            f"[bold blue][TASK {current_task}/{num_tasks}] Connecting to targets via SSH", spinner="point"
+        ):
             connections = get_connections_from_targets(
-                self._args.targets,
-                self._args.user,
-                self._args.connection_timeout
+                self._args.targets, self._args.user, self._args.connection_timeout
             )
         print_success(f"[TASK {current_task}/{num_tasks}] Connected to targets")
         current_task += 1
@@ -172,6 +216,6 @@ class DeployRobots():
             current_task += 1
 
         # Close connections
-        with CONSOLE.status(f"[bold blue] Tasks finished. Closing connections", spinner="point"):
+        with CONSOLE.status("[bold blue] Tasks finished. Closing connections", spinner="point"):
             connections.close()
-        print_success(f"Tasks finished. Connections closed. Exiting.")
+        print_success("Tasks finished. Connections closed. Exiting.")

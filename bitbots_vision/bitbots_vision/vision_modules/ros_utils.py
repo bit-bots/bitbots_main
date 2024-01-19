@@ -1,13 +1,25 @@
 import re
 from typing import Union
+
+from bitbots_utils.utils import get_parameters_from_other_node
+from cv_bridge import CvBridge
 from rclpy import logging
 from rclpy.node import Node
-from cv_bridge import CvBridge
-from vision_msgs.msg import BoundingBox2D, Pose2D, Point2D
-from bitbots_msgs.msg import Audio
-from soccer_vision_2d_msgs.msg import Ball, BallArray, FieldBoundary, Goalpost, GoalpostArray, Robot, RobotArray, MarkingArray, MarkingSegment
+from soccer_vision_2d_msgs.msg import (
+    Ball,
+    BallArray,
+    Goalpost,
+    GoalpostArray,
+    MarkingArray,
+    MarkingSegment,
+    Robot,
+    RobotArray,
+)
 from soccer_vision_attribute_msgs.msg import Robot as RobotAttributes
-from bitbots_utils.utils import get_parameters_from_other_node
+from vision_msgs.msg import BoundingBox2D, Pose2D
+
+from bitbots_msgs.msg import Audio
+
 """
 This module provides some methods needed for the ros environment,
 e.g. methods to convert candidates to ROS messages or methods to modify the dynamic reconfigure objects.
@@ -15,7 +27,7 @@ e.g. methods to convert candidates to ROS messages or methods to modify the dyna
 
 _cv_bridge = CvBridge()
 
-logger = logging.get_logger('bitbots_vision')
+logger = logging.get_logger("bitbots_vision")
 
 general_parameters = []
 
@@ -23,14 +35,9 @@ global own_team_color
 own_team_color = None
 
 
-def create_or_update_publisher(node,
-                               old_config,
-                               new_config,
-                               publisher_object,
-                               topic_key,
-                               data_class,
-                               qos_profile=1,
-                               callback_group=None):
+def create_or_update_publisher(
+    node, old_config, new_config, publisher_object, topic_key, data_class, qos_profile=1, callback_group=None
+):
     """
     Creates or updates a publisher
 
@@ -53,23 +60,16 @@ def create_or_update_publisher(node,
     # Check if topic parameter has changed
     if config_param_change(old_config, new_config, topic_key):
         # Create the new publisher
-        publisher_object = node.create_publisher(data_class,
-                                                 new_config[topic_key],
-                                                 qos_profile,
-                                                 callback_group=callback_group)
+        publisher_object = node.create_publisher(
+            data_class, new_config[topic_key], qos_profile, callback_group=callback_group
+        )
         logger.debug("Registered new publisher to " + str(new_config[topic_key]))
     return publisher_object
 
 
-def create_or_update_subscriber(node,
-                                old_config,
-                                new_config,
-                                subscriber_object,
-                                topic_key,
-                                data_class,
-                                callback,
-                                qos_profile=1,
-                                callback_group=None):
+def create_or_update_subscriber(
+    node, old_config, new_config, subscriber_object, topic_key, data_class, callback, qos_profile=1, callback_group=None
+):
     """
     Creates or updates a subscriber
 
@@ -93,11 +93,9 @@ def create_or_update_subscriber(node,
     # Check if topic parameter has changed
     if config_param_change(old_config, new_config, topic_key):
         # Create the new subscriber
-        subscriber_object = node.create_subscription(data_class,
-                                                     new_config[topic_key],
-                                                     callback,
-                                                     qos_profile,
-                                                     callback_group=callback_group)
+        subscriber_object = node.create_subscription(
+            data_class, new_config[topic_key], callback, qos_profile, callback_group=callback_group
+        )
         logger.debug("Registered new subscriber at " + str(new_config[topic_key]))
     return subscriber_object
 
@@ -334,10 +332,10 @@ def config_param_change(old_config, new_config, params_expressions, check_genera
 
 def update_own_team_color(vision_node: Node):
     global own_team_color
-    params = get_parameters_from_other_node(vision_node,
-                                            'parameter_blackboard', ['team_color'],
-                                            service_timeout_sec=2.0)
-    own_team_color = params['team_color']
+    params = get_parameters_from_other_node(
+        vision_node, "parameter_blackboard", ["team_color"], service_timeout_sec=2.0
+    )
+    own_team_color = params["team_color"]
     vision_node._logger.debug(f"Own team color is: {own_team_color}")
 
 

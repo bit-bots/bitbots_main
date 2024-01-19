@@ -8,9 +8,9 @@ from dynamic_stack_decider import DSD
 
 def test_dsd_valid():
     # Create empty blackboard
-    DummyBlackboard = object
+    dummy_blackboard = object
     # Create DSD
-    dsd = DSD(DummyBlackboard())
+    dsd = DSD(dummy_blackboard())
 
     # Find install path of package where the dsd and python files are located
     dirname = os.path.join(get_package_share_directory("bitbots_hcm"), "hcm_dsd")

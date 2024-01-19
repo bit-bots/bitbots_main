@@ -1,24 +1,26 @@
 import os.path as osp
+from typing import Dict, Optional
+
 import rclpy
 
-from typing import Optional, Dict
-
 from bitbots_vision.vision_modules import ros_utils
+
 from . import yoeo_handlers
 from .model_config import ModelConfig, ModelConfigLoader
 
-logger = rclpy.logging.get_logger('bitbots_vision')
+logger = rclpy.logging.get_logger("bitbots_vision")
 
 
 class YOEOObjectManager:
     """
     This class manages the creation and update of the YOEO handler instance.
     """
+
     _HANDLERS_BY_NAME = {
-        'openvino': yoeo_handlers.YOEOHandlerOpenVino,
-        'onnx': yoeo_handlers.YOEOHandlerONNX,
-        'pytorch': yoeo_handlers.YOEOHandlerPytorch,
-        'tvm': yoeo_handlers.YOEOHandlerTVM
+        "openvino": yoeo_handlers.YOEOHandlerOpenVino,
+        "onnx": yoeo_handlers.YOEOHandlerONNX,
+        "pytorch": yoeo_handlers.YOEOHandlerPytorch,
+        "tvm": yoeo_handlers.YOEOHandlerTVM,
     }
 
     _config: Dict = {}
@@ -92,12 +94,12 @@ class YOEOObjectManager:
 
     @staticmethod
     def _verify_framework_parameter(framework: str) -> None:
-        if framework not in {'openvino', 'onnx', 'pytorch', 'tvm'}:
+        if framework not in {"openvino", "onnx", "pytorch", "tvm"}:
             logger.error(f"Unknown neural network framework '{framework}'")
 
     @classmethod
     def _get_full_model_path(cls, model_path: str) -> str:
-        return osp.join(cls._package_directory, 'models', model_path)
+        return osp.join(cls._package_directory, "models", model_path)
 
     @classmethod
     def _verify_required_neural_network_files_exist(cls, framework: str, model_path: str) -> None:
@@ -131,10 +133,10 @@ class YOEOObjectManager:
             model_path,
             cls._model_config.get_detection_classes(),
             cls._model_config.get_robot_class_ids(),
-            cls._model_config.get_segmentation_classes()
+            cls._model_config.get_segmentation_classes(),
         )
         logger.info(f"Using {cls._yoeo_instance.__class__.__name__}")
 
     @classmethod
     def _yoeo_parameters_have_changed(cls, new_config: Dict) -> bool:
-        return ros_utils.config_param_change(cls._config, new_config, r'yoeo_')
+        return ros_utils.config_param_change(cls._config, new_config, r"yoeo_")

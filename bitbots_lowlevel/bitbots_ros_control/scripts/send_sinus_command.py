@@ -3,8 +3,9 @@
 import math
 
 import rclpy
-from bitbots_msgs.msg import JointCommand
 from rclpy.node import Node
+
+from bitbots_msgs.msg import JointCommand
 
 DYNAMIXEL_CMD_TOPIC = "/DynamixelController/command"
 JOINT_NAME = "LAnkleRoll"

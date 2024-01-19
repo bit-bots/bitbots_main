@@ -1,7 +1,6 @@
 from collections import defaultdict
+
 from bitbots_msgs.msg import NetworkInterface as NetworkInterfaceMsg
-from rclpy.duration import Duration
-from rclpy.time import Time
 
 _prev_msgs = defaultdict(NetworkInterfaceMsg)
 _prev_msg_time = None
@@ -19,12 +18,12 @@ def collect_all(clock):
 def _get_interfaces():
     """@rtype: dict"""
     result = {}
-    with open('/proc/net/dev') as file_obj:
+    with open("/proc/net/dev") as file_obj:
         for line in file_obj:
-            if '|' not in line:  # exclude table header lines
+            if "|" not in line:  # exclude table header lines
                 line = line.strip().split()
 
-                name = line[0].replace(':', '')
+                name = line[0].replace(":", "")
                 msg = NetworkInterfaceMsg(
                     name=name,
                     received_bytes=int(line[1]),
@@ -51,15 +50,43 @@ def _analyze_rate(msgs, clock):
         if interface not in _prev_msgs:
             continue
 
-        i_msg.rate_received_bytes = int((i_msg.received_bytes - _prev_msgs[interface].received_bytes) * (now - _prev_msg_time).nanoseconds/1e9)
-        i_msg.rate_received_packets = int((i_msg.received_packets - _prev_msgs[interface].received_packets) * (now - _prev_msg_time).nanoseconds/1e9)
-        i_msg.rate_received_packets_errors = int((i_msg.received_packets_errors - _prev_msgs[interface].received_packets_errors) * (now - _prev_msg_time).nanoseconds/1e9)
-        i_msg.rate_received_packets_dropped = int((i_msg.received_packets_dropped - _prev_msgs[interface].received_packets_dropped) * (now - _prev_msg_time).nanoseconds/1e9)
-        i_msg.rate_sent_bytes = int((i_msg.sent_bytes - _prev_msgs[interface].sent_bytes) * (now - _prev_msg_time).nanoseconds/1e9)
-        i_msg.rate_sent_packets = int((i_msg.sent_packets - _prev_msgs[interface].sent_packets) * (now - _prev_msg_time).nanoseconds/1e9)
-        i_msg.rate_sent_packets_errors = int((i_msg.sent_packets_errors - _prev_msgs[interface].sent_packets_errors) * (now - _prev_msg_time).nanoseconds/1e9)
-        i_msg.rate_sent_packets_dropped = int((i_msg.sent_packets_dropped - _prev_msgs[interface].sent_packets_dropped) * (now - _prev_msg_time).nanoseconds/1e9)
-        i_msg.rate_sent_packets_collisions = int((i_msg.sent_packets_collisions - _prev_msgs[interface].sent_packets_collisions) * (now - _prev_msg_time).nanoseconds/1e9)
+        i_msg.rate_received_bytes = int(
+            (i_msg.received_bytes - _prev_msgs[interface].received_bytes) * (now - _prev_msg_time).nanoseconds / 1e9
+        )
+        i_msg.rate_received_packets = int(
+            (i_msg.received_packets - _prev_msgs[interface].received_packets) * (now - _prev_msg_time).nanoseconds / 1e9
+        )
+        i_msg.rate_received_packets_errors = int(
+            (i_msg.received_packets_errors - _prev_msgs[interface].received_packets_errors)
+            * (now - _prev_msg_time).nanoseconds
+            / 1e9
+        )
+        i_msg.rate_received_packets_dropped = int(
+            (i_msg.received_packets_dropped - _prev_msgs[interface].received_packets_dropped)
+            * (now - _prev_msg_time).nanoseconds
+            / 1e9
+        )
+        i_msg.rate_sent_bytes = int(
+            (i_msg.sent_bytes - _prev_msgs[interface].sent_bytes) * (now - _prev_msg_time).nanoseconds / 1e9
+        )
+        i_msg.rate_sent_packets = int(
+            (i_msg.sent_packets - _prev_msgs[interface].sent_packets) * (now - _prev_msg_time).nanoseconds / 1e9
+        )
+        i_msg.rate_sent_packets_errors = int(
+            (i_msg.sent_packets_errors - _prev_msgs[interface].sent_packets_errors)
+            * (now - _prev_msg_time).nanoseconds
+            / 1e9
+        )
+        i_msg.rate_sent_packets_dropped = int(
+            (i_msg.sent_packets_dropped - _prev_msgs[interface].sent_packets_dropped)
+            * (now - _prev_msg_time).nanoseconds
+            / 1e9
+        )
+        i_msg.rate_sent_packets_collisions = int(
+            (i_msg.sent_packets_collisions - _prev_msgs[interface].sent_packets_collisions)
+            * (now - _prev_msg_time).nanoseconds
+            / 1e9
+        )
 
     _prev_msg_time = now
     _prev_msgs = msgs

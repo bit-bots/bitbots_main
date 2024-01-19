@@ -1,4 +1,5 @@
-from rcl_interfaces.msg import ParameterDescriptor, FloatingPointRange, IntegerRange, ParameterType
+from rcl_interfaces.msg import FloatingPointRange, IntegerRange, ParameterDescriptor, ParameterType
+
 
 class ParameterGenerator:  # TODO own file
     def __init__(self):
@@ -19,12 +20,12 @@ class ParameterGenerator:  # TODO own file
         if param_type is None and default is not None:
             param_type = type(default)
 
-        py2ros_param_type =  {
+        py2ros_param_type = {
             None: ParameterType.PARAMETER_NOT_SET,
             bool: ParameterType.PARAMETER_BOOL,
             int: ParameterType.PARAMETER_INTEGER,
             float: ParameterType.PARAMETER_DOUBLE,
-            str: ParameterType.PARAMETER_STRING
+            str: ParameterType.PARAMETER_STRING,
         }
 
         param_type = py2ros_param_type.get(param_type, param_type)
@@ -56,13 +57,14 @@ class ParameterGenerator:  # TODO own file
             ParameterType.PARAMETER_BOOL: False,
             ParameterType.PARAMETER_INTEGER: 0,
             ParameterType.PARAMETER_DOUBLE: 0.0,
-            ParameterType.PARAMETER_STRING: ""
+            ParameterType.PARAMETER_STRING: "",
         }
 
         if default is None:
             default = type2default_default[param_type]
 
         self.param_cache.append((param_name, default, describtor))
+
 
 gen = ParameterGenerator()
 
@@ -78,7 +80,13 @@ gen.add("component_goalpost_detection_active", bool, description="Activate/Deact
 gen.add("component_line_detection_active", bool, description="Activate/Deactivate the line detection component")
 gen.add("component_robot_detection_active", bool, description="Activate/Deactivate the robot detection component")
 
-gen.add("vision_blind_threshold", int, description="Brightness threshold under which the vision thinks, that someone forgot the camera cap", min=0, max=765)
+gen.add(
+    "vision_blind_threshold",
+    int,
+    description="Brightness threshold under which the vision thinks, that someone forgot the camera cap",
+    min=0,
+    max=765,
+)
 
 gen.add("ROS_audio_msg_topic", str, description="ROS topic of the audio message")
 gen.add("ROS_img_msg_topic", str, description="ROS topic of the image message")
@@ -93,9 +101,21 @@ gen.add("ROS_field_mask_image_msg_topic", str, description="ROS topic of the fie
 gen.add("yoeo_model_path", str, description="Name of YOEO model")
 gen.add("yoeo_nms_threshold", float, description="YOEO Non-maximum suppression threshold", min=0.0, max=1.0)
 gen.add("yoeo_conf_threshold", float, description="YOEO confidence threshold", min=0.0, max=1.0)
-gen.add("yoeo_framework", str, description="The neural network framework that should be used ['pytorch', 'openvino', 'onnx', 'tvm']")
+gen.add(
+    "yoeo_framework",
+    str,
+    description="The neural network framework that should be used ['pytorch', 'openvino', 'onnx', 'tvm']",
+)
 
-gen.add("ball_candidate_rating_threshold", float, description="A threshold for the minimum candidate rating", min=0.0, max=1.0)
-gen.add("ball_candidate_max_count", int, description="The maximum number of balls that should be published", min=0, max=50)
+gen.add(
+    "ball_candidate_rating_threshold",
+    float,
+    description="A threshold for the minimum candidate rating",
+    min=0.0,
+    max=1.0,
+)
+gen.add(
+    "ball_candidate_max_count", int, description="The maximum number of balls that should be published", min=0, max=50
+)
 
 gen.add("caching", bool, description="Used to deactivate caching for profiling reasons")

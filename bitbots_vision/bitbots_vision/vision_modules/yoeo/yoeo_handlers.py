@@ -1,19 +1,19 @@
 from __future__ import annotations
 
-import cv2
-import numpy as np
 import os
-import rclpy
-
 from abc import ABC, abstractmethod
 from collections import defaultdict
-from typing import List, Dict, Tuple, Optional
+from typing import Optional
 
-from . import utils
+import cv2
+import numpy as np
+import rclpy
+
 from bitbots_vision.vision_modules.candidate import Candidate
 
+from . import utils
 
-logger = rclpy.logging.get_logger('vision_yoeo')
+logger = rclpy.logging.get_logger("vision_yoeo")
 
 
 class IYOEOHandler(ABC):
@@ -22,28 +22,28 @@ class IYOEOHandler(ABC):
     """
 
     @abstractmethod
-    def configure(self, config: Dict) -> None:
+    def configure(self, config: dict) -> None:
         """
         Allows to (re-) configure the YOEO handler.
         """
         ...
 
     @abstractmethod
-    def get_available_detection_class_names(self) -> List[str]:
+    def get_available_detection_class_names(self) -> list[str]:
         """
         Returns the names of the classes that are part of the YOEO detection.
         """
         ...
 
     @abstractmethod
-    def get_detection_candidates_for(self, class_name: str) -> List[Candidate]:
+    def get_detection_candidates_for(self, class_name: str) -> list[Candidate]:
         """
         Returns the detection candidates for a given class.
         """
         ...
 
     @abstractmethod
-    def get_available_segmentation_class_names(self) -> List[str]:
+    def get_available_segmentation_class_names(self) -> list[str]:
         """
         Returns the names of the classes that are part of the YOEO segmentation.
         """
@@ -95,52 +95,52 @@ class YOEOHandlerTemplate(IYOEOHandler):
         - model_files_exist(model_directory: str) -> bool:
         - _compute_new_prediction_for(self, image) -> Tuple:
     """
-    def __init__(self,
-                 config: Dict,
-                 det_class_names: List[str],
-                 det_robot_class_ids: List[int],
-                 seg_class_names: List[str]
-                 ):
-        logger.debug(f"Entering YOEOHandlerTemplate constructor")
 
-        self._det_candidates: Dict = defaultdict(list)
-        self._det_class_names: List[str] = det_class_names
-        self._det_robot_class_ids: List[int] = det_robot_class_ids
+    def __init__(
+        self, config: dict, det_class_names: list[str], det_robot_class_ids: list[int], seg_class_names: list[str]
+    ):
+        logger.debug("Entering YOEOHandlerTemplate constructor")
+
+        self._det_candidates: dict = defaultdict(list)
+        self._det_class_names: list[str] = det_class_names
+        self._det_robot_class_ids: list[int] = det_robot_class_ids
 
         self._image: Optional[np.ndarray] = None
 
         self._prediction_is_up_to_date: bool = True
 
-        self._seg_class_names: List[str] = seg_class_names
-        self._seg_masks: Dict = dict()
+        self._seg_class_names: list[str] = seg_class_names
+        self._seg_masks: dict = dict()
 
-        self._use_caching: bool = config['caching']
+        self._use_caching: bool = config["caching"]
 
-        logger.debug(f"Leaving YOEOHandlerTemplate constructor")
+        logger.debug("Leaving YOEOHandlerTemplate constructor")
 
-    def configure(self, config: Dict) -> None:
-        self._use_caching = config['caching']
+    def configure(self, config: dict) -> None:
+        self._use_caching = config["caching"]
 
-    def get_available_detection_class_names(self) -> List[str]:
+    def get_available_detection_class_names(self) -> list[str]:
         return self._det_class_names
 
-    def get_available_segmentation_class_names(self) -> List[str]:
+    def get_available_segmentation_class_names(self) -> list[str]:
         return self._seg_class_names
 
-    def get_detection_candidates_for(self, class_name: str) -> List[Candidate]:
-        assert class_name in self._det_class_names, \
-            f"Class '{class_name}' is not available for the current YOEO model (detection)"
+    def get_detection_candidates_for(self, class_name: str) -> list[Candidate]:
+        assert (
+            class_name in self._det_class_names
+        ), f"Class '{class_name}' is not available for the current YOEO model (detection)"
 
         self.predict()
 
         return self._det_candidates[class_name]
 
-    def get_robot_class_ids(self) -> List[int]:
+    def get_robot_class_ids(self) -> list[int]:
         return self._det_robot_class_ids
 
     def get_segmentation_mask_for(self, class_name: str):
-        assert class_name in self._seg_class_names, \
-            f"Class '{class_name}' ist not available for the current YOEO model (segmentation)"
+        assert (
+            class_name in self._seg_class_names
+        ), f"Class '{class_name}' ist not available for the current YOEO model (segmentation)"
 
         self.predict()
 
@@ -148,7 +148,7 @@ class YOEOHandlerTemplate(IYOEOHandler):
 
     def predict(self) -> None:
         if self._prediction_has_to_be_updated():
-            logger.debug(f"Computing new prediction...")
+            logger.debug("Computing new prediction...")
 
             detections, segmentation = self._compute_new_prediction_for(self._image)
             self._create_detection_candidate_lists_from(detections)
@@ -187,7 +187,7 @@ class YOEOHandlerTemplate(IYOEOHandler):
         ...
 
     @abstractmethod
-    def _compute_new_prediction_for(self, image: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    def _compute_new_prediction_for(self, image: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         """
         Hook method to be implemented by actual YOEO handlers.
 
@@ -206,13 +206,15 @@ class YOEOHandlerONNX(YOEOHandlerTemplate):
     Framework version: 1.12.0
     see https://onnxruntime.ai/docs/get-started/with-python.html for ONNX documentation
     """
-    def __init__(self,
-                 config: Dict,
-                 model_directory: str,
-                 det_class_names: List[str],
-                 det_robot_class_ids: List[int],
-                 seg_class_names: List[str]
-                 ):
+
+    def __init__(
+        self,
+        config: dict,
+        model_directory: str,
+        det_class_names: list[str],
+        det_robot_class_ids: list[int],
+        seg_class_names: list[str],
+    ):
         super().__init__(config, det_class_names, det_robot_class_ids, seg_class_names)
 
         logger.debug(f"Entering {self.__class__.__name__} constructor")
@@ -221,8 +223,8 @@ class YOEOHandlerONNX(YOEOHandlerTemplate):
 
         try:
             import onnxruntime
-        except ImportError:
-            raise ImportError("Could not import onnxruntime. The selected handler requires this package.")
+        except ImportError as e:
+            raise ImportError("Could not import onnxruntime. The selected handler requires this package.") from e
 
         logger.debug(f"Loading file...\n\t{onnx_path}")
         self._inference_session = onnxruntime.InferenceSession(onnx_path)
@@ -236,7 +238,7 @@ class YOEOHandlerONNX(YOEOHandlerTemplate):
             output_img_size=self._input_layer.shape[2],
             conf_thresh=config["yoeo_conf_threshold"],
             nms_thresh=config["yoeo_nms_threshold"],
-            robot_class_ids=self.get_robot_class_ids()
+            robot_class_ids=self.get_robot_class_ids(),
         )
         self._seg_postprocessor: utils.ISegmentationPostProcessor = utils.DefaultSegmentationPostProcessor(
             self._img_preprocessor
@@ -244,19 +246,21 @@ class YOEOHandlerONNX(YOEOHandlerTemplate):
 
         logger.debug(f"Leaving {self.__class__.__name__} constructor")
 
-    def configure(self, config: Dict) -> None:
+    def configure(self, config: dict) -> None:
         super().configure(config)
-        self._det_postprocessor.configure(image_preprocessor=self._img_preprocessor,
-                                          output_img_size=self._input_layer.shape[2],
-                                          conf_thresh=config["yoeo_conf_threshold"],
-                                          nms_thresh=config["yoeo_nms_threshold"],
-                                          robot_class_ids=self.get_robot_class_ids())
+        self._det_postprocessor.configure(
+            image_preprocessor=self._img_preprocessor,
+            output_img_size=self._input_layer.shape[2],
+            conf_thresh=config["yoeo_conf_threshold"],
+            nms_thresh=config["yoeo_nms_threshold"],
+            robot_class_ids=self.get_robot_class_ids(),
+        )
 
     @staticmethod
     def model_files_exist(model_directory: str) -> bool:
         return os.path.exists(YOEOPathGetter.get_onnx_onnx_file_path(model_directory))
 
-    def _compute_new_prediction_for(self, image: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    def _compute_new_prediction_for(self, image: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         preproccessed_image = self._img_preprocessor.process(image)
 
         network_input = preproccessed_image.reshape(self._input_layer.shape)
@@ -275,13 +279,15 @@ class YOEOHandlerOpenVino(YOEOHandlerTemplate):
     Framework version: OpenVINO 2022.1
     Code is based on https://docs.openvino.ai/latest/notebooks/002-openvino-api-with-output.html (April 9, 2022)
     """
-    def __init__(self,
-                 config: Dict,
-                 model_directory: str,
-                 det_class_names: List[str],
-                 det_robot_class_ids: List[int],
-                 seg_class_names: List[str]
-                 ):
+
+    def __init__(
+        self,
+        config: dict,
+        model_directory: str,
+        det_class_names: list[str],
+        det_robot_class_ids: list[int],
+        seg_class_names: list[str],
+    ):
         super().__init__(config, det_class_names, det_robot_class_ids, seg_class_names)
 
         logger.debug(f"Entering {self.__class__.__name__} constructor")
@@ -291,8 +297,8 @@ class YOEOHandlerOpenVino(YOEOHandlerTemplate):
 
         try:
             from openvino.runtime import Core as openvino_runtime_Core
-        except ImportError:
-            raise ImportError("Could not import openvino. The selected handler requires this package.")
+        except ImportError as e:
+            raise ImportError("Could not import openvino. The selected handler requires this package.") from e
 
         self._inference_engine = openvino_runtime_Core()
 
@@ -314,7 +320,7 @@ class YOEOHandlerOpenVino(YOEOHandlerTemplate):
             output_img_size=self._input_layer.shape[2],
             conf_thresh=config["yoeo_conf_threshold"],
             nms_thresh=config["yoeo_nms_threshold"],
-            robot_class_ids=self.get_robot_class_ids()
+            robot_class_ids=self.get_robot_class_ids(),
         )
         self._seg_postprocessor: utils.ISegmentationPostProcessor = utils.DefaultSegmentationPostProcessor(
             self._img_preprocessor
@@ -329,20 +335,23 @@ class YOEOHandlerOpenVino(YOEOHandlerTemplate):
             device = "CPU"
         return device
 
-    def configure(self, config: Dict) -> None:
+    def configure(self, config: dict) -> None:
         super().configure(config)
-        self._det_postprocessor.configure(image_preprocessor=self._img_preprocessor,
-                                          output_img_size=self._input_layer.shape[2],
-                                          conf_thresh=config["yoeo_conf_threshold"],
-                                          nms_thresh=config["yoeo_nms_threshold"],
-                                          robot_class_ids=self.get_robot_class_ids())
+        self._det_postprocessor.configure(
+            image_preprocessor=self._img_preprocessor,
+            output_img_size=self._input_layer.shape[2],
+            conf_thresh=config["yoeo_conf_threshold"],
+            nms_thresh=config["yoeo_nms_threshold"],
+            robot_class_ids=self.get_robot_class_ids(),
+        )
 
     @staticmethod
     def model_files_exist(model_directory: str) -> bool:
-        return os.path.exists(YOEOPathGetter.get_openvino_bin_file_path(model_directory)) and \
-               os.path.exists(YOEOPathGetter.get_openvino_xml_file_path(model_directory))
+        return os.path.exists(YOEOPathGetter.get_openvino_bin_file_path(model_directory)) and os.path.exists(
+            YOEOPathGetter.get_openvino_xml_file_path(model_directory)
+        )
 
-    def _compute_new_prediction_for(self, image: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    def _compute_new_prediction_for(self, image: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         preproccessed_image = self._img_preprocessor.process(image)
 
         network_input = preproccessed_image.reshape(self._input_layer.shape)
@@ -358,13 +367,15 @@ class YOEOHandlerPytorch(YOEOHandlerTemplate):
     """
     YOEO handler for the PyTorch framework
     """
-    def __init__(self,
-                 config: Dict,
-                 model_directory: str,
-                 det_class_names: List[str],
-                 det_robot_class_ids: List[int],
-                 seg_class_names: List[str]
-                 ):
+
+    def __init__(
+        self,
+        config: dict,
+        model_directory: str,
+        det_class_names: list[str],
+        det_robot_class_ids: list[int],
+        seg_class_names: list[str],
+    ):
         super().__init__(config, det_class_names, det_robot_class_ids, seg_class_names)
 
         logger.debug(f"Entering {self.__class__.__name__} constructor")
@@ -373,12 +384,12 @@ class YOEOHandlerPytorch(YOEOHandlerTemplate):
         weights_path = YOEOPathGetter.get_pytorch_pth_file_path(model_directory)
 
         try:
-            from yoeo import models as torch_models
             from yoeo import detect as torch_detect
+            from yoeo import models as torch_models
 
             self.torch_detect = torch_detect
-        except ImportError:
-            raise ImportError("Could not import yoeo. The selected handler requires this package.")
+        except ImportError as e:
+            raise ImportError("Could not import yoeo. The selected handler requires this package.") from e
 
         logger.debug(f"Loading files...\n\t{config_path}\n\t{weights_path}")
         self._model = torch_models.load_model(config_path, weights_path)
@@ -388,22 +399,25 @@ class YOEOHandlerPytorch(YOEOHandlerTemplate):
 
         logger.debug(f"Leaving {self.__class__.__name__} constructor")
 
-    def configure(self, config: Dict) -> None:
+    def configure(self, config: dict) -> None:
         super().configure(config)
         self._conf_thresh = config["yoeo_conf_threshold"]
         self._nms_thresh = config["yoeo_nms_threshold"]
 
     @staticmethod
     def model_files_exist(model_directory: str) -> bool:
-        return os.path.exists(YOEOPathGetter.get_pytorch_cfg_file_path(model_directory)) and \
-               os.path.exists(YOEOPathGetter.get_pytorch_pth_file_path(model_directory))
+        return os.path.exists(YOEOPathGetter.get_pytorch_cfg_file_path(model_directory)) and os.path.exists(
+            YOEOPathGetter.get_pytorch_pth_file_path(model_directory)
+        )
 
-    def _compute_new_prediction_for(self, image: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
-        detections, segmentation = self.torch_detect.detect_image(self._model,
-                                                                  image,
-                                                                  conf_thres=self._conf_thresh,
-                                                                  nms_thres=self._nms_thresh,
-                                                                  robot_class_ids=self.get_robot_class_ids())
+    def _compute_new_prediction_for(self, image: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        detections, segmentation = self.torch_detect.detect_image(
+            self._model,
+            image,
+            conf_thres=self._conf_thresh,
+            nms_thres=self._nms_thresh,
+            robot_class_ids=self.get_robot_class_ids(),
+        )
 
         segmentation = self._postprocess_segmentation(segmentation)
 
@@ -418,13 +432,15 @@ class YOEOHandlerTVM(YOEOHandlerTemplate):
     """
     YOEO handler for the TVM framework.
     """
-    def __init__(self,
-                 config: Dict,
-                 model_directory: str,
-                 det_class_names: List[str],
-                 det_robot_class_ids: List[int],
-                 seg_class_names: List[str]
-                 ):
+
+    def __init__(
+        self,
+        config: dict,
+        model_directory: str,
+        det_class_names: list[str],
+        det_robot_class_ids: list[int],
+        seg_class_names: list[str],
+    ):
         super().__init__(config, det_class_names, det_robot_class_ids, seg_class_names)
 
         logger.debug(f"Entering {self.__class__.__name__} constructor")
@@ -436,8 +452,8 @@ class YOEOHandlerTVM(YOEOHandlerTemplate):
         try:
             import tvm
             from tvm.contrib import graph_executor
-        except ImportError:
-            raise ImportError("Unable to import tvm. The selected handler requires this package.")
+        except ImportError as e:
+            raise ImportError("Unable to import tvm. The selected handler requires this package.") from e
 
         logger.debug(f"Loading files...\n\t{binary_path}\n\t{params_path}\n\t{json_path}")
         binary_lib = tvm.runtime.load_module(binary_path)
@@ -451,7 +467,7 @@ class YOEOHandlerTVM(YOEOHandlerTemplate):
         self._model.load_params(loaded_params)
 
         input_shape_dict, _ = self._model.get_input_info()
-        self._input_layer_shape = input_shape_dict.get('InputLayer')
+        self._input_layer_shape = input_shape_dict.get("InputLayer")
 
         height, width = self._input_layer_shape[2], self._input_layer_shape[3]
         self._img_preprocessor: utils.IImagePreProcessor = utils.DefaultImagePreProcessor((height, width))
@@ -460,7 +476,7 @@ class YOEOHandlerTVM(YOEOHandlerTemplate):
             output_img_size=self._input_layer_shape[2],
             conf_thresh=config["yoeo_conf_threshold"],
             nms_thresh=config["yoeo_nms_threshold"],
-            robot_class_ids=self.get_robot_class_ids()
+            robot_class_ids=self.get_robot_class_ids(),
         )
         self._seg_postprocessor: utils.ISegmentationPostProcessor = utils.DefaultSegmentationPostProcessor(
             self._img_preprocessor
@@ -468,21 +484,25 @@ class YOEOHandlerTVM(YOEOHandlerTemplate):
 
         logger.debug(f"Leaving {self.__class__.__name__} constructor")
 
-    def configure(self, config: Dict) -> None:
+    def configure(self, config: dict) -> None:
         super().configure(config)
-        self._det_postprocessor.configure(image_preprocessor=self._img_preprocessor,
-                                          output_img_size=self._input_layer_shape[2],
-                                          conf_thresh=config["yoeo_conf_threshold"],
-                                          nms_thresh=config["yoeo_nms_threshold"],
-                                          robot_class_ids=self.get_robot_class_ids())
+        self._det_postprocessor.configure(
+            image_preprocessor=self._img_preprocessor,
+            output_img_size=self._input_layer_shape[2],
+            conf_thresh=config["yoeo_conf_threshold"],
+            nms_thresh=config["yoeo_nms_threshold"],
+            robot_class_ids=self.get_robot_class_ids(),
+        )
 
     @staticmethod
     def model_files_exist(model_directory: str) -> bool:
-        return os.path.exists(YOEOPathGetter.get_tvm_json_file_path(model_directory)) and \
-               os.path.exists(YOEOPathGetter.get_tvm_params_file_path(model_directory)) and \
-               os.path.exists(YOEOPathGetter.get_tvm_so_file_path(model_directory))
+        return (
+            os.path.exists(YOEOPathGetter.get_tvm_json_file_path(model_directory))
+            and os.path.exists(YOEOPathGetter.get_tvm_params_file_path(model_directory))
+            and os.path.exists(YOEOPathGetter.get_tvm_so_file_path(model_directory))
+        )
 
-    def _compute_new_prediction_for(self, image: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    def _compute_new_prediction_for(self, image: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         preproccessed_image = self._img_preprocessor.process(image)
         network_input = preproccessed_image.reshape(self._input_layer_shape)
 
@@ -503,6 +523,7 @@ class YOEOPathGetter:
     To make it more clear which methods to use, the framework specific methods follow the following naming scheme:
     "get_'FRAMEWORK-NAME'_'FILE-EXTENSION'_file_path"
     """
+
     @classmethod
     def _assemble_full_path(cls, model_directory: str, subdir: Optional[str], filename: str) -> str:
         if subdir is None:

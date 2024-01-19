@@ -1,8 +1,8 @@
-from bitbots_msgs.action import Kick
+from bitbots_blackboard.blackboard import BodyBlackboard
 from bitbots_utils.transforms import quat_from_yaw
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
-from bitbots_blackboard.blackboard import BodyBlackboard
+from bitbots_msgs.action import Kick
 
 
 class AbstractKickAction(AbstractActionElement):

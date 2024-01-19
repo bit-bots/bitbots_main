@@ -2,9 +2,10 @@ import math
 from enum import Enum
 
 import numpy as np
-from bitbots_hcm.hcm_dsd.decisions import AbstractHCMDecisionElement
 from bitbots_utils.transforms import quat2fused
 from rclpy.duration import Duration
+
+from bitbots_hcm.hcm_dsd.decisions import AbstractHCMDecisionElement
 
 
 class FallDirection(Enum):
@@ -33,8 +34,6 @@ class Falling(AbstractHCMDecisionElement):
         # Initialize smoothing list that stores the last results
         self.smoothing_list: list[FallDirection] = []
 
-
-
     def perform(self, reevaluate=False):
         """Checks if the robot is currently falling and in which direction."""
         # Check if detection is active
@@ -49,16 +48,12 @@ class Falling(AbstractHCMDecisionElement):
 
         # setting the fall quantification function
         roll_fall_quantification = self.calc_fall_quantification(
-            self.thresh_orient_roll,
-            self.thresh_gyro_roll,
-            fused_roll,
-            angular_velocity[0])
+            self.thresh_orient_roll, self.thresh_gyro_roll, fused_roll, angular_velocity[0]
+        )
 
         pitch_fall_quantification = self.calc_fall_quantification(
-            self.thresh_orient_pitch,
-            self.thresh_gyro_pitch,
-            fused_pitch,
-            angular_velocity[1])
+            self.thresh_orient_pitch, self.thresh_gyro_pitch, fused_pitch, angular_velocity[1]
+        )
 
         if roll_fall_quantification + pitch_fall_quantification == 0:
             result = FallDirection.STABLE
@@ -80,9 +75,12 @@ class Falling(AbstractHCMDecisionElement):
                     result = FallDirection.RIGHT
 
         # Prune old elements from smoothing history
-        self.smoothing_list = list(filter(
-            lambda x: x[0] > self.blackboard.node.get_clock().now() - Duration(seconds=self.smoothing),
-            self.smoothing_list))
+        self.smoothing_list = list(
+            filter(
+                lambda x: x[0] > self.blackboard.node.get_clock().now() - Duration(seconds=self.smoothing),
+                self.smoothing_list,
+            )
+        )
 
         # Add the current element
         self.smoothing_list.append((self.blackboard.node.get_clock().now(), result))
@@ -109,8 +107,9 @@ class Falling(AbstractHCMDecisionElement):
         else:
             raise ValueError("Unknown falling direction")
 
-    def calc_fall_quantification(self, falling_threshold_orientation, falling_threshold_gyro, current_axis_euler,
-                                 current_axis__gyro):
+    def calc_fall_quantification(
+        self, falling_threshold_orientation, falling_threshold_gyro, current_axis_euler, current_axis__gyro
+    ):
         # check if you are moving forward or away from the perpendicular position, by comparing the signs.
         moving_more_upright = np.sign(current_axis_euler) != np.sign(current_axis__gyro)
 

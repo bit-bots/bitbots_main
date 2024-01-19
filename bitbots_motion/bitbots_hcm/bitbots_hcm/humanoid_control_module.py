@@ -5,10 +5,10 @@ import threading
 
 import rclpy
 from ament_index_python import get_package_share_directory
-from bitbots_hcm.hcm_dsd.hcm_blackboard import HcmBlackboard
 from bitbots_utils.utils import get_parameters_from_ros_yaml
 from builtin_interfaces.msg import Time as TimeMsg
 from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus
+from dynamic_stack_decider.dsd import DSD
 from humanoid_league_speaker.speaker import speak
 from rcl_interfaces.msg import Parameter as ParameterMsg
 from rclpy.duration import Duration
@@ -21,8 +21,8 @@ from ros2_numpy import numpify
 from sensor_msgs.msg import Imu, JointState
 from std_msgs.msg import Bool
 
+from bitbots_hcm.hcm_dsd.hcm_blackboard import HcmBlackboard
 from bitbots_msgs.msg import FootPressure, RobotControlState
-from dynamic_stack_decider.dsd import DSD
 
 
 class HardwareControlManager:
@@ -32,7 +32,8 @@ class HardwareControlManager:
 
         # Load parameters from yaml file because this is a hacky cpp python hybrid node for performance reasons
         parameter_msgs: list(ParameterMsg) = get_parameters_from_ros_yaml(
-            node_name, f"{get_package_share_directory('bitbots_hcm')}/config/hcm_wolfgang.yaml", use_wildcard=True)
+            node_name, f"{get_package_share_directory('bitbots_hcm')}/config/hcm_wolfgang.yaml", use_wildcard=True
+        )
         parameters = []
         for parameter_msg in parameter_msgs:
             parameters.append(Parameter.from_parameter_msg(parameter_msg))
@@ -44,10 +45,12 @@ class HardwareControlManager:
             parameters.append(Parameter("visualization_active", type_=Parameter.Type.BOOL, value=True))
 
         # Create Python node
-        self.node = Node(node_name,
-                         allow_undeclared_parameters=True,
-                         automatically_declare_parameters_from_overrides=True,
-                         parameter_overrides=parameters)
+        self.node = Node(
+            node_name,
+            allow_undeclared_parameters=True,
+            automatically_declare_parameters_from_overrides=True,
+            parameter_overrides=parameters,
+        )
 
         # Create own executor for Python part
         multi_executor = MultiThreadedExecutor()
@@ -64,12 +67,12 @@ class HardwareControlManager:
         # Create Dynamic Stack Decider
         self.dsd = DSD(self.blackboard, "debug/dsd/hcm", node=self.node)
         # Get the path to the python actions and decisions
-        dirname = os.path.join(get_package_share_directory('bitbots_hcm'), "hcm_dsd")
+        dirname = os.path.join(get_package_share_directory("bitbots_hcm"), "hcm_dsd")
         # Register actions and decisions
-        self.dsd.register_actions(os.path.join(dirname, 'actions'))
-        self.dsd.register_decisions(os.path.join(dirname, 'decisions'))
+        self.dsd.register_actions(os.path.join(dirname, "actions"))
+        self.dsd.register_decisions(os.path.join(dirname, "decisions"))
         # Load the behavior file
-        self.dsd.load_behavior(os.path.join(dirname, 'hcm.dsd'))
+        self.dsd.load_behavior(os.path.join(dirname, "hcm.dsd"))
 
         # Flag to deactivate the HCM
         self.hcm_deactivated = False
@@ -94,7 +97,7 @@ class HardwareControlManager:
         # Store the time of the current tick
         tick_start_time = self.node.get_clock().now()
         # This can happen in simulation due to bad implementation in rclpy
-        if (self.last_tick_start_time != tick_start_time):
+        if self.last_tick_start_time != tick_start_time:
             self.last_tick_start_time = tick_start_time
             # Do not perform any behavior if the HCM is deactivated
             if self.hcm_deactivated:
@@ -108,19 +111,19 @@ class HardwareControlManager:
                     pass
 
     def deactivate_cb(self, msg: Bool):
-        """ Deactivates the HCM. """
+        """Deactivates the HCM."""
         self.hcm_deactivated = msg.data
 
     def pause(self, msg: Bool):
-        """ Updates the stop state for the state machine"""
+        """Updates the stop state for the state machine"""
         self.blackboard.stopped = msg.data
 
     def power_cb(self, msg: Bool):
-        """ Updates the power state. """
+        """Updates the power state."""
         self.blackboard.is_power_on = msg.data
 
     def diag_cb(self, msg: DiagnosticArray):
-        """ Updates the diagnostic state. """
+        """Updates the diagnostic state."""
         status: DiagnosticStatus
         for status in msg.status:
             if "//Servos/" in status.name:
@@ -134,7 +137,7 @@ class HardwareControlManager:
                 self.blackboard.pressure_diag_error = status.level in (DiagnosticStatus.ERROR, DiagnosticStatus.STALE)
 
     def get_state(self) -> RobotControlState:
-        """ Returns the current state of the HCM. """
+        """Returns the current state of the HCM."""
         return self.blackboard.current_state
 
     # The following methods are used to set the blackboard values from the cpp part
@@ -179,7 +182,7 @@ class HardwareControlManager:
 
     def set_imu(self, imu_msg_serialized: bytes):
         self.blackboard.previous_imu_msg = self.blackboard.imu_msg
-        
+
         msg: Imu = deserialize_message(imu_msg_serialized, Imu)
 
         self.blackboard.accel = numpify(msg.linear_acceleration)
@@ -188,6 +191,8 @@ class HardwareControlManager:
 
         self.blackboard.smooth_gyro = 0.95 * self.blackboard.smooth_gyro + 0.05 * self.blackboard.gyro
         self.blackboard.smooth_accel = 0.99 * self.blackboard.smooth_accel + 0.01 * self.blackboard.accel
-        self.blackboard.not_much_smoothed_gyro = 0.5 * self.blackboard.not_much_smoothed_gyro + 0.5 * self.blackboard.gyro
+        self.blackboard.not_much_smoothed_gyro = (
+            0.5 * self.blackboard.not_much_smoothed_gyro + 0.5 * self.blackboard.gyro
+        )
 
         self.blackboard.imu_msg = msg

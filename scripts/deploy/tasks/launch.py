@@ -1,10 +1,9 @@
 import re
 
+from deploy.misc import get_connections_from_succeeded, hide_output, print_debug, print_err, print_success
+from deploy.tasks.abstract_task import AbstractTask
 from fabric import Group, GroupResult, Result
 from fabric.exceptions import GroupException
-
-from deploy.tasks.abstract_task import AbstractTask
-from deploy.misc import *
 
 
 class Launch(AbstractTask):
@@ -53,8 +52,8 @@ class Launch(AbstractTask):
         :param connections: The connections to remote servers.
         :return: Results, with success if ROS 2 nodes are not already running
         """
-        print_debug(f"Checking if ROS 2 nodes are already running")
-        cmd = 'ros2 node list -c'
+        print_debug("Checking if ROS 2 nodes are already running")
+        cmd = "ros2 node list -c"
 
         print_debug(f"Calling {cmd}")
         try:
@@ -72,7 +71,7 @@ class Launch(AbstractTask):
         no_nodes_already_running_results = GroupResult()
         nodes_already_running: bool
         for connection, result in node_list_results.items():
-            if re.match(r'^0$', result.stdout):  # No nodes already running
+            if re.match(r"^0$", result.stdout):  # No nodes already running
                 nodes_already_running = False
             else:  # Nodes already running
                 nodes_already_running = True
@@ -85,11 +84,13 @@ class Launch(AbstractTask):
                 exited=int(nodes_already_running),
                 command=result.command,
                 stdout=result.stdout,
-                stderr=result.stderr
+                stderr=result.stderr,
             )
 
         if no_nodes_already_running_results.succeeded:
-            print_debug(f"No ROS 2 nodes are already running on {self._succeeded_hosts(no_nodes_already_running_results)}")
+            print_debug(
+                f"No ROS 2 nodes are already running on {self._succeeded_hosts(no_nodes_already_running_results)}"
+            )
         if no_nodes_already_running_results.failed:
             print_err(f"ROS 2 nodes are already running on {self._failed_hosts(no_nodes_already_running_results)}")
         return no_nodes_already_running_results
@@ -133,17 +134,21 @@ class Launch(AbstractTask):
                 exited=int(tmux_session_already_running),
                 command=result.command,
                 stdout=result.stdout,
-                stderr=result.stderr
+                stderr=result.stderr,
             )
 
         if tmux_session_already_running_results.succeeded:
-            print_debug(f"No tmux session called {self._tmux_session_name} has been found on hosts {self._succeeded_hosts(tmux_ls_results)}")
+            print_debug(
+                f"No tmux session called {self._tmux_session_name} has been found on hosts {self._succeeded_hosts(tmux_ls_results)}"
+            )
         if tmux_session_already_running_results.failed:
-            print_err(f"Tmux session called {self._tmux_session_name} has been found on hosts {self._failed_hosts(tmux_ls_results)}")
+            print_err(
+                f"Tmux session called {self._tmux_session_name} has been found on hosts {self._failed_hosts(tmux_ls_results)}"
+            )
         return tmux_session_already_running_results
 
     def _launch_teamplayer(self, connections: Group) -> GroupResult:
-        print_debug(f"Launching teamplayer")
+        print_debug("Launching teamplayer")
         # Create tmux session
         cmd = f"tmux new-session -d -s {self._tmux_session_name} && tmux send-keys -t {self._tmux_session_name} 'ros2 launch bitbots_bringup teamplayer.launch' Enter"
 
@@ -154,8 +159,12 @@ class Launch(AbstractTask):
             help_cmds = ""
             for connection in results.succeeded:
                 help_cmds += f"{connection.host} : [bold]ssh {connection.user}@{connection.host} -t 'tmux attach-session -t {self._tmux_session_name}'[/bold]\n"
-            print_success(f"Teamplayer launched successfully on {self._succeeded_hosts(results)}!\nTo attach to the tmux session, run:\n\n{help_cmds}")
+            print_success(
+                f"Teamplayer launched successfully on {self._succeeded_hosts(results)}!\nTo attach to the tmux session, run:\n\n{help_cmds}"
+            )
         except GroupException as e:
-            print_err(f"Creating tmux session called {self._tmux_session_name} failed OR launching teamplayer failed on the following hosts: {self._failed_hosts(e.result)}")
+            print_err(
+                f"Creating tmux session called {self._tmux_session_name} failed OR launching teamplayer failed on the following hosts: {self._failed_hosts(e.result)}"
+            )
             return e.result
         return results

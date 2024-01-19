@@ -1,24 +1,30 @@
-import os
 import math
+import os
 import time
 
-from controller import Robot, Node, Field
-
-import rclpy
-from rclpy.node import Node as RclpyNode
+from controller import Node, Robot
 from geometry_msgs.msg import PointStamped
+from rclpy.node import Node as RclpyNode
 from rclpy.time import Time
-from sensor_msgs.msg import JointState, Imu, Image, CameraInfo
+from sensor_msgs.msg import CameraInfo, Image, Imu, JointState
 
-from bitbots_msgs.msg import JointCommand, FootPressure
+from bitbots_msgs.msg import FootPressure, JointCommand
 
 CAMERA_DIVIDER = 8  # every nth timestep an image is published, this is n
 
 
 class RobotController:
-    def __init__(self, ros_node: Node = None, ros_active=False, robot='wolfgang', robot_node=None, base_ns='',
-                 recognize=False,
-                 camera_active=True, foot_sensors_active=True):
+    def __init__(
+        self,
+        ros_node: Node = None,
+        ros_active=False,
+        robot="wolfgang",
+        robot_node=None,
+        base_ns="",
+        recognize=False,
+        camera_active=True,
+        foot_sensors_active=True,
+    ):
         """
         The RobotController, a Webots controller that controls a single robot.
         The environment variable WEBOTS_ROBOT_NAME should be set to "amy", "rory", "jack" or "donna" if used with
@@ -31,7 +37,7 @@ class RobotController:
         """
         self.ros_node = ros_node
         if self.ros_node is None:
-            self.ros_node = RclpyNode('robot_controller')
+            self.ros_node = RclpyNode("robot_controller")
         self.ros_active = ros_active
         self.recognize = recognize
         self.camera_active = camera_active
@@ -53,24 +59,76 @@ class RobotController:
         self.is_wolfgang = False
         self.pressure_sensors = None
         self.pressure_sensor_names = []
-        if robot == 'wolfgang':
+        if robot == "wolfgang":
             self.is_wolfgang = True
             # how the names of the joint devices are in the proto file
-            self.proto_motor_names = ["RShoulderPitch [shoulder]", "LShoulderPitch [shoulder]", "RShoulderRoll",
-                                      "LShoulderRoll", "RElbow", "LElbow", "RHipYaw", "LHipYaw", "RHipRoll [hip]",
-                                      "LHipRoll [hip]", "RHipPitch", "LHipPitch", "RKnee", "LKnee", "RAnklePitch",
-                                      "LAnklePitch", "RAnkleRoll", "LAnkleRoll", "HeadPan", "HeadTilt"]
-            # how the corresponding names of the joints are in the URDF and moveit config                                      
-            self.external_motor_names = ["RShoulderPitch", "LShoulderPitch", "RShoulderRoll", "LShoulderRoll", "RElbow",
-                                         "LElbow", "RHipYaw", "LHipYaw", "RHipRoll", "LHipRoll", "RHipPitch",
-                                         "LHipPitch", "RKnee", "LKnee", "RAnklePitch", "LAnklePitch", "RAnkleRoll",
-                                         "LAnkleRoll", "HeadPan", "HeadTilt"]
-            self.initial_joint_positions = {"LAnklePitch": -30, "LAnkleRoll": 0, "LHipPitch": 30, "LHipRoll": 0,
-                                            "LHipYaw": 0, "LKnee": 60, "RAnklePitch": 30, "RAnkleRoll": 0,
-                                            "RHipPitch": -30, "RHipRoll": 0, "RHipYaw": 0, "RKnee": -60,
-                                            "LShoulderPitch": 75, "LShoulderRoll": 0, "LElbow": 36,
-                                            "RShoulderPitch": -75, "RShoulderRoll": 0, "RElbow": -36, "HeadPan": 0,
-                                            "HeadTilt": 0}
+            self.proto_motor_names = [
+                "RShoulderPitch [shoulder]",
+                "LShoulderPitch [shoulder]",
+                "RShoulderRoll",
+                "LShoulderRoll",
+                "RElbow",
+                "LElbow",
+                "RHipYaw",
+                "LHipYaw",
+                "RHipRoll [hip]",
+                "LHipRoll [hip]",
+                "RHipPitch",
+                "LHipPitch",
+                "RKnee",
+                "LKnee",
+                "RAnklePitch",
+                "LAnklePitch",
+                "RAnkleRoll",
+                "LAnkleRoll",
+                "HeadPan",
+                "HeadTilt",
+            ]
+            # how the corresponding names of the joints are in the URDF and moveit config
+            self.external_motor_names = [
+                "RShoulderPitch",
+                "LShoulderPitch",
+                "RShoulderRoll",
+                "LShoulderRoll",
+                "RElbow",
+                "LElbow",
+                "RHipYaw",
+                "LHipYaw",
+                "RHipRoll",
+                "LHipRoll",
+                "RHipPitch",
+                "LHipPitch",
+                "RKnee",
+                "LKnee",
+                "RAnklePitch",
+                "LAnklePitch",
+                "RAnkleRoll",
+                "LAnkleRoll",
+                "HeadPan",
+                "HeadTilt",
+            ]
+            self.initial_joint_positions = {
+                "LAnklePitch": -30,
+                "LAnkleRoll": 0,
+                "LHipPitch": 30,
+                "LHipRoll": 0,
+                "LHipYaw": 0,
+                "LKnee": 60,
+                "RAnklePitch": 30,
+                "RAnkleRoll": 0,
+                "RHipPitch": -30,
+                "RHipRoll": 0,
+                "RHipYaw": 0,
+                "RKnee": -60,
+                "LShoulderPitch": 75,
+                "LShoulderRoll": 0,
+                "LElbow": 36,
+                "RShoulderPitch": -75,
+                "RShoulderRoll": 0,
+                "RElbow": -36,
+                "HeadPan": 0,
+                "HeadTilt": 0,
+            }
             self.sensor_suffix = "_sensor"
             accel_name = "imu accelerometer"
             gyro_name = "imu gyro"
@@ -83,155 +141,433 @@ class RobotController:
                 sensor.enable(self.timestep)
                 self.pressure_sensors.append(sensor)
 
-        elif robot in ['darwin', 'robotis_op2']:
-            self.proto_motor_names = ["ShoulderR", "ShoulderL", "ArmUpperR", "ArmUpperL", "ArmLowerR", "ArmLowerL",
-                                      "PelvYR", "PelvYL", "PelvR", "PelvL", "LegUpperR", "LegUpperL", "LegLowerR",
-                                      "LegLowerL", "AnkleR", "AnkleL", "FootR", "FootL", "Neck", "Head"]
-            self.external_motor_names = ["RShoulderPitch", "LShoulderPitch", "RShoulderRoll", "LShoulderRoll", "RElbow",
-                                         "LElbow", "RHipYaw", "LHipYaw", "RHipRoll", "LHipRoll", "RHipPitch",
-                                         "LHipPitch", "RKnee", "LKnee", "RAnklePitch", "LAnklePitch", "RAnkleRoll",
-                                         "LAnkleRoll", "HeadPan", "HeadTilt"]
+        elif robot in ["darwin", "robotis_op2"]:
+            self.proto_motor_names = [
+                "ShoulderR",
+                "ShoulderL",
+                "ArmUpperR",
+                "ArmUpperL",
+                "ArmLowerR",
+                "ArmLowerL",
+                "PelvYR",
+                "PelvYL",
+                "PelvR",
+                "PelvL",
+                "LegUpperR",
+                "LegUpperL",
+                "LegLowerR",
+                "LegLowerL",
+                "AnkleR",
+                "AnkleL",
+                "FootR",
+                "FootL",
+                "Neck",
+                "Head",
+            ]
+            self.external_motor_names = [
+                "RShoulderPitch",
+                "LShoulderPitch",
+                "RShoulderRoll",
+                "LShoulderRoll",
+                "RElbow",
+                "LElbow",
+                "RHipYaw",
+                "LHipYaw",
+                "RHipRoll",
+                "LHipRoll",
+                "RHipPitch",
+                "LHipPitch",
+                "RKnee",
+                "LKnee",
+                "RAnklePitch",
+                "LAnklePitch",
+                "RAnkleRoll",
+                "LAnkleRoll",
+                "HeadPan",
+                "HeadTilt",
+            ]
             self.pressure_sensors = None
             self.sensor_suffix = "S"
             accel_name = "Accelerometer"
             gyro_name = "Gyro"
             camera_name = "Camera"
-        elif robot == 'nao':
-            self.proto_motor_names = ["RShoulderPitch", "LShoulderPitch", "RShoulderRoll", "LShoulderRoll", "RElbowYaw",
-                                      "LElbowYaw", "RHipYawPitch", "LHipYawPitch", "RHipRoll", "LHipRoll", "RHipPitch",
-                                      "LHipPitch",
-                                      "RKneePitch", "LKneePitch", "RAnklePitch", "LAnklePitch", "RAnkleRoll",
-                                      "LAnkleRoll",
-                                      "HeadYaw",
-                                      "HeadPitch"]
+        elif robot == "nao":
+            self.proto_motor_names = [
+                "RShoulderPitch",
+                "LShoulderPitch",
+                "RShoulderRoll",
+                "LShoulderRoll",
+                "RElbowYaw",
+                "LElbowYaw",
+                "RHipYawPitch",
+                "LHipYawPitch",
+                "RHipRoll",
+                "LHipRoll",
+                "RHipPitch",
+                "LHipPitch",
+                "RKneePitch",
+                "LKneePitch",
+                "RAnklePitch",
+                "LAnklePitch",
+                "RAnkleRoll",
+                "LAnkleRoll",
+                "HeadYaw",
+                "HeadPitch",
+            ]
             self.pressure_sensors = None
             self.external_motor_names = self.proto_motor_names
             self.sensor_suffix = "S"
             accel_name = "accelerometer"
             gyro_name = "gyro"
             camera_name = "CameraTop"
-        elif robot == 'op3': #robotis
-            self.proto_motor_names = ["ShoulderR", "ShoulderL", "ArmUpperR", "ArmUpperL", "ArmLowerR", "ArmLowerL",
-                                      "PelvYR", "PelvYL", "PelvR", "PelvL", "LegUpperR", "LegUpperL", "LegLowerR",
-                                      "LegLowerL", "AnkleR", "AnkleL", "FootR", "FootL", "Neck", "Head"]
-            self.external_motor_names = ["r_sho_pitch", "l_sho_pitch", "r_sho_roll", "l_sho_roll",
-                                         "r_el", "l_el", "r_hip_yaw", "l_hip_yaw", "r_hip_roll", "l_hip_roll",
-                                         "r_hip_pitch", "l_hip_pitch", "r_knee", "l_knee", "r_ank_pitch",
-                                         "l_ank_pitch", "r_ank_roll", "l_ank_roll", "head_pan", "head_tilt"]
+        elif robot == "op3":  # robotis
+            self.proto_motor_names = [
+                "ShoulderR",
+                "ShoulderL",
+                "ArmUpperR",
+                "ArmUpperL",
+                "ArmLowerR",
+                "ArmLowerL",
+                "PelvYR",
+                "PelvYL",
+                "PelvR",
+                "PelvL",
+                "LegUpperR",
+                "LegUpperL",
+                "LegLowerR",
+                "LegLowerL",
+                "AnkleR",
+                "AnkleL",
+                "FootR",
+                "FootL",
+                "Neck",
+                "Head",
+            ]
+            self.external_motor_names = [
+                "r_sho_pitch",
+                "l_sho_pitch",
+                "r_sho_roll",
+                "l_sho_roll",
+                "r_el",
+                "l_el",
+                "r_hip_yaw",
+                "l_hip_yaw",
+                "r_hip_roll",
+                "l_hip_roll",
+                "r_hip_pitch",
+                "l_hip_pitch",
+                "r_knee",
+                "l_knee",
+                "r_ank_pitch",
+                "l_ank_pitch",
+                "r_ank_roll",
+                "l_ank_roll",
+                "head_pan",
+                "head_tilt",
+            ]
             self.pressure_sensors = None
             self.sensor_suffix = "S"
             accel_name = "Accelerometer"
             gyro_name = "Gyro"
             camera_name = "Camera"
-        elif robot == 'rfc':
-            self.proto_motor_names = ["RightShoulderPitch [shoulder]", "LeftShoulderPitch [shoulder]",
-                                      "RightShoulderRoll", "LeftShoulderRoll", "RightElbow", "LeftElbow", "RightHipYaw",
-                                      "LeftHipYaw", "RightHipRoll [hip]", "LeftHipRoll [hip]", "RightHipPitch",
-                                      "LeftHipPitch", "RightKnee", "LeftKnee", "RightFootPitch", "LeftFootPitch",
-                                      "RightFootRoll", "LeftFootRoll", "HeadYaw", "HeadPitch"]
-            self.external_motor_names = ["RightShoulderPitch", "LeftShoulderPitch",
-                                      "RightShoulderRoll", "LeftShoulderRoll", "RightElbow", "LeftElbow", "RightHipYaw",
-                                      "LeftHipYaw", "RightHipRoll", "LeftHipRoll", "RightHipPitch",
-                                      "LeftHipPitch", "RightKnee", "LeftKnee", "RightFootPitch", "LeftFootPitch",
-                                      "RightFootRoll", "LeftFootRoll", "HeadYaw", "HeadPitch"]
+        elif robot == "rfc":
+            self.proto_motor_names = [
+                "RightShoulderPitch [shoulder]",
+                "LeftShoulderPitch [shoulder]",
+                "RightShoulderRoll",
+                "LeftShoulderRoll",
+                "RightElbow",
+                "LeftElbow",
+                "RightHipYaw",
+                "LeftHipYaw",
+                "RightHipRoll [hip]",
+                "LeftHipRoll [hip]",
+                "RightHipPitch",
+                "LeftHipPitch",
+                "RightKnee",
+                "LeftKnee",
+                "RightFootPitch",
+                "LeftFootPitch",
+                "RightFootRoll",
+                "LeftFootRoll",
+                "HeadYaw",
+                "HeadPitch",
+            ]
+            self.external_motor_names = [
+                "RightShoulderPitch",
+                "LeftShoulderPitch",
+                "RightShoulderRoll",
+                "LeftShoulderRoll",
+                "RightElbow",
+                "LeftElbow",
+                "RightHipYaw",
+                "LeftHipYaw",
+                "RightHipRoll",
+                "LeftHipRoll",
+                "RightHipPitch",
+                "LeftHipPitch",
+                "RightKnee",
+                "LeftKnee",
+                "RightFootPitch",
+                "LeftFootPitch",
+                "RightFootRoll",
+                "LeftFootRoll",
+                "HeadYaw",
+                "HeadPitch",
+            ]
             self.pressure_sensors = None
             self.sensor_suffix = "_sensor"
             accel_name = "Accelerometer"
             gyro_name = "Gyroscope"
             camera_name = "Camera"
-        elif robot == 'gankenkun': #CITBrains
-            self.proto_motor_names = ["right_shoulder_pitch_joint [shoulder]", "left_shoulder_pitch_joint [shoulder]",
-                                      "right_shoulder_roll_joint", "left_shoulder_roll_joint",
-                                      "right_elbow_pitch_joint", "left_elbow_pitch_joint", "right_waist_yaw_joint",
-                                      "left_waist_yaw_joint", "right_waist_roll_joint [hip]",
-                                      "left_waist_roll_joint [hip]", "right_waist_pitch_joint",
-                                      "left_waist_pitch_joint", "right_knee_pitch_joint", "left_knee_pitch_joint",
-                                      "right_ankle_pitch_joint", "left_ankle_pitch_joint",
-                                      "right_ankle_roll_joint", "left_ankle_roll_joint", "head_yaw_joint"]
+        elif robot == "gankenkun":  # CITBrains
+            self.proto_motor_names = [
+                "right_shoulder_pitch_joint [shoulder]",
+                "left_shoulder_pitch_joint [shoulder]",
+                "right_shoulder_roll_joint",
+                "left_shoulder_roll_joint",
+                "right_elbow_pitch_joint",
+                "left_elbow_pitch_joint",
+                "right_waist_yaw_joint",
+                "left_waist_yaw_joint",
+                "right_waist_roll_joint [hip]",
+                "left_waist_roll_joint [hip]",
+                "right_waist_pitch_joint",
+                "left_waist_pitch_joint",
+                "right_knee_pitch_joint",
+                "left_knee_pitch_joint",
+                "right_ankle_pitch_joint",
+                "left_ankle_pitch_joint",
+                "right_ankle_roll_joint",
+                "left_ankle_roll_joint",
+                "head_yaw_joint",
+            ]
             self.external_motor_names = self.proto_motor_names
             self.pressure_sensors = None
             self.sensor_suffix = "_sensor"
             accel_name = "accelerometer"
             gyro_name = "gyro"
             camera_name = "camera_sensor"
-        elif robot == 'chape': #itandroids
-            self.proto_motor_names = ["rightShoulderPitch[shoulder]", "leftShoulderPitch[shoulder]",
-                                      "rightShoulderYaw", "leftShoulderYaw", "rightElbowYaw", "leftElbowYaw",
-                                      "rightHipYaw", "leftHipYaw", "rightHipRoll[hip]", "leftHipRoll[hip]",
-                                      "rightHipPitch", "leftHipPitch", "rightKneePitch", "leftKneePitch",
-                                      "rightAnklePitch", "leftAnklePitch", "rightAnkleRoll", "leftAnkleRoll", "neckYaw",
-                                      "neckPitch"]
-            self.external_motor_names = ["rightShoulderPitch", "leftShoulderPitch",
-                                      "rightShoulderYaw", "leftShoulderYaw", "rightElbowYaw", "leftElbowYaw",
-                                      "rightHipYaw", "leftHipYaw", "rightHipRoll", "leftHipRoll",
-                                      "rightHipPitch", "leftHipPitch", "rightKneePitch", "leftKneePitch",
-                                      "rightAnklePitch", "leftAnklePitch", "rightAnkleRoll", "leftAnkleRoll", "neckYaw",
-                                      "neckPitch"]
+        elif robot == "chape":  # itandroids
+            self.proto_motor_names = [
+                "rightShoulderPitch[shoulder]",
+                "leftShoulderPitch[shoulder]",
+                "rightShoulderYaw",
+                "leftShoulderYaw",
+                "rightElbowYaw",
+                "leftElbowYaw",
+                "rightHipYaw",
+                "leftHipYaw",
+                "rightHipRoll[hip]",
+                "leftHipRoll[hip]",
+                "rightHipPitch",
+                "leftHipPitch",
+                "rightKneePitch",
+                "leftKneePitch",
+                "rightAnklePitch",
+                "leftAnklePitch",
+                "rightAnkleRoll",
+                "leftAnkleRoll",
+                "neckYaw",
+                "neckPitch",
+            ]
+            self.external_motor_names = [
+                "rightShoulderPitch",
+                "leftShoulderPitch",
+                "rightShoulderYaw",
+                "leftShoulderYaw",
+                "rightElbowYaw",
+                "leftElbowYaw",
+                "rightHipYaw",
+                "leftHipYaw",
+                "rightHipRoll",
+                "leftHipRoll",
+                "rightHipPitch",
+                "leftHipPitch",
+                "rightKneePitch",
+                "leftKneePitch",
+                "rightAnklePitch",
+                "leftAnklePitch",
+                "rightAnkleRoll",
+                "leftAnkleRoll",
+                "neckYaw",
+                "neckPitch",
+            ]
             self.pressure_sensors = None
             self.sensor_suffix = "_sensor"
             accel_name = "Accelerometer"
             gyro_name = "Gyro"
             camera_name = "Camera"
-        elif robot == 'mrl_hsl':
-            self.proto_motor_names = ["Shoulder-R [shoulder]", "UpperArm-R", "LowerArm-R", "Shoulder-L [shoulder]",
-                                      "UpperArm-L", "LowerArm-L", "HipYaw-R", "HipRoll-R [hip]", "HipPitch-R",
-                                      "KneePitch-R", "AnklePitch-R", "AnkleRoll-R", "HipYaw-L", "HipRoll-L [hip]",
-                                      "HipPitch-L", "KneePitch-L", "AnklePitch-L", "AnkleRoll-L", "NeckYaw",
-                                      "HeadPitch"]
-            self.external_motor_names = ["Shoulder-R", "UpperArm-R", "LowerArm-R", "Shoulder-L",
-                                        "UpperArm-L", "LowerArm-L", "HipYaw-R", "HipRoll-R", "HipPitch-R",
-                                        "KneePitch-R", "AnklePitch-R", "AnkleRoll-R", "HipYaw-L", "HipRoll-L",
-                                        "HipPitch-L", "KneePitch-L", "AnklePitch-L", "AnkleRoll-L", "NeckYaw",
-                                        "HeadPitch"]           
+        elif robot == "mrl_hsl":
+            self.proto_motor_names = [
+                "Shoulder-R [shoulder]",
+                "UpperArm-R",
+                "LowerArm-R",
+                "Shoulder-L [shoulder]",
+                "UpperArm-L",
+                "LowerArm-L",
+                "HipYaw-R",
+                "HipRoll-R [hip]",
+                "HipPitch-R",
+                "KneePitch-R",
+                "AnklePitch-R",
+                "AnkleRoll-R",
+                "HipYaw-L",
+                "HipRoll-L [hip]",
+                "HipPitch-L",
+                "KneePitch-L",
+                "AnklePitch-L",
+                "AnkleRoll-L",
+                "NeckYaw",
+                "HeadPitch",
+            ]
+            self.external_motor_names = [
+                "Shoulder-R",
+                "UpperArm-R",
+                "LowerArm-R",
+                "Shoulder-L",
+                "UpperArm-L",
+                "LowerArm-L",
+                "HipYaw-R",
+                "HipRoll-R",
+                "HipPitch-R",
+                "KneePitch-R",
+                "AnklePitch-R",
+                "AnkleRoll-R",
+                "HipYaw-L",
+                "HipRoll-L",
+                "HipPitch-L",
+                "KneePitch-L",
+                "AnklePitch-L",
+                "AnkleRoll-L",
+                "NeckYaw",
+                "HeadPitch",
+            ]
             self.pressure_sensors = None
             self.sensor_suffix = "S"
             accel_name = "Accelerometer"
             gyro_name = "Gyro"
             camera_name = "Camera"
-        elif robot == 'nugus': #NUbots
-            self.proto_motor_names = ["neck_yaw", "head_pitch", "left_hip_yaw", "left_hip_roll [hip]",
-                                      "left_hip_pitch", "left_knee_pitch", "left_ankle_pitch", "left_ankle_roll",
-                                      "right_hip_yaw", "right_hip_roll [hip]", "right_hip_pitch", "right_knee_pitch",
-                                      "right_ankle_pitch", "right_ankle_roll", "left_shoulder_pitch [shoulder]",
-                                      "left_shoulder_roll", "left_elbow_pitch", "right_shoulder_pitch [shoulder]",
-                                      "right_shoulder_roll", "right_elbow_pitch"]
-            self.external_motor_names = ["neck_yaw", "head_pitch", "left_hip_yaw", "left_hip_roll",
-                                      "left_hip_pitch", "left_knee_pitch", "left_ankle_pitch", "left_ankle_roll",
-                                      "right_hip_yaw", "right_hip_roll", "right_hip_pitch", "right_knee_pitch",
-                                      "right_ankle_pitch", "right_ankle_roll", "left_shoulder_pitch",
-                                      "left_shoulder_roll", "left_elbow_pitch", "right_shoulder_pitch",
-                                      "right_shoulder_roll", "right_elbow_pitch"]
+        elif robot == "nugus":  # NUbots
+            self.proto_motor_names = [
+                "neck_yaw",
+                "head_pitch",
+                "left_hip_yaw",
+                "left_hip_roll [hip]",
+                "left_hip_pitch",
+                "left_knee_pitch",
+                "left_ankle_pitch",
+                "left_ankle_roll",
+                "right_hip_yaw",
+                "right_hip_roll [hip]",
+                "right_hip_pitch",
+                "right_knee_pitch",
+                "right_ankle_pitch",
+                "right_ankle_roll",
+                "left_shoulder_pitch [shoulder]",
+                "left_shoulder_roll",
+                "left_elbow_pitch",
+                "right_shoulder_pitch [shoulder]",
+                "right_shoulder_roll",
+                "right_elbow_pitch",
+            ]
+            self.external_motor_names = [
+                "neck_yaw",
+                "head_pitch",
+                "left_hip_yaw",
+                "left_hip_roll",
+                "left_hip_pitch",
+                "left_knee_pitch",
+                "left_ankle_pitch",
+                "left_ankle_roll",
+                "right_hip_yaw",
+                "right_hip_roll",
+                "right_hip_pitch",
+                "right_knee_pitch",
+                "right_ankle_pitch",
+                "right_ankle_roll",
+                "left_shoulder_pitch",
+                "left_shoulder_roll",
+                "left_elbow_pitch",
+                "right_shoulder_pitch",
+                "right_shoulder_roll",
+                "right_elbow_pitch",
+            ]
             self.pressure_sensors = None
             self.sensor_suffix = "_sensor"
             accel_name = "accelerometer"
             gyro_name = "gyroscope"
             camera_name = "left_camera"
-        elif robot == 'sahrv74': #Starkit
-            self.proto_motor_names = ["right_shoulder_pitch [shoulder]", "right_shoulder_roll", "right_elbow",
-                                      "left_shoulder_pitch [shoulder]", "left_shoulder_roll", "left_elbow",
-                                      "right_hip_yaw", "right_hip_roll", "right_hip_pitch [hip]", "right_knee",
-                                      "right_ankle_pitch", "right_ankle_roll", "left_hip_yaw", "left_hip_roll",
-                                      "left_hip_pitch [hip]", "left_knee", "left_ankle_pitch", "left_ankle_roll",
-                                      "head_yaw", "head_pitch"]
+        elif robot == "sahrv74":  # Starkit
+            self.proto_motor_names = [
+                "right_shoulder_pitch [shoulder]",
+                "right_shoulder_roll",
+                "right_elbow",
+                "left_shoulder_pitch [shoulder]",
+                "left_shoulder_roll",
+                "left_elbow",
+                "right_hip_yaw",
+                "right_hip_roll",
+                "right_hip_pitch [hip]",
+                "right_knee",
+                "right_ankle_pitch",
+                "right_ankle_roll",
+                "left_hip_yaw",
+                "left_hip_roll",
+                "left_hip_pitch [hip]",
+                "left_knee",
+                "left_ankle_pitch",
+                "left_ankle_roll",
+                "head_yaw",
+                "head_pitch",
+            ]
             self.external_motor_names = self.proto_motor_names
             self.pressure_sensors = None
             self.sensor_suffix = "_sensor"
             accel_name = "accelerometer"
             gyro_name = "gyro"
             camera_name = "left_camera"
-        elif robot == 'bez': #UTRA
-            self.proto_motor_names = ["head_motor_0", "head_motor_1", "right_leg_motor_0", "right_leg_motor_1 [hip]",
-                                      "right_leg_motor_2", "right_leg_motor_3", "right_leg_motor_4",
-                                      "right_leg_motor_5", "left_leg_motor_0", "left_leg_motor_1 [hip]",
-                                      "left_leg_motor_2", "left_leg_motor_3", "left_leg_motor_4", "left_leg_motor_5",
-                                      "right_arm_motor_0 [shoulder]", "right_arm_motor_1",
-                                      "left_arm_motor_0 [shoulder]", "left_arm_motor_1"]
-            self.external_motor_names = ["head_motor_0", "head_motor_1", "right_leg_motor_0", "right_leg_motor_1",
-                                      "right_leg_motor_2", "right_leg_motor_3", "right_leg_motor_4",
-                                      "right_leg_motor_5", "left_leg_motor_0", "left_leg_motor_1",
-                                      "left_leg_motor_2", "left_leg_motor_3", "left_leg_motor_4", "left_leg_motor_5",
-                                      "right_arm_motor_0", "right_arm_motor_1",
-                                      "left_arm_motor_0", "left_arm_motor_1"]
+        elif robot == "bez":  # UTRA
+            self.proto_motor_names = [
+                "head_motor_0",
+                "head_motor_1",
+                "right_leg_motor_0",
+                "right_leg_motor_1 [hip]",
+                "right_leg_motor_2",
+                "right_leg_motor_3",
+                "right_leg_motor_4",
+                "right_leg_motor_5",
+                "left_leg_motor_0",
+                "left_leg_motor_1 [hip]",
+                "left_leg_motor_2",
+                "left_leg_motor_3",
+                "left_leg_motor_4",
+                "left_leg_motor_5",
+                "right_arm_motor_0 [shoulder]",
+                "right_arm_motor_1",
+                "left_arm_motor_0 [shoulder]",
+                "left_arm_motor_1",
+            ]
+            self.external_motor_names = [
+                "head_motor_0",
+                "head_motor_1",
+                "right_leg_motor_0",
+                "right_leg_motor_1",
+                "right_leg_motor_2",
+                "right_leg_motor_3",
+                "right_leg_motor_4",
+                "right_leg_motor_5",
+                "left_leg_motor_0",
+                "left_leg_motor_1",
+                "left_leg_motor_2",
+                "left_leg_motor_3",
+                "left_leg_motor_4",
+                "left_leg_motor_5",
+                "right_arm_motor_0",
+                "right_arm_motor_1",
+                "left_arm_motor_0",
+                "left_arm_motor_1",
+            ]
             self.pressure_sensors = None
             self.sensor_suffix = "_sensor"
             accel_name = "imu accelerometer"
@@ -261,8 +597,10 @@ class RobotController:
             self.current_positions[self.motor_names_to_external_names[motor_name]] = sensor.getValue()
             # min, max and middle position (precomputed since it will be used at each step)
             self.joint_limits[self.motor_names_to_external_names[motor_name]] = (
-                motor.getMinPosition(), motor.getMaxPosition(),
-                0.5 * (motor.getMinPosition() + motor.getMaxPosition()))
+                motor.getMinPosition(),
+                motor.getMaxPosition(),
+                0.5 * (motor.getMinPosition() + motor.getMaxPosition()),
+            )
 
         self.accel = self.robot_node.getDevice(accel_name)
         self.accel.enable(self.timestep)
@@ -280,9 +618,9 @@ class RobotController:
         if self.recognize:
             self.camera.recognitionEnable(self.timestep)
             self.last_img_saved = 0.0
-            self.img_save_dir = "/tmp/webots/images" + \
-                                time.strftime("%Y-%m-%d-%H-%M-%S") + \
-                                os.getenv('WEBOTS_ROBOT_NAME')
+            self.img_save_dir = (
+                "/tmp/webots/images" + time.strftime("%Y-%m-%d-%H-%M-%S") + os.getenv("WEBOTS_ROBOT_NAME")
+            )
             if not os.path.exists(self.img_save_dir):
                 os.makedirs(self.img_save_dir)
 
@@ -295,8 +633,9 @@ class RobotController:
             self.ros_node.declare_parameter("head_imu_frame", "head_imu_frame")
             self.l_sole_frame = self.ros_node.get_parameter("l_sole_frame").get_parameter_value().string_value
             self.r_sole_frame = self.ros_node.get_parameter("r_sole_frame").get_parameter_value().string_value
-            self.camera_optical_frame = self.ros_node.get_parameter(
-                "camera_optical_frame").get_parameter_value().string_value
+            self.camera_optical_frame = (
+                self.ros_node.get_parameter("camera_optical_frame").get_parameter_value().string_value
+            )
             self.head_imu_frame = self.ros_node.get_parameter("head_imu_frame").get_parameter_value().string_value
             self.pub_js = self.ros_node.create_publisher(JointState, base_ns + "joint_states", 1)
             self.pub_imu = self.ros_node.create_publisher(Imu, base_ns + "imu/data_raw", 1)
@@ -327,7 +666,7 @@ class RobotController:
         self.get_joint_values(self.external_motor_names)
 
     def mat_from_fov_and_resolution(self, fov, res):
-        return 0.5 * res * (math.cos((fov / 2)) / math.sin((fov / 2)))
+        return 0.5 * res * (math.cos(fov / 2) / math.sin(fov / 2))
 
     def h_fov_to_v_fov(self, h_fov, height, width):
         return 2 * math.atan(math.tan(h_fov * 0.5) * (height / width))
@@ -376,7 +715,7 @@ class RobotController:
         else:
             motor.setVelocity(goal_velocity)
 
-    def set_joint_goals_position(self, joint_names, goal_positions, goal_velocities=[]):
+    def set_joint_goals_position(self, joint_names, goal_positions, goal_velocities):
         for i in range(len(joint_names)):
             try:
                 if len(goal_velocities) != 0:
@@ -403,8 +742,14 @@ class RobotController:
         self.motors[-1].setPosition(pos)
 
     def set_arms_zero(self):
-        positions = [-0.8399999308200574, 0.7200000596634105, -0.3299999109923385, 0.35999992683575216,
-                     0.5099999812500172, -0.5199999789619728]
+        positions = [
+            -0.8399999308200574,
+            0.7200000596634105,
+            -0.3299999109923385,
+            0.35999992683575216,
+            0.5099999812500172,
+            -0.5199999789619728,
+        ]
         for i in range(0, 6):
             self.motors[i].setPosition(positions[i])
 
@@ -474,7 +819,7 @@ class RobotController:
             gyro_vels = self.gyro.getValues()
             msg.angular_velocity.x = gyro_vels[0]
             msg.angular_velocity.y = gyro_vels[1]
-            if not math.isnan(gyro_vels[2]): # nao robot reports nan for yaw
+            if not math.isnan(gyro_vels[2]):  # nao robot reports nan for yaw
                 msg.angular_velocity.z = gyro_vels[2]
             else:
                 msg.angular_velocity.z = 0.0
@@ -502,15 +847,24 @@ class RobotController:
         self.cam_info.height = self.camera.getHeight()
         self.cam_info.width = self.camera.getWidth()
         f_y = self.mat_from_fov_and_resolution(
-            self.h_fov_to_v_fov(self.camera.getFov(), self.cam_info.height, self.cam_info.width),
-            self.cam_info.height)
+            self.h_fov_to_v_fov(self.camera.getFov(), self.cam_info.height, self.cam_info.width), self.cam_info.height
+        )
         f_x = self.mat_from_fov_and_resolution(self.camera.getFov(), self.cam_info.width)
-        self.cam_info.k = [f_x, 0.0, self.cam_info.width / 2,
-                           0.0, f_y, self.cam_info.height / 2,
-                           0.0, 0.0, 1.0]
-        self.cam_info.p = [f_x, 0.0, self.cam_info.width / 2, 0.0,
-                           0.0, f_y, self.cam_info.height / 2, 0.0,
-                           0.0, 0.0, 1.0, 0.0]
+        self.cam_info.k = [f_x, 0.0, self.cam_info.width / 2, 0.0, f_y, self.cam_info.height / 2, 0.0, 0.0, 1.0]
+        self.cam_info.p = [
+            f_x,
+            0.0,
+            self.cam_info.width / 2,
+            0.0,
+            0.0,
+            f_y,
+            self.cam_info.height / 2,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+        ]
         self.pub_cam_info.publish(self.cam_info)
 
     def save_recognition(self):
@@ -589,11 +943,27 @@ class RobotController:
         cop_l.header.stamp = current_time
         sum = left_pressure.left_back + left_pressure.left_front + left_pressure.right_front + left_pressure.right_back
         if sum > threshold:
-            cop_l.point.x = (left_pressure.left_front + left_pressure.right_front -
-                             left_pressure.left_back - left_pressure.right_back) * pos_x / sum
+            cop_l.point.x = (
+                (
+                    left_pressure.left_front
+                    + left_pressure.right_front
+                    - left_pressure.left_back
+                    - left_pressure.right_back
+                )
+                * pos_x
+                / sum
+            )
             cop_l.point.x = max(min(cop_l.point.x, pos_x), -pos_x)
-            cop_l.point.y = (left_pressure.left_front + left_pressure.left_back -
-                             left_pressure.right_front - left_pressure.right_back) * pos_y / sum
+            cop_l.point.y = (
+                (
+                    left_pressure.left_front
+                    + left_pressure.left_back
+                    - left_pressure.right_front
+                    - left_pressure.right_back
+                )
+                * pos_y
+                / sum
+            )
             cop_l.point.y = max(min(cop_l.point.x, pos_y), -pos_y)
         else:
             cop_l.point.x = 0.0
@@ -602,13 +972,34 @@ class RobotController:
         cop_r = PointStamped()
         cop_r.header.frame_id = self.r_sole_frame
         cop_r.header.stamp = current_time
-        sum = right_pressure.right_back + right_pressure.right_front + right_pressure.right_front + right_pressure.right_back
+        sum = (
+            right_pressure.right_back
+            + right_pressure.right_front
+            + right_pressure.right_front
+            + right_pressure.right_back
+        )
         if sum > threshold:
-            cop_r.point.x = (right_pressure.left_front + right_pressure.right_front -
-                             right_pressure.left_back - right_pressure.right_back) * pos_x / sum
+            cop_r.point.x = (
+                (
+                    right_pressure.left_front
+                    + right_pressure.right_front
+                    - right_pressure.left_back
+                    - right_pressure.right_back
+                )
+                * pos_x
+                / sum
+            )
             cop_r.point.x = max(min(cop_r.point.x, pos_x), -pos_x)
-            cop_r.point.y = (right_pressure.left_front + right_pressure.left_back -
-                             right_pressure.right_front - right_pressure.right_back) * pos_y / sum
+            cop_r.point.y = (
+                (
+                    right_pressure.left_front
+                    + right_pressure.left_back
+                    - right_pressure.right_front
+                    - right_pressure.right_back
+                )
+                * pos_y
+                / sum
+            )
             cop_r.point.y = max(min(cop_r.point.x, pos_y), -pos_y)
         else:
             cop_r.point.x = 0.0

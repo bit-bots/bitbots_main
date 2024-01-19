@@ -12,7 +12,10 @@ class RecentKickGoals(AbstractHCMDecisionElement):
             return "NOT_KICKING"
 
         # Calculate the time delta between now and the last kick goal
-        time_delta = self.blackboard.node.get_clock().now().nanoseconds / 1e9 - self.blackboard.last_kick_goal_time.nanoseconds / 1e9
+        time_delta = (
+            self.blackboard.node.get_clock().now().nanoseconds / 1e9
+            - self.blackboard.last_kick_goal_time.nanoseconds / 1e9
+        )
 
         # Log the time delta between now and the last kick goal
         self.publish_debug_data("Last Kick Goal Time Delta", time_delta)

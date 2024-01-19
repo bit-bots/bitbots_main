@@ -3,24 +3,23 @@
 # This script was based on the teleop_twist_keyboard package
 # original code can be found at https://github.com/ros-teleop/teleop_twist_keyboard
 import os
+import select
+import sys
+import termios
 import threading
+import tty
 
 import rclpy
-from rclpy.node import Node
-
-from geometry_msgs.msg import Twist
-from sensor_msgs.msg import JointState
-from bitbots_msgs.msg import JointCommand
 from bitbots_utils.transforms import quat_from_yaw
-
-import sys, select, termios, tty
+from geometry_msgs.msg import Point, Twist, Vector3
 from rclpy.action import ActionClient
-from bitbots_msgs.action import Kick, Dynup
-from geometry_msgs.msg import Point, Vector3
+from rclpy.node import Node
+from sensor_msgs.msg import JointState
 from std_msgs.msg import Bool
 from std_srvs.srv import Empty
 
-
+from bitbots_msgs.action import Dynup, Kick
+from bitbots_msgs.msg import JointCommand
 
 msg = """
 BitBots Teleop
@@ -57,51 +56,49 @@ CTRL-C to quit
 
 """
 
-moveBindings = {
-    'w': (1, 0, 0),
-    's': (-1, 0, 0),
-    'a': (0, 1, 0),
-    'd': (0, -1, 0),
-    'q': (0, 0, 1),
-    'e': (0, 0, -1),
-    'W': (10, 0, 0),
-    'S': (-10, 0, 0),
-    'A': (0, 10, 0),
-    'D': (0, -10, 0),
-    'Q': (0, 0, 10),
-    'E': (0, 0, -10),
+move_bindings = {
+    "w": (1, 0, 0),
+    "s": (-1, 0, 0),
+    "a": (0, 1, 0),
+    "d": (0, -1, 0),
+    "q": (0, 0, 1),
+    "e": (0, 0, -1),
+    "W": (10, 0, 0),
+    "S": (-10, 0, 0),
+    "A": (0, 10, 0),
+    "D": (0, -10, 0),
+    "Q": (0, 0, 10),
+    "E": (0, 0, -10),
 }
-headBindings = {
-    'u': (1, 1),
-    'i': (1, 0),
-    'o': (1, -1),
-    'j': (0, 1),
-    'l': (0, -1),
-    'm': (-1, 1),
-    ',': (-1, 0),
-    '.': (-1, -1),
-    'U': (10, 10),
-    'I': (10, 0),
-    'O': (10, -10),
-    'J': (0, 10),
-    'L': (0, -10),
-    'M': (-10, 10),
-    ';': (-10, 0),
-    ':': (-10, -10)
+head_bindings = {
+    "u": (1, 1),
+    "i": (1, 0),
+    "o": (1, -1),
+    "j": (0, 1),
+    "l": (0, -1),
+    "m": (-1, 1),
+    ",": (-1, 0),
+    ".": (-1, -1),
+    "U": (10, 10),
+    "I": (10, 0),
+    "O": (10, -10),
+    "J": (0, 10),
+    "L": (0, -10),
+    "M": (-10, 10),
+    ";": (-10, 0),
+    ":": (-10, -10),
 }
 
 
 class TeleopKeyboard(Node):
-
     def __init__(self):
         # create node
         super().__init__("TeleopKeyboard")
 
         self.settings = termios.tcgetattr(sys.stdin)
 
-
         # Walking Part
-        self.pub = self.create_publisher(Twist, 'cmd_vel', 1)
+        self.pub = self.create_publisher(Twist, "cmd_vel", 1)
 
         self.head_pan_pos = 0
         self.head_tilt_pos = 0
@@ -126,7 +123,7 @@ class TeleopKeyboard(Node):
         self.head_msg.max_currents = [-1.0] * 2
         self.head_msg.velocities = [5.0] * 2
         self.head_msg.accelerations = [40.0] * 2
-        self.head_msg.joint_names = ['HeadPan', 'HeadTilt']
+        self.head_msg.joint_names = ["HeadPan", "HeadTilt"]
         self.head_msg.positions = [0.0] * 2
 
         self.head_pan_step = 0.05
@@ -141,24 +138,22 @@ class TeleopKeyboard(Node):
 
         self.frame_prefix = "" if os.environ.get("ROS_NAMESPACE") is None else os.environ.get("ROS_NAMESPACE") + "/"
 
-        self.dynup_client = ActionClient(self, Dynup, 'dynup')
+        self.dynup_client = ActionClient(self, Dynup, "dynup")
         if not self.dynup_client.wait_for_server(timeout_sec=5.0):
-            self.get_logger().error('Dynup action server not available after waiting 5 seconds')
+            self.get_logger().error("Dynup action server not available after waiting 5 seconds")
 
-        self.kick_client = ActionClient(self, Kick, 'dynamic_kick')
+        self.kick_client = ActionClient(self, Kick, "dynamic_kick")
         if not self.kick_client.wait_for_server(timeout_sec=5.0):
-            self.get_logger().error('Kick action server not available after waiting 5 seconds')
+            self.get_logger().error("Kick action server not available after waiting 5 seconds")
 
-
-
-    def getKey(self):
+    def get_key(self):
         tty.setraw(sys.stdin.fileno())
         select.select([sys.stdin], [], [], 0)
         key = sys.stdin.read(1)
         termios.tcsetattr(sys.stdin, termios.TCSADRAIN, self.settings)
         return key
-    
-    def getWalkready(self):
+
+    def get_walkready(self):
         goal = Dynup.Goal()
         goal.direction = "walkready"
         result: Dynup.Result = self.dynup_client.send_goal(goal).result
@@ -183,41 +178,41 @@ class TeleopKeyboard(Node):
     def loop(self):
         try:
             while True:
-                key = self.getKey()
-                if key in moveBindings.keys():
-                    self.x += moveBindings[key][0] * self.x_speed_step
+                key = self.get_key()
+                if key in move_bindings.keys():
+                    self.x += move_bindings[key][0] * self.x_speed_step
 
                     self.x = round(self.x, 2)
-                    self.y += moveBindings[key][1] * self.y_speed_step
+                    self.y += move_bindings[key][1] * self.y_speed_step
                     self.y = round(self.y, 2)
-                    self.th += moveBindings[key][2] * self.turn_speed_step
+                    self.th += move_bindings[key][2] * self.turn_speed_step
                     self.th = round(self.th, 2)
                     self.a_x = 0
-                elif key in headBindings.keys():
-                    self.head_msg.positions[0] = self.head_pan_pos + headBindings[key][1] * self.head_pan_step
-                    self.head_msg.positions[1] = self.head_tilt_pos + headBindings[key][0] * self.head_tilt_step
+                elif key in head_bindings.keys():
+                    self.head_msg.positions[0] = self.head_pan_pos + head_bindings[key][1] * self.head_pan_step
+                    self.head_msg.positions[1] = self.head_tilt_pos + head_bindings[key][0] * self.head_tilt_step
                     self.head_pub.publish(self.head_msg)
-                elif key == 'k' or key == 'K':
+                elif key == "k" or key == "K":
                     # put head back in init
                     self.head_msg.positions[0] = 0
                     self.head_msg.positions[1] = 0
                     self.head_pub.publish(self.head_msg)
-                elif key == 'y':
+                elif key == "y":
                     # kick left forward
                     self.kick_client.send_goal_async(self.generate_kick_goal(0.2, 0.1, 0))
-                elif key == '<':
+                elif key == "<":
                     # kick left side ball left
                     self.kick_client.send_goal_async(self.generate_kick_goal(0.2, 0.1, -1.57))
-                elif key == '>':
+                elif key == ">":
                     # kick left side ball center
                     self.kick_client.send_goal_async(self.generate_kick_goal(0.2, 0, -1.57))
-                elif key == 'c':
+                elif key == "c":
                     # kick right forward
                     self.kick_client.send_goal_async(self.generate_kick_goal(0.2, -0.1, 0))
-                elif key == 'v':
+                elif key == "v":
                     # kick right side ball right
                     self.kick_client.send_goal_async(self.generate_kick_goal(0.2, -0.1, 1.57))
-                elif key == 'V':
+                elif key == "V":
                     # kick right side ball center
                     self.kick_client.send_goal_async(self.generate_kick_goal(0.2, 0, 1.57))
                 elif key == "x":
@@ -238,28 +233,28 @@ class TeleopKeyboard(Node):
                 elif key == "N":
                     # kick right backwards
                     self.kick_client.send_goal_async(self.generate_kick_goal(0, -0.14, 1.57))
-                elif key == 'Y':
+                elif key == "Y":
                     # kick left walk
                     self.walk_kick_pub.publish(Bool(data=False))
-                elif key == 'C':
+                elif key == "C":
                     # kick right walk
                     self.walk_kick_pub.publish(Bool(data=True))
-                elif key == 'F':
+                elif key == "F":
                     # play walkready animation
-                    self.getWalkready()
-                elif key == 'r':
+                    self.get_walkready()
+                elif key == "r":
                     # reset robot in sim
                     try:
                         self.reset_robot.call_async(Empty.Request())
-                    except:
+                    except Exception:
                         pass
-                elif key == 'R':
+                elif key == "R":
                     # reset ball in sim
                     try:
                         self.reset_ball.call_async(Empty.Request())
-                    except:
+                    except Exception:
                         pass
-                elif key == 'f':
+                elif key == "f":
                     # complete walk stop
                     self.x = 0
                     self.y = 0
@@ -272,7 +267,7 @@ class TeleopKeyboard(Node):
                     self.z = 0
                     self.a_x = 0
                     self.th = 0
-                    if (key == '\x03'):
+                    if key == "\x03":
                         self.a_x = -1
                         break
 
@@ -285,8 +280,7 @@ class TeleopKeyboard(Node):
                 sys.stdout.write("\x1b[A")
                 sys.stdout.write("\x1b[A")
                 sys.stdout.write("\x1b[A")
-                print(
-                    f"x:    {self.x}          \ny:    {self.y}          \nturn: {self.th}          \n\n")
+                print(f"x:    {self.x}          \ny:    {self.y}          \nturn: {self.th}          \n\n")
 
         except Exception as e:
             print(e)

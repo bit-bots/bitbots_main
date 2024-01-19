@@ -1,36 +1,39 @@
+import os
 from typing import Any, Dict, List
 
-import os
-
-import yaml
 import rclpy
-from rclpy.node import Node
+import yaml
 from ament_index_python import get_package_share_directory
 from rcl_interfaces.msg import Parameter as ParameterMsg
-from rcl_interfaces.msg import ParameterValue as ParameterValueMsg
 from rcl_interfaces.msg import ParameterType as ParameterTypeMsg
+from rcl_interfaces.msg import ParameterValue as ParameterValueMsg
 from rcl_interfaces.srv import GetParameters, SetParameters
-from rclpy.parameter import parameter_value_to_python, Parameter, PARAMETER_SEPARATOR_STRING
+from rclpy.node import Node
+from rclpy.parameter import PARAMETER_SEPARATOR_STRING, Parameter, parameter_value_to_python
 
 
 def read_urdf(robot_name):
-    urdf = os.popen(f"xacro {get_package_share_directory(f'{robot_name}_description')}"
-                    f"/urdf/robot.urdf use_fake_walk:=false sim_ns:=false").read()
+    urdf = os.popen(
+        f"xacro {get_package_share_directory(f'{robot_name}_description')}"
+        f"/urdf/robot.urdf use_fake_walk:=false sim_ns:=false"
+    ).read()
     return urdf
 
 
 def load_moveit_parameter(robot_name):
     moveit_parameters = get_parameters_from_plain_yaml(
         f"{get_package_share_directory(f'{robot_name}_moveit_config')}/config/kinematics.yaml",
-        "robot_description_kinematics.")
+        "robot_description_kinematics.",
+    )
     robot_description = ParameterMsg()
     robot_description.name = "robot_description"
-    robot_description.value = ParameterValueMsg(string_value=read_urdf(robot_name),
-                                                type=ParameterTypeMsg.PARAMETER_STRING)
+    robot_description.value = ParameterValueMsg(
+        string_value=read_urdf(robot_name), type=ParameterTypeMsg.PARAMETER_STRING
+    )
     moveit_parameters.append(robot_description)
     robot_description_semantic = ParameterMsg()
     robot_description_semantic.name = "robot_description_semantic"
-    with open(f"{get_package_share_directory(f'{robot_name}_moveit_config')}/config/{robot_name}.srdf", "r") as file:
+    with open(f"{get_package_share_directory(f'{robot_name}_moveit_config')}/config/{robot_name}.srdf") as file:
         value = file.read()
         robot_description_semantic.value = ParameterValueMsg(string_value=value, type=ParameterTypeMsg.PARAMETER_STRING)
     moveit_parameters.append(robot_description_semantic)
@@ -39,29 +42,32 @@ def load_moveit_parameter(robot_name):
 
 def get_parameters_from_ros_yaml(node_name, parameter_file, use_wildcard):
     # Remove leading slash and namespaces
-    with open(parameter_file, 'r') as f:
+    with open(parameter_file) as f:
         param_file = yaml.safe_load(f)
         param_keys = []
-        if use_wildcard and '/**' in param_file:
-            param_keys.append('/**')
+        if use_wildcard and "/**" in param_file:
+            param_keys.append("/**")
         if node_name in param_file:
             param_keys.append(node_name)
 
         if param_keys == []:
-            raise RuntimeError('Param file does not contain parameters for {}, '
-                               ' only for nodes: {}'.format(node_name, param_file.keys()))
+            raise RuntimeError(
+                f"Param file does not contain parameters for {node_name}, " f" only for nodes: {param_file.keys()}"
+            )
         param_dict = {}
         for k in param_keys:
             value = param_file[k]
-            if type(value) != dict or 'ros__parameters' not in value:
-                raise RuntimeError('Invalid structure of parameter file for node {}'
-                                   'expected same format as provided by ros2 param dump'.format(k))
-            param_dict.update(value['ros__parameters'])
-        return parse_parameter_dict(namespace='', parameter_dict=param_dict)
+            if not isinstance(value, dict) or "ros__parameters" not in value:
+                raise RuntimeError(
+                    f"Invalid structure of parameter file for node {k}"
+                    "expected same format as provided by ros2 param dump"
+                )
+            param_dict.update(value["ros__parameters"])
+        return parse_parameter_dict(namespace="", parameter_dict=param_dict)
 
 
-def get_parameters_from_plain_yaml(parameter_file, namespace=''):
-    with open(parameter_file, 'r') as f:
+def get_parameters_from_plain_yaml(parameter_file, namespace=""):
+    with open(parameter_file) as f:
         param_dict = yaml.safe_load(f)
         return parse_parameter_dict(namespace=namespace, parameter_dict=param_dict)
 
@@ -81,9 +87,9 @@ def get_parameter_dict(node: Node, prefix: str) -> Dict:
     config = dict()
     for param in parameter_config.values():
         # Split separated keys into nested dicts
-        param_nests = param.name[len(prefix):].split(PARAMETER_SEPARATOR_STRING)
+        param_nests = param.name[len(prefix) :].split(PARAMETER_SEPARATOR_STRING)
         # Remove empty first element from split (because of possible leading separator)
-        if param_nests[0] == '':
+        if param_nests[0] == "":
             param_nests.pop(0)
         # Traverse nested dicts and create them if they don't exist
         param_dict = config
@@ -101,18 +107,17 @@ def get_parameter_dict(node: Node, prefix: str) -> Dict:
     return config
 
 
-def get_parameters_from_other_node(own_node: Node,
-                                   other_node_name: str,
-                                   parameter_names: List[str],
-                                   service_timeout_sec: float = 20.0) -> Dict:
+def get_parameters_from_other_node(
+    own_node: Node, other_node_name: str, parameter_names: List[str], service_timeout_sec: float = 20.0
+) -> Dict:
     """
     Used to receive parameters from other running nodes.
     Returns a dict with requested parameter name as dict key and parameter value as dict value.
     """
-    client = own_node.create_client(GetParameters, f'{other_node_name}/get_parameters')
+    client = own_node.create_client(GetParameters, f"{other_node_name}/get_parameters")
     ready = client.wait_for_service(timeout_sec=service_timeout_sec)
     if not ready:
-        raise RuntimeError(f'Wait for {other_node_name} parameter service timed out')
+        raise RuntimeError(f"Wait for {other_node_name} parameter service timed out")
     request = GetParameters.Request()
     request.names = parameter_names
     future = client.call_async(request)
@@ -125,19 +130,21 @@ def get_parameters_from_other_node(own_node: Node,
     return results
 
 
-def set_parameters_of_other_node(own_node: Node,
-                                 other_node_name: str,
-                                 parameter_names: List[str],
-                                 parameter_values: List[Any],
-                                 service_timeout_sec: float = 20.0) -> List[bool]:
+def set_parameters_of_other_node(
+    own_node: Node,
+    other_node_name: str,
+    parameter_names: List[str],
+    parameter_values: List[Any],
+    service_timeout_sec: float = 20.0,
+) -> List[bool]:
     """
     Used to set parameters of another running node.
     Returns a list of booleans indicating success or failure.
     """
-    client = own_node.create_client(SetParameters, f'{other_node_name}/set_parameters')
+    client = own_node.create_client(SetParameters, f"{other_node_name}/set_parameters")
     ready = client.wait_for_service(timeout_sec=service_timeout_sec)
     if not ready:
-        raise RuntimeError(f'Wait for {other_node_name} parameter service timed out')
+        raise RuntimeError(f"Wait for {other_node_name} parameter service timed out")
     request = SetParameters.Request()
 
     for name, value in zip(parameter_names, parameter_values):
@@ -156,10 +163,10 @@ def parse_parameter_dict(*, namespace, parameter_dict):
     for param_name, param_value in parameter_dict.items():
         full_param_name = namespace + param_name
         # Unroll nested parameters
-        if type(param_value) == dict:
+        if isinstance(param_value, dict):
             parameters += parse_parameter_dict(
-                    namespace=full_param_name + PARAMETER_SEPARATOR_STRING,
-                    parameter_dict=param_value)
+                namespace=full_param_name + PARAMETER_SEPARATOR_STRING, parameter_dict=param_value
+            )
         else:
             parameter = Parameter(name=full_param_name, value=param_value)
             parameters.append(parameter.to_parameter_msg())

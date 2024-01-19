@@ -31,13 +31,13 @@ def provide_config(path):
     """
     if os.path.exists(path):
         try:
-            with open(path, "r") as f:
+            with open(path) as f:
                 config = yaml.load(f, Loader=yaml.UnsafeLoader)
         except yaml.YAMLError as exc:
             print("Error in configuration file:", exc)
     else:
         config = {}
-        print("The config yaml with path {}, does not exist.".format(path))
+        print(f"The config yaml with path {path}, does not exist.")
 
     return config
 
@@ -57,7 +57,7 @@ def ask_for_config_option(
     :param explanation: describes options
     :return: new chosen value for this config option, can be the old one
     """
-    print("=============== {} ===============".format(name))
+    print(f"=============== {name} ===============")
     if valid_options:
         print(f"Options: {valid_options}")
     print(f"Explanations: {explanation}")

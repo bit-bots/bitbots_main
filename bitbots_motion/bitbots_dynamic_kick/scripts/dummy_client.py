@@ -1,84 +1,80 @@
 #!/usr/bin/env python3
 
-from rclpy.action import ActionClient
 import argparse
 import math
 import os
-import random
-import rclpy
-from rclpy.node import Node
 import sys
-from time import sleep
 
+import rclpy
 from actionlib_msgs.msg import GoalStatus
-from geometry_msgs.msg import Vector3, Quaternion
-from bitbots_msgs.action import Kick
+from geometry_msgs.msg import Quaternion
+from rclpy.action import ActionClient
+from rclpy.node import Node
+from tf_transformations import quaternion_from_euler
 from visualization_msgs.msg import Marker
 
-from tf_transformations import quaternion_from_euler
+from bitbots_msgs.action import Kick
 
 showing_feedback = False
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('ball_y', type=float, help='y position of the ball [m]', default=0)
-    parser.add_argument('kick_direction', type=float, help='kick direction [°]', default=0)
-    parser.add_argument('-u', '--unstable', action='store_true', help='Use unstable kick')
+    parser.add_argument("ball_y", type=float, help="y position of the ball [m]", default=0)
+    parser.add_argument("kick_direction", type=float, help="kick direction [°]", default=0)
+    parser.add_argument("-u", "--unstable", action="store_true", help="Use unstable kick")
     args = parser.parse_args()
 
-    print("Beware: this script may only work when calling it directly on the robot "
-          "and will maybe result in tf errors otherwise")
-    print("[..] Initializing node", end='')
+    print(
+        "Beware: this script may only work when calling it directly on the robot "
+        "and will maybe result in tf errors otherwise"
+    )
+    print("[..] Initializing node", end="")
     rclpy.init(args=None)
     node = Node("dummy_client")
     marker_pub = node.create_publisher(Marker, "debug/dynamic_kick_ball_marker", 1)
     print("\r[OK] Initializing node")
 
-
     def done_cb(state, result):
-        print('Action completed: ', end='')
+        print("Action completed: ", end="")
         if state == GoalStatus.PENDING:
-            print('Pending')
+            print("Pending")
         elif state == GoalStatus.ACTIVE:
-            print('Active')
+            print("Active")
         elif state == GoalStatus.PREEMPTED:
-            print('Preempted')
+            print("Preempted")
         elif state == GoalStatus.SUCCEEDED:
-            print('Succeeded')
+            print("Succeeded")
         elif state == GoalStatus.ABORTED:
-            print('Aborted')
+            print("Aborted")
         elif state == GoalStatus.REJECTED:
-            print('Rejected')
+            print("Rejected")
         elif state == GoalStatus.PREEMPTING:
-            print('Preempting')
+            print("Preempting")
         elif state == GoalStatus.RECALLING:
-            print('Recalling')
+            print("Recalling")
         elif state == GoalStatus.RECALLED:
-            print('Recalled')
+            print("Recalled")
         elif state == GoalStatus.LOST:
-            print('Lost')
+            print("Lost")
         else:
-            print('Unknown state', state)
+            print("Unknown state", state)
         print(str(result))
-
 
     def active_cb():
         print("Server accepted action")
 
-
     def feedback_cb(feedback):
-        if len(sys.argv) > 1 and sys.argv[1] == '--feedback':
-            print('Feedback')
+        if len(sys.argv) > 1 and sys.argv[1] == "--feedback":
+            print("Feedback")
             print(feedback)
             print()
 
-
-    print('[..] Connecting to action server \'dynamic_kick\'', end='')
+    print("[..] Connecting to action server 'dynamic_kick'", end="")
     sys.stdout.flush()
-    client = ActionClient(node, Kick, 'dynamic_kick')
+    client = ActionClient(node, Kick, "dynamic_kick")
     if not client.wait_for_server():
         exit(1)
-    print('\r[OK] Connecting to action server \'dynamic_kick\'')
+    print("\r[OK] Connecting to action server 'dynamic_kick'")
     print()
 
     goal = Kick.Goal()
@@ -114,6 +110,6 @@ if __name__ == "__main__":
     """
     future = client.send_goal_async(goal)
     future.add_done_callback(done_cb)
-    #future.add_feedback_callback(feedback_cb)
+    # future.add_feedback_callback(feedback_cb)
     print("Sent new goal. Waiting for result")
-    #rclpy.spin_until_future_complete(client, future)
+    # rclpy.spin_until_future_complete(client, future)

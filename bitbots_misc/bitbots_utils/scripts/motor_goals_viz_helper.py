@@ -4,17 +4,17 @@ import argparse
 import sys
 
 import rclpy
-
-from bitbots_msgs.msg import Animation, JointCommand
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 from sensor_msgs.msg import JointState
 from std_msgs.msg import Float64MultiArray
 
+from bitbots_msgs.msg import Animation, JointCommand
+
 
 class MotorVizHelper(Node):
     def __init__(self):
-        super().__init__('MotorGoalsVizHelper')
+        super().__init__("MotorGoalsVizHelper")
         # get rid of additional ROS args when used in launch file
 
         parser = argparse.ArgumentParser()
@@ -33,29 +33,103 @@ class MotorVizHelper(Node):
 
         if self.args.robot_type == "wolfgang":
             # List of all joint names. Do not change the order as it is important for Gazebo
-            self.joint_names = ['HeadPan', 'HeadTilt', 'LShoulderPitch', 'LShoulderRoll', 'LElbow', 'RShoulderPitch',
-                                'RShoulderRoll', 'RElbow', 'LHipYaw', 'LHipRoll', 'LHipPitch', 'LKnee', 'LAnklePitch',
-                                'LAnkleRoll', 'RHipYaw', 'RHipRoll', 'RHipPitch', 'RKnee', 'RAnklePitch', 'RAnkleRoll']
-            self.joint_goals = [float(0), float(0), float(0), float(0), float(0), float(0), float(0), float(0),
-                                float(0), float(0), float(0.7), float(-1), float(-0.4), float(0), float(0), float(0),
-                                float(-0.7), float(1), float(0.4), float(0)]
+            self.joint_names = [
+                "HeadPan",
+                "HeadTilt",
+                "LShoulderPitch",
+                "LShoulderRoll",
+                "LElbow",
+                "RShoulderPitch",
+                "RShoulderRoll",
+                "RElbow",
+                "LHipYaw",
+                "LHipRoll",
+                "LHipPitch",
+                "LKnee",
+                "LAnklePitch",
+                "LAnkleRoll",
+                "RHipYaw",
+                "RHipRoll",
+                "RHipPitch",
+                "RKnee",
+                "RAnklePitch",
+                "RAnkleRoll",
+            ]
+            self.joint_goals = [
+                float(0),
+                float(0),
+                float(0),
+                float(0),
+                float(0),
+                float(0),
+                float(0),
+                float(0),
+                float(0),
+                float(0),
+                0.7,
+                float(-1),
+                float(-0.4),
+                float(0),
+                float(0),
+                float(0),
+                float(-0.7),
+                float(1),
+                0.4,
+                float(0),
+            ]
         elif self.args.robot_type == "itandroids":
-            self.joint_names = ["rightShoulderPitch[shoulder]", "leftShoulderPitch[shoulder]",
-                                "rightShoulderYaw", "leftShoulderYaw", "rightElbowYaw", "leftElbowYaw", "rightHipYaw",
-                                "leftHipYaw", "rightHipRoll[hip]", "leftHipRoll[hip]", "rightHipPitch",
-                                "leftHipPitch", "rightKneePitch", "leftKneePitch", "rightAnklePitch", "leftAnklePitch",
-                                "rightAnkleRoll", "leftAnkleRoll", "neckYaw", "neckPitch"]
-            self.joint_goals = [float(0), float(0), float(0), float(0), float(0), float(0), float(0), float(0),
-                                float(0), float(0), float(0), float(0), float(0), float(0), float(0), float(0),
-                                float(0), float(0), float(0), float(0)]
+            self.joint_names = [
+                "rightShoulderPitch[shoulder]",
+                "leftShoulderPitch[shoulder]",
+                "rightShoulderYaw",
+                "leftShoulderYaw",
+                "rightElbowYaw",
+                "leftElbowYaw",
+                "rightHipYaw",
+                "leftHipYaw",
+                "rightHipRoll[hip]",
+                "leftHipRoll[hip]",
+                "rightHipPitch",
+                "leftHipPitch",
+                "rightKneePitch",
+                "leftKneePitch",
+                "rightAnklePitch",
+                "leftAnklePitch",
+                "rightAnkleRoll",
+                "leftAnkleRoll",
+                "neckYaw",
+                "neckPitch",
+            ]
+            self.joint_goals = [
+                float(0),
+                float(0),
+                float(0),
+                float(0),
+                float(0),
+                float(0),
+                float(0),
+                float(0),
+                float(0),
+                float(0),
+                float(0),
+                float(0),
+                float(0),
+                float(0),
+                float(0),
+                float(0),
+                float(0),
+                float(0),
+                float(0),
+                float(0),
+            ]
         else:
             print(f"Unknown robot type {self.args.robot_type}")
             exit()
 
         if self.args.gazebo:
-            self.joint_publisher = self.create_publisher(Float64MultiArray, 'JointGroupController/command', 10)
+            self.joint_publisher = self.create_publisher(Float64MultiArray, "JointGroupController/command", 10)
         else:
-            self.joint_publisher = self.create_publisher(JointState, 'joint_states', 10)
+            self.joint_publisher = self.create_publisher(JointState, "joint_states", 10)
 
         if self.args.walking or self.args.all:
             self.create_subscription(JointCommand, "walking_motor_goals", self.joint_command_cb, 10)
@@ -134,7 +208,7 @@ class MotorVizHelper(Node):
         return msg
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     rclpy.init(args=sys.argv)
 
     node = MotorVizHelper()

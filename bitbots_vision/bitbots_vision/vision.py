@@ -1,25 +1,28 @@
 #! /usr/bin/env python3
+from copy import deepcopy
+from typing import Dict, List
+
 import numpy as np
 import rclpy
 from ament_index_python.packages import get_package_share_directory
-from copy import deepcopy
 from cv_bridge import CvBridge
-from rclpy.node import Node
 from rcl_interfaces.msg import SetParametersResult
+from rclpy.node import Node
 from sensor_msgs.msg import Image
-from typing import Dict, List
-from bitbots_vision.vision_modules import ros_utils
-from bitbots_vision.vision_modules import yoeo
+
+from bitbots_vision.vision_modules import ros_utils, yoeo
 
 from .params import gen
 
-logger = rclpy.logging.get_logger('bitbots_vision')
+logger = rclpy.logging.get_logger("bitbots_vision")
 
 try:
-    from profilehooks import profile, \
-        timecall  # Profilehooks profiles certain functions if you add the @profile or @timecall decorator.
+    from profilehooks import profile
 except ImportError:
-    profile = lambda x: x
+
+    def profile(func):
+        return func
+
     logger.info("No Profiling available")
 
 
@@ -32,11 +35,11 @@ class YOEOVision(Node):
     """
 
     def __init__(self) -> None:
-        super().__init__('bitbots_vision')
+        super().__init__("bitbots_vision")
 
         logger.info(f"Entering {self.__class__.__name__} constructor")
 
-        self._package_path = get_package_share_directory('bitbots_vision')
+        self._package_path = get_package_share_directory("bitbots_vision")
 
         yoeo.YOEOObjectManager.set_package_directory(self._package_path)
 
@@ -121,13 +124,9 @@ class YOEOVision(Node):
             vision_component.configure(new_config, new_config["component_debug_image_active"])
 
     def _register_subscribers(self, config: Dict) -> None:
-        self._sub_image = ros_utils.create_or_update_subscriber(self,
-                                                                self._config,
-                                                                config,
-                                                                self._sub_image,
-                                                                'ROS_img_msg_topic',
-                                                                Image,
-                                                                callback=self._image_callback)
+        self._sub_image = ros_utils.create_or_update_subscriber(
+            self, self._config, config, self._sub_image, "ROS_img_msg_topic", Image, callback=self._image_callback
+        )
 
     def _image_callback(self, image_msg: Image) -> None:
         """
@@ -150,7 +149,8 @@ class YOEOVision(Node):
         image_age = self.get_clock().now() - rclpy.time.Time.from_msg(image_msg.header.stamp)
         if 1.0 < image_age.nanoseconds / 1000000000 < 1000.0:
             logger.warning(
-                f"Vision: Dropping incoming Image-Message because it is too old! ({image_age.to_msg().sec} sec)")
+                f"Vision: Dropping incoming Image-Message because it is too old! ({image_age.to_msg().sec} sec)"
+            )
             return True
         else:
             return False
@@ -166,7 +166,7 @@ class YOEOVision(Node):
         self._run_components(image_msg)
 
     def _extract_image_from_message(self, image_msg: Image) -> np.ndarray:
-        return self._cv_bridge.imgmsg_to_cv2(image_msg, 'bgr8')
+        return self._cv_bridge.imgmsg_to_cv2(image_msg, "bgr8")
 
     def _forward_image_to_components(self, image: np.ndarray) -> None:
         for vision_component in self._vision_components:

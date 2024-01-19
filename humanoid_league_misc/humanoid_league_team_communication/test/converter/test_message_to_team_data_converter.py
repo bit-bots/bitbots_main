@@ -1,4 +1,4 @@
-import humanoid_league_team_communication.robocup_extension_pb2 as Proto
+import humanoid_league_team_communication.robocup_extension_pb2 as Proto  # noqa: N812
 import pytest
 from humanoid_league_team_communication.converter.robocup_protocol_converter import RobocupProtocolConverter, TeamColor
 from std_msgs.msg import Header
@@ -54,8 +54,8 @@ def test_convert_strategy(message_with_strategy):
     assert team_data.strategy.offensive_side == Strategy.SIDE_RIGHT
 
 
-def convert_from_message(message: Proto.Message, team_data=TeamData()):
-    return RobocupProtocolConverter(own_team_color).convert_from_message(message, team_data)
+def convert_from_message(message: Proto.Message, team_data: TeamData | None = None):
+    return RobocupProtocolConverter(own_team_color).convert_from_message(message, team_data or TeamData())
 
 
 @pytest.fixture

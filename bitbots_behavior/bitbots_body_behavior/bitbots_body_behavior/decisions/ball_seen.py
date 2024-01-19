@@ -1,7 +1,6 @@
+from bitbots_blackboard.blackboard import BodyBlackboard
 from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
 from rclpy.duration import Duration
-
-from bitbots_blackboard.blackboard import BodyBlackboard
 
 
 class BallSeen(AbstractDecisionElement):

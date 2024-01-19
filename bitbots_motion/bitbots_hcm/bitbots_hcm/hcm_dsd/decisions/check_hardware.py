@@ -19,10 +19,15 @@ class CheckMotors(AbstractHCMDecisionElement):
         # we check if the joint state values are actually changing, since the joint_state controller will publish the same message
         # even if there is no connection anymore. But we don't want to go directly to hardware error if we just
         # have a small break, since this can happen often due to loose cabling
-        if self.blackboard.previous_joint_state is not None and self.blackboard.current_joint_state is not None \
-                and (self.blackboard.previous_joint_state.effort != self.blackboard.current_joint_state.effort
-                or self.blackboard.previous_joint_state.position != self.blackboard.current_joint_state.position) \
-                and not self.blackboard.servo_diag_error:
+        if (
+            self.blackboard.previous_joint_state is not None
+            and self.blackboard.current_joint_state is not None
+            and (
+                self.blackboard.previous_joint_state.effort != self.blackboard.current_joint_state.effort
+                or self.blackboard.previous_joint_state.position != self.blackboard.current_joint_state.position
+            )
+            and not self.blackboard.servo_diag_error
+        ):
             self.blackboard.last_different_joint_state_time = self.blackboard.node.get_clock().now()
 
         if self.blackboard.visualization_active:
@@ -37,18 +42,25 @@ class CheckMotors(AbstractHCMDecisionElement):
                 return "MOTORS_NOT_STARTED"
             else:
                 return "OKAY"
-        
+
         if self.blackboard.servo_overload:
             return "OVERLOAD"
-            
+
         # Check if we get no messages or always the exact same
-        if self.blackboard.last_different_joint_state_time is None or  self.blackboard.node.get_clock().now().nanoseconds - \
-                self.blackboard.last_different_joint_state_time.nanoseconds > self.blackboard.motor_timeout_duration * 1e9:
+        if (
+            self.blackboard.last_different_joint_state_time is None
+            or self.blackboard.node.get_clock().now().nanoseconds
+            - self.blackboard.last_different_joint_state_time.nanoseconds
+            > self.blackboard.motor_timeout_duration * 1e9
+        ):
             # Check if the motors have power
             if self.blackboard.is_power_on:
                 # If we are currently in startup phase, we will wait a bit before we complain
-                if (self.blackboard.current_state == RobotControlState.STARTUP and
-                        self.blackboard.node.get_clock().now().nanoseconds - self.blackboard.start_time.nanoseconds < 10 * 1e9):
+                if (
+                    self.blackboard.current_state == RobotControlState.STARTUP
+                    and self.blackboard.node.get_clock().now().nanoseconds - self.blackboard.start_time.nanoseconds
+                    < 10 * 1e9
+                ):
                     # we are still in startup phase, just wait and dont complain
                     return "MOTORS_NOT_STARTED"
                 else:
@@ -88,9 +100,12 @@ class CheckIMU(AbstractHCMDecisionElement):
             return "OKAY"
 
         # we will get always the same message if there is no connection, so check if it differs
-        if self.blackboard.previous_imu_msg is not None and self.blackboard.imu_msg is not None \
-                and not self.blackboard.previous_imu_msg.orientation == self.blackboard.imu_msg.orientation \
-                and not self.blackboard.imu_diag_error: 
+        if (
+            self.blackboard.previous_imu_msg is not None
+            and self.blackboard.imu_msg is not None
+            and not self.blackboard.previous_imu_msg.orientation == self.blackboard.imu_msg.orientation
+            and not self.blackboard.imu_diag_error
+        ):
             self.blackboard.last_different_imu_state_time = self.blackboard.node.get_clock().now()
 
         if self.blackboard.simulation_active:
@@ -100,10 +115,16 @@ class CheckIMU(AbstractHCMDecisionElement):
             else:
                 return "OKAY"
 
-        if self.blackboard.previous_imu_msg is None or (self.blackboard.node.get_clock().now().nanoseconds - \
-                self.blackboard.last_different_imu_state_time.nanoseconds > self.blackboard.imu_timeout_duration * 1e9):
-            if self.blackboard.current_state == RobotControlState.STARTUP and self.blackboard.node.get_clock().now().nanoseconds - \
-                    self.blackboard.start_time.nanoseconds < 10 * 1e9:
+        if self.blackboard.previous_imu_msg is None or (
+            self.blackboard.node.get_clock().now().nanoseconds
+            - self.blackboard.last_different_imu_state_time.nanoseconds
+            > self.blackboard.imu_timeout_duration * 1e9
+        ):
+            if (
+                self.blackboard.current_state == RobotControlState.STARTUP
+                and self.blackboard.node.get_clock().now().nanoseconds - self.blackboard.start_time.nanoseconds
+                < 10 * 1e9
+            ):
                 # wait for the IMU to start
                 return "IMU_NOT_STARTED"
             else:
@@ -138,17 +159,27 @@ class CheckPressureSensor(AbstractHCMDecisionElement):
         if not self.blackboard.pressure_sensors_installed:
             # no pressure sensors installed, no check necessary
             return "OKAY"
-        
+
         # Check if we get no messages due to an error or always the exact same one (no connection)
-        if not self.blackboard.pressure_diag_error and not self.blackboard.previous_pressures == self.blackboard.pressures:        
+        if (
+            not self.blackboard.pressure_diag_error
+            and not self.blackboard.previous_pressures == self.blackboard.pressures
+        ):
             self.blackboard.last_different_pressure_state_time = self.blackboard.node.get_clock().now()
 
         # Check if we get no messages for a while
-        if  self.blackboard.last_different_pressure_state_time is None or self.blackboard.node.get_clock().now().nanoseconds -  \
-                self.blackboard.last_different_pressure_state_time.nanoseconds > 0.1 * 1e9:
+        if (
+            self.blackboard.last_different_pressure_state_time is None
+            or self.blackboard.node.get_clock().now().nanoseconds
+            - self.blackboard.last_different_pressure_state_time.nanoseconds
+            > 0.1 * 1e9
+        ):
             # Check if we are in the startup phase (not too long tho)
-            if self.blackboard.current_state == RobotControlState.STARTUP and self.blackboard.node.get_clock().now().nanoseconds  - \
-                    self.blackboard.start_time.nanoseconds < 10 * 1e9:
+            if (
+                self.blackboard.current_state == RobotControlState.STARTUP
+                and self.blackboard.node.get_clock().now().nanoseconds - self.blackboard.start_time.nanoseconds
+                < 10 * 1e9
+            ):
                 # wait for the pressure sensors to start
                 return "PRESSURE_NOT_STARTED"
             else:

@@ -4,12 +4,11 @@ import transforms3d
 from geometry_msgs.msg import PoseWithCovariance
 from numpy import double
 
-import humanoid_league_team_communication.robocup_extension_pb2 as Proto
+import humanoid_league_team_communication.robocup_extension_pb2 as Proto  # noqa: N812
 from bitbots_msgs.msg import RobotRelative, RobotRelativeArray, TeamData
 
 
 class MessageToTeamDataConverter:
-
     def __init__(self, team_mapping, role_mapping, action_mapping, side_mapping):
         self.team_mapping = team_mapping
         self.role_mapping = role_mapping
@@ -46,8 +45,9 @@ class MessageToTeamDataConverter:
 
         return team_data
 
-    def convert_robots(self, message_robots: List[Proto.Robot],
-                       message_robot_confidence: List[float]) -> RobotRelativeArray:
+    def convert_robots(
+        self, message_robots: List[Proto.Robot], message_robot_confidence: List[float]
+    ) -> RobotRelativeArray:
         relative_robots = RobotRelativeArray()
         for index, robot in enumerate(message_robots):
             robot_relative = RobotRelative(player_number=robot.player_id, type=self.team_mapping[robot.team])

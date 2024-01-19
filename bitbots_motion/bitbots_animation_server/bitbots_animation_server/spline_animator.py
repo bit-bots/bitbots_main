@@ -1,17 +1,17 @@
 import math
 
-from rclpy.impl.rcutils_logger import RcutilsLogger as Logger
-from rclpy.clock import Clock
-
-from sensor_msgs.msg import JointState
-from bitbots_animation_server.animation import Animation
 from bitbots_splines.smooth_spline import SmoothSpline
+from rclpy.clock import Clock
+from rclpy.impl.rcutils_logger import RcutilsLogger as Logger
+from sensor_msgs.msg import JointState
+
+from bitbots_animation_server.animation import Animation
 
 
 class SplineAnimator:
     def __init__(self, animation: Animation, current_joint_states: JointState, logger: Logger, clock: Clock):
         self.anim = animation
-        self.start_time = clock.now().nanoseconds /1e9
+        self.start_time = clock.now().nanoseconds / 1e9
 
         self.animation_duration = 0.0
         self.current_point_time = 0.0

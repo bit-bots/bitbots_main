@@ -1,9 +1,9 @@
-from abc import abstractmethod, ABC
+from abc import ABC, abstractmethod
 
 import rclpy
 from action_msgs.msg import GoalStatus
-from bitbots_hcm.hcm_dsd.actions import AbstractHCMActionElement
 
+from bitbots_hcm.hcm_dsd.actions import AbstractHCMActionElement
 from bitbots_msgs.action import Dynup, PlayAnimation
 
 
@@ -59,14 +59,16 @@ class AbstractPlayAnimation(AbstractHCMActionElement, ABC):
             self.blackboard.node.get_logger().warn("Tried to play an animation with an empty name!")
             return False
         first_try = self.blackboard.animation_action_client.wait_for_server(
-            timeout_sec=self.blackboard.node.get_parameter('hcm.anim_server_wait_time').value)
+            timeout_sec=self.blackboard.node.get_parameter("hcm.anim_server_wait_time").value
+        )
         if not first_try:
             server_running = False
             while not server_running and rclpy.ok():
                 self.blackboard.node.get_logger().warn(
-                                      "Animation Action Server not running! Motion can not work without animation action server. "
-                                      "Will now wait until server is accessible!",
-                                      throttle_duration_sec=10.0)
+                    "Animation Action Server not running! Motion can not work without animation action server. "
+                    "Will now wait until server is accessible!",
+                    throttle_duration_sec=10.0,
+                )
                 server_running = self.blackboard.animation_action_client.wait_for_server(timeout_sec=1)
             if server_running:
                 self.blackboard.node.get_logger().warn("Animation server now running, hcm will go on.")
@@ -77,7 +79,8 @@ class AbstractPlayAnimation(AbstractHCMActionElement, ABC):
         goal.animation = anim
         goal.hcm = True  # the animation is from the hcm
         self.blackboard.animation_action_current_goal = self.blackboard.animation_action_client.send_goal_async(
-            goal, feedback_callback=self.animation_feedback_cb)
+            goal, feedback_callback=self.animation_feedback_cb
+        )
         return True
 
     def animation_feedback_cb(self, msg):
@@ -85,8 +88,10 @@ class AbstractPlayAnimation(AbstractHCMActionElement, ABC):
         self.publish_debug_data("Animation Percent Done", str(feedback.percent_done))
 
     def animation_finished(self):
-        return (self.blackboard.animation_action_current_goal.done() and self.blackboard.animation_action_current_goal.result().status == GoalStatus.STATUS_SUCCEEDED) \
-                or self.blackboard.animation_action_current_goal.cancelled()
+        return (
+            self.blackboard.animation_action_current_goal.done()
+            and self.blackboard.animation_action_current_goal.result().status == GoalStatus.STATUS_SUCCEEDED
+        ) or self.blackboard.animation_action_current_goal.cancelled()
 
 
 class PlayAnimationFallingLeft(AbstractPlayAnimation):
@@ -118,6 +123,7 @@ class PlayAnimationTurningBackLeft(AbstractPlayAnimation):
         self.blackboard.node.get_logger().info("LYING ON THE LEFT SIDE AND TURNING TO THE BACK TO GET UP")
         return self.blackboard.animation_name_turning_back_left
 
+
 class PlayAnimationTurningBackRight(AbstractPlayAnimation):
     def chose_animation(self):
         self.blackboard.node.get_logger().info("LYING ON THE RIGHT SIDE AND TURNING TO THE BACK TO GET UP")
@@ -127,7 +133,7 @@ class PlayAnimationTurningBackRight(AbstractPlayAnimation):
 class PlayAnimationDynup(AbstractHCMActionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super().__init__(blackboard, dsd, parameters)
-        self.direction = parameters.get('direction')
+        self.direction = parameters.get("direction")
         self.first_perform = True
 
     def perform(self, reevaluate=False):
@@ -160,14 +166,16 @@ class PlayAnimationDynup(AbstractHCMActionElement):
         """
 
         first_try = self.blackboard.dynup_action_client.wait_for_server(
-            timeout_sec=self.blackboard.node.get_parameter('hcm.anim_server_wait_time').value)
+            timeout_sec=self.blackboard.node.get_parameter("hcm.anim_server_wait_time").value
+        )
         if not first_try:
             server_running = False
             while not server_running and rclpy.ok():
                 self.blackboard.node.get_logger().warn(
-                                      "Dynup Action Server not running! Dynup cannot work without dynup server! "
-                                      "Will now wait until server is accessible!",
-                                      throttle_duration_sec=10.0)
+                    "Dynup Action Server not running! Dynup cannot work without dynup server! "
+                    "Will now wait until server is accessible!",
+                    throttle_duration_sec=10.0,
+                )
                 server_running = self.blackboard.dynup_action_client.wait_for_server(timeout_sec=1)
             if server_running:
                 self.blackboard.node.get_logger().warn("Dynup server now running, hcm will go on.")
@@ -178,7 +186,8 @@ class PlayAnimationDynup(AbstractHCMActionElement):
         goal = Dynup.Goal()
         goal.direction = self.direction
         self.blackboard.dynup_action_current_goal = self.blackboard.dynup_action_client.send_goal_async(
-            goal, feedback_callback=self.animation_feedback_cb)
+            goal, feedback_callback=self.animation_feedback_cb
+        )
         return True
 
     def animation_feedback_cb(self, msg):
@@ -186,5 +195,7 @@ class PlayAnimationDynup(AbstractHCMActionElement):
         self.publish_debug_data("Dynup Percent Done", str(feedback.percent_done))
 
     def animation_finished(self):
-        return (self.blackboard.dynup_action_current_goal.done() and self.blackboard.dynup_action_current_goal.result().status == GoalStatus.STATUS_SUCCEEDED) \
-                or self.blackboard.dynup_action_current_goal.cancelled()
+        return (
+            self.blackboard.dynup_action_current_goal.done()
+            and self.blackboard.dynup_action_current_goal.result().status == GoalStatus.STATUS_SUCCEEDED
+        ) or self.blackboard.dynup_action_current_goal.cancelled()

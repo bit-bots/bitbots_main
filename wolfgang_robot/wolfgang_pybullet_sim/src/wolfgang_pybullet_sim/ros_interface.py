@@ -1,26 +1,25 @@
 import time
+
 import rospy
-from bitbots_msgs.msg import FootPressure, JointCommand
 from geometry_msgs.msg import PointStamped
 from nav_msgs.msg import Odometry
 from rosgraph_msgs.msg import Clock
-from sensor_msgs.msg import JointState, Imu
-from std_msgs.msg import Float32, Bool
+from sensor_msgs.msg import Imu, JointState
+from std_msgs.msg import Bool, Float32
 from tf.transformations import euler_from_quaternion
 
-from wolfgang_pybullet_sim.cfg import simConfig
-from dynamic_reconfigure.server import Server
+from bitbots_msgs.msg import FootPressure, JointCommand
 
 
 class ROSInterface:
-    def __init__(self, simulation, namespace='', node=True):
+    def __init__(self, simulation, namespace="", node=True):
         self.namespace = namespace
         # give possibility to use the interface directly as class with setting node=False
         if node:
-            if namespace == '':
+            if namespace == "":
                 rospy.init_node("pybullet_sim")
             else:
-                rospy.init_node('pybullet_sim', anonymous=True, argv=['clock:=/' + self.namespace + '/clock'])
+                rospy.init_node("pybullet_sim", anonymous=True, argv=["clock:=/" + self.namespace + "/clock"])
 
         self.simulation = simulation
         self.namespace = namespace
@@ -36,25 +35,28 @@ class ROSInterface:
         self.imu_msg.header.frame_id = "imu_frame"
         self.clock_msg = Clock()
         self.foot_msg_left = FootPressure()
-        self.foot_msg_left.header.frame_id = 'l_sole'
+        self.foot_msg_left.header.frame_id = "l_sole"
         self.foot_msg_right = FootPressure()
-        self.foot_msg_right.header.frame_id = 'r_sole'
+        self.foot_msg_right.header.frame_id = "r_sole"
         self.odom_msg = Odometry()
         self.odom_msg.header.frame_id = "odom"
         self.odom_msg.child_frame_id = "base_link"
         # we just use the first robot
         self.robot_index = self.simulation.robot_indexes[0]
 
-
         # publisher
-        self.left_foot_pressure_publisher = rospy.Publisher(self.namespace + "foot_pressure_left/raw", FootPressure,
-                                                            queue_size=1)
-        self.right_foot_pressure_publisher = rospy.Publisher(self.namespace + "foot_pressure_right/raw", FootPressure,
-                                                             queue_size=1)
-        self.left_foot_pressure_publisher_filtered = rospy.Publisher(self.namespace + "foot_pressure_left/filtered",
-                                                                     FootPressure, queue_size=1)
-        self.right_foot_pressure_publisher_filtered = rospy.Publisher(self.namespace + "foot_pressure_right/filtered",
-                                                                      FootPressure, queue_size=1)
+        self.left_foot_pressure_publisher = rospy.Publisher(
+            self.namespace + "foot_pressure_left/raw", FootPressure, queue_size=1
+        )
+        self.right_foot_pressure_publisher = rospy.Publisher(
+            self.namespace + "foot_pressure_right/raw", FootPressure, queue_size=1
+        )
+        self.left_foot_pressure_publisher_filtered = rospy.Publisher(
+            self.namespace + "foot_pressure_left/filtered", FootPressure, queue_size=1
+        )
+        self.right_foot_pressure_publisher_filtered = rospy.Publisher(
+            self.namespace + "foot_pressure_right/filtered", FootPressure, queue_size=1
+        )
         self.joint_publisher = rospy.Publisher(self.namespace + "joint_states", JointState, queue_size=1)
         self.imu_publisher = rospy.Publisher(self.namespace + "imu/data_raw", Imu, queue_size=1)
         self.clock_publisher = rospy.Publisher(self.namespace + "clock", Clock, queue_size=1)
@@ -64,11 +66,17 @@ class ROSInterface:
         self.cop_r_pub_ = rospy.Publisher(self.namespace + "cop_r", PointStamped, queue_size=1)
 
         # subscriber
-        self.joint_goal_subscriber = rospy.Subscriber(self.namespace + "DynamixelController/command", JointCommand,
-                                                      self.joint_goal_cb, queue_size=1, tcp_nodelay=True)
+        self.joint_goal_subscriber = rospy.Subscriber(
+            self.namespace + "DynamixelController/command",
+            JointCommand,
+            self.joint_goal_cb,
+            queue_size=1,
+            tcp_nodelay=True,
+        )
 
-        self.reset_subscriber = rospy.Subscriber(self.namespace + "reset", Bool, self.reset_cb, queue_size=1,
-                                                 tcp_nodelay=True)
+        self.reset_subscriber = rospy.Subscriber(
+            self.namespace + "reset", Bool, self.reset_cb, queue_size=1, tcp_nodelay=True
+        )
 
     def step(self):
         self.simulation.step()
@@ -127,10 +135,10 @@ class ROSInterface:
         # simple acceleration computation by using diff of velocities
         linear_acc = tuple(map(lambda i, j: i - j, self.last_linear_vel, linear_vel))
         self.last_linear_vel = linear_vel
-        #adding gravity to the acceleration
-        r,p,y = euler_from_quaternion(orientation)
-        gravity = [r*9.81,p*9.81,y*9.81]
-        linear_acc = tuple([linear_acc[0]+gravity[0], linear_acc[1]+gravity[1], linear_acc[2]+gravity[2]])
+        # adding gravity to the acceleration
+        r, p, y = euler_from_quaternion(orientation)
+        gravity = [r * 9.81, p * 9.81, y * 9.81]
+        linear_acc = tuple([linear_acc[0] + gravity[0], linear_acc[1] + gravity[1], linear_acc[2] + gravity[2]])
         self.imu_msg.linear_acceleration.x = linear_acc[0]
         self.imu_msg.linear_acceleration.y = linear_acc[1]
         self.imu_msg.linear_acceleration.z = linear_acc[2]
@@ -263,8 +271,13 @@ class ROSInterface:
         self.simulation.reset()
 
     def _dynamic_reconfigure_callback(self, config, level):
-        self.simulation.set_foot_dynamics(config["contact_damping"], config["contact_stiffness"],
-                                          config["joint_damping"], config["lateral_friction"],
-                                          config["spinning_friction"], config["rolling_friction"])
+        self.simulation.set_foot_dynamics(
+            config["contact_damping"],
+            config["contact_stiffness"],
+            config["joint_damping"],
+            config["lateral_friction"],
+            config["spinning_friction"],
+            config["rolling_friction"],
+        )
         self.simulation.set_filter_params(config["cutoff"], config["order"])
         return config

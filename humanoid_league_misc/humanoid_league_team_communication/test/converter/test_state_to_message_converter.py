@@ -1,15 +1,25 @@
 from unittest.mock import Mock
 
-import humanoid_league_team_communication.robocup_extension_pb2 as Proto
+import humanoid_league_team_communication.robocup_extension_pb2 as Proto  # noqa: N812
 import numpy
 import pytest
-from geometry_msgs.msg import (Point, PointStamped, Pose, PoseStamped, PoseWithCovariance, PoseWithCovarianceStamped,
-                               Quaternion, Twist, Vector3)
-from humanoid_league_team_communication.converter.robocup_protocol_converter import TeamColor, RobocupProtocolConverter
+from geometry_msgs.msg import (
+    Point,
+    PointStamped,
+    Pose,
+    PoseStamped,
+    PoseWithCovariance,
+    PoseWithCovarianceStamped,
+    Quaternion,
+    Twist,
+    Vector3,
+)
+from humanoid_league_team_communication.converter.robocup_protocol_converter import RobocupProtocolConverter, TeamColor
 from humanoid_league_team_communication.humanoid_league_team_communication import HumanoidLeagueTeamCommunication
 from rclpy.time import Time
 from soccer_vision_3d_msgs.msg import Robot, RobotArray
-from soccer_vision_attribute_msgs.msg import Confidence, Robot as RobotAttributes
+from soccer_vision_attribute_msgs.msg import Confidence
+from soccer_vision_attribute_msgs.msg import Robot as RobotAttributes
 from std_msgs.msg import Header
 
 from bitbots_msgs.msg import GameState, Strategy

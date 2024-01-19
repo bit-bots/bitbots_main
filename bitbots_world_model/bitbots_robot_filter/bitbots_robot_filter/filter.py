@@ -1,25 +1,25 @@
 import numpy as np
-import tf2_ros as tf2
-import tf2_geometry_msgs
-
-from std_msgs.msg import Header
 import rclpy
-from rclpy.time import Time
+import soccer_vision_3d_msgs.msg as sv3dm
+import soccer_vision_attribute_msgs.msg as svam
+import tf2_geometry_msgs
+import tf2_ros as tf2
+from bitbots_tf_listener import TransformListener
+from geometry_msgs.msg import Pose
+from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.duration import Duration
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
-from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
-from geometry_msgs.msg import Pose
-import soccer_vision_3d_msgs.msg as sv3dm
-import soccer_vision_attribute_msgs.msg as svam
+from rclpy.time import Time
 from ros2_numpy import numpify
+from std_msgs.msg import Header
+
 from bitbots_msgs.msg import TeamData
-from bitbots_tf_listener import TransformListener
 
 
 class RobotFilter(Node):
     def __init__(self):
-        super().__init__('bitbots_robot_filter')
+        super().__init__("bitbots_robot_filter")
 
         self.tf_buffer = tf2.Buffer(cache_time=Duration(seconds=10.0))
         self.tf_listener = TransformListener(self.tf_buffer, self)
@@ -27,31 +27,32 @@ class RobotFilter(Node):
         self.robots = []
         self.team = dict()
 
-        self.filter_frame = self.declare_parameter('filter_frame', 'map').value
-        self.robot_dummy_size = self.declare_parameter('robot_dummy_size', 0.4).value
-        self.robot_merge_distance = self.declare_parameter('robot_merge_distance', 0.5).value
-        self.robot_storage_time = self.declare_parameter('robot_storage_time', 10e9).value
+        self.filter_frame = self.declare_parameter("filter_frame", "map").value
+        self.robot_dummy_size = self.declare_parameter("robot_dummy_size", 0.4).value
+        self.robot_merge_distance = self.declare_parameter("robot_merge_distance", 0.5).value
+        self.robot_storage_time = self.declare_parameter("robot_storage_time", 10e9).value
 
         self.create_subscription(
             sv3dm.RobotArray,
-            self.declare_parameter('robot_observation_topic', 'robots_relative').value,
+            self.declare_parameter("robot_observation_topic", "robots_relative").value,
             self._robot_vision_callback,
             5,
-            callback_group=MutuallyExclusiveCallbackGroup())
+            callback_group=MutuallyExclusiveCallbackGroup(),
+        )
 
         self.create_subscription(
             TeamData,
-            self.declare_parameter('team_data_topic', 'team_data').value,
+            self.declare_parameter("team_data_topic", "team_data").value,
             self._team_data_callback,
             5,
-            callback_group=MutuallyExclusiveCallbackGroup())
+            callback_group=MutuallyExclusiveCallbackGroup(),
+        )
 
         self.robot_obstacle_publisher = self.create_publisher(
-            sv3dm.RobotArray,
-            self.declare_parameter('robots_publish_topic', 'robots_relative_filtered').value,
-            1)
+            sv3dm.RobotArray, self.declare_parameter("robots_publish_topic", "robots_relative_filtered").value, 1
+        )
 
-        self.create_timer(1/20, self.publish_obstacles, callback_group=MutuallyExclusiveCallbackGroup())
+        self.create_timer(1 / 20, self.publish_obstacles, callback_group=MutuallyExclusiveCallbackGroup())
 
     def publish_obstacles(self):
         # Set current timespamp and frame
@@ -60,9 +61,13 @@ class RobotFilter(Node):
         dummy_header.frame_id = self.filter_frame
 
         # Cleanup robot obstacles
-        self.robots = list(filter(
-            lambda robot: abs((self.get_clock().now() - Time.from_msg(robot[1])).nanoseconds) < self.robot_storage_time,
-            self.robots))
+        self.robots = list(
+            filter(
+                lambda robot: abs((self.get_clock().now() - Time.from_msg(robot[1])).nanoseconds)
+                < self.robot_storage_time,
+                self.robots,
+            )
+        )
 
         # Add Team Mates
         def build_robot_detection_from_team_data(msg: TeamData) -> sv3dm.Robot:
@@ -85,10 +90,9 @@ class RobotFilter(Node):
 
     def _robot_vision_callback(self, msg: sv3dm.RobotArray):
         try:
-            transform = self.tf_buffer.lookup_transform(self.filter_frame,
-                                                        msg.header.frame_id,
-                                                        msg.header.stamp,
-                                                        Duration(seconds=1.0))
+            transform = self.tf_buffer.lookup_transform(
+                self.filter_frame, msg.header.frame_id, msg.header.stamp, Duration(seconds=1.0)
+            )
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
             self.get_logger().warn(str(e))
             return

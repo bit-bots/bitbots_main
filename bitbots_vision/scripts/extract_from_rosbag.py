@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
 
+import argparse
 import os
+
 import cv2
 import rosbag
-import argparse
-import numpy as np
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
+
 
 def yes_or_no_input(question, default=None):
     # type: (str) -> bool
     """
     Prints a yes or no question and returns the answer.
-    
+
     :param str question: Yes or no question
     :param bool default: Default answer, if empty answer
     :return bool: Input answer
@@ -23,26 +24,27 @@ def yes_or_no_input(question, default=None):
 
     if default is None:
         extension = " [y|n]"
-    elif default == True:
+    elif default:
         extension = " [Y|n]"
-    elif default == False:
+    elif not default:
         extension = " [y|N]"
 
     while answer is None:
         reply = str(input(question + extension + ": ")).lower().strip()
         if default is not None and reply == "":
             answer = default
-        elif reply[:1] == 'y':
+        elif reply[:1] == "y":
             answer = True
-        elif reply[:1] == 'n':
-            answer =  False
+        elif reply[:1] == "n":
+            answer = False
     return answer
+
 
 def int_input(question, min_int=None, max_int=None):
     # type: (str, int, int) -> int
     """
     Prints a question about a int value and returns the answer.
-    
+
     :param str question: Int question
     :param int min_int: Minimum input value to be accepted
     :param int max_int: Maximum input value to be accepted
@@ -71,25 +73,36 @@ def int_input(question, min_int=None, max_int=None):
 
         # Check for min and max conditions
         if reply is not None:
-            if min_int is None and max_int is None or \
-                    min_int is not None and max_int is None and min_int <= reply or \
-                    min_int is None and max_int is not None and reply >= max_int or \
-                    min_int is not None and max_int is not None and min_int <= reply <= max_int:
+            if (
+                min_int is None
+                and max_int is None
+                or min_int is not None
+                and max_int is None
+                and min_int <= reply
+                or min_int is None
+                and max_int is not None
+                and reply >= max_int
+                or min_int is not None
+                and max_int is not None
+                and min_int <= reply <= max_int
+            ):
                 answer = reply
     return answer
+
 
 parser = argparse.ArgumentParser("Extract images from a rosbag")
 
 parser.add_argument("-o", "--out-dir", required=True, help="Output directory for the images", dest="outputdir")
 parser.add_argument("-i", "--input-bag", required=True, help="Input rosbag", dest="inputfile")
-parser.add_argument("-n", "--nth-image", help="Every n-th image will be saved, prompted if not specified", dest="n",
-                    type=int)
+parser.add_argument(
+    "-n", "--nth-image", help="Every n-th image will be saved, prompted if not specified", dest="n", type=int
+)
 parser.add_argument("-t", "--topic", help="Image topic, prompted if not asked", dest="topic")
 
 args = parser.parse_args()
 try:
     bag = rosbag.Bag(args.inputfile, "r")
-except IOError:
+except OSError:
     print("Error while opening bag")
     exit(1)
 
@@ -104,7 +117,9 @@ if len(image_topics_and_info) == 0:  # no topics found
     print("No messages of type sensor_msgs/Image found in the provided rosbag")
     exit()
 elif len(image_topics_and_info) == 1:  # 1 topic found
-    print(f"Found exactly one topic ({image_topics_and_info[0][0],}) of type sensor_msgs/Image with {image_topics_and_info[0][1].message_count} messages.")
+    print(
+        f"Found exactly one topic ({image_topics_and_info[0][0],}) of type sensor_msgs/Image with {image_topics_and_info[0][1].message_count} messages."
+    )
     if image_topics_and_info[0][0] == args.topic:
         chosen_set_num = 0
     else:
@@ -120,8 +135,14 @@ else:  # Multiple topics found
     else:  # Multiple topics, but not specified yet
         print("Multiple topics with type sensor_msgs/Image:")
         for i, topic_tuple in enumerate(image_topics_and_info):
-            print("[" + str(i) + "] topic: " + str(topic_tuple[0]) + " \t message_count: " + str(
-                topic_tuple[1].message_count))
+            print(
+                "["
+                + str(i)
+                + "] topic: "
+                + str(topic_tuple[0])
+                + " \t message_count: "
+                + str(topic_tuple[1].message_count)
+            )
         chosen_set_num = int_input("Make a selection", min_int=0, max_int=len(image_topics_and_info) - 1)
 
 chosen_set = image_topics_and_info[chosen_set_num]
@@ -137,7 +158,7 @@ print(f"Extracting every {n}-th image.")
 try:
     os.mkdir(args.outputdir)
 except OSError:
-    if not yes_or_no_input("Directory already exists, continue?" ,default=True):
+    if not yes_or_no_input("Directory already exists, continue?", default=True):
         exit()
 
 i = 0

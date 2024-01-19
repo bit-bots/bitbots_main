@@ -1,26 +1,27 @@
-from cmath import phase
-from tracemalloc import start
-from std_msgs.msg import Int64
-from bitbots_quintic_walk_py.libpy_quintic_walk import PyWalkWrapper
-from bitbots_msgs.msg import JointCommand, FootPressure
-from geometry_msgs.msg import Twist, Pose, PoseArray
-from sensor_msgs.msg import Imu, JointState
-from std_msgs.msg import String
-from nav_msgs.msg import Odometry
-from rclpy.serialization import serialize_message, deserialize_message
-from rcl_interfaces.msg import Parameter
 from biped_interfaces.msg import Phase
+from bitbots_quintic_walk_py.libpy_quintic_walk import PyWalkWrapper
 from bitbots_utils.utils import parse_parameter_dict
+from geometry_msgs.msg import Pose, PoseArray, Twist
+from nav_msgs.msg import Odometry
+from rcl_interfaces.msg import Parameter
+from rclpy.serialization import deserialize_message, serialize_message
+from std_msgs.msg import String
+
+from bitbots_msgs.msg import JointCommand
+
 
 class PyWalk:
-    def __init__(self, namespace="", parameters: [Parameter]=[], setForceSmoothStepTransition=False):
+    def __init__(self, namespace="", parameters: [Parameter] | None = None, set_force_smooth_step_transition=False):
         serialized_parameters = []
-        for parameter in parameters:
-            serialized_parameters.append(serialize_message(parameter))
-            if parameter.value.type == 2:
-                print(f"Gave parameter {parameter.name} of integer type. If the code crashes it is maybe because this "
-                      f"should be a float. You may need to add an .0 in some yaml file.")
-        self.py_walk_wrapper = PyWalkWrapper(namespace, serialized_parameters, setForceSmoothStepTransition)
+        if parameters is not None:
+            for parameter in parameters:
+                serialized_parameters.append(serialize_message(parameter))
+                if parameter.value.type == 2:
+                    print(
+                        f"Gave parameter {parameter.name} of integer type. If the code crashes it is maybe because this "
+                        f"should be a float. You may need to add an .0 in some yaml file."
+                    )
+        self.py_walk_wrapper = PyWalkWrapper(namespace, serialized_parameters, set_force_smooth_step_transition)
 
     def spin_ros(self):
         self.py_walk_wrapper.spin_some()
@@ -29,8 +30,16 @@ class PyWalk:
         self.py_walk_wrapper.reset()
 
     def special_reset(self, state: String, phase: float, cmd_vel_msg: Twist, reset_odometry: bool):
-        state_dict = {"PAUSED": 0, "WALKING": 1, "IDLE": 2, "START_MOVEMENT": 3, "STOP_MOVEMENT": 4, "START_STEP": 5,
-                      "STOP_STEP": 6, "KICK": 7}
+        state_dict = {
+            "PAUSED": 0,
+            "WALKING": 1,
+            "IDLE": 2,
+            "START_MOVEMENT": 3,
+            "STOP_MOVEMENT": 4,
+            "START_STEP": 5,
+            "STOP_STEP": 6,
+            "KICK": 7,
+        }
         self.py_walk_wrapper.special_reset(state_dict[state], phase, serialize_message(cmd_vel_msg), reset_odometry)
 
     def step(self, dt: float, cmdvel_msg: Twist, imu_msg, jointstate_msg, pressure_left, pressure_right):
@@ -43,7 +52,8 @@ class PyWalk:
             serialize_message(imu_msg),
             serialize_message(jointstate_msg),
             serialize_message(pressure_left),
-            serialize_message(pressure_right))
+            serialize_message(pressure_right),
+        )
 
         result = deserialize_message(stepi, JointCommand)
         return result
@@ -58,7 +68,8 @@ class PyWalk:
             serialize_message(imu_msg),
             serialize_message(jointstate_msg),
             serialize_message(pressure_left),
-            serialize_message(pressure_right))
+            serialize_message(pressure_right),
+        )
 
         result = deserialize_message(stepi, JointCommand)
         return result
@@ -92,10 +103,10 @@ class PyWalk:
 
     def get_freq(self):
         return self.py_walk_wrapper.get_freq()
-    
+
     def get_support_state(self):
         return deserialize_message(self.py_walk_wrapper.get_support_state(), Phase)
-    
+
     def is_left_support(self):
         return self.py_walk_wrapper.is_left_support()
 
@@ -105,7 +116,7 @@ class PyWalk:
         return result
 
     def publish_debug(self):
-        self.py_walk_wrapper.publish_debug()    
+        self.py_walk_wrapper.publish_debug()
 
     def reset_and_test_if_speed_possible(self, cmd_vel_msg, threshold=0.001):
         """Returns true if complete walk cycle with cmd_vel is possible without kinematic issues"""

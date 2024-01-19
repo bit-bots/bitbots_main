@@ -1,7 +1,6 @@
+from bitbots_blackboard.blackboard import BodyBlackboard
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 from tf2_geometry_msgs import PoseStamped
-
-from bitbots_blackboard.blackboard import BodyBlackboard
 
 
 class GoToBlockPosition(AbstractActionElement):

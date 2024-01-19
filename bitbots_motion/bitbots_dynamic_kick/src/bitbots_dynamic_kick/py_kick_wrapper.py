@@ -1,8 +1,9 @@
 from io import BytesIO
 
+from geometry_msgs.msg import Pose
 from moveit_ros_planning_interface._moveit_roscpp_initializer import roscpp_init, roscpp_shutdown
 from sensor_msgs.msg import JointState
-from geometry_msgs.msg import Pose
+
 from bitbots_dynamic_kick.py_dynamic_kick import PyKickWrapper
 from bitbots_msgs.msg import JointCommand, KickGoal
 
@@ -41,15 +42,16 @@ class PyKick:
     not supported yet. Then, set the kick goal by calling init. After that, repeatedly call step with the passed time
     and the current motor positions of the robot. It will return the new motor commands.
     """
+
     def __init__(self, namespace=""):
         """
         Initialize the kick, needs a roscore and the robot description
 
         :param namespace: The namespace where the kick node is launched
         """
-        roscpp_init('py_kick', [])
+        roscpp_init("py_kick", [])
         # make namespace end with a /
-        if namespace != "" and namespace[-1] != '/':
+        if namespace != "" and namespace[-1] != "/":
             namespace = namespace + "/"
         self.py_kick_wrapper = PyKickWrapper(namespace)
 
@@ -78,7 +80,7 @@ class PyKick:
             # preventing weird spline interpolation errors on edge case
             dt = 0.001
         elif dt > 1:
-            print('dt is very large, maybe forgot to reset?')
+            print("dt is very large, maybe forgot to reset?")
         step = self.py_kick_wrapper.step(dt, to_cpp(joint_state))
         return from_cpp(step, JointCommand)
 

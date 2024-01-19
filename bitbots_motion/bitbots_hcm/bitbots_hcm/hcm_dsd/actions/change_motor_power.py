@@ -1,5 +1,6 @@
-from bitbots_hcm.hcm_dsd.actions import AbstractHCMActionElement
 from std_srvs.srv import SetBool
+
+from bitbots_hcm.hcm_dsd.actions import AbstractHCMActionElement
 
 
 class AbstractChangeMotorPower(AbstractHCMActionElement):
@@ -10,11 +11,9 @@ class AbstractChangeMotorPower(AbstractHCMActionElement):
     def __init__(self, blackboard, dsd, parameters=None):
         super().__init__(blackboard, dsd, parameters)
 
+        # In visualization and simulation, we cannot disable motors
         if not self.blackboard.visualization_active and not self.blackboard.simulation_active:
-            # In visualization and simulation, we cannot disable motors
-            try:
-                self.blackboard.motor_switch_service.wait_for_service(timeout_sec=10)
-            except:
+            if not self.blackboard.motor_switch_service.wait_for_service(timeout_sec=10):
                 self.blackboard.node.get_logger().warn("HCM waiting for switch power service")
             self.blackboard.motor_switch_service.wait_for_service()
 

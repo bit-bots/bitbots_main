@@ -1,17 +1,16 @@
 #!/usr/bin/env python3
 import rclpy
-from rclpy.node import Node
 from rclpy.executors import MultiThreadedExecutor
+from rclpy.node import Node
 from sensor_msgs.msg import Imu
 
 
 class DummyImu(Node):
-
     def __init__(self):
-        super().__init__('DummyImu')
-        self.pub = self.create_publisher(Imu, '/imu/data', 1)
+        super().__init__("DummyImu")
+        self.pub = self.create_publisher(Imu, "/imu/data", 1)
         self.msg = Imu()
-        self.msg.header.frame_id = 'imu_frame'
+        self.msg.header.frame_id = "imu_frame"
         self.msg.orientation.w = 1.0
 
     def loop(self):
@@ -19,7 +18,7 @@ class DummyImu(Node):
         self.pub.publish(self.msg)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     rclpy.init(args=None)
 
     node = DummyImu()

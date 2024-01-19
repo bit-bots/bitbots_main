@@ -1,16 +1,16 @@
 from io import BytesIO
 
-from bitbots_dynup.msg import DynupPoses
-from bitbots_dynup.py_dynup import PyDynupWrapper, spin_once
 from geometry_msgs.msg import PoseArray
 
+from bitbots_dynup.msg import DynupPoses
+from bitbots_dynup.py_dynup import PyDynupWrapper, spin_once
 from bitbots_msgs.msg import JointCommand
 
 
-class PyDynup(object):
+class PyDynup:
     def __init__(self, namespace=""):
-        if namespace != "" and namespace[-1] != '/':
-            namespace = namespace + '/'
+        if namespace != "" and namespace[-1] != "/":
+            namespace = namespace + "/"
         self.py_dynup_wrapper = PyDynupWrapper(namespace)
 
     def spin_once(self):
@@ -75,6 +75,3 @@ class PyDynup(object):
 
     def get_direction(self):
         return self.py_dynup_wrapper.get_direction()
-
-
-

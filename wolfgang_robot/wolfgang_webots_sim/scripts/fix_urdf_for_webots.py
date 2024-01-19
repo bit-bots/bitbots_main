@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import sys
-import xml.etree.ElementTree as ET
+from xml.etree import ElementTree
 
 if len(sys.argv) != 3:
     print(f"Usage: {sys.argv[0]} <infile> <outfile>")
@@ -10,7 +10,7 @@ if len(sys.argv) != 3:
 infile_path = sys.argv[1]
 outfile_path = sys.argv[2]
 
-tree = ET.parse(infile_path)
+tree = ElementTree.parse(infile_path)
 root = tree.getroot()
 
 for child in root:

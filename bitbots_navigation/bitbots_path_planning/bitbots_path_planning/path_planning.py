@@ -1,7 +1,6 @@
 import rclpy
 import soccer_vision_3d_msgs.msg as sv3dm
 import tf2_ros as tf2
-from bitbots_msgs.msg import PoseWithCertaintyStamped
 from bitbots_tf_listener import TransformListener
 from geometry_msgs.msg import PointStamped, PoseStamped, Twist
 from nav_msgs.msg import OccupancyGrid, Path
@@ -11,6 +10,7 @@ from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 from std_msgs.msg import Empty
 
+from bitbots_msgs.msg import PoseWithCertaintyStamped
 from bitbots_path_planning.controller import Controller
 from bitbots_path_planning.map import Map
 from bitbots_path_planning.planner import Planner

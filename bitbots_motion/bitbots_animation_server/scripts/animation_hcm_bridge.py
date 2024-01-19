@@ -6,14 +6,32 @@ This script subscribes to the topic "animation" and publishes the received joint
 
 import rclpy
 from rclpy.node import Node
-from bitbots_msgs.msg import JointCommand
 
 # List of all joint names. Do not change the order as it is important for Gazebo
-from bitbots_msgs.msg import Animation
+from bitbots_msgs.msg import Animation, JointCommand
 
-JOINT_NAMES = ['HeadPan', 'HeadTilt', 'LShoulderPitch', 'LShoulderRoll', 'LElbow', 'RShoulderPitch',
-               'RShoulderRoll', 'RElbow', 'LHipYaw', 'LHipRoll', 'LHipPitch', 'LKnee', 'LAnklePitch',
-               'LAnkleRoll', 'RHipYaw', 'RHipRoll', 'RHipPitch', 'RKnee', 'RAnklePitch', 'RAnkleRoll']
+JOINT_NAMES = [
+    "HeadPan",
+    "HeadTilt",
+    "LShoulderPitch",
+    "LShoulderRoll",
+    "LElbow",
+    "RShoulderPitch",
+    "RShoulderRoll",
+    "RElbow",
+    "LHipYaw",
+    "LHipRoll",
+    "LHipPitch",
+    "LKnee",
+    "LAnklePitch",
+    "LAnkleRoll",
+    "RHipYaw",
+    "RHipRoll",
+    "RHipPitch",
+    "RKnee",
+    "RAnklePitch",
+    "RAnkleRoll",
+]
 
 
 class AnimationHcmBridge(Node):
@@ -40,6 +58,6 @@ class AnimationHcmBridge(Node):
         self.joint_publisher.publish(self.joint_command_msg)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     bridge = AnimationHcmBridge()
     rclpy.spin(bridge)

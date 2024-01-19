@@ -1,13 +1,13 @@
 import tf2_ros as tf2
 from bitbots_blackboard.capsules.game_status_capsule import GameStatusCapsule
-from bitbots_msgs.msg import RobotControlState
+from bitbots_localization.srv import ResetFilter, SetPaused
 from bitbots_utils.utils import get_parameters_from_other_node
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from rclpy.duration import Duration
 from rclpy.node import Node
 from tf2_geometry_msgs import TransformStamped
 
-from bitbots_localization.srv import ResetFilter, SetPaused
+from bitbots_msgs.msg import RobotControlState
 
 
 class LocalizationBlackboard:

@@ -1,8 +1,8 @@
 import rclpy
-from bitbots_msgs.action import Dynup
+from bitbots_blackboard.blackboard import BodyBlackboard
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
-from bitbots_blackboard.blackboard import BodyBlackboard
+from bitbots_msgs.action import Dynup
 
 
 class GetWalkready(AbstractActionElement):

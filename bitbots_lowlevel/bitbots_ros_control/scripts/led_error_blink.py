@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 
 import rclpy
-from bitbots_msgs.srv import Leds
 from diagnostic_msgs.msg import DiagnosticStatus
 from rclpy.duration import Duration
 from rclpy.node import Node
 from std_msgs.msg import ColorRGBA
+
+from bitbots_msgs.srv import Leds
 
 BLINK_DURATION = 0.2
 ERROR_TIMEOUT = 1

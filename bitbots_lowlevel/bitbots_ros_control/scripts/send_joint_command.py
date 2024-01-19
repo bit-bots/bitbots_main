@@ -3,9 +3,10 @@
 import argparse
 
 import rclpy
-from bitbots_msgs.msg import JointCommand
 from rclpy.duration import Duration
 from rclpy.node import Node
+
+from bitbots_msgs.msg import JointCommand
 
 DYNAMIXEL_CMD_TOPIC = "/DynamixelController/command"
 

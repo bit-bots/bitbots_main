@@ -6,9 +6,9 @@ from std_msgs.msg import ColorRGBA
 
 from bitbots_msgs.msg import RobotControlState
 
-
 BLINK_DURATION = 0.2
 ERROR_TIMEOUT = 1
+
 
 class HCMLedNode(Node):
     def __init__(self):
@@ -37,7 +37,6 @@ class HCMLedNode(Node):
 
         self.sub = self.create_subscription(RobotControlState, "robot_state", self.hcm_state_cb, 1)
         rclpy.spin(self)
-
 
     def hcm_state_cb(self, msg: RobotControlState):
         state = msg.state

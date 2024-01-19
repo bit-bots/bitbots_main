@@ -3,13 +3,14 @@
 This script publishes dummy values for ball, goalpost, position and obstacles for testing the team communication.
 """
 
-import rclpy
 import numpy
-from bitbots_msgs.msg import GameState, Strategy
+import rclpy
 from geometry_msgs.msg import Point, Pose, PoseWithCovariance, PoseWithCovarianceStamped, Quaternion, TransformStamped
 from soccer_vision_3d_msgs.msg import Robot, RobotArray
 from soccer_vision_attribute_msgs.msg import Robot as RobotAttributes
 from tf2_ros import StaticTransformBroadcaster
+
+from bitbots_msgs.msg import GameState, Strategy
 
 
 def pose_with_covariance(x, y, z=0.0):
@@ -38,13 +39,13 @@ def covariance_list():
 
 def base_footprint_transform():
     transform = TransformStamped()
-    transform.header.frame_id = 'base_footprint'
-    transform.child_frame_id = 'map'
+    transform.header.frame_id = "base_footprint"
+    transform.child_frame_id = "map"
 
     return transform
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     rclpy.init(args=None)
     node = rclpy.create_node("test_team_comm")
     tf_static_broadcaster = StaticTransformBroadcaster(node)
@@ -57,9 +58,9 @@ if __name__ == '__main__':
 
     transform = base_footprint_transform()
     gamestate_msg = GameState(penalized=False)
-    strategy_msg = Strategy(role=Strategy.ROLE_DEFENDER,
-                            action=Strategy.ACTION_GOING_TO_BALL,
-                            offensive_side=Strategy.SIDE_LEFT)
+    strategy_msg = Strategy(
+        role=Strategy.ROLE_DEFENDER, action=Strategy.ACTION_GOING_TO_BALL, offensive_side=Strategy.SIDE_LEFT
+    )
     position_msg = pose_with_covariance(x=2.0, y=3.0)
     ball_msg = pose_with_covariance(x=8.0, y=9.0)
     robots_msg = RobotArray()

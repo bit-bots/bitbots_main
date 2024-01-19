@@ -15,7 +15,7 @@ from bitbots_msgs.action import Dynup, PlayAnimation
 from bitbots_msgs.msg import Audio, RobotControlState
 
 
-class HcmBlackboard():
+class HcmBlackboard:
     def __init__(self, node: Node):
         self.node = node
 
@@ -27,25 +27,25 @@ class HcmBlackboard():
         self.start_time: Time = self.node.get_clock().now()
 
         # Get parameters
-        self.simulation_active: bool = self.node.get_parameter('simulation_active').value
-        self.visualization_active: bool = self.node.get_parameter('visualization_active').value
-        self.pickup_accel_threshold: float = self.node.get_parameter('pick_up_accel_threshold').value
-        self.pressure_sensors_installed: bool = self.node.get_parameter('pressure_sensors_installed').value
+        self.simulation_active: bool = self.node.get_parameter("simulation_active").value
+        self.visualization_active: bool = self.node.get_parameter("visualization_active").value
+        self.pickup_accel_threshold: float = self.node.get_parameter("pick_up_accel_threshold").value
+        self.pressure_sensors_installed: bool = self.node.get_parameter("pressure_sensors_installed").value
 
         # Create services
         self.foot_zero_service = self.node.create_client(EmptySrv, "set_foot_zero")
-        self.motor_switch_service = self.node.create_client(SetBool, 'core/switch_power')
+        self.motor_switch_service = self.node.create_client(SetBool, "core/switch_power")
 
         # Create action clients and corresponding goal handles
-        self.animation_action_client: ActionClient = ActionClient(self.node, PlayAnimation, 'animation')
-        self.animation_action_current_goal: Optional[Future]  = None
-        self.dynup_action_client: ActionClient = ActionClient(self.node, Dynup, 'dynup')
+        self.animation_action_client: ActionClient = ActionClient(self.node, PlayAnimation, "animation")
+        self.animation_action_current_goal: Optional[Future] = None
+        self.dynup_action_client: ActionClient = ActionClient(self.node, Dynup, "dynup")
         self.dynup_action_current_goal: Optional[Future] = None
 
         # Create publishers
         self.walk_pub = self.node.create_publisher(Twist, "cmd_vel", 1)
         self.cancel_path_planning_pub = self.node.create_publisher(EmptyMsg, "pathfinding/cancel", 1)
-        self.speak_publisher = self.node.create_publisher(Audio, 'speak', 1)
+        self.speak_publisher = self.node.create_publisher(Audio, "speak", 1)
 
         # Latest imu data
         self.accel = numpy.array([0, 0, 0])
@@ -86,8 +86,8 @@ class HcmBlackboard():
 
         # Falling
         # Paramerters
-        self.is_stand_up_active = self.node.get_parameter('stand_up_active').value
-        self.falling_detection_active = self.node.get_parameter('falling_active').value
+        self.is_stand_up_active = self.node.get_parameter("stand_up_active").value
+        self.falling_detection_active = self.node.get_parameter("falling_active").value
 
         # Kicking
         # State

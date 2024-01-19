@@ -1,8 +1,9 @@
 import abc
+from typing import Optional
 
+from deploy.misc import CONSOLE
 from fabric import Group, GroupResult
 
-from deploy.misc import *
 
 class AbstractTask(abc.ABC):
     def __init__(self) -> None:

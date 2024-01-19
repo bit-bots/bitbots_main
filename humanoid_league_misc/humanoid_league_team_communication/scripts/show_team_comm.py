@@ -4,11 +4,12 @@ import sys
 import threading
 
 import rclpy
-from rclpy.node import Node
-from rclpy.time import Time, Duration
 from rclpy.constants import S_TO_NS
-from bitbots_msgs.msg import TeamData, Strategy
+from rclpy.node import Node
+from rclpy.time import Duration, Time
 from transforms3d.euler import quat2euler
+
+from bitbots_msgs.msg import Strategy, TeamData
 
 print_msg = """
 Team Communication Visualizer
@@ -38,7 +39,6 @@ Robot 1
 
 
 class TeamCommPrinter(Node):
-
     def __init__(self):
         super().__init__("show_team_comm")
         self.subscriber = self.create_subscription(TeamData, "team_data", self.data_cb, 1)
@@ -51,7 +51,7 @@ class TeamCommPrinter(Node):
         self.states = {
             TeamData.STATE_UNKNOWN: "Unknown",
             TeamData.STATE_PENALIZED: "Penalized",
-            TeamData.STATE_UNPENALIZED: "Unpenalized"
+            TeamData.STATE_UNPENALIZED: "Unpenalized",
         }
         self.roles = {
             Strategy.ROLE_UNDEFINED: "Undefined",
@@ -60,7 +60,7 @@ class TeamCommPrinter(Node):
             Strategy.ROLE_OTHER: "Other",
             Strategy.ROLE_IDLING: "Idle",
             Strategy.ROLE_DEFENDER: "Defender",
-            Strategy.ROLE_SUPPORTER: "Supporter"
+            Strategy.ROLE_SUPPORTER: "Supporter",
         }
         self.actions = {
             Strategy.ACTION_KICKING: "Kicking",
@@ -70,13 +70,13 @@ class TeamCommPrinter(Node):
             Strategy.ACTION_WAITING: "Waiting",
             Strategy.ACTION_POSITIONING: "Positioning",
             Strategy.ACTION_TRYING_TO_SCORE: "Trying to score",
-            Strategy.ACTION_UNDEFINED: "Undefined"
+            Strategy.ACTION_UNDEFINED: "Undefined",
         }
         self.sides = {
             Strategy.SIDE_LEFT: "Left",
             Strategy.SIDE_RIGHT: "Right",
             Strategy.SIDE_MIDDLE: "Middle",
-            Strategy.SIDE_UNDEFINED: "Undefined"
+            Strategy.SIDE_UNDEFINED: "Undefined",
         }
 
         self.run_spin_in_thread()
@@ -91,7 +91,7 @@ class TeamCommPrinter(Node):
         time = min(100, round(duration.nanoseconds / S_TO_NS))
         lines.append(f"Time since message: {time:<3}")
         lines.append(f"State: {self.states[data.state]:<11}")
-        lines.append(f"Position")
+        lines.append("Position")
         lines.append(f"  x: {round(data.robot_position.pose.position.x, 3):<4}")
         lines.append(f"  y: {round(data.robot_position.pose.position.y, 3):<4}")
         quat_xyzw = data.robot_position.pose.orientation
@@ -100,13 +100,13 @@ class TeamCommPrinter(Node):
         lines.append(f"  x_cov: {round(data.robot_position.covariance[0], 3):<4}")
         lines.append(f"  y_cov: {round(data.robot_position.covariance[7], 3):<4}")
         lines.append(f"  yaw_cov: {round(data.robot_position.covariance[35], 3):<4}")
-        lines.append(f"Ball absolute")
+        lines.append("Ball absolute")
         lines.append(f"  x: {round(data.ball_absolute.pose.position.x, 3):<4}")
         lines.append(f"  y: {round(data.ball_absolute.pose.position.y, 3):<4}")
         lines.append(f"  x_cov: {round(data.ball_absolute.covariance[0], 3):<4}")
         lines.append(f"  y_cov: {round(data.ball_absolute.covariance[7], 3):<4}")
         lines.append(f"Obstacles found: {len(data.obstacles.obstacles)}")
-        lines.append(f"Strategy")
+        lines.append("Strategy")
         lines.append(f"  Role: {self.roles[data.strategy.role]:<9}")
         lines.append(f"  Action: {self.actions[data.strategy.action]:<15}")
         lines.append(f"  Side: {self.sides[data.strategy.offensive_side]:<9}")
@@ -123,8 +123,7 @@ class TeamCommPrinter(Node):
             max_line_length = 30
             # remove old text
             if not first:
-                for i in range(number_of_line):
-                    sys.stdout.write("\x1b[A")
+                sys.stdout.write("\x1b[A" * number_of_line)
             first = False
             for i in range(number_of_line):
                 line = ""
@@ -140,7 +139,8 @@ class TeamCommPrinter(Node):
         thread = threading.Thread(target=rclpy.spin, args=[self], daemon=True)
         thread.start()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     rclpy.init(args=None)
     printer = TeamCommPrinter()
     printer.run()

@@ -1,20 +1,18 @@
 import math
-import numpy as np
 
+import numpy as np
 from geometry_msgs.msg import Quaternion
 from ros2_numpy import msgify
-from transforms3d.euler import quat2euler, euler2quat
-from transforms3d.quaternions import quat2mat, mat2quat
-from transforms3d.quaternions import rotate_vector, qinverse, quat2mat, mat2quat
-
+from transforms3d.euler import euler2quat, quat2euler
+from transforms3d.quaternions import mat2quat, qinverse, quat2mat, rotate_vector
 
 
 def wxyz2xyzw(quat_wxyz: np.ndarray) -> np.ndarray:
-    return quat_wxyz[[1,2,3,0]]
+    return quat_wxyz[[1, 2, 3, 0]]
 
 
 def xyzw2wxyz(quat_xyzw: np.ndarray) -> np.ndarray:
-    return quat_xyzw[[3,0,1,2]]
+    return quat_xyzw[[3, 0, 1, 2]]
 
 
 def quat2sixd(quat_wxyz: np.ndarray) -> np.ndarray:
@@ -39,18 +37,19 @@ def sixd2quat(sixd):
     return mat2quat(mat)
 
 
-def quat2fused(q, order='wxyz'):
+def quat2fused(q, order="wxyz"):
     # Check quaternion order
-    if order == 'xyzw':
+    if order == "xyzw":
         q_xyzw = q
-    elif order == 'wxyz':
+    elif order == "wxyz":
         q_xyzw = wxyz2xyzw(q)
     else:
-        raise ValueError('Unknown quaternion order: {}'.format(order))
+        raise ValueError(f"Unknown quaternion order: {order}")
 
     # Fused yaw of Quaternion
-    fused_yaw = 2.0 * math.atan2(q_xyzw[2],
-                                 q_xyzw[3])  # Output of atan2 is [-tau/2,tau/2], so this expression is in [-tau,tau]
+    fused_yaw = 2.0 * math.atan2(
+        q_xyzw[2], q_xyzw[3]
+    )  # Output of atan2 is [-tau/2,tau/2], so this expression is in [-tau,tau]
     if fused_yaw > math.tau / 2:
         fused_yaw -= math.tau  # fused_yaw is now in[-2* pi, pi]
     if fused_yaw <= -math.tau / 2:
@@ -71,15 +70,15 @@ def quat2fused(q, order='wxyz'):
     fused_roll = math.asin(sphi)
 
     # compute hemi parameter
-    hemi = (0.5 - (q_xyzw[0] * q_xyzw[0] + q_xyzw[1] * q_xyzw[1]) >= 0.0)
+    hemi = 0.5 - (q_xyzw[0] * q_xyzw[0] + q_xyzw[1] * q_xyzw[1]) >= 0.0
     return fused_roll, fused_pitch, fused_yaw, hemi
 
 
 # Conversion: Fused angles (3D/4D) --> Quaternion (wxyz)
-def fused2quat(fusedRoll, fusedPitch, fusedYaw, hemi):
+def fused2quat(fused_roll, fused_pitch, fused_yaw, hemi):
     # Precalculate the sine values
-    sth = math.sin(fusedPitch)
-    sphi = math.sin(fusedRoll)
+    sth = math.sin(fused_pitch)
+    sphi = math.sin(fused_roll)
 
     # Calculate the sine sum criterion
     crit = sth * sth + sphi * sphi
@@ -98,7 +97,7 @@ def fused2quat(fusedRoll, fusedPitch, fusedYaw, hemi):
 
     # Evaluate the required intermediate angles
     halpha = 0.5 * alpha
-    hpsi = 0.5 * fusedYaw
+    hpsi = 0.5 * fused_yaw
     hgampsi = gamma + hpsi
 
     # Precalculate trigonometric terms involved in the quaternion expression
@@ -116,13 +115,13 @@ def fused2quat(fusedRoll, fusedPitch, fusedYaw, hemi):
 def compute_imu_orientation_from_world(robot_quat_in_world):
     # imu orientation has roll and pitch relative to gravity vector. yaw in world frame
     # get global yaw
-    yrp_world_frame = quat2euler(robot_quat_in_world, axes='szxy')
+    yrp_world_frame = quat2euler(robot_quat_in_world, axes="szxy")
     # remove global yaw rotation from roll and pitch
-    yaw_quat = euler2quat(yrp_world_frame[0], 0, 0, axes='szxy')
+    yaw_quat = euler2quat(yrp_world_frame[0], 0, 0, axes="szxy")
     rp = rotate_vector((yrp_world_frame[1], yrp_world_frame[2], 0), qinverse(yaw_quat))
     # save in correct order
     return [rp[0], rp[1], 0], yaw_quat
 
 
 def quat_from_yaw(yaw: float) -> Quaternion:
-    return msgify(Quaternion, wxyz2xyzw(euler2quat(yaw, 0, 0, axes='szxy')))
+    return msgify(Quaternion, wxyz2xyzw(euler2quat(yaw, 0, 0, axes="szxy")))

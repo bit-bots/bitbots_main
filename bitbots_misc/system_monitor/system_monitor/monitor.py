@@ -1,19 +1,20 @@
 #!/usr/bin/env python3
 import socket
+import time
+
 import rclpy
+from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus
 from rclpy.node import Node
 
 from bitbots_msgs.msg import Workload as WorkloadMsg
 from system_monitor import cpus, memory, network_interfaces
-from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus
-import time
 
 
 def main():
     rclpy.init(args=None)
-    node = Node('system_monitor')
-    pub = node.create_publisher(WorkloadMsg, 'system_workload', 1)
-    diagnostic_pub = node.create_publisher(DiagnosticArray, 'diagnostics', 1)
+    node = Node("system_monitor")
+    pub = node.create_publisher(WorkloadMsg, "system_workload", 1)
+    diagnostic_pub = node.create_publisher(DiagnosticArray, "diagnostics", 1)
 
     hostname = socket.gethostname()
 
@@ -26,27 +27,25 @@ def main():
     diag_mem.name = "SYSTEMMemory"
     diag_cpu.hardware_id = "Memory"
 
-    node.declare_parameter('update_frequency', 10.0)
-    node.declare_parameter('do_memory', True)
-    node.declare_parameter('do_cpu', True)
-    node.declare_parameter('cpu_load_percentage', 80.0)
-    node.declare_parameter('memoroy_load_percentage', 80.0)
-    node.declare_parameter('network_rate_received_errors', 10.0)
-    node.declare_parameter('network_rate_send_errors', 10.0)
+    node.declare_parameter("update_frequency", 10.0)
+    node.declare_parameter("do_memory", True)
+    node.declare_parameter("do_cpu", True)
+    node.declare_parameter("cpu_load_percentage", 80.0)
+    node.declare_parameter("memoroy_load_percentage", 80.0)
+    node.declare_parameter("network_rate_received_errors", 10.0)
+    node.declare_parameter("network_rate_send_errors", 10.0)
 
-    rate = node.get_parameter('update_frequency').get_parameter_value().double_value
-    do_memory = node.get_parameter('do_memory').get_parameter_value().bool_value
-    do_cpu = node.get_parameter('do_cpu').get_parameter_value().bool_value
-    cpu_load_percentage = node.get_parameter('cpu_load_percentage').get_parameter_value().double_value
-    memoroy_load_percentage = node.get_parameter('memoroy_load_percentage').get_parameter_value().double_value
-    network_rate_received_errors = node.get_parameter(
-        'network_rate_received_errors').get_parameter_value().double_value
-    network_rate_send_errors = node.get_parameter('network_rate_send_errors').get_parameter_value().double_value
+    rate = node.get_parameter("update_frequency").get_parameter_value().double_value
+    do_memory = node.get_parameter("do_memory").get_parameter_value().bool_value
+    do_cpu = node.get_parameter("do_cpu").get_parameter_value().bool_value
+    cpu_load_percentage = node.get_parameter("cpu_load_percentage").get_parameter_value().double_value
+    memoroy_load_percentage = node.get_parameter("memoroy_load_percentage").get_parameter_value().double_value
+    network_rate_received_errors = node.get_parameter("network_rate_received_errors").get_parameter_value().double_value
+    network_rate_send_errors = node.get_parameter("network_rate_send_errors").get_parameter_value().double_value
 
     while rclpy.ok():
         last_send_time = time.time()
-        running_processes, cpu_usages, overall_usage_percentage = cpus.collect_all() if do_cpu else (
-            -1, [], 0)
+        running_processes, cpu_usages, overall_usage_percentage = cpus.collect_all() if do_cpu else (-1, [], 0)
         memory_available, memory_used, memory_total = memory.collect_all() if do_memory else (-1, -1, -1)
         interfaces = network_interfaces.collect_all(node.get_clock())
 
@@ -59,7 +58,7 @@ def main():
             memory_used=memory_used,
             memory_total=memory_total,
             filesystems=[],
-            network_interfaces=interfaces
+            network_interfaces=interfaces,
         )
         pub.publish(msg)
 
@@ -84,8 +83,10 @@ def main():
             diag_net = DiagnosticStatus()
             diag_net.name = "SYSTEM" + interface.name
             diag_net.hardware_id = interface.name
-            if interface.rate_received_packets_errors >= network_rate_received_errors \
-                    or interface.rate_sent_packets_errors >= network_rate_send_errors:
+            if (
+                interface.rate_received_packets_errors >= network_rate_received_errors
+                or interface.rate_sent_packets_errors >= network_rate_send_errors
+            ):
                 diag_net.level = DiagnosticStatus.WARN
             else:
                 diag_net.level = DiagnosticStatus.OK

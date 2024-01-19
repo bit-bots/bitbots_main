@@ -1,18 +1,17 @@
 import math
-import transforms3d
-from numpy import double
 from typing import Callable, List, Optional, Tuple
 
-from bitbots_msgs.msg import GameState, Strategy
+import transforms3d
 from geometry_msgs.msg import PointStamped, PoseStamped, PoseWithCovarianceStamped, Quaternion, Twist
+from numpy import double
 from rclpy.time import Time
 from soccer_vision_3d_msgs.msg import Robot, RobotArray
 
-import humanoid_league_team_communication.robocup_extension_pb2 as Proto
+import humanoid_league_team_communication.robocup_extension_pb2 as Proto  # noqa: N812
+from bitbots_msgs.msg import GameState, Strategy
 
 
 class StateToMessageConverter:
-
     def __init__(self, team_mapping, role_mapping, action_mapping, side_mapping):
         self.team_mapping = team_mapping
         self.role_mapping = role_mapping
@@ -20,7 +19,6 @@ class StateToMessageConverter:
         self.side_mapping = side_mapping
 
     def convert(self, state, message: Proto.Message, is_still_valid_checker: Callable[[Time], bool]) -> Proto.Message:
-
         def convert_gamestate(gamestate: Optional[GameState], message: Proto.Message):
             if gamestate is not None and is_still_valid_checker(gamestate.header.stamp):
                 message.state = Proto.State.PENALISED if gamestate.penalized else Proto.State.UNPENALISED
@@ -61,8 +59,12 @@ class StateToMessageConverter:
 
             return message
 
-        def convert_ball_position(ball_position: Optional[PointStamped], ball_velocity: Tuple[float, float, float],
-                                  ball_covariance: List[double], message):
+        def convert_ball_position(
+            ball_position: Optional[PointStamped],
+            ball_velocity: Tuple[float, float, float],
+            ball_covariance: List[double],
+            message,
+        ):
             if ball_position is not None and is_still_valid_checker(ball_position.header.stamp):
                 message.ball.position.x = ball_position.point.x
                 message.ball.position.y = ball_position.point.y
@@ -104,21 +106,34 @@ class StateToMessageConverter:
 
             return message
 
-        def are_robot_and_ball_position_valid(current_pose: Optional[PoseWithCovarianceStamped],
-                                              ball_position: Optional[PointStamped]) -> bool:
-            return (ball_position is not None and is_still_valid_checker(ball_position.header.stamp) and
-                    current_pose is not None and is_still_valid_checker(current_pose.header.stamp))
+        def are_robot_and_ball_position_valid(
+            current_pose: Optional[PoseWithCovarianceStamped], ball_position: Optional[PointStamped]
+        ) -> bool:
+            return (
+                ball_position is not None
+                and is_still_valid_checker(ball_position.header.stamp)
+                and current_pose is not None
+                and is_still_valid_checker(current_pose.header.stamp)
+            )
 
-        def calculate_time_to_ball(current_pose: PoseWithCovarianceStamped, ball_position: PointStamped,
-                                   walking_speed: float) -> float:
+        def calculate_time_to_ball(
+            current_pose: PoseWithCovarianceStamped, ball_position: PointStamped, walking_speed: float
+        ) -> float:
             pose = current_pose.pose.pose
-            ball_distance = math.sqrt((ball_position.point.x - pose.position.x)**2 +
-                                      (ball_position.point.y - pose.position.y)**2)
+            ball_distance = math.sqrt(
+                (ball_position.point.x - pose.position.x) ** 2 + (ball_position.point.y - pose.position.y) ** 2
+            )
 
             return ball_distance / walking_speed
 
-        def convert_time_to_ball(time_to_ball: Optional[float], time_to_ball_time: Time, ball_position: PointStamped,
-                                 current_pose: PoseWithCovarianceStamped, walking_speed: float, message: Proto.Message):
+        def convert_time_to_ball(
+            time_to_ball: Optional[float],
+            time_to_ball_time: Time,
+            ball_position: PointStamped,
+            current_pose: PoseWithCovarianceStamped,
+            walking_speed: float,
+            message: Proto.Message,
+        ):
             if time_to_ball is not None and is_still_valid_checker(time_to_ball_time):
                 message.time_to_ball = time_to_ball
             elif are_robot_and_ball_position_valid(current_pose, ball_position):
@@ -138,8 +153,9 @@ class StateToMessageConverter:
         message = convert_ball_position(state.ball, state.ball_velocity, state.ball_covariance, message)
         message = convert_seen_robots(state.seen_robots, message)
         message = convert_strategy(state.strategy, state.strategy_time, message)
-        message = convert_time_to_ball(state.time_to_ball, state.time_to_ball_time, state.ball, state.pose,
-                                       state.avg_walking_speed, message)
+        message = convert_time_to_ball(
+            state.time_to_ball, state.time_to_ball_time, state.ball, state.pose, state.avg_walking_speed, message
+        )
 
         return message
 

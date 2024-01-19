@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-import numpy as np
-from typing import List
 
-from bitbots_vision.vision_modules.candidate import CandidateFinder, Candidate
+import numpy as np
+
+from bitbots_vision.vision_modules.candidate import Candidate, CandidateFinder
+
 from . import yoeo_handlers
 
 
@@ -37,7 +38,7 @@ class DetectorTemplate(CandidateFinder):
         self._yoeo_handler.predict()
 
     @abstractmethod
-    def get_candidates(self) -> List[Candidate]:
+    def get_candidates(self) -> list[Candidate]:
         """
         Returns the detection candidates.
         """
@@ -52,7 +53,7 @@ class BallDetector(DetectorTemplate):
     def __init__(self, yoeo_handler: yoeo_handlers.IYOEOHandler):
         super().__init__(yoeo_handler)
 
-    def get_candidates(self) -> List[Candidate]:
+    def get_candidates(self) -> list[Candidate]:
         return self._yoeo_handler.get_detection_candidates_for("ball")
 
 
@@ -64,7 +65,7 @@ class GoalpostDetector(DetectorTemplate):
     def __init__(self, yoeo_handler: yoeo_handlers.IYOEOHandler):
         super().__init__(yoeo_handler)
 
-    def get_candidates(self) -> List[Candidate]:
+    def get_candidates(self) -> list[Candidate]:
         return self._yoeo_handler.get_detection_candidates_for("goalpost")
 
 
@@ -76,7 +77,7 @@ class RobotDetector(DetectorTemplate):
     def __init__(self, yoeo_handler: yoeo_handlers.IYOEOHandler):
         super().__init__(yoeo_handler)
 
-    def get_candidates(self) -> List[Candidate]:
+    def get_candidates(self) -> list[Candidate]:
         return self._yoeo_handler.get_detection_candidates_for("robot")
 
 
@@ -88,7 +89,7 @@ class BlueRobotDetector(DetectorTemplate):
     def __init__(self, yoeo_handler: yoeo_handlers.IYOEOHandler):
         super().__init__(yoeo_handler)
 
-    def get_candidates(self) -> List[Candidate]:
+    def get_candidates(self) -> list[Candidate]:
         return self._yoeo_handler.get_detection_candidates_for("robot_blue")
 
 
@@ -100,7 +101,7 @@ class RedRobotDetector(DetectorTemplate):
     def __init__(self, yoeo_handler: yoeo_handlers.IYOEOHandler):
         super().__init__(yoeo_handler)
 
-    def get_candidates(self) -> List[Candidate]:
+    def get_candidates(self) -> list[Candidate]:
         return self._yoeo_handler.get_detection_candidates_for("robot_red")
 
 
@@ -112,7 +113,7 @@ class UnknownRobotDetector(DetectorTemplate):
     def __init__(self, yoeo_handler: yoeo_handlers.IYOEOHandler):
         super().__init__(yoeo_handler)
 
-    def get_candidates(self) -> List[Candidate]:
+    def get_candidates(self) -> list[Candidate]:
         return self._yoeo_handler.get_detection_candidates_for("robot_unknown")
 
 

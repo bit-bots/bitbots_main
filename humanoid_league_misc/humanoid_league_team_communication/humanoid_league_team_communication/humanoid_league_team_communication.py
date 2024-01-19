@@ -3,40 +3,39 @@
 import socket
 import struct
 import threading
-from numpy import double
 from typing import List, Optional, Tuple
 
 import rclpy
-from rclpy.executors import MultiThreadedExecutor
 from ament_index_python.packages import get_package_share_directory
-from bitbots_msgs.msg import GameState, Strategy, TeamData
+from bitbots_tf_listener import TransformListener
 from bitbots_utils.utils import get_parameter_dict, get_parameters_from_other_node
 from geometry_msgs.msg import PoseWithCovarianceStamped, Twist, TwistWithCovarianceStamped
 from numpy import double
 from rclpy.duration import Duration
+from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 from rclpy.time import Time
 from soccer_vision_3d_msgs.msg import Robot, RobotArray
 from std_msgs.msg import Float32, Header
 from tf2_geometry_msgs import PointStamped, PoseStamped
 from tf2_ros import Buffer, TransformException
-from bitbots_tf_listener import TransformListener
 
-import humanoid_league_team_communication.robocup_extension_pb2 as Proto
+import humanoid_league_team_communication.robocup_extension_pb2 as Proto  # noqa: N812
+from bitbots_msgs.msg import GameState, Strategy, TeamData
 from humanoid_league_team_communication.communication import SocketCommunication
-from humanoid_league_team_communication.converter.robocup_protocol_converter import TeamColor, RobocupProtocolConverter
+from humanoid_league_team_communication.converter.robocup_protocol_converter import RobocupProtocolConverter, TeamColor
 
 
 class HumanoidLeagueTeamCommunication:
-
     def __init__(self):
         self._package_path = get_package_share_directory("humanoid_league_team_communication")
         self.node = Node("team_comm", automatically_declare_parameters_from_overrides=True)
         self.logger = self.node.get_logger()
 
         self.logger.info("Initializing humanoid_league_team_communication...")
-        params_blackboard = get_parameters_from_other_node(self.node, "parameter_blackboard",
-                                                           ["bot_id", "team_id", "team_color"])
+        params_blackboard = get_parameters_from_other_node(
+            self.node, "parameter_blackboard", ["bot_id", "team_id", "team_color"]
+        )
         self.player_id = params_blackboard["bot_id"]
         self.team_id = params_blackboard["team_id"]
         self.team_color_id = params_blackboard["team_color"]
@@ -139,7 +138,6 @@ class HumanoidLeagueTeamCommunication:
         self.move_base_goal = msg
 
     def robots_cb(self, msg: RobotArray):
-
         def transform_to_map(robot_relative: Robot):
             # @TODO: check if this is not handled by the transform itself
             robot_pose = PoseStamped(header=msg.header, pose=robot_relative.bb.center)
@@ -187,8 +185,10 @@ class HumanoidLeagueTeamCommunication:
         message.ParseFromString(string_message)
 
         if self.should_message_be_discarded(message):
-            self.logger.debug(f"Discarding msg by player {message.current_pose.player_id} " +
-                              f"in team {message.current_pose.team} at {message.timestamp.seconds}")
+            self.logger.debug(
+                f"Discarding msg by player {message.current_pose.player_id} "
+                + f"in team {message.current_pose.team} at {message.timestamp.seconds}"
+            )
             return
 
         team_data = self.protocol_converter.convert_from_message(message, self.create_team_data())
@@ -201,7 +201,10 @@ class HumanoidLeagueTeamCommunication:
 
         now = self.get_current_time()
         msg = self.create_empty_message(now)
-        is_still_valid = lambda time: now - Time.from_msg(time) < Duration(seconds=self.lifetime)
+
+        def is_still_valid(time) -> bool:
+            return now - Time.from_msg(time) < Duration(seconds=self.lifetime)
+
         message = self.protocol_converter.convert_to_message(self, msg, is_still_valid)
         self.socket_communication.send_message(message.SerializeToString())
 
@@ -222,10 +225,10 @@ class HumanoidLeagueTeamCommunication:
         player_id = message.current_pose.player_id
         team_id = message.current_pose.team
 
-        isOwnMessage = player_id == self.player_id
-        isMessageFromOpositeTeam = team_id != self.team_id
+        is_own_message = player_id == self.player_id
+        is_message_from_oposite_team = team_id != self.team_id
 
-        return isOwnMessage or isMessageFromOpositeTeam
+        return is_own_message or is_message_from_oposite_team
 
     def is_robot_allowed_to_send_message(self) -> bool:
         return self.gamestate is not None and not self.gamestate.penalized

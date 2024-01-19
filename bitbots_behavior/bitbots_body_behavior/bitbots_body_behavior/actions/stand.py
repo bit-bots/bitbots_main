@@ -1,10 +1,9 @@
 import random
 
+from bitbots_blackboard.blackboard import BodyBlackboard
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 from geometry_msgs.msg import Twist
 from rclpy.duration import Duration
-
-from bitbots_blackboard.blackboard import BodyBlackboard
 
 
 class CancelPathplanning(AbstractActionElement):

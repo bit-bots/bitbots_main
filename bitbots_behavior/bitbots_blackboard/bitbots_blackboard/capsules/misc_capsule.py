@@ -6,11 +6,12 @@ Capsule for miscellaneous things that don't fit anywhere else.
 """
 from typing import Optional
 
-from bitbots_msgs.msg import HeadMode, RobotControlState
 from bitbots_utils.utils import get_parameters_from_other_node
 from rclpy.duration import Duration
 from rclpy.node import Node
 from std_msgs.msg import Bool
+
+from bitbots_msgs.msg import HeadMode, RobotControlState
 
 
 class MiscCapsule:

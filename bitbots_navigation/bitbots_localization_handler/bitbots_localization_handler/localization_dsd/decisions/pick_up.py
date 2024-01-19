@@ -1,6 +1,5 @@
-from bitbots_msgs.msg import RobotControlState
-
 from bitbots_localization_handler.localization_dsd.decisions import AbstractLocalizationDecisionElement
+from bitbots_msgs.msg import RobotControlState
 
 
 class CheckPickup(AbstractLocalizationDecisionElement):

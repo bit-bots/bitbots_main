@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding:utf-8 -*-
 
 import os
 import subprocess
@@ -17,7 +16,7 @@ from bitbots_msgs.msg import Audio
 
 
 def speak(text: str, publisher: Publisher, priority: int = 20, speaking_active: bool = True) -> None:
-    """ Utility method which can be used by other classes to easily publish a message."""
+    """Utility method which can be used by other classes to easily publish a message."""
     if speaking_active:
         msg = Audio()
         msg.priority = priority
@@ -26,12 +25,12 @@ def speak(text: str, publisher: Publisher, priority: int = 20, speaking_active: 
 
 
 class Speaker(Node):
-    """ 
+    """
     Uses tts to say messages from the speak topic.
     """
 
     def __init__(self) -> None:
-        """ Initializes the node and the parameters. """
+        """Initializes the node and the parameters."""
         super().__init__("tts_speaker")
 
         # Class Variables
@@ -39,7 +38,7 @@ class Speaker(Node):
         self.speak_enabled = None
         self.print_say = None
         self.message_level = None
-        
+
         # Initialize Parameters
         self.declare_parameter("print", True)
         self.declare_parameter("talk", True)
@@ -57,16 +56,10 @@ class Speaker(Node):
             "donna": "en_US/vctk_low",
             "jack": "en_UK/apope_low",
             "melody": "en_US/vctk_low",
-            "rory": "en_UK/apope_low"
+            "rory": "en_UK/apope_low",
         }
 
-        self.robot_speed_mapping = {
-            "amy": 2.2,
-            "donna": 2.2,
-            "jack": 1.0,
-            "melody": 2.2,
-            "rory": 1.0
-        }
+        self.robot_speed_mapping = {"amy": 2.2, "donna": 2.2, "jack": 1.0, "melody": 2.2, "rory": 1.0}
 
         # Subscribe to the speak topic
         self.create_subscription(Audio, "speak", self.speak_cb, 10)
@@ -86,7 +79,7 @@ class Speaker(Node):
         self.create_timer(0.1, self.run_speaker)
 
     def on_set_parameters(self, parameters: List[Parameter]) -> SetParametersResult:
-        """ Callback for parameter changes. """
+        """Callback for parameter changes."""
         for parameter in parameters:
             if parameter.name == "print":
                 self.print_say = parameter.value.bool_value
@@ -99,7 +92,7 @@ class Speaker(Node):
         return SetParametersResult(successful=True)
 
     def run_speaker(self) -> None:
-        """ Continously checks the queue and speaks the next message. """
+        """Continously checks the queue and speaks the next message."""
         # Check if there is a message in the queue
         if len(self.prio_queue) > 0:
             # Get the next message and speak it
@@ -107,28 +100,25 @@ class Speaker(Node):
             self.say(text)
 
     def say(self, text: str) -> None:
-        """ Speak this specific text. """
+        """Speak this specific text."""
         # Get the voice name from the environment variable ROBOT_NAME or use the default voice if it's not set
-        voice = self.robot_voice_mapping.get(os.getenv('ROBOT_NAME'), "en_US/vctk_low")
+        voice = self.robot_voice_mapping.get(os.getenv("ROBOT_NAME"), "en_US/vctk_low")
         # Get the speed for the given robot or use the default speed if no robot name is set
-        speed = self.robot_speed_mapping.get(os.getenv('ROBOT_NAME'), 2.2)
+        speed = self.robot_speed_mapping.get(os.getenv("ROBOT_NAME"), 2.2)
         try:
             # Generate the speech with mimic
             mimic_subprocess = subprocess.Popen(
-                ('mimic3', '--remote', '--voice', voice, '--length-scale', str(speed), text), 
-                stdout=subprocess.PIPE)
+                ("mimic3", "--remote", "--voice", voice, "--length-scale", str(speed), text), stdout=subprocess.PIPE
+            )
             # Play the audio from the previous process with aplay
-            aplay_subprocess = subprocess.Popen(
-                ('aplay', '-'), 
-                stdin=mimic_subprocess.stdout, 
-                stdout=subprocess.PIPE)
+            aplay_subprocess = subprocess.Popen(("aplay", "-"), stdin=mimic_subprocess.stdout, stdout=subprocess.PIPE)
             # Wait for the process to finish
             aplay_subprocess.wait()
         except OSError:
             self.get_logger().error(str(traceback.format_exc()))
 
     def speak_cb(self, msg: Audio) -> None:
-        """ Handles incoming msg on speak topic. """
+        """Handles incoming msg on speak topic."""
         # First decide if it's a file or a text
         text = msg.text
         if text is None:
@@ -138,8 +128,8 @@ class Speaker(Node):
         # If printing is enabled and it's a text, print it
         if self.print_say:
             self.get_logger().info("Said: " + text)
-        
-        # Check if the message is already in the queue or if it's priority is high enough to be added 
+
+        # Check if the message is already in the queue or if it's priority is high enough to be added
         if self.speak_enabled and prio >= self.message_level and (text, prio) not in self.prio_queue:
             self.prio_queue.append((text, prio))
             self.prio_queue.sort(key=lambda x: x[1], reverse=True)

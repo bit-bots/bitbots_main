@@ -1,10 +1,6 @@
-import glob
-import os
-
-from setuptools import find_packages
 from setuptools import setup
 
-package_name = 'bitbots_bringup'
+package_name = "bitbots_bringup"
 
 
 setup(
@@ -12,9 +8,9 @@ setup(
     packages=[],
     data_files=[],
     install_requires=[
-        'setuptools',
+        "setuptools",
     ],
     zip_safe=True,
-    keywords=['ROS'],
-    license='MIT',
+    keywords=["ROS"],
+    license="MIT",
 )

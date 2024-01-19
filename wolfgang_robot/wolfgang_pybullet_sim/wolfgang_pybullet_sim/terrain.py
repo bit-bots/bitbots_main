@@ -1,9 +1,6 @@
-import pybullet as p
-import pybullet_data as pd
-import math
-import time
-
 import random
+
+import pybullet as p
 
 
 class Terrain:
@@ -22,7 +19,7 @@ class Terrain:
 
     def randomize(self, max_height):
         if max_height > 1:
-            #hacky way to make different types of terrain just based on the max_height parameter
+            # hacky way to make different types of terrain just based on the max_height parameter
             max_height = max_height - 1
             for j in range(int(self.cols / 2)):
                 for i in range(int(self.rows / 2)):
@@ -40,8 +37,9 @@ class Terrain:
         if self.clear_center:
             # make sure the center is flat so the robot does not get stuck there on resetting
             for j in range(int(self.cols / 4) - self.clear_center_size, int(self.cols / 4) + self.clear_center_size):
-                for i in range(int(self.rows / 4) - self.clear_center_size,
-                               int(self.rows / 4) + self.clear_center_size):
+                for i in range(
+                    int(self.rows / 4) - self.clear_center_size, int(self.rows / 4) + self.clear_center_size
+                ):
                     self.heightfield_data[2 * i + 2 * j * self.rows] = 0
                     self.heightfield_data[2 * i + 1 + 2 * j * self.rows] = 0
                     self.heightfield_data[2 * i + (2 * j + 1) * self.rows] = 0
@@ -55,7 +53,8 @@ class Terrain:
                 heightfieldTextureScaling=(self.rows - 1) / 2,
                 heightfieldData=self.heightfield_data,
                 numHeightfieldRows=self.rows,
-                numHeightfieldColumns=self.cols)
+                numHeightfieldColumns=self.cols,
+            )
             self.id = p.createMultiBody(0, self.collision_shape)
             p.resetBasePositionAndOrientation(self.id, [0, 0, 0.0], [0, 0, 0, 1])
             p.changeVisualShape(self.id, -1, rgbaColor=[1, 1, 1, 1])
@@ -68,4 +67,5 @@ class Terrain:
                 heightfieldData=self.heightfield_data,
                 numHeightfieldRows=self.rows,
                 numHeightfieldColumns=self.cols,
-                replaceHeightfieldIndex=self.collision_shape)
+                replaceHeightfieldIndex=self.collision_shape,
+            )

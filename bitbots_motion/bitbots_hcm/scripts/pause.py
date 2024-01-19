@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
-# -*- coding:utf-8 -*-
 import rclpy
+from humanoid_league_speaker.speaker import speak
 from rclpy.node import Node
 from std_msgs.msg import Bool
 
-from bitbots_msgs.srv import ManualPenalize
 from bitbots_msgs.msg import Audio
-from humanoid_league_speaker.speaker import speak
+from bitbots_msgs.srv import ManualPenalize
 
 
-class Pause(object):
+class Pause:
     """
     Always go in and out of pause by manual penalty.
     Go in and out of pause by game controller, if manual penalty is not active.
@@ -52,5 +51,5 @@ class Pause(object):
         self.pause_publisher.publish(Bool(data=state))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pause = Pause()

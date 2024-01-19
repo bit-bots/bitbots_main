@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
 import rclpy
-from bitbots_msgs.srv import FootScale
 from rclpy.node import Node
 from std_srvs.srv import Empty
+
+from bitbots_msgs.srv import FootScale
 
 CALIBRATION_WEIGHT = 0.850 * 9.81
 

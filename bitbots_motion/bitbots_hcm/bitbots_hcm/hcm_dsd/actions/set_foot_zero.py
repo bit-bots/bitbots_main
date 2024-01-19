@@ -14,10 +14,11 @@ class SetFootZero(AbstractHCMActionElement):
         if self.first_perform:
             # Executing this once is sufficient
             self.first_perform = False
-            try:
-                self.blackboard.foot_zero_service.wait_for_service(0.5)
+
+            # Wait for the service to be available and call it
+            if self.blackboard.foot_zero_service.wait_for_service(timeout_sec=0.5):
                 self.blackboard.foot_zero_service.call_async({})
-            except:
+            else:
                 self.blackboard.node.get_logger().warn("No foot zeroing service accessible, will not reset sensors")
 
             self.pop()

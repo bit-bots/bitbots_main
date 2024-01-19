@@ -9,7 +9,7 @@ from wolfgang_pybullet_sim.simulation import Simulation
 if __name__ == "__main__":
     rclpy.init(args=None)
     simulation = Simulation(True)
-    node = Node('pybullet_sim')
+    node = Node("pybullet_sim")
     interface = ROSInterface(node, simulation)
     thread = threading.Thread(target=rclpy.spin, args=(node,), daemon=True)
     thread.start()

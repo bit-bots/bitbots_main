@@ -1,6 +1,6 @@
 from unittest.mock import MagicMock
 
-import humanoid_league_team_communication.robocup_extension_pb2 as Proto
+import humanoid_league_team_communication.robocup_extension_pb2 as Proto  # noqa: N812
 import pytest
 from humanoid_league_team_communication.converter.robocup_protocol_converter import RobocupProtocolConverter, TeamColor
 from soccer_vision_attribute_msgs.msg import Robot as RobotAttributes
@@ -40,13 +40,13 @@ def test_setup_of_from_message_converter(snapshot, from_message_mock):
 
 
 def test_maps_convert_functions(to_message_mock, from_message_mock):
-    to_message_mock.return_value.convert.return_value = 'message'
-    from_message_mock.return_value.convert.return_value = 'team_data'
+    to_message_mock.return_value.convert.return_value = "message"
+    from_message_mock.return_value.convert.return_value = "team_data"
 
     converter = protocol_converter()
 
-    assert converter.convert_to_message() == 'message'
-    assert converter.convert_from_message() == 'team_data'
+    assert converter.convert_to_message() == "message"
+    assert converter.convert_from_message() == "team_data"
 
 
 def protocol_converter() -> RobocupProtocolConverter:
@@ -56,10 +56,12 @@ def protocol_converter() -> RobocupProtocolConverter:
 @pytest.fixture
 def to_message_mock(mocker) -> MagicMock:
     return mocker.patch(
-        "humanoid_league_team_communication.converter.robocup_protocol_converter.StateToMessageConverter")
+        "humanoid_league_team_communication.converter.robocup_protocol_converter.StateToMessageConverter"
+    )
 
 
 @pytest.fixture
 def from_message_mock(mocker) -> MagicMock:
     return mocker.patch(
-        "humanoid_league_team_communication.converter.robocup_protocol_converter.MessageToTeamDataConverter")
+        "humanoid_league_team_communication.converter.robocup_protocol_converter.MessageToTeamDataConverter"
+    )

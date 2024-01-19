@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
+import argparse
 import subprocess
 import threading
-
-import argparse
 
 import rclpy
 from ament_index_python import get_package_share_directory
@@ -10,9 +9,8 @@ from rclpy.node import Node
 
 
 class WebotsSim(Node):
-
     def __init__(self, nogui, multi_robot, headless, sim_port, robot_type):
-        super().__init__('webots_sim')
+        super().__init__("webots_sim")
         pkg_path = get_package_share_directory("wolfgang_webots_sim")
 
         # construct arguments with which webots is started depending on this scripts args
@@ -42,7 +40,9 @@ class WebotsSim(Node):
             cmd = ["webots"]
 
         # actually start webots
-        cmd_with_args = cmd + list(extra_args) + [f"--mode={mode}", f"--port={sim_port}", f"{pkg_path}/worlds/{world_name}"]
+        cmd_with_args = (
+            cmd + list(extra_args) + [f"--mode={mode}", f"--port={sim_port}", f"{pkg_path}/worlds/{world_name}"]
+        )
         print(f"running {' '.join(cmd_with_args)}")
         self.sim_proc = subprocess.Popen(cmd_with_args)
 
@@ -57,13 +57,15 @@ class WebotsSim(Node):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     group = parser.add_mutually_exclusive_group()
-    group.add_argument('--headless',
-                       help='Starts webots completely headless on a virtual framebuffer. This also automatically enables --batch and --no-rendering for webots',
-                       action='store_true')
-    group.add_argument('--nogui', help="Deactivate gui", action='store_true')
-    parser.add_argument('--sim-port', help="port of the simulation", default="1234")
-    parser.add_argument('--multi-robot', help="start world with a single robot", action='store_true')
-    parser.add_argument('--robot-type', help="which robot should be started", default="wolfgang")
+    group.add_argument(
+        "--headless",
+        help="Starts webots completely headless on a virtual framebuffer. This also automatically enables --batch and --no-rendering for webots",
+        action="store_true",
+    )
+    group.add_argument("--nogui", help="Deactivate gui", action="store_true")
+    parser.add_argument("--sim-port", help="port of the simulation", default="1234")
+    parser.add_argument("--multi-robot", help="start world with a single robot", action="store_true")
+    parser.add_argument("--robot-type", help="which robot should be started", default="wolfgang")
     args, _ = parser.parse_known_args()
 
     rclpy.init()

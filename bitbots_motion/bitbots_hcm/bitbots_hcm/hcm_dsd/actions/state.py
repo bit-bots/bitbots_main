@@ -1,8 +1,7 @@
-from abc import abstractmethod, ABC
-
-from bitbots_msgs.msg import RobotControlState
+from abc import ABC, abstractmethod
 
 from bitbots_hcm.hcm_dsd.actions import AbstractHCMActionElement
+from bitbots_msgs.msg import RobotControlState
 
 
 class AbstractRobotState(AbstractHCMActionElement, ABC):
@@ -25,7 +24,6 @@ class AbstractRobotState(AbstractHCMActionElement, ABC):
         self.blackboard.current_state = self.get_state()
         # Our job is done, we can pop
         self.pop()
-
 
 
 class RobotStateStartup(AbstractRobotState):

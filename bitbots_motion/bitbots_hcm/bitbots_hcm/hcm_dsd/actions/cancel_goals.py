@@ -13,13 +13,13 @@ class CancelGoals(AbstractHCMActionElement):
         if self.blackboard.animation_action_current_goal is not None:
             try:
                 self.blackboard.animation_action_current_goal.cancel()
-            except:
-                pass
+            except Exception as e:
+                self.blackboard.node.get_logger().error("Could not cancel animation goal: " + str(e))
         if self.blackboard.dynup_action_current_goal is not None:
             try:
                 self.blackboard.dynup_action_current_goal.cancel()
-            except:
-                pass
+            except Exception as e:
+                self.blackboard.node.get_logger().error("Could not cancel dynup goal: " + str(e))
 
         self.blackboard.cancel_path_planning()
         self.pop()

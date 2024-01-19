@@ -3,7 +3,6 @@ import os
 
 import rclpy
 from ament_index_python import get_package_share_directory
-from bitbots_msgs.msg import GameState, RobotControlState
 from dynamic_stack_decider.dsd import DSD
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup, ReentrantCallbackGroup
@@ -11,6 +10,7 @@ from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 
 from bitbots_localization_handler.localization_dsd.localization_blackboard import LocalizationBlackboard
+from bitbots_msgs.msg import GameState, RobotControlState
 
 
 def init(node: Node):

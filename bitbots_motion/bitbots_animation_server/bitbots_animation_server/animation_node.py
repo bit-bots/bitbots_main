@@ -8,23 +8,22 @@ from rclpy.action import ActionServer
 from rclpy.action.server import ServerGoalHandle
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.duration import Duration
-from rclpy.executors import ExternalShutdownException
-from rclpy.executors import MultiThreadedExecutor
+from rclpy.executors import ExternalShutdownException, MultiThreadedExecutor
 from rclpy.node import Node
 from sensor_msgs.msg import JointState
-from trajectory_msgs.msg import JointTrajectoryPoint, JointTrajectory
+from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
-from bitbots_animation_server.animation import Animation
-from bitbots_animation_server.animation import parse
+from bitbots_animation_server.animation import Animation, parse
 from bitbots_animation_server.resource_manager import ResourceManager
 from bitbots_animation_server.spline_animator import SplineAnimator
 from bitbots_msgs.action import PlayAnimation
-from bitbots_msgs.msg import Animation as AnimationMsg, RobotControlState
+from bitbots_msgs.msg import Animation as AnimationMsg
+from bitbots_msgs.msg import RobotControlState
 
 
 class AnimationNode(Node):
     """This node provides an action server for playing animations."""
-    
+
     def __init__(self):
         """Starts a simple action server and waits for requests."""
         super().__init__("animation_server")
@@ -37,7 +36,7 @@ class AnimationNode(Node):
 
         # Get robot type and create resource manager
         self.declare_parameter("robot_type", "wolfgang")
-        self.resource_manager = ResourceManager(self.get_parameter('robot_type').value)
+        self.resource_manager = ResourceManager(self.get_parameter("robot_type").value)
 
         # Load all animations into memory
         all_animations = self.resource_manager.find_all_animations_by_name(self)
@@ -45,25 +44,28 @@ class AnimationNode(Node):
             try:
                 with open(animation_file) as fp:
                     self.animation_cache[animation_name] = parse(json.load(fp))
-            except IOError:
+            except OSError:
                 self.get_logger().error(f"Animation '{animation_name}' could not be loaded")
             except ValueError:
                 self.get_logger().error(
                     f"Animation '{animation_name}' had a ValueError. "
                     "Probably there is a syntax error in the animation file. "
-                    "See traceback")
+                    "See traceback"
+                )
                 traceback.print_exc()
 
         callback_group = ReentrantCallbackGroup()
         self.create_subscription(JointState, "joint_states", self.update_current_pose, 1, callback_group=callback_group)
-        self.create_subscription(RobotControlState, "robot_state", self.update_hcm_state, 1, callback_group=callback_group)
+        self.create_subscription(
+            RobotControlState, "robot_state", self.update_hcm_state, 1, callback_group=callback_group
+        )
 
         self.hcm_publisher = self.create_publisher(AnimationMsg, "animation", 1)
 
         self._as = ActionServer(self, PlayAnimation, "animation", self.execute_cb, callback_group=callback_group)
 
     def execute_cb(self, goal: ServerGoalHandle):
-        """ This is called, when someone calls the animation action"""
+        """This is called, when someone calls the animation action"""
 
         # Set type for request
         request: PlayAnimation.Goal = goal.request
@@ -89,7 +91,8 @@ class AnimationNode(Node):
             if self.hcm_state != 0:
                 self.get_logger().info(
                     "HCM not controllable. Only sent request to make it come controllable, "
-                    "but it was not successful until timeout")
+                    "but it was not successful until timeout"
+                )
                 goal.abort()
                 return PlayAnimation.Result(successful=False)
 
@@ -107,26 +110,19 @@ class AnimationNode(Node):
                 if pose is None:
                     # animation is finished
                     # tell it to the hcm
-                    self.send_animation(
-                        first=False,
-                        last=True,
-                        hcm=request.hcm,
-                        pose=None,
-                        torque=None)
+                    self.send_animation(first=False, last=True, hcm=request.hcm, pose=None, torque=None)
                     goal.publish_feedback(PlayAnimation.Feedback(percent_done=100))
                     # we give a positive result
                     goal.succeed()
                     return PlayAnimation.Result(successful=True)
 
-                self.send_animation(
-                    first=first,
-                    last=False,
-                    hcm=request.hcm,
-                    pose=pose,
-                    torque=animator.get_torque(t))
+                self.send_animation(first=first, last=False, hcm=request.hcm, pose=pose, torque=animator.get_torque(t))
 
                 first = False  # we have sent the first frame, all frames after this can't be the first
-                perc_done = int(((self.get_clock().now().nanoseconds / 1e9 - animator.get_start_time()) / animator.get_duration()) * 100)
+                perc_done = int(
+                    ((self.get_clock().now().nanoseconds / 1e9 - animator.get_start_time()) / animator.get_duration())
+                    * 100
+                )
                 perc_done = max(0, min(perc_done, 100))
 
                 goal.publish_feedback(PlayAnimation.Feedback(percent_done=perc_done))
@@ -141,10 +137,8 @@ class AnimationNode(Node):
             self.get_logger().error(f"Animation '{animation_name}' not found")
             return
         return SplineAnimator(
-            self.animation_cache[animation_name],
-            self.current_joint_states,
-            self.get_logger(),
-            self.get_clock())
+            self.animation_cache[animation_name], self.current_joint_states, self.get_logger(), self.get_clock()
+        )
 
     def update_current_pose(self, msg):
         """Gets the current motor positions and updates the representing pose accordingly."""
@@ -166,7 +160,7 @@ class AnimationNode(Node):
         anim_msg.first = first
         anim_msg.last = last
         anim_msg.hcm = hcm
-        if pose is not None:#
+        if pose is not None:  #
             traj_msg = JointTrajectory()
             traj_msg.joint_names = []
             traj_msg.points = [JointTrajectoryPoint()]

@@ -1,13 +1,15 @@
 from __future__ import annotations
-from typing import List, TYPE_CHECKING
+
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     import numpy as np
 
 import abc
+
 from rclpy import logging
 
-logger = logging.get_logger('vision_candidate')
+logger = logging.get_logger("vision_candidate")
 
 
 class Candidate:
@@ -159,14 +161,9 @@ class Candidate:
         :param point: An x-y-int-tuple defining the point to inspect.
         :return bool: Whether the point is in the candidate or not.
         """
-        return (
-                self.get_upper_left_x()
-                <= point[0]
-                <= self.get_upper_left_x() + self.get_width()) \
-            and (
-                    self.get_upper_left_y()
-                    <= point[1]
-                    <= self.get_upper_left_y() + self.get_height())
+        return (self.get_upper_left_x() <= point[0] <= self.get_upper_left_x() + self.get_width()) and (
+            self.get_upper_left_y() <= point[1] <= self.get_upper_left_y() + self.get_height()
+        )
 
     def set_in_mask(self, mask, value=0, grow=1):
         """
@@ -180,8 +177,9 @@ class Candidate:
         width = int(self.get_width() * grow * 0.5)
         height = int(self.get_height() * grow * 0.5)
         mask[
-        max(self.get_center_y() - height, 0): min(self.get_center_y() + height, mask.shape[0]),
-        max(self.get_center_x() - width, 0): min(self.get_center_x() + width, mask.shape[1])] = value
+            max(self.get_center_y() - height, 0) : min(self.get_center_y() + height, mask.shape[0]),
+            max(self.get_center_x() - width, 0) : min(self.get_center_x() + width, mask.shape[1]),
+        ] = value
         return mask
 
     @staticmethod
@@ -234,7 +232,7 @@ class Candidate:
         return cls(min(x1, x2), min(y1, y2), width, height, rating)
 
 
-class CandidateFinder(object):
+class CandidateFinder:
     """
     The abstract class :class:`.CandidateFinder` requires its subclasses to implement the methods
     :meth:`.get_candidates`,  :meth:`.compute` and :meth:`set_image`.
@@ -246,9 +244,9 @@ class CandidateFinder(object):
         """
         Initialization of :class:`.CandidateFinder`.
         """
-        super(CandidateFinder, self).__init__()
+        super(self).__init__()
 
-    def get_top_candidates(self, count: int = 1) -> List[Candidate]:
+    def get_top_candidates(self, count: int = 1) -> list[Candidate]:
         """
         Returns the count highest rated candidates.
 
@@ -268,7 +266,7 @@ class CandidateFinder(object):
         return Candidate.select_top_candidate(self.get_candidates())
 
     @abc.abstractmethod
-    def get_candidates(self) -> List[Candidate]:
+    def get_candidates(self) -> list[Candidate]:
         """
         Returns a list of all candidates.
 

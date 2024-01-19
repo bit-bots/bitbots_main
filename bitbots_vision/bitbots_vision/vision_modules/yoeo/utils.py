@@ -1,12 +1,12 @@
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from typing import List, Optional, Tuple
+
 import cv2
 import numpy as np
 import rclpy
 
-from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from typing import Tuple, Optional, List
-
-logger = rclpy.logging.get_logger('yoeo_handler_utils')
+logger = rclpy.logging.get_logger("yoeo_handler_utils")
 
 
 @dataclass
@@ -25,6 +25,7 @@ class ImagePreProcessorData:
     :param max_dim: the larger of the two dimensions of the original unprocessed image (number of pixels)
     :type max_dim: int
     """
+
     padding_top: int
     padding_bottom: int
     padding_left: int
@@ -114,12 +115,14 @@ class IDetectionPostProcessor:
     """
 
     @abstractmethod
-    def configure(self,
-                  image_preprocessor: IImagePreProcessor,
-                  output_img_size: int,
-                  conf_thresh: float,
-                  nms_thresh: float,
-                  robot_class_ids: List[int]) -> None:
+    def configure(
+        self,
+        image_preprocessor: IImagePreProcessor,
+        output_img_size: int,
+        conf_thresh: float,
+        nms_thresh: float,
+        robot_class_ids: List[int],
+    ) -> None:
         """
         Allows to (re-) configure the current instance.
 
@@ -172,7 +175,7 @@ class DefaultImagePreProcessor(IImagePreProcessor):
             padding_bottom=self._padding_bottom,
             padding_left=self._padding_left,
             padding_right=self._padding_right,
-            max_dim=np.max(self._image_dimensions_HW)
+            max_dim=np.max(self._image_dimensions_HW),
         )
 
     def process(self, image: np.ndarray) -> np.ndarray:
@@ -182,7 +185,7 @@ class DefaultImagePreProcessor(IImagePreProcessor):
         image = self._normalize_image_to_range_0_1(image)
         image = self._pad_to_square(image)
         image = self._resize_to_network_input_shape(image)
-        image = self._rearrange_axes_from_HWC_to_CHW(image)
+        image = self._rearrange_axes_from_hwc_to_chw(image)
 
         return image
 
@@ -209,14 +212,14 @@ class DefaultImagePreProcessor(IImagePreProcessor):
             left=self._padding_left,
             right=self._padding_right,
             borderType=cv2.BORDER_CONSTANT,
-            value=0
+            value=0,
         )
 
     def _resize_to_network_input_shape(self, image: np.ndarray) -> np.ndarray:
         return cv2.resize(src=image, dsize=self._network_input_shape_WH)
 
     @staticmethod
-    def _rearrange_axes_from_HWC_to_CHW(image: np.ndarray) -> np.ndarray:
+    def _rearrange_axes_from_hwc_to_chw(image: np.ndarray) -> np.ndarray:
         # Change data layout from HWC to CHW
         return np.moveaxis(image, 2, 0)
 
@@ -244,7 +247,7 @@ class DefaultSegmentationPostProcessor(ISegmentationPostProcessor):
 
     def process(self, segmentation: np.ndarray) -> np.ndarray:
         self._get_preprocessor_info()
-        segmentation = self._rearrange_axis_from_CHW_to_HWC(segmentation)
+        segmentation = self._rearrange_axes_from_chw_to_hwc(segmentation)
         segmentation = self._resize_to_original_padded_size(segmentation)
         segmentation = self._unpad(segmentation)
 
@@ -259,29 +262,30 @@ class DefaultSegmentationPostProcessor(ISegmentationPostProcessor):
         self._padding_right = preprocessor_info.padding_right
 
     @staticmethod
-    def _rearrange_axis_from_CHW_to_HWC(segmentation: np.ndarray) -> np.ndarray:
+    def _rearrange_axes_from_chw_to_hwc(segmentation: np.ndarray) -> np.ndarray:
         # Change data layout from CHW to HWC
         return np.moveaxis(segmentation, 0, -1)
 
     def _resize_to_original_padded_size(self, segmentation: np.ndarray) -> np.ndarray:
-        return cv2.resize(
-            src=segmentation,
-            dsize=(self._max_dim, self._max_dim),
-            interpolation=cv2.INTER_NEAREST_EXACT
-        )
+        return cv2.resize(src=segmentation, dsize=(self._max_dim, self._max_dim), interpolation=cv2.INTER_NEAREST_EXACT)
 
     def _unpad(self, segmentation: np.ndarray) -> np.ndarray:
-        return segmentation[self._padding_top:self._max_dim - self._padding_bottom, \
-               self._padding_left:self._max_dim - self._padding_right, ...]
+        return segmentation[
+            self._padding_top : self._max_dim - self._padding_bottom,
+            self._padding_left : self._max_dim - self._padding_right,
+            ...,
+        ]
 
 
 class DefaultDetectionPostProcessor(IDetectionPostProcessor):
-    def __init__(self,
-                 image_preprocessor: IImagePreProcessor,
-                 output_img_size: int,
-                 conf_thresh: float,
-                 nms_thresh: float,
-                 robot_class_ids: List[int]):
+    def __init__(
+        self,
+        image_preprocessor: IImagePreProcessor,
+        output_img_size: int,
+        conf_thresh: float,
+        nms_thresh: float,
+        robot_class_ids: List[int],
+    ):
         self._image_preprocessor: IImagePreProcessor = image_preprocessor
         self._output_img_size: int = output_img_size
         self._conf_thresh: float = conf_thresh
@@ -302,12 +306,14 @@ class DefaultDetectionPostProcessor(IDetectionPostProcessor):
         self._padding_left: int = 0
         self._padding_right: int = 0
 
-    def configure(self,
-                  image_preprocessor: IImagePreProcessor,
-                  output_img_size: int,
-                  conf_thresh: float,
-                  nms_thresh: float,
-                  robot_class_ids: List[int]) -> None:
+    def configure(
+        self,
+        image_preprocessor: IImagePreProcessor,
+        output_img_size: int,
+        conf_thresh: float,
+        nms_thresh: float,
+        robot_class_ids: List[int],
+    ) -> None:
         self._image_preprocessor = image_preprocessor
         self._output_img_size = output_img_size
         self._conf_thresh = conf_thresh
@@ -333,11 +339,13 @@ class DefaultDetectionPostProcessor(IDetectionPostProcessor):
         detections = self._preprocess_detections_for_nms(detections)
 
         boxes, scores = self._get_boxes_and_scores_for_nms(detections)
-        indices = cv2.dnn.NMSBoxes(bboxes=boxes,
-                                   scores=scores,
-                                   score_threshold=0,
-                                   nms_threshold=self._nms_thresh,
-                                   top_k=self._nms_max_number_of_detections_per_image)
+        indices = cv2.dnn.NMSBoxes(
+            bboxes=boxes,
+            scores=scores,
+            score_threshold=0,
+            nms_threshold=self._nms_thresh,
+            top_k=self._nms_max_number_of_detections_per_image,
+        )
 
         output = self._postprocess_nms_output(detections, indices)
 
@@ -373,9 +381,7 @@ class DefaultDetectionPostProcessor(IDetectionPostProcessor):
     def _get_boxes_and_scores_for_nms(self, detections: np.ndarray) -> Tuple:
         if self._robot_class_ids:
             class_offsets = np.where(
-                self._is_robot_class(detections[:, 5:6]),
-                self._robot_class_ids[0],
-                detections[:, 5:6]
+                self._is_robot_class(detections[:, 5:6]), self._robot_class_ids[0], detections[:, 5:6]
             )
         else:
             class_offsets = detections[:, 5:6].copy()

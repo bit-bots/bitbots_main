@@ -5,16 +5,17 @@
 # The script provides a simple mechanism to test robot behavior in different game states,
 # when no game controller is running
 
-import sys
 import select
+import sys
 import termios
 import tty
 
 import rclpy
-from rclpy.node import Node
-from rclpy.qos import QoSProfile, DurabilityPolicy
-from bitbots_msgs.msg import GameState as GameStateMsg
 from bitbots_utils.utils import get_parameters_from_other_node
+from rclpy.node import Node
+from rclpy.qos import DurabilityPolicy, QoSProfile
+
+from bitbots_msgs.msg import GameState as GameStateMsg
 
 
 class SimGamestate(Node):
@@ -118,7 +119,7 @@ Secondary State Team: {game_state_msg.secondary_state_team}
 Secondary State Mode: {game_state_msg.secondary_state_mode}
 Secondary State:      {game_state_msg.secondary_state}
 Gamestate:            {game_state_msg.game_state}
-Has Kick Off:         {game_state_msg.has_kick_off} 
+Has Kick Off:         {game_state_msg.has_kick_off}
 
 
 CTRL-C to quit
