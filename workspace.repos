@@ -1,4 +1,7 @@
 repositories:
+  humanoid_league_misc/humanoid_league_team_communication/humanoid_league_team_communication/RobocupProtocol:
+    type: git
+    url: git@github.com:bit-bots/RobocupProtocol.git
   lib/dynamic_stack_decider:
     type: git
     url: git@github.com:bit-bots/dynamic_stack_decider.git
