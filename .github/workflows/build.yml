@@ -25,7 +25,7 @@ jobs:
         run: make rosdep
       - name: Set up colcon workspace
         run: |
-          mkdir /colcon_ws/src
+          mkdir -p /colcon_ws/src
           ln -s $(realpath .) /colcon_ws/src/bitbots_meta
       - name: Build packages
         run: |
