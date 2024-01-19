@@ -1,4 +1,4 @@
-.PHONY : basler install pip pre-commit pull-all pull-init pull-files rosdep status update
+.PHONY : basler install pip pre-commit pull-all pull-init pull-files fresh-libs remove-libs setup-libs rosdep status update
 
 HTTPS := ""
 
@@ -19,16 +19,14 @@ pre-commit:
 	pre-commit install
 
 pull-all:
-	git pull
-	vcs pull .
+	vcs pull . --nested
 	scripts/pull_files.bash
 
-pull-init:
-	git pull
-	setup-libs
-	scripts/pull_files.bash
+pull-init: fresh-libs pull-files
 
-clean-libs:
+fresh-libs: remove-libs setup-libs
+
+remove-libs:
 	rm -rf lib/*
 
 setup-libs:
@@ -49,6 +47,6 @@ rosdep:
 	bash -c "sudo apt install -y $(rosdep check --from-paths . --ignore-src --rosdistro iron | sed -n 's/^apt\s\+//p' | tr '\n' ' ')"
 
 status:
-	vcs status .
+	vcs status . --nested
 
 update: pull-all rosdep pip pre-commit
