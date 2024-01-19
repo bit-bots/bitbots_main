@@ -22,7 +22,12 @@ jobs:
       - name: Install proprietary basler drivers
         run: make basler ARGS="-ci"
       - name: Install packages via rosdep
-        run: make rosdep
+        run: |
+          rosdep update
+          sudo apt install -y libunwind-dev
+          # Small hack to make rosdep install all dependencies at once
+          # See https://github.com/ros-infrastructure/rosdep/issues/671
+          bash -c "sudo apt install -y $(rosdep check --from-paths . --ignore-src --rosdistro iron | sed -n 's/^apt\s\+//p' | tr '\n' ' ')"
       - name: Set up colcon workspace
         run: |
           mkdir -p /colcon_ws/src
