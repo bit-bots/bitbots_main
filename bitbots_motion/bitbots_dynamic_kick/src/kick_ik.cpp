@@ -1,4 +1,4 @@
-#include "bitbots_dynamic_kick/kick_ik.h"
+#include "bitbots_dynamic_kick/kick_ik.hpp"
 
 namespace bitbots_dynamic_kick {
 

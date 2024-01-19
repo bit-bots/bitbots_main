@@ -1,4 +1,4 @@
-#include "bitbots_dynamic_kick/stabilizer.h"
+#include "bitbots_dynamic_kick/stabilizer.hpp"
 
 namespace bitbots_dynamic_kick {
 

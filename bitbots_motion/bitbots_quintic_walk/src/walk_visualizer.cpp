@@ -1,4 +1,4 @@
-#include "bitbots_quintic_walk/walk_visualizer.h"
+#include "bitbots_quintic_walk/walk_visualizer.hpp"
 
 namespace bitbots_quintic_walk {
 WalkVisualizer::WalkVisualizer(rclcpp::Node::SharedPtr node) : node_(node) {

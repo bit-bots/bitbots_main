@@ -3,9 +3,9 @@ This code is largely based on the original code by Quentin "Leph" Rouxel and Tea
 The original files can be found at:
 https://github.com/Rhoban/model/
 */
-#include "bitbots_splines/polynom.h"
+#include "bitbots_splines/polynom.hpp"
 
-#include "bitbots_splines/newton_binomial.h"
+#include "bitbots_splines/newton_binomial.hpp"
 
 namespace bitbots_splines {
 

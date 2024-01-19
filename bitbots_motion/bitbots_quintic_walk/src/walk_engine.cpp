@@ -3,7 +3,7 @@ This code is partly based on the original code by Quentin "Leph" Rouxel and Team
 The original files can be found at:
 https://github.com/Rhoban/model/
 */
-#include "bitbots_quintic_walk/walk_engine.h"
+#include "bitbots_quintic_walk/walk_engine.hpp"
 
 namespace bitbots_quintic_walk {
 

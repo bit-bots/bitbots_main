@@ -1,6 +1,6 @@
 #define M_TAU M_PI * 2
 
-#include "bitbots_quintic_walk/walk_node.h"
+#include "bitbots_quintic_walk/walk_node.hpp"
 
 #include <iostream>
 #include <memory>

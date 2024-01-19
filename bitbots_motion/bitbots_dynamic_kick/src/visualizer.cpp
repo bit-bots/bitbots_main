@@ -1,4 +1,4 @@
-#include "bitbots_dynamic_kick/visualizer.h"
+#include "bitbots_dynamic_kick/visualizer.hpp"
 
 #include <bitbots_splines/pose_spline.h>
 

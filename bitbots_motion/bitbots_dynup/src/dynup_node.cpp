@@ -1,4 +1,4 @@
-#include "bitbots_dynup/dynup_node.h"
+#include "bitbots_dynup/dynup_node.hpp"
 
 namespace bitbots_dynup {
 using namespace std::chrono_literals;
@@ -11,6 +11,7 @@ DynupNode::DynupNode(const std::string ns, std::vector<rclcpp::Parameter> parame
       engine_(SharedPtr(this)),
       stabilizer_(ns),
       visualizer_("debug/dynup", SharedPtr(this)),
+      ik_(SharedPtr(this)),
       tf_buffer_(std::make_unique<tf2_ros::Buffer>(this->get_clock())) {
   // get all kinematics parameters from the move_group node if they are not set manually via constructor
   std::string check_kinematic_parameters;

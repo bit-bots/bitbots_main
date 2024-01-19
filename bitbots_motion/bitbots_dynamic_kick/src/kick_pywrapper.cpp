@@ -1,4 +1,4 @@
-#include <bitbots_dynamic_kick/kick_pywrapper.h>
+#include <bitbots_dynamic_kick/kick_pywrapper.hpp>
 
 /**
  * Read a ROS message from a serialized string.

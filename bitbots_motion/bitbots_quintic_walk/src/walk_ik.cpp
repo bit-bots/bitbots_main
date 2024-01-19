@@ -1,4 +1,4 @@
-#include "bitbots_quintic_walk/walk_ik.h"
+#include "bitbots_quintic_walk/walk_ik.hpp"
 
 namespace bitbots_quintic_walk {
 

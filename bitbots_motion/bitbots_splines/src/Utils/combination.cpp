@@ -3,7 +3,7 @@ This code is largely based on the original code by Quentin "Leph" Rouxel and Tea
 The original files can be found at:
 https://github.com/Rhoban/model/
 */
-#include "bitbots_splines/combination.h"
+#include "bitbots_splines/combination.hpp"
 
 #include <limits>
 #include <stdexcept>

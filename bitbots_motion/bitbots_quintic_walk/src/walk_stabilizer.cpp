@@ -1,4 +1,4 @@
-#include "bitbots_quintic_walk/walk_stabilizer.h"
+#include "bitbots_quintic_walk/walk_stabilizer.hpp"
 
 namespace bitbots_quintic_walk {
 

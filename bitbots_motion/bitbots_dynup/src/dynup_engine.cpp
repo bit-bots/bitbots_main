@@ -1,4 +1,4 @@
-#include "bitbots_dynup/dynup_engine.h"
+#include "bitbots_dynup/dynup_engine.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 

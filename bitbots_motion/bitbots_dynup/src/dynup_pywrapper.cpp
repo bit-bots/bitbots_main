@@ -1,4 +1,4 @@
-#include "bitbots_dynup/dynup_pywrapper.h"
+#include "bitbots_dynup/dynup_pywrapper.hpp"
 
 PyDynupWrapper::PyDynupWrapper(const std::string ns) {
   // initialize rclcpp if not already done

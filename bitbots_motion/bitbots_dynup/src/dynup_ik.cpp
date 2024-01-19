@@ -1,5 +1,8 @@
-#include <bitbots_dynup/dynup_ik.h>
+#include <bitbots_dynup/dynup_ik.hpp>
 namespace bitbots_dynup {
+
+DynupIK::DynupIK(rclcpp::Node::SharedPtr node) : node_(node) {}
+
 void DynupIK::init(moveit::core::RobotModelPtr kinematic_model) {
   current_joint_states_ = std::make_shared<sensor_msgs::msg::JointState>();
   /* Extract joint groups from kinematics model */

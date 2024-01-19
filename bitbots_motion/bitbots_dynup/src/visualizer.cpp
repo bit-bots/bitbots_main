@@ -1,4 +1,4 @@
-#include "bitbots_dynup/visualizer.h"
+#include "bitbots_dynup/visualizer.hpp"
 
 #include <bitbots_splines/pose_spline.h>
 

@@ -1,4 +1,4 @@
-#include <bitbots_odometry/odometry_fuser.h>
+#include <bitbots_odometry/odometry_fuser.hpp>
 
 /*
 odom -> baselink

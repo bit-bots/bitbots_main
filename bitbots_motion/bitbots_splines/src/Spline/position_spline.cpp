@@ -1,4 +1,4 @@
-#include "bitbots_splines/position_spline.h"
+#include "bitbots_splines/position_spline.hpp"
 
 namespace bitbots_splines {
 

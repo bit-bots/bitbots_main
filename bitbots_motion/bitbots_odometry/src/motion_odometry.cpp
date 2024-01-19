@@ -1,4 +1,4 @@
-#include <bitbots_odometry/motion_odometry.h>
+#include <bitbots_odometry/motion_odometry.hpp>
 
 namespace bitbots_odometry {
 

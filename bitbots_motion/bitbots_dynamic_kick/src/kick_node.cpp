@@ -1,4 +1,4 @@
-#include "bitbots_dynamic_kick/kick_node.h"
+#include "bitbots_dynamic_kick/kick_node.hpp"
 
 namespace bitbots_dynamic_kick {
 using namespace std::chrono_literals;

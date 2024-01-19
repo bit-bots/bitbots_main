@@ -1,4 +1,4 @@
-#include <extrinsic_calibration/extrinsic_calibration.h>
+#include <extrinsic_calibration/extrinsic_calibration.hpp>
 
 ExtrinsicCalibrationBroadcaster::ExtrinsicCalibrationBroadcaster() : Node("bitbots_extrinsic_calibration") {
   broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(this);
