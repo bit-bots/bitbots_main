@@ -1,8 +1,4 @@
 repositories:
-  bitbots_meta:
-    type: git
-    url: git@github.com:bit-bots/bitbots_meta.git
-    version: monorepo
   lib/dynamic_stack_decider:
     type: git
     url: git@github.com:bit-bots/dynamic_stack_decider.git

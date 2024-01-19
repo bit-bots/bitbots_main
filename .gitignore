@@ -204,7 +204,7 @@ bitbots_docs_internal
 **/cmake-build-*
 
 # Neural Network Model Path
-bitbots_vision/bitbots_vision/models/
+/bitbots_vision/bitbots_vision/models/
 
 **/.*.
 .idea/*
@@ -216,4 +216,6 @@ ansible_robots/*
 doc_internal/*
 doku/*
 
+# library subdirectories
+/lib/
 

@@ -8,7 +8,7 @@ basler:
 install: pull-init basler update
 
 master:
-	vcs import .. < workspace.repos
+	vcs import . < workspace.repos
 
 pip:
 	# Install and upgrade pip dependencies
@@ -20,17 +20,23 @@ pre-commit:
 
 pull-all:
 	git pull
-	vcs pull ..
+	vcs pull .
 	scripts/pull_files.bash
 
 pull-init:
 	git pull
-ifeq ($(HTTPS), true)
-	awk '{sub("git@github.com:", "https://github.com/"); print "  " $$0}' workspace.repos | vcs import .. --skip-existing
-else
-	vcs import .. --skip-existing < workspace.repos
-endif
+	setup-libs
 	scripts/pull_files.bash
+
+clean-libs:
+	rm -rf lib/*
+
+setup-libs:
+ifeq ($(HTTPS), true)
+	awk '{sub("git@github.com:", "https://github.com/"); print "  " $$0}' workspace.repos | vcs import .
+else
+	vcs import . < workspace.repos
+endif
 
 pull-files:
 	scripts/pull_files.bash
@@ -40,9 +46,9 @@ rosdep:
 	rosdep update
 	# Small hack to make rosdep install all dependencies at once
 	# See https://github.com/ros-infrastructure/rosdep/issues/671
-	bash -c "sudo apt install -y $(rosdep check --from-paths .. --ignore-src --rosdistro iron | sed -n 's/^apt\s\+//p' | tr '\n' ' ')"
+	bash -c "sudo apt install -y $(rosdep check --from-paths . --ignore-src --rosdistro iron | sed -n 's/^apt\s\+//p' | tr '\n' ' ')"
 
 status:
-	vcs status ..
+	vcs status .
 
 update: pull-all rosdep pip pre-commit
