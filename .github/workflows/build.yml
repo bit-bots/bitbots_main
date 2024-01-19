@@ -26,7 +26,7 @@ jobs:
       - name: Set up colcon workspace
         run: |
           mkdir /colcon_ws/src
-          ls -s $(realpath .) /colcon_ws/src/bitbots_meta
+          ln -s $(realpath .) /colcon_ws/src/bitbots_meta
       - name: Build packages
         run: |
           . /opt/ros/iron/setup.sh
