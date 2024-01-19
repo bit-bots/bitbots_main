@@ -1,13 +1,13 @@
 #ifndef BITBOTS_DYNUP_INCLUDE_BITBOTS_DYNUP_DYNUP_ENGINE_H_
 #define BITBOTS_DYNUP_INCLUDE_BITBOTS_DYNUP_DYNUP_ENGINE_H_
 
-#include <bitbots_splines/abstract_engine.h>
-#include <bitbots_splines/pose_spline.h>
-#include <bitbots_splines/smooth_spline.h>
-#include <bitbots_splines/spline_container.h>
 #include <tf2/convert.h>
 
 #include <bitbots_dynup/msg/dynup_engine_debug.hpp>
+#include <bitbots_splines/abstract_engine.hpp>
+#include <bitbots_splines/pose_spline.hpp>
+#include <bitbots_splines/smooth_spline.hpp>
+#include <bitbots_splines/spline_container.hpp>
 #include <cmath>
 #include <optional>
 #include <rclcpp/rclcpp.hpp>

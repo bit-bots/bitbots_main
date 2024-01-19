@@ -9,8 +9,8 @@
 #include <rclcpp/rclcpp.hpp>
 #include <ros2_python_extension/serialization.hpp>
 
-#include "bitbots_dynup/dynup_node.h"
-#include "bitbots_dynup/dynup_utils.h"
+#include "bitbots_dynup/dynup_node.hpp"
+#include "bitbots_dynup/dynup_utils.hpp"
 
 namespace py = pybind11;
 using namespace ros2_python_extension;

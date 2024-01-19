@@ -1,6 +1,6 @@
 #include "bitbots_dynamic_kick/visualizer.hpp"
 
-#include <bitbots_splines/pose_spline.h>
+#include <bitbots_splines/pose_spline.hpp>
 
 namespace bitbots_dynamic_kick {
 

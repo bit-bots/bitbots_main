@@ -27,10 +27,10 @@
 #include <tf2_eigen/tf2_eigen.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
-#include "bitbots_dynup/dynup_engine.h"
-#include "bitbots_dynup/dynup_ik.h"
-#include "bitbots_dynup/dynup_stabilizer.h"
-#include "bitbots_dynup/visualizer.h"
+#include "bitbots_dynup/dynup_engine.hpp"
+#include "bitbots_dynup/dynup_ik.hpp"
+#include "bitbots_dynup/dynup_stabilizer.hpp"
+#include "bitbots_dynup/visualizer.hpp"
 #include "bitbots_msgs/action/dynup.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
 

@@ -4,8 +4,8 @@
 
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
-#include "bitbots_quintic_walk/walk_utils.h"
-#include "bitbots_splines/abstract_ik.h"
+#include "bitbots_quintic_walk/walk_utils.hpp"
+#include "bitbots_splines/abstract_ik.hpp"
 namespace bitbots_quintic_walk {
 
 class WalkIK : public bitbots_splines::AbstractIK<WalkResponse> {

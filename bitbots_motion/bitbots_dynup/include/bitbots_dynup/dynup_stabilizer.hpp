@@ -1,10 +1,10 @@
 #ifndef BITBOTS_DYNUP_INCLUDE_BITBOTS_DYNUP_DYNUP_STABILIZER_H_
 #define BITBOTS_DYNUP_INCLUDE_BITBOTS_DYNUP_DYNUP_STABILIZER_H_
 
-#include <bitbots_splines/abstract_stabilizer.h>
 #include <rot_conv/rot_conv.h>
 
 #include <Eigen/Geometry>
+#include <bitbots_splines/abstract_stabilizer.hpp>
 #include <control_toolbox/pid_ros.hpp>
 #include <optional>
 #include <sensor_msgs/msg/imu.hpp>

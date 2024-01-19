@@ -1,18 +1,18 @@
 #ifndef BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALK_STABILIZER_H_
 #define BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALK_STABILIZER_H_
 
-#include <bitbots_splines/abstract_stabilizer.h>
 #include <rot_conv/rot_conv.h>
 
 #include <Eigen/Geometry>
+#include <bitbots_splines/abstract_stabilizer.hpp>
 #include <control_toolbox/pid_ros.hpp>
 #include <optional>
 #include <rclcpp/logger.hpp>
 #include <tf2_eigen/tf2_eigen.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
-#include "bitbots_quintic_walk/walk_utils.h"
-#include "bitbots_splines/abstract_stabilizer.h"
+#include "bitbots_quintic_walk/walk_utils.hpp"
+#include "bitbots_splines/abstract_stabilizer.hpp"
 
 namespace bitbots_quintic_walk {
 

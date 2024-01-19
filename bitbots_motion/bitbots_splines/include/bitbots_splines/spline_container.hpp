@@ -6,9 +6,8 @@ https://github.com/Rhoban/model/
 #ifndef BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_SPLINE_CONTAINER_H_
 #define BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_SPLINE_CONTAINER_H_
 
-#include <bitbots_splines/smooth_spline.h>
-
 #include <algorithm>
+#include <bitbots_splines/smooth_spline.hpp>
 #include <fstream>
 #include <map>
 #include <set>

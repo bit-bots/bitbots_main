@@ -1,11 +1,11 @@
 #ifndef BITBOTS_DYNUP_INCLUDE_BITBOTS_DYNUP_VISUALIZER_H_
 #define BITBOTS_DYNUP_INCLUDE_BITBOTS_DYNUP_VISUALIZER_H_
 
-#include <bitbots_splines/abstract_visualizer.h>
-#include <bitbots_splines/smooth_spline.h>
-#include <bitbots_splines/spline_container.h>
 #include <tf2/LinearMath/Vector3.h>
 
+#include <bitbots_splines/abstract_visualizer.hpp>
+#include <bitbots_splines/smooth_spline.hpp>
+#include <bitbots_splines/spline_container.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <string>
