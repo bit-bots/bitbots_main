@@ -22,8 +22,7 @@ As such you can lookup some of the needed requirements there.
   mkdir -p "~/colcon_ws/src"
   cd "~/colcon_ws/src"
   git clone git@github.com:bit-bots/bitbots_meta.git && cd bitbots_meta
-  make pull-init
-  pip install -r bitbots_meta/requirements/dev.txt
+  make install-no-root
 
 - set PATH and COLCON_WS (see `section 5 <https://docs.bit-bots.de/meta/manual/tutorials/install_software_ros2.html>`_)
 

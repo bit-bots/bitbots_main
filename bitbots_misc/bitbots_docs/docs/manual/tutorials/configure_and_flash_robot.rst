@@ -41,8 +41,9 @@ At a competition, follow these steps:
 #. **Checkout the latest code:**
    In your local `bitbots_meta <https://github.com/bit-bots/bitbots_meta>`_ repo run:
 
-   #. ``make status`` to check if the submodules are on the correct branch (normally ``master`` or ``main``)
-   #. ``make pull-all`` to update all submodules
+   #. Check that you are on the ``master`` branch
+   #. ``git pull`` to get the latest changes
+   #. ``make fresh-libs`` to clean and update all third party libraries
 
 #. **Sync, configure, compile and launch software:**
    In the ``bitbots_meta`` directory call the ``deploy_robots.py`` tool:
@@ -120,7 +121,7 @@ We utilize a python script located in ``bitbots_meta/scripts/robot_compile.py`` 
 - sync the local code of the whole ``bitbots_meta`` or a single package onto a robot
 - build the synced code on the robot afterwards
 - automatically install required dependencies with ``rosdep install`` if the robot has an active internet connection
-- clean the whole ``~/colcon_ws`` on a robot 
+- clean the whole ``~/colcon_ws`` on a robot
 - interactively configure the ``game_settings.yaml`` on a robot to prepare it for a game
 - activate the fields Wi-Fi connection and disable all others
 

@@ -37,9 +37,9 @@ If you are not already using Ubuntu 22.04, consider installing it on your system
 
 **3. Download our software**
 
-- Create a GitHub and Mafiasi account, if not already done (see here for further information on this: http://doku.bit-bots.de/private/manual/dienste_accounts.html)
+- Create a GitHub account, if not already done (see here for further information on this: http://doku.bit-bots.de/private/manual/dienste_accounts.html)
   Those services host our Git software repositories.
-- Add your SSH key to GitHub and Gitea to access and sync our repositories
+- Add your SSH key to GitHub to access and sync our repositories
     - If you don't know what I am talking about or you don't yet have a SSH key, follow this guide: https://docs.github.com/en/authentication/connecting-to-github-with-ssh/checking-for-existing-ssh-keys
     - Go to your account settings and add your SSH key (the ``.pub`` file) for `GitHub <https://github.com/settings/keys>`_ AND `Gitea <https://git.mafiasi.de/user/settings/keys>`_
 - Now, you can clone (download) our main code repository (repo) called `bitbots_meta <https://github.com/bit-bots/bitbots_meta>`_:
@@ -50,11 +50,9 @@ If you are not already using Ubuntu 22.04, consider installing it on your system
     - Clone the code repository with: ``git clone git@github.com:bit-bots/bitbots_meta.git``
       Confirm the host key by typing ``yes``, if asked.
     - Move into the newly created directory with: ``cd bitbots_meta``
-    - Clone all sub-repositories and other files by running: ``make install``
+    - Clone all code and other files by running: ``make install``
       This will take a while, as it downloads all the code and other files from our repositories and additionally installs all missing dependencies (using rosdep and pip).
       Finally, it will register pre-commit hooks (automatic code-formatting and warnings), which will be run every time you commit code to our repositories.
-    - To use the robot's cameras, also run the following command to download and install the Basler Pylon camera drivers: ``make basler``
-      Confirm with the properitary license agreement by typing ``y``, and later enter your passwort (sudo) if asked.
 
 **4. Setup colcon workspace**
 
