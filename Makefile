@@ -1,4 +1,4 @@
-.PHONY : basler install pip pre-commit format pull-all pull-init pull-files fresh-libs remove-libs setup-libs rosdep status update
+.PHONY : basler install install-no-root pip pre-commit format pull-all pull-init pull-repos pull-files fresh-libs remove-libs setup-libs rosdep status update update-no-root
 
 HTTPS := ""
 REPO:=$(dir $(abspath $(firstword $(MAKEFILE_LIST))))
@@ -8,6 +8,8 @@ basler:
 	scripts/make_basler.sh $(ARGS)
 
 install: pull-init basler update
+
+install-no-root: pull-init update-no-root
 
 pip:
 	# Install and upgrade pip dependencies
@@ -21,27 +23,13 @@ format:
 	# Format all files in the repository
 	pre-commit run --all-files
 
-pull-all:
-	# Pull all repositories and untracked files
-	vcs pull . --nested
-	scripts/pull_files.bash
+pull-all: pull-repos pull-files
 
 pull-init: fresh-libs pull-files
 
-fresh-libs: remove-libs setup-libs
-
-remove-libs:
-	# Removes the lib directory and all its contents
-	rm -rf lib/*
-
-setup-libs:
-	# Clone lib repositories in workspace.repos into the lib directory
-ifeq ($(HTTPS), true)
-	# Replace git@ with https:// to allow cloning without ssh keys
-	awk '{sub("git@github.com:", "https://github.com/"); print "  " $$0}' workspace.repos | vcs import .
-else
-	vcs import . < workspace.repos
-endif
+pull-repos:
+	# Pull all repositories
+	vcs pull . --nested
 
 pull-files:
 	# Pull all large files (mainly neural network weights) from the http server
@@ -66,6 +54,21 @@ pull-files:
 		--reject "index.html*" \
 		"https://data.bit-bots.de/rl_walk_models/"
 
+fresh-libs: remove-libs setup-libs
+
+remove-libs:
+	# Removes the lib directory and all its contents
+	rm -rf lib/*
+
+setup-libs:
+	# Clone lib repositories in workspace.repos into the lib directory
+ifeq ($(HTTPS), true)
+	# Replace git@ with https:// to allow cloning without ssh keys
+	awk '{sub("git@github.com:", "https://github.com/"); print "  " $$0}' workspace.repos | vcs import .
+else
+	vcs import . < workspace.repos
+endif
+
 rosdep:
 	# Update rosdep and install dependencies from meta directory
 	rosdep update
@@ -78,3 +81,5 @@ status:
 	vcs status . --nested
 
 update: pull-all rosdep pip pre-commit
+
+update-no-root: pull-all pip pre-commit
