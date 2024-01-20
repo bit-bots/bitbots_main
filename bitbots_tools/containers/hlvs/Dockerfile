@@ -62,12 +62,12 @@ RUN cd src/bitbots_meta && \
     make pull-all && \
     rm -rf bitbots_tools/bitbots_jenkins_library udp_bridge bitbots_tools/containers \
     humanoid_league_visualization dynamic_stack_decider/dynamic_stack_decider_visualization bitbots_lowlevel \
-    wolfgang_robot/wolfgang_pybullet_sim bitbots_navigation/bitbots_visual_compass lib/DynamixelSDK lib/dynamixel-workbench \
+    bitbots_wolfgang/wolfgang_pybullet_sim bitbots_navigation/bitbots_visual_compass lib/DynamixelSDK lib/dynamixel-workbench \
     lib/events-executor/events_executor_examples lib/events-executor/irobot_lock_free_events_queue \
     bitbots_misc/bitbots_live_tool_rqt  bitbots_motion/bitbots_recordui_rqt bitbots_misc/bitbots_basler_camera \
     lib/pylon-ros-camera && \
     sed -i '/plotjuggler/d' bitbots_motion/bitbots_quintic_walk/package.xml && \
-    sed -i '/run_depend/d' wolfgang_robot/wolfgang_moveit_config/package.xml
+    sed -i '/run_depend/d' bitbots_wolfgang/wolfgang_moveit_config/package.xml
 
 # Install ros dependencies with rosdep
 RUN sudo apt update && rosdep update
@@ -77,7 +77,7 @@ RUN . /opt/ros/iron/setup.sh && colcon build --cmake-args -DBUILD_TESTING=OFF
 
 # TODO execute tests
 
-RUN cp src/bitbots_meta/wolfgang_robot/wolfgang_robocup_api/scripts/start.sh .local/bin/start
+RUN cp src/bitbots_meta/bitbots_wolfgang/wolfgang_robocup_api/scripts/start.sh .local/bin/start
 
 # Volume for logs
 VOLUME /robocup-logs
