@@ -23,7 +23,8 @@ add_compile_options(-Wall -Werror -Wno-unused)
 
 add_executable(extrinsic_calibration src/extrinsic_calibration.cpp)
 
-ament_target_dependencies(extrinsic_calibration
+ament_target_dependencies(
+  extrinsic_calibration
   ament_cmake
   bitbots_docs
   rclcpp
@@ -31,18 +32,14 @@ ament_target_dependencies(extrinsic_calibration
   tf2
   tf2_geometry_msgs
   tf2_ros
-  rot_conv
-)
+  rot_conv)
 
 enable_bitbots_docs()
 
-install(TARGETS extrinsic_calibration
-        DESTINATION lib/${PROJECT_NAME})
+install(TARGETS extrinsic_calibration DESTINATION lib/${PROJECT_NAME})
 
-install(DIRECTORY launch
-        DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 
-install(DIRECTORY config
-        DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
 
 ament_package()

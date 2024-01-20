@@ -18,28 +18,47 @@ find_package(std_srvs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(bitbots_docs REQUIRED)
 
-set(INCLUDE_DIRS ${bio_ik_msgs_INCLUDE_DIRS} ${ament_cmake_INCLUDE_DIRS}
-  ${sensor_msgs_INCLUDE_DIRS}
-  ${rclpy_INCLUDE_DIRS} ${tf2_INCLUDE_DIRS} ${bitbots_msgs_INCLUDE_DIRS}
-  ${std_msgs_INCLUDE_DIRS} ${tf2_geometry_msgs_INCLUDE_DIRS}
-  ${std_srvs_INCLUDE_DIRS} ${geometry_msgs_INCLUDE_DIRS}
-  ${bitbots_docs_INCLUDE_DIRS})
+set(INCLUDE_DIRS
+    ${bio_ik_msgs_INCLUDE_DIRS}
+    ${ament_cmake_INCLUDE_DIRS}
+    ${sensor_msgs_INCLUDE_DIRS}
+    ${rclpy_INCLUDE_DIRS}
+    ${tf2_INCLUDE_DIRS}
+    ${bitbots_msgs_INCLUDE_DIRS}
+    ${std_msgs_INCLUDE_DIRS}
+    ${tf2_geometry_msgs_INCLUDE_DIRS}
+    ${std_srvs_INCLUDE_DIRS}
+    ${geometry_msgs_INCLUDE_DIRS}
+    ${bitbots_docs_INCLUDE_DIRS})
 include_directories(${INCLUDE_DIRS})
 
-set(LIBRARY_DIRS ${bio_ik_msgs_LIBRARY_DIRS} ${ament_cmake_LIBRARY_DIRS}
-  ${sensor_msgs_LIBRARY_DIRS}
-  ${rclpy_LIBRARY_DIRS} ${tf2_LIBRARY_DIRS} ${bitbots_msgs_LIBRARY_DIRS}
-  ${std_msgs_LIBRARY_DIRS} ${tf2_geometry_msgs_LIBRARY_DIRS}
-  ${std_srvs_LIBRARY_DIRS} ${geometry_msgs_LIBRARY_DIRS}
-  ${bitbots_docs_LIBRARY_DIRS})
+set(LIBRARY_DIRS
+    ${bio_ik_msgs_LIBRARY_DIRS}
+    ${ament_cmake_LIBRARY_DIRS}
+    ${sensor_msgs_LIBRARY_DIRS}
+    ${rclpy_LIBRARY_DIRS}
+    ${tf2_LIBRARY_DIRS}
+    ${bitbots_msgs_LIBRARY_DIRS}
+    ${std_msgs_LIBRARY_DIRS}
+    ${tf2_geometry_msgs_LIBRARY_DIRS}
+    ${std_srvs_LIBRARY_DIRS}
+    ${geometry_msgs_LIBRARY_DIRS}
+    ${bitbots_docs_LIBRARY_DIRS})
 
 link_directories(${LIBRARY_DIRS})
 
-set(LIBS ${bio_ik_msgs_LIBRARIES} ${ament_cmake_LIBRARIES}
-  ${sensor_msgs_LIBRARIES} ${rclpy_LIBRARIES}
-  ${tf2_LIBRARIES} ${bitbots_msgs_LIBRARIES} ${std_msgs_LIBRARIES}
-  ${tf2_geometry_msgs_LIBRARIES} ${std_srvs_LIBRARIES} ${geometry_msgs_LIBRARIES}
-  ${bitbots_docs_LIBRARIES})
+set(LIBS
+    ${bio_ik_msgs_LIBRARIES}
+    ${ament_cmake_LIBRARIES}
+    ${sensor_msgs_LIBRARIES}
+    ${rclpy_LIBRARIES}
+    ${tf2_LIBRARIES}
+    ${bitbots_msgs_LIBRARIES}
+    ${std_msgs_LIBRARIES}
+    ${tf2_geometry_msgs_LIBRARIES}
+    ${std_srvs_LIBRARIES}
+    ${geometry_msgs_LIBRARIES}
+    ${bitbots_docs_LIBRARIES})
 
 include(${CMAKE_BINARY_DIR}/../bitbots_docs/enable_bitbots_docs.cmake)
 enable_bitbots_docs()

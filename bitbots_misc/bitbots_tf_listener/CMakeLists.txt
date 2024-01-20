@@ -20,27 +20,16 @@ find_package(rcl REQUIRED)
 
 add_compile_options(-Wall -Wno-unused)
 
-pybind11_add_module(cpp_wrapper SHARED
-  src/bitbots_tf_listener.cpp
-)
+pybind11_add_module(cpp_wrapper SHARED src/bitbots_tf_listener.cpp)
 
-ament_target_dependencies(cpp_wrapper PUBLIC
-  rclcpp
-  rcl
-  tf2
-  tf2_ros
-)
+ament_target_dependencies(cpp_wrapper PUBLIC rclcpp rcl tf2 tf2_ros)
 
-target_link_libraries(cpp_wrapper PRIVATE
-  pybind11::module
-)
+target_link_libraries(cpp_wrapper PRIVATE pybind11::module)
 
 ament_python_install_package(${PROJECT_NAME})
 
 ament_get_python_install_dir(PYTHON_INSTALL_DIR)
 
-install(TARGETS cpp_wrapper
-  DESTINATION "${PYTHON_INSTALL_DIR}/${PROJECT_NAME}"
-)
+install(TARGETS cpp_wrapper DESTINATION "${PYTHON_INSTALL_DIR}/${PROJECT_NAME}")
 
 ament_package()

@@ -15,7 +15,8 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
-rosidl_generate_interfaces(${PROJECT_NAME}
+rosidl_generate_interfaces(
+  ${PROJECT_NAME}
   "action/Dynup.action"
   "action/Kick.action"
   "action/LookAt.action"
@@ -54,8 +55,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   geometry_msgs
   sensor_msgs
   std_msgs
-  trajectory_msgs
-)
+  trajectory_msgs)
 
 include(${CMAKE_BINARY_DIR}/../bitbots_docs/enable_bitbots_docs.cmake)
 enable_bitbots_docs()

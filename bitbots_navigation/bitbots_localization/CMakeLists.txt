@@ -29,8 +29,7 @@ generate_parameter_library(
   src/parameters.yml)
 
 rosidl_generate_interfaces(${PROJECT_NAME} "srv/ResetFilter.srv"
-  "srv/SetPaused.srv"
-  DEPENDENCIES builtin_interfaces)
+                           "srv/SetPaused.srv" DEPENDENCIES builtin_interfaces)
 
 include_directories(${INCLUDE_DIRS})
 
@@ -38,48 +37,53 @@ link_directories(${LIBRARY_DIRS})
 
 set(LIBS ${ament_cmake_LIBRARIES})
 
-## Compile as C++17
+# Compile as C++17
 add_compile_options(-Wall -Werror -Wno-unused)
 
-## Find catkin macros and libraries
-## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
-## is used, also find other catkin packages
+# Find catkin macros and libraries if COMPONENTS list like find_package(catkin
+# REQUIRED COMPONENTS xyz) is used, also find other catkin packages
 
 find_package(Eigen3 REQUIRED)
 
 find_package(OpenCV)
 
-## Generate services in the 'srv' folder
+# Generate services in the 'srv' folder
 
-## Generate added messages and services with any dependencies listed here
+# Generate added messages and services with any dependencies listed here
 
 include(${CMAKE_BINARY_DIR}/../bitbots_docs/enable_bitbots_docs.cmake)
 enable_bitbots_docs()
 
-###########
-## Build ##
-###########
+# ##############################################################################
+# Build ##
+# ##############################################################################
 
-## Specify additional locations of header files
-## Your package locations should be listed before other locations
+# Specify additional locations of header files Your package locations should be
+# listed before other locations
 
 include_directories(include)
 
-## Declare a C++ library
-set(SOURCES src/localization.cpp src/map.cpp src/MotionModel.cpp
-  src/ObservationModel.cpp src/RobotState.cpp src/StateDistribution.cpp
-  src/tools.cpp)
+# Declare a C++ library
+set(SOURCES
+    src/localization.cpp
+    src/map.cpp
+    src/MotionModel.cpp
+    src/ObservationModel.cpp
+    src/RobotState.cpp
+    src/StateDistribution.cpp
+    src/tools.cpp)
 
-## Add cmake target dependencies of the library
-## as an example, code may need to be generated before libraries
-## either from message generation or dynamic reconfigure#include "ObservationModel.h"
+# Add cmake target dependencies of the library as an example, code may need to
+# be generated before libraries either from message generation or dynamic
+# reconfigure#include "ObservationModel.h"
 
-## Declare a C++ executable
-## With catkin_make all packages are built within a single CMake context
-## The recommended prefix ensures that target names across packages don't collide
+# Declare a C++ executable With catkin_make all packages are built within a
+# single CMake context The recommended prefix ensures that target names across
+# packages don't collide
 add_executable(localization ${SOURCES})
 
-ament_target_dependencies(localization
+ament_target_dependencies(
+  localization
   ament_cmake
   rclcpp
   Boost
@@ -95,14 +99,14 @@ ament_target_dependencies(localization
   tf2_ros
   visualization_msgs)
 
-rosidl_get_typesupport_target(cpp_typesupport_target
-  ${PROJECT_NAME} "rosidl_typesupport_cpp")
+rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME}
+                              "rosidl_typesupport_cpp")
 
-target_link_libraries(localization "${cpp_typesupport_target}" localization_parameters)
+target_link_libraries(localization "${cpp_typesupport_target}"
+                      localization_parameters)
 
-install(DIRECTORY config  DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 install(TARGETS localization DESTINATION lib/${PROJECT_NAME})
-
 
 ament_package()

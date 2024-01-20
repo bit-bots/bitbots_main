@@ -30,10 +30,11 @@ add_compile_options(-Wall -Wno-unused)
 enable_bitbots_docs()
 
 pybind11_add_module(libbitbots_moveit_bindings SHARED
-  src/bitbots_moveit_bindings.cpp
-)
+                    src/bitbots_moveit_bindings.cpp)
 
-ament_target_dependencies(libbitbots_moveit_bindings PUBLIC
+ament_target_dependencies(
+  libbitbots_moveit_bindings
+  PUBLIC
   backward_ros
   bio_ik
   bio_ik_msgs
@@ -45,13 +46,11 @@ ament_target_dependencies(libbitbots_moveit_bindings PUBLIC
   ros2_python_extension
   tf2
   tf2_ros
-  tf2_kdl
-)
+  tf2_kdl)
 
 ament_python_install_package(${PROJECT_NAME})
 
 install(TARGETS libbitbots_moveit_bindings
-  DESTINATION "${PYTHON_INSTALL_DIR}/${PROJECT_NAME}"
-)
+        DESTINATION "${PYTHON_INSTALL_DIR}/${PROJECT_NAME}")
 
 ament_package()

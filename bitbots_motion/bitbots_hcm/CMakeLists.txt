@@ -27,45 +27,52 @@ set(SOURCES src/hcm.cpp)
 
 add_executable(HCM ${SOURCES})
 
-ament_target_dependencies(HCM
-    ament_cmake
-    backward_ros
-    bitbots_msgs
-    builtin_interfaces
-    geometry_msgs
-    rclcpp
-    ros2_python_extension
-    sensor_msgs
-    std_msgs)
+ament_target_dependencies(
+  HCM
+  ament_cmake
+  backward_ros
+  bitbots_msgs
+  builtin_interfaces
+  geometry_msgs
+  rclcpp
+  ros2_python_extension
+  sensor_msgs
+  std_msgs)
 
 target_link_libraries(HCM ${PYTHON_LIBRARIES})
 
 enable_bitbots_docs()
 
-install(TARGETS HCM
-    DESTINATION lib/${PROJECT_NAME})
+install(TARGETS HCM DESTINATION lib/${PROJECT_NAME})
 
-install(DIRECTORY launch
-    DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 
-install(DIRECTORY config
-    DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
 
-install(DIRECTORY scripts/ USE_SOURCE_PERMISSIONS DESTINATION lib/${PROJECT_NAME})
+install(DIRECTORY scripts/ USE_SOURCE_PERMISSIONS
+        DESTINATION lib/${PROJECT_NAME})
 
-install(DIRECTORY bitbots_hcm/hcm_dsd/actions DESTINATION share/${PROJECT_NAME}/hcm_dsd FILES_MATCHING PATTERN "*.py")
+install(
+  DIRECTORY bitbots_hcm/hcm_dsd/actions
+  DESTINATION share/${PROJECT_NAME}/hcm_dsd
+  FILES_MATCHING
+  PATTERN "*.py")
 
-install(DIRECTORY bitbots_hcm/hcm_dsd/decisions DESTINATION share/${PROJECT_NAME}/hcm_dsd FILES_MATCHING PATTERN "*.py")
+install(
+  DIRECTORY bitbots_hcm/hcm_dsd/decisions
+  DESTINATION share/${PROJECT_NAME}/hcm_dsd
+  FILES_MATCHING
+  PATTERN "*.py")
 
-install(FILES bitbots_hcm/hcm_dsd/hcm.dsd DESTINATION share/${PROJECT_NAME}/hcm_dsd)
+install(FILES bitbots_hcm/hcm_dsd/hcm.dsd
+        DESTINATION share/${PROJECT_NAME}/hcm_dsd)
 
 if(BUILD_TESTING)
   find_package(ament_cmake_pytest REQUIRED)
 
-  ament_add_pytest_test(hcm_py_test test/pytest
-    PYTHON_EXECUTABLE "${PYTHON_EXECUTABLE}"
-    APPEND_ENV PYTHONPATH=${CMAKE_CURRENT_BINARY_DIR}
-  )
+  ament_add_pytest_test(
+    hcm_py_test test/pytest PYTHON_EXECUTABLE "${PYTHON_EXECUTABLE}" APPEND_ENV
+    PYTHONPATH=${CMAKE_CURRENT_BINARY_DIR})
 endif()
 
 ament_python_install_package(${PROJECT_NAME})

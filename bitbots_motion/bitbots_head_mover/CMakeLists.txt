@@ -25,19 +25,14 @@ find_package(tf2_ros REQUIRED)
 
 set(CMAKE_BUILD_TYPE Debug)
 
-# uncomment the following section in order to fill in
-# further dependencies manually.
-# find_package(<dependency> REQUIRED)
+# uncomment the following section in order to fill in further dependencies
+# manually. find_package(<dependency> REQUIRED)
 generate_parameter_library(
   head_parameters # cmake target name for the parameter library
   config/head_config.yml)
 
 add_executable(move_head src/move_head.cpp)
-target_link_libraries(move_head
-  rclcpp::rclcpp
-  head_parameters
-)
-
+target_link_libraries(move_head rclcpp::rclcpp head_parameters)
 
 ament_target_dependencies(
   move_head
@@ -57,14 +52,10 @@ ament_target_dependencies(
   tf2_kdl
   tf2_ros)
 
-install(TARGETS
-  move_head
-  DESTINATION lib/${PROJECT_NAME})
+install(TARGETS move_head DESTINATION lib/${PROJECT_NAME})
 
-install(DIRECTORY config
-        DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
 
-install(DIRECTORY launch
-  DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 
 ament_package()

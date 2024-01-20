@@ -23,6 +23,6 @@ enable_bitbots_docs()
 ament_export_dependencies(ament_cmake)
 ament_export_include_directories(${INCLUDE_DIRS})
 
-install(DIRECTORY animations  DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY animations DESTINATION share/${PROJECT_NAME})
 
 ament_package()

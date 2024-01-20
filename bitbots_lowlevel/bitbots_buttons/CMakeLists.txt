@@ -17,22 +17,21 @@ find_package(std_srvs REQUIRED)
 find_package(test_msgs REQUIRED)
 
 add_executable(button_node src/button_node.cpp)
-ament_target_dependencies(button_node
-        ament_cmake
-        backward_ros
-        bitbots_msgs
-        bitbots_localization
-        rclcpp
-        std_msgs
-        std_srvs
-        test_msgs)
+ament_target_dependencies(
+  button_node
+  ament_cmake
+  backward_ros
+  bitbots_msgs
+  bitbots_localization
+  rclcpp
+  std_msgs
+  std_srvs
+  test_msgs)
 
-#enable_bitbots_docs()
+# enable_bitbots_docs()
 
-
-install(TARGETS button_node
-        DESTINATION lib/${PROJECT_NAME})
-install(DIRECTORY config  DESTINATION share/${PROJECT_NAME})
+install(TARGETS button_node DESTINATION lib/${PROJECT_NAME})
+install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 
 ament_export_dependencies(std_msgs)

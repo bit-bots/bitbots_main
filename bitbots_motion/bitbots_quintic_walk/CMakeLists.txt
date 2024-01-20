@@ -2,13 +2,12 @@ cmake_minimum_required(VERSION 3.5)
 project(bitbots_quintic_walk)
 
 # Add support for C++17
-if (NOT CMAKE_CXX_STANDARD)
-    set(CMAKE_CXX_STANDARD 17)
-endif ()
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 17)
+endif()
 
 set(PYBIND11_PYTHON_VERSION 3)
 set(PYBIND11_FINDPYTHON ON)
-#find_package(bitbots_test REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(backward_ros REQUIRED)
 find_package(biped_interfaces REQUIRED)
@@ -30,107 +29,96 @@ find_package(tf2_eigen REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 
-
 find_package(ros2_python_extension REQUIRED)
 find_package(pybind11 REQUIRED)
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
 
-generate_parameter_library(
-  bitbots_quintic_walk_parameters
-  src/parameters.yaml
-)
+generate_parameter_library(bitbots_quintic_walk_parameters src/parameters.yaml)
 
-rosidl_generate_interfaces(${PROJECT_NAME}
-        "msg/WalkDebug.msg"
-        "msg/WalkEngineDebug.msg"
-        DEPENDENCIES
-        std_msgs
-        geometry_msgs
-        Python3)
+rosidl_generate_interfaces(
+  ${PROJECT_NAME}
+  "msg/WalkDebug.msg"
+  "msg/WalkEngineDebug.msg"
+  DEPENDENCIES
+  std_msgs
+  geometry_msgs
+  Python3)
 
 include_directories(include ${PYTHON_INCLUDE_DIRS})
 
 add_compile_options(-Wall -Werror -Wno-unused)
 
-set(SOURCES src/walk_visualizer.cpp
-        src/walk_engine.cpp
-        src/walk_stabilizer.cpp
-        src/walk_ik.cpp
-        src/walk_node.cpp)
+set(SOURCES src/walk_visualizer.cpp src/walk_engine.cpp src/walk_stabilizer.cpp
+            src/walk_ik.cpp src/walk_node.cpp)
 
 add_executable(WalkNode ${SOURCES})
 
-ament_target_dependencies(WalkNode
-        ament_cmake
-        backward_ros
-        biped_interfaces
-        bitbots_msgs
-        bitbots_splines
-        control_msgs
-        control_toolbox
-        geometry_msgs
-        moveit_ros_planning_interface
-        nav_msgs
-        rclcpp
-        rot_conv
-        sensor_msgs
-        std_msgs
-        tf2
-        tf2_eigen
-        tf2_geometry_msgs
-        tf2_ros)
+ament_target_dependencies(
+  WalkNode
+  ament_cmake
+  backward_ros
+  biped_interfaces
+  bitbots_msgs
+  bitbots_splines
+  control_msgs
+  control_toolbox
+  geometry_msgs
+  moveit_ros_planning_interface
+  nav_msgs
+  rclcpp
+  rot_conv
+  sensor_msgs
+  std_msgs
+  tf2
+  tf2_eigen
+  tf2_geometry_msgs
+  tf2_ros)
 
-rosidl_get_typesupport_target(cpp_typesupport_target
-        ${PROJECT_NAME} "rosidl_typesupport_cpp")
+rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME}
+                              "rosidl_typesupport_cpp")
 
-target_link_libraries(WalkNode "${cpp_typesupport_target}" bitbots_quintic_walk_parameters)
-
+target_link_libraries(WalkNode "${cpp_typesupport_target}"
+                      bitbots_quintic_walk_parameters)
 
 # create the lib
-pybind11_add_module(libpy_quintic_walk SHARED
-        src/walk_pywrapper.cpp ${SOURCES})
-ament_target_dependencies(libpy_quintic_walk PUBLIC
-        ament_cmake
-        biped_interfaces
-        bitbots_msgs
-        bitbots_splines
-        control_msgs
-        control_toolbox
-        geometry_msgs
-        moveit_ros_planning_interface
-        nav_msgs
-        rclcpp
-        ros2_python_extension
-        rot_conv
-        sensor_msgs
-        std_msgs
-        tf2
-        tf2_eigen
-        tf2_geometry_msgs
-        tf2_ros)
+pybind11_add_module(libpy_quintic_walk SHARED src/walk_pywrapper.cpp ${SOURCES})
+ament_target_dependencies(
+  libpy_quintic_walk
+  PUBLIC
+  ament_cmake
+  biped_interfaces
+  bitbots_msgs
+  bitbots_splines
+  control_msgs
+  control_toolbox
+  geometry_msgs
+  moveit_ros_planning_interface
+  nav_msgs
+  rclcpp
+  ros2_python_extension
+  rot_conv
+  sensor_msgs
+  std_msgs
+  tf2
+  tf2_eigen
+  tf2_geometry_msgs
+  tf2_ros)
 
-target_link_libraries(libpy_quintic_walk PRIVATE "${cpp_typesupport_target}" bitbots_quintic_walk_parameters)
+target_link_libraries(
+  libpy_quintic_walk PRIVATE "${cpp_typesupport_target}"
+                             bitbots_quintic_walk_parameters)
 
 ament_python_install_package(bitbots_quintic_walk_py)
 
 install(TARGETS libpy_quintic_walk
-        DESTINATION "${PYTHON_INSTALL_DIR}/bitbots_quintic_walk_py"
-        )
-
-#if(BUILD_TESTING)
-#  enable_bitbots_tests()
-#endif()
+        DESTINATION "${PYTHON_INSTALL_DIR}/bitbots_quintic_walk_py")
 
 enable_bitbots_docs()
 
-install(TARGETS WalkNode
-        DESTINATION lib/${PROJECT_NAME})
+install(TARGETS WalkNode DESTINATION lib/${PROJECT_NAME})
 
-install(DIRECTORY launch
-        DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 
-install(DIRECTORY config
-        DESTINATION share/${PROJECT_NAME})
-
+install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
 
 ament_package()

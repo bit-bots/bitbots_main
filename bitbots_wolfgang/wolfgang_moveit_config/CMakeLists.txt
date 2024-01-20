@@ -22,7 +22,6 @@ install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
 ament_export_dependencies(ament_cmake)
 ament_export_include_directories(${INCLUDE_DIRS})
 
-install(DIRECTORY config
-        DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
 
 ament_package()
