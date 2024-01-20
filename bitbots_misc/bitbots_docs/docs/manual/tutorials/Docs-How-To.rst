@@ -2,7 +2,7 @@
 How to document
 ===============
 
-Our documentation is published under `doku.bit-bots.de <https://doku.bit-bots.de>`_ and `docs.bit-bots.de <https://docs.bit-bots.de>`_ and will automatically be regenerated from the package `bitbots_meta/bitbots_tools/bitbots_docs <https://github.com/bit-bots/bitbots_tools/tree/master/bitbots_docs>`_.
+Our documentation is published under `doku.bit-bots.de <https://doku.bit-bots.de>`_ and `docs.bit-bots.de <https://docs.bit-bots.de>`_ and will automatically be regenerated from the package `bitbots_meta/bitbots_misc/bitbots_docs <https://github.com/bit-bots/bitbots_meta/tree/master/bitbots_misc/bitbots_docs>`_.
 
 Installation of dependencies
 ============================
@@ -22,19 +22,19 @@ How to build the documentation
 1. Go to the package with the general documentation (tutorials etc. including this one). Said package is called  ``bitbots_docs``.
 
   .. code-block:: bash
-            
-        cd bitbots_meta/bitbots_tools/bitbots_docs
-        
+
+        cd bitbots_meta/bitbots_misc/bitbots_docs
+
 2. Build the sphinx docs for the given package.
-        
+
   .. code-block:: bash
-   
+
         sphinx-build docs docs/_out -b html
-        
+
 3. Open the docs with firefox.
-        
+
   .. code-block:: bash
-   
+
         firefox docs/_out/index.html
 
 To build and view documentation for another package go to the ROS package (e.g. ``bitbots_vision``) and run steps 2. and 3. there.
