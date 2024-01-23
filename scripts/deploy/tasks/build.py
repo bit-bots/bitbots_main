@@ -1,17 +1,11 @@
+from deploy.misc import get_connections_from_succeeded, hide_output, print_debug, print_err
+from deploy.tasks.abstract_task import AbstractTask
 from fabric import Group, GroupResult
 from fabric.exceptions import GroupException
 
-from deploy.tasks.abstract_task import AbstractTask
-from deploy.misc import *
-
 
 class Build(AbstractTask):
-    def __init__(
-            self,
-            remote_workspace: str,
-            package: str = '',
-            pre_clean: bool = False
-        ) -> None:
+    def __init__(self, remote_workspace: str, package: str = "", pre_clean: bool = False) -> None:
         """
         Task to build using colcon in the remote workspace.
 
@@ -41,7 +35,6 @@ class Build(AbstractTask):
         build_results = self._build(connections)
         return build_results
 
-
     def _clean(self, connections: Group) -> GroupResult:
         """Clean the source directory before building.
 
@@ -52,8 +45,10 @@ class Build(AbstractTask):
             print_debug(f"Cleaning the following packages before building: {self._package}")
             cmd_clean = f"colcon clean packages -y --packages-select {self._package}"
         else:
-            print_debug(f"Cleaning ALL packages before building")
-            cmd_clean = f'rm -rf {self._remote_workspace}/build {self._remote_workspace}/install {self._remote_workspace}/log'
+            print_debug("Cleaning ALL packages before building")
+            cmd_clean = (
+                f"rm -rf {self._remote_workspace}/build {self._remote_workspace}/install {self._remote_workspace}/log"
+            )
 
         print_debug(f"Calling {cmd_clean}")
         try:
@@ -76,13 +71,13 @@ class Build(AbstractTask):
             print_debug(f"Building the following packages: {self._package}")
             package_option = f"--packages-up-to {self._package}"
         else:
-            print_debug(f"Building ALL packages")
+            print_debug("Building ALL packages")
             package_option = ""
         cmd = (
             "sync;"
             f"cd {self._remote_workspace};"
             "source /opt/ros/iron/setup.zsh;"
-            "ISOLATED_CPUS=\"$(grep -oP 'isolcpus=\K([\d-]+)' /proc/cmdline)\";"  # type: ignore[reportInvalidStringEscapeSequence]
+            "ISOLATED_CPUS=\"$(grep -oP 'isolcpus=\\K([\\d-]+)' /proc/cmdline)\";"  # type: ignore[reportInvalidStringEscapeSequence]
             f"chrt -r 1 taskset -c ${{ISOLATED_CPUS:-0-15}} colcon build --symlink-install {package_option} --continue-on-error || exit 1;"
             "sync;"
         )

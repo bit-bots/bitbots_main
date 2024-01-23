@@ -1,16 +1,15 @@
 import concurrent.futures
+import os
+from typing import Optional
 
+from deploy.misc import Connection, get_connections_from_succeeded, hide_output, print_debug, print_err, print_warn
+from deploy.tasks.abstract_task import AbstractTaskWhichRequiresSudo
 from fabric import Group, GroupResult, Result
 from fabric.exceptions import GroupException
 
-from deploy.tasks.abstract_task import AbstractTaskWhichRequiresSudo
-from deploy.misc import *
 
 class Install(AbstractTaskWhichRequiresSudo):
-    def __init__(
-            self,
-            remote_workspace: str
-        ) -> None:
+    def __init__(self, remote_workspace: str) -> None:
         """
         Task to install and update all dependencies.
 
@@ -47,7 +46,7 @@ class Install(AbstractTaskWhichRequiresSudo):
         :return: Results, with success if the Target has an internet connection
         """
         apt_mirror = "de.archive.ubuntu.com"
-        print_debug(f"Checking internet connections")
+        print_debug("Checking internet connections")
 
         cmd = f"timeout --foreground 0.5 curl -sSLI {apt_mirror}"
         print_debug(f"Calling {cmd}")
@@ -55,14 +54,13 @@ class Install(AbstractTaskWhichRequiresSudo):
             results = connections.run(cmd, hide=hide_output())
             print_debug(f"Internet is available on the following hosts: {self._succeeded_hosts(results)}")
         except GroupException as e:
-            print_warn(f"Internet is NOT available and skipping installs on the following hosts: {self._failed_hosts(e.result)}")
+            print_warn(
+                f"Internet is NOT available and skipping installs on the following hosts: {self._failed_hosts(e.result)}"
+            )
             results = e.result
         return results
 
-    def _install_rosdeps(
-            self,
-            connections: Group
-        ) -> GroupResult:
+    def _install_rosdeps(self, connections: Group) -> GroupResult:
         """
         Install ROS dependencies.
         This is done by simulating a rosdep install to gather install commands (mostly sudo apt install ...).
@@ -83,7 +81,7 @@ class Install(AbstractTaskWhichRequiresSudo):
         try:
             gather_results = connections.run(cmd, hide=hide_output())
         except GroupException as e:
-            print_err(f"Failed to gather rosdeps install commands")
+            print_err("Failed to gather rosdeps install commands")
             if not e.result.succeeded:
                 return e.result
             gather_results = e.result
@@ -122,19 +120,23 @@ class Install(AbstractTaskWhichRequiresSudo):
             # pip_command_prefix = ""  # TODO what is it?
             # pip_packages: list[str] = []
 
-            install_result: Optional[Result] = None  # This collects the result of the last run install command, failed if exception occurred
+            install_result: Optional[
+                Result
+            ] = None  # This collects the result of the last run install command, failed if exception occurred
             for install_command in install_commands:
                 if install_command.startswith(apt_command_prefix):
                     # Remove prefix from command, as we collect all apt commands into one
                     apt_packages.append(install_command.replace(apt_command_prefix, "", 1).strip())
                 else:
-                    print_warn(f"Currently only the apt-get installer is supported. Stumbled over unknown installer in command and skipping it: '{install_command}' on {connection.host}")
+                    print_warn(
+                        f"Currently only the apt-get installer is supported. Stumbled over unknown installer in command and skipping it: '{install_command}' on {connection.host}"
+                    )
 
             apt_install_command = f"apt-get install -y {' '.join(apt_packages)}"
             print_debug(f"Running apt install command: {apt_install_command} on {connection.host}")
             try:
                 install_result = connection.sudo(apt_install_command, hide=hide_output(), password=self._sudo_password)
-            except Exception as e:  # TODO: What exception can we expect here?
+            except Exception:  # TODO: What exception can we expect here?
                 print_err(f"Failed install command on {connection.host}")
                 install_result = Result(connection=connection, exited=1, command=apt_install_command)
             return install_result
@@ -144,7 +146,10 @@ class Install(AbstractTaskWhichRequiresSudo):
 
         # Create a ThreadPoolExecutor to run the install commands on all hosts in parallel
         with concurrent.futures.ThreadPoolExecutor(max_workers=len(gather_results.succeeded)) as executor:
-            futures = [executor.submit(_install_commands_on_single_host, gather_connection, gather_result) for gather_connection, gather_result in gather_results.items()]
+            futures = [
+                executor.submit(_install_commands_on_single_host, gather_connection, gather_result)
+                for gather_connection, gather_result in gather_results.items()
+            ]
 
         for future in futures:
             install_result = future.result()

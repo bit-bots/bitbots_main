@@ -1,0 +1,116 @@
+{  
+    "documentId": "8c6aa9a8917f764cb7039c2d",
+    "assemblyName": "WolfgangV3",
+    "outputFormat": "urdf",
+    "drawFrames": false,
+    "drawCollisions": false,
+    "useScads": true,
+    "simplifySTLs": false,
+    "mergeSTLs": false,
+    "maxSTLSize": 1,
+    "addDummyBaseLink": true,
+    "packageName": "wolfgang_description/urdf/",
+    "robotName": "wolfgang",
+    "additionalUrdfFile": "/additionalURDF.txt",
+
+    // in Nm
+    // 3/4 of the stall torque from robotis emanual at 14.8V
+    // original values
+    // XH540-W270: 11.7nm
+    // MX-106: 10 Nm
+    // MX-64: 7.3 Nm
+    "jointMaxEffort": {
+        "default": 0.0,
+        "RShoulderRoll": 5.475,
+        "LShoulderRoll": 5.475,
+        "RShoulderPitch": 5.475,
+        "LShoulderPitch": 5.475,
+        "RElbow": 5.475,
+        "LElbow": 5.475,
+        "RHipYaw": 7.5,
+        "LHipYaw": 7.5,
+        "RHipRoll": 7.5,
+        "LHipRoll": 7.5,
+        "RHipPitch": 7.5,
+        "LHipPitch": 7.5,
+        "RKnee": 8.775,
+        "LKnee": 8.775,
+        "RAnklePitch": 7.5,
+        "LAnklePitch": 7.5,
+        "RAnkleRoll": 7.5,
+        "LAnkleRoll": 7.5,
+        "HeadPan": 5.475,
+        "HeadTilt": 5.475
+    },
+    // in rad/sec
+    // from datasheet at 14.8 V
+    // XH540-W270: 46 [rev/min] -> 4.82
+    // MX-106: 55 [rev/min] -> 5.76
+    // MX-64: 78 [rev/min] -> 8.17
+    "jointMaxVelocity": {
+        "default": 0.0,
+        "RShoulderRoll": 8.17,
+        "LShoulderRoll": 8.17,
+        "RShoulderPitch": 8.17,
+        "LShoulderPitch": 8.17,
+        "RElbow": 8.17,
+        "LElbow": 8.17,
+        "RHipYaw": 5.76,
+        "LHipYaw": 5.76,
+        "RHipRoll": 5.76,
+        "LHipRoll": 5.76,
+        "RHipPitch": 5.76,
+        "LHipPitch": 5.76,
+        "RKnee": 4.82,
+        "LKnee": 4.82,
+        "RAnklePitch": 5.76,
+        "LAnklePitch": 5.76,
+        "RAnkleRoll": 5.76,
+        "LAnkleRoll": 5.76,
+        "HeadPan": 8.17,
+        "HeadTilt": 8.17
+    },
+    "jointDamping": {
+        // max force is only achived at 0 speed. max speed is only achieved with zero load
+        // damping = maxTorue / maxSpeed
+        "default": 0.0,
+        "RShoulderRoll": 0.67,
+        "LShoulderRoll": 0.67,
+        "RShoulderPitch": 0.67,
+        "LShoulderPitch": 0.67,
+        "RElbow": 0.67,
+        "LElbow": 0.67,
+        "RHipYaw": 1.3,
+        "LHipYaw": 1.3,
+        "RHipRoll": 1.3,
+        "LHipRoll": 1.3,
+        "RHipPitch": 1.3,
+        "LHipPitch": 1.3,
+        "RKnee": 1.82,
+        "LKnee": 1.82,
+        "RAnklePitch": 1.3,
+        "LAnklePitch": 1.3,
+        "RAnkleRoll": 1.3,
+        "LAnkleRoll": 1.3,
+        "HeadPan": 0.67,
+        "HeadTilt": 0.67
+    },
+    "ignore": [
+        // ignore smaller standard parts
+        "hex_socket_head_cap_screw_m3x0.50_x_8",
+        "rx64-cap",
+        "mf128zz",
+        "hn05-n101",        
+        "hn05-i101",
+        "hn07-i101",
+        "nuc_usb",
+        "nuc_button",
+        "nuc_usb",
+        "nuc_top",
+        "torsion_spring_assembly_helper",
+        "hip_z_spacer",
+        "torsion_spring_sodemann_t105-180-813r",
+        "torsion_spring_sodemann_t105-180-813l"
+    ],
+    "additionalURDF": "additionalURDF.txt"
+}

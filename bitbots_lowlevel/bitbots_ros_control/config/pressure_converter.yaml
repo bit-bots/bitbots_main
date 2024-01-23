@@ -1,0 +1,7 @@
+pressure_converter:
+  ros__parameters:
+    left_topic: "/foot_pressure_left"
+    right_topic: "/foot_pressure_right"
+    average: 5
+    scale_and_zero_average: 50
+    cop_threshold: 5.0

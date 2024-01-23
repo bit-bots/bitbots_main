@@ -1,0 +1,18 @@
+#VRML_SIM R2022b utf8
+# license: Apache License 2.0
+# license url: http://www.apache.org/licenses/LICENSE-2.0
+# tags: hidden
+# Extracted from: wolfgang.urdf
+
+EXTERNPROTO "../Wolfgang_textures/WolfgangNUC.proto"
+
+PROTO Wolfgang_nuc_mainMesh [
+]
+{
+  Shape {
+    appearance WolfgangNUC {}
+    geometry Mesh {
+      url["nuc_main.stl"]
+    }
+  }
+}

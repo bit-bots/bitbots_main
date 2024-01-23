@@ -1,0 +1,167 @@
+import cv2
+import numpy as np
+
+
+class DebugImage:
+    """
+    :class:`.DebugImage` draws the images with information of the vision pipeline for debug purposes.
+
+    It is capable of displaying the detected and convex field boundary (red and yellow lines respectively),
+    the best and discarded ball candidates (green and red circles respectively),
+    the goalposts (white bounding boxes) and
+    different obstacles (black: unknown, red: red robot, blue: blue robot).
+    """
+
+    def __init__(self, active=True):
+        """
+        Initialization of :class:`.DebugImage`.
+        """
+        self._debug_image = None
+        self.active = active
+
+    def set_image(self, image):
+        """
+        Sets a new image on which the debug image is mapped.
+
+        :param image: image the vision is currently processing
+        """
+        self._debug_image = image.copy()
+
+    def draw_field_boundary(self, field_boundary_points, color, thickness=1):
+        """
+        Draws a line a line that represents the given field_boundary.
+
+        :param field_boundary_points: list of coordinates of the field_boundary
+        :param color: color of the line
+        :param thickness: thickness of the line
+        """
+        if not self.active:
+            return
+        for i in range(len(field_boundary_points) - 1):
+            cv2.line(self._debug_image, field_boundary_points[i], field_boundary_points[i + 1], color, thickness=1)
+
+    def draw_ball_candidates(self, ball_candidates, color, thickness=1):
+        """
+        Draws a circle around every coordinate where a ball candidate was found.
+
+        :param ball_candidates: list of ball candidates with the type Candidate
+        :param color: color of the circle to draw
+        :param thickness: thickness of the outline
+        """
+        if not self.active:
+            return
+        for candidate in ball_candidates:
+            if candidate:
+                cv2.circle(
+                    self._debug_image,
+                    (candidate.get_center_x(), candidate.get_center_y()),
+                    candidate.get_radius(),
+                    color,
+                    thickness=thickness,
+                )
+
+    def draw_robot_candidates(self, robot_candidates, color, thickness=1):
+        """
+        Draws a bounding box for every given robot.
+
+        :param robot_candidates: list of list of robot candidates with the type Candidate
+        :param color: color of the outline
+        :param thickness: thickness of the outline
+        """
+        if not self.active:
+            return
+        for candidate in robot_candidates:
+            if candidate:
+                cv2.rectangle(
+                    self._debug_image,
+                    candidate.get_upper_left_point(),
+                    candidate.get_lower_right_point(),
+                    color,
+                    thickness=thickness,
+                )
+
+    def draw_points(self, points, color, thickness=-1, rad=2):
+        """
+        Draws a (line)point for every given point.
+
+        :param points: list points
+        :param color: color of the point
+        :param thickness: thickness of the outline
+        :param rad: radius of the point
+        """
+        if not self.active:
+            return
+        for point in points:
+            cv2.circle(self._debug_image, point, rad, color, thickness=thickness)
+
+    def draw_line_segments(self, segments, color, thickness=2):
+        """
+        Draws a line segment.
+
+        :param segments: list line segments in the form (x1,y1,x2,y2)
+        :param color: color of the line
+        :param thickness: thickness of the line
+        """
+        if not self.active:
+            return
+        for segment in segments:
+            cv2.line(self._debug_image, (segment[0], segment[1]), (segment[2], segment[3]), color, thickness=2)
+
+    def draw_mask(self, mask, color, opacity=0.5):
+        if not self.active:
+            return
+        # Make a colored image
+        colored_image = np.zeros_like(self._debug_image)
+        colored_image[:, :] = tuple(np.multiply(color, opacity).astype(np.uint8))
+
+        # Compose debug image with lines
+        self._debug_image = cv2.add(
+            cv2.bitwise_and(self._debug_image, self._debug_image, mask=255 - mask),
+            cv2.add(colored_image * opacity, self._debug_image * (1 - opacity), mask=mask).astype(np.uint8),
+        )
+
+    def get_image(self):
+        """
+        Get the image with the debug drawing in it.
+
+        :return: image with debug stuff
+        """
+        return self._debug_image
+
+    def draw(self, debug_image_description, image=None):
+        """
+        Draws a debug image description, that contains the style and the data for each object/class that we debug
+        E.g.:
+        {
+            'type': 'field_boundary',
+            'thickness': 1,
+            'color': (255,255,255),
+            'data': #Some data
+        }
+
+        :param debug_image_description: List of dicts contains the style and the date for each object/class that we debug
+        In the dict 'type' refers to the type that we want to draw. Some types are ['robot', 'field_boundary', 'ball', 'line_point', 'line_segment'].
+        The key 'color' defines the color as BRG. For most types this is the border color.
+        The key 'thickness' refers to the border thickness.
+        The data, so the candidates we want to draw are defined with the 'data' key.
+        :return: Image with debug stuff
+        """
+        # Set Image if transmitted (optional). Otherwise take the manual set image.
+        if image:
+            self.set_image(image)
+        # Define the draw functions for each type
+        draw_functions = {
+            "robot": self.draw_robot_candidates,
+            "field_boundary": self.draw_field_boundary,
+            "ball": self.draw_ball_candidates,
+            "line_point": self.draw_points,
+            "line_segment": self.draw_line_segments,
+        }
+        # Draw all entries
+        for draw_type in debug_image_description:
+            # Get drawing function from dict
+            draw_function = draw_functions[draw_type["type"]]
+            # Call drawing function
+            draw_function(draw_type["data"], draw_type["color"], draw_type["thickness"])
+        # Return the image
+        return self.get_image()

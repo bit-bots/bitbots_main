@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>wolfgang_pybullet_sim</name>
+  <version>1.3.0</version>
+  <description>Simulation environment using PyBullet for Wolfgang robot.</description>
+  
+  <maintainer email="bestmann@informatik.uni-hamburg.de">Marc Bestmann </maintainer>
+  <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+
+  <author email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</author>
+  <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
+
+  
+  <license>MIT</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>sensor_msgs</depend>
+  <depend>urdf</depend>
+  <depend>bitbots_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>rosgraph_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>bitbots_docs</depend>
+  <depend>wolfgang_webots_sim</depend>
+  <depend>tf_transformations</depend>
+  <depend>python3-transforms3d</depend>
+  <depend>python3-numpy</depend>
+
+  <export>
+      <bitbots_documentation>
+        <status>unknown</status>
+        <language>python</language>
+      </bitbots_documentation>
+  </export>
+</package>

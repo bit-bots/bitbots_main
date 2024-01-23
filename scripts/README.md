@@ -1,14 +1,6 @@
-# bitbots_meta scripts
+# Scripts
 
 This directory contains scripts that are very useful for development, testing and deployment.
-
-## `build-doc.py`
-
-To build documentation with `sphinx` for all packages in the workspace. Possibly outdated.
-
-## `catkin-to-ament.py`
-
-To help migration from a ROS 1 package to ROS2.
 
 ## `deploy_robots.py`
 
@@ -54,33 +46,6 @@ Five different tasks can be performed:
     ./deploy_robots.py --package bitbots_utils nuc1
     ```
 
-## `gen_rdmanifest.py`
+## `make_basler.sh`
 
-Generate .rdmanifest files for a package. These files are necessary to describe how rosdep can install a package via the 'source' package manager
-
-## `git_status.bash`
-
-Print the git status of all submodules.
-Can be invoked by `make status` in the root directory.
-
-## `install.pl`
-
-To create a workspace with all dependencies installed.
-Unfortunatly, this script is vastly outdated.
-
-## `pull_all.sh`
-
-To pull all submodules and the meta repository.
-Can be invoked by `make pull-all` in the root directory.
-
-## `pull_files.sh`
-
-To pull all supplemental files (like ML models).
-Can be invoked by `make pull-files` in the root directory.
-Also included with `make pull-all`.
-
-## `pull_init.sh`
-
-To initialize, clone and pull all submodules.
-Neccessary in a fresh workspace.
-Can be invoked by `make pull-init` in the root directory.
+Downloads and installs the Basler Pylon SDK for Linux. This is needed to communicate with our camera. Normally called by the `make basler` or other `make` targets.

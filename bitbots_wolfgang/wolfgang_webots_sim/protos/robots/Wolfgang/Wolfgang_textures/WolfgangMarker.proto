@@ -1,0 +1,20 @@
+#VRML_SIM R2022b utf8
+    # license: Apache License 2.0
+    # license url: http://www.apache.org/licenses/LICENSE-2.0
+    # tags: hidden
+    # Extracted from: wolfgang.urdf
+
+    PROTO WolfgangMarker [
+    field MFString textureUrl "number_0.png"
+    field SFColor  baseColor   0.0 0.0 0.0
+    ]
+{
+PBRAppearance {
+    baseColor IS baseColor
+    roughness 0.8
+    metalness 0
+    baseColorMap ImageTexture {
+        url IS textureUrl
+    }
+}
+}

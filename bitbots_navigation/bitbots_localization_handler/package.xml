@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>bitbots_localization_handler</name>
+  <version>1.0.0</version>
+  <description>
+    The bitbots_localization_handler uses high level information to improve 
+    the localization, e.g. by initializing at the start of the game or after falling down.
+  </description>
+  <maintainer email="7vahl@informatik.uni-hamburg.de">Florian Vahl</maintainer>
+  <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+  <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
+  <license>MIT</license>
+
+  <depend>bitbots_blackboard</depend>
+  <depend>bitbots_localization</depend>
+  <depend>bitbots_msgs</depend>
+  <depend>bitbots_utils</depend>
+  <depend>dynamic_stack_decider</depend>
+  <depend>geometry_msgs</depend>
+  <depend>python3-numpy</depend>
+  <depend>rclpy</depend>
+  <depend>std_msgs</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>tf2_ros</depend>
+  
+
+  <export>
+    <rosdoc config="rosdoc.yaml" />
+    <bitbots_documentation>
+      <status>tested_integration</status>
+      <language>python2</language>
+    </bitbots_documentation>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>bitbots_splines</name>
+  <version>1.3.1</version>
+  <description>This package provides a library for splines which is based on the code by team Rhoban FC</description>
+
+  <maintainer email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</maintainer>
+  <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+
+  <author email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</author>
+  <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
+  <author>Rhoban FC</author>
+
+  <license>MIT</license>
+
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>std_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>bitbots_docs</depend>
+  <depend>rclcpp</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>moveit_core</depend>
+  <depend>moveit_ros_planning</depend>
+  <depend>eigen</depend>
+  <depend>python3-matplotlib</depend>
+
+  <export>
+    <bitbots_documentation>
+      <status>stable</status>
+      <language>c++</language>
+    </bitbots_documentation>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

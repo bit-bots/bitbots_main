@@ -1,0 +1,21 @@
+<launch>
+  <arg name="sim" default="false"/>
+  <arg name="viz" default="false"/>
+  <let name="tf_prefix" value="$(eval '\'$(env ROS_NAMESPACE not_defined)\' if \'$(env ROS_NAMESPACE not_defined)\' != \'not_defined\' else \'\'')"/>
+
+  <let if="$(env IS_ROBOT false)" name="taskset" value="taskset -c 3,4"/>
+  <let unless="$(env IS_ROBOT false)" name="taskset" value=""/>
+
+  <group unless="$(var sim)">
+    <node pkg="bitbots_dynamic_kick" exec="KickNode" output="screen" launch-prefix="$(var taskset)">
+        <param from="$(find-pkg-share bitbots_dynamic_kick)/config/kick_config.yaml" />
+    </node>
+  </group>
+
+  <group if="$(var sim)">
+      <node pkg="bitbots_dynamic_kick" exec="KickNode" output="screen" launch-prefix="$(var taskset)">
+          <param from="$(find-pkg-share bitbots_dynamic_kick)/config/kick_sim_config.yaml" />
+          <param name="use_sim_time" value="true"/>
+      </node>
+  </group>
+</launch>

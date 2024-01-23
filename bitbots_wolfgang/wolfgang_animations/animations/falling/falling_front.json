@@ -1,0 +1,36 @@
+{
+    "author": "Unknown",
+    "description": "An animation that mitigates the damage of a fall on the front, by pulling the arms in.",
+    "keyframes": [
+        {
+            "duration": 0.01,
+            "goals": {
+                "HeadPan": 0.0,
+                "HeadTilt": 45.0,
+                "LAnklePitch": -36.0,
+                "LAnkleRoll": 4.0,
+                "LElbow": 45.0,
+                "LHipPitch": -11.0,
+                "LHipRoll": 4.0,
+                "LHipYaw": 6.0,
+                "LKnee": 13.0,
+                "LShoulderPitch": 90.0,
+                "LShoulderRoll": 0.0,
+                "RAnklePitch": 36.0,
+                "RAnkleRoll": -4.0,
+                "RElbow": -45.0,
+                "RHipPitch": 11.0,
+                "RHipRoll": -4.0,
+                "RHipYaw": 6.0,
+                "RKnee": -13.0,
+                "RShoulderPitch": -90.0,
+                "RShoulderRoll": 0.0
+            },
+            "name": "frame0",
+            "pause": 0.2
+        }
+    ],
+    "last_edited": "2019-05-02 10:20:24.230135",
+    "name": "falling_front",
+    "version": "0"
+}

@@ -1,0 +1,141 @@
+{
+    "cameras": [
+        {
+            "proto_camera_name": "camera",
+            "time_step": 16,
+            "optical_frame": "camera_optical_frame",
+            "horizontal_field_of_view": 1.04
+        }
+    ],
+    "IMUs": [
+        {
+            "proto_gyro_name": "imu gyro",
+            "proto_accel_name": "imu accelerometer",
+            "ros_name": "imu",
+            "time_step": 8,
+            "frame_name": "imu_frame"
+        }
+    ],
+    "joints": [
+        {
+            "proto_motor_name" : "RShoulderPitch [shoulder]",
+            "proto_sensor_name" : "RShoulderPitch [shoulder]_sensor",
+            "ros_name" : "RShoulderPitch",
+            "time_step" : 8
+        },
+        {
+            "proto_motor_name" : "RShoulderRoll",
+            "proto_sensor_name" : "RShoulderRoll_sensor",
+            "ros_name" : "RShoulderRoll",
+            "time_step" : 8
+        },
+        {
+            "proto_motor_name" : "RElbow",
+            "proto_sensor_name" : "RElbow_sensor",
+            "ros_name" : "RElbow",
+            "time_step" : 8
+        },
+        {
+            "proto_motor_name" : "LShoulderPitch [shoulder]",
+            "proto_sensor_name" : "LShoulderPitch [shoulder]_sensor",
+            "ros_name" : "LShoulderPitch",
+            "time_step" : 8
+        },
+        {
+            "proto_motor_name" : "LShoulderRoll",
+            "proto_sensor_name" : "LShoulderRoll_sensor",
+            "ros_name" : "LShoulderRoll",
+            "time_step" : 8
+        },
+        {
+            "proto_motor_name" : "LElbow",
+            "proto_sensor_name" : "LElbow_sensor",
+            "ros_name" : "LElbow",
+            "time_step" : 8
+        },
+        {
+            "proto_motor_name" : "RHipYaw",
+            "proto_sensor_name" : "RHipYaw_sensor",
+            "ros_name" : "RHipYaw",
+            "time_step" : 8
+        },
+        {
+            "proto_motor_name" : "RHipRoll [hip]",
+            "proto_sensor_name" : "RHipRoll [hip]_sensor",
+            "ros_name" : "RHipRoll",
+            "time_step" : 8
+        },
+        {
+            "proto_motor_name" : "RHipPitch",
+            "proto_sensor_name" : "RHipPitch_sensor",
+            "ros_name" : "RHipPitch",
+            "time_step" : 8
+        },
+        {
+            "proto_motor_name" : "RKnee",
+            "proto_sensor_name" : "RKnee_sensor",
+            "ros_name" : "RKnee",
+            "time_step" : 8
+        },
+        {
+            "proto_motor_name" : "RAnklePitch",
+            "proto_sensor_name" : "RAnklePitch_sensor",
+            "ros_name" : "RAnklePitch",
+            "time_step" : 8
+        },
+        {
+            "proto_motor_name" : "RAnkleRoll",
+            "proto_sensor_name" : "RAnkleRoll_sensor",
+            "ros_name" : "RAnkleRoll",
+            "time_step" : 8
+        },
+        {
+            "proto_motor_name" : "LHipYaw",
+            "proto_sensor_name" : "LHipYaw_sensor",
+            "ros_name" : "LHipYaw",
+            "time_step" : 8
+        },
+        {
+            "proto_motor_name" : "LHipRoll [hip]",
+            "proto_sensor_name" : "LHipRoll [hip]_sensor",
+            "ros_name" : "LHipRoll",
+            "time_step" : 8
+        },
+        {
+            "proto_motor_name" : "LHipPitch",
+            "proto_sensor_name" : "LHipPitch_sensor",
+            "ros_name" : "LHipPitch",
+            "time_step" : 8
+        },
+        {
+            "proto_motor_name" : "LKnee",
+            "proto_sensor_name" : "LKnee_sensor",
+            "ros_name" : "LKnee",
+            "time_step" : 8
+        },
+        {
+            "proto_motor_name" : "LAnklePitch",
+            "proto_sensor_name" : "LAnklePitch_sensor",
+            "ros_name" : "LAnklePitch",
+            "time_step" : 8
+        },
+        {
+            "proto_motor_name" : "LAnkleRoll",
+            "proto_sensor_name" : "LAnkleRoll_sensor",
+            "ros_name" : "LAnkleRoll",
+            "time_step" : 8
+        },
+        {
+            "proto_motor_name" : "HeadPan",
+            "proto_sensor_name" : "HeadPan_sensor",
+            "ros_name" : "HeadPan",
+            "time_step" : 8
+        },
+        {
+            "proto_motor_name" : "HeadTilt",
+            "proto_sensor_name" : "HeadTilt_sensor",
+            "ros_name" : "HeadTilt",
+            "time_step" : 8
+        }
+    ]
+}

@@ -1,0 +1,11 @@
+bitbots_ball_filter:
+  ros__parameters:
+    # Topics
+    robot_observation_topic: 'robots_relative'
+    team_data_topic: 'team_data'
+    robots_publish_topic: 'robots_relative_filtered'
+
+    filter_frame: 'map'
+    robot_dummy_size: 0.4
+    robot_merge_distance: 0.5
+    robot_storage_time: 10e9

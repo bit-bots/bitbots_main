@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="sim" default="false"/>
+    <arg name="robot_type" default="wolfgang" description="what kind of robot should be started" />
+
+    <include file="$(find-pkg-share bitbots_robot_description)/launch/move_group.py">
+      <arg name="sim" value="$(var sim)"/>
+      <arg name="robot_type" value="$(var robot_type)"/>
+    </include>
+
+    <include file="$(find-pkg-share bitbots_extrinsic_calibration)/launch/calibration.launch">
+      <arg name="sim" value="$(var sim)"/>
+    </include>
+</launch>

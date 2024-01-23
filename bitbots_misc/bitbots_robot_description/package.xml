@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+    <name>bitbots_robot_description</name>
+    <version>2.3.1</version>
+    <description>
+        The bitbots_robot_description package includes utilities to launch the robot description,
+        robot state publisher and the robot calibration.
+    </description>
+
+    <maintainer email="git@flova.de">Florian Vahl</maintainer>
+    <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+    <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
+    <license>MIT</license>
+
+    <buildtool_depend>ament_cmake</buildtool_depend>
+
+    <depend>bitbots_docs</depend>
+    <depend>bitbots_extrinsic_calibration</depend>
+    <depend>moveit_ros_move_group</depend>
+    <depend>robot_state_publisher</depend>
+    <depend>xacro</depend>
+
+    <export>
+        <bitbots_documentation>
+            <status>unknown</status>
+        </bitbots_documentation>
+        <build_type>ament_cmake</build_type>
+    </export>
+</package>

@@ -1,0 +1,13 @@
+<launch>
+    <arg name="sim" default="false" />
+    <arg name="dsd_file" default="main.dsd" description="The behavior dsd file that should be used" />
+
+    <include file="$(find-pkg-share bitbots_body_behavior)/launch/body_behavior.launch">
+        <arg name="dsd_file" value="$(var dsd_file)" />
+        <arg name="sim" value="$(var sim)" />
+    </include>
+
+    <include file="$(find-pkg-share bitbots_head_mover)/launch/head_mover.launch">
+        <arg name="sim" value="$(var sim)" />
+    </include>
+</launch>

@@ -1,12 +1,15 @@
-.PHONY : basler install pip pre-commit pull-all pull-init pull-files rosdep status update
+.PHONY : basler install install-no-root pip pre-commit format pull-all pull-init pull-repos pull-files fresh-libs remove-libs setup-libs rosdep status update update-no-root
+
+HTTPS := ""
+REPO:=$(dir $(abspath $(firstword $(MAKEFILE_LIST))))
 
 basler:
+	# Install Basler Pylon SDK
 	scripts/make_basler.sh $(ARGS)
 
 install: pull-init basler update
 
-master:
-	git submodule foreach -q --recursive 'branch="$$(git config -f $$toplevel/.gitmodules submodule.$$name.branch)"; [ "$$branch" = "" ] && git switch -q master || git switch -q $$branch'
+install-no-root: pull-init update-no-root
 
 pip:
 	# Install and upgrade pip dependencies
@@ -14,27 +17,67 @@ pip:
 
 pre-commit:
 	# Install pre-commit hooks for all submodules that have a .pre-commit-config.yaml file
-	git submodule foreach -q --recursive "test -f .pre-commit-config.yaml && pre-commit install || :"
+	pre-commit install
 
-pull-all:
-	git pull
-	scripts/pull_all.sh
-	scripts/pull_files.bash
+format:
+	# Format all files in the repository
+	pre-commit run --all-files
 
-pull-init:
-	git pull
-	scripts/pull_init.sh
-	scripts/pull_files.bash
+pull-all: pull-repos pull-files
+
+pull-init: fresh-libs pull-files
+
+pull-repos:
+	# Pull all repositories
+	vcs pull . --nested
 
 pull-files:
-	scripts/pull_files.bash
+	# Pull all large files (mainly neural network weights) from the http server
+	wget \
+		--no-verbose \
+		--show-progress \
+		--recursive \
+		--timestamping \
+		--no-parent \
+		--no-host-directories \
+		--directory-prefix=$(REPO)/bitbots_vision \
+		--reject "index.html*" \
+		"https://data.bit-bots.de/models/"
+	wget \
+		--no-verbose \
+		--show-progress \
+		--recursive \
+		--timestamping \
+		--no-parent \
+		--no-host-directories \
+		--directory-prefix=$(REPO)/bitbots_motion/bitbots_rl_motion \
+		--reject "index.html*" \
+		"https://data.bit-bots.de/rl_walk_models/"
+
+fresh-libs: remove-libs setup-libs
+
+remove-libs:
+	# Removes the lib directory and all its contents
+	rm -rf lib/*
+
+setup-libs:
+	# Clone lib repositories in workspace.repos into the lib directory
+ifeq ($(HTTPS), true)
+	# Replace git@ with https:// to allow cloning without ssh keys
+	awk '{sub("git@github.com:", "https://github.com/"); print "  " $$0}' workspace.repos | vcs import .
+else
+	vcs import . < workspace.repos
+endif
 
 rosdep:
 	# Update rosdep and install dependencies from meta directory
 	rosdep update
-	rosdep install -iry --from-paths .
+	rosdep install --from-paths . --ignore-src --rosdistro iron -y
 
 status:
-	scripts/git_status.bash
+	# Show status of all repositories
+	vcs status . --nested
 
 update: pull-all rosdep pip pre-commit
+
+update-no-root: pull-all pip pre-commit

@@ -8,6 +8,7 @@ include:
     - bitbots_misc:
         - bitbots_basler_camera
         - bitbots_bringup
+        - bitbots_docs
         - bitbots_extrinsic_calibration
         - bitbots_ipm
         - bitbots_robot_description
@@ -30,14 +31,15 @@ include:
         - bitbots_localization
         - bitbots_localization_handler
         - bitbots_path_planning
-    - bitbots_tools:
-        - bitbots_docs
     - bitbots_vision:
         - bitbots_vision
+    - bitbots_wolfgang:
+        - wolfgang_animations
+        - wolfgang_description
+        - wolfgang_moveit_config
     - bitbots_world_model:
         - bitbots_ball_filter
         - bitbots_robot_filter
-    - dynamic_stack_decider
     - humanoid_league_misc:
         - humanoid_league_game_controller
         - humanoid_league_map_generator
@@ -48,8 +50,9 @@ include:
         - bio_ik
         - bio_ik_msgs
         - biped_interfaces
-        - DynamixelSDK
+        - dynamic_stack_decider
         - dynamixel-workbench
+        - DynamixelSDK
         - humanoid_base_footprint
         - imu_tools
         - ipm
@@ -59,12 +62,8 @@ include:
         - ros2_numpy
         - ros2_python_extension
         - soccer_ipm
+        - udp_bridge
     - scripts
-    - udp_bridge
-    - wolfgang_robot:
-        - wolfgang_animations
-        - wolfgang_description
-        - wolfgang_moveit_config
 exclude:
     - "*.bag"
     - "*.pyc"

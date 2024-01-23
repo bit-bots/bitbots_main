@@ -1,0 +1,19 @@
+<launch>
+  <arg name="tf_prefix" default=""/>
+  <arg name="sim" default="false"/>
+  <arg name="wolfgang" default="false"/>
+
+  <let if="$(env IS_ROBOT false)" name="taskset" value="taskset -c 3,4"/>
+  <let unless="$(env IS_ROBOT false)" name="taskset" value=""/>
+
+  <group if="$(var sim)">
+    <node pkg="bitbots_quintic_walk" exec="WalkNode" output="screen" launch-prefix="$(var taskset)">
+      <param from="$(find-pkg-share bitbots_quintic_walk)/config/walking_wolfgang_simulator.yaml" />
+    </node>
+  </group>
+  <group unless="$(var sim)">
+    <node pkg="bitbots_quintic_walk" exec="WalkNode" output="screen" launch-prefix="$(var taskset)">
+      <param from="$(find-pkg-share bitbots_quintic_walk)/config/walking_wolfgang_robot.yaml" />
+    </node>
+  </group>
+</launch>

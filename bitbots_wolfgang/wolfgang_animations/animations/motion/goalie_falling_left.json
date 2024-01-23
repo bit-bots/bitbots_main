@@ -1,0 +1,36 @@
+{
+    "author": "Unknown",
+    "description": "Results in the goalie falling to the left with an extended left arm. DO NOT RUN THIS ON THE ACTUAL ROBOT (sim only).",
+    "keyframes": [
+        {
+            "duration": 0.1,
+            "goals": {
+                "HeadPan" : 0.0,
+                "HeadTilt" : 0.0,
+                "LHipYaw" : -0.0006957411352730921,
+                "LHipRoll" : 2.4179578166451106,
+                "LHipPitch" : 30.62366580150313,
+                "LKnee" : 120.27586447607317,
+                "LAnklePitch" : -32.65200910867831,
+                "LAnkleRoll" : 2.6736751638781087,
+                "LShoulderPitch" : -179,
+                "LShoulderRoll" : 0,
+                "LElbow" : -90,
+                "RHipYaw" : 0.00077231963918347,
+                "RHipRoll" : -5.162227874600987,
+                "RHipPitch" : 6.875494,
+                "RKnee" : 0.0,
+                "RAnklePitch" : -6.875494,
+                "RAnkleRoll" : -6.850795653242464,
+                "RShoulderPitch" : 179,
+                "RShoulderRoll" : 0.0,
+                "RElbow" : 90
+            },
+            "name": "generated frame",
+            "pause": 0.0
+        }
+    ],
+    "last_edited": "2021-05-06 10:29:41.094173",
+    "name": "Goalie Falling Left",
+    "version": 0
+}

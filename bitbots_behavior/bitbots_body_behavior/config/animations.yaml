@@ -1,0 +1,11 @@
+/**:
+  ros__parameters:
+    Animations:
+      Goalie:
+        goalieArms: "goalie_prepare_arms"
+        fallLeft: "goalie_falling_left"
+        fallRight: "goalie_falling_right"
+        fallCenter: "goalie_falling_center"
+      Misc:
+        cheering: "cheering"
+        init: "init_sim"

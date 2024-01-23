@@ -1,18 +1,15 @@
-from typing import Any, Iterable, Optional
-
 import argparse
 import ipaddress
 import os
 import subprocess
+from typing import Any, Iterable, Optional
 
 import yaml
-
 from fabric import Connection, GroupResult, ThreadingGroup
+from rich import box
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
-from rich import box
-
 
 CONSOLE = Console()
 
@@ -70,7 +67,7 @@ def be_quiet() -> bool:
     return LOGLEVEL.CURRENT <= LOGLEVEL.INFO
 
 
-def hide_output() -> bool|str:
+def hide_output() -> bool | str:
     """
     Returns which output streams to hide.
     stderr is always shown, unless loglevel is below ERR_SUCCESS.
@@ -91,11 +88,12 @@ def hide_output() -> bool|str:
 # Read the known targets
 _known_targets_path: str = os.path.join(os.path.dirname(__file__), "known_targets.yaml")
 try:
-    with open(_known_targets_path, "r") as f:
+    with open(_known_targets_path) as f:
         KNOWN_TARGETS: dict[str, dict[str, str]] = yaml.safe_load(f)
 except FileNotFoundError:
     print_err(f"Could not find known_targets.yaml in {_known_targets_path}")
     exit(1)
+
 
 def print_known_targets() -> None:
     table = Table()
@@ -107,7 +105,7 @@ def print_known_targets() -> None:
     table.add_row("ALL", "", "")
     for hostname, values in known_targets.items():
         table.add_row(hostname, values.get("robot_name", ""), values.get("ip", ""))
-    print_info(f"You can enter the following values as targets:")
+    print_info("You can enter the following values as targets:")
     CONSOLE.print(table)
     exit(0)
 
@@ -166,7 +164,7 @@ class Target:
                 print_debug(f"Checking if {identifier} is a IP address")
                 identifier_ip = ipaddress.ip_address(identifier)
             except ValueError:
-                print_debug(f"Entered target is not a IP-address")
+                print_debug("Entered target is not a IP-address")
             # We accept every IP address, but if we later find an associated hostname, we use that
             identified_target = str(identifier_ip)
 
@@ -183,7 +181,9 @@ class Target:
 
         # If no target was identified, exit
         if identified_target is None:
-            print_err(f"Could not find a known target for the given identifier: {identifier}\nChoose from the known targets")
+            print_err(
+                f"Could not find a known target for the given identifier: {identifier}\nChoose from the known targets"
+            )
             print_known_targets()
             exit(1)
 
@@ -202,7 +202,7 @@ class Target:
     def __str__(self) -> str:
         """Returns the target's hostname if available or IP address."""
         return self.hostname if self.hostname is not None else str(self.ip)
-    
+
     def get_connection_identifier(self) -> str:
         """Returns the target's IP address if available or the hostname."""
         return str(self.ip) if self.ip is not None else self.hostname
@@ -227,10 +227,8 @@ def _parse_targets(input_targets: str) -> list[Target]:
 
 
 def _get_connections_from_targets(
-    targets: list[Target],
-    user: str,
-    connection_timeout: Optional[int] = 10
-    ) -> ThreadingGroup:
+    targets: list[Target], user: str, connection_timeout: Optional[int] = 10
+) -> ThreadingGroup:
     """
     Get connections to the given Targets using the 'bitbots' username.
 
@@ -241,11 +239,7 @@ def _get_connections_from_targets(
     """
     hosts: list[str] = [target.get_connection_identifier() for target in targets]
     try:
-        connections = ThreadingGroup(
-            *hosts,
-            user=user,
-            connect_timeout=connection_timeout
-        )
+        connections = ThreadingGroup(*hosts, user=user, connect_timeout=connection_timeout)
         for connection in connections:
             print_debug(f"Connecting to {connection.host}...")
             connection.open()
@@ -257,10 +251,7 @@ def _get_connections_from_targets(
     return connections
 
 
-def _get_connections_from_all_known_targets(
-    user: str,
-    connection_timeout: Optional[int] = 10
-    ) -> ThreadingGroup:
+def _get_connections_from_all_known_targets(user: str, connection_timeout: Optional[int] = 10) -> ThreadingGroup:
     """
     Get connections to all known targets using the given username.
     NOTE: This still continues if not all connections could be established.
@@ -293,10 +284,8 @@ def _get_connections_from_all_known_targets(
 
 
 def get_connections_from_targets(
-    input_targets: str,
-    user: str,
-    connection_timeout: Optional[int] = 10
-    ) -> ThreadingGroup:
+    input_targets: str, user: str, connection_timeout: Optional[int] = 10
+) -> ThreadingGroup:
     """
     First parse the input targets, then get connections to the targets.
     NOTE: If input_targets is 'ALL', all known targets will be used and failed connections will be ignored.
@@ -308,16 +297,12 @@ def get_connections_from_targets(
     """
     if input_targets == "ALL":
         print_info(f"Connecting to all known Targets: {KNOWN_TARGETS.keys()}")
-        return _get_connections_from_all_known_targets(
-            user=user,
-            connection_timeout=connection_timeout
-        )
+        return _get_connections_from_all_known_targets(user=user, connection_timeout=connection_timeout)
 
     return _get_connections_from_targets(
-        targets=_parse_targets(input_targets),
-        user=user,
-        connection_timeout=connection_timeout
+        targets=_parse_targets(input_targets), user=user, connection_timeout=connection_timeout
     )
+
 
 def get_connections_from_succeeded(results: GroupResult) -> ThreadingGroup:
     """
@@ -335,6 +320,7 @@ class ArgumentParserShowTargets(argparse.ArgumentParser):
     This is a normal argparse.ArgumentParser, except, that we intercept the error
     "the following arguments are required" and show the known targets instead
     """
+
     def error(self, message):
         if "the following arguments are required" in message:
             print_err(message)

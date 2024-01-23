@@ -1,0 +1,109 @@
+#VRML_SIM R2022b utf8
+
+EXTERNPROTO "../protos/RoboCupBackground.proto"
+EXTERNPROTO "../protos/RobocupSoccerField.proto"
+EXTERNPROTO "../protos/RobocupTexturedSoccerBall.proto"
+EXTERNPROTO "../protos/lighting/RoboCupMainLight.proto"
+EXTERNPROTO "../protos/lighting/RoboCupOffLight.proto"
+EXTERNPROTO "../protos/lighting/RoboCupTopLight.proto"
+
+EXTERNPROTO "../protos/robots/Wolfgang/Wolfgang.proto"
+EXTERNPROTO "../protos/hl_supervisor/hl_supervisor.proto"
+
+WorldInfo {
+    info [
+    "Description: Bit-Bots Robocup Virtual Humanoid League (kid size) field including four Wolfgang robots"
+    "Version 0.1"
+  ]
+  title "Bit-Bots Field Four Robots"
+  basicTimeStep 8
+  optimalThreadCount 4
+  physicsDisableTime 0.1
+  physicsDisableLinearThreshold 0.1
+  physicsDisableAngularThreshold 0.1
+  contactProperties [
+    ContactProperties {
+      material1 "grass"
+      coulombFriction [
+        0.5
+      ]
+      softCFM 0.03
+    }
+    ContactProperties {
+      material1 "grass"
+      material2 "robocup soccer ball"
+      coulombFriction [
+        0.5
+      ]
+      bounce 0.76
+      softCFM 0.05
+    }
+    ContactProperties {
+      material2 "robocup soccer ball"
+      bounce 0.76
+    }
+  ]
+}
+Viewpoint {
+  orientation 0.13074775069234934 0.15392461377846517 -0.9793938119888453 1.674637090314644
+  position 0.0918799331514291 15.742602735510587 6.669799372347793
+}
+
+DEF robocup_background RoboCupBackground {
+  texture "stadium_dry"
+  luminosity 1.0
+}
+
+DEF robocup_main_light RoboCupMainLight {
+  texture "stadium_dry"
+  luminosity 1.0
+}
+
+DEF robocup_off_light RoboCupOffLight {
+  texture "stadium_dry"
+  luminosity 1.0
+}
+
+DEF robocup_top_light RoboCupTopLight {
+  texture "stadium_dry"
+  luminosity 1.0
+}
+
+DEF robocup_soccer_field RobocupSoccerField {
+  size "kid"
+}
+
+DEF BALL RobocupTexturedSoccerBall {
+  translation 0.0 0.0 0.07
+  size 1
+  texture "telstar"
+}
+
+DEF amy Wolfgang {
+  translation -1.0 3.14 0.4274
+  rotation 0.0 0.0 -1.0 1.5869763401625028
+  name "amy"
+  controller "<extern>"
+}
+DEF rory Wolfgang {
+  translation -1.0 -3.14 0.4274
+  rotation 0.0 0.0 1.0 1.5869763401625028
+  name "rory"
+  controller "<extern>"
+}
+DEF jack Wolfgang {
+  translation -3.0 3.14 0.4274
+  rotation 0.0 0.0 -1.0 1.5869763401625028
+  name "jack"
+  controller "<extern>"
+}
+DEF donna Wolfgang {
+  translation -3.0 -3.14 0.4274
+  rotation 0.0 0.0 1.0 1.5869763401625028
+  name "donna"
+  controller "<extern>"
+}
+DEF supervisor_robot hl_supervisor {
+  name "supervisor_robot"
+  controller "<extern>"
+}

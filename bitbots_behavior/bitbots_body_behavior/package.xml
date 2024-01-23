@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>bitbots_body_behavior</name>
+  <version>1.7.0</version>
+  <description>The bitbots_body_behavior package determines the
+        behavior of the robot including strategy decisions and
+        kick or walk actions. The node controls the walking indirectly via
+        /navigation_goal or directly via /cmd_vel and the head behavior
+        via /head_duty.</description>
+
+  <maintainer email="5fiedler@informatik.uni-hamburg.de">Niklas Fiedler</maintainer>
+  <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+  <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
+
+  <license>MIT</license>
+
+  <depend>bitbots_blackboard</depend>
+  <depend>bitbots_msgs</depend>
+  <depend>bitbots_utils</depend>
+  <depend>dynamic_stack_decider</depend>
+  <depend>geometry_msgs</depend>
+  <depend>python3-numpy</depend>
+  <depend>rclpy</depend>
+  <depend>ros2_numpy</depend>
+  <depend>soccer_vision_3d_msgs</depend>
+  <depend>tf_transformations</depend>
+  <depend>tf2</depend>
+
+
+  <export>
+    <rosdoc config="rosdoc.yaml"/>
+    <bitbots_documentation>
+      <status>starts</status>
+      <language>python3</language>
+    </bitbots_documentation>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

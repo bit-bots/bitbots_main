@@ -1,0 +1,259 @@
+bitbots_localization:
+  misc:
+    init_mode: 
+      type: int
+      description: "Initialization mode for the filters particle distribution"
+      validation:
+        bounds<>: [0, 4]
+    percentage_best_particles:
+      type: int
+      description: "Percentage of particles which are considered to be the best ones. These particles are used to calculate the pose estimate"
+      validation:
+        bounds<>: [0, 100]
+    min_motion_linear:
+      type: double
+      description: "Minimum linear motion (m/s) which is considered to be a movement. This is relevant if we want to deactivate the filter if no movement is detected"
+      validation:
+        bounds<>: [0.0, 1.0]
+    min_motion_angular:
+      type: double
+      description: "Minimum angular motion (rad/s) which is considered to be a movement. This is relevant if we want to deactivate the filter if no movement is detected"
+      validation:
+        bounds<>: [0.0, 1.0]
+    filter_only_with_motion:
+      type: bool
+      description: "If true, the filter is only active if a movement is detected"
+  ros:
+    line_pointcloud_topic:
+      type: string
+      description: "Topic for the line pointcloud input messages"
+      read_only: true
+    goal_topic:
+      type: string
+      description: "Topic for the goal input messages"
+      read_only: true
+    fieldboundary_topic:
+      type: string
+      description: "Topic for the field boundary input messages"
+      read_only: true
+    particle_publishing_topic:
+      type: string
+      description: "Topic for the particle publishing messages"
+      read_only: true
+    debug_visualization:
+      type: bool
+      description: "Activate debug visualization"
+    odom_frame:
+      type: string
+      description: "The odometry frame name"
+      read_only: true
+    base_footprint_frame:
+      type: string
+      description: "The base footprint frame name"
+      read_only: true
+    map_frame:
+      type: string
+      description: "The map frame name"
+      read_only: true
+    publishing_frame:
+      type: string
+      description: "The frame which is used for publishing the pose estimate"
+      read_only: true
+  particle_filter:
+    particle_number:
+      type: int
+      description: "Number of particles"
+      read_only: true
+      validation:
+        bounds<>: [1, 10000]
+    rate:
+      type: int
+      description: "Frequency at which the filter is updated"
+      read_only: true
+      validation:
+        bounds<>: [1, 200]
+    resampling_interval:
+      type: int
+      description: "Number of steps after which resampling is performed"
+      validation:
+        gt<>: [0]
+    diffusion:
+      x_std_dev:
+        type: double
+        description: "Standard deviation for the diffusion in x direction"
+        validation:
+          gt_eq<>: [0.0]
+      y_std_dev:
+        type: double
+        description: "Standard deviation for the diffusion in y direction"
+        validation:
+          gt_eq<>: [0.0]
+      t_std_dev:
+        type: double
+        description: "Standard deviation for the diffusion in theta (rotation) direction"
+        validation:
+          gt_eq<>: [0.0]
+      multiplier:
+        type: double
+        description: "Scaling multiplier for the diffusion (hacky way to change the diffusion strength)"
+        validation:
+          gt_eq<>: [0.0]
+      starting_multiplier:
+        type: double
+        description: "Starting diffusion multiplier value. This can be used to increase the diffusion shortly after initialization, which can help with initial exploration and convergence"
+        validation:
+          gt_eq<>: [0.0]
+      starting_steps_with_higher_diffusion:
+        type: int
+        description: "Number of filter steps in which the value of the starting_multiplier is used."
+        validation:
+          gt_eq<>: [0]
+    drift:
+      distance_to_direction:
+        type: double
+        description: "Relationship between the moved distance and the noise which is added to the direction of movement (!= rotation as our robot is holonomic)"
+        validation:
+          gt_eq<>: [0.0]
+      rotation_to_direction:
+        type: double
+        description: "Relationship between the rotational movement of the robot and the noise which is added to its direction of movement estimates"
+        validation:
+          gt_eq<>: [0.0]
+      distance_to_distance:
+        type: double
+        description: "Relationship between the moved distance and the noise which is added to the distance estimates"
+        validation:
+          gt_eq<>: [0.0]
+      rotation_to_distance:
+        type: double
+        description: "Relationship between the rotational movement of the robot and the noise which is added to the distance estimates"
+        validation:
+          gt_eq<>: [0.0]
+      distance_to_rotation:
+        type: double
+        description: "Relationship between the moved distance and the noise which is added to the rotation estimates"
+        validation:
+          gt_eq<>: [0.0]
+      rotation_to_rotation:
+        type: double
+        description: "Relationship between the rotational movement of the robot and the noise which is added to the rotation estimates"
+        validation:
+          gt_eq<>: [0.0]
+      max_rotation:
+        type: double
+        description: "Maximum rotation which is expected for a single step"
+        validation:
+          gt_eq<>: [0.0]
+      max_translation:
+        type: double
+        description: "Maximum translation which is expected for a single step"
+        validation:
+          gt_eq<>: [0.0]
+    weighting:
+      min_weight:
+        type: double
+        description: "Minimum possible weight for a particle. Values below this value are clamped to this value"
+        validation:
+          bounds<>: [0.0, 1.0]
+      particle_reset_weight:
+        type: double
+        description: "Weight which is set for a particle after resampling"
+        validation:
+          bounds<>: [0.0, 1.0]
+      out_of_field_weight_decrease:
+        type: double
+        description: "Weight decrease for particles which are out of the field"
+        validation:
+          bounds<>: [0.0, 1.0]
+      out_of_field_range:
+        type: double
+        description: "Distance (m) from the field border in which particles are considered to be out of the field"
+        validation:
+          bounds<>: [-5.0, 5.0]
+    scoring:
+      lines: 
+        factor:
+          type: double
+          description: "Weighing how much the line information is considered for the scoring of a particle"
+          validation:
+            bounds<>: [0.0, 1.0]
+        out_of_field_score:
+          type: double
+          description: "Score which is given to a measurement (e.g. projected line pixel) if it is out of the field"
+          validation:
+            bounds<>: [0.0, 100.0]
+      goal:
+        factor:
+          type: double
+          description: "Weighing how much the goal information is considered for the scoring of a particle"
+          validation:
+            bounds<>: [0.0, 1.0]
+        out_of_field_score:
+          type: double
+          description: "Score which is given to a measurement (e.g. projected goal post) if it is out of the field"
+          validation:
+            bounds<>: [0.0, 100.0]
+      field_boundary:
+        factor:
+          type: double
+          description: "Weighing how much the field boundary information is considered for the scoring of a particle"
+          validation:
+            bounds<>: [0.0, 1.0]
+        out_of_field_score:
+          type: double
+          description: "Score which is given to a measurement (e.g. projected field boundary segment) if it is out of the field"
+          validation:
+            bounds<>: [0.0, 100.0]
+    confidences:
+      line_element:
+        type: double
+        description: "Confidence we have in each data point of the line information. Meaning each projected line pixel"
+        validation:
+          bounds<>: [0.0, 1.0]
+      goal_element:
+        type: double
+        description: "Confidence we have in each data point of the goal information. Meaning each projected goal post"
+        validation:
+          bounds<>: [0.0, 1.0]
+      field_boundary_element:
+        type: double
+        description: "Confidence we have in each data point of the field boundary information. Meaning each projected field boundary segment"
+        validation:
+          bounds<>: [0.0, 1.0]
+  field:
+    name:
+      type: string
+      description: "Name of the field"
+      read_only: true
+    size:
+      x:
+        type: double
+        description: "Size of the field in x direction"
+        read_only: true
+        validation:
+          gt_eq<>: [0.0]
+      y:
+        type: double
+        description: "Size of the field in y direction"
+        read_only: true
+        validation:
+          gt_eq<>: [0.0]
+    padding:
+      type: double
+      description: "Padding (area outside of the lines) of the field in all directions"
+      read_only: true
+      validation:
+        gt_eq<>: [0.0]
+    initialization:
+      single_pose:
+        x:
+          type: double
+          description: "Initial x position of the robot"
+        y:
+          type: double
+          description: "Initial y position of the robot"
+        t:
+          type: double
+          description: "Initial rotation of the robot"
+          validation:
+            bounds<>: [-3.14159265359, 3.14159265359]

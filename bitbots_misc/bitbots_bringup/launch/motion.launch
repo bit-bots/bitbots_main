@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="sim" default="false"/>
+    <arg name="viz" default="false"/>
+    <arg name="walking" default="true" description="start the walking" />
+    <arg name="torqueless_mode" default="false" description="start without torque, for example for testing the falling detection"/>
+
+    <!-- launch the base footprint -->
+    <node pkg="humanoid_base_footprint" exec="base_footprint" output="screen">
+      <param name="support_state_topics" value="[walk_support_state, dynamic_kick_support_state]"/>
+      <param name="use_sim_time" value="$(var sim)"/>
+    </node>
+
+    <!-- launch the odometry -->
+    <include file="$(find-pkg-share bitbots_odometry)/launch/odometry.launch">
+      <arg name="sim" value="$(var sim)"/>
+    </include>
+
+    <!-- if not in simulation or visualization, launch ros_control -->
+    <group unless="$(var sim)">
+        <group unless="$(var viz)">
+            <include file="$(find-pkg-share bitbots_ros_control)/launch/ros_control.launch">
+                <arg name="torqueless_mode" value="$(var torqueless_mode)" />
+            </include>
+            <node name="set_volume" pkg="bitbots_utils" exec="set_volume.sh" args="75%" />
+        </group>
+    </group>
+
+    <!-- launch the animation server -->
+    <include file="$(find-pkg-share bitbots_animation_server)/launch/animation.launch">
+        <arg name="sim" value="$(var sim)"/>
+    </include>
+
+    <!-- launch the walking -->
+    <group if="$(var walking)">
+        <include file="$(find-pkg-share bitbots_quintic_walk)/launch/quintic_walk.launch">
+            <arg name="sim" value="$(var sim)"/>
+            <arg name="viz" value="$(var viz)"/>
+        </include>
+    </group>
+
+    <!-- launch the hcm -->
+    <include file="$(find-pkg-share bitbots_hcm)/launch/hcm.launch">
+        <arg name="sim" value="$(var sim)"/>
+        <arg name="viz" value="$(var viz)"/>
+    </include>
+
+    <!-- launch the kick -->
+    <include file="$(find-pkg-share bitbots_dynamic_kick)/launch/dynamic_kick.launch">
+        <arg name="sim" value="$(var sim)"/>
+    </include>
+
+    <!-- launch dynup -->
+    <include file="$(find-pkg-share bitbots_dynup)/launch/dynup.launch">
+        <arg name="sim" value="$(var sim)"/>
+        <arg name="viz" value="$(var viz)"/>
+    </include>
+</launch>

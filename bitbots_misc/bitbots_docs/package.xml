@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+    <name>bitbots_docs</name>
+    <version>1.1.0</version>
+    <description>Includes main Bit-Bots documentation and provides CMake helper functions to ease the creation of documentation</description>
+
+    <maintainer email="7sell@finn-thorben.me">Finn-Thorben Sell</maintainer>
+    <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+    <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
+    <license>MIT</license>
+
+    <buildtool_depend>ament_cmake</buildtool_depend>
+    <build_depend>python3-sphinx-rtd-theme</build_depend>
+    <depend>python3-breathe</depend>
+	 
+
+    <export>
+        <bitbots_documentation>
+            <status>unknown</status>
+        </bitbots_documentation>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

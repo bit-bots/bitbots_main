@@ -13,27 +13,32 @@ jobs:
     steps:
       - name: Set up ROS ecosystem
         uses: ros-tooling/setup-ros@v0.7
+
       - name: Check out repository
         uses: actions/checkout@v3
+
       - name: Configure git to trust repository
         run: git config --global --add safe.directory /__w/bitbots_meta/bitbots_meta
-      - name: Pull our software
-        run: make pull-init
-      - name: Install proprietary basler drivers
-        run: make basler ARGS="-ci"
-      - name: Install packages via rosdep
-        run: |
-          rosdep update
-          sudo apt install -y libunwind-dev
-          # Small hack to make rosdep install all dependencies at once
-          # See https://github.com/ros-infrastructure/rosdep/issues/671
-          bash -c "sudo apt install -y $(rosdep check --from-paths . --ignore-src --rosdistro iron | sed -n 's/^apt\s\+//p' | tr '\n' ' ')"
+
+      - name: Pull source code for libraries and install dependencies
+        run: make install HTTPS=true ARGS="-ci"
+
       - name: Set up colcon workspace
         run: |
           mkdir -p /colcon_ws/src
           ln -s $(realpath .) /colcon_ws/src/bitbots_meta
+
       - name: Build packages
         run: |
           . /opt/ros/iron/setup.sh
           colcon build --symlink-install
+        working-directory: /colcon_ws
+        
+      - name: Test packages
+        run: |
+          # Source workspace
+          . /opt/ros/iron/setup.sh
+          . install/setup.sh
+          # Run tests for all packages
+          colcon test --packages-skip-regex pylon --event-handlers console_direct+ --return-code-on-test-failure --parallel-workers 1
         working-directory: /colcon_ws

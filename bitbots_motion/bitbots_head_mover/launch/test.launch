@@ -1,0 +1,59 @@
+<launch>
+    <arg name="sim" default="false"/>
+    <arg name="viz" default="false"/>
+    <arg name="tf_prefix" default=""/>
+
+    <group unless="$(var sim)">
+        <group unless="$(var viz)">
+            <include file="$(find-pkg-share bitbots_ros_control)/launch/ros_control.launch" />
+        </group>
+    </group>
+
+    <include file="$(find-pkg-share bitbots_utils)/launch/parameter_blackboard.launch" >
+        <arg name="sim" value="$(var sim)"/>
+    </include>
+
+    <include file="$(find-pkg-share bitbots_robot_description)/launch/load_robot_description.launch" >
+        <arg name="sim" value="$(var sim)"/>
+    </include>
+
+    <!-- launch the base footprint -->
+    <node pkg="humanoid_base_footprint" exec="base_footprint" output="screen">
+      <param name="support_state_topics" value="[walk_support_state, dynamic_kick_support_state]"/>
+      <param name="use_sim_time" value="$(var sim)"/>
+    </node>
+
+    <!-- launch the odometry -->
+    <include file="$(find-pkg-share bitbots_odometry)/launch/odometry.launch">
+      <arg name="sim" value="$(var sim)"/>
+    </include>
+
+    <include file="$(find-pkg-share bitbots_ball_filter)/launch/ball_filter.launch" >
+        <arg name="sim" value="$(var sim)"/>
+    </include>
+
+    <group if="$(var viz)">
+        <!-- translate joint goals to joint states -->
+        <node pkg="bitbots_utils" exec="motor_goals_viz_helper.py" args="--head"/>
+        <!-- fake IMU needed for odometry-->
+        <node pkg="bitbots_utils" exec="dummy_imu.py"/>
+        <!-- create fake tf from map to robot -->
+        <node pkg="tf2_ros" exec="static_transform_publisher" name="static_map2odom_tf" args="--x -0.0 --y -0.0 --z 0.0 --qx 0.0 --qy 0.0 --qz 0.0 --qw 1.0 --frame-id map --child-frame-id odom" />
+    </group>
+
+    <group unless="$(var viz)">
+        <!-- launch vision -->
+        <include file="$(find-pkg-share bitbots_bringup)/launch/vision.launch">
+            <arg name="sim" value="$(var sim)" />
+        </include>
+
+        <!-- launch inverse perspective mapping (ipm) -->
+        <include file="$(find-pkg-share bitbots_ipm)/launch/ipm.launch">
+            <arg name="sim" value="$(var sim)"/>
+        </include>
+    </group>
+
+    <include file="$(find-pkg-share bitbots_head_mover)/launch/head_mover.launch" >
+        <arg name="sim" value="$(var sim)"/>
+    </include>
+</launch>

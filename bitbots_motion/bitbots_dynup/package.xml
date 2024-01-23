@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>bitbots_dynup</name>
+  <version>1.0.0</version>
+  <description>todo
+  </description>
+
+  <maintainer email="6stelter@informatik.uni-hamburg.de">Sebastian Stelter</maintainer>
+
+  <license>MIT</license>
+
+  <author email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</author>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>backward_ros</depend>
+  <depend>bio_ik</depend>
+  <depend>bitbots_docs</depend>
+  <depend>bitbots_msgs</depend>
+  <depend>bitbots_robot_description</depend>
+  <depend>bitbots_splines</depend>
+  <depend>bitbots_utils</depend>
+  <depend>control_toolbox</depend>
+  <depend>geometry_msgs</depend>
+  <depend>moveit_core</depend>
+  <depend>moveit_ros_move_group</depend>
+  <depend>moveit_ros_planning_interface</depend>
+  <depend>moveit_ros_robot_interaction</depend>
+  <depend>ros2_python_extension</depend>
+  <depend>rot_conv</depend>
+  <depend>std_msgs</depend>
+  <depend>tf2_eigen</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>tf2_ros</depend>
+  <depend>tf2</depend>
+
+  <test_depend>plotjuggler</test_depend>
+  <test_depend>bitbots_odometry</test_depend>
+
+  <export>
+    <bitbots_documentation>
+      <status>tested_integration</status>
+      <language>c++</language>
+    </bitbots_documentation>
+    <build_type>ament_cmake</build_type>
+  </export>
+
+  <buildtool_depend>rosidl_default_generators</buildtool_depend>
+  <exec_depend>rosidl_default_runtime</exec_depend>
+  <depend>builtin_interfaces</depend>
+  <member_of_group>rosidl_interface_packages</member_of_group>
+  <depend>rclcpp</depend>
+
+  </package>

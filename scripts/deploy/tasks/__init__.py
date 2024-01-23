@@ -4,3 +4,13 @@ from deploy.tasks.configure import Configure
 from deploy.tasks.install import Install
 from deploy.tasks.launch import Launch
 from deploy.tasks.sync import Sync
+
+__all__ = [
+    "AbstractTask",
+    "AbstractTaskWhichRequiresSudo",
+    "Build",
+    "Configure",
+    "Install",
+    "Launch",
+    "Sync",
+]

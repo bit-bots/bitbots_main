@@ -1,0 +1,88 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="behavior" default="true" description="Whether the behavior control system should be started" />
+    <arg name="behavior_dsd_file" default="main.dsd" description="The behavior dsd file that should be used" />
+    <arg name="game_controller" default="true" description="Whether the Gamecontroller module should be started" />
+    <arg name="ipm" default="true" description="Whether the inverse perspective mapping should be started"/>
+    <arg name="localization" default="true" description="Whether the localization system should be started" />
+    <arg name="path_planning" default="true" description="Whether the path planning should be started"/>
+    <arg name="sim" default="false" description="Whether the robot is running in simulation or on real hardware" />
+    <arg name="teamcom" default="false" description="Whether the team communication system should be started" />
+    <arg name="vision" default="true" description="Whether the vision system should be started" />
+    <arg name="world_model" default="true" description="Whether the world model should be started"/>
+    <arg name="audio" default="true" description="Whether the audio system should be started"/>
+
+
+    <!-- launch game controller -->
+    <group if="$(var game_controller)">
+        <include file="$(find-pkg-share humanoid_league_game_controller)/launch/game_controller.launch">
+            <arg name="sim" value="$(var sim)" />
+        </include>
+    </group>
+
+    <!-- launch vision -->
+    <group if="$(var vision)">
+        <include file="$(find-pkg-share bitbots_bringup)/launch/vision.launch">
+            <arg name="sim" value="$(var sim)" />
+        </include>
+    </group>
+
+    <!-- launch inverse perspective mapping (ipm) -->
+    <group if="$(var ipm)">
+        <include file="$(find-pkg-share bitbots_ipm)/launch/ipm.launch">
+            <arg name="sim" value="$(var sim)"/>
+        </include>
+    </group>
+
+    <!-- launch teamcom -->
+    <group if="$(var teamcom)">
+        <include file="$(find-pkg-share humanoid_league_team_communication)/launch/team_comm.launch">
+            <arg name="sim" value="$(var sim)"/>
+        </include>
+    </group>
+
+    <!-- launch world model -->
+    <group if="$(var world_model)">
+        <include file="$(find-pkg-share bitbots_ball_filter)/launch/ball_filter.launch">
+            <arg name="sim" value="$(var sim)"/>
+        </include>
+        <include file="$(find-pkg-share bitbots_robot_filter)/launch/robot_filter.launch">
+            <arg name="sim" value="$(var sim)"/>
+        </include>
+    </group>
+
+    <!-- launch localization or fake localization -->
+    <group if="$(var localization)">
+        <include file="$(find-pkg-share bitbots_localization)/launch/localization.launch">
+            <arg name="sim" value="$(var sim)"/>
+        </include>
+    </group>
+    <group unless="$(var localization)">
+        <!-- simulate map frame -->
+        <node name="map_odom" pkg="tf2_ros" exec="static_transform_publisher" args="--x 0 --y 0 --z 0 --roll 0 --pitch 0 --yaw 0 --frame-id map --child-frame-id odom" />
+        <!-- publish perfect covariance -->
+        <!--node name="localization_covariance" pkg="bitbots_localization" exec="rviz_localization_sim.py" output="screen" /-->
+    </group>
+
+    <!-- launch path planning -->
+    <group if="$(var path_planning)">
+        <include file="$(find-pkg-share bitbots_path_planning)/launch/path_planning.launch">
+            <arg name="sim" value="$(var sim)"/>
+        </include>
+    </group>
+
+    <!-- launch behavior -->
+    <group if="$(var behavior)">
+        <include file="$(find-pkg-share bitbots_body_behavior)/launch/behavior.launch">
+            <arg name="dsd_file" value="$(var behavior_dsd_file)" />
+            <arg name="sim" value="$(var sim)" />
+        </include>
+    </group>
+
+    <!-- launch audio processing -->
+    <group if="$(var audio)">
+        <include file="$(find-pkg-share bitbots_bringup)/launch/audio.launch">
+            <arg name="sim" value="$(var sim)" />
+        </include>
+    </group>
+</launch>
