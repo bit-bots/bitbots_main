@@ -40,5 +40,5 @@ jobs:
           . /opt/ros/iron/setup.sh
           . install/setup.sh
           # Run tests for all packages
-          colcon test --packages-skip-regex pylon --event-handlers console_direct+ --return-code-on-test-failure
+          colcon test --packages-skip-regex pylon --event-handlers console_direct+ --return-code-on-test-failure --parallel-workers 1
         working-directory: /colcon_ws
