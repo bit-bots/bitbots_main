@@ -244,7 +244,7 @@ class CandidateFinder:
         """
         Initialization of :class:`.CandidateFinder`.
         """
-        super(self).__init__()
+        super().__init__()
 
     def get_top_candidates(self, count: int = 1) -> list[Candidate]:
         """
