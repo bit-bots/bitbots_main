@@ -91,8 +91,6 @@ class DeployRobots:
 
         # Optional arguments
         parser.add_argument("-p", "--package", default="", help="Synchronize and build only the given ROS package")
-        parser.add_argument("-u", "--user", default="bitbots", help="The user to connect to the target machines with")
-        parser.add_argument("-w", "--workspace", default="~/colcon_ws", help="The workspace to deploy to")
         parser.add_argument(
             "--clean",
             action="store_true",
@@ -110,6 +108,8 @@ class DeployRobots:
         )
         parser.add_argument("-v", "--verbose", action="count", default=0, help="More output")
         parser.add_argument("-q", "--quiet", action="count", default=0, help="Less output")
+        parser.add_argument("-u", "--user", default="bitbots", help="The user to connect to the target machines with")
+        parser.add_argument("-w", "--workspace", default="~/colcon_ws", help="The workspace to deploy to")
 
         args = parser.parse_args()
 
