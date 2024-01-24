@@ -29,6 +29,7 @@
     <exec_depend>bitbots_ros_control</exec_depend>
     <exec_depend>bitbots_utils</exec_depend>
     <exec_depend>bitbots_vision</exec_depend>
+    <exec_depend>game_controller_hl</exec_depend>
     <exec_depend>humanoid_base_footprint</exec_depend>
     <exec_depend>soccer_ipm</exec_depend>
     <exec_depend>system_monitor</exec_depend>

@@ -27,7 +27,6 @@ rosidl_generate_interfaces(
   "msg/Cpu.msg"
   "msg/Filesystem.msg"
   "msg/FootPressure.msg"
-  "msg/GameState.msg"
   "msg/HeadMode.msg"
   "msg/JointCommand.msg"
   "msg/JointTorque.msg"

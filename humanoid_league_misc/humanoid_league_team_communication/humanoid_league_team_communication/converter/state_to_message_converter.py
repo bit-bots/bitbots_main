@@ -2,13 +2,14 @@ import math
 from typing import Callable, List, Optional, Tuple
 
 import transforms3d
+from game_controller_hl_interfaces.msg import GameState
 from geometry_msgs.msg import PointStamped, PoseStamped, PoseWithCovarianceStamped, Quaternion, Twist
 from numpy import double
 from rclpy.time import Time
 from soccer_vision_3d_msgs.msg import Robot, RobotArray
 
 import humanoid_league_team_communication.robocup_extension_pb2 as Proto  # noqa: N812
-from bitbots_msgs.msg import GameState, Strategy
+from bitbots_msgs.msg import Strategy
 
 
 class StateToMessageConverter:

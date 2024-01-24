@@ -5,11 +5,12 @@ from typing import Optional
 
 import numpy as np
 import rclpy
+from game_controller_hl_interfaces.msg import GameState
 from rclpy.node import Node
 from sensor_msgs.msg import Image
 from soccer_vision_2d_msgs.msg import BallArray, GoalpostArray, Robot, RobotArray
 
-from bitbots_msgs.msg import Audio, GameState
+from bitbots_msgs.msg import Audio
 from bitbots_vision.vision_modules import candidate, debug, ros_utils
 
 from . import detectors, object_manager, yoeo_handlers

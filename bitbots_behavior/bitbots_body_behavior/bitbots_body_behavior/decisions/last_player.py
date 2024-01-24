@@ -9,15 +9,12 @@ class LastPlayer(AbstractDecisionElement):
         super().__init__(blackboard, dsd, parameters)
 
     def perform(self, reevaluate=False):
+        # Get nessesary data
         red_cards = self.blackboard.gamestate.get_red_cards()
         own_id = self.blackboard.misc.bot_id
 
-        # iterate through all red card states except the own one
-        for i in range(len(red_cards)):
-            if i != own_id:
-                if not red_cards[i]:
-                    return "NO"
-        return "YES"
-
-    def get_reevaluate(self):
-        return True
+        # Use generator comprehension to check if all red cards are true except our own
+        if all(x for i, x in enumerate(red_cards) if i != own_id):
+            return "YES"
+        else:
+            return "NO"

@@ -47,7 +47,7 @@ In the simulator we should see a field with a single robot.
 
 With ``game_controller:=false`` we ensure, that the game_controller_listener is not started as well, but instead
 we will simulate the current gamestate by our own script (in another terminal):
-``rr humanoid_league_game_controller sim_gamestate.py``
+``rr game_controller_hl sim_gamestate.py``
 
 Which allows us to simulate the current gamestate and different phases of the game.
 Now everything is ready for some simulation testing.
