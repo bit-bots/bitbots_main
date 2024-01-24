@@ -1,5 +1,6 @@
+from game_controller_hl_interfaces.msg import GameState
+
 from bitbots_localization_handler.localization_dsd.decisions import AbstractLocalizationDecisionElement
-from bitbots_msgs.msg import GameState
 
 
 class CheckGameStateReceived(AbstractLocalizationDecisionElement):

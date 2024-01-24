@@ -3,6 +3,7 @@ from unittest.mock import Mock
 import humanoid_league_team_communication.robocup_extension_pb2 as Proto  # noqa: N812
 import numpy
 import pytest
+from game_controller_hl_interfaces.msg import GameState
 from geometry_msgs.msg import (
     Point,
     PointStamped,
@@ -22,7 +23,7 @@ from soccer_vision_attribute_msgs.msg import Confidence
 from soccer_vision_attribute_msgs.msg import Robot as RobotAttributes
 from std_msgs.msg import Header
 
-from bitbots_msgs.msg import GameState, Strategy
+from bitbots_msgs.msg import Strategy
 
 own_team_id = 1
 own_team_color = TeamColor(own_team_id)

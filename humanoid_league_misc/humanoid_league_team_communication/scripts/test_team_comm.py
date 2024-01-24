@@ -5,12 +5,13 @@ This script publishes dummy values for ball, goalpost, position and obstacles fo
 
 import numpy
 import rclpy
+from game_controller_hl_interfaces.msg import GameState
 from geometry_msgs.msg import Point, Pose, PoseWithCovariance, PoseWithCovarianceStamped, Quaternion, TransformStamped
 from soccer_vision_3d_msgs.msg import Robot, RobotArray
 from soccer_vision_attribute_msgs.msg import Robot as RobotAttributes
 from tf2_ros import StaticTransformBroadcaster
 
-from bitbots_msgs.msg import GameState, Strategy
+from bitbots_msgs.msg import Strategy
 
 
 def pose_with_covariance(x, y, z=0.0):
