@@ -2,7 +2,7 @@
 #####################
 [submodule "bitbots_behavior"]
 	path = bitbots_behavior
-	url = ../../bit-bots/bitbots_behavior.git
+	url = ../../texhnolyze/bitbots_behavior.git
 [submodule "bitbots_lowlevel"]
 	path = bitbots_lowlevel
 	url = ../../bit-bots/bitbots_lowlevel.git
@@ -14,7 +14,7 @@
 	url = ../../bit-bots/bitbots_motion.git
 [submodule "bitbots_msgs"]
 	path = bitbots_msgs
-	url = ../../bit-bots/bitbots_msgs.git
+	url = ../../texhnolyze/bitbots_msgs.git
 [submodule "bitbots_navigation"]
 	path = bitbots_navigation
 	url = ../../bit-bots/bitbots_navigation.git
@@ -111,4 +111,4 @@
 [submodule "lib/soccer_field_map_generator"]
 	path = lib/soccer_field_map_generator
 	url = ../../ros-sports/soccer_field_map_generator.git
-        branch = rolling 
+        branch = rolling
