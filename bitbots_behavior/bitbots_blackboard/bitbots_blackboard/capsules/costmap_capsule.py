@@ -185,7 +185,7 @@ class CostmapCapsule:
             # Transform point of interest to the map
             point = self._blackboard.tf_buffer.transform(point, self.map_frame, timeout=Duration(seconds=0.3))
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
-            self._blackboard.node.get_logger().warn(e)
+            self._blackboard.node.get_logger().warn(str(e))
             return 0.0
 
         return self.get_cost_at_field_position(point.point.x, point.point.y)
@@ -338,7 +338,7 @@ class CostmapCapsule:
             pose = self._blackboard.tf_buffer.transform(pose, self.map_frame, timeout=Duration(seconds=0.3))
 
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
-            self._blackboard.node.get_logger().warn(e)
+            self._blackboard.node.get_logger().warn(str(e))
             return 0.0
         d = euler_from_quaternion(numpify(pose.pose.orientation))[2]
         return self.get_cost_of_kick(pose.pose.position.x, pose.pose.position.y, d, kick_length, angular_range)

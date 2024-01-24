@@ -175,7 +175,7 @@ class WorldModelCapsule:
                 ball, self.base_footprint_frame, timeout=Duration(seconds=0.2)
             ).point
         except tf2.ExtrapolationException as e:
-            self._blackboard.node.get_logger().warn(e)
+            self._blackboard.node.get_logger().warn(str(e))
             self._blackboard.node.get_logger().error("Severe transformation problem concerning the ball!")
             return None
         return ball_bfp.x, ball_bfp.y
