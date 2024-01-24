@@ -18,7 +18,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Configure git to trust repository
-        run: git config --global --add safe.directory /__w/bitbots_meta/bitbots_meta
+        run: git config --global --add safe.directory /__w/bitbots_main/bitbots_main
 
       - name: Pull source code for libraries and install dependencies
         run: make install HTTPS=true ARGS="-ci"
@@ -26,7 +26,7 @@ jobs:
       - name: Set up colcon workspace
         run: |
           mkdir -p /colcon_ws/src
-          ln -s $(realpath .) /colcon_ws/src/bitbots_meta
+          ln -s $(realpath .) /colcon_ws/src/bitbots_main
 
       - name: Build packages
         run: |

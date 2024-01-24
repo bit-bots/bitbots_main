@@ -23,7 +23,7 @@ class LOGLEVEL:
     ERR_SUCCESS = 0
 
 
-BITBOTS_META = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BITBOTS_MAIN = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def print_err(msg):
@@ -157,7 +157,7 @@ class Target:
 
         self.workspace = getattr(self.Workspaces, self.robot_name)  # type: str
 
-        self.sync_includes_file = os.path.join(BITBOTS_META, f"sync_includes_wolfgang_{self.hostname[:-1]}.yaml")
+        self.sync_includes_file = os.path.join(BITBOTS_MAIN, f"sync_includes_wolfgang_{self.hostname[:-1]}.yaml")
 
 
 def parse_arguments():
@@ -345,7 +345,7 @@ def sync(target, package="", pre_clean=False):
         cmd.append("--verbose")
 
     cmd.extend(get_includes_from_file(target.sync_includes_file, package))
-    cmd.extend([BITBOTS_META + "/", f"bitbots@{target.ssh_target}:{target.workspace}/src/"])
+    cmd.extend([BITBOTS_MAIN + "/", f"bitbots@{target.ssh_target}:{target.workspace}/src/"])
 
     print_debug("Calling {}".format(" ".join(cmd)))
     sync_result = subprocess.run(cmd)
