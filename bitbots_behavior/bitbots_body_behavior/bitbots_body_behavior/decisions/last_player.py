@@ -18,3 +18,6 @@ class LastPlayer(AbstractDecisionElement):
             return "YES"
         else:
             return "NO"
+
+    def get_reevaluate(self):
+        return True
