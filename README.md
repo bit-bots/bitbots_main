@@ -2,7 +2,7 @@
 
 # Bit-Bots Software Stack
 
-[![Test if all packages build](https://github.com/bit-bots/bitbots_meta/actions/workflows/build.yml/badge.svg)](https://github.com/bit-bots/bitbots_meta/actions/workflows/build.yml)
+[![Test if all packages build](https://github.com/bit-bots/bitbots_main/actions/workflows/build.yml/badge.svg)](https://github.com/bit-bots/bitbots_main/actions/workflows/build.yml)
 
 This git repository contains all RoboCup-related code and documentation from the Hamburg Bit-Bots team.
 All code is written as individual ROS 2 packages targeting Ubuntu.
