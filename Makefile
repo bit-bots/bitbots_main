@@ -40,7 +40,7 @@ pull-files:
 		--timestamping \
 		--no-parent \
 		--no-host-directories \
-		--directory-prefix=$(REPO)/bitbots_vision/bitbots_vision \
+		--directory-prefix=$(REPO)/bitbots_vision \
 		--reject "index.html*" \
 		"https://data.bit-bots.de/models/"
 	wget \
