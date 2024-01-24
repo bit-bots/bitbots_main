@@ -42,14 +42,14 @@ If you are not already using Ubuntu 22.04, consider installing it on your system
 - Add your SSH key to GitHub to access and sync our repositories
     - If you don't know what I am talking about or you don't yet have a SSH key, follow this guide: https://docs.github.com/en/authentication/connecting-to-github-with-ssh/checking-for-existing-ssh-keys
     - Go to your account settings and add your SSH key (the ``.pub`` file) for `GitHub <https://github.com/settings/keys>`_ AND `Gitea <https://git.mafiasi.de/user/settings/keys>`_
-- Now, you can clone (download) our main code repository (repo) called `bitbots_meta <https://github.com/bit-bots/bitbots_meta>`_:
+- Now, you can clone (download) our main code repository (repo) called `bitbots_main <https://github.com/bit-bots/bitbots_main>`_:
     - Open a terminal and go to the directory where you want to download our code (typically ``~/git/bitbots/``)
         - Create the directory with: ``mkdir -p ~/git/bitbots``
           This is were your source code will live and grow.
         - Move to this directory with: ``cd ~/git/bitbots``
-    - Clone the code repository with: ``git clone git@github.com:bit-bots/bitbots_meta.git``
+    - Clone the code repository with: ``git clone git@github.com:bit-bots/bitbots_main.git``
       Confirm the host key by typing ``yes``, if asked.
-    - Move into the newly created directory with: ``cd bitbots_meta``
+    - Move into the newly created directory with: ``cd bitbots_main``
     - Clone all code and other files by running: ``make install``
       This will take a while, as it downloads all the code and other files from our repositories and additionally installs all missing dependencies (using rosdep and pip).
       Finally, it will register pre-commit hooks (automatic code-formatting and warnings), which will be run every time you commit code to our repositories.
@@ -61,7 +61,7 @@ The colcon workspace is where your source code gets build and where we use colco
 
 - Create colcon workspace directory (typically ``~/colcon_ws/``)
     - Create directory with: ``mkdir -p ~/colcon_ws/src``
-    - Link our software contained in the bitbots_meta repo to the newly created ``src`` directory with: ``ln -s ~/git/bitbots/bitbots_meta/ ~/colcon_ws/src/bitbots_meta``
+    - Link our software contained in the bitbots_main repo to the newly created ``src`` directory with: ``ln -s ~/git/bitbots/bitbots_main/ ~/colcon_ws/src/bitbots_main``
 
 **5. Final touches**
 

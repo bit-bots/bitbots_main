@@ -45,20 +45,20 @@ RUN sudo rosdep init
 #    pip3 install -U PyYAML construct defusedxml filterpy matplotlib numpy opencv-python \
 #    protobuf psutil pytorchyolo setuptools sklearn transforms3d
 
-ADD --chown=robot:robot https://raw.githubusercontent.com/bit-bots/bitbots_meta/master/requirements/common.txt src/requirements_common.txt
+ADD --chown=robot:robot https://raw.githubusercontent.com/bit-bots/bitbots_main/master/requirements/common.txt src/requirements_common.txt
 
 RUN pip3 install -U -r src/requirements_common.txt --no-cache-dir && \
     pip3 uninstall -y numpy
 
 RUN cd src && \
-    git clone https://github.com/bit-bots/bitbots_meta.git && \
-    cd bitbots_meta && \
+    git clone https://github.com/bit-bots/bitbots_main.git && \
+    cd bitbots_main && \
     make pull-init
 
 # From here on, we don't want to cache anything. That's achieved by adding the current time.
 ADD https://www.timeapi.io/api/Time/current/zone?timeZone=UTC /tmp/build-time
 
-RUN cd src/bitbots_meta && \
+RUN cd src/bitbots_main && \
     make pull-all && \
     rm -rf lib/udp_bridge bitbots_misc/bitbots_containers \
     humanoid_league_visualization dynamic_stack_decider/dynamic_stack_decider_visualization bitbots_lowlevel \
@@ -69,13 +69,13 @@ RUN cd src/bitbots_meta && \
 
 # Install ros dependencies with rosdep
 RUN sudo apt update && rosdep update
-RUN cd src/bitbots_meta && rosdep install --rosdistro=iron --from-paths . --ignore-src -r -y
+RUN cd src/bitbots_main && rosdep install --rosdistro=iron --from-paths . --ignore-src -r -y
 
 RUN . /opt/ros/iron/setup.sh && colcon build --cmake-args -DBUILD_TESTING=OFF
 
 # TODO execute tests
 
-RUN cp src/bitbots_meta/bitbots_wolfgang/wolfgang_robocup_api/scripts/start.sh .local/bin/start
+RUN cp src/bitbots_main/bitbots_wolfgang/wolfgang_robocup_api/scripts/start.sh .local/bin/start
 
 # Volume for logs
 VOLUME /robocup-logs
