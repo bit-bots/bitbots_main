@@ -13,7 +13,15 @@ from deploy.misc import (
     print_known_targets,
     print_success,
 )
-from deploy.tasks import AbstractTask, AbstractTaskWhichRequiresSudo, Build, Configure, Install, Launch, Sync  # type: ignore
+from deploy.tasks import (
+    AbstractTask,
+    AbstractTaskWhichRequiresSudo,
+    Build,
+    Configure,
+    Install,
+    Launch,
+    Sync,
+)
 from rich.prompt import Prompt
 
 # TODO: Install this script as a command line tool
@@ -47,7 +55,7 @@ class DeployRobots:
         parser = ArgumentParserShowTargets(
             description="Deploy the Bit-Bots software on a robot. "
             "This script provides 5 tasks: sync, install, configure, build, launch. "
-            "By default, it runs all tasks. You can select a subset of tasks by using the corresponding flags."
+            "By default, it runs all tasks. You can select a subset of tasks by using the corresponding flags. "
             "For example, to only run the sync and build task, use the -sb."
         )
 

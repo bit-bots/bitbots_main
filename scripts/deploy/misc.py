@@ -6,6 +6,7 @@ from typing import Any, Iterable, Optional
 
 import yaml
 from fabric import Connection, GroupResult, ThreadingGroup
+from paramiko import AuthenticationException
 from rich import box
 from rich.console import Console
 from rich.panel import Panel
@@ -105,7 +106,7 @@ def print_known_targets() -> None:
     table.add_row("ALL", "", "")
     for ip, values in known_targets.items():
         table.add_row(values.get("hostname", ""), values.get("robot_name", ""), ip)
-    print_info(f"You can enter the following values as targets:")
+    print_info("You can enter the following values as targets:")
     CONSOLE.print(table)
     exit(0)
 
@@ -145,7 +146,7 @@ class Target:
             print_debug(f"Found {ip} as IP address")
             return ip
         except ValueError:
-            print_debug(f"Entered target is not a IP-address.")
+            print_debug("Entered target is not a IP-address.")
 
         # It was not an IP address, so we try to find a known target
         for ip, values in KNOWN_TARGETS.items():
@@ -158,13 +159,15 @@ class Target:
                     return ipaddress.ip_address(ip)
                 else:
                     print_debug(f"Hostname '{known_hostname}' does not match identifier '{identifier}'.")
-                
+
             # Is the identifier a known robot name?
             known_robot_name = values.get("robot_name", None)
             if known_robot_name:
                 print_debug(f"Comparing '{identifier}' with '{known_robot_name}'.")
                 if known_robot_name.strip() == identifier.strip():
-                    print_debug(f"Found robot name '{known_robot_name}' for identifier '{identifier}'. Using its IP {ip}.")
+                    print_debug(
+                        f"Found robot name '{known_robot_name}' for identifier '{identifier}'. Using its IP {ip}."
+                    )
                     return ipaddress.ip_address(ip)
                 else:
                     print_debug(f"Robot name '{known_robot_name}' does not match identifier '{identifier}'.")
@@ -200,23 +203,47 @@ def _get_connections_from_targets(
     targets: list[Target], user: str, connection_timeout: Optional[int] = 10
 ) -> ThreadingGroup:
     """
-    Get connections to the given Targets using the 'bitbots' username.
+    Get connections to the given Targets using the given username.
 
     :param targets: The Targets to connect to
     :param user: The username to connect with
     :param connection_timeout: Timeout for establishing the connection
     :return: The connections
     """
+
+    def _concat_exception_args(e: Exception) -> str:
+        """Concatenate all arguments of an exception into a string."""
+        reason = ""
+        for arg in e.args:
+            if arg:
+                reason += f"{arg} "
+        return reason
+
     hosts: list[str] = [target.get_connection_identifier() for target in targets]
-    try:
-        connections = ThreadingGroup(*hosts, user=user, connect_timeout=connection_timeout)
-        for connection in connections:
+    connections = ThreadingGroup(*hosts, user=user, connect_timeout=connection_timeout)
+    failures: list[tuple[Connection, str]] = []  # List of tuples of failed connections and their error message
+    for connection in connections:
+        try:
             print_debug(f"Connecting to {connection.host}...")
             connection.open()
             print_debug(f"Connected to {connection.host}...")
-    except Exception as e:
-        print_err(f"Could not establish all required connections: {hosts}")
-        print_debug(e)
+        except AuthenticationException as e:
+            failures.append(
+                (
+                    connection,
+                    _concat_exception_args(e)
+                    + f"Did you add your SSH key to the target? Run '[bold blue]ssh-copy-id {user}@{connection.host}[/bold blue]' manually to do so.",
+                )
+            )
+        except Exception as e:
+            failures.append((connection, _concat_exception_args(e)))
+    if failures:
+        print_err("Could not connect to the following hosts:")
+        failure_table = Table(style="bold red", box=box.HEAVY)
+        failure_table.add_column("Host")
+        failure_table.add_column("Reason")
+        [failure_table.add_row(connection.host, reason) for connection, reason in failures]
+        CONSOLE.print(failure_table)
         exit(1)
     return connections
 
