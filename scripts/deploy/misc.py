@@ -103,9 +103,9 @@ def print_known_targets() -> None:
 
     known_targets = get_known_targets()
     table.add_row("ALL", "", "")
-    for hostname, values in known_targets.items():
-        table.add_row(hostname, values.get("robot_name", ""), values.get("ip", ""))
-    print_info("You can enter the following values as targets:")
+    for ip, values in known_targets.items():
+        table.add_row(values.get("hostname", ""), values.get("robot_name", ""), ip)
+    print_info(f"You can enter the following values as targets:")
     CONSOLE.print(table)
     exit(0)
 
@@ -120,99 +120,69 @@ def get_known_targets() -> dict[str, dict[str, str]]:
 
 
 class Target:
-    hostname: str
-    ip: Optional[ipaddress.IPv4Address | ipaddress.IPv6Address]
-
     def __init__(self, identifier: str) -> None:
         """
         Target represents a robot to deploy to.
         It can be initialized with a hostname, IP address or a robot name.
         """
-        self.hostname, self.ip = self._identify_target(identifier)
+        self.ip: Optional[ipaddress.IPv4Address | ipaddress.IPv6Address] = self._identify_ip(identifier)
+        self.hostname: Optional[str] = None  # TODO: Get the hostname after we have a connection
 
-    def _identify_target(self, identifier: str) -> tuple[str, Optional[ipaddress.IPv4Address | ipaddress.IPv6Address]]:
+    def _identify_ip(self, identifier: str) -> Optional[ipaddress.IPv4Address | ipaddress.IPv6Address]:
         """
-        Identifies a target from an identifier.
+        Identifies an IP address from an identifier.
         The identifier can be a hostname, IP address or a robot name.
 
         :param identifier: The identifier to identify the target from.
-        :return: A tuple containing the hostname and the IP address of the target.
+        :return: IP address of the identified target.
         """
-        print_debug(f"Identifying target from identifier: {identifier}")
+        print_debug(f"Identifying IP address from identifier: '{identifier}'.")
 
-        identified_target: Optional[str] = None  # The hostname of the identified target
+        # Is the identifier an IP address?
+        try:
+            print_debug(f"Checking if {identifier} is a IP address")
+            ip = ipaddress.ip_address(identifier)
+            print_debug(f"Found {ip} as IP address")
+            return ip
+        except ValueError:
+            print_debug(f"Entered target is not a IP-address.")
 
-        # Iterate over the known targets
-        for hostname, values in KNOWN_TARGETS.items():
-            print_debug(f"Checking if {identifier} is {hostname}")
-
+        # It was not an IP address, so we try to find a known target
+        for ip, values in KNOWN_TARGETS.items():
             # Is the identifier a known hostname?
-            print_debug(f"Comparing {identifier} with {hostname}")
-            if hostname == identifier:
-                identified_target = hostname
-                break
-
+            known_hostname = values.get("hostname", None)
+            if known_hostname:
+                print_debug(f"Comparing {identifier} with {known_hostname}")
+                if known_hostname.strip() == identifier.strip():
+                    print_debug(f"Found hostname '{known_hostname}' for identifier '{identifier}'. Using its IP {ip}.")
+                    return ipaddress.ip_address(ip)
+                else:
+                    print_debug(f"Hostname '{known_hostname}' does not match identifier '{identifier}'.")
+                
             # Is the identifier a known robot name?
-            print_debug(f"Comparing {identifier} with {values['robot_name']}") if "robot_name" in values else None
-            if values.get("robot_name") == identifier:
-                identified_target = hostname
-                break
-
-            # Is the identifier a known IP address?
-            identifier_ip = None
-            try:
-                print_debug(f"Checking if {identifier} is a IP address")
-                identifier_ip = ipaddress.ip_address(identifier)
-            except ValueError:
-                print_debug("Entered target is not a IP-address")
-            # We accept every IP address, but if we later find an associated hostname, we use that
-            identified_target = str(identifier_ip)
-
-            if "ip" in values:
-                try:
-                    known_target_ip = ipaddress.ip_address(values["ip"])
-                except ValueError:
-                    print_warn(f"Invalid IP address ('{values['ip']}') defined for known target: {hostname}")
-                    exit(1)
-
-                if identifier_ip is not None and identifier_ip == known_target_ip:
-                    identified_target = hostname
-                    break
-
-        # If no target was identified, exit
-        if identified_target is None:
-            print_err(
-                f"Could not find a known target for the given identifier: {identifier}\nChoose from the known targets"
-            )
-            print_known_targets()
-            exit(1)
-
-        print_debug(f"Found {identified_target} as known target")
-
-        identified_ip = None
-        if "ip" in KNOWN_TARGETS[identified_target]:
-            try:
-                identified_ip = ipaddress.ip_address(KNOWN_TARGETS[identified_target]["ip"])
-            except ValueError:
-                print_err(f"Invalid IP address defined for known target: {identified_target}")
-                exit(1)
-
-        return (identified_target, identified_ip)
+            known_robot_name = values.get("robot_name", None)
+            if known_robot_name:
+                print_debug(f"Comparing '{identifier}' with '{known_robot_name}'.")
+                if known_robot_name.strip() == identifier.strip():
+                    print_debug(f"Found robot name '{known_robot_name}' for identifier '{identifier}'. Using its IP {ip}.")
+                    return ipaddress.ip_address(ip)
+                else:
+                    print_debug(f"Robot name '{known_robot_name}' does not match identifier '{identifier}'.")
 
     def __str__(self) -> str:
         """Returns the target's hostname if available or IP address."""
         return self.hostname if self.hostname is not None else str(self.ip)
 
     def get_connection_identifier(self) -> str:
-        """Returns the target's IP address if available or the hostname."""
-        return str(self.ip) if self.ip is not None else self.hostname
+        """Returns the target's IP address."""
+        return str(self.ip)
 
 
 def _parse_targets(input_targets: str) -> list[Target]:
     """
     Parse target input into usable Targets.
 
-    :param input_targets: The input string of targets as a comma separated string of either hostnames, robot names or IPs. 'ALL' is a valid argument and will be expanded to all known targets.
+    :param input_targets: The input string of targets as a comma separated string of either hostnames, robot names or IPs.
     :return: List of Targets
     """
     targets: list[Target] = []

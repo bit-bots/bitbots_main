@@ -13,7 +13,7 @@ from deploy.misc import (
     print_known_targets,
     print_success,
 )
-from deploy.tasks import AbstractTask, AbstractTaskWhichRequiresSudo, Build, Configure, Install, Launch, Sync
+from deploy.tasks import AbstractTask, AbstractTaskWhichRequiresSudo, Build, Configure, Install, Launch, Sync  # type: ignore
 from rich.prompt import Prompt
 
 # TODO: Install this script as a command line tool

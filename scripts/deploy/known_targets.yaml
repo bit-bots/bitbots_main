@@ -1,18 +1,18 @@
-nuc1:
-  ip: "172.20.1.11"
+"172.20.1.11":
+  hostname: "nuc1"
   robot_name: "amy"
-nuc2:
-  ip: "172.20.1.12"
+"172.20.1.12":
+  hostname: "nuc2"
   robot_name: "rory"
-nuc3:
-  ip: "172.20.1.13"
+"172.20.1.13":
+  hostname: "nuc3"
   robot_name: "jack"
-nuc4:
-  ip: "172.20.1.14"
+"172.20.1.14":
+  hostname: "nuc4"
   robot_name: "donna"
-nuc5:
-  ip: "172.20.1.15"
+"172.20.1.15":
+  hostname: "nuc5"
   robot_name: "melody"
-nuc6:
-  ip: "172.20.1.16"
+"172.20.1.16":
+  hostname: "nuc6"
   robot_name: "rose"
