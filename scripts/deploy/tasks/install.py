@@ -13,13 +13,12 @@ class Install(AbstractTaskWhichRequiresSudo):
         """
         Task to install and update all dependencies.
 
-        :param remote_workspace: Path to the remote workspace to run rosdep in
+        :param remote_workspace: Path to the remote workspace
         """
         super().__init__()
 
         self._remote_workspace = remote_workspace
 
-        # TODO: also install pip upgrades
         # TODO: run yes | scripts/make_basler.sh
 
     def _run(self, connections: Group) -> GroupResult:
@@ -36,8 +35,9 @@ class Install(AbstractTaskWhichRequiresSudo):
 
         # Some hosts have an internet connection, make updates and installs
         apt_upgrade_results = self._apt_upgrade(get_connections_from_succeeded(internet_available_results))
-        install_results = self._install_rosdeps(get_connections_from_succeeded(apt_upgrade_results))
-        return install_results
+        rosdep_results = self._install_rosdeps(get_connections_from_succeeded(apt_upgrade_results))
+        pip_upgrade_results = self._pip_upgrade(get_connections_from_succeeded(rosdep_results))
+        return pip_upgrade_results
 
     def _internet_available_on_target(self, connections: Group) -> GroupResult:
         """
@@ -197,3 +197,22 @@ class Install(AbstractTaskWhichRequiresSudo):
                 installs_results.succeeded[key] = value
 
         return installs_results
+
+    def _pip_upgrade(self, connections: Group) -> GroupResult:
+        """
+        Install and upgrade all pip robot requirements on the target.
+
+        :param connections: The connections to remote servers.
+        :return: Results, with success if the upgrade succeeded on the target
+        """
+        print_debug("Upgrading pip packages")
+
+        cmd = f"pip3 install --upgrade -r {self._remote_workspace}/src/requirements/robot.txt"
+        print_debug(f"Calling {cmd}")
+        try:
+            upgrade_results = connections.run(cmd, hide=hide_output())
+            print_debug(f"Upgraded pip packages on the following hosts: {self._succeeded_hosts(upgrade_results)}")
+        except GroupException as e:
+            print_err(f"Failed to upgrade pip packages on the following hosts: {self._failed_hosts(e.result)}")
+            upgrade_results = e.result
+        return upgrade_results
