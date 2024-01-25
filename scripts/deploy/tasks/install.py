@@ -19,8 +19,6 @@ class Install(AbstractTaskWhichRequiresSudo):
 
         self._remote_workspace = remote_workspace
 
-        # TODO: run yes | scripts/make_basler.sh
-
     def _run(self, connections: Group) -> GroupResult:
         """
         Install and update all dependencies, if internet is available.
@@ -35,7 +33,8 @@ class Install(AbstractTaskWhichRequiresSudo):
 
         # Some hosts have an internet connection, make updates and installs
         apt_upgrade_results = self._apt_upgrade(get_connections_from_succeeded(internet_available_results))
-        rosdep_results = self._install_rosdeps(get_connections_from_succeeded(apt_upgrade_results))
+        basler_install_results = self._install_basler(get_connections_from_succeeded(apt_upgrade_results))
+        rosdep_results = self._install_rosdeps(get_connections_from_succeeded(basler_install_results))
         pip_upgrade_results = self._pip_upgrade(get_connections_from_succeeded(rosdep_results))
         return pip_upgrade_results
 
@@ -91,6 +90,25 @@ class Install(AbstractTaskWhichRequiresSudo):
             print_err(f"Failed to upgrade apt packages on the following hosts: {self._failed_hosts(e.result)}")
             upgrade_results = e.result
         return update_results
+
+    def _install_basler(self, connections: Group) -> GroupResult:
+        """
+        Installs the basler camera drivers on the targets.
+
+        :param connections: The connections to remote servers.
+        :return: Results, with success if the install succeeded on the target
+        """
+        print_debug("Installing basler drivers")
+
+        cmd = f"{self._remote_workspace}/src/scripts/make_basler.sh -ci"
+        print_debug(f"Calling {cmd}")
+        try:
+            install_results = connections.sudo(cmd, hide=hide_output(), password=self._sudo_password)
+            print_debug(f"Installed basler drivers on the following hosts: {self._succeeded_hosts(install_results)}")
+        except GroupException as e:
+            print_err(f"Failed to install basler drivers on the following hosts: {self._failed_hosts(e.result)}")
+            install_results = e.result
+        return install_results
 
     def _install_rosdeps(self, connections: Group) -> GroupResult:
         """

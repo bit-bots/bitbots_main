@@ -1,6 +1,6 @@
-#!/bin/bash 
+#!/bin/bash
 
-# You need to fill out a form to download the pylon driver. 
+# You need to fill out a form to download the pylon driver.
 # The pylon driver can be found in the download section of the following link:
 # https://www.baslerweb.com/en/downloads/software-downloads/
 # Go to the download button and copy the link address.
