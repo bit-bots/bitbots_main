@@ -10,25 +10,25 @@ As such you can lookup some of the needed requirements there.
 
 - have an LDAP mafiasi account for access to the CLs
 - have ros2 aliases setup (see linked docs)
-- have github ssh access setup for bitbots_meta (see linked docs)
+- have GitHub ssh access setup for bitbots_main (see linked docs)
 
 **1. Setup and download our software**
 
 - SSH into the ``cl0*`` with your mafiasi user
-- setup bitbots_meta in your home directory
+- setup bitbots_main in your home directory
 
 .. code-block:: bash
 
   mkdir -p "~/colcon_ws/src"
   cd "~/colcon_ws/src"
-  git clone git@github.com:bit-bots/bitbots_meta.git && cd bitbots_meta
+  git clone git@github.com:bit-bots/bitbots_main.git && cd bitbots_main
   make install-no-root
 
 - set PATH and COLCON_WS (see `section 5 <https://docs.bit-bots.de/meta/manual/tutorials/install_software_ros2.html>`_)
 
 **2. Compile the packages**
 
-If while testing you are changing code or updating ``bitbots_meta`` via ``make pull-all``,
+If while testing you are changing code or updating ``bitbots_main`` via ``make pull-all``,
 this step needs to be done again.
 For compilation of the whole meta repository run ``cba``, which is an alias for:
 ``cd $COLCON_WS; colcon build --symlink-install --continue-on-error``
@@ -47,7 +47,7 @@ In the simulator we should see a field with a single robot.
 
 With ``game_controller:=false`` we ensure, that the game_controller_listener is not started as well, but instead
 we will simulate the current gamestate by our own script (in another terminal):
-``rr humanoid_league_game_controller sim_gamestate.py``
+``rr game_controller_hl sim_gamestate.py``
 
 Which allows us to simulate the current gamestate and different phases of the game.
 Now everything is ready for some simulation testing.

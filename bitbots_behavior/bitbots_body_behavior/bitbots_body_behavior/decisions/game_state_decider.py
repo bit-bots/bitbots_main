@@ -1,7 +1,6 @@
 from bitbots_blackboard.blackboard import BodyBlackboard
 from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
-
-from bitbots_msgs.msg import GameState
+from game_controller_hl_interfaces.msg import GameState
 
 
 class GameStateDecider(AbstractDecisionElement):

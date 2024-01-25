@@ -15,8 +15,12 @@
 
     <!-- launch game controller -->
     <group if="$(var game_controller)">
-        <include file="$(find-pkg-share humanoid_league_game_controller)/launch/game_controller.launch">
+        <include file="$(find-pkg-share game_controller_hl)/launch/game_controller.launch">
             <arg name="sim" value="$(var sim)" />
+            <arg name="use_parameter_blackboard" value="true" />
+            <arg name="parameter_blackboard_name" value="parameter_blackboard" />
+            <arg name="team_id_param_name" value="team_id" />
+            <arg name="bot_id_param_name" value="bot_id" />
         </include>
     </group>
 

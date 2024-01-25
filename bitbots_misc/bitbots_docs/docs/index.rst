@@ -6,7 +6,7 @@ and see if you can find something.
 
 If you want to take a look at the code, our Github Organisation is also named `Bit-Bots
 <https://github.com/bit-bots>`_.
-The main repository is `bitbots_meta <https://github.com/bit-bots/bitbots_meta>`_ and everything is linked from there.
+The main repository is `bitbots_main <https://github.com/bit-bots/bitbots_main>`_.
 
 .. toctree::
     :maxdepth: 1

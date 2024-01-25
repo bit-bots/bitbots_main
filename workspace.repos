@@ -78,3 +78,7 @@ repositories:
     type: git
     url: git@github.com:ros-sports/soccer_field_map_generator.git
     version: rolling
+  lib/game_controller_hl:
+    type: git
+    url: git@github.com:ros-sports/game_controller_hl.git
+    version: rolling

@@ -5,9 +5,8 @@ GameStatusCapsule
 Provides information about the current game state.
 """
 from bitbots_utils.utils import get_parameters_from_other_node
+from game_controller_hl_interfaces.msg import GameState
 from rclpy.node import Node
-
-from bitbots_msgs.msg import GameState
 
 
 class GameStatusCapsule:

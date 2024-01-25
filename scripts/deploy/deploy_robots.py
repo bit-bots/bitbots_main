@@ -21,9 +21,9 @@ from rich.prompt import Prompt
 
 class DeployRobots:
     def __init__(self):
-        self._bitbots_meta_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        print_debug(f"Bit-Bots meta path: {self._bitbots_meta_path}")
-        os.chdir(self._bitbots_meta_path)
+        self._bitbots_main_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        print_debug(f"Bit-Bots meta path: {self._bitbots_main_path}")
+        os.chdir(self._bitbots_main_path)
 
         # Handle arguments
         self._args = self._parse_arguments()
@@ -159,7 +159,7 @@ class DeployRobots:
         if self._args.sync:
             tasks.append(
                 Sync(
-                    self._bitbots_meta_path,
+                    self._bitbots_main_path,
                     self._args.workspace,
                     self._args.package,
                     self._args.clean_src,

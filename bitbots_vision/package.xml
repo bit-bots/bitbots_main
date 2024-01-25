@@ -28,6 +28,7 @@
   <exec_depend>rosidl_default_runtime</exec_depend>
   <depend>bitbots_msgs</depend>
   <depend>bitbots_utils</depend>
+  <depend>game_controller_hl_interfaces</depend>
   <depend>geometry_msgs</depend>
   <depend>image_transport</depend>
   <depend>python3-numpy</depend>

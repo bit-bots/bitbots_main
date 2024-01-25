@@ -37,4 +37,4 @@ Test the complete software stack in simulation
     .. code-block:: bash
 
         ros2 launch bitbots_bringup simulator_teamplayer.launch
-        ros2 run humanoid_league_game_controller sim_gamestate.py
+        ros2 run game_controller_hl sim_gamestate.py

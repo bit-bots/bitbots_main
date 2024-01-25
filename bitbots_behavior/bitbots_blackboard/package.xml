@@ -22,8 +22,10 @@
     <build_depend>bitbots_docs</build_depend>
     <depend>bitbots_tf_listener</depend>
     <depend>bitbots_utils</depend>
+    <depend>game_controller_hl_interfaces</depend>
     <depend>python3-numpy</depend>
     <depend>rclpy</depend>
+    <depend>ros2_numpy</depend>
     <depend>tf_transformations</depend>
     <exec_depend>bio_ik_msgs</exec_depend>
     <exec_depend>bitbots_msgs</exec_depend>
