@@ -20,7 +20,7 @@ class Install(AbstractTaskWhichRequiresSudo):
         self._remote_workspace = remote_workspace
 
         # TODO: also install pip upgrades
-        # TODO: sudo apt update && sudo apt upgrade -y
+        # TODO: run yes | scripts/make_basler.sh
 
     def _run(self, connections: Group) -> GroupResult:
         """
@@ -34,8 +34,9 @@ class Install(AbstractTaskWhichRequiresSudo):
         if not internet_available_results.succeeded:
             return internet_available_results
 
-        # Some hosts have an internet connection, install rosdeps
-        install_results = self._install_rosdeps(get_connections_from_succeeded(internet_available_results))
+        # Some hosts have an internet connection, make updates and installs
+        apt_upgrade_results = self._apt_upgrade(get_connections_from_succeeded(internet_available_results))
+        install_results = self._install_rosdeps(get_connections_from_succeeded(apt_upgrade_results))
         return install_results
 
     def _internet_available_on_target(self, connections: Group) -> GroupResult:
@@ -60,6 +61,37 @@ class Install(AbstractTaskWhichRequiresSudo):
             results = e.result
         return results
 
+    def _apt_upgrade(self, connections: Group) -> GroupResult:
+        """
+        Upgrade all apt packages on the target.
+        Runs apt update and apt upgrade -y.
+
+        :param connections: The connections to remote servers.
+        :return: Results, with success if the upgrade succeeded on the target
+        """
+        print_debug("Updating apt")
+
+        cmd = "apt update"
+        print_debug(f"Calling {cmd}")
+        try:
+            update_results = connections.sudo(cmd, hide=hide_output(), password=self._sudo_password)
+            print_debug(f"Updated apt on the following hosts: {self._succeeded_hosts(update_results)}")
+        except GroupException as e:
+            print_err(f"Failed to update apt on the following hosts: {self._failed_hosts(e.result)}")
+            update_results = e.result
+
+        print_debug("Upgrading apt packages")
+
+        cmd = "apt upgrade -y"
+        print_debug(f"Calling {cmd}")
+        try:
+            upgrade_results = connections.sudo(cmd, hide=hide_output(), password=self._sudo_password)
+            print_debug(f"Upgraded apt packages on the following hosts: {self._succeeded_hosts(upgrade_results)}")
+        except GroupException as e:
+            print_err(f"Failed to upgrade apt packages on the following hosts: {self._failed_hosts(e.result)}")
+            upgrade_results = e.result
+        return update_results
+
     def _install_rosdeps(self, connections: Group) -> GroupResult:
         """
         Install ROS dependencies.
@@ -71,12 +103,12 @@ class Install(AbstractTaskWhichRequiresSudo):
         The "sudo" functionality provided by fabric is not able to autofill in this case.
 
         :param connections: The connections to remote servers.
-        :return: Results, with success if the Target has an internet connection
+        :return: Results, with success if the install commands succeeded on the target
         """
         remote_src_path = os.path.join(self._remote_workspace, "src")
         print_debug(f"Gathering rosdep install commands in {remote_src_path}")
 
-        cmd = f"rosdep install --simulate --default-yes --ignore-src --from-paths {remote_src_path}"
+        cmd = f"rosdep update && rosdep install --simulate --default-yes --ignore-src --from-paths {remote_src_path}"
         print_debug(f"Calling {cmd}")
         try:
             gather_results = connections.run(cmd, hide=hide_output())
