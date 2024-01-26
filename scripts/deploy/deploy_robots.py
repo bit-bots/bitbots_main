@@ -10,6 +10,7 @@ from deploy.misc import (
     print_bit_bot,
     print_debug,
     print_err,
+    print_info,
     print_known_targets,
     print_success,
 )
@@ -30,7 +31,7 @@ from rich.prompt import Prompt
 class DeployRobots:
     def __init__(self):
         self._bitbots_main_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        print_debug(f"Bit-Bots meta path: {self._bitbots_main_path}")
+        print_info(f"Bit-Bots main path: {self._bitbots_main_path}")
         os.chdir(self._bitbots_main_path)
 
         # Handle arguments
@@ -98,6 +99,12 @@ class DeployRobots:
         )
 
         # Optional arguments
+        parser.add_argument(
+            "-f",
+            "--fast",
+            action="store_true",
+            help="Don't build/compile on the target machines, instead synchronize the complete install directory from the local machine.",
+        )
         parser.add_argument("-p", "--package", default="", help="Synchronize and build only the given ROS package.")
         parser.add_argument(
             "--clean",
@@ -139,6 +146,12 @@ class DeployRobots:
             args.build = args.only_build
             args.launch = args.only_launch
 
+        if args.fast:
+            print_info("Fast mode enabled. We will sync the current local colcon workspace and skip the build task.")
+            args.sync = True
+            args.build = False
+            args.clean = True
+
         if args.clean:
             args.clean_src = True
             args.clean_build = True
@@ -178,6 +191,7 @@ class DeployRobots:
                     self._args.workspace,
                     self._args.package,
                     self._args.clean_src,
+                    self._args.fast,
                 )
             )
 

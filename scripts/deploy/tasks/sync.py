@@ -10,28 +10,31 @@ from fabric.exceptions import GroupException
 
 
 class Sync(AbstractTask):
-    def __init__(self, local_workspace: str, remote_workspace: str, package: str = "", pre_clean: bool = False) -> None:
+    def __init__(
+        self,
+        local_src_bitbots_main: str,
+        remote_workspace: str,
+        package: str = "",
+        pre_clean: bool = False,
+        fast: bool = False,
+    ) -> None:
         """
         Sync task that synchronizes (copies) the local source directory to the remote server.
 
-        :param local_workspace: Path to the local workspace to sync
+        :param _local_src_bitbots_main: Path to the local src/bitbots_main directory to sync
         :param remote_workspace: Path to the remote workspace to sync to
         :param package: Limit to file from this package, if empty, all files are included
         :param pre_clean: Whether to clean the source directory before syncing
+        :param fast: Whether to sync the current local colcon workspace including build artifacts
         """
         super().__init__()
-        self._local_workspace = local_workspace
+        self._local_src_bitbots_main = local_src_bitbots_main
         self._remote_workspace = remote_workspace
         self._package = package
         self._pre_clean = pre_clean
+        self._fast = fast
 
-        self._remote_src_path = os.path.join(self._remote_workspace, "src")
-
-        self._includes = self._get_includes_from_file(
-            os.path.join(self._local_workspace, "sync_includes_wolfgang_nuc.yaml"), self._package
-        )
-
-    def _get_includes_from_file(self, file_path: str, package: str = "") -> list:
+    def _get_includes_from_file(self, file_path: str, package: str = "") -> list[str]:
         """
         Retrieve the include and exclude arguments for rsync from a yaml file.
 
@@ -84,8 +87,34 @@ class Sync(AbstractTask):
                 return clean_results
             connections = get_connections_from_succeeded(clean_results)
 
-        # Synchronize the local source directory to the remote workspace with rsync
-        rsync_results = self._rsync(connections)
+        if self._fast:
+            rsync_results = self._rsync(
+                connections,
+                os.path.dirname(os.path.dirname(self._local_src_bitbots_main))
+                + "/",  # NOTE: The trailing slash is important for rsync
+                [
+                    "'--include=- log'",
+                    "'--include=+ build'",
+                    "'--include=+ build/**'",
+                    "'--include=+ install'",
+                    "'--include=+ install/**'",
+                    "'--include=+ src'",
+                    "'--include=+ src/**'",
+                    "'--include=- *'",
+                ],
+                self._remote_workspace,
+            )
+        else:
+            # Synchronize the local source directory to the remote workspace with rsync
+            includes = self._get_includes_from_file(
+                os.path.join(self._local_src_bitbots_main, "sync_includes_wolfgang_nuc.yaml"), self._package
+            )
+            rsync_results = self._rsync(
+                connections,
+                self._local_src_bitbots_main + "/",  # NOTE: The trailing slash is important for rsync
+                includes,
+                os.path.join(self._remote_workspace, "src"),
+            )
         return rsync_results
 
     def _clean(self, connections: Group) -> GroupResult:
@@ -94,6 +123,7 @@ class Sync(AbstractTask):
 
         :return: The results of the task.
         """
+        remote_src_path = os.path.join(self._remote_workspace, "src")
 
         def _remove_directories_on_single_host(connection: Connection, result: Result) -> Optional[Result]:
             """Removes directories given in the output of the previous find command.
@@ -117,13 +147,13 @@ class Sync(AbstractTask):
                 return Result(connection=connection, cmd=rm_cmd, exited=1, stdout="", stderr=str(e))
             return rm_results
 
-        if self._package:  # Package given, clean only the package directory
+        if self._package and not self._fast:  # Package given, clean only the package directory
             # Only clean the package directory
             # To do this, we find sub-directories with the package name and remove them
             print_debug(
-                f"Searching for package '{self._package}' in remote source directory: '{self._remote_src_path} to clean it'"
+                f"Searching for package '{self._package}' in remote source directory: '{remote_src_path} to clean it'"
             )
-            find_cmd = f'find {self._remote_src_path} -type d -not -path "*/.git/*" -name "{self._package}"'
+            find_cmd = f'find {remote_src_path} -type d -not -path "*/.git/*" -name "{self._package}"'
             print_debug(f"Calling '{find_cmd}'")
             try:
                 find_results = connections.run(find_cmd, hide=hide_output())
@@ -160,8 +190,8 @@ class Sync(AbstractTask):
 
         else:  # No package given, clean the entire source directory
             # First, remove the source directory
-            print_debug(f"Removing source directory: '{self._remote_src_path}'")
-            rm_cmd = f"rm -rf {self._remote_src_path}"
+            print_debug(f"Removing source directory: '{remote_src_path}'")
+            rm_cmd = f"rm -rf {remote_src_path}"
 
             print_debug(f"Calling '{rm_cmd}'")
             try:
@@ -177,8 +207,8 @@ class Sync(AbstractTask):
             connections = get_connections_from_succeeded(rm_results)
 
             # Second, create an empty directory again
-            print_debug(f"Creating source directory: '{self._remote_src_path}'")
-            mkdir_cmd = f"mkdir -p {self._remote_src_path}"
+            print_debug(f"Creating source directory: '{remote_src_path}'")
+            mkdir_cmd = f"mkdir -p {remote_src_path}"
 
             print_debug(f"Calling '{mkdir_cmd}'")
             try:
@@ -191,12 +221,15 @@ class Sync(AbstractTask):
                 return e.result
             return mkdir_results
 
-    def _rsync(self, connections: Group) -> GroupResult:
+    def _rsync(self, connections: Group, local_path: str, includes: list[str], remote_path: str) -> GroupResult:
         """
-        Synchronize (copy) the local source directory to the remotes using the rsync tool.
+        Synchronize (copy) the local directory to the remotes using the rsync tool.
         This happens in parallel for all connections.
 
         :param connections: The connections to remote servers.
+        :param local_path: The path to the local directory to sync from.
+        :param includes: The include and exclude arguments for rsync.
+        :param remote_path: The path to the remote directory to sync to.
         :return: The results of the task.
         """
 
@@ -210,11 +243,11 @@ class Sync(AbstractTask):
             ]
             if not be_quiet():
                 cmd.append("--verbose")
-            cmd.extend(self._includes)
+            cmd.extend(includes)
             cmd.extend(
                 [
-                    self._local_workspace + "/",  # NOTE: The trailing slash is important for rsync
-                    f"{connection.user}@{connection.host}:{self._remote_src_path}",
+                    local_path,
+                    f"{connection.user}@{connection.host}:{remote_path}",
                 ]
             )
             cmd = " ".join(cmd)
@@ -238,9 +271,7 @@ class Sync(AbstractTask):
                 connection=connection,
             )
 
-        print_debug(
-            f"Synchronizing local source directory ('{self._local_workspace}') to  the remote directory: '{self._remote_src_path}'"
-        )
+        print_debug(f"Synchronizing local source directory ('{local_path}') to  the remote directory: '{remote_path}'")
 
         # Collect results of the group
         results = GroupResult()
