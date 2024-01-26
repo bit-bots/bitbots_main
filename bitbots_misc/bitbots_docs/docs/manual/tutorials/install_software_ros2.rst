@@ -41,7 +41,7 @@ If you are not already using Ubuntu 22.04, consider installing it on your system
   Those services host our Git software repositories.
 - Add your SSH key to GitHub to access and sync our repositories
     - If you don't know what I am talking about or you don't yet have a SSH key, follow this guide: https://docs.github.com/en/authentication/connecting-to-github-with-ssh/checking-for-existing-ssh-keys
-    - Go to your account settings and add your SSH key (the ``.pub`` file) for `GitHub <https://github.com/settings/keys>`_ AND `Gitea <https://git.mafiasi.de/user/settings/keys>`_
+    - Go to your account settings and add your SSH key (the ``.pub`` file) to `GitHub <https://github.com/settings/keys>`_
 - Now, you can clone (download) our main code repository (repo) called `bitbots_main <https://github.com/bit-bots/bitbots_main>`_:
     - Open a terminal and go to the directory where you want to download our code (typically ``~/git/bitbots/``)
         - Create the directory with: ``mkdir -p ~/git/bitbots``
