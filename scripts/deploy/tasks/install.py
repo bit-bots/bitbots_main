@@ -175,8 +175,6 @@ class Install(AbstractTaskWhichRequiresSudo):
             # Define command prefixes to search for
             apt_command_prefix = "sudo -H apt-get install -y "
             apt_packages: list[str] = []
-            # pip_command_prefix = ""  # TODO what is it?
-            # pip_packages: list[str] = []
 
             install_result: Optional[
                 Result

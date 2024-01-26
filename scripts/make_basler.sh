@@ -32,7 +32,7 @@ fi
 # Create function to check if we have an internet connection
 function check_internet_connection () {
     # Check if we have an internet connection, except in the ci as azure does not support ping by design
-    if [[ $1 != "-ci" ]] && ! ping -q -c 1 -W 1 google.com >/dev/null; then
+    if [[ $1 != "--ci" ]] && ! ping -q -c 1 -W 1 google.com >/dev/null; then
         echo "No internet connection. Please check your internet connection to install the basler drivers."
         exit 1
     fi
