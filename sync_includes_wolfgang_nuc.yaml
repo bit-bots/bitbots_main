@@ -31,8 +31,7 @@ include:
         - bitbots_localization
         - bitbots_localization_handler
         - bitbots_path_planning
-    - bitbots_vision:
-        - bitbots_vision
+    - bitbots_vision
     - bitbots_wolfgang:
         - wolfgang_animations
         - wolfgang_description
