@@ -27,14 +27,22 @@ class Install(AbstractTaskWhichRequiresSudo):
         :return: The results of the task.
         """
         internet_available_results = self._internet_available_on_target(connections)
-
         if not internet_available_results.succeeded:
             return internet_available_results
 
         # Some hosts have an internet connection, make updates and installs
         apt_upgrade_results = self._apt_upgrade(get_connections_from_succeeded(internet_available_results))
+        if not apt_upgrade_results.succeeded:
+            return apt_upgrade_results
+
         basler_install_results = self._install_basler(get_connections_from_succeeded(apt_upgrade_results))
+        if not basler_install_results.succeeded:
+            return basler_install_results
+
         rosdep_results = self._install_rosdeps(get_connections_from_succeeded(basler_install_results))
+        if not rosdep_results.succeeded:
+            return rosdep_results
+
         pip_upgrade_results = self._pip_upgrade(get_connections_from_succeeded(rosdep_results))
         return pip_upgrade_results
 
@@ -100,7 +108,7 @@ class Install(AbstractTaskWhichRequiresSudo):
         """
         print_debug("Installing basler drivers")
 
-        cmd = f"{self._remote_workspace}/src/scripts/make_basler.sh -ci"
+        cmd = f"{self._remote_workspace}/src/scripts/make_basler.sh --ci"
         print_debug(f"Calling {cmd}")
         try:
             install_results = connections.sudo(cmd, hide=hide_output(), password=self._sudo_password)
