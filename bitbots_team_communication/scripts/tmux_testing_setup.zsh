@@ -10,18 +10,16 @@ run_tmux_session() {
     tmux new-session -d -s "$session"
 
     # window/pane setup
-    tmux rename-window -t "$session:1" "Launch"
-    tmux new-window -t "$session:2" -n "Test"
+    tmux rename-window -t "$session:0" "Launch"
+    tmux new-window -t "$session:1" -n "Test"
     tmux split-window -h
-    tmux new-window -t "$session:3" -n "Base"
 
     # run required launch files in order
-    tmux send-keys -t "$session:Base" "rl bitbots_utils base.launch" Enter
-    tmux send-keys -t "$session:Launch" "rl bitbots_team_communication team_comm.launch" Enter
+    tmux send-keys -t "$session:Launch" "rl bitbots_team_communication team_comm_standalone.launch" Enter
 
     # start test publisher/subscriber
-    tmux send-keys -t "$session:Test.top" "rr bitbots_team_communication test_team_comm.py" Enter
-    tmux send-keys -t "$session:Test.bottom" "rr bitbots_team_communication show_team_comm.py" Enter
+    tmux send-keys -t "$session:Test.left" "rr bitbots_team_communication test_team_comm.py" Enter
+    tmux send-keys -t "$session:Test.right" "rr bitbots_team_communication show_team_comm.py" Enter
   fi
 
   tmux attach-session -t "$session:Test"
@@ -35,4 +33,5 @@ trap kill_session INT
 
 cd "$COLCON_WS"
 colcon build --symlink-install --packages-up-to "$pkg"
+source install/setup.zsh
 run_tmux_session
