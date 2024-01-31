@@ -1,9 +1,10 @@
 from unittest.mock import MagicMock
 
-import humanoid_league_team_communication.robocup_extension_pb2 as Proto  # noqa: N812
 import pytest
-from humanoid_league_team_communication.converter.robocup_protocol_converter import RobocupProtocolConverter, TeamColor
 from soccer_vision_attribute_msgs.msg import Robot as RobotAttributes
+
+import bitbots_team_communication.robocup_extension_pb2 as Proto  # noqa: N812
+from bitbots_team_communication.converter.robocup_protocol_converter import RobocupProtocolConverter, TeamColor
 
 own_team_color = TeamColor.BLUE
 
@@ -55,13 +56,9 @@ def protocol_converter() -> RobocupProtocolConverter:
 
 @pytest.fixture
 def to_message_mock(mocker) -> MagicMock:
-    return mocker.patch(
-        "humanoid_league_team_communication.converter.robocup_protocol_converter.StateToMessageConverter"
-    )
+    return mocker.patch("bitbots_team_communication.converter.robocup_protocol_converter.StateToMessageConverter")
 
 
 @pytest.fixture
 def from_message_mock(mocker) -> MagicMock:
-    return mocker.patch(
-        "humanoid_league_team_communication.converter.robocup_protocol_converter.MessageToTeamDataConverter"
-    )
+    return mocker.patch("bitbots_team_communication.converter.robocup_protocol_converter.MessageToTeamDataConverter")

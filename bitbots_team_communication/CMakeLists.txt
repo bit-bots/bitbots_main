@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(humanoid_league_team_communication)
+project(bitbots_team_communication)
 
 find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_python REQUIRED)
@@ -16,18 +16,17 @@ find_package(bitbots_docs REQUIRED)
 find_package(Protobuf REQUIRED)
 
 protobuf_generate_python(
-  PROTO_PY
-  humanoid_league_team_communication/RobocupProtocol/robocup_extension.proto)
+  PROTO_PY bitbots_team_communication/RobocupProtocol/robocup_extension.proto)
 
 add_custom_target(
-  humanoid_league_team_communication ALL
+  bitbots_team_communication ALL
   DEPENDS ${PROTO_PY}
   COMMENT "Generating protobuf")
 add_custom_command(
-  TARGET humanoid_league_team_communication
+  TARGET bitbots_team_communication
   POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy ${PROTO_PY}
-          ${CMAKE_SOURCE_DIR}/humanoid_league_team_communication
+          ${CMAKE_SOURCE_DIR}/bitbots_team_communication
   COMMENT "Copying protobuf to source dir")
 
 enable_bitbots_docs()

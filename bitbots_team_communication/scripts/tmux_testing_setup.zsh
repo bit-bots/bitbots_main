@@ -1,7 +1,7 @@
 #!/usr/bin/env zsh
 
 session="TeamComm"
-pkg="humanoid_league_team_communication"
+pkg="bitbots_team_communication"
 
 run_tmux_session() {
   session_running="$(tmux list-sessions | grep $session)"
@@ -17,11 +17,11 @@ run_tmux_session() {
 
     # run required launch files in order
     tmux send-keys -t "$session:Base" "rl bitbots_utils base.launch" Enter
-    tmux send-keys -t "$session:Launch" "rl humanoid_league_team_communication team_comm.launch" Enter
+    tmux send-keys -t "$session:Launch" "rl bitbots_team_communication team_comm.launch" Enter
 
     # start test publisher/subscriber
-    tmux send-keys -t "$session:Test.top" "rr humanoid_league_team_communication test_team_comm.py" Enter
-    tmux send-keys -t "$session:Test.bottom" "rr humanoid_league_team_communication show_team_comm.py" Enter
+    tmux send-keys -t "$session:Test.top" "rr bitbots_team_communication test_team_comm.py" Enter
+    tmux send-keys -t "$session:Test.bottom" "rr bitbots_team_communication show_team_comm.py" Enter
   fi
 
   tmux attach-session -t "$session:Test"

@@ -4,7 +4,7 @@ import transforms3d
 from geometry_msgs.msg import PoseWithCovariance
 from numpy import double
 
-import humanoid_league_team_communication.robocup_extension_pb2 as Proto  # noqa: N812
+import bitbots_team_communication.robocup_extension_pb2 as Proto  # noqa: N812
 from bitbots_msgs.msg import RobotRelative, RobotRelativeArray, TeamData
 
 
@@ -22,8 +22,6 @@ class MessageToTeamDataConverter:
         team_data.robot_position = self.convert_robot_pose(message.current_pose)
         team_data.ball_absolute = self.convert_ball_pose(message.ball)
 
-        # @TODO: change TeamData field/type to robots
-        # see: https://github.com/bit-bots/humanoid_league_misc/issues/125
         team_data.robots = self.convert_robots(message.others, message.other_robot_confidence)
         team_data.robots.header = team_data.header
 
