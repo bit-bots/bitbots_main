@@ -27,7 +27,7 @@ from bitbots_team_communication.communication import SocketCommunication
 from bitbots_team_communication.converter.robocup_protocol_converter import RobocupProtocolConverter, TeamColor
 
 
-class HumanoidLeagueTeamCommunication:
+class TeamCommunication:
     def __init__(self):
         self._package_path = get_package_share_directory("bitbots_team_communication")
         self.node = Node("team_comm", automatically_declare_parameters_from_overrides=True)
@@ -240,7 +240,7 @@ class HumanoidLeagueTeamCommunication:
 
 def main():
     rclpy.init(args=None)
-    HumanoidLeagueTeamCommunication()
+    TeamCommunication()
 
 
 if __name__ == "__main__":
