@@ -1,4 +1,4 @@
-name: Test if all packages build
+name: Build & Test
 on:
   schedule:
     - cron: '0 0 * * *'
