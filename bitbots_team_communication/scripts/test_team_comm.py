@@ -7,6 +7,7 @@ import numpy
 import rclpy
 from game_controller_hl_interfaces.msg import GameState
 from geometry_msgs.msg import Point, Pose, PoseWithCovariance, PoseWithCovarianceStamped, Quaternion, TransformStamped
+from rclpy.qos import QoSDurabilityPolicy, QoSProfile
 from soccer_vision_3d_msgs.msg import Robot, RobotArray
 from soccer_vision_attribute_msgs.msg import Robot as RobotAttributes
 from tf2_ros import StaticTransformBroadcaster
@@ -51,7 +52,9 @@ if __name__ == "__main__":
     node = rclpy.create_node("test_team_comm")
     tf_static_broadcaster = StaticTransformBroadcaster(node)
 
-    gamestate_pub = node.create_publisher(GameState, "gamestate", 1)
+    gamestate_pub = node.create_publisher(
+        GameState, "gamestate", qos_profile=QoSProfile(depth=1, durability=QoSDurabilityPolicy.TRANSIENT_LOCAL)
+    )
     strategy_pub = node.create_publisher(Strategy, "strategy", 1)
     ball_pub = node.create_publisher(PoseWithCovarianceStamped, "ball_position_relative_filtered", 1)
     position_pub = node.create_publisher(PoseWithCovarianceStamped, "pose_with_covariance", 1)

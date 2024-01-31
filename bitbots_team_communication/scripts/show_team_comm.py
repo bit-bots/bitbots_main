@@ -105,7 +105,7 @@ class TeamCommPrinter(Node):
         lines.append(f"  y: {round(data.ball_absolute.pose.position.y, 3):<4}")
         lines.append(f"  x_cov: {round(data.ball_absolute.covariance[0], 3):<4}")
         lines.append(f"  y_cov: {round(data.ball_absolute.covariance[7], 3):<4}")
-        lines.append(f"Obstacles found: {len(data.obstacles.obstacles)}")
+        lines.append(f"Robots found: {len(data.robots.robots)}")
         lines.append("Strategy")
         lines.append(f"  Role: {self.roles[data.strategy.role]:<9}")
         lines.append(f"  Action: {self.actions[data.strategy.action]:<15}")
