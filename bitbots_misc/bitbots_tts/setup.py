@@ -2,7 +2,7 @@ import glob
 
 from setuptools import find_packages, setup
 
-package_name = "humanoid_league_speaker"
+package_name = "bitbots_tts"
 
 setup(
     name=package_name,
@@ -19,7 +19,7 @@ setup(
     scripts=["scripts/send_text.py"],
     entry_points={
         "console_scripts": [
-            "speaker = humanoid_league_speaker.speaker:main",
+            "tts = bitbots_tts.tts:main",
         ],
     },
 )

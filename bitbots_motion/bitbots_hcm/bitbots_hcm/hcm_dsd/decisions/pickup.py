@@ -1,4 +1,4 @@
-from humanoid_league_speaker.speaker import speak
+from bitbots_tts.tts import speak
 
 from bitbots_hcm.hcm_dsd.decisions import AbstractHCMDecisionElement
 
