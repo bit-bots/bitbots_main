@@ -22,7 +22,7 @@ from std_msgs.msg import Header
 
 import bitbots_team_communication.robocup_extension_pb2 as Proto  # noqa: N812
 from bitbots_msgs.msg import Strategy
-from bitbots_team_communication.bitbots_team_communication import HumanoidLeagueTeamCommunication
+from bitbots_team_communication.bitbots_team_communication import TeamCommunication
 from bitbots_team_communication.converter.robocup_protocol_converter import RobocupProtocolConverter, TeamColor
 
 own_team_id = 1
@@ -305,7 +305,7 @@ def state_with_gamestate(state):
 
 @pytest.fixture
 def state():
-    state = Mock(HumanoidLeagueTeamCommunication)
+    state = Mock(TeamCommunication)
     state.player_id = 2
     state.team_id = own_team_id
     state.gamestate = None
