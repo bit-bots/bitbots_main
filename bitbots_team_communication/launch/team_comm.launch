@@ -3,8 +3,8 @@
     <!-- Get launch params-->
     <arg name="sim" default="false" description="true: activates simulation time" />
 
-    <node pkg="humanoid_league_team_communication" exec="team_comm.py" output="screen">
-        <param from="$(find-pkg-share humanoid_league_team_communication)/config/team_communication_config.yaml"/>
+    <node pkg="bitbots_team_communication" exec="team_comm.py" output="screen">
+        <param from="$(find-pkg-share bitbots_team_communication)/config/team_communication_config.yaml"/>
         <param name="use_sim_time" value="$(var sim)" />
     </node>
 </launch>

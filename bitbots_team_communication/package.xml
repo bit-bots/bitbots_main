@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>humanoid_league_team_communication</name>
+  <name>bitbots_team_communication</name>
   <version>3.0.0</version>
-  <description>The humanoid_league_team_communication package provides a ROS wrapper for the Protobuf RoboCup protocol.
+  <description>The bitbots_team_communication package provides a ROS wrapper for the Protobuf RoboCup protocol.
     This is the standard communication protocol developed by the NUbots. </description>
 
   <maintainer email="joern.griepenburg@studium.uni-hamburg.de">Joern Griepenburg</maintainer>

@@ -21,19 +21,19 @@ from std_msgs.msg import Float32, Header
 from tf2_geometry_msgs import PointStamped, PoseStamped
 from tf2_ros import Buffer, TransformException
 
-import humanoid_league_team_communication.robocup_extension_pb2 as Proto  # noqa: N812
+import bitbots_team_communication.robocup_extension_pb2 as Proto  # noqa: N812
 from bitbots_msgs.msg import Strategy, TeamData
-from humanoid_league_team_communication.communication import SocketCommunication
-from humanoid_league_team_communication.converter.robocup_protocol_converter import RobocupProtocolConverter, TeamColor
+from bitbots_team_communication.communication import SocketCommunication
+from bitbots_team_communication.converter.robocup_protocol_converter import RobocupProtocolConverter, TeamColor
 
 
 class HumanoidLeagueTeamCommunication:
     def __init__(self):
-        self._package_path = get_package_share_directory("humanoid_league_team_communication")
+        self._package_path = get_package_share_directory("bitbots_team_communication")
         self.node = Node("team_comm", automatically_declare_parameters_from_overrides=True)
         self.logger = self.node.get_logger()
 
-        self.logger.info("Initializing humanoid_league_team_communication...")
+        self.logger.info("Initializing bitbots_team_communication...")
         params_blackboard = get_parameters_from_other_node(
             self.node, "parameter_blackboard", ["bot_id", "team_id", "team_color"]
         )

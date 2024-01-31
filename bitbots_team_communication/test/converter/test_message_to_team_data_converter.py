@@ -1,9 +1,9 @@
-import humanoid_league_team_communication.robocup_extension_pb2 as Proto  # noqa: N812
 import pytest
-from humanoid_league_team_communication.converter.robocup_protocol_converter import RobocupProtocolConverter, TeamColor
 from std_msgs.msg import Header
 
+import bitbots_team_communication.robocup_extension_pb2 as Proto  # noqa: N812
 from bitbots_msgs.msg import RobotRelative, Strategy, TeamData
+from bitbots_team_communication.converter.robocup_protocol_converter import RobocupProtocolConverter, TeamColor
 
 own_team_id = 1
 own_team_color = TeamColor(own_team_id)

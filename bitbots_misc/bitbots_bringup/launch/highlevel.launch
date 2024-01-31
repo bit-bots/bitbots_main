@@ -40,7 +40,7 @@
 
     <!-- launch teamcom -->
     <group if="$(var teamcom)">
-        <include file="$(find-pkg-share humanoid_league_team_communication)/launch/team_comm.launch">
+        <include file="$(find-pkg-share bitbots_team_communication)/launch/team_comm.launch">
             <arg name="sim" value="$(var sim)"/>
         </include>
     </group>

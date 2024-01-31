@@ -2,10 +2,10 @@ from enum import IntEnum
 
 from soccer_vision_attribute_msgs.msg import Robot as RobotAttributes
 
-import humanoid_league_team_communication.robocup_extension_pb2 as Proto  # noqa: N812
+import bitbots_team_communication.robocup_extension_pb2 as Proto  # noqa: N812
 from bitbots_msgs.msg import RobotRelative, Strategy
-from humanoid_league_team_communication.converter.message_to_team_data_converter import MessageToTeamDataConverter
-from humanoid_league_team_communication.converter.state_to_message_converter import StateToMessageConverter
+from bitbots_team_communication.converter.message_to_team_data_converter import MessageToTeamDataConverter
+from bitbots_team_communication.converter.state_to_message_converter import StateToMessageConverter
 
 
 class TeamColor(IntEnum):

@@ -59,47 +59,6 @@ Starting (starts)
 The next step is to check if the package actually starts without crashing instantly with an obvious error.
 A part of this is that a launch file exists.
 
-Testing in Visualization (tested_viz)
-----------------------------------------
-
-The easiest real test if the software works is in visualization with fake data/commands and then to look at the output.
-For this you can also use real data that was recorded in a rosbag.
-
-For this, it is important to be aware of your own testing bias.
-Humans tend to test their own software for exactly the use cases they had in mind during programming.
-However it is important to explicitly check all possibilities.
-This means especially to test for edge cases and on robustness, e.g., testing with wrong data and against other parts of the software stack that crash.
-A good method for this is to let someone else test your software, someone who was not involved in the programming of it.
-
-This method is essentially used to prevent errors from happening and less to see how well something works.
-The tests in this stage can be done via multiple methods:
-
-Input
-^^^^^^^^^^^
-
-1. ros2 topic pub
-2. RViz interactive marker
-    1. Path planning: inbuilt Navigation goal in RViz
-    2. behavior: humanoid_league_interactive_marker
-3. special test scripts:
-    1. walking: bitbots_teleop
-    2. behavior: sim_gamestate (in gamecontroller package)
-4. rosbags
-
-Output
-^^^^^^^^^^^^
-
-1. ros2 topic echo
-2. RViz marker
-    1. Object detection: humanoid_league_rviz_marker
-    2. Walking: published its own markers
-3. RViz robot model
-    1. you might need to make the joint commands into joint_state (bitbots_bringup motor_goals_viz_helper.py)
-4. special visualization tools for rqt
-    1. DSD: dynamic_stack_decider_visualization
-    2. Object Detection: humanoid_league_relative_rqt
-    3. Vision: bitbots_vision_tools
-
 Testing in Simulation
 ------------------------------------------------
 
@@ -139,8 +98,7 @@ Conclusion
 1. Each package has to be tested on its own
     1. compiles
     2. starts
-    3. using visualization
-    4. using simulation
-    5. on the real robot
+    3. using simulation
+    4. on the real robot
 2. test packages pairwise
 3. test the complete stack (integration)

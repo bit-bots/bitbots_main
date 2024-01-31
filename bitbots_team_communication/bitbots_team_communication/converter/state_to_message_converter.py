@@ -8,7 +8,7 @@ from numpy import double
 from rclpy.time import Time
 from soccer_vision_3d_msgs.msg import Robot, RobotArray
 
-import humanoid_league_team_communication.robocup_extension_pb2 as Proto  # noqa: N812
+import bitbots_team_communication.robocup_extension_pb2 as Proto  # noqa: N812
 from bitbots_msgs.msg import Strategy
 
 
