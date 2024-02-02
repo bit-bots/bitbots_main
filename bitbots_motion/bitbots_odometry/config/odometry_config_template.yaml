@@ -40,3 +40,40 @@ motion_odometry:
     default_value: false,
     description:  "Should odom tf be published"
   }
+
+  k: {
+    type: double,
+    default_value: 0.7,
+    description: "Factor for lowpass filtering the foot pressure",
+    validation: {
+      bounds<>: [0.0, 1.0]
+    }
+  }
+
+      
+  m: {
+    type: double,
+    default_value: 0.95,
+    description: "Factor for lowpass filtering the step duration",
+    validation: {
+      bounds<>: [0.0, 1.0]
+    }
+  }
+
+  temporal_step_offset: {
+    type: double,
+    default_value: 0.0,
+    description: "Factor for detecting when the robot really stands on one foot",
+    validation: {
+      bounds<>: [0.0, 1.0]
+    }
+  }
+
+  summed_pressure_threshold: {
+    type: int,
+    default_value: 40,
+    description: "Factor for detecting when the robot really stands on one foot",
+    validation: {
+      bounds<>: [25, 200]
+    }
+  }

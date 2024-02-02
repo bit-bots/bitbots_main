@@ -21,12 +21,20 @@ MotionOdometry::MotionOdometry() : Node("MotionOdometry"), param_listener_(get_n
   current_support_state_ = -1;
   previous_support_state_ = -1;
 
-  walk_support_state_sub_ = this->create_subscription<biped_interfaces::msg::Phase>(
-      "walk_support_state", 1, std::bind(&MotionOdometry::supportCallback, this, _1));
-  kick_support_state_sub_ = this->create_subscription<biped_interfaces::msg::Phase>(
-      "dynamic_kick_support_state", 1, std::bind(&MotionOdometry::supportCallback, this, _1));
-  odom_subscriber_ = this->create_subscription<nav_msgs::msg::Odometry>(
-      "walk_engine_odometry", 1, std::bind(&MotionOdometry::odomCallback, this, _1));
+  walk_support_state_sub_ =
+      this->create_subscription<biped_interfaces::msg::Phase>("foot_pressure/walk_support_state",
+                                                              1,
+                                                              std::bind(&MotionOdometry::supportCallback,
+                                                                        this, _1));
+  kick_support_state_sub_ =
+      this->create_subscription<biped_interfaces::msg::Phase>("dynamic_kick_support_state",
+                                                              1,
+                                                              std::bind(&MotionOdometry::supportCallback,
+                                                                        this, _1));
+  odom_subscriber_ =
+      this->create_subscription<nav_msgs::msg::Odometry>("walk_engine_odometry",
+                                                         1,
+                                                         std::bind(&MotionOdometry::odomCallback, this, _1));
 
   pub_odometry_ = this->create_publisher<nav_msgs::msg::Odometry>("motion_odometry", 1);
   // set the origin to 0. will be set correctly on recieving first support state
@@ -36,6 +44,9 @@ MotionOdometry::MotionOdometry() : Node("MotionOdometry"), param_listener_(get_n
   foot_change_time_ = rclcpp::Time(0, 0, RCL_ROS_TIME);
   previous_support_link_ = r_sole_frame_;
   start_time_ = this->now();
+
+
+
 }
 
 void MotionOdometry::loop() {
@@ -154,7 +165,7 @@ void MotionOdometry::loop() {
 void MotionOdometry::supportCallback(const biped_interfaces::msg::Phase::SharedPtr msg) {
   current_support_state_ = msg->phase;
   current_support_state_time_ = msg->header.stamp;
-
+  
   // remember if we received first support state, only remember left or right
   if (previous_support_state_ == -1 && current_support_state_ != biped_interfaces::msg::Phase::DOUBLE_STANCE) {
     std::string current_support_link;
@@ -183,7 +194,8 @@ void MotionOdometry::supportCallback(const biped_interfaces::msg::Phase::SharedP
 
 void MotionOdometry::odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg) { current_odom_msg_ = *msg; }
 
-}  // namespace bitbots_odometry
+
+}
 
 int main(int argc, char **argv) {
   rclcpp::init(argc, argv);

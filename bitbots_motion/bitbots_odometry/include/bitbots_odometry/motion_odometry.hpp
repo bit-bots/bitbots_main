@@ -12,9 +12,12 @@
 #include <sensor_msgs/msg/joint_state.hpp>
 #include <std_msgs/msg/char.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
-
-#include "odometry_parameters.hpp"
-
+#include <tf2_ros/buffer.h>
+#include <tf2_ros/transform_broadcaster.h>
+#include <tf2_ros/transform_listener.h>
+#include <tf2/utils.h>
+#include <unistd.h>
+#include <bitbots_msgs/msg/foot_pressure.hpp>
 using std::placeholders::_1;
 
 namespace bitbots_odometry {
@@ -52,6 +55,7 @@ class MotionOdometry : public rclcpp::Node {
   std::string previous_support_link_;
   std::string current_support_link_;
   rclcpp::Time start_time_;
+
 };
 
 }  // namespace bitbots_odometry
