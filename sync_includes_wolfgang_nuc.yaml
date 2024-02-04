@@ -14,6 +14,7 @@ include:
         - bitbots_robot_description
         - bitbots_teleop
         - bitbots_tf_listener
+        - bitbots_tts
         - bitbots_utils
         - system_monitor
     - bitbots_motion:
@@ -31,6 +32,7 @@ include:
         - bitbots_localization
         - bitbots_localization_handler
         - bitbots_path_planning
+    - bitbots_team_communication
     - bitbots_vision
     - bitbots_wolfgang:
         - wolfgang_animations
@@ -39,9 +41,6 @@ include:
     - bitbots_world_model:
         - bitbots_ball_filter
         - bitbots_robot_filter
-    - humanoid_league_misc:
-        - humanoid_league_speaker
-        - humanoid_league_team_communication
     - lib:
         - audio_common
         - bio_ik

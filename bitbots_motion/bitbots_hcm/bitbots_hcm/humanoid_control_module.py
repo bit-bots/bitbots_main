@@ -5,11 +5,11 @@ import threading
 
 import rclpy
 from ament_index_python import get_package_share_directory
+from bitbots_tts.tts import speak
 from bitbots_utils.utils import get_parameters_from_ros_yaml
 from builtin_interfaces.msg import Time as TimeMsg
 from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus
 from dynamic_stack_decider.dsd import DSD
-from humanoid_league_speaker.speaker import speak
 from rcl_interfaces.msg import Parameter as ParameterMsg
 from rclpy.duration import Duration
 from rclpy.executors import MultiThreadedExecutor
