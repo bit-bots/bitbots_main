@@ -11,7 +11,7 @@ param_listener_(get_node_parameters_interface())
   pressure_l_sub_ = this->create_subscription<bitbots_msgs::msg::FootPressure>(
         config_.foot_pressure_topic_left, 1, std::bind(&WalkSupportStateDetector::pressure_l_callback, this, _1));
   pressure_r_sub_ = this->create_subscription<bitbots_msgs::msg::FootPressure>(
-        config_.foot_pressure_topic_left, 1, std::bind(&WalkSupportStateDetector::pressure_r_callback, this, _1));
+        config_.foot_pressure_topic_right, 1, std::bind(&WalkSupportStateDetector::pressure_r_callback, this, _1));
   pub_foot_pressure_support_state_ = this->create_publisher<biped_interfaces::msg::Phase>("foot_pressure/walk_support_state", 1);
 
   // if debug, publish a debug for summed pressure
@@ -24,7 +24,7 @@ param_listener_(get_node_parameters_interface())
   pressure_filtered_left_ = 0;
   step_duration_r_ = 0;
   up_r_ = this->now(); 
-    step_duration_l_ = 0;
+  step_duration_l_ = 0;
   up_l_ = this->now(); 
 
 }
@@ -44,7 +44,7 @@ void WalkSupportStateDetector::loop() {
     else if (curr_stand_left_ && ! curr_stand_right_ && (up_r_ + rclcpp::Duration::from_nanoseconds(int(config_.temporal_step_offset*step_duration_r_))) < this->now()){
       phase.phase = 0;
     }
-      else if (!curr_stand_left_ && curr_stand_right_ &&(up_r_ + rclcpp::Duration::from_nanoseconds(int(config_.temporal_step_offset*step_duration_r_))) < this->now()){
+      else if (!curr_stand_left_ && curr_stand_right_ &&(up_l_ + rclcpp::Duration::from_nanoseconds(int(config_.temporal_step_offset*step_duration_l_))) < this->now()){
       phase.phase = 1;
     }
   if (phase.phase != curr_stance_.phase){
@@ -109,7 +109,7 @@ int main(int argc, char **argv) {
   rclcpp::init(argc, argv);
   auto node = std::make_shared<bitbots_odometry::WalkSupportStateDetector>();
 
-  rclcpp::Duration timer_duration = rclcpp::Duration::from_seconds(1.0 / 1200.0);
+  rclcpp::Duration timer_duration = rclcpp::Duration::from_seconds(1.0 / 600.0);
   rclcpp::experimental::executors::EventsExecutor exec;
   exec.add_node(node);
 
