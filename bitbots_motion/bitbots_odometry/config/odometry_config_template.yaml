@@ -63,7 +63,7 @@ motion_odometry:
   temporal_step_offset: {
     type: double,
     default_value: 0.0,
-    description: "Factor for detecting when the robot really stands on one foot",
+    description: "Offset for detecting when the robot really stands on one foot",
     validation: {
       bounds<>: [0.0, 1.0]
     }
@@ -72,7 +72,7 @@ motion_odometry:
   summed_pressure_threshold: {
     type: int,
     default_value: 40,
-    description: "Factor for detecting when the robot really stands on one foot",
+    description: Threshold for detecting whether the robot really stands on one foot",
     validation: {
       bounds<>: [25, 200]
     }
@@ -93,5 +93,5 @@ motion_odometry:
   debug: {
     type: bool,
     default_value: true,
-    description: "Should debug information be published"
+    description: "Whether debug information should be published"
   }
