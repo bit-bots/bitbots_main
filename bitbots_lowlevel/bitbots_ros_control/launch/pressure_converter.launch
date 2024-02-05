@@ -3,7 +3,7 @@
 
     <node pkg="bitbots_ros_control" exec="pressure_converter">
         <param from="$(find-pkg-share bitbots_ros_control)/config/pressure_converter.yaml" />
-        <param from="$(find-pkg-share bitbots_ros_control)/config/pressure_$(env ROBOT_NAME nobot).yaml" />
+        <param from="$(find-pkg-share bitbots_ros_control)/config/pressure_$(env ROBOT_NAME robot).yaml" />
     </node>
 
 </launch>
