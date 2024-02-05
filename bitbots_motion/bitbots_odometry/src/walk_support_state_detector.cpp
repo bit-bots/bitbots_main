@@ -6,11 +6,19 @@ param_listener_(get_node_parameters_interface())
 {
   config_ = param_listener_.get_params();
 
+  // if sim use raw, if not sim use filtered
+
   pressure_l_sub_ = this->create_subscription<bitbots_msgs::msg::FootPressure>(
-        "foot_pressure_left/raw", 1, std::bind(&WalkSupportStateDetector::pressure_l_callback, this, _1));
+        config_.foot_pressure_topic_left, 1, std::bind(&WalkSupportStateDetector::pressure_l_callback, this, _1));
   pressure_r_sub_ = this->create_subscription<bitbots_msgs::msg::FootPressure>(
-        "foot_pressure_right/raw", 1, std::bind(&WalkSupportStateDetector::pressure_r_callback, this, _1));
+        config_.foot_pressure_topic_left, 1, std::bind(&WalkSupportStateDetector::pressure_r_callback, this, _1));
   pub_foot_pressure_support_state_ = this->create_publisher<biped_interfaces::msg::Phase>("foot_pressure/walk_support_state", 1);
+
+  // if debug, publish a debug for summed pressure
+  if (config_.debug){
+    pub_summed_pressure_l_ = this->create_publisher<std_msgs::msg::Float64>("foot_pressure/summed_pressure_left", 1);
+    pub_summed_pressure_r_ = this->create_publisher<std_msgs::msg::Float64>("foot_pressure/summed_pressure_right", 1);
+  }
   curr_stance_.phase = 2;
   pressure_filtered_right_ = 0;
   pressure_filtered_left_ = 0;
@@ -54,6 +62,9 @@ void WalkSupportStateDetector::loop() {
     prev_stand_left_ = curr_stand_left_;
     std_msgs::msg::Float64 pressure_msg;
     pressure_msg.data = pressure_filtered_left_;
+    if (config_.debug){
+      pub_summed_pressure_l_->publish(pressure_msg);
+    }
     if (pressure_filtered_left_ > config_.summed_pressure_threshold){
         if (curr_stand_left_ != true){
             up_l_ = this->now();
@@ -75,6 +86,9 @@ void WalkSupportStateDetector::loop() {
     prev_stand_right_ = curr_stand_right_;
      std_msgs::msg::Float64 pressure_msg;
     pressure_msg.data = pressure_filtered_right_;
+    if (config_.debug){
+      pub_summed_pressure_r_->publish(pressure_msg);
+    }
     if (pressure_filtered_right_ > config_.summed_pressure_threshold){
         if (curr_stand_right_ != true){
             up_r_ = this->now();
@@ -95,7 +109,7 @@ int main(int argc, char **argv) {
   rclcpp::init(argc, argv);
   auto node = std::make_shared<bitbots_odometry::WalkSupportStateDetector>();
 
-  rclcpp::Duration timer_duration = rclcpp::Duration::from_seconds(1.0 / 600.0);
+  rclcpp::Duration timer_duration = rclcpp::Duration::from_seconds(1.0 / 1200.0);
   rclcpp::experimental::executors::EventsExecutor exec;
   exec.add_node(node);
 

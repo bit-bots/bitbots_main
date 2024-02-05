@@ -77,3 +77,21 @@ motion_odometry:
       bounds<>: [25, 200]
     }
   }
+
+  foot_pressure_topic_left: {
+    type: string,
+    default_value: "foot_pressure_left/raw",
+    description: "Topic for the left foot pressure sensor"
+  }
+
+  foot_pressure_topic_right: {
+    type: string,
+    default_value: "foot_pressure_right/raw",
+    description: "Topic for the right foot pressure sensor"
+  }
+
+  debug: {
+    type: bool,
+    default_value: true,
+    description: "Should debug information be published"
+  }
