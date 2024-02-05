@@ -163,7 +163,7 @@ wolfgang_hardware_interface:
         id: 102
         topic: /foot_pressure_left/raw
         model_number: 0
-       RightFoot:
+      RightFoot:
         id: 101
         topic: /foot_pressure_right/raw
         model_number: 0 

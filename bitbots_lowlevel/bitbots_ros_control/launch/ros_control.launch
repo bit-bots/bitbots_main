@@ -28,7 +28,7 @@
         <include file="$(find-pkg-share system_monitor)/launch/system_monitor.launch"/>
         <include file="$(find-pkg-share bitbots_buttons)/launch/buttons.launch"/>
         <include file="$(find-pkg-share humanoid_league_speaker)/launch/speaker.launch"/>
-        <!--include file="$(find-pkg-share bitbots_ros_control)/launch/pressure_converter.launch"/-->
+        <include file="$(find-pkg-share bitbots_ros_control)/launch/pressure_converter.launch"/>
     </group>
 
 </launch>
