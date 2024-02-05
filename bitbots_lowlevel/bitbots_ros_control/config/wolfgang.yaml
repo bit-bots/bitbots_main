@@ -158,6 +158,15 @@ wolfgang_hardware_interface:
         interface_type: LED
         number_of_LEDs: 3
         start_number: 3
+
+      LeftFoot:
+        id: 102
+        topic: /foot_pressure_left/raw
+        model_number: 0
+       RightFoot:
+        id: 101
+        topic: /foot_pressure_right/raw
+        model_number: 0 
       # Removed head imu at worldcup due to motorbus issues
       #IMU_head:
       #  id: 242
