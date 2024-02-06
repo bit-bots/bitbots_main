@@ -32,25 +32,23 @@ param_listener_(get_node_parameters_interface())
 void WalkSupportStateDetector::loop() {
   config_ = param_listener_.get_params();
   int curr_stand_left = curr_stand_left_;
-  int prev_stand_left = prev_stand_left_;
-
   int curr_stand_right = curr_stand_right_;
-  int prev_stand_right = prev_stand_right_;
 
   biped_interfaces::msg::Phase phase;
-    if ( curr_stand_left_ && curr_stand_right_){
-      phase.phase = 2;
+    if (curr_stand_left && ! curr_stand_right){
+      phase.phase = biped_interfaces::msg::Phase::LEFT_STANCE;
+      phase.header.stamp = this->now() + rclcpp::Duration::from_nanoseconds(int(config_.temporal_step_offset_factor*step_duration_left_));
     }
-    else if (curr_stand_left_ && ! curr_stand_right_ && (up_right_ + rclcpp::Duration::from_nanoseconds(int(config_.temporal_step_offset*step_duration_right_))) < this->now()){
-      phase.phase = 0;
+      else if (!curr_stand_left && curr_stand_right){
+      phase.phase = biped_interfaces::msg::Phase::RIGHT_STANCE;
+      phase.header.stamp = this->now() + rclcpp::Duration::from_nanoseconds(int(config_.temporal_step_offset_factor*step_duration_right_));
     }
-      else if (!curr_stand_left_ && curr_stand_right_ &&(up_left_ + rclcpp::Duration::from_nanoseconds(int(config_.temporal_step_offset*step_duration_left_))) < this->now()){
-      phase.phase = 1;
+  else{ // if both are high its double support, but if both are too low, pressure is shared on both feet
+      phase.phase = biped_interfaces::msg::Phase::DOUBLE_STANCE;
+      phase.header.stamp = this->now() + rclcpp::Duration::from_nanoseconds((int(config_.temporal_step_offset_factor*step_duration_left_)+int(config_.temporal_step_offset_factor*step_duration_right_))/2);
     }
   if (phase.phase != curr_stance_.phase){
     curr_stance_.phase = phase.phase;
-    phase.header.stamp = this->now();
-
     pub_foot_pressure_support_state_->publish(phase);
   }
   
@@ -59,22 +57,20 @@ void WalkSupportStateDetector::loop() {
   void WalkSupportStateDetector::pressure_left_callback(bitbots_msgs::msg::FootPressure msg) {
     float_t summed_pressure = msg.left_back +msg.left_front + msg.right_front + msg.right_back;
     pressure_filtered_left_ = (1-config_.k)*summed_pressure + config_.k*pressure_filtered_left_;
-    prev_stand_left_ = curr_stand_left_;
     std_msgs::msg::Float64 pressure_msg;
     pressure_msg.data = pressure_filtered_left_;
     if (config_.debug){
       pub_summed_pressure_left_->publish(pressure_msg);
     }
-    if (pressure_filtered_left_ > config_.summed_pressure_threshold){
+    if (pressure_filtered_left_ > config_.summed_pressure_threshold_left){
         if (curr_stand_left_ != true){
             up_left_ = this->now();
-        
-      curr_stand_left_ = true;}
+            curr_stand_left_ = true;}
     }
     else{
         if (curr_stand_left_ != false){
         step_duration_left_ = (1-config_.m)*(this->now().nanoseconds() - up_left_.nanoseconds()) + config_.m*step_duration_left_;
-      curr_stand_left_ = false;
+        curr_stand_left_ = false;
         }
     }
 
@@ -83,22 +79,20 @@ void WalkSupportStateDetector::loop() {
   void WalkSupportStateDetector::pressure_right_callback(bitbots_msgs::msg::FootPressure msg) {
     float_t summed_pressure = msg.left_back +msg.left_front + msg.right_front + msg.right_back;
     pressure_filtered_right_ = (1-config_.k)*summed_pressure + config_.k*pressure_filtered_right_;
-    prev_stand_right_ = curr_stand_right_;
-     std_msgs::msg::Float64 pressure_msg;
+    std_msgs::msg::Float64 pressure_msg;
     pressure_msg.data = pressure_filtered_right_;
     if (config_.debug){
       pub_summed_pressure_right_->publish(pressure_msg);
     }
-    if (pressure_filtered_right_ > config_.summed_pressure_threshold){
+    if (pressure_filtered_right_ > config_.summed_pressure_threshold_right){
         if (curr_stand_right_ != true){
             up_right_ = this->now();
-        
-      curr_stand_right_ = true;}
+            curr_stand_right_ = true;}
     }
     else{
         if (curr_stand_right_ != false){
         step_duration_right_ = (1-config_.m)*(this->now().nanoseconds() - up_right_.nanoseconds()) + config_.m*step_duration_right_;
-      curr_stand_right_ = false;
+        curr_stand_right_ = false;
         }
     }
   }
