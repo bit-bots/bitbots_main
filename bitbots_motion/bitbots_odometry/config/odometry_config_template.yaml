@@ -43,7 +43,7 @@ motion_odometry:
 
   k: {
     type: double,
-    default_value: 0.7,
+    default_value: 0.97,
     description: "Factor for lowpass filtering the foot pressure",
     validation: {
       bounds<>: [0.0, 1.0]
@@ -54,39 +54,48 @@ motion_odometry:
   m: {
     type: double,
     default_value: 0.95,
-    description: "Factor for lowpass filtering the step duration",
+    description: "Factor for lowpass filtering the step duration. This only plays a role if temporal_step_offset is not 0.",
     validation: {
       bounds<>: [0.0, 1.0]
     }
   }
 
-  temporal_step_offset: {
+  temporal_step_offset_factor: {
     type: double,
     default_value: 0.0,
-    description: "Offset for detecting when the robot really stands on one foot",
+    description: "Offset factor for taking the time stamp when the robot really stands on one foot. 1 means waiting until the steps is finished, 0 means taking the first time stamp when robots start standing",
     validation: {
       bounds<>: [0.0, 1.0]
     }
   }
 
-  summed_pressure_threshold: {
+  summed_pressure_threshold_right: {
     type: int,
-    default_value: 40,
-    description: Threshold for detecting whether the robot really stands on one foot",
+    default_value: 2500,
+    description: "Threshold for detecting whether the robot really stands on right foot. If they overlap, the robot is considered to stand on both feet.",
     validation: {
-      bounds<>: [25, 200]
+      bounds<>: [0, 5000]
+    }
+  }
+
+  summed_pressure_threshold_left: {
+    type: int,
+    default_value: 2500,
+    description: "Threshold for detecting whether the robot really stands on left foot",
+    validation: {
+      bounds<>: [0, 5000]
     }
   }
 
   foot_pressure_topic_left: {
     type: string,
-    default_value: "foot_pressure_left/raw",
+    default_value: "foot_pressure_left/filtered",
     description: "Topic for the left foot pressure sensor"
   }
 
   foot_pressure_topic_right: {
     type: string,
-    default_value: "foot_pressure_right/raw",
+    default_value: "foot_pressure_right/filtered",
     description: "Topic for the right foot pressure sensor"
   }
 
