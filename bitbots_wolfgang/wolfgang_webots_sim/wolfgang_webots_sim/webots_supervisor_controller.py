@@ -1,4 +1,3 @@
-<<<<<<< HEAD:bitbots_wolfgang/wolfgang_webots_sim/wolfgang_webots_sim/webots_supervisor_controller.py
 import numpy as np
 import transforms3d
 from controller import Keyboard, Node, Supervisor
@@ -6,19 +5,9 @@ from gazebo_msgs.msg import ModelStates
 from geometry_msgs.msg import Point, Pose, Quaternion, Twist
 from rclpy.node import Node as RclpyNode
 from rclpy.time import Time
-=======
-from controller import Supervisor, Keyboard, Node
-
-from rclpy.node import Node as RclpyNode
-from geometry_msgs.msg import Quaternion, Pose, Point, Twist
-
-from bitbots_msgs.srv import SetObjectPose, SetObjectPosition
-from rclpy.time import Time
-from bitbots_msgs.msg import SimInfo
-
->>>>>>> ac8e9f6c0 (switch msgs):wolfgang_webots_sim/wolfgang_webots_sim/webots_supervisor_controller.py
 from rosgraph_msgs.msg import Clock
 from std_srvs.srv import Empty
+from bitbots_msgs.msg import SimInfo
 
 from bitbots_msgs.srv import SetObjectPose, SetObjectPosition
 
