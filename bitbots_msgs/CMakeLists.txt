@@ -40,6 +40,7 @@ rosidl_generate_interfaces(
   "msg/Strategy.msg"
   "msg/TeamData.msg"
   "msg/Workload.msg"
+  "msg/SimInfo.msg"
   "srv/AccelerometerCalibration.srv"
   "srv/ComplementaryFilterParams.srv"
   "srv/FootScale.srv"
