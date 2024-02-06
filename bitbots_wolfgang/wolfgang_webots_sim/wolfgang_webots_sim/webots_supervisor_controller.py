@@ -369,7 +369,7 @@ class SupervisorController:
                 # msg.name.append(robot_name + "_head")
                 # msg.pose.append(head_pose)
 
-                l_foot_node = robot_node.getFromProtoDef("l_foot")
+                l_foot_node = robot_node.getFromProtoDef("l_sole")
                 l_foot_position = l_foot_node.getPosition()
                 l_foot_orientation = l_foot_node.getOrientation()
                 l_foot_orientation_quat = transforms3d.quaternions.mat2quat(np.reshape(l_foot_orientation, (3, 3)))
@@ -379,7 +379,7 @@ class SupervisorController:
                                                      z=l_foot_orientation_quat[3], w=l_foot_orientation_quat[0])
                 msg.l_foot_pose = l_foot_pose
 
-                r_foot_node = robot_node.getFromProtoDef("r_foot")
+                r_foot_node = robot_node.getFromProtoDef("r_sole")
                 r_foot_position = r_foot_node.getPosition()
                 r_foot_orientation = r_foot_node.getOrientation()
                 r_foot_orientation_quat = transforms3d.quaternions.mat2quat(np.reshape(r_foot_orientation, (3, 3)))
