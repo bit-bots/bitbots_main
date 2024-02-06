@@ -346,8 +346,7 @@ class SupervisorController:
                 robot_pose.orientation = Quaternion(
                     x=orientation[0], y=orientation[1], z=orientation[2], w=orientation[3]
                 )
-                msg.name.append(robot_name)
-                msg.pose.append(robot_pose)
+                msg.base_link_pose = robot_pose
                 lin_vel, ang_vel = self.get_robot_velocity(robot_name)
                 twist = Twist()
                 twist.linear.x = lin_vel[0]
