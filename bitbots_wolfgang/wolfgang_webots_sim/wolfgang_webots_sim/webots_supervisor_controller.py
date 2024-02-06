@@ -7,6 +7,7 @@ from rclpy.node import Node as RclpyNode
 from rclpy.time import Time
 from rosgraph_msgs.msg import Clock
 from std_srvs.srv import Empty
+from bitbots_msgs.msg import SimInfo
 
 from bitbots_msgs.srv import SetObjectPose, SetObjectPosition
 
@@ -105,7 +106,7 @@ class SupervisorController:
                 clock_topic = base_ns + "clock"
                 model_topic = base_ns + "model_states"
             self.clock_publisher = self.ros_node.create_publisher(Clock, clock_topic, 1)
-            self.model_state_publisher = self.ros_node.create_publisher(ModelStates, model_topic, 1)
+            self.model_state_publisher = self.ros_node.create_publisher(SimInfo, model_topic, 1)
             self.reset_service = self.ros_node.create_service(Empty, base_ns + "reset", self.reset)
             self.reset_pose_service = self.ros_node.create_service(
                 Empty, base_ns + "reset_pose", self.set_initial_poses
@@ -337,7 +338,7 @@ class SupervisorController:
 
     def publish_model_states(self):
         if self.model_state_publisher.get_subscription_count() != 0:
-            msg = ModelStates()
+            msg = SimInfo()
             for robot_name, robot_node in self.robot_nodes.items():
                 position, orientation = self.get_robot_pose_quat(name=robot_name)
                 robot_pose = Pose()
@@ -355,7 +356,7 @@ class SupervisorController:
                 twist.angular.x = ang_vel[0]
                 twist.angular.y = ang_vel[1]
                 twist.angular.z = ang_vel[2]
-                msg.twist.append(twist)
+                msg.base_link_twist = twist
 
                 head_node = robot_node.getFromProtoDef("head")
                 head_position = head_node.getPosition()
@@ -363,21 +364,45 @@ class SupervisorController:
                 head_orientation_quat = transforms3d.quaternions.mat2quat(np.reshape(head_orientation, (3, 3)))
                 head_pose = Pose()
                 head_pose.position = Point(x=head_position[0], y=head_position[1], z=head_position[2])
-                head_pose.orientation = Quaternion(
-                    x=head_orientation_quat[1],
-                    y=head_orientation_quat[2],
-                    z=head_orientation_quat[3],
-                    w=head_orientation_quat[0],
-                )
-                msg.name.append(robot_name + "_head")
-                msg.pose.append(head_pose)
+                head_pose.orientation = Quaternion(x=head_orientation_quat[1], y=head_orientation_quat[2],
+                                                   z=head_orientation_quat[3], w=head_orientation_quat[0])
+                # I currently do not need the head
+                # msg.name.append(robot_name + "_head")
+                # msg.pose.append(head_pose)
 
-            if self.ball is not None:
-                ball_position = self.ball.getField("translation").getSFVec3f()
-                ball_pose = Pose()
-                ball_pose.position = Point(x=ball_position[0], y=ball_position[1], z=ball_position[2])
-                ball_pose.orientation = Quaternion()
-                msg.name.append("ball")
-                msg.pose.append(ball_pose)
+                l_foot_node = robot_node.getFromProtoDef("l_foot")
+                l_foot_position = l_foot_node.getPosition()
+                l_foot_orientation = l_foot_node.getOrientation()
+                l_foot_orientation_quat = transforms3d.quaternions.mat2quat(np.reshape(l_foot_orientation, (3, 3)))
+                l_foot_pose = Pose()
+                l_foot_pose.position = Point(x=l_foot_position[0], y=l_foot_position[1], z=l_foot_position[2])
+                l_foot_pose.orientation = Quaternion(x=l_foot_orientation_quat[1], y=l_foot_orientation_quat[2],
+                                                     z=l_foot_orientation_quat[3], w=l_foot_orientation_quat[0])
+                msg.l_foot_pose = l_foot_pose
+
+                r_foot_node = robot_node.getFromProtoDef("r_foot")
+                r_foot_position = r_foot_node.getPosition()
+                r_foot_orientation = r_foot_node.getOrientation()
+                r_foot_orientation_quat = transforms3d.quaternions.mat2quat(np.reshape(r_foot_orientation, (3, 3)))
+                r_foot_pose = Pose()
+                r_foot_pose.position = Point(x=r_foot_position[0], y=r_foot_position[1], z=r_foot_position[2])
+                r_foot_pose.orientation = Quaternion(x=r_foot_orientation_quat[1], y=r_foot_orientation_quat[2],
+                                                     z=r_foot_orientation_quat[3], w=r_foot_orientation_quat[0])
+                
+                msg.r_foot_pose = r_foot_pose
+
+                seconds = int(self.time)
+                nanosec = int((self.time - seconds) * 1e9)
+                msg.header.stamp = Time(seconds=seconds, nanoseconds=nanosec).to_msg()
+                
+
+
+            # if self.ball is not None:
+            #     ball_position = self.ball.getField("translation").getSFVec3f()
+            #     ball_pose = Pose()
+            #     ball_pose.position = Point(x=ball_position[0], y=ball_position[1], z=ball_position[2])
+            #     ball_pose.orientation = Quaternion()
+            #     msg.name.append("ball")
+            #     msg.pose.append(ball_pose)
 
             self.model_state_publisher.publish(msg)
