@@ -49,58 +49,53 @@ class RecordUI(Plugin):
         ui_file = os.path.join(get_package_share_directory("bitbots_animation_rqt"), "resource", "RecordUI.ui")
         loadUi(ui_file, self._widget, {})
 
+        # Initialize the recorder module
         self._recorder = Recorder(self._node)
+
+        # Initialize the GUI state
         self._sliders = {}
-        self._textFields = {}
-        self._motorSwitched = {}
+        self._text_fields = {}
+        self._motor_switched = {}
         self._selected_frame = None
 
-        self._currentGoals = {}  # this is the data about the current unsaved frame
-        self._currentDuration = 1.0
-        self._currentPause = 0.0
-        self._currentName = "new frame"
+        self._current_goals = {}  # this is the data about the current unsaved frame
+        self._current_duration = 1.0
+        self._current_pause = 0.0
+        self._current_name = "new frame"
 
-        self._workingValues = {}  # this is the data about the frame that is displayed
-        self._workingDuration = 1.0
-        self._workingPause = 0.0
-        self._workingName = self._currentName
+        self._working_values = {}  # this is the data about the frame that is displayed
+        self._working_duration = 1.0
+        self._working_pause = 0.0
+        self._working_name = self._currentName
 
         self._current = True
 
-        self._saveDir = None
-
-        self._robot_anim_path = os.path.join(get_package_share_directory("wolfgang_animations"), "animations")
+        # QT directory for saving files
+        self._save_directory = None
 
         # save current frame when switching to other frames for reference
         # working frame
 
         self._treeItems = {}
-        self._motorCheckBody = QTreeWidgetItem(self._widget.motorTree)
-        self._motorCheckLegs = QTreeWidgetItem(self._motorCheckBody)
-        self._motorCheckArms = QTreeWidgetItem(self._motorCheckBody)
-        self._motorCheckHead = QTreeWidgetItem(self._motorCheckBody)
-        self._motorCheckLArm = QTreeWidgetItem(self._motorCheckArms)
-        self._motorCheckRArm = QTreeWidgetItem(self._motorCheckArms)
-        self._motorCheckLLeg = QTreeWidgetItem(self._motorCheckLegs)
-        self._motorCheckRLeg = QTreeWidgetItem(self._motorCheckLegs)
+        self._motor_check_body = QTreeWidgetItem(self._widget.motorTree)
+        self._motor_check_legs = QTreeWidgetItem(self._motor_check_body)
+        self._motor_check_arms = QTreeWidgetItem(self._motor_check_body)
+        self._motor_check_head = QTreeWidgetItem(self._motor_check_body)
+        self._motor_check_left_arm = QTreeWidgetItem(self._motor_check_arms)
+        self._motor_check_right_arm = QTreeWidgetItem(self._motor_check_arms)
+        self._motor_check_left_leg = QTreeWidgetItem(self._motor_check_legs)
+        self._motor_check_right_leg = QTreeWidgetItem(self._motor_check_legs)
 
         # saves configuration of the trees checkboxes for each of the tree modes.
-        self._checkBoxesSave = {}
-        self._checkBoxesPower = {}
-        self._previousTreeMode = 0
+        self._check_boxes_save = {}
+        self._check_boxes_power = {}
+        self._previous_tree_mode = 0
 
         self.setObjectName("Record Animation")
 
         self._widget.frameList = DragDropList(self._widget, self)
         self._widget.verticalLayout_2.insertWidget(0, self._widget.frameList)
         self._widget.frameList.setDragDropMode(QAbstractItemView.InternalMove)
-
-        # Create subscriptions
-        self.state_sub = self._node.create_subscription(JointState, "joint_states", self.state_update, 1)
-
-        # Create publishers
-        self._joint_pub = self._node.create_publisher(JointCommand, "record_motor_goals", 1)
-        self.effort_pub = self._node.create_publisher(JointTorque, "ros_control/set_torque_individual", 1)
 
         # Create a dictionary to map joint names to ids # TODO this should not be hardcoded
         self.ids = {
@@ -136,15 +131,15 @@ class RecordUI(Plugin):
             self._initial_joints.position.append(0)
 
         for i in range(0, len(self._initial_joints.name)):
-            self._currentGoals[self._initial_joints.name[i]] = self._initial_joints.position[i]
-            self._workingValues[self._initial_joints.name[i]] = self._initial_joints.position[i]
-            self._motorSwitched[self._initial_joints.name[i]] = True
+            self._current_goals[self._initial_joints.name[i]] = self._initial_joints.position[i]
+            self._working_values[self._initial_joints.name[i]] = self._initial_joints.position[i]
+            self._motor_switched[self._initial_joints.name[i]] = True
 
         init_torque = {}
-        for k in self._workingValues.keys():
+        for k in self._working_values.keys():
             init_torque[k] = 2
 
-        self._checkBoxesPower["#CURRENT_FRAME"] = init_torque
+        self._check_boxes_power["#CURRENT_FRAME"] = init_torque
 
         self.motor_controller()
         self.motor_switcher()
@@ -155,6 +150,14 @@ class RecordUI(Plugin):
         self.set_sliders_and_text_fields(manual=True)
 
         context.add_widget(self._widget)
+
+        # Create subscriptions
+        self.state_sub = self._node.create_subscription(JointState, "joint_states", self.state_update, 1)
+
+        # Create publishers
+        self._joint_pub = self._node.create_publisher(JointCommand, "record_motor_goals", 1)
+        self.effort_pub = self._node.create_publisher(JointTorque, "ros_control/set_torque_individual", 1)
+
         self._widget.statusBar.showMessage("Initialization complete.")
 
     def state_update(self, joint_states):
@@ -166,8 +169,8 @@ class RecordUI(Plugin):
             time.sleep(1)
         else:
             for i in range(0, len(joint_states.name)):
-                if not self._motorSwitched[joint_states.name[i]]:
-                    self._workingValues[joint_states.name[i]] = joint_states.position[i]
+                if not self._motor_switched[joint_states.name[i]]:
+                    self._working_values[joint_states.name[i]] = joint_states.position[i]
 
         time.sleep(self.update_time)
         self.set_sliders_and_text_fields(manual=False)
@@ -178,7 +181,7 @@ class RecordUI(Plugin):
         Uses self._motorValues to determine which motors are present.
         """
         i = 0
-        for k, _v in sorted(self._currentGoals.items()):
+        for k, _v in sorted(self._current_goals.items()):
             group = QGroupBox()
             slider = QSlider(Qt.Horizontal)
             slider.setTickInterval(1)
@@ -193,7 +196,7 @@ class RecordUI(Plugin):
             textfield = QLineEdit()
             textfield.setText("0")
             textfield.textEdited.connect(self.textfield_update)
-            self._textFields[k] = textfield
+            self._text_fields[k] = textfield
 
             label = QLabel()
             label.setText(k)
@@ -201,7 +204,7 @@ class RecordUI(Plugin):
             layout = QVBoxLayout()
             layout.addWidget(label)
             layout.addWidget(self._sliders[k])
-            layout.addWidget(self._textFields[k])
+            layout.addWidget(self._text_fields[k])
             group.setLayout(layout)
             self._widget.motorControlLayout.addWidget(group, i // 5, i % 5)
             i = i + 1
@@ -275,13 +278,13 @@ class RecordUI(Plugin):
         Saves all currently recorded frames into a json file
         """
         if self._recorder.get_animation_state():
-            self.tree_mode_changed(self._previousTreeMode)
+            self.tree_mode_changed(self._previous_tree_mode)
             self.set_metadata()
-            if not self._saveDir:
+            if not self._save_directory:
                 # QFileDialogue throws a gtk warning, that can not be suppressed or fixed. Should be ignored.
-                self._saveDir = QFileDialog.getExistingDirectory()
+                self._save_directory = QFileDialog.getExistingDirectory()
             status = self._recorder.save_animation(
-                self._saveDir, self._widget.lineAnimationName.text(), self._checkBoxesSave
+                self._save_directory, self._widget.lineAnimationName.text(), self._check_boxes_save
             )
             self._widget.statusBar.showMessage(status)
         else:
@@ -293,9 +296,11 @@ class RecordUI(Plugin):
         Saves all currently recorded frames into a json file, which is saved at a user specified location
         """
         if self._recorder.get_animation_state():
-            self.tree_mode_changed(self._previousTreeMode)
-            self._saveDir = QFileDialog.getExistingDirectory()
-            self._recorder.save_animation(self._saveDir, self._widget.lineAnimationName.text(), self._checkBoxesSave)
+            self.tree_mode_changed(self._previous_tree_mode)
+            self._save_directory = QFileDialog.getExistingDirectory()
+            self._recorder.save_animation(
+                self._save_directory, self._widget.lineAnimationName.text(), self._check_boxes_save
+            )
         else:
             self._widget.statusBar.showMessage("There is nothing to save!")
             return
@@ -330,11 +335,11 @@ class RecordUI(Plugin):
         animstate = self._recorder.get_animation_state()
         for i in animstate:
             try:
-                self._checkBoxesPower[i["name"]] = i["torque"]
+                self._check_boxes_power[i["name"]] = i["torque"]
             except KeyError:
-                self._checkBoxesPower[i["name"]] = {}
+                self._check_boxes_power[i["name"]] = {}
                 for key in self.ids:
-                    self._checkBoxesPower[i["name"]][key] = 2
+                    self._check_boxes_power[i["name"]][key] = 2
 
         self.update_frames()
 
@@ -378,7 +383,7 @@ class RecordUI(Plugin):
         pos_msg.accelerations = [-1.0] * 20
         pos_msg.max_currents = [-1.0] * 20
 
-        for k, v in self._workingValues.items():
+        for k, v in self._working_values.items():
             pos_msg.joint_names.append(k)
             pos_msg.positions.append(v)
 
@@ -386,7 +391,7 @@ class RecordUI(Plugin):
         torque_msg.joint_names = []
         torque_msg.on = []
 
-        for k, v in self._checkBoxesPower[self._widget.frameList.currentItem().text()].items():
+        for k, v in self._check_boxes_power[self._widget.frameList.currentItem().text()].items():
             torque_msg.joint_names.append(k)
             torque_msg.on.append(v)
 
@@ -405,10 +410,10 @@ class RecordUI(Plugin):
         self.set_all_joints_stiff()
 
         if self._widget.frameList.currentItem().text() == "#CURRENT_FRAME":
-            for k, _v in self._workingValues.items():
-                self._workingValues[k] = 0.0
-        for k, _v in self._currentGoals.items():
-            self._currentGoals[k] = 0.0
+            for k, _v in self._working_values.items():
+                self._working_values[k] = 0.0
+        for k, _v in self._current_goals.items():
+            self._current_goals[k] = 0.0
         self.set_sliders_and_text_fields(manual=False)
 
         pos_msg = JointCommand()
@@ -481,38 +486,38 @@ class RecordUI(Plugin):
                 x = True
                 n = 0
                 for state in self._recorder.get_animation_state():
-                    if self._workingName == state["name"]:
+                    if self._working_name == state["name"]:
                         while x:
                             x = False
                             for state in self._recorder.get_animation_state():
-                                if self._workingName + str(n) == state["name"]:
+                                if self._working_name + str(n) == state["name"]:
                                     n += 1
                                     x = True
-                        self._workingName = self._workingName + str(n)
+                        self._working_name = self._working_name + str(n)
 
                 self.set_sliders_and_text_fields(manual=True)
 
-                self._checkBoxesPower[self._workingName] = {}
+                self._check_boxes_power[self._working_name] = {}
                 init_torque = {}
-                for k, _v in self._workingValues.items():
+                for k, _v in self._working_values.items():
                     init_torque[k] = 2
 
-                self._checkBoxesPower[self._workingName] = init_torque
+                self._check_boxes_power[self._working_name] = init_torque
 
                 self._recorder.record(
-                    self._workingValues,
+                    self._working_values,
                     init_torque,
                     self._widget.lineFrameName.text(),
                     self._widget.spinBoxDuration.value(),
                     self._widget.spinBoxPause.value(),
                 )
-                self._currentGoals = deepcopy(self._workingValues)
+                self._current_goals = deepcopy(self._working_values)
             else:
                 current_row = self._widget.frameList.currentRow()
 
                 self._recorder.record(
-                    self._workingValues,
-                    self._checkBoxesPower[self._widget.frameList.currentItem().text()],
+                    self._working_values,
+                    self._check_boxes_power[self._widget.frameList.currentItem().text()],
                     self._widget.lineFrameName.text(),
                     self._widget.spinBoxDuration.value(),
                     self._widget.spinBoxPause.value(),
@@ -520,7 +525,7 @@ class RecordUI(Plugin):
                     True,
                 )
 
-            self._widget.statusBar.showMessage("Recorded frame " + self._workingName)
+            self._widget.statusBar.showMessage("Recorded frame " + self._working_name)
         self.update_frames(keep)
 
     def undo(self):
@@ -546,17 +551,17 @@ class RecordUI(Plugin):
         opposite = "L"
         if direction == "L":
             opposite = "R"
-        for k, v in self._workingValues.items():
+        for k, v in self._working_values.items():
             if k[0] == opposite:
-                for k1, _v1 in self._workingValues.items():
+                for k1, _v1 in self._working_values.items():
                     if k1 == str(direction) + k[1:]:
-                        self._workingValues[k1] = v * -1
+                        self._working_values[k1] = v * -1
 
         boxmode = 0
         if self._widget.treeModeSelector.currentIndex() == 0:
-            boxmode = self._checkBoxesPower[self._widget.frameList.currentItem().text()]
+            boxmode = self._check_boxes_power[self._widget.frameList.currentItem().text()]
         elif self._widget.treeModeSelector.currentIndex() == 1:
-            boxmode = self._checkBoxesSave[self._widget.frameList.currentItem().text()]
+            boxmode = self._check_boxes_save[self._widget.frameList.currentItem().text()]
 
         for k in boxmode.keys():
             if k[0] == opposite:
@@ -577,19 +582,19 @@ class RecordUI(Plugin):
         Inverts values, if necessary
         """
         temp_dict = {}
-        for k, v in self._workingValues.items():
+        for k, v in self._working_values.items():
             if k[0] == "L":
                 temp_dict["R" + k[1:]] = -v
             elif k[0] == "R":
                 temp_dict["L" + k[1:]] = -v
         for k, v in temp_dict.items():
-            self._workingValues[k] = v
+            self._working_values[k] = v
 
         boxmode = 0
         if self._widget.treeModeSelector.currentIndex() == 0:
-            boxmode = self._checkBoxesPower
+            boxmode = self._check_boxes_power
         elif self._widget.treeModeSelector.currentIndex() == 1:
-            boxmode = self._checkBoxesSave
+            boxmode = self._check_boxes_save
 
         for k, v in boxmode[self._widget.frameList.currentItem().text()].items():
             if k[0] == "L":
@@ -621,9 +626,9 @@ class RecordUI(Plugin):
         """
         Updates the respective values for the two spin boxes and the frame name, when they are changed
         """
-        self._workingDuration = self._widget.spinBoxDuration.value()
-        self._workingPause = self._widget.spinBoxPause.value()
-        self._workingName = self._widget.lineFrameName.text()
+        self._working_duration = self._widget.spinBoxDuration.value()
+        self._working_pause = self._widget.spinBoxPause.value()
+        self._working_name = self._widget.lineFrameName.text()
 
     def frame_select(self):
         """
@@ -646,10 +651,10 @@ class RecordUI(Plugin):
                 self._widget.treeModeSelector.setCurrentIndex(0)
                 self.update_tree_config(0)
                 self._widget.treeModeSelector.setEnabled(False)
-                self._workingValues = deepcopy(self._currentGoals)
-                self._workingName = deepcopy(self._currentName)
-                self._workingDuration = deepcopy(self._currentDuration)
-                self._workingPause = deepcopy(self._currentPause)
+                self._working_values = deepcopy(self._current_goals)
+                self._working_name = deepcopy(self._currentName)
+                self._working_duration = deepcopy(self._current_duration)
+                self._working_pause = deepcopy(self._current_pause)
 
                 self._current = True
             else:
@@ -657,26 +662,26 @@ class RecordUI(Plugin):
                     return
                 self._widget.treeModeSelector.setEnabled(True)
                 if self._current:
-                    self._currentGoals = deepcopy(self._workingValues)
-                    self._currentName = deepcopy(self._workingName)
-                    self._currentDuration = deepcopy(self._workingDuration)
-                    self._currentPause = deepcopy(self._workingPause)
+                    self._current_goals = deepcopy(self._working_values)
+                    self._currentName = deepcopy(self._working_name)
+                    self._current_duration = deepcopy(self._working_duration)
+                    self._current_pause = deepcopy(self._working_pause)
 
-                self._workingValues = self._selected_frame["goals"]
-                self._workingName = self._selected_frame["name"]
-                self._workingPause = self._selected_frame["pause"]
-                self._workingDuration = float(self._selected_frame["duration"])
+                self._working_values = self._selected_frame["goals"]
+                self._working_name = self._selected_frame["name"]
+                self._working_pause = self._selected_frame["pause"]
+                self._working_duration = float(self._selected_frame["duration"])
 
                 self._widget.lineFrameName.setText(self._widget.frameList.currentItem().text())
                 self._current = False
-                self.update_tree_config(self._previousTreeMode)
+                self.update_tree_config(self._previous_tree_mode)
 
             if self._widget.treeModeSelector.currentIndex() == 0:
                 for k, v in self._treeItems.items():
-                    self._motorSwitched[k] = v.checkState(0) == 2
+                    self._motor_switched[k] = v.checkState(0) == 2
 
-            for k, v in self._motorSwitched.items():
-                self._textFields[k].setEnabled(v)
+            for k, v in self._motor_switched.items():
+                self._text_fields[k].setEnabled(v)
                 self._sliders[k].setEnabled(v)
 
         self.box_ticked()
@@ -686,43 +691,51 @@ class RecordUI(Plugin):
         Loads the motors into the tree and adds the checkboxes
         """
         self._widget.motorTree.setHeaderLabel("Stiff Motors")
-        self._motorCheckBody.setText(0, "Body")
-        self._motorCheckBody.setFlags(self._motorCheckBody.flags() | Qt.ItemIsTristate | Qt.ItemIsUserCheckable)
-        self._motorCheckBody.setExpanded(True)
-        self._motorCheckHead.setText(0, "Head")
-        self._motorCheckHead.setFlags(self._motorCheckHead.flags() | Qt.ItemIsTristate | Qt.ItemIsUserCheckable)
-        self._motorCheckHead.setExpanded(True)
-        self._motorCheckArms.setText(0, "Arms")
-        self._motorCheckArms.setFlags(self._motorCheckArms.flags() | Qt.ItemIsTristate | Qt.ItemIsUserCheckable)
-        self._motorCheckArms.setExpanded(True)
-        self._motorCheckLegs.setText(0, "Legs")
-        self._motorCheckLegs.setFlags(self._motorCheckLegs.flags() | Qt.ItemIsTristate | Qt.ItemIsUserCheckable)
-        self._motorCheckLegs.setExpanded(True)
-        self._motorCheckLArm.setText(0, "Left Arm")
-        self._motorCheckLArm.setFlags(self._motorCheckLArm.flags() | Qt.ItemIsTristate | Qt.ItemIsUserCheckable)
-        self._motorCheckLArm.setExpanded(True)
-        self._motorCheckRArm.setText(0, "Right Arm")
-        self._motorCheckRArm.setFlags(self._motorCheckRArm.flags() | Qt.ItemIsTristate | Qt.ItemIsUserCheckable)
-        self._motorCheckRArm.setExpanded(True)
-        self._motorCheckLLeg.setText(0, "Left Leg")
-        self._motorCheckLLeg.setFlags(self._motorCheckLLeg.flags() | Qt.ItemIsTristate | Qt.ItemIsUserCheckable)
-        self._motorCheckLLeg.setExpanded(True)
-        self._motorCheckRLeg.setText(0, "Right Leg")
-        self._motorCheckRLeg.setFlags(self._motorCheckRLeg.flags() | Qt.ItemIsTristate | Qt.ItemIsUserCheckable)
-        self._motorCheckRLeg.setExpanded(True)
+        self._motor_check_body.setText(0, "Body")
+        self._motor_check_body.setFlags(self._motor_check_body.flags() | Qt.ItemIsTristate | Qt.ItemIsUserCheckable)
+        self._motor_check_body.setExpanded(True)
+        self._motor_check_head.setText(0, "Head")
+        self._motor_check_head.setFlags(self._motor_check_head.flags() | Qt.ItemIsTristate | Qt.ItemIsUserCheckable)
+        self._motor_check_head.setExpanded(True)
+        self._motor_check_arms.setText(0, "Arms")
+        self._motor_check_arms.setFlags(self._motor_check_arms.flags() | Qt.ItemIsTristate | Qt.ItemIsUserCheckable)
+        self._motor_check_arms.setExpanded(True)
+        self._motor_check_legs.setText(0, "Legs")
+        self._motor_check_legs.setFlags(self._motor_check_legs.flags() | Qt.ItemIsTristate | Qt.ItemIsUserCheckable)
+        self._motor_check_legs.setExpanded(True)
+        self._motor_check_left_arm.setText(0, "Left Arm")
+        self._motor_check_left_arm.setFlags(
+            self._motor_check_left_arm.flags() | Qt.ItemIsTristate | Qt.ItemIsUserCheckable
+        )
+        self._motor_check_left_arm.setExpanded(True)
+        self._motor_check_right_arm.setText(0, "Right Arm")
+        self._motor_check_right_arm.setFlags(
+            self._motor_check_right_arm.flags() | Qt.ItemIsTristate | Qt.ItemIsUserCheckable
+        )
+        self._motor_check_right_arm.setExpanded(True)
+        self._motor_check_left_leg.setText(0, "Left Leg")
+        self._motor_check_left_leg.setFlags(
+            self._motor_check_left_leg.flags() | Qt.ItemIsTristate | Qt.ItemIsUserCheckable
+        )
+        self._motor_check_left_leg.setExpanded(True)
+        self._motor_check_right_leg.setText(0, "Right Leg")
+        self._motor_check_right_leg.setFlags(
+            self._motor_check_right_leg.flags() | Qt.ItemIsTristate | Qt.ItemIsUserCheckable
+        )
+        self._motor_check_right_leg.setExpanded(True)
 
-        for k, _v in self._currentGoals.items():
+        for k, _v in self._current_goals.items():
             parent = None
             if "LHip" in k or "LKnee" in k or "LAnkle" in k:
-                parent = self._motorCheckLLeg
+                parent = self._motor_check_left_leg
             elif "RHip" in k or "RKnee" in k or "RAnkle" in k:
-                parent = self._motorCheckRLeg
+                parent = self._motor_check_right_leg
             elif "LShoulder" in k or "LElbow" in k:
-                parent = self._motorCheckLArm
+                parent = self._motor_check_left_arm
             elif "RShoulder" in k or "RElbow" in k:
-                parent = self._motorCheckRArm
+                parent = self._motor_check_right_arm
             elif "Head" in k:
-                parent = self._motorCheckHead
+                parent = self._motor_check_head
             child = QTreeWidgetItem(parent)
             child.setText(0, k)
             child.setFlags(child.flags() | Qt.ItemIsUserCheckable)
@@ -740,10 +753,10 @@ class RecordUI(Plugin):
             for k in self._treeItems.keys():
                 temp_dict[k] = self._treeItems[k].checkState(0)
 
-            if self._previousTreeMode == 1:
-                self._checkBoxesSave[self._selected_frame["name"]] = deepcopy(temp_dict)
-            elif self._previousTreeMode == 0:
-                self._checkBoxesPower[self._selected_frame["name"]] = deepcopy(temp_dict)
+            if self._previous_tree_mode == 1:
+                self._check_boxes_save[self._selected_frame["name"]] = deepcopy(temp_dict)
+            elif self._previous_tree_mode == 0:
+                self._check_boxes_power[self._selected_frame["name"]] = deepcopy(temp_dict)
 
     def update_tree_config(self, index):
         """
@@ -753,21 +766,21 @@ class RecordUI(Plugin):
         if self._widget.frameList.currentItem() is not None:
             if not self._widget.frameList.currentItem().text() == "#CURRENT_FRAME":
                 if index == 1:
-                    if self._selected_frame["name"] in self._checkBoxesSave.keys():
-                        temp_dict_2 = deepcopy(self._checkBoxesSave[self._selected_frame["name"]])
+                    if self._selected_frame["name"] in self._check_boxes_save.keys():
+                        temp_dict_2 = deepcopy(self._check_boxes_save[self._selected_frame["name"]])
                     else:
-                        for k in self._workingValues:
+                        for k in self._working_values:
                             temp_dict_2[k] = 2
                 elif index == 0:
-                    if self._selected_frame["name"] in self._checkBoxesPower.keys():
-                        temp_dict_2 = deepcopy(self._checkBoxesPower[self._selected_frame["name"]])
+                    if self._selected_frame["name"] in self._check_boxes_power.keys():
+                        temp_dict_2 = deepcopy(self._check_boxes_power[self._selected_frame["name"]])
                     else:
-                        for k in self._workingValues:
+                        for k in self._working_values:
                             temp_dict_2[k] = 2
             else:
-                for k in self._workingValues:
+                for k in self._working_values:
                     temp_dict_2[k] = 2
-            self._previousTreeMode = index
+            self._previous_tree_mode = index
             for k, v in temp_dict_2.items():
                 if v == 0:
                     self._treeItems[k].setCheckState(0, Qt.Unchecked)
@@ -785,20 +798,20 @@ class RecordUI(Plugin):
         Updates all sliders, checks whether a value is too large, then replaces it
         """
         for k, v in self._sliders.items():
-            self._workingValues[k] = math.radians(v.value())
-            if self._workingValues[k] < -math.pi:
-                self._workingValues[k] = -math.pi
-            elif self._workingValues[k] > math.pi:
-                self._workingValues[k] = math.pi
+            self._working_values[k] = math.radians(v.value())
+            if self._working_values[k] < -math.pi:
+                self._working_values[k] = -math.pi
+            elif self._working_values[k] > math.pi:
+                self._working_values[k] = math.pi
         self.set_sliders_and_text_fields(manual=True)
 
     def textfield_update(self):
         """
         Updates all textfields.
         """
-        for k, v in self._textFields.items():
+        for k, v in self._text_fields.items():
             try:
-                self._workingValues[k] = math.radians(float(v.text()))
+                self._working_values[k] = math.radians(float(v.text()))
             except ValueError:
                 continue
         self.set_sliders_and_text_fields(manual=True)
@@ -808,10 +821,10 @@ class RecordUI(Plugin):
         Updates the text fields and sliders in self._sliders and self._textfields and also frame name and duration and pause
         to the values in self._workingValues.
         """
-        for k, v in self._workingValues.items():
+        for k, v in self._working_values.items():
             try:
                 if not self._treeItems[k].checkState(0) == 0:
-                    self._textFields[k].setText(str(int(round(math.degrees(v)))))
+                    self._text_fields[k].setText(str(int(round(math.degrees(v)))))
                     self._sliders[k].setValue(int(round(math.degrees(v))))
 
             except KeyError:
@@ -827,19 +840,19 @@ class RecordUI(Plugin):
                 self._widget.statusBar.showMessage(message)
                 break
         if manual:
-            self._widget.lineFrameName.setText(self._workingName)
-            self._widget.spinBoxDuration.setValue(self._workingDuration)
-            self._widget.spinBoxPause.setValue(self._workingPause)
+            self._widget.lineFrameName.setText(self._working_name)
+            self._widget.spinBoxDuration.setValue(self._working_duration)
+            self._widget.spinBoxPause.setValue(self._working_pause)
 
     def box_ticked(self):
         """
         Controls whether a checkbox has been clicked, and reacts.
         """
         for k, v in self._treeItems.items():
-            self._motorSwitched[k] = v.checkState(0) == 2
+            self._motor_switched[k] = v.checkState(0) == 2
 
-        for k, v in self._motorSwitched.items():
-            self._textFields[k].setEnabled(v)
+        for k, v in self._motor_switched.items():
+            self._text_fields[k].setEnabled(v)
             self._sliders[k].setEnabled(v)
 
         self.set_sliders_and_text_fields(manual=False)
@@ -860,7 +873,7 @@ class RecordUI(Plugin):
         pos_msg.accelerations = [-1.0] * 20
         pos_msg.max_currents = [-1.0] * 20
 
-        for k, v in self._workingValues.items():
+        for k, v in self._working_values.items():
             pos_msg.joint_names.append(k)
             pos_msg.positions.append(v)
 
