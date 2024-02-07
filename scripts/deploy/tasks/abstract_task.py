@@ -43,7 +43,7 @@ class AbstractTask(abc.ABC):
         :param results: The results of the task.
         :return: The list of hosts that have results.
         """
-        return [connection.host for connection in results.keys()]
+        return [connection.original_host for connection in results.keys()]
 
     def _succeeded_hosts(self, results: GroupResult) -> list[str]:
         """

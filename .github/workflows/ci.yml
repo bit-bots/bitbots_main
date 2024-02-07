@@ -21,7 +21,7 @@ jobs:
         run: git config --global --add safe.directory /__w/bitbots_main/bitbots_main
 
       - name: Pull source code for libraries and install dependencies
-        run: make install HTTPS=true ARGS="-ci"
+        run: make install HTTPS=true ARGS="--ci"
 
       - name: Set up colcon workspace
         run: |

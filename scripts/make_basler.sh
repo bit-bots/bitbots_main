@@ -1,6 +1,6 @@
-#!/bin/bash 
+#!/bin/bash
 
-# You need to fill out a form to download the pylon driver. 
+# You need to fill out a form to download the pylon driver.
 # The pylon driver can be found in the download section of the following link:
 # https://www.baslerweb.com/en/downloads/software-downloads/
 # Go to the download button and copy the link address.
@@ -14,9 +14,10 @@ BLAZE_VERSION="1.5.0"
 # Check let the user confirm that they read the license agreement on the basler website and agree with it.
 echo "You need to confirm that you read the license agreements for pylon $PYLON_VERSION and the blaze supplementary package $BLAZE_VERSION on the basler download page (https://www.baslerweb.com/en/downloads/software-downloads/) and agree with it."
 
-# Check -ci flag for automatic confirmation in the ci
-if [[ $1 == "-ci" ]]; then
+# Check --ci flag for automatic confirmation in the ci
+if [[ $1 == "--ci" ]]; then
     echo "Running in a CI environment, continuing..."
+    SHOW_PROGRESS=""
 else
     # Ask the user if they want to continue and break if they don't
     read -p "Do you want to continue? [y/N] " -n 1 -r
@@ -25,12 +26,13 @@ else
         echo "Aborting..."
         exit 1
     fi
+    SHOW_PROGRESS="--show-progress"
 fi
 
 # Create function to check if we have an internet connection
 function check_internet_connection () {
     # Check if we have an internet connection, except in the ci as azure does not support ping by design
-    if [[ $1 != "-ci" ]] && ! ping -q -c 1 -W 1 google.com >/dev/null; then
+    if [[ $1 != "--ci" ]] && ! ping -q -c 1 -W 1 google.com >/dev/null; then
         echo "No internet connection. Please check your internet connection to install the basler drivers."
         exit 1
     fi
@@ -49,7 +51,7 @@ else
         exit 1
     fi
     # Download the pylon driver to temp folder
-    wget --no-verbose --show-progress $PYLON_DOWNLOAD_URL -O /tmp/pylon_${PYLON_VERSION}.tar.gz
+    wget --no-verbose $SHOW_PROGRESS $PYLON_DOWNLOAD_URL -O /tmp/pylon_${PYLON_VERSION}.tar.gz
     # Extract the pylon driver
     tar -xzf /tmp/pylon_${PYLON_VERSION}.tar.gz -C /tmp
     # Install the pylon driver
@@ -69,7 +71,7 @@ else
         exit 1
     fi
     # Download the blaze supplementary package to temp folder
-    wget --no-verbose --show-progress $BLAZE_DOWNLOAD_URL -O /tmp/pylon-blaze-supplementary-package_${BLAZE_VERSION}.deb
+    wget --no-verbose $SHOW_PROGRESS $BLAZE_DOWNLOAD_URL -O /tmp/pylon-blaze-supplementary-package_${BLAZE_VERSION}.deb
     # Install the blaze supplementary package
     sudo apt install /tmp/pylon-blaze-supplementary-package_${BLAZE_VERSION}*.deb -y
 fi
