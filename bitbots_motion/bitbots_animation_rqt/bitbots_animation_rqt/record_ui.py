@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import rospkg
-import rospy
+import rclpy
 import time
 import math
-import inspect
 from copy import deepcopy
 
 from python_qt_binding.QtCore import Qt, QMetaType, QDataStream, QVariant, pyqtSignal
@@ -13,60 +12,42 @@ from rqt_gui_py.plugin import Plugin
 from python_qt_binding.QtWidgets import QMainWindow, QTreeWidget, QTreeWidgetItem,QListWidgetItem, \
     QSlider, QGroupBox, QVBoxLayout, QLabel, QLineEdit, QListWidget, QAbstractItemView, QFileDialog, QDoubleSpinBox, QMessageBox, \
     QInputDialog, QShortcut
-from python_qt_binding.QtGui import QDoubleValidator, QKeySequence
+from python_qt_binding.QtGui import QKeySequence
 
 from bitbots_msgs.msg import JointCommand, JointTorque
 from sensor_msgs.msg import JointState
-from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
-import os
+from rqt_gui.main import Main
 
-from .animation_recording import Recorder
+from rclpy.node import Node
 
+import os, sys
 
+from ament_index_python import get_package_share_directory
 
-class DragDropList(QListWidget):
-    ''' QListWidget with an event that is called when a drag and drop action was performed.'''
-    keyPressed = pyqtSignal()
-
-    def __init__(self, parent, ui):
-        super(DragDropList, self).__init__(parent)
-
-        self.ui = ui
-        self.setAcceptDrops(True)
-
-
-    def dropEvent(self, e):
-        super(DragDropList, self).dropEvent(e)
-        items = []
-        for i in range(0, self.count()):
-            items.append(self.item(i).text())
-        self.ui.change_frame_order(items)
-
-    def keyPressEvent(self, event):
-        if event.key() == Qt.Key_Delete:
-            super(DragDropList, self).keyPressEvent(event)
-            self.keyPressed.emit()
-        elif event.key() == Qt.Key_Up and self.currentRow()-1 >= 0:
-                self.setCurrentRow(self.currentRow()-1)
-        elif event.key() == Qt.Key_Down and self.currentRow()+1 < self.count():
-            self.setCurrentRow(self.currentRow()+1)
-
+from bitbots_animation_rqt.animation_recording import Recorder
+from bitbots_animation_rqt.utils import DragDropList
 
 
 
 class RecordUI(Plugin):
-    ''' class containing the UI part of the framework'''
+    '''
+    This class is the main class for the RecordUI. It is a plugin for the rqt framework and is used to record animations.
+    '''
     def __init__(self, context):
-        super(RecordUI, self).__init__(context)
+        super().__init__(context)
+        self._node: Node = context.node
 
-
+        # Initialize the window
         self._widget = QMainWindow()
-        rp = rospkg.RosPack()
-        ui_file = os.path.join(rp.get_path('bitbots_recordui_rqt'), 'resource', 'RecordUI.ui')
+
+        # Load XML ui definition
+        ui_file = os.path.join(
+            get_package_share_directory("bitbots_animation_rqt"), "resource", "RecordUI.ui"
+        )
         loadUi(ui_file, self._widget, {})
 
-        self._recorder = Recorder()
+        #self._recorder = Recorder()
         self._sliders = {}
         self._textFields = {}
         self._motorSwitched = {}
@@ -77,7 +58,7 @@ class RecordUI(Plugin):
         self._currentPause = 0.0
         self._currentName = "new frame"
 
-        self._workingValues = {}                # this is the data about the frame that is displayed
+        self._workingValues = {}              # this is the data about the frame that is displayed
         self._workingDuration = 1.0
         self._workingPause = 0.0
         self._workingName = self._currentName
@@ -86,7 +67,9 @@ class RecordUI(Plugin):
 
         self._saveDir = None
 
-        self._robot_anim_path = None
+        self._robot_anim_path = os.path.join(
+            get_package_share_directory("wolfgang_animations"), "animations"
+        )
 
         #save current frame when switching to other frames for reference
         #working frame
@@ -108,16 +91,18 @@ class RecordUI(Plugin):
 
         self.setObjectName('Record Animation')
 
-        self._initial_joints = None
-
         self._widget.frameList = DragDropList(self._widget, self)
         self._widget.verticalLayout_2.insertWidget(0, self._widget.frameList)
         self._widget.frameList.setDragDropMode(QAbstractItemView.InternalMove)
 
-        self.state_sub = rospy.Subscriber("joint_states", JointState, self.state_update, queue_size=1, tcp_nodelay=True)
-        self._joint_pub = rospy.Publisher("record_motor_goals", JointCommand, queue_size=1)
-        self.effort_pub = rospy.Publisher("ros_control/set_torque_individual", JointTorque, queue_size=1)
+        # Create subscriptions
+        self.state_sub = self._node.create_subscription(JointState, "joint_states", self.state_update, 1)
 
+        # Create publishers
+        self._joint_pub = self._node.create_publisher(JointCommand, "record_motor_goals", 1)
+        self.effort_pub = self._node.create_publisher(JointTorque, "ros_control/set_torque_individual", 1)
+
+        # Create a dictionary to map joint names to ids # TODO this should not be hardcoded
         self.ids = {"HeadPan": 0,
                "HeadTilt": 1,
                "LShoulderPitch": 2,
@@ -141,36 +126,18 @@ class RecordUI(Plugin):
 
         self._initial_joints = JointState()
 
-        self.update_time = rospy.Duration(0.1)
+
+        self.update_time = 0.1
 
         for k,v in self.ids.items():
-            rospy.loginfo(k)
+            self._node.get_logger().info(f"Adding {k} to initial_joints")
             self._initial_joints.name.append(k)
             self._initial_joints.position.append(0)
 
-        while not self._initial_joints:
-            if not rospy.is_shutdown():
-                time.rospy.sleep(0.5)
-                rospy.logwarn("wait")
-            else:
-                return
-
-        self.initialize()
-
-        context.add_widget(self._widget)
-        self._widget.statusBar.showMessage("Initialization complete.")
-
-    def initialize(self):
         for i in range(0, len(self._initial_joints.name)):
             self._currentGoals[self._initial_joints.name[i]] = self._initial_joints.position[i]
             self._workingValues[self._initial_joints.name[i]] = self._initial_joints.position[i]
             self._motorSwitched[self._initial_joints.name[i]] = True
-
-
-        host = os.environ['ROS_MASTER_URI'].split('/')[2].split(':')[0]
-        self._robot_anim_path = "bitbots@{}:~/wolfgang_ws/src/wolfgang_robot/wolfgang_animations/animations/motion/".format(host)
-                
-        rospy.loginfo("Set animation path to: "+str(self._robot_anim_path+"record.json"))
 
         initTorque = {}
         for k, v in self._workingValues.items():
@@ -185,6 +152,9 @@ class RecordUI(Plugin):
         self.frame_list()
         self.update_frames()
         self.set_sliders_and_text_fields(manual=True)
+
+        context.add_widget(self._widget)
+        self._widget.statusBar.showMessage("Initialization complete.")
 
     def state_update(self, joint_states):
         '''
@@ -232,7 +202,7 @@ class RecordUI(Plugin):
             layout.addWidget(self._sliders[k])
             layout.addWidget(self._textFields[k])
             group.setLayout(layout)
-            self._widget.motorControlLayout.addWidget(group, i / 5, i % 5)
+            self._widget.motorControlLayout.addWidget(group, i // 5, i % 5)
             i = i+1
 
     def action_connect(self):
@@ -665,7 +635,7 @@ class RecordUI(Plugin):
             self._selected_frame = None
 
 
-            for v in self._recorder.get_animation_state():
+            for v in []: # TODO self._recorder.get_animation_state():
                 if v["name"] == selected_frame_name:
                     self._selected_frame = v
                     break
@@ -911,7 +881,7 @@ class RecordUI(Plugin):
         '''
         current_index = self._widget.frameList.currentIndex()
         current_mode = self._widget.treeModeSelector.currentIndex()
-        current_state = self._recorder.get_animation_state()
+        current_state = [] #TODO self._recorder.get_animation_state()
         while self._widget.frameList.takeItem(0):
             continue
 
@@ -942,3 +912,9 @@ class RecordUI(Plugin):
         '''Clean up by sending the HCM a signal that we are no longer recording'''
         self._joint_pub.publish(JointCommand())
         rospy.sleep(1)
+
+
+def main():
+    plugin = "bitbots_animation_rqt.record_ui.RecordUI"
+    main = Main(filename=plugin)
+    sys.exit(main.main(standalone=plugin))

@@ -10,16 +10,10 @@ import datetime
 import json
 import os
 import math
-
-import actionlib
-import humanoid_league_msgs
-import rosparam
-from rosgraph import MasterException
-import rospy
 from copy import deepcopy
 from socket import gethostname
 import rospkg
-from humanoid_league_msgs.msg import PlayAnimationAction
+from bitbots_msgs.action import PlayAnimation
 
 import subprocess
 
@@ -53,7 +47,7 @@ class Recorder(object):
         self.steps = []
         self.redo_steps = []
         self.current_state = AnimationData()
-        self.anim_client = actionlib.SimpleActionClient('animation', PlayAnimationAction)
+        self.anim_client = actionlib.SimpleActionClient('animation', PlayAnimation)
         self.save_step('Initial step')
 
     def get_animation_state(self):
