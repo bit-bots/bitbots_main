@@ -231,7 +231,7 @@ class RecordUI(Plugin):
         self._widget.buttonRecord.clicked.connect(self.record)
         self._widget.buttonRecord.shortcut = QShortcut(QKeySequence("Space"), self._widget)
         self._widget.buttonRecord.shortcut.activated.connect(self.record)
-        self._widget.frameList.keyPressed.connect(self.delete)
+        self._widget.frameList.key_pressed.connect(self.delete)
         self._widget.treeModeSelector.currentIndexChanged.connect(self.tree_mode_changed)
 
     def help(self):
