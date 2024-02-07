@@ -1,0 +1,16 @@
+motion_odometry:
+  ros__parameters:
+    x_forward_scaling: 1.25
+    x_backward_scaling: 0.95
+    y_scaling: 1.0
+    yaw_scaling: 0.6
+    publish_walk_odom_tf: false
+    k: 0.7
+    m: 0.95
+    temporal_step_offset_factor: 0.0
+    summed_pressure_threshold_right: 30
+    summed_pressure_threshold_left: 30
+    foot_pressure_topic_left: "foot_pressure_left/raw"
+    foot_pressure_topic_right: "foot_pressure_right/raw"
+    debug: true
+  

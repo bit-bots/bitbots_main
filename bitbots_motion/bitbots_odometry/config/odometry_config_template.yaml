@@ -89,7 +89,7 @@ motion_odometry:
 
   foot_pressure_topic_left: {
     type: string,
-    default_value: "foot_pressure_left/filtered",
+    default_value: "cod",
     description: "Topic for the left foot pressure sensor"
   }
 
