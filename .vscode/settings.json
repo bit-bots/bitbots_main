@@ -192,11 +192,15 @@
 
     // Tell the ROS extension where to find the setup.bash
     // This also utilizes the COLCON_WS environment variable, which needs to be set
-    "ros.rosSetupScript": "${env:COLCON_WS}/install/setup.bash",
     "ros.distro": "iron",
     "search.useIgnoreFiles": false,
+    "python.autoComplete.extraPaths": [
+        "/opt/ros/iron/lib/python3.10/site-packages"
+    ],
+    "python.analysis.extraPaths": [
+        "/opt/ros/iron/lib/python3.10/site-packages"
+    ],
 
-    // DO NOT COMMIT THESE ABSOLUTE PYTHON PATHS:
-    
+
 
 }

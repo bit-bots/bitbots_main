@@ -1,4 +1,4 @@
-.PHONY : basler install install-no-root pip pre-commit format pull-all pull-init pull-repos pull-files fresh-libs remove-libs setup-libs rosdep status update update-no-root
+.PHONY : basler install install-no-root pip pre-commit install-git-filters format pull-all pull-init pull-repos pull-files fresh-libs remove-libs setup-libs rosdep status update update-no-root
 
 HTTPS := ""
 REPO:=$(dir $(abspath $(firstword $(MAKEFILE_LIST))))
@@ -18,6 +18,13 @@ pip:
 pre-commit:
 	# Install pre-commit hooks for all submodules that have a .pre-commit-config.yaml file
 	pre-commit install
+
+install-git-filters:
+	# Install git filters
+	# The vscode settings file gets updated by the ros extension and contains the full path to the current user's home directory.
+	# We don't want to commit this path, so we use a git filter to remove it when git adds the file to the staging area.
+	# This does not affect the file on disk, so vscode will still work as expected.
+	git config filter.removeFullHomePath.clean "sed '/\/home.*\(install\|build\)/d'"
 
 format:
 	# Format all files in the repository
@@ -78,6 +85,6 @@ status:
 	# Show status of all repositories
 	vcs status . --nested
 
-update: pull-all rosdep pip pre-commit
+update: pull-all rosdep pip install-git-filters pre-commit
 
-update-no-root: pull-all pip pre-commit
+update-no-root: pull-all pip install-git-filters pre-commit
