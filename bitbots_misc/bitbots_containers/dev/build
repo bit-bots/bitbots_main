@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -eEou pipefail
+
+IMAGE_NAME=bitbots-dev-iron
+WORKSPACE=${ROS_WORKSPACE:-$HOME}
+
+# Build the docker image
+docker build \
+  --pull \
+  --network=host \
+  --build-arg user=$USER \
+  --build-arg uid=$UID \
+  --build-arg home=$HOME \
+  --build-arg workspace=$WORKSPACE \
+  --build-arg shell=$SHELL \
+  -t $IMAGE_NAME \
+  $@ \
+  - < Dockerfile
