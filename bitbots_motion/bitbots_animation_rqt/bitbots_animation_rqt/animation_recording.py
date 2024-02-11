@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-import datetime
-
 # todo
 # copy paste of frames, from one animation to another
 # record button next to frame name filed
@@ -9,6 +7,8 @@ import json
 import math
 import os
 from copy import deepcopy
+from datetime import datetime
+from typing import Optional
 
 from rclpy.action import ActionClient
 from rclpy.duration import Duration
@@ -23,16 +23,16 @@ class AnimationData:
     """
 
     def __init__(self):
-        self.anim_steps = []
-        self.name = "None yet"
-        self.version = 0
-        self.last_edited = datetime.datetime.isoformat(datetime.datetime.now(), " ")
-        self.author = "Unknown"
-        self.description = "Edit me!"
+        self.key_frames: list[dict] = []
+        self.author: str = "Unknown"
+        self.description: str = "Edit me!"
+        self.last_edited: datetime = datetime.isoformat(datetime.now(), " ")
+        self.name: str = "None yet"
+        self.version: int = 0
 
 
 class Recorder:
-    def __init__(self, node: Node):
+    def __init__(self, node: Node) -> None:
         self._node = node
         self.steps = []
         self.redo_steps = []
@@ -40,14 +40,32 @@ class Recorder:
         self.animation_client: ActionClient = ActionClient(self._node, PlayAnimation, "animation")
         self.save_step("Initial step")
 
-    def get_animation_state(self):
-        return self.current_state.anim_steps
+    def get_keyframes(self) -> list[dict]:
+        """
+        Gets the keyframes of the current animation
 
-    def get_meta_data(self):
+        :return: the keyframes of the current animation
+        """
+        return self.current_state.key_frames
+
+    def get_keyframe(self, name: str) -> Optional[dict]:
+        """
+        Gets the keyframe with the given name
+
+        :param name: the name of the keyframe
+        :return: the keyframe with the given name
+        """
+        # Get the first keyframe with the given name or None
+        return next(filter(lambda key_frame: key_frame["name"] == name, self.get_keyframes()), None)
+
+    def get_meta_data(self) -> tuple[str, int, str, str]:
+        """
+        Returns the meta data of the current animation
+        """
         data = self.current_state
         return data.name, data.version, data.author, data.description
 
-    def set_meta_data(self, name, version, author, description):
+    def set_meta_data(self, name: str, version: int, author: str, description: str) -> None:
         self.current_state.name = name
         self.current_state.version = version
         self.current_state.author = author
@@ -118,13 +136,13 @@ class Recorder:
         frame = {"name": frame_name, "duration": duration, "pause": pause, "goals": motor_pos, "torque": motor_torque}
         new_frame = deepcopy(frame)
         if seq_pos is None:
-            self.current_state.anim_steps.append(new_frame)
+            self.current_state.key_frames.append(new_frame)
             self.save_step("Appending new keyframe " + frame_name)
         elif not override:
-            self.current_state.anim_steps.insert(seq_pos, new_frame)
+            self.current_state.key_frames.insert(seq_pos, new_frame)
             self.save_step("Inserting new keyframe " + frame_name + " to position " + str(seq_pos))
         else:
-            self.current_state.anim_steps[seq_pos] = new_frame
+            self.current_state.key_frames[seq_pos] = new_frame
             self.save_step("overriding keyframe " + frame_name + " at position " + str(seq_pos))
         return True
 
@@ -135,7 +153,7 @@ class Recorder:
             if i[1] == "Initial step":
                 newsteps.append(i)
         self.steps = deepcopy(newsteps)
-        self.current_state.anim_steps = []
+        self.current_state.key_frames = []
         return True
 
     def save_animation(self, path, file_name=None, save_checkbox=None):
@@ -143,7 +161,7 @@ class Recorder:
 
         :param file_name: what name the new file should receive
         """
-        if not self.current_state.anim_steps:
+        if not self.current_state.key_frames:
             self._node.get_logger().info("There is nothing to save.")
             return "There is nothing to save."
 
@@ -155,7 +173,7 @@ class Recorder:
         path = os.path.join(path, file_name + ".json")
         self._node.get_logger().debug("Saving to '%s'" % path)
 
-        saved_keyframes = deepcopy(self.current_state.anim_steps)
+        saved_keyframes = deepcopy(self.current_state.key_frames)
 
         for kf in saved_keyframes:
             if save_checkbox is not None:
@@ -167,7 +185,7 @@ class Recorder:
         anim = {
             "name": self.current_state.name,
             "version": self.current_state.version,
-            "last_edited": datetime.datetime.isoformat(datetime.datetime.now(), " "),
+            "last_edited": datetime.isoformat(datetime.now(), " "),
             "author": self.current_state.author,
             "description": self.current_state.description,
             "keyframes": saved_keyframes,
@@ -187,11 +205,11 @@ class Recorder:
         :param framenumber: The Number of frame to remove. default is last
         """
         if not framenumber:
-            if not self.current_state.anim_steps:
+            if not self.current_state.key_frames:
                 self._node.get_logger().warn("Nothing to revert, framelist is empty!")
                 return False
-            self.save_step("Reverting the last Keyframe (#%i)" % len(self.current_state.anim_steps))
-            self.current_state.anim_steps.pop()
+            self.save_step("Reverting the last Keyframe (#%i)" % len(self.current_state.key_frames))
+            self.current_state.key_frames.pop()
             return True
         else:
             try:
@@ -199,15 +217,15 @@ class Recorder:
             except TypeError:
                 self._node.get_logger().warn("Optional framenumber must be Integer! (got %s)" % framenumber)
                 return False
-            if len(self.current_state.anim_steps) < framenumber:
+            if len(self.current_state.key_frames) < framenumber:
                 self._node.get_logger().warn("Invalid framenumber: %i" % framenumber)
                 return False
             self.save_step("Reverting keyframe #%i" % framenumber)
             framenumber -= 1  # Frameindices in the GUI are starting with 1, not 0
-            self.current_state.anim_steps.pop(framenumber)
+            self.current_state.key_frames.pop(framenumber)
         return True
 
-    def load_animation(self, path):
+    def load_animation(self, path: str):
         """Record command, load a animation '.json' file
 
         :param path: path of the animation to load
@@ -236,7 +254,7 @@ class Recorder:
 
         self.save_step("Loading of animation named %s" % path)
 
-        self.current_state.anim_steps = data["keyframes"]
+        self.current_state.key_frames = data["keyframes"]
 
     def play(self, anim_path, until_frame=None):
         """Record command, start playing an animation
@@ -246,24 +264,24 @@ class Recorder:
 
         :param until_frame: the frame until which the animation should be played
         """
-        if not self.current_state.anim_steps:
+        if not self.current_state.key_frames:
             self._node.get_logger().info("Refusing to play, because nothing to play exists!")
             return "Refusing to play, because nothing to play exists!"
         if not until_frame:
             # play complete animation
-            n = len(self.current_state.anim_steps)
+            n = len(self.current_state.key_frames)
         else:
             # play the given number if not higher than current steps
-            n = min(until_frame, len(self.current_state.anim_steps))
+            n = min(until_frame, len(self.current_state.key_frames))
 
-        anim_dict = {"name": "Record-play", "keyframes": deepcopy(self.current_state.anim_steps[0:n])}
+        anim_dict = {"name": "Record-play", "keyframes": deepcopy(self.current_state.key_frames[0:n])}
         for kf in anim_dict["keyframes"]:
             for k, v in kf["goals"].items():
                 kf["goals"][k] = int(math.degrees(v))
 
         self._node.get_logger().info("playing %d frames..." % len(anim_dict["keyframes"]))
 
-        path = os.path.join(anim_path, f"record_{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.json")
+        path = os.path.join(anim_path, f"record_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.json")
 
         with open(path, "w") as fp:
             json.dump(anim_dict, fp, sort_keys=True, indent=4)
@@ -294,11 +312,11 @@ class Recorder:
         """Changes the order of the frames given an array of frame names"""
         new_ordered_frames = []
         for frame_name in new_order:
-            for frame in self.current_state.anim_steps:
+            for frame in self.current_state.key_frames:
                 if frame_name == frame["name"]:
                     new_ordered_frames.append(frame)
 
-        self.current_state.anim_steps = new_ordered_frames
+        self.current_state.key_frames = new_ordered_frames
         self.save_step("Reordered frames")
 
     def duplicate(self, frame_name):
@@ -306,18 +324,18 @@ class Recorder:
         Duplicates a frame
         """
         new_frames = []
-        for frame in self.current_state.anim_steps:
+        for frame in self.current_state.key_frames:
             new_frames.append(frame)
             if frame_name == frame["name"]:
                 duplicate = deepcopy(frame)
                 newname = frame_name + "d"
                 x = True
                 n = 0
-                for frame in self.current_state.anim_steps:
+                for frame in self.current_state.key_frames:
                     if newname == frame["name"]:
                         while x:
                             x = False
-                            for frame in self.current_state.anim_steps:
+                            for frame in self.current_state.key_frames:
                                 if newname + str(n) == frame["name"]:
                                     n += 1
                                     x = True
@@ -325,7 +343,7 @@ class Recorder:
 
                 duplicate["name"] = newname
                 new_frames.append(duplicate)
-        self.current_state.anim_steps = new_frames
+        self.current_state.key_frames = new_frames
         self.save_step("Duplicated Frame " + frame_name)
 
     def delete(self, frame_name):
@@ -333,8 +351,8 @@ class Recorder:
         Deletes a frame
         """
         new_frames = []
-        for frame in self.current_state.anim_steps:
+        for frame in self.current_state.key_frames:
             if not frame_name == frame["name"]:
                 new_frames.append(frame)
-        self.current_state.anim_steps = new_frames
+        self.current_state.key_frames = new_frames
         self.save_step("Duplicated Frame " + frame_name)
