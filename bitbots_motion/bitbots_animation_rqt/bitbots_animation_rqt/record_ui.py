@@ -40,7 +40,18 @@ class RecordUI(Plugin):
 
     def __init__(self, context):
         super().__init__(context)
+        # Store reference to node
         self._node: Node = context.node
+
+        # Set Name of the plugin
+        self.setObjectName("Record Animation")
+
+        # Create publishers
+        self._joint_pub = self._node.create_publisher(JointCommand, "record_motor_goals", 1)
+        self.effort_pub = self._node.create_publisher(JointTorque, "ros_control/set_torque_individual", 1)
+
+        # Initialize the recorder module
+        self._recorder = Recorder(self._node)
 
         # Initialize the window
         self._widget = QMainWindow()
@@ -49,33 +60,30 @@ class RecordUI(Plugin):
         ui_file = os.path.join(get_package_share_directory("bitbots_animation_rqt"), "resource", "RecordUI.ui")
         loadUi(ui_file, self._widget, {})
 
-        # Initialize the recorder module
-        self._recorder = Recorder(self._node)
-
         # Initialize the GUI state
         self._sliders = {}
         self._text_fields = {}
         self._motor_switched = {}
         self._selected_frame = None
+        
+        self.update_time = 0.1 # TODO what is this for?
 
         self._current_goals = {}  # this is the data about the current unsaved frame
         self._current_duration = 1.0
         self._current_pause = 0.0
         self._current_name = "new frame"
 
+        # Save current keyframe when switching to other frames in the ui
         self._working_values = {}  # this is the data about the frame that is displayed
         self._working_duration = 1.0
         self._working_pause = 0.0
-        self._working_name = self._currentName
-
+        self._working_name = self._current_name
         self._current = True
 
         # QT directory for saving files
         self._save_directory = None
 
-        # save current frame when switching to other frames for reference
-        # working frame
-
+        # Initialize the motor tree structure where we can select which motors are stiff
         self._treeItems = {}
         self._motor_check_body = QTreeWidgetItem(self._widget.motorTree)
         self._motor_check_legs = QTreeWidgetItem(self._motor_check_body)
@@ -86,49 +94,46 @@ class RecordUI(Plugin):
         self._motor_check_left_leg = QTreeWidgetItem(self._motor_check_legs)
         self._motor_check_right_leg = QTreeWidgetItem(self._motor_check_legs)
 
-        # saves configuration of the trees checkboxes for each of the tree modes.
+        # Save configuration of the trees checkboxes for each of the tree modes
         self._check_boxes_save = {}
         self._check_boxes_power = {}
         self._previous_tree_mode = 0
 
-        self.setObjectName("Record Animation")
-
+        # Create drag and dop list for keyframes
         self._widget.frameList = DragDropList(self._widget, self)
         self._widget.verticalLayout_2.insertWidget(0, self._widget.frameList)
         self._widget.frameList.setDragDropMode(QAbstractItemView.InternalMove)
 
         # Create a dictionary to map joint names to ids # TODO this should not be hardcoded
-        self.ids = {
-            "HeadPan": 0,
-            "HeadTilt": 1,
-            "LShoulderPitch": 2,
-            "LShoulderRoll": 3,
-            "LElbow": 4,
-            "RShoulderPitch": 5,
-            "RShoulderRoll": 6,
-            "RElbow": 7,
-            "LHipYaw": 8,
-            "LHipRoll": 9,
-            "LHipPitch": 10,
-            "LKnee": 11,
-            "LAnklePitch": 12,
-            "LAnkleRoll": 13,
-            "RHipYaw": 14,
-            "RHipRoll": 15,
-            "RHipPitch": 16,
-            "RKnee": 17,
-            "RAnklePitch": 18,
-            "RAnkleRoll": 19,
-        }
+        self.motors = [
+            "HeadPan",
+            "HeadTilt",
+            "LShoulderPitch",
+            "LShoulderRoll",
+            "LElbow",
+            "RShoulderPitch",
+            "RShoulderRoll",
+            "RElbow",
+            "LHipYaw",
+            "LHipRoll",
+            "LHipPitch",
+            "LKnee",
+            "LAnklePitch",
+            "LAnkleRoll",
+            "RHipYaw",
+            "RHipRoll",
+            "RHipPitch",
+            "RKnee",
+            "RAnklePitch",
+            "RAnkleRoll",
+        ]
 
-        self._initial_joints = JointState()
+        # Create the initial joint state
+        self._initial_joints = JointState(
+            name=self.motors,
+            position=[0.0] * len(self.motors),
+        )
 
-        self.update_time = 0.1
-
-        for k, _v in self.ids.items():
-            self._node.get_logger().info(f"Adding {k} to initial_joints")
-            self._initial_joints.name.append(k)
-            self._initial_joints.position.append(0)
 
         for i in range(0, len(self._initial_joints.name)):
             self._current_goals[self._initial_joints.name[i]] = self._initial_joints.position[i]
@@ -141,9 +146,9 @@ class RecordUI(Plugin):
 
         self._check_boxes_power["#CURRENT_FRAME"] = init_torque
 
-        self.motor_controller()
-        self.motor_switcher()
-        self.action_connect()
+        self.create_motor_controller()
+        self.create_motor_switcher()
+        self.connect_gui_callbacks()
         self.box_ticked()
         self.frame_list()
         self.update_frames()
@@ -153,10 +158,6 @@ class RecordUI(Plugin):
 
         # Create subscriptions
         self.state_sub = self._node.create_subscription(JointState, "joint_states", self.state_update, 1)
-
-        # Create publishers
-        self._joint_pub = self._node.create_publisher(JointCommand, "record_motor_goals", 1)
-        self.effort_pub = self._node.create_publisher(JointTorque, "ros_control/set_torque_individual", 1)
 
         self._widget.statusBar.showMessage("Initialization complete.")
 
@@ -175,13 +176,12 @@ class RecordUI(Plugin):
         time.sleep(self.update_time)
         self.set_sliders_and_text_fields(manual=False)
 
-    def motor_controller(self):
+    def create_motor_controller(self):
         """
         Sets up the GUI in the middle of the Screen to control the motors.
         Uses self._motorValues to determine which motors are present.
         """
-        i = 0
-        for k, _v in sorted(self._current_goals.items()):
+        for i, k in enumerate(sorted(self._current_goals.keys())):
             group = QGroupBox()
             slider = QSlider(Qt.Horizontal)
             slider.setTickInterval(1)
@@ -207,9 +207,8 @@ class RecordUI(Plugin):
             layout.addWidget(self._text_fields[k])
             group.setLayout(layout)
             self._widget.motorControlLayout.addWidget(group, i // 5, i % 5)
-            i = i + 1
 
-    def action_connect(self):
+    def connect_gui_callbacks(self):
         """
         Connects the actions in the top bar to the corresponding functions, and sets their shortcuts
         :return:
@@ -639,7 +638,7 @@ class RecordUI(Plugin):
             selected_frame_name = self._widget.frameList.currentItem().text()
             self._selected_frame = None
 
-            for v in []:  # TODO self._recorder.get_animation_state():
+            for v in self._recorder.get_animation_state():
                 if v["name"] == selected_frame_name:
                     self._selected_frame = v
                     break
@@ -652,7 +651,7 @@ class RecordUI(Plugin):
                 self.update_tree_config(0)
                 self._widget.treeModeSelector.setEnabled(False)
                 self._working_values = deepcopy(self._current_goals)
-                self._working_name = deepcopy(self._currentName)
+                self._working_name = deepcopy(self._current_name)
                 self._working_duration = deepcopy(self._current_duration)
                 self._working_pause = deepcopy(self._current_pause)
 
@@ -663,7 +662,7 @@ class RecordUI(Plugin):
                 self._widget.treeModeSelector.setEnabled(True)
                 if self._current:
                     self._current_goals = deepcopy(self._working_values)
-                    self._currentName = deepcopy(self._working_name)
+                    self._current_name = deepcopy(self._working_name)
                     self._current_duration = deepcopy(self._working_duration)
                     self._current_pause = deepcopy(self._working_pause)
 
@@ -686,7 +685,7 @@ class RecordUI(Plugin):
 
         self.box_ticked()
 
-    def motor_switcher(self):
+    def create_motor_switcher(self):
         """
         Loads the motors into the tree and adds the checkboxes
         """
@@ -724,7 +723,7 @@ class RecordUI(Plugin):
         )
         self._motor_check_right_leg.setExpanded(True)
 
-        for k, _v in self._current_goals.items():
+        for k in self._current_goals.keys():
             parent = None
             if "LHip" in k or "LKnee" in k or "LAnkle" in k:
                 parent = self._motor_check_left_leg
@@ -844,7 +843,7 @@ class RecordUI(Plugin):
             self._widget.spinBoxDuration.setValue(self._working_duration)
             self._widget.spinBoxPause.setValue(self._working_pause)
 
-    def box_ticked(self):
+    def box_ticked(self):   # TODO rename
         """
         Controls whether a checkbox has been clicked, and reacts.
         """
@@ -890,7 +889,7 @@ class RecordUI(Plugin):
         """
         current_index = self._widget.frameList.currentIndex()
         current_mode = self._widget.treeModeSelector.currentIndex()
-        current_state = []  # TODO self._recorder.get_animation_state()
+        current_state = self._recorder.get_animation_state()
         while self._widget.frameList.takeItem(0):
             continue
 
@@ -912,7 +911,7 @@ class RecordUI(Plugin):
             self._widget.frameList.setCurrentItem(current)
             self._current = True
 
-    def change_frame_order(self, new_order):
+    def change_keyframe_order(self, new_order):
         """Calls the recorder to update frame order and updates the gui"""
         self._recorder.change_frame_order(new_order)
         self.update_frames()
