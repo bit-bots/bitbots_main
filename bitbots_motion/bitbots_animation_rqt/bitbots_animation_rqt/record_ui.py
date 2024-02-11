@@ -3,6 +3,7 @@ import math
 import os
 import sys
 import time
+from collections import defaultdict
 from copy import deepcopy
 
 from ament_index_python import get_package_share_directory
@@ -65,8 +66,8 @@ class RecordUI(Plugin):
         self._text_fields = {}
         self._motor_switched = {}
         self._selected_frame = None
-        
-        self.update_time = 0.1 # TODO what is this for?
+
+        self.update_time = 0.1  # TODO what is this for?
 
         self._current_goals = {}  # this is the data about the current unsaved frame
         self._current_duration = 1.0
@@ -96,8 +97,7 @@ class RecordUI(Plugin):
 
         # Save configuration of the trees checkboxes for each of the tree modes
         self._check_boxes_save = {}
-        self._check_boxes_power = {}
-        self._previous_tree_mode = 0
+        self._check_boxes_power = defaultdict(dict)
 
         # Create drag and dop list for keyframes
         self._widget.frameList = DragDropList(self._widget, self)
@@ -134,46 +134,45 @@ class RecordUI(Plugin):
             position=[0.0] * len(self.motors),
         )
 
+        # Initialize all joint dependent data structures
+        for i, k in enumerate(self._initial_joints.name):
+            self._current_goals[k] = self._initial_joints.position[i]
+            self._working_values[k] = self._initial_joints.position[i]
+            self._motor_switched[k] = True
+            self._check_boxes_power["#CURRENT_FRAME"][k] = 2
 
-        for i in range(0, len(self._initial_joints.name)):
-            self._current_goals[self._initial_joints.name[i]] = self._initial_joints.position[i]
-            self._working_values[self._initial_joints.name[i]] = self._initial_joints.position[i]
-            self._motor_switched[self._initial_joints.name[i]] = True
-
-        init_torque = {}
-        for k in self._working_values.keys():
-            init_torque[k] = 2
-
-        self._check_boxes_power["#CURRENT_FRAME"] = init_torque
-
+        # Create GUI components
         self.create_motor_controller()
         self.create_motor_switcher()
+        # Connect callbacks to GUI components
         self.connect_gui_callbacks()
+        # Update ticks
         self.box_ticked()
         self.frame_list()
         self.update_frames()
         self.set_sliders_and_text_fields(manual=True)
 
+        # Add the widget to the context
         context.add_widget(self._widget)
 
         # Create subscriptions
         self.state_sub = self._node.create_subscription(JointState, "joint_states", self.state_update, 1)
 
+        # Tell the user that the initialization is complete
+        self._node.get_logger().info("Initialization complete.")
         self._widget.statusBar.showMessage("Initialization complete.")
 
     def state_update(self, joint_states):
         """
         Callback method for /joint_states. Updates the sliders to the actual values of the motors when the robot moves.
         """
-        if not self._initial_joints:
-            self._initial_joints = joint_states
-            time.sleep(1)
-        else:
-            for i in range(0, len(joint_states.name)):
-                if not self._motor_switched[joint_states.name[i]]:
-                    self._working_values[joint_states.name[i]] = joint_states.position[i]
+        # Insert the current values into the working values, if the motor is not switched off
+        for i, name in enumerate(joint_states.name):
+            if not self._motor_switched[name]:
+                self._working_values[name] = joint_states.position[i]
 
-        time.sleep(self.update_time)
+        time.sleep(self.update_time)  # TODO what is this for?
+        # Update the UI so the new values are displayed
         self.set_sliders_and_text_fields(manual=False)
 
     def create_motor_controller(self):
@@ -724,6 +723,7 @@ class RecordUI(Plugin):
         self._motor_check_right_leg.setExpanded(True)
 
         for k in self._current_goals.keys():
+            # Check who is the parent of the motor
             parent = None
             if "LHip" in k or "LKnee" in k or "LAnkle" in k:
                 parent = self._motor_check_left_leg
@@ -735,12 +735,22 @@ class RecordUI(Plugin):
                 parent = self._motor_check_right_arm
             elif "Head" in k:
                 parent = self._motor_check_head
-            child = QTreeWidgetItem(parent)
-            child.setText(0, k)
-            child.setFlags(child.flags() | Qt.ItemIsUserCheckable)
-            child.setCheckState(0, Qt.Checked)
-            self._treeItems[k] = child
 
+            # Add motor enable checkbox
+            enable_checkbox = QTreeWidgetItem(parent)
+            enable_checkbox.setText(0, k)
+            enable_checkbox.setFlags(enable_checkbox.flags() | Qt.ItemIsUserCheckable)
+            enable_checkbox.setCheckState(0, Qt.Checked)
+            enable_checkbox.setExpanded(True)
+            self._treeItems[k] = enable_checkbox
+
+            # Put a torque checkbox below the motor enable checkbox
+            torque_checkbox = QTreeWidgetItem(enable_checkbox)
+            torque_checkbox.setText(0, "Torque")
+            torque_checkbox.setFlags(torque_checkbox.flags() | Qt.ItemIsUserCheckable)
+            torque_checkbox.setCheckState(0, Qt.Checked)
+
+        # Register hook that executes our callback when the user clicks on a checkbox
         self._widget.motorTree.itemClicked.connect(self.box_ticked)
 
     def copy_old_tree_config(self):
@@ -843,7 +853,7 @@ class RecordUI(Plugin):
             self._widget.spinBoxDuration.setValue(self._working_duration)
             self._widget.spinBoxPause.setValue(self._working_pause)
 
-    def box_ticked(self):   # TODO rename
+    def box_ticked(self):  # TODO rename
         """
         Controls whether a checkbox has been clicked, and reacts.
         """
