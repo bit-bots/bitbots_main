@@ -138,31 +138,13 @@
        </layout>
       </item>
       <item>
-       <layout class="QVBoxLayout" name="treeLayout">
-        <item>
-         <widget class="QComboBox" name="treeModeSelector">
-          <item>
-           <property name="text">
-            <string>Power mode</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Save mode</string>
-           </property>
-          </item>
-         </widget>
-        </item>
-        <item>
-         <widget class="QTreeWidget" name="motorTree">
+        <widget class="QTreeWidget" name="motorTree">
           <column>
-           <property name="text">
-            <string notr="true">1</string>
-           </property>
+            <property name="text">
+              <string notr="true">1</string>
+            </property>
           </column>
-         </widget>
-        </item>
-       </layout>
+        </widget>
       </item>
      </layout>
     </item>

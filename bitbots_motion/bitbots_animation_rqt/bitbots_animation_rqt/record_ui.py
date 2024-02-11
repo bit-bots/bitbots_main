@@ -96,8 +96,8 @@ class RecordUI(Plugin):
         self._motor_check_right_leg = QTreeWidgetItem(self._motor_check_legs)
 
         # Save configuration of the trees checkboxes for each of the tree modes
-        self._check_boxes_save = {}
-        self._check_boxes_power = defaultdict(dict)
+        self._motors_active: dict[dict[str, int]] = {}
+        self._motors_torque: dict[dict[str, bool]] = defaultdict(dict)
 
         # Create drag and dop list for keyframes
         self._widget.frameList = DragDropList(self._widget, self)
@@ -139,7 +139,7 @@ class RecordUI(Plugin):
             self._current_goals[k] = self._initial_joints.position[i]
             self._working_values[k] = self._initial_joints.position[i]
             self._motor_switched[k] = True
-            self._check_boxes_power["#CURRENT_FRAME"][k] = 2
+            self._motors_torque["#CURRENT_FRAME"][k] = 2
 
         # Create GUI components
         self.create_motor_controller()
@@ -282,7 +282,7 @@ class RecordUI(Plugin):
                 # QFileDialogue throws a gtk warning, that can not be suppressed or fixed. Should be ignored.
                 self._save_directory = QFileDialog.getExistingDirectory()
             status = self._recorder.save_animation(
-                self._save_directory, self._widget.lineAnimationName.text(), self._check_boxes_save
+                self._save_directory, self._widget.lineAnimationName.text(), self._motors_active
             )
             self._widget.statusBar.showMessage(status)
         else:
@@ -297,7 +297,7 @@ class RecordUI(Plugin):
             self.tree_mode_changed(self._previous_tree_mode)
             self._save_directory = QFileDialog.getExistingDirectory()
             self._recorder.save_animation(
-                self._save_directory, self._widget.lineAnimationName.text(), self._check_boxes_save
+                self._save_directory, self._widget.lineAnimationName.text(), self._motors_active
             )
         else:
             self._widget.statusBar.showMessage("There is nothing to save!")
@@ -333,11 +333,11 @@ class RecordUI(Plugin):
         animstate = self._recorder.get_animation_state()
         for i in animstate:
             try:
-                self._check_boxes_power[i["name"]] = i["torque"]
+                self._motors_torque[i["name"]] = i["torque"]
             except KeyError:
-                self._check_boxes_power[i["name"]] = {}
+                self._motors_torque[i["name"]] = {}
                 for key in self.ids:
-                    self._check_boxes_power[i["name"]][key] = 2
+                    self._motors_torque[i["name"]][key] = 2
 
         self.update_frames()
 
@@ -389,7 +389,7 @@ class RecordUI(Plugin):
         torque_msg.joint_names = []
         torque_msg.on = []
 
-        for k, v in self._check_boxes_power[self._widget.frameList.currentItem().text()].items():
+        for k, v in self._motors_torque[self._widget.frameList.currentItem().text()].items():
             torque_msg.joint_names.append(k)
             torque_msg.on.append(v)
 
@@ -495,12 +495,12 @@ class RecordUI(Plugin):
 
                 self.set_sliders_and_text_fields(manual=True)
 
-                self._check_boxes_power[self._working_name] = {}
+                self._motors_torque[self._working_name] = {}
                 init_torque = {}
                 for k, _v in self._working_values.items():
                     init_torque[k] = 2
 
-                self._check_boxes_power[self._working_name] = init_torque
+                self._motors_torque[self._working_name] = init_torque
 
                 self._recorder.record(
                     self._working_values,
@@ -515,7 +515,7 @@ class RecordUI(Plugin):
 
                 self._recorder.record(
                     self._working_values,
-                    self._check_boxes_power[self._widget.frameList.currentItem().text()],
+                    self._motors_torque[self._widget.frameList.currentItem().text()],
                     self._widget.lineFrameName.text(),
                     self._widget.spinBoxDuration.value(),
                     self._widget.spinBoxPause.value(),
@@ -557,9 +557,9 @@ class RecordUI(Plugin):
 
         boxmode = 0
         if self._widget.treeModeSelector.currentIndex() == 0:
-            boxmode = self._check_boxes_power[self._widget.frameList.currentItem().text()]
+            boxmode = self._motors_torque[self._widget.frameList.currentItem().text()]
         elif self._widget.treeModeSelector.currentIndex() == 1:
-            boxmode = self._check_boxes_save[self._widget.frameList.currentItem().text()]
+            boxmode = self._motors_active[self._widget.frameList.currentItem().text()]
 
         for k in boxmode.keys():
             if k[0] == opposite:
@@ -590,9 +590,9 @@ class RecordUI(Plugin):
 
         boxmode = 0
         if self._widget.treeModeSelector.currentIndex() == 0:
-            boxmode = self._check_boxes_power
+            boxmode = self._motors_torque
         elif self._widget.treeModeSelector.currentIndex() == 1:
-            boxmode = self._check_boxes_save
+            boxmode = self._motors_active
 
         for k, v in boxmode[self._widget.frameList.currentItem().text()].items():
             if k[0] == "L":
@@ -763,9 +763,9 @@ class RecordUI(Plugin):
                 temp_dict[k] = self._treeItems[k].checkState(0)
 
             if self._previous_tree_mode == 1:
-                self._check_boxes_save[self._selected_frame["name"]] = deepcopy(temp_dict)
+                self._motors_active[self._selected_frame["name"]] = deepcopy(temp_dict)
             elif self._previous_tree_mode == 0:
-                self._check_boxes_power[self._selected_frame["name"]] = deepcopy(temp_dict)
+                self._motors_torque[self._selected_frame["name"]] = deepcopy(temp_dict)
 
     def update_tree_config(self, index):
         """
@@ -775,14 +775,14 @@ class RecordUI(Plugin):
         if self._widget.frameList.currentItem() is not None:
             if not self._widget.frameList.currentItem().text() == "#CURRENT_FRAME":
                 if index == 1:
-                    if self._selected_frame["name"] in self._check_boxes_save.keys():
-                        temp_dict_2 = deepcopy(self._check_boxes_save[self._selected_frame["name"]])
+                    if self._selected_frame["name"] in self._motors_active.keys():
+                        temp_dict_2 = deepcopy(self._motors_active[self._selected_frame["name"]])
                     else:
                         for k in self._working_values:
                             temp_dict_2[k] = 2
                 elif index == 0:
-                    if self._selected_frame["name"] in self._check_boxes_power.keys():
-                        temp_dict_2 = deepcopy(self._check_boxes_power[self._selected_frame["name"]])
+                    if self._selected_frame["name"] in self._motors_torque.keys():
+                        temp_dict_2 = deepcopy(self._motors_torque[self._selected_frame["name"]])
                     else:
                         for k in self._working_values:
                             temp_dict_2[k] = 2
