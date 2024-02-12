@@ -210,7 +210,7 @@ class RecordUI(Plugin):
         """
         Loads the motors into the tree and adds the checkboxes
         """
-        self._widget.motorTree.setHeaderLabel("Stiff Motors")
+        self._widget.motorTree.setHeaderLabel("Active and Stiff Motors")
         self._motor_check_body.setText(0, "Body")
         self._motor_check_body.setFlags(self._motor_check_body.flags() | Qt.ItemIsTristate | Qt.ItemIsUserCheckable)
         self._motor_check_body.setExpanded(True)
@@ -335,7 +335,8 @@ class RecordUI(Plugin):
             message = "This will discard your current Animation. Continue?"
             sure = QMessageBox.question(self._widget, "Sure?", message, QMessageBox.Yes | QMessageBox.No)
             if sure == QMessageBox.Yes:
-                self._recorder.clear()
+                # Create a new recorder (deletes all states and starts from scratch)
+                self._recorder = Recorder(self._node)
                 self.update_frames()
 
     def save(self, new_location: bool = False) -> None:
@@ -358,9 +359,7 @@ class RecordUI(Plugin):
                     self._widget, "Select Directory for Animation Files", os.path.expanduser("~")
                 )
             # Save the animation
-            status = self._recorder.save_animation(
-                self._save_directory, self._widget.lineAnimationName.text(), self._motors_active
-            )
+            status = self._recorder.save_animation(self._save_directory, self._widget.lineAnimationName.text())
             self._widget.statusBar.showMessage(status)
         else:
             self._widget.statusBar.showMessage("There is nothing to save!")
@@ -410,21 +409,21 @@ class RecordUI(Plugin):
         """
         Plays the animation
         """
-        status = self._recorder.play(self._robot_anim_path)
+        status = self._recorder.play()
         self._widget.statusBar.showMessage(status)
 
     def play_until(self):
         """
         Plays the animation up to a certain frame
         """
+        # Get all keyframes
         steps = self._recorder.get_keyframes()
-        j = 0
-        for i in range(0, len(steps)):
-            j += 1
-            self._node.get_logger().info(steps[i]["name"])
-            if steps[i]["name"] == self._selected_frame["name"]:
-                break
-        self._recorder.play(self._robot_anim_path, j)
+
+        # Get the index of the selected frame  # TODO use name of frame instead of reference
+        end = steps.index(self._selected_frame) + 1
+
+        # Play the animation
+        self._recorder.play(end)
 
     def goto_frame(self):
         """
@@ -433,25 +432,16 @@ class RecordUI(Plugin):
         self.set_all_joints_stiff()
 
         pos_msg = JointCommand()
-        pos_msg.joint_names = []
-        pos_msg.velocities = [1.0] * 20
-        pos_msg.positions = []
-        pos_msg.accelerations = [-1.0] * 20
-        pos_msg.max_currents = [-1.0] * 20
+        # Set velocity to 1.0 and all other values to -1.0 (maximum)
+        pos_msg.velocities = [1.0] * len(self._initial_joints.name)
+        pos_msg.accelerations = [-1.0] * len(self._initial_joints.name)
+        pos_msg.max_currents = [-1.0] * len(self._initial_joints.name)
 
-        for k, v in self._working_values.items():
-            pos_msg.joint_names.append(k)
-            pos_msg.positions.append(v)
+        # Set the joint names and positions
+        pos_msg.joint_names = self._working_values.keys()
+        pos_msg.positions = self._working_values.values()
 
-        torque_msg = JointTorque()
-        torque_msg.joint_names = []
-        torque_msg.on = []
-
-        for k, v in self._motors_torque[self._widget.frameList.currentItem().text()].items():
-            torque_msg.joint_names.append(k)
-            torque_msg.on.append(v)
-
-        self.effort_pub.publish(torque_msg)
+        # Publish the message
         self._joint_pub.publish(pos_msg)
 
     def goto_next(self):
@@ -489,15 +479,8 @@ class RecordUI(Plugin):
             for v in self._treeItems.values():
                 v.setCheckState(0, Qt.Checked)
 
-        torque_msg = JointTorque()
-        torque_msg.joint_names = []
-        torque_msg.on = []
-
-        for k in sorted(self._treeItems.keys()):
-            torque_msg.joint_names.append(k)
-            torque_msg.on.append(True)
-
-        self.effort_pub.publish(torque_msg)
+        # Publish a message to enable torque for all motors
+        self.effort_pub.publish(JointTorque(joint_names=self._treeItems.keys(), on=[True] * len(self._treeItems)))
 
     def duplicate(self):
         """
@@ -604,32 +587,7 @@ class RecordUI(Plugin):
         """
         Copies all motor values from one side of the robot to the other. Inverts values, if necessary
         """
-        opposite = "L"
-        if direction == "L":
-            opposite = "R"
-        for k, v in self._working_values.items():
-            if k[0] == opposite:
-                for k1, _v1 in self._working_values.items():
-                    if k1 == str(direction) + k[1:]:
-                        self._working_values[k1] = v * -1
-
-        boxmode = 0
-        if self._widget.treeModeSelector.currentIndex() == 0:
-            boxmode = self._motors_torque[self._widget.frameList.currentItem().text()]
-        elif self._widget.treeModeSelector.currentIndex() == 1:
-            boxmode = self._motors_active[self._widget.frameList.currentItem().text()]
-
-        for k in boxmode.keys():
-            if k[0] == opposite:
-                for k1 in boxmode.keys():
-                    if k1 == str(direction) + k[1:]:
-                        if boxmode[k] == 0:
-                            boxmode[k1] = 0
-                        elif boxmode[k] == 2:
-                            boxmode[k1] = 2
-
-        self.update_tree_config(self._widget.treeModeSelector.currentIndex())
-        self.update_torques()
+        raise NotImplementedError("This function is not yet implemented")
         self._widget.statusBar.showMessage("Mirrored frame to " + direction)
 
     def invert_frame(self):
@@ -637,36 +595,7 @@ class RecordUI(Plugin):
         Copies all values from the left side to the right and all values from the right side to the left.
         Inverts values, if necessary
         """
-        temp_dict = {}
-        for k, v in self._working_values.items():
-            if k[0] == "L":
-                temp_dict["R" + k[1:]] = -v
-            elif k[0] == "R":
-                temp_dict["L" + k[1:]] = -v
-        for k, v in temp_dict.items():
-            self._working_values[k] = v
-
-        boxmode = 0
-        if self._widget.treeModeSelector.currentIndex() == 0:
-            boxmode = self._motors_torque
-        elif self._widget.treeModeSelector.currentIndex() == 1:
-            boxmode = self._motors_active
-
-        for k, v in boxmode[self._widget.frameList.currentItem().text()].items():
-            if k[0] == "L":
-                if v == 2:
-                    temp_dict["R" + k[1:]] = 2
-                elif v == 0:
-                    temp_dict["R" + k[1:]] = 0
-            elif k[0] == "R":
-                if v == 2:
-                    temp_dict["L" + k[1:]] = 2
-                elif v == 0:
-                    temp_dict["L" + k[1:]] = 0
-
-        boxmode[self._widget.frameList.currentItem().text()] = deepcopy(temp_dict)
-        self.update_tree_config(self._widget.treeModeSelector.currentIndex())
-        self.update_torques()
+        raise NotImplementedError("This function is not yet implemented")
         self._widget.statusBar.showMessage("Inverted frame")
 
     def frame_list(self):
@@ -705,7 +634,6 @@ class RecordUI(Plugin):
 
             if selected_frame_name == "#CURRENT_FRAME":
                 self.update_tree_config(0)
-                self._widget.treeModeSelector.setEnabled(False)
                 self._working_values = deepcopy(self._current_goals)
                 self._working_name = deepcopy(self._current_name)
                 self._working_duration = deepcopy(self._current_duration)
@@ -715,7 +643,6 @@ class RecordUI(Plugin):
             else:
                 if self._selected_frame is None:
                     return
-                self._widget.treeModeSelector.setEnabled(True)
                 if self._current:
                     self._current_goals = deepcopy(self._working_values)
                     self._current_name = deepcopy(self._working_name)
@@ -782,10 +709,6 @@ class RecordUI(Plugin):
                 elif v == 2:
                     self._treeItems[k].setCheckState(0, Qt.Checked)
 
-    def tree_mode_changed(self, index):
-        self.copy_old_tree_config()
-        self.update_tree_config(index)
-
     def slider_update(self):
         """
         Updates all sliders, checks whether a value is too large, then replaces it
@@ -844,11 +767,11 @@ class RecordUI(Plugin):
         """
         # Update active motors for the current frame
         for k, v in self._treeItems.items():
-            self._motors_active[self._selected_frame][k] = v.checkState(0) == 2
+            self._motors_active[self._current_name][k] = v.checkState(0) == 2
 
         # Enable or disable the sliders and text fields for each motor depending
         # based on if the motor is active or not
-        for k, v in self._motor_switched.items():
+        for k, v in self._motors_active[self._current_name].items():
             self._text_fields[k].setEnabled(v)
             self._sliders[k].setEnabled(v)
 
@@ -862,9 +785,10 @@ class RecordUI(Plugin):
         Publishes the motor torques to the robot based on the selection for the current frame
         """
         # Create the torque message object
-        torque_msg = JointTorque()
-        torque_msg.joint_names = self._motors_torque.keys()
-        torque_msg.on = self._motors_torque.values()
+        torque_msg = JointTorque(
+            joint_names=self._motors_torque[self._current_name].keys(),
+            on=self._motors_torque[self._current_name].values(),
+        )
 
         # Create the position message object
         pos_msg = JointCommand()
@@ -888,7 +812,6 @@ class RecordUI(Plugin):
         updates the list of frames present in the current animation
         """
         current_index = self._widget.frameList.currentIndex()
-        current_mode = self._widget.treeModeSelector.currentIndex()
         current_state = self._recorder.get_keyframes()
         while self._widget.frameList.takeItem(0):
             continue
@@ -906,7 +829,6 @@ class RecordUI(Plugin):
         self._widget.frameList.addItem(current)
         if keep:
             self._widget.frameList.setCurrentIndex(current_index)
-            self._widget.treeModeSelector.setCurrentIndex(current_mode)
         else:
             self._widget.frameList.setCurrentItem(current)
             self._current = True
