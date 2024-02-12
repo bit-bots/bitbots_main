@@ -11,10 +11,10 @@ from datetime import datetime
 from typing import Optional
 
 from rclpy.action import ActionClient
-from rclpy.duration import Duration
 from rclpy.node import Node
 
 from bitbots_msgs.action import PlayAnimation
+from bitbots_msgs.srv import AddAnimation
 
 
 class AnimationData:
@@ -38,6 +38,7 @@ class Recorder:
         self.redo_steps = []
         self.current_state = AnimationData()
         self.animation_client: ActionClient = ActionClient(self._node, PlayAnimation, "animation")
+        self.add_animation_client = self._node.create_client(AddAnimation, "add_temporary_animation")
         self.save_step("Initial step")
 
     def get_keyframes(self) -> list[dict]:
@@ -57,6 +58,19 @@ class Recorder:
         """
         # Get the first keyframe with the given name or None
         return next(filter(lambda key_frame: key_frame["name"] == name, self.get_keyframes()), None)
+
+    def get_keyframe_index(self, name: str) -> Optional[int]:
+        """
+        Gets the index of the keyframe with the given name
+
+        :param name: the name of the keyframe
+        :return: the index of the keyframe with the given name
+        """
+        # Get the index of the first keyframe with the given name or None
+        key_frame = self.get_keyframe(name)
+        if key_frame is None:
+            return None
+        return self.get_keyframes().index(key_frame)
 
     def get_meta_data(self) -> tuple[str, int, str, str]:
         """
@@ -83,13 +97,12 @@ class Recorder:
         :param state: a AnimState can be given otherwise the current one is used
         """
 
-        self._node.get_logger().debug("Saving step: %s" % description)
+        self._node.get_logger().debug(f"Saving step: {description}")
         if not state:
             state = deepcopy(self.current_state)
         self.steps.append((state, description))
-        self.save_animation("backup")
 
-    def undo(self, amount=1):
+    def undo(self, amount: int = 1) -> str:
         """Undo <amount> of steps or the last Step if omitted"""
         if amount > len(self.steps) or self.steps[-1][1] == "Initial step":
             self._node.get_logger().warn("I cannot undo what did not happen!")
@@ -97,24 +110,24 @@ class Recorder:
         if amount == 1:
             state, description = self.steps.pop()
             self.redo_steps.append((state, description, self.current_state))
-            self._node.get_logger().info("Undoing: %s" % description)
+            self._node.get_logger().info(f"Undoing: {description}")
             if self.steps:
                 state, description = self.steps[-1]
                 self.current_state = state
-                self._node.get_logger().info("Last noted action: %s" % description)
-                return "Undoing. Last noted action: %s" % description
+                self._node.get_logger().info(f"Last noted action: {description}")
+                return f"Undoing. Last noted action: {description}"
             else:
                 self._node.get_logger().info("There are no previously noted steps")
                 return "Undoing. There are no more previous steps."
         else:
-            self._node.get_logger().info("Undoing %i steps" % amount)
+            self._node.get_logger().info(f"Undoing {amount} steps")
             state, description = self.steps[-amount]
             self.current_state = state
             self.redo_steps = self.steps[-amount:].reverse()
             self.steps = self.steps[:-amount]
-            return "Undoing %i steps" % amount
+            return f"Undoing {amount} steps"
 
-    def redo(self, amount=1):
+    def redo(self, amount: int = 1) -> str:
         """Redo <amount> of steps, or the last step if omitted"""
         post_state = None
         if not self.redo_steps:
@@ -128,135 +141,105 @@ class Recorder:
             self.steps.append((pre_state, description))
             amount -= 1
         self.current_state = post_state
-        self._node.get_logger().info("Last noted step is now: %s " % self.steps[-1][1])
-        return "Last noted step is now: %s " % self.steps[-1][1]
+        self._node.get_logger().info(f"Last noted step is now: {self.steps[-1][1]}")
+        return f"Last noted step is now: {self.steps[-1][1]}"
 
-    def record(self, motor_pos, motor_torque, frame_name, duration, pause, seq_pos=None, override=False):
-        """Record Command, save current keyframe-data"""
+    def record(
+        self,
+        motor_pos: dict[str, float],
+        motor_torque: dict[str, int],  # TODO: check if we can use bool instead of int
+        frame_name: str,
+        duration: float,
+        pause: float,
+        seq_pos: Optional[int] = None,
+        override: bool = False,
+    ):
+        """Record Command, save current keyframe-data
+
+        :param motor_pos: A position for each motor we want to control
+        :param motor_torque: Wether or not the motor should apply torque
+        :param frame_name: The name of the frame
+        :param duration: The duration of the frame
+        :param pause: We pause for this amount of time after the frame
+        :param seq_pos: The position in the sequence where the frame should be inserted
+        :param override: Wether or not to override the frame at the given position
+        """
         frame = {"name": frame_name, "duration": duration, "pause": pause, "goals": motor_pos, "torque": motor_torque}
         new_frame = deepcopy(frame)
         if seq_pos is None:
             self.current_state.key_frames.append(new_frame)
-            self.save_step("Appending new keyframe " + frame_name)
+            self.save_step(f"Appending new keyframe '{frame_name}'")
         elif not override:
             self.current_state.key_frames.insert(seq_pos, new_frame)
-            self.save_step("Inserting new keyframe " + frame_name + " to position " + str(seq_pos))
+            self.save_step(f"Inserting new keyframe '{frame_name}' at position {seq_pos}")
         else:
             self.current_state.key_frames[seq_pos] = new_frame
-            self.save_step("overriding keyframe " + frame_name + " at position " + str(seq_pos))
+            self.save_step(f"Overriding keyframe at position {seq_pos} with '{frame_name}'")
         return True
 
-    def clear(self):
-        """Record Command, clear all keyframe-data"""
-        newsteps = []
-        for i in self.steps:
-            if i[1] == "Initial step":
-                newsteps.append(i)
-        self.steps = deepcopy(newsteps)
-        self.current_state.key_frames = []
-        return True
+    def save_animation(self, path: str, file_name: Optional[str] = None) -> None:
+        """Dumps all keyframe data to an animation .json file
 
-    def save_animation(self, path, file_name=None, save_checkbox=None):
-        """Record Command, dump all keyframedata to an animation .json file
-
-        :param file_name: what name the new file should receive
+        :param path: The folder where the file should be saved
+        :param file_name: The name of the file
         """
         if not self.current_state.key_frames:
             self._node.get_logger().info("There is nothing to save.")
             return "There is nothing to save."
 
+        # Use the animation name as file name if none is given
         if not file_name:
             file_name = self.current_state.name
 
-        if not os.path.isdir(path):
-            path = os.path.expanduser("~")
-        path = os.path.join(path, file_name + ".json")
-        self._node.get_logger().debug("Saving to '%s'" % path)
+        path = os.path.join(path, f"{file_name}.json")
+        self._node.get_logger().debug(f"Saving to '{path}'")
 
-        saved_keyframes = deepcopy(self.current_state.key_frames)
+        # Convert the angles from radians to degrees
+        keyframes = deepcopy(self.current_state.key_frames)
+        for kf in keyframes:
+            for k, v in kf["goals"].items():
+                kf["goals"][k] = math.degrees(v)
 
-        for kf in saved_keyframes:
-            if save_checkbox is not None:
-                if kf["name"] in save_checkbox:
-                    for k, v in save_checkbox[kf["name"]].items():
-                        if v == 0:
-                            kf["goals"].pop(k)
-
-        anim = {
+        # Construct the animation dictionary with meta data and keyframes
+        animation_dict = {
             "name": self.current_state.name,
             "version": self.current_state.version,
             "last_edited": datetime.isoformat(datetime.now(), " "),
             "author": self.current_state.author,
             "description": self.current_state.description,
-            "keyframes": saved_keyframes,
+            "keyframes": keyframes,
         }
 
-        for kf in anim["keyframes"]:
-            for k, v in kf["goals"].items():
-                kf["goals"][k] = int(math.degrees(v))
-
+        # Save the animation to a file
         with open(path, "w") as fp:
-            json.dump(anim, fp, sort_keys=True, indent=4)
+            json.dump(animation_dict, fp, sort_keys=True, indent=4)
+
         return "Saving to '%s'" % path + ". Done."
 
-    def remove(self, framenumber=None):
-        """Record Command, remove the last keyframedata
-
-        :param framenumber: The Number of frame to remove. default is last
-        """
-        if not framenumber:
-            if not self.current_state.key_frames:
-                self._node.get_logger().warn("Nothing to revert, framelist is empty!")
-                return False
-            self.save_step("Reverting the last Keyframe (#%i)" % len(self.current_state.key_frames))
-            self.current_state.key_frames.pop()
-            return True
-        else:
-            try:
-                framenumber = int(framenumber)
-            except TypeError:
-                self._node.get_logger().warn("Optional framenumber must be Integer! (got %s)" % framenumber)
-                return False
-            if len(self.current_state.key_frames) < framenumber:
-                self._node.get_logger().warn("Invalid framenumber: %i" % framenumber)
-                return False
-            self.save_step("Reverting keyframe #%i" % framenumber)
-            framenumber -= 1  # Frameindices in the GUI are starting with 1, not 0
-            self.current_state.key_frames.pop(framenumber)
-        return True
-
-    def load_animation(self, path: str):
+    def load_animation(self, path: str) -> None:
         """Record command, load a animation '.json' file
 
         :param path: path of the animation to load
         """
-        data = []
+        # Load the json file
         with open(path) as fp:
-            try:
-                data = json.load(fp)
-                i = 0
-                for kf in data["keyframes"]:
-                    if "name" not in kf:
-                        kf["name"] = "frame" + str(i)
-                        i += 1
-                for kf in data["keyframes"]:
-                    for k, v in kf["goals"].items():
-                        kf["goals"][k] = math.radians(v)
-            except ValueError as e:
-                self._node.get_logger().error(
-                    "Animation {} is corrupt:\n {}".format(path, e.message.partition("\n")[0])
-                )
-                return "Animation {} is corrupt:\n {}".format(path, e.message.partition("\n")[0])
+            data = json.load(fp)
+        # Check if the file is a valid animation and convert the angles from degrees to radians
+        try:
+            for keyframe in data["keyframes"]:
+                for k, v in keyframe["goals"].items():
+                    keyframe["goals"][k] = math.radians(v)
+        except ValueError as e:
+            self._node.get_logger().error("Animation {} is corrupt:\n {}".format(path, e.message.partition("\n")[0]))
+            return "Animation {} is corrupt:\n {}".format(path, e.message.partition("\n")[0])
 
-        # Ensure Data retrieval was a success
-        if not data:
-            return False
-
-        self.save_step("Loading of animation named %s" % path)
-
+        # Set the current state to the loaded animation
         self.current_state.key_frames = data["keyframes"]
 
-    def play(self, anim_path, until_frame=None):
+        # Save the current state
+        self.save_step(f"Loading of animation named '{data['name']}'")
+
+    def play(self, until_frame: Optional[int] = None) -> str:
         """Record command, start playing an animation
 
         Can play a certain (named) animation or the current one by default.
@@ -265,94 +248,88 @@ class Recorder:
         :param until_frame: the frame until which the animation should be played
         """
         if not self.current_state.key_frames:
-            self._node.get_logger().info("Refusing to play, because nothing to play exists!")
-            return "Refusing to play, because nothing to play exists!"
-        if not until_frame:
-            # play complete animation
-            n = len(self.current_state.key_frames)
+            msg = "Refusing to play, because nothing to play exists!"
+            self._node.get_logger().warn(msg)
+            return msg
+
+        if until_frame is None:
+            # Play complete animation
+            until_frame = len(self.current_state.key_frames)
         else:
-            # play the given number if not higher than current steps
-            n = min(until_frame, len(self.current_state.key_frames))
+            # Check if the given frame id is in bounds
+            assert until_frame > 0, "Upper bound must be positive"
+            assert until_frame <= len(
+                self.current_state.key_frames
+            ), "Upper bound must be less than or equal to the number of frames"
 
-        anim_dict = {"name": "Record-play", "keyframes": deepcopy(self.current_state.key_frames[0:n])}
-        for kf in anim_dict["keyframes"]:
-            for k, v in kf["goals"].items():
-                kf["goals"][k] = int(math.degrees(v))
+        # Create name for the temporary animation that is send to the animation server
+        # We can call this animation by name to play it
+        # We do not want to overwrite the current animation
+        tmp_animation_name = f"{self.current_state.name}_tmp"
 
-        self._node.get_logger().info("playing %d frames..." % len(anim_dict["keyframes"]))
+        # Create a dictionary with the animation data
+        animation_dict = {
+            "name": tmp_animation_name,
+            "version": self.current_state.version,
+            "last_edited": datetime.isoformat(datetime.now(), " "),
+            "author": self.current_state.author,
+            "description": self.current_state.description,
+            "keyframes": deepcopy(self.current_state.key_frames[0:until_frame]),
+        }
 
-        path = os.path.join(anim_path, f"record_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.json")
+        # Convert the angles from radians to degrees
+        for key_frame in animation_dict["keyframes"]:
+            for joint, v in key_frame["goals"].items():
+                key_frame["goals"][joint] = math.degrees(v)
 
-        with open(path, "w") as fp:
-            json.dump(anim_dict, fp, sort_keys=True, indent=4)
+        self._node.get_logger().debug(f"Playing {len(animation_dict['keyframes'])} frames...")
 
-        self._node.get_logger().info("Storing animation in %s" % path)
+        # Wait for the service to be available before sending the animation
+        if not self.add_animation_client.wait_for_service(timeout_sec=2):
+            self._node.get_logger().error("Add Animation Service not available! Is the animation server running?")
+            return "Add Animation Service not available! Is the animation server running?"
 
-        # TODO send animation to animation server using service
+        # Create a request to add the animation
+        request = AddAnimation.Request()
+        request.json = json.dumps(animation_dict, sort_keys=True, indent=4)
 
-        self.play_animation("record")
+        # Send the request to the service (blocking to make sure the animation is added before playing it)
+        self.add_animation_client.call(request)
 
-        return "playing %d frames..." % len(anim_dict["keyframes"])
+        # Wait for animation action server to be available
+        if not self.animation_client.wait_for_server(timeout_sec=2):
+            self._node.get_logger().error("Animation Action Server not available! Is the animation server running?")
+            return "Animation Action Server not available! Is the animation server running?"
 
-    def play_animation(self, name):
-        """Sends the animation to the animation server"""
-        first_try = self.animation_client.wait_for_server(Duration(seconds=10))
-        if not first_try:
-            self._node.get_logger().error(
-                "Animation Action Server not running! Will now wait until server is accessible!"
-            )
-            self.animation_client.wait_for_server()
-            self._node.get_logger().warn("Animation server now running, hcm will go on.")
+        # Create a goal to play the animation
         goal = PlayAnimation.Goal()
-        goal.animation = name
+        goal.animation = tmp_animation_name
         goal.hcm = True  # force TODO check that
         self.animation_client.send_goal_async(goal)  # TODO maybe handle result or status
 
-    def change_frame_order(self, new_order):
-        """Changes the order of the frames given an array of frame names"""
-        new_ordered_frames = []
-        for frame_name in new_order:
-            for frame in self.current_state.key_frames:
-                if frame_name == frame["name"]:
-                    new_ordered_frames.append(frame)
+        return f"Playing {len(animation_dict['keyframes'])} frames..."
 
+    def change_frame_order(self, new_order: list[str]) -> None:
+        """Changes the order of the frames given an array of frame names"""
+        new_ordered_frames = [self.get_keyframe(frame_name) for frame_name in new_order]
+        assert None not in new_ordered_frames, "One of the given frame names does not exist"
         self.current_state.key_frames = new_ordered_frames
         self.save_step("Reordered frames")
 
-    def duplicate(self, frame_name):
+    def duplicate(self, frame_name: str) -> None:
         """
         Duplicates a frame
         """
-        new_frames = []
-        for frame in self.current_state.key_frames:
-            new_frames.append(frame)
-            if frame_name == frame["name"]:
-                duplicate = deepcopy(frame)
-                newname = frame_name + "d"
-                x = True
-                n = 0
-                for frame in self.current_state.key_frames:
-                    if newname == frame["name"]:
-                        while x:
-                            x = False
-                            for frame in self.current_state.key_frames:
-                                if newname + str(n) == frame["name"]:
-                                    n += 1
-                                    x = True
-                        newname = newname + str(n)
+        index = self.get_keyframe_index(frame_name)
+        assert index is not None, "The given frame name does not exist"
+        self.current_state.key_frames.insert(index + 1, deepcopy(self.get_keyframe(frame_name)))
+        self.save_step(f"Duplicated Frame '{frame_name}'")
 
-                duplicate["name"] = newname
-                new_frames.append(duplicate)
-        self.current_state.key_frames = new_frames
-        self.save_step("Duplicated Frame " + frame_name)
-
-    def delete(self, frame_name):
+    def delete(self, frame_name: str) -> None:
         """
         Deletes a frame
         """
-        new_frames = []
-        for frame in self.current_state.key_frames:
-            if not frame_name == frame["name"]:
-                new_frames.append(frame)
-        self.current_state.key_frames = new_frames
-        self.save_step("Duplicated Frame " + frame_name)
+        index = self.get_keyframe_index(frame_name)
+        assert index is not None, "The given frame name does not exist"
+        self.current_state.key_frames.pop(index)
+        self.save_step(f"Deleted Frame '{frame_name}'")
