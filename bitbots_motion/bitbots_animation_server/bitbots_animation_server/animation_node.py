@@ -19,6 +19,7 @@ from bitbots_animation_server.spline_animator import SplineAnimator
 from bitbots_msgs.action import PlayAnimation
 from bitbots_msgs.msg import Animation as AnimationMsg
 from bitbots_msgs.msg import RobotControlState
+from bitbots_msgs.srv import AddAnimation
 
 
 class AnimationNode(Node):
@@ -55,14 +56,21 @@ class AnimationNode(Node):
                 traceback.print_exc()
 
         callback_group = ReentrantCallbackGroup()
+
+        # Subscribers
         self.create_subscription(JointState, "joint_states", self.update_current_pose, 1, callback_group=callback_group)
         self.create_subscription(
             RobotControlState, "robot_state", self.update_hcm_state, 1, callback_group=callback_group
         )
 
+        # Publisher for sending joint states to the HCM
         self.hcm_publisher = self.create_publisher(AnimationMsg, "animation", 1)
 
+        # Action server for playing animations
         self._as = ActionServer(self, PlayAnimation, "animation", self.execute_cb, callback_group=callback_group)
+
+        # Service to temporarily add an animation to the cache
+        self.add_animation_service = self.create_service(AddAnimation, "add_temporary_animation", self.add_animation)
 
     def execute_cb(self, goal: ServerGoalHandle):
         """This is called, when someone calls the animation action"""
@@ -176,6 +184,25 @@ class AnimationNode(Node):
             anim_msg.position = traj_msg
         anim_msg.header.stamp = self.get_clock().now().to_msg()
         self.hcm_publisher.publish(anim_msg)
+
+    def add_animation(self, request: AddAnimation.Request, response: AddAnimation.Response) -> AddAnimation.Response:
+        """
+        Adds an animation to the cache (non persistent).
+        This is usefull if e.g. the recording GUI wants to play an uncommited animation.
+        """
+        try:
+            # Parse the animation
+            new_animation = parse(json.loads(request.json))
+            # Get the name of the animation and add it to the cache
+            self.animation_cache[new_animation.name] = new_animation
+        except ValueError:
+            self.get_logger().error(
+                "Animation provided by service call had a ValueError. "
+                "Probably there is a syntax error in the animation file. "
+                "See traceback"
+            )
+            traceback.print_exc()
+        return response
 
 
 def main(args=None):
