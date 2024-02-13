@@ -127,12 +127,6 @@ class AnimationNode(Node):
                 if request.bounds:
                     t += animator.get_keyframe_times()[request.start]
 
-                self.get_logger().info(f"Playing animation at time {t}")
-                self.get_logger().info(f"Using bounds {request.bounds} and start {request.start} and end {request.end}")
-                self.get_logger().info(
-                    f"Using start time {animator.get_keyframe_times()[request.start]} and end time {animator.get_keyframe_times()[request.end]}"
-                )
-
                 # Get the robot pose at the current time from the spline interpolator
                 pose = animator.get_positions_rad(t)
 
