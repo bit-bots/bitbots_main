@@ -87,6 +87,7 @@
         "seaborn",
         "segmentations",
         "ssid",
+        "std_srvs",
         "taskset",
         "teamplayer",
         "teleop",
