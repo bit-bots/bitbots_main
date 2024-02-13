@@ -3,8 +3,6 @@ import math
 import os
 import sys
 import time
-from collections import defaultdict
-from copy import deepcopy
 
 from ament_index_python import get_package_share_directory
 from python_qt_binding import loadUi
@@ -24,6 +22,7 @@ from python_qt_binding.QtWidgets import (
     QTreeWidgetItem,
     QVBoxLayout,
 )
+from rclpy.action import ActionClient
 from rclpy.node import Node
 from rqt_gui.main import Main
 from rqt_gui_py.plugin import Plugin
@@ -31,7 +30,9 @@ from sensor_msgs.msg import JointState
 
 from bitbots_animation_rqt.animation_recording import Recorder
 from bitbots_animation_rqt.utils import DragDropList
+from bitbots_msgs.action import PlayAnimation
 from bitbots_msgs.msg import JointCommand, JointTorque
+from bitbots_msgs.srv import AddAnimation
 
 
 class RecordUI(Plugin):
@@ -51,8 +52,14 @@ class RecordUI(Plugin):
         self._joint_pub = self._node.create_publisher(JointCommand, "record_motor_goals", 1)
         self.effort_pub = self._node.create_publisher(JointTorque, "ros_control/set_torque_individual", 1)
 
+        # Create a action client to play animations
+        self.animation_client: ActionClient = ActionClient(self._node, PlayAnimation, "animation")
+
+        # Create a service client to add temporary animations
+        self.add_animation_client = self._node.create_client(AddAnimation, "add_temporary_animation")
+
         # Initialize the recorder module
-        self._recorder = Recorder(self._node)
+        self._recorder = Recorder(self._node, self.animation_client, self.add_animation_client)
 
         # Initialize the window
         self._widget = QMainWindow()
@@ -62,70 +69,75 @@ class RecordUI(Plugin):
         loadUi(ui_file, self._widget, {})
 
         # Initialize the GUI state
-        self._sliders = {}
-        self._text_fields = {}
-        self._selected_frame: dict = None
+        self._motor_controller_sliders = {}
+        self._motor_controller_text_fields = {}
+        self._selected_frame: str = "start frame"
+        self._joint_states = JointState()
+
+        # Initialize the working values
+        self._working_angles: dict[str, float] = {}
 
         self.update_time = 0.1  # TODO what is this for?
-
-        self._current_goals = {}  # this is the data about the current unsaved frame
-        self._current_duration = 1.0
-        self._current_pause = 0.0
-        self._current_name = "new frame"
-
-        # Save current keyframe when switching to other frames in the ui
-        self._working_values = {}  # this is the data about the frame that is displayed
-        self._working_duration = 1.0
-        self._working_pause = 0.0
-        self._working_name = self._current_name
-        self._current = True
 
         # QT directory for saving files
         self._save_directory = None
 
         # Initialize the motor tree structure where we can select which motors are stiff
-        self._treeItems = {}
-        self._motor_check_body = QTreeWidgetItem(self._widget.motorTree)
-        self._motor_check_legs = QTreeWidgetItem(self._motor_check_body)
-        self._motor_check_arms = QTreeWidgetItem(self._motor_check_body)
-        self._motor_check_head = QTreeWidgetItem(self._motor_check_body)
-        self._motor_check_left_arm = QTreeWidgetItem(self._motor_check_arms)
-        self._motor_check_right_arm = QTreeWidgetItem(self._motor_check_arms)
-        self._motor_check_left_leg = QTreeWidgetItem(self._motor_check_legs)
-        self._motor_check_right_leg = QTreeWidgetItem(self._motor_check_legs)
+        self._motor_switcher_active_checkbox: dict[str, QTreeWidgetItem] = {}
+        self._motor_switcher_torque_checkbox: dict[str, QTreeWidgetItem] = {}
 
-        # Save configuration of the trees checkboxes for each of the tree modes
-        self._motors_active: defaultdict[dict[str, bool]] = defaultdict(dict)
-        self._motors_torque: defaultdict[dict[str, bool]] = defaultdict(dict)
+        # Motor hirarchy
+        self._motor_hierarchy = {  # TODO this should be a parameter / loaded from the urdf
+            "Body": {
+                "Head": ["HeadPan", "HeadTilt"],
+                "Arms": {
+                    "Left": [
+                        "LShoulderPitch",
+                        "LShoulderRoll",
+                        "LElbow",
+                    ],
+                    "Right": [
+                        "RShoulderPitch",
+                        "RShoulderRoll",
+                        "RElbow",
+                    ],
+                },
+                "Legs": {
+                    "Left": [
+                        "LHipYaw",
+                        "LHipRoll",
+                        "LHipPitch",
+                        "LKnee",
+                        "LAnklePitch",
+                        "LAnkleRoll",
+                    ],
+                    "Right": [
+                        "RHipYaw",
+                        "RHipRoll",
+                        "RHipPitch",
+                        "RKnee",
+                        "RAnklePitch",
+                        "RAnkleRoll",
+                    ],
+                },
+            }
+        }
 
         # Create drag and dop list for keyframes
         self._widget.frameList = DragDropList(self._widget, self)
         self._widget.verticalLayout_2.insertWidget(0, self._widget.frameList)
         self._widget.frameList.setDragDropMode(QAbstractItemView.InternalMove)
 
-        # Create a dictionary to map joint names to ids # TODO this should not be hardcoded
-        self.motors = [
-            "HeadPan",
-            "HeadTilt",
-            "LShoulderPitch",
-            "LShoulderRoll",
-            "LElbow",
-            "RShoulderPitch",
-            "RShoulderRoll",
-            "RElbow",
-            "LHipYaw",
-            "LHipRoll",
-            "LHipPitch",
-            "LKnee",
-            "LAnklePitch",
-            "LAnkleRoll",
-            "RHipYaw",
-            "RHipRoll",
-            "RHipPitch",
-            "RKnee",
-            "RAnklePitch",
-            "RAnkleRoll",
-        ]
+        # Create a list of all motors
+        def get_motor_names(hirarchy: dict) -> list:
+            names = []
+            for element in hirarchy.values():
+                if isinstance(element, dict):
+                    names.extend(get_motor_names(element))
+                else:
+                    names.extend(element)
+            return names
+        self.motors = get_motor_names(self._motor_hierarchy)
 
         # Create the initial joint state
         self._initial_joints = JointState(
@@ -133,23 +145,17 @@ class RecordUI(Plugin):
             position=[0.0] * len(self.motors),
         )
 
-        # Initialize all joint dependent data structures
-        for i, k in enumerate(self._initial_joints.name):
-            self._current_goals[k] = self._initial_joints.position[i]
-            self._working_values[k] = self._initial_joints.position[i]
-            self._motors_active["#CURRENT_FRAME"][k] = True
-            self._motors_torque["#CURRENT_FRAME"][k] = True
+        # Add an initial keyframe to the recorder (it has no motors active, but serves as a starting point)
+        self._recorder.record({}, {}, self._selected_frame, 1.0, 0.0)
 
         # Create GUI components
         self.create_motor_controller()
         self.create_motor_switcher()
+        # Update ticks
+        self.react_to_motor_selection()
+        self.update_frames()
         # Connect callbacks to GUI components
         self.connect_gui_callbacks()
-        # Update ticks
-        self.update_torques()
-        self.frame_list()
-        self.update_frames()
-        self.set_sliders_and_text_fields(manual=True)
 
         # Add the widget to the context
         context.add_widget(self._widget)
@@ -161,48 +167,49 @@ class RecordUI(Plugin):
         self._node.get_logger().info("Initialization complete.")
         self._widget.statusBar.showMessage("Initialization complete.")
 
-    def joint_state_callback(self, joint_states) -> None:
+    def joint_state_callback(self, joint_states: JointState) -> None:
         """
-        Callback method for /joint_states. Updates the sliders to the actual values of the motors when the robot moves.
+        Callback method for /joint_states.
         """
-        # Insert the current values into the working values, if the motor is not activly controlled by the current frame of the animation
-        for i, name in enumerate(joint_states.name):
-            if not self._motors_active["#CURRENT_FRAME"][name]:
-                self._working_values[name] = joint_states.position[i]
-
-        time.sleep(self.update_time)  # TODO what is this for?
-        # Update the UI so the new values are displayed
-        self.set_sliders_and_text_fields(manual=False)
+        # Store the joint states
+        self._joint_states = joint_states
 
     def create_motor_controller(self) -> None:
         """
         Sets up the GUI in the middle of the Screen to control the motors.
         Uses self._motorValues to determine which motors are present.
         """
-        for i, k in enumerate(sorted(self._current_goals.keys())):
+        # Iterate over all motors
+        for i, motor_name in enumerate(sorted(self.motors)):
+            # Create a group of UI elements for each motor
             group = QGroupBox()
+            layout = QVBoxLayout()
+            # Create a label for the motor name
+            label = QLabel()
+            label.setText(motor_name)
+            layout.addWidget(label)
+            # Create a slider for the motor to set the position
             slider = QSlider(Qt.Horizontal)
             slider.setTickInterval(1)
             slider.setMinimum(-181)
             slider.setMaximum(181)
+            # Add a callback to the slider to update the motor values
             slider.sliderMoved.connect(
                 self.slider_update
             )  # This has to  be a sliderMoved signal, since valueChanged is
             # triggered by other sources than user action.
-            self._sliders[k] = slider
+            layout.addWidget(slider)
+            # Store a reference to the slider in a dictionary
+            self._motor_controller_sliders[motor_name] = slider
 
+            # Add a textfield to display the exact value of the motor
             textfield = QLineEdit()
             textfield.setText("0")
             textfield.textEdited.connect(self.textfield_update)
-            self._text_fields[k] = textfield
+            layout.addWidget(textfield)
+            self._motor_controller_text_fields[motor_name] = textfield
 
-            label = QLabel()
-            label.setText(k)
-
-            layout = QVBoxLayout()
-            layout.addWidget(label)
-            layout.addWidget(self._sliders[k])
-            layout.addWidget(self._text_fields[k])
+            # Add the layout to the group and the group to the main layout (at the correct position in the 5 x n grid)
             group.setLayout(layout)
             self._widget.motorControlLayout.addWidget(group, i // 5, i % 5)
 
@@ -210,70 +217,44 @@ class RecordUI(Plugin):
         """
         Loads the motors into the tree and adds the checkboxes
         """
-        self._widget.motorTree.setHeaderLabel("Active and Stiff Motors")
-        self._motor_check_body.setText(0, "Body")
-        self._motor_check_body.setFlags(self._motor_check_body.flags() | Qt.ItemIsTristate | Qt.ItemIsUserCheckable)
-        self._motor_check_body.setExpanded(True)
-        self._motor_check_head.setText(0, "Head")
-        self._motor_check_head.setFlags(self._motor_check_head.flags() | Qt.ItemIsTristate | Qt.ItemIsUserCheckable)
-        self._motor_check_head.setExpanded(True)
-        self._motor_check_arms.setText(0, "Arms")
-        self._motor_check_arms.setFlags(self._motor_check_arms.flags() | Qt.ItemIsTristate | Qt.ItemIsUserCheckable)
-        self._motor_check_arms.setExpanded(True)
-        self._motor_check_legs.setText(0, "Legs")
-        self._motor_check_legs.setFlags(self._motor_check_legs.flags() | Qt.ItemIsTristate | Qt.ItemIsUserCheckable)
-        self._motor_check_legs.setExpanded(True)
-        self._motor_check_left_arm.setText(0, "Left Arm")
-        self._motor_check_left_arm.setFlags(
-            self._motor_check_left_arm.flags() | Qt.ItemIsTristate | Qt.ItemIsUserCheckable
-        )
-        self._motor_check_left_arm.setExpanded(True)
-        self._motor_check_right_arm.setText(0, "Right Arm")
-        self._motor_check_right_arm.setFlags(
-            self._motor_check_right_arm.flags() | Qt.ItemIsTristate | Qt.ItemIsUserCheckable
-        )
-        self._motor_check_right_arm.setExpanded(True)
-        self._motor_check_left_leg.setText(0, "Left Leg")
-        self._motor_check_left_leg.setFlags(
-            self._motor_check_left_leg.flags() | Qt.ItemIsTristate | Qt.ItemIsUserCheckable
-        )
-        self._motor_check_left_leg.setExpanded(True)
-        self._motor_check_right_leg.setText(0, "Right Leg")
-        self._motor_check_right_leg.setFlags(
-            self._motor_check_right_leg.flags() | Qt.ItemIsTristate | Qt.ItemIsUserCheckable
-        )
-        self._motor_check_right_leg.setExpanded(True)
+        # Create a recursive function to build the tree
+        def build_widget_tree(parent, hirarchy: dict) -> None:
+            # Iterate over all elements in the hirarchy
+            for key, value in hirarchy.items():
+                # If the element is a dict, create a new group in the tree
+                if isinstance(value, dict):
+                    # Create a new group in the tree
+                    child = QTreeWidgetItem(parent)
+                    child.setText(0, key)
+                    child.setFlags(child.flags() | Qt.ItemIsTristate | Qt.ItemIsUserCheckable)
+                    child.setExpanded(True)
+                    # Recursively call the function to add the children of the group
+                    build_widget_tree(child, value)
+                # If the element is a list we are at the lowest level of the hirarchy and add the motors
+                elif isinstance(value, list):
+                    for motor_name in value:
+                        # Add motor enable checkbox
+                        enable_checkbox = QTreeWidgetItem(parent)
+                        enable_checkbox.setText(0, motor_name)
+                        enable_checkbox.setFlags(enable_checkbox.flags() | Qt.ItemIsUserCheckable)
+                        enable_checkbox.setCheckState(0, Qt.Checked)
+                        enable_checkbox.setExpanded(True)
+                        self._motor_switcher_active_checkbox[motor_name] = enable_checkbox
 
-        for k in self._current_goals.keys():
-            # Check who is the parent of the motor
-            parent = None
-            if "LHip" in k or "LKnee" in k or "LAnkle" in k:
-                parent = self._motor_check_left_leg
-            elif "RHip" in k or "RKnee" in k or "RAnkle" in k:
-                parent = self._motor_check_right_leg
-            elif "LShoulder" in k or "LElbow" in k:
-                parent = self._motor_check_left_arm
-            elif "RShoulder" in k or "RElbow" in k:
-                parent = self._motor_check_right_arm
-            elif "Head" in k:
-                parent = self._motor_check_head
+                        # Put a torque checkbox below the motor enable checkbox
+                        torque_checkbox = QTreeWidgetItem(enable_checkbox)
+                        torque_checkbox.setText(0, "Torque")
+                        torque_checkbox.setFlags(torque_checkbox.flags() | Qt.ItemIsUserCheckable)
+                        torque_checkbox.setCheckState(0, Qt.Checked)
+                        self._motor_switcher_torque_checkbox[motor_name] = torque_checkbox
+                else:
+                    raise ValueError("Invalid hirarchy")
 
-            # Add motor enable checkbox
-            enable_checkbox = QTreeWidgetItem(parent)
-            enable_checkbox.setText(0, k)
-            enable_checkbox.setFlags(enable_checkbox.flags() | Qt.ItemIsUserCheckable)
-            enable_checkbox.setCheckState(0, Qt.Checked)
-            enable_checkbox.setExpanded(True)
-            self._treeItems[k] = enable_checkbox
-
-            # Put a torque checkbox below the motor enable checkbox
-            torque_checkbox = QTreeWidgetItem(enable_checkbox)
-            torque_checkbox.setText(0, "Torque")
-            torque_checkbox.setFlags(torque_checkbox.flags() | Qt.ItemIsUserCheckable)
-            torque_checkbox.setCheckState(0, Qt.Checked)
+        # Build the tree
+        build_widget_tree(self._widget.motorTree, self._motor_hierarchy)
 
         # Register hook that executes our callback when the user clicks on a checkbox
-        self._widget.motorTree.itemClicked.connect(self.update_torques)
+        self._widget.motorTree.itemClicked.connect(self.react_to_motor_selection)
 
     def connect_gui_callbacks(self) -> None:
         """
@@ -301,6 +282,7 @@ class RecordUI(Plugin):
         self._widget.buttonRecord.shortcut = QShortcut(QKeySequence("Space"), self._widget)
         self._widget.buttonRecord.shortcut.activated.connect(self.record)
         self._widget.frameList.key_pressed.connect(self.delete)
+        self._widget.frameList.itemSelectionChanged.connect(self.frame_select)
 
     def help(self) -> None:
         """
@@ -336,7 +318,7 @@ class RecordUI(Plugin):
             sure = QMessageBox.question(self._widget, "Sure?", message, QMessageBox.Yes | QMessageBox.No)
             if sure == QMessageBox.Yes:
                 # Create a new recorder (deletes all states and starts from scratch)
-                self._recorder = Recorder(self._node)
+                self._recorder = Recorder(self._node, self.animation_client, self.add_animation_client)
                 self.update_frames()
 
     def save(self, new_location: bool = False) -> None:
@@ -416,21 +398,16 @@ class RecordUI(Plugin):
         """
         Plays the animation up to a certain frame
         """
-        # Get all keyframes
-        steps = self._recorder.get_keyframes()
-
-        # Get the index of the selected frame  # TODO use name of frame instead of reference
-        end = steps.index(self._selected_frame) + 1
+        # Get the index of the selected frame
+        end_index = self._recorder.get_keyframe_index(self._selected_frame) + 1
 
         # Play the animation
-        self._recorder.play(end)
+        self._recorder.play(until_frame=end_index)
 
     def goto_frame(self):
         """
         Plays one single frame
         """
-        self.set_all_joints_stiff()
-
         pos_msg = JointCommand()
         # Set velocity to 1.0 and all other values to -1.0 (maximum)
         pos_msg.velocities = [1.0] * len(self._initial_joints.name)
@@ -451,36 +428,14 @@ class RecordUI(Plugin):
 
     def goto_init(self):
         """
-        Plays init frame, sets all motor values to 0
+        Plays init frame
         """
-        self.set_all_joints_stiff()
-
-        if self._widget.frameList.currentItem().text() == "#CURRENT_FRAME":
-            for k, _v in self._working_values.items():
-                self._working_values[k] = 0.0
-        for k, _v in self._current_goals.items():
-            self._current_goals[k] = 0.0
-        self.set_sliders_and_text_fields(manual=False)
-
-        pos_msg = JointCommand()
-        pos_msg.joint_names = self._initial_joints.name
-        pos_msg.velocities = [1.0] * len(self._initial_joints.name)
-        pos_msg.positions = [0.0] * len(self._initial_joints.name)
-        pos_msg.accelerations = [-1.0] * len(self._initial_joints.name)
-        pos_msg.max_currents = [-1.0] * len(self._initial_joints.name)
-
-        self._joint_pub.publish(pos_msg)
-
-    def set_all_joints_stiff(self):
-        """
-        Enables torque for all motors
-        """
-        if self._widget.frameList.currentItem().text() == "#CURRENT_FRAME":
-            for v in self._treeItems.values():
-                v.setCheckState(0, Qt.Checked)
-
-        # Publish a message to enable torque for all motors
-        self.effort_pub.publish(JointTorque(joint_names=self._treeItems.keys(), on=[True] * len(self._treeItems)))
+        self.animation_client.send_goal_async(
+            PlayAnimation.Goal(
+                animation="init",
+                hcm=True,  # force TODO check that
+            )
+        )
 
     def duplicate(self):
         """
@@ -491,13 +446,10 @@ class RecordUI(Plugin):
         except Exception as e:
             self._node.get_logger().error(str(e))
             return
-        if frame:
-            if not frame == "#CURRENT_FRAME":
-                self._recorder.duplicate(frame)
-                self._widget.statusBar.showMessage("Duplicated frame " + frame)
-            else:
-                self._widget.statusBar.showMessage("Cannot duplicate current frame. Record first.")
-            self.update_frames()
+        assert self._recorder.get_keyframe(frame) is not None, "Selected frame not found in list of keyframes"
+        self._recorder.duplicate(frame)
+        self._widget.statusBar.showMessage("Duplicated frame " + frame)
+        self.update_frames()
 
     def delete(self):
         """
@@ -508,64 +460,49 @@ class RecordUI(Plugin):
         except Exception as e:
             self._node.get_logger().error(str(e))
             return
-        if frame:
-            if not frame == "#CURRENT_FRAME":
-                self._recorder.delete(frame)
-                self._widget.statusBar.showMessage("Deleted frame " + frame)
-            else:
-                self._widget.statusBar.showMessage("Cannot delete current frame.")
-            self.update_frames()
+        assert self._recorder.get_keyframe(frame) is not None, "Selected frame not found in list of keyframes"
+        self._recorder.delete(frame)
+        self._widget.statusBar.showMessage(f"Deleted frame {frame}")
+        self.update_frames()
 
-    def record(self, keep=False):
+    def record(self):
         """
-        Records a frame
+        Records a frame, meaning it saves the current motor positions and settings in the recorder at the selected frame
         """
-        if self._widget.frameList.currentItem() is not None:
-            if self._widget.frameList.currentItem().text() == "#CURRENT_FRAME":
-                x = True
-                n = 0
-                for state in self._recorder.get_keyframes():
-                    if self._working_name == state["name"]:
-                        while x:
-                            x = False
-                            for state in self._recorder.get_keyframes():
-                                if self._working_name + str(n) == state["name"]:
-                                    n += 1
-                                    x = True
-                        self._working_name = self._working_name + str(n)
+        # Get the index of the currently selected frame
+        index = self._recorder.get_keyframe_index(self._selected_frame)
+        assert index is not None, "Selected frame not found in list of keyframes"
 
-                self.set_sliders_and_text_fields(manual=True)
+        # Check if we added a valid name
+        new_name = self._widget.lineFrameName.text()
+        if not new_name:
+            QMessageBox.warning(self._widget, "Warning", "Please enter a unique name for the keyframe.")
+            return
 
-                self._motors_torque[self._working_name] = {}
-                init_torque = {}
-                for k, _v in self._working_values.items():
-                    init_torque[k] = 2
+        # Check if the name is unique
+        if new_name != self._selected_frame and self._recorder.get_keyframe(new_name) is not None:
+            QMessageBox.warning(self._widget, "Warning", f"A keyframe with the name '{new_name}' already exists.")
+            return
 
-                self._motors_torque[self._working_name] = init_torque
+        # Record the frame
+        self._recorder.record(
+            self._working_angles,
+            {motor_name: self._motor_switcher_torque_checkbox[motor_name].checkState(0) for motor_name in self.motors},
+            new_name,
+            self._widget.spinBoxDuration.value(),
+            self._widget.spinBoxPause.value(),
+            index,
+            True,
+        )
 
-                self._recorder.record(
-                    self._working_values,
-                    init_torque,
-                    self._widget.lineFrameName.text(),
-                    self._widget.spinBoxDuration.value(),
-                    self._widget.spinBoxPause.value(),
-                )
-                self._current_goals = deepcopy(self._working_values)
-            else:
-                current_row = self._widget.frameList.currentRow()
+        # Update the selected frame
+        self._selected_frame = new_name
 
-                self._recorder.record(
-                    self._working_values,
-                    self._motors_torque[self._widget.frameList.currentItem().text()],
-                    self._widget.lineFrameName.text(),
-                    self._widget.spinBoxDuration.value(),
-                    self._widget.spinBoxPause.value(),
-                    current_row,
-                    True,
-                )
+        # Display a message
+        self._widget.statusBar.showMessage(f"Recorded frame {self._selected_frame}")
 
-            self._widget.statusBar.showMessage("Recorded frame " + self._working_name)
-        self.update_frames(keep)
+        # Update the frames in the UI
+        self.update_frames()
 
     def undo(self):
         """
@@ -598,240 +535,149 @@ class RecordUI(Plugin):
         raise NotImplementedError("This function is not yet implemented")
         self._widget.statusBar.showMessage("Inverted frame")
 
-    def frame_list(self):
-        """
-        Connects triggers from the frame list to their callback methods.
-        """
-        self._widget.frameList.itemSelectionChanged.connect(self.frame_select)
-        self._widget.lineFrameName.textEdited.connect(self.frame_meta_update)
-        self._widget.spinBoxPause.valueChanged.connect(self.frame_meta_update)
-        self._widget.spinBoxDuration.valueChanged.connect(self.frame_meta_update)
-
-    def frame_meta_update(self):
-        """
-        Updates the respective values for the two spin boxes and the frame name, when they are changed
-        """
-        self._working_duration = self._widget.spinBoxDuration.value()
-        self._working_pause = self._widget.spinBoxPause.value()
-        self._working_name = self._widget.lineFrameName.text()
-
     def frame_select(self):
         """
         Loads all information on a specific frame into the working values, if the frame selection changes
         """
         # Check if a frame is selected at all
         if self._widget.frameList.currentItem() is not None:
-            # Get the name of the selected frame
+            # Get the selected frame
             selected_frame_name = self._widget.frameList.currentItem().text()
+            selected_frame = self._recorder.get_keyframe(selected_frame_name)
+            assert selected_frame is not None, "Selected frame not found in list of keyframes"
+            # Update state so we have a new selected frame
+            self._selected_frame = selected_frame_name
 
-            # Find the selected frame in the list of keyframes
-            self._selected_frame = self._recorder.get_keyframe(selected_frame_name)
+            # Update the name
+            self._widget.lineFrameName.setText(self._selected_frame)
 
-            assert self._selected_frame is not None, "Selected frame not found in list of keyframes"
+            # Update what motors are active, what are stiff and set the angles accordingly
+            for motor_name in self.motors:
+                # Update checkbox if the motor is active or not
+                active = motor_name in selected_frame["goals"]
+                self._motor_switcher_active_checkbox[motor_name].setCheckState(
+                    0, Qt.Checked if active else Qt.Unchecked
+                )
 
-            # save current values to _currentValues if switching from current frame to different one
-            # when switching from current to different, save current values
+                # Update checkbox if the motor is stiff or not
+                stiff = "torques" not in selected_frame or (
+                    motor_name in selected_frame["torques"] and bool(selected_frame["torques"][motor_name])
+                )
+                self._motor_switcher_torque_checkbox[motor_name].setCheckState(0, Qt.Checked if stiff else Qt.Unchecked)
 
-            if selected_frame_name == "#CURRENT_FRAME":
-                self.update_tree_config(0)
-                self._working_values = deepcopy(self._current_goals)
-                self._working_name = deepcopy(self._current_name)
-                self._working_duration = deepcopy(self._current_duration)
-                self._working_pause = deepcopy(self._current_pause)
+                # Update the motor angle controls (value and active state)
+                if active:
+                    self._motor_controller_sliders[motor_name].setValue(
+                        math.degrees(selected_frame["goals"][motor_name])
+                    )
+                    self._motor_controller_text_fields[motor_name].setText(
+                        str(math.degrees(selected_frame["goals"][motor_name]))
+                    )
+                else:
+                    self._motor_controller_sliders[motor_name].setValue(0)
+                    self._motor_controller_text_fields[motor_name].setText("0")
 
-                self._current = True
-            else:
-                if self._selected_frame is None:
-                    return
-                if self._current:
-                    self._current_goals = deepcopy(self._working_values)
-                    self._current_name = deepcopy(self._working_name)
-                    self._current_duration = deepcopy(self._working_duration)
-                    self._current_pause = deepcopy(self._working_pause)
+            # Update the duration and pause
+            self._widget.spinBoxDuration.setValue(selected_frame["duration"])
+            self._widget.spinBoxPause.setValue(selected_frame["pause"])
 
-                self._working_values = self._selected_frame["goals"]
-                self._working_name = self._selected_frame["name"]
-                self._working_pause = self._selected_frame["pause"]
-                self._working_duration = float(self._selected_frame["duration"])
-
-                self._widget.lineFrameName.setText(self._widget.frameList.currentItem().text())
-                self._current = False
-                self.update_tree_config(self._previous_tree_mode)
-
-            for k, v in self._motors_active[selected_frame_name].items():
-                self._text_fields[k].setEnabled(v)
-                self._sliders[k].setEnabled(v)
-
-        self.update_torques()
-
-    def copy_old_tree_config(self):
-        """
-        Saves the current configuration of the motor tree checkboxes into the corresponding dictionary
-        """
-        if self._selected_frame is not None:
-            temp_dict = {}
-            for k in self._treeItems.keys():
-                temp_dict[k] = self._treeItems[k].checkState(0)
-
-            if self._previous_tree_mode == 1:
-                self._motors_active[self._selected_frame["name"]] = deepcopy(temp_dict)
-            elif self._previous_tree_mode == 0:
-                self._motors_torque[self._selected_frame["name"]] = deepcopy(temp_dict)
-
-    def update_tree_config(self, index):
-        """
-        Loads the new configuration of the motor tree depending on the change
-        """
-        temp_dict_2 = {}
-        if self._widget.frameList.currentItem() is not None:
-            if not self._widget.frameList.currentItem().text() == "#CURRENT_FRAME":
-                if index == 1:
-                    if self._selected_frame["name"] in self._motors_active.keys():
-                        temp_dict_2 = deepcopy(self._motors_active[self._selected_frame["name"]])
-                    else:
-                        for k in self._working_values:
-                            temp_dict_2[k] = 2
-                elif index == 0:
-                    if self._selected_frame["name"] in self._motors_torque.keys():
-                        temp_dict_2 = deepcopy(self._motors_torque[self._selected_frame["name"]])
-                    else:
-                        for k in self._working_values:
-                            temp_dict_2[k] = 2
-            else:
-                for k in self._working_values:
-                    temp_dict_2[k] = 2
-            self._previous_tree_mode = index
-            for k, v in temp_dict_2.items():
-                if v == 0:
-                    self._treeItems[k].setCheckState(0, Qt.Unchecked)
-                elif v == 1:
-                    self._treeItems[k].setCheckState(0, Qt.PartiallyChecked)
-                elif v == 2:
-                    self._treeItems[k].setCheckState(0, Qt.Checked)
+            self.react_to_motor_selection()
 
     def slider_update(self):
         """
-        Updates all sliders, checks whether a value is too large, then replaces it
+        Get the angle from the slider and update the textfield and working values
         """
-        for k, v in self._sliders.items():
-            self._working_values[k] = math.radians(v.value())
-            if self._working_values[k] < -math.pi:
-                self._working_values[k] = -math.pi
-            elif self._working_values[k] > math.pi:
-                self._working_values[k] = math.pi
-        self.set_sliders_and_text_fields(manual=True)
+        for motor_name, slider in self._motor_controller_sliders.items():
+            # Get the angle from the slider
+            angle = math.radians(slider.value())
+            # Clip the angle to the maximum and minimum
+            angle = max(-math.pi, min(math.pi, angle))
+            # Set the angle in the textfield
+            self._motor_controller_text_fields[motor_name].setText(str(math.degrees(angle)))
+            # Set the angle in the working values
+            self._working_angles[motor_name] = angle
 
     def textfield_update(self):
         """
-        Updates all textfields.
+        If the textfield is updated, update the slider and working values
         """
-        for k, v in self._text_fields.items():
+        for motor_name, text_field in self._motor_controller_text_fields.items():
             try:
-                self._working_values[k] = math.radians(float(v.text()))
+                # Get the angle from the textfield
+                angle = math.radians(float(text_field.text()))
             except ValueError:
-                continue
-        self.set_sliders_and_text_fields(manual=True)
-
-    def set_sliders_and_text_fields(self, manual):
-        """
-        Updates the text fields and sliders in self._sliders and self._textfields and also frame name and duration and pause
-        to the values in self._workingValues.
-        """
-        for k, v in self._working_values.items():
-            try:
-                if not self._treeItems[k].checkState(0) == 0:
-                    self._text_fields[k].setText(str(int(round(math.degrees(v)))))
-                    self._sliders[k].setValue(int(round(math.degrees(v))))
-
-            except KeyError:
-                message = "Found a key-value pair for motor (%s), which doesn't seem to exist (yet). Ignoring it." % k
-                self._node.get_logger().warn(message)
-                self._widget.statusBar.showMessage(message)
-                continue
-            except RuntimeError:
-                message = (
-                    "Tried to access a PyQt element that no longer exists. This happens when you close the framework."
+                # Display QMessageBox stating that the value is not a number
+                QMessageBox.warning(
+                    self._widget,
+                    "Warning",
+                    f"Please enter a valid number.\n '{text_field.text()}' is not a valid number.",
                 )
-                self._node.get_logger().warn(message)
-                self._widget.statusBar.showMessage(message)
-                break
-        if manual:
-            self._widget.lineFrameName.setText(self._working_name)
-            self._widget.spinBoxDuration.setValue(self._working_duration)
-            self._widget.spinBoxPause.setValue(self._working_pause)
+                return
+            # Clip the angle to the maximum and minimum
+            angle = max(-math.pi, min(math.pi, angle))
+            # Set the angle in the slider
+            self._motor_controller_sliders[motor_name].setValue(math.degrees(angle))
+            # Set the angle in the working values
+            self._working_angles[motor_name] = angle
 
-    def update_torques(self):
+    def react_to_motor_selection(self):
         """
         Fetches which motors are active from the UI. It also fetches whether the motor is stiff or not. It then
         publishes the motor torques to the robot.
         """
-        # Update active motors for the current frame
-        for k, v in self._treeItems.items():
-            self._motors_active[self._current_name][k] = v.checkState(0) == 2
+        # Go through all motors
+        for motor_name in self.motors:
+            active = self._motor_switcher_active_checkbox[motor_name].checkState(0) == 2
+            # Enable or disable the motor controls
+            self._motor_controller_text_fields[motor_name].setEnabled(active)
+            self._motor_controller_sliders[motor_name].setEnabled(active)
+            # Pull working values from from the joint states if the motor is not active
+            if not active and motor_name in self._joint_states.name:
+                self._working_angles[motor_name] = self._joint_states.position[
+                    self._joint_states.name.index(motor_name)
+                ]
 
-        # Enable or disable the sliders and text fields for each motor depending
-        # based on if the motor is active or not
-        for k, v in self._motors_active[self._current_name].items():
-            self._text_fields[k].setEnabled(v)
-            self._sliders[k].setEnabled(v)
-
-        self.set_sliders_and_text_fields(manual=False)  # TODO check that
-
-        # Publish the motor torques to the robot
-        self.publish_motor_torques()
-
-    def publish_motor_torques(self):
-        """
-        Publishes the motor torques to the robot based on the selection for the current frame
-        """
-        # Create the torque message object
-        torque_msg = JointTorque(
-            joint_names=self._motors_torque[self._current_name].keys(),
-            on=self._motors_torque[self._current_name].values(),
+        # Publish position message
+        self._joint_pub.publish(
+            JointCommand(
+                # Set set the motor controller constraints to the maximum
+                accelerations=[-1.0] * len(self.motors),
+                max_currents=[-1.0] * len(self.motors),
+                # Set velocities to 1.0 # TODO evaluate
+                velocities=[1.0] * len(self.motors),
+                # Set the joint names and positions
+                joint_names=self._working_angles.keys(),
+                positions=self._working_angles.values(),
+            )
         )
 
-        # Create the position message object
-        pos_msg = JointCommand()
+        # Publish the torque message
+        self.effort_pub.publish(
+            JointTorque(
+                joint_names=self.motors,
+                on=[self._motor_switcher_torque_checkbox[motor_name].checkState(0) == 2 for motor_name in self.motors],
+            )
+        )
 
-        # Set set the motor controller constraints to the maximum
-        pos_msg.accelerations = [-1.0] * len(self._motors_torque)
-        pos_msg.max_currents = [-1.0] * len(self._motors_torque)
-        # Set velocities to 1.0 # TODO evaluate
-        pos_msg.velocities = [1.0] * len(self._motors_torque)
-
-        # Set the joint names and positions
-        pos_msg.joint_names = self._working_values.keys()
-        pos_msg.positions = self._working_values.values()
-
-        # Publish the messages
-        self._joint_pub.publish(pos_msg)
-        self.effort_pub.publish(torque_msg)
-
-    def update_frames(self, keep: bool = False) -> None:
+    def update_frames(self) -> None:
         """
-        updates the list of frames present in the current animation
+        Updates the list of frames present in the current animation
         """
-        current_index = self._widget.frameList.currentIndex()
-        current_state = self._recorder.get_keyframes()
-        while self._widget.frameList.takeItem(0):
-            continue
+        # Get the current state of the recorder and the index of the selected frame
+        keyframes = self._recorder.get_keyframes()
+        index = self._recorder.get_keyframe_index(self._selected_frame)
 
-        for i in range(0, len(current_state)):
+        # Clear the list of frames
+        self._widget.frameList.clear()
+
+        # Add all frames to the list
+        for i, frame in enumerate(keyframes):
             item = QListWidgetItem()
-            if "name" in current_state[i]:
-                item.setText(current_state[i]["name"])
-            else:  # older animations without names for the frames
-                item.setText(str(i))
+            item.setText(frame["name"])
             self._widget.frameList.addItem(item)
 
-        current = QListWidgetItem()
-        current.setText("#CURRENT_FRAME")
-        self._widget.frameList.addItem(current)
-        if keep:
-            self._widget.frameList.setCurrentIndex(current_index)
-        else:
-            self._widget.frameList.setCurrentItem(current)
-            self._current = True
+        # Select the correct frame
+        self._widget.frameList.setCurrentIndex(index)
 
     def change_keyframe_order(self, new_order):
         """Calls the recorder to update frame order and updates the gui"""

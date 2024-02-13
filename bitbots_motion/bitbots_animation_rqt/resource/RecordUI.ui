@@ -107,6 +107,9 @@
             <property name="value">
              <double>1.000000000000000</double>
             </property>
+            <property name="minimum">
+             <double>0.000000000000000</double>
+            </property>
            </widget>
           </item>
           <item>
@@ -120,6 +123,9 @@
            <widget class="QDoubleSpinBox" name="spinBoxPause">
             <property name="singleStep">
              <double>0.100000000000000</double>
+            </property>
+            <property name="minimum">
+             <double>0.000000000000000</double>
             </property>
            </widget>
           </item>

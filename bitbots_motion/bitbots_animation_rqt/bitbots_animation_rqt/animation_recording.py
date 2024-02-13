@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
-# todo
-# copy paste of frames, from one animation to another
-# record button next to frame name filed
-# set min max for joint value fields
+
 import json
 import math
 import os
@@ -11,6 +8,7 @@ from datetime import datetime
 from typing import Optional
 
 from rclpy.action import ActionClient
+from rclpy.client import Client as ServiceClient
 from rclpy.node import Node
 
 from bitbots_msgs.action import PlayAnimation
@@ -26,19 +24,19 @@ class AnimationData:
         self.key_frames: list[dict] = []
         self.author: str = "Unknown"
         self.description: str = "Edit me!"
-        self.last_edited: datetime = datetime.isoformat(datetime.now(), " ")
+        self.last_edited: datetime = datetime.now().isoformat(" ")
         self.name: str = "None yet"
         self.version: int = 0
 
 
 class Recorder:
-    def __init__(self, node: Node) -> None:
+    def __init__(self, node: Node, animation_action_client: ActionClient, add_animation_client: ServiceClient):
         self._node = node
-        self.steps = []
-        self.redo_steps = []
+        self.steps: list[tuple[AnimationData, str]] = []
+        self.redo_steps: list[tuple[AnimationData, str, AnimationData]] = []
         self.current_state = AnimationData()
-        self.animation_client: ActionClient = ActionClient(self._node, PlayAnimation, "animation")
-        self.add_animation_client = self._node.create_client(AddAnimation, "add_temporary_animation")
+        self.animation_client = animation_action_client
+        self.add_animation_client = add_animation_client
         self.save_step("Initial step")
 
     def get_keyframes(self) -> list[dict]:
@@ -239,13 +237,11 @@ class Recorder:
         # Save the current state
         self.save_step(f"Loading of animation named '{data['name']}'")
 
-    def play(self, until_frame: Optional[int] = None) -> str:
-        """Record command, start playing an animation
+    def play(self, from_frame: int = 0, until_frame: Optional[int] = None) -> str:
+        """Plays (a range of) the current animation using the animation server
 
-        Can play a certain (named) animation or the current one by default.
-        Also can play only a part of an animation if end is defined
-
-        :param until_frame: the frame until which the animation should be played
+        :param from_frame: the keyframe from which the animation should be played
+        :param until_frame: the keyframe until which the animation should be played
         """
         if not self.current_state.key_frames:
             msg = "Refusing to play, because nothing to play exists!"
@@ -261,6 +257,11 @@ class Recorder:
             assert until_frame <= len(
                 self.current_state.key_frames
             ), "Upper bound must be less than or equal to the number of frames"
+        assert from_frame >= 0, "Lower bound must be positive"
+        assert from_frame < until_frame, "Lower bound must be less than the upper bound"
+        assert until_frame <= len(
+            self.current_state.key_frames
+        ), "Upper bound must be less than or equal to the number of frames"
 
         # Create name for the temporary animation that is send to the animation server
         # We can call this animation by name to play it
@@ -274,7 +275,7 @@ class Recorder:
             "last_edited": datetime.isoformat(datetime.now(), " "),
             "author": self.current_state.author,
             "description": self.current_state.description,
-            "keyframes": deepcopy(self.current_state.key_frames[0:until_frame]),
+            "keyframes": deepcopy(self.current_state.key_frames[from_frame:until_frame]),
         }
 
         # Convert the angles from radians to degrees
