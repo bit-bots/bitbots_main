@@ -2,6 +2,7 @@
     "autoDocstring.docstringFormat": "sphinx",
     "cSpell.language": "en,de-de,lorem",
     "cSpell.words": [
+        "animatable",
         "ansible",
         "autoconnect",
         "basler",
