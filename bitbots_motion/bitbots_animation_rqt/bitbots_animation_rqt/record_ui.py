@@ -4,10 +4,9 @@ import os
 import sys
 
 from ament_index_python import get_package_share_directory
-from python_qt_binding import loadUi
-from python_qt_binding.QtCore import Qt
-from python_qt_binding.QtGui import QKeySequence
-from python_qt_binding.QtWidgets import (
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QKeySequence
+from PyQt5.QtWidgets import (
     QAbstractItemView,
     QFileDialog,
     QGroupBox,
@@ -20,6 +19,7 @@ from python_qt_binding.QtWidgets import (
     QTreeWidgetItem,
     QVBoxLayout,
 )
+from PyQt5.uic import loadUi
 from rclpy.action import ActionClient
 from rclpy.node import Node
 from rqt_gui.main import Main
@@ -122,7 +122,7 @@ class RecordUI(Plugin):
         }
 
         # Create drag and dop list for keyframes
-        self._widget.frameList = DragDropList(self._widget, self)
+        self._widget.frameList = DragDropList(self._widget, self.change_keyframe_order)
         self._widget.verticalLayout_2.insertWidget(0, self._widget.frameList)
         self._widget.frameList.setDragDropMode(QAbstractItemView.InternalMove)
 
@@ -203,7 +203,7 @@ class RecordUI(Plugin):
 
         # Create a recursive function to build the tree
         def build_widget_tree(parent, hierarchy: dict) -> None:
-            # Iterate over all elements in the hirarchy
+            # Iterate over all elements in the hierarchy
             for key, value in hierarchy.items():
                 # If the element is a dict, create a new group in the tree
                 if isinstance(value, dict):
@@ -214,7 +214,7 @@ class RecordUI(Plugin):
                     child.setExpanded(True)
                     # Recursively call the function to add the children of the group
                     build_widget_tree(child, value)
-                # If the element is a list we are at the lowest level of the hirarchy and add the motors
+                # If the element is a list we are at the lowest level of the hierarchy and add the motors
                 elif isinstance(value, list):
                     # Create a new group in the tree
                     child = QTreeWidgetItem(parent)
@@ -237,7 +237,7 @@ class RecordUI(Plugin):
                         torque_checkbox.setCheckState(0, Qt.Checked)
                         self._motor_switcher_torque_checkbox[motor_name] = torque_checkbox
                 else:
-                    raise ValueError("Invalid hirarchy")
+                    raise ValueError("Invalid hierarchy")
 
         # Build the tree
         build_widget_tree(self._widget.motorTree, self._motor_hierarchy)
@@ -697,14 +697,15 @@ class RecordUI(Plugin):
         # Variables depending on the frame selection
         self.react_to_frame_change()
 
-    def change_keyframe_order(self, new_order):
+    def change_keyframe_order(self, new_order: list[str]) -> None:
         """Calls the recorder to update frame order and updates the gui"""
         self._recorder.change_frame_order(new_order)
         self.update_frames()
 
     def shutdown_plugin(self):
         """Clean up by sending the HCM that we are not in record mode anymore"""
-        self.hcm_record_mode_client.call(SetBool.Request(data=False))
+        if self.hcm_record_mode_client.wait_for_service(timeout_sec=1.0):
+            self.hcm_record_mode_client.call(SetBool.Request(data=False))
 
 
 def main():

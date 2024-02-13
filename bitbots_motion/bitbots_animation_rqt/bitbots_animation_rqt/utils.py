@@ -1,5 +1,7 @@
-from python_qt_binding.QtCore import Qt, pyqtSignal
-from python_qt_binding.QtWidgets import QListWidget
+from typing import Callable
+
+from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtWidgets import QListWidget, QWidget
 
 
 class DragDropList(QListWidget):
@@ -7,10 +9,10 @@ class DragDropList(QListWidget):
 
     key_pressed = pyqtSignal()
 
-    def __init__(self, parent, ui):
+    def __init__(self, parent: QWidget, frame_order_callback: Callable[[list[str]], None]):
         super().__init__(parent)
 
-        self.ui = ui
+        self.frame_order_callback = frame_order_callback
         self.setAcceptDrops(True)
 
     # fmt: off
@@ -20,7 +22,7 @@ class DragDropList(QListWidget):
         items = []
         for i in range(0, self.count()):
             items.append(self.item(i).text())
-        self.ui.change_frame_order(items)
+        self.frame_order_callback(items)
 
     # fmt: off
     def keyPressEvent(self, event): # noqa: N802
