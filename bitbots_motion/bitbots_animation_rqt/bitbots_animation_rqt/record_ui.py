@@ -130,9 +130,9 @@ class RecordUI(Plugin):
         self._widget.frameList.setDragDropMode(QAbstractItemView.InternalMove)
 
         # Create a list of all motors
-        def get_motor_names(hirarchy: dict) -> list:
+        def get_motor_names(hierarchy: dict) -> list:
             names = []
-            for element in hirarchy.values():
+            for element in hierarchy.values():
                 if isinstance(element, dict):
                     names.extend(get_motor_names(element))
                 else:
@@ -410,32 +410,37 @@ class RecordUI(Plugin):
         """
         Plays one single frame
         """
-        pos_msg = JointCommand()
-        # Set velocity to 1.0 and all other values to -1.0 (maximum)
-        pos_msg.velocities = [1.0] * len(self._initial_joints.name)
-        pos_msg.accelerations = [-1.0] * len(self._initial_joints.name)
-        pos_msg.max_currents = [-1.0] * len(self._initial_joints.name)
+        index = self._recorder.get_keyframe_index(self._selected_frame)
+        assert index is not None, "Selected frame not found in list of keyframes"
 
-        # Set the joint names and positions
-        pos_msg.joint_names = self._working_values.keys()
-        pos_msg.positions = self._working_values.values()
-
-        # Publish the message
-        self._joint_pub.publish(pos_msg)
+        self._recorder.play(from_frame=index, until_frame=index)
 
     def goto_next(self):
-        if self._widget.frameList.currentRow() < self._widget.frameList.count() - 2:
-            self._widget.frameList.setCurrentRow(self._widget.frameList.currentRow() + 1)
+        # Get current index
+        index = self._recorder.get_keyframe_index(self._selected_frame)
+        assert index is not None, "Selected frame not found in list of keyframes"
+
+        # Check if this is the last frame
+        if index + 1 < len(self._recorder.get_keyframes()):
+            # Play until the next frame
+            self._recorder.play(from_frame=index, until_frame=index + 1)
+            # Go to the next frame in the UI if we are not at the end
+            self._widget.frameList.setCurrentRow(index + 1)
+            self._selected_frame = self._recorder.get_keyframes()[index + 1]["name"]
+            self.react_to_frame_change()
+        else:
             self.goto_frame()
 
     def goto_init(self):
         """
         Plays init frame
         """
+        # Request record mode from HCM
+        self.hcm_record_mode_client.call(SetBool.Request(data=True))
+        # Play the init animation
         self.animation_client.send_goal_async(
             PlayAnimation.Goal(
                 animation="init",
-                hcm=True,  # force TODO check that
             )
         )
 

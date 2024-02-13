@@ -87,6 +87,7 @@ class AnimationNode(Node):
         # These are the states in which we can play an animation without thinking twice
         animatable_states = [RobotControlState.CONTROLLABLE, RobotControlState.RECORD]
 
+        # Check if we can play the animation right now or if we have to wait
         if self.hcm_state not in animatable_states and not request.hcm:
             # we cant play an animation right now
             # but we send a request, so that we may can soon
@@ -109,16 +110,35 @@ class AnimationNode(Node):
 
         animator = self.get_animation_splines(self.current_animation)
 
+        # Flag that determines that we have send something once
+        once = False
+
+        # Loop to play the animation
         while rclpy.ok() and animator:
             try:
                 last_time = self.get_clock().now()
 
                 # if we're here we want to play the next keyframe, cause there is no other goal
                 # compute next pose
-                t = self.get_clock().now().nanoseconds / 1e9 - animator.get_start_time()
+                t = (
+                    self.get_clock().now().nanoseconds / 1e9 - animator.get_start_time()
+                )  # time since start of animation
+                # Start later if we have set bounds and only play the part of the animation
+                if request.bounds:
+                    t += animator.get_keyframe_times()[request.start]
+
+                self.get_logger().info(f"Playing animation at time {t}")
+                self.get_logger().info(f"Using bounds {request.bounds} and start {request.start} and end {request.end}")
+                self.get_logger().info(
+                    f"Using start time {animator.get_keyframe_times()[request.start]} and end time {animator.get_keyframe_times()[request.end]}"
+                )
+
+                # Get the robot pose at the current time from the spline interpolator
                 pose = animator.get_positions_rad(t)
 
-                if pose is None:
+                # Finish if spline ends or we reaches the explicitly defined premature end
+                assert request.end >= 0 and request.end <= len(animator.get_keyframe_times())
+                if pose is None or (request.bounds and once and t > animator.get_keyframe_times()[request.end]):
                     # animation is finished
                     # tell it to the hcm
                     self.send_animation(first=False, last=True, hcm=request.hcm, pose=None, torque=None)
@@ -137,6 +157,8 @@ class AnimationNode(Node):
                 perc_done = max(0, min(perc_done, 100))
 
                 goal.publish_feedback(PlayAnimation.Feedback(percent_done=perc_done))
+
+                once = True
 
                 self.get_clock().sleep_until(last_time + Duration(seconds=0.02))
             except (ExternalShutdownException, KeyboardInterrupt):

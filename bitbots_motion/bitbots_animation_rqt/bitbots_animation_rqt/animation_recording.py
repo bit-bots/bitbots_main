@@ -241,7 +241,7 @@ class Recorder:
         # Save the current state
         self.save_step(f"Loading of animation named '{data['name']}'")
 
-    def play(self, from_frame: int = 0, until_frame: Optional[int] = None) -> tuple[str, bool]:
+    def play(self, from_frame: int = 0, until_frame: int = -1) -> tuple[str, bool]:
         """Plays (a range of) the current animation using the animation server
 
         :param from_frame: the keyframe from which the animation should be played
@@ -252,17 +252,16 @@ class Recorder:
             self._node.get_logger().warn(msg)
             return msg, False
 
-        if until_frame is None:
+        if until_frame == -1:
             # Play complete animation
-            until_frame = len(self.current_state.key_frames)
+            until_frame = len(self.current_state.key_frames) - 1
         else:
             # Check if the given frame id is in bounds
-            assert until_frame > 0, "Upper bound must be positive"
+            assert until_frame >= 0, "Upper bound must be positive"
             assert until_frame <= len(
                 self.current_state.key_frames
             ), "Upper bound must be less than or equal to the number of frames"
         assert from_frame >= 0, "Lower bound must be positive"
-        assert from_frame < until_frame, "Lower bound must be less than the upper bound"
         assert until_frame <= len(
             self.current_state.key_frames
         ), "Upper bound must be less than or equal to the number of frames"
@@ -279,7 +278,7 @@ class Recorder:
             "last_edited": datetime.isoformat(datetime.now(), " "),
             "author": self.current_state.author,
             "description": self.current_state.description,
-            "keyframes": deepcopy(self.current_state.key_frames[from_frame:until_frame]),
+            "keyframes": deepcopy(self.current_state.key_frames),
         }
 
         # Convert the angles from radians to degrees
@@ -294,12 +293,8 @@ class Recorder:
             self._node.get_logger().error("Add Animation Service not available! Is the animation server running?")
             return "Add Animation Service not available! Is the animation server running?", False
 
-        # Create a request to add the animation
-        request = AddAnimation.Request()
-        request.json = json.dumps(animation_dict, sort_keys=True, indent=4)
-
-        # Send the request to the service (blocking to make sure the animation is added before playing it)
-        self.add_animation_client.call(request)
+        # Send request to the service (blocking to make sure the animation is added before playing it)
+        self.add_animation_client.call(AddAnimation.Request(json=json.dumps(animation_dict, sort_keys=True, indent=4)))
 
         # Set the HCM into record mode
         if self.hcm_record_mode_client.wait_for_service(timeout_sec=2):
@@ -314,10 +309,10 @@ class Recorder:
             self._node.get_logger().error("Animation Action Server not available! Is the animation server running?")
             return "Animation Action Server not available! Is the animation server running?", False
 
-        # Create a goal to play the animation
-        goal = PlayAnimation.Goal()
-        goal.animation = tmp_animation_name
-        self.animation_client.send_goal_async(goal)  # TODO maybe handle result or status
+        # Send a goal to play the animation
+        self.animation_client.send_goal_async(
+            PlayAnimation.Goal(animation=tmp_animation_name, bounds=True, start=from_frame, end=until_frame)
+        )  # TODO maybe blocking or something else
 
         return f"Playing {len(animation_dict['keyframes'])} frames...", True
 

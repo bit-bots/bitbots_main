@@ -17,6 +17,7 @@ class SplineAnimator:
         self.current_point_time = 0.0
         self.spline_dict: dict[str, SmoothSpline] = {}
         self.torques = {}
+        self.keyframe_times: list[float] = []
 
         # add current joint positions as start
         if current_joint_states is not None:
@@ -37,6 +38,7 @@ class SplineAnimator:
         for keyframe in self.anim.keyframes:
             self.animation_duration += keyframe.duration + keyframe.pause
             self.current_point_time += keyframe.duration
+            self.keyframe_times.append(self.current_point_time)
             for joint in keyframe.goals:
                 if joint not in self.spline_dict:
                     self.spline_dict[joint] = SmoothSpline()
@@ -48,6 +50,10 @@ class SplineAnimator:
         # compute the splines
         for joint in self.spline_dict:
             self.spline_dict[joint].compute_spline()
+
+    def get_keyframe_times(self) -> list[float]:
+        assert len(self.keyframe_times) == len(self.anim.keyframes)
+        return self.keyframe_times
 
     def get_positions_deg(self, time):
         if time < 0 or time > self.animation_duration:
