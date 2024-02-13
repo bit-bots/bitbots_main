@@ -20,6 +20,7 @@ from rclpy.time import Time
 from ros2_numpy import numpify
 from sensor_msgs.msg import Imu, JointState
 from std_msgs.msg import Bool
+from std_srvs.srv import SetBool
 
 from bitbots_hcm.hcm_dsd.hcm_blackboard import HcmBlackboard
 from bitbots_msgs.msg import FootPressure, RobotControlState
@@ -82,6 +83,9 @@ class HardwareControlManager:
         self.node.create_subscription(Bool, "core/power_switch_status", self.power_cb, 1)
         self.node.create_subscription(Bool, "hcm_deactivate", self.deactivate_cb, 1)
         self.node.create_subscription(DiagnosticArray, "diagnostics_agg", self.diag_cb, 1)
+
+        # Create services
+        self.node.create_service(SetBool, "record_mode", self.set_record_active)
 
         # Store time of the last tick
         self.last_tick_start_time = self.node.get_clock().now()
@@ -148,8 +152,10 @@ class HardwareControlManager:
     def set_external_animation_running(self, running: bool):
         self.blackboard.external_animation_running = running
 
-    def set_record_active(self, active: bool):
-        self.blackboard.record_active = active
+    def set_record_active(self, request: SetBool.Request, response: SetBool.Response):
+        self.blackboard.record_active = request.data
+        response.success = True
+        return response
 
     def set_last_animation_goal_time(self, time_msg_serialized: bytes):
         self.blackboard.last_animation_goal_time = deserialize_message(time_msg_serialized, TimeMsg)

@@ -3,14 +3,14 @@ $StartHCM
     START_UP --> @RobotStateStartup, @Wait + time:0.1 + r:false, @PlayAnimationDynup + direction:walkready, @Wait
     RUNNING --> $Stop
         STOPPED --> @CancelGoals, @StopWalking, @PlayAnimationDynup + direction:walkready, @Wait
-        FREE -->$RecordAnimation
-            RECORD_ACTIVE --> @RobotStateRecord, @Wait
-            FREE --> $CheckMotors
-                MOTORS_NOT_STARTED --> @RobotStateStartup, @WaitForMotorStartup
-                OVERLOAD --> @RobotStateMotorOff, @CancelGoals, @StopWalking, @PlayAnimationFallingFront, @TurnMotorsOff, @Wait
-                PROBLEM --> @RobotStateHardwareProblem, @WaitForMotors
-                TURN_ON --> @TurnMotorsOn, @PlayAnimationDynup + direction:walkready, @Wait
-                OKAY --> $CheckIMU
+        FREE --> $CheckMotors
+            MOTORS_NOT_STARTED --> @RobotStateStartup, @WaitForMotorStartup
+            OVERLOAD --> @RobotStateMotorOff, @CancelGoals, @StopWalking, @PlayAnimationFallingFront, @TurnMotorsOff, @Wait
+            PROBLEM --> @RobotStateHardwareProblem, @WaitForMotors
+            TURN_ON --> @TurnMotorsOn, @PlayAnimationDynup + direction:walkready, @Wait
+            OKAY --> $RecordAnimation
+                RECORD_ACTIVE --> @RobotStateRecord, @Wait
+                FREE --> $CheckIMU
                     IMU_NOT_STARTED --> @RobotStateStartup, @WaitForIMUStartup
                     PROBLEM --> @RobotStateHardwareProblem, @WaitForIMU
                     OKAY --> $CheckPressureSensor

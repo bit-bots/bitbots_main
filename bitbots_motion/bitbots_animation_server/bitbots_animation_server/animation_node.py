@@ -84,19 +84,22 @@ class AnimationNode(Node):
         # publish info to the console for the user
         self.get_logger().info(f"Request to play animation {request.animation}")
 
-        if self.hcm_state != 0 and not request.hcm:  # 0 means controllable
+        # These are the states in which we can play an animation without thinking twice
+        animatable_states = [RobotControlState.CONTROLLABLE, RobotControlState.RECORD]
+
+        if self.hcm_state not in animatable_states and not request.hcm:
             # we cant play an animation right now
             # but we send a request, so that we may can soon
             self.send_animation_request()
 
             # Wait for the hcm to be controllable
             num_tries = 0
-            while rclpy.ok() and self.hcm_state != 0 and num_tries < 10:
+            while rclpy.ok() and self.hcm_state not in animatable_states and num_tries < 10:
                 num_tries += 1
                 self.get_logger().info(f"HCM not controllable. Waiting... (try {num_tries})")
                 self.get_clock().sleep_until(self.get_clock().now() + Duration(seconds=0.1))
 
-            if self.hcm_state != 0:
+            if self.hcm_state not in animatable_states:
                 self.get_logger().info(
                     "HCM not controllable. Only sent request to make it come controllable, "
                     "but it was not successful until timeout"

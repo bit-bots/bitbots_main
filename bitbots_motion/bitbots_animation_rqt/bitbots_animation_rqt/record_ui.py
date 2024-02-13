@@ -2,7 +2,6 @@
 import math
 import os
 import sys
-import time
 
 from ament_index_python import get_package_share_directory
 from python_qt_binding import loadUi
@@ -18,7 +17,6 @@ from python_qt_binding.QtWidgets import (
     QMainWindow,
     QMessageBox,
     QShortcut,
-    QSlider,
     QTreeWidgetItem,
     QVBoxLayout,
 )
@@ -27,6 +25,7 @@ from rclpy.node import Node
 from rqt_gui.main import Main
 from rqt_gui_py.plugin import Plugin
 from sensor_msgs.msg import JointState
+from std_srvs.srv import SetBool
 
 from bitbots_animation_rqt.animation_recording import Recorder
 from bitbots_animation_rqt.utils import DragDropList
@@ -55,11 +54,14 @@ class RecordUI(Plugin):
         # Create a action client to play animations
         self.animation_client: ActionClient = ActionClient(self._node, PlayAnimation, "animation")
 
-        # Create a service client to add temporary animations
+        # Create a service clients
         self.add_animation_client = self._node.create_client(AddAnimation, "add_temporary_animation")
+        self.hcm_record_mode_client = self._node.create_client(SetBool, "record_mode")
 
         # Initialize the recorder module
-        self._recorder = Recorder(self._node, self.animation_client, self.add_animation_client)
+        self._recorder = Recorder(
+            self._node, self.animation_client, self.add_animation_client, self.hcm_record_mode_client
+        )
 
         # Initialize the window
         self._widget = QMainWindow()
@@ -69,7 +71,6 @@ class RecordUI(Plugin):
         loadUi(ui_file, self._widget, {})
 
         # Initialize the GUI state
-        self._motor_controller_sliders = {}
         self._motor_controller_text_fields = {}
         self._selected_frame: str = "start frame"
         self._joint_states = JointState()
@@ -86,7 +87,7 @@ class RecordUI(Plugin):
         self._motor_switcher_active_checkbox: dict[str, QTreeWidgetItem] = {}
         self._motor_switcher_torque_checkbox: dict[str, QTreeWidgetItem] = {}
 
-        # Motor hirarchy
+        # Motor hierarchy
         self._motor_hierarchy = {  # TODO this should be a parameter / loaded from the urdf
             "Body": {
                 "Head": ["HeadPan", "HeadTilt"],
@@ -137,6 +138,7 @@ class RecordUI(Plugin):
                 else:
                     names.extend(element)
             return names
+
         self.motors = get_motor_names(self._motor_hierarchy)
 
         # Create the initial joint state
@@ -146,7 +148,7 @@ class RecordUI(Plugin):
         )
 
         # Add an initial keyframe to the recorder (it has no motors active, but serves as a starting point)
-        self._recorder.record({}, {}, self._selected_frame, 1.0, 0.0)
+        self._recorder.record({}, {}, self._selected_frame, 1.0, 0.0, frozen=True)
 
         # Create GUI components
         self.create_motor_controller()
@@ -188,23 +190,10 @@ class RecordUI(Plugin):
             label = QLabel()
             label.setText(motor_name)
             layout.addWidget(label)
-            # Create a slider for the motor to set the position
-            slider = QSlider(Qt.Horizontal)
-            slider.setTickInterval(1)
-            slider.setMinimum(-181)
-            slider.setMaximum(181)
-            # Add a callback to the slider to update the motor values
-            slider.sliderMoved.connect(
-                self.slider_update
-            )  # This has to  be a sliderMoved signal, since valueChanged is
-            # triggered by other sources than user action.
-            layout.addWidget(slider)
-            # Store a reference to the slider in a dictionary
-            self._motor_controller_sliders[motor_name] = slider
 
             # Add a textfield to display the exact value of the motor
             textfield = QLineEdit()
-            textfield.setText("0")
+            textfield.setText("0.0")
             textfield.textEdited.connect(self.textfield_update)
             layout.addWidget(textfield)
             self._motor_controller_text_fields[motor_name] = textfield
@@ -217,10 +206,11 @@ class RecordUI(Plugin):
         """
         Loads the motors into the tree and adds the checkboxes
         """
+
         # Create a recursive function to build the tree
-        def build_widget_tree(parent, hirarchy: dict) -> None:
+        def build_widget_tree(parent, hierarchy: dict) -> None:
             # Iterate over all elements in the hirarchy
-            for key, value in hirarchy.items():
+            for key, value in hierarchy.items():
                 # If the element is a dict, create a new group in the tree
                 if isinstance(value, dict):
                     # Create a new group in the tree
@@ -232,11 +222,16 @@ class RecordUI(Plugin):
                     build_widget_tree(child, value)
                 # If the element is a list we are at the lowest level of the hirarchy and add the motors
                 elif isinstance(value, list):
+                    # Create a new group in the tree
+                    child = QTreeWidgetItem(parent)
+                    child.setText(0, key)
+                    child.setFlags(child.flags() | Qt.ItemIsTristate | Qt.ItemIsUserCheckable)
+                    child.setExpanded(True)
                     for motor_name in value:
                         # Add motor enable checkbox
-                        enable_checkbox = QTreeWidgetItem(parent)
+                        enable_checkbox = QTreeWidgetItem(child)
                         enable_checkbox.setText(0, motor_name)
-                        enable_checkbox.setFlags(enable_checkbox.flags() | Qt.ItemIsUserCheckable)
+                        enable_checkbox.setFlags(enable_checkbox.flags() | Qt.ItemIsTristate | Qt.ItemIsUserCheckable)
                         enable_checkbox.setCheckState(0, Qt.Checked)
                         enable_checkbox.setExpanded(True)
                         self._motor_switcher_active_checkbox[motor_name] = enable_checkbox
@@ -244,7 +239,7 @@ class RecordUI(Plugin):
                         # Put a torque checkbox below the motor enable checkbox
                         torque_checkbox = QTreeWidgetItem(enable_checkbox)
                         torque_checkbox.setText(0, "Torque")
-                        torque_checkbox.setFlags(torque_checkbox.flags() | Qt.ItemIsUserCheckable)
+                        torque_checkbox.setFlags(torque_checkbox.flags() | Qt.ItemIsTristate | Qt.ItemIsUserCheckable)
                         torque_checkbox.setCheckState(0, Qt.Checked)
                         self._motor_switcher_torque_checkbox[motor_name] = torque_checkbox
                 else:
@@ -252,6 +247,7 @@ class RecordUI(Plugin):
 
         # Build the tree
         build_widget_tree(self._widget.motorTree, self._motor_hierarchy)
+        self._widget.motorTree.setHeaderLabel("Active / Stiff Motors")
 
         # Register hook that executes our callback when the user clicks on a checkbox
         self._widget.motorTree.itemClicked.connect(self.react_to_motor_selection)
@@ -318,7 +314,9 @@ class RecordUI(Plugin):
             sure = QMessageBox.question(self._widget, "Sure?", message, QMessageBox.Yes | QMessageBox.No)
             if sure == QMessageBox.Yes:
                 # Create a new recorder (deletes all states and starts from scratch)
-                self._recorder = Recorder(self._node, self.animation_client, self.add_animation_client)
+                self._recorder = Recorder(
+                    self._node, self.animation_client, self.add_animation_client, self.hcm_record_mode_client
+                )
                 self.update_frames()
 
     def save(self, new_location: bool = False) -> None:
@@ -367,7 +365,7 @@ class RecordUI(Plugin):
             return
 
         # Load the animation
-        status = self._recorder.load_animation(my_file)
+        status = self._recorder.load_animation(my_file[0])
 
         # Update the UI
         if status == "":
@@ -391,8 +389,10 @@ class RecordUI(Plugin):
         """
         Plays the animation
         """
-        status = self._recorder.play()
+        status, success = self._recorder.play()
         self._widget.statusBar.showMessage(status)
+        if not success:
+            QMessageBox.warning(self._widget, "Warning", status)
 
     def play_until(self):
         """
@@ -402,7 +402,9 @@ class RecordUI(Plugin):
         end_index = self._recorder.get_keyframe_index(self._selected_frame) + 1
 
         # Play the animation
-        self._recorder.play(until_frame=end_index)
+        status, success = self._recorder.play(until_frame=end_index)
+        if not success:
+            QMessageBox.warning(self._widget, "Warning", status)
 
     def goto_frame(self):
         """
@@ -506,7 +508,7 @@ class RecordUI(Plugin):
 
     def undo(self):
         """
-        Undos the previous action
+        Undo the previous action
         """
         status = self._recorder.undo()
         self._widget.statusBar.showMessage(status)
@@ -537,74 +539,64 @@ class RecordUI(Plugin):
 
     def frame_select(self):
         """
-        Loads all information on a specific frame into the working values, if the frame selection changes
+        Gets called when a frame is selected in the list of frames
         """
         # Check if a frame is selected at all
         if self._widget.frameList.currentItem() is not None:
             # Get the selected frame
             selected_frame_name = self._widget.frameList.currentItem().text()
             selected_frame = self._recorder.get_keyframe(selected_frame_name)
-            assert selected_frame is not None, "Selected frame not found in list of keyframes"
-            # Update state so we have a new selected frame
-            self._selected_frame = selected_frame_name
+            if selected_frame is not None:
+                # Update state so we have a new selected frame
+                self._selected_frame = selected_frame_name
 
-            # Update the name
-            self._widget.lineFrameName.setText(self._selected_frame)
+        # Update the UI
+        self.react_to_frame_change()
 
-            # Update what motors are active, what are stiff and set the angles accordingly
-            for motor_name in self.motors:
-                # Update checkbox if the motor is active or not
-                active = motor_name in selected_frame["goals"]
-                self._motor_switcher_active_checkbox[motor_name].setCheckState(
-                    0, Qt.Checked if active else Qt.Unchecked
-                )
-
-                # Update checkbox if the motor is stiff or not
-                stiff = "torques" not in selected_frame or (
-                    motor_name in selected_frame["torques"] and bool(selected_frame["torques"][motor_name])
-                )
-                self._motor_switcher_torque_checkbox[motor_name].setCheckState(0, Qt.Checked if stiff else Qt.Unchecked)
-
-                # Update the motor angle controls (value and active state)
-                if active:
-                    self._motor_controller_sliders[motor_name].setValue(
-                        math.degrees(selected_frame["goals"][motor_name])
-                    )
-                    self._motor_controller_text_fields[motor_name].setText(
-                        str(math.degrees(selected_frame["goals"][motor_name]))
-                    )
-                else:
-                    self._motor_controller_sliders[motor_name].setValue(0)
-                    self._motor_controller_text_fields[motor_name].setText("0")
-
-            # Update the duration and pause
-            self._widget.spinBoxDuration.setValue(selected_frame["duration"])
-            self._widget.spinBoxPause.setValue(selected_frame["pause"])
-
-            self.react_to_motor_selection()
-
-    def slider_update(self):
+    def react_to_frame_change(self):
         """
-        Get the angle from the slider and update the textfield and working values
+        Updates the UI when the frame changes
         """
-        for motor_name, slider in self._motor_controller_sliders.items():
-            # Get the angle from the slider
-            angle = math.radians(slider.value())
-            # Clip the angle to the maximum and minimum
-            angle = max(-math.pi, min(math.pi, angle))
-            # Set the angle in the textfield
-            self._motor_controller_text_fields[motor_name].setText(str(math.degrees(angle)))
-            # Set the angle in the working values
-            self._working_angles[motor_name] = angle
+        # Get the selected frame
+        selected_frame = self._recorder.get_keyframe(self._selected_frame)
+
+        # Update the name
+        self._widget.lineFrameName.setText(self._selected_frame)
+
+        # Update what motors are active, what are stiff and set the angles accordingly
+        for motor_name in self.motors:
+            # Update checkbox if the motor is active or not
+            active = motor_name in selected_frame["goals"]
+            self._motor_switcher_active_checkbox[motor_name].setCheckState(0, Qt.Checked if active else Qt.Unchecked)
+
+            # Update checkbox if the motor is stiff or not
+            stiff = "torques" not in selected_frame or (
+                motor_name in selected_frame["torques"] and bool(selected_frame["torques"][motor_name])
+            )
+            self._motor_switcher_torque_checkbox[motor_name].setCheckState(0, Qt.Checked if stiff else Qt.Unchecked)
+
+            # Update the motor angle controls (value and active state)
+            if active:
+                self._motor_controller_text_fields[motor_name].setText(
+                    str(round(math.degrees(selected_frame["goals"][motor_name]), 4))
+                )
+            else:
+                self._motor_controller_text_fields[motor_name].setText("0.0")
+
+        # Update the duration and pause
+        self._widget.spinBoxDuration.setValue(selected_frame["duration"])
+        self._widget.spinBoxPause.setValue(selected_frame["pause"])
+
+        self.react_to_motor_selection()
 
     def textfield_update(self):
         """
-        If the textfield is updated, update the slider and working values
+        If the textfield is updated, update working values
         """
         for motor_name, text_field in self._motor_controller_text_fields.items():
             try:
                 # Get the angle from the textfield
-                angle = math.radians(float(text_field.text()))
+                angle = float(text_field.text())
             except ValueError:
                 # Display QMessageBox stating that the value is not a number
                 QMessageBox.warning(
@@ -613,12 +605,14 @@ class RecordUI(Plugin):
                     f"Please enter a valid number.\n '{text_field.text()}' is not a valid number.",
                 )
                 return
-            # Clip the angle to the maximum and minimum
-            angle = max(-math.pi, min(math.pi, angle))
-            # Set the angle in the slider
-            self._motor_controller_sliders[motor_name].setValue(math.degrees(angle))
+            # Clip the angle to the maximum and minimum, we do this in degrees,
+            # because we do not want introduce rounding errors in the textfield
+            angle = round(max(-180.0, min(angle, 180.0)), 4)
+            # Set the angle in the textfield
+            if float(text_field.text()) != float(angle):
+                text_field.setText(str(angle))
             # Set the angle in the working values
-            self._working_angles[motor_name] = angle
+            self._working_angles[motor_name] = math.radians(angle)
 
     def react_to_motor_selection(self):
         """
@@ -630,7 +624,6 @@ class RecordUI(Plugin):
             active = self._motor_switcher_active_checkbox[motor_name].checkState(0) == 2
             # Enable or disable the motor controls
             self._motor_controller_text_fields[motor_name].setEnabled(active)
-            self._motor_controller_sliders[motor_name].setEnabled(active)
             # Pull working values from from the joint states if the motor is not active
             if not active and motor_name in self._joint_states.name:
                 self._working_angles[motor_name] = self._joint_states.position[
@@ -661,23 +654,33 @@ class RecordUI(Plugin):
 
     def update_frames(self) -> None:
         """
-        Updates the list of frames present in the current animation
+        Updates the list of frames in the GUI based on the keyframes in the recorder
         """
         # Get the current state of the recorder and the index of the selected frame
         keyframes = self._recorder.get_keyframes()
         index = self._recorder.get_keyframe_index(self._selected_frame)
 
+        # Check if the selected frame is still in the list of frames
+        if index is None:
+            # If it is not, select the first frame
+            index = 0
+            self._selected_frame = keyframes[index]["name"]
+            print(f"Selected frame {self._selected_frame}")
+
         # Clear the list of frames
         self._widget.frameList.clear()
 
         # Add all frames to the list
-        for i, frame in enumerate(keyframes):
+        for frame in keyframes:
             item = QListWidgetItem()
             item.setText(frame["name"])
             self._widget.frameList.addItem(item)
 
         # Select the correct frame
-        self._widget.frameList.setCurrentIndex(index)
+        self._widget.frameList.setCurrentRow(index)
+
+        # Variables depending on the frame selection
+        self.react_to_frame_change()
 
     def change_keyframe_order(self, new_order):
         """Calls the recorder to update frame order and updates the gui"""
@@ -685,9 +688,8 @@ class RecordUI(Plugin):
         self.update_frames()
 
     def shutdown_plugin(self):
-        """Clean up by sending the HCM a signal that we are no longer recording"""
-        self._joint_pub.publish(JointCommand())
-        time.sleep(0.5)
+        """Clean up by sending the HCM that we are not in record mode anymore"""
+        self.hcm_record_mode_client.call(SetBool.Request(data=False))
 
 
 def main():

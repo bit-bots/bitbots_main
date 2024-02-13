@@ -49,7 +49,6 @@ class HCM_CPP : public rclcpp::Node {
     last_kick_time_ = builtin_interfaces::msg::Time();
 
     // Animation state
-    record_active_ = false;
     external_animation_running_ = false;
     animation_requested_ = false;
     last_animation_goal_time_ = builtin_interfaces::msg::Time();
@@ -113,11 +112,12 @@ class HCM_CPP : public rclcpp::Node {
       } else {
         // Coming from outside
         // Check if we can run an animation now
-        if (current_state_ != bitbots_msgs::msg::RobotControlState::CONTROLLABLE) {
-          RCLCPP_WARN(this->get_logger(), "HCM is not controllable, animation refused.");
-        } else {
+        if (current_state_ == bitbots_msgs::msg::RobotControlState::CONTROLLABLE ||
+            current_state_ == bitbots_msgs::msg::RobotControlState::RECORD) {
           // We're already controllable, go to animation running
           external_animation_running_ = true;
+        } else {
+          RCLCPP_WARN(this->get_logger(), "HCM is not controllable, animation refused.");
         }
       }
     }
@@ -142,7 +142,8 @@ class HCM_CPP : public rclcpp::Node {
     if (msg.position.points.size() > 0 && (current_state_ == bitbots_msgs::msg::RobotControlState::CONTROLLABLE ||
                                            current_state_ == bitbots_msgs::msg::RobotControlState::ANIMATION_RUNNING ||
                                            current_state_ == bitbots_msgs::msg::RobotControlState::FALLING ||
-                                           current_state_ == bitbots_msgs::msg::RobotControlState::FALLEN)) {
+                                           current_state_ == bitbots_msgs::msg::RobotControlState::FALLEN ||
+                                           current_state_ == bitbots_msgs::msg::RobotControlState::RECORD)) {
       bitbots_msgs::msg::JointCommand out_msg = bitbots_msgs::msg::JointCommand();
       out_msg.positions = msg.position.points[0].positions;
       out_msg.joint_names = msg.position.joint_names;
@@ -191,11 +192,7 @@ class HCM_CPP : public rclcpp::Node {
   }
 
   void record_goal_callback(const bitbots_msgs::msg::JointCommand msg) {
-    if (msg.joint_names.size() == 0) {
-      // record tells us that its finished
-      record_active_ = false;
-    } else {
-      record_active_ = true;
+    if (msg.joint_names.size() == 0 && current_state_ == bitbots_msgs::msg::RobotControlState::RECORD) {
       pub_controller_command_->publish(msg);
     }
   }
@@ -231,7 +228,6 @@ class HCM_CPP : public rclcpp::Node {
         ros2_python_extension::toPython<builtin_interfaces::msg::Time>(last_walking_time_));
     hcm_py_.attr("set_last_kick_goal_time")(
         ros2_python_extension::toPython<builtin_interfaces::msg::Time>(last_kick_time_));
-    hcm_py_.attr("set_record_active")(record_active_);
     hcm_py_.attr("set_external_animation_running")(external_animation_running_);
     hcm_py_.attr("set_animation_requested")(animation_requested_);
     hcm_py_.attr("set_last_animation_goal_time")(
@@ -272,7 +268,6 @@ class HCM_CPP : public rclcpp::Node {
   builtin_interfaces::msg::Time last_kick_time_;
 
   // Animation states
-  bool record_active_;
   bool external_animation_running_;
   bool animation_requested_;
   builtin_interfaces::msg::Time last_animation_goal_time_;

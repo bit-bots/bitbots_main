@@ -7,9 +7,11 @@ from copy import deepcopy
 from datetime import datetime
 from typing import Optional
 
+import regex as re
 from rclpy.action import ActionClient
 from rclpy.client import Client as ServiceClient
 from rclpy.node import Node
+from std_srvs.srv import SetBool
 
 from bitbots_msgs.action import PlayAnimation
 from bitbots_msgs.srv import AddAnimation
@@ -30,14 +32,21 @@ class AnimationData:
 
 
 class Recorder:
-    def __init__(self, node: Node, animation_action_client: ActionClient, add_animation_client: ServiceClient):
+    def __init__(
+        self,
+        node: Node,
+        animation_action_client: ActionClient,
+        add_animation_client: ServiceClient,
+        hcm_record_mode_client: ServiceClient,
+    ):
         self._node = node
-        self.steps: list[tuple[AnimationData, str]] = []
+        self.steps: list[tuple[AnimationData, str, bool]] = []
         self.redo_steps: list[tuple[AnimationData, str, AnimationData]] = []
         self.current_state = AnimationData()
         self.animation_client = animation_action_client
         self.add_animation_client = add_animation_client
-        self.save_step("Initial step")
+        self.hcm_record_mode_client = hcm_record_mode_client
+        self.save_step("Initial step", frozen=True)
 
     def get_keyframes(self) -> list[dict]:
         """
@@ -83,7 +92,7 @@ class Recorder:
         self.current_state.author = author
         self.current_state.description = description
 
-    def save_step(self, description, state=None):
+    def save_step(self, description: str, state: Optional[dict] = None, frozen: bool = False) -> None:
         """Save the current state of the Animation
         for later restoration by the undo-command
 
@@ -93,51 +102,39 @@ class Recorder:
 
         :param description: A string describing the saved action for the user
         :param state: a AnimState can be given otherwise the current one is used
+        :param frozen: if True, the step cannot be undone
         """
 
         self._node.get_logger().debug(f"Saving step: {description}")
         if not state:
             state = deepcopy(self.current_state)
-        self.steps.append((state, description))
+        self.steps.append((state, description, frozen))
 
-    def undo(self, amount: int = 1) -> str:
-        """Undo <amount> of steps or the last Step if omitted"""
-        if amount > len(self.steps) or self.steps[-1][1] == "Initial step":
-            self._node.get_logger().warn("I cannot undo what did not happen!")
-            return "I cannot undo what did not happen!"
-        if amount == 1:
-            state, description = self.steps.pop()
-            self.redo_steps.append((state, description, self.current_state))
-            self._node.get_logger().info(f"Undoing: {description}")
-            if self.steps:
-                state, description = self.steps[-1]
-                self.current_state = state
-                self._node.get_logger().info(f"Last noted action: {description}")
-                return f"Undoing. Last noted action: {description}"
-            else:
-                self._node.get_logger().info("There are no previously noted steps")
-                return "Undoing. There are no more previous steps."
-        else:
-            self._node.get_logger().info(f"Undoing {amount} steps")
-            state, description = self.steps[-amount]
+    def undo(self) -> str:
+        """Undo the last Step if omitted"""
+        if self.steps[-1][2]:
+            self._node.get_logger().warn("Reaching frozen step (e.g. the initial state). Cannot undo further!")
+            return "Reaching frozen step (e.g. the initial state). Cannot undo further!"
+        state, description, _ = self.steps.pop()
+        self.redo_steps.append((state, description, self.current_state))
+        self._node.get_logger().info(f"Undoing: {description}")
+        if self.steps:
+            state, description, _ = self.steps[-1]
             self.current_state = state
-            self.redo_steps = self.steps[-amount:].reverse()
-            self.steps = self.steps[:-amount]
-            return f"Undoing {amount} steps"
+            self._node.get_logger().info(f"Last noted action: {description}")
+            return f"Undoing. Last noted action: {description}"
+        else:
+            self._node.get_logger().info("There are no previously noted steps")
+            return "Undoing. There are no more previous steps."
 
-    def redo(self, amount: int = 1) -> str:
-        """Redo <amount> of steps, or the last step if omitted"""
+    def redo(self) -> str:
+        """Redo the last step if omitted"""
         post_state = None
         if not self.redo_steps:
             self._node.get_logger().warn("Cannot redo what was not undone!")
             return "Cannot redo what was not undone!"
-        if amount < 0:
-            self._node.get_logger().warn("Amount cannot be negative! (What where you even thinking?)")
-            return "Amount cannot be negative! (What where you even thinking?)"
-        while amount and self.redo_steps:
-            pre_state, description, post_state = self.redo_steps.pop()
-            self.steps.append((pre_state, description))
-            amount -= 1
+        pre_state, description, post_state = self.redo_steps.pop()
+        self.steps.append((pre_state, description, False))
         self.current_state = post_state
         self._node.get_logger().info(f"Last noted step is now: {self.steps[-1][1]}")
         return f"Last noted step is now: {self.steps[-1][1]}"
@@ -151,6 +148,7 @@ class Recorder:
         pause: float,
         seq_pos: Optional[int] = None,
         override: bool = False,
+        frozen: bool = False,
     ):
         """Record Command, save current keyframe-data
 
@@ -161,18 +159,19 @@ class Recorder:
         :param pause: We pause for this amount of time after the frame
         :param seq_pos: The position in the sequence where the frame should be inserted
         :param override: Wether or not to override the frame at the given position
+        :param frozen: if True, the step cannot be undone
         """
         frame = {"name": frame_name, "duration": duration, "pause": pause, "goals": motor_pos, "torque": motor_torque}
         new_frame = deepcopy(frame)
         if seq_pos is None:
             self.current_state.key_frames.append(new_frame)
-            self.save_step(f"Appending new keyframe '{frame_name}'")
+            self.save_step(f"Appending new keyframe '{frame_name}'", frozen=frozen)
         elif not override:
             self.current_state.key_frames.insert(seq_pos, new_frame)
-            self.save_step(f"Inserting new keyframe '{frame_name}' at position {seq_pos}")
+            self.save_step(f"Inserting new keyframe '{frame_name}' at position {seq_pos}", frozen=frozen)
         else:
             self.current_state.key_frames[seq_pos] = new_frame
-            self.save_step(f"Overriding keyframe at position {seq_pos} with '{frame_name}'")
+            self.save_step(f"Overriding keyframe at position {seq_pos} with '{frame_name}'", frozen=frozen)
         return True
 
     def save_animation(self, path: str, file_name: Optional[str] = None) -> None:
@@ -233,11 +232,16 @@ class Recorder:
 
         # Set the current state to the loaded animation
         self.current_state.key_frames = data["keyframes"]
+        self.current_state.name = data["name"]
+        self.current_state.version = data["version"] if "version" in data else 0
+        self.current_state.last_edited = data["last_edited"] if "last_edited" in data else datetime.now().isoformat(" ")
+        self.current_state.author = data["author"] if "author" in data else "Unknown"
+        self.current_state.description = data["description"] if "description" in data else ""
 
         # Save the current state
         self.save_step(f"Loading of animation named '{data['name']}'")
 
-    def play(self, from_frame: int = 0, until_frame: Optional[int] = None) -> str:
+    def play(self, from_frame: int = 0, until_frame: Optional[int] = None) -> tuple[str, bool]:
         """Plays (a range of) the current animation using the animation server
 
         :param from_frame: the keyframe from which the animation should be played
@@ -246,7 +250,7 @@ class Recorder:
         if not self.current_state.key_frames:
             msg = "Refusing to play, because nothing to play exists!"
             self._node.get_logger().warn(msg)
-            return msg
+            return msg, False
 
         if until_frame is None:
             # Play complete animation
@@ -288,7 +292,7 @@ class Recorder:
         # Wait for the service to be available before sending the animation
         if not self.add_animation_client.wait_for_service(timeout_sec=2):
             self._node.get_logger().error("Add Animation Service not available! Is the animation server running?")
-            return "Add Animation Service not available! Is the animation server running?"
+            return "Add Animation Service not available! Is the animation server running?", False
 
         # Create a request to add the animation
         request = AddAnimation.Request()
@@ -297,18 +301,25 @@ class Recorder:
         # Send the request to the service (blocking to make sure the animation is added before playing it)
         self.add_animation_client.call(request)
 
+        # Set the HCM into record mode
+        if self.hcm_record_mode_client.wait_for_service(timeout_sec=2):
+            self.hcm_record_mode_client.call(SetBool.Request(data=True))
+        else:
+            self._node.get_logger().error(
+                "HCM Record Mode Service not available! Is the HCM running? The animation might not be played if the HCM is not in record mode."
+            )
+
         # Wait for animation action server to be available
         if not self.animation_client.wait_for_server(timeout_sec=2):
             self._node.get_logger().error("Animation Action Server not available! Is the animation server running?")
-            return "Animation Action Server not available! Is the animation server running?"
+            return "Animation Action Server not available! Is the animation server running?", False
 
         # Create a goal to play the animation
         goal = PlayAnimation.Goal()
         goal.animation = tmp_animation_name
-        goal.hcm = True  # force TODO check that
         self.animation_client.send_goal_async(goal)  # TODO maybe handle result or status
 
-        return f"Playing {len(animation_dict['keyframes'])} frames..."
+        return f"Playing {len(animation_dict['keyframes'])} frames...", True
 
     def change_frame_order(self, new_order: list[str]) -> None:
         """Changes the order of the frames given an array of frame names"""
@@ -321,9 +332,22 @@ class Recorder:
         """
         Duplicates a frame
         """
+        # Get the index of the frame
         index = self.get_keyframe_index(frame_name)
         assert index is not None, "The given frame name does not exist"
-        self.current_state.key_frames.insert(index + 1, deepcopy(self.get_keyframe(frame_name)))
+        # Create a deep copy of the frame
+        new_frame = deepcopy(self.get_keyframe(frame_name))
+        # Add suffix to the frame name if it already exists and increment the number instead of making it longer
+        while new_frame["name"] in [frame["name"] for frame in self.current_state.key_frames]:
+            # Check if the frame name ends with "_copy_" and a number, if so increment the number
+            if re.match(r".*?_copy_(\d+)", new_frame["name"]):
+                new_frame["name"] = re.sub(
+                    r"(_copy_)(\d+)", lambda m: f"{m.group(1)}{int(m.group(2)) + 1}", new_frame["name"]
+                )
+            else:
+                new_frame["name"] = f"{frame_name}_copy_1"
+        # Insert the new frame after the original frame
+        self.current_state.key_frames.insert(index + 1, new_frame)
         self.save_step(f"Duplicated Frame '{frame_name}'")
 
     def delete(self, frame_name: str) -> None:
