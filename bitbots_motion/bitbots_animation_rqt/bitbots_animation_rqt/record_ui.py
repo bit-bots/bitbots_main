@@ -59,9 +59,7 @@ class RecordUI(Plugin):
         self.hcm_record_mode_client = self._node.create_client(SetBool, "record_mode")
 
         # Initialize the recorder module
-        self._recorder = Recorder(
-            self._node, self.animation_client, self.add_animation_client, self.hcm_record_mode_client
-        )
+        self.create_initialized_recorder()
 
         # Initialize the window
         self._widget = QMainWindow()
@@ -72,7 +70,6 @@ class RecordUI(Plugin):
 
         # Initialize the GUI state
         self._motor_controller_text_fields = {}
-        self._selected_frame: str = "start frame"
         self._joint_states = JointState()
 
         # Initialize the working values
@@ -146,9 +143,6 @@ class RecordUI(Plugin):
             name=self.motors,
             position=[0.0] * len(self.motors),
         )
-
-        # Add an initial keyframe to the recorder (it has no motors active, but serves as a starting point)
-        self._recorder.record({}, {}, self._selected_frame, 1.0, 0.0, frozen=True)
 
         # Create GUI components
         self.create_motor_controller()
@@ -314,10 +308,21 @@ class RecordUI(Plugin):
             sure = QMessageBox.question(self._widget, "Sure?", message, QMessageBox.Yes | QMessageBox.No)
             if sure == QMessageBox.Yes:
                 # Create a new recorder (deletes all states and starts from scratch)
-                self._recorder = Recorder(
-                    self._node, self.animation_client, self.add_animation_client, self.hcm_record_mode_client
-                )
+                self.create_initialized_recorder()
                 self.update_frames()
+
+    def create_initialized_recorder(self) -> None:
+        """
+        Creates a new recorder and adds an initial keyframe to it
+        """
+        # Create a new recorder (deletes all states and starts from scratch)
+        self._recorder = Recorder(
+            self._node, self.animation_client, self.add_animation_client, self.hcm_record_mode_client
+        )
+        # Find a name for the first keyframe
+        self._selected_frame = "start frame"
+        # Add an initial keyframe to the recorder (it has no motors active, but serves as a starting point)
+        self._recorder.record({}, {}, self._selected_frame, 1.0, 0.0, frozen=True)
 
     def save(self, new_location: bool = False) -> None:
         """
@@ -493,7 +498,12 @@ class RecordUI(Plugin):
 
         # Record the frame
         self._recorder.record(
-            self._working_angles,
+            # Only record the active motors
+            {
+                motor_name: self._working_angles[motor_name]
+                for motor_name in self.motors
+                if self._motor_switcher_active_checkbox[motor_name].checkState(0) == 2
+            },
             {motor_name: self._motor_switcher_torque_checkbox[motor_name].checkState(0) for motor_name in self.motors},
             new_name,
             self._widget.spinBoxDuration.value(),
