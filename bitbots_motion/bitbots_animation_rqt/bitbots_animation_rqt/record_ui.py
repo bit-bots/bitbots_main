@@ -8,6 +8,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import (
     QAbstractItemView,
+    QCheckBox,
     QFileDialog,
     QGroupBox,
     QLabel,
@@ -28,7 +29,7 @@ from sensor_msgs.msg import JointState
 from std_srvs.srv import SetBool
 
 from bitbots_animation_rqt.animation_recording import Recorder
-from bitbots_animation_rqt.utils import DragDropList
+from bitbots_animation_rqt.utils import DragDropList, flatten_dict_of_lists
 from bitbots_msgs.action import PlayAnimation
 from bitbots_msgs.msg import JointCommand, JointTorque
 from bitbots_msgs.srv import AddAnimation
@@ -82,7 +83,7 @@ class RecordUI(Plugin):
 
         # Initialize the motor tree structure where we can select which motors are stiff
         self._motor_switcher_active_checkbox: dict[str, QTreeWidgetItem] = {}
-        self._motor_switcher_torque_checkbox: dict[str, QTreeWidgetItem] = {}
+        self._motor_controller_torque_checkbox: dict[str, QTreeWidgetItem] = {}
 
         # Motor hierarchy
         self._motor_hierarchy = {  # TODO this should be a parameter / loaded from the urdf
@@ -120,6 +121,7 @@ class RecordUI(Plugin):
                 },
             }
         }
+        self._motor_hierarchy_flat = flatten_dict_of_lists(self._motor_hierarchy)
 
         # Create drag and dop list for keyframes
         self._widget.frameList = DragDropList(self._widget, self.change_keyframe_order)
@@ -175,11 +177,13 @@ class RecordUI(Plugin):
         Sets up the GUI in the middle of the Screen to control the motors.
         Uses self._motorValues to determine which motors are present.
         """
-        # Iterate over all motors
-        for i, motor_name in enumerate(sorted(self.motors)):
+        # Iterate over all motors (we iterate over the flat hierarchy to get the correct order of the motors)
+        for i, motor_name in enumerate(self._motor_hierarchy_flat.values()):
             # Create a group of UI elements for each motor
             group = QGroupBox()
             layout = QVBoxLayout()
+            # Horizontally center the group
+            layout.setAlignment(Qt.AlignHCenter)
             # Create a label for the motor name
             label = QLabel()
             label.setText(motor_name)
@@ -192,7 +196,15 @@ class RecordUI(Plugin):
             layout.addWidget(textfield)
             self._motor_controller_text_fields[motor_name] = textfield
 
+            # Put a torque checkbox below the motor enable checkbox
+            torque_checkbox = QCheckBox()
+            torque_checkbox.setText("Torque")
+            torque_checkbox.setCheckState(Qt.Checked)
+            layout.addWidget(torque_checkbox)
+            self._motor_controller_torque_checkbox[motor_name] = torque_checkbox
+
             # Add the layout to the group and the group to the main layout (at the correct position in the 5 x n grid)
+            layout.setAlignment(Qt.AlignCenter)
             group.setLayout(layout)
             self._widget.motorControlLayout.addWidget(group, i // 5, i % 5)
 
@@ -229,19 +241,12 @@ class RecordUI(Plugin):
                         enable_checkbox.setCheckState(0, Qt.Checked)
                         enable_checkbox.setExpanded(True)
                         self._motor_switcher_active_checkbox[motor_name] = enable_checkbox
-
-                        # Put a torque checkbox below the motor enable checkbox
-                        torque_checkbox = QTreeWidgetItem(enable_checkbox)
-                        torque_checkbox.setText(0, "Torque")
-                        torque_checkbox.setFlags(torque_checkbox.flags() | Qt.ItemIsTristate | Qt.ItemIsUserCheckable)
-                        torque_checkbox.setCheckState(0, Qt.Checked)
-                        self._motor_switcher_torque_checkbox[motor_name] = torque_checkbox
                 else:
                     raise ValueError("Invalid hierarchy")
 
         # Build the tree
         build_widget_tree(self._widget.motorTree, self._motor_hierarchy)
-        self._widget.motorTree.setHeaderLabel("Active / Stiff Motors")
+        self._widget.motorTree.setHeaderLabel("Active Motors (for the current keyframe)")
 
         # Register hook that executes our callback when the user clicks on a checkbox
         self._widget.motorTree.itemClicked.connect(self.react_to_motor_selection)
@@ -502,9 +507,9 @@ class RecordUI(Plugin):
             {
                 motor_name: self._working_angles[motor_name]
                 for motor_name in self.motors
-                if self._motor_switcher_active_checkbox[motor_name].checkState(0) == 2
+                if self._motor_switcher_active_checkbox[motor_name].checkState(0) == Qt.CheckState.Checked
             },
-            {motor_name: self._motor_switcher_torque_checkbox[motor_name].checkState(0) for motor_name in self.motors},
+            {motor_name: self._motor_controller_torque_checkbox[motor_name].checkState() for motor_name in self.motors},
             new_name,
             self._widget.spinBoxDuration.value(),
             self._widget.spinBoxPause.value(),
@@ -588,7 +593,7 @@ class RecordUI(Plugin):
             stiff = "torques" not in selected_frame or (
                 motor_name in selected_frame["torques"] and bool(selected_frame["torques"][motor_name])
             )
-            self._motor_switcher_torque_checkbox[motor_name].setCheckState(0, Qt.Checked if stiff else Qt.Unchecked)
+            self._motor_controller_torque_checkbox[motor_name].setCheckState(Qt.Checked if stiff else Qt.Unchecked)
 
             # Update the motor angle controls (value and active state)
             if active:
@@ -636,9 +641,10 @@ class RecordUI(Plugin):
         """
         # Go through all motors
         for motor_name in self.motors:
-            active = self._motor_switcher_active_checkbox[motor_name].checkState(0) == 2
+            active = self._motor_switcher_active_checkbox[motor_name].checkState(0) == Qt.CheckState.Checked
             # Enable or disable the motor controls
             self._motor_controller_text_fields[motor_name].setEnabled(active)
+            self._motor_controller_torque_checkbox[motor_name].setEnabled(active)
             # Pull working values from from the joint states if the motor is not active
             if not active and motor_name in self._joint_states.name:
                 self._working_angles[motor_name] = self._joint_states.position[
@@ -663,7 +669,10 @@ class RecordUI(Plugin):
         self.effort_pub.publish(
             JointTorque(
                 joint_names=self.motors,
-                on=[self._motor_switcher_torque_checkbox[motor_name].checkState(0) == 2 for motor_name in self.motors],
+                on=[
+                    self._motor_controller_torque_checkbox[motor_name].checkState() == Qt.CheckState.Checked
+                    for motor_name in self.motors
+                ],
             )
         )
 
