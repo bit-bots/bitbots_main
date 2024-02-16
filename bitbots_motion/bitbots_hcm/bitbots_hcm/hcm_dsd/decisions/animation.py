@@ -23,8 +23,21 @@ class PlayingExternalAnimation(AbstractHCMDecisionElement):
     """
 
     def perform(self, reevaluate=False):
+        # Calculate time since last animation goal
+        time_delta = (
+            self.blackboard.node.get_clock().now().nanoseconds / 1e9
+            - self.blackboard.last_animation_goal_time.nanoseconds / 1e9
+        )
+
+        # Log the time delta between now and the last animation goal
+        self.publish_debug_data("Last Animation Goal Time Delta", time_delta)
+
+        # Check if the robot is currently playing an animation
         if self.blackboard.external_animation_running:
-            return "ANIMATION_RUNNING"
+            if time_delta < 0.1:
+                return "ANIMATION_RUNNING"
+            else:
+                return "ANIMATION_SERVER_TIMEOUT"
         else:
             return "FREE"
 

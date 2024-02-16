@@ -57,7 +57,6 @@ class HcmBlackboard:
 
         # Animation
         # Animation states
-        self.animation_requested: bool = False
         self.external_animation_running: bool = False
         self.last_animation_goal_time: Time = self.node.get_clock().now()
         self.record_active: bool = False

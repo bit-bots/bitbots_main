@@ -86,11 +86,12 @@ class HardwareControlManager:
 
         # Create services
         self.node.create_service(SetBool, "record_mode", self.set_record_active)
+        self.node.create_service(SetBool, "play_animation_mode", self.set_animation_mode)
 
         # Store time of the last tick
         self.last_tick_start_time = self.node.get_clock().now()
 
-        # Anounce the HCM startup
+        # Announce the HCM startup
         speak("Starting HCM", self.blackboard.speak_publisher, priority=50)
 
     def tick(self):
@@ -146,8 +147,28 @@ class HardwareControlManager:
 
     # The following methods are used to set the blackboard values from the cpp part
 
-    def set_animation_requested(self, animation_requested: bool):
-        self.blackboard.animation_requested = animation_requested
+    def set_animation_mode(self, request: SetBool.Request, response: SetBool.Response):
+        # Check if the robot is in a state where it is allowed to play animations
+        if request.data:  # We want to go into the animation mode
+            if self.blackboard.current_state in [RobotControlState.CONTROLLABLE, RobotControlState.RECORD]:
+                self.set_external_animation_running(True)
+                response.success = True
+                response.message = "Robot is now in animation mode, have fun!"
+                return response
+            else:
+                response.success = False
+                response.message = "Robot is not in a state where it is allowed to play new animations"
+                return response
+        else:  # We want to go out of the animation mode
+            if self.blackboard.current_state in [RobotControlState.ANIMATION_RUNNING, RobotControlState.RECORD]:
+                self.set_external_animation_running(False)
+                response.success = True
+                response.message = "Animation stopped successfully"
+                return response
+            else:
+                response.success = False
+                response.message = "Robot is not in a state where it is allowed to stop animations"
+                return response
 
     def set_external_animation_running(self, running: bool):
         self.blackboard.external_animation_running = running

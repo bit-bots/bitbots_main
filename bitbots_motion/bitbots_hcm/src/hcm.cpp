@@ -50,7 +50,6 @@ class HCM_CPP : public rclcpp::Node {
 
     // Animation state
     external_animation_running_ = false;
-    animation_requested_ = false;
     last_animation_goal_time_ = builtin_interfaces::msg::Time();
 
     // Initialize HCM logic
@@ -93,75 +92,16 @@ class HCM_CPP : public rclcpp::Node {
 
   void animation_callback(bitbots_msgs::msg::Animation msg) {
     // The animation server is sending us goal positions for the next keyframe
-    last_animation_goal_time_ = msg.header.stamp;
-
-    // Check if the message is an animation request
-    if (msg.request) {
-      RCLCPP_INFO(this->get_logger(), "Got Animation request. HCM will try to get controllable now.");
-      // Animation has to wait
-      // DSD should try to become controllable
-      animation_requested_ = true;
-      return;
-    }
-
-    // Check if the message is the start of an animation
-    if (msg.first) {
-      if (msg.hcm) {
-        // This was an animation from the DSD
-        // We don't have to do anything, since we must be in the right state
-      } else {
-        // Coming from outside
-        // Check if we can run an animation now
-        if (current_state_ == bitbots_msgs::msg::RobotControlState::CONTROLLABLE ||
-            current_state_ == bitbots_msgs::msg::RobotControlState::RECORD) {
-          // We're already controllable, go to animation running
-          external_animation_running_ = true;
-        } else {
-          RCLCPP_WARN(this->get_logger(), "HCM is not controllable, animation refused.");
-        }
-      }
-    }
-
-    // Check if the message is the end of an animation
-    if (msg.last) {
-      if (msg.hcm) {
-        // This was an animation from the DSD
-        // We don't have to do anything, since we must be in the right state
-      } else {
-        // This is the last frame, we want to tell the DSD that we're finished with the animations
-        external_animation_running_ = false;
-        if (msg.position.points.size() == 0) {
-          // Probably this was just to tell us we're finished
-          // we don't need to set another position to the motors
-          return;
-        }
-      }
-    }
+    last_animation_goal_time_ = msg.joint_command.header.stamp;
 
     // Forward joint positions to motors if there are any and we're in the right state
-    if (msg.position.points.size() > 0 && (current_state_ == bitbots_msgs::msg::RobotControlState::CONTROLLABLE ||
-                                           current_state_ == bitbots_msgs::msg::RobotControlState::ANIMATION_RUNNING ||
-                                           current_state_ == bitbots_msgs::msg::RobotControlState::FALLING ||
-                                           current_state_ == bitbots_msgs::msg::RobotControlState::FALLEN ||
-                                           current_state_ == bitbots_msgs::msg::RobotControlState::RECORD)) {
-      bitbots_msgs::msg::JointCommand out_msg = bitbots_msgs::msg::JointCommand();
-      out_msg.positions = msg.position.points[0].positions;
-      out_msg.joint_names = msg.position.joint_names;
-      int number_joints = out_msg.joint_names.size();
-      std::vector<double> values = {};
-      for (int i = 0; i < number_joints; i++) {
-        values.push_back(-1.0);
-      }
-      out_msg.accelerations = values;
-      out_msg.velocities = values;
-      out_msg.max_currents = values;
-      if (msg.position.points[0].effort.size() != 0) {
-        out_msg.max_currents = {};
-        for (int i = 0; i < msg.position.points[0].effort.size(); i++) {
-          out_msg.max_currents.push_back(msg.position.points[0].effort[i]);
-        }
-      }
-      pub_controller_command_->publish(out_msg);
+    // The right state is either one of the animation robot control states or if the animation is from the HCM
+    if (msg.joint_command.positions.size() > 0 and
+        ((current_state_ == bitbots_msgs::msg::RobotControlState::ANIMATION_RUNNING or
+          current_state_ == bitbots_msgs::msg::RobotControlState::RECORD) or
+         msg.from_hcm)) {
+      // We can forward the animation goal to the motors
+      pub_controller_command_->publish(msg.joint_command);
     }
   }
 
@@ -229,7 +169,6 @@ class HCM_CPP : public rclcpp::Node {
     hcm_py_.attr("set_last_kick_goal_time")(
         ros2_python_extension::toPython<builtin_interfaces::msg::Time>(last_kick_time_));
     hcm_py_.attr("set_external_animation_running")(external_animation_running_);
-    hcm_py_.attr("set_animation_requested")(animation_requested_);
     hcm_py_.attr("set_last_animation_goal_time")(
         ros2_python_extension::toPython<builtin_interfaces::msg::Time>(last_animation_goal_time_));
 
@@ -269,7 +208,6 @@ class HCM_CPP : public rclcpp::Node {
 
   // Animation states
   bool external_animation_running_;
-  bool animation_requested_;
   builtin_interfaces::msg::Time last_animation_goal_time_;
 
   // Publishers
