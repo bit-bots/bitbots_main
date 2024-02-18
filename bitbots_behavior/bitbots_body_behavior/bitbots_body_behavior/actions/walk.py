@@ -4,7 +4,7 @@ from rclpy.duration import Duration
 
 
 class WalkForward(AbstractActionElement):
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd)
         self.time = parameters.get("time", 0.5)
         self.start_time = self.blackboard.node.get_clock().now()

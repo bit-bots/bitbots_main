@@ -3,7 +3,7 @@ from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 
 class StartTimer(AbstractActionElement):
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
         self.blackboard: BodyBlackboard
 
@@ -20,7 +20,7 @@ class StartTimer(AbstractActionElement):
 
 
 class EndTimer(AbstractActionElement):
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
         self.blackboard: BodyBlackboard
 
