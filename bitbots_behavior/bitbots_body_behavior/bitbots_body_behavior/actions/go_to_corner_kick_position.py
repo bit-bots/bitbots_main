@@ -10,7 +10,7 @@ from tf_transformations import quaternion_from_euler
 class GoToCornerKickPosition(AbstractActionElement):
     blackboard: BodyBlackboard
 
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
 
         # optional parameter which goes into the block position at a certain distance to the ball

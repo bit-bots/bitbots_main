@@ -6,7 +6,7 @@ from tf2_geometry_msgs import PoseStamped
 class GoToRolePosition(AbstractActionElement):
     blackboard: BodyBlackboard
 
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
         role_positions = self.blackboard.config["role_positions"]
         kickoff_type = "active" if self.blackboard.gamestate.has_kickoff() else "passive"

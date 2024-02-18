@@ -10,7 +10,7 @@ from visualization_msgs.msg import Marker
 class GoToBall(AbstractActionElement):
     blackboard: BodyBlackboard
 
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
 
         if "target" not in parameters.keys():

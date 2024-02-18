@@ -5,7 +5,7 @@ from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElem
 class DribbleOrKick(AbstractDecisionElement):
     blackboard: BodyBlackboard
 
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
         self.orient_threshold = self.blackboard.config["dribble_orient_threshold"]
         self.goal_distance_threshold = self.blackboard.config["dribble_goal_distance_threshold"]

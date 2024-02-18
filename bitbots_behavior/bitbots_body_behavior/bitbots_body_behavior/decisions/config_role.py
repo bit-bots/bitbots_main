@@ -9,7 +9,7 @@ class ConfigRole(AbstractDecisionElement):
 
     blackboard: BodyBlackboard
 
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
         self.role = self.blackboard.team_data.role
 

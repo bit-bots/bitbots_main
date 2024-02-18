@@ -8,7 +8,7 @@ class AbstractChangeMotorPower(AbstractHCMActionElement):
     Switches motor power using the service call of the hardware interface.
     """
 
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
 
         # In visualization and simulation, we cannot disable motors
