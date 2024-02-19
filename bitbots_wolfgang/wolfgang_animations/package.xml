@@ -7,10 +7,10 @@
 
   <maintainer email="6stelter@informatik.uni-hamburg.de">Sebastian Stelter</maintainer>
   <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
-  
-  <author email="6stelter@informatik.uni-hamburg.de">Sebastian Stelter</author>
 
   <license>MIT</license>
+
+  <author email="6stelter@informatik.uni-hamburg.de">Sebastian Stelter</author>
 
 
   <buildtool_depend>ament_cmake</buildtool_depend>

@@ -10,11 +10,11 @@
   <maintainer email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</maintainer>
   <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
 
+  <license>MIT</license>
+
   <author email="5flemmin@informatik.uni-hamburg.de">Tanja Flemming</author>
   <author email="7engelke@informatik.uni-hamburg.de">Timon Engelke</author>
   <author email="7gutsche@informatik.uni-hamburg.de">Jan Gutsche</author>
-
-  <license>MIT</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 

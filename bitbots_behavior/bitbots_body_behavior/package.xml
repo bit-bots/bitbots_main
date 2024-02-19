@@ -7,13 +7,15 @@
         behavior of the robot including strategy decisions and
         kick or walk actions. The node controls the walking indirectly via
         /navigation_goal or directly via /cmd_vel and the head behavior
-        via /head_duty.</description>
+        via /head_duty.
+  </description>
 
   <maintainer email="5fiedler@informatik.uni-hamburg.de">Niklas Fiedler</maintainer>
   <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
-  <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
 
   <license>MIT</license>
+
+  <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
 
   <depend>bitbots_blackboard</depend>
   <depend>bitbots_msgs</depend>
