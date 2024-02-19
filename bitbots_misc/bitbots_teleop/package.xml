@@ -7,9 +7,10 @@
 
   <maintainer email="5guelden@informatik.uni-hamburg.de">Jasper Güldenstein</maintainer>
   <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
-  <author email="5guelden@informatik.uni-hamburg.de">Jasper Güldenstein</author>
-  
+
   <license>MIT</license>
+  
+  <author email="5guelden@informatik.uni-hamburg.de">Jasper Güldenstein</author>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
