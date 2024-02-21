@@ -52,23 +52,35 @@ export PROMPT="%K{black} 🐋 %K{blue}%F{black}%/ %f%k%F{blue}%f "  # Pref
 
 # Do ros2 specific things
 source /opt/ros/iron/setup.zsh &> /dev/null
+
+# Ignore some deprecation warnings
 export PYTHONWARNINGS=ignore:::setuptools.command.install,ignore:::setuptools.command.easy_install,ignore:::pkg_resources
 
+# Limit ROS 2 communication to localhost (can be overridden when needed)
 export ROS_DOMAIN_ID=24
+export ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST
 
+# Set the default colcon workspace
 export COLCON_WS="$HOME/colcon_ws"
 
+# Set the default log level for colcon
 export COLCON_LOG_LEVEL=30
 
+# Define a log layout
 export RCUTILS_COLORIZED_OUTPUT=1
 export RCUTILS_CONSOLE_OUTPUT_FORMAT="[{severity}] [{name}]: {message}"
 
+# Set the default Middleware
 export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 
+# Create a function to update the argcomplete so tab completion works
+# This needs to be called every time we source something ROS 2 related
 function update_ros2_argcomplete() {
   eval "$(register-python-argcomplete3 ros2)"
   eval "$(register-python-argcomplete3 colcon)"
 }
+
+# Update the tab completion
 update_ros2_argcomplete
 
 alias rr='ros2 run'
