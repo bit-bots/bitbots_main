@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-IMAGE_NAME=ros-iron
+IMAGE_NAME=bitbots-dev-iron
 CONTAINER_NAME=`docker ps --filter status=running --filter ancestor=$IMAGE_NAME --format "{{.Names}}"`
 
 if [[ -z $CONTAINER_NAME ]]; then

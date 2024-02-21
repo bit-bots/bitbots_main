@@ -2,7 +2,8 @@
 set -eEou pipefail
 
 IMAGE_NAME=bitbots-dev-iron
-WORKSPACE=${ROS_WORKSPACE:-$HOME}
+
+SCRIPTPATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 
 # Build the docker image
 docker build \
@@ -11,8 +12,6 @@ docker build \
   --build-arg user=$USER \
   --build-arg uid=$UID \
   --build-arg home=$HOME \
-  --build-arg workspace=$WORKSPACE \
-  --build-arg shell=$SHELL \
   -t $IMAGE_NAME \
   $@ \
-  - < Dockerfile
+  $SCRIPTPATH
