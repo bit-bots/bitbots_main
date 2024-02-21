@@ -1,4 +1,4 @@
-.PHONY : basler install install-no-root pip pre-commit install-git-filters format pull-all pull-init pull-repos pull-files fresh-libs remove-libs setup-libs rosdep status update update-no-root dev-container-build dev-container-run dev-container-clean dev-container-stop
+.PHONY : basler install install-no-root pip pre-commit install-git-filters format pull-all pull-init pull-repos pull-files fresh-libs remove-libs setup-libs rosdep status update update-no-root
 
 HTTPS := ""
 REPO:=$(dir $(abspath $(firstword $(MAKEFILE_LIST))))
@@ -88,15 +88,3 @@ status:
 update: pull-all rosdep pip install-git-filters pre-commit
 
 update-no-root: pull-all pip install-git-filters pre-commit
-
-dev-container-build:
-	 bash bitbots_misc/bitbots_containers/dev/build.bash
-
-dev-container-run:
-	 bash bitbots_misc/bitbots_containers/dev/connect.bash
-
-dev-container-clean:
-	 bash bitbots_misc/bitbots_containers/dev/clean.bash
-
-dev-container-stop:
-	 bash bitbots_misc/bitbots_containers/dev/stop.bash
