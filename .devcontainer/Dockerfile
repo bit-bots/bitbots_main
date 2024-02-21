@@ -1,10 +1,5 @@
 FROM ros:iron
 
-# Arguments
-ARG user
-ARG uid
-ARG home
-
 # Basic Utilities
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update -y \
@@ -81,27 +76,22 @@ RUN python3 -m pip install \
   git+https://github.com/timonegk/colcon-notification.git@colors \
   git+https://github.com/timonegk/colcon-output.git@colors
 
-# Clone user into docker image and set up X11 sharing
-RUN echo "${user}:x:${uid}:${uid}:${user},,,:${home}:/usr/bin/zsh" >> /etc/passwd \
-  && echo "${user}:*::0:99999:0:::" >> /etc/shadow \
-  && echo "${user}:x:${uid}:" >> /etc/group \
-  && echo "${user} ALL=(ALL) NOPASSWD: ALL" >> "/etc/sudoers"
+# Set zsh as default shell
+SHELL ["/bin/zsh", "-c"]
 
 # Create home directory and colcon workspace
-RUN mkdir -p "${home}/colcon_ws" && chown -R "${user}:${user}" "${home}"
+RUN mkdir -p "/root/colcon_ws"
 
-# Switch to user
-USER "${user}"
 
 # Install oh-my-zsh for pretty terminal
 RUN sh -c "$(wget -O- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" && \
   git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
 
 # Add zshrc
-COPY zshrc "${home}/.zshrc"
+COPY zshrc "/root/.zshrc"
 
 # This is required for sharing Xauthority
 ENV QT_X11_NO_MITSHM=1
 
 # Switch to the workspace directory
-WORKDIR "${home}/colcon_ws"
+WORKDIR "/root/colcon_ws"

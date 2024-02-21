@@ -76,8 +76,8 @@ export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 # Create a function to update the argcomplete so tab completion works
 # This needs to be called every time we source something ROS 2 related
 function update_ros2_argcomplete() {
-  eval "$(register-python-argcomplete3 ros2)"
   eval "$(register-python-argcomplete3 colcon)"
+  eval "$(register-python-argcomplete3 ros2)"
 }
 
 # Update the tab completion
