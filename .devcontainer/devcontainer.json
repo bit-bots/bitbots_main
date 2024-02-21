@@ -39,6 +39,5 @@
       "--security-opt", "seccomp=unconfined"
     ],
 
-    "postCreateCommand": "make -C $HOME/colcon_ws/src/bitbots_main install",
-    "postAttachCommand": "git config --global --add safe.directory '*'"
+    "postCreateCommand": "git config --global --add safe.directory '*' && make -C $HOME/colcon_ws/src/bitbots_main install"
   }
