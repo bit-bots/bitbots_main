@@ -1,5 +1,6 @@
 {
-    "autoDocstring.docstringFormat": "sphinx",
+    "autoDocstring.docstringFormat": "sphinx-notypes",
+    "autoDocstring.startOnNewLine": true,
     "cSpell.language": "en,de-de,lorem",
     "cSpell.words": [
         "ansible",

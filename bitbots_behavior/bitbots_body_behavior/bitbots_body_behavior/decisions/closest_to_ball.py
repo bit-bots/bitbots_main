@@ -5,7 +5,7 @@ from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElem
 class ClosestToBallNoGoalie(AbstractDecisionElement):
     blackboard: BodyBlackboard
 
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
 
     def perform(self, reevaluate=False):
@@ -24,7 +24,7 @@ class ClosestToBallNoGoalie(AbstractDecisionElement):
 class ClosestToBall(AbstractDecisionElement):
     blackboard: BodyBlackboard
 
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
 
     def perform(self, reevaluate=False):
@@ -43,7 +43,7 @@ class ClosestToBall(AbstractDecisionElement):
 class RankToBallNoGoalie(AbstractDecisionElement):
     blackboard: BodyBlackboard
 
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
 
     def perform(self, reevaluate=False):

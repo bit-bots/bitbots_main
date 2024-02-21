@@ -173,13 +173,6 @@ walking:
         bounds<>: [ 0.0, 1.0 ]
       }
     }
-    trunk_pitch_p_coef_turn: {
-      type: double,
-      description: "Trunk pitch orientation proportional to rotation step (in rad/rad)",
-      validation: {
-        bounds<>: [ -1.0, 1.0 ]
-      }
-    }
     kick_length: {
       type: double,
       description: "Length of kick movement (in meters)",

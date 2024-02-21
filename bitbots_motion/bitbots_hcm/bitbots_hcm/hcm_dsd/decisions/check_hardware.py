@@ -9,7 +9,7 @@ class CheckMotors(AbstractHCMDecisionElement):
     Needs to be checked before other sensors, since they also need the power to be able to response
     """
 
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
         self.had_problem = False
 
@@ -90,7 +90,7 @@ class CheckIMU(AbstractHCMDecisionElement):
     Since the HCM can not detect falls without it, we will shut everything down if we dont have an imu.
     """
 
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
         self.had_problem = False
 
@@ -147,7 +147,7 @@ class CheckPressureSensor(AbstractHCMDecisionElement):
     Checks connection to pressure sensors.
     """
 
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
         self.had_problem = False
 

@@ -11,7 +11,7 @@ class Fallen(AbstractHCMDecisionElement):
     Decides if the robot is fallen and lying on the ground
     """
 
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
 
         # Get parameters

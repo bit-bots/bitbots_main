@@ -7,9 +7,10 @@
 
     <maintainer email="florian.vahl@uni-hamburg.de">Florian Vahl</maintainer>
     <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
-    <author email="florian.vahl@uni-hamburg.de">Florian Vahl</author>
 
     <license>MIT</license>
+    
+    <author email="florian.vahl@uni-hamburg.de">Florian Vahl</author>
 
     <buildtool_depend>ament_cmake</buildtool_depend>
 

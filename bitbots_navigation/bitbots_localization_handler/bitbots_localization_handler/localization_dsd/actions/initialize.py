@@ -7,7 +7,7 @@ from bitbots_localization_handler.localization_dsd.actions import AbstractLocali
 
 
 class AbstractInitialize(AbstractLocalizationActionElement):
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
 
         # Save the type the instance that called super, so we know what was the last init mode
@@ -111,7 +111,7 @@ class RedoLastInit(AbstractInitialize):
     Executes an action with the type of the last action
     """
 
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
         # Creates an instance of the last init action
         self.sub_action: AbstractInitialize = self.blackboard.last_init_action_type(blackboard, dsd, parameters)

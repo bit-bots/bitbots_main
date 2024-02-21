@@ -52,7 +52,7 @@ class GoToRelativePosition(AbstractActionElement):
 class GoToAbsolutePosition(AbstractActionElement):
     blackboard: BodyBlackboard
 
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         """Go to an absolute position on the field"""
         super().__init__(blackboard, dsd)
         self.point = parameters
@@ -71,7 +71,7 @@ class GoToAbsolutePosition(AbstractActionElement):
 
 
 class GoToOwnGoal(GoToAbsolutePosition):
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         """Go to the own goal"""
         super().__init__(blackboard, dsd, parameters)
         self.point = (
@@ -82,7 +82,7 @@ class GoToOwnGoal(GoToAbsolutePosition):
 
 
 class GoToEnemyGoal(GoToAbsolutePosition):
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         """Go to the enemy goal"""
         super().__init__(blackboard, dsd, parameters)
         self.point = (
@@ -93,7 +93,7 @@ class GoToEnemyGoal(GoToAbsolutePosition):
 
 
 class GoToCenterpoint(GoToAbsolutePosition):
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         """Go to the center of the field and look towards the enemy goal"""
         super().__init__(blackboard, dsd, parameters)
         self.point = 0, 0, 0
