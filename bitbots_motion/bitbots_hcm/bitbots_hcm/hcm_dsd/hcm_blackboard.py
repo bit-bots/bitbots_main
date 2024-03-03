@@ -32,9 +32,12 @@ class HcmBlackboard:
         self.pickup_accel_threshold: float = self.node.get_parameter("pick_up_accel_threshold").value
         self.pressure_sensors_installed: bool = self.node.get_parameter("pressure_sensors_installed").value
 
-        # Create services
+        # Create service clients
         self.foot_zero_service = self.node.create_client(EmptySrv, "set_foot_zero")
         self.motor_switch_service = self.node.create_client(SetBool, "core/switch_power")
+
+        # Create services
+        self.teaching_mode_service = self.create_service(SetBool, "set_teaching_mode", self.set_teaching_mode_callback)
 
         # Create action clients and corresponding goal handles
         self.animation_action_client: ActionClient = ActionClient(self.node, PlayAnimation, "animation")
@@ -69,6 +72,9 @@ class HcmBlackboard:
         self.animation_name_falling_right: str = self.node.get_parameter("animations.falling_right").value
         self.animation_name_turning_back_left: str = self.node.get_parameter("animations.turning_back_left").value
         self.animation_name_turning_back_right: str = self.node.get_parameter("animations.turning_back_right").value
+
+        # Teaching State
+        self.teaching_mode_active: bool = False
 
         # Motor State
         self.current_joint_state: Optional[JointState] = None
@@ -112,3 +118,19 @@ class HcmBlackboard:
 
     def cancel_path_planning(self):
         self.cancel_path_planning_pub.publish(EmptyMsg())
+
+    def set_teaching_mode_callback(self, request: SetBool.Request, response: SetBool.Response) -> SetBool.Response:
+        # Check if we are able to modify the teaching mode
+        if request.data and self.current_state not in [
+            RobotControlState.CONTROLLABLE,
+            RobotControlState.PICKED_UP,
+            RobotControlState.PENALTY,
+        ]:
+            # Respond that we can not activate the teaching mode in the current state
+            response.success = False
+            return response
+
+        # Activate / Deactivate teaching mode
+        self.teaching_mode_active = request.data
+        response.success = True
+        return response
