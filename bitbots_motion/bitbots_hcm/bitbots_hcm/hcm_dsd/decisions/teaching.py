@@ -4,10 +4,11 @@ from bitbots_hcm.hcm_dsd.decisions import AbstractHCMDecisionElement
 class TeachingMode(AbstractHCMDecisionElement):
     """
     Decides if the robot is currently in teaching mode.
-    In the teaching mode the robot can be puppeteered freely. 
+    In the teaching mode the robot can be puppeteered freely.
     To do this we deactivate the torque on all motors.
     If we leave the teaching mode we activate the torque again.
     """
+
     def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
         self.last_state_on = False
@@ -27,5 +28,3 @@ class TeachingMode(AbstractHCMDecisionElement):
 
     def get_reevaluate(self):
         return True
-
-

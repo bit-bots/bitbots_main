@@ -55,7 +55,7 @@ class TeachingNode(Node):
 
 
 if __name__ == "__main__":
-    rclpy.init(args=args)
+    rclpy.init()
     node = TeachingNode()
     try:
         rclpy.spin(node)
