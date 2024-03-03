@@ -279,9 +279,7 @@ class TeamMessage:
                     ]
                     msg.ball_absolute = ball_absolute
 
-                    cartesian_distance = math.sqrt(
-                        ball_relative.pose.position.x**2 + ball_relative.pose.position.y**2
-                    )
+                    cartesian_distance = math.sqrt(ball_relative.pose.position.x**2 + ball_relative.pose.position.y**2)
                     msg.time_to_position_at_ball = cartesian_distance / ROBOT_SPEED
                 except tf2_ros.LookupException as ex:
                     self.get_logger().warn(self.get_name() + ": " + str(ex), throttle_duration_sec=10.0)

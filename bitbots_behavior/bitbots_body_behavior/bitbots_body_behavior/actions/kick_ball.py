@@ -14,7 +14,7 @@ class AbstractKickAction(AbstractActionElement):
 
 
 class KickBallStatic(AbstractKickAction):
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
         if "foot" not in parameters.keys():
             # usually, we kick with the right foot
@@ -38,7 +38,7 @@ class KickBallDynamic(AbstractKickAction):
     Kick the ball using bitbots_dynamic_kick
     """
 
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
         if parameters.get("type", None) == "penalty":
             self.penalty_kick = True

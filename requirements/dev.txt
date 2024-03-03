@@ -1,6 +1,5 @@
 # This file is used by pip to install dependencies for the development environment
 -r robot.txt  # Include robot.txt dependencies
-black  # Auto-formatting for python
 exhale  # Necessary for rst rendering
 fabric  # Manages SSH sessions for the deploy tool
 paramiko  # Necessary for fabric

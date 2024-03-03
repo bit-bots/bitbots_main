@@ -7,7 +7,7 @@ from geometry_msgs.msg import Twist
 class DribbleForward(AbstractActionElement):
     blackboard: BodyBlackboard
 
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
         self.max_speed_x = self.blackboard.config["dribble_max_speed_x"]
         self.min_speed_x = -0.1

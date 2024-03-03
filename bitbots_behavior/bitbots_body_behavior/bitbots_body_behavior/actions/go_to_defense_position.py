@@ -11,7 +11,7 @@ from tf_transformations import quaternion_from_euler
 class GoToDefensePosition(AbstractActionElement):
     blackboard: BodyBlackboard
 
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
 
         # Also apply offset from the ready positions to the defense positions

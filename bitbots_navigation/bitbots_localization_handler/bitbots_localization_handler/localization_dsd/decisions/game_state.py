@@ -95,7 +95,7 @@ class SecondaryStateTeamDecider(AbstractLocalizationDecisionElement):
     Decides if our team or the other team is allowed to execute the secondary state.
     """
 
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd)
         self.team_id = self.blackboard.gamestate.get_team_id()
 
@@ -141,7 +141,7 @@ class InitialToReady(AbstractLocalizationDecisionElement):
     Decides if the ready phase was just started coming from initial
     """
 
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
         self.previous_game_state_number = self.blackboard.gamestate.get_gamestate()
 

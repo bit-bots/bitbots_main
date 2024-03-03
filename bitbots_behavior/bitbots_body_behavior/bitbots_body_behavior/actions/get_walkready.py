@@ -8,7 +8,7 @@ from bitbots_msgs.action import Dynup
 class GetWalkready(AbstractActionElement):
     blackboard: BodyBlackboard
 
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
         self.direction = "walkready"
         self.first_perform = True

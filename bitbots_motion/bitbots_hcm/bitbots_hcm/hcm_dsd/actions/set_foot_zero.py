@@ -2,7 +2,7 @@ from bitbots_hcm.hcm_dsd.actions import AbstractHCMActionElement
 
 
 class SetFootZero(AbstractHCMActionElement):
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
         self.first_perform = True
 

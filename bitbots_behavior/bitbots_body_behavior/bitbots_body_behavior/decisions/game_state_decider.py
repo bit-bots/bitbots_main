@@ -6,7 +6,7 @@ from game_controller_hl_interfaces.msg import GameState
 class GameStateDecider(AbstractDecisionElement):
     blackboard: BodyBlackboard
 
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
 
     def perform(self, reevaluate=False):

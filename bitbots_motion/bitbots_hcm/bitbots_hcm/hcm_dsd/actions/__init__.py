@@ -8,6 +8,6 @@ class AbstractHCMActionElement(AbstractActionElement):
     AbstractHCMActionElement with a hcm blackboard as its blackboard
     """
 
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
         self.blackboard: HcmBlackboard

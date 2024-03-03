@@ -10,7 +10,7 @@ class WalkedSinceLastInit(AbstractLocalizationDecisionElement):
     Decides if we walked significantly since our last initialization
     """
 
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
         self.distance_threshold = parameters.get("dist", 0.5)
 
