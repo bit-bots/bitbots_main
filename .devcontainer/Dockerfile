@@ -82,7 +82,6 @@ SHELL ["/bin/zsh", "-c"]
 # Create home directory and colcon workspace
 RUN mkdir -p "/root/colcon_ws"
 
-
 # Install oh-my-zsh for pretty terminal
 RUN sh -c "$(wget -O- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" && \
   git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions

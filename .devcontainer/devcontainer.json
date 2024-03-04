@@ -26,18 +26,18 @@
     "workspaceFolder": "/root/colcon_ws/src/bitbots_main",
 
     "mounts": [
-      "type=bind,source=${localEnv:HOME},target=/srv/host_home,consistency=cached"
+      "type=bind,source=${localEnv:HOME},target=/srv/host_home,consistency=cached",
+      "type=tmpfs,destination=/tmp,tmpfs-size=2G"
     ],
 
     "runArgs": [
       "--privileged",
       "--net=host",
-      "--ulimit", "nofile=1024:524288",
       "--device=/dev/dri:/dev/dri",
       "--volume=/tmp/.X11-unix:/tmp/.X11-unix",
       "--cap-add=SYS_PTRACE",
       "--security-opt", "seccomp=unconfined"
     ],
 
-    "postCreateCommand": "git config --global --add safe.directory '*' && make -C $HOME/colcon_ws/src/bitbots_main install"
+    "postCreateCommand": "git config --global --add safe.directory '*'"
   }

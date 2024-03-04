@@ -108,3 +108,12 @@ alias sa='sr && sc'
 
 # Set default editor
 export VISUAL="vim"
+
+# Some user instructions
+echo "Hello there! Welcome to the Bit-Bots ROS 2 development environment!"
+echo "If you just (re)build this container a few manual steps are nessessary:"
+echo "Create a ssh key with 'ssh-keygen -q -f $HOME/.ssh/id_rsa -N \"\" &&  cat $HOME/.ssh/id_rsa.pub'."
+echo "Copy the commands output and add it to your GitHub account ('https://github.com/settings/keys') (ctrl+click to open in browser)."
+echo "Now you can install the rest of the workspace and compile everything with 'make install && cba'."
+echo "To update an existing workspace you can use 'make update && cba'."
+echo "To compile all packages in the workspace use 'cba'. If you want to compile only a specific package use 'cbs <package_name>'."
