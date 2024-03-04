@@ -13,7 +13,7 @@ install-no-root: pull-init update-no-root
 
 pip:
 	# Install and upgrade pip dependencies
-	pip install --upgrade -r requirements/dev.txt
+	pip install --upgrade -r requirements/dev.txt --user
 
 pre-commit:
 	# Install pre-commit hooks for all submodules that have a .pre-commit-config.yaml file
