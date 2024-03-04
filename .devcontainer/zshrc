@@ -117,3 +117,4 @@ echo "Copy the commands output and add it to your GitHub account ('https://githu
 echo "Now you can install the rest of the workspace and compile everything with 'make install && cba'."
 echo "To update an existing workspace you can use 'make update && cba'."
 echo "To compile all packages in the workspace use 'cba'. If you want to compile only a specific package use 'cbs <package_name>'."
+echo "Run 'xhost local:root' in a terminal on the host machine to enable GUI applications (e.g. rviz2) in the container. This needs to be done after every restart of the host machine."
