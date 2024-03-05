@@ -12,7 +12,7 @@ from std_srvs.srv import Empty as EmptySrv
 from std_srvs.srv import SetBool
 
 from bitbots_msgs.action import Dynup, PlayAnimation
-from bitbots_msgs.msg import Audio, RobotControlState
+from bitbots_msgs.msg import Audio, JointCommand, JointTorque, RobotControlState
 
 
 class HcmBlackboard:
@@ -49,6 +49,8 @@ class HcmBlackboard:
         self.walk_pub = self.node.create_publisher(Twist, "cmd_vel", 1)
         self.cancel_path_planning_pub = self.node.create_publisher(EmptyMsg, "pathfinding/cancel", 1)
         self.speak_publisher = self.node.create_publisher(Audio, "speak", 1)
+        self.joint_command_publisher = self.node.create_publisher(JointCommand, "DynamixelController/command", 10)
+        self.torque_publisher = self.node.create_publisher(JointTorque, "ros_control/set_torque_individual", 10)
 
         # Latest imu data
         self.accel = numpy.array([0, 0, 0])
