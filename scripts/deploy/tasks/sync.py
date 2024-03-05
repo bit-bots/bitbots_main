@@ -207,6 +207,8 @@ class Sync(AbstractTask):
                 "--checksum",
                 "--archive",
                 "--delete",
+                "-e",
+                '"ssh -o StrictHostKeyChecking=no"',
             ]
             if not be_quiet():
                 cmd.append("--verbose")
