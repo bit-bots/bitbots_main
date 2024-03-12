@@ -170,6 +170,16 @@ class RecordUI(Plugin):
         # Store the joint states
         self._joint_states = joint_states
 
+        # Update working values of non stiff motors
+        for motor_name in self.motors:
+            if self._motor_controller_torque_checkbox[motor_name].checkState(0) != Qt.CheckState.Checked:
+                # Update textfield
+                self._motor_controller_text_fields[motor_name].setText(
+                    str(round(math.degrees(joint_states.position[joint_states.name.index(motor_name)]), 2))
+                )
+        # React to textfield changes
+        self.textfield_update()
+
     def create_motor_controller(self) -> None:
         """
         Sets up the GUI in the middle of the Screen to control the motors.
@@ -193,7 +203,6 @@ class RecordUI(Plugin):
             textfield.textEdited.connect(self.textfield_update)
             layout.addWidget(textfield)
             self._motor_controller_text_fields[motor_name] = textfield
-
 
             # Add the layout to the group and the group to the main layout (at the correct position in the 5 x n grid)
             layout.setAlignment(Qt.AlignCenter)
@@ -505,15 +514,8 @@ class RecordUI(Plugin):
         # Record the frame
         self._recorder.record(
             # Only record the active motors
-            {
-                motor_name: self._working_angles[motor_name]
-                for motor_name in self.motors
-                if self._motor_switcher_active_checkbox[motor_name].checkState(0) == Qt.CheckState.Checked
-            },
-            {
-                motor_name: self._motor_switcher_active_checkbox[motor_name].checkState(0) == Qt.CheckState.Checked
-                for motor_name in self.motors
-            },
+            self._working_angles,
+            {},
             new_name,
             self._widget.spinBoxDuration.value(),
             self._widget.spinBoxPause.value(),
@@ -602,7 +604,7 @@ class RecordUI(Plugin):
             # Update the motor angle controls (value and active state)
             if active:
                 self._motor_controller_text_fields[motor_name].setText(
-                    str(round(math.degrees(selected_frame["goals"][motor_name]), 4))
+                    str(round(math.degrees(selected_frame["goals"][motor_name]), 2))
                 )
             else:
                 self._motor_controller_text_fields[motor_name].setText("0.0")
@@ -631,12 +633,13 @@ class RecordUI(Plugin):
                 return
             # Clip the angle to the maximum and minimum, we do this in degrees,
             # because we do not want introduce rounding errors in the textfield
-            angle = round(max(-180.0, min(angle, 180.0)), 4)
+            angle = round(max(-180.0, min(angle, 180.0)), 2)
             # Set the angle in the textfield
             if float(text_field.text()) != float(angle):
                 text_field.setText(str(angle))
-            # Set the angle in the working values
-            self._working_angles[motor_name] = math.radians(angle)
+            # Set the angle in the working values if the motor is active
+            if self._motor_switcher_active_checkbox[motor_name].checkState(0) == Qt.CheckState.Checked:
+                self._working_angles[motor_name] = math.radians(angle)
 
     def react_to_motor_selection(self):
         """
@@ -656,11 +659,9 @@ class RecordUI(Plugin):
                 if active
                 else self._motor_controller_torque_checkbox[motor_name].flags() & ~Qt.ItemIsEnabled
             )
-            # Pull working values from from the joint states if the motor is not active
-            if not active and motor_name in self._joint_states.name:
-                self._working_angles[motor_name] = self._joint_states.position[
-                    self._joint_states.name.index(motor_name)
-                ]
+            # Remove the motor from the working angles if it is not active
+            if not active and motor_name in self._working_angles:
+                self._working_angles.pop(motor_name)
 
         # Publish the torque message
         self.effort_pub.publish(
