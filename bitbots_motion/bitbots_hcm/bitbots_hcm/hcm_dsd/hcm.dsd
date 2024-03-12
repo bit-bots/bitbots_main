@@ -12,7 +12,7 @@ $StartHCM
                 TURN_ON --> @TurnMotorsOn, @PlayAnimationDynup + direction:walkready, @Wait
                 OKAY --> $TeachingMode
                     TURN_ON --> @SetTorque + stiff:false, @Wait
-                    TURN_OFF --> @SetTorque + stiff:true, @SendJointStatesAsGoals 
+                    TURN_OFF --> @SetTorque + stiff:true
                     OFF --> $CheckIMU
                         IMU_NOT_STARTED --> @RobotStateStartup, @WaitForIMUStartup
                         PROBLEM --> @RobotStateHardwareProblem, @WaitForIMU

@@ -37,7 +37,7 @@ class HcmBlackboard:
         self.motor_switch_service = self.node.create_client(SetBool, "core/switch_power")
 
         # Create services
-        self.teaching_mode_service = self.create_service(SetBool, "set_teaching_mode", self.set_teaching_mode_callback)
+        self.teaching_mode_service = self.node.create_service(SetBool, "set_teaching_mode", self.set_teaching_mode_callback)
 
         # Create action clients and corresponding goal handles
         self.animation_action_client: ActionClient = ActionClient(self.node, PlayAnimation, "animation")
@@ -49,7 +49,7 @@ class HcmBlackboard:
         self.walk_pub = self.node.create_publisher(Twist, "cmd_vel", 1)
         self.cancel_path_planning_pub = self.node.create_publisher(EmptyMsg, "pathfinding/cancel", 1)
         self.speak_publisher = self.node.create_publisher(Audio, "speak", 1)
-        self.torque_publisher = self.node.create_publisher(JointTorque, "ros_control/set_torque_individual", 10)
+        self.torque_publisher = self.node.create_publisher(JointTorque, "set_torque_individual", 10)
 
         # Latest imu data
         self.accel = numpy.array([0, 0, 0])

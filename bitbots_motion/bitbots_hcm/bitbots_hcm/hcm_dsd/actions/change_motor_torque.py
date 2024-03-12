@@ -10,11 +10,11 @@ class SetTorque(AbstractHCMActionElement):
     def perform(self, reevaluate=False):
         if self.blackboard.current_joint_state is None:
             self.blackboard.node.get_logger().warning(
-                "Cannot set joint stiffness for teaching mode because no joint states where recived!"
+                "Cannot set joint stiffness for teaching mode because no joint states where received!"
             )
             return self.pop()
 
         self.blackboard.torque_publisher.publish(
-            JointTorque(joint_names=self.current_joint_state.name, on=self.stiff * len(self.current_joint_state.name))
+            JointTorque(joint_names=self.blackboard.current_joint_state.name, on=[self.stiff] * len(self.blackboard.current_joint_state.name))
         )
         return self.pop()
