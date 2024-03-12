@@ -16,7 +16,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout_2">
     <item row="0" column="0">
-     <layout class="QHBoxLayout" name="contentLayout" stretch="1,3,1">
+     <layout class="QHBoxLayout" name="contentLayout" stretch="1,2,1,1">
       <property name="sizeConstraint">
        <enum>QLayout::SetNoConstraint</enum>
       </property>
@@ -148,6 +148,15 @@
           <column>
             <property name="text">
               <string notr="true">1</string>
+            </property>
+          </column>
+        </widget>
+      </item>
+      <item>
+        <widget class="QTreeWidget" name="torqueTree">
+          <column>
+            <property name="text">
+              <string notr="true">Torque</string>
             </property>
           </column>
         </widget>
