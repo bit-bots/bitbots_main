@@ -179,7 +179,7 @@ class HardwareControlManager:
         return response
 
     def set_last_animation_goal_time(self, time_msg_serialized: bytes):
-        self.blackboard.last_animation_goal_time = deserialize_message(time_msg_serialized, TimeMsg)
+        self.blackboard.last_animation_goal_time = Time.from_msg(deserialize_message(time_msg_serialized, TimeMsg))
 
     def set_last_walking_goal_time(self, time_msg_serialized: bytes):
         self.blackboard.last_walking_goal_time = Time.from_msg(deserialize_message(time_msg_serialized, TimeMsg))
