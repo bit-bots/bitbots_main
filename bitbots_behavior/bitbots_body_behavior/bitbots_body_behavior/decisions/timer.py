@@ -5,7 +5,7 @@ from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElem
 class TimerRunning(AbstractDecisionElement):
     blackboard: BodyBlackboard
 
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
         if "name" not in parameters:
             raise KeyError("TimerRunning: Name parameter is missing!")
@@ -37,7 +37,7 @@ class TimerRunning(AbstractDecisionElement):
 class TimerEnded(AbstractDecisionElement):
     blackboard: BodyBlackboard
 
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
 
         if "name" not in parameters:

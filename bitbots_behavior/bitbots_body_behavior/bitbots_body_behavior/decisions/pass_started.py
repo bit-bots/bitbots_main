@@ -5,7 +5,7 @@ from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElem
 class PassStarted(AbstractDecisionElement):
     blackboard: BodyBlackboard
 
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
 
     def perform(self, reevaluate=False):

@@ -2,7 +2,7 @@ from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElem
 
 
 class DoOnce(AbstractDecisionElement):
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
         self.done = False
 

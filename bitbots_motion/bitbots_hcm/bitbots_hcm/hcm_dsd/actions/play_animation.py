@@ -12,7 +12,7 @@ class AbstractPlayAnimation(AbstractHCMActionElement, ABC):
     Abstract class to create actions for playing animations
     """
 
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
         self.first_perform = True
 
@@ -131,7 +131,7 @@ class PlayAnimationTurningBackRight(AbstractPlayAnimation):
 
 
 class PlayAnimationDynup(AbstractHCMActionElement):
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
         self.direction = parameters.get("direction")
         self.first_perform = True

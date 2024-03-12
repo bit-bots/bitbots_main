@@ -15,9 +15,11 @@
 
     <maintainer email="5fiedler@informatik.uni-hamburg.de">Niklas Fiedler</maintainer>
     <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
-    <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
 
     <license>MIT</license>
+
+    <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
+
 
     <build_depend>bitbots_docs</build_depend>
     <depend>bitbots_tf_listener</depend>

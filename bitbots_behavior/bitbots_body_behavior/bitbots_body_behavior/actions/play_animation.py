@@ -9,8 +9,8 @@ class AbstractPlayAnimation(AbstractActionElement, ABC):
     Abstract class to create actions for playing animations
     """
 
-    def __init__(self, blackboard, dsd, parameters=None):
-        super().__init__(blackboard, dsd, parameters=None)
+    def __init__(self, blackboard, dsd, parameters):
+        super().__init__(blackboard, dsd, parameters)
         self.blackboard: BodyBlackboard
 
         self.first_perform = True

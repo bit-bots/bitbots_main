@@ -62,10 +62,6 @@ repositories:
     type: git
     url: git@github.com:basler/pylon-ros-camera.git
     version: humble
-  lib/robot_controllers:
-    type: git
-    url: git@github.com:fetchrobotics/robot_controllers.git
-    version: ros2
   lib/ros2_numpy:
     type: git
     url: git@github.com:Bit-Bots/ros2_numpy.git

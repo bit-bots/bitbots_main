@@ -56,7 +56,6 @@ include:
         - ipm
         - particle_filter
         - pylon-ros-camera
-        - robot_controllers
         - ros2_numpy
         - ros2_python_extension
         - soccer_ipm

@@ -4,7 +4,7 @@ from bitbots_localization_handler.localization_dsd.actions import AbstractLocali
 
 
 class AbstractLocalizationPause(AbstractLocalizationActionElement):
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters=parameters)
 
     def set_paused(self, paused):
@@ -15,7 +15,7 @@ class AbstractLocalizationPause(AbstractLocalizationActionElement):
 
 
 class LocalizationStop(AbstractLocalizationPause):
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters=parameters)
 
     def perform(self, reevaluate=False):
@@ -25,7 +25,7 @@ class LocalizationStop(AbstractLocalizationPause):
 
 
 class LocalizationStart(AbstractLocalizationPause):
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters=parameters)
 
     def perform(self, reevaluate=False):

@@ -10,8 +10,10 @@
 
     <maintainer email="git@flova.de">Florian Vahl</maintainer>
     <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
-    <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
+
     <license>MIT</license>
+    
+    <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
 
     <buildtool_depend>ament_cmake</buildtool_depend>
 

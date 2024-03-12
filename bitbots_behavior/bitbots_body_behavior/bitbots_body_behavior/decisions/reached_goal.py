@@ -10,7 +10,7 @@ from tf_transformations import euler_from_quaternion
 class ReachedPathPlanningGoalPosition(AbstractDecisionElement):
     blackboard: BodyBlackboard
 
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
         self.frame_id = parameters.get("frame_id", self.blackboard.map_frame)
         self.threshold = parameters.get("threshold")
@@ -40,7 +40,7 @@ class ReachedPathPlanningGoalPosition(AbstractDecisionElement):
 class AlignedToPathPlanningGoal(AbstractDecisionElement):
     blackboard: BodyBlackboard
 
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
         self.orientation_threshold = self.blackboard.config["goal_alignment_orientation_threshold"]  # [deg]
         self.frame_id = parameters.get("frame_id", self.blackboard.map_frame)

@@ -9,9 +9,10 @@
 
   <maintainer email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</maintainer>
   <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
-  <author email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</author>
-  
+
   <license>MIT</license>
+  
+  <author email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</author>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 

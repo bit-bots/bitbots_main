@@ -7,13 +7,15 @@
 
     <maintainer email="7sell@finn-thorben.me">Finn-Thorben Sell</maintainer>
     <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
-    <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
+
     <license>MIT</license>
+
+    <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
 
     <buildtool_depend>ament_cmake</buildtool_depend>
     <build_depend>python3-sphinx-rtd-theme</build_depend>
     <depend>python3-breathe</depend>
-	 
+
 
     <export>
         <bitbots_documentation>
