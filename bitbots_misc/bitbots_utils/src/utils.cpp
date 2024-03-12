@@ -14,10 +14,10 @@ namespace bitbots_utils {
  * @param warn_interval Interval in which to keep warning if the frames are not available
  * @param verbose Can be used to disable the warning messages
  */
-void wait_for_tf(const rclcpp::Logger &logger, std::shared_ptr<rclcpp::Clock> clock,
-                 tf2_ros::Buffer* tf_buffer, const std::vector<std::string> &frames,
-                 const std::string &root_frame, const rclcpp::Duration &check_interval,
-                 const rclcpp::Duration &warn_duration, const rclcpp::Duration &warn_interval, bool verbose) {
+void wait_for_tf(const rclcpp::Logger &logger, std::shared_ptr<rclcpp::Clock> clock, tf2_ros::Buffer *tf_buffer,
+                 const std::vector<std::string> &frames, const std::string &root_frame,
+                 const rclcpp::Duration &check_interval, const rclcpp::Duration &warn_duration,
+                 const rclcpp::Duration &warn_interval, bool verbose) {
   // Store the beginning time
   auto start_time = clock->now();
 
