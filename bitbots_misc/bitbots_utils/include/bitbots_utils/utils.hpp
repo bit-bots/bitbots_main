@@ -25,7 +25,7 @@ namespace bitbots_utils {
  * @param verbose Can be used to disable the warning messages
  */
 void wait_for_tf(const rclcpp::Logger &logger, std::shared_ptr<rclcpp::Clock> clock,
-                 std::shared_ptr<tf2_ros::Buffer> tf_buffer, const std::vector<std::string> &frames,
+                 tf2_ros::Buffer* tf_buffer, const std::vector<std::string> &frames,
                  const std::string &root_frame, const rclcpp::Duration &check_interval = rclcpp::Duration(0.1s),
                  const rclcpp::Duration &warn_duration = rclcpp::Duration(5.0s),
                  const rclcpp::Duration &warn_interval = rclcpp::Duration(1.0s), bool verbose = true);

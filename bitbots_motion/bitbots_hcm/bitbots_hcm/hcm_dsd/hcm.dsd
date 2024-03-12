@@ -1,6 +1,6 @@
 -->HCM
 $StartHCM
-    START_UP --> @RobotStateStartup, @Wait + time:0.1 + r:false, @PlayAnimationDynup + direction:walkready, @Wait
+    START_UP --> @RobotStateStartup, @PlayAnimationDynup + direction:walkready
     RUNNING --> $Stop
         STOPPED --> @CancelGoals, @StopWalking, @PlayAnimationDynup + direction:walkready, @Wait
         FREE -->$RecordAnimation
