@@ -269,7 +269,7 @@ class Recorder:
         # Create name for the temporary animation that is send to the animation server
         # We can call this animation by name to play it
         # We do not want to overwrite the current animation
-        tmp_animation_name = f"{self.current_state.name}_tmp"
+        tmp_animation_name = "bitbots_animation_rqt_tmp"
 
         # Create a dictionary with the animation data
         animation_dict = {
