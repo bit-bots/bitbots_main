@@ -42,7 +42,6 @@ class ButtonNode : public rclcpp::Node {
 
     // --- Initialize Topics ---
     speak_pub_ = this->create_publisher<bitbots_msgs::msg::Audio>("/speak", 1);
-    shoot_publisher_ = this->create_publisher<std_msgs::msg::Bool>("/shoot_button", 1);
 
     if (manual_penalty_mode_) {
       manual_penalize_client_ = this->create_client<bitbots_msgs::srv::ManualPenalize>("manual_penalize");
@@ -200,7 +199,6 @@ class ButtonNode : public rclcpp::Node {
   double button3_time_;
 
   rclcpp::Publisher<bitbots_msgs::msg::Audio>::SharedPtr speak_pub_;
-  rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr shoot_publisher_;
   rclcpp::Client<bitbots_msgs::srv::ManualPenalize>::SharedPtr manual_penalize_client_;
   rclcpp::Client<std_srvs::srv::Empty>::SharedPtr foot_zero_client_;
   rclcpp::Client<std_srvs::srv::SetBool>::SharedPtr power_client_;

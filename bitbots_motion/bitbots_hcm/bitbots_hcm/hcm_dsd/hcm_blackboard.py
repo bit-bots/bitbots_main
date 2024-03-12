@@ -13,6 +13,7 @@ from std_srvs.srv import SetBool
 
 from bitbots_msgs.action import Dynup, PlayAnimation
 from bitbots_msgs.msg import Audio, JointTorque, RobotControlState
+from bitbots_msgs.srv import SetTeachingMode
 
 
 class HcmBlackboard:
@@ -37,7 +38,7 @@ class HcmBlackboard:
         self.motor_switch_service = self.node.create_client(SetBool, "core/switch_power")
 
         # Create services
-        self.teaching_mode_service = self.node.create_service(SetBool, "set_teaching_mode", self.set_teaching_mode_callback)
+        self.teaching_mode_service = self.node.create_service(SetTeachingMode, "set_teaching_mode", self.set_teaching_mode_callback)
 
         # Create action clients and corresponding goal handles
         self.animation_action_client: ActionClient = ActionClient(self.node, PlayAnimation, "animation")
@@ -75,7 +76,7 @@ class HcmBlackboard:
         self.animation_name_turning_back_right: str = self.node.get_parameter("animations.turning_back_right").value
 
         # Teaching State
-        self.teaching_mode_active: bool = False
+        self.teaching_mode_state: int = SetTeachingMode.Request.OFF
 
         # Motor State
         self.current_joint_state: Optional[JointState] = None
@@ -120,9 +121,9 @@ class HcmBlackboard:
     def cancel_path_planning(self):
         self.cancel_path_planning_pub.publish(EmptyMsg())
 
-    def set_teaching_mode_callback(self, request: SetBool.Request, response: SetBool.Response) -> SetBool.Response:
-        # Check if we are able to modify the teaching mode
-        if request.data and self.current_state not in [
+    def set_teaching_mode_callback(self, request: SetTeachingMode.Request, response: SetTeachingMode.Response) -> SetTeachingMode.Response:
+        # Check if we are able to start the teaching mode
+        if request.state == SetTeachingMode.Request.TEACH and self.current_state not in [
             RobotControlState.CONTROLLABLE,
             RobotControlState.PICKED_UP,
             RobotControlState.PENALTY,
@@ -130,8 +131,12 @@ class HcmBlackboard:
             # Respond that we can not activate the teaching mode in the current state
             response.success = False
             return response
+        
+        if request.state == SetTeachingMode.Request.HOLD and self.teaching_mode_state != SetTeachingMode.Request.TEACH:
+            response.success = False
+            return response
 
         # Activate / Deactivate teaching mode
-        self.teaching_mode_active = request.data
+        self.teaching_mode_state = request.state
         response.success = True
         return response

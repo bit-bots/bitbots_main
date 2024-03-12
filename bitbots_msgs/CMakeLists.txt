@@ -49,6 +49,7 @@ rosidl_generate_interfaces(
   "srv/SetAccelerometerCalibrationThreshold.srv"
   "srv/SetObjectPose.srv"
   "srv/SetObjectPosition.srv"
+  "srv/SetTeachingMode.srv"
   DEPENDENCIES
   action_msgs
   geometry_msgs

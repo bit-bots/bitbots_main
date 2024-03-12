@@ -1,0 +1,9 @@
+int8 OFF = 0
+int8 HOLD = 1
+int8 TEACH = 2
+
+int8 state
+
+---
+
+bool success

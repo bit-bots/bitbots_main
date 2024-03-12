@@ -1,5 +1,7 @@
 from bitbots_hcm.hcm_dsd.decisions import AbstractHCMDecisionElement
 
+from bitbots_msgs.srv import SetTeachingMode
+
 
 class TeachingMode(AbstractHCMDecisionElement):
     """
@@ -14,14 +16,18 @@ class TeachingMode(AbstractHCMDecisionElement):
         self.last_state_on = False
 
     def perform(self, reevaluate=False):
-        if self.blackboard.teaching_mode_active:
+        if self.blackboard.teaching_mode_state == SetTeachingMode.Request.TEACH:
             self.last_state_on = True
             # We activated the teaching mode
-            return "TURN_ON"
+            return "TEACH"
+        elif self.blackboard.teaching_mode_state == SetTeachingMode.Request.HOLD:
+            # We want to hold the pose
+            self.last_state_on = True
+            return "HOLD"
         elif self.last_state_on:
             self.last_state_on = False
             # We just deactivated the teaching mode and need to clean up
-            return "TURN_OFF"
+            return "FINISHED"
         else:
             # We are not in the teaching mode
             return "OFF"
