@@ -1,5 +1,6 @@
 import argparse
 import os
+import sys
 from typing import Optional
 
 from deploy.misc import (
@@ -227,7 +228,7 @@ class DeployRobots:
                 print_success(f"{task_prefix} completed.")
             elif results.failed:
                 print_err(f"{task_prefix} failed on the following hosts: {task._succeeded_hosts(results)}")
-                exit(1)
+                sys.exit(1)
             current_task += 1
 
         # Close connections

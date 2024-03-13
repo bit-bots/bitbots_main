@@ -69,6 +69,7 @@ class SplineAnimator:
         ret_dict = {}
         for joint in self.spline_dict:
             ret_dict[joint] = math.radians(self.spline_dict[joint].pos(time))
+
         return ret_dict
 
     def get_torque(self, current_time):

@@ -17,7 +17,7 @@ class GoToCornerKickPosition(AbstractActionElement):
         self.mode = parameters.get("mode", None)
         if self.mode is None or self.mode not in ("striker", "supporter", "others"):
             self.blackboard.node.get_logger().error("mode for corner kick not specified")
-            exit()
+            raise ValueError("mode for corner kick not specified")
 
     def perform(self, reevaluate=False):
         # The defense position should be a position between the ball and the own goal.

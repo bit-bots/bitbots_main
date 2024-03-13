@@ -124,7 +124,7 @@ if __name__ == "__main__":
     sys.stdout.flush()
     client = ActionClient(KickAction, "dynamic_kick")
     if not client.wait_for_server():
-        exit(1)
+        sys.exit(1)
 
     robot_x = 2.8
     robot_y = 0
