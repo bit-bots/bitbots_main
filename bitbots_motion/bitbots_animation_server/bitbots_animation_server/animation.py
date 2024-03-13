@@ -19,7 +19,7 @@ class Animation:
 
     def __init__(self, name, keyframes, default_interpolator=None):
         self.name: str = name
-        self.keyframes: list(Keyframe) = keyframes
+        self.keyframes: list[Keyframe] = keyframes
         self.default_interpolator = default_interpolator
 
 

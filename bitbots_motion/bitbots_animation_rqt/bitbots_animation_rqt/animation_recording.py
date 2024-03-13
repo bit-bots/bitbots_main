@@ -254,17 +254,14 @@ class Recorder:
 
         if until_frame == -1:
             # Play complete animation
-            until_frame = len(self.current_state.key_frames) - 1
+            until_frame = len(self.current_state.key_frames)
         else:
             # Check if the given frame id is in bounds
-            assert until_frame >= 0, "Upper bound must be positive"
+            assert until_frame > 0, "Upper bound must be positive"
             assert until_frame <= len(
                 self.current_state.key_frames
             ), "Upper bound must be less than or equal to the number of frames"
         assert from_frame >= 0, "Lower bound must be positive"
-        assert until_frame <= len(
-            self.current_state.key_frames
-        ), "Upper bound must be less than or equal to the number of frames"
 
         # Create name for the temporary animation that is send to the animation server
         # We can call this animation by name to play it

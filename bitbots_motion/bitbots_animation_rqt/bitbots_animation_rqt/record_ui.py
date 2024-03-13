@@ -392,9 +392,6 @@ class RecordUI(Plugin):
             status = "Load successful."
         self._widget.statusBar.showMessage(status)
 
-        # Update what motor is active and has torque in the UI
-        # TODO
-
         # Update the frames in the UI
         self.update_frames()
 
@@ -433,23 +430,23 @@ class RecordUI(Plugin):
         index = self._recorder.get_keyframe_index(self._selected_frame)
         assert index is not None, "Selected frame not found in list of keyframes"
 
-        self._recorder.play(from_frame=index, until_frame=index)
+        self._recorder.play(from_frame=index, until_frame=index + 1)
 
     def goto_next(self):
         # Get current index
         index = self._recorder.get_keyframe_index(self._selected_frame)
         assert index is not None, "Selected frame not found in list of keyframes"
 
-        # Check if this is the last frame
-        if index + 1 < len(self._recorder.get_keyframes()):
-            # Play until the next frame
-            self._recorder.play(from_frame=index, until_frame=index + 1)
-            # Go to the next frame in the UI if we are not at the end
-            self._widget.frameList.setCurrentRow(index + 1)
-            self._selected_frame = self._recorder.get_keyframes()[index + 1]["name"]
-            self.react_to_frame_change()
-        else:
-            self.goto_frame()
+        # Get the next frame (keep the current frame if we are at the end)
+        next_frame_index = min(index + 1, len(self._recorder.get_keyframes()) - 1)
+
+        # Play the next frame
+        self._recorder.play(from_frame=index, until_frame=next_frame_index + 1)
+
+        # Go to the frame in the UI
+        self._widget.frameList.setCurrentRow(next_frame_index)
+        self._selected_frame = self._recorder.get_keyframes()[next_frame_index]["name"]
+        self.react_to_frame_change()
 
     def goto_init(self):
         """

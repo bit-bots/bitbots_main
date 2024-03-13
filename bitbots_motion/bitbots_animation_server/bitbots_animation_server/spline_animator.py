@@ -1,4 +1,5 @@
 import math
+from copy import deepcopy
 
 from bitbots_splines.smooth_spline import SmoothSpline
 from rclpy.clock import Clock
@@ -10,44 +11,48 @@ from bitbots_animation_server.animation import Animation
 
 class SplineAnimator:
     def __init__(self, animation: Animation, current_joint_states: JointState, logger: Logger, clock: Clock):
-        self.anim = animation
+        self.anim = deepcopy(animation)
         self.start_time = clock.now().nanoseconds / 1e9
 
-        self.animation_duration = 0.0
-        self.current_point_time = 0.0
+        self.animation_duration: float = 0.0
         self.spline_dict: dict[str, SmoothSpline] = {}
         self.torques = {}
         self.keyframe_times: list[float] = []
 
-        # add current joint positions as start
-        if current_joint_states is not None:
-            i = 0
-            for joint in current_joint_states.name:
-                if joint not in self.spline_dict:
-                    self.spline_dict[joint] = SmoothSpline()
-                self.spline_dict[joint].add_point(0, math.degrees(current_joint_states.position[i]))
-                i += 1
-        else:
+        # Add current joint positions as start
+        if current_joint_states is None:
             logger.warn("No current joint positions. Will play animation starting from first keyframe.")
-            for joint in self.anim.keyframes[0].goals:
-                if joint not in self.spline_dict:
-                    self.spline_dict[joint] = SmoothSpline()
-                self.spline_dict[joint].add_point(0, self.anim.keyframes[0].goals[joint])
 
-        # load keyframe positions into the splines
+        # Load keyframe positions into the splines
+        current_point_time = 0.0
         for keyframe in self.anim.keyframes:
+            # Calculate important times
             self.animation_duration += keyframe.duration + keyframe.pause
-            self.current_point_time += keyframe.duration
-            self.keyframe_times.append(self.current_point_time)
+            current_point_time += keyframe.duration
+            self.keyframe_times.append(current_point_time)
+            # Add spline point for each joint in this keyframe
             for joint in keyframe.goals:
+                # Check if this joint already has a spline from previous keyframes
                 if joint not in self.spline_dict:
+                    # If not, create a new spline
                     self.spline_dict[joint] = SmoothSpline()
-                self.spline_dict[joint].add_point(self.current_point_time, keyframe.goals[joint])
-                self.spline_dict[joint].add_point(self.current_point_time + keyframe.pause, keyframe.goals[joint])
-            self.current_point_time += keyframe.pause
-            self.torques[self.current_point_time] = keyframe.torque
+                    # Add the current joint position (if available) as the first point
+                    if current_joint_states is not None:
+                        # Get the number of the joint in the joint_states message
+                        joint_index = current_joint_states.name.index(joint)
+                        # Add the current joint position as the point before the first keyframe
+                        self.spline_dict[joint].add_point(
+                            current_point_time - keyframe.duration,
+                            math.degrees(current_joint_states.position[joint_index]),
+                        )
+                # Add the keyframe position as the next point
+                self.spline_dict[joint].add_point(current_point_time, keyframe.goals[joint])
+                # Add a second point if we want to hold the position for a while
+                self.spline_dict[joint].add_point(current_point_time + keyframe.pause, keyframe.goals[joint])
+            current_point_time += keyframe.pause
+            self.torques[current_point_time] = keyframe.torque
 
-        # compute the splines
+        # Compute the splines
         for joint in self.spline_dict:
             self.spline_dict[joint].compute_spline()
 

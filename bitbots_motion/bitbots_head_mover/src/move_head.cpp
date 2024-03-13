@@ -56,7 +56,7 @@ class HeadMover {
   std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
 
   // Declare variables
-  uint head_mode_;
+  uint head_mode_ = 7;
   std::shared_ptr<sensor_msgs::msg::JointState> current_joint_state_;
   bitbots_msgs::msg::JointCommand pos_msg_;
   geometry_msgs::msg::PoseWithCovarianceStamped tf_precision_pose_;

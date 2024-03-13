@@ -10,9 +10,9 @@ bool hcm
 
 # Debugging controls
 bool bounds # If true, only a specific range of keyframes will be played
-# Keyframe where we want to start (if not specified, the animation will start from the beginning)
+# Keyframe where we want to start (use 0 as the start of the animation)
 uint8 start
-# Keyframe where we want to end
+# Keyframe where we want to end (use len(animation) as the end of the animation)
 uint8 end
 
 
