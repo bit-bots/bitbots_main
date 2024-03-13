@@ -15,6 +15,9 @@ class SetTorque(AbstractHCMActionElement):
             return self.pop()
 
         self.blackboard.torque_publisher.publish(
-            JointTorque(joint_names=self.blackboard.current_joint_state.name, on=[self.stiff] * len(self.blackboard.current_joint_state.name))
+            JointTorque(
+                joint_names=self.blackboard.current_joint_state.name,
+                on=[self.stiff] * len(self.blackboard.current_joint_state.name),
+            )
         )
         return self.pop()

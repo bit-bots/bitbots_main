@@ -1,5 +1,4 @@
 from bitbots_hcm.hcm_dsd.decisions import AbstractHCMDecisionElement
-
 from bitbots_msgs.srv import SetTeachingMode
 
 

@@ -38,7 +38,9 @@ class HcmBlackboard:
         self.motor_switch_service = self.node.create_client(SetBool, "core/switch_power")
 
         # Create services
-        self.teaching_mode_service = self.node.create_service(SetTeachingMode, "set_teaching_mode", self.set_teaching_mode_callback)
+        self.teaching_mode_service = self.node.create_service(
+            SetTeachingMode, "set_teaching_mode", self.set_teaching_mode_callback
+        )
 
         # Create action clients and corresponding goal handles
         self.animation_action_client: ActionClient = ActionClient(self.node, PlayAnimation, "animation")
@@ -121,9 +123,21 @@ class HcmBlackboard:
     def cancel_path_planning(self):
         self.cancel_path_planning_pub.publish(EmptyMsg())
 
-    def set_teaching_mode_callback(self, request: SetTeachingMode.Request, response: SetTeachingMode.Response) -> SetTeachingMode.Response:
+    def set_teaching_mode_callback(
+        self, request: SetTeachingMode.Request, response: SetTeachingMode.Response
+    ) -> SetTeachingMode.Response:
+        # Store modifiable version of the requested state.
+        state = request.state
+
+        # Modify requested state if request state is SWITCH so that it switches between HOLD and TEACH after it was turned on once.
+        if state == SetTeachingMode.Request.SWITCH:
+            if self.teaching_mode_state in [SetTeachingMode.Request.HOLD, SetTeachingMode.Request.OFF]:
+                state = SetTeachingMode.Request.TEACH
+            elif self.teaching_mode_state == SetTeachingMode.Request.TEACH:
+                state = SetTeachingMode.Request.HOLD
+
         # Check if we are able to start the teaching mode
-        if request.state == SetTeachingMode.Request.TEACH and self.current_state not in [
+        if state == SetTeachingMode.Request.TEACH and self.current_state not in [
             RobotControlState.CONTROLLABLE,
             RobotControlState.PICKED_UP,
             RobotControlState.PENALTY,
@@ -131,12 +145,12 @@ class HcmBlackboard:
             # Respond that we can not activate the teaching mode in the current state
             response.success = False
             return response
-        
-        if request.state == SetTeachingMode.Request.HOLD and self.teaching_mode_state != SetTeachingMode.Request.TEACH:
+
+        if state == SetTeachingMode.Request.HOLD and self.teaching_mode_state != SetTeachingMode.Request.TEACH:
             response.success = False
             return response
 
         # Activate / Deactivate teaching mode
-        self.teaching_mode_state = request.state
+        self.teaching_mode_state = state
         response.success = True
         return response

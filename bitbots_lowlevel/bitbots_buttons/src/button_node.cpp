@@ -89,12 +89,11 @@ class ButtonNode : public rclcpp::Node {
       if (current_time - button1_time_ > debounce_time_) {
         if (current_time - button1_time_ < short_time_ || in_game_) {
           // button 1 short
-          speak("1 short");
-          setPower(false);
+          speak("Red button pressed short. Turning motor power off.");
+          setPower(false);  // this can not be reversed because the button cuts the power of himself
         } else {
           // button 1 long
-          speak("1 long");
-          setPower(true);
+          speak("Red button pressed long. No action implemented.");
         }
       }
       button1_time_ = 0;
@@ -104,12 +103,12 @@ class ButtonNode : public rclcpp::Node {
       double current_time = this->get_clock()->now().seconds();
       if (current_time - button2_time_ > debounce_time_) {
         if (current_time - button2_time_ < short_time_ || in_game_) {
-          speak("2 short");
+          speak("Green button pressed short. Try deactivating Penalty mode");
           setPenalty(false);
-          resetLocalization();
         } else {
-          speak("2 long");
+          speak("Green button pressed long. Try deactivating Penalty mode");
           setPenalty(false);
+          // Turn teaching mode off
         }
       }
       button2_time_ = 0;
@@ -124,12 +123,16 @@ class ButtonNode : public rclcpp::Node {
         } else {
           speak("3 long");
           setPenalty(true);
+          // Turn teaching mode on
         }
       }
       button3_time_ = 0;
     }
   }
 
+  // Write setTeaching mode, witch uses the service from the hcm and 
+  //sends NOT an async request. When turned on the request is SWITCH, when turned off it is OFF.
+  
   void setPenalty(bool penalize) {
     // Penalizes the robot, if it is not penalized and manual penalty mode is true.
     if (manual_penalty_mode_) {
