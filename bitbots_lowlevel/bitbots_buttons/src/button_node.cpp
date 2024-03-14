@@ -1,9 +1,9 @@
 #include <signal.h>
 
-#include <bitbots_localization/srv/reset_filter.hpp>
 #include <bitbots_msgs/msg/audio.hpp>
 #include <bitbots_msgs/msg/buttons.hpp>
 #include <bitbots_msgs/srv/manual_penalize.hpp>
+#include <bitbots_msgs/srv/set_teaching_mode.hpp>
 #include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <std_msgs/msg/bool.hpp>
@@ -62,8 +62,7 @@ class ButtonNode : public rclcpp::Node {
       RCLCPP_INFO(this->get_logger(), "service switch_power not available, waiting again...");
     }
 
-    localization_client_ = this->create_client<bitbots_localization::srv::ResetFilter>("reset_localization");
-    localization_available_ = localization_client_->wait_for_service(3s);
+    teaching_mode_client_ = this->create_client<bitbots_msgs::srv::SetTeachingMode>("set_teaching_mode");
     buttons_sub_ = this->create_subscription<bitbots_msgs::msg::Buttons>(
         "/buttons", 1, std::bind(&bitbots_buttons::ButtonNode::buttonCb, this, _1));
   }
@@ -106,9 +105,9 @@ class ButtonNode : public rclcpp::Node {
           speak("Green button pressed short. Try deactivating Penalty mode");
           setPenalty(false);
         } else {
-          speak("Green button pressed long. Try deactivating Penalty mode");
-          setPenalty(false);
+          speak("Green button pressed long. Try deactivating teaching mode");
           // Turn teaching mode off
+          setTeachingMode(false);
         }
       }
       button2_time_ = 0;
@@ -118,21 +117,29 @@ class ButtonNode : public rclcpp::Node {
       double current_time = this->get_clock()->now().seconds();
       if (current_time - button3_time_ > debounce_time_) {
         if (current_time - button3_time_ < short_time_ || in_game_) {
-          speak("3 short");
+          speak("Blue button pressed short. Try activating Penalty mode");
           setPenalty(true);
         } else {
-          speak("3 long");
-          setPenalty(true);
-          // Turn teaching mode on
+          speak("Blue button pressed long. Try switching teaching mode state");
+          // Turn teaching mode on or switch between HOLD and TEACH
+          setTeachingMode(true);
         }
       }
       button3_time_ = 0;
     }
   }
 
-  // Write setTeaching mode, witch uses the service from the hcm and 
-  //sends NOT an async request. When turned on the request is SWITCH, when turned off it is OFF.
-  
+  void setTeachingMode(bool state) {
+    // switch teaching mode state by calling service on HCM
+    auto request = std::make_shared<bitbots_msgs::srv::SetTeachingMode::Request>();
+    if (state) {
+      request->state = bitbots_msgs::srv::SetTeachingMode::Request::SWITCH;
+    } else {
+      request->state = bitbots_msgs::srv::SetTeachingMode::Request::OFF;
+    }
+    teaching_mode_client_->async_send_request(request);
+  }
+
   void setPenalty(bool penalize) {
     // Penalizes the robot, if it is not penalized and manual penalty mode is true.
     if (manual_penalty_mode_) {
@@ -162,16 +169,6 @@ class ButtonNode : public rclcpp::Node {
     power_client_->async_send_request(request);
   }
 
-  void resetLocalization() {
-    if (localization_available_) {
-      auto request = std::make_shared<bitbots_localization::srv::ResetFilter::Request>();
-      request->init_mode = 0;
-      localization_client_->async_send_request(request);
-    } else {
-      RCLCPP_WARN(this->get_logger(), "service not available");
-    }
-  }
-
  private:
   void speak(const std::string& text) {
     /**
@@ -195,7 +192,6 @@ class ButtonNode : public rclcpp::Node {
   bool button1_;
   bool button2_;
   bool button3_;
-  bool localization_available_;
   bool foot_zero_available_;
   double button1_time_;
   double button2_time_;
@@ -203,9 +199,9 @@ class ButtonNode : public rclcpp::Node {
 
   rclcpp::Publisher<bitbots_msgs::msg::Audio>::SharedPtr speak_pub_;
   rclcpp::Client<bitbots_msgs::srv::ManualPenalize>::SharedPtr manual_penalize_client_;
+  rclcpp::Client<bitbots_msgs::srv::SetTeachingMode>::SharedPtr teaching_mode_client_;
   rclcpp::Client<std_srvs::srv::Empty>::SharedPtr foot_zero_client_;
   rclcpp::Client<std_srvs::srv::SetBool>::SharedPtr power_client_;
-  rclcpp::Client<bitbots_localization::srv::ResetFilter>::SharedPtr localization_client_;
   rclcpp::Subscription<bitbots_msgs::msg::Buttons>::SharedPtr buttons_sub_;
 };
 }  // namespace bitbots_buttons

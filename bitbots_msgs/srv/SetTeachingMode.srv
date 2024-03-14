@@ -1,7 +1,7 @@
 int8 OFF = 0
 int8 HOLD = 1
 int8 TEACH = 2
-int8 SWITCH = 3 // Activates the taching mode if it is off otherwise it cycles between HOLD and TEACH.
+int8 SWITCH = 3 # Activates the taching mode if it is off otherwise it cycles between HOLD and TEACH. 
 
 int8 state
 
