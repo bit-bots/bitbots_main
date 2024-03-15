@@ -16,4 +16,3 @@
 - [ ] Create issues for future work
 - [ ] Test on your machine
 - [ ] Test on the robot
-- [ ] This PR is on our `Software` project board
