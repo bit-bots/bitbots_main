@@ -6,13 +6,13 @@ if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
 endif()
 
-find_package(std_msgs REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(backward_ros REQUIRED)
 find_package(bitbots_docs REQUIRED)
 find_package(bitbots_msgs REQUIRED)
-find_package(bitbots_localization REQUIRED)
+find_package(game_controller_hl_interfaces REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(std_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(test_msgs REQUIRED)
 
@@ -22,7 +22,7 @@ ament_target_dependencies(
   ament_cmake
   backward_ros
   bitbots_msgs
-  bitbots_localization
+  game_controller_hl_interfaces
   rclcpp
   std_msgs
   std_srvs
