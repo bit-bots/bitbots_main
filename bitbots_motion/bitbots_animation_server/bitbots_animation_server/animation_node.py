@@ -146,7 +146,7 @@ class AnimationNode(Node):
                     goal.abort()
                     return finish(successful=False)
                 num_tries += 1
-                self.get_clock().sleep_until(self.get_clock().now() + Duration(seconds=0.1))
+                self.get_clock().sleep_for(Duration(seconds=0.1))
 
         # Create splines
         animator = SplineAnimator(
