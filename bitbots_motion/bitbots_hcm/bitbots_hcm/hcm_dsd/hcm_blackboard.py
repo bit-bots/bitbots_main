@@ -12,7 +12,8 @@ from std_srvs.srv import Empty as EmptySrv
 from std_srvs.srv import SetBool
 
 from bitbots_msgs.action import Dynup, PlayAnimation
-from bitbots_msgs.msg import Audio, RobotControlState
+from bitbots_msgs.msg import Audio, JointTorque, RobotControlState
+from bitbots_msgs.srv import SetTeachingMode
 
 
 class HcmBlackboard:
@@ -32,9 +33,14 @@ class HcmBlackboard:
         self.pickup_accel_threshold: float = self.node.get_parameter("pick_up_accel_threshold").value
         self.pressure_sensors_installed: bool = self.node.get_parameter("pressure_sensors_installed").value
 
-        # Create services
+        # Create service clients
         self.foot_zero_service = self.node.create_client(EmptySrv, "set_foot_zero")
         self.motor_switch_service = self.node.create_client(SetBool, "core/switch_power")
+
+        # Create services
+        self.teaching_mode_service = self.node.create_service(
+            SetTeachingMode, "set_teaching_mode", self.set_teaching_mode_callback
+        )
 
         # Create action clients and corresponding goal handles
         self.animation_action_client: ActionClient = ActionClient(self.node, PlayAnimation, "animation")
@@ -46,6 +52,7 @@ class HcmBlackboard:
         self.walk_pub = self.node.create_publisher(Twist, "cmd_vel", 1)
         self.cancel_path_planning_pub = self.node.create_publisher(EmptyMsg, "pathfinding/cancel", 1)
         self.speak_publisher = self.node.create_publisher(Audio, "speak", 1)
+        self.torque_publisher = self.node.create_publisher(JointTorque, "set_torque_individual", 10)
 
         # Latest imu data
         self.accel = numpy.array([0, 0, 0])
@@ -68,6 +75,9 @@ class HcmBlackboard:
         self.animation_name_falling_right: str = self.node.get_parameter("animations.falling_right").value
         self.animation_name_turning_back_left: str = self.node.get_parameter("animations.turning_back_left").value
         self.animation_name_turning_back_right: str = self.node.get_parameter("animations.turning_back_right").value
+
+        # Teaching State
+        self.teaching_mode_state: int = SetTeachingMode.Request.OFF
 
         # Motor State
         self.current_joint_state: Optional[JointState] = None
@@ -111,3 +121,36 @@ class HcmBlackboard:
 
     def cancel_path_planning(self):
         self.cancel_path_planning_pub.publish(EmptyMsg())
+
+    def set_teaching_mode_callback(
+        self, request: SetTeachingMode.Request, response: SetTeachingMode.Response
+    ) -> SetTeachingMode.Response:
+        # Store modifiable version of the requested state.
+        state = request.state
+
+        # Modify requested state if request state is SWITCH so that it switches between HOLD and TEACH after it was turned on once.
+        if state == SetTeachingMode.Request.SWITCH:
+            if self.teaching_mode_state in [SetTeachingMode.Request.HOLD, SetTeachingMode.Request.OFF]:
+                state = SetTeachingMode.Request.TEACH
+            elif self.teaching_mode_state == SetTeachingMode.Request.TEACH:
+                state = SetTeachingMode.Request.HOLD
+
+        # Check if we are able to start the teaching mode
+        if state == SetTeachingMode.Request.TEACH and self.current_state not in [
+            RobotControlState.CONTROLLABLE,
+            RobotControlState.PICKED_UP,
+            RobotControlState.PENALTY,
+            RobotControlState.RECORD,
+        ]:
+            # Respond that we can not activate the teaching mode in the current state
+            response.success = False
+            return response
+
+        if state == SetTeachingMode.Request.HOLD and self.teaching_mode_state != SetTeachingMode.Request.TEACH:
+            response.success = False
+            return response
+
+        # Activate / Deactivate teaching mode
+        self.teaching_mode_state = state
+        response.success = True
+        return response

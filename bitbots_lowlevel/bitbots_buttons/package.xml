@@ -19,8 +19,8 @@
 
   <depend>backward_ros</depend>
   <depend>bitbots_docs</depend>
-  <depend>bitbots_localization</depend>
   <depend>bitbots_msgs</depend>
+  <depend>game_controller_hl_interfaces</depend>
   <depend>rclcpp</depend>
   <depend>std_msgs</depend>
   <depend>std_srvs</depend>
