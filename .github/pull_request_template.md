@@ -13,6 +13,7 @@
 
 - [ ] Run `colcon build`
 - [ ] Write documentation
-- [ ] Create issues for future work
 - [ ] Test on your machine
 - [ ] Test on the robot
+- [ ] Create issues for future work
+- [ ] Triaged this PR and labeled it
