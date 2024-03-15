@@ -33,8 +33,9 @@ If you are not already using Ubuntu 22.04, consider installing it on your system
 
 **2. Install Webots**
 
-- Navigate to https://github.com/cyberbotics/webots/releases and download the ``.deb`` file of **Webots2022b**.
-- Install it using the command ``sudo apt install ~/Downloads/webots_2022b_amd64.deb`` or similar, depending on your system setup.
+Webots is a robot simulator, which we use to simulate our robots and test our software.
+It is not strictly necessary to install it, but it is very useful for development and testing.
+If you want to install it, you can do so by running ``make webots`` in the bitbots_main repository.
 
 **3. Download our software**
 
