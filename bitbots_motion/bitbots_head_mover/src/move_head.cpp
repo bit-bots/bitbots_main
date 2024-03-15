@@ -56,7 +56,7 @@ class HeadMover {
   std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
 
   // Declare variables
-  uint head_mode_ = humanoid_league_msgs::msg::HeadMode::LOOK_FORWARD;
+  uint head_mode_ = bitbots_msgs::msg::HeadMode::LOOK_FORWARD;
   std::shared_ptr<sensor_msgs::msg::JointState> current_joint_state_;
   bitbots_msgs::msg::JointCommand pos_msg_;
   geometry_msgs::msg::PoseWithCovarianceStamped tf_precision_pose_;
