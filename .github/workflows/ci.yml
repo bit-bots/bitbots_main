@@ -23,7 +23,7 @@ jobs:
       - name: Add '$HOME/.local/bin' to PATH
         run: |
           mkdir -p $HOME/.local/bin
-          echo "::add-path::/github/home/.local/bin"
+          echo "$PATH='$PATH:/github/home/.local/bin'" >> "$GITHUB_ENV"
 
       - name: Pull source code for libraries and install dependencies
         run: make install HTTPS=true ARGS="--ci"
