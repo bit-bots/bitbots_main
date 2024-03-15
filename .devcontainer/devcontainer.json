@@ -27,10 +27,10 @@
 
     "mounts": [
       "type=bind,source=${localEnv:HOME},target=/srv/host_home,consistency=cached",
-      "type=tmpfs,destination=/tmp,tmpfs-size=2G"
     ],
 
     "runArgs": [
+      "--tmpfs", "/tmp:exec",
       "--privileged",
       "--net=host",
       "--device=/dev/dri:/dev/dri",
