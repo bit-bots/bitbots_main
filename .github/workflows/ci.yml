@@ -20,6 +20,11 @@ jobs:
       - name: Configure git to trust repository
         run: git config --global --add safe.directory /__w/bitbots_main/bitbots_main
 
+      - name: Add '$HOME/.local/bin' to PATH
+        run: |
+          mkdir -p $HOME/.local/bin
+          echo "::add-path::/github/home/.local/bin"
+
       - name: Pull source code for libraries and install dependencies
         run: make install HTTPS=true ARGS="--ci"
 
@@ -33,7 +38,7 @@ jobs:
           . /opt/ros/iron/setup.sh
           colcon build --symlink-install
         working-directory: /colcon_ws
-        
+
       - name: Test packages
         run: |
           # Source workspace
