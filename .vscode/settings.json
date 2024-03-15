@@ -203,7 +203,5 @@
     "python.analysis.extraPaths": [
         "/opt/ros/iron/lib/python3.10/site-packages"
     ],
-
-
-
+    "cmake.configureOnOpen": false,
 }
