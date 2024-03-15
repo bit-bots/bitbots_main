@@ -222,6 +222,11 @@ void DynupNode::execute(const std::shared_ptr<DynupGoalHandle> goal_handle) {
   reset();
   last_ros_update_time_ = 0;
   start_time_ = this->get_clock()->now().seconds();
+
+  bitbots_utils::wait_for_tf(this->get_logger(), this->get_clock(), this->tf_buffer_.get(),
+                             {base_link_frame_, r_sole_frame_, l_sole_frame_, r_wrist_frame_, l_wrist_frame_},
+                             base_link_frame_);
+
   bitbots_dynup::msg::DynupPoses poses = getCurrentPoses();
   if (poses.header.stamp.nanosec != 0) {
     DynupRequest request;

@@ -40,7 +40,7 @@ MotionOdometry::MotionOdometry() : Node("MotionOdometry"), param_listener_(get_n
 
 void MotionOdometry::loop() {
   // Wait for tf to be available
-  bitbots_utils::wait_for_tf(this->get_logger(), this->get_clock(), tf_buffer_,
+  bitbots_utils::wait_for_tf(this->get_logger(), this->get_clock(), tf_buffer_.get(),
                              {base_link_frame_, r_sole_frame_, l_sole_frame_}, base_link_frame_);
 
   rclcpp::Time cycle_start_time = this->now();

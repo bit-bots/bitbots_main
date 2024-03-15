@@ -20,7 +20,7 @@ enable_bitbots_docs()
 set(INCLUDE_DIRS include)
 include_directories(${INCLUDE_DIRS})
 
-add_compile_options(-Wall -Werror -Wno-unused -pedantic -Wextra)
+add_compile_options(-Wall -Werror -Wno-unused -pedantic -Wextra -fPIC)
 
 # Add cpp library
 add_library(${PROJECT_NAME} src/utils.cpp)

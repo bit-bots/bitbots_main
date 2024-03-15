@@ -11,6 +11,9 @@
                 "${env:COLCON_WS}/install/*/include/**",
                 "${env:COLCON_WS}/build/**/include/**",
                 "${env:COLCON_WS}/build/**/rosidl_generator_cpp/**",
+                "/root/colcon_ws/install/*/include/**",
+                "/root/colcon_ws/build/**/include/**",
+                "/root/colcon_ws/build/**/rosidl_generator_cpp/**",
                 "${workspaceFolder}/**/include/**",
                 "/opt/ros/${env:ROS_DISTRO}/include/**",
                 "/usr/include/**"
