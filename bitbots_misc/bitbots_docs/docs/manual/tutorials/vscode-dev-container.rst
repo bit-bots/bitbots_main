@@ -7,7 +7,7 @@ It should work with most other Linux distributions.
 Windows users might need to delete the home directory mount from `.devcontainer/devcontainer.json` and are not officially supported.
 Also make sure docker is installed and setup.
 
-Install Dokcer
+Install Docker
 --------------
 
 To install docker visit https://docs.docker.com/engine/install/ and follow the instructions for your OS.
