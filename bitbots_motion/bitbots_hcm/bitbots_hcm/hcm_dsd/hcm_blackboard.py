@@ -141,6 +141,7 @@ class HcmBlackboard:
             RobotControlState.CONTROLLABLE,
             RobotControlState.PICKED_UP,
             RobotControlState.PENALTY,
+            RobotControlState.RECORD,
         ]:
             # Respond that we can not activate the teaching mode in the current state
             response.success = False
