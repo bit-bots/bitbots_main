@@ -24,7 +24,7 @@ install-git-filters:
 	# The vscode settings file gets updated by the ros extension and contains the full path to the current user's home directory.
 	# We don't want to commit this path, so we use a git filter to remove it when git adds the file to the staging area.
 	# This does not affect the file on disk, so vscode will still work as expected.
-	git config filter.removeFullHomePath.clean "sed '/\/home.*\(install\|build\)/d'"
+	git config filter.removeFullHomePath.clean "sed '/\/\(home\|root\).*\(install\|build\)/d'"
 
 format:
 	# Format all files in the repository
