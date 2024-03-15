@@ -21,6 +21,7 @@ RUN apt-get update -y \
     python3-pip \
     radeontop \
     ranger \
+    rsync \
     screen \
     ssh \
     sudo \
