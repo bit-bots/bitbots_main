@@ -30,7 +30,7 @@
     ],
 
     "runArgs": [
-      "--tmpfs", "/tmp:exec",
+      "--tmpfs", "/tmp:exec,mode=01777",
       "--privileged",
       "--net=host",
       "--device=/dev/dri:/dev/dri",
