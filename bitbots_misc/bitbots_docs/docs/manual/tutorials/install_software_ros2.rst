@@ -28,10 +28,16 @@ If you have not previously setup any of our software stack, you can use the foll
     python3-pip \
     python3-rosdep \
     python3-vcstool \
+    ros-iron-desktop-full \
     ros-iron-plotjuggler-ros \
     ros-iron-rmw-cyclonedds-cpp \
     ros-iron-rqt-robot-monitor \
     ros-iron-rqt-runtime-monitor \
+  && python3 -m pip install \
+    git+https://github.com/ruffsl/colcon-clean \
+    git+https://github.com/timonegk/colcon-core.git@colors \
+    git+https://github.com/timonegk/colcon-notification.git@colors \
+    git+https://github.com/timonegk/colcon-output.git@colors \
   && mkdir -p ~/git/bitbots \
   && cd ~/git/bitbots \
   && curl -fsSL https://raw.githubusercontent.com/bit-bots/bitbots_main/main/scripts/setup.sh > /tmp/setup.sh \
@@ -60,6 +66,15 @@ Manual steps with in depth explanation
     ros-iron-rmw-cyclonedds-cpp \
     ros-iron-rqt-robot-monitor \
     ros-iron-rqt-runtime-monitor
+
+- To aditionally get nice colored output from colcon, you can install the following pip packages:
+
+.. code-block:: bash
+  python3 -m pip install \
+    git+https://github.com/ruffsl/colcon-clean \
+    git+https://github.com/timonegk/colcon-core.git@colors \
+    git+https://github.com/timonegk/colcon-notification.git@colors \
+    git+https://github.com/timonegk/colcon-output.git@colors \
 
 **2. Install Webots**
 
