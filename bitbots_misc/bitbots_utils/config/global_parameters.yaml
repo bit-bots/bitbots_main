@@ -4,5 +4,7 @@ parameter_blackboard:
     field_width: 6.0
     field_length: 9.0
     goal_width: 2.6
+    penalty_area_length: 2.0
+    goal_area_length: 1.0
 
     robot_type_name: Wolfgang

@@ -131,7 +131,6 @@ class GoToBlockPosition(AbstractActionElement):
             list: goalie_pos
         """
         goalie_pos_x, goalie_pos_y = goalie_pos
-        penalty_area_length = 2.0  # TODO: Look for world_model parameter
         # cut if goalie is behind the goal happens when the ball is too close to the corner
         if goalie_pos_x < -self.blackboard.world_model.field_length / 2:
             goalie_pos_x = -self.blackboard.world_model.field_length / 2 + self.block_position_goal_offset
@@ -144,7 +143,9 @@ class GoToBlockPosition(AbstractActionElement):
         goalie_pos_x = np.clip(
             goalie_pos_x,
             -self.blackboard.world_model.field_length / 2,
-            -self.blackboard.world_model.field_length / 2 + penalty_area_length,
+            -self.blackboard.world_model.field_length / 2
+            + self.blackboard.world_model.penalty_area_length
+            - self.block_radius,
         )
         return (goalie_pos_x, goalie_pos_y)
 
