@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import subprocess
+import sys
 import threading
 
 import rclpy
@@ -49,9 +50,9 @@ class WebotsSim(Node):
     def run_simulation(self):
         # join with child process
         try:
-            exit(self.sim_proc.wait())
+            sys.exit(self.sim_proc.wait())
         except KeyboardInterrupt:
-            exit(self.sim_proc.returncode)
+            sys.exit(self.sim_proc.returncode)
 
 
 if __name__ == "__main__":
