@@ -192,7 +192,7 @@ class HardwareControlManager:
                 state = SetTeachingMode.Request.HOLD
 
         # Check if we are able to start the teaching mode
-        if state == SetTeachingMode.Request.TEACH and self.current_state not in [
+        if state == SetTeachingMode.Request.TEACH and self.blackboard.current_state not in [
             RobotControlState.CONTROLLABLE,
             RobotControlState.PICKED_UP,
             RobotControlState.PENALTY,
