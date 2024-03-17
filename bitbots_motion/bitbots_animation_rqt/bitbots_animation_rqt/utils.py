@@ -1,7 +1,8 @@
 from typing import Callable
 
-from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtCore import QObject, Qt, pyqtSignal
 from PyQt5.QtWidgets import QListWidget, QWidget
+from sensor_msgs.msg import JointState
 
 
 class DragDropList(QListWidget):
@@ -34,6 +35,10 @@ class DragDropList(QListWidget):
             self.setCurrentRow(self.currentRow() - 1)
         elif event.key() == Qt.Key_Down and self.currentRow() + 1 < self.count():
             self.setCurrentRow(self.currentRow() + 1)
+
+
+class JointStateCommunicate(QObject):
+    signal = pyqtSignal(JointState)
 
 
 def flatten_dict(input_dict: dict, parent_key: str = "", sep: str = ".") -> dict:

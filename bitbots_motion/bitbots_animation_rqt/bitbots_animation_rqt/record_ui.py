@@ -3,6 +3,7 @@ import math
 import os
 import sys
 
+import rclpy
 from ament_index_python import get_package_share_directory
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QKeySequence
@@ -28,8 +29,8 @@ from sensor_msgs.msg import JointState
 from std_srvs.srv import SetBool
 
 from bitbots_animation_rqt.animation_recording import Recorder
-from bitbots_animation_rqt.utils import DragDropList, flatten_dict_of_lists
-from bitbots_msgs.action import PlayAnimation
+from bitbots_animation_rqt.utils import DragDropList, JointStateCommunicate, flatten_dict_of_lists
+from bitbots_msgs.action import Dynup, PlayAnimation
 from bitbots_msgs.msg import JointTorque
 from bitbots_msgs.srv import AddAnimation
 
@@ -52,10 +53,19 @@ class RecordUI(Plugin):
 
         # Create a action client to play animations
         self.animation_client: ActionClient = ActionClient(self._node, PlayAnimation, "animation")
+        if not self.animation_client.wait_for_server(timeout_sec=5.0):
+            self._node.get_logger().error("Animation action server not available after waiting 5 seconds")
+        self.dynup_client = ActionClient(self._node, Dynup, "dynup")
+        if not self.dynup_client.wait_for_server(timeout_sec=5.0):
+            self._node.get_logger().error("Dynup action server not available after waiting 5 seconds")
 
         # Create a service clients
         self.add_animation_client = self._node.create_client(AddAnimation, "add_temporary_animation")
+        if not self.add_animation_client.wait_for_service(timeout_sec=5.0):
+            self._node.get_logger().error("AddAnimation service not available after waiting 5 seconds")
         self.hcm_record_mode_client = self._node.create_client(SetBool, "record_mode")
+        if not self.hcm_record_mode_client.wait_for_service(timeout_sec=5.0):
+            self._node.get_logger().error("RecordMode service not available after waiting 5 seconds")
 
         # Initialize the recorder module
         self.create_initialized_recorder()
@@ -170,6 +180,18 @@ class RecordUI(Plugin):
         # Store the joint states
         self._joint_states = joint_states
 
+        # Send the joint states to the main thread in a safe way
+        c = JointStateCommunicate()
+        c.signal.connect(self.q_joint_state_update)
+        c.signal.emit(joint_states)
+
+    def q_joint_state_update(self, joint_states: JointState) -> None:
+        """
+        Main thread callback for joint state updates.
+        """
+        # Check if we are doing a shutdown. Otherwise this callback might be called after the plugin was shut down and tries to access resources that are not available anymore
+        if not rclpy.ok():
+            return
         # Update working values of non stiff motors
         for motor_name in self.motors:
             if self._motor_controller_torque_checkbox[motor_name].checkState(0) != Qt.CheckState.Checked:
@@ -278,12 +300,21 @@ class RecordUI(Plugin):
         self._widget.actionInvert.triggered.connect(self.invert_frame)
         self._widget.actionUndo.triggered.connect(self.undo)
         self._widget.actionRedo.triggered.connect(self.redo)
+        self._widget.actionWalkready.triggered.connect(self.play_walkready)
         self._widget.actionHelp.triggered.connect(self.help)
         self._widget.buttonRecord.clicked.connect(self.record)
         self._widget.buttonRecord.shortcut = QShortcut(QKeySequence("Space"), self._widget)
         self._widget.buttonRecord.shortcut.activated.connect(self.record)
         self._widget.frameList.key_pressed.connect(self.delete)
         self._widget.frameList.itemSelectionChanged.connect(self.frame_select)
+
+    def play_walkready(self) -> None:
+        """
+        Plays the walkready animation on the robot
+        """
+        result: Dynup.Result = self.dynup_client.send_goal(Dynup.Goal(direction="walkready")).result
+        if not result.successful:
+            self._node.get_logger().error("Could not execute walkready animation")
 
     def help(self) -> None:
         """

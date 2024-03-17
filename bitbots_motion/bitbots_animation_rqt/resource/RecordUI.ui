@@ -191,6 +191,7 @@
    <addaction name="actionInvert"/>
    <addaction name="actionUndo"/>
    <addaction name="actionRedo"/>
+   <addaction name="actionWalkready"/>
    <addaction name="actionHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
@@ -320,6 +321,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Down</string>
+   </property>
+  </action>
+  <action name="actionWalkready">
+   <property name="text">
+    <string>Go to Walkready</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+W</string>
    </property>
   </action>
   <action name="actionHelp">
