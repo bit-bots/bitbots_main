@@ -18,7 +18,7 @@ class CancelPathplanning(AbstractActionElement):
 class WalkInPlace(AbstractActionElement):
     """This keeps walking in place and optionally pops itself after a given time"""
 
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
         self.blackboard: BodyBlackboard
         self.duration = parameters.get("duration", None)
@@ -41,7 +41,7 @@ class WalkInPlace(AbstractActionElement):
 class Stand(WalkInPlace):
     """This stops the robot's walking and optionally pops itself after a given time"""
 
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
         # Cancel the path planning if it is running
         self.blackboard.pathfinding.cancel_goal()
@@ -59,7 +59,7 @@ class Stand(WalkInPlace):
 class StandAndWaitRandom(Stand):
     """This stops the robot's walking for a random amount of time"""
 
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
         self.min = parameters.get("min", None)
         self.max = parameters.get("max", None)

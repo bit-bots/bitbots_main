@@ -10,7 +10,7 @@ from tf2_geometry_msgs import PoseStamped
 class GoToBlockPosition(AbstractActionElement):
     blackboard: BodyBlackboard
 
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
         self.block_position_goal_offset = self.blackboard.config["block_position_goal_offset"]
         self.block_radius = self.blackboard.config["block_radius_robot"]

@@ -13,14 +13,11 @@ class Install(AbstractTaskWhichRequiresSudo):
         """
         Task to install and update all dependencies.
 
-        :param remote_workspace: Path to the remote workspace to run rosdep in
+        :param remote_workspace: Path to the remote workspace
         """
         super().__init__()
 
         self._remote_workspace = remote_workspace
-
-        # TODO: also install pip upgrades
-        # TODO: sudo apt update && sudo apt upgrade -y
 
     def _run(self, connections: Group) -> GroupResult:
         """
@@ -30,13 +27,24 @@ class Install(AbstractTaskWhichRequiresSudo):
         :return: The results of the task.
         """
         internet_available_results = self._internet_available_on_target(connections)
-
         if not internet_available_results.succeeded:
             return internet_available_results
 
-        # Some hosts have an internet connection, install rosdeps
-        install_results = self._install_rosdeps(get_connections_from_succeeded(internet_available_results))
-        return install_results
+        # Some hosts have an internet connection, make updates and installs
+        apt_upgrade_results = self._apt_upgrade(get_connections_from_succeeded(internet_available_results))
+        if not apt_upgrade_results.succeeded:
+            return apt_upgrade_results
+
+        basler_install_results = self._install_basler(get_connections_from_succeeded(apt_upgrade_results))
+        if not basler_install_results.succeeded:
+            return basler_install_results
+
+        rosdep_results = self._install_rosdeps(get_connections_from_succeeded(basler_install_results))
+        if not rosdep_results.succeeded:
+            return rosdep_results
+
+        pip_upgrade_results = self._pip_upgrade(get_connections_from_succeeded(rosdep_results))
+        return pip_upgrade_results
 
     def _internet_available_on_target(self, connections: Group) -> GroupResult:
         """
@@ -60,6 +68,56 @@ class Install(AbstractTaskWhichRequiresSudo):
             results = e.result
         return results
 
+    def _apt_upgrade(self, connections: Group) -> GroupResult:
+        """
+        Upgrade all apt packages on the target.
+        Runs apt update and apt upgrade -y.
+
+        :param connections: The connections to remote servers.
+        :return: Results, with success if the upgrade succeeded on the target
+        """
+        print_debug("Updating apt")
+
+        cmd = "apt update"
+        print_debug(f"Calling {cmd}")
+        try:
+            update_results = connections.sudo(cmd, hide=hide_output(), password=self._sudo_password)
+            print_debug(f"Updated apt on the following hosts: {self._succeeded_hosts(update_results)}")
+        except GroupException as e:
+            print_err(f"Failed to update apt on the following hosts: {self._failed_hosts(e.result)}")
+            update_results = e.result
+
+        print_debug("Upgrading apt packages")
+
+        cmd = "apt upgrade -y"
+        print_debug(f"Calling {cmd}")
+        try:
+            upgrade_results = connections.sudo(cmd, hide=hide_output(), password=self._sudo_password)
+            print_debug(f"Upgraded apt packages on the following hosts: {self._succeeded_hosts(upgrade_results)}")
+        except GroupException as e:
+            print_err(f"Failed to upgrade apt packages on the following hosts: {self._failed_hosts(e.result)}")
+            upgrade_results = e.result
+        return update_results
+
+    def _install_basler(self, connections: Group) -> GroupResult:
+        """
+        Installs the basler camera drivers on the targets.
+
+        :param connections: The connections to remote servers.
+        :return: Results, with success if the install succeeded on the target
+        """
+        print_debug("Installing basler drivers")
+
+        cmd = f"{self._remote_workspace}/src/scripts/make_basler.sh --ci"
+        print_debug(f"Calling {cmd}")
+        try:
+            install_results = connections.sudo(cmd, hide=hide_output(), password=self._sudo_password)
+            print_debug(f"Installed basler drivers on the following hosts: {self._succeeded_hosts(install_results)}")
+        except GroupException as e:
+            print_err(f"Failed to install basler drivers on the following hosts: {self._failed_hosts(e.result)}")
+            install_results = e.result
+        return install_results
+
     def _install_rosdeps(self, connections: Group) -> GroupResult:
         """
         Install ROS dependencies.
@@ -71,12 +129,12 @@ class Install(AbstractTaskWhichRequiresSudo):
         The "sudo" functionality provided by fabric is not able to autofill in this case.
 
         :param connections: The connections to remote servers.
-        :return: Results, with success if the Target has an internet connection
+        :return: Results, with success if the install commands succeeded on the target
         """
         remote_src_path = os.path.join(self._remote_workspace, "src")
         print_debug(f"Gathering rosdep install commands in {remote_src_path}")
 
-        cmd = f"rosdep install --simulate --default-yes --ignore-src --from-paths {remote_src_path}"
+        cmd = f"rosdep update && rosdep install --simulate --default-yes --ignore-src --from-paths {remote_src_path}"
         print_debug(f"Calling {cmd}")
         try:
             gather_results = connections.run(cmd, hide=hide_output())
@@ -117,8 +175,6 @@ class Install(AbstractTaskWhichRequiresSudo):
             # Define command prefixes to search for
             apt_command_prefix = "sudo -H apt-get install -y "
             apt_packages: list[str] = []
-            # pip_command_prefix = ""  # TODO what is it?
-            # pip_packages: list[str] = []
 
             install_result: Optional[
                 Result
@@ -165,3 +221,22 @@ class Install(AbstractTaskWhichRequiresSudo):
                 installs_results.succeeded[key] = value
 
         return installs_results
+
+    def _pip_upgrade(self, connections: Group) -> GroupResult:
+        """
+        Install and upgrade all pip robot requirements on the target.
+
+        :param connections: The connections to remote servers.
+        :return: Results, with success if the upgrade succeeded on the target
+        """
+        print_debug("Upgrading pip packages")
+
+        cmd = f"pip3 install --upgrade -r {self._remote_workspace}/src/requirements/robot.txt"
+        print_debug(f"Calling {cmd}")
+        try:
+            upgrade_results = connections.run(cmd, hide=hide_output())
+            print_debug(f"Upgraded pip packages on the following hosts: {self._succeeded_hosts(upgrade_results)}")
+        except GroupException as e:
+            print_err(f"Failed to upgrade pip packages on the following hosts: {self._failed_hosts(e.result)}")
+            upgrade_results = e.result
+        return upgrade_results

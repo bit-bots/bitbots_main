@@ -8,6 +8,6 @@ class AbstractLocalizationActionElement(AbstractActionElement):
     AbstractLocalizationActionElement with a localization blackboard as its blackboard
     """
 
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
         self.blackboard: LocalizationBlackboard

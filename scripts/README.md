@@ -18,31 +18,31 @@ Five different tasks can be performed:
 
 - Get help and list all arguments:
 
-    ```bash
+    ```shell
     ./deploy_robots.py --help
     ```
 
 - Default usage: Run all tasks on the `nuc1` host:
 
-    ```bash
+    ```shell
     ./deploy_robots.py nuc1
     ```
 
 - Make all robots ready for games. This also launch the teamplayer software on all robots:
 
-    ```bash
+    ```shell
     ./deploy_robots.py ALL
     ```
 
 - Only run the sync and build tasks on the `nuc1` and `nuc2` hosts:
 
-    ```bash
+    ```shell
     ./deploy_robots.py --sync --build nuc1 nuc2
     ```
 
 - Only build the `bitbots_utils` ROS package on the `nuc1` host:
 
-    ```bash
+    ```shell
     ./deploy_robots.py --package bitbots_utils nuc1
     ```
 

@@ -7,7 +7,7 @@ from tf2_geometry_msgs import PoseStamped
 class AbstractGoToPassPosition(AbstractActionElement):
     blackboard: BodyBlackboard
 
-    def __init__(self, blackboard, dsd, accept, parameters=None):
+    def __init__(self, blackboard, dsd, accept, parameters):
         super().__init__(blackboard, dsd, parameters)
         self.max_x = self.blackboard.config["supporter_max_x"]
         self.pass_pos_x = self.blackboard.config["pass_position_x"]
@@ -52,7 +52,7 @@ class GoToPassPreparePosition(AbstractGoToPassPosition):
     Go to a position 1m left or right from the ball (whichever is closer) as preparation for a pass
     """
 
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, False, parameters)
 
 
@@ -61,5 +61,5 @@ class GoToPassAcceptPosition(AbstractGoToPassPosition):
     Go to a position forward of the ball to accept a pass from another robot.
     """
 
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, True, parameters)

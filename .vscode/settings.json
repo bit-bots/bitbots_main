@@ -1,5 +1,6 @@
 {
-    "autoDocstring.docstringFormat": "sphinx",
+    "autoDocstring.docstringFormat": "sphinx-notypes",
+    "autoDocstring.startOnNewLine": true,
     "cSpell.language": "en,de-de,lorem",
     "cSpell.words": [
         "ansible",
@@ -72,6 +73,7 @@
         "rclpy",
         "rhoban",
         "robocup",
+        "rory",
         "rosbag",
         "rosbags",
         "rosdep",
@@ -199,7 +201,5 @@
     "python.analysis.extraPaths": [
         "/opt/ros/iron/lib/python3.10/site-packages"
     ],
-
-
-
+    "cmake.configureOnOpen": false,
 }

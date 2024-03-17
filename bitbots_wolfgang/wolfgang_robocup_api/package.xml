@@ -10,11 +10,12 @@
 
   <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
 
+  <license>MIT</license>
+
   <author email="jan.gutsche@uni-hamburg.de">Jan Gutsche</author>
   <author email="timon.engelke@uni-hamburg.de">Timon Engelke</author>
   <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
 
-  <license>MIT</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
