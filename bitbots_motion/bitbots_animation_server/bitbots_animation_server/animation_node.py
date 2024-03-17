@@ -33,7 +33,7 @@ class AnimationNode(Node):
         super().__init__("animation_server")
         self.get_logger().debug("Starting Animation Server")
 
-        self.current_joint_states = None
+        self.current_joint_states: Optional[JointState] = None
         self.current_animation = None
         self.animation_cache: dict[str, Animation] = {}
         self.animation_running: bool = False
@@ -175,10 +175,11 @@ class AnimationNode(Node):
 
                 # Finish if spline ends or we reaches the explicitly defined premature end
                 if pose is None or (request.bounds and once and t > animator.get_keyframe_times()[request.end - 1]):
-                    # Animation is finished, tell it to the hcm
-                    hcm_result = self.hcm_animation_mode.call(SetBool.Request(data=False))
-                    if not hcm_result.success:
-                        self.get_logger().error(f"Failed to finish animation on HCM. Reason: {hcm_result.message}")
+                    # Animation is finished, tell it to the hcm (except if it is from the hcm)
+                    if not request.hcm:
+                        hcm_result = self.hcm_animation_mode.call(SetBool.Request(data=False))
+                        if not hcm_result.success:
+                            self.get_logger().error(f"Failed to finish animation on HCM. Reason: {hcm_result.message}")
 
                     # We give a positive result
                     goal.publish_feedback(PlayAnimation.Feedback(percent_done=100))
@@ -210,11 +211,11 @@ class AnimationNode(Node):
         """Sends an animation to the hcm"""
         self.hcm_publisher.publish(
             AnimationMsg(
-                header=Header(
-                    stamp=self.get_clock().now().to_msg(),
-                ),
                 from_hcm=from_hcm,
                 joint_command=JointCommand(
+                    header=Header(
+                        stamp=self.get_clock().now().to_msg(),
+                    ),
                     joint_names=pose.keys(),
                     positions=pose.values(),
                     velocities=[-1.0] * len(pose),
