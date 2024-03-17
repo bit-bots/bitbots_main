@@ -227,7 +227,7 @@ class DeployRobots:
             if not results.failed:
                 print_success(f"{task_prefix} completed.")
             elif results.failed:
-                print_err(f"{task_prefix} failed on the following hosts: {task._succeeded_hosts(results)}")
+                print_err(f"{task_prefix} failed on the following hosts: {task._failed_hosts(results)}")
                 sys.exit(1)
             current_task += 1
 
