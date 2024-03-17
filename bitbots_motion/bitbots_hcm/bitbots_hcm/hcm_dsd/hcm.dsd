@@ -1,14 +1,14 @@
 -->HCM
 $StartHCM
     START_UP --> @RobotStateStartup, @PlayAnimationDynup + direction:walkready
-    RUNNING --> $RecordAnimation
-        RECORD_ACTIVE --> @RobotStateRecord, @Wait
-        FREE --> $CheckMotors
-            MOTORS_NOT_STARTED --> @RobotStateStartup, @WaitForMotorStartup
-            OVERLOAD --> @RobotStateMotorOff, @CancelGoals, @StopWalking, @PlayAnimationFallingFront, @TurnMotorsOff, @Wait
-            PROBLEM --> @RobotStateHardwareProblem, @WaitForMotors
-            TURN_ON --> @TurnMotorsOn, @PlayAnimationDynup + direction:walkready, @Wait
-            OKAY --> $TeachingMode
+    RUNNING --> $CheckMotors
+        MOTORS_NOT_STARTED --> @RobotStateStartup, @Wait
+        OVERLOAD --> @RobotStateMotorOff, @CancelGoals, @StopWalking, @PlayAnimationFallingFront, @TurnMotorsOff, @Wait
+        PROBLEM --> @RobotStateHardwareProblem, @WaitForMotors
+        TURN_ON --> @TurnMotorsOn, @PlayAnimationDynup + direction:walkready, @Wait
+        OKAY --> $RecordAnimation
+            RECORD_ACTIVE --> @RobotStateRecord, @Wait
+            FREE --> $TeachingMode
                 TEACH --> @RobotStateRecord, @SetTorque + stiff:false, @Wait
                 HOLD --> @SetTorque + stiff:true, @Wait
                 FINISHED --> @SetTorque + stiff:true + r:false, @RobotStateControllable, @PlayAnimationDynup + direction:walkready
@@ -34,6 +34,7 @@ $StartHCM
                                         FALLING_BACK --> @RobotStateFalling, @CancelGoals, @StopWalking, @PlayAnimationFallingBack, @Wait
                                         NOT_FALLING --> $PlayingExternalAnimation
                                             ANIMATION_RUNNING --> @StopWalking, @RobotStateAnimationRunning, @Wait
+                                            ANIMATION_SERVER_TIMEOUT --> @CancelAnimation
                                             FREE --> $RecentWalkingGoals
                                                 STAY_WALKING --> @RobotStateWalking, @Wait
                                                 NOT_WALKING --> $RecentKickGoals

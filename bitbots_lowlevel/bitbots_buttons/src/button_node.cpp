@@ -51,7 +51,7 @@ class ButtonNode : public rclcpp::Node {
       RCLCPP_INFO(this->get_logger(), "service switch_power not available, waiting again...");
     }
 
-    teaching_mode_client_ = this->create_client<bitbots_msgs::srv::SetTeachingMode>("set_teaching_mode");
+    teaching_mode_client_ = this->create_client<bitbots_msgs::srv::SetTeachingMode>("teaching_mode");
     buttons_sub_ = this->create_subscription<bitbots_msgs::msg::Buttons>(
         "/buttons", 1, std::bind(&bitbots_buttons::ButtonNode::buttonCb, this, _1));
     gamestate_sub_ = this->create_subscription<game_controller_hl_interfaces::msg::GameState>(
