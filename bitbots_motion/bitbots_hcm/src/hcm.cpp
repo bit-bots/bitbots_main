@@ -33,25 +33,6 @@ class HCM_CPP : public rclcpp::Node {
     this->get_parameter("simulation_active", simulation_active);
     this->get_parameter("visualization_active", visualization_active);
 
-    // HCM state
-    current_state_ = bitbots_msgs::msg::RobotControlState::STARTUP;
-
-    // Sensor states
-    current_imu_ = sensor_msgs::msg::Imu();
-    current_pressure_left_ = bitbots_msgs::msg::FootPressure();
-    current_pressure_right_ = bitbots_msgs::msg::FootPressure();
-    current_joint_state_ = sensor_msgs::msg::JointState();
-
-    // Walking state
-    last_walking_time_ = builtin_interfaces::msg::Time();
-
-    // Kick state
-    last_kick_time_ = builtin_interfaces::msg::Time();
-
-    // Animation state
-    external_animation_running_ = false;
-    last_animation_goal_time_ = builtin_interfaces::msg::Time();
-
     // Initialize HCM logic
     // Import Python module
     // "from bitbots_hcm.humanoid_control_module import HardwareControlManager"
@@ -156,21 +137,33 @@ class HCM_CPP : public rclcpp::Node {
   void tick() {
     // Performs one tick of the HCM DSD
 
-    // Pass all the data nessesary data to the python module
-    hcm_py_.attr("set_imu")(ros2_python_extension::toPython(current_imu_));
-    hcm_py_.attr("set_pressure_left")(
-        ros2_python_extension::toPython<bitbots_msgs::msg::FootPressure>(current_pressure_left_));
-    hcm_py_.attr("set_pressure_right")(
-        ros2_python_extension::toPython<bitbots_msgs::msg::FootPressure>(current_pressure_right_));
-    hcm_py_.attr("set_current_joint_state")(
-        ros2_python_extension::toPython<sensor_msgs::msg::JointState>(current_joint_state_));
-    hcm_py_.attr("set_last_walking_goal_time")(
-        ros2_python_extension::toPython<builtin_interfaces::msg::Time>(last_walking_time_));
-    hcm_py_.attr("set_last_kick_goal_time")(
-        ros2_python_extension::toPython<builtin_interfaces::msg::Time>(last_kick_time_));
-    hcm_py_.attr("set_external_animation_running")(external_animation_running_);
-    hcm_py_.attr("set_last_animation_goal_time")(
-        ros2_python_extension::toPython<builtin_interfaces::msg::Time>(last_animation_goal_time_));
+    // Pass the data we have got until now to the python module
+    if (current_imu_) {
+      hcm_py_.attr("set_imu")(ros2_python_extension::toPython(current_imu_.value()));
+    }
+    if (current_pressure_left_) {
+      hcm_py_.attr("set_pressure_left")(
+          ros2_python_extension::toPython<bitbots_msgs::msg::FootPressure>(current_pressure_left_.value()));
+    }
+    if (current_pressure_right_) {
+      hcm_py_.attr("set_pressure_right")(
+          ros2_python_extension::toPython<bitbots_msgs::msg::FootPressure>(current_pressure_right_.value()));
+    }
+    if (current_joint_state_)
+      hcm_py_.attr("set_current_joint_state")(
+          ros2_python_extension::toPython<sensor_msgs::msg::JointState>(current_joint_state_.value()));
+    if (last_walking_time_) {
+      hcm_py_.attr("set_last_walking_goal_time")(
+          ros2_python_extension::toPython<builtin_interfaces::msg::Time>(last_walking_time_.value()));
+    }
+    if (last_kick_time_) {
+      hcm_py_.attr("set_last_kick_goal_time")(
+          ros2_python_extension::toPython<builtin_interfaces::msg::Time>(last_kick_time_.value()));
+    }
+    if (last_animation_goal_time_) {
+      hcm_py_.attr("set_last_animation_goal_time")(
+          ros2_python_extension::toPython<builtin_interfaces::msg::Time>(last_animation_goal_time_.value()));
+    }
 
     // Run HCM Python DSD code
     hcm_py_.attr("tick")();
@@ -192,23 +185,22 @@ class HCM_CPP : public rclcpp::Node {
   // Python hcm module
   py::object hcm_py_;
   // The current robot state
-  int current_state_;
+  int current_state_ = bitbots_msgs::msg::RobotControlState::STARTUP;
 
   // Sensor states
-  sensor_msgs::msg::Imu current_imu_;
-  bitbots_msgs::msg::FootPressure current_pressure_left_;
-  bitbots_msgs::msg::FootPressure current_pressure_right_;
-  sensor_msgs::msg::JointState current_joint_state_;
+  std::optional<sensor_msgs::msg::Imu> current_imu_;
+  std::optional<bitbots_msgs::msg::FootPressure> current_pressure_left_;
+  std::optional<bitbots_msgs::msg::FootPressure> current_pressure_right_;
+  std::optional<sensor_msgs::msg::JointState> current_joint_state_;
 
   // Walking state
-  builtin_interfaces::msg::Time last_walking_time_;
+  std::optional<builtin_interfaces::msg::Time> last_walking_time_;
 
   // Kick state
-  builtin_interfaces::msg::Time last_kick_time_;
+  std::optional<builtin_interfaces::msg::Time> last_kick_time_;
 
   // Animation states
-  bool external_animation_running_;
-  builtin_interfaces::msg::Time last_animation_goal_time_;
+  std::optional<builtin_interfaces::msg::Time> last_animation_goal_time_;
 
   // Publishers
   rclcpp::Publisher<bitbots_msgs::msg::JointCommand>::SharedPtr pub_controller_command_;

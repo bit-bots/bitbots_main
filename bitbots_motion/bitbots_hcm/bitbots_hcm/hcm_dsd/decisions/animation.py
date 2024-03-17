@@ -23,23 +23,36 @@ class PlayingExternalAnimation(AbstractHCMDecisionElement):
     """
 
     def perform(self, reevaluate=False):
-        # Calculate time since last animation goal
-        time_delta = (
-            self.blackboard.node.get_clock().now().nanoseconds / 1e9
-            - self.blackboard.last_animation_goal_time.nanoseconds / 1e9
-        )
-
-        # Log the time delta between now and the last animation goal
-        self.publish_debug_data("Last Animation Goal Time Delta", time_delta)
-
         # Check if the robot is currently playing an animation
-        if self.blackboard.external_animation_running:
-            if time_delta < 0.1:
-                return "ANIMATION_RUNNING"
-            else:
-                return "ANIMATION_SERVER_TIMEOUT"
-        else:
+        if not self.blackboard.external_animation_running:
             return "FREE"
+
+        self.blackboard.node.get_logger().info(str(self.blackboard.last_animation_goal_time))
+
+        # We can safely assume that the last animation start time is set because the animation is running
+        # Calculate time since last animation start
+        time_delta_since_last_animation_start = (
+            self.blackboard.node.get_clock().now().nanoseconds / 1e9
+            - self.blackboard.last_animation_start_time.nanoseconds / 1e9
+        )
+        # If the time since the last animation start is less than 0.5 seconds the animation just started and we might not have received the first command yet
+        if time_delta_since_last_animation_start < 0.5:
+            return "ANIMATION_RUNNING"
+
+        # If the animation is running for more longer we check if the last goal was more than 0.5 seconds ago and abort the animation if it was
+        # Check if the last animation goal was more than 0.5 seconds ago
+        if (
+            self.blackboard.last_animation_goal_time is None
+            or (
+                self.blackboard.node.get_clock().now().nanoseconds / 1e9
+                - self.blackboard.last_animation_goal_time.nanoseconds / 1e9
+            )
+            > 0.5
+        ):
+            return "ANIMATION_SERVER_TIMEOUT"
+
+        # We are recieving goals and the animation is running
+        return "ANIMATION_RUNNING"
 
     def get_reevaluate(self):
         return True
