@@ -24,6 +24,7 @@ from std_srvs.srv import SetBool
 
 from bitbots_hcm.hcm_dsd.hcm_blackboard import HcmBlackboard
 from bitbots_msgs.msg import FootPressure, RobotControlState
+from bitbots_msgs.srv import SetTeachingMode
 
 
 class HardwareControlManager:
@@ -85,8 +86,11 @@ class HardwareControlManager:
         self.node.create_subscription(DiagnosticArray, "diagnostics_agg", self.diag_cb, 1)
 
         # Create services
-        self.node.create_service(SetBool, "record_mode", self.set_record_active)
-        self.node.create_service(SetBool, "play_animation_mode", self.set_animation_mode)
+        self.node.create_service(SetBool, "record_mode", self.set_record_mode_callback)
+        self.node.create_service(SetBool, "play_animation_mode", self.set_animation_mode_callback)
+        self.teaching_mode_service = self.node.create_service(
+            SetTeachingMode, "teaching_mode", self.set_teaching_mode_callback
+        )
 
         # Store time of the last tick
         self.last_tick_start_time = self.node.get_clock().now()
@@ -145,13 +149,12 @@ class HardwareControlManager:
         """Returns the current state of the HCM."""
         return self.blackboard.current_state
 
-    # The following methods are used to set the blackboard values from the cpp part
-
-    def set_animation_mode(self, request: SetBool.Request, response: SetBool.Response):
+    def set_animation_mode_callback(self, request: SetBool.Request, response: SetBool.Response):
         # Check if the robot is in a state where it is allowed to play animations
         if request.data:  # We want to go into the animation mode
             if self.blackboard.current_state in [RobotControlState.CONTROLLABLE, RobotControlState.RECORD]:
-                self.set_external_animation_running(True)
+                self.blackboard.last_animation_start_time = self.node.get_clock().now()
+                self.blackboard.external_animation_running = True
                 response.success = True
                 response.message = "Robot is now in animation mode, have fun!"
                 return response
@@ -161,7 +164,7 @@ class HardwareControlManager:
                 return response
         else:  # We want to go out of the animation mode
             if self.blackboard.current_state in [RobotControlState.ANIMATION_RUNNING, RobotControlState.RECORD]:
-                self.set_external_animation_running(False)
+                self.blackboard.external_animation_running = False
                 response.success = True
                 response.message = "Animation stopped successfully"
                 return response
@@ -170,13 +173,48 @@ class HardwareControlManager:
                 response.message = "Robot is not in a state where it is allowed to stop animations"
                 return response
 
-    def set_external_animation_running(self, running: bool):
-        self.blackboard.external_animation_running = running
-
-    def set_record_active(self, request: SetBool.Request, response: SetBool.Response):
+    def set_record_mode_callback(self, request: SetBool.Request, response: SetBool.Response):
         self.blackboard.record_active = request.data
         response.success = True
         return response
+
+    def set_teaching_mode_callback(
+        self, request: SetTeachingMode.Request, response: SetTeachingMode.Response
+    ) -> SetTeachingMode.Response:
+        # Store modifiable version of the requested state.
+        state = request.state
+
+        # Modify requested state if request state is SWITCH so that it switches between HOLD and TEACH after it was turned on once.
+        if state == SetTeachingMode.Request.SWITCH:
+            if self.blackboard.teaching_mode_state in [SetTeachingMode.Request.HOLD, SetTeachingMode.Request.OFF]:
+                state = SetTeachingMode.Request.TEACH
+            elif self.blackboard.teaching_mode_state == SetTeachingMode.Request.TEACH:
+                state = SetTeachingMode.Request.HOLD
+
+        # Check if we are able to start the teaching mode
+        if state == SetTeachingMode.Request.TEACH and self.current_state not in [
+            RobotControlState.CONTROLLABLE,
+            RobotControlState.PICKED_UP,
+            RobotControlState.PENALTY,
+            RobotControlState.RECORD,
+        ]:
+            # Respond that we can not activate the teaching mode in the current state
+            response.success = False
+            return response
+
+        if (
+            state == SetTeachingMode.Request.HOLD
+            and self.blackboard.teaching_mode_state != SetTeachingMode.Request.TEACH
+        ):
+            response.success = False
+            return response
+
+        # Activate / Deactivate teaching mode
+        self.blackboard.teaching_mode_state = state
+        response.success = True
+        return response
+
+    # The following methods are used to set the blackboard values from the cpp part
 
     def set_last_animation_goal_time(self, time_msg_serialized: bytes):
         self.blackboard.last_animation_goal_time = Time.from_msg(deserialize_message(time_msg_serialized, TimeMsg))
