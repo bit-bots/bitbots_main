@@ -4,13 +4,16 @@
   <arg name="bias_alpha" default="0.05"/>
   <arg name="do_adaptive_gain" default="false"/>
   <arg name="gain_acc" default="0.01"/>
+  <arg name="ns" default="imu"/>
 
   <node pkg="imu_complementary_filter" exec="complementary_filter_node"
-        name="complementary_filter_gain_node" output="screen">
+        name="complementary_filter_gain_node_$(var ns)" output="screen">
     <param name="use_sim_time" value="$(var sim)"/>
     <param name="do_bias_estimation" value="$(var do_bias_estimation)"/>
     <param name="bias_alpha" value="$(var bias_alpha)"/>
     <param name="do_adaptive_gain" value="$(var do_adaptive_gain)"/>
     <param name="gain_acc" value="$(var gain_acc)"/>
+    <remap from="imu/data_raw" to="$(var ns)/data_raw"/>
+    <remap from="imu/data" to="$(var ns)/data" />
   </node>
 </launch>

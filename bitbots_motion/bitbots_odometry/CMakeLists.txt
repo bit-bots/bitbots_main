@@ -9,6 +9,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(biped_interfaces REQUIRED)
 find_package(bitbots_docs REQUIRED)
+find_package(bitbots_msgs REQUIRED)
 find_package(bitbots_utils REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(generate_parameter_library REQUIRED)
@@ -22,6 +23,7 @@ find_package(tf2 REQUIRED)
 find_package(tf2_eigen REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
+find_package(std_msgs REQUIRED)
 
 generate_parameter_library(odometry_parameters
                            config/odometry_config_template.yaml)
@@ -32,15 +34,23 @@ add_compile_options(-Wall -Werror -Wno-unused)
 
 add_executable(odometry_fuser src/odometry_fuser.cpp)
 add_executable(motion_odometry src/motion_odometry.cpp)
+add_executable(walk_support_state_detector src/walk_support_state_detector.cpp)
 
 target_link_libraries(motion_odometry rclcpp::rclcpp odometry_parameters)
 
-# Specify libraries to link a library or executable target against
+target_link_libraries(
+  walk_support_state_detector
+  rclcpp::rclcpp
+  odometry_parameters
+)
+
+## Specify libraries to link a library or executable target against
 ament_target_dependencies(
   motion_odometry
   ament_cmake
   biped_interfaces
   bitbots_docs
+  bitbots_msgs
   bitbots_utils
   generate_parameter_library
   geometry_msgs
@@ -52,7 +62,17 @@ ament_target_dependencies(
   tf2
   tf2_eigen
   tf2_geometry_msgs
-  tf2_ros)
+  tf2_ros
+  std_msgs
+)
+
+ament_target_dependencies(
+  walk_support_state_detector
+  bitbots_msgs
+  biped_interfaces
+  generate_parameter_library
+  std_msgs
+)
 
 ament_target_dependencies(
   odometry_fuser
@@ -78,7 +98,11 @@ install(TARGETS motion_odometry DESTINATION lib/${PROJECT_NAME})
 
 install(TARGETS odometry_fuser DESTINATION lib/${PROJECT_NAME})
 
-install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
+install(TARGETS walk_support_state_detector
+        DESTINATION lib/${PROJECT_NAME})
+
+install(DIRECTORY launch
+        DESTINATION share/${PROJECT_NAME})
 
 install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
 

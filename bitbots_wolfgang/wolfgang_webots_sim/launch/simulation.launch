@@ -34,6 +34,17 @@
             <arg name="robot_type" value="$(var robot_type)"/>
         </include>
         <include file="$(find-pkg-share wolfgang_webots_sim)/launch/imu_filter_sim.launch"/>
+        <group if="$(eval '\'$(var robot_type)\' == \'wolfgang\' ')">
+            <include file="$(find-pkg-share wolfgang_webots_sim)/launch/imu_filter_sim.launch">
+                <arg name="ns" value="imu_head"/>
+            </include>
+            <include file="$(find-pkg-share wolfgang_webots_sim)/launch/imu_filter_sim.launch">
+                <arg name="ns" value="imu_l_foot"/>
+            </include>
+            <include file="$(find-pkg-share wolfgang_webots_sim)/launch/imu_filter_sim.launch">
+                <arg name="ns" value="imu_r_foot"/>
+            </include>
+        </group>
     </group>
 
     <!-- case for multiple robots -->
