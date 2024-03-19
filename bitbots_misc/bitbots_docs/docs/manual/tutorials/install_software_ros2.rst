@@ -8,42 +8,26 @@ In this tutorial, we will learn how to install ROS2 Iron Irwini on Ubuntu 22.04 
 
 As ROS works best on Ubuntu, we are using this distribution.
 Currently, ROS2 Iron runs on Ubuntu 22.04.
-If you are not already using Ubuntu 22.04, consider installing it on your system (perhaps as a dual boot), alternately you can run it in a virtual machine (not recommended, as recently we had some issues with it; https://www.virtualbox.org/) or use the ROS2 docker (https://github.com/timonegk/rosdocked)
+If you are not already using Ubuntu 22.04, consider installing it on your system (perhaps as a dual boot), alternately you can run it in a virtual machine (not recommended, as recently we had some issues with it; https://www.virtualbox.org/), a custom ROS2 docker setup (https://github.com/timonegk/rosdocked).
+
+Alternatively you can use a devcontainer :doc:`vscode-dev-container`, with a preconfigured environment and follow those instructions, as these docs do not apply to the devcontainer.
 
 **TLDR**: single command setup
 ------------------------------
 
 **Prerequirements**
-- running Ubuntu 22.04 environment
+- running Ubuntu 22.04 environment (native, VM, or custom ROS2 docker setup)
 - existing Github account and with SSH key added to your account
+- root access to your system (sudo)
 
-If you have not previously setup any of our software stack, you can use the following command to install and setup everything in one go:
+If you have not previously set up any of our software stack, you can use the following command to install and setup everything in one go:
 
 .. code-block:: bash
 
-  sudo apt install \
-    clang-format \
-    cppcheck \
-    python3-colcon-clean \
-    python3-colcon-common-extensions \
-    python3-pip \
-    python3-rosdep \
-    python3-vcstool \
-    ros-iron-desktop-full \
-    ros-iron-plotjuggler-ros \
-    ros-iron-rmw-cyclonedds-cpp \
-    ros-iron-rqt-robot-monitor \
-    ros-iron-rqt-runtime-monitor \
-  && python3 -m pip install \
-    git+https://github.com/ruffsl/colcon-clean \
-    git+https://github.com/timonegk/colcon-core.git@colors \
-    git+https://github.com/timonegk/colcon-notification.git@colors \
-    git+https://github.com/timonegk/colcon-output.git@colors \
-  && mkdir -p ~/git/bitbots \
-  && cd ~/git/bitbots \
-  && curl -fsSL https://raw.githubusercontent.com/bit-bots/bitbots_main/main/scripts/setup.sh > /tmp/setup.sh \
-  && bash /tmp/setup.sh
-
+  mkdir -p ~/git/bitbots \
+    && cd ~/git/bitbots \
+    && curl -fsSL https://raw.githubusercontent.com/bit-bots/bitbots_main/main/scripts/setup.sh > /tmp/setup.sh \
+    && bash /tmp/setup.sh
 
 Manual steps with in depth explanation
 --------------------------------------
