@@ -1,43 +1,43 @@
 {
-    "name": "Bit-Bots Iron Dev",
+  "name": "Bit-Bots Iron Dev",
 
-    "build": { "dockerfile": "Dockerfile" },
+  "build": { "dockerfile": "Dockerfile" },
 
-    "containerEnv": {
-      "DISPLAY": "${localEnv:DISPLAY}",
-      "LIBGL_ALWAYS_SOFTWARE": "1",
-      "QT_X11_NO_MITSHM": "1",
-      "DOCKER": "1"
-    },
+  "containerEnv": {
+    "DISPLAY": "${localEnv:DISPLAY}",
+    "LIBGL_ALWAYS_SOFTWARE": "1",
+    "QT_X11_NO_MITSHM": "1",
+    "DOCKER": "1"
+  },
 
-    "customizations": {
-        "vscode": {
-            "settings": {
-                "terminal.integrated.defaultProfile.linux": "zsh",
-                "terminal.integrated.profiles.linux": { "zsh": { "path": "/bin/zsh" } }
-            },
-            "extensions": [
-              "ms-iot.vscode-ros"
-            ]
-        }
-    },
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "zsh",
+        "terminal.integrated.profiles.linux": { "zsh": { "path": "/bin/zsh" } }
+      },
+      "extensions": ["ms-iot.vscode-ros"]
+    }
+  },
 
-    "workspaceMount": "type=bind,source=${localWorkspaceFolder},target=/root/colcon_ws/src/bitbots_main",
-    "workspaceFolder": "/root/colcon_ws/src/bitbots_main",
+  "workspaceMount": "type=bind,source=${localWorkspaceFolder},target=/root/colcon_ws/src/bitbots_main",
+  "workspaceFolder": "/root/colcon_ws/src/bitbots_main",
 
-    "mounts": [
-      "type=bind,source=${localEnv:HOME},target=/srv/host_home,consistency=cached",
-    ],
+  "mounts": [
+    "type=bind,source=${localEnv:HOME},target=/srv/host_home,consistency=cached"
+  ],
 
-    "runArgs": [
-      "--tmpfs", "/tmp:exec,mode=01777",
-      "--privileged",
-      "--net=host",
-      "--device=/dev/dri:/dev/dri",
-      "--volume=/tmp/.X11-unix:/tmp/.X11-unix",
-      "--cap-add=SYS_PTRACE",
-      "--security-opt", "seccomp=unconfined"
-    ],
+  "runArgs": [
+    "--tmpfs",
+    "/tmp:exec,mode=01777",
+    "--privileged",
+    "--net=host",
+    "--device=/dev/dri:/dev/dri",
+    "--volume=/tmp/.X11-unix:/tmp/.X11-unix",
+    "--cap-add=SYS_PTRACE",
+    "--security-opt",
+    "seccomp=unconfined"
+  ],
 
-    "postCreateCommand": "git config --global --add safe.directory '*'"
-  }
+  "postCreateCommand": "git config --global --add safe.directory '*'"
+}
