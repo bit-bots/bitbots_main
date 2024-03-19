@@ -8,7 +8,6 @@ from ament_index_python.packages import get_package_share_directory
 from cv_bridge import CvBridge
 from rcl_interfaces.msg import SetParametersResult
 from rclpy.node import Node
-from rclpy.qos import qos_profile_sensor_data
 from sensor_msgs.msg import Image
 
 from bitbots_vision.vision_modules import ros_utils, yoeo
@@ -133,7 +132,6 @@ class YOEOVision(Node):
             "ROS_img_msg_topic",
             Image,
             callback=self._image_callback,
-            qos_profile=qos_profile_sensor_data,
         )
 
     def _image_callback(self, image_msg: Image) -> None:
