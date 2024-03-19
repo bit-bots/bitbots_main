@@ -64,12 +64,13 @@ class GoToBlockPosition(AbstractActionElement):
 
         self.blackboard.pathfinding.publish(pose_msg)
 
-    def _calc_opening_angle(self, ball_to_line, ball_pos):
+    def _calc_opening_angle(self, ball_to_line: float, ball_pos: tuple) -> float:
         """
         Calculates the opening angle of the ball to both goalposts.
         With it we can get the angle bisector, in which we place the robot.
         Args:
-            ball_to_line (float): distance of the ball to our goal line
+            ball_to_line: distance of the ball to our goal line
+            ball_pos: ball position in world koordinate system
 
         Returns:
             float: opening angle
@@ -84,7 +85,7 @@ class GoToBlockPosition(AbstractActionElement):
         return opening_angle_ball
 
     def _get_robot_pose(
-        self, angle_bisector: float, ball_to_line_distance: float, ball_pos: tuple
+        self, angle_bisector: float, ball_to_line_distance: float, ball_pos: tuple[float, float]
     ) -> tuple[float, float]:
         """
         Calculates the position where the robot should be to block the ball.
@@ -96,6 +97,8 @@ class GoToBlockPosition(AbstractActionElement):
             ball_to_line_distance: distance of the ball to the goal line
             ball_pos: ball position in world koordinate system
 
+        Returns:
+            tuple: goalie_position
         """
         left_goalpost_to_ball = math.dist(self.left_goalpost_position, ball_pos)
         right_goalpost_to_ball = math.dist(self.right_goalpost_position, ball_pos)
@@ -119,16 +122,17 @@ class GoToBlockPosition(AbstractActionElement):
         # calculate the angle, the robot needs to turn to look at the ball
         return (goalie_x, goalie_y)
 
-    def _cut_goalie_pos(self, goalie_pos, ball_pos):
+    def _cut_goalie_pos(self, goalie_pos: tuple[float, float], ball_pos: tuple[float, float]) -> tuple[float, float]:
         """
         Cut the goalie position if he is behind the goal or wants to leave the designated
         goal area.
 
         Args:
-            goalie_pos (list): a list which contains [goalie_y, goalie_x] position
+            goalie_pos: a tuple which contains [goalie_y, goalie_x] position
+            ball_pos: a tuple which contains [ball_y, ball_x] position
 
         Returns:
-            list: goalie_pos
+            tuple: goalie_position
         """
         goalie_pos_x, goalie_pos_y = goalie_pos
         # cut if goalie is behind the goal happens when the ball is too close to the corner
@@ -149,7 +153,17 @@ class GoToBlockPosition(AbstractActionElement):
         )
         return (goalie_pos_x, goalie_pos_y)
 
-    def _calc_turn_to_ball_angle(self, ball_pos, goalie_pos):
+    def _calc_turn_to_ball_angle(self, ball_pos: tuple[float, float], goalie_pos: tuple[float, float]) -> float:
+        """
+        Calculates the angle the robot needs to turn to look at the ball.
+
+        Args:
+            ball_pos: a tuple which contains [ball_y, ball_x] position
+            goalie_pos: a tuple which contains [goalie_y, goalie_x] position
+
+        Returns:
+            float: angle
+        """
         robot_to_ball_x = ball_pos[0] - goalie_pos[0]
         robot_to_ball_y = ball_pos[1] - goalie_pos[1]
         angle = np.arctan2(robot_to_ball_y, robot_to_ball_x)
