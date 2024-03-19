@@ -13,19 +13,12 @@
         <param name="enable_current_params_publisher" value="true" />
     </node>
     <!-- Debayer + Binning -->
-    <node_container pkg="rclcpp_components" exec="component_container" name="head_camera_image_proc_container" namespace="" launch-prefix="$(var taskset)">
-        <composable_node pkg="image_proc" plugin="image_proc::DebayerNode" name="debayer">
-            <remap from="image_raw" to="/pylon_camera_node/image_raw"/>
-            <remap from="camera_info" to="/pylon_camera_node/camera_info"/>
-            <remap from="image_color" to="/camera/image_raw"/>
-            <remap from="image_mono" to="/camera/image_mono"/>
-        </composable_node>
-        <composable_node pkg="image_proc" plugin="image_proc::CropDecimateNode" name="crop_decimate">
-            <remap from="in/image_raw" to="/camera/image_raw"/>
-            <remap from="in/camera_info" to="/pylon_camera_node/camera_info"/>
-            <remap from="out/image_raw" to="/camera/image_proc"/>
-            <remap from="out/camera_info" to="/camera/camera_info"/>
-            <param from="$(find-pkg-share bitbots_basler_camera)/config/binning.yaml"/>
-        </composable_node>
-    </node_container>
+    <node pkg="bitbots_basler_camera" exec="postprocessing" name="basler_camera_post_processing" output="screen" launch-prefix="$(var taskset)">
+        <remap from="in/image_raw" to="/pylon_camera_node/image_raw" />
+        <remap from="in/camera_info" to="/pylon_camera_node/camera_info" />
+        <remap from="out/image_proc" to="/camera/image_proc" />
+        <remap from="out/camera_info" to="/camera/camera_info" />
+        <param name="binning_factor_x" value="4" />
+        <param name="binning_factor_y" value="4" />
+    </node>
 </launch>
