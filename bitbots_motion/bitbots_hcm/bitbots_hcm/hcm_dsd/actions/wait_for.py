@@ -45,14 +45,6 @@ class WaitForPressure(AbstractHCMActionElement):
         )
 
 
-class WaitForMotorStartup(AbstractHCMActionElement):
-    """
-    Waits for the motors on startup without complaining if it takes a moment.
-    """
-
-    pass
-
-
 class WaitForMotors(AbstractHCMActionElement):
     """
     Waits for the motors to connect and publishes warnings while doing so

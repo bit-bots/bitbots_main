@@ -2,6 +2,7 @@ import argparse
 import ipaddress
 import os
 import subprocess
+import sys
 from typing import Any, Iterable, Optional
 
 import yaml
@@ -93,7 +94,7 @@ try:
         KNOWN_TARGETS: dict[str, dict[str, str]] = yaml.safe_load(f)
 except FileNotFoundError:
     print_err(f"Could not find known_targets.yaml in {_known_targets_path}")
-    exit(1)
+    sys.exit(1)
 
 
 def print_known_targets() -> None:
@@ -108,7 +109,7 @@ def print_known_targets() -> None:
         table.add_row(values.get("hostname", ""), values.get("robot_name", ""), ip)
     print_info("You can enter the following values as targets:")
     CONSOLE.print(table)
-    exit(0)
+    sys.exit(0)
 
 
 def get_known_targets() -> dict[str, dict[str, str]]:
@@ -175,10 +176,10 @@ def _parse_targets(input_targets: str) -> list[str]:
             target_ip = _identify_ip(input_target)
         except ValueError:
             print_err(f"Could not determine IP address from input: '{input_target}'")
-            exit(1)
+            sys.exit(1)
         if target_ip is None:
             print_err(f"Could not determine IP address from input:' {input_target}'")
-            exit(1)
+            sys.exit(1)
         target_ips.append(target_ip)
     return target_ips
 
@@ -231,7 +232,7 @@ def _get_connections_from_targets(
         failure_table.add_column("Reason")
         [failure_table.add_row(connection.host, reason) for connection, reason in failures]
         CONSOLE.print(failure_table)
-        exit(1)
+        sys.exit(1)
     return connections
 
 
@@ -265,7 +266,7 @@ def _get_connections_from_all_known_targets(user: str, connection_timeout: Optio
         open_connections.append(connection)
     if len(open_connections) == 0:
         print_err("Could not establish any connection to the known targets. Exiting...")
-        exit(1)
+        sys.exit(1)
     return ThreadingGroup.from_connections(open_connections)
 
 
@@ -311,6 +312,6 @@ class ArgumentParserShowTargets(argparse.ArgumentParser):
         if "the following arguments are required" in message:
             print_err(message)
             print_known_targets()
-            exit(0)
+            sys.exit(0)
         else:
             super().error(message)

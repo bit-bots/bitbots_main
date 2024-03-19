@@ -3,6 +3,7 @@
     "autoDocstring.startOnNewLine": true,
     "cSpell.language": "en,de-de,lorem",
     "cSpell.words": [
+        "animatable",
         "ansible",
         "autoconnect",
         "basler",
@@ -87,6 +88,7 @@
         "seaborn",
         "segmentations",
         "ssid",
+        "std_srvs",
         "taskset",
         "teamplayer",
         "teleop",

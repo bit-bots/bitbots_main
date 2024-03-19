@@ -27,8 +27,7 @@ def set_moveit_parameters(parameters: [Parameter], type):
     elif type == "collision":
         collision_state = BitbotsMoveitBindings("moveit_bindings_collision", serialized_parameters)
     else:
-        print("Type for bitbots_moveit_bindings state not correctly defined")
-        exit(1)
+        raise ValueError("Type for bitbots_moveit_bindings state not correctly defined")
 
 
 def get_position_ik(request: GetPositionIK.Request, approximate=False):

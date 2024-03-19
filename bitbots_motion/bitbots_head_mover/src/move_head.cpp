@@ -56,8 +56,8 @@ class HeadMover {
   std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
 
   // Declare variables
-  uint head_mode_;
-  std::shared_ptr<sensor_msgs::msg::JointState> current_joint_state_;
+  uint head_mode_ = bitbots_msgs::msg::HeadMode::LOOK_FORWARD;
+  std::optional<sensor_msgs::msg::JointState> current_joint_state_;
   bitbots_msgs::msg::JointCommand pos_msg_;
   geometry_msgs::msg::PoseWithCovarianceStamped tf_precision_pose_;
 
@@ -192,7 +192,7 @@ class HeadMover {
   /**
    * @brief Callback used to get updates of the current joint states of the robot
    */
-  void joint_state_callback(const sensor_msgs::msg::JointState::SharedPtr msg) { current_joint_state_ = msg; }
+  void joint_state_callback(const sensor_msgs::msg::JointState::SharedPtr msg) { current_joint_state_ = *msg; }
 
   /***
    * @brief Handles the goal request for the look at action
@@ -713,6 +713,11 @@ class HeadMover {
 
     // Pull the parameters from the parameter server
     params_ = param_listener_->get_params();
+
+    // Check if we received the joint states yet and if not, return
+    if (!current_joint_state_) {
+      return;
+    }
 
     // Check if the head mode changed and if so, update the search pattern
     if (prev_head_mode_ != curr_head_mode) {

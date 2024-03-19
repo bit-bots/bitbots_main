@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 import os
+import sys
 
 import rclpy
 import yaml
@@ -29,7 +30,7 @@ if __name__ == "__main__":
                 env_kwargs = loaded_args["env_kwargs"]
     else:
         node.get_logger().fatal(f"No args.yml found in {args_path}")
-        exit()
+        sys.exit()
 
     env_kwargs["node"] = node
     print(env_kwargs)
