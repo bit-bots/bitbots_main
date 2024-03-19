@@ -9,9 +9,10 @@
         <remap to="/camera/camera_info" from="camera_info"/>
         <remap to="/line_mask_in_image" from="input"/>
         <remap to="/line_mask_relative_pc" from="projected_point_cloud"/>
-        <param name="type" value="mask"/>
-        <param name="scale" value="0.2"/>
         <param name="output_frame" value="base_footprint"/>
+        <param name="scale" value="0.2"/>
+        <param name="type" value="mask"/>
+        <param name="use_distortion" value="true"/>
         <param name="use_sim_time" value="$(var sim)"/>
     </node>
     <node pkg="soccer_ipm" exec="ipm" name="soccer_ipm" output="screen">
@@ -25,9 +26,10 @@
             <remap to="/camera/camera_info" from="camera_info"/>
             <remap to="/camera/image_proc" from="input"/>
             <remap to="/projected_camera_image" from="projected_point_cloud"/>
-            <param name="type" value="rgb_image"/>
-            <param name="scale" value="1.0"/>
             <param name="output_frame" value="base_footprint"/>
+            <param name="scale" value="1.0"/>
+            <param name="type" value="rgb_image"/>
+            <param name="use_distortion" value="true"/>
             <param name="use_sim_time" value="$(var sim)"/>
         </node>
     </group>

@@ -23,14 +23,9 @@
         <composable_node pkg="image_proc" plugin="image_proc::CropDecimateNode" name="crop_decimate">
             <remap from="in/image_raw" to="/camera/image_raw"/>
             <remap from="in/camera_info" to="/pylon_camera_node/camera_info"/>
-            <remap from="out/image_raw" to="/camera/image_unrect"/>
+            <remap from="out/image_raw" to="/camera/image_proc"/>
             <remap from="out/camera_info" to="/camera/camera_info"/>
             <param from="$(find-pkg-share bitbots_basler_camera)/config/binning.yaml"/>
-        </composable_node>
-        <composable_node pkg="image_proc" plugin="image_proc::RectifyNode" name="rectify">
-            <remap from="image" to="/camera/image_unrect"/>
-            <remap from="camera_info" to="/camera/camera_info"/>
-            <remap from="image_rect" to="/camera/image_proc"/>
         </composable_node>
     </node_container>
 </launch>
