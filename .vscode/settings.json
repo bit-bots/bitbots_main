@@ -190,7 +190,9 @@
         "typeindex": "cpp",
         "typeinfo": "cpp",
         "valarray": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "regex": "cpp",
+        "future": "cpp"
     },
 
     // Tell the ROS extension where to find the setup.bash
