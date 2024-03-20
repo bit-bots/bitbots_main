@@ -30,8 +30,8 @@ class PostProcessor {
         transport_hints_(node_.get()),
         image_sub_(std::make_unique<image_transport::CameraSubscriber>(image_transport::create_camera_subscription(
             node_.get(), "in/image_raw", std::bind(&PostProcessor::image_callback, this, _1, _2),
-            transport_hints_.getTransport()))),
-        image_pub_(std::make_unique<image_transport::CameraPublisher>(
+            transport_hints_.getTransport(), rclcpp::QoS(1).get_rmw_qos_profile()))),
+          image_pub_(std::make_unique<image_transport::CameraPublisher>(
             image_transport::create_camera_publisher(node_.get(), "out/image_proc"))) {
     // Declare parameters
     node_->declare_parameter("binning_factor_x", 4);
