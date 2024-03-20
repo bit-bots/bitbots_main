@@ -76,8 +76,7 @@ class PostProcessor {
     } else if (image_msg->encoding == sensor_msgs::image_encodings::BAYER_GRBG8 ||  // NOLINT
                image_msg->encoding == sensor_msgs::image_encodings::BAYER_GRBG16) {
       code = cv::COLOR_BayerGB2BGR;
-    }
-    code += cv::COLOR_BayerBG2BGR_VNG - cv::COLOR_BayerBG2BGR;
+    };
 
     // Debayer the image
     cv::cvtColor(bayer, color, code);
