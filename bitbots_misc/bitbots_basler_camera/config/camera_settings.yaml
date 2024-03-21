@@ -110,3 +110,6 @@ pylon_camera_node:
     gige/inter_pkg_delay: 4000
 
     rectification_active: false
+
+    # Only grab the latest image
+    grab_strategy: 1
