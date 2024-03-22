@@ -37,16 +37,22 @@ pylon_camera_parameters:
     default_value: ""
     read_only: true
     description: "The URL of the camera calibration file."
+    validation:
+      not_empty<>: []
   device_user_id:
     type: string
-    default_value: "camera"
+    default_value: ""
     read_only: true
     description: "The name of the camera (used to discover the camera). The name can be set in the pylon viewer."
+    validation:
+      not_empty<>: []
   camera_frame_id:
     type: string
     default_value: "camera_optical_frame"
     read_only: true
     description: "The tf frame at which the camera's optical center is located."
+    validation:
+      not_empty<>: []
   gige:
     mtu_size:
       type: int
