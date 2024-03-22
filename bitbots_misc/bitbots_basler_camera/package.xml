@@ -16,9 +16,10 @@
   <depend>cv_bridge</depend>
   <depend>image_transport</depend>
   <depend>libopencv-dev</depend>
-  <depend>pylon_ros2_camera_wrapper</depend>
   <depend>rclcpp</depend>
   <depend>sensor_msgs</depend>
+  <depend>camera_info_manager</depend>
+  <depend>generate_parameter_library</depend>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 

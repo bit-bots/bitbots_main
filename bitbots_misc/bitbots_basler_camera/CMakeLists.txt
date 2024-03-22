@@ -14,12 +14,20 @@ find_package(image_transport REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(pylon 7.1.0 REQUIRED)
+find_package(camera_info_manager REQUIRED)
+find_package(generate_parameter_library REQUIRED)
 
 add_compile_options(-Wall -Werror -Wno-unused)
 
+generate_parameter_library(
+  pylon_camera_parameters # cmake target name for the parameter library
+  config/camera_settings.yaml)
+
 add_executable(postprocessing src/postprocessing.cpp)
 
-target_link_libraries(postprocessing ${OpenCV_LIBRARIES})
+target_link_libraries(postprocessing ${OpenCV_LIBRARIES} pylon::pylon
+                      pylon_camera_parameters)
 
 ament_target_dependencies(
   postprocessing
@@ -29,6 +37,8 @@ ament_target_dependencies(
   image_transport
   rclcpp
   sensor_msgs
+  camera_info_manager
+  generate_parameter_library
   OpenCV)
 
 enable_bitbots_docs()
