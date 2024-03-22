@@ -24,13 +24,13 @@ generate_parameter_library(
   pylon_camera_parameters # cmake target name for the parameter library
   config/camera_settings.yaml)
 
-add_executable(postprocessing src/postprocessing.cpp)
+add_executable(basler_camera src/basler_camera.cpp)
 
-target_link_libraries(postprocessing ${OpenCV_LIBRARIES} pylon::pylon
+target_link_libraries(basler_camera ${OpenCV_LIBRARIES} pylon::pylon
                       pylon_camera_parameters)
 
 ament_target_dependencies(
-  postprocessing
+  basler_camera
   ament_cmake
   bitbots_docs
   cv_bridge
@@ -43,7 +43,7 @@ ament_target_dependencies(
 
 enable_bitbots_docs()
 
-install(TARGETS postprocessing DESTINATION lib/${PROJECT_NAME})
+install(TARGETS basler_camera DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
 

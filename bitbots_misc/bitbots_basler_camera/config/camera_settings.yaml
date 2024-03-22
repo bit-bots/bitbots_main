@@ -6,17 +6,11 @@ pylon_camera_parameters:
     validation:
       bounds<>: [0.0, 1000000.0]
   gain:
-    type: double
-    default_value: 0.55
+    type: int
+    default_value: 200
     description: "The target gain in percent of the maximal value the camera supports."
     validation:
-      bounds<>: [0.0, 1.0]
-  gamma:
-    type: double
-    default_value: 1.0
-    description: "Gamma correction of pixel intensity."
-    validation:
-      bounds<>: [0.0, 2.0]
+      bounds<>: [0, 360]
   fps:
     type: double
     default_value: 10.0
@@ -56,13 +50,13 @@ pylon_camera_parameters:
   gige:
     mtu_size:
       type: int
-      default_value: 8000
+      default_value: 9000
       description: "The MTU size for GigE cameras."
       read_only: true
 
     inter_pkg_delay:
       type: int
-      default_value: 4000
+      default_value: 1000
       description: "The inter-package delay in 'ticks' for GigE cameras."
       read_only: true
       validation:

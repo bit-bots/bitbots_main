@@ -34,6 +34,8 @@ class PostProcessor {
 
   std::unique_ptr<Pylon::CBaslerUniversalInstantCamera> camera_;
 
+  double camera_tick_frequency_ = 1;
+
   Pylon::PylonAutoInitTerm autoInitTerm;
 
   std::unique_ptr<pylon_camera_parameters::ParamListener> param_listener_;
@@ -86,8 +88,17 @@ class PostProcessor {
     // Wait for the camera to be ready
     camera_->Open();
 
-    // Print the model name of the camera.
+    // Print the name of the camera.
     RCLCPP_INFO(node_->get_logger(), "Using device '%s'", camera_->GetDeviceInfo().GetFriendlyName().c_str());
+
+    // Set MTU and inter-package delay
+    camera_->GevSCPSPacketSize.SetValue(config_.gige.mtu_size);
+    camera_->GevSCPD.SetValue(config_.gige.inter_pkg_delay);
+
+    camera_->ClearBufferModeEnable();
+
+    // Set the camera parameters
+    apply_camera_parameters();
 
     // Set static camera parameters
     camera_->ShutterMode.SetValue(Basler_UniversalCameraParams::ShutterModeEnums::ShutterMode_Global);
@@ -97,22 +108,22 @@ class PostProcessor {
     camera_->BalanceWhiteAuto.SetValue(
         Basler_UniversalCameraParams::BalanceWhiteAutoEnums::BalanceWhiteAuto_Continuous);
 
-    // Set MTU and inter-package delay
-    camera_->GevSCPSPacketSize.SetValue(config_.gige.mtu_size);
-    camera_->GevSCPD.SetValue(config_.gige.inter_pkg_delay);
-
     // Set to manual acquisition mode
-    camera_->AcquisitionMode.SetValue(Basler_UniversalCameraParams::AcquisitionModeEnums::AcquisitionMode_SingleFrame);
+    camera_->AcquisitionMode.SetValue(Basler_UniversalCameraParams::AcquisitionModeEnums::AcquisitionMode_Continuous);
 
-    // Set the camera parameters
-    apply_camera_parameters();
+    // Get the camera frequency
+    camera_tick_frequency_ = camera_->GevTimestampTickFrequency();
+
+    // Start grabbing
+    camera_->StartGrabbing(GrabStrategy_LatestImageOnly);
   }
 
   void apply_camera_parameters() {
     // Set the camera parameters
-    camera_->Gain.SetValue(config_.gain);
-    camera_->ExposureTime.SetValue(config_.exposure);
-    camera_->Gamma.SetValue(config_.gamma);
+    camera_->GainAuto.SetValue(Basler_UniversalCameraParams::GainAutoEnums::GainAuto_Off);
+    camera_->ExposureAuto.SetValue(Basler_UniversalCameraParams::ExposureAutoEnums::ExposureAuto_Off);
+    camera_->GainRaw.SetValue(config_.gain);
+    camera_->ExposureTimeAbs.SetValue(config_.exposure);
   }
 
   void timer_callback() {
@@ -137,17 +148,17 @@ class PostProcessor {
         initilize_camera();
       }
 
-      // Cancel all pending grabs
-      camera_->StopGrabbing();
+      // Get current camera time
+      camera_->GevTimestampControlLatch();
+      auto camera_time_stamp_at_capture = (__int128_t)camera_->GevTimestampValue();
+      camera_->GevTimestampControlLatchReset();
+      auto ros_time_stamp_at_capture = node_->now();
 
       // Start frame acquisition
-      camera_->StartGrabbing(1, GrabStrategy_LatestImageOnly);
-
-      // Store the current time
-      trigger_time = node_->now();
+      camera_->ExecuteSoftwareTrigger();
 
       // Wait for an image and then retrieve it. A timeout of 5000 ms is used.
-      camera_->RetrieveResult(1000, ptrGrabResult, TimeoutHandling_ThrowException);
+      camera_->RetrieveResult(100, ptrGrabResult, TimeoutHandling_ThrowException);
 
       // Image grabbed successfully?
       if (!ptrGrabResult->GrabSucceeded()) {
@@ -156,6 +167,10 @@ class PostProcessor {
         return;
       }
 
+      // Adjust the time stamp of the image
+      auto image_camera_stamp = (__int128_t)ptrGrabResult->GetTimeStamp();
+      auto image_age_in_seconds = (image_camera_stamp - camera_time_stamp_at_capture) / camera_tick_frequency_;
+      trigger_time = ros_time_stamp_at_capture + rclcpp::Duration::from_seconds(image_age_in_seconds);
     } catch (GenICam::GenericException& e) {
       // Error handling.
       RCLCPP_ERROR(node_->get_logger(), "An exception occurred: %s", e.GetDescription());
@@ -203,7 +218,11 @@ class PostProcessor {
 
 int main(int argc, char* argv[]) {
   rclcpp::init(argc, argv);
-  rclcpp::experimental::executors::EventsExecutor exec;
+  rclcpp::experimental::executors::EventsExecutor exec = rclcpp::experimental::executors::EventsExecutor(
+    std::make_unique<rclcpp::experimental::executors::SimpleEventsQueue>(),
+    true,
+    rclcpp::ExecutorOptions());
+
   auto post_processor = std::make_shared<postprocessing::PostProcessor>();
   exec.add_node(post_processor->get_node());
   exec.spin();
