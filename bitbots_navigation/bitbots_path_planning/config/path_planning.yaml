@@ -19,10 +19,10 @@ bitbots_path_planning:
     controller:
       carrot_distance: 20
       max_rotation_vel: 0.4
-      max_vel_x: 0.1
-      min_vel_x: -0.05
-      max_vel_y: 0.04
-      smoothing_k: 0.03
+      max_vel_x: 0.25
+      min_vel_x: -0.2
+      max_vel_y: 0.08
+      smoothing_k: 0.2
       rotation_i_factor: 0.0
       rotation_slow_down_factor: 0.4
       translation_slow_down_factor: 0.5
