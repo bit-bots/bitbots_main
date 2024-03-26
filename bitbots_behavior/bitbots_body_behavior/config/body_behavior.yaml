@@ -112,7 +112,7 @@
       # The value describes the offset in meters from the goal line.
       block_position_goal_offset: 0.2
 
-      # This is the radius in which the goalie is able to block the ball
+      # This is the radius in meters of a circle around the goalie in which he is able to block the ball.
       block_radius_robot: 0.25
 
       # configurations for the use of bitbots_dynamic_kick package
