@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 
-import rclpy
 import math
+
 import numpy as np
+import rclpy
+from geometry_msgs.msg import PoseWithCovarianceStamped, Twist, Vector3
 from rclpy.node import Node
-from geometry_msgs.msg import PoseWithCovarianceStamped, Vector3, Twist
-from ros2_numpy import numpify, msgify
+from ros2_numpy import msgify, numpify
 from tf_transformations import euler_from_quaternion
 
 
@@ -53,10 +54,7 @@ class Behavior(Node):
 
         # Create a subscriber the robot's pose
         self.pose_subscriber = self.create_subscription(
-            PoseWithCovarianceStamped,
-            "/pose_with_covariance",
-            pose_callback,
-            10
+            PoseWithCovarianceStamped, "/pose_with_covariance", pose_callback, 10
         )
 
         # A callback function that updates the ball's position
@@ -65,21 +63,22 @@ class Behavior(Node):
             self.ball_position_relative = msgify(
                 Vector3,
                 np.dot(
-                    np.linalg.inv(np.array([
-                        [math.cos(math.radians(self.orientation)), -math.sin(math.radians(self.orientation))],
-                        [math.sin(math.radians(self.orientation)), math.cos(math.radians(self.orientation))]
-                    ])),
-                    np.array([self.ball_position.x - self.position.x, self.ball_position.y - self.position.y])
-                )
+                    np.linalg.inv(
+                        np.array(
+                            [
+                                [math.cos(math.radians(self.orientation)), -math.sin(math.radians(self.orientation))],
+                                [math.sin(math.radians(self.orientation)), math.cos(math.radians(self.orientation))],
+                            ]
+                        )
+                    ),
+                    np.array([self.ball_position.x - self.position.x, self.ball_position.y - self.position.y]),
+                ),
             )
-            self.ball_confidence = 1 - 1/(1 + (msg.pose.covariance[0] + msg.pose.covariance[7]) / 2)
+            self.ball_confidence = 1 - 1 / (1 + (msg.pose.covariance[0] + msg.pose.covariance[7]) / 2)
 
         # Create a subscriber for the ball's position
         self.ball_subscriber = self.create_subscription(
-            PoseWithCovarianceStamped,
-            "/ball_position_relative_filtered",
-            ball_callback,
-            10
+            PoseWithCovarianceStamped, "/ball_position_relative_filtered", ball_callback, 10
         )
 
         # Create a cmd_vel publisher
@@ -97,10 +96,9 @@ class Behavior(Node):
         :param y: The sideways speed in m/s
         :param theta: The angular speed in degrees/s
         """
-        self.walk_command_publisher.publish(Twist(
-            linear=Vector3(x=float(x), y=float(y)),
-            angular=Vector3(z=math.radians(float(theta)))
-        ))
+        self.walk_command_publisher.publish(
+            Twist(linear=Vector3(x=float(x), y=float(y)), angular=Vector3(z=math.radians(float(theta))))
+        )
 
     def stop(self):
         """
@@ -113,7 +111,13 @@ class Behavior(Node):
         This method is called every 100ms. You can put your code here, so it gets executed periodically.
         """
         self.get_logger().info("Executing...")
-        self.get_logger().info(f"Robot position: {self.position.x:.2f}m, {self.position.y:.2f}m | Orientation: {self.orientation:.2f}° | Ball position: {self.ball_position.x:.2f}m, {self.ball_position.y:.2f}m | Ball relative position: {self.ball_position_relative.x:.2f}m, {self.ball_position_relative.y:.2f}m | Ball confidence: {self.ball_confidence:.2f}")
+        self.get_logger().info(
+            f"Robot position: {self.position.x:.2f}m, {self.position.y:.2f}m | "
+            f"Orientation: {self.orientation:.2f}° | "
+            f"Ball position: {self.ball_position.x:.2f}m, {self.ball_position.y:.2f}m | "
+            f"Ball relative position: {self.ball_position_relative.x:.2f}m, {self.ball_position_relative.y:.2f}m | "
+            f"Ball confidence: {self.ball_confidence:.2f}"
+        )
 
         # --------------------->    Your code goes here    <-------------------
 
