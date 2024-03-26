@@ -192,7 +192,6 @@
         "valarray": "cpp",
         "variant": "cpp"
     },
-
     // Tell the ROS extension where to find the setup.bash
     // This also utilizes the COLCON_WS environment variable, which needs to be set
     "ros.distro": "iron",
@@ -204,4 +203,6 @@
         "/opt/ros/iron/lib/python3.10/site-packages"
     ],
     "cmake.configureOnOpen": false,
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "charliermarsh.ruff",
 }
