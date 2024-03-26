@@ -2,9 +2,10 @@
 
 import rclpy
 import math
+import numpy as np
 from rclpy.node import Node
 from geometry_msgs.msg import PoseWithCovarianceStamped, Vector3, Twist
-from ros2_numpy import numpify
+from ros2_numpy import numpify, msgify
 from tf_transformations import euler_from_quaternion
 
 
@@ -31,6 +32,12 @@ class Behavior(Node):
         # Same coordinate system as the robot (see above)
         self.ball_position = Vector3(x=0, y=0, z=0)
 
+        # Ball position relative to the robot
+        # x is positive forward
+        # y is positive to the left
+        # z is positive upwards (not used for this example)
+        self.ball_position_relative = Vector3(x=0, y=0, z=0)
+
         # Ball confidence
         # A value between 0 and 1 describing how confident the robot is about the ball's position
         # 0 means the robot is not confident at all
@@ -55,6 +62,16 @@ class Behavior(Node):
         # A callback function that updates the ball's position
         def ball_callback(msg: PoseWithCovarianceStamped):
             self.ball_position = msg.pose.pose.position
+            self.ball_position_relative = msgify(
+                Vector3,
+                np.dot(
+                    np.linalg.inv(np.array([
+                        [math.cos(math.radians(self.orientation)), -math.sin(math.radians(self.orientation))],
+                        [math.sin(math.radians(self.orientation)), math.cos(math.radians(self.orientation))]
+                    ])),
+                    np.array([self.ball_position.x - self.position.x, self.ball_position.y - self.position.y])
+                )
+            )
             self.ball_confidence = 1 - 1/(1 + (msg.pose.covariance[0] + msg.pose.covariance[7]) / 2)
 
         # Create a subscriber for the ball's position
@@ -96,15 +113,22 @@ class Behavior(Node):
         This method is called every 100ms. You can put your code here, so it gets executed periodically.
         """
         self.get_logger().info("Executing...")
-        self.get_logger().info(f"Robot position: {self.position.x:.2f}m, {self.position.y:.2f}m | Orientation: {self.orientation:.2f}° | Ball position: {self.ball_position.x:.2f}m, {self.ball_position.y:.2f}m | Ball confidence: {self.ball_confidence:.2f}")
+        self.get_logger().info(f"Robot position: {self.position.x:.2f}m, {self.position.y:.2f}m | Orientation: {self.orientation:.2f}° | Ball position: {self.ball_position.x:.2f}m, {self.ball_position.y:.2f}m | Ball relative position: {self.ball_position_relative.x:.2f}m, {self.ball_position_relative.y:.2f}m | Ball confidence: {self.ball_confidence:.2f}")
 
         # --------------------->    Your code goes here    <-------------------
 
         # Example: Stand still
-        self.stop()
+        # self.stop()
+
+        # Example: Turn left
+        # self.walk(0, 0, 10)
 
         # Example: Walk forward
-        # self.walk(0.1, 0, 0.5)
+        # self.walk(0.1, 0, 0)
+
+        # Task 1: Walk to the ball
+
+        # Task 2: Dribble the ball into the goal (from various positions)
 
 
 # This is the main entry point of the program, you can ignore it for now
