@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <launch>
     <arg name="sim" default="false"/>
-    <arg name="full_image" default="false" description="Whether to project the full rgb image for debugging or shwcasing"/>
-    <arg name="markers" default="false" description="Whether to publish markers for visualization of the detected objects in rviz"/>
-    <arg name="rviz" default="false" description="Whether to start rviz with the ipm configuration"/>
+    <arg name="full_image" default="false" description="Whether to project the full-size RGB image for debugging or showcasing"/>
+    <arg name="markers" default="false" description="Whether to publish markers for visualization of the detected objects in RViz"/>
+    <arg name="rviz" default="false" description="Whether to start RViz with the ipm configuration"/>
 
     <node pkg="ipm_image_node" exec="ipm" name="ipm_line_mask" output="screen">
         <remap to="/camera/camera_info" from="camera_info"/>
