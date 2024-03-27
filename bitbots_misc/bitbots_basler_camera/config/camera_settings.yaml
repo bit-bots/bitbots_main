@@ -8,7 +8,7 @@ pylon_camera_parameters:
   gain:
     type: int
     default_value: 200
-    description: "The target gain in percent of the maximal value the camera supports."
+    description: "The target raw gain of the camera sensor (similar to ISO)."
     validation:
       bounds<>: [0, 360]
   fps:

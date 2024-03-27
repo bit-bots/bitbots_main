@@ -17,7 +17,7 @@ class ExtrinsicCalibrationBroadcaster : public rclcpp::Node {
 
     this->declare_parameter<std::string>("parent_frame", "camera_optical_frame_uncalibrated");
     this->declare_parameter<std::string>("child_frame", "camera_optical_frame");
-    this->declare_parameter<double>("offset_x", 0.0, rcl_interfaces::msg::ParameterDescriptor());
+    this->declare_parameter<double>("offset_x", 0.0);
     this->declare_parameter<double>("offset_y", 0.0);
     this->declare_parameter<double>("offset_z", 0.0);
 
