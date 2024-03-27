@@ -7,12 +7,8 @@
 PYLON_DOWNLOAD_URL="https://www2.baslerweb.com/media/downloads/software/pylon_software/pylon_7_4_0_14900_linux_x86_64_debs.tar.gz"
 PYLON_VERSION="7.4.0"
 
-# Similar to the pylon driver we also need to download the blaze supplementary package.
-BLAZE_DOWNLOAD_URL="https://www2.baslerweb.com/media/downloads/software/tof_software/pylon-supplementary-package-for-blaze-1.5.0.def07388_amd64.deb"
-BLAZE_VERSION="1.5.0"
-
 # Check let the user confirm that they read the license agreement on the basler website and agree with it.
-echo "You need to confirm that you read the license agreements for pylon $PYLON_VERSION and the blaze supplementary package $BLAZE_VERSION on the basler download page (https://www.baslerweb.com/en/downloads/software-downloads/) and agree with it."
+echo "You need to confirm that you read the license agreements for pylon $PYLON_VERSION on the basler download page (https://www.baslerweb.com/en/downloads/software-downloads/) and agree with it."
 
 # Check --ci flag for automatic confirmation in the ci
 if [[ $1 == "--ci" ]]; then
@@ -57,22 +53,4 @@ else
     tar -xzf /tmp/pylon_${PYLON_VERSION}.tar.gz -C /tmp/pylon/
     # Install the pylon driver
     sudo apt-get install /tmp/pylon/pylon_${PYLON_VERSION}*.deb -y
-fi
-
-# Check if the correct blaze supplementary package BLAZE_VERSION is installed (apt)
-if apt list pylon-supplementary-package-for-blaze --installed | grep -q $BLAZE_VERSION; then
-    echo "Blaze supplementary package $BLAZE_VERSION is already installed."
-else
-    echo "Blaze supplementary package $BLAZE_VERSION is not installed. Installing..."
-    # Check if we have an internet connection
-    check_internet_connection $1
-    # Check if the url exist
-    if ! curl --output /dev/null --silent --head --fail "$BLAZE_DOWNLOAD_URL"; then
-        echo "Blaze download url does not exist. Please check the url and update the 'BLAZE_DOWNLOAD_URL' variable in the 'make_basler.sh' script. The website might have changed."
-        exit 1
-    fi
-    # Download the blaze supplementary package to temp folder
-    wget --no-verbose $SHOW_PROGRESS $BLAZE_DOWNLOAD_URL -O /tmp/pylon-blaze-supplementary-package_${BLAZE_VERSION}.deb
-    # Install the blaze supplementary package
-    sudo apt-get install /tmp/pylon-blaze-supplementary-package_${BLAZE_VERSION}*.deb -y
 fi

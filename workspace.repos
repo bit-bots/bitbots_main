@@ -58,10 +58,6 @@ repositories:
     type: git
     url: git@github.com:ros-sports/ipm.git
     version: rolling
-  lib/pylon-ros-camera:
-    type: git
-    url: git@github.com:basler/pylon-ros-camera.git
-    version: humble
   lib/ros2_numpy:
     type: git
     url: git@github.com:Bit-Bots/ros2_numpy.git

@@ -57,12 +57,9 @@ RUN apt-get install -y \
   ros-iron-camera-calibration \
   ros-iron-desktop \
   ros-iron-joint-state-publisher-gui \
-  # ros-iron-plotjuggler-ros containing plotjuggler ros plugins
-  # build currently fails and is not available as a package so we
-  # have to manually install plotjuggler and plotjuggler-msgs
-  # https://github.com/PlotJuggler/plotjuggler-ros-plugins/issues/59
   ros-iron-plotjuggler \
   ros-iron-plotjuggler-msgs \
+  ros-iron-plotjuggler-ros \
   ros-iron-rmw-cyclonedds-cpp \
   ros-iron-rqt-robot-monitor \
   ros-iron-soccer-vision-3d-rviz-markers
