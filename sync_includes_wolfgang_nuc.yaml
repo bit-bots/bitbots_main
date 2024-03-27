@@ -55,7 +55,6 @@ include:
         - imu_tools
         - ipm
         - particle_filter
-        - pylon-ros-camera
         - ros2_numpy
         - ros2_python_extension
         - soccer_ipm

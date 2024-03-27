@@ -125,7 +125,13 @@ class YOEOVision(Node):
 
     def _register_subscribers(self, config: Dict) -> None:
         self._sub_image = ros_utils.create_or_update_subscriber(
-            self, self._config, config, self._sub_image, "ROS_img_msg_topic", Image, callback=self._image_callback
+            self,
+            self._config,
+            config,
+            self._sub_image,
+            "ROS_img_msg_topic",
+            Image,
+            callback=self._image_callback,
         )
 
     def _image_callback(self, image_msg: Image) -> None:

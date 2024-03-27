@@ -192,7 +192,7 @@
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
-  
+
     <visual>
       <origin rpy="-3.14159 1.5708 0.0" xyz="-0.0015 -0.036 0.2035"/>
       <geometry>
@@ -374,18 +374,19 @@
       </material>
     </visual>
   </link>
-  <link name="imu_frame">
+  <!-- Renamed due to extrinsic calibration -->
+  <link name="imu_frame_uncalibrated">
     <inertial>
       <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
       <mass value="1e-09"/>
       <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0"/>
     </inertial>
   </link>
-  <joint name="imu_frame_frame" type="fixed">
+  <joint name="imu_frame_uncalibrated_frame" type="fixed">
     <origin rpy="5.31321e-16 -3.12873e-17 4.65401e-17" xyz="-0.0369749 -0.0474614 0.224"/>
     <axis xyz="0.0 0.0 0.0"/>
     <parent link="torso"/>
-    <child link="imu_frame"/>
+    <child link="imu_frame_uncalibrated"/>
   </joint>
   <link name="r_shoulder">
     <inertial>
@@ -3588,21 +3589,21 @@
     <child link="camera"/>
   </joint>
   <!--
-  Removed due to extrinsic calibration
-  <link name="camera_optical_frame">
+  Renamed due to extrinsic calibration
+  -->
+  <link name="camera_optical_frame_uncalibrated">
     <inertial>
       <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
       <mass value="1e-09"/>
       <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0"/>
     </inertial>
   </link>
-  <joint name="camera_optical_frame_frame" type="fixed">
+  <joint name="camera_optical_frame_uncalibrated_frame" type="fixed">
     <origin rpy="3.14159 -1.5708 0.0" xyz="0.0432 0.08 -0.0235"/>
     <axis xyz="0.0 0.0 0.0"/>
     <parent link="head"/>
-    <child link="camera_optical_frame"/>
+    <child link="camera_optical_frame_uncalibrated"/>
   </joint>
-  -->
   <link name="imu_frame_2">
     <inertial>
       <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
@@ -3870,7 +3871,7 @@
       </plugin>
     </sensor>
   </gazebo>
-  <gazebo reference="imu_frame">
+  <gazebo reference="imu_frame_uncalibrated">
     <gravity>true</gravity>
     <sensor name="imu_sensor" type="imu">
       <always_on>true</always_on>
@@ -3879,12 +3880,12 @@
       <topic>__default_topic__</topic>
       <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
         <topicName>imu</topicName>
-        <bodyName>imu_frame</bodyName>
+        <bodyName>imu_frame_uncalibrated</bodyName>
         <updateRateHZ>100.0</updateRateHZ>
         <gaussianNoise>0.0</gaussianNoise>
         <xyzOffset>0 0 0</xyzOffset>
         <rpyOffset>0 0 0</rpyOffset>
-        <frameName>imu_frame</frameName>
+        <frameName>imu_frame_uncalibrated</frameName>
       </plugin>
       <pose>0 0 0 0 0 0</pose>
     </sensor>

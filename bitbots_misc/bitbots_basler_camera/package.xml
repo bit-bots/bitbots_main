@@ -3,7 +3,7 @@
 <package format="3">
   <name>bitbots_basler_camera</name>
   <version>1.0.0</version>
-  <description>This sets up the basler camera</description>
+  <description>This contains the interface between the Basler camera's pylon SDK and ROS 2. In addtion to that is also applies some postprocessing (debayering, downsampling) to the images.</description>
 
   <maintainer email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</maintainer>
   <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
@@ -13,8 +13,13 @@
   <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
 
   <depend>bitbots_docs</depend>
-  <depend>pylon_ros2_camera_wrapper</depend>
-  <depend>image_proc</depend>
+  <depend>cv_bridge</depend>
+  <depend>image_transport</depend>
+  <depend>libopencv-dev</depend>
+  <depend>rclcpp</depend>
+  <depend>sensor_msgs</depend>
+  <depend>camera_info_manager</depend>
+  <depend>generate_parameter_library</depend>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 

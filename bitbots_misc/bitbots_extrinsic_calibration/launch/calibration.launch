@@ -1,8 +1,16 @@
 <launch>
     <arg name="sim" default="false"/>
 
-    <node pkg="bitbots_extrinsic_calibration" exec="extrinsic_calibration" name="bitbots_extrinsic_calibration">
+    <node pkg="bitbots_extrinsic_calibration" exec="extrinsic_calibration" name="bitbots_extrinsic_camera_calibration">
         <param name="use_sim_time" value="$(var sim)"/>
+        <param name="parent_frame" value="camera_optical_frame_uncalibrated"/>
+        <param name="child_frame" value="camera_optical_frame"/>
+        <param from="$(find-pkg-share bitbots_extrinsic_calibration)/config/$(env ROBOT_NAME default).yaml" />
+    </node>
+    <node pkg="bitbots_extrinsic_calibration" exec="extrinsic_calibration" name="bitbots_extrinsic_imu_calibration">
+        <param name="use_sim_time" value="$(var sim)"/>
+        <param name="parent_frame" value="imu_frame_uncalibrated"/>
+        <param name="child_frame" value="imu_frame"/>
         <param from="$(find-pkg-share bitbots_extrinsic_calibration)/config/$(env ROBOT_NAME default).yaml" />
     </node>
 </launch>

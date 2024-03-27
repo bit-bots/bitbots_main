@@ -102,7 +102,7 @@ class HeadMover {
 
     // Initialize subscriber for the current joint states of the robot
     joint_state_subscriber_ = node_->create_subscription<sensor_msgs::msg::JointState>(
-        "joint_states", 10, [this](const sensor_msgs::msg::JointState::SharedPtr msg) { joint_state_callback(msg); });
+        "joint_states", 1, [this](const sensor_msgs::msg::JointState::SharedPtr msg) { joint_state_callback(msg); });
 
     // Create parameter listener and load initial set of parameters
     param_listener_ = std::make_shared<move_head::ParamListener>(node_);
@@ -181,7 +181,7 @@ class HeadMover {
         std::bind(&HeadMover::handle_accepted, this, std::placeholders::_1));
 
     // Initialize timer for main loop
-    timer_ = rclcpp::create_timer(node_, node_->get_clock(), 10ms, [this] { behave(); });
+    timer_ = rclcpp::create_timer(node_, node_->get_clock(), 50ms, [this] { behave(); });
   }
 
   /**
@@ -689,7 +689,7 @@ class HeadMover {
 
     // Send the motor goals to the head motors
     bool success =
-        send_motor_goals(head_pan, head_tilt, true, pan_speed_, tilt_speed_, current_head_pan, current_head_tilt);
+        send_motor_goals(head_pan, head_tilt, false, pan_speed_, tilt_speed_, current_head_pan, current_head_tilt);
 
     if (success) {
       // Check if we reached the current keypoint and if so, increase the index
