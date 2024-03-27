@@ -7,13 +7,14 @@
 
   <maintainer email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</maintainer>
   <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
-  
+
   <license>MIT</license>
 
   <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
 
+  <depend>apriltag_ros</depend>
+  <depend>bitbots_basler_camera</depend>
   <depend>bitbots_docs</depend>
-  <depend>pylon_ros2_camera_wrapper</depend>
   <depend>image_proc</depend>
   <depend>tf2_ros</depend>
 
