@@ -69,11 +69,15 @@ class WorldModelCapsule:
         self.ball_seen: bool = False
         self.ball_seen_teammate: bool = False
         parameters = get_parameters_from_other_node(
-            self._blackboard.node, "/parameter_blackboard", ["field_length", "field_width", "goal_width"]
+            self._blackboard.node,
+            "/parameter_blackboard",
+            ["field_length", "field_width", "goal_width", "penalty_area_length", "goal_area_length"],
         )
         self.field_length: float = parameters["field_length"]
         self.field_width: float = parameters["field_width"]
         self.goal_width: float = parameters["goal_width"]
+        self.penalty_area_length: float = parameters["penalty_area_length"]
+        self.goal_area_length: float = parameters["goal_area_length"]
         self.map_margin: float = self._blackboard.node.get_parameter("body.map_margin").value
         self.obstacle_costmap_smoothing_sigma: float = self._blackboard.node.get_parameter(
             "body.obstacle_costmap_smoothing_sigma"
