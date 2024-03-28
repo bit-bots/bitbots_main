@@ -18,12 +18,12 @@ bitbots_path_planning:
         blur: 13
     controller:
       carrot_distance: 20
-      max_rotation_vel: 0.4
+      max_rotation_vel: 0.5
       max_vel_x: 0.1
       min_vel_x: -0.05
-      max_vel_y: 0.025
+      max_vel_y: 0.03
       smoothing_k: 0.05
       rotation_i_factor: 0.0
-      rotation_slow_down_factor: 2.0
+      rotation_slow_down_factor: 0.4
       translation_slow_down_factor: 0.5
       orient_to_goal_distance: 1.0
