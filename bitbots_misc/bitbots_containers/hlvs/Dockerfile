@@ -61,9 +61,9 @@ ADD https://www.timeapi.io/api/Time/current/zone?timeZone=UTC /tmp/build-time
 RUN cd src/bitbots_main && \
     make pull-all && \
     rm -rf lib/udp_bridge bitbots_misc/bitbots_containers \
-    humanoid_league_visualization dynamic_stack_decider/dynamic_stack_decider_visualization bitbots_lowlevel \
+    lib/dynamic_stack_decider/dynamic_stack_decider_visualization bitbots_lowlevel \
     bitbots_wolfgang/wolfgang_pybullet_sim lib/DynamixelSDK lib/dynamixel-workbench \
-    bitbots_misc/bitbots_basler_camera lib/pylon-ros-camera && \
+    bitbots_misc/bitbots_basler_camera && \
     sed -i '/plotjuggler/d' bitbots_motion/bitbots_quintic_walk/package.xml && \
     sed -i '/run_depend/d' bitbots_wolfgang/wolfgang_moveit_config/package.xml
 

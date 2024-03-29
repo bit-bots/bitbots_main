@@ -85,7 +85,9 @@ class SmoothSpline:
     def interpolation(self, x, func):
         # Empty case
         if len(self.splines_parts) == 0:
-            exit("Error: no spline parts. did you call compute_spline()?")
+            raise ValueError(
+                "Error: no spline parts. did you call compute_spline()? Did you add any point to the spline?"
+            )
 
         # Bound asked abscisse into spline range
         if x <= self.splines_parts[0].min:

@@ -1,16 +1,15 @@
-[tool.black]
-line-length = 120
-
 [tool.ruff]
 line-length = 120
- # Never enforce `E501` (line length violations), as black takes care of this.
+
+[tool.ruff.lint]
+# Never enforce `E501` (line length violations)
 ignore = ["E501", "UP007"]
 # Additionally enable the following rules
 # - pycodestyle warnings (`W`)
 # - flake8-bugbear warnings (`B`)
-# - isort import sorting (`I`)
+# - isort import sorting (`I001`)
 # - pep8-naming convenrtions (`N`)
 # - pyupgrade prefer newer language constructs (`UP`)
-select = ["F", "E", "B", "W", "I", "N", "UP"]
+select = ["F", "E", "B", "W", "I001", "N", "UP"]
 # Do not lint the following directories
 exclude = ["lib"]

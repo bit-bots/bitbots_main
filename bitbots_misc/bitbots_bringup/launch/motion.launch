@@ -31,6 +31,11 @@
         <arg name="sim" value="$(var sim)"/>
     </include>
 
+    <!-- launch the head mover -->
+    <include file="$(find-pkg-share bitbots_head_mover)/launch/head_mover.launch">
+        <arg name="sim" value="$(var sim)" />
+    </include>
+
     <!-- launch the walking -->
     <group if="$(var walking)">
         <include file="$(find-pkg-share bitbots_quintic_walk)/launch/quintic_walk.launch">

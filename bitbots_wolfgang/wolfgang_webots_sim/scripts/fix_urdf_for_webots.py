@@ -5,7 +5,7 @@ from xml.etree import ElementTree
 
 if len(sys.argv) != 3:
     print(f"Usage: {sys.argv[0]} <infile> <outfile>")
-    exit(1)
+    sys.exit(1)
 
 infile_path = sys.argv[1]
 outfile_path = sys.argv[2]

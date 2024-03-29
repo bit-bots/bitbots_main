@@ -1,7 +1,9 @@
 {
-    "autoDocstring.docstringFormat": "sphinx",
+    "autoDocstring.docstringFormat": "sphinx-notypes",
+    "autoDocstring.startOnNewLine": true,
     "cSpell.language": "en,de-de,lorem",
     "cSpell.words": [
+        "animatable",
         "ansible",
         "autoconnect",
         "basler",
@@ -72,6 +74,7 @@
         "rclpy",
         "rhoban",
         "robocup",
+        "rory",
         "rosbag",
         "rosbags",
         "rosdep",
@@ -85,6 +88,7 @@
         "seaborn",
         "segmentations",
         "ssid",
+        "std_srvs",
         "taskset",
         "teamplayer",
         "teleop",
@@ -186,9 +190,10 @@
         "typeindex": "cpp",
         "typeinfo": "cpp",
         "valarray": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "regex": "cpp",
+        "future": "cpp"
     },
-
     // Tell the ROS extension where to find the setup.bash
     // This also utilizes the COLCON_WS environment variable, which needs to be set
     "ros.distro": "iron",
@@ -199,7 +204,7 @@
     "python.analysis.extraPaths": [
         "/opt/ros/iron/lib/python3.10/site-packages"
     ],
-
-
-
+    "cmake.configureOnOpen": false,
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "charliermarsh.ruff",
 }

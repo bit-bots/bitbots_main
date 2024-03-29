@@ -15,7 +15,7 @@ class AbstractHeadModeElement(AbstractActionElement):
 class LookAtBall(AbstractHeadModeElement):
     """Search for Ball and track it if found"""
 
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
 
     def perform(self):

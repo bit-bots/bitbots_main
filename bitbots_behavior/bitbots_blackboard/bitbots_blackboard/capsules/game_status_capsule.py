@@ -101,32 +101,32 @@ class GameStatusCapsule:
     def get_red_cards(self):
         return self.gamestate.team_mates_with_red_card
 
-    def gamestate_callback(self, gs: GameState):
-        if self.gamestate.penalized and not gs.penalized:
+    def gamestate_callback(self, gamestate_msg: GameState):
+        if self.gamestate.penalized and not gamestate_msg.penalized:
             self.unpenalized_time = self.node.get_clock().now().nanoseconds / 1e9
 
-        if gs.own_score > self.gamestate.own_score:
+        if gamestate_msg.own_score > self.gamestate.own_score:
             self.last_goal_from_us_time = self.node.get_clock().now().nanoseconds / 1e9
             self.last_goal_time = self.node.get_clock().now().nanoseconds / 1e9
 
-        if gs.rival_score > self.gamestate.rival_score:
+        if gamestate_msg.rival_score > self.gamestate.rival_score:
             self.last_goal_time = self.node.get_clock().now().nanoseconds / 1e9
 
         if (
-            gs.secondary_state_mode == 2
+            gamestate_msg.secondary_state_mode == 2
             and self.gamestate.secondary_state_mode != 2
-            and gs.game_state == GameState.GAMESTATE_PLAYING
+            and gamestate_msg.game_state == GameState.GAMESTATE_PLAYING
         ):
             # secondary action is now executed but we will not see this in the new messages.
             # it will look like a normal kick off, but we need to remember that this is some sort of free kick
             # we set the kickoff value accordingly, then we will not be allowed to move if it is a kick for the others
-            self.free_kick_kickoff_team = gs.secondary_state_team
+            self.free_kick_kickoff_team = gamestate_msg.secondary_state_team
 
-        if gs.secondary_state_mode != 2 and gs.secondary_seconds_remaining == 0:
+        if gamestate_msg.secondary_state_mode != 2 and gamestate_msg.secondary_seconds_remaining == 0:
             self.free_kick_kickoff_team = None
 
         if self.free_kick_kickoff_team is not None:
-            gs.has_kick_off = self.free_kick_kickoff_team == self.team_id
+            gamestate_msg.has_kick_off = self.free_kick_kickoff_team == self.team_id
 
         self.last_update = self.node.get_clock().now().nanoseconds / 1e9
-        self.gamestate = gs
+        self.gamestate = gamestate_msg

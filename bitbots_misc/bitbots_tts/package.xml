@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>bitbots_tts</name>
+  <version>2.0.0</version>
+  <description>The bitbots_tts package provides an easy way to do audio speech output via a text to speach engine.
+  Messages send to the /speak topic are queued and spoken in another thread depending on their priority.
+  This can be used for debug but also for inter robot communication with natural language.</description>
+
+  <maintainer email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</maintainer>
+  <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+
+  <license>MIT</license>
+  
+  <author email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</author>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>bitbots_docs</depend>
+  <depend>bitbots_msgs</depend>
+  <depend>espeak</depend>
+  <depend>std_msgs</depend>
+
+  <export>
+    <bitbots_documentation>
+      <status>broken</status>
+      <language>python3</language>
+    </bitbots_documentation>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

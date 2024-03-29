@@ -61,7 +61,7 @@ if __name__ == "__main__":
     sys.stdout.flush()
     client = ActionClient(node, Dynup, "dynup")
     if not client.wait_for_server():
-        exit(1)
+        sys.exit(1)
     print("\r[OK] Connecting to action server 'dynup'")
     print()
 

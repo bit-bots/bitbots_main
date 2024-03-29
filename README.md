@@ -1,8 +1,7 @@
-
-
 # Bit-Bots Software Stack
 
 [![Build & Test](https://github.com/bit-bots/bitbots_main/actions/workflows/ci.yml/badge.svg)](https://github.com/bit-bots/bitbots_main/actions/workflows/ci.yml)
+[![Code style checks](https://github.com/bit-bots/bitbots_main/actions/workflows/pre-commit.yml/badge.svg)](https://github.com/bit-bots/bitbots_main/actions/workflows/pre-commit.yml)
 [![ROS Version Iron](https://img.shields.io/badge/ROS%20Version-Iron-ab8c71)](https://docs.ros.org/en/iron/index.html)
 
 This git repository contains all RoboCup-related code and documentation from the Hamburg Bit-Bots team.
@@ -21,15 +20,15 @@ Full step-by-step instructions for installing the Bit-Bots software stack and RO
 
 If you want to update this repo, all third party source files as well as the supplementing files, run
 
-``` bash
+``` shell
 make pull-all
 ```
 
 If you encounter any problems consider cleaning the third party source files (the `lib` folder) first:
 
-**THIS DELETES ALL CHANGES YOU MADE TO THE THIRD PARTY SOURCE FILES**
+**THIS DELETES ALL CHANGES YOU MADE TO THE THIRD PARTY SOURCE FILES!**
 
-``` bash
+``` shell
 make fresh-libs
 ```
 
@@ -37,7 +36,7 @@ make fresh-libs
 
 To format all code in the repository, run
 
-``` bash
+``` shell
 make format
 ```
 

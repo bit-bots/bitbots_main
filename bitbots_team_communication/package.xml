@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>bitbots_team_communication</name>
+  <version>3.0.0</version>
+  <description>The bitbots_team_communication package provides a ROS wrapper for the Protobuf RoboCup protocol.
+    This is the standard communication protocol developed by the NUbots. </description>
+
+  <maintainer email="joern.griepenburg@studium.uni-hamburg.de">Joern Griepenburg</maintainer>
+  <maintainer email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</maintainer>
+  <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+
+  <license>MIT</license>
+
+  <author email="5flemmin@informatik.uni-hamburg.de">Tanja Flemming</author>
+  <author email="7engelke@informatik.uni-hamburg.de">Timon Engelke</author>
+  <author email="7gutsche@informatik.uni-hamburg.de">Jan Gutsche</author>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>bitbots_docs</depend>
+  <depend>bitbots_msgs</depend>
+  <depend>bitbots_tf_listener</depend>
+  <depend>bitbots_utils</depend>
+  <depend>game_controller_hl_interfaces</depend>
+  <depend>geometry_msgs</depend>
+  <depend>python3-protobuf</depend>
+  <depend>python3-transforms3d</depend>
+  <depend>rclpy</depend>
+  <depend>std_msgs</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>tf2_ros</depend>
+  <depend>tf2</depend>
+
+  <test_depend>python3-pytest</test_depend>
+
+  <export>
+    <bitbots_documentation>
+      <status>unknown</status>
+      <language>python</language>
+    </bitbots_documentation>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

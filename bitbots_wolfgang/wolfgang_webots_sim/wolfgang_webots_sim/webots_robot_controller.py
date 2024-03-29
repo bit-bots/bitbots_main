@@ -574,8 +574,7 @@ class RobotController:
             gyro_name = "imu gyro"
             camera_name = "camera"
         else:
-            self.ros_node.get_logger().error("Robot type not supported: %s" % robot)
-            exit()
+            raise ValueError(f"Robot type not supported: {robot}")
 
         self.motor_names_to_external_names = {}
         self.external_motor_names_to_motor_names = {}

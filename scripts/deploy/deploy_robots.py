@@ -1,5 +1,6 @@
 import argparse
 import os
+import sys
 from typing import Optional
 
 from deploy.misc import (
@@ -13,7 +14,15 @@ from deploy.misc import (
     print_known_targets,
     print_success,
 )
-from deploy.tasks import AbstractTask, AbstractTaskWhichRequiresSudo, Build, Configure, Install, Launch, Sync
+from deploy.tasks import (
+    AbstractTask,
+    AbstractTaskWhichRequiresSudo,
+    Build,
+    Configure,
+    Install,
+    Launch,
+    Sync,
+)
 from rich.prompt import Prompt
 
 # TODO: Install this script as a command line tool
@@ -47,7 +56,7 @@ class DeployRobots:
         parser = ArgumentParserShowTargets(
             description="Deploy the Bit-Bots software on a robot. "
             "This script provides 5 tasks: sync, install, configure, build, launch. "
-            "By default, it runs all tasks. You can select a subset of tasks by using the corresponding flags."
+            "By default, it runs all tasks. You can select a subset of tasks by using the corresponding flags. "
             "For example, to only run the sync and build task, use the -sb."
         )
 
@@ -66,50 +75,57 @@ class DeployRobots:
             "--sync",
             dest="only_sync",
             action="store_true",
-            help="Only synchronize (copy) files from you to the target machine",
+            help="Only synchronize (copy) files from you to the target machine.",
         )
         parser.add_argument(
             "-i",
             "--install",
             dest="only_install",
             action="store_true",
-            help="Only install ROS dependencies on the target",
+            help="Only install ROS dependencies on the targets.",
         )
         parser.add_argument(
-            "-c", "--configure", dest="only_configure", action="store_true", help="Only configure the target machine"
+            "-c", "--configure", dest="only_configure", action="store_true", help="Only configure the target machines."
         )
         parser.add_argument(
-            "-b", "--build", dest="only_build", action="store_true", help="Only build on the target machine"
+            "-b", "--build", dest="only_build", action="store_true", help="Only build/compile on the target machines."
         )
         parser.add_argument(
             "-l",
             "--launch",
             dest="only_launch",
             action="store_true",
-            help="Only launch teamplayer software on the target",
+            help="Only launch teamplayer software on the targets.",
         )
 
         # Optional arguments
-        parser.add_argument("-p", "--package", default="", help="Synchronize and build only the given ROS package")
-        parser.add_argument("-u", "--user", default="bitbots", help="The user to connect to the target machines with")
-        parser.add_argument("-w", "--workspace", default="~/colcon_ws", help="The workspace to deploy to")
+        parser.add_argument("-p", "--package", default="", help="Synchronize and build only the given ROS package.")
         parser.add_argument(
             "--clean",
             action="store_true",
-            help="Clean complete workspace (source and install, ...) before syncing and building",
+            help="Clean complete workspace (source and install, ...) before syncing and building.",
         )
-        parser.add_argument("--clean-src", action="store_true", help="Clean source directory before syncing")
+        parser.add_argument("--clean-src", action="store_true", help="Clean source directory before syncing.")
         parser.add_argument(
             "--clean-build",
             action="store_true",
-            help="Clean workspace before building. If --package is given, clean only that package",
+            help="Clean workspace before building. If --package is given, clean only that package.",
         )
         parser.add_argument("--connection-timeout", default=10, help="Timeout to establish SSH connections in seconds.")
         parser.add_argument(
-            "--print-bit-bot", action="store_true", default=False, help="Print our logo at script start"
+            "--print-bit-bot", action="store_true", default=False, help="Print our logo at script start."
         )
-        parser.add_argument("-v", "--verbose", action="count", default=0, help="More output")
-        parser.add_argument("-q", "--quiet", action="count", default=0, help="Less output")
+        parser.add_argument("-v", "--verbose", action="count", default=0, help="More output.")
+        parser.add_argument("-q", "--quiet", action="count", default=0, help="Less output.")
+        parser.add_argument(
+            "-u", "--user", default="bitbots", help="The SSH user to connect to the target machines with"
+        )
+        parser.add_argument(
+            "-w",
+            "--workspace",
+            default="~/colcon_ws",
+            help="Path to the workspace directory to deploy to. Defaults to '~/colcon_ws'",
+        )
 
         args = parser.parse_args()
 
@@ -211,8 +227,8 @@ class DeployRobots:
             if not results.failed:
                 print_success(f"{task_prefix} completed.")
             elif results.failed:
-                print_err(f"{task_prefix} failed on the following hosts: {task._succeeded_hosts(results)}")
-                exit(1)
+                print_err(f"{task_prefix} failed on the following hosts: {task._failed_hosts(results)}")
+                sys.exit(1)
             current_task += 1
 
         # Close connections

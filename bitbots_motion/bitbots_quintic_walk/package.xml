@@ -12,11 +12,11 @@
     <maintainer email="7sell@informatik.uni-hamburg.de">Finn-Thorben Sell</maintainer>
     <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
 
+    <license>MIT</license>
+
     <author email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</author>
     <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
     <author>Rhoban FC (original version of engine)</author>
-
-    <license>MIT</license>
 
     <buildtool_depend>ament_cmake</buildtool_depend>
     <buildtool_depend>rosidl_default_generators</buildtool_depend>

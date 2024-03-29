@@ -6,7 +6,7 @@ from rclpy.duration import Duration
 class BallSeen(AbstractDecisionElement):
     blackboard: BodyBlackboard
 
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
         self.ball_lost_time = Duration(seconds=self.blackboard.config["ball_lost_time"])
 

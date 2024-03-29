@@ -1,0 +1,120 @@
+# If you come from bash you might have to change your $PATH.
+export PATH=$HOME/bin:/usr/local/bin:$HOME/.local/bin:$PATH
+
+# Path to your oh-my-zsh installation.
+export ZSH=$HOME/.oh-my-zsh
+
+# Set name of the theme to load.
+ZSH_THEME="agnoster"
+
+# Set list of
+plugins=(
+  git
+  zsh-autosuggestions
+)
+
+# Setups for oh-my-zsh
+source $ZSH/oh-my-zsh.sh
+
+# User configuration
+
+# You may need to manually set your language environment
+export LANG=en_US.UTF-8
+export LANGUAGE=en_US:en
+
+# Set personal aliases, overriding those provided by oh-my-zsh libs,
+# plugins, and themes. Aliases can be placed here, though oh-my-zsh
+# users are encouraged to define aliases within the ZSH_CUSTOM folder.
+# For a full list of active aliases, run `alias`.
+#
+# Example aliases
+# alias zshconfig="mate ~/.zshrc"
+# alias ohmyzsh="mate ~/.oh-my-zsh"
+function mkcd(){
+    mkdir -p $1
+    cd $1
+}
+
+function mksh(){
+    vim $1.sh
+    chmod 744 $1.sh
+}
+
+
+# Settings for the terminal
+bindkey "^H" backward-kill-word
+bindkey "^[[1;5C" forward-word
+bindkey "^[[1;5D" backward-word
+
+
+# Settings for the prompt to show that we are in a docker container
+export PROMPT="%K{black} 🐋 %K{blue}%F{black}%/ %f%k%F{blue}%f "  # Prefix the prompt with DOCKER
+
+# Do ros2 specific things
+source /opt/ros/iron/setup.zsh &> /dev/null
+
+# Ignore some deprecation warnings
+export PYTHONWARNINGS=ignore:::setuptools.command.install,ignore:::setuptools.command.easy_install,ignore:::pkg_resources
+
+# Limit ROS 2 communication to localhost (can be overridden when needed)
+export ROS_DOMAIN_ID=24
+export ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST
+
+# Set the default colcon workspace
+export COLCON_WS="$HOME/colcon_ws"
+
+# Set the default log level for colcon
+export COLCON_LOG_LEVEL=30
+
+# Define a log layout
+export RCUTILS_COLORIZED_OUTPUT=1
+export RCUTILS_CONSOLE_OUTPUT_FORMAT="[{severity}] [{name}]: {message}"
+
+# Set the default Middleware
+export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+
+# Create a function to update the argcomplete so tab completion works
+# This needs to be called every time we source something ROS 2 related
+function update_ros2_argcomplete() {
+  eval "$(register-python-argcomplete3 colcon)"
+  eval "$(register-python-argcomplete3 ros2)"
+}
+
+# Update the tab completion
+update_ros2_argcomplete
+
+alias rr='ros2 run'
+alias rl='ros2 launch'
+
+alias rte='ros2 topic echo'
+alias rtl='ros2 topic list'
+alias rth='ros2 topic hz'
+alias rtp='ros2 topic pub'
+
+alias rpl='ros2 param list'
+alias rpg='ros2 param get'
+
+alias cdc='cd $COLCON_WS'
+
+alias cba='cdc && colcon build --symlink-install --continue-on-error'
+alias cb='cdc && colcon build --symlink-install --continue-on-error --packages-up-to'
+alias cbs='cdc && colcon build --symlink-install --packages-select'
+alias cc='cdc && colcon clean packages --packages-select'
+alias cca='cdc && colcon clean packages'
+
+alias sr='source /opt/ros/iron/setup.zsh && update_ros2_argcomplete'
+alias sc='source $COLCON_WS/install/setup.zsh && update_ros2_argcomplete'
+alias sa='sr && sc'
+
+# Set default editor
+export VISUAL="vim"
+
+# Some user instructions
+echo "Hello there! Welcome to the Bit-Bots ROS 2 development environment!"
+echo "If you just (re)build this container a few manual steps are nessessary:"
+echo "Create a ssh key with 'ssh-keygen -q -f $HOME/.ssh/id_rsa -N \"\" &&  cat $HOME/.ssh/id_rsa.pub'."
+echo "Copy the commands output and add it to your GitHub account ('https://github.com/settings/keys') (ctrl+click to open in browser)."
+echo "Now you can install the rest of the workspace and compile everything with 'make install && cba'."
+echo "To update an existing workspace you can use 'make update && cba'."
+echo "To compile all packages in the workspace use 'cba'. If you want to compile only a specific package use 'cbs <package_name>'."
+echo "Run 'xhost local:root' in a terminal on the host machine to enable GUI applications (e.g. rviz2) in the container. This needs to be done after every restart of the host machine."

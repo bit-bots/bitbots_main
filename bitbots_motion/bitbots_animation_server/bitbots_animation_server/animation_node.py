@@ -1,24 +1,28 @@
 #!/usr/bin/env python3
 import json
+import sys
 import traceback
+from typing import Optional
 
 import numpy as np
 import rclpy
-from rclpy.action import ActionServer
+from rclpy.action import ActionServer, GoalResponse
 from rclpy.action.server import ServerGoalHandle
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.duration import Duration
 from rclpy.executors import ExternalShutdownException, MultiThreadedExecutor
 from rclpy.node import Node
 from sensor_msgs.msg import JointState
-from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
+from std_msgs.msg import Header
+from std_srvs.srv import SetBool
 
 from bitbots_animation_server.animation import Animation, parse
 from bitbots_animation_server.resource_manager import ResourceManager
 from bitbots_animation_server.spline_animator import SplineAnimator
 from bitbots_msgs.action import PlayAnimation
 from bitbots_msgs.msg import Animation as AnimationMsg
-from bitbots_msgs.msg import RobotControlState
+from bitbots_msgs.msg import JointCommand
+from bitbots_msgs.srv import AddAnimation
 
 
 class AnimationNode(Node):
@@ -29,10 +33,10 @@ class AnimationNode(Node):
         super().__init__("animation_server")
         self.get_logger().debug("Starting Animation Server")
 
-        self.current_joint_states = None
-        self.hcm_state = 0
+        self.current_joint_states: Optional[JointState] = None
         self.current_animation = None
         self.animation_cache: dict[str, Animation] = {}
+        self.animation_running: bool = False
 
         # Get robot type and create resource manager
         self.declare_parameter("robot_type", "wolfgang")
@@ -55,70 +59,135 @@ class AnimationNode(Node):
                 traceback.print_exc()
 
         callback_group = ReentrantCallbackGroup()
-        self.create_subscription(JointState, "joint_states", self.update_current_pose, 1, callback_group=callback_group)
-        self.create_subscription(
-            RobotControlState, "robot_state", self.update_hcm_state, 1, callback_group=callback_group
-        )
 
+        # Subscribers
+        self.create_subscription(JointState, "joint_states", self.update_current_pose, 1, callback_group=callback_group)
+
+        # Service clients
+        self.hcm_animation_mode = self.create_client(SetBool, "play_animation_mode")
+
+        # Publisher for sending joint states to the HCM
         self.hcm_publisher = self.create_publisher(AnimationMsg, "animation", 1)
 
-        self._as = ActionServer(self, PlayAnimation, "animation", self.execute_cb, callback_group=callback_group)
+        # Action server for playing animations
+        self._action_server = ActionServer(
+            self, PlayAnimation, "animation", self.execute_cb, callback_group=callback_group, goal_callback=self.goal_cb
+        )
 
-    def execute_cb(self, goal: ServerGoalHandle):
-        """This is called, when someone calls the animation action"""
+        # Service to temporarily add an animation to the cache
+        self.add_animation_service = self.create_service(AddAnimation, "add_temporary_animation", self.add_animation)
+
+    def goal_cb(self, request: PlayAnimation.Goal) -> GoalResponse:
+        """This checks whether the goal is acceptable."""
+
+        # Check if we know the animation
+        if request.animation not in self.animation_cache:
+            self.get_logger().error(f"Animation '{request.animation}' not found")
+            return GoalResponse.REJECT
+
+        # Check if another animation is currently running
+        if self.animation_running:
+            self.get_logger().error("Another animation is currently running. Rejecting...")
+            return GoalResponse.REJECT
+
+        # Check if bounds are valid
+        if request.bounds:
+            # Get the length of the animation
+            animation_length = len(self.animation_cache[request.animation].keyframes)
+            # Check if the bounds are valid
+            if request.start < 0 or request.start >= animation_length:
+                self.get_logger().error(
+                    f"Start index {request.start} out of bounds for animation '{request.animation}'"
+                )
+                return GoalResponse.REJECT
+            if request.end < 0 or request.end > animation_length:
+                self.get_logger().error(f"End index {request.end} out of bounds for animation '{request.animation}'")
+                return GoalResponse.REJECT
+            if request.start >= request.end:
+                self.get_logger().error(f"Start index {request.start} must be smaller than end index {request.end}")
+                return GoalResponse.REJECT
+
+        # Everything is fine we are good to go
+        return GoalResponse.ACCEPT
+
+    def execute_cb(self, goal: ServerGoalHandle) -> PlayAnimation.Result:
+        """This is called, when the action should be executed."""
+
+        # Store the fact that an animation is running
+        self.animation_running = True
+
+        # Define a function to finish the action and return the resource
+        def finish(successful: bool) -> PlayAnimation.Result:
+            """This is called when the action is finished."""
+            self.animation_running = False
+            return PlayAnimation.Result(successful=successful)
 
         # Set type for request
         request: PlayAnimation.Goal = goal.request
 
-        first = True
         self.current_animation = request.animation
 
         # publish info to the console for the user
-        self.get_logger().info(f"Request to play animation {request.animation}")
+        self.get_logger().info(f"Request to play animation {self.current_animation}")
 
-        if self.hcm_state != 0 and not request.hcm:  # 0 means controllable
-            # we cant play an animation right now
-            # but we send a request, so that we may can soon
-            self.send_animation_request()
-
-            # Wait for the hcm to be controllable
-            num_tries = 0
-            while rclpy.ok() and self.hcm_state != 0 and num_tries < 10:
-                num_tries += 1
-                self.get_logger().info(f"HCM not controllable. Waiting... (try {num_tries})")
-                self.get_clock().sleep_until(self.get_clock().now() + Duration(seconds=0.1))
-
-            if self.hcm_state != 0:
-                self.get_logger().info(
-                    "HCM not controllable. Only sent request to make it come controllable, "
-                    "but it was not successful until timeout"
-                )
+        # If the request is not from the HCM we might need to wait for the HCM to be controllable
+        if not request.hcm:
+            # Wait for HCM to be up and running
+            if not self.hcm_animation_mode.wait_for_service(timeout_sec=5.0):
+                self.get_logger().error("HCM not available. Aborting animation...")
                 goal.abort()
-                return PlayAnimation.Result(successful=False)
+                return finish(successful=False)
 
-        animator = self.get_animation_splines(self.current_animation)
+            # Send request to make the HCM to go into animation play mode
+            num_tries = 0
+            while rclpy.ok() and (not self.hcm_animation_mode.call(SetBool.Request(data=True)).success):
+                if num_tries >= 10:
+                    self.get_logger().error("Failed to request HCM to go into animation play mode")
+                    goal.abort()
+                    return finish(successful=False)
+                num_tries += 1
+                self.get_clock().sleep_for(Duration(seconds=0.1))
 
+        # Create splines
+        animator = SplineAnimator(
+            self.animation_cache[self.current_animation], self.current_joint_states, self.get_logger(), self.get_clock()
+        )
+
+        # Flag that determines that we have send something once
+        once = False
+
+        # Loop to play the animation
         while rclpy.ok() and animator:
             try:
                 last_time = self.get_clock().now()
 
                 # if we're here we want to play the next keyframe, cause there is no other goal
                 # compute next pose
-                t = self.get_clock().now().nanoseconds / 1e9 - animator.get_start_time()
+                t = (
+                    self.get_clock().now().nanoseconds / 1e9 - animator.get_start_time()
+                )  # time since start of animation
+                # Start later if we have set bounds and only play the part of the animation
+                if request.bounds and request.start > 0:
+                    t += animator.get_keyframe_times()[request.start]
+
+                # Get the robot pose at the current time from the spline interpolator
                 pose = animator.get_positions_rad(t)
 
-                if pose is None:
-                    # animation is finished
-                    # tell it to the hcm
-                    self.send_animation(first=False, last=True, hcm=request.hcm, pose=None, torque=None)
+                # Finish if spline ends or we reaches the explicitly defined premature end
+                if pose is None or (request.bounds and once and t > animator.get_keyframe_times()[request.end - 1]):
+                    # Animation is finished, tell it to the hcm (except if it is from the hcm)
+                    if not request.hcm:
+                        hcm_result = self.hcm_animation_mode.call(SetBool.Request(data=False))
+                        if not hcm_result.success:
+                            self.get_logger().error(f"Failed to finish animation on HCM. Reason: {hcm_result.message}")
+
+                    # We give a positive result
                     goal.publish_feedback(PlayAnimation.Feedback(percent_done=100))
-                    # we give a positive result
                     goal.succeed()
-                    return PlayAnimation.Result(successful=True)
+                    return finish(successful=True)
 
-                self.send_animation(first=first, last=False, hcm=request.hcm, pose=pose, torque=animator.get_torque(t))
+                self.send_animation(from_hcm=request.hcm, pose=pose, torque=animator.get_torque(t))
 
-                first = False  # we have sent the first frame, all frames after this can't be the first
                 perc_done = int(
                     ((self.get_clock().now().nanoseconds / 1e9 - animator.get_start_time()) / animator.get_duration())
                     * 100
@@ -127,55 +196,55 @@ class AnimationNode(Node):
 
                 goal.publish_feedback(PlayAnimation.Feedback(percent_done=perc_done))
 
+                once = True
+
                 self.get_clock().sleep_until(last_time + Duration(seconds=0.02))
             except (ExternalShutdownException, KeyboardInterrupt):
-                exit()
-        return PlayAnimation.Result(successful=False)
-
-    def get_animation_splines(self, animation_name: str):
-        if animation_name not in self.animation_cache:
-            self.get_logger().error(f"Animation '{animation_name}' not found")
-            return
-        return SplineAnimator(
-            self.animation_cache[animation_name], self.current_joint_states, self.get_logger(), self.get_clock()
-        )
+                sys.exit(0)
+        return finish(successful=False)
 
     def update_current_pose(self, msg):
         """Gets the current motor positions and updates the representing pose accordingly."""
         self.current_joint_states = msg
 
-    def update_hcm_state(self, msg: RobotControlState):
-        self.hcm_state = msg.state
-
-    def send_animation_request(self):
-        anim_msg = AnimationMsg()
-        anim_msg.request = True
-        anim_msg.header.stamp = self.get_clock().now().to_msg()
-        self.hcm_publisher.publish(anim_msg)
-
-    def send_animation(self, first: bool, last: bool, hcm: bool, pose: dict, torque: dict):
+    def send_animation(self, from_hcm: bool, pose: dict, torque: Optional[dict]):
         """Sends an animation to the hcm"""
-        anim_msg = AnimationMsg()
-        anim_msg.request = False
-        anim_msg.first = first
-        anim_msg.last = last
-        anim_msg.hcm = hcm
-        if pose is not None:  #
-            traj_msg = JointTrajectory()
-            traj_msg.joint_names = []
-            traj_msg.points = [JointTrajectoryPoint()]
-            # We are only using a single point in the trajectory message, since we only want to send a single joint goal
-            traj_msg.points[0].positions = []
-            traj_msg.points[0].effort = []
-            for joint in pose:
-                traj_msg.joint_names.append(joint)
-                traj_msg.points[0].positions.append(pose[joint])
-                if torque:
-                    # 1 and 2 should be mapped to 1
-                    traj_msg.points[0].effort.append(np.clip((torque[joint]), 0, 1))
-            anim_msg.position = traj_msg
-        anim_msg.header.stamp = self.get_clock().now().to_msg()
-        self.hcm_publisher.publish(anim_msg)
+        self.hcm_publisher.publish(
+            AnimationMsg(
+                from_hcm=from_hcm,
+                joint_command=JointCommand(
+                    header=Header(
+                        stamp=self.get_clock().now().to_msg(),
+                    ),
+                    joint_names=pose.keys(),
+                    positions=pose.values(),
+                    velocities=[-1.0] * len(pose),
+                    accelerations=[-1.0] * len(pose),
+                    max_currents=[np.clip((torque[joint]), 0.0, 1.0) for joint in pose]
+                    if torque and False  # TODO
+                    else [-1.0] * len(pose),  # fmt: skip
+                ),
+            )
+        )
+
+    def add_animation(self, request: AddAnimation.Request, response: AddAnimation.Response) -> AddAnimation.Response:
+        """
+        Adds an animation to the cache (non persistent).
+        This is useful if e.g. the recording GUI wants to play an uncommitted animation.
+        """
+        try:
+            # Parse the animation
+            new_animation = parse(json.loads(request.json))
+            # Get the name of the animation and add it to the cache
+            self.animation_cache[new_animation.name] = new_animation
+        except ValueError:
+            self.get_logger().error(
+                "Animation provided by service call had a ValueError. "
+                "Probably there is a syntax error in the animation file. "
+                "See traceback"
+            )
+            traceback.print_exc()
+        return response
 
 
 def main(args=None):

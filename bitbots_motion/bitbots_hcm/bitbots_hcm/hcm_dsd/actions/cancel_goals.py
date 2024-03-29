@@ -6,7 +6,7 @@ class CancelGoals(AbstractHCMActionElement):
     Cancels all animation, dynup and move_base goals
     """
 
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
 
     def perform(self):

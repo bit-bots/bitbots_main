@@ -1,16 +1,4 @@
-std_msgs/Header header
+# Is this animation coming from the humanoid control module and can be executed during all robot states
+bool from_hcm
 
-# This is a request to make HCM controllable, e.g. stop walking
-bool request
-
-# First message of this animation
-bool first
-
-# Last message of this animation
-bool last
-
-# Is this animation coming from the hardware control manager
-bool hcm
-
-# Joint goals
-trajectory_msgs/JointTrajectory position
+bitbots_msgs/JointCommand joint_command
