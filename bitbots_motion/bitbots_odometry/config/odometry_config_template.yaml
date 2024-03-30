@@ -107,7 +107,7 @@ motion_odometry:
 
   resample_rate: {
     type: double,
-    default_value: 100.0,
+    default_value: 1.0,
     description: "Every nth sample from the pressure sensors is taken to compute the infliction points and minima",
     validation: {
       bounds<>: [1.0, 1000.0]
@@ -116,7 +116,7 @@ motion_odometry:
 
   pressure_vector_size: {
     type: int,
-    default_value: 600,
+    default_value: 50,
     description: "Size of the pressure vector",
     validation: {
       bounds<>: [1, 10000]

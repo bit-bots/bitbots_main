@@ -31,8 +31,6 @@ param_listener_(get_node_parameters_interface())
 
 void WalkSupportStateDetector::loop() {
   config_ = param_listener_.get_params();
-  // get current vector of pressure values
-  // put logs inbetween to see where the program crashes
   
   std::vector<std::pair<float_t, rclcpp::Time>> pressure_times_left = WalkSupportStateDetector::reorder_pressure_array(pressure_left_values_stamped_);
   std::vector<std::pair<float_t, rclcpp::Time>> pressure_times_right = WalkSupportStateDetector::reorder_pressure_array(pressure_right_values_stamped_);
@@ -48,7 +46,7 @@ void WalkSupportStateDetector::loop() {
   // find the inflection points
   int inflection_point_left = WalkSupportStateDetector::findInflectionPoints(pressure_left);
   int inflection_point_right = WalkSupportStateDetector::findInflectionPoints(pressure_right);
-  // find the local minima
+    // find the local minima
   int local_minima_left = WalkSupportStateDetector::findLocalMinima(pressure_left);
   int local_minima_right = WalkSupportStateDetector::findLocalMinima(pressure_right);
   if (inflection_point_left != -1){
@@ -64,14 +62,29 @@ void WalkSupportStateDetector::loop() {
   if (local_minima_right != -1){
   left_ts_up_ = pressure_times_right[local_minima_right].second;
   }
+  int max_time_stamp_right = std::max(right_ts_down_.nanoseconds(), right_ts_up_.nanoseconds());
+  int max_time_stamp_left = std::max(left_ts_down_.nanoseconds(), left_ts_up_.nanoseconds());
 
-  if (right_ts_down_ > right_ts_up_){
+  if (static_cast<int>(pressure_right_values_stamped_.size()) > 0){
+    while (pressure_right_values_stamped_[0].second.nanoseconds() < max_time_stamp_right){
+      pressure_right_values_stamped_.erase(pressure_right_values_stamped_.begin());
+    }
+  }
+  if (static_cast<int>(pressure_left_values_stamped_.size()) > 0){
+    while (pressure_left_values_stamped_[0].second.nanoseconds() < max_time_stamp_left){
+      pressure_left_values_stamped_.erase(pressure_left_values_stamped_.begin());
+    }
+  }
+
+
+
+  if (right_ts_down_.nanoseconds() > right_ts_up_.nanoseconds()){
     curr_stand_right_ = true;
   }
   else{
     curr_stand_right_ = false;
   }
-  if (left_ts_down_ > left_ts_up_){
+  if (left_ts_down_.nanoseconds() > left_ts_up_.nanoseconds()){
     curr_stand_left_ = true;
   }
   else{
@@ -85,15 +98,21 @@ void WalkSupportStateDetector::loop() {
   biped_interfaces::msg::Phase phase;
     if (curr_stand_left && ! curr_stand_right){
       phase.phase = biped_interfaces::msg::Phase::LEFT_STANCE;
-      phase.header.stamp = this->now() + rclcpp::Duration::from_nanoseconds(int(config_.temporal_step_offset_factor*step_duration_left_));
+      phase.header.stamp = left_ts_down_;
     }
       else if (!curr_stand_left && curr_stand_right){
       phase.phase = biped_interfaces::msg::Phase::RIGHT_STANCE;
-      phase.header.stamp = this->now() + rclcpp::Duration::from_nanoseconds(int(config_.temporal_step_offset_factor*step_duration_right_));
+      phase.header.stamp = right_ts_down_;
     }
   else{ // if both are high its double support, but if both are too low, pressure is shared on both feet
       phase.phase = biped_interfaces::msg::Phase::DOUBLE_STANCE;
-      phase.header.stamp = this->now() + rclcpp::Duration::from_nanoseconds((int(config_.temporal_step_offset_factor*step_duration_left_)+int(config_.temporal_step_offset_factor*step_duration_right_))/2);
+      if (right_ts_down_.nanoseconds() > left_ts_down_.nanoseconds()){
+        phase.header.stamp = right_ts_down_;
+      }
+      else{
+
+      phase.header.stamp = left_ts_down_;
+      }
     }
   if (phase.phase != curr_stance_.phase){
     curr_stance_.phase = phase.phase;
@@ -103,20 +122,20 @@ void WalkSupportStateDetector::loop() {
 }
 
   void WalkSupportStateDetector::pressure_left_callback(bitbots_msgs::msg::FootPressure msg) {
-    float_t summed_pressure = (msg.left_back +msg.left_front + msg.right_front + msg.right_back)/4.0;
+    float_t summed_pressure = (msg.left_back +msg.left_front + msg.right_front + msg.right_back);
     pressure_filtered_left_ = (1-config_.k)*summed_pressure + config_.k*pressure_filtered_left_;
     std_msgs::msg::Float64 pressure_msg;
     pressure_msg.data = pressure_filtered_left_;
+    
     // get the time from msg
     rclcpp::Time stamp = msg.header.stamp;
+    pub_summed_pressure_left_->publish(pressure_msg);
     pressure_left_values_stamped_.push_back(std::pair<float_t, rclcpp::Time>(pressure_filtered_left_, stamp));
     
     if ( static_cast<int>(pressure_left_values_stamped_.size())> config_.pressure_vector_size){
         pressure_left_values_stamped_.erase(pressure_left_values_stamped_.begin());
     }
-    if (config_.debug){
-      pub_summed_pressure_left_->publish(pressure_msg);
-    }
+    
     // if (pressure_filtered_left_ > config_.summed_pressure_threshold_left){
     //     if (curr_stand_left_ != true){
     //         up_left_ = this->now();
@@ -132,7 +151,7 @@ void WalkSupportStateDetector::loop() {
   }
 
   void WalkSupportStateDetector::pressure_right_callback(bitbots_msgs::msg::FootPressure msg) {
-    float_t summed_pressure = (msg.left_back +msg.left_front + msg.right_front + msg.right_back)/4.0;
+    float_t summed_pressure = (msg.left_back +msg.left_front + msg.right_front + msg.right_back);
     pressure_filtered_right_ = (1-config_.k)*summed_pressure + config_.k*pressure_filtered_right_;
     std_msgs::msg::Float64 pressure_msg;
     rclcpp::Time stamp = msg.header.stamp;
@@ -140,13 +159,12 @@ void WalkSupportStateDetector::loop() {
     pressure_right_values_stamped_.push_back(std::pair<float_t, rclcpp::Time>(pressure_filtered_right_, stamp));
     // if one second has passed, start trimming the vector
 
+      pub_summed_pressure_right_->publish(pressure_msg);
     if (static_cast<int>(pressure_right_values_stamped_.size()) > config_.pressure_vector_size){
         pressure_right_values_stamped_.erase(pressure_right_values_stamped_.begin());
     }
 
-    if (config_.debug){
-      pub_summed_pressure_right_->publish(pressure_msg);
-    }
+      
     // if (pressure_filtered_right_ > config_.summed_pressure_threshold_right){
     //     if (curr_stand_right_ != true){
     //         up_right_ = this->now();
@@ -161,6 +179,7 @@ void WalkSupportStateDetector::loop() {
   }
 
 int WalkSupportStateDetector::findInflectionPoints(const std::vector<float_t>& function) {
+  int steepest_slope_index = -1;
     for (int i = 1; i < static_cast<int>(function.size()) - 1; ++i) {
         double prev_slope = function[i] - function[i - 1];
         double next_slope = function[i] - function[i + 1];
@@ -172,17 +191,24 @@ int WalkSupportStateDetector::findInflectionPoints(const std::vector<float_t>& f
     return -1;
 }
 
+
 // Function to find local minima
 int WalkSupportStateDetector::findLocalMinima(const std::vector<float_t>& function) {
+  int local_minima_index = -1;
     for (int i = 1; i < static_cast<int>(function.size()) - 1; ++i) {
         double prev_slope = function[i] - function[i - 1];
         double next_slope = function[i] - function[i + 1];
         
         if (prev_slope < 0 && next_slope < 0) {
-            return i;
+            if (local_minima_index == -1){
+                local_minima_index = i;
+            }
+            else if (function[i] < function[local_minima_index]){
+                local_minima_index = i;
+            }
         }
     }
-    return -1;
+    return local_minima_index;
 }
 
 // find the localminima and inflection point of the pressure array
