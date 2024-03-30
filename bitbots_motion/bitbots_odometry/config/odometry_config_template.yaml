@@ -71,7 +71,7 @@ motion_odometry:
 
   summed_pressure_threshold_right: {
     type: int,
-    default_value: 2500,
+    default_value: 40,
     description: "Threshold for detecting whether the robot really stands on right foot. If they overlap, the robot is considered to stand on both feet.",
     validation: {
       bounds<>: [0, 5000]
@@ -80,7 +80,7 @@ motion_odometry:
 
   summed_pressure_threshold_left: {
     type: int,
-    default_value: 2500,
+    default_value: 40,
     description: "Threshold for detecting whether the robot really stands on left foot",
     validation: {
       bounds<>: [0, 5000]
@@ -103,4 +103,22 @@ motion_odometry:
     type: bool,
     default_value: true,
     description: "Whether debug information should be published"
+  }
+
+  resample_rate: {
+    type: double,
+    default_value: 100.0,
+    description: "Every nth sample from the pressure sensors is taken to compute the infliction points and minima",
+    validation: {
+      bounds<>: [1.0, 1000.0]
+    }
+  }
+
+  pressure_vector_size: {
+    type: int,
+    default_value: 600,
+    description: "Size of the pressure vector",
+    validation: {
+      bounds<>: [1, 10000]
+    }
   }

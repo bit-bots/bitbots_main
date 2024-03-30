@@ -4,6 +4,7 @@
 
 #include <bitbots_msgs/msg/foot_pressure.hpp>
 #include <std_msgs/msg/float64.hpp>
+#include <vector>
 using std::placeholders::_1;
 
 namespace bitbots_odometry {
@@ -19,6 +20,9 @@ class WalkSupportStateDetector: public rclcpp::Node {
 
   void pressure_left_callback(bitbots_msgs::msg::FootPressure msg);
   void pressure_right_callback(bitbots_msgs::msg::FootPressure msg);
+  std::vector<std::pair<float_t, rclcpp::Time>> reorder_pressure_array(std::vector<std::pair<float_t, rclcpp::Time>> pressure_vector);
+  int findInflectionPoints(const std::vector<float_t>& function);
+  int findLocalMinima(const std::vector<float_t>& function);
   int curr_stand_left_;
   int curr_stand_right_;
   int prev_stand_right_;
@@ -41,6 +45,17 @@ class WalkSupportStateDetector: public rclcpp::Node {
   // if debug is true, publish a debug for summed pressure
   rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr pub_summed_pressure_left_;
   rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr pub_summed_pressure_right_;
+
+  // make an array which can store values for 2 seconds
+  std::vector<std::pair<float_t, rclcpp::Time>> pressure_left_values_stamped_;
+  std::vector<std::pair<float_t, rclcpp::Time>> pressure_right_values_stamped_;
+
+  rclcpp::Time right_ts_up_;
+  rclcpp::Time left_ts_up_;
+  rclcpp::Time right_ts_down_;
+  rclcpp::Time left_ts_down_;
+
+
 };
 
 }
