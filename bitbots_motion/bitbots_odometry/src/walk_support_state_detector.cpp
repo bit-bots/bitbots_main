@@ -44,23 +44,26 @@ void WalkSupportStateDetector::loop() {
     pressure_right.push_back(pressure_times_right[i].first);
   }
   // find the inflection points
-  int inflection_point_left = WalkSupportStateDetector::findInflectionPoints(pressure_left);
-  int inflection_point_right = WalkSupportStateDetector::findInflectionPoints(pressure_right);
+  // int inflection_point_left = WalkSupportStateDetector::findInflectionPoints(pressure_left);
+  // int inflection_point_right = WalkSupportStateDetector::findInflectionPoints(pressure_right);
     // find the local minima
   int local_minima_left = WalkSupportStateDetector::findLocalMinima(pressure_left);
   int local_minima_right = WalkSupportStateDetector::findLocalMinima(pressure_right);
-  if (inflection_point_left != -1){
+  // if (inflection_point_left != -1){
 
-  left_ts_down_ = pressure_times_left[inflection_point_left].second;
-  }
-  if (inflection_point_right != -1){
-  right_ts_down_ = pressure_times_right[inflection_point_right].second;
-  }
+  // left_ts_down_ = pressure_times_left[inflection_point_left].second;
+  // }
+  // if (inflection_point_right != -1){
+  // right_ts_down_ = pressure_times_right[inflection_point_right].second;
+  // }
   if (local_minima_left != -1){
   right_ts_up_ = pressure_times_left[local_minima_left].second;
+  left_ts_down_ = pressure_times_left[local_minima_left].second;
+
   }
   if (local_minima_right != -1){
   left_ts_up_ = pressure_times_right[local_minima_right].second;
+  right_ts_down_ = pressure_times_right[local_minima_right].second;
   }
   int max_time_stamp_right = std::max(right_ts_down_.nanoseconds(), right_ts_up_.nanoseconds());
   int max_time_stamp_left = std::max(left_ts_down_.nanoseconds(), left_ts_up_.nanoseconds());
