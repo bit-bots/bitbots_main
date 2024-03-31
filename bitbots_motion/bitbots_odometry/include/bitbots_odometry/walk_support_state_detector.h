@@ -20,7 +20,6 @@ class WalkSupportStateDetector: public rclcpp::Node {
 
   void pressure_left_callback(bitbots_msgs::msg::FootPressure msg);
   void pressure_right_callback(bitbots_msgs::msg::FootPressure msg);
-  std::vector<std::pair<float_t, rclcpp::Time>> reorder_pressure_array(std::vector<std::pair<float_t, rclcpp::Time>> pressure_vector);
   int findInflectionPoints(const std::vector<float_t>& function);
   int findLocalMinima(const std::vector<float_t>& function);
   int curr_stand_left_;
@@ -42,11 +41,9 @@ class WalkSupportStateDetector: public rclcpp::Node {
   // Datastructure to hold all parameters, which is build from the schema in the 'parameters.yaml'
   motion_odometry::Params config_;
 
-  // if debug is true, publish a debug for summed pressure
   rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr pub_summed_pressure_left_;
   rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr pub_summed_pressure_right_;
 
-  // make an array which can store values for 2 seconds
   std::vector<std::pair<float_t, rclcpp::Time>> pressure_left_values_stamped_;
   std::vector<std::pair<float_t, rclcpp::Time>> pressure_right_values_stamped_;
 

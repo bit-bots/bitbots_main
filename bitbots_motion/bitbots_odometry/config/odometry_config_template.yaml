@@ -50,43 +50,6 @@ motion_odometry:
     }
   }
 
-      
-  m: {
-    type: double,
-    default_value: 0.95,
-    description: "Factor for lowpass filtering the step duration. This only plays a role if temporal_step_offset is not 0.",
-    validation: {
-      bounds<>: [0.0, 1.0]
-    }
-  }
-
-  temporal_step_offset_factor: {
-    type: double,
-    default_value: 0.0,
-    description: "Offset factor for taking the time stamp when the robot really stands on one foot. 1 means waiting until the steps is finished, 0 means taking the first time stamp when robots start standing",
-    validation: {
-      bounds<>: [0.0, 1.0]
-    }
-  }
-
-  summed_pressure_threshold_right: {
-    type: int,
-    default_value: 40,
-    description: "Threshold for detecting whether the robot really stands on right foot. If they overlap, the robot is considered to stand on both feet.",
-    validation: {
-      bounds<>: [0, 5000]
-    }
-  }
-
-  summed_pressure_threshold_left: {
-    type: int,
-    default_value: 40,
-    description: "Threshold for detecting whether the robot really stands on left foot",
-    validation: {
-      bounds<>: [0, 5000]
-    }
-  }
-
   foot_pressure_topic_left: {
     type: string,
     default_value: "foot_pressure_left/raw",
@@ -99,26 +62,12 @@ motion_odometry:
     description: "Topic for the right foot pressure sensor"
   }
 
-  debug: {
-    type: bool,
-    default_value: true,
-    description: "Whether debug information should be published"
-  }
-
-  resample_rate: {
-    type: double,
-    default_value: 1.0,
-    description: "Every nth sample from the pressure sensors is taken to compute the infliction points and minima",
-    validation: {
-      bounds<>: [1.0, 1000.0]
-    }
-  }
 
   pressure_vector_size: {
     type: int,
-    default_value: 50,
-    description: "Size of the pressure vector",
+    default_value: 60,
+    description: "Size of the buffer for the pressure sensor values which are used to calculate the minima",
     validation: {
-      bounds<>: [1, 10000]
+      bounds<>: [10, 100]
     }
   }
