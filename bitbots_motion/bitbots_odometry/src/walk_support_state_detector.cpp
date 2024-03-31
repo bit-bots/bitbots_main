@@ -21,10 +21,6 @@ WalkSupportStateDetector::WalkSupportStateDetector()
   curr_stance_.phase = 2;
   pressure_filtered_right_ = 0;
   pressure_filtered_left_ = 0;
-  step_duration_right_ = 0;
-  up_right_ = this->now();
-  step_duration_left_ = 0;
-  up_left_ = this->now();
 }
 
 void WalkSupportStateDetector::loop() {
@@ -56,17 +52,15 @@ void WalkSupportStateDetector::loop() {
 
   // if we have a local minimum, we can assume that the foot is on the ground and the other starts lifting
   if (local_minima_left != -1) {
-    //right_ts_up_ = pressure_times_left[local_minima_left].second;
     left_ts_down_ = pressure_times_left[local_minima_left].second;
   }
   if (local_minima_right != -1) {
-    //left_ts_up_ = pressure_times_right[local_minima_right].second;
     right_ts_down_ = pressure_times_right[local_minima_right].second;
   }
   int max_time_stamp_right = right_ts_down_.nanoseconds();
   int max_time_stamp_left = left_ts_down_.nanoseconds();
 
-// remove all values that are older than the current stance, because they are not importantn anymore
+// remove all values that are older than the current stance, because they are not important anymore
   if (static_cast<int>(pressure_right_values_stamped_.size()) > 0) {
     while (pressure_right_values_stamped_[0].second.nanoseconds() < max_time_stamp_right) {
       pressure_right_values_stamped_.erase(pressure_right_values_stamped_.begin());
@@ -77,26 +71,15 @@ void WalkSupportStateDetector::loop() {
       pressure_left_values_stamped_.erase(pressure_left_values_stamped_.begin());
     }
   }
-
-  if (right_ts_down_.nanoseconds() > left_ts_down_.nanoseconds()){ //right_ts_up_.nanoseconds()) {
-    curr_stand_right_ = true;
-    curr_stand_left_ = false;
-  } else {
-    curr_stand_right_ = false;
-    curr_stand_left_ = true;
-  }
-
-  int curr_stand_left = curr_stand_left_;
-  int curr_stand_right = curr_stand_right_;
-
   biped_interfaces::msg::Phase phase;
-  if (curr_stand_left && !curr_stand_right) {
-    phase.phase = biped_interfaces::msg::Phase::LEFT_STANCE;
-    phase.header.stamp = left_ts_down_;
-  } else if (!curr_stand_left && curr_stand_right) {
+  if (right_ts_down_.nanoseconds() > left_ts_down_.nanoseconds()) {
+    curr_stance_.header.stamp = right_ts_down_;
     phase.phase = biped_interfaces::msg::Phase::RIGHT_STANCE;
-    phase.header.stamp = right_ts_down_;
+  } else {
+    curr_stance_.header.stamp = left_ts_down_;
+    phase.phase = biped_interfaces::msg::Phase::LEFT_STANCE;
   }
+
   if (phase.phase != curr_stance_.phase) {
     curr_stance_.phase = phase.phase;
     pub_foot_pressure_support_state_->publish(phase);
@@ -123,6 +106,7 @@ void WalkSupportStateDetector::pressure_right_callback(bitbots_msgs::msg::FootPr
   pub_summed_pressure_right_->publish(pressure_msg);
 }
 
+// previously I tried using the inflection points to detect the foot switch, but it was not reliable
 int WalkSupportStateDetector::findInflectionPoints(const std::vector<float_t>& function) {
   int steepest_slope_index = -1;
   for (int i = 1; i < static_cast<int>(function.size()) - 1; ++i) {
@@ -136,6 +120,7 @@ int WalkSupportStateDetector::findInflectionPoints(const std::vector<float_t>& f
   return -1;
 }
 
+// local minima are found by looking for two negative slopes and then checking whether the minima is the smallest in the buffer
 int WalkSupportStateDetector::findLocalMinima(const std::vector<float_t>& function) {
   int local_minima_index = -1;
   for (int i = 1; i < static_cast<int>(function.size()) - 1; ++i) {

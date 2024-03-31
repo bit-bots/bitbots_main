@@ -22,18 +22,9 @@ class WalkSupportStateDetector: public rclcpp::Node {
   void pressure_right_callback(bitbots_msgs::msg::FootPressure msg);
   int findInflectionPoints(const std::vector<float_t>& function);
   int findLocalMinima(const std::vector<float_t>& function);
-  int curr_stand_left_;
-  int curr_stand_right_;
-  int prev_stand_right_;
-  int prev_stand_left_;
   float_t pressure_filtered_left_;
   float_t pressure_filtered_right_;
 
-  long step_duration_right_;
-  rclcpp::Time up_right_;
-
-  long step_duration_left_;
-  rclcpp::Time up_left_;
   biped_interfaces::msg::Phase curr_stance_;
 
   // Declare parameter listener and struct from the generate_parameter_library
@@ -47,8 +38,6 @@ class WalkSupportStateDetector: public rclcpp::Node {
   std::vector<std::pair<float_t, rclcpp::Time>> pressure_left_values_stamped_;
   std::vector<std::pair<float_t, rclcpp::Time>> pressure_right_values_stamped_;
 
-  rclcpp::Time right_ts_up_;
-  rclcpp::Time left_ts_up_;
   rclcpp::Time right_ts_down_;
   rclcpp::Time left_ts_down_;
 
