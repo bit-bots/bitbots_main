@@ -89,17 +89,33 @@ class PostProcessor {
       }
     }
 
-    // Check if the device was found
-    if (!our_device_info) {
+    // Wait until the camera is found
+    while(rclcpp::ok() && !our_device_info) {
       RCLCPP_ERROR(node_->get_logger(), "Could not find device with user id '%s'", config_.device_user_id.c_str());
+      RCLCPP_ERROR(node_->get_logger(), "Retrying in 2 seconds");
+      // Wait
+      rclcpp::sleep_for(std::chrono::seconds(2));
+      // List all available devices
+      CTlFactory::GetInstance().EnumerateDevices(devices);
+      // Get the matching device
+      auto it = std::find_if(devices.begin(), devices.end(), [this](const auto& device) {
+        return device.GetUserDefinedName().compare(config_.device_user_id.c_str()) == 0;
+      });
+      // Use the device if it was found
+      if (it != devices.end()) {
+        our_device_info = *it;
+      }
+    }
+
+    // Check if the node is still ok, maybe it was shut down while waiting
+    if(!rclcpp::ok()) {
       return;
-    } else {
-      RCLCPP_INFO(node_->get_logger(), "Using device user id '%s'", config_.device_user_id.c_str());
     }
 
     // Set up the camera
     camera_ = std::make_unique<Pylon::CBaslerUniversalInstantCamera>(
         CTlFactory::GetInstance().CreateDevice(our_device_info.value()));
+    RCLCPP_INFO(node_->get_logger(), "Using device user id '%s'", config_.device_user_id.c_str());
 
     // Wait for the camera to be ready
     camera_->Open();
