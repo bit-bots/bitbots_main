@@ -27,11 +27,14 @@ class KickBallStatic(AbstractKickAction):
             self.blackboard.node.get_logger().error(
                 "The parameter '{}' could not be used to decide which foot should kick".format(parameters["foot"])
             )
+        # By default, don't reevaluate
+        self.never_reevaluate = parameters.get("r", True) and parameters.get("reevaluate", True)
+        # Request play animation
+        self.blackboard.animation.play_animation(self.kick, False)
 
     def perform(self, reevaluate=False):
         if not self.blackboard.animation.is_busy():
-            self.blackboard.animation.play_animation(self.kick, False)
-
+            self.pop()
 
 class KickBallDynamic(AbstractKickAction):
     """
