@@ -591,7 +591,7 @@ class RecordUI(Plugin):
         mirrored_motors: dict[str, float] = {}
 
         # Go through all active motors
-        for angle, motor_name in self._working_angles:
+        for motor_name, angle in self._working_angles.items():
             # Check if the motor is on the right or left side and get the mirrored motor name
             if motor_name.startswith("R"):
                 mirrored_motor_name = "L" + motor_name[1:]
@@ -602,10 +602,15 @@ class RecordUI(Plugin):
                 mirrored_motors[motor_name] = angle
                 continue
             # Set the angle of the mirrored motor to this one
-            mirrored_motors[mirrored_motor_name] = angle
+            mirrored_motors[mirrored_motor_name] = -angle
 
         # Update the working values
         self._working_angles = mirrored_motors
+
+        # Update the UI
+        for motor_name, angle in self._working_angles.items():
+            self._motor_controller_text_fields[motor_name].setText(str(round(math.degrees(angle), 2)))
+
         self._widget.statusBar.showMessage("Inverted frame")
 
     def frame_select(self):
@@ -651,6 +656,7 @@ class RecordUI(Plugin):
                 self._motor_controller_text_fields[motor_name].setText(
                     str(round(math.degrees(selected_frame["goals"][motor_name]), 2))
                 )
+                self._working_angles[motor_name] = selected_frame["goals"][motor_name]
             else:
                 self._motor_controller_text_fields[motor_name].setText("0.0")
 
