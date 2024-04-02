@@ -25,9 +25,6 @@ class WalkInPlace(AbstractActionElement):
 
         self.start_time = self.blackboard.node.get_clock().now()
 
-        # Cancel the path planning if it is running
-        self.blackboard.pathfinding.cancel_goal()
-
     def perform(self, reevaluate=False):
         self.publish_debug_data("duration", self.duration)
         if self.duration is not None and (self.blackboard.node.get_clock().now() - self.start_time) >= Duration(
@@ -35,6 +32,9 @@ class WalkInPlace(AbstractActionElement):
         ):
             return self.pop()
 
+        # Cancel the path planning if it is running
+        self.blackboard.pathfinding.cancel_goal()
+        # Publish a zero velocity
         self.blackboard.pathfinding.direct_cmd_vel_pub.publish(Twist())
 
 
