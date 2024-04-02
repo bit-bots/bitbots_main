@@ -23,7 +23,7 @@ using namespace Pylon;
 
 namespace basler_camera {
 
-class PostProcessor {
+class BaslerCamera {
   std::shared_ptr<rclcpp::Node> node_;
 
   image_transport::TransportHints transport_hints_;
@@ -42,7 +42,7 @@ class PostProcessor {
   pylon_camera_parameters::Params config_;
 
  public:
-  PostProcessor()
+  BaslerCamera()
       : node_(std::make_shared<rclcpp::Node>("post_processor")),
         transport_hints_(node_.get()),
         image_pub_(std::make_unique<image_transport::CameraPublisher>(
@@ -68,7 +68,7 @@ class PostProcessor {
 
     // Setup timer for publishing
     timer_ = node_->create_wall_timer(std::chrono::duration<double>(1.0 / config_.fps),
-                                      std::bind(&PostProcessor::timer_callback, this));
+                                      std::bind(&BaslerCamera::timer_callback, this));
   }
 
   void initilize_camera() {
@@ -250,7 +250,7 @@ int main(int argc, char* argv[]) {
   rclcpp::experimental::executors::EventsExecutor exec = rclcpp::experimental::executors::EventsExecutor(
       std::make_unique<rclcpp::experimental::executors::SimpleEventsQueue>(), true, rclcpp::ExecutorOptions());
 
-  auto post_processor = std::make_shared<basler_camera::PostProcessor>();
+  auto post_processor = std::make_shared<basler_camera::BaslerCamera>();
   exec.add_node(post_processor->get_node());
   exec.spin();
   rclcpp::shutdown();
