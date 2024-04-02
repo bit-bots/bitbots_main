@@ -90,7 +90,7 @@ class BaslerCamera {
     }
 
     // Wait until the camera is found
-    while(rclcpp::ok() && !our_device_info) {
+    while (rclcpp::ok() && !our_device_info) {
       RCLCPP_ERROR(node_->get_logger(), "Could not find device with user id '%s'", config_.device_user_id.c_str());
       RCLCPP_ERROR(node_->get_logger(), "Retrying in 2 seconds");
       // Wait
@@ -108,7 +108,7 @@ class BaslerCamera {
     }
 
     // Check if the node is still ok, maybe it was shut down while waiting
-    if(!rclcpp::ok()) {
+    if (!rclcpp::ok()) {
       return;
     }
 
