@@ -129,7 +129,7 @@ class RecordUI(Plugin):
                 },
             }
         }
-        self._motor_hierarchy_flat = flatten_dict_of_lists(self._motor_hierarchy)
+        self._motor_hierarchy_flat: dict[str, str] = flatten_dict_of_lists(self._motor_hierarchy)
 
         # Create drag and dop list for keyframes
         self._widget.frameList = DragDropList(self._widget, self.change_keyframe_order)
@@ -580,15 +580,32 @@ class RecordUI(Plugin):
         """
         Copies all motor values from one side of the robot to the other. Inverts values, if necessary
         """
-        raise NotImplementedError("This function is not yet implemented")
-        self._widget.statusBar.showMessage("Mirrored frame to " + direction)
+        raise NotImplementedError("This function is not implemented yet")
 
     def invert_frame(self):
         """
         Copies all values from the left side to the right and all values from the right side to the left.
         Inverts values, if necessary
         """
-        raise NotImplementedError("This function is not yet implemented")
+        # We need a copy so we don't change them back while when we do it for the other side
+        mirrored_motors: dict[str, float] = {}
+
+        # Go through all active motors
+        for angle, motor_name in self._working_angles:
+            # Check if the motor is on the right or left side and get the mirrored motor name
+            if motor_name.startswith("R"):
+                mirrored_motor_name = "L" + motor_name[1:]
+            elif motor_name.startswith("L"):
+                mirrored_motor_name = "R" + motor_name[1:]
+            else:
+                # Just copy over if the motor is not on the left or right side
+                mirrored_motors[motor_name] = angle
+                continue
+            # Set the angle of the mirrored motor to this one
+            mirrored_motors[mirrored_motor_name] = angle
+
+        # Update the working values
+        self._working_angles = mirrored_motors
         self._widget.statusBar.showMessage("Inverted frame")
 
     def frame_select(self):
