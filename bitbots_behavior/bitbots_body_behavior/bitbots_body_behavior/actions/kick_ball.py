@@ -29,11 +29,16 @@ class KickBallStatic(AbstractKickAction):
             )
         # By default, don't reevaluate
         self.never_reevaluate = parameters.get("r", True) and parameters.get("reevaluate", True)
-        # Request play animation
-        self.blackboard.animation.play_animation(self.kick, False)
+
+        self.requested = False
 
     def perform(self, reevaluate=False):
-        if not self.blackboard.animation.is_busy():
+        if not self.requested:
+            # Request play animation
+            self.blackboard.animation.play_animation(self.kick, False)
+            self.requested = True
+
+        if not self.blackboard.animation.is_busy() and self.requested:
             self.pop()
 
 class KickBallDynamic(AbstractKickAction):
