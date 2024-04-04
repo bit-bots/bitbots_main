@@ -27,9 +27,6 @@ class KickBallStatic(AbstractKickAction):
             self.blackboard.node.get_logger().error(
                 "The parameter '{}' could not be used to decide which foot should kick".format(parameters["foot"])
             )
-        # By default, don't reevaluate
-        self.never_reevaluate = parameters.get("r", True) and parameters.get("reevaluate", True)
-
         self.requested = False
 
     def perform(self, reevaluate=False):
@@ -40,6 +37,7 @@ class KickBallStatic(AbstractKickAction):
 
         if not self.blackboard.animation.is_busy() and self.requested:
             self.pop()
+
 
 class KickBallDynamic(AbstractKickAction):
     """
@@ -59,8 +57,6 @@ class KickBallDynamic(AbstractKickAction):
         self.max_kick_angle = self.blackboard.config["max_kick_angle"]
         self.num_kick_angles = self.blackboard.config["num_kick_angles"]
         self.penalty_kick_angle = self.blackboard.config["penalty_kick_angle"]
-        # By default, don't reevaluate
-        self.never_reevaluate = parameters.get("r", True) and parameters.get("reevaluate", True)
 
     def perform(self, reevaluate=False):
         self.publish_debug_data("Currently Kicking", self.blackboard.kick.is_currently_kicking)
