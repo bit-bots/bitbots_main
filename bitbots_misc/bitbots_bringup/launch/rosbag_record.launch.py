@@ -4,6 +4,7 @@ from datetime import datetime
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, ExecuteProcess, OpaqueFunction
 from launch.substitutions import EnvironmentVariable, LaunchConfiguration, PathJoinSubstitution
+from launch_ros.actions import Node
 
 TOPICS_TO_RECORD: list[str] = [
     "/animation",
@@ -71,9 +72,23 @@ def generate_launch_arguments():
         DeclareLaunchArgument(
             "max_image_frequency", default_value="1.0", description="Max frequency [hz] for recording images"
         ),
-        DeclareLaunchArgument(
-            "max_pointcloud_frequency", default_value="1.0", description="Max frequency [hz] for recording pointclouds"
-        ),
+    ]
+
+
+def generate_nodes():
+    return [
+        Node(
+            package="topic_tools",
+            executable="throttle",
+            output="screen",
+            name="record_rosbag_drop_images",
+            arguments=[
+                "messages",
+                "/camera/image_proc",
+                LaunchConfiguration("max_image_frequency"),
+                "/camera/image_to_record",
+            ],
+        )
     ]
 
 
@@ -123,8 +138,9 @@ def generate_action(context):
 
 def generate_launch_description():
     launch_arguments = generate_launch_arguments()
+    nodes = generate_nodes()
 
     action = OpaqueFunction(function=generate_action)
 
     # Construct LaunchDescription from parts
-    return LaunchDescription(launch_arguments + [action])
+    return LaunchDescription(launch_arguments + nodes + [action])
