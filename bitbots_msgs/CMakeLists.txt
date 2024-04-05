@@ -41,6 +41,7 @@ rosidl_generate_interfaces(
   "msg/TeamData.msg"
   "msg/Workload.msg"
   "srv/AccelerometerCalibration.srv"
+  "srv/AddAnimation.srv"
   "srv/ComplementaryFilterParams.srv"
   "srv/FootScale.srv"
   "srv/IMURanges.srv"
@@ -49,6 +50,7 @@ rosidl_generate_interfaces(
   "srv/SetAccelerometerCalibrationThreshold.srv"
   "srv/SetObjectPose.srv"
   "srv/SetObjectPosition.srv"
+  "srv/SetTeachingMode.srv"
   DEPENDENCIES
   action_msgs
   geometry_msgs

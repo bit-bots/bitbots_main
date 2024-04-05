@@ -9,10 +9,10 @@
   <maintainer email="6stelter@informatik.uni-hamburg.de">Sebastian Stelter</maintainer>
   <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
 
+  <license>MIT</license>
+
   <author email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</author>
   <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
-
-  <license>MIT</license>
 
   <depend>bitbots_docs</depend>
   <depend>bitbots_msgs</depend>

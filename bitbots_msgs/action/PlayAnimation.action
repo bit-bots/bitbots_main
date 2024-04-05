@@ -3,10 +3,19 @@
 # Name of the animation
 string animation
 
-# If the animation call comes from the hardware control manager, 
+# If the animation call comes from the humanoid control module,
 # it should be played directly, interrupting other animations and walking
 # It's probably falling or standing up
 bool hcm
+
+# Debugging controls
+bool bounds # If true, only a specific range of keyframes will be played
+# Keyframe where we want to start (use 0 as the start of the animation)
+uint8 start
+# Keyframe where we want to end (use len(animation) as the end of the animation)
+uint8 end
+
+
 
 ---
 # Result definition

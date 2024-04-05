@@ -34,10 +34,7 @@
     <node name="motor_goals_viz_helper" pkg="bitbots_utils" exec="motor_goals_viz_helper.py"/>
 
     <!-- add some visualization tools -->
-    <include file="$(find-pkg-share humanoid_league_interactive_marker)/launch/interactive_marker.launch">
-        <arg name="rviz" value="false" />
-    </include>
-    <include file="$(find-pkg-share humanoid_league_team_communication)/launch/team_comm_test_marker.launch">
+    <include file="$(find-pkg-share bitbots_team_communication)/launch/team_comm_test_marker.launch">
         <arg name="rviz" value="false" />
     </include>
 </launch>

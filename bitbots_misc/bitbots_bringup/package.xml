@@ -7,8 +7,10 @@
 
     <maintainer email="7sell@informatik.uni-hamburg.de">Finn-Thorben Sell</maintainer>
     <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
-    <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
+
     <license>MIT</license>
+
+    <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
 
     <buildtool_depend>ament_cmake</buildtool_depend>
 
@@ -33,6 +35,7 @@
     <exec_depend>humanoid_base_footprint</exec_depend>
     <exec_depend>soccer_ipm</exec_depend>
     <exec_depend>system_monitor</exec_depend>
+    <exec_depend>topic_tools</exec_depend>
     <exec_depend>udp_bridge</exec_depend>
     <exec_depend>wolfgang_description</exec_depend>
     <exec_depend>wolfgang_moveit_config</exec_depend>

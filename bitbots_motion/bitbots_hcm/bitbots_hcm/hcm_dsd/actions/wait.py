@@ -14,7 +14,7 @@ class Wait(AbstractHCMActionElement):
     This action does nothing. If a time is given, it will wait for that time before it pops itself.
     """
 
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         """
         :param parameters['time']: Time to wait in seconds
         """

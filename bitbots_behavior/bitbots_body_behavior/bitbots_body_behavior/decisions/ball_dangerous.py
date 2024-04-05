@@ -5,7 +5,7 @@ from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElem
 class BallDangerous(AbstractDecisionElement):
     blackboard: BodyBlackboard
 
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
         self.goal_radius = parameters.get("radius", self.blackboard.config["ball_dangerous_goal_radius"])
         self.center_width = self.blackboard.config["ball_dangerous_center"]

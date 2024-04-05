@@ -12,7 +12,8 @@ from std_srvs.srv import Empty as EmptySrv
 from std_srvs.srv import SetBool
 
 from bitbots_msgs.action import Dynup, PlayAnimation
-from bitbots_msgs.msg import Audio, RobotControlState
+from bitbots_msgs.msg import Audio, JointTorque, RobotControlState
+from bitbots_msgs.srv import SetTeachingMode
 
 
 class HcmBlackboard:
@@ -32,7 +33,7 @@ class HcmBlackboard:
         self.pickup_accel_threshold: float = self.node.get_parameter("pick_up_accel_threshold").value
         self.pressure_sensors_installed: bool = self.node.get_parameter("pressure_sensors_installed").value
 
-        # Create services
+        # Create service clients
         self.foot_zero_service = self.node.create_client(EmptySrv, "set_foot_zero")
         self.motor_switch_service = self.node.create_client(SetBool, "core/switch_power")
 
@@ -46,6 +47,7 @@ class HcmBlackboard:
         self.walk_pub = self.node.create_publisher(Twist, "cmd_vel", 1)
         self.cancel_path_planning_pub = self.node.create_publisher(EmptyMsg, "pathfinding/cancel", 1)
         self.speak_publisher = self.node.create_publisher(Audio, "speak", 1)
+        self.torque_publisher = self.node.create_publisher(JointTorque, "set_torque_individual", 10)
 
         # Latest imu data
         self.accel = numpy.array([0, 0, 0])
@@ -57,9 +59,9 @@ class HcmBlackboard:
 
         # Animation
         # Animation states
-        self.animation_requested: bool = False
         self.external_animation_running: bool = False
-        self.last_animation_goal_time: Time = self.node.get_clock().now()
+        self.last_animation_goal_time: Optional[Time] = None
+        self.last_animation_start_time: Optional[Time] = None
         self.record_active: bool = False
 
         # Get animation parameters
@@ -69,6 +71,9 @@ class HcmBlackboard:
         self.animation_name_falling_right: str = self.node.get_parameter("animations.falling_right").value
         self.animation_name_turning_back_left: str = self.node.get_parameter("animations.turning_back_left").value
         self.animation_name_turning_back_right: str = self.node.get_parameter("animations.turning_back_right").value
+
+        # Teaching State
+        self.teaching_mode_state: int = SetTeachingMode.Request.OFF
 
         # Motor State
         self.current_joint_state: Optional[JointState] = None

@@ -7,8 +7,10 @@
 
   <maintainer email="florian.vahl@informatik.uni-hamburg.de">Florian Vahl</maintainer>
   <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
-  <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
+  
   <license>MIT</license>
+
+  <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
 
   <depend>soccer_ipm</depend>
   <depend>ipm_image_node</depend>

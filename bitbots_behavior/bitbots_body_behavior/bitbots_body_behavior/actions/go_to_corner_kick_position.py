@@ -10,14 +10,14 @@ from tf_transformations import quaternion_from_euler
 class GoToCornerKickPosition(AbstractActionElement):
     blackboard: BodyBlackboard
 
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
 
         # optional parameter which goes into the block position at a certain distance to the ball
         self.mode = parameters.get("mode", None)
         if self.mode is None or self.mode not in ("striker", "supporter", "others"):
             self.blackboard.node.get_logger().error("mode for corner kick not specified")
-            exit()
+            raise ValueError("mode for corner kick not specified")
 
     def perform(self, reevaluate=False):
         # The defense position should be a position between the ball and the own goal.

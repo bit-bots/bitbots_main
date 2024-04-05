@@ -21,7 +21,7 @@ class Falling(AbstractHCMDecisionElement):
     Decides if the robot is currently falling and has to act on this
     """
 
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
 
         # Get parameters

@@ -1,6 +1,5 @@
 # This file is used by pip to install dependencies for the development environment
 -r robot.txt  # Include robot.txt dependencies
-black  # Auto-formatting for python
 exhale  # Necessary for rst rendering
 fabric  # Manages SSH sessions for the deploy tool
 paramiko  # Necessary for fabric
@@ -9,3 +8,4 @@ rich  # Rich terminal output
 ruff  # Python linting
 syrupy  # Python snapshot testing
 pytest-mock   # Mocking for pytest
+pytest<8.1  # Keep version smaller than 8.1 until https://github.com/ros2/launch/pull/766 is released

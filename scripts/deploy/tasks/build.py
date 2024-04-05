@@ -89,7 +89,7 @@ class Build(AbstractTask):
             results = connections.run(cmd, hide=hide_output())
             print_debug(f"Build succeeded on the following hosts: {self._succeeded_hosts(results)}")
         except GroupException as e:
-            for connection, result in e.result.failed.items():
-                print_err(f"Build on {connection.host} failed with the following errors: {result.stderr}")
+            for connection in e.result.failed.keys():
+                print_err(f"Build on {connection.host} failed!")
             return e.result
         return results

@@ -12,7 +12,7 @@ class AbstractPlayAnimation(AbstractHCMActionElement, ABC):
     Abstract class to create actions for playing animations
     """
 
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
         self.first_perform = True
 
@@ -131,7 +131,7 @@ class PlayAnimationTurningBackRight(AbstractPlayAnimation):
 
 
 class PlayAnimationDynup(AbstractHCMActionElement):
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
         self.direction = parameters.get("direction")
         self.first_perform = True
@@ -199,3 +199,14 @@ class PlayAnimationDynup(AbstractHCMActionElement):
             self.blackboard.dynup_action_current_goal.done()
             and self.blackboard.dynup_action_current_goal.result().status == GoalStatus.STATUS_SUCCEEDED
         ) or self.blackboard.dynup_action_current_goal.cancelled()
+
+
+class CancelAnimation(AbstractHCMActionElement):
+    """
+    This action is used to cancel an animation that is currently playing
+    """
+
+    def perform(self, reevaluate=False):
+        self.blackboard.node.get_logger().info("Canceling animation")
+        self.blackboard.external_animation_running = False
+        return self.pop()

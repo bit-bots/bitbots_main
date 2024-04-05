@@ -8,7 +8,7 @@ from geometry_msgs.msg import PoseStamped, Twist
 
 
 class TurnAround(AbstractActionElement):
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
         self.blackboard: BodyBlackboard
 
@@ -52,7 +52,7 @@ class Turn(AbstractActionElement):
     The sign of max speed indicates the direction (positive = left, negative = right).
     """
 
-    def __init__(self, blackboard, dsd, parameters=None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
         self.blackboard: BodyBlackboard
         self.current_rotation_vel = 0.0

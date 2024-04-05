@@ -13,6 +13,7 @@
 
 #include <bitbots_dynup/msg/dynup_poses.hpp>
 #include <bitbots_msgs/msg/joint_command.hpp>
+#include <bitbots_utils/utils.hpp>
 #include <cmath>
 #include <geometry_msgs/msg/pose.hpp>
 #include <geometry_msgs/msg/pose_array.hpp>

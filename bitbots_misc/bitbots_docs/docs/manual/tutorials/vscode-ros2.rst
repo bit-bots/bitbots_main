@@ -24,8 +24,8 @@ You can use multiple commands with `Ctrl+Shift+P` and then type `ROS`.
 
 Debugging
 ~~~~~~~~~
-You can debug launch files but only ones that are written in Python. 
-These cannot include further xml launch files. 
+You can debug launch files but only ones that are written in Python.
+These cannot include further xml launch files.
 It makes sense to create a small test launch with only the node that you want to debug and start the rest independently.
 An example vscode launch configuration and the corresponding python launch file can be seen below:
 
@@ -56,7 +56,7 @@ An example vscode launch configuration and the corresponding python launch file 
 
     def generate_launch_description():
         body_config = os.path.join(get_package_share_directory('bitbots_body_behavior'), 'config', 'body_behavior.yaml')
-        head_config = os.path.join(get_package_share_directory('bitbots_head_behavior'), 'config', 'head_config.yaml') 
+        head_config = os.path.join(get_package_share_directory('bitbots_head_behavior'), 'config', 'head_config.yaml')
 
         node = Node(
                 package='bitbots_head_behavior',

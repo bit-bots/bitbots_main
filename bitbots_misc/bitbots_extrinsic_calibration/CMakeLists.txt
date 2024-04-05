@@ -17,8 +17,6 @@ find_package(tf2 REQUIRED)
 find_package(rot_conv REQUIRED)
 find_package(backward_ros REQUIRED)
 
-include_directories(include)
-
 add_compile_options(-Wall -Werror -Wno-unused)
 
 add_executable(extrinsic_calibration src/extrinsic_calibration.cpp)

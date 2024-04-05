@@ -59,10 +59,10 @@ if [[ ! -d "$UTILS_DIR" ]]; then
     exit 2
 fi
 
-TEAM_COMM_DIR=$COLCON_PREFIX_PATH/humanoid_league_team_communication/share/humanoid_league_team_communication
+TEAM_COMM_DIR=$COLCON_PREFIX_PATH/bitbots_team_communication/share/bitbots_team_communication
 
 if [[ ! -d "$TEAM_COMM_DIR" ]]; then
-    echo "Could not find humanoid_league_team_communication!"
+    echo "Could not find bitbots_team_communication!"
     exit 2
 fi
 

@@ -9,11 +9,11 @@
 
   <maintainer email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</maintainer>
   <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+  
+    <license>MIT</license>
 
   <author email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</author>
   <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
-
-  <license>MIT</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
@@ -24,7 +24,7 @@
   <depend>bitbots_utils</depend>
   <depend>dynamic_stack_decider</depend>
   <depend>geometry_msgs</depend>
-  <depend>humanoid_league_speaker</depend>
+  <depend>bitbots_tts</depend>
   <depend>pybind11-dev</depend>
   <depend>python3-numpy</depend>
   <depend>python3-transforms3d</depend>

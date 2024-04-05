@@ -25,3 +25,4 @@ soccer_ipm:
         z: 1.0
 
     output_frame: 'base_footprint'
+    use_distortion: true

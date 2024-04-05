@@ -4,6 +4,7 @@ from datetime import datetime
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, ExecuteProcess, OpaqueFunction
 from launch.substitutions import EnvironmentVariable, LaunchConfiguration, PathJoinSubstitution
+from launch_ros.actions import Node
 
 TOPICS_TO_RECORD: list[str] = [
     "/animation",
@@ -23,13 +24,19 @@ TOPICS_TO_RECORD: list[str] = [
     "/core/power_switch_status",
     "/debug/approach_point",
     "/debug/ball_twist",
-    "/debug/dsd/body_behavior",
-    "/debug/dsd/hcm",
-    "/debug/dsd/localization",
+    "/debug/dsd/body_behavior/dsd_current_action",
+    "/debug/dsd/body_behavior/dsd_stack",
+    "/debug/dsd/body_behavior/dsd_tree",
+    "/debug/dsd/hcm/dsd_current_action",
+    "/debug/dsd/hcm/dsd_stack",
+    "/debug/dsd/hcm/dsd_tree",
+    "/debug/dsd/localization/dsd_current_action",
+    "/debug/dsd/localization/dsd_stack",
+    "/debug/dsd/localization/dsd_tree",
     "/debug/used_ball",
     "/debug/which_ball_is_used",
-    "/diagnostics",
     "/diagnostics_agg",
+    "/diagnostics",
     "/DynamixelController/command",
     "/field_boundary_relative",
     "/game_controller_connected",
@@ -43,16 +50,16 @@ TOPICS_TO_RECORD: list[str] = [
     "/move_base/current_goal",
     "/pose_with_covariance",
     "/robot_state",
-    "/robots_relative",
     "/robots_relative_filtered",
+    "/robots_relative",
     "/rosout",
     "/server_time_clock",
     "/speak",
     "/strategy",
     "/system_workload",
     "/team_data",
-    "/tf",
     "/tf_static",
+    "/tf",
     "/time_to_ball",
 ]
 
@@ -65,9 +72,23 @@ def generate_launch_arguments():
         DeclareLaunchArgument(
             "max_image_frequency", default_value="1.0", description="Max frequency [hz] for recording images"
         ),
-        DeclareLaunchArgument(
-            "max_pointcloud_frequency", default_value="1.0", description="Max frequency [hz] for recording pointclouds"
-        ),
+    ]
+
+
+def generate_nodes():
+    return [
+        Node(
+            package="topic_tools",
+            executable="throttle",
+            output="screen",
+            name="record_rosbag_drop_images",
+            arguments=[
+                "messages",
+                "/camera/image_proc",
+                LaunchConfiguration("max_image_frequency"),
+                "/camera/image_to_record",
+            ],
+        )
     ]
 
 
@@ -117,8 +138,9 @@ def generate_action(context):
 
 def generate_launch_description():
     launch_arguments = generate_launch_arguments()
+    nodes = generate_nodes()
 
     action = OpaqueFunction(function=generate_action)
 
     # Construct LaunchDescription from parts
-    return LaunchDescription(launch_arguments + [action])
+    return LaunchDescription(launch_arguments + nodes + [action])
