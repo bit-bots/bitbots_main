@@ -43,8 +43,6 @@ class Stand(WalkInPlace):
 
     def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
-        # Cancel the path planning if it is running
-        self.blackboard.pathfinding.cancel_goal()
 
     def perform(self, reevaluate=False):
         self.publish_debug_data("duration", self.duration)
@@ -52,6 +50,8 @@ class Stand(WalkInPlace):
             seconds=self.duration
         ):
             return self.pop()
+        # Cancel the path planning if it is running
+        self.blackboard.pathfinding.cancel_goal()
         # need to keep publishing this since path planning publishes a few more messages
         self.blackboard.pathfinding.stop_walk()
 
