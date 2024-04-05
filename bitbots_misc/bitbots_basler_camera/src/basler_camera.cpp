@@ -92,9 +92,10 @@ class BaslerCamera {
     // Wait until the camera is found
     while (rclcpp::ok() && !our_device_info) {
       RCLCPP_ERROR(node_->get_logger(), "Could not find device with user id '%s'", config_.device_user_id.c_str());
-      RCLCPP_ERROR(node_->get_logger(), "Retrying in 2 seconds");
+      RCLCPP_ERROR(node_->get_logger(), "Retrying in %f seconds", config_.reconnect_interval);
       // Wait
-      rclcpp::sleep_for(std::chrono::seconds(2));
+      rclcpp::sleep_for(std::chrono::duration_cast<std::chrono::nanoseconds>(
+          std::chrono::duration<double>(config_.reconnect_interval)));
       // List all available devices
       CTlFactory::GetInstance().EnumerateDevices(devices);
       // Get the matching device

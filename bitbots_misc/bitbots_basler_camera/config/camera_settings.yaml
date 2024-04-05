@@ -53,6 +53,13 @@ pylon_camera_parameters:
     description: "The tf frame at which the camera's optical center is located."
     validation:
       not_empty<>: []
+  reconnect_interval:
+    type: double
+    default_value: 1.0
+    description: "The interval in seconds in which we try to (re-)connect to the camera."
+    read_only: true
+    validation:
+      gt_eq<>: [0.0]
   gige:
     mtu_size:
       type: int
