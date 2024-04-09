@@ -23,7 +23,7 @@ using namespace Pylon;
 
 namespace basler_camera {
 
-class PostProcessor {
+class BaslerCamera {
   std::shared_ptr<rclcpp::Node> node_;
 
   image_transport::TransportHints transport_hints_;
@@ -42,7 +42,7 @@ class PostProcessor {
   pylon_camera_parameters::Params config_;
 
  public:
-  PostProcessor()
+  BaslerCamera()
       : node_(std::make_shared<rclcpp::Node>("post_processor")),
         transport_hints_(node_.get()),
         image_pub_(std::make_unique<image_transport::CameraPublisher>(
@@ -68,7 +68,7 @@ class PostProcessor {
 
     // Setup timer for publishing
     timer_ = node_->create_wall_timer(std::chrono::duration<double>(1.0 / config_.fps),
-                                      std::bind(&PostProcessor::timer_callback, this));
+                                      std::bind(&BaslerCamera::timer_callback, this));
   }
 
   void initilize_camera() {
@@ -89,17 +89,34 @@ class PostProcessor {
       }
     }
 
-    // Check if the device was found
-    if (!our_device_info) {
+    // Wait until the camera is found
+    while (rclcpp::ok() && !our_device_info) {
       RCLCPP_ERROR(node_->get_logger(), "Could not find device with user id '%s'", config_.device_user_id.c_str());
+      RCLCPP_ERROR(node_->get_logger(), "Retrying in %f seconds", config_.reconnect_interval);
+      // Wait
+      rclcpp::sleep_for(std::chrono::duration_cast<std::chrono::nanoseconds>(
+          std::chrono::duration<double>(config_.reconnect_interval)));
+      // List all available devices
+      CTlFactory::GetInstance().EnumerateDevices(devices);
+      // Get the matching device
+      auto it = std::find_if(devices.begin(), devices.end(), [this](const auto& device) {
+        return device.GetUserDefinedName().compare(config_.device_user_id.c_str()) == 0;
+      });
+      // Use the device if it was found
+      if (it != devices.end()) {
+        our_device_info = *it;
+      }
+    }
+
+    // Check if the node is still ok, maybe it was shut down while waiting
+    if (!rclcpp::ok()) {
       return;
-    } else {
-      RCLCPP_INFO(node_->get_logger(), "Using device user id '%s'", config_.device_user_id.c_str());
     }
 
     // Set up the camera
     camera_ = std::make_unique<Pylon::CBaslerUniversalInstantCamera>(
         CTlFactory::GetInstance().CreateDevice(our_device_info.value()));
+    RCLCPP_INFO(node_->get_logger(), "Using device user id '%s'", config_.device_user_id.c_str());
 
     // Wait for the camera to be ready
     camera_->Open();
@@ -234,7 +251,7 @@ int main(int argc, char* argv[]) {
   rclcpp::experimental::executors::EventsExecutor exec = rclcpp::experimental::executors::EventsExecutor(
       std::make_unique<rclcpp::experimental::executors::SimpleEventsQueue>(), true, rclcpp::ExecutorOptions());
 
-  auto post_processor = std::make_shared<basler_camera::PostProcessor>();
+  auto post_processor = std::make_shared<basler_camera::BaslerCamera>();
   exec.add_node(post_processor->get_node());
   exec.spin();
   rclcpp::shutdown();
