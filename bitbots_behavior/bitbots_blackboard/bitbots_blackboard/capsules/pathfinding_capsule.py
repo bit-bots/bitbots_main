@@ -89,6 +89,9 @@ class PathfindingCapsule:
         # send special command to walking to stop it
         msg = Twist()
         msg.angular.x = -1.0
+        # Cancel the path planning
+        self.cancel_goal()
+        # Publish the stop command
         self.direct_cmd_vel_pub.publish(msg)
 
     def calculate_time_to_ball(self):
