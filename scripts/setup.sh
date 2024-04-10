@@ -131,7 +131,7 @@ build_repository() {
 }
 
 setup_shell_aliases() {
-    if ask_question "Do you want to setup/update the bit-bots ros2/colcon shell configuration?"; then
+    if ask_question "Do you want to setup/update the Bit-Bots ROS 2 and colcon shell configuration?"; then
         local shell_config_file
 
         if [[ "$SHELL" =~ "bash" ]]; then
@@ -154,7 +154,7 @@ if ask_question "Do you have sudo rights?"; then
     has_sudo=1
 fi
 if (( ! has_sudo )); then
-    echo "Because, you don't have sudo rights, you need ensure all necessary ros packages are preinstalled."
+    echo "Because, you don't have sudo rights, ensure all necessary ROS 2 packages are installed."
 fi
 
 in_repo=1

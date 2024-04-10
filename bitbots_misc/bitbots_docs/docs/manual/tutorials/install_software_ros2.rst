@@ -3,22 +3,13 @@ Software installation with ROS2
 
 In this tutorial, we will learn how to install ROS2 Iron Irwini on Ubuntu 22.04 and build our software stack.
 
-
-**0. Use Ubuntu 22.04**
-
-As ROS works best on Ubuntu, we are using this distribution.
-Currently, ROS2 Iron runs on Ubuntu 22.04.
-If you are not already using Ubuntu 22.04, consider installing it on your system (perhaps as a dual boot), alternately you can run it in a virtual machine (not recommended, as recently we had some issues with it; https://www.virtualbox.org/), a custom ROS2 docker setup (https://github.com/timonegk/rosdocked).
-
-Alternatively you can use a devcontainer :doc:`vscode-dev-container`, with a preconfigured environment and follow those instructions, as these docs do not apply to the devcontainer.
-
 **TLDR**: single command setup
 ------------------------------
 
 **Prerequirements**
-- running Ubuntu 22.04 environment (native, VM, or custom ROS2 docker setup)
-- existing Github account and with SSH key added to your account
-- root access to your system (sudo)
+- You have a running Ubuntu 22.04 environment
+- You have an existing Github account and added a SSH key to your account
+- You have root access to your system (sudo)
 
 If you have not previously set up any of our software stack, you can use the following command to install and setup everything in one go:
 
@@ -31,6 +22,14 @@ If you have not previously set up any of our software stack, you can use the fol
 
 Manual steps with in depth explanation
 --------------------------------------
+
+**0. Use Ubuntu 22.04**
+
+As ROS works best on Ubuntu, we are using this distribution.
+Currently, ROS2 Iron runs on Ubuntu 22.04.
+
+If you are not already using Ubuntu 22.04, consider installing it on your system (perhaps as a dual boot?).
+Alternatively you can use a devcontainer :doc:`vscode-dev-container`, with a preconfigured environment and follow those instructions, as these docs do not apply to the devcontainer.
 
 **1. Setup and Install ROS 2**
 
@@ -53,7 +52,7 @@ Manual steps with in depth explanation
     ros-iron-rqt-runtime-monitor
 
 - Run ``sudo rosdep init`` to initialize ``rosdep``, a tool that helps you install system dependencies for ROS packages.
-- To aditionally get nice colored output from colcon, you can install the following pip packages:
+- Optionally, to get nice colored output from colcon, you can install the following pip packages:
 
 .. code-block:: bash
 
@@ -71,8 +70,7 @@ If you want to install it, you can do so by running ``make webots`` in the bitbo
 
 **3. Download our software**
 
-- Create a GitHub account, if not already done (see here for further information on this: http://doku.bit-bots.de/private/manual/dienste_accounts.html)
-  Those services host our Git software repositories.
+- Create a GitHub account, if not already done (see `here <http://doku.bit-bots.de/private/manual/dienste_accounts.html>` for further information)
 - Add your SSH key to GitHub to access and sync our repositories
     - If you don't know what I am talking about or you don't yet have a SSH key, follow this guide: https://docs.github.com/en/authentication/connecting-to-github-with-ssh/checking-for-existing-ssh-keys
     - Go to your account settings and add your SSH key (the ``.pub`` file) to `GitHub <https://github.com/settings/keys>`_
@@ -108,6 +106,8 @@ In case you are not using the bash shell, replace ``~/.bashrc`` and ``bash`` wit
 
   cat >> ~/.bashrc << EOF
 
+  # >>> bit-bots initialize >>>
+
   # Ignore some deprecation warnings
   export PYTHONWARNINGS=ignore:::setuptools.command.install,ignore:::setuptools.command.easy_install,ignore:::pkg_resources
 
@@ -139,6 +139,12 @@ In case you are not using the bash shell, replace ``~/.bashrc`` and ``bash`` wit
 
 - Configure the robot hostnames, see :doc:`configure_hostnames`.
 
-**6. Troubleshooting**
+Notes
+-----
 
-If you have some problems with your installation, like not finding any nodes or topics, referr here for some troubleshooting steps: https://docs.ros.org/en/rolling/How-To-Guides/Installation-Troubleshooting.html
+Custom docker setup
+  Before utilizing a devcontainer, we used a custom docker setup for ROS 2 development.
+  If you want (or need) to utilize a custom setup like this, have a look at https://github.com/timonegk/rosdocked.
+
+Virtual Machine setup
+  We recommend against using a virtual machine for ROS 2 development, both for compile speed and setup complexity reasons.

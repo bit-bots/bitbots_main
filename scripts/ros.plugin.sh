@@ -1,4 +1,4 @@
-### Aliases and functions for ros2/colcon usage. Usage for either
+### Aliases and functions for ROS 2 and colcon usage. Usage for either
 ### Ubuntu 22.04 or in rosdocked/dev docker container
 
 shell="$(basename "$SHELL")"
@@ -8,9 +8,9 @@ rid() {
   echo "ROS_DOMAIN_ID set to $ROS_DOMAIN_ID"
 }
 
-# Create a function to update the argcomplete so tab completion works
-# This needs to be called every time we source something ROS 2 related
-# For this previous loading of bashcompinit is required
+# Create a function to update the argcomplete so tab completion works.
+# This needs to be called every time we source something ROS 2 related.
+# Previous loading of bashcompinit is required.
 update_ros2_argcomplete() {
   eval "$(register-python-argcomplete3 colcon)"
   eval "$(register-python-argcomplete3 ros2)"
