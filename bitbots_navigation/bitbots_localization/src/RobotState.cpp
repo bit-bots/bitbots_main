@@ -90,6 +90,46 @@ void RobotState::convertParticleListToEigen(const std::vector<particle_filter::P
   }
 }
 
+ void RobotState::convertParticleListToTorchTensor(const std::vector<particle_filter::Particle<RobotState> *> &particle_list,
+                                         torch::Tensor &tensor, const bool ignore_explorers) {
+  if (ignore_explorers) {
+    int non_explorer_count =
+        std::count_if(particle_list.begin(), particle_list.end(),
+                      [](particle_filter::Particle<RobotState> *particle) { return !particle->is_explorer_; });
+
+    tensor = torch::zeros({non_explorer_count, 8});
+    int counter = 0;
+    //#pragma parallel for
+    for (particle_filter::Particle<RobotState> *particle : particle_list) {
+      if (!particle->is_explorer_) {
+        tensor[counter][0] = std::cos(0);
+        tensor[counter][1] = std::sin(0);
+        tensor[counter][2] = std::cos(0.7);
+        tensor[counter][3] = std::sin(0.7);
+        tensor[counter][4] = particle->getState().getXPos();
+        tensor[counter][5] = particle->getState().getYPos();
+        tensor[counter][6] = std::cos(particle->getState().getTheta());
+        tensor[counter][7] = std::sin(particle->getState().getTheta());
+
+        counter ++;
+      }
+    }
+  } else {
+    tensor = torch::zeros({(long int) particle_list.size(), 8});
+    //#pragma parallel for
+    for (size_t i = 0; i < particle_list.size(); i++) {
+        tensor[i][0] = std::cos(0);
+        tensor[i][1] = std::sin(0);
+        tensor[i][2] = std::cos(0.7);
+        tensor[i][3] = std::sin(0.7);
+        tensor[i][4] = particle_list[i]->getState().getXPos();
+        tensor[i][5] = particle_list[i]->getState().getYPos();
+        tensor[i][6] = std::cos(particle_list[i]->getState().getTheta());
+        tensor[i][7] = std::sin(particle_list[i]->getState().getTheta());
+    }
+  }
+}
+
 visualization_msgs::msg::Marker RobotState::renderMarker(std::string n_space, std::string frame,
                                                          rclcpp::Duration lifetime, std_msgs::msg::ColorRGBA color,
                                                          rclcpp::Time stamp) const {

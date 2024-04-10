@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 project(bitbots_localization)
-
+set(CMAKE_CUDA_ARCHITECTURES "native")
 # Add support for C++17
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
@@ -23,6 +23,7 @@ find_package(tf2 REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(visualization_msgs REQUIRED)
+find_package(Torch REQUIRED)
 
 generate_parameter_library(
   localization_parameters # cmake target name for the parameter library
@@ -67,9 +68,9 @@ include_directories(include)
 set(SOURCES
     src/localization.cpp
     src/map.cpp
+    src/RobotState.cpp
     src/MotionModel.cpp
     src/ObservationModel.cpp
-    src/RobotState.cpp
     src/StateDistribution.cpp
     src/tools.cpp)
 
@@ -86,6 +87,7 @@ ament_target_dependencies(
   localization
   ament_cmake
   rclcpp
+  Torch
   Boost
   cv_bridge
   image_transport
@@ -102,7 +104,7 @@ ament_target_dependencies(
 rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME}
                               "rosidl_typesupport_cpp")
 
-target_link_libraries(localization "${cpp_typesupport_target}"
+target_link_libraries(localization "${cpp_typesupport_target}" "${TORCH_LIBRARIES}"
                       localization_parameters)
 
 install(DIRECTORY config DESTINATION share/${PROJECT_NAME})

@@ -11,6 +11,7 @@
 #include <Eigen/Core>
 #include <bitbots_localization/tools.hpp>
 #include <cmath>
+#include <torch/script.h>
 #include <vector>
 
 namespace bitbots_localization {
@@ -57,6 +58,9 @@ class RobotState {
 
   static void convertParticleListToEigen(const std::vector<particle_filter::Particle<RobotState> *> &particle_list,
                                          Eigen::MatrixXd &matrix, const bool ignore_explorers);
+
+  static void convertParticleListToTorchTensor(const std::vector<particle_filter::Particle<RobotState> *> &particle_list,
+                                         torch::Tensor &tensor, const bool ignore_explorers);
 
   bool is_explorer_;
 

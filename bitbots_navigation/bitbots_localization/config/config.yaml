@@ -6,8 +6,10 @@ bitbots_localization:
       min_motion_linear: 0.0
       min_motion_angular: 0.0
       filter_only_with_motion: false
+      network_model_path: '/homes/15fiedler/latest_ts.pt'
     ros:
       line_pointcloud_topic: 'line_mask_relative_pc'
+      line_mask_topic: 'line_mask_in_image'
       goal_topic: 'goals_simulated'
       fieldboundary_topic: 'field_boundary_relative'
       particle_publishing_topic: 'pose_particles'

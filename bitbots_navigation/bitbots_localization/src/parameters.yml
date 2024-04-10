@@ -23,10 +23,18 @@ bitbots_localization:
     filter_only_with_motion:
       type: bool
       description: "If true, the filter is only active if a movement is detected"
+    network_model_path:
+      type: string
+      description: "Path to the pt file of the mask rating model."
+      read_only: true
   ros:
     line_pointcloud_topic:
       type: string
       description: "Topic for the line pointcloud input messages"
+      read_only: true
+    line_mask_topic:
+      type: string
+      description: "Topic for the line mask input messages"
       read_only: true
     goal_topic:
       type: string

@@ -31,6 +31,9 @@ Localization::Localization()
   line_point_cloud_subscriber_ = this->create_subscription<sm::msg::PointCloud2>(
       config_.ros.line_pointcloud_topic, 1, std::bind(&Localization::LinePointcloudCallback, this, _1));
 
+  line_mask_subscriber_ = this->create_subscription<sm::msg::Image>(
+      config_.ros.line_mask_topic, 1, std::bind(&Localization::LineMaskCallback, this, _1));
+
   goal_subscriber_ = this->create_subscription<sv3dm::msg::GoalpostArray>(
       config_.ros.goal_topic, 1, std::bind(&Localization::GoalPostsCallback, this, _1));
 
@@ -105,7 +108,7 @@ void Localization::updateParams(bool force_reload) {
   }
 
   // Init observation model
-  robot_pose_observation_model_.reset(new RobotPoseObservationModel(lines_, goals_, field_boundary_, config_));
+  robot_pose_observation_model_.reset(new RobotPoseObservationModel(lines_, goals_, field_boundary_, config_, SharedPtr(this)));
 
   // Init motion model
   auto drift_config = config_.particle_filter.drift;
@@ -165,7 +168,7 @@ void Localization::updateParams(bool force_reload) {
 
 void Localization::run_filter_one_step() {
   timer_callback_count_++;
-
+  RCLCPP_INFO(this->get_logger(), "Running filter step %d", timer_callback_count_);
   // Check for new parameters and recreate necessary components if needed
   updateParams();
 
@@ -187,7 +190,8 @@ void Localization::run_filter_one_step() {
   }
 
   // Apply ratings corresponding to the observations compared with each particle position
-  robot_pf_->measure();
+  RCLCPP_INFO(this->get_logger(), "measure bulk");
+  robot_pf_->measure_bulk();
 
   // Check if its resampling time!
   if (timer_callback_count_ % config_.particle_filter.resampling_interval == 0) {
@@ -206,6 +210,8 @@ void Localization::run_filter_one_step() {
 }
 
 void Localization::LinePointcloudCallback(const sm::msg::PointCloud2 &msg) { line_pointcloud_relative_ = msg; }
+
+void Localization::LineMaskCallback(const sm::msg::Image &msg) { line_mask_ = msg; }
 
 void Localization::GoalPostsCallback(const sv3dm::msg::GoalpostArray &msg) { goal_posts_relative_ = msg; }
 
@@ -248,15 +254,18 @@ bool Localization::reset_filter_callback(const std::shared_ptr<bl::srv::ResetFil
 void Localization::reset_filter(int distribution) {
   RCLCPP_INFO(this->get_logger(), "reset filter");
 
+  RCLCPP_INFO(this->get_logger(), "rfa");
   robot_pf_.reset(new particle_filter::ParticleFilter<RobotState>(config_.particle_filter.particle_number,
                                                                   robot_pose_observation_model_, robot_motion_model_));
 
+  RCLCPP_INFO(this->get_logger(), "rfb");
   timer_callback_count_ = 0;
 
   // Increasing the noise helps with the initial localization.
   robot_motion_model_->diffuse_multiplier_ = config_.particle_filter.diffusion.starting_multiplier;
 
   robot_pf_->setResamplingStrategy(resampling_);
+  RCLCPP_INFO(this->get_logger(), "rfc");
   if (distribution == 0) {
     robot_pf_->drawAllFromDistribution(robot_state_distribution_start_right_);
   } else if (distribution == 1) {
@@ -296,14 +305,18 @@ void Localization::reset_filter(int distribution, double x, double y, double ang
 
 void Localization::updateMeasurements() {
   // Sets the measurements in the observation model
+
+  if (line_mask_.header.stamp != last_stamp_mask ) {
+    robot_pose_observation_model_->set_measurement_line_mask(line_mask_);
+  }
+
   if (line_pointcloud_relative_.header.stamp != last_stamp_lines && config_.particle_filter.scoring.lines.factor) {
     robot_pose_observation_model_->set_measurement_lines_pc(line_pointcloud_relative_);
   }
   if (config_.particle_filter.scoring.goal.factor && goal_posts_relative_.header.stamp != last_stamp_goals) {
     robot_pose_observation_model_->set_measurement_goalposts(goal_posts_relative_);
   }
-  if (config_.particle_filter.scoring.field_boundary.factor &&
-      fieldboundary_relative_.header.stamp != last_stamp_fb_points) {
+  if (config_.particle_filter.scoring.field_boundary.factor && fieldboundary_relative_.header.stamp != last_stamp_fb_points) {
     robot_pose_observation_model_->set_measurement_field_boundary(fieldboundary_relative_);
   }
 
@@ -311,6 +324,7 @@ void Localization::updateMeasurements() {
   last_stamp_lines = line_pointcloud_relative_.header.stamp;
   last_stamp_goals = goal_posts_relative_.header.stamp;
   last_stamp_fb_points = fieldboundary_relative_.header.stamp;
+  last_stamp_mask = line_mask_.header.stamp;
   // Maximum time stamp of the last measurements
   last_stamp_all_measurements = std::max({last_stamp_lines, last_stamp_goals, last_stamp_fb_points});
 }
