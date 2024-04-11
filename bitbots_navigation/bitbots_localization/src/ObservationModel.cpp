@@ -8,7 +8,8 @@ namespace bitbots_localization {
 
 RobotPoseObservationModel::RobotPoseObservationModel(std::shared_ptr<Map> map_lines, std::shared_ptr<Map> map_goals,
                                                      std::shared_ptr<Map> map_field_boundary,
-                                                     const bitbots_localization::Params &config, rclcpp::Node::SharedPtr node)
+                                                     const bitbots_localization::Params &config,
+                                                     rclcpp::Node::SharedPtr node)
     : particle_filter::ObservationModel<RobotState>() {
   map_lines_ = map_lines;
   map_goals_ = map_goals;
@@ -23,8 +24,7 @@ RobotPoseObservationModel::RobotPoseObservationModel(std::shared_ptr<Map> map_li
     RCLCPP_INFO_STREAM(node_->get_logger(), "PATH: " << config_.misc.network_model_path);
     mask_rating_module_ = torch::jit::load(config_.misc.network_model_path, device);
     // RCLCPP_INFO_STREAM(node_->get_logger(), "c");
-  }
-  catch (const c10::Error& e) {
+  } catch (const c10::Error &e) {
     RCLCPP_ERROR_STREAM(node_->get_logger(), "error loading the mask rating model\n" << e.what());
   }
 
@@ -47,32 +47,43 @@ double RobotPoseObservationModel::calculate_weight_for_class(
   return particle_weight_for_class;
 }
 
-std::vector<double> RobotPoseObservationModel::measure_bulk(std::vector<particle_filter::Particle<RobotState>*> particle_vector) {
+std::vector<double> RobotPoseObservationModel::measure_bulk(
+    std::vector<particle_filter::Particle<RobotState> *> particle_vector) {
   // RCLCPP_INFO_STREAM(node_->get_logger(), "measure_bulk called");
   torch::Device device(torch::kCUDA);
 
   std::vector<torch::jit::IValue> inputs;
   last_measurement_line_mask_ = last_measurement_line_mask_.to(at::kFloat);
-  //RCLCPP_INFO_STREAM(node_->get_logger(), "last_measurement_line_mask_: " << last_measurement_line_mask_.sizes());
+  // RCLCPP_INFO_STREAM(node_->get_logger(), "last_measurement_line_mask_: " << last_measurement_line_mask_.sizes());
   last_measurement_line_mask_ = last_measurement_line_mask_.to(device);
-  inputs.push_back(last_measurement_line_mask_);//.to(device));
+  inputs.push_back(last_measurement_line_mask_);  //.to(device));
   torch::Tensor state_tensor;
   particle_vector[0]->getState().convertParticleListToTorchTensor(particle_vector, state_tensor, false);
-  state_tensor = state_tensor.to(at::kFloat).transpose(0,1);
+  state_tensor = state_tensor.to(at::kFloat).transpose(0, 1);
   state_tensor = state_tensor.reshape({1, 8, -1});
-  //RCLCPP_INFO_STREAM(node_->get_logger(), "state_tensor_: " << state_tensor);
+  // RCLCPP_INFO_STREAM(node_->get_logger(), "state_tensor_: " << state_tensor);
   state_tensor = state_tensor.to(device);
-  inputs.push_back(state_tensor);//.to(device));
-  //RCLCPP_INFO_STREAM(node_->get_logger(), "state_tensor: " << state_tensor.sizes());
-  at::Tensor out_tensor = mask_rating_module_.forward(inputs).toTensor(); // TODO: to cpu or gpu and stuff and dtype
+  inputs.push_back(state_tensor);  //.to(device));
+  // RCLCPP_INFO_STREAM(node_->get_logger(), "state_tensor: " << state_tensor.sizes());
+  at::Tensor out_tensor = mask_rating_module_.forward(inputs).toTensor();  // TODO: to cpu or gpu and stuff and dtype
   // RCLCPP_INFO_STREAM(node_->get_logger(), "an");
   out_tensor = out_tensor.toType(at::kDouble).to(torch::kCPU);
-  std::vector<double> out_vector(out_tensor.data_ptr<double>(), out_tensor.data_ptr<double>() + out_tensor.numel()); // TODO: make sure dtype fits
+  // std::vector<double> out_vector(out_tensor.data_ptr<double>(), out_tensor.data_ptr<double>() + out_tensor.numel());
+  // // TODO: make sure dtype fits
+  RCLCPP_ERROR_STREAM(node_->get_logger(), "raw: " << out_tensor);
+  out_tensor = torch::abs(out_tensor);
+  RCLCPP_ERROR_STREAM(node_->get_logger(), "abs: " << out_tensor);
+  out_tensor = torch::sum(out_tensor, 1);
+  RCLCPP_ERROR_STREAM(node_->get_logger(), "sum: " << out_tensor);
+  out_tensor = 1 / out_tensor;
+  RCLCPP_ERROR_STREAM(node_->get_logger(), "out_tensor: " << out_tensor);
+  std::vector<double> out_vector =
+      std::vector<double>(out_tensor.data_ptr<double>(), out_tensor.data_ptr<double>() + out_tensor.numel());
+  RCLCPP_ERROR_STREAM(node_->get_logger(), "out_vector: " << out_vector);
   return out_vector;
 }
 
 double RobotPoseObservationModel::measure(const RobotState &state) const {
-
   double particle_weight_lines = calculate_weight_for_class(state, last_measurement_lines_, map_lines_,
                                                             config_.particle_filter.confidences.line_element);
   double particle_weight_goal = calculate_weight_for_class(state, last_measurement_goal_, map_goals_,
@@ -109,20 +120,20 @@ double RobotPoseObservationModel::measure(const RobotState &state) const {
 void RobotPoseObservationModel::set_measurement_line_mask(sm::msg::Image measurement) {
   // stolen from: https://github.com/klintan/ros2_pytorch/blob/master/src/ros2_pytorch.cpp
   // convert image to tensor
-  std::shared_ptr<cv_bridge::CvImage> image_ = cv_bridge::toCvCopy(measurement, "8UC1"); 
-  //RCLCPP_INFO_STREAM(node_->get_logger(), "image shape: " << image_->image.size());
+  std::shared_ptr<cv_bridge::CvImage> image_ = cv_bridge::toCvCopy(measurement, "8UC1");
+  // RCLCPP_INFO_STREAM(node_->get_logger(), "image shape: " << image_->image.size());
   cv::Mat image;
   cv::resize(image_->image, image, cv::Size(256, 192));  // TODO change order?
-  //RCLCPP_INFO_STREAM(node_->get_logger(), "image sum: " << cv::sum(image));
+  // RCLCPP_INFO_STREAM(node_->get_logger(), "image sum: " << cv::sum(image));
   at::TensorOptions options(at::ScalarType::Byte);
   std::vector<int64_t> sizes = {1, 1, 256, 192};
   at::Tensor tensor_image = torch::from_blob(image.data, at::IntList(sizes), options);
-  tensor_image = tensor_image.transpose(2,3);  // adapt to pytorch format
-  last_measurement_line_mask_ = tensor_image.toType(at::kDouble);
-  //RCLCPP_INFO_STREAM(node_->get_logger(), "tensor shape: " << last_measurement_line_mask_.sizes());
-  //RCLCPP_INFO_STREAM(node_->get_logger(), "tensor sum: " << last_measurement_line_mask_.sum());
-}
+  tensor_image = tensor_image.transpose(2, 3);  // adapt to pytorch format
 
+  last_measurement_line_mask_ = tensor_image / 255.0;
+  RCLCPP_INFO_STREAM(node_->get_logger(), "image input tensor shape: " << last_measurement_line_mask_.sizes());
+  RCLCPP_INFO_STREAM(node_->get_logger(), "tensor sum: " << last_measurement_line_mask_.max());
+}
 
 void RobotPoseObservationModel::set_measurement_lines_pc(sm::msg::PointCloud2 measurement) {
   for (sm::PointCloud2ConstIterator<float> iter_xyz(measurement, "x"); iter_xyz != iter_xyz.end(); ++iter_xyz) {
@@ -171,7 +182,6 @@ void RobotPoseObservationModel::clear_measurement() {
   // last_measurement_goal_.clear();
   // last_measurement_field_boundary_.clear();
   last_measurement_line_mask_ = torch::Tensor();
-
 }
 
 bool RobotPoseObservationModel::measurements_available() {
