@@ -23,6 +23,7 @@ If you are not already using Ubuntu 22.04, consider installing it on your system
   python3-colcon-common-extensions \
   python3-pip \
   python3-rosdep \
+  python3-vcstool \
   ros-iron-plotjuggler-ros \
   ros-iron-rmw-cyclonedds-cpp \
   ros-iron-rqt-robot-monitor \
