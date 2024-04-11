@@ -14,6 +14,7 @@ Localization::Localization()
       br(std::make_shared<tf2_ros::TransformBroadcaster>(this)) {
   // Wait for transforms to become available and init them
   std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+  nodePtr_ = SharedPtr(this);
   while (true) {
     try {
       previousOdomTransform_ =
@@ -154,7 +155,7 @@ void Localization::updateParams(bool force_reload) {
   if (!robot_pf_) {
     // Create new particle filter
     robot_pf_.reset(new particle_filter::ParticleFilter<RobotState>(
-        config_.particle_filter.particle_number, robot_pose_observation_model_, robot_motion_model_));
+        config_.particle_filter.particle_number, robot_pose_observation_model_, robot_motion_model_, nodePtr_));
   } else {
     // Update particle filter's components
     robot_pf_->setResamplingStrategy(resampling_);
@@ -249,7 +250,7 @@ void Localization::reset_filter(int distribution) {
   RCLCPP_INFO(this->get_logger(), "reset filter");
 
   robot_pf_.reset(new particle_filter::ParticleFilter<RobotState>(config_.particle_filter.particle_number,
-                                                                  robot_pose_observation_model_, robot_motion_model_));
+                                                                  robot_pose_observation_model_, robot_motion_model_, nodePtr_));
 
   timer_callback_count_ = 0;
 
@@ -272,7 +273,7 @@ void Localization::reset_filter(int distribution) {
 
 void Localization::reset_filter(int distribution, double x, double y) {
   robot_pf_.reset(new particle_filter::ParticleFilter<RobotState>(config_.particle_filter.particle_number,
-                                                                  robot_pose_observation_model_, robot_motion_model_));
+                                                                  robot_pose_observation_model_, robot_motion_model_, nodePtr_));
 
   robot_pf_->setResamplingStrategy(resampling_);
 
@@ -284,7 +285,7 @@ void Localization::reset_filter(int distribution, double x, double y) {
 
 void Localization::reset_filter(int distribution, double x, double y, double angle) {
   robot_pf_.reset(new particle_filter::ParticleFilter<RobotState>(config_.particle_filter.particle_number,
-                                                                  robot_pose_observation_model_, robot_motion_model_));
+                                                                  robot_pose_observation_model_, robot_motion_model_, nodePtr_));
 
   robot_pf_->setResamplingStrategy(resampling_);
 

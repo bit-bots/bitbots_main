@@ -225,6 +225,7 @@ class Localization : public rclcpp::Node {
   std::shared_ptr<Map> lines_;
   std::shared_ptr<Map> goals_;
   std::shared_ptr<Map> field_boundary_;
+  rclcpp::Node::SharedPtr nodePtr_;
 
   // RNG that is used for the different sampling steps
   particle_filter::CRandomNumberGenerator random_number_generator_;

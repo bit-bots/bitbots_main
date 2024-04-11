@@ -39,6 +39,7 @@ class RobotPoseObservationModel : public particle_filter::ObservationModel<Robot
    * @return weight for the given state.
    */
   double measure(const RobotState &state) const override;
+  std::vector<double> measure_bulk(std::vector<particle_filter::Particle<RobotState>*> particle_vector);
 
   void set_measurement_lines_pc(sm::msg::PointCloud2 measurement);
 

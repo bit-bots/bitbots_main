@@ -31,6 +31,9 @@ double RobotPoseObservationModel::calculate_weight_for_class(
   }
   return particle_weight_for_class;
 }
+std::vector<double> RobotPoseObservationModel::measure_bulk(std::vector<particle_filter::Particle<RobotState> *> particle_vector) {
+  return std::vector<double>();
+}
 
 double RobotPoseObservationModel::measure(const RobotState &state) const {
   double particle_weight_lines = calculate_weight_for_class(state, last_measurement_lines_, map_lines_,
