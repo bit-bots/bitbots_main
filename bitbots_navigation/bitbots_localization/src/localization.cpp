@@ -157,7 +157,7 @@ void Localization::updateParams(bool force_reload) {
   if (!robot_pf_) {
     // Create new particle filter
     robot_pf_.reset(new particle_filter::ParticleFilter<RobotState>(
-        config_.particle_filter.particle_number, robot_pose_observation_model_, robot_motion_model_));
+        config_.particle_filter.particle_number, robot_pose_observation_model_, robot_motion_model_, SharedPtr(this)));
   } else {
     // Update particle filter's components
     robot_pf_->setResamplingStrategy(resampling_);
@@ -256,7 +256,7 @@ void Localization::reset_filter(int distribution) {
 
   RCLCPP_INFO(this->get_logger(), "rfa");
   robot_pf_.reset(new particle_filter::ParticleFilter<RobotState>(config_.particle_filter.particle_number,
-                                                                  robot_pose_observation_model_, robot_motion_model_));
+                                                                  robot_pose_observation_model_, robot_motion_model_, SharedPtr(this)));
 
   RCLCPP_INFO(this->get_logger(), "rfb");
   timer_callback_count_ = 0;
@@ -281,7 +281,7 @@ void Localization::reset_filter(int distribution) {
 
 void Localization::reset_filter(int distribution, double x, double y) {
   robot_pf_.reset(new particle_filter::ParticleFilter<RobotState>(config_.particle_filter.particle_number,
-                                                                  robot_pose_observation_model_, robot_motion_model_));
+                                                                  robot_pose_observation_model_, robot_motion_model_, SharedPtr(this)));
 
   robot_pf_->setResamplingStrategy(resampling_);
 
@@ -293,7 +293,7 @@ void Localization::reset_filter(int distribution, double x, double y) {
 
 void Localization::reset_filter(int distribution, double x, double y, double angle) {
   robot_pf_.reset(new particle_filter::ParticleFilter<RobotState>(config_.particle_filter.particle_number,
-                                                                  robot_pose_observation_model_, robot_motion_model_));
+                                                                  robot_pose_observation_model_, robot_motion_model_, SharedPtr(this)));
 
   robot_pf_->setResamplingStrategy(resampling_);
 
