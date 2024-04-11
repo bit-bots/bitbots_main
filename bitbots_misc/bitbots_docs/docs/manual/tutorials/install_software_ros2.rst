@@ -115,3 +115,7 @@ In case you are not using the bash shell, replace ``~/.bashrc`` and ``bash`` wit
   EOF
 
 - Configure the robot hostnames, see :doc:`configure_hostnames`.
+
+**6. Troubleshooting**
+
+If you have some problems with your installation, like not finding any nodes or topics, referr here for some troubleshooting steps: https://docs.ros.org/en/rolling/How-To-Guides/Installation-Troubleshooting.html
