@@ -224,6 +224,8 @@ class Localization : public rclcpp::Node {
   // Keep track of the odometry transform in the last step
   geometry_msgs::msg::TransformStamped previousOdomTransform_;
 
+  rclcpp::Node::SharedPtr nodePtr_;
+
   // Flag that checks if the robot is moving
   bool robot_moved = false;
 
