@@ -52,13 +52,17 @@ std::vector<double> RobotPoseObservationModel::measure_bulk(
   // RCLCPP_INFO_STREAM(node_->get_logger(), "measure_bulk called");
   torch::Device device(torch::kCUDA);
 
+  // TODO: create LocalizationMap msg
+
+
   std::vector<torch::jit::IValue> inputs;
   last_measurement_line_mask_ = last_measurement_line_mask_.to(at::kFloat);
+  
   // RCLCPP_INFO_STREAM(node_->get_logger(), "last_measurement_line_mask_: " << last_measurement_line_mask_.sizes());
   last_measurement_line_mask_ = last_measurement_line_mask_.to(device);
   inputs.push_back(last_measurement_line_mask_);  //.to(device));
   torch::Tensor state_tensor;
-  particle_vector[0]->getState().convertParticleListToTorchTensor(particle_vector, state_tensor, false);
+  particle_vector[0]->getState().convertParticleListToTorchTensor(particle_vector, state_tensor, false, true);
   state_tensor = state_tensor.to(at::kFloat).transpose(0, 1);
   state_tensor = state_tensor.reshape({1, 8, -1});
   // RCLCPP_INFO_STREAM(node_->get_logger(), "state_tensor_: " << state_tensor);

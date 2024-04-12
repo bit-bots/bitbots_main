@@ -60,7 +60,10 @@ class RobotState {
                                          Eigen::MatrixXd &matrix, const bool ignore_explorers);
 
   static void convertParticleListToTorchTensor(const std::vector<particle_filter::Particle<RobotState> *> &particle_list,
-                                         torch::Tensor &tensor, const bool ignore_explorers);
+                                         torch::Tensor &tensor, const bool ignore_explorers, bool mirror_field);
+
+  static void convertParticleListToVector(const std::vector<particle_filter::Particle<RobotState> *> &particle_list,
+                                         std::vector<float> &vec, const bool ignore_explorers, bool mirror_field);
 
   bool is_explorer_;
 
