@@ -13,7 +13,7 @@ $StartHCM
                 HOLD --> @SetTorque + stiff:true, @Wait
                 FINISHED --> @SetTorque + stiff:true + r:false, @RobotStateControllable, @PlayAnimationDynup + direction:walkready
                 OFF -->  $Stop
-                    STOPPED --> @CancelGoals, @StopWalking, @PlayAnimationDynup + direction:walkready, @Wait
+                    STOPPED --> @RobotStatePenalty, @CancelGoals, @StopWalking, @PlayAnimationDynup + direction:walkready, @Wait
                     FREE -->$CheckIMU
                         IMU_NOT_STARTED --> @RobotStateStartup, @WaitForIMUStartup
                         PROBLEM --> @RobotStateHardwareProblem, @WaitForIMU

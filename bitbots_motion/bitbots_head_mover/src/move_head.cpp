@@ -58,7 +58,6 @@ class HeadMover {
   // Declare variables
   uint head_mode_ = bitbots_msgs::msg::HeadMode::LOOK_FORWARD;
   std::optional<sensor_msgs::msg::JointState> current_joint_state_;
-  bitbots_msgs::msg::JointCommand pos_msg_;
   geometry_msgs::msg::PoseWithCovarianceStamped tf_precision_pose_;
 
   // Declare robot model and planning scene for moveit
@@ -159,13 +158,6 @@ class HeadMover {
     if (!planning_scene_) {
       RCLCPP_ERROR_ONCE(node_->get_logger(), "failed to connect to planning scene");
     }
-
-    // Prepare the pos_msg with default values
-    pos_msg_.joint_names = {"HeadPan", "HeadTilt"};
-    pos_msg_.positions = {0, 0};
-    pos_msg_.velocities = {0, 0};
-    pos_msg_.accelerations = {params_.max_acceleration_pan, params_.max_acceleration_pan};
-    pos_msg_.max_currents = {-1, -1};
 
     // Create tf buffer and listener to update it
     tf_buffer_ = std::make_shared<tf2_ros::Buffer>(node_->get_clock());
@@ -443,12 +435,15 @@ class HeadMover {
     }
 
     // Send the motor goals including the position, speed and acceleration
-    pos_msg_.positions = {goal_pan, goal_tilt};
-    pos_msg_.velocities = {pan_speed, tilt_speed};
-    pos_msg_.accelerations = {params_.max_acceleration_pan, params_.max_acceleration_pan};
+    bitbots_msgs::msg::JointCommand pos_msg;
+    pos_msg.header.stamp = rclcpp::Clock().now();
+    pos_msg.joint_names = {"HeadPan", "HeadTilt"};
+    pos_msg.positions = {goal_pan, goal_tilt};
+    pos_msg.velocities = {pan_speed, tilt_speed};
+    pos_msg.accelerations = {params_.max_acceleration_pan, params_.max_acceleration_pan};
+    pos_msg.max_currents = {-1, -1};
 
-    pos_msg_.header.stamp = rclcpp::Clock().now();
-    position_publisher_->publish(pos_msg_);
+    position_publisher_->publish(pos_msg);
   }
 
   /**
