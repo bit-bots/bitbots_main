@@ -173,6 +173,9 @@ class WorldModelCapsule:
             return self.ball_odom
 
     def get_ball_position_uv(self) -> Tuple[float, float]:
+        """
+        Returns the ball position relative to the robot in the base_footprint frame
+        """
         ball = self.get_best_ball_point_stamped()
         try:
             ball_bfp = self._blackboard.tf_buffer.transform(

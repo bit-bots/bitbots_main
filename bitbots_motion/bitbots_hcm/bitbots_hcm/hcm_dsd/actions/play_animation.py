@@ -90,7 +90,8 @@ class AbstractPlayAnimation(AbstractHCMActionElement, ABC):
     def animation_finished(self):
         return (
             self.blackboard.animation_action_current_goal.done()
-            and self.blackboard.animation_action_current_goal.result().status == GoalStatus.STATUS_SUCCEEDED
+            and self.blackboard.animation_action_current_goal.result().status
+            in [GoalStatus.STATUS_SUCCEEDED, GoalStatus.STATUS_CANCELED, GoalStatus.STATUS_ABORTED]
         ) or self.blackboard.animation_action_current_goal.cancelled()
 
 
@@ -197,7 +198,8 @@ class PlayAnimationDynup(AbstractHCMActionElement):
     def animation_finished(self):
         return (
             self.blackboard.dynup_action_current_goal.done()
-            and self.blackboard.dynup_action_current_goal.result().status == GoalStatus.STATUS_SUCCEEDED
+            and self.blackboard.dynup_action_current_goal.result().status
+            in [GoalStatus.STATUS_SUCCEEDED, GoalStatus.STATUS_CANCELED, GoalStatus.STATUS_ABORTED]
         ) or self.blackboard.dynup_action_current_goal.cancelled()
 
 

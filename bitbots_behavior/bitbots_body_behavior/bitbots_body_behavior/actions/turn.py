@@ -62,9 +62,6 @@ class Turn(AbstractActionElement):
         self.duration: Optional[float] = parameters.get("duration", None)
         self.start_time = self.blackboard.node.get_clock().now()
 
-        # Cancel the path planning if it is running
-        self.blackboard.pathfinding.cancel_goal()
-
     def perform(self, reevaluate=False):
         # Increase the rotation speed if we are not at max speed
         if abs(self.current_rotation_vel) < self.max_speed:
@@ -73,6 +70,9 @@ class Turn(AbstractActionElement):
         # Create the cmd_vel message
         cmd_vel = Twist()
         cmd_vel.angular.z = self.current_rotation_vel
+
+        # Cancel the path planning if it is running
+        self.blackboard.pathfinding.cancel_goal()
 
         # Send the rotation speed
         self.blackboard.pathfinding.direct_cmd_vel_pub.publish(cmd_vel)

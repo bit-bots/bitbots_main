@@ -10,15 +10,8 @@ class DribbleForward(AbstractActionElement):
     def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
         self.max_speed_x = self.blackboard.config["dribble_max_speed_x"]
-        self.min_speed_x = -0.1
         self.max_speed_y = self.blackboard.config["dribble_max_speed_y"]
-        self.ball_heading_x_vel_zero_point = self.blackboard.config["dribble_ball_heading_x_vel_zero_point"]
         self.p = self.blackboard.config["dribble_p"]
-        self.max_accel_x = self.blackboard.config["dribble_accel_x"]
-        self.max_accel_y = self.blackboard.config["dribble_accel_y"]
-
-        self.current_speed_x = self.blackboard.pathfinding.current_cmd_vel.linear.x
-        self.current_speed_y = self.blackboard.pathfinding.current_cmd_vel.linear.y
 
     def perform(self, reevaluate=False):
         """
@@ -29,25 +22,15 @@ class DribbleForward(AbstractActionElement):
         """
         # Get the ball relative to the base fottprint
         _, ball_v = self.blackboard.world_model.get_ball_position_uv()
-        # Get the relative angle from us to the ball
-        ball_angle = self.blackboard.world_model.get_ball_angle()
 
-        # todo compute yaw speed based on how we are aligned to the goal
+        self.current_speed_y = np.clip(ball_v * self.p, -self.max_speed_y, self.max_speed_y)
 
-        adaptive_acceleration_x = 1 - (abs(ball_angle) / self.ball_heading_x_vel_zero_point)
-        self.max_speed_x * adaptive_acceleration_x
+        # Stop the pathfinding if it is running for some reason
+        self.blackboard.pathfinding.cancel_goal()
 
-        self.current_speed_x = self.max_accel_x * self.max_speed_x + self.current_speed_x * (1 - self.max_accel_x)
-
-        # give more speed in y direction based on ball position
-        y_speed = ball_v * self.p
-
-        self.current_speed_y = self.max_accel_y * np.clip(
-            y_speed, -self.max_speed_y, self.max_speed_y
-        ) + self.current_speed_y * (1 - self.max_accel_y)
-
+        # Publish the velocities
         cmd_vel = Twist()
-        cmd_vel.linear.x = self.current_speed_x
+        cmd_vel.linear.x = self.max_speed_x
         cmd_vel.linear.y = self.current_speed_y
         cmd_vel.angular.z = 0.0
         self.blackboard.pathfinding.direct_cmd_vel_pub.publish(cmd_vel)

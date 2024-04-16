@@ -12,7 +12,11 @@ class AlignedToGoal(AbstractDecisionElement):
         self.goalpost_safety_distance = self.blackboard.config["goalpost_safety_distance"]
         self.field_length = self.blackboard.world_model.field_length
         self.goal_width = self.blackboard.world_model.goal_width
-        self.max_kick_angle = self.blackboard.config["max_kick_angle"]
+        # Check if we want to consider kicks
+        if parameters.get("consider_kicks", False):
+            self.max_kick_angle = self.blackboard.config["max_kick_angle"]
+        else:
+            self.max_kick_angle = 0
 
     def perform(self, reevaluate=False):
         """
