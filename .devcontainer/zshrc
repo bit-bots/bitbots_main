@@ -40,7 +40,6 @@ function mksh(){
     chmod 744 $1.sh
 }
 
-
 # Settings for the terminal
 bindkey "^H" backward-kill-word
 bindkey "^[[1;5C" forward-word
