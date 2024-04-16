@@ -2,7 +2,7 @@ import concurrent.futures
 import os
 from typing import Optional
 
-from deploy.misc import Connection, get_connections_from_succeeded, hide_output, print_debug, print_err, print_warn
+from deploy.misc import Connection, get_connections_from_succeeded, hide_output, print_debug, print_err, print_warning
 from deploy.tasks.abstract_task import AbstractTaskWhichRequiresSudo
 from fabric import Group, GroupResult, Result
 from fabric.exceptions import GroupException
@@ -62,7 +62,7 @@ class Install(AbstractTaskWhichRequiresSudo):
             results = connections.run(cmd, hide=hide_output())
             print_debug(f"Internet is available on the following hosts: {self._succeeded_hosts(results)}")
         except GroupException as e:
-            print_warn(
+            print_warning(
                 f"Internet is NOT available and skipping installs on the following hosts: {self._failed_hosts(e.result)}"
             )
             results = e.result
@@ -184,7 +184,7 @@ class Install(AbstractTaskWhichRequiresSudo):
                     # Remove prefix from command, as we collect all apt commands into one
                     apt_packages.append(install_command.replace(apt_command_prefix, "", 1).strip())
                 else:
-                    print_warn(
+                    print_warning(
                         f"Currently only the apt-get installer is supported. Stumbled over unknown installer in command and skipping it: '{install_command}' on {connection.host}"
                     )
 

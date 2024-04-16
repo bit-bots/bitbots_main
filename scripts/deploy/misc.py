@@ -22,7 +22,7 @@ def print_err(msg: Any) -> None:
         CONSOLE.print(Panel(msg, title="Error", style="bold red", box=box.HEAVY))
 
 
-def print_warn(msg: Any) -> None:
+def print_warning(msg: Any) -> None:
     """Prints a warning message in a yellow box to the console."""
     if LOGLEVEL.CURRENT >= LOGLEVEL.WARN:
         CONSOLE.print(Panel(msg, title="Warning", style="yellow", box=box.SQUARE))
