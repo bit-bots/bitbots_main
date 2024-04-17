@@ -18,6 +18,7 @@
 #include <soccer_vision_3d_msgs/msg/goalpost_array.hpp>
 #include <soccer_vision_3d_msgs/msg/marking_array.hpp>
 #include <soccer_vision_3d_msgs/msg/marking_intersection.hpp>
+#include <bitbots_localization/srv/get_measurement.hpp>
 #include <torch/script.h>
 #include <cv_bridge/cv_bridge.hpp>
 
@@ -88,7 +89,7 @@ class RobotPoseObservationModel : public particle_filter::ObservationModel<Robot
   rclcpp::Node::SharedPtr node_;
 
   torch::jit::script::Module mask_rating_module_;
-
+  rclcpp::Client<bitbots_localization::srv::GetMeasurement>::SharedPtr client_;
   // Parameters
   bitbots_localization::Params config_;
 };

@@ -18,6 +18,14 @@ RobotPoseObservationModel::RobotPoseObservationModel(std::shared_ptr<Map> map_li
   node_ = node;
   // RCLCPP_INFO_STREAM(node_->get_logger(), "a");
   torch::Device device(torch::kCUDA);
+
+  client_ = node_->create_client<bitbots_localization::srv::GetMeasurement>("get_pf_measurement");
+  while (!client_->wait_for_service(std::chrono::seconds(1))) {
+    if (!rclcpp::ok()) {
+      RCLCPP_ERROR(node_->get_logger(), "Interrupted while waiting for the service. Exiting.");
+    }
+    RCLCPP_INFO(node_->get_logger(), "service not available, waiting again...");
+  }
   // RCLCPP_INFO_STREAM(node_->get_logger(), "b");
   try {
     // Deserialize the ScriptModule from a file using torch::jit::load().
@@ -49,6 +57,36 @@ double RobotPoseObservationModel::calculate_weight_for_class(
 
 std::vector<double> RobotPoseObservationModel::measure_bulk(
     std::vector<particle_filter::Particle<RobotState> *> particle_vector) {
+  torch::Tensor state_tensor;
+  particle_vector[0]->getState().convertParticleListToTorchTensor(particle_vector, state_tensor, false, true);
+
+  
+  auto request = std::make_shared<bitbots_localization::srv::GetMeasurement::Request>();
+  std::vector<float> x_values, y_values, theta_values;
+  for(auto particle : particle_vector){
+    x_values.push_back((float) particle->getState().getXPos());
+    y_values.push_back((float) particle->getState().getYPos());
+    theta_values.push_back((float) particle->getState().getTheta());
+  }
+  request->particle_x = x_values;
+  request->particle_y = y_values;
+  request->particle_yaw = theta_values;
+  std::vector<double> weight_vector;
+  auto result = client_->async_send_request(request);
+  if (rclcpp::spin_until_future_complete(node_, result) ==
+    rclcpp::FutureReturnCode::SUCCESS){
+    std::vector<float> rx, ry, ryaw;
+    rx = result.get()->particle_x_dist;
+    ry = result.get()->particle_y_dist;
+    ryaw = result.get()->particle_yaw_dist;
+    for(long unsigned int i=0; i<particle_vector.size(); i++){
+      weight_vector.push_back((double)1.0/(rx[i] + ry[i] + ryaw[i]));
+    }
+  } else {
+    RCLCPP_ERROR(node_->get_logger(), "Failed to call service get_pf_measurement");
+  }
+  return weight_vector;
+  /*
   // RCLCPP_INFO_STREAM(node_->get_logger(), "measure_bulk called");
   torch::Device device(torch::kCUDA);
 
@@ -85,6 +123,7 @@ std::vector<double> RobotPoseObservationModel::measure_bulk(
       std::vector<double>(out_tensor.data_ptr<double>(), out_tensor.data_ptr<double>() + out_tensor.numel());
   RCLCPP_ERROR_STREAM(node_->get_logger(), "out_vector: " << out_vector);
   return out_vector;
+  */
 }
 
 double RobotPoseObservationModel::measure(const RobotState &state) const {
