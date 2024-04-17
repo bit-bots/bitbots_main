@@ -47,7 +47,7 @@ $ClosestToBall + use_time_to_ball:true
             NOT_DONE --> @LookAtFieldFeatures, @GoToRolePosition + blocking:false
             DONE --> $ReachedPathPlanningGoalPosition + threshold:0.2 + latch:true
                 YES -->  #StandAndLook
-                NO --> @LookAtFieldFeatures, @GoToRAlignedToPathPlanningGoalolePosition
+                NO --> @LookAtFieldFeatures, @GoToRolePosition
     YES --> #KickWithAvoidance
 
 #StrikerRole
