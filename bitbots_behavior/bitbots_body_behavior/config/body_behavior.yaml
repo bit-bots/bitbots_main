@@ -31,7 +31,7 @@
       # To be useful for different field sizes, use values in [-1, 1] for x and y
 
       role_positions:
-        goalie: [ -0.95, 0.0 ]
+        goalie: [ -0.7, 0.0 ]
         defense:
           passive: # passive: opponent has kickoff, active: we have kickoff
             # position number 0 = center, 1 = left, 2 = right
@@ -60,7 +60,7 @@
       ball_lost_time: 3.0
 
       # The orientation threshold defining which range (in Degrees) is acceptable as aligned to the goal (in each direction)
-      goal_alignment_orientation_threshold: 20.0
+      goal_alignment_orientation_threshold: 5.0
 
       # When the goal has not been seen for `goal_lost_time` seconds,
       # it is considered lost and will be searched

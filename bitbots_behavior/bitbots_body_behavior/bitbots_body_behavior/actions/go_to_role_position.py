@@ -28,6 +28,8 @@ class GoToRolePosition(AbstractActionElement):
             generalized_role_position[1] * self.blackboard.world_model.field_width / 2,
         ]
 
+        self.blocking = parameters.get("blocking", True)
+
     def perform(self, reevaluate=False):
         pose_msg = PoseStamped()
         pose_msg.header.stamp = self.blackboard.node.get_clock().now().to_msg()
@@ -38,3 +40,6 @@ class GoToRolePosition(AbstractActionElement):
         pose_msg.pose.orientation.w = 1.0
 
         self.blackboard.pathfinding.publish(pose_msg)
+
+        if not self.blocking:
+            self.pop()
