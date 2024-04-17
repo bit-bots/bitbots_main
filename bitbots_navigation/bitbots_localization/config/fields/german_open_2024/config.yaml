@@ -1,8 +1,8 @@
-########################
-# RoboCup 2022 Bangkok #
-########################
+############################
+# RoboCup German Open 2024 #
+############################
 
-# Settings override for the RoboCup 2022 Bangkok field
+# Settings override for the RoboCup German Open 2024 field
 
 bitbots_localization:
   ros__parameters:
