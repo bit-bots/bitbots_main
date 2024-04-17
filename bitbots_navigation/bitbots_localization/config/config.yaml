@@ -36,7 +36,7 @@ bitbots_localization:
         min_weight: 0.01
         particle_reset_weight: 0.1
         out_of_field_weight_decrease: 0.01
-        out_of_field_range: 0.5 
+        out_of_field_range: 0.5
       scoring:
         lines:
           factor: 1.0
@@ -51,7 +51,3 @@ bitbots_localization:
         line_element: 0.01
         goal_element: 0.0
         field_boundary_element: 0.0
-
-
-    
-    

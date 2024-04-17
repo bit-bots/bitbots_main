@@ -1,0 +1,19 @@
+############################
+# RoboCup German Open 2024 #
+############################
+
+# Settings override for the RoboCup German Open 2024 field
+
+bitbots_localization:
+  ros__parameters:
+    field:
+      size:
+        x: 9.0
+        y: 6.0
+      padding: 1.0
+      initialization:
+        single_pose:
+          x: -2.0
+          y: 0.0
+          t: 0.0
+          
