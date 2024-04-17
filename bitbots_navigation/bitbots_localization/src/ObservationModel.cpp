@@ -73,17 +73,13 @@ std::vector<double> RobotPoseObservationModel::measure_bulk(
   request->particle_yaw = theta_values;
   std::vector<double> weight_vector;
   auto result = client_->async_send_request(request);
-  if (rclcpp::spin_until_future_complete(node_, result) ==
-    rclcpp::FutureReturnCode::SUCCESS){
-    std::vector<float> rx, ry, ryaw;
-    rx = result.get()->particle_x_dist;
-    ry = result.get()->particle_y_dist;
-    ryaw = result.get()->particle_yaw_dist;
-    for(long unsigned int i=0; i<particle_vector.size(); i++){
-      weight_vector.push_back((double)1.0/(rx[i] + ry[i] + ryaw[i]));
-    }
-  } else {
-    RCLCPP_ERROR(node_->get_logger(), "Failed to call service get_pf_measurement");
+  result.wait();
+  std::vector<float> rx, ry, ryaw;
+  rx = result.get()->particle_x_dist;
+  ry = result.get()->particle_y_dist;
+  ryaw = result.get()->particle_yaw_dist;
+  for(long unsigned int i=0; i<particle_vector.size(); i++){
+    weight_vector.push_back((double)1.0/(rx[i] + ry[i] + ryaw[i]));
   }
   return weight_vector;
   /*
