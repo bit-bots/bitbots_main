@@ -45,11 +45,11 @@ $ClosestToBall + use_time_to_ball:true
         YES --> @ChangeAction + action:positioning, @AvoidBallActive, @LookAtFieldFeatures, @GoToBlockPosition
         NO --> $DoOnce
             NOT_DONE --> @LookAtFieldFeatures, @GoToRolePosition + blocking:false
-            DONE --> $ReachedPathPlanningGoalPosition + threshold:0.2 + latch:true
+            DONE --> $ReachedAndAlignedToPathPlanningGoalPosition + threshold:0.2 + latch:true
                 YES -->  #StandAndLook
                 NO --> @LookAtFieldFeatures, @GoToRolePosition
     YES --> #KickWithAvoidance
-
+    
 #StrikerRole
 $GoalieHandlingBall
     YES --> @ChangeAction + action:positioning, @AvoidBallActive, @LookAtFieldFeatures, @GoToPassAcceptPosition //don't go too far back
@@ -116,7 +116,11 @@ $DoOnce
 #NormalBehavior
 $BallSeen
     NO --> $ConfigRole
-        GOALIE --> @LookAtFieldFeatures, @GoToRolePosition
+        GOALIE --> $DoOnce
+            NOT_DONE --> @LookAtFieldFeatures, @GoToRolePosition + blocking:false
+            DONE --> $ReachedAndAlignedToPathPlanningGoalPosition + threshold:0.2 + latch:true
+                YES -->  #StandAndLook
+                NO --> @LookAtFieldFeatures, @GoToRolePosition
         ELSE --> #SearchBall
     YES --> $KickOffTimeUp
         NO_NORMAL --> #StandAndLook
