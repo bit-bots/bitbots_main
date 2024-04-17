@@ -158,7 +158,7 @@ class Launch(AbstractTask):
             # Print commands to connect to teamplayer tmux session
             help_cmds = ""
             for connection in results.succeeded:
-                help_cmds += f"{connection.host} : [bold]ssh {connection.user}@{connection.host} -t 'tmux attach-session -t {self._tmux_session_name}'[/bold]\n"
+                help_cmds += f"{connection.original_host} : [bold]ssh {connection.user}@{connection.host} -t 'tmux attach-session -t {self._tmux_session_name}'[/bold]\n"
             print_success(
                 f"Teamplayer launched successfully on {self._succeeded_hosts(results)}!\nTo attach to the tmux session, run:\n\n{help_cmds}"
             )
