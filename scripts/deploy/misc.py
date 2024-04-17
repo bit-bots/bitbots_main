@@ -208,9 +208,9 @@ def _get_connections_from_targets(
     failures: list[tuple[Connection, str]] = []  # List of tuples of failed connections and their error message
     for connection in connections:
         try:
-            print_debug(f"Connecting to {connection.host}...")
+            print_debug(f"Connecting to {connection.user}@{connection.host}...")
             connection.open()
-            print_debug(f"Connected to {connection.host}...")
+            print_debug(f"Connected to {connection.user}@{connection.host}...")
             print_debug(f"Getting hostname of {connection.host}...")
             hostname: str = connection.run("hostname", hide=hide_output()).stdout.strip()
             print_debug(f"Got hostname of {connection.host}: {hostname}. Setting is as original hostname.")
