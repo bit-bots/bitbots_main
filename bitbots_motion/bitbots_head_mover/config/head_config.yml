@@ -16,7 +16,7 @@ move_head:
 
   max_pan:
     type: double_array
-    default_value: [-2.35, 2.35]
+    default_value: [-1.57, 1.57]
     description: "Max values for the head position (in radians)"
     validation:
       fixed_size<>: 2
@@ -59,7 +59,7 @@ move_head:
     # Max values for the search pattern
     pan_max:
       type: double_array
-      default_value: [135.0, -135.0]
+      default_value: [90.0, -90.0]
       description: "Maximum pan values for the search pattern (in degrees)"
       validation:
         fixed_size<>: 2
@@ -139,7 +139,7 @@ move_head:
 
     pan_max:
       type: double_array
-      default_value: [-135.0, 135.0]
+      default_value: [-90.0, 90.0]
       description: "Maximum pan values for the search pattern (in degrees)"
       validation:
         fixed_size<>: 2

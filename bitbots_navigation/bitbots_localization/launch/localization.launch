@@ -2,8 +2,8 @@
     <!-- define parameters -->
     <arg name="tf_prefix" default=""/>
     <arg name="sim" default="false" description="true: activates simulation time and might load different parameters"/>
-    <arg unless="$(var sim)" name="fieldname" default="labor" description="Loads field settings (labor, webots, gazebo, bangkok, spl)." />
-    <arg if="$(var sim)" name="fieldname" default="webots" description="Loads field settings (labor, webots, gazebo, bangkok)." />
+    <arg unless="$(var sim)" name="fieldname" default="german_open_2024" description="Loads field settings (labor, webots, gazebo, bangkok, spl, german_open)." />
+    <arg if="$(var sim)" name="fieldname" default="webots" description="Loads field settings (labor, webots, gazebo, bangkok, german_open)." />
 
     <let if="$(env IS_ROBOT false)" name="taskset" value="taskset -c 8"/>
     <let unless="$(env IS_ROBOT false)" name="taskset" value=""/>
