@@ -7,6 +7,7 @@ if(NOT CMAKE_CXX_STANDARD)
 endif()
 
 find_package(ament_cmake REQUIRED)
+find_package(ament_index_cpp REQUIRED)
 find_package(backward_ros REQUIRED)
 find_package(bitbots_docs REQUIRED)
 find_package(cv_bridge REQUIRED)
@@ -32,6 +33,7 @@ target_link_libraries(basler_camera ${OpenCV_LIBRARIES} pylon::pylon
 ament_target_dependencies(
   basler_camera
   ament_cmake
+  ament_index_cpp
   bitbots_docs
   cv_bridge
   image_transport
