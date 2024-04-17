@@ -73,7 +73,9 @@ std::vector<double> RobotPoseObservationModel::measure_bulk(
   request->particle_yaw = theta_values;
   std::vector<double> weight_vector;
   auto result = client_->async_send_request(request);
-  result.wait();
+  while(rclcpp::ok() && result.wait_for(std::chrono::seconds(0)) != std::future_status::ready){
+    rclcpp::sleep_for(std::chrono::milliseconds(10));  
+  }
   std::vector<float> rx, ry, ryaw;
   rx = result.get()->particle_x_dist;
   ry = result.get()->particle_y_dist;
