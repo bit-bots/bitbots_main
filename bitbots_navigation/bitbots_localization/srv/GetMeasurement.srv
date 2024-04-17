@@ -1,0 +1,9 @@
+float32[] particle_x
+float32[] particle_y
+float32[] particle_yaw
+
+---
+
+float32[] particle_x_dist
+float32[] particle_y_dist
+float32[] particle_yaw_dist

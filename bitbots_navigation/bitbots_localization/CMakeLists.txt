@@ -29,8 +29,9 @@ generate_parameter_library(
   localization_parameters # cmake target name for the parameter library
   src/parameters.yml)
 
-rosidl_generate_interfaces(${PROJECT_NAME} "srv/ResetFilter.srv"
-                           "srv/SetPaused.srv" DEPENDENCIES builtin_interfaces)
+rosidl_generate_interfaces(
+  ${PROJECT_NAME} "srv/ResetFilter.srv" "srv/SetPaused.srv"
+  "srv/GetMeasurement.srv" DEPENDENCIES builtin_interfaces)
 
 include_directories(${INCLUDE_DIRS})
 
@@ -104,8 +105,8 @@ ament_target_dependencies(
 rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME}
                               "rosidl_typesupport_cpp")
 
-target_link_libraries(localization "${cpp_typesupport_target}" "${TORCH_LIBRARIES}"
-                      localization_parameters)
+target_link_libraries(localization "${cpp_typesupport_target}"
+                      "${TORCH_LIBRARIES}" localization_parameters)
 
 install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
