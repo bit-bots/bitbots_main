@@ -68,9 +68,9 @@ class AlignedToPathPlanningGoal(AbstractDecisionElement):
             return "NO"
         current_orientation = euler_from_quaternion(numpify(current_pose.pose.orientation))
         goal_orientation = euler_from_quaternion(numpify(current_goal.pose.orientation))
-        min_angle = abs(math.remainder(current_orientation[2] - goal_orientation[2], math.tau))
+        angle_to_goal_orientation = abs(math.remainder(current_orientation[2] - goal_orientation[2], math.tau))
 
-        if min_angle < self.orientation_threshold:
+        if angle_to_goal_orientation < self.orientation_threshold:
             return "YES"
         else:
             return "NO"
@@ -109,14 +109,14 @@ class ReachedAndAlignedToPathPlanningGoalPosition(AbstractDecisionElement):
 
         current_orientation = euler_from_quaternion(numpify(current_pose.pose.orientation))
         goal_orientation = euler_from_quaternion(numpify(goal_pose.pose.orientation))
-        min_angle = abs(math.remainder(current_orientation[2] - goal_orientation[2], math.tau))
+        angle_to_goal_orientation = abs(math.remainder(current_orientation[2] - goal_orientation[2], math.tau))
         self.publish_debug_data("current_orientation", current_orientation[2])
         self.publish_debug_data("goal_orientation", goal_orientation[2])
-        self.publish_debug_data("min_angle", min_angle)
+        self.publish_debug_data("angle_to_goal_orientation", angle_to_goal_orientation)
 
         distance = np.linalg.norm(numpify(goal_pose.pose.position) - numpify(current_pose.pose.position))
         self.publish_debug_data("distance", distance)
-        if distance < self.threshold and min_angle < self.orientation_threshold:
+        if distance < self.threshold and angle_to_goal_orientation < self.orientation_threshold:
             self.latched = self.latch  # Set it to true if we always want to return YES in the future
             return "YES"
         return "NO"

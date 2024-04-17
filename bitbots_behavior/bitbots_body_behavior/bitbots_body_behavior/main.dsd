@@ -19,6 +19,13 @@
 #Dribble
 @ChangeAction + action:going_to_ball, @CancelPathplanning, @LookAtBall, @LookAtFront, @DribbleForward
 
+#RolePositionWithPause
+$DoOnce
+    NOT_DONE --> @LookAtFieldFeatures, @GoToRolePosition + blocking:false
+    DONE --> $ReachedAndAlignedToPathPlanningGoalPosition + threshold:0.2 + latch:true
+        YES -->  #StandAndLook
+        NO --> @LookAtFieldFeatures, @GoToRolePosition
+
 #KickWithAvoidance
 $AvoidBall
     NO --> $BallClose + distance:%body.ball_reapproach_dist + angle:%body.ball_reapproach_angle
@@ -43,11 +50,7 @@ $ConfigRole
 $ClosestToBall + use_time_to_ball:true
     NO --> $BallInOwnPercent + p:40
         YES --> @ChangeAction + action:positioning, @AvoidBallActive, @LookAtFieldFeatures, @GoToBlockPosition
-        NO --> $DoOnce
-            NOT_DONE --> @LookAtFieldFeatures, @GoToRolePosition + blocking:false
-            DONE --> $ReachedAndAlignedToPathPlanningGoalPosition + threshold:0.2 + latch:true
-                YES -->  #StandAndLook
-                NO --> @LookAtFieldFeatures, @GoToRolePosition
+        NO --> #RolePositionWithPause
     YES --> #KickWithAvoidance
     
 #StrikerRole
@@ -116,11 +119,7 @@ $DoOnce
 #NormalBehavior
 $BallSeen
     NO --> $ConfigRole
-        GOALIE --> $DoOnce
-            NOT_DONE --> @LookAtFieldFeatures, @GoToRolePosition + blocking:false
-            DONE --> $ReachedAndAlignedToPathPlanningGoalPosition + threshold:0.2 + latch:true
-                YES -->  #StandAndLook
-                NO --> @LookAtFieldFeatures, @GoToRolePosition
+        GOALIE --> #RolePositionWithPause
         ELSE --> #SearchBall
     YES --> $KickOffTimeUp
         NO_NORMAL --> #StandAndLook
