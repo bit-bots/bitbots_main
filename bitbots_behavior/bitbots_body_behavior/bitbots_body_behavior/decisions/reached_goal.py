@@ -14,6 +14,8 @@ class ReachedPathPlanningGoalPosition(AbstractDecisionElement):
         super().__init__(blackboard, dsd, parameters)
         self.frame_id = parameters.get("frame_id", self.blackboard.map_frame)
         self.threshold = parameters.get("threshold")
+        self.latch = parameters.get("latch", False)
+        self.latched = False
 
     def perform(self, reevaluate=False):
         """
@@ -21,6 +23,10 @@ class ReachedPathPlanningGoalPosition(AbstractDecisionElement):
         :param reevaluate:
         :return:
         """
+        # We return that reached it forever if we reached it once if latching is enabled
+        if self.latched:
+            return "YES"
+
         current_pose = self.blackboard.world_model.get_current_position_pose_stamped(self.frame_id)
         goal_pose = self.blackboard.pathfinding.get_goal()
 
@@ -30,6 +36,7 @@ class ReachedPathPlanningGoalPosition(AbstractDecisionElement):
         distance = np.linalg.norm(numpify(goal_pose.pose.position) - numpify(current_pose.pose.position))
         self.publish_debug_data("distance", distance)
         if distance < self.threshold:
+            self.latched = self.latch  # Set it to true if we always want to return YES in the future
             return "YES"
         return "NO"
 

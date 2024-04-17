@@ -41,7 +41,13 @@ $ConfigRole
 
 #GoalieBehavior
 $ClosestToBall + use_time_to_ball:true
-    NO --> @ChangeAction + action:positioning, @AvoidBallActive, @LookAtFieldFeatures, @GoToBlockPosition
+    NO --> $BallInOwnPercent + p:40
+        YES --> @ChangeAction + action:positioning, @AvoidBallActive, @LookAtFieldFeatures, @GoToBlockPosition
+        NO --> $DoOnce
+            NOT_DONE --> @LookAtFieldFeatures, @GoToRolePosition + blocking:false
+            DONE --> $ReachedPathPlanningGoalPosition + threshold:0.2 + latch:true
+                YES -->  #StandAndLook
+                NO --> @LookAtFieldFeatures, @GoToRAlignedToPathPlanningGoalolePosition
     YES --> #KickWithAvoidance
 
 #StrikerRole

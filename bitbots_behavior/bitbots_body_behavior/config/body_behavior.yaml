@@ -31,7 +31,7 @@
       # To be useful for different field sizes, use values in [-1, 1] for x and y
 
       role_positions:
-        goalie: [ -0.95, 0.0 ]
+        goalie: [ -0.7, 0.0 ]
         defense:
           passive: # passive: opponent has kickoff, active: we have kickoff
             # position number 0 = center, 1 = left, 2 = right
