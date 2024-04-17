@@ -57,6 +57,8 @@ double RobotPoseObservationModel::calculate_weight_for_class(
 
 std::vector<double> RobotPoseObservationModel::measure_bulk(
     std::vector<particle_filter::Particle<RobotState> *> particle_vector) {
+
+  /*
   torch::Tensor state_tensor;
   particle_vector[0]->getState().convertParticleListToTorchTensor(particle_vector, state_tensor, false, true);
 
@@ -84,7 +86,7 @@ std::vector<double> RobotPoseObservationModel::measure_bulk(
     weight_vector.push_back((double)1.0/(rx[i] + ry[i] + ryaw[i]));
   }
   return weight_vector;
-  /*
+  */
   // RCLCPP_INFO_STREAM(node_->get_logger(), "measure_bulk called");
   torch::Device device(torch::kCUDA);
 
@@ -92,7 +94,8 @@ std::vector<double> RobotPoseObservationModel::measure_bulk(
 
   std::vector<torch::jit::IValue> inputs;
   last_measurement_line_mask_ = last_measurement_line_mask_.to(at::kFloat);
-
+  torch::save(last_measurement_line_mask_, "~/last_measurement_line_mask.pt");
+  std::exit(0);
   // RCLCPP_INFO_STREAM(node_->get_logger(), "last_measurement_line_mask_: " << last_measurement_line_mask_.sizes());
   last_measurement_line_mask_ = last_measurement_line_mask_.to(device);
   inputs.push_back(last_measurement_line_mask_);  //.to(device));
@@ -121,7 +124,6 @@ std::vector<double> RobotPoseObservationModel::measure_bulk(
       std::vector<double>(out_tensor.data_ptr<double>(), out_tensor.data_ptr<double>() + out_tensor.numel());
   RCLCPP_ERROR_STREAM(node_->get_logger(), "out_vector: " << out_vector);
   return out_vector;
-  */
 }
 
 double RobotPoseObservationModel::measure(const RobotState &state) const {
