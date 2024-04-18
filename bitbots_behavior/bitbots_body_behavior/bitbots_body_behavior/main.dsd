@@ -42,7 +42,9 @@ $AvoidBall
 #PositioningReady
 $ConfigRole
     GOALIE --> $GoalScoreRecently
-        YES --> @Stand + duration:1.0 + r:false, @PlayAnimationCheering + r:false, @GetWalkready + r:false
+        YES --> $RobotInOwnPercentOfField + p:40
+            YES -->@Stand + duration:1.0 + r:false, @PlayAnimationCheering + r:false, @GetWalkready + r:false
+            NO --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @Stand + duration:%body.ready_wait_time, @AvoidBallActive, @GoToRolePosition
         NO --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @Stand + duration:%body.ready_wait_time, @AvoidBallActive, @GoToRolePosition
     ELSE --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @Stand + duration:%body.ready_wait_time, @AvoidBallActive, @GoToRolePosition
 
