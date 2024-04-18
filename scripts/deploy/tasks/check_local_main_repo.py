@@ -38,7 +38,6 @@ class CheckLocalMainRepoTask(AbstractTask):
         """
         commit_hash: str = self._get_commit_hash()
         commit_name: str = self._get_friendly_commit_name(commit_hash)
-
         if self._check_dirty():
             self.warning_reasons.append("The local main repository is dirty (uncommitted changes).")
         if not self._check_branch_main():
@@ -48,33 +47,39 @@ class CheckLocalMainRepoTask(AbstractTask):
 
         if not self.warning_reasons:
             print_success(
-                f"Current commit: {commit_name} ({commit_hash})\nYour local main repository is clean and up-to-date."
+                f"Current commit: [bold]{commit_name}[default] ({commit_hash[:8]})\nYour local main repository is clean and up-to-date."
             )
             group_result = GroupResult()
-            group_result.succeeded = {connection: Result(connection) for connection in connections}
+            group_result._successes = {connection: Result() for connection in connections}
         else:
+            warnings: str = "\n".join(self.warning_reasons)
             print_warning(
-                f"Current commit: {commit_name} ({commit_hash})\n"
-                f"Warnings: {', '.join(self.warning_reasons)}\n"
+                f"Current commit: [bold]{commit_name}[default] ({commit_hash[:8]})\n\n"
+                "Warnings:\n"
+                f"{warnings}\n\n"
                 "Please check the warnings and decide if you want to proceed!"
             )
-            proceed = "y" in input("Do you want to proceed? [y/N] ").lower()
+            answer: str = input(r"Do you want to proceed? \[y/N] ").lower()
+            proceed = answer and "y" in answer[0]
             group_result = GroupResult()
             if proceed:
-                group_result.succeeded = {}
+                print_debug("Proceeding despite warnings because of user choice.")
+                group_result._successes = {}
                 for connection in connections:
                     result = Result(connection=connection)
                     result.exited = 0
-                    result.stdout = self.warning_reasons
-                    group_result.succeeded[connection] = result
+                    result.stdout = warnings
+                    group_result._successes[connection] = result
             else:
-                group_result.failed = {}
+                print_debug("Aborting because of user choice.")
+                group_result._failures = {}
                 for connection in connections:
                     result = Result(connection=connection)
                     result.exited = 1
-                    result.stdout = self.warning_reasons
-                    group_result.failed[connection] = result
-            return GroupResult()
+                    result.stdout = warnings
+                    group_result._failures[connection] = result
+        print_debug(group_result.failed)
+        return group_result
 
     def _get_commit_hash(self) -> str:
         """
@@ -83,7 +88,9 @@ class CheckLocalMainRepoTask(AbstractTask):
         :return: The commit hash.
         """
         print_debug("Getting current commit hash of the main repository.")
-        return self.repo.head.commit.hexsha
+        commit_hash: str = self.repo.head.commit.hexsha
+        print_debug(f"Got commit hash: '{commit_hash}'.")
+        return commit_hash
 
     def _get_friendly_commit_name(self, hash: str) -> str:
         """
@@ -173,7 +180,9 @@ class CheckLocalMainRepoTask(AbstractTask):
             "Zebra",
         ]
 
-        return f"{friendly_adjectives[int(hash, 16) % len(friendly_adjectives)]} {friendly_animals[int(hash, 16) % len(friendly_animals)]}"
+        friendly_name: str = f"{friendly_adjectives[int(hash, 16) % len(friendly_adjectives)]} {friendly_animals[int(hash, 16) % len(friendly_animals)]}"
+        print_debug(f"Generated friendly commit name: '{friendly_name}'.")
+        return friendly_name
 
     def _check_dirty(self) -> bool:
         """
@@ -182,7 +191,9 @@ class CheckLocalMainRepoTask(AbstractTask):
         :return: True if the main repository is dirty.
         """
         print_debug("Checking if the main repository is dirty.")
-        return self.repo.is_dirty(untracked_files=True)
+        dirty: bool = self.repo.is_dirty(untracked_files=True)
+        print_debug(f"Main repository is dirty?: {dirty}.")
+        return dirty
 
     def _check_branch_main(self) -> bool:
         """
@@ -195,6 +206,7 @@ class CheckLocalMainRepoTask(AbstractTask):
             active_branch = self.repo.active_branch
         except TypeError:
             return False
+        print_debug(f"Main repository is on branch: '{active_branch.name}'.")
         return active_branch.name == "main"
 
     def _check_ahead_behind(self) -> bool:
@@ -205,14 +217,30 @@ class CheckLocalMainRepoTask(AbstractTask):
         """
         print_debug("Checking if the main repository is ahead or behind of the remote main repository.")
         try:
+            print_debug("Trying to get remote repository.")
             remote = self.repo.remote()
         except ValueError:
+            print_debug("No remote repository found.")
             self.warning_reasons.append(
                 "No remote repository found. Could not check if the local main repository is ahead or behind of the remote main repository."
             )
             return True
 
+        print_debug("Fetching remote repository.")
         remote.fetch(kill_after_timeout=5)
-        ahead, behind = self.repo.iter_commits(f"main..{remote.name}/main")
-        print(ahead, behind)  # TODO Remove
-        return ahead == behind
+
+        print_debug("Checking if behind: Comparing local and remote main repository.")
+        ahead = False
+        for _ in self.repo.iter_commits(f"main..{remote.name}/main"):
+            ahead = True
+        if ahead:
+            self.warning_reasons.append("The local main repository is ahead of the remote main repository.")
+
+        print_debug("Checking if ahead: Comparing remote main and local repository.")
+        behind = False
+        for _ in self.repo.iter_commits(f"{remote.name}/main..main"):
+            behind = True
+        if behind:
+            self.warning_reasons.append("The local main repository is behind of the remote main repository.")
+
+        return ahead or behind
