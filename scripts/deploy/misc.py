@@ -16,13 +16,13 @@ from rich.table import Table
 CONSOLE = Console()
 
 
-def print_err(msg: Any) -> None:
+def print_error(msg: Any) -> None:
     """Prints an error message in a red box to the console."""
     if LOGLEVEL.CURRENT >= LOGLEVEL.ERR_SUCCESS:
         CONSOLE.print(Panel(msg, title="Error", style="bold red", box=box.HEAVY))
 
 
-def print_warn(msg: Any) -> None:
+def print_warning(msg: Any) -> None:
     """Prints a warning message in a yellow box to the console."""
     if LOGLEVEL.CURRENT >= LOGLEVEL.WARN:
         CONSOLE.print(Panel(msg, title="Warning", style="yellow", box=box.SQUARE))
@@ -93,7 +93,7 @@ try:
     with open(_known_targets_path) as f:
         KNOWN_TARGETS: dict[str, dict[str, str]] = yaml.safe_load(f)
 except FileNotFoundError:
-    print_err(f"Could not find known_targets.yaml in {_known_targets_path}")
+    print_error(f"Could not find known_targets.yaml in {_known_targets_path}")
     sys.exit(1)
 
 
@@ -175,10 +175,10 @@ def _parse_targets(input_targets: str) -> list[str]:
         try:
             target_ip = _identify_ip(input_target)
         except ValueError:
-            print_err(f"Could not determine IP address from input: '{input_target}'")
+            print_error(f"Could not determine IP address from input: '{input_target}'")
             sys.exit(1)
         if target_ip is None:
-            print_err(f"Could not determine IP address from input:' {input_target}'")
+            print_error(f"Could not determine IP address from input:' {input_target}'")
             sys.exit(1)
         target_ips.append(target_ip)
     return target_ips
@@ -226,7 +226,7 @@ def _get_connections_from_targets(
         except Exception as e:
             failures.append((connection, _concat_exception_args(e)))
     if failures:
-        print_err("Could not connect to the following hosts:")
+        print_error("Could not connect to the following hosts:")
         failure_table = Table(style="bold red", box=box.HEAVY)
         failure_table.add_column("Host")
         failure_table.add_column("Reason")
@@ -261,11 +261,11 @@ def _get_connections_from_all_known_targets(user: str, connection_timeout: Optio
             connection.open()
             print_debug(f"Connected to {connection.host}...")
         except Exception as e:
-            print_err(f"Could not establish connection to {connection.host}. Ignoring this host.")
+            print_error(f"Could not establish connection to {connection.host}. Ignoring this host.")
             print_debug(e)
         open_connections.append(connection)
     if len(open_connections) == 0:
-        print_err("Could not establish any connection to the known targets. Exiting...")
+        print_error("Could not establish any connection to the known targets. Exiting...")
         sys.exit(1)
     return ThreadingGroup.from_connections(open_connections)
 
@@ -310,7 +310,7 @@ class ArgumentParserShowTargets(argparse.ArgumentParser):
 
     def error(self, message):
         if "the following arguments are required" in message:
-            print_err(message)
+            print_error(message)
             print_known_targets()
             sys.exit(0)
         else:

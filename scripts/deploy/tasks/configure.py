@@ -7,7 +7,7 @@ from deploy.misc import (
     get_connections_from_succeeded,
     hide_output,
     print_debug,
-    print_err,
+    print_error,
     print_info,
 )
 from deploy.tasks.abstract_task import AbstractTaskWhichRequiresSudo
@@ -79,7 +79,7 @@ class Configure(AbstractTaskWhichRequiresSudo):
         if results.succeeded:
             print_info(f"Game settings configured on the following hosts: {self._succeeded_hosts(results)}")
         if results.failed:
-            print_err(f"Configuring game setting FAILED on the following hosts: {self._failed_hosts(results)}")
+            print_error(f"Configuring game setting FAILED on the following hosts: {self._failed_hosts(results)}")
         return results
 
     def _configure_wifi(self, connections: Group) -> GroupResult:
@@ -114,7 +114,7 @@ class Configure(AbstractTaskWhichRequiresSudo):
                     get_ids_cmd, hide=hide_output()
                 )  # TODO: Does this need a try block? Which exceptions can occur?
                 if get_ids_result.failed:
-                    print_err(f"Could not get connection ids on {connection.host}")
+                    print_error(f"Could not get connection ids on {connection.host}")
                     return get_ids_result
 
                 connection_ids = str(get_ids_result.stdout).strip().split("\n")
@@ -133,7 +133,9 @@ class Configure(AbstractTaskWhichRequiresSudo):
                         cmd, hide=True, password=self._sudo_password
                     )  # TODO: Does this need a try block? Which exceptions can occur?
                     if disable_autoconnect_result.failed:
-                        print_err(f"Could not disable autoconnect for connection {connection_id} on {connection.host}")
+                        print_error(
+                            f"Could not disable autoconnect for connection {connection_id} on {connection.host}"
+                        )
                         return disable_autoconnect_result
 
                     # De-prioritize connection
@@ -144,7 +146,7 @@ class Configure(AbstractTaskWhichRequiresSudo):
                         cmd, hide=True, password=self._sudo_password
                     )  # TODO: Does this need a try block? Which exceptions can occur?
                     if de_prioritize_result.failed:
-                        print_err(f"Could not de-prioritize connection {connection_id} on {connection.host}")
+                        print_error(f"Could not de-prioritize connection {connection_id} on {connection.host}")
                         return de_prioritize_result
 
                 # Enable the connection we want to use
@@ -155,7 +157,7 @@ class Configure(AbstractTaskWhichRequiresSudo):
                     cmd, hide=True, password=self._sudo_password
                 )  # TODO: Does this need a try block? Which exceptions can occur?
                 if enable_connection_result.failed:
-                    print_err(f"Could not enable connection {answered_connection_id} on {connection.host}")
+                    print_error(f"Could not enable connection {answered_connection_id} on {connection.host}")
                     return enable_connection_result
 
                 # Enabling autoconnect for the connection we want to use
@@ -166,7 +168,7 @@ class Configure(AbstractTaskWhichRequiresSudo):
                     cmd, hide=True, password=self._sudo_password
                 )  # TODO: Does this need a try block? Which exceptions can occur?
                 if enable_autoconnect_result.failed:
-                    print_err(
+                    print_error(
                         f"Could not enable autoconnect for connection {answered_connection_id} on {connection.host}"
                     )
                     return enable_autoconnect_result
@@ -179,7 +181,7 @@ class Configure(AbstractTaskWhichRequiresSudo):
                     cmd, hide=True, password=self._sudo_password
                 )  # TODO: Does this need a try block? Which exceptions can occur?
                 if set_priority_result.failed:
-                    print_err(
+                    print_error(
                         f"Could not set priority of connection {answered_connection_id} to 100 on {connection.host}"
                     )
                 return set_priority_result
@@ -196,7 +198,7 @@ class Configure(AbstractTaskWhichRequiresSudo):
             show_cmd, hide=False
         )  # TODO: Does this need a try block? Which exceptions can occur?
         if show_result.failed:
-            print_err(f"Could not show connections on {connection.host}")
+            print_error(f"Could not show connections on {connection.host}")
             return show_result
 
         # Ask user for connection to use
@@ -228,7 +230,7 @@ class Configure(AbstractTaskWhichRequiresSudo):
                 if results.succeeded:
                     print_info(f"Wifi configured on the following hosts: {self._succeeded_hosts(results)}")
                 if results.failed:
-                    print_err(f"Configuring wifi FAILED on the following hosts: {self._failed_hosts(results)}")
+                    print_error(f"Configuring wifi FAILED on the following hosts: {self._failed_hosts(results)}")
             return results
 
         else:  # User did not answer, we do not change anything
