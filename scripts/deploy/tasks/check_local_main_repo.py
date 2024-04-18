@@ -50,7 +50,7 @@ class CheckLocalMainRepoTask(AbstractTask):
                 f"Current commit: [bold]{commit_name}[default] ({commit_hash[:8]})\nYour local main repository is clean and up-to-date."
             )
             group_result = GroupResult()
-            group_result._successes = {connection: Result() for connection in connections}
+            group_result._successes = {connection: Result(connection=connection) for connection in connections}
         else:
             warnings: str = "\n".join(self.warning_reasons)
             print_warning(
