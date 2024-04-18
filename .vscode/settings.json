@@ -36,6 +36,7 @@
         "gamecontroller",
         "gamestate",
         "goalkick",
+        "hexsha",
         "hlvs",
         "holonomic",
         "hostnames",
