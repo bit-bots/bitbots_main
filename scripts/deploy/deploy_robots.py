@@ -10,7 +10,7 @@ from deploy.misc import (
     get_connections_from_targets,
     print_bit_bot,
     print_debug,
-    print_err,
+    print_error,
     print_known_targets,
     print_success,
 )
@@ -18,6 +18,7 @@ from deploy.tasks import (
     AbstractTask,
     AbstractTaskWhichRequiresSudo,
     Build,
+    CheckLocalMainRepoTask,
     Configure,
     Install,
     Launch,
@@ -126,6 +127,7 @@ class DeployRobots:
             default="~/colcon_ws",
             help="Path to the workspace directory to deploy to. Defaults to '~/colcon_ws'",
         )
+        parser.add_argument("--skip-local-repo-check", action="store_true", help="Skip the local repository check.")
 
         args = parser.parse_args()
 
@@ -172,6 +174,9 @@ class DeployRobots:
         """
         tasks = []
 
+        if not self._args.skip_local_repo_check:
+            tasks.append(CheckLocalMainRepoTask())
+
         if self._args.sync:
             tasks.append(
                 Sync(
@@ -206,7 +211,7 @@ class DeployRobots:
         """
         Main method, that creates connections to all targets and runs all registered tasks in parallel.
         """
-        num_tasks = len(self._tasks) + 1  # +1 for establishing connections to the targets
+        num_tasks = 1 + len(self._tasks)  # +1 for establishing connections to the targets
         current_task = 1  # Track current task for status output
 
         # Get connection
@@ -227,7 +232,7 @@ class DeployRobots:
             if not results.failed:
                 print_success(f"{task_prefix} completed.")
             elif results.failed:
-                print_err(f"{task_prefix} failed on the following hosts: {task._failed_hosts(results)}")
+                print_error(f"{task_prefix} failed on the following hosts: {task._failed_hosts(results)}")
                 sys.exit(1)
             current_task += 1
 

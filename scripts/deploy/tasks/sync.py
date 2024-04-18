@@ -3,7 +3,7 @@ import os
 from typing import Optional
 
 import yaml
-from deploy.misc import Connection, be_quiet, get_connections_from_succeeded, hide_output, print_debug, print_err
+from deploy.misc import Connection, be_quiet, get_connections_from_succeeded, hide_output, print_debug, print_error
 from deploy.tasks.abstract_task import AbstractTask
 from fabric import Group, GroupResult, Result
 from fabric.exceptions import GroupException
@@ -113,7 +113,7 @@ class Sync(AbstractTask):
                 rm_results = connection.run(rm_cmd, hide=hide_output())
                 print_debug(f"Cleaning of package succeeded for hosts {connection.host}")
             except Exception as e:
-                print_err(f"Cleaning of package failed for hosts {Connection.host}")
+                print_error(f"Cleaning of package failed for hosts {Connection.host}")
                 return Result(connection=connection, cmd=rm_cmd, exited=1, stdout="", stderr=str(e))
             return rm_results
 
@@ -129,7 +129,7 @@ class Sync(AbstractTask):
                 find_results = connections.run(find_cmd, hide=hide_output())
                 print_debug(f"Finding of package succeeded for hosts {self._succeeded_hosts(find_results)}")
             except GroupException as e:
-                print_err(f"Finding of package failed for hosts {self._failed_hosts(e.result)}")
+                print_error(f"Finding of package failed for hosts {self._failed_hosts(e.result)}")
                 if not e.result.succeeded:  # TODO: Does run immediately if one host fails? Do we even get here?
                     return e.result
                 find_results = e.result
@@ -168,7 +168,7 @@ class Sync(AbstractTask):
                 rm_results = connections.run(rm_cmd, hide=hide_output())
                 print_debug(f"Cleaning of source directory succeeded for hosts {self._succeeded_hosts(rm_results)}")
             except GroupException as e:
-                print_err(f"Cleaning of source directory failed for hosts {self._failed_hosts(e.result)}")
+                print_error(f"Cleaning of source directory failed for hosts {self._failed_hosts(e.result)}")
                 if not e.result.succeeded:  # TODO: Does run immediately if one host fails? Do we even get here?
                     return e.result
                 rm_results = e.result
@@ -187,7 +187,7 @@ class Sync(AbstractTask):
                     f"Recreation of source directory succeeded for hosts {self._succeeded_hosts(mkdir_results)}"
                 )
             except GroupException as e:
-                print_err(f"Recreation of source directory failed for hosts {self._failed_hosts(e.result)}")
+                print_error(f"Recreation of source directory failed for hosts {self._failed_hosts(e.result)}")
                 return e.result
             return mkdir_results
 
@@ -260,5 +260,5 @@ class Sync(AbstractTask):
         if results.succeeded:
             print_debug(f"Synchronization succeeded for hosts {self._succeeded_hosts(results)}")
         if results.failed:
-            print_err(f"Synchronization failed for hosts {self._failed_hosts(results)}")
+            print_error(f"Synchronization failed for hosts {self._failed_hosts(results)}")
         return results
