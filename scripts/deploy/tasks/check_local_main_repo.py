@@ -180,7 +180,7 @@ class CheckLocalMainRepoTask(AbstractTask):
             "Zebra",
         ]
 
-        friendly_name: str = f"{friendly_adjectives[int(hash[:len(hash)//2], 16) % len(friendly_adjectives)]} {friendly_animals[int(hash[len(hash)//2], 16) % len(friendly_animals)]}"
+        friendly_name: str = f"{friendly_adjectives[int(hash[:len(hash)//2], 16) % len(friendly_adjectives)]} {friendly_animals[int(hash[len(hash)//2:], 16) % len(friendly_animals)]}"
         print_debug(f"Generated friendly commit name: '{friendly_name}'.")
         return friendly_name
 
