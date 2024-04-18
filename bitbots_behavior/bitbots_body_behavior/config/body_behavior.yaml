@@ -162,8 +162,8 @@
 
       # The position where the supporter robot should place itself in order to accept a pass
       pass_position_x: 0.1
-      pass_position_y: 1
-      supporter_max_x: 4
+      pass_position_y: 1.0
+      supporter_max_x: 4.0
 
       # maximal angle of a ball kick
       max_kick_angle: 1.4  #  (radians)
