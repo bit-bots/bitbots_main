@@ -1,3 +1,4 @@
+import numpy as np
 import tf2_ros as tf2
 from bitbots_blackboard.capsules.game_status_capsule import GameStatusCapsule
 from bitbots_localization.srv import ResetFilter, SetPaused
@@ -5,6 +6,8 @@ from bitbots_utils.utils import get_parameters_from_other_node
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from rclpy.duration import Duration
 from rclpy.node import Node
+from ros2_numpy import numpify
+from sensor_msgs.msg import Imu
 from tf2_geometry_msgs import TransformStamped
 
 from bitbots_msgs.msg import RobotControlState
@@ -48,7 +51,8 @@ class LocalizationBlackboard:
         self.last_state_get_up = False
 
         # Picked up
-        self.last_state_pickup = False
+        self.accel = np.array([0, 0, 0])
+        self.accel_buffer = []
 
         # Last init action
         self.last_init_action_type = False
@@ -59,3 +63,15 @@ class LocalizationBlackboard:
 
     def _callback_robot_control_state(self, msg: RobotControlState):
         self.robot_control_state = msg.state
+
+    def _callback_imu(self, msg: Imu):
+        self.accel = numpify(msg.linear_acceleration)
+        self.accel_buffer.append(self.accel)
+        if len(self.accel_buffer) > 100:  # todo tune buffer length to distinguish between picked up and fallen in set
+            self.accel_buffer.pop(0)
+
+    def picked_up(self) -> bool:
+        """Naive check if the robot is picked up. Only works if the robot is standing still."""
+        buffer = np.array(self.accel_buffer)
+        std = np.std(buffer[..., 2])
+        return std > 0.1

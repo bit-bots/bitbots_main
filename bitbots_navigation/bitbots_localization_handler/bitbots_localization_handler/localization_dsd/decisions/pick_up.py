@@ -10,14 +10,12 @@ class CheckPickup(AbstractLocalizationDecisionElement):
     def perform(self, reevaluate=False):
         self.clear_debug_data()
 
-        if self.blackboard.robot_control_state == RobotControlState.PICKED_UP:
-            self.blackboard.last_state_pickup = True
+        if (
+            self.blackboard.robot_control_state
+            not in [RobotControlState.FALLEN, RobotControlState.FALLING, RobotControlState.GETTING_UP]
+            and self.blackboard.picked_up()
+        ):
             return "UP"
-        else:
-            if self.blackboard.last_state_pickup:
-                self.blackboard.last_state_pickup = False
-                return "JUST_DOWN"
-
         return "DOWN"
 
     def get_reevaluate(self):

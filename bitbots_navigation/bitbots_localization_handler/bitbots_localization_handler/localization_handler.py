@@ -9,6 +9,7 @@ from geometry_msgs.msg import PoseWithCovarianceStamped
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup, ReentrantCallbackGroup
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
+from sensor_msgs.msg import Imu
 
 from bitbots_localization_handler.localization_dsd.localization_blackboard import LocalizationBlackboard
 from bitbots_msgs.msg import RobotControlState
@@ -45,6 +46,7 @@ def init(node: Node):
         1,
         callback_group=ReentrantCallbackGroup(),
     )
+    node.create_subscription(Imu, "imu", blackboard._callback_imu, 1, callback_group=MutuallyExclusiveCallbackGroup())
 
     return dsd
 
