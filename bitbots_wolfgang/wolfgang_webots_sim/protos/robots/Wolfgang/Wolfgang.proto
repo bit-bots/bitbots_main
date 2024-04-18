@@ -71,7 +71,7 @@ PROTO Wolfgang [
   field  SFBool      enableBoundingObject TRUE      # Is `Robot.enableBoundingObject`.
   field  SFBool      enablePhysics   TRUE           # Is `Robot.enablePhysics`.
   field  SFBool      enableFootSensors TRUE         # Is `Robot.enableFootSensors`.
-  field  SFFloat     cameraFOV       1.04
+  field  SFFloat     cameraFOV       1.518
   field  SFInt32     cameraWidth     800
   field  SFInt32     cameraHeight    600
   field  SFFloat     MX64-torque     7.3

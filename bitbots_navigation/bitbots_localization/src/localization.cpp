@@ -44,6 +44,9 @@ Localization::Localization()
   rviz_initial_pose_subscriber_ = this->create_subscription<gm::msg::PoseWithCovarianceStamped>(
       "initialpose", 1, std::bind(&Localization::SetInitialPositionCallback, this, _1));
 
+  joint_state_subscriber_ = this->create_subscription<sm::msg::JointState>(
+      "joint_state", 1, std::bind(&Localization::JointStateCallback, this, _1));
+
   // Init publishers
   pose_particles_publisher_ =
       this->create_publisher<visualization_msgs::msg::MarkerArray>(config_.ros.particle_publishing_topic, 1);
@@ -109,7 +112,8 @@ void Localization::updateParams(bool force_reload) {
   }
 
   // Init observation model
-  robot_pose_observation_model_.reset(new RobotPoseObservationModel(lines_, goals_, field_boundary_, config_, nodePtr_));
+  robot_pose_observation_model_.reset(
+      new RobotPoseObservationModel(lines_, goals_, field_boundary_, config_, nodePtr_));
 
   // Init motion model
   auto drift_config = config_.particle_filter.drift;
@@ -228,6 +232,16 @@ void Localization::SetInitialPositionCallback(const gm::msg::PoseWithCovarianceS
   reset_filter(bl::srv::ResetFilter::Request::POSE, pose_in_map.pose.pose.position.x, pose_in_map.pose.pose.position.y,
                yaw);
 }
+void Localization::JointStateCallback(const sm::msg::JointState &msg) {
+  // Update the joint states in the observation model
+  for (size_t i = 0; i < msg.name.size(); i++) {
+    if (msg.name[i] == "head_pan") {
+      robot_pose_observation_model_->set_head_pan(msg.position[i]);
+    } else if (msg.name[i] == "head_tilt") {
+      robot_pose_observation_model_->set_head_tilt(msg.position[i]);
+    }
+  }
+}
 bool Localization::set_paused_callback(const std::shared_ptr<bl::srv::SetPaused::Request> req,
                                        std::shared_ptr<bl::srv::SetPaused::Response> res) {
   if (req->paused) {
@@ -256,8 +270,8 @@ void Localization::reset_filter(int distribution) {
   RCLCPP_INFO(this->get_logger(), "reset filter");
 
   RCLCPP_INFO(this->get_logger(), "rfa");
-  robot_pf_.reset(new particle_filter::ParticleFilter<RobotState>(config_.particle_filter.particle_number,
-                                                                  robot_pose_observation_model_, robot_motion_model_, nodePtr_));
+  robot_pf_.reset(new particle_filter::ParticleFilter<RobotState>(
+      config_.particle_filter.particle_number, robot_pose_observation_model_, robot_motion_model_, nodePtr_));
 
   RCLCPP_INFO(this->get_logger(), "rfb");
   timer_callback_count_ = 0;
@@ -281,8 +295,8 @@ void Localization::reset_filter(int distribution) {
 }
 
 void Localization::reset_filter(int distribution, double x, double y) {
-  robot_pf_.reset(new particle_filter::ParticleFilter<RobotState>(config_.particle_filter.particle_number,
-                                                                  robot_pose_observation_model_, robot_motion_model_, nodePtr_));
+  robot_pf_.reset(new particle_filter::ParticleFilter<RobotState>(
+      config_.particle_filter.particle_number, robot_pose_observation_model_, robot_motion_model_, nodePtr_));
 
   robot_pf_->setResamplingStrategy(resampling_);
 
@@ -293,8 +307,8 @@ void Localization::reset_filter(int distribution, double x, double y) {
 }
 
 void Localization::reset_filter(int distribution, double x, double y, double angle) {
-  robot_pf_.reset(new particle_filter::ParticleFilter<RobotState>(config_.particle_filter.particle_number,
-                                                                  robot_pose_observation_model_, robot_motion_model_, nodePtr_));
+  robot_pf_.reset(new particle_filter::ParticleFilter<RobotState>(
+      config_.particle_filter.particle_number, robot_pose_observation_model_, robot_motion_model_, nodePtr_));
 
   robot_pf_->setResamplingStrategy(resampling_);
 
@@ -307,7 +321,7 @@ void Localization::reset_filter(int distribution, double x, double y, double ang
 void Localization::updateMeasurements() {
   // Sets the measurements in the observation model
 
-  if (line_mask_.header.stamp != last_stamp_mask ) {
+  if (line_mask_.header.stamp != last_stamp_mask) {
     robot_pose_observation_model_->set_measurement_line_mask(line_mask_);
   }
 
@@ -317,7 +331,8 @@ void Localization::updateMeasurements() {
   if (config_.particle_filter.scoring.goal.factor && goal_posts_relative_.header.stamp != last_stamp_goals) {
     robot_pose_observation_model_->set_measurement_goalposts(goal_posts_relative_);
   }
-  if (config_.particle_filter.scoring.field_boundary.factor && fieldboundary_relative_.header.stamp != last_stamp_fb_points) {
+  if (config_.particle_filter.scoring.field_boundary.factor &&
+      fieldboundary_relative_.header.stamp != last_stamp_fb_points) {
     robot_pose_observation_model_->set_measurement_field_boundary(fieldboundary_relative_);
   }
 

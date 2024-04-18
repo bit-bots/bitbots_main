@@ -298,7 +298,7 @@ class LineDetectionComponent(IVisionComponent):
             self._add_line_mask_to_debug_image(line_mask)
 
     def _publish_line_mask_msg(self, image_msg: Image, line_mask: np.ndarray) -> None:
-        line_mask_msg = ros_utils.build_image_msg(image_msg.header, line_mask, "8UC1")
+        line_mask_msg = ros_utils.build_image_msg(image_msg.header, line_mask, "mono8")
         self._publisher.publish(line_mask_msg)
 
     def _add_line_mask_to_debug_image(self, line_mask: np.ndarray) -> None:

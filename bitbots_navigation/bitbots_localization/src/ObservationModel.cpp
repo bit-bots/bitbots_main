@@ -19,18 +19,12 @@ RobotPoseObservationModel::RobotPoseObservationModel(std::shared_ptr<Map> map_li
   // RCLCPP_INFO_STREAM(node_->get_logger(), "a");
   torch::Device device(torch::kCUDA);
 
-  client_ = node_->create_client<bitbots_localization::srv::GetMeasurement>("get_pf_measurement");
-  while (!client_->wait_for_service(std::chrono::seconds(1))) {
-    if (!rclcpp::ok()) {
-      RCLCPP_ERROR(node_->get_logger(), "Interrupted while waiting for the service. Exiting.");
-    }
-    RCLCPP_INFO(node_->get_logger(), "service not available, waiting again...");
-  }
   // RCLCPP_INFO_STREAM(node_->get_logger(), "b");
   try {
     // Deserialize the ScriptModule from a file using torch::jit::load().
     RCLCPP_INFO_STREAM(node_->get_logger(), "PATH: " << config_.misc.network_model_path);
     mask_rating_module_ = torch::jit::load(config_.misc.network_model_path, device);
+    mask_rating_module_.eval();
     // RCLCPP_INFO_STREAM(node_->get_logger(), "c");
   } catch (const c10::Error &e) {
     RCLCPP_ERROR_STREAM(node_->get_logger(), "error loading the mask rating model\n" << e.what());
@@ -55,14 +49,17 @@ double RobotPoseObservationModel::calculate_weight_for_class(
   return particle_weight_for_class;
 }
 
+void RobotPoseObservationModel::set_head_pan(double head_pan) { head_pan_ = head_pan; }
+
+void RobotPoseObservationModel::set_head_tilt(double head_tilt) { head_tilt_ = head_tilt; }
+
 std::vector<double> RobotPoseObservationModel::measure_bulk(
     std::vector<particle_filter::Particle<RobotState> *> particle_vector) {
-
   /*
   torch::Tensor state_tensor;
   particle_vector[0]->getState().convertParticleListToTorchTensor(particle_vector, state_tensor, false, true);
 
-  
+
   auto request = std::make_shared<bitbots_localization::srv::GetMeasurement::Request>();
   std::vector<float> x_values, y_values, theta_values;
   for(auto particle : particle_vector){
@@ -76,7 +73,7 @@ std::vector<double> RobotPoseObservationModel::measure_bulk(
   std::vector<double> weight_vector;
   auto result = client_->async_send_request(request);
   while(rclcpp::ok() && result.wait_for(std::chrono::seconds(0)) != std::future_status::ready){
-    rclcpp::sleep_for(std::chrono::milliseconds(10));  
+    rclcpp::sleep_for(std::chrono::milliseconds(10));
   }
   std::vector<float> rx, ry, ryaw;
   rx = result.get()->particle_x_dist;
@@ -94,35 +91,51 @@ std::vector<double> RobotPoseObservationModel::measure_bulk(
 
   std::vector<torch::jit::IValue> inputs;
   last_measurement_line_mask_ = last_measurement_line_mask_.to(at::kFloat);
-  torch::save(last_measurement_line_mask_, "~/last_measurement_line_mask.pt");
-  std::exit(0);
+
+  torch::save(last_measurement_line_mask_, "/homes/15guelden/last_measurement_line_mask.pt");
   // RCLCPP_INFO_STREAM(node_->get_logger(), "last_measurement_line_mask_: " << last_measurement_line_mask_.sizes());
   last_measurement_line_mask_ = last_measurement_line_mask_.to(device);
   inputs.push_back(last_measurement_line_mask_);  //.to(device));
   RCLCPP_INFO_STREAM(node_->get_logger(), "last_measurement_line_mask_: " << last_measurement_line_mask_.sizes());
   torch::Tensor state_tensor;
-  particle_vector[0]->getState().convertParticleListToTorchTensor(particle_vector, state_tensor, false, true);
+  particle_vector[0]->getState().convertParticleListToTorchTensor(particle_vector, state_tensor, false, true, head_pan_,
+                                                                  head_tilt_);
   state_tensor = state_tensor.to(at::kFloat).transpose(0, 1);
   state_tensor = state_tensor.reshape({1, 8, -1});
-  RCLCPP_INFO_STREAM(node_->get_logger(), "state_tensor_: " << state_tensor);
+  // RCLCPP_INFO_STREAM(node_->get_logger(), "state_tensor_: " << state_tensor);
+  // auto pickled_s = torch::pickle_save(state_tensor);
+  // std::ofstream fout_s("/homes/15guelden/state.pt", std::ios::out | std::ios::binary);
+  // fout_s.write(pickled_s.data(), pickled_s.size());
+  // fout_s.close();
+
+  // auto pickled_i = torch::pickle_save(last_measurement_line_mask_);
+  // std::ofstream fout_i("/homes/15guelden/img.pt", std::ios::out | std::ios::binary);
+  // fout_i.write(pickled_i.data(), pickled_i.size());
+  // fout_i.close();
+
   state_tensor = state_tensor.to(device);
   inputs.push_back(state_tensor);  //.to(device));
   // RCLCPP_INFO_STREAM(node_->get_logger(), "state_tensor: " << state_tensor.sizes());
   at::Tensor out_tensor = mask_rating_module_.forward(inputs).toTensor();  // TODO: to cpu or gpu and stuff and dtype
-  // RCLCPP_INFO_STREAM(node_->get_logger(), "an");
+  // auto pickled = torch::pickle_save(out_tensor);
+  // std::ofstream fout("/homes/15guelden/out_tensor.pt", std::ios::out | std::ios::binary);
+  // fout.write(pickled.data(), pickled.size());
+  // fout.close();
+  // std::exit(0);
+  //  RCLCPP_INFO_STREAM(node_->get_logger(), "an");
   out_tensor = out_tensor.toType(at::kDouble).to(torch::kCPU);
   // std::vector<double> out_vector(out_tensor.data_ptr<double>(), out_tensor.data_ptr<double>() + out_tensor.numel());
   // // TODO: make sure dtype fits
-  RCLCPP_ERROR_STREAM(node_->get_logger(), "raw: " << out_tensor);
+  // RCLCPP_ERROR_STREAM(node_->get_logger(), "raw: " << out_tensor);
   out_tensor = torch::abs(out_tensor);
   // RCLCPP_ERROR_STREAM(node_->get_logger(), "abs: " << out_tensor);
   out_tensor = torch::sum(out_tensor, 1);
-  RCLCPP_ERROR_STREAM(node_->get_logger(), "sum: " << out_tensor);
+  // RCLCPP_ERROR_STREAM(node_->get_logger(), "sum: " << out_tensor);
   out_tensor = 1 / out_tensor;
   // RCLCPP_ERROR_STREAM(node_->get_logger(), "out_tensor: " << out_tensor);
   std::vector<double> out_vector =
       std::vector<double>(out_tensor.data_ptr<double>(), out_tensor.data_ptr<double>() + out_tensor.numel());
-  RCLCPP_ERROR_STREAM(node_->get_logger(), "out_vector: " << out_vector);
+  // RCLCPP_ERROR_STREAM(node_->get_logger(), "out_vector: " << out_vector);
   return out_vector;
 }
 
@@ -164,9 +177,9 @@ void RobotPoseObservationModel::set_measurement_line_mask(sm::msg::Image measure
   // stolen from: https://github.com/klintan/ros2_pytorch/blob/master/src/ros2_pytorch.cpp
   // convert image to tensor
   std::shared_ptr<cv_bridge::CvImage> image_ = cv_bridge::toCvCopy(measurement, "8UC1");
-  RCLCPP_INFO_STREAM(node_->get_logger(), "image shape: " << image_->image.size());
+  // RCLCPP_INFO_STREAM(node_->get_logger(), "image shape: " << image_->image.size());
   cv::Mat image;
-  // cv::resize(image_->image, image, cv::Size(192, 256));  // TODO change order?
+  cv::resize(image_->image, image, cv::Size(256, 192));  // TODO change order?
   // RCLCPP_INFO_STREAM(node_->get_logger(), "image sum: " << cv::sum(image));
   at::TensorOptions options(at::ScalarType::Byte);
   std::vector<int64_t> sizes = {1, 1, 192, 256};
@@ -174,8 +187,8 @@ void RobotPoseObservationModel::set_measurement_line_mask(sm::msg::Image measure
   // tensor_image = tensor_image.transpose(2, 3);  // adapt to pytorch format
 
   last_measurement_line_mask_ = tensor_image.to(at::kFloat) / 255.0;
-  RCLCPP_INFO_STREAM(node_->get_logger(), "image input tensor shape: " << last_measurement_line_mask_.sizes());
-  RCLCPP_INFO_STREAM(node_->get_logger(), "tensor sum: " << last_measurement_line_mask_.sum());
+  // RCLCPP_INFO_STREAM(node_->get_logger(), "image input tensor shape: " << last_measurement_line_mask_.sizes());
+  // RCLCPP_INFO_STREAM(node_->get_logger(), "tensor sum: " << last_measurement_line_mask_.sum());
 }
 
 void RobotPoseObservationModel::set_measurement_lines_pc(sm::msg::PointCloud2 measurement) {

@@ -45,6 +45,7 @@
 #include <memory>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/camera_info.hpp>
+#include <sensor_msgs/msg/joint_state.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <soccer_vision_3d_msgs/msg/field_boundary.hpp>
 #include <soccer_vision_3d_msgs/msg/goalpost_array.hpp>
@@ -128,6 +129,8 @@ class Localization : public rclcpp::Node {
 
   void SetInitialPositionCallback(const gm::msg::PoseWithCovarianceStamped &msg);
 
+  void JointStateCallback(const sm::msg::JointState &msg);
+
   void reset_filter(int distribution);
 
   /**
@@ -160,6 +163,7 @@ class Localization : public rclcpp::Node {
   rclcpp::Subscription<sv3dm::msg::FieldBoundary>::SharedPtr fieldboundary_subscriber_;
 
   rclcpp::Subscription<gm::msg::PoseWithCovarianceStamped>::SharedPtr rviz_initial_pose_subscriber_;
+  rclcpp::Subscription<sm::msg::JointState>::SharedPtr joint_state_subscriber_;
 
   // Declare publishers
   rclcpp::Publisher<gm::msg::PoseWithCovarianceStamped>::SharedPtr pose_with_covariance_publisher_;

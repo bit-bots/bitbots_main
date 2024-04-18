@@ -90,8 +90,9 @@ void RobotState::convertParticleListToEigen(const std::vector<particle_filter::P
   }
 }
 
- void RobotState::convertParticleListToTorchTensor(const std::vector<particle_filter::Particle<RobotState> *> &particle_list,
-                                         torch::Tensor &tensor, const bool ignore_explorers, bool mirror_field) {
+void RobotState::convertParticleListToTorchTensor(
+    const std::vector<particle_filter::Particle<RobotState> *> &particle_list, torch::Tensor &tensor,
+    const bool ignore_explorers, bool mirror_field, double head_pan, double head_tilt) {
   if (ignore_explorers) {
     int non_explorer_count =
         std::count_if(particle_list.begin(), particle_list.end(),
@@ -102,10 +103,10 @@ void RobotState::convertParticleListToEigen(const std::vector<particle_filter::P
     //#pragma parallel for
     for (particle_filter::Particle<RobotState> *particle : particle_list) {
       if (!particle->is_explorer_) {
-        tensor[counter][0] = std::cos(0);
-        tensor[counter][1] = std::sin(0);
-        tensor[counter][2] = std::cos(0.7);
-        tensor[counter][3] = std::sin(0.7);
+        tensor[counter][0] = std::cos(head_pan);
+        tensor[counter][1] = std::sin(head_pan);
+        tensor[counter][2] = std::cos(-head_tilt);  // axis is inverted
+        tensor[counter][3] = std::sin(-head_tilt);  // axis is inverted
         double x = particle->getState().getXPos();
         if (x < 0 && mirror_field) {
           tensor[counter][4] = -x;
@@ -119,35 +120,35 @@ void RobotState::convertParticleListToEigen(const std::vector<particle_filter::P
           tensor[counter][7] = std::sin(particle->getState().getTheta());
         }
 
-        counter ++;
+        counter++;
       }
     }
   } else {
-    tensor = torch::zeros({(long int) particle_list.size(), 8});
+    tensor = torch::zeros({(long int)particle_list.size(), 8});
     //#pragma parallel for
     for (size_t i = 0; i < particle_list.size(); i++) {
-        tensor[i][0] = std::cos(0);
-        tensor[i][1] = std::sin(0);
-        tensor[i][2] = std::cos(0.7);
-        tensor[i][3] = std::sin(0.7);
-        double x = particle_list[i]->getState().getXPos();
-        if (x < 0 && mirror_field) {
-          tensor[i][4] = -x;
-          tensor[i][5] = -particle_list[i]->getState().getYPos();
-          tensor[i][6] = std::cos(particle_list[i]->getState().getTheta() + M_PI);
-          tensor[i][7] = std::sin(particle_list[i]->getState().getTheta() + M_PI);
-        } else {
-          tensor[i][4] = x;
-          tensor[i][5] = particle_list[i]->getState().getYPos();
-          tensor[i][6] = std::cos(particle_list[i]->getState().getTheta());
-          tensor[i][7] = std::sin(particle_list[i]->getState().getTheta());
-        }
+      tensor[i][0] = std::cos(0);
+      tensor[i][1] = std::sin(0);
+      tensor[i][2] = std::cos(0.7);
+      tensor[i][3] = std::sin(0.7);
+      double x = particle_list[i]->getState().getXPos();
+      if (x < 0 && mirror_field) {
+        tensor[i][4] = -x;
+        tensor[i][5] = -particle_list[i]->getState().getYPos();
+        tensor[i][6] = std::cos(particle_list[i]->getState().getTheta() + M_PI);
+        tensor[i][7] = std::sin(particle_list[i]->getState().getTheta() + M_PI);
+      } else {
+        tensor[i][4] = x;
+        tensor[i][5] = particle_list[i]->getState().getYPos();
+        tensor[i][6] = std::cos(particle_list[i]->getState().getTheta());
+        tensor[i][7] = std::sin(particle_list[i]->getState().getTheta());
+      }
     }
   }
 }
 
- void RobotState::convertParticleListToVector(const std::vector<particle_filter::Particle<RobotState> *> &particle_list,
-                                         std::vector<float> &vec, const bool ignore_explorers, bool mirror_field) {
+void RobotState::convertParticleListToVector(const std::vector<particle_filter::Particle<RobotState> *> &particle_list,
+                                             std::vector<float> &vec, const bool ignore_explorers, bool mirror_field) {
   if (ignore_explorers) {
     int non_explorer_count =
         std::count_if(particle_list.begin(), particle_list.end(),
@@ -158,47 +159,46 @@ void RobotState::convertParticleListToEigen(const std::vector<particle_filter::P
     //#pragma parallel for
     for (particle_filter::Particle<RobotState> *particle : particle_list) {
       if (!particle->is_explorer_) {
-
-        vec[counter*8+0] = std::cos(0);
-        vec[counter*8+1] = std::sin(0);
-        vec[counter*8+2] = std::cos(0.7);
-        vec[counter*8+3] = std::sin(0.7);
+        vec[counter * 8 + 0] = std::cos(0);
+        vec[counter * 8 + 1] = std::sin(0);
+        vec[counter * 8 + 2] = std::cos(0.7);
+        vec[counter * 8 + 3] = std::sin(0.7);
         double x = particle->getState().getXPos();
         if (x < 0 && mirror_field) {
-          vec[counter*8+4] = -x;
-          vec[counter*8+5] = -particle->getState().getYPos();
-          vec[counter*8+6] = std::cos(particle->getState().getTheta() + M_PI);
-          vec[counter*8+7] = std::sin(particle->getState().getTheta() + M_PI);
+          vec[counter * 8 + 4] = -x;
+          vec[counter * 8 + 5] = -particle->getState().getYPos();
+          vec[counter * 8 + 6] = std::cos(particle->getState().getTheta() + M_PI);
+          vec[counter * 8 + 7] = std::sin(particle->getState().getTheta() + M_PI);
         } else {
-          vec[counter*8+4] = x;
-          vec[counter*8+5] = particle->getState().getYPos();
-          vec[counter*8+6] = std::cos(particle->getState().getTheta());
-          vec[counter*8+7] = std::sin(particle->getState().getTheta());
+          vec[counter * 8 + 4] = x;
+          vec[counter * 8 + 5] = particle->getState().getYPos();
+          vec[counter * 8 + 6] = std::cos(particle->getState().getTheta());
+          vec[counter * 8 + 7] = std::sin(particle->getState().getTheta());
         }
 
-        counter ++;
+        counter++;
       }
     }
   } else {
     vec = std::vector<float>(particle_list.size() * 8);
     //#pragma parallel for
     for (size_t i = 0; i < particle_list.size(); i++) {
-        vec[i*8+0] = std::cos(0);
-        vec[i*8+1] = std::sin(0);
-        vec[i*8+2] = std::cos(0.7);
-        vec[i*8+3] = std::sin(0.7);
-        double x = particle_list[i]->getState().getXPos();
-        if (x < 0 && mirror_field) {
-          vec[i*8+4] = -x;
-          vec[i*8+5] = -particle_list[i]->getState().getYPos();
-          vec[i*8+6] = std::cos(particle_list[i]->getState().getTheta() + M_PI);
-          vec[i*8+7] = std::sin(particle_list[i]->getState().getTheta() + M_PI);
-        } else {
-          vec[i*8+4] = x;
-          vec[i*8+5] = particle_list[i]->getState().getYPos();
-          vec[i*8+6] = std::cos(particle_list[i]->getState().getTheta());
-          vec[i*8+7] = std::sin(particle_list[i]->getState().getTheta());
-        }
+      vec[i * 8 + 0] = std::cos(0);
+      vec[i * 8 + 1] = std::sin(0);
+      vec[i * 8 + 2] = std::cos(0.7);
+      vec[i * 8 + 3] = std::sin(0.7);
+      double x = particle_list[i]->getState().getXPos();
+      if (x < 0 && mirror_field) {
+        vec[i * 8 + 4] = -x;
+        vec[i * 8 + 5] = -particle_list[i]->getState().getYPos();
+        vec[i * 8 + 6] = std::cos(particle_list[i]->getState().getTheta() + M_PI);
+        vec[i * 8 + 7] = std::sin(particle_list[i]->getState().getTheta() + M_PI);
+      } else {
+        vec[i * 8 + 4] = x;
+        vec[i * 8 + 5] = particle_list[i]->getState().getYPos();
+        vec[i * 8 + 6] = std::cos(particle_list[i]->getState().getTheta());
+        vec[i * 8 + 7] = std::sin(particle_list[i]->getState().getTheta());
+      }
     }
   }
 }

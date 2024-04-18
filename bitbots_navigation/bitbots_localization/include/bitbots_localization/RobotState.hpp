@@ -7,11 +7,11 @@
 
 #include <particle_filter/ParticleFilter.h>
 #include <tf2/LinearMath/Quaternion.h>
+#include <torch/script.h>
 
 #include <Eigen/Core>
 #include <bitbots_localization/tools.hpp>
 #include <cmath>
-#include <torch/script.h>
 #include <vector>
 
 namespace bitbots_localization {
@@ -59,11 +59,12 @@ class RobotState {
   static void convertParticleListToEigen(const std::vector<particle_filter::Particle<RobotState> *> &particle_list,
                                          Eigen::MatrixXd &matrix, const bool ignore_explorers);
 
-  static void convertParticleListToTorchTensor(const std::vector<particle_filter::Particle<RobotState> *> &particle_list,
-                                         torch::Tensor &tensor, const bool ignore_explorers, bool mirror_field);
+  static void convertParticleListToTorchTensor(
+      const std::vector<particle_filter::Particle<RobotState> *> &particle_list, torch::Tensor &tensor,
+      const bool ignore_explorers, bool mirror_field, double head_pan, double head_tilt);
 
   static void convertParticleListToVector(const std::vector<particle_filter::Particle<RobotState> *> &particle_list,
-                                         std::vector<float> &vec, const bool ignore_explorers, bool mirror_field);
+                                          std::vector<float> &vec, const bool ignore_explorers, bool mirror_field);
 
   bool is_explorer_;
 
