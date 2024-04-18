@@ -2,12 +2,18 @@
   "configById": {
     "RosOut!3yblzst": {
       "searchTerms": [],
-      "minLogLevel": 1
+      "minLogLevel": 1,
+      "topicToRender": "/nuc1/rosout"
     },
     "RosOut!3g9ceib": {
       "searchTerms": [],
       "minLogLevel": 1,
       "topicToRender": "/nuc2/rosout"
+    },
+    "RosOut!323q0t4": {
+      "searchTerms": [],
+      "minLogLevel": 1,
+      "topicToRender": "/nuc3/rosout"
     },
     "RosOut!323q0t5": {
       "searchTerms": [],
@@ -233,14 +239,12 @@
           "layout": "RosOut!3g9ceib"
         },
         {
-          "title": "Jack"
+          "title": "Jack",
+          "layout": "RosOut!323q0t4"
         },
         {
           "title": "Donna",
           "layout": "RosOut!323q0t5"
-        },
-        {
-          "title": "5"
         }
       ]
     },
