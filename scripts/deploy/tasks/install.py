@@ -2,7 +2,7 @@ import concurrent.futures
 import os
 from typing import Optional
 
-from deploy.misc import Connection, get_connections_from_succeeded, hide_output, print_debug, print_err, print_warning
+from deploy.misc import Connection, get_connections_from_succeeded, hide_output, print_debug, print_error, print_warning
 from deploy.tasks.abstract_task import AbstractTaskWhichRequiresSudo
 from fabric import Group, GroupResult, Result
 from fabric.exceptions import GroupException
@@ -84,7 +84,7 @@ class Install(AbstractTaskWhichRequiresSudo):
             update_results = connections.sudo(cmd, hide=hide_output(), password=self._sudo_password)
             print_debug(f"Updated apt on the following hosts: {self._succeeded_hosts(update_results)}")
         except GroupException as e:
-            print_err(f"Failed to update apt on the following hosts: {self._failed_hosts(e.result)}")
+            print_error(f"Failed to update apt on the following hosts: {self._failed_hosts(e.result)}")
             update_results = e.result
 
         print_debug("Upgrading apt packages")
@@ -95,7 +95,7 @@ class Install(AbstractTaskWhichRequiresSudo):
             upgrade_results = connections.sudo(cmd, hide=hide_output(), password=self._sudo_password)
             print_debug(f"Upgraded apt packages on the following hosts: {self._succeeded_hosts(upgrade_results)}")
         except GroupException as e:
-            print_err(f"Failed to upgrade apt packages on the following hosts: {self._failed_hosts(e.result)}")
+            print_error(f"Failed to upgrade apt packages on the following hosts: {self._failed_hosts(e.result)}")
             upgrade_results = e.result
         return update_results
 
@@ -114,7 +114,7 @@ class Install(AbstractTaskWhichRequiresSudo):
             install_results = connections.sudo(cmd, hide=hide_output(), password=self._sudo_password)
             print_debug(f"Installed basler drivers on the following hosts: {self._succeeded_hosts(install_results)}")
         except GroupException as e:
-            print_err(f"Failed to install basler drivers on the following hosts: {self._failed_hosts(e.result)}")
+            print_error(f"Failed to install basler drivers on the following hosts: {self._failed_hosts(e.result)}")
             install_results = e.result
         return install_results
 
@@ -139,7 +139,7 @@ class Install(AbstractTaskWhichRequiresSudo):
         try:
             gather_results = connections.run(cmd, hide=hide_output())
         except GroupException as e:
-            print_err("Failed to gather rosdeps install commands")
+            print_error("Failed to gather rosdeps install commands")
             if not e.result.succeeded:
                 return e.result
             gather_results = e.result
@@ -193,7 +193,7 @@ class Install(AbstractTaskWhichRequiresSudo):
             try:
                 install_result = connection.sudo(apt_install_command, hide=hide_output(), password=self._sudo_password)
             except Exception:  # TODO: What exception can we expect here?
-                print_err(f"Failed install command on {connection.host}")
+                print_error(f"Failed install command on {connection.host}")
                 install_result = Result(connection=connection, exited=1, command=apt_install_command)
             return install_result
 
@@ -237,6 +237,6 @@ class Install(AbstractTaskWhichRequiresSudo):
             upgrade_results = connections.run(cmd, hide=hide_output())
             print_debug(f"Upgraded pip packages on the following hosts: {self._succeeded_hosts(upgrade_results)}")
         except GroupException as e:
-            print_err(f"Failed to upgrade pip packages on the following hosts: {self._failed_hosts(e.result)}")
+            print_error(f"Failed to upgrade pip packages on the following hosts: {self._failed_hosts(e.result)}")
             upgrade_results = e.result
         return upgrade_results

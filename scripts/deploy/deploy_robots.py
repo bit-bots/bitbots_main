@@ -10,7 +10,7 @@ from deploy.misc import (
     get_connections_from_targets,
     print_bit_bot,
     print_debug,
-    print_err,
+    print_error,
     print_known_targets,
     print_success,
 )
@@ -232,7 +232,7 @@ class DeployRobots:
             if not results.failed:
                 print_success(f"{task_prefix} completed.")
             elif results.failed:
-                print_err(f"{task_prefix} failed on the following hosts: {task._failed_hosts(results)}")
+                print_error(f"{task_prefix} failed on the following hosts: {task._failed_hosts(results)}")
                 sys.exit(1)
             current_task += 1
 

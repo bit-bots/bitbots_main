@@ -1,4 +1,4 @@
-from deploy.misc import get_connections_from_succeeded, hide_output, print_debug, print_err
+from deploy.misc import get_connections_from_succeeded, hide_output, print_debug, print_error
 from deploy.tasks.abstract_task import AbstractTask
 from fabric import Group, GroupResult
 from fabric.exceptions import GroupException
@@ -56,7 +56,7 @@ class Build(AbstractTask):
             print_debug(f"Clean succeeded on the following hosts: {self._succeeded_hosts(results)}")
         except GroupException as e:
             for connection, result in e.result.failed.items():
-                print_err(f"Clean on {connection.host} failed with the following errors: {result.stderr}")
+                print_error(f"Clean on {connection.host} failed with the following errors: {result.stderr}")
             return e.result
         return results
 
@@ -90,6 +90,6 @@ class Build(AbstractTask):
             print_debug(f"Build succeeded on the following hosts: {self._succeeded_hosts(results)}")
         except GroupException as e:
             for connection in e.result.failed.keys():
-                print_err(f"Build on {connection.host} failed!")
+                print_error(f"Build on {connection.host} failed!")
             return e.result
         return results

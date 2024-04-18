@@ -1,6 +1,6 @@
 import re
 
-from deploy.misc import get_connections_from_succeeded, hide_output, print_debug, print_err, print_success
+from deploy.misc import get_connections_from_succeeded, hide_output, print_debug, print_error, print_success
 from deploy.tasks.abstract_task import AbstractTask
 from fabric import Group, GroupResult, Result
 from fabric.exceptions import GroupException
@@ -60,7 +60,7 @@ class Launch(AbstractTask):
             node_list_results = connections.run(cmd, hide=hide_output())
             print_debug(f"Calling {cmd} succeeded on {self._succeeded_hosts(node_list_results)}")
         except GroupException as e:
-            print_err(f"Calling {cmd} failed on {self._failed_hosts(e.result)}")
+            print_error(f"Calling {cmd} failed on {self._failed_hosts(e.result)}")
             if not e.result.succeeded:  # TODO: Does run immediately fail if one host fails? Do we even get here?
                 return e.result
             else:
@@ -92,7 +92,7 @@ class Launch(AbstractTask):
                 f"No ROS 2 nodes are already running on {self._succeeded_hosts(no_nodes_already_running_results)}"
             )
         if no_nodes_already_running_results.failed:
-            print_err(f"ROS 2 nodes are already running on {self._failed_hosts(no_nodes_already_running_results)}")
+            print_error(f"ROS 2 nodes are already running on {self._failed_hosts(no_nodes_already_running_results)}")
         return no_nodes_already_running_results
 
     def _check_tmux_session_already_running(self, connections: Group) -> GroupResult:
@@ -109,7 +109,7 @@ class Launch(AbstractTask):
             tmux_ls_results = connections.run(cmd, hide=hide_output())
             print_debug(f"Calling {cmd} succeeded on {self._succeeded_hosts(tmux_ls_results)}")
         except GroupException as e:
-            print_err(f"Calling {cmd} failed on {self._failed_hosts(e.result)}")
+            print_error(f"Calling {cmd} failed on {self._failed_hosts(e.result)}")
             if not e.result.succeeded:
                 return e.result
             else:
@@ -142,7 +142,7 @@ class Launch(AbstractTask):
                 f"No tmux session called {self._tmux_session_name} has been found on hosts {self._succeeded_hosts(tmux_ls_results)}"
             )
         if tmux_session_already_running_results.failed:
-            print_err(
+            print_error(
                 f"Tmux session called {self._tmux_session_name} has been found on hosts {self._failed_hosts(tmux_ls_results)}"
             )
         return tmux_session_already_running_results
@@ -163,7 +163,7 @@ class Launch(AbstractTask):
                 f"Teamplayer launched successfully on {self._succeeded_hosts(results)}!\nTo attach to the tmux session, run:\n\n{help_cmds}"
             )
         except GroupException as e:
-            print_err(
+            print_error(
                 f"Creating tmux session called {self._tmux_session_name} failed OR launching teamplayer failed on the following hosts: {self._failed_hosts(e.result)}"
             )
             return e.result
