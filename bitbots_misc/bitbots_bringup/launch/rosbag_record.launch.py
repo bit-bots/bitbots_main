@@ -39,6 +39,7 @@ TOPICS_TO_RECORD: list[str] = [
     "/diagnostics",
     "/DynamixelController/command",
     "/field_boundary_relative",
+    "/field/map",
     "/game_controller_connected",
     "/gamestate",
     "/goal_pose",
