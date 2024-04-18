@@ -374,6 +374,10 @@ class WorldModelCapsule:
         ps = PoseStamped()
         ps.header = transform.header
         ps.pose.position = msgify(Point, numpify(transform.transform.translation))
+        ps.pose.orientation.x = transform.transform.rotation.x
+        ps.pose.orientation.y = transform.transform.rotation.y
+        ps.pose.orientation.z = transform.transform.rotation.z
+        ps.pose.orientation.w = transform.transform.rotation.w
         return ps
 
     def get_current_position_transform(self, frame_id: str) -> TransformStamped:
