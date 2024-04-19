@@ -1,3 +1,4 @@
+import numpy as np
 import tf2_ros as tf2
 from bitbots_blackboard.capsules.game_status_capsule import GameStatusCapsule
 from bitbots_localization.srv import ResetFilter, SetPaused
@@ -5,6 +6,8 @@ from bitbots_utils.utils import get_parameters_from_other_node
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from rclpy.duration import Duration
 from rclpy.node import Node
+from ros2_numpy import numpify
+from sensor_msgs.msg import Imu
 from tf2_geometry_msgs import TransformStamped
 
 from bitbots_msgs.msg import RobotControlState
@@ -48,7 +51,9 @@ class LocalizationBlackboard:
         self.last_state_get_up = False
 
         # Picked up
-        self.last_state_pickup = False
+        self.accel = np.array([0, 0, 0])
+        self.pickup_accel_buffer = []
+        self.pickup_accel_buffer_long = []
 
         # Last init action
         self.last_init_action_type = False
@@ -59,3 +64,39 @@ class LocalizationBlackboard:
 
     def _callback_robot_control_state(self, msg: RobotControlState):
         self.robot_control_state = msg.state
+
+        # Reset pickup buffer if we fall down
+        if self.robot_control_state in [
+            RobotControlState.FALLEN,
+            RobotControlState.FALLING,
+            RobotControlState.GETTING_UP,
+        ]:
+            self.pickup_accel_buffer = []
+            self.pickup_accel_buffer_long = []
+
+    def _callback_imu(self, msg: Imu):
+        self.accel = numpify(msg.linear_acceleration)
+
+        if self.robot_control_state is not None and self.robot_control_state not in [
+            RobotControlState.FALLEN,
+            RobotControlState.FALLING,
+            RobotControlState.GETTING_UP,
+        ]:
+            self.pickup_accel_buffer.append(self.accel)
+            self.pickup_accel_buffer_long.append(self.accel)
+            if len(self.pickup_accel_buffer) > 200:
+                self.pickup_accel_buffer.pop(0)
+            if len(self.pickup_accel_buffer_long) > 10000:
+                self.pickup_accel_buffer_long.pop(0)
+
+    def picked_up(self) -> bool:
+        """Naive check if the robot is picked up. Only works if the robot is standing still."""
+        if len(self.pickup_accel_buffer) == 0:
+            return False
+        buffer = np.array(self.pickup_accel_buffer)
+        mean = np.mean(buffer[..., 2])
+        buffer_long = np.array(self.pickup_accel_buffer_long)
+        mean_long = np.mean(buffer_long[..., 2])
+        absolute_diff = abs(mean_long - mean)
+
+        return absolute_diff > 1.0

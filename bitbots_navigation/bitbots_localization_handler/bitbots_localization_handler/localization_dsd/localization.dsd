@@ -3,25 +3,24 @@ $SecondaryStateDecider
     PENALTYSHOOT --> $SecondaryStateTeamDecider
         OTHER --> @InitGoal, @DoNothing   // Init as kicker
         OUR --> @InitPenaltyKick, @DoNothing   // Init as goalie
-    ELSE --> @DoNothing
+    ELSE --> $CheckPickup
+        UP --> @WaitForPickupEnd + r:false, @InitSide, @DoNothing
+        ELSE --> @DoNothing
 
 -->Localization
-$CheckPickup
-    UP --> @LocalizationStop
-    JUST_DOWN --> @LocalizationStart, @DoNothing
-    DOWN --> $GettingUpState
-        YES --> @LocalizationStop, @DoNothing
-        GOTUP --> $WalkedSinceLastInit + dist:%walking_moved_distance
-            YES --> @InitPosition, @LocalizationStart, @DoNothing
-            NO --> @RedoLastInit, @LocalizationStart, @DoNothing
-        NO --> $CheckGameStateReceived
-            NO_GAMESTATE_INIT --> @InitSide, @DoNothing
-            DO_NOTHING --> @DoNothing
-            GAMESTATE_RECEIVED --> $CheckPenalized
-                YES --> @LocalizationStop, @DoNothing
-                JUST_UNPENALIZED --> @InitSide, @LocalizationStart, @DoNothing
-                NO --> $InitialToReady
-                    YES --> @InitSide, @DoNothing
-                    NO --> $GameStateDecider
-                        SET --> #InitSet
-                        ELSE --> @DoNothing
+$GettingUpState
+    YES --> @LocalizationStop, @DoNothing
+    GOTUP --> $WalkedSinceLastInit + dist:%walking_moved_distance
+        YES --> @InitPosition, @LocalizationStart, @DoNothing
+        NO --> @RedoLastInit, @LocalizationStart, @DoNothing
+    NO --> $CheckGameStateReceived
+        NO_GAMESTATE_INIT --> @InitSide, @DoNothing
+        DO_NOTHING --> @DoNothing
+        GAMESTATE_RECEIVED --> $CheckPenalized
+            YES --> @LocalizationStop, @DoNothing
+            JUST_UNPENALIZED --> @InitSide, @LocalizationStart, @DoNothing
+            NO --> $InitialToReady
+                YES --> @InitSide, @DoNothing
+                NO --> $GameStateDecider
+                    SET --> #InitSet
+                    ELSE --> @DoNothing
