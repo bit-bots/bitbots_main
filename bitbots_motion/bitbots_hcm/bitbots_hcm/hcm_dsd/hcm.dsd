@@ -1,6 +1,6 @@
 -->HCM
 $StartHCM
-    START_UP --> @RobotStateStartup, @PlayAnimationDynup + direction:walkready
+    START_UP --> @RobotStateStartup, @PlayAnimationInit, @PlayAnimationDynup + direction:walkready
     RUNNING --> $CheckMotors
         MOTORS_NOT_STARTED --> @RobotStateStartup, @Wait
         OVERLOAD --> @RobotStateMotorOff, @CancelGoals, @StopWalking, @PlayAnimationFallingFront, @TurnMotorsOff, @Wait
