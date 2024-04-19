@@ -52,7 +52,8 @@ class LocalizationBlackboard:
 
         # Picked up
         self.accel = np.array([0, 0, 0])
-        self.accel_buffer = []
+        self.pickup_accel_buffer = []
+        self.pickup_accel_buffer_long = []
 
         # Last init action
         self.last_init_action_type = False
@@ -63,20 +64,39 @@ class LocalizationBlackboard:
 
     def _callback_robot_control_state(self, msg: RobotControlState):
         self.robot_control_state = msg.state
+        
+        # Reset pickup buffer if we fall down
+        if self.robot_control_state in [
+            RobotControlState.FALLEN,
+            RobotControlState.FALLING,
+            RobotControlState.GETTING_UP,
+        ]:
+            self.pickup_accel_buffer = []
+            self.pickup_accel_buffer_long = []
 
     def _callback_imu(self, msg: Imu):
         self.accel = numpify(msg.linear_acceleration)
-        self.accel_buffer.append(self.accel)
-        if len(self.accel_buffer) > 500:
-            self.accel_buffer.pop(0)
+
+        if self.robot_control_state is not None and self.robot_control_state not in [
+            RobotControlState.FALLEN,
+            RobotControlState.FALLING,
+            RobotControlState.GETTING_UP,
+        ]:
+            self.pickup_accel_buffer.append(self.accel)
+            self.pickup_accel_buffer_long.append(self.accel)
+            if len(self.pickup_accel_buffer) > 200:
+                self.pickup_accel_buffer.pop(0)
+            if len(self.pickup_accel_buffer_long) > 10000:
+                self.pickup_accel_buffer_long.pop(0)
 
     def picked_up(self) -> bool:
         """Naive check if the robot is picked up. Only works if the robot is standing still."""
-        if len(self.accel_buffer) == 0:
+        if len(self.pickup_accel_buffer) == 0:
             return False
-        buffer = np.array(self.accel_buffer)
+        buffer = np.array(self.pickup_accel_buffer)
         mean = np.mean(buffer[..., 2])
-        G = 9.81
-        absolute_diff = abs(G - mean)
-
-        return absolute_diff > 0.9
+        buffer_long = np.array(self.pickup_accel_buffer_long)
+        mean_long = np.mean(buffer_long[..., 2])
+        absolute_diff = abs(mean_long - mean)
+        
+        return absolute_diff > 1.0
