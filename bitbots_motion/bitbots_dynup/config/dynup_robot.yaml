@@ -8,7 +8,7 @@ dynup:
     foot_distance: 0.2
     hand_walkready_pitch: 40.0
     hand_walkready_height: -0.17
-    trunk_height: 0.38
+    trunk_height: 0.42
     trunk_pitch: 0.2
     trunk_x_final: 0.001
 
@@ -26,7 +26,7 @@ dynup:
     time_full_squat_hands: 0.172
     time_full_squat_legs: 0.196
     time_legs_close: 0.068
-    trunk_height_back: 0.179  # if you decrease this, the robot's ass collides its ankles
+    trunk_height_back: 0.2  # if you decrease this, the robot's ass collides its ankles
     trunk_overshoot_angle_back: 5.95
     wait_in_squat_back: 1.0
 
