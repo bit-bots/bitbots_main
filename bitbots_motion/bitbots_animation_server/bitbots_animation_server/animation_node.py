@@ -168,6 +168,10 @@ class AnimationNode(Node):
                 num_tries += 1
                 self.get_clock().sleep_for(Duration(seconds=0.1))
 
+        # Make sure we have our current joint states
+        while rclpy.ok() and self.current_joint_states is None:
+            self.get_clock().sleep_for(Duration(seconds=0.1))
+
         # Create splines
         animator = SplineAnimator(
             self.animation_cache[self.current_animation], self.current_joint_states, self.get_logger(), self.get_clock()
