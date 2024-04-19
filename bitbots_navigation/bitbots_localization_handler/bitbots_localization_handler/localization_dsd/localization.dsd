@@ -9,9 +9,9 @@ $SecondaryStateDecider
 
 -->Localization
 $GettingUpState
-    YES --> @LocalizationStop, @DoNothing
+    YES --> @StoreCurrentIMUYaw, @LocalizationStop, @DoNothing
     GOTUP --> $WalkedSinceLastInit + dist:%walking_moved_distance
-        YES --> @InitPosition, @LocalizationStart, @DoNothing
+        YES --> @InitPoseAfterFall, @LocalizationStart, @DoNothing
         NO --> @RedoLastInit, @LocalizationStart, @DoNothing
     NO --> $CheckGameStateReceived
         NO_GAMESTATE_INIT --> @InitSide, @DoNothing

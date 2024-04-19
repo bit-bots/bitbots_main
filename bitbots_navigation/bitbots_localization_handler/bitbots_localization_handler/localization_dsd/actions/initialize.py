@@ -1,3 +1,5 @@
+import math
+
 import tf2_ros as tf2
 from bitbots_localization.srv import ResetFilter
 from rclpy.duration import Duration
@@ -68,6 +70,36 @@ class InitPosition(AbstractInitialize):
         return self.pop()
 
 
+class InitPoseAfterFall(AbstractInitialize):
+    def perform(self, reevaluate=False):
+        self.do_not_reevaluate()
+        self.blackboard.node.get_logger().debug("Initializing at pose after fall")
+        while not self.blackboard.reset_filter_proxy.wait_for_service(timeout_sec=3.0):
+            self.blackboard.node.get_logger().info("Localization reset service not available, waiting again...")
+
+        # Calculate the angle of the robot after the fall by adding the yaw difference during the fall
+        # (estimated by the IMU) to the last known localization yaw
+        esimated_angle = (
+            (
+                self.blackboard.get_imu_yaw()
+                - self.blackboard.imu_yaw_before_fall
+                + self.blackboard.get_localization_yaw()
+            )
+            % math.tau,
+        )
+
+        # Tell the localization to reset to the last position and the estimated angle
+        self.blackboard.reset_filter_proxy.call_async(
+            ResetFilter.Request(
+                init_mode=ResetFilter.Request.POSE,
+                x=self.blackboard.robot_pose.pose.pose.position.x,
+                y=self.blackboard.robot_pose.pose.pose.position.y,
+                angle=esimated_angle,
+            )
+        )
+        return self.pop()
+
+
 class InitSide(AbstractInitialize):
     def perform(self, reevaluate=False):
         self.do_not_reevaluate()
@@ -119,3 +151,14 @@ class RedoLastInit(AbstractInitialize):
     def perform(self, reevaluate=False):
         self.blackboard.node.get_logger().debug("Redoing the last init")
         return self.sub_action.perform(reevaluate)
+
+
+class StoreCurrentIMUYaw(AbstractInitialize):
+    def perform(self, reevaluate=False):
+        self.do_not_reevaluate()
+        self.blackboard.node.get_logger().debug("Storing current IMU yaw")
+        # Get yaw component of the current orientation before the fall
+        # It drifts over time, so this is not an absolute measurement, but it will help to overcome
+        # The short time during the fall at which we have no odometry
+        self.blackboard.imu_yaw_before_fall = self.blackboard.get_imu_yaw()
+        return self.pop()
