@@ -18,6 +18,8 @@ class CheckLocalMainRepoTask(AbstractTask):
         - The local main repository is ahead or behind of the remote main repository.
         """
         super().__init__()
+        self._show_status = False
+
         self.repo: Repo = self._get_repo()
         self.warning_reasons: list[str] = []
 
