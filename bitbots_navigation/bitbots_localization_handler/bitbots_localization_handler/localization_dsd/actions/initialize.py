@@ -80,13 +80,8 @@ class InitPoseAfterFall(AbstractInitialize):
         # Calculate the angle of the robot after the fall by adding the yaw difference during the fall
         # (estimated by the IMU) to the last known localization yaw
         esimated_angle = (
-            (
-                self.blackboard.get_imu_yaw()
-                - self.blackboard.imu_yaw_before_fall
-                + self.blackboard.get_localization_yaw()
-            )
-            % math.tau,
-        )
+            self.blackboard.get_imu_yaw() - self.blackboard.imu_yaw_before_fall + self.blackboard.get_localization_yaw()
+        ) % math.tau
 
         # Tell the localization to reset to the last position and the estimated angle
         self.blackboard.reset_filter_proxy.call_async(
@@ -153,7 +148,7 @@ class RedoLastInit(AbstractInitialize):
         return self.sub_action.perform(reevaluate)
 
 
-class StoreCurrentIMUYaw(AbstractInitialize):
+class StoreCurrentIMUYaw(AbstractLocalizationActionElement):
     def perform(self, reevaluate=False):
         self.do_not_reevaluate()
         self.blackboard.node.get_logger().debug("Storing current IMU yaw")

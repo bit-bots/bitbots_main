@@ -52,7 +52,7 @@ class LocalizationBlackboard:
         self.last_state_get_up = False
 
         # IMU
-        self.accel = np.array([0, 0, 0])
+        self.accel = np.array([0.0, 0.0, 0.0])
         self.imu_orientation = Quaternion(w=1.0)
 
         # Falling odometry / imu interpolation during falls
