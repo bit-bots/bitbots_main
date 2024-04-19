@@ -1,7 +1,7 @@
 parameter_blackboard:
   ros__parameters:
     bot_id: 1
-    monitoring_host_ip: 0.0.0.0
+    monitoring_host_ip: 172.20.0.10
     position_number: 0
     role: offense
     team_color: 0
