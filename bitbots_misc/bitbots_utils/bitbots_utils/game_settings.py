@@ -15,6 +15,12 @@ SETTING_PATH = os.path.join(
     "config",
     "game_settings.yaml",
 )
+DEFAULT_SETTING_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+    "bitbots_utils",
+    "config",
+    "default_game_settings.yaml",
+)
 OPTIONS_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
     "bitbots_utils",
@@ -107,29 +113,52 @@ def check_new_value(new_value: str, value_type: Any, valid_options: Optional[lis
     return True
 
 
+def ask_for_confirmation(question) -> bool:
+    result = None
+    prompt = " [Y/n] "
+    valid = {"": True, "y": True, "n": False}
+
+    while result is None:
+        answer = input(question + prompt).lower()
+        result = valid.get(answer)
+        if result is None:
+            print("Please input a valid selection!")
+
+    return result
+
+
 def main():
-    config = provide_config(SETTING_PATH)
-    ros_parameters = config["parameter_blackboard"]["ros__parameters"]
+    is_config_correct = False
+
+    default_settings = provide_config(DEFAULT_SETTING_PATH)
+    settings = default_settings | provide_config(SETTING_PATH)
+    ros_parameters = settings["parameter_blackboard"]["ros__parameters"]
     if ros_parameters is None:
         ros_parameters = {}
-        config["parameter_blackboard"]["ros__parameters"] = ros_parameters
+        settings["parameter_blackboard"]["ros__parameters"] = ros_parameters
 
     options = provide_config(OPTIONS_PATH)
-    for key in options.keys():
-        entry_value_type = locate(options[key]["type"])
-        entry_options = options[key].get("options", None)
-        entry_explanation = options[key]["explanation"]
+    while not is_config_correct:
+        for key in options.keys():
+            entry_value_type = locate(options[key]["type"])
+            entry_options = options[key].get("options", None)
+            entry_explanation = options[key]["explanation"]
 
-        if key in ros_parameters.keys():
-            ros_parameters[key] = ask_for_config_option(
-                key, entry_value_type, ros_parameters[key], entry_options, entry_explanation
-            )
-        else:
-            value = ask_for_config_option(key, entry_value_type, None, entry_options, entry_explanation)
-            ros_parameters.update({key: value})
+            if key in ros_parameters.keys():
+                ros_parameters[key] = ask_for_config_option(
+                    key, entry_value_type, ros_parameters[key], entry_options, entry_explanation
+                )
+            else:
+                value = ask_for_config_option(key, entry_value_type, None, entry_options, entry_explanation)
+                ros_parameters.update({key: value})
+
+        settings_string = yaml.safe_dump(settings)
+        print("=============== Current Settings ===============")
+        print(settings_string)
+        is_config_correct = ask_for_confirmation("Are these settings correct?")
 
     with open(SETTING_PATH, "w") as f:
-        yaml.safe_dump(config, f, default_flow_style=False)
+        f.write(settings_string)
 
 
 if __name__ == "__main__":
