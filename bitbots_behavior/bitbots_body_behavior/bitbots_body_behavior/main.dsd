@@ -151,7 +151,9 @@ $IsPenalized
                     YES --> @Stand + duration:0.1 + r:false, @DeactivateHCM + r:false, @LookForward + r:false, @PlayAnimationInitInSim + r:false, @GetWalkready + r:false, @LookAtBall + r:false, @PlayAnimationGoalieArms + r:false, @Stand // goalie only needs to care about the ball
                     NO --> @Stand + duration:0.1 + r:false, @DeactivateHCM + r:false, @LookForward + r:false, @PlayAnimationInitInSim + r:false, @GetWalkready + r:false, @SearchBall + r:false, @PlayAnimationGoalieArms + r:false, @Stand
             ELSE --> #StandAndLook
-        FINISHED --> #Init
+        FINISHED --> $CurrentScore
+            AHEAD --> @Stand + duration:0.5 + r:false, @PlayAnimationCheering + r:false, @ChangeAction + action:waiting, @LookForward, @Stand
+            ELSE --> #Init
         PLAYING --> $SecondaryStateDecider
             PENALTYSHOOT --> #PenaltyShootoutBehavior
             TIMEOUT --> #StandAndLook
