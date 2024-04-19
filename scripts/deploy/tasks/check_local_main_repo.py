@@ -4,6 +4,7 @@ from deploy.misc import print_debug, print_success, print_warning
 from deploy.tasks.abstract_task import AbstractTask
 from fabric import Group, GroupResult, Result
 from git import Repo
+from git.exc import GitCommandError
 
 
 class CheckLocalMainRepoTask(AbstractTask):
@@ -52,7 +53,9 @@ class CheckLocalMainRepoTask(AbstractTask):
             group_result = GroupResult()
             group_result._successes = {connection: Result(connection=connection) for connection in connections}
         else:
-            warnings: str = "\n".join(self.warning_reasons)
+            warnings: str = ""
+            for i, warning in enumerate(self.warning_reasons):
+                warnings += f"{i+1}. {warning}\n"
             print_warning(
                 f"Current commit: [bold]{commit_name}[default] ({commit_hash[:8]})\n\n"
                 "Warnings:\n"
@@ -227,7 +230,15 @@ class CheckLocalMainRepoTask(AbstractTask):
             return True
 
         print_debug("Fetching remote repository.")
-        remote.fetch(kill_after_timeout=5)
+        try:
+            remote.fetch(kill_after_timeout=5)
+        except GitCommandError as e:
+            err: str = e.stderr.strip()
+            print_debug(f"Fetching remote repository failed: {err}")
+            self.warning_reasons.append(
+                f"{err}. Could not check if the local main repository is ahead or behind of the remote main repository."
+            )
+            return True
 
         print_debug("Checking if behind: Comparing local and remote main repository.")
         ahead = False
