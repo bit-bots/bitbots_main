@@ -19,10 +19,6 @@ class SplineAnimator:
         self.torques = {}
         self.keyframe_times: list[float] = []
 
-        # Add current joint positions as start
-        if current_joint_states is None:
-            logger.warn("No current joint positions. Will play animation starting from first keyframe.")
-
         # Load keyframe positions into the splines
         current_point_time = 0.0
         for keyframe in self.anim.keyframes:
@@ -36,15 +32,14 @@ class SplineAnimator:
                 if joint not in self.spline_dict:
                     # If not, create a new spline
                     self.spline_dict[joint] = SmoothSpline()
-                    # Add the current joint position (if available) as the first point
-                    if current_joint_states is not None:
-                        # Get the number of the joint in the joint_states message
-                        joint_index = current_joint_states.name.index(joint)
-                        # Add the current joint position as the point before the first keyframe
-                        self.spline_dict[joint].add_point(
-                            current_point_time - keyframe.duration,
-                            math.degrees(current_joint_states.position[joint_index]),
-                        )
+                    # Add the current joint position as the first point
+                    # Get the number of the joint in the joint_states message
+                    joint_index = current_joint_states.name.index(joint)
+                    # Add the current joint position as the point before the first keyframe
+                    self.spline_dict[joint].add_point(
+                        current_point_time - keyframe.duration,
+                        math.degrees(current_joint_states.position[joint_index]),
+                    )
                 # Add the keyframe position as the next point
                 self.spline_dict[joint].add_point(current_point_time, keyframe.goals[joint])
                 # Add a second point if we want to hold the position for a while
