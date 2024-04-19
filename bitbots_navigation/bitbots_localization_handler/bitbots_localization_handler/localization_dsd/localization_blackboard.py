@@ -76,7 +76,7 @@ class LocalizationBlackboard:
             return False
         buffer = np.array(self.accel_buffer)
         mean = np.mean(buffer[..., 2])
-        G = 9.81
-        absolute_diff = abs(G - mean)
+        g = 9.81
+        absolute_diff = abs(g - mean)
 
         return absolute_diff > 0.9
