@@ -152,7 +152,7 @@ $IsPenalized
                     NO --> @Stand + duration:0.1 + r:false, @DeactivateHCM + r:false, @LookForward + r:false, @PlayAnimationInitInSim + r:false, @GetWalkready + r:false, @SearchBall + r:false, @PlayAnimationGoalieArms + r:false, @Stand
             ELSE --> #StandAndLook
         FINISHED --> $CurrentScore
-            AHEAD --> @Stand + duration:0.5 + r:false, @PlayAnimationCheering + r:false, @Speak + text:"BitBots BitBots BitBots", @LookForward, @Stand
+            AHEAD --> @Stand + duration:0.5 + r:false, @PlayAnimationCheering + r:false, @Speak + text:Wooooooohooooooo_We_have_won, @LookForward, @Stand
             ELSE --> #Init
         PLAYING --> $SecondaryStateDecider
             PENALTYSHOOT --> #PenaltyShootoutBehavior
