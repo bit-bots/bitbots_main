@@ -64,7 +64,7 @@ class LocalizationBlackboard:
 
     def _callback_robot_control_state(self, msg: RobotControlState):
         self.robot_control_state = msg.state
-        
+
         # Reset pickup buffer if we fall down
         if self.robot_control_state in [
             RobotControlState.FALLEN,
@@ -98,5 +98,5 @@ class LocalizationBlackboard:
         buffer_long = np.array(self.pickup_accel_buffer_long)
         mean_long = np.mean(buffer_long[..., 2])
         absolute_diff = abs(mean_long - mean)
-        
+
         return absolute_diff > 1.0
