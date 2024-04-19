@@ -67,11 +67,16 @@ class LocalizationBlackboard:
     def _callback_imu(self, msg: Imu):
         self.accel = numpify(msg.linear_acceleration)
         self.accel_buffer.append(self.accel)
-        if len(self.accel_buffer) > 100:  # todo tune buffer length to distinguish between picked up and fallen in set
+        if len(self.accel_buffer) > 500:
             self.accel_buffer.pop(0)
 
     def picked_up(self) -> bool:
         """Naive check if the robot is picked up. Only works if the robot is standing still."""
+        if len(self.accel_buffer) == 0:
+            return False
         buffer = np.array(self.accel_buffer)
-        std = np.std(buffer[..., 2])
-        return std > 0.1
+        mean = np.mean(buffer[..., 2])
+        G = 9.81
+        absolute_diff = abs(G - mean)
+
+        return absolute_diff > 0.9

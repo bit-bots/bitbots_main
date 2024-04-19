@@ -46,7 +46,9 @@ def init(node: Node):
         1,
         callback_group=ReentrantCallbackGroup(),
     )
-    node.create_subscription(Imu, "imu", blackboard._callback_imu, 1, callback_group=MutuallyExclusiveCallbackGroup())
+    node.create_subscription(
+        Imu, "/imu/data", blackboard._callback_imu, 1, callback_group=MutuallyExclusiveCallbackGroup()
+    )
 
     return dsd
 
