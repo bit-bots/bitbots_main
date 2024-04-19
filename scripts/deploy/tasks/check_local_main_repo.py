@@ -39,20 +39,20 @@ class CheckLocalMainRepoTask(AbstractTask):
         """
         commit_hash: str = self._get_commit_hash()
         commit_name: str = self._get_friendly_commit_name(commit_hash)
-        if self._check_dirty():
-            self.warning_reasons.append("The local main repository is dirty (uncommitted changes).")
-        if not self._check_branch_main():
-            self.warning_reasons.append("The local main repository is not on the main branch.")
-        if self._check_ahead_behind():
-            self.warning_reasons.append("The local main repository is ahead or behind of the remote main repository.")
 
-        if not self.warning_reasons:
+        # Run checks which collect warnings
+        self._check_dirty()
+        self._check_branch_main()
+        self._check_ahead_behind()
+
+        # Display results
+        if not self.warning_reasons:  # No warnings = Success
             print_success(
                 f"Current commit: [bold]{commit_name}[default] ({commit_hash[:8]})\nYour local main repository is clean and up-to-date."
             )
             group_result = GroupResult()
             group_result._successes = {connection: Result(connection=connection) for connection in connections}
-        else:
+        else:  # Warnings = Failure
             warnings: str = ""
             for i, warning in enumerate(self.warning_reasons):
                 warnings += f"{i+1}. {warning}\n"
@@ -195,7 +195,9 @@ class CheckLocalMainRepoTask(AbstractTask):
         """
         print_debug("Checking if the main repository is dirty.")
         dirty: bool = self.repo.is_dirty(untracked_files=True)
-        print_debug(f"Main repository is dirty?: {dirty}.")
+        if dirty:
+            print_debug("Main repository is dirty!.")
+            self.warning_reasons.append("The local main repository is dirty (uncommitted changes).")
         return dirty
 
     def _check_branch_main(self) -> bool:
@@ -210,7 +212,10 @@ class CheckLocalMainRepoTask(AbstractTask):
         except TypeError:
             return False
         print_debug(f"Main repository is on branch: '{active_branch.name}'.")
-        return active_branch.name == "main"
+        branch_is_main: bool = active_branch.name == "main"
+        if not branch_is_main:
+            self.warning_reasons.append("The local main repository is not on the main branch.")
+        return branch_is_main
 
     def _check_ahead_behind(self) -> bool:
         """
