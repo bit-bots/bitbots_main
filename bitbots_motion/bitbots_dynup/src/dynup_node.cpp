@@ -8,6 +8,8 @@ DynupNode::DynupNode(const std::string &ns, std::vector<rclcpp::Parameter> param
                              .allow_undeclared_parameters(true)
                              .parameter_overrides(parameters)
                              .automatically_declare_parameters_from_overrides(true)),
+      param_listener_(get_node_parameters_interface()),
+      config_(param_listener_.get_params()),
       engine_(SharedPtr(this)),
       stabilizer_(ns),
       visualizer_("debug/dynup", SharedPtr(this)),
@@ -190,14 +192,11 @@ void DynupNode::jointStateCallback(const sensor_msgs::msg::JointState::SharedPtr
 void DynupNode::imuCallback(const sensor_msgs::msg::Imu::SharedPtr msg) { stabilizer_.setImu(msg); }
 
 rcl_interfaces::msg::SetParametersResult DynupNode::onSetParameters(const std::vector<rclcpp::Parameter> &parameters) {
-  auto params = this->get_parameters(param_names_);
-  for (auto &param : params) {
-    params_[param.get_name()] = param;
-  }
+  config_ = param_listener_.get_params();
   engine_rate_ = params_["engine_rate"].get_value<int>();
   debug_ = params_["display_debug"].get_value<bool>();
 
-  engine_.setParams(params_);
+  engine_.setParams(config_.engine);
   stabilizer_.setParams(params_);
   ik_.useStabilizing(params_["stabilizing"].get_value<bool>());
 
@@ -222,6 +221,10 @@ void DynupNode::execute(const std::shared_ptr<DynupGoalHandle> goal_handle) {
   reset();
   last_ros_update_time_ = 0;
   start_time_ = this->get_clock()->now().seconds();
+
+  config_ = param_listener_.get_params();
+  // Copy engine params to engine
+  engine_.setParams(config_.engine);
 
   bitbots_utils::wait_for_tf(this->get_logger(), this->get_clock(), this->tf_buffer_.get(),
                              {base_link_frame_, r_sole_frame_, l_sole_frame_, r_wrist_frame_, l_wrist_frame_},

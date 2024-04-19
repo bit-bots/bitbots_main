@@ -32,6 +32,7 @@
 #include "bitbots_dynup/dynup_ik.hpp"
 #include "bitbots_dynup/dynup_stabilizer.hpp"
 #include "bitbots_dynup/visualizer.hpp"
+#include "bitbots_dynup_parameters.hpp"
 #include "bitbots_msgs/action/dynup.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
 
@@ -99,6 +100,11 @@ class DynupNode : public rclcpp::Node {
   rclcpp_action::Server<DynupGoal>::SharedPtr action_server_;
 
   OnSetParametersCallbackHandle::SharedPtr callback_handle_;
+
+  // Declare parameter listener and struct from the generate_parameter_library
+  dynup::ParamListener param_listener_;
+  // Datastructure to hold all parameters, which is build from the schema in the 'parameters.yaml'
+  dynup::Params config_;
 
   DynupEngine engine_;
   Stabilizer stabilizer_;
