@@ -344,13 +344,30 @@ void Localization::getMotion() {
     double time_delta = rclcpp::Time(transformStampedNow.header.stamp).seconds() -
                         rclcpp::Time(previousOdomTransform_.header.stamp).seconds();
 
-    // Check if robot moved
+    // Check if we already applied the motion for this time step
     if (time_delta > 0) {
-      robot_moved = linear_movement_.x / time_delta >= config_.misc.min_motion_linear or
-                    linear_movement_.y / time_delta >= config_.misc.min_motion_linear or
-                    rotational_movement_.z / time_delta >= config_.misc.min_motion_angular;
+      // Calculate normalized motion (motion per second)
+      auto linear_movement_normalized_x = linear_movement_.x / time_delta;
+      auto linear_movement_normalized_y = linear_movement_.y / time_delta;
+      auto rotational_movement_normalized_z = rotational_movement_.z / time_delta;
+
+      // Check if the robot moved an unreasonable amount and drop the motion if it did
+      if (std::abs(linear_movement_normalized_x) > config_.misc.max_motion_linear or
+          std::abs(linear_movement_normalized_y) > config_.misc.max_motion_linear or
+          std::abs(std::remainder(rotational_movement_normalized_z, 2 * M_PI)) > config_.misc.max_motion_angular) {
+        rotational_movement_.z = 0;
+        linear_movement_.x = 0;
+        linear_movement_.y = 0;
+        RCLCPP_WARN(this->get_logger(), "Robot moved an unreasonable amount, dropping motion.");
+      }
+
+      // Check if robot moved
+      robot_moved = linear_movement_normalized_x >= config_.misc.min_motion_linear or
+                    linear_movement_normalized_y >= config_.misc.min_motion_linear or
+                    rotational_movement_normalized_z >= config_.misc.min_motion_angular;
     } else {
-      RCLCPP_WARN(this->get_logger(), "Time step delta of zero encountered! This should not happen!");
+      RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 1000,
+                           "Time step delta of zero encountered! Odometry is unavailable.");
       robot_moved = false;
     }
 
