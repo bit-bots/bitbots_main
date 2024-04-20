@@ -47,7 +47,7 @@ $ConfigRole
     ELSE --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @Stand + duration:%body.ready_wait_time, @AvoidBallActive, @GoToRolePosition
 
 #GoalieBehavior
-$ClosestToBall + use_time_to_ball:true
+$ClosestToBall 
     NO --> $BallInOwnPercent + p:40
         YES --> @ChangeAction + action:positioning, @AvoidBallActive, @LookAtFieldFeatures, @GoToBlockPosition
         NO --> #RolePositionWithPause
@@ -55,7 +55,7 @@ $ClosestToBall + use_time_to_ball:true
     
 #StrikerRole
 $GoalieHandlingBall
-    YES --> @ChangeAction + action:positioning, @AvoidBallActive, @LookAtFieldFeatures, @GoToPassAcceptPosition //don't go too far back
+    YES --> @ChangeAction + action:positioning, @AvoidBallActive, @LookAtFieldFeatures, @GoToDefensePosition //quick fix for playing with to robots during GO
     NO --> #KickWithAvoidance
 
 #DefensePositioning
