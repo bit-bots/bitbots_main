@@ -80,8 +80,11 @@ class InitPoseAfterFall(AbstractInitialize):
         # Calculate the angle of the robot after the fall by adding the yaw difference during the fall
         # (estimated by the IMU) to the last known localization yaw
         esimated_angle = (
-            self.blackboard.get_imu_yaw() - self.blackboard.imu_yaw_before_fall + self.blackboard.get_localization_yaw()
-        + math.tau) % math.tau
+            self.blackboard.get_imu_yaw()
+            - self.blackboard.imu_yaw_before_fall
+            + self.blackboard.get_localization_yaw()
+            + math.tau
+        ) % math.tau
 
         # Tell the localization to reset to the last position and the estimated angle
         self.blackboard.reset_filter_proxy.call_async(
