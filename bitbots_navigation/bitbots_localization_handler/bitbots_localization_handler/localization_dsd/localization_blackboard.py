@@ -112,10 +112,10 @@ class LocalizationBlackboard:
     def get_imu_yaw(self) -> float:
         """Returns the current yaw of the IMU (this is not an absolute measurement!!! It drifts over time!)"""
 
-        return quat2euler(xyzw2wxyz(numpify(self.imu_orientation)), axes="szxy")[2]
+        return quat2euler(xyzw2wxyz(numpify(self.imu_orientation)), axes="szxy")[0]
 
     def get_localization_yaw(self) -> float:
         """Returns the current yaw of the robot according to the localization. 0 is the x-axis of the field."""
         if self.robot_pose is None:
             return 0.0
-        return quat2euler(xyzw2wxyz(numpify(self.robot_pose.pose.pose.orientation)), axes="szxy")[2]
+        return quat2euler(xyzw2wxyz(numpify(self.robot_pose.pose.pose.orientation)), axes="szxy")[0]
