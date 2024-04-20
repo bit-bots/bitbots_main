@@ -1,6 +1,6 @@
 bitbots_localization:
   misc:
-    init_mode: 
+    init_mode:
       type: int
       description: "Initialization mode for the filters particle distribution"
       validation:
@@ -14,12 +14,22 @@ bitbots_localization:
       type: double
       description: "Minimum linear motion (m/s) which is considered to be a movement. This is relevant if we want to deactivate the filter if no movement is detected"
       validation:
-        bounds<>: [0.0, 1.0]
+        gt_eq<>: [0.0]
+    max_motion_linear:
+      type: double
+      description: "Maximum linear motion (m/s) which is considered to be a movement. Updates larger than this are deemed unrealistic and are ignored"
+      validation:
+        gt_eq<>: [0.0]
     min_motion_angular:
       type: double
       description: "Minimum angular motion (rad/s) which is considered to be a movement. This is relevant if we want to deactivate the filter if no movement is detected"
       validation:
-        bounds<>: [0.0, 1.0]
+        gt_eq<>: [0.0]
+    max_motion_angular:
+      type: double
+      description: "Maximum angular motion (rad/s) which is considered to be a movement. Updates larger than this are deemed unrealistic and are ignored"
+      validation:
+        gt_eq<>: [0.0]
     filter_only_with_motion:
       type: bool
       description: "If true, the filter is only active if a movement is detected"
@@ -171,7 +181,7 @@ bitbots_localization:
         validation:
           bounds<>: [-5.0, 5.0]
     scoring:
-      lines: 
+      lines:
         factor:
           type: double
           description: "Weighing how much the line information is considered for the scoring of a particle"
