@@ -17,7 +17,7 @@ dynup:
     # Back
     arms_angle_back: 120.36
     com_shift_1: 0.051
-    com_shift_2: 0.0
+    com_shift_2: 0.04
     foot_angle: 51.76
     hands_behind_back_x: 0.162
     hands_behind_back_z: 0.183
@@ -26,8 +26,8 @@ dynup:
     time_full_squat_hands: 0.172
     time_full_squat_legs: 0.196
     time_legs_close: 0.068
-    trunk_height_back: 0.2  # if you decrease this, the robot's ass collides its ankles
-    trunk_overshoot_angle_back: 5.95
+    trunk_height_back: 0.189  # if you decrease this, the robot's ass collides its ankles
+    trunk_overshoot_angle_back: 8.95
     wait_in_squat_back: 1.0
 
     # Front
@@ -48,7 +48,7 @@ dynup:
 
     time_walkready: 2.0
     # Rise
-    rise_time: 1.0
+    rise_time: 3.0
 
     # Descend
     descend_time: 0.25

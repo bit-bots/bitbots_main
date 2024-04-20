@@ -769,15 +769,11 @@ bool DynupEngine::isHeadZero() {
                         params_["time_foot_close"].get_value<double>() +
                         params_["time_hands_front"].get_value<double>() +
                         params_["time_foot_ground_front"].get_value<double>() +
-                        params_["time_torso_45"].get_value<double>() + params_["time_to_squat"].get_value<double>() +
-                        params_["wait_in_squat_front"].get_value<double>() +
-                        0.5 * params_["rise_time"].get_value<double>()) ||
+                        params_["time_torso_45"].get_value<double>() + params_["time_to_squat"].get_value<double>()) ||
           (direction_ == 0 && time_ >= params_["time_legs_close"].get_value<double>() +
                                            params_["time_foot_ground_back"].get_value<double>() +
                                            params_["time_full_squat_hands"].get_value<double>() +
-                                           params_["time_full_squat_legs"].get_value<double>() +
-                                           params_["wait_in_squat_back"].get_value<double>() +
-                                           0.5 * params_["rise_time"].get_value<double>()) ||
+                                           params_["time_full_squat_legs"].get_value<double>()) ||
           (direction_ == 2) || (direction_ == 3));
 }
 
