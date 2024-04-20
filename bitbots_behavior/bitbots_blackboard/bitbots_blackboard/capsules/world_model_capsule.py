@@ -4,6 +4,7 @@ WorldModelCapsule
 
 Provides information about the world model.
 """
+
 import math
 from typing import TYPE_CHECKING, Dict, Optional, Tuple
 
@@ -299,7 +300,7 @@ class WorldModelCapsule:
         if reset_ball_filter:  # Reset the ball filter
             result: Trigger.Response = self.reset_ball_filter.call(Trigger.Request())
             if result.success:
-                self._blackboard.node.get_logger().info(f"Received message from ball filter: '{result.message}'")
+                self._blackboard.node.get_logger().debug(f"Received message from ball filter: '{result.message}'")
             else:
                 self._blackboard.node.get_logger().warn(f"Ball filter reset failed with: '{result.message}'")
 
