@@ -2,8 +2,9 @@ import numpy as np
 import tf2_ros as tf2
 from bitbots_blackboard.capsules.game_status_capsule import GameStatusCapsule
 from bitbots_localization.srv import ResetFilter, SetPaused
+from bitbots_utils.transforms import quat2euler, xyzw2wxyz
 from bitbots_utils.utils import get_parameters_from_other_node
-from geometry_msgs.msg import PoseWithCovarianceStamped
+from geometry_msgs.msg import PoseWithCovarianceStamped, Quaternion
 from rclpy.duration import Duration
 from rclpy.node import Node
 from ros2_numpy import numpify
@@ -50,8 +51,14 @@ class LocalizationBlackboard:
         # Was the last robot state one of the get up states?
         self.last_state_get_up = False
 
+        # IMU
+        self.accel = np.array([0.0, 0.0, 0.0])
+        self.imu_orientation = Quaternion(w=1.0)
+
+        # Falling odometry / imu interpolation during falls
+        self.imu_yaw_before_fall: float = 0.0
+
         # Picked up
-        self.accel = np.array([0, 0, 0])
         self.pickup_accel_buffer = []
         self.pickup_accel_buffer_long = []
 
@@ -76,6 +83,7 @@ class LocalizationBlackboard:
 
     def _callback_imu(self, msg: Imu):
         self.accel = numpify(msg.linear_acceleration)
+        self.imu_orientation = msg.orientation
 
         if self.robot_control_state is not None and self.robot_control_state not in [
             RobotControlState.FALLEN,
@@ -100,3 +108,14 @@ class LocalizationBlackboard:
         absolute_diff = abs(mean_long - mean)
 
         return absolute_diff > 1.0
+
+    def get_imu_yaw(self) -> float:
+        """Returns the current yaw of the IMU (this is not an absolute measurement!!! It drifts over time!)"""
+
+        return quat2euler(xyzw2wxyz(numpify(self.imu_orientation)), axes="szxy")[0]
+
+    def get_localization_yaw(self) -> float:
+        """Returns the current yaw of the robot according to the localization. 0 is the x-axis of the field."""
+        if self.robot_pose is None:
+            return 0.0
+        return quat2euler(xyzw2wxyz(numpify(self.robot_pose.pose.pose.orientation)), axes="szxy")[0]
