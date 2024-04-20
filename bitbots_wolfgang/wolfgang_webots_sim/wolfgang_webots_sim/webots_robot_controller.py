@@ -636,7 +636,7 @@ class RobotController:
                 self.ros_node.get_parameter("camera_optical_frame").get_parameter_value().string_value
             )
             self.head_imu_frame = self.ros_node.get_parameter("head_imu_frame").get_parameter_value().string_value
-            self.pub_js = self.ros_node.create_publisher(JointState, base_ns + "joint_states", 1)
+            self.pub_js = self.ros_node.create_publisher(JointState, base_ns + "joint_states_unmodified", 1)
             self.pub_imu = self.ros_node.create_publisher(Imu, base_ns + "imu/data_raw", 1)
 
             self.pub_imu_head = self.ros_node.create_publisher(Imu, base_ns + "imu_head/data", 1)

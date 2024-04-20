@@ -183,7 +183,7 @@ void RobotPoseObservationModel::set_measurement_line_mask(sm::msg::Image measure
   // RCLCPP_INFO_STREAM(node_->get_logger(), "image sum: " << cv::sum(image));
   at::TensorOptions options(at::ScalarType::Byte);
   std::vector<int64_t> sizes = {1, 1, 192, 256};
-  at::Tensor tensor_image = torch::from_blob(image_->image.data, at::IntList(sizes), options);
+  at::Tensor tensor_image = torch::from_blob(image.data, at::IntList(sizes), options);
   // tensor_image = tensor_image.transpose(2, 3);  // adapt to pytorch format
 
   last_measurement_line_mask_ = tensor_image.to(at::kFloat) / 255.0;

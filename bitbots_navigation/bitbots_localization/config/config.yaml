@@ -6,7 +6,9 @@ bitbots_localization:
       min_motion_linear: 0.0
       min_motion_angular: 0.0
       filter_only_with_motion: false
-      network_model_path: '/homes/15guelden/gits/bitbots_deep_localization/runs/260-true-star/latest_traced.pth'
+      #network_model_path: '/homes/15guelden/gits/bitbots_deep_localization/runs/265-swift-disco/latest_traced.pth'
+      network_model_path: '/homes/15guelden/gits/bitbots_deep_localization/runs/269-swept-silence/latest_traced.pth'
+      #network_model_path: '/homes/15guelden/gits/bitbots_deep_localization/runs/270-cosmic-lion/latest_traced.pth'
     ros:
       line_pointcloud_topic: 'line_mask_relative_pc'
       line_mask_topic: 'line_mask_in_image'
