@@ -55,87 +55,26 @@ void RobotPoseObservationModel::set_head_tilt(double head_tilt) { head_tilt_ = h
 
 std::vector<double> RobotPoseObservationModel::measure_bulk(
     std::vector<particle_filter::Particle<RobotState> *> particle_vector) {
-  /*
-  torch::Tensor state_tensor;
-  particle_vector[0]->getState().convertParticleListToTorchTensor(particle_vector, state_tensor, false, true);
-
-
-  auto request = std::make_shared<bitbots_localization::srv::GetMeasurement::Request>();
-  std::vector<float> x_values, y_values, theta_values;
-  for(auto particle : particle_vector){
-    x_values.push_back((float) particle->getState().getXPos());
-    y_values.push_back((float) particle->getState().getYPos());
-    theta_values.push_back((float) particle->getState().getTheta());
-  }
-  request->particle_x = x_values;
-  request->particle_y = y_values;
-  request->particle_yaw = theta_values;
-  std::vector<double> weight_vector;
-  auto result = client_->async_send_request(request);
-  while(rclcpp::ok() && result.wait_for(std::chrono::seconds(0)) != std::future_status::ready){
-    rclcpp::sleep_for(std::chrono::milliseconds(10));
-  }
-  std::vector<float> rx, ry, ryaw;
-  rx = result.get()->particle_x_dist;
-  ry = result.get()->particle_y_dist;
-  ryaw = result.get()->particle_yaw_dist;
-  for(long unsigned int i=0; i<particle_vector.size(); i++){
-    weight_vector.push_back((double)1.0/(rx[i] + ry[i] + ryaw[i]));
-  }
-  return weight_vector;
-  */
-  // RCLCPP_INFO_STREAM(node_->get_logger(), "measure_bulk called");
   torch::Device device(torch::kCUDA);
-
-  // TODO: create LocalizationMap msg
-
   std::vector<torch::jit::IValue> inputs;
   last_measurement_line_mask_ = last_measurement_line_mask_.to(at::kFloat);
-
-  torch::save(last_measurement_line_mask_, "/homes/15guelden/last_measurement_line_mask.pt");
-  // RCLCPP_INFO_STREAM(node_->get_logger(), "last_measurement_line_mask_: " << last_measurement_line_mask_.sizes());
   last_measurement_line_mask_ = last_measurement_line_mask_.to(device);
-  inputs.push_back(last_measurement_line_mask_);  //.to(device));
+  inputs.push_back(last_measurement_line_mask_);
   RCLCPP_INFO_STREAM(node_->get_logger(), "last_measurement_line_mask_: " << last_measurement_line_mask_.sizes());
   torch::Tensor state_tensor;
   particle_vector[0]->getState().convertParticleListToTorchTensor(particle_vector, state_tensor, false, true, head_pan_,
                                                                   head_tilt_);
   state_tensor = state_tensor.to(at::kFloat).transpose(0, 1);
   state_tensor = state_tensor.reshape({1, 8, -1});
-  // RCLCPP_INFO_STREAM(node_->get_logger(), "state_tensor_: " << state_tensor);
-  // auto pickled_s = torch::pickle_save(state_tensor);
-  // std::ofstream fout_s("/homes/15guelden/state.pt", std::ios::out | std::ios::binary);
-  // fout_s.write(pickled_s.data(), pickled_s.size());
-  // fout_s.close();
-
-  // auto pickled_i = torch::pickle_save(last_measurement_line_mask_);
-  // std::ofstream fout_i("/homes/15guelden/img.pt", std::ios::out | std::ios::binary);
-  // fout_i.write(pickled_i.data(), pickled_i.size());
-  // fout_i.close();
-
   state_tensor = state_tensor.to(device);
-  inputs.push_back(state_tensor);  //.to(device));
-  // RCLCPP_INFO_STREAM(node_->get_logger(), "state_tensor: " << state_tensor.sizes());
-  at::Tensor out_tensor = mask_rating_module_.forward(inputs).toTensor();  // TODO: to cpu or gpu and stuff and dtype
-  // auto pickled = torch::pickle_save(out_tensor);
-  // std::ofstream fout("/homes/15guelden/out_tensor.pt", std::ios::out | std::ios::binary);
-  // fout.write(pickled.data(), pickled.size());
-  // fout.close();
-  // std::exit(0);
-  //  RCLCPP_INFO_STREAM(node_->get_logger(), "an");
+  inputs.push_back(state_tensor);
+  at::Tensor out_tensor = mask_rating_module_.forward(inputs).toTensor();
   out_tensor = out_tensor.toType(at::kDouble).to(torch::kCPU);
-  // std::vector<double> out_vector(out_tensor.data_ptr<double>(), out_tensor.data_ptr<double>() + out_tensor.numel());
-  // // TODO: make sure dtype fits
-  // RCLCPP_ERROR_STREAM(node_->get_logger(), "raw: " << out_tensor);
   out_tensor = torch::abs(out_tensor);
-  // RCLCPP_ERROR_STREAM(node_->get_logger(), "abs: " << out_tensor);
   out_tensor = torch::sum(out_tensor, 1);
-  // RCLCPP_ERROR_STREAM(node_->get_logger(), "sum: " << out_tensor);
   out_tensor = 1 / out_tensor;
-  // RCLCPP_ERROR_STREAM(node_->get_logger(), "out_tensor: " << out_tensor);
   std::vector<double> out_vector =
       std::vector<double>(out_tensor.data_ptr<double>(), out_tensor.data_ptr<double>() + out_tensor.numel());
-  // RCLCPP_ERROR_STREAM(node_->get_logger(), "out_vector: " << out_vector);
   return out_vector;
 }
 
