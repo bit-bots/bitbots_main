@@ -5,7 +5,7 @@ In order to adjust the calibration of the visualization you can change offset_x,
 ```rl bitbots_bringup teamplayer.launch game_controller:=false behavior:=false```
 2.) Start robot remote control.
 ```rr bitbots_teleop teleop_keyboard.py```
-3.) Press key 1 for the right head mode.
+3.) Press key 1 for the look around head mode.
 4.) Start rviz2.
 ```rviz2```
 5.) Open config file in bitbots_misc > bitbots_extrinsic_calibration > config
