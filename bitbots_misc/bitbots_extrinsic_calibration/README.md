@@ -1,14 +1,21 @@
-# How to extrinsic Calibration
+# How to extrinsic calibration
 In order to adjust the calibration of the visualization you can change offset_x, offset_y and offset_z which are all parameters for the roll, pitch and jaw respectively.
 
 1.) Start teamplayer.
+
 ```rl bitbots_bringup teamplayer.launch game_controller:=false behavior:=false```
+
 2.) Start robot remote control.
+
 ```rr bitbots_teleop teleop_keyboard.py```
+
 3.) Press key 1 for the look around head mode.
+
 4.) Start rviz2.
 ```rviz2```
+
 5.) Open config file in bitbots_misc > bitbots_extrinsic_calibration > config
+
 6.) Open rqt and navigate to Plugins > Configurations > Dynamic Reconfigure where you can configure the parameters.
 
 If you change the calibration first change all parameters to 0.
