@@ -71,6 +71,7 @@ class HcmBlackboard:
         self.animation_name_falling_right: str = self.node.get_parameter("animations.falling_right").value
         self.animation_name_turning_back_left: str = self.node.get_parameter("animations.turning_back_left").value
         self.animation_name_turning_back_right: str = self.node.get_parameter("animations.turning_back_right").value
+        self.animation_name_init: str = self.node.get_parameter("animations.init").value
 
         # Teaching State
         self.teaching_mode_state: int = SetTeachingMode.Request.OFF

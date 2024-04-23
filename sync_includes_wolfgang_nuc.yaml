@@ -70,3 +70,4 @@ exclude:
     - ".idea"
     - ".vscode"
     - "__pycache__"
+    - "bitbots_utils/config/game_settings.yaml"

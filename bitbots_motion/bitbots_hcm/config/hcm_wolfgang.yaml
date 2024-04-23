@@ -19,6 +19,7 @@
       falling_right: "falling_right"
       turning_back_left: "turning_back_left"
       turning_back_right: "turning_back_right"
+      init: "init"
 
     # Falling
     stand_up_active: true # Enables the robot to stand up automatically

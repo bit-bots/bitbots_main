@@ -24,6 +24,9 @@ from bitbots_msgs.msg import Animation as AnimationMsg
 from bitbots_msgs.msg import JointCommand
 from bitbots_msgs.srv import AddAnimation
 
+# A hashable definition for the UUID of the goals
+UUID = tuple[int]
+
 
 class AnimationNode(Node):
     """This node provides an action server for playing animations."""
@@ -36,7 +39,8 @@ class AnimationNode(Node):
         self.current_joint_states: Optional[JointState] = None
         self.current_animation = None
         self.animation_cache: dict[str, Animation] = {}
-        self.animation_running: bool = False
+        self.running_goals: set[UUID] = set()
+        self.goals_to_abort: set[UUID] = set()
 
         # Get robot type and create resource manager
         self.declare_parameter("robot_type", "wolfgang")
@@ -86,9 +90,16 @@ class AnimationNode(Node):
             return GoalResponse.REJECT
 
         # Check if another animation is currently running
-        if self.animation_running:
-            self.get_logger().error("Another animation is currently running. Rejecting...")
-            return GoalResponse.REJECT
+        if len(self.running_goals):
+            if request.hcm:
+                self.get_logger().warn(
+                    "Another animation is currently running, but it is from the HCM. Aborting the old one..."
+                )
+                # Cancel the running goals
+                self.goals_to_abort = self.goals_to_abort | self.running_goals
+            else:
+                self.get_logger().error("Another animation is currently running. Rejecting...")
+                return GoalResponse.REJECT
 
         # Check if bounds are valid
         if request.bounds:
@@ -113,13 +124,24 @@ class AnimationNode(Node):
     def execute_cb(self, goal: ServerGoalHandle) -> PlayAnimation.Result:
         """This is called, when the action should be executed."""
 
-        # Store the fact that an animation is running
-        self.animation_running = True
+        # Convert goal id uuid to hashable tuple (custom UUID type)
+        goal_id: UUID = tuple(goal.goal_id.uuid)
+
+        # Store the that the animation is running / the goal is active
+        self.running_goals.add(goal_id)
 
         # Define a function to finish the action and return the resource
         def finish(successful: bool) -> PlayAnimation.Result:
             """This is called when the action is finished."""
-            self.animation_running = False
+            # Remove references to the goal
+            self.running_goals.remove(goal_id)
+            self.goals_to_abort.discard(goal_id)  # We use discard here, because the goal might not be in the set
+            # Set the goal as succeeded or aborted
+            if successful:
+                goal.succeed()
+            else:
+                goal.abort()
+            # Create the appropriate result object
             return PlayAnimation.Result(successful=successful)
 
         # Set type for request
@@ -135,7 +157,6 @@ class AnimationNode(Node):
             # Wait for HCM to be up and running
             if not self.hcm_animation_mode.wait_for_service(timeout_sec=5.0):
                 self.get_logger().error("HCM not available. Aborting animation...")
-                goal.abort()
                 return finish(successful=False)
 
             # Send request to make the HCM to go into animation play mode
@@ -143,10 +164,13 @@ class AnimationNode(Node):
             while rclpy.ok() and (not self.hcm_animation_mode.call(SetBool.Request(data=True)).success):
                 if num_tries >= 10:
                     self.get_logger().error("Failed to request HCM to go into animation play mode")
-                    goal.abort()
                     return finish(successful=False)
                 num_tries += 1
                 self.get_clock().sleep_for(Duration(seconds=0.1))
+
+        # Make sure we have our current joint states
+        while rclpy.ok() and self.current_joint_states is None:
+            self.get_clock().sleep_for(Duration(seconds=0.1))
 
         # Create splines
         animator = SplineAnimator(
@@ -157,7 +181,7 @@ class AnimationNode(Node):
         once = False
 
         # Loop to play the animation
-        while rclpy.ok() and animator:
+        while rclpy.ok() and animator and goal_id not in self.goals_to_abort:
             try:
                 last_time = self.get_clock().now()
 
@@ -183,7 +207,6 @@ class AnimationNode(Node):
 
                     # We give a positive result
                     goal.publish_feedback(PlayAnimation.Feedback(percent_done=100))
-                    goal.succeed()
                     return finish(successful=True)
 
                 self.send_animation(from_hcm=request.hcm, pose=pose, torque=animator.get_torque(t))

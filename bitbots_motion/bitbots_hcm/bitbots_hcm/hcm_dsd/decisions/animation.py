@@ -27,8 +27,6 @@ class PlayingExternalAnimation(AbstractHCMDecisionElement):
         if not self.blackboard.external_animation_running:
             return "FREE"
 
-        self.blackboard.node.get_logger().info(str(self.blackboard.last_animation_goal_time))
-
         # We can safely assume that the last animation start time is set because the animation is running
         # Calculate time since last animation start
         time_delta_since_last_animation_start = (

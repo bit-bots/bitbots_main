@@ -5,6 +5,8 @@ bitbots_localization:
       percentage_best_particles: 50
       min_motion_linear: 0.0
       min_motion_angular: 0.0
+      max_motion_linear: 0.5
+      max_motion_angular: 3.14
       filter_only_with_motion: false
     ros:
       line_pointcloud_topic: 'line_mask_relative_pc'
@@ -36,7 +38,7 @@ bitbots_localization:
         min_weight: 0.01
         particle_reset_weight: 0.1
         out_of_field_weight_decrease: 0.01
-        out_of_field_range: 0.5 
+        out_of_field_range: 0.5
       scoring:
         lines:
           factor: 1.0
@@ -51,7 +53,3 @@ bitbots_localization:
         line_element: 0.01
         goal_element: 0.0
         field_boundary_element: 0.0
-
-
-    
-    

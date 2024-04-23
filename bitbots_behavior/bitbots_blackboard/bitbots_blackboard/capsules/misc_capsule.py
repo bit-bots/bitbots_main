@@ -11,13 +11,14 @@ from rclpy.duration import Duration
 from rclpy.node import Node
 from std_msgs.msg import Bool
 
-from bitbots_msgs.msg import HeadMode, RobotControlState
+from bitbots_msgs.msg import Audio, HeadMode, RobotControlState
 
 
 class MiscCapsule:
     def __init__(self, node: Node):
         self.node = node
         self.head_pub = node.create_publisher(HeadMode, "head_mode", 10)
+        self.speak_pub = node.create_publisher(Audio, "speak", 10)
 
         # Config
         gamestate_settings = get_parameters_from_other_node(

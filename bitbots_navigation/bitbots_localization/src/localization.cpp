@@ -311,8 +311,6 @@ void Localization::updateMeasurements() {
   last_stamp_lines = line_pointcloud_relative_.header.stamp;
   last_stamp_goals = goal_posts_relative_.header.stamp;
   last_stamp_fb_points = fieldboundary_relative_.header.stamp;
-  // Maximum time stamp of the last measurements
-  last_stamp_all_measurements = std::max({last_stamp_lines, last_stamp_goals, last_stamp_fb_points});
 }
 
 void Localization::getMotion() {
@@ -346,13 +344,30 @@ void Localization::getMotion() {
     double time_delta = rclcpp::Time(transformStampedNow.header.stamp).seconds() -
                         rclcpp::Time(previousOdomTransform_.header.stamp).seconds();
 
-    // Check if robot moved
+    // Check if we already applied the motion for this time step
     if (time_delta > 0) {
-      robot_moved = linear_movement_.x / time_delta >= config_.misc.min_motion_linear or
-                    linear_movement_.y / time_delta >= config_.misc.min_motion_linear or
-                    rotational_movement_.z / time_delta >= config_.misc.min_motion_angular;
+      // Calculate normalized motion (motion per second)
+      auto linear_movement_normalized_x = linear_movement_.x / time_delta;
+      auto linear_movement_normalized_y = linear_movement_.y / time_delta;
+      auto rotational_movement_normalized_z = rotational_movement_.z / time_delta;
+
+      // Check if the robot moved an unreasonable amount and drop the motion if it did
+      if (std::abs(linear_movement_normalized_x) > config_.misc.max_motion_linear or
+          std::abs(linear_movement_normalized_y) > config_.misc.max_motion_linear or
+          std::abs(std::remainder(rotational_movement_normalized_z, 2 * M_PI)) > config_.misc.max_motion_angular) {
+        rotational_movement_.z = 0;
+        linear_movement_.x = 0;
+        linear_movement_.y = 0;
+        RCLCPP_WARN(this->get_logger(), "Robot moved an unreasonable amount, dropping motion.");
+      }
+
+      // Check if robot moved
+      robot_moved = linear_movement_normalized_x >= config_.misc.min_motion_linear or
+                    linear_movement_normalized_y >= config_.misc.min_motion_linear or
+                    rotational_movement_normalized_z >= config_.misc.min_motion_angular;
     } else {
-      RCLCPP_WARN(this->get_logger(), "Time step delta of zero encountered! This should not happen!");
+      RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 1000,
+                           "Time step delta of zero encountered! Odometry is unavailable.");
       robot_moved = false;
     }
 
@@ -378,21 +393,10 @@ void Localization::publish_transforms() {
   // Get the transform from the last measurement timestamp until now
   geometry_msgs::msg::TransformStamped odomDuringMeasurement, odomNow;
   try {
-    odomDuringMeasurement = tfBuffer->lookupTransform(config_.ros.odom_frame, config_.ros.base_footprint_frame,
-                                                      last_stamp_all_measurements);
     odomNow = tfBuffer->lookupTransform(config_.ros.odom_frame, config_.ros.base_footprint_frame, rclcpp::Time(0));
   } catch (const tf2::TransformException &ex) {
     RCLCPP_WARN(this->get_logger(), "Could not acquire odom transforms: %s", ex.what());
   }
-
-  // Calculate difference between the two transforms
-  tf2::Transform odomDuringMeasurement_tf2, odomNow_tf2;
-  tf2::fromMsg(odomDuringMeasurement.transform, odomDuringMeasurement_tf2);
-  tf2::fromMsg(odomNow.transform, odomNow_tf2);
-  tf2::Transform odom_diff = odomNow_tf2 * odomDuringMeasurement_tf2.inverse();
-
-  // Apply the transform from the last measurement timestamp until now to the current estimate
-  filter_transform = odom_diff * filter_transform;
 
   // Update estimate_ with the new estimate
   estimate_.setXPos(filter_transform.getOrigin().x());

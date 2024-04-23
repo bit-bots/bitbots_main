@@ -107,6 +107,8 @@ To run the whole setup on a specific robot execute the following in the ansible 
 
   ansible-playbook ./playbooks/setup_robots.yml --ask-become-pass --limit <nuc*>
 
+if you dont have access to the secret git-crypt data you can add ``--skip-tags git_crypt`` to the command.
+
 Ansible will execute the playbook with the ``bitbots`` user on the robots and will ask for its password to be able to utilize ``sudo``.
 
 .. note::

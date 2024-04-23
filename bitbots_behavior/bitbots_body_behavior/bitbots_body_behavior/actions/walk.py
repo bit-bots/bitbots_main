@@ -11,6 +11,10 @@ class WalkForward(AbstractActionElement):
 
     def perform(self, reevaluate=False):
         if self.blackboard.node.get_clock().now() - self.start_time < Duration(seconds=self.time):
+            # Cancel the path planning if it is running
+            self.blackboard.pathfinding.cancel_goal()
+
+            # Publish the walk command
             cmd_vel = Twist()
             cmd_vel.linear.x = 0.2
             self.blackboard.pathfinding.direct_cmd_vel_pub.publish(cmd_vel)
