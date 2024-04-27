@@ -1,17 +1,23 @@
 # This defines an openai gym environment to walk with the wolfgang robot in mujoco.
 
-import os
+import math
 import mujoco
-import gym
+import gymnasium as gym
 import cv2
 from tqdm import tqdm
+import numpy as np
+
+import uuid
+
 
 class WolfgangMujocoEnv(gym.Env):
-    def __init__(self):
+    def __init__(self, render_mode = "human"):
         # Load the model
         self.model = mujoco.MjModel.from_xml_path("/home/florian/Projekt/bitbots/bitbots_main/bitbots_wolfgang/wolfgang_description/urdf/scene.xml")
         self.data = mujoco.MjData(self.model)
-        self.renderer = mujoco.Renderer(self.model, 415, 415)
+        self.renderer = mujoco.Renderer(self.model, 415, 256)
+
+        self.render_mode = render_mode
 
         # Extract joint names from the model (they are non unique!)
         # We do this by reading a null terminated string at the address of the joint name in the joint names buffer
@@ -25,37 +31,54 @@ class WolfgangMujocoEnv(gym.Env):
 
 
         # Define the action space
-        self.action_space = gym.spaces.Box(low=-1, high=1, shape=(20,))
+        self.action_space = gym.spaces.Box(low=-math.pi, high=math.pi, shape=(20,))
         # Define the observation space
-        self.observation_space = gym.spaces.Box(low=-1, high=1, shape=(20,))
+        self.observation_space = gym.spaces.Box(low=-math.pi, high=math.pi, shape=(20,))
 
-    def reset(self):
-        super().reset()
+        self.max_length = 2
+
+        self.name = "WolfgangMujocoEnv-" + str(uuid.uuid4())
+
+    def reset(self, seed=None):
+        super().reset(seed=seed)
 
         # Reset the simulation
         mujoco.mj_resetData(self.model, self.data)
-        return self.data.qpos, self.data.qvel
+        return self._get_obs(), {}
+
+    def _get_obs(self):
+        return self.data.qpos[self.joint_id_observation_start[1]:]
 
     def step(self, action):
 
         # Apply the action
         for i in range(len(action)):
-            self.data.ctrl[i] = action[i]
+            self.data.ctrl[i] = 0.2 * action[i]
 
         # Perform an action
-        mujoco.mj_step(self.model, self.data)
+        for _ in range(10):
+            mujoco.mj_step(self.model, self.data)
 
-        # Get the observation
-        observation = self.data.qpos[self.joint_id_observation_start[1]:]
+        # Debugging
+        # Render
+        self.renderer.update_scene(self.data)
+        img = self.renderer.render()
+        cv2.imshow(self.name, cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
+        cv2.waitKey(1)
 
         # Calculate the reward
-        reward = self.data.xpos[1][2]
-        return observation, reward, False, {}
+        reward = self.data.xpos[1][0]
+
+        return self._get_obs(), reward, self.data.time >= self.max_length, False, {}
 
     def render(self):
         # Render the simulation
         self.renderer.update_scene(self.data)
-        return self.renderer.render()
+        img = self.renderer.render()
+        if self.render_mode == "human":
+            cv2.imshow("Wolfgang", cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
+            cv2.waitKey(1)
+        return img
 
     def close(self):
         super().close()
