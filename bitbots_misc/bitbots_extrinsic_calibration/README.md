@@ -20,20 +20,19 @@ The camera parameters change the camera direction and the IMU parameters change 
 
 6. Open rqt and navigate to **Plugins &rarr; Configurations &rarr; Dynamic Reconfigure** where you can configure the parameters.
 
-<span style="color:red;"> If you change the calibration first change all parameters to 0.
+If you change the calibration first change all parameters to 0.
 Then start with the adjustment of the IMU parameters.
-</span>
 
 ## IMU parameters
 * change if the lines are more far away on one side / to the front
 * has a right-handed coordinate system
-<p align="center">
-  <img src="bitbots_misc/bitbots_extrinsic_calibration/README_images/right_handed_coordinate_system.png" width="350" alt="right-handed coordinate system">
+<p>
+  <img src="README_images/right_handed_coordinate_system.png" width="300" alt="right-handed coordinate system">
 </p>
 
 ## camera parameters
 * change if its not aligned equally on both sides / front
 * has a camera coordinate system
-<p align="center">
-  <img src="bitbots_misc/bitbots_extrinsic_calibration/README_images/camera_coordinate_system.png" width="350" alt="camera coordinate system">
+<p>
+  <img src="README_images/camera_coordinate_system.png" alt="camera coordinate system">
 </p>
