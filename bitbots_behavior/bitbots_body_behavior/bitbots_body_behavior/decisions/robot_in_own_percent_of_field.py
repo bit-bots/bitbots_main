@@ -15,7 +15,7 @@ class RobotInOwnPercentOfField(AbstractDecisionElement):
         :param reevaluate:
         :return:
         """
-        robot_position = self.blackboard.world_model.get_current_position(self)
+        robot_position = self.blackboard.world_model.get_current_position()
         # calculate the x value of the boundary of the defensive area
         defensive_x = ((self.percent / 100.0) * self.blackboard.world_model.field_length) - (
             self.blackboard.world_model.field_length / 2.0
