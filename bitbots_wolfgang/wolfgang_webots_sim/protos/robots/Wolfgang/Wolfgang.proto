@@ -1939,10 +1939,18 @@ PROTO Wolfgang [
                                             ]
                                           }
                                           Transform {
-                                            translation -0.145000 0.085000 -0.039500
+                                            translation 0.0145000 0.05500 -0.034
                                             rotation -0.000000 -0.000000 -1.000000 1.570800
                                             children [
-                                              Wolfgang_foot_printed_rightMesh {
+                                              Shape{
+                                                appearance Appearance{
+                                                  material Material{
+                                                    diffuseColor 0.7 0.45 0.0
+                                                  }
+                                                }
+                                                geometry Box {
+                                                    size 0.12000 0.106000 0.0100
+                                                }
                                               }
                                             ]
                                           }
@@ -2132,6 +2140,38 @@ PROTO Wolfgang [
                                                 ]
                                               }
                                             %{ end }%
+                                          }
+                                          DEF FlexiJointL HingeJoint {
+                                            jointParameters HingeJointParameters {
+                                              anchor 0.0 0.115 -0.034
+                                              axis 1 0 0
+                                              springConstant 10
+                                              minStop 0
+                                              maxStop 0.5
+                                            }
+                                            endPoint DEF l_flexi Solid {
+                                              translation 0.0145 0.145 -0.034
+                                              rotation 0.0 0.0 -1.0 1.5708
+                                              children [
+                                                Shape {
+                                                  appearance Appearance {
+                                                    material Material {
+                                                      diffuseColor 0.9 0.0 0.0
+                                                    }
+                                                  }
+                                                  geometry Box {
+                                                    size 0.06 0.106 0.01
+                                                  }
+                                                }
+                                              ]
+                                              boundingObject Box {
+                                                size 0.06 0.106 0.01
+                                              }
+                                              physics Physics {
+                                                density -1
+                                                mass 0.1
+                                              }
+                                            }
                                           }
                                         ]
                                         name "r_foot [foot]"
