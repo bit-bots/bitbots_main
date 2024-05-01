@@ -2156,24 +2156,6 @@ PROTO Wolfgang [
                                               ]
                                             }
                                             Transform {
-                                              translation 0.015000 0.160 -0.0236
-                                              rotation 0.696310 0.696313 -0.174073 2.796895
-                                              children [
-                                                Box {
-                                                   size 0.045000 0.074000 0.006000
-                                                }
-                                              ]
-                                            }
-                                            Transform {
-                                              translation 0.015000 0.120225 -0.019224
-                                              rotation -0.000000 -0.000000 -1.000000 1.570800
-                                              children [
-                                                Box {
-                                                   size 0.040000 0.106000 0.019000
-                                                }
-                                              ]
-                                            }
-                                            Transform {
                                               translation 0.00 -0.0020000000000000018 -0.009
                                               rotation 0.0 1.0 0.0 0.0
                                               children [
@@ -3566,26 +3548,6 @@ PROTO Wolfgang [
                                                 }
                                               ]
                                             }
-
-                                            Transform {
-                                              translation -0.0145000 0.160 -0.0236
-                                              rotation 0.696310 0.696313 -0.174073 2.796895
-                                              children [
-                                                Box {
-                                                   size 0.045000 0.074000 0.006000
-                                                }
-                                              ]
-                                            }
-                                            Transform {
-                                              translation -0.0145000 0.120225 -0.019224
-                                              rotation -0.000000 -0.000000 -1.000000 1.570800
-                                              children [
-                                                Box {
-                                                   size 0.040000 0.106000 0.019000
-                                                }
-                                              ]
-                                            }
-
                                             Transform {
                                               translation 0.00 -0.0020000000000000018 -0.009
                                               rotation 0.0 1.0 0.0 0.0
