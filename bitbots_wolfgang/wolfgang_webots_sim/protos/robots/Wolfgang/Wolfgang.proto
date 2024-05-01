@@ -3315,7 +3315,7 @@ PROTO Wolfgang [
                                                 Shape {
                                                   appearance Appearance {
                                                     material Material {
-                                                      diffuseColor 1.0 0.0 0.0
+                                                      diffuseColor 0.4 0.35 0.0
                                                     }
                                                   }
                                                   geometry Box {
@@ -3323,6 +3323,13 @@ PROTO Wolfgang [
                                                   }
                                                 }
                                               ]
+                                              boundingObject Box {
+                                                size 0.06 0.106 0.01
+                                              }
+                                              physics Physics {
+                                                density -1
+                                                mass 0.1
+                                              }
                                             }
                                           }
                                           Transform {
@@ -3573,7 +3580,7 @@ PROTO Wolfgang [
                                         %{if fields.enablePhysics.value then}%
                                           physics Physics {
                                             density -1
-                                            mass 0.268240
+                                            mass 0.168240
                                             centerOfMass [ -0.012040 0.091109 -0.029858 ]
                                             inertiaMatrix [
                                               8.841070e-04 3.173780e-04 1.153190e-03
