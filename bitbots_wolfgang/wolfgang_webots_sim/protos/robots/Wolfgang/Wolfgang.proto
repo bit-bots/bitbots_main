@@ -1954,14 +1954,6 @@ PROTO Wolfgang [
                                               }
                                             ]
                                           }
-                                          Transform {
-                                            translation 0.023457 0.061834 -0.046391
-                                            rotation -0.000000 -0.000000 -1.000000 1.570800
-                                            children [
-                                              Wolfgang_foot_coverMesh {
-                                              }
-                                            ]
-                                          }
                                           DEF r_sole Solid {
                                             translation 0.015222 0.090768 -0.052900
                                             rotation -0.000000 0.000000 1.000000 1.570800
@@ -3354,14 +3346,6 @@ PROTO Wolfgang [
                                             rotation 0.000000 0.000000 -1.000000 1.570800
                                             children [
                                               Wolfgang_foot_printed_leftMesh {
-                                              }
-                                            ]
-                                          }
-                                          Transform {
-                                            translation -0.006543 0.061834 -0.046391
-                                            rotation -0.000000 -0.000000 -1.000000 1.570800
-                                            children [
-                                              Wolfgang_foot_coverMesh {
                                               }
                                             ]
                                           }
