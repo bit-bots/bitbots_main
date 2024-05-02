@@ -1,8 +1,8 @@
 =============================
 How to: Extrinsic Calibration
 =============================
-As robots frequently tumble and fall down, we need to adjust not correctly aligned parts of the robots in their calibration.
-Additionally, we need the `Inverse Perspective Mapping (IPM) <https://ipm-docs.readthedocs.io/en/latest/>`_
+| As robots frequently tumble and fall down, we need to adjust not correctly aligned parts of the robots in their calibration.
+| Additionally, we need the `Inverse Perspective Mapping (IPM) <https://ipm-docs.readthedocs.io/en/latest/>`_
 to map correctly camera pixels to field coordinates.
 
 In order to adjust the calibration of the visualization you can change the roll (:code:`offset_x`), pitch (:code:`offset_y`) and yaw (:code:`offset_z`) of the camera and the IMU.
