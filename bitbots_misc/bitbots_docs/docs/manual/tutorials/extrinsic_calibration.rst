@@ -45,7 +45,7 @@ IMU Parameters
 * has a `right-handed coordinate system <https://www.ros.org/reps/rep-0103.html#coordinate-frame-conventions>`_
 
 .. image:: extrinsic_calibration/right_handed_coordinate_system.png
-   :width: 600
+   :width: 300
 
 Camera Parameters
 =================
@@ -54,5 +54,3 @@ Camera Parameters
 * has a `camera coordinate system <https://www.ros.org/reps/rep-0103.html#suffix-frames>`_
 
 .. image:: extrinsic_calibration/camera_coordinate_system.png
-   :width: 600
-
