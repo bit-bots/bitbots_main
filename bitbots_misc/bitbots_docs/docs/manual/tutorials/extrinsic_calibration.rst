@@ -1,7 +1,7 @@
 =============================
 How to: Extrinsic Calibration
 =============================
-As robots frequently tumble and fall down, we need to adjust not correctly aligned parts of the robots.
+As robots frequently tumble and fall down, we need to adjust not correctly aligned parts of the robots in their calibration.
 Additionally, we need the `Inverse Perspective Mapping (IPM) <https://ipm-docs.readthedocs.io/en/latest/>`_
 to map correctly camera pixels to field coordinates.
 
