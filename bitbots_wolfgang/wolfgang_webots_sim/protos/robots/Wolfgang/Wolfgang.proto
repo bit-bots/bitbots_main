@@ -1998,16 +1998,6 @@ PROTO Wolfgang [
                                             ]
                                             name "rlb"
                                             %{if fields.enableBoundingObject.value then}%
-                                            boundingObject DEF CLEAT_CAPSULE Transform {
-                                              translation 0.000000 0.000000 0.005000
-                                              rotation -0.000000 0.000000 1.000000 1.570796
-                                              children [
-                                                Capsule {
-                                                  radius 0.006
-                                                  height 0.014
-                                                }
-                                              ]
-                                            }
                                             %{ end }%
                                             %{if fields.enablePhysics.value then}%
                                               physics Physics {
@@ -2047,7 +2037,6 @@ PROTO Wolfgang [
                                             ]
                                             name "rlf"
                                             %{if fields.enableBoundingObject.value then}%
-                                            boundingObject USE CLEAT_CAPSULE
                                             %{ end }%
                                             %{if fields.enablePhysics.value then}%
                                               physics Physics {
@@ -2087,7 +2076,6 @@ PROTO Wolfgang [
                                             ]
                                             name "rrf"
                                             %{if fields.enableBoundingObject.value then}%
-                                            boundingObject USE CLEAT_CAPSULE
                                             %{ end }%
                                             %{if fields.enablePhysics.value then}%
                                               physics Physics {
@@ -2127,7 +2115,6 @@ PROTO Wolfgang [
                                             ]
                                             name "rrb"
                                             %{if fields.enableBoundingObject.value then}%
-                                            boundingObject USE CLEAT_CAPSULE
                                             %{ end }%
                                             %{if fields.enablePhysics.value then}%
                                               physics Physics {
@@ -3432,7 +3419,6 @@ PROTO Wolfgang [
                                             ]
                                             name "llb"
                                             %{if fields.enableBoundingObject.value then}%
-                                            boundingObject USE CLEAT_CAPSULE
                                             %{ end }%
                                             %{if fields.enablePhysics.value then}%
                                               physics Physics {
@@ -3472,7 +3458,6 @@ PROTO Wolfgang [
                                             ]
                                             name "llf"
                                             %{if fields.enableBoundingObject.value then}%
-                                            boundingObject USE CLEAT_CAPSULE
                                             %{ end }%
                                             %{if fields.enablePhysics.value then}%
                                               physics Physics {
@@ -3512,7 +3497,6 @@ PROTO Wolfgang [
                                             ]
                                             name "lrf"
                                             %{if fields.enableBoundingObject.value then}%
-                                            boundingObject USE CLEAT_CAPSULE
                                             %{ end }%
                                             %{if fields.enablePhysics.value then}%
                                               physics Physics {
@@ -3552,7 +3536,6 @@ PROTO Wolfgang [
                                             ]
                                             name "lrb"
                                             %{if fields.enableBoundingObject.value then}%
-                                            boundingObject USE CLEAT_CAPSULE
                                             %{ end }%
                                             %{if fields.enablePhysics.value then}%
                                               physics Physics {
