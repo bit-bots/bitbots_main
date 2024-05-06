@@ -17,13 +17,22 @@ bitbots_path_planning:
         dialte: 3
         blur: 13
     controller:
+      # The distance to the carrot that we want to reach on the path
       carrot_distance: 20
+      # The maximum rotation velocity of the robot in rad/s around the z-axis
       max_rotation_vel: 0.4
+      # Maximum velocity we want to reach in different directions (base_footprint coordinate system)
       max_vel_x: 0.1
       min_vel_x: -0.1
       max_vel_y: 0.03
-      smoothing_k: 0.05
+      # This is the time constant of the exponential smoothing filter. The higher the value, the more smoothing is applied.
+      # It denotes the time after which only 63% (1-1/e) of the original signal is left. It is update rate independent!
+      smoothing_tau: 0.39
+      # Integral gain to counter constant disturbances (not really tested/used)
       rotation_i_factor: 0.0
+      # Clamped p gain of the rotation controller
       rotation_slow_down_factor: 0.7
+      # Clamped p gain of the translation controller
       translation_slow_down_factor: 0.8
+      # Distance at which we switch from orienting towards the path to orienting towards the goal poses orientation (in meters)
       orient_to_goal_distance: 1.0
