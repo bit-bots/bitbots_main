@@ -55,7 +55,7 @@ class GoToAbsolutePosition(AbstractActionElement):
     def __init__(self, blackboard, dsd, parameters):
         """Go to an absolute position on the field"""
         super().__init__(blackboard, dsd)
-        self.point = parameters
+        self.point = float(parameters.get("x", 0)), float(parameters.get("y", 0)), float(parameters.get("t", 0))
 
     def perform(self, reevaluate=False):
         pose_msg = PoseStamped()

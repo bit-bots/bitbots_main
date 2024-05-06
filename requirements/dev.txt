@@ -9,4 +9,3 @@ rich  # Rich terminal output
 ruff  # Python linting
 syrupy  # Python snapshot testing
 pytest-mock   # Mocking for pytest
-pytest<8.1  # Keep version smaller than 8.1 until https://github.com/ros2/launch/pull/766 is released
