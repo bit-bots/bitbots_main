@@ -21,7 +21,7 @@
 
 #RolePositionWithPause
 $DoOnce
-    NOT_DONE --> @LookAtFieldFeatures, @GoToRolePosition + blocking:false
+    NOT_DONE --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @GoToRolePosition + blocking:false
     DONE --> $ReachedAndAlignedToPathPlanningGoalPosition + threshold:0.2 + latch:true
         YES -->  #StandAndLook
         NO --> @LookAtFieldFeatures, @GoToRolePosition
