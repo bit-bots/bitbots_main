@@ -10,6 +10,7 @@ dynup:
       arm_extended_length: {
         type: double,
         description: "",
+        default_value: 0.4,
         validation: {
           bounds<>: [ 0.0, 5.0 ],
         }
@@ -17,6 +18,7 @@ dynup:
       foot_distance: {
         type: double,
         description: "",
+        default_value: 0.2,
         validation: {
           bounds<>: [ 0.0, 5.0 ],
         }
@@ -24,6 +26,7 @@ dynup:
       hand_walkready_pitch: {
         type: double,
         description: "",
+        default_value: 40.0,
         validation: {
           bounds<>: [ 0.0, 90.0 ],
         }
@@ -31,6 +34,7 @@ dynup:
       hand_walkready_height: {
         type: double,
         description: "",
+        default_value: -0.17,
         validation: {
           bounds<>: [ -1.0, 1.0 ],
         }
@@ -39,6 +43,7 @@ dynup:
       trunk_height: {
         type: double,
         description: "",
+        default_value: 0.38,
         validation: {
           bounds<>: [ 0.0, 1.0 ],
         }
@@ -46,6 +51,7 @@ dynup:
       trunk_pitch: {
         type: double,
         description: "",
+        default_value: 0.2,
         validation: {
           bounds<>: [ 0.0, 1.0 ],
         }
@@ -53,6 +59,7 @@ dynup:
       trunk_x_final: {
         type: double,
         description: "",
+        default_value: 0.001,
         validation: {
           bounds<>: [ 0.0, 1.0 ],
         }
@@ -60,6 +67,7 @@ dynup:
       arm_side_offset_back: {
         type: double,
         description: "",
+        default_value: 0.148,
         validation: {
           bounds<>: [ 0.0, 5.0 ],
         }
@@ -69,6 +77,7 @@ dynup:
       arms_angle_back: {
         type: double,
         description: "",
+        default_value: 120.36,
         validation: {
           bounds<>: [ 0.0, 180.0 ],
         }
@@ -76,6 +85,7 @@ dynup:
       com_shift_1: {
         type: double,
         description: "",
+        default_value: 0.051,
         validation: {
           bounds<>: [ 0.0, 1.0 ],
         }
@@ -84,6 +94,7 @@ dynup:
       com_shift_2: {
         type: double,
         description: "",
+        default_value: 0.0,
         validation: {
           bounds<>: [ 0.0, 1.0 ],
         }
@@ -91,6 +102,7 @@ dynup:
       foot_angle: {
         type: double,
         description: "",
+        default_value: 51.76,
         validation: {
           bounds<>: [ 0.0, 90.0 ],
         }
@@ -98,6 +110,7 @@ dynup:
       hands_behind_back_x: {
         type: double,
         description: "",
+        default_value: 0.162,
         validation: {
           bounds<>: [ 0.0, 1.0 ],
         }
@@ -105,6 +118,7 @@ dynup:
       hands_behind_back_z: {
         type: double,
         description: "",
+        default_value: 0.183,
         validation: {
           bounds<>: [ 0.0, 1.0 ],
         }
@@ -112,6 +126,7 @@ dynup:
       leg_min_length_back: {
         type: double,
         description: "",
+        default_value: 0.253,
         validation: {
           bounds<>: [ 0.0, 1.0 ],
         }        
@@ -119,6 +134,7 @@ dynup:
       time_foot_ground_back: {
         type: double,
         description: "",
+        default_value: 0.536,
         validation: {
           bounds<>: [ 0.0, 1.0 ],
         }
@@ -126,6 +142,7 @@ dynup:
       time_full_squat_hands: {
         type: double,
         description: "",
+        default_value: 0.172,
         validation: {
           bounds<>: [ 0.0, 1.0 ],
         }
@@ -133,6 +150,7 @@ dynup:
       time_full_squat_legs: {
         type: double,
         description: "",
+        default_value: 0.196,
         validation: {
           bounds<>: [ 0.0, 1.0 ],
         }
@@ -140,6 +158,7 @@ dynup:
       time_legs_close: {
         type: double,
         description: "",
+        default_value: 0.068,
         validation: {
           bounds<>: [ 0.0, 1.0 ],
         }
@@ -147,6 +166,7 @@ dynup:
       trunk_height_back: {
         type: double,
         description: "if you decrease this, the robot's ass collides its ankles",
+        default_value: 0.179,
         validation: {
           bounds<>: [ 0.0, 1.0 ],
         }
@@ -154,6 +174,7 @@ dynup:
       trunk_overshoot_angle_back: {
         type: double,
         description: "",
+        default_value: 5.95,
         validation: {
           bounds<>: [ 0.0, 10.0 ],
         }
@@ -161,6 +182,7 @@ dynup:
       wait_in_squat_back: {
         type: double,
         description: "",
+        default_value: 1.0,
         validation: {
           bounds<>: [ 0.0, 10.0 ],
         }
@@ -170,6 +192,7 @@ dynup:
       arm_side_offset_front: {
         type: double,
         description: "",
+        default_value: 0.13,
         validation: {
           bounds<>: [ 0.0, 1.0 ],
         }
@@ -177,6 +200,7 @@ dynup:
       hands_pitch: {
         type: double,
         description: "",
+        default_value: -65.86,
         validation: {
           bounds<>: [ -90.0, 90.0 ],
         }
@@ -184,6 +208,7 @@ dynup:
       leg_min_length_front: {
         type: double,
         description: "",
+        default_value: 0.244,
         validation: {
           bounds<>: [ 0.0, 1.0 ],
         }
@@ -191,6 +216,7 @@ dynup:
       max_leg_angle: {
         type: double,
         description: "",
+        default_value: 71.71,
         validation: {
           bounds<>: [ 0.0, 90.0 ],
         }
@@ -198,6 +224,7 @@ dynup:
       time_foot_close: {
         type: double,
         description: "",
+        default_value: 0.0,
         validation: {
           bounds<>: [ 0.0, 1.0 ],
         }
@@ -205,6 +232,7 @@ dynup:
       time_foot_ground_front: {
         type: double,
         description: "",
+        default_value: 0.132,
         validation: {
           bounds<>: [ 0.0, 1.0 ],
         }
@@ -212,6 +240,7 @@ dynup:
       time_hands_front: {
         type: double,
         description: "",
+        default_value: 0.3,
         validation: {
           bounds<>: [ 0.0, 1.0 ],
         }
@@ -219,6 +248,7 @@ dynup:
       time_hands_rotate: {
         type: double,
         description: "",
+        default_value: 0.3,
         validation: {
           bounds<>: [ 0.0, 1.0 ],
         }
@@ -226,6 +256,7 @@ dynup:
       time_hands_side: {
         type: double,
         description: "",
+        default_value: 0.3,
         validation: {
           bounds<>: [ 0.0, 1.0 ],
         }
@@ -233,6 +264,7 @@ dynup:
       time_to_squat: {
         type: double,
         description: "",
+        default_value: 0.924,
         validation: {
           bounds<>: [ 0.0, 1.0 ],
         }
@@ -240,6 +272,7 @@ dynup:
       time_torso_45: {
         type: double,
         description: "",
+        default_value: 0.462,
         validation: {
           bounds<>: [ 0.0, 1.0 ],
         }
@@ -247,6 +280,7 @@ dynup:
       trunk_overshoot_angle_front: {
         type: double,
         description: "",
+        default_value: -5.0,
         validation: {
           bounds<>: [ -90.0, 90.0 ],
         }
@@ -254,6 +288,7 @@ dynup:
       trunk_x_front: {
         type: double,
         description: "do not increase this unless you want to burn a fuse",
+        default_value: 0.091,
         validation: {
           bounds<>: [ 0.0, 1.0 ],
         }
@@ -261,6 +296,7 @@ dynup:
       wait_in_squat_front: {
         type: double,
         description: "",
+        default_value: 1.2,
         validation: {
           bounds<>: [ 0.0, 10.0 ],
         }
@@ -268,6 +304,7 @@ dynup:
       time_walkready: {
         type: double,
         description: "",
+        default_value: 2.0,
         validation: {
           bounds<>: [ 0.0, 10.0 ],
         }
@@ -276,6 +313,7 @@ dynup:
       rise_time: {
         type: double,
         description: "",
+        default_value: 1.0,
         validation: {
           bounds<>: [ 0.0, 10.0 ],
         }
@@ -285,6 +323,7 @@ dynup:
       descend_time: {
         type: double,
         description: "",
+        default_value: 0.25,
         validation: {
           bounds<>: [ 0.0, 5.0 ],
         }
