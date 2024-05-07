@@ -190,6 +190,10 @@ class TeamDataCapsule:
             if self.is_valid(data) and (data.strategy.role != Strategy.ROLE_GOALIE or count_goalies):
                 poses.append(data.robot_position.pose)
         return poses
+    
+    def get_number_of_active_teammates(self) -> int:
+        return len(list(filter(self.is_valid,self.team_data.values())))
+
 
     def get_own_time_to_ball(self) -> float:
         return self.own_time_to_ball
