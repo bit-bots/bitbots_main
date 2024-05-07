@@ -26,7 +26,7 @@ class PyDynupWrapper {
   void special_reset(double time);
   void set_engine_goal(std::string direction);
   int get_direction();
-  void set_parameter(const py::bytes params);
+  void set_parameter(const py::bytes params); // TODO: change 
 
  private:
   std::shared_ptr<bitbots_dynup::DynupNode> dynup_node_;

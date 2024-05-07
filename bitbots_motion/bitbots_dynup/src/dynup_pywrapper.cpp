@@ -52,7 +52,7 @@ bool string2bool(const std::string &v) {
   return !v.empty() && (strcasecmp(v.c_str(), "true") == 0 || atoi(v.c_str()) != 0);
 }
 
-void PyDynupWrapper::set_parameter(py::bytes parameter_msg) {
+void PyDynupWrapper::set_parameter(py::bytes parameter_msg) { // TODO: change
   // convert serialized parameter msg to parameter object
   rclcpp::Parameter parameter =
       rclcpp::Parameter::from_parameter_msg(fromPython<rcl_interfaces::msg::Parameter>(parameter_msg));
@@ -71,7 +71,7 @@ PYBIND11_MODULE(libpy_dynup, m) {
       .def("step_open_loop", &PyDynupWrapper::step_open_loop)
       .def("reset", &PyDynupWrapper::reset)
       .def("special_reset", &PyDynupWrapper::special_reset)
-      .def("set_parameter", &PyDynupWrapper::set_parameter)
+      .def("set_parameter", &PyDynupWrapper::set_parameter) // TODO: also look into the python code
       .def("get_poses", &PyDynupWrapper::get_poses)
       .def("get_direction", &PyDynupWrapper::get_direction)
       .def("set_engine_goal", &PyDynupWrapper::set_engine_goal)

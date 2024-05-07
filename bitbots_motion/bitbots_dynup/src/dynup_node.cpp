@@ -3,13 +3,17 @@
 namespace bitbots_dynup {
 using namespace std::chrono_literals;
 
-DynupNode::DynupNode(const std::string &ns)
-    : Node(ns + "dynup"), param_listener_(get_node_parameters_interface()),
-      engine_(SharedPtr(this)),
-      stabilizer_(ns),
-      visualizer_("debug/dynup", SharedPtr(this)),
-      ik_(SharedPtr(this)),
-      tf_buffer_(std::make_unique<tf2_ros::Buffer>(this->get_clock())) {
+DynupNode::DynupNode(const std::string &ns, std::vector<rclcpp::Parameter> parameters)
+    : Node(ns + "dynup", rclcpp::NodeOptions()
+                             .allow_undeclared_parameters(true)
+                             .parameter_overrides(parameters)
+                             .automatically_declare_parameters_from_overrides(true)),
+    param_listener_(get_node_parameters_interface()),
+    engine_(SharedPtr(this)),
+    stabilizer_(ns),
+    visualizer_("debug/dynup", SharedPtr(this)),
+    ik_(SharedPtr(this)),
+    tf_buffer_(std::make_unique<tf2_ros::Buffer>(this->get_clock())) {
   // get all kinematics parameters from the move_group node if they are not set manually via constructor
   config_ = param_listener_.get_params();
   std::string check_kinematic_parameters;
@@ -25,7 +29,7 @@ DynupNode::DynupNode(const std::string &ns)
     }
     rcl_interfaces::msg::ListParametersResult parameter_list =
         parameters_client->list_parameters({"robot_description_kinematics"}, 10);
-    auto copied_parameters = parameters_client->get_parameters(parameter_list.names);
+    auto copied_parameters = parameters_client->get_parameters(parameter_list.names); // TODO: 
     // set the parameters to our node
     this->set_parameters(copied_parameters);
   }
