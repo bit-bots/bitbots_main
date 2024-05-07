@@ -36,6 +36,8 @@
 #include "bitbots_msgs/action/dynup.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
 
+#include "bitbots_dynup_parameters.hpp"
+
 namespace bitbots_dynup {
 using DynupGoal = bitbots_msgs::action::Dynup;
 using DynupGoalHandle = rclcpp_action::ServerGoalHandle<DynupGoal>;
@@ -52,7 +54,7 @@ using namespace std::placeholders;
  */
 class DynupNode : public rclcpp::Node {
  public:
-  explicit DynupNode(const std::string &ns = "", std::vector<rclcpp::Parameter> parameters = {});
+  explicit DynupNode(const std::string &ns = "");
 
   rcl_interfaces::msg::SetParametersResult onSetParameters(const std::vector<rclcpp::Parameter> &parameters);
 
@@ -110,7 +112,7 @@ class DynupNode : public rclcpp::Node {
   Stabilizer stabilizer_;
   Visualizer visualizer_;
   DynupIK ik_;
-  std::map<std::string, rclcpp::Parameter> params_;
+  dynup::Params params_ ;
   int stable_duration_;
   int engine_rate_;
   int failed_tick_counter_;

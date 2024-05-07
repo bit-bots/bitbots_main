@@ -290,13 +290,51 @@ dynup:
         }
       }
 
-    # stabilizer: # Stabilier
-    # stabilizing: False
-    # minimal_displacement: False
-    # stable_threshold: 0.05
-    # stable_duration: 100
-    # stabilization_timeout: 2.0
+    stabilizer: 
+      stabilizing: {
+        type: bool,
+        description: "",
+        default_value: false,
+      }
+      minimal_displacement: {
+        type: bool,
+        description: "",
+        default_value: false,
+      }
+      stable_threshold: {
+        type: double,
+        description: "",
+        default_value: 0.05,
+        validation: {
+          bounds<>: [ 0.0, 1.0 ],
+        }
+      }
+      stable_duration: {
+        type: int,
+        description: "",
+        default_value: 100,
+        validation: {
+          bounds<>: [ 0, 1000 ],
+        }
+      }
+      stabilization_timeout: {
+        type: double,
+        description: "",
+        default_value: 2.0,
+        validation: {
+          bounds<>: [ 0.0, 10.0 ],
+        }
+      }
+    
+    visualizer: 
+      spline_smoothness: {
+        type: int,
+        description: "",
+        default_value: 100,
+      }
+      display_debug: {
+        type: bool,
+        description: "",
+        default_value: true,
+      }
 
-    # # Visualizer
-    # spline_smoothness: 100
-    # display_debug: True

@@ -3,19 +3,15 @@
 namespace bitbots_dynup {
 using namespace std::chrono_literals;
 
-DynupNode::DynupNode(const std::string &ns, std::vector<rclcpp::Parameter> parameters)
-    : Node(ns + "dynup", rclcpp::NodeOptions()
-                             .allow_undeclared_parameters(true)
-                             .parameter_overrides(parameters)
-                             .automatically_declare_parameters_from_overrides(true)),
-      param_listener_(get_node_parameters_interface()),
-      config_(param_listener_.get_params()),
+DynupNode::DynupNode(const std::string &ns)
+    : Node(ns + "dynup"), param_listener_(get_node_parameters_interface()),
       engine_(SharedPtr(this)),
       stabilizer_(ns),
       visualizer_("debug/dynup", SharedPtr(this)),
       ik_(SharedPtr(this)),
       tf_buffer_(std::make_unique<tf2_ros::Buffer>(this->get_clock())) {
   // get all kinematics parameters from the move_group node if they are not set manually via constructor
+  config_ = param_listener_.get_params();
   std::string check_kinematic_parameters;
   if (!this->get_parameter("robot_description_kinematics.LeftLeg.kinematics_solver", check_kinematic_parameters)) {
     auto parameters_client = std::make_shared<rclcpp::SyncParametersClient>(this, "/move_group");
@@ -192,16 +188,17 @@ void DynupNode::jointStateCallback(const sensor_msgs::msg::JointState::SharedPtr
 void DynupNode::imuCallback(const sensor_msgs::msg::Imu::SharedPtr msg) { stabilizer_.setImu(msg); }
 
 rcl_interfaces::msg::SetParametersResult DynupNode::onSetParameters(const std::vector<rclcpp::Parameter> &parameters) {
-  config_ = param_listener_.get_params();
-  engine_rate_ = params_["engine_rate"].get_value<int>();
-  debug_ = params_["display_debug"].get_value<bool>();
+  params_ = param_listener_.get_params();
+
+  engine_rate_ = params_.engine.engine_rate;
+  debug_ = params_.engine.visualizer.display_debug;
 
   engine_.setParams(config_.engine);
   stabilizer_.setParams(params_);
-  ik_.useStabilizing(params_["stabilizing"].get_value<bool>());
+  ik_.useStabilizing(params_.engine.stabilizer.stabilizing);
 
   VisualizationParams viz_params = VisualizationParams();
-  viz_params.spline_smoothness = params_["spline_smoothness"].get_value<int>();
+  viz_params.spline_smoothness = params_.engine.visualizer.spline_smoothness;
   visualizer_.setParams(viz_params);
 
   rcl_interfaces::msg::SetParametersResult result;
@@ -305,6 +302,7 @@ double DynupNode::getTimeDelta() {
 }
 
 void DynupNode::loopEngine(int loop_rate, std::shared_ptr<DynupGoalHandle> goal_handle) {
+  params_ = param_listener_.get_params();
   auto result = std::make_shared<DynupGoal::Result>();
   bitbots_msgs::msg::JointCommand msg;
   /* Do the loop as long as nothing cancels it */
@@ -320,10 +318,10 @@ void DynupNode::loopEngine(int loop_rate, std::shared_ptr<DynupGoalHandle> goal_
     feedback->percent_done = engine_.getPercentDone();
     goal_handle->publish_feedback(feedback);
     if (feedback->percent_done >= 100 &&
-        (stable_duration_ >= params_["stable_duration"].get_value<int>() ||
-         !(params_["stabilizing"].get_value<bool>()) ||
+        (stable_duration_ >= params_.engine.stabilizer.stable_duration ||
+         !(params_.engine.stabilizer.stabilizing) ||
          (this->get_clock()->now().seconds() - start_time_ >=
-          engine_.getDuration() + params_["stabilization_timeout"].get_value<double>()))) {
+          engine_.getDuration() + params_.engine.stabilizer.stabilization_timeout))) {
       RCLCPP_INFO_STREAM(this->get_logger(), "Completed dynup with " << failed_tick_counter_ << " failed ticks.");
       result->successful = true;
       server_free_ = true;
