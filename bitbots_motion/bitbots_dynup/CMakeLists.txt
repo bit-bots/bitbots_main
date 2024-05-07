@@ -28,12 +28,14 @@ find_package(tf2_eigen REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(Eigen3 REQUIRED)
+find_package(generate_parameter_library REQUIRED)
 
 find_package(ros2_python_extension REQUIRED)
 find_package(pybind11 REQUIRED)
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
 
-generate_parameter_library(bitbots_dynup_parameters src/parameters.yaml)
+generate_parameter_library(bitbots_dynup_parameters config/dynup_config.yaml)
+
 
 rosidl_generate_interfaces(
   ${PROJECT_NAME} "msg/DynupEngineDebug.msg" "msg/DynupPoses.msg" DEPENDENCIES
