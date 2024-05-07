@@ -193,7 +193,7 @@ rcl_interfaces::msg::SetParametersResult DynupNode::onSetParameters(const std::v
   engine_rate_ = params_.engine.engine_rate;
   debug_ = params_.engine.visualizer.display_debug;
 
-  engine_.setParams(config_.engine);
+  engine_.setParams(params_.engine);
   stabilizer_.setParams(params_);
   ik_.useStabilizing(params_.engine.stabilizer.stabilizing);
 
@@ -219,9 +219,9 @@ void DynupNode::execute(const std::shared_ptr<DynupGoalHandle> goal_handle) {
   last_ros_update_time_ = 0;
   start_time_ = this->get_clock()->now().seconds();
 
-  config_ = param_listener_.get_params();
+  params_ = param_listener_.get_params();
   // Copy engine params to engine
-  engine_.setParams(config_.engine);
+  engine_.setParams(params_.engine);
 
   bitbots_utils::wait_for_tf(this->get_logger(), this->get_clock(), this->tf_buffer_.get(),
                              {base_link_frame_, r_sole_frame_, l_sole_frame_, r_wrist_frame_, l_wrist_frame_},

@@ -92,9 +92,9 @@ DynupResponse Stabilizer::stabilize(const DynupResponse &ik_goals, const rclcpp:
   return response;
 }
 
-void Stabilizer::setParams(std::map<std::string, rclcpp::Parameter> params) {
-  use_stabilizing_ = params["stabilizing"].get_value<bool>();
-  stable_threshold_ = params["stable_threshold"].get_value<double>();
+void Stabilizer::setParams(dynup::Params params) {
+  use_stabilizing_ = params.engine.stabilizer.stabilizing;
+  stable_threshold_ = params.engine.stabilizer.stable_threshold;
 }
 
 bool Stabilizer::isStable() { return is_stable_; }
