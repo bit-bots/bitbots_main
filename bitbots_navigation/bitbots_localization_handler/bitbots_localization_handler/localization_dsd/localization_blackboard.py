@@ -101,9 +101,9 @@ class LocalizationBlackboard:
         """Naive check if the robot is picked up. Only works if the robot is standing still."""
         if len(self.pickup_accel_buffer) == 0:
             return False
-        buffer = np.array(self.pickup_accel_buffer)
+        buffer = np.vstack(self.pickup_accel_buffer)
         mean = np.mean(buffer[..., 2])
-        buffer_long = np.array(self.pickup_accel_buffer_long)
+        buffer_long = np.vstack(self.pickup_accel_buffer_long)
         mean_long = np.mean(buffer_long[..., 2])
         absolute_diff = abs(mean_long - mean)
 
