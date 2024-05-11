@@ -46,7 +46,6 @@ class BodyDSD:
         dsd_file: str = node.get_parameter("dsd_file").value
         self.dsd.load_behavior(os.path.join(bitbots_body_behavior.__path__[0], dsd_file))
 
-
         node.create_subscription(
             PoseWithCovarianceStamped,
             "ball_position_relative_filtered",
