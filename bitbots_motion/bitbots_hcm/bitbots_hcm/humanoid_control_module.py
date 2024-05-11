@@ -22,6 +22,7 @@ from sensor_msgs.msg import Imu, JointState
 from std_msgs.msg import Bool
 from std_srvs.srv import SetBool
 
+from bitbots_hcm import hcm_dsd
 from bitbots_hcm.hcm_dsd.hcm_blackboard import HcmBlackboard
 from bitbots_msgs.msg import FootPressure, RobotControlState
 from bitbots_msgs.srv import SetTeachingMode
@@ -68,13 +69,11 @@ class HardwareControlManager:
         self.blackboard = HcmBlackboard(self.node)
         # Create Dynamic Stack Decider
         self.dsd = DSD(self.blackboard, "debug/dsd/hcm", node=self.node)
-        # Get the path to the python actions and decisions
-        dirname = os.path.join(get_package_share_directory("bitbots_hcm"), "hcm_dsd")
         # Register actions and decisions
-        self.dsd.register_actions(os.path.join(dirname, "actions"))
-        self.dsd.register_decisions(os.path.join(dirname, "decisions"))
+        self.dsd.register_actions(hcm_dsd.actions.__path__[0])
+        self.dsd.register_decisions(hcm_dsd.decisions.__path__[0])
         # Load the behavior file
-        self.dsd.load_behavior(os.path.join(dirname, "hcm.dsd"))
+        self.dsd.load_behavior(os.path.join(hcm_dsd.__path__[0], "hcm.dsd"))
 
         # Flag to deactivate the HCM
         self.hcm_deactivated = False
