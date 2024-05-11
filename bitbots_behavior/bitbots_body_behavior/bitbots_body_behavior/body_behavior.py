@@ -23,8 +23,7 @@ from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 from soccer_vision_3d_msgs.msg import RobotArray
 
-import bitbots_body_behavior
-from bitbots_body_behavior import actions, decisions
+from bitbots_body_behavior import behavior_dsd
 from bitbots_msgs.msg import RobotControlState, TeamData
 
 
@@ -40,11 +39,11 @@ class BodyDSD:
         blackboard = BodyBlackboard(node, self.tf_buffer)
         self.dsd = DSD(blackboard, "debug/dsd/body_behavior", node)  # TODO: use config
 
-        self.dsd.register_actions(actions.__path__[0])
-        self.dsd.register_decisions(decisions.__path__[0])
+        self.dsd.register_actions(behavior_dsd.actions.__path__[0])
+        self.dsd.register_decisions(behavior_dsd.decisions.__path__[0])
 
         dsd_file: str = node.get_parameter("dsd_file").value
-        self.dsd.load_behavior(os.path.join(bitbots_body_behavior.__path__[0], dsd_file))
+        self.dsd.load_behavior(os.path.join(behavior_dsd.__path__[0], dsd_file))
 
         node.create_subscription(
             PoseWithCovarianceStamped,
