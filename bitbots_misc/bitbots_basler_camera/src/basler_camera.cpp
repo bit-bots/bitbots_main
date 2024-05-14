@@ -163,6 +163,8 @@ class BaslerCamera {
 
   void publish_basic_diagnostics(unsigned char severity, const std::string& message) {
     diagnostic_msgs::msg::DiagnosticStatus status;
+    status.name = "Camera";
+    status.hardware_id = config_.device_user_id;
     status.level = severity;
     status.message = message;
     diagnostic_msgs::msg::DiagnosticArray diagnostics;
