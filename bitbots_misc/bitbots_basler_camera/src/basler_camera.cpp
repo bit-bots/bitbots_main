@@ -6,6 +6,8 @@
 #include <camera_info_manager/camera_info_manager.hpp>
 #include <cmath>
 #include <cv_bridge/cv_bridge.hpp>
+#include <diagnostic_msgs/msg/diagnostic_array.hpp>
+#include <diagnostic_msgs/msg/diagnostic_status.hpp>
 #include <image_transport/image_transport.hpp>
 #include <iostream>
 #include <memory>
@@ -27,29 +29,30 @@ class BaslerCamera {
   std::shared_ptr<rclcpp::Node> node_;
 
   image_transport::TransportHints transport_hints_;
-  std::unique_ptr<image_transport::CameraPublisher> image_pub_;
+  image_transport::CameraPublisher image_pub_;
   rclcpp::TimerBase::SharedPtr timer_;
+  rclcpp::Publisher<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr diagnostics_pub_;
 
   std::unique_ptr<camera_info_manager::CameraInfoManager> camera_info_manager_;
 
   std::unique_ptr<Pylon::CBaslerUniversalInstantCamera> camera_;
 
-  double camera_tick_frequency_ = 1;
+  std::optional<double> camera_tick_frequency_;
 
   Pylon::PylonAutoInitTerm autoInitTerm;
 
-  std::unique_ptr<pylon_camera_parameters::ParamListener> param_listener_;
+  pylon_camera_parameters::ParamListener param_listener_;
   pylon_camera_parameters::Params config_;
 
  public:
   BaslerCamera()
       : node_(std::make_shared<rclcpp::Node>("post_processor")),
         transport_hints_(node_.get()),
-        image_pub_(std::make_unique<image_transport::CameraPublisher>(
-            image_transport::create_camera_publisher(node_.get(), "camera/image_proc"))) {
+        image_pub_(image_transport::create_camera_publisher(node_.get(), "camera/image_proc")),
+        diagnostics_pub_(node_->create_publisher<diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 1)),
+        param_listener_(node_) {
     // Load parameters
-    param_listener_ = std::make_unique<pylon_camera_parameters::ParamListener>(node_);
-    config_ = param_listener_->get_params();
+    config_ = param_listener_.get_params();
 
     // Set up camera info manager
     camera_info_manager_ = std::make_unique<camera_info_manager::CameraInfoManager>(node_.get(), config_.device_user_id,
@@ -63,9 +66,9 @@ class BaslerCamera {
       // Error handling.
       RCLCPP_ERROR(node_->get_logger(), "An exception occurred: %s", e.GetDescription());
       RCLCPP_ERROR(node_->get_logger(), "Could not initialize camera");
+      publish_basic_diagnostics(diagnostic_msgs::msg::DiagnosticStatus::ERROR, "Could not initialize camera");
       exit(1);
     }
-
     // Setup timer for publishing
     timer_ = node_->create_wall_timer(std::chrono::duration<double>(1.0 / config_.fps),
                                       std::bind(&BaslerCamera::timer_callback, this));
@@ -93,6 +96,8 @@ class BaslerCamera {
     while (rclcpp::ok() && !our_device_info) {
       RCLCPP_ERROR(node_->get_logger(), "Could not find device with user id '%s'", config_.device_user_id.c_str());
       RCLCPP_ERROR(node_->get_logger(), "Retrying in %f seconds", config_.reconnect_interval);
+      publish_basic_diagnostics(diagnostic_msgs::msg::DiagnosticStatus::STALE,
+                                "Could not find the device with id " + config_.device_user_id);
       // Wait
       rclcpp::sleep_for(std::chrono::duration_cast<std::chrono::nanoseconds>(
           std::chrono::duration<double>(config_.reconnect_interval)));
@@ -156,6 +161,15 @@ class BaslerCamera {
     camera_->ExposureTimeAbs.SetValue(config_.exposure);
   }
 
+  void publish_basic_diagnostics(unsigned char severity, const std::string& message) {
+    diagnostic_msgs::msg::DiagnosticStatus status;
+    status.level = severity;
+    status.message = message;
+    diagnostic_msgs::msg::DiagnosticArray diagnostics;
+    diagnostics.status.push_back(status);
+    diagnostics_pub_->publish(diagnostics);
+  }
+
   void timer_callback() {
     // This smart pointer will receive the grab result data.
     CGrabResultPtr ptrGrabResult;
@@ -165,16 +179,18 @@ class BaslerCamera {
 
     try {
       // Check if the config has changed
-      if (param_listener_->is_old(config_)) {
+      if (param_listener_.is_old(config_)) {
         // Update the camera parameters
-        config_ = param_listener_->get_params();
+        config_ = param_listener_.get_params();
         // Apply the new camera parameters
         apply_camera_parameters();
       }
 
       // Try to reinitialize the camera if the connection is lost
       if (!camera_->IsOpen() or camera_->IsCameraDeviceRemoved()) {
-        RCLCPP_WARN(node_->get_logger(), "Camera connection lost. Reinitializing camera");
+        auto message = "Camera connection lost. Reinitializing camera";
+        RCLCPP_WARN(node_->get_logger(), message);
+        publish_basic_diagnostics(diagnostic_msgs::msg::DiagnosticStatus::STALE, message);
         initilize_camera();
       }
 
@@ -194,16 +210,19 @@ class BaslerCamera {
       if (!ptrGrabResult->GrabSucceeded()) {
         RCLCPP_ERROR(node_->get_logger(), "Error: %x %s", ptrGrabResult->GetErrorCode(),
                      ptrGrabResult->GetErrorDescription().c_str());
+        publish_basic_diagnostics(diagnostic_msgs::msg::DiagnosticStatus::ERROR, "Error while grabbing image");
         return;
       }
 
       // Adjust the time stamp of the image
       auto image_camera_stamp = (__int128_t)ptrGrabResult->GetTimeStamp();
-      auto image_age_in_seconds = (image_camera_stamp - camera_time_stamp_at_capture) / camera_tick_frequency_;
+      auto image_age_in_seconds = (image_camera_stamp - camera_time_stamp_at_capture) / camera_tick_frequency_.value();
       trigger_time = ros_time_stamp_at_capture + rclcpp::Duration::from_seconds(image_age_in_seconds);
     } catch (GenICam::GenericException& e) {
       // Error handling.
       RCLCPP_ERROR(node_->get_logger(), "An exception occurred: %s", e.GetDescription());
+      publish_basic_diagnostics(diagnostic_msgs::msg::DiagnosticStatus::ERROR,
+                                "An exception occurred during image acquisition");
       return;
     }
 
@@ -236,7 +255,29 @@ class BaslerCamera {
     color_msg.image = binned;
 
     // Publish the image
-    image_pub_->publish(color_msg.toImageMsg(), camera_info);
+    image_pub_.publish(color_msg.toImageMsg(), camera_info);
+
+    // Check if image is too dark
+    float luminance = 0;
+    int sample_grid = 5;
+    int step_height = binned.size().height / sample_grid;
+    int step_width = binned.size().width / sample_grid;
+    for (int i = 0; i < sample_grid; i++) {
+      for (int j = 0; j < sample_grid; j++) {
+        cv::Vec3b pixel = binned.at<cv::Vec3b>(i * step_height, j * step_width);
+        luminance += (pixel[0] + pixel[1] + pixel[2]) / (3 * 255.0 * sample_grid * sample_grid);
+      }
+    }
+
+    // Warn if the image is too dark
+    if (luminance < config_.misc.darkness_threshold) {
+      auto message = "Image is too dark. Did you forget the camera cover?";
+      RCLCPP_WARN_ONCE(node_->get_logger(), message);
+      publish_basic_diagnostics(diagnostic_msgs::msg::DiagnosticStatus::WARN, message);
+    } else {
+      // Everything is fine
+      publish_basic_diagnostics(diagnostic_msgs::msg::DiagnosticStatus::OK, "Camera is running");
+    }
   }
 
   /**
