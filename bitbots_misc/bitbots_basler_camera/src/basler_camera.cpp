@@ -168,6 +168,7 @@ class BaslerCamera {
     status.level = severity;
     status.message = message;
     diagnostic_msgs::msg::DiagnosticArray diagnostics;
+    diagnostics.header.stamp = node_->now();
     diagnostics.status.push_back(status);
     diagnostics_pub_->publish(diagnostics);
   }
