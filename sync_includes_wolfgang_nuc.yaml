@@ -8,6 +8,7 @@ include:
     - bitbots_misc:
         - bitbots_basler_camera
         - bitbots_bringup
+        - bitbots_diagnostic
         - bitbots_docs
         - bitbots_extrinsic_calibration
         - bitbots_ipm

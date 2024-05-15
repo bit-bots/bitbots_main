@@ -1,10 +1,10 @@
 analyzers:
   ros__parameters:
     pub_rate: 10.0 # Optional
-    path: '' # Optional, prepended to all diagnostic output
+    path: 'Robot' # Optional, prepended to all diagnostic output
     Camera:
       type: diagnostic_aggregator/GenericAnalyzer
-      path: Servos
+      path: Camera
       startswith: [ 'CAMERA']
       timeout: 0.2
       find_and_remove_prefix: ['CAMERA']
