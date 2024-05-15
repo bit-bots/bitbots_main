@@ -1,4 +1,4 @@
-dynup:
+bitbots_dynup:
   engine: 
     engine_rate: {
       type: int,

@@ -3,11 +3,11 @@
 namespace bitbots_dynup {
 using namespace std::chrono_literals;
 
-DynupNode::DynupNode(const std::string &ns, std::vector<rclcpp::Parameter> parameters)
+DynupNode::DynupNode(const std::string &ns, std::vector<rclcpp::Parameter> parameters) //parameters werden im launch script übergeben, aber hierüber kriegt er auch die yaml, also gucken, dass das vlt anders
     : Node(ns + "dynup", rclcpp::NodeOptions()
                              .allow_undeclared_parameters(true)
                              .parameter_overrides(parameters)
-                             .automatically_declare_parameters_from_overrides(true)),
+                             .automatically_declare_parameters_from_overrides(true)), //TODO: vlt. rausnehmen?
     param_listener_(get_node_parameters_interface()),
     engine_(SharedPtr(this)),
     stabilizer_(ns),
@@ -18,7 +18,7 @@ DynupNode::DynupNode(const std::string &ns, std::vector<rclcpp::Parameter> param
   config_ = param_listener_.get_params();
   std::string check_kinematic_parameters;
   if (!this->get_parameter("robot_description_kinematics.LeftLeg.kinematics_solver", check_kinematic_parameters)) {
-    auto parameters_client = std::make_shared<rclcpp::SyncParametersClient>(this, "/move_group");
+    auto parameters_client = std::make_shared<rclcpp::SyncParametersClient>(this, "/move_group"); // just move group parameters
     while (!parameters_client->wait_for_service(1s)) {
       if (!rclcpp::ok()) {
         RCLCPP_ERROR(this->get_logger(), "Interrupted while waiting for the service. Exiting.");
@@ -34,7 +34,7 @@ DynupNode::DynupNode(const std::string &ns, std::vector<rclcpp::Parameter> param
     this->set_parameters(copied_parameters);
   }
 
-  base_link_frame_ = this->get_parameter("base_link_frame").get_value<std::string>();
+  base_link_frame_ = this->get_parameter("base_link_frame").get_value<std::string>(); //TODO: from launch file
   r_sole_frame_ = this->get_parameter("r_sole_frame").get_value<std::string>();
   l_sole_frame_ = this->get_parameter("l_sole_frame").get_value<std::string>();
   r_wrist_frame_ = this->get_parameter("r_wrist_frame").get_value<std::string>();
@@ -191,7 +191,7 @@ void DynupNode::jointStateCallback(const sensor_msgs::msg::JointState::SharedPtr
 
 void DynupNode::imuCallback(const sensor_msgs::msg::Imu::SharedPtr msg) { stabilizer_.setImu(msg); }
 
-rcl_interfaces::msg::SetParametersResult DynupNode::onSetParameters(const std::vector<rclcpp::Parameter> &parameters) {
+rcl_interfaces::msg::SetParametersResult DynupNode::onSetParameters(const std::vector<rclcpp::Parameter> &parameters) { //TODO: muss eig. nicht mehr die parameter als vektor entgegenehmen
   params_ = param_listener_.get_params();
 
   engine_rate_ = params_.engine.engine_rate;
@@ -340,6 +340,13 @@ void DynupNode::loopEngine(int loop_rate, std::shared_ptr<DynupGoalHandle> goal_
   }
 }
 
+void DynupNode::loop()
+{
+  params_ = param_listener_.get_params();
+  // log one parameter
+  RCLCPP_INFO(this->get_logger(), "engine_rate: %ld", params_.engine.engine_rate);
+}
+
 bitbots_dynup::msg::DynupPoses DynupNode::getCurrentPoses() {
   rclcpp::Time time = this->get_clock()->now();
   /* Transform the left foot into the right foot frame and all other splines into the base link frame*/
@@ -416,6 +423,11 @@ int main(int argc, char **argv) {
   auto node = std::make_shared<bitbots_dynup::DynupNode>();
   rclcpp::experimental::executors::EventsExecutor exec;
   exec.add_node(node);
+
+rclcpp::Duration timer_duration = rclcpp::Duration::from_seconds(1.0 / 200.0);
+    rclcpp::TimerBase::SharedPtr timer =
+      rclcpp::create_timer(node, node->get_clock(), timer_duration, [node]() -> void { node->loop(); });
+
 
   exec.spin();
   rclcpp::shutdown();

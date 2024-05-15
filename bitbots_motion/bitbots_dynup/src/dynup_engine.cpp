@@ -764,7 +764,7 @@ bitbots_splines::PoseSpline DynupEngine::getRHandSplines() const { return r_hand
 
 bitbots_splines::PoseSpline DynupEngine::getLHandSplines() const { return l_hand_spline_; }
 
-void DynupEngine::setParams(dynup::Params::Engine params) {
+void DynupEngine::setParams(bitbots_dynup::Params::Engine params) {
   params_ = params;
   arm_offset_y_ = shoulder_offset_y_;
   offset_left_ = tf2::Transform(tf2::Quaternion(0, 0, 0, 1), {0, arm_offset_y_, arm_offset_z_});

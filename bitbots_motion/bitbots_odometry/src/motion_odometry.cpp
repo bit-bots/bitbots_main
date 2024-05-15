@@ -188,10 +188,10 @@ void MotionOdometry::odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg) 
 int main(int argc, char **argv) {
   rclcpp::init(argc, argv);
   auto node = std::make_shared<bitbots_odometry::MotionOdometry>();
-
-  rclcpp::Duration timer_duration = rclcpp::Duration::from_seconds(1.0 / 200.0);
   rclcpp::experimental::executors::EventsExecutor exec;
   exec.add_node(node);
+
+  rclcpp::Duration timer_duration = rclcpp::Duration::from_seconds(1.0 / 200.0);
 
   rclcpp::TimerBase::SharedPtr timer =
       rclcpp::create_timer(node, node->get_clock(), timer_duration, [node]() -> void { node->loop(); });
