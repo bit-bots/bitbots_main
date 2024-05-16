@@ -6,7 +6,7 @@ from typing import Tuple, Union
 import numpy as np
 import rclpy
 import tf2_ros as tf2
-from bitbots_tf_listener import TransformListener
+from bitbots_tf_listener import Buffer
 from filterpy.common import Q_discrete_white_noise
 from filterpy.kalman import KalmanFilter
 from geometry_msgs.msg import Point, PoseWithCovarianceStamped, TwistWithCovarianceStamped
@@ -45,8 +45,7 @@ class BallFilter(Node):
         """
         super().__init__("ball_filter", automatically_declare_parameters_from_overrides=True)
         self.logger = self.get_logger()
-        self.tf_buffer = tf2.Buffer(cache_time=rclpy.duration.Duration(seconds=2))
-        self.tf_listener = TransformListener(self.tf_buffer, self)
+        self.tf_buffer = Buffer(rclpy.duration.Duration(seconds=2), self)
         # Setup dynamic reconfigure config
         self.config = {}
         self.add_on_set_parameters_callback(self._dynamic_reconfigure_callback)

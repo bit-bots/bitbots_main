@@ -10,6 +10,8 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
   <depend>pybind11_vendor</depend>
+  <depend>tf2</depend>
+  <depend>ros2_python_extension</depend>
   <depend>tf2_ros</depend>
   <export>
 

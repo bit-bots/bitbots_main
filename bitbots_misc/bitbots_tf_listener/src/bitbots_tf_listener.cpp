@@ -1,10 +1,16 @@
 #include <pybind11/embed.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <tf2_ros/buffer.h>
+#include <tf2_ros/transform_listener.h>
 
+#include <builtin_interfaces/msg/duration.hpp>
+#include <builtin_interfaces/msg/time.hpp>
+#include <geometry_msgs/msg/transform_stamped.hpp>
 #include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
 #include <rclcpp/qos.hpp>
 #include <rclcpp/serialization.hpp>
+#include <ros2_python_extension/serialization.hpp>
 #include <tf2_msgs/msg/tf_message.hpp>
 #include <utility>
 
@@ -12,7 +18,7 @@ namespace py = pybind11;
 
 class TransformListener {
  public:
-  TransformListener(py::object node, py::object py_wrapper) {
+  TransformListener(py::bytes duration_raw, py::object node) {
     // initialize rclcpp if not already done
     if (!rclcpp::contexts::get_global_default_context()->is_valid()) {
       rclcpp::init(0, nullptr);
@@ -21,21 +27,16 @@ class TransformListener {
     // get node name from python node object
     rcl_node_t *node_handle = (rcl_node_t *)node.attr("handle").attr("pointer").cast<size_t>();
     const char *node_name = rcl_node_get_name(node_handle);
-    // create node with name <python_node_name>_tf_listener
-    node_ = std::make_shared<rclcpp::Node>((std::string(node_name) + "_tf_listener").c_str());
+    // create node with name <python_node_name>_tf
+    node_ = std::make_shared<rclcpp::Node>((std::string(node_name) + "_tf").c_str());
 
-    // get python functions from wrapper object
-    set_transform_ = py_wrapper.attr("set_transform");
-    set_transform_static_ = py_wrapper.attr("set_transform_static");
+    // Get buffer duration from python duration
+    rclcpp::Duration duration{ros2_python_extension::fromPython<builtin_interfaces::msg::Duration>(duration_raw)};
 
     // create subscribers
-    rclcpp::QoS qos(rclcpp::KeepLast(100));
-    rclcpp::QoS qos_static(rclcpp::KeepLast(100));
-    qos_static.transient_local();
-    tf_sub_ = node_->create_subscription<tf2_msgs::msg::TFMessage>(
-        "/tf", qos, std::bind(&TransformListener::tf_callback, this, std::placeholders::_1));
-    tf_static_sub_ = node_->create_subscription<tf2_msgs::msg::TFMessage>(
-        "/tf_static", qos_static, std::bind(&TransformListener::tf_static_callback, this, std::placeholders::_1));
+    buffer_ = std::make_shared<tf2_ros::Buffer>(this->node_->get_clock());
+    buffer_->setUsingDedicatedThread(true);
+    listener_ = std::make_shared<tf2_ros::TransformListener>(*buffer_, node_, false);
 
     // create executor and start thread spinning the executor
     executor_ = std::make_shared<rclcpp::experimental::executors::EventsExecutor>();
@@ -47,34 +48,29 @@ class TransformListener {
     });
   }
 
-  // callbacks
-  void tf_callback(const tf2_msgs::msg::TFMessage::SharedPtr msg) { common_callback(msg, set_transform_); }
+  py::bytes lookup_transform(py::str target_frame, py::str source_frame, py::bytes time_raw, py::bytes timeout_raw) {
+    // lookup transform
+    geometry_msgs::msg::TransformStamped transform;
+    rclcpp::Time time_msg{ros2_python_extension::fromPython<builtin_interfaces::msg::Time>(time_raw)};
+    rclcpp::Duration timeout{ros2_python_extension::fromPython<builtin_interfaces::msg::Duration>(timeout_raw)};
 
-  void tf_static_callback(const tf2_msgs::msg::TFMessage::SharedPtr msg) {
-    common_callback(msg, set_transform_static_);
+    try {
+      transform = buffer_->lookupTransform(target_frame.cast<std::string>(), source_frame.cast<std::string>(), time_msg,
+                                           timeout);
+    } catch (tf2::TransformException &ex) {
+      // throw python exception
+      throw py::value_error(ex.what());
+    }
+
+    // serialize transform
+    return ros2_python_extension::toPython<geometry_msgs::msg::TransformStamped>(transform);
   }
 
-  // function with common code (serialization) from both callbacks
-  void common_callback(const tf2_msgs::msg::TFMessage::SharedPtr &msg, py::object set_transform) {
-    // the message is serialized to python to be able to transfer it to the python tf buffer
-    auto serializer = rclcpp::Serialization<geometry_msgs::msg::TransformStamped>();
-    rclcpp::SerializedMessage serialized_transform;
-
-    for (auto &transform : msg->transforms) {
-      // this is the actual serialization
-      serializer.serialize_message(&transform, &serialized_transform);
-      auto rcl_serialized_transform = serialized_transform.get_rcl_serialized_message();
-      py::bytes py_serialized_transform = {reinterpret_cast<const char *>(rcl_serialized_transform.buffer),
-                                           rcl_serialized_transform.buffer_length};
-      // we have to acquire the GIL to be able to call python functions
-      {
-        // we need PyGILState_Ensure and py::gil_scoped_acquire because of a bug
-        // see https://github.com/pybind/pybind11/issues/1920
-        PyGILState_STATE gstate = PyGILState_Ensure();
-        py::gil_scoped_acquire acquire;
-        set_transform(py_serialized_transform);
-      }
-    }
+  bool can_transform(py::str target_frame, py::str source_frame, py::bytes time_raw, py::bytes timeout_raw) {
+    // check if transform can be looked up
+    rclcpp::Time time_msg{ros2_python_extension::fromPython<builtin_interfaces::msg::Time>(time_raw)};
+    rclcpp::Duration timeout{ros2_python_extension::fromPython<builtin_interfaces::msg::Duration>(timeout_raw)};
+    return buffer_->canTransform(target_frame.cast<std::string>(), source_frame.cast<std::string>(), time_msg, timeout);
   }
 
   // destructor
@@ -85,18 +81,20 @@ class TransformListener {
   }
 
  private:
+  rclcpp::Serialization<builtin_interfaces::msg::Time> time_serializer_;
+  rclcpp::Serialization<builtin_interfaces::msg::Duration> duration_serializer_;
+  rclcpp::Serialization<geometry_msgs::msg::TransformStamped> transform_serializer_;
+
   std::shared_ptr<rclcpp::Node> node_;
+  std::shared_ptr<tf2_ros::Buffer> buffer_;
+  std::shared_ptr<tf2_ros::TransformListener> listener_;
   std::shared_ptr<std::thread> thread_;
   std::shared_ptr<rclcpp::experimental::executors::EventsExecutor> executor_;
-  py::object set_transform_;
-  py::object set_transform_static_;
-
-  // subscriber objects
-  rclcpp::Subscription<tf2_msgs::msg::TFMessage>::SharedPtr tf_sub_;
-  rclcpp::Subscription<tf2_msgs::msg::TFMessage>::SharedPtr tf_static_sub_;
 };
 
 PYBIND11_MODULE(cpp_wrapper, m) {
   py::class_<TransformListener, std::shared_ptr<TransformListener>>(m, "TransformListener")
-      .def(py::init<py::object, py::object>());
+      .def(py::init<py::bytes, py::object>())
+      .def("lookup_transform", &TransformListener::lookup_transform)
+      .def("can_transform", &TransformListener::can_transform);
 }
