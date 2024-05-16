@@ -1,5 +1,9 @@
 FROM ros:iron
 
+ARG user=bitbots
+ARG uid=1000
+ARG gid=1000
+
 # Basic Utilities
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update -y \
@@ -77,18 +81,25 @@ RUN python3 -m pip install \
 # Set zsh as default shell
 SHELL ["/bin/zsh", "-c"]
 
-# Create home directory and colcon workspace
-RUN mkdir -p "/root/colcon_ws"
+# Create user bitbots with home directory and add to sudo group
+RUN useradd -m -U -u "$uid" -G sudo -s /bin/zsh $user \
+  && groupmod -g "$gid" $user \
+  && echo "$user ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+
+USER $user
+
+# Create colcon workspace
+RUN mkdir -p /home/$user/colcon_ws/src
 
 # Install oh-my-zsh for pretty terminal
 RUN sh -c "$(wget -O- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" && \
-  git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
+  git clone https://github.com/zsh-users/zsh-autosuggestions "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions"
 
-# Add zshrc
-COPY zshrc "/root/.zshrc"
+# Add zshrc to bitbots home directory
+COPY --chown=$user:$user zshrc /home/$user/.zshrc
 
 # This is required for sharing Xauthority
 ENV QT_X11_NO_MITSHM=1
 
 # Switch to the workspace directory
-WORKDIR "/root/colcon_ws"
+WORKDIR /home/$user/colcon_ws

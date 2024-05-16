@@ -20,8 +20,8 @@
     }
   },
 
-  "workspaceMount": "type=bind,source=${localWorkspaceFolder},target=/root/colcon_ws/src/bitbots_main",
-  "workspaceFolder": "/root/colcon_ws/src/bitbots_main",
+  "workspaceMount": "type=bind,source=${localWorkspaceFolder},target=/home/bitbots/colcon_ws/src/bitbots_main",
+  "workspaceFolder": "/home/bitbots/colcon_ws/src/bitbots_main",
 
   "mounts": [
     "type=bind,source=${localEnv:HOME},target=/srv/host_home,consistency=cached"
