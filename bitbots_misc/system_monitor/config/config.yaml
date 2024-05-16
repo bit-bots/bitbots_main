@@ -10,6 +10,6 @@ system_monitor:
 
     # these are the threshold values at which we start going into a warn state
     cpu_load_percentage: 80.0
-    memory_load_percentage: 80.0
+    memoroy_load_percentage: 80.0
     network_rate_received_errors: 10.0
     network_rate_send_errors: 10.0
