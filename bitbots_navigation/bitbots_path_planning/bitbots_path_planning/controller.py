@@ -89,7 +89,7 @@ class Controller:
 
         # Calculate the translational walk velocity.
         # It considers the distance and breaks if we are close to the final position of the global plan
-        walk_vel = min(distance * self.config_translation_slow_down_factor, self.config_max_vel_x)
+        walk_vel = distance * self.config_translation_slow_down_factor
 
         # Check if we are so close to the final position of the global plan that we want to align us with
         # its orientation and not the heading towards its position
@@ -123,30 +123,30 @@ class Controller:
         cmd_vel.linear.x = math.cos(walk_angle - self._get_yaw(current_pose)) * walk_vel
         cmd_vel.linear.y = math.sin(walk_angle - self._get_yaw(current_pose)) * walk_vel
 
-        # Scale command accordingly if a limit is exceded
+        # Scale command accordingly if a limit is exceeded
         if cmd_vel.linear.x > self.config_max_vel_x:
             self.node.get_logger().debug(
-                f"X LIMIT reached: {cmd_vel.linear.x} > {self.config_max_vel_x}, with Y being {cmd_vel.linear.y}"
+                f"X max LIMIT reached: {cmd_vel.linear.x} > {self.config_max_vel_x}, with Y being {cmd_vel.linear.y}"
             )
             cmd_vel.linear.y *= self.config_max_vel_x / cmd_vel.linear.x
             cmd_vel.linear.x = self.config_max_vel_x
-            self.node.get_logger().debug(f"X LIMIT reached: set Y to {cmd_vel.linear.y}")
+            self.node.get_logger().debug(f"X max LIMIT reached: scale Y to {cmd_vel.linear.y}")
 
         if cmd_vel.linear.x < self.config_min_vel_x:
             self.node.get_logger().debug(
-                f"X LIMIT reached: {cmd_vel.linear.x} < {self.config_min_vel_x}, with Y being {cmd_vel.linear.y}"
+                f"X min LIMIT reached: {cmd_vel.linear.x} < {self.config_min_vel_x}, with Y being {cmd_vel.linear.y}"
             )
             cmd_vel.linear.y *= self.config_min_vel_x / cmd_vel.linear.x
             cmd_vel.linear.x = self.config_min_vel_x
-            self.node.get_logger().debug(f"X LIMIT reached: set Y to {cmd_vel.linear.y}")
+            self.node.get_logger().debug(f"X min LIMIT reached: scale Y to {cmd_vel.linear.y}")
 
         if abs(cmd_vel.linear.y) > self.config_max_vel_y:
             self.node.get_logger().debug(
-                f"Y LIMIT reached: {cmd_vel.linear.y} > {self.config_max_vel_y}, with X being {cmd_vel.linear.x}"
+                f"Y max LIMIT reached: {cmd_vel.linear.y} > {self.config_max_vel_y}, with X being {cmd_vel.linear.x}"
             )
             cmd_vel.linear.x *= self.config_max_vel_y / abs(cmd_vel.linear.y)
-            cmd_vel.linear.y *= self.config_max_vel_y / abs(cmd_vel.linear.y)
-            self.node.get_logger().debug(f"Y LIMIT reached: set X to {cmd_vel.linear.x}")
+            cmd_vel.linear.y = math.copysign(self.config_max_vel_y, cmd_vel.linear.y)
+            self.node.get_logger().debug(f"Y max LIMIT reached: scale X to {cmd_vel.linear.x}")
 
         # Apply the desired rotational velocity
         cmd_vel.angular.z = rot_goal_vel
