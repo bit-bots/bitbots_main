@@ -1,9 +1,11 @@
 import math
+from typing import Optional
 
 import tf2_ros as tf2
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Path
 from rclpy.node import Node
+from rclpy.time import Time
 from ros2_numpy import numpify
 from tf2_geometry_msgs import PointStamped, Pose, PoseStamped
 from tf_transformations import euler_from_quaternion
@@ -31,13 +33,16 @@ class Controller:
             "controller.rotation_slow_down_factor", 0.3
         ).value
         self.config_rotation_i_factor: float = self.node.declare_parameter("controller.rotation_i_factor", 0.05).value
-        self.config_smoothing_k: float = self.node.declare_parameter("controller.smoothing_k", 0.2).value
+        self.config_smoothing_tau: float = self.node.declare_parameter("controller.smoothing_tau", 0.2).value
         self.config_translation_slow_down_factor: float = self.node.declare_parameter(
             "controller.translation_slow_down_factor", 0.5
         ).value
 
         # Last command velocity
         self.last_cmd_vel = Twist()
+
+        # Last update time
+        self.last_update_time: Optional[Time] = None
 
         # Accumulator for the angular error
         self.angular_error_accumulator = 0
@@ -152,15 +157,24 @@ class Controller:
         cmd_vel.angular.z = rot_goal_vel
 
         # Filter the command velocity to avoid sudden changes
-        cmd_vel.linear.x = (
-            self.config_smoothing_k * cmd_vel.linear.x + (1 - self.config_smoothing_k) * self.last_cmd_vel.linear.x
-        )
-        cmd_vel.linear.y = (
-            self.config_smoothing_k * cmd_vel.linear.y + (1 - self.config_smoothing_k) * self.last_cmd_vel.linear.y
-        )
-        cmd_vel.angular.z = (
-            self.config_smoothing_k * cmd_vel.angular.z + (1 - self.config_smoothing_k) * self.last_cmd_vel.angular.z
-        )
+        current_time = self.node.get_clock().now()
+
+        # Don't apply the filter on the first update
+        if self.last_update_time is not None:
+            # Calculate the time since the last update
+            delta_time = current_time - self.last_update_time
+
+            # Calculate the exponential decay smoothing factor alpha from the time constant tau
+            # Instead of defining alpha directly, we use tau to derive it in a time-step independent way
+            alpha = 1 - math.exp(-delta_time.nanoseconds / (self.config_smoothing_tau * 1e9))
+
+            # Apply the exponential moving average filter
+            cmd_vel.linear.x = alpha * cmd_vel.linear.x + (1 - alpha) * self.last_cmd_vel.linear.x
+            cmd_vel.linear.y = alpha * cmd_vel.linear.y + (1 - alpha) * self.last_cmd_vel.linear.y
+            cmd_vel.angular.z = alpha * cmd_vel.angular.z + (1 - alpha) * self.last_cmd_vel.angular.z
+
+        # Store the current time for the next update
+        self.last_update_time = current_time
 
         # Store the last command velocity
         self.last_cmd_vel = cmd_vel
