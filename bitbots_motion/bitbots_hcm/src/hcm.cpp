@@ -62,13 +62,21 @@ class HCM_CPP : public rclcpp::Node {
 
     // Create subscriber for high frequency sensor data
     joint_state_sub_ = this->create_subscription<sensor_msgs::msg::JointState>(
-        "joint_states", 1, std::bind(&HCM_CPP::joint_state_callback, this, _1));
+        "joint_states", 1, std::bind(&HCM_CPP::joint_state_callback, this, _1), high_hz_sub_options());
     pressure_l_sub_ = this->create_subscription<bitbots_msgs::msg::FootPressure>(
-        "foot_pressure_left/filtered", 1, std::bind(&HCM_CPP::pressure_l_callback, this, _1));
+        "foot_pressure_left/filtered", 1, std::bind(&HCM_CPP::pressure_l_callback, this, _1), high_hz_sub_options());
     pressure_r_sub_ = this->create_subscription<bitbots_msgs::msg::FootPressure>(
-        "foot_pressure_right/filtered", 1, std::bind(&HCM_CPP::pressure_r_callback, this, _1));
-    imu_sub_ =
-        this->create_subscription<sensor_msgs::msg::Imu>("imu/data", 1, std::bind(&HCM_CPP::imu_callback, this, _1));
+        "foot_pressure_right/filtered", 1, std::bind(&HCM_CPP::pressure_r_callback, this, _1), high_hz_sub_options());
+    imu_sub_ = this->create_subscription<sensor_msgs::msg::Imu>(
+        "imu/data", 1, std::bind(&HCM_CPP::imu_callback, this, _1), high_hz_sub_options());
+  }
+
+  rclcpp::SubscriptionOptions high_hz_sub_options() {
+    // Setup a MutuallyExclusive callback group for each high frequency
+    // subscription so that they don't block each other
+    rclcpp::SubscriptionOptions options;
+    options.callback_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+    return options;
   }
 
   void animation_callback(bitbots_msgs::msg::Animation msg) {
