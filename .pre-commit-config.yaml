@@ -15,6 +15,7 @@ repos:
           - "-i"
       - id: cppcheck
         args:
+          - "--inline-suppr"
           - "--suppress=missingInclude"
           - "--suppress=unmatchedSuppression"
           - "--suppress=unusedFunction"
