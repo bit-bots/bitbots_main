@@ -74,3 +74,10 @@ pylon_camera_parameters:
       read_only: true
       validation:
         bounds<>: [0, 10000]
+  misc:
+    darkness_threshold:
+      type: double
+      default_value: 0.1
+      description: "This threshold is used to determine if the image is too dark, which means that we might forgot the camera cover."
+      validation:
+        bounds<>: [0, 1]

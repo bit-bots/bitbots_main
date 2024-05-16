@@ -57,7 +57,7 @@ void OdometryFuser::loop() {
     // This wait clogs the executor, leading to a deadlock. It locks because with the clogged executor,
     // the fused_time_ is not updated, because the callback updating it is not executed
     if (this->now() - fused_time_ > rclcpp::Duration::from_seconds(0.1)) {
-      RCLCPP_WARN_SKIPFIRST_THROTTLE(this->get_logger(), *this->get_clock(), 2,
+      RCLCPP_WARN_SKIPFIRST_THROTTLE(this->get_logger(), *this->get_clock(), 2 * 1000,
                                      "Fused time is too old, this should only happen if we get no new data");
       return;
     }

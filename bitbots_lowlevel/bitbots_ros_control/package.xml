@@ -19,6 +19,7 @@
 
   <depend>backward_ros</depend>
   <depend>bitbots_buttons</depend>
+  <depend>bitbots_diagnostic</depend>
   <depend>bitbots_docs</depend>
   <depend>bitbots_msgs</depend>
   <depend>bitbots_robot_description</depend>
