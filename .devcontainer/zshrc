@@ -50,7 +50,7 @@ bindkey "^[[1;5D" backward-word
 
 
 # Settings for the prompt to show that we are in a docker container
-export PROMPT="%K{black} 🐋 %K{blue}%F{black}%/ %f%k%F{blue}%f "  # Prefix the prompt with DOCKER
+export PROMPT="%K{black} 🐋 %K{blue}%F{black} %~ %f%k%F{blue}%f "  # Prefix the prompt with DOCKER
 
 # >>> bit-bots initialize >>>
 
