@@ -105,14 +105,13 @@ void loop();
 
   // Declare parameter listener and struct from the generate_parameter_library
   bitbots_dynup::ParamListener param_listener_;
+  bitbots_dynup::Params params_ ;
   // Datastructure to hold all parameters, which is build from the schema in the 'parameters.yaml'
-  bitbots_dynup::Params config_;
 
   DynupEngine engine_;
   Stabilizer stabilizer_;
   Visualizer visualizer_;
   DynupIK ik_;
-  bitbots_dynup::Params params_ ;
   int stable_duration_;
   int engine_rate_;
   int failed_tick_counter_;

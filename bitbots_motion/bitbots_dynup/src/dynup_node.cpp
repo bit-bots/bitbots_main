@@ -4,105 +4,54 @@ namespace bitbots_dynup {
 using namespace std::chrono_literals;
 
 DynupNode::DynupNode(const std::string &ns, std::vector<rclcpp::Parameter> parameters) //parameters werden im launch script übergeben, aber hierüber kriegt er auch die yaml, also gucken, dass das vlt anders
-    : Node(ns + "dynup", rclcpp::NodeOptions()
-                             .allow_undeclared_parameters(true)
-                             .parameter_overrides(parameters)
-                             .automatically_declare_parameters_from_overrides(true)), //TODO: vlt. rausnehmen?
+    : Node(ns + "dynup", rclcpp::NodeOptions()), //TODO: vlt. rausnehmen?
     param_listener_(get_node_parameters_interface()),
     engine_(SharedPtr(this)),
     stabilizer_(ns),
     visualizer_("debug/dynup", SharedPtr(this)),
     ik_(SharedPtr(this)),
     tf_buffer_(std::make_unique<tf2_ros::Buffer>(this->get_clock())) {
-  // get all kinematics parameters from the move_group node if they are not set manually via constructor
-  config_ = param_listener_.get_params();
+
+
+  auto moveit_node = std::make_shared<rclcpp::Node>(ns + "dynup_moveit_node");
+
+    // when called from python, parameters are given to the constructor
+  for (auto parameter : parameters) {
+    if (this->has_parameter(parameter.get_name())) {
+      // this is the case for walk engine params set via python
+      this->set_parameter(parameter);
+    } else {
+      // parameter is not for the walking, set on moveit node
+      moveit_node->declare_parameter(parameter.get_name(), parameter.get_type());
+      moveit_node->set_parameter(parameter);
+    }
+  }
+    // get all kinematics parameters from the move_group node if they are not set manually via constructor
   std::string check_kinematic_parameters;
-  if (!this->get_parameter("robot_description_kinematics.LeftLeg.kinematics_solver", check_kinematic_parameters)) {
-    auto parameters_client = std::make_shared<rclcpp::SyncParametersClient>(this, "/move_group"); // just move group parameters
+  if (!moveit_node->get_parameter("robot_description_kinematics.LeftLeg.kinematics_solver",
+                                  check_kinematic_parameters)) {
+    auto parameters_client = std::make_shared<rclcpp::SyncParametersClient>(this, "/move_group");
     while (!parameters_client->wait_for_service(1s)) {
       if (!rclcpp::ok()) {
         RCLCPP_ERROR(this->get_logger(), "Interrupted while waiting for the service. Exiting.");
-        rclcpp::shutdown();
+        break;
       }
-      RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 10 * 1e9,
+      RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 10 * 1e3,
                            "Can't copy parameters from move_group node. Service not available, waiting again...");
     }
     rcl_interfaces::msg::ListParametersResult parameter_list =
         parameters_client->list_parameters({"robot_description_kinematics"}, 10);
-    auto copied_parameters = parameters_client->get_parameters(parameter_list.names); // TODO: 
-    // set the parameters to our node
-    this->set_parameters(copied_parameters);
+    auto copied_parameters = parameters_client->get_parameters(parameter_list.names);
+    for (auto &parameter : copied_parameters) {
+      moveit_node->declare_parameter(parameter.get_name(), parameter.get_type());
+      moveit_node->set_parameter(parameter);
+    }
   }
 
-  base_link_frame_ = this->get_parameter("base_link_frame").get_value<std::string>(); //TODO: from launch file
-  r_sole_frame_ = this->get_parameter("r_sole_frame").get_value<std::string>();
-  l_sole_frame_ = this->get_parameter("l_sole_frame").get_value<std::string>();
-  r_wrist_frame_ = this->get_parameter("r_wrist_frame").get_value<std::string>();
-  l_wrist_frame_ = this->get_parameter("l_wrist_frame").get_value<std::string>();
+  // get all kinematics parameters from the move_group node if they are not set manually via constructor
+  params_ = param_listener_.get_params();
 
-  param_names_ = {"engine_rate",
-                  "arm_extended_length",
-                  "foot_distance",
-                  "hand_walkready_pitch",
-                  "hand_walkready_height",
-                  "trunk_height",
-                  "trunk_pitch",
-                  "trunk_x_final",
-                  "time_walkready",
-                  "arms_angle_back",
-                  "arm_side_offset_back",
-                  "com_shift_1",
-                  "com_shift_2",
-                  "foot_angle",
-                  "hands_behind_back_x",
-                  "hands_behind_back_z",
-                  "leg_min_length_back",
-                  "time_foot_ground_back",
-                  "time_full_squat_hands",
-                  "time_full_squat_legs",
-                  "time_legs_close",
-                  "trunk_height_back",
-                  "trunk_overshoot_angle_back",
-                  "wait_in_squat_back",
-                  "arm_side_offset_front",
-                  "hands_pitch",
-                  "leg_min_length_front",
-                  "max_leg_angle",
-                  "time_foot_close",
-                  "time_foot_ground_front",
-                  "time_hands_front",
-                  "time_hands_rotate",
-                  "time_hands_side",
-                  "time_to_squat",
-                  "time_torso_45",
-                  "trunk_overshoot_angle_front",
-                  "trunk_x_front",
-                  "wait_in_squat_front",
-                  "rise_time",
-                  "descend_time",
-                  "stabilizing",
-                  "minimal_displacement",
-                  "stable_threshold",
-                  "stable_duration",
-                  "stabilization_timeout",
-                  "spline_smoothness",
-                  "display_debug",
-                  "pid_trunk_roll.p",
-                  "pid_trunk_roll.i",
-                  "pid_trunk_roll.d",
-                  "pid_trunk_roll.i_clamp",
-                  "pid_trunk_roll.i_clamp_min",
-                  "pid_trunk_roll.i_clamp_max",
-                  "pid_trunk_roll.antiwindup",
-                  "pid_trunk_roll.publish_state",
-                  "pid_trunk_pitch.p",
-                  "pid_trunk_pitch.i",
-                  "pid_trunk_pitch.d",
-                  "pid_trunk_pitch.i_clamp",
-                  "pid_trunk_pitch.i_clamp_min",
-                  "pid_trunk_pitch.i_clamp_max",
-                  "pid_trunk_pitch.antiwindup",
-                  "pid_trunk_pitch.publish_state"};
+
 
   // load params once
   const std::vector<rclcpp::Parameter> params;
@@ -110,13 +59,19 @@ DynupNode::DynupNode(const std::string &ns, std::vector<rclcpp::Parameter> param
 
   tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_, this);
 
-  robot_model_loader_ =
-      std::make_shared<robot_model_loader::RobotModelLoader>(SharedPtr(this), "robot_description", true);
+  robot_model_loader_ = std::make_shared<robot_model_loader::RobotModelLoader>(moveit_node, "robot_description");
   kinematic_model_ = robot_model_loader_->getModel();
   if (!kinematic_model_) {
     RCLCPP_FATAL(this->get_logger(), "No robot model loaded, killing dynup.");
     exit(1);
   }
+
+  this->get_parameter("base_link_frame", base_link_frame_); //TODO: from launch file
+  this->get_parameter("r_sole_frame", r_sole_frame_);
+  this->get_parameter("l_sole_frame", l_sole_frame_);
+  this->get_parameter("r_wrist_frame", r_wrist_frame_);
+  this->get_parameter("l_wrist_frame", l_wrist_frame_);
+  
   moveit::core::RobotStatePtr init_state;
   init_state.reset(new moveit::core::RobotState(kinematic_model_));
   // set elbows to make arms straight, in a stupid way since moveit is annoying
@@ -342,9 +297,10 @@ void DynupNode::loopEngine(int loop_rate, std::shared_ptr<DynupGoalHandle> goal_
 
 void DynupNode::loop()
 {
+  if (param_listener_.is_old(params_)) {
   params_ = param_listener_.get_params();
-  // log one parameter
   RCLCPP_INFO(this->get_logger(), "engine_rate: %ld", params_.engine.engine_rate);
+}
 }
 
 bitbots_dynup::msg::DynupPoses DynupNode::getCurrentPoses() {
