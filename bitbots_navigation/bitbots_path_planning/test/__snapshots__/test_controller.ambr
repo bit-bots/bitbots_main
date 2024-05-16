@@ -10,10 +10,10 @@
     'config_orient_to_goal_distance': 1.0,
     'config_rotation_i_factor': 0.05,
     'config_rotation_slow_down_factor': 0.3,
-    'config_smoothing_k': 0.2,
+    'config_smoothing_tau': 0.2,
     'config_translation_slow_down_factor': 0.5,
   })
 # ---
 # name: test_step_cmd_vel_smoothing
-  'geometry_msgs.msg.Twist(linear=geometry_msgs.msg.Vector3(x=0.18500000000000003, y=0.08, z=0.0), angular=geometry_msgs.msg.Vector3(x=0.0, y=0.0, z=0.30290045562082435))'
+  'geometry_msgs.msg.Twist(linear=geometry_msgs.msg.Vector3(x=0.1375935868207597, y=0.08, z=0.0), angular=geometry_msgs.msg.Vector3(x=0.0, y=0.0, z=0.2320828999230522))'
 # ---
