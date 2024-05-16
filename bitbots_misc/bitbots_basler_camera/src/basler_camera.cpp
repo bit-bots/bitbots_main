@@ -44,6 +44,22 @@ class BaslerCamera {
   pylon_camera_parameters::ParamListener param_listener_;
   pylon_camera_parameters::Params config_;
 
+  const std::map<const Basler_UniversalCameraParams::TemperatureStateEnums, const std::string> TEMP_STATE_2_STRING = {
+      {Basler_UniversalCameraParams::TemperatureStateEnums::TemperatureState_Ok, "OK"},
+      {Basler_UniversalCameraParams::TemperatureStateEnums::TemperatureState_Critical, "critical"},
+      {Basler_UniversalCameraParams::TemperatureStateEnums::TemperatureState_Error, "error"},
+  };
+
+  const std::map<const Basler_UniversalCameraParams::TemperatureStateEnums, const unsigned char>
+      TEMP_STATE_2_DIAGNOSTIC_STATE = {
+          {Basler_UniversalCameraParams::TemperatureStateEnums::TemperatureState_Ok,
+           diagnostic_msgs::msg::DiagnosticStatus::OK},
+          {Basler_UniversalCameraParams::TemperatureStateEnums::TemperatureState_Critical,
+           diagnostic_msgs::msg::DiagnosticStatus::WARN},
+          {Basler_UniversalCameraParams::TemperatureStateEnums::TemperatureState_Error,
+           diagnostic_msgs::msg::DiagnosticStatus::ERROR},
+  };
+
  public:
   BaslerCamera()
       : node_(std::make_shared<rclcpp::Node>("post_processor")),
@@ -66,7 +82,7 @@ class BaslerCamera {
       // Error handling.
       RCLCPP_ERROR(node_->get_logger(), "An exception occurred: %s", e.GetDescription());
       RCLCPP_ERROR(node_->get_logger(), "Could not initialize camera");
-      publish_basic_diagnostics(diagnostic_msgs::msg::DiagnosticStatus::ERROR, "Could not initialize camera");
+      publish_basic_diagnostics(diagnostic_msgs::msg::DiagnosticStatus::ERROR, "Could not initialize camera", {});
       exit(1);
     }
     // Setup timer for publishing
@@ -97,7 +113,7 @@ class BaslerCamera {
       RCLCPP_ERROR(node_->get_logger(), "Could not find device with user id '%s'", config_.device_user_id.c_str());
       RCLCPP_ERROR(node_->get_logger(), "Retrying in %f seconds", config_.reconnect_interval);
       publish_basic_diagnostics(diagnostic_msgs::msg::DiagnosticStatus::STALE,
-                                "Could not find the device with id " + config_.device_user_id);
+                                "Could not find the device '" + config_.device_user_id + "'!", {});
       // Wait
       rclcpp::sleep_for(std::chrono::duration_cast<std::chrono::nanoseconds>(
           std::chrono::duration<double>(config_.reconnect_interval)));
@@ -161,11 +177,30 @@ class BaslerCamera {
     camera_->ExposureTimeAbs.SetValue(config_.exposure);
   }
 
-  void publish_basic_diagnostics(unsigned char severity, const std::string& message) {
+  void publish_basic_diagnostics(unsigned char severity, const std::string& message,
+                                 const std::map<const std::string, const std::string>& additional_data) {
+    // Add general infos
     diagnostic_msgs::msg::DiagnosticStatus status;
+    status.name = "CAMERA";
+    status.hardware_id = config_.device_user_id;
+
+    // Add overall status
     status.level = severity;
     status.message = message;
+
+    // Add additional data (e.g. temperature)
+    std::vector<diagnostic_msgs::msg::KeyValue> keyValues;
+    for (auto const& [key, value] : additional_data) {  // cppcheck-suppress unassignedVariable
+      diagnostic_msgs::msg::KeyValue key_value;
+      key_value.key = key;
+      key_value.value = value;
+      keyValues.push_back(key_value);
+    }
+    status.values = keyValues;
+
+    // Publish the diagnostics array (only one status, as we only have one camera)
     diagnostic_msgs::msg::DiagnosticArray diagnostics;
+    diagnostics.header.stamp = node_->now();
     diagnostics.status.push_back(status);
     diagnostics_pub_->publish(diagnostics);
   }
@@ -176,6 +211,10 @@ class BaslerCamera {
 
     // Field to store the trigger time
     rclcpp::Time trigger_time;
+
+    // Camera metrics
+    std::optional<float> temperature;
+    std::optional<Basler_UniversalCameraParams::TemperatureStateEnums> temperature_state;
 
     try {
       // Check if the config has changed
@@ -190,7 +229,7 @@ class BaslerCamera {
       if (!camera_->IsOpen() or camera_->IsCameraDeviceRemoved()) {
         auto message = "Camera connection lost. Reinitializing camera";
         RCLCPP_WARN(node_->get_logger(), message);
-        publish_basic_diagnostics(diagnostic_msgs::msg::DiagnosticStatus::STALE, message);
+        publish_basic_diagnostics(diagnostic_msgs::msg::DiagnosticStatus::STALE, message, {});
         initilize_camera();
       }
 
@@ -210,7 +249,7 @@ class BaslerCamera {
       if (!ptrGrabResult->GrabSucceeded()) {
         RCLCPP_ERROR(node_->get_logger(), "Error: %x %s", ptrGrabResult->GetErrorCode(),
                      ptrGrabResult->GetErrorDescription().c_str());
-        publish_basic_diagnostics(diagnostic_msgs::msg::DiagnosticStatus::ERROR, "Error while grabbing image");
+        publish_basic_diagnostics(diagnostic_msgs::msg::DiagnosticStatus::ERROR, "Error while grabbing image", {});
         return;
       }
 
@@ -218,11 +257,16 @@ class BaslerCamera {
       auto image_camera_stamp = (__int128_t)ptrGrabResult->GetTimeStamp();
       auto image_age_in_seconds = (image_camera_stamp - camera_time_stamp_at_capture) / camera_tick_frequency_.value();
       trigger_time = ros_time_stamp_at_capture + rclcpp::Duration::from_seconds(image_age_in_seconds);
+
+      // Get the camera temperature
+      temperature = camera_->TemperatureAbs.GetValue();
+      temperature_state = camera_->TemperatureState.GetValue();
+
     } catch (GenICam::GenericException& e) {
       // Error handling.
       RCLCPP_ERROR(node_->get_logger(), "An exception occurred: %s", e.GetDescription());
       publish_basic_diagnostics(diagnostic_msgs::msg::DiagnosticStatus::ERROR,
-                                "An exception occurred during image acquisition");
+                                "An exception occurred during image acquisition", {});
       return;
     }
 
@@ -269,14 +313,26 @@ class BaslerCamera {
       }
     }
 
-    // Warn if the image is too dark
-    if (luminance < config_.misc.darkness_threshold) {
+    // Build map for additional diagnostics metrics
+    const std::map<const std::string, const std::string> diagnostics_metrics = {
+        {"temperature", std::to_string(temperature.value())},
+        {"temperature_state", TEMP_STATE_2_STRING.at(temperature_state.value())},
+        {"luminance", std::to_string(luminance)}};
+
+    // Warn if the camera is too hot or the image is too dark
+    if (temperature_state.value() != Basler_UniversalCameraParams::TemperatureStateEnums::TemperatureState_Ok) {
+      auto message = "Camera temperature (" + std::to_string((int)round(temperature.value())) + "°C) is " +
+                     TEMP_STATE_2_STRING.at(temperature_state.value()) + "! Thresholds are 72°C and 78°C respectively.";
+      RCLCPP_WARN_THROTTLE(node_->get_logger(), *node_->get_clock(), 10000, message.c_str());
+      publish_basic_diagnostics(TEMP_STATE_2_DIAGNOSTIC_STATE.at(temperature_state.value()), message,
+                                diagnostics_metrics);
+    } else if (luminance < config_.misc.darkness_threshold) {
       auto message = "Image is too dark. Did you forget the camera cover?";
       RCLCPP_WARN_ONCE(node_->get_logger(), message);
-      publish_basic_diagnostics(diagnostic_msgs::msg::DiagnosticStatus::WARN, message);
+      publish_basic_diagnostics(diagnostic_msgs::msg::DiagnosticStatus::WARN, message, diagnostics_metrics);
     } else {
       // Everything is fine
-      publish_basic_diagnostics(diagnostic_msgs::msg::DiagnosticStatus::OK, "Camera is running");
+      publish_basic_diagnostics(diagnostic_msgs::msg::DiagnosticStatus::OK, "Camera is running", diagnostics_metrics);
     }
   }
 
