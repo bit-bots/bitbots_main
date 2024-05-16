@@ -316,8 +316,8 @@ class BaslerCamera {
     // Build map for additional diagnostics metrics
     const std::map<const std::string, const std::string> diagnostics_metrics = {
         {"temperature", std::to_string(temperature.value())},
-        {"luminance", std::to_string(luminance)},
-        {"temperature_state", TEMP_STATE_2_STRING.at(temperature_state.value())}};
+        {"temperature_state", TEMP_STATE_2_STRING.at(temperature_state.value())},
+        {"luminance", std::to_string(luminance)}};
 
     // Warn if the camera is too hot or the image is too dark
     if (temperature_state.value() != Basler_UniversalCameraParams::TemperatureStateEnums::TemperatureState_Ok) {
