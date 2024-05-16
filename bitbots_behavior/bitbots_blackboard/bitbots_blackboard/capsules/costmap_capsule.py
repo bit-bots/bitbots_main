@@ -165,7 +165,7 @@ class CostmapCapsule:
         norms = np.linalg.norm(gradient, axis=0)
 
         # normalize gradient length
-        gradient = [np.where(norms == 0, 0, i / norms) for i in gradient]
+        gradient = [np.where(norms == 0, 0, i / (norms + np.finfo(norms.dtype).eps)) for i in gradient]
         self.gradient_map = gradient
 
     def cost_at_relative_xy(self, x: float, y: float) -> float:

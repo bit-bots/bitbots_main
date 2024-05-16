@@ -12,7 +12,6 @@ import os
 
 import rclpy
 import tf2_ros as tf2
-from ament_index_python import get_package_share_directory
 from bitbots_blackboard.blackboard import BodyBlackboard
 from bitbots_tf_listener import TransformListener
 from dynamic_stack_decider.dsd import DSD
@@ -24,6 +23,7 @@ from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 from soccer_vision_3d_msgs.msg import RobotArray
 
+from bitbots_body_behavior import behavior_dsd
 from bitbots_msgs.msg import RobotControlState, TeamData
 
 
@@ -39,13 +39,11 @@ class BodyDSD:
         blackboard = BodyBlackboard(node, self.tf_buffer)
         self.dsd = DSD(blackboard, "debug/dsd/body_behavior", node)  # TODO: use config
 
-        dirname = get_package_share_directory("bitbots_body_behavior")
+        self.dsd.register_actions(behavior_dsd.actions.__path__[0])
+        self.dsd.register_decisions(behavior_dsd.decisions.__path__[0])
 
-        self.dsd.register_actions(os.path.join(dirname, "actions"))
-        self.dsd.register_decisions(os.path.join(dirname, "decisions"))
-
-        dsd_file = node.get_parameter("dsd_file").get_parameter_value().string_value
-        self.dsd.load_behavior(os.path.join(dirname, dsd_file))
+        dsd_file: str = node.get_parameter("dsd_file").value
+        self.dsd.load_behavior(os.path.join(behavior_dsd.__path__[0], dsd_file))
 
         node.create_subscription(
             PoseWithCovarianceStamped,
