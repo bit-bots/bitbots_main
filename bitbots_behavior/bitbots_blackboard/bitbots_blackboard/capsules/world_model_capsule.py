@@ -1,10 +1,3 @@
-"""
-WorldModelCapsule
-^^^^^^^^^^^^^^^^^^
-
-Provides information about the world model.
-"""
-
 import math
 from typing import TYPE_CHECKING, Dict, Optional, Tuple
 

@@ -1,10 +1,3 @@
-"""
-PathfindingCapsule
-^^^^^^^^^^^
-
-Capsule that handles everything related to pathfinding.
-"""
-
 import math
 from enum import Enum
 from typing import TYPE_CHECKING, Optional

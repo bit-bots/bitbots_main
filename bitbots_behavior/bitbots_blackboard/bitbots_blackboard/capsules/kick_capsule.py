@@ -1,9 +1,3 @@
-"""
-KickCapsule
-^^^^^^^^^^^^^^^^
-
-Communicates with the dynamic_kick.
-"""
 from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:

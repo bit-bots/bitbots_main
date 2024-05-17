@@ -1,9 +1,3 @@
-"""
-AnimationCapsule
-^^^^^^^^^^^^^^^^
-
-Communicates with the animation action server and plays predefined animations.
-"""
 from rclpy.action import ActionClient
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.duration import Duration

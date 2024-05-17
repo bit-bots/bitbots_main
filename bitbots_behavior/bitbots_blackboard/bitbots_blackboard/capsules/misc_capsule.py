@@ -1,9 +1,3 @@
-"""
-MiscCapsule
-^^^^^^^^^^^
-
-Capsule for miscellaneous things that don't fit anywhere else.
-"""
 from typing import Optional
 
 from bitbots_utils.utils import get_parameters_from_other_node
