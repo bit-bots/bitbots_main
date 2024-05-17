@@ -4,7 +4,6 @@ import sys
 
 from ament_index_python import get_package_share_directory
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import (
     QComboBox,
     QFormLayout,
@@ -14,7 +13,6 @@ from PyQt5.QtWidgets import (
     QMainWindow,
     QPushButton,
     QRadioButton,
-    QShortcut,
     QSlider,
     QSpinBox,
     QVBoxLayout,
@@ -29,7 +27,7 @@ from bitbots_msgs.msg import TeamData
 
 class RobotWidget(QGroupBox):
     def __init__(self, parent=None):
-        super(RobotWidget, self).__init__(parent)
+        super().__init__(parent)
         self.setTitle("Robot")
         # Set maximum width
         self.setMaximumWidth(350)
@@ -63,7 +61,7 @@ class RobotWidget(QGroupBox):
 
 class StateBox(QGroupBox):
     def __init__(self, parent=None):
-        super(StateBox, self).__init__(parent)
+        super().__init__(parent)
         self.setTitle("State")
         self.setEnabled(False)
         # Create layout
@@ -89,7 +87,7 @@ class StateBox(QGroupBox):
 
 class TimeToPositionBox(QGroupBox):
     def __init__(self, parent=None):
-        super(TimeToPositionBox, self).__init__(parent)
+        super().__init__(parent)
         self.setTitle("Time to Position at Ball")
         self.setEnabled(False)
         # Create layout
@@ -107,7 +105,7 @@ class TimeToPositionBox(QGroupBox):
 
 class StrategyBox(QGroupBox):
     def __init__(self, parent=None):
-        super(StrategyBox, self).__init__(parent)
+        super().__init__(parent)
         self.setTitle("Strategy")
         self.setEnabled(False)
         self.main_layout = QVBoxLayout()
@@ -126,7 +124,7 @@ class StrategyBox(QGroupBox):
 
 class PublishButton(QPushButton):
     def __init__(self, parent=None):
-        super(PublishButton, self).__init__(parent)
+        super().__init__(parent)
         self.button_text = "Publish Team Data"
         self.setText(self.button_text)
         self.setCheckable(True)
@@ -205,7 +203,7 @@ class TeamDataSimulator(Plugin):
         # Show test message box
         self._widget.PlusButton.clicked.connect(self.plus_button_clicked)
         self._widget.MinusButton.clicked.connect(self.minus_button_clicked)
-        
+
 
 def main():
     plugin = "bitbots_team_data_sim_rqt.team_data_ui.TeamDataSimulator"
