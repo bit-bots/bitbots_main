@@ -2,10 +2,10 @@
 -r robot.txt  # Include robot.txt dependencies
 exhale  # Necessary for rst rendering
 fabric  # Manages SSH sessions for the deploy tool
+GitPython  # Used by the deploy tool to check current state of the git repository
 paramiko  # Necessary for fabric
 pre-commit  # Installs and runs pre-commit hooks for git
 rich  # Rich terminal output
 ruff  # Python linting
 syrupy  # Python snapshot testing
 pytest-mock   # Mocking for pytest
-pytest<8.1  # Keep version smaller than 8.1 until https://github.com/ros2/launch/pull/766 is released

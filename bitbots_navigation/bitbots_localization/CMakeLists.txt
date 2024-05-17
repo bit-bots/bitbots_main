@@ -7,6 +7,7 @@ if(NOT CMAKE_CXX_STANDARD)
 endif()
 
 find_package(ament_cmake REQUIRED)
+find_package(ament_index_cpp REQUIRED)
 find_package(backward_ros REQUIRED)
 find_package(Boost COMPONENTS filesystem REQUIRED)
 find_package(builtin_interfaces REQUIRED)
@@ -85,6 +86,7 @@ add_executable(localization ${SOURCES})
 ament_target_dependencies(
   localization
   ament_cmake
+  ament_index_cpp
   rclcpp
   Boost
   cv_bridge

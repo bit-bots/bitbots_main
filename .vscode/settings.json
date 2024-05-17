@@ -36,6 +36,7 @@
         "gamecontroller",
         "gamestate",
         "goalkick",
+        "hexsha",
         "hlvs",
         "holonomic",
         "hostnames",
@@ -207,4 +208,5 @@
     "cmake.configureOnOpen": false,
     "editor.formatOnSave": true,
     "editor.defaultFormatter": "charliermarsh.ruff",
+    "restructuredtext.pythonRecommendation.disabled": true,
 }

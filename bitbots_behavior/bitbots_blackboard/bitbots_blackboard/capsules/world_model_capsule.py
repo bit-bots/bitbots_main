@@ -4,6 +4,7 @@ WorldModelCapsule
 
 Provides information about the world model.
 """
+
 import math
 from typing import TYPE_CHECKING, Dict, Optional, Tuple
 
@@ -299,7 +300,7 @@ class WorldModelCapsule:
         if reset_ball_filter:  # Reset the ball filter
             result: Trigger.Response = self.reset_ball_filter.call(Trigger.Request())
             if result.success:
-                self._blackboard.node.get_logger().info(f"Received message from ball filter: '{result.message}'")
+                self._blackboard.node.get_logger().debug(f"Received message from ball filter: '{result.message}'")
             else:
                 self._blackboard.node.get_logger().warn(f"Ball filter reset failed with: '{result.message}'")
 
@@ -374,6 +375,10 @@ class WorldModelCapsule:
         ps = PoseStamped()
         ps.header = transform.header
         ps.pose.position = msgify(Point, numpify(transform.transform.translation))
+        ps.pose.orientation.x = transform.transform.rotation.x
+        ps.pose.orientation.y = transform.transform.rotation.y
+        ps.pose.orientation.z = transform.transform.rotation.z
+        ps.pose.orientation.w = transform.transform.rotation.w
         return ps
 
     def get_current_position_transform(self, frame_id: str) -> TransformStamped:

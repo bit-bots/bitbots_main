@@ -6,7 +6,7 @@
     <let if="$(env IS_ROBOT false)" name="taskset" value="taskset -c 2"/>
     <let unless="$(env IS_ROBOT false)" name="taskset" value=""/>
 
-    <node pkg="bitbots_body_behavior" exec="body_behavior" output="screen" launch-prefix="$(var taskset)">
+    <node pkg="bitbots_body_behavior" exec="body_behavior" output="screen" launch-prefix="$(var taskset)" respawn="true">
         <param name="dsd_file" value="$(var dsd_file)"/>
         <param name="actionlib_client_sub_queue_size" value="-1"/>
         <param name="actionlib_client_sub_queue_size" value="-1"/>

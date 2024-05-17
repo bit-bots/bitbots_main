@@ -85,6 +85,6 @@ class GoToDefensePosition(AbstractActionElement):
             # center point between ball and own goal
             pose_msg.pose.position.x = (goal_position[0] + ball_position[0]) / 2
             pose_msg.pose.position.y = ball_position[1] / 2 + self.y_offset
-            pose_msg.pose.orientation.w = 1
+            pose_msg.pose.orientation.w = 1.0
 
         self.blackboard.pathfinding.publish(pose_msg)

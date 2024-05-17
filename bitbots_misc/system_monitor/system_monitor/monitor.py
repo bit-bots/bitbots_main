@@ -20,7 +20,7 @@ def main():
 
     diag_array = DiagnosticArray()
     diag_cpu = DiagnosticStatus()
-    # start all names with "SYSTEM" for diagnostic analysesr
+    # start all names with "SYSTEM" for diagnostic analyzer
     diag_cpu.name = "SYSTEMCPU"
     diag_cpu.hardware_id = "CPU"
     diag_mem = DiagnosticStatus()
@@ -31,7 +31,7 @@ def main():
     node.declare_parameter("do_memory", True)
     node.declare_parameter("do_cpu", True)
     node.declare_parameter("cpu_load_percentage", 80.0)
-    node.declare_parameter("memoroy_load_percentage", 80.0)
+    node.declare_parameter("memory_load_percentage", 80.0)
     node.declare_parameter("network_rate_received_errors", 10.0)
     node.declare_parameter("network_rate_send_errors", 10.0)
 
@@ -39,7 +39,7 @@ def main():
     do_memory = node.get_parameter("do_memory").get_parameter_value().bool_value
     do_cpu = node.get_parameter("do_cpu").get_parameter_value().bool_value
     cpu_load_percentage = node.get_parameter("cpu_load_percentage").get_parameter_value().double_value
-    memoroy_load_percentage = node.get_parameter("memoroy_load_percentage").get_parameter_value().double_value
+    memory_load_percentage = node.get_parameter("memory_load_percentage").get_parameter_value().double_value
     network_rate_received_errors = node.get_parameter("network_rate_received_errors").get_parameter_value().double_value
     network_rate_send_errors = node.get_parameter("network_rate_send_errors").get_parameter_value().double_value
 
@@ -73,7 +73,7 @@ def main():
 
         memory_usage = round((memory_used / memory_total) * 100, 2)
         diag_mem.message = str(memory_usage) + "%"
-        if memory_usage >= memoroy_load_percentage:
+        if memory_usage >= memory_load_percentage:
             diag_mem.level = DiagnosticStatus.WARN
         else:
             diag_mem.level = DiagnosticStatus.OK
