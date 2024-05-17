@@ -92,6 +92,7 @@ PROTO Wolfgang [
   field  SFVec3f     pid             10 0 0
   field  SFFloat     encoderResolution 0.00153398078
   field  MFNode      externalCamera  NULL
+  field  SFFloat     toe-spring-constant  0.7
 ]
 {
   Robot {
@@ -2134,7 +2135,7 @@ PROTO Wolfgang [
                                             jointParameters HingeJointParameters {
                                               anchor 0.0 0.115 -0.034
                                               axis 1 0 0
-                                              springConstant 10
+                                              springConstant IS toe-spring-constant
                                               minStop 0
                                               maxStop 0.5
                                             }
@@ -3560,7 +3561,7 @@ PROTO Wolfgang [
                                             jointParameters HingeJointParameters {
                                               anchor 0.0 0.115 -0.034
                                               axis 1 0 0
-                                              springConstant 10
+                                              springConstant IS toe-spring-constant
                                               minStop 0
                                               maxStop 0.5
                                             }
