@@ -1,7 +1,7 @@
 <library path="src">
-  <class name="RecordUI" type="bitbots_animation_rqt.record_ui.RecordUI" base_class_type="rqt_gui_py::Plugin">
+  <class name="TeamDataSimulator" type="bitbots_team_data_sim_rqt.team_data_ui.TeamDataSimulator" base_class_type="rqt_gui_py::Plugin">
     <description>
-      A Python GUI plugin to record joint space animations.
+      A Python GUI plugin to simulate team data.
     </description>
     <qtgui>
       <group>
@@ -9,9 +9,9 @@
         <icon type="theme">folder</icon>
         <statustip>Plugins related to RoboCup.</statustip>
       </group>
-      <label>Bit-Bots Animation</label>
+      <label>Bit-Bots Team Data Sim</label>
       <icon type="theme">preferences-system-network</icon>
-      <statustip>A Python GUI plugin to record joint space animations.</statustip>
+      <statustip>A Python GUI plugin to simulate team data.</statustip>
     </qtgui>
   </class>
 </library>

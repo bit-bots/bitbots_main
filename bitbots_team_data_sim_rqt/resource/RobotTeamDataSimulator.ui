@@ -146,7 +146,7 @@
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_12">
             <item>
-             <widget class="KComboBox" name="kcombobox_2">
+             <widget class="QComboBox" name="QComboBox_2">
               <item>
                <property name="text">
                 <string>Striker</string>
@@ -323,7 +323,7 @@
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_3">
             <item>
-             <widget class="KComboBox" name="StrategieChooser">
+             <widget class="QComboBox" name="StrategieChooser">
               <item>
                <property name="text">
                 <string>Striker</string>
@@ -421,11 +421,6 @@
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <customwidgets>
-  <customwidget>
-   <class>KComboBox</class>
-   <extends>QComboBox</extends>
-   <header>kcombobox.h</header>
-  </customwidget>
  </customwidgets>
  <resources/>
  <connections>
