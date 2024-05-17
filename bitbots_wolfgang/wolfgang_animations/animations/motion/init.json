@@ -21,9 +21,9 @@
                 "LHipRoll": 0.0,
                 "RHipRoll": 0.0,
                 "LAnkleRoll": 0.0,
-                "LElbow": 0,
-                "RElbow": 0,
-                "RHipPitch": 0,
+                "LElbow": 0.0,
+                "RElbow": 0.0,
+                "RHipPitch": 0.0,
                 "HeadPan": 0.0,
                 "RShoulderPitch": 0.0
             }

@@ -448,7 +448,7 @@ diagnostic_msgs::msg::DiagnosticStatus ServoBusInterface::createServoDiagMsg(int
   servo_status.message = message;
   servo_status.hardware_id = std::to_string(id);
   std::vector<diagnostic_msgs::msg::KeyValue> keyValues = std::vector<diagnostic_msgs::msg::KeyValue>();
-  // itarate through map and save it into values
+  // iterate through map and save it into values
   for (auto const &ent1 : map) {
     diagnostic_msgs::msg::KeyValue key_value = diagnostic_msgs::msg::KeyValue();
     key_value.key = ent1.first;

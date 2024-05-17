@@ -13,6 +13,7 @@ class AbstractGoToPassPosition(AbstractActionElement):
         self.pass_pos_x = self.blackboard.config["pass_position_x"]
         self.pass_pos_y = self.blackboard.config["pass_position_y"]
         self.accept = accept
+        self.blocking = parameters.get("blocking", True)
 
     def perform(self, reevaluate=False):
         # get ball pos
@@ -34,17 +35,18 @@ class AbstractGoToPassPosition(AbstractActionElement):
         goal_x = min(self.max_x, goal_x)
 
         goal_y = ball_pos[1] + side_sign * self.pass_pos_y
-        goal_yaw = 0
+        goal_yaw = 0.0
 
         pose_msg = PoseStamped()
         pose_msg.header.stamp = self.blackboard.node.get_clock().now().to_msg()
         pose_msg.header.frame_id = self.blackboard.map_frame
-        pose_msg.pose.position.x = goal_x
-        pose_msg.pose.position.y = goal_y
+        pose_msg.pose.position.x = float(goal_x)
+        pose_msg.pose.position.y = float(goal_y)
         pose_msg.pose.orientation = quat_from_yaw(goal_yaw)
         self.blackboard.pathfinding.publish(pose_msg)
 
-        self.pop()
+        if not self.blocking:
+            self.pop()
 
 
 class GoToPassPreparePosition(AbstractGoToPassPosition):

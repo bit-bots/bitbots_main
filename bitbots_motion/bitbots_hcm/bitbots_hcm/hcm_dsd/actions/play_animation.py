@@ -23,7 +23,7 @@ class AbstractPlayAnimation(AbstractHCMActionElement, ABC):
         if self.first_perform:
             # get the animation that should be played
             # defined by implementations of this abstract class
-            anim = self.chose_animation()
+            anim = self.choose_animation()
 
             # try to start animation
             sucess = self.start_animation(anim)
@@ -41,7 +41,7 @@ class AbstractPlayAnimation(AbstractHCMActionElement, ABC):
             return self.pop()
 
     @abstractmethod
-    def chose_animation(self):
+    def choose_animation(self):
         # this is what has to be implemented returning the animation to play
         raise NotImplementedError
 
@@ -96,39 +96,44 @@ class AbstractPlayAnimation(AbstractHCMActionElement, ABC):
 
 
 class PlayAnimationFallingLeft(AbstractPlayAnimation):
-    def chose_animation(self):
+    def choose_animation(self):
         self.blackboard.node.get_logger().info("PLAYING FALLING LEFT ANIMATION")
         return self.blackboard.animation_name_falling_left
 
 
 class PlayAnimationFallingRight(AbstractPlayAnimation):
-    def chose_animation(self):
+    def choose_animation(self):
         self.blackboard.node.get_logger().info("PLAYING FALLING RIGHT ANIMATION")
         return self.blackboard.animation_name_falling_right
 
 
 class PlayAnimationFallingFront(AbstractPlayAnimation):
-    def chose_animation(self):
+    def choose_animation(self):
         self.blackboard.node.get_logger().info("PLAYING FALLING FRONT ANIMATION")
         return self.blackboard.animation_name_falling_front
 
 
 class PlayAnimationFallingBack(AbstractPlayAnimation):
-    def chose_animation(self):
+    def choose_animation(self):
         self.blackboard.node.get_logger().info("PLAYING FALLING BACK ANIMATION")
         return self.blackboard.animation_name_falling_back
 
 
 class PlayAnimationTurningBackLeft(AbstractPlayAnimation):
-    def chose_animation(self):
+    def choose_animation(self):
         self.blackboard.node.get_logger().info("LYING ON THE LEFT SIDE AND TURNING TO THE BACK TO GET UP")
         return self.blackboard.animation_name_turning_back_left
 
 
 class PlayAnimationTurningBackRight(AbstractPlayAnimation):
-    def chose_animation(self):
+    def choose_animation(self):
         self.blackboard.node.get_logger().info("LYING ON THE RIGHT SIDE AND TURNING TO THE BACK TO GET UP")
         return self.blackboard.animation_name_turning_back_right
+
+
+class PlayAnimationInit(AbstractPlayAnimation):
+    def choose_animation(self):
+        return self.blackboard.animation_name_init
 
 
 class PlayAnimationDynup(AbstractHCMActionElement):

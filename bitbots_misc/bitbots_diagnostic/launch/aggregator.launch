@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="diagnostic_aggregator" exec="aggregator_node" args="--ros-args --log-level WARN">
+        <param from="$(find-pkg-share bitbots_diagnostic)/config/analyzers.yaml" />
+    </node>
+</launch>
+
