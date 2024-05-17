@@ -40,13 +40,13 @@ $AvoidBall
         NO --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:map + distance:%body.ball_far_approach_dist
 
 #PositioningReady
-$ConfigRole
-    GOALIE --> $GoalScoreRecently
-        YES --> @Stand + duration:1.0 + r:false, @PlaySound + file:ole.wav, @PlayAnimationCheering + r:false, @GetWalkready + r:false
-        NO --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @Stand + duration:%body.ready_wait_time, @AvoidBallActive, @GoToRolePosition
-    ELSE --> $GoalScoreRecently
-        YES --> @ChangeAction + action:positioning, @PlaySound + file:ole.wav, @LookAtFieldFeatures, @Stand + duration:%body.ready_wait_time, @AvoidBallActive, @GoToRolePosition
-        NO --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @Stand + duration:%body.ready_wait_time, @AvoidBallActive, @GoToRolePosition
+$GoalScoreRecently
+    YES --> $ConfigRole
+        GOALIE -->  $RobotInOwnPercentOfField + p:40
+            YES -->@Stand + duration:1.0 + r:false, @PlayAnimationCheering + r:false, @GetWalkready + r:false
+            NO -->  @ChangeAction + action:positioning, @PlaySound + file:ole.wav, @LookAtFieldFeatures, @Stand + duration:%body.ready_wait_time, @AvoidBallActive, @GoToRolePosition
+        ELSE --> @ChangeAction + action:positioning, @PlaySound + file:ole.wav, @LookAtFieldFeatures, @Stand + duration:%body.ready_wait_time, @AvoidBallActive, @GoToRolePosition
+    NO --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @Stand + duration:%body.ready_wait_time, @AvoidBallActive, @GoToRolePosition
 
 #GoalieBehavior
 $ClosestToBall 
@@ -93,7 +93,7 @@ $SecondaryStateTeamDecider
 $DoOnce
     NOT_DONE --> @ForgetBall, @LookAtFieldFeatures
     DONE --> $ConfigRole
-        GOALIE --> @ChangeAction + action:positioning, @GoToBlockPosition, @LookAtFieldFeatures
+        GOALIE --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToBlockPosition
         ELSE --> $BallSeen
             NO --> $SecondaryStateTeamDecider
                 OUR --> #SearchBall

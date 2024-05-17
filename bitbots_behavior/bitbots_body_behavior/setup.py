@@ -13,9 +13,6 @@ setup(
         ("share/ament_index/resource_index/packages", ["resource/" + package_name]),
         ("share/" + package_name + "/config", glob.glob("config/*")),
         ("share/" + package_name + "/launch", glob.glob("launch/*.launch")),
-        ("share/" + package_name + "/actions", glob.glob(package_name + "/actions/*.py")),
-        ("share/" + package_name + "/decisions", glob.glob(package_name + "/decisions/*.py")),
-        ("share/" + package_name, glob.glob(package_name + "/*.dsd")),
     ],
     scripts=[],
     install_requires=[
