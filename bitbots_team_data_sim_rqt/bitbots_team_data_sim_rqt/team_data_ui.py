@@ -1,23 +1,22 @@
 #!/usr/bin/env python3
-import math
 import os
 import sys
 
-import rclpy
 from ament_index_python import get_package_share_directory
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import (
-    QAbstractItemView,
-    QFileDialog,
+    QComboBox,
+    QFormLayout,
     QGroupBox,
+    QHBoxLayout,
     QLabel,
-    QLineEdit,
-    QListWidgetItem,
     QMainWindow,
-    QMessageBox,
+    QPushButton,
+    QRadioButton,
     QShortcut,
-    QTreeWidgetItem,
+    QSlider,
+    QSpinBox,
     QVBoxLayout,
 )
 from PyQt5.uic import loadUi
@@ -26,6 +25,120 @@ from rqt_gui.main import Main
 from rqt_gui_py.plugin import Plugin
 
 from bitbots_msgs.msg import TeamData
+
+
+class RobotWidget(QGroupBox):
+    def __init__(self, parent=None):
+        super(RobotWidget, self).__init__(parent)
+        self.setTitle("Robot")
+        # Set maximum width
+        self.setMaximumWidth(350)
+        self.setMinimumWidth(150)
+        # Create layout
+        self.main_layout = QVBoxLayout()
+        self.setLayout(self.main_layout)
+        self.id_layout = QFormLayout()
+        self.main_layout.addLayout(self.id_layout)
+        self.id_spin_box = QSpinBox()
+        self.id_spin_box.setRange(0, 4)
+        self.id_layout.addRow(QLabel("ID"), self.id_spin_box)
+        self.state_box = StateBox()
+        self.main_layout.addWidget(self.state_box)
+        self.time_to_position_box = TimeToPositionBox()
+        self.main_layout.addWidget(self.time_to_position_box)
+        self.strategy_box = StrategyBox()
+        self.main_layout.addWidget(self.strategy_box)
+        self.publish_button = PublishButton()
+        self.main_layout.addWidget(self.publish_button)
+
+        self.id_spin_box.valueChanged.connect(self.id_spin_box_update)
+
+    def id_spin_box_update(self):
+        enabled = self.id_spin_box.value() != 0
+        self.state_box.setEnabled(enabled)
+        self.time_to_position_box.setEnabled(enabled)
+        self.strategy_box.setEnabled(enabled)
+        self.publish_button.setEnabled(enabled)
+
+
+class StateBox(QGroupBox):
+    def __init__(self, parent=None):
+        super(StateBox, self).__init__(parent)
+        self.setTitle("State")
+        self.setEnabled(False)
+        # Create layout
+        self.main_layout = QVBoxLayout()
+        self.setLayout(self.main_layout)
+        self.unknown_button = QRadioButton("Unknown")
+        self.unknown_button.setChecked(True)
+        self.main_layout.addWidget(self.unknown_button)
+        self.penalized_button = QRadioButton("Penalized")
+        self.main_layout.addWidget(self.penalized_button)
+        self.unpenalized_button = QRadioButton("Unpenalized")
+        self.main_layout.addWidget(self.unpenalized_button)
+
+    def get_state(self):
+        if self.unknown_button.isChecked():
+            return 0
+        if self.penalized_button.isChecked():
+            return 1
+        if self.unpenalized_button.isChecked():
+            return 2
+        return 0
+
+
+class TimeToPositionBox(QGroupBox):
+    def __init__(self, parent=None):
+        super(TimeToPositionBox, self).__init__(parent)
+        self.setTitle("Time to Position at Ball")
+        self.setEnabled(False)
+        # Create layout
+        self.main_layout = QHBoxLayout()
+        self.setLayout(self.main_layout)
+        self.time_spin_box = QSpinBox()
+        self.time_spin_box.setRange(0, 200)
+        self.main_layout.addWidget(self.time_spin_box)
+        self.time_slider = QSlider(Qt.Horizontal)
+        self.time_slider.setRange(0, 200)
+        self.main_layout.addWidget(self.time_slider)
+        self.time_spin_box.valueChanged.connect(self.time_slider.setValue)
+        self.time_slider.valueChanged.connect(self.time_spin_box.setValue)
+
+
+class StrategyBox(QGroupBox):
+    def __init__(self, parent=None):
+        super(StrategyBox, self).__init__(parent)
+        self.setTitle("Strategy")
+        self.setEnabled(False)
+        self.main_layout = QVBoxLayout()
+        self.setLayout(self.main_layout)
+        self.combobox = QComboBox()
+        self.combobox.addItem("Striker")
+        self.combobox.addItem("Offense")
+        self.combobox.addItem("Supporter")
+        self.combobox.addItem("Defender")
+        self.combobox.addItem("Defense")
+        self.combobox.addItem("Other")
+        self.combobox.addItem("Goalie")
+        self.combobox.addItem("Idle")
+        self.main_layout.addWidget(self.combobox)
+
+
+class PublishButton(QPushButton):
+    def __init__(self, parent=None):
+        super(PublishButton, self).__init__(parent)
+        self.button_text = "Publish Team Data"
+        self.setText(self.button_text)
+        self.setCheckable(True)
+        self.setEnabled(False)
+
+        self.clicked.connect(self.publish_button_clicked)
+
+    def publish_button_clicked(self):
+        if self.isChecked():
+            self.setText("Publishing Team Data")
+        else:
+            self.setText(self.button_text)
 
 
 class TeamDataSimulator(Plugin):
@@ -53,6 +166,11 @@ class TeamDataSimulator(Plugin):
         )
         self._widget: QMainWindow = loadUi(ui_file)
 
+        # Add widgets to the window
+        robot_widget = RobotWidget()
+        self._widget.robots_layout.addWidget(robot_widget)
+        self.robots = [robot_widget]
+
         # Connect callbacks to GUI components
         self.connect_gui_callbacks()
 
@@ -62,38 +180,32 @@ class TeamDataSimulator(Plugin):
         # Tell the user that the initialization is complete
         self._node.get_logger().info("Initialization complete.")
 
+    def plus_button_clicked(self):
+        robot_widget = RobotWidget()
+        self._widget.robots_layout.addWidget(robot_widget)
+        self.robots.append(robot_widget)
+        self._widget.MinusButton.setEnabled(True)
+        if len(self.robots) >= 4:
+            self._widget.PlusButton.setEnabled(False)
 
-
+    def minus_button_clicked(self):
+        if len(self.robots) > 1:
+            robot_widget = self.robots.pop()
+            robot_widget.deleteLater()
+            if len(self.robots) < 4:
+                self._widget.PlusButton.setEnabled(True)
+        if len(self.robots) == 1:
+            self._widget.MinusButton.setEnabled(False)
 
     def connect_gui_callbacks(self) -> None:
         """
         Connects the actions in the top bar to the corresponding functions, and sets their shortcuts
         :return:
         """
-        return
-        self._widget.actionNew.triggered.connect(self.new)
-        self._widget.actionOpen.triggered.connect(self.open)
-        self._widget.actionSave.triggered.connect(self.save)
-        self._widget.actionSave_as.triggered.connect(lambda: self.save(new_location=True))
-        self._widget.actionInit.triggered.connect(self.goto_init)
-        self._widget.actionCurrent_Frame.triggered.connect(self.goto_frame)
-        self._widget.actionNext_Frame.triggered.connect(self.goto_next)
-        self._widget.actionAnimation.triggered.connect(self.play)
-        self._widget.actionAnimation_until_Frame.triggered.connect(self.play_until)
-        self._widget.actionDuplicate_Frame.triggered.connect(self.duplicate)
-        self._widget.actionDelete_Frame.triggered.connect(self.delete)
-        self._widget.actionLeft.triggered.connect(lambda: self.mirror_frame("L"))
-        self._widget.actionRight.triggered.connect(lambda: self.mirror_frame("R"))
-        self._widget.actionInvert.triggered.connect(self.invert_frame)
-        self._widget.actionUndo.triggered.connect(self.undo)
-        self._widget.actionRedo.triggered.connect(self.redo)
-        self._widget.actionWalkready.triggered.connect(self.play_walkready)
-        self._widget.actionHelp.triggered.connect(self.help)
-        self._widget.buttonRecord.clicked.connect(self.record)
-        self._widget.buttonRecord.shortcut = QShortcut(QKeySequence("Space"), self._widget)
-        self._widget.buttonRecord.shortcut.activated.connect(self.record)
-        self._widget.frameList.key_pressed.connect(self.delete)
-        self._widget.frameList.itemSelectionChanged.connect(self.frame_select)
+        # Show test message box
+        self._widget.PlusButton.clicked.connect(self.plus_button_clicked)
+        self._widget.MinusButton.clicked.connect(self.minus_button_clicked)
+        
 
 def main():
     plugin = "bitbots_team_data_sim_rqt.team_data_ui.TeamDataSimulator"
