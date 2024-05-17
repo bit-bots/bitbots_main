@@ -1938,6 +1938,7 @@ PROTO Wolfgang [
                                               }
                                             ]
                                           }
+                                          # right sole visual
                                           Transform {
                                             translation 0.0145000 0.05500 -0.034
                                             rotation -0.000000 -0.000000 -1.000000 1.570800
@@ -2128,6 +2129,7 @@ PROTO Wolfgang [
                                               }
                                             %{ end }%
                                           }
+                                          # right toe joint
                                           DEF FlexiJointL HingeJoint {
                                             jointParameters HingeJointParameters {
                                               anchor 0.0 0.115 -0.034
@@ -2136,6 +2138,7 @@ PROTO Wolfgang [
                                               minStop 0
                                               maxStop 0.5
                                             }
+                                            # right toe visual, collision & physics
                                             endPoint DEF l_flexi Solid {
                                               translation 0.0145 0.145 -0.034
                                               rotation 0.0 0.0 -1.0 1.5708
@@ -2161,6 +2164,7 @@ PROTO Wolfgang [
                                             }
                                           }
                                         ]
+                                        # right sole collision
                                         name "r_foot [foot]"
                                         %{if fields.enableBoundingObject.value then}%
                                         boundingObject Group {
@@ -2186,6 +2190,7 @@ PROTO Wolfgang [
                                           ]
                                         }
                                         %{ end }%
+                                        # right sole physics
                                         %{if fields.enablePhysics.value then}%
                                           physics Physics {
                                             density -1
@@ -3343,6 +3348,7 @@ PROTO Wolfgang [
                                               }
                                             ]
                                           }
+                                          # left foot sole visual
                                           Transform {
                                             translation -0.0145000 0.05500 -0.034
                                             rotation 0.000000 0.000000 -1.000000 1.570800
@@ -3549,6 +3555,7 @@ PROTO Wolfgang [
                                               }
                                             %{ end }%
                                           }
+                                          # left toe joint
                                           DEF FlexiJointL HingeJoint {
                                             jointParameters HingeJointParameters {
                                               anchor 0.0 0.115 -0.034
@@ -3557,6 +3564,7 @@ PROTO Wolfgang [
                                               minStop 0
                                               maxStop 0.5
                                             }
+                                            # left toe visual, collision & physics
                                             endPoint DEF l_flexi Solid {
                                               translation -0.0145 0.145 -0.034
                                               rotation 0.0 0.0 -1.0 1.5708
@@ -3582,6 +3590,7 @@ PROTO Wolfgang [
                                             }
                                           }
                                         ]
+                                        # left foot sole collision
                                         name "l_foot [foot]"
                                         %{if fields.enableBoundingObject.value then}%
                                         boundingObject Group {
@@ -3608,6 +3617,7 @@ PROTO Wolfgang [
                                           ]
                                         }
                                         %{ end }%
+                                        # left foot sole physics
                                         %{if fields.enablePhysics.value then}%
                                           physics Physics {
                                             density -1
