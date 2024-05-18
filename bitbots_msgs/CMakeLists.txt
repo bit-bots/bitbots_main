@@ -24,6 +24,7 @@ rosidl_generate_interfaces(
   "msg/Animation.msg"
   "msg/Audio.msg"
   "msg/BoundingBox.msg"
+  "msg/BoundingBoxArray.msg"
   "msg/Buttons.msg"
   "msg/CircleInImage.msg"
   "msg/CircleInImageArray.msg"
