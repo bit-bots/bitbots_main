@@ -2,7 +2,6 @@
 <launch>
     <!-- Get launch params-->
     <arg name="sim" default="false" description="true: activates simulation time" />
-    <arg name="debug" default="true" description="true: activates publishing of several debug images" />
 
     <let if="$(env IS_ROBOT false)" name="taskset" value="taskset -c 6,7"/>
     <let unless="$(env IS_ROBOT false)" name="taskset" value=""/>
@@ -10,18 +9,12 @@
     <group unless="$(var sim)">
         <node pkg="bitbots_technical_challenge_vision" exec="bitbots_technical_challenge_vision" name="bitbots_technical_challenge_vision" launch-prefix="$(var taskset)">
             <param from="$(find-pkg-share bitbots_technical_challenge_vision)/config/range.yaml"/>
-    
-            <!-- Set debug Parameters -->
-            <param name="vision_publish_debug_image" value="$(var debug)"/>
         </node>
     </group>
 
     <group unless="$(var sim)">
         <node pkg="bitbots_technical_challenge_vision" exec="bitbots_technical_challenge_vision" name="bitbots_technical_challenge_vision" launch-prefix="$(var taskset)">
             <param from="$(find-pkg-share bitbots_technical_challenge_vision)/config/range.yaml"/>
-    
-            <!-- Set debug parameters -->
-            <param name="vision_publish_debug_image" value="$(var debug)"/>
 
             <!-- Use sim time -->
             <param name="use_sim_time" value="true"/>

@@ -112,3 +112,8 @@ bitbots_technical_challenge_vision:
         gt_eq<>: 0
       }
     }
+    debug_mode: {
+      type: bool,
+      default_value: true,
+      description: "set true if debug images should be drawn and published",
+    }
