@@ -7,6 +7,11 @@
   <maintainer email="paer-wiegmann@gmx.de">par</maintainer>
   <license>TODO: License declaration</license>
 
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>bitbots_msgs</exec_depend>
+
+  <depend>generate_parameter_library</depend>
+
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
   <test_depend>ament_pep257</test_depend>
