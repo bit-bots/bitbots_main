@@ -8,7 +8,11 @@
   <license>TODO: License declaration</license>
 
   <exec_depend>rclpy</exec_depend>
-  <exec_depend>bitbots_msgs</exec_depend>
+  <exec_depend>cv2</exec_depend>
+  <exec_depend>numpy</exec_depend>
+  <exec_depend>cv_bridge</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>soccer_vision_2d_msgs</exec_depend>
 
   <depend>generate_parameter_library</depend>
 
