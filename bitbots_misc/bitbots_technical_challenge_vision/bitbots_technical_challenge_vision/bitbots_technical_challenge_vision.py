@@ -10,21 +10,27 @@ from rclpy.node import Node
 from sensor_msgs.msg import Image
 from soccer_vision_2d_msgs.msg import Robot, RobotArray
 
-from technical_challenge_vision.technical_challenge_vision_params import technical_challenge_vision
+from bitbots_technical_challenge_vision.bitbots_technical_challenge_vision_params import (
+    bitbots_technical_challenge_vision,
+)
 
 
 class TechnicalChallengeVision(Node):
     def __init__(self):
-        super().__init__("technical_challenge_vision")
+        super().__init__("bitbots_technical_challenge_vision")
 
-        self._package_path = get_package_share_directory("technical_challenge_vision")
+        self._package_path = get_package_share_directory("bitbots_technical_challenge_vision")
         self._cv_bridge = CvBridge()
-        self._annotations_pub = self.create_publisher(RobotArray, "/technical_challenge_vision", 10)
-        self._debug_img_pub = self.create_publisher(Image, "/technical_challenge_vision_debug_img", 10)
-        self._debug_clrmp_pub_blue = self.create_publisher(Image, "/technical_challenge_vision_debug_clrmp_blue", 10)
-        self._debug_clrmp_pub_red = self.create_publisher(Image, "/technical_challenge_vision_debug_clrmp_red", 10)
+        self._annotations_pub = self.create_publisher(RobotArray, "/bitbots_technical_challenge_vision", 10)
+        self._debug_img_pub = self.create_publisher(Image, "/bitbots_technical_challenge_vision_debug_img", 10)
+        self._debug_clrmp_pub_blue = self.create_publisher(
+            Image, "/bitbots_technical_challenge_vision_debug_clrmp_blue", 10
+        )
+        self._debug_clrmp_pub_red = self.create_publisher(
+            Image, "/bitbots_technical_challenge_vision_debug_clrmp_red", 10
+        )
         self._img_sub = self.create_subscription(Image, "/camera/image_proc", self.image_callback, 10)
-        self._param_listener = technical_challenge_vision.ParamListener(self)
+        self._param_listener = bitbots_technical_challenge_vision.ParamListener(self)
         self._params = self._param_listener.get_params()
 
     def create_robot_msg(self, x: int, y: int, h: int, w: int, t: int) -> Robot:

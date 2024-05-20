@@ -1,4 +1,4 @@
-technical_challenge_vision:
+bitbots_technical_challenge_vision:
   ros__parameters:
     blue_lower_h: {
       type: int,
