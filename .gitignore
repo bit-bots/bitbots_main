@@ -225,3 +225,4 @@ doku/*
 # Protobuf generated file
 /bitbots_team_communication/bitbots_team_communication/robocup_extension_pb2.py
 
+bitbots_misc/technical_challenge_vision/technical_challenge_vision/technical_challenge_vision_params.py
