@@ -8,8 +8,8 @@ from ament_index_python.packages import get_package_share_directory
 from cv_bridge import CvBridge
 from rclpy.node import Node
 from sensor_msgs.msg import Image
+from soccer_vision_2d_msgs.msg import Robot, RobotArray
 
-from bitbots_msgs.msg import BoundingBox, BoundingBoxArray
 from technical_challenge_vision.technical_challenge_vision_params import technical_challenge_vision
 
 
@@ -19,7 +19,7 @@ class TechnicalChallengeVision(Node):
 
         self._package_path = get_package_share_directory("technical_challenge_vision")
         self._cv_bridge = CvBridge()
-        self._annotations_pub = self.create_publisher(BoundingBoxArray, "/technical_challenge_vision", 10)
+        self._annotations_pub = self.create_publisher(RobotArray, "/technical_challenge_vision", 10)
         self._debug_img_pub = self.create_publisher(Image, "/technical_challenge_vision_debug_img", 10)
         self._debug_clrmp_pub_blue = self.create_publisher(Image, "/technical_challenge_vision_debug_clrmp_blue", 10)
         self._debug_clrmp_pub_red = self.create_publisher(Image, "/technical_challenge_vision_debug_clrmp_red", 10)
@@ -27,7 +27,30 @@ class TechnicalChallengeVision(Node):
         self._param_listener = technical_challenge_vision.ParamListener(self)
         self._params = self._param_listener.get_params()
 
-    def process_image(self, img: np.ndarray) -> Tuple[list[BoundingBox], list[BoundingBox], np.ndarray, np.ndarray]:
+    def create_robot_msg(self, x: int, y: int, h: int, w: int, t: int) -> Robot:
+        """
+        Creates a Robot message from a robots bounding box data and its color.
+
+        :param x: bb top left x
+        :param y: bb top left y
+        :param h: bb height
+        :param w: bb width
+        :param t: robot team
+        :return: robot message for that robot
+        """
+        robot = Robot()
+
+        robot.bb.center.position.x = float(x + (w / 2))
+        robot.bb.center.position.y = float(y + (h / 2))
+        robot.bb.size_x = float(w)
+        robot.bb.size_y = float(h)
+        robot.attributes.team = t
+
+        return robot
+
+    def process_image(
+        self, img: np.ndarray, debug_img: np.ndarray
+    ) -> Tuple[list[Robot], list[Robot], np.ndarray, np.ndarray]:
         """
         gets annotations from the camera image
 
@@ -57,58 +80,59 @@ class TechnicalChallengeVision(Node):
         red_contours, _ = cv2.findContours(red_map, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
 
         # get lists of bounding boxes
-        blue_boxes = []
-        red_boxes = []
+        blue_robots = []
+        red_robots = []
 
         for cnt in blue_contours:
             x, y, h, w = cv2.boundingRect(cnt)
             if min(h, w) >= arg.min_size and max(h, w) <= arg.max_size:
-                blue_boxes.append(BoundingBox(top_left_x=x, top_left_y=y, height=h, width=w))
+                # draw bb on debug img
+                debug_img = cv2.rectangle(
+                    debug_img,
+                    (x, y),
+                    (x + w, y + h),
+                    (255, 0, 0),
+                    2,
+                )
+
+                # TODO I think 1 is for the blue team?
+                blue_robots.append(self.create_robot_msg(x, y, h, w, 1))
 
         for cnt in red_contours:
             x, y, h, w = cv2.boundingRect(cnt)
             if min(h, w) >= arg.min_size and max(h, w) <= arg.max_size:
-                red_boxes.append(BoundingBox(top_left_x=x, top_left_y=y, height=h, width=w))
+                # draw bb on debug img
+                debug_img = cv2.rectangle(
+                    debug_img,
+                    (x, y),
+                    (x + w, y + h),
+                    (0, 0, 255),
+                    2,
+                )
 
-        return blue_boxes, red_boxes, blue_map, red_map
+                red_robots.append(self.create_robot_msg(x, y, h, w, 2))
+
+        return blue_robots, red_robots, blue_map, red_map, debug_img
 
     def image_callback(self, msg: Image):
-        # get image from message
+        # set variables
         img = self._cv_bridge.imgmsg_to_cv2(img_msg=msg, desired_encoding="bgr8")
         header = msg.header
-
-        # get annotations
-        blue_boxes, red_boxes, blue_map, red_map = self.process_image(img)
-
-        # make output message
-        bb_message = BoundingBoxArray()
-        bb_message.header = header
-        bb_message.blue_boxes = blue_boxes
-        bb_message.red_boxes = red_boxes
-
-        # publish output message
-        self._annotations_pub.publish(bb_message)
-
-        # draw on debug image
         debug_img = np.copy(img)
 
-        for bb in blue_boxes:
-            debug_img = cv2.rectangle(
-                debug_img,
-                (bb.top_left_x, bb.top_left_y),
-                (bb.top_left_x + bb.width, bb.top_left_y + bb.height),
-                (255, 0, 0),
-                2,
-            )
+        # get annotations
+        blue_robots, red_robots, blue_map, red_map, debug_img = self.process_image(img, debug_img)
+        robots = []
+        robots.extend(blue_robots)
+        robots.extend(red_robots)
 
-        for bb in red_boxes:
-            debug_img = cv2.rectangle(
-                debug_img,
-                (bb.top_left_x, bb.top_left_y),
-                (bb.top_left_x + bb.width, bb.top_left_y + bb.height),
-                (0, 0, 255),
-                2,
-            )
+        # make output message
+        robot_array_message = RobotArray()
+        robot_array_message.header = header
+        robot_array_message.robots = robots
+
+        # publish output message
+        self._annotations_pub.publish(robot_array_message)
 
         # make debug image message
         # debug_img = cv2.cvtColor(debug_img, cv2.COLOR_BGR2RGB)
