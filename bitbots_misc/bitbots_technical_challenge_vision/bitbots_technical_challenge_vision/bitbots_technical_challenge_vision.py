@@ -55,18 +55,18 @@ class TechnicalChallengeVision(Node):
         return robot
 
     def process_image(
-        self, img: np.ndarray, debug_img: np.ndarray
+        self, img: np.ndarray, debug_img: np.ndarray, arg
     ) -> Tuple[list[Robot], list[Robot], np.ndarray, np.ndarray]:
         """
         gets annotations from the camera image
 
         :param img: ndarray containing the camera image
+        :param debug_img: copy of img debug annotations should be drawn here
+        :param arg: __RosParameters object containing the dynamic parameters
+        :return: [[blue_robots], [red_robots], clrmp_blue, clrmp_red]
         """
         # convert img to hsv to isolate colors better
         img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-
-        # get dynamic parameters
-        arg = self._params.ros__parameters
 
         # get color maps
         blue_map = cv2.inRange(
@@ -89,17 +89,26 @@ class TechnicalChallengeVision(Node):
         blue_robots = []
         red_robots = []
 
+        if arg.debug_mode:
+
+            def annotate(x, y, h, w, c):
+                return cv2.rectangle(
+                    debug_img,
+                    (x, y),
+                    (x + w, y + h),
+                    c,
+                    2,
+                )
+        else:
+
+            def annotate(x, y, h, w, c):
+                return None
+
         for cnt in blue_contours:
             x, y, h, w = cv2.boundingRect(cnt)
             if min(h, w) >= arg.min_size and max(h, w) <= arg.max_size:
                 # draw bb on debug img
-                debug_img = cv2.rectangle(
-                    debug_img,
-                    (x, y),
-                    (x + w, y + h),
-                    (255, 0, 0),
-                    2,
-                )
+                annotate(x, y, h, w, (255, 0, 0))
 
                 # TODO I think 1 is for the blue team?
                 blue_robots.append(self.create_robot_msg(x, y, h, w, 1))
@@ -108,26 +117,27 @@ class TechnicalChallengeVision(Node):
             x, y, h, w = cv2.boundingRect(cnt)
             if min(h, w) >= arg.min_size and max(h, w) <= arg.max_size:
                 # draw bb on debug img
-                debug_img = cv2.rectangle(
-                    debug_img,
-                    (x, y),
-                    (x + w, y + h),
-                    (0, 0, 255),
-                    2,
-                )
+                annotate(x, y, h, w, (0, 0, 255))
 
                 red_robots.append(self.create_robot_msg(x, y, h, w, 2))
 
         return blue_robots, red_robots, blue_map, red_map, debug_img
 
     def image_callback(self, msg: Image):
+        # get dynamic parameters
+        arg = self._params.ros__parameters
+
         # set variables
         img = self._cv_bridge.imgmsg_to_cv2(img_msg=msg, desired_encoding="bgr8")
         header = msg.header
-        debug_img = np.copy(img)
+
+        if arg.debug_mode:
+            debug_img = np.copy(img)
+        else:
+            debug_img = None
 
         # get annotations
-        blue_robots, red_robots, blue_map, red_map, debug_img = self.process_image(img, debug_img)
+        blue_robots, red_robots, blue_map, red_map, debug_img = self.process_image(img, debug_img, arg)
         robots = []
         robots.extend(blue_robots)
         robots.extend(red_robots)
@@ -140,23 +150,23 @@ class TechnicalChallengeVision(Node):
         # publish output message
         self._annotations_pub.publish(robot_array_message)
 
-        # make debug image message
-        # debug_img = cv2.cvtColor(debug_img, cv2.COLOR_BGR2RGB)
-        debug_img_msg = self._cv_bridge.cv2_to_imgmsg(cvim=debug_img, encoding="bgr8", header=header)
+        if arg.debug_mode:
+            # make debug image message
+            debug_img_msg = self._cv_bridge.cv2_to_imgmsg(cvim=debug_img, encoding="bgr8", header=header)
 
-        # publish debug image
-        self._debug_img_pub.publish(debug_img_msg)
+            # publish debug image
+            self._debug_img_pub.publish(debug_img_msg)
 
-        # make color map messages
-        clrmp_blue_img = cv2.cvtColor(blue_map, cv2.COLOR_GRAY2BGR)
-        clrmp_blue_msg = self._cv_bridge.cv2_to_imgmsg(cvim=clrmp_blue_img, encoding="bgr8", header=header)
+            # make color map messages
+            clrmp_blue_img = cv2.cvtColor(blue_map, cv2.COLOR_GRAY2BGR)
+            clrmp_blue_msg = self._cv_bridge.cv2_to_imgmsg(cvim=clrmp_blue_img, encoding="bgr8", header=header)
 
-        clrmp_red_img = cv2.cvtColor(red_map, cv2.COLOR_GRAY2BGR)
-        clrmp_red_msg = self._cv_bridge.cv2_to_imgmsg(clrmp_red_img, encoding="bgr8", header=header)
+            clrmp_red_img = cv2.cvtColor(red_map, cv2.COLOR_GRAY2BGR)
+            clrmp_red_msg = self._cv_bridge.cv2_to_imgmsg(clrmp_red_img, encoding="bgr8", header=header)
 
-        # publish color map messages
-        self._debug_clrmp_pub_blue.publish(clrmp_blue_msg)
-        self._debug_clrmp_pub_red.publish(clrmp_red_msg)
+            # publish color map messages
+            self._debug_clrmp_pub_blue.publish(clrmp_blue_msg)
+            self._debug_clrmp_pub_red.publish(clrmp_red_msg)
 
 
 def main(args=None):
