@@ -1,0 +1,114 @@
+technical_challenge_vision:
+  ros__parameters:
+    blue_lower_h: {
+      type: int,
+      default_value: 0,
+      description: "hue value of the lower boundary for blue obstacles",
+      validation: {
+        bounds<>: [0, 179]
+      }
+    }
+    blue_upper_h: {
+      type: int,
+      default_value: 179,
+      description: "hue value of the upper boundary for blue obstacles",
+      validation: {
+        bounds<>: [0, 179]
+      }
+    }
+    blue_lower_s: {
+      type: int,
+      default_value: 0,
+      description: "separation value of the lower boundary for blue obstacles",
+      validation: {
+        bounds<>: [0, 255]
+      }
+    }
+    blue_upper_s: {
+      type: int,
+      default_value: 255,
+      description: "separation value of the upper boundary for blue obstacles",
+      validation: {
+        bounds<>: [0, 255]
+      }
+    }
+    blue_lower_v: {
+      type: int,
+      default_value: 0,
+      description: "value value of the lower boundary for blue obstacles",
+      validation: {
+        bounds<>: [0, 255]
+      }
+    }
+    blue_upper_v: {
+      type: int,
+      default_value: 255,
+      description: "value value of the upper boundary for blue obstacles",
+      validation: {
+        bounds<>: [0, 255]
+      }
+    }
+    red_lower_h: {
+      type: int,
+      default_value: 0,
+      description: "hue value of the lower boundary for red obstacles",
+      validation: {
+        bounds<>: [0, 179]
+      }
+    }
+    red_upper_h: {
+      type: int,
+      default_value: 179,
+      description: "hue value of the upper boundary for red obstacles",
+      validation: {
+        bounds<>: [0, 179]
+      }
+    }
+    red_lower_s: {
+      type: int,
+      default_value: 0,
+      description: "separation value of the lower boundary for red obstacles",
+      validation: {
+        bounds<>: [0, 255]
+      }
+    }
+    red_upper_s: {
+      type: int,
+      default_value: 255,
+      description: "separation value of the upper boundary for red obstacles",
+      validation: {
+        bounds<>: [0, 255]
+      }
+    }
+    red_lower_v: {
+      type: int,
+      default_value: 0,
+      description: "value value of the lower boundary for red obstacles",
+      validation: {
+        bounds<>: [0, 255]
+      }
+    }
+    red_upper_v: {
+      type: int,
+      default_value: 255,
+      description: "value value of the upper boundary for red obstacles",
+      validation: {
+        bounds<>: [0, 255]
+      }
+    }
+    min_size: {
+      type: int,
+      default_value: 0,
+      description: "minimum size of an obstacle to be considered",
+      validation: {
+        gt_eq<>: 0
+      }
+    }
+    max_size: {
+      type: int,
+      default_value: 1,
+      description: "maximum size of an obstacle to be considered",
+      validation: {
+        gt_eq<>: 0
+      }
+    }
