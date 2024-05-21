@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <launch>
-    <!-- Get launch params-->
-    <arg name="sim" default="false" description="true: activates simulation time" />
-
     <let if="$(env IS_ROBOT false)" name="taskset" value="taskset -c 6,7"/>
     <let unless="$(env IS_ROBOT false)" name="taskset" value=""/>
 
@@ -15,9 +12,6 @@
     <group unless="$(var sim)">
         <node pkg="bitbots_technical_challenge_vision" exec="bitbots_technical_challenge_vision" name="bitbots_technical_challenge_vision" launch-prefix="$(var taskset)">
             <param from="$(find-pkg-share bitbots_technical_challenge_vision)/config/range.yaml"/>
-
-            <!-- Use sim time -->
-            <param name="use_sim_time" value="true"/>
         </node>
     </group>
 </launch>
