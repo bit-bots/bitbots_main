@@ -22,7 +22,7 @@ from rclpy.node import Node
 from rqt_gui.main import Main
 from rqt_gui_py.plugin import Plugin
 
-from bitbots_msgs.msg import TeamData
+from bitbots_msgs.msg import Strategy, TeamData
 
 
 class RobotWidget(QGroupBox):
@@ -58,8 +58,20 @@ class RobotWidget(QGroupBox):
         self.strategy_box.setEnabled(enabled)
         self.publish_button.setEnabled(enabled)
 
+    def get_robot_id(self) -> int:
+        return self.id_spin_box.value()
+
+    def active(self) -> bool:
+        return self.publish_button.isChecked()
+
 
 class StateBox(QGroupBox):
+    _states: dict[int, str] = {
+        TeamData.STATE_UNKNOWN: "Unknown",
+        TeamData.STATE_PENALIZED: "Penalized",
+        TeamData.STATE_UNPENALIZED: "Unpenalized",
+    }
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setTitle("State")
@@ -67,22 +79,21 @@ class StateBox(QGroupBox):
         # Create layout
         self.main_layout = QVBoxLayout()
         self.setLayout(self.main_layout)
-        self.unknown_button = QRadioButton("Unknown")
-        self.unknown_button.setChecked(True)
-        self.main_layout.addWidget(self.unknown_button)
-        self.penalized_button = QRadioButton("Penalized")
-        self.main_layout.addWidget(self.penalized_button)
-        self.unpenalized_button = QRadioButton("Unpenalized")
-        self.main_layout.addWidget(self.unpenalized_button)
+        # Create radio buttons
+        self.radio_buttons: dict[int, QRadioButton] = {}
+        for state_id, name in self._states.items():
+            button = QRadioButton(name)
+            self.main_layout.addWidget(button)
+            self.radio_buttons[state_id] = button
+        # Set default state
+        self.default_state = TeamData.STATE_UNKNOWN
+        self.radio_buttons[self.default_state].setChecked(True)
 
-    def get_state(self):
-        if self.unknown_button.isChecked():
-            return 0
-        if self.penalized_button.isChecked():
-            return 1
-        if self.unpenalized_button.isChecked():
-            return 2
-        return 0
+    def get_state(self) -> int:
+        for state_id, button in self.radio_buttons.items():
+            if button.isChecked():
+                return state_id
+        return self.default_state
 
 
 class TimeToPositionBox(QGroupBox):
@@ -93,33 +104,69 @@ class TimeToPositionBox(QGroupBox):
         # Create layout
         self.main_layout = QHBoxLayout()
         self.setLayout(self.main_layout)
+        # Create spin box
         self.time_spin_box = QSpinBox()
         self.time_spin_box.setRange(0, 200)
         self.main_layout.addWidget(self.time_spin_box)
+        # Create slider
         self.time_slider = QSlider(Qt.Horizontal)
         self.time_slider.setRange(0, 200)
         self.main_layout.addWidget(self.time_slider)
+        # Connect spin box and slider
         self.time_spin_box.valueChanged.connect(self.time_slider.setValue)
         self.time_slider.valueChanged.connect(self.time_spin_box.setValue)
 
+    def get_time(self) -> float:
+        return float(self.time_spin_box.value())
+
 
 class StrategyBox(QGroupBox):
+    _roles: dict[str, int] = {
+        "Undefined": Strategy.ROLE_UNDEFINED,
+        "Defender": Strategy.ROLE_DEFENDER,
+        "Goalie": Strategy.ROLE_GOALIE,
+        "Idling": Strategy.ROLE_IDLING,
+        "Striker": Strategy.ROLE_STRIKER,
+        "Supporter": Strategy.ROLE_SUPPORTER,
+        "Other": Strategy.ROLE_OTHER,
+    }
+    _actions: dict[str, int] = {
+        "Undefined": Strategy.ACTION_UNDEFINED,
+        "Going to Ball": Strategy.ACTION_GOING_TO_BALL,
+        "Kicking": Strategy.ACTION_KICKING,
+        "Localizing": Strategy.ACTION_LOCALIZING,
+        "Positioning": Strategy.ACTION_POSITIONING,
+        "Searching": Strategy.ACTION_SEARCHING,
+        "Trying to Score": Strategy.ACTION_TRYING_TO_SCORE,
+        "Waiting": Strategy.ACTION_WAITING,
+    }
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setTitle("Strategy")
         self.setEnabled(False)
+
+        # Create layout
         self.main_layout = QVBoxLayout()
         self.setLayout(self.main_layout)
-        self.combobox = QComboBox()
-        self.combobox.addItem("Striker")
-        self.combobox.addItem("Offense")
-        self.combobox.addItem("Supporter")
-        self.combobox.addItem("Defender")
-        self.combobox.addItem("Defense")
-        self.combobox.addItem("Other")
-        self.combobox.addItem("Goalie")
-        self.combobox.addItem("Idle")
-        self.main_layout.addWidget(self.combobox)
+
+        # Create combobox for role
+        self.role_combobox = QComboBox()
+        for action in self._roles.keys():
+            self.role_combobox.addItem(action)
+        self.main_layout.addWidget(self.role_combobox)
+
+        # Create combobox for action
+        self.action_combobox = QComboBox()
+        for action in self._actions.keys():
+            self.action_combobox.addItem(action)
+        self.main_layout.addWidget(self.action_combobox)
+
+    def get_role(self) -> int:
+        return self._roles[self.role_combobox.currentText()]
+
+    def get_action(self) -> int:
+        return self._actions[self.action_combobox.currentText()]
 
 
 class PublishButton(QPushButton):
@@ -175,6 +222,8 @@ class TeamDataSimulator(Plugin):
         # Add the widget to the context
         context.add_widget(self._widget)
 
+        self.timer = self._node.create_timer(0.1, self.timer_callback)
+
         # Tell the user that the initialization is complete
         self._node.get_logger().info("Initialization complete.")
 
@@ -194,6 +243,18 @@ class TeamDataSimulator(Plugin):
                 self._widget.PlusButton.setEnabled(True)
         if len(self.robots) == 1:
             self._widget.MinusButton.setEnabled(False)
+
+    def timer_callback(self):
+        for robot_widget in self.robots:
+            if robot_widget.active():
+                team_data = TeamData()
+                team_data.robot_id = robot_widget.get_robot_id()
+                team_data.state = robot_widget.state_box.get_state()
+                team_data.time_to_position_at_ball = robot_widget.time_to_position_box.get_time()
+                team_data.strategy.role = robot_widget.strategy_box.get_role()
+                team_data.strategy.action = robot_widget.strategy_box.get_action()
+                team_data.header.stamp = self._node.get_clock().now().to_msg()
+                self.team_data_pub.publish(team_data)
 
     def connect_gui_callbacks(self) -> None:
         """
