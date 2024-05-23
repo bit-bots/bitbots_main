@@ -301,14 +301,6 @@ void DynupNode::loopEngine(int loop_rate, std::shared_ptr<DynupGoalHandle> goal_
   }
 }
 
-void DynupNode::loop()
-{
-  if (param_listener_.is_old(params_)) {
-  params_ = param_listener_.get_params();
-  RCLCPP_INFO(this->get_logger(), "engine_rate: %ld", params_.engine.engine_rate);
-}
-}
-
 bitbots_dynup::msg::DynupPoses DynupNode::getCurrentPoses() {
   rclcpp::Time time = this->get_clock()->now();
   /* Transform the left foot into the right foot frame and all other splines into the base link frame*/
