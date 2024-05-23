@@ -66,11 +66,17 @@ DynupNode::DynupNode(const std::string &ns, std::vector<rclcpp::Parameter> param
     exit(1);
   }
 
-  this->get_parameter("base_link_frame", base_link_frame_); //TODO: from launch file
+  this->declare_parameter<std::string>("base_link_frame", "base_link");
+  this->get_parameter("base_link_frame", base_link_frame_);
+  this->declare_parameter<std::string>("r_sole_frame", "r_sole");
   this->get_parameter("r_sole_frame", r_sole_frame_);
+  this->declare_parameter<std::string>("l_sole_frame", "l_sole");
   this->get_parameter("l_sole_frame", l_sole_frame_);
+  this->declare_parameter<std::string>("r_wrist_frame", "r_wrist");
   this->get_parameter("r_wrist_frame", r_wrist_frame_);
+  this->declare_parameter<std::string>("l_wrist_frame", "l_wrist");
   this->get_parameter("l_wrist_frame", l_wrist_frame_);
+
   
   moveit::core::RobotStatePtr init_state;
   init_state.reset(new moveit::core::RobotState(kinematic_model_));
