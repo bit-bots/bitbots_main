@@ -24,7 +24,6 @@ class PickedUp(AbstractHCMDecisionElement):
                 speak("Picked up!", self.blackboard.speak_publisher, priority=50)
             # we do an action sequence to go to walkready and stay in picked up state
             return "PICKED_UP"
-
         # robot is not picked up
         return "ON_GROUND"
 

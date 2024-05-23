@@ -21,7 +21,7 @@
 
 #RolePositionWithPause
 $DoOnce
-    NOT_DONE --> @LookAtFieldFeatures, @GoToRolePosition + blocking:false
+    NOT_DONE --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @GoToRolePosition + blocking:false
     DONE --> $ReachedAndAlignedToPathPlanningGoalPosition + threshold:0.2 + latch:true
         YES -->  #StandAndLook
         NO --> @LookAtFieldFeatures, @GoToRolePosition
@@ -40,20 +40,24 @@ $AvoidBall
         NO --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:map + distance:%body.ball_far_approach_dist
 
 #PositioningReady
-$ConfigRole
-    GOALIE --> $GoalScoreRecently
-        YES --> @Stand + duration:1.0 + r:false, @PlayAnimationCheering + r:false, @GetWalkready + r:false
-        NO --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @Stand + duration:%body.ready_wait_time, @AvoidBallActive, @GoToRolePosition
-    ELSE --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @Stand + duration:%body.ready_wait_time, @AvoidBallActive, @GoToRolePosition
+$GoalScoreRecently
+    YES --> $ConfigRole
+        GOALIE -->  $RobotInOwnPercentOfField + p:40
+            YES -->@Stand + duration:1.0 + r:false, @PlayAnimationCheering + r:false, @GetWalkready + r:false
+            NO -->  @ChangeAction + action:positioning, @PlaySound + file:ole.wav, @LookAtFieldFeatures, @Stand + duration:%body.ready_wait_time, @AvoidBallActive, @GoToRolePosition
+        ELSE --> @ChangeAction + action:positioning, @PlaySound + file:ole.wav, @LookAtFieldFeatures, @Stand + duration:%body.ready_wait_time, @AvoidBallActive, @GoToRolePosition
+    NO --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @Stand + duration:%body.ready_wait_time, @AvoidBallActive, @GoToRolePosition
 
 #GoalieBehavior
-$BallInOwnPercent + p:40
-    YES --> @ChangeAction + action:positioning, @AvoidBallActive, @LookAtFieldFeatures, @GoToBlockPosition
-    NO --> #RolePositionWithPause
+$ClosestToBall 
+    NO --> $BallInOwnPercent + p:40
+        YES --> @ChangeAction + action:positioning, @AvoidBallActive, @LookAtFieldFeatures, @GoToBlockPosition
+        NO --> #RolePositionWithPause
+    YES --> #KickWithAvoidance
     
 #StrikerRole
 $GoalieHandlingBall
-    YES --> @ChangeAction + action:positioning, @AvoidBallActive, @LookAtFieldFeatures, @GoToPassAcceptPosition //don't go too far back
+    YES --> @ChangeAction + action:positioning, @AvoidBallActive, @LookAtFieldFeatures, @GoToDefensePosition //quick fix for playing with two robots during GO
     NO --> #KickWithAvoidance
 
 #DefensePositioning
@@ -89,7 +93,7 @@ $SecondaryStateTeamDecider
 $DoOnce
     NOT_DONE --> @ForgetBall, @LookAtFieldFeatures
     DONE --> $ConfigRole
-        GOALIE --> @ChangeAction + action:positioning, @GoToBlockPosition, @LookAtFieldFeatures
+        GOALIE --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToBlockPosition
         ELSE --> $BallSeen
             NO --> $SecondaryStateTeamDecider
                 OUR --> #SearchBall
@@ -149,7 +153,9 @@ $IsPenalized
                     YES --> @Stand + duration:0.1 + r:false, @DeactivateHCM + r:false, @LookForward + r:false, @PlayAnimationInitInSim + r:false, @GetWalkready + r:false, @LookAtBall + r:false, @PlayAnimationGoalieArms + r:false, @Stand // goalie only needs to care about the ball
                     NO --> @Stand + duration:0.1 + r:false, @DeactivateHCM + r:false, @LookForward + r:false, @PlayAnimationInitInSim + r:false, @GetWalkready + r:false, @SearchBall + r:false, @PlayAnimationGoalieArms + r:false, @Stand
             ELSE --> #StandAndLook
-        FINISHED --> #Init
+        FINISHED --> $CurrentScore
+            AHEAD --> @Stand + duration:0.5 + r:false, @PlaySound + file:fanfare.wav, @PlayAnimationCheering + r:false, @LookForward, @Stand
+            ELSE --> #Init
         PLAYING --> $SecondaryStateDecider
             PENALTYSHOOT --> #PenaltyShootoutBehavior
             TIMEOUT --> #StandAndLook
