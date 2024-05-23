@@ -49,6 +49,7 @@ TOPICS_TO_RECORD: list[str] = [
     "/joint_states",
     "/motion_odometry",
     "/move_base/current_goal",
+    "/path",
     "/pose_with_covariance",
     "/robot_state",
     "/robots_relative_filtered",
