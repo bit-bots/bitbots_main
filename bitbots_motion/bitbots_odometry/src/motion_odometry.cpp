@@ -109,13 +109,8 @@ void MotionOdometry::loop() {
     tf2::Transform current_support_to_base;
     tf2::fromMsg(current_support_to_base_msg.transform, current_support_to_base);
     double x = current_support_to_base.getOrigin().x();
-    if (current_odom_msg_.twist.twist.linear.x > 0) {
-      x = x * config_.x_forward_scaling;
-    } else {
-      x = x * config_.x_backward_scaling;
-    }
-    double y = current_support_to_base.getOrigin().y() * config_.y_scaling;
-    double yaw = tf2::getYaw(current_support_to_base.getRotation()) * config_.yaw_scaling;
+    double y = current_support_to_base.getOrigin().y();
+    double yaw = tf2::getYaw(current_support_to_base.getRotation());
     current_support_to_base.setOrigin({x, y, current_support_to_base.getOrigin().z()});
     tf2::Quaternion q;
     q.setRPY(0, 0, yaw);
