@@ -12,6 +12,8 @@ from bitbots_msgs.action import Kick
 
 
 class KickCapsule:
+    """Communicates with the dynamic_kick action server to kick the ball."""
+
     __blackboard: "BodyBlackboard"
 
     last_feedback: Optional[Kick.Feedback] = None

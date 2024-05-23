@@ -9,6 +9,8 @@ from bitbots_msgs.msg import Audio, HeadMode, RobotControlState
 
 
 class MiscCapsule:
+    """Capsule for miscellaneous functions."""
+
     def __init__(self, node: Node):
         self.node = node
         self.head_pub = node.create_publisher(HeadMode, "head_mode", 10)

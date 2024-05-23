@@ -24,6 +24,8 @@ class BallGoalType(Enum):
 
 
 class PathfindingCapsule:
+    """Capsule for pathfinding related functions."""
+
     def __init__(self, blackboard: "BodyBlackboard", node: Node):
         self.node = node
         self._blackboard = blackboard

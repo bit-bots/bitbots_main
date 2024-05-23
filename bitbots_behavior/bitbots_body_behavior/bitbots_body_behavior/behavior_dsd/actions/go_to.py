@@ -50,6 +50,8 @@ class GoToRelativePosition(AbstractActionElement):
 
 
 class GoToAbsolutePosition(AbstractActionElement):
+    blackboard: BodyBlackboard
+
     def __init__(self, blackboard, dsd, parameters):
         """Go to an absolute position on the field"""
         super().__init__(blackboard, dsd)

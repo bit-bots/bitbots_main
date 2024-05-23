@@ -7,6 +7,8 @@ from bitbots_msgs.action import Dynup, LookAt, PlayAnimation
 
 
 class AnimationCapsule:
+    """Communicates with the animation action server to play animations."""
+
     def __init__(self, node: Node):
         self.node = node
         self.active = False
