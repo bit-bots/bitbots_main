@@ -4,6 +4,5 @@
     <let unless="$(env IS_ROBOT false)" name="taskset" value=""/>
 
     <node pkg="bitbots_technical_challenge_vision" exec="bitbots_technical_challenge_vision" name="bitbots_technical_challenge_vision" launch-prefix="$(var taskset)">
-        <param from="$(find-pkg-share bitbots_technical_challenge_vision)/config/range.yaml"/>
     </node>
 </launch>
