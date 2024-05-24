@@ -8,10 +8,10 @@ Stabilizer::Stabilizer(std::string ns) {
   pitch_node_->get_logger().set_level(rclcpp::Logger::Level::Warn);
   roll_node_->get_logger().set_level(rclcpp::Logger::Level::Warn);
 
-  pitch_node_->declare_parameter<double>("p", 0.0); //TODO: change parameters to the ones from the yaml, rn they are hard coded, shoulnd be
-  pitch_node_->declare_parameter<double>("i", 0.0); // "der pid controller braucht irgendwie einen wert und deswegen muss man die deklarieren", das ist ein ros2 node
+  pitch_node_->declare_parameter<double>("p", 0.0); 
+  pitch_node_->declare_parameter<double>("i", 0.0); 
   pitch_node_->declare_parameter<double>("d", 0.0);
-  pitch_node_->declare_parameter<double>("i_clamp_max", 0.0); // also könnte vielleicht in onsetparams oder so gesetztw erden
+  pitch_node_->declare_parameter<double>("i_clamp_max", 0.0);
   pitch_node_->declare_parameter<double>("i_clamp_min", 0.0);
   pitch_node_->declare_parameter<bool>("antiwindup", false);
   roll_node_->declare_parameter<double>("p", 0.0);
@@ -21,7 +21,7 @@ Stabilizer::Stabilizer(std::string ns) {
   roll_node_->declare_parameter<double>("i_clamp_min", 0.0);
   roll_node_->declare_parameter<bool>("antiwindup", false);
 
-  pid_trunk_pitch_ = std::make_shared<control_toolbox::PidROS>(pitch_node_, ""); //pid controller sind ndoes
+  pid_trunk_pitch_ = std::make_shared<control_toolbox::PidROS>(pitch_node_, ""); 
   pid_trunk_roll_ = std::make_shared<control_toolbox::PidROS>(roll_node_, "");
   pid_trunk_pitch_->initPid();
   pid_trunk_roll_->initPid();

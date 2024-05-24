@@ -5,7 +5,7 @@ dynup:
       engine_rate: 240
 
       # end pose
-      end_pose: # nicht zu ändern, weil abhängig von anderen Parametern
+      end_pose: # this depends on the walkready pose
         arm_extended_length: 0.4
         foot_distance: 0.2
         hand_walkready_pitch: 40.0
@@ -19,12 +19,12 @@ dynup:
       # Back
       dynup_back:
         arms_angle_back: 120.36
-        com_shift_1: 0.051 # center of mass: zeitpunkt 1-> nachträglich eingefügt
-        com_shift_2: 0.0 # noch einen spline einfügen, der das center of mass setzt
+        com_shift_1: 0.051 # center of mass
+        com_shift_2: 0.0 
         foot_angle: 51.76
         hands_behind_back_x: 0.162
         hands_behind_back_z: 0.183
-        leg_min_length_back: 0.253  # so niedrig wie möglich im folgenden, aber iwann geht das nicht mehr
+        leg_min_length_back: 0.253  # this should be as low as possible
         time_foot_ground_back: 0.536
         time_full_squat_hands: 0.172
         time_full_squat_legs: 0.196
@@ -59,11 +59,11 @@ dynup:
       descend:
         descend_time: 0.25
 
-    # Stabilier
-    stabilizing: False # why is is off?
+    # Stabilizer
+    stabilizing: False 
     minimal_displacement: False
-    stable_threshold: 0.05 # ab wie viel ungenauigkeit gilt es nicht mehr als stabil (eher relevant für das training)
-    stable_duration: 100 # auch für training, 100 steps
+    stable_threshold: 0.05
+    stable_duration: 100
     stabilization_timeout: 2.0
 
     # Visualizer

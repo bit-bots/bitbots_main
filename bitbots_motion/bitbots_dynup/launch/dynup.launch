@@ -12,7 +12,6 @@
             <param name="r_wrist_frame" value="$(var tf_prefix)r_wrist"/>
             <param name="l_wrist_frame" value="$(var tf_prefix)l_wrist"/>
             <param from="$(find-pkg-share bitbots_dynup)/config/dynup_robot.yaml" />
-            <!-- diese parameter sind nicht dynamically rconfigurable, deswegen stehen sie hier, früher waren sie nterschiedlich, also die in die config rein tun -->
         </node>
     </group>
     <group if="$(var sim)">
