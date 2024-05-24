@@ -54,8 +54,7 @@ DynupNode::DynupNode(const std::string &ns, std::vector<rclcpp::Parameter> param
 
 
   // load params once
-  const std::vector<rclcpp::Parameter> params;
-  onSetParameters(params);
+  onSetParameters();
 
   tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_, this);
 
@@ -93,7 +92,10 @@ DynupNode::DynupNode(const std::string &ns, std::vector<rclcpp::Parameter> param
   engine_.init(shoulder_origin.position.y, shoulder_origin.position.z);
   ik_.init(kinematic_model_);
 
-  callback_handle_ = this->add_on_set_parameters_callback(std::bind(&DynupNode::onSetParameters, this, _1));
+  callback_handle_ = this->add_on_set_parameters_callback(
+    [this](const std::vector<rclcpp::Parameter> &) -> rcl_interfaces::msg::SetParametersResult {
+        return this->onSetParameters();
+    });
 
   joint_goal_publisher_ = this->create_publisher<bitbots_msgs::msg::JointCommand>("dynup_motor_goals", 1);
   debug_publisher_ = this->create_publisher<visualization_msgs::msg::Marker>("debug_markers", 1);
@@ -152,8 +154,7 @@ void DynupNode::jointStateCallback(const sensor_msgs::msg::JointState::SharedPtr
 
 void DynupNode::imuCallback(const sensor_msgs::msg::Imu::SharedPtr msg) { stabilizer_.setImu(msg); }
 
-rcl_interfaces::msg::SetParametersResult DynupNode::onSetParameters(const std::vector<rclcpp::Parameter> &parameters) { //TODO: muss eig. nicht mehr die parameter als vektor entgegenehmen
-  params_ = param_listener_.get_params();
+rcl_interfaces::msg::SetParametersResult DynupNode::onSetParameters() {
 
   engine_rate_ = params_.engine.engine_rate;
   debug_ = params_.engine.visualizer.display_debug;

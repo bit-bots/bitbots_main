@@ -55,7 +55,7 @@ class DynupNode : public rclcpp::Node {
  public:
   explicit DynupNode(const std::string &ns = "", std::vector<rclcpp::Parameter> parameters = {});
 
-  rcl_interfaces::msg::SetParametersResult onSetParameters(const std::vector<rclcpp::Parameter> &parameters);
+  rcl_interfaces::msg::SetParametersResult onSetParameters();
 
   void imuCallback(const sensor_msgs::msg::Imu::SharedPtr msg);
 
