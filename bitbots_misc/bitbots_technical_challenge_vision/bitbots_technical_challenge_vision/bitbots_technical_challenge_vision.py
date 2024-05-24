@@ -32,6 +32,7 @@ class TechnicalChallengeVision(Node):
         self._img_sub = self.create_subscription(Image, "/camera/image_proc", self.image_callback, 10)
         self._param_listener = bitbots_technical_challenge_vision.ParamListener(self)
         self._params = self._param_listener.get_params()
+        self._timer = self.create_timer(1, self.timer_callback)
 
     def create_robot_msg(self, x: int, y: int, h: int, w: int, t: int) -> Robot:
         """
@@ -125,7 +126,7 @@ class TechnicalChallengeVision(Node):
 
     def image_callback(self, msg: Image):
         # get dynamic parameters
-        arg = self._params.ros__parameters
+        arg = self._params
 
         # set variables
         img = self._cv_bridge.imgmsg_to_cv2(img_msg=msg, desired_encoding="bgr8")
@@ -167,6 +168,11 @@ class TechnicalChallengeVision(Node):
             # publish color map messages
             self._debug_clrmp_pub_blue.publish(clrmp_blue_msg)
             self._debug_clrmp_pub_red.publish(clrmp_red_msg)
+
+    def timer_callback(self):
+        if self._param_listener.is_old(self._params):
+            self._param_listener.refresh_dynamic_parameters()
+            self._params = self._param_listener.get_params()
 
 
 def main(args=None):
