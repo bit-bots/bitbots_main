@@ -1,13 +1,3 @@
-#!/usr/bin/env python3
-
-"""
-BehaviorModule
-^^^^^^^^^^^^^^
-.. moduleauthor:: Martin Poppinga <1popping@informatik.uni-hamburg.de>
-
-Starts the body behavior
-"""
-
 import os
 
 import rclpy
