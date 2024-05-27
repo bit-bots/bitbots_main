@@ -33,9 +33,8 @@
 #include "bitbots_dynup/dynup_stabilizer.hpp"
 #include "bitbots_dynup/visualizer.hpp"
 #include "bitbots_msgs/action/dynup.hpp"
-#include "rclcpp_action/rclcpp_action.hpp"
-
 #include "dynup_parameters.hpp"
+#include "rclcpp_action/rclcpp_action.hpp"
 
 namespace bitbots_dynup {
 using DynupGoal = bitbots_msgs::action::Dynup;
@@ -104,7 +103,7 @@ class DynupNode : public rclcpp::Node {
 
   // Declare parameter listener and struct from the generate_parameter_library
   bitbots_dynup::ParamListener param_listener_;
-  bitbots_dynup::Params params_ ;
+  bitbots_dynup::Params params_;
   // Datastructure to hold all parameters, which is build from the schema in the 'parameters.yaml'
 
   DynupEngine engine_;

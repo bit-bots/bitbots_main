@@ -3,19 +3,20 @@
 namespace bitbots_dynup {
 using namespace std::chrono_literals;
 
-DynupNode::DynupNode(const std::string &ns, std::vector<rclcpp::Parameter> parameters) //parameters werden im launch script übergeben, aber hierüber kriegt er auch die yaml, also gucken, dass das vlt anders
-    : Node(ns + "dynup", rclcpp::NodeOptions()), //TODO: vlt. rausnehmen?
-    param_listener_(get_node_parameters_interface()),
-    engine_(SharedPtr(this)),
-    stabilizer_(ns),
-    visualizer_("debug/dynup", SharedPtr(this)),
-    ik_(SharedPtr(this)),
-    tf_buffer_(std::make_unique<tf2_ros::Buffer>(this->get_clock())) {
-
-
+DynupNode::DynupNode(
+    const std::string &ns,
+    std::vector<rclcpp::Parameter> parameters)  // parameters werden im launch script übergeben, aber hierüber kriegt er
+                                                // auch die yaml, also gucken, dass das vlt anders
+    : Node(ns + "dynup", rclcpp::NodeOptions()),  // TODO: vlt. rausnehmen?
+      param_listener_(get_node_parameters_interface()),
+      engine_(SharedPtr(this)),
+      stabilizer_(ns),
+      visualizer_("debug/dynup", SharedPtr(this)),
+      ik_(SharedPtr(this)),
+      tf_buffer_(std::make_unique<tf2_ros::Buffer>(this->get_clock())) {
   auto moveit_node = std::make_shared<rclcpp::Node>(ns + "dynup_moveit_node");
 
-    // when called from python, parameters are given to the constructor
+  // when called from python, parameters are given to the constructor
   for (auto parameter : parameters) {
     if (this->has_parameter(parameter.get_name())) {
       // this is the case for walk engine params set via python
@@ -26,7 +27,7 @@ DynupNode::DynupNode(const std::string &ns, std::vector<rclcpp::Parameter> param
       moveit_node->set_parameter(parameter);
     }
   }
-    // get all kinematics parameters from the move_group node if they are not set manually via constructor
+  // get all kinematics parameters from the move_group node if they are not set manually via constructor
   std::string check_kinematic_parameters;
   if (!moveit_node->get_parameter("robot_description_kinematics.LeftLeg.kinematics_solver",
                                   check_kinematic_parameters)) {
@@ -51,8 +52,6 @@ DynupNode::DynupNode(const std::string &ns, std::vector<rclcpp::Parameter> param
   // get all kinematics parameters from the move_group node if they are not set manually via constructor
   params_ = param_listener_.get_params();
 
-
-
   // load params once
   onSetParameters();
 
@@ -76,7 +75,6 @@ DynupNode::DynupNode(const std::string &ns, std::vector<rclcpp::Parameter> param
   this->declare_parameter<std::string>("l_wrist_frame", "l_wrist");
   this->get_parameter("l_wrist_frame", l_wrist_frame_);
 
-  
   moveit::core::RobotStatePtr init_state;
   init_state.reset(new moveit::core::RobotState(kinematic_model_));
   // set elbows to make arms straight, in a stupid way since moveit is annoying
@@ -93,9 +91,9 @@ DynupNode::DynupNode(const std::string &ns, std::vector<rclcpp::Parameter> param
   ik_.init(kinematic_model_);
 
   callback_handle_ = this->add_on_set_parameters_callback(
-    [this](const std::vector<rclcpp::Parameter> &) -> rcl_interfaces::msg::SetParametersResult {
+      [this](const std::vector<rclcpp::Parameter> &) -> rcl_interfaces::msg::SetParametersResult {
         return this->onSetParameters();
-    });
+      });
 
   joint_goal_publisher_ = this->create_publisher<bitbots_msgs::msg::JointCommand>("dynup_motor_goals", 1);
   debug_publisher_ = this->create_publisher<visualization_msgs::msg::Marker>("debug_markers", 1);
@@ -155,7 +153,6 @@ void DynupNode::jointStateCallback(const sensor_msgs::msg::JointState::SharedPtr
 void DynupNode::imuCallback(const sensor_msgs::msg::Imu::SharedPtr msg) { stabilizer_.setImu(msg); }
 
 rcl_interfaces::msg::SetParametersResult DynupNode::onSetParameters() {
-
   engine_rate_ = params_.engine.engine_rate;
   debug_ = params_.engine.visualizer.display_debug;
 
@@ -284,8 +281,7 @@ void DynupNode::loopEngine(int loop_rate, std::shared_ptr<DynupGoalHandle> goal_
     feedback->percent_done = engine_.getPercentDone();
     goal_handle->publish_feedback(feedback);
     if (feedback->percent_done >= 100 &&
-        (stable_duration_ >= params_.engine.stabilizer.stable_duration ||
-         !(params_.engine.stabilizer.stabilizing) ||
+        (stable_duration_ >= params_.engine.stabilizer.stable_duration || !(params_.engine.stabilizer.stabilizing) ||
          (this->get_clock()->now().seconds() - start_time_ >=
           engine_.getDuration() + params_.engine.stabilizer.stabilization_timeout))) {
       RCLCPP_INFO_STREAM(this->get_logger(), "Completed dynup with " << failed_tick_counter_ << " failed ticks.");
@@ -378,7 +374,6 @@ int main(int argc, char **argv) {
   auto node = std::make_shared<bitbots_dynup::DynupNode>();
   rclcpp::experimental::executors::EventsExecutor exec;
   exec.add_node(node);
-
 
   exec.spin();
   rclcpp::shutdown();

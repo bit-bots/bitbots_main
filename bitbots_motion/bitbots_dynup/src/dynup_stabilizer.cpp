@@ -8,8 +8,8 @@ Stabilizer::Stabilizer(std::string ns) {
   pitch_node_->get_logger().set_level(rclcpp::Logger::Level::Warn);
   roll_node_->get_logger().set_level(rclcpp::Logger::Level::Warn);
 
-  pitch_node_->declare_parameter<double>("p", 0.0); 
-  pitch_node_->declare_parameter<double>("i", 0.0); 
+  pitch_node_->declare_parameter<double>("p", 0.0);
+  pitch_node_->declare_parameter<double>("i", 0.0);
   pitch_node_->declare_parameter<double>("d", 0.0);
   pitch_node_->declare_parameter<double>("i_clamp_max", 0.0);
   pitch_node_->declare_parameter<double>("i_clamp_min", 0.0);
@@ -21,7 +21,7 @@ Stabilizer::Stabilizer(std::string ns) {
   roll_node_->declare_parameter<double>("i_clamp_min", 0.0);
   roll_node_->declare_parameter<bool>("antiwindup", false);
 
-  pid_trunk_pitch_ = std::make_shared<control_toolbox::PidROS>(pitch_node_, ""); 
+  pid_trunk_pitch_ = std::make_shared<control_toolbox::PidROS>(pitch_node_, "");
   pid_trunk_roll_ = std::make_shared<control_toolbox::PidROS>(roll_node_, "");
   pid_trunk_pitch_->initPid();
   pid_trunk_roll_->initPid();

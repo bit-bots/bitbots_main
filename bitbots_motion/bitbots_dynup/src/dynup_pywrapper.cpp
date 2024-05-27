@@ -52,7 +52,7 @@ bool string2bool(const std::string &v) {
   return !v.empty() && (strcasecmp(v.c_str(), "true") == 0 || atoi(v.c_str()) != 0);
 }
 
-void PyDynupWrapper::set_parameter(py::bytes parameter_msg) { 
+void PyDynupWrapper::set_parameter(py::bytes parameter_msg) {
   // convert serialized parameter msg to parameter object
   rclcpp::Parameter parameter =
       rclcpp::Parameter::from_parameter_msg(fromPython<rcl_interfaces::msg::Parameter>(parameter_msg));
