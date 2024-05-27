@@ -1,0 +1,94 @@
+BallFilter:
+  ball_subscribe_topic: {
+    type: string,
+    default_value: 'balls_relative',
+    description: 'Topic to subscribe to for ball detections'
+  }
+  ball_position_publish_topic: {
+    type: string,
+    default_value: 'ball_position_relative_filtered',
+    description: 'Topic to publish the filtered ball position'
+  }
+  ball_movement_publish_topic: {
+    type: string,
+    default_value: 'ball_relative_movement',
+    description: 'Topic to publish the filtered ball movement'
+  }
+  ball_publish_topic: {
+    type: string,
+    default_value: 'ball_relative_filtered',
+    description: 'Topic to publish the filtered ball'
+  }
+  ball_filter_reset_service_name: {
+    type: string,
+    default_value: 'ball_filter_reset',
+    description: 'Service to reset the ball filter'
+  }
+  filter_frame: {
+    type: string,
+    default_value: 'map',
+    description: 'Frame to filter the ball in',
+    validation: {
+      one_of<>: ['map', 'odom']
+    }
+  }
+
+  filter_rate: {
+    type: int,
+    default_value: 62,
+    description: 'Filtering rate in Hz',
+    validation: {
+      bounds<>: [0, 100]
+    }
+  }
+
+  velocity_reduction: {
+    type: double,
+    default_value: 0.6,
+    description: 'Velocity reduction (per axis) factor of the ball per second',
+    validation: {
+      bounds<>: [0, 1]
+    }
+  }
+
+  process_noise_variance: {
+    type: double,
+    default_value: 0.001,
+    description: 'Noise which is added to the estimated position without new measurements',
+    validation: {
+      bounds<>: [0, 1]
+    }
+  }
+
+  measurement_certainty: {
+    type: double,
+    default_value: 0.1,
+    description: 'Ball measurement certainty in filter',
+    validation: {
+      bounds<>: [0, 1]
+    }
+  }
+
+  filter_reset_time: {
+    type: int,
+    default_value: 20,
+    description: 'Max ball not seen time in Seconds',
+    validation: {
+      bounds<>: [0, 100]
+    }
+  }
+
+  filter_reset_distance: {
+    type: int,
+    default_value: 2,
+    description: 'Distance to the current estimation causing a filter reset',
+    validation: {
+      bounds<>: [0, 100]
+    }
+  }
+
+  closest_distance_match: {
+    type: bool,
+    default_value: True,
+    description: 'True if ball should be selected based on distance to filtered ball instead of highest rating'
+  }
