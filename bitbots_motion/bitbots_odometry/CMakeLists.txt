@@ -22,13 +22,9 @@ find_package(tf2_eigen REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 
-include_directories(include)
-
 add_compile_options(-Wall -Werror -Wno-unused)
 
 add_executable(odometry_fuser src/odometry_fuser.cpp)
-
-target_link_libraries(motion_odometry rclcpp::rclcpp odometry_parameters)
 
 # Specify libraries to link a library or executable target against
 ament_target_dependencies(
@@ -54,7 +50,5 @@ enable_bitbots_docs()
 install(TARGETS odometry_fuser DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
-
-install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
 
 ament_package()
