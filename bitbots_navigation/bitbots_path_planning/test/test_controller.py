@@ -7,6 +7,7 @@ from bitbots_path_planning.controller import Controller
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Path
 from rclpy.node import Node
+from rclpy.time import Time
 from tf2_geometry_msgs import PoseStamped
 
 
@@ -22,7 +23,7 @@ def test_default_setup(snapshot, node, tf2_buffer):
         "config_orient_to_goal_distance",
         "config_rotation_slow_down_factor",
         "config_rotation_i_factor",
-        "config_smoothing_k",
+        "config_smoothing_tau",
         "config_translation_slow_down_factor",
     ]
     parameters = {p: getattr(controller, p) for p in parameter_keys}
@@ -34,7 +35,6 @@ def test_default_setup(snapshot, node, tf2_buffer):
 
 def test_step_limits_forward_x_velocity(node, tf2_buffer, pose_opponent_goal):
     controller = setup_controller(node, tf2_buffer)
-    controller.config_smoothing_k = 1.0
 
     controller.step(path_to(pose_opponent_goal))
 
@@ -45,7 +45,6 @@ def test_step_limits_forward_x_velocity(node, tf2_buffer, pose_opponent_goal):
 
 def test_step_limits_backward_x_velocity(node, tf2_buffer, pose_own_goal):
     controller = setup_controller(node, tf2_buffer)
-    controller.config_smoothing_k = 1.0
 
     controller.step(path_to(pose_own_goal))
 
@@ -56,7 +55,6 @@ def test_step_limits_backward_x_velocity(node, tf2_buffer, pose_own_goal):
 
 def test_step_limits_forward_y_velocity(node, tf2_buffer, pose_left_line):
     controller = setup_controller(node, tf2_buffer)
-    controller.config_smoothing_k = 1.0
 
     controller.step(path_to(pose_left_line))
 
@@ -67,7 +65,6 @@ def test_step_limits_forward_y_velocity(node, tf2_buffer, pose_left_line):
 
 def test_step_limits_backward_y_velocity(node, tf2_buffer, pose_right_line):
     controller = setup_controller(node, tf2_buffer)
-    controller.config_smoothing_k = 1.0
 
     controller.step(path_to(pose_right_line))
 
@@ -78,7 +75,6 @@ def test_step_limits_backward_y_velocity(node, tf2_buffer, pose_right_line):
 
 def test_step_limits_forward_xy_velocities(node, tf2_buffer, pose_opponent_corner):
     controller = setup_controller(node, tf2_buffer)
-    controller.config_smoothing_k = 1.0
 
     controller.step(path_to(pose_opponent_corner))
 
@@ -89,7 +85,6 @@ def test_step_limits_forward_xy_velocities(node, tf2_buffer, pose_opponent_corne
 
 def test_step_limits_backward_xy_velocities(node, tf2_buffer, pose_own_corner):
     controller = setup_controller(node, tf2_buffer)
-    controller.config_smoothing_k = 1.0
 
     controller.step(path_to(pose_own_corner))
 
@@ -100,18 +95,20 @@ def test_step_limits_backward_xy_velocities(node, tf2_buffer, pose_own_corner):
 
 def test_step_limits_rotation(node, tf2_buffer, pose_left_line, pose_right_line):
     controller = setup_controller(node, tf2_buffer)
-    controller.config_smoothing_k = 1.0
 
     controller.step(path_to(pose_left_line))
     assert controller.last_cmd_vel.angular.z == controller.config_max_rotation_vel
 
+    controller.last_update_time = None
     controller.step(path_to(pose_right_line))
     assert controller.last_cmd_vel.angular.z == -controller.config_max_rotation_vel
 
 
 def test_step_cmd_vel_smoothing(snapshot, node, tf2_buffer, pose_opponent_corner):
     controller = setup_controller(node, tf2_buffer)
-    controller.config_smoothing_k = 0.5
+    controller.config_smoothing_tau = 0.5
+    controller.last_update_time = Time(seconds=0)
+
     controller.last_cmd_vel.linear.x = controller.config_max_vel_x
     controller.last_cmd_vel.linear.y = controller.config_max_vel_y
     controller.last_cmd_vel.angular.z = controller.config_max_rotation_vel
@@ -217,8 +214,7 @@ def node() -> Node:
     node.get_parameter = lambda key: SimpleNamespace(value=key)
     node.declare_parameter = lambda _, default_value: SimpleNamespace(value=default_value)
 
-    logger = Mock()
-    logger.debug = print
-    node.get_logger = lambda: logger
+    node.get_logger.return_value.debug = print
+    node.get_clock.return_value.now.return_value = Time(seconds=1)
 
     return node
