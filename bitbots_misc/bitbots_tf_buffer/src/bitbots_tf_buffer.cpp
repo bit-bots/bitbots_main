@@ -62,20 +62,26 @@ class Buffer {
   }
 
   py::bytes lookup_transform(py::str target_frame, py::str source_frame, py::bytes time_raw, py::bytes timeout_raw) {
+    // Convert python objects to C++ objects
     const std::string target_frame_str = target_frame.cast<std::string>();
     const std::string source_frame_str = source_frame.cast<std::string>();
     const rclcpp::Time time_msg{ros2_python_extension::fromPython<builtin_interfaces::msg::Time>(time_raw)};
     const rclcpp::Duration timeout{ros2_python_extension::fromPython<builtin_interfaces::msg::Duration>(timeout_raw)};
 
-    return ros2_python_extension::toPython<geometry_msgs::msg::TransformStamped>(
-        buffer_->lookupTransform(target_frame_str, source_frame_str, time_msg, timeout));
+    // Lookup transform
+    auto transform = buffer_->lookupTransform(target_frame_str, source_frame_str, time_msg, timeout);
+
+    // Convert C++ object back to python object
+    return ros2_python_extension::toPython<geometry_msgs::msg::TransformStamped>(transform);
   }
 
   bool can_transform(py::str target_frame, py::str source_frame, py::bytes time_raw, py::bytes timeout_raw) {
+    // Convert python objects to C++ objects
     const std::string target_frame_str = target_frame.cast<std::string>();
     const std::string source_frame_str = source_frame.cast<std::string>();
     const rclcpp::Time time_msg{ros2_python_extension::fromPython<builtin_interfaces::msg::Time>(time_raw)};
     const rclcpp::Duration timeout{ros2_python_extension::fromPython<builtin_interfaces::msg::Duration>(timeout_raw)};
+    // Check if transform can be looked up
     return buffer_->canTransform(target_frame_str, source_frame_str, time_msg, timeout);
   }
 
