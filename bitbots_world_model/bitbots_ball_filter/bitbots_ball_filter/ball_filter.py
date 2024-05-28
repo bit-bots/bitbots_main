@@ -12,6 +12,7 @@ from filterpy.kalman import KalmanFilter
 from geometry_msgs.msg import Point, PoseWithCovarianceStamped, TwistWithCovarianceStamped
 from rcl_interfaces.msg import SetParametersResult
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
+from rclpy.duration import Duration
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 from soccer_vision_3d_msgs.msg import Ball, BallArray
@@ -45,7 +46,7 @@ class BallFilter(Node):
         """
         super().__init__("ball_filter", automatically_declare_parameters_from_overrides=True)
         self.logger = self.get_logger()
-        self.tf_buffer = Buffer(rclpy.duration.Duration(seconds=2), self)
+        self.tf_buffer = Buffer(self, Duration(seconds=2))
         # Setup dynamic reconfigure config
         self.config = {}
         self.add_on_set_parameters_callback(self._dynamic_reconfigure_callback)
@@ -65,7 +66,7 @@ class BallFilter(Node):
         self.filter_rate = config["filter_rate"]
         self.measurement_certainty = config["measurement_certainty"]
         self.filter_time_step = 1.0 / self.filter_rate
-        self.filter_reset_duration = rclpy.duration.Duration(seconds=config["filter_reset_time"])
+        self.filter_reset_duration = Duration(seconds=config["filter_reset_time"])
         self.filter_reset_distance = config["filter_reset_distance"]
         self.closest_distance_match = config["closest_distance_match"]
 
@@ -156,7 +157,7 @@ class BallFilter(Node):
         point_stamped.header = header
         point_stamped.point = point
         try:
-            return self.tf_buffer.transform(point_stamped, frame, timeout=rclpy.duration.Duration(seconds=timeout))
+            return self.tf_buffer.transform(point_stamped, frame, timeout=Duration(seconds=timeout))
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
             self.logger.warning(str(e))
 

@@ -21,7 +21,7 @@ class RobotFilter(Node):
     def __init__(self):
         super().__init__("bitbots_robot_filter")
 
-        self.tf_buffer = Buffer(Duration(seconds=10.0), self)
+        self.tf_buffer = Buffer(self, Duration(seconds=10.0))
 
         self.robots = []
         self.team = dict()

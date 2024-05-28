@@ -28,7 +28,7 @@ class PathPlanning(Node):
         self.declare_parameter("rate", 20.0)
 
         # We need to create a tf buffer
-        self.tf_buffer = Buffer(Duration(seconds=self.declare_parameter("tf_buffer_duration", 5.0).value), self)
+        self.tf_buffer = Buffer(self, Duration(seconds=self.declare_parameter("tf_buffer_duration", 5.0).value))
 
         # Create submodules
         self.map = Map(node=self, buffer=self.tf_buffer)

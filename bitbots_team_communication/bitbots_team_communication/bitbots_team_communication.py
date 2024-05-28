@@ -7,7 +7,7 @@ from typing import List, Optional, Tuple
 
 import rclpy
 from ament_index_python.packages import get_package_share_directory
-from bitbots_tf_buffer import TransformListener
+from bitbots_tf_buffer import Buffer
 from bitbots_utils.utils import get_parameter_dict, get_parameters_from_other_node
 from game_controller_hl_interfaces.msg import GameState
 from geometry_msgs.msg import PoseWithCovarianceStamped, Twist, TwistWithCovarianceStamped
@@ -20,7 +20,7 @@ from rclpy.time import Time
 from soccer_vision_3d_msgs.msg import Robot, RobotArray
 from std_msgs.msg import Float32, Header
 from tf2_geometry_msgs import PointStamped, PoseStamped
-from tf2_ros import Buffer, TransformException
+from tf2_ros import TransformException
 
 import bitbots_team_communication.robocup_extension_pb2 as Proto  # noqa: N812
 from bitbots_msgs.msg import Strategy, TeamData
@@ -59,8 +59,7 @@ class TeamCommunication:
 
         self.set_state_defaults()
 
-        self.tf_buffer = Buffer()
-        self.tf_listener = TransformListener(self.tf_buffer, self.node)
+        self.tf_buffer = Buffer(self.node)
 
         self.run_spin_in_thread()
         self.try_to_establish_connection()

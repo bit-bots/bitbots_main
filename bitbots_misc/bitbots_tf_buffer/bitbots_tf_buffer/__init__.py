@@ -17,7 +17,7 @@ class Buffer(tf2.BufferCore, tf2.BufferInterface):
     It spawns a new node with the suffix "_tf" to handle the C++ side of the ROS communication.
     """
 
-    def __init__(self, cache_time: Duration, node, *args, **kwargs):
+    def __init__(self, node, cache_time: Optional[Duration] = None, *args, **kwargs):
         if cache_time is not None:
             tf2.BufferCore.__init__(self, cache_time)
         else:
