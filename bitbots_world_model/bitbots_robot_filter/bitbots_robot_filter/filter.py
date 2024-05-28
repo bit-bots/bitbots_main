@@ -5,7 +5,6 @@ import soccer_vision_attribute_msgs.msg as svam
 import tf2_geometry_msgs
 import tf2_ros as tf2
 from bitbots_tf_buffer import Buffer
-from geometry_msgs.msg import Pose
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.duration import Duration
 from rclpy.executors import MultiThreadedExecutor
