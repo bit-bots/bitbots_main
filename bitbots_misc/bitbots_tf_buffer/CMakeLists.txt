@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(bitbots_tf_listener)
+project(bitbots_tf_buffer)
 
 # Add support for C++17
 if(NOT CMAKE_CXX_STANDARD)
@@ -12,17 +12,24 @@ find_package(ament_cmake REQUIRED)
 find_package(backward_ros REQUIRED)
 find_package(pybind11 REQUIRED)
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
+find_package(rcl REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(ros2_python_extension REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
-find_package(tf2_kdl REQUIRED)
-find_package(rclcpp REQUIRED)
-find_package(rcl REQUIRED)
 
 add_compile_options(-Wall -Wno-unused)
 
-pybind11_add_module(cpp_wrapper SHARED src/bitbots_tf_listener.cpp)
+pybind11_add_module(cpp_wrapper SHARED src/bitbots_tf_buffer.cpp)
 
-ament_target_dependencies(cpp_wrapper PUBLIC rclcpp rcl tf2 tf2_ros)
+ament_target_dependencies(
+  cpp_wrapper
+  PUBLIC
+  rclcpp
+  rcl
+  tf2
+  tf2_ros
+  ros2_python_extension)
 
 target_link_libraries(cpp_wrapper PRIVATE pybind11::module)
 

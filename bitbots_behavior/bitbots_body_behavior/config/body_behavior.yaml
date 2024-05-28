@@ -148,7 +148,7 @@
       # Range in which the ball far approach point is counted as reached
       ball_far_approach_position_thresh: 0.2
 
-      # We reapproach the ball after it has moved further away than this distance. This includes moveing to the far approach position.
+      # We reapproach the ball after it has moved further away than this distance. This includes moving to the far approach position.
       ball_reapproach_dist: 1.0
 
       # Distance at which the ball is normally approached
