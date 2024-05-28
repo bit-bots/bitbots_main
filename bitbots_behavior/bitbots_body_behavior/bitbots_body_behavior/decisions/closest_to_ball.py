@@ -49,15 +49,13 @@ class RankToBallNoGoalie(AbstractDecisionElement):
     def perform(self, reevaluate=False):
         my_time_to_ball = self.blackboard.team_data.get_own_time_to_ball()
         rank = self.blackboard.team_data.team_rank_to_ball(my_time_to_ball, count_goalies=False, use_time_to_ball=True)
-        nummber_of_active_teammates = self.blackboard.team_data.get_number_of_active_teammates()
         self.publish_debug_data("time to ball", my_time_to_ball)
         self.publish_debug_data("Rank to ball", rank)
         if rank == 1:
             return "FIRST"
-        # in case we play with three robots we want rank two to defend
-        elif rank == 2 and nummber_of_active_teammates == 4:
+        elif rank == 2:
             return "SECOND"
-        elif rank == 3 or (rank == 2 and nummber_of_active_teammates == 3):
+        elif rank == 3:
             return "THIRD"
         else:
             # emergency fall back if something goes wrong

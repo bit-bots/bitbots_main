@@ -34,7 +34,6 @@ class TeamDataCapsule:
         self.team_data: Dict[TeamData] = {}
         for i in range(1, 7):
             self.team_data[i] = TeamData()
-        self.team_strategy = dict()
         self.times_to_ball = dict()
         self.own_time_to_ball = 9999.0
 
@@ -191,8 +190,20 @@ class TeamDataCapsule:
                 poses.append(data.robot_position.pose)
         return poses
     
-    def get_number_of_active_teammates(self) -> int:
-        return len(list(filter(self.is_valid,self.team_data.values())))
+    def get_number_of_active_fieldplayers(self, count_goalie: bool =False ) -> int:
+
+        def is_not_goalie(team_data: TeamData) -> bool:
+            return team_data.strategy.role != Strategy.ROLE_GOALIE
+        
+        # Get the team data infos for all robots (ignoring the robot id/name)
+        team_data_infos = self.team_data.values()
+
+        # Remove goalie data if needed
+        if not count_goalie:
+            team_data_infos = filter(is_not_goalie, team_data_infos)
+
+        # Count valid team data infos (aka robots with valid team data)
+        return sum(map(self.is_valid, team_data_infos))
 
 
     def get_own_time_to_ball(self) -> float:
