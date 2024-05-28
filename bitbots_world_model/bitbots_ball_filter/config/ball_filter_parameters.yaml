@@ -37,6 +37,7 @@ BallFilter:
     type: int,
     default_value: 62,
     description: 'Filtering rate in Hz',
+    read_only: true,
     validation: {
       bounds<>: [0, 100]
     }
