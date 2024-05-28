@@ -186,7 +186,7 @@ class PublishButton(QPushButton):
             self.setText(self.button_text)
 
 
-class TeamDataSimulator(Plugin):
+class TeamDataSimulator(Plugin):  # TODO add sim time button
     """
     This class is the main class for the RecordUI. It is a plugin for the rqt framework and is used to record animations.
     """
@@ -264,6 +264,10 @@ class TeamDataSimulator(Plugin):
         # Show test message box
         self._widget.PlusButton.clicked.connect(self.plus_button_clicked)
         self._widget.MinusButton.clicked.connect(self.minus_button_clicked)
+
+    def shutdown_plugin(self):
+        """Clean up on shutdown"""
+        self.timer.cancel()
 
 
 def main():
