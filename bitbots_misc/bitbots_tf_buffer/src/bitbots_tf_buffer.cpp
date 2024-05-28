@@ -24,6 +24,19 @@ class Buffer {
       rclcpp::init(0, nullptr);
     }
 
+    // Register the tf2 exceptions, so they can be caught in Python as expected
+    auto py_tf2_ros = py::module::import("tf2_ros");
+    py::register_local_exception<tf2::LookupException>(py_tf2_ros, "LookupExceptionCpp",
+                                                       py_tf2_ros.attr("LookupException"));
+    py::register_local_exception<tf2::ConnectivityException>(py_tf2_ros, "ConnectivityExceptionCpp",
+                                                             py_tf2_ros.attr("ConnectivityException"));
+    py::register_local_exception<tf2::ExtrapolationException>(py_tf2_ros, "ExtrapolationExceptionCpp",
+                                                              py_tf2_ros.attr("ExtrapolationException"));
+    py::register_local_exception<tf2::InvalidArgumentException>(py_tf2_ros, "InvalidArgumentExceptionCpp",
+                                                                py_tf2_ros.attr("InvalidArgumentException"));
+    py::register_local_exception<tf2::TimeoutException>(py_tf2_ros, "TimeoutExceptionCpp",
+                                                        py_tf2_ros.attr("TimeoutException"));
+
     // get node name from python node object
     rcl_node_t *node_handle = (rcl_node_t *)node.attr("handle").attr("pointer").cast<size_t>();
     const char *node_name = rcl_node_get_name(node_handle);
@@ -49,28 +62,21 @@ class Buffer {
   }
 
   py::bytes lookup_transform(py::str target_frame, py::str source_frame, py::bytes time_raw, py::bytes timeout_raw) {
-    // lookup transform
-    geometry_msgs::msg::TransformStamped transform;
-    rclcpp::Time time_msg{ros2_python_extension::fromPython<builtin_interfaces::msg::Time>(time_raw)};
-    rclcpp::Duration timeout{ros2_python_extension::fromPython<builtin_interfaces::msg::Duration>(timeout_raw)};
+    const std::string target_frame_str = target_frame.cast<std::string>();
+    const std::string source_frame_str = source_frame.cast<std::string>();
+    const rclcpp::Time time_msg{ros2_python_extension::fromPython<builtin_interfaces::msg::Time>(time_raw)};
+    const rclcpp::Duration timeout{ros2_python_extension::fromPython<builtin_interfaces::msg::Duration>(timeout_raw)};
 
-    try {
-      transform = buffer_->lookupTransform(target_frame.cast<std::string>(), source_frame.cast<std::string>(), time_msg,
-                                           timeout);
-    } catch (tf2::TransformException &ex) {
-      // throw python exception
-      throw py::value_error(ex.what());
-    }
-
-    // serialize transform
-    return ros2_python_extension::toPython<geometry_msgs::msg::TransformStamped>(transform);
+    return ros2_python_extension::toPython<geometry_msgs::msg::TransformStamped>(
+        buffer_->lookupTransform(target_frame_str, source_frame_str, time_msg, timeout));
   }
 
   bool can_transform(py::str target_frame, py::str source_frame, py::bytes time_raw, py::bytes timeout_raw) {
-    // check if transform can be looked up
-    rclcpp::Time time_msg{ros2_python_extension::fromPython<builtin_interfaces::msg::Time>(time_raw)};
-    rclcpp::Duration timeout{ros2_python_extension::fromPython<builtin_interfaces::msg::Duration>(timeout_raw)};
-    return buffer_->canTransform(target_frame.cast<std::string>(), source_frame.cast<std::string>(), time_msg, timeout);
+    const std::string target_frame_str = target_frame.cast<std::string>();
+    const std::string source_frame_str = source_frame.cast<std::string>();
+    const rclcpp::Time time_msg{ros2_python_extension::fromPython<builtin_interfaces::msg::Time>(time_raw)};
+    const rclcpp::Duration timeout{ros2_python_extension::fromPython<builtin_interfaces::msg::Duration>(timeout_raw)};
+    return buffer_->canTransform(target_frame_str, source_frame_str, time_msg, timeout);
   }
 
   // destructor
