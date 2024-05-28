@@ -132,7 +132,7 @@ $BallSeen
                 TWO --> $RankToBallNoGoalie
                     FIRST --> #StrikerRole
                     SECOND --> #DefensePositioning
-                OTHER --> $RankToBallNoGoalie
+                ELSE --> $RankToBallNoGoalie
                     FIRST --> #StrikerRole
                     SECOND --> #SupporterRole
                     THIRD --> #DefensePositioning

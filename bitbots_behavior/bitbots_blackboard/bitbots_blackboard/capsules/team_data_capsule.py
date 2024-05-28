@@ -187,12 +187,11 @@ class TeamDataCapsule:
             if self.is_valid(data) and (data.strategy.role != Strategy.ROLE_GOALIE or count_goalies):
                 poses.append(data.robot_position.pose)
         return poses
-    
-    def get_number_of_active_fieldplayers(self, count_goalie: bool =False ) -> int:
 
+    def get_number_of_active_fieldplayers(self, count_goalie: bool = False) -> int:
         def is_not_goalie(team_data: TeamData) -> bool:
             return team_data.strategy.role != Strategy.ROLE_GOALIE
-        
+
         # Get the team data infos for all robots (ignoring the robot id/name)
         team_data_infos = self.team_data.values()
 
@@ -202,7 +201,6 @@ class TeamDataCapsule:
 
         # Count valid team data infos (aka robots with valid team data)
         return sum(map(self.is_valid, team_data_infos))
-
 
     def get_own_time_to_ball(self) -> float:
         return self.own_time_to_ball
