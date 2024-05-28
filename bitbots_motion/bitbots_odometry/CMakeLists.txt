@@ -11,7 +11,6 @@ find_package(biped_interfaces REQUIRED)
 find_package(bitbots_docs REQUIRED)
 find_package(bitbots_utils REQUIRED)
 find_package(Eigen3 REQUIRED)
-find_package(generate_parameter_library REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(message_filters REQUIRED)
 find_package(nav_msgs REQUIRED)
@@ -23,37 +22,15 @@ find_package(tf2_eigen REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 
-generate_parameter_library(odometry_parameters
-                           config/odometry_config_template.yaml)
-
 include_directories(include)
 
 add_compile_options(-Wall -Werror -Wno-unused)
 
 add_executable(odometry_fuser src/odometry_fuser.cpp)
-add_executable(motion_odometry src/motion_odometry.cpp)
 
 target_link_libraries(motion_odometry rclcpp::rclcpp odometry_parameters)
 
 # Specify libraries to link a library or executable target against
-ament_target_dependencies(
-  motion_odometry
-  ament_cmake
-  biped_interfaces
-  bitbots_docs
-  bitbots_utils
-  generate_parameter_library
-  geometry_msgs
-  message_filters
-  nav_msgs
-  rclcpp
-  rot_conv
-  sensor_msgs
-  tf2
-  tf2_eigen
-  tf2_geometry_msgs
-  tf2_ros)
-
 ament_target_dependencies(
   odometry_fuser
   ament_cmake
@@ -73,8 +50,6 @@ ament_target_dependencies(
   tf2_ros)
 
 enable_bitbots_docs()
-
-install(TARGETS motion_odometry DESTINATION lib/${PROJECT_NAME})
 
 install(TARGETS odometry_fuser DESTINATION lib/${PROJECT_NAME})
 
