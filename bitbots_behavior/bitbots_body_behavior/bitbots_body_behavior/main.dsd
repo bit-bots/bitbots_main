@@ -93,7 +93,7 @@ $SecondaryStateTeamDecider
 $DoOnce
     NOT_DONE --> @ForgetBall, @LookAtFieldFeatures
     DONE --> $ConfigRole
-        GOALIE --> @ChangeAction + action:positioning, @GoToBlockPosition, @LookAtFieldFeatures
+        GOALIE --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToBlockPosition
         ELSE --> $BallSeen
             NO --> $SecondaryStateTeamDecider
                 OUR --> #SearchBall
