@@ -4,7 +4,7 @@ import soccer_vision_3d_msgs.msg as sv3dm
 import soccer_vision_attribute_msgs.msg as svam
 import tf2_geometry_msgs
 import tf2_ros as tf2
-from bitbots_tf_listener import TransformListener
+from bitbots_tf_buffer import Buffer
 from geometry_msgs.msg import Pose
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.duration import Duration
@@ -21,8 +21,7 @@ class RobotFilter(Node):
     def __init__(self):
         super().__init__("bitbots_robot_filter")
 
-        self.tf_buffer = tf2.Buffer(cache_time=Duration(seconds=10.0))
-        self.tf_listener = TransformListener(self.tf_buffer, self)
+        self.tf_buffer = Buffer(self, Duration(seconds=10.0))
 
         self.robots = []
         self.team = dict()
@@ -121,7 +120,7 @@ class RobotFilter(Node):
 def main(args=None):
     rclpy.init(args=args)
     node = RobotFilter()
-    # Number of executor threads is the number of MutiallyExclusiveCallbackGroups + 2 threads the tf listener and executor needs
+    # Number of executor threads is the number of MutuallyExclusiveCallbackGroups + 2 threads the tf listener and executor needs
     ex = MultiThreadedExecutor(num_threads=5)
     ex.add_node(node)
     try:
