@@ -146,8 +146,6 @@ class TeleopKeyboard(Node):
         self.reset_robot = self.create_client(Empty, "/reset_pose")
         self.reset_ball = self.create_client(Empty, "/reset_ball")
 
-        print(msg)
-
         self.frame_prefix = "" if os.environ.get("ROS_NAMESPACE") is None else os.environ.get("ROS_NAMESPACE") + "/"
 
         self.dynup_client = ActionClient(self, Dynup, "dynup")
@@ -155,8 +153,10 @@ class TeleopKeyboard(Node):
             self.get_logger().error("Dynup action server not available after waiting 5 seconds")
 
         self.kick_client = ActionClient(self, Kick, "dynamic_kick")
-        if not self.kick_client.wait_for_server(timeout_sec=5.0):
+        if not self.kick_client.wait_for_server(timeout_sec=0.1):
             self.get_logger().error("Kick action server not available after waiting 5 seconds")
+
+        print(msg)
 
     def get_key(self):
         tty.setraw(sys.stdin.fileno())
@@ -212,21 +212,27 @@ class TeleopKeyboard(Node):
                 elif key == "0":
                     # Search for Ball and track it if found
                     self.head_mode_msg.head_mode = HeadMode.BALL_MODE
+                    assert int(key) == HeadMode.BALL_MODE
                 elif key == "1":
                     # Look generally for all features on the field (ball, goals, corners, center point)
                     self.head_mode_msg.head_mode = HeadMode.FIELD_FEATURES
+                    assert int(key) == HeadMode.FIELD_FEATURES
                 elif key == "2":
                     # Simply look directly forward
                     self.head_mode_msg.head_mode = HeadMode.LOOK_FORWARD
+                    assert int(key) == HeadMode.LOOK_FORWARD
                 elif key == "3":
                     # Don't move the head
                     self.head_mode_msg.head_mode = HeadMode.DONT_MOVE
+                    assert int(key) == HeadMode.DONT_MOVE
                 elif key == "4":
                     # Ball Mode adapted for Penalty Kick
                     self.head_mode_msg.head_mode = HeadMode.BALL_MODE_PENALTY
+                    assert int(key) == HeadMode.BALL_MODE_PENALTY
                 elif key == "5":
                     # Do a pattern which only looks in front of the robot
                     self.head_mode_msg.head_mode = HeadMode.LOOK_FRONT
+                    assert int(key) == HeadMode.LOOK_FRONT
                 elif key == "y":
                     # kick left forward
                     self.kick_client.send_goal_async(self.generate_kick_goal(0.2, 0.1, 0))
@@ -307,14 +313,10 @@ class TeleopKeyboard(Node):
                 twist.linear = Vector3(x=float(self.x), y=float(self.y), z=0.0)
                 twist.angular = Vector3(x=float(self.a_x), y=0.0, z=float(self.th))
                 self.pub.publish(twist)
-                sys.stdout.write("\x1b[A")
-                sys.stdout.write("\x1b[A")
-                sys.stdout.write("\x1b[A")
-                sys.stdout.write("\x1b[A")
-                sys.stdout.write("\x1b[A")
-                print(
-                    f"x:    {self.x}          \ny:    {self.y}          \nturn: {self.th}          \nhead mode: {self.head_mode_msg.head_mode}      \n\n"
-                )
+                state_str = f"x:    {self.x}          \ny:    {self.y}          \nturn: {self.th}          \nhead mode: {self.head_mode_msg.head_mode}      \n"
+                for _ in range(state_str.count("\n") + 1):
+                    sys.stdout.write("\x1b[A")
+                print(state_str)
 
         except Exception as e:
             print(e)
