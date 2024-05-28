@@ -80,15 +80,14 @@ class RobotFilter(Node):
             robot.attributes.player_number = msg.robot_id
             return robot
 
-        # Check if the team data is fresh enough
-        def team_data_fresh(msg: TeamData) -> bool:
-            return abs((self.get_clock().now() - Time.from_msg(msg.header.stamp)).nanoseconds) < self.team_data_timeout
+        def is_team_data_fresh(msg: TeamData) -> bool:
+            return (self.get_clock().now() - Time.from_msg(msg.header.stamp)).nanoseconds < self.team_data_timeout
 
         # We don't need the time stamps and we want a new list, so the team data is only applied temporarily
         robots = [robot_msg for robot_msg, _ in self.robots]
 
         # Add Team Mates (if the data is fresh enough)
-        robots.extend(list(map(build_robot_detection_from_team_data, filter(team_data_fresh, self.team.values()))))
+        robots.extend(list(map(build_robot_detection_from_team_data, filter(is_team_data_fresh, self.team.values()))))
 
         # Publish the robot obstacles
         self.robot_obstacle_publisher.publish(sv3dm.RobotArray(header=dummy_header, robots=robots))
@@ -105,7 +104,7 @@ class RobotFilter(Node):
         robot: sv3dm.Robot
         for robot in msg.robots:
             # Transfrom robot to map frame
-            robot.bb.center: Pose = tf2_geometry_msgs.do_transform_pose(robot.bb.center, transform)
+            robot.bb.center = tf2_geometry_msgs.do_transform_pose(robot.bb.center, transform)
             # Update robots that are close together
             cleaned_robots = []
             old_robot: sv3dm.Robot
