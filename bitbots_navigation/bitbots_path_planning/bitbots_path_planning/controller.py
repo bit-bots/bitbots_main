@@ -166,7 +166,8 @@ class Controller:
 
             # Calculate the exponential decay smoothing factor alpha from the time constant tau
             # Instead of defining alpha directly, we use tau to derive it in a time-step independent way
-            alpha = 1 - math.exp(-delta_time.nanoseconds / (self.config_smoothing_tau * 1e9))
+            exponent_in_s = -delta_time.nanoseconds / (self.config_smoothing_tau * 1e9)
+            alpha = 1 - math.exp(exponent_in_s)
 
             # Apply the exponential moving average filter
             cmd_vel.linear.x = alpha * cmd_vel.linear.x + (1 - alpha) * self.last_cmd_vel.linear.x
