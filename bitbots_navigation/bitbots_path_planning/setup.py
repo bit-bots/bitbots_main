@@ -15,6 +15,9 @@ setup(
         ("share/" + package_name + "/launch", glob.glob("launch/*.launch")),
     ],
     install_requires=["setuptools"],
+    extras_require={
+        "dev": ["pytest", "syrupy"],
+    },
     zip_safe=True,
     maintainer="Florian Vahl",
     maintainer_email="git@flova.de",

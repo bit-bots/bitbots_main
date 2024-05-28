@@ -1,10 +1,3 @@
-"""
-PathfindingCapsule
-^^^^^^^^^^^
-
-Capsule that handles everything related to pathfinding.
-"""
-
 import math
 from enum import Enum
 from typing import TYPE_CHECKING, Optional
@@ -31,6 +24,8 @@ class BallGoalType(Enum):
 
 
 class PathfindingCapsule:
+    """Capsule for pathfinding related functions."""
+
     def __init__(self, blackboard: "BodyBlackboard", node: Node):
         self.node = node
         self._blackboard = blackboard

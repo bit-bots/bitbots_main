@@ -1,4 +1,4 @@
-.PHONY : basler install install-no-root pip pre-commit install-git-filters format pull-all pull-init pull-repos pull-files fresh-libs remove-libs setup-libs rosdep status update update-no-root
+.PHONY : basler webots install install-no-root pip pre-commit install-git-filters format pull-all pull-init pull-repos pull-files fresh-libs remove-libs setup-libs rosdep status update update-no-root
 
 HTTPS := ""
 REPO:=$(dir $(abspath $(firstword $(MAKEFILE_LIST))))
@@ -6,6 +6,10 @@ REPO:=$(dir $(abspath $(firstword $(MAKEFILE_LIST))))
 basler:
 	# Install Basler Pylon SDK
 	scripts/make_basler.sh $(ARGS)
+
+webots:
+	# Install Webots Simulation environment
+	scripts/make_webots.sh $(ARGS)
 
 install: pull-init basler update
 
@@ -77,6 +81,8 @@ else
 endif
 
 rosdep:
+	# Initialize rosdep if not already done
+	[ -f /etc/ros/rosdep/sources.list.d/20-default.list ] || sudo rosdep init
 	# Update rosdep and install dependencies from meta directory
 	rosdep update
 	rosdep install --from-paths . --ignore-src --rosdistro iron -y

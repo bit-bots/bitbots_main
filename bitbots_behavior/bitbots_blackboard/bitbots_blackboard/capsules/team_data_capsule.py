@@ -1,7 +1,3 @@
-"""
-TeamDataCapsule
-^^^^^^^^^^^^^^^
-"""
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
@@ -19,6 +15,8 @@ from bitbots_msgs.msg import Strategy, TeamData
 
 class TeamDataCapsule:
     def __init__(self, node: Node):
+        """Handles incoming team data communication."""
+
         self.node = node
 
         # Publishers

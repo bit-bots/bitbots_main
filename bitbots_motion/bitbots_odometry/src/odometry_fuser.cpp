@@ -51,6 +51,17 @@ void OdometryFuser::loop() {
 
   // Check if the imu is active
   if (imu_data_received_) {
+    // Check if fused_time_ is recent enough
+    // Otherwise it might happen that we try to process a time that is too old
+    // it it is older than the tf buffer content, we will wait for the tf to be updated.
+    // This wait clogs the executor, leading to a deadlock. It locks because with the clogged executor,
+    // the fused_time_ is not updated, because the callback updating it is not executed
+    if (this->now() - fused_time_ > rclcpp::Duration::from_seconds(0.1)) {
+      RCLCPP_WARN_SKIPFIRST_THROTTLE(this->get_logger(), *this->get_clock(), 2 * 1000,
+                                     "Fused time is too old, this should only happen if we get no new data");
+      return;
+    }
+
     // get roll an pitch from imu
     tf2::Quaternion imu_orientation;
     tf2::fromMsg(imu_data_.orientation, imu_orientation);
