@@ -2,14 +2,14 @@ bitbots_dynup:
   engine: 
     engine_rate: {
       type: int,
-      description: "",
+      description: "Rate at which the engine is looped",
       default_value: 240,
     }
 
     end_pose:
       arm_extended_length: {
         type: double,
-        description: "",
+        description: "Length of the arm when extended at the end pose. Depends on walkready of walking.",
         default_value: 0.4,
         validation: {
           bounds<>: [ 0.0, 5.0 ],
@@ -17,7 +17,7 @@ bitbots_dynup:
       } 
       foot_distance: {
         type: double,
-        description: "",
+        description: "End pose foot distance from one foot to the other. Depends on walkready of walking.",
         default_value: 0.2,
         validation: {
           bounds<>: [ 0.0, 5.0 ],
@@ -25,7 +25,7 @@ bitbots_dynup:
       } 
       hand_walkready_pitch: {
         type: double,
-        description: "",
+        description: "End pose hand pitch. Depends on walkready of walking.",
         default_value: 40.0,
         validation: {
           bounds<>: [ 0.0, 90.0 ],
@@ -33,7 +33,7 @@ bitbots_dynup:
       }
       hand_walkready_height: {
         type: double,
-        description: "",
+        description: "End pose hand height. Depends on walkready of walking.",
         default_value: -0.17,
         validation: {
           bounds<>: [ -1.0, 1.0 ],
@@ -42,7 +42,7 @@ bitbots_dynup:
       }
       trunk_height: {
         type: double,
-        description: "",
+        description: "End pose trunk height. Depends on walkready of walking.",
         default_value: 0.38,
         validation: {
           bounds<>: [ 0.0, 1.0 ],
@@ -50,7 +50,7 @@ bitbots_dynup:
       }
       trunk_pitch: {
         type: double,
-        description: "",
+        description: "End pose trunk pitch. Depends on walkready of walking.",
         default_value: 0.2,
         validation: {
           bounds<>: [ 0.0, 1.0 ],
@@ -58,7 +58,7 @@ bitbots_dynup:
       }
       trunk_x_final: {
         type: double,
-        description: "",
+        description: "End pose position of the trunk in x direction. Depends on walkready of walking.",
         default_value: 0.001,
         validation: {
           bounds<>: [ 0.0, 1.0 ],
@@ -66,7 +66,7 @@ bitbots_dynup:
       }
       arm_side_offset_back: {
         type: double,
-        description: "",
+        description: "End pose arm side offset back. Depends on walkready of walking.",
         default_value: 0.148,
         validation: {
           bounds<>: [ 0.0, 5.0 ],
@@ -76,7 +76,7 @@ bitbots_dynup:
     dynup_back:
       arms_angle_back: {
         type: double,
-        description: "",
+        description: "When fallen to the back: angle of the arms",
         default_value: 120.36,
         validation: {
           bounds<>: [ 0.0, 180.0 ],
@@ -84,7 +84,7 @@ bitbots_dynup:
       }
       com_shift_1: {
         type: double,
-        description: "",
+        description: "When fallen to the back: shift of the center of mass",
         default_value: 0.051,
         validation: {
           bounds<>: [ 0.0, 1.0 ],
@@ -93,7 +93,7 @@ bitbots_dynup:
       }
       com_shift_2: {
         type: double,
-        description: "",
+        description: "When fallen to the back: shift of the center of mass",
         default_value: 0.0,
         validation: {
           bounds<>: [ 0.0, 1.0 ],
@@ -101,7 +101,7 @@ bitbots_dynup:
       }
       foot_angle: {
         type: double,
-        description: "",
+        description: "When fallen to the back: angle of the foot",
         default_value: 51.76,
         validation: {
           bounds<>: [ 0.0, 90.0 ],
@@ -109,7 +109,7 @@ bitbots_dynup:
       }
       hands_behind_back_x: {
         type: double,
-        description: "",
+        description: "When fallen to the back: hands behind back x",
         default_value: 0.162,
         validation: {
           bounds<>: [ 0.0, 1.0 ],
@@ -117,7 +117,7 @@ bitbots_dynup:
       }
       hands_behind_back_z: {
         type: double,
-        description: "",
+        description: "When fallen to the back: hands behind back z",
         default_value: 0.183,
         validation: {
           bounds<>: [ 0.0, 1.0 ],
@@ -125,7 +125,7 @@ bitbots_dynup:
       }
       leg_min_length_back: {
         type: double,
-        description: "",
+        description: "When fallen to the back: minimum length of the leg",
         default_value: 0.253,
         validation: {
           bounds<>: [ 0.0, 1.0 ],
@@ -133,7 +133,7 @@ bitbots_dynup:
       }
       time_foot_ground_back: {
         type: double,
-        description: "",
+        description: "When fallen to the back: time the foot is on the ground",
         default_value: 0.536,
         validation: {
           bounds<>: [ 0.0, 1.0 ],
@@ -141,7 +141,7 @@ bitbots_dynup:
       }
       time_full_squat_hands: {
         type: double,
-        description: "",
+        description: "When fallen to the back: time the hands are in full squat",
         default_value: 0.172,
         validation: {
           bounds<>: [ 0.0, 1.0 ],
@@ -149,7 +149,7 @@ bitbots_dynup:
       }
       time_full_squat_legs: {
         type: double,
-        description: "",
+        description: "When fallen to the back: time the legs are in full squat",
         default_value: 0.196,
         validation: {
           bounds<>: [ 0.0, 1.0 ],
@@ -157,7 +157,7 @@ bitbots_dynup:
       }
       time_legs_close: {
         type: double,
-        description: "",
+        description: "When fallen to the back: time the legs are close",
         default_value: 0.068,
         validation: {
           bounds<>: [ 0.0, 1.0 ],
@@ -165,15 +165,15 @@ bitbots_dynup:
       }
       trunk_height_back: {
         type: double,
-        description: "if you decrease this, the robot's ass collides its ankles",
+        description: "When fallen to the back: trunk height",
         default_value: 0.179,
         validation: {
-          bounds<>: [ 0.0, 1.0 ],
+          bounds<>: [ 0.179, 1.0 ],
         }
       }
       trunk_overshoot_angle_back: {
         type: double,
-        description: "",
+        description: "When fallen to the back: the angle the trunk overshoots",
         default_value: 5.95,
         validation: {
           bounds<>: [ 0.0, 10.0 ],
@@ -181,7 +181,7 @@ bitbots_dynup:
       }
       wait_in_squat_back: {
         type: double,
-        description: "",
+        description: "When fallen to the back: time to wait in squat position in seconds",
         default_value: 1.0,
         validation: {
           bounds<>: [ 0.0, 10.0 ],
@@ -191,7 +191,7 @@ bitbots_dynup:
     dynup_front:
       arm_side_offset_front: {
         type: double,
-        description: "",
+        description: "When fallen to the front: offset of the arms to the side",
         default_value: 0.13,
         validation: {
           bounds<>: [ 0.0, 1.0 ],
@@ -199,7 +199,7 @@ bitbots_dynup:
       }
       hands_pitch: {
         type: double,
-        description: "",
+        description: "When fallen to the front: pitch of the hands",
         default_value: -65.86,
         validation: {
           bounds<>: [ -90.0, 90.0 ],
@@ -207,7 +207,7 @@ bitbots_dynup:
       }
       leg_min_length_front: {
         type: double,
-        description: "",
+        description: "When fallen to the front: minimum length of the leg",
         default_value: 0.244,
         validation: {
           bounds<>: [ 0.0, 1.0 ],
@@ -215,7 +215,7 @@ bitbots_dynup:
       }
       max_leg_angle: {
         type: double,
-        description: "",
+        description: "When fallen to the front: maximum angle of the leg",
         default_value: 71.71,
         validation: {
           bounds<>: [ 0.0, 90.0 ],
@@ -223,7 +223,7 @@ bitbots_dynup:
       }
       time_foot_close: {
         type: double,
-        description: "",
+        description: "When fallen to the front: time the foot is close",
         default_value: 0.0,
         validation: {
           bounds<>: [ 0.0, 1.0 ],
@@ -231,7 +231,7 @@ bitbots_dynup:
       } 
       time_foot_ground_front: {
         type: double,
-        description: "",
+        description: "When fallen to the front: time the foot is on the ground",
         default_value: 0.132,
         validation: {
           bounds<>: [ 0.0, 1.0 ],
@@ -239,7 +239,7 @@ bitbots_dynup:
       }
       time_hands_front: {
         type: double,
-        description: "",
+        description: "When fallen to the front: time the hands are in front",
         default_value: 0.3,
         validation: {
           bounds<>: [ 0.0, 1.0 ],
@@ -247,7 +247,7 @@ bitbots_dynup:
       }
       time_hands_rotate: {
         type: double,
-        description: "",
+        description: "When fallen to the front: time the hands rotate",
         default_value: 0.3,
         validation: {
           bounds<>: [ 0.0, 1.0 ],
@@ -255,7 +255,7 @@ bitbots_dynup:
       }
       time_hands_side: {
         type: double,
-        description: "",
+        description: "When fallen to the front: time the hands are to the side",
         default_value: 0.3,
         validation: {
           bounds<>: [ 0.0, 1.0 ],
@@ -263,7 +263,7 @@ bitbots_dynup:
       } 
       time_to_squat: {
         type: double,
-        description: "",
+        description: "When fallen to the front: time to squat",
         default_value: 0.924,
         validation: {
           bounds<>: [ 0.0, 1.0 ],
@@ -271,7 +271,7 @@ bitbots_dynup:
       }
       time_torso_45: {
         type: double,
-        description: "",
+        description: "When fallen to the front: time the torso is at 45 degrees",
         default_value: 0.462,
         validation: {
           bounds<>: [ 0.0, 1.0 ],
@@ -279,7 +279,7 @@ bitbots_dynup:
       }
       trunk_overshoot_angle_front: {
         type: double,
-        description: "",
+        description: "When fallen to the front: the angle the trunk overshoots",
         default_value: -5.0,
         validation: {
           bounds<>: [ -90.0, 90.0 ],
@@ -287,15 +287,15 @@ bitbots_dynup:
       }
       trunk_x_front: {
         type: double,
-        description: "do not increase this unless you want to burn a fuse",
+        description: "When fallen to the front: trunk x position",
         default_value: 0.091,
         validation: {
-          bounds<>: [ 0.0, 1.0 ],
+          bounds<>: [ 0.0, 0.091 ],
         }
       }
       wait_in_squat_front: {
         type: double,
-        description: "",
+        description: "When fallen to the front: time to wait in squat position in seconds",
         default_value: 1.2,
         validation: {
           bounds<>: [ 0.0, 10.0 ],
@@ -303,7 +303,7 @@ bitbots_dynup:
       }
       time_walkready: {
         type: double,
-        description: "",
+        description: "When fallen to the front: time to walkready",
         default_value: 2.0,
         validation: {
           bounds<>: [ 0.0, 10.0 ],
@@ -312,7 +312,7 @@ bitbots_dynup:
     rise: 
       rise_time: {
         type: double,
-        description: "",
+        description: "Time to rise in seconds",
         default_value: 1.0,
         validation: {
           bounds<>: [ 0.0, 10.0 ],
@@ -322,7 +322,7 @@ bitbots_dynup:
     descend: 
       descend_time: {
         type: double,
-        description: "",
+        description: "Time to descend in seconds",
         default_value: 0.25,
         validation: {
           bounds<>: [ 0.0, 5.0 ],
@@ -332,7 +332,7 @@ bitbots_dynup:
     stabilizer: 
       stabilizing: {
         type: bool,
-        description: "",
+        description: "Whether to use stabilizing",
         default_value: false,
       }
       minimal_displacement: {
@@ -342,7 +342,7 @@ bitbots_dynup:
       }
       stable_threshold: {
         type: double,
-        description: "",
+        description: "Threshold for when the robot is considered stable",
         default_value: 0.05,
         validation: {
           bounds<>: [ 0.0, 1.0 ],
