@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <package format="2">
-  <name>bitbots_tf_listener</name>
+  <name>bitbots_tf_buffer</name>
   <version>1.0.0</version>
   <description>Drop-in replacement for tf listener to improve performance</description>
 
@@ -10,11 +10,11 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
   <depend>pybind11_vendor</depend>
-  <depend>tf2</depend>
   <depend>ros2_python_extension</depend>
   <depend>tf2_ros</depend>
-  <export>
+  <depend>tf2</depend>
 
-  <build_type>ament_cmake</build_type>
+  <export>
+    <build_type>ament_cmake</build_type>
   </export>
 </package>

@@ -16,9 +16,9 @@
 
 namespace py = pybind11;
 
-class TransformListener {
+class Buffer {
  public:
-  TransformListener(py::bytes duration_raw, py::object node) {
+  Buffer(py::bytes duration_raw, py::object node) {
     // initialize rclcpp if not already done
     if (!rclcpp::contexts::get_global_default_context()->is_valid()) {
       rclcpp::init(0, nullptr);
@@ -74,7 +74,7 @@ class TransformListener {
   }
 
   // destructor
-  ~TransformListener() {
+  ~Buffer() {
     // the executor finishes when rclcpp is shutdown, so the thread can be joined
     rclcpp::shutdown();
     thread_->join();
@@ -93,8 +93,8 @@ class TransformListener {
 };
 
 PYBIND11_MODULE(cpp_wrapper, m) {
-  py::class_<TransformListener, std::shared_ptr<TransformListener>>(m, "TransformListener")
+  py::class_<Buffer, std::shared_ptr<Buffer>>(m, "Buffer")
       .def(py::init<py::bytes, py::object>())
-      .def("lookup_transform", &TransformListener::lookup_transform)
-      .def("can_transform", &TransformListener::can_transform);
+      .def("lookup_transform", &Buffer::lookup_transform)
+      .def("can_transform", &Buffer::can_transform);
 }

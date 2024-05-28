@@ -1,6 +1,6 @@
 import rclpy
 import soccer_vision_3d_msgs.msg as sv3dm
-from bitbots_tf_listener import Buffer
+from bitbots_tf_buffer import Buffer
 from geometry_msgs.msg import PointStamped, PoseStamped, Twist
 from nav_msgs.msg import OccupancyGrid, Path
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup

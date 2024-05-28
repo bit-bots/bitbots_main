@@ -7,7 +7,7 @@ from typing import List, Optional, Tuple
 
 import rclpy
 from ament_index_python.packages import get_package_share_directory
-from bitbots_tf_listener import TransformListener
+from bitbots_tf_buffer import TransformListener
 from bitbots_utils.utils import get_parameter_dict, get_parameters_from_other_node
 from game_controller_hl_interfaces.msg import GameState
 from geometry_msgs.msg import PoseWithCovarianceStamped, Twist, TwistWithCovarianceStamped

@@ -12,7 +12,7 @@ import os
 
 import rclpy
 from bitbots_blackboard.blackboard import BodyBlackboard
-from bitbots_tf_listener import Buffer
+from bitbots_tf_buffer import Buffer
 from dynamic_stack_decider.dsd import DSD
 from game_controller_hl_interfaces.msg import GameState
 from geometry_msgs.msg import PoseWithCovarianceStamped, Twist, TwistWithCovarianceStamped

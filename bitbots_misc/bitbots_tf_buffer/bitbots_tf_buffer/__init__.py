@@ -6,7 +6,7 @@ from rclpy.duration import Duration
 from rclpy.serialization import deserialize_message, serialize_message
 from rclpy.time import Time
 
-from bitbots_tf_listener.cpp_wrapper import TransformListener as TransformListener_
+from bitbots_tf_buffer.cpp_wrapper import Buffer as CppBuffer
 
 
 class Buffer(tf2.BufferCore, tf2.BufferInterface):
@@ -17,7 +17,7 @@ class Buffer(tf2.BufferCore, tf2.BufferInterface):
             tf2.BufferCore.__init__(self)
         tf2.BufferInterface.__init__(self)
 
-        self._impl = TransformListener_(serialize_message(Duration.to_msg(cache_time)), node)
+        self._impl = CppBuffer(serialize_message(Duration.to_msg(cache_time)), node)
 
     def lookup_transform(
         self, target_frame: str, source_frame: str, time: Time, timeout: Duration = Duration()

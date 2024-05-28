@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(bitbots_tf_listener)
+project(bitbots_tf_buffer)
 
 # Add support for C++17
 if(NOT CMAKE_CXX_STANDARD)
@@ -20,7 +20,7 @@ find_package(tf2_ros REQUIRED)
 
 add_compile_options(-Wall -Wno-unused)
 
-pybind11_add_module(cpp_wrapper SHARED src/bitbots_tf_listener.cpp)
+pybind11_add_module(cpp_wrapper SHARED src/bitbots_tf_buffer.cpp)
 
 ament_target_dependencies(
   cpp_wrapper

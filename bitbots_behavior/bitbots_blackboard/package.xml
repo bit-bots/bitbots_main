@@ -22,7 +22,7 @@
 
 
     <build_depend>bitbots_docs</build_depend>
-    <depend>bitbots_tf_listener</depend>
+    <depend>bitbots_tf_buffer</depend>
     <depend>bitbots_utils</depend>
     <depend>game_controller_hl_interfaces</depend>
     <depend>python3-numpy</depend>

@@ -6,7 +6,7 @@ from typing import Tuple, Union
 import numpy as np
 import rclpy
 import tf2_ros as tf2
-from bitbots_tf_listener import Buffer
+from bitbots_tf_buffer import Buffer
 from filterpy.common import Q_discrete_white_noise
 from filterpy.kalman import KalmanFilter
 from geometry_msgs.msg import Point, PoseWithCovarianceStamped, TwistWithCovarianceStamped
