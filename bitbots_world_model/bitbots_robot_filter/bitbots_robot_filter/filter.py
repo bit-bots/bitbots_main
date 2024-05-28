@@ -87,7 +87,7 @@ class RobotFilter(Node):
         robots = [robot_msg for robot_msg, _ in self.robots]
 
         # Add Team Mates (if the data is fresh enough)
-        robots.extend(list(map(build_robot_detection_from_team_data, filter(is_team_data_fresh, self.team.values()))))
+        robots.extend(map(build_robot_detection_from_team_data, filter(is_team_data_fresh, self.team.values())))
 
         # Publish the robot obstacles
         self.robot_obstacle_publisher.publish(sv3dm.RobotArray(header=dummy_header, robots=robots))
