@@ -17,7 +17,7 @@
   <buildtool_depend>rosidl_default_generators</buildtool_depend>
   <exec_depend>rosidl_default_runtime</exec_depend>
   <depend>bitbots_msgs</depend>
-  <depend>bitbots_tf_listener</depend>
+  <depend>bitbots_tf_buffer</depend>
   <depend>geometry_msgs</depend>
   <depend>rclpy</depend>
   <depend>std_msgs</depend>

@@ -5,12 +5,13 @@ from typing import Tuple, Union
 import numpy as np
 import rclpy
 import tf2_ros as tf2
-from bitbots_tf_listener import TransformListener
+from bitbots_tf_buffer import Buffer
 from filterpy.common import Q_discrete_white_noise
 from filterpy.kalman import KalmanFilter
 from geometry_msgs.msg import Point, PoseWithCovarianceStamped, TwistWithCovarianceStamped
 from rcl_interfaces.msg import SetParametersResult
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
+from rclpy.duration import Duration
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 from soccer_vision_3d_msgs.msg import Ball, BallArray
@@ -45,8 +46,7 @@ class BallFilter(Node):
         """
         super().__init__("ball_filter", automatically_declare_parameters_from_overrides=True)
         self.logger = self.get_logger()
-        self.tf_buffer = tf2.Buffer(cache_time=rclpy.duration.Duration(seconds=2))
-        self.tf_listener = TransformListener(self.tf_buffer, self)
+        self.tf_buffer = Buffer(self, Duration(seconds=2))
         # Setup dynamic reconfigure config
         self.param_listener = Parameters.ParamListener(self)
         self.config = self.param_listener.get_params()
@@ -60,11 +60,13 @@ class BallFilter(Node):
         self.filter_rate = self.config.filter_rate
         self.measurement_certainty = self.config.measurement_certainty
         self.filter_time_step = 1.0 / self.filter_rate
+
         self.filter_reset_duration = rclpy.duration.Duration(seconds=self.config.filter_reset_time)
         self.filter_reset_distance = self.config.filter_reset_distance
         self.closest_distance_match = self.config.closest_distance_match
 
         self.filter_frame = self.config.filter_frame
+
         self.logger.info(f"Using frame '{self.filter_frame}' for ball filtering")
 
         # adapt velocity factor to frequency
@@ -146,7 +148,7 @@ class BallFilter(Node):
         point_stamped.header = header
         point_stamped.point = point
         try:
-            return self.tf_buffer.transform(point_stamped, frame, timeout=rclpy.duration.Duration(seconds=timeout))
+            return self.tf_buffer.transform(point_stamped, frame, timeout=Duration(seconds=timeout))
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
             self.logger.warning(str(e))
 
