@@ -5,9 +5,8 @@ using namespace std::chrono_literals;
 
 DynupNode::DynupNode(
     const std::string &ns,
-    std::vector<rclcpp::Parameter> parameters)  // parameters werden im launch script übergeben, aber hierüber kriegt er
-                                                // auch die yaml, also gucken, dass das vlt anders
-    : Node(ns + "dynup", rclcpp::NodeOptions()),  // TODO: vlt. rausnehmen?
+    std::vector<rclcpp::Parameter> parameters) 
+    : Node(ns + "dynup", rclcpp::NodeOptions()),  
       param_listener_(get_node_parameters_interface()),
       engine_(SharedPtr(this)),
       stabilizer_(ns),
