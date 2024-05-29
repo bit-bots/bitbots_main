@@ -156,7 +156,7 @@ rcl_interfaces::msg::SetParametersResult DynupNode::onSetParameters() {
   debug_ = params_.engine.visualizer.display_debug;
 
   engine_.setParams(params_.engine);
-  stabilizer_.setParams(params_.engine);
+  stabilizer_.setParams(params_.engine.stabilizer);
   ik_.useStabilizing(params_.engine.stabilizer.stabilizing);
 
   VisualizationParams viz_params = VisualizationParams();

@@ -92,9 +92,9 @@ DynupResponse Stabilizer::stabilize(const DynupResponse &ik_goals, const rclcpp:
   return response;
 }
 
-void Stabilizer::setParams(bitbots_dynup::Params::Engine params) {
-  use_stabilizing_ = params.stabilizer.stabilizing;
-  stable_threshold_ = params.stabilizer.stable_threshold;
+void Stabilizer::setParams(bitbots_dynup::Params::Engine::Stabilizer params) {
+  use_stabilizing_ = params.stabilizing;
+  stable_threshold_ = params.stable_threshold;
 }
 
 bool Stabilizer::isStable() { return is_stable_; }

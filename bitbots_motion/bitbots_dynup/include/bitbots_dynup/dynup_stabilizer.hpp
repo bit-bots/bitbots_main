@@ -20,7 +20,7 @@ class Stabilizer : public bitbots_splines::AbstractStabilizer<DynupResponse> {
   explicit Stabilizer(std::string ns);
   DynupResponse stabilize(const DynupResponse &response, const rclcpp::Duration &dt) override;
   void setRSoleToTrunk(geometry_msgs::msg::TransformStamped r_sole_to_trunk);
-  void setParams(bitbots_dynup::Params::Engine params);
+  void setParams(bitbots_dynup::Params::Engine::Stabilizer params);
   void reset() override;
   void setImu(sensor_msgs::msg::Imu::SharedPtr imu);
   bool isStable();
