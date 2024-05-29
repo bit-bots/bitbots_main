@@ -21,7 +21,7 @@ class TechnicalChallengeVision(Node):
 
         self._package_path = get_package_share_directory("bitbots_technical_challenge_vision")
         self._cv_bridge = CvBridge()
-        self._annotations_pub = self.create_publisher(RobotArray, "/bitbots_technical_challenge_vision", 10)
+        self._annotations_pub = self.create_publisher(RobotArray, "/robots_in_image", 10)
         self._debug_img_pub = self.create_publisher(Image, "/bitbots_technical_challenge_vision_debug_img", 10)
         self._debug_clrmp_pub_blue = self.create_publisher(
             Image, "/bitbots_technical_challenge_vision_debug_clrmp_blue", 10
