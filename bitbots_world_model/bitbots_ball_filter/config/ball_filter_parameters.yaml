@@ -29,7 +29,7 @@ BallFilter:
     default_value: 'map',
     description: 'Frame to filter the ball in',
     validation: {
-      one_of<>: ['map', 'odom']
+      one_of<>: [['map', 'odom']]
     }
   }
 
