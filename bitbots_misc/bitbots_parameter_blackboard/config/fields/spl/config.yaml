@@ -1,0 +1,22 @@
+####################
+# RoboCup 2022 SPL #
+####################
+
+# Settings for the standard platform league field
+
+parameter_blackboard:
+  ros__parameters:
+    field:
+      size:
+        x: 9.0
+        y: 6.0
+        padding: 0.7   # Padding (area outside of the lines) of the field in all directions
+      markings:
+        penalty_area:
+          size:
+            x: 1.65   # The distance from the goal line to the boundary of the penalty area
+        goal_area:
+          size:
+            x: 0.6   # The distance from the goal line to the boundary of the goal area
+      goal:
+        width: 1.5   # The width of the goal (center of one goal post to the other goal post)

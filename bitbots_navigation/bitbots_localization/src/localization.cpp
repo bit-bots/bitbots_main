@@ -13,19 +13,12 @@ Localization::Localization()
       tfListener(std::make_shared<tf2_ros::TransformListener>(*tfBuffer, this)),
       br(std::make_shared<tf2_ros::TransformBroadcaster>(this)) {
   // Wait for transforms to become available and init them
-  std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-  while (true) {
-    try {
-      previousOdomTransform_ =
-          tfBuffer->lookupTransform(config_.ros.odom_frame, config_.ros.base_footprint_frame, rclcpp::Time(0),
-                                    rclcpp::Duration::from_nanoseconds(1e9 * 20.0));
-      break;
-    } catch (const tf2::LookupException &ex) {
-      RCLCPP_INFO(this->get_logger(), "Transforms not available, waiting for them... \n %s", ex.what());
-      std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    }
-  }
-  RCLCPP_INFO(this->get_logger(), "Transforms are available now");
+  bitbots_utils::wait_for_tf(this->get_logger(), this->get_clock(), tfBuffer.get(), {config_.ros.base_footprint_frame},
+                             config_.ros.odom_frame);
+
+  // Get the initial transform from odom to base_footprint
+  previousOdomTransform_ = tfBuffer->lookupTransform(config_.ros.odom_frame, config_.ros.base_footprint_frame,
+                                                     rclcpp::Time(0), rclcpp::Duration::from_nanoseconds(1e9 * 20.0));
 
   // Init subscribers
   line_point_cloud_subscriber_ = this->create_subscription<sm::msg::PointCloud2>(
@@ -90,22 +83,32 @@ void Localization::updateParams(bool force_reload) {
   param_listener_.refresh_dynamic_parameters();
   config_ = param_listener_.get_params();
 
+  // Poll the global parameter configuration
+  auto global_params = bitbots_utils::get_parameters_from_other_node(
+      this->shared_from_this(), "/parameter_blackboard",
+      {"field.size.x", "field.size.y", "field.size.padding", "field.name"}, 1s);
+  field_name_ = global_params["field.name"].as_string();
+  field_dimensions_.x = global_params["field.size.x"].as_double();
+  field_dimensions_.y = global_params["field.size.y"].as_double();
+  field_dimensions_.padding = global_params["field.size.padding"].as_double();
+
   // Check if measurement type is used and load the correct map for that
   if (config_.particle_filter.scoring.lines.factor) {
-    lines_.reset(new Map(config_.field.name, "lines.png", config_.particle_filter.scoring.lines.out_of_field_score));
+    lines_.reset(new Map(field_name_, "lines.png", config_.particle_filter.scoring.lines.out_of_field_score));
     // Publish the line map once
     field_publisher_->publish(lines_->get_map_msg(config_.ros.map_frame));
   }
   if (config_.particle_filter.scoring.goal.factor) {
-    goals_.reset(new Map(config_.field.name, "goals.png", config_.particle_filter.scoring.goal.out_of_field_score));
+    goals_.reset(new Map(field_name_, "goals.png", config_.particle_filter.scoring.goal.out_of_field_score));
   }
   if (config_.particle_filter.scoring.field_boundary.factor) {
-    field_boundary_.reset(new Map(config_.field.name, "field_boundary.png",
-                                  config_.particle_filter.scoring.field_boundary.out_of_field_score));
+    field_boundary_.reset(
+        new Map(field_name_, "field_boundary.png", config_.particle_filter.scoring.field_boundary.out_of_field_score));
   }
 
   // Init observation model
-  robot_pose_observation_model_.reset(new RobotPoseObservationModel(lines_, goals_, field_boundary_, config_));
+  robot_pose_observation_model_.reset(
+      new RobotPoseObservationModel(lines_, goals_, field_boundary_, config_, field_dimensions_));
 
   // Init motion model
   auto drift_config = config_.particle_filter.drift;
@@ -131,20 +134,12 @@ void Localization::updateParams(bool force_reload) {
                                                  config_.particle_filter.diffusion.starting_multiplier, drift_cov));
 
   // Create standard particle probability distributions (e.g. for the initialization at the start of the game)
-  robot_state_distribution_start_left_.reset(new RobotStateDistributionStartLeft(
-      random_number_generator_, std::make_pair(config_.field.size.x, config_.field.size.y)));
-  robot_state_distribution_start_right_.reset(new RobotStateDistributionStartRight(
-      random_number_generator_, std::make_pair(config_.field.size.x, config_.field.size.y)));
-  robot_state_distribution_left_half_.reset(new RobotStateDistributionLeftHalf(
-      random_number_generator_, std::make_pair(config_.field.size.x, config_.field.size.y)));
-  robot_state_distribution_right_half_.reset(new RobotStateDistributionRightHalf(
-      random_number_generator_, std::make_pair(config_.field.size.x, config_.field.size.y)));
-  robot_state_distribution_position_.reset(
-      new RobotStateDistributionPosition(random_number_generator_, config_.field.initialization.single_pose.x,
-                                         config_.field.initialization.single_pose.y));
-  robot_state_distribution_pose_.reset(new RobotStateDistributionPose(
-      random_number_generator_, config_.field.initialization.single_pose.x, config_.field.initialization.single_pose.y,
-      config_.field.initialization.single_pose.t));
+  robot_state_distribution_own_sidelines.reset(new RobotStateDistributionOwnSideline(
+      random_number_generator_, std::make_pair(field_dimensions_.x, field_dimensions_.y)));
+  robot_state_distribution_opponent_half.reset(new RobotStateDistributionOpponentHalf(
+      random_number_generator_, std::make_pair(field_dimensions_.x, field_dimensions_.y)));
+  robot_state_distribution_own_half_.reset(new RobotStateDistributionOwnHalf(
+      random_number_generator_, std::make_pair(field_dimensions_.x, field_dimensions_.y)));
 
   // Create the resampling strategy
   resampling_.reset(
@@ -258,14 +253,13 @@ void Localization::reset_filter(int distribution) {
 
   robot_pf_->setResamplingStrategy(resampling_);
   if (distribution == 0) {
-    robot_pf_->drawAllFromDistribution(robot_state_distribution_start_right_);
+    robot_pf_->drawAllFromDistribution(robot_state_distribution_own_sidelines);
   } else if (distribution == 1) {
-    robot_pf_->drawAllFromDistribution(robot_state_distribution_left_half_);
+    robot_pf_->drawAllFromDistribution(robot_state_distribution_opponent_half);
   } else if (distribution == 2) {
-    robot_pf_->drawAllFromDistribution(robot_state_distribution_right_half_);
-  } else if (distribution == 4) {
-    robot_pf_->drawAllFromDistribution(robot_state_distribution_pose_);
+    robot_pf_->drawAllFromDistribution(robot_state_distribution_own_half_);
   } else {
+    RCLCPP_WARN(this->get_logger(), "Unknown distribution type %d or missing parameters", distribution);
     return;
   }
 }
@@ -277,8 +271,8 @@ void Localization::reset_filter(int distribution, double x, double y) {
   robot_pf_->setResamplingStrategy(resampling_);
 
   if (distribution == 3) {
-    robot_state_distribution_position_.reset(new RobotStateDistributionPosition(random_number_generator_, x, y));
-    robot_pf_->drawAllFromDistribution(robot_state_distribution_position_);
+    robot_pf_->drawAllFromDistribution(
+        std::make_shared<RobotStateDistributionPosition>(random_number_generator_, x, y));
   }
 }
 
@@ -289,8 +283,8 @@ void Localization::reset_filter(int distribution, double x, double y, double ang
   robot_pf_->setResamplingStrategy(resampling_);
 
   if (distribution == 4) {
-    robot_state_distribution_pose_.reset(new RobotStateDistributionPose(random_number_generator_, x, y, angle));
-    robot_pf_->drawAllFromDistribution(robot_state_distribution_pose_);
+    robot_pf_->drawAllFromDistribution(
+        std::make_shared<RobotStateDistributionPose>(random_number_generator_, x, y, angle));
   }
 }
 

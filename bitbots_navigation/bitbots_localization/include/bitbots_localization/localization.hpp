@@ -29,6 +29,7 @@
 #include <bitbots_localization/srv/reset_filter.hpp>
 #include <bitbots_localization/srv/set_paused.hpp>
 #include <bitbots_localization/tools.hpp>
+#include <bitbots_utils/utils.hpp>
 #include <chrono>
 #include <cv_bridge/cv_bridge.hpp>
 #include <geometry_msgs/msg/point.hpp>
@@ -146,6 +147,10 @@ class Localization : public rclcpp::Node {
   bitbots_localization::ParamListener param_listener_;
   // Data structure to hold all parameters, which is build from the schema in the 'parameters.yaml'
   bitbots_localization::Params config_;
+  // Data structure to hold field specific parameters, as they are not part of the schema and get pulled from the global
+  // parameter server
+  bitbots_localization::FieldDimensions field_dimensions_;
+  std::string field_name_;
 
   // Declare subscribers
   rclcpp::Subscription<sm::msg::PointCloud2>::SharedPtr line_point_cloud_subscriber_;
@@ -182,12 +187,9 @@ class Localization : public rclcpp::Node {
   std::shared_ptr<particle_filter::ParticleFilter<RobotState>> robot_pf_;
 
   // Declare initial state distributions
-  std::shared_ptr<RobotStateDistributionStartLeft> robot_state_distribution_start_left_;
-  std::shared_ptr<RobotStateDistributionStartRight> robot_state_distribution_start_right_;
-  std::shared_ptr<RobotStateDistributionRightHalf> robot_state_distribution_right_half_;
-  std::shared_ptr<RobotStateDistributionLeftHalf> robot_state_distribution_left_half_;
-  std::shared_ptr<RobotStateDistributionPosition> robot_state_distribution_position_;
-  std::shared_ptr<RobotStateDistributionPose> robot_state_distribution_pose_;
+  std::shared_ptr<RobotStateDistributionOwnSideline> robot_state_distribution_own_sidelines;
+  std::shared_ptr<RobotStateDistributionOwnHalf> robot_state_distribution_own_half_;
+  std::shared_ptr<RobotStateDistributionOpponentHalf> robot_state_distribution_opponent_half;
 
   // Declare filter estimate
   RobotState estimate_;

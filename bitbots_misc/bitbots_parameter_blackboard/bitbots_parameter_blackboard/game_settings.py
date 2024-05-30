@@ -11,19 +11,19 @@ YAML_COMPATIBLE_SCALAR_TYPES = [int, float, str, bool]
 # path to the game settings yaml and to the game setting options
 SETTING_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-    "bitbots_utils",
+    "bitbots_parameter_blackboard",
     "config",
     "game_settings.yaml",
 )
 DEFAULT_SETTING_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-    "bitbots_utils",
+    "bitbots_parameter_blackboard",
     "config",
     "default_game_settings.yaml",
 )
 OPTIONS_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-    "bitbots_utils",
+    "bitbots_parameter_blackboard",
     "config",
     "game_settings_options.yaml",
 )
