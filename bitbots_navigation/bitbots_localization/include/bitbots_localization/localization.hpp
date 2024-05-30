@@ -72,9 +72,9 @@ using namespace std::placeholders;
  * @class Localization
  * @brief Includes the ROS interface, configuration and main loop of the Bit-Bots RoboCup localization.
  */
-class Localization : public rclcpp::Node {
+class Localization {
  public:
-  explicit Localization();
+  explicit Localization(rclcpp::Node::SharedPtr node);
 
   /**
    * Callback for the pause service
@@ -143,6 +143,9 @@ class Localization : public rclcpp::Node {
   void reset_filter(int distribution, double x, double y, double angle);
 
  private:
+  // Reference to the node
+  rclcpp::Node::SharedPtr node_;
+
   // Declare parameter listener and struct from the generate_parameter_library
   bitbots_localization::ParamListener param_listener_;
   // Data structure to hold all parameters, which is build from the schema in the 'parameters.yaml'

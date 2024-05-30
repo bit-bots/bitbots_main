@@ -5,15 +5,15 @@
 
 namespace bitbots_localization {
 
-Localization::Localization()
-    : Node("bitbots_localization"),
-      param_listener_(get_node_parameters_interface()),
+Localization::Localization(std::shared_ptr<rclcpp::Node> node)
+    : node_(node),
+      param_listener_(node->get_node_parameters_interface()),
       config_(param_listener_.get_params()),
-      tfBuffer(std::make_unique<tf2_ros::Buffer>(this->get_clock())),
-      tfListener(std::make_shared<tf2_ros::TransformListener>(*tfBuffer, this)),
-      br(std::make_shared<tf2_ros::TransformBroadcaster>(this)) {
+      tfBuffer(std::make_unique<tf2_ros::Buffer>(node->get_clock())),
+      tfListener(std::make_shared<tf2_ros::TransformListener>(*tfBuffer, node)),
+      br(std::make_shared<tf2_ros::TransformBroadcaster>(node)) {
   // Wait for transforms to become available and init them
-  bitbots_utils::wait_for_tf(this->get_logger(), this->get_clock(), tfBuffer.get(), {config_.ros.base_footprint_frame},
+  bitbots_utils::wait_for_tf(node->get_logger(), node->get_clock(), tfBuffer.get(), {config_.ros.base_footprint_frame},
                              config_.ros.odom_frame);
 
   // Get the initial transform from odom to base_footprint
@@ -21,29 +21,29 @@ Localization::Localization()
                                                      rclcpp::Time(0), rclcpp::Duration::from_nanoseconds(1e9 * 20.0));
 
   // Init subscribers
-  line_point_cloud_subscriber_ = this->create_subscription<sm::msg::PointCloud2>(
+  line_point_cloud_subscriber_ = node->create_subscription<sm::msg::PointCloud2>(
       config_.ros.line_pointcloud_topic, 1, std::bind(&Localization::LinePointcloudCallback, this, _1));
 
-  goal_subscriber_ = this->create_subscription<sv3dm::msg::GoalpostArray>(
+  goal_subscriber_ = node->create_subscription<sv3dm::msg::GoalpostArray>(
       config_.ros.goal_topic, 1, std::bind(&Localization::GoalPostsCallback, this, _1));
 
-  fieldboundary_subscriber_ = this->create_subscription<sv3dm::msg::FieldBoundary>(
+  fieldboundary_subscriber_ = node->create_subscription<sv3dm::msg::FieldBoundary>(
       config_.ros.fieldboundary_topic, 1, std::bind(&Localization::FieldboundaryCallback, this, _1));
 
-  rviz_initial_pose_subscriber_ = this->create_subscription<gm::msg::PoseWithCovarianceStamped>(
+  rviz_initial_pose_subscriber_ = node->create_subscription<gm::msg::PoseWithCovarianceStamped>(
       "initialpose", 1, std::bind(&Localization::SetInitialPositionCallback, this, _1));
 
   // Init publishers
   pose_particles_publisher_ =
-      this->create_publisher<visualization_msgs::msg::MarkerArray>(config_.ros.particle_publishing_topic, 1);
+      node->create_publisher<visualization_msgs::msg::MarkerArray>(config_.ros.particle_publishing_topic, 1);
   pose_with_covariance_publisher_ =
-      this->create_publisher<gm::msg::PoseWithCovarianceStamped>("pose_with_covariance", 1);
-  lines_publisher_ = this->create_publisher<visualization_msgs::msg::Marker>("lines", 1);
-  line_ratings_publisher_ = this->create_publisher<visualization_msgs::msg::Marker>("line_ratings", 1);
-  goal_ratings_publisher_ = this->create_publisher<visualization_msgs::msg::Marker>("goal_ratings", 1);
+      node->create_publisher<gm::msg::PoseWithCovarianceStamped>("pose_with_covariance", 1);
+  lines_publisher_ = node->create_publisher<visualization_msgs::msg::Marker>("lines", 1);
+  line_ratings_publisher_ = node->create_publisher<visualization_msgs::msg::Marker>("line_ratings", 1);
+  goal_ratings_publisher_ = node->create_publisher<visualization_msgs::msg::Marker>("goal_ratings", 1);
   fieldboundary_ratings_publisher_ =
-      this->create_publisher<visualization_msgs::msg::Marker>("field_boundary_ratings", 1);
-  field_publisher_ = this->create_publisher<nav_msgs::msg::OccupancyGrid>(
+      node->create_publisher<visualization_msgs::msg::Marker>("field_boundary_ratings", 1);
+  field_publisher_ = node->create_publisher<nav_msgs::msg::OccupancyGrid>(
       "field/map", rclcpp::QoS(rclcpp::KeepLast(1)).transient_local());
 
   // Set the measurement timestamps to 0
@@ -56,19 +56,19 @@ Localization::Localization()
   updateParams(true);
 
   // Init the particles with the given distribution
-  RCLCPP_INFO(this->get_logger(), "Trying to initialize particle filter...");
+  RCLCPP_INFO(node->get_logger(), "Trying to initialize particle filter...");
   reset_filter(config_.misc.init_mode);
 
   // Init services that can be called from outside
-  reset_service_ = this->create_service<bl::srv::ResetFilter>(
+  reset_service_ = node->create_service<bl::srv::ResetFilter>(
       "reset_localization", std::bind(&Localization::reset_filter_callback, this, _1, _2));
-  pause_service_ = this->create_service<bl::srv::SetPaused>(
+  pause_service_ = node->create_service<bl::srv::SetPaused>(
       "pause_localization", std::bind(&Localization::set_paused_callback, this, _1, _2));
 
   // Start the timer that runs the filter
-  publishing_timer_ =
-      rclcpp::create_timer(this, this->get_clock(), rclcpp::Duration(0, uint32_t(1.0e9 / config_.particle_filter.rate)),
-                           std::bind(&Localization::run_filter_one_step, this));
+  publishing_timer_ = rclcpp::create_timer(node_, node->get_clock(),
+                                           rclcpp::Duration(0, uint32_t(1.0e9 / config_.particle_filter.rate)),
+                                           std::bind(&Localization::run_filter_one_step, this));
 }
 
 void Localization::updateParams(bool force_reload) {
@@ -77,7 +77,7 @@ void Localization::updateParams(bool force_reload) {
     return;
   }
 
-  RCLCPP_INFO(this->get_logger(), "Updating parameters...");
+  RCLCPP_INFO(node_->get_logger(), "Updating parameters...");
 
   // Update parameters
   param_listener_.refresh_dynamic_parameters();
@@ -85,8 +85,7 @@ void Localization::updateParams(bool force_reload) {
 
   // Poll the global parameter configuration
   auto global_params = bitbots_utils::get_parameters_from_other_node(
-      this->shared_from_this(), "/parameter_blackboard",
-      {"field.size.x", "field.size.y", "field.size.padding", "field.name"}, 1s);
+      node_, "/parameter_blackboard", {"field.size.x", "field.size.y", "field.size.padding", "field.name"}, 1s);
   field_name_ = global_params["field.name"].as_string();
   field_dimensions_.x = global_params["field.size.x"].as_double();
   field_dimensions_.y = global_params["field.size.y"].as_double();
@@ -205,6 +204,7 @@ void Localization::LinePointcloudCallback(const sm::msg::PointCloud2 &msg) { lin
 void Localization::GoalPostsCallback(const sv3dm::msg::GoalpostArray &msg) { goal_posts_relative_ = msg; }
 
 void Localization::FieldboundaryCallback(const sv3dm::msg::FieldBoundary &msg) { fieldboundary_relative_ = msg; }
+
 void Localization::SetInitialPositionCallback(const gm::msg::PoseWithCovarianceStamped &msg) {
   // Transform the given pose to map frame
   auto pose_in_map = tfBuffer->transform(msg, config_.ros.map_frame, tf2::durationFromSec(1.0));
@@ -216,6 +216,7 @@ void Localization::SetInitialPositionCallback(const gm::msg::PoseWithCovarianceS
   reset_filter(bl::srv::ResetFilter::Request::POSE, pose_in_map.pose.pose.position.x, pose_in_map.pose.pose.position.y,
                yaw);
 }
+
 bool Localization::set_paused_callback(const std::shared_ptr<bl::srv::SetPaused::Request> req,
                                        std::shared_ptr<bl::srv::SetPaused::Response> res) {
   if (req->paused) {
@@ -241,7 +242,7 @@ bool Localization::reset_filter_callback(const std::shared_ptr<bl::srv::ResetFil
 }
 
 void Localization::reset_filter(int distribution) {
-  RCLCPP_INFO(this->get_logger(), "reset filter");
+  RCLCPP_INFO(node_->get_logger(), "reset filter");
 
   robot_pf_.reset(new particle_filter::ParticleFilter<RobotState>(config_.particle_filter.particle_number,
                                                                   robot_pose_observation_model_, robot_motion_model_));
@@ -259,7 +260,7 @@ void Localization::reset_filter(int distribution) {
   } else if (distribution == 2) {
     robot_pf_->drawAllFromDistribution(robot_state_distribution_own_half_);
   } else {
-    RCLCPP_WARN(this->get_logger(), "Unknown distribution type %d or missing parameters", distribution);
+    RCLCPP_WARN(node_->get_logger(), "Unknown distribution type %d or missing parameters", distribution);
     return;
   }
 }
@@ -352,7 +353,7 @@ void Localization::getMotion() {
         rotational_movement_.z = 0;
         linear_movement_.x = 0;
         linear_movement_.y = 0;
-        RCLCPP_WARN(this->get_logger(), "Robot moved an unreasonable amount, dropping motion.");
+        RCLCPP_WARN(node_->get_logger(), "Robot moved an unreasonable amount, dropping motion.");
       }
 
       // Check if robot moved
@@ -360,7 +361,7 @@ void Localization::getMotion() {
                     linear_movement_normalized_y >= config_.misc.min_motion_linear or
                     rotational_movement_normalized_z >= config_.misc.min_motion_angular;
     } else {
-      RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 1000,
+      RCLCPP_WARN_THROTTLE(node_->get_logger(), *node_->get_clock(), 1000,
                            "Time step delta of zero encountered! Odometry is unavailable.");
       robot_moved = false;
     }
@@ -369,7 +370,7 @@ void Localization::getMotion() {
     // this step.
     previousOdomTransform_ = transformStampedNow;
   } catch (const tf2::TransformException &ex) {
-    RCLCPP_WARN(this->get_logger(), "Could not acquire motion for odom transforms: %s", ex.what());
+    RCLCPP_WARN(node_->get_logger(), "Could not acquire motion for odom transforms: %s", ex.what());
   }
 }
 
@@ -389,7 +390,7 @@ void Localization::publish_transforms() {
   try {
     odomNow = tfBuffer->lookupTransform(config_.ros.odom_frame, config_.ros.base_footprint_frame, rclcpp::Time(0));
   } catch (const tf2::TransformException &ex) {
-    RCLCPP_WARN(this->get_logger(), "Could not acquire odom transforms: %s", ex.what());
+    RCLCPP_WARN(node_->get_logger(), "Could not acquire odom transforms: %s", ex.what());
   }
 
   // Update estimate_ with the new estimate
@@ -429,7 +430,7 @@ void Localization::publish_transforms() {
     // Publish odom localization offset
     geometry_msgs::msg::TransformStamped map_odom_transform;
 
-    map_odom_transform.header.stamp = this->get_clock()->now();
+    map_odom_transform.header.stamp = node_->get_clock()->now();
     map_odom_transform.header.frame_id = config_.ros.map_frame;
     map_odom_transform.child_frame_id = config_.ros.odom_frame;
 
@@ -441,7 +442,7 @@ void Localization::publish_transforms() {
 
     map_odom_transform.transform = tf2::toMsg(map_tf);
 
-    RCLCPP_DEBUG(this->get_logger(), "Transform %s", geometry_msgs::msg::to_yaml(map_odom_transform).c_str());
+    RCLCPP_DEBUG(node_->get_logger(), "Transform %s", geometry_msgs::msg::to_yaml(map_odom_transform).c_str());
 
     // Check if a transform for the current timestamp was already published
     if (map_odom_tf_last_published_time_ != map_odom_transform.header.stamp) {
@@ -450,7 +451,7 @@ void Localization::publish_transforms() {
       br->sendTransform(map_odom_transform);
     }
   } catch (const tf2::TransformException &ex) {
-    RCLCPP_WARN(this->get_logger(), "Odom not available, therefore odom offset can not be published: %s", ex.what());
+    RCLCPP_WARN(node_->get_logger(), "Odom not available, therefore odom offset can not be published: %s", ex.what());
   }
 }
 
@@ -461,7 +462,7 @@ void Localization::publish_pose_with_covariance() {
   q.normalize();
 
   gm::msg::PoseWithCovarianceStamped estimateMsg;
-  estimateMsg.header.stamp = this->get_clock()->now();
+  estimateMsg.header.stamp = node_->get_clock()->now();
   estimateMsg.pose.pose.orientation.w = q.w();
   estimateMsg.pose.pose.orientation.x = q.x();
   estimateMsg.pose.pose.orientation.y = q.y();
@@ -494,7 +495,7 @@ void Localization::publish_particle_markers() {
   red.a = 1;
 
   pose_particles_publisher_->publish(robot_pf_->renderMarkerArray(
-      "pose_marker", config_.ros.map_frame, rclcpp::Duration::from_nanoseconds(1e9), red, this->get_clock()->now()));
+      "pose_marker", config_.ros.map_frame, rclcpp::Duration::from_nanoseconds(1e9), red, node_->get_clock()->now()));
 }
 
 void Localization::publish_ratings() {
@@ -522,7 +523,7 @@ void Localization::publish_debug_rating(std::vector<std::pair<double, double>> m
 
   visualization_msgs::msg::Marker marker;
   marker.header.frame_id = config_.ros.map_frame;
-  marker.header.stamp = this->get_clock()->now();
+  marker.header.stamp = node_->get_clock()->now();
   marker.ns = name;
   marker.action = visualization_msgs::msg::Marker::ADD;
   marker.pose.orientation.w = 1.0;
@@ -560,7 +561,9 @@ void Localization::publish_debug_rating(std::vector<std::pair<double, double>> m
 
 int main(int argc, char *argv[]) {
   rclcpp::init(argc, argv);
-  rclcpp::spin(std::make_shared<bitbots_localization::Localization>());
+  auto node = rclcpp::Node::make_shared("bitbots_localization");
+  [[maybe_unused]] auto localization = bitbots_localization::Localization(node);
+  rclcpp::spin(node);
   rclcpp::shutdown();
   return 0;
 }
