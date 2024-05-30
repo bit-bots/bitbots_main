@@ -18,8 +18,6 @@ from soccer_vision_2d_msgs.msg import (
 from soccer_vision_attribute_msgs.msg import Robot as RobotAttributes
 from vision_msgs.msg import BoundingBox2D, Pose2D
 
-from bitbots_msgs.msg import Audio
-
 """
 This module provides some methods needed for the ros environment,
 e.g. methods to convert candidates to ROS messages or methods to modify the dynamic reconfigure objects.
@@ -264,18 +262,6 @@ def convert_line_points_to_marking_segment_msgs(line_points):
         marking_segment.end = marking_segment.start
         marking_segments.append(marking_segment)
     return marking_segments
-
-
-def speak(string, speech_publisher):
-    """
-    Sends a speak message and let the robot say the given string.
-
-    :param string: Text the robot should say
-    :param speech_publisher: ROS publisher for the speech message
-    """
-    speak_message = Audio()
-    speak_message.text = string
-    speech_publisher.publish(speak_message)
 
 
 def set_general_parameters(params):

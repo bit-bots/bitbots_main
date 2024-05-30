@@ -73,22 +73,12 @@ gen = ParameterGenerator()
 ##########
 
 gen.add("component_ball_detection_active", bool, description="Activate/Deactivate the ball detection component")
-gen.add("component_camera_cap_check_active", bool, description="Activate/Deactivate the camera cap check component")
 gen.add("component_debug_image_active", bool, description="Activate/Deactivate the debug image component")
 gen.add("component_field_detection_active", bool, description="Activate/Deactivate the field detection component")
 gen.add("component_goalpost_detection_active", bool, description="Activate/Deactivate the goalpost detection component")
 gen.add("component_line_detection_active", bool, description="Activate/Deactivate the line detection component")
 gen.add("component_robot_detection_active", bool, description="Activate/Deactivate the robot detection component")
 
-gen.add(
-    "vision_blind_threshold",
-    int,
-    description="Brightness threshold under which the vision thinks, that someone forgot the camera cap",
-    min=0,
-    max=765,
-)
-
-gen.add("ROS_audio_msg_topic", str, description="ROS topic of the audio message")
 gen.add("ROS_img_msg_topic", str, description="ROS topic of the image message")
 gen.add("ROS_ball_msg_topic", str, description="ROS topic of the ball message")
 gen.add("ROS_goal_posts_msg_topic", str, description="ROS topic of the goal posts message")
