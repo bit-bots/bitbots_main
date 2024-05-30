@@ -10,6 +10,9 @@
         <arg name="sim" value="$(var sim)" />
     </include>
 
+    <!-- Load the diagnostic aggregator-->
+    <include file="$(find-pkg-share bitbots_diagnostic)/launch/aggregator.launch" />
+
     <!-- Start the vision-->
     <include file="$(find-pkg-share bitbots_bringup)/launch/vision.launch">
         <arg name="sim" value="$(var sim)" />

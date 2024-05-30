@@ -10,14 +10,15 @@ find_package(ament_cmake REQUIRED)
 find_package(ament_index_cpp REQUIRED)
 find_package(backward_ros REQUIRED)
 find_package(bitbots_docs REQUIRED)
+find_package(camera_info_manager REQUIRED)
 find_package(cv_bridge REQUIRED)
+find_package(diagnostic_msgs REQUIRED)
+find_package(generate_parameter_library REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(OpenCV REQUIRED)
+find_package(pylon 7.1.0 REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
-find_package(pylon 7.1.0 REQUIRED)
-find_package(camera_info_manager REQUIRED)
-find_package(generate_parameter_library REQUIRED)
 
 add_compile_options(-Wall -Werror -Wno-unused)
 
@@ -35,12 +36,13 @@ ament_target_dependencies(
   ament_cmake
   ament_index_cpp
   bitbots_docs
+  camera_info_manager
   cv_bridge
+  diagnostic_msgs
+  generate_parameter_library
   image_transport
   rclcpp
   sensor_msgs
-  camera_info_manager
-  generate_parameter_library
   OpenCV)
 
 enable_bitbots_docs()

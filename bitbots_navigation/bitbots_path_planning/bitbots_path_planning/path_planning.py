@@ -1,7 +1,6 @@
 import rclpy
 import soccer_vision_3d_msgs.msg as sv3dm
-import tf2_ros as tf2
-from bitbots_tf_listener import TransformListener
+from bitbots_tf_buffer import Buffer
 from geometry_msgs.msg import PointStamped, PoseStamped, Twist
 from nav_msgs.msg import OccupancyGrid, Path
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
@@ -29,10 +28,7 @@ class PathPlanning(Node):
         self.declare_parameter("rate", 20.0)
 
         # We need to create a tf buffer
-        self.tf_buffer = tf2.Buffer(
-            cache_time=Duration(seconds=self.declare_parameter("tf_buffer_duration", 5.0).value)
-        )
-        self.tf_listener = TransformListener(self.tf_buffer, self)
+        self.tf_buffer = Buffer(self, Duration(seconds=self.declare_parameter("tf_buffer_duration", 5.0).value))
 
         # Create submodules
         self.map = Map(node=self, buffer=self.tf_buffer)

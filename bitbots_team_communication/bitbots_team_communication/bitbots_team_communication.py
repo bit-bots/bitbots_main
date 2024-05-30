@@ -7,11 +7,12 @@ from typing import List, Optional, Tuple
 
 import rclpy
 from ament_index_python.packages import get_package_share_directory
-from bitbots_tf_listener import TransformListener
+from bitbots_tf_buffer import Buffer
 from bitbots_utils.utils import get_parameter_dict, get_parameters_from_other_node
 from game_controller_hl_interfaces.msg import GameState
 from geometry_msgs.msg import PoseWithCovarianceStamped, Twist, TwistWithCovarianceStamped
 from numpy import double
+from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.duration import Duration
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
@@ -19,7 +20,7 @@ from rclpy.time import Time
 from soccer_vision_3d_msgs.msg import Robot, RobotArray
 from std_msgs.msg import Float32, Header
 from tf2_geometry_msgs import PointStamped, PoseStamped
-from tf2_ros import Buffer, TransformException
+from tf2_ros import TransformException
 
 import bitbots_team_communication.robocup_extension_pb2 as Proto  # noqa: N812
 from bitbots_msgs.msg import Strategy, TeamData
@@ -58,13 +59,12 @@ class TeamCommunication:
 
         self.set_state_defaults()
 
-        self.tf_buffer = Buffer()
-        self.tf_listener = TransformListener(self.tf_buffer, self.node)
+        self.tf_buffer = Buffer(self.node)
 
         self.run_spin_in_thread()
         self.try_to_establish_connection()
 
-        self.node.create_timer(1 / self.rate, self.send_message)
+        self.node.create_timer(1 / self.rate, self.send_message, callback_group=MutuallyExclusiveCallbackGroup())
         self.receive_forever()
 
     def spin(self):
@@ -99,23 +99,72 @@ class TeamCommunication:
             self.node.get_clock().sleep_for(Duration(seconds=1))
 
     def create_publishers(self):
-        self.team_data_publisher = self.node.create_publisher(TeamData, self.topics["team_data_topic"], 1)
+        self.team_data_publisher = self.node.create_publisher(TeamData, self.topics["team_data_topic"], qos_profile=1)
 
     def create_subscribers(self):
-        self.node.create_subscription(GameState, self.topics["gamestate_topic"], self.gamestate_cb, 1)
-        self.node.create_subscription(PoseWithCovarianceStamped, self.topics["pose_topic"], self.pose_cb, 1)
-        self.node.create_subscription(Twist, self.topics["cmd_vel_topic"], self.cmd_vel_cb, 1)
-        self.node.create_subscription(PoseWithCovarianceStamped, self.topics["ball_topic"], self.ball_cb, 1)
+        self.node.create_subscription(
+            GameState,
+            self.topics["gamestate_topic"],
+            self.gamestate_cb,
+            qos_profile=1,
+            callback_group=MutuallyExclusiveCallbackGroup(),
+        )
+        self.node.create_subscription(
+            PoseWithCovarianceStamped,
+            self.topics["pose_topic"],
+            self.pose_cb,
+            qos_profile=1,
+            callback_group=MutuallyExclusiveCallbackGroup(),
+        )
+        self.node.create_subscription(
+            Twist,
+            self.topics["cmd_vel_topic"],
+            self.cmd_vel_cb,
+            qos_profile=1,
+            callback_group=MutuallyExclusiveCallbackGroup(),
+        )
+        self.node.create_subscription(
+            PoseWithCovarianceStamped,
+            self.topics["ball_topic"],
+            self.ball_cb,
+            qos_profile=1,
+            callback_group=MutuallyExclusiveCallbackGroup(),
+        )
         self.node.create_subscription(
             TwistWithCovarianceStamped,
             self.topics["ball_velocity_topic"],
             self.ball_velocity_cb,
-            1,
+            qos_profile=1,
+            callback_group=MutuallyExclusiveCallbackGroup(),
         )
-        self.node.create_subscription(Strategy, self.topics["strategy_topic"], self.strategy_cb, 1)
-        self.node.create_subscription(Float32, self.topics["time_to_ball_topic"], self.time_to_ball_cb, 1)
-        self.node.create_subscription(RobotArray, self.topics["robots_topic"], self.robots_cb, 1)
-        self.node.create_subscription(PoseStamped, self.topics["move_base_goal_topic"], self.move_base_goal_cb, 1)
+        self.node.create_subscription(
+            Strategy,
+            self.topics["strategy_topic"],
+            self.strategy_cb,
+            qos_profile=1,
+            callback_group=MutuallyExclusiveCallbackGroup(),
+        )
+        self.node.create_subscription(
+            Float32,
+            self.topics["time_to_ball_topic"],
+            self.time_to_ball_cb,
+            qos_profile=1,
+            callback_group=MutuallyExclusiveCallbackGroup(),
+        )
+        self.node.create_subscription(
+            RobotArray,
+            self.topics["robots_topic"],
+            self.robots_cb,
+            qos_profile=1,
+            callback_group=MutuallyExclusiveCallbackGroup(),
+        )
+        self.node.create_subscription(
+            PoseStamped,
+            self.topics["move_base_goal_topic"],
+            self.move_base_goal_cb,
+            qos_profile=1,
+            callback_group=MutuallyExclusiveCallbackGroup(),
+        )
 
     def gamestate_cb(self, msg: GameState):
         self.gamestate = msg
@@ -168,8 +217,8 @@ class TeamCommunication:
             msg.twist.twist.angular.z,
         )
 
-    def transform_to_map_frame(self, field, timeout_in_ns=0.3e9):
-        return self.tf_buffer.transform(field, self.map_frame, timeout=Duration(nanoseconds=timeout_in_ns))
+    def transform_to_map_frame(self, field, timeout_in_s=0.3):
+        return self.tf_buffer.transform(field, self.map_frame, timeout=Duration(seconds=timeout_in_s))
 
     def receive_forever(self):
         while rclpy.ok():
