@@ -1,8 +1,8 @@
-############
-# Feldraum #
-############
+#########
+# Labor #
+#########
 
-# Settings for the f-031 test field
+# Settings for the f-015 test field
 
 parameter_blackboard:
   ros__parameters:
