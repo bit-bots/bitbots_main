@@ -4,7 +4,7 @@
     <name>bitbots_parameter_blackboard</name>
     <version>2.3.1</version>
     <description>
-        The bitbots_parameter_blackboard package is handles the global parameters, utilized by multiple nodes.
+        The bitbots_parameter_blackboard package handles the global parameters, utilized by multiple nodes.
         These include the game settings, field specific settings, etc..
     </description>
 
