@@ -10,7 +10,7 @@ float32 y # in meters
 float32 angle # in radians
 
 # Constants
-int64 OWN_SIDELINE=0  # Start at the sideline on the right half facing inwards (default game start)
+int64 OWN_SIDELINE=0  # Start at the sideline on the own half facing inwards (default game start)
 int64 OPPONENT_HALF=1  # Start somewhere on the opponents side (needs a very large number of particles)
 int64 OWN_HALF=2  # Start somewhere on our own side (needs a very large number of particles)
 int64 POSITION=3  # Start at a specific position with unknown orientation
