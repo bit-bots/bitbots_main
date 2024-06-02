@@ -10,7 +10,7 @@ parameter_blackboard:
       size:
         x: 5.45
         y: 3.88
-        padding: 0.2   # Padding (area outside of the lines) of the field in all directions
+        padding: 0.1   # Padding (area outside of the lines) of the field in all directions
       markings:
         penalty_area:
           size:
