@@ -5,54 +5,74 @@ using std::placeholders::_2;
 PressureConverter::PressureConverter(rclcpp::Node::SharedPtr nh, pressure_converter::Params::Common config,
                                      FootConfig foot_config, char side)
     : nh_(nh),
-      side_(std::to_string(side)),
+
+      side_(std::string(1, side)),
+
       wrench_topics_({"l_front", "l_back", "r_front", "r_back", "cop"}),
-      wrench_frames_([](auto &wrench_topics, auto &side) {
+
+      wrench_frames_([this]() {
         std::vector<std::string> vec;
-        for (size_t i = 0; i < wrench_topics.size(); i++) {
-          vec.push_back(side + "_cleat_" + wrench_topics[i]);
+        for (size_t i = 0; i < wrench_topics_.size(); i++) {
+          vec.push_back(side_ + "_cleat_" + wrench_topics_[i]);
         }
         return vec;
-      }(wrench_topics_, side_)),
-      zero_([](const std::vector<double> &vec) {
+      }()),
+
+      zero_([foot_config]() {
         // Copy first 4 elements of the config into an new array
         std::array<double, 4> arr;
-        std::copy_n(vec.begin(), 4, arr.begin());
+        std::copy_n(foot_config.zero.begin(), 4, arr.begin());
         return arr;
-      }(foot_config.zero)),  // cppcheck-suppress internalAstError
-      scale_([](const std::vector<double> &vec) {
+      }()),
+
+      scale_([foot_config]() {
         // Copy first 4 elements of the config into an new array
         std::array<double, 4> arr;
-        std::copy_n(vec.begin(), 4, arr.begin());
+        std::copy_n(foot_config.scale.begin(), 4, arr.begin());
         return arr;
-      }(foot_config.scale)),
-      previous_values_([](size_t size) {
+      }()),
+
+      previous_values_([config]() {
         std::array<std::vector<double>, 4> arr;
         for (auto &vec : arr) {
           // Initialize vector with size elements, all set to 0
-          vec.resize(size, 0);
+          vec.resize(config.average, 0);
         }
         return arr;
-      }(config.average)),
+      }()),
+
       average_(config.average),
+
       calibration_buffer_length_(config.calibration_buffer_length),
+
       cop_threshold_(config.cop_threshold),
+
       filtered_pub_(nh_->create_publisher<bitbots_msgs::msg::FootPressure>(foot_config.topic + "/filtered", 1)),
+
       cop_pub_(nh_->create_publisher<geometry_msgs::msg::PointStamped>("/cop_" + side_, 1)),
+
       // Create wrench publishers
-      wrench_pubs_([this](auto &foot_topic, auto &wrench_topics) {
+      wrench_pubs_([this, foot_config]() {
         std::vector<rclcpp::Publisher<geometry_msgs::msg::WrenchStamped>::SharedPtr> vec;
-        for (size_t i = 0; i < wrench_topics.size(); i++) {
-          vec.push_back(
-              nh_->create_publisher<geometry_msgs::msg::WrenchStamped>(foot_topic + "/wrench/" + wrench_topics[i], 1));
+        for (size_t i = 0; i < wrench_topics_.size(); i++) {
+          vec.push_back(nh_->create_publisher<geometry_msgs::msg::WrenchStamped>(
+              foot_config.topic + "/wrench/" + wrench_topics_[i], 1));
         }
         return vec;
-      }(foot_config.topic, wrench_topics_)),  // cppcheck-suppress unmatchedSuppression
-      sub_(nh_->create_subscription<bitbots_msgs::msg::FootPressure>(
-          foot_config.topic + "/raw", 1, std::bind(&PressureConverter::pressureCallback, this, _1))),
+      }()),
+
+      sub_([this, foot_config]() {
+        auto options = rclcpp::SubscriptionOptions();
+        options.callback_group = nh_->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+        return nh_->create_subscription<bitbots_msgs::msg::FootPressure>(
+            foot_config.topic + "/raw", 1, std::bind(&PressureConverter::pressureCallback, this, _1), options);
+      }()),
+
       tf_broadcaster_(std::make_unique<tf2_ros::TransformBroadcaster>(*nh_)),
+
       zero_service_(nh_->create_service<std_srvs::srv::Empty>(
           foot_config.topic + "/set_foot_zero", std::bind(&PressureConverter::zeroCallback, this, _1, _2))),
+
       scale_service_(nh_->create_service<bitbots_msgs::srv::FootScale>(
           foot_config.topic + "/set_foot_scale", std::bind(&PressureConverter::scaleCallback, this, _1, _2))) {}
 
@@ -202,7 +222,7 @@ int main(int argc, char *argv[]) {
 
   // Create node and executor
   rclcpp::Node::SharedPtr nh = rclcpp::Node::make_shared("pressure_converter");
-  rclcpp::executors::StaticSingleThreadedExecutor executor;
+  rclcpp::executors::MultiThreadedExecutor executor(rclcpp::ExecutorOptions(), 4);
   executor.add_node(nh);
 
   // Get config
