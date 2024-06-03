@@ -159,8 +159,9 @@ void PressureConverter::showYAML() {
   e << YAML::Key << "scale";
   e << YAML::Value << YAML::Flow << scale_;
 
-  RCLCPP_INFO_STREAM(nh_->get_logger(), "The following calibration values are the new calibration values:" << std::endl
-                                                                                                             << e.c_str());
+  RCLCPP_INFO_STREAM(nh_->get_logger(),
+                     "The following calibration values are the new calibration values:" << std::endl
+                                                                                        << e.c_str());
 }
 
 bool PressureConverter::scaleCallback(const std::shared_ptr<bitbots_msgs::srv::FootScale::Request> req,
