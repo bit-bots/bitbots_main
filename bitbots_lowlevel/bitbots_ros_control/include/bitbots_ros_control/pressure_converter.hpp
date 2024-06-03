@@ -14,32 +14,42 @@
 #include <rclcpp/rclcpp.hpp>
 #include <std_srvs/srv/empty.hpp>
 
+#include "pressure_converter_parameters.hpp"
+
+struct FootConfig {
+  std::string topic;
+  std::vector<double> zero;
+  std::vector<double> scale;
+  explicit FootConfig(const pressure_converter::Params::Left &foot_config)
+      : topic(foot_config.topic), zero(foot_config.zero), scale(foot_config.scale) {}
+  explicit FootConfig(const pressure_converter::Params::Right &foot_config)
+      : topic(foot_config.topic), zero(foot_config.zero), scale(foot_config.scale) {}
+};
+
 class PressureConverter {
  public:
-  PressureConverter(rclcpp::Node::SharedPtr nh, char side);
+  PressureConverter(rclcpp::Node::SharedPtr nh, pressure_converter::Params::Common config, FootConfig foot_config,
+                    char side);
 
  private:
   rclcpp::Node::SharedPtr nh_;
-  rclcpp::executors::StaticSingleThreadedExecutor sub_executor_;
-  rclcpp::CallbackGroup::SharedPtr sub_cbg_;
-  std::thread* sub_executor_thread_;
+
+  // Create publisher and subscriber
   rclcpp::Publisher<bitbots_msgs::msg::FootPressure>::SharedPtr filtered_pub_;
   rclcpp::Publisher<geometry_msgs::msg::PointStamped>::SharedPtr cop_pub_;
-  std::vector<rclcpp::Publisher<geometry_msgs::msg::WrenchStamped>::SharedPtr> wrench_pubs_;
+  std::array<rclcpp::Publisher<geometry_msgs::msg::WrenchStamped>::SharedPtr, 5> wrench_pubs_;
   rclcpp::Subscription<bitbots_msgs::msg::FootPressure>::SharedPtr sub_;
   std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
 
-  std::vector<std::string> wrench_frames_;
-  std::vector<double> zero_, scale_;
-  std::vector<std::vector<double>> previous_values_, zero_and_scale_values_;
-  bool save_zero_and_scale_values_;
-  int current_index_;
-  int average_, scale_and_zero_average_;
-  double cop_threshold_;
-  char side_;
-  std::string req_type_;
-  std::string scale_lr_, zero_lr_, cop_lr_, sole_lr_;
-  std::shared_ptr<bitbots_msgs::srv::FootScale::Request> request_;
+  const char side_;
+  const std::string wrench_topics_[5] = {"l_front", "l_back", "r_front", "r_back", "cop"};
+  std::array<std::string, 4> wrench_frames_;
+  std::array<double, 4> zero_, scale_;
+  std::array<std::vector<double>, 4> previous_values_, calibration_buffer_;
+  bool save_calibration_buffer_ = false;
+  int current_index_ = 0;
+  const int average_, calibration_buffer_length_;
+  const double cop_threshold_;
 
   rclcpp::Service<std_srvs::srv::Empty>::SharedPtr zero_service_;
   rclcpp::Service<bitbots_msgs::srv::FootScale>::SharedPtr scale_service_;
