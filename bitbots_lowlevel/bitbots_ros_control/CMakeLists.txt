@@ -92,9 +92,8 @@ ament_target_dependencies(
   std_msgs
   std_srvs
   tf2_ros
-  transmission_interface
-  yaml-cpp)
-target_link_libraries(pressure_converter yaml-cpp rclcpp::rclcpp
+  transmission_interface)
+target_link_libraries(pressure_converter rclcpp::rclcpp
                       pressure_converter_parameters)
 
 ament_export_dependencies(ament_cmake)

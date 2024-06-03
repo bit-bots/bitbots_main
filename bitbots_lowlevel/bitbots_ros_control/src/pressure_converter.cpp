@@ -153,11 +153,15 @@ void PressureConverter::collectMessages() {
 }
 
 void PressureConverter::showYAML() {
-  YAML::Emitter e;
-  e << YAML::Key << "zero";
-  e << YAML::Value << YAML::Flow << zero_;
-  e << YAML::Key << "scale";
-  e << YAML::Value << YAML::Flow << scale_;
+  std::string e = "zero: [";
+  for (int i = 0; i < 4; i++) {
+    e += std::to_string(zero_[i]) + ", ";
+  }
+  e += "]\nscale: [";
+  for (int i = 0; i < 4; i++) {
+    e += std::to_string(scale_[i]) + ", ";
+  }
+  e += "]";
 
   RCLCPP_INFO_STREAM(nh_->get_logger(),
                      "The following calibration values are the new calibration values:" << std::endl

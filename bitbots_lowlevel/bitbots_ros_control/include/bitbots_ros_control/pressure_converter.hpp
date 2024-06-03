@@ -1,6 +1,4 @@
 #include <tf2_ros/transform_broadcaster.h>
-#include <yaml-cpp/emitter.h>
-#include <yaml-cpp/yaml.h>
 
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <bitbots_msgs/msg/foot_pressure.hpp>
