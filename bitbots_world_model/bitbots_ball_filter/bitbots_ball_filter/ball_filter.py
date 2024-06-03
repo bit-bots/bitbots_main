@@ -9,7 +9,6 @@ from bitbots_tf_buffer import Buffer
 from filterpy.common import Q_discrete_white_noise
 from filterpy.kalman import KalmanFilter
 from geometry_msgs.msg import Point, PoseWithCovarianceStamped, TwistWithCovarianceStamped
-from rcl_interfaces.msg import SetParametersResult
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.duration import Duration
 from rclpy.executors import MultiThreadedExecutor
@@ -109,7 +108,6 @@ class BallFilter(Node):
         self.logger.info("Resetting bitbots ball filter...")
         self.filter_initialized = False
         response.success = True
-        self.logger.info("Bitbots ball filter reset")
         return response
 
     def ball_callback(self, msg: BallArray) -> None:
@@ -124,7 +122,6 @@ class BallFilter(Node):
             position = self._get_transform(msg.header, ball_msg.center)
             if position is not None:
                 self.ball = BallWrapper(position, msg.header, ball_msg.confidence.confidence)
-        self.logger.info("Received ball data")
 
     def _get_closest_ball_to_previous_prediction(self, ball_array: BallArray) -> Union[Ball, None]:
         closest_distance = math.inf
@@ -138,7 +135,6 @@ class BallFilter(Node):
                 )
                 if distance < closest_distance:
                     closest_ball_msg = ball_msg
-        self.logger.info(f"Closest ball to previous prediction: {closest_ball_msg}")
         return closest_ball_msg
 
     def _get_transform(
@@ -150,16 +146,13 @@ class BallFilter(Node):
         point_stamped = PointStamped()
         point_stamped.header = header
         point_stamped.point = point
-        
-        self.logger.info(f"Transforming point {point_stamped} to frame {frame}")
+
         try:
             return self.tf_buffer.transform(point_stamped, frame, timeout=Duration(seconds=timeout))
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
             self.logger.warning(str(e))
 
     def set_parameters(self):
-        
-        self.logger.info("Setting parameters")
         self.measurement_certainty = self.config.measurement_certainty
         self.filter_reset_duration = rclpy.duration.Duration(seconds=float(self.config.filter_reset_time))
         self.filter_reset_distance = self.config.filter_reset_distance
@@ -167,7 +160,6 @@ class BallFilter(Node):
 
         self.filter_frame = self.config.filter_frame
         self.logger.info(f"Using frame '{self.filter_frame}' for ball filtering")
-        
 
     def filter_step(self) -> None:
         """ "
@@ -179,7 +171,6 @@ class BallFilter(Node):
         Process noise is taken into account
         """
         # check whether parameters have changed
-        self.logger.info("Checking for parameter changes")
         if self.param_listener.is_old(self.config):
             self.param_listener.refresh_dynamic_parameters()
             self.config = self.param_listener.get_params()
@@ -261,7 +252,6 @@ class BallFilter(Node):
         )
 
         self.filter_initialized = True
-        self.logger.info("Filter initialized")
 
     def publish_data(self, state_vec: np.array, cov_mat: np.array) -> None:
         """
@@ -269,7 +259,6 @@ class BallFilter(Node):
         :param state_vec: current state of kalmanfilter
         :param cov_mat: current covariance matrix
         """
-        self.logger.info("Publishing ball data")
         header = Header()
         header.frame_id = self.filter_frame
         header.stamp = rclpy.time.Time.to_msg(self.get_clock().now())
@@ -311,12 +300,11 @@ class BallFilter(Node):
         ball_msg.pose.pose.covariance = pos_covariance
         ball_msg.pose.confidence = self.ball.get_confidence() if self.ball else 0.0
         self.ball_publisher.publish(ball_msg)
-        self.logger.info("Published ball data")
 
 
 def main(args=None) -> None:
     rclpy.init(args=args)
-    
+
     node = BallFilter()
     # Number of executor threads is the number of MutiallyExclusiveCallbackGroups + 1 thread for the executor
     ex = MultiThreadedExecutor(num_threads=3)

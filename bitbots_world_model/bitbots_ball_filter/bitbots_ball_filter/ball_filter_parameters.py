@@ -86,7 +86,7 @@ class BallFilter:
                     self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
 
                 if param.name == self.prefix_ + "filter_frame":
-                    validation_result = ParameterValidators.one_of(param, "map", "odom")
+                    validation_result = ParameterValidators.one_of(param, ["map", "odom"])
                     if validation_result:
                         return SetParametersResult(successful=False, reason=validation_result)
                     updated_params.filter_frame = param.value
@@ -185,7 +185,7 @@ class BallFilter:
                 self.node_.declare_parameter(self.prefix_ + "filter_frame", parameter, descriptor)
 
             if not self.node_.has_parameter(self.prefix_ + "filter_rate"):
-                descriptor = ParameterDescriptor(description="Filtering rate in Hz", read_only=False)
+                descriptor = ParameterDescriptor(description="Filtering rate in Hz", read_only=True)
                 descriptor.integer_range.append(IntegerRange())
                 descriptor.integer_range[-1].from_value = 0
                 descriptor.integer_range[-1].to_value = 100
@@ -266,7 +266,7 @@ class BallFilter:
             updated_params.ball_filter_reset_service_name = param.value
             param = self.node_.get_parameter(self.prefix_ + "filter_frame")
             self.logger_.debug(param.name + ": " + param.type_.name + " = " + str(param.value))
-            validation_result = ParameterValidators.one_of(param, "map", "odom")
+            validation_result = ParameterValidators.one_of(param, ["map", "odom"])
             if validation_result:
                 raise InvalidParameterValueException(
                     "filter_frame",
