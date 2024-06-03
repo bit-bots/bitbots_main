@@ -53,6 +53,13 @@ pylon_camera_parameters:
     description: "The tf frame at which the camera's optical center is located."
     validation:
       not_empty<>: []
+  reconnect_interval:
+    type: double
+    default_value: 1.0
+    description: "The interval in seconds in which we try to (re-)connect to the camera."
+    read_only: true
+    validation:
+      gt_eq<>: [0.0]
   gige:
     mtu_size:
       type: int
@@ -67,3 +74,10 @@ pylon_camera_parameters:
       read_only: true
       validation:
         bounds<>: [0, 10000]
+  misc:
+    darkness_threshold:
+      type: double
+      default_value: 0.1
+      description: "This threshold is used to determine if the image is too dark, which means that we might forgot the camera cover."
+      validation:
+        bounds<>: [0, 1]

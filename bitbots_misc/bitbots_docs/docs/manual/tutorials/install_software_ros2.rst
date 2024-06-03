@@ -3,11 +3,33 @@ Software installation with ROS2
 
 In this tutorial, we will learn how to install ROS2 Iron Irwini on Ubuntu 22.04 and build our software stack.
 
+**TLDR**: single command setup
+------------------------------
+
+**Prerequirements**
+- You have a running Ubuntu 22.04 environment
+- You have an existing Github account and added a SSH key to your account
+- You have root access to your system (sudo)
+
+If you have not previously set up any of our software stack, you can use the following command to install and setup everything in one go:
+
+.. code-block:: bash
+
+  mkdir -p ~/git/bitbots \
+    && cd ~/git/bitbots \
+    && curl -fsSL https://raw.githubusercontent.com/bit-bots/bitbots_main/main/scripts/setup.sh > /tmp/setup.sh \
+    && bash /tmp/setup.sh
+
+Manual steps with in depth explanation
+--------------------------------------
+
 **0. Use Ubuntu 22.04**
 
 As ROS works best on Ubuntu, we are using this distribution.
 Currently, ROS2 Iron runs on Ubuntu 22.04.
-If you are not already using Ubuntu 22.04, consider installing it on your system (perhaps as a dual boot), alternately you can run it in a virtual machine (not recommended, as recently we had some issues with it; https://www.virtualbox.org/) or use the ROS2 docker (https://github.com/timonegk/rosdocked)
+
+If you are not already using Ubuntu 22.04, consider installing it on your system (perhaps as a dual boot?).
+Alternatively you can use a devcontainer :doc:`vscode-dev-container`, with a preconfigured environment and follow those instructions, as these docs do not apply to the devcontainer.
 
 **1. Setup and Install ROS 2**
 
@@ -17,28 +39,38 @@ If you are not already using Ubuntu 22.04, consider installing it on your system
 .. code-block:: bash
 
   sudo apt install \
-  clang-format \
-  cppcheck \
-  python3-colcon-clean \
-  python3-colcon-common-extensions \
-  python3-pip \
-  python3-rosdep \
-  ros-iron-plotjuggler-ros \
-  ros-iron-rmw-cyclonedds-cpp \
-  ros-iron-rqt-robot-monitor \
-  ros-iron-rqt-runtime-monitor
+    clang-format \
+    cppcheck \
+    python3-colcon-clean \
+    python3-colcon-common-extensions \
+    python3-pip \
+    python3-rosdep \
+    python3-vcstool \
+    ros-iron-plotjuggler-ros \
+    ros-iron-rmw-cyclonedds-cpp \
+    ros-iron-rqt-robot-monitor \
+    ros-iron-rqt-runtime-monitor
 
 - Run ``sudo rosdep init`` to initialize ``rosdep``, a tool that helps you install system dependencies for ROS packages.
+- Optionally, to get nice colored output from colcon, you can install the following pip packages:
+
+.. code-block:: bash
+
+  python3 -m pip install \
+    git+https://github.com/ruffsl/colcon-clean \
+    git+https://github.com/timonegk/colcon-core.git@colors \
+    git+https://github.com/timonegk/colcon-notification.git@colors \
+    git+https://github.com/timonegk/colcon-output.git@colors
 
 **2. Install Webots**
 
-- Navigate to https://github.com/cyberbotics/webots/releases and download the ``.deb`` file of **Webots2022b**.
-- Install it using the command ``sudo apt install ~/Downloads/webots_2022b_amd64.deb`` or similar, depending on your system setup.
+Webots is a robot simulator, which we use to simulate our robots and test our software.
+It is not strictly necessary to install it, but it is very useful for development and testing.
+If you want to install it, you can do so by running ``make webots`` in the bitbots_main repository.
 
 **3. Download our software**
 
-- Create a GitHub account, if not already done (see here for further information on this: http://doku.bit-bots.de/private/manual/dienste_accounts.html)
-  Those services host our Git software repositories.
+- Create a GitHub account, if not already done (see `here <http://doku.bit-bots.de/private/manual/dienste_accounts.html>` for further information)
 - Add your SSH key to GitHub to access and sync our repositories
     - If you don't know what I am talking about or you don't yet have a SSH key, follow this guide: https://docs.github.com/en/authentication/connecting-to-github-with-ssh/checking-for-existing-ssh-keys
     - Go to your account settings and add your SSH key (the ``.pub`` file) to `GitHub <https://github.com/settings/keys>`_
@@ -73,44 +105,46 @@ In case you are not using the bash shell, replace ``~/.bashrc`` and ``bash`` wit
 .. code-block:: bash
 
   cat >> ~/.bashrc << EOF
-  export PATH=\$PATH:\$HOME/.local/bin
+
+  # >>> bit-bots initialize >>>
+
+  # Ignore some deprecation warnings
+  export PYTHONWARNINGS=ignore:::setuptools.command.install,ignore:::setuptools.command.easy_install,ignore:::pkg_resources
+
+  # Limit ROS 2 communication to localhost (can be overridden when needed)
+  export ROS_DOMAIN_ID=24
+  export ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST
+
+  # Set the default colcon workspace
   export COLCON_WS="\$HOME/colcon_ws"
+
+  # Set the default log level for colcon
   export COLCON_LOG_LEVEL=30
+
+  # Define a log layout
   export RCUTILS_COLORIZED_OUTPUT=1
-  export RCUTILS_CONSOLE_OUTPUT_FORMAT="[{severity}] [{name}]: {message} ({function_name}() at {file_name}:{line_number})"
+  export RCUTILS_CONSOLE_OUTPUT_FORMAT="[{severity}] [{name}]: {message}"
+
+  # Set the default Middleware
   export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
-  source /opt/ros/iron/setup.bash
-  eval "\$(register-python-argcomplete3 ros2)"
-  eval "\$(register-python-argcomplete3 colcon)"
-  EOF
 
-- Optionally, run the following command to set some useful shortcuts for various ROS2 commands:
+  # Load our ros plugin script containing useful functions and aliases for ROS 2 development
+  if [[ -f \$COLCON_WS/src/bitbots_main/scripts/ros.plugin.sh ]]; then
+    source \$COLCON_WS/src/bitbots_main/scripts/ros.plugin.sh
+  fi
 
-.. code-block:: bash
+  # <<< bit-bots initialize <<<
 
-  cat >> ~/.bashrc << EOF
-  alias rr='ros2 run'
-  alias rl='ros2 launch'
-
-  alias rte='ros2 topic echo'
-  alias rtl='ros2 topic list'
-  alias rth='ros2 topic hz'
-  alias rtp='ros2 topic pub'
-
-  alias rpl='ros2 param list'
-  alias rpg='ros2 param get'
-
-  alias cdc='cd \$COLCON_WS'
-
-  alias cba='cdc && colcon build --symlink-install --continue-on-error'
-  alias cb='cdc && colcon build --symlink-install --continue-on-error --packages-up-to'
-  alias cbs='cdc && colcon build --symlink-install --packages-select'
-  alias cc='cdc && colcon clean packages --packages-select'
-  alias cca='cdc && colcon clean packages'
-
-  alias sr='source /opt/ros/iron/setup.bash'
-  alias sc='source \$COLCON_WS/install/setup.bash'
-  alias sa='sr && sc'
   EOF
 
 - Configure the robot hostnames, see :doc:`configure_hostnames`.
+
+Notes
+-----
+
+Custom docker setup
+  Before utilizing a devcontainer, we used a custom docker setup for ROS 2 development.
+  If you want (or need) to utilize a custom setup like this, have a look at https://github.com/timonegk/rosdocked.
+
+Virtual Machine setup
+  We recommend against using a virtual machine for ROS 2 development, both for compile speed and setup complexity reasons.

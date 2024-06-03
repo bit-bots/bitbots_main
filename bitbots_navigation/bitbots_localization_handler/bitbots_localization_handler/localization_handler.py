@@ -2,14 +2,15 @@
 import os
 
 import rclpy
-from ament_index_python import get_package_share_directory
 from dynamic_stack_decider.dsd import DSD
 from game_controller_hl_interfaces.msg import GameState
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup, ReentrantCallbackGroup
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
+from sensor_msgs.msg import Imu
 
+from bitbots_localization_handler import localization_dsd
 from bitbots_localization_handler.localization_dsd.localization_blackboard import LocalizationBlackboard
 from bitbots_msgs.msg import RobotControlState
 
@@ -20,12 +21,11 @@ def init(node: Node):
 
     # Create DSD
     dsd = DSD(blackboard, "debug/dsd/localization", node)
-    # Get the location of the package to load the dsd files
-    dirname = os.path.join(get_package_share_directory("bitbots_localization_handler"), "localization_dsd")
+
     # Register dsd related files
-    dsd.register_actions(os.path.join(dirname, "actions"))
-    dsd.register_decisions(os.path.join(dirname, "decisions"))
-    dsd.load_behavior(os.path.join(dirname, "localization.dsd"))
+    dsd.register_actions(localization_dsd.actions.__path__[0])
+    dsd.register_decisions(localization_dsd.decisions.__path__[0])
+    dsd.load_behavior(os.path.join(localization_dsd.__path__[0], "localization.dsd"))
 
     # Create subscribers
     node.create_subscription(
@@ -44,6 +44,9 @@ def init(node: Node):
         blackboard._callback_robot_control_state,
         1,
         callback_group=ReentrantCallbackGroup(),
+    )
+    node.create_subscription(
+        Imu, "/imu/data", blackboard._callback_imu, 1, callback_group=MutuallyExclusiveCallbackGroup()
     )
 
     return dsd

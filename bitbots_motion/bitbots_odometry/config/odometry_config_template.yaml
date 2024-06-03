@@ -1,46 +1,4 @@
-motion_odometry:
-  x_forward_scaling: {
-    type: double,
-    default_value: 1.25,
-    description: "Scaling factor in forward x direction",
-    validation: {
-      bounds<>: [0.5, 1.5]
-    }
-  }
-
-  x_backward_scaling: {
-    type: double,
-    default_value: 0.95,
-    description: "Scaling factor in backward x direction",
-    validation: {
-      bounds<>: [0.5, 1.5]
-    }
-  }
-
-  y_scaling: {
-    type: double,
-    default_value: 1.0,
-    description: "Scaling factor in y direction",
-    validation: {
-      bounds<>: [0.5, 1.5]
-    }
-  }
-
-  yaw_scaling: {
-    type: double,
-    default_value: 0.6,
-    description: "Scaling factor for rotation in yaw direction",
-    validation: {
-      bounds<>: [0.2, 2.5]
-    }
-  }
-
-  publish_walk_odom_tf: {
-    type: bool,
-    default_value: false,
-    description:  "Should odom tf be published"
-  }
-
+support_state_detector:
   k: {
     type: double,
     default_value: 0.97,
@@ -49,8 +7,6 @@ motion_odometry:
       bounds<>: [0.0, 1.0]
     }
   }
-
-      
   m: {
     type: double,
     default_value: 0.95,

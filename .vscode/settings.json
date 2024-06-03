@@ -16,6 +16,7 @@
         "colcon",
         "cornerkick",
         "costmap",
+        "costmaps",
         "cpus",
         "cuda",
         "cudnn",
@@ -27,6 +28,7 @@
         "dtype",
         "dynamixel",
         "dynup",
+        "euler",
         "externproto",
         "fetchrobotics",
         "fieldboundary",
@@ -35,7 +37,9 @@
         "freekick",
         "gamecontroller",
         "gamestate",
+        "gaussian",
         "goalkick",
+        "hexsha",
         "hlvs",
         "holonomic",
         "hostnames",
@@ -62,6 +66,7 @@
         "odom",
         "odometry",
         "particlefilter",
+        "pathfinding",
         "penaltykick",
         "penaltyshoot",
         "pointcloud",
@@ -207,4 +212,8 @@
     "cmake.configureOnOpen": false,
     "editor.formatOnSave": true,
     "editor.defaultFormatter": "charliermarsh.ruff",
+    "restructuredtext.pythonRecommendation.disabled": true,
+    "[xml]": {
+        "editor.defaultFormatter": "DotJoshJohnson.xml"
+    },
 }

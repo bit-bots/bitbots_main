@@ -1,9 +1,3 @@
-"""
-WorldModelCapsule
-^^^^^^^^^^^^^^^^^^
-
-Provides information about the world model.
-"""
 import math
 from typing import TYPE_CHECKING, Dict, Optional, Tuple
 
@@ -31,6 +25,8 @@ from tf_transformations import euler_from_quaternion
 
 
 class WorldModelCapsule:
+    """Provides information about the world model."""
+
     def __init__(self, blackboard: "BodyBlackboard"):
         self._blackboard = blackboard
         self.body_config = get_parameter_dict(self._blackboard.node, "body")
@@ -69,11 +65,15 @@ class WorldModelCapsule:
         self.ball_seen: bool = False
         self.ball_seen_teammate: bool = False
         parameters = get_parameters_from_other_node(
-            self._blackboard.node, "/parameter_blackboard", ["field_length", "field_width", "goal_width"]
+            self._blackboard.node,
+            "/parameter_blackboard",
+            ["field_length", "field_width", "goal_width", "penalty_area_length", "goal_area_length"],
         )
         self.field_length: float = parameters["field_length"]
         self.field_width: float = parameters["field_width"]
         self.goal_width: float = parameters["goal_width"]
+        self.penalty_area_length: float = parameters["penalty_area_length"]
+        self.goal_area_length: float = parameters["goal_area_length"]
         self.map_margin: float = self._blackboard.node.get_parameter("body.map_margin").value
         self.obstacle_costmap_smoothing_sigma: float = self._blackboard.node.get_parameter(
             "body.obstacle_costmap_smoothing_sigma"
@@ -169,6 +169,9 @@ class WorldModelCapsule:
             return self.ball_odom
 
     def get_ball_position_uv(self) -> Tuple[float, float]:
+        """
+        Returns the ball position relative to the robot in the base_footprint frame
+        """
         ball = self.get_best_ball_point_stamped()
         try:
             ball_bfp = self._blackboard.tf_buffer.transform(
@@ -292,7 +295,7 @@ class WorldModelCapsule:
         if reset_ball_filter:  # Reset the ball filter
             result: Trigger.Response = self.reset_ball_filter.call(Trigger.Request())
             if result.success:
-                self._blackboard.node.get_logger().info(f"Received message from ball filter: '{result.message}'")
+                self._blackboard.node.get_logger().debug(f"Received message from ball filter: '{result.message}'")
             else:
                 self._blackboard.node.get_logger().warn(f"Ball filter reset failed with: '{result.message}'")
 
@@ -367,6 +370,10 @@ class WorldModelCapsule:
         ps = PoseStamped()
         ps.header = transform.header
         ps.pose.position = msgify(Point, numpify(transform.transform.translation))
+        ps.pose.orientation.x = transform.transform.rotation.x
+        ps.pose.orientation.y = transform.transform.rotation.y
+        ps.pose.orientation.z = transform.transform.rotation.z
+        ps.pose.orientation.w = transform.transform.rotation.w
         return ps
 
     def get_current_position_transform(self, frame_id: str) -> TransformStamped:

@@ -11,11 +11,15 @@ jobs:
       image: ubuntu:jammy
 
     steps:
+      - name: Cancel outdated jobs
+        uses: fkirc/skip-duplicate-actions@v5
+        with:
+          cancel_others: 'true'
       - name: Set up ROS ecosystem
         uses: ros-tooling/setup-ros@v0.7
 
       - name: Check out repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Configure git to trust repository
         run: git config --global --add safe.directory /__w/bitbots_main/bitbots_main

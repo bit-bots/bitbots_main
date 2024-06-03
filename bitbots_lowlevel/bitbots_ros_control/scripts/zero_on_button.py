@@ -17,10 +17,6 @@ press_time = node.get_clock().now() - Duration(seconds=1.0)
 
 def cb(msg):
     global button_prev_state, press_time
-    print("New msg")
-    print(msg.button1)
-    print(not button_prev_state)
-    print(node.get_clock().now() - press_time > Duration(seconds=1.0))
     if msg.button3 and not button_prev_state and node.get_clock().now() - press_time > Duration(seconds=1.0):
         request = Empty.Request()
         zero_l.call_async(request)

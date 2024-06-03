@@ -1,10 +1,3 @@
-"""
-PathfindingCapsule
-^^^^^^^^^^^
-
-Capsule that handles everything related to pathfinding.
-"""
-
 import math
 from enum import Enum
 from typing import TYPE_CHECKING, Optional
@@ -31,6 +24,8 @@ class BallGoalType(Enum):
 
 
 class PathfindingCapsule:
+    """Capsule for pathfinding related functions."""
+
     def __init__(self, blackboard: "BodyBlackboard", node: Node):
         self.node = node
         self._blackboard = blackboard
@@ -89,6 +84,9 @@ class PathfindingCapsule:
         # send special command to walking to stop it
         msg = Twist()
         msg.angular.x = -1.0
+        # Cancel the path planning
+        self.cancel_goal()
+        # Publish the stop command
         self.direct_cmd_vel_pub.publish(msg)
 
     def calculate_time_to_ball(self):

@@ -31,7 +31,7 @@
       # To be useful for different field sizes, use values in [-1, 1] for x and y
 
       role_positions:
-        goalie: [ -0.95, 0.0 ]
+        goalie: [ -0.7, 0.0 ]
         defense:
           passive: # passive: opponent has kickoff, active: we have kickoff
             # position number 0 = center, 1 = left, 2 = right
@@ -60,7 +60,7 @@
       ball_lost_time: 3.0
 
       # The orientation threshold defining which range (in Degrees) is acceptable as aligned to the goal (in each direction)
-      goal_alignment_orientation_threshold: 20.0
+      goal_alignment_orientation_threshold: 5.0
 
       # When the goal has not been seen for `goal_lost_time` seconds,
       # it is considered lost and will be searched
@@ -110,10 +110,10 @@
 
       # This is the offset the goalie keeps to avoid crashes with poles when blocking balls.
       # The value describes the offset in meters from the goal line.
-      block_position_goal_offset: 0.15
+      block_position_goal_offset: 0.2
 
-      # this factor defines how extreme the goalie reacts to a ball offset
-      block_position_gradient_factor: 4.0
+      # This is the radius in meters of a circle around the goalie in which he is able to block the ball.
+      block_radius_robot: 0.25
 
       # configurations for the use of bitbots_dynamic_kick package
       dynamic_kick:
@@ -148,7 +148,7 @@
       # Range in which the ball far approach point is counted as reached
       ball_far_approach_position_thresh: 0.2
 
-      # We reapproach the ball after it has moved further away than this distance. This includes moveing to the far approach position.
+      # We reapproach the ball after it has moved further away than this distance. This includes moving to the far approach position.
       ball_reapproach_dist: 1.0
 
       # Distance at which the ball is normally approached
@@ -162,8 +162,8 @@
 
       # The position where the supporter robot should place itself in order to accept a pass
       pass_position_x: 0.1
-      pass_position_y: 1
-      supporter_max_x: 4
+      pass_position_y: 1.0
+      supporter_max_x: 4.0
 
       # maximal angle of a ball kick
       max_kick_angle: 1.4  #  (radians)
@@ -178,13 +178,9 @@
       kickoff_min_ball_movement: 0.5
 
       # dribble action
-      dribble_max_speed_x: 0.03
+      dribble_max_speed_x: 0.05
       dribble_max_speed_y: 0.05
-      # Ball angle at which we stop moving forward
-      dribble_ball_heading_x_vel_zero_point: 30
       dribble_p: 0.8
-      dribble_accel_x: 0.01
-      dribble_accel_y: 0.01
 
       # dribble decision
       dribble_orient_threshold: 0.5

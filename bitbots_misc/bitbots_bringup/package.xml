@@ -20,6 +20,7 @@
     <exec_depend>audio_common</exec_depend>
     <exec_depend>bitbots_basler_camera</exec_depend>
     <exec_depend>bitbots_body_behavior</exec_depend>
+    <exec_depend>bitbots_diagnostic</exec_depend>
     <exec_depend>bitbots_dynamic_kick</exec_depend>
     <exec_depend>bitbots_dynup</exec_depend>
     <exec_depend>bitbots_hcm</exec_depend>
@@ -35,6 +36,7 @@
     <exec_depend>humanoid_base_footprint</exec_depend>
     <exec_depend>soccer_ipm</exec_depend>
     <exec_depend>system_monitor</exec_depend>
+    <exec_depend>topic_tools</exec_depend>
     <exec_depend>udp_bridge</exec_depend>
     <exec_depend>wolfgang_description</exec_depend>
     <exec_depend>wolfgang_moveit_config</exec_depend>

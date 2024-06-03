@@ -1,7 +1,6 @@
 from .object_manager import YOEOObjectManager
 from .vision_components import (
     BallDetectionComponent,
-    CameraCapCheckComponent,
     DebugImageComponent,
     FieldDetectionComponent,
     GoalpostDetectionComponent,
@@ -14,7 +13,6 @@ from .vision_components import (
 
 __all__ = [
     "BallDetectionComponent",
-    "CameraCapCheckComponent",
     "DebugImageComponent",
     "FieldDetectionComponent",
     "GoalpostDetectionComponent",

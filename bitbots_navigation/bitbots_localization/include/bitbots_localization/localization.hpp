@@ -202,7 +202,6 @@ class Localization : public rclcpp::Node {
   rclcpp::Time last_stamp_lines = rclcpp::Time(0);
   rclcpp::Time last_stamp_goals = rclcpp::Time(0);
   rclcpp::Time last_stamp_fb_points = rclcpp::Time(0);
-  rclcpp::Time last_stamp_all_measurements = rclcpp::Time(0);
   builtin_interfaces::msg::Time map_odom_tf_last_published_time_ =
       builtin_interfaces::msg::Time(rclcpp::Time(0, 0, RCL_ROS_TIME));
   builtin_interfaces::msg::Time localization_tf_last_published_time_ =
