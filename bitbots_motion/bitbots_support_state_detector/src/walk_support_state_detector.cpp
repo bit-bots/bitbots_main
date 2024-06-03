@@ -1,5 +1,5 @@
-#include <bitbots_odometry/walk_support_state_detector.h>
-namespace bitbots_odometry {
+#include <bitbots_support_state_detector/walk_support_state_detector.hpp>
+namespace bitbots_support_state_detector {
 
 WalkSupportStateDetector::WalkSupportStateDetector()
     : Node("WalkSupportStateDetector"), param_listener_(get_node_parameters_interface()) {
@@ -100,11 +100,11 @@ void WalkSupportStateDetector::pressure_right_callback(bitbots_msgs::msg::FootPr
   }
 }
 
-}  // namespace bitbots_odometry
+}  // namespace bitbots_support_state_detector
 
 int main(int argc, char **argv) {
   rclcpp::init(argc, argv);
-  auto node = std::make_shared<bitbots_odometry::WalkSupportStateDetector>();
+  auto node = std::make_shared<bitbots_support_state_detector::WalkSupportStateDetector>();
 
   rclcpp::Duration timer_duration = rclcpp::Duration::from_seconds(1.0 / 600.0);
   rclcpp::experimental::executors::EventsExecutor exec;

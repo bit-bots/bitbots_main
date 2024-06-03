@@ -1,30 +1,23 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>bitbots_odometry</name>
+  <name>bitbots_support_state_detector</name>
   <version>1.0.13</version>
-  <description>The bitbots_odometry package</description>
+  <description>The bitbots_support_state_detector package. It is used to detect the support state of the robot (meaning which foot is on the ground).</description>
 
-  <maintainer email="5guelden@informatik.uni-hamburg.de">Jasper Güldenstein</maintainer>
+  <maintainer email="7vahl@informatik.uni-hamburg.de">Florian Vahl</maintainer>
 
   <license>MIT</license>
 
-  <author email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</author>
   <author email="7vahl@informatik.uni-hamburg.de">Florian Vahl</author>
-  <author email="jasper@bit-bots.de">Jasper Güldenstein</author>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
   <depend>biped_interfaces</depend>
   <depend>bitbots_docs</depend>
   <depend>bitbots_msgs</depend>
   <depend>bitbots_utils</depend>
-  <depend>message_filters</depend>
-  <depend>nav_msgs</depend>
-  <depend>rot_conv</depend>
-  <depend>sensor_msgs</depend>
-  <depend>tf2_eigen</depend>
-  <depend>tf2_geometry_msgs</depend>
-  <depend>tf2</depend>
+  <depend>rclcpp</depend>
+  <depend>generate_parameter_library</depend>
 
   <export>
     <bitbots_documentation>
