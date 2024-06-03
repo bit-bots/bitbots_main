@@ -9,7 +9,6 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(ament_index_cpp REQUIRED)
 find_package(backward_ros REQUIRED)
-find_package(bitbots_parameter_blackboard)
 find_package(bitbots_utils REQUIRED)
 find_package(Boost COMPONENTS filesystem REQUIRED)
 find_package(builtin_interfaces REQUIRED)
@@ -89,7 +88,6 @@ ament_target_dependencies(
   localization
   ament_cmake
   ament_index_cpp
-  bitbots_parameter_blackboard
   bitbots_utils
   Boost
   cv_bridge
