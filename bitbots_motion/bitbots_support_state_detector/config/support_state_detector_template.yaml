@@ -7,23 +7,6 @@ support_state_detector:
       bounds<>: [0.0, 1.0]
     }
   }
-  m: {
-    type: double,
-    default_value: 0.95,
-    description: "Factor for lowpass filtering the step duration. This only plays a role if temporal_step_offset is not 0.",
-    validation: {
-      bounds<>: [0.0, 1.0]
-    }
-  }
-
-  temporal_step_offset_factor: {
-    type: double,
-    default_value: 0.0,
-    description: "Offset factor for taking the time stamp when the robot really stands on one foot. 1 means waiting until the steps is finished, 0 means taking the first time stamp when robots start standing",
-    validation: {
-      bounds<>: [0.0, 1.0]
-    }
-  }
 
   summed_pressure_threshold_right: {
     type: int,

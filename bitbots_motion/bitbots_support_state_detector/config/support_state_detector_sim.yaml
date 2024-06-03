@@ -1,8 +1,6 @@
 support_state_detector:
   ros__parameters:
     k: 0.7
-    m: 0.95
-    temporal_step_offset_factor: 0.0
     summed_pressure_threshold_right: 30
     summed_pressure_threshold_left: 30
     foot_pressure_topic_left: "foot_pressure_left/raw"

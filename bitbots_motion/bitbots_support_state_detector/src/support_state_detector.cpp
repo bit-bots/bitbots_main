@@ -16,41 +16,39 @@ class SupportStateDetector : public rclcpp::Node {
         pressure_left_sub_(this->create_subscription<bitbots_msgs::msg::FootPressure>(
             config_.foot_pressure_topic_left, 1, std::bind(&SupportStateDetector::pressure_left_callback, this, _1))),
         pressure_right_sub_(this->create_subscription<bitbots_msgs::msg::FootPressure>(
-            config_.foot_pressure_topic_right, 1,
-            std::bind(&SupportStateDetector::pressure_right_callback, this, _1))),
+            config_.foot_pressure_topic_right, 1, std::bind(&SupportStateDetector::pressure_right_callback, this, _1))),
         pub_foot_pressure_support_state_(
             this->create_publisher<biped_interfaces::msg::Phase>("foot_pressure/walk_support_state", 1)),
-        pub_summed_pressure_left_(this->create_publisher<std_msgs::msg::Float64>("foot_pressure/summed_pressure_left", 1)),
+        pub_summed_pressure_left_(
+            this->create_publisher<std_msgs::msg::Float64>("foot_pressure/summed_pressure_left", 1)),
         pub_summed_pressure_right_(
             this->create_publisher<std_msgs::msg::Float64>("foot_pressure/summed_pressure_right", 1)) {
-    curr_stance_.phase = 2;
-    up_right_ = this->now();
-    up_left_ = this->now();
+    curr_stance_.phase = biped_interfaces::msg::Phase::DOUBLE_STANCE;
   }
 
   void loop() {
-    config_ = param_listener_.get_params();
-    int curr_stand_left = curr_stand_left_;
-    int curr_stand_right = curr_stand_right_;
+    // Update parameters if they have changed
+    if (param_listener_.is_old(config_)) {
+      config_ = param_listener_.get_params();
+    }
 
+    // Build the phase message based on the current stance
     biped_interfaces::msg::Phase phase;
-    if (curr_stand_left && !curr_stand_right) {
+    if (curr_stand_left_ and !curr_stand_right_) {
       phase.phase = biped_interfaces::msg::Phase::LEFT_STANCE;
-      phase.header.stamp = this->now() + rclcpp::Duration::from_nanoseconds(
-                                             int(config_.temporal_step_offset_factor * step_duration_left_));
-    } else if (!curr_stand_left && curr_stand_right) {
+    } else if (!curr_stand_left_ and curr_stand_right_) {
       phase.phase = biped_interfaces::msg::Phase::RIGHT_STANCE;
-      phase.header.stamp = this->now() + rclcpp::Duration::from_nanoseconds(
-                                             int(config_.temporal_step_offset_factor * step_duration_right_));
     } else {  // if both are high its double support, but if both are too low, pressure is shared on both feet
       phase.phase = biped_interfaces::msg::Phase::DOUBLE_STANCE;
-      phase.header.stamp = this->now() + rclcpp::Duration::from_nanoseconds(
-                                             (int(config_.temporal_step_offset_factor * step_duration_left_) +
-                                              int(config_.temporal_step_offset_factor * step_duration_right_)) /
-                                             2);
     }
+
+    // Only send message if phase has changed
     if (phase.phase != curr_stance_.phase) {
+      // Add timestamp to message
+      phase.header.stamp = this->now();
+      // Store current phase
       curr_stance_.phase = phase.phase;
+      // Publish phase
       pub_foot_pressure_support_state_->publish(phase);
     }
   }
@@ -59,44 +57,26 @@ class SupportStateDetector : public rclcpp::Node {
   void pressure_left_callback(bitbots_msgs::msg::FootPressure msg) {
     float_t summed_pressure = msg.left_back + msg.left_front + msg.right_front + msg.right_back;
     pressure_filtered_left_ = (1 - config_.k) * summed_pressure + config_.k * pressure_filtered_left_;
-    std_msgs::msg::Float64 pressure_msg;
-    pressure_msg.data = pressure_filtered_left_;
+
+    curr_stand_left_ = pressure_filtered_left_ > config_.summed_pressure_threshold_left;
+
     if (config_.debug) {
+      std_msgs::msg::Float64 pressure_msg;
+      pressure_msg.data = pressure_filtered_left_;
       pub_summed_pressure_left_->publish(pressure_msg);
-    }
-    if (pressure_filtered_left_ > config_.summed_pressure_threshold_left) {
-      if (curr_stand_left_ != true) {
-        up_left_ = this->now();
-        curr_stand_left_ = true;
-      }
-    } else {
-      if (curr_stand_left_ != false) {
-        step_duration_left_ =
-            (1 - config_.m) * (this->now().nanoseconds() - up_left_.nanoseconds()) + config_.m * step_duration_left_;
-        curr_stand_left_ = false;
-      }
     }
   }
 
   void pressure_right_callback(bitbots_msgs::msg::FootPressure msg) {
     float_t summed_pressure = msg.left_back + msg.left_front + msg.right_front + msg.right_back;
     pressure_filtered_right_ = (1 - config_.k) * summed_pressure + config_.k * pressure_filtered_right_;
-    std_msgs::msg::Float64 pressure_msg;
-    pressure_msg.data = pressure_filtered_right_;
+
+    curr_stand_right_ = pressure_filtered_right_ > config_.summed_pressure_threshold_right;
+
     if (config_.debug) {
+      std_msgs::msg::Float64 pressure_msg;
+      pressure_msg.data = pressure_filtered_right_;
       pub_summed_pressure_right_->publish(pressure_msg);
-    }
-    if (pressure_filtered_right_ > config_.summed_pressure_threshold_right) {
-      if (curr_stand_right_ != true) {
-        up_right_ = this->now();
-        curr_stand_right_ = true;
-      }
-    } else {
-      if (curr_stand_right_ != false) {
-        step_duration_right_ =
-            (1 - config_.m) * (this->now().nanoseconds() - up_right_.nanoseconds()) + config_.m * step_duration_right_;
-        curr_stand_right_ = false;
-      }
     }
   }
 
@@ -113,14 +93,10 @@ class SupportStateDetector : public rclcpp::Node {
   rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr pub_summed_pressure_right_;
 
   // Declare variables
-  bool curr_stand_left_;
-  bool curr_stand_right_;
+  bool curr_stand_left_ = false;
+  bool curr_stand_right_ = false;
   float_t pressure_filtered_left_ = 0;
   float_t pressure_filtered_right_ = 0;
-  long step_duration_right_ = 0;
-  rclcpp::Time up_right_;
-  long step_duration_left_ = 0;
-  rclcpp::Time up_left_;
   biped_interfaces::msg::Phase curr_stance_;
 };
 
