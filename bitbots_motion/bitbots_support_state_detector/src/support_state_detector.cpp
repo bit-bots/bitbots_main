@@ -7,31 +7,24 @@
 
 using std::placeholders::_1;
 
-class WalkSupportStateDetector : public rclcpp::Node {
+class SupportStateDetector : public rclcpp::Node {
  public:
-  WalkSupportStateDetector() : Node("WalkSupportStateDetector"), param_listener_(get_node_parameters_interface()) {
-    config_ = param_listener_.get_params();
-    // if sim use raw, if not sim use filtered
-    pressure_left_sub_ = this->create_subscription<bitbots_msgs::msg::FootPressure>(
-        config_.foot_pressure_topic_left, 1, std::bind(&WalkSupportStateDetector::pressure_left_callback, this, _1));
-    pressure_right_sub_ = this->create_subscription<bitbots_msgs::msg::FootPressure>(
-        config_.foot_pressure_topic_right, 1, std::bind(&WalkSupportStateDetector::pressure_right_callback, this, _1));
-    pub_foot_pressure_support_state_ =
-        this->create_publisher<biped_interfaces::msg::Phase>("foot_pressure/walk_support_state", 1);
-
-    // if debug, publish a debug for summed pressure
-    if (config_.debug) {
-      pub_summed_pressure_left_ =
-          this->create_publisher<std_msgs::msg::Float64>("foot_pressure/summed_pressure_left", 1);
-      pub_summed_pressure_right_ =
-          this->create_publisher<std_msgs::msg::Float64>("foot_pressure/summed_pressure_right", 1);
-    }
+  SupportStateDetector()
+      : Node("SupportStateDetector"),
+        param_listener_(get_node_parameters_interface()),
+        config_(param_listener_.get_params()),
+        pressure_left_sub_(this->create_subscription<bitbots_msgs::msg::FootPressure>(
+            config_.foot_pressure_topic_left, 1, std::bind(&SupportStateDetector::pressure_left_callback, this, _1))),
+        pressure_right_sub_(this->create_subscription<bitbots_msgs::msg::FootPressure>(
+            config_.foot_pressure_topic_right, 1,
+            std::bind(&SupportStateDetector::pressure_right_callback, this, _1))),
+        pub_foot_pressure_support_state_(
+            this->create_publisher<biped_interfaces::msg::Phase>("foot_pressure/walk_support_state", 1)),
+        pub_summed_pressure_left_(this->create_publisher<std_msgs::msg::Float64>("foot_pressure/summed_pressure_left", 1)),
+        pub_summed_pressure_right_(
+            this->create_publisher<std_msgs::msg::Float64>("foot_pressure/summed_pressure_right", 1)) {
     curr_stance_.phase = 2;
-    pressure_filtered_right_ = 0;
-    pressure_filtered_left_ = 0;
-    step_duration_right_ = 0;
     up_right_ = this->now();
-    step_duration_left_ = 0;
     up_left_ = this->now();
   }
 
@@ -107,39 +100,35 @@ class WalkSupportStateDetector : public rclcpp::Node {
     }
   }
 
+  // Declare parameter listener and struct from the generate_parameter_library
+  support_state_detector::ParamListener param_listener_;
+  support_state_detector::Params config_;
+
+  // Declare subscriptions and publishers
   rclcpp::Subscription<bitbots_msgs::msg::FootPressure>::SharedPtr pressure_left_sub_;
   rclcpp::Subscription<bitbots_msgs::msg::FootPressure>::SharedPtr pressure_right_sub_;
   rclcpp::Publisher<biped_interfaces::msg::Phase>::SharedPtr pub_foot_pressure_support_state_;
-
-  int curr_stand_left_;
-  int curr_stand_right_;
-  int prev_stand_right_;
-  int prev_stand_left_;
-  float_t pressure_filtered_left_;
-  float_t pressure_filtered_right_;
-
-  long step_duration_right_;
-  rclcpp::Time up_right_;
-
-  long step_duration_left_;
-  rclcpp::Time up_left_;
-  biped_interfaces::msg::Phase curr_stance_;
-
-  // Declare parameter listener and struct from the generate_parameter_library
-  support_state_detector::ParamListener param_listener_;
-  // Datastructure to hold all parameters, which is build from the schema in the 'parameters.yaml'
-  support_state_detector::Params config_;
-
   // if debug is true, publish a debug for summed pressure
   rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr pub_summed_pressure_left_;
   rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr pub_summed_pressure_right_;
+
+  // Declare variables
+  bool curr_stand_left_;
+  bool curr_stand_right_;
+  float_t pressure_filtered_left_ = 0;
+  float_t pressure_filtered_right_ = 0;
+  long step_duration_right_ = 0;
+  rclcpp::Time up_right_;
+  long step_duration_left_ = 0;
+  rclcpp::Time up_left_;
+  biped_interfaces::msg::Phase curr_stance_;
 };
 
 int main(int argc, char **argv) {
   rclcpp::init(argc, argv);
-  auto node = std::make_shared<WalkSupportStateDetector>();
+  auto node = std::make_shared<SupportStateDetector>();
 
-  rclcpp::Duration timer_duration = rclcpp::Duration::from_seconds(1.0 / 600.0);
+  rclcpp::Duration timer_duration = rclcpp::Duration::from_seconds(1.0 / 500.0);
   rclcpp::experimental::executors::EventsExecutor exec;
   exec.add_node(node);
 
