@@ -4,6 +4,7 @@
 #include <std_msgs/msg/float64.hpp>
 
 #include "support_state_detector_parameters.hpp"
+
 using std::placeholders::_1;
 
 class WalkSupportStateDetector : public rclcpp::Node {

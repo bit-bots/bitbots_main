@@ -24,8 +24,8 @@ add_executable(support_state_detector src/support_state_detector.cpp)
 target_link_libraries(support_state_detector rclcpp::rclcpp
                       support_state_detector_parameters)
 
-ament_target_dependencies(support_state_detector biped_interfaces
-                          bitbots_msgs generate_parameter_library std_msgs)
+ament_target_dependencies(support_state_detector biped_interfaces bitbots_msgs
+                          generate_parameter_library std_msgs)
 
 enable_bitbots_docs()
 
