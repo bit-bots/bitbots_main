@@ -6,7 +6,7 @@
     <let if="$(env IS_ROBOT false)" name="taskset" value="taskset -c 3,4"/>
     <let unless="$(env IS_ROBOT false)" name="taskset" value=""/>
 
-    <include file="$(find-pkg-share bitbots_utils)/launch/parameter_blackboard.launch" >
+    <include file="$(find-pkg-share bitbots_parameter_blackboard)/launch/parameter_blackboard.launch" >
         <arg name="sim" value="$(var sim)"/>
     </include>
 

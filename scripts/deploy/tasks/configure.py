@@ -60,7 +60,7 @@ class Configure(AbstractTaskWhichRequiresSudo):
             :return: The result of the task.
             """
             print_info(f"Configuring game settings on {connection.host}...")
-            cmd = f"python3 {self._remote_workspace}/src/bitbots_misc/bitbots_utils/bitbots_utils/game_settings.py"
+            cmd = f"python3 {self._remote_workspace}/src/bitbots_misc/bitbots_parameter_blackboard/bitbots_parameter_blackboard/game_settings.py"
 
             print_debug(f"Calling {cmd}")
             results = connection.run(

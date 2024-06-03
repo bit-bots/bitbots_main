@@ -33,11 +33,11 @@ class CostmapCapsule:
         self.base_footprint_frame: str = self._blackboard.node.get_parameter("base_footprint_frame").value
 
         parameters = get_parameters_from_other_node(
-            self._blackboard.node, "/parameter_blackboard", ["field_length", "field_width", "goal_width"]
+            self._blackboard.node, "/parameter_blackboard", ["field.size.x", "field.size.y", "field.goal.width"]
         )
-        self.field_length: float = parameters["field_length"]
-        self.field_width: float = parameters["field_width"]
-        self.goal_width: float = parameters["goal_width"]
+        self.field_length: float = parameters["field.size.x"]
+        self.field_width: float = parameters["field.size.y"]
+        self.goal_width: float = parameters["field.goal.width"]
         self.map_margin: float = self.body_config["map_margin"]
         self.obstacle_costmap_smoothing_sigma: float = self.body_config["obstacle_costmap_smoothing_sigma"]
         self.obstacle_cost: float = self.body_config["obstacle_cost"]

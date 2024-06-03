@@ -42,10 +42,10 @@ class RobotStateDistributionStartLeft : public particle_filter::StateDistributio
   std::pair<double, double> field_size;
 };
 
-class RobotStateDistributionStartRight : public particle_filter::StateDistribution<RobotState> {
+class RobotStateDistributionOwnSideline : public particle_filter::StateDistribution<RobotState> {
  public:
-  RobotStateDistributionStartRight(particle_filter::CRandomNumberGenerator &random_number_generator,
-                                   std::pair<double, double> field_size);
+  RobotStateDistributionOwnSideline(particle_filter::CRandomNumberGenerator &random_number_generator,
+                                    std::pair<double, double> field_size);
 
   const RobotState draw() const override;
 
@@ -54,10 +54,10 @@ class RobotStateDistributionStartRight : public particle_filter::StateDistributi
   double field_x, field_y;
 };
 
-class RobotStateDistributionLeftHalf : public particle_filter::StateDistribution<RobotState> {
+class RobotStateDistributionOpponentHalf : public particle_filter::StateDistribution<RobotState> {
  public:
-  RobotStateDistributionLeftHalf(particle_filter::CRandomNumberGenerator &random_number_generator,
-                                 std::pair<double, double> field_size);
+  RobotStateDistributionOpponentHalf(particle_filter::CRandomNumberGenerator &random_number_generator,
+                                     std::pair<double, double> field_size);
 
   const RobotState draw() const override;
 
@@ -69,10 +69,10 @@ class RobotStateDistributionLeftHalf : public particle_filter::StateDistribution
   double max_y_;
 };
 
-class RobotStateDistributionRightHalf : public particle_filter::StateDistribution<RobotState> {
+class RobotStateDistributionOwnHalf : public particle_filter::StateDistribution<RobotState> {
  public:
-  RobotStateDistributionRightHalf(particle_filter::CRandomNumberGenerator &random_number_generator,
-                                  std::pair<double, double> field_size);
+  RobotStateDistributionOwnHalf(particle_filter::CRandomNumberGenerator &random_number_generator,
+                                std::pair<double, double> field_size);
 
   const RobotState draw() const override;
 
