@@ -61,5 +61,5 @@ class PressureConverter {
   bool scaleCallback(const std::shared_ptr<bitbots_msgs::srv::FootScale::Request> req,
                      std::shared_ptr<bitbots_msgs::srv::FootScale::Response> resp);
   void collectMessages();
-  void saveYAML();
+  void showYAML();
 };
