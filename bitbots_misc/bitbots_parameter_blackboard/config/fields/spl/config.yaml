@@ -15,8 +15,5 @@ parameter_blackboard:
         penalty_area:
           size:
             x: 1.65   # The distance from the goal line to the boundary of the penalty area
-        goal_area:
-          size:
-            x: 0.6   # The distance from the goal line to the boundary of the goal area
       goal:
         width: 1.5   # The width of the goal (center of one goal post to the other goal post)
