@@ -16,32 +16,20 @@ find_package(rclcpp REQUIRED)
 
 add_compile_options(-Wall -Werror -Wno-unused)
 
-generate_parameter_library(
-  support_state_detector_parameters
-  config/support_state_detector_template.yaml
-)
+generate_parameter_library(support_state_detector_parameters
+                           config/support_state_detector_template.yaml)
 
-# Include
-include_directories(include)
+add_executable(support_state_detector src/support_state_detector.cpp)
 
-add_executable(walk_support_state_detector src/walk_support_state_detector.cpp)
+target_link_libraries(support_state_detector rclcpp::rclcpp
+                      support_state_detector_parameters)
 
-target_link_libraries(
-  walk_support_state_detector 
-  rclcpp::rclcpp
-  support_state_detector_parameters)
-
-ament_target_dependencies(
-  walk_support_state_detector
-  biped_interfaces
-  bitbots_msgs
-  generate_parameter_library
-  std_msgs
-)
+ament_target_dependencies(support_state_detector biped_interfaces
+                          bitbots_msgs generate_parameter_library std_msgs)
 
 enable_bitbots_docs()
 
-install(TARGETS walk_support_state_detector DESTINATION lib/${PROJECT_NAME})
+install(TARGETS support_state_detector DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 
