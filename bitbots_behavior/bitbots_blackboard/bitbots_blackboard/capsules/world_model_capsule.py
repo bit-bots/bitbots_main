@@ -35,7 +35,6 @@ class WorldModelCapsule:
 
         self.odom_frame: str = self._blackboard.node.get_parameter("odom_frame").value
         self.map_frame: str = self._blackboard.node.get_parameter("map_frame").value
-        self.ball_frame: str = self._blackboard.node.get_parameter("ball_frame").value
         self.base_footprint_frame: str = self._blackboard.node.get_parameter("base_footprint_frame").value
 
         self.ball = PointStamped()  # The ball in the base footprint frame
