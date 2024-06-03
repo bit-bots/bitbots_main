@@ -32,22 +32,22 @@ class PressureConverter {
  private:
   rclcpp::Node::SharedPtr nh_;
 
-  // Create publisher and subscriber
-  rclcpp::Publisher<bitbots_msgs::msg::FootPressure>::SharedPtr filtered_pub_;
-  rclcpp::Publisher<geometry_msgs::msg::PointStamped>::SharedPtr cop_pub_;
-  std::array<rclcpp::Publisher<geometry_msgs::msg::WrenchStamped>::SharedPtr, 5> wrench_pubs_;
-  rclcpp::Subscription<bitbots_msgs::msg::FootPressure>::SharedPtr sub_;
-  std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
-
-  const char side_;
-  const std::string wrench_topics_[5] = {"l_front", "l_back", "r_front", "r_back", "cop"};
-  std::array<std::string, 4> wrench_frames_;
+  const std::string side_;
+  const std::vector<std::string> wrench_topics_;
+  std::vector<std::string> wrench_frames_;
   std::array<double, 4> zero_, scale_;
   std::array<std::vector<double>, 4> previous_values_, calibration_buffer_;
   bool save_calibration_buffer_ = false;
   int current_index_ = 0;
   const int average_, calibration_buffer_length_;
   const double cop_threshold_;
+
+  // Create publisher and subscriber
+  rclcpp::Publisher<bitbots_msgs::msg::FootPressure>::SharedPtr filtered_pub_;
+  rclcpp::Publisher<geometry_msgs::msg::PointStamped>::SharedPtr cop_pub_;
+  std::vector<rclcpp::Publisher<geometry_msgs::msg::WrenchStamped>::SharedPtr> wrench_pubs_;
+  rclcpp::Subscription<bitbots_msgs::msg::FootPressure>::SharedPtr sub_;
+  std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
 
   rclcpp::Service<std_srvs::srv::Empty>::SharedPtr zero_service_;
   rclcpp::Service<bitbots_msgs::srv::FootScale>::SharedPtr scale_service_;

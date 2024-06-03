@@ -5,34 +5,21 @@ using std::placeholders::_2;
 PressureConverter::PressureConverter(rclcpp::Node::SharedPtr nh, pressure_converter::Params::Common config,
                                      FootConfig foot_config, char side)
     : nh_(nh),
-      filtered_pub_(nh_->create_publisher<bitbots_msgs::msg::FootPressure>(foot_config.topic + "/filtered", 1)),
-      cop_pub_(nh_->create_publisher<geometry_msgs::msg::PointStamped>("/cop_" + side, 1)),
-      // Create wrench publishers
-      wrench_pubs_([this](auto &topic) {
-        std::array<rclcpp::Publisher<geometry_msgs::msg::WrenchStamped>::SharedPtr, 5> arr;
-        for (size_t i = 0; i < arr.size(); i++) {
-          arr[i] = nh_->create_publisher<geometry_msgs::msg::WrenchStamped>(topic + "/wrench/" + wrench_topics_[i], 1);
-        }
-        return arr;
-      }(foot_config.topic)),  // cppcheck-suppress internalAstError
-      sub_(nh_->create_subscription<bitbots_msgs::msg::FootPressure>(
-          foot_config.topic + "/raw", 1, std::bind(&PressureConverter::pressureCallback, this, _1))),
-      tf_broadcaster_(std::make_unique<tf2_ros::TransformBroadcaster>(*nh_)),
-      side_(side),
+      side_(std::to_string(side)),
+      wrench_topics_({"l_front", "l_back", "r_front", "r_back", "cop"}),
       wrench_frames_([](auto &wrench_topics, auto &side) {
-        // Copy array into new array
-        std::array<std::string, 4> arr;
-        for (size_t i = 0; i < 5; i++) {
-          arr[i] = side + "_cleat_" + wrench_topics[i];
+        std::vector<std::string> vec;
+        for (size_t i = 0; i < wrench_topics.size(); i++) {
+          vec.push_back(side + "_cleat_" + wrench_topics[i]);
         }
-        return arr;
-      }(wrench_topics_, side)),
+        return vec;
+      }(wrench_topics_, side_)),
       zero_([](const std::vector<double> &vec) {
         // Copy first 4 elements of the config into an new array
         std::array<double, 4> arr;
         std::copy_n(vec.begin(), 4, arr.begin());
         return arr;
-      }(foot_config.zero)),
+      }(foot_config.zero)),  // cppcheck-suppress internalAstError
       scale_([](const std::vector<double> &vec) {
         // Copy first 4 elements of the config into an new array
         std::array<double, 4> arr;
@@ -50,6 +37,20 @@ PressureConverter::PressureConverter(rclcpp::Node::SharedPtr nh, pressure_conver
       average_(config.average),
       calibration_buffer_length_(config.calibration_buffer_length),
       cop_threshold_(config.cop_threshold),
+      filtered_pub_(nh_->create_publisher<bitbots_msgs::msg::FootPressure>(foot_config.topic + "/filtered", 1)),
+      cop_pub_(nh_->create_publisher<geometry_msgs::msg::PointStamped>("/cop_" + side_, 1)),
+      // Create wrench publishers
+      wrench_pubs_([this](auto &foot_topic, auto &wrench_topics) {
+        std::vector<rclcpp::Publisher<geometry_msgs::msg::WrenchStamped>::SharedPtr> vec;
+        for (size_t i = 0; i < wrench_topics.size(); i++) {
+          vec.push_back(
+              nh_->create_publisher<geometry_msgs::msg::WrenchStamped>(foot_topic + "/wrench/" + wrench_topics[i], 1));
+        }
+        return vec;
+      }(foot_config.topic, wrench_topics_)),  // cppcheck-suppress unmatchedSuppression
+      sub_(nh_->create_subscription<bitbots_msgs::msg::FootPressure>(
+          foot_config.topic + "/raw", 1, std::bind(&PressureConverter::pressureCallback, this, _1))),
+      tf_broadcaster_(std::make_unique<tf2_ros::TransformBroadcaster>(*nh_)),
       zero_service_(nh_->create_service<std_srvs::srv::Empty>(
           foot_config.topic + "/set_foot_zero", std::bind(&PressureConverter::zeroCallback, this, _1, _2))),
       scale_service_(nh_->create_service<bitbots_msgs::srv::FootScale>(
