@@ -69,14 +69,12 @@ class WorldModelCapsule:
             "/parameter_blackboard",
             [
                 "field.goal.width",
-                "field.markings.goal_area.size.x",
                 "field.markings.penalty_area.size.x",
                 "field.size.x",
                 "field.size.y",
             ],
         )
         self.goal_width: float = parameters["field.goal.width"]
-        self.goal_area_size_x: float = parameters["field.markings.goal_area.size.x"]
         self.penalty_area_size_x: float = parameters["field.markings.penalty_area.size.x"]
         self.field_length: float = parameters["field.size.x"]
         self.field_width: float = parameters["field.size.y"]
