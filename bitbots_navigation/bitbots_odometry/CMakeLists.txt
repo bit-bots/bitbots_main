@@ -30,13 +30,10 @@ add_executable(odometry_fuser src/odometry_fuser.cpp)
 
 add_executable(walk_support_state_detector src/walk_support_state_detector.cpp)
 
-target_link_libraries(
-  walk_support_state_detector
-  rclcpp::rclcpp
-  odometry_parameters
-)
+target_link_libraries(walk_support_state_detector rclcpp::rclcpp
+                      odometry_parameters)
 
-## Specify libraries to link a library or executable target against
+# Specify libraries to link a library or executable target against
 ament_target_dependencies(
   odometry_fuser
   ament_cmake
@@ -50,6 +47,7 @@ ament_target_dependencies(
   rclcpp
   rot_conv
   sensor_msgs
+  std_msgs
   tf2
   tf2_eigen
   tf2_geometry_msgs
@@ -67,11 +65,9 @@ enable_bitbots_docs()
 
 install(TARGETS odometry_fuser DESTINATION lib/${PROJECT_NAME})
 
-install(TARGETS walk_support_state_detector
-        DESTINATION lib/${PROJECT_NAME})
+install(TARGETS walk_support_state_detector DESTINATION lib/${PROJECT_NAME})
 
-install(DIRECTORY launch
-        DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 
 install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
 
