@@ -3,7 +3,7 @@ walking:
     engine:
       double_support_ratio: 0.05
       foot_distance: 0.2
-      foot_rise: 0.032
+      foot_rise: 0.05
       freq: 1.25
       trunk_height: 0.38
       trunk_phase: -0.1
@@ -59,8 +59,8 @@ walking:
 
       pressure_phase_reset_active: False
       ground_min_pressure: 1.5
-      phase_reset_phase: 0.25
-      joint_min_effort: 35.0
+      phase_reset_phase: 0.99
+      joint_min_effort: 2.0
       effort_phase_reset_active: False
 
 walk_pid_trunk_fused_pitch:

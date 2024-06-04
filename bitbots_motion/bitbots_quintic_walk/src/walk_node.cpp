@@ -130,7 +130,7 @@ void WalkNode::run() {
   walk_engine_.config_ = config_.engine;
   // Phase reset can only work if one phase resetting method is active and this might have changed due to parameter
   // changes
-  walk_engine_.setPhaseRest(config_.node.effort_phase_reset_active || config_.node.pressure_phase_reset_active);
+  walk_engine_.setPhaseRest(true);
   // Pass params to other components
   ik_.setIKTimeout(config_.node.ik_timeout);
   walk_engine_.setPauseDuration(config_.node.pause_duration);
@@ -442,6 +442,8 @@ void WalkNode::imuCb(const sensor_msgs::msg::Imu::SharedPtr msg) {
   roll_vel_ = msg->angular_velocity.x;
   pitch_vel_ = msg->angular_velocity.y;
 
+  imu_y_acc = msg->linear_acceleration.y * 0.1 + imu_y_acc * (1 - 0.1);
+
   if (config_.node.imu_active) {
     // compute the pitch offset to the currently wanted pitch of the engine
     double wanted_pitch = walk_engine_.getWantedTrunkPitch();
@@ -486,18 +488,17 @@ void WalkNode::checkPhaseRestAndReset() {
   // phase has to be far enough (almost at end of step) so that the foot has already lifted from the ground
   // otherwise we will always do phase reset in the beginning of the step
   double phase = walk_engine_.getPhase();
-  double phase_reset_phase = walk_engine_.getPhaseResetPhase();
+  double phase_reset_phase = 0.48;
+
+  // Log phase for debugging
+  RCLCPP_INFO(this->get_logger(), "Phase: %f , Phase reset phase: %f , IMU y acc: %f", phase, phase_reset_phase,
+              imu_y_acc);
 
   if ((phase > phase_reset_phase && phase < 0.5) || (phase > 0.5 + phase_reset_phase)) {
     // check if we want to perform a phase reset
-    if (config_.node.pressure_phase_reset_active && current_fly_pressure_ > config_.node.ground_min_pressure) {
+    if (std::abs(imu_y_acc) < config_.node.joint_min_effort) {
       // reset phase by using pressure sensors
       walk_engine_.endStep();
-    } else if (config_.node.effort_phase_reset_active && current_fly_effort_ > config_.node.joint_min_effort) {
-      // reset phase by using joint efforts
-      walk_engine_.endStep();
-      RCLCPP_INFO(this->get_logger(), "Phase reset by joint effort at phase %f with combined effort %f", phase,
-                  current_fly_effort_);
     }
   }
 }

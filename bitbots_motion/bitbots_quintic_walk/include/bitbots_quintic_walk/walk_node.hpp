@@ -193,6 +193,8 @@ class WalkNode : public rclcpp::Node {
   double current_fly_pressure_;
   double current_fly_effort_;
 
+  double imu_y_acc = 0;
+
   double roll_vel_;
   double pitch_vel_;
 
