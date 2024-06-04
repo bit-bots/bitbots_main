@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<launch>
+    <let if="$(env IS_ROBOT false)" name="taskset" value="taskset -c 6,7"/>
+    <let unless="$(env IS_ROBOT false)" name="taskset" value=""/>
+
+    <node name="bitbots_map_publisher" pkg="bitbots_map_publisher" exec="bitbots_map_publisher" launch-prefix="$(var taskset)"/>
+</launch>
