@@ -11,14 +11,13 @@ from filterpy.kalman import KalmanFilter
 from geometry_msgs.msg import Point, PoseWithCovarianceStamped, TwistWithCovarianceStamped
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.duration import Duration
-from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 from soccer_vision_3d_msgs.msg import Ball, BallArray
 from std_msgs.msg import Header
 from std_srvs.srv import Trigger
 from tf2_geometry_msgs import PointStamped
 
-from bitbots_ball_filter.ball_filter_parameters import BallFilter as Parameters
+from bitbots_ball_filter.ball_filter_parameters import bitbots_ball_filter as parameters
 from bitbots_msgs.msg import PoseWithCertaintyStamped
 
 
@@ -47,7 +46,7 @@ class BallFilter(Node):
         self.logger = self.get_logger()
         self.tf_buffer = Buffer(self, Duration(seconds=2))
         # Setup dynamic reconfigure config
-        self.param_listener = Parameters.ParamListener(self)
+        self.param_listener = parameters.ParamListener(self)
         self.config = self.param_listener.get_params()
 
         # creates kalmanfilter with 4 dimensions
@@ -307,10 +306,11 @@ def main(args=None) -> None:
 
     node = BallFilter()
     # Number of executor threads is the number of MutiallyExclusiveCallbackGroups + 1 thread for the executor
-    ex = MultiThreadedExecutor(num_threads=3)
-    ex.add_node(node)
+    # ex = MultiThreadedExecutor(num_threads=3)
+    # ex.add_node(node)
     try:
-        ex.spin()
+        # ex.spin()
+        rclpy.spin(node)
     except KeyboardInterrupt:
         pass
     node.destroy_node()

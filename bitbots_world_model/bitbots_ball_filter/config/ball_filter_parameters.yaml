@@ -1,4 +1,4 @@
-BallFilter:
+bitbots_ball_filter:
   ball_subscribe_topic: {
     type: string,
     default_value: 'balls_relative',

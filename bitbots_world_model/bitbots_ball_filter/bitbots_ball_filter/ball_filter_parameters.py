@@ -13,7 +13,7 @@ import rclpy
 from generate_parameter_library_py.python_validators import ParameterValidators
 
 
-class BallFilter:
+class bitbots_ball_filter:
     class Params:
         # for detecting if the parameter struct has been updated
         stamp_ = Time()
@@ -35,9 +35,9 @@ class BallFilter:
     class ParamListener:
         def __init__(self, node, prefix=""):
             self.prefix_ = prefix
-            self.params_ = BallFilter.Params()
+            self.params_ = bitbots_ball_filter.Params()
             self.node_ = node
-            self.logger_ = rclpy.logging.get_logger("BallFilter." + prefix)
+            self.logger_ = rclpy.logging.get_logger("bitbots_ball_filter." + prefix)
 
             self.declare_params()
 
