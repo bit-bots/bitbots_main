@@ -4,7 +4,7 @@
     <arg name="sim" default="false" description="true: activates simulation time" />
 
     <!-- load the global parameters -->
-    <include file="$(find-pkg-share bitbots_utils)/launch/parameter_blackboard.launch" />
+    <include file="$(find-pkg-share bitbots_parameter_blackboard)/launch/parameter_blackboard.launch" />
 
     <node pkg="bitbots_team_communication" exec="team_comm.py" output="screen">
         <param from="$(find-pkg-share bitbots_team_communication)/config/team_communication_config.yaml"/>

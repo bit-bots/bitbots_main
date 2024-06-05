@@ -421,7 +421,10 @@ def install_rosdeps(target):
 
 def configure_game_settings(target):
     print_info("Configuring game settings")
-    _execute_on_target(target, "python3 ~/colcon_ws/src/bitbots_misc/bitbots_utils/bitbots_utils/game_settings.py")
+    _execute_on_target(
+        target,
+        "python3 ~/colcon_ws/src/bitbots_misc/bitbots_parameter_blackboard/bitbots_parameter_blackboard/game_settings.py",
+    )
     print_success(f"Game settings on {target.hostname} configured")
 
 
