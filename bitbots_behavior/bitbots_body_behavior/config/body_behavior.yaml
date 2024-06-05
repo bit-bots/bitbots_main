@@ -11,10 +11,6 @@
         - "offense"
         - "defense"
 
-      # When False, the behavior will use a simple fallback mode in which only detected image features are
-      # used for decision making
-      use_localization: true
-
       # Position format:
       #      y
       #      ^       ______________________
@@ -61,11 +57,6 @@
 
       # The orientation threshold defining which range (in Degrees) is acceptable as aligned to the goal (in each direction)
       goal_alignment_orientation_threshold: 5.0
-
-      # When the goal has not been seen for `goal_lost_time` seconds,
-      # it is considered lost and will be searched
-      goal_lost_time: 30.0
-
 
       # When the ball is closer than `ball_close_distance` meters
       # it is in a reachable area of the robot
@@ -127,13 +118,6 @@
         x_sdev: 0.5
         y_sdev: 0.5
         theta_sdev: 0.6
-
-
-      # Duration for which the robot tries to orient itself, when the localization precision is low.
-      reorientation_duration: 10.0
-
-      # Duration for which the robot pauses between reorientation runs.
-      reorientation_pause_duration: 30.0
 
       # minimal difference between the current and the last path planning goal to actually send a new goal.
       pathfinding_position_threshold: 0.3
@@ -244,6 +228,3 @@
 
       # factor by which the difference in starting and goal angle is weighted (only if not turning to ball i.e. <1m)
       time_to_ball_cost_start_to_goal_angle: 3.82
-
-      # seconds after which the time to ball is forgotten if a new path to the ball can not be calculated and evaluated
-      time_to_ball_remember_time: 1.0
