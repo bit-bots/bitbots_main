@@ -2,25 +2,25 @@ bitbots_dynup:
   engine: 
     engine_rate: {
       type: int,
-      description: "Rate at which the engine is looped",
+      description: "Rate at which the engine is looped. Sleeps for 1/engine_rate seconds.",
       default_value: 240,
     }
 
     end_pose:
       arm_extended_length: {
         type: double,
-        description: "Length of the arm when extended at the end pose. Depends on walkready of walking.",
+        description: "The length of how much the arm is extended. The same value is used for both arms and when the robot puts his hand to the side and to the top.",
         default_value: 0.4,
         validation: {
-          bounds<>: [ 0.0, 5.0 ],
+          bounds<>: [ 0.0, 0.5 ],
         }
       } 
       foot_distance: {
         type: double,
-        description: "End pose foot distance from one foot to the other. Depends on walkready of walking.",
+        description: "This is how much the feet are apart, when the robot stands. Depends on walkready of walking.",
         default_value: 0.2,
         validation: {
-          bounds<>: [ 0.0, 5.0 ],
+          bounds<>: [ 0.0, 0.3 ],
         }
       } 
       hand_walkready_pitch: {
@@ -84,7 +84,7 @@ bitbots_dynup:
       }
       com_shift_1: {
         type: double,
-        description: "When fallen to the back: shift of the center of mass",
+        description: "When fallen to the back: height of right foot",
         default_value: 0.051,
         validation: {
           bounds<>: [ 0.0, 1.0 ],
