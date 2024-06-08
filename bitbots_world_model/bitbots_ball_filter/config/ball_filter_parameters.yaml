@@ -48,7 +48,7 @@ bitbots_ball_filter:
     default_value: 0.6,
     description: 'Velocity reduction (per axis) factor of the ball per second',
     validation: {
-      bounds<>: [0, 1]
+      bounds<>: [0.0, 1.0]
     }
   }
 
@@ -57,7 +57,7 @@ bitbots_ball_filter:
     default_value: 0.001,
     description: 'Noise which is added to the estimated position without new measurements',
     validation: {
-      bounds<>: [0, 1]
+      bounds<>: [0.0, 1.0]
     }
   }
 
@@ -66,7 +66,7 @@ bitbots_ball_filter:
     default_value: 0.1,
     description: 'Ball measurement certainty in filter',
     validation: {
-      bounds<>: [0, 1]
+      bounds<>: [0.0, 1.0]
     }
   }
 
