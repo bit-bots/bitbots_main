@@ -29,6 +29,7 @@
 #include <bitbots_localization/srv/reset_filter.hpp>
 #include <bitbots_localization/srv/set_paused.hpp>
 #include <bitbots_localization/tools.hpp>
+#include <bitbots_utils/utils.hpp>
 #include <chrono>
 #include <cv_bridge/cv_bridge.hpp>
 #include <geometry_msgs/msg/point.hpp>
@@ -71,9 +72,9 @@ using namespace std::placeholders;
  * @class Localization
  * @brief Includes the ROS interface, configuration and main loop of the Bit-Bots RoboCup localization.
  */
-class Localization : public rclcpp::Node {
+class Localization {
  public:
-  explicit Localization();
+  explicit Localization(rclcpp::Node::SharedPtr node);
 
   /**
    * Callback for the pause service
@@ -142,10 +143,17 @@ class Localization : public rclcpp::Node {
   void reset_filter(int distribution, double x, double y, double angle);
 
  private:
+  // Reference to the node
+  rclcpp::Node::SharedPtr node_;
+
   // Declare parameter listener and struct from the generate_parameter_library
   bitbots_localization::ParamListener param_listener_;
   // Data structure to hold all parameters, which is build from the schema in the 'parameters.yaml'
   bitbots_localization::Params config_;
+  // Data structure to hold field specific parameters, as they are not part of the schema and get pulled from the global
+  // parameter server
+  bitbots_localization::FieldDimensions field_dimensions_;
+  std::string field_name_;
 
   // Declare subscribers
   rclcpp::Subscription<sm::msg::PointCloud2>::SharedPtr line_point_cloud_subscriber_;
@@ -182,12 +190,9 @@ class Localization : public rclcpp::Node {
   std::shared_ptr<particle_filter::ParticleFilter<RobotState>> robot_pf_;
 
   // Declare initial state distributions
-  std::shared_ptr<RobotStateDistributionStartLeft> robot_state_distribution_start_left_;
-  std::shared_ptr<RobotStateDistributionStartRight> robot_state_distribution_start_right_;
-  std::shared_ptr<RobotStateDistributionRightHalf> robot_state_distribution_right_half_;
-  std::shared_ptr<RobotStateDistributionLeftHalf> robot_state_distribution_left_half_;
-  std::shared_ptr<RobotStateDistributionPosition> robot_state_distribution_position_;
-  std::shared_ptr<RobotStateDistributionPose> robot_state_distribution_pose_;
+  std::shared_ptr<RobotStateDistributionOwnSideline> robot_state_distribution_own_sidelines;
+  std::shared_ptr<RobotStateDistributionOwnHalf> robot_state_distribution_own_half_;
+  std::shared_ptr<RobotStateDistributionOpponentHalf> robot_state_distribution_opponent_half;
 
   // Declare filter estimate
   RobotState estimate_;

@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="sim" default="false"/>
+    <arg unless="$(var sim)" name="fieldname" default="labor" description="Loads field settings (labor, webots, gazebo, bangkok, spl, german_open_2024)." />
+    <arg if="$(var sim)" name="fieldname" default="webots" description="Loads field settings (labor, webots, gazebo, bangkok, german_open_2024)." />
+
+    <!-- print bit-bot -->
+    <include file="$(find-pkg-share bitbots_utils)/launch/welcome.launch" />
+
+    <!-- global parameters -->
+    <node name="parameter_blackboard" pkg="demo_nodes_cpp" exec="parameter_blackboard" args="--ros-args --log-level WARN">
+        <param name="simulation_active" value="$(var sim)"/>
+        <param name="use_sim_time" value="$(var sim)"/>
+        <param name="field.name" value="$(var fieldname)"/>
+        <param from="$(find-pkg-share bitbots_parameter_blackboard)/config/fields/$(var fieldname)/config.yaml" />
+        <param from="$(find-pkg-share bitbots_parameter_blackboard)/config/global_parameters.yaml" />
+        <param from="$(find-pkg-share bitbots_parameter_blackboard)/config/game_settings.yaml" />
+    </node>
+</launch>

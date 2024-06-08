@@ -6,7 +6,7 @@
     <arg name="debug" default="false" description="true: activates publishing of several debug images" />
 
     <!-- Load the global parameters-->
-    <include file="$(find-pkg-share bitbots_utils)/launch/parameter_blackboard.launch">
+    <include file="$(find-pkg-share bitbots_parameter_blackboard)/launch/parameter_blackboard.launch">
         <arg name="sim" value="$(var sim)" />
     </include>
 
