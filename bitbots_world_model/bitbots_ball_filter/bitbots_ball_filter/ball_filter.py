@@ -158,6 +158,13 @@ class BallFilter(Node):
             self.config = self.param_listener.get_params()
             self.filter_reset_duration = Duration(seconds=self.config.filter_reset_time)
             self.velocity_factor = (1 - self.config.velocity_reduction) ** (self.filter_time_step)
+            self.kf.Q = Q_discrete_white_noise(
+                dim=2,
+                dt=self.filter_time_step,
+                var=self.config.process_noise_variance,
+                block_size=2,
+                order_by_dim=False,
+            )
 
         if self.ball:  # Ball measurement exists
             # Reset filter, if distance between last prediction and latest measurement is too large

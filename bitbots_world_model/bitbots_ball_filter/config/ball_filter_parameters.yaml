@@ -2,26 +2,31 @@ bitbots_ball_filter:
   ball_subscribe_topic: {
     type: string,
     default_value: 'balls_relative',
+    read_only: true,
     description: 'Topic to subscribe to for ball detections'
   }
   ball_position_publish_topic: {
     type: string,
     default_value: 'ball_position_relative_filtered',
+    read_only: true,
     description: 'Topic to publish the filtered ball position'
   }
   ball_movement_publish_topic: {
     type: string,
     default_value: 'ball_relative_movement',
+    read_only: true,
     description: 'Topic to publish the filtered ball movement'
   }
   ball_publish_topic: {
     type: string,
     default_value: 'ball_relative_filtered',
+    read_only: true,
     description: 'Topic to publish the filtered ball'
   }
   ball_filter_reset_service_name: {
     type: string,
     default_value: 'ball_filter_reset',
+    read_only: true,
     description: 'Service to reset the ball filter'
   }
   filter_frame: {
