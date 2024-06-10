@@ -143,6 +143,10 @@ class BallFilter(Node):
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
             self.logger.warning(str(e))
 
+    def update_measurement_noise(self, distance: float) -> None:
+        base = np.array([[1, 0], [0, 1]]) * self.config.measurement_certainty
+        self.kf.R = base * (1 + self.config.noise_increment_factor * (distance / self.config.reference_distance - 1))
+
     def filter_step(self) -> None:
         """
         When ball has been assigned a value and filter has been initialized:
@@ -179,6 +183,7 @@ class BallFilter(Node):
             # Initialize filter if not already
             if not self.filter_initialized:
                 self.init_filter(*self.get_ball_measurement())
+            self.update_measurement_noise(distance_to_ball)
             # Predict and publish
             self.kf.predict()
             self.kf.update(self.get_ball_measurement())
