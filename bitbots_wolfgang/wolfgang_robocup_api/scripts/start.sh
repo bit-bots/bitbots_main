@@ -52,10 +52,10 @@ if [[ -z "$ROBOCUP_MIRROR_SERVER_IP" ]]; then
     exit 2
 fi
 
-UTILS_DIR=$COLCON_PREFIX_PATH/bitbots_utils/share/bitbots_utils
+PARAM_DIR=$COLCON_PREFIX_PATH/bitbots_parameter_blackboard/share/bitbots_parameter_blackboard
 
-if [[ ! -d "$UTILS_DIR" ]]; then
-    echo "Could not find bitbots_utils! Did you source ROS?"
+if [[ ! -d "$PARAM_DIR" ]]; then
+    echo "Could not find bitbots_parameter_blackboard! Did you source ROS?"
     exit 2
 fi
 
@@ -122,7 +122,7 @@ done
 # Write configuration files #
 #############################
 
-cat > $UTILS_DIR/config/game_settings.yaml << EOF
+cat > $PARAM_DIR/config/game_settings.yaml << EOF
 parameter_blackboard:
   ros__parameters:
     bot_id: $ROBOCUP_ROBOT_ID

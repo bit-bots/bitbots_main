@@ -1,0 +1,20 @@
+#########
+# Labor #
+#########
+
+# Settings for the f-015 test field
+
+parameter_blackboard:
+  ros__parameters:
+    field:
+      size:
+        x: 5.45
+        y: 3.88
+        padding: 0.1   # Padding (area outside of the lines) of the field in all directions
+      markings:
+        penalty_area:
+          size:
+            x: 0.75   # The distance from the goal line to the boundary of the penalty area
+      goal:
+        width: 2.25   # The width of the goal (center of one goal post to the other goal post)
+

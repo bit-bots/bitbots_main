@@ -12,6 +12,7 @@ include:
         - bitbots_docs
         - bitbots_extrinsic_calibration
         - bitbots_ipm
+        - bitbots_parameter_blackboard
         - bitbots_robot_description
         - bitbots_teleop
         - bitbots_tf_buffer
@@ -71,4 +72,4 @@ exclude:
     - ".idea"
     - ".vscode"
     - "__pycache__"
-    - "bitbots_utils/config/game_settings.yaml"
+    - "bitbots_parameter_blackboard/config/game_settings.yaml"

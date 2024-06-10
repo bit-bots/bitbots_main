@@ -10,7 +10,6 @@ from rclpy.node import Node
 from sensor_msgs.msg import Image
 from soccer_vision_2d_msgs.msg import BallArray, GoalpostArray, Robot, RobotArray
 
-from bitbots_msgs.msg import Audio
 from bitbots_vision.vision_modules import candidate, debug, ros_utils
 
 from . import detectors, object_manager, yoeo_handlers
@@ -91,65 +90,6 @@ class YOEOComponent(IVisionComponent):
 
     def set_image(self, image: np.ndarray) -> None:
         self._yoeo_instance.set_image(image)
-
-
-class CameraCapCheckComponent(IVisionComponent):
-    """
-    This component checks if the camera cap could still be attached to the camera.
-    Component deactivates itself after the first image.
-    """
-
-    def __init__(self, node: Node):
-        self._camera_cap_brightness_threshold: int = 0
-        self._config: dict = {}
-        self._image: Optional[np.ndarray] = None
-        self._is_first_image: bool = True
-        self._node: Node = node
-        self._publisher: Optional[rclpy.publisher.Publisher] = None
-
-    def configure(self, config: dict, debug_mode: bool) -> None:
-        self._camera_cap_brightness_threshold = config["vision_blind_threshold"]
-
-        self._register_publisher(config)
-        self._config = config
-
-    def _register_publisher(self, new_config: dict) -> None:
-        self._publisher = ros_utils.create_or_update_publisher(
-            self._node, self._config, new_config, self._publisher, "ROS_audio_msg_topic", Audio
-        )
-
-    def run(self, image_msg: Image) -> None:
-        if self._component_has_not_run_yet():
-            self._set_component_has_run()
-            self._run_component()
-
-    def _component_has_not_run_yet(self) -> bool:
-        return self._is_first_image
-
-    def _set_component_has_run(self) -> None:
-        self._is_first_image = False
-
-    def _run_component(self) -> None:
-        if self._camera_cap_could_be_on():
-            self._log_error()
-            self._issue_oral_warning()
-
-    def _camera_cap_could_be_on(self) -> bool:
-        mean_image_brightness = self._image.mean()
-        return mean_image_brightness < self._camera_cap_brightness_threshold
-
-    @staticmethod
-    def _log_error() -> None:
-        logger.error("Image is too dark! Camera cap not removed?")
-
-    def _issue_oral_warning(self) -> None:
-        ros_utils.speak("Hey!   Remove my camera cap!", self._publisher)
-
-    def set_image(self, image: np.ndarray) -> None:
-        if self._component_has_not_run_yet():
-            self._image = image
-        else:
-            self._image = None  # to allow for garbage collection of first image
 
 
 class BallDetectionComponent(IVisionComponent):
