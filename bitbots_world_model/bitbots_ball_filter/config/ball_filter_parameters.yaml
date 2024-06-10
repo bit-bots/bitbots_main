@@ -98,3 +98,21 @@ bitbots_ball_filter:
     default_value: True,
     description: 'True if ball should be selected based on distance to filtered ball instead of highest rating'
   }
+
+  reference_distance: {
+    type: double,
+    default_value: 4.0,
+    description: 'A reference distance from robot to ball. If the current distance is higher, there is more uncertainty, if it is lower, there is less uncertainty.',
+    validation: {
+      bounds<>: [0.0, 10.8]
+    }
+  }
+
+  noise_increment_factor: {
+    type: double,
+    default_value: 0.1,
+    description: 'Factor to increase the noise if the ball is further away. This also depends on the reference distance.',
+    validation: {
+      bounds<>: [0.0, 1.0]
+    }
+  }
