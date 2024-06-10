@@ -174,7 +174,9 @@ void DynupNode::execute(const std::shared_ptr<DynupGoalHandle> goal_handle) {
   last_ros_update_time_ = 0;
   start_time_ = this->get_clock()->now().seconds();
 
-  params_ = param_listener_.get_params();
+  if (param_listener_.is_old(params_)) {
+    params_ = param_listener_.get_params();
+  }
   // Copy engine params to engine
   engine_.setParams(params_.engine);
 
@@ -257,7 +259,6 @@ double DynupNode::getTimeDelta() {
 }
 
 void DynupNode::loopEngine(int loop_rate, std::shared_ptr<DynupGoalHandle> goal_handle) {
-  params_ = param_listener_.get_params();
   auto result = std::make_shared<DynupGoal::Result>();
   bitbots_msgs::msg::JointCommand msg;
   /* Do the loop as long as nothing cancels it */
