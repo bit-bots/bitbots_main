@@ -87,11 +87,6 @@ DynupNode::DynupNode(const std::string &ns, std::vector<rclcpp::Parameter> param
   engine_.init(shoulder_origin.position.y, shoulder_origin.position.z);
   ik_.init(kinematic_model_);
 
-  callback_handle_ = this->add_on_set_parameters_callback(
-      [this](const std::vector<rclcpp::Parameter> &) -> rcl_interfaces::msg::SetParametersResult {
-        return this->onSetParameters();
-      });
-
   joint_goal_publisher_ = this->create_publisher<bitbots_msgs::msg::JointCommand>("dynup_motor_goals", 1);
   debug_publisher_ = this->create_publisher<visualization_msgs::msg::Marker>("debug_markers", 1);
   cop_subscriber_ =

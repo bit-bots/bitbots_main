@@ -99,8 +99,6 @@ class DynupNode : public rclcpp::Node {
   std::vector<std::string> param_names_;
   rclcpp_action::Server<DynupGoal>::SharedPtr action_server_;
 
-  OnSetParametersCallbackHandle::SharedPtr callback_handle_;
-
   // Declare parameter listener and struct from the generate_parameter_library
   bitbots_dynup::ParamListener param_listener_;
   bitbots_dynup::Params params_;
