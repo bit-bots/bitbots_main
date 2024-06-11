@@ -60,6 +60,7 @@ class BallFilter(Node):
         self.filter_reset_duration = Duration(seconds=self.config.filter_reset_time)
         self.logger.info(f"Using frame '{self.config.filter_frame}' for ball filtering")
 
+        self.update_params()
         # adapt velocity factor to frequency
         self.velocity_factor = (1 - self.config.velocity_reduction) ** (self.filter_time_step)
 
@@ -143,6 +144,21 @@ class BallFilter(Node):
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
             self.logger.warning(str(e))
 
+    def update_params(self) -> None:
+        """
+        Updates parameters from dynamic reconfigure
+        """
+        self.config = self.param_listener.get_params()
+        self.filter_reset_duration = Duration(seconds=self.config.filter_reset_time)
+        self.velocity_factor = (1 - self.config.velocity_reduction) ** (self.filter_time_step)
+        self.kf.Q = Q_discrete_white_noise(
+            dim=2,
+            dt=self.filter_time_step,
+            var=self.config.process_noise_variance,
+            block_size=2,
+            order_by_dim=False,
+        )
+
     def filter_step(self) -> None:
         """
         When ball has been assigned a value and filter has been initialized:
@@ -155,16 +171,7 @@ class BallFilter(Node):
         # check whether parameters have changed
         if self.param_listener.is_old(self.config):
             self.param_listener.refresh_dynamic_parameters()
-            self.config = self.param_listener.get_params()
-            self.filter_reset_duration = Duration(seconds=self.config.filter_reset_time)
-            self.velocity_factor = (1 - self.config.velocity_reduction) ** (self.filter_time_step)
-            self.kf.Q = Q_discrete_white_noise(
-                dim=2,
-                dt=self.filter_time_step,
-                var=self.config.process_noise_variance,
-                block_size=2,
-                order_by_dim=False,
-            )
+            self.update_params()
 
         if self.ball:  # Ball measurement exists
             # Reset filter, if distance between last prediction and latest measurement is too large
