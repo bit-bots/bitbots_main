@@ -128,10 +128,14 @@ $BallSeen
         NO_FREEKICK --> #Placing
         YES --> $ConfigRole
             GOALIE --> #GoalieRole
-            ELSE --> $RankToBallNoGoalie
-                FIRST --> #StrikerRole
-                SECOND --> #SupporterRole
-                THIRD --> #DefensePositioning
+            ELSE --> $CountActiveRobotsWithoutGoalie
+                ONE --> $RankToBallNoGoalie
+                    FIRST --> #StrikerRole
+                    SECOND --> #DefensePositioning
+                ELSE --> $RankToBallNoGoalie
+                    FIRST --> #StrikerRole
+                    SECOND --> #SupporterRole
+                    THIRD --> #DefensePositioning
 
 -->BodyBehavior
 $IsPenalized
