@@ -139,7 +139,7 @@ class BallFilter(Node):
         point_stamped.point = point
 
         try:
-            return self.tf_buffer.transform(point_stamped, frame, timeout=Duration(seconds=int(timeout)))
+            return self.tf_buffer.transform(point_stamped, frame, timeout=Duration(nanoseconds=int(timeout * (10**9))))
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
             self.logger.warning(str(e))
 
