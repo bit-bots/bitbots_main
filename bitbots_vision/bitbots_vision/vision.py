@@ -92,8 +92,6 @@ class YOEOVision(Node):
         self._vision_components = []
         self._vision_components.append(yoeo.YOEOComponent())
 
-        if new_config["component_camera_cap_check_active"]:
-            self._vision_components.append(yoeo.CameraCapCheckComponent(self))
         if new_config["component_ball_detection_active"]:
             self._vision_components.append(yoeo.BallDetectionComponent(self))
         if new_config["component_robot_detection_active"]:

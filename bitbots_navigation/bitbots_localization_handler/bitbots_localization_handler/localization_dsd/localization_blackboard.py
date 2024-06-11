@@ -31,8 +31,8 @@ class LocalizationBlackboard:
         self.base_footprint_frame: str = node.get_parameter("base_footprint_frame").value
 
         # Get the length of the field
-        self.field_length = get_parameters_from_other_node(self.node, "parameter_blackboard", ["field_length"])[
-            "field_length"
+        self.field_length = get_parameters_from_other_node(self.node, "parameter_blackboard", ["field.size.x"])[
+            "field.size.x"
         ]
 
         # Service clients
