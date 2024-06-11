@@ -84,7 +84,7 @@ class TeamDataCapsule:
     def is_valid(self, data: TeamData) -> bool:
         """
         Checks if a team data message from a given robot is valid.
-        Meaning is is not too old and the robot is not penalized.
+        Meaning it is not too old and the robot is not penalized.
         """
         return (
             self.node.get_clock().now() - Time.from_msg(data.header.stamp) < Duration(seconds=self.data_timeout)
