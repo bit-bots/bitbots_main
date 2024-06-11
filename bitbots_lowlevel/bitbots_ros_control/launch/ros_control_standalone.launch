@@ -6,7 +6,7 @@
     <arg name="only_pressure" default="false"/>
     <arg name="robot_type" default="wolfgang"/>
 
-    <include file="$(find-pkg-share bitbots_utils)/launch/parameter_blackboard.launch" >
+    <include file="$(find-pkg-share bitbots_parameter_blackboard)/launch/parameter_blackboard.launch" >
         <arg name="sim" value="$(var sim)"/>
     </include>
 

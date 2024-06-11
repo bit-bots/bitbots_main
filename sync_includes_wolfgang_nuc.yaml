@@ -12,9 +12,10 @@ include:
         - bitbots_docs
         - bitbots_extrinsic_calibration
         - bitbots_ipm
+        - bitbots_parameter_blackboard
         - bitbots_robot_description
         - bitbots_teleop
-        - bitbots_tf_listener
+        - bitbots_tf_buffer
         - bitbots_tts
         - bitbots_utils
         - system_monitor
@@ -25,13 +26,13 @@ include:
         - bitbots_hcm
         - bitbots_head_mover
         - bitbots_moveit_bindings
-        - bitbots_odometry
         - bitbots_quintic_walk
         - bitbots_splines
     - bitbots_msgs
     - bitbots_navigation:
         - bitbots_localization
         - bitbots_localization_handler
+        - bitbots_odometry
         - bitbots_path_planning
     - bitbots_team_communication
     - bitbots_vision
@@ -71,4 +72,4 @@ exclude:
     - ".idea"
     - ".vscode"
     - "__pycache__"
-    - "bitbots_utils/config/game_settings.yaml"
+    - "bitbots_parameter_blackboard/config/game_settings.yaml"
