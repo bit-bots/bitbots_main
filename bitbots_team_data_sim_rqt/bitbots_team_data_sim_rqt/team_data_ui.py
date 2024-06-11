@@ -19,6 +19,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.uic import loadUi
 from rclpy.node import Node
+from rclpy.parameter import Parameter
 from rqt_gui.main import Main
 from rqt_gui_py.plugin import Plugin
 
@@ -244,6 +245,9 @@ class TeamDataSimulator(Plugin):  # TODO add sim time button
         if len(self.robots) == 1:
             self._widget.MinusButton.setEnabled(False)
 
+    def sim_time_checkbox_is_checked(self, checked):
+        self._node.set_parameters([Parameter("use_sim_time", Parameter.Type.BOOL, checked)])
+
     def timer_callback(self):
         for robot_widget in self.robots:
             if robot_widget.active():
@@ -264,6 +268,7 @@ class TeamDataSimulator(Plugin):  # TODO add sim time button
         # Show test message box
         self._widget.PlusButton.clicked.connect(self.plus_button_clicked)
         self._widget.MinusButton.clicked.connect(self.minus_button_clicked)
+        self._widget.SimTimeCheckbox.clicked.connect(self.sim_time_checkbox_is_checked)
 
     def shutdown_plugin(self):
         """Clean up on shutdown"""
