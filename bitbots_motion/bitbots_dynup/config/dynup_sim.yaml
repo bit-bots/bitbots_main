@@ -39,6 +39,7 @@ dynup:
         rise_time: 0.4 
 
     # Stabilier
+  stabilizer:
     stabilizing: True
     minimal_displacement: False
     stable_duration: -1
