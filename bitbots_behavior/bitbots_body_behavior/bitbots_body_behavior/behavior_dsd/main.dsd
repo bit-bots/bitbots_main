@@ -129,7 +129,7 @@ $BallSeen
         YES --> $ConfigRole
             GOALIE --> #GoalieRole
             ELSE --> $CountActiveRobotsWithoutGoalie
-                TWO --> $RankToBallNoGoalie
+                ONE --> $RankToBallNoGoalie
                     FIRST --> #StrikerRole
                     SECOND --> #DefensePositioning
                 ELSE --> $RankToBallNoGoalie

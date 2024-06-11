@@ -14,16 +14,15 @@ class CountActiveRobotsWithoutGoalie(AbstractDecisionElement):
 
     def perform(self, reevaluate=False):
         nummber_of_active_teammates = self.blackboard.team_data.get_number_of_active_fieldplayers(False)
-        nummber_of_active_teammates += 1  # TODO move in function
         self.publish_debug_data("Number of active Teammates", nummber_of_active_teammates)
-        if nummber_of_active_teammates == 1:
+        if nummber_of_active_teammates == 0:
+            return "ZERO"
+        elif nummber_of_active_teammates == 1:
             return "ONE"
         elif nummber_of_active_teammates == 2:
             return "TWO"
         elif nummber_of_active_teammates == 3:
             return "THREE"
-        elif nummber_of_active_teammates == 4:
-            return "FOUR"
         else:
             # emergency fall back if something goes wrong
             self.blackboard.node.get_logger().error("Rank to ball had some issues")
