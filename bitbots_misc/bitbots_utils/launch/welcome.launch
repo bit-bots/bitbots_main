@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- Print Bit-Bot on the Terminal -->
+    <executable name="welcome" cmd="cat $(find-pkg-share bitbots_utils)/config/welcome_art.txt" output="screen" />
+</launch>

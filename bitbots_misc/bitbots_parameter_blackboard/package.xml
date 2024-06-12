@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+    <name>bitbots_parameter_blackboard</name>
+    <version>2.3.1</version>
+    <description>
+        The bitbots_parameter_blackboard package handles the global parameters, utilized by multiple nodes.
+        These include the game settings, field specific settings, etc..
+    </description>
+
+    <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+
+    <license>MIT</license>
+
+    <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
+
+    <buildtool_depend>ament_cmake</buildtool_depend>
+
+    <depend>bitbots_docs</depend>
+    <depend>bitbots_utils</depend>
+    <depend>python3-yaml</depend>
+    <depend>demo_nodes_cpp</depend>
+
+    <export>
+        <bitbots_documentation>
+            <status>unknown</status>
+        </bitbots_documentation>
+        <build_type>ament_cmake</build_type>
+    </export>
+</package>

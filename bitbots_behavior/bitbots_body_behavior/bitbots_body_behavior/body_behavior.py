@@ -1,19 +1,8 @@
-#!/usr/bin/env python3
-
-"""
-BehaviorModule
-^^^^^^^^^^^^^^
-.. moduleauthor:: Martin Poppinga <1popping@informatik.uni-hamburg.de>
-
-Starts the body behavior
-"""
-
 import os
 
 import rclpy
-import tf2_ros as tf2
 from bitbots_blackboard.blackboard import BodyBlackboard
-from bitbots_tf_listener import TransformListener
+from bitbots_tf_buffer import Buffer
 from dynamic_stack_decider.dsd import DSD
 from game_controller_hl_interfaces.msg import GameState
 from geometry_msgs.msg import PoseWithCovarianceStamped, Twist, TwistWithCovarianceStamped
@@ -33,8 +22,7 @@ class BodyDSD:
         self.step_running = False
         self.node = node
 
-        self.tf_buffer = tf2.Buffer(cache_time=Duration(seconds=30))
-        self.tf_listener = TransformListener(self.tf_buffer, node)
+        self.tf_buffer = Buffer(node, Duration(seconds=30))
 
         blackboard = BodyBlackboard(node, self.tf_buffer)
         self.dsd = DSD(blackboard, "debug/dsd/body_behavior", node)  # TODO: use config
@@ -63,7 +51,7 @@ class BodyDSD:
             TeamData,
             "team_data",
             blackboard.team_data.team_data_callback,
-            qos_profile=1,
+            qos_profile=10,
             callback_group=MutuallyExclusiveCallbackGroup(),
         )
         node.create_subscription(

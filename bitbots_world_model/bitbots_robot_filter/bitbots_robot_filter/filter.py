@@ -4,8 +4,7 @@ import soccer_vision_3d_msgs.msg as sv3dm
 import soccer_vision_attribute_msgs.msg as svam
 import tf2_geometry_msgs
 import tf2_ros as tf2
-from bitbots_tf_listener import TransformListener
-from geometry_msgs.msg import Pose
+from bitbots_tf_buffer import Buffer
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.duration import Duration
 from rclpy.executors import MultiThreadedExecutor
@@ -21,16 +20,16 @@ class RobotFilter(Node):
     def __init__(self):
         super().__init__("bitbots_robot_filter")
 
-        self.tf_buffer = tf2.Buffer(cache_time=Duration(seconds=10.0))
-        self.tf_listener = TransformListener(self.tf_buffer, self)
+        self.tf_buffer = Buffer(self, Duration(seconds=10.0))
 
-        self.robots = []
-        self.team = dict()
+        self.robots: list[tuple[sv3dm.Robot, Time]] = list()
+        self.team: dict[int, TeamData] = dict()
 
         self.filter_frame = self.declare_parameter("filter_frame", "map").value
         self.robot_dummy_size = self.declare_parameter("robot_dummy_size", 0.4).value
         self.robot_merge_distance = self.declare_parameter("robot_merge_distance", 0.5).value
         self.robot_storage_time = self.declare_parameter("robot_storage_time", 10e9).value
+        self.team_data_timeout = self.declare_parameter("team_data_timeout", 1e9).value
 
         self.create_subscription(
             sv3dm.RobotArray,
@@ -69,7 +68,7 @@ class RobotFilter(Node):
             )
         )
 
-        # Add Team Mates
+        # Convert TeamData to Robot Observation
         def build_robot_detection_from_team_data(msg: TeamData) -> sv3dm.Robot:
             robot = sv3dm.Robot()
             robot.bb.center = msg.robot_position.pose
@@ -78,15 +77,19 @@ class RobotFilter(Node):
             robot.bb.size.z = 1.0
             robot.attributes.team = svam.Robot.TEAM_OWN
             robot.attributes.player_number = msg.robot_id
-            return (robot, msg.header.stamp)
+            return robot
 
-        self.robots.extend(list(map(build_robot_detection_from_team_data, self.team.values())))
+        def is_team_data_fresh(msg: TeamData) -> bool:
+            return (self.get_clock().now() - Time.from_msg(msg.header.stamp)).nanoseconds < self.team_data_timeout
 
-        msg = sv3dm.RobotArray()
-        msg.header = dummy_header
-        msg.robots = [robot_msg for robot_msg, _ in self.robots]
+        # We don't need the time stamps and we want a new list, so the team data is only applied temporarily
+        robots = [robot_msg for robot_msg, _ in self.robots]
 
-        self.robot_obstacle_publisher.publish(msg)
+        # Add Team Mates (if the data is fresh enough)
+        robots.extend(map(build_robot_detection_from_team_data, filter(is_team_data_fresh, self.team.values())))
+
+        # Publish the robot obstacles
+        self.robot_obstacle_publisher.publish(sv3dm.RobotArray(header=dummy_header, robots=robots))
 
     def _robot_vision_callback(self, msg: sv3dm.RobotArray):
         try:
@@ -100,7 +103,7 @@ class RobotFilter(Node):
         robot: sv3dm.Robot
         for robot in msg.robots:
             # Transfrom robot to map frame
-            robot.bb.center: Pose = tf2_geometry_msgs.do_transform_pose(robot.bb.center, transform)
+            robot.bb.center = tf2_geometry_msgs.do_transform_pose(robot.bb.center, transform)
             # Update robots that are close together
             cleaned_robots = []
             old_robot: sv3dm.Robot
@@ -114,14 +117,14 @@ class RobotFilter(Node):
             # Append our new robots
             self.robots.append((robot, msg.header.stamp))
 
-    def _team_data_callback(self, msg):
+    def _team_data_callback(self, msg: TeamData):
         self.team[msg.robot_id] = msg
 
 
 def main(args=None):
     rclpy.init(args=args)
     node = RobotFilter()
-    # Number of executor threads is the number of MutiallyExclusiveCallbackGroups + 2 threads the tf listener and executor needs
+    # Number of executor threads is the number of MutuallyExclusiveCallbackGroups + 2 threads the tf listener and executor needs
     ex = MultiThreadedExecutor(num_threads=5)
     ex.add_node(node)
     try:

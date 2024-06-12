@@ -20,9 +20,8 @@
 
     <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
 
-
     <build_depend>bitbots_docs</build_depend>
-    <depend>bitbots_tf_listener</depend>
+    <depend>bitbots_tf_buffer</depend>
     <depend>bitbots_utils</depend>
     <depend>game_controller_hl_interfaces</depend>
     <depend>python3-numpy</depend>
@@ -44,6 +43,6 @@
             <status>unknown</status>
             <language>python3</language>
         </bitbots_documentation>
-    <build_type>ament_cmake</build_type>
-  </export>
+        <build_type>ament_cmake</build_type>
+    </export>
 </package>

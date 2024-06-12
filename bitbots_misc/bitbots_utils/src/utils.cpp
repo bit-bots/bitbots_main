@@ -61,4 +61,39 @@ void wait_for_tf(const rclcpp::Logger &logger, std::shared_ptr<rclcpp::Clock> cl
   }
 }
 
+std::map<std::string, rclcpp::Parameter> get_parameters_from_other_node(rclcpp::Node::SharedPtr own_node,
+                                                                        const std::string &other_node_name,
+                                                                        const std::vector<std::string> &parameter_names,
+                                                                        const std::chrono::seconds &service_timeout) {
+  // Create a client to the other node
+  auto client = own_node->create_client<rcl_interfaces::srv::GetParameters>(other_node_name + "/get_parameters");
+
+  // Wait for the service to be available
+  if (!client->wait_for_service(service_timeout)) {
+    throw std::runtime_error("Wait for " + other_node_name + " parameter service timed out");
+  }
+
+  // Create the request
+  auto request = std::make_shared<rcl_interfaces::srv::GetParameters::Request>();
+  request->names = parameter_names;
+
+  // Call the service
+  auto future = client->async_send_request(request);
+  rclcpp::spin_until_future_complete(own_node, future);
+  auto response = future.get();
+
+  // Create a map to store the results
+  std::map<std::string, rclcpp::Parameter> results;
+
+  // Fill the map with the received parameters
+  for (size_t i = 0; i < parameter_names.size(); i++) {
+    // Convert to parameter message fist, so we have less hassle with the params type template
+    auto parameter = rcl_interfaces::msg::Parameter();
+    parameter.name = parameter_names[i];
+    parameter.value = response->values[i];
+    results[parameter_names[i]] = rclcpp::Parameter::from_parameter_msg(parameter);
+  }
+
+  return results;
+}
 }  // namespace bitbots_utils

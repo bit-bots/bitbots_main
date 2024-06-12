@@ -82,7 +82,7 @@ def is_motion_started():
         "/walking",
         "/animation",
         "/dynamic_kick",
-        "/motion_odometry",
+        "/walk_engine_odometry",
         "/odometry_fuser",
         "/DynupNode",
     }

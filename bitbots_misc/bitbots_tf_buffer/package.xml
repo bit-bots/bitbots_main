@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='utf-8'?>
+<package format="2">
+  <name>bitbots_tf_buffer</name>
+  <version>1.0.0</version>
+  <description>Drop-in replacement for tf listener to improve performance</description>
+
+  <maintainer email="timon.engelke@uni-hamburg.de">Timon Engelke</maintainer>
+
+  <license>MIT</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>pybind11_vendor</depend>
+  <depend>ros2_python_extension</depend>
+  <depend>tf2_ros</depend>
+  <depend>tf2</depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

@@ -148,7 +148,7 @@ class GoToBlockPosition(AbstractActionElement):
             goalie_pos_x,
             -self.blackboard.world_model.field_length / 2,
             -self.blackboard.world_model.field_length / 2
-            + self.blackboard.world_model.penalty_area_length
+            + self.blackboard.world_model.penalty_area_size_x
             - self.block_radius,
         )
         return (goalie_pos_x, goalie_pos_y)
