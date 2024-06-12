@@ -144,8 +144,7 @@ class BallFilter(Node):
             self.logger.warning(str(e))
 
     def update_measurement_noise(self, distance: float) -> None:
-        base = np.array([[1, 0], [0, 1]]) * self.config.measurement_certainty
-        self.kf.R = base * (1 + self.config.noise_increment_factor * distance**2)
+        self.kf.R = np.eye(2) * (self.measurement_certainty + self.config.noise_increment_factor * distance**2)
 
     def filter_step(self) -> None:
         """
@@ -239,7 +238,7 @@ class BallFilter(Node):
         self.kf.P = np.eye(4) * 1000
 
         # assigning measurement noise
-        self.kf.R = np.array([[1, 0], [0, 1]]) * self.config.measurement_certainty
+        self.kf.R = np.eye(2) * self.config.measurement_certainty
 
         # assigning process noise
         self.kf.Q = Q_discrete_white_noise(
