@@ -187,7 +187,7 @@ class PublishButton(QPushButton):
             self.setText(self.button_text)
 
 
-class TeamDataSimulator(Plugin):  # TODO add sim time button
+class TeamDataSimulator(Plugin):
     """
     This class is the main class for the RecordUI. It is a plugin for the rqt framework and is used to record animations.
     """
