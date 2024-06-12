@@ -56,7 +56,6 @@ class BallFilter(Node):
         self.last_ball_stamp = None
 
         self.update_params()
-        self.filter_time_step = 1.0 / self.config.filter_rate
 
         self.logger.info(f"Using frame '{self.config.filter_frame}' for ball filtering")
 
@@ -145,6 +144,7 @@ class BallFilter(Node):
         Updates parameters from dynamic reconfigure
         """
         self.config = self.param_listener.get_params()
+        self.filter_time_step = 1.0 / self.config.filter_rate
         self.filter_reset_duration = Duration(seconds=self.config.filter_reset_time)
         self.velocity_factor = (1 - self.config.velocity_reduction) ** (self.filter_time_step)
         self.kf.Q = Q_discrete_white_noise(
