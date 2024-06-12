@@ -1,6 +1,12 @@
 import glob
 
+from generate_parameter_library_py.setup_helper import generate_parameter_module
 from setuptools import find_packages, setup
+
+generate_parameter_module(
+    "ball_filter_parameters",  # python module name for parameter library
+    "config/ball_filter_parameters.yaml",  # path to input yaml file
+)
 
 package_name = "bitbots_ball_filter"
 
