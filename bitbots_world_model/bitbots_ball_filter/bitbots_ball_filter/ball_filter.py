@@ -144,7 +144,7 @@ class BallFilter(Node):
             self.logger.warning(str(e))
 
     def update_measurement_noise(self, distance: float) -> None:
-        self.kf.R = np.eye(2) * (self.measurement_certainty + self.config.noise_increment_factor * distance**2)
+        self.kf.R = np.eye(2) * (self.config.measurement_certainty + self.config.noise_increment_factor * distance**2)
 
     def filter_step(self) -> None:
         """
