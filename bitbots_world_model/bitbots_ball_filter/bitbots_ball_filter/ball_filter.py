@@ -48,7 +48,6 @@ class BallFilter(Node):
         self.tf_buffer = Buffer(self, Duration(seconds=2))
         # Setup dynamic reconfigure config
         self.param_listener = parameters.ParamListener(self)
-        self.config = self.param_listener.get_params()
 
         # creates kalmanfilter with 4 dimensions
         self.kf = KalmanFilter(dim_x=4, dim_z=2, dim_u=0)
@@ -56,12 +55,9 @@ class BallFilter(Node):
         self.ball = None  # type: BallWrapper
         self.last_ball_stamp = None
 
-        self.filter_time_step = 1.0 / self.config.filter_rate
-        self.filter_reset_duration = Duration(seconds=self.config.filter_reset_time)
-        self.logger.info(f"Using frame '{self.config.filter_frame}' for ball filtering")
+        self.update_params()
 
-        # adapt velocity factor to frequency
-        self.velocity_factor = (1 - self.config.velocity_reduction) ** (self.filter_time_step)
+        self.logger.info(f"Using frame '{self.config.filter_frame}' for ball filtering")
 
         # publishes positions of ball
         self.ball_pose_publisher = self.create_publisher(
@@ -139,12 +135,28 @@ class BallFilter(Node):
         point_stamped.point = point
 
         try:
-            return self.tf_buffer.transform(point_stamped, frame, timeout=Duration(seconds=int(timeout)))
+            return self.tf_buffer.transform(point_stamped, frame, timeout=Duration(nanoseconds=int(timeout * (10**9))))
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
             self.logger.warning(str(e))
 
     def update_measurement_noise(self, distance: float) -> None:
         self.kf.R = np.eye(2) * (self.config.measurement_certainty + self.config.noise_increment_factor * distance**2)
+        
+    def update_params(self) -> None:
+        """
+        Updates parameters from dynamic reconfigure
+        """
+        self.config = self.param_listener.get_params()
+        self.filter_time_step = 1.0 / self.config.filter_rate
+        self.filter_reset_duration = Duration(seconds=self.config.filter_reset_time)
+        self.velocity_factor = (1 - self.config.velocity_reduction) ** (self.filter_time_step)
+        self.kf.Q = Q_discrete_white_noise(
+            dim=2,
+            dt=self.filter_time_step,
+            var=self.config.process_noise_variance,
+            block_size=2,
+            order_by_dim=False,
+        )
 
     def filter_step(self) -> None:
         """
@@ -158,16 +170,7 @@ class BallFilter(Node):
         # check whether parameters have changed
         if self.param_listener.is_old(self.config):
             self.param_listener.refresh_dynamic_parameters()
-            self.config = self.param_listener.get_params()
-            self.filter_reset_duration = Duration(seconds=self.config.filter_reset_time)
-            self.velocity_factor = (1 - self.config.velocity_reduction) ** (self.filter_time_step)
-            self.kf.Q = Q_discrete_white_noise(
-                dim=2,
-                dt=self.filter_time_step,
-                var=self.config.process_noise_variance,
-                block_size=2,
-                order_by_dim=False,
-            )
+            self.update_params()
 
         if self.ball:  # Ball measurement exists
             # Reset filter, if distance between last prediction and latest measurement is too large

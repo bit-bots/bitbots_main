@@ -1,5 +1,5 @@
 repositories:
-  bitbots_team_communication/bitbots_team_communication/RobocupProtocol:
+  bitbots_team_communication/bitbots_team_communication/bitbots_team_communication/RobocupProtocol:
     type: git
     url: git@github.com:bit-bots/RobocupProtocol.git
   lib/dynamic_stack_decider:
