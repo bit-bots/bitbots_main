@@ -57,12 +57,9 @@ class BallFilter(Node):
         self.last_ball_stamp = None
 
         self.filter_time_step = 1.0 / self.config.filter_rate
-        self.filter_reset_duration = Duration(seconds=self.config.filter_reset_time)
-        self.logger.info(f"Using frame '{self.config.filter_frame}' for ball filtering")
 
         self.update_params()
-        # adapt velocity factor to frequency
-        self.velocity_factor = (1 - self.config.velocity_reduction) ** (self.filter_time_step)
+        self.logger.info(f"Using frame '{self.config.filter_frame}' for ball filtering")
 
         # publishes positions of ball
         self.ball_pose_publisher = self.create_publisher(
