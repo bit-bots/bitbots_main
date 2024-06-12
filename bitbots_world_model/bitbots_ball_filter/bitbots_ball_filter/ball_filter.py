@@ -48,7 +48,6 @@ class BallFilter(Node):
         self.tf_buffer = Buffer(self, Duration(seconds=2))
         # Setup dynamic reconfigure config
         self.param_listener = parameters.ParamListener(self)
-        self.config = self.param_listener.get_params()
 
         # creates kalmanfilter with 4 dimensions
         self.kf = KalmanFilter(dim_x=4, dim_z=2, dim_u=0)
@@ -56,9 +55,9 @@ class BallFilter(Node):
         self.ball = None  # type: BallWrapper
         self.last_ball_stamp = None
 
+        self.update_params()
         self.filter_time_step = 1.0 / self.config.filter_rate
 
-        self.update_params()
         self.logger.info(f"Using frame '{self.config.filter_frame}' for ball filtering")
 
         # publishes positions of ball
