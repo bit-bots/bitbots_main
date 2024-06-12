@@ -490,10 +490,6 @@ void WalkNode::checkPhaseRestAndReset() {
   double phase = walk_engine_.getPhase();
   double phase_reset_phase = 0.48;
 
-  // Log phase for debugging
-  RCLCPP_INFO(this->get_logger(), "Phase: %f , Phase reset phase: %f , IMU y acc: %f", phase, phase_reset_phase,
-              imu_y_acc);
-
   if ((phase > phase_reset_phase && phase < 0.5) || (phase > 0.5 + phase_reset_phase)) {
     // check if we want to perform a phase reset
     if (std::abs(imu_y_acc) < config_.node.joint_min_effort) {
