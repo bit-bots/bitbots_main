@@ -145,7 +145,7 @@ class BallFilter(Node):
 
     def update_measurement_noise(self, distance: float) -> None:
         base = np.array([[1, 0], [0, 1]]) * self.config.measurement_certainty
-        self.kf.R = base * (1 + self.config.noise_increment_factor * (distance / self.config.reference_distance - 1))
+        self.kf.R = base * (1 + self.config.noise_increment_factor * distance**2)
 
     def filter_step(self) -> None:
         """
