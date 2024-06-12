@@ -4,15 +4,15 @@ walking:
       double_support_ratio: 0.05
       foot_distance: 0.2
       foot_rise: 0.05
-      freq: 1.25
+      freq: 1.2
       trunk_height: 0.38
       trunk_phase: -0.1
       trunk_pitch: 0.2
-      trunk_pitch_p_coef_forward: -0.25
-      trunk_pitch_p_coef_turn: -0.05
+      trunk_pitch_p_coef_forward: 0.0
+      trunk_pitch_p_coef_turn: 0.0
       trunk_swing: 0.25
-      trunk_x_offset: 0.001
-      trunk_y_offset: -0.005
+      trunk_x_offset: 0.02
+      trunk_y_offset: 0.0
       trunk_z_movement: 0.0
       first_step_swing_factor: 1.0
       first_step_trunk_phase: -0.5
@@ -23,7 +23,7 @@ walking:
       foot_put_down_z_offset: 0.0
       foot_z_pause: 0.0
       trunk_pause: 0.0
-      trunk_x_offset_p_coef_forward: 0.0
+      trunk_x_offset_p_coef_forward: 0.25
       trunk_x_offset_p_coef_turn: 0.0
 
       kick_length: 0.09
