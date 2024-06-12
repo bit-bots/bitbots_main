@@ -1,6 +1,5 @@
 #! /usr/bin/env python3
 import math
-from copy import deepcopy
 from typing import Tuple, Union
 
 import numpy as np
@@ -10,7 +9,6 @@ from bitbots_tf_buffer import Buffer
 from filterpy.common import Q_discrete_white_noise
 from filterpy.kalman import KalmanFilter
 from geometry_msgs.msg import Point, PoseWithCovarianceStamped, TwistWithCovarianceStamped
-from rcl_interfaces.msg import SetParametersResult
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.duration import Duration
 from rclpy.executors import MultiThreadedExecutor
@@ -20,6 +18,7 @@ from std_msgs.msg import Header
 from std_srvs.srv import Trigger
 from tf2_geometry_msgs import PointStamped
 
+from bitbots_ball_filter.ball_filter_parameters import bitbots_ball_filter as parameters
 from bitbots_msgs.msg import PoseWithCertaintyStamped
 
 
@@ -44,60 +43,39 @@ class BallFilter(Node):
         """
         creates Kalmanfilter and subscribes to messages which are needed
         """
-        super().__init__("ball_filter", automatically_declare_parameters_from_overrides=True)
+        super().__init__("ball_filter")
         self.logger = self.get_logger()
         self.tf_buffer = Buffer(self, Duration(seconds=2))
         # Setup dynamic reconfigure config
-        self.config = {}
-        self.add_on_set_parameters_callback(self._dynamic_reconfigure_callback)
-        self._dynamic_reconfigure_callback(self.get_parameters_by_prefix("").values())
+        self.param_listener = parameters.ParamListener(self)
 
-    def _dynamic_reconfigure_callback(self, config) -> SetParametersResult:
-        tmp_config = deepcopy(self.config)
-        for param in config:
-            tmp_config[param.name] = param.value
-        config = tmp_config
         # creates kalmanfilter with 4 dimensions
         self.kf = KalmanFilter(dim_x=4, dim_z=2, dim_u=0)
         self.filter_initialized = False
         self.ball = None  # type: BallWrapper
         self.last_ball_stamp = None
 
-        self.filter_rate = config["filter_rate"]
-        self.measurement_certainty = config["measurement_certainty"]
-        self.filter_time_step = 1.0 / self.filter_rate
-        self.filter_reset_duration = Duration(seconds=config["filter_reset_time"])
-        self.filter_reset_distance = config["filter_reset_distance"]
-        self.closest_distance_match = config["closest_distance_match"]
+        self.update_params()
 
-        filter_frame = config["filter_frame"]
-        if filter_frame == "odom":
-            self.filter_frame = config["odom_frame"]
-        elif filter_frame == "map":
-            self.filter_frame = config["map_frame"]
-        self.logger.info(f"Using frame '{self.filter_frame}' for ball filtering")
-
-        # adapt velocity factor to frequency
-        self.velocity_factor = (1 - config["velocity_reduction"]) ** (1 / self.filter_rate)
-        self.process_noise_variance = config["process_noise_variance"]
+        self.logger.info(f"Using frame '{self.config.filter_frame}' for ball filtering")
 
         # publishes positions of ball
         self.ball_pose_publisher = self.create_publisher(
-            PoseWithCovarianceStamped, config["ball_position_publish_topic"], 1
+            PoseWithCovarianceStamped, self.config.ball_position_publish_topic, 1
         )
 
         # publishes velocity of ball
         self.ball_movement_publisher = self.create_publisher(
-            TwistWithCovarianceStamped, config["ball_movement_publish_topic"], 1
+            TwistWithCovarianceStamped, self.config.ball_movement_publish_topic, 1
         )
 
         # publishes ball
-        self.ball_publisher = self.create_publisher(PoseWithCertaintyStamped, config["ball_publish_topic"], 1)
+        self.ball_publisher = self.create_publisher(PoseWithCertaintyStamped, self.config.ball_publish_topic, 1)
 
         # setup subscriber
         self.subscriber = self.create_subscription(
             BallArray,
-            config["ball_subscribe_topic"],
+            self.config.ball_subscribe_topic,
             self.ball_callback,
             1,
             callback_group=MutuallyExclusiveCallbackGroup(),
@@ -105,14 +83,13 @@ class BallFilter(Node):
 
         self.reset_service = self.create_service(
             Trigger,
-            config["ball_filter_reset_service_name"],
+            self.config.ball_filter_reset_service_name,
             self.reset_filter_cb,
             callback_group=MutuallyExclusiveCallbackGroup(),
         )
 
-        self.config = config
         self.filter_timer = self.create_timer(self.filter_time_step, self.filter_step)
-        return SetParametersResult(successful=True)
+        self.logger.info("Ball filter initialized")
 
     def reset_filter_cb(self, req, response) -> Tuple[bool, str]:
         self.logger.info("Resetting bitbots ball filter...")
@@ -123,7 +100,7 @@ class BallFilter(Node):
     def ball_callback(self, msg: BallArray) -> None:
         if msg.balls:  # Balls exist
             # Either select ball closest to previous prediction or with highest confidence
-            if self.closest_distance_match:  # Select ball closest to previous prediction
+            if self.config.closest_distance_match:  # Select ball closest to previous prediction
                 ball_msg = self._get_closest_ball_to_previous_prediction(msg)
             else:  # Select ball with highest confidence
                 ball_msg = sorted(msg.balls, key=lambda ball: ball.confidence.confidence)[-1]
@@ -151,18 +128,35 @@ class BallFilter(Node):
         self, header: Header, point: Point, frame: Union[None, str] = None, timeout: float = 0.3
     ) -> Union[PointStamped, None]:
         if frame is None:
-            frame = self.filter_frame
+            frame = self.config.filter_frame
 
         point_stamped = PointStamped()
         point_stamped.header = header
         point_stamped.point = point
+
         try:
-            return self.tf_buffer.transform(point_stamped, frame, timeout=Duration(seconds=timeout))
+            return self.tf_buffer.transform(point_stamped, frame, timeout=Duration(nanoseconds=int(timeout * (10**9))))
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
             self.logger.warning(str(e))
 
+    def update_params(self) -> None:
+        """
+        Updates parameters from dynamic reconfigure
+        """
+        self.config = self.param_listener.get_params()
+        self.filter_time_step = 1.0 / self.config.filter_rate
+        self.filter_reset_duration = Duration(seconds=self.config.filter_reset_time)
+        self.velocity_factor = (1 - self.config.velocity_reduction) ** (self.filter_time_step)
+        self.kf.Q = Q_discrete_white_noise(
+            dim=2,
+            dt=self.filter_time_step,
+            var=self.config.process_noise_variance,
+            block_size=2,
+            order_by_dim=False,
+        )
+
     def filter_step(self) -> None:
-        """ "
+        """
         When ball has been assigned a value and filter has been initialized:
         State will be updated according to filter.
         If filter has not been initialized, then that will be done first.
@@ -170,15 +164,20 @@ class BallFilter(Node):
         If there is no data for ball, a prediction will still be made and published
         Process noise is taken into account
         """
+        # check whether parameters have changed
+        if self.param_listener.is_old(self.config):
+            self.param_listener.refresh_dynamic_parameters()
+            self.update_params()
+
         if self.ball:  # Ball measurement exists
             # Reset filter, if distance between last prediction and latest measurement is too large
             distance_to_ball = math.dist(
                 (self.kf.get_update()[0][0], self.kf.get_update()[0][1]), self.get_ball_measurement()
             )
-            if self.filter_initialized and distance_to_ball > self.filter_reset_distance:
+            if self.filter_initialized and distance_to_ball > self.config.filter_reset_distance:
                 self.filter_initialized = False
                 self.logger.info(
-                    f"Reset filter! Reason: Distance to ball {distance_to_ball} > {self.filter_reset_distance} (filter_reset_distance)"
+                    f"Reset filter! Reason: Distance to ball {distance_to_ball} > {self.config.filter_reset_distance} (filter_reset_distance)"
                 )
             # Initialize filter if not already
             if not self.filter_initialized:
@@ -219,6 +218,7 @@ class BallFilter(Node):
         :param x: start x position of the ball
         :param y: start y position of the ball
         """
+        self.logger.info(f"Initializing filter at position ({x}, {y})")
         # initial value of position(x,y) of the ball and velocity
         self.kf.x = np.array([x, y, 0, 0])
 
@@ -237,11 +237,11 @@ class BallFilter(Node):
         self.kf.P = np.eye(4) * 1000
 
         # assigning measurement noise
-        self.kf.R = np.array([[1, 0], [0, 1]]) * self.measurement_certainty
+        self.kf.R = np.array([[1, 0], [0, 1]]) * self.config.measurement_certainty
 
         # assigning process noise
         self.kf.Q = Q_discrete_white_noise(
-            dim=2, dt=self.filter_time_step, var=self.process_noise_variance, block_size=2, order_by_dim=False
+            dim=2, dt=self.filter_time_step, var=self.config.process_noise_variance, block_size=2, order_by_dim=False
         )
 
         self.filter_initialized = True
@@ -253,7 +253,7 @@ class BallFilter(Node):
         :param cov_mat: current covariance matrix
         """
         header = Header()
-        header.frame_id = self.filter_frame
+        header.frame_id = self.config.filter_frame
         header.stamp = rclpy.time.Time.to_msg(self.get_clock().now())
 
         # position
@@ -277,8 +277,8 @@ class BallFilter(Node):
         # velocity
         movement_msg = TwistWithCovarianceStamped()
         movement_msg.header = header
-        movement_msg.twist.twist.linear.x = float(state_vec[2] * self.filter_rate)
-        movement_msg.twist.twist.linear.y = float(state_vec[3] * self.filter_rate)
+        movement_msg.twist.twist.linear.x = float(state_vec[2] * self.config.filter_rate)
+        movement_msg.twist.twist.linear.y = float(state_vec[3] * self.config.filter_rate)
         movement_msg.twist.covariance = np.eye(6).reshape(36)
         movement_msg.twist.covariance[0] = float(cov_mat[2][2])
         movement_msg.twist.covariance[1] = float(cov_mat[2][3])
@@ -291,12 +291,13 @@ class BallFilter(Node):
         ball_msg.header = header
         ball_msg.pose.pose.pose.position = point_msg
         ball_msg.pose.pose.covariance = pos_covariance
-        ball_msg.pose.confidence = self.ball.get_confidence() if self.ball else 0.0
+        ball_msg.pose.confidence = float(self.ball.get_confidence() if self.ball else 0.0)
         self.ball_publisher.publish(ball_msg)
 
 
 def main(args=None) -> None:
     rclpy.init(args=args)
+
     node = BallFilter()
     # Number of executor threads is the number of MutiallyExclusiveCallbackGroups + 1 thread for the executor
     ex = MultiThreadedExecutor(num_threads=3)
