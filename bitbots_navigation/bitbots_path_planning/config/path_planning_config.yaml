@@ -1,0 +1,141 @@
+bitbots_path_planning:
+  base_footprint_frame: 
+    type: string
+    default_value: base_footprint
+    description: 'The frame of the robot base'
+    read_only: true
+  tf_buffer_duration:
+    type: double
+    default_value: 5.0
+    description: '-'
+    validation:
+      bounds<>: [0.0, 10.0]
+  rate:
+    type: double
+    default_value: 20.0
+    description: 'The rate at which the path planning is executed'
+    validation:
+      bounds<>: [0.0, 100.0]
+  
+  map:
+    planning_frame:
+      type: string
+      default_value: map
+      description: 'The frame in which the path planning is done'
+    resolution:
+      type: int
+      default_value: 20
+      description: 'Pixel per meter'
+      validation:
+        bounds<>: [0, 100]
+    size:
+      x:
+        type: double
+        default_value: 11.0
+        description: 'The size of the map in x direction'
+        validation:
+          bounds<>: [0.0, 100.0]
+      y:
+        type: double
+        default_value: 8.0
+        description: 'The size of the map in y direction'
+        validation:
+          bounds<>: [0.0, 100.0]
+    ball_update_topic:
+      type: string
+      default_value: ball_relative_filtered
+      description: 'The topic to subscribe to for ball detections'
+      read_only: true
+    robot_update_topic:
+      type: string
+      default_value: robots_relative_filtered
+      description: 'The topic to subscribe to for robot detections'
+      read_only: true
+    ball_diameter:
+      type: double
+      default_value: 0.13
+      description: 'The diameter of the ball'
+      read_only: true
+    obstacle_value:
+      type: int
+      default_value: 50
+      description: 'The value of the obstacles in the map'
+      validation:
+        bounds<>: [0, 100]
+    inflation:
+      dialte:
+        type: int
+        default_value: 3
+        description: 'The dialte value for the inflation'
+        validation:
+          bounds<>: [0, 100]
+      blur:
+        type: int
+        default_value: 13
+        description: 'The blur value for the inflation'
+        validation:
+          bounds<>: [0, 100]
+
+  controller:
+    carrot_distance:
+      type: int
+      default_value: 20
+      description: 'The distance to the carrot that we want to reach on the path'
+      validation:
+        bounds<>: [0, 100]
+    max_rotation_vel:
+      type: double
+      default_value: 0.4
+      description: 'The maximum rotation velocity of the robot in rad/s around the z-axis'
+      validation:
+        bounds<>: [0.0, 1.0]
+
+    max_vel_x:
+      type: double
+      default_value: 0.15
+      description: 'Maximum velocity we want to reach in different directions (base_footprint coordinate system)'
+      validation:
+        bounds<>: [0.0, 1.0]
+    min_vel_x:
+      type: double
+      default_value: -0.1
+      description: 'Minimum velocity we want to reach in different directions (base_footprint coordinate system)'
+      validation:
+        bounds<>: [-1.0, 0.0]
+    max_vel_y:
+      type: double
+      default_value: 0.05
+      description: 'Maximum velocity we want to reach in different directions (base_footprint coordinate system)'
+      validation:
+        bounds<>: [0.0, 1.0]
+    smoothing_tau:
+      type: double
+      default_value: 0.5
+      description: 'This is the time constant of the exponential smoothing filter. The higher the value, the more smoothing is applied. It denotes the time after which only 63% (1-1/e) of the original signal is left. It is update rate independent!'
+      validation:
+        bounds<>: [0.0, 1.0]
+    rotation_i_factor:
+      type: double
+      default_value: 0.0
+      description: 'Integral gain to counter constant disturbances (not really tested/used)'
+      validation:
+        bounds<>: [0.0, 1.0]
+    rotation_slow_down_factor:
+      type: double
+      default_value: 0.3
+      description: 'Clamped p gain of the rotation controller'
+      validation:
+        bounds<>: [0.0, 1.0]
+    translation_slow_down_factor:
+      type: double
+      default_value: 0.5
+      description: 'Clamped p gain of the translation controller'
+      validation:
+        bounds<>: [0.0, 1.0]
+    orient_to_goal_distance:
+      type: double
+      default_value: 1.0
+      description: 'Distance at which we switch from orienting towards the path to orienting towards the goal poses orientation (in meters)'
+      validation:
+        bounds<>: [0.0, 10.0]
+      
