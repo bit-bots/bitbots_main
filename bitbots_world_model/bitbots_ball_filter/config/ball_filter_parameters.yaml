@@ -100,7 +100,7 @@ bitbots_ball_filter:
   }
 
   camera_info_subscribe_topic: {
-    type: str,
+    type: string,
     default_value: 'camera/camera_info' ,
     description: 'Topic of the camera info',
     read_only: True
