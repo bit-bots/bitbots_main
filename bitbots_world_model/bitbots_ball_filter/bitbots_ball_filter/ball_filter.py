@@ -119,6 +119,20 @@ class BallFilter(Node):
             position = self._get_transform(msg.header, ball_msg.center)
             if position is not None:
                 self.ball = BallWrapper(position, msg.header, ball_msg.confidence.confidence)
+        # If we do not see a ball, but the KF predicts the ball to be there:
+        else:
+            # Check if we should be able to see the ball
+            if self.is_ball_in_fov(msg.header):
+                self.logger.info(
+                    "The KF prediction expects a ball, but we see none... Process noise will be increased."
+                )
+                self.kf.Q = Q_discrete_white_noise(
+                    dim=2,
+                    dt=self.filter_time_step,
+                    var=self.config.process_noise_variance * 10,
+                    block_size=2,
+                    order_by_dim=False,
+                )
 
     def _get_closest_ball_to_previous_prediction(self, ball_array: BallArray) -> Union[Ball, None]:
         closest_distance = math.inf
@@ -217,7 +231,7 @@ class BallFilter(Node):
                 huge_cov_mat = np.eye(cov_mat.shape[0]) * 10
                 self.publish_data(state_vec, huge_cov_mat)
 
-    def is_ball_in_fov(self):
+    def is_ball_in_fov(self, header: Header) -> bool:
         """
         Calculates if a ball should be currently visible
         """
@@ -232,7 +246,7 @@ class BallFilter(Node):
         # Build a pose
         ball_point = PointStamped()
         ball_point.header.frame_id = self.filter_frame
-        ball_point.header.stamp = self.ball.get_header().stamp
+        ball_point.header.stamp = header.stamp
         ball_point.point.x = state[0]
         ball_point.point.y = state[1]
 
