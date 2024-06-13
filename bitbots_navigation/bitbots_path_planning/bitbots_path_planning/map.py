@@ -19,19 +19,18 @@ class Map:
     def __init__(self, node: Node, buffer: tf2.Buffer) -> None:
         self.node = node
         self.buffer = buffer
-        self.resolution: int = self.node.declare_parameter("map.resolution", 20).value
-        self.size: tuple[float, float] = (
-            self.node.declare_parameter("map.size.x", 11.0).value,
-            self.node.declare_parameter("map.size.y", 8.0).value,
+        self.resolution: int = self.node.config.map.resolution
+        self.map: np.ndarray = np.ones(
+            (np.array((self.node.config.map.size.x, self.node.config.map.size.y)) * self.resolution).astype(int),
+            dtype=np.int8,
         )
-        self.map: np.ndarray = np.ones((np.array(self.size) * self.resolution).astype(int), dtype=np.int8)
-        self.frame: str = self.node.declare_parameter("map.planning_frame", "map").value
+        self.frame: str = self.node.config.map.planning_frame
         self.ball_buffer: list[Point] = []
         self.robot_buffer: list[sv3dm.Robot] = []
-        self.config_ball_diameter: float = self.node.declare_parameter("map.ball_diameter", 0.13).value
-        self.config_inflation_blur: int = self.node.declare_parameter("map.inflation.blur", 13).value
-        self.config_inflation_dialation: int = self.node.declare_parameter("map.inflation.dialte", 3).value
-        self.config_obstacle_value: int = self.node.declare_parameter("map.obstacle_value", 50).value
+        self.config_ball_diameter: float = self.node.config.map.ball_diameter
+        self.config_inflation_blur: int = self.node.config.map.inflation.blur
+        self.config_inflation_dialation: int = self.node.config.map.inflation.dialate
+        self.config_obstacle_value: int = self.node.config.map.obstacle_value
 
     def set_ball(self, ball: PoseWithCertaintyStamped) -> None:
         """

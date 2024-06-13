@@ -26,21 +26,18 @@ bitbots_path_planning:
       type: int
       default_value: 20
       description: 'Pixel per meter'
-      validation:
-        bounds<>: [0, 100]
+      read_only: true
     size:
       x:
         type: double
         default_value: 11.0
         description: 'The size of the map in x direction'
-        validation:
-          bounds<>: [0.0, 100.0]
+        read_only: true
       y:
         type: double
         default_value: 8.0
         description: 'The size of the map in y direction'
-        validation:
-          bounds<>: [0.0, 100.0]
+        read_only: true
     ball_update_topic:
       type: string
       default_value: ball_relative_filtered
@@ -60,21 +57,18 @@ bitbots_path_planning:
       type: int
       default_value: 50
       description: 'The value of the obstacles in the map'
-      validation:
-        bounds<>: [0, 100]
+      read_only: true
     inflation:
-      dialte:
+      dialate:
         type: int
         default_value: 3
         description: 'The dialte value for the inflation'
-        validation:
-          bounds<>: [0, 100]
+        read_only: true
       blur:
         type: int
         default_value: 13
         description: 'The blur value for the inflation'
-        validation:
-          bounds<>: [0, 100]
+        read_only: true
 
   controller:
     carrot_distance:
