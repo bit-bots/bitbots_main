@@ -13,6 +13,7 @@ from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.duration import Duration
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
+from sensor_msgs.msg import CameraInfo
 from soccer_vision_3d_msgs.msg import Ball, BallArray
 from std_msgs.msg import Header
 from std_srvs.srv import Trigger
@@ -54,6 +55,7 @@ class BallFilter(Node):
         self.filter_initialized = False
         self.ball = None  # type: BallWrapper
         self.last_ball_stamp = None
+        self.camera_info = None
 
         self.update_params()
 
@@ -73,12 +75,16 @@ class BallFilter(Node):
         self.ball_publisher = self.create_publisher(PoseWithCertaintyStamped, self.config.ball_publish_topic, 1)
 
         # setup subscriber
-        self.subscriber = self.create_subscription(
+        self.ball_subscriber = self.create_subscription(
             BallArray,
             self.config.ball_subscribe_topic,
             self.ball_callback,
             1,
             callback_group=MutuallyExclusiveCallbackGroup(),
+        )
+
+        self.camera_info_subscriber = self.create_subscription(
+            self.config.camera_info_subscribe_topic, CameraInfo, self.camera_info_callback, queue_size=1
         )
 
         self.reset_service = self.create_service(
@@ -96,6 +102,10 @@ class BallFilter(Node):
         self.filter_initialized = False
         response.success = True
         return response
+
+    def camera_info_callback(self, msg: CameraInfo):
+        """handles incoming ball messages"""
+        self.camera_info = msg
 
     def ball_callback(self, msg: BallArray) -> None:
         if msg.balls:  # Balls exist

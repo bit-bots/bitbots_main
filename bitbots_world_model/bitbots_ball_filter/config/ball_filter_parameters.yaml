@@ -98,3 +98,10 @@ bitbots_ball_filter:
     default_value: True,
     description: 'True if ball should be selected based on distance to filtered ball instead of highest rating'
   }
+
+  camera_info_subscribe_topic: {
+    type: str,
+    default_value: 'camera/camera_info' ,
+    description: 'Topic of the camera info',
+    read_only: True
+  }
