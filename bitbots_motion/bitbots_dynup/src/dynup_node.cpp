@@ -177,8 +177,8 @@ void DynupNode::execute(const std::shared_ptr<DynupGoalHandle> goal_handle) {
   if (param_listener_.is_old(params_)) {
     params_ = param_listener_.get_params();
   }
-  // Copy engine params to engine
-  engine_.setParams(params_.engine);
+  // Copy all params to other nodes
+  onSetParameters();
 
   bitbots_utils::wait_for_tf(this->get_logger(), this->get_clock(), this->tf_buffer_.get(),
                              {base_link_frame_, r_sole_frame_, l_sole_frame_, r_wrist_frame_, l_wrist_frame_},
