@@ -21,7 +21,7 @@ class Planner:
         self.map = map
         self.goal: PoseStamped | None = None
         self.path: Path | None = None
-        self.base_footprint_frame: str = self.node.get_parameter("base_footprint_frame").value
+        self.base_footprint_frame: str = self.node.config.base_footprint_frame
 
     def set_goal(self, pose: PoseStamped) -> None:
         """
