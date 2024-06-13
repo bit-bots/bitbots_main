@@ -176,7 +176,7 @@ void DynupNode::execute(const std::shared_ptr<DynupGoalHandle> goal_handle) {
 
   if (param_listener_.is_old(params_)) {
     params_ = param_listener_.get_params();
-    // Copy all params to other nodes
+    // Copy all params to other modules
     onSetParameters();
   }
 
