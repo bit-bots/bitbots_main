@@ -24,11 +24,7 @@ class PathPlanning(Node):
     def __init__(self) -> None:
         super().__init__("bitbots_path_planning")
         self.param_listener = parameters.ParamListener(self)
-        self.config = self.param_listener.get_config()
-
-        # Declare params
-        self.declare_parameter("base_footprint_frame", "base_footprint")
-        self.declare_parameter("rate", 20.0)
+        self.config = self.param_listener.get_params()
 
         # We need to create a tf buffer
         self.tf_buffer = Buffer(self, Duration(seconds=self.config.tf_buffer_duration))
