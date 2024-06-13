@@ -57,9 +57,7 @@ void PyDynupWrapper::set_parameter(py::bytes parameter_msg) {
   rclcpp::Parameter parameter =
       rclcpp::Parameter::from_parameter_msg(fromPython<rcl_interfaces::msg::Parameter>(parameter_msg));
 
-  // needs to be a vector
-  std::vector<rclcpp::Parameter> parameters = {parameter};
-  dynup_node_->onSetParameters(parameters);
+  dynup_node_->onSetParameters();
 }
 
 PYBIND11_MODULE(libpy_dynup, m) {
