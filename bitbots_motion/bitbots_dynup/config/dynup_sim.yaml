@@ -53,6 +53,7 @@ dynup_pid_trunk_fused_roll:
     i_clamp: 0.0
     i_clamp_min: 0.0
     i_clamp_max: 0.0
+    antiwindup: True
 dynup_pid_trunk_fused_pitch:
   ros__parameters:
     p: -0.3
@@ -61,4 +62,5 @@ dynup_pid_trunk_fused_pitch:
     i_clamp: 0.0
     i_clamp_min: -0.25
     i_clamp_max: 0.25
+    antiwindup: True
 
