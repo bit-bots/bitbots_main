@@ -33,6 +33,7 @@
 #include "bitbots_dynup/dynup_stabilizer.hpp"
 #include "bitbots_dynup/visualizer.hpp"
 #include "bitbots_msgs/action/dynup.hpp"
+#include "dynup_parameters.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
 
 namespace bitbots_dynup {
@@ -53,7 +54,7 @@ class DynupNode : public rclcpp::Node {
  public:
   explicit DynupNode(const std::string &ns = "", std::vector<rclcpp::Parameter> parameters = {});
 
-  rcl_interfaces::msg::SetParametersResult onSetParameters(const std::vector<rclcpp::Parameter> &parameters);
+  rcl_interfaces::msg::SetParametersResult onSetParameters();
 
   void imuCallback(const sensor_msgs::msg::Imu::SharedPtr msg);
 
@@ -98,13 +99,15 @@ class DynupNode : public rclcpp::Node {
   std::vector<std::string> param_names_;
   rclcpp_action::Server<DynupGoal>::SharedPtr action_server_;
 
-  OnSetParametersCallbackHandle::SharedPtr callback_handle_;
+  // Declare parameter listener and struct from the generate_parameter_library
+  bitbots_dynup::ParamListener param_listener_;
+  bitbots_dynup::Params params_;
+  // Datastructure to hold all parameters, which is build from the schema in the 'parameters.yaml'
 
   DynupEngine engine_;
   Stabilizer stabilizer_;
   Visualizer visualizer_;
   DynupIK ik_;
-  std::map<std::string, rclcpp::Parameter> params_;
   int stable_duration_;
   int engine_rate_;
   int failed_tick_counter_;
