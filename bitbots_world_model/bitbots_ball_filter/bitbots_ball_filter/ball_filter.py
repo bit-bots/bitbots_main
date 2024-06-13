@@ -17,7 +17,7 @@ from sensor_msgs.msg import CameraInfo
 from soccer_vision_3d_msgs.msg import Ball, BallArray
 from std_msgs.msg import Header
 from std_srvs.srv import Trigger
-from tf2_geometry_msgs import PointStamped
+from tf2_geometry_msgs import PointStamped, PoseStamped
 
 from bitbots_ball_filter.ball_filter_parameters import bitbots_ball_filter as parameters
 from bitbots_msgs.msg import PoseWithCertaintyStamped
@@ -84,7 +84,7 @@ class BallFilter(Node):
         )
 
         self.camera_info_subscriber = self.create_subscription(
-            self.config.camera_info_subscribe_topic, CameraInfo, self.camera_info_callback, queue_size=1
+            CameraInfo, self.config.camera_info_subscribe_topic, self.camera_info_callback, 1
         )
 
         self.reset_service = self.create_service(
@@ -244,16 +244,21 @@ class BallFilter(Node):
         state, cov_mat = self.kf.get_update()
 
         # Build a pose
-        ball_point = PointStamped()
-        ball_point.header.frame_id = self.filter_frame
-        ball_point.header.stamp = header.stamp
-        ball_point.point.x = state[0]
-        ball_point.point.y = state[1]
+        ball_pose = PoseStamped()
+        ball_pose.header.frame_id = self.config.filter_frame
+        ball_pose.header.stamp = header.stamp
+        ball_pose.pose.position.x = state[0]
+        ball_pose.pose.position.y = state[1]
 
         # Transform to camera frame
-        ball_in_camera_optical_frame = self.tf_buffer.transform(
-            ball_point, self.camera_info.header.frame_id, timeout=Duration(nanoseconds=0.5 * (10**9))
-        )
+        try:
+            ball_in_camera_optical_frame = self.tf_buffer.transform(
+                ball_pose, self.camera_info.header.frame_id, timeout=Duration(nanoseconds=0.5 * (10**9))
+            )
+        except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
+            self.logger.warning(str(e))
+            return False
+
         # Check if the ball is in front of the camera
         if ball_in_camera_optical_frame.pose.position.z >= 0:
             # Quick math to get the pixels
@@ -262,7 +267,7 @@ class BallFilter(Node):
                 ball_in_camera_optical_frame.pose.position.y,
                 ball_in_camera_optical_frame.pose.position.z,
             ]
-            k = np.reshape(self.camera_info.K, (3, 3))
+            k = np.reshape(self.camera_info.k, (3, 3))
             p_pixel = np.matmul(k, p)
             p_pixel = p_pixel * (1 / p_pixel[2])
             # Make sure that the transformed pixel is inside the resolution and positive.
