@@ -207,6 +207,45 @@ class BallFilter(Node):
                 huge_cov_mat = np.eye(cov_mat.shape[0]) * 10
                 self.publish_data(state_vec, huge_cov_mat)
 
+    def is_ball_in_fov(self):
+        """
+        Calculates if a ball should be currently visible
+        """
+        # Check if we got a camera info to do this stuff
+        if self.camera_info is None:
+            self.logger.info("No camera info received. Not checking if the ball is currently visible.")
+            return False
+
+        # Get ball filter state
+        state, cov_mat = self.kf.get_update()
+
+        # Build a pose
+        ball_point = PointStamped()
+        ball_point.header.frame_id = self.filter_frame
+        ball_point.header.stamp = self.ball.get_header().stamp
+        ball_point.point.x = state[0]
+        ball_point.point.y = state[1]
+
+        # Transform to camera frame
+        ball_in_camera_optical_frame = self.tf_buffer.transform(
+            ball_point, self.camera_info.header.frame_id, timeout=Duration(nanoseconds=0.5 * (10**9))
+        )
+        # Check if the ball is in front of the camera
+        if ball_in_camera_optical_frame.pose.position.z >= 0:
+            # Quick math to get the pixels
+            p = [
+                ball_in_camera_optical_frame.pose.position.x,
+                ball_in_camera_optical_frame.pose.position.y,
+                ball_in_camera_optical_frame.pose.position.z,
+            ]
+            k = np.reshape(self.camera_info.K, (3, 3))
+            p_pixel = np.matmul(k, p)
+            p_pixel = p_pixel * (1 / p_pixel[2])
+            # Make sure that the transformed pixel is inside the resolution and positive.
+            if 0 < p_pixel[0] <= self.camera_info.width and 0 < p_pixel[1] <= self.camera_info.height:
+                return True
+        return False
+
     def get_ball_measurement(self) -> Tuple[float, float]:
         """extracts filter measurement from ball message"""
         return self.ball.get_position().point.x, self.ball.get_position().point.y
