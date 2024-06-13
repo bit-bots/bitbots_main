@@ -51,7 +51,7 @@ class BodyDSD:
             TeamData,
             "team_data",
             blackboard.team_data.team_data_callback,
-            qos_profile=1,
+            qos_profile=10,
             callback_group=MutuallyExclusiveCallbackGroup(),
         )
         node.create_subscription(
