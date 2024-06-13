@@ -10,6 +10,7 @@
   <depend>bitbots_msgs</depend>
   <depend>bitbots_tf_buffer</depend>
   <depend>geometry_msgs</depend>
+  <depend>generate_parameter_library</depend>
   <depend>nav_msgs</depend>
   <depend>python3-numpy</depend>
   <depend>python3-opencv</depend>
