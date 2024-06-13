@@ -18,10 +18,10 @@ class Buffer(tf2.BufferCore, tf2.BufferInterface):
     """
 
     def __init__(self, node, cache_time: Optional[Duration] = None, *args, **kwargs):
-        if cache_time is not None:
-            tf2.BufferCore.__init__(self, cache_time)
-        else:
-            tf2.BufferCore.__init__(self)
+        if cache_time is None:
+            cache_time = Duration(seconds=10.0)
+
+        tf2.BufferCore.__init__(self, cache_time)
         tf2.BufferInterface.__init__(self)
 
         self._impl = CppBuffer(serialize_message(Duration.to_msg(cache_time)), node)
