@@ -20,8 +20,9 @@ class Map:
         self.node = node
         self.buffer = buffer
         self.resolution: int = self.node.config.map.resolution
+        self.size: tuple[float, float] = (self.node.config.map.size.x, self.node.config.map.size.y)
         self.map: np.ndarray = np.ones(
-            (np.array((self.node.config.map.size.x, self.node.config.map.size.y)) * self.resolution).astype(int),
+            (np.array(self.size) * self.resolution).astype(int),
             dtype=np.int8,
         )
         self.frame: str = self.node.config.map.planning_frame
