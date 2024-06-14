@@ -151,17 +151,6 @@ class BallFilter(Node):
             if self.kf is None:
                 self.init_filter(*self.last_ball_measurement.get_position_tuple())
 
-            # Reset filter, if distance between the filter state and the measurement is too large
-            distance_measurement_prediction = math.dist(
-                (self.kf.get_update()[0][0], self.kf.get_update()[0][1]),
-                self.last_ball_measurement.get_position_tuple(),
-            )
-            if distance_measurement_prediction > self.config.filter_reset_distance:
-                self.init_filter(*self.last_ball_measurement.get_position_tuple())
-                self.logger.info(
-                    f"Reset filter! Reason: Distance to ball {distance_measurement_prediction} > {self.config.filter_reset_distance} (filter_reset_distance)"
-                )
-
             # Calculate distance from the robot to the ball and update measurement noise
             assert msg.header.frame_id == "base_footprint", "Ball frame_id is not 'base_footprint'!"
             robot_ball_delta = math.hypot(ball_msg.center.x, ball_msg.center.y)
@@ -284,15 +273,18 @@ class BallFilter(Node):
         Sets up the kalman filter with
         the different matrices
         """
+        # Models the friction as an exponential decay alpha from the time constant tau (velocity_decay_time)
+        # It is defined in a time-step independent way
+        exponent_in_s = -self.filter_time_step / self.config.velocity_decay_time
+        velocity_factor = 1 - math.exp(exponent_in_s)
+
         # transition matrix
-        # The velocity factor is used to reduce the velocity of the ball over time
-        velocity_factor = (1 - self.config.velocity_reduction) ** (self.filter_time_step)
         self.kf.F = np.array(
             [
                 [1.0, 0.0, 1.0, 0.0],
                 [0.0, 1.0, 0.0, 1.0],
-                [0.0, 0.0, velocity_factor, 0.0],
-                [0.0, 0.0, 0.0, velocity_factor],
+                [0.0, 0.0, 1 - velocity_factor, 0.0],
+                [0.0, 0.0, 0.0, 1 - velocity_factor],
             ]
         )
         # measurement function
