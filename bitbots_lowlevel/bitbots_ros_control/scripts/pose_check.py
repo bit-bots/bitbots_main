@@ -47,16 +47,28 @@ def num_to_emoji(num: int) -> str:
     return f'{"".join([emoji_numbers[int(digit)] for digit in str(num)])} '
 
 
-def move_to_joint_position(publisher: Publisher, joint_goals: dict[str, float | int]):
+def move_to_joint_position(publisher: Publisher, joint_goals: dict[str, float]):
     assert set(joint_goals.keys()) <= set(JOINT_NAMES), "Joint goals do not match the robots joints"
+
+    # Init all joints with 0
+    all_joint_goals = {joint: 0.0 for joint in JOINT_NAMES}
+    all_joint_goals.update(joint_goals)
+
+    # offsets for straight legs
+    all_joint_goals["LHipPitch"] -= 0.327
+    all_joint_goals["RHipPitch"] += 0.327
+    all_joint_goals["LKnee"] -= 0.097
+    all_joint_goals["RKnee"] += 0.097
+    all_joint_goals["LAnklePitch"] += 0.084
+    all_joint_goals["RAnklePitch"] -= 0.084
 
     publisher.publish(
         JointCommand(
-            joint_names=JOINT_NAMES,
+            joint_names=all_joint_goals.keys(),
             velocities=[SPEED] * len(JOINT_NAMES),
             accelerations=[-1] * len(JOINT_NAMES),
             max_currents=[-1] * len(JOINT_NAMES),
-            positions=[float(joint_goals.get(joint, 0)) for joint in JOINT_NAMES],
+            positions=all_joint_goals.values(),
         )
     )
 
@@ -96,7 +108,6 @@ def main():
         # T-Pose #
         ##########
 
-        # TODO knee init pose offset for straight legs
         move_to_joint_position(
             pub,
             {
@@ -110,6 +121,7 @@ def main():
             f"{Style.BRIGHT}\nChecks:{Style.RESET_ALL}\n"
             "- Check that all limbs are straight.\n"
             "- Check that both sides of the robot are symmetrical.\n"
+            "- Check for backlash and loose parts.\n"
             f"{Style.BRIGHT}Press enter to continue.{Style.RESET_ALL}"
         )
 
@@ -137,6 +149,7 @@ def main():
             f"{Style.BRIGHT}\nChecks:{Style.RESET_ALL}\n"
             "- Check that all limbs are straight.\n"
             "- Check that both sides of the robot are symmetrical.\n"
+            "- Check for backlash and loose parts.\n"
             f"{Style.BRIGHT}Press enter to continue.{Style.RESET_ALL}"
         )
 
@@ -164,6 +177,7 @@ def main():
             f"{Style.BRIGHT}\nChecks:{Style.RESET_ALL}\n"
             "- Check that all limbs are straight.\n"
             "- Check that both sides of the robot are symmetrical.\n"
+            "- Check for backlash and loose parts.\n"
             f"{Style.BRIGHT}Press enter to continue.{Style.RESET_ALL}"
         )
 
@@ -186,8 +200,9 @@ def main():
 
         input(
             f"{Style.BRIGHT}\nChecks:{Style.RESET_ALL}\n"
-            "- Check that all limbs are straight.\n"
+            "- Check that the elbows are at 90 degrees.\n"
             "- Check that both sides of the robot are symmetrical.\n"
+            "- Check for backlash and loose parts.\n"
             f"{Style.BRIGHT}Press enter to continue.{Style.RESET_ALL}"
         )
 
@@ -213,6 +228,7 @@ def main():
             f"{Style.BRIGHT}\nChecks:{Style.RESET_ALL}\n"
             "- Check that all limbs are straight.\n"
             "- Check that both sides of the robot are symmetrical.\n"
+            "- Check for backlash and loose parts.\n"
             f"{Style.BRIGHT}Press enter to continue.{Style.RESET_ALL}"
         )
 
@@ -224,7 +240,7 @@ def main():
 
         step += 1
         input(
-            f"\n{Fore.YELLOW}{num_to_emoji(step)}: The robot will now move {Style.BRIGHT}its head to the right.{Style.RESET_ALL}\n"
+            f"\n{Fore.YELLOW}{num_to_emoji(step)}: The robot will now move {Style.BRIGHT}its head to the right and the elbows to 90 degrees.{Style.RESET_ALL}\n"
             f"{Style.BRIGHT}Press enter to move.{Style.RESET_ALL}"
         )
 
@@ -235,11 +251,11 @@ def main():
             },
         )
 
-        # TODO Change checks?
         input(
             f"{Style.BRIGHT}\nChecks:{Style.RESET_ALL}\n"
-            "- Check that all limbs are straight.\n"
-            "- Check that both sides of the robot are symmetrical.\n"
+            "- Check that the head looks 90 degrees to the right.\n"
+            "- Check that the head is horizontal.\n"
+            "- Check that the head is not loose.\n"
             f"{Style.BRIGHT}Press enter to continue.{Style.RESET_ALL}"
         )
 
@@ -260,11 +276,11 @@ def main():
             },
         )
 
-        # TODO Change checks?
         input(
             f"{Style.BRIGHT}\nChecks:{Style.RESET_ALL}\n"
-            "- Check that all limbs are straight.\n"
-            "- Check that both sides of the robot are symmetrical.\n"
+            "- Check that the head looks 90 degrees to the left.\n"
+            "- Check that the head is horizontal.\n"
+            "- Check that the head is not loose.\n"
             f"{Style.BRIGHT}Press enter to continue.{Style.RESET_ALL}"
         )
 
@@ -281,34 +297,15 @@ def main():
         move_to_joint_position(
             pub,
             {
-                "HeadPan": 0,
                 "HeadTilt": -math.pi / 2,
-                "LAnklePitch": 0,
-                "LAnkleRoll": 0,
-                "LElbow": 0,
-                "LHipPitch": 0,
-                "LHipRoll": 0,
-                "LHipYaw": 0,
-                "LKnee": 0,
-                "LShoulderPitch": 0,
-                "LShoulderRoll": 0,
-                "RAnklePitch": 0,
-                "RAnkleRoll": 0,
-                "RElbow": 0,
-                "RHipPitch": 0,
-                "RHipRoll": 0,
-                "RHipYaw": 0,
-                "RKnee": 0,
-                "RShoulderPitch": 0,
-                "RShoulderRoll": 0,
             },
         )
 
-        # TODO Change checks?
         input(
             f"{Style.BRIGHT}\nChecks:{Style.RESET_ALL}\n"
-            "- Check that all limbs are straight.\n"
-            "- Check that both sides of the robot are symmetrical.\n"
+            "- Check that the head looks to the front.\n"
+            "- Check that the head looks straight down in reference to the torso.\n"
+            "- Check that the head is not loose.\n"
             f"{Style.BRIGHT}Press enter to continue.{Style.RESET_ALL}"
         )
 
@@ -335,11 +332,11 @@ def main():
             },
         )
 
-        # TODO Change checks?
         input(
             f"{Style.BRIGHT}\nChecks:{Style.RESET_ALL}\n"
-            "- Check that all limbs are straight.\n"
             "- Check that both sides of the robot are symmetrical.\n"
+            "- Check that the knees are at 90 degrees.\n"
+            "- Check for backlash or flexibility of the legs.\n"
             f"{Style.BRIGHT}Press enter to continue.{Style.RESET_ALL}"
         )
 
@@ -364,11 +361,12 @@ def main():
             },
         )
 
-        # TODO Change checks?
         input(
             f"{Style.BRIGHT}\nChecks:{Style.RESET_ALL}\n"
-            "- Check that all limbs are straight.\n"
-            "- Check that both sides of the robot are symmetrical.\n"
+            "- Check that the legs are straight.\n"
+            "- Check if the legs moved freely to the position (sometimes the hipYaw screws are tightened too much and block the range of motion).\n"
+            "- Check that the legs are not flexible by an unusual amount if moved.\n"
+            "- Check that the cables are without strain.\n"
             f"{Style.BRIGHT}Press enter to continue.{Style.RESET_ALL}"
         )
 
@@ -393,11 +391,12 @@ def main():
             },
         )
 
-        # TODO Change checks?
         input(
             f"{Style.BRIGHT}\nChecks:{Style.RESET_ALL}\n"
-            "- Check that all limbs are straight.\n"
-            "- Check that both sides of the robot are symmetrical.\n"
+            "- Check that the legs are straight.\n"
+            "- Check if the legs moved freely to the position (sometimes the hipYaw screws are tightened too much and block the range of motion).\n"
+            "- Check that the legs are not flexible by an unusual amount if moved.\n"
+            "- Check that the cables are without strain.\n"
             f"{Style.BRIGHT}Press enter to continue.{Style.RESET_ALL}"
         )
 
@@ -420,16 +419,21 @@ def main():
             },
         )
 
-        # TODO Change checks?
         input(
             f"{Style.BRIGHT}\nChecks:{Style.RESET_ALL}\n"
-            "- Check that all limbs are straight.\n"
-            "- Check that both sides of the robot are symmetrical.\n"
+            "- Check that the legs are symmetrical.\n"
+            "- Check that the legs are straight.\n"
+            "- Check that the legs are horizontal.\n"
+            "- Check that the legs are not flexible by an unusual amount if moved.\n"
             f"{Style.BRIGHT}Press enter to continue.{Style.RESET_ALL}"
         )
 
         # Move back to init
         move_to_joint_position(pub, {})
+
+        print(
+            f"\n\n{Fore.GREEN}If you have reached this point, the robot is hopefully in good shape and ready to go! GLHF"
+        )
 
     except KeyboardInterrupt:
         print(f"\n\n{Fore.RED}Closing...")
