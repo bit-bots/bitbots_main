@@ -72,7 +72,7 @@ def main():
 
     step = 1
 
-    # Show bitbot ascii art
+    # Show bitbot ascii art (TODO change to T-Posing Bit-Bot)
     ascii_art = open(os.path.join(get_package_share_directory("bitbots_utils"), "config", "welcome_art.txt")).read()
 
     print(
