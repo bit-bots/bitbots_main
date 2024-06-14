@@ -193,6 +193,7 @@ class WalkNode : public rclcpp::Node {
   double current_fly_pressure_;
   double current_fly_effort_;
 
+  std::optional<rclcpp::Time> last_imu_measurement_time_;
   double imu_y_acc = 0;
 
   double roll_vel_;

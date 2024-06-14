@@ -50,7 +50,7 @@ walking:
       y_speed_multiplier: 1.0
       yaw_speed_multiplier: 1.0
 
-      imu_active: False
+      imu_stabilization_active: False
       imu_pitch_threshold: 0.19
       imu_roll_threshold: 0.4
       imu_pitch_vel_threshold: 1.3

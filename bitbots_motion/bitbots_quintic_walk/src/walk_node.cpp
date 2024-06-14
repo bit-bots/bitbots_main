@@ -442,9 +442,18 @@ void WalkNode::imuCb(const sensor_msgs::msg::Imu::SharedPtr msg) {
   roll_vel_ = msg->angular_velocity.x;
   pitch_vel_ = msg->angular_velocity.y;
 
-  imu_y_acc = msg->linear_acceleration.y * 0.1 + imu_y_acc * (1 - 0.1);
+  // Calculate ema (exponential moving average) of y (sideways) acceleration in a time-independet manner
+  if (last_imu_measurement_time_) {
+    auto time_delta = rclcpp::Time(msg->header.stamp) - last_imu_measurement_time_.value();
+    double exponent_in_s = -time_delta.nanoseconds() / (config_.node.imu_y_acc_tau * 1e9);
+    double alpha = 1 - std::exp(exponent_in_s);
 
-  if (config_.node.imu_active) {
+    imu_y_acc = msg->linear_acceleration.y * alpha + imu_y_acc * (1 - alpha);
+  } else {
+    imu_y_acc = msg->linear_acceleration.y;
+  }
+
+  if (config_.node.imu_stabilization_active) {
     // compute the pitch offset to the currently wanted pitch of the engine
     double wanted_pitch = walk_engine_.getWantedTrunkPitch();
 
@@ -464,6 +473,8 @@ void WalkNode::imuCb(const sensor_msgs::msg::Imu::SharedPtr msg) {
       }
     }
   }
+  // Store the timestamp
+  last_imu_measurement_time_ = msg->header.stamp;
 }
 
 void WalkNode::pressureLeftCb(const bitbots_msgs::msg::FootPressure::SharedPtr msg) {

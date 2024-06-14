@@ -273,7 +273,7 @@ walking:
         bounds<>: [ 0.0, 5.0 ],
       }
     }
-    imu_active: {
+    imu_stabilization_active: {
       type: bool,
       description: "Activate IMU",
     }
@@ -312,6 +312,14 @@ walking:
         bounds<>: [ 0.0, 5.0 ],
       }
     }
+    imu_y_acc_tau: {
+      type: double,
+      description: "Time constant for the low pass filter of the IMU y acceleration (in seconds). It defines the time it takes for a unit step input to reach 63.2% of its final value.",
+      default_value: 0.1,
+      validation: {
+        bounds<>: [ 0.0, 1.0 ],
+      }
+    }
     pressure_phase_reset_active: {
       type: bool,
       description: "Activate foot pressure based phase reset",
@@ -339,5 +347,18 @@ walking:
       description: "Minimum effort value for the joint effort based phase reset",
       validation: {
         bounds<>: [ 0.0, 100.0 ],
+      }
+    }
+    imu_phase_reset:
+      active: {
+        type: bool,
+        default_value: false,
+        description: "Activate IMU linear acceleration based phase reset",
+      }
+    y_acceleration_threshold: {
+      type: double,
+      description: "Threshold for the y acceleration of the IMU under which the phase reset is triggered (if we are in the correct phase of the walking cycle)",
+      validation: {
+        bounds<>: [ 0.0, 10.0 ],
       }
     }
