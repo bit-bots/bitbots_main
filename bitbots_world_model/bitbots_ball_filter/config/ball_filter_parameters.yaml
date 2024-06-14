@@ -71,13 +71,6 @@ bitbots_ball_filter:
     description: 'Max ball not seen time in Seconds'
     validation: 
       bounds<>: [0, 100]
-    
-  filter_reset_distance: 
-    type: int
-    default_value: 99
-    description: 'Distance to the current estimation causing a filter reset'
-    validation: 
-      bounds<>: [0, 100]
   
   noise_increment_factor: 
     type: double

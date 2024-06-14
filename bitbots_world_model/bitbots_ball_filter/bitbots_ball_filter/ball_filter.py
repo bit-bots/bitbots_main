@@ -151,17 +151,6 @@ class BallFilter(Node):
             if self.kf is None:
                 self.init_filter(*self.last_ball_measurement.get_position_tuple())
 
-            # Reset filter, if distance between the filter state and the measurement is too large
-            distance_measurement_prediction = math.dist(
-                (self.kf.get_update()[0][0], self.kf.get_update()[0][1]),
-                self.last_ball_measurement.get_position_tuple(),
-            )
-            if distance_measurement_prediction > self.config.filter_reset_distance:
-                self.init_filter(*self.last_ball_measurement.get_position_tuple())
-                self.logger.info(
-                    f"Reset filter! Reason: Distance to ball {distance_measurement_prediction} > {self.config.filter_reset_distance} (filter_reset_distance)"
-                )
-
             # Calculate distance from the robot to the ball and update measurement noise
             assert msg.header.frame_id == "base_footprint", "Ball frame_id is not 'base_footprint'!"
             robot_ball_delta = math.hypot(ball_msg.center.x, ball_msg.center.y)
