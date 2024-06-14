@@ -284,15 +284,18 @@ class BallFilter(Node):
         Sets up the kalman filter with
         the different matrices
         """
+        # Models the friction as an exponential decay alpha from the time constant tau (velocity_decay_time)
+        # It is defined in a time-step independent way
+        exponent_in_s = -self.filter_time_step / self.config.velocity_decay_time
+        velocity_factor = 1 - math.exp(exponent_in_s)
+
         # transition matrix
-        # The velocity factor is used to reduce the velocity of the ball over time
-        velocity_factor = (1 - self.config.velocity_reduction) ** (self.filter_time_step)
         self.kf.F = np.array(
             [
                 [1.0, 0.0, 1.0, 0.0],
                 [0.0, 1.0, 0.0, 1.0],
-                [0.0, 0.0, velocity_factor, 0.0],
-                [0.0, 0.0, 0.0, velocity_factor],
+                [0.0, 0.0, 1 - velocity_factor, 0.0],
+                [0.0, 0.0, 0.0, 1 - velocity_factor],
             ]
         )
         # measurement function
