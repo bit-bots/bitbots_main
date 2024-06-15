@@ -16,7 +16,7 @@ from rclpy.publisher import Publisher
 
 from bitbots_msgs.msg import HeadMode, JointCommand
 
-SPEED = 1.0
+SPEED: float = 1.0
 DYNAMIXEL_CMD_TOPIC = "/DynamixelController/command"
 JOINT_NAMES = [
     "HeadPan",
@@ -66,8 +66,8 @@ def move_to_joint_position(publisher: Publisher, joint_goals: dict[str, float]):
         JointCommand(
             joint_names=all_joint_goals.keys(),
             velocities=[SPEED] * len(JOINT_NAMES),
-            accelerations=[-1] * len(JOINT_NAMES),
-            max_currents=[-1] * len(JOINT_NAMES),
+            accelerations=[-1.0] * len(JOINT_NAMES),
+            max_currents=[-1.0] * len(JOINT_NAMES),
             positions=all_joint_goals.values(),
         )
     )
@@ -94,7 +94,7 @@ def main():
         f"{Fore.LIGHTWHITE_EX}{Style.BRIGHT}{Back.BLUE}    ========================================    {Style.RESET_ALL}\n"
         f"{Fore.LIGHTWHITE_EX}{Style.BRIGHT}{Back.BLUE}                                                {Style.RESET_ALL}\n\n"
         f"{Fore.RED}Make sure that the surroundings are clear and the robot is able to move freely. "
-        f"Also be cautions and be prepared to hold the robot in case it is not stable.\n{Style.RESET_ALL}"
+        f"Also be cautious and prepared to hold the robot in case it is not stable.\n{Style.RESET_ALL}"
     )
 
     try:
