@@ -15,6 +15,7 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <visualization_msgs/msg/marker.hpp>
 
+#include "dynup_parameters.hpp"
 #include "dynup_stabilizer.hpp"
 
 namespace bitbots_dynup {
@@ -52,7 +53,7 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
 
   bitbots_splines::PoseSpline getLFootSplines() const;
 
-  void setParams(std::map<std::string, rclcpp::Parameter> params);
+  void setParams(bitbots_dynup::Params::Engine params);
 
   void reset() override;
   void reset(double time);
@@ -76,7 +77,7 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
   bitbots_splines::PoseSpline l_hand_spline_;
   bitbots_splines::PoseSpline r_foot_spline_;
   bitbots_splines::PoseSpline r_hand_spline_;
-  std::map<std::string, rclcpp::Parameter> params_;
+  bitbots_dynup::Params::Engine params_;
 
   DynupResponse goals_;
   std::shared_ptr<rclcpp::Node> walking_param_node_;

@@ -9,6 +9,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(ament_index_cpp REQUIRED)
 find_package(backward_ros REQUIRED)
+find_package(bitbots_utils REQUIRED)
 find_package(Boost COMPONENTS filesystem REQUIRED)
 find_package(builtin_interfaces REQUIRED)
 find_package(cv_bridge REQUIRED)
@@ -87,13 +88,14 @@ ament_target_dependencies(
   localization
   ament_cmake
   ament_index_cpp
-  rclcpp
+  bitbots_utils
   Boost
   cv_bridge
   image_transport
   nav_msgs
   OpenCV
   particle_filter
+  rclcpp
   soccer_vision_3d_msgs
   std_srvs
   tf2

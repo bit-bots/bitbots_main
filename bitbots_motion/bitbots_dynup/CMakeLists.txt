@@ -28,10 +28,13 @@ find_package(tf2_eigen REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(Eigen3 REQUIRED)
+find_package(generate_parameter_library REQUIRED)
 
 find_package(ros2_python_extension REQUIRED)
 find_package(pybind11 REQUIRED)
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
+
+generate_parameter_library(dynup_parameters config/dynup_config.yaml)
 
 rosidl_generate_interfaces(
   ${PROJECT_NAME} "msg/DynupEngineDebug.msg" "msg/DynupPoses.msg" DEPENDENCIES
@@ -56,6 +59,7 @@ ament_target_dependencies(
   control_msgs
   control_toolbox
   geometry_msgs
+  generate_parameter_library
   moveit_ros_planning_interface
   rclcpp
   ros2_python_extension
@@ -71,8 +75,8 @@ ament_target_dependencies(
 rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME}
                               "rosidl_typesupport_cpp")
 
-target_link_libraries(DynupNode "${cpp_typesupport_target}")
-
+target_link_libraries(DynupNode "${cpp_typesupport_target}" rclcpp::rclcpp
+                      dynup_parameters)
 # create the lib
 pybind11_add_module(libpy_dynup SHARED src/dynup_pywrapper.cpp ${SOURCES})
 ament_target_dependencies(
@@ -96,7 +100,8 @@ ament_target_dependencies(
   tf2_geometry_msgs
   tf2_ros)
 
-target_link_libraries(libpy_dynup PRIVATE "${cpp_typesupport_target}")
+target_link_libraries(libpy_dynup PRIVATE "${cpp_typesupport_target}"
+                                          dynup_parameters)
 
 ament_python_install_package(bitbots_dynup_py)
 
