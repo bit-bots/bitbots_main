@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 import math
-from typing import Tuple, Union
+from typing import Optional, Tuple
 
 import numpy as np
 import rclpy
@@ -24,18 +24,28 @@ from bitbots_msgs.msg import PoseWithCertaintyStamped
 
 
 class BallWrapper:
-    def __init__(self, position, header, confidence):
+    def __init__(self, position: Point, header: Header, confidence: float):
         self.position = position
         self.header = header
         self.confidence = confidence
+        self.processed = False
 
-    def get_header(self):
+    def flag_processed(self) -> None:
+        self.processed = True
+
+    def get_processed(self) -> bool:
+        return self.processed
+
+    def get_header(self) -> Header:
         return self.header
 
-    def get_position(self):
+    def get_position(self) -> Point:
         return self.position
 
-    def get_confidence(self):
+    def get_position_tuple(self) -> Tuple[float, float]:
+        return self.position.x, self.position.y
+
+    def get_confidence(self) -> float:
         return self.confidence
 
 
@@ -50,12 +60,10 @@ class BallFilter(Node):
         # Setup dynamic reconfigure config
         self.param_listener = parameters.ParamListener(self)
 
-        # creates kalmanfilter with 4 dimensions
-        self.kf = KalmanFilter(dim_x=4, dim_z=2, dim_u=0)
-        self.filter_initialized = False
-        self.ball = None  # type: BallWrapper
-        self.last_ball_stamp = None
-        self.camera_info = None
+        self.kf: Optional[KalmanFilter] = None
+        self.last_ball_measurement: Optional[BallWrapper] = None
+        self.reset_requested = False
+        self.camera_info: Optional[CameraInfo] = None
 
         self.update_params()
 
@@ -74,13 +82,16 @@ class BallFilter(Node):
         # publishes ball
         self.ball_publisher = self.create_publisher(PoseWithCertaintyStamped, self.config.ball_publish_topic, 1)
 
+        # Create callback group
+        self.callback_group = MutuallyExclusiveCallbackGroup()
+
         # setup subscriber
         self.ball_subscriber = self.create_subscription(
             BallArray,
             self.config.ball_subscribe_topic,
             self.ball_callback,
-            1,
-            callback_group=MutuallyExclusiveCallbackGroup(),
+            2,
+            callback_group=self.callback_group,
         )
 
         self.camera_info_subscriber = self.create_subscription(
@@ -91,15 +102,18 @@ class BallFilter(Node):
             Trigger,
             self.config.ball_filter_reset_service_name,
             self.reset_filter_cb,
-            callback_group=MutuallyExclusiveCallbackGroup(),
+            callback_group=self.callback_group,
         )
 
-        self.filter_timer = self.create_timer(self.filter_time_step, self.filter_step)
-        self.logger.info("Ball filter initialized")
+        self.filter_timer = self.create_timer(
+            self.filter_time_step, self.filter_step, callback_group=self.callback_group
+        )
+        self.logger.debug("Ball filter initialized")
 
     def reset_filter_cb(self, req, response) -> Tuple[bool, str]:
         self.logger.info("Resetting bitbots ball filter...")
-        self.filter_initialized = False
+        # Reset filter
+        self.reset_requested = True
         response.success = True
         return response
 
@@ -109,20 +123,54 @@ class BallFilter(Node):
 
     def ball_callback(self, msg: BallArray) -> None:
         if msg.balls:  # Balls exist
-            # Either select ball closest to previous prediction or with highest confidence
-            if self.config.closest_distance_match:  # Select ball closest to previous prediction
-                ball_msg = self._get_closest_ball_to_previous_prediction(msg)
-            else:  # Select ball with highest confidence
-                ball_msg = sorted(msg.balls, key=lambda ball: ball.confidence.confidence)[-1]
+            # If we have a kalman filter, we use it's estimate to ignore balls that are too far away (false positives)
+            # The ignore distance is calculated using the filter's covariance and a factor
+            # This way false positives are ignored if we already have a good estimate
+            if self.kf is not None:
+                ignore_threshold_x = math.sqrt(self.kf.P[0, 0]) * self.config.ignore_measurement_threshold
+                ignore_threshold_y = math.sqrt(self.kf.P[0, 0]) * self.config.ignore_measurement_threshold
 
-            # A ball measurement was selected, now we save it for the next filter step
-            position = self._get_transform(msg.header, ball_msg.center)
-            if position is not None:
-                self.ball = BallWrapper(position, msg.header, ball_msg.confidence.confidence)
-        # If we do not see a ball, but the KF predicts the ball to be there:
-        else:
-            # Check if we should be able to see the ball
-            if self.is_ball_in_fov(msg.header):
+                # Filter out balls that are too far away from the filter's estimate
+                filtered_balls: list[
+                    tuple[Ball, PointStamped, float]
+                ] = []  # Store, original ball in base_footprint frame, transformed ball in filter frame , distance to filter estimate
+                ball: Ball
+                for ball in msg.balls:
+                    ball_transform = self._get_transform(msg.header, ball.center)
+                    if ball_transform:
+                        distance_x = ball_transform.point.x - self.kf.x[0]
+                        distance_y = ball_transform.point.y - self.kf.x[1]
+                        if abs(distance_x) < ignore_threshold_x and abs(distance_y) < ignore_threshold_y:
+                            filtered_balls.append((ball, ball_transform, math.hypot(distance_x, distance_y)))
+            else:
+                filtered_balls = [(ball, self._get_transform(msg.header, ball.center), 0) for ball in msg.balls]
+
+            # Select the ball with closest distance to the filter estimate
+            # Return if no ball was found
+            ball_msg, ball_measurement_map, _ = min(filtered_balls, key=lambda x: x[2], default=(None, None, 0))
+            if ball_measurement_map is None:
+                return
+
+            # Store the ball measurement
+            self.last_ball_measurement = BallWrapper(
+                ball_measurement_map.point, ball_measurement_map.header, ball_msg.confidence.confidence
+            )
+
+            # Initialize filter if not already done
+            # We do this here, because we need the ball measurement to initialize the filter
+            if self.kf is None:
+                self.init_filter(*self.last_ball_measurement.get_position_tuple())
+
+            # Calculate distance from the robot to the ball and update measurement noise
+            assert msg.header.frame_id == "base_footprint", "Ball frame_id is not 'base_footprint'!"
+            robot_ball_delta = math.hypot(ball_msg.center.x, ball_msg.center.y)
+            self.update_measurement_noise(robot_ball_delta)
+            # Reset process noise if ball is not visible
+            self.kf.Q = Q_discrete_white_noise(
+                dim=2, dt=self.filter_time_step, var=self.config.process_noise_variance, block_size=2, order_by_dim=False
+            )
+        else: # TODO handle if ball is visible but not matched
+            if self.is_estimate_in_fov(msg.header):
                 self.logger.info(
                     "The KF prediction expects a ball, but we see none... Process noise will be increased."
                 )
@@ -133,24 +181,33 @@ class BallFilter(Node):
                     block_size=2,
                     order_by_dim=False,
                 )
+            else:
+                # Reset process noise
+                self.kf.Q = Q_discrete_white_noise(
+                    dim=2, dt=self.filter_time_step, var=self.config.process_noise_variance, block_size=2, order_by_dim=False
+                )
 
-    def _get_closest_ball_to_previous_prediction(self, ball_array: BallArray) -> Union[Ball, None]:
+    def _get_closest_ball_to_previous_prediction(self, ball_array: BallArray) -> Optional[Ball]:
         closest_distance = math.inf
         closest_ball_msg = ball_array.balls[0]
         for ball_msg in ball_array.balls:
             ball_transform = self._get_transform(ball_array.header, ball_msg.center)
-            if ball_transform and self.ball:
+            if ball_transform and self.last_ball_measurement:
                 distance = math.dist(
                     (ball_transform.point.x, ball_transform.point.y),
-                    (self.ball.get_position().point.x, self.ball.get_position().point.y),
+                    self.last_ball_measurement.get_position_tuple(),
                 )
                 if distance < closest_distance:
                     closest_ball_msg = ball_msg
         return closest_ball_msg
 
     def _get_transform(
-        self, header: Header, point: Point, frame: Union[None, str] = None, timeout: float = 0.3
-    ) -> Union[PointStamped, None]:
+        self, header: Header, point: Point, frame: Optional[str] = None, timeout: float = 0.3
+    ) -> Optional[PointStamped]:
+        """
+        Transforms a point to the filter frame
+        """
+
         if frame is None:
             frame = self.config.filter_frame
 
@@ -163,6 +220,9 @@ class BallFilter(Node):
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
             self.logger.warning(str(e))
 
+    def update_measurement_noise(self, distance: float) -> None:
+        self.kf.R = np.eye(2) * (self.config.measurement_certainty + self.config.noise_increment_factor * distance**2)
+
     def update_params(self) -> None:
         """
         Updates parameters from dynamic reconfigure
@@ -170,68 +230,11 @@ class BallFilter(Node):
         self.config = self.param_listener.get_params()
         self.filter_time_step = 1.0 / self.config.filter_rate
         self.filter_reset_duration = Duration(seconds=self.config.filter_reset_time)
-        self.velocity_factor = (1 - self.config.velocity_reduction) ** (self.filter_time_step)
-        self.kf.Q = Q_discrete_white_noise(
-            dim=2,
-            dt=self.filter_time_step,
-            var=self.config.process_noise_variance,
-            block_size=2,
-            order_by_dim=False,
-        )
+        if self.kf:
+            self.setup_filter()
 
-    def filter_step(self) -> None:
-        """
-        When ball has been assigned a value and filter has been initialized:
-        State will be updated according to filter.
-        If filter has not been initialized, then that will be done first.
 
-        If there is no data for ball, a prediction will still be made and published
-        Process noise is taken into account
-        """
-        # check whether parameters have changed
-        if self.param_listener.is_old(self.config):
-            self.param_listener.refresh_dynamic_parameters()
-            self.update_params()
-
-        if self.ball:  # Ball measurement exists
-            # Reset filter, if distance between last prediction and latest measurement is too large
-            distance_to_ball = math.dist(
-                (self.kf.get_update()[0][0], self.kf.get_update()[0][1]), self.get_ball_measurement()
-            )
-            if self.filter_initialized and distance_to_ball > self.config.filter_reset_distance:
-                self.filter_initialized = False
-                self.logger.info(
-                    f"Reset filter! Reason: Distance to ball {distance_to_ball} > {self.config.filter_reset_distance} (filter_reset_distance)"
-                )
-            # Initialize filter if not already
-            if not self.filter_initialized:
-                self.init_filter(*self.get_ball_measurement())
-            # Predict and publish
-            self.kf.predict()
-            self.kf.update(self.get_ball_measurement())
-            self.publish_data(*self.kf.get_update())
-            self.last_ball_stamp = self.ball.get_header().stamp
-            self.ball = None  # Clear handled measurement
-        else:  # No new ball measurement to handle
-            if self.filter_initialized:
-                # Reset filer,if last measurement is too old
-                age = self.get_clock().now() - rclpy.time.Time.from_msg(self.last_ball_stamp)
-                if not self.last_ball_stamp or age > self.filter_reset_duration:
-                    self.filter_initialized = False
-                    self.logger.info(
-                        f"Reset filter! Reason: Latest ball is too old {age} > {self.filter_reset_duration} (filter_reset_duration)"
-                    )
-                    return
-                # Empty update, as no new measurement available (and not too old)
-                self.kf.predict()
-                self.kf.update(None)
-                self.publish_data(*self.kf.get_update())
-            else:  # Publish old state with huge covariance
-                state_vec, cov_mat = self.kf.get_update()
-                huge_cov_mat = np.eye(cov_mat.shape[0]) * 10
-                self.publish_data(state_vec, huge_cov_mat)
-
-    def is_ball_in_fov(self, header: Header) -> bool:
+    def is_estimate_in_fov(self, header: Header) -> bool:
         """
         Calculates if a ball should be currently visible
         """
@@ -275,44 +278,102 @@ class BallFilter(Node):
                 return True
         return False
 
-    def get_ball_measurement(self) -> Tuple[float, float]:
-        """extracts filter measurement from ball message"""
-        return self.ball.get_position().point.x, self.ball.get_position().point.y
+    def filter_step(self) -> None:
+        """
+        When ball has been assigned a value and filter has been initialized:
+        State will be updated according to filter.
+        If filter has not been initialized, then that will be done first.
+
+        If there is no data for ball, a prediction will still be made and published
+        Process noise is taken into account
+        """
+        # check whether parameters have changed
+        if self.param_listener.is_old(self.config):
+            self.param_listener.refresh_dynamic_parameters()
+            self.update_params()
+
+        # Reset filter if requested
+        if self.reset_requested:
+            self.kf = None
+            self.reset_requested = False
+            self.logger.info("Filter reset")
+            return
+
+        # Early exit if filter is not initialized
+        if self.kf is None:
+            huge_cov_mat = np.eye(4) * 100
+            self.publish_data(np.zeros((4,)), huge_cov_mat)
+            return
+
+        # Reset filer,if last measurement is too old
+        age = self.get_clock().now() - rclpy.time.Time.from_msg(self.last_ball_measurement.get_header().stamp)
+        if age > self.filter_reset_duration:
+            self.kf = None
+            self.logger.info(
+                f"Reset filter! Reason: Latest ball is too old {age} > {self.filter_reset_duration} (filter_reset_duration)"
+            )
+            return
+
+        # Predict next state
+        self.kf.predict()
+        # Update filter with new measurement if available
+        if not self.last_ball_measurement.get_processed():
+            self.last_ball_measurement.flag_processed()
+            self.kf.update(self.last_ball_measurement.get_position_tuple())
+        else:
+            self.kf.update(None)
+        self.publish_data(*self.kf.get_update())
 
     def init_filter(self, x: float, y: float) -> None:
         """
-        Initializes kalmanfilter at given position
+        Initializes kalman filter at given position
 
         :param x: start x position of the ball
         :param y: start y position of the ball
         """
         self.logger.info(f"Initializing filter at position ({x}, {y})")
+
+        # Create Kalman filter
+        self.kf = KalmanFilter(dim_x=4, dim_z=2, dim_u=0)
+
         # initial value of position(x,y) of the ball and velocity
         self.kf.x = np.array([x, y, 0, 0])
+
+        # multiplying by the initial uncertainty
+        self.kf.P = np.eye(4) * 1000
+
+        # setup the other matrices, that can also be updated without reinitializing the filter
+        self.setup_filter()
+
+    def setup_filter(self) -> None:
+        """
+        Sets up the kalman filter with
+        the different matrices
+        """
+        # Models the friction as an exponential decay alpha from the time constant tau (velocity_decay_time)
+        # It is defined in a time-step independent way
+        exponent_in_s = -self.filter_time_step / self.config.velocity_decay_time
+        velocity_factor = 1 - math.exp(exponent_in_s)
 
         # transition matrix
         self.kf.F = np.array(
             [
                 [1.0, 0.0, 1.0, 0.0],
                 [0.0, 1.0, 0.0, 1.0],
-                [0.0, 0.0, self.velocity_factor, 0.0],
-                [0.0, 0.0, 0.0, self.velocity_factor],
+                [0.0, 0.0, 1 - velocity_factor, 0.0],
+                [0.0, 0.0, 0.0, 1 - velocity_factor],
             ]
         )
         # measurement function
         self.kf.H = np.array([[1.0, 0.0, 0.0, 0.0], [0.0, 1.0, 0.0, 0.0]])
-        # multiplying by the initial uncertainty
-        self.kf.P = np.eye(4) * 1000
 
         # assigning measurement noise
-        self.kf.R = np.array([[1, 0], [0, 1]]) * self.config.measurement_certainty
+        self.kf.R = np.eye(2) * self.config.measurement_certainty
 
         # assigning process noise
         self.kf.Q = Q_discrete_white_noise(
             dim=2, dt=self.filter_time_step, var=self.config.process_noise_variance, block_size=2, order_by_dim=False
         )
-
-        self.filter_initialized = True
 
     def publish_data(self, state_vec: np.array, cov_mat: np.array) -> None:
         """
@@ -325,20 +386,16 @@ class BallFilter(Node):
         header.stamp = rclpy.time.Time.to_msg(self.get_clock().now())
 
         # position
-        point_msg = Point()
-        point_msg.x = float(state_vec[0])
-        point_msg.y = float(state_vec[1])
+        point_msg = Point(x=float(state_vec[0]), y=float(state_vec[1]))
 
-        pos_covariance = np.eye(6).reshape(36)
-        pos_covariance[0] = float(cov_mat[0][0])
-        pos_covariance[1] = float(cov_mat[0][1])
-        pos_covariance[6] = float(cov_mat[1][0])
-        pos_covariance[7] = float(cov_mat[1][1])
+        # covariance
+        pos_covariance = np.zeros((6, 6))
+        pos_covariance[:2, :2] = cov_mat[:2, :2]
 
         pose_msg = PoseWithCovarianceStamped()
         pose_msg.header = header
         pose_msg.pose.pose.position = point_msg
-        pose_msg.pose.covariance = pos_covariance
+        pose_msg.pose.covariance = pos_covariance.reshape(-1)
         pose_msg.pose.pose.orientation.w = 1.0
         self.ball_pose_publisher.publish(pose_msg)
 
@@ -347,19 +404,19 @@ class BallFilter(Node):
         movement_msg.header = header
         movement_msg.twist.twist.linear.x = float(state_vec[2] * self.config.filter_rate)
         movement_msg.twist.twist.linear.y = float(state_vec[3] * self.config.filter_rate)
-        movement_msg.twist.covariance = np.eye(6).reshape(36)
-        movement_msg.twist.covariance[0] = float(cov_mat[2][2])
-        movement_msg.twist.covariance[1] = float(cov_mat[2][3])
-        movement_msg.twist.covariance[6] = float(cov_mat[3][2])
-        movement_msg.twist.covariance[7] = float(cov_mat[3][3])
+        vel_covariance = np.eye(6)
+        vel_covariance[:2, :2] = cov_mat[2:, 2:]
+        movement_msg.twist.covariance = vel_covariance.reshape(-1)
         self.ball_movement_publisher.publish(movement_msg)
 
         # ball
         ball_msg = PoseWithCertaintyStamped()
         ball_msg.header = header
         ball_msg.pose.pose.pose.position = point_msg
-        ball_msg.pose.pose.covariance = pos_covariance
-        ball_msg.pose.confidence = float(self.ball.get_confidence() if self.ball else 0.0)
+        ball_msg.pose.pose.covariance = pos_covariance.reshape(-1)
+        ball_msg.pose.confidence = float(
+            self.last_ball_measurement.get_confidence() if self.last_ball_measurement else 0.0
+        )
         self.ball_publisher.publish(ball_msg)
 
 
