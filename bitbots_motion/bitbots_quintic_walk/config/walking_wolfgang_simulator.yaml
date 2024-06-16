@@ -79,7 +79,7 @@ walking:
           joint_min_effort: 30.0
         imu:
           active: True
-          y_acceleration_threshold: 2.0
+          y_acceleration_threshold: 1.4
 
 walk_pid_trunk_fused_pitch:
   ros__parameters:
