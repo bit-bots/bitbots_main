@@ -48,7 +48,7 @@ class OdometryFuser : public rclcpp::Node {
         tf_listener_(std::make_shared<tf2_ros::TransformListener>(*tf_buffer_, this)),
         support_state_cache_(100),
         imu_sub_(this, "imu/data"),
-        motion_odom_sub_(this, "walk_engine_odometry"),
+        motion_odom_sub_(this, "motion_odometry"),
         br_(std::make_unique<tf2_ros::TransformBroadcaster>(this)),
         sync_(message_filters::Synchronizer<SyncPolicy>(SyncPolicy(50), imu_sub_, motion_odom_sub_)) {
     this->declare_parameter<std::string>("base_link_frame", "base_link");
