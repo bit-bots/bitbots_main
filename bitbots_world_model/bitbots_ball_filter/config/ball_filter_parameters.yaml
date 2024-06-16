@@ -79,13 +79,6 @@ bitbots_ball_filter:
     validation:
       bounds<>: [0.0, 1.0]
 
-  filter_reset_time:
-    type: int
-    default_value: 20
-    description: 'Max ball not seen time in Seconds'
-    validation:
-      bounds<>: [0, 100]
-
   camera_info_subscribe_topic:
     type: string
     default_value: 'camera/camera_info'
