@@ -122,6 +122,12 @@ class BallFilter(Node):
         self.camera_info = msg
 
     def ball_callback(self, msg: BallArray) -> None:
+        # Keep track if we have updated the measurement
+        # We might not have a measurement if the ball is not visible
+        # We also filter out balls that are too far away from the filter's estimate
+        ball_measurement_updated: bool = False
+
+        # Do filtering, transform, ... if we have a ball
         if msg.balls:  # Balls exist
             # If we have a kalman filter, we use it's estimate to ignore balls that are too far away (false positives)
             # The ignore distance is calculated using the filter's covariance and a factor
@@ -130,10 +136,10 @@ class BallFilter(Node):
                 ignore_threshold_x = math.sqrt(self.kf.P[0, 0]) * self.config.ignore_measurement_threshold
                 ignore_threshold_y = math.sqrt(self.kf.P[0, 0]) * self.config.ignore_measurement_threshold
 
-                # Filter out balls that are too far away from the filter's estimate
+                # Array without out balls that are too far away from the filter's estimate
                 filtered_balls: list[
                     tuple[Ball, PointStamped, float]
-                ] = []  # Store, original ball in base_footprint frame, transformed ball in filter frame , distance to filter estimate
+                ] = []  # Store, original ball in base_footprint frame, transformed ball in filter frame, distance to filter estimate
                 ball: Ball
                 for ball in msg.balls:
                     ball_transform = self._get_transform(msg.header, ball.center)
@@ -155,6 +161,7 @@ class BallFilter(Node):
             self.last_ball_measurement = BallWrapper(
                 ball_measurement_map.point, ball_measurement_map.header, ball_msg.confidence.confidence
             )
+            ball_measurement_updated = True
 
             # Initialize filter if not already done
             # We do this here, because we need the ball measurement to initialize the filter
@@ -165,27 +172,21 @@ class BallFilter(Node):
             assert msg.header.frame_id == "base_footprint", "Ball frame_id is not 'base_footprint'!"
             robot_ball_delta = math.hypot(ball_msg.center.x, ball_msg.center.y)
             self.update_measurement_noise(robot_ball_delta)
-            # Reset process noise if ball is not visible
-            self.kf.Q = Q_discrete_white_noise(
-                dim=2, dt=self.filter_time_step, var=self.config.process_noise_variance, block_size=2, order_by_dim=False
-            )
-        else: # TODO handle if ball is visible but not matched
-            if self.is_estimate_in_fov(msg.header):
-                self.logger.info(
-                    "The KF prediction expects a ball, but we see none... Process noise will be increased."
-                )
-                self.kf.Q = Q_discrete_white_noise(
-                    dim=2,
-                    dt=self.filter_time_step,
-                    var=self.config.process_noise_variance * 10,
-                    block_size=2,
-                    order_by_dim=False,
-                )
-            else:
-                # Reset process noise
-                self.kf.Q = Q_discrete_white_noise(
-                    dim=2, dt=self.filter_time_step, var=self.config.process_noise_variance, block_size=2, order_by_dim=False
-                )
+
+        # If we made no measurement, we can check if we expected one and increase process noise accordingly
+        if not ball_measurement_updated and self.is_estimate_in_fov(msg.header):
+            self.logger.info("The KF prediction expects a ball, but we see none... Process noise will be increased.")
+            self.set_process_noise_level(high=True)
+        else:
+            self.set_process_noise_level(high=False)
+
+    def set_process_noise_level(self, high: bool) -> None:
+        process_noise_variance = self.config.process_noise_variance
+        if high:
+            process_noise_variance *= 10
+        self.kf.Q = Q_discrete_white_noise(
+            dim=2, dt=self.filter_time_step, var=process_noise_variance, block_size=2, order_by_dim=False
+        )
 
     def _get_closest_ball_to_previous_prediction(self, ball_array: BallArray) -> Optional[Ball]:
         closest_distance = math.inf
@@ -233,7 +234,6 @@ class BallFilter(Node):
         if self.kf:
             self.setup_filter()
 
-
     def is_estimate_in_fov(self, header: Header) -> bool:
         """
         Calculates if a ball should be currently visible
@@ -244,7 +244,7 @@ class BallFilter(Node):
             return False
 
         # Get ball filter state
-        state, cov_mat = self.kf.get_update()
+        state, _ = self.kf.get_update()
 
         # Build a pose
         ball_pose = PoseStamped()
@@ -274,6 +274,7 @@ class BallFilter(Node):
             p_pixel = np.matmul(k, p)
             p_pixel = p_pixel * (1 / p_pixel[2])
             # Make sure that the transformed pixel is inside the resolution and positive.
+            # TODO border
             if 0 < p_pixel[0] <= self.camera_info.width and 0 < p_pixel[1] <= self.camera_info.height:
                 return True
         return False
