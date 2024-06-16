@@ -47,7 +47,7 @@ TOPICS_TO_RECORD: list[str] = [
     "/imu_head/data",
     "/imu/data_raw",
     "/joint_states",
-    "/walk_engine_odometry",
+    "/motion_odometry",
     "/move_base/current_goal",
     "/path",
     "/pose_with_covariance",

@@ -17,6 +17,7 @@
   <depend>biped_interfaces</depend>
   <depend>bitbots_docs</depend>
   <depend>bitbots_utils</depend>
+  <depend>generate_parameter_library</depend>
   <depend>message_filters</depend>
   <depend>nav_msgs</depend>
   <depend>rot_conv</depend>
