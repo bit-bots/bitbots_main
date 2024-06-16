@@ -70,6 +70,8 @@ fresh-libs: remove-libs setup-libs
 remove-libs:
 	# Removes the lib directory and all its contents
 	rm -rf lib/*
+	# Also remove the generated protobuf files, as they are not needed anymore
+	rm bitbots_team_communication/bitbots_team_communication/robocup_extension_pb2.py 2> /dev/null || true
 
 setup-libs:
 	# Clone lib repositories in workspace.repos into the lib directory
