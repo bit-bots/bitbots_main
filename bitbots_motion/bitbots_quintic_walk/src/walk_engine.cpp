@@ -60,7 +60,7 @@ WalkEngine::WalkEngine(rclcpp::Node::SharedPtr node)
 
   // move left and right in world by foot distance for correct initialization
   left_in_world_.setOrigin(tf2::Vector3{0, config_.foot_distance / 2, 0});
-  right_in_world_.setOrigin(tf2::Vector3{0, -1 * config_.foot_distance / 2, 0});
+  right_in_world_.setOrigin(tf2::Vector3{0, -config_.foot_distance / 2, 0});
   // create splines one time to have no empty splines during first idle phase
   buildStartMovementTrajectories();
 
@@ -103,7 +103,7 @@ WalkResponse WalkEngine::update(double dt) {
     // check if we should rest the phase because the flying foot didn't make contact to the ground during step
     if (step_will_finish && phase_rest_active_) {
       // dont update the phase (do a phase rest) till it gets updated by a phase reset
-      RCLCPP_WARN_THROTTLE(node_->get_logger(), *node_->get_clock(), 1, "PHASE REST");
+      RCLCPP_DEBUG_THROTTLE(node_->get_logger(), *node_->get_clock(), 200, "PHASE REST");
       return createResponse();
     }
   }
