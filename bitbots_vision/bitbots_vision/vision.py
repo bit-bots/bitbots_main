@@ -37,7 +37,7 @@ class YOEOVision(Node):
     def __init__(self) -> None:
         super().__init__("bitbots_vision")
 
-        logger.info(f"Entering {self.__class__.__name__} constructor")
+        logger.debug(f"Entering {self.__class__.__name__} constructor")
 
         self._package_path = get_package_share_directory("bitbots_vision")
 

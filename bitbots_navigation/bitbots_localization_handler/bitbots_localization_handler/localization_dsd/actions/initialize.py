@@ -26,7 +26,7 @@ class AbstractInitialize(AbstractLocalizationActionElement):
                     )  # wait up to 1 second for odom data
             except (tf2.LookupException, tf2.ConnectivityException, tf2.ExtrapolationException) as e:
                 self.blackboard.node.get_logger().warn(f"Not able to save the odom position due to a tf error: {e}")
-            self.blackboard.node.get_logger().info(
+            self.blackboard.node.get_logger().debug(
                 f"Set last init action type to {self.blackboard.last_init_action_type}"
             )
 

@@ -102,7 +102,7 @@ class BallFilter(Node):
         self.filter_timer = self.create_timer(
             self.filter_time_step, self.filter_step, callback_group=self.callback_group
         )
-        self.logger.info("Ball filter initialized")
+        self.logger.debug("Ball filter initialized")
 
     def reset_filter_cb(self, req, response) -> Tuple[bool, str]:
         self.logger.info("Resetting bitbots ball filter...")
