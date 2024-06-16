@@ -504,8 +504,8 @@ void WalkNode::checkPhaseRestAndReset() {
   // Check if we are in the correct point of the phase to do a phase reset
   // Phase has to be far enough (almost at end of step) so that the foot has already lifted from the ground
   // otherwise we will always do phase reset in the beginning of the step
-  if ((phase > config_.node.phase_reset.min_phase / 2 and phase < 0.5) or
-      (phase > 0.5 + config_.node.phase_reset.min_phase / 2)) {
+  double min_phase_single_step = config_.node.phase_reset.min_phase / 2;
+  if ((phase > min_phase_single_step and phase < 0.5) or (phase > 0.5 + min_phase_single_step)) {
     // Check if one of our phase reset conditions is met
     if ((config_.node.phase_reset.foot_pressure.active and
          current_fly_pressure_ > config_.node.phase_reset.foot_pressure.ground_min_pressure) or

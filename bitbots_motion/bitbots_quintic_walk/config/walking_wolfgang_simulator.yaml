@@ -70,7 +70,7 @@ walking:
       imu_y_acc_tau: 0.1
 
       phase_reset:
-        min_phase: 0.99
+        min_phase: 0.90
         foot_pressure:
           active: False
           ground_min_pressure: 1.5
