@@ -854,11 +854,6 @@ WalkResponse WalkEngine::createResponse() {
 
 double WalkEngine::getPhase() const { return phase_; }
 
-double WalkEngine::getPhaseResetPhase() const {
-  // returning the phase when the foot is on apex in step phase (between 0 and 0.5)
-  return (config_.double_support_ratio + config_.foot_apex_phase * (1 - config_.double_support_ratio)) / 2;
-}
-
 double WalkEngine::getTrajsTime() const {
   double t;
   if (phase_ < 0.5) {

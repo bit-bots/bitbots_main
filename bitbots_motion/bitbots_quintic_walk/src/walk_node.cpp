@@ -18,8 +18,8 @@ WalkNode::WalkNode(const std::string ns, std::vector<rclcpp::Parameter> paramete
       ik_(SharedPtr(this)),
       visualizer_(SharedPtr(this)) {
   // Set parameters in subcomponents
-  ik_.setIKTimeout(config_.node.ik_timeout);
-  walk_engine_.setPauseDuration(config_.node.pause_duration);
+  ik_.setIKTimeout(config_.node.ik.timeout);
+  walk_engine_.setPauseDuration(config_.node.stability_stop.pause_duration);
   max_step_linear_ = {config_.node.max_step_x, config_.node.max_step_y, config_.node.max_step_z};
 
   // Create dummy node for moveit
@@ -130,10 +130,11 @@ void WalkNode::run() {
   walk_engine_.config_ = config_.engine;
   // Phase reset can only work if one phase resetting method is active and this might have changed due to parameter
   // changes
-  walk_engine_.setPhaseRest(true);
+  walk_engine_.setPhaseRest(config_.node.phase_reset.effort.active || config_.node.phase_reset.foot_pressure.active ||
+                            config_.node.phase_reset.imu.active);
   // Pass params to other components
-  ik_.setIKTimeout(config_.node.ik_timeout);
-  walk_engine_.setPauseDuration(config_.node.pause_duration);
+  ik_.setIKTimeout(config_.node.ik.timeout);
+  walk_engine_.setPauseDuration(config_.node.stability_stop.pause_duration);
   max_step_linear_ = {config_.node.max_step_x, config_.node.max_step_y, config_.node.max_step_z};
 
   double dt = getTimeDelta();
@@ -453,20 +454,23 @@ void WalkNode::imuCb(const sensor_msgs::msg::Imu::SharedPtr msg) {
     imu_y_acc = msg->linear_acceleration.y;
   }
 
-  if (config_.node.imu_stabilization_active) {
+  if (config_.node.stability_stop.imu.active) {
     // compute the pitch offset to the currently wanted pitch of the engine
     double wanted_pitch = walk_engine_.getWantedTrunkPitch();
 
+    // Get the sub struct of the imu stability stop config
+    auto params = config_.node.stability_stop.imu;
+
+    // Check if we have to stop the walk
     double pitch_delta = pitch - wanted_pitch;
-    if (abs(roll) > config_.node.imu_roll_threshold || abs(pitch_delta) > config_.node.imu_pitch_threshold ||
-        abs(pitch_vel_) > config_.node.imu_pitch_vel_threshold ||
-        abs(roll_vel_) > config_.node.imu_roll_vel_threshold) {
+    if (abs(roll) > params.roll.threshold or abs(pitch_delta) > params.pitch.threshold or
+        abs(pitch_vel_) > params.pitch.vel_threshold or abs(roll_vel_) > params.roll.vel_threshold) {
       walk_engine_.requestPause();
-      if (abs(roll) > config_.node.imu_roll_threshold) {
+      if (abs(roll) > params.roll.threshold) {
         RCLCPP_WARN(this->get_logger(), "imu roll angle stop");
-      } else if (abs(pitch_delta) > config_.node.imu_pitch_threshold) {
+      } else if (abs(pitch_delta) > params.pitch.threshold) {
         RCLCPP_WARN(this->get_logger(), "imu pitch angle stop");
-      } else if (abs(pitch_vel_) > config_.node.imu_pitch_vel_threshold) {
+      } else if (abs(pitch_vel_) > params.pitch.vel_threshold) {
         RCLCPP_WARN(this->get_logger(), "imu roll vel stop");
       } else {
         RCLCPP_WARN(this->get_logger(), "imu pitch vel stop");
@@ -496,15 +500,22 @@ void WalkNode::checkPhaseRestAndReset() {
    * This method checks if the foot made contact to the ground and ends the step earlier by resetting the phase ("phase
    reset") or lets the robot rest until it makes ground contact ("phase rest").
    */
-  // phase has to be far enough (almost at end of step) so that the foot has already lifted from the ground
-  // otherwise we will always do phase reset in the beginning of the step
   double phase = walk_engine_.getPhase();
-  double phase_reset_phase = 0.48;
-
-  if ((phase > phase_reset_phase && phase < 0.5) || (phase > 0.5 + phase_reset_phase)) {
-    // check if we want to perform a phase reset
-    if (std::abs(imu_y_acc) < config_.node.joint_min_effort) {
-      // reset phase by using pressure sensors
+  // Check if we are in the correct point of the phase to do a phase reset
+  // Phase has to be far enough (almost at end of step) so that the foot has already lifted from the ground
+  // otherwise we will always do phase reset in the beginning of the step
+  if ((phase > config_.node.phase_reset.min_phase and phase < 0.5) or
+      (phase > 0.5 + config_.node.phase_reset.min_phase)) {
+    // Check if one of our phase reset conditions is met
+    if ((config_.node.phase_reset.foot_pressure.active and
+         current_fly_pressure_ > config_.node.phase_reset.foot_pressure.ground_min_pressure) or
+        (config_.node.phase_reset.effort.active and
+         current_fly_effort_ > config_.node.phase_reset.effort.joint_min_effort) or
+        (config_.node.phase_reset.imu.active and
+         std::abs(imu_y_acc) < config_.node.phase_reset.imu.y_acceleration_threshold)) {
+      // Manually end the step
+      // This may and a step earlier than the engine would do it
+      // But it can also lengthen the step, as the engine will not end the step by itself if a phase reset is active
       walk_engine_.endStep();
     }
   }

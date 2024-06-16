@@ -145,14 +145,15 @@ walking:
       description: "Control loop frequency in Hz"
       validation:
         bounds<>: [0.0, 1000.0]
-    ik_timeout:
-      type: double
-      description: "Inverse kinematics timeout in seconds"
-      validation:
-        bounds<>: [0.0, 10.0]
-    ik_reset:
-      type: bool
-      description: "bioIK parameter"
+    ik:
+      timeout:
+        type: double
+        description: "Inverse kinematics timeout in seconds"
+        validation:
+          bounds<>: [0.0, 10.0]
+      reset:
+        type: bool
+        description: "bioIK parameter"
     debug_active:
       type: bool
       description: "Activate debug output"
@@ -196,68 +197,73 @@ walking:
       description: "Speed multiplier for yaw direction to calibrate the cmd_vel input"
       validation:
         bounds<>: [0.0, 5.0]
-    imu_stabilization_active:
-      type: bool
-      description: "Activate IMU"
-    imu_pitch_threshold:
-      type: double
-      description: "Pitch threshold used for IMU stability stop (in radians)"
-      validation:
-        bounds<>: [0.0, 2.0]
-    imu_roll_threshold:
-      type: double
-      description: "Roll threshold used for IMU stability stop (in radians)"
-      validation:
-        bounds<>: [0.0, 2.0]
-    imu_pitch_vel_threshold:
-      type: double
-      description: "Pitch velocity threshold used for IMU stability stop (in radians/s)"
-      validation:
-        bounds<>: [0.0, 10.0]
-    imu_roll_vel_threshold:
-      type: double
-      description: "Roll velocity threshold used for IMU stability stop (in radians/s)"
-      validation:
-        bounds<>: [0.0, 10.0]
-    pause_duration:
-      type: double
-      description: "Pause duration for the stability stop (in seconds)"
-      validation:
-        bounds<>: [0.0, 5.0]
+    stability_stop:
+      imu:
+        active:
+          type: bool
+          description: "Activate IMU"
+        pitch:
+          threshold:
+            type: double
+            description: "Pitch threshold used for IMU stability stop (in radians)"
+            validation:
+              bounds<>: [0.0, 2.0]
+          vel_threshold:
+            type: double
+            description: "Pitch velocity threshold used for IMU stability stop (in radians/s)"
+            validation:
+              bounds<>: [0.0, 10.0]
+        roll:
+          threshold:
+            type: double
+            description: "Roll threshold used for IMU stability stop (in radians)"
+            validation:
+              bounds<>: [0.0, 2.0]
+          vel_threshold:
+            type: double
+            description: "Roll velocity threshold used for IMU stability stop (in radians/s)"
+            validation:
+              bounds<>: [0.0, 10.0]
+      pause_duration:
+        type: double
+        description: "Pause duration for the stability stop (in seconds)"
+        validation:
+          bounds<>: [0.0, 5.0]
     imu_y_acc_tau:
       type: double
       description: "Time constant for the low pass filter of the IMU y acceleration (in seconds). It defines the time it takes for a unit step input to reach 63.2% of its final value."
-      default_value: 0.1
       validation:
         bounds<>: [0.0, 1.0]
-    pressure_phase_reset_active:
-      type: bool
-      description: "Activate foot pressure based phase reset"
-    ground_min_pressure:
-      type: double
-      description: "Minimum pressure value for the ground contact detection"
-      validation:
-        bounds<>: [0.0, 100.0]
-    phase_reset_phase:
-      type: double
-      description: "Phase reset phase (in single support cycle phase)"
-      validation:
-        bounds<>: [0.0, 1.0]
-    effort_phase_reset_active:
-      type: bool
-      description: "Activate effort based phase reset"
-    joint_min_effort:
-      type: double
-      description: "Minimum effort value for the joint effort based phase reset"
-      validation:
-        bounds<>: [0.0, 100.0]
-    imu_phase_reset:
-      active:
-        type: bool
-        default_value: false
-        description: "Activate IMU linear acceleration based phase reset"
-    y_acceleration_threshold:
-      type: double
-      description: "Threshold for the y acceleration of the IMU under which the phase reset is triggered (if we are in the correct phase of the walking cycle)"
-      validation:
-        bounds<>: [0.0, 10.0]
+    phase_reset:
+      min_phase:
+        type: double
+        description: "Phase reset phase start (in single support cycle phase)"
+        validation:
+          bounds<>: [0.0, 1.0]
+      foot_pressure:
+        active:
+          type: bool
+          description: "Activate foot pressure based phase reset"
+        ground_min_pressure:
+          type: double
+          description: "Minimum pressure value for the ground contact detection"
+          validation:
+            bounds<>: [0.0, 100.0]
+      effort:
+        active:
+          type: bool
+          description: "Activate joint effort based phase reset"
+        joint_min_effort:
+          type: double
+          description: "Minimum effort value for the joint effort based phase reset"
+          validation:
+            bounds<>: [0.0, 100.0]
+      imu:
+        active:
+          type: bool
+          description: "Activate IMU linear acceleration based phase reset"
+        y_acceleration_threshold:
+          type: double
+          description: "Threshold for the y acceleration of the IMU under which the phase reset is triggered (if we are in the correct phase of the walking cycle)"
+          validation:
+            bounds<>: [0.0, 10.0]
