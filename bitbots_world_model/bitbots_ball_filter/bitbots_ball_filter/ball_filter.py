@@ -297,7 +297,6 @@ class BallFilter(Node):
             self.kf = None
             self.reset_requested = False
             self.logger.info("Filter reset")
-            return
 
         # Early exit if filter is not initialized
         if self.kf is None:
