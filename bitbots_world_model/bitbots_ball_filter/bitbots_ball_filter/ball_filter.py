@@ -176,17 +176,8 @@ class BallFilter(Node):
         # If we made no measurement, we can check if we expected one and increase process noise accordingly
         if not ball_measurement_updated and self.is_estimate_in_fov(msg.header):
             self.logger.info("The KF prediction expects a ball, but we see none... Process noise will be increased.")
-            self.set_process_noise_level(high=True)
-        else:
-            self.set_process_noise_level(high=False)
-
-    def set_process_noise_level(self, high: bool) -> None:
-        process_noise_variance = self.config.process_noise_variance
-        if high:
-            process_noise_variance *= 10
-        self.kf.Q = Q_discrete_white_noise(
-            dim=2, dt=self.filter_time_step, var=process_noise_variance, block_size=2, order_by_dim=False
-        )
+            if self.kf is not None:
+                self.kf.P += np.eye(4) * 0.0001
 
     def _get_closest_ball_to_previous_prediction(self, ball_array: BallArray) -> Optional[Ball]:
         closest_distance = math.inf
@@ -241,6 +232,10 @@ class BallFilter(Node):
         # Check if we got a camera info to do this stuff
         if self.camera_info is None:
             self.logger.info("No camera info received. Not checking if the ball is currently visible.")
+            return False
+
+        # Check if we have an estimate
+        if self.kf is None:
             return False
 
         # Get ball filter state
@@ -340,7 +335,7 @@ class BallFilter(Node):
         self.kf.x = np.array([x, y, 0, 0])
 
         # multiplying by the initial uncertainty
-        self.kf.P = np.eye(4) * 1000
+        self.kf.P = np.eye(4) * 0.1
 
         # setup the other matrices, that can also be updated without reinitializing the filter
         self.setup_filter()

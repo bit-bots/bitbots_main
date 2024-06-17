@@ -53,7 +53,7 @@ bitbots_ball_filter:
 
   process_noise_variance:
     type: double
-    default_value: 0.001
+    default_value: 0.0002
     description: 'Noise which is added to the estimated position without new measurements'
     validation:
       bounds<>: [0.0, 1.0]
