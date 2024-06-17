@@ -11,10 +11,10 @@
 @ChangeAction + action:waiting + r:false, @PlayAnimationInitInSim + r:false, @LookAtFieldFeatures + r:false, @GetWalkready + r:false, @WalkInPlace
 
 #PerformKickLeft
-@ChangeAction + action:kicking, @LookAtFront, @Stand + duration:1.0 + r:false, @LookForward + r:false, @KickBallStatic + foot:left + r:false, @LookAtFieldFeatures + r:false, @Stand + duration:2 + r:false
+@ChangeAction + action:kicking, @LookAtFront, @Stand + duration:1.0 + r:false, @LookForward + r:false, @KickBallStatic + foot:left + r:false, @LookAtFieldFeatures + r:false, @Stand + duration:0.5 + r:false
 
 #PerformKickRight
-@ChangeAction + action:kicking, @LookAtFront, @Stand + duration:1.0 + r:false, @LookForward + r:false, @KickBallStatic + foot:right + r:false, @LookAtFieldFeatures + r:false, @Stand + duration:2 + r:false
+@ChangeAction + action:kicking, @LookAtFront, @Stand + duration:1.0 + r:false, @LookForward + r:false, @KickBallStatic + foot:right + r:false, @LookAtFieldFeatures + r:false, @Stand + duration:0.5 + r:false
 
 #Dribble
 @ChangeAction + action:going_to_ball, @CancelPathplanning, @LookAtBall, @LookAtFront, @DribbleForward
@@ -49,12 +49,12 @@ $GoalScoreRecently
     NO --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @Stand + duration:%body.ready_wait_time, @AvoidBallActive, @GoToRolePosition
 
 #GoalieBehavior
-$ClosestToBall 
+$ClosestToBall
     NO --> $BallInOwnPercent + p:40
         YES --> @ChangeAction + action:positioning, @AvoidBallActive, @LookAtFieldFeatures, @GoToBlockPosition
         NO --> #RolePositionWithPause
     YES --> #KickWithAvoidance
-    
+
 #StrikerRole
 $GoalieHandlingBall
     YES --> @ChangeAction + action:positioning, @AvoidBallActive, @LookAtFieldFeatures, @GoToDefensePosition //quick fix for playing with two robots during GO
