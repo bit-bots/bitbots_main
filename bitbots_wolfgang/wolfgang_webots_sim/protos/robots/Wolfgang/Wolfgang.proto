@@ -108,6 +108,13 @@ PROTO Wolfgang [
       0.2 0.2 0.2
     ]
     %{
+      TOE_FRACTION = 0.3
+      FOOT_LENGTH = 0.18
+      FOOT_MASS = 0.26824
+      TOE_LENGTH = FOOT_LENGTH * TOE_FRACTION
+      REAR_FOOT_LENGTH = FOOT_LENGTH * (1-TOE_FRACTION)
+    }%
+    %{
       if fields.name.value ~= '' then
         local color = "none"
         local number = 0
@@ -1941,7 +1948,7 @@ PROTO Wolfgang [
                                           }
                                           # right sole visual
                                           Transform {
-                                            translation 0.0145000 0.05500 -0.034
+                                            translation 0.0145000 %{=-0.005 + 0.5*REAR_FOOT_LENGTH}% -0.034
                                             rotation -0.000000 -0.000000 -1.000000 1.570800
                                             children [
                                               Shape{
@@ -1951,7 +1958,7 @@ PROTO Wolfgang [
                                                   }
                                                 }
                                                 geometry Box {
-                                                    size 0.12000 0.106000 0.0100
+                                                    size %{=REAR_FOOT_LENGTH}% 0.106000 0.0100
                                                 }
                                               }
                                             ]
@@ -2133,16 +2140,18 @@ PROTO Wolfgang [
                                           # right toe joint
                                           DEF FlexiJointL HingeJoint {
                                             jointParameters HingeJointParameters {
-                                              anchor 0.0 0.115 -0.034
+                                              anchor 0.0 %{=-0.005 + REAR_FOOT_LENGTH}% -0.034
                                               axis 1 0 0
                                               springConstant IS toe-spring-constant
                                               minStop 0
                                               maxStop 0.5
                                             }
                                             # right toe visual, collision & physics
+                                            # endPoint is relative to foot base
                                             endPoint DEF l_flexi Solid {
-                                              translation 0.0145 0.145 -0.034
+                                              translation 0.0145 %{=-0.005 + REAR_FOOT_LENGTH + 0.5*TOE_LENGTH}% -0.034 # y = forward
                                               rotation 0.0 0.0 -1.0 1.5708
+                                              # for children x = forward
                                               children [
                                                 Shape {
                                                   appearance Appearance {
@@ -2151,12 +2160,12 @@ PROTO Wolfgang [
                                                     }
                                                   }
                                                   geometry Box {
-                                                    size 0.06 0.106 0.01
+                                                    size %{=TOE_LENGTH}% 0.106 0.01
                                                   }
                                                 }
                                               ]
                                               boundingObject Box {
-                                                size 0.06 0.106 0.01
+                                                size %{=TOE_LENGTH}% 0.106 0.01
                                               }
                                               physics Physics {
                                                 density -1
@@ -2171,11 +2180,11 @@ PROTO Wolfgang [
                                         boundingObject Group {
                                           children [
                                             Transform {
-                                              translation 0.0145000 0.08500 -0.034
+                                              translation 0.0145000 %{=-0.005 + REAR_FOOT_LENGTH/2}% -0.034
                                               rotation -0.000000 -0.000000 -1.000000 1.570800
                                               children [
                                                 Box {
-                                                   size 0.18000 0.106000 0.0100
+                                                   size %{=REAR_FOOT_LENGTH}% 0.106000 0.0100
                                                 }
                                               ]
                                             }
@@ -3351,7 +3360,7 @@ PROTO Wolfgang [
                                           }
                                           # left foot sole visual
                                           Transform {
-                                            translation -0.0145000 0.05500 -0.034
+                                            translation -0.0145000 %{=-0.005 + 0.5*REAR_FOOT_LENGTH}% -0.034
                                             rotation 0.000000 0.000000 -1.000000 1.570800
                                             children [
                                               Shape{
@@ -3361,7 +3370,7 @@ PROTO Wolfgang [
                                                   }
                                                 }
                                                 geometry Box {
-                                                    size 0.12000 0.106000 0.0100
+                                                    size %{=REAR_FOOT_LENGTH}% 0.106000 0.0100
                                                 }
                                               }
                                             ]
@@ -3559,7 +3568,7 @@ PROTO Wolfgang [
                                           # left toe joint
                                           DEF FlexiJointL HingeJoint {
                                             jointParameters HingeJointParameters {
-                                              anchor 0.0 0.115 -0.034
+                                              anchor 0.0 %{=-0.005 + REAR_FOOT_LENGTH}% -0.034
                                               axis 1 0 0
                                               springConstant IS toe-spring-constant
                                               minStop 0
@@ -3567,7 +3576,7 @@ PROTO Wolfgang [
                                             }
                                             # left toe visual, collision & physics
                                             endPoint DEF l_flexi Solid {
-                                              translation -0.0145 0.145 -0.034
+                                              translation -0.0145 %{=-0.005 + REAR_FOOT_LENGTH + 0.5*TOE_LENGTH}% -0.034 # y = forward
                                               rotation 0.0 0.0 -1.0 1.5708
                                               children [
                                                 Shape {
@@ -3577,12 +3586,12 @@ PROTO Wolfgang [
                                                     }
                                                   }
                                                   geometry Box {
-                                                    size 0.06 0.106 0.01
+                                                    size %{=TOE_LENGTH}% 0.106 0.01
                                                   }
                                                 }
                                               ]
                                               boundingObject Box {
-                                                size 0.06 0.106 0.01
+                                                size %{=TOE_LENGTH}% 0.106 0.01
                                               }
                                               physics Physics {
                                                 density -1
@@ -3597,11 +3606,11 @@ PROTO Wolfgang [
                                         boundingObject Group {
                                           children [
                                             Transform {
-                                              translation -0.0145000 0.05500 -0.034
+                                              translation -0.0145000 %{=-0.005 + REAR_FOOT_LENGTH/2}% -0.034
                                               rotation 0.000000 0.000000 -1.000000 1.570800
                                               children [
                                                 Box {
-                                                   size 0.12000 0.106000 0.0100
+                                                   size %{=REAR_FOOT_LENGTH}% 0.106000 0.0100
                                                 }
                                               ]
                                             }
