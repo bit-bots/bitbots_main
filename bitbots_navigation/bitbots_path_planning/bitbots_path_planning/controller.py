@@ -52,8 +52,8 @@ class Controller:
         # End conditions with an empty or shorter than carrot distance path need to be considered
         if len(path.poses) > 0:
             end_pose: Pose = path.poses[-1].pose
-            if len(path.poses) > self.node.config.carrot_distance:
-                goal_pose: Pose = path.poses[self.node.config.carrot_distance].pose
+            if len(path.poses) > self.node.config.controller.carrot_distance:
+                goal_pose: Pose = path.poses[self.node.config.controller.carrot_distance].pose
             else:
                 goal_pose: Pose = end_pose
         else:
