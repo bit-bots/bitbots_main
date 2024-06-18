@@ -140,7 +140,7 @@ class BallFilter(Node):
         # If we did not get a ball measurement, we can check if we should have seen the ball
         # And increase the covariance if we did not see the ball
         if not ball_measurement_updated and self.is_estimate_in_fov(msg.header):
-            self.ball_state_covariance += self.config.negative_observation_value
+            self.ball_state_covariance += np.eye(3) * self.config.negative_observation_value
 
     def _get_transform(
         self, header: Header, point: Point, frame: Optional[str] = None, timeout: float = 0.3
