@@ -71,14 +71,6 @@
       # it is in a reachable area of the robot
       ball_close_distance: 1.5
 
-      # the maximal allowed standard deviation of the ball twist.
-      ball_twist_precision_threshold:
-        x_sdev: 0.3
-        y_sdev: 0.3
-
-      # the duration after which a ball_twist is considered irrelevant.
-      ball_twist_lost_time: 2
-
       # the maximal allowed standard deviation of the ball position.
       ball_position_precision_threshold:
         x_sdev: 0.5
@@ -156,9 +148,6 @@
 
       # Angle at which the ball is normally approached again
       ball_reapproach_angle: 1.2
-
-      # topics the behavior subscribes to
-      ball_movement_subscribe_topic: 'ball_relative_movement'
 
       # The position where the supporter robot should place itself in order to accept a pass
       pass_position_x: 0.1

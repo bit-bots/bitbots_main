@@ -11,8 +11,6 @@ from geometry_msgs.msg import (
     PoseStamped,
     PoseWithCovarianceStamped,
     TransformStamped,
-    TwistStamped,
-    TwistWithCovarianceStamped,
 )
 from rclpy.clock import ClockType
 from rclpy.duration import Duration
@@ -49,14 +47,7 @@ class WorldModelCapsule:
         self.ball_teammate.header.stamp = Time(clock_type=ClockType.ROS_TIME).to_msg()
         self.ball_teammate.header.frame_id = self.map_frame
         self.ball_lost_time = Duration(seconds=self._blackboard.node.get_parameter("body.ball_lost_time").value)
-        self.ball_twist_map: Optional[TwistStamped] = None
         self.ball_filtered: Optional[PoseWithCovarianceStamped] = None
-        self.ball_twist_lost_time = Duration(
-            seconds=self._blackboard.node.get_parameter("body.ball_twist_lost_time").value
-        )
-        self.ball_twist_precision_threshold = get_parameter_dict(
-            self._blackboard.node, "body.ball_twist_precision_threshold"
-        )
         self.reset_ball_filter = self._blackboard.node.create_client(Trigger, "ball_filter_reset")
 
         self.counter: int = 0
@@ -90,7 +81,6 @@ class WorldModelCapsule:
 
         # Publisher for visualization in RViZ
         self.ball_publisher = self._blackboard.node.create_publisher(PointStamped, "debug/viz_ball", 1)
-        self.ball_twist_publisher = self._blackboard.node.create_publisher(TwistStamped, "debug/ball_twist", 1)
         self.used_ball_pub = self._blackboard.node.create_publisher(PointStamped, "debug/used_ball", 1)
         self.which_ball_pub = self._blackboard.node.create_publisher(Header, "debug/which_ball_is_used", 1)
 
@@ -237,46 +227,6 @@ class WorldModelCapsule:
 
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
             self._blackboard.node.get_logger().warn(str(e))
-
-    def recent_ball_twist_available(self) -> bool:
-        if self.ball_twist_map is None:
-            return False
-        return self._blackboard.node.get_clock().now() - self.ball_twist_map.header.stamp < self.ball_twist_lost_time
-
-    def ball_twist_callback(self, msg: TwistWithCovarianceStamped):
-        x_sdev = msg.twist.covariance[0]  # position 0,0 in a 6x6-matrix
-        y_sdev = msg.twist.covariance[7]  # position 1,1 in a 6x6-matrix
-        if (
-            x_sdev > self.ball_twist_precision_threshold["x_sdev"]
-            or y_sdev > self.ball_twist_precision_threshold["y_sdev"]
-        ):
-            return
-        if msg.header.frame_id != self.map_frame:
-            try:
-                # point (0,0,0)
-                point_a = PointStamped()
-                point_a.header = msg.header
-                # linear velocity vector
-                point_b = PointStamped()
-                point_b.header = msg.header
-                point_b.point.x = msg.twist.twist.linear.x
-                point_b.point.y = msg.twist.twist.linear.y
-                point_b.point.z = msg.twist.twist.linear.z
-                # transform start and endpoint of velocity vector
-                point_a = self._blackboard.tf_buffer.transform(point_a, self.map_frame, timeout=Duration(seconds=1.0))
-                point_b = self._blackboard.tf_buffer.transform(point_b, self.map_frame, timeout=Duration(seconds=1.0))
-                # build new twist using transform vector
-                self.ball_twist_map = TwistStamped(header=msg.header)
-                self.ball_twist_map.header.frame_id = self.map_frame
-                self.ball_twist_map.twist.linear.x = point_b.point.x - point_a.point.x
-                self.ball_twist_map.twist.linear.y = point_b.point.y - point_a.point.y
-                self.ball_twist_map.twist.linear.z = point_b.point.z - point_a.point.z
-            except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
-                self._blackboard.node.get_logger().warn(str(e))
-        else:
-            self.ball_twist_map = TwistStamped(header=msg.header, twist=msg.twist.twist)
-        if self.ball_twist_map is not None:
-            self.ball_twist_publisher.publish(self.ball_twist_map)
 
     def forget_ball(self, own: bool = True, team: bool = True, reset_ball_filter: bool = True) -> None:
         """

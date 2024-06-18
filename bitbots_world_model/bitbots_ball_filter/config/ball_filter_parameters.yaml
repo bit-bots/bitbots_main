@@ -11,18 +11,6 @@ bitbots_ball_filter:
     read_only: true
     description: 'Topic to publish the filtered ball position'
   
-  ball_movement_publish_topic: 
-    type: string
-    default_value: 'ball_relative_movement'
-    read_only: true
-    description: 'Topic to publish the filtered ball movement'
-  
-  ball_publish_topic: 
-    type: string
-    default_value: 'ball_relative_filtered'
-    read_only: true
-    description: 'Topic to publish the filtered ball'
-  
   ball_filter_reset_service_name: 
     type: string
     default_value: 'ball_filter_reset'
@@ -43,13 +31,6 @@ bitbots_ball_filter:
     read_only: true
     validation: 
       bounds<>: [0, 100]  
-
-  velocity_reduction: 
-    type: double
-    default_value: 0.4
-    description: 'Velocity reduction (per axis) factor of the ball per second'
-    validation: 
-      bounds<>: [0.0, 1.0]
     
   process_noise_variance: 
     type: double
@@ -64,20 +45,6 @@ bitbots_ball_filter:
     description: 'Ball measurement certainty in filter'
     validation: 
       bounds<>: [0.0, 1.0]
-   
-  filter_reset_time: 
-    type: int
-    default_value: 20
-    description: 'Max ball not seen time in Seconds'
-    validation: 
-      bounds<>: [0, 100]
-    
-  filter_reset_distance: 
-    type: int
-    default_value: 99
-    description: 'Distance to the current estimation causing a filter reset'
-    validation: 
-      bounds<>: [0, 100]
   
   noise_increment_factor: 
     type: double
