@@ -35,11 +35,6 @@ class KickCapsule:
 
     def connect(self):
         topic = self.__blackboard.config["dynamic_kick"]["topic"]
-        self.__blackboard.node.get_logger().info(
-            "Connecting {}.KickCapsule to bitbots_dynamic_kick ({})".format(
-                str(self.__blackboard.__class__).split(".")[-1], topic
-            )
-        )
         self.__action_client = ActionClient(
             self.__blackboard.node, Kick, topic, callback_group=ReentrantCallbackGroup()
         )
