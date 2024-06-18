@@ -10,20 +10,8 @@ bitbots_ball_filter:
     default_value: 'ball_position_relative_filtered'
     read_only: true
     description: 'Topic to publish the filtered ball position'
-
-  ball_movement_publish_topic:
-    type: string
-    default_value: 'ball_relative_movement'
-    read_only: true
-    description: 'Topic to publish the filtered ball movement'
-
-  ball_publish_topic:
-    type: string
-    default_value: 'ball_relative_filtered'
-    read_only: true
-    description: 'Topic to publish the filtered ball'
-
-  ball_filter_reset_service_name:
+  
+  ball_filter_reset_service_name: 
     type: string
     default_value: 'ball_filter_reset'
     read_only: true
@@ -41,17 +29,10 @@ bitbots_ball_filter:
     default_value: 62
     description: 'Filtering rate in Hz'
     read_only: true
-    validation:
-      bounds<>: [0, 100]
-
-  velocity_decay_time:
-    type: double
-    default_value: 1.96
-    description: 'Duration (in seconds) after which, the velocity of the ball is reduced by 1-1/e (63%) due to friction'
-    validation:
-      bounds<>: [0.0001, 5.0]
-
-  process_noise_variance:
+    validation: 
+      bounds<>: [0, 100]  
+    
+  process_noise_variance: 
     type: double
     default_value: 0.0002
     description: 'Noise which is added to the estimated position without new measurements'
@@ -64,15 +45,8 @@ bitbots_ball_filter:
     description: 'Ball measurement certainty in filter'
     validation:
       bounds<>: [0.0, 1.0]
-
-  filter_reset_time:
-    type: int
-    default_value: 20
-    description: 'Max ball not seen time in Seconds'
-    validation:
-      bounds<>: [0, 100]
-
-  noise_increment_factor:
+  
+  noise_increment_factor: 
     type: double
     default_value: 0.2
     description: 'Factor to increase the noise if the ball is further away. This also depends on the reference distance.'
@@ -89,5 +63,12 @@ bitbots_ball_filter:
     type: double
     default_value: 3.0
     description: 'We calculate a distance around our filter state over which we ignore measurements. This threshold is based on the covariance of the filter scaled by this factor. This is used to ignore false positives if we already have a good estimation.'
+    validation:
+      bounds<>: [0.0, 10.0]
+
+  negative_observation_value:
+    type: double
+    default_value: 3.0
+    description: 'Value by which the covariance is increased if we have a negative observation, meaning we did not see the ball if we should have seen it.'
     validation:
       bounds<>: [0.0, 10.0]
