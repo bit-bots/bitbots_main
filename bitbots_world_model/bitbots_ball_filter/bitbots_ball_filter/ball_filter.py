@@ -91,9 +91,6 @@ class BallFilter(Node):
         """handles incoming ball messages"""
         self.camera_info = msg
 
-    def get_position_numpy(self) -> np.ndarray:
-        return np.array([*self.get_position_tuple()])
-
     def ball_callback(self, msg: BallArray) -> None:
         # Keep track if we have updated the measurement
         # We might not have a measurement if the ball is not visible
@@ -117,7 +114,7 @@ class BallFilter(Node):
             for ball in msg.balls:
                 ball_transform = self._get_transform(msg.header, ball.center)
                 if ball_transform:
-                    diff = numpify(ball_transform.point) - self.get_position_numpy()
+                    diff = numpify(ball_transform.point) - self.ball_state_position
                     if abs(diff[0]) < ignore_threshold_x and abs(diff[0]) < ignore_threshold_y:
                         filtered_balls.append((ball, ball_transform, np.linalg.norm(diff)))
 
@@ -170,7 +167,6 @@ class BallFilter(Node):
         """
         self.config = self.param_listener.get_params()
         self.filter_time_step = 1.0 / self.config.filter_rate
-        self.filter_reset_duration = Duration(seconds=self.config.filter_reset_time)
 
     def is_estimate_in_fov(self, header: Header) -> bool:
         """
@@ -224,7 +220,7 @@ class BallFilter(Node):
             self.update_params()
 
         # Increase covariance
-        self.ball_state_covariance += np.eye(2) * self.config.process_noise_variance
+        self.ball_state_covariance += np.eye(3) * self.config.process_noise_variance
 
         # Pose
         pose_msg = PoseWithCovarianceStamped()
@@ -233,8 +229,9 @@ class BallFilter(Node):
             frame_id=self.config.filter_frame,
         )
         pose_msg.pose.pose.position = msgify(Point, self.ball_state_position)
-        pose_msg.pose.covariance = np.zeros((6, 6))
-        pose_msg.pose.covariance[:3, :3] = self.ball_state_covariance
+        covariance = np.zeros((6, 6))
+        covariance[:3, :3] = self.ball_state_covariance
+        pose_msg.pose.covariance = covariance.flatten()
         pose_msg.pose.pose.orientation.w = 1.0
         self.ball_pose_publisher.publish(pose_msg)
 
