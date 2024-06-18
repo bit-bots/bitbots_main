@@ -108,11 +108,11 @@ PROTO Wolfgang [
       0.2 0.2 0.2
     ]
     %{
-      TOE_FRACTION = 0.3
+      TOE_RATIO = 0.3
       FOOT_LENGTH = 0.18
       FOOT_MASS = 0.26824
-      TOE_LENGTH = FOOT_LENGTH * TOE_FRACTION
-      REAR_FOOT_LENGTH = FOOT_LENGTH * (1-TOE_FRACTION)
+      TOE_LENGTH = FOOT_LENGTH * TOE_RATIO
+      REAR_FOOT_LENGTH = FOOT_LENGTH * (1-TOE_RATIO)
     }%
     %{
       if fields.name.value ~= '' then
@@ -2169,7 +2169,7 @@ PROTO Wolfgang [
                                               }
                                               physics Physics {
                                                 density -1
-                                                mass 0.1
+                                                mass %{=TOE_RATIO * FOOT_MASS}%
                                               }
                                             }
                                           }
@@ -2204,7 +2204,7 @@ PROTO Wolfgang [
                                         %{if fields.enablePhysics.value then}%
                                           physics Physics {
                                             density -1
-                                            mass 0.268240
+                                            mass %{=(1-TOE_RATIO) * FOOT_MASS}%
                                             centerOfMass [ 0.011970 0.091109 -0.029858 ]
                                             inertiaMatrix [
                                               8.841070e-04 3.178300e-04 1.153640e-03
@@ -3595,7 +3595,7 @@ PROTO Wolfgang [
                                               }
                                               physics Physics {
                                                 density -1
-                                                mass 0.1
+                                                mass %{=TOE_RATIO * FOOT_MASS}%
                                               }
                                             }
                                           }
@@ -3631,7 +3631,7 @@ PROTO Wolfgang [
                                         %{if fields.enablePhysics.value then}%
                                           physics Physics {
                                             density -1
-                                            mass 0.168240
+                                            mass %{=(1-TOE_RATIO) * FOOT_MASS}%
                                             centerOfMass [ -0.012040 0.091109 -0.029858 ]
                                             inertiaMatrix [
                                               8.841070e-04 3.173780e-04 1.153190e-03
