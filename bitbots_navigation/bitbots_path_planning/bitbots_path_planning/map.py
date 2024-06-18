@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import soccer_vision_3d_msgs.msg as sv3dm
 import tf2_ros as tf2
+from bitbots_utils.utils import get_parameters_from_other_node
 from geometry_msgs.msg import Point
 from nav_msgs.msg import OccupancyGrid
 from rclpy.node import Node
@@ -20,11 +21,18 @@ class Map:
         self.node = node
         self.buffer = buffer
         self.resolution: int = self.node.config.map.resolution
-        self.size: tuple[float, float] = (self.node.config.map.size.x, self.node.config.map.size.y)
+        parameters = get_parameters_from_other_node(
+            self.node, "/parameter_blackboard", ["field.size.x", "field.size.y", "field.size.padding"]
+        )
+        self.size: tuple[float, float] = (
+            parameters["field.size.x"] + 2 * parameters["field.size.padding"],
+            parameters["field.size.y"] + 2 * parameters["field.size.padding"],
+        )
         self.map: np.ndarray = np.ones(
             (np.array(self.size) * self.resolution).astype(int),
             dtype=np.int8,
         )
+
         self.frame: str = self.node.config.map.planning_frame
         self.ball_buffer: list[Point] = []
         self.robot_buffer: list[sv3dm.Robot] = []
