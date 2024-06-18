@@ -105,7 +105,7 @@ bitbots_path_planning:
     smoothing_tau:
       type: double
       default_value: 0.5
-      description: 'This is the time constant of the exponential smoothing filter. The higher the value, the more smoothing is applied. It denotes the time after which only 63% (1-1/e) of the original signal is left. It is update rate independent!'
+      description: 'This is the time constant of the exponential smoothing filter. It denotes the time after which only 63% (1-1/e) of the original signal is left. In other words, it denotes the time it takes for a new input to be 63% integrated into the output. It is update rate independent!'
       validation:
         bounds<>: [0.0, 1.0]
     rotation_i_factor:
