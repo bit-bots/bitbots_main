@@ -1,5 +1,4 @@
 # This file includes common dependencies for all environments
-filterpy
 pip
 transforms3d
 git+https://github.com/Flova/pyastar2d

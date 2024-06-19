@@ -10,9 +10,9 @@ from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.duration import Duration
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
-from sensor_msgs.msg import CameraInfo
 from rclpy.time import Time
 from ros2_numpy import msgify, numpify
+from sensor_msgs.msg import CameraInfo
 from soccer_vision_3d_msgs.msg import Ball, BallArray
 from std_msgs.msg import Header
 from std_srvs.srv import Trigger
@@ -38,7 +38,7 @@ class BallFilter(Node):
 
         # Initialize parameters
         self.update_params()
-        self.logger.info(f"Using frame '{self.config.filter_frame}' for ball filtering")
+        self.logger.info(f"Using frame '{self.config.filter.frame}' for ball filtering")
 
         self.camera_info: Optional[CameraInfo] = None
 
@@ -47,7 +47,7 @@ class BallFilter(Node):
 
         # publishes positions of ball
         self.ball_pose_publisher = self.create_publisher(
-            PoseWithCovarianceStamped, self.config.ball_position_publish_topic, 1
+            PoseWithCovarianceStamped, self.config.ros.ball_position_publish_topic, 1
         )
 
         # Create callback group
@@ -56,19 +56,19 @@ class BallFilter(Node):
         # setup subscriber
         self.ball_subscriber = self.create_subscription(
             BallArray,
-            self.config.ball_subscribe_topic,
+            self.config.ros.ball_subscribe_topic,
             self.ball_callback,
             2,
             callback_group=self.callback_group,
         )
 
         self.camera_info_subscriber = self.create_subscription(
-            CameraInfo, self.config.camera_info_subscribe_topic, self.camera_info_callback, 1
+            CameraInfo, self.config.ros.camera_info_subscribe_topic, self.camera_info_callback, 1
         )
 
         self.reset_service = self.create_service(
             Trigger,
-            self.config.ball_filter_reset_service_name,
+            self.config.ros.ball_filter_reset_service_name,
             self.reset_filter_cb,
             callback_group=self.callback_group,
         )
@@ -103,7 +103,7 @@ class BallFilter(Node):
             # The ignore distance is calculated using the filter's covariance and a factor
             # This way false positives are ignored if we already have a good estimate
             ignore_threshold_x, ignore_threshold_y, _ = (
-                np.sqrt(np.diag(self.ball_state_covariance)) * self.config.ignore_measurement_threshold
+                np.diag(self.ball_state_covariance) * self.config.filter.tracking.ignore_measurement_threshold
             )
 
             # Filter out balls that are too far away from the filter's estimate
@@ -115,32 +115,31 @@ class BallFilter(Node):
                 ball_transform = self._get_transform(msg.header, ball.center)
                 if ball_transform:
                     diff = numpify(ball_transform.point) - self.ball_state_position
-                    if abs(diff[0]) < ignore_threshold_x and abs(diff[0]) < ignore_threshold_y:
+                    if abs(diff[0]) < ignore_threshold_x and abs(diff[1]) < ignore_threshold_y:
                         filtered_balls.append((ball, ball_transform, np.linalg.norm(diff)))
 
             # Select the ball with closest distance to the filter estimate
             # Return if no ball was found
             ball_msg, ball_measurement_map, _ = min(filtered_balls, key=lambda x: x[2], default=(None, None, 0))
-            if ball_measurement_map is None:
-                return
+            if ball_measurement_map is not None:
+                # Estimate the covariance of the measurement
+                # Calculate the distance from the robot to the ball
+                distance = np.linalg.norm(numpify(ball_msg.center))
+                covariance = np.eye(3) * (
+                    self.config.filter.covariance.measurement_uncertainty
+                    + (distance**2) * self.config.filter.covariance.distance_factor
+                )
+                covariance[2, 2] = 0.0  # Ignore z-axis
 
-            # Estimate the covariance of the measurement
-            # Calculate the distance from the robot to the ball
-            distance = np.linalg.norm(numpify(ball_msg.center))
-            covariance = np.eye(3) * (
-                self.config.measurement_certainty + (distance**2) * self.config.noise_increment_factor
-            )
-            covariance[2, 2] = 0.0  # Ignore z-axis
-
-            # Store the ball measurement
-            self.ball_state_position = numpify(ball_measurement_map.point)
-            self.ball_state_covariance = covariance
-            ball_measurement_updated = True
+                # Store the ball measurement
+                self.ball_state_position = numpify(ball_measurement_map.point)
+                self.ball_state_covariance = covariance
+                ball_measurement_updated = True
 
         # If we did not get a ball measurement, we can check if we should have seen the ball
         # And increase the covariance if we did not see the ball
         if not ball_measurement_updated and self.is_estimate_in_fov(msg.header):
-            self.ball_state_covariance += np.eye(3) * self.config.negative_observation_value
+            self.ball_state_covariance *= np.eye(3) * self.config.filter.covariance.negative_observation.value
 
     def _get_transform(
         self, header: Header, point: Point, frame: Optional[str] = None, timeout: float = 0.3
@@ -150,7 +149,7 @@ class BallFilter(Node):
         """
 
         if frame is None:
-            frame = self.config.filter_frame
+            frame = self.config.filter.frame
 
         point_stamped = PointStamped()
         point_stamped.header = header
@@ -166,7 +165,7 @@ class BallFilter(Node):
         Updates parameters from dynamic reconfigure
         """
         self.config = self.param_listener.get_params()
-        self.filter_time_step = 1.0 / self.config.filter_rate
+        self.filter_time_step = 1.0 / self.config.filter.rate
 
     def is_estimate_in_fov(self, header: Header) -> bool:
         """
@@ -176,10 +175,10 @@ class BallFilter(Node):
         if self.camera_info is None:
             self.logger.info("No camera info received. Not checking if the ball is currently visible.")
             return False
-        
+
         # Build a pose
         ball_pose = PoseStamped()
-        ball_pose.header.frame_id = self.config.filter_frame
+        ball_pose.header.frame_id = self.config.filter.frame
         ball_pose.header.stamp = header.stamp
         ball_pose.pose.position = msgify(Point, self.ball_state_position)
 
@@ -193,17 +192,21 @@ class BallFilter(Node):
             return False
 
         # Check if the ball is in front of the camera
-        if ball_in_camera_optical_frame.pose.position.z >= 0:
-            # Quick math to get the pixels
-            p = numpify(ball_in_camera_optical_frame.pose.position)
-            k = np.reshape(self.camera_info.k, (3, 3))
-            p_pixel = np.matmul(k, p)
-            p_pixel = p_pixel * (1 / p_pixel[2])
-            # Make sure that the transformed pixel is inside the resolution and positive.
-            # TODO border
-            if 0 < p_pixel[0] <= self.camera_info.width and 0 < p_pixel[1] <= self.camera_info.height:
-                return True
-        return False
+        if ball_in_camera_optical_frame.pose.position.z < 0:
+            return False
+
+        # Quick math to get the pixel
+        p = numpify(ball_in_camera_optical_frame.pose.position)
+        k = np.reshape(self.camera_info.k, (3, 3))
+        pixel = np.matmul(k, p)
+        pixel = pixel * (1 / pixel[2])
+
+        # Make sure that the transformed pixel is on the sensor and not too close to the border
+        border_fraction = self.config.filter.covariance.negative_observation.ignore_border
+        border_px = np.array([self.camera_info.width, self.camera_info.height]) / 2 * border_fraction
+        in_fov_horizontal = border_px[0] < pixel[0] <= self.camera_info.width - border_px[0]
+        in_fov_vertical = border_px[1] < pixel[1] <= self.camera_info.height - border_px[1]
+        return in_fov_horizontal and in_fov_vertical
 
     def filter_step(self) -> None:
         """
@@ -220,13 +223,13 @@ class BallFilter(Node):
             self.update_params()
 
         # Increase covariance
-        self.ball_state_covariance += np.eye(3) * self.config.process_noise_variance
+        self.ball_state_covariance[:2, :2] += np.eye(2) * self.config.filter.covariance.process_noise
 
         # Pose
         pose_msg = PoseWithCovarianceStamped()
         pose_msg.header = Header(
             stamp=Time.to_msg(self.get_clock().now()),
-            frame_id=self.config.filter_frame,
+            frame_id=self.config.filter.frame,
         )
         pose_msg.pose.pose.position = msgify(Point, self.ball_state_position)
         covariance = np.zeros((6, 6))
