@@ -88,17 +88,19 @@ class BallFilter(Node):
         return response
 
     def camera_info_callback(self, msg: CameraInfo):
-        """handles incoming ball messages"""
+        """Updates the camera intrinsics"""
         self.camera_info = msg
 
     def ball_callback(self, msg: BallArray) -> None:
+        """handles incoming ball detections form a frame captured by the camera"""
+
         # Keep track if we have updated the measurement
         # We might not have a measurement if the ball is not visible
         # We also filter out balls that are too far away from the filter's estimate
         ball_measurement_updated: bool = False
 
         # Do filtering, transform, ... if we have a ball
-        if msg.balls:  # Balls exist
+        if msg.balls:  # Balls exist in the frame
             # Ignore balls that are too far away (false positives)
             # The ignore distance is calculated using the filter's covariance and a factor
             # This way false positives are ignored if we already have a good estimate
@@ -112,19 +114,24 @@ class BallFilter(Node):
             ] = []  # Store, original ball in base_footprint frame, transformed ball in filter frame , distance to filter estimate
             ball: Ball
             for ball in msg.balls:
+                # Bring ball detection into the frame of the filter and decouple the ball from the robots movement
                 ball_transform = self._get_transform(msg.header, ball.center)
+                # This checks if the ball can be transformed to the filter frame
                 if ball_transform:
+                    # Check if the ball is close enough to the filter's estimate
                     diff = numpify(ball_transform.point) - self.ball_state_position
                     if abs(diff[0]) < ignore_threshold_x and abs(diff[1]) < ignore_threshold_y:
+                        # Store the ball relative to the robot, the ball in the filter frame and the distance to the filter estimate
                         filtered_balls.append((ball, ball_transform, np.linalg.norm(diff)))
 
             # Select the ball with closest distance to the filter estimate
-            # Return if no ball was found
             ball_msg, ball_measurement_map, _ = min(filtered_balls, key=lambda x: x[2], default=(None, None, 0))
+            # Only update the measurement if we have a ball that is close enough to the filter's estimate
             if ball_measurement_map is not None:
                 # Estimate the covariance of the measurement
                 # Calculate the distance from the robot to the ball
                 distance = np.linalg.norm(numpify(ball_msg.center))
+                # Calculate the covariance of the measurement based on the distance and the filter's configuration
                 covariance = np.eye(3) * (
                     self.config.filter.covariance.measurement_uncertainty
                     + (distance**2) * self.config.filter.covariance.distance_factor
@@ -225,7 +232,7 @@ class BallFilter(Node):
         # Increase covariance
         self.ball_state_covariance[:2, :2] += np.eye(2) * self.config.filter.covariance.process_noise
 
-        # Pose
+        # Build message
         pose_msg = PoseWithCovarianceStamped()
         pose_msg.header = Header(
             stamp=Time.to_msg(self.get_clock().now()),
