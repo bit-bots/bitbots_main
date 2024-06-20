@@ -12,7 +12,7 @@ void WalkIK::init(moveit::core::RobotModelPtr kinematic_model) {
   goal_state_.reset(new moveit::core::RobotState(kinematic_model));
   goal_state_->setToDefaultValues();
   bool ik_reset;
-  node_->get_parameter("node.ik_reset", ik_reset);
+  node_->get_parameter("node.ik.reset", ik_reset);
   if (ik_reset) {
     reset();
   }

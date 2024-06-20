@@ -237,6 +237,14 @@ class CostmapCapsule:
                 ((self.field_length, self.field_width / 2 - self.goal_width / 2), goalpost_value),
                 ((self.field_length, self.field_width / 2 + self.goal_width / 2), goalpost_value),
                 (
+                    (self.field_length + self.map_margin, self.field_width / 2 - self.goal_width / 2),
+                    corner_value + in_field_value_our_side,
+                ),
+                (
+                    (self.field_length + self.map_margin, self.field_width / 2 + self.goal_width / 2),
+                    corner_value + in_field_value_our_side,
+                ),
+                (
                     (self.field_length, self.field_width / 2 - self.goal_width / 2 + goalpost_safety_distance),
                     goal_value,
                 ),
@@ -247,14 +255,14 @@ class CostmapCapsule:
                 (
                     (
                         self.field_length + self.map_margin,
-                        self.field_width / 2 - self.goal_width / 2 - goalpost_safety_distance,
+                        self.field_width / 2 - self.goal_width / 2 + goalpost_safety_distance,
                     ),
                     -0.2,
                 ),
                 (
                     (
                         self.field_length + self.map_margin,
-                        self.field_width / 2 + self.goal_width / 2 + goalpost_safety_distance,
+                        self.field_width / 2 + self.goal_width / 2 - goalpost_safety_distance,
                     ),
                     -0.2,
                 ),

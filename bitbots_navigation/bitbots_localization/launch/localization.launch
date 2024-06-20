@@ -12,10 +12,6 @@
     <node pkg="bitbots_localization" exec="localization" name="bitbots_localization" output="screen" launch-prefix="$(var taskset)">
         <!-- load base parameters -->
         <param from="$(find-pkg-share bitbots_localization)/config/config.yaml"/>
-        <!-- load field specific paramters -->
-        <param from="$(find-pkg-share bitbots_localization)/config/fields/$(var fieldname)/config.yaml"/>
-
-        <param name="field.name" value="$(var fieldname)"/>
         <!-- load correct frames for namespace -->
         <param name="ros.odom_frame" value="$(var tf_prefix)odom"/>
         <param name="ros.base_footprint_frame" value="$(var tf_prefix)base_footprint"/>

@@ -53,7 +53,7 @@ class SecondaryStateTeamDecider(AbstractDecisionElement):
     blackboard: BodyBlackboard
 
     def __init__(self, blackboard, dsd, parameters):
-        super().__init__(blackboard, dsd)
+        super().__init__(blackboard, dsd, parameters)
         self.team_id = self.blackboard.gamestate.get_team_id()
 
     def perform(self, reevaluate=False):
@@ -83,7 +83,7 @@ class SecondaryStateModeDecider(AbstractDecisionElement):
     blackboard: BodyBlackboard
 
     def __init__(self, blackboard, dsd, parameters):
-        super().__init__(blackboard, dsd)
+        super().__init__(blackboard, dsd, parameters)
 
     def perform(self, reevaluate=False):
         state_mode = self.blackboard.gamestate.get_secondary_state_mode()

@@ -13,7 +13,7 @@ class GoToRelativePosition(AbstractActionElement):
     blackboard: BodyBlackboard
 
     def __init__(self, blackboard, dsd, parameters: dict = None):
-        super().__init__(blackboard, dsd)
+        super().__init__(blackboard, dsd, parameters)
         self.point = float(parameters.get("x", 0)), float(parameters.get("y", 0)), float(parameters.get("t", 0))
         self.threshold = float(parameters.get("threshold", 0.1))
         self.first = True
@@ -54,7 +54,7 @@ class GoToAbsolutePosition(AbstractActionElement):
 
     def __init__(self, blackboard, dsd, parameters):
         """Go to an absolute position on the field"""
-        super().__init__(blackboard, dsd)
+        super().__init__(blackboard, dsd, parameters)
         self.point = float(parameters.get("x", 0)), float(parameters.get("y", 0)), float(parameters.get("t", 0))
 
     def perform(self, reevaluate=False):

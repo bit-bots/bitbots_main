@@ -179,7 +179,7 @@
       ##################
 
       # sigma of gaussian blur applied to costmap
-      base_costmap_smoothing_sigma: 0.3
+      base_costmap_smoothing_sigma: 1.0
 
       # margin that is added around the field size when creating the costmap (meters)
       map_margin: 1.0
@@ -191,7 +191,7 @@
       goal_value: 0.0
 
       # cost at a goalpost
-      goalpost_value: 1.0
+      goalpost_value: 0.5
 
       # cost in a corner
       corner_value: 1.0

@@ -51,6 +51,14 @@ Localization::Localization(std::shared_ptr<rclcpp::Node> node)
   goal_posts_relative_.header.stamp = rclcpp::Time(0);
   fieldboundary_relative_.header.stamp = rclcpp::Time(0);
 
+  // Get the static global configuration from the blackboard
+  auto global_params = bitbots_utils::get_parameters_from_other_node(
+      node_, "/parameter_blackboard", {"field.size.x", "field.size.y", "field.size.padding", "field.name"}, 1s);
+  field_name_ = global_params["field.name"].as_string();
+  field_dimensions_.x = global_params["field.size.x"].as_double();
+  field_dimensions_.y = global_params["field.size.y"].as_double();
+  field_dimensions_.padding = global_params["field.size.padding"].as_double();
+
   // Update all things that are dependent on the parameters and
   // might need to be updated during runtime later if a parameter is changed
   updateParams(true);
@@ -82,14 +90,6 @@ void Localization::updateParams(bool force_reload) {
   // Update parameters
   param_listener_.refresh_dynamic_parameters();
   config_ = param_listener_.get_params();
-
-  // Poll the global parameter configuration
-  auto global_params = bitbots_utils::get_parameters_from_other_node(
-      node_, "/parameter_blackboard", {"field.size.x", "field.size.y", "field.size.padding", "field.name"}, 1s);
-  field_name_ = global_params["field.name"].as_string();
-  field_dimensions_.x = global_params["field.size.x"].as_double();
-  field_dimensions_.y = global_params["field.size.y"].as_double();
-  field_dimensions_.padding = global_params["field.size.padding"].as_double();
 
   // Check if measurement type is used and load the correct map for that
   if (config_.particle_filter.scoring.lines.factor) {

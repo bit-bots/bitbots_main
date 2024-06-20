@@ -24,9 +24,11 @@ bitbots_path_planning:
       # Maximum velocity we want to reach in different directions (base_footprint coordinate system)
       max_vel_x: 0.15
       min_vel_x: -0.1
-      max_vel_y: 0.05
+      max_vel_y: 0.1
       # This is the time constant of the exponential smoothing filter. The higher the value, the more smoothing is applied.
-      # It denotes the time after which only 63% (1-1/e) of the original signal is left. It is update rate independent!
+      # It denotes the time after which a unit step function input signal reaches 63% (1-1/e) of its original strength.
+      # In other words, it denotes the time it takes for a new input to be 63% integrated into the output.
+      # It is update rate independent!
       smoothing_tau: 0.5
       # Integral gain to counter constant disturbances (not really tested/used)
       rotation_i_factor: 0.0

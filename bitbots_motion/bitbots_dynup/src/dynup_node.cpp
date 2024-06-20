@@ -4,117 +4,74 @@ namespace bitbots_dynup {
 using namespace std::chrono_literals;
 
 DynupNode::DynupNode(const std::string &ns, std::vector<rclcpp::Parameter> parameters)
-    : Node(ns + "dynup", rclcpp::NodeOptions()
-                             .allow_undeclared_parameters(true)
-                             .parameter_overrides(parameters)
-                             .automatically_declare_parameters_from_overrides(true)),
+    : Node(ns + "dynup", rclcpp::NodeOptions()),
+      param_listener_(get_node_parameters_interface()),
       engine_(SharedPtr(this)),
       stabilizer_(ns),
       visualizer_("debug/dynup", SharedPtr(this)),
       ik_(SharedPtr(this)),
       tf_buffer_(std::make_unique<tf2_ros::Buffer>(this->get_clock())) {
+  auto moveit_node = std::make_shared<rclcpp::Node>(ns + "dynup_moveit_node");
+
+  // when called from python, parameters are given to the constructor
+  for (auto parameter : parameters) {
+    if (this->has_parameter(parameter.get_name())) {
+      // this is the case for walk engine params set via python
+      this->set_parameter(parameter);
+    } else {
+      // parameter is not for the walking, set on moveit node
+      moveit_node->declare_parameter(parameter.get_name(), parameter.get_type());
+      moveit_node->set_parameter(parameter);
+    }
+  }
   // get all kinematics parameters from the move_group node if they are not set manually via constructor
   std::string check_kinematic_parameters;
-  if (!this->get_parameter("robot_description_kinematics.LeftLeg.kinematics_solver", check_kinematic_parameters)) {
+  if (!moveit_node->get_parameter("robot_description_kinematics.LeftLeg.kinematics_solver",
+                                  check_kinematic_parameters)) {
     auto parameters_client = std::make_shared<rclcpp::SyncParametersClient>(this, "/move_group");
     while (!parameters_client->wait_for_service(1s)) {
       if (!rclcpp::ok()) {
         RCLCPP_ERROR(this->get_logger(), "Interrupted while waiting for the service. Exiting.");
-        rclcpp::shutdown();
+        break;
       }
-      RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 10 * 1e9,
+      RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 10 * 1e3,
                            "Can't copy parameters from move_group node. Service not available, waiting again...");
     }
     rcl_interfaces::msg::ListParametersResult parameter_list =
         parameters_client->list_parameters({"robot_description_kinematics"}, 10);
     auto copied_parameters = parameters_client->get_parameters(parameter_list.names);
-    // set the parameters to our node
-    this->set_parameters(copied_parameters);
+    for (auto &parameter : copied_parameters) {
+      moveit_node->declare_parameter(parameter.get_name(), parameter.get_type());
+      moveit_node->set_parameter(parameter);
+    }
   }
 
-  base_link_frame_ = this->get_parameter("base_link_frame").get_value<std::string>();
-  r_sole_frame_ = this->get_parameter("r_sole_frame").get_value<std::string>();
-  l_sole_frame_ = this->get_parameter("l_sole_frame").get_value<std::string>();
-  r_wrist_frame_ = this->get_parameter("r_wrist_frame").get_value<std::string>();
-  l_wrist_frame_ = this->get_parameter("l_wrist_frame").get_value<std::string>();
-
-  param_names_ = {"engine_rate",
-                  "arm_extended_length",
-                  "foot_distance",
-                  "hand_walkready_pitch",
-                  "hand_walkready_height",
-                  "trunk_height",
-                  "trunk_pitch",
-                  "trunk_x_final",
-                  "time_walkready",
-                  "arms_angle_back",
-                  "arm_side_offset_back",
-                  "com_shift_1",
-                  "com_shift_2",
-                  "foot_angle",
-                  "hands_behind_back_x",
-                  "hands_behind_back_z",
-                  "leg_min_length_back",
-                  "time_foot_ground_back",
-                  "time_full_squat_hands",
-                  "time_full_squat_legs",
-                  "time_legs_close",
-                  "trunk_height_back",
-                  "trunk_overshoot_angle_back",
-                  "wait_in_squat_back",
-                  "arm_side_offset_front",
-                  "hands_pitch",
-                  "leg_min_length_front",
-                  "max_leg_angle",
-                  "time_foot_close",
-                  "time_foot_ground_front",
-                  "time_hands_front",
-                  "time_hands_rotate",
-                  "time_hands_side",
-                  "time_to_squat",
-                  "time_torso_45",
-                  "trunk_overshoot_angle_front",
-                  "trunk_x_front",
-                  "wait_in_squat_front",
-                  "rise_time",
-                  "descend_time",
-                  "stabilizing",
-                  "minimal_displacement",
-                  "stable_threshold",
-                  "stable_duration",
-                  "stabilization_timeout",
-                  "spline_smoothness",
-                  "display_debug",
-                  "pid_trunk_roll.p",
-                  "pid_trunk_roll.i",
-                  "pid_trunk_roll.d",
-                  "pid_trunk_roll.i_clamp",
-                  "pid_trunk_roll.i_clamp_min",
-                  "pid_trunk_roll.i_clamp_max",
-                  "pid_trunk_roll.antiwindup",
-                  "pid_trunk_roll.publish_state",
-                  "pid_trunk_pitch.p",
-                  "pid_trunk_pitch.i",
-                  "pid_trunk_pitch.d",
-                  "pid_trunk_pitch.i_clamp",
-                  "pid_trunk_pitch.i_clamp_min",
-                  "pid_trunk_pitch.i_clamp_max",
-                  "pid_trunk_pitch.antiwindup",
-                  "pid_trunk_pitch.publish_state"};
+  // get all kinematics parameters from the move_group node if they are not set manually via constructor
+  params_ = param_listener_.get_params();
 
   // load params once
-  const std::vector<rclcpp::Parameter> params;
-  onSetParameters(params);
+  onSetParameters();
 
   tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_, this);
 
-  robot_model_loader_ =
-      std::make_shared<robot_model_loader::RobotModelLoader>(SharedPtr(this), "robot_description", true);
+  robot_model_loader_ = std::make_shared<robot_model_loader::RobotModelLoader>(moveit_node, "robot_description");
   kinematic_model_ = robot_model_loader_->getModel();
   if (!kinematic_model_) {
     RCLCPP_FATAL(this->get_logger(), "No robot model loaded, killing dynup.");
     exit(1);
   }
+
+  this->declare_parameter<std::string>("base_link_frame", "base_link");
+  this->get_parameter("base_link_frame", base_link_frame_);
+  this->declare_parameter<std::string>("r_sole_frame", "r_sole");
+  this->get_parameter("r_sole_frame", r_sole_frame_);
+  this->declare_parameter<std::string>("l_sole_frame", "l_sole");
+  this->get_parameter("l_sole_frame", l_sole_frame_);
+  this->declare_parameter<std::string>("r_wrist_frame", "r_wrist");
+  this->get_parameter("r_wrist_frame", r_wrist_frame_);
+  this->declare_parameter<std::string>("l_wrist_frame", "l_wrist");
+  this->get_parameter("l_wrist_frame", l_wrist_frame_);
+
   moveit::core::RobotStatePtr init_state;
   init_state.reset(new moveit::core::RobotState(kinematic_model_));
   // set elbows to make arms straight, in a stupid way since moveit is annoying
@@ -129,8 +86,6 @@ DynupNode::DynupNode(const std::string &ns, std::vector<rclcpp::Parameter> param
   // arm max length, y offset, z offset from base link
   engine_.init(shoulder_origin.position.y, shoulder_origin.position.z);
   ik_.init(kinematic_model_);
-
-  callback_handle_ = this->add_on_set_parameters_callback(std::bind(&DynupNode::onSetParameters, this, _1));
 
   joint_goal_publisher_ = this->create_publisher<bitbots_msgs::msg::JointCommand>("dynup_motor_goals", 1);
   debug_publisher_ = this->create_publisher<visualization_msgs::msg::Marker>("debug_markers", 1);
@@ -189,20 +144,16 @@ void DynupNode::jointStateCallback(const sensor_msgs::msg::JointState::SharedPtr
 
 void DynupNode::imuCallback(const sensor_msgs::msg::Imu::SharedPtr msg) { stabilizer_.setImu(msg); }
 
-rcl_interfaces::msg::SetParametersResult DynupNode::onSetParameters(const std::vector<rclcpp::Parameter> &parameters) {
-  auto params = this->get_parameters(param_names_);
-  for (auto &param : params) {
-    params_[param.get_name()] = param;
-  }
-  engine_rate_ = params_["engine_rate"].get_value<int>();
-  debug_ = params_["display_debug"].get_value<bool>();
+rcl_interfaces::msg::SetParametersResult DynupNode::onSetParameters() {
+  engine_rate_ = params_.engine.engine_rate;
+  debug_ = params_.engine.visualizer.display_debug;
 
-  engine_.setParams(params_);
-  stabilizer_.setParams(params_);
-  ik_.useStabilizing(params_["stabilizing"].get_value<bool>());
+  engine_.setParams(params_.engine);
+  stabilizer_.setParams(params_.engine.stabilizer);
+  ik_.useStabilizing(params_.engine.stabilizer.stabilizing);
 
   VisualizationParams viz_params = VisualizationParams();
-  viz_params.spline_smoothness = params_["spline_smoothness"].get_value<int>();
+  viz_params.spline_smoothness = params_.engine.visualizer.spline_smoothness;
   visualizer_.setParams(viz_params);
 
   rcl_interfaces::msg::SetParametersResult result;
@@ -222,6 +173,12 @@ void DynupNode::execute(const std::shared_ptr<DynupGoalHandle> goal_handle) {
   reset();
   last_ros_update_time_ = 0;
   start_time_ = this->get_clock()->now().seconds();
+
+  if (param_listener_.is_old(params_)) {
+    params_ = param_listener_.get_params();
+    // Copy all params to other modules
+    onSetParameters();
+  }
 
   bitbots_utils::wait_for_tf(this->get_logger(), this->get_clock(), this->tf_buffer_.get(),
                              {base_link_frame_, r_sole_frame_, l_sole_frame_, r_wrist_frame_, l_wrist_frame_},
@@ -317,10 +274,9 @@ void DynupNode::loopEngine(int loop_rate, std::shared_ptr<DynupGoalHandle> goal_
     feedback->percent_done = engine_.getPercentDone();
     goal_handle->publish_feedback(feedback);
     if (feedback->percent_done >= 100 &&
-        (stable_duration_ >= params_["stable_duration"].get_value<int>() ||
-         !(params_["stabilizing"].get_value<bool>()) ||
+        (stable_duration_ >= params_.engine.stabilizer.stable_duration || !(params_.engine.stabilizer.stabilizing) ||
          (this->get_clock()->now().seconds() - start_time_ >=
-          engine_.getDuration() + params_["stabilization_timeout"].get_value<double>()))) {
+          engine_.getDuration() + params_.engine.stabilizer.stabilization_timeout))) {
       RCLCPP_INFO_STREAM(this->get_logger(), "Completed dynup with " << failed_tick_counter_ << " failed ticks.");
       result->successful = true;
       server_free_ = true;

@@ -11,7 +11,6 @@
             <param name="l_sole_frame" value="$(var tf_prefix)l_sole"/>
             <param name="r_wrist_frame" value="$(var tf_prefix)r_wrist"/>
             <param name="l_wrist_frame" value="$(var tf_prefix)l_wrist"/>
-            <param from="$(find-pkg-share bitbots_dynup)/config/dynup_robot.yaml" />
         </node>
     </group>
     <group if="$(var sim)">
@@ -22,6 +21,7 @@
             <param name="r_wrist_frame" value="$(var tf_prefix)r_wrist"/>
             <param name="l_wrist_frame" value="$(var tf_prefix)l_wrist"/>
             <param from="$(find-pkg-share bitbots_dynup)/config/dynup_sim.yaml"/>
+            <param name="use_sim_time" value="$(var sim)"/>
         </node>
     </group>
 </launch>
