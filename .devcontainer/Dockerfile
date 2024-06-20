@@ -81,8 +81,12 @@ RUN python3 -m pip install \
 # Set zsh as default shell
 SHELL ["/bin/zsh", "-c"]
 
-# Create user bitbots with home directory and add to sudo group
-RUN useradd -m -U -u "$uid" -G sudo -s /bin/zsh $user \
+# Remove the users group, because when it exists on the host system
+# the devcontainer will not dynamically update the containerUser GID,
+# when the host user is part of the users group.
+# Then create a bitbots user with home directory and add allow it to use sudo
+RUN groupdel users \
+  && useradd -m -U -u "$uid" -G sudo -s /bin/zsh $user \
   && groupmod -g "$gid" $user \
   && echo "$user ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
