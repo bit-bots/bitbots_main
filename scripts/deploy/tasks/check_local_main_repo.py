@@ -64,7 +64,7 @@ class CheckLocalMainRepoTask(AbstractTask):
                 f"{warnings}\n\n"
                 "Please check the warnings and decide if you want to proceed!"
             )
-            answer: str = input(r"Do you want to proceed? \[y/N] ").lower()
+            answer: str = input("Do you want to proceed? [y/N] ").lower()
             proceed = answer and "y" in answer[0]
             group_result = GroupResult()
             if proceed:
