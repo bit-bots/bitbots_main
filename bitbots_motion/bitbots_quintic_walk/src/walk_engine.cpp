@@ -638,7 +638,12 @@ void WalkEngine::buildTrajectories(bool start_movement, bool start_step, bool ki
     trunk_spline_.y()->addPoint(0.0, trunk_pos_at_foot_change_.y(), trunk_pos_vel_at_foot_change_.y(),
                                 trunk_pos_acc_at_foot_change_.y());
   }
-  if (start_step || start_movement) {
+  if (start_movement) {
+    trunk_spline_.y()->addPoint(period + time_shift - pause_length,
+                                trunk_point_middle.y() - trunk_vect.y() * config_.first_step_swing_factor);
+    trunk_spline_.y()->addPoint(period + time_shift + pause_length,
+                                trunk_point_middle.y() - trunk_vect.y() * config_.first_step_swing_factor);
+  } else if (start_step) {
     trunk_spline_.y()->addPoint(half_period + time_shift - pause_length,
                                 trunk_point_middle.y() + trunk_vect.y() * config_.first_step_swing_factor);
     trunk_spline_.y()->addPoint(half_period + time_shift + pause_length,
