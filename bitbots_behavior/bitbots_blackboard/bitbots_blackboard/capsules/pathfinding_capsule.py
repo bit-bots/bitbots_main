@@ -176,7 +176,9 @@ class PathfindingCapsule:
         elif BallGoalType.CLOSE == target:
             ball_u, ball_v = self._blackboard.world_model.get_ball_position_uv()
             angle = math.atan2(ball_v, ball_u)
-            ball_point = (ball_u, ball_v, angle, self._blackboard.world_model.base_footprint_frame)
+            goal_u = ball_u - math.cos(angle) * distance
+            goal_v = ball_v - math.sin(angle) * distance
+            ball_point = (goal_u, goal_v, angle, self._blackboard.world_model.base_footprint_frame)
 
         else:
             self.node.get_logger().error(f"Target {target} for go_to_ball action not implemented.")
