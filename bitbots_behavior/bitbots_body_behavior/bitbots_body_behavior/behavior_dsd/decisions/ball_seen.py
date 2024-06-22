@@ -16,8 +16,10 @@ class BallSeen(AbstractDecisionElement):
         :param reevaluate:
         :return:
         """
-
-        if self.blackboard.world_model.has_been_seen():  # TODO: change to ball_seen of all robots or not?
+        self.publish_debug_data(
+            "Ball lost time", self.blackboard.node.get_clock().now() - self.blackboard.world_model.ball_last_seen()
+        )
+        if self.blackboard.node.get_clock().now() - self.blackboard.world_model.ball_last_seen() < self.ball_lost_time:
             return "YES"
         return "NO"
 
