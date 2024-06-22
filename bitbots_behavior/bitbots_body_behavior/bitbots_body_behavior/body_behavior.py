@@ -5,7 +5,7 @@ from bitbots_blackboard.blackboard import BodyBlackboard
 from bitbots_tf_buffer import Buffer
 from dynamic_stack_decider.dsd import DSD
 from game_controller_hl_interfaces.msg import GameState
-from geometry_msgs.msg import PoseWithCovarianceStamped, Twist
+from geometry_msgs.msg import PoseWithCovarianceStamped, Twist, TwistWithCovarianceStamped
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.duration import Duration
 from rclpy.executors import MultiThreadedExecutor
@@ -72,6 +72,13 @@ class BodyDSD:
             RobotControlState,
             "robot_state",
             blackboard.misc.robot_state_callback,
+            qos_profile=1,
+            callback_group=MutuallyExclusiveCallbackGroup(),
+        )
+        node.create_subscription(
+            TwistWithCovarianceStamped,
+            node.get_parameter("body.ball_movement_subscribe_topic").get_parameter_value().string_value,
+            blackboard.world_model.ball_twist_callback,
             qos_profile=1,
             callback_group=MutuallyExclusiveCallbackGroup(),
         )
