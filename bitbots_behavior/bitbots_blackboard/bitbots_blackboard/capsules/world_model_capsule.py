@@ -9,10 +9,10 @@ import tf2_ros as tf2
 from bitbots_utils.utils import get_parameter_dict, get_parameters_from_other_node
 from geometry_msgs.msg import (
     PoseStamped,
-    PoseWithCovariance,
     PoseWithCovarianceStamped,
     TransformStamped,
     TwistStamped,
+    TwistWithCovarianceStamped,
 )
 from rclpy.clock import ClockType
 from rclpy.duration import Duration
@@ -50,9 +50,10 @@ class WorldModelCapsule:
         # Define the frames
         self.base_footprint_frame: str = self._blackboard.node.get_parameter("base_footprint_frame").value
         self.map_frame: str = self._blackboard.node.get_parameter("map_frame").value
+        self.odom_frame: str = self._blackboard.node.get_parameter("odom_frame").value
 
         # Get body parameters
-        self.ball_covariance_threshold = self._blackboard.node.get_parameter("ball_max_covariance").value
+        self.ball_lost_time = Duration(seconds=self._blackboard.node.get_parameter("body.ball_lost_time").value)
         self.ball_position_precision_threshold = get_parameter_dict(
             self._blackboard.node, "body.ball_position_precision_threshold"
         )
@@ -68,17 +69,15 @@ class WorldModelCapsule:
         self.map_margin: float = self._blackboard.node.get_parameter("body.map_margin").value
 
         # Placeholders
-        self.ball_base_footprint: PoseWithCovarianceStamped | None = None  # The ball in the base footprint frame
-        self.ball_map: PoseWithCovarianceStamped | None = (
-            None  # The ball in the map frame (when localization is usable)
-        )
+        self._ball_seen_time: Time | None = None
+        self.ball_base_footprint: PointStamped | None = None  # The ball in the base footprint frame
+        self.ball_map: PointStamped | None = None  # The ball in the map frame (when localization is usable)
+        self.ball_odom: PointStamped | None = None  # The ball in the odom frame (when localization is not usable)
         self.ball_twist_map: TwistStamped | None = None
         self.pose: PoseWithCovarianceStamped | None = None  # Own pose with covariance
 
         # Publisher for debug messages
-        self.debug_publisher_ball = self._blackboard.node.create_publisher(
-            PoseWithCovarianceStamped, "debug/viz_ball", 1
-        )
+        self.debug_publisher_ball = self._blackboard.node.create_publisher(PointStamped, "debug/viz_ball", 1)
         self.debug_publisher_ball_twist = self._blackboard.node.create_publisher(TwistStamped, "debug/ball_twist", 1)
         self.debug_publisher_used_ball = self._blackboard.node.create_publisher(PointStamped, "debug/used_ball", 1)
         self.debug_publisher_which_ball = self._blackboard.node.create_publisher(Header, "debug/which_ball_is_used", 1)
@@ -86,32 +85,97 @@ class WorldModelCapsule:
         # Services
         self.reset_ball_filter = self._blackboard.node.create_client(Trigger, "ball_filter_reset")
 
-        # make subscription
-        self._blackboard.node.create_subscription(
-            PoseWithCovarianceStamped,
-            "ball_position_relative_filtered",
-            self.ball_filtered_callback,
-            1,
-        )
-
     ############
     ### Ball ###
     ############
 
+    def ball_seen_self(self) -> bool:
+        """Returns true if we have seen the ball recently (less than ball_lost_time ago)"""
+        return self._blackboard.node.get_clock().now() - self._ball_seen_time < self.ball_lost_time
+
+    def ball_last_seen(self) -> Time:
+        """
+        Returns the time at which the ball was last seen if it is in the threshold or
+        the more recent ball from either the teammate or itself if teamcomm is available
+        """
+        if not self.ball_seen_self() and (
+            hasattr(self._blackboard, "team_data") and self.localization_precision_in_threshold()
+        ):
+            return max(self._ball_seen_time, self._blackboard.team_data.get_teammate_ball_seen_time())
+        else:
+            return self._ball_seen_time
+
     def ball_has_been_seen(self) -> bool:
         """Returns true if we or a teammate have seen the ball recently (less than ball_lost_time ago)"""
-        return np.sum(self.ball_map.pose.covariance) < self.ball_covariance_threshold
+        return self._blackboard.node.get_clock().now() - self.ball_last_seen() < self.ball_lost_time
 
     def get_ball_position_xy(self) -> Tuple[float, float]:
         """Return the ball saved in the map or odom frame"""
-        ball = self.ball_map.pose
+        ball = self.get_best_ball_point_stamped()
         return ball.point.x, ball.point.y
+
+    def get_ball_stamped_relative(self) -> PointStamped:
+        """Returns the ball in the base_footprint frame i.e. relative to the robot projected on the ground"""
+        return self.ball_base_footprint
+
+    def get_best_ball_point_stamped(self) -> PointStamped:
+        """
+        Returns the best ball, either its own ball has been in the ball_lost_lost time
+        or from teammate if the robot itself has lost it and teamcomm is available
+        """
+        if self.localization_precision_in_threshold():
+            if self.ball_seen_self() or not hasattr(self._blackboard, "team_data"):
+                self.debug_publisher_used_ball.publish(self.ball_map)
+                h = Header()
+                h.stamp = self.ball_map.header.stamp
+                h.frame_id = "own_ball_map"
+                self.debug_publisher_which_ball.publish(h)
+                return self.ball_map
+            else:
+                teammate_ball = self._blackboard.team_data.get_teammate_ball()
+                if teammate_ball is not None and self._blackboard.tf_buffer.can_transform(
+                    self.base_footprint_frame,
+                    teammate_ball.header.frame_id,
+                    teammate_ball.header.stamp,
+                    timeout=Duration(seconds=0.2),
+                ):
+                    self.debug_publisher_used_ball.publish(teammate_ball)
+                    h = Header()
+                    h.stamp = teammate_ball.header.stamp
+                    h.frame_id = "teammate_ball"
+                    self.debug_publisher_which_ball.publish(h)
+                    return teammate_ball
+                else:
+                    self._blackboard.node.get_logger().warning(
+                        "our ball is bad but the teammates ball is worse or cant be transformed"
+                    )
+                    h = Header()
+                    h.stamp = self.ball_map.header.stamp
+                    h.frame_id = "own_ball_map"
+                    self.debug_publisher_which_ball.publish(h)
+                    self.debug_publisher_used_ball.publish(self.ball_map)
+                    return self.ball_map
+        else:
+            h = Header()
+            h.stamp = self.ball_odom.header.stamp
+            h.frame_id = "own_ball_odom"
+            self.debug_publisher_which_ball.publish(h)
+            self.debug_publisher_used_ball.publish(self.ball_odom)
+            return self.ball_odom
 
     def get_ball_position_uv(self) -> Tuple[float, float]:
         """
         Returns the ball position relative to the robot in the base_footprint frame
         """
-        ball_bfp = self.ball_base_footprint.pose
+        ball = self.get_best_ball_point_stamped()
+        try:
+            ball_bfp = self._blackboard.tf_buffer.transform(
+                ball, self.base_footprint_frame, timeout=Duration(seconds=0.2)
+            ).point
+        except tf2.ExtrapolationException as e:
+            self._blackboard.node.get_logger().warn(str(e))
+            self._blackboard.node.get_logger().error("Severe transformation problem concerning the ball!")
+            return None
         return ball_bfp.x, ball_bfp.y
 
     def get_ball_distance(self) -> float:
@@ -132,27 +196,75 @@ class WorldModelCapsule:
         return math.atan2(v, u)
 
     def ball_filtered_callback(self, msg: PoseWithCovarianceStamped):
-        ball_buffer = PoseStamped(header=msg.header, pose=msg.pose.pose)
+        # When the precision is not sufficient, the ball ages.
+        x_sdev = msg.pose.covariance[0]  # position 0,0 in a 6x6-matrix
+        y_sdev = msg.pose.covariance[7]  # position 1,1 in a 6x6-matrix
+        if (
+            x_sdev > self.ball_position_precision_threshold["x_sdev"]
+            or y_sdev > self.ball_position_precision_threshold["y_sdev"]
+        ):
+            self.forget_ball(own=True, team=False, reset_ball_filter=False)
+            return
+
+        ball_buffer = PointStamped(header=msg.header, point=msg.pose.pose.position)
         try:
-            ball_base_footprint = self._blackboard.tf_buffer.transform(
+            self.ball_base_footprint = self._blackboard.tf_buffer.transform(
                 ball_buffer, self.base_footprint_frame, timeout=Duration(seconds=1.0)
             )
-            ball_map = self._blackboard.tf_buffer.transform(ball_buffer, self.map_frame, timeout=Duration(seconds=1.0))
-            self.ball_base_footprint = PoseWithCovarianceStamped(
-                header=ball_base_footprint.header,
-                pose=PoseWithCovariance(pose=ball_base_footprint.pose, covariance=msg.pose.covariance),
+            self.ball_odom = self._blackboard.tf_buffer.transform(
+                ball_buffer, self.odom_frame, timeout=Duration(seconds=1.0)
             )
-            self.ball_map = PoseWithCovarianceStamped(
-                header=ball_map.header, pose=PoseWithCovariance(pose=ball_map.pose, covariance=msg.pose.covariance)
+            self.ball_map = self._blackboard.tf_buffer.transform(
+                ball_buffer, self.map_frame, timeout=Duration(seconds=1.0)
             )
             # Set timestamps to zero to get the newest transform when this is transformed later
-            self.ball_base_footprint.header.stamp = Time(clock_type=ClockType.ROS_TIME).to_msg()
+            self.ball_odom.header.stamp = Time(clock_type=ClockType.ROS_TIME).to_msg()
             self.ball_map.header.stamp = Time(clock_type=ClockType.ROS_TIME).to_msg()
-
+            self._ball_seen_time = Time.from_msg(msg.header.stamp)
             self.debug_publisher_ball.publish(self.ball_base_footprint)
 
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
             self._blackboard.node.get_logger().warn(str(e))
+
+    def recent_ball_twist_available(self) -> bool:
+        if self.ball_twist_map is None:
+            return False
+        return self._blackboard.node.get_clock().now() - self.ball_twist_map.header.stamp < self.ball_twist_lost_time
+
+    def ball_twist_callback(self, msg: TwistWithCovarianceStamped):
+        x_sdev = msg.twist.covariance[0]  # position 0,0 in a 6x6-matrix
+        y_sdev = msg.twist.covariance[7]  # position 1,1 in a 6x6-matrix
+        if (
+            x_sdev > self.ball_twist_precision_threshold["x_sdev"]
+            or y_sdev > self.ball_twist_precision_threshold["y_sdev"]
+        ):
+            return
+        if msg.header.frame_id != self.map_frame:
+            try:
+                # point (0,0,0)
+                point_a = PointStamped()
+                point_a.header = msg.header
+                # linear velocity vector
+                point_b = PointStamped()
+                point_b.header = msg.header
+                point_b.point.x = msg.twist.twist.linear.x
+                point_b.point.y = msg.twist.twist.linear.y
+                point_b.point.z = msg.twist.twist.linear.z
+                # transform start and endpoint of velocity vector
+                point_a = self._blackboard.tf_buffer.transform(point_a, self.map_frame, timeout=Duration(seconds=1.0))
+                point_b = self._blackboard.tf_buffer.transform(point_b, self.map_frame, timeout=Duration(seconds=1.0))
+                # build new twist using transform vector
+                self.ball_twist_map = TwistStamped(header=msg.header)
+                self.ball_twist_map.header.frame_id = self.map_frame
+                self.ball_twist_map.twist.linear.x = point_b.point.x - point_a.point.x
+                self.ball_twist_map.twist.linear.y = point_b.point.y - point_a.point.y
+                self.ball_twist_map.twist.linear.z = point_b.point.z - point_a.point.z
+            except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
+                self._blackboard.node.get_logger().warn(str(e))
+        else:
+            self.ball_twist_map = TwistStamped(header=msg.header, twist=msg.twist.twist)
+        if self.ball_twist_map is not None:
+            self.debug_publisher_ball_twist.publish(self.ball_twist_map)
 
     def forget_ball(self, own: bool = True, team: bool = True, reset_ball_filter: bool = True) -> None:
         """
@@ -166,8 +278,7 @@ class WorldModelCapsule:
         """
         if own:  # Forget own ball
             self._ball_seen_time = Time(clock_type=ClockType.ROS_TIME)
-            self.ball_base_footprint = PoseWithCovarianceStamped()
-            self.ball_map = PoseWithCovarianceStamped()
+            self.ball_base_footprint = PointStamped()
 
         if reset_ball_filter:  # Reset the ball filter
             result: Trigger.Response = self.reset_ball_filter.call(Trigger.Request())
