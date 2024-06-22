@@ -1,10 +1,4 @@
 bitbots_ball_filter:
-  ball_covariance_threshold: 
-    type: double
-    default_value: 0.5
-    description: 'Threshold for the ball covariance to be considered as lost'
-    validation: 
-      bounds<>: [0.0, 1.0]
   ball_subscribe_topic: 
     type: string
     default_value: 'balls_relative'
