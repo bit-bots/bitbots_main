@@ -8,18 +8,20 @@ import tf2_ros as tf2
 from bitbots_tf_buffer import Buffer
 from filterpy.common import Q_discrete_white_noise
 from filterpy.kalman import KalmanFilter
-from geometry_msgs.msg import Point, PoseWithCovarianceStamped, TwistWithCovarianceStamped
+from geometry_msgs.msg import Point, PoseWithCovariance, PoseWithCovarianceStamped, TwistWithCovarianceStamped
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.duration import Duration
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
+from rclpy.time import Time
+from ros2_numpy import numpify
 from soccer_vision_3d_msgs.msg import Ball, BallArray
 from std_msgs.msg import Header
 from std_srvs.srv import Trigger
 from tf2_geometry_msgs import PointStamped
 
 from bitbots_ball_filter.ball_filter_parameters import bitbots_ball_filter as parameters
-from bitbots_msgs.msg import PoseWithCertaintyStamped
+from bitbots_msgs.msg import PoseWithCertaintyStamped, TeamData
 
 
 class BallWrapper:
@@ -61,6 +63,7 @@ class BallFilter(Node):
 
         self.kf: Optional[KalmanFilter] = None
         self.last_ball_measurement: Optional[BallWrapper] = None
+        self.best_teammate_ball: Optional[BallWrapper] = None
         self.reset_requested = False
 
         self.update_params()
@@ -92,6 +95,14 @@ class BallFilter(Node):
             callback_group=self.callback_group,
         )
 
+        self.team_comm_subscriber = self.create_subscription(
+            TeamData,
+            "/team_data",
+            self.team_ball_callback,
+            5,
+            callback_group=self.callback_group,
+        )
+
         self.reset_service = self.create_service(
             Trigger,
             self.config.ball_filter_reset_service_name,
@@ -110,6 +121,80 @@ class BallFilter(Node):
         self.reset_requested = True
         response.success = True
         return response
+
+    def team_ball_callback(self, msg: TeamData) -> None:
+        if self.best_teammate_ball is None:
+            self.logger.debug("Received ball from teamcomm")
+            self.ball_map = PoseWithCovarianceStamped(header=msg.header, pose=msg.ball_absolute.pose)
+        elif msg.ball_absolute.confidence > self.best_teammate_ball.confidence:
+            self.logger.debug("Received better ball from teamcomm")
+            self.ball_map = PoseWithCovarianceStamped(header=msg.header, pose=msg.ball_absolute.pose)
+
+    def get_best_ball_point_stamped(self) -> PointStamped:  # use best point from all of the robots
+        """
+        Returns the best ball, either its own ball has been in the ball_lost_lost time
+        or from teammate if the robot itself has lost it and teamcomm is available
+        """
+        if self.ball_seen_self() or not hasattr(self._blackboard, "team_data"):
+            return self.ball_map
+        else:
+            teammate_ball = self.get_teammate_ball()
+            if teammate_ball is not None and self.tf_buffer.can_transform(
+                self.base_footprint_frame,
+                teammate_ball.header.frame_id,
+                teammate_ball.header.stamp,
+                timeout=Duration(seconds=0.2),
+            ):
+                return teammate_ball
+            else:
+                self.get_logger().warning("our ball is bad but the teammates ball is worse or cant be transformed")
+                return self.ball_map
+
+    def teammate_ball_is_valid(self):
+        """Returns true if a teammate has seen the ball accurately enough"""
+        return self.get_teammate_ball() is not None
+
+    def get_teammate_ball(self) -> Optional[PoseWithCovarianceStamped]:
+        """Returns the ball from the closest teammate that has accurate enough localization and ball precision"""
+
+        def std_dev_from_covariance(covariance):
+            x_sdev = covariance[0]  # position 0,0 in a 6x6-matrix
+            y_sdev = covariance[7]  # position 1,1 in a 6x6-matrix
+            theta_sdev = covariance[35]  # position 5,5 in a 6x6-matrix
+            return x_sdev, y_sdev, theta_sdev
+
+        best_robot_dist = 9999
+        best_ball = None
+
+        teamdata: TeamData
+        for teamdata in self.team_data.values():
+            if not self.is_valid(teamdata):
+                continue
+            ball = teamdata.ball_absolute
+            ball_x_std_dev, ball_y_std_dev, _ = std_dev_from_covariance(ball.covariance)
+            robot = teamdata.robot_position
+            robot_x_std_dev, robot_y_std_dev, robot_theta_std_dev = std_dev_from_covariance(robot.covariance)
+            stamp = teamdata.header.stamp
+            if self.node.get_clock().now() - Time.from_msg(stamp) < self.ball_lost_time:
+                if ball_x_std_dev < self.ball_max_covariance and ball_y_std_dev < self.ball_max_covariance:
+                    if (
+                        robot_x_std_dev < self.localization_precision_threshold_x_sdev
+                        and robot_y_std_dev < self.localization_precision_threshold_y_sdev
+                        and robot_theta_std_dev < self.localization_precision_threshold_theta_sdev
+                    ):
+                        robot_dist = np.linalg.norm(
+                            numpify(teamdata.ball_absolute.pose.position)
+                            - numpify(teamdata.robot_position.pose.position)
+                        )
+                        if robot_dist < best_robot_dist:
+                            best_ball = PoseWithCovarianceStamped(
+                                header=teamdata.header,
+                                pose=PoseWithCovariance(
+                                    pose=teamdata.ball_absolute.pose.position, covariance=ball.covariance
+                                ),
+                            )
+                            best_robot_dist = robot_dist
+        return best_ball
 
     def ball_callback(self, msg: BallArray) -> None:
         if msg.balls:  # Balls exist
