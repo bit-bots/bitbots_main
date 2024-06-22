@@ -185,12 +185,11 @@ void WalkNode::run() {
           pub_support_->publish(support_state);
           current_support_foot_ = support_state.phase;
         }
-
-        // publish debug information
-        if (config_.node.debug_active) {
-          publish_debug();
-        }
       }
+    }
+    // publish debug information
+    if (config_.node.debug_active) {
+      publish_debug();
     }
     // always publish odometry to not confuse odometry fuser
     pub_odometry_->publish(getOdometry());
