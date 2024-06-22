@@ -1,9 +1,8 @@
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Tuple
 
 import numpy as np
 from bitbots_utils.utils import get_parameters_from_other_node
-from geometry_msgs.msg import PointStamped, Pose
-from rclpy.clock import ClockType
+from geometry_msgs.msg import Pose
 from rclpy.duration import Duration
 from rclpy.node import Node
 from rclpy.time import Time
@@ -215,52 +214,3 @@ class TeamDataCapsule:
 
     def publish_time_to_ball(self):
         self.time_to_ball_publisher.publish(Float32(data=self.own_time_to_ball))
-
-    def get_teammate_ball_seen_time(self) -> Time:
-        """Returns the time at which a teammate has seen the ball accurately enough"""
-        teammate_ball = self.get_teammate_ball()
-        if teammate_ball is not None:
-            return Time.from_msg(teammate_ball.header.stamp)
-        else:
-            return Time(clock_type=ClockType.ROS_TIME)
-
-    def teammate_ball_is_valid(self):
-        """Returns true if a teammate has seen the ball accurately enough"""
-        return self.get_teammate_ball() is not None
-
-    def get_teammate_ball(self) -> Optional[PointStamped]:
-        """Returns the ball from the closest teammate that has accurate enough localization and ball precision"""
-
-        def std_dev_from_covariance(covariance):
-            x_sdev = covariance[0]  # position 0,0 in a 6x6-matrix
-            y_sdev = covariance[7]  # position 1,1 in a 6x6-matrix
-            theta_sdev = covariance[35]  # position 5,5 in a 6x6-matrix
-            return x_sdev, y_sdev, theta_sdev
-
-        best_robot_dist = 9999
-        best_ball = None
-
-        teamdata: TeamData
-        for teamdata in self.team_data.values():
-            if not self.is_valid(teamdata):
-                continue
-            ball = teamdata.ball_absolute
-            ball_x_std_dev, ball_y_std_dev, _ = std_dev_from_covariance(ball.covariance)
-            robot = teamdata.robot_position
-            robot_x_std_dev, robot_y_std_dev, robot_theta_std_dev = std_dev_from_covariance(robot.covariance)
-            stamp = teamdata.header.stamp
-            if self.node.get_clock().now() - Time.from_msg(stamp) < self.ball_lost_time:
-                if ball_x_std_dev < self.ball_max_covariance and ball_y_std_dev < self.ball_max_covariance:
-                    if (
-                        robot_x_std_dev < self.localization_precision_threshold_x_sdev
-                        and robot_y_std_dev < self.localization_precision_threshold_y_sdev
-                        and robot_theta_std_dev < self.localization_precision_threshold_theta_sdev
-                    ):
-                        robot_dist = np.linalg.norm(
-                            numpify(teamdata.ball_absolute.pose.position)
-                            - numpify(teamdata.robot_position.pose.position)
-                        )
-                        if robot_dist < best_robot_dist:
-                            best_ball = PointStamped(header=teamdata.header, point=teamdata.ball_absolute.pose.position)
-                            best_robot_dist = robot_dist
-        return best_ball
