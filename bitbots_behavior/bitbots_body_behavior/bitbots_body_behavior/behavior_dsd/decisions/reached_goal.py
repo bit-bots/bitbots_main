@@ -1,7 +1,7 @@
 import math
 
 import numpy as np
-from bitbots_blackboard.blackboard import BodyBlackboard
+from bitbots_blackboard.body_blackboard import BodyBlackboard
 from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
 from ros2_numpy import numpify
 from tf_transformations import euler_from_quaternion

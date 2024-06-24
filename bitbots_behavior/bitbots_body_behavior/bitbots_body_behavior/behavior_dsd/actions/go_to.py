@@ -2,7 +2,7 @@ import math
 
 import numpy as np
 import tf2_ros as tf2
-from bitbots_blackboard.blackboard import BodyBlackboard
+from bitbots_blackboard.body_blackboard import BodyBlackboard
 from bitbots_utils.transforms import quat_from_yaw
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 from geometry_msgs.msg import PoseStamped

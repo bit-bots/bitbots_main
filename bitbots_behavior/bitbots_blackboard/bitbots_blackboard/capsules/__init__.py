@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Optional
 from rclpy.node import Node
 
 if TYPE_CHECKING:
-    from bitbots_blackboard.blackboard import BodyBlackboard
+    from bitbots_blackboard.body_blackboard import BodyBlackboard
 
 
 class AbstractBlackboardCapsule:
