@@ -29,7 +29,7 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
         self.map_frame: str = self._node.get_parameter("map_frame").value
         self.position_threshold: str = self._node.get_parameter("pathfinding_position_threshold").value
         self.orientation_threshold: str = self._node.get_parameter("pathfinding_orientation_threshold").value
-        
+
         self.direct_cmd_vel_pub = self._node.create_publisher(Twist, "cmd_vel", 1)
         self.pathfinding_pub = self._node.create_publisher(PoseStamped, "goal_pose", 1)
         self.pathfinding_cancel_pub = self._node.create_publisher(Empty, "pathfinding/cancel", 1)
