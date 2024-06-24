@@ -1,19 +1,18 @@
 # serializer version: 1
 # name: test_default_setup
   dict({
-    'config_base_footprint_frame': 'base_footprint_frame',
-    'config_carrot_distance': 20,
-    'config_max_rotation_vel': 0.4,
-    'config_max_vel_x': 0.25,
-    'config_max_vel_y': 0.08,
-    'config_min_vel_x': -0.2,
-    'config_orient_to_goal_distance': 1.0,
-    'config_rotation_i_factor': 0.05,
-    'config_rotation_slow_down_factor': 0.3,
-    'config_smoothing_tau': 0.2,
-    'config_translation_slow_down_factor': 0.5,
+    'carrot_distance': 20,
+    'max_rotation_vel': 0.4,
+    'max_vel_x': 0.15,
+    'max_vel_y': 0.1,
+    'min_vel_x': -0.1,
+    'orient_to_goal_distance': 1.0,
+    'rotation_i_factor': 0.0,
+    'rotation_slow_down_factor': 0.3,
+    'smoothing_tau': 0.5,
+    'translation_slow_down_factor': 0.5,
   })
 # ---
 # name: test_step_cmd_vel_smoothing
-  'geometry_msgs.msg.Twist(linear=geometry_msgs.msg.Vector3(x=0.1375935868207597, y=0.08, z=0.0), angular=geometry_msgs.msg.Vector3(x=0.0, y=0.0, z=0.2320828999230522))'
+  'geometry_msgs.msg.Twist(linear=geometry_msgs.msg.Vector3(x=0.15, y=0.09999999999999996, z=0.0), angular=geometry_msgs.msg.Vector3(x=0.0, y=0.0, z=0.20666164469042259))'
 # ---
