@@ -6,9 +6,7 @@ from geometry_msgs.msg import Point
 from nav_msgs.msg import OccupancyGrid
 from rclpy.node import Node
 from ros2_numpy import msgify, numpify
-from tf2_geometry_msgs import PointStamped
-
-from bitbots_msgs.msg import PoseWithCertaintyStamped
+from tf2_geometry_msgs import PointStamped, PoseWithCovarianceStamped
 
 
 class Map:
@@ -33,13 +31,13 @@ class Map:
         self.config_inflation_dialation: int = self.node.declare_parameter("map.inflation.dialte", 3).value
         self.config_obstacle_value: int = self.node.declare_parameter("map.obstacle_value", 50).value
 
-    def set_ball(self, ball: PoseWithCertaintyStamped) -> None:
+    def set_ball(self, ball: PoseWithCovarianceStamped) -> None:
         """
         Adds a given ball to the ball buffer
         """
         point = PointStamped()
         point.header.frame_id = ball.header.frame_id
-        point.point = ball.pose.pose.pose.position
+        point.point = ball.pose.pose.position
         try:
             self.ball_buffer = [self.buffer.transform(point, self.frame).point]
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:

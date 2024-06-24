@@ -59,7 +59,7 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
             header=Header(stamp=Time(clock_type=ClockType.ROS_TIME), frame_id=self.map_frame)
         )  # The ball in the map frame (default to the center of the field if ball is not seen yet)
 
-        # Publisher for debug messages
+        # Publisher for visualization in RViZ
         self.debug_publisher_used_ball = self._node.create_publisher(PointStamped, "debug/behavior/used_ball", 1)
         self.debug_publisher_which_ball = self._node.create_publisher(Header, "debug/behavior/which_ball_is_used", 1)
 

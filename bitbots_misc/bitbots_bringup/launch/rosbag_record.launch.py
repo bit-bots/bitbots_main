@@ -12,8 +12,6 @@ TOPICS_TO_RECORD: list[str] = [
     "/audio/audio",
     "/ball_obstacle_active",
     "/ball_position_relative_filtered",
-    "/ball_relative_filtered",
-    "/ball_relative_movement",
     "/balls_relative",
     "/camera/camera_info",
     "/camera/image_to_record",
