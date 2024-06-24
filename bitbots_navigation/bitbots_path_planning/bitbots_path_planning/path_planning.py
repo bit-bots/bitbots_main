@@ -35,7 +35,7 @@ class PathPlanning(Node):
 
         # Subscriber
         self.create_subscription(
-            PoseWithCertaintyStamped,
+            PoseWithCovarianceStamped,
             self.config.map.ball_update_topic,
             self.map.set_ball,
             5,
