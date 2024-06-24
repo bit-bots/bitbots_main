@@ -40,7 +40,7 @@ bitbots_path_planning:
         read_only: true
     ball_update_topic:
       type: string
-      default_value: ball_relative_filtered
+      default_value: ball_position_relative_filtered
       description: 'The topic to subscribe to for ball detections'
       read_only: true
     robot_update_topic:
@@ -98,14 +98,14 @@ bitbots_path_planning:
         bounds<>: [-1.0, 0.0]
     max_vel_y:
       type: double
-      default_value: 0.05
+      default_value: 0.1
       description: 'Maximum velocity we want to reach in different directions (base_footprint coordinate system)'
       validation:
         bounds<>: [0.0, 1.0]
     smoothing_tau:
       type: double
       default_value: 0.5
-      description: 'This is the time constant of the exponential smoothing filter. It denotes the time after which only 63% (1-1/e) of the original signal is left. In other words, it denotes the time it takes for a new input to be 63% integrated into the output. It is update rate independent!'
+      description: 'This is the time constant of the exponential smoothing filter. The higher the value, the more smoothing is applied. It denotes the time after which a unit step function input signal reaches 63% (1-1/e) of its original strength. In other words, it denotes the time it takes for a new input to be 63% integrated into the output. It is update rate independent!'
       validation:
         bounds<>: [0.0, 1.0]
     rotation_i_factor:
