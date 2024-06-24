@@ -14,6 +14,7 @@
   <group unless="$(var sim)">
     <node pkg="bitbots_quintic_walk" exec="WalkNode" output="screen" launch-prefix="$(var taskset)">
       <param from="$(find-pkg-share bitbots_quintic_walk)/config/walking_wolfgang_robot.yaml" />
+      <param from="$(find-pkg-share bitbots_quintic_walk)/config/robots/$(env ROBOT_NAME default).yaml" />
     </node>
   </group>
 </launch>
