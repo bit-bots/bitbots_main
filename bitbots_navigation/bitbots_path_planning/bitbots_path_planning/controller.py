@@ -103,7 +103,10 @@ class Controller:
         )
 
         # Clamp rotational velocity to max values (both sides)
-        rot_goal_vel = min(max(target_rot_vel, -self.node.config.max_rotation_vel), self.node.config.max_rotation_vel)
+        rot_goal_vel = min(
+            max(target_rot_vel, -self.node.config.controller.max_rotation_vel),
+            self.node.config.controller.max_rotation_vel,
+        )
 
         # Calculate the x and y components of our linear velocity based on the desired heading and the
         # desired translational velocity.
