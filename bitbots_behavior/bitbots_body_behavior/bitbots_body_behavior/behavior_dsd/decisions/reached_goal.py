@@ -12,7 +12,6 @@ class ReachedPathPlanningGoalPosition(AbstractDecisionElement):
 
     def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
-        self.frame_id = parameters.get("frame_id", self.blackboard.map_frame)
         self.threshold = parameters.get("threshold")
         self.latch = parameters.get("latch", False)
         self.latched = False
@@ -27,7 +26,7 @@ class ReachedPathPlanningGoalPosition(AbstractDecisionElement):
         if self.latched:
             return "YES"
 
-        current_pose = self.blackboard.world_model.get_current_position_pose_stamped(self.frame_id)
+        current_pose = self.blackboard.world_model.get_current_position_pose_stamped()
         goal_pose = self.blackboard.pathfinding.get_goal()
 
         if current_pose is None or goal_pose is None:
@@ -50,7 +49,6 @@ class AlignedToPathPlanningGoal(AbstractDecisionElement):
     def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
         self.orientation_threshold = math.radians(self.blackboard.config["goal_alignment_orientation_threshold"])
-        self.frame_id = parameters.get("frame_id", self.blackboard.map_frame)
 
     def perform(self, reevaluate=False):
         """
@@ -58,7 +56,7 @@ class AlignedToPathPlanningGoal(AbstractDecisionElement):
         determined threshold by comparing the current orientation angle of the robot in the map with the one from the
         path planning goal.
         """
-        current_pose = self.blackboard.world_model.get_current_position_pose_stamped(self.frame_id)
+        current_pose = self.blackboard.world_model.get_current_position_pose_stamped()
         current_goal = self.blackboard.pathfinding.get_goal()
 
         if current_pose is None or current_goal is None:
@@ -87,7 +85,6 @@ class ReachedAndAlignedToPathPlanningGoalPosition(AbstractDecisionElement):
         self.frame_id = parameters.get("frame_id", self.blackboard.map_frame)
         self.threshold = parameters.get("threshold")
         self.orientation_threshold = math.radians(self.blackboard.config["goal_alignment_orientation_threshold"])
-        self.frame_id = parameters.get("frame_id", self.blackboard.map_frame)
         self.latch = parameters.get("latch", False)
         self.latched = False
 
@@ -101,7 +98,7 @@ class ReachedAndAlignedToPathPlanningGoalPosition(AbstractDecisionElement):
         if self.latched:
             return "YES"
 
-        current_pose = self.blackboard.world_model.get_current_position_pose_stamped(self.frame_id)
+        current_pose = self.blackboard.world_model.get_current_position_pose_stamped()
         goal_pose = self.blackboard.pathfinding.get_goal()
 
         if current_pose is None or goal_pose is None:

@@ -6,5 +6,5 @@ class ForgetBall(AbstractActionElement):
     blackboard: BodyBlackboard
 
     def perform(self, reevaluate=False):
-        self.blackboard.world_model.forget_ball(own=True, team=True, reset_ball_filter=True)
+        self.blackboard.world_model.forget_ball(reset_ball_filter=True)
         self.pop()

@@ -4,7 +4,7 @@ from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElem
 
 class CountActiveRobotsWithoutGoalie(AbstractDecisionElement):
     """
-    Decides what kind of behaviour the robot performs
+    Decides what kind of behavior the robot performs
     """
 
     blackboard: BodyBlackboard
@@ -13,15 +13,15 @@ class CountActiveRobotsWithoutGoalie(AbstractDecisionElement):
         super().__init__(blackboard, dsd, parameters)
 
     def perform(self, reevaluate=False):
-        nummber_of_active_teammates = self.blackboard.team_data.get_number_of_active_fieldplayers(False)
-        self.publish_debug_data("Number of active Teammates", nummber_of_active_teammates)
-        if nummber_of_active_teammates == 0:
+        number_of_active_teammates = self.blackboard.team_data.get_number_of_active_field_players(False)
+        self.publish_debug_data("Number of active Teammates", number_of_active_teammates)
+        if number_of_active_teammates == 0:
             return "ZERO"
-        elif nummber_of_active_teammates == 1:
+        elif number_of_active_teammates == 1:
             return "ONE"
-        elif nummber_of_active_teammates == 2:
+        elif number_of_active_teammates == 2:
             return "TWO"
-        elif nummber_of_active_teammates == 3:
+        elif number_of_active_teammates == 3:
             return "THREE"
         else:
             # emergency fall back if something goes wrong

@@ -1,19 +1,17 @@
 import math
 from enum import Enum
-from typing import TYPE_CHECKING, Optional
-
-if TYPE_CHECKING:
-    from bitbots_blackboard.blackboard import BodyBlackboard
+from typing import Optional
 
 import numpy as np
 from bitbots_utils.transforms import quat_from_yaw
 from bitbots_utils.utils import get_parameters_from_other_node
 from geometry_msgs.msg import Point, PoseStamped, Twist
-from rclpy.node import Node
 from ros2_numpy import numpify
 from std_msgs.msg import Bool, Empty
 from tf_transformations import euler_from_quaternion
 from visualization_msgs.msg import Marker
+
+from bitbots_blackboard.capsules import AbstractBlackboardCapsule
 
 
 # Type of pathfinding goal relative to the ball
@@ -23,25 +21,25 @@ class BallGoalType(Enum):
     CLOSE = "close"
 
 
-class PathfindingCapsule:
+class PathfindingCapsule(AbstractBlackboardCapsule):
     """Capsule for pathfinding related functions."""
 
-    def __init__(self, blackboard: "BodyBlackboard", node: Node):
-        self.node = node
-        self._blackboard = blackboard
-        self.map_frame: str = self.node.get_parameter("map_frame").value
-        self.position_threshold: str = self.node.get_parameter("body.pathfinding_position_threshold").value
-        self.orientation_threshold: str = self.node.get_parameter("body.pathfinding_orientation_threshold").value
-        self.direct_cmd_vel_pub = self.node.create_publisher(Twist, "cmd_vel", 1)
-        self.pathfinding_pub = node.create_publisher(PoseStamped, "goal_pose", 1)
-        self.pathfinding_cancel_pub = node.create_publisher(Empty, "pathfinding/cancel", 1)
-        self.ball_obstacle_active_pub = node.create_publisher(Bool, "ball_obstacle_active", 1)
-        self.approach_marker_pub = node.create_publisher(Marker, "debug/approach_point", 10)
+    def __init__(self, node, blackboard):
+        super().__init__(node, blackboard)
+        self.map_frame: str = self._node.get_parameter("map_frame").value
+        self.position_threshold: str = self._node.get_parameter("pathfinding_position_threshold").value
+        self.orientation_threshold: str = self._node.get_parameter("pathfinding_orientation_threshold").value
+        
+        self.direct_cmd_vel_pub = self._node.create_publisher(Twist, "cmd_vel", 1)
+        self.pathfinding_pub = self._node.create_publisher(PoseStamped, "goal_pose", 1)
+        self.pathfinding_cancel_pub = self._node.create_publisher(Empty, "pathfinding/cancel", 1)
+        self.ball_obstacle_active_pub = self._node.create_publisher(Bool, "ball_obstacle_active", 1)
+        self.approach_marker_pub = self._node.create_publisher(Marker, "debug/approach_point", 10)
         self.goal: Optional[PoseStamped] = None
         self.avoid_ball: bool = True
         self.current_cmd_vel = Twist()
         self.orient_to_ball_distance: float = get_parameters_from_other_node(
-            self.node, "bitbots_path_planning", ["controller.orient_to_goal_distance"]
+            self._node, "bitbots_path_planning", ["controller.orient_to_goal_distance"]
         )["controller.orient_to_goal_distance"]
 
     def publish(self, msg: PoseStamped):
@@ -95,10 +93,7 @@ class PathfindingCapsule:
         """
         # only send new request if previous request is finished or first update
         # also verify that the ball and the localization are reasonably recent/accurate
-        if (
-            self._blackboard.world_model.ball_has_been_seen()
-            and self._blackboard.world_model.localization_precision_in_threshold()
-        ):
+        if self._blackboard.world_model.ball_has_been_seen():
             ball_target = self.get_ball_goal(BallGoalType.MAP, self._blackboard.config["ball_approach_dist"])
             own_position = self._blackboard.world_model.get_current_position_pose_stamped()
             self._blackboard.team_data.own_time_to_ball = self.time_from_pose_to_pose(own_position, ball_target)
@@ -168,7 +163,7 @@ class PathfindingCapsule:
             # Play in any part of the opponents goal, not just the center
             if abs(ball_y) < self._blackboard.world_model.goal_width / 2:
                 goal_angle = 0
-            # Play in the opposite direction if the ball is near the opponent goal backline
+            # Play in the opposite direction if the ball is near the opponent goal back line
             elif ball_x > self._blackboard.world_model.field_length / 2 - 0.2:
                 goal_angle = math.pi + np.copysign(math.pi / 4, ball_y)
 
@@ -183,11 +178,11 @@ class PathfindingCapsule:
             ball_point = (ball_u, ball_v, angle, self._blackboard.world_model.base_footprint_frame)
 
         else:
-            self.node.get_logger().error(f"Target {target} for go_to_ball action not implemented.")
+            self._node.get_logger().error(f"Target {target} for go_to_ball action not implemented.")
             return
 
         pose_msg = PoseStamped()
-        pose_msg.header.stamp = self.node.get_clock().now().to_msg()
+        pose_msg.header.stamp = self._node.get_clock().now().to_msg()
         pose_msg.header.frame_id = ball_point[3]
         pose_msg.pose.position = Point(x=ball_point[0], y=ball_point[1], z=0.0)
         pose_msg.pose.orientation = quat_from_yaw(ball_point[2])
