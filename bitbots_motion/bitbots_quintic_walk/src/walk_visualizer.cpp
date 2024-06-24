@@ -329,6 +329,10 @@ void WalkVisualizer::publishArrowMarker(std::string name_space, std::string fram
 }
 
 void WalkVisualizer::publishWalkMarkers(WalkResponse response) {
+  // only do something if someone is listing
+  if (pub_debug_marker_->get_subscription_count() == 0) {
+    return;
+  }
   // publish markers
   visualization_msgs::msg::Marker marker_msg;
   marker_msg.header.stamp = node_->now();
