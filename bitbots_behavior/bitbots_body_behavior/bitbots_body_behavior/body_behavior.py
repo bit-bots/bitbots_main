@@ -1,7 +1,7 @@
 import os
 
 import rclpy
-from bitbots_blackboard.blackboard import BodyBlackboard
+from bitbots_blackboard.body_blackboard import BodyBlackboard
 from bitbots_tf_buffer import Buffer
 from dynamic_stack_decider.dsd import DSD
 from game_controller_hl_interfaces.msg import GameState
@@ -55,13 +55,6 @@ class BodyDSD:
             callback_group=MutuallyExclusiveCallbackGroup(),
         )
         node.create_subscription(
-            PoseWithCovarianceStamped,
-            "pose_with_covariance",
-            blackboard.world_model.pose_callback,
-            qos_profile=1,
-            callback_group=MutuallyExclusiveCallbackGroup(),
-        )
-        node.create_subscription(
             RobotArray,
             "robots_relative_filtered",
             blackboard.costmap.robot_callback,
@@ -104,7 +97,7 @@ def main(args=None):
     node = Node("body_behavior", automatically_declare_parameters_from_overrides=True)
     body_dsd = BodyDSD(node)
     node.create_timer(1 / 60.0, body_dsd.loop, callback_group=MutuallyExclusiveCallbackGroup(), clock=node.get_clock())
-    # Number of executor threads is the number of MutiallyExclusiveCallbackGroups + 2 threads needed by the tf listener and executor
+    # Number of executor threads is the number of MutuallyExclusiveCallbackGroups + 2 threads needed by the tf listener and executor
     multi_executor = MultiThreadedExecutor(num_threads=12)
     multi_executor.add_node(node)
 

@@ -28,25 +28,25 @@ $DoOnce
 
 #KickWithAvoidance
 $AvoidBall
-    NO --> $BallClose + distance:%body.ball_reapproach_dist + angle:%body.ball_reapproach_angle
+    NO --> $BallClose + distance:%ball_reapproach_dist + angle:%ball_reapproach_angle
         YES --> $BallKickArea
             NEAR --> $FootSelection
                 LEFT --> #PerformKickLeft
                 RIGHT --> #PerformKickRight
             FAR --> @ChangeAction + action:going_to_ball, @LookAtFront, @GoToBall + target:map
-        NO --> @ChangeAction + action:going_to_ball + r:false, @LookAtFieldFeatures + r:false, @AvoidBallActive + r:false, @GoToBall + target:map + blocking:false + distance:%body.ball_far_approach_dist
-    YES --> $ReachedPathPlanningGoalPosition + threshold:%body.ball_far_approach_position_thresh
+        NO --> @ChangeAction + action:going_to_ball + r:false, @LookAtFieldFeatures + r:false, @AvoidBallActive + r:false, @GoToBall + target:map + blocking:false + distance:%ball_far_approach_dist
+    YES --> $ReachedPathPlanningGoalPosition + threshold:%ball_far_approach_position_thresh
         YES --> @AvoidBallInactive
-        NO --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:map + distance:%body.ball_far_approach_dist
+        NO --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:map + distance:%ball_far_approach_dist
 
 #PositioningReady
 $GoalScoreRecently
     YES --> $ConfigRole
         GOALIE -->  $RobotInOwnPercentOfField + p:40
             YES -->@Stand + duration:1.0 + r:false, @PlayAnimationCheering + r:false, @GetWalkready + r:false
-            NO -->  @ChangeAction + action:positioning, @PlaySound + file:ole.wav, @LookAtFieldFeatures, @Stand + duration:%body.ready_wait_time, @AvoidBallActive, @GoToRolePosition
-        ELSE --> @ChangeAction + action:positioning, @PlaySound + file:ole.wav, @LookAtFieldFeatures, @Stand + duration:%body.ready_wait_time, @AvoidBallActive, @GoToRolePosition
-    NO --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @Stand + duration:%body.ready_wait_time, @AvoidBallActive, @GoToRolePosition
+            NO -->  @ChangeAction + action:positioning, @PlaySound + file:ole.wav, @LookAtFieldFeatures, @Stand + duration:%ready_wait_time, @AvoidBallActive, @GoToRolePosition
+        ELSE --> @ChangeAction + action:positioning, @PlaySound + file:ole.wav, @LookAtFieldFeatures, @Stand + duration:%ready_wait_time, @AvoidBallActive, @GoToRolePosition
+    NO --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @Stand + duration:%ready_wait_time, @AvoidBallActive, @GoToRolePosition
 
 #GoalieBehavior
 $ClosestToBall

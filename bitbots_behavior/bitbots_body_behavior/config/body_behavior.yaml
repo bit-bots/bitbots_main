@@ -1,238 +1,208 @@
-/**:
+body_behavior:
   ros__parameters:
     # Data older than this is seen as non existent
     team_data_timeout: 2
-    # minimal confidence to regard a ball of a team mate as valid
+
+    roles:
+      - "goalie"
+      - "offense"
+      - "defense"
+
+    # Position format:
+    #      y
+    #      ^       ______________________
+    #      |    M  |          |          |  O
+    #      |    Y  |_ -x, y   |   x, y  _|  P
+    #      |    G  | |        |        | |  P
+    # 0    +    O  | |       ( )       | |  G
+    #      |    A  |_|        |        |_|  O
+    #      |    L  |  -x,-y   |   x,-y   |  A
+    #      |       |__________|__________|  L
+    #      |
+    #      +------------------+--------------> x
+    #                         0
+    # To be useful for different field sizes, use values in [-1, 1] for x and y
+
+    role_positions:
+      goalie: [ -0.7, 0.0 ]
+      defense:
+        passive: # passive: opponent has kickoff, active: we have kickoff
+          # position number 0 = center, 1 = left, 2 = right
+          0: [ -0.5, 0.0 ]
+          1: [ -0.45, 0.5 ]
+          2: [ -0.45, -0.5 ]
+        active:
+          0: [ -0.5, 0.0 ]
+          1: [ -0.45, 0.5 ]
+          2: [ -0.45, -0.5 ]
+      offense:
+        passive:
+          0: [ -0.27, 0.0 ]
+          1: [ -0.2, 0.33 ]
+          2: [ -0.2, -0.33 ]
+        active:
+          0: [ -0.1, 0.0 ]
+          1: [ -0.085, 0.33 ]
+          2: [ -0.085, -0.33 ]
+
+    # Time to wait in ready state before moving to role position to give the localization time to converge.
+    ready_wait_time: 4.0
+
+    # When the ball has not been seen for `ball_lost_time` seconds,
+    # it is considered lost and will be searched
+    ball_lost_time: 3.0
+
+    # The orientation threshold defining which range (in Degrees) is acceptable as aligned to the goal (in each direction)
+    goal_alignment_orientation_threshold: 5.0
+
+    # When the ball is closer than `ball_close_distance` meters
+    # it is in a reachable area of the robot
+    ball_close_distance: 1.5
+
+    # the maximal allowed standard deviation of the ball position
     ball_max_covariance: 2.0
 
-    body:
-      roles:
-        - "goalie"
-        - "offense"
-        - "defense"
+    # An area in which the ball can be kicked
+    # defined by min/max x/y values in meters which represent ball positions relative to base_footprint
+    # http://www.ros.org/reps/rep-0103.html#axis-orientation
+    kick_x_enter: 0.24
+    kick_x_leave: 0.30
+    kick_y_enter: 0.14
+    kick_y_leave: 0.16
 
-      # When False, the behavior will use a simple fallback mode in which only detected image features are
-      # used for decision making
-      use_localization: true
+    # defines the radius around the goal (in form of a box)
+    # in this area, the goalie will react to the ball.
+    # the radius is the margin around the goal to both y and the positive x directions
+    ball_dangerous_goal_radius: 2.0
 
-      # Position format:
-      #      y
-      #      ^       ______________________
-      #      |    M  |          |          |  O
-      #      |    Y  |_ -x, y   |   x, y  _|  P
-      #      |    G  | |        |        | |  P
-      # 0    +    O  | |       ( )       | |  G
-      #      |    A  |_|        |        |_|  O
-      #      |    L  |  -x,-y   |   x,-y   |  A
-      #      |       |__________|__________|  L
-      #      |
-      #      +------------------+--------------> x
-      #                         0
-      # To be useful for different field sizes, use values in [-1, 1] for x and y
+    # defines the area in which the goalie will not attempt to fall in front of the ball
+    # this value represents the y displacement of the ball relative to the center of the robot
+    ball_dangerous_center: 0.1
 
-      role_positions:
-        goalie: [ -0.7, 0.0 ]
-        defense:
-          passive: # passive: opponent has kickoff, active: we have kickoff
-            # position number 0 = center, 1 = left, 2 = right
-            0: [ -0.5, 0.0 ]
-            1: [ -0.45, 0.5 ]
-            2: [ -0.45, -0.5 ]
-          active:
-            0: [ -0.5, 0.0 ]
-            1: [ -0.45, 0.5 ]
-            2: [ -0.45, -0.5 ]
-        offense:
-          passive:
-            0: [ -0.27, 0.0 ]
-            1: [ -0.2, 0.33 ]
-            2: [ -0.2, -0.33 ]
-          active:
-            0: [ -0.1, 0.0 ]
-            1: [ -0.085, 0.33 ]
-            2: [ -0.085, -0.33 ]
+    # The defensive area is an area in which the players behave more defensive then usual
+    # (defensive players are actively going to the ball and goalies move in the goal to be able to block the ball).
+    # This affects the BallInDefensiveArea decision.
+    # The area is described as portion of the field [0, 1] always measured from the own goal.
+    # A value of 0.25 means, that the quarter in front of the own goal is the defensive area.
+    defensive_area: 0.5
 
-      # Time to wait in ready state before moving to role position to give the localization time to converge.
-      ready_wait_time: 4.0
+    # This is the offset the goalie keeps to avoid crashes with poles when blocking balls.
+    # The value describes the offset in meters from the goal line.
+    block_position_goal_offset: 0.2
 
-      # When the ball has not been seen for `ball_lost_time` seconds,
-      # it is considered lost and will be searched
-      ball_lost_time: 3.0
+    # This is the radius in meters of a circle around the goalie in which he is able to block the ball.
+    block_radius_robot: 0.25
 
-      # The orientation threshold defining which range (in Degrees) is acceptable as aligned to the goal (in each direction)
-      goal_alignment_orientation_threshold: 5.0
+    # configurations for the use of bitbots_dynamic_kick package
+    dynamic_kick:
+      # time to wait for a dynamic_kick server
+      wait_time: 10.0
+      # base topic under which an actionserver listens for KickAction messages
+      topic: "dynamic_kick"
 
-      # When the goal has not been seen for `goal_lost_time` seconds,
-      # it is considered lost and will be searched
-      goal_lost_time: 30.0
+    # minimal difference between the current and the last path planning goal to actually send a new goal.
+    pathfinding_position_threshold: 0.3
+    pathfinding_orientation_threshold: 10.0
 
+    # don't aim closer to goalpost than this
+    goalpost_safety_distance: 0.05
 
-      # When the ball is closer than `ball_close_distance` meters
-      # it is in a reachable area of the robot
-      ball_close_distance: 1.5
+    # Distance at which the ball is first approached before the ball obstacle is deactivated and we approach closer for the kick
+    ball_far_approach_dist: 0.5
 
-      # the maximal allowed standard deviation of the ball position.
-      ball_position_precision_threshold:
-        x_sdev: 2.5
-        y_sdev: 2.5
+    # Range in which the ball far approach point is counted as reached
+    ball_far_approach_position_thresh: 0.2
 
-      # An area in which the ball can be kicked
-      # defined by min/max x/y values in meters which represent ball positions relative to base_footprint
-      # http://www.ros.org/reps/rep-0103.html#axis-orientation
-      kick_x_enter: 0.24
-      kick_x_leave: 0.30
-      kick_y_enter: 0.14
-      kick_y_leave: 0.16
+    # We reapproach the ball after it has moved further away than this distance. This includes moving to the far approach position.
+    ball_reapproach_dist: 1.0
 
-      # defines the radius around the goal (in form of a box)
-      # in this area, the goalie will react to the ball.
-      # the radius is the margin around the goal to both y and the positive x directions
-      ball_dangerous_goal_radius: 2.0
+    # Distance at which the ball is normally approached
+    ball_approach_dist: 0.20
 
-      # defines the area in which the goalie will not attempt to fall in front of the ball
-      # this value represents the y displacement of the ball relative to the center of the robot
-      ball_dangerous_center: 0.1
+    # Angle at which the ball is normally approached again
+    ball_reapproach_angle: 1.2
 
-      # The defensive area is an area in which the players behave more defensive then usual
-      # (defensive players are actively going to the ball and goalies move in the goal to be able to block the ball).
-      # This affects the BallInDefensiveArea decision.
-      # The area is described as portion of the field [0, 1] always measured from the own goal.
-      # A value of 0.25 means, that the quarter in front of the own goal is the defensive area.
-      defensive_area: 0.5
+    # The position where the supporter robot should place itself in order to accept a pass
+    pass_position_x: 0.1
+    pass_position_y: 1.0
+    supporter_max_x: 4.0
 
-      # This is the offset the goalie keeps to avoid crashes with poles when blocking balls.
-      # The value describes the offset in meters from the goal line.
-      block_position_goal_offset: 0.2
+    # maximal angle of a ball kick
+    max_kick_angle: 1.4  #  (radians)
 
-      # This is the radius in meters of a circle around the goalie in which he is able to block the ball.
-      block_radius_robot: 0.25
+    # number of considered kick angles (uneven, otherwise the middle would be excluded)
+    num_kick_angles: 9
 
-      # configurations for the use of bitbots_dynamic_kick package
-      dynamic_kick:
-        # time to wait for a dynamic_kick server
-        wait_time: 10.0
-        # base topic under which an actionserver listens for KickAction messages
-        topic: "dynamic_kick"
+    # the angle that the kick is done either to the left or right during penalty shoot out
+    penalty_kick_angle: 0.44
 
-      # the maximal allowed standard deviation of the localization pose.
-      localization_precision_threshold:
-        x_sdev: 0.5
-        y_sdev: 0.5
-        theta_sdev: 0.6
+    # distance from center point, that the ball must be during an opponent kickoff to think that it moved
+    kickoff_min_ball_movement: 0.5
 
+    # dribble action
+    dribble_max_speed_x: 0.05
+    dribble_max_speed_y: 0.05
+    dribble_p: 0.8
 
-      # Duration for which the robot tries to orient itself, when the localization precision is low.
-      reorientation_duration: 10.0
+    # dribble decision
+    dribble_orient_threshold: 0.5
+    dribble_goal_distance_threshold: 1.5
+    dribble_ball_distance_threshold: 0.5
+    dribble_kick_angle: 0.6
 
-      # Duration for which the robot pauses between reorientation runs.
-      reorientation_pause_duration: 30.0
+    kick_decision_smoothing: 5.0
 
-      # minimal difference between the current and the last path planning goal to actually send a new goal.
-      pathfinding_position_threshold: 0.3
-      pathfinding_orientation_threshold: 10.0
+    ##################
+    # costmap params #
+    ##################
 
-      # don't aim closer to goalpost than this
-      goalpost_safety_distance: 0.05
+    # sigma of gaussian blur applied to costmap
+    base_costmap_smoothing_sigma: 1.0
 
-      # Distance at which the ball is first approached before the ball obstacle is deactivated and we approach closer for the kick
-      ball_far_approach_dist: 0.5
+    # margin that is added around the field size when creating the costmap (meters)
+    map_margin: 1.0
 
-      # Range in which the ball far approach point is counted as reached
-      ball_far_approach_position_thresh: 0.2
+    # sigma of gaussian blur applied to obstacle costmap
+    obstacle_costmap_smoothing_sigma: 1.5
 
-      # We reapproach the ball after it has moved further away than this distance. This includes moving to the far approach position.
-      ball_reapproach_dist: 1.0
+    # cost in the goal
+    goal_value: 0.0
 
-      # Distance at which the ball is normally approached
-      ball_approach_dist: 0.20
+    # cost at a goalpost
+    goalpost_value: 0.5
 
-      # Angle at which the ball is normally approached again
-      ball_reapproach_angle: 1.2
+    # cost in a corner
+    corner_value: 1.0
 
-      # The position where the supporter robot should place itself in order to accept a pass
-      pass_position_x: 0.1
-      pass_position_y: 1.0
-      supporter_max_x: 4.0
+    # start value on our side
+    in_field_value_our_side: 1.5
 
-      # maximal angle of a ball kick
-      max_kick_angle: 1.4  #  (radians)
+    # dangerous border area width in meters
+    keep_out_border: 0.2
 
-      # number of considered kick angles (uneven, otherwise the middle would be excluded)
-      num_kick_angles: 9
+    # cost of an obstacle
+    obstacle_cost: 2.0
 
-      # the angle that the kick is done either to the left or right during penalty shoot out
-      penalty_kick_angle: 0.44
+    # angular range when estimating kick cost
+    kick_cost_angular_range: 0.5
 
-      # distance from center point, that the ball must be during an opponent kickoff to think that it moved
-      kickoff_min_ball_movement: 0.5
+    # estimated kick length when estimating kick cost
+    kick_cost_kick_length: 2.0
 
-      # dribble action
-      dribble_max_speed_x: 0.05
-      dribble_max_speed_y: 0.05
-      dribble_p: 0.8
+    # parameters for time_to_ball estimation
+    # divider of how often the time to ball is updated depending on update rate of the behavior
+    # example: (125 = 1 per second, 250 = 1 per 2 seconds)
+    time_to_ball_divider: 25.0
 
-      # dribble decision
-      dribble_orient_threshold: 0.5
-      dribble_goal_distance_threshold: 1.5
-      dribble_ball_distance_threshold: 0.5
-      dribble_kick_angle: 0.6
+    # 7 seconds per meter when walking
+    # 6 sec per 1.57 rad (90 deg) = 3.82 sec per rad
 
-      kick_decision_smoothing: 5.0
+    time_to_ball_cost_per_meter: 7.0 # seconds
 
-      ##################
-      # costmap params #
-      ##################
+    # factor by which the difference in the starting angle and direction of the path (in rad) is weighted
+    time_to_ball_cost_start_angle: 3.82
+    # same but for the goal angle
+    time_to_ball_cost_goal_angle: 3.82
 
-      # sigma of gaussian blur applied to costmap
-      base_costmap_smoothing_sigma: 1.0
-
-      # margin that is added around the field size when creating the costmap (meters)
-      map_margin: 1.0
-
-      # sigma of gaussian blur applied to obstacle costmap
-      obstacle_costmap_smoothing_sigma: 1.5
-
-      # cost in the goal
-      goal_value: 0.0
-
-      # cost at a goalpost
-      goalpost_value: 0.5
-
-      # cost in a corner
-      corner_value: 1.0
-
-      # start value on our side
-      in_field_value_our_side: 1.5
-
-      # dangerous border area width in meters
-      keep_out_border: 0.2
-
-      # cost of an obstacle
-      obstacle_cost: 2.0
-
-      # angular range when estimating kick cost
-      kick_cost_angular_range: 0.5
-
-      # estimated kick length when estimating kick cost
-      kick_cost_kick_length: 2.0
-
-      # parameters for time_to_ball estimation
-      # divider of how often the time to ball is updated depending on update rate of the behavior
-      # example: (125 = 1 per second, 250 = 1 per 2 seconds)
-      time_to_ball_divider: 25.0
-
-      # 7 seconds per meter when walking
-      # 6 sec per 1.57 rad (90 deg) = 3.82 sec per rad
-
-      time_to_ball_cost_per_meter: 7.0 # seconds
-
-      # factor by which the difference in the starting angle and direction of the path (in rad) is weighted
-      time_to_ball_cost_start_angle: 3.82
-      # same but for the goal angle
-      time_to_ball_cost_goal_angle: 3.82
-
-      # factor by which the difference in starting and goal angle is weighted (only if not turning to ball i.e. <1m)
-      time_to_ball_cost_start_to_goal_angle: 3.82
-
-      # seconds after which the time to ball is forgotten if a new path to the ball can not be calculated and evaluated
-      time_to_ball_remember_time: 1.0
+    # factor by which the difference in starting and goal angle is weighted (only if not turning to ball i.e. <1m)
+    time_to_ball_cost_start_to_goal_angle: 3.82
