@@ -1,0 +1,7 @@
+motion_odometry:
+  ros__parameters:
+    x_forward_scaling: 1.25
+    x_backward_scaling: 0.95
+    y_scaling: 1.0
+    yaw_scaling: 0.6
+    publish_walk_odom_tf: false

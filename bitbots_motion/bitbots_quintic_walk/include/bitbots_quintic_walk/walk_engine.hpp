@@ -47,13 +47,6 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
   [[nodiscard]] double getPhase() const;
 
   /**
-    * Returns the phase of one single step, on which we can start doing phase resets.
-      Basically the phase when the flying foot reached its apex.
-    */
-
-  [[nodiscard]] double getPhaseResetPhase() const;
-
-  /**
    * Return current time between 0 and half period for trajectories evaluation
    */
   [[nodiscard]] double getTrajsTime() const;

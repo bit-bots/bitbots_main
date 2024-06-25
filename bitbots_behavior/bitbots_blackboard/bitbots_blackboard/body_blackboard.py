@@ -19,18 +19,18 @@ class BodyBlackboard:
         self.tf_buffer = tf_buffer
 
         # Config
-        self.config = get_parameter_dict(node, "body")
+        self.config = get_parameter_dict(self.node, "")
         self.base_footprint_frame: str = self.node.get_parameter("base_footprint_frame").value
         self.map_frame: str = self.node.get_parameter("map_frame").value
         self.odom_frame: str = self.node.get_parameter("odom_frame").value
         self.in_sim: bool = self.node.get_parameter("use_sim_time").value
 
         # Capsules
-        self.misc = MiscCapsule(node)
-        self.gamestate = GameStatusCapsule(node)
-        self.animation = AnimationCapsule(node)
-        self.kick = KickCapsule(self)
-        self.world_model = WorldModelCapsule(self)
-        self.costmap = CostmapCapsule(self)
-        self.pathfinding = PathfindingCapsule(self, node)
-        self.team_data = TeamDataCapsule(node)
+        self.misc = MiscCapsule(self.node, self)
+        self.gamestate = GameStatusCapsule(self.node, self)
+        self.animation = AnimationCapsule(self.node, self)
+        self.kick = KickCapsule(self.node, self)
+        self.world_model = WorldModelCapsule(self.node, self)
+        self.costmap = CostmapCapsule(self.node, self)
+        self.pathfinding = PathfindingCapsule(self.node, self)
+        self.team_data = TeamDataCapsule(self.node, self)

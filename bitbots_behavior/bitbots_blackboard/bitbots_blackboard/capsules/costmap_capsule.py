@@ -1,8 +1,5 @@
 import math
-from typing import TYPE_CHECKING, List, Optional, Tuple
-
-if TYPE_CHECKING:
-    from bitbots_blackboard.blackboard import BodyBlackboard
+from typing import List, Optional, Tuple
 
 import numpy as np
 import tf2_ros as tf2
@@ -20,30 +17,33 @@ from soccer_vision_3d_msgs.msg import Robot, RobotArray
 from tf2_geometry_msgs import PointStamped
 from tf_transformations import euler_from_quaternion, quaternion_from_euler
 
+from bitbots_blackboard.capsules import AbstractBlackboardCapsule
 
-class CostmapCapsule:
+
+class CostmapCapsule(AbstractBlackboardCapsule):
     """Provides information about the cost of different positions and moves."""
 
-    def __init__(self, blackboard: "BodyBlackboard"):
-        self._blackboard = blackboard
-        self._node = blackboard.node
-        self.body_config = get_parameter_dict(self._blackboard.node, "body")
+    def __init__(self, node, blackboard):
+        super().__init__(node, blackboard)
 
-        self.map_frame: str = self._blackboard.node.get_parameter("map_frame").value
-        self.base_footprint_frame: str = self._blackboard.node.get_parameter("base_footprint_frame").value
+        self.body_config = get_parameter_dict(self._node, "")
+
+        self.map_frame: str = self._node.get_parameter("map_frame").value
+        self.base_footprint_frame: str = self._node.get_parameter("base_footprint_frame").value
 
         parameters = get_parameters_from_other_node(
-            self._blackboard.node, "/parameter_blackboard", ["field.size.x", "field.size.y", "field.goal.width"]
+            self._node, "/parameter_blackboard", ["field.size.x", "field.size.y", "field.goal.width"]
         )
         self.field_length: float = parameters["field.size.x"]
         self.field_width: float = parameters["field.size.y"]
         self.goal_width: float = parameters["field.goal.width"]
+
         self.map_margin: float = self.body_config["map_margin"]
         self.obstacle_costmap_smoothing_sigma: float = self.body_config["obstacle_costmap_smoothing_sigma"]
         self.obstacle_cost: float = self.body_config["obstacle_cost"]
 
         # Publisher for visualization in RViZ
-        self.costmap_publisher = self._blackboard.node.create_publisher(OccupancyGrid, "debug/costmap", 1)
+        self.costmap_publisher = self._node.create_publisher(OccupancyGrid, "debug/costmap", 1)
 
         self.base_costmap: Optional[np.ndarray] = None  # generated once in constructor field features
         self.costmap: Optional[np.ndarray] = None  # updated on the fly based on the base_costmap
@@ -181,7 +181,7 @@ class CostmapCapsule:
             # Transform point of interest to the map
             point = self._blackboard.tf_buffer.transform(point, self.map_frame, timeout=Duration(seconds=0.3))
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
-            self._blackboard.node.get_logger().warn(str(e))
+            self._node.get_logger().warn(str(e))
             return 0.0
 
         return self.get_cost_at_field_position(point.point.x, point.point.y)
@@ -237,6 +237,14 @@ class CostmapCapsule:
                 ((self.field_length, self.field_width / 2 - self.goal_width / 2), goalpost_value),
                 ((self.field_length, self.field_width / 2 + self.goal_width / 2), goalpost_value),
                 (
+                    (self.field_length + self.map_margin, self.field_width / 2 - self.goal_width / 2),
+                    corner_value + in_field_value_our_side,
+                ),
+                (
+                    (self.field_length + self.map_margin, self.field_width / 2 + self.goal_width / 2),
+                    corner_value + in_field_value_our_side,
+                ),
+                (
                     (self.field_length, self.field_width / 2 - self.goal_width / 2 + goalpost_safety_distance),
                     goal_value,
                 ),
@@ -247,14 +255,14 @@ class CostmapCapsule:
                 (
                     (
                         self.field_length + self.map_margin,
-                        self.field_width / 2 - self.goal_width / 2 - goalpost_safety_distance,
+                        self.field_width / 2 - self.goal_width / 2 + goalpost_safety_distance,
                     ),
                     -0.2,
                 ),
                 (
                     (
                         self.field_length + self.map_margin,
-                        self.field_width / 2 + self.goal_width / 2 + goalpost_safety_distance,
+                        self.field_width / 2 + self.goal_width / 2 - goalpost_safety_distance,
                     ),
                     -0.2,
                 ),
@@ -334,7 +342,7 @@ class CostmapCapsule:
             pose = self._blackboard.tf_buffer.transform(pose, self.map_frame, timeout=Duration(seconds=0.3))
 
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
-            self._blackboard.node.get_logger().warn(str(e))
+            self._node.get_logger().warn(str(e))
             return 0.0
         d = euler_from_quaternion(numpify(pose.pose.orientation))[2]
         return self.get_cost_of_kick(pose.pose.position.x, pose.pose.position.y, d, kick_length, angular_range)
