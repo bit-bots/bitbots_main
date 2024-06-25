@@ -303,7 +303,7 @@ def main():
 
         input(
             f"{Style.BRIGHT}\nChecks:{Style.RESET_ALL}\n"
-            "- Check that the head looks to the front.\n"
+            "- Check that the head is oriented to the front.\n"
             "- Check that the head looks straight down in reference to the torso.\n"
             "- Check that the head is not loose.\n"
             f"{Style.BRIGHT}Press enter to continue.{Style.RESET_ALL}"
