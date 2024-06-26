@@ -132,7 +132,7 @@ void WalkNode::run() {
   walk_engine_.setPhaseRest(config_.node.phase_reset.effort.active || config_.node.phase_reset.foot_pressure.active ||
                             config_.node.phase_reset.imu.active);
   // Pass params to other components
-  ik_.setIKTimeout(config_.node.ik.timeout);
+  ik_.setConfig(config_.node.ik);
   walk_engine_.setPauseDuration(config_.node.stability_stop.pause_duration);
   max_step_linear_ = {config_.node.max_step_x, config_.node.max_step_y, config_.node.max_step_z};
 

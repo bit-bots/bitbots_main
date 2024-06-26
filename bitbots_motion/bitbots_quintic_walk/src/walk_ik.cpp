@@ -2,7 +2,7 @@
 
 namespace bitbots_quintic_walk {
 
-WalkIK::WalkIK(rclcpp::Node::SharedPtr node, walking::Params::Node::Ik config) : node_(node) {}
+WalkIK::WalkIK(rclcpp::Node::SharedPtr node, walking::Params::Node::Ik config) : node_(node), config_(config) {}
 
 void WalkIK::init(moveit::core::RobotModelPtr kinematic_model) {
   legs_joints_group_ = kinematic_model->getJointModelGroup("Legs");
@@ -41,11 +41,11 @@ bitbots_splines::JointGoals WalkIK::calculate(const WalkResponse &ik_goals) {
   // we have to do this otherwise there is an error
   goal_state_->updateLinkTransforms();
 
-  success = goal_state_->setFromIK(left_leg_joints_group_, left_foot_goal_msg, config.timeout,
+  success = goal_state_->setFromIK(left_leg_joints_group_, left_foot_goal_msg, config_.timeout,
                                    moveit::core::GroupStateValidityCallbackFn());
   goal_state_->updateLinkTransforms();
 
-  success &= goal_state_->setFromIK(right_leg_joints_group_, right_foot_goal_msg, config.timeout,
+  success &= goal_state_->setFromIK(right_leg_joints_group_, right_foot_goal_msg, config_.timeout,
                                     moveit::core::GroupStateValidityCallbackFn());
 
   if (!success) {
