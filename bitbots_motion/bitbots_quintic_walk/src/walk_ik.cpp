@@ -2,7 +2,7 @@
 
 namespace bitbots_quintic_walk {
 
-WalkIK::WalkIK(rclcpp::Node::SharedPtr node) : node_(node), ik_timeout_(0.01) {}
+WalkIK::WalkIK(rclcpp::Node::SharedPtr node, walking::Params::Node::Ik config) : node_(node) {}
 
 void WalkIK::init(moveit::core::RobotModelPtr kinematic_model) {
   legs_joints_group_ = kinematic_model->getJointModelGroup("Legs");
@@ -11,9 +11,8 @@ void WalkIK::init(moveit::core::RobotModelPtr kinematic_model) {
 
   goal_state_.reset(new moveit::core::RobotState(kinematic_model));
   goal_state_->setToDefaultValues();
-  bool ik_reset;
-  node_->get_parameter("node.ik.reset", ik_reset);
-  if (ik_reset) {
+
+  if (config_.reset) {
     reset();
   }
 }
@@ -42,11 +41,11 @@ bitbots_splines::JointGoals WalkIK::calculate(const WalkResponse &ik_goals) {
   // we have to do this otherwise there is an error
   goal_state_->updateLinkTransforms();
 
-  success = goal_state_->setFromIK(left_leg_joints_group_, left_foot_goal_msg, ik_timeout_,
+  success = goal_state_->setFromIK(left_leg_joints_group_, left_foot_goal_msg, config.timeout,
                                    moveit::core::GroupStateValidityCallbackFn());
   goal_state_->updateLinkTransforms();
 
-  success &= goal_state_->setFromIK(right_leg_joints_group_, right_foot_goal_msg, ik_timeout_,
+  success &= goal_state_->setFromIK(right_leg_joints_group_, right_foot_goal_msg, config.timeout,
                                     moveit::core::GroupStateValidityCallbackFn());
 
   if (!success) {
@@ -75,7 +74,7 @@ void WalkIK::reset() {
   }
 }
 
-void WalkIK::setIKTimeout(double timeout) { ik_timeout_ = timeout; }
+void WalkIK::setConfig(walking::Params::Node::Ik config) { config_ = config; }
 
 const std::vector<std::string> &WalkIK::getLeftLegJointNames() { return left_leg_joints_group_->getJointModelNames(); }
 

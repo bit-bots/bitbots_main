@@ -113,7 +113,7 @@ class WalkNode : public rclcpp::Node {
   double getTimerFreq();
 
  private:
-  std::vector<double> get_step_from_vel(geometry_msgs::msg::Twist::SharedPtr msg);
+  std::array<double, 4> get_step_from_vel(geometry_msgs::msg::Twist::SharedPtr msg);
   void stepCb(geometry_msgs::msg::Twist::SharedPtr msg);
   void cmdVelCb(geometry_msgs::msg::Twist::SharedPtr msg);
 

@@ -153,6 +153,7 @@ walking:
           bounds<>: [0.0, 10.0]
       reset:
         type: bool
+        read_only: true
         description: "bioIK parameter"
     debug_active:
       type: bool
