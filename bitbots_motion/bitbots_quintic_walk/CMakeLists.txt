@@ -46,7 +46,7 @@ rosidl_generate_interfaces(
 
 include_directories(include ${PYTHON_INCLUDE_DIRS})
 
-add_compile_options(-Wall -Werror -Wno-unused)
+add_compile_options(-Wall -Werror -Wno-unused -Wextra -Wpedantic)
 
 set(SOURCES src/walk_visualizer.cpp src/walk_engine.cpp src/walk_stabilizer.cpp
             src/walk_ik.cpp src/walk_node.cpp)
