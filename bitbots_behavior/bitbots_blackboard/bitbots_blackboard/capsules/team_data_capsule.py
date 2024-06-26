@@ -5,26 +5,25 @@ from bitbots_utils.utils import get_parameters_from_other_node
 from geometry_msgs.msg import PointStamped, Pose
 from rclpy.clock import ClockType
 from rclpy.duration import Duration
-from rclpy.node import Node
 from rclpy.time import Time
 from ros2_numpy import numpify
 from std_msgs.msg import Float32
 
+from bitbots_blackboard.capsules import AbstractBlackboardCapsule
 from bitbots_msgs.msg import Strategy, TeamData
 
 
-class TeamDataCapsule:
-    def __init__(self, node: Node):
+class TeamDataCapsule(AbstractBlackboardCapsule):
+    def __init__(self, node, blackboard):
         """Handles incoming team data communication."""
-
-        self.node = node
+        super().__init__(node, blackboard)
 
         # Publishers
-        self.strategy_sender = node.create_publisher(Strategy, "strategy", 2)
-        self.time_to_ball_publisher = node.create_publisher(Float32, "time_to_ball", 2)
+        self.strategy_sender = self._node.create_publisher(Strategy, "strategy", 2)
+        self.time_to_ball_publisher = self._node.create_publisher(Float32, "time_to_ball", 2)
 
         # Retrieve game settings from parameter blackboard
-        params = get_parameters_from_other_node(self.node, "parameter_blackboard", ["role"])
+        params = get_parameters_from_other_node(self._node, "parameter_blackboard", ["role"])
         self.role = params["role"]
 
         # Data
@@ -67,19 +66,9 @@ class TeamDataCapsule:
         self.action_update: float = 0.0
 
         # Config
-        self.data_timeout: float = self.node.get_parameter("team_data_timeout").value
-        self.ball_max_covariance: float = self.node.get_parameter("ball_max_covariance").value
-        self.ball_lost_time: float = Duration(seconds=self.node.get_parameter("body.ball_lost_time").value)
-
-        self.localization_precision_threshold_x_sdev: float = self.node.get_parameter(
-            "body.localization_precision_threshold.x_sdev"
-        ).value
-        self.localization_precision_threshold_y_sdev: float = self.node.get_parameter(
-            "body.localization_precision_threshold.y_sdev"
-        ).value
-        self.localization_precision_threshold_theta_sdev: float = self.node.get_parameter(
-            "body.localization_precision_threshold.theta_sdev"
-        ).value
+        self.data_timeout: float = self._node.get_parameter("team_data_timeout").value
+        self.ball_max_covariance: float = self._node.get_parameter("ball_max_covariance").value
+        self.ball_lost_time: float = Duration(seconds=self._node.get_parameter("ball_lost_time").value)
 
     def is_valid(self, data: TeamData) -> bool:
         """
@@ -87,7 +76,7 @@ class TeamDataCapsule:
         Meaning it is not too old and the robot is not penalized.
         """
         return (
-            self.node.get_clock().now() - Time.from_msg(data.header.stamp) < Duration(seconds=self.data_timeout)
+            self._node.get_clock().now() - Time.from_msg(data.header.stamp) < Duration(seconds=self.data_timeout)
             and data.state != TeamData.STATE_PENALIZED
         )
 
@@ -151,7 +140,7 @@ class TeamDataCapsule:
         :param action: An action from bitbots_msgs/Strategy"""
         assert action in self.actions
         self.strategy.action = action
-        self.action_update = self.node.get_clock().now().nanoseconds / 1e9
+        self.action_update = self._node.get_clock().now().nanoseconds / 1e9
 
     def get_action(self) -> Tuple[int, float]:
         return self.strategy.action, self.action_update
@@ -166,7 +155,7 @@ class TeamDataCapsule:
 
         self.role = role
         self.strategy.role = self.roles_mapping[role]
-        self.role_update = self.node.get_clock().now().nanoseconds / 1e9
+        self.role_update = self._node.get_clock().now().nanoseconds / 1e9
 
     def get_role(self) -> Tuple[int, float]:
         return self.strategy.role, self.role_update
@@ -174,7 +163,7 @@ class TeamDataCapsule:
     def set_kickoff_strategy(self, strategy: int):
         assert strategy in [Strategy.SIDE_LEFT, Strategy.SIDE_MIDDLE, Strategy.SIDE_RIGHT]
         self.strategy.offensive_side = strategy
-        self.strategy_update = self.node.get_clock().now().nanoseconds / 1e9
+        self.strategy_update = self._node.get_clock().now().nanoseconds / 1e9
 
     def get_kickoff_strategy(self) -> Tuple[int, float]:
         return self.strategy.offensive_side, self.strategy_update
@@ -188,7 +177,7 @@ class TeamDataCapsule:
                 poses.append(data.robot_position.pose)
         return poses
 
-    def get_number_of_active_fieldplayers(self, count_goalie: bool = False) -> int:
+    def get_number_of_active_field_players(self, count_goalie: bool = False) -> int:
         def is_not_goalie(team_data: TeamData) -> bool:
             return team_data.strategy.role != Strategy.ROLE_GOALIE
 
@@ -229,38 +218,28 @@ class TeamDataCapsule:
         return self.get_teammate_ball() is not None
 
     def get_teammate_ball(self) -> Optional[PointStamped]:
-        """Returns the ball from the closest teammate that has accurate enough localization and ball precision"""
+        """Returns the best ball from all teammates that satisfies a minimum ball precision"""
 
-        def std_dev_from_covariance(covariance):
-            x_sdev = covariance[0]  # position 0,0 in a 6x6-matrix
-            y_sdev = covariance[7]  # position 1,1 in a 6x6-matrix
-            theta_sdev = covariance[35]  # position 5,5 in a 6x6-matrix
-            return x_sdev, y_sdev, theta_sdev
+        # Get the team data infos for all valid robots (ignoring the robot id)
+        team_data_infos = filter(self.is_valid, self.team_data.values())
 
-        best_robot_dist = 9999
-        best_ball = None
+        def is_ball_good_enough(team_data: TeamData) -> bool:
+            return (
+                team_data.ball_absolute.covariance[0] < self.ball_max_covariance
+                and team_data.ball_absolute.covariance[7] < self.ball_max_covariance
+            )
 
-        teamdata: TeamData
-        for teamdata in self.team_data.values():
-            if not self.is_valid(teamdata):
-                continue
-            ball = teamdata.ball_absolute
-            ball_x_std_dev, ball_y_std_dev, _ = std_dev_from_covariance(ball.covariance)
-            robot = teamdata.robot_position
-            robot_x_std_dev, robot_y_std_dev, robot_theta_std_dev = std_dev_from_covariance(robot.covariance)
-            stamp = teamdata.header.stamp
-            if self.node.get_clock().now() - Time.from_msg(stamp) < self.ball_lost_time:
-                if ball_x_std_dev < self.ball_max_covariance and ball_y_std_dev < self.ball_max_covariance:
-                    if (
-                        robot_x_std_dev < self.localization_precision_threshold_x_sdev
-                        and robot_y_std_dev < self.localization_precision_threshold_y_sdev
-                        and robot_theta_std_dev < self.localization_precision_threshold_theta_sdev
-                    ):
-                        robot_dist = np.linalg.norm(
-                            numpify(teamdata.ball_absolute.pose.position)
-                            - numpify(teamdata.robot_position.pose.position)
-                        )
-                        if robot_dist < best_robot_dist:
-                            best_ball = PointStamped(header=teamdata.header, point=teamdata.ball_absolute.pose.position)
-                            best_robot_dist = robot_dist
-        return best_ball
+        # Filter robots with too high ball covariance
+        team_data_infos = filter(is_ball_good_enough, team_data_infos)
+
+        def get_ball_max_covariance(team_data: TeamData) -> float:
+            return max(team_data.ball_absolute.covariance[0], team_data.ball_absolute.covariance[7])
+
+        # Get robot with lowest maximum ball covariance
+        team_data_with_best_ball = min(team_data_infos, key=get_ball_max_covariance, default=None)
+
+        # Convert ball to PointStamped if a ball was found
+        if team_data_with_best_ball is not None:
+            return PointStamped(
+                header=team_data_with_best_ball.header, point=team_data_with_best_ball.ball_absolute.pose.position
+            )
