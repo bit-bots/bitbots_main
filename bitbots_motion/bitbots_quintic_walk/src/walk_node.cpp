@@ -16,7 +16,7 @@ WalkNode::WalkNode(const std::string ns, std::vector<rclcpp::Parameter> paramete
       walk_engine_(SharedPtr(this), config_.engine),
       stabilizer_(ns),
       ik_(SharedPtr(this), config_.node.ik),
-      visualizer_(SharedPtr(this)) {
+      visualizer_(SharedPtr(this), config_.node.tf) {
   // Set parameters in subcomponents
   walk_engine_.setPauseDuration(config_.node.stability_stop.pause_duration);
   max_step_linear_ = {config_.node.max_step_x, config_.node.max_step_y, config_.node.max_step_z};
@@ -68,24 +68,6 @@ WalkNode::WalkNode(const std::string ns, std::vector<rclcpp::Parameter> paramete
     exit(1);
   }
 
-  this->get_parameter("base_link_frame", base_link_frame_);
-  this->get_parameter("r_sole_frame", r_sole_frame_);
-  this->get_parameter("l_sole_frame", l_sole_frame_);
-  this->get_parameter("odom_frame", odom_frame_);
-
-  // init variables
-  robot_state_ = bitbots_msgs::msg::RobotControlState::CONTROLLABLE;
-  current_request_.linear_orders = {0, 0, 0};
-  current_request_.angular_z = 0;
-  current_request_.stop_walk = true;
-  current_trunk_fused_pitch_ = 0;
-  current_trunk_fused_roll_ = 0;
-  current_fly_pressure_ = 0;
-  current_fly_effort_ = 0;
-
-  odom_counter_ = 0;
-  last_request_ = WalkRequest();
-
   /* init publisher and subscriber */
   pub_controller_command_ = this->create_publisher<bitbots_msgs::msg::JointCommand>("walking_motor_goals", 1);
   pub_odometry_ = this->create_publisher<nav_msgs::msg::Odometry>("walk_engine_odometry", 1);
@@ -109,8 +91,6 @@ WalkNode::WalkNode(const std::string ns, std::vector<rclcpp::Parameter> paramete
 
   current_state_.reset(new moveit::core::RobotState(kinematic_model_));
   current_state_->setToDefaultValues();
-
-  first_run_ = true;
 
   walk_engine_.reset();
 
@@ -439,8 +419,8 @@ void WalkNode::imuCb(const sensor_msgs::msg::Imu::SharedPtr msg) {
   current_trunk_fused_roll_ = imu_fused.fusedRoll;
 
   // get angular velocities
-  roll_vel_ = msg->angular_velocity.x;
-  pitch_vel_ = msg->angular_velocity.y;
+  double roll_vel = msg->angular_velocity.x;
+  double pitch_vel = msg->angular_velocity.y;
 
   // Calculate ema (exponential moving average) of y (sideways) acceleration in a time-independet manner
   if (last_imu_measurement_time_) {
@@ -463,13 +443,13 @@ void WalkNode::imuCb(const sensor_msgs::msg::Imu::SharedPtr msg) {
     // Check if we have to stop the walk
     double pitch_delta = pitch - wanted_pitch;
     if (abs(roll) > params.roll.threshold or abs(pitch_delta) > params.pitch.threshold or
-        abs(pitch_vel_) > params.pitch.vel_threshold or abs(roll_vel_) > params.roll.vel_threshold) {
+        abs(pitch_vel) > params.pitch.vel_threshold or abs(roll_vel) > params.roll.vel_threshold) {
       walk_engine_.requestPause();
       if (abs(roll) > params.roll.threshold) {
         RCLCPP_WARN(this->get_logger(), "imu roll angle stop");
       } else if (abs(pitch_delta) > params.pitch.threshold) {
         RCLCPP_WARN(this->get_logger(), "imu pitch angle stop");
-      } else if (abs(pitch_vel_) > params.pitch.vel_threshold) {
+      } else if (abs(pitch_vel) > params.pitch.vel_threshold) {
         RCLCPP_WARN(this->get_logger(), "imu roll vel stop");
       } else {
         RCLCPP_WARN(this->get_logger(), "imu pitch vel stop");
@@ -573,8 +553,8 @@ nav_msgs::msg::Odometry WalkNode::getOdometry() {
 
   // send the odometry as message
   odom_msg_.header.stamp = current_time;
-  odom_msg_.header.frame_id = odom_frame_;
-  odom_msg_.child_frame_id = base_link_frame_;
+  odom_msg_.header.frame_id = config_.node.tf.odom_frame;
+  odom_msg_.child_frame_id = config_.node.tf.base_link_frame;
   odom_msg_.pose.pose.position.x = pos[0];
   odom_msg_.pose.pose.position.y = pos[1];
   odom_msg_.pose.pose.position.z = pos[2];

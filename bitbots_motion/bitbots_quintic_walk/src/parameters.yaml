@@ -1,8 +1,4 @@
 walking:
-  odom_frame:
-    type: string
-    description: "The frame in which the odometry is published"
-    default_value: "odom"
   engine:
     freq:
       type: double
@@ -145,6 +141,27 @@ walking:
       description: "Control loop frequency in Hz"
       validation:
         bounds<>: [0.0, 1000.0]
+    tf:
+      odom_frame:
+        type: string
+        description: "The frame in which the odometry is published"
+        read_only: true
+        default_value: "odom"
+      base_link_frame:
+        type: string
+        description: "The robots base link frame name"
+        read_only: true
+        default_value: "base_link"
+      r_sole_frame:
+        type: string
+        description: "The robot right sole frame name"
+        read_only: true
+        default_value: "r_sole"
+      l_sole_frame:
+        type: string
+        description: "The robot left sole frame name"
+        read_only: true
+        default_value: "l_sole"
     ik:
       timeout:
         type: double

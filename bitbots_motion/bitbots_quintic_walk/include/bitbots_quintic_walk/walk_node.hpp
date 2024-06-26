@@ -136,20 +136,16 @@ class WalkNode : public rclcpp::Node {
   // Datastructure to hold all parameters, which is build from the schema in the 'parameters.yaml'
   walking::Params config_;
 
-  std::string odom_frame_, base_link_frame_, l_sole_frame_, r_sole_frame_;
-
-  WalkRequest current_request_;
-
-  bool first_run_;
-
-  double last_ros_update_time_;
-
-  int robot_state_;
-
-  int current_support_foot_;
-
-  int odom_counter_;
+  WalkRequest current_request_ = {.stop_walk = true};
   WalkRequest last_request_;
+
+  bool first_run_ = true;
+
+  double last_ros_update_time_ = 0;
+
+  int robot_state_ = bitbots_msgs::msg::RobotControlState::CONTROLLABLE;
+
+  int current_support_foot_ = biped_interfaces::msg::Phase::DOUBLE_STANCE;
 
   WalkResponse current_response_;
   WalkResponse current_stabilized_response_;
@@ -187,19 +183,16 @@ class WalkNode : public rclcpp::Node {
   WalkIK ik_;
   WalkVisualizer visualizer_;
 
-  double current_trunk_fused_pitch_;
-  double current_trunk_fused_roll_;
+  double current_trunk_fused_pitch_ = 0;
+  double current_trunk_fused_roll_ = 0;
 
-  double current_fly_pressure_;
-  double current_fly_effort_;
+  double current_fly_pressure_ = 0;
+  double current_fly_effort_ = 0;
 
   std::optional<rclcpp::Time> last_imu_measurement_time_;
   double imu_y_acc = 0;
 
-  double roll_vel_;
-  double pitch_vel_;
-
-  bool got_new_goals_;
+  bool got_new_goals_ = false;
 };
 
 }  // namespace bitbots_quintic_walk
