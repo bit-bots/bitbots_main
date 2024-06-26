@@ -26,8 +26,8 @@ class MotionOdometry : public rclcpp::Node {
 
  private:
   rclcpp::Time joint_update_time_{rclcpp::Time(0, 0, RCL_ROS_TIME)};
-  char current_support_state_;
-  char previous_support_state_;
+  int current_support_state_ = -1;
+  int previous_support_state_ = -1;
   rclcpp::Time current_support_state_time_{rclcpp::Time(0, 0, RCL_ROS_TIME)};
   nav_msgs::msg::Odometry current_odom_msg_;
   tf2::Transform odometry_to_support_foot_;
@@ -46,9 +46,9 @@ class MotionOdometry : public rclcpp::Node {
   void odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg);
 
   std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
-  std::unique_ptr<tf2_ros::TransformBroadcaster> br_;
   std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
-  rclcpp::Time foot_change_time_;
+  std::unique_ptr<tf2_ros::TransformBroadcaster> br_;
+  rclcpp::Time foot_change_time_{rclcpp::Time(0, 0, RCL_ROS_TIME)};
   std::string previous_support_link_;
   std::string current_support_link_;
   rclcpp::Time start_time_;
