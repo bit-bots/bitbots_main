@@ -158,7 +158,9 @@ class CheckReposTask(AbstractTask):
             os.path.dirname(__file__), "..", "..", ".."
         )  # bitbots_main/scripts/deploy/tasks
 
-        self.results_file: str = os.path.join(self.main_repo_path, "workspace.status.json")
+        self.results_file: str = os.path.join(
+            self.main_repo_path, "bitbots_misc/bitbots_utils/config/", "workspace_status.json"
+        )
 
         self.main_repo: OurRepo = OurRepo(self.main_repo_path, "main")
         self.repos: dict[str, OurRepo] = {"bitbots_main": self.main_repo, **self._get_workspace_repos()}
@@ -379,4 +381,4 @@ class CheckReposTask(AbstractTask):
             name: {"hash": hash, "name": self._get_friendly_name(hash)} for name, hash in self.commit_hashes.items()
         }
         with open(self.results_file, "w") as file:
-            json.dump(state, file)
+            json.dump(state, file, sort_keys=True)

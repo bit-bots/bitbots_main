@@ -226,4 +226,4 @@ doku/*
 /bitbots_team_communication/bitbots_team_communication/bitbots_team_communication/robocup_extension_pb2.py
 
 # Workspace git status file from the deploy tool
-workspace.status.json
+**/workspace_status.json

@@ -61,6 +61,7 @@ TOPICS_TO_RECORD: list[str] = [
     "/tf_static",
     "/tf",
     "/time_to_ball",
+    "/workspace_status",
 ]
 
 
