@@ -30,6 +30,8 @@ class KickCapsule(AbstractBlackboardCapsule):
         self.connect()
 
     def connect(self):
+        # Do not connect if dynamic_kick is disabled
+        return
         topic = self._blackboard.config["dynamic_kick"]["topic"]
         self.__action_client = ActionClient(self._node, Kick, topic, callback_group=ReentrantCallbackGroup())
         self.__connected = self.__action_client.wait_for_server(self._blackboard.config["dynamic_kick"]["wait_time"])
@@ -43,6 +45,7 @@ class KickCapsule(AbstractBlackboardCapsule):
         :type goal: KickGoal
         :raises RuntimeError: when not connected to dynamic_kick server
         """
+        raise NotImplementedError("The dynamic_kick is disabled currently")
         if not self.__connected:
             # try to connect again
             self.__connected = self.__action_client.wait_for_server(
