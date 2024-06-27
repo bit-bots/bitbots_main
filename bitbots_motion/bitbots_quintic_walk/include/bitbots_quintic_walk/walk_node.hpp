@@ -51,9 +51,10 @@ https://github.com/Rhoban/model/
 
 namespace bitbots_quintic_walk {
 
-class WalkNode : public rclcpp::Node {
+class WalkNode {
  public:
-  explicit WalkNode(std::string ns = "", std::vector<rclcpp::Parameter> parameters = {});
+  explicit WalkNode(rclcpp::Node::SharedPtr node, const std::string &ns = "",
+                    std::vector<rclcpp::Parameter> parameters = {});
   bitbots_msgs::msg::JointCommand step(double dt);
   bitbots_msgs::msg::JointCommand step(double dt, geometry_msgs::msg::Twist::SharedPtr cmdvel_msg,
                                        sensor_msgs::msg::Imu::SharedPtr imu_msg,
@@ -77,6 +78,11 @@ class WalkNode : public rclcpp::Node {
    * Reset everything to initial idle state.
    */
   void reset();
+
+  /**
+   * Updates the parameters of the walking after a parameter change.
+   */
+  void updateParams();
 
   /**
    * Reset walk to any given state. Necessary for using this as reference in learning.
@@ -113,6 +119,8 @@ class WalkNode : public rclcpp::Node {
   double getTimerFreq();
 
  private:
+  rclcpp::Node::SharedPtr node_;
+
   std::array<double, 4> get_step_from_vel(geometry_msgs::msg::Twist::SharedPtr msg);
   void stepCb(geometry_msgs::msg::Twist::SharedPtr msg);
   void cmdVelCb(geometry_msgs::msg::Twist::SharedPtr msg);
@@ -126,8 +134,6 @@ class WalkNode : public rclcpp::Node {
   void jointStateCb(sensor_msgs::msg::JointState::SharedPtr msg);
 
   void kickCb(std_msgs::msg::Bool::SharedPtr msg);
-
-  OnSetParametersCallbackHandle::SharedPtr callback_handle_;
 
   double getTimeDelta();
 
@@ -150,12 +156,6 @@ class WalkNode : public rclcpp::Node {
   WalkResponse current_response_;
   WalkResponse current_stabilized_response_;
   bitbots_splines::JointGoals motor_goals_;
-
-  /**
-   * Saves max values we can move in a single step as [x-direction, y-direction, z-rotation].
-   * Is used to limit _currentOrders to sane values
-   */
-  Eigen::Vector3d max_step_linear_;
 
   bitbots_quintic_walk::WalkEngine walk_engine_;
 
