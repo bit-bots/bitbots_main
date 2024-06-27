@@ -243,6 +243,14 @@ bitbots_dynup:
         validation:
           bounds<>: [0.0, 5.0]
 
+    walkready:
+      walkready_time:
+        type: double
+        description: "Time to walkready in seconds"
+        default_value: 5.0
+        validation:
+          bounds<>: [0.0, 10.0]
+
   stabilizer:
     end_pause:
       active:

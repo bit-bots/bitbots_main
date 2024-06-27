@@ -577,10 +577,10 @@ double DynupEngine::calcBackSplines() {
   return time;
 }
 
-double DynupEngine::calcRiseSplines(double time) {
+double DynupEngine::calcWalkreadySplines(double time, double travel_time) {
   // all positions relative to right foot
   // foot_trajectories_ are for left foot
-  time += params_.rise.rise_time;
+  time += travel_time;
   l_foot_spline_.x()->addPoint(time, 0);
   l_foot_spline_.y()->addPoint(time, params_.end_pose.foot_distance);
   l_foot_spline_.z()->addPoint(time, 0);
@@ -699,13 +699,13 @@ void DynupEngine::setGoals(const DynupRequest &goals) {
     case DynupDirection::FRONT: {
       // add front and rise splines together
       double time = calcFrontSplines();
-      duration_ = calcRiseSplines(time);
+      duration_ = calcWalkreadySplines(time, params_.rise.rise_time);
       break;
     }
     case DynupDirection::BACK: {
       // add back and rise splines together
       double time = calcBackSplines();
-      duration_ = calcRiseSplines(time);
+      duration_ = calcWalkreadySplines(time, params_.rise.rise_time);
       break;
     }
     case DynupDirection::FRONT_ONLY:
@@ -715,13 +715,13 @@ void DynupEngine::setGoals(const DynupRequest &goals) {
       duration_ = calcBackSplines();
       break;
     case DynupDirection::RISE:
-      duration_ = calcRiseSplines();
+      duration_ = calcWalkreadySplines(0, params_.rise.rise_time);
       break;
     case DynupDirection::DESCEND:
       duration_ = calcDescendSplines();
       break;
     case DynupDirection::WALKREADY:
-      duration_ = calcRiseSplines();
+      duration_ = calcWalkreadySplines(0, params_.walkready.time);
       break;
     default:
       RCLCPP_ERROR(node_->get_logger(), "Provided direction not known");

@@ -124,7 +124,7 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
    *
    *  @return the time of the last splinepoint of this function, needed to concat rise or descend
    */
-  double calcRiseSplines(double time = 0);
+  double calcWalkreadySplines(double time = 0, double travel_time = 0);
 
   /*
    * Calculate the splines to get down to a squatting position:
