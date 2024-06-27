@@ -166,9 +166,7 @@ class TeleopKeyboard(Node):
         return key
 
     def get_walkready(self):
-        goal = Dynup.Goal()
-        goal.direction = "walkready"
-        result: Dynup.Result = self.dynup_client.send_goal(goal).result
+        result: Dynup.Result = self.dynup_client.send_goal(Dynup.Goal(direction=Dynup.Goal.DIRECTION_WALKREADY)).result
         if not result.successful:
             self.get_logger().error("Could not execute walkready animation")
         return result.successful

@@ -19,7 +19,7 @@ class DynupIK : public bitbots_splines::AbstractIK<DynupResponse> {
   void reset() override;
   void useStabilizing(bool use);
   void setCurrentJointStates(sensor_msgs::msg::JointState::SharedPtr jointStates);
-  void setDirection(std::string direction);
+  void setDirection(DynupDirection direction);
   moveit::core::RobotStatePtr get_goal_state();
 
  private:
@@ -33,7 +33,7 @@ class DynupIK : public bitbots_splines::AbstractIK<DynupResponse> {
   moveit::core::RobotStatePtr goal_state_;
   bool use_stabilizing_ = false;
   bool use_minimal_displacement_ = false;
-  std::string direction_;
+  DynupDirection direction_;
 };
 
 }  // namespace bitbots_dynup

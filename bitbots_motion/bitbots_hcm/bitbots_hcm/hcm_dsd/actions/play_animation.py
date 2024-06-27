@@ -140,6 +140,15 @@ class PlayAnimationDynup(AbstractHCMActionElement):
     def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
         self.direction = parameters.get("direction")
+        assert self.direction in [
+            Dynup.Goal.DIRECTION_FRONT,
+            Dynup.Goal.DIRECTION_FRONT_ONLY,
+            Dynup.Goal.DIRECTION_BACK,
+            Dynup.Goal.DIRECTION_BACK_ONLY,
+            Dynup.Goal.DIRECTION_RISE,
+            Dynup.Goal.DIRECTION_DESCEND,
+            Dynup.Goal.DIRECTION_WALKREADY,
+        ]
         self.first_perform = True
 
     def perform(self, reevaluate=False):

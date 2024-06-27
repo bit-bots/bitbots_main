@@ -28,7 +28,7 @@ void DynupIK::reset() {
   }
 }
 
-void DynupIK::setDirection(std::string direction) { direction_ = direction; }
+void DynupIK::setDirection(DynupDirection direction) { direction_ = direction; }
 
 bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
   /* ik options is basically the command which we send to bio_ik and which describes what we want to do */

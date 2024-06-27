@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.5)
 project(bitbots_dynup)
 
-# Add support for C++17
+# Add support for C++20
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 17)
+  set(CMAKE_CXX_STANDARD 20)
 endif()
 
 set(PYBIND11_PYTHON_VERSION 3)

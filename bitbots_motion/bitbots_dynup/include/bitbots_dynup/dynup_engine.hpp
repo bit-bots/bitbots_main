@@ -63,15 +63,15 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
 
  private:
   rclcpp::Node::SharedPtr node_;
-  int marker_id_;
-  double time_;
-  double duration_;
-  double shoulder_offset_y_;
-  double arm_offset_y_;
-  double arm_offset_z_;
+  int marker_id_ = 1;
+  double time_ = 0;
+  double duration_ = 0;
+  double arm_offset_y_ = 0;
+  double arm_offset_z_ = 0;
   tf2::Transform offset_left_;
   tf2::Transform offset_right_;
-  int direction_;
+
+  DynupDirection direction_;
 
   bitbots_splines::PoseSpline l_foot_spline_;
   bitbots_splines::PoseSpline l_hand_spline_;

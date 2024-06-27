@@ -187,7 +187,7 @@ void DynupNode::execute(const std::shared_ptr<DynupGoalHandle> goal_handle) {
   bitbots_dynup::msg::DynupPoses poses = getCurrentPoses();
   if (poses.header.stamp.nanosec != 0) {
     DynupRequest request;
-    request.direction = goal->direction;
+    request.direction = getDynupDirection(goal->direction);
     ik_.setDirection(request.direction);
     request.l_foot_pose = poses.l_leg_pose;
     request.r_foot_pose = poses.r_leg_pose;
@@ -198,7 +198,7 @@ void DynupNode::execute(const std::shared_ptr<DynupGoalHandle> goal_handle) {
       visualizer_.displaySplines(engine_.getRFootSplines(), base_link_frame_);
       visualizer_.displaySplines(engine_.getLFootSplines(), r_sole_frame_);
       // Workaround for an error in the Visualizer. TODO
-      if (request.direction == "front" || request.direction == "back") {
+      if (request.direction == DynupDirection::FRONT || request.direction == DynupDirection::BACK) {
         visualizer_.displaySplines(engine_.getLHandSplines(), base_link_frame_);
         visualizer_.displaySplines(engine_.getRHandSplines(), base_link_frame_);
       }

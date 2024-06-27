@@ -15,7 +15,7 @@ DynupEngine::DynupEngine(rclcpp::Node::SharedPtr node) : node_(node) {
 
 void DynupEngine::init(double arm_offset_y, double arm_offset_z) {
   // this are just the offsets to the shoulder, we need to apply some additional offset to prevent collisions
-  shoulder_offset_y_ = arm_offset_y;
+  arm_offset_y_ = arm_offset_y;
   arm_offset_z_ = arm_offset_z;
   setParams(params_);
 
@@ -644,9 +644,9 @@ void DynupEngine::setGoals(const DynupRequest &goals) {
   // we use hand splines from shoulder frame instead of base_link
   geometry_msgs::msg::Pose l_hand = goals.l_hand_pose;
   geometry_msgs::msg::Pose r_hand = goals.r_hand_pose;
-  l_hand.position.y -= shoulder_offset_y_;
+  l_hand.position.y -= arm_offset_y_;
   l_hand.position.z -= arm_offset_z_;
-  r_hand.position.y += shoulder_offset_y_;
+  r_hand.position.y += arm_offset_y_;
   r_hand.position.z -= arm_offset_z_;
   // l_foot_spline_ is defined relative to r_foot_spline_, while all others are relative to base_link
   l_hand_spline_ = initializeSpline(l_hand, l_hand_spline_);
@@ -690,37 +690,25 @@ void DynupEngine::setGoals(const DynupRequest &goals) {
     params_.end_pose.trunk_x_final = trunk_x_final;
   }
 
-  if (goals.direction == "front") {
+  direction_ = goals.direction;
+  if (direction_ == DynupDirection::FRONT) {
     // add front and rise splines together
     double time = calcFrontSplines();
     duration_ = calcRiseSplines(time);
-    direction_ = 1;
-  } else if (goals.direction == "back") {
+  } else if (direction_ == DynupDirection::BACK) {
     // add back and rise splines together
     double time = calcBackSplines();
     duration_ = calcRiseSplines(time);
-    direction_ = 0;
-  } else if (goals.direction == "front-only") {
+  } else if (direction_ == DynupDirection::FRONT_ONLY) {
     duration_ = calcFrontSplines();
-    direction_ = 1;
-  } else if (goals.direction == "back-only") {
+  } else if (direction_ == DynupDirection::BACK_ONLY) {
     duration_ = calcBackSplines();
-    direction_ = 0;
-  } else if (goals.direction == "rise") {
+  } else if (direction_ == DynupDirection::RISE) {
     duration_ = calcRiseSplines(0);
-    direction_ = 2;
-  } else if (goals.direction == "descend") {
+  } else if (direction_ == DynupDirection::DESCEND) {
     duration_ = calcDescendSplines(0);
-    direction_ = 3;
-  } else if (goals.direction == "front_only") {
-    duration_ = calcFrontSplines();
-    direction_ = 4;
-  } else if (goals.direction == "back_only") {
-    duration_ = calcBackSplines();
-    direction_ = 5;
-  } else if (goals.direction == "walkready") {
+  } else if (direction_ == DynupDirection::WALKREADY) {
     duration_ = calcRiseSplines(params_.dynup_front.time_walkready);
-    direction_ = 6;
   } else {
     RCLCPP_ERROR(node_->get_logger(), "Provided direction not known");
   }
@@ -732,7 +720,7 @@ double DynupEngine::getDuration() const { return duration_; }
 
 /*Calculates if we are at a point of the animation where stabilizing should be applied. */
 bool DynupEngine::isStabilizingNeeded() {
-  return ((direction_ == 1 && time_ >= params_.dynup_front.time_hands_side + params_.dynup_front.time_hands_rotate +
+  return ((direction_ == 1 && time_ >= params_.dynup_front.time_hands_side + params_.dynup_front.time_hands_rotate +   // TODO fix int direction number
                                            params_.dynup_front.time_foot_close + params_.dynup_front.time_hands_front +
                                            params_.dynup_front.time_foot_ground_front +
                                            params_.dynup_front.time_torso_45 + params_.dynup_front.time_to_squat) ||
@@ -766,7 +754,6 @@ bitbots_splines::PoseSpline DynupEngine::getLHandSplines() const { return l_hand
 
 void DynupEngine::setParams(bitbots_dynup::Params::Engine params) {
   params_ = params;
-  arm_offset_y_ = shoulder_offset_y_;
   offset_left_ = tf2::Transform(tf2::Quaternion(0, 0, 0, 1), {0, arm_offset_y_, arm_offset_z_});
   offset_right_ = tf2::Transform(tf2::Quaternion(0, 0, 0, 1), {0, -arm_offset_y_, arm_offset_z_});
 }
