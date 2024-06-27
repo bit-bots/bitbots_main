@@ -15,7 +15,6 @@ class Pause:
     """
 
     def __init__(self):
-        rclpy.init(args=None)
         self.node = Node("Pause")
 
         self.penalty_manual = False
@@ -25,8 +24,6 @@ class Pause:
         self.manual_penalize_service = self.node.create_service(ManualPenalize, "manual_penalize", self.manual_update)
         self.pause_publisher = self.node.create_publisher(Bool, "pause", 10)  # todo latch
         self.speak_publisher = self.node.create_publisher(Audio, "speak", 10)
-
-        rclpy.spin(self.node)
 
     def manual_update(self, req: ManualPenalize.Request, resp: ManualPenalize.Response):
         if req.penalize == ManualPenalize.Request.OFF:
@@ -52,4 +49,9 @@ class Pause:
 
 
 if __name__ == "__main__":
+    rclpy.init(args=None)
     pause = Pause()
+    try:
+        rclpy.spin(pause.node)
+    except KeyboardInterrupt:
+        pass

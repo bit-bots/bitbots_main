@@ -153,8 +153,8 @@ class TeleopKeyboard(Node):
             self.get_logger().error("Dynup action server not available after waiting 5 seconds")
 
         # The kick is currently disabled
-        #self.kick_client = ActionClient(self, Kick, "dynamic_kick")
-        #if not self.kick_client.wait_for_server(timeout_sec=0.1):
+        # self.kick_client = ActionClient(self, Kick, "dynamic_kick")
+        # if not self.kick_client.wait_for_server(timeout_sec=0.1):
         #    self.get_logger().error("Kick action server not available after waiting 5 seconds")
 
         print(msg)
@@ -235,51 +235,51 @@ class TeleopKeyboard(Node):
                 elif key == "y":
                     # kick left forward
                     pass
-                    #self.kick_client.send_goal_async(self.generate_kick_goal(0.2, 0.1, 0))
+                    # self.kick_client.send_goal_async(self.generate_kick_goal(0.2, 0.1, 0))
                 elif key == "<":
                     # kick left side ball left
                     pass
-                    #self.kick_client.send_goal_async(self.generate_kick_goal(0.2, 0.1, -1.57))
+                    # self.kick_client.send_goal_async(self.generate_kick_goal(0.2, 0.1, -1.57))
                 elif key == ">":
                     # kick left side ball center
                     pass
-                    #self.kick_client.send_goal_async(self.generate_kick_goal(0.2, 0, -1.57))
+                    # self.kick_client.send_goal_async(self.generate_kick_goal(0.2, 0, -1.57))
                 elif key == "c":
                     # kick right forward
                     pass
-                    #self.kick_client.send_goal_async(self.generate_kick_goal(0.2, -0.1, 0))
+                    # self.kick_client.send_goal_async(self.generate_kick_goal(0.2, -0.1, 0))
                 elif key == "v":
                     # kick right side ball right
                     pass
-                    #self.kick_client.send_goal_async(self.generate_kick_goal(0.2, -0.1, 1.57))
+                    # self.kick_client.send_goal_async(self.generate_kick_goal(0.2, -0.1, 1.57))
                 elif key == "V":
                     # kick right side ball center
                     pass
-                    #self.kick_client.send_goal_async(self.generate_kick_goal(0.2, 0, 1.57))
+                    # self.kick_client.send_goal_async(self.generate_kick_goal(0.2, 0, 1.57))
                 elif key == "x":
                     # kick center forward
                     pass
-                    #self.kick_client.send_goal_async(self.generate_kick_goal(0.2, 0, 0))
+                    # self.kick_client.send_goal_async(self.generate_kick_goal(0.2, 0, 0))
                 elif key == "X":
                     # kick center backwards
                     pass
-                    #self.kick_client.send_goal_async(self.generate_kick_goal(-0.2, 0, 0))
+                    # self.kick_client.send_goal_async(self.generate_kick_goal(-0.2, 0, 0))
                 elif key == "b":
                     # kick left backwards
                     pass
-                    #self.kick_client.send_goal_async(self.generate_kick_goal(-0.2, 0.1, 0))
+                    # self.kick_client.send_goal_async(self.generate_kick_goal(-0.2, 0.1, 0))
                 elif key == "n":
                     # kick right backwards
                     pass
-                    #self.kick_client.send_goal_async(self.generate_kick_goal(-0.2, -0.1, 0))
+                    # self.kick_client.send_goal_async(self.generate_kick_goal(-0.2, -0.1, 0))
                 elif key == "B":
                     # kick left backwards
                     pass
-                    #self.kick_client.send_goal_async(self.generate_kick_goal(0, 0.14, -1.57))
+                    # self.kick_client.send_goal_async(self.generate_kick_goal(0, 0.14, -1.57))
                 elif key == "N":
                     # kick right backwards
                     pass
-                    #self.kick_client.send_goal_async(self.generate_kick_goal(0, -0.14, 1.57))
+                    # self.kick_client.send_goal_async(self.generate_kick_goal(0, -0.14, 1.57))
                 elif key == "Y":
                     # kick left walk
                     self.walk_kick_pub.publish(Bool(data=False))
