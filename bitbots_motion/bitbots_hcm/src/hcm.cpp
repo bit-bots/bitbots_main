@@ -69,13 +69,6 @@ class HCM_CPP : public rclcpp::Node {
         "foot_pressure_right/filtered", 1, std::bind(&HCM_CPP::pressure_r_callback, this, _1));
     imu_sub_ =
         this->create_subscription<sensor_msgs::msg::Imu>("imu/data", 1, std::bind(&HCM_CPP::imu_callback, this, _1));
-
-    // Store time of last tick so we can check if time progressed
-    last_tick_time_ = this->get_clock()->now();
-
-    // Create timer that ticks the HCM
-    timer_ = rclcpp::create_timer(this, this->get_clock(), std::chrono::milliseconds(1 / 125),
-                                  std::bind(&HCM_CPP::tick, this));
   }
 
   void animation_callback(bitbots_msgs::msg::Animation msg) {
@@ -145,12 +138,6 @@ class HCM_CPP : public rclcpp::Node {
   void tick() {
     // Performs one tick of the HCM DSD
 
-    // Check if time progressed
-    auto current_time = this->get_clock()->now();
-    if (current_time == last_tick_time_) {
-      return;
-    }
-
     // Pass the data we have got until now to the python module
     if (current_imu_) {
       hcm_py_.attr("set_imu")(ros2_python_extension::toPython(current_imu_.value()));
@@ -191,9 +178,6 @@ class HCM_CPP : public rclcpp::Node {
     bitbots_msgs::msg::RobotControlState state_msg = bitbots_msgs::msg::RobotControlState();
     state_msg.state = current_state_;
     pub_robot_state_->publish(state_msg);
-
-    // Store the time of the last tick
-    last_tick_time_ = current_time;
   }
 
  private:
@@ -236,22 +220,35 @@ class HCM_CPP : public rclcpp::Node {
   rclcpp::Subscription<bitbots_msgs::msg::FootPressure>::SharedPtr pressure_l_sub_;
   rclcpp::Subscription<bitbots_msgs::msg::FootPressure>::SharedPtr pressure_r_sub_;
   rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_sub_;
-
-  // Timer
-  rclcpp::TimerBase::SharedPtr timer_;
-
-  // Time of last tick
-  rclcpp::Time last_tick_time_;
 };
 }  // namespace bitbots_hcm
+
+void thread_spin(rclcpp::experimental::executors::EventsExecutor::SharedPtr executor) { executor->spin(); }
 
 int main(int argc, char** argv) {
   rclcpp::init(argc, argv);
   auto node = std::make_shared<bitbots_hcm::HCM_CPP>();
 
-  rclcpp::experimental::executors::EventsExecutor executor;
-  executor.add_node(node);
-  executor.spin();
+  rclcpp::experimental::executors::EventsExecutor::SharedPtr exec =
+      std::make_shared<rclcpp::experimental::executors::EventsExecutor>();
+  exec->add_node(node);
+  std::thread thread_obj(thread_spin, exec);
+
+  auto last_time = node->get_clock()->now();
+  rclcpp::Rate rate = rclcpp::Rate(125.0);
+  while (rclcpp::ok()) {
+    // Check if time progressed
+    auto current_time = node->get_clock()->now();
+    if (current_time > last_time) {
+      last_time = current_time;
+      node->tick();
+      rate.sleep();
+    }
+    // really short sleep to not waste cpu time
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+  }
+  // Join the thread
+  thread_obj.join();
 
   rclcpp::shutdown();
 }
