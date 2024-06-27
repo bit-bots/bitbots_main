@@ -30,8 +30,8 @@ void PyDynupWrapper::special_reset(double time) { dynup_node_->reset(time); }
 void PyDynupWrapper::set_engine_goal(std::string direction) {
   bitbots_dynup::msg::DynupPoses poses = dynup_node_->getCurrentPoses();
   if (!poses.header.stamp.sec == 0) {
-    DynupRequest request;
-    request.direction = direction;
+    bitbots_dynup::DynupRequest request;
+    request.direction = bitbots_dynup::getDynupDirection(direction);
     request.l_foot_pose = poses.l_leg_pose;
     request.r_foot_pose = poses.r_leg_pose;
     request.l_hand_pose = poses.l_arm_pose;

@@ -1,5 +1,5 @@
 bitbots_dynup:
-  engine: 
+  engine:
     engine_rate: {
       type: int,
       description: "Rate at which the engine is looped",
@@ -14,7 +14,7 @@ bitbots_dynup:
         validation: {
           bounds<>: [ 0.0, 5.0 ],
         }
-      } 
+      }
       foot_distance: {
         type: double,
         description: "End pose foot distance from one foot to the other. Depends on walkready of walking.",
@@ -22,7 +22,7 @@ bitbots_dynup:
         validation: {
           bounds<>: [ 0.0, 5.0 ],
         }
-      } 
+      }
       hand_walkready_pitch: {
         type: double,
         description: "End pose hand pitch. Depends on walkready of walking.",
@@ -38,7 +38,7 @@ bitbots_dynup:
         validation: {
           bounds<>: [ -1.0, 1.0 ],
         }
-      
+
       }
       trunk_height: {
         type: double,
@@ -89,7 +89,7 @@ bitbots_dynup:
         validation: {
           bounds<>: [ 0.0, 1.0 ],
         }
-      
+
       }
       com_shift_2: {
         type: double,
@@ -129,7 +129,7 @@ bitbots_dynup:
         default_value: 0.253,
         validation: {
           bounds<>: [ 0.0, 1.0 ],
-        }        
+        }
       }
       time_foot_ground_back: {
         type: double,
@@ -228,7 +228,7 @@ bitbots_dynup:
         validation: {
           bounds<>: [ 0.0, 1.0 ],
         }
-      } 
+      }
       time_foot_ground_front: {
         type: double,
         description: "When fallen to the front: time the foot is on the ground",
@@ -260,7 +260,7 @@ bitbots_dynup:
         validation: {
           bounds<>: [ 0.0, 1.0 ],
         }
-      } 
+      }
       time_to_squat: {
         type: double,
         description: "When fallen to the front: time to squat",
@@ -301,15 +301,7 @@ bitbots_dynup:
           bounds<>: [ 0.0, 10.0 ],
         }
       }
-      time_walkready: {
-        type: double,
-        description: "When fallen to the front: time to walkready",
-        default_value: 2.0,
-        validation: {
-          bounds<>: [ 0.0, 10.0 ],
-        }
-      } 
-    rise: 
+    rise:
       rise_time: {
         type: double,
         description: "Time to rise in seconds",
@@ -319,7 +311,7 @@ bitbots_dynup:
         }
       }
 
-    descend: 
+    descend:
       descend_time: {
         type: double,
         description: "Time to descend in seconds",
@@ -329,7 +321,7 @@ bitbots_dynup:
         }
       }
 
-    stabilizer: 
+    stabilizer:
       stabilizing: {
         type: bool,
         description: "Whether to use stabilizing",
@@ -364,8 +356,8 @@ bitbots_dynup:
           bounds<>: [ 0.0, 10.0 ],
         }
       }
-    
-    visualizer: 
+
+    visualizer:
       spline_smoothness: {
         type: int,
         description: "",

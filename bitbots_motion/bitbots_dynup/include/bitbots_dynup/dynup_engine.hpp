@@ -39,7 +39,7 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
 
   double getDuration() const;
 
-  int getDirection();
+  DynupDirection getDirection();
 
   bool isStabilizingNeeded();
 
@@ -124,7 +124,7 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
    *
    *  @return the time of the last splinepoint of this function, needed to concat rise or descend
    */
-  double calcRiseSplines(double time);
+  double calcRiseSplines(double time = 0);
 
   /*
    * Calculate the splines to get down to a squatting position:
@@ -132,7 +132,7 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
    *
    *  @return the time of the last splinepoint of this function, needed to concat rise or descend
    */
-  double calcDescendSplines(double time);
+  double calcDescendSplines(double time = 0);
 };
 
 }  // namespace bitbots_dynup

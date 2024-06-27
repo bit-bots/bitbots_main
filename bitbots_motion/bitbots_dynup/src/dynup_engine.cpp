@@ -50,7 +50,7 @@ void DynupEngine::publishDebug() {
 
   msg.time = time_;
   msg.stabilization_active = isStabilizingNeeded();
-  if (direction_ == 1) {
+  if (direction_ == DynupDirection::FRONT or direction_ == DynupDirection::FRONT_ONLY) {
     if (time_ < params_.dynup_front.time_hands_side) {
       msg.state_number = 0;
     } else if (time_ < params_.dynup_front.time_hands_side + params_.dynup_front.time_hands_rotate) {
@@ -82,7 +82,7 @@ void DynupEngine::publishDebug() {
     } else {
       msg.state_number = 8;
     }
-  } else if (direction_ == 0) {
+  } else if (direction_ == DynupDirection::BACK or direction_ == DynupDirection::BACK_ONLY) {
     if (time_ < params_.dynup_back.time_legs_close) {
       msg.state_number = 0;
     } else if (time_ < params_.dynup_back.time_legs_close + params_.dynup_back.time_foot_ground_back) {
@@ -691,26 +691,36 @@ void DynupEngine::setGoals(const DynupRequest &goals) {
   }
 
   direction_ = goals.direction;
-  if (direction_ == DynupDirection::FRONT) {
-    // add front and rise splines together
-    double time = calcFrontSplines();
-    duration_ = calcRiseSplines(time);
-  } else if (direction_ == DynupDirection::BACK) {
-    // add back and rise splines together
-    double time = calcBackSplines();
-    duration_ = calcRiseSplines(time);
-  } else if (direction_ == DynupDirection::FRONT_ONLY) {
-    duration_ = calcFrontSplines();
-  } else if (direction_ == DynupDirection::BACK_ONLY) {
-    duration_ = calcBackSplines();
-  } else if (direction_ == DynupDirection::RISE) {
-    duration_ = calcRiseSplines(0);
-  } else if (direction_ == DynupDirection::DESCEND) {
-    duration_ = calcDescendSplines(0);
-  } else if (direction_ == DynupDirection::WALKREADY) {
-    duration_ = calcRiseSplines(params_.dynup_front.time_walkready);
-  } else {
-    RCLCPP_ERROR(node_->get_logger(), "Provided direction not known");
+  switch (direction_) {
+    case DynupDirection::FRONT: {
+      // add front and rise splines together
+      double time = calcFrontSplines();
+      duration_ = calcRiseSplines(time);
+      break;
+    }
+    case DynupDirection::BACK: {
+      // add back and rise splines together
+      double time = calcBackSplines();
+      duration_ = calcRiseSplines(time);
+      break;
+    }
+    case DynupDirection::FRONT_ONLY:
+      duration_ = calcFrontSplines();
+      break;
+    case DynupDirection::BACK_ONLY:
+      duration_ = calcBackSplines();
+      break;
+    case DynupDirection::RISE:
+      duration_ = calcRiseSplines();
+      break;
+    case DynupDirection::DESCEND:
+      duration_ = calcDescendSplines();
+      break;
+    case DynupDirection::WALKREADY:
+      duration_ = calcRiseSplines();
+      break;
+    default:
+      RCLCPP_ERROR(node_->get_logger(), "Provided direction not known");
   }
 }
 
@@ -720,28 +730,31 @@ double DynupEngine::getDuration() const { return duration_; }
 
 /*Calculates if we are at a point of the animation where stabilizing should be applied. */
 bool DynupEngine::isStabilizingNeeded() {
-  return ((direction_ == 1 && time_ >= params_.dynup_front.time_hands_side + params_.dynup_front.time_hands_rotate +   // TODO fix int direction number
-                                           params_.dynup_front.time_foot_close + params_.dynup_front.time_hands_front +
-                                           params_.dynup_front.time_foot_ground_front +
-                                           params_.dynup_front.time_torso_45 + params_.dynup_front.time_to_squat) ||
-          (direction_ == 0 && time_ >= params_.dynup_back.time_legs_close + params_.dynup_back.time_foot_ground_back +
-                                           params_.dynup_back.time_full_squat_hands +
-                                           params_.dynup_back.time_full_squat_legs) ||
-          (direction_ == 2) || (direction_ == 3));
+  return (((direction_ == DynupDirection::FRONT or direction_ == DynupDirection::FRONT_ONLY) and
+           time_ >= params_.dynup_front.time_hands_side +
+                        params_.dynup_front.time_hands_rotate +  // TODO fix int direction number
+                        params_.dynup_front.time_foot_close + params_.dynup_front.time_hands_front +
+                        params_.dynup_front.time_foot_ground_front + params_.dynup_front.time_torso_45 +
+                        params_.dynup_front.time_to_squat) or
+          ((direction_ == DynupDirection::BACK or direction_ == DynupDirection::BACK_ONLY) and
+           time_ >= params_.dynup_back.time_legs_close + params_.dynup_back.time_foot_ground_back +
+                        params_.dynup_back.time_full_squat_hands + params_.dynup_back.time_full_squat_legs) or
+          (direction_ == DynupDirection::RISE) or (direction_ == DynupDirection::DESCEND));
 }
 
 bool DynupEngine::isHeadZero() {
   // set heads zero in the middle of rise phase
-  return ((direction_ == 1 && time_ >= params_.dynup_front.time_hands_side + params_.dynup_front.time_hands_rotate +
-                                           params_.dynup_front.time_foot_close + params_.dynup_front.time_hands_front +
-                                           params_.dynup_front.time_foot_ground_front +
-                                           params_.dynup_front.time_torso_45 + params_.dynup_front.time_to_squat +
-                                           params_.dynup_front.wait_in_squat_front + 0.5 * params_.rise.rise_time) ||
-          (direction_ == 0 && time_ >= params_.dynup_back.time_legs_close + params_.dynup_back.time_foot_ground_back +
-                                           params_.dynup_back.time_full_squat_hands +
-                                           params_.dynup_back.time_full_squat_legs +
-                                           params_.dynup_back.wait_in_squat_back + 0.5 * params_.rise.rise_time) ||
-          (direction_ == 2) || (direction_ == 3));
+  return (((direction_ == DynupDirection::FRONT or direction_ == DynupDirection::FRONT_ONLY) and
+           time_ >= params_.dynup_front.time_hands_side + params_.dynup_front.time_hands_rotate +
+                        params_.dynup_front.time_foot_close + params_.dynup_front.time_hands_front +
+                        params_.dynup_front.time_foot_ground_front + params_.dynup_front.time_torso_45 +
+                        params_.dynup_front.time_to_squat + params_.dynup_front.wait_in_squat_front +
+                        0.5 * params_.rise.rise_time) or
+          ((direction_ == DynupDirection::BACK or direction_ == DynupDirection::BACK_ONLY) and
+           time_ >= params_.dynup_back.time_legs_close + params_.dynup_back.time_foot_ground_back +
+                        params_.dynup_back.time_full_squat_hands + params_.dynup_back.time_full_squat_legs +
+                        params_.dynup_back.wait_in_squat_back + 0.5 * params_.rise.rise_time) or
+          (direction_ == DynupDirection::RISE) or (direction_ == DynupDirection::DESCEND));
 }
 
 bitbots_splines::PoseSpline DynupEngine::getRFootSplines() const { return r_foot_spline_; }
@@ -758,6 +771,6 @@ void DynupEngine::setParams(bitbots_dynup::Params::Engine params) {
   offset_right_ = tf2::Transform(tf2::Quaternion(0, 0, 0, 1), {0, -arm_offset_y_, arm_offset_z_});
 }
 
-int DynupEngine::getDirection() { return direction_; }
+DynupDirection DynupEngine::getDirection() { return direction_; }
 
 }  // namespace bitbots_dynup

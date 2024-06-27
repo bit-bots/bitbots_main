@@ -45,8 +45,14 @@ include_directories(include ${PYTHON_INCLUDE_DIRS})
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 add_compile_options(-Wall -Werror -Wno-unused -fPIC)
 
-set(SOURCES src/dynup_engine.cpp src/dynup_ik.cpp src/dynup_node.cpp
-            src/dynup_pywrapper.cpp src/dynup_stabilizer.cpp src/visualizer.cpp)
+set(SOURCES
+    src/dynup_engine.cpp
+    src/dynup_ik.cpp
+    src/dynup_node.cpp
+    src/dynup_pywrapper.cpp
+    src/dynup_stabilizer.cpp
+    src/visualizer.cpp
+    src/dynup_utils.cpp)
 
 add_executable(DynupNode ${SOURCES})
 
