@@ -1,3 +1,4 @@
+import json
 import os
 import threading
 from hashlib import md5
@@ -156,9 +157,13 @@ class CheckReposTask(AbstractTask):
         self.main_repo_path: str = os.path.join(
             os.path.dirname(__file__), "..", "..", ".."
         )  # bitbots_main/scripts/deploy/tasks
+
+        self.results_file: str = os.path.join(self.main_repo_path, "workspace.status.json")
+
         self.main_repo: OurRepo = OurRepo(self.main_repo_path, "main")
         self.repos: dict[str, OurRepo] = {"bitbots_main": self.main_repo, **self._get_workspace_repos()}
 
+        self.commit_hashes: dict[str, str] = {}
         self.warnings: dict[str, list[str]] = {}
 
     def _get_workspace_repos(self) -> dict[str, OurRepo]:
@@ -179,6 +184,7 @@ class CheckReposTask(AbstractTask):
     def _run(self, connections: Group) -> GroupResult:
         """
         For each repo, get the current commit hash and display warnings if necessary.
+        Also write the current commit states to a file.
 
         :param connections: The connections to the targets.
         :return: The result of the check.
@@ -206,7 +212,7 @@ class CheckReposTask(AbstractTask):
             return group_result
 
         # Collect commit hashes for the friendly commit name
-        commit_hashes: dict[str, str] = {name: repo.get_commit_hash() for name, repo in self.repos.items()}
+        self.commit_hashes: dict[str, str] = {name: repo.get_commit_hash() for name, repo in self.repos.items()}
         # Check all repositories and collect warnings with multiple threads
         threads: list[threading.Thread] = []
         for name, repo in self.repos.items():
@@ -216,16 +222,18 @@ class CheckReposTask(AbstractTask):
         for thread in threads:
             thread.join()
 
-        workspace_hash: str = self._get_workspace_hash(commit_hashes)
+        workspace_hash: str = self._get_workspace_hash(self.commit_hashes)
+        self.commit_hashes["__WORKSPACE__"] = workspace_hash
         workspace_friendly_name: str = self._get_friendly_name(workspace_hash)
 
         # Display results
+        results: GroupResult
         # Do we have any warnings? If not, all checks for all repos were successful
         if not any([*self.warnings.values()]):  # No warnings = Success
             print_success(
                 f"Current commit: [bold]{workspace_friendly_name}[default] ({workspace_hash[:8]})\nYour local workspace is clean and up-to-date."
             )
-            return success(connections)
+            results = success(connections)
 
         # Display warnings and ask for confirmation
         else:  # Warnings = Failure
@@ -236,7 +244,7 @@ class CheckReposTask(AbstractTask):
             for repo_name, repo_warnings in sorted(self.warnings.items()):
                 if not repo_warnings:
                     continue
-                commit_hash: str = commit_hashes[repo_name]
+                commit_hash: str = self.commit_hashes[repo_name]
                 commit_name: str = self._get_friendly_name(commit_hash)
                 warnings: str = ""
                 for i, warning in enumerate(repo_warnings):
@@ -254,10 +262,13 @@ class CheckReposTask(AbstractTask):
             proceed = answer and "y" in answer[0]
             if proceed:
                 print_debug("Proceeding despite warnings because of user choice.")
-                return failure(connections, warnings, do_exit=False)
+                results = failure(connections, warnings, do_exit=False)
             else:
                 print_debug("Aborting because of user choice.")
-                return failure(connections, warnings, do_exit=True)
+                results = failure(connections, warnings, do_exit=True)
+
+        self._write_commits()
+        return results
 
     def _get_workspace_hash(self, commit_hashes: dict[str, str]) -> str:
         """
@@ -359,3 +370,13 @@ class CheckReposTask(AbstractTask):
         friendly_name: str = f"{friendly_adjectives[int(hash[:len(hash)//2], 16) % len(friendly_adjectives)]} {friendly_animals[int(hash[len(hash)//2:], 16) % len(friendly_animals)]}"
         print_debug(f"Generated friendly commit name: '{friendly_name}'.")
         return friendly_name
+
+    def _write_commits(self) -> None:
+        """
+        Write the current commit hashes and names to a file.
+        """
+        state: dict[str, dict[str, str]] = {
+            name: {"hash": hash, "name": self._get_friendly_name(hash)} for name, hash in self.commit_hashes.items()
+        }
+        with open(self.results_file, "w") as file:
+            json.dump(state, file)
