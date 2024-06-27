@@ -12,7 +12,7 @@ void DynupIK::init(moveit::core::RobotModelPtr kinematic_model) {
   all_joints_group_ = kinematic_model->getJointModelGroup("All");
 
   /* Reset kinematic goal to default */
-  goal_state_.reset(new moveit::core::RobotState(kinematic_model));
+  goal_state_ = std::make_shared<moveit::core::RobotState>(kinematic_model);
   goal_state_->setToDefaultValues();
 }
 
