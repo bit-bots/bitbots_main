@@ -56,7 +56,7 @@ WalkResponse WalkEngine::update(double dt) {
     bool step_will_finish = (phase_ < 0.5 && phase_ + dt * config_.freq > 0.5) || phase_ + dt * config_.freq > 1.0;
     // check if we should rest the phase because the flying foot didn't make contact to the ground during step
     if (step_will_finish && phase_rest_active_) {
-      // dont update the phase (do a phase rest) till it gets updated by a phase reset
+      // don't update the phase (do a phase rest) till it gets updated by a phase reset
       RCLCPP_DEBUG_THROTTLE(node_->get_logger(), *node_->get_clock(), 200, "PHASE REST");
       return createResponse();
     }
@@ -220,6 +220,8 @@ void WalkEngine::endStep() {
   }
 }
 
+void WalkEngine::setConfig(walking::Params::Engine config) { config_ = config; }
+
 void WalkEngine::setPhaseRest(bool active) { phase_rest_active_ = active; }
 
 void WalkEngine::reset() { reset(WalkState::IDLE, 0.0, {0, 0, 0, 0}, true, false, false); }
@@ -238,7 +240,7 @@ void WalkEngine::reset(WalkState state, double phase, std::array<double, 4> step
   pause_requested_ = false;
 
   if (state == WalkState::IDLE) {
-    // we dont need to build trajectories in idle, just reset everything
+    // we don't need to build trajectories in idle, just reset everything
     if (phase < 0.5) {
       is_left_support_foot_ = false;
       last_phase_ = 0.49999;
@@ -543,12 +545,12 @@ void WalkEngine::buildTrajectories(WalkEngine::TrajectoryType type) {
   // Trunk middle neutral (no swing) position
   tf2::Vector3 trunk_point_middle = 0.5 * trunk_point_support + 0.5 * trunk_point_next;
   // Trunk vector from middle to support apex
-  tf2::Vector3 trunk_vect = trunk_point_support - trunk_point_middle;
+  tf2::Vector3 trunk_vector = trunk_point_support - trunk_point_middle;
   // Apply swing amplitude ratio
-  trunk_vect[1] *= config_.trunk_swing;
+  trunk_vector[1] *= config_.trunk_swing;
   // Trunk support and next apex position
-  tf2::Vector3 trunk_apex_support = trunk_point_middle + trunk_vect;
-  tf2::Vector3 trunk_apex_next = trunk_point_middle - trunk_vect;
+  tf2::Vector3 trunk_apex_support = trunk_point_middle + trunk_vector;
+  tf2::Vector3 trunk_apex_next = trunk_point_middle - trunk_vector;
   // Trunk forward velocity
   double trunk_vel_support = (support_to_next_.getOrigin().x() - support_to_last_.getOrigin().x()) / period;
   double trunk_vel_next = support_to_next_.getOrigin().x() / half_period;
@@ -571,13 +573,13 @@ void WalkEngine::buildTrajectories(WalkEngine::TrajectoryType type) {
   }
   if (start_step || start_movement) {
     trunk_spline_.y()->addPoint(half_period + time_shift - pause_length,
-                                trunk_point_middle.y() + trunk_vect.y() * config_.first_step_swing_factor);
+                                trunk_point_middle.y() + trunk_vector.y() * config_.first_step_swing_factor);
     trunk_spline_.y()->addPoint(half_period + time_shift + pause_length,
-                                trunk_point_middle.y() + trunk_vect.y() * config_.first_step_swing_factor);
+                                trunk_point_middle.y() + trunk_vector.y() * config_.first_step_swing_factor);
     trunk_spline_.y()->addPoint(period + time_shift - pause_length,
-                                trunk_point_middle.y() - trunk_vect.y() * config_.first_step_swing_factor);
+                                trunk_point_middle.y() - trunk_vector.y() * config_.first_step_swing_factor);
     trunk_spline_.y()->addPoint(period + time_shift + pause_length,
-                                trunk_point_middle.y() - trunk_vect.y() * config_.first_step_swing_factor);
+                                trunk_point_middle.y() - trunk_vector.y() * config_.first_step_swing_factor);
   } else {
     trunk_spline_.y()->addPoint(half_period + time_shift - pause_length, trunk_apex_support.y());
     trunk_spline_.y()->addPoint(half_period + time_shift + pause_length, trunk_apex_support.y());
@@ -602,7 +604,7 @@ void WalkEngine::buildTrajectories(WalkEngine::TrajectoryType type) {
   }
   trunk_spline_.z()->addPoint(period + double_support_length / 2, trunk_height_including_foot_z_movement);
 
-  // Define trunk rotation as rool pitch yaw
+  // Define trunk rotation as roll pitch yaw
   tf2::Vector3 euler_at_support =
       tf2::Vector3(0.0,
                    config_.trunk_pitch + config_.trunk_pitch_p_coef_forward * support_to_next_.getOrigin().x() +
@@ -713,7 +715,7 @@ void WalkEngine::buildWalkDisableTrajectories(bool foot_in_idle_position) {
                                config_.foot_put_down_z_offset);
     foot_spline_.z()->addPoint(half_period, 0.0);
   } else {
-    // dont move the foot in last single step before stop since we only move the trunk back to the center
+    // don't move the foot in last single step before stop since we only move the trunk back to the center
     foot_spline_.z()->addPoint(0.0, foot_pos_at_foot_change_.z());
     foot_spline_.z()->addPoint(half_period, 0.0);
   }
