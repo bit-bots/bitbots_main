@@ -9,9 +9,6 @@ DynupNode::DynupNode(rclcpp::Node::SharedPtr node, const std::string &ns, std::v
       joint_goal_publisher_(node_->create_publisher<bitbots_msgs::msg::JointCommand>("dynup_motor_goals", 1)),
       imu_subscriber_(node_->create_subscription<sensor_msgs::msg::Imu>("imu/data", 1,
                                                                         std::bind(&DynupNode::imuCallback, this, _1))),
-      action_server_(rclcpp_action::create_server<DynupGoal>(
-          node_, "dynup", std::bind(&DynupNode::goalCb, this, _1, _2), std::bind(&DynupNode::cancelCb, this, _1),
-          std::bind(&DynupNode::acceptedCb, this, _1))),
       param_listener_(node_),
       params_(param_listener_.get_params()),
       engine_(node_, params_.engine),
@@ -66,8 +63,7 @@ DynupNode::DynupNode(rclcpp::Node::SharedPtr node, const std::string &ns, std::v
   // load params once
   onSetParameters();
 
-  moveit::core::RobotStatePtr init_state;
-  init_state.reset(new moveit::core::RobotState(kinematic_model_));
+  moveit::core::RobotStatePtr init_state = std::make_shared<moveit::core::RobotState>(kinematic_model_);
   // set elbows to make arms straight, in a stupid way since moveit is annoying
   std::vector<std::string> names_vec = {"LElbow", "RElbow"};
   std::vector<double> pos_vec{-M_PI / 2, M_PI / 2};
@@ -80,6 +76,10 @@ DynupNode::DynupNode(rclcpp::Node::SharedPtr node, const std::string &ns, std::v
   // arm max length, y offset, z offset from base link
   engine_.init(shoulder_origin.position.y, shoulder_origin.position.z);
   ik_.init(kinematic_model_);
+
+  action_server_ = rclcpp_action::create_server<DynupGoal>(node_, "dynup", std::bind(&DynupNode::goalCb, this, _1, _2),
+                                                           std::bind(&DynupNode::cancelCb, this, _1),
+                                                           std::bind(&DynupNode::acceptedCb, this, _1));
 
   RCLCPP_INFO(node_->get_logger(), "Initialized DynUp and waiting for actions");
 }
@@ -135,14 +135,10 @@ geometry_msgs::msg::PoseArray DynupNode::step_open_loop(double dt) {
 
 void DynupNode::imuCallback(const sensor_msgs::msg::Imu::SharedPtr msg) { stabilizer_.setImu(msg); }
 
-rcl_interfaces::msg::SetParametersResult DynupNode::onSetParameters() {
+void DynupNode::onSetParameters() {
   engine_.setParams(params_.engine);
   stabilizer_.setParams(params_.stabilizer);
   visualizer_.setParams(params_.visualizer);
-
-  rcl_interfaces::msg::SetParametersResult result;
-  result.successful = true;
-  return result;
 }
 
 void DynupNode::reset(int time) {
