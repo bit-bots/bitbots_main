@@ -721,7 +721,7 @@ void DynupEngine::setGoals(const DynupRequest &goals) {
       duration_ = calcDescendSplines();
       break;
     case DynupDirection::WALKREADY:
-      duration_ = calcWalkreadySplines(0, params_.walkready.time);
+      duration_ = calcWalkreadySplines(0, params_.walkready.travel_time);
       break;
     default:
       RCLCPP_ERROR(node_->get_logger(), "Provided direction not known");

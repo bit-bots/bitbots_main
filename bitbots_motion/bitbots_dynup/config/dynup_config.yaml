@@ -244,7 +244,7 @@ bitbots_dynup:
           bounds<>: [0.0, 5.0]
 
     walkready:
-      walkready_time:
+      travel_time:
         type: double
         description: "Time to walkready in seconds"
         default_value: 5.0
