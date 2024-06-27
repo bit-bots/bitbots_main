@@ -4,7 +4,8 @@ from datetime import datetime
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, ExecuteProcess, OpaqueFunction
 from launch.substitutions import EnvironmentVariable, LaunchConfiguration, PathJoinSubstitution
-from launch_ros.actions import Node
+
+# from launch_ros.actions import Node
 
 TOPICS_TO_RECORD: list[str] = [
     "/animation",
@@ -14,7 +15,7 @@ TOPICS_TO_RECORD: list[str] = [
     "/ball_position_relative_filtered",
     "/balls_relative",
     "/camera/camera_info",
-    "/camera/image_to_record",
+    "/camera/image_proc",
     "/clock",
     "/cmd_vel",
     "/cop_l",
@@ -76,18 +77,18 @@ def generate_launch_arguments():
 
 def generate_nodes():
     return [
-        Node(
-            package="topic_tools",
-            executable="throttle",
-            output="screen",
-            name="record_rosbag_drop_images",
-            arguments=[
-                "messages",
-                "/camera/image_proc",
-                LaunchConfiguration("max_image_frequency"),
-                "/camera/image_to_record",
-            ],
-        )
+        # Node(
+        #     package="topic_tools",
+        #     executable="throttle",
+        #     output="screen",
+        #     name="record_rosbag_drop_images",
+        #     arguments=[
+        #         "messages",
+        #         "/camera/image_proc",
+        #         LaunchConfiguration("max_image_frequency"),
+        #         "/camera/image_to_record",
+        #     ],
+        # )
     ]
 
 

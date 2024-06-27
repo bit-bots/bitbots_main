@@ -3,7 +3,6 @@ from typing import Dict, List, Optional, Tuple
 import numpy as np
 from bitbots_utils.utils import get_parameters_from_other_node
 from geometry_msgs.msg import PointStamped, Pose
-from rclpy.clock import ClockType
 from rclpy.duration import Duration
 from rclpy.time import Time
 from ros2_numpy import numpify
@@ -68,7 +67,6 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
         # Config
         self.data_timeout: float = self._node.get_parameter("team_data_timeout").value
         self.ball_max_covariance: float = self._node.get_parameter("ball_max_covariance").value
-        self.ball_lost_time: float = Duration(seconds=self._node.get_parameter("ball_lost_time").value)
 
     def is_valid(self, data: TeamData) -> bool:
         """
@@ -204,14 +202,6 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
 
     def publish_time_to_ball(self):
         self.time_to_ball_publisher.publish(Float32(data=self.own_time_to_ball))
-
-    def get_teammate_ball_seen_time(self) -> Time:
-        """Returns the time at which a teammate has seen the ball accurately enough"""
-        teammate_ball = self.get_teammate_ball()
-        if teammate_ball is not None:
-            return Time.from_msg(teammate_ball.header.stamp)
-        else:
-            return Time(clock_type=ClockType.ROS_TIME)
 
     def teammate_ball_is_valid(self):
         """Returns true if a teammate has seen the ball accurately enough"""

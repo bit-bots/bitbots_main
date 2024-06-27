@@ -2,44 +2,20 @@
 
 namespace bitbots_quintic_walk {
 
-WalkStabilizer::WalkStabilizer(std::string ns) {
-  pitch_node_ = rclcpp::Node::make_shared(ns + "walk_pid_trunk_fused_pitch");
-  roll_node_ = rclcpp::Node::make_shared(ns + "walk_pid_trunk_fused_roll");
-  // ensure that there is no unecessary infos from the PID nodes
-  pitch_node_->get_logger().set_level(rclcpp::Logger::Level::Warn);
-  roll_node_->get_logger().set_level(rclcpp::Logger::Level::Warn);
-
-  pitch_node_->declare_parameter<double>("p", 0.0);
-  pitch_node_->declare_parameter<double>("i", 0.0);
-  pitch_node_->declare_parameter<double>("d", 0.0);
-  pitch_node_->declare_parameter<double>("i_clamp_max", 0.0);
-  pitch_node_->declare_parameter<double>("i_clamp_min", 0.0);
-  pitch_node_->declare_parameter<bool>("antiwindup", false);
-  roll_node_->declare_parameter<double>("p", 0.0);
-  roll_node_->declare_parameter<double>("i", 0.0);
-  roll_node_->declare_parameter<double>("d", 0.0);
-  roll_node_->declare_parameter<double>("i_clamp_max", 0.0);
-  roll_node_->declare_parameter<double>("i_clamp_min", 0.0);
-  roll_node_->declare_parameter<bool>("antiwindup", false);
-
-  pid_trunk_fused_pitch_ = std::make_shared<control_toolbox::PidROS>(pitch_node_, "");
-  pid_trunk_fused_roll_ = std::make_shared<control_toolbox::PidROS>(roll_node_, "");
-  pid_trunk_fused_pitch_->initPid();
-  pid_trunk_fused_roll_->initPid();
+WalkStabilizer::WalkStabilizer(rclcpp::Node::SharedPtr node)
+    : pid_trunk_fused_pitch_(node, "node.trunk_pid.pitch"), pid_trunk_fused_roll_(node, "node.trunk_pid.roll") {
+  pid_trunk_fused_pitch_.initPid();
+  pid_trunk_fused_roll_.initPid();
 
   reset();
 }
 
 void WalkStabilizer::reset() {
-  pid_trunk_fused_pitch_->reset();
-  pid_trunk_fused_roll_->reset();
+  pid_trunk_fused_pitch_.reset();
+  pid_trunk_fused_roll_.reset();
 }
 
 WalkResponse WalkStabilizer::stabilize(const WalkResponse &response, const rclcpp::Duration &dt) {
-  // let pid nodes spine
-  spin_some(pitch_node_);
-  spin_some(roll_node_);
-
   // compute orientation with PID control
   double goal_pitch, goal_roll, goal_yaw;
   tf2::Matrix3x3(response.support_foot_to_trunk.getRotation()).getRPY(goal_roll, goal_pitch, goal_yaw);
@@ -53,9 +29,9 @@ WalkResponse WalkStabilizer::stabilize(const WalkResponse &response, const rclcp
 
   // adapt trunk values based on PID controllers
   double fused_roll_correction =
-      pid_trunk_fused_roll_->computeCommand(goal_fused.fusedRoll - response.current_fused_roll, dt);
+      pid_trunk_fused_roll_.computeCommand(goal_fused.fusedRoll - response.current_fused_roll, dt);
   double fused_pitch_correction =
-      pid_trunk_fused_pitch_->computeCommand(goal_fused.fusedPitch - response.current_fused_pitch, dt);
+      pid_trunk_fused_pitch_.computeCommand(goal_fused.fusedPitch - response.current_fused_pitch, dt);
 
   tf2::Quaternion corrected_orientation;
   goal_fused.fusedRoll += fused_roll_correction;

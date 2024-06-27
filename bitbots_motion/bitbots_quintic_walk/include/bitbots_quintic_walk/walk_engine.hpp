@@ -36,6 +36,11 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
   [[nodiscard]] int getPercentDone() const override;
 
   /**
+   * Updates the engine configuration.
+   */
+  void setConfig(walking::Params::Engine config);
+
+  /**
    * Resets the engine to any given state. Necessary for using it as reference in learning.
    */
   void reset(WalkState state, double phase, std::array<double, 4> step, bool stop_walk, bool walkable_state,
