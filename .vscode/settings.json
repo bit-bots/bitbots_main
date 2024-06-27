@@ -204,7 +204,8 @@
         "valarray": "cpp",
         "variant": "cpp",
         "regex": "cpp",
-        "future": "cpp"
+        "future": "cpp",
+        "*.ipp": "cpp"
     },
     // Tell the ROS extension where to find the setup.bash
     // This also utilizes the COLCON_WS environment variable, which needs to be set

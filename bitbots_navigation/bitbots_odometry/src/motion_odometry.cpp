@@ -2,12 +2,14 @@
 
 namespace bitbots_odometry {
 
-MotionOdometry::MotionOdometry() : Node("MotionOdometry"), param_listener_(get_node_parameters_interface()) {
-  tf_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
-  tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_, this);
-  br_ = std::make_unique<tf2_ros::TransformBroadcaster>(this);
-  config_ = param_listener_.get_params();
-
+MotionOdometry::MotionOdometry()
+    : Node("MotionOdometry"),
+      odometry_to_support_foot_(tf2::Transform::getIdentity()),
+      param_listener_(get_node_parameters_interface()),
+      config_(param_listener_.get_params()),
+      tf_buffer_(std::make_shared<tf2_ros::Buffer>(this->get_clock())),
+      tf_listener_(std::make_shared<tf2_ros::TransformListener>(*tf_buffer_, this)),
+      br_(std::make_unique<tf2_ros::TransformBroadcaster>(this)) {
   this->declare_parameter<std::string>("base_link_frame", "base_link");
   this->get_parameter("base_link_frame", base_link_frame_);
   this->declare_parameter<std::string>("r_sole_frame", "r_sole");
@@ -17,10 +19,6 @@ MotionOdometry::MotionOdometry() : Node("MotionOdometry"), param_listener_(get_n
   this->declare_parameter<std::string>("odom_frame", "odom");
   this->get_parameter("odom_frame", odom_frame_);
 
-  joint_update_time_ = rclcpp::Time(0);
-  current_support_state_ = -1;
-  previous_support_state_ = -1;
-
   walk_support_state_sub_ = this->create_subscription<biped_interfaces::msg::Phase>(
       "walk_support_state", 1, std::bind(&MotionOdometry::supportCallback, this, _1));
   kick_support_state_sub_ = this->create_subscription<biped_interfaces::msg::Phase>(
@@ -29,11 +27,7 @@ MotionOdometry::MotionOdometry() : Node("MotionOdometry"), param_listener_(get_n
       "walk_engine_odometry", 1, std::bind(&MotionOdometry::odomCallback, this, _1));
 
   pub_odometry_ = this->create_publisher<nav_msgs::msg::Odometry>("motion_odometry", 1);
-  // set the origin to 0. will be set correctly on recieving first support state
-  odometry_to_support_foot_.setOrigin({0, 0, 0});
-  odometry_to_support_foot_.setRotation(tf2::Quaternion(0, 0, 0, 1));
 
-  foot_change_time_ = rclcpp::Time(0, 0, RCL_ROS_TIME);
   previous_support_link_ = r_sole_frame_;
   start_time_ = this->now();
 }
