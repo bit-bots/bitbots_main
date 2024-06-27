@@ -1,4 +1,5 @@
 import os
+import threading
 from hashlib import md5
 
 from deploy.misc import be_quiet, print_debug, print_success, print_warning
@@ -74,8 +75,12 @@ class OurRepo(Repo):
             branch_is_correct: bool = self.active_branch.name == self.specified_branch
             print_debug(f"Repo {self}: Is on branch: '{self.active_branch.name}'.")
             if not branch_is_correct:
-                print_debug(f"Repo {self}: Is not on the {self.specified_branch} branch, instead {self.active_branch}!")
-                self.warnings.append(f"Is not on the {self.specified_branch} branch, instead {self.active_branch}!")
+                print_debug(
+                    f"Repo {self}: Is on the '{self.active_branch}' branch, but should be on '{self.specified_branch}'!"
+                )
+                self.warnings.append(
+                    f"Is on the '{self.active_branch}' branch, but should be on '{self.specified_branch}'!"
+                )
         except TypeError:
             return False
         return branch_is_correct
@@ -200,14 +205,16 @@ class CheckReposTask(AbstractTask):
                 group_result._successes = results
             return group_result
 
-        # Check and handle all repositories
-        commit_hashes: dict[str, str] = {}
-        for repo_name, repo in self.repos.items():
-            commit_hash: str = repo.get_commit_hash()
-            commit_hashes[repo_name] = commit_hash  # Collect commit hashes for the friendly commit name
-
-            # Run the checks
-            self.warnings[repo_name] = repo.check()
+        # Collect commit hashes for the friendly commit name
+        commit_hashes: dict[str, str] = {name: repo.get_commit_hash() for name, repo in self.repos.items()}
+        # Check all repositories and collect warnings with multiple threads
+        threads: list[threading.Thread] = []
+        for name, repo in self.repos.items():
+            thread = threading.Thread(target=lambda name=name, repo=repo: self.warnings.update({name: repo.check()}))
+            threads.append(thread)
+            thread.start()
+        for thread in threads:
+            thread.join()
 
         workspace_hash: str = self._get_workspace_hash(commit_hashes)
         workspace_friendly_name: str = self._get_friendly_name(workspace_hash)
@@ -226,7 +233,7 @@ class CheckReposTask(AbstractTask):
             warning_table.add_column("Repository")
             warning_table.add_column("Commit")
             warning_table.add_column("Warnings")
-            for repo_name, repo_warnings in self.warnings.items():
+            for repo_name, repo_warnings in sorted(self.warnings.items()):
                 if not repo_warnings:
                     continue
                 commit_hash: str = commit_hashes[repo_name]
