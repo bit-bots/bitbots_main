@@ -321,51 +321,126 @@ bitbots_dynup:
         }
       }
 
-    stabilizer:
-      stabilizing: {
+  stabilizer:
+    end_pause:
+      active: {
         type: bool,
-        description: "Whether to use stabilizing",
-        default_value: false,
-      }
-      minimal_displacement: {
-        type: bool,
-        description: "",
+        description: "Stand still until the robot is stable again after standing up",
         default_value: false,
       }
       stable_threshold: {
         type: double,
-        description: "Threshold for when the robot is considered stable",
+        description: "Angular threshold for the robot to be considered stable",
         default_value: 0.05,
         validation: {
           bounds<>: [ 0.0, 1.0 ],
         }
       }
-      stable_duration: {
+      duration: {
         type: int,
-        description: "",
+        description: "Number of cycles the robot has to be stable to be considered stable",
         default_value: 100,
         validation: {
           bounds<>: [ 0, 1000 ],
         }
       }
-      stabilization_timeout: {
+      timeout: {
         type: double,
-        description: "",
+        description: "Timeout after which the robot is considered considered stable even if it is not",
         default_value: 2.0,
         validation: {
           bounds<>: [ 0.0, 10.0 ],
         }
       }
+    trunk_pid:
+      pitch:
+        p:
+          type: double
+          description: "Proportional gain for the trunk pitch PID controller"
+          default_value: 0.0
+        i:
+          type: double
+          description: "Integral gain for the trunk pitch PID controller"
+          default_value: 0.0
+        d:
+          type: double
+          description: "Derivative gain for the trunk pitch PID controller"
+          default_value: 0.0
+        i_clamp_max:
+          type: double
+          description: "Integral clamp maximum for the trunk pitch PID controller"
+          default_value: 0.0
+        i_clamp_min:
+          type: double
+          description: "Integral clamp minimum for the trunk pitch PID controller"
+          default_value: 0.0
+        antiwindup:
+          type: bool
+          description: "Activate antiwindup for the trunk pitch PID controller"
+          default_value: false
+      roll:
+        p:
+          type: double
+          description: "Proportional gain for the trunk roll PID controller"
+          default_value: 0.0
+        i:
+          type: double
+          description: "Integral gain for the trunk roll PID controller"
+          default_value: 0.0
+        d:
+          type: double
+          description: "Derivative gain for the trunk roll PID controller"
+          default_value: 0.0
+        i_clamp_max:
+          type: double
+          description: "Integral clamp maximum for the trunk roll PID controller"
+          default_value: 0.0
+        i_clamp_min:
+          type: double
+          description: "Integral clamp minimum for the trunk roll PID controller"
+          default_value: 0.0
+        antiwindup:
+          type: bool
+          description: "Activate antiwindup for the trunk roll PID controller"
+          default_value: false
 
-    visualizer:
-      spline_smoothness: {
-        type: int,
-        description: "",
-        default_value: 100,
-      }
-      display_debug: {
-        type: bool,
-        description: "",
-        default_value: true,
-      }
 
+  visualizer:
+    spline_smoothness: {
+      type: int,
+      description: "",
+      default_value: 100,
+    }
+    display_debug: {
+      type: bool,
+      description: "",
+      default_value: true,
+    }
+
+  node:
+    tf:
+      base_link_frame:
+        type: string
+        description: "The robots base link frame name"
+        read_only: true
+        default_value: "base_link"
+      r_sole_frame:
+        type: string
+        description: "The robot right sole frame name"
+        read_only: true
+        default_value: "r_sole"
+      l_sole_frame:
+        type: string
+        description: "The robot left sole frame name"
+        read_only: true
+        default_value: "l_sole"
+      r_wrist_frame:
+        type: string
+        description: "The robot right wrist frame name"
+        read_only: true
+        default_value: "r_wrist"
+      l_wrist_frame:
+        type: string
+        description: "The robot left wrist frame name"
+        read_only: true
+        default_value: "l_wrist"

@@ -4,7 +4,11 @@
 
 namespace bitbots_dynup {
 
-DynupEngine::DynupEngine(rclcpp::Node::SharedPtr node) : node_(node) {
+DynupEngine::DynupEngine(rclcpp::Node::SharedPtr node, bitbots_dynup::Params::Engine params)
+    : node_(node),
+      params_(params),
+      offset_left_(tf2::Transform::getIdentity()),
+      offset_right_(tf2::Transform::getIdentity()) {
   pub_engine_debug_ = node_->create_publisher<bitbots_dynup::msg::DynupEngineDebug>("dynup_engine_debug", 1);
   pub_debug_marker_ = node_->create_publisher<visualization_msgs::msg::Marker>("dynup_engine_marker", 1);
   // We need a separate node for the parameter client because the parameter client adds the node to an executor

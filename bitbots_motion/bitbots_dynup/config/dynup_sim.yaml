@@ -1,9 +1,7 @@
 dynup:
   ros__parameters:
-    engine:    
-      
-      # end pose
-      end_pose: 
+    engine:
+      end_pose:
         arm_extended_length: 0.3
         hand_walkready_pitch: 34.2
         hand_walkready_height: -0.18
@@ -11,7 +9,6 @@ dynup:
         trunk_pitch: 0.13
         trunk_x_final: 0.0
 
-    # Back
       dynup_back:
         arms_angle_back: 113.75
         arm_side_offset_back: 0.148
@@ -20,7 +17,6 @@ dynup:
         foot_angle: 67.97
         time_full_squat_legs: 0.236
 
-    # Front
       dynup_front:
         hands_pitch: -46.7
         leg_min_length_front: 0.298
@@ -34,34 +30,26 @@ dynup:
         trunk_x_front: 0.035
         wait_in_squat_front: 0.032
 
-    # Rise
       rise:
-        rise_time: 0.4 
+        rise_time: 0.4
 
-    # Stabilier
     stabilizer:
-      stabilizing: True
-      minimal_displacement: False
-      stable_duration: -1
-      stabilization_timeout: 1.5
-
-dynup_pid_trunk_fused_roll:
-  ros__parameters:
-    p: 0.0
-    i: 0.0
-    d: 0.0
-    i_clamp: 0.0
-    i_clamp_min: 0.0
-    i_clamp_max: 0.0
-    antiwindup: True
-
-dynup_pid_trunk_fused_pitch:
-  ros__parameters:
-    p: -0.3
-    i: 0.0
-    d: -0.005
-    i_clamp: 0.0
-    i_clamp_min: -0.25
-    i_clamp_max: 0.25
-    antiwindup: True
-
+      end_pause:
+        active: True
+        duration: 0
+        timeout: 1.5
+      trunk_pid:
+        pitch:
+          p: 0.0
+          i: 0.0
+          d: 0.0
+          i_clamp_min: 0.0
+          i_clamp_max: 0.0
+          antiwindup: True
+        roll:
+          p: -0.3
+          i: 0.0
+          d: -0.005
+          i_clamp_min: -0.25
+          i_clamp_max: 0.25
+          antiwindup: True

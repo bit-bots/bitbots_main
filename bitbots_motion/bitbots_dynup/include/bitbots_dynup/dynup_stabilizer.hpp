@@ -17,29 +17,23 @@ namespace bitbots_dynup {
 
 class Stabilizer : public bitbots_splines::AbstractStabilizer<DynupResponse> {
  public:
-  explicit Stabilizer(std::string ns);
+  explicit Stabilizer(rclcpp::Node::SharedPtr node, bitbots_dynup::Params::Stabilizer params);
   DynupResponse stabilize(const DynupResponse &response, const rclcpp::Duration &dt) override;
   void setRSoleToTrunk(geometry_msgs::msg::TransformStamped r_sole_to_trunk);
-  void setParams(bitbots_dynup::Params::Engine::Stabilizer params);
+  void setParams(bitbots_dynup::Params::Stabilizer params);
   void reset() override;
   void setImu(sensor_msgs::msg::Imu::SharedPtr imu);
   bool isStable();
 
  private:
-  sensor_msgs::msg::Imu::SharedPtr imu_;
-  std::shared_ptr<control_toolbox::PidROS> pid_trunk_pitch_;
-  std::shared_ptr<control_toolbox::PidROS> pid_trunk_roll_;
-  std::shared_ptr<rclcpp::Node> pitch_node_;
-  std::shared_ptr<rclcpp::Node> roll_node_;
+  bitbots_dynup::Params::Stabilizer params_;
+  control_toolbox::PidROS pid_trunk_pitch_;
+  control_toolbox::PidROS pid_trunk_roll_;
   // Transform from r_sole frame to base_link frame, as we want to stabilize the base link.
-  geometry_msgs::msg::TransformStamped r_sole_to_trunk_;
+  std::optional<geometry_msgs::msg::TransformStamped> r_sole_to_trunk_;
+  sensor_msgs::msg::Imu::SharedPtr imu_;
 
-  bool stabilize_now_;
-
-  bool is_stable_;
-  double stable_threshold_;
-
-  bool use_stabilizing_;
+  bool is_stable_ = true;
 };
 
 }  // namespace bitbots_dynup
