@@ -22,7 +22,7 @@ namespace bitbots_dynup {
 
 class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupResponse> {
  public:
-  explicit DynupEngine(rclcpp::Node::SharedPtr node);
+  explicit DynupEngine(rclcpp::Node::SharedPtr node, bitbots_dynup::Params::Engine params);
 
   void init(double arm_offset_y, double arm_offset_z);
 
@@ -39,7 +39,7 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
 
   double getDuration() const;
 
-  int getDirection();
+  DynupDirection getDirection();
 
   bool isStabilizingNeeded();
 
@@ -63,27 +63,27 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
 
  private:
   rclcpp::Node::SharedPtr node_;
-  int marker_id_;
-  double time_;
-  double duration_;
-  double shoulder_offset_y_;
-  double arm_offset_y_;
-  double arm_offset_z_;
+
+  bitbots_dynup::Params::Engine params_;
+
+  int marker_id_ = 1;
+  double time_ = 0;
+  double duration_ = 0;
+  double arm_offset_y_ = 0;
+  double arm_offset_z_ = 0;
   tf2::Transform offset_left_;
   tf2::Transform offset_right_;
-  int direction_;
+
+  DynupDirection direction_ = DynupDirection::WALKREADY;
 
   bitbots_splines::PoseSpline l_foot_spline_;
   bitbots_splines::PoseSpline l_hand_spline_;
   bitbots_splines::PoseSpline r_foot_spline_;
   bitbots_splines::PoseSpline r_hand_spline_;
-  bitbots_dynup::Params::Engine params_;
 
   DynupResponse goals_;
   std::shared_ptr<rclcpp::Node> walking_param_node_;
   std::shared_ptr<rclcpp::SyncParametersClient> walking_param_client_;
-
-  std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
 
   rclcpp::Publisher<bitbots_dynup::msg::DynupEngineDebug>::SharedPtr pub_engine_debug_;
   rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr pub_debug_marker_;
@@ -124,7 +124,7 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
    *
    *  @return the time of the last splinepoint of this function, needed to concat rise or descend
    */
-  double calcRiseSplines(double time);
+  double calcRiseSplines(double time = 0);
 
   /*
    * Calculate the splines to get down to a squatting position:
@@ -132,7 +132,7 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
    *
    *  @return the time of the last splinepoint of this function, needed to concat rise or descend
    */
-  double calcDescendSplines(double time);
+  double calcDescendSplines(double time = 0);
 };
 
 }  // namespace bitbots_dynup
