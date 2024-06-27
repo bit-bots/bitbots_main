@@ -45,8 +45,8 @@ class MotionOdometry : public rclcpp::Node {
   void supportCallback(const biped_interfaces::msg::Phase::SharedPtr msg);
   void odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg);
 
-  std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
-  std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
+  tf2_ros::Buffer tf_buffer_;
+  tf2_ros::TransformListener tf_listener_;
   std::unique_ptr<tf2_ros::TransformBroadcaster> br_;
   rclcpp::Time foot_change_time_{rclcpp::Time(0, 0, RCL_ROS_TIME)};
   std::string previous_support_link_;
