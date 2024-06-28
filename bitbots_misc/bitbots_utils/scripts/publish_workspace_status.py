@@ -2,7 +2,6 @@
 import os
 
 import rclpy
-from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile
 from std_msgs.msg import String
@@ -20,29 +19,37 @@ class WorkspaceStatusPublisher(Node):
 
         if not os.path.exists(self.workspace_status_path):
             self.get_logger().warning(
-                f"The workspace status file does not exist under the given path: '{self.workspace_status_path}'"
+                f"The workspace status file does not exist under the given path: '{self.workspace_status_path}'. Exiting."
             )
             self.destroy_node()
+            import sys
+
+            sys.exit(1)
 
         # Read workspace status file
+        self.get_logger().debug(f"Reading workspace status from '{self.workspace_status_path}'...")
         with open(self.workspace_status_path) as f:
             self.workspace_status = f.read()
 
+        # Create publisher
+        self.get_logger().debug(f"Creating publisher at '{self.publish_topic}'...")
         self.pub = self.create_publisher(
             String, self.publish_topic, qos_profile=QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL)
         )
 
+        # Publish workspace status
+        self.get_logger().debug("Publishing workspace status...")
         self.pub.publish(String(data=self.workspace_status))
+        self.get_logger().info("Published workspace status.")
+
+        # NOTE: We cannot destroy the node here, because we want to keep the publisher alive.
 
 
 def main(args=None):
     rclpy.init(args=args)
     node = WorkspaceStatusPublisher()
-    executor = SingleThreadedExecutor()
-    executor.add_node(node)
-
     try:
-        executor.spin()
+        rclpy.spin(node)
     except KeyboardInterrupt:
         pass
 
