@@ -4,7 +4,6 @@ namespace bitbots_dynup {
 DynupIK::DynupIK(rclcpp::Node::SharedPtr node) : node_(node) {}
 
 void DynupIK::init(moveit::core::RobotModelPtr kinematic_model) {
-  current_joint_states_ = std::make_shared<sensor_msgs::msg::JointState>();
   /* Extract joint groups from kinematics model */
   l_leg_joints_group_ = kinematic_model->getJointModelGroup("LeftLeg");
   r_leg_joints_group_ = kinematic_model->getJointModelGroup("RightLeg");
@@ -13,7 +12,7 @@ void DynupIK::init(moveit::core::RobotModelPtr kinematic_model) {
   all_joints_group_ = kinematic_model->getJointModelGroup("All");
 
   /* Reset kinematic goal to default */
-  goal_state_.reset(new moveit::core::RobotState(kinematic_model));
+  goal_state_ = std::make_shared<moveit::core::RobotState>(kinematic_model);
   goal_state_->setToDefaultValues();
 }
 
@@ -28,7 +27,7 @@ void DynupIK::reset() {
   }
 }
 
-void DynupIK::setDirection(std::string direction) { direction_ = direction; }
+void DynupIK::setDirection(DynupDirection direction) { direction_ = direction; }
 
 bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
   /* ik options is basically the command which we send to bio_ik and which describes what we want to do */
@@ -64,18 +63,16 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
                                     moveit::core::GroupStateValidityCallbackFn(), ik_options);
   if (success) {
     /* retrieve joint names and associated positions from  */
-    std::vector<std::string> joint_names = all_joints_group_->getActiveJointModelNames();
+    auto joint_names = all_joints_group_->getActiveJointModelNames();
     std::vector<double> joint_goals;
     goal_state_->copyJointGroupPositions(all_joints_group_, joint_goals);
 
     /* construct result object */
-    bitbots_splines::JointGoals result;
-    result.first = joint_names;
-    result.second = joint_goals;
+    bitbots_splines::JointGoals result = {joint_names, joint_goals};
     /* sets head motors to correct positions, as the IK will return random values for those unconstrained motors. */
     for (size_t i = result.first.size(); i-- > 0;) {
       if (result.first[i] == "HeadPan") {
-        if (direction_ == "walkready") {
+        if (direction_ == DynupDirection::WALKREADY) {
           // remove head from the goals so that we can move it freely
           result.first.erase(result.first.begin() + i);
           result.second.erase(result.second.begin() + i);
@@ -86,11 +83,11 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
         if (ik_goals.is_head_zero) {
           result.second[i] = 0;
         } else {
-          if (direction_ == "front") {
+          if (direction_ == DynupDirection::FRONT or direction_ == DynupDirection::FRONT_ONLY) {
             result.second[i] = 1.0;
-          } else if (direction_ == "back") {
+          } else if (direction_ == DynupDirection::BACK or direction_ == DynupDirection::BACK_ONLY) {
             result.second[i] = -1.5;
-          } else if (direction_ == "walkready") {
+          } else if (direction_ == DynupDirection::WALKREADY) {
             // remove head from the goals so that we can move it freely
             result.first.erase(result.first.begin() + i);
             result.second.erase(result.second.begin() + i);
@@ -105,11 +102,6 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
     // node will count this as a missing tick and provide warning
     return {};
   }
-}
-void DynupIK::useStabilizing(bool use) { use_stabilizing_ = use; }
-
-void DynupIK::setCurrentJointStates(sensor_msgs::msg::JointState::SharedPtr jointStates) {
-  current_joint_states_ = jointStates;
 }
 
 moveit::core::RobotStatePtr DynupIK::get_goal_state() { return goal_state_; }

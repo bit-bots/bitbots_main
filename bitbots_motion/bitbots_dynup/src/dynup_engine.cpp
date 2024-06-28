@@ -4,7 +4,11 @@
 
 namespace bitbots_dynup {
 
-DynupEngine::DynupEngine(rclcpp::Node::SharedPtr node) : node_(node) {
+DynupEngine::DynupEngine(rclcpp::Node::SharedPtr node, bitbots_dynup::Params::Engine params)
+    : node_(node),
+      params_(params),
+      offset_left_(tf2::Transform::getIdentity()),
+      offset_right_(tf2::Transform::getIdentity()) {
   pub_engine_debug_ = node_->create_publisher<bitbots_dynup::msg::DynupEngineDebug>("dynup_engine_debug", 1);
   pub_debug_marker_ = node_->create_publisher<visualization_msgs::msg::Marker>("dynup_engine_marker", 1);
   // We need a separate node for the parameter client because the parameter client adds the node to an executor
@@ -15,7 +19,7 @@ DynupEngine::DynupEngine(rclcpp::Node::SharedPtr node) : node_(node) {
 
 void DynupEngine::init(double arm_offset_y, double arm_offset_z) {
   // this are just the offsets to the shoulder, we need to apply some additional offset to prevent collisions
-  shoulder_offset_y_ = arm_offset_y;
+  arm_offset_y_ = arm_offset_y;
   arm_offset_z_ = arm_offset_z;
   setParams(params_);
 
@@ -50,7 +54,7 @@ void DynupEngine::publishDebug() {
 
   msg.time = time_;
   msg.stabilization_active = isStabilizingNeeded();
-  if (direction_ == 1) {
+  if (direction_ == DynupDirection::FRONT or direction_ == DynupDirection::FRONT_ONLY) {
     if (time_ < params_.dynup_front.time_hands_side) {
       msg.state_number = 0;
     } else if (time_ < params_.dynup_front.time_hands_side + params_.dynup_front.time_hands_rotate) {
@@ -82,7 +86,7 @@ void DynupEngine::publishDebug() {
     } else {
       msg.state_number = 8;
     }
-  } else if (direction_ == 0) {
+  } else if (direction_ == DynupDirection::BACK or direction_ == DynupDirection::BACK_ONLY) {
     if (time_ < params_.dynup_back.time_legs_close) {
       msg.state_number = 0;
     } else if (time_ < params_.dynup_back.time_legs_close + params_.dynup_back.time_foot_ground_back) {
@@ -573,10 +577,10 @@ double DynupEngine::calcBackSplines() {
   return time;
 }
 
-double DynupEngine::calcRiseSplines(double time) {
+double DynupEngine::calcWalkreadySplines(double time, double travel_time) {
   // all positions relative to right foot
   // foot_trajectories_ are for left foot
-  time += params_.rise.rise_time;
+  time += travel_time;
   l_foot_spline_.x()->addPoint(time, 0);
   l_foot_spline_.y()->addPoint(time, params_.end_pose.foot_distance);
   l_foot_spline_.z()->addPoint(time, 0);
@@ -644,9 +648,9 @@ void DynupEngine::setGoals(const DynupRequest &goals) {
   // we use hand splines from shoulder frame instead of base_link
   geometry_msgs::msg::Pose l_hand = goals.l_hand_pose;
   geometry_msgs::msg::Pose r_hand = goals.r_hand_pose;
-  l_hand.position.y -= shoulder_offset_y_;
+  l_hand.position.y -= arm_offset_y_;
   l_hand.position.z -= arm_offset_z_;
-  r_hand.position.y += shoulder_offset_y_;
+  r_hand.position.y += arm_offset_y_;
   r_hand.position.z -= arm_offset_z_;
   // l_foot_spline_ is defined relative to r_foot_spline_, while all others are relative to base_link
   l_hand_spline_ = initializeSpline(l_hand, l_hand_spline_);
@@ -690,39 +694,37 @@ void DynupEngine::setGoals(const DynupRequest &goals) {
     params_.end_pose.trunk_x_final = trunk_x_final;
   }
 
-  if (goals.direction == "front") {
-    // add front and rise splines together
-    double time = calcFrontSplines();
-    duration_ = calcRiseSplines(time);
-    direction_ = 1;
-  } else if (goals.direction == "back") {
-    // add back and rise splines together
-    double time = calcBackSplines();
-    duration_ = calcRiseSplines(time);
-    direction_ = 0;
-  } else if (goals.direction == "front-only") {
-    duration_ = calcFrontSplines();
-    direction_ = 1;
-  } else if (goals.direction == "back-only") {
-    duration_ = calcBackSplines();
-    direction_ = 0;
-  } else if (goals.direction == "rise") {
-    duration_ = calcRiseSplines(0);
-    direction_ = 2;
-  } else if (goals.direction == "descend") {
-    duration_ = calcDescendSplines(0);
-    direction_ = 3;
-  } else if (goals.direction == "front_only") {
-    duration_ = calcFrontSplines();
-    direction_ = 4;
-  } else if (goals.direction == "back_only") {
-    duration_ = calcBackSplines();
-    direction_ = 5;
-  } else if (goals.direction == "walkready") {
-    duration_ = calcRiseSplines(params_.dynup_front.time_walkready);
-    direction_ = 6;
-  } else {
-    RCLCPP_ERROR(node_->get_logger(), "Provided direction not known");
+  direction_ = goals.direction;
+  switch (direction_) {
+    case DynupDirection::FRONT: {
+      // add front and rise splines together
+      double time = calcFrontSplines();
+      duration_ = calcWalkreadySplines(time, params_.rise.rise_time);
+      break;
+    }
+    case DynupDirection::BACK: {
+      // add back and rise splines together
+      double time = calcBackSplines();
+      duration_ = calcWalkreadySplines(time, params_.rise.rise_time);
+      break;
+    }
+    case DynupDirection::FRONT_ONLY:
+      duration_ = calcFrontSplines();
+      break;
+    case DynupDirection::BACK_ONLY:
+      duration_ = calcBackSplines();
+      break;
+    case DynupDirection::RISE:
+      duration_ = calcWalkreadySplines(0, params_.rise.rise_time);
+      break;
+    case DynupDirection::DESCEND:
+      duration_ = calcDescendSplines();
+      break;
+    case DynupDirection::WALKREADY:
+      duration_ = calcWalkreadySplines(0, params_.walkready.travel_time);
+      break;
+    default:
+      RCLCPP_ERROR(node_->get_logger(), "Provided direction not known");
   }
 }
 
@@ -732,28 +734,31 @@ double DynupEngine::getDuration() const { return duration_; }
 
 /*Calculates if we are at a point of the animation where stabilizing should be applied. */
 bool DynupEngine::isStabilizingNeeded() {
-  return ((direction_ == 1 && time_ >= params_.dynup_front.time_hands_side + params_.dynup_front.time_hands_rotate +
-                                           params_.dynup_front.time_foot_close + params_.dynup_front.time_hands_front +
-                                           params_.dynup_front.time_foot_ground_front +
-                                           params_.dynup_front.time_torso_45 + params_.dynup_front.time_to_squat) ||
-          (direction_ == 0 && time_ >= params_.dynup_back.time_legs_close + params_.dynup_back.time_foot_ground_back +
-                                           params_.dynup_back.time_full_squat_hands +
-                                           params_.dynup_back.time_full_squat_legs) ||
-          (direction_ == 2) || (direction_ == 3));
+  return (((direction_ == DynupDirection::FRONT or direction_ == DynupDirection::FRONT_ONLY) and
+           time_ >= params_.dynup_front.time_hands_side +
+                        params_.dynup_front.time_hands_rotate +  // TODO fix int direction number
+                        params_.dynup_front.time_foot_close + params_.dynup_front.time_hands_front +
+                        params_.dynup_front.time_foot_ground_front + params_.dynup_front.time_torso_45 +
+                        params_.dynup_front.time_to_squat) or
+          ((direction_ == DynupDirection::BACK or direction_ == DynupDirection::BACK_ONLY) and
+           time_ >= params_.dynup_back.time_legs_close + params_.dynup_back.time_foot_ground_back +
+                        params_.dynup_back.time_full_squat_hands + params_.dynup_back.time_full_squat_legs) or
+          (direction_ == DynupDirection::RISE) or (direction_ == DynupDirection::DESCEND));
 }
 
 bool DynupEngine::isHeadZero() {
   // set heads zero in the middle of rise phase
-  return ((direction_ == 1 && time_ >= params_.dynup_front.time_hands_side + params_.dynup_front.time_hands_rotate +
-                                           params_.dynup_front.time_foot_close + params_.dynup_front.time_hands_front +
-                                           params_.dynup_front.time_foot_ground_front +
-                                           params_.dynup_front.time_torso_45 + params_.dynup_front.time_to_squat +
-                                           params_.dynup_front.wait_in_squat_front + 0.5 * params_.rise.rise_time) ||
-          (direction_ == 0 && time_ >= params_.dynup_back.time_legs_close + params_.dynup_back.time_foot_ground_back +
-                                           params_.dynup_back.time_full_squat_hands +
-                                           params_.dynup_back.time_full_squat_legs +
-                                           params_.dynup_back.wait_in_squat_back + 0.5 * params_.rise.rise_time) ||
-          (direction_ == 2) || (direction_ == 3));
+  return (((direction_ == DynupDirection::FRONT or direction_ == DynupDirection::FRONT_ONLY) and
+           time_ >= params_.dynup_front.time_hands_side + params_.dynup_front.time_hands_rotate +
+                        params_.dynup_front.time_foot_close + params_.dynup_front.time_hands_front +
+                        params_.dynup_front.time_foot_ground_front + params_.dynup_front.time_torso_45 +
+                        params_.dynup_front.time_to_squat + params_.dynup_front.wait_in_squat_front +
+                        0.5 * params_.rise.rise_time) or
+          ((direction_ == DynupDirection::BACK or direction_ == DynupDirection::BACK_ONLY) and
+           time_ >= params_.dynup_back.time_legs_close + params_.dynup_back.time_foot_ground_back +
+                        params_.dynup_back.time_full_squat_hands + params_.dynup_back.time_full_squat_legs +
+                        params_.dynup_back.wait_in_squat_back + 0.5 * params_.rise.rise_time) or
+          (direction_ == DynupDirection::RISE) or (direction_ == DynupDirection::DESCEND));
 }
 
 bitbots_splines::PoseSpline DynupEngine::getRFootSplines() const { return r_foot_spline_; }
@@ -766,11 +771,10 @@ bitbots_splines::PoseSpline DynupEngine::getLHandSplines() const { return l_hand
 
 void DynupEngine::setParams(bitbots_dynup::Params::Engine params) {
   params_ = params;
-  arm_offset_y_ = shoulder_offset_y_;
   offset_left_ = tf2::Transform(tf2::Quaternion(0, 0, 0, 1), {0, arm_offset_y_, arm_offset_z_});
   offset_right_ = tf2::Transform(tf2::Quaternion(0, 0, 0, 1), {0, -arm_offset_y_, arm_offset_z_});
 }
 
-int DynupEngine::getDirection() { return direction_; }
+DynupDirection DynupEngine::getDirection() { return direction_; }
 
 }  // namespace bitbots_dynup

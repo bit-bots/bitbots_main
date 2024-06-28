@@ -17,9 +17,6 @@ WalkNode::WalkNode(rclcpp::Node::SharedPtr node, const std::string& ns, std::vec
       stabilizer_(node_),
       ik_(node_, config_.node.ik),
       visualizer_(node_, config_.node.tf) {
-  // Process the parameters
-  updateParams();
-
   // Create dummy node for moveit
   auto moveit_node = std::make_shared<rclcpp::Node>(ns + "walking_moveit_node");
 
@@ -66,6 +63,9 @@ WalkNode::WalkNode(rclcpp::Node::SharedPtr node, const std::string& ns, std::vec
     RCLCPP_FATAL(node_->get_logger(), "No robot model loaded, killing quintic walk.");
     exit(1);
   }
+
+  // Process the parameters
+  updateParams();
 
   /* init publisher and subscriber */
   pub_controller_command_ = node_->create_publisher<bitbots_msgs::msg::JointCommand>("walking_motor_goals", 1);
