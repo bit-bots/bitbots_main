@@ -8,7 +8,7 @@ This results in a significant speedup compared to running the networks on the CP
 Installation on the robot
 --------------------------
 
-- Follow the install/build `guide <https://tvm.apache.org/docs/install/from_source.html/>`_
+- Follow the install/build `guide <https://tvm.apache.org/docs/install/from_source.html#developers-get-source-from-github>`_
     - Install Vulkan SDK with this `script <https://github.com/apache/tvm/blob/main/docker/install/ubuntu_install_vulkan.sh/>`_ in `docker/install` in the TVM repo
     - Change `build/config.cmake` to enable profiling, llvm and vulkan during TVM build
 - Install helpful Vulkan tools 
