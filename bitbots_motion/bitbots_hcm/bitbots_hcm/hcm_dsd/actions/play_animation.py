@@ -185,10 +185,9 @@ class PlayAnimationDynup(AbstractHCMActionElement):
         Cancel the current goal when the action is popped
         """
         super().on_pop()
-        self.blackboard.node.get_logger().warn("Canceling dynup action")
         if not self.animation_finished():
             self.blackboard.dynup_action_current_goal.result().cancel_goal_async()
-            self.blackboard.node.get_logger().warn("Canceling dynup action successful")
+            self.blackboard.node.get_logger().info("Canceling dynup")
 
     def start_animation(self):
         """
