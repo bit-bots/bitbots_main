@@ -392,6 +392,10 @@ void WalkNode::stepCb(const geometry_msgs::msg::Twist::SharedPtr msg) {
 void WalkNode::cmdVelCb(const geometry_msgs::msg::Twist::SharedPtr msg) {
   got_new_goals_ = true;
   current_request_.single_step = false;
+  // we want to add a bias, because the robots usually move a bit to much forward, but it can be adjustd
+  // TODO:
+  msg->linear.x += config_.node.x_bias;
+  msg->linear.y += config_.node.y_bias;
 
   // we use only 3 values from the twist messages, as the robot is not capable of jumping or spinning around its
   // other axis.

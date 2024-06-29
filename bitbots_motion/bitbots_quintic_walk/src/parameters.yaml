@@ -336,3 +336,15 @@ walking:
           type: bool
           description: "Activate antiwindup for the trunk roll PID controller"
           default_value: false
+    x_bias:
+      type: double
+      description: "X bias for the command velocity which is received by the walk node. "
+      default_value: 0.0
+      validation:
+        bounds<>: [-0.1, 0.1]
+    y_bias:
+      type: double
+      description: "Y bias for the command velocity which is received by the walk node. "
+      default_value: 0.0
+      validation:
+        bounds<>: [-0.1, 0.1]
