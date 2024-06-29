@@ -747,17 +747,15 @@ bool DynupEngine::isStabilizingNeeded() {
 }
 
 bool DynupEngine::isHeadZero() {
-  // set heads zero in the middle of rise phase
+  // set heads zero if we are upright
   return (((direction_ == DynupDirection::FRONT or direction_ == DynupDirection::FRONT_ONLY) and
            time_ >= params_.dynup_front.time_hands_side + params_.dynup_front.time_hands_rotate +
                         params_.dynup_front.time_foot_close + params_.dynup_front.time_hands_front +
                         params_.dynup_front.time_foot_ground_front + params_.dynup_front.time_torso_45 +
-                        params_.dynup_front.time_to_squat + params_.dynup_front.wait_in_squat_front +
-                        0.5 * params_.rise.rise_time) or
+                        params_.dynup_front.time_to_squat) or
           ((direction_ == DynupDirection::BACK or direction_ == DynupDirection::BACK_ONLY) and
            time_ >= params_.dynup_back.time_legs_close + params_.dynup_back.time_foot_ground_back +
-                        params_.dynup_back.time_full_squat_hands + params_.dynup_back.time_full_squat_legs +
-                        params_.dynup_back.wait_in_squat_back + 0.5 * params_.rise.rise_time) or
+                        params_.dynup_back.time_full_squat_hands + params_.dynup_back.time_full_squat_legs) or
           (direction_ == DynupDirection::RISE) or (direction_ == DynupDirection::DESCEND));
 }
 

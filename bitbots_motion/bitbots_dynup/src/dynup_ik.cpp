@@ -82,18 +82,16 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
       } else if (result.first[i] == "HeadTilt") {
         if (ik_goals.is_head_zero) {
           result.second[i] = 0;
+        } else if (direction_ == DynupDirection::FRONT or direction_ == DynupDirection::FRONT_ONLY) {
+          result.second[i] = 1.0;
+        } else if (direction_ == DynupDirection::BACK or direction_ == DynupDirection::BACK_ONLY) {
+          result.second[i] = -1.5;
+        } else if (direction_ == DynupDirection::WALKREADY) {
+          // remove head from the goals so that we can move it freely
+          result.first.erase(result.first.begin() + i);
+          result.second.erase(result.second.begin() + i);
         } else {
-          if (direction_ == DynupDirection::FRONT or direction_ == DynupDirection::FRONT_ONLY) {
-            result.second[i] = 1.0;
-          } else if (direction_ == DynupDirection::BACK or direction_ == DynupDirection::BACK_ONLY) {
-            result.second[i] = -1.5;
-          } else if (direction_ == DynupDirection::WALKREADY) {
-            // remove head from the goals so that we can move it freely
-            result.first.erase(result.first.begin() + i);
-            result.second.erase(result.second.begin() + i);
-          } else {
-            result.second[i] = 0;
-          }
+          result.second[i] = 0;
         }
       }
     }
