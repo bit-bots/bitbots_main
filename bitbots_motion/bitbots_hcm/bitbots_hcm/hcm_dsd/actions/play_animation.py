@@ -152,8 +152,14 @@ class PlayAnimationDynup(AbstractHCMActionElement):
         self.first_perform = True
 
     def perform(self, reevaluate=False):
-        # deactivate falling since it will be wrongly detected
-        self.do_not_reevaluate()
+        # deactivate the falling/fallen detection when a standup animation is running
+        if self.direction in [
+            Dynup.Goal.DIRECTION_FRONT,
+            Dynup.Goal.DIRECTION_BACK,
+            Dynup.Goal.DIRECTION_FRONT_ONLY,
+            Dynup.Goal.DIRECTION_BACK_ONLY,
+        ]:
+            self.do_not_reevaluate()
 
         # We only want to execute this once
         if self.first_perform:
@@ -173,6 +179,14 @@ class PlayAnimationDynup(AbstractHCMActionElement):
         if self.animation_finished():
             # we are finished playing this animation
             return self.pop()
+
+    def on_pop(self):
+        """
+        Cancel the current goal when the action is popped
+        """
+        super().on_pop()
+        if not self.animation_finished():
+            self.blackboard.dynup_action_current_goal.result().cancel_goal_async()
 
     def start_animation(self):
         """

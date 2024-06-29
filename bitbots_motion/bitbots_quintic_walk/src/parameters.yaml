@@ -215,6 +215,24 @@ walking:
       description: "Speed multiplier for yaw direction to calibrate the cmd_vel input"
       validation:
         bounds<>: [0.0, 5.0]
+    x_bias:
+      type: double
+      description: "X bias for the command velocity which is received by the walk node. "
+      default_value: 0.0
+      validation:
+        bounds<>: [-0.1, 0.1]
+    y_bias:
+      type: double
+      description: "Y bias for the command velocity which is received by the walk node. "
+      default_value: 0.0
+      validation:
+        bounds<>: [-0.1, 0.1]
+    yaw_bias:
+      type: double
+      description: "Yaw bias for the command velocity which is received by the walk node. "
+      default_value: 0.0
+      validation:
+        bounds<>: [-0.4, 0.4]
     stability_stop:
       imu:
         active:

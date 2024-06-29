@@ -268,7 +268,7 @@ void DynupNode::loopEngine(int loop_rate, std::shared_ptr<DynupGoalHandle> goal_
       return;
     }
     if (msg.joint_names.empty()) {
-      break;
+      continue;
     }
     joint_goal_publisher_->publish(msg);
     node_->get_clock()->sleep_until(startTime + rclcpp::Duration::from_nanoseconds(1e9 / loop_rate));
