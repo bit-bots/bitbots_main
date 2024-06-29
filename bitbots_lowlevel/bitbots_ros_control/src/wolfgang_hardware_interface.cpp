@@ -301,23 +301,30 @@ void threaded_write(const std::vector<HardwareInterface *> &port_interfaces, con
 void WolfgangHardwareInterface::write(const rclcpp::Time &t, const rclcpp::Duration &dt) {
   if (core_present_ && !last_power_status_ && current_power_status_ &&
       nh_->get_parameter("servos.set_ROM_RAM").as_bool()) {
-    // when we can read the power and see that it was just switched on, we write the ROM RAM again
-    servo_interface_.writeROMRAM(false);
-  } else if (core_present_ && !current_power_status_) {
-    // if power is off only write CORE
-    core_interface_->write(t, dt);
-  } else {
-    // write all controller values to interfaces
-    servo_interface_.write(t, dt);
-    std::vector<std::thread> threads;
-    // start all writes
-    for (std::vector<HardwareInterface *> &port_interfaces : interfaces_) {
-      threads.push_back(std::thread(threaded_write, std::ref(port_interfaces), std::ref(t), std::ref(dt)));
+    motor_start_time_ = t + rclcpp::Duration::from_seconds(nh_->get_parameter("servos.start_delay").as_double());
+    motor_first_write_ = true;
+  }
+  if (t > motor_start_time_) {
+    if (motor_first_write_) {
+      servo_interface_.writeROMRAM(false);
+      motor_first_write_ = false;
     }
+    if (core_present_ && !current_power_status_) {
+      // if power is off only write CORE
+      core_interface_->write(t, dt);
+    } else {
+      // write all controller values to interfaces
+      servo_interface_.write(t, dt);
+      std::vector<std::thread> threads;
+      // start all writes
+      for (std::vector<HardwareInterface *> &port_interfaces : interfaces_) {
+        threads.push_back(std::thread(threaded_write, std::ref(port_interfaces), std::ref(t), std::ref(dt)));
+      }
 
-    // wait for all writes to finish
-    for (std::thread &thread : threads) {
-      thread.join();
+      // wait for all writes to finish
+      for (std::thread &thread : threads) {
+        thread.join();
+      }
     }
   }
 }
