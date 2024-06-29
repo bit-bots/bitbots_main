@@ -179,7 +179,7 @@ class PlayAnimationDynup(AbstractHCMActionElement):
         if self.animation_finished():
             # we are finished playing this animation
             return self.pop()
-    
+
     def on_pop(self):
         """
         Cancel the current goal when the action is popped

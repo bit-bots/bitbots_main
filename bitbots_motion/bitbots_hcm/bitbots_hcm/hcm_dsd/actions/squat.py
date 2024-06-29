@@ -1,5 +1,5 @@
-
 from bitbots_hcm.hcm_dsd.actions import AbstractHCMActionElement
+
 
 class SetSquat(AbstractHCMActionElement):
     """
@@ -11,7 +11,7 @@ class SetSquat(AbstractHCMActionElement):
 
         # Check if parameters are valid
         assert "squat" in parameters, "No squat parameter given"
-        assert type(parameters["squat"]) == bool, "Squat parameter is not a bool"
+        assert isinstance(parameters["squat"], bool), "Squat parameter is not a boolean"
 
         # Set state in blackboard
         self.blackboard.in_squat = parameters["squat"]
