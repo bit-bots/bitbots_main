@@ -152,7 +152,7 @@ class PlayAnimationDynup(AbstractHCMActionElement):
         self.first_perform = True
 
     def perform(self, reevaluate=False):
-        # Deactivate do not interrupt certain actions due to e.g. the falling detection, because we might be in an unstable state
+        # deactivate the falling/fallen detection when a standup animation is running
         if self.direction in [
             Dynup.Goal.DIRECTION_FRONT,
             Dynup.Goal.DIRECTION_BACK,
