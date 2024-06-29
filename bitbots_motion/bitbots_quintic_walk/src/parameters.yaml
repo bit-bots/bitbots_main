@@ -348,3 +348,9 @@ walking:
       default_value: 0.0
       validation:
         bounds<>: [-0.1, 0.1]
+    yaw_bias:
+      type: double
+      description: "Yaw bias for the command velocity which is received by the walk node. "
+      default_value: 0.0
+      validation:
+        bounds<>: [-0.4, 0.4]

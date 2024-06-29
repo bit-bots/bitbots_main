@@ -349,9 +349,10 @@ std::array<double, 4> WalkNode::get_step_from_vel(const geometry_msgs::msg::Twis
   // the sidewards movement only does one step per double step, since the second foot only goes back to the initial
   // pose therefore we need to multiply it by 2 furthermore, the engine does not really reach the correct goal
   // speed, dependent on the parameters
-  std::array<double, 4> step = {msg->linear.x * factor * config_.node.x_speed_multiplier,
-                                msg->linear.y * factor * 2 * config_.node.y_speed_multiplier, msg->linear.z * factor,
-                                msg->angular.z * factor * config_.node.yaw_speed_multiplier};
+  std::array<double, 4> step = {msg->linear.x * factor * config_.node.x_speed_multiplier + config_.node.x_bias,
+                                msg->linear.y * factor * 2 * config_.node.y_speed_multiplier + config_.node.y_bias,
+                                msg->linear.z * factor,
+                                msg->angular.z * factor * config_.node.yaw_speed_multiplier + config_.node.yaw_bias};
 
   // the orders should not extend beyond a maximal step size
   step[0] = std::clamp(step[0], -config_.node.max_step_x, config_.node.max_step_x);
@@ -392,10 +393,6 @@ void WalkNode::stepCb(const geometry_msgs::msg::Twist::SharedPtr msg) {
 void WalkNode::cmdVelCb(const geometry_msgs::msg::Twist::SharedPtr msg) {
   got_new_goals_ = true;
   current_request_.single_step = false;
-  // we want to add a bias, because the robots usually move a bit to much forward, but it can be adjustd
-  // TODO:
-  msg->linear.x += config_.node.x_bias;
-  msg->linear.y += config_.node.y_bias;
 
   // we use only 3 values from the twist messages, as the robot is not capable of jumping or spinning around its
   // other axis.
