@@ -3,7 +3,7 @@ from bitbots_hcm.hcm_dsd.decisions import AbstractHCMDecisionElement
 
 class InSquat(AbstractHCMDecisionElement):
     """
-    Decides if the robot is currently recording animations
+    Decides if the robot is currently in a squatting position
     """
 
     def perform(self, reevaluate=False):
