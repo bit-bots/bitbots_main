@@ -16,8 +16,6 @@
         </node>
     </group>
 
-    <node pkg="bitbots_hcm" exec="pause.py" />
-
     <group unless="$(var sim)">
         <node pkg="bitbots_hcm" exec="hcm_led.py" />
     </group>
