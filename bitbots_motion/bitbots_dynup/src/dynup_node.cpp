@@ -5,7 +5,6 @@ using namespace std::chrono_literals;
 
 DynupNode::DynupNode(rclcpp::Node::SharedPtr node, const std::string &ns, std::vector<rclcpp::Parameter> parameters)
     : node_(node),
-      debug_publisher_(node_->create_publisher<visualization_msgs::msg::Marker>("debug_markers", 1)),
       joint_goal_publisher_(node_->create_publisher<bitbots_msgs::msg::JointCommand>("dynup_motor_goals", 1)),
       imu_subscriber_(node_->create_subscription<sensor_msgs::msg::Imu>("imu/data", 1,
                                                                         std::bind(&DynupNode::imuCallback, this, _1))),

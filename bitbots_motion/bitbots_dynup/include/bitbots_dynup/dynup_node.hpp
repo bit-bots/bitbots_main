@@ -93,7 +93,6 @@ class DynupNode {
   // Store reference to the "real" node
   rclcpp::Node::SharedPtr node_;
 
-  rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr debug_publisher_;
   rclcpp::Publisher<bitbots_msgs::msg::JointCommand>::SharedPtr joint_goal_publisher_;
   rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_subscriber_;
 
