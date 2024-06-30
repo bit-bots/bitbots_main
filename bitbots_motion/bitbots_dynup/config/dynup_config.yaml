@@ -125,7 +125,7 @@ bitbots_dynup:
       trunk_height_back:
         type: double
         description: "When fallen to the back: trunk height"
-        default_value: 0.179
+        default_value: 0.2
         validation:
           bounds<>: [0.179, 1.0]
       trunk_overshoot_angle_back:
@@ -231,7 +231,7 @@ bitbots_dynup:
       rise_time:
         type: double
         description: "Time to rise in seconds"
-        default_value: 1.0
+        default_value: 4.0
         validation:
           bounds<>: [0.0, 10.0]
 
