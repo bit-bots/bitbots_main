@@ -47,20 +47,21 @@ def num_to_emoji(num: int) -> str:
     return f'{"".join([emoji_numbers[int(digit)] for digit in str(num)])} '
 
 
-def move_to_joint_position(publisher: Publisher, joint_goals: dict[str, float]):
+def move_to_joint_position(publisher: Publisher, joint_goals: dict[str, float], offsets=True):
     assert set(joint_goals.keys()) <= set(JOINT_NAMES), "Joint goals do not match the robots joints"
 
     # Init all joints with 0
     all_joint_goals = {joint: 0.0 for joint in JOINT_NAMES}
     all_joint_goals.update(joint_goals)
 
-    # offsets for straight legs
-    all_joint_goals["LHipPitch"] -= 0.327
-    all_joint_goals["RHipPitch"] += 0.327
-    all_joint_goals["LKnee"] -= 0.097
-    all_joint_goals["RKnee"] += 0.097
-    all_joint_goals["LAnklePitch"] += 0.084
-    all_joint_goals["RAnklePitch"] -= 0.084
+    if offsets:
+        # offsets for straight legs
+        all_joint_goals["LHipPitch"] -= 0.327
+        all_joint_goals["RHipPitch"] += 0.327
+        all_joint_goals["LKnee"] -= 0.097
+        all_joint_goals["RKnee"] += 0.097
+        all_joint_goals["LAnklePitch"] += 0.084
+        all_joint_goals["RAnklePitch"] -= 0.084
 
     publisher.publish(
         JointCommand(
@@ -428,8 +429,67 @@ def main():
             f"{Style.BRIGHT}Press enter to continue.{Style.RESET_ALL}"
         )
 
-        # Move back to init
-        move_to_joint_position(pub, {})
+        ###########
+        # Ankles #
+        ##########
+
+        input(
+            f"\n{Fore.YELLOW}{num_to_emoji(step)}: The robot will now move {Style.BRIGHT}back and lift its feet.{Style.RESET_ALL}\n"
+            f"{Fore.RED}Make sure to pick the robot up and keep clear!{Style.RESET_ALL}\n\n"
+            f"{Style.BRIGHT}Press enter to move.{Style.RESET_ALL}"
+        )
+
+        move_to_joint_position(
+            pub,
+            {
+                "LAnklePitch": -math.pi / 4,
+                "RAnklePitch": math.pi / 4,
+            },
+        )
+
+        input(
+            f"{Style.BRIGHT}\nChecks:{Style.RESET_ALL}\n"
+            f"- Check that the feet are lifted at a 45 degree angle\n"
+            f"{Style.BRIGHT}Press enter to continue.{Style.RESET_ALL}"
+        )
+
+        input(
+            f"\n{Fore.YELLOW}{num_to_emoji(step)}: The robot will now move its {Style.BRIGHT}ankles.{Style.RESET_ALL}\n"
+            f"{Fore.RED}Make sure to pick the robot up and keep clear!{Style.RESET_ALL}\n\n"
+            f"{Style.BRIGHT}Press enter to move.{Style.RESET_ALL}"
+        )
+
+        move_to_joint_position(
+            pub,
+            {
+                "LAnkleRoll": -math.pi / 2,
+                "RAnkleRoll": math.pi / 2,
+            },
+        )
+
+        input(
+            f"{Style.BRIGHT}\nChecks:{Style.RESET_ALL}\n"
+            f"- Check that the feet are rolled to the side at a 90 degree angle\n"
+            f"{Style.BRIGHT}Press enter to continue.{Style.RESET_ALL}"
+        )
+
+        ########
+        # Zero #
+        ########
+
+        input(
+            f"{Fore.YELLOW}{num_to_emoji(step)}: The robot will now move into a {Style.BRIGHT}zero-position.{Style.RESET_ALL}\n\n"
+            f"{Style.BRIGHT}Press enter to move."
+        )
+
+        move_to_joint_position(pub, {}, False)
+        input(
+            f"{Style.BRIGHT}\nChecks:{Style.RESET_ALL}\n"
+            "- Check that all motors are mounted at their zero-position.\n"
+            "- Check that both sides of the robot are symmetrical.\n"
+            "- Check for backlash and loose parts.\n"
+            f"{Style.BRIGHT}Press enter to continue.{Style.RESET_ALL}"
+        )
 
         print(
             f"\n\n{Fore.GREEN}If you have reached this point, the robot is hopefully in good shape and ready to go! GLHF"
