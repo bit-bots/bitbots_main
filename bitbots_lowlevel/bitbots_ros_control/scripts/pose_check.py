@@ -103,7 +103,7 @@ def main():
             f"{Fore.YELLOW}{num_to_emoji(step)}: The robot will now move into a {Style.BRIGHT}t-pose.{Style.RESET_ALL} 🥵\n\n"
             f"{Style.BRIGHT}Press enter to move."
         )
-        #################### ARMS ####################
+        #################### ARMS and HEAD ####################
 
         ##########
         # T-Pose #
@@ -132,7 +132,7 @@ def main():
 
         step += 1
         input(
-            f"\n{Fore.YELLOW}{num_to_emoji(step)}: The robot will now move {Style.BRIGHT}its arms up.{Style.RESET_ALL}\n"
+            f"\n{Fore.YELLOW}{num_to_emoji(step)}: The robot will now move {Style.BRIGHT}its arms up and its head to the right.{Style.RESET_ALL}\n"
             f"{Style.BRIGHT}Press enter to move.{Style.RESET_ALL}"
         )
 
@@ -143,13 +143,16 @@ def main():
                 "LShoulderRoll": -math.pi,
                 "RElbow": math.pi / 2,
                 "RShoulderRoll": math.pi,
+                "HeadPan": -math.pi / 2,
             },
         )
 
         input(
             f"{Style.BRIGHT}\nChecks:{Style.RESET_ALL}\n"
             "- Check that all limbs are straight.\n"
-            "- Check that both sides of the robot are symmetrical.\n"
+            "- Check that both arms are symmetrical.\n"
+            "- Check that the head looks 90 degrees to the right.\n"
+            "- Check that the head is horizontal.\n"
             "- Check for backlash and loose parts.\n"
             f"{Style.BRIGHT}Press enter to continue.{Style.RESET_ALL}"
         )
@@ -160,49 +163,26 @@ def main():
 
         step += 1
         input(
-            f"\n{Fore.YELLOW}{num_to_emoji(step)}: The robot will now move {Style.BRIGHT}its arms to the front.{Style.RESET_ALL}\n"
+            f"\n{Fore.YELLOW}{num_to_emoji(step)}: The robot will now move {Style.BRIGHT}its arms to the front, its elbows to a 90 degree angle, and its headto the left.{Style.RESET_ALL}\n"
             f"{Style.BRIGHT}Press enter to move.{Style.RESET_ALL}"
         )
 
         move_to_joint_position(
             pub,
             {
-                "LElbow": -math.pi / 2,
                 "LShoulderPitch": -math.pi / 2,
-                "RElbow": math.pi / 2,
                 "RShoulderPitch": math.pi / 2,
+                "HeadPan": math.pi / 2,
             },
         )
 
         input(
             f"{Style.BRIGHT}\nChecks:{Style.RESET_ALL}\n"
-            "- Check that all limbs are straight.\n"
-            "- Check that both sides of the robot are symmetrical.\n"
-            "- Check for backlash and loose parts.\n"
-            f"{Style.BRIGHT}Press enter to continue.{Style.RESET_ALL}"
-        )
-
-        #########################
-        # Elbows-90-degree-Pose #
-        #########################
-
-        step += 1
-        input(
-            f"\n{Fore.YELLOW}{num_to_emoji(step)}: The robot will now move {Style.BRIGHT}its elbows to a 90 degree angle.{Style.RESET_ALL}\n"
-            f"{Style.BRIGHT}Press enter to move.{Style.RESET_ALL}"
-        )
-        move_to_joint_position(
-            pub,
-            {
-                "LShoulderPitch": -math.pi / 2,
-                "RShoulderPitch": math.pi / 2,
-            },
-        )
-
-        input(
-            f"{Style.BRIGHT}\nChecks:{Style.RESET_ALL}\n"
+            "- Check that the arms point to the front.\n"
             "- Check that the elbows are at 90 degrees.\n"
-            "- Check that both sides of the robot are symmetrical.\n"
+            "- Check that both arms are symmetrical.\n"
+            "- Check that the head looks 90 degrees to the left.\n"
+            "- Check that the head is horizontal.\n"
             "- Check for backlash and loose parts.\n"
             f"{Style.BRIGHT}Press enter to continue.{Style.RESET_ALL}"
         )
@@ -213,7 +193,7 @@ def main():
 
         step += 1
         input(
-            f"\n{Fore.YELLOW}{num_to_emoji(step)}: The robot will now move {Style.BRIGHT}its arms down again.{Style.RESET_ALL}\n"
+            f"\n{Fore.YELLOW}{num_to_emoji(step)}: The robot will now move {Style.BRIGHT}its arms and its head down.{Style.RESET_ALL}\n"
             f"{Style.BRIGHT}Press enter to move.{Style.RESET_ALL}"
         )
 
@@ -222,91 +202,17 @@ def main():
             {
                 "LElbow": -math.pi / 2,
                 "RElbow": math.pi / 2,
-            },
-        )
-
-        input(
-            f"{Style.BRIGHT}\nChecks:{Style.RESET_ALL}\n"
-            "- Check that all limbs are straight.\n"
-            "- Check that both sides of the robot are symmetrical.\n"
-            "- Check for backlash and loose parts.\n"
-            f"{Style.BRIGHT}Press enter to continue.{Style.RESET_ALL}"
-        )
-
-        #################### HEAD ####################
-
-        ###################
-        # Head-Right-Pose #
-        ###################
-
-        step += 1
-        input(
-            f"\n{Fore.YELLOW}{num_to_emoji(step)}: The robot will now move {Style.BRIGHT}its head to the right and the elbows to 90 degrees.{Style.RESET_ALL}\n"
-            f"{Style.BRIGHT}Press enter to move.{Style.RESET_ALL}"
-        )
-
-        move_to_joint_position(
-            pub,
-            {
-                "HeadPan": -math.pi / 2,
-            },
-        )
-
-        input(
-            f"{Style.BRIGHT}\nChecks:{Style.RESET_ALL}\n"
-            "- Check that the head looks 90 degrees to the right.\n"
-            "- Check that the head is horizontal.\n"
-            "- Check that the head is not loose.\n"
-            f"{Style.BRIGHT}Press enter to continue.{Style.RESET_ALL}"
-        )
-
-        ##################
-        # Head-Left-Pose #
-        ##################
-
-        step += 1
-        input(
-            f"\n{Fore.YELLOW}{num_to_emoji(step)}: The robot will now move {Style.BRIGHT}its head to the left.{Style.RESET_ALL}\n"
-            f"{Style.BRIGHT}Press enter to move.{Style.RESET_ALL}"
-        )
-
-        move_to_joint_position(
-            pub,
-            {
-                "HeadPan": math.pi / 2,
-            },
-        )
-
-        input(
-            f"{Style.BRIGHT}\nChecks:{Style.RESET_ALL}\n"
-            "- Check that the head looks 90 degrees to the left.\n"
-            "- Check that the head is horizontal.\n"
-            "- Check that the head is not loose.\n"
-            f"{Style.BRIGHT}Press enter to continue.{Style.RESET_ALL}"
-        )
-
-        ##################
-        # Head-Down-Pose #
-        ##################
-
-        step += 1
-        input(
-            f"\n{Fore.YELLOW}{num_to_emoji(step)}: The robot will now move {Style.BRIGHT}its head down.{Style.RESET_ALL}\n"
-            f"{Style.BRIGHT}Press enter to move.{Style.RESET_ALL}"
-        )
-
-        move_to_joint_position(
-            pub,
-            {
                 "HeadTilt": -math.pi / 2,
             },
         )
 
         input(
             f"{Style.BRIGHT}\nChecks:{Style.RESET_ALL}\n"
+            "- Check that all limbs are straight.\n"
+            "- Check that both arms are symmetrical.\n"
             "- Check that the head is oriented to the front.\n"
             "- Check that the head looks straight down in reference to the torso.\n"
-            "- Check that the head is not loose.\n"
+            "- Check for backlash and loose parts.\n"
             f"{Style.BRIGHT}Press enter to continue.{Style.RESET_ALL}"
         )
 
