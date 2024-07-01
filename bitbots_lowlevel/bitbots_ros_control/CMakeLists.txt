@@ -15,6 +15,7 @@ find_package(controller_interface REQUIRED)
 find_package(controller_manager REQUIRED)
 find_package(diagnostic_msgs REQUIRED)
 find_package(dynamixel_workbench_toolbox REQUIRED)
+find_package(generate_parameter_library REQUIRED)
 find_package(hardware_interface REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rclcpp REQUIRED)
@@ -26,8 +27,7 @@ find_package(tf2_ros REQUIRED)
 find_package(transmission_interface REQUIRED)
 find_package(yaml-cpp REQUIRED)
 
-set(INCLUDE_DIRS include)
-include_directories(${INCLUDE_DIRS})
+include_directories(include)
 
 set(CMAKE_CXX_STANDARD 17)
 add_compile_options(-Wall -Werror -Wno-unused -pedantic -Wextra)
@@ -70,6 +70,8 @@ ament_target_dependencies(
   transmission_interface
   yaml-cpp)
 
+generate_parameter_library(pressure_converter_parameters
+                           config/pressure_template.yaml)
 add_executable(pressure_converter src/pressure_converter.cpp)
 ament_target_dependencies(
   pressure_converter
@@ -90,9 +92,9 @@ ament_target_dependencies(
   std_msgs
   std_srvs
   tf2_ros
-  transmission_interface
-  yaml-cpp)
-target_link_libraries(pressure_converter yaml-cpp)
+  transmission_interface)
+target_link_libraries(pressure_converter rclcpp::rclcpp
+                      pressure_converter_parameters)
 
 ament_export_dependencies(ament_cmake)
 ament_export_dependencies(bitbots_buttons)
