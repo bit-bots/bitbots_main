@@ -107,6 +107,8 @@ bitbots_msgs::msg::JointCommand DynupNode::step(double dt) {
   // Calculate the joint goals (IK)
   bitbots_splines::JointGoals goals = ik_.calculate(stabilized_response);
 
+  visualizer_.publishIKOffsets(kinematic_model_, stabilized_response, goals);
+
   // Check if we found a solution
   if (goals.first.empty()) {
     failed_tick_counter_++;
