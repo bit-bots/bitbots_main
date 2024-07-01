@@ -50,10 +50,11 @@
         <arg name="viz" value="$(var viz)"/>
     </include>
 
-    <!-- launch the kick -->
-    <include file="$(find-pkg-share bitbots_dynamic_kick)/launch/dynamic_kick.launch">
-        <arg name="sim" value="$(var sim)"/>
-    </include>
+    <!-- launch the kick (currently disabled)
+        <include file="$(find-pkg-share bitbots_dynamic_kick)/launch/dynamic_kick.launch">
+            <arg name="sim" value="$(var sim)"/>
+        </include>
+    -->
 
     <!-- launch dynup -->
     <include file="$(find-pkg-share bitbots_dynup)/launch/dynup.launch">

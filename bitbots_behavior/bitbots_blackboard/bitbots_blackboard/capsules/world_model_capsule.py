@@ -5,6 +5,7 @@ import numpy as np
 import tf2_ros as tf2
 from bitbots_utils.utils import get_parameters_from_other_node
 from geometry_msgs.msg import (
+    Pose,
     PoseStamped,
     PoseWithCovarianceStamped,
     TransformStamped,
@@ -49,15 +50,14 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
         self.map_frame: str = self._node.get_parameter("map_frame").value
 
         # Get body parameters
-        self.ball_lost_time = Duration(seconds=self._node.get_parameter("ball_lost_time").value)
         self.ball_max_covariance = self._node.get_parameter("ball_max_covariance").value
         self.map_margin: float = self._node.get_parameter("map_margin").value
 
         # Ball state
-        self._ball_seen_time: Time = Time(clock_type=ClockType.ROS_TIME)  # Time when the ball was last seen
         self._ball: PointStamped = PointStamped(
             header=Header(stamp=Time(clock_type=ClockType.ROS_TIME), frame_id=self.map_frame)
         )  # The ball in the map frame (default to the center of the field if ball is not seen yet)
+        self._ball_covariance: np.ndarray = np.zeros((2, 2))  # Covariance of the ball
 
         # Publisher for visualization in RViZ
         self.debug_publisher_used_ball = self._node.create_publisher(PointStamped, "debug/behavior/used_ball", 1)
@@ -71,22 +71,12 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
     ############
 
     def ball_seen_self(self) -> bool:
-        """Returns true if we have seen the ball recently (less than ball_lost_time ago)"""
-        return self._node.get_clock().now() - self._ball_seen_time < self.ball_lost_time
-
-    def ball_last_seen(self) -> Time:
-        """
-        Returns the time at which the ball was last seen if it is in the threshold or
-        the more recent ball from either the teammate or itself if teamcomm is available
-        """
-        if self.ball_seen_self():
-            return self._ball_seen_time
-        else:
-            return max(self._ball_seen_time, self._blackboard.team_data.get_teammate_ball_seen_time())
+        """Returns true we are reasonably sure that we have seen the ball"""
+        return all(np.diag(self._ball_covariance) < self.ball_max_covariance)
 
     def ball_has_been_seen(self) -> bool:
-        """Returns true if we or a teammate have seen the ball recently (less than ball_lost_time ago)"""
-        return self._node.get_clock().now() - self.ball_last_seen() < self.ball_lost_time
+        """Returns true if we or a teammate are reasonably sure that we have seen the ball"""
+        return self.ball_seen_self() or self._blackboard.team_data.teammate_ball_is_valid()
 
     def get_ball_position_xy(self) -> Tuple[float, float]:
         """Return the ball saved in the map frame, meaning the absolute position of the ball on the field"""
@@ -108,16 +98,17 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
             self.debug_publisher_which_ball.publish(Header(stamp=teammate_ball.header.stamp, frame_id="teammate_ball"))
             return teammate_ball
 
-        # Otherwise, use the own ball even if it is too old
+        # Otherwise, use the own ball even if it is bad
         if not self.ball_seen_self():
-            self._node.get_logger().warn("Using own ball even though it is too old, as no teammate ball is available")
+            self._node.get_logger().warn("Using own ball even though it is bad, as no teammate ball is available")
         self.debug_publisher_used_ball.publish(own_ball)
         self.debug_publisher_which_ball.publish(Header(stamp=own_ball.header.stamp, frame_id="own_ball_map"))
         return own_ball
 
     def get_ball_position_uv(self) -> Tuple[float, float]:
         """
-        Returns the ball position relative to the robot in the base_footprint frame
+        Returns the ball position relative to the robot in the base_footprint frame.
+        U and V are returned, where positive U is forward, positive V is to the left.
         """
         ball = self.get_best_ball_point_stamped()
         try:
@@ -131,58 +122,50 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
         return ball_bfp.x, ball_bfp.y
 
     def get_ball_distance(self) -> float:
-        ball_pos = self.get_ball_position_uv()
-        if ball_pos is None:
+        """
+        Returns the distance to the ball in meters.
+        """
+        if not (ball_pos := self.get_ball_position_uv()):
             return np.inf  # worst case (very far away)
-        else:
-            u, v = ball_pos
-
+        u, v = ball_pos
         return math.hypot(u, v)
 
     def get_ball_angle(self) -> float:
-        ball_pos = self.get_ball_position_uv()
-        if ball_pos is None:
+        """
+        Returns the angle to the ball in radians.
+        0 is straight ahead, positive is to the left, negative is to the right.
+        """
+        if not (ball_pos := self.get_ball_position_uv()):
             return -math.pi  # worst case (behind robot)
-        else:
-            u, v = ball_pos
+        u, v = ball_pos
         return math.atan2(v, u)
 
     def ball_filtered_callback(self, msg: PoseWithCovarianceStamped):
-        # When the precision is not sufficient, the ball ages.
-        x_sdev = msg.pose.covariance[0]  # position 0,0 in a 6x6-matrix
-        y_sdev = msg.pose.covariance[7]  # position 1,1 in a 6x6-matrix
-        if x_sdev > self.ball_max_covariance or y_sdev > self.ball_max_covariance:
-            self.forget_ball(reset_ball_filter=False)
-            return
-
-        try:
-            self._ball = self._blackboard.tf_buffer.transform(
-                PointStamped(header=msg.header, point=msg.pose.pose.position),
-                self.map_frame,
-                timeout=Duration(seconds=1.0),
-            )
-            # Set timestamps to zero to get the newest transform when this is transformed later
-            self._ball_seen_time = Time.from_msg(msg.header.stamp)
-            self._ball.header.stamp = Time(clock_type=ClockType.ROS_TIME).to_msg()
-
-        except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
-            self._node.get_logger().warn(str(e))
-
-    def forget_ball(self, reset_ball_filter: bool = True) -> None:
         """
-        Forget that we saw a ball, optionally reset the ball filter
-        :param reset_ball_filter: Reset the ball filter, defaults to True
-        :type reset_ball_filter: bool, optional
+        Handles incoming ball messages
         """
-        # Forget own ball
-        self._ball_seen_time = Time(clock_type=ClockType.ROS_TIME)
+        assert msg.header.frame_id == self.map_frame, "Ball needs to be in the map frame"
 
-        if reset_ball_filter:  # Reset the ball filter
-            result: Trigger.Response = self.reset_ball_filter.call(Trigger.Request())
-            if result.success:
-                self._node.get_logger().debug(f"Received message from ball filter: '{result.message}'")
-            else:
-                self._node.get_logger().warn(f"Ball filter reset failed with: '{result.message}'")
+        # Save ball
+        self._ball = PointStamped(
+            header=Header(
+                # Set timestamps to zero to get the newest transform when this is transformed later
+                stamp=Time(clock_type=ClockType.ROS_TIME).to_msg(),
+                frame_id=self.map_frame,
+            ),
+            point=msg.pose.pose.position,
+        )
+
+        # Save covariance (only x and y parts)
+        self._ball_covariance = msg.pose.covariance.reshape((6, 6))[:2, :2]
+
+    def forget_ball(self) -> None:
+        """
+        Forget that we saw a ball
+        """
+        result: Trigger.Response = self.reset_ball_filter.call(Trigger.Request())
+        if not result.success:
+            self._node.get_logger().error(f"Ball filter reset failed with: '{result.message}'")
 
     ########
     # Goal #
@@ -233,8 +216,7 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
         0,0,0 is the center of the field looking in the direction of the opponent goal.
         :returns x,y,theta:
         """
-        transform = self.get_current_position_transform()
-        if transform is None:
+        if not (transform := self.get_current_position_transform()):
             return None
         theta = euler_from_quaternion(numpify(transform.transform.rotation))[2]
         return transform.transform.translation.x, transform.transform.translation.y, theta
@@ -243,17 +225,15 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
         """
         Returns the current position as determined by the localization as a PoseStamped
         """
-        transform = self.get_current_position_transform()
-        if transform is None:
+        if not (transform := self.get_current_position_transform()):
             return None
-        ps = PoseStamped()
-        ps.header = transform.header
-        ps.pose.position = msgify(Point, numpify(transform.transform.translation))
-        ps.pose.orientation.x = transform.transform.rotation.x
-        ps.pose.orientation.y = transform.transform.rotation.y
-        ps.pose.orientation.z = transform.transform.rotation.z
-        ps.pose.orientation.w = transform.transform.rotation.w
-        return ps
+        return PoseStamped(
+            header=transform.header,
+            pose=Pose(
+                position=msgify(Point, numpify(transform.transform.translation)),
+                orientation=transform.transform.rotation,
+            ),
+        )
 
     def get_current_position_transform(self) -> TransformStamped:
         """

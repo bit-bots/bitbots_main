@@ -22,7 +22,7 @@
 namespace bitbots_quintic_walk {
 class WalkVisualizer : public bitbots_splines::AbstractVisualizer {
  public:
-  explicit WalkVisualizer(rclcpp::Node::SharedPtr node);
+  explicit WalkVisualizer(rclcpp::Node::SharedPtr node, walking::Params::Node::Tf tf_config);
 
   void publishArrowMarker(std::string name_space, std::string frame, geometry_msgs::msg::Pose pose, float r, float g,
                           float b, float a);
@@ -37,14 +37,15 @@ class WalkVisualizer : public bitbots_splines::AbstractVisualizer {
  private:
   rclcpp::Node::SharedPtr node_;
 
-  int marker_id_;
+  walking::Params::Node::Tf tf_config_;
+
+  int marker_id_ = 1;
 
   rclcpp::Publisher<bitbots_quintic_walk::msg::WalkDebug>::SharedPtr pub_debug_;
   rclcpp::Publisher<bitbots_quintic_walk::msg::WalkEngineDebug>::SharedPtr pub_engine_debug_;
   rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr pub_debug_marker_;
-  moveit::core::RobotModelPtr kinematic_model_;
 
-  std::string base_link_frame_, l_sole_frame_, r_sole_frame_;
+  moveit::core::RobotModelPtr kinematic_model_;
 };
 }  // namespace bitbots_quintic_walk
 

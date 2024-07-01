@@ -94,6 +94,7 @@ class HcmBlackboard:
         # Paramerters
         self.is_stand_up_active = self.node.get_parameter("stand_up_active").value
         self.falling_detection_active = self.node.get_parameter("falling_active").value
+        self.in_squat: bool = False  # Needed for sequencing of the stand up motion
 
         # Kicking
         # State

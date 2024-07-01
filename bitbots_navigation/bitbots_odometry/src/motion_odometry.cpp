@@ -2,12 +2,14 @@
 
 namespace bitbots_odometry {
 
-MotionOdometry::MotionOdometry() : Node("MotionOdometry"), param_listener_(get_node_parameters_interface()) {
-  tf_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
-  tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_, this);
-  br_ = std::make_unique<tf2_ros::TransformBroadcaster>(this);
-  config_ = param_listener_.get_params();
-
+MotionOdometry::MotionOdometry()
+    : Node("MotionOdometry"),
+      odometry_to_support_foot_(tf2::Transform::getIdentity()),
+      param_listener_(get_node_parameters_interface()),
+      config_(param_listener_.get_params()),
+      tf_buffer_(this->get_clock()),
+      tf_listener_(tf_buffer_, this),
+      br_(std::make_unique<tf2_ros::TransformBroadcaster>(this)) {
   this->declare_parameter<std::string>("base_link_frame", "base_link");
   this->get_parameter("base_link_frame", base_link_frame_);
   this->declare_parameter<std::string>("r_sole_frame", "r_sole");
@@ -17,10 +19,6 @@ MotionOdometry::MotionOdometry() : Node("MotionOdometry"), param_listener_(get_n
   this->declare_parameter<std::string>("odom_frame", "odom");
   this->get_parameter("odom_frame", odom_frame_);
 
-  joint_update_time_ = rclcpp::Time(0);
-  current_support_state_ = -1;
-  previous_support_state_ = -1;
-
   walk_support_state_sub_ = this->create_subscription<biped_interfaces::msg::Phase>(
       "walk_support_state", 1, std::bind(&MotionOdometry::supportCallback, this, _1));
   kick_support_state_sub_ = this->create_subscription<biped_interfaces::msg::Phase>(
@@ -29,18 +27,14 @@ MotionOdometry::MotionOdometry() : Node("MotionOdometry"), param_listener_(get_n
       "walk_engine_odometry", 1, std::bind(&MotionOdometry::odomCallback, this, _1));
 
   pub_odometry_ = this->create_publisher<nav_msgs::msg::Odometry>("motion_odometry", 1);
-  // set the origin to 0. will be set correctly on recieving first support state
-  odometry_to_support_foot_.setOrigin({0, 0, 0});
-  odometry_to_support_foot_.setRotation(tf2::Quaternion(0, 0, 0, 1));
 
-  foot_change_time_ = rclcpp::Time(0, 0, RCL_ROS_TIME);
   previous_support_link_ = r_sole_frame_;
   start_time_ = this->now();
 }
 
 void MotionOdometry::loop() {
   // Wait for tf to be available
-  bitbots_utils::wait_for_tf(this->get_logger(), this->get_clock(), tf_buffer_.get(),
+  bitbots_utils::wait_for_tf(this->get_logger(), this->get_clock(), &tf_buffer_,
                              {base_link_frame_, r_sole_frame_, l_sole_frame_}, base_link_frame_);
 
   rclcpp::Time cycle_start_time = this->now();
@@ -68,8 +62,8 @@ void MotionOdometry::loop() {
       // add the transform between previous and current support link to the odometry transform.
       // we wait a bit for the transform as the joint messages are maybe a bit behind
       geometry_msgs::msg::TransformStamped previous_to_current_support_msg =
-          tf_buffer_->lookupTransform(previous_support_link_, current_support_link_, foot_change_time_,
-                                      rclcpp::Duration::from_nanoseconds(0.1 * 1e9));
+          tf_buffer_.lookupTransform(previous_support_link_, current_support_link_, foot_change_time_,
+                                     rclcpp::Duration::from_nanoseconds(0.1 * 1e9));
       tf2::Transform previous_to_current_support = tf2::Transform();
       tf2::fromMsg(previous_to_current_support_msg.transform, previous_to_current_support);
       // setting translation in z axis, pitch and roll to zero to stop the robot from lifting up
@@ -105,7 +99,7 @@ void MotionOdometry::loop() {
   // publish odometry and if wanted transform to base_link
   try {
     geometry_msgs::msg::TransformStamped current_support_to_base_msg =
-        tf_buffer_->lookupTransform(previous_support_link_, base_link_frame_, rclcpp::Time(0, 0, RCL_ROS_TIME));
+        tf_buffer_.lookupTransform(previous_support_link_, base_link_frame_, rclcpp::Time(0, 0, RCL_ROS_TIME));
     tf2::Transform current_support_to_base;
     tf2::fromMsg(current_support_to_base_msg.transform, current_support_to_base);
     double x = current_support_to_base.getOrigin().x();
@@ -169,8 +163,8 @@ void MotionOdometry::supportCallback(const biped_interfaces::msg::Phase::SharedP
     // we assume that our baseline is on x=0 and y=0
     try {
       geometry_msgs::msg::TransformStamped base_to_current_support_msg =
-          tf_buffer_->lookupTransform(base_link_frame_, current_support_link, rclcpp::Time(0, 0, RCL_ROS_TIME),
-                                      rclcpp::Duration::from_nanoseconds(1e9));
+          tf_buffer_.lookupTransform(base_link_frame_, current_support_link, rclcpp::Time(0, 0, RCL_ROS_TIME),
+                                     rclcpp::Duration::from_nanoseconds(1e9));
       odometry_to_support_foot_.setOrigin({-1 * base_to_current_support_msg.transform.translation.x,
                                            -1 * base_to_current_support_msg.transform.translation.y, 0});
     } catch (tf2::TransformException &ex) {

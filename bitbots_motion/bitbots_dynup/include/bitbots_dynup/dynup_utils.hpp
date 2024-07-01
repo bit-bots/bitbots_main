@@ -4,6 +4,10 @@
 #include <tf2/LinearMath/Transform.h>
 
 #include <geometry_msgs/msg/pose.hpp>
+#include <map>
+#include <string>
+
+namespace bitbots_dynup {
 
 struct DynupResponse {
   tf2::Transform l_foot_goal_pose;  // relative to r_foot_goal_pose
@@ -14,13 +18,19 @@ struct DynupResponse {
   bool is_head_zero;
 };
 
+enum DynupDirection { FRONT = 1, BACK = 0, FRONT_ONLY = 4, BACK_ONLY = 5, RISE = 2, DESCEND = 3, WALKREADY = 6 };
+
+DynupDirection getDynupDirection(const std::string& direction);
+
 struct DynupRequest {
   /* Whether the robot should stand up from the front, back or from squad */
-  std::string direction;
+  DynupDirection direction;
   geometry_msgs::msg::Pose l_foot_pose;  // relative to r_foot_pose
   geometry_msgs::msg::Pose r_foot_pose;
   geometry_msgs::msg::Pose l_hand_pose;
   geometry_msgs::msg::Pose r_hand_pose;
 };
+
+}  // namespace bitbots_dynup
 
 #endif  // BITBOTS_DYNUP_INCLUDE_BITBOTS_DYNUP_DYNUP_UTILS_H_

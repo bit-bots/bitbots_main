@@ -48,10 +48,6 @@ body_behavior:
     # Time to wait in ready state before moving to role position to give the localization time to converge.
     ready_wait_time: 4.0
 
-    # When the ball has not been seen for `ball_lost_time` seconds,
-    # it is considered lost and will be searched
-    ball_lost_time: 3.0
-
     # The orientation threshold defining which range (in Degrees) is acceptable as aligned to the goal (in each direction)
     goal_alignment_orientation_threshold: 5.0
 

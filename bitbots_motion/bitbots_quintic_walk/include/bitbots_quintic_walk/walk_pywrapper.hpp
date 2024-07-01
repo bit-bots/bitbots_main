@@ -46,6 +46,7 @@ class PyWalkWrapper {
   bool reset_and_test_if_speed_possible(py::bytes cmd_vel, double pos_threshold);
 
  private:
+  rclcpp::Node::SharedPtr node_;
   std::shared_ptr<bitbots_quintic_walk::WalkNode> walk_node_;
 };
 

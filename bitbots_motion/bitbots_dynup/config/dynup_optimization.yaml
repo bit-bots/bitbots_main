@@ -2,25 +2,21 @@ dynup:
   ros__parameters:
     # necessary to provide
     engine_rate: 240
-    stabilization_timeout: 10
-
-dynup_pid_trunk_fused_roll:
-  ros__parameters:
-    p: 0.0
-    i: 0.0
-    d: 0.0
-    i_clamp: 0
-    i_clamp_min: 0
-    i_clamp_max: 0
-    antiwindup: True
-    publish_state: False
-dynup_pid_trunk_fused_pitch:
-  ros__parameters:
-    p: 0.0
-    i: 0.0
-    d: 0.0
-    i_clamp: 0
-    i_clamp_min: 0
-    i_clamp_max: 0
-    antiwindup: True
-    publish_state: False
+    stabilizer:
+      end_pause:
+        timeout: 10
+      trunk_pid:
+        pitch:
+          p: 0.0
+          i: 0.0
+          d: 0.0
+          i_clamp_min: 0.0
+          i_clamp_max: 0.0
+          antiwindup: True
+        roll:
+          p: 0.0
+          i: 0.0
+          d: 0.0
+          i_clamp_min: 0.0
+          i_clamp_max: 0.0
+          antiwindup: True

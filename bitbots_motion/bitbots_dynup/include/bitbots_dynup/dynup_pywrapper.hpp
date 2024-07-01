@@ -18,7 +18,7 @@ using namespace ros2_python_extension;
 class PyDynupWrapper {
  public:
   explicit PyDynupWrapper(std::string ns);
-  py::bytes step(double dt, py::bytes &imu_msg, py::bytes &jointstate_msg);
+  py::bytes step(double dt, py::bytes &imu_msg);
   py::bytes step_open_loop(double dt);
   py::bytes get_poses();
   void reset();
@@ -29,7 +29,8 @@ class PyDynupWrapper {
   void set_parameter(const py::bytes params);
 
  private:
-  std::shared_ptr<bitbots_dynup::DynupNode> dynup_node_;
+  rclcpp::Node::SharedPtr node_;
+  std::shared_ptr<bitbots_dynup::DynupNode> dynup_;
 };
 
 #endif  // BITBOTS_DYNUP_BITBOTS_DYNUP_SRC_DYNUP_PYWRAPPER_H

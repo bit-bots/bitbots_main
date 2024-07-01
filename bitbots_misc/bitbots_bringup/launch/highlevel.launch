@@ -1,7 +1,8 @@
 <?xml version="1.0"?>
 <launch>
-    <arg name="behavior" default="true" description="Whether the behavior control system should be started" />
+    <arg name="audio" default="true" description="Whether the audio system should be started"/>
     <arg name="behavior_dsd_file" default="main.dsd" description="The behavior dsd file that should be used" />
+    <arg name="behavior" default="true" description="Whether the behavior control system should be started" />
     <arg name="game_controller" default="true" description="Whether the Gamecontroller module should be started" />
     <arg name="ipm" default="true" description="Whether the inverse perspective mapping should be started"/>
     <arg name="localization" default="true" description="Whether the localization system should be started" />
@@ -9,8 +10,8 @@
     <arg name="sim" default="false" description="Whether the robot is running in simulation or on real hardware" />
     <arg name="teamcom" default="false" description="Whether the team communication system should be started" />
     <arg name="vision" default="true" description="Whether the vision system should be started" />
+    <arg name="workspace_status" default="true" description="Whether to publish the current workspace status"/>
     <arg name="world_model" default="true" description="Whether the world model should be started"/>
-    <arg name="audio" default="true" description="Whether the audio system should be started"/>
 
 
     <!-- launch game controller -->
@@ -88,5 +89,15 @@
         <include file="$(find-pkg-share bitbots_bringup)/launch/audio.launch">
             <arg name="sim" value="$(var sim)" />
         </include>
+    </group>
+
+    <!-- launch workspace status publisher -->
+    <group if="$(var workspace_status)">
+        <group unless="$(var sim)">
+            <node pkg="bitbots_utils" exec="publish_workspace_status.py" output="screen">
+                <param name="workspace_status_path" value="$(find-pkg-share bitbots_utils)/config/workspace_status.json"/>
+                <param name="publish_topic" value="/workspace_status"/>
+            </node>
+        </group>
     </group>
 </launch>

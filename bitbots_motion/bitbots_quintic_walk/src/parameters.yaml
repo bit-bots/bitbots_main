@@ -1,8 +1,4 @@
 walking:
-  odom_frame:
-    type: string
-    description: "The frame in which the odometry is published"
-    default_value: "odom"
   engine:
     freq:
       type: double
@@ -145,6 +141,27 @@ walking:
       description: "Control loop frequency in Hz"
       validation:
         bounds<>: [0.0, 1000.0]
+    tf:
+      odom_frame:
+        type: string
+        description: "The frame in which the odometry is published"
+        read_only: true
+        default_value: "odom"
+      base_link_frame:
+        type: string
+        description: "The robots base link frame name"
+        read_only: true
+        default_value: "base_link"
+      r_sole_frame:
+        type: string
+        description: "The robot right sole frame name"
+        read_only: true
+        default_value: "r_sole"
+      l_sole_frame:
+        type: string
+        description: "The robot left sole frame name"
+        read_only: true
+        default_value: "l_sole"
     ik:
       timeout:
         type: double
@@ -153,6 +170,7 @@ walking:
           bounds<>: [0.0, 10.0]
       reset:
         type: bool
+        read_only: true
         description: "bioIK parameter"
     debug_active:
       type: bool
@@ -197,6 +215,24 @@ walking:
       description: "Speed multiplier for yaw direction to calibrate the cmd_vel input"
       validation:
         bounds<>: [0.0, 5.0]
+    x_bias:
+      type: double
+      description: "X bias for the command velocity which is received by the walk node. "
+      default_value: 0.0
+      validation:
+        bounds<>: [-0.1, 0.1]
+    y_bias:
+      type: double
+      description: "Y bias for the command velocity which is received by the walk node. "
+      default_value: 0.0
+      validation:
+        bounds<>: [-0.1, 0.1]
+    yaw_bias:
+      type: double
+      description: "Yaw bias for the command velocity which is received by the walk node. "
+      default_value: 0.0
+      validation:
+        bounds<>: [-0.4, 0.4]
     stability_stop:
       imu:
         active:
@@ -267,3 +303,54 @@ walking:
           description: "Threshold for the y acceleration of the IMU under which the phase reset is triggered (if we are in the correct phase of the walking cycle)"
           validation:
             bounds<>: [0.0, 10.0]
+    trunk_pid:
+      pitch:
+        p:
+          type: double
+          description: "Proportional gain for the trunk pitch PID controller"
+          default_value: 0.0
+        i:
+          type: double
+          description: "Integral gain for the trunk pitch PID controller"
+          default_value: 0.0
+        d:
+          type: double
+          description: "Derivative gain for the trunk pitch PID controller"
+          default_value: 0.0
+        i_clamp_max:
+          type: double
+          description: "Integral clamp maximum for the trunk pitch PID controller"
+          default_value: 0.0
+        i_clamp_min:
+          type: double
+          description: "Integral clamp minimum for the trunk pitch PID controller"
+          default_value: 0.0
+        antiwindup:
+          type: bool
+          description: "Activate antiwindup for the trunk pitch PID controller"
+          default_value: false
+      roll:
+        p:
+          type: double
+          description: "Proportional gain for the trunk roll PID controller"
+          default_value: 0.0
+        i:
+          type: double
+          description: "Integral gain for the trunk roll PID controller"
+          default_value: 0.0
+        d:
+          type: double
+          description: "Derivative gain for the trunk roll PID controller"
+          default_value: 0.0
+        i_clamp_max:
+          type: double
+          description: "Integral clamp maximum for the trunk roll PID controller"
+          default_value: 0.0
+        i_clamp_min:
+          type: double
+          description: "Integral clamp minimum for the trunk roll PID controller"
+          default_value: 0.0
+        antiwindup:
+          type: bool
+          description: "Activate antiwindup for the trunk roll PID controller"
+          default_value: false

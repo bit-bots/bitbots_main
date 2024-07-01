@@ -76,22 +76,18 @@ walking:
       y_speed_multiplier: 1.0
       yaw_speed_multiplier: 1.0
 
-walk_pid_trunk_fused_pitch:
-  ros__parameters:
-    p: 0.0
-    i: 0.0
-    d: 0.0
-    i_clamp: 0.0
-    i_clamp_min: 0.0
-    i_clamp_max: 0.0
-    antiwindup: False
-
-walk_pid_trunk_fused_roll:
-  ros__parameters:
-    p: 0.0
-    i: 0.0
-    d: 0.0
-    i_clamp: 0.0
-    i_clamp_min: 0.0
-    i_clamp_max: 0.0
-    antiwindup: False
+      trunk_pid:
+        pitch:
+          p: 0.0
+          i: 0.0
+          d: 0.0
+          i_clamp_min: 0.0
+          i_clamp_max: 0.0
+          antiwindup: False
+        roll:
+          p: 0.0
+          i: 0.0
+          d: 0.0
+          i_clamp_min: 0.0
+          i_clamp_max: 0.0
+          antiwindup: False

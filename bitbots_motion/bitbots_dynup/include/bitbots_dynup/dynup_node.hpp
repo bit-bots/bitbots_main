@@ -22,7 +22,6 @@
 #include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/imu.hpp>
-#include <sensor_msgs/msg/joint_state.hpp>
 #include <std_msgs/msg/char.hpp>
 #include <string>
 #include <tf2_eigen/tf2_eigen.hpp>
@@ -50,15 +49,16 @@ using namespace std::placeholders;
  *
  * Additionally it publishes the DynUpEngines motor-goals back into ROS
  */
-class DynupNode : public rclcpp::Node {
+class DynupNode {
  public:
-  explicit DynupNode(const std::string &ns = "", std::vector<rclcpp::Parameter> parameters = {});
+  explicit DynupNode(rclcpp::Node::SharedPtr node, const std::string &ns = "",
+                     std::vector<rclcpp::Parameter> parameters = {});
 
-  rcl_interfaces::msg::SetParametersResult onSetParameters();
+  void onSetParameters();
 
   void imuCallback(const sensor_msgs::msg::Imu::SharedPtr msg);
 
-  void jointStateCallback(const sensor_msgs::msg::JointState::SharedPtr jointstates);
+  void jointStateCallback(const sensor_msgs::msg::JointState::SharedPtr joint_states);
 
   DynupEngine *getEngine();
 
@@ -73,8 +73,7 @@ class DynupNode : public rclcpp::Node {
 
   bitbots_msgs::msg::JointCommand step(double dt);
 
-  bitbots_msgs::msg::JointCommand step(double dt, const sensor_msgs::msg::Imu::SharedPtr imu_msg,
-                                       const sensor_msgs::msg::JointState::SharedPtr jointstate_msg);
+  bitbots_msgs::msg::JointCommand step(double dt, const sensor_msgs::msg::Imu::SharedPtr imu_msg);
 
   geometry_msgs::msg::PoseArray step_open_loop(double dt);
 
@@ -91,36 +90,36 @@ class DynupNode : public rclcpp::Node {
 
   void acceptedCb(const std::shared_ptr<DynupGoalHandle> goal);
 
+  // Store reference to the "real" node
+  rclcpp::Node::SharedPtr node_;
+
   rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr debug_publisher_;
   rclcpp::Publisher<bitbots_msgs::msg::JointCommand>::SharedPtr joint_goal_publisher_;
-  rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr cop_subscriber_;
-  rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_subscriber_;
+  rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_subscriber_;
+
+  rclcpp_action::Server<DynupGoal>::SharedPtr action_server_;
 
   std::vector<std::string> param_names_;
-  rclcpp_action::Server<DynupGoal>::SharedPtr action_server_;
 
   // Declare parameter listener and struct from the generate_parameter_library
   bitbots_dynup::ParamListener param_listener_;
+  // Data structure to hold all parameters, which is build from the schema in the 'parameters.yaml'
   bitbots_dynup::Params params_;
-  // Datastructure to hold all parameters, which is build from the schema in the 'parameters.yaml'
 
   DynupEngine engine_;
   Stabilizer stabilizer_;
   Visualizer visualizer_;
   DynupIK ik_;
-  int stable_duration_;
-  int engine_rate_;
-  int failed_tick_counter_;
-  double last_ros_update_time_;
-  double start_time_;
-  bool server_free_;
-  bool debug_;
-  std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
-  std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
+  int stable_duration_ = 0;
+  int failed_tick_counter_ = 0;
+  double last_ros_update_time_ = 0;
+  double start_time_ = 0;
+  bool server_free_ = true;
+  bool debug_ = false;
+  tf2_ros::Buffer tf_buffer_;
+  tf2_ros::TransformListener tf_listener_;
   std::shared_ptr<robot_model_loader::RobotModelLoader> robot_model_loader_;
   moveit::core::RobotModelPtr kinematic_model_;
-
-  std::string base_link_frame_, l_sole_frame_, r_sole_frame_, l_wrist_frame_, r_wrist_frame_;
 
   void execute(const std::shared_ptr<DynupGoalHandle> goal);
 

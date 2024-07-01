@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.5)
 project(bitbots_quintic_walk)
 
-# Add support for C++17
+# Add support for C++20
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 17)
+  set(CMAKE_CXX_STANDARD 20)
 endif()
 
 set(PYBIND11_PYTHON_VERSION 3)
@@ -46,7 +46,7 @@ rosidl_generate_interfaces(
 
 include_directories(include ${PYTHON_INCLUDE_DIRS})
 
-add_compile_options(-Wall -Werror -Wno-unused)
+add_compile_options(-Wall -Werror -Wno-unused -Wextra -Wpedantic)
 
 set(SOURCES src/walk_visualizer.cpp src/walk_engine.cpp src/walk_stabilizer.cpp
             src/walk_ik.cpp src/walk_node.cpp)
