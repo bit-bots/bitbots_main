@@ -20,6 +20,7 @@ include:
         - bitbots_utils
         - system_monitor
     - bitbots_motion:
+        - bitbots_animation_rqt
         - bitbots_animation_server
         - bitbots_dynamic_kick
         - bitbots_dynup
