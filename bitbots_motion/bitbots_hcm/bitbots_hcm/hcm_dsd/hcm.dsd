@@ -2,7 +2,7 @@
 $StartHCM
     START_UP --> $Simulation
         YES --> @RobotStateStartup, @PlayAnimationDynup + direction:walkready + r:false
-        NO --> @RobotStateStartup, @PlayAnimationInit, @PlayAnimationDynup + direction:walkready + r:false
+        NO --> @RobotStateStartup, @Wait + time:1 + r:false, @PlayAnimationInit, @PlayAnimationDynup + direction:walkready + r:false
     RUNNING --> $CheckMotors
         MOTORS_NOT_STARTED --> @RobotStateStartup, @Wait
         OVERLOAD --> @RobotStateMotorOff, @CancelGoals, @StopWalking, @PlayAnimationFallingFront, @TurnMotorsOff, @Wait
@@ -25,8 +25,8 @@ $StartHCM
                             OKAY --> $PickedUp
                                 PICKED_UP --> @RobotStatePickedUp, @PlayAnimationDynup + direction:walkready + r:false, @Wait
                                 ON_GROUND --> $Fallen
-                                    FALLEN_FRONT --> @RobotStateFallen, @CancelGoals, @StopWalking, @RobotStateGettingUp, @PlayAnimationDynup + direction:front_only, @SetSquat + squat:true
-                                    FALLEN_BACK --> @RobotStateFallen, @CancelGoals, @StopWalking, @RobotStateGettingUp, @SetFootZero, @PlayAnimationDynup + direction:back_only, @SetSquat + squat:true
+                                    FALLEN_FRONT --> @RobotStateFallen, @CancelGoals, @StopWalking, @RobotStateGettingUp, @PlayAnimationStandupFront, @SetSquat + squat:true
+                                    FALLEN_BACK --> @RobotStateFallen, @CancelGoals, @StopWalking, @RobotStateGettingUp, @SetFootZero, @PlayAnimationStandupBack, @SetSquat + squat:true
                                     FALLEN_RIGHT --> @RobotStateFallen, @CancelGoals, @StopWalking, @PlayAnimationTurningBackRight
                                     FALLEN_LEFT --> @RobotStateFallen, @CancelGoals, @StopWalking, @PlayAnimationTurningBackLeft
                                     NOT_FALLEN --> $Falling

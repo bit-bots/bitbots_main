@@ -131,6 +131,18 @@ class PlayAnimationTurningBackRight(AbstractPlayAnimation):
         return self.blackboard.animation_name_turning_back_right
 
 
+class PlayAnimationStandupFront(AbstractPlayAnimation):
+    def choose_animation(self):
+        self.blackboard.node.get_logger().info("STANDUP FRONT ANIMATION")
+        return "stand_up_front"
+
+
+class PlayAnimationStandupBack(AbstractPlayAnimation):
+    def choose_animation(self):
+        self.blackboard.node.get_logger().info("STANDUP BACK ANIMATION")
+        return "stand_up_back"
+
+
 class PlayAnimationInit(AbstractPlayAnimation):
     def choose_animation(self):
         return self.blackboard.animation_name_init
