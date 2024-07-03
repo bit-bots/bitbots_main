@@ -73,7 +73,8 @@ class DynupNode {
 
   bitbots_msgs::msg::JointCommand step(double dt);
 
-  bitbots_msgs::msg::JointCommand step(double dt, const sensor_msgs::msg::Imu::SharedPtr imu_msg, const sensor_msgs::msg::JointState::SharedPtr joint_state_msg);
+  bitbots_msgs::msg::JointCommand step(double dt, const sensor_msgs::msg::Imu::SharedPtr imu_msg,
+                                       const sensor_msgs::msg::JointState::SharedPtr joint_state_msg);
 
   geometry_msgs::msg::PoseArray step_open_loop(double dt);
 

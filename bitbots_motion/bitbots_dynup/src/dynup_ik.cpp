@@ -28,7 +28,8 @@ void DynupIK::reset() {
     }
   } else {
     // if we don't have a joint state, we set some default values that are a reasonable starting point
-    RCLCPP_WARN(node_->get_logger(), "No joint state received, using hardcoded initial positions for IK initialization");
+    RCLCPP_WARN(node_->get_logger(),
+                "No joint state received, using hardcoded initial positions for IK initialization");
     std::vector<std::string> names_vec = {"LHipPitch", "LKnee", "LAnklePitch", "RHipPitch", "RKnee", "RAnklePitch"};
     std::vector<double> pos_vec = {0.7, 1.0, -0.4, -0.7, -1.0, 0.4};
     for (size_t i = 0; i < names_vec.size(); i++) {
