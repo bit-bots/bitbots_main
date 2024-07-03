@@ -13,13 +13,15 @@
     # Animations
     anim_server_wait_time: 10.0 # time the hcm waits for animation server
     animations:
-      falling_front: "falling_front"
       falling_back: "falling_back"
+      falling_front: "falling_front"
       falling_left: "falling_left"
       falling_right: "falling_right"
+      init: "init"
+      stand_up_back: "stand_up_back"
+      stand_up_front: "stand_up_front"
       turning_back_left: "turning_back_left"
       turning_back_right: "turning_back_right"
-      init: "init"
 
     # Falling
     stand_up_active: true # Enables the robot to stand up automatically
