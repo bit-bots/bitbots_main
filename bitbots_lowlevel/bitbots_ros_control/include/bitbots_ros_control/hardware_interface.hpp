@@ -16,6 +16,8 @@ class HardwareInterface {
 
   virtual void write(const rclcpp::Time &t, const rclcpp::Duration &dt){};
 
+  virtual void restoreAfterPowerCycle(){};
+
   virtual ~HardwareInterface(){};
 };
 }  // namespace bitbots_ros_control

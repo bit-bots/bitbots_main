@@ -304,9 +304,13 @@ void WolfgangHardwareInterface::write(const rclcpp::Time &t, const rclcpp::Durat
     motor_start_time_ = t + rclcpp::Duration::from_seconds(nh_->get_parameter("servos.start_delay").as_double());
     motor_first_write_ = true;
   }
-  if (t > motor_start_time_) {
+  if (!motor_start_time_ || t > motor_start_time_.value()) {
     if (motor_first_write_) {
-      servo_interface_.writeROMRAM(false);
+      for (std::vector<HardwareInterface *> &port_interfaces : interfaces_) {
+        for (HardwareInterface *interface : port_interfaces) {
+          interface->restoreAfterPowerCycle();
+        }
+      }
       motor_first_write_ = false;
     }
     if (core_present_ && !current_power_status_) {
