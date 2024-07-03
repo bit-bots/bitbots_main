@@ -26,7 +26,7 @@ $StartHCM
                                 PICKED_UP --> @RobotStatePickedUp, @PlayAnimationDynup + direction:walkready + r:false, @Wait
                                 ON_GROUND --> $Fallen
                                     FALLEN_FRONT --> @RobotStateFallen, @CancelGoals, @StopWalking, @RobotStateGettingUp, @PlayAnimationStandupFront, @SetSquat + squat:true
-                                    FALLEN_BACK --> @RobotStateFallen, @CancelGoals, @StopWalking, @RobotStateGettingUp, @SetFootZero, @PlayAnimationStandupBack, @SetSquat + squat:true
+                                    FALLEN_BACK --> @RobotStateFallen, @CancelGoals, @StopWalking, @RobotStateGettingUp, @SetFootZero, @PlayAnimationFallingBack, @PlayAnimationStandupBack, @SetSquat + squat:true
                                     FALLEN_RIGHT --> @RobotStateFallen, @CancelGoals, @StopWalking, @PlayAnimationTurningBackRight
                                     FALLEN_LEFT --> @RobotStateFallen, @CancelGoals, @StopWalking, @PlayAnimationTurningBackLeft
                                     NOT_FALLEN --> $Falling
