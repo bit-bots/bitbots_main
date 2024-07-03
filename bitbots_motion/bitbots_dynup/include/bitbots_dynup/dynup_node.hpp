@@ -67,13 +67,13 @@ class DynupNode {
   /**
    * Retrieve current positions of left foot and trunk relative to right foot
    *
-   * @return The pair of (right foot, left foot) poses if transformation was successfull
+   * @return The pair of (right foot, left foot) poses if transformation was successful
    */
   bitbots_dynup::msg::DynupPoses getCurrentPoses();
 
   bitbots_msgs::msg::JointCommand step(double dt);
 
-  bitbots_msgs::msg::JointCommand step(double dt, const sensor_msgs::msg::Imu::SharedPtr imu_msg);
+  bitbots_msgs::msg::JointCommand step(double dt, const sensor_msgs::msg::Imu::SharedPtr imu_msg, const sensor_msgs::msg::JointState::SharedPtr joint_state_msg);
 
   geometry_msgs::msg::PoseArray step_open_loop(double dt);
 
@@ -93,10 +93,6 @@ class DynupNode {
   // Store reference to the "real" node
   rclcpp::Node::SharedPtr node_;
 
-  rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr debug_publisher_;
-  rclcpp::Publisher<bitbots_msgs::msg::JointCommand>::SharedPtr joint_goal_publisher_;
-  rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_subscriber_;
-
   rclcpp_action::Server<DynupGoal>::SharedPtr action_server_;
 
   std::vector<std::string> param_names_;
@@ -106,20 +102,33 @@ class DynupNode {
   // Data structure to hold all parameters, which is build from the schema in the 'parameters.yaml'
   bitbots_dynup::Params params_;
 
+  // Subcomponents of the dynup
   DynupEngine engine_;
   Stabilizer stabilizer_;
   Visualizer visualizer_;
   DynupIK ik_;
+
+  // Variables for node
   int stable_duration_ = 0;
   int failed_tick_counter_ = 0;
   double last_ros_update_time_ = 0;
   double start_time_ = 0;
   bool server_free_ = true;
   bool debug_ = false;
+
+  // TF2 related things
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener tf_listener_;
+
+  // MoveIt related things
   std::shared_ptr<robot_model_loader::RobotModelLoader> robot_model_loader_;
   moveit::core::RobotModelPtr kinematic_model_;
+
+  // Publishers and subscribers
+  rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr debug_publisher_;
+  rclcpp::Publisher<bitbots_msgs::msg::JointCommand>::SharedPtr joint_goal_publisher_;
+  rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_subscriber_;
+  rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_subscriber_;
 
   void execute(const std::shared_ptr<DynupGoalHandle> goal);
 
