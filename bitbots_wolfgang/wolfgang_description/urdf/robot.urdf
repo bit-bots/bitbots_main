@@ -755,7 +755,7 @@
         <mesh filename="package://wolfgang_description/urdf/sea_connector.stl"/>
       </geometry>
       <material name="sea_connector_material">
-<color rgba="0.647059 0.647059 0.647059 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -770,7 +770,7 @@
         <mesh filename="package://wolfgang_description/urdf/shoulder_connector.stl"/>
       </geometry>
       <material name="shoulder_connector_material">
-<color rgba="0.647059 0.647059 0.647059 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -797,7 +797,7 @@
         <mesh filename="package://wolfgang_description/urdf/sea_ninjaflex.stl"/>
       </geometry>
       <material name="sea_ninjaflex_material">
-<color rgba="0.647059 0.647059 0.647059 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -849,7 +849,7 @@
         <mesh filename="package://wolfgang_description/urdf/connector_shoulder.stl"/>
       </geometry>
       <material name="connector_shoulder_material">
-<color rgba="0.647059 0.647059 0.647059 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -864,7 +864,7 @@
         <mesh filename="package://wolfgang_description/urdf/upper_arm_spacer.stl"/>
       </geometry>
       <material name="upper_arm_spacer_material">
-<color rgba="0.647059 0.647059 0.647059 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -879,7 +879,7 @@
         <mesh filename="package://wolfgang_description/urdf/upper_arm.stl"/>
       </geometry>
       <material name="upper_arm_material">
-<color rgba="0.647059 0.647059 0.647059 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -906,7 +906,7 @@
         <mesh filename="package://wolfgang_description/urdf/upper_arm.stl"/>
       </geometry>
       <material name="upper_arm_material">
-<color rgba="0.647059 0.647059 0.647059 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -3353,7 +3353,7 @@
     <axis xyz="-0.0 -1.0 -0.0"/>
     <parent link="l_ankle"/>
     <child link="l_foot"/>
-    <limit effort="10" lower="-1.0472" upper="1.0472" velocity="5.76"/>
+    <limit effort="10" lower="-10" upper="10" velocity="5.76"/>
     <dynamics damping="1.23" friction="2.55"/>
   </joint>
   <joint name="LAnklePitch" type="revolute">
@@ -3361,7 +3361,7 @@
     <axis xyz="-0.0 -0.0 -1.0"/>
     <parent link="l_lower_leg"/>
     <child link="l_ankle"/>
-    <limit effort="10" lower="-1.22173" upper="1.74533" velocity="5.76"/>
+    <limit effort="10" lower="-10" upper="10" velocity="5.76"/>
     <dynamics damping="1.23" friction="2.55"/>
   </joint>
   <joint name="LKnee" type="revolute">
@@ -3369,7 +3369,7 @@
     <axis xyz="-0.0 1.0 -0.0"/>
     <parent link="l_upper_leg"/>
     <child link="l_lower_leg"/>
-    <limit effort="12.9" lower="0.0" upper="2.96706" velocity="3.87"/>
+    <limit effort="12.9" lower="-10" upper="10" velocity="3.87"/>
     <dynamics damping="2.92" friction="1.49"/>
   </joint>
   <joint name="LHipPitch" type="revolute">
@@ -3377,7 +3377,7 @@
     <axis xyz="7.95491e-17 -3.00167e-16 -1.0"/>
     <parent link="l_hip_2"/>
     <child link="l_upper_leg"/>
-    <limit effort="10" lower="-1.91986" upper="2.0944" velocity="5.76"/>
+    <limit effort="10" lower="-10" upper="10" velocity="5.76"/>
     <dynamics damping="1.23" friction="2.55"/>
   </joint>
   <joint name="LHipRoll" type="revolute">
@@ -3385,7 +3385,7 @@
     <axis xyz="-0.0 -0.0 -1.0"/>
     <parent link="l_hip_1"/>
     <child link="l_hip_2"/>
-    <limit effort="10" lower="-1.5708" upper="1.5708" velocity="5.76"/>
+    <limit effort="10" lower="-10" upper="10" velocity="5.76"/>
     <dynamics damping="1.23" friction="2.55"/>
   </joint>
   <joint name="LHipYaw" type="revolute">
@@ -3393,7 +3393,7 @@
     <axis xyz="-0.0 1.0 -0.0"/>
     <parent link="torso"/>
     <child link="l_hip_1"/>
-    <limit effort="10" lower="-1.5708" upper="1.5708" velocity="5.76"/>
+    <limit effort="10" lower="-10" upper="10" velocity="5.76"/>
     <dynamics damping="1.23" friction="2.55"/>
   </joint>
   <link name="neck">
