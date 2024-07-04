@@ -237,7 +237,7 @@ class CheckReposTask(AbstractTask):
         # Do we have any warnings? If not, all checks for all repos were successful
         if not any([*self.warnings.values()]):  # No warnings = Success
             print_success(
-                f"Current commit: [bold]{workspace_friendly_name}[default] ({workspace_hash[:8]})\nYour local workspace is clean and up-to-date."
+                f"Current workspace hash: [bold]{workspace_friendly_name}[default] ({workspace_hash[:8]})\nYour local workspace is clean and up-to-date."
             )
             results = success(connections)
 
@@ -258,7 +258,7 @@ class CheckReposTask(AbstractTask):
                 warning_table.add_row(repo_name, f"{commit_name} ({commit_hash[:8]})", warnings)
             print_warning(
                 RichGroup(
-                    f"Current commit: [bold]{workspace_friendly_name}[default] ({workspace_hash[:8]})",
+                    f"Current workspace hash: [bold]{workspace_friendly_name}[default] ({workspace_hash[:8]})",
                     "Your local workspace is [bold][red]BAD!",
                     warning_table,
                     "Please check the warnings and decide if you want to proceed!",
