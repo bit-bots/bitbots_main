@@ -120,20 +120,24 @@ class OurRepo(Repo):
             return True
 
         print_debug(f"Repo {self}: Checking if behind: Comparing local and remote repository.")
-        ahead = False
-        for _ in self.iter_commits(f"{self.specified_branch}..{remote.name}/{self.specified_branch}"):
-            ahead = True
-        if ahead:
-            print_debug(f"Repo {self}: The local repository is ahead of the remote repository.")
-            self.warnings.append("The local repository is ahead of the remote repository.")
+        behind = len(list(self.iter_commits(f"{self.specified_branch}..{remote.name}/{self.specified_branch}")))
+        if behind:
+            print_debug(
+                f"Repo {self}: Your branch is behind the remote branch by {behind} commit{'s' if behind > 1 else ''}."
+            )
+            self.warnings.append(
+                f"Your branch is behind the remote branch by {behind} commit{'s' if behind > 1 else ''}."
+            )
 
         print_debug(f"Repo {self}: Checking if ahead: Comparing remote and local repository.")
-        behind = False
-        for _ in self.iter_commits(f"{remote.name}/{self.specified_branch}..{self.specified_branch}"):
-            behind = True
-        if behind:
-            print_debug(f"Repo {self}: The local repository is behind of the remote repository.")
-            self.warnings.append("The local repository is behind of the remote repository.")
+        ahead = len(list(self.iter_commits(f"{remote.name}/{self.specified_branch}..{self.specified_branch}")))
+        if ahead:
+            print_debug(
+                f"Repo {self}: Your branch is ahead of the remote branch by {ahead} commit{'s' if ahead > 1 else ''}."
+            )
+            self.warnings.append(
+                f"Your branch is ahead of the remote branch by {ahead} commit{'s' if ahead > 1 else ''}."
+            )
 
         return ahead or behind
 
@@ -255,7 +259,7 @@ class CheckReposTask(AbstractTask):
             print_warning(
                 RichGroup(
                     f"Current commit: [bold]{workspace_friendly_name}[default] ({workspace_hash[:8]})",
-                    "Your local workspace is [bold]BAD!",
+                    "Your local workspace is [bold][red]BAD!",
                     warning_table,
                     "Please check the warnings and decide if you want to proceed!",
                 )
