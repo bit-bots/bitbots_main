@@ -3,12 +3,13 @@ class Keyframe:
     A pose which the robot reaches at :attr:`duration` seconds in the future.
     """
 
-    def __init__(self, goals, torque=None, duration=1.0, pause=0.0, p=None):
+    def __init__(self, goals, torque=None, duration=1.0, pause=0.0, p=None, stabelization_functions=None):
         self.duration = float(duration)
         self.pause = float(pause)
         self.goals = goals
-        self.torque = {} if torque is None else torque
-        self.p = {} if p is None else p
+        self.torque = torque or {}
+        self.p = p or {}
+        self.stabelization_functions: dict[str, str] = stabelization_functions or {}
 
 
 class Animation:
@@ -32,7 +33,14 @@ def parse(info):
 
     keyframes = info.get("keyframes", ())
     anim.keyframes = [
-        Keyframe(k.get("goals", {}), k.get("torque", {}), k.get("duration", 1), k.get("pause", 0), k.get("p", {}))
+        Keyframe(
+            k.get("goals", {}),
+            k.get("torque", {}),
+            k.get("duration", 1),
+            k.get("pause", 0),
+            k.get("p", {}),
+            k.get("stabelization_functions", {}),
+        )
         for k in keyframes
     ]
 
@@ -49,7 +57,14 @@ def as_dict(anim: Animation):
         "default_interpolator": anim.default_interpolator.__name__,
         "interpolators": {n: ip.__name__ for n, ip in anim.interpolators},
         "keyframes": [
-            {"duration": k.duration, "pause": k.pause, "goals": k.goals, "torque": k.torque, "p": k.p}
+            {
+                "duration": k.duration,
+                "pause": k.pause,
+                "goals": k.goals,
+                "torque": k.torque,
+                "p": k.p,
+                "stabelization_functions": k.stabelization_functions,
+            }
             for k in anim.keyframes
         ],
     }
