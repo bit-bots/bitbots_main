@@ -355,13 +355,11 @@ std::array<double, 4> WalkNode::get_step_from_vel(const geometry_msgs::msg::Twis
                                 msg->angular.z * factor * config_.node.yaw_speed_multiplier + config_.node.yaw_bias};
 
   std::array<double, 4> clamped_step = {
-    // the orders should not extend beyond a maximal step size
-    std::clamp(step[0], -config_.node.max_step_x, config_.node.max_step_x),
-    std::clamp(step[1], -config_.node.max_step_y, config_.node.max_step_y),
-    std::clamp(step[2], -config_.node.max_step_z, config_.node.max_step_z),
-    std::max(std::min(step[3], config_.node.max_step_angular), config_.node.max_step_angular * -1)
-  };
-
+      // the orders should not extend beyond a maximal step size
+      std::clamp(step[0], -config_.node.max_step_x, config_.node.max_step_x),
+      std::clamp(step[1], -config_.node.max_step_y, config_.node.max_step_y),
+      std::clamp(step[2], -config_.node.max_step_z, config_.node.max_step_z),
+      std::max(std::min(step[3], config_.node.max_step_angular), config_.node.max_step_angular * -1)};
 
   // translational orders (x+y) should not exceed combined limit. scale if necessary
   if (config_.node.max_step_xy != 0) {
@@ -373,10 +371,11 @@ std::array<double, 4> WalkNode::get_step_from_vel(const geometry_msgs::msg::Twis
 
   // warn user that speed was limited
   if (step != clamped_step) {
-    RCLCPP_WARN(node_->get_logger(),
-                "Commanded step 'x: %.2f y: %.2f z: %.2f angular: %.2f' exceeded limits, clamped to 'x: %.2f y: %.2f z: "
-                "%.2f angular: %.2f'",
-                step[0], step[1], step[2], step[3], clamped_step[0], clamped_step[1], clamped_step[2], clamped_step[3]);
+    RCLCPP_WARN(
+        node_->get_logger(),
+        "Commanded step 'x: %.2f y: %.2f z: %.2f angular: %.2f' exceeded limits, clamped to 'x: %.2f y: %.2f z: "
+        "%.2f angular: %.2f'",
+        step[0], step[1], step[2], step[3], clamped_step[0], clamped_step[1], clamped_step[2], clamped_step[3]);
   }
 
   return clamped_step;
