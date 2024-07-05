@@ -354,33 +354,32 @@ std::array<double, 4> WalkNode::get_step_from_vel(const geometry_msgs::msg::Twis
                                 msg->linear.z * factor,
                                 msg->angular.z * factor * config_.node.yaw_speed_multiplier + config_.node.yaw_bias};
 
-  // the orders should not extend beyond a maximal step size
-  step[0] = std::clamp(step[0], -config_.node.max_step_x, config_.node.max_step_x);
-  step[1] = std::clamp(step[1], -config_.node.max_step_y, config_.node.max_step_y);
-  step[2] = std::clamp(step[2], -config_.node.max_step_z, config_.node.max_step_z);
-  step[3] = std::max(std::min(step[3], config_.node.max_step_angular), config_.node.max_step_angular * -1);
+  std::array<double, 4> clamped_step = {
+    // the orders should not extend beyond a maximal step size
+    std::clamp(step[0], -config_.node.max_step_x, config_.node.max_step_x),
+    std::clamp(step[1], -config_.node.max_step_y, config_.node.max_step_y),
+    std::clamp(step[2], -config_.node.max_step_z, config_.node.max_step_z),
+    std::max(std::min(step[3], config_.node.max_step_angular), config_.node.max_step_angular * -1)
+  };
+
 
   // translational orders (x+y) should not exceed combined limit. scale if necessary
   if (config_.node.max_step_xy != 0) {
-    double scaling_factor = sqrt(pow(step[0], 2) + pow(step[1], 2)) / config_.node.max_step_xy;
+    double scaling_factor = sqrt(pow(clamped_step[0], 2) + pow(clamped_step[1], 2)) / config_.node.max_step_xy;
     for (int i = 0; i < 2; i++) {
-      step[i] = step[i] / std::max(scaling_factor, 1.0);
+      clamped_step[i] = clamped_step[i] / std::max(scaling_factor, 1.0);
     }
   }
 
   // warn user that speed was limited
-  if (msg->linear.x * factor * config_.node.x_speed_multiplier != step[0] ||
-      msg->linear.y * factor * config_.node.y_speed_multiplier != step[1] / 2 || msg->linear.z * factor != step[2] ||
-      msg->angular.z * factor * config_.node.yaw_speed_multiplier != step[3]) {
+  if (step != clamped_step) {
     RCLCPP_WARN(node_->get_logger(),
-                "Speed command was x: %.2f y: %.2f z: %.2f angular: %.2f xy: %.2f but maximum is x: %.2f y: %.2f z: "
-                "%.2f angular: %.2f xy: %.2f",
-                msg->linear.x, msg->linear.y, msg->linear.z, msg->angular.z, msg->linear.x + msg->linear.y,
-                config_.node.max_step_x / factor, config_.node.max_step_y / factor, config_.node.max_step_z / factor,
-                config_.node.max_step_angular / factor, config_.node.max_step_xy / factor);
+                "Commanded step 'x: %.2f y: %.2f z: %.2f angular: %.2f' exceeded limits, clamped to 'x: %.2f y: %.2f z: "
+                "%.2f angular: %.2f'",
+                step[0], step[1], step[2], step[3], clamped_step[0], clamped_step[1], clamped_step[2], clamped_step[3]);
   }
 
-  return step;
+  return clamped_step;
 }
 void WalkNode::stepCb(const geometry_msgs::msg::Twist::SharedPtr msg) {
   current_request_.linear_orders = {msg->linear.x, msg->linear.y, msg->linear.z};
