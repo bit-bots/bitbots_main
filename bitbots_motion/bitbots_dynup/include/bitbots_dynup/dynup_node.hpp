@@ -126,7 +126,6 @@ class DynupNode {
   moveit::core::RobotModelPtr kinematic_model_;
 
   // Publishers and subscribers
-  rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr debug_publisher_;
   rclcpp::Publisher<bitbots_msgs::msg::JointCommand>::SharedPtr joint_goal_publisher_;
   rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_subscriber_;
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_subscriber_;

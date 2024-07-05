@@ -13,7 +13,6 @@ DynupNode::DynupNode(rclcpp::Node::SharedPtr node, const std::string &ns, std::v
       ik_(node_),
       tf_buffer_(node_->get_clock()),
       tf_listener_(tf_buffer_, node_),
-      debug_publisher_(node_->create_publisher<visualization_msgs::msg::Marker>("debug_markers", 1)),
       joint_goal_publisher_(node_->create_publisher<bitbots_msgs::msg::JointCommand>("dynup_motor_goals", 1)),
       imu_subscriber_(node_->create_subscription<sensor_msgs::msg::Imu>("imu/data", 1,
                                                                         std::bind(&DynupNode::imuCallback, this, _1))),
@@ -98,6 +97,9 @@ bitbots_msgs::msg::JointCommand DynupNode::step(double dt, const sensor_msgs::ms
 
 bitbots_msgs::msg::JointCommand DynupNode::step(double dt) {
   if (dt <= 0) {
+    RCLCPP_WARN(node_->get_logger(),
+                "dt was 0. this can happen in simulation if your update rate is higher than the "
+                "simulators.");
     dt = 0.001;
   }
 
@@ -286,7 +288,7 @@ void DynupNode::loopEngine(int loop_rate, std::shared_ptr<DynupGoalHandle> goal_
 }
 
 bitbots_dynup::msg::DynupPoses DynupNode::getCurrentPoses() {
-  rclcpp::Time time = node_->get_clock()->now();
+  rclcpp::Time time;
   /* Transform the left foot into the right foot frame and all other splines into the base link frame*/
   bitbots_dynup::msg::DynupPoses msg;
   try {
@@ -298,13 +300,13 @@ bitbots_dynup::msg::DynupPoses DynupNode::getCurrentPoses() {
 
     // Get the transforms of the end effectors
     geometry_msgs::msg::Transform l_foot_transformed =
-        tf_buffer_.lookupTransform(tf_names.r_sole_frame, tf_names.l_sole_frame, time, timeout).transform;
+        tf_buffer_.lookupTransform(tf_names.r_sole_frame, tf_names.l_sole_frame, time).transform;
     geometry_msgs::msg::Transform r_foot_transformed =
-        tf_buffer_.lookupTransform(tf_names.base_link_frame, tf_names.r_sole_frame, time, timeout).transform;
+        tf_buffer_.lookupTransform(tf_names.base_link_frame, tf_names.r_sole_frame, time).transform;
     geometry_msgs::msg::Transform l_hand_transformed =
-        tf_buffer_.lookupTransform(tf_names.base_link_frame, tf_names.l_wrist_frame, time, timeout).transform;
+        tf_buffer_.lookupTransform(tf_names.base_link_frame, tf_names.l_wrist_frame, time).transform;
     geometry_msgs::msg::Transform r_hand_transformed =
-        tf_buffer_.lookupTransform(tf_names.base_link_frame, tf_names.r_wrist_frame, time, timeout).transform;
+        tf_buffer_.lookupTransform(tf_names.base_link_frame, tf_names.r_wrist_frame, time).transform;
 
     std::function transform2pose = [](geometry_msgs::msg::Transform transform) {
       geometry_msgs::msg::Pose pose;

@@ -72,8 +72,9 @@ class HcmBlackboard:
         self.animation_name_init: str = self.node.get_parameter("animations.init").value
         self.animation_name_stand_up_back: str = self.node.get_parameter("animations.stand_up_back").value
         self.animation_name_stand_up_front: str = self.node.get_parameter("animations.stand_up_front").value
-        self.animation_name_turning_back_left: str = self.node.get_parameter("animations.turning_back_left").value
-        self.animation_name_turning_back_right: str = self.node.get_parameter("animations.turning_back_right").value
+        self.animation_name_startup: str = self.node.get_parameter("animations.startup").value
+        self.animation_name_turning_front_left: str = self.node.get_parameter("animations.turning_front_left").value
+        self.animation_name_turning_front_right: str = self.node.get_parameter("animations.turning_front_right").value
 
         # Teaching State
         self.teaching_mode_state: int = SetTeachingMode.Request.OFF

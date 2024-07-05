@@ -119,16 +119,16 @@ class PlayAnimationFallingBack(AbstractPlayAnimation):
         return self.blackboard.animation_name_falling_back
 
 
-class PlayAnimationTurningBackLeft(AbstractPlayAnimation):
+class PlayAnimationTurningFrontLeft(AbstractPlayAnimation):
     def choose_animation(self):
         self.blackboard.node.get_logger().info("LYING ON THE LEFT SIDE AND TURNING TO THE BACK TO GET UP")
-        return self.blackboard.animation_name_turning_back_left
+        return self.blackboard.animation_name_turning_front_left
 
 
-class PlayAnimationTurningBackRight(AbstractPlayAnimation):
+class PlayAnimationTurningFrontRight(AbstractPlayAnimation):
     def choose_animation(self):
         self.blackboard.node.get_logger().info("LYING ON THE RIGHT SIDE AND TURNING TO THE BACK TO GET UP")
-        return self.blackboard.animation_name_turning_back_right
+        return self.blackboard.animation_name_turning_front_right
 
 
 class PlayAnimationStandupFront(AbstractPlayAnimation):
@@ -146,6 +146,11 @@ class PlayAnimationStandupBack(AbstractPlayAnimation):
 class PlayAnimationInit(AbstractPlayAnimation):
     def choose_animation(self):
         return self.blackboard.animation_name_init
+
+
+class PlayAnimationStartup(AbstractPlayAnimation):
+    def choose_animation(self):
+        return self.blackboard.animation_name_startup
 
 
 class PlayAnimationDynup(AbstractHCMActionElement):

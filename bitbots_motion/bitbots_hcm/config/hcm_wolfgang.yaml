@@ -20,8 +20,9 @@
       init: "init"
       stand_up_back: "stand_up_back"
       stand_up_front: "stand_up_front"
-      turning_back_left: "turning_back_left"
-      turning_back_right: "turning_back_right"
+      startup: "startup"
+      turning_front_left: "turning_front_left"
+      turning_front_right: "turning_front_right"
 
     # Falling
     stand_up_active: true # Enables the robot to stand up automatically

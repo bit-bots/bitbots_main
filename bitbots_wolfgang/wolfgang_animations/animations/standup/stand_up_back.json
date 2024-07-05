@@ -27,7 +27,7 @@
                 "RShoulderRoll": -0.26
             },
             "name": "bridge",
-            "pause": 0.3,
+            "pause": 0.5,
             "torque": {}
         },
         {
