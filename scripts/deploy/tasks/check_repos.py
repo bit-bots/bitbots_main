@@ -3,7 +3,7 @@ import os
 import threading
 from hashlib import md5
 
-from deploy.misc import be_quiet, print_debug, print_success, print_warning
+from deploy.misc import be_quiet, print_debug, print_info, print_success, print_warning
 from deploy.tasks.abstract_task import AbstractTask
 from fabric import Group, GroupResult, Result
 from git import Repo
@@ -120,20 +120,24 @@ class OurRepo(Repo):
             return True
 
         print_debug(f"Repo {self}: Checking if behind: Comparing local and remote repository.")
-        ahead = False
-        for _ in self.iter_commits(f"{self.specified_branch}..{remote.name}/{self.specified_branch}"):
-            ahead = True
-        if ahead:
-            print_debug(f"Repo {self}: The local repository is ahead of the remote repository.")
-            self.warnings.append("The local repository is ahead of the remote repository.")
+        behind = len(list(self.iter_commits(f"{self.specified_branch}..{remote.name}/{self.specified_branch}")))
+        if behind:
+            print_debug(
+                f"Repo {self}: Your branch is behind the remote branch by {behind} commit{'s' if behind > 1 else ''}."
+            )
+            self.warnings.append(
+                f"Your branch is behind the remote branch by {behind} commit{'s' if behind > 1 else ''}."
+            )
 
         print_debug(f"Repo {self}: Checking if ahead: Comparing remote and local repository.")
-        behind = False
-        for _ in self.iter_commits(f"{remote.name}/{self.specified_branch}..{self.specified_branch}"):
-            behind = True
-        if behind:
-            print_debug(f"Repo {self}: The local repository is behind of the remote repository.")
-            self.warnings.append("The local repository is behind of the remote repository.")
+        ahead = len(list(self.iter_commits(f"{remote.name}/{self.specified_branch}..{self.specified_branch}")))
+        if ahead:
+            print_debug(
+                f"Repo {self}: Your branch is ahead of the remote branch by {ahead} commit{'s' if ahead > 1 else ''}."
+            )
+            self.warnings.append(
+                f"Your branch is ahead of the remote branch by {ahead} commit{'s' if ahead > 1 else ''}."
+            )
 
         return ahead or behind
 
@@ -142,7 +146,7 @@ class OurRepo(Repo):
 
 
 class CheckReposTask(AbstractTask):
-    def __init__(self) -> None:
+    def __init__(self, only_workspace_status: bool = False) -> None:
         """
         Task to check the local repositories (bitbots_main and others as specified in workspace.repos file).
         Displays the current commit status (with a friendly name) to compare with other people in a hurry.
@@ -150,6 +154,8 @@ class CheckReposTask(AbstractTask):
         - A repository is dirty (uncommitted changes).
         - A repository is not on the specified branch.
         - A repository is ahead or behind of the remote repository.
+
+        :param only_workspace_status: If True, only collect the workspace commit hashes and skip the local workspace check.
         """
         super().__init__()
         self._show_status = False
@@ -161,6 +167,8 @@ class CheckReposTask(AbstractTask):
         self.results_file: str = os.path.join(
             self.main_repo_path, "bitbots_misc/bitbots_utils/config/", "workspace_status.json"
         )
+
+        self.only_workspace_status: bool = only_workspace_status
 
         self.main_repo: OurRepo = OurRepo(self.main_repo_path, "main")
         self.repos: dict[str, OurRepo] = {"bitbots_main": self.main_repo, **self._get_workspace_repos()}
@@ -213,8 +221,14 @@ class CheckReposTask(AbstractTask):
                 group_result._successes = results
             return group_result
 
-        # Collect commit hashes for the friendly commit name
-        self.commit_hashes: dict[str, str] = {name: repo.get_commit_hash() for name, repo in self.repos.items()}
+        workspace_hash, workspace_friendly_name = self._collect_workspace_hashes()
+        if self.only_workspace_status:
+            print_info(
+                f"Current workspace hash: [bold]{workspace_friendly_name}[default] ({workspace_hash[:8]})\nSkipped workspace checks."
+            )
+            results = success(connections)
+            return results
+
         # Check all repositories and collect warnings with multiple threads
         threads: list[threading.Thread] = []
         for name, repo in self.repos.items():
@@ -224,16 +238,12 @@ class CheckReposTask(AbstractTask):
         for thread in threads:
             thread.join()
 
-        workspace_hash: str = self._get_workspace_hash(self.commit_hashes)
-        self.commit_hashes["__WORKSPACE__"] = workspace_hash
-        workspace_friendly_name: str = self._get_friendly_name(workspace_hash)
-
         # Display results
         results: GroupResult
         # Do we have any warnings? If not, all checks for all repos were successful
         if not any([*self.warnings.values()]):  # No warnings = Success
             print_success(
-                f"Current commit: [bold]{workspace_friendly_name}[default] ({workspace_hash[:8]})\nYour local workspace is clean and up-to-date."
+                f"Current workspace hash: [bold]{workspace_friendly_name}[default] ({workspace_hash[:8]})\nYour local workspace is clean and up-to-date."
             )
             results = success(connections)
 
@@ -254,8 +264,8 @@ class CheckReposTask(AbstractTask):
                 warning_table.add_row(repo_name, f"{commit_name} ({commit_hash[:8]})", warnings)
             print_warning(
                 RichGroup(
-                    f"Current commit: [bold]{workspace_friendly_name}[default] ({workspace_hash[:8]})",
-                    "Your local workspace is [bold]BAD!",
+                    f"Current workspace hash: [bold]{workspace_friendly_name}[default] ({workspace_hash[:8]})",
+                    "Your local workspace is [bold][red]BAD!",
                     warning_table,
                     "Please check the warnings and decide if you want to proceed!",
                 )
@@ -268,9 +278,20 @@ class CheckReposTask(AbstractTask):
             else:
                 print_debug("Aborting because of user choice.")
                 results = failure(connections, warnings, do_exit=True)
-
-        self._write_commits()
         return results
+
+    def _collect_workspace_hashes(self) -> tuple[str, str]:
+        """
+        Collect commit hashes and generate the friendly commit names. Writes the results to a file.
+
+        :return: The workspace hash and the friendly name of the workspace hash.
+        """
+        self.commit_hashes: dict[str, str] = {name: repo.get_commit_hash() for name, repo in self.repos.items()}
+        workspace_hash: str = self._get_workspace_hash(self.commit_hashes)
+        self.commit_hashes["__WORKSPACE__"] = workspace_hash
+        workspace_friendly_name: str = self._get_friendly_name(workspace_hash)
+        self._write_commits()
+        return workspace_hash, workspace_friendly_name
 
     def _get_workspace_hash(self, commit_hashes: dict[str, str]) -> str:
         """
