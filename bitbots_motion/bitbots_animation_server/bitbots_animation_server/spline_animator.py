@@ -24,6 +24,7 @@ class SplineAnimator:
         current_point_time = 0.0
         for keyframe in self.anim.keyframes:
             # Calculate important times
+            self.stabilizations[current_point_time] = keyframe.stabelization_functions
             self.animation_duration += keyframe.duration + keyframe.pause
             current_point_time += keyframe.duration
             self.keyframe_times.append(current_point_time)
@@ -47,7 +48,6 @@ class SplineAnimator:
                 self.spline_dict[joint].add_point(current_point_time + keyframe.pause, keyframe.goals[joint])
             current_point_time += keyframe.pause
             self.torques[current_point_time] = keyframe.torque
-            self.stabilizations[current_point_time] = keyframe.stabelization_functions
 
         # Compute the splines
         for joint in self.spline_dict:
