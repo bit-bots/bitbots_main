@@ -135,6 +135,16 @@ walking:
       description: "Time of kick apex (in single support cycle phase)"
       validation:
         bounds<>: [0.0, 1.0]
+    kick_put_down_phase:
+      type: double
+      description: "Time at which the foot is moved back from the kick apex to it's resting position, but still in the air (in single support cycle phase)"
+      validation:
+        bounds<>: [0.0, 1.0]
+    kick_rise_factor:
+      type: double
+      description: "Scales the step rise parameter, as the kick is a special case, where the foot is moved higher of the ground than in normal walking (ratio)"
+      validation:
+        bounds<>: [0.0, 5.0]
   node:
     engine_freq:
       type: double
