@@ -66,9 +66,11 @@ walking:
       # (in 1)
       trunk_pitch_p_coef_turn: -0.05
 
-      kick_length: 0.09
+      kick_length: 0.12
       kick_vel: 0.2
-      kick_phase: 0.75
+      kick_phase: 0.28
+      kick_put_down_phase: 0.8
+      kick_rise_factor: 1.5
 
       first_step_swing_factor: 1.0
       first_step_trunk_phase: -0.5

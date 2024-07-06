@@ -474,6 +474,8 @@ void WalkEngine::buildTrajectories(WalkEngine::TrajectoryType type) {
   if (kick_step) {
     foot_spline_.x()->addPoint(double_support_length + single_support_length * config_.kick_phase,
                                support_to_next_.getOrigin().x() + config_.kick_length, config_.kick_vel);
+    foot_spline_.x()->addPoint(double_support_length + single_support_length * config_.kick_put_down_phase,
+                               support_to_next_.getOrigin().x());
   } else {
     foot_spline_.x()->addPoint(
         double_support_length + single_support_length * config_.foot_put_down_phase * config_.foot_overshoot_phase,
@@ -499,10 +501,10 @@ void WalkEngine::buildTrajectories(WalkEngine::TrajectoryType type) {
   foot_spline_.z()->addPoint(double_support_length, foot_pos_at_foot_change_.z());
   foot_spline_.z()->addPoint(double_support_length + single_support_length * config_.foot_apex_phase -
                                  0.5 * config_.foot_z_pause * single_support_length,
-                             config_.foot_rise);
+                             kick_step ? config_.foot_rise * config_.kick_rise_factor : config_.foot_rise);
   foot_spline_.z()->addPoint(double_support_length + single_support_length * config_.foot_apex_phase +
                                  0.5 * config_.foot_z_pause * single_support_length,
-                             config_.foot_rise);
+                             kick_step ? config_.foot_rise * config_.kick_rise_factor : config_.foot_rise);
   foot_spline_.z()->addPoint(double_support_length + single_support_length * config_.foot_put_down_phase,
                              config_.foot_put_down_z_offset + support_to_next_.getOrigin().z());
   foot_spline_.z()->addPoint(half_period, support_to_next_.getOrigin().z());
