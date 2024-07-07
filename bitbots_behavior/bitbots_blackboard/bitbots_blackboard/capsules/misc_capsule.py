@@ -2,23 +2,23 @@ from typing import Optional
 
 from bitbots_utils.utils import get_parameters_from_other_node
 from rclpy.duration import Duration
-from rclpy.node import Node
 from std_msgs.msg import Bool
 
+from bitbots_blackboard.capsules import AbstractBlackboardCapsule
 from bitbots_msgs.msg import Audio, HeadMode, RobotControlState
 
 
-class MiscCapsule:
+class MiscCapsule(AbstractBlackboardCapsule):
     """Capsule for miscellaneous functions."""
 
-    def __init__(self, node: Node):
-        self.node = node
-        self.head_pub = node.create_publisher(HeadMode, "head_mode", 10)
-        self.speak_pub = node.create_publisher(Audio, "speak", 10)
+    def __init__(self, node, blackboard):
+        super().__init__(node, blackboard)
+        self.head_pub = self._node.create_publisher(HeadMode, "head_mode", 10)
+        self.speak_pub = self._node.create_publisher(Audio, "speak", 10)
 
         # Config
         gamestate_settings = get_parameters_from_other_node(
-            self.node, "parameter_blackboard", ["bot_id", "position_number"]
+            self._node, "parameter_blackboard", ["bot_id", "position_number"]
         )
 
         self.position_number: int = gamestate_settings["position_number"]
@@ -27,7 +27,7 @@ class MiscCapsule:
         self.robot_control_state: Optional[RobotControlState] = None
         self.timers = dict()
 
-        self.hcm_deactivate_pub = node.create_publisher(Bool, "hcm_deactivate", 1)
+        self.hcm_deactivate_pub = self._node.create_publisher(Bool, "hcm_deactivate", 1)
 
     #####################
     # ## Tracking Part ##
@@ -59,7 +59,7 @@ class MiscCapsule:
         :param duration_secs: Duration of the timer in seconds
         :return: None
         """
-        self.timers[timer_name] = self.node.get_clock().now() + Duration(seconds=duration_secs)
+        self.timers[timer_name] = self._node.get_clock().now() + Duration(seconds=duration_secs)
 
     def end_timer(self, timer_name: str):
         """
@@ -67,7 +67,7 @@ class MiscCapsule:
         :param timer_name: Name of the timer
         :return: None
         """
-        self.timers[timer_name] = self.node.get_clock().now()
+        self.timers[timer_name] = self._node.get_clock().now()
 
     def timer_running(self, timer_name: str) -> bool:
         """
@@ -77,7 +77,7 @@ class MiscCapsule:
         """
         if timer_name not in self.timers:
             return False
-        return self.node.get_clock().now() < self.timers[timer_name]
+        return self._node.get_clock().now() < self.timers[timer_name]
 
     def timer_remaining(self, timer_name: str) -> int:
         """
@@ -88,7 +88,7 @@ class MiscCapsule:
 
         if timer_name not in self.timers:
             return -1
-        return (self.timers[timer_name] - self.node.get_clock().now()).to_sec()
+        return (self.timers[timer_name] - self._node.get_clock().now()).to_sec()
 
     def timer_ended(self, timer_name: str) -> bool:
         """
@@ -98,4 +98,4 @@ class MiscCapsule:
         """
         if timer_name not in self.timers:
             return True  # Don't wait for a non-existing Timer
-        return self.node.get_clock().now() > self.timers[timer_name]
+        return self._node.get_clock().now() > self.timers[timer_name]

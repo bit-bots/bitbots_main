@@ -3,8 +3,9 @@
 #include <bitbots_splines/pose_spline.hpp>
 
 namespace bitbots_dynup {
-Visualizer::Visualizer(const std::string &base_topic, rclcpp::Node::SharedPtr node)
-    : base_topic_(base_topic), node_(node), params_() {
+Visualizer::Visualizer(rclcpp::Node::SharedPtr node, bitbots_dynup::Params::Visualizer params,
+                       const std::string &base_topic)
+    : node_(node), base_topic_(base_topic), params_(params) {
   /* make sure base_topic_ has consistent scheme */
   if (base_topic.compare(base_topic.size() - 1, 1, "/") != 0) {
     base_topic_ += "/";
@@ -15,7 +16,7 @@ Visualizer::Visualizer(const std::string &base_topic, rclcpp::Node::SharedPtr no
                                                                                     /* queue_size */ 5);
 }
 
-void Visualizer::setParams(VisualizationParams params) { params_ = params; }
+void Visualizer::setParams(bitbots_dynup::Params::Visualizer params) { params_ = params; }
 
 void Visualizer::displaySplines(bitbots_splines::PoseSpline splines, const std::string &frame) {
   // if (spline_publisher_->get_subscription_count() == 0)

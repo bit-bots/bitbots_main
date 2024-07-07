@@ -247,6 +247,8 @@ int main(int argc, char** argv) {
     // really short sleep to not waste cpu time
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
   }
+  // Join the thread
+  thread_obj.join();
 
   rclcpp::shutdown();
 }

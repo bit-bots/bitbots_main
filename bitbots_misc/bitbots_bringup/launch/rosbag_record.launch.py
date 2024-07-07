@@ -4,7 +4,8 @@ from datetime import datetime
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, ExecuteProcess, OpaqueFunction
 from launch.substitutions import EnvironmentVariable, LaunchConfiguration, PathJoinSubstitution
-from launch_ros.actions import Node
+
+# from launch_ros.actions import Node
 
 TOPICS_TO_RECORD: list[str] = [
     "/animation",
@@ -12,18 +13,15 @@ TOPICS_TO_RECORD: list[str] = [
     "/audio/audio",
     "/ball_obstacle_active",
     "/ball_position_relative_filtered",
-    "/ball_relative_filtered",
-    "/ball_relative_movement",
     "/balls_relative",
     "/camera/camera_info",
-    "/camera/image_to_record",
+    "/camera/image_proc",
     "/clock",
     "/cmd_vel",
     "/cop_l",
     "/cop_r",
     "/core/power_switch_status",
     "/debug/approach_point",
-    "/debug/ball_twist",
     "/debug/dsd/body_behavior/dsd_current_action",
     "/debug/dsd/body_behavior/dsd_stack",
     "/debug/dsd/body_behavior/dsd_tree",
@@ -33,8 +31,8 @@ TOPICS_TO_RECORD: list[str] = [
     "/debug/dsd/localization/dsd_current_action",
     "/debug/dsd/localization/dsd_stack",
     "/debug/dsd/localization/dsd_tree",
-    "/debug/used_ball",
-    "/debug/which_ball_is_used",
+    "/debug/behavior/used_ball",
+    "/debug/behavior/which_ball_is_used",
     "/diagnostics_agg",
     "/diagnostics",
     "/DynamixelController/command",
@@ -47,7 +45,7 @@ TOPICS_TO_RECORD: list[str] = [
     "/imu_head/data",
     "/imu/data_raw",
     "/joint_states",
-    "/walk_engine_odometry",
+    "/motion_odometry",
     "/move_base/current_goal",
     "/path",
     "/pose_with_covariance",
@@ -63,6 +61,7 @@ TOPICS_TO_RECORD: list[str] = [
     "/tf_static",
     "/tf",
     "/time_to_ball",
+    "/workspace_status",
 ]
 
 
@@ -79,18 +78,18 @@ def generate_launch_arguments():
 
 def generate_nodes():
     return [
-        Node(
-            package="topic_tools",
-            executable="throttle",
-            output="screen",
-            name="record_rosbag_drop_images",
-            arguments=[
-                "messages",
-                "/camera/image_proc",
-                LaunchConfiguration("max_image_frequency"),
-                "/camera/image_to_record",
-            ],
-        )
+        # Node(
+        #     package="topic_tools",
+        #     executable="throttle",
+        #     output="screen",
+        #     name="record_rosbag_drop_images",
+        #     arguments=[
+        #         "messages",
+        #         "/camera/image_proc",
+        #         LaunchConfiguration("max_image_frequency"),
+        #         "/camera/image_to_record",
+        #     ],
+        # )
     ]
 
 

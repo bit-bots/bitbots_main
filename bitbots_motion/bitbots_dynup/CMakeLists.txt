@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.5)
 project(bitbots_dynup)
 
-# Add support for C++17
+# Add support for C++20
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 17)
+  set(CMAKE_CXX_STANDARD 20)
 endif()
 
 set(PYBIND11_PYTHON_VERSION 3)
@@ -28,10 +28,13 @@ find_package(tf2_eigen REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(Eigen3 REQUIRED)
+find_package(generate_parameter_library REQUIRED)
 
 find_package(ros2_python_extension REQUIRED)
 find_package(pybind11 REQUIRED)
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
+
+generate_parameter_library(dynup_parameters config/dynup_config.yaml)
 
 rosidl_generate_interfaces(
   ${PROJECT_NAME} "msg/DynupEngineDebug.msg" "msg/DynupPoses.msg" DEPENDENCIES
@@ -42,8 +45,14 @@ include_directories(include ${PYTHON_INCLUDE_DIRS})
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 add_compile_options(-Wall -Werror -Wno-unused -fPIC)
 
-set(SOURCES src/dynup_engine.cpp src/dynup_ik.cpp src/dynup_node.cpp
-            src/dynup_pywrapper.cpp src/dynup_stabilizer.cpp src/visualizer.cpp)
+set(SOURCES
+    src/dynup_engine.cpp
+    src/dynup_ik.cpp
+    src/dynup_node.cpp
+    src/dynup_pywrapper.cpp
+    src/dynup_stabilizer.cpp
+    src/visualizer.cpp
+    src/dynup_utils.cpp)
 
 add_executable(DynupNode ${SOURCES})
 
@@ -56,6 +65,7 @@ ament_target_dependencies(
   control_msgs
   control_toolbox
   geometry_msgs
+  generate_parameter_library
   moveit_ros_planning_interface
   rclcpp
   ros2_python_extension
@@ -71,8 +81,8 @@ ament_target_dependencies(
 rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME}
                               "rosidl_typesupport_cpp")
 
-target_link_libraries(DynupNode "${cpp_typesupport_target}")
-
+target_link_libraries(DynupNode "${cpp_typesupport_target}" rclcpp::rclcpp
+                      dynup_parameters)
 # create the lib
 pybind11_add_module(libpy_dynup SHARED src/dynup_pywrapper.cpp ${SOURCES})
 ament_target_dependencies(
@@ -96,7 +106,8 @@ ament_target_dependencies(
   tf2_geometry_msgs
   tf2_ros)
 
-target_link_libraries(libpy_dynup PRIVATE "${cpp_typesupport_target}")
+target_link_libraries(libpy_dynup PRIVATE "${cpp_typesupport_target}"
+                                          dynup_parameters)
 
 ament_python_install_package(bitbots_dynup_py)
 

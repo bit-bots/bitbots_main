@@ -35,8 +35,9 @@ walking:
       engine_freq: 100.0
 
       # parameters for bioIK
-      ik_timeout: 0.01
-      ik_reset: True
+      ik:
+        timeout: 0.01
+        reset: True
 
       debug_active: True
 
@@ -50,35 +51,43 @@ walking:
       y_speed_multiplier: 1.0
       yaw_speed_multiplier: 1.0
 
-      imu_active: False
-      imu_pitch_threshold: 0.19
-      imu_roll_threshold: 0.4
-      imu_pitch_vel_threshold: 1.3
-      imu_roll_vel_threshold: 5.7
-      pause_duration: 3.0
+      stability_stop:
+        imu:
+          active: False
+          pitch:
+            threshold: 0.19
+            vel_threshold: 1.3
+          roll:
+            threshold: 0.4
+            vel_threshold: 5.7
+        pause_duration: 3.0
 
-      pressure_phase_reset_active: False
-      ground_min_pressure: 1.5
-      phase_reset_phase: 0.25
-      joint_min_effort: 35.0
-      effort_phase_reset_active: False
+      imu_y_acc_tau: 0.1
 
-walk_pid_trunk_fused_pitch:
-  ros__parameters:
-    p: 0.0
-    i: 0.0
-    d: 0.0
-    i_clamp: 0.0
-    i_clamp_min: 0.0
-    i_clamp_max: 0.0
-    antiwindup: False
+      phase_reset:
+        min_phase: 0.25
+        foot_pressure:
+          active: False
+          ground_min_pressure: 1.5
+        effort:
+          active: False
+          joint_min_effort: 35.0
+        imu:
+          active: False
+          y_acceleration_threshold: 2.0
 
-walk_pid_trunk_fused_roll:
-  ros__parameters:
-    p: 0.0
-    i: 0.0
-    d: 0.0
-    i_clamp: 0.0
-    i_clamp_min: 0.0
-    i_clamp_max: 0.0
-    antiwindup: False
+      trunk_pid:
+        pitch:
+          p: 0.0
+          i: 0.0
+          d: 0.0
+          i_clamp_min: 0.0
+          i_clamp_max: 0.0
+          antiwindup: False
+        roll:
+          p: 0.0
+          i: 0.0
+          d: 0.0
+          i_clamp_min: 0.0
+          i_clamp_max: 0.0
+          antiwindup: False

@@ -2,7 +2,7 @@ import math
 
 import numpy as np
 import tf2_ros as tf2
-from bitbots_blackboard.blackboard import BodyBlackboard
+from bitbots_blackboard.body_blackboard import BodyBlackboard
 from bitbots_utils.transforms import quat_from_yaw
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 from geometry_msgs.msg import PoseStamped
@@ -13,7 +13,7 @@ class GoToRelativePosition(AbstractActionElement):
     blackboard: BodyBlackboard
 
     def __init__(self, blackboard, dsd, parameters: dict = None):
-        super().__init__(blackboard, dsd)
+        super().__init__(blackboard, dsd, parameters)
         self.point = float(parameters.get("x", 0)), float(parameters.get("y", 0)), float(parameters.get("t", 0))
         self.threshold = float(parameters.get("threshold", 0.1))
         self.first = True
@@ -54,7 +54,7 @@ class GoToAbsolutePosition(AbstractActionElement):
 
     def __init__(self, blackboard, dsd, parameters):
         """Go to an absolute position on the field"""
-        super().__init__(blackboard, dsd)
+        super().__init__(blackboard, dsd, parameters)
         self.point = float(parameters.get("x", 0)), float(parameters.get("y", 0)), float(parameters.get("t", 0))
 
     def perform(self, reevaluate=False):

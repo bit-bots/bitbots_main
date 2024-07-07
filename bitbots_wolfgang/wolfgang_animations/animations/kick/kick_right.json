@@ -30,7 +30,7 @@
                 "HeadPan": -0.09,
                 "HeadTilt": -0.09,
                 "LAnklePitch": -35.86,
-                "LAnkleRoll": 5.36,
+                "LAnkleRoll": -5.36,
                 "LHipPitch": 36.14,
                 "LHipRoll": 6.42,
                 "LHipYaw": -1.23,
@@ -52,7 +52,7 @@
                 "HeadPan": -0.09,
                 "HeadTilt": -0.09,
                 "LAnklePitch": -35.86,
-                "LAnkleRoll": 5.36,
+                "LAnkleRoll": -5.36,
                 "LHipPitch": 36.14,
                 "LHipRoll": 6.42,
                 "LHipYaw": -1.23,
@@ -74,7 +74,7 @@
                 "HeadPan": -0.09,
                 "HeadTilt": -0.09,
                 "LAnklePitch": -35.86,
-                "LAnkleRoll": 5.36,
+                "LAnkleRoll": -5.36,
                 "LHipPitch": 36.14,
                 "LHipRoll": 6.42,
                 "LHipYaw": -1.23,
@@ -113,7 +113,7 @@
             "torque": {}
         }
     ],
-    "last_edited": "2024-04-02 14:16:16.512615",
+    "last_edited": "2024-06-16 16:51:58.152981",
     "name": "kick_right",
     "version": ""
 }

@@ -11,26 +11,24 @@
 #include <string>
 #include <visualization_msgs/msg/marker_array.hpp>
 
-namespace bitbots_dynup {
+#include "dynup_parameters.hpp"
 
-struct VisualizationParams {
-  int spline_smoothness;
-};
+namespace bitbots_dynup {
 
 class Visualizer : bitbots_splines::AbstractVisualizer {
  public:
-  Visualizer(const std::string &base_topic, rclcpp::Node::SharedPtr node);
+  Visualizer(rclcpp::Node::SharedPtr node, bitbots_dynup::Params::Visualizer params, const std::string &base_topic);
 
-  void setParams(VisualizationParams params);
+  void setParams(bitbots_dynup::Params::Visualizer params);
 
   void displaySplines(bitbots_splines::PoseSpline splines, const std::string &frame);
 
  private:
+  rclcpp::Node::SharedPtr node_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr spline_publisher_;
   std::string base_topic_;
-  rclcpp::Node::SharedPtr node_;
   const std::string marker_ns_ = "bitbots_dynup";
-  VisualizationParams params_;
+  bitbots_dynup::Params::Visualizer params_;
 };
 }  // namespace bitbots_dynup
 

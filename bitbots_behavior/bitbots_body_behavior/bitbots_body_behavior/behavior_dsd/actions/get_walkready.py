@@ -1,5 +1,5 @@
 import rclpy
-from bitbots_blackboard.blackboard import BodyBlackboard
+from bitbots_blackboard.body_blackboard import BodyBlackboard
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 from bitbots_msgs.action import Dynup
@@ -10,7 +10,6 @@ class GetWalkready(AbstractActionElement):
 
     def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
-        self.direction = "walkready"
         self.first_perform = True
         self.active = False
 
@@ -59,7 +58,7 @@ class GetWalkready(AbstractActionElement):
 
         # Dynup action server is running, we can start the walkready action
         goal = Dynup.Goal()
-        goal.direction = self.direction
+        goal.direction = Dynup.Goal.DIRECTION_WALKREADY
         self.active = True
         self.dynup_action_current_goal = self.blackboard.animation.dynup_action_client.send_goal_async(goal)
         self.dynup_action_current_goal.add_done_callback(

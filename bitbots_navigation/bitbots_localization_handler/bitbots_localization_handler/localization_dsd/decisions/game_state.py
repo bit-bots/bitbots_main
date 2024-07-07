@@ -96,7 +96,7 @@ class SecondaryStateTeamDecider(AbstractLocalizationDecisionElement):
     """
 
     def __init__(self, blackboard, dsd, parameters):
-        super().__init__(blackboard, dsd)
+        super().__init__(blackboard, dsd, parameters)
         self.team_id = self.blackboard.gamestate.get_team_id()
 
     def perform(self, reevaluate=False):

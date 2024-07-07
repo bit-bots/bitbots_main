@@ -221,6 +221,9 @@ doku/*
 /lib/
 
 # Path to the protocol buffer definitions, which are a diffrerent repository and managed by vcstool
-/bitbots_team_communication/bitbots_team_communication/RobocupProtocol
+/bitbots_team_communication/bitbots_team_communication/bitbots_team_communication/RobocupProtocol
 # Protobuf generated file
-/bitbots_team_communication/bitbots_team_communication/robocup_extension_pb2.py
+/bitbots_team_communication/bitbots_team_communication/bitbots_team_communication/robocup_extension_pb2.py
+
+# Workspace git status file from the deploy tool
+**/workspace_status.json

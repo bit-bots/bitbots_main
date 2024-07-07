@@ -306,4 +306,6 @@ void ImuHardwareInterface::write(const rclcpp::Time &t, const rclcpp::Duration &
     set_accel_calib_threshold_ = false;
   }
 }
+
+void ImuHardwareInterface::restoreAfterPowerCycle() { write_complementary_filter_params_ = true; }
 }  // namespace bitbots_ros_control
