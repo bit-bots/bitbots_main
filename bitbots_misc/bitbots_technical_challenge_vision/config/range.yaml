@@ -1,7 +1,7 @@
 bitbots_technical_challenge_vision:
   blue_lower_h: {
     type: int,
-    default_value: 0,
+    default_value: 92,
     description: "hue value of the lower boundary for blue obstacles",
     validation: {
       bounds<>: [0, 179]
@@ -9,7 +9,7 @@ bitbots_technical_challenge_vision:
   }
   blue_upper_h: {
     type: int,
-    default_value: 179,
+    default_value: 110,
     description: "hue value of the upper boundary for blue obstacles",
     validation: {
       bounds<>: [0, 179]
@@ -17,7 +17,7 @@ bitbots_technical_challenge_vision:
   }
   blue_lower_s: {
     type: int,
-    default_value: 0,
+    default_value: 90,
     description: "separation value of the lower boundary for blue obstacles",
     validation: {
       bounds<>: [0, 255]
@@ -25,7 +25,7 @@ bitbots_technical_challenge_vision:
   }
   blue_upper_s: {
     type: int,
-    default_value: 255,
+    default_value: 236,
     description: "separation value of the upper boundary for blue obstacles",
     validation: {
       bounds<>: [0, 255]
@@ -49,7 +49,7 @@ bitbots_technical_challenge_vision:
   }
   red_lower_h: {
     type: int,
-    default_value: 0,
+    default_value: 138,
     description: "hue value of the lower boundary for red obstacles",
     validation: {
       bounds<>: [0, 179]
@@ -65,7 +65,7 @@ bitbots_technical_challenge_vision:
   }
   red_lower_s: {
     type: int,
-    default_value: 0,
+    default_value: 78,
     description: "separation value of the lower boundary for red obstacles",
     validation: {
       bounds<>: [0, 255]
@@ -97,7 +97,7 @@ bitbots_technical_challenge_vision:
   }
   min_size: {
     type: int,
-    default_value: 0,
+    default_value: 20,
     description: "minimum size of an obstacle to be considered",
     validation: {
       gt_eq<>: 0
@@ -105,7 +105,7 @@ bitbots_technical_challenge_vision:
   }
   max_size: {
     type: int,
-    default_value: 1,
+    default_value: 200,
     description: "maximum size of an obstacle to be considered",
     validation: {
       gt_eq<>: 0
@@ -113,6 +113,6 @@ bitbots_technical_challenge_vision:
   }
   debug_mode: {
     type: bool,
-    default_value: true,
+    default_value: false,
     description: "set true if debug images should be drawn and published",
   }

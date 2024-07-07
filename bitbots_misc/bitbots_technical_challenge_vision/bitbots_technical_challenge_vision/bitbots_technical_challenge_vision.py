@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Optional, Tuple
 
 import cv2
 import numpy as np
@@ -33,14 +33,14 @@ class TechnicalChallengeVision(Node):
         self._param_listener = bitbots_technical_challenge_vision.ParamListener(self)
         self._params = self._param_listener.get_params()
 
-    def create_robot_msg(self, x: int, y: int, h: int, w: int, t: int) -> Robot:
+    def create_robot_msg(self, x: int, y: int, w: int, h: int, t: int) -> Robot:
         """
         Creates a Robot message from a robots bounding box data and its color.
 
         :param x: bb top left x
         :param y: bb top left y
-        :param h: bb height
         :param w: bb width
+        :param h: bb height
         :param t: robot team
         :return: robot message for that robot
         """
@@ -89,37 +89,33 @@ class TechnicalChallengeVision(Node):
         blue_robots = []
         red_robots = []
 
-        if arg.debug_mode:
-
-            def annotate(x, y, h, w, c):
-                return cv2.rectangle(
-                    debug_img,
-                    (x, y),
-                    (x + w, y + h),
-                    c,
-                    2,
-                )
-        else:
-
-            def annotate(x, y, h, w, c):
+        def annotate(x, y, w, h, c) -> Optional[np.ndarray]:
+            if not arg.debug_mode:
                 return None
+            return cv2.rectangle(
+                debug_img,
+                (x, y),
+                (x + w, y + h),
+                c,
+                2,
+            )
 
         for cnt in blue_contours:
-            x, y, h, w = cv2.boundingRect(cnt)
-            if min(h, w) >= arg.min_size and max(h, w) <= arg.max_size:
+            x, y, w, h = cv2.boundingRect(cnt)
+            if min(w, h) >= arg.min_size and max(h, w) <= arg.max_size:
                 # draw bb on debug img
-                annotate(x, y, h, w, (255, 0, 0))
+                annotate(x, y, w, h, (255, 0, 0))
 
                 # TODO I think 1 is for the blue team?
-                blue_robots.append(self.create_robot_msg(x, y, h, w, 1))
+                blue_robots.append(self.create_robot_msg(x, y, w, h, 1))
 
         for cnt in red_contours:
-            x, y, h, w = cv2.boundingRect(cnt)
-            if min(h, w) >= arg.min_size and max(h, w) <= arg.max_size:
+            x, y, w, h = cv2.boundingRect(cnt)
+            if min(w, h) >= arg.min_size and max(h, w) <= arg.max_size:
                 # draw bb on debug img
-                annotate(x, y, h, w, (0, 0, 255))
+                annotate(x, y, w, h, (0, 0, 255))
 
-                red_robots.append(self.create_robot_msg(x, y, h, w, 2))
+                red_robots.append(self.create_robot_msg(x, y, w, h, 2))
 
         return blue_robots, red_robots, blue_map, red_map, debug_img
 
