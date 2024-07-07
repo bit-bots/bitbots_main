@@ -105,7 +105,7 @@ bitbots_technical_challenge_vision:
   }
   max_size: {
     type: int,
-    default_value: 200,
+    default_value: 400,
     description: "maximum size of an obstacle to be considered",
     validation: {
       gt_eq<>: 0
