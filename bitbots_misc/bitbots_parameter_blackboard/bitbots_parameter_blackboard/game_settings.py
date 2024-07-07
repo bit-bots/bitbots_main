@@ -138,19 +138,28 @@ def main():
         settings["parameter_blackboard"]["ros__parameters"] = ros_parameters
 
     options = provide_config(OPTIONS_PATH)
-    while not is_config_correct:
-        for key in options.keys():
-            entry_value_type = locate(options[key]["type"])
-            entry_options = options[key].get("options", None)
-            entry_explanation = options[key]["explanation"]
 
-            if key in ros_parameters.keys():
-                ros_parameters[key] = ask_for_config_option(
-                    key, entry_value_type, ros_parameters[key], entry_options, entry_explanation
+    # As a special case, we try to get the robot_id from the hostname as a default value
+    # Because the robots often play with theirs fixed numbers
+    try:
+        robot_id = int(os.uname()[1][-1])  # We assume the the hostname is in the form 'nucX'
+        settings["robot_id"] = robot_id
+    except ValueError:
+        pass
+
+    while not is_config_correct:
+        for param_name, param_template in options.items():
+            entry_value_type = locate(param_template["type"])
+            entry_options = param_template.get("options", None)
+            entry_explanation = param_template["explanation"]
+
+            if param_name in ros_parameters.keys():
+                ros_parameters[param_name] = ask_for_config_option(
+                    param_name, entry_value_type, ros_parameters[param_name], entry_options, entry_explanation
                 )
             else:
-                value = ask_for_config_option(key, entry_value_type, None, entry_options, entry_explanation)
-                ros_parameters.update({key: value})
+                value = ask_for_config_option(param_name, entry_value_type, None, entry_options, entry_explanation)
+                ros_parameters.update({param_name: value})
 
         settings_string = yaml.safe_dump(settings)
         print("=============== Current Settings ===============")
