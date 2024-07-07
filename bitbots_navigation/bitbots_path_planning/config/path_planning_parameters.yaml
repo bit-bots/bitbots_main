@@ -1,5 +1,5 @@
 bitbots_path_planning:
-  base_footprint_frame: 
+  base_footprint_frame:
     type: string
     default_value: base_footprint
     description: 'The frame of the robot base'
@@ -16,7 +16,7 @@ bitbots_path_planning:
     description: 'The rate at which the path planning is executed'
     validation:
       bounds<>: [0.0, 100.0]
-  
+
   map:
     planning_frame:
       type: string
@@ -73,7 +73,7 @@ bitbots_path_planning:
   controller:
     carrot_distance:
       type: int
-      default_value: 20
+      default_value: 4
       description: 'The distance to the carrot that we want to reach on the path'
       validation:
         bounds<>: [0, 100]
@@ -86,19 +86,19 @@ bitbots_path_planning:
 
     max_vel_x:
       type: double
-      default_value: 0.15
+      default_value: 0.05
       description: 'Maximum velocity we want to reach in different directions (base_footprint coordinate system)'
       validation:
         bounds<>: [0.0, 1.0]
     min_vel_x:
       type: double
-      default_value: -0.1
+      default_value: -0.05
       description: 'Minimum velocity we want to reach in different directions (base_footprint coordinate system)'
       validation:
         bounds<>: [-1.0, 0.0]
     max_vel_y:
       type: double
-      default_value: 0.1
+      default_value: 0.05
       description: 'Maximum velocity we want to reach in different directions (base_footprint coordinate system)'
       validation:
         bounds<>: [0.0, 1.0]
@@ -132,4 +132,3 @@ bitbots_path_planning:
       description: 'Distance at which we switch from orienting towards the path to orienting towards the goal poses orientation (in meters)'
       validation:
         bounds<>: [0.0, 10.0]
-      
