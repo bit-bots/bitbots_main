@@ -11,10 +11,10 @@
 @ChangeAction + action:waiting + r:false, @PlayAnimationInitInSim + r:false, @LookAtFieldFeatures + r:false, @GetWalkready + r:false, @WalkInPlace
 
 #PerformKickLeft
-@ChangeAction + action:kicking, @LookAtFront, @Stand + duration:1.0 + r:false, @LookForward + r:false, @KickBallStatic + foot:left + r:false, @LookAtFieldFeatures + r:false, @Stand + duration:0.5 + r:false
+@ChangeAction + action:kicking, @LookForward + r:false, @WalkKick + foot:left + r:false, @LookAtFieldFeatures + r:false
 
 #PerformKickRight
-@ChangeAction + action:kicking, @LookAtFront, @Stand + duration:1.0 + r:false, @LookForward + r:false, @KickBallStatic + foot:right + r:false, @LookAtFieldFeatures + r:false, @Stand + duration:0.5 + r:false
+@ChangeAction + action:kicking, @LookForward + r:false, @WalkKick + foot:right + r:false, @LookAtFieldFeatures + r:false
 
 #Dribble
 @ChangeAction + action:going_to_ball, @CancelPathplanning, @LookAtBall, @LookAtFront, @DribbleForward

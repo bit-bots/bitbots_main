@@ -1,4 +1,5 @@
 from bitbots_blackboard.body_blackboard import BodyBlackboard
+from bitbots_blackboard.capsules.kick_capsule import KickCapsule
 from bitbots_utils.transforms import quat_from_yaw
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
@@ -11,6 +12,25 @@ class AbstractKickAction(AbstractActionElement):
     def pop(self):
         self.blackboard.world_model.forget_ball()
         super().pop()
+
+
+class WalkKick(AbstractKickAction):
+    target: KickCapsule.WalkKickTargets
+
+    def __init__(self, blackboard, dsd, parameters):
+        super().__init__(blackboard, dsd, parameters)
+        if "foot" not in parameters.keys():
+            raise ValueError("No foot specified for walk kick")
+        elif "right" == parameters["foot"]:
+            self.target = KickCapsule.WalkKickTargets.RIGHT
+        elif "left" == parameters["foot"]:
+            self.target = KickCapsule.WalkKickTargets.LEFT
+        else:
+            raise ValueError(f"Invalid foot specified for walk kick: {parameters['foot']}")
+
+    def perform(self, reevaluate=False):
+        self.blackboard.kick.walk_kick(self.target)
+        self.pop()
 
 
 class KickBallStatic(AbstractKickAction):
@@ -99,7 +119,7 @@ class KickBallDynamic(AbstractKickAction):
 
                 goal.kick_direction = quat_from_yaw(kick_direction)
 
-                self.blackboard.kick.kick(goal)
+                self.blackboard.kick.dynamic_kick(goal)
                 self._goal_sent = True
             else:
                 self.pop()
