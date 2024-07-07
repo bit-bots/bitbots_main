@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<launch>
+    <let if="$(env IS_ROBOT false)" name="taskset" value="taskset -c 6,7"/>
+    <let unless="$(env IS_ROBOT false)" name="taskset" value=""/>
+
+    <node pkg="bitbots_technical_challenge_vision" exec="bitbots_technical_challenge_vision" name="bitbots_technical_challenge_vision" output="screen" launch-prefix="$(var taskset)">
+    </node>
+</launch>
