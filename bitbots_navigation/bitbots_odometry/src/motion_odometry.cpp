@@ -29,7 +29,6 @@ MotionOdometry::MotionOdometry()
   pub_odometry_ = this->create_publisher<nav_msgs::msg::Odometry>("motion_odometry", 1);
 
   previous_support_link_ = r_sole_frame_;
-  start_time_ = this->now();
 }
 
 void MotionOdometry::loop() {
@@ -37,7 +36,6 @@ void MotionOdometry::loop() {
   bitbots_utils::wait_for_tf(this->get_logger(), this->get_clock(), &tf_buffer_,
                              {base_link_frame_, r_sole_frame_, l_sole_frame_}, base_link_frame_);
 
-  rclcpp::Time cycle_start_time = this->now();
   config_ = param_listener_.get_params();
 
   // check if step finished, meaning left->right or right->left support. double support is skipped

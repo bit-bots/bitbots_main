@@ -51,7 +51,6 @@ class MotionOdometry : public rclcpp::Node {
   rclcpp::Time foot_change_time_{rclcpp::Time(0, 0, RCL_ROS_TIME)};
   std::string previous_support_link_;
   std::string current_support_link_;
-  rclcpp::Time start_time_;
 };
 
 }  // namespace bitbots_odometry
