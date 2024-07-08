@@ -106,9 +106,8 @@ class OdometryFuser : public rclcpp::Node {
       tf2::Transform base_link_in_rotation_point = rotation_point_in_base.inverse();
 
       // get only translation and yaw from motion odometry
-      tf2::Quaternion odom_orientation_yaw = getCurrentMotionOdomYaw(motion_odometry.getRotation());
       tf2::Transform motion_odometry_yaw;
-      motion_odometry_yaw.setRotation(odom_orientation_yaw);
+      motion_odometry_yaw.setRotation(tf2::Quaternion::getIdentity());
       motion_odometry_yaw.setOrigin(motion_odometry.getOrigin());
 
       // Get the rotation offset between the IMU and the baselink
@@ -122,16 +121,14 @@ class OdometryFuser : public rclcpp::Node {
       }
 
       // get imu transform without yaw
-      tf2::Quaternion imu_orientation_without_yaw_component =
-          getCurrentImuRotationWithoutYaw(imu_orientation * imu_mounting_offset.getRotation());
+      tf2::Quaternion imu_orientation_without_yaw_component = imu_orientation * imu_mounting_offset.getRotation();
       tf2::Transform imu_without_yaw_component;
       imu_without_yaw_component.setRotation(imu_orientation_without_yaw_component);
       imu_without_yaw_component.setOrigin({0, 0, 0});
 
       // transformation chain to get correctly rotated odom frame
       // go to the rotation point in the odom frame. rotate the transform to the base link at this point
-      fused_odometry =
-          motion_odometry_yaw * rotation_point_in_base * imu_without_yaw_component * base_link_in_rotation_point;
+      fused_odometry = motion_odometry_yaw * imu_without_yaw_component;
     } else {
       fused_odometry = motion_odometry;
     }
