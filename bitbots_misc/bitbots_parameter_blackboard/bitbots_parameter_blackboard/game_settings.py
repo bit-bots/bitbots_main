@@ -143,7 +143,7 @@ def main():
     # Because the robots often play with theirs fixed numbers
     try:
         robot_id = int(os.uname()[1][-1])  # We assume the the hostname is in the form 'nucX'
-        settings["robot_id"] = robot_id
+        ros_parameters["bot_id"] = robot_id
     except ValueError:
         pass
 
