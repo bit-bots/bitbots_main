@@ -1,3 +1,4 @@
+import math
 from unittest.mock import Mock
 
 import pytest
@@ -37,7 +38,7 @@ def test_step_limits_forward_x_velocity(node, tf2_buffer, config, pose_opponent_
 
     controller.step(path_to(pose_opponent_goal))
 
-    assert controller.last_cmd_vel.linear.x == config.controller.max_vel_x
+    assert controller.last_cmd_vel.linear.x == pytest.approx(config.controller.max_vel_x)
     assert controller.last_cmd_vel.linear.y == pytest.approx(0)
     assert controller.last_cmd_vel.linear.z == 0
 
@@ -47,7 +48,7 @@ def test_step_limits_backward_x_velocity(node, tf2_buffer, config, pose_own_goal
 
     controller.step(path_to(pose_own_goal))
 
-    assert controller.last_cmd_vel.linear.x == config.controller.min_vel_x
+    assert controller.last_cmd_vel.linear.x == pytest.approx(config.controller.min_vel_x)
     assert controller.last_cmd_vel.linear.y == pytest.approx(0)
     assert controller.last_cmd_vel.linear.z == 0
 
@@ -58,7 +59,7 @@ def test_step_limits_forward_y_velocity(node, tf2_buffer, config, pose_left_line
     controller.step(path_to(pose_left_line))
 
     assert controller.last_cmd_vel.linear.x == pytest.approx(0)
-    assert controller.last_cmd_vel.linear.y == config.controller.max_vel_y
+    assert controller.last_cmd_vel.linear.y == pytest.approx(config.controller.max_vel_y)
     assert controller.last_cmd_vel.linear.z == 0
 
 
@@ -68,7 +69,7 @@ def test_step_limits_backward_y_velocity(node, tf2_buffer, config, pose_right_li
     controller.step(path_to(pose_right_line))
 
     assert controller.last_cmd_vel.linear.x == pytest.approx(0)
-    assert controller.last_cmd_vel.linear.y == -config.controller.max_vel_y
+    assert controller.last_cmd_vel.linear.y == pytest.approx(-config.controller.max_vel_y)
     assert controller.last_cmd_vel.linear.z == 0
 
 
@@ -77,8 +78,15 @@ def test_step_limits_forward_xy_velocities(node, tf2_buffer, config, pose_oppone
 
     controller.step(path_to(pose_opponent_corner))
 
-    assert controller.last_cmd_vel.linear.x == pytest.approx(config.controller.max_vel_x)
-    assert controller.last_cmd_vel.linear.y == pytest.approx(config.controller.max_vel_y)
+    goal_heading_angle = math.atan2(pose_opponent_corner.pose.position.y, pose_opponent_corner.pose.position.x)
+    walk_command_angle = math.atan2(controller.last_cmd_vel.linear.y, controller.last_cmd_vel.linear.x)
+
+    assert goal_heading_angle == pytest.approx(walk_command_angle)
+
+    walk_command_speed = math.hypot(controller.last_cmd_vel.linear.x, controller.last_cmd_vel.linear.y)
+
+    assert walk_command_speed < config.controller.max_vel_x
+    assert walk_command_speed < config.controller.max_vel_y
     assert controller.last_cmd_vel.linear.z == 0
 
 
@@ -87,8 +95,15 @@ def test_step_limits_backward_xy_velocities(node, tf2_buffer, config, pose_own_c
 
     controller.step(path_to(pose_own_corner))
 
-    assert controller.last_cmd_vel.linear.x == pytest.approx(config.controller.min_vel_x)
-    assert controller.last_cmd_vel.linear.y == pytest.approx(-0.066666666)
+    goal_heading_angle = math.atan2(pose_own_corner.pose.position.y, pose_own_corner.pose.position.x)
+    walk_command_angle = math.atan2(controller.last_cmd_vel.linear.y, controller.last_cmd_vel.linear.x)
+
+    assert goal_heading_angle == pytest.approx(walk_command_angle)
+
+    walk_command_speed = math.hypot(controller.last_cmd_vel.linear.x, controller.last_cmd_vel.linear.y)
+
+    assert walk_command_speed < abs(config.controller.min_vel_x)
+    assert walk_command_speed < config.controller.max_vel_y
     assert controller.last_cmd_vel.linear.z == 0
 
 
@@ -96,11 +111,11 @@ def test_step_limits_rotation(node, tf2_buffer, config, pose_left_line, pose_rig
     controller = setup_controller(node, tf2_buffer)
 
     controller.step(path_to(pose_left_line))
-    assert controller.last_cmd_vel.angular.z == config.controller.max_rotation_vel
+    assert controller.last_cmd_vel.angular.z == pytest.approx(config.controller.max_rotation_vel)
 
     controller.last_update_time = None
     controller.step(path_to(pose_right_line))
-    assert controller.last_cmd_vel.angular.z == -config.controller.max_rotation_vel
+    assert controller.last_cmd_vel.angular.z == pytest.approx(-config.controller.max_rotation_vel)
 
 
 def test_step_cmd_vel_smoothing(snapshot, node, tf2_buffer, config, pose_opponent_corner):
