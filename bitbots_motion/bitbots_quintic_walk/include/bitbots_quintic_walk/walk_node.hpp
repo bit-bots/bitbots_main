@@ -51,9 +51,10 @@ https://github.com/Rhoban/model/
 
 namespace bitbots_quintic_walk {
 
-class WalkNode : public rclcpp::Node {
+class WalkNode {
  public:
-  explicit WalkNode(std::string ns = "", std::vector<rclcpp::Parameter> parameters = {});
+  explicit WalkNode(rclcpp::Node::SharedPtr node, const std::string &ns = "",
+                    std::vector<rclcpp::Parameter> parameters = {});
   bitbots_msgs::msg::JointCommand step(double dt);
   bitbots_msgs::msg::JointCommand step(double dt, geometry_msgs::msg::Twist::SharedPtr cmdvel_msg,
                                        sensor_msgs::msg::Imu::SharedPtr imu_msg,
@@ -77,6 +78,11 @@ class WalkNode : public rclcpp::Node {
    * Reset everything to initial idle state.
    */
   void reset();
+
+  /**
+   * Updates the parameters of the walking after a parameter change.
+   */
+  void updateParams();
 
   /**
    * Reset walk to any given state. Necessary for using this as reference in learning.
@@ -113,7 +119,9 @@ class WalkNode : public rclcpp::Node {
   double getTimerFreq();
 
  private:
-  std::vector<double> get_step_from_vel(geometry_msgs::msg::Twist::SharedPtr msg);
+  rclcpp::Node::SharedPtr node_;
+
+  std::array<double, 4> get_step_from_vel(geometry_msgs::msg::Twist::SharedPtr msg);
   void stepCb(geometry_msgs::msg::Twist::SharedPtr msg);
   void cmdVelCb(geometry_msgs::msg::Twist::SharedPtr msg);
 
@@ -127,8 +135,6 @@ class WalkNode : public rclcpp::Node {
 
   void kickCb(std_msgs::msg::Bool::SharedPtr msg);
 
-  OnSetParametersCallbackHandle::SharedPtr callback_handle_;
-
   double getTimeDelta();
 
   // Declare parameter listener and struct from the generate_parameter_library
@@ -136,30 +142,20 @@ class WalkNode : public rclcpp::Node {
   // Datastructure to hold all parameters, which is build from the schema in the 'parameters.yaml'
   walking::Params config_;
 
-  std::string odom_frame_, base_link_frame_, l_sole_frame_, r_sole_frame_;
-
-  WalkRequest current_request_;
-
-  bool first_run_;
-
-  double last_ros_update_time_;
-
-  int robot_state_;
-
-  int current_support_foot_;
-
-  int odom_counter_;
+  WalkRequest current_request_ = {.stop_walk = true};
   WalkRequest last_request_;
+
+  bool first_run_ = true;
+
+  double last_ros_update_time_ = 0;
+
+  int robot_state_ = bitbots_msgs::msg::RobotControlState::CONTROLLABLE;
+
+  int current_support_foot_ = biped_interfaces::msg::Phase::DOUBLE_STANCE;
 
   WalkResponse current_response_;
   WalkResponse current_stabilized_response_;
   bitbots_splines::JointGoals motor_goals_;
-
-  /**
-   * Saves max values we can move in a single step as [x-direction, y-direction, z-rotation].
-   * Is used to limit _currentOrders to sane values
-   */
-  Eigen::Vector3d max_step_linear_;
 
   bitbots_quintic_walk::WalkEngine walk_engine_;
 
@@ -187,16 +183,16 @@ class WalkNode : public rclcpp::Node {
   WalkIK ik_;
   WalkVisualizer visualizer_;
 
-  double current_trunk_fused_pitch_;
-  double current_trunk_fused_roll_;
+  double current_trunk_fused_pitch_ = 0;
+  double current_trunk_fused_roll_ = 0;
 
-  double current_fly_pressure_;
-  double current_fly_effort_;
+  double current_fly_pressure_ = 0;
+  double current_fly_effort_ = 0;
 
-  double roll_vel_;
-  double pitch_vel_;
+  std::optional<rclcpp::Time> last_imu_measurement_time_;
+  double imu_y_acc = 0;
 
-  bool got_new_goals_;
+  bool got_new_goals_ = false;
 };
 
 }  // namespace bitbots_quintic_walk

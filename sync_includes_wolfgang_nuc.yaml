@@ -12,28 +12,33 @@ include:
         - bitbots_docs
         - bitbots_extrinsic_calibration
         - bitbots_ipm
+        - bitbots_parameter_blackboard
         - bitbots_robot_description
+        - bitbots_technical_challenge_vision
         - bitbots_teleop
-        - bitbots_tf_listener
+        - bitbots_tf_buffer
         - bitbots_tts
         - bitbots_utils
         - system_monitor
     - bitbots_motion:
+        - bitbots_animation_rqt
         - bitbots_animation_server
         - bitbots_dynamic_kick
         - bitbots_dynup
         - bitbots_hcm
         - bitbots_head_mover
         - bitbots_moveit_bindings
-        - bitbots_odometry
         - bitbots_quintic_walk
         - bitbots_splines
     - bitbots_msgs
     - bitbots_navigation:
         - bitbots_localization
         - bitbots_localization_handler
+        - bitbots_odometry
         - bitbots_path_planning
-    - bitbots_team_communication
+    - bitbots_team_communication:
+        - bitbots_team_communication
+        - bitbots_team_data_sim_rqt
     - bitbots_vision
     - bitbots_wolfgang:
         - wolfgang_animations
@@ -71,4 +76,4 @@ exclude:
     - ".idea"
     - ".vscode"
     - "__pycache__"
-    - "bitbots_utils/config/game_settings.yaml"
+    - "bitbots_parameter_blackboard/config/game_settings.yaml"

@@ -6,23 +6,6 @@
 
 namespace bitbots_localization {
 
-RobotStateDistribution::RobotStateDistribution(particle_filter::CRandomNumberGenerator &random_number_generator,
-                                               std::pair<double, double> initial_robot_pose,
-                                               std::pair<double, double> field_size)
-    : random_number_generator_(random_number_generator) {
-  // around robot
-  min_x_ = -field_size.first / 2.0 - initial_robot_pose.first;    // length
-  min_y_ = -field_size.second / 2.0 - initial_robot_pose.second;  // width
-  max_x_ = field_size.first / 2.0 - initial_robot_pose.first;
-  max_y_ = field_size.second / 2.0 - initial_robot_pose.second;
-}
-
-const RobotState RobotStateDistribution::draw() const {
-  return (RobotState(random_number_generator_.getUniform(min_x_, max_x_),
-                     random_number_generator_.getUniform(min_y_, max_y_),
-                     random_number_generator_.getUniform(-M_PI, M_PI)));
-}
-
 RobotStateDistributionStartLeft::RobotStateDistributionStartLeft(
     particle_filter::CRandomNumberGenerator &random_number_generator, std::pair<double, double> field_size) {
   field_size = field_size;
@@ -40,13 +23,13 @@ const RobotState RobotStateDistributionStartLeft::draw() const {
   }
 }
 
-RobotStateDistributionStartRight::RobotStateDistributionStartRight(
+RobotStateDistributionOwnSideline::RobotStateDistributionOwnSideline(
     particle_filter::CRandomNumberGenerator &random_number_generator, std::pair<double, double> field_size) {
   field_x = field_size.first;
   field_y = field_size.second;
 }
 
-const RobotState RobotStateDistributionStartRight::draw() const {
+const RobotState RobotStateDistributionOwnSideline::draw() const {
   if (random_number_generator_.getUniform(0, 1) > 0.5) {
     return (RobotState(random_number_generator_.getUniform(-field_x / 2, 0.0),
                        random_number_generator_.getGaussian(0.1) - field_y / 2,
@@ -58,7 +41,7 @@ const RobotState RobotStateDistributionStartRight::draw() const {
   }
 }
 
-RobotStateDistributionLeftHalf::RobotStateDistributionLeftHalf(
+RobotStateDistributionOpponentHalf::RobotStateDistributionOpponentHalf(
     particle_filter::CRandomNumberGenerator &random_number_generator, std::pair<double, double> field_size)
     : random_number_generator_(random_number_generator) {
   // only own half
@@ -68,13 +51,13 @@ RobotStateDistributionLeftHalf::RobotStateDistributionLeftHalf(
   max_y_ = (field_size.second / 2.0) + 0.5;
 }
 
-const RobotState RobotStateDistributionLeftHalf::draw() const {
+const RobotState RobotStateDistributionOpponentHalf::draw() const {
   return (RobotState(random_number_generator_.getUniform(min_x_, max_x_),
                      random_number_generator_.getUniform(min_y_, max_y_),
                      random_number_generator_.getUniform(-M_PI, M_PI)));
 }
 
-RobotStateDistributionRightHalf::RobotStateDistributionRightHalf(
+RobotStateDistributionOwnHalf::RobotStateDistributionOwnHalf(
     particle_filter::CRandomNumberGenerator &random_number_generator, std::pair<double, double> field_size)
     : random_number_generator_(random_number_generator) {
   // only own half
@@ -84,7 +67,7 @@ RobotStateDistributionRightHalf::RobotStateDistributionRightHalf(
   max_y_ = field_size.second / 2.0;
 }
 
-const RobotState RobotStateDistributionRightHalf::draw() const {
+const RobotState RobotStateDistributionOwnHalf::draw() const {
   return (RobotState(random_number_generator_.getUniform(min_x_, max_x_),
                      random_number_generator_.getUniform(min_y_, max_y_),
                      random_number_generator_.getUniform(-M_PI, M_PI)));

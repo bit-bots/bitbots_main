@@ -42,7 +42,7 @@ RUN sudo rosdep init
 
 # Add some requirements already here so that they are cached
 #RUN python3 -m pip install -U pip && \
-#    pip3 install -U PyYAML construct defusedxml filterpy matplotlib numpy opencv-python \
+#    pip3 install -U PyYAML construct defusedxml matplotlib numpy opencv-python \
 #    protobuf psutil pytorchyolo setuptools sklearn transforms3d
 
 ADD --chown=robot:robot https://raw.githubusercontent.com/bit-bots/bitbots_main/master/requirements/common.txt src/requirements_common.txt

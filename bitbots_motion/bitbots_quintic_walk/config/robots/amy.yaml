@@ -1,0 +1,8 @@
+# This file contains robot specific overrides to account for slight the differences in the robots.
+
+walking:
+  ros__parameters:
+    engine:
+      trunk_x_offset: -0.01
+    node:
+      x_bias: -0.015

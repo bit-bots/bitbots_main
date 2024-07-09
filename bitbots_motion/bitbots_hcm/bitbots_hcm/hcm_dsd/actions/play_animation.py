@@ -119,16 +119,28 @@ class PlayAnimationFallingBack(AbstractPlayAnimation):
         return self.blackboard.animation_name_falling_back
 
 
-class PlayAnimationTurningBackLeft(AbstractPlayAnimation):
+class PlayAnimationTurningFrontLeft(AbstractPlayAnimation):
     def choose_animation(self):
         self.blackboard.node.get_logger().info("LYING ON THE LEFT SIDE AND TURNING TO THE BACK TO GET UP")
-        return self.blackboard.animation_name_turning_back_left
+        return self.blackboard.animation_name_turning_front_left
 
 
-class PlayAnimationTurningBackRight(AbstractPlayAnimation):
+class PlayAnimationTurningFrontRight(AbstractPlayAnimation):
     def choose_animation(self):
         self.blackboard.node.get_logger().info("LYING ON THE RIGHT SIDE AND TURNING TO THE BACK TO GET UP")
-        return self.blackboard.animation_name_turning_back_right
+        return self.blackboard.animation_name_turning_front_right
+
+
+class PlayAnimationStandupFront(AbstractPlayAnimation):
+    def choose_animation(self):
+        self.blackboard.node.get_logger().info("STANDUP FRONT ANIMATION")
+        return self.blackboard.animation_name_stand_up_front
+
+
+class PlayAnimationStandupBack(AbstractPlayAnimation):
+    def choose_animation(self):
+        self.blackboard.node.get_logger().info("STANDUP BACK ANIMATION")
+        return self.blackboard.animation_name_stand_up_back
 
 
 class PlayAnimationInit(AbstractPlayAnimation):
@@ -136,15 +148,35 @@ class PlayAnimationInit(AbstractPlayAnimation):
         return self.blackboard.animation_name_init
 
 
+class PlayAnimationStartup(AbstractPlayAnimation):
+    def choose_animation(self):
+        return self.blackboard.animation_name_startup
+
+
 class PlayAnimationDynup(AbstractHCMActionElement):
     def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
         self.direction = parameters.get("direction")
+        assert self.direction in [
+            Dynup.Goal.DIRECTION_FRONT,
+            Dynup.Goal.DIRECTION_FRONT_ONLY,
+            Dynup.Goal.DIRECTION_BACK,
+            Dynup.Goal.DIRECTION_BACK_ONLY,
+            Dynup.Goal.DIRECTION_RISE,
+            Dynup.Goal.DIRECTION_DESCEND,
+            Dynup.Goal.DIRECTION_WALKREADY,
+        ]
         self.first_perform = True
 
     def perform(self, reevaluate=False):
-        # deactivate falling since it will be wrongly detected
-        self.do_not_reevaluate()
+        # deactivate the falling/fallen detection when a standup animation is running
+        if self.direction in [
+            Dynup.Goal.DIRECTION_FRONT,
+            Dynup.Goal.DIRECTION_BACK,
+            Dynup.Goal.DIRECTION_FRONT_ONLY,
+            Dynup.Goal.DIRECTION_BACK_ONLY,
+        ]:
+            self.do_not_reevaluate()
 
         # We only want to execute this once
         if self.first_perform:
@@ -164,6 +196,14 @@ class PlayAnimationDynup(AbstractHCMActionElement):
         if self.animation_finished():
             # we are finished playing this animation
             return self.pop()
+
+    def on_pop(self):
+        """
+        Cancel the current goal when the action is popped
+        """
+        super().on_pop()
+        if not self.animation_finished():
+            self.blackboard.dynup_action_current_goal.result().cancel_goal_async()
 
     def start_animation(self):
         """

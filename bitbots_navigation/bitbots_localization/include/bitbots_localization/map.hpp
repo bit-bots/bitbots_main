@@ -18,6 +18,13 @@ namespace gm = geometry_msgs;
 namespace bl = bitbots_localization;
 
 namespace bitbots_localization {
+
+struct FieldDimensions {
+  double x = 0;        // in m, x is the length of the field from goal to goal
+  double y = 0;        // in m, y is the width of the field
+  double padding = 0;  // in m, padding is the distance from the field lines to the field boundary
+};
+
 /**
  * @class Map
  * @brief Stores a map for a messurement class (e.g. a map of the lines)

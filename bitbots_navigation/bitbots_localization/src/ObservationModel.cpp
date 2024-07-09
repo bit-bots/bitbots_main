@@ -8,12 +8,14 @@ namespace bitbots_localization {
 
 RobotPoseObservationModel::RobotPoseObservationModel(std::shared_ptr<Map> map_lines, std::shared_ptr<Map> map_goals,
                                                      std::shared_ptr<Map> map_field_boundary,
-                                                     const bitbots_localization::Params &config)
-    : particle_filter::ObservationModel<RobotState>() {
-  map_lines_ = map_lines;
-  map_goals_ = map_goals;
-  map_field_boundary_ = map_field_boundary;
-  config_ = config;
+                                                     const bitbots_localization::Params &config,
+                                                     const FieldDimensions &field_dimensions)
+    : particle_filter::ObservationModel<RobotState>(),
+      map_lines_(map_lines),
+      map_goals_(map_goals),
+      map_field_boundary_(map_field_boundary),
+      config_(config),
+      field_dimensions_(field_dimensions) {
   particle_filter::ObservationModel<RobotState>::accumulate_weights_ = true;
 }
 
@@ -23,9 +25,8 @@ double RobotPoseObservationModel::calculate_weight_for_class(
   double particle_weight_for_class;
   if (!last_measurement.empty()) {
     std::vector<double> ratings = map->Map::provideRating(state, last_measurement);
-    particle_weight_for_class = std::accumulate(
-        ratings.begin(), ratings.end(), 1.0,
-        [element_weight](double a, double b) { return a * ((1 - element_weight) + element_weight * (b / 100)); });
+    // Take the average of the ratings (functional)
+    particle_weight_for_class = std::accumulate(ratings.begin(), ratings.end(), 0.0) / ratings.size();
   } else {
     particle_weight_for_class = 0;
   }
@@ -56,10 +57,10 @@ double RobotPoseObservationModel::measure(const RobotState &state) const {
 
   // reduce weight if particle is too far outside of the field:
   float range = config_.particle_filter.weighting.out_of_field_range;
-  if (state.getXPos() > (config_.field.size.x + config_.field.padding) / 2 + range ||
-      state.getXPos() < -(config_.field.size.x + config_.field.padding) / 2 - range ||
-      state.getYPos() > (config_.field.size.y + config_.field.padding) / 2 + range ||
-      state.getYPos() < -(config_.field.size.y + config_.field.padding) / 2 - range) {
+  if (state.getXPos() > (field_dimensions_.x + field_dimensions_.padding) / 2 + range ||
+      state.getXPos() < -(field_dimensions_.x + field_dimensions_.padding) / 2 - range ||
+      state.getYPos() > (field_dimensions_.y + field_dimensions_.padding) / 2 + range ||
+      state.getYPos() < -(field_dimensions_.y + field_dimensions_.padding) / 2 - range) {
     weight = weight - config_.particle_filter.weighting.out_of_field_weight_decrease;
   }
 

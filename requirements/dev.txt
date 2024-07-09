@@ -1,5 +1,6 @@
 # This file is used by pip to install dependencies for the development environment
 -r robot.txt  # Include robot.txt dependencies
+colorama  # Colorful terminal formatting
 exhale  # Necessary for rst rendering
 fabric  # Manages SSH sessions for the deploy tool
 GitPython  # Used by the deploy tool to check current state of the git repository
