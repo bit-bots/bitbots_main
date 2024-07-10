@@ -5,4 +5,4 @@ walking:
     engine:
       trunk_x_offset: -0.01
     node:
-      x_bias: -0.015
+      x_bias: -0.01
