@@ -86,7 +86,7 @@ bitbots_path_planning:
 
     max_vel_x:
       type: double
-      default_value: 0.05
+      default_value: 0.12
       description: 'Maximum velocity we want to reach in different directions (base_footprint coordinate system)'
       validation:
         bounds<>: [0.0, 1.0]
