@@ -49,10 +49,10 @@ class PyDynup:
     def set_engine_goal(self, direction):
         self.py_dynup_wrapper.set_engine_goal(direction)
 
-    def step(self, dt: float, imu_msg, jointstate_msg=None):
+    def step(self, dt: float, imu_msg, joint_state_msg):
         if dt == 0.0:
             dt = 0.001
-        step = self.py_dynup_wrapper.step(dt, self._to_cpp(imu_msg))
+        step = self.py_dynup_wrapper.step(dt, self._to_cpp(imu_msg), self._to_cpp(joint_state_msg))
         result = self._from_cpp(step, JointCommand)
         return result
 

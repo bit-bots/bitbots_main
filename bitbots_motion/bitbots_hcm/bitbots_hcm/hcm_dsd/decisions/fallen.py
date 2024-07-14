@@ -37,19 +37,15 @@ class Fallen(AbstractHCMDecisionElement):
 
         # Decides which side is facing downwards.
         if fused_pitch > self.fallen_orientation_thresh:
-            self.blackboard.node.get_logger().info("FALLEN TO THE FRONT")
             return "FALLEN_FRONT"
 
         if fused_pitch < -self.fallen_orientation_thresh:
-            self.blackboard.node.get_logger().info("FALLEN TO THE BACK")
             return "FALLEN_BACK"
 
         if fused_roll > self.fallen_orientation_thresh:
-            self.blackboard.node.get_logger().info("FALLEN TO THE RIGHT")
             return "FALLEN_RIGHT"
 
         if fused_roll < -self.fallen_orientation_thresh:
-            self.blackboard.node.get_logger().info("FALLEN TO THE LEFT")
             return "FALLEN_LEFT"
 
         return "NOT_FALLEN"

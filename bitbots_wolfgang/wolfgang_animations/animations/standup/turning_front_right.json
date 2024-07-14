@@ -1,0 +1,62 @@
+{
+    "author": "Unknown",
+    "description": "Turns the robot to the front, when it lies on its right side.",
+    "keyframes": [
+        {
+            "duration": 0.5,
+            "goals": {
+                "HeadPan": 0.0,
+                "HeadTilt": 45.0,
+                "LAnklePitch": -26.0,
+                "LAnkleRoll": 4.0,
+                "LHipPitch": 27.13,
+                "LHipRoll": 4.0,
+                "LHipYaw": -1.0,
+                "LKnee": 58.00000000000001,
+                "RAnklePitch": 26.0,
+                "RAnkleRoll": -4.0,
+                "RElbow": -24.27,
+                "RHipPitch": -23.0,
+                "RHipRoll": -4.0,
+                "RHipYaw": -22.0,
+                "RKnee": -58.00000000000001,
+                "RShoulderPitch": -54.78,
+                "RShoulderRoll": 32.43
+            },
+            "name": "push arm",
+            "pause": 0.0,
+            "torque": {}
+        },
+        {
+            "duration": 0.5,
+            "goals": {
+                "HeadPan": 0.0,
+                "HeadTilt": 45.0,
+                "LAnklePitch": -26.0,
+                "LAnkleRoll": 4.0,
+                "LElbow": 45.0,
+                "LHipPitch": 27.13,
+                "LHipRoll": 4.0,
+                "LHipYaw": 20.22,
+                "LKnee": 58.00000000000001,
+                "LShoulderPitch": 90.0,
+                "LShoulderRoll": 0.0,
+                "RAnklePitch": 26.0,
+                "RAnkleRoll": -4.0,
+                "RElbow": -45.0,
+                "RHipPitch": -27.0,
+                "RHipRoll": -4.0,
+                "RHipYaw": 1.0,
+                "RKnee": -58.00000000000001,
+                "RShoulderPitch": -90.0,
+                "RShoulderRoll": 0.0
+            },
+            "name": "generated frame 1",
+            "pause": 0.0,
+            "torque": {}
+        }
+    ],
+    "last_edited": "2019-05-03 12:22:52.948391",
+    "name": "turning_front_right",
+    "version": "0"
+}
