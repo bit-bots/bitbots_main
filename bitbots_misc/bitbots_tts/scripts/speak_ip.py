@@ -12,8 +12,8 @@ wifi_interface = next(filter(lambda i: i.startswith("wlp"), interfaces()), None)
 if wifi_interface and AF_INET in ifaddresses(wifi_interface):
     ip_address = ifaddresses(wifi_interface)[AF_INET][0]["addr"]
 
-ip = " dot ".join(ip_address.split("."))
+ip = " - dot - ".join(ip_address.split("."))
 
 robot_name = os.getenv("ROBOT_NAME") or gethostname()
-msg = f"Startup complete: {robot_name}. My wifi IP is {ip}."
+msg = f"Startup complete: - {robot_name}. My wifi IP is {ip}."
 say(msg)
