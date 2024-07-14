@@ -1,4 +1,4 @@
-bitbots_technical_challenge_vision:
+bitbots_obstacle_avoidance_challenge:
   blue_lower_h: {
     type: int,
     default_value: 92,

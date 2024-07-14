@@ -3,7 +3,7 @@ import glob
 from generate_parameter_library_py.setup_helper import generate_parameter_module
 from setuptools import find_packages, setup
 
-package_name = "bitbots_technical_challenge_vision"
+package_name = "bitbots_obstacle_avoidance_challenge"
 
 setup(
     name=package_name,
@@ -23,12 +23,12 @@ setup(
     license="MIT",
     entry_points={
         "console_scripts": [
-            "bitbots_technical_challenge_vision = bitbots_technical_challenge_vision.bitbots_technical_challenge_vision:main",
+            "bitbots_obstacle_avoidance_challenge = bitbots_obstacle_avoidance_challenge.bitbots_obstacle_avoidance_challenge:main",
         ],
     },
 )
 
 generate_parameter_module(
-    "bitbots_technical_challenge_vision_params",
+    "bitbots_obstacle_avoidance_challenge_params",
     "config/range.yaml",
 )

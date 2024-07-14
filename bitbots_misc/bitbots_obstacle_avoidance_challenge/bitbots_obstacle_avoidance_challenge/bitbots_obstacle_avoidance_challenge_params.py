@@ -13,33 +13,33 @@ import rclpy
 from generate_parameter_library_py.python_validators import ParameterValidators
 
 
-class bitbots_technical_challenge_vision:
+class bitbots_obstacle_avoidance_challenge:
     class Params:
         # for detecting if the parameter struct has been updated
         stamp_ = Time()
 
-        blue_lower_h = 0
-        blue_upper_h = 179
-        blue_lower_s = 0
-        blue_upper_s = 255
+        blue_lower_h = 92
+        blue_upper_h = 110
+        blue_lower_s = 90
+        blue_upper_s = 236
         blue_lower_v = 0
         blue_upper_v = 255
-        red_lower_h = 0
+        red_lower_h = 138
         red_upper_h = 179
-        red_lower_s = 0
+        red_lower_s = 78
         red_upper_s = 255
         red_lower_v = 0
         red_upper_v = 255
-        min_size = 0
-        max_size = 1
-        debug_mode = True
+        min_size = 20
+        max_size = 400
+        debug_mode = False
 
     class ParamListener:
         def __init__(self, node, prefix=""):
             self.prefix_ = prefix
-            self.params_ = bitbots_technical_challenge_vision.Params()
+            self.params_ = bitbots_obstacle_avoidance_challenge.Params()
             self.node_ = node
-            self.logger_ = rclpy.logging.get_logger("bitbots_technical_challenge_vision." + prefix)
+            self.logger_ = rclpy.logging.get_logger("bitbots_obstacle_avoidance_challenge." + prefix)
 
             self.declare_params()
 
