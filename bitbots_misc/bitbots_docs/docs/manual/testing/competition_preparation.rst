@@ -23,12 +23,33 @@ Before Powering On
 After Powering On
 -----------------
 * Verify ROS control torqueless and check robot model in RViz
+   Run:
+
+   ``rl bitbots_ros_control ros_control_standalone.launch torqueless_mode:=true`` and ``rl bitbots_ros_control viz_servos.launch``
+
 * Connect hands to legs while watching the robot mode in RViz
-* Check for motor communication issues during startup and afterwards
+   Run the same commands as above.
+* Check for motor communication issues during startup and afterwards in the terminal
 * Run T-pose script
+   Run:
+
+   ``rl bitbots_ros_control ros_control_standalone.launch`` and ``rr bitbots_ros_control pose_check.py``
+
 * Test teleop walking
+   Run:
+
+   ``rl bitbots_bringup motion_standalone.launch`` and ``rr bitbots_teleop teleop_keyboard.py``
+
 * Test getting up
+   Run:
+
+   ``rl bitbots_bringup motion_standalone.launch``
+
 * Verify robot-specific walking parameters
 * Perform extrinsic calibration
-* Check camera images for focus and proper transmission
+ Do the steps as described in `this documentation <https://docs.bit-bots.de/meta/manual/tutorials/extrinsic_calibration.html>`_.
 
+* Check camera images for focus and proper transmission (10 Hz, low jitter)
+   Run:
+
+   ``rl bitbots_bringup vision_standalone.launch`` and ``ros2 topic hz /camera/image_proc`` and in ``rqt`` open the image view plugin.
