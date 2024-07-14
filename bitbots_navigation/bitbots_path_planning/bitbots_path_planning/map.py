@@ -30,7 +30,7 @@ class Map:
             (np.array(self.size) * self.resolution).astype(int),
             dtype=np.int8,
         )
-
+        self.draw_barrier()
         self.frame: str = self.node.config.map.planning_frame
         self.ball_buffer: list[Point] = []
         self.robot_buffer: list[sv3dm.Robot] = []
@@ -38,6 +38,20 @@ class Map:
         self.config_inflation_blur: int = self.node.config.map.inflation.blur
         self.config_inflation_dialation: int = self.node.config.map.inflation.dialate
         self.config_obstacle_value: int = self.node.config.map.obstacle_value
+
+    def draw_barrier(self) -> None:
+        cv2.line(
+            self.map,
+            (5.5 * self.resolution, 0),
+            (5.5 * self.resolution, 8 * self.resolution),
+            self.config_obstacle_value,
+        )
+        cv2.line(
+            self.map, ((5.5 + 1.5) * self.resolution, 0), ((5.5 + 1.5) * self.resolution, 8), self.config_obstacle_value
+        )
+        cv2.line(
+            self.map, ((5.5) * self.resolution, 7.2), ((5.5 + 1.5) * self.resolution, 7.2), self.config_obstacle_value
+        )
 
     def set_ball(self, ball: PoseWithCovarianceStamped) -> None:
         """
@@ -140,6 +154,7 @@ class Map:
         Regenerates the costmap based on the ball and robot buffer
         """
         self.clear()
+        self.draw_barrier()
         self._render_balls()
         self._render_robots()
         self.inflate()
