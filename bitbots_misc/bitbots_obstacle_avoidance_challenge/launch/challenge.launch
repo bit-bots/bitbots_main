@@ -36,6 +36,7 @@
         <arg name="sim" value="$(var sim)" />
         <arg name="vision" value="$(var vision)" />
         <arg name="world_model" value="$(var world_model)" />
+        <arg name="game_controller" value="false" />
     </include>
 
     <node pkg="bitbots_obstacle_avoidance_challenge" exec="bitbots_obstacle_avoidance_challenge" name="bitbots_obstacle_avoidance_challenge" output="screen" launch-prefix="$(var taskset)">
