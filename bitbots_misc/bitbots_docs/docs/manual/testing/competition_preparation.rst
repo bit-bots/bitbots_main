@@ -1,4 +1,4 @@
-Robotics Competition Checklist
+Hardware Checklist (Pre-Competition)
 ==============================
 
 When Powered Off
