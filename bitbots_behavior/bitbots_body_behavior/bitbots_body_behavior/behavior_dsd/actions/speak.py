@@ -10,7 +10,7 @@ class Speak(AbstractActionElement):
     def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
         self.blackboard: BodyBlackboard
-        self.text = parameters.get("text", None).replace("_", " ")
+        self.text = parameters.get("text", "").replace("_", " ")
 
     def perform(self, reevaluate=False):
         speak(self.text, self.blackboard.misc.speak_pub, priority=50)

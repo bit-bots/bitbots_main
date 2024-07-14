@@ -35,7 +35,7 @@ $StartHCM
                                         FALLING_FRONT --> @RobotStateFalling, @CancelGoals, @StopWalking, @PlayAnimationFallingFront, @Wait
                                         FALLING_BACK --> @RobotStateFalling, @CancelGoals, @StopWalking, @PlayAnimationFallingBack, @Wait
                                         NOT_FALLING --> $InSquat
-                                            YES --> @RobotStateGettingUp, @PlayAnimationDynup + direction:rise, @SetSquat + squat:false
+                                            YES --> @RobotStateGettingUp, @Complain, @PlayAnimationDynup + direction:rise, @SetSquat + squat:false
                                             NO --> $PlayingExternalAnimation
                                                 ANIMATION_RUNNING --> @StopWalking, @RobotStateAnimationRunning, @Wait
                                                 ANIMATION_SERVER_TIMEOUT --> @CancelAnimation
