@@ -108,35 +108,40 @@ class Controller:
             self.node.config.controller.max_rotation_vel,
         )
 
+        # Calculate the heading of our linear velocity vector in the local frame of the robot
+        local_heading = walk_angle - self._get_yaw(current_pose)
+
+        # Convert the heading of the robot to a unit vector
+        local_heading_vector_x = math.cos(local_heading)
+        local_heading_vector_y = math.sin(local_heading)
+
+        # Returns interpolates the x and y maximum velocity linearly based on our heading
+        # See https://github.com/bit-bots/bitbots_main/issues/366#issuecomment-2161460917
+        def interpolate_max_vel(x_limit, y_limit, target_x, target_y):
+            n = (x_limit * abs(target_y)) + y_limit * target_x
+            intersection_x = (x_limit * y_limit * target_x) / n
+            intersection_y = (x_limit * y_limit * abs(target_y)) / n
+            return math.hypot(intersection_x, intersection_y)
+
+        # Limit the x and y velocity with the heading specific maximum velocity
+        walk_vel = min(
+            walk_vel,
+            # Calc the max velocity for the current heading
+            interpolate_max_vel(
+                # Use different maximum values for forward and backwards x movement
+                self.node.config.controller.max_vel_x
+                if local_heading_vector_x > 0
+                else self.node.config.controller.min_vel_x,
+                self.node.config.controller.max_vel_y,
+                local_heading_vector_x,
+                local_heading_vector_y,
+            ),
+        )
+
         # Calculate the x and y components of our linear velocity based on the desired heading and the
         # desired translational velocity.
-        cmd_vel.linear.x = math.cos(walk_angle - self._get_yaw(current_pose)) * walk_vel
-        cmd_vel.linear.y = math.sin(walk_angle - self._get_yaw(current_pose)) * walk_vel
-
-        # Scale command accordingly if a limit is exceeded
-        if cmd_vel.linear.x > self.node.config.controller.max_vel_x:
-            self.node.get_logger().debug(
-                f"X max LIMIT reached: {cmd_vel.linear.x} > {self.node.config.controller.max_vel_x}, with Y being {cmd_vel.linear.y}"
-            )
-            cmd_vel.linear.y *= self.node.config.controller.max_vel_x / cmd_vel.linear.x
-            cmd_vel.linear.x = self.node.config.controller.max_vel_x
-            self.node.get_logger().debug(f"X max LIMIT reached: scale Y to {cmd_vel.linear.y}")
-
-        if cmd_vel.linear.x < self.node.config.controller.min_vel_x:
-            self.node.get_logger().debug(
-                f"X min LIMIT reached: {cmd_vel.linear.x} < {self.node.config.controller.min_vel_x}, with Y being {cmd_vel.linear.y}"
-            )
-            cmd_vel.linear.y *= self.node.config.controller.min_vel_x / cmd_vel.linear.x
-            cmd_vel.linear.x = self.node.config.controller.min_vel_x
-            self.node.get_logger().debug(f"X min LIMIT reached: scale Y to {cmd_vel.linear.y}")
-
-        if abs(cmd_vel.linear.y) > self.node.config.controller.max_vel_y:
-            self.node.get_logger().debug(
-                f"Y max LIMIT reached: {cmd_vel.linear.y} > {self.node.config.controller.max_vel_y}, with X being {cmd_vel.linear.x}"
-            )
-            cmd_vel.linear.x *= self.node.config.controller.max_vel_y / abs(cmd_vel.linear.y)
-            cmd_vel.linear.y = math.copysign(self.node.config.controller.max_vel_y, cmd_vel.linear.y)
-            self.node.get_logger().debug(f"Y max LIMIT reached: scale X to {cmd_vel.linear.x}")
+        cmd_vel.linear.x = local_heading_vector_x * walk_vel
+        cmd_vel.linear.y = local_heading_vector_y * walk_vel
 
         # Apply the desired rotational velocity
         cmd_vel.angular.z = rot_goal_vel

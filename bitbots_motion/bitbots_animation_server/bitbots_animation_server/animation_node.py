@@ -6,13 +6,15 @@ from typing import Optional
 
 import numpy as np
 import rclpy
+from bitbots_utils.transforms import quat2fused
 from rclpy.action import ActionServer, GoalResponse
 from rclpy.action.server import ServerGoalHandle
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.duration import Duration
 from rclpy.executors import ExternalShutdownException, MultiThreadedExecutor
 from rclpy.node import Node
-from sensor_msgs.msg import JointState
+from sensor_msgs.msg import Imu, JointState
+from simpleeval import simple_eval
 from std_msgs.msg import Header
 from std_srvs.srv import SetBool
 
@@ -37,6 +39,7 @@ class AnimationNode(Node):
         self.get_logger().debug("Starting Animation Server")
 
         self.current_joint_states: Optional[JointState] = None
+        self.imu_data: Optional[Imu] = None
         self.current_animation = None
         self.animation_cache: dict[str, Animation] = {}
         self.running_goals: set[UUID] = set()
@@ -66,6 +69,7 @@ class AnimationNode(Node):
 
         # Subscribers
         self.create_subscription(JointState, "joint_states", self.update_current_pose, 1, callback_group=callback_group)
+        self.create_subscription(Imu, "imu/data", self.imu_callback, 1, callback_group=callback_group)
 
         # Service clients
         self.hcm_animation_mode = self.create_client(SetBool, "play_animation_mode")
@@ -197,6 +201,64 @@ class AnimationNode(Node):
                 # Get the robot pose at the current time from the spline interpolator
                 pose = animator.get_positions_rad(t)
 
+                # Apply stabilizations
+                for joint, stabilization_function in animator.get_stabilization_functions(t).items():
+                    # Check if we have the necessary data
+                    if self.imu_data is None:
+                        self.get_logger().warn("IMU data is not available. Skipping stabilization.")
+                        continue
+                    # Convert quaternion to fused angles for better usability
+                    imu_fused_angles = quat2fused(
+                        [
+                            self.imu_data.orientation.w,
+                            self.imu_data.orientation.x,
+                            self.imu_data.orientation.y,
+                            self.imu_data.orientation.z,
+                        ],
+                        order="wxyz",
+                    )
+
+                    # Evaluate the stabilization function
+                    try:
+                        pose[joint] = simple_eval(
+                            stabilization_function,
+                            names={
+                                "position": pose[joint],
+                                "time": t,
+                                "pi": np.pi,
+                                "imu": {
+                                    "angular_velocity": {
+                                        "x": self.imu_data.angular_velocity.x,
+                                        "y": self.imu_data.angular_velocity.y,
+                                        "z": self.imu_data.angular_velocity.z,
+                                    },
+                                    "linear_acceleration": {
+                                        "x": self.imu_data.linear_acceleration.x,
+                                        "y": self.imu_data.linear_acceleration.y,
+                                        "z": self.imu_data.linear_acceleration.z,
+                                    },
+                                    "fused_angles": {
+                                        "roll": imu_fused_angles[0],
+                                        "pitch": imu_fused_angles[1],
+                                        "yaw": imu_fused_angles[2],
+                                        "hemi": imu_fused_angles[3],
+                                    },
+                                },
+                            },
+                            functions={
+                                "abs": abs,
+                                "sin": np.sin,
+                                "cos": np.cos,
+                                "tan": np.tan,
+                                "atan": np.arctan,
+                            },
+                        )
+                    except simple_eval.InvalidExpression as e:
+                        self.get_logger().error(
+                            f"Stabilization function for joint {joint} is invalid. Skipping stabilization. Reason: {e}"
+                        )
+                        continue
+
                 # Finish if spline ends or we reaches the explicitly defined premature end
                 if pose is None or (request.bounds and once and t > animator.get_keyframe_times()[request.end - 1]):
                     # Animation is finished, tell it to the hcm (except if it is from the hcm)
@@ -226,9 +288,13 @@ class AnimationNode(Node):
                 sys.exit(0)
         return finish(successful=False)
 
-    def update_current_pose(self, msg):
+    def update_current_pose(self, msg) -> None:
         """Gets the current motor positions and updates the representing pose accordingly."""
         self.current_joint_states = msg
+
+    def imu_callback(self, msg: Imu) -> None:
+        """Callback for the IMU data."""
+        self.imu_data = msg
 
     def send_animation(self, from_hcm: bool, pose: dict, torque: Optional[dict]):
         """Sends an animation to the hcm"""

@@ -1,0 +1,63 @@
+{
+    "author": "Unknown",
+    "description": "Turns the robot to the front, when it lies on its left side.",
+    "keyframes": [
+        {
+            "duration": 0.5,
+            "goals": {
+                "HeadPan": 0.0,
+                "HeadTilt": 45.0,
+                "LAnklePitch": -26.0,
+                "LAnkleRoll": 4.0,
+                "LElbow": 24.27,
+                "LHipPitch": 23.13,
+                "LHipRoll": 4.0,
+                "LHipYaw": 20.22,
+                "LKnee": 58.00000000000001,
+                "LShoulderPitch": 54.78,
+                "LShoulderRoll": -32.43,
+                "RAnklePitch": 26.0,
+                "RAnkleRoll": -4.0,
+                "RElbow": -43.15,
+                "RHipPitch": -27.0,
+                "RHipRoll": -4.0,
+                "RHipYaw": 1.0,
+                "RKnee": -58.00000000000001
+            },
+            "name": "push arm",
+            "pause": 0.0,
+            "torque": {}
+        },
+        {
+            "duration": 0.5,
+            "goals": {
+                "HeadPan": 0.0,
+                "HeadTilt": 45.0,
+                "LAnklePitch": -26.0,
+                "LAnkleRoll": 4.0,
+                "LElbow": 45.0,
+                "LHipPitch": 27.13,
+                "LHipRoll": 4.0,
+                "LHipYaw": 20.22,
+                "LKnee": 58.00000000000001,
+                "LShoulderPitch": 90.0,
+                "LShoulderRoll": 0.0,
+                "RAnklePitch": 26.0,
+                "RAnkleRoll": -4.0,
+                "RElbow": -45.0,
+                "RHipPitch": -27.0,
+                "RHipRoll": -4.0,
+                "RHipYaw": 1.0,
+                "RKnee": -58.00000000000001,
+                "RShoulderPitch": -90.0,
+                "RShoulderRoll": 0.0
+            },
+            "name": "generated frame 1",
+            "pause": 0.0,
+            "torque": {}
+        }
+    ],
+    "last_edited": "2024-07-05 13:42:00.308632",
+    "name": "turning_front_left",
+    "version": "0"
+}
