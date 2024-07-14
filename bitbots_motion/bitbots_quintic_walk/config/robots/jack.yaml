@@ -4,3 +4,5 @@ walking:
   ros__parameters:
     engine:
       trunk_x_offset: 0.0
+    node:
+      x_bias: -0.02
