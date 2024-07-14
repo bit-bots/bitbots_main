@@ -83,7 +83,6 @@ bitbots_path_planning:
       description: 'The maximum rotation velocity of the robot in rad/s around the z-axis'
       validation:
         bounds<>: [0.0, 1.0]
-
     max_vel_x:
       type: double
       default_value: 0.12
