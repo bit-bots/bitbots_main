@@ -3,7 +3,6 @@
     <let if="$(env IS_ROBOT false)" name="taskset" value="taskset -c 6,7"/>
     <let unless="$(env IS_ROBOT false)" name="taskset" value=""/>
 
-    <arg name="audio" default="true" description="Whether the audio system should be started" />
     <arg name="ipm" default="true" description="Whether the inverse perspective mapping should be started"/>
     <arg name="localization" default="true" description="Whether the localization system should be started" />
     <arg name="motion" default="true" description="Whether the motion control system should be started" />
@@ -11,16 +10,11 @@
     <arg name="sim" default="false" description="Whether the robot is running in simulation or on real hardware" />
     <arg name="vision" default="true" description="Whether the vision system should be started" />
     <arg name="world_model" default="true" description="Whether the world model should be started"/>
-    <arg name="monitoring" default="true" description="Whether the system monitor and udp bridge should be started" />
-    <arg name="record" default="false" description="Whether the ros bag recording should be started" />
 
     <!-- load the global parameters -->
     <include file="$(find-pkg-share bitbots_parameter_blackboard)/launch/parameter_blackboard.launch">
         <arg name="sim" value="$(var sim)" />
     </include>
-
-    <!-- load the diagnostic aggregator -->
-    <include file="$(find-pkg-share bitbots_diagnostic)/launch/aggregator.launch" />
 
     <!-- load the robot description -->
     <include file="$(find-pkg-share bitbots_robot_description)/launch/load_robot_description.launch">
@@ -36,7 +30,6 @@
 
     <!-- load the highlevel stuff -->
     <include file="$(find-pkg-share bitbots_bringup)/launch/highlevel.launch">
-        <arg name="audio" value="$(var audio)" />
         <arg name="ipm" value="$(var ipm)" />
         <arg name="localization" value="$(var localization)" />
         <arg name="path_planning" value="$(var path_planning)" />
@@ -45,20 +38,6 @@
         <arg name="world_model" value="$(var world_model)" />
     </include>
 
-    <!-- load monitoring -->
-    <group if="$(var monitoring)">
-        <group unless="$(var sim)">
-            <include file="$(find-pkg-share bitbots_bringup)/launch/monitoring.launch" />
-        </group>
-    </group>
-
-    <!-- record rosbag -->
-    <group if="$(var record)">
-        <include file="$(find-pkg-share bitbots_bringup)/launch/rosbag_record.launch.py">
-            <arg name="sim" value="$(var sim)" />
-        </include>
-    </group>
-    
     <node pkg="bitbots_obstacle_avoidance_challenge" exec="bitbots_obstacle_avoidance_challenge" name="bitbots_obstacle_avoidance_challenge" output="screen" launch-prefix="$(var taskset)">
 
     </node>
