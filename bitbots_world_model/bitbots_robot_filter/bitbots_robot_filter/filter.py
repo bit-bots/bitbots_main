@@ -54,7 +54,7 @@ class RobotFilter(Node):
         self.create_timer(1 / 20, self.publish_obstacles, callback_group=MutuallyExclusiveCallbackGroup())
 
     def publish_obstacles(self):
-        # Set current timespamp and frame
+        # Set current timestamp and frame
         dummy_header = Header()
         dummy_header.stamp = self.get_clock().now().to_msg()
         dummy_header.frame_id = self.filter_frame

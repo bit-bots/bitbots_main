@@ -1,6 +1,6 @@
 #include "bitbots_quintic_walk/walk_pywrapper.hpp"
 
-void PyWalkWrapper::spin_some() { rclcpp::spin_some(walk_node_); }
+void PyWalkWrapper::spin_some() { rclcpp::spin_some(node_); }
 
 PyWalkWrapper::PyWalkWrapper(std::string ns, std::vector<py::bytes> parameter_msgs, bool force_smooth_step_transition) {
   // initialize rclcpp if not already done
@@ -14,7 +14,9 @@ PyWalkWrapper::PyWalkWrapper(std::string ns, std::vector<py::bytes> parameter_ms
     cpp_parameters.push_back(
         rclcpp::Parameter::from_parameter_msg(fromPython<rcl_interfaces::msg::Parameter>(parameter_msg)));
   }
-  walk_node_ = std::make_shared<bitbots_quintic_walk::WalkNode>(ns, cpp_parameters);
+
+  node_ = rclcpp::Node::make_shared(ns + "walking");
+  walk_node_ = std::make_shared<bitbots_quintic_walk::WalkNode>(node_, ns, cpp_parameters);
   set_robot_state(0);
   walk_node_->initializeEngine();
   walk_node_->getEngine()->setForceSmoothStepTransition(force_smooth_step_transition);
@@ -83,7 +85,7 @@ void PyWalkWrapper::special_reset(int state, double phase, py::bytes cmd_vel, bo
   } else if (state == 7) {
     walk_state = bitbots_quintic_walk::WalkState::KICK;
   } else {
-    RCLCPP_WARN(walk_node_->get_logger(), "state in special reset not clear");
+    RCLCPP_WARN(node_->get_logger(), "state in special reset not clear");
     return;
   }
   walk_node_->reset(walk_state, phase,
@@ -120,9 +122,8 @@ void PyWalkWrapper::set_parameter(py::bytes parameter_msg) {
   rclcpp::Parameter parameter =
       rclcpp::Parameter::from_parameter_msg(fromPython<rcl_interfaces::msg::Parameter>(parameter_msg));
 
-  // needs to be a vector
-  std::vector<rclcpp::Parameter> parameters = {parameter};
-  walk_node_->onSetParameters(parameters);
+  node_->set_parameter(parameter);
+  walk_node_->updateParams();
 }
 
 void PyWalkWrapper::publish_debug() { walk_node_->publish_debug(); }

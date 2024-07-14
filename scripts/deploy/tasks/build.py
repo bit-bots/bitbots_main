@@ -82,7 +82,6 @@ class Build(AbstractTask):
             "sync;"
         )
         # TODO make output colored
-        # TODO: check if only single core?!?
 
         print_debug(f"Calling {cmd}")
         try:

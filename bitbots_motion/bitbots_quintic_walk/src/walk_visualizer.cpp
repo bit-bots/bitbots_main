@@ -1,21 +1,12 @@
 #include "bitbots_quintic_walk/walk_visualizer.hpp"
 
 namespace bitbots_quintic_walk {
-WalkVisualizer::WalkVisualizer(rclcpp::Node::SharedPtr node) : node_(node) {
-  marker_id_ = 1;
-  /* debug publisher */
-
-  pub_debug_ = node_->create_publisher<bitbots_quintic_walk::msg::WalkDebug>("walk_debug", 1);
-  pub_engine_debug_ = node_->create_publisher<bitbots_quintic_walk::msg::WalkEngineDebug>("walk_engine_debug", 1);
-  pub_debug_marker_ = node_->create_publisher<visualization_msgs::msg::Marker>("walk_debug_marker", 1);
-
-  node_->declare_parameter<std::string>("base_link_frame", "base_link");
-  node_->get_parameter("base_link_frame", base_link_frame_);
-  node_->declare_parameter<std::string>("r_sole_frame", "r_sole");
-  node_->get_parameter("r_sole_frame", r_sole_frame_);
-  node_->declare_parameter<std::string>("l_sole_frame", "l_sole");
-  node_->get_parameter("l_sole_frame", l_sole_frame_);
-}
+WalkVisualizer::WalkVisualizer(rclcpp::Node::SharedPtr node, walking::Params::Node::Tf tf_config)
+    : node_(node),
+      tf_config_(tf_config),
+      pub_debug_(node_->create_publisher<bitbots_quintic_walk::msg::WalkDebug>("walk_debug", 1)),
+      pub_engine_debug_(node_->create_publisher<bitbots_quintic_walk::msg::WalkEngineDebug>("walk_engine_debug", 1)),
+      pub_debug_marker_(node_->create_publisher<visualization_msgs::msg::Marker>("walk_debug_marker", 1)) {}
 
 void WalkVisualizer::init(moveit::core::RobotModelPtr kinematic_model) { kinematic_model_ = kinematic_model; }
 
@@ -37,9 +28,9 @@ void WalkVisualizer::publishEngineDebug(WalkResponse response) {
   // define current support frame
   std::string current_support_frame;
   if (is_left_support) {
-    current_support_frame = l_sole_frame_;
+    current_support_frame = tf_config_.l_sole_frame;
   } else {
-    current_support_frame = r_sole_frame_;
+    current_support_frame = tf_config_.r_sole_frame;
   }
 
   // define colors based on current support state
@@ -141,7 +132,7 @@ void WalkVisualizer::publishEngineDebug(WalkResponse response) {
   pose.orientation.y = 0;
   pose.orientation.z = 0;
   pose.orientation.w = 1;
-  publishArrowMarker("trunk_result", base_link_frame_, pose, r, g, b, a);
+  publishArrowMarker("trunk_result", tf_config_.base_link_frame, pose, r, g, b, a);
 
   pub_engine_debug_->publish(msg);
 }
@@ -171,8 +162,8 @@ void WalkVisualizer::publishIKDebug(WalkResponse response, moveit::core::RobotSt
     msg.left_foot_goal = pose_fly_foot_goal;
     msg.right_foot_goal = pose_support_foot_goal;
   }
-  publishArrowMarker("engine_left_goal", base_link_frame_, msg.left_foot_goal, 0, 1, 0, 1);
-  publishArrowMarker("engine_right_goal", base_link_frame_, msg.right_foot_goal, 1, 0, 0, 1);
+  publishArrowMarker("engine_left_goal", tf_config_.base_link_frame, msg.left_foot_goal, 0, 1, 0, 1);
+  publishArrowMarker("engine_right_goal", tf_config_.base_link_frame, msg.right_foot_goal, 1, 0, 0, 1);
 
   // IK results
   moveit::core::RobotStatePtr goal_state;
@@ -198,8 +189,8 @@ void WalkVisualizer::publishIKDebug(WalkResponse response, moveit::core::RobotSt
     msg.support_foot_ik_result = pose_right_result;
     msg.fly_foot_ik_result = pose_left_result;
   }
-  publishArrowMarker("ik_left", base_link_frame_, pose_left_result, 0, 1, 0, 1);
-  publishArrowMarker("ik_right", base_link_frame_, pose_right_result, 1, 0, 0, 1);
+  publishArrowMarker("ik_left", tf_config_.base_link_frame, pose_left_result, 0, 1, 0, 1);
+  publishArrowMarker("ik_right", tf_config_.base_link_frame, pose_right_result, 1, 0, 0, 1);
 
   // IK offsets
   tf2::Vector3 support_off;
@@ -329,13 +320,17 @@ void WalkVisualizer::publishArrowMarker(std::string name_space, std::string fram
 }
 
 void WalkVisualizer::publishWalkMarkers(WalkResponse response) {
+  // only do something if someone is listing
+  if (pub_debug_marker_->get_subscription_count() == 0) {
+    return;
+  }
   // publish markers
   visualization_msgs::msg::Marker marker_msg;
   marker_msg.header.stamp = node_->now();
   if (response.is_left_support_foot) {
-    marker_msg.header.frame_id = l_sole_frame_;
+    marker_msg.header.frame_id = tf_config_.l_sole_frame;
   } else {
-    marker_msg.header.frame_id = r_sole_frame_;
+    marker_msg.header.frame_id = tf_config_.r_sole_frame;
   }
   marker_msg.type = marker_msg.CUBE;
   marker_msg.action = 0;

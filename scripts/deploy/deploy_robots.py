@@ -18,7 +18,7 @@ from deploy.tasks import (
     AbstractTask,
     AbstractTaskWhichRequiresSudo,
     Build,
-    CheckLocalMainRepoTask,
+    CheckReposTask,
     Configure,
     Install,
     Launch,
@@ -174,8 +174,7 @@ class DeployRobots:
         """
         tasks = []
 
-        if not self._args.skip_local_repo_check:
-            tasks.append(CheckLocalMainRepoTask())
+        tasks.append(CheckReposTask(only_workspace_status=self._args.skip_local_repo_check))
 
         if self._args.sync:
             tasks.append(

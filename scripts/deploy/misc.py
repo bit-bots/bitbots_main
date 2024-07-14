@@ -10,6 +10,7 @@ from fabric import Connection, GroupResult, ThreadingGroup
 from paramiko import AuthenticationException
 from rich import box
 from rich.console import Console
+from rich.console import Group as RichGroup
 from rich.panel import Panel
 from rich.table import Table
 
@@ -226,12 +227,11 @@ def _get_connections_from_targets(
         except Exception as e:
             failures.append((connection, _concat_exception_args(e)))
     if failures:
-        print_error("Could not connect to the following hosts:")
         failure_table = Table(style="bold red", box=box.HEAVY)
         failure_table.add_column("Host")
         failure_table.add_column("Reason")
         [failure_table.add_row(connection.host, reason) for connection, reason in failures]
-        CONSOLE.print(failure_table)
+        print_error(RichGroup("Could not connect to the following hosts:", failure_table))
         sys.exit(1)
     return connections
 

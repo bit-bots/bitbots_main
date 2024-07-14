@@ -1,343 +1,356 @@
 walking:
-  odom_frame: {
-    type: string,
-    description: "The frame in which the odometry is published",
-    default_value: "odom",
-  }
   engine:
-    freq: {
-      type: double,
-      description: "Full walking cycle frequency in Hz",
-      validation: {
-        bounds<>: [ 0.0, 5.0 ],
-      }
-    }
-    double_support_ratio: {
-      type: double,
-      description: "Length of double support phase in half cycle",
-      validation: {
+    freq:
+      type: double
+      description: "Full walking cycle frequency in Hz"
+      validation:
+        bounds<>: [0.0, 5.0]
+    double_support_ratio:
+      type: double
+      description: "Length of double support phase in half cycle"
+      validation:
         bounds<>: [0.0, 1.0]
-      }
-    }
-    first_step_swing_factor: {
-      type: double,
-      description: "Swing factor for the first step",
-      validation: {
-        bounds<>: [ 0.0, 10.0],
-      }
-    }
-    first_step_trunk_phase: {
-      type: double,
-      description: "Trunk phase for the first step",
-      validation: {
-        bounds<>: [ -1.0, 1.0 ]
-      }
-    }
-    foot_distance: {
-      type: double,
-      description: "Lateral distance between the feet center (in meters)",
-      validation: {
-        bounds<>: [ 0.0, 1.0],
-      }
-    }
-    foot_rise: {
-      type: double,
-      description: "Maximum flying foot height (in meters)",
-      validation: {
-        bounds<>: [ 0.0, 1.0 ],
-      }
-    }
-    trunk_swing: {
-      type: double,
-      description: "Trunk lateral oscillation amplitude ratio",
-      validation: {
-        bounds<>: [ 0.0, 2.0 ],
-      }
-    }
-    trunk_height: {
-      type: double,
-      description: "Height of the trunk from ground (in meters)",
-      validation: {
-        bounds<>: [ 0.0, 1.0 ],
-      }
-    }
-    trunk_pitch: {
-      type: double,
-      description: "Trunk pitch angle (in radians)",
-      validation: {
-        bounds<>: [ -1.57, 1.57 ]
-      }
-    }
-    trunk_pitch_p_coef_forward: {
-      type: double,
-      description: "Trunk pitch orientation proportional to forward/backward step (in rad/m)",
-      validation: {
-        bounds<>: [ -1.0, 1.0 ]
-      }
-    }
-    trunk_pitch_p_coef_turn: {
-      type: double,
-      description: "Trunk pitch orientation proportional to turn step (in rad/rad)",
-      validation: {
-        bounds<>: [ -1.0, 1.0 ]
-      }
-    }
-    trunk_phase: {
-      type: double,
-      description: "Phase offset of trunk oscillation (half cycle phase, [-1:1])",
-      validation: {
-        bounds<>: [ -1.0, 1.0 ]
-      }
-    }
-    foot_z_pause: {
-      type: double,
-      description: "Pause of Z movement on highest point (single support cycle ratio)",
-      validation: {
-        bounds<>: [ 0.0, 1.0 ],
-      }
-    }
-    foot_put_down_z_offset: {
-      type: double,
-      description: "Let the foot's downward trajectory end above the ground this is helpful if the support leg bends, (in meters)",
-      validation: {
-        bounds<>: [ 0.0, 1.0 ],
-      }
-    }
-    foot_put_down_phase: {
-      type: double,
-      description: "Phase time for moving the foot from Z offset to ground (phase between apex and single support end)",
-      validation: {
-        bounds<>: [ 0.0, 1.0 ]
-      }
-    }
-    foot_apex_phase: {
-      type: double,
-      description: "Phase of flying foot apex(single support cycle phase)",
-      validation: {
-        bounds<>: [ 0.0, 1.0 ]
-      }
-    }
-    foot_overshoot_ratio: {
-      type: double,
-      description: "Foot X/Y overshoot in ratio of step length(ratio)",
-      validation: {
-        bounds<>: [ 0.0, 1.0 ],
-      }
-    }
-    foot_overshoot_phase: {
-      type: double,
-      description: "Foot X/Y overshoot phase (single support cycle phase, [foot_apex_phase:1]",
-      validation: {
-        bounds<>: [ 0.0, 1.0 ]
-      }
-    }
-    trunk_x_offset: {
-      type: double,
-      description: "Trunk X offset (in meters)",
-      validation: {
-        bounds<>: [ -0.2, 0.2 ]
-      }
-    }
-    trunk_y_offset: {
-      type: double,
-      description: "Trunk Y offset (in meters)",
-      validation: {
-        bounds<>: [ -0.2, 0.2 ]
-      }
-    }
-    trunk_z_movement: {
-      type: double,
-      description: "Trunk Z movement (in meters)",
-      validation: {
-        bounds<>: [ -0.2, 0.2 ]
-      }
-    }
-    trunk_pause: {
-      type: double,
-      description: "Trunk swing pause length in phase at apex (half cycle ratio)",
-      validation: {
-        bounds<>: [ 0.0, 1.0 ],
-      }
-    }
-    trunk_x_offset_p_coef_forward: {
-      type: double,
-      description: "Trunk forward offset proportional to forward step (in m/m)",
-      validation: {
-        bounds<>: [ 0.0, 1.0 ]
-      }
-    }
-    trunk_x_offset_p_coef_turn: {
-      type: double,
-      description: "Trunk forward offset proportional to rotation step (in meters/rad)",
-      validation: {
-        bounds<>: [ 0.0, 1.0 ]
-      }
-    }
-    kick_length: {
-      type: double,
-      description: "Length of kick movement (in meters)",
-      validation: {
-        bounds<>: [ 0.0, 1.0],
-      }
-    }
-    kick_vel: {
-      type: double,
-      description: "Velocity of kick movement (in meters/s)",
-      validation: {
-        bounds<>: [ 0.0, 100.0 ],
-      }
-    }
-    kick_phase: {
-      type: double,
-      description: "Time of kick apex (in single support cycle phase)",
-      validation: {
-        bounds<>: [ 0.0, 1.0 ],
-      }
-    }
+    first_step_swing_factor:
+      type: double
+      description: "Swing factor for the first step"
+      validation:
+        bounds<>: [0.0, 10.0]
+    first_step_trunk_phase:
+      type: double
+      description: "Trunk phase for the first step"
+      validation:
+        bounds<>: [-1.0, 1.0]
+    foot_distance:
+      type: double
+      description: "Lateral distance between the feet center (in meters)"
+      validation:
+        bounds<>: [0.0, 1.0]
+    foot_rise:
+      type: double
+      description: "Maximum flying foot height (in meters)"
+      validation:
+        bounds<>: [0.0, 1.0]
+    trunk_swing:
+      type: double
+      description: "Trunk lateral oscillation amplitude ratio"
+      validation:
+        bounds<>: [0.0, 2.0]
+    trunk_height:
+      type: double
+      description: "Height of the trunk from ground (in meters)"
+      validation:
+        bounds<>: [0.0, 1.0]
+    trunk_pitch:
+      type: double
+      description: "Trunk pitch angle (in radians)"
+      validation:
+        bounds<>: [-1.57, 1.57]
+    trunk_pitch_p_coef_forward:
+      type: double
+      description: "Trunk pitch orientation proportional to forward/backward step (in rad/m)"
+      validation:
+        bounds<>: [-1.0, 1.0]
+    trunk_pitch_p_coef_turn:
+      type: double
+      description: "Trunk pitch orientation proportional to turn step (in rad/rad)"
+      validation:
+        bounds<>: [-1.0, 1.0]
+    trunk_phase:
+      type: double
+      description: "Phase offset of trunk oscillation (half cycle phase, [-1:1])"
+      validation:
+        bounds<>: [-1.0, 1.0]
+    foot_z_pause:
+      type: double
+      description: "Pause of Z movement on highest point (single support cycle ratio)"
+      validation:
+        bounds<>: [0.0, 1.0]
+    foot_put_down_z_offset:
+      type: double
+      description: "Let the foot's downward trajectory end above the ground this is helpful if the support leg bends, (in meters)"
+      validation:
+        bounds<>: [0.0, 1.0]
+    foot_put_down_phase:
+      type: double
+      description: "Phase time for moving the foot from Z offset to ground (phase between apex and single support end)"
+      validation:
+        bounds<>: [0.0, 1.0]
+    foot_apex_phase:
+      type: double
+      description: "Phase of flying foot apex(single support cycle phase)"
+      validation:
+        bounds<>: [0.0, 1.0]
+    foot_overshoot_ratio:
+      type: double
+      description: "Foot X/Y overshoot in ratio of step length(ratio)"
+      validation:
+        bounds<>: [0.0, 1.0]
+    foot_overshoot_phase:
+      type: double
+      description: "Foot X/Y overshoot phase (single support cycle phase, [foot_apex_phase:1])"
+      validation:
+        bounds<>: [0.0, 1.0]
+    trunk_x_offset:
+      type: double
+      description: "Trunk X offset (in meters)"
+      validation:
+        bounds<>: [-0.2, 0.2]
+    trunk_y_offset:
+      type: double
+      description: "Trunk Y offset (in meters)"
+      validation:
+        bounds<>: [-0.2, 0.2]
+    trunk_z_movement:
+      type: double
+      description: "Trunk Z movement (in meters)"
+      validation:
+        bounds<>: [-0.2, 0.2]
+    trunk_pause:
+      type: double
+      description: "Trunk swing pause length in phase at apex (half cycle ratio)"
+      validation:
+        bounds<>: [0.0, 1.0]
+    trunk_x_offset_p_coef_forward:
+      type: double
+      description: "Trunk forward offset proportional to forward step (in m/m)"
+      validation:
+        bounds<>: [0.0, 1.0]
+    trunk_x_offset_p_coef_turn:
+      type: double
+      description: "Trunk forward offset proportional to rotation step (in meters/rad)"
+      validation:
+        bounds<>: [0.0, 1.0]
+    kick_length:
+      type: double
+      description: "Length of kick movement (in meters)"
+      validation:
+        bounds<>: [0.0, 1.0]
+    kick_vel:
+      type: double
+      description: "Velocity of kick movement (in meters/s)"
+      validation:
+        bounds<>: [0.0, 100.0]
+    kick_phase:
+      type: double
+      description: "Time of kick apex (in single support cycle phase)"
+      validation:
+        bounds<>: [0.0, 1.0]
   node:
-    engine_freq: {
-      type: double,
-      description: "Control loop frequency in Hz",
-      validation: {
-        bounds<>: [ 0.0, 1000.0 ],
-      }
-    }
-    ik_timeout: {
-      type: double,
-      description: "Inverse kinematics timeout in seconds",
-      validation: {
-        bounds<>: [ 0.0, 10.0 ],
-      }
-    }
-    ik_reset: {
-      type: bool,
-      description: "bioIK parameter",
-    }
-    debug_active: {
-      type: bool,
-      description: "Activate debug output",
-    }
-    max_step_x: {
-      type: double,
-      description: "Maximum step length in X direction (in meters)",
-      validation: {
-        bounds<>: [ 0.0, 100000.0 ],
-      }
-    }
-    max_step_y: {
-      type: double,
-      description: "Maximum step length in Y direction (in meters)",
-      validation: {
-        bounds<>: [ 0.0, 100000.0 ],
-      }
-    }
-    max_step_xy: {
-      type: double,
-      description: "Maximum step length in XY direction (in meters)",
-      validation: {
-        bounds<>: [ 0.0, 100000.0 ],
-      }
-    }
-    max_step_z: {
-      type: double,
-      description: "Maximum step length in Z direction (in meters)",
-      validation: {
-        bounds<>: [ 0.0, 100000.0 ],
-      }
-    }
-    max_step_angular: {
-      type: double,
-      description: "Maximum step length angular (in radians)",
-      validation: {
-        bounds<>: [ 0.0, 100000.0 ],
-      }
-    }
-    x_speed_multiplier: {
-      type: double,
-      description: "Speed multiplier for X direction to calibrate the cmd_vel input",
-      validation: {
-        bounds<>: [ 0.0, 5.0 ],
-      }
-    }
-    y_speed_multiplier: {
-      type: double,
-      description: "Speed multiplier for Y direction to calibrate the cmd_vel input",
-      validation: {
-        bounds<>: [ 0.0, 5.0 ],
-      }
-    }
-    yaw_speed_multiplier: {
-      type: double,
-      description: "Speed multiplier for yaw direction to calibrate the cmd_vel input",
-      validation: {
-        bounds<>: [ 0.0, 5.0 ],
-      }
-    }
-    imu_active: {
-      type: bool,
-      description: "Activate IMU",
-    }
-    imu_pitch_threshold: {
-      type: double,
-      description: "Pitch threshold used for IMU stability stop (in radians)",
-      validation: {
-        bounds<>: [ 0.0, 2.0 ],
-      }
-    }
-    imu_roll_threshold: {
-      type: double,
-      description: "Roll threshold used for IMU stability stop (in radians)",
-      validation: {
-        bounds<>: [ 0.0, 2.0 ],
-      }
-    }
-    imu_pitch_vel_threshold: {
-      type: double,
-      description: "Pitch velocity threshold used for IMU stability stop (in radians/s)",
-      validation: {
-        bounds<>: [ 0.0, 10.0 ],
-      }
-    }
-    imu_roll_vel_threshold: {
-      type: double,
-      description: "Roll velocity threshold used for IMU stability stop (in radians/s)",
-      validation: {
-        bounds<>: [ 0.0, 10.0 ],
-      }
-    }
-    pause_duration: {
-      type: double,
-      description: "Pause duration for the stability stop (in seconds)",
-      validation: {
-        bounds<>: [ 0.0, 5.0 ],
-      }
-    }
-    pressure_phase_reset_active: {
-      type: bool,
-      description: "Activate foot pressure based phase reset",
-    }
-    ground_min_pressure: {
-      type: double,
-      description: "Minimum pressure value for the ground contact detection",
-      validation: {
-        bounds<>: [ 0.0, 100.0 ],
-      }
-    }
-    phase_reset_phase: {
-      type: double,
-      description: "Phase reset phase (in single support cycle phase)",
-      validation: {
-        bounds<>: [ 0.0, 1.0 ],
-      }
-    }
-    effort_phase_reset_active: {
-      type: bool,
-      description: "Activate effort based phase reset",
-    }
-    joint_min_effort: {
-      type: double,
-      description: "Minimum effort value for the joint effort based phase reset",
-      validation: {
-        bounds<>: [ 0.0, 100.0 ],
-      }
-    }
+    engine_freq:
+      type: double
+      description: "Control loop frequency in Hz"
+      validation:
+        bounds<>: [0.0, 1000.0]
+    tf:
+      odom_frame:
+        type: string
+        description: "The frame in which the odometry is published"
+        read_only: true
+        default_value: "odom"
+      base_link_frame:
+        type: string
+        description: "The robots base link frame name"
+        read_only: true
+        default_value: "base_link"
+      r_sole_frame:
+        type: string
+        description: "The robot right sole frame name"
+        read_only: true
+        default_value: "r_sole"
+      l_sole_frame:
+        type: string
+        description: "The robot left sole frame name"
+        read_only: true
+        default_value: "l_sole"
+    ik:
+      timeout:
+        type: double
+        description: "Inverse kinematics timeout in seconds"
+        validation:
+          bounds<>: [0.0, 10.0]
+      reset:
+        type: bool
+        read_only: true
+        description: "bioIK parameter"
+    debug_active:
+      type: bool
+      description: "Activate debug output"
+    max_step_x:
+      type: double
+      description: "Maximum step length in X direction (in meters)"
+      validation:
+        bounds<>: [0.0, 100000.0]
+    max_step_y:
+      type: double
+      description: "Maximum step length in Y direction (in meters)"
+      validation:
+        bounds<>: [0.0, 100000.0]
+    max_step_xy:
+      type: double
+      description: "Maximum step length in XY direction (in meters)"
+      validation:
+        bounds<>: [0.0, 100000.0]
+    max_step_z:
+      type: double
+      description: "Maximum step length in Z direction (in meters)"
+      validation:
+        bounds<>: [0.0, 100000.0]
+    max_step_angular:
+      type: double
+      description: "Maximum step length angular (in radians)"
+      validation:
+        bounds<>: [0.0, 100000.0]
+    x_speed_multiplier:
+      type: double
+      description: "Speed multiplier for X direction to calibrate the cmd_vel input"
+      validation:
+        bounds<>: [0.0, 5.0]
+    y_speed_multiplier:
+      type: double
+      description: "Speed multiplier for Y direction to calibrate the cmd_vel input"
+      validation:
+        bounds<>: [0.0, 5.0]
+    yaw_speed_multiplier:
+      type: double
+      description: "Speed multiplier for yaw direction to calibrate the cmd_vel input"
+      validation:
+        bounds<>: [0.0, 5.0]
+    x_bias:
+      type: double
+      description: "X bias for the command velocity which is received by the walk node. "
+      default_value: 0.0
+      validation:
+        bounds<>: [-0.1, 0.1]
+    y_bias:
+      type: double
+      description: "Y bias for the command velocity which is received by the walk node. "
+      default_value: 0.0
+      validation:
+        bounds<>: [-0.1, 0.1]
+    yaw_bias:
+      type: double
+      description: "Yaw bias for the command velocity which is received by the walk node. "
+      default_value: 0.0
+      validation:
+        bounds<>: [-0.4, 0.4]
+    stability_stop:
+      imu:
+        active:
+          type: bool
+          description: "Activate IMU"
+        pitch:
+          threshold:
+            type: double
+            description: "Pitch threshold used for IMU stability stop (in radians)"
+            validation:
+              bounds<>: [0.0, 2.0]
+          vel_threshold:
+            type: double
+            description: "Pitch velocity threshold used for IMU stability stop (in radians/s)"
+            validation:
+              bounds<>: [0.0, 10.0]
+        roll:
+          threshold:
+            type: double
+            description: "Roll threshold used for IMU stability stop (in radians)"
+            validation:
+              bounds<>: [0.0, 2.0]
+          vel_threshold:
+            type: double
+            description: "Roll velocity threshold used for IMU stability stop (in radians/s)"
+            validation:
+              bounds<>: [0.0, 10.0]
+      pause_duration:
+        type: double
+        description: "Pause duration for the stability stop (in seconds)"
+        validation:
+          bounds<>: [0.0, 5.0]
+    imu_y_acc_tau:
+      type: double
+      description: "Time constant for the low pass filter of the IMU y acceleration (in seconds). It defines the time it takes for a unit step input to reach 63.2% of its final value."
+      validation:
+        bounds<>: [0.0, 1.0]
+    phase_reset:
+      min_phase:
+        type: double
+        description: "Phase reset phase start (in single support cycle phase)"
+        validation:
+          bounds<>: [0.0, 1.0]
+      foot_pressure:
+        active:
+          type: bool
+          description: "Activate foot pressure based phase reset"
+        ground_min_pressure:
+          type: double
+          description: "Minimum pressure value for the ground contact detection"
+          validation:
+            bounds<>: [0.0, 100.0]
+      effort:
+        active:
+          type: bool
+          description: "Activate joint effort based phase reset"
+        joint_min_effort:
+          type: double
+          description: "Minimum effort value for the joint effort based phase reset"
+          validation:
+            bounds<>: [0.0, 100.0]
+      imu:
+        active:
+          type: bool
+          description: "Activate IMU linear acceleration based phase reset"
+        y_acceleration_threshold:
+          type: double
+          description: "Threshold for the y acceleration of the IMU under which the phase reset is triggered (if we are in the correct phase of the walking cycle)"
+          validation:
+            bounds<>: [0.0, 10.0]
+    trunk_pid:
+      pitch:
+        p:
+          type: double
+          description: "Proportional gain for the trunk pitch PID controller"
+          default_value: 0.0
+        i:
+          type: double
+          description: "Integral gain for the trunk pitch PID controller"
+          default_value: 0.0
+        d:
+          type: double
+          description: "Derivative gain for the trunk pitch PID controller"
+          default_value: 0.0
+        i_clamp_max:
+          type: double
+          description: "Integral clamp maximum for the trunk pitch PID controller"
+          default_value: 0.0
+        i_clamp_min:
+          type: double
+          description: "Integral clamp minimum for the trunk pitch PID controller"
+          default_value: 0.0
+        antiwindup:
+          type: bool
+          description: "Activate antiwindup for the trunk pitch PID controller"
+          default_value: false
+      roll:
+        p:
+          type: double
+          description: "Proportional gain for the trunk roll PID controller"
+          default_value: 0.0
+        i:
+          type: double
+          description: "Integral gain for the trunk roll PID controller"
+          default_value: 0.0
+        d:
+          type: double
+          description: "Derivative gain for the trunk roll PID controller"
+          default_value: 0.0
+        i_clamp_max:
+          type: double
+          description: "Integral clamp maximum for the trunk roll PID controller"
+          default_value: 0.0
+        i_clamp_min:
+          type: double
+          description: "Integral clamp minimum for the trunk roll PID controller"
+          default_value: 0.0
+        antiwindup:
+          type: bool
+          description: "Activate antiwindup for the trunk roll PID controller"
+          default_value: false

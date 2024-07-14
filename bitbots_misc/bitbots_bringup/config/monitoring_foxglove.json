@@ -1,0 +1,337 @@
+{
+  "configById": {
+    "RosOut!3yblzst": {
+      "searchTerms": [],
+      "minLogLevel": 1,
+      "topicToRender": "/nuc1/rosout"
+    },
+    "RosOut!3g9ceib": {
+      "searchTerms": [],
+      "minLogLevel": 1,
+      "topicToRender": "/nuc2/rosout"
+    },
+    "RosOut!323q0t4": {
+      "searchTerms": [],
+      "minLogLevel": 1,
+      "topicToRender": "/nuc3/rosout"
+    },
+    "RosOut!323q0t5": {
+      "searchTerms": [],
+      "minLogLevel": 1,
+      "topicToRender": "/nuc4/rosout"
+    },
+    "DiagnosticStatusPanel!71kvga": {
+      "topicToRender": "/nuc1/diagnostics_agg"
+    },
+    "RawMessages!1brxbm0": {
+      "diffEnabled": false,
+      "diffMethod": "custom",
+      "diffTopicPath": "",
+      "showFullMessageForDiff": false,
+      "topicPath": "/nuc1/debug/dsd/body_behavior/dsd_current_action.data"
+    },
+    "RawMessages!423vgxy": {
+      "diffEnabled": false,
+      "diffMethod": "custom",
+      "diffTopicPath": "",
+      "showFullMessageForDiff": false,
+      "topicPath": "/nuc1/debug/dsd/hcm/dsd_current_action.data"
+    },
+    "RawMessages!2x1cv98": {
+      "diffEnabled": false,
+      "diffMethod": "custom",
+      "diffTopicPath": "",
+      "showFullMessageForDiff": false,
+      "topicPath": "/nuc1/debug/dsd/localization/dsd_current_action.data"
+    },
+    "DiagnosticSummary!1r8i43o": {
+      "minLevel": 0,
+      "pinnedIds": [],
+      "hardwareIdFilter": "",
+      "topicToRender": "/nuc2/diagnostics_agg",
+      "sortByLevel": true
+    },
+    "DiagnosticStatusPanel!3k7hbv4": {
+      "topicToRender": "/nuc2/diagnostics_agg",
+      "selectedHardwareId": "",
+      "selectedName": "//Servos",
+      "collapsedSections": []
+    },
+    "RawMessages!jfwubn": {
+      "diffEnabled": false,
+      "diffMethod": "custom",
+      "diffTopicPath": "",
+      "showFullMessageForDiff": false,
+      "topicPath": "/nuc2/debug/dsd/body_behavior/dsd_current_action.data"
+    },
+    "RawMessages!41xue5l": {
+      "diffEnabled": false,
+      "diffMethod": "custom",
+      "diffTopicPath": "",
+      "showFullMessageForDiff": false,
+      "topicPath": "/nuc2/debug/dsd/hcm/dsd_current_action.data"
+    },
+    "RawMessages!33l5ojn": {
+      "diffEnabled": false,
+      "diffMethod": "custom",
+      "diffTopicPath": "",
+      "showFullMessageForDiff": false,
+      "topicPath": "/nuc2/debug/localization/hcm/dsd_current_action.data"
+    },
+    "Gauge!37c3rt2": {
+      "path": "/nuc2/system_workload.cpu_usage_overall",
+      "minValue": 0,
+      "maxValue": 100,
+      "colorMap": "red-yellow-green",
+      "colorMode": "colormap",
+      "gradient": [
+        "#0000ff",
+        "#ff00ff"
+      ],
+      "reverse": true,
+      "foxglovePanelTitle": "CPU %"
+    },
+    "DiagnosticStatusPanel!28rvz6": {
+      "topicToRender": "/diagnostics"
+    },
+    "DiagnosticStatusPanel!360qbtt": {
+      "topicToRender": "/nuc4/diagnostics_agg"
+    },
+    "RawMessages!lz2mux": {
+      "diffEnabled": false,
+      "diffMethod": "custom",
+      "diffTopicPath": "",
+      "showFullMessageForDiff": false,
+      "topicPath": "/nuc4/debug/dsd/body_behavior/dsd_current_action.data"
+    },
+    "RawMessages!52hdlj": {
+      "diffEnabled": false,
+      "diffMethod": "custom",
+      "diffTopicPath": "",
+      "showFullMessageForDiff": false,
+      "topicPath": "/nuc4/debug/dsd/hcm/dsd_current_action.data"
+    },
+    "RawMessages!3pgrtz6": {
+      "diffEnabled": false,
+      "diffMethod": "custom",
+      "diffTopicPath": "",
+      "showFullMessageForDiff": false,
+      "topicPath": "/nuc4/debug/dsd/localization/dsd_current_action.data"
+    },
+    "3D!28f8we9": {
+      "cameraState": {
+        "distance": 7.944286369162776,
+        "perspective": false,
+        "phi": 59.99999999999999,
+        "target": [
+          0,
+          0,
+          0
+        ],
+        "targetOffset": [
+          0.6116602648776032,
+          -0.1667007941574684,
+          2.4383996116985306e-17
+        ],
+        "targetOrientation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "thetaOffset": -179.99999999999974,
+        "fovy": 45,
+        "near": 0.5,
+        "far": 5000
+      },
+      "followMode": "follow-none",
+      "scene": {
+        "labelScaleFactor": 1.34,
+        "transforms": {
+          "axisScale": 5.514
+        }
+      },
+      "transforms": {},
+      "topics": {
+        "/initialpose": {
+          "visible": false
+        },
+        "/nuc2/field/map": {
+          "visible": true
+        },
+        "/nuc2/pose_with_covariance": {
+          "visible": true,
+          "type": "arrow"
+        },
+        "/nuc2/goal_pose": {
+          "visible": true,
+          "type": "arrow",
+          "arrowScale": [
+            0.5,
+            0.15,
+            0.15
+          ]
+        },
+        "/nuc2/ball_position_relative_filtered": {
+          "visible": false,
+          "covarianceColor": "#7c6bffff"
+        },
+        "/nuc1/ball_position_relative_filtered": {
+          "visible": false,
+          "covarianceColor": "#ccff6b40"
+        },
+        "/nuc1/field/map": {
+          "visible": true
+        },
+        "/nuc1/pose_with_covariance": {
+          "visible": true,
+          "type": "arrow",
+          "color": "#d5ff6bff"
+        },
+        "/nuc1/goal_pose": {
+          "visible": true,
+          "type": "arrow",
+          "arrowScale": [
+            0.5,
+            0.15,
+            0.15
+          ],
+          "color": "#d5ff6bff"
+        },
+        "/nuc4/pose_with_covariance": {
+          "visible": true,
+          "type": "arrow",
+          "color": "#ff6bdeff"
+        },
+        "/nuc4/goal_pose": {
+          "visible": true,
+          "type": "arrow",
+          "arrowScale": [
+            0.5,
+            0.15,
+            0.15
+          ],
+          "color": "#ff6bdeff"
+        }
+      },
+      "layers": {},
+      "publish": {
+        "type": "point",
+        "poseTopic": "/move_base_simple/goal",
+        "pointTopic": "/clicked_point",
+        "poseEstimateTopic": "/initialpose",
+        "poseEstimateXDeviation": 0.5,
+        "poseEstimateYDeviation": 0.5,
+        "poseEstimateThetaDeviation": 0.26179939
+      },
+      "imageMode": {},
+      "foxglovePanelTitle": "Map"
+    },
+    "Tab!1ry7l7s": {
+      "activeTabIdx": 0,
+      "tabs": [
+        {
+          "title": "Amy",
+          "layout": "RosOut!3yblzst"
+        },
+        {
+          "title": "Rory",
+          "layout": "RosOut!3g9ceib"
+        },
+        {
+          "title": "Jack",
+          "layout": "RosOut!323q0t4"
+        },
+        {
+          "title": "Donna",
+          "layout": "RosOut!323q0t5"
+        }
+      ]
+    },
+    "Tab!n96hur": {
+      "activeTabIdx": 0,
+      "tabs": [
+        {
+          "title": "Amy",
+          "layout": {
+            "first": "DiagnosticStatusPanel!71kvga",
+            "second": {
+              "first": "RawMessages!1brxbm0",
+              "second": {
+                "first": "RawMessages!423vgxy",
+                "second": "RawMessages!2x1cv98",
+                "direction": "column"
+              },
+              "direction": "column",
+              "splitPercentage": 36.75564681724845
+            },
+            "direction": "column"
+          }
+        },
+        {
+          "title": "Rory",
+          "layout": {
+            "first": {
+              "direction": "row",
+              "second": "DiagnosticStatusPanel!3k7hbv4",
+              "first": "DiagnosticSummary!1r8i43o"
+            },
+            "second": {
+              "first": {
+                "first": {
+                  "first": "RawMessages!jfwubn",
+                  "second": "RawMessages!41xue5l",
+                  "direction": "column"
+                },
+                "second": "RawMessages!33l5ojn",
+                "direction": "column",
+                "splitPercentage": 67.87878787878789
+              },
+              "second": "Gauge!37c3rt2",
+              "direction": "row",
+              "splitPercentage": 65.37616229923923
+            },
+            "direction": "column",
+            "splitPercentage": 53.182751540041075
+          }
+        },
+        {
+          "title": "Jack",
+          "layout": "DiagnosticStatusPanel!28rvz6"
+        },
+        {
+          "title": "Donna",
+          "layout": {
+            "first": "DiagnosticStatusPanel!360qbtt",
+            "second": {
+              "first": "RawMessages!lz2mux",
+              "second": {
+                "first": "RawMessages!52hdlj",
+                "second": "RawMessages!3pgrtz6",
+                "direction": "column"
+              },
+              "direction": "column",
+              "splitPercentage": 35.93429158110882
+            },
+            "direction": "column"
+          }
+        }
+      ]
+    }
+  },
+  "globalVariables": {},
+  "userNodes": {},
+  "playbackConfig": {
+    "speed": 1
+  },
+  "layout": {
+    "first": {
+      "first": "3D!28f8we9",
+      "second": "Tab!1ry7l7s",
+      "direction": "column"
+    },
+    "second": "Tab!n96hur",
+    "direction": "row",
+    "splitPercentage": 55.052083333333336
+  }
+}

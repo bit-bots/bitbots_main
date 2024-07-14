@@ -401,6 +401,8 @@ void ServoBusInterface::write(const rclcpp::Time &t, const rclcpp::Duration &dt)
   lost_servo_connection_ = false;
 }
 
+void ServoBusInterface::restoreAfterPowerCycle() { writeROMRAM(false); }
+
 void ServoBusInterface::switchDynamixelControlMode() {
   /**
    * This method switches the control mode of all servos
