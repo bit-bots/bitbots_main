@@ -1,0 +1,93 @@
+{
+    "author": "Flo",
+    "description": "",
+    "keyframes": [
+        {
+            "duration": 1.0,
+            "goals": {
+                "HeadPan": 0.0,
+                "HeadTilt": -45.0,
+                "LAnklePitch": -75.0,
+                "LAnkleRoll": -2.0,
+                "LElbow": 27.0,
+                "LHipPitch": -50.0,
+                "LHipRoll": -2.2,
+                "LHipYaw": 0.0,
+                "LKnee": 124.0,
+                "LShoulderPitch": 170.0,
+                "LShoulderRoll": 0.0,
+                "RAnklePitch": 75.0,
+                "RAnkleRoll": 2.0,
+                "RElbow": -27.0,
+                "RHipPitch": 50.0,
+                "RHipRoll": -2.2,
+                "RHipYaw": 0.0,
+                "RKnee": -124.0,
+                "RShoulderPitch": -170.0,
+                "RShoulderRoll": -0.26
+            },
+            "name": "bridge",
+            "pause": 0.5,
+            "torque": {}
+        },
+        {
+            "duration": 0.25,
+            "goals": {
+                "HeadPan": 0.0,
+                "HeadTilt": -45.0,
+                "LAnklePitch": -80.0,
+                "LAnkleRoll": -2.0,
+                "LElbow": -90.0,
+                "LHipPitch": 51.0,
+                "LHipRoll": -2.2,
+                "LHipYaw": 0.0,
+                "LKnee": 143.0,
+                "LShoulderPitch": 34.0,
+                "LShoulderRoll": 0.0,
+                "RAnklePitch": 80.0,
+                "RAnkleRoll": 2.0,
+                "RElbow": 90.0,
+                "RHipPitch": -51.0,
+                "RHipRoll": 2.2,
+                "RHipYaw": 0.0,
+                "RKnee": -143.0,
+                "RShoulderPitch": -34.0,
+                "RShoulderRoll": -0.0
+            },
+            "name": "push",
+            "pause": 0.2,
+            "torque": {}
+        },
+        {
+            "duration": 0.5,
+            "goals": {
+                "HeadPan": 0.0,
+                "HeadTilt": -45.0,
+                "LAnklePitch": -80.0,
+                "LAnkleRoll": -2.0,
+                "LElbow": -90.0,
+                "LHipPitch": 51.0,
+                "LHipRoll": -2.2,
+                "LHipYaw": 0.0,
+                "LKnee": 144.0,
+                "LShoulderPitch": -9.0,
+                "LShoulderRoll": 0.0,
+                "RAnklePitch": 80.0,
+                "RAnkleRoll": 2.0,
+                "RElbow": 90.0,
+                "RHipPitch": -51.0,
+                "RHipRoll": 2.2,
+                "RHipYaw": 0.0,
+                "RKnee": -144.0,
+                "RShoulderPitch": 9.0,
+                "RShoulderRoll": 0.0
+            },
+            "name": "squat",
+            "pause": 0.0,
+            "torque": {}
+        }
+    ],
+    "last_edited": "2024-07-01 18:11:40.280193",
+    "name": "stand_up_back",
+    "version": "1.0"
+}

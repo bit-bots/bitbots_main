@@ -19,17 +19,27 @@ void DynupIK::init(moveit::core::RobotModelPtr kinematic_model) {
 void DynupIK::reset() {
   // we have to set some good initial position in the goal state, since we are using a gradient
   // based method. Otherwise, the first step will be not correct
-  std::vector<std::string> names_vec = {"LHipPitch", "LKnee", "LAnklePitch", "RHipPitch", "RKnee", "RAnklePitch"};
-  std::vector<double> pos_vec = {0.7, 1.0, -0.4, -0.7, -1.0, 0.4};
-  for (size_t i = 0; i < names_vec.size(); i++) {
-    // besides its name, this method only changes a single joint position...
-    goal_state_->setJointPositions(names_vec[i], &pos_vec[i]);
+
+  // Use the current joint state as a starting point for the IK
+  if (joint_state_) {
+    goal_state_->setVariablePositions(joint_state_->name, joint_state_->position);
+  } else {
+    // if we don't have a joint state, we set some default values that are a reasonable starting point
+    RCLCPP_WARN(node_->get_logger(),
+                "No joint state received, using hardcoded initial positions for IK "
+                "initialization");
+    std::vector<std::string> names_vec = {"LHipPitch", "LKnee", "LAnklePitch", "RHipPitch", "RKnee", "RAnklePitch"};
+    std::vector<double> pos_vec = {0.7, 1.0, -0.4, -0.7, -1.0, 0.4};
+    for (size_t i = 0; i < names_vec.size(); i++) {
+      // besides its name, this method only changes a single joint position...
+      goal_state_->setJointPositions(names_vec[i], &pos_vec[i]);
+    }
   }
 }
 
 void DynupIK::setDirection(DynupDirection direction) { direction_ = direction; }
 
-bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
+bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse& ik_goals) {
   /* ik options is basically the command which we send to bio_ik and which describes what we want to do */
   auto ik_options = kinematics::KinematicsQueryOptions();
   ik_options.return_approximate_solution = true;
@@ -104,4 +114,7 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse &ik_goals) {
 
 moveit::core::RobotStatePtr DynupIK::get_goal_state() { return goal_state_; }
 
+void DynupIK::set_joint_positions(sensor_msgs::msg::JointState::ConstSharedPtr joint_state) {
+  joint_state_ = joint_state;
+}
 }  // namespace bitbots_dynup

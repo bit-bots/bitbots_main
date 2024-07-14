@@ -12,9 +12,10 @@ PyDynupWrapper::PyDynupWrapper(const std::string ns) {
 
 void PyDynupWrapper::spin_some() { rclcpp::spin_some(node_); }
 
-py::bytes PyDynupWrapper::step(double dt, py::bytes &imu_msg) {
-  bitbots_msgs::msg::JointCommand result =
-      dynup_->step(dt, std::make_shared<sensor_msgs::msg::Imu>(fromPython<sensor_msgs::msg::Imu>(imu_msg)));
+py::bytes PyDynupWrapper::step(double dt, py::bytes &imu_msg, py::bytes &joint_state_msg) {
+  bitbots_msgs::msg::JointCommand result = dynup_->step(
+      dt, std::make_shared<sensor_msgs::msg::Imu>(fromPython<sensor_msgs::msg::Imu>(imu_msg)),
+      std::make_shared<sensor_msgs::msg::JointState>(fromPython<sensor_msgs::msg::JointState>(joint_state_msg)));
   return toPython<bitbots_msgs::msg::JointCommand>(result);
 }
 
