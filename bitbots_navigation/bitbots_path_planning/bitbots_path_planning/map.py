@@ -30,7 +30,6 @@ class Map:
             (np.array(self.size) * self.resolution).astype(int),
             dtype=np.int8,
         )
-        self.draw_barrier()
         self.frame: str = self.node.config.map.planning_frame
         self.ball_buffer: list[Point] = []
         self.robot_buffer: list[sv3dm.Robot] = []
@@ -38,20 +37,31 @@ class Map:
         self.config_inflation_blur: int = self.node.config.map.inflation.blur
         self.config_inflation_dialation: int = self.node.config.map.inflation.dialate
         self.config_obstacle_value: int = self.node.config.map.obstacle_value
+        self.draw_barrier()
 
     def draw_barrier(self) -> None:
-        cv2.line(
+        cv2.circle(
             self.map,
-            (5.5 * self.resolution, 0),
-            (5.5 * self.resolution, 8 * self.resolution),
+            self.to_map_space(0, 0),
+            round(self.config_ball_diameter * self.resolution),
             self.config_obstacle_value,
+            -1,
         )
-        cv2.line(
-            self.map, ((5.5 + 1.5) * self.resolution, 0), ((5.5 + 1.5) * self.resolution, 8), self.config_obstacle_value
-        )
-        cv2.line(
-            self.map, ((5.5) * self.resolution, 7.2), ((5.5 + 1.5) * self.resolution, 7.2), self.config_obstacle_value
-        )
+        # cv2.line(
+        #     self.map,
+        #     (self.to_map_space(0 + self.get_origin()[0], 5.5 + self.get_origin()[1])),
+        #     (self.to_map_space(5.5 + self.get_origin()[0], 8 + self.get_origin()[1])),
+        #     self.config_obstacle_value,
+        #     2
+        # )
+        cv2.line(self.map, self.to_map_space(-4, 0), self.to_map_space(4, 0), self.config_obstacle_value, 2)
+        # cv2.line(
+        #     self.map,
+        #     self.to_map_space(7.2 + self.get_origin()[0], 5.5 + self.get_origin()[1] ),
+        #     self.to_map_space(7.2 + self.get_origin()[0], 5.5 + self.get_origin()[1] ),
+        #     self.config_obstacle_value,
+        #     2
+        # )
 
     def set_ball(self, ball: PoseWithCovarianceStamped) -> None:
         """
@@ -115,8 +125,8 @@ class Map:
         Maps a point (x, y in meters) to corresponding pixel on the costmap
         """
         return (
-            max(0, min(round((x - self.get_origin()[0]) * self.resolution), self.map.shape[0] - 1)),
-            max(0, min(round((y - self.get_origin()[1]) * self.resolution), self.map.shape[1] - 1)),
+            max(0, min(round((x - self.get_origin()[1]) * self.resolution), self.map.shape[1] - 1)),
+            max(0, min(round((y - self.get_origin()[0]) * self.resolution), self.map.shape[0] - 1)),
         )
 
     def from_map_space_np(self, points: np.ndarray) -> np.ndarray:
