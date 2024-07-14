@@ -1,0 +1,59 @@
+pressure_converter:
+  common:
+    average:
+      type: int
+      description: "Number of values to average over."
+      read_only: true
+      default_value: 5
+      validation:
+        gt<>: [0]
+    calibration_buffer_length:
+      type: int
+      description: "Number of values to average over for the calibration of the scale and zero."
+      read_only: true
+      default_value: 50
+      validation:
+        gt<>: [0]
+    cop_threshold:
+      type: double
+      description: "Minimum value for the center of pressure to be considered valid."
+      read_only: true
+      default_value: 5.0
+      validation:
+        gt_eq<>: [0.0]
+  right:
+    topic:
+      type: string
+      description: "Topic for the right foot pressure sensor."
+      read_only: true
+      default_value: "/foot_pressure_right"
+    zero:
+      type: double_array
+      description: "Zero values for the right foot pressure sensor."
+      read_only: true
+      validation:
+        fixed_size<>: [4]
+    scale:
+      type: double_array
+      description: "Scale values for the right foot pressure sensor."
+      read_only: true
+      validation:
+        fixed_size<>: [4]
+  left:
+    topic:
+      type: string
+      description: "Topic for the left foot pressure sensor."
+      read_only: true
+      default_value: "/foot_pressure_left"
+    zero:
+      type: double_array
+      description: "Zero values for the left foot pressure sensor."
+      read_only: true
+      validation:
+        fixed_size<>: [4]
+    scale:
+      type: double_array
+      description: "Scale values for the left foot pressure sensor."
+      read_only: true
+      validation:
+        fixed_size<>: [4]
