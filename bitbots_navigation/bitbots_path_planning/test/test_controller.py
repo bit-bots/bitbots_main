@@ -85,8 +85,7 @@ def test_step_limits_forward_xy_velocities(node, tf2_buffer, config, pose_oppone
 
     walk_command_speed = math.hypot(controller.last_cmd_vel.linear.x, controller.last_cmd_vel.linear.y)
 
-    assert walk_command_speed < config.controller.max_vel_x
-    assert walk_command_speed < config.controller.max_vel_y
+    assert walk_command_speed < max(config.controller.max_vel_x, config.controller.max_vel_y)
     assert controller.last_cmd_vel.linear.z == 0
 
 

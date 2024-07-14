@@ -1,5 +1,7 @@
 <launch>
-    <executable cmd="mimic3-server --preload-voice en_US/vctk_low --cache-dir $(env HOME)/.cache/mimic3/" name="mimic3-server" output="screen"/>
+    <!-- Do not launch mimic3-server on robot, as it is running as a systemd service -->
+    <executable unless="$(env IS_ROBOT)" cmd="mimic3-server --preload-voice en_US/vctk_low --preload-voice en_UK/apope_low --cache-dir $(env HOME)/.cache/mimic3/" name="mimic3-server" output="screen"/>
+
     <node name="bitbots_tts" pkg="bitbots_tts" exec="tts">
         <param from="$(find-pkg-share bitbots_tts)/config/tts_config.yaml"/>
     </node>

@@ -26,14 +26,14 @@ bitbots_localization:
         starting_multiplier: 0.05
         starting_steps_with_higher_diffusion: 40
       drift:
-        distance_to_direction: 0.4
+        distance_to_direction: 1.0
         rotation_to_direction: 0.0
-        distance_to_distance: 0.08
-        rotation_to_distance: 0.15
-        distance_to_rotation: 0.0
-        rotation_to_rotation: 0.8
+        distance_to_distance: 0.1
+        rotation_to_distance: 0.2
+        distance_to_rotation: 0.2
+        rotation_to_rotation: 1.5
         max_rotation: 0.45
-        max_translation: 0.15
+        max_translation: 0.09
       weighting:
         min_weight: 0.01
         particle_reset_weight: 0.01
