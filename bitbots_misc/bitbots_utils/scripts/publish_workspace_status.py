@@ -1,12 +1,13 @@
 #!/usr/bin/python3
-import os
 import json
+import os
 
 import rclpy
+from bitbots_tts.tts import speak
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile
 from std_msgs.msg import String
-from bitbots_tts.tts import speak
+
 from bitbots_msgs.msg import Audio
 
 
@@ -40,8 +41,7 @@ class WorkspaceStatusPublisher(Node):
             String, self.publish_topic, qos_profile=QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL)
         )
         self.get_logger().info("Creating speak publisher...")
-        self.speak_pub = self.create_publisher(
-            Audio, "/speak", 1)
+        self.speak_pub = self.create_publisher(Audio, "/speak", 1)
 
         # Publish workspace status
         self.get_logger().debug("Publishing workspace status...")
