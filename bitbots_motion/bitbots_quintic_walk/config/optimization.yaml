@@ -7,10 +7,11 @@
       trunk_pause: 0.0
       foot_put_down_phase: 1.0
 
-      kick_length: 0.09
+      kick_length: 0.12
       kick_vel: 0.2
-      kick_phase: 0.75
-
+      kick_phase: 0.28
+      kick_put_down_phase: 0.8
+      kick_rise_factor: 1.5
     node:
       engine_freq: 200.0
 

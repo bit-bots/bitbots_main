@@ -46,7 +46,7 @@ double Map::get_occupancy(double x, double y) {
   if (x < mapWidth && x >= 0 && y < mapHeight && y >= 0) {
     occupancy = 100 - map.at<uchar>(y, x);
   }
-  return occupancy;
+  return occupancy / 100.0;
 }
 
 std::vector<double> Map::provideRating(const RobotState &state,

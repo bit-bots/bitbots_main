@@ -1,9 +1,12 @@
+from enum import Flag
 from typing import Optional
 
 from rclpy.action import ActionClient
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.duration import Duration
+from rclpy.publisher import Publisher
 from rclpy.time import Time
+from std_msgs.msg import Bool
 
 from bitbots_blackboard.capsules import AbstractBlackboardCapsule
 from bitbots_msgs.action import Kick
@@ -22,16 +25,32 @@ class KickCapsule(AbstractBlackboardCapsule):
     __connected: bool = False
     __action_client: ActionClient = None
 
+    class WalkKickTargets(Flag):
+        """
+        Define the target for the walk kick (e.g. left or right foot)
+        """
+
+        LEFT = False
+        RIGHT = True
+
+    walk_kick_pub: Publisher
+
     def __init__(self, node, blackboard):
         super().__init__(node, blackboard)
         """
         :param blackboard: Global blackboard instance
         """
-        self.connect()
+        self.walk_kick_pub = self._node.create_publisher(Bool, "/kick", 1)
+        # self.connect_dynamic_kick()  Do not connect if dynamic_kick is disabled
 
-    def connect(self):
-        # Do not connect if dynamic_kick is disabled
-        return
+    def walk_kick(self, target: WalkKickTargets):
+        """
+        Kick the ball while walking
+        :param target: Target for the walk kick (e.g. left or right foot)
+        """
+        self.walk_kick_pub.publish(Bool(data=target.value))
+
+    def connect_dynamic_kick(self):
         topic = self._blackboard.config["dynamic_kick"]["topic"]
         self.__action_client = ActionClient(self._node, Kick, topic, callback_group=ReentrantCallbackGroup())
         self.__connected = self.__action_client.wait_for_server(self._blackboard.config["dynamic_kick"]["wait_time"])
@@ -39,7 +58,7 @@ class KickCapsule(AbstractBlackboardCapsule):
         if not self.__connected:
             self._node.get_logger().error(f"No dynamic_kick server running on {topic}")
 
-    def kick(self, goal: Kick.Goal):
+    def dynamic_kick(self, goal: Kick.Goal):
         """
         :param goal: Goal to kick to
         :type goal: KickGoal
