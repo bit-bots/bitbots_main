@@ -40,27 +40,28 @@ class Map:
         self.draw_barrier()
 
     def draw_barrier(self) -> None:
-        cv2.line(
+        cv2.circle(
             self.map,
-            (int(5.5 * self.resolution), 0),
-            (int(5.5 * self.resolution), int(8 * self.resolution)),
+            self.to_map_space(0, 0),
+            round(self.config_ball_diameter * self.resolution),
             self.config_obstacle_value,
-            100,
+            -1,
         )
-        cv2.line(
-            self.map,
-            (int((5.5 + 1.5) * self.resolution), 0),
-            (int((5.5 + 1.5) * self.resolution), int(8 * self.resolution)),
-            self.config_obstacle_value,
-            100,
-        )
-        cv2.line(
-            self.map,
-            (int((5.5) * self.resolution), int(7.2 * self.resolution)),
-            (int((5.5 + 1.5) * self.resolution), int(7.2 * self.resolution)),
-            self.config_obstacle_value,
-            100,
-        )
+        # cv2.line(
+        #     self.map,
+        #     (self.to_map_space(0 + self.get_origin()[0], 5.5 + self.get_origin()[1])),
+        #     (self.to_map_space(5.5 + self.get_origin()[0], 8 + self.get_origin()[1])),
+        #     self.config_obstacle_value,
+        #     2
+        # )
+        cv2.line(self.map, self.to_map_space(-4, 0), self.to_map_space(4, 0), self.config_obstacle_value, 2)
+        # cv2.line(
+        #     self.map,
+        #     self.to_map_space(7.2 + self.get_origin()[0], 5.5 + self.get_origin()[1] ),
+        #     self.to_map_space(7.2 + self.get_origin()[0], 5.5 + self.get_origin()[1] ),
+        #     self.config_obstacle_value,
+        #     2
+        # )
 
     def set_ball(self, ball: PoseWithCovarianceStamped) -> None:
         """
@@ -124,8 +125,8 @@ class Map:
         Maps a point (x, y in meters) to corresponding pixel on the costmap
         """
         return (
-            max(0, min(round((x - self.get_origin()[0]) * self.resolution), self.map.shape[0] - 1)),
-            max(0, min(round((y - self.get_origin()[1]) * self.resolution), self.map.shape[1] - 1)),
+            max(0, min(round((x - self.get_origin()[1]) * self.resolution), self.map.shape[1] - 1)),
+            max(0, min(round((y - self.get_origin()[0]) * self.resolution), self.map.shape[0] - 1)),
         )
 
     def from_map_space_np(self, points: np.ndarray) -> np.ndarray:
