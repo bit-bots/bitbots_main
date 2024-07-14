@@ -34,10 +34,10 @@ class LedNode(Node):
         self.pub_imu_5 = self.create_publisher(ColorRGBA, "/led5", 1)
 
         self.stratedy_msg: Strategy = Strategy()
-        self.robot_controll_state_msg: Optional[RobotControlState] = None
+        self.robot_control_state_msg: Optional[RobotControlState] = None
 
         # Maps the robot control state to a color
-        self.color_mapping_robot_controll_state = {
+        self.color_mapping_robot_control_state = {
             RobotControlState.HARDWARE_PROBLEM: color_to_msg("red"),
             RobotControlState.PENALTY: color_to_msg("yellow"),
         }
@@ -74,24 +74,24 @@ class LedNode(Node):
 
     def hcm_state_cb(self, msg: RobotControlState):
         # If the message is the same as the last one, ignore it
-        if self.robot_controll_state_msg == msg:
+        if self.robot_control_state_msg == msg:
             return
-        self.robot_controll_state_msg = msg
+        self.robot_control_state_msg = msg
         # Change the led color accordingly
         self.update_leds()
 
     def update_leds(self):
         """
         Updates the leds based on the current state. The priority is as follows: robot control state > strategy role and action.
-        The robot controll state changes all leds to the same color. The strategy role and action changes the led on the left
+        The robot control state changes all leds to the same color. The strategy role and action changes the led on the left
         of the imu and coreboard and the stategy action changes the mittle and right led on the imu and coreboard.
         """
         if (
-            self.robot_controll_state_msg is not None
-            and self.robot_controll_state_msg.state in self.color_mapping_robot_controll_state
+            self.robot_control_state_msg is not None
+            and self.robot_control_state_msg.state in self.color_mapping_robot_control_state
         ):
             # If the robot control state is in the mapping, change all leds to the color of the state
-            color = self.color_mapping_robot_controll_state[self.robot_controll_state_msg.state]
+            color = self.color_mapping_robot_control_state[self.robot_control_state_msg.state]
             self.pub_core_0.publish(color)
             self.pub_core_1.publish(color)
             self.pub_core_2.publish(color)
