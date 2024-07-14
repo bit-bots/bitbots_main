@@ -16,7 +16,7 @@ setup(
     install_requires=[
         "setuptools",
     ],
-    scripts=["scripts/send_text.py"],
+    scripts=glob.glob("scripts/*"),
     entry_points={
         "console_scripts": [
             "tts = bitbots_tts.tts:main",
