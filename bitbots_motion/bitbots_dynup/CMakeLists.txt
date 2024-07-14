@@ -37,8 +37,13 @@ find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
 generate_parameter_library(dynup_parameters config/dynup_config.yaml)
 
 rosidl_generate_interfaces(
-  ${PROJECT_NAME} "msg/DynupEngineDebug.msg" "msg/DynupPoses.msg" DEPENDENCIES
-  std_msgs geometry_msgs)
+  ${PROJECT_NAME}
+  "msg/DynupEngineDebug.msg"
+  "msg/DynupPoses.msg"
+  "msg/DynupIkOffset.msg"
+  DEPENDENCIES
+  std_msgs
+  geometry_msgs)
 
 include_directories(include ${PYTHON_INCLUDE_DIRS})
 
