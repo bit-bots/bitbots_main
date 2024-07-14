@@ -1,5 +1,5 @@
 Hardware Checklist (Pre-Competition)
-==============================
+====================================
 
 When Powered Off
 ----------------
