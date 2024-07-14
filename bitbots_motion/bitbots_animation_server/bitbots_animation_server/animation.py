@@ -10,7 +10,7 @@ class Keyframe:
     :param torque: The torque for each joint.
     :param duration: The time in seconds until the robot reaches the goal.
     :param pause: The time in seconds the robot pauses at the goal.
-    :param stabelization_functions: A string expression for each joint to stabilize the joint using e.g. IMU data.
+    :param stabilization_functions: A string expression for each joint to stabilize the joint using e.g. IMU data.
     """
 
     def __init__(
@@ -19,13 +19,13 @@ class Keyframe:
         torque: Optional[dict[str, float]] = None,
         duration: float = 1.0,
         pause: float = 0.0,
-        stabelization_functions: Optional[dict[str, str]] = None,
+        stabilization_functions: Optional[dict[str, str]] = None,
     ):
         self.duration = float(duration)
         self.pause = float(pause)
         self.goals = goals
         self.torque = torque or {}
-        self.stabelization_functions: dict[str, str] = stabelization_functions or {}
+        self.stabilization_functions: dict[str, str] = stabilization_functions or {}
 
 
 class Animation:
@@ -53,7 +53,7 @@ def parse(info: dict) -> Animation:
             k.get("torque", {}),
             k.get("duration", 1),
             k.get("pause", 0),
-            k.get("stabelization_functions", {}),
+            k.get("stabilization_functions", {}),
         )
         for k in keyframes
     ]
@@ -75,7 +75,7 @@ def as_dict(anim: Animation) -> dict:
                 "pause": k.pause,
                 "goals": k.goals,
                 "torque": k.torque,
-                "stabelization_functions": k.stabelization_functions,
+                "stabilization_functions": k.stabilization_functions,
             }
             for k in anim.keyframes
         ],

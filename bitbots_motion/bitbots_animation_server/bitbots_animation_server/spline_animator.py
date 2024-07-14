@@ -24,7 +24,7 @@ class SplineAnimator:
         current_point_time = 0.0
         for keyframe in self.anim.keyframes:
             # Calculate important times
-            self.stabilizations[current_point_time] = keyframe.stabelization_functions
+            self.stabilizations[current_point_time] = keyframe.stabilization_functions
             self.animation_duration += keyframe.duration + keyframe.pause
             current_point_time += keyframe.duration
             self.keyframe_times.append(current_point_time)
@@ -94,7 +94,7 @@ class SplineAnimator:
     def get_duration(self):
         return self.animation_duration
 
-    def get_stabalization_functions(self, current_time) -> dict[str, str]:
+    def get_stabilization_functions(self, current_time) -> dict[str, str]:
         if current_time < 0 or current_time > self.animation_duration:
             return {}
         # find previous time

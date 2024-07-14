@@ -202,7 +202,7 @@ class AnimationNode(Node):
                 pose = animator.get_positions_rad(t)
 
                 # Apply stabilizations
-                for joint, stabilization_function in animator.get_stabalization_functions(t).items():
+                for joint, stabilization_function in animator.get_stabilization_functions(t).items():
                     # Check if we have the necessary data
                     if self.imu_data is None:
                         self.get_logger().warn("IMU data is not available. Skipping stabilization.")
