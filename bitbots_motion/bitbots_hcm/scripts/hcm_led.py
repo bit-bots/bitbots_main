@@ -12,7 +12,7 @@ from bitbots_msgs.msg import RobotControlState, Strategy
 
 def color_to_msg(color: str) -> ColorRGBA:
     """
-    Changes a color string to a ColorRGBA message
+    Converts a color string to a ColorRGBA message
     """
     r, g, b = colors.to_rgb(color)
     return ColorRGBA(r=r, g=g, b=b, a=1.0)
@@ -41,11 +41,9 @@ class HCMLedNode(Node):
             RobotControlState.PENALTY: color_to_msg("yellow"),
         }
 
-        """
-        Maps the strategy role to a color. Ideally the colors of the role and action should match
-        for default behavoior. For example, the striker role should have the same color as the going to ball action.
-        As the stiker is the most likely to go to the ball.
-        """
+        # Maps the strategy role to a color. Ideally the colors of the role and action should match
+        # for default behavoior. For example, the striker role should have the same color as the going to ball action.
+        # As the stiker is the most likely to go to the ball.
         self.color_mapping_strategy_role = {
             Strategy.ROLE_STRIKER: color_to_msg("green"),
             Strategy.ROLE_SUPPORTER: color_to_msg("dimgrey"),
@@ -70,6 +68,7 @@ class HCMLedNode(Node):
         if self.stratedy_msg == msg:
             return
         self.stratedy_msg = msg
+        # Change the led color accordingly
         self.update_leds()
 
     def hcm_state_cb(self, msg: RobotControlState):
@@ -77,6 +76,7 @@ class HCMLedNode(Node):
         if self.robot_controll_state_msg == msg:
             return
         self.robot_controll_state_msg = msg
+        # Change the led color accordingly
         self.update_leds()
 
     def update_leds(self):
