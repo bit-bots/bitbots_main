@@ -10,6 +10,8 @@ import rclpy
 import requests
 from ament_index_python import get_package_prefix
 from rcl_interfaces.msg import Parameter, SetParametersResult
+from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
+from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 from rclpy.publisher import Publisher
 
@@ -59,7 +61,7 @@ class Speaker(Node):
         self.add_on_set_parameters_callback(self.on_set_parameters)
 
         # Subscribe to the speak topic
-        self.create_subscription(Audio, "speak", self.speak_cb, 10)
+        self.create_subscription(Audio, "speak", self.speak_cb, 10, callback_group=MutuallyExclusiveCallbackGroup())
 
         # Wait for the mimic server to start
         while True:
@@ -73,7 +75,7 @@ class Speaker(Node):
                 pass
 
         # Start processing the queue
-        self.create_timer(0.1, self.run_speaker)
+        self.create_timer(0.1, self.run_speaker, callback_group=MutuallyExclusiveCallbackGroup())
 
     def on_set_parameters(self, parameters: List[Parameter]) -> SetParametersResult:
         """Callback for parameter changes."""
@@ -120,8 +122,10 @@ class Speaker(Node):
 def main(args=None):
     rclpy.init(args=args)
     node = Speaker()
+    executor = MultiThreadedExecutor(num_threads=2)
+    executor.add_node(node)
     try:
-        rclpy.spin(node)
+        executor.spin()
     except KeyboardInterrupt:
         pass
     node.destroy_node()
