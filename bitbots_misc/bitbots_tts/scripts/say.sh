@@ -11,12 +11,12 @@ case "$ROBOT_NAME" in
     ;;
   "amy"|"donna"|"melody"|"rose")
     voice="en_US/vctk_low"
-    speed=1.7
+    speed=2.0
     ;;
   *)
     echo "Unknown robot: '$ROBOT_NAME', using default female voice"
     voice="en_US/vctk_low"
-    speed=1.7
+    speed=2.0
     ;;
 esac
 
