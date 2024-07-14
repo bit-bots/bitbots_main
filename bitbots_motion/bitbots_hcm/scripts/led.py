@@ -19,9 +19,9 @@ def color_to_msg(color: str) -> ColorRGBA:
     return ColorRGBA(r=r, g=g, b=b, a=1.0)
 
 
-class HCMLedNode(Node):
+class LedNode(Node):
     def __init__(self):
-        super().__init__("hcm_led")
+        super().__init__("led_node")
 
         # Publishers for the core leds
         self.pub_core_0 = self.create_publisher(ColorRGBA, "/led0", 1)
@@ -115,7 +115,7 @@ class HCMLedNode(Node):
 
 if __name__ == "__main__":
     rclpy.init(args=None)
-    node = HCMLedNode()
+    node = LedNode()
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:
