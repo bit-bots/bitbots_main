@@ -48,3 +48,10 @@ alias cca='cdc && colcon clean packages'
 alias sr="source /opt/ros/iron/setup.$shell && update_ros2_argcomplete"
 alias sc="source \$COLCON_WS/install/setup.$shell && update_ros2_argcomplete"
 alias sa='sr && sc'
+
+# deploy_robots tool aliases
+DEPLOY_ROBOTS = '$COLCON_WS/src/bitbots_main/scripts/deploy_robots.py'
+alias dp='$DEPLOY_ROBOTS --sync --build --print-bit-bot'
+alias dpfull='dp --install --configure'
+alias dpclean='dp --clean'
+alias dplo='dp --skip-local-repo-check'
