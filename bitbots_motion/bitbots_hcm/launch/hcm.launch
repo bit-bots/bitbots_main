@@ -17,7 +17,7 @@
     </group>
 
     <group unless="$(var sim)">
-        <node pkg="bitbots_hcm" exec="hcm_led.py" />
+        <node pkg="bitbots_hcm" exec="led.py" />
     </group>
 
 </launch>
