@@ -24,6 +24,7 @@ setup(
     entry_points={
         "console_scripts": [
             "bitbots_obstacle_avoidance_challenge = bitbots_obstacle_avoidance_challenge.bitbots_obstacle_avoidance_challenge:main",
+            "navigate_to_other_side = bitbots_obstacle_avoidance_challenge.navigate_to_other_side:main",
         ],
     },
 )
