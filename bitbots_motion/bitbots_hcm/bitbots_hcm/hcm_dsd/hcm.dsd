@@ -5,7 +5,7 @@ $StartHCM
         NO --> @RobotStateStartup, @Wait + time:1 + r:false, @PlayAnimationStartup, @PlayAnimationDynup + direction:walkready + r:false
     RUNNING --> $CheckMotors
         MOTORS_NOT_STARTED --> @RobotStateStartup, @Wait
-        OVERLOAD --> @RobotStateMotorOff, @CancelGoals, @StopWalking, @PlayAnimationFallingFront, @TurnMotorsOff, @Wait
+        OVERLOAD --> @RobotStateMotorOff, @CancelGoals, @StopWalking, @PlayAnimationFallingFront, @Wait + time:1 + r:false, @TurnMotorsOff, @Wait
         PROBLEM --> @RobotStateHardwareProblem, @WaitForMotors
         TURN_ON --> @TurnMotorsOn, @PlayAnimationDynup + direction:walkready + r:false, @Wait
         OKAY --> $RecordAnimation
