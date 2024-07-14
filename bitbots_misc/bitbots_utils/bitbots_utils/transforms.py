@@ -38,7 +38,7 @@ def sixd2quat(sixd):
 
 
 def quat2fused(q, order="wxyz"):
-    # Convert to numpy array in necessary
+    # Convert to numpy array if necessary
     q = np.asarray(q)
 
     # Check quaternion order
