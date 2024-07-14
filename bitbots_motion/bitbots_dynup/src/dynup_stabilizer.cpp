@@ -21,7 +21,7 @@ DynupResponse Stabilizer::stabilize(const DynupResponse &ik_goals, const rclcpp:
   tf2::Transform right_foot_goal;
 
   // Check if we have all the necessary data to stabilize
-  if (!ik_goals.is_stabilizing_needed and r_sole_to_trunk_ and imu_) {
+  if (ik_goals.is_stabilizing_needed and r_sole_to_trunk_ and imu_) {
     // Convert to eigen quaternion
     tf2::Quaternion quat;
     tf2::convert(imu_->orientation, quat);

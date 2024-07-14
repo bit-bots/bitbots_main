@@ -5,10 +5,6 @@ using namespace std::chrono_literals;
 
 DynupNode::DynupNode(rclcpp::Node::SharedPtr node, const std::string &ns, std::vector<rclcpp::Parameter> parameters)
     : node_(node),
-      debug_publisher_(node_->create_publisher<visualization_msgs::msg::Marker>("debug_markers", 1)),
-      joint_goal_publisher_(node_->create_publisher<bitbots_msgs::msg::JointCommand>("dynup_motor_goals", 1)),
-      imu_subscriber_(node_->create_subscription<sensor_msgs::msg::Imu>("imu/data", 1,
-                                                                        std::bind(&DynupNode::imuCallback, this, _1))),
       param_listener_(node_),
       params_(param_listener_.get_params()),
       engine_(node_, params_.engine),
@@ -16,7 +12,12 @@ DynupNode::DynupNode(rclcpp::Node::SharedPtr node, const std::string &ns, std::v
       visualizer_(node_, params_.visualizer, "debug/dynup"),
       ik_(node_),
       tf_buffer_(node_->get_clock()),
-      tf_listener_(tf_buffer_, node_) {
+      tf_listener_(tf_buffer_, node_),
+      joint_goal_publisher_(node_->create_publisher<bitbots_msgs::msg::JointCommand>("dynup_motor_goals", 1)),
+      imu_subscriber_(node_->create_subscription<sensor_msgs::msg::Imu>("imu/data", 1,
+                                                                        std::bind(&DynupNode::imuCallback, this, _1))),
+      joint_state_subscriber_(node_->create_subscription<sensor_msgs::msg::JointState>(
+          "joint_states", 1, std::bind(&DynupNode::jointStateCallback, this, _1))) {
   // We need to create a new node for moveit, otherwise dynamic reconfigure will be broken...
   auto moveit_node = std::make_shared<rclcpp::Node>(ns + "dynup_moveit_node");
 
@@ -84,9 +85,11 @@ DynupNode::DynupNode(rclcpp::Node::SharedPtr node, const std::string &ns, std::v
   RCLCPP_INFO(node_->get_logger(), "Initialized DynUp and waiting for actions");
 }
 
-bitbots_msgs::msg::JointCommand DynupNode::step(double dt, const sensor_msgs::msg::Imu::SharedPtr imu_msg) {
+bitbots_msgs::msg::JointCommand DynupNode::step(double dt, const sensor_msgs::msg::Imu::SharedPtr imu_msg,
+                                                const sensor_msgs::msg::JointState::SharedPtr joint_state) {
   // method for python interface. take all messages as parameters instead of using ROS
   imuCallback(imu_msg);
+  jointStateCallback(joint_state);
   // update dynup engine response
   bitbots_msgs::msg::JointCommand joint_goals = step(dt);
   return joint_goals;
@@ -94,6 +97,9 @@ bitbots_msgs::msg::JointCommand DynupNode::step(double dt, const sensor_msgs::ms
 
 bitbots_msgs::msg::JointCommand DynupNode::step(double dt) {
   if (dt <= 0) {
+    RCLCPP_WARN(node_->get_logger(),
+                "dt was 0. this can happen in simulation if your update rate is higher than the "
+                "simulators.");
     dt = 0.001;
   }
 
@@ -107,6 +113,8 @@ bitbots_msgs::msg::JointCommand DynupNode::step(double dt) {
 
   // Calculate the joint goals (IK)
   bitbots_splines::JointGoals goals = ik_.calculate(stabilized_response);
+
+  visualizer_.publishIKOffsets(kinematic_model_, stabilized_response, goals);
 
   // Check if we found a solution
   if (goals.first.empty()) {
@@ -134,6 +142,10 @@ geometry_msgs::msg::PoseArray DynupNode::step_open_loop(double dt) {
 }
 
 void DynupNode::imuCallback(const sensor_msgs::msg::Imu::SharedPtr msg) { stabilizer_.setImu(msg); }
+
+void DynupNode::jointStateCallback(const sensor_msgs::msg::JointState::SharedPtr joint_states) {
+  ik_.set_joint_positions(joint_states);
+}
 
 void DynupNode::onSetParameters() {
   engine_.setParams(params_.engine);
@@ -276,7 +288,7 @@ void DynupNode::loopEngine(int loop_rate, std::shared_ptr<DynupGoalHandle> goal_
 }
 
 bitbots_dynup::msg::DynupPoses DynupNode::getCurrentPoses() {
-  rclcpp::Time time = node_->get_clock()->now();
+  rclcpp::Time time;
   /* Transform the left foot into the right foot frame and all other splines into the base link frame*/
   bitbots_dynup::msg::DynupPoses msg;
   try {
@@ -288,13 +300,13 @@ bitbots_dynup::msg::DynupPoses DynupNode::getCurrentPoses() {
 
     // Get the transforms of the end effectors
     geometry_msgs::msg::Transform l_foot_transformed =
-        tf_buffer_.lookupTransform(tf_names.r_sole_frame, tf_names.l_sole_frame, time, timeout).transform;
+        tf_buffer_.lookupTransform(tf_names.r_sole_frame, tf_names.l_sole_frame, time).transform;
     geometry_msgs::msg::Transform r_foot_transformed =
-        tf_buffer_.lookupTransform(tf_names.base_link_frame, tf_names.r_sole_frame, time, timeout).transform;
+        tf_buffer_.lookupTransform(tf_names.base_link_frame, tf_names.r_sole_frame, time).transform;
     geometry_msgs::msg::Transform l_hand_transformed =
-        tf_buffer_.lookupTransform(tf_names.base_link_frame, tf_names.l_wrist_frame, time, timeout).transform;
+        tf_buffer_.lookupTransform(tf_names.base_link_frame, tf_names.l_wrist_frame, time).transform;
     geometry_msgs::msg::Transform r_hand_transformed =
-        tf_buffer_.lookupTransform(tf_names.base_link_frame, tf_names.r_wrist_frame, time, timeout).transform;
+        tf_buffer_.lookupTransform(tf_names.base_link_frame, tf_names.r_wrist_frame, time).transform;
 
     std::function transform2pose = [](geometry_msgs::msg::Transform transform) {
       geometry_msgs::msg::Pose pose;
