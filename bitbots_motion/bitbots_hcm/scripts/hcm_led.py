@@ -12,7 +12,8 @@ from bitbots_msgs.msg import RobotControlState, Strategy
 
 def color_to_msg(color: str) -> ColorRGBA:
     """
-    Converts a color string to a ColorRGBA message
+    Converts a color string to a ColorRGBA message.
+    For availlable colors see: https://matplotlib.org/stable/gallery/color/named_colors.html#css-colors
     """
     r, g, b = colors.to_rgb(color)
     return ColorRGBA(r=r, g=g, b=b, a=1.0)
@@ -32,7 +33,7 @@ class HCMLedNode(Node):
         self.pub_imu_4 = self.create_publisher(ColorRGBA, "/led4", 1)
         self.pub_imu_5 = self.create_publisher(ColorRGBA, "/led5", 1)
 
-        self.stratedy_msg: Optional[Strategy] = None
+        self.stratedy_msg: Strategy = Strategy()
         self.robot_controll_state_msg: Optional[RobotControlState] = None
 
         # Maps the robot control state to a color
@@ -48,7 +49,7 @@ class HCMLedNode(Node):
             Strategy.ROLE_STRIKER: color_to_msg("green"),
             Strategy.ROLE_SUPPORTER: color_to_msg("dimgrey"),
             Strategy.ROLE_DEFENDER: color_to_msg("blue"),
-            Strategy.ROLE_GOALIE: color_to_msg("black"),
+            Strategy.ROLE_GOALIE: color_to_msg("magenta"),
         }
 
         # Maps the strategy action to a color
@@ -99,19 +100,17 @@ class HCMLedNode(Node):
             self.pub_imu_5.publish(color)
             return
 
-        if self.stratedy_msg is not None and self.stratedy_msg.role in self.color_mapping_strategy_role:
-            # If the strategy role is in the mapping, change the left led on the imu and coreboard to the color of the role
-            color = self.color_mapping_strategy_role[self.stratedy_msg.role]
-            self.pub_core_0.publish(color)
-            self.pub_imu_3.publish(color)
+        # If the strategy role is in the mapping, change the left led on the imu and coreboard to the color of the role
+        color = self.color_mapping_strategy_role.get(self.stratedy_msg.role, color_to_msg("black"))
+        self.pub_core_0.publish(color)
+        self.pub_imu_3.publish(color)
 
-        if self.stratedy_msg is not None and self.stratedy_msg.action in self.color_mapping_strategy_action:
-            # If the strategy action is in the mapping, change the middle and right led on the imu and coreboard to the color of the action
-            color = self.color_mapping_strategy_action[self.stratedy_msg.action]
-            self.pub_core_1.publish(color)
-            self.pub_core_2.publish(color)
-            self.pub_imu_4.publish(color)
-            self.pub_imu_5.publish(color)
+        # If the strategy action is in the mapping, change the middle and right led on the imu and coreboard to the color of the action
+        color = self.color_mapping_strategy_action.get(self.stratedy_msg.action, color_to_msg("black"))
+        self.pub_core_1.publish(color)
+        self.pub_core_2.publish(color)
+        self.pub_imu_4.publish(color)
+        self.pub_imu_5.publish(color)
 
 
 if __name__ == "__main__":
