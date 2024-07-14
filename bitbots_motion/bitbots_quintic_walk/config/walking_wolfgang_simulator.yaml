@@ -30,6 +30,7 @@ walking:
       trunk_z_movement: 0.0155005052923747
       first_step_trunk_phase: -0.5
       foot_apex_phase: 0.5
+      foot_apex_pitch: 0.1
       foot_overshoot_phase: 1.0
       foot_overshoot_ratio: 0.0
       foot_put_down_phase: 1.0

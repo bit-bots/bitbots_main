@@ -80,6 +80,12 @@ walking:
       description: "Phase of flying foot apex(single support cycle phase)"
       validation:
         bounds<>: [0.0, 1.0]
+    foot_apex_pitch:
+      type: double
+      description: "Pitch angle of flying foot at its apex (in radians). This is used to level the foot even if the some motors are not able to reach the desired position."
+      default_value: 0.0
+      validation:
+        bounds<>: [-0.5, 0.5]
     foot_overshoot_ratio:
       type: double
       description: "Foot X/Y overshoot in ratio of step length(ratio)"
