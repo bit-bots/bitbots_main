@@ -123,7 +123,7 @@ wolfgang_hardware_interface:
         Profile_Acceleration: 0 # 0 for infinite
         Profile_Velocity: 0 # 0 for infinite
 
-      ROM_RAM_HEAD: # Because we use X-Series servos for the knees, we need to set different values
+      ROM_RAM_HEAD:
         # all names of parameters have to be the same as on the dynamixel table (see dynamixel_workbench_toolbox/src/dynamixel_item.cpp )
         # all values are directly values this means not Celsius or rad but the value used by the servo firmware see datasheet
         # ROM
