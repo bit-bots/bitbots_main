@@ -87,6 +87,7 @@ bool WolfgangHardwareInterface::create_interfaces(std::vector<std::pair<std::str
       std::vector<bitbots_ros_control::HardwareInterface *> interfaces_on_port;
       // iterate over all devices and ping them to see what is connected to this bus
       std::vector<std::tuple<int, std::string, float, float, std::string>> servos_on_port;
+      bool imu_on_port = false;
       for (std::pair<std::string, int> &device : dxl_devices) {
         // RCLCPP_INFO_STREAM(nh_->get_logger(), device.first);
         std::string name = device.first;
@@ -143,6 +144,7 @@ bool WolfgangHardwareInterface::create_interfaces(std::vector<std::pair<std::str
                * Therefore, a pointer to this class is passed down to the RobotHW classes
                * registering further interfaces */
               interfaces_on_port.push_back(interface);
+              imu_on_port = true;
             } else if (model_number_specified == 0xBAFF && interface_type == "Button" && !only_pressure_) {
               // Buttons
               std::string topic;
@@ -185,6 +187,10 @@ bool WolfgangHardwareInterface::create_interfaces(std::vector<std::pair<std::str
       // create a servo bus interface if there were servos found on this bus
       if (servos_on_port.size() > 0) {
         ServoBusInterface *interface = new ServoBusInterface(nh_, driver, servos_on_port);
+        if (imu_on_port) {
+          // our IMU currently does not work well when sync instructions are done on the bus
+          interface->disableSyncInstructions();
+        }
         interfaces_on_port.push_back(interface);
         servo_interface_.addBusInterface(interface);
       }

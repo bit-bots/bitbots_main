@@ -32,8 +32,6 @@ class ServoBusInterface : public bitbots_ros_control::HardwareInterface {
   bool loadDynamixels();
   bool writeROMRAM(bool first_time);
 
-  void syncWritePWM();
-
   void switchDynamixelControlMode();
   diagnostic_msgs::msg::DiagnosticStatus createServoDiagMsg(int id, char level, std::string message,
                                                             std::map<std::string, std::string> map, std::string name);
@@ -44,19 +42,37 @@ class ServoBusInterface : public bitbots_ros_control::HardwareInterface {
   void writeTorque(bool enabled);
   void writeTorqueForServos(std::vector<int32_t> torque);
 
+  bool readPositions();
+  bool singleReadPositions();
   bool syncReadPositions();
   bool syncReadVelocities();
   bool syncReadEfforts();
   bool syncReadPWMs();
   bool syncReadAll();
+  bool readVoltageAndTemp();
+  bool singleReadVoltageAndTemp();
   bool syncReadVoltageAndTemp();
+  bool readError();
+  bool singleReadError();
   bool syncReadError();
 
+  void writePosition();
   void syncWritePosition();
+  void singleWritePosition();
   void syncWriteVelocity();
+  void writeProfileVelocity();
+  void singleWriteProfileVelocity();
   void syncWriteProfileVelocity();
   void syncWriteCurrent();
+  void writeProfileAcceleration();
+  void singleWriteProfileAcceleration();
   void syncWriteProfileAcceleration();
+  void writePWM();
+  void singleWritePWM();
+  void syncWritePWM();
+
+  void disableSyncInstructions();
+  bool disable_sync_instructions_;
 
   rclcpp::Node::SharedPtr nh_;
   int32_t *data_sync_read_positions_;

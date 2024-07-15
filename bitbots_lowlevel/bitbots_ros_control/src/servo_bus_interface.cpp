@@ -223,11 +223,16 @@ bool ServoBusInterface::writeROMRAM(bool first_time) {
                    register_value);
       // Set the value in the driver
       values[num] = register_value;
+      if (disable_sync_instructions_) {
+        sucess &= driver_->writeRegister(joint_ids_[num], register_name.c_str(), register_value);
+      }
     }
     if (first_time) {
       driver_->addSyncWrite(register_name.c_str());
     }
-    sucess = sucess && driver_->syncWrite(register_name.c_str(), values);
+    if (!disable_sync_instructions_) {
+      sucess = sucess && driver_->syncWrite(register_name.c_str(), values);
+    }
   }
   // Free the memory
   free(values);
@@ -251,7 +256,7 @@ void ServoBusInterface::read(const rclcpp::Time &t, const rclcpp::Duration &dt) 
     }
   } else {
     if (read_position_) {
-      if (syncReadPositions()) {
+      if (readPositions()) {
         for (size_t num = 0; num < joint_names_.size(); num++) {
           current_position_[num] += joint_mounting_offsets_[num] + joint_offsets_[num];
         }
@@ -288,12 +293,12 @@ void ServoBusInterface::read(const rclcpp::Time &t, const rclcpp::Duration &dt) 
   if (read_volt_temp_) {
     if (read_vt_counter_ + 1 == vt_update_rate_) {
       bool success = true;
-      if (!syncReadVoltageAndTemp()) {
+      if (!readVoltageAndTemp()) {
         RCLCPP_ERROR_THROTTLE(nh_->get_logger(), *nh_->get_clock(), 1000,
                               "Couldn't read current input volatage and temperature!");
         success = false;
       }
-      if (!syncReadError()) {
+      if (!readError()) {
         RCLCPP_ERROR_THROTTLE(nh_->get_logger(), *nh_->get_clock(), 1000, "Couldn't read current error bytes!");
         success = false;
         driver_->reinitSyncReadHandler("Hardware_Error_Status");
@@ -354,22 +359,22 @@ void ServoBusInterface::write(const rclcpp::Time &t, const rclcpp::Duration &dt)
   }
   if (control_mode_ == POSITION_CONTROL) {
     if (goal_effort_ != last_goal_effort_ || lost_servo_connection_) {
-      syncWritePWM();
+      writePWM();
       last_goal_effort_ = goal_effort_;
     }
 
     if (goal_velocity_ != last_goal_velocity_ || lost_servo_connection_) {
-      syncWriteProfileVelocity();
+      writeProfileVelocity();
       last_goal_velocity_ = goal_velocity_;
     }
 
     if (goal_acceleration_ != last_goal_acceleration_ || lost_servo_connection_) {
-      syncWriteProfileAcceleration();
+      writeProfileAcceleration();
       last_goal_acceleration_ = goal_acceleration_;
     }
 
     if (goal_position_ != last_goal_position_ || lost_servo_connection_) {
-      syncWritePosition();
+      writePosition();
       last_goal_position_ = goal_position_;
     }
   } else if (control_mode_ == VELOCITY_CONTROL) {
@@ -384,17 +389,17 @@ void ServoBusInterface::write(const rclcpp::Time &t, const rclcpp::Duration &dt)
     }
 
     if (goal_velocity_ != last_goal_velocity_ || lost_servo_connection_) {
-      syncWriteProfileVelocity();
+      writeProfileVelocity();
       last_goal_velocity_ = goal_velocity_;
     }
 
     if (goal_acceleration_ != last_goal_acceleration_ || lost_servo_connection_) {
-      syncWriteProfileAcceleration();
+      writeProfileAcceleration();
       last_goal_acceleration_ = goal_acceleration_;
     }
 
     if (goal_position_ != last_goal_position_ || lost_servo_connection_) {
-      syncWritePosition();
+      writePosition();
       last_goal_position_ = goal_position_;
     }
   }
@@ -430,7 +435,13 @@ void ServoBusInterface::switchDynamixelControlMode() {
 
   std::vector<int32_t> operating_mode(joint_names_.size(), value);
   int32_t *o = &operating_mode[0];
-  driver_->syncWrite("Operating_Mode", o);
+  if (disable_sync_instructions_) {
+    for (size_t i = 0; i < joint_names_.size(); i++) {
+      driver_->writeRegister(joint_ids_[i], "Operating_Mode", value);
+    }
+  } else {
+    driver_->syncWrite("Operating_Mode", o);
+  }
 
   nh_->get_clock()->sleep_for(rclcpp::Duration::from_nanoseconds(1e9 * 0.5));
   // reenable torque if it was previously enabled
@@ -584,6 +595,39 @@ bool ServoBusInterface::syncReadPositions() {
   return success;
 }
 
+bool ServoBusInterface::readPositions() {
+  if (disable_sync_instructions_) {
+    return singleReadPositions();
+  } else {
+    return syncReadPositions();
+  }
+}
+
+bool ServoBusInterface::singleReadPositions() {
+  /**
+   * Reads the positions with multiple reads
+   */
+  for (int i = 0; i < joint_count_; i++) {
+    int32_t position;
+    if (!driver_->readMultipleRegisters(int(joint_ids_[i]), 132, 4, (uint8_t *)&position)) {
+      return false;
+    }
+    // TODO test if this is required
+    if (position == 0) {
+      // a value of 0 is often a reading error, therefore we discard it
+      // this should not cause issues when a motor is actually close to 0
+      // since 1 bit only corresponds to + or - 0.1 deg
+      continue;
+    }
+    double current_pos = driver_->convertValue2Radian(joint_ids_[i], position);
+    if (current_pos < 3.15 && current_pos > -3.15) {
+      // only write values which are possible
+      current_position_[i] = current_pos;
+    }
+  }
+  return true;
+}
+
 bool ServoBusInterface::syncReadVelocities() {
   /**
    * Reads all velocity information with a single sync read
@@ -626,6 +670,28 @@ bool ServoBusInterface::syncReadPWMs() {
   return success;
 }
 
+bool ServoBusInterface::readError() {
+  if (disable_sync_instructions_) {
+    return singleReadError();
+  } else {
+    return syncReadError();
+  }
+}
+
+bool ServoBusInterface::singleReadError() {
+  /**
+   * Reads the error bytes with a single reads
+   */
+  uint8_t data;
+  for (int i = 0; i < joint_count_; i++) {
+    if (!driver_->readMultipleRegisters(joint_ids_[i], 70, 1, &data)) {
+      return false;
+    }
+    current_error_[i] = data;
+  }
+  return true;
+}
+
 bool ServoBusInterface::syncReadError() {
   /**
    * Reads all error bytes with a single sync read
@@ -637,6 +703,33 @@ bool ServoBusInterface::syncReadError() {
     }
   }
   return success;
+}
+
+bool ServoBusInterface::readVoltageAndTemp() {
+  if (disable_sync_instructions_) {
+    return singleReadVoltageAndTemp();
+  } else {
+    return syncReadVoltageAndTemp();
+  }
+}
+
+bool ServoBusInterface::singleReadVoltageAndTemp() {
+  /**
+   * Reads the voltages and temperature information with multiple reads
+   */
+  std::array<uint8_t, 3> data;
+  for (int i = 0; i < joint_count_; i++) {
+    if (!driver_->readMultipleRegisters(joint_ids_[i], 144, 3, data.data())) {
+      return false;
+    }
+    uint16_t volt = dxlMakeword(data[0], data[1]);
+    uint8_t temp = data[2];
+    // convert value to voltage
+    current_input_voltage_[i] = volt * 0.1;
+    // is already in °C
+    current_temperature_[i] = temp;
+  }
+  return true;
 }
 
 bool ServoBusInterface::syncReadVoltageAndTemp() {
@@ -684,6 +777,22 @@ bool ServoBusInterface::syncReadAll() {
   }
 }
 
+void ServoBusInterface::writePosition() {
+  if (disable_sync_instructions_) {
+    singleWritePosition();
+  } else {
+    syncWritePosition();
+  }
+}
+
+void ServoBusInterface::singleWritePosition() {
+  for (size_t num = 0; num < joint_names_.size(); num++) {
+    float radian = goal_position_[num] - joint_mounting_offsets_[num] - joint_offsets_[num];
+    int32_t data = driver_->convertRadian2Value(joint_ids_[num], radian);
+    driver_->writeRegister(joint_ids_[num], "Goal_Position", data);
+  }
+}
+
 void ServoBusInterface::syncWritePosition() {
   /**
    * Writes all goal positions with a single sync write
@@ -705,6 +814,28 @@ void ServoBusInterface::syncWriteVelocity() {
   driver_->syncWrite("Goal_Velocity", sync_write_goal_velocity_);
 }
 
+void ServoBusInterface::writeProfileVelocity() {
+  if (disable_sync_instructions_) {
+    singleWriteProfileVelocity();
+  } else {
+    syncWriteProfileVelocity();
+  }
+}
+
+void ServoBusInterface::singleWriteProfileVelocity() {
+  int32_t data;
+  for (size_t num = 0; num < joint_names_.size(); num++) {
+    if (goal_velocity_[num] < 0) {
+      // we want to set to maximum, which is 0
+      data = 0;
+    } else {
+      // use max to prevent accidentially setting 0
+      data = std::max(driver_->convertVelocity2Value(joint_ids_[num], goal_velocity_[num]), 1);
+    }
+    driver_->writeRegister(joint_ids_[num], "Profile_Velocity", data);
+  }
+}
+
 void ServoBusInterface::syncWriteProfileVelocity() {
   /**
    * Writes all profile velocities with a single sync write
@@ -720,6 +851,28 @@ void ServoBusInterface::syncWriteProfileVelocity() {
     }
   }
   driver_->syncWrite("Profile_Velocity", sync_write_profile_velocity_);
+}
+
+void ServoBusInterface::writeProfileAcceleration() {
+  if (disable_sync_instructions_) {
+    singleWriteProfileAcceleration();
+  } else {
+    syncWriteProfileAcceleration();
+  }
+}
+
+void ServoBusInterface::singleWriteProfileAcceleration() {
+  int32_t data;
+  for (size_t num = 0; num < joint_names_.size(); num++) {
+    if (goal_acceleration_[num] < 0) {
+      // we want to set to maximum, which is 0
+      data = 0;
+    } else {
+      // 572.9577952 for change of units, 214.577 rev/min^2 per LSB
+      data = std::max(static_cast<int>(goal_acceleration_[num] * 572.9577952 / 214.577), 1);
+    }
+    driver_->writeRegister(joint_ids_[num], "Profile_Acceleration", data);
+  }
 }
 
 void ServoBusInterface::syncWriteProfileAcceleration() {
@@ -760,6 +913,27 @@ void ServoBusInterface::syncWriteCurrent() {
   driver_->syncWrite("Goal_Current", sync_write_goal_current_);
 }
 
+void ServoBusInterface::writePWM() {
+  if (disable_sync_instructions_) {
+    singleWritePWM();
+  } else {
+    syncWritePWM();
+  }
+}
+
+void ServoBusInterface::singleWritePWM() {
+  int32_t data;
+  for (size_t num = 0; num < joint_names_.size(); num++) {
+    if (goal_effort_[num] < 0) {
+      // we want to set to maximum
+      data = 855;
+    } else {
+      data = goal_effort_[num] / 100.0 * 855.0;
+    }
+    driver_->writeRegister(joint_ids_[num], "Goal_PWM", data);
+  }
+}
+
 void ServoBusInterface::syncWritePWM() {
   for (size_t num = 0; num < joint_names_.size(); num++) {
     if (goal_effort_[num] < 0) {
@@ -771,5 +945,7 @@ void ServoBusInterface::syncWritePWM() {
   }
   driver_->syncWrite("Goal_PWM", sync_write_goal_pwm_);
 }
+
+void ServoBusInterface::disableSyncInstructions() { disable_sync_instructions_ = true; }
 
 }  // namespace bitbots_ros_control
