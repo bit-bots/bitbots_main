@@ -158,7 +158,7 @@ $IsPenalized
                     NO --> @Stand + duration:0.1 + r:false, @DeactivateHCM + r:false, @LookForward + r:false, @PlayAnimationInitInSim + r:false, @GetWalkready + r:false, @SearchBall + r:false, @PlayAnimationGoalieArms + r:false, @Stand
             ELSE --> #StandAndLook
         FINISHED --> $CurrentScore
-            AHEAD --> @Stand + duration:0.5 + r:false, @PlaySound + file:fanfare.wav, @PlayAnimationCheering + r:false, @LookForward, @Stand
+            AHEAD --> @Stand + duration:0.5 + r:false, @PlaySound + file:fanfare.wav, @PlayAnimationCheering + r:false, @GetWalkready + r:false, @LookForward, @Stand
             ELSE --> #Init
         PLAYING --> $SecondaryStateDecider
             PENALTYSHOOT --> #PenaltyShootoutBehavior
