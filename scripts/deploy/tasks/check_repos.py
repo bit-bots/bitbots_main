@@ -28,16 +28,16 @@ class OurRepo(Repo):
 
         self.warnings: list[str] = []
 
-    def check(self, quick: bool = False) -> list[str]:
+    def check(self, do_fetch: True) -> list[str]:
         """
         Run all checks for the repository and return the occurred warnings.
 
-        :param quick: If True, only check if the repository is dirty and on the specified branch. Don't check if the repository is ahead or behind of the remote repository.
+        :param do_fetch: If True, run checks that fetch the remote, thus an Internet connection is required. Default is True.
         :return: The warnings.
         """
         self.check_dirty()
         self.check_branch()
-        if not quick:
+        if do_fetch:
             self.check_ahead_behind()
         return self.warnings
 
@@ -191,6 +191,19 @@ class CheckReposTask(AbstractTask):
                     result[str(our_repo)] = our_repo
         return result
 
+    def _github_available(self) -> bool:
+        """
+        Check if GitHub is available.
+
+        :return: True if GitHub is available.
+        """
+        github: str = "https://github.com"
+        print_debug(f"Checking for internet connection to {github}")
+
+        cmd = f"timeout --foreground 0.5 curl -sSLI {github}"
+        print_debug(f"Calling {cmd}")
+        return os.system(cmd) == 0
+
     def _run(self, connections: Group) -> GroupResult:
         """
         For each repo, get the current commit hash and display warnings if necessary.
@@ -229,10 +242,15 @@ class CheckReposTask(AbstractTask):
             results = success(connections)
             return results
 
+        # Is GitHub available?
+        github_available: bool = self._github_available()
+
         # Check all repositories and collect warnings with multiple threads
         threads: list[threading.Thread] = []
         for name, repo in self.repos.items():
-            thread = threading.Thread(target=lambda name=name, repo=repo: self.warnings.update({name: repo.check()}))
+            thread = threading.Thread(
+                target=lambda name=name, repo=repo: self.warnings.update({name: repo.check(do_fetch=github_available)})
+            )
             threads.append(thread)
             thread.start()
         for thread in threads:
