@@ -44,7 +44,7 @@ wolfgang_hardware_interface:
         # all values are directly values this means not Celsius or rad but the value used by the servo firmware see datasheet
         # ROM
         Return_Delay_Time: 0 # this is a stupid function which has always to be zero or nothing will work correctly anymore
-        Temperature_Limit: 60 # [about 1 deg C]
+        Temperature_Limit: 80 # [about 1 deg C]
         Max_Voltage_Limit: 160 #[About 0.1V]
         Min_Voltage_Limit: 95 #[About 0.1V]
         PWM_Limit: 885 # 885 = 100%
@@ -72,7 +72,7 @@ wolfgang_hardware_interface:
         # all values are directly values this means not Celsius or rad but the value used by the servo firmware see datasheet
         # ROM
         Return_Delay_Time: 0 # this is a stupid function which has always to be zero or nothing will work correctly anymore
-        Temperature_Limit: 60 # [about 1 deg C]
+        Temperature_Limit: 80 # [about 1 deg C]
         Max_Voltage_Limit: 160 #[About 0.1V]
         Min_Voltage_Limit: 95 #[About 0.1V]
         PWM_Limit: 885 # 885 = 100%
@@ -100,7 +100,7 @@ wolfgang_hardware_interface:
         # all values are directly values this means not Celsius or rad but the value used by the servo firmware see datasheet
         # ROM
         Return_Delay_Time: 0 # this is a stupid function which has always to be zero or nothing will work correctly anymore
-        Temperature_Limit: 60 # [about 1 deg C]
+        Temperature_Limit: 80 # [about 1 deg C]
         Max_Voltage_Limit: 160 #[About 0.1V]
         Min_Voltage_Limit: 95 #[About 0.1V]
         PWM_Limit: 885 # 885 = 100%
@@ -128,7 +128,7 @@ wolfgang_hardware_interface:
         # all values are directly values this means not Celsius or rad but the value used by the servo firmware see datasheet
         # ROM
         Return_Delay_Time: 0 # this is a stupid function which has always to be zero or nothing will work correctly anymore
-        Temperature_Limit: 60 # [about 1 deg C]
+        Temperature_Limit: 80 # [about 1 deg C]
         Max_Voltage_Limit: 160 #[About 0.1V]
         Min_Voltage_Limit: 95 #[About 0.1V]
         PWM_Limit: 885 # 885 = 100%
