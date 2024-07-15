@@ -11,10 +11,10 @@
 @ChangeAction + action:waiting + r:false, @PlayAnimationInitInSim + r:false, @LookAtFieldFeatures + r:false, @GetWalkready + r:false, @WalkInPlace
 
 #PerformKickLeft
-@ChangeAction + action:kicking, @LookAtBall + r:false, @WalkKick + foot:left + r:false, @WalkInPlace + duration:1 + r:false, @ForgetBall, @LookForward, @WalkInPlace + duration:1 + r:false, @LookAtFieldFeatures + r:false
+@ChangeAction + action:kicking, @LookAtFront, @WalkKick + foot:left + r:false, @WalkInPlace + duration:1 + r:false, @ForgetBall + r:false, @WalkInPlace + duration:1 + r:false, @LookAtFieldFeatures + r:false
 
 #PerformKickRight
-@ChangeAction + action:kicking, @LookAtBall + r:false, @WalkKick + foot:right + r:false, @WalkInPlace + duration:1 + r:false, @ForgetBall, @LookForward, @WalkInPlace + duration:1 + r:false, @LookAtFieldFeatures + r:false
+@ChangeAction + action:kicking, @LookAtFront, @WalkKick + foot:right + r:false, @WalkInPlace + duration:1 + r:false, @ForgetBall + r:false, @WalkInPlace + duration:1 + r:false, @LookAtFieldFeatures + r:false
 
 #Dribble
 @ChangeAction + action:going_to_ball, @CancelPathplanning, @LookAtBall, @LookAtFront, @DribbleForward
