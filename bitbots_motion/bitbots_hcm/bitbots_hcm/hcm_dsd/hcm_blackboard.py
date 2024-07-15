@@ -117,6 +117,7 @@ class HcmBlackboard:
         # Diagnostics state
         self.servo_diag_error: bool = False
         self.servo_overload: bool = False
+        self.servo_overheat: bool = False
         self.imu_diag_error: bool = False
         self.pressure_diag_error: bool = False
 
