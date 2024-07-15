@@ -52,12 +52,12 @@ class DynamixelServoHardwareInterface : public bitbots_ros_control::HardwareInte
   bool init();
   void read(const rclcpp::Time &t, const rclcpp::Duration &dt);
   void write(const rclcpp::Time &t, const rclcpp::Duration &dt);
-  void addBusInterface(ServoBusInterface *bus);
+  void addBusInterface(std::shared_ptr<ServoBusInterface> bus);
   void writeROMRAM(bool first_time);
 
  private:
   rclcpp::Node::SharedPtr nh_;
-  std::vector<ServoBusInterface *> bus_interfaces_;
+  std::vector<std::shared_ptr<ServoBusInterface>> bus_interfaces_;
 
   void setTorqueCb(std_msgs::msg::Bool::SharedPtr enabled);
   void individualTorqueCb(bitbots_msgs::msg::JointTorque msg);

@@ -61,7 +61,6 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(rclcpp::Node::SharedPtr nh)
 }
 
 bool WolfgangHardwareInterface::create_interfaces(std::vector<std::pair<std::string, int>> dxl_devices) {
-  interfaces_ = std::vector<std::vector<bitbots_ros_control::HardwareInterface *>>();
   // init bus drivers
   std::vector<std::string> pinged;
   rcl_interfaces::msg::ListParametersResult port_list = nh_->list_parameters({"port_info"}, 3);
@@ -84,7 +83,7 @@ bool WolfgangHardwareInterface::create_interfaces(std::vector<std::pair<std::str
       // uncomment the following line if you are using such an interface
       // sleep(1);
       driver->setPacketHandler(protocol_version);
-      std::vector<bitbots_ros_control::HardwareInterface *> interfaces_on_port;
+      std::vector<std::shared_ptr<HardwareInterface>> interfaces_on_port;
       // iterate over all devices and ping them to see what is connected to this bus
       std::vector<std::tuple<int, std::string, float, float, std::string>> servos_on_port;
       for (std::pair<std::string, int> &device : dxl_devices) {
@@ -100,10 +99,10 @@ bool WolfgangHardwareInterface::create_interfaces(std::vector<std::pair<std::str
           std::string interface_type;
           nh_->get_parameter("device_info." + name + ".interface_type", interface_type);
           uint16_t model_number_specified_16 = uint16_t(model_number_specified);
-          uint16_t *model_number_returned_16 = new uint16_t;
-          if (driver->ping(uint8_t(id), model_number_returned_16)) {
+          uint16_t model_number_returned_16;
+          if (driver->ping(uint8_t(id), &model_number_returned_16)) {
             // check if the specified model number matches the actual model number of the device
-            if (model_number_specified_16 != *model_number_returned_16) {
+            if (model_number_specified_16 != model_number_returned_16) {
               RCLCPP_WARN(nh_->get_logger(), "Model number of id %d does not match", id);
             }
             // ping was successful, add device correspondingly
@@ -114,7 +113,7 @@ bool WolfgangHardwareInterface::create_interfaces(std::vector<std::pair<std::str
               int read_rate;
               nh_->get_parameter("device_info." + name + ".read_rate", read_rate);
               driver->setTools(model_number_specified_16, id);
-              core_interface_ = new CoreHardwareInterface(nh_, driver, id, read_rate);
+              core_interface_ = std::make_shared<CoreHardwareInterface>(nh_, driver, id, read_rate);
               // turn on power, just to be sure
               core_interface_->write(nh_->get_clock()->now(), rclcpp::Duration::from_nanoseconds(1e9 * 0));
               interfaces_on_port.push_back(core_interface_);
@@ -125,7 +124,7 @@ bool WolfgangHardwareInterface::create_interfaces(std::vector<std::pair<std::str
               if (!nh_->get_parameter("device_info." + name + ".topic", topic)) {
                 RCLCPP_WARN(nh_->get_logger(), "Bitfoot topic not specified");
               }
-              BitFootHardwareInterface *interface = new BitFootHardwareInterface(nh_, driver, id, topic, name);
+              auto interface = std::make_shared<BitFootHardwareInterface>(nh_, driver, id, topic, name);
               interfaces_on_port.push_back(interface);
             } else if (model_number_specified == 0xBAFF && interface_type == "IMU" && !only_pressure_) {
               // IMU
@@ -138,7 +137,7 @@ bool WolfgangHardwareInterface::create_interfaces(std::vector<std::pair<std::str
                 RCLCPP_WARN(nh_->get_logger(), "IMU frame not specified");
               }
               driver->setTools(model_number_specified_16, id);
-              ImuHardwareInterface *interface = new ImuHardwareInterface(nh_, driver, id, topic, frame, name);
+              auto interface = std::make_shared<ImuHardwareInterface>(nh_, driver, id, topic, frame, name);
               /* Hardware interfaces must be registered at the main RobotHW class.
                * Therefore, a pointer to this class is passed down to the RobotHW classes
                * registering further interfaces */
@@ -151,14 +150,16 @@ bool WolfgangHardwareInterface::create_interfaces(std::vector<std::pair<std::str
               }
               int read_rate;
               nh_->get_parameter("device_info." + name + ".read_rate", read_rate);
-              interfaces_on_port.push_back(new ButtonHardwareInterface(nh_, driver, id, topic, read_rate));
+              interfaces_on_port.push_back(
+                  std::make_shared<ButtonHardwareInterface>(nh_, driver, id, topic, read_rate));
             } else if ((model_number_specified == 0xBAFF || model_number_specified == 0xABBA) &&
                        interface_type == "LED" && !only_pressure_) {
               // LEDs
               int number_of_LEDs, start_number;
               nh_->get_parameter("device_info." + name + ".number_of_LEDs", number_of_LEDs);
               nh_->get_parameter("device_info." + name + ".start_number", start_number);
-              interfaces_on_port.push_back(new LedsHardwareInterface(nh_, driver, id, number_of_LEDs, start_number));
+              interfaces_on_port.push_back(
+                  std::make_shared<LedsHardwareInterface>(nh_, driver, id, number_of_LEDs, start_number));
             } else if ((model_number_specified == 311 || model_number_specified == 321 ||
                         model_number_specified == 1100) &&
                        !only_pressure_ && !only_imu_) {
@@ -179,12 +180,11 @@ bool WolfgangHardwareInterface::create_interfaces(std::vector<std::pair<std::str
             }
             pinged.push_back(name);
           }
-          delete model_number_returned_16;
         }
       }
       // create a servo bus interface if there were servos found on this bus
       if (servos_on_port.size() > 0) {
-        ServoBusInterface *interface = new ServoBusInterface(nh_, driver, servos_on_port);
+        auto interface = std::make_shared<ServoBusInterface>(nh_, driver, servos_on_port);
         interfaces_on_port.push_back(interface);
         servo_interface_.addBusInterface(interface);
       }
@@ -220,9 +220,10 @@ bool WolfgangHardwareInterface::create_interfaces(std::vector<std::pair<std::str
   }
 }
 
-void threaded_init(const std::vector<HardwareInterface *> &port_interfaces, rclcpp::Node::SharedPtr &nh, int &success) {
+void threaded_init(const std::vector<std::shared_ptr<HardwareInterface>> &port_interfaces, rclcpp::Node::SharedPtr &nh,
+                   int &success) {
   success = std::all_of(port_interfaces.begin(), port_interfaces.end(),
-                        [](HardwareInterface *interface) -> bool { return interface->init(); });
+                        [](std::shared_ptr<HardwareInterface> interface) -> bool { return interface->init(); });
 }
 
 bool WolfgangHardwareInterface::init() {
@@ -230,7 +231,7 @@ bool WolfgangHardwareInterface::init() {
   std::vector<std::thread> threads;
   std::vector<int *> successes;
   int i = 0;
-  for (std::vector<HardwareInterface *> &port_interfaces : interfaces_) {
+  for (std::vector<std::shared_ptr<HardwareInterface>> &port_interfaces : interfaces_) {
     // iterate through all interfaces on this port
     // we use an int instead of bool, since std::ref can't handle bool
     int suc = 0;
@@ -249,9 +250,9 @@ bool WolfgangHardwareInterface::init() {
   return success;
 }
 
-void threaded_read(const std::vector<HardwareInterface *> &port_interfaces, const rclcpp::Time &t,
+void threaded_read(const std::vector<std::shared_ptr<HardwareInterface>> &port_interfaces, const rclcpp::Time &t,
                    const rclcpp::Duration &dt) {
-  for (HardwareInterface *interface : port_interfaces) {
+  for (std::shared_ptr<HardwareInterface> interface : port_interfaces) {
     interface->read(t, dt);
   }
 }
@@ -269,7 +270,7 @@ void WolfgangHardwareInterface::read(const rclcpp::Time &t, const rclcpp::Durati
     // only read all hardware if power is on
     std::vector<std::thread> threads;
     // start all reads
-    for (std::vector<HardwareInterface *> &port_interfaces : interfaces_) {
+    for (std::vector<std::shared_ptr<HardwareInterface>> &port_interfaces : interfaces_) {
       threads.push_back(std::thread(threaded_read, std::ref(port_interfaces), std::ref(t), std::ref(dt)));
     }
     // wait for all reads to finish
@@ -291,9 +292,9 @@ void WolfgangHardwareInterface::read(const rclcpp::Time &t, const rclcpp::Durati
   }
 }
 
-void threaded_write(const std::vector<HardwareInterface *> &port_interfaces, const rclcpp::Time &t,
+void threaded_write(const std::vector<std::shared_ptr<HardwareInterface>> &port_interfaces, const rclcpp::Time &t,
                     const rclcpp::Duration &dt) {
-  for (HardwareInterface *interface : port_interfaces) {
+  for (std::shared_ptr<HardwareInterface> interface : port_interfaces) {
     interface->write(t, dt);
   }
 }
@@ -306,8 +307,8 @@ void WolfgangHardwareInterface::write(const rclcpp::Time &t, const rclcpp::Durat
   }
   if (!motor_start_time_ || t > motor_start_time_.value()) {
     if (motor_first_write_) {
-      for (std::vector<HardwareInterface *> &port_interfaces : interfaces_) {
-        for (HardwareInterface *interface : port_interfaces) {
+      for (std::vector<std::shared_ptr<HardwareInterface>> &port_interfaces : interfaces_) {
+        for (std::shared_ptr<HardwareInterface> interface : port_interfaces) {
           interface->restoreAfterPowerCycle();
         }
       }
@@ -321,7 +322,7 @@ void WolfgangHardwareInterface::write(const rclcpp::Time &t, const rclcpp::Durat
       servo_interface_.write(t, dt);
       std::vector<std::thread> threads;
       // start all writes
-      for (std::vector<HardwareInterface *> &port_interfaces : interfaces_) {
+      for (std::vector<std::shared_ptr<HardwareInterface>> &port_interfaces : interfaces_) {
         threads.push_back(std::thread(threaded_write, std::ref(port_interfaces), std::ref(t), std::ref(dt)));
       }
 
