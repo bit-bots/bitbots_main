@@ -3,7 +3,6 @@ import rclpy.logging
 from ament_index_python.packages import get_package_share_directory
 from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped
 from rclpy.node import Node
-from rclpy.time import Duration
 
 from bitbots_msgs.msg import Buttons, HeadMode
 
@@ -23,9 +22,11 @@ class Navigator(Node):
     def button_callback(self, msg: Buttons):
         if msg.button2 and not self.button_pressed:
             self.button_pressed = True
-            self.set_initial_pose(-0.75, 3.0, -0.7, 0.7)
-            self.get_clock().sleep_for(Duration(seconds=2))
-            self.set_goal(-0.75, -3.7, -0.7, 0.7)
+            self.set_initial_pose(0.77, -3.0, 0.7, 0.7)
+            # self.get_logger().info(f"KSAFÖ#########################################################AKSLö{msg}")
+            # self.get_clock().sleep_for(Duration(seconds=2))
+            self.set_goal(0.77, -3.0, 0.7, 0.7)
+            # self.get_logger().info(f"KSAFÖ###############AKSLö{msg}")
             self.button_pressed = False
 
     def set_initial_pose(self, x: float, y: float, z, w):
