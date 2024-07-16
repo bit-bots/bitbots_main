@@ -5,7 +5,7 @@ from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped
 from rclpy.node import Node
 from rclpy.time import Duration
 
-from bitbots_msgs.msg import Buttons
+from bitbots_msgs.msg import Buttons, HeadMode
 
 
 class Navigator(Node):
@@ -15,6 +15,8 @@ class Navigator(Node):
         self._package_path = get_package_share_directory("bitbots_obstacle_avoidance_challenge")
         self.pathfinding_pub = self.create_publisher(PoseStamped, "goal_pose", 1)
         self.initialpose_pub = self.create_publisher(PoseWithCovarianceStamped, "initialpose", 1)
+        self.head_mode_pub = self.create_publisher(HeadMode, "head_mode", 1)
+        self.head_mode_pub.publish(HeadMode(head_mode=HeadMode.FIELD_FEATURES))
         self.set_initial_pose(-0.75, 3.0, -0.7, 0.7)
         self.button_pressed = False
         self.button_sub = self.create_subscription(Buttons, "buttons", self.button_callback, 1)
