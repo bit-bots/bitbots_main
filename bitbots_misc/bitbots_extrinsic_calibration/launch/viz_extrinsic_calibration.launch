@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<launch>
+    <node pkg="rviz2" exec="rviz2" args="-d $(find-pkg-share bitbots_extrinsic_calibration)/config/extrinsic_calibration.rviz" name="extrinsic_calibration_rviz"/>
+</launch>
