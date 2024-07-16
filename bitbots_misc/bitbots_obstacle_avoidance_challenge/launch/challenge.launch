@@ -43,9 +43,9 @@
     </include>
 
     <node pkg="bitbots_obstacle_avoidance_challenge" exec="bitbots_obstacle_avoidance_challenge" name="bitbots_obstacle_avoidance_challenge" output="screen" launch-prefix="$(var taskset)">
-
+        <param name="use_sim_time" value="$(var sim)" />
     </node>
     <node pkg="bitbots_obstacle_avoidance_challenge" exec="navigate_to_other_side" name="navigate_to_other_side" output="screen" launch-prefix="$(var taskset)">
-
+        <param name="use_sim_time" value="$(var sim)" />
     </node>
 </launch>
