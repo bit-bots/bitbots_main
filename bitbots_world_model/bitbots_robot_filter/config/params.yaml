@@ -7,6 +7,6 @@ bitbots_ball_filter:
 
     filter_frame: 'map'
     robot_dummy_size: 0.4
-    robot_merge_distance: 0.5
-    robot_storage_time: 100e9
+    robot_merge_distance: 0.2
+    robot_storage_time: 30e9
     team_data_timeout: 1e9
