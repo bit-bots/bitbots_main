@@ -379,24 +379,6 @@ def main():
             f"{Style.BRIGHT}Press enter to continue.{Style.RESET_ALL}"
         )
 
-        ########
-        # Zero #
-        ########
-
-        input(
-            f"{Fore.YELLOW}{num_to_emoji(step)}: The robot will now move into a {Style.BRIGHT}zero-position.{Style.RESET_ALL}\n\n"
-            f"{Style.BRIGHT}Press enter to move."
-        )
-
-        move_to_joint_position(pub, {}, False)
-        input(
-            f"{Style.BRIGHT}\nChecks:{Style.RESET_ALL}\n"
-            "- Check that all motors are mounted at their zero-position.\n"
-            "- Check that both sides of the robot are symmetrical.\n"
-            "- Check for backlash and loose parts.\n"
-            f"{Style.BRIGHT}Press enter to continue.{Style.RESET_ALL}"
-        )
-
         print(
             f"\n\n{Fore.GREEN}If you have reached this point, the robot is hopefully in good shape and ready to go! GLHF"
         )
