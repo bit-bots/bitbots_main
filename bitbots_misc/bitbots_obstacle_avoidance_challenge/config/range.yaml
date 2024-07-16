@@ -1,7 +1,7 @@
 bitbots_obstacle_avoidance_challenge:
   blue_lower_h: {
     type: int,
-    default_value: 92,
+    default_value: 89,
     description: "hue value of the lower boundary for blue obstacles",
     validation: {
       bounds<>: [0, 179]
@@ -9,7 +9,7 @@ bitbots_obstacle_avoidance_challenge:
   }
   blue_upper_h: {
     type: int,
-    default_value: 110,
+    default_value: 145,
     description: "hue value of the upper boundary for blue obstacles",
     validation: {
       bounds<>: [0, 179]
@@ -17,7 +17,7 @@ bitbots_obstacle_avoidance_challenge:
   }
   blue_lower_s: {
     type: int,
-    default_value: 90,
+    default_value: 144,
     description: "separation value of the lower boundary for blue obstacles",
     validation: {
       bounds<>: [0, 255]
@@ -25,7 +25,7 @@ bitbots_obstacle_avoidance_challenge:
   }
   blue_upper_s: {
     type: int,
-    default_value: 236,
+    default_value: 231,
     description: "separation value of the upper boundary for blue obstacles",
     validation: {
       bounds<>: [0, 255]
@@ -33,7 +33,7 @@ bitbots_obstacle_avoidance_challenge:
   }
   blue_lower_v: {
     type: int,
-    default_value: 0,
+    default_value: 31,
     description: "value value of the lower boundary for blue obstacles",
     validation: {
       bounds<>: [0, 255]
@@ -41,7 +41,7 @@ bitbots_obstacle_avoidance_challenge:
   }
   blue_upper_v: {
     type: int,
-    default_value: 255,
+    default_value: 194,
     description: "value value of the upper boundary for blue obstacles",
     validation: {
       bounds<>: [0, 255]
@@ -49,7 +49,7 @@ bitbots_obstacle_avoidance_challenge:
   }
   red_lower_h: {
     type: int,
-    default_value: 138,
+    default_value: 137,
     description: "hue value of the lower boundary for red obstacles",
     validation: {
       bounds<>: [0, 179]
@@ -65,7 +65,7 @@ bitbots_obstacle_avoidance_challenge:
   }
   red_lower_s: {
     type: int,
-    default_value: 78,
+    default_value: 177,
     description: "separation value of the lower boundary for red obstacles",
     validation: {
       bounds<>: [0, 255]
@@ -97,7 +97,7 @@ bitbots_obstacle_avoidance_challenge:
   }
   min_size: {
     type: int,
-    default_value: 20,
+    default_value: 40,
     description: "minimum size of an obstacle to be considered",
     validation: {
       gt_eq<>: 0
@@ -105,7 +105,7 @@ bitbots_obstacle_avoidance_challenge:
   }
   max_size: {
     type: int,
-    default_value: 400,
+    default_value: 1000,
     description: "maximum size of an obstacle to be considered",
     validation: {
       gt_eq<>: 0
