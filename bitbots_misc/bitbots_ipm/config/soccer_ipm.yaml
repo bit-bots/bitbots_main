@@ -18,7 +18,7 @@ soccer_ipm:
         z: 1.0
 
     robots:
-      footpoint_out_of_image_threshold: 0.8
+      footpoint_out_of_image_threshold: 0.99
       object_default_dimensions:
         x: 0.2
         y: 0.2
