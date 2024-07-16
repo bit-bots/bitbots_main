@@ -106,8 +106,8 @@ class Map:
         Maps a point (x, y in meters) to corresponding pixel on the costmap
         """
         return (
-            max(0, min(round((x - self.get_origin()[1]) * self.resolution), self.map.shape[1] - 1)),
-            max(0, min(round((y - self.get_origin()[0]) * self.resolution), self.map.shape[0] - 1)),
+            max(0, min(round((x - self.get_origin()[0]) * self.resolution), self.map.shape[0] - 1)),
+            max(0, min(round((y - self.get_origin()[1]) * self.resolution), self.map.shape[1] - 1)),
         )
 
     def from_map_space_np(self, points: np.ndarray) -> np.ndarray:
