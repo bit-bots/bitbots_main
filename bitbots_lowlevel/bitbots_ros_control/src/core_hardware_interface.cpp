@@ -149,4 +149,7 @@ void CoreHardwareInterface::write(const rclcpp::Time &t, const rclcpp::Duration 
     driver_->writeRegister(id_, "Power", requested_power_status_);
   }
 }
+
+void CoreHardwareInterface::restoreAfterPowerCycle() { requested_power_status_ = true; }
+
 }  // namespace bitbots_ros_control
