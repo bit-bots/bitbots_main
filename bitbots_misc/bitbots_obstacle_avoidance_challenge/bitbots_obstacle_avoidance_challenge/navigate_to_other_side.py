@@ -17,19 +17,16 @@ class Navigator(Node):
         self.initialpose_pub = self.create_publisher(PoseWithCovarianceStamped, "initialpose", 1)
         self.head_mode_pub = self.create_publisher(HeadMode, "head_mode", 1)
         self.head_mode_pub.publish(HeadMode(head_mode=HeadMode.FIELD_FEATURES))
-        self.set_initial_pose(-0.75, 3.0, -0.7, 0.7)
         self.button_pressed = False
         self.button_sub = self.create_subscription(Buttons, "buttons", self.button_callback, 1)
-        self.get_clock().sleep_for(Duration(seconds=1))
 
     def button_callback(self, msg: Buttons):
         if msg.button2 and not self.button_pressed:
             self.button_pressed = True
-            self.start_navigation()
-
-    def start_navigation(self):
-        self.get_clock().sleep_for(Duration(seconds=5))
-        self.set_goal(-0.75, -3.7, -0.7, 0.7)
+            self.set_initial_pose(-0.75, 3.0, -0.7, 0.7)
+            self.get_clock().sleep_for(Duration(seconds=2))
+            self.set_goal(-0.75, -3.7, -0.7, 0.7)
+            self.button_pressed = False
 
     def set_initial_pose(self, x: float, y: float, z, w):
         pose_msg = PoseWithCovarianceStamped()
