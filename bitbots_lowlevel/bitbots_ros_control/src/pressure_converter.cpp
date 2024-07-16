@@ -93,7 +93,7 @@ PressureConverter::PressureConverter(rclcpp::Node::SharedPtr nh, char side) {
   tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*nh_);
 
   sub_executor_.add_callback_group(sub_cbg_, nh_->get_node_base_interface());
-  sub_executor_thread_ = new std::thread([this]() { sub_executor_.spin(); });
+  sub_executor_thread_ = std::make_shared<std::thread>([this]() { sub_executor_.spin(); });
 }
 
 void PressureConverter::pressureCallback(bitbots_msgs::msg::FootPressure pressure_raw) {
