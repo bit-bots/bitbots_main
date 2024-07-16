@@ -14,9 +14,9 @@ class Navigator(Node):
         self.pathfinding_pub = self.create_publisher(PoseStamped, "goal_pose", 1)
         self.initialpose_pub = self.create_publisher(PoseWithCovarianceStamped, "initialpose", 1)
         self.get_clock().sleep_for(Duration(seconds=5))
-        self.set_initial_pose(0.8, -2.7, 0.709, 0.705)
-        self.get_clock().sleep_for(Duration(seconds=1))
-        self.set_goal(0.8, 2.4, 0.7, 0.71)
+        self.set_initial_pose(-0.75, 3.0, -0.7, 0.7)
+        self.get_clock().sleep_for(Duration(seconds=5))
+        self.set_goal(-0.75, -3.7, -0.7, 0.7)
 
     def set_initial_pose(self, x: float, y: float, z, w):
         pose_msg = PoseWithCovarianceStamped()
