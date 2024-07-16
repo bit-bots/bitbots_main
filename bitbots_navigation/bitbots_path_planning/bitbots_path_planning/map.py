@@ -106,7 +106,7 @@ class Map:
         for robot in self.robot_buffer:
             cv2.circle(
                 self.map,
-                self.to_map_space(robot.bb.center.position.x, robot.bb.center.position.y)[::-1],
+                self.to_map_space(robot.bb.center.position.x, robot.bb.center.position.y - 0.3)[::-1],
                 round(max(numpify(robot.bb.size)[:2]) * self.resolution),
                 self.config_obstacle_value,
                 -1,
