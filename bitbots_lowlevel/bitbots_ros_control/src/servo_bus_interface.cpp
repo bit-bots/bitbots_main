@@ -18,10 +18,12 @@ bool ServoBusInterface::init() {
   lost_servo_connection_ = false;
   read_vt_counter_ = 0;
   switch_individual_torque_ = false;
+  current_torque_ = false;
   reading_successes_ = 0;
   reading_errors_ = 0;
 
   torqueless_mode_ = nh_->get_parameter("torqueless_mode").as_bool();
+  goal_torque_ = !torqueless_mode_;
   read_volt_temp_ = nh_->get_parameter("servos.read_volt_temp").as_bool();
   vt_update_rate_ = nh_->get_parameter("servos.VT_update_rate").as_int();
   warn_volt_ = nh_->get_parameter("servos.warn_volt").as_double();

@@ -25,7 +25,7 @@ class ButtonHardwareInterface : public bitbots_ros_control::HardwareInterface {
 
  private:
   rclcpp::Node::SharedPtr nh_;
-  int counter_;
+  int counter_ = 0;
 
   std::shared_ptr<DynamixelDriver> driver_;
   int id_;
