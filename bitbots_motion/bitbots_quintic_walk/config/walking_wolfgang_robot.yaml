@@ -90,13 +90,3 @@ walking:
       y_speed_multiplier: 1.0
       yaw_bias: 0.0
       yaw_speed_multiplier: 1.0
-    qos_overrides:
-      /parameter_events:
-        publisher:
-          depth: 1000
-          durability: volatile
-          history: keep_last
-          reliability: reliable
-    start_type_description_service: true
-    use_sim_time: false
-
