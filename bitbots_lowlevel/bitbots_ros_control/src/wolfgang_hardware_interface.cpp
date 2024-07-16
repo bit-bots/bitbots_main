@@ -302,17 +302,17 @@ void threaded_write(const std::vector<std::shared_ptr<HardwareInterface>> &port_
 void WolfgangHardwareInterface::write(const rclcpp::Time &t, const rclcpp::Duration &dt) {
   if (core_present_ && !last_power_status_ && current_power_status_ &&
       nh_->get_parameter("servos.set_ROM_RAM").as_bool()) {
-    motor_start_time_ = t + rclcpp::Duration::from_seconds(nh_->get_parameter("servos.start_delay").as_double());
-    motor_first_write_ = true;
+    bus_start_time_ = t + rclcpp::Duration::from_seconds(nh_->get_parameter("start_delay").as_double());
+    bus_first_write_ = true;
   }
-  if (!motor_start_time_ || t > motor_start_time_.value()) {
-    if (motor_first_write_) {
+  if (!bus_start_time_ || t > bus_start_time_.value()) {
+    if (bus_first_write_) {
       for (std::vector<std::shared_ptr<HardwareInterface>> &port_interfaces : interfaces_) {
         for (std::shared_ptr<HardwareInterface> interface : port_interfaces) {
           interface->restoreAfterPowerCycle();
         }
       }
-      motor_first_write_ = false;
+      bus_first_write_ = false;
     }
     if (core_present_ && !current_power_status_) {
       // if power is off only write CORE
