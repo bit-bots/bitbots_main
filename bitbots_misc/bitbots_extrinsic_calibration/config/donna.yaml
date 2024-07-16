@@ -6,6 +6,6 @@
 
 /bitbots_extrinsic_imu_calibration:
   ros__parameters:
-    offset_x: 0.04
-    offset_y: -0.0
+    offset_x: 0.075
+    offset_y: 0.13
     offset_z: 0.0
