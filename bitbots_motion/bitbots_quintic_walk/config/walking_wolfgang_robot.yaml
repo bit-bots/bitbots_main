@@ -32,6 +32,7 @@ walking:
       trunk_y_offset: 0.0
       trunk_z_movement: 0.0
     node:
+      # update frequency of the engine
       debug_active: true
       engine_freq: 125.0
       ik:
