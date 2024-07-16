@@ -35,6 +35,7 @@ walking:
       # update frequency of the engine
       debug_active: true
       engine_freq: 125.0
+      # parameters for bioIK
       ik:
         reset: true
         timeout: 0.01
