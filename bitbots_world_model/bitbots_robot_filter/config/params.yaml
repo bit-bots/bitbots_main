@@ -1,4 +1,4 @@
-bitbots_ball_filter:
+bitbots_robot_filter:
   ros__parameters:
     # Topics
     robot_observation_topic: 'robots_relative'
