@@ -1,3 +1,6 @@
+#EMERGENCY_FALL
+@RobotStateMotorOff, @CancelGoals, @StopWalking, @PlayAnimationFallingFront, @Wait + time:1 + r:false, @TurnMotorsOff, @Wait
+
 -->HCM
 $StartHCM
     START_UP --> $Simulation
@@ -5,7 +8,8 @@ $StartHCM
         NO --> @RobotStateStartup, @Wait + time:1 + r:false, @PlayAnimationStartup, @PlayAnimationDynup + direction:walkready + r:false
     RUNNING --> $CheckMotors
         MOTORS_NOT_STARTED --> @RobotStateStartup, @Wait
-        OVERLOAD --> @RobotStateMotorOff, @CancelGoals, @StopWalking, @PlayAnimationFallingFront, @TurnMotorsOff, @Wait
+        OVERLOAD --> #EMERGENCY_FALL
+        OVERHEAT --> #EMERGENCY_FALL
         PROBLEM --> @RobotStateHardwareProblem, @WaitForMotors
         TURN_ON --> @TurnMotorsOn, @PlayAnimationDynup + direction:walkready + r:false, @Wait
         OKAY --> $RecordAnimation
@@ -35,7 +39,7 @@ $StartHCM
                                         FALLING_FRONT --> @RobotStateFalling, @CancelGoals, @StopWalking, @PlayAnimationFallingFront, @Wait
                                         FALLING_BACK --> @RobotStateFalling, @CancelGoals, @StopWalking, @PlayAnimationFallingBack, @Wait
                                         NOT_FALLING --> $InSquat
-                                            YES --> @RobotStateGettingUp, @PlayAnimationDynup + direction:rise, @SetSquat + squat:false
+                                            YES --> @RobotStateGettingUp, @Complain, @PlayAnimationDynup + direction:rise, @SetSquat + squat:false
                                             NO --> $PlayingExternalAnimation
                                                 ANIMATION_RUNNING --> @StopWalking, @RobotStateAnimationRunning, @Wait
                                                 ANIMATION_SERVER_TIMEOUT --> @CancelAnimation

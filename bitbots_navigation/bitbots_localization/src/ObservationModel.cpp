@@ -26,7 +26,7 @@ double RobotPoseObservationModel::calculate_weight_for_class(
   if (!last_measurement.empty()) {
     std::vector<double> ratings = map->Map::provideRating(state, last_measurement);
     // Take the average of the ratings (functional)
-    particle_weight_for_class = std::accumulate(ratings.begin(), ratings.end(), 0.0) / ratings.size();
+    particle_weight_for_class = std::pow(std::accumulate(ratings.begin(), ratings.end(), 0.0) / ratings.size(), 2);
   } else {
     particle_weight_for_class = 0;
   }

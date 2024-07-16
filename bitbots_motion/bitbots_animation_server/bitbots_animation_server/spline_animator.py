@@ -17,12 +17,14 @@ class SplineAnimator:
         self.animation_duration: float = 0.0
         self.spline_dict: dict[str, SmoothSpline] = {}
         self.torques = {}
+        self.stabilizations = {}
         self.keyframe_times: list[float] = []
 
         # Load keyframe positions into the splines
         current_point_time = 0.0
         for keyframe in self.anim.keyframes:
             # Calculate important times
+            self.stabilizations[current_point_time] = keyframe.stabilization_functions
             self.animation_duration += keyframe.duration + keyframe.pause
             current_point_time += keyframe.duration
             self.keyframe_times.append(current_point_time)
@@ -91,3 +93,15 @@ class SplineAnimator:
 
     def get_duration(self):
         return self.animation_duration
+
+    def get_stabilization_functions(self, current_time) -> dict[str, str]:
+        if current_time < 0 or current_time > self.animation_duration:
+            return {}
+        # find previous time
+        sorted_keys = sorted(self.stabilizations.keys())
+        keyframe_time = sorted_keys[0]
+        for keyframe_time in reversed(sorted_keys):
+            if keyframe_time <= current_time:
+                break
+
+        return self.stabilizations[keyframe_time]

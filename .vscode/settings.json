@@ -231,4 +231,7 @@
     "[xml]": {
         "editor.defaultFormatter": "DotJoshJohnson.xml"
     },
+    "[json]": {
+        "editor.defaultFormatter": "vscode.json-language-features"
+    },
 }

@@ -45,6 +45,8 @@ class CheckMotors(AbstractHCMDecisionElement):
 
         if self.blackboard.servo_overload:
             return "OVERLOAD"
+        elif self.blackboard.servo_overheat:
+            return "OVERHEAT"
 
         # Check if we get no messages or always the exact same
         if (

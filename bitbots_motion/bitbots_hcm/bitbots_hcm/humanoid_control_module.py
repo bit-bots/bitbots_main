@@ -147,14 +147,18 @@ class HardwareControlManager:
         """Updates the diagnostic state."""
         status: DiagnosticStatus
         for status in msg.status:
-            if "//Servos/" in status.name:
-                if status.level == DiagnosticStatus.ERROR and "Overload" in status.message:
-                    self.blackboard.servo_overload = True
-            elif "//Servos" in status.name:
+            if "/Servos/" in status.name:
+                if status.level == DiagnosticStatus.ERROR:
+                    if "Overload" in status.message:
+                        self.blackboard.servo_overload = True
+                    elif "Overheat" in status.message:
+                        self.blackboard.servo_overheat = True
+
+            elif "/Servos" in status.name:
                 self.blackboard.servo_diag_error = status.level in (DiagnosticStatus.ERROR, DiagnosticStatus.STALE)
-            elif "//IMU" in status.name:
+            elif "/IMU" in status.name:
                 self.blackboard.imu_diag_error = status.level in (DiagnosticStatus.ERROR, DiagnosticStatus.STALE)
-            elif "//Pressure" in status.name:
+            elif "/Pressure" in status.name:
                 self.blackboard.pressure_diag_error = status.level in (DiagnosticStatus.ERROR, DiagnosticStatus.STALE)
 
     def get_state(self) -> RobotControlState:
