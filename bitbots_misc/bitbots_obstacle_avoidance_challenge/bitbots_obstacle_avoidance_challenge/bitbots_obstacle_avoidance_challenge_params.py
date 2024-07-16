@@ -18,20 +18,20 @@ class bitbots_obstacle_avoidance_challenge:
         # for detecting if the parameter struct has been updated
         stamp_ = Time()
 
-        blue_lower_h = 92
-        blue_upper_h = 110
-        blue_lower_s = 90
-        blue_upper_s = 236
-        blue_lower_v = 0
-        blue_upper_v = 255
-        red_lower_h = 138
+        blue_lower_h = 89
+        blue_upper_h = 145
+        blue_lower_s = 144
+        blue_upper_s = 231
+        blue_lower_v = 31
+        blue_upper_v = 194
+        red_lower_h = 137
         red_upper_h = 179
-        red_lower_s = 78
+        red_lower_s = 177
         red_upper_s = 255
         red_lower_v = 0
         red_upper_v = 255
-        min_size = 20
-        max_size = 400
+        min_size = 40
+        max_size = 1000
         debug_mode = False
 
     class ParamListener:
