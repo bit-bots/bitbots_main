@@ -109,7 +109,7 @@ nav_msgs::msg::OccupancyGrid Map::get_map_msg(std::string frame_id, int threshol
   map_msg.data.resize(map.rows * map.cols);
   for (int i = 0; i < map.rows; i++) {
     for (int j = 0; j < map.cols; j++) {
-      map_msg.data[i * map.cols + j] = 100 - map.at<uchar>(i, j);
+      map_msg.data[i * map.cols + j] = max_value_ - map.at<uchar>(i, j);
     }
   }
   return map_msg;
