@@ -33,8 +33,8 @@ class WolfgangHardwareInterface {
   std::vector<std::vector<std::shared_ptr<bitbots_ros_control::HardwareInterface>>> interfaces_;
   DynamixelServoHardwareInterface servo_interface_;
   rclcpp::Publisher<bitbots_msgs::msg::Audio>::SharedPtr speak_pub_;
-  std::optional<rclcpp::Time> motor_start_time_;
-  bool motor_first_write_{false};
+  std::optional<rclcpp::Time> bus_start_time_;
+  bool bus_first_write_{false};
 
   // prevent unnecessary error when power is turned on
   bool first_ping_error_;

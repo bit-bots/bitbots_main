@@ -1,6 +1,7 @@
 wolfgang_hardware_interface:
   ros__parameters:
     control_loop_hz: 500.0
+    start_delay: 2.0 # delay after the motor power is turned on until values are written, in seconds
 
     port_info:
       port0:
@@ -37,7 +38,6 @@ wolfgang_hardware_interface:
       auto_torque: true
 
       set_ROM_RAM: true # set the following values on startup to all motors
-      start_delay: 0.5 # delay after the motors are turned on until values are written, in seconds
 
       ROM_RAM_DEFAULT:
         # all names of parameters have to be the same as on the dynamixel table (see dynamixel_workbench_toolbox/src/dynamixel_item.cpp )
