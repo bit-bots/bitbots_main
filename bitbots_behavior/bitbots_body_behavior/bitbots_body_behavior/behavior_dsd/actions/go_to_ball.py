@@ -24,7 +24,7 @@ class GoToBall(AbstractActionElement):
         self.distance = parameters.get("distance", self.blackboard.config["ball_approach_dist"])
 
     def perform(self, reevaluate=False):
-        pose_msg = self.blackboard.pathfinding.get_ball_goal(self.target, self.distance)
+        pose_msg = self.blackboard.pathfinding.get_ball_goal(self.target, self.distance, 0.05)
         self.blackboard.pathfinding.publish(pose_msg)
 
         approach_marker = Marker()

@@ -135,7 +135,7 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
             )
         return total_cost
 
-    def get_ball_goal(self, target: BallGoalType, distance: float) -> PoseStamped:
+    def get_ball_goal(self, target: BallGoalType, distance: float, side_offset: float = 0.0) -> PoseStamped:
         """
         This function returns a goal pose relative to the ball.
 
@@ -167,8 +167,8 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
             elif ball_x > self._blackboard.world_model.field_length / 2 - 0.2:
                 goal_angle = math.pi + np.copysign(math.pi / 4, ball_y)
 
-            goal_x = ball_x - math.cos(goal_angle) * distance
-            goal_y = ball_y - math.sin(goal_angle) * distance
+            goal_x = ball_x - math.cos(goal_angle) * distance + math.sin(goal_angle) * side_offset
+            goal_y = ball_y - math.sin(goal_angle) * distance + math.cos(goal_angle) * side_offset
 
             ball_point = (goal_x, goal_y, goal_angle, self._blackboard.map_frame)
 
