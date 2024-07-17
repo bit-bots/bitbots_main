@@ -28,6 +28,7 @@ class CoreHardwareInterface : public bitbots_ros_control::HardwareInterface {
   void read(const rclcpp::Time &t, const rclcpp::Duration &dt);
 
   void write(const rclcpp::Time &t, const rclcpp::Duration &dt);
+  void restoreAfterPowerCycle();
 
  private:
   rclcpp::Node::SharedPtr nh_;
