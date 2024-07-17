@@ -74,12 +74,15 @@ class TechnicalChallengeVision(Node):
             (arg.blue_lower_h, arg.blue_lower_s, arg.blue_lower_v),
             (arg.blue_upper_h, arg.blue_upper_s, arg.blue_upper_v),
         )
+        blue_map = cv2.dilate(blue_map, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)))
 
         red_map = cv2.inRange(
             img,
             (arg.red_lower_h, arg.red_lower_s, arg.red_lower_v),
             (arg.red_upper_h, arg.red_upper_s, arg.red_upper_v),
         )
+
+        red_map = cv2.dilate(red_map, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)))
 
         # get contours in color maps
         blue_contours, _ = cv2.findContours(blue_map, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
