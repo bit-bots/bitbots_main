@@ -3,11 +3,12 @@ import os
 import threading
 from hashlib import md5
 
-from deploy.misc import be_quiet, print_debug, print_info, print_success, print_warning
+from deploy.misc import be_quiet, hide_output, print_debug, print_info, print_success, print_warning
 from deploy.tasks.abstract_task import AbstractTask
-from fabric import Group, GroupResult, Result
+from fabric import Connection, Group, GroupResult, Result
 from git import Repo
 from git.exc import GitCommandError
+from invoke.exceptions import UnexpectedExit
 from rich.console import Group as RichGroup
 from rich.table import Table
 from yaml import safe_load
@@ -39,6 +40,8 @@ class OurRepo(Repo):
         self.check_branch()
         if do_fetch:
             self.check_ahead_behind()
+        else:
+            print_debug(f"Repo {self}: Skipping check for being ahead or behind of the remote repository.")
         return self.warnings
 
     def get_commit_hash(self) -> str:
@@ -191,7 +194,7 @@ class CheckReposTask(AbstractTask):
                     result[str(our_repo)] = our_repo
         return result
 
-    def _github_available(self) -> bool:
+    def _github_available(self, connection: Connection) -> bool:
         """
         Check if GitHub is available.
 
@@ -202,7 +205,18 @@ class CheckReposTask(AbstractTask):
 
         cmd = f"timeout --foreground 0.5 curl -sSLI {github}"
         print_debug(f"Calling {cmd}")
-        return os.system(cmd) == 0
+        available = False
+        result: Result | None = None
+        try:
+            result = connection.local(cmd, hide=hide_output())
+        except UnexpectedExit:
+            pass
+        if result is not None:
+            available = result.ok
+        print_debug(f"Internet connection to github.com is {'' if available else 'NOT'} available.")
+        if not available:
+            print_info("Internet connection is not available. We may skip some checks!")
+        return available
 
     def _run(self, connections: Group) -> GroupResult:
         """
@@ -243,7 +257,7 @@ class CheckReposTask(AbstractTask):
             return results
 
         # Is GitHub available?
-        github_available: bool = self._github_available()
+        github_available: bool = self._github_available(connections[0])
 
         # Check all repositories and collect warnings with multiple threads
         threads: list[threading.Thread] = []
