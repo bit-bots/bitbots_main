@@ -10,27 +10,27 @@ from rclpy.node import Node
 from sensor_msgs.msg import Image
 from soccer_vision_2d_msgs.msg import Robot, RobotArray
 
-from bitbots_technical_challenge_vision.bitbots_technical_challenge_vision_params import (
-    bitbots_technical_challenge_vision,
+from bitbots_obstacle_avoidance_challenge.bitbots_obstacle_avoidance_challenge_params import (
+    bitbots_obstacle_avoidance_challenge,
 )
 
 
 class TechnicalChallengeVision(Node):
     def __init__(self):
-        super().__init__("bitbots_technical_challenge_vision")
+        super().__init__("bitbots_obstacle_avoidance_challenge")
 
-        self._package_path = get_package_share_directory("bitbots_technical_challenge_vision")
+        self._package_path = get_package_share_directory("bitbots_obstacle_avoidance_challenge")
         self._cv_bridge = CvBridge()
         self._annotations_pub = self.create_publisher(RobotArray, "/robots_in_image", 10)
-        self._debug_img_pub = self.create_publisher(Image, "/bitbots_technical_challenge_vision_debug_img", 10)
+        self._debug_img_pub = self.create_publisher(Image, "/bitbots_obstacle_avoidance_challenge_debug_img", 10)
         self._debug_clrmp_pub_blue = self.create_publisher(
-            Image, "/bitbots_technical_challenge_vision_debug_clrmp_blue", 10
+            Image, "/bitbots_obstacle_avoidance_challenge_debug_clrmp_blue", 10
         )
         self._debug_clrmp_pub_red = self.create_publisher(
-            Image, "/bitbots_technical_challenge_vision_debug_clrmp_red", 10
+            Image, "/bitbots_obstacle_avoidance_challenge_debug_clrmp_red", 10
         )
         self._img_sub = self.create_subscription(Image, "/camera/image_proc", self.image_callback, 10)
-        self._param_listener = bitbots_technical_challenge_vision.ParamListener(self)
+        self._param_listener = bitbots_obstacle_avoidance_challenge.ParamListener(self)
         self._params = self._param_listener.get_params()
 
     def create_robot_msg(self, x: int, y: int, w: int, h: int, t: int) -> Robot:

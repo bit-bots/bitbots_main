@@ -14,7 +14,7 @@ include:
         - bitbots_ipm
         - bitbots_parameter_blackboard
         - bitbots_robot_description
-        - bitbots_technical_challenge_vision
+        - bitbots_obstacle_avoidance_challenge
         - bitbots_teleop
         - bitbots_tf_buffer
         - bitbots_tts

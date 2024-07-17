@@ -26,6 +26,9 @@ Map::Map(const std::string &name, const std::string &type, const double out_of_m
     RCLCPP_ERROR(rclcpp::get_logger("bitbots_localization"), "No image data '%s'", map_path.c_str());
     return;
   }
+  // determine max pixel value in map
+  double min_placeholder;
+  cv::minMaxLoc(map, &min_placeholder, &max_value_);
 }
 
 double Map::get_occupancy(double x, double y) {
@@ -44,9 +47,9 @@ double Map::get_occupancy(double x, double y) {
   double occupancy = out_of_map_value_;  // punish points outside the map
 
   if (x < mapWidth && x >= 0 && y < mapHeight && y >= 0) {
-    occupancy = 100 - map.at<uchar>(y, x);
+    occupancy = max_value_ - map.at<uchar>(y, x);
   }
-  return occupancy / 100.0;
+  return occupancy / max_value_;
 }
 
 std::vector<double> Map::provideRating(const RobotState &state,
@@ -106,7 +109,7 @@ nav_msgs::msg::OccupancyGrid Map::get_map_msg(std::string frame_id, int threshol
   map_msg.data.resize(map.rows * map.cols);
   for (int i = 0; i < map.rows; i++) {
     for (int j = 0; j < map.cols; j++) {
-      map_msg.data[i * map.cols + j] = 100 - map.at<uchar>(i, j);
+      map_msg.data[i * map.cols + j] = max_value_ - map.at<uchar>(i, j);
     }
   }
   return map_msg;

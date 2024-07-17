@@ -51,7 +51,8 @@ class Map {
   nav_msgs::msg::OccupancyGrid get_map_msg(std::string frame_id, int threshold = -1);
 
  private:
-  double out_of_map_value_;
+  double out_of_map_value_ = 0;
+  double max_value_ = 1;
 };
 };      // namespace bitbots_localization
 #endif  // BITBOTS_LOCALIZATION_MAP_H

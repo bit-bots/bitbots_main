@@ -26,11 +26,11 @@ class Map:
             parameters["field.size.x"] + 2 * parameters["field.size.padding"],
             parameters["field.size.y"] + 2 * parameters["field.size.padding"],
         )
-        self.map: np.ndarray = np.ones(
+        self.map: np.ndarray = np.full(
             (np.array(self.size) * self.resolution).astype(int),
+            self.config_obstacle_value,
             dtype=np.int8,
         )
-
         self.frame: str = self.node.config.map.planning_frame
         self.ball_buffer: list[Point] = []
         self.robot_buffer: list[sv3dm.Robot] = []
@@ -38,6 +38,10 @@ class Map:
         self.config_inflation_blur: int = self.node.config.map.inflation.blur
         self.config_inflation_dialation: int = self.node.config.map.inflation.dialate
         self.config_obstacle_value: int = self.node.config.map.obstacle_value
+        self.draw_barrier()
+
+    def draw_barrier(self) -> None:
+        cv2.rectangle(self.map, self.to_map_space(-1.5, 3.2)[::-1], self.to_map_space(0, -4)[::-1], 1, -1)
 
     def set_ball(self, ball: PoseWithCovarianceStamped) -> None:
         """
@@ -90,7 +94,7 @@ class Map:
         for robot in self.robot_buffer:
             cv2.circle(
                 self.map,
-                self.to_map_space(robot.bb.center.position.x, robot.bb.center.position.y)[::-1],
+                self.to_map_space(robot.bb.center.position.x, robot.bb.center.position.y - 0.3)[::-1],
                 round(max(numpify(robot.bb.size)[:2]) * self.resolution),
                 self.config_obstacle_value,
                 -1,
@@ -121,7 +125,7 @@ class Map:
         """
         Clears the complete cost map
         """
-        self.map[...] = 1
+        self.map[...] = self.config_obstacle_value
 
     def inflate(self) -> None:
         """
@@ -140,6 +144,7 @@ class Map:
         Regenerates the costmap based on the ball and robot buffer
         """
         self.clear()
+        self.draw_barrier()
         self._render_balls()
         self._render_robots()
         self.inflate()
