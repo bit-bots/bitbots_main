@@ -379,6 +379,7 @@ def main():
             f"{Style.BRIGHT}Press enter to continue.{Style.RESET_ALL}"
         )
 
+        move_to_joint_position(pub, {})
         print(
             f"\n\n{Fore.GREEN}If you have reached this point, the robot is hopefully in good shape and ready to go! GLHF"
         )
