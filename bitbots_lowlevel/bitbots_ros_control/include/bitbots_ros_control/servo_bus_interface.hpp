@@ -23,7 +23,6 @@ class ServoBusInterface : public bitbots_ros_control::HardwareInterface {
  public:
   explicit ServoBusInterface(rclcpp::Node::SharedPtr nh, std::shared_ptr<DynamixelDriver> &driver,
                              std::vector<std::tuple<int, std::string, float, float, std::string>> servos);
-  ~ServoBusInterface();
   bool init();
   void read(const rclcpp::Time &t, const rclcpp::Duration &dt);
   void write(const rclcpp::Time &t, const rclcpp::Duration &dt);
@@ -59,17 +58,17 @@ class ServoBusInterface : public bitbots_ros_control::HardwareInterface {
   void syncWriteProfileAcceleration();
 
   rclcpp::Node::SharedPtr nh_;
-  int32_t *data_sync_read_positions_;
-  int32_t *data_sync_read_velocities_;
-  int32_t *data_sync_read_efforts_;
-  int32_t *data_sync_read_pwms_;
-  int32_t *data_sync_read_error_;
-  int32_t *sync_write_goal_position_;
-  int32_t *sync_write_goal_velocity_;
-  int32_t *sync_write_profile_velocity_;
-  int32_t *sync_write_profile_acceleration_;
-  int32_t *sync_write_goal_current_;
-  int32_t *sync_write_goal_pwm_;
+  std::vector<int32_t> data_sync_read_positions_;
+  std::vector<int32_t> data_sync_read_velocities_;
+  std::vector<int32_t> data_sync_read_efforts_;
+  std::vector<int32_t> data_sync_read_pwms_;
+  std::vector<int32_t> data_sync_read_error_;
+  std::vector<int32_t> sync_write_goal_position_;
+  std::vector<int32_t> sync_write_goal_velocity_;
+  std::vector<int32_t> sync_write_profile_velocity_;
+  std::vector<int32_t> sync_write_profile_acceleration_;
+  std::vector<int32_t> sync_write_goal_current_;
+  std::vector<int32_t> sync_write_goal_pwm_;
   std::vector<uint8_t> sync_read_all_data_;
 
   bool first_cycle_;

@@ -9,7 +9,7 @@
     'orient_to_goal_distance': 1.0,
     'rotation_i_factor': 0.0,
     'rotation_slow_down_factor': 0.3,
-    'smoothing_tau': 0.5,
+    'smoothing_tau': 1.0,
     'translation_slow_down_factor': 0.5,
   })
 # ---

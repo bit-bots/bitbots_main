@@ -2,61 +2,63 @@ walking:
   ros__parameters:
     engine:
       double_support_ratio: 0.05
+      first_step_swing_factor: 0.7
+      first_step_trunk_phase: -0.25
+      foot_apex_phase: 0.5
+      foot_apex_pitch: 0.0
       foot_distance: 0.2
-      foot_rise: 0.05
-      freq: 1.2
+      foot_overshoot_phase: 0.67
+      foot_overshoot_ratio: 0.1
+      foot_put_down_phase: 1.0
+      foot_put_down_z_offset: 0.0
+      foot_rise: 0.04
+      foot_z_pause: 0.0
+      freq: 1.0
+      kick_length: 0.12
+      kick_phase: 0.28
+      kick_put_down_phase: 0.8
+      kick_rise_factor: 1.5
+      kick_vel: 0.2
       trunk_height: 0.38
+      trunk_pause: 0.0
       trunk_phase: -0.1
       trunk_pitch: 0.2
       trunk_pitch_p_coef_forward: 0.0
       trunk_pitch_p_coef_turn: 0.0
       trunk_swing: 0.25
-      trunk_x_offset: 0.02
-      trunk_y_offset: 0.0
-      trunk_z_movement: 0.0
-      first_step_swing_factor: 1.0
-      first_step_trunk_phase: -0.5
-      foot_apex_phase: 0.5
-      foot_apex_pitch: 0.1
-      foot_overshoot_phase: 0.67
-      foot_overshoot_ratio: 0.1
-      foot_put_down_phase: 1.0
-      foot_put_down_z_offset: 0.0
-      foot_z_pause: 0.0
-      trunk_pause: 0.0
+      trunk_x_offset: -0.02
       trunk_x_offset_p_coef_forward: 0.1
       trunk_x_offset_p_coef_turn: 0.0
-
-      kick_length: 0.12
-      kick_vel: 0.2
-      kick_phase: 0.28
-      kick_put_down_phase: 0.8
-      kick_rise_factor: 1.5
-
+      trunk_y_offset: 0.0
+      trunk_z_movement: 0.0
     node:
       # update frequency of the engine
+      debug_active: true
       engine_freq: 125.0
-
       # parameters for bioIK
       ik:
+        reset: true
         timeout: 0.01
-        reset: True
-
-      debug_active: True
-
-      max_step_x: 1.0
-      max_step_y: 1.0
-      max_step_xy: 1.0
-      max_step_z: 1.0
+      imu_y_acc_tau: 0.2
       max_step_angular: 1.0
-
-      x_speed_multiplier: 1.0
-      y_speed_multiplier: 1.0
-      yaw_speed_multiplier: 1.0
-
+      max_step_x: 1.0
+      max_step_xy: 1.0
+      max_step_y: 1.0
+      max_step_z: 1.0
+      phase_reset:
+        effort:
+          active: false
+          joint_min_effort: 2.0
+        foot_pressure:
+          active: false
+          ground_min_pressure: 1.5
+        imu:
+          active: true
+          y_acceleration_threshold: 2.0
+        min_phase: 0.9
       stability_stop:
         imu:
-          active: False
+          active: false
           pitch:
             threshold: 0.19
             vel_threshold: 1.3
@@ -64,33 +66,29 @@ walking:
             threshold: 0.4
             vel_threshold: 5.7
         pause_duration: 3.0
-
-      imu_y_acc_tau: 0.1
-
-      phase_reset:
-        min_phase: 0.90
-        foot_pressure:
-          active: False
-          ground_min_pressure: 1.5
-        effort:
-          active: False
-          joint_min_effort: 2.0
-        imu:
-          active: True
-          y_acceleration_threshold: 2.0
-
+      tf:
+        base_link_frame: base_link
+        l_sole_frame: l_sole
+        odom_frame: odom
+        r_sole_frame: r_sole
       trunk_pid:
         pitch:
-          p: 0.0
-          i: 0.0
+          antiwindup: false
           d: 0.0
-          i_clamp_min: 0.0
+          i: 0.0
           i_clamp_max: 0.0
-          antiwindup: False
+          i_clamp_min: 0.0
+          p: 0.0
         roll:
-          p: 0.0
-          i: 0.0
+          antiwindup: false
           d: 0.0
-          i_clamp_min: 0.0
+          i: 0.0
           i_clamp_max: 0.0
-          antiwindup: False
+          i_clamp_min: 0.0
+          p: 0.0
+      x_bias: 0.0
+      x_speed_multiplier: 1.0
+      y_bias: 0.0
+      y_speed_multiplier: 1.0
+      yaw_bias: 0.0
+      yaw_speed_multiplier: 1.0

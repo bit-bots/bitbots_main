@@ -22,7 +22,7 @@ class PressureConverter {
   rclcpp::Node::SharedPtr nh_;
   rclcpp::executors::StaticSingleThreadedExecutor sub_executor_;
   rclcpp::CallbackGroup::SharedPtr sub_cbg_;
-  std::thread* sub_executor_thread_;
+  std::shared_ptr<std::thread> sub_executor_thread_;
   rclcpp::Publisher<bitbots_msgs::msg::FootPressure>::SharedPtr filtered_pub_;
   rclcpp::Publisher<geometry_msgs::msg::PointStamped>::SharedPtr cop_pub_;
   std::vector<rclcpp::Publisher<geometry_msgs::msg::WrenchStamped>::SharedPtr> wrench_pubs_;
