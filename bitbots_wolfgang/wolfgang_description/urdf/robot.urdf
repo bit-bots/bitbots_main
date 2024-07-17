@@ -2228,7 +2228,7 @@
     <axis xyz="-0.0 1.0 -0.0"/>
     <parent link="r_hip_2"/>
     <child link="r_upper_leg"/>
-    <limit effort="10" lower="-2.77" upper="0.87" velocity="5.76"/>
+    <limit effort="10" lower="-2.77" upper="0.79" velocity="5.76"/>
     <dynamics damping="1.23" friction="2.55"/>
   </joint>
   <joint name="RHipRoll" type="revolute">
@@ -3377,7 +3377,7 @@
     <axis xyz="7.95491e-17 -3.00167e-16 -1.0"/>
     <parent link="l_hip_2"/>
     <child link="l_upper_leg"/>
-    <limit effort="10" lower="-0.87" upper="2.77" velocity="5.76"/>
+    <limit effort="10" lower="-0.79" upper="2.77" velocity="5.76"/>
     <dynamics damping="1.23" friction="2.55"/>
   </joint>
   <joint name="LHipRoll" type="revolute">
