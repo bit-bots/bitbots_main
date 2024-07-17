@@ -143,9 +143,22 @@ class BallFilter(Node):
                 self.ball_state_covariance = covariance
                 ball_measurement_updated = True
 
+        # Get our estimate in the base footprint frame for easier distance calculation
+        # We use the 0 time to get the newest transform
+        estimate_relative = self._get_transform(
+            Header(stamp=Time(), frame_id=self.config.filter.frame),
+            msgify(Point, self.ball_state_position),
+            "base_footprint",
+        )
+        if estimate_relative is None:
+            return
+
+        distance_to_estimate = np.linalg.norm(numpify(estimate_relative.point))
+
         # If we did not get a ball measurement, we can check if we should have seen the ball
         # And increase the covariance if we did not see the ball
-        if not ball_measurement_updated and self.is_estimate_in_fov(msg.header):
+        # Due to vision issues with very close balls we don't do this for close balls
+        if not ball_measurement_updated and distance_to_estimate > 0.23 and self.is_estimate_in_fov(msg.header):
             self.ball_state_covariance *= np.eye(3) * self.config.filter.covariance.negative_observation.value
 
     def _get_transform(
