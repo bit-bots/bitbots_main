@@ -26,6 +26,7 @@ class Map:
             parameters["field.size.x"] + 2 * parameters["field.size.padding"],
             parameters["field.size.y"] + 2 * parameters["field.size.padding"],
         )
+        self.config_obstacle_value: int = self.node.config.map.obstacle_value
         self.map: np.ndarray = np.full(
             (np.array(self.size) * self.resolution).astype(int),
             self.config_obstacle_value,
@@ -37,7 +38,6 @@ class Map:
         self.config_ball_diameter: float = self.node.config.map.ball_diameter
         self.config_inflation_blur: int = self.node.config.map.inflation.blur
         self.config_inflation_dialation: int = self.node.config.map.inflation.dialate
-        self.config_obstacle_value: int = self.node.config.map.obstacle_value
         self.draw_barrier()
 
     def draw_barrier(self) -> None:
