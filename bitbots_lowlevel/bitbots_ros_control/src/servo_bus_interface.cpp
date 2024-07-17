@@ -70,17 +70,17 @@ bool ServoBusInterface::init() {
   goal_torque_individual_.resize(joint_count_, 1);
 
   // reserve memory only once for later reads and writes to improve performance
-  data_sync_read_positions_.reserve(joint_count_);
-  data_sync_read_velocities_.reserve(joint_count_);
-  data_sync_read_efforts_.reserve(joint_count_);
-  data_sync_read_pwms_.reserve(joint_count_);
-  data_sync_read_error_.reserve(joint_count_);
-  sync_write_goal_position_.reserve(joint_count_);
-  sync_write_goal_velocity_.reserve(joint_count_);
-  sync_write_profile_velocity_.reserve(joint_count_);
-  sync_write_profile_acceleration_.reserve(joint_count_);
-  sync_write_goal_current_.reserve(joint_count_);
-  sync_write_goal_pwm_.reserve(joint_count_);
+  data_sync_read_positions_.resize(joint_count_);
+  data_sync_read_velocities_.resize(joint_count_);
+  data_sync_read_efforts_.resize(joint_count_);
+  data_sync_read_pwms_.resize(joint_count_);
+  data_sync_read_error_.resize(joint_count_);
+  sync_write_goal_position_.resize(joint_count_);
+  sync_write_goal_velocity_.resize(joint_count_);
+  sync_write_profile_velocity_.resize(joint_count_);
+  sync_write_profile_acceleration_.resize(joint_count_);
+  sync_write_goal_current_.resize(joint_count_);
+  sync_write_goal_pwm_.resize(joint_count_);
 
   // write ROM and RAM values if wanted
   if (nh_->get_parameter("servos.set_ROM_RAM").as_bool()) {
