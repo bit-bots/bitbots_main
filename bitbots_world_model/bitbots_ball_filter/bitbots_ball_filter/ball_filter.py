@@ -157,7 +157,7 @@ class BallFilter(Node):
 
         # If we did not get a ball measurement, we can check if we should have seen the ball
         # And increase the covariance if we did not see the ball
-        # Due to vision issues with very close balls we don't do this for close balls
+        # Due to vision issues with very close balls we don't do this for close balls  # TODO Remove with 558
         if not ball_measurement_updated and distance_to_estimate > 0.23 and self.is_estimate_in_fov(msg.header):
             self.ball_state_covariance *= np.eye(3) * self.config.filter.covariance.negative_observation.value
 
