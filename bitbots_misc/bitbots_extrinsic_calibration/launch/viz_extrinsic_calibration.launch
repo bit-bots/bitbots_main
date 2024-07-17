@@ -1,4 +1,23 @@
 <?xml version="1.0" encoding="utf-8" ?>
+
 <launch>
-    <node pkg="rviz2" exec="rviz2" args="-d $(find-pkg-share bitbots_extrinsic_calibration)/config/extrinsic_calibration.rviz" name="extrinsic_calibration_rviz"/>
+    <!-- Launch teamplayer only with necessary components -->
+    <include file="$(find-pkg-share bitbots_bringup)/launch/teamplayer.launch">
+        <arg name="game_controller" value="false" />
+        <arg name="behavior" value="false" />
+        <arg name="path_planning" value="false" />
+        <arg name="world_model" value="false" />
+        <arg name="teamcom" value="false" />
+        <arg name="monitoring" value="false" />
+        <arg name="record" value="false" />
+    </include>
+
+    <!-- Launch rviz2 with the extrinsic_calibration.rviz configuration -->
+    <node pkg="rviz2" exec="rviz2" args="-d $(find-pkg-share bitbots_extrinsic_calibration)/config/extrinsic_calibration.rviz" name="extrinsic_calibration_rviz" output="screen"/>
+
+    <!-- Launch RQT dynamic reconfigure plugin -->
+    <node pkg="rqt_reconfigure" exec="rqt_reconfigure" name="rqt_reconfigure" output="screen"/>
+
+    <!-- Set head mode to 1 (Field Features) -->
+    <executable cmd="ros2 topic pub --once /head_mode bitbots_msgs/msg/HeadMode '{head_mode: 1}'" name="set_headmode" output="screen"/>
 </launch>
