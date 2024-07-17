@@ -26,8 +26,9 @@ class Map:
             parameters["field.size.x"] + 2 * parameters["field.size.padding"],
             parameters["field.size.y"] + 2 * parameters["field.size.padding"],
         )
-        self.map: np.ndarray = np.ones(
+        self.map: np.ndarray = np.full(
             (np.array(self.size) * self.resolution).astype(int),
+            self.config_obstacle_value,
             dtype=np.int8,
         )
         self.frame: str = self.node.config.map.planning_frame
@@ -40,35 +41,7 @@ class Map:
         self.draw_barrier()
 
     def draw_barrier(self) -> None:
-        barrier_thickness = 5
-        cv2.line(
-            self.map,
-            self.to_map_space(-1.5, 4)[::-1],
-            self.to_map_space(-1.5, -4)[::-1],
-            self.config_obstacle_value,
-            barrier_thickness,
-        )
-        cv2.line(
-            self.map,
-            self.to_map_space(0, 4)[::-1],
-            self.to_map_space(0, -4)[::-1],
-            self.config_obstacle_value,
-            barrier_thickness,
-        )
-        cv2.line(
-            self.map,
-            self.to_map_space(0, 3.2)[::-1],
-            self.to_map_space(-1.5, 3.2)[::-1],
-            self.config_obstacle_value,
-            barrier_thickness,
-        )
-        cv2.line(
-            self.map,
-            self.to_map_space(0, -4)[::-1],
-            self.to_map_space(-1.5, -4)[::-1],
-            self.config_obstacle_value,
-            barrier_thickness,
-        )
+        cv2.rectangle(self.map, self.to_map_space(-1.5, 3.2)[::-1], self.to_map_space(0, -4)[::-1], 1, -1)
 
     def set_ball(self, ball: PoseWithCovarianceStamped) -> None:
         """
@@ -152,7 +125,7 @@ class Map:
         """
         Clears the complete cost map
         """
-        self.map[...] = 1
+        self.map[...] = self.config_obstacle_value
 
     def inflate(self) -> None:
         """
