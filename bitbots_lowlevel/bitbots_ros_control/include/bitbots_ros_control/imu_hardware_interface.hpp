@@ -34,16 +34,16 @@ class ImuHardwareInterface : public bitbots_ros_control::HardwareInterface {
   std::string topic_;
   std::string frame_;
   std::string name_;
-  uint8_t *data_;
-  uint8_t *accel_calib_data_;
+  std::array<uint8_t, 40> data_;
+  std::array<uint8_t, 28> accel_calib_data_;
 
   uint32_t last_seq_number_{};
-  double *orientation_{};  // quaternion (x,y,z,w)
-  double *orientation_covariance_{};
-  double *angular_velocity_{};
-  double *angular_velocity_covariance_{};
-  double *linear_acceleration_{};
-  double *linear_acceleration_covariance_{};
+  std::array<double, 4> orientation_{};
+  std::array<double, 9> orientation_covariance_{};
+  std::array<double, 3> angular_velocity_{};
+  std::array<double, 9> angular_velocity_covariance_{};
+  std::array<double, 3> linear_acceleration_{};
+  std::array<double, 9> linear_acceleration_covariance_{};
 
   diagnostic_msgs::msg::DiagnosticStatus status_imu_;
 

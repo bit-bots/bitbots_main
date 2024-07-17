@@ -14,7 +14,6 @@ BitFootHardwareInterface::BitFootHardwareInterface(rclcpp::Node::SharedPtr nh, s
 
 bool BitFootHardwareInterface::init() {
   current_pressure_.resize(4, std::vector<double>());
-  data_ = (uint8_t *)malloc(16 * sizeof(uint8_t));
   pressure_pub_ = nh_->create_publisher<bitbots_msgs::msg::FootPressure>(topic_name_, 1);
   diagnostic_pub_ = nh_->create_publisher<diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 10);
   return true;
@@ -27,13 +26,11 @@ void BitFootHardwareInterface::read(const rclcpp::Time &t, const rclcpp::Duratio
 
   // read foot
   bool read_successful = true;
-  if (driver_->readMultipleRegisters(id_, 36, 16, data_)) {
+  if (driver_->readMultipleRegisters(id_, 36, 16, data_.data())) {
     for (int i = 0; i < 4; i++) {
-      int32_t pres =
-          dxlMakedword(dxlMakeword(data_[i * 4], data_[i * 4 + 1]), dxlMakeword(data_[i * 4 + 2], data_[i * 4 + 3]));
-      float pres_d = (float)pres;
+      float pres = dxlMakeFloat(&data_[i * 4]);
       // we directly provide raw data since the scaling has to be calibrated by another node for every robot anyway
-      current_pressure_[i].push_back((double)pres_d);
+      current_pressure_[i].push_back((double)pres);
     }
   } else {
     RCLCPP_ERROR_THROTTLE(nh_->get_logger(), *nh_->get_clock(), 3000, "Could not read %s", name_.c_str());

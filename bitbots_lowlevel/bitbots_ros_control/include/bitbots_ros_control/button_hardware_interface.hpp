@@ -25,7 +25,7 @@ class ButtonHardwareInterface : public bitbots_ros_control::HardwareInterface {
 
  private:
   rclcpp::Node::SharedPtr nh_;
-  int counter_;
+  int counter_ = 0;
 
   std::shared_ptr<DynamixelDriver> driver_;
   int id_;
@@ -33,7 +33,7 @@ class ButtonHardwareInterface : public bitbots_ros_control::HardwareInterface {
   rclcpp::Publisher<bitbots_msgs::msg::Buttons>::SharedPtr button_pub_;
   int read_rate_;
   rclcpp::Publisher<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr diagnostic_pub_;
-  uint8_t *data_;
+  std::array<uint8_t, 3> data_;
 };
 }  // namespace bitbots_ros_control
 

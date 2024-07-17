@@ -37,7 +37,7 @@ class BitFootHardwareInterface : public bitbots_ros_control::HardwareInterface {
   std::string name_;
   bitbots_msgs::msg::FootPressure msg_;
   rclcpp::Publisher<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr diagnostic_pub_;
-  uint8_t *data_;
+  std::array<uint8_t, 16> data_;
 };
 }  // namespace bitbots_ros_control
 #endif
