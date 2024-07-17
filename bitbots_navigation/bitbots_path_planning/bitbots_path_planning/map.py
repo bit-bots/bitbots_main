@@ -40,19 +40,34 @@ class Map:
         self.draw_barrier()
 
     def draw_barrier(self) -> None:
+        barrier_thickness = 5
         cv2.line(
-            self.map, self.to_map_space(-1.5, 4)[::-1], self.to_map_space(-1.5, -4)[::-1], self.config_obstacle_value, 2
+            self.map,
+            self.to_map_space(-1.5, 4)[::-1],
+            self.to_map_space(-1.5, -4)[::-1],
+            self.config_obstacle_value,
+            barrier_thickness,
         )
-        cv2.line(self.map, self.to_map_space(0, 4)[::-1], self.to_map_space(0, -4)[::-1], self.config_obstacle_value, 2)
+        cv2.line(
+            self.map,
+            self.to_map_space(0, 4)[::-1],
+            self.to_map_space(0, -4)[::-1],
+            self.config_obstacle_value,
+            barrier_thickness,
+        )
         cv2.line(
             self.map,
             self.to_map_space(0, 3.2)[::-1],
             self.to_map_space(-1.5, 3.2)[::-1],
             self.config_obstacle_value,
-            2,
+            barrier_thickness,
         )
         cv2.line(
-            self.map, self.to_map_space(0, -4)[::-1], self.to_map_space(-1.5, -4)[::-1], self.config_obstacle_value, 2
+            self.map,
+            self.to_map_space(0, -4)[::-1],
+            self.to_map_space(-1.5, -4)[::-1],
+            self.config_obstacle_value,
+            barrier_thickness,
         )
 
     def set_ball(self, ball: PoseWithCovarianceStamped) -> None:
