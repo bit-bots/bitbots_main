@@ -116,3 +116,9 @@ bitbots_obstacle_avoidance_challenge:
     default_value: false,
     description: "set true if debug images should be drawn and published",
   }
+  kernel_size: {
+    type: long,
+    default_value: 3,
+    description: "kernel size for dilation"
+
+  }
