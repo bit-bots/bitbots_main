@@ -7,19 +7,19 @@
             "goals": {
                 "HeadPan": 0.0,
                 "HeadTilt": -45.0,
-                "LAnklePitch": -75.0,
+                "LAnklePitch": -81.47,
                 "LAnkleRoll": -2.0,
                 "LElbow": 27.0,
-                "LHipPitch": -50.0,
+                "LHipPitch": -38.85,
                 "LHipRoll": -2.2,
                 "LHipYaw": 0.0,
                 "LKnee": 124.0,
                 "LShoulderPitch": 170.0,
                 "LShoulderRoll": 0.0,
-                "RAnklePitch": 75.0,
+                "RAnklePitch": 78.7,
                 "RAnkleRoll": 2.0,
                 "RElbow": -27.0,
-                "RHipPitch": 50.0,
+                "RHipPitch": 36.84,
                 "RHipRoll": -2.2,
                 "RHipYaw": 0.0,
                 "RKnee": -124.0,
@@ -31,7 +31,35 @@
             "torque": {}
         },
         {
-            "duration": 0.25,
+            "duration": 0.9,
+            "goals": {
+                "HeadPan": 0.0,
+                "HeadTilt": -45.0,
+                "LAnklePitch": -81.47,
+                "LAnkleRoll": -2.0,
+                "LElbow": -16.17,
+                "LHipPitch": -38.85,
+                "LHipRoll": -2.2,
+                "LHipYaw": 0.0,
+                "LKnee": 124.0,
+                "LShoulderPitch": 137.0,
+                "LShoulderRoll": -1.67,
+                "RAnklePitch": 78.7,
+                "RAnkleRoll": 2.0,
+                "RElbow": 13.37,
+                "RHipPitch": 36.84,
+                "RHipRoll": -2.2,
+                "RHipYaw": 0.0,
+                "RKnee": -124.0,
+                "RShoulderPitch": -139.57,
+                "RShoulderRoll": 0.79
+            },
+            "name": "bridge_shift",
+            "pause": 0.0,
+            "torque": {}
+        },
+        {
+            "duration": 0.2,
             "goals": {
                 "HeadPan": 0.0,
                 "HeadTilt": -45.0,
@@ -42,7 +70,7 @@
                 "LHipRoll": -2.2,
                 "LHipYaw": 0.0,
                 "LKnee": 143.0,
-                "LShoulderPitch": 34.0,
+                "LShoulderPitch": 54.56,
                 "LShoulderRoll": 0.0,
                 "RAnklePitch": 80.0,
                 "RAnkleRoll": 2.0,
@@ -51,7 +79,7 @@
                 "RHipRoll": 2.2,
                 "RHipYaw": 0.0,
                 "RKnee": -143.0,
-                "RShoulderPitch": -34.0,
+                "RShoulderPitch": -54.84,
                 "RShoulderRoll": -0.0
             },
             "name": "push",
@@ -87,7 +115,7 @@
             "torque": {}
         }
     ],
-    "last_edited": "2024-07-01 18:11:40.280193",
+    "last_edited": "2024-07-17 11:41:14.004363",
     "name": "stand_up_back",
     "version": "1.0"
 }
