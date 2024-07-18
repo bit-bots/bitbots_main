@@ -2,9 +2,9 @@
 # name: test_default_setup
   dict({
     'carrot_distance': 4,
-    'max_rotation_vel': 0.4,
-    'max_vel_x': 0.12,
-    'max_vel_y': 0.05,
+    'max_rotation_vel': 0.3,
+    'max_vel_x': 0.07,
+    'max_vel_y': 0.06,
     'min_vel_x': -0.05,
     'orient_to_goal_distance': 1.0,
     'rotation_i_factor': 0.0,
@@ -14,5 +14,5 @@
   })
 # ---
 # name: test_step_cmd_vel_smoothing
-  'geometry_msgs.msg.Twist(linear=geometry_msgs.msg.Vector3(x=0.056147836300549855, y=0.03337183236993486, z=0.0), angular=geometry_msgs.msg.Vector3(x=0.0, y=0.0, z=0.20666164469042259))'
+  'geometry_msgs.msg.Twist(linear=geometry_msgs.msg.Vector3(x=0.04351964304912127, y=0.030817565809235677, z=0.0), angular=geometry_msgs.msg.Vector3(x=0.0, y=0.0, z=0.19312811636676133))'
 # ---
