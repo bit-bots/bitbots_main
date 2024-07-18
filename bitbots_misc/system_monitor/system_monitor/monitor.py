@@ -30,6 +30,7 @@ def main():
     node.declare_parameter("update_frequency", 10.0)
     node.declare_parameter("do_memory", True)
     node.declare_parameter("do_cpu", True)
+    node.declare_parameter("do_network", True)
     node.declare_parameter("cpu_load_percentage", 80.0)
     node.declare_parameter("memory_load_percentage", 80.0)
     node.declare_parameter("network_rate_received_errors", 10.0)
@@ -38,6 +39,7 @@ def main():
     rate = node.get_parameter("update_frequency").get_parameter_value().double_value
     do_memory = node.get_parameter("do_memory").get_parameter_value().bool_value
     do_cpu = node.get_parameter("do_cpu").get_parameter_value().bool_value
+    do_network = node.get_parameter("do_network").get_parameter_value().bool_value
     cpu_load_percentage = node.get_parameter("cpu_load_percentage").get_parameter_value().double_value
     memory_load_percentage = node.get_parameter("memory_load_percentage").get_parameter_value().double_value
     network_rate_received_errors = node.get_parameter("network_rate_received_errors").get_parameter_value().double_value
@@ -47,7 +49,7 @@ def main():
         last_send_time = time.time()
         running_processes, cpu_usages, overall_usage_percentage = cpus.collect_all() if do_cpu else (-1, [], 0)
         memory_available, memory_used, memory_total = memory.collect_all() if do_memory else (-1, -1, -1)
-        interfaces = network_interfaces.collect_all(node.get_clock())
+        interfaces = network_interfaces.collect_all(node.get_clock()) if do_network else []
 
         msg = WorkloadMsg(
             hostname=hostname,
