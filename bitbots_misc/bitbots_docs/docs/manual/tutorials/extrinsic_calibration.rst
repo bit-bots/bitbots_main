@@ -14,7 +14,8 @@ Setup
 1. Start the visualization launch-file including the necessary motion and vision nodes.
 
 .. code-block:: bash
-ros2 launch bitbots_extrinsic_calibration viz_extrinsic_calibration.launch
+
+   ros2 launch bitbots_extrinsic_calibration viz_extrinsic_calibration.launch
 
 2. In Dynamic Reconfigure open the parameters (left panel) for the nodes: :code:`bitbots_extrinsic_imu_calibration` and :code:`bitbots_extrinsic_camera_calibration`.
 
