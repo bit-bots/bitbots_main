@@ -119,6 +119,9 @@ bitbots_obstacle_avoidance_challenge:
   kernel_size: {
     type: int,
     default_value: 3,
-    description: "kernel size for dilation"
+    description: "kernel size for dilation",
+        validation: {
+      bounds<>: [0, 100]
+    } 
 
   }
