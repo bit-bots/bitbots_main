@@ -15,7 +15,7 @@ void WalkStabilizer::reset() {
   pid_trunk_fused_roll_.reset();
 }
 
-WalkResponse WalkStabilizer::stabilize(const WalkResponse &response, const rclcpp::Duration &dt) {
+WalkResponse WalkStabilizer::stabilize(const WalkResponse& response, const rclcpp::Duration& dt) {
   // compute orientation with PID control
   double goal_pitch, goal_roll, goal_yaw;
   tf2::Matrix3x3(response.support_foot_to_trunk.getRotation()).getRPY(goal_roll, goal_pitch, goal_yaw);
@@ -33,14 +33,15 @@ WalkResponse WalkStabilizer::stabilize(const WalkResponse &response, const rclcp
   double fused_pitch_correction =
       pid_trunk_fused_pitch_.computeCommand(goal_fused.fusedPitch - response.current_fused_pitch, dt);
 
-  tf2::Quaternion corrected_orientation;
-  goal_fused.fusedRoll += fused_roll_correction;
-  goal_fused.fusedPitch += fused_pitch_correction;
-  Eigen::Quaterniond goal_orientation_eigen_corrected = rot_conv::QuatFromFused(goal_fused);
-  tf2::convert(goal_orientation_eigen_corrected, corrected_orientation);
+  // Change trunk x offset (in the trunks frame of reference) based on the PID controllers
+  WalkResponse stabilized_response{response};
 
-  WalkResponse stabilized_response = response;
-  stabilized_response.support_foot_to_trunk.setRotation(corrected_orientation);
+  tf2::Transform trunk_offset;
+  trunk_offset.setOrigin(tf2::Vector3(fused_pitch_correction, fused_roll_correction, 0.0));
+  trunk_offset.setRotation(tf2::Quaternion::getIdentity());
+
+  // apply the trunk offset to the trunk pose
+  stabilized_response.support_foot_to_trunk = trunk_offset * response.support_foot_to_trunk;
 
   return stabilized_response;
 }

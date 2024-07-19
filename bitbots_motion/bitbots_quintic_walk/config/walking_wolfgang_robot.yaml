@@ -7,8 +7,8 @@ walking:
       foot_apex_phase: 0.5
       foot_apex_pitch: 0.0
       foot_distance: 0.2
-      foot_overshoot_phase: 0.67
-      foot_overshoot_ratio: 0.1
+      foot_overshoot_phase: 0.92
+      foot_overshoot_ratio: 0.0
       foot_put_down_phase: 1.0
       foot_put_down_z_offset: 0.0
       foot_rise: 0.04
@@ -26,7 +26,7 @@ walking:
       trunk_pitch_p_coef_forward: 0.0
       trunk_pitch_p_coef_turn: 0.0
       trunk_swing: 0.25
-      trunk_x_offset: -0.02
+      trunk_x_offset: -0.01
       trunk_x_offset_p_coef_forward: 0.1
       trunk_x_offset_p_coef_turn: 0.0
       trunk_y_offset: 0.0
@@ -74,11 +74,11 @@ walking:
       trunk_pid:
         pitch:
           antiwindup: false
-          d: 0.0
+          d: 0.004
           i: 0.0
           i_clamp_max: 0.0
           i_clamp_min: 0.0
-          p: 0.0
+          p: 0.0035
         roll:
           antiwindup: false
           d: 0.0
