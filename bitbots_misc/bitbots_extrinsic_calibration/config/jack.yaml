@@ -1,6 +1,6 @@
 /bitbots_extrinsic_camera_calibration:
   ros__parameters:
-    offset_x: -0.025
+    offset_x: -0.02
     offset_y: 0.0
     offset_z: 0.0
 

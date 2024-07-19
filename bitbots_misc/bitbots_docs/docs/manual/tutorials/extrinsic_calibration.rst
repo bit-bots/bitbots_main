@@ -14,7 +14,8 @@ Setup
 1. Start the visualization launch-file including the necessary motion and vision nodes.
 
 .. code-block:: bash
-ros2 launch bitbots_extrinsic_calibration viz_extrinsic_calibration.launch
+
+   ros2 launch bitbots_extrinsic_calibration viz_extrinsic_calibration.launch
 
 2. In Dynamic Reconfigure open the parameters (left panel) for the nodes: :code:`bitbots_extrinsic_imu_calibration` and :code:`bitbots_extrinsic_camera_calibration`.
 
@@ -25,6 +26,10 @@ Do the calibration
 1. Open config file in **bitbots_misc** > **bitbots_extrinsic_calibration** > **config**
 
 2. Open rqt and navigate to **Plugins** > **Configurations** > **Dynamic Reconfigure** where you can configure the parameters.
+
+3. Place the robot outside the field exactly in front of the middle line.
+
+4. Use the :code:`2D Pose Estimate` button in RViz to place the virtual robot in the corresponding pose.
 
 .. note::
   If you change the calibration first change all parameters to :code:`0.0`.
