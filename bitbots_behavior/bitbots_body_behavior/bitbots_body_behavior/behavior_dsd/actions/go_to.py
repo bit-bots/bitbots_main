@@ -65,7 +65,7 @@ class GoToAbsolutePosition(AbstractActionElement):
 
         pose_msg.pose.position.x = self.point[0]
         pose_msg.pose.position.y = self.point[1]
-        pose_msg.pose.position.z = 0
+        pose_msg.pose.position.z = 0.0
         pose_msg.pose.orientation = quat_from_yaw(math.radians(self.point[2]))
 
         self.blackboard.pathfinding.publish(pose_msg)
@@ -80,8 +80,8 @@ class GoToAbsolutePositionFieldFraction(GoToAbsolutePosition):
         super().__init__(blackboard, dsd, parameters)
         point = float(parameters.get("x", 0)), float(parameters.get("y", 0)), float(parameters.get("t", 0))
         self.point = (
-            point[0] * self.blackboard.world_model.field_length,
-            point[1] * self.blackboard.world_model.field_width,
+            point[0] * self.blackboard.world_model.field_length / 2,
+            point[1] * self.blackboard.world_model.field_width / 2,
             self.point[2],
         )
 
@@ -112,4 +112,4 @@ class GoToCenterpoint(GoToAbsolutePosition):
     def __init__(self, blackboard, dsd, parameters):
         """Go to the center of the field and look towards the enemy goal"""
         super().__init__(blackboard, dsd, parameters)
-        self.point = 0, 0, 0
+        self.point = 0.0, 0.0, 0.0
