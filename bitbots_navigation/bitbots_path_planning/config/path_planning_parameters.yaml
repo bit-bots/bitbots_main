@@ -79,25 +79,25 @@ bitbots_path_planning:
         bounds<>: [0, 100]
     max_rotation_vel:
       type: double
-      default_value: 0.3
+      default_value: 0.35
       description: 'The maximum rotation velocity of the robot in rad/s around the z-axis'
       validation:
         bounds<>: [0.0, 1.0]
     max_vel_x:
       type: double
-      default_value: 0.12
+      default_value: 0.13
       description: 'Maximum velocity we want to reach in different directions (base_footprint coordinate system)'
       validation:
         bounds<>: [0.0, 1.0]
     min_vel_x:
       type: double
-      default_value: -0.06
+      default_value: -0.07
       description: 'Minimum velocity we want to reach in different directions (base_footprint coordinate system)'
       validation:
         bounds<>: [-1.0, 0.0]
     max_vel_y:
       type: double
-      default_value: 0.07
+      default_value: 0.09
       description: 'Maximum velocity we want to reach in different directions (base_footprint coordinate system)'
       validation:
         bounds<>: [0.0, 1.0]
@@ -127,7 +127,7 @@ bitbots_path_planning:
         bounds<>: [0.0, 1.0]
     orient_to_goal_distance:
       type: double
-      default_value: 1.0
+      default_value: 0.9
       description: 'Distance at which we switch from orienting towards the path to orienting towards the goal poses orientation (in meters)'
       validation:
         bounds<>: [0.0, 10.0]
