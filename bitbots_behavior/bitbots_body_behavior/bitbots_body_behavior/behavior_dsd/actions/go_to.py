@@ -76,7 +76,7 @@ class GoToAbsolutePosition(AbstractActionElement):
 
 class GoToAbsolutePositionFieldFraction(GoToAbsolutePosition):
     def __init__(self, blackboard, dsd, parameters):
-        """Go to the own goal"""
+        """Go to an absolute position of the field, specified by the fraction of the field size"""
         super().__init__(blackboard, dsd, parameters)
         point = float(parameters.get("x", 0)), float(parameters.get("y", 0)), float(parameters.get("t", 0))
         self.point = (

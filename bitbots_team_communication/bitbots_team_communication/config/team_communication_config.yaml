@@ -2,7 +2,7 @@ team_comm:
   ros__parameters:
     # UDP broadcast address is the highest IP in the subnet e.g. 172.20.255.255
     # Sets local mode if set to loopback (127.0.0.1)
-    target_ip: 10.87.255.255
+    target_ip: 192.168.255.255
 
     # Only used in non local mode with specific target_ip
     target_port: 3737
