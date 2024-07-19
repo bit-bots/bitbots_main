@@ -27,6 +27,10 @@ Do the calibration
 
 2. Open rqt and navigate to **Plugins** > **Configurations** > **Dynamic Reconfigure** where you can configure the parameters.
 
+3. Place the robot outside the field exactly in front of the middle line.
+
+4. Use the :code:`2D Pose Estimate` button in RViz to place the virtual robot in the corresponding pose.
+
 .. note::
   If you change the calibration first change all parameters to :code:`0.0`.
   Then start with the adjustment of the IMU parameters.
