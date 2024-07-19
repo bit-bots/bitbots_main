@@ -1,5 +1,15 @@
 #SearchBall
-@ChangeAction + action:searching, @LookAtFieldFeatures, @WalkInPlace + duration:3, @Turn
+$DoOnce
+    NOT_DONE --> @ChangeAction + action:searching, @LookAtFieldFeatures, @WalkInPlace + duration:3, @Turn + duration:15, @GoToAbsolutePositionFieldFraction + x:0.5 + blocking:false
+    DONE --> $ReachedAndAlignedToPathPlanningGoalPosition + threshold:0.5 + latch:true
+        NO --> @LookAtFieldFeatures, @GoToAbsolutePositionFieldFraction + x:0.5
+        YES --> $DoOnce
+            NOT_DONE --> @Turn + duration:5
+            DONE --> $DoOnce
+                NOT_DONE --> @GoToAbsolutePositionFieldFraction + y:1.0 + t:-90 + blocking:false
+                DONE --> $ReachedAndAlignedToPathPlanningGoalPosition + threshold:0.2 + latch:true
+                    YES --> @Stand
+                    NO --> @GoToAbsolutePositionFieldFraction + y:1.0 + t:-90
 
 #DoNothing
 @ChangeAction + action:waiting, @LookForward, @Stand

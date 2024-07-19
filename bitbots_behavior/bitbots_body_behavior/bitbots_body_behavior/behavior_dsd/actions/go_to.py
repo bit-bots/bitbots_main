@@ -56,6 +56,7 @@ class GoToAbsolutePosition(AbstractActionElement):
         """Go to an absolute position on the field"""
         super().__init__(blackboard, dsd, parameters)
         self.point = float(parameters.get("x", 0)), float(parameters.get("y", 0)), float(parameters.get("t", 0))
+        self.blocking = parameters.get("blocking", True)
 
     def perform(self, reevaluate=False):
         pose_msg = PoseStamped()
@@ -69,6 +70,21 @@ class GoToAbsolutePosition(AbstractActionElement):
 
         self.blackboard.pathfinding.publish(pose_msg)
 
+        if not self.blocking:
+            self.pop()
+
+
+class GoToAbsolutePositionFieldFraction(GoToAbsolutePosition):
+    def __init__(self, blackboard, dsd, parameters):
+        """Go to the own goal"""
+        super().__init__(blackboard, dsd, parameters)
+        point = float(parameters.get("x", 0)), float(parameters.get("y", 0)), float(parameters.get("t", 0))
+        self.point = (
+            point[0] * self.blackboard.world_model.field_length,
+            point[1] * self.blackboard.world_model.field_width,
+            self.point[2],
+        )
+
 
 class GoToOwnGoal(GoToAbsolutePosition):
     def __init__(self, blackboard, dsd, parameters):
@@ -77,7 +93,7 @@ class GoToOwnGoal(GoToAbsolutePosition):
         self.point = (
             self.blackboard.world_model.get_map_based_own_goal_center_xy()[0],
             self.blackboard.world_model.get_map_based_own_goal_center_xy()[1],
-            parameters,
+            self.point[2],
         )
 
 
@@ -88,7 +104,7 @@ class GoToEnemyGoal(GoToAbsolutePosition):
         self.point = (
             self.blackboard.world_model.get_map_based_opp_goal_center_xy()[0],
             self.blackboard.world_model.get_map_based_opp_goal_center_xy()[1],
-            parameters,
+            self.point[2],
         )
 
 
