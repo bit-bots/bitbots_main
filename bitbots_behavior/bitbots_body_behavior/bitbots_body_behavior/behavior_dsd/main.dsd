@@ -26,6 +26,9 @@ $DoOnce
 #PerformKickRight
 @ChangeAction + action:kicking, @LookAtFront, @WalkKick + foot:right + r:false, @WalkInPlace + duration:1 + r:false, @ForgetBall + r:false, @WalkInPlace + duration:1 + r:false, @LookAtFieldFeatures + r:false
 
+#PerformStrongKick
+@ChangeAction + action:kicking, @LookAtFront, @Stand + duration:2, @KickBallStatic + foot:right + r:false, @WalkInPlace + duration:1 + r:false, @ForgetBall + r:false, @WalkInPlace + duration:1 + r:false, @LookAtFieldFeatures + r:false
+
 #Dribble
 @ChangeAction + action:going_to_ball, @CancelPathplanning, @LookAtBall, @LookAtFront, @DribbleForward
 
@@ -36,7 +39,7 @@ $DoOnce
         YES -->  #StandAndLook
         NO --> @LookAtFieldFeatures, @GoToRolePosition
 
-#KickWithAvoidance
+#WalkKickWithAvoidance
 $AvoidBall
     NO --> $BallClose + distance:%ball_reapproach_dist + angle:%ball_reapproach_angle
         YES --> $BallKickArea
@@ -48,6 +51,22 @@ $AvoidBall
     YES --> $ReachedPathPlanningGoalPosition + threshold:%ball_far_approach_position_thresh
         YES --> @AvoidBallInactive
         NO --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:map + distance:%ball_far_approach_dist
+
+#StrongKickWithAvoidance
+$AvoidBall
+    NO --> $BallClose + distance:%ball_reapproach_dist + angle:%ball_reapproach_angle
+        YES --> $BallKickArea
+            NEAR --> #PerformStrongKick
+            FAR --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:map
+        NO --> @ChangeAction + action:going_to_ball + r:false, @LookAtFieldFeatures + r:false, @AvoidBallActive + r:false, @GoToBall + target:map + blocking:false + distance:%ball_far_approach_dist
+    YES --> $ReachedPathPlanningGoalPosition + threshold:%ball_far_approach_position_thresh
+        YES --> @AvoidBallInactive
+        NO --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:map + distance:%ball_far_approach_dist
+
+#KickWithAvoidance
+$RobotInOwnPercentOfField + p:70
+    YES --> #WalkKickWithAvoidance
+    NO --> #StrongKickWithAvoidance
 
 #PositioningReady
 $GoalScoreRecently
