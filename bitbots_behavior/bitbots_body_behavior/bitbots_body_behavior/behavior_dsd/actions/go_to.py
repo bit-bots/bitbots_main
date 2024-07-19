@@ -56,6 +56,7 @@ class GoToAbsolutePosition(AbstractActionElement):
         """Go to an absolute position on the field"""
         super().__init__(blackboard, dsd, parameters)
         self.point = float(parameters.get("x", 0)), float(parameters.get("y", 0)), float(parameters.get("t", 0))
+        self.blocking = parameters.get("blocking", True)
 
     def perform(self, reevaluate=False):
         pose_msg = PoseStamped()
@@ -64,10 +65,25 @@ class GoToAbsolutePosition(AbstractActionElement):
 
         pose_msg.pose.position.x = self.point[0]
         pose_msg.pose.position.y = self.point[1]
-        pose_msg.pose.position.z = 0
+        pose_msg.pose.position.z = 0.0
         pose_msg.pose.orientation = quat_from_yaw(math.radians(self.point[2]))
 
         self.blackboard.pathfinding.publish(pose_msg)
+
+        if not self.blocking:
+            self.pop()
+
+
+class GoToAbsolutePositionFieldFraction(GoToAbsolutePosition):
+    def __init__(self, blackboard, dsd, parameters):
+        """Go to an absolute position of the field, specified by the fraction of the field size"""
+        super().__init__(blackboard, dsd, parameters)
+        point = float(parameters.get("x", 0)), float(parameters.get("y", 0)), float(parameters.get("t", 0))
+        self.point = (
+            point[0] * self.blackboard.world_model.field_length / 2,
+            point[1] * self.blackboard.world_model.field_width / 2,
+            self.point[2],
+        )
 
 
 class GoToOwnGoal(GoToAbsolutePosition):
@@ -77,7 +93,7 @@ class GoToOwnGoal(GoToAbsolutePosition):
         self.point = (
             self.blackboard.world_model.get_map_based_own_goal_center_xy()[0],
             self.blackboard.world_model.get_map_based_own_goal_center_xy()[1],
-            parameters,
+            self.point[2],
         )
 
 
@@ -88,7 +104,7 @@ class GoToEnemyGoal(GoToAbsolutePosition):
         self.point = (
             self.blackboard.world_model.get_map_based_opp_goal_center_xy()[0],
             self.blackboard.world_model.get_map_based_opp_goal_center_xy()[1],
-            parameters,
+            self.point[2],
         )
 
 
@@ -96,4 +112,4 @@ class GoToCenterpoint(GoToAbsolutePosition):
     def __init__(self, blackboard, dsd, parameters):
         """Go to the center of the field and look towards the enemy goal"""
         super().__init__(blackboard, dsd, parameters)
-        self.point = 0, 0, 0
+        self.point = 0.0, 0.0, 0.0
