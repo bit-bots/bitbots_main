@@ -1,3 +1,6 @@
+#include <moveit/robot_model/robot_model.h>
+#include <moveit/robot_model_loader/robot_model_loader.h>
+
 #include <bitbots_ros_control/dynamixel_servo_hardware_interface.hpp>
 #include <bitbots_ros_control/utils.hpp>
 #include <utility>
@@ -63,6 +66,18 @@ bool DynamixelServoHardwareInterface::init() {
     joint_map_[joint_names_[i]] = i;
   }
 
+  // read lower and upper limits
+  robot_model_loader::RobotModelLoader rml(nh_, "robot_description", false);
+  moveit::core::RobotModelPtr model = rml.getModel();
+  lower_joint_limits_.resize(joint_count_);
+  upper_joint_limits_.resize(joint_count_);
+  for (const std::string &joint_name : joint_names_) {
+    moveit::core::JointModel *jm = model->getJointModel(joint_name);
+    // we use getVariableBounds()[0] because there is only a single variable for all of our joints
+    lower_joint_limits_[joint_map_[joint_name]] = jm->getVariableBounds()[0].min_position_;
+    upper_joint_limits_[joint_map_[joint_name]] = jm->getVariableBounds()[0].max_position_;
+  }
+
   std::string control_mode;
   control_mode = nh_->get_parameter("servos.control_mode").as_string();
   RCLCPP_INFO(nh_->get_logger(), "Control mode: %s", control_mode.c_str());
@@ -88,10 +103,19 @@ void DynamixelServoHardwareInterface::commandCb(const bitbots_msgs::msg::JointCo
     RCLCPP_ERROR(nh_->get_logger(), "Dynamixel Controller got command with inconsistent array lengths.");
     return;
   }
-  // todo improve performance
   for (unsigned int i = 0; i < command_msg.joint_names.size(); i++) {
     int joint_id = joint_map_[command_msg.joint_names[i]];
-    goal_position_[joint_id] = command_msg.positions[i];
+    if (command_msg.positions[i] > upper_joint_limits_[joint_id] ||
+        command_msg.positions[i] < lower_joint_limits_[joint_id]) {
+      RCLCPP_WARN_STREAM(nh_->get_logger(), "Invalid position for " << command_msg.joint_names[i] << ": "
+                                                                    << command_msg.positions[i] << " not in ("
+                                                                    << lower_joint_limits_[joint_id] << ", "
+                                                                    << upper_joint_limits_[joint_id] << ")");
+      goal_position_[joint_id] =
+          std::clamp(command_msg.positions[i], lower_joint_limits_[joint_id], upper_joint_limits_[joint_id]);
+    } else {
+      goal_position_[joint_id] = command_msg.positions[i];
+    }
     goal_velocity_[joint_id] = command_msg.velocities[i];
     goal_acceleration_[joint_id] = command_msg.accelerations[i];
     goal_effort_[joint_id] = command_msg.max_currents[i];

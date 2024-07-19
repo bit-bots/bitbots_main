@@ -16,6 +16,8 @@ find_package(controller_manager REQUIRED)
 find_package(diagnostic_msgs REQUIRED)
 find_package(dynamixel_workbench_toolbox REQUIRED)
 find_package(hardware_interface REQUIRED)
+find_package(moveit_core REQUIRED)
+find_package(moveit_ros_planning REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(realtime_tools REQUIRED)
@@ -60,6 +62,8 @@ ament_target_dependencies(
   diagnostic_msgs
   dynamixel_workbench_toolbox
   hardware_interface
+  moveit_core
+  moveit_ros_planning
   pluginlib
   rclcpp
   realtime_tools

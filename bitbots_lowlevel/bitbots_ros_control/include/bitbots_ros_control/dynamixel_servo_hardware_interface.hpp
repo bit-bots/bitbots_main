@@ -70,6 +70,8 @@ class DynamixelServoHardwareInterface : public bitbots_ros_control::HardwareInte
   unsigned int joint_count_;
 
   std::vector<std::string> joint_names_;
+  std::vector<double> lower_joint_limits_;
+  std::vector<double> upper_joint_limits_;
 
   std::vector<double> goal_position_;
   std::vector<double> goal_effort_;
