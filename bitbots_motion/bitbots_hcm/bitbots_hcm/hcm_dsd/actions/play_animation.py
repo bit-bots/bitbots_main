@@ -26,10 +26,10 @@ class AbstractPlayAnimation(AbstractHCMActionElement, ABC):
             anim = self.choose_animation()
 
             # try to start animation
-            sucess = self.start_animation(anim)
+            success = self.start_animation(anim)
 
             # if we fail, we need to abort this action
-            if not sucess:
+            if not success:
                 self.blackboard.node.get_logger().error("Could not start animation. Will abort play animation action!")
                 return self.pop()
 
@@ -211,7 +211,8 @@ class PlayAnimationDynup(AbstractHCMActionElement):
     def start_animation(self):
         """
         This will NOT wait by itself. You have to check animation_finished() by yourself.
-        :return:
+
+        :return: True if the animation was started, False if not
         """
 
         first_try = self.blackboard.dynup_action_client.wait_for_server(

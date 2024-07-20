@@ -17,6 +17,9 @@ $DoOnce
 #StandAndLook
 @ChangeAction + action:waiting, @LookAtFieldFeatures, @Stand
 
+#DescendAndLook
+@ChangeAction + action:waiting, @LookAtFieldFeatures, @Stand + duration:1.0, @Descend
+
 #GetWalkreadyAndLocalize
 @ChangeAction + action:waiting + r:false, @PlayAnimationInitInSim + r:false, @LookAtFieldFeatures + r:false, @GetWalkready + r:false, @WalkInPlace
 
@@ -33,7 +36,9 @@ $DoOnce
 $DoOnce
     NOT_DONE --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @GoToRolePosition + blocking:false
     DONE --> $ReachedAndAlignedToPathPlanningGoalPosition + threshold:0.2 + latch:true
-        YES -->  #StandAndLook
+        YES --> $ConfigRole
+            GOALIE --> #DescendAndLook
+            ELSE --> #StandAndLook
         NO --> @LookAtFieldFeatures, @GoToRolePosition
 
 #KickWithAvoidance
@@ -61,7 +66,11 @@ $GoalScoreRecently
 #GoalieBehavior
 $ClosestToBall
     NO --> $BallInOwnPercent + p:40
-        YES --> @ChangeAction + action:positioning, @AvoidBallActive, @LookAtFieldFeatures, @GoToBlockPosition
+        YES --> $DoOnce
+            NOT_DONE --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToBlockPosition + blocking:false
+            DONE --> $OnBlockPosition + threshold:0.2
+                YES --> @Stand + duration:1.0, @Descend
+                NO --> @GoToBlockPosition + blocking:false
         NO --> #RolePositionWithPause
     YES --> #KickWithAvoidance
 
