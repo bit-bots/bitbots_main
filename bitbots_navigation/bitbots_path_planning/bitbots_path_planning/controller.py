@@ -69,10 +69,21 @@ class Controller:
             end_pose.position.y - current_pose.position.y, end_pose.position.x - current_pose.position.x
         )
 
-        # Calculate the distance from our current position to the final position of the global plan
-        distance = math.hypot(
-            end_pose.position.x - current_pose.position.x, end_pose.position.y - current_pose.position.y
-        )
+        if len(path.poses) < 3:
+            # Calculate the distance from our current position to the final position of the global plan
+            distance = math.hypot(
+                end_pose.position.x - current_pose.position.x, end_pose.position.y - current_pose.position.y
+            )
+        else:
+            # Calculate path length
+            distance = 0
+            a_position = current_pose.position
+            pose: PoseStamped
+            for pose in path.poses:
+                b_postion = pose.pose.position
+                distance += math.hypot(b_postion.x - a_position.x, b_postion.y - a_position.y)
+                a_position = b_postion
+            distance += math.hypot(end_pose.position.x - a_position.x, end_pose.position.y - a_position.y)
 
         # Calculate the translational walk velocity.
         # It considers the distance and breaks if we are close to the final position of the global plan
