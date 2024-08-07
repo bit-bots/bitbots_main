@@ -1,7 +1,7 @@
 walking:
   ros__parameters:
     engine:
-      double_support_ratio: 0.05
+      double_support_ratio: 0.30
       foot_distance: 0.2
       foot_rise: 0.05
       freq: 0.5
@@ -11,7 +11,7 @@ walking:
       trunk_pitch_p_coef_forward: 0.0
       trunk_pitch_p_coef_turn: 0.0
       trunk_swing: 0.25
-      trunk_x_offset: 0.0
+      trunk_x_offset: -0.05
       trunk_y_offset: 0.005
       trunk_z_movement: 0.0
       first_step_swing_factor: 1.0

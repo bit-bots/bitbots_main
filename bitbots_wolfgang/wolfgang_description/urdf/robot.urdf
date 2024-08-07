@@ -1985,7 +1985,7 @@
     </inertial>
   </link>
   <joint name="r_sole_frame" type="fixed">
-    <origin rpy="-4.1858e-16 2.36866e-15 1.5708" xyz="0.0152219 0.0907683 -0.0529"/>
+    <origin rpy="-4.1858e-16 2.36866e-15 1.5708" xyz="0.0152219 0.1407683 -0.0529"/>
     <axis xyz="0.0 0.0 0.0"/>
     <parent link="r_foot"/>
     <child link="r_sole"/>
@@ -3134,7 +3134,7 @@
     </inertial>
   </link>
   <joint name="l_sole_frame" type="fixed">
-    <origin rpy="-5.77818e-15 -6.98371e-15 1.5708" xyz="-0.0152219 0.0907683 -0.0529"/>
+    <origin rpy="-5.77818e-15 -6.98371e-15 1.5708" xyz="-0.0152219 0.1407683 -0.0529"/>
     <axis xyz="0.0 0.0 0.0"/>
     <parent link="l_foot"/>
     <child link="l_sole"/>
