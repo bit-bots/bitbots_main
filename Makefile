@@ -47,6 +47,8 @@ pull-files:
 	wget \
 		--no-verbose \
 		--show-progress \
+		--timeout=15 \
+		--tries=2 \
 		--recursive \
 		--timestamping \
 		--no-parent \
@@ -57,6 +59,8 @@ pull-files:
 	wget \
 		--no-verbose \
 		--show-progress \
+		--timeout=15 \
+		--tries=2 \
 		--recursive \
 		--timestamping \
 		--no-parent \
