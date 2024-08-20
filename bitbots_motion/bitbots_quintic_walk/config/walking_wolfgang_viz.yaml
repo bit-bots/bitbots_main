@@ -19,6 +19,7 @@ walking:
       foot_apex_phase: 0.5
       foot_overshoot_phase: 0.85
       foot_overshoot_ratio: 0.1
+      foot_pitch_angle: 0.5
       foot_put_down_phase: 1.0
       foot_put_down_z_offset: 0.0
       foot_z_pause: 0.0

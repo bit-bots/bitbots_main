@@ -90,6 +90,11 @@ walking:
       description: "Foot X/Y overshoot phase (single support cycle phase, [foot_apex_phase:1])"
       validation:
         bounds<>: [0.0, 1.0]
+    foot_pitch_angle:
+      type: double
+      description: "Foot pitch angle before toe-off"
+      validation:
+        bounds<>: [0.0, 1.0]
     trunk_x_offset:
       type: double
       description: "Trunk X offset (in meters)"
