@@ -1,7 +1,10 @@
-#VRML_SIM R2021b utf8
+#VRML_SIM R2022b utf8
 # license: Apache License 2.0
 # license url: http://www.apache.org/licenses/LICENSE-2.0
 # This is a proto file for Webots for the WolfgangRobocup
+
+EXTERNPROTO "Wolfgang.proto"
+
 
 PROTO WolfgangOptimization [
   field  SFVec3f     translation     0 0 0
@@ -15,7 +18,7 @@ PROTO WolfgangOptimization [
   field  SFBool      enableBoundingObject TRUE      # Is `Robot.enableBoundingObject`.
   field  SFBool      enablePhysics   TRUE           # Is `Robot.enablePhysics`.
   field  SFBool      enableFootSensors TRUE         # Is `Robot.enableFootSensors`.
-  field  SFFloat     transparency    0              # Is `Robot.transparency`
+  #field  SFFloat     transparency    0              # Is `Robot.transparency`
   field  MFNode      externalCamera NULL
 ]
 {
@@ -30,7 +33,7 @@ PROTO WolfgangOptimization [
     controller IS controller
     enableBoundingObject IS enableBoundingObject
     enablePhysics IS enablePhysics
-    transparency IS transparency
+    #transparency IS transparency
     enableFootSensors IS enableFootSensors
     externalCamera IS externalCamera
   }
