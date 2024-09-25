@@ -38,6 +38,7 @@ class Map:
         self.config_inflation_blur: int = self.node.config.map.inflation.blur
         self.config_inflation_dialation: int = self.node.config.map.inflation.dialate
         self.config_obstacle_value: int = self.node.config.map.obstacle_value
+        self.ball_obstacle_active: bool = True
 
     def set_ball(self, ball: PoseWithCovarianceStamped) -> None:
         """
@@ -60,7 +61,7 @@ class Map:
             cv2.circle(
                 self.map,
                 self.to_map_space(ball.x, ball.y)[::-1],
-                round(self.config_ball_diameter * self.resolution),
+                round(self.config_ball_diameter / 2 * self.resolution),
                 self.config_obstacle_value,
                 -1,
             )
@@ -140,9 +141,16 @@ class Map:
         Regenerates the costmap based on the ball and robot buffer
         """
         self.clear()
-        self._render_balls()
+        if self.ball_obstacle_active:
+            self._render_balls()
         self._render_robots()
         self.inflate()
+
+    def avoid_ball(self, state: bool) -> None:
+        """
+        Activates or deactivates the ball obstacle
+        """
+        self.ball_obstacle_active = state
 
     def get_map(self) -> np.ndarray:
         """
