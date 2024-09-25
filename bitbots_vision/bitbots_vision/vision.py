@@ -37,7 +37,7 @@ class YOEOVision(Node):
     def __init__(self) -> None:
         super().__init__("bitbots_vision")
 
-        logger.info(f"Entering {self.__class__.__name__} constructor")
+        logger.debug(f"Entering {self.__class__.__name__} constructor")
 
         self._package_path = get_package_share_directory("bitbots_vision")
 
@@ -92,8 +92,6 @@ class YOEOVision(Node):
         self._vision_components = []
         self._vision_components.append(yoeo.YOEOComponent())
 
-        if new_config["component_camera_cap_check_active"]:
-            self._vision_components.append(yoeo.CameraCapCheckComponent(self))
         if new_config["component_ball_detection_active"]:
             self._vision_components.append(yoeo.BallDetectionComponent(self))
         if new_config["component_robot_detection_active"]:

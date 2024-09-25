@@ -8,7 +8,10 @@ from typing import List, Tuple
 
 import rclpy
 import requests
+from ament_index_python import get_package_prefix
 from rcl_interfaces.msg import Parameter, SetParametersResult
+from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
+from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 from rclpy.publisher import Publisher
 
@@ -22,6 +25,13 @@ def speak(text: str, publisher: Publisher, priority: int = 20, speaking_active: 
         msg.priority = priority
         msg.text = text
         publisher.publish(msg)
+
+
+def say(text: str) -> None:
+    """Start the shell `say.sh` script to output given text with mimic3. Beware: this is blocking."""
+    script_path = os.path.join(get_package_prefix("bitbots_tts"), "lib/bitbots_tts/say.sh")
+    process = subprocess.Popen((script_path, text))
+    process.wait()
 
 
 class Speaker(Node):
@@ -50,19 +60,8 @@ class Speaker(Node):
         # Callback for parameter changes
         self.add_on_set_parameters_callback(self.on_set_parameters)
 
-        # Mapping from robot name to voice name
-        self.robot_voice_mapping = {
-            "amy": "en_US/vctk_low",
-            "donna": "en_US/vctk_low",
-            "jack": "en_UK/apope_low",
-            "melody": "en_US/vctk_low",
-            "rory": "en_UK/apope_low",
-        }
-
-        self.robot_speed_mapping = {"amy": 2.2, "donna": 2.2, "jack": 1.0, "melody": 2.2, "rory": 1.0}
-
         # Subscribe to the speak topic
-        self.create_subscription(Audio, "speak", self.speak_cb, 10)
+        self.create_subscription(Audio, "speak", self.speak_cb, 10, callback_group=MutuallyExclusiveCallbackGroup())
 
         # Wait for the mimic server to start
         while True:
@@ -76,7 +75,7 @@ class Speaker(Node):
                 pass
 
         # Start processing the queue
-        self.create_timer(0.1, self.run_speaker)
+        self.create_timer(0.1, self.run_speaker, callback_group=MutuallyExclusiveCallbackGroup())
 
     def on_set_parameters(self, parameters: List[Parameter]) -> SetParametersResult:
         """Callback for parameter changes."""
@@ -92,30 +91,15 @@ class Speaker(Node):
         return SetParametersResult(successful=True)
 
     def run_speaker(self) -> None:
-        """Continously checks the queue and speaks the next message."""
+        """Continuously checks the queue and speaks the next message."""
         # Check if there is a message in the queue
         if len(self.prio_queue) > 0:
             # Get the next message and speak it
             text, _ = self.prio_queue.pop(0)
-            self.say(text)
-
-    def say(self, text: str) -> None:
-        """Speak this specific text."""
-        # Get the voice name from the environment variable ROBOT_NAME or use the default voice if it's not set
-        voice = self.robot_voice_mapping.get(os.getenv("ROBOT_NAME"), "en_US/vctk_low")
-        # Get the speed for the given robot or use the default speed if no robot name is set
-        speed = self.robot_speed_mapping.get(os.getenv("ROBOT_NAME"), 2.2)
-        try:
-            # Generate the speech with mimic
-            mimic_subprocess = subprocess.Popen(
-                ("mimic3", "--remote", "--voice", voice, "--length-scale", str(speed), text), stdout=subprocess.PIPE
-            )
-            # Play the audio from the previous process with aplay
-            aplay_subprocess = subprocess.Popen(("aplay", "-"), stdin=mimic_subprocess.stdout, stdout=subprocess.PIPE)
-            # Wait for the process to finish
-            aplay_subprocess.wait()
-        except OSError:
-            self.get_logger().error(str(traceback.format_exc()))
+            try:
+                say(text)
+            except OSError:
+                self.get_logger().error(str(traceback.format_exc()))
 
     def speak_cb(self, msg: Audio) -> None:
         """Handles incoming msg on speak topic."""
@@ -138,8 +122,10 @@ class Speaker(Node):
 def main(args=None):
     rclpy.init(args=args)
     node = Speaker()
+    executor = MultiThreadedExecutor(num_threads=2)
+    executor.add_node(node)
     try:
-        rclpy.spin(node)
+        executor.spin()
     except KeyboardInterrupt:
         pass
     node.destroy_node()

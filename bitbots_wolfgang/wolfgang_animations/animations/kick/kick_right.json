@@ -1,5 +1,5 @@
 {
-    "author": "Flo und Valla",
+    "author": "Timon und Pär",
     "description": "Kicks with the right foot.",
     "keyframes": [
         {
@@ -8,86 +8,20 @@
                 "HeadPan": -0.09,
                 "HeadTilt": -0.09,
                 "LAnklePitch": -35.86,
-                "LAnkleRoll": 5.36,
-                "LHipPitch": 36.14,
-                "LHipRoll": 6.42,
-                "LHipYaw": -1.23,
-                "LKnee": 76.77,
-                "RAnklePitch": 35.44,
-                "RAnkleRoll": -7.12,
-                "RHipPitch": -34.54,
-                "RHipRoll": -5.19,
-                "RHipYaw": 1.06,
-                "RKnee": -75.94
-            },
-            "name": "start frame",
-            "pause": 0.0,
-            "torque": {}
-        },
-        {
-            "duration": 0.2,
-            "goals": {
-                "HeadPan": -0.09,
-                "HeadTilt": -0.09,
-                "LAnklePitch": -35.86,
-                "LAnkleRoll": 5.36,
+                "LAnkleRoll": -5.01,
                 "LHipPitch": 36.14,
                 "LHipRoll": 6.42,
                 "LHipYaw": -1.23,
                 "LKnee": 76.77,
                 "RAnklePitch": 25.5,
-                "RAnkleRoll": -11.95,
+                "RAnkleRoll": -7.29,
                 "RHipPitch": -25.22,
                 "RHipRoll": -1.49,
                 "RHipYaw": 1.14,
                 "RKnee": -56.51
             },
-            "name": "kick_ground",
-            "pause": 0.0,
-            "torque": {}
-        },
-        {
-            "duration": 0.2,
-            "goals": {
-                "HeadPan": -0.09,
-                "HeadTilt": -0.09,
-                "LAnklePitch": -35.86,
-                "LAnkleRoll": 5.36,
-                "LHipPitch": 36.14,
-                "LHipRoll": 6.42,
-                "LHipYaw": -1.23,
-                "LKnee": 76.77,
-                "RAnklePitch": 26.56,
-                "RAnkleRoll": -5.27,
-                "RHipPitch": -39.29,
-                "RHipRoll": 1.93,
-                "RHipYaw": 0.79,
-                "RKnee": -107.31
-            },
-            "name": "kick_ground_copy_1",
-            "pause": 0.0,
-            "torque": {}
-        },
-        {
-            "duration": 0.2,
-            "goals": {
-                "HeadPan": -0.09,
-                "HeadTilt": -0.09,
-                "LAnklePitch": -35.86,
-                "LAnkleRoll": 5.36,
-                "LHipPitch": 36.14,
-                "LHipRoll": 6.42,
-                "LHipYaw": -1.23,
-                "LKnee": 76.77,
-                "RAnklePitch": -18.28,
-                "RAnkleRoll": -5.27,
-                "RHipPitch": -76.03,
-                "RHipRoll": 1.93,
-                "RHipYaw": 0.79,
-                "RKnee": -99.58
-            },
-            "name": "kick_ground_copy_2",
-            "pause": 0.0,
+            "name": "lift_foot",
+            "pause": 0.5,
             "torque": {}
         },
         {
@@ -96,24 +30,68 @@
                 "HeadPan": -0.09,
                 "HeadTilt": -0.09,
                 "LAnklePitch": -35.86,
-                "LAnkleRoll": 5.36,
+                "LAnkleRoll": -11.95,
                 "LHipPitch": 36.14,
                 "LHipRoll": 6.42,
                 "LHipYaw": -1.23,
                 "LKnee": 76.77,
                 "RAnklePitch": 35.44,
-                "RAnkleRoll": -7.12,
-                "RHipPitch": -34.54,
-                "RHipRoll": -5.19,
-                "RHipYaw": 1.06,
-                "RKnee": -75.94
+                "RAnkleRoll": -14.06,
+                "RHipPitch": -39.29,
+                "RHipRoll": -6.5,
+                "RHipYaw": 0.79,
+                "RKnee": -141.86
             },
-            "name": "start frame_copy_1",
+            "name": "lift_foot_2",
+            "pause": 0.0,
+            "torque": {}
+        },
+        {
+            "duration": 0.05,
+            "goals": {
+                "HeadPan": -0.09,
+                "HeadTilt": -0.09,
+                "LAnklePitch": -35.86,
+                "LAnkleRoll": -9.23,
+                "LHipPitch": 36.14,
+                "LHipRoll": 6.42,
+                "LHipYaw": -1.23,
+                "LKnee": 76.77,
+                "RAnklePitch": 18.47,
+                "RAnkleRoll": -2.9,
+                "RHipPitch": -81.47,
+                "RHipRoll": -1.58,
+                "RHipYaw": -1.93,
+                "RKnee": -88.07
+            },
+            "name": "kick_end",
+            "pause": 0.0,
+            "torque": {}
+        },
+        {
+            "duration": 0.5,
+            "goals": {
+                "HeadPan": -0.09,
+                "HeadTilt": -0.09,
+                "LAnklePitch": -34.72,
+                "LAnkleRoll": 4.22,
+                "LHipPitch": 31.39,
+                "LHipRoll": 5.19,
+                "LHipYaw": -0.88,
+                "LKnee": 72.02,
+                "RAnklePitch": 29.720000000000002,
+                "RAnkleRoll": -12.92,
+                "RHipPitch": -31.990000000000002,
+                "RHipRoll": -8.53,
+                "RHipYaw": 1.32,
+                "RKnee": -69.08
+            },
+            "name": "end",
             "pause": 0.0,
             "torque": {}
         }
     ],
-    "last_edited": "2024-04-02 14:16:16.512615",
+    "last_edited": "2024-07-19 16:26:33.206490",
     "name": "kick_right",
     "version": ""
 }

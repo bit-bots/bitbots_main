@@ -11,7 +11,6 @@ ButtonHardwareInterface::ButtonHardwareInterface(rclcpp::Node::SharedPtr nh, std
 }
 
 bool ButtonHardwareInterface::init() {
-  data_ = (uint8_t *)malloc(3 * sizeof(uint8_t));
   button_pub_ = nh_->create_publisher<bitbots_msgs::msg::Buttons>(topic_, 1);
   diagnostic_pub_ = nh_->create_publisher<diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 10);
   return true;
@@ -24,7 +23,7 @@ void ButtonHardwareInterface::read(const rclcpp::Time &t, const rclcpp::Duration
   counter_ = (counter_ + 1) % read_rate_;
   if (counter_ != 0) return;
   bool read_successful = true;
-  if (driver_->readMultipleRegisters(id_, 76, 3, data_)) {
+  if (driver_->readMultipleRegisters(id_, 76, 3, data_.data())) {
     bitbots_msgs::msg::Buttons msg;
     msg.button1 = data_[0];
     msg.button2 = data_[1];

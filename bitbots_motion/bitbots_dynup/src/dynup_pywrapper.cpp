@@ -6,45 +6,46 @@ PyDynupWrapper::PyDynupWrapper(const std::string ns) {
     rclcpp::init(0, nullptr);
   }
 
-  dynup_node_ = std::make_shared<bitbots_dynup::DynupNode>(ns);
+  node_ = std::make_shared<rclcpp::Node>(ns + "_dynup");
+  dynup_ = std::make_shared<bitbots_dynup::DynupNode>(node_, ns);
 }
 
-void PyDynupWrapper::spin_some() { rclcpp::spin_some(dynup_node_); }
+void PyDynupWrapper::spin_some() { rclcpp::spin_some(node_); }
 
-py::bytes PyDynupWrapper::step(double dt, py::bytes &imu_msg, py::bytes &jointstate_msg) {
-  bitbots_msgs::msg::JointCommand result = dynup_node_->step(
+py::bytes PyDynupWrapper::step(double dt, py::bytes &imu_msg, py::bytes &joint_state_msg) {
+  bitbots_msgs::msg::JointCommand result = dynup_->step(
       dt, std::make_shared<sensor_msgs::msg::Imu>(fromPython<sensor_msgs::msg::Imu>(imu_msg)),
-      std::make_shared<sensor_msgs::msg::JointState>(fromPython<sensor_msgs::msg::JointState>(jointstate_msg)));
+      std::make_shared<sensor_msgs::msg::JointState>(fromPython<sensor_msgs::msg::JointState>(joint_state_msg)));
   return toPython<bitbots_msgs::msg::JointCommand>(result);
 }
 
 py::bytes PyDynupWrapper::step_open_loop(double dt) {
-  geometry_msgs::msg::PoseArray result = dynup_node_->step_open_loop(dt);
+  geometry_msgs::msg::PoseArray result = dynup_->step_open_loop(dt);
   return toPython<geometry_msgs::msg::PoseArray>(result);
 }
 
-void PyDynupWrapper::reset() { dynup_node_->reset(); }
+void PyDynupWrapper::reset() { dynup_->reset(); }
 
-void PyDynupWrapper::special_reset(double time) { dynup_node_->reset(time); }
+void PyDynupWrapper::special_reset(double time) { dynup_->reset(time); }
 
 void PyDynupWrapper::set_engine_goal(std::string direction) {
-  bitbots_dynup::msg::DynupPoses poses = dynup_node_->getCurrentPoses();
+  bitbots_dynup::msg::DynupPoses poses = dynup_->getCurrentPoses();
   if (!poses.header.stamp.sec == 0) {
-    DynupRequest request;
-    request.direction = direction;
+    bitbots_dynup::DynupRequest request;
+    request.direction = bitbots_dynup::getDynupDirection(direction);
     request.l_foot_pose = poses.l_leg_pose;
     request.r_foot_pose = poses.r_leg_pose;
     request.l_hand_pose = poses.l_arm_pose;
     request.r_hand_pose = poses.r_arm_pose;
-    dynup_node_->getEngine()->setGoals(request);
-    dynup_node_->getIK()->setDirection(request.direction);
+    dynup_->getEngine()->setGoals(request);
+    dynup_->getIK()->setDirection(request.direction);
   }
 }
 
-int PyDynupWrapper::get_direction() { return dynup_node_->getEngine()->getDirection(); }
+int PyDynupWrapper::get_direction() { return dynup_->getEngine()->getDirection(); }
 
 py::bytes PyDynupWrapper::get_poses() {
-  bitbots_dynup::msg::DynupPoses poses = dynup_node_->getCurrentPoses();
+  bitbots_dynup::msg::DynupPoses poses = dynup_->getCurrentPoses();
   return toPython<bitbots_dynup::msg::DynupPoses>(poses);
 }
 
@@ -57,9 +58,10 @@ void PyDynupWrapper::set_parameter(py::bytes parameter_msg) {
   rclcpp::Parameter parameter =
       rclcpp::Parameter::from_parameter_msg(fromPython<rcl_interfaces::msg::Parameter>(parameter_msg));
 
-  // needs to be a vector
-  std::vector<rclcpp::Parameter> parameters = {parameter};
-  dynup_node_->onSetParameters(parameters);
+  // set parameter
+  node_->set_parameter(parameter);
+  // apply the parameter changes
+  dynup_->onSetParameters();
 }
 
 PYBIND11_MODULE(libpy_dynup, m) {

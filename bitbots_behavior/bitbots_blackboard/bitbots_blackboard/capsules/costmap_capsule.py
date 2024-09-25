@@ -1,14 +1,5 @@
-"""
-CostmapCapsule
-^^^^^^^^^^^^^^^^^^
-
-Provides information about the cost of different positions and moves.
-"""
 import math
-from typing import TYPE_CHECKING, List, Optional, Tuple
-
-if TYPE_CHECKING:
-    from bitbots_blackboard.blackboard import BodyBlackboard
+from typing import List, Optional, Tuple
 
 import numpy as np
 import tf2_ros as tf2
@@ -26,28 +17,33 @@ from soccer_vision_3d_msgs.msg import Robot, RobotArray
 from tf2_geometry_msgs import PointStamped
 from tf_transformations import euler_from_quaternion, quaternion_from_euler
 
+from bitbots_blackboard.capsules import AbstractBlackboardCapsule
 
-class CostmapCapsule:
-    def __init__(self, blackboard: "BodyBlackboard"):
-        self._blackboard = blackboard
-        self._node = blackboard.node
-        self.body_config = get_parameter_dict(self._blackboard.node, "body")
 
-        self.map_frame: str = self._blackboard.node.get_parameter("map_frame").value
-        self.base_footprint_frame: str = self._blackboard.node.get_parameter("base_footprint_frame").value
+class CostmapCapsule(AbstractBlackboardCapsule):
+    """Provides information about the cost of different positions and moves."""
+
+    def __init__(self, node, blackboard):
+        super().__init__(node, blackboard)
+
+        self.body_config = get_parameter_dict(self._node, "")
+
+        self.map_frame: str = self._node.get_parameter("map_frame").value
+        self.base_footprint_frame: str = self._node.get_parameter("base_footprint_frame").value
 
         parameters = get_parameters_from_other_node(
-            self._blackboard.node, "/parameter_blackboard", ["field_length", "field_width", "goal_width"]
+            self._node, "/parameter_blackboard", ["field.size.x", "field.size.y", "field.goal.width"]
         )
-        self.field_length: float = parameters["field_length"]
-        self.field_width: float = parameters["field_width"]
-        self.goal_width: float = parameters["goal_width"]
+        self.field_length: float = parameters["field.size.x"]
+        self.field_width: float = parameters["field.size.y"]
+        self.goal_width: float = parameters["field.goal.width"]
+
         self.map_margin: float = self.body_config["map_margin"]
         self.obstacle_costmap_smoothing_sigma: float = self.body_config["obstacle_costmap_smoothing_sigma"]
         self.obstacle_cost: float = self.body_config["obstacle_cost"]
 
         # Publisher for visualization in RViZ
-        self.costmap_publisher = self._blackboard.node.create_publisher(OccupancyGrid, "debug/costmap", 1)
+        self.costmap_publisher = self._node.create_publisher(OccupancyGrid, "debug/costmap", 1)
 
         self.base_costmap: Optional[np.ndarray] = None  # generated once in constructor field features
         self.costmap: Optional[np.ndarray] = None  # updated on the fly based on the base_costmap
@@ -137,11 +133,11 @@ class CostmapCapsule:
 
     def field_2_costmap_coord(self, x: float, y: float) -> Tuple[float, float]:
         """
-        Converts a field position to the coresponding indices for the costmap.
+        Converts a field position to the corresponding indices for the costmap.
 
         :param x: X Position relative to the center point. (Positive is towards the enemy goal)
         :param y: Y Position relative to the center point. (Positive is towards the left when we face the enemy goal)
-        :return: The x index of the coresponding costmap slot, The y index of the coresponding costmap slot
+        :return: The x index of the corresponding costmap slot, The y index of the corresponding costmap slot
         """
         idx_x = int(
             min(
@@ -165,7 +161,7 @@ class CostmapCapsule:
         norms = np.linalg.norm(gradient, axis=0)
 
         # normalize gradient length
-        gradient = [np.where(norms == 0, 0, i / norms) for i in gradient]
+        gradient = [np.where(norms == 0, 0, i / (norms + np.finfo(norms.dtype).eps)) for i in gradient]
         self.gradient_map = gradient
 
     def cost_at_relative_xy(self, x: float, y: float) -> float:
@@ -185,14 +181,14 @@ class CostmapCapsule:
             # Transform point of interest to the map
             point = self._blackboard.tf_buffer.transform(point, self.map_frame, timeout=Duration(seconds=0.3))
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
-            self._blackboard.node.get_logger().warn(str(e))
+            self._node.get_logger().warn(str(e))
             return 0.0
 
         return self.get_cost_at_field_position(point.point.x, point.point.y)
 
     def calc_base_costmap(self):
         """
-        Builds the base costmap based on the bahavior parameters.
+        Builds the base costmap based on the behavior parameters.
         This costmap includes a gradient towards the enemy goal and high costs outside the playable area
         """
         # Get parameters
@@ -241,6 +237,14 @@ class CostmapCapsule:
                 ((self.field_length, self.field_width / 2 - self.goal_width / 2), goalpost_value),
                 ((self.field_length, self.field_width / 2 + self.goal_width / 2), goalpost_value),
                 (
+                    (self.field_length + self.map_margin, self.field_width / 2 - self.goal_width / 2),
+                    corner_value + in_field_value_our_side,
+                ),
+                (
+                    (self.field_length + self.map_margin, self.field_width / 2 + self.goal_width / 2),
+                    corner_value + in_field_value_our_side,
+                ),
+                (
                     (self.field_length, self.field_width / 2 - self.goal_width / 2 + goalpost_safety_distance),
                     goal_value,
                 ),
@@ -251,37 +255,37 @@ class CostmapCapsule:
                 (
                     (
                         self.field_length + self.map_margin,
-                        self.field_width / 2 - self.goal_width / 2 - goalpost_safety_distance,
+                        self.field_width / 2 - self.goal_width / 2 + goalpost_safety_distance,
                     ),
                     -0.2,
                 ),
                 (
                     (
                         self.field_length + self.map_margin,
-                        self.field_width / 2 + self.goal_width / 2 + goalpost_safety_distance,
+                        self.field_width / 2 + self.goal_width / 2 - goalpost_safety_distance,
                     ),
                     -0.2,
                 ),
             ]
         )
 
-        # Apply map margin to fixpoints
+        # Apply map margin to fix points
         fix_points = [((p[0][0] + self.map_margin, p[0][1] + self.map_margin), p[1]) for p in fix_points]
 
-        # Interpolate the keypoints from above to form the costmap
+        # Interpolate the key points from above to form the costmap
         interpolated = griddata(
             [p[0] for p in fix_points], [p[1] for p in fix_points], (grid_x, grid_y), method="linear"
         )
 
-        # Smooth the costmap to get more continus gradients
+        # Smooth the costmap to get more continuous gradients
         self.base_costmap = gaussian_filter(interpolated, self.body_config["base_costmap_smoothing_sigma"])
         self.costmap = self.base_costmap.copy()
 
     def get_gradient_at_field_position(self, x: float, y: float) -> Tuple[float, float]:
         """
         Gets the gradient tuple at a given field position
-        :param x: Field coordiante in the x direction
-        :param y: Field coordiante in the y direction
+        :param x: Field coordinate in the x direction
+        :param y: Field coordinate in the y direction
         """
         idx_x, idx_y = self.field_2_costmap_coord(x, y)
         return -self.gradient_map[0][idx_x, idx_y], -self.gradient_map[1][idx_x, idx_y]
@@ -298,8 +302,8 @@ class CostmapCapsule:
     def get_gradient_direction_at_field_position(self, x: float, y: float):
         """
         Returns the gradient direction at the given position
-        :param x: Field coordiante in the x direction
-        :param y: Field coordiante in the y direction
+        :param x: Field coordinate in the x direction
+        :param y: Field coordinate in the y direction
         """
         # for debugging only
         # if False and self.costmap.sum() > 0:
@@ -317,8 +321,8 @@ class CostmapCapsule:
     def get_cost_of_kick_relative(self, x: float, y: float, direction: float, kick_length: float, angular_range: float):
         """
         Returns the cost of a kick at the given position and direction in base footprint frame
-        :param x: Field coordiante in the x direction
-        :param y: Field coordiante in the y direction
+        :param x: Field coordinate in the x direction
+        :param y: Field coordinate in the y direction
         :param direction: The direction of the kick
         :param kick_length: The length of the kick
         :param angular_range: The angular range of the kick"""
@@ -338,7 +342,7 @@ class CostmapCapsule:
             pose = self._blackboard.tf_buffer.transform(pose, self.map_frame, timeout=Duration(seconds=0.3))
 
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
-            self._blackboard.node.get_logger().warn(str(e))
+            self._node.get_logger().warn(str(e))
             return 0.0
         d = euler_from_quaternion(numpify(pose.pose.orientation))[2]
         return self.get_cost_of_kick(pose.pose.position.x, pose.pose.position.y, d, kick_length, angular_range)
@@ -346,8 +350,8 @@ class CostmapCapsule:
     def get_cost_of_kick(self, x: float, y: float, direction: float, kick_length: float, angular_range: float) -> float:
         """
         Returns the cost of the kick at the given position
-        :param x: Field coordiante in the x direction
-        :param y: Field coordiante in the y direction
+        :param x: Field coordinate in the x direction
+        :param y: Field coordinate in the y direction
         :param direction: The direction of the kick
         :param kick_length: The length of the kick
         :param angular_range: The angular range of the kick
@@ -378,7 +382,7 @@ class CostmapCapsule:
         # plt.show()
 
         # The main influence should be the maximum cost in the area which is covered by the kick. This could be the field boundary, robots, ...
-        # But we also want prio directions with lower min cost. This could be the goal area or the pass accept area of an teammate
+        # But we also want prioritize directions with lower min cost. This could be the goal area or the pass accept area of an teammate
         # This should contribute way less than the max and should have an impact if the max values are similar in all directions.
         return masked_costmap.max() * 0.75 + masked_costmap.min() * 0.25
 

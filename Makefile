@@ -1,4 +1,4 @@
-.PHONY : basler install install-no-root pip pre-commit install-git-filters format pull-all pull-init pull-repos pull-files fresh-libs remove-libs setup-libs rosdep status update update-no-root
+.PHONY : basler webots install install-no-root pip pre-commit install-git-filters format pull-all pull-init pull-repos pull-files fresh-libs remove-libs setup-libs rosdep status update update-no-root
 
 HTTPS := ""
 REPO:=$(dir $(abspath $(firstword $(MAKEFILE_LIST))))
@@ -6,6 +6,10 @@ REPO:=$(dir $(abspath $(firstword $(MAKEFILE_LIST))))
 basler:
 	# Install Basler Pylon SDK
 	scripts/make_basler.sh $(ARGS)
+
+webots:
+	# Install Webots Simulation environment
+	scripts/make_webots.sh $(ARGS)
 
 install: pull-init basler update
 
@@ -43,6 +47,8 @@ pull-files:
 	wget \
 		--no-verbose \
 		--show-progress \
+		--timeout=15 \
+		--tries=2 \
 		--recursive \
 		--timestamping \
 		--no-parent \
@@ -53,6 +59,8 @@ pull-files:
 	wget \
 		--no-verbose \
 		--show-progress \
+		--timeout=15 \
+		--tries=2 \
 		--recursive \
 		--timestamping \
 		--no-parent \
@@ -66,6 +74,8 @@ fresh-libs: remove-libs setup-libs
 remove-libs:
 	# Removes the lib directory and all its contents
 	rm -rf lib/*
+	# Also remove the generated protobuf files, as they are not needed anymore
+	rm bitbots_team_communication/bitbots_team_communication/robocup_extension_pb2.py 2> /dev/null || true
 
 setup-libs:
 	# Clone lib repositories in workspace.repos into the lib directory
@@ -77,6 +87,8 @@ else
 endif
 
 rosdep:
+	# Initialize rosdep if not already done
+	[ -f /etc/ros/rosdep/sources.list.d/20-default.list ] || sudo rosdep init
 	# Update rosdep and install dependencies from meta directory
 	rosdep update
 	rosdep install --from-paths . --ignore-src --rosdistro iron -y

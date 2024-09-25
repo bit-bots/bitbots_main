@@ -312,7 +312,7 @@ class RecordUI(Plugin):
         """
         Plays the walkready animation on the robot
         """
-        result: Dynup.Result = self.dynup_client.send_goal(Dynup.Goal(direction="walkready")).result
+        result: Dynup.Result = self.dynup_client.send_goal(Dynup.Goal(direction=Dynup.Goal.DIRECTION_WALKREADY)).result
         if not result.successful:
             self._node.get_logger().error("Could not execute walkready animation")
 

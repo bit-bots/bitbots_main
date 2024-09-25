@@ -1,11 +1,11 @@
 /bitbots_extrinsic_camera_calibration:
   ros__parameters:
-    offset_x: -0.01
+    offset_x: -0.05
     offset_y: 0.0
     offset_z: 0.0
 
 /bitbots_extrinsic_imu_calibration:
   ros__parameters:
-    offset_x: 0.32
-    offset_y: -0.1
+    offset_x: 0.075
+    offset_y: 0.13
     offset_z: 0.0

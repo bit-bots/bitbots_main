@@ -15,11 +15,11 @@ Map::Map(const std::string &name, const std::string &type, const double out_of_m
   // Set config
   out_of_map_value_ = out_of_map_value;
   // get package path
-  std::string package_path = ament_index_cpp::get_package_share_directory("bitbots_localization");
+  std::string map_package_path = ament_index_cpp::get_package_share_directory("bitbots_parameter_blackboard");
   // make boost path
   fs::path map_path = fs::path("config/fields") / fs::path(name) / fs::path(type);
   // convert to absolute path
-  fs::path absolute_map_path = fs::absolute(map_path, package_path);
+  fs::path absolute_map_path = fs::absolute(map_path, map_package_path);
   // load map
   map = cv::imread(absolute_map_path.string(), cv::IMREAD_GRAYSCALE);
   if (!map.data) {
@@ -46,7 +46,7 @@ double Map::get_occupancy(double x, double y) {
   if (x < mapWidth && x >= 0 && y < mapHeight && y >= 0) {
     occupancy = 100 - map.at<uchar>(y, x);
   }
-  return occupancy;
+  return occupancy / 100.0;
 }
 
 std::vector<double> Map::provideRating(const RobotState &state,

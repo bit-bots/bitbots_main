@@ -22,8 +22,6 @@ uint8 SHUTDOWN=6
 # The robot is in penalty position
 # It can not be controlled
 uint8 PENALTY=7
-# The robot is getting in or out of penalty position
-uint8 PENALTY_ANIMATION=8
 # The robot is used for recording animations
 # Reserved all controlling to a recording process
 # No falling detection is processed and no stand ups will be done

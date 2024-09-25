@@ -1,35 +1,33 @@
-"""
-AnimationCapsule
-^^^^^^^^^^^^^^^^
-
-Communicates with the animation action server and plays predefined animations.
-"""
 from rclpy.action import ActionClient
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.duration import Duration
-from rclpy.node import Node
 
+from bitbots_blackboard.capsules import AbstractBlackboardCapsule
 from bitbots_msgs.action import Dynup, LookAt, PlayAnimation
 
 
-class AnimationCapsule:
-    def __init__(self, node: Node):
-        self.node = node
+class AnimationCapsule(AbstractBlackboardCapsule):
+    """Communicates with the animation action server to play animations."""
+
+    def __init__(self, node, blackboard):
+        super().__init__(node, blackboard)
         self.active = False
 
         # Config
-        self.goalie_arms_animation: str = self.node.get_parameter("Animations.Goalie.goalieArms").value
-        self.goalie_falling_right_animation: str = self.node.get_parameter("Animations.Goalie.fallRight").value
-        self.goalie_falling_left_animation: str = self.node.get_parameter("Animations.Goalie.fallLeft").value
-        self.goalie_falling_center_animation: str = self.node.get_parameter("Animations.Goalie.fallCenter").value
-        self.cheering_animation: str = self.node.get_parameter("Animations.Misc.cheering").value
-        self.init_animation: str = self.node.get_parameter("Animations.Misc.init").value
+        self.goalie_arms_animation: str = self._node.get_parameter("Animations.Goalie.goalieArms").value
+        self.goalie_falling_right_animation: str = self._node.get_parameter("Animations.Goalie.fallRight").value
+        self.goalie_falling_left_animation: str = self._node.get_parameter("Animations.Goalie.fallLeft").value
+        self.goalie_falling_center_animation: str = self._node.get_parameter("Animations.Goalie.fallCenter").value
+        self.cheering_animation: str = self._node.get_parameter("Animations.Misc.cheering").value
+        self.init_animation: str = self._node.get_parameter("Animations.Misc.init").value
 
-        self.animation_client = ActionClient(node, PlayAnimation, "animation", callback_group=ReentrantCallbackGroup())
+        self.animation_client = ActionClient(
+            self._node, PlayAnimation, "animation", callback_group=ReentrantCallbackGroup()
+        )
 
-        self.dynup_action_client = ActionClient(node, Dynup, "dynup", callback_group=ReentrantCallbackGroup())
+        self.dynup_action_client = ActionClient(self._node, Dynup, "dynup", callback_group=ReentrantCallbackGroup())
 
-        self.lookat_action_client = ActionClient(node, LookAt, "look_at_goal")
+        self.lookat_action_client = ActionClient(self._node, LookAt, "look_at_goal")
 
     def play_animation(self, animation: str, from_hcm: bool) -> bool:
         """
@@ -43,11 +41,11 @@ class AnimationCapsule:
             return False
 
         if animation is None or animation == "":
-            self.node.get_logger().warn("Tried to play an animation with an empty name!")
+            self._node.get_logger().warn("Tried to play an animation with an empty name!")
             return False
 
         if not self.animation_client.wait_for_server(Duration(seconds=10)):
-            self.node.get_logger().error(
+            self._node.get_logger().error(
                 "Animation Action Server not running! Motion can not work without animation action server."
             )
             return False

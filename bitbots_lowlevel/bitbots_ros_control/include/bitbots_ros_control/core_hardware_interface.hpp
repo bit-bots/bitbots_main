@@ -28,6 +28,7 @@ class CoreHardwareInterface : public bitbots_ros_control::HardwareInterface {
   void read(const rclcpp::Time &t, const rclcpp::Duration &dt);
 
   void write(const rclcpp::Time &t, const rclcpp::Duration &dt);
+  void restoreAfterPowerCycle();
 
  private:
   rclcpp::Node::SharedPtr nh_;
@@ -39,7 +40,7 @@ class CoreHardwareInterface : public bitbots_ros_control::HardwareInterface {
   int id_;
   int read_rate_;
   int read_counter_;
-  uint8_t *data_;
+  std::array<uint8_t, 27> data_;
 
   bool requested_power_status_;
   bool last_read_successful_;

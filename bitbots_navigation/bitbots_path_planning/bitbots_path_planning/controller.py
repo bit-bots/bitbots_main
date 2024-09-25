@@ -1,9 +1,11 @@
 import math
+from typing import Optional
 
 import tf2_ros as tf2
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Path
 from rclpy.node import Node
+from rclpy.time import Time
 from ros2_numpy import numpify
 from tf2_geometry_msgs import PointStamped, Pose, PoseStamped
 from tf_transformations import euler_from_quaternion
@@ -18,26 +20,11 @@ class Controller:
         self.node = node
         self.buffer = buffer
 
-        self.config_base_footprint_frame: str = self.node.get_parameter("base_footprint_frame").value
-        self.config_carrot_distance: int = self.node.declare_parameter("controller.carrot_distance", 20).value
-        self.config_max_rotation_vel: float = self.node.declare_parameter("controller.max_rotation_vel", 0.4).value
-        self.config_max_vel_x: float = self.node.declare_parameter("controller.max_vel_x", 0.25).value
-        self.config_max_vel_y: float = self.node.declare_parameter("controller.max_vel_y", 0.08).value
-        self.config_min_vel_x: float = self.node.declare_parameter("controller.min_vel_x", -0.2).value
-        self.config_orient_to_goal_distance: float = self.node.declare_parameter(
-            "controller.orient_to_goal_distance", 1.0
-        ).value
-        self.config_rotation_slow_down_factor: float = self.node.declare_parameter(
-            "controller.rotation_slow_down_factor", 0.3
-        ).value
-        self.config_rotation_i_factor: float = self.node.declare_parameter("controller.rotation_i_factor", 0.05).value
-        self.config_smoothing_k: float = self.node.declare_parameter("controller.smoothing_k", 0.2).value
-        self.config_translation_slow_down_factor: float = self.node.declare_parameter(
-            "controller.translation_slow_down_factor", 0.5
-        ).value
-
         # Last command velocity
         self.last_cmd_vel = Twist()
+
+        # Last update time
+        self.last_update_time: Optional[Time] = None
 
         # Accumulator for the angular error
         self.angular_error_accumulator = 0
@@ -51,7 +38,7 @@ class Controller:
 
         # Create an default pose in the origin of our base footprint
         pose_geometry_msgs = PoseStamped()
-        pose_geometry_msgs.header.frame_id = self.config_base_footprint_frame
+        pose_geometry_msgs.header.frame_id = self.node.config.base_footprint_frame
 
         # We get our pose in respect to the map frame (also frame of the path message)
         # by transforming the pose above into this frame
@@ -65,8 +52,8 @@ class Controller:
         # End conditions with an empty or shorter than carrot distance path need to be considered
         if len(path.poses) > 0:
             end_pose: Pose = path.poses[-1].pose
-            if len(path.poses) > self.config_carrot_distance:
-                goal_pose: Pose = path.poses[self.config_carrot_distance].pose
+            if len(path.poses) > self.node.config.controller.carrot_distance:
+                goal_pose: Pose = path.poses[self.node.config.controller.carrot_distance].pose
             else:
                 goal_pose: Pose = end_pose
         else:
@@ -82,19 +69,30 @@ class Controller:
             end_pose.position.y - current_pose.position.y, end_pose.position.x - current_pose.position.x
         )
 
-        # Calculate the distance from our current position to the final position of the global plan
-        distance = math.hypot(
-            end_pose.position.x - current_pose.position.x, end_pose.position.y - current_pose.position.y
-        )
+        if len(path.poses) < 3:
+            # Calculate the distance from our current position to the final position of the global plan
+            distance = math.hypot(
+                end_pose.position.x - current_pose.position.x, end_pose.position.y - current_pose.position.y
+            )
+        else:
+            # Calculate path length
+            distance = 0
+            a_position = current_pose.position
+            pose: PoseStamped
+            for pose in path.poses:
+                b_postion = pose.pose.position
+                distance += math.hypot(b_postion.x - a_position.x, b_postion.y - a_position.y)
+                a_position = b_postion
+            distance += math.hypot(end_pose.position.x - a_position.x, end_pose.position.y - a_position.y)
 
         # Calculate the translational walk velocity.
         # It considers the distance and breaks if we are close to the final position of the global plan
-        walk_vel = min(distance * self.config_translation_slow_down_factor, self.config_max_vel_x)
+        walk_vel = distance * self.node.config.controller.translation_slow_down_factor
 
         # Check if we are so close to the final position of the global plan that we want to align us with
         # its orientation and not the heading towards its position
         diff = 0
-        if distance > self.config_orient_to_goal_distance:
+        if distance > self.node.config.controller.orient_to_goal_distance:
             # Calculate the difference between our current heading and the heading towards the final position of
             # the global plan
             diff = final_walk_angle - self._get_yaw(current_pose)
@@ -111,56 +109,74 @@ class Controller:
 
         # Define the target rotation velocity (based on p and i of the error)
         target_rot_vel = (
-            self.config_rotation_slow_down_factor * min_angle
-            + self.config_rotation_i_factor * self.angular_error_accumulator
+            self.node.config.controller.rotation_slow_down_factor * min_angle
+            + self.node.config.controller.rotation_i_factor * self.angular_error_accumulator
         )
 
         # Clamp rotational velocity to max values (both sides)
-        rot_goal_vel = min(max(target_rot_vel, -self.config_max_rotation_vel), self.config_max_rotation_vel)
+        rot_goal_vel = min(
+            max(target_rot_vel, -self.node.config.controller.max_rotation_vel),
+            self.node.config.controller.max_rotation_vel,
+        )
+
+        # Calculate the heading of our linear velocity vector in the local frame of the robot
+        local_heading = walk_angle - self._get_yaw(current_pose)
+
+        # Convert the heading of the robot to a unit vector
+        local_heading_vector_x = math.cos(local_heading)
+        local_heading_vector_y = math.sin(local_heading)
+
+        # Returns interpolates the x and y maximum velocity linearly based on our heading
+        # See https://github.com/bit-bots/bitbots_main/issues/366#issuecomment-2161460917
+        def interpolate_max_vel(x_limit, y_limit, target_x, target_y):
+            n = (x_limit * abs(target_y)) + y_limit * target_x
+            intersection_x = (x_limit * y_limit * target_x) / n
+            intersection_y = (x_limit * y_limit * abs(target_y)) / n
+            return math.hypot(intersection_x, intersection_y)
+
+        # Limit the x and y velocity with the heading specific maximum velocity
+        walk_vel = min(
+            walk_vel,
+            # Calc the max velocity for the current heading
+            interpolate_max_vel(
+                # Use different maximum values for forward and backwards x movement
+                self.node.config.controller.max_vel_x
+                if local_heading_vector_x > 0
+                else self.node.config.controller.min_vel_x,
+                self.node.config.controller.max_vel_y,
+                local_heading_vector_x,
+                local_heading_vector_y,
+            ),
+        )
 
         # Calculate the x and y components of our linear velocity based on the desired heading and the
         # desired translational velocity.
-        cmd_vel.linear.x = math.cos(walk_angle - self._get_yaw(current_pose)) * walk_vel
-        cmd_vel.linear.y = math.sin(walk_angle - self._get_yaw(current_pose)) * walk_vel
-
-        # Scale command accordingly if a limit is exceded
-        if cmd_vel.linear.x > self.config_max_vel_x:
-            self.node.get_logger().debug(
-                f"X LIMIT reached: {cmd_vel.linear.x} > {self.config_max_vel_x}, with Y being {cmd_vel.linear.y}"
-            )
-            cmd_vel.linear.y *= self.config_max_vel_x / cmd_vel.linear.x
-            cmd_vel.linear.x = self.config_max_vel_x
-            self.node.get_logger().debug(f"X LIMIT reached: set Y to {cmd_vel.linear.y}")
-
-        if cmd_vel.linear.x < self.config_min_vel_x:
-            self.node.get_logger().debug(
-                f"X LIMIT reached: {cmd_vel.linear.x} < {self.config_min_vel_x}, with Y being {cmd_vel.linear.y}"
-            )
-            cmd_vel.linear.y *= self.config_min_vel_x / cmd_vel.linear.x
-            cmd_vel.linear.x = self.config_min_vel_x
-            self.node.get_logger().debug(f"X LIMIT reached: set Y to {cmd_vel.linear.y}")
-
-        if abs(cmd_vel.linear.y) > self.config_max_vel_y:
-            self.node.get_logger().debug(
-                f"Y LIMIT reached: {cmd_vel.linear.y} > {self.config_max_vel_y}, with X being {cmd_vel.linear.x}"
-            )
-            cmd_vel.linear.x *= self.config_max_vel_y / abs(cmd_vel.linear.y)
-            cmd_vel.linear.y *= self.config_max_vel_y / abs(cmd_vel.linear.y)
-            self.node.get_logger().debug(f"Y LIMIT reached: set X to {cmd_vel.linear.x}")
+        cmd_vel.linear.x = local_heading_vector_x * walk_vel
+        cmd_vel.linear.y = local_heading_vector_y * walk_vel
 
         # Apply the desired rotational velocity
         cmd_vel.angular.z = rot_goal_vel
 
         # Filter the command velocity to avoid sudden changes
-        cmd_vel.linear.x = (
-            self.config_smoothing_k * cmd_vel.linear.x + (1 - self.config_smoothing_k) * self.last_cmd_vel.linear.x
-        )
-        cmd_vel.linear.y = (
-            self.config_smoothing_k * cmd_vel.linear.y + (1 - self.config_smoothing_k) * self.last_cmd_vel.linear.y
-        )
-        cmd_vel.angular.z = (
-            self.config_smoothing_k * cmd_vel.angular.z + (1 - self.config_smoothing_k) * self.last_cmd_vel.angular.z
-        )
+        current_time = self.node.get_clock().now()
+
+        # Don't apply the filter on the first update
+        if self.last_update_time is not None:
+            # Calculate the time since the last update
+            delta_time = current_time - self.last_update_time
+
+            # Calculate the exponential decay smoothing factor alpha from the time constant tau
+            # Instead of defining alpha directly, we use tau to derive it in a time-step independent way
+            exponent_in_s = -delta_time.nanoseconds / (self.node.config.controller.smoothing_tau * 1e9)
+            alpha = 1 - math.exp(exponent_in_s)
+
+            # Apply the exponential moving average filter
+            cmd_vel.linear.x = alpha * cmd_vel.linear.x + (1 - alpha) * self.last_cmd_vel.linear.x
+            cmd_vel.linear.y = alpha * cmd_vel.linear.y + (1 - alpha) * self.last_cmd_vel.linear.y
+            cmd_vel.angular.z = alpha * cmd_vel.angular.z + (1 - alpha) * self.last_cmd_vel.angular.z
+
+        # Store the current time for the next update
+        self.last_update_time = current_time
 
         # Store the last command velocity
         self.last_cmd_vel = cmd_vel

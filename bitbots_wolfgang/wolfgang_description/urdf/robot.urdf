@@ -724,7 +724,7 @@
     <axis xyz="0.0 0.0 1.0"/>
     <parent link="r_upper_arm"/>
     <child link="r_lower_arm"/>
-    <limit effort="7.3" lower="-1.0472" upper="1.5708" velocity="8.17"/>
+    <limit effort="7.3" lower="-0.78" upper="1.5708" velocity="8.17"/>
     <dynamics damping="0.65" friction="1.73"/>
   </joint>
   <joint name="RShoulderRoll" type="revolute">
@@ -732,7 +732,7 @@
     <axis xyz="-0.0 -0.0 -1.0"/>
     <parent link="r_shoulder"/>
     <child link="r_upper_arm"/>
-    <limit effort="7.3" lower="0.0" upper="3.14159" velocity="8.17"/>
+    <limit effort="7.3" lower="-0.12" upper="3.1416" velocity="8.17"/>
     <dynamics damping="0.65" friction="1.73"/>
   </joint>
   <joint name="RShoulderPitch" type="revolute">
@@ -755,7 +755,7 @@
         <mesh filename="package://wolfgang_description/urdf/sea_connector.stl"/>
       </geometry>
       <material name="sea_connector_material">
-<color rgba="0.647059 0.647059 0.647059 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -770,7 +770,7 @@
         <mesh filename="package://wolfgang_description/urdf/shoulder_connector.stl"/>
       </geometry>
       <material name="shoulder_connector_material">
-<color rgba="0.647059 0.647059 0.647059 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -797,7 +797,7 @@
         <mesh filename="package://wolfgang_description/urdf/sea_ninjaflex.stl"/>
       </geometry>
       <material name="sea_ninjaflex_material">
-<color rgba="0.647059 0.647059 0.647059 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -849,7 +849,7 @@
         <mesh filename="package://wolfgang_description/urdf/connector_shoulder.stl"/>
       </geometry>
       <material name="connector_shoulder_material">
-<color rgba="0.647059 0.647059 0.647059 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -864,7 +864,7 @@
         <mesh filename="package://wolfgang_description/urdf/upper_arm_spacer.stl"/>
       </geometry>
       <material name="upper_arm_spacer_material">
-<color rgba="0.647059 0.647059 0.647059 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -879,7 +879,7 @@
         <mesh filename="package://wolfgang_description/urdf/upper_arm.stl"/>
       </geometry>
       <material name="upper_arm_material">
-<color rgba="0.647059 0.647059 0.647059 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -906,7 +906,7 @@
         <mesh filename="package://wolfgang_description/urdf/upper_arm.stl"/>
       </geometry>
       <material name="upper_arm_material">
-<color rgba="0.647059 0.647059 0.647059 1.0"/>
+        <color rgba="0.647059 0.647059 0.647059 1.0"/>
       </material>
     </visual>
     <collision>
@@ -1079,7 +1079,7 @@
     <axis xyz="0.0 0.0 1.0"/>
     <parent link="l_upper_arm"/>
     <child link="l_lower_arm"/>
-    <limit effort="7.3" lower="-1.5708" upper="1.0472" velocity="8.17"/>
+    <limit effort="7.3" lower="-1.5708" upper="0.78" velocity="8.17"/>
     <dynamics damping="0.65" friction="1.73"/>
   </joint>
   <joint name="LShoulderRoll" type="revolute">
@@ -1087,7 +1087,7 @@
     <axis xyz="-0.0 -0.0 -1.0"/>
     <parent link="l_shoulder"/>
     <child link="l_upper_arm"/>
-    <limit effort="7.3" lower="-3.14159" upper="0.0" velocity="8.17"/>
+    <limit effort="7.3" lower="-3.1416" upper="0.12" velocity="8.17"/>
     <dynamics damping="0.65" friction="1.73"/>
   </joint>
   <joint name="LShoulderPitch" type="revolute">
@@ -2204,7 +2204,7 @@
     <axis xyz="0.0 -1.0 0.0"/>
     <parent link="r_ankle"/>
     <child link="r_foot"/>
-    <limit effort="10" lower="-1.0472" upper="1.0472" velocity="5.76"/>
+    <limit effort="10" lower="-1.4" upper="1.58" velocity="5.76"/>
     <dynamics damping="1.23" friction="2.55"/>
   </joint>
   <joint name="RAnklePitch" type="revolute">
@@ -2212,7 +2212,7 @@
     <axis xyz="-0.0 -0.0 -1.0"/>
     <parent link="r_lower_leg"/>
     <child link="r_ankle"/>
-    <limit effort="10" lower="-1.74533" upper="1.22173" velocity="5.76"/>
+    <limit effort="10" lower="-0.37" upper="1.42" velocity="5.76"/>
     <dynamics damping="1.23" friction="2.55"/>
   </joint>
   <joint name="RKnee" type="revolute">
@@ -2220,7 +2220,7 @@
     <axis xyz="-0.0 -1.0 -0.0"/>
     <parent link="r_upper_leg"/>
     <child link="r_lower_leg"/>
-    <limit effort="12.9" lower="-2.96706" upper="0.0" velocity="3.87"/>
+    <limit effort="12.9" lower="-2.8" upper="0.2" velocity="3.87"/>
     <dynamics damping="2.92" friction="1.49"/>
   </joint>
   <joint name="RHipPitch" type="revolute">
@@ -2228,7 +2228,7 @@
     <axis xyz="-0.0 1.0 -0.0"/>
     <parent link="r_hip_2"/>
     <child link="r_upper_leg"/>
-    <limit effort="10" lower="-2.0944" upper="1.91986" velocity="5.76"/>
+    <limit effort="10" lower="-2.77" upper="0.79" velocity="5.76"/>
     <dynamics damping="1.23" friction="2.55"/>
   </joint>
   <joint name="RHipRoll" type="revolute">
@@ -2236,7 +2236,7 @@
     <axis xyz="-0.0 -0.0 -1.0"/>
     <parent link="r_hip_1"/>
     <child link="r_hip_2"/>
-    <limit effort="10" lower="-1.5708" upper="1.5708" velocity="5.76"/>
+    <limit effort="10" lower="-1.9" upper="1.6" velocity="5.76"/>
     <dynamics damping="1.23" friction="2.55"/>
   </joint>
   <joint name="RHipYaw" type="revolute">
@@ -3353,7 +3353,7 @@
     <axis xyz="-0.0 -1.0 -0.0"/>
     <parent link="l_ankle"/>
     <child link="l_foot"/>
-    <limit effort="10" lower="-1.0472" upper="1.0472" velocity="5.76"/>
+    <limit effort="10" lower="-1.58" upper="1.4" velocity="5.76"/>
     <dynamics damping="1.23" friction="2.55"/>
   </joint>
   <joint name="LAnklePitch" type="revolute">
@@ -3361,7 +3361,7 @@
     <axis xyz="-0.0 -0.0 -1.0"/>
     <parent link="l_lower_leg"/>
     <child link="l_ankle"/>
-    <limit effort="10" lower="-1.22173" upper="1.74533" velocity="5.76"/>
+    <limit effort="10" lower="-1.42" upper="0.37" velocity="5.76"/>
     <dynamics damping="1.23" friction="2.55"/>
   </joint>
   <joint name="LKnee" type="revolute">
@@ -3369,7 +3369,7 @@
     <axis xyz="-0.0 1.0 -0.0"/>
     <parent link="l_upper_leg"/>
     <child link="l_lower_leg"/>
-    <limit effort="12.9" lower="0.0" upper="2.96706" velocity="3.87"/>
+    <limit effort="12.9" lower="-0.2" upper="2.8" velocity="3.87"/>
     <dynamics damping="2.92" friction="1.49"/>
   </joint>
   <joint name="LHipPitch" type="revolute">
@@ -3377,7 +3377,7 @@
     <axis xyz="7.95491e-17 -3.00167e-16 -1.0"/>
     <parent link="l_hip_2"/>
     <child link="l_upper_leg"/>
-    <limit effort="10" lower="-1.91986" upper="2.0944" velocity="5.76"/>
+    <limit effort="10" lower="-0.79" upper="2.77" velocity="5.76"/>
     <dynamics damping="1.23" friction="2.55"/>
   </joint>
   <joint name="LHipRoll" type="revolute">
@@ -3385,7 +3385,7 @@
     <axis xyz="-0.0 -0.0 -1.0"/>
     <parent link="l_hip_1"/>
     <child link="l_hip_2"/>
-    <limit effort="10" lower="-1.5708" upper="1.5708" velocity="5.76"/>
+    <limit effort="10" lower="-1.6" upper="1.9" velocity="5.76"/>
     <dynamics damping="1.23" friction="2.55"/>
   </joint>
   <joint name="LHipYaw" type="revolute">
@@ -3622,7 +3622,7 @@
     <axis xyz="-0.0 -0.0 1.0"/>
     <parent link="neck"/>
     <child link="head"/>
-    <limit effort="7.3" lower="-1.5708" upper="1.0472" velocity="8.17"/>
+    <limit effort="7.3" lower="-1.923" upper="1.24" velocity="8.17"/>
     <dynamics damping="0.65" friction="1.73"/>
   </joint>
   <joint name="HeadPan" type="revolute">

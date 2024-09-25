@@ -31,8 +31,8 @@ class LocalizationBlackboard:
         self.base_footprint_frame: str = node.get_parameter("base_footprint_frame").value
 
         # Get the length of the field
-        self.field_length = get_parameters_from_other_node(self.node, "parameter_blackboard", ["field_length"])[
-            "field_length"
+        self.field_length = get_parameters_from_other_node(self.node, "parameter_blackboard", ["field.size.x"])[
+            "field.size.x"
         ]
 
         # Service clients
@@ -101,9 +101,9 @@ class LocalizationBlackboard:
         """Naive check if the robot is picked up. Only works if the robot is standing still."""
         if len(self.pickup_accel_buffer) == 0:
             return False
-        buffer = np.array(self.pickup_accel_buffer)
+        buffer = np.vstack(self.pickup_accel_buffer)
         mean = np.mean(buffer[..., 2])
-        buffer_long = np.array(self.pickup_accel_buffer_long)
+        buffer_long = np.vstack(self.pickup_accel_buffer_long)
         mean_long = np.mean(buffer_long[..., 2])
         absolute_diff = abs(mean_long - mean)
 

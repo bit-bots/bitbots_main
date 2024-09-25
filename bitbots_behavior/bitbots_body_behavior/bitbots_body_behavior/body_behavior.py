@@ -1,29 +1,18 @@
-#!/usr/bin/env python3
-
-"""
-BehaviorModule
-^^^^^^^^^^^^^^
-.. moduleauthor:: Martin Poppinga <1popping@informatik.uni-hamburg.de>
-
-Starts the body behavior
-"""
-
 import os
 
 import rclpy
-import tf2_ros as tf2
-from ament_index_python import get_package_share_directory
-from bitbots_blackboard.blackboard import BodyBlackboard
-from bitbots_tf_listener import TransformListener
+from bitbots_blackboard.body_blackboard import BodyBlackboard
+from bitbots_tf_buffer import Buffer
 from dynamic_stack_decider.dsd import DSD
 from game_controller_hl_interfaces.msg import GameState
-from geometry_msgs.msg import PoseWithCovarianceStamped, Twist, TwistWithCovarianceStamped
+from geometry_msgs.msg import PoseWithCovarianceStamped, Twist
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.duration import Duration
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 from soccer_vision_3d_msgs.msg import RobotArray
 
+from bitbots_body_behavior import behavior_dsd
 from bitbots_msgs.msg import RobotControlState, TeamData
 
 
@@ -33,19 +22,16 @@ class BodyDSD:
         self.step_running = False
         self.node = node
 
-        self.tf_buffer = tf2.Buffer(cache_time=Duration(seconds=30))
-        self.tf_listener = TransformListener(self.tf_buffer, node)
+        self.tf_buffer = Buffer(node, Duration(seconds=30))
 
         blackboard = BodyBlackboard(node, self.tf_buffer)
         self.dsd = DSD(blackboard, "debug/dsd/body_behavior", node)  # TODO: use config
 
-        dirname = get_package_share_directory("bitbots_body_behavior")
+        self.dsd.register_actions(behavior_dsd.actions.__path__[0])
+        self.dsd.register_decisions(behavior_dsd.decisions.__path__[0])
 
-        self.dsd.register_actions(os.path.join(dirname, "actions"))
-        self.dsd.register_decisions(os.path.join(dirname, "decisions"))
-
-        dsd_file = node.get_parameter("dsd_file").get_parameter_value().string_value
-        self.dsd.load_behavior(os.path.join(dirname, dsd_file))
+        dsd_file: str = node.get_parameter("dsd_file").value
+        self.dsd.load_behavior(os.path.join(behavior_dsd.__path__[0], dsd_file))
 
         node.create_subscription(
             PoseWithCovarianceStamped,
@@ -65,14 +51,7 @@ class BodyDSD:
             TeamData,
             "team_data",
             blackboard.team_data.team_data_callback,
-            qos_profile=1,
-            callback_group=MutuallyExclusiveCallbackGroup(),
-        )
-        node.create_subscription(
-            PoseWithCovarianceStamped,
-            "pose_with_covariance",
-            blackboard.world_model.pose_callback,
-            qos_profile=1,
+            qos_profile=10,
             callback_group=MutuallyExclusiveCallbackGroup(),
         )
         node.create_subscription(
@@ -86,13 +65,6 @@ class BodyDSD:
             RobotControlState,
             "robot_state",
             blackboard.misc.robot_state_callback,
-            qos_profile=1,
-            callback_group=MutuallyExclusiveCallbackGroup(),
-        )
-        node.create_subscription(
-            TwistWithCovarianceStamped,
-            node.get_parameter("body.ball_movement_subscribe_topic").get_parameter_value().string_value,
-            blackboard.world_model.ball_twist_callback,
             qos_profile=1,
             callback_group=MutuallyExclusiveCallbackGroup(),
         )
@@ -125,7 +97,7 @@ def main(args=None):
     node = Node("body_behavior", automatically_declare_parameters_from_overrides=True)
     body_dsd = BodyDSD(node)
     node.create_timer(1 / 60.0, body_dsd.loop, callback_group=MutuallyExclusiveCallbackGroup(), clock=node.get_clock())
-    # Number of executor threads is the number of MutiallyExclusiveCallbackGroups + 2 threads needed by the tf listener and executor
+    # Number of executor threads is the number of MutuallyExclusiveCallbackGroups + 2 threads needed by the tf listener and executor
     multi_executor = MultiThreadedExecutor(num_threads=12)
     multi_executor.add_node(node)
 
