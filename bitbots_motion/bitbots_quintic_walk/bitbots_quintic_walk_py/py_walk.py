@@ -107,24 +107,24 @@ class PyWalk:
         for parameter in parameters:
             self.py_walk_wrapper.set_parameter(serialize_message(parameter))
 
-    def get_phase(self):
+    def get_phase(self) -> float:
         return self.py_walk_wrapper.get_phase()
 
-    def get_freq(self):
+    def get_freq(self) -> float:
         return self.py_walk_wrapper.get_freq()
 
-    def get_support_state(self):
+    def get_support_state(self) -> Phase:
         return deserialize_message(self.py_walk_wrapper.get_support_state(), Phase)
 
-    def is_left_support(self):
+    def is_left_support(self) -> bool:
         return self.py_walk_wrapper.is_left_support()
 
-    def get_odom(self):
+    def get_odom(self) -> Odometry:
         odom = self.py_walk_wrapper.get_odom()
         result = deserialize_message(odom, Odometry)
         return result
 
-    def publish_debug(self):
+    def publish_debug(self) -> None:
         self.py_walk_wrapper.publish_debug()
 
     def reset_and_test_if_speed_possible(self, cmd_vel_msg, threshold=0.001):
