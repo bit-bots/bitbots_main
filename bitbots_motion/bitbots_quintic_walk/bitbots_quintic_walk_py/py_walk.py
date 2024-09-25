@@ -11,7 +11,7 @@ from bitbots_msgs.msg import JointCommand
 
 
 class PyWalk:
-    def __init__(self, namespace="", parameters: [Parameter] | None = None, set_force_smooth_step_transition=False):
+    def __init__(self, namespace="", parameters: list[Parameter] | None = None, set_force_smooth_step_transition=False):
         serialized_parameters = []
         if parameters is not None:
             for parameter in parameters:
