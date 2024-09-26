@@ -10,7 +10,7 @@ using namespace std::chrono_literals;
 namespace bitbots_quintic_walk {
 
 WalkNode::WalkNode(rclcpp::Node::SharedPtr node, const std::string& ns,
-                   std::vector<rclcpp::Parameter> moveit_parameters)
+                   const std::vector<rclcpp::Parameter>& moveit_parameters)
     : node_(node),
       param_listener_(node_),
       config_(param_listener_.get_params()),
