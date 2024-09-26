@@ -2,8 +2,8 @@
 
 void PyWalkWrapper::spin_some() { rclcpp::spin_some(node_); }
 
-PyWalkWrapper::PyWalkWrapper(std::string ns, std::vector<py::bytes> walk_parameter_msgs,
-                             std::vector<py::bytes> moveit_parameter_msgs, bool force_smooth_step_transition) {
+PyWalkWrapper::PyWalkWrapper(const std::string &ns, const std::vector<py::bytes> &walk_parameter_msgs,
+                             const std::vector<py::bytes> &moveit_parameter_msgs, bool force_smooth_step_transition) {
   // initialize rclcpp if not already done
   if (!rclcpp::contexts::get_global_default_context()->is_valid()) {
     rclcpp::init(0, nullptr);
