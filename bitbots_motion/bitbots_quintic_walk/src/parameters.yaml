@@ -112,7 +112,7 @@ walking:
       type: double
       description: "Foot pitch angle before toe-off"
       validation:
-        bounds<>: [0.0, 1.0]
+        bounds<>: [0.0, 5.0]
       default_value: 0.0
     trunk_x_offset:
       type: double
