@@ -92,7 +92,7 @@ PROTO Wolfgang [
   field  SFVec3f     pid             10 0 0
   field  SFFloat     encoderResolution 0.00153398078
   field  MFNode      externalCamera  NULL
-  field  SFFloat     toe-spring-constant  2.0
+  field  SFFloat     toe-spring-constant  3.0
 ]
 {
   Robot {
