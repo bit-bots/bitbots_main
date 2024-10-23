@@ -4,8 +4,8 @@ import os
 import threading
 
 import rclpy
-from rclpy.node import Node
 from bitbots_webots_sim.webots_supervisor_controller import SupervisorController
+from rclpy.node import Node
 
 
 class SupervisorNode:
