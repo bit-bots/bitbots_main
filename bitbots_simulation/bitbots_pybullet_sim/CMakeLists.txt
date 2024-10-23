@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(wolfgang_pybullet_sim)
+project(bitbots_pybullet_sim)
 
 # Add support for C++17
 if(NOT CMAKE_CXX_STANDARD)

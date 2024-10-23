@@ -14,7 +14,7 @@ from scipy import signal
 from transforms3d.euler import euler2quat, quat2euler
 from transforms3d.quaternions import qinverse, quat2mat, rotate_vector
 
-from wolfgang_pybullet_sim.terrain import Terrain
+from bitbots_pybullet_sim.terrain import Terrain
 
 
 class Simulation:
@@ -177,7 +177,7 @@ class Simulation:
             # Load field
 
             rospack = rospkg.RosPack()
-            path = os.path.join(rospack.get_path("wolfgang_pybullet_sim"), "models")
+            path = os.path.join(rospack.get_path("bitbots_pybullet_sim"), "models")
             p.setAdditionalSearchPath(path)  # needed to find field model
             self.field_index = p.loadURDF("field/field.urdf")
 

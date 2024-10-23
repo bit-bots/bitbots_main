@@ -62,7 +62,7 @@ RUN cd src/bitbots_main && \
     make pull-all && \
     rm -rf lib/udp_bridge bitbots_misc/bitbots_containers \
     lib/dynamic_stack_decider/dynamic_stack_decider_visualization bitbots_lowlevel \
-    bitbots_robot/wolfgang_pybullet_sim lib/DynamixelSDK lib/dynamixel-workbench \
+    bitbots_robot/bitbots_pybullet_sim lib/DynamixelSDK lib/dynamixel-workbench \
     bitbots_misc/bitbots_basler_camera && \
     sed -i '/plotjuggler/d' bitbots_motion/bitbots_quintic_walk/package.xml && \
     sed -i '/run_depend/d' bitbots_robot/wolfgang_moveit_config/package.xml
