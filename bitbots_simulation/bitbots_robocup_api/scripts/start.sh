@@ -138,4 +138,4 @@ sed -i "/^    target_ip:/s/^.*$/    target_ip: $ROBOCUP_MIRROR_SERVER_IP/" $TEAM
 # Start ROS #
 #############
 
-exec ros2 launch wolfgang_robocup_api robocup_teamplayer.launch record:=$RECORD
+exec ros2 launch bitbots_robocup_api robocup_teamplayer.launch record:=$RECORD

@@ -10,7 +10,7 @@
     </group>
 
     <!-- load the robocup api -->
-    <include file="$(find-pkg-share wolfgang_robocup_api)/launch/wolfgang_robocup_api_bridge.launch" />
+    <include file="$(find-pkg-share bitbots_robocup_api)/launch/bitbots_robocup_api_bridge.launch" />
 
     <!-- launch the team player -->
     <include file="$(find-pkg-share bitbots_bringup)/launch/teamplayer.launch">

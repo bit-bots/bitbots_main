@@ -75,7 +75,7 @@ RUN . /opt/ros/iron/setup.sh && colcon build --cmake-args -DBUILD_TESTING=OFF
 
 # TODO execute tests
 
-RUN cp src/bitbots_main/bitbots_robot/wolfgang_robocup_api/scripts/start.sh .local/bin/start
+RUN cp src/bitbots_main/bitbots_robot/bitbots_robocup_api/scripts/start.sh .local/bin/start
 
 # Volume for logs
 VOLUME /robocup-logs

@@ -3,7 +3,7 @@ import os.path
 
 from setuptools import find_packages, setup
 
-package_name = "wolfgang_robocup_api"
+package_name = "bitbots_robocup_api"
 
 setup(
     name=package_name,

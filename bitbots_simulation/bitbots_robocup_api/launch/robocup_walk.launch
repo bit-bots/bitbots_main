@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-    <include file="$(find wolfgang_robocup_api)/launch/wolfgang_robocup_api_bridge.launch" />
+    <include file="$(find bitbots_robocup_api)/launch/bitbots_robocup_api_bridge.launch" />
 
     <include file="$(find bitbots_bringup)/launch/motion_standalone.launch">
         <arg name="sim" value="true" />
