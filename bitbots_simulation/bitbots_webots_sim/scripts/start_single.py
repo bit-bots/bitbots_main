@@ -6,7 +6,7 @@ import threading
 import rclpy
 from controller import Robot
 from rclpy.node import Node
-from wolfgang_webots_sim.webots_robot_controller import RobotController
+from bitbots_webots_sim.webots_robot_controller import RobotController
 
 
 class RobotNode:

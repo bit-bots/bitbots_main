@@ -12,7 +12,7 @@ from rclpy.node import Node
 class WebotsSim(Node):
     def __init__(self, nogui, multi_robot, headless, sim_port, robot_type):
         super().__init__("webots_sim")
-        pkg_path = get_package_share_directory("wolfgang_webots_sim")
+        pkg_path = get_package_share_directory("bitbots_webots_sim")
 
         # construct arguments with which webots is started depending on this scripts args
         extra_args = set()

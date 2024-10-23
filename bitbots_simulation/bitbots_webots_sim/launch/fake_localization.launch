@@ -6,5 +6,5 @@
     <node pkg="tf2_ros" exec="static_transform_publisher" name="donna_map" args="0 0 0 0 0 0 1 map donna/map" />
     <node pkg="tf2_ros" exec="static_transform_publisher" name="melody_map" args="0 0 0 0 0 0 1 map melody/map" />
 
-    <node pkg="wolfgang_webots_sim" exec="localization_faker.py" name="localization_faker"/>
+    <node pkg="bitbots_webots_sim" exec="localization_faker.py" name="localization_faker"/>
 </launch>

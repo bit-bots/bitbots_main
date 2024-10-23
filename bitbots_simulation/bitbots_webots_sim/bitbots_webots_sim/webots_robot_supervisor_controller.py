@@ -1,5 +1,5 @@
-from wolfgang_webots_sim.webots_robot_controller import RobotController
-from wolfgang_webots_sim.webots_supervisor_controller import SupervisorController
+from bitbots_webots_sim.webots_robot_controller import RobotController
+from bitbots_webots_sim.webots_supervisor_controller import SupervisorController
 
 
 class RobotSupervisorController(SupervisorController, RobotController):

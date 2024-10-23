@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>wolfgang_webots_sim</name>
+  <name>bitbots_webots_sim</name>
   <version>1.4.0</version>
   <description>Simulation environment using Webots for Wolfgang robot.</description>
 
@@ -34,10 +34,10 @@
 
 
   <export>
-      <bitbots_documentation>
-        <status>unknown</status>
-        <language>python</language>
-      </bitbots_documentation>
+    <bitbots_documentation>
+      <status>unknown</status>
+      <language>python</language>
+    </bitbots_documentation>
     <build_type>ament_cmake</build_type>
   </export>
 </package>

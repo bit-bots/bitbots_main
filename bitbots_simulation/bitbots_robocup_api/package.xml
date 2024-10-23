@@ -23,7 +23,7 @@
   <depend>hlvs_player</depend>
   <depend>rclpy</depend>
   <depend>sensor_msgs</depend>
-  <depend>wolfgang_webots_sim</depend>
+  <depend>bitbots_webots_sim</depend>
   <depend>protobuf-dev</depend>
   <depend>urdfdom_py</depend>
   <depend>topic_tools</depend>

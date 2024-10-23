@@ -5,7 +5,7 @@ import threading
 
 import rclpy
 from rclpy.node import Node
-from wolfgang_webots_sim.webots_supervisor_controller import SupervisorController
+from bitbots_webots_sim.webots_supervisor_controller import SupervisorController
 
 
 class SupervisorNode:

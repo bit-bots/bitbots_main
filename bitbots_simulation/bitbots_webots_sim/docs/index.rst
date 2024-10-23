@@ -28,7 +28,7 @@ Run the script to adapt the urdf to be usable by webots2urdf
 
 .. code-block:: bash
 
-  roscd wolfgang_webots_sim
+  roscd bitbots_webots_sim
   python scripts/fix_urdf_for_webots.py ../wolfgang_description/urdf/robot.urdf webots_robot.urdf
 
 Run the conversion script from urdf to proto file

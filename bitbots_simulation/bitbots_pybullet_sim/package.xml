@@ -21,7 +21,7 @@
   <depend>rosgraph_msgs</depend>
   <depend>std_msgs</depend>
   <depend>bitbots_docs</depend>
-  <depend>wolfgang_webots_sim</depend>
+  <depend>bitbots_webots_sim</depend>
   <depend>tf_transformations</depend>
   <depend>python3-transforms3d</depend>
   <depend>python3-numpy</depend>
