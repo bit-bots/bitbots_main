@@ -12,7 +12,7 @@
     <arg name="world_model" default="true" description="Whether the world model should be started"/>
 
     <!-- load the general simulator -->
-    <include file="$(find-pkg-share wolfgang_webots_sim)/launch/simulation.launch" />
+    <include file="$(find-pkg-share bitbots_webots_sim)/launch/simulation.launch" />
 
     <!-- load teamplayer software stack -->
     <include file="$(find-pkg-share bitbots_bringup)/launch/teamplayer.launch">

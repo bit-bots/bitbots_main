@@ -40,7 +40,7 @@ include:
         - bitbots_team_communication
         - bitbots_team_data_sim_rqt
     - bitbots_vision
-    - bitbots_wolfgang:
+    - bitbots_robot:
         - wolfgang_animations
         - wolfgang_description
         - wolfgang_moveit_config
