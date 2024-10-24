@@ -12,6 +12,7 @@ class GoToBlockPosition(AbstractActionElement):
 
     def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
+        self.blocking = parameters.get("blocking", True)
         self.block_position_goal_offset = self.blackboard.config["block_position_goal_offset"]
         self.block_radius = self.blackboard.config["block_radius_robot"]
         self.left_goalpost_position = [
@@ -64,13 +65,16 @@ class GoToBlockPosition(AbstractActionElement):
 
         self.blackboard.pathfinding.publish(pose_msg)
 
+        if not self.blocking:
+            self.pop()
+
     def _calc_opening_angle(self, ball_to_line: float, ball_pos: tuple) -> float:
         """
         Calculates the opening angle of the ball to both goalposts.
         With it we can get the angle bisector, in which we place the robot.
         Args:
             ball_to_line: distance of the ball to our goal line
-            ball_pos: ball position in world koordinate system
+            ball_pos: ball position in world coordinate system
 
         Returns:
             float: opening angle
