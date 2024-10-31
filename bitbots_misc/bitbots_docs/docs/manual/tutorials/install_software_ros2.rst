@@ -70,7 +70,7 @@ If you want to install it, you can do so by running ``make webots`` in the bitbo
 
 **3. Download our software**
 
-- Create a GitHub account, if not already done (see `here <http://doku.bit-bots.de/private/manual/dienste_accounts.html>` for further information)
+- Create a GitHub account, if not already done (see `here <http://doku.bit-bots.de/private/manual/dienste_accounts.html>`_ for further information)
 - Add your SSH key to GitHub to access and sync our repositories
     - If you don't know what I am talking about or you don't yet have a SSH key, follow this guide: https://docs.github.com/en/authentication/connecting-to-github-with-ssh/checking-for-existing-ssh-keys
     - Go to your account settings and add your SSH key (the ``.pub`` file) to `GitHub <https://github.com/settings/keys>`_
