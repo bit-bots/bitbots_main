@@ -21,8 +21,8 @@ As such you can lookup some of the needed requirements there.
 
 .. code-block:: bash
 
-  mkdir -p ~/colcon_ws/src
-  cd ~/colcon_ws/src
+  mkdir -p "$HOME/colcon_ws/src"
+  cd "$HOME/colcon_ws/src"
   git clone git@github.com:bit-bots/bitbots_main.git && cd bitbots_main
   make install-no-root
 
