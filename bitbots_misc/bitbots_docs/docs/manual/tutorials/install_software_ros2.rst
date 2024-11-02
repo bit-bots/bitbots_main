@@ -137,6 +137,8 @@ In case you are not using the bash shell, replace ``~/.bashrc`` and ``bash`` wit
 
   EOF
 
+  source ~/.bashrc
+
 - Configure the robot hostnames, see :doc:`configure_hostnames`.
 
 Notes
