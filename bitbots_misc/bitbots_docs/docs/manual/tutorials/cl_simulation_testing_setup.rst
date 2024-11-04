@@ -9,7 +9,6 @@ As such you can lookup some of the needed requirements there.
 **0. Requirements**
 
 - have an LDAP mafiasi account for access to the CLs
-- have ros2 aliases setup (see linked docs)
 
 **1. Setup and download our software**
 
