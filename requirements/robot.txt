@@ -5,3 +5,4 @@ protobuf==3.20.3 # Required for mycroft-mimic3-tts, but we want to enshure that 
 pyttsx3
 playsound
 simpleeval
+pyamdgpuinfo
