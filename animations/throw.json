@@ -1,0 +1,73 @@
+{
+    "author": "",
+    "description": "",
+    "keyframes": [
+        {
+            "duration": 1.0,
+            "goals": {
+                "HeadPan": 0.0,
+                "HeadTilt": 0.0,
+                "LElbow": -73.74,
+                "LShoulderPitch": -179.38,
+                "LShoulderRoll": 17.15,
+                "RElbow": 68.94,
+                "RShoulderPitch": 178.94,
+                "RShoulderRoll": -12.57
+            },
+            "name": "start frame",
+            "pause": 0.0,
+            "torque": {}
+        },
+        {
+            "duration": 1.0,
+            "goals": {
+                "HeadPan": 0.0,
+                "HeadTilt": 0.0,
+                "LElbow": -62.49000000000001,
+                "LShoulderPitch": -179.38,
+                "LShoulderRoll": 17.41,
+                "RElbow": 52.23,
+                "RShoulderPitch": 178.94,
+                "RShoulderRoll": -12.3
+            },
+            "name": "start frame_copy_1",
+            "pause": 0.0,
+            "torque": {}
+        },
+        {
+            "duration": 0.3,
+            "goals": {
+                "HeadPan": 0.0,
+                "HeadTilt": 0.0,
+                "LElbow": -94.66,
+                "LShoulderPitch": -147.13,
+                "LShoulderRoll": 11.17,
+                "RElbow": 89.16,
+                "RShoulderPitch": 147.38,
+                "RShoulderRoll": -7.21
+            },
+            "name": "start frame_copy_3",
+            "pause": 0.5,
+            "torque": {}
+        },
+        {
+            "duration": 1.0,
+            "goals": {
+                "HeadPan": 0.0,
+                "HeadTilt": 0.0,
+                "LElbow": 8.35,
+                "LShoulderPitch": 37.81,
+                "LShoulderRoll": -1.93,
+                "RElbow": -25.22,
+                "RShoulderPitch": -38.85,
+                "RShoulderRoll": 0.62
+            },
+            "name": "start frame_copy_2",
+            "pause": 0.0,
+            "torque": {}
+        }
+    ],
+    "last_edited": "2024-10-30 19:13:18.833923",
+    "name": "throw",
+    "version": ""
+}

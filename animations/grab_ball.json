@@ -1,0 +1,87 @@
+{
+    "author": "",
+    "description": "",
+    "keyframes": [
+        {
+            "duration": 3.0,
+            "goals": {
+                "LAnklePitch": -55.99,
+                "LAnkleRoll": 2.99,
+                "LElbow": -86.22,
+                "LHipPitch": 71.75,
+                "LHipRoll": 6.86,
+                "LHipYaw": -2.72,
+                "LKnee": 139.37,
+                "LShoulderPitch": -173.58,
+                "LShoulderRoll": 19.35,
+                "RAnklePitch": 51.44,
+                "RAnkleRoll": -12.66,
+                "RElbow": 82.66,
+                "RHipPitch": -71.54,
+                "RHipRoll": -13.54,
+                "RHipYaw": 1.23,
+                "RKnee": -134.74,
+                "RShoulderPitch": 172.35,
+                "RShoulderRoll": -12.66
+            },
+            "name": "start frame",
+            "pause": 0.0,
+            "torque": {}
+        },
+        {
+            "duration": 1.2,
+            "goals": {
+                "LAnklePitch": -57.48,
+                "LAnkleRoll": 11.96,
+                "LElbow": -86.22,
+                "LHipPitch": 121.61,
+                "LHipRoll": 14.250000000000002,
+                "LHipYaw": -3.08,
+                "LKnee": 160.21,
+                "LShoulderPitch": -58.89,
+                "LShoulderRoll": 19.35,
+                "RAnklePitch": 58.480000000000004,
+                "RAnkleRoll": -20.39,
+                "RElbow": 82.66,
+                "RHipPitch": -118.74,
+                "RHipRoll": -18.19,
+                "RHipYaw": 17.5,
+                "RKnee": -157.68,
+                "RShoulderPitch": 56.54,
+                "RShoulderRoll": -12.66
+            },
+            "name": "start frame_copy_1",
+            "pause": 0.0,
+            "torque": {}
+        },
+        {
+            "duration": 1.2,
+            "goals": {
+                "LAnklePitch": -62.4,
+                "LAnkleRoll": 10.11,
+                "LElbow": -86.22,
+                "LHipPitch": 71.05,
+                "LHipRoll": 13.37,
+                "LHipYaw": 1.23,
+                "LKnee": 142.19,
+                "LShoulderPitch": -164.79,
+                "LShoulderRoll": 19.35,
+                "RAnklePitch": 59.71,
+                "RAnkleRoll": -15.560000000000002,
+                "RElbow": 82.66,
+                "RHipPitch": -70.05,
+                "RHipRoll": -17.67,
+                "RHipYaw": 3.17,
+                "RKnee": -139.31,
+                "RShoulderPitch": 164.0,
+                "RShoulderRoll": -12.66
+            },
+            "name": "start frame_copy_2",
+            "pause": 0.0,
+            "torque": {}
+        }
+    ],
+    "last_edited": "2024-10-30 19:16:16.384874",
+    "name": "grab_ball",
+    "version": ""
+}
