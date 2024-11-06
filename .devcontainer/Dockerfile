@@ -1,4 +1,4 @@
-FROM ros:iron
+FROM ros:jazzy
 
 ARG user=bitbots
 ARG uid=1000
@@ -58,25 +58,16 @@ RUN apt update -y \
 RUN apt-get install -y \
   python3-rosdep \
   python3-vcstool \
-  ros-iron-camera-calibration \
-  ros-iron-desktop \
-  ros-iron-joint-state-publisher-gui \
-  ros-iron-plotjuggler \
-  ros-iron-plotjuggler-msgs \
-  ros-iron-plotjuggler-ros \
-  ros-iron-rmw-cyclonedds-cpp \
-  ros-iron-rqt-robot-monitor \
-  ros-iron-soccer-vision-3d-rviz-markers
-
-# Update pip and install colcon-clean
-RUN pip3 install pip -U
-
-# Install colcon extensions / patches
-RUN python3 -m pip install \
-  git+https://github.com/ruffsl/colcon-clean \
-  git+https://github.com/timonegk/colcon-core.git@colors \
-  git+https://github.com/timonegk/colcon-notification.git@colors \
-  git+https://github.com/timonegk/colcon-output.git@colors
+  python3-virtualenv \
+  ros-jazzy-camera-calibration \
+  ros-jazzy-desktop \
+  ros-jazzy-joint-state-publisher-gui \
+  ros-jazzy-plotjuggler \
+  ros-jazzy-plotjuggler-msgs \
+  ros-jazzy-plotjuggler-ros \
+  ros-jazzy-rmw-cyclonedds-cpp \
+  ros-jazzy-rqt-robot-monitor \
+  ros-jazzy-soccer-vision-3d-rviz-markers
 
 # Set zsh as default shell
 SHELL ["/bin/zsh", "-c"]
@@ -86,11 +77,19 @@ SHELL ["/bin/zsh", "-c"]
 # when the host user is part of the users group.
 # Then create a bitbots user with home directory and add allow it to use sudo
 RUN groupdel users \
+  && userdel -r ubuntu \
   && useradd -m -U -u "$uid" -G sudo -s /bin/zsh $user \
   && groupmod -g "$gid" $user \
   && echo "$user ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
 USER $user
+
+# Install pip colcon extensions / patches as user
+RUN python3 -m pip install --user --break-system-packages \
+    git+https://github.com/ruffsl/colcon-clean \
+    git+https://github.com/timonegk/colcon-core.git@colors \
+    git+https://github.com/timonegk/colcon-notification.git@colors \
+    git+https://github.com/timonegk/colcon-output.git@colors
 
 # Create colcon workspace
 RUN mkdir -p /home/$user/colcon_ws/src

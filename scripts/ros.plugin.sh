@@ -1,7 +1,9 @@
 ### Aliases and functions for ROS 2 and colcon usage. Usage for either
-### Ubuntu 22.04 or in rosdocked/dev docker container
+### Ubuntu 22.04/24.04 or in rosdocked/dev docker container
 
 shell="$(basename "$SHELL")"
+ros_releases=(iron jazzy rolling)
+distro="$ROS_DISTRO"
 
 rid() {
   export ROS_DOMAIN_ID="$1"
@@ -12,13 +14,21 @@ rid() {
 # This needs to be called every time we source something ROS 2 related.
 # Previous loading of bashcompinit is required.
 update_ros2_argcomplete() {
-  eval "$(register-python-argcomplete3 colcon)"
-  eval "$(register-python-argcomplete3 ros2)"
+  eval "$(register-python-argcomplete colcon)"
+  eval "$(register-python-argcomplete ros2)"
 }
 
 # Source the ROS 2 setup files if iron is installed
-if [[ -d /opt/ros/iron ]]; then
-  source "/opt/ros/iron/setup.$shell" &> /dev/null
+if [[ -n "$distro" ]]; then
+  source "/opt/ros/$distro/setup.$shell" &> /dev/null
+else
+  for release in "${ros_releases[@]}"; do
+    if [[ -d "/opt/ros/$release" ]]; then
+      source "/opt/ros/$release/setup.$shell" &> /dev/null
+      distro="$release"
+      break
+    fi
+  done
 fi
 
 # Update the tab completion
@@ -45,7 +55,7 @@ alias cb='cdc && colcon build --symlink-install --continue-on-error --packages-u
 alias cc='cdc && colcon clean packages --packages-select'
 alias cca='cdc && colcon clean packages'
 
-alias sr="source /opt/ros/iron/setup.$shell && update_ros2_argcomplete"
+alias sr="source /opt/ros/$distro/setup.$shell && update_ros2_argcomplete"
 alias sc="source \$COLCON_WS/install/setup.$shell && update_ros2_argcomplete"
 alias sa='sr && sc'
 

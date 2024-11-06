@@ -1,5 +1,5 @@
 {
-  "name": "Bit-Bots Iron Dev",
+  "name": "Bit-Bots Jazzy Dev",
 
   "build": { "dockerfile": "Dockerfile" },
 
@@ -14,7 +14,9 @@
     "vscode": {
       "settings": {
         "terminal.integrated.defaultProfile.linux": "zsh",
-        "terminal.integrated.profiles.linux": { "zsh": { "path": "/bin/zsh" } }
+        "terminal.integrated.profiles.linux": { "zsh": { "path": "/bin/zsh" } },
+        "dev.containers.copyGitConfig": false,
+        "dev.containers.gitCredentialHelperConfigLocation": "none"
       },
       "extensions": ["ms-iot.vscode-ros"]
     }

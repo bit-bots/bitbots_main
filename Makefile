@@ -17,7 +17,7 @@ install-no-root: pull-init update-no-root
 
 pip:
 	# Install and upgrade pip dependencies
-	pip install --upgrade -r requirements/dev.txt --user
+	pip install --upgrade -r requirements/dev.txt --user --break-system-packages
 
 pre-commit:
 	# Install pre-commit hooks for all submodules that have a .pre-commit-config.yaml file
@@ -91,7 +91,7 @@ rosdep:
 	[ -f /etc/ros/rosdep/sources.list.d/20-default.list ] || sudo rosdep init
 	# Update rosdep and install dependencies from meta directory
 	rosdep update
-	rosdep install --from-paths . --ignore-src --rosdistro iron -y
+	rosdep install --from-paths . --ignore-src --rosdistro jazzy -y
 
 status:
 	# Show status of all repositories
