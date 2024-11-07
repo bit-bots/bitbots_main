@@ -15,7 +15,7 @@ walking:
       kick_rise_factor: 1.5
 
       double_support_ratio: 0.0264282002140171
-      first_step_swing_factor: 1.80591386587488
+      first_step_swing_factor: 2.9
       foot_distance: 0.179900277671633
       foot_rise: 0.0819786291304007
       freq: 1.2
