@@ -1,4 +1,7 @@
+#include <bio_ik/bio_ik.h>  // TODO remove this include
+
 #include <bitbots_dynup/dynup_ik.hpp>
+
 namespace bitbots_dynup {
 
 DynupIK::DynupIK(rclcpp::Node::SharedPtr node) : node_(node) {}
@@ -54,13 +57,19 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse& ik_goals) {
   bool success;
   goal_state_->updateLinkTransforms();
 
+  // Add auxiliary goal for the knees to prevent bending in the wrong direction
+  bio_ik::BioIKKinematicsQueryOptions leg_ik_options;
+  leg_ik_options.return_approximate_solution = true;
+
+  leg_ik_options.goals.push_back(std::make_unique<bio_ik::AvoidJointLimitsGoal>());
+
   success = goal_state_->setFromIK(l_leg_joints_group_, left_foot_goal_msg, 0.005,
-                                   moveit::core::GroupStateValidityCallbackFn(), ik_options);
+                                   moveit::core::GroupStateValidityCallbackFn(), leg_ik_options);
 
   goal_state_->updateLinkTransforms();
 
   success &= goal_state_->setFromIK(r_leg_joints_group_, right_foot_goal_msg, 0.005,
-                                    moveit::core::GroupStateValidityCallbackFn(), ik_options);
+                                    moveit::core::GroupStateValidityCallbackFn(), leg_ik_options);
 
   goal_state_->updateLinkTransforms();
 
