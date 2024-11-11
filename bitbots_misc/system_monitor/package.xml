@@ -19,7 +19,7 @@
   <depend>python3-psutil</depend>
   <depend>bitbots_docs</depend>
   <depend>rclpy</depend>
-    <depend>bitbots_msgs</depend>
+  <depend>bitbots_msgs</depend>
 
   <export><build_type>ament_python</build_type>
   </export>
