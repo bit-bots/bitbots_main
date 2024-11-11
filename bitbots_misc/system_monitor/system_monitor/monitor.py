@@ -7,7 +7,7 @@ from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus
 from rclpy.node import Node
 
 from bitbots_msgs.msg import Workload as WorkloadMsg
-from system_monitor import cpus, memory, network_interfaces
+from system_monitor import cpus, gpu, memory, network_interfaces
 
 
 def main():
@@ -23,24 +23,31 @@ def main():
     # start all names with "SYSTEM" for diagnostic analyzer
     diag_cpu.name = "SYSTEMCPU"
     diag_cpu.hardware_id = "CPU"
+    diag_gpu = DiagnosticStatus()
+    diag_gpu.name = "SYSTEMGPU"
+    diag_gpu.hardware_id = "GPU"
     diag_mem = DiagnosticStatus()
     diag_mem.name = "SYSTEMMemory"
     diag_mem.hardware_id = "Memory"
 
     node.declare_parameter("update_frequency", 10.0)
-    node.declare_parameter("do_memory", True)
     node.declare_parameter("do_cpu", True)
+    node.declare_parameter("do_gpu", True)
+    node.declare_parameter("do_memory", True)
     node.declare_parameter("do_network", True)
     node.declare_parameter("cpu_load_percentage", 80.0)
+    node.declare_parameter("gpu_load_percentage", 80.0)
     node.declare_parameter("memory_load_percentage", 80.0)
     node.declare_parameter("network_rate_received_errors", 10.0)
     node.declare_parameter("network_rate_send_errors", 10.0)
 
     rate = node.get_parameter("update_frequency").get_parameter_value().double_value
-    do_memory = node.get_parameter("do_memory").get_parameter_value().bool_value
     do_cpu = node.get_parameter("do_cpu").get_parameter_value().bool_value
+    do_gpu = node.get_parameter("do_gpu").get_parameter_value().bool_value
+    do_memory = node.get_parameter("do_memory").get_parameter_value().bool_value
     do_network = node.get_parameter("do_network").get_parameter_value().bool_value
     cpu_load_percentage = node.get_parameter("cpu_load_percentage").get_parameter_value().double_value
+    gpu_load_percentage = node.get_parameter("gpu_load_percentage").get_parameter_value().double_value
     memory_load_percentage = node.get_parameter("memory_load_percentage").get_parameter_value().double_value
     network_rate_received_errors = node.get_parameter("network_rate_received_errors").get_parameter_value().double_value
     network_rate_send_errors = node.get_parameter("network_rate_send_errors").get_parameter_value().double_value
@@ -48,6 +55,7 @@ def main():
     while rclpy.ok():
         last_send_time = time.time()
         running_processes, cpu_usages, overall_usage_percentage = cpus.collect_all() if do_cpu else (-1, [], 0)
+        gpu_usage_percentage = gpu.collect_all() if do_gpu else 0
         memory_available, memory_used, memory_total = memory.collect_all() if do_memory else (-1, -1, -1)
         interfaces = network_interfaces.collect_all(node.get_clock()) if do_network else []
 
@@ -56,6 +64,7 @@ def main():
             cpus=cpu_usages,
             running_processes=running_processes,
             cpu_usage_overall=overall_usage_percentage,
+            gpu_usage=gpu_usage_percentage,
             memory_available=memory_available,
             memory_used=memory_used,
             memory_total=memory_total,
@@ -72,6 +81,13 @@ def main():
         else:
             diag_cpu.level = DiagnosticStatus.OK
         diag_array.status.append(diag_cpu)
+
+        diag_gpu.message = str(gpu_usage_percentage) + "%"
+        if gpu_usage_percentage >= gpu_load_percentage:
+            diag_gpu.level = DiagnosticStatus.WARN
+        else:
+            diag_gpu.level = DiagnosticStatus.OK
+        diag_array.status.append(diag_gpu)
 
         memory_usage = round((memory_used / memory_total) * 100, 2)
         diag_mem.message = str(memory_usage) + "%"
