@@ -110,7 +110,13 @@ walking:
       default_value: 0.0
     foot_pitch_angle:
       type: double
-      description: "Foot pitch angle before toe-off"
+      description: "Foot pitch angle at toe-off"
+      validation:
+        bounds<>: [0.0, 15.0]
+      default_value: 0.0
+    foot_pitch_acc:
+      type: double
+      description: "Foot pitch acceleration at toe-off"
       validation:
         bounds<>: [0.0, 15.0]
       default_value: 0.0

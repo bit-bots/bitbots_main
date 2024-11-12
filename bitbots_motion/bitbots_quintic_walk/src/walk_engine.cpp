@@ -518,7 +518,8 @@ void WalkEngine::buildTrajectories(WalkEngine::TrajectoryType type) {
   foot_spline_.pitch()->addPoint(0.0, foot_orientation_pos_at_last_foot_change_.y(),
                                  foot_orientation_vel_at_last_foot_change_.y(),
                                  foot_orientation_acc_at_foot_change_.y());
-  foot_spline_.pitch()->addPoint(double_support_length, config_.foot_pitch_angle * support_to_next_.getOrigin().x());
+  foot_spline_.pitch()->addPoint(double_support_length, config_.foot_pitch_angle * support_to_next_.getOrigin().x(),
+                                 config_.foot_pitch_acc, 0);
   // foot_spline_.pitch()->addPoint(double_support_length + single_support_length * config_.foot_apex_phase -
   //                                0.5 * config_.foot_z_pause * single_support_length,
   //                                0.5 * config_.foot_pitch_angle * support_to_next_.getOrigin().x());
