@@ -1,0 +1,389 @@
+<xacro:arg name="use_fake_walk" default="False"/>
+<xacro:property name="fake_walk" value="$(arg use_fake_walk)" />
+<xacro:arg name="sim_ns" default="/" />
+
+<transmission name="HeadPanTransmission">
+<type>transmission_interface/SimpleTransmission</type>
+<joint name="HeadPan">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+</joint>
+<actuator name="HeadPanMotor">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+</actuator>
+</transmission>
+<transmission name="HeadTiltTransmission">
+<type>transmission_interface/SimpleTransmission</type>
+<joint name="HeadTilt">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+</joint>
+<actuator name="HeadTiltMotor">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+</actuator>
+</transmission>
+<transmission name="LShoulderPitchTransmission">
+<type>transmission_interface/SimpleTransmission</type>
+<joint name="LShoulderPitch">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+</joint>
+<actuator name="LShoulderPitchMotor">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+</actuator>
+</transmission>
+<transmission name="LShoulderRollTransmission">
+<type>transmission_interface/SimpleTransmission</type>
+<joint name="LShoulderRoll">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+</joint>
+<actuator name="LShoulderRollTransmission">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+</actuator>
+</transmission>
+<transmission name="LElbowTransmission">
+<type>transmission_interface/SimpleTransmission</type>
+<joint name="LElbow">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+</joint>
+<actuator name="LElbowMotor">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+</actuator>
+</transmission>
+<transmission name="RShoulderPitchTransmission">
+<type>transmission_interface/SimpleTransmission</type>
+<joint name="RShoulderPitch">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+</joint>
+<actuator name="RShoulderPitchMotor">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+</actuator>
+</transmission>
+<transmission name="RShoulderRollTransmission">
+<type>transmission_interface/SimpleTransmission</type>
+<joint name="RShoulderRoll">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+</joint>
+<actuator name="RShoulderRollMotor">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+</actuator>
+</transmission>
+<transmission name="RElbowTransmission">
+<type>transmission_interface/SimpleTransmission</type>
+<joint name="RElbow">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+</joint>
+<actuator name="RElbowMotor">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+</actuator>
+</transmission>
+<transmission name="LHipYawTransmission">
+<type>transmission_interface/SimpleTransmission</type>
+<joint name="LHipYaw">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+</joint>
+<actuator name="LHipYawMotor">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+</actuator>
+</transmission>
+<transmission name="LHipRollTransmission">
+<type>transmission_interface/SimpleTransmission</type>
+<joint name="LHipRoll">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+</joint>
+<actuator name="LHipRollMotor">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+</actuator>
+</transmission>
+<transmission name="LHipPitchTransmission">
+<type>transmission_interface/SimpleTransmission</type>
+<joint name="LHipPitch">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+</joint>
+<actuator name="LHipPitchMotor">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+</actuator>
+</transmission>
+<transmission name="LKneeTransmission">
+<type>transmission_interface/SimpleTransmission</type>
+<joint name="LKnee">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+</joint>
+<actuator name="LKneeMotor">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+</actuator>
+</transmission>
+<transmission name="LAnklePitchTransmission">
+<type>transmission_interface/SimpleTransmission</type>
+<joint name="LAnklePitch">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+</joint>
+<actuator name="LAnklePitchMotor">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+</actuator>
+</transmission>
+<transmission name="LAnkleRollTransmission">
+<type>transmission_interface/SimpleTransmission</type>
+<joint name="LAnkleRoll">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+</joint>
+<actuator name="LAnkleRollMotor">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+</actuator>
+</transmission>
+<transmission name="RHipYawTransmission">
+<type>transmission_interface/SimpleTransmission</type>
+<joint name="RHipYaw">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+</joint>
+<actuator name="RHipYawMotor">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+</actuator>
+</transmission>
+<transmission name="RHipRollTransmission">
+<type>transmission_interface/SimpleTransmission</type>
+<joint name="RHipRoll">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+</joint>
+<actuator name="RHipRollMotor">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+</actuator>
+</transmission>
+<transmission name="RHipPitchTransmission">
+<type>transmission_interface/SimpleTransmission</type>
+<joint name="RHipPitch">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+</joint>
+<actuator name="RHipPitchMotor">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+</actuator>
+</transmission>
+<transmission name="RKneeTransmission">
+<type>transmission_interface/SimpleTransmission</type>
+<joint name="RKnee">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+</joint>
+<actuator name="RKneeMotor">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+</actuator>
+</transmission>
+<transmission name="RAnklePitchTransmission">
+<type>transmission_interface/SimpleTransmission</type>
+<joint name="RAnklePitch">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+</joint>
+<actuator name="RAnklePitchMotor">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+</actuator>
+</transmission>
+<transmission name="RAnkleRollTransmission">
+<type>transmission_interface/SimpleTransmission</type>
+<joint name="RAnkleRoll">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+</joint>
+<actuator name="RAnkleRollMotor">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+</actuator>
+</transmission>
+<gazebo reference="r_foot">
+<material>Gazebo/FlatBlack</material>
+<kp>1000000.0</kp>
+<kd>100.0</kd>
+<mu1>1.0</mu1>
+<mu2>1.0</mu2>
+<fdir1>1 0 0</fdir1>
+<maxVel>1.0</maxVel>
+<minDepth>0.00</minDepth>
+</gazebo>
+<gazebo reference="l_foot">
+<material>Gazebo/FlatBlack</material>
+<kp>1000000.0</kp>
+<kd>100.0</kd>
+<mu1>1.0</mu1>
+<mu2>1.0</mu2>
+<fdir1>1 0 0</fdir1>
+<maxVel>1.0</maxVel>
+<minDepth>0.00</minDepth>
+</gazebo>
+
+<!-- joint controller -->
+<gazebo>
+<plugin filename="libgazebo_ros_control.so" name="gazebo_ros_control">
+    <robotNamespace>$(arg sim_ns)</robotNamespace>
+</plugin>
+</gazebo>
+
+<!-- camera sensor -->
+<gazebo reference="camera_optical_frame">
+    <sensor name='camera' type='camera'>
+      <pose>-0.050000 -0.010000 0.000000 -1.5708 0.000000 -3.141592</pose>
+      <camera name='__default__'>
+        <horizontal_fov>0.57</horizontal_fov>
+        <image>
+          <width>620</width>
+          <height>480</height>
+        </image>
+        <clip>
+          <near>0.001000</near>
+          <far>100.000000</far>
+        </clip>
+      </camera>
+      <always_on>1</always_on>
+      <update_rate>30.000000</update_rate>
+      <visualize>1</visualize>
+      <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>30</updateRate>
+        <cameraName>camera</cameraName>
+        <imageTopicName>camera/image_proc</imageTopicName>
+        <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+        <frameName>camera_optical_frame</frameName>
+        <hackBaseline>0.07</hackBaseline>
+        <distortionK1>0.0</distortionK1>
+        <distortionK2>0.0</distortionK2>
+        <distortionK3>0.0</distortionK3>
+        <distortionT1>0.0</distortionT1>
+        <distortionT2>0.0</distortionT2>
+      </plugin>
+    </sensor>
+</gazebo>
+
+
+<!-- IMU sensor -->
+<gazebo reference="imu_frame">
+    <gravity>true</gravity>
+    <sensor name="imu_sensor" type="imu">
+        <always_on>true</always_on>
+        <update_rate>100</update_rate>
+        <visualize>true</visualize>
+        <topic>__default_topic__</topic>
+        <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
+            <topicName>imu</topicName>
+            <bodyName>imu_frame</bodyName>
+            <updateRateHZ>100.0</updateRateHZ>
+            <gaussianNoise>0.0</gaussianNoise>
+            <xyzOffset>0 0 0</xyzOffset>
+            <rpyOffset>0 0 0</rpyOffset>
+            <frameName>imu_frame</frameName>
+        </plugin>
+        <pose>0 0 0 0 0 0</pose>
+    </sensor>
+</gazebo>
+<gazebo reference="imu_frame_2">
+  <gravity>true</gravity>
+  <sensor name="imu_head" type="imu">
+    <always_on>true</always_on>
+    <update_rate>100</update_rate>
+    <visualize>true</visualize>
+    <topic>__default_topic__</topic>
+    <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
+      <topicName>imu_head</topicName>
+      <bodyName>head</bodyName>
+      <updateRateHZ>100.0</updateRateHZ>
+      <gaussianNoise>0.0</gaussianNoise>
+      <xyzOffset>0 0 0</xyzOffset>
+      <rpyOffset>0 0 0</rpyOffset>
+      <frameName>head</frameName>
+    </plugin>
+    <pose>0 0 0 0 0 0</pose>
+  </sensor>
+</gazebo>
+<!-- force plugins for foot strain gauges -->
+<gazebo>
+    <plugin filename="libgazebo_ros_f3d.so" name="gazebo_ros_f3d">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>100.0</updateRate>
+        <bodyName>llb</bodyName>
+        <topicName>sim_strain_gauges/llb</topicName>
+        <robotNamespace>$(arg sim_ns)</robotNamespace>
+    </plugin>
+
+    <plugin filename="libgazebo_ros_f3d.so" name="gazebo_ros_f3d">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>100.0</updateRate>
+        <bodyName>llf</bodyName>
+        <topicName>sim_strain_gauges/llf</topicName>
+        <robotNamespace>$(arg sim_ns)</robotNamespace>
+    </plugin>
+
+    <plugin filename="libgazebo_ros_f3d.so" name="gazebo_ros_f3d">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>100.0</updateRate>
+        <bodyName>lrf</bodyName>
+        <topicName>sim_strain_gauges/lrf</topicName>
+        <robotNamespace>$(arg sim_ns)</robotNamespace>
+    </plugin>
+
+    <plugin filename="libgazebo_ros_f3d.so" name="gazebo_ros_f3d">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>100.0</updateRate>
+        <bodyName>lrb</bodyName>
+        <topicName>sim_strain_gauges/lrb</topicName>
+        <robotNamespace>$(arg sim_ns)</robotNamespace>
+    </plugin>
+
+    <plugin filename="libgazebo_ros_f3d.so" name="gazebo_ros_f3d">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>100.0</updateRate>
+        <bodyName>rlb</bodyName>
+        <topicName>sim_strain_gauges/rlb</topicName>
+        <robotNamespace>$(arg sim_ns)</robotNamespace>
+    </plugin>
+
+    <plugin filename="libgazebo_ros_f3d.so" name="gazebo_ros_f3d">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>100.0</updateRate>
+        <bodyName>rlf</bodyName>
+        <topicName>sim_strain_gauges/rlf</topicName>
+        <robotNamespace>$(arg sim_ns)</robotNamespace>
+    </plugin>
+
+    <plugin filename="libgazebo_ros_f3d.so" name="gazebo_ros_f3d">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>100.0</updateRate>
+        <bodyName>rrf</bodyName>
+        <topicName>sim_strain_gauges/rrf</topicName>
+        <robotNamespace>$(arg sim_ns)</robotNamespace>
+    </plugin>
+
+    <plugin filename="libgazebo_ros_f3d.so" name="gazebo_ros_f3d">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>100.0</updateRate>
+        <bodyName>rrb</bodyName>
+        <topicName>sim_strain_gauges/rrb</topicName>
+        <robotNamespace>$(arg sim_ns)</robotNamespace>
+    </plugin>
+</gazebo>
+
+<!-- fake controller that allows us to move the robot and to get its oposition -->
+<!-- rostopic pub /cmd_vel geometry_msgs/Twist "{ linear: [ 0.1, 0, 0], angular: [0.2, 0, 0.1] }" -->
+<xacro:if value="${fake_walk == True}">
+    <!-- only active when fake_walk param is set to True -->
+    <gazebo>
+        <plugin name="object_controller" filename="libgazebo_ros_planar_move.so">
+            <robotNamespace>/</robotNamespace>
+            <commandTopic>cmd_vel</commandTopic>
+            <odometryTopic>odom</odometryTopic>
+            <odometryFrame>odom</odometryFrame>
+            <odometryRate>100.0</odometryRate>
+            <robotBaseFrame>base_link</robotBaseFrame>
+        </plugin>
+    </gazebo>
+</xacro:if>
