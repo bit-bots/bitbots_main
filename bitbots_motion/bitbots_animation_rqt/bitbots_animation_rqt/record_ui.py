@@ -6,14 +6,14 @@ from typing import Literal
 
 import rclpy
 from ament_index_python import get_package_share_directory
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import QLocale, Qt
 from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import (
     QAbstractItemView,
+    QDoubleSpinBox,
     QFileDialog,
     QGroupBox,
     QLabel,
-    QLineEdit,
     QListWidgetItem,
     QMainWindow,
     QMessageBox,
@@ -223,9 +223,12 @@ class RecordUI(Plugin):
             layout.addWidget(label)
 
             # Add a textfield to display the exact value of the motor
-            textfield = QLineEdit()
-            textfield.setText("0.0")
-            textfield.textEdited.connect(self.textfield_update)
+            textfield = QDoubleSpinBox()
+            textfield.setLocale(QLocale("C"))
+            textfield.setMaximum(180.0)
+            textfield.setMinimum(-180.0)
+            textfield.setValue(0.0)
+            textfield.valueChanged.connect(self.textfield_update)
             layout.addWidget(textfield)
             self._motor_controller_text_fields[motor_name] = textfield
 
@@ -597,7 +600,7 @@ class RecordUI(Plugin):
 
         # Update the UI
         for motor_name, angle in self._working_angles.items():
-            self._motor_controller_text_fields[motor_name].setText(str(round(math.degrees(angle), 2)))
+            self._motor_controller_text_fields[motor_name].setValue(round(math.degrees(angle), 2))
 
         self._widget.statusBar.showMessage("Mirrored frame")
 
@@ -628,7 +631,7 @@ class RecordUI(Plugin):
 
         # Update the UI
         for motor_name, angle in self._working_angles.items():
-            self._motor_controller_text_fields[motor_name].setText(str(round(math.degrees(angle), 2)))
+            self._motor_controller_text_fields[motor_name].setValue(round(math.degrees(angle), 2))
 
         self._widget.statusBar.showMessage("Inverted frame")
 
@@ -672,12 +675,13 @@ class RecordUI(Plugin):
 
             # Update the motor angle controls (value and active state)
             if active:
-                self._motor_controller_text_fields[motor_name].setText(
-                    str(round(math.degrees(selected_frame["goals"][motor_name]), 2))
+                self._motor_controller_text_fields[motor_name].setValue(
+                    round(math.degrees(selected_frame["goals"][motor_name]), 2)
                 )
+
                 self._working_angles[motor_name] = selected_frame["goals"][motor_name]
             else:
-                self._motor_controller_text_fields[motor_name].setText("0.0")
+                self._motor_controller_text_fields[motor_name].setValue(0.0)
 
         # Update the duration and pause
         self._widget.spinBoxDuration.setValue(selected_frame["duration"])
@@ -692,7 +696,7 @@ class RecordUI(Plugin):
         for motor_name, text_field in self._motor_controller_text_fields.items():
             try:
                 # Get the angle from the textfield
-                angle = float(text_field.text())
+                angle = text_field.value()
             except ValueError:
                 # Display QMessageBox stating that the value is not a number
                 QMessageBox.warning(
@@ -705,8 +709,8 @@ class RecordUI(Plugin):
             # because we do not want introduce rounding errors in the textfield
             angle = round(max(-180.0, min(angle, 180.0)), 2)
             # Set the angle in the textfield
-            if float(text_field.text()) != float(angle):
-                text_field.setText(str(angle))
+            if text_field.value() != angle:
+                text_field.setValue(angle)
             # Set the angle in the working values if the motor is active
             if self._motor_switcher_active_checkbox[motor_name].checkState(0) == Qt.CheckState.Checked:
                 self._working_angles[motor_name] = math.radians(angle)
