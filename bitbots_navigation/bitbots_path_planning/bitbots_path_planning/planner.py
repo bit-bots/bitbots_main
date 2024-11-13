@@ -51,7 +51,7 @@ class Planner:
         goal = self.goal
 
         # Get current costmap
-        navigation_grid = self.map.get_map()
+        navigation_grid = self.map.costmap
 
         # Get my pose and position on the map
         my_position = self.buffer.lookup_transform(

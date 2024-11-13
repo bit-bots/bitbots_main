@@ -88,8 +88,6 @@ class PathPlanning(Node):
             self.param_listener.refresh_dynamic_parameters()
             self.config = self.param_listener.get_params()
         try:
-            # Update the map with the latest ball and robot positions
-            self.map.update()
             # Publish the costmap for visualization
             self.costmap_pub.publish(self.map.to_msg())
 
@@ -106,6 +104,7 @@ class PathPlanning(Node):
                 self.carrot_pub.publish(carrot_point)
         except Exception as e:
             self.get_logger().error(f"Caught exception during calculation of path planning step: {e}")
+            raise e
 
 
 def main(args=None):
