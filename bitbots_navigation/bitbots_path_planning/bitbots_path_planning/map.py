@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import shapely
 import soccer_vision_3d_msgs.msg as sv3dm
 import tf2_ros as tf2
 from bitbots_utils.utils import get_parameters_from_other_node
@@ -7,7 +8,10 @@ from geometry_msgs.msg import Point
 from nav_msgs.msg import OccupancyGrid
 from rclpy.node import Node
 from ros2_numpy import msgify, numpify
+from shapely import Geometry
 from tf2_geometry_msgs import PointStamped, PoseWithCovarianceStamped
+
+CIRCLE_APPROXIMATION_SEGMENTS = 12
 
 
 class Map:
@@ -34,6 +38,20 @@ class Map:
         self.config_inflation_dialation: int = self.node.config.map.inflation.dialate
         self.config_obstacle_value: int = self.node.config.map.obstacle_value
         self.ball_obstacle_active: bool = True
+        self._obstacles: list[Geometry]
+        self._obstacles_union: Geometry | None = None
+
+    def obstacles(self) -> list[Geometry]:
+        """
+        Return the obstacles in the map as Geometry objects
+        """
+        return self._obstacles
+
+    def intersects(self, object: Geometry) -> bool:
+        """
+        Check if an object intersects with any obstacles in the map
+        """
+        return not self._obstacles_union.touches(object) and self._obstacles_union.intersects(object)
 
     def set_ball(self, ball: PoseWithCovarianceStamped) -> None:
         """
@@ -77,6 +95,17 @@ class Map:
             except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
                 self.node.get_logger().warn(str(e))
         self.robot_buffer = new_buffer
+        self._update_robot_geometries()
+
+    def _update_robot_geometries(self):
+        self._obstacles = []
+        for robot in self.robot_buffer:
+            center = shapely.Point(robot.bb.center.position.x, robot.bb.center.position.y)
+            radius = max(numpify(robot.bb.size)[:2]) / 2
+            dilation = self.config_inflation_dialation * self.node.config.map.resolution
+            geometry = center.buffer(radius + dilation, quad_segs=CIRCLE_APPROXIMATION_SEGMENTS // 4)
+            self._obstacles.append(geometry)
+        self._obstacles_union = shapely.union_all(self._obstacles)
 
     def _render_robots(self, map: np.ndarray) -> None:
         """

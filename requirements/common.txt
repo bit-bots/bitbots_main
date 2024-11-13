@@ -3,6 +3,7 @@ pip
 transforms3d==0.4.1
 git+https://github.com/Flova/pyastar2d
 git+https://github.com/bit-bots/YOEO
+heapdict==1.0.1
 simpleeval
 
 # The following dependencies are only needed for rl walking and we don't actively use them currently

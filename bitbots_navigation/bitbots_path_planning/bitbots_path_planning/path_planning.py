@@ -12,7 +12,7 @@ from std_msgs.msg import Bool, Empty
 from bitbots_path_planning.controller import Controller
 from bitbots_path_planning.map import Map
 from bitbots_path_planning.path_planning_parameters import bitbots_path_planning as parameters
-from bitbots_path_planning.planner import Planner
+from bitbots_path_planning.planner import VisibilityPlanner
 
 
 class PathPlanning(Node):
@@ -30,7 +30,7 @@ class PathPlanning(Node):
 
         # Create submodules
         self.map = Map(node=self, buffer=self.tf_buffer)
-        self.planner = Planner(node=self, buffer=self.tf_buffer, map=self.map)
+        self.planner = VisibilityPlanner(node=self, buffer=self.tf_buffer, map=self.map)
         self.controller = Controller(node=self, buffer=self.tf_buffer)
 
         # Subscriber
@@ -54,7 +54,7 @@ class PathPlanning(Node):
         self.create_subscription(
             Empty,
             "pathfinding/cancel",
-            lambda _: self.planner.cancel(),
+            lambda _: self.planner.cancel_goal(),
             5,
             callback_group=MutuallyExclusiveCallbackGroup(),
         )
@@ -104,7 +104,6 @@ class PathPlanning(Node):
                 self.carrot_pub.publish(carrot_point)
         except Exception as e:
             self.get_logger().error(f"Caught exception during calculation of path planning step: {e}")
-            raise e
 
 
 def main(args=None):
