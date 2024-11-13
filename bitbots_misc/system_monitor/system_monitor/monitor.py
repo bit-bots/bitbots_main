@@ -25,7 +25,7 @@ def main():
     diag_cpu.hardware_id = "CPU"
     diag_mem = DiagnosticStatus()
     diag_mem.name = "SYSTEMMemory"
-    diag_cpu.hardware_id = "Memory"
+    diag_mem.hardware_id = "Memory"
 
     node.declare_parameter("update_frequency", 10.0)
     node.declare_parameter("do_memory", True)

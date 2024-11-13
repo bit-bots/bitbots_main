@@ -194,13 +194,17 @@ class RecordUI(Plugin):
             return
         # Update working values of non stiff motors
         for motor_name in self.motors:
-            if self._motor_controller_torque_checkbox[motor_name].checkState(0) != Qt.CheckState.Checked:
+            # Get the state from the UI checkboxes
+            motor_active = self._motor_switcher_active_checkbox[motor_name].checkState(0) == Qt.CheckState.Checked
+            motor_torqueless = self._motor_controller_torque_checkbox[motor_name].checkState(0) != Qt.CheckState.Checked
+            # Check if the we are currently positioning the motor and want to store the value
+            if motor_active and motor_torqueless:
                 # Update textfield
                 self._motor_controller_text_fields[motor_name].setText(
                     str(round(math.degrees(joint_states.position[joint_states.name.index(motor_name)]), 2))
                 )
-        # React to textfield changes
-        self.textfield_update()
+                # Update working values
+                self._working_angles[motor_name] = joint_states.position[joint_states.name.index(motor_name)]
 
     def create_motor_controller(self) -> None:
         """
@@ -681,7 +685,7 @@ class RecordUI(Plugin):
                     "Warning",
                     f"Please enter a valid number.\n '{text_field.text()}' is not a valid number.",
                 )
-                return
+                continue
             # Clip the angle to the maximum and minimum, we do this in degrees,
             # because we do not want introduce rounding errors in the textfield
             angle = round(max(-180.0, min(angle, 180.0)), 2)
