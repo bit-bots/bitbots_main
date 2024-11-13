@@ -522,6 +522,10 @@ class RecordUI(Plugin):
             self._node.get_logger().error(str(e))
             return
         assert self._recorder.get_keyframe(frame) is not None, "Selected frame not found in list of keyframes"
+        # Check if only one frame is remaining
+        if len(self._widget.frameList) == 1:
+            QMessageBox.warning(self._widget, "Warning", "Cannot delete last remaining frame")
+            return
         self._recorder.delete(frame)
         self._widget.statusBar.showMessage(f"Deleted frame {frame}")
         self.update_frames()
