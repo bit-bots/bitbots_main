@@ -199,8 +199,8 @@ class RecordUI(Plugin):
             # Check if the we are currently positioning the motor and want to store the value
             if motor_active and motor_torqueless:
                 # Update textfield
-                self._motor_controller_text_fields[motor_name].setText(
-                    str(round(math.degrees(joint_states.position[joint_states.name.index(motor_name)]), 2))
+                self._motor_controller_text_fields[motor_name].setValue(
+                    round(math.degrees(joint_states.position[joint_states.name.index(motor_name)]), 2)
                 )
                 # Update working values
                 self._working_angles[motor_name] = joint_states.position[joint_states.name.index(motor_name)]
@@ -586,21 +586,26 @@ class RecordUI(Plugin):
         """
         Copies all motor values from one side of the robot to the other. Inverts values, if necessary
         """
+        # Get direction to mirror to
         mirrored_source = {"R": "L", "L": "R"}[source]
 
         # Go through all active motors
         for motor_name, angle in self._working_angles.items():
-            # Check if the motor is on the right or left side and get the mirrored motor name
+            # Set mirrored angles
             if motor_name.startswith(source):
                 mirrored_motor_name = mirrored_source + motor_name[1:]
-                if self._working_angles[motor_name] == 0.0:
-                    self._working_angles[mirrored_motor_name] = angle
-                else:
-                    self._working_angles[mirrored_motor_name] = -angle
+                # Make -0.0 to 0.0
+                mirrored_angle = -angle if angle != 0 else 0.0
+                self._working_angles[mirrored_motor_name] = mirrored_angle
 
         # Update the UI
         for motor_name, angle in self._working_angles.items():
+            # Block signals
+            self._motor_controller_text_fields[motor_name].blockSignals(True)
+            # Set values
             self._motor_controller_text_fields[motor_name].setValue(round(math.degrees(angle), 2))
+            # Enable signals again
+            self._motor_controller_text_fields[motor_name].blockSignals(False)
 
         self._widget.statusBar.showMessage("Mirrored frame")
 
@@ -631,7 +636,12 @@ class RecordUI(Plugin):
 
         # Update the UI
         for motor_name, angle in self._working_angles.items():
+            # Block signals
+            self._motor_controller_text_fields[motor_name].blockSignals(True)
+            # Set values
             self._motor_controller_text_fields[motor_name].setValue(round(math.degrees(angle), 2))
+            # Enable signals again
+            self._motor_controller_text_fields[motor_name].blockSignals(False)
 
         self._widget.statusBar.showMessage("Inverted frame")
 
