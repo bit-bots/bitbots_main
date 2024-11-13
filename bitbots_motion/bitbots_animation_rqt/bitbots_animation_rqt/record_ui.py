@@ -708,20 +708,9 @@ class RecordUI(Plugin):
         If the textfield is updated, update working values
         """
         for motor_name, text_field in self._motor_controller_text_fields.items():
-            try:
-                # Get the angle from the textfield
-                angle = text_field.value()
-            except ValueError:
-                # Display QMessageBox stating that the value is not a number
-                QMessageBox.warning(
-                    self._widget,
-                    "Warning",
-                    f"Please enter a valid number.\n '{text_field.text()}' is not a valid number.",
-                )
-                continue
-            # Clip the angle to the maximum and minimum, we do this in degrees,
-            # because we do not want introduce rounding errors in the textfield
-            angle = round(max(-180.0, min(angle, 180.0)), 2)
+            # Get the angle from the textfield
+            angle = text_field.value()
+            angle = round(angle, 2)
             # Set the angle in the textfield
             if text_field.value() != angle:
                 text_field.setValue(angle)
