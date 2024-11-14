@@ -85,8 +85,9 @@ def main():
             diag_cpu.level = DiagnosticStatus.OK
         diag_array.status.append(diag_cpu)
 
-        diag_gpu.message = str(gpu_load) + "%"
-        if gpu_load >= gpu_load_percentage:
+        gpu_usage = gpu_load * 100
+        diag_gpu.message = str(gpu_usage) + "%"
+        if gpu_usage >= gpu_load_percentage:
             diag_gpu.level = DiagnosticStatus.WARN
         else:
             diag_gpu.level = DiagnosticStatus.OK

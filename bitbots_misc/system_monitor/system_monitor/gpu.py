@@ -6,7 +6,7 @@ def collect_all():
         return 0
 
     gpu = pyamdgpuinfo.get_gpu(0)
-    load = round(gpu.query_load() * 100, 2)
+    load = gpu.query_load()
     vram_total = gpu.memory_info["vram_size"]
     vram_used = gpu.query_vram_usage()
     temperature = int(gpu.query_temperature())
