@@ -4,7 +4,7 @@
 -->HCM
 $StartHCM
     START_UP --> $Simulation
-        YES --> @RobotStateStartup, @PlayAnimationDynup + direction:walkready + r:false
+        YES --> @RobotStateStartup, @PlayAnimationStartup, @PlayAnimationDynup + direction:walkready + r:false
         NO --> @RobotStateStartup, @Wait + time:1 + r:false, @PlayAnimationStartup, @PlayAnimationDynup + direction:walkready + r:false
     RUNNING --> $CheckMotors
         MOTORS_NOT_STARTED --> @RobotStateStartup, @Wait

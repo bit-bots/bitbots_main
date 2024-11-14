@@ -15,7 +15,7 @@ walking:
       kick_rise_factor: 1.5
 
       double_support_ratio: 0.0264282002140171
-      first_step_swing_factor: 1.80591386587488
+      first_step_swing_factor: 2.9
       foot_distance: 0.179900277671633
       foot_rise: 0.0819786291304007
       freq: 1.2
@@ -75,23 +75,23 @@ walking:
       phase_reset:
         min_phase: 0.90
         foot_pressure:
-          active: False
+          active: True
           ground_min_pressure: 1.5
         effort:
           active: False
           joint_min_effort: 30.0
         imu:
-          active: True
+          active: False
           y_acceleration_threshold: 1.4
 
       trunk_pid:
         pitch:
-          p: 0.0
+          p: 0.0035
           i: 0.0
-          d: 0.0
+          d: 0.004
           i_clamp_min: 0.0
           i_clamp_max: 0.0
-          antiwindup: False
+          antiwindup: false
         roll:
           p: 0.0
           i: 0.0
