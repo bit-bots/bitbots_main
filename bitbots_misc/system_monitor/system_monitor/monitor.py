@@ -55,7 +55,7 @@ def main():
     while rclpy.ok():
         last_send_time = time.time()
         running_processes, cpu_usages, overall_usage_percentage = cpus.collect_all() if do_cpu else (-1, [], 0)
-        gpu_usage_percentage = gpu.collect_all() if do_gpu else 0
+        gpu_usage_percentage, gpu_load, gpu_temperature = gpu.collect_all() if do_gpu else 0
         memory_available, memory_used, memory_total = memory.collect_all() if do_memory else (-1, -1, -1)
         interfaces = network_interfaces.collect_all(node.get_clock()) if do_network else []
 
@@ -65,6 +65,8 @@ def main():
             running_processes=running_processes,
             cpu_usage_overall=overall_usage_percentage,
             gpu_usage=gpu_usage_percentage,
+            gpu_load=gpu_load,
+            gpu_temperature=gpu_temperature,
             memory_available=memory_available,
             memory_used=memory_used,
             memory_total=memory_total,
