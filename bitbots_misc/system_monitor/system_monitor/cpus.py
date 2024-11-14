@@ -52,7 +52,7 @@ def _get_cpu_stats():
 
 def _calculate_usage(cpu_num, total, busy):
     """
-    calculate usage percentage based on busy/total time(load, vram_used, vram_total, temperature)
+    calculate usage percentage based on busy/total time
     """
     diff_total = total - _prev_total[cpu_num]
     diff_busy = busy - _prev_busy[cpu_num]
