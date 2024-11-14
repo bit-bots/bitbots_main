@@ -5,11 +5,13 @@ system_monitor:
 
     # These settings are quick_switches to completely disable certain parts of statistic collection
     do_cpu: true
+    do_gpu: true
     do_memory: true
     do_network: false
 
     # these are the threshold values at which we start going into a warn state
     cpu_load_percentage: 80.0
+    gpu_load_percentage: 95.0
     memory_load_percentage: 80.0
     network_rate_received_errors: 10.0
     network_rate_send_errors: 10.0
