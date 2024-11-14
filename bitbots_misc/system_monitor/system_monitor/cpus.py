@@ -36,7 +36,8 @@ def collect_all():
 def _get_cpu_stats():
     """
     read and parse /proc/stat
-    :returns timings which contains accumulative busy and total cpu time
+
+    :returns: timings which contains accumulative busy and total cpu time
     """
     timings = {}
     with open("/proc/stat") as file_obj:
@@ -51,7 +52,7 @@ def _get_cpu_stats():
 
 def _calculate_usage(cpu_num, total, busy):
     """
-    calculate usage percentage based on busy/total time
+    calculate usage percentage based on busy/total time(load, vram_used, vram_total, temperature)
     """
     diff_total = total - _prev_total[cpu_num]
     diff_busy = busy - _prev_busy[cpu_num]
