@@ -10,118 +10,94 @@ WalkVisualizer::WalkVisualizer(rclcpp::Node::SharedPtr node, walking::Params::No
 
 void WalkVisualizer::init(moveit::core::RobotModelPtr kinematic_model) { kinematic_model_ = kinematic_model; }
 
-void WalkVisualizer::publishEngineDebug(WalkResponse response) {
-  // only do something if someone is listing
+std::pair<bitbots_quintic_walk::msg::WalkEngineDebug, visualization_msgs::msg::MarkerArray>
+WalkVisualizer::publishEngineDebug(WalkResponse response) {
+  // Here we will convert the walk engine response to a various debug messages and RViz markers
+
+  // Only do something if someone is listing
   if (pub_engine_debug_->get_subscription_count() == 0 && pub_debug_marker_->get_subscription_count() == 0) {
     return;
   }
 
-  /*
-  This method publishes various debug / visualization information.
-  */
+  // Initialize output containers
   bitbots_quintic_walk::msg::WalkEngineDebug msg;
-  bool is_left_support = response.is_left_support_foot;
-  msg.is_left_support = is_left_support;
+  visualization_msgs::msg::MarkerArray marker_array;
+
+  // Copy some data into the debug message
+  msg.is_left_support = response.is_left_support_foot;
   msg.is_double_support = response.is_double_support;
   msg.header.stamp = node_->now();
+  msg.phase_time = response.phase;
+  msg.traj_time = response.traj_time;
+  // Copy walk engine state
+  static const std::unordered_map<WalkState, std::string> state_string_mapping = {
+      {WalkState::IDLE, "idle"},
+      {WalkState::START_MOVEMENT, "start_movement"},
+      {WalkState::START_STEP, "start_step"},
+      {WalkState::WALKING, "walking"},
+      {WalkState::PAUSED, "paused"},
+      {WalkState::KICK, "kick"},
+      {WalkState::STOP_STEP, "stop_step"},
+      {WalkState::STOP_MOVEMENT, "stop_movement"}};
+  msg.state.data = state_string_mapping.at(response.state);
+  msg.state_number = static_cast<int>(response.state);
 
-  // define current support frame
+  // Define current support foot frame
   std::string current_support_frame;
-  if (is_left_support) {
+  if (response.is_left_support_foot) {
     current_support_frame = tf_config_.l_sole_frame;
   } else {
     current_support_frame = tf_config_.r_sole_frame;
   }
 
-  // define colors based on current support state
-  float r, g, b, a;
+  // Define colors based on current support state
+  std_msgs::msg::ColorRGBA color;
   if (response.is_double_support) {
-    r = 0;
-    g = 0;
-    b = 1;
-    a = 1;
+    color = BLUE;
   } else if (response.is_left_support_foot) {
-    r = 1;
-    g = 0;
-    b = 0;
-    a = 1;
+    color = RED;
   } else {
-    r = 1;
-    g = 1;
-    b = 0;
-    a = 1;
+    color = GREEN;
   }
 
-  // times
-  msg.phase_time = response.phase;
-  msg.traj_time = response.traj_time;
-
-  if (response.state == WalkState::IDLE) {
-    msg.state_number = 0;
-    msg.state.data = "idle";
-  } else if (response.state == WalkState::START_MOVEMENT) {
-    msg.state_number = 1;
-    msg.state.data = "start_movement";
-  } else if (response.state == WalkState::START_STEP) {
-    msg.state_number = 2;
-    msg.state.data = "start_step";
-  } else if (response.state == WalkState::WALKING) {
-    msg.state_number = 3;
-    msg.state.data = "walking";
-  } else if (response.state == WalkState::PAUSED) {
-    msg.state_number = 4;
-    msg.state.data = "paused";
-  } else if (response.state == WalkState::KICK) {
-    msg.state_number = 5;
-    msg.state.data = "kick";
-  } else if (response.state == WalkState::STOP_STEP) {
-    msg.state_number = 6;
-    msg.state.data = "stop_step";
-  } else if (response.state == WalkState::STOP_MOVEMENT) {
-    msg.state_number = 7;
-    msg.state.data = "stop_movement";
-  }
-
-  // footsteps
-  double roll, pitch, yaw;
+  // Create placeholder floats
+  double _1, _2;
+  // Copy transform of the last footstep position (and orientation) to the debug message
   msg.footstep_last.x = response.support_to_last.getOrigin()[0];
   msg.footstep_last.y = response.support_to_last.getOrigin()[1];
-  tf2::Matrix3x3(response.support_to_last.getRotation()).getRPY(roll, pitch, yaw);
-  msg.footstep_last.z = yaw;
+  tf2::Matrix3x3(response.support_to_last.getRotation()).getRPY(_1, _2, msg.footstep_last.z);
 
+  // Copy transform of the next footstep position (and orientation) to the debug message
   msg.footstep_next.x = response.support_to_next.getOrigin()[0];
   msg.footstep_next.y = response.support_to_next.getOrigin()[1];
-  tf2::Matrix3x3(response.support_to_next.getRotation()).getRPY(roll, pitch, yaw);
-  msg.footstep_next.z = yaw;
+  tf2::Matrix3x3(response.support_to_next.getRotation()).getRPY(_1, _2, msg.footstep_next.z);
 
-  // engine output
-  geometry_msgs::msg::Pose pose_msg;
-  tf2::toMsg(response.support_foot_to_flying_foot, pose_msg);
-  msg.fly_goal = pose_msg;
-  publishArrowMarker("engine_fly_goal", current_support_frame, pose_msg, 0, 0, 1, a);
+  // Copy cartesian coordinates of the currently flying foot relative to the support foot to the debug message
+  tf2::toMsg(response.support_foot_to_flying_foot, msg.fly_goal);
+  // Create an additional marker for the flying foot goal
+  marker_array.markers.push_back(createArrowMarker("engine_fly_goal", current_support_frame, msg.fly_goal, BLUE));
 
-  tf2::Matrix3x3(response.support_foot_to_flying_foot.getRotation()).getRPY(roll, pitch, yaw);
-  msg.fly_euler.x = roll;
-  msg.fly_euler.y = pitch;
-  msg.fly_euler.z = yaw;
+  // Copy the rotation of the flying foot relative to the support foot to the debug message
+  tf2::Matrix3x3(response.support_foot_to_flying_foot.getRotation())
+      .getRPY(msg.fly_euler.x, msg.fly_euler.y, msg.fly_euler.z);
 
-  tf2::toMsg(response.support_foot_to_trunk, pose_msg);
-  msg.trunk_goal = pose_msg;
-  publishArrowMarker("engine_trunk_goal", current_support_frame, pose_msg, r, g, b, a);
+  // Copy cartesian coordinates of the trunk goal relative to the support foot to the debug message
+  tf2::toMsg(response.support_foot_to_trunk, msg.trunk_goal);
+  // Create an additional marker for the trunk goal
+  marker_array.markers.push_back(createArrowMarker("engine_trunk_goal", current_support_frame, msg.trunk_goal, color));
 
-  msg.trunk_goal_abs = pose_msg;
+  // TODO check this!!!
+  msg.trunk_goal_abs = msg.trunk_goal;
   if (msg.trunk_goal_abs.position.y > 0) {
     msg.trunk_goal_abs.position.y -= response.foot_distance / 2;
   } else {
     msg.trunk_goal_abs.position.y += response.foot_distance / 2;
   }
 
-  tf2::Matrix3x3(response.support_foot_to_flying_foot.getRotation()).getRPY(roll, pitch, yaw);
-  msg.trunk_euler.x = roll;
-  msg.trunk_euler.y = pitch;
-  msg.trunk_euler.z = yaw;
+  tf2::Matrix3x3(response.support_foot_to_flying_foot.getRotation())
+      .getRPY(msg.trunk_euler.x, msg.trunk_euler.y, msg.trunk_euler.z);
 
-  // resulting trunk pose
+  // resulting trunk pose  TODO don't cheat here
   geometry_msgs::msg::Pose pose;
   geometry_msgs::msg::Point point;
   point.x = 0;
@@ -132,9 +108,10 @@ void WalkVisualizer::publishEngineDebug(WalkResponse response) {
   pose.orientation.y = 0;
   pose.orientation.z = 0;
   pose.orientation.w = 1;
-  publishArrowMarker("trunk_result", tf_config_.base_link_frame, pose, r, g, b, a);
+  marker_array.markers.push_back(createArrowMarker("trunk_result", tf_config_.base_link_frame, pose, color));
 
-  pub_engine_debug_->publish(msg);
+  // TODO return marker array
+  return {msg, marker_array};
 }
 
 void WalkVisualizer::publishIKDebug(WalkResponse response, moveit::core::RobotStatePtr current_state,
@@ -162,8 +139,8 @@ void WalkVisualizer::publishIKDebug(WalkResponse response, moveit::core::RobotSt
     msg.left_foot_goal = pose_fly_foot_goal;
     msg.right_foot_goal = pose_support_foot_goal;
   }
-  publishArrowMarker("engine_left_goal", tf_config_.base_link_frame, msg.left_foot_goal, 0, 1, 0, 1);
-  publishArrowMarker("engine_right_goal", tf_config_.base_link_frame, msg.right_foot_goal, 1, 0, 0, 1);
+  createArrowMarker("engine_left_goal", tf_config_.base_link_frame, msg.left_foot_goal, GREEN);
+  createArrowMarker("engine_right_goal", tf_config_.base_link_frame, msg.right_foot_goal, RED);
 
   // IK results
   moveit::core::RobotStatePtr goal_state;
@@ -189,8 +166,8 @@ void WalkVisualizer::publishIKDebug(WalkResponse response, moveit::core::RobotSt
     msg.support_foot_ik_result = pose_right_result;
     msg.fly_foot_ik_result = pose_left_result;
   }
-  publishArrowMarker("ik_left", tf_config_.base_link_frame, pose_left_result, 0, 1, 0, 1);
-  publishArrowMarker("ik_right", tf_config_.base_link_frame, pose_right_result, 1, 0, 0, 1);
+  createArrowMarker("ik_left", tf_config_.base_link_frame, pose_left_result, GREEN);
+  createArrowMarker("ik_right", tf_config_.base_link_frame, pose_right_result, RED);
 
   // IK offsets
   tf2::Vector3 support_off;
@@ -289,8 +266,10 @@ void WalkVisualizer::publishIKDebug(WalkResponse response, moveit::core::RobotSt
   pub_debug_->publish(msg);
 }
 
-void WalkVisualizer::publishArrowMarker(std::string name_space, std::string frame, geometry_msgs::msg::Pose pose,
-                                        float r, float g, float b, float a) {
+visualization_msgs::msg::Marker WalkVisualizer::createArrowMarker(const std::string &name_space,
+                                                                  const std::string &frame,
+                                                                  const geometry_msgs::msg::Pose &pose,
+                                                                  const std_msgs::msg::ColorRGBA &color) {
   visualization_msgs::msg::Marker marker_msg;
   marker_msg.header.stamp = node_->now();
   marker_msg.header.frame_id = frame;
@@ -299,12 +278,6 @@ void WalkVisualizer::publishArrowMarker(std::string name_space, std::string fram
   marker_msg.ns = name_space;
   marker_msg.action = marker_msg.ADD;
   marker_msg.pose = pose;
-
-  std_msgs::msg::ColorRGBA color;
-  color.r = r;
-  color.g = g;
-  color.b = b;
-  color.a = a;
   marker_msg.color = color;
 
   geometry_msgs::msg::Vector3 scale;
@@ -313,10 +286,10 @@ void WalkVisualizer::publishArrowMarker(std::string name_space, std::string fram
   scale.z = 0.003;
   marker_msg.scale = scale;
 
-  marker_msg.id = marker_id_;
+  marker_msg.id = marker_id_;  // TODO use consistent marker ids
   marker_id_++;
 
-  pub_debug_marker_->publish(marker_msg);
+  return marker_msg;
 }
 
 void WalkVisualizer::publishWalkMarkers(WalkResponse response) {

@@ -24,15 +24,32 @@ class WalkVisualizer : public bitbots_splines::AbstractVisualizer {
  public:
   explicit WalkVisualizer(rclcpp::Node::SharedPtr node, walking::Params::Node::Tf tf_config);
 
-  void publishArrowMarker(std::string name_space, std::string frame, geometry_msgs::msg::Pose pose, float r, float g,
-                          float b, float a);
+  visualization_msgs::msg::Marker createArrowMarker(const std::string &name_space, const std::string &frame,
+                                                    const geometry_msgs::msg::Pose &pose,
+                                                    const std_msgs::msg::ColorRGBA &color);
 
-  void publishEngineDebug(WalkResponse response);
+  std::pair<bitbots_quintic_walk::msg::WalkEngineDebug, visualization_msgs::msg::MarkerArray> publishEngineDebug(
+      WalkResponse response);
   void publishIKDebug(WalkResponse response, moveit::core::RobotStatePtr current_state,
                       bitbots_splines::JointGoals joint_goals);
   void publishWalkMarkers(WalkResponse response);
 
   void init(moveit::core::RobotModelPtr kinematic_model);
+
+  std_msgs::msg::ColorRGBA colorFactory(double r, double g, double b) {
+    std_msgs::msg::ColorRGBA color;
+    color.r = r;
+    color.g = g;
+    color.b = b;
+    color.a = 1.0;
+    return color;
+  }
+
+  const std_msgs::msg::ColorRGBA RED = colorFactory(1.0, 0.0, 0.0);
+  const std_msgs::msg::ColorRGBA GREEN = colorFactory(0.0, 1.0, 0.0);
+  const std_msgs::msg::ColorRGBA BLUE = colorFactory(0.0, 0.0, 1.0);
+  const std_msgs::msg::ColorRGBA BLACK = colorFactory(0.0, 0.0, 0.0);
+  const std_msgs::msg::ColorRGBA WHITE = colorFactory(1.0, 1.0, 1.0);
 
  private:
   rclcpp::Node::SharedPtr node_;
@@ -43,7 +60,7 @@ class WalkVisualizer : public bitbots_splines::AbstractVisualizer {
 
   rclcpp::Publisher<bitbots_quintic_walk::msg::WalkDebug>::SharedPtr pub_debug_;
   rclcpp::Publisher<bitbots_quintic_walk::msg::WalkEngineDebug>::SharedPtr pub_engine_debug_;
-  rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr pub_debug_marker_;
+  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr pub_debug_marker_;
 
   moveit::core::RobotModelPtr kinematic_model_;
 };
