@@ -33,7 +33,7 @@ class MotionOdometry : public rclcpp::Node {
   rclcpp::Time current_support_state_time_{rclcpp::Time(0, 0, RCL_ROS_TIME)};
   nav_msgs::msg::Odometry current_odom_msg_;
   tf2::Transform odometry_to_support_foot_;
-  std::string base_link_frame_, r_sole_frame_, l_sole_frame_, odom_frame_;
+  std::string base_link_frame_, r_sole_frame_, l_sole_frame_, odom_frame_, imu_frame_;
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr pub_odometry_;
   rclcpp::Subscription<biped_interfaces::msg::Phase>::SharedPtr walk_support_state_sub_;
   rclcpp::Subscription<biped_interfaces::msg::Phase>::SharedPtr kick_support_state_sub_;
@@ -57,11 +57,10 @@ class MotionOdometry : public rclcpp::Node {
   std::string current_support_link_;
   rclcpp::Time start_time_;
 
-  geometry_msgs::msg::QuaternionStamped current_imu_orientation_;
-  geometry_msgs::msg::QuaternionStamped previous_imu_orientation_inverse_;
-  geometry_msgs::msg::QuaternionStamped initial_imu_transform_;
+  tf2::Quaternion current_imu_orientation_;
+  tf2::Quaternion initial_imu_transform_;
 
-  bool initial_transform_set_ = false;
+  bool is_initial_transform_set_ = false;
 };
 
 }  // namespace bitbots_odometry

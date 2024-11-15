@@ -18,6 +18,8 @@ MotionOdometry::MotionOdometry()
   this->get_parameter("l_sole_frame", l_sole_frame_);
   this->declare_parameter<std::string>("odom_frame", "odom");
   this->get_parameter("odom_frame", odom_frame_);
+  this->declare_parameter<std::string>("imu_frame", "imu_frame");
+  this->get_parameter("imu_frame", imu_frame_);
 
   walk_support_state_sub_ = this->create_subscription<biped_interfaces::msg::Phase>(
       "walk_support_state", 1, std::bind(&MotionOdometry::supportCallback, this, _1));
@@ -100,6 +102,9 @@ void MotionOdometry::loop() {
   try {
     geometry_msgs::msg::TransformStamped current_support_to_base_msg =
         tf_buffer_.lookupTransform(previous_support_link_, base_link_frame_, rclcpp::Time(0, 0, RCL_ROS_TIME));
+    geometry_msgs::msg::TransformStamped imu_to_base_msg =
+        tf_buffer_.lookupTransform(imu_frame_, base_link_frame_, rclcpp::Time(0, 0, RCL_ROS_TIME));
+
     tf2::Transform current_support_to_base;
     tf2::fromMsg(current_support_to_base_msg.transform, current_support_to_base);
     double x = current_support_to_base.getOrigin().x();
@@ -111,16 +116,9 @@ void MotionOdometry::loop() {
     double y = current_support_to_base.getOrigin().y() * config_.y_scaling;
 
     tf2::Quaternion q;
-
-    tf2::Quaternion curr_imu_rot_quat;
-    tf2::Quaternion initial_imu_transform_quat;
-    tf2::fromMsg(current_imu_orientation_.quaternion, curr_imu_rot_quat);
-    tf2::fromMsg(initial_imu_transform_.quaternion, initial_imu_transform_quat);
     tf2::Transform imu_to_base;
-    geometry_msgs::msg::TransformStamped imu_to_base_msg =
-        tf_buffer_.lookupTransform("imu_frame", base_link_frame_, rclcpp::Time(0, 0, RCL_ROS_TIME));
     fromMsg(imu_to_base_msg.transform, imu_to_base);
-    q = curr_imu_rot_quat * initial_imu_transform_quat * imu_to_base.getRotation();
+    q = current_imu_orientation_ * initial_imu_transform_ * imu_to_base.getRotation();
 
     current_support_to_base.setOrigin({x, y, current_support_to_base.getOrigin().z()});
     current_support_to_base.setRotation(q);
@@ -188,16 +186,12 @@ void MotionOdometry::supportCallback(const biped_interfaces::msg::Phase::SharedP
 void MotionOdometry::odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg) { current_odom_msg_ = *msg; }
 
 void MotionOdometry::IMUCallback(const sensor_msgs::msg::Imu::SharedPtr msg) {
-  current_imu_orientation_.quaternion = msg->orientation;
-  current_imu_orientation_.header = msg->header;
-  if (initial_transform_set_ == false) {
-    initial_transform_set_ = true;
+  tf2::fromMsg(msg->orientation, current_imu_orientation_);
+  if (is_initial_transform_set_ == false) {
+    is_initial_transform_set_ = true;
     initial_imu_transform_ = current_imu_orientation_;
-    tf2::Quaternion rotation;
-    tf2::fromMsg(initial_imu_transform_.quaternion, rotation);
-    rotation.setW(-1.0);
-    rotation.normalize();
-    initial_imu_transform_.quaternion = tf2::toMsg(rotation);
+    initial_imu_transform_.setW(-1.0);
+    initial_imu_transform_.normalize();
   }
 }
 
