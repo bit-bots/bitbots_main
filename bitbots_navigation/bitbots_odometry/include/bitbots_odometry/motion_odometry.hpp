@@ -6,9 +6,11 @@
 
 #include <biped_interfaces/msg/phase.hpp>
 #include <bitbots_utils/utils.hpp>
+#include <geometry_msgs/msg/quaternion_stamped.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/imu.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
 #include <std_msgs/msg/char.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
@@ -36,6 +38,7 @@ class MotionOdometry : public rclcpp::Node {
   rclcpp::Subscription<biped_interfaces::msg::Phase>::SharedPtr walk_support_state_sub_;
   rclcpp::Subscription<biped_interfaces::msg::Phase>::SharedPtr kick_support_state_sub_;
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_subscriber_;
+  rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_subscriber_;
 
   // Declare parameter listener and struct from the generate_parameter_library
   motion_odometry::ParamListener param_listener_;
@@ -44,6 +47,7 @@ class MotionOdometry : public rclcpp::Node {
 
   void supportCallback(const biped_interfaces::msg::Phase::SharedPtr msg);
   void odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg);
+  void IMUCallback(const sensor_msgs::msg::Imu::SharedPtr msg);
 
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener tf_listener_;
@@ -52,6 +56,9 @@ class MotionOdometry : public rclcpp::Node {
   std::string previous_support_link_;
   std::string current_support_link_;
   rclcpp::Time start_time_;
+
+  geometry_msgs::msg::QuaternionStamped current_imu_orientation_;
+  geometry_msgs::msg::QuaternionStamped previous_imu_orientation_inverse_;
 };
 
 }  // namespace bitbots_odometry
