@@ -59,6 +59,9 @@ class MotionOdometry : public rclcpp::Node {
 
   geometry_msgs::msg::QuaternionStamped current_imu_orientation_;
   geometry_msgs::msg::QuaternionStamped previous_imu_orientation_inverse_;
+  geometry_msgs::msg::QuaternionStamped initial_imu_transform_;
+
+  bool initial_transform_set_ = false;
 };
 
 }  // namespace bitbots_odometry

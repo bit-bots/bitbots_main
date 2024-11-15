@@ -60,8 +60,6 @@ void MotionOdometry::loop() {
       current_support_link_ = l_sole_frame_;
     }
 
-    geometry_msgs::msg::QuaternionStamped current_imu_orientation =
-        current_imu_orientation_;  // TODO: time stamp fitting to step taken
     try {
       // add the transform between previous and current support link to the odometry transform.
       // we wait a bit for the transform as the joint messages are maybe a bit behind
@@ -79,21 +77,8 @@ void MotionOdometry::loop() {
         x = x * config_.x_backward_scaling;
       }
       double y = previous_to_current_support.getOrigin().y() * config_.y_scaling;
-      double yaw = tf2::getYaw(previous_to_current_support.getRotation()) * config_.yaw_scaling;
       previous_to_current_support.setOrigin({x, y, 0});
-      tf2::Quaternion q;
-      // rotation = current * inverse(previous)
-      tf2::Quaternion curr_imu_rot_quat;
-      tf2::Quaternion prev_imu_rot_quat_inv;
-      tf2::fromMsg(current_imu_orientation.quaternion, curr_imu_rot_quat);
-      tf2::fromMsg(previous_imu_orientation_inverse_.quaternion, prev_imu_rot_quat_inv);
-      tf2::Transform imu_to_support_foot;
-      geometry_msgs::msg::TransformStamped imu_to_support_foot_msg =
-          tf_buffer_.lookupTransform("imu_frame", current_support_link_, foot_change_time_);
-      fromMsg(imu_to_support_foot_msg.transform, imu_to_support_foot);
-      q = curr_imu_rot_quat * prev_imu_rot_quat_inv * imu_to_support_foot.getRotation();
 
-      previous_to_current_support.setRotation(q);
       odometry_to_support_foot_ = odometry_to_support_foot_ * previous_to_current_support;
 
     } catch (tf2::TransformException &ex) {
@@ -104,11 +89,6 @@ void MotionOdometry::loop() {
 
     // update current support link for transform from foot to base link
     previous_support_link_ = current_support_link_;
-    tf2::Quaternion rotation;
-    tf2::fromMsg(current_imu_orientation.quaternion, rotation);
-    rotation.setW(-1.0);
-    rotation.normalize();
-    previous_imu_orientation_inverse_.quaternion = tf2::toMsg(rotation);
 
     // remember the support state change but skip the double support phase
     if (current_support_state_ != biped_interfaces::msg::Phase::DOUBLE_STANCE) {
@@ -129,10 +109,20 @@ void MotionOdometry::loop() {
       x = x * config_.x_backward_scaling;
     }
     double y = current_support_to_base.getOrigin().y() * config_.y_scaling;
-    double yaw = tf2::getYaw(current_support_to_base.getRotation()) * config_.yaw_scaling;
-    current_support_to_base.setOrigin({x, y, current_support_to_base.getOrigin().z()});
+
     tf2::Quaternion q;
-    q.setRPY(0, 0, yaw);
+
+    tf2::Quaternion curr_imu_rot_quat;
+    tf2::Quaternion initial_imu_transform_quat;
+    tf2::fromMsg(current_imu_orientation_.quaternion, curr_imu_rot_quat);
+    tf2::fromMsg(initial_imu_transform_.quaternion, initial_imu_transform_quat);
+    tf2::Transform imu_to_base;
+    geometry_msgs::msg::TransformStamped imu_to_base_msg =
+        tf_buffer_.lookupTransform("imu_frame", base_link_frame_, rclcpp::Time(0, 0, RCL_ROS_TIME));
+    fromMsg(imu_to_base_msg.transform, imu_to_base);
+    q = curr_imu_rot_quat * initial_imu_transform_quat * imu_to_base.getRotation();
+
+    current_support_to_base.setOrigin({x, y, current_support_to_base.getOrigin().z()});
     current_support_to_base.setRotation(q);
 
     tf2::Transform odom_to_base_link = odometry_to_support_foot_ * current_support_to_base;
@@ -200,6 +190,15 @@ void MotionOdometry::odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg) 
 void MotionOdometry::IMUCallback(const sensor_msgs::msg::Imu::SharedPtr msg) {
   current_imu_orientation_.quaternion = msg->orientation;
   current_imu_orientation_.header = msg->header;
+  if (initial_transform_set_ == false) {
+    initial_transform_set_ = true;
+    initial_imu_transform_ = current_imu_orientation_;
+    tf2::Quaternion rotation;
+    tf2::fromMsg(initial_imu_transform_.quaternion, rotation);
+    rotation.setW(-1.0);
+    rotation.normalize();
+    initial_imu_transform_.quaternion = tf2::toMsg(rotation);
+  }
 }
 
 }  // namespace bitbots_odometry
