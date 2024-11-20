@@ -29,7 +29,8 @@ class Map:
         self.frame: str = self.node.config.map.planning_frame
         self.config_ball_diameter: float = self.node.config.map.ball_diameter
         self.config_inflation_blur: int = self.node.config.map.inflation.blur
-        self.config_inflation_dilation: int = self.node.config.map.inflation.dilate
+        self.config_inflation_dilation: float = self.node.config.map.inflation.dilate
+        print(f"dilation is {self.config_inflation_dilation}")
         self.config_obstacle_value: int = self.node.config.map.obstacle_value
         self.ball_obstacle_active: bool = True
         self._robot_geometries: list[Geometry] = []
@@ -40,7 +41,7 @@ class Map:
         """
         Return the obstacles in the map as Geometry objects
         """
-        return self._robot_geometries + self._ball_geometries
+        return self._robot_geometries + (self._ball_geometries if self.ball_obstacle_active else [])
 
     def intersects(self, object: Geometry) -> bool:
         """
@@ -93,22 +94,24 @@ class Map:
 
     def _update_ball_geometries(self, balls):
         self._ball_geometries = []
-        if self.ball_obstacle_active:
-            for ball in balls:
-                center = shapely.Point(ball.x, ball.y)
-                radius = self.config_ball_diameter / 2
-                dilation = self.config_inflation_dilation
-                geometry = center.buffer(radius + dilation, quad_segs=CIRCLE_APPROXIMATION_SEGMENTS // 4)
-                self._ball_geometries.append(geometry)
+        for ball in balls:
+            center = shapely.Point(ball.x, ball.y)
+            radius = self.config_ball_diameter / 2
+            dilation = self.config_inflation_dilation
+            geometry = center.buffer(radius + dilation, quad_segs=CIRCLE_APPROXIMATION_SEGMENTS // 4)
+            self._ball_geometries.append(geometry)
 
     def _update_obstacle_union(self):
-        self._obstacle_union = shapely.union_all(self._ball_geometries + self._robot_geometries)
+        self._obstacle_union = shapely.union_all(
+            (self._ball_geometries if self.ball_obstacle_active else []) + self._robot_geometries
+        )
 
     def avoid_ball(self, state: bool) -> None:
         """
         Activates or deactivates the ball obstacle
         """
         self.ball_obstacle_active = state
+        self._update_obstacle_union()
 
     def get_frame(self) -> str:
         """

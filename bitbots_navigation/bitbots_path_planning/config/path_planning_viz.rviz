@@ -405,6 +405,41 @@ Visualization Manager:
         Reliability Policy: Reliable
         Value: /pose_with_covariance
       Value: true
+    - Alpha: 1
+      Axes Length: 1
+      Axes Radius: 0.10000000149011612
+      Class: rviz_default_plugins/PoseWithCovariance
+      Color: 255; 25; 0
+      Covariance:
+        Orientation:
+          Alpha: 0.5
+          Color: 255; 255; 127
+          Color Style: Unique
+          Frame: Local
+          Offset: 1
+          Scale: 1
+          Value: true
+        Position:
+          Alpha: 0.30000001192092896
+          Color: 204; 51; 204
+          Scale: 1
+          Value: true
+        Value: true
+      Enabled: true
+      Head Length: 0.30000001192092896
+      Head Radius: 0.10000000149011612
+      Name: PoseWithCovariance
+      Shaft Length: 1
+      Shaft Radius: 0.05000000074505806
+      Shape: Arrow
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        Filter size: 10
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /ball_position_relative_filtered
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -450,7 +485,7 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Angle: 1.579999566078186
+      Angle: 3.0500032901763916
       Class: rviz_default_plugins/TopDownOrtho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
@@ -460,11 +495,11 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Scale: 108.03849029541016
+      Scale: 133.8726348876953
       Target Frame: <Fixed Frame>
       Value: TopDownOrtho (rviz_default_plugins)
-      X: 0.3327471911907196
-      Y: 0.0025227859150618315
+      X: 0.6864694356918335
+      Y: -1.4928948879241943
     Saved: ~
 Window Geometry:
   Displays:
