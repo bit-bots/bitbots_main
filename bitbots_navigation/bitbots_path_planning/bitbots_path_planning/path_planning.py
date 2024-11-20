@@ -1,3 +1,5 @@
+import time
+
 import rclpy
 import soccer_vision_3d_msgs.msg as sv3dm
 from bitbots_tf_buffer import Buffer
@@ -8,6 +10,7 @@ from rclpy.duration import Duration
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 from std_msgs.msg import Bool, Empty
+from visualization_msgs.msg import MarkerArray
 
 from bitbots_path_planning.controller import Controller
 from bitbots_path_planning.map import Map
@@ -70,6 +73,7 @@ class PathPlanning(Node):
         self.cmd_vel_pub = self.create_publisher(Twist, "cmd_vel", 1)
         self.path_pub = self.create_publisher(Path, "path", 1)
         self.carrot_pub = self.create_publisher(PointStamped, "carrot", 1)
+        self.graph_pub = self.create_publisher(MarkerArray, "visibility_graph", 1)
 
         # Timer that updates the path and command velocity at a given rate
         self.create_timer(
@@ -89,7 +93,13 @@ class PathPlanning(Node):
         try:
             if self.planner.active():
                 # Calculate the path to the goal pose considering the current map
+                t1 = time.time()
                 path = self.planner.step()
+                t2 = time.time()
+                print(f"delta = {t2 - t1}")
+                # Publish the visibility graph for visualization
+                markers = self.planner.visibility_graph_wrapper()
+                self.graph_pub.publish(markers)
                 # Publish the path for visualization
                 self.path_pub.publish(path)
                 # Calculate the command velocity to follow the given path

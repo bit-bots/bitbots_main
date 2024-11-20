@@ -1,14 +1,18 @@
+import typing
 from abc import ABC, abstractmethod
+from itertools import product
 
+import geometry_msgs.msg as geom_msg
+import rustworkx as rx
 import tf2_ros as tf2
 from geometry_msgs.msg import PoseStamped
-from heapdict import heapdict
 from nav_msgs.msg import Path
 from rclpy.duration import Duration
 from rclpy.node import Node
 from rclpy.time import Time
 from shapely import LineString, Point, distance
 from std_msgs.msg import Header
+from visualization_msgs.msg import Marker, MarkerArray
 
 from bitbots_path_planning.map import Map
 
@@ -73,6 +77,85 @@ class VisibilityPlanner(Planner):
         """
         return self.goal is not None
 
+    def visibility_graph(self, start: Point, goal: Point) -> typing.Tuple[rx.PyGraph, int, int]:
+        graph = rx.PyGraph()
+        start_node = graph.add_node(start)
+        goal_node = graph.add_node(goal)
+        for obstacle in self.map.obstacles():
+            for x, y in obstacle.boundary.coords:
+                graph.add_node(Point(x, y))
+        for a, b in product(graph.node_indices(), repeat=2):
+            if a == b:
+                continue
+            a_point = graph.get_node_data(a)
+            b_point = graph.get_node_data(b)
+            if not self.map.intersects(LineString([a_point, b_point])):
+                graph.add_edge(a, b, distance(a_point, b_point))
+        return (graph, start_node, goal_node)
+
+    def visibility_graph_wrapper(self) -> MarkerArray:
+        goal = Point(self.goal.pose.position.x, self.goal.pose.position.y)
+        my_position = self.buffer.lookup_transform(
+            self.map.frame, self.base_footprint_frame, Time(), Duration(seconds=0.2)
+        ).transform.translation
+        start = Point(my_position.x, my_position.y)
+        (graph, _, _) = self.visibility_graph(start, goal)
+        markers = MarkerArray()
+        nodes = Marker(type=Marker.POINTS, ns="visibility_graph_nodes", action=Marker.ADD)
+        nodes.header.frame_id = self.map.get_frame()
+        nodes.header.stamp = self.node.get_clock().now().to_msg()
+        for node in graph.nodes():
+            nodes.points.append(geom_msg.Point(x=node.x, y=node.y, z=0.5))
+        nodes.color.a = 1.0
+        nodes.color.r = 0.2
+        nodes.color.g = 0.2
+        nodes.color.b = 0.2
+        nodes.scale.x = 0.03
+        nodes.scale.y = 0.03
+        nodes.scale.z = 0.03
+        markers.markers.append(nodes)
+        edges = Marker(type=Marker.LINE_LIST, ns="visibility_graph_edges", action=Marker.ADD)
+        edges.header.frame_id = self.map.get_frame()
+        edges.header.stamp = self.node.get_clock().now().to_msg()
+        for edge in graph.edge_indices():
+            (a, b) = graph.get_edge_endpoints_by_index(edge)
+            a_point = graph.get_node_data(a)
+            b_point = graph.get_node_data(b)
+            edges.points.append(geom_msg.Point(x=a_point.x, y=a_point.y, z=0.5))
+            edges.points.append(geom_msg.Point(x=b_point.x, y=b_point.y, z=0.5))
+        edges.color.a = 1.0
+        edges.color.r = 0.2
+        edges.color.g = 0.2
+        edges.color.b = 0.2
+        edges.scale.x = 0.015
+        markers.markers.append(edges)
+        return markers
+
+    def step(self) -> Path:
+        goal = Point(self.goal.pose.position.x, self.goal.pose.position.y)
+        my_position = self.buffer.lookup_transform(
+            self.map.frame, self.base_footprint_frame, Time(), Duration(seconds=0.2)
+        ).transform.translation
+        start = Point(my_position.x, my_position.y)
+        (graph, start_node, goal_node) = self.visibility_graph(start, goal)
+        path = rx.astar_shortest_path(
+            graph, start_node, lambda node: node == goal, lambda edge: edge, lambda node: distance(node, goal)
+        )
+
+        def map_to_pose(node: int):
+            position = graph.get_node_data(node)
+            pose = PoseStamped()
+            pose.pose.position.x = position.x
+            pose.pose.position.y = position.y
+            return pose
+
+        return Path(
+            header=Header(frame_id=self.map.get_frame(), stamp=self.node.get_clock().now().to_msg()),
+            poses=list(map(map_to_pose, path)),
+        )
+
+
+"""
     def step(self) -> Path:
         goal = Point(self.goal.pose.position.x, self.goal.pose.position.y)
         my_position = self.buffer.lookup_transform(
@@ -124,3 +207,4 @@ class VisibilityPlanner(Planner):
                 successor.cost = tentative_g
                 f = tentative_g + distance(node.point, goal)  # calculate new f-value (costs + heuristic)
                 open_list[successor] = f
+"""

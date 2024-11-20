@@ -30,7 +30,6 @@ class Map:
         self.config_ball_diameter: float = self.node.config.map.ball_diameter
         self.config_inflation_blur: int = self.node.config.map.inflation.blur
         self.config_inflation_dilation: float = self.node.config.map.inflation.dilate
-        print(f"dilation is {self.config_inflation_dilation}")
         self.config_obstacle_value: int = self.node.config.map.obstacle_value
         self.ball_obstacle_active: bool = True
         self._robot_geometries: list[Geometry] = []
@@ -85,7 +84,6 @@ class Map:
     def _update_robot_geometries(self, robots):
         self._robot_geometries = []
         for robot in robots:
-            print(robot)
             center = shapely.Point(robot.bb.center.position.x, robot.bb.center.position.y)
             radius = max(numpify(robot.bb.size)[:2]) / 2
             dilation = self.config_inflation_dilation
