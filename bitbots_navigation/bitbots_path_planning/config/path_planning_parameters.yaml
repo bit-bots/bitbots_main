@@ -59,10 +59,10 @@ bitbots_path_planning:
       description: 'The value of the obstacles in the map'
       read_only: true
     inflation:
-      dialate:
+      dilate:
         type: int
         default_value: 3
-        description: 'The dialte value for the inflation'
+        description: 'The dilation value for the inflation'
         read_only: true
       blur:
         type: int
