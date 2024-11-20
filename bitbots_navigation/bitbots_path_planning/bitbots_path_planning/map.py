@@ -39,6 +39,7 @@ class Map:
         self.config_obstacle_value: int = self.node.config.map.obstacle_value
         self.ball_obstacle_active: bool = True
         self._obstacles: list[Geometry]
+        self._ball_geometry = list[Geometry]
         self._obstacles_union: Geometry | None = None
 
     def obstacles(self) -> list[Geometry]:
@@ -64,6 +65,7 @@ class Map:
             self.ball_buffer = [self.buffer.transform(point, self.frame).point]
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
             self.node.get_logger().warn(str(e))
+        self._update_geometries()
 
     def _render_balls(self, map: np.ndarray) -> None:
         """
@@ -95,9 +97,9 @@ class Map:
             except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
                 self.node.get_logger().warn(str(e))
         self.robot_buffer = new_buffer
-        self._update_robot_geometries()
+        self._update_geometries()
 
-    def _update_robot_geometries(self):
+    def _update_geometries(self):
         self._obstacles = []
         for robot in self.robot_buffer:
             center = shapely.Point(robot.bb.center.position.x, robot.bb.center.position.y)
@@ -105,6 +107,13 @@ class Map:
             dilation = self.config_inflation_dialation / self.node.config.map.resolution
             geometry = center.buffer(radius + dilation, quad_segs=CIRCLE_APPROXIMATION_SEGMENTS // 4)
             self._obstacles.append(geometry)
+        if self.ball_obstacle_active:
+            for ball in self.ball_buffer:
+                center = shapely.Point(ball.x, ball.y)
+                radius = self.config_ball_diameter / 2
+                dilation = self.config_inflation_dialation / self.node.config.map.resolution
+                geometry = center.buffer(radius + dilation, quad_segs=CIRCLE_APPROXIMATION_SEGMENTS // 4)
+                self._obstacles.append(geometry)
         self._obstacles_union = shapely.union_all(self._obstacles)
 
     def _render_robots(self, map: np.ndarray) -> None:
