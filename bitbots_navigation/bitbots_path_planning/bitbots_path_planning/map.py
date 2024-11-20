@@ -87,7 +87,7 @@ class Map:
             print(robot)
             center = shapely.Point(robot.bb.center.position.x, robot.bb.center.position.y)
             radius = max(numpify(robot.bb.size)[:2]) / 2
-            dilation = self.config_inflation_dilation / self.node.config.map.resolution
+            dilation = self.config_inflation_dilation
             geometry = center.buffer(radius + dilation, quad_segs=CIRCLE_APPROXIMATION_SEGMENTS // 4)
             self._robot_geometries.append(geometry)
 
@@ -97,7 +97,7 @@ class Map:
             for ball in balls:
                 center = shapely.Point(ball.x, ball.y)
                 radius = self.config_ball_diameter / 2
-                dilation = self.config_inflation_dilation / self.node.config.map.resolution
+                dilation = self.config_inflation_dilation
                 geometry = center.buffer(radius + dilation, quad_segs=CIRCLE_APPROXIMATION_SEGMENTS // 4)
                 self._ball_geometries.append(geometry)
 
