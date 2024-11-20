@@ -2,7 +2,7 @@ import rclpy
 import soccer_vision_3d_msgs.msg as sv3dm
 from bitbots_tf_buffer import Buffer
 from geometry_msgs.msg import PointStamped, PoseStamped, PoseWithCovarianceStamped, Twist
-from nav_msgs.msg import OccupancyGrid, Path
+from nav_msgs.msg import Path
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.duration import Duration
 from rclpy.executors import MultiThreadedExecutor
@@ -68,7 +68,6 @@ class PathPlanning(Node):
 
         # Publisher
         self.cmd_vel_pub = self.create_publisher(Twist, "cmd_vel", 1)
-        self.costmap_pub = self.create_publisher(OccupancyGrid, "costmap", 1)
         self.path_pub = self.create_publisher(Path, "path", 1)
         self.carrot_pub = self.create_publisher(PointStamped, "carrot", 1)
 
@@ -88,9 +87,6 @@ class PathPlanning(Node):
             self.param_listener.refresh_dynamic_parameters()
             self.config = self.param_listener.get_params()
         try:
-            # Publish the costmap for visualization
-            self.costmap_pub.publish(self.map.to_msg())
-
             if self.planner.active():
                 # Calculate the path to the goal pose considering the current map
                 path = self.planner.step()
