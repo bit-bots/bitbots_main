@@ -102,7 +102,7 @@ class Map:
         for robot in self.robot_buffer:
             center = shapely.Point(robot.bb.center.position.x, robot.bb.center.position.y)
             radius = max(numpify(robot.bb.size)[:2]) / 2
-            dilation = self.config_inflation_dialation * self.node.config.map.resolution
+            dilation = self.config_inflation_dialation / self.node.config.map.resolution
             geometry = center.buffer(radius + dilation, quad_segs=CIRCLE_APPROXIMATION_SEGMENTS // 4)
             self._obstacles.append(geometry)
         self._obstacles_union = shapely.union_all(self._obstacles)
