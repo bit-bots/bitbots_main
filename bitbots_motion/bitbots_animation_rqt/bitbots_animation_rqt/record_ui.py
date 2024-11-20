@@ -664,9 +664,9 @@ class RecordUI(Plugin):
                 for motor_name, text_field in self._motor_controller_text_fields.items():
                     # Get the angle from the textfield
                     angle = text_field.value()
-                    angle = round(angle, 2)
-                    # compare with working angles
-                    if not self._angle_saved[motor_name]:
+                    # compare with angles in current keyframe
+                    print(selected_frame)
+                    if not self._recorder.get_keyframe(self._selected_frame)["goals"][motor_name] == math.radians(angle):
                         unrecorded_changes.append(motor_name)
                 # warn user about unrecorded changes
                 if unrecorded_changes:
