@@ -65,7 +65,7 @@
                 "LHipYaw": -3.08,
                 "LKnee": 160.21,
                 "LShoulderPitch": -58.89,
-                "LShoulderRoll": 15.0,
+                "LShoulderRoll": 14.999999999999998,
                 "RAnklePitch": 58.480000000000004,
                 "RAnkleRoll": -20.39,
                 "RElbow": 82.66,
@@ -74,7 +74,7 @@
                 "RHipYaw": 17.5,
                 "RKnee": -157.68,
                 "RShoulderPitch": 56.54,
-                "RShoulderRoll": -15.0
+                "RShoulderRoll": -14.999999999999998
             },
             "name": "start frame_copy_1",
             "pause": 0.0,
@@ -107,7 +107,7 @@
             "torque": {}
         }
     ],
-    "last_edited": "2024-10-30 19:16:16.384874",
+    "last_edited": "2024-11-20 15:37:40.398286",
     "name": "grab_ball",
     "version": ""
 }
