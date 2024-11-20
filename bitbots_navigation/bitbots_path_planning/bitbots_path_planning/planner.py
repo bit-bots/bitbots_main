@@ -106,6 +106,7 @@ class VisibilityPlanner(Planner):
                     pose.pose.position.x = pos.x
                     pose.pose.position.y = pos.y
                     poses.append(pose)
+                poses.append(self.goal)
                 return Path(
                     header=Header(frame_id=self.map.get_frame(), stamp=self.node.get_clock().now().to_msg()),
                     poses=poses,
