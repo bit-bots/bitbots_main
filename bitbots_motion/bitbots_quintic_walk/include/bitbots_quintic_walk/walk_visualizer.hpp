@@ -62,8 +62,6 @@ class WalkVisualizer : public bitbots_splines::AbstractVisualizer {
 
   walking::Params::Node::Tf tf_config_;
 
-  int marker_id_ = 1;
-
   rclcpp::Publisher<bitbots_quintic_walk::msg::WalkDebug>::SharedPtr pub_debug_;
   rclcpp::Publisher<bitbots_quintic_walk::msg::WalkEngineDebug>::SharedPtr pub_engine_debug_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr pub_debug_marker_;

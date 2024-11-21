@@ -272,9 +272,7 @@ visualization_msgs::msg::Marker WalkVisualizer::createArrowMarker(const std::str
   scale.y = 0.003;
   scale.z = 0.003;
   marker_msg.scale = scale;
-
-  marker_msg.id = 0;  // TODO use consistent marker ids
-  marker_id_++;
+  marker_msg.id = 0;
 
   return marker_msg;
 }
@@ -310,7 +308,6 @@ visualization_msgs::msg::MarkerArray WalkVisualizer::publishWalkMarkers(WalkResp
   tf2::convert(q, pose.orientation);
   support_foot_marker_msg.pose = pose;
   marker_array.markers.push_back(support_foot_marker_msg);
-  marker_id_++;
 
   // This step center
   auto step_center_marker_msg(support_foot_marker_msg);
@@ -320,7 +317,6 @@ visualization_msgs::msg::MarkerArray WalkVisualizer::publishWalkMarkers(WalkResp
   step_center_marker_msg.scale.y = 0.01;
   step_center_marker_msg.scale.z = 0.01;
   marker_array.markers.push_back(step_center_marker_msg);
-  marker_id_++;
 
   // Next step
   auto next_step_marker_msg(support_foot_marker_msg);
@@ -339,7 +335,6 @@ visualization_msgs::msg::MarkerArray WalkVisualizer::publishWalkMarkers(WalkResp
   tf2::convert(q, pose.orientation);
   next_step_marker_msg.pose = pose;
   marker_array.markers.push_back(next_step_marker_msg);
-  marker_id_++;  // TODO use consistent marker ids
 
   return marker_array;
 }
