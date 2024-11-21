@@ -63,16 +63,6 @@ WalkVisualizer::publishEngineDebug(WalkResponse response) {
     current_support_frame = tf_config_.r_sole_frame;
   }
 
-  // Define colors based on current support state
-  std_msgs::msg::ColorRGBA color;
-  if (response.is_double_support) {
-    color = BLUE;
-  } else if (response.is_left_support_foot) {
-    color = RED;
-  } else {
-    color = GREEN;
-  }
-
   // Create placeholder floats
   double _1, _2;
   // Copy transform of the last footstep position (and orientation) to the debug message
@@ -89,6 +79,8 @@ WalkVisualizer::publishEngineDebug(WalkResponse response) {
   tf2::toMsg(response.support_foot_to_flying_foot, msg.fly_goal);
   // Create an additional marker for the flying foot goal
   marker_array.markers.push_back(createArrowMarker("engine_fly_goal", current_support_frame, msg.fly_goal, BLUE));
+  RCLCPP_INFO_ONCE(node_->get_logger(),
+                   "Color for the Engine Debug marker, showing where the flying foot and trunk should be, is blue!");
 
   // Copy the rotation of the flying foot relative to the support foot to the debug message
   tf2::Matrix3x3(response.support_foot_to_flying_foot.getRotation())
@@ -97,7 +89,7 @@ WalkVisualizer::publishEngineDebug(WalkResponse response) {
   // Copy cartesian coordinates of the trunk goal relative to the support foot to the debug message
   tf2::toMsg(response.support_foot_to_trunk, msg.trunk_goal);
   // Create an additional marker for the trunk goal
-  marker_array.markers.push_back(createArrowMarker("engine_trunk_goal", current_support_frame, msg.trunk_goal, color));
+  marker_array.markers.push_back(createArrowMarker("engine_trunk_goal", current_support_frame, msg.trunk_goal, BLUE));
 
   // TODO check this!!!
   msg.trunk_goal_abs = msg.trunk_goal;
@@ -110,18 +102,11 @@ WalkVisualizer::publishEngineDebug(WalkResponse response) {
   tf2::Matrix3x3(response.support_foot_to_flying_foot.getRotation())
       .getRPY(msg.trunk_euler.x, msg.trunk_euler.y, msg.trunk_euler.z);
 
-  // resulting trunk pose  TODO don't cheat here
+  // resulting trunk pose
   geometry_msgs::msg::Pose pose;
-  geometry_msgs::msg::Point point;
-  point.x = 0;
-  point.y = 0;
-  point.z = 0;
-  pose.position = point;
-  pose.orientation.x = 0;
-  pose.orientation.y = 0;
-  pose.orientation.z = 0;
   pose.orientation.w = 1;
-  marker_array.markers.push_back(createArrowMarker("trunk_result", tf_config_.base_link_frame, pose, color));
+  marker_array.markers.push_back(createArrowMarker("trunk_result", tf_config_.base_link_frame, pose, GREEN));
+  RCLCPP_INFO_ONCE(node_->get_logger(), "Color for the Engine Debug marker, showing where the trunk is, is green!");
 
   return {msg, marker_array};
 }
@@ -147,9 +132,10 @@ std::pair<bitbots_quintic_walk::msg::WalkDebug, visualization_msgs::msg::MarkerA
   }
   // Create additional markers for the foot goals
   marker_array.markers.push_back(
-      createArrowMarker("engine_left_goal", tf_config_.base_link_frame, msg.left_foot_goal, GREEN));
+      createArrowMarker("engine_left_goal", tf_config_.base_link_frame, msg.left_foot_goal, ORANGE));
   marker_array.markers.push_back(
-      createArrowMarker("engine_right_goal", tf_config_.base_link_frame, msg.right_foot_goal, RED));
+      createArrowMarker("engine_right_goal", tf_config_.base_link_frame, msg.right_foot_goal, ORANGE));
+  RCLCPP_INFO_ONCE(node_->get_logger(), "Color for the IK marker, showing where the feet should be, is orange!");
 
   // IK results
   moveit::core::RobotStatePtr goal_state;
@@ -160,22 +146,20 @@ std::pair<bitbots_quintic_walk::msg::WalkDebug, visualization_msgs::msg::MarkerA
     goal_state->setJointPositions(names[i], &goals[i]);
   }
   goal_state->updateLinkTransforms();
-  geometry_msgs::msg::Pose pose_left_result;
   tf2::convert(goal_state->getFrameTransform("l_sole"), msg.left_foot_ik_result);
-  msg.left_foot_ik_result = pose_left_result;
-  geometry_msgs::msg::Pose pose_right_result;
-  tf2::convert(goal_state->getFrameTransform("r_sole"), pose_right_result);
-  msg.right_foot_ik_result = pose_right_result;
+  tf2::convert(goal_state->getFrameTransform("r_sole"), msg.right_foot_ik_result);
   if (response.is_left_support_foot) {
     msg.support_foot_ik_result = msg.left_foot_ik_result;
-    msg.fly_foot_ik_result = pose_right_result;
+    msg.fly_foot_ik_result = msg.right_foot_ik_result;
   } else {
-    msg.support_foot_ik_result = pose_right_result;
+    msg.support_foot_ik_result = msg.right_foot_ik_result;
     msg.fly_foot_ik_result = msg.left_foot_ik_result;
   }
   marker_array.markers.push_back(
       createArrowMarker("ik_left", tf_config_.base_link_frame, msg.left_foot_ik_result, GREEN));
-  marker_array.markers.push_back(createArrowMarker("ik_right", tf_config_.base_link_frame, pose_right_result, RED));
+  marker_array.markers.push_back(
+      createArrowMarker("ik_right", tf_config_.base_link_frame, msg.right_foot_ik_result, GREEN));
+  RCLCPP_INFO_ONCE(node_->get_logger(), "Color for the IK marker, showing the ik result, is green!");
 
   // IK offsets
   tf2::Vector3 support_off;
@@ -275,7 +259,6 @@ visualization_msgs::msg::Marker WalkVisualizer::createArrowMarker(const std::str
                                                                   const geometry_msgs::msg::Pose &pose,
                                                                   const std_msgs::msg::ColorRGBA &color) {
   visualization_msgs::msg::Marker marker_msg;
-  marker_msg.header.stamp = node_->now();
   marker_msg.header.frame_id = frame;
 
   marker_msg.type = marker_msg.ARROW;
@@ -290,7 +273,7 @@ visualization_msgs::msg::Marker WalkVisualizer::createArrowMarker(const std::str
   scale.z = 0.003;
   marker_msg.scale = scale;
 
-  marker_msg.id = marker_id_;  // TODO use consistent marker ids
+  marker_msg.id = 0;  // TODO use consistent marker ids
   marker_id_++;
 
   return marker_msg;
@@ -301,7 +284,6 @@ visualization_msgs::msg::MarkerArray WalkVisualizer::publishWalkMarkers(WalkResp
 
   // Create a marker for the last step
   visualization_msgs::msg::Marker support_foot_marker_msg;
-  support_foot_marker_msg.header.stamp = node_->now();
   if (response.is_left_support_foot) {
     support_foot_marker_msg.header.frame_id = tf_config_.l_sole_frame;
   } else {
@@ -309,13 +291,14 @@ visualization_msgs::msg::MarkerArray WalkVisualizer::publishWalkMarkers(WalkResp
   }
   support_foot_marker_msg.type = support_foot_marker_msg.CUBE;
   support_foot_marker_msg.action = 0;
-  support_foot_marker_msg.lifetime = rclcpp::Duration::from_nanoseconds(0.0);  // TODO check this
+  support_foot_marker_msg.lifetime = rclcpp::Duration::from_nanoseconds(0.0);
   support_foot_marker_msg.scale.x = 0.2;
   support_foot_marker_msg.scale.y = 0.1;
   support_foot_marker_msg.scale.z = 0.01;
   support_foot_marker_msg.ns = "last_step";
   support_foot_marker_msg.id = 1;
   support_foot_marker_msg.color = BLACK;
+  support_foot_marker_msg.color.a = 0.5;
 
   tf2::Vector3 step_pos = response.support_to_last.getOrigin();
   geometry_msgs::msg::Pose pose;
@@ -332,7 +315,7 @@ visualization_msgs::msg::MarkerArray WalkVisualizer::publishWalkMarkers(WalkResp
   // This step center
   auto step_center_marker_msg(support_foot_marker_msg);
   step_center_marker_msg.ns = "step_center";
-  step_center_marker_msg.id = marker_id_;
+  step_center_marker_msg.id = 2;
   step_center_marker_msg.scale.x = 0.01;
   step_center_marker_msg.scale.y = 0.01;
   step_center_marker_msg.scale.z = 0.01;
@@ -341,7 +324,7 @@ visualization_msgs::msg::MarkerArray WalkVisualizer::publishWalkMarkers(WalkResp
 
   // Next step
   auto next_step_marker_msg(support_foot_marker_msg);
-  next_step_marker_msg.id = marker_id_;
+  next_step_marker_msg.id = 3;
   next_step_marker_msg.ns = "next_step";
   next_step_marker_msg.scale.x = 0.20;
   next_step_marker_msg.scale.y = 0.10;

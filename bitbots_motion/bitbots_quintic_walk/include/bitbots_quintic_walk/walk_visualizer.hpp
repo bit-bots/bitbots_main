@@ -49,11 +49,13 @@ class WalkVisualizer : public bitbots_splines::AbstractVisualizer {
     return color;
   }
 
-  const std_msgs::msg::ColorRGBA RED = colorFactory(1.0, 0.0, 0.0);
-  const std_msgs::msg::ColorRGBA GREEN = colorFactory(0.0, 1.0, 0.0);
-  const std_msgs::msg::ColorRGBA BLUE = colorFactory(0.0, 0.0, 1.0);
   const std_msgs::msg::ColorRGBA BLACK = colorFactory(0.0, 0.0, 0.0);
+  const std_msgs::msg::ColorRGBA BLUE = colorFactory(0.0, 0.0, 1.0);
+  const std_msgs::msg::ColorRGBA GREEN = colorFactory(0.0, 1.0, 0.0);
+  const std_msgs::msg::ColorRGBA ORANGE = colorFactory(1.0, 0.5, 0.0);
+  const std_msgs::msg::ColorRGBA RED = colorFactory(1.0, 0.0, 0.0);
   const std_msgs::msg::ColorRGBA WHITE = colorFactory(1.0, 1.0, 1.0);
+  const std_msgs::msg::ColorRGBA YELLOW = colorFactory(1.0, 1.0, 0.0);
 
  private:
   rclcpp::Node::SharedPtr node_;
