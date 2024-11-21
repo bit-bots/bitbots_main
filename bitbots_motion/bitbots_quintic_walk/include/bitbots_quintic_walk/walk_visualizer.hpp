@@ -10,6 +10,7 @@
 #include <bitbots_quintic_walk/walk_engine.hpp>
 #include <bitbots_quintic_walk/walk_utils.hpp>
 #include <moveit_msgs/msg/robot_state.hpp>
+#include <ranges>
 #include <rclcpp/rclcpp.hpp>
 #include <tf2_eigen/tf2_eigen.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
@@ -30,11 +31,14 @@ class WalkVisualizer : public bitbots_splines::AbstractVisualizer {
 
   std::pair<bitbots_quintic_walk::msg::WalkEngineDebug, visualization_msgs::msg::MarkerArray> publishEngineDebug(
       WalkResponse response);
-  void publishIKDebug(WalkResponse response, moveit::core::RobotStatePtr current_state,
-                      bitbots_splines::JointGoals joint_goals);
-  void publishWalkMarkers(WalkResponse response);
+  std::pair<bitbots_quintic_walk::msg::WalkDebug, visualization_msgs::msg::MarkerArray> publishIKDebug(
+      WalkResponse response, moveit::core::RobotStatePtr current_state, bitbots_splines::JointGoals joint_goals);
+  visualization_msgs::msg::MarkerArray publishWalkMarkers(WalkResponse response);
 
   void init(moveit::core::RobotModelPtr kinematic_model);
+
+  void publishDebug(const WalkResponse &current_response, const moveit::core::RobotStatePtr &current_state,
+                    const bitbots_splines::JointGoals &motor_goals);
 
   std_msgs::msg::ColorRGBA colorFactory(double r, double g, double b) {
     std_msgs::msg::ColorRGBA color;

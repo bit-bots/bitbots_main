@@ -6,19 +6,32 @@ WalkVisualizer::WalkVisualizer(rclcpp::Node::SharedPtr node, walking::Params::No
       tf_config_(tf_config),
       pub_debug_(node_->create_publisher<bitbots_quintic_walk::msg::WalkDebug>("walk_debug", 1)),
       pub_engine_debug_(node_->create_publisher<bitbots_quintic_walk::msg::WalkEngineDebug>("walk_engine_debug", 1)),
-      pub_debug_marker_(node_->create_publisher<visualization_msgs::msg::Marker>("walk_debug_marker", 1)) {}
+      pub_debug_marker_(node_->create_publisher<visualization_msgs::msg::MarkerArray>("walk_debug_marker", 1)) {}
 
 void WalkVisualizer::init(moveit::core::RobotModelPtr kinematic_model) { kinematic_model_ = kinematic_model; }
+
+void WalkVisualizer::publishDebug(const WalkResponse &current_response,
+                                  const moveit::core::RobotStatePtr &current_state,
+                                  const bitbots_splines::JointGoals &motor_goals) {
+  visualization_msgs::msg::MarkerArray marker_array;
+
+  auto [engine_debug, engine_markers] = publishEngineDebug(current_response);
+  marker_array.markers.insert(marker_array.markers.end(), engine_markers.markers.begin(), engine_markers.markers.end());
+  pub_engine_debug_->publish(engine_debug);
+
+  auto [ik_debug, ik_markers] = publishIKDebug(current_response, current_state, motor_goals);
+  marker_array.markers.insert(marker_array.markers.end(), ik_markers.markers.begin(), ik_markers.markers.end());
+  pub_debug_->publish(ik_debug);
+
+  auto walk_markers = publishWalkMarkers(current_response);
+  marker_array.markers.insert(marker_array.markers.end(), walk_markers.markers.begin(), walk_markers.markers.end());
+
+  pub_debug_marker_->publish(marker_array);
+}
 
 std::pair<bitbots_quintic_walk::msg::WalkEngineDebug, visualization_msgs::msg::MarkerArray>
 WalkVisualizer::publishEngineDebug(WalkResponse response) {
   // Here we will convert the walk engine response to a various debug messages and RViz markers
-
-  // Only do something if someone is listing
-  if (pub_engine_debug_->get_subscription_count() == 0 && pub_debug_marker_->get_subscription_count() == 0) {
-    return;
-  }
-
   // Initialize output containers
   bitbots_quintic_walk::msg::WalkEngineDebug msg;
   visualization_msgs::msg::MarkerArray marker_array;
@@ -110,64 +123,59 @@ WalkVisualizer::publishEngineDebug(WalkResponse response) {
   pose.orientation.w = 1;
   marker_array.markers.push_back(createArrowMarker("trunk_result", tf_config_.base_link_frame, pose, color));
 
-  // TODO return marker array
   return {msg, marker_array};
 }
 
-void WalkVisualizer::publishIKDebug(WalkResponse response, moveit::core::RobotStatePtr current_state,
-                                    bitbots_splines::JointGoals joint_goals) {
-  // only do something if someone is listing
-  if (pub_debug_->get_subscription_count() == 0 && pub_debug_marker_->get_subscription_count() == 0) {
-    return;
-  }
+std::pair<bitbots_quintic_walk::msg::WalkDebug, visualization_msgs::msg::MarkerArray> WalkVisualizer::publishIKDebug(
+    WalkResponse response, moveit::core::RobotStatePtr current_state, bitbots_splines::JointGoals joint_goals) {
   bitbots_quintic_walk::msg::WalkDebug msg;
+  visualization_msgs::msg::MarkerArray marker_array;
 
   tf2::Transform trunk_to_support_foot = response.support_foot_to_trunk.inverse();
   tf2::Transform trunk_to_flying_foot = trunk_to_support_foot * response.support_foot_to_flying_foot;
 
-  // goals
-  geometry_msgs::msg::Pose pose_support_foot_goal;
-  tf2::toMsg(trunk_to_support_foot, pose_support_foot_goal);
-  msg.support_foot_goal = pose_support_foot_goal;
-  geometry_msgs::msg::Pose pose_fly_foot_goal;
-  tf2::toMsg(trunk_to_flying_foot, pose_fly_foot_goal);
-  msg.fly_foot_goal = pose_fly_foot_goal;
+  // Copy goals into the message
+  tf2::toMsg(trunk_to_support_foot, msg.support_foot_goal);
+  tf2::toMsg(trunk_to_flying_foot, msg.fly_foot_goal);
+  // Set left and right foot goals based on the support foot
   if (response.is_left_support_foot) {
-    msg.left_foot_goal = pose_support_foot_goal;
-    msg.right_foot_goal = pose_fly_foot_goal;
+    msg.left_foot_goal = msg.support_foot_goal;
+    msg.right_foot_goal = msg.fly_foot_goal;
   } else {
-    msg.left_foot_goal = pose_fly_foot_goal;
-    msg.right_foot_goal = pose_support_foot_goal;
+    msg.left_foot_goal = msg.fly_foot_goal;
+    msg.right_foot_goal = msg.support_foot_goal;
   }
-  createArrowMarker("engine_left_goal", tf_config_.base_link_frame, msg.left_foot_goal, GREEN);
-  createArrowMarker("engine_right_goal", tf_config_.base_link_frame, msg.right_foot_goal, RED);
+  // Create additional markers for the foot goals
+  marker_array.markers.push_back(
+      createArrowMarker("engine_left_goal", tf_config_.base_link_frame, msg.left_foot_goal, GREEN));
+  marker_array.markers.push_back(
+      createArrowMarker("engine_right_goal", tf_config_.base_link_frame, msg.right_foot_goal, RED));
 
   // IK results
   moveit::core::RobotStatePtr goal_state;
   goal_state.reset(new moveit::core::RobotState(kinematic_model_));
-  std::vector<std::string> names = joint_goals.first;
-  std::vector<double> goals = joint_goals.second;
+  auto &[names, goals] = joint_goals;
   for (size_t i = 0; i < names.size(); i++) {
     // besides its name, this method only changes a single joint position...
     goal_state->setJointPositions(names[i], &goals[i]);
   }
-
   goal_state->updateLinkTransforms();
   geometry_msgs::msg::Pose pose_left_result;
-  tf2::convert(goal_state->getFrameTransform("l_sole"), pose_left_result);
+  tf2::convert(goal_state->getFrameTransform("l_sole"), msg.left_foot_ik_result);
   msg.left_foot_ik_result = pose_left_result;
   geometry_msgs::msg::Pose pose_right_result;
   tf2::convert(goal_state->getFrameTransform("r_sole"), pose_right_result);
   msg.right_foot_ik_result = pose_right_result;
   if (response.is_left_support_foot) {
-    msg.support_foot_ik_result = pose_left_result;
+    msg.support_foot_ik_result = msg.left_foot_ik_result;
     msg.fly_foot_ik_result = pose_right_result;
   } else {
     msg.support_foot_ik_result = pose_right_result;
-    msg.fly_foot_ik_result = pose_left_result;
+    msg.fly_foot_ik_result = msg.left_foot_ik_result;
   }
-  createArrowMarker("ik_left", tf_config_.base_link_frame, pose_left_result, GREEN);
-  createArrowMarker("ik_right", tf_config_.base_link_frame, pose_right_result, RED);
+  marker_array.markers.push_back(
+      createArrowMarker("ik_left", tf_config_.base_link_frame, msg.left_foot_ik_result, GREEN));
+  marker_array.markers.push_back(createArrowMarker("ik_right", tf_config_.base_link_frame, pose_right_result, RED));
 
   // IK offsets
   tf2::Vector3 support_off;
@@ -211,22 +219,18 @@ void WalkVisualizer::publishIKDebug(WalkResponse response, moveit::core::RobotSt
   vect_msg.z = fly_off.z();
   msg.fly_foot_ik_offset = vect_msg;
 
-  // actual positions
-  geometry_msgs::msg::Pose pose_left_actual;
-  tf2::convert(current_state->getGlobalLinkTransform("l_sole"), pose_left_actual);
-  msg.left_foot_position = pose_left_actual;
-  geometry_msgs::msg::Pose pose_right_actual;
-  tf2::convert(current_state->getGlobalLinkTransform("r_sole"), pose_right_actual);
-  msg.right_foot_position = pose_right_actual;
+  // Actual foot positions determined by the IK solver (not strictly equal to the goals)
+  tf2::convert(current_state->getGlobalLinkTransform("l_sole"), msg.left_foot_position);
+  tf2::convert(current_state->getGlobalLinkTransform("r_sole"), msg.right_foot_position);
   if (response.is_left_support_foot) {
-    msg.support_foot_position = pose_left_actual;
-    msg.fly_foot_position = pose_right_actual;
+    msg.support_foot_position = msg.left_foot_position;
+    msg.fly_foot_position = msg.right_foot_position;
   } else {
-    msg.support_foot_position = pose_right_actual;
-    msg.fly_foot_position = pose_left_actual;
+    msg.support_foot_position = msg.right_foot_position;
+    msg.fly_foot_position = msg.left_foot_position;
   }
 
-  // actual offsets
+  // Calculate offsets between the actual foot positions and the goals (meaning the IK solver error)
   l_transform = current_state->getGlobalLinkTransform("l_sole").translation();
   r_transform = current_state->getGlobalLinkTransform("r_sole").translation();
   tf2::convert(l_transform, tf_vec_left);
@@ -263,7 +267,7 @@ void WalkVisualizer::publishIKDebug(WalkResponse response, moveit::core::RobotSt
   vect_msg.z = fly_off.z();
   msg.fly_foot_actual_offset = vect_msg;
 
-  pub_debug_->publish(msg);
+  return {msg, marker_array};
 }
 
 visualization_msgs::msg::Marker WalkVisualizer::createArrowMarker(const std::string &name_space,
@@ -292,80 +296,69 @@ visualization_msgs::msg::Marker WalkVisualizer::createArrowMarker(const std::str
   return marker_msg;
 }
 
-void WalkVisualizer::publishWalkMarkers(WalkResponse response) {
-  // only do something if someone is listing
-  if (pub_debug_marker_->get_subscription_count() == 0) {
-    return;
-  }
-  // publish markers
-  visualization_msgs::msg::Marker marker_msg;
-  marker_msg.header.stamp = node_->now();
+visualization_msgs::msg::MarkerArray WalkVisualizer::publishWalkMarkers(WalkResponse response) {
+  visualization_msgs::msg::MarkerArray marker_array;
+
+  // Create a marker for the last step
+  visualization_msgs::msg::Marker support_foot_marker_msg;
+  support_foot_marker_msg.header.stamp = node_->now();
   if (response.is_left_support_foot) {
-    marker_msg.header.frame_id = tf_config_.l_sole_frame;
+    support_foot_marker_msg.header.frame_id = tf_config_.l_sole_frame;
   } else {
-    marker_msg.header.frame_id = tf_config_.r_sole_frame;
+    support_foot_marker_msg.header.frame_id = tf_config_.r_sole_frame;
   }
-  marker_msg.type = marker_msg.CUBE;
-  marker_msg.action = 0;
-  marker_msg.lifetime = rclcpp::Duration::from_nanoseconds(0.0);
-  geometry_msgs::msg::Vector3 scale;
-  scale.x = 0.20;
-  scale.y = 0.10;
-  scale.z = 0.01;
-  marker_msg.scale = scale;
-  // last step
-  marker_msg.ns = "last_step";
-  marker_msg.id = 1;
-  std_msgs::msg::ColorRGBA color;
-  color.r = 0;
-  color.g = 0;
-  color.b = 0;
-  color.a = 1;
-  marker_msg.color = color;
-  geometry_msgs::msg::Pose pose;
+  support_foot_marker_msg.type = support_foot_marker_msg.CUBE;
+  support_foot_marker_msg.action = 0;
+  support_foot_marker_msg.lifetime = rclcpp::Duration::from_nanoseconds(0.0);  // TODO check this
+  support_foot_marker_msg.scale.x = 0.2;
+  support_foot_marker_msg.scale.y = 0.1;
+  support_foot_marker_msg.scale.z = 0.01;
+  support_foot_marker_msg.ns = "last_step";
+  support_foot_marker_msg.id = 1;
+  support_foot_marker_msg.color = BLACK;
+
   tf2::Vector3 step_pos = response.support_to_last.getOrigin();
-  geometry_msgs::msg::Point point;
-  point.x = step_pos[0];
-  point.y = step_pos[1];
-  point.z = 0;
-  pose.position = point;
+  geometry_msgs::msg::Pose pose;
+  pose.position.x = step_pos[0];
+  pose.position.y = step_pos[1];
+  pose.position.z = 0;
   tf2::Quaternion q;
   q.setRPY(0.0, 0.0, step_pos[2]);
   tf2::convert(q, pose.orientation);
-  marker_msg.pose = pose;
-  pub_debug_marker_->publish(marker_msg);
+  support_foot_marker_msg.pose = pose;
+  marker_array.markers.push_back(support_foot_marker_msg);
+  marker_id_++;
 
-  // last step center
-  marker_msg.ns = "step_center";
-  marker_msg.id = marker_id_;
-  scale.x = 0.01;
-  scale.y = 0.01;
-  scale.z = 0.01;
-  marker_msg.scale = scale;
-  pub_debug_marker_->publish(marker_msg);
+  // This step center
+  auto step_center_marker_msg(support_foot_marker_msg);
+  step_center_marker_msg.ns = "step_center";
+  step_center_marker_msg.id = marker_id_;
+  step_center_marker_msg.scale.x = 0.01;
+  step_center_marker_msg.scale.y = 0.01;
+  step_center_marker_msg.scale.z = 0.01;
+  marker_array.markers.push_back(step_center_marker_msg);
+  marker_id_++;
 
-  // next step
-  marker_msg.id = marker_id_;
-  marker_msg.ns = "next_step";
-  scale.x = 0.20;
-  scale.y = 0.10;
-  scale.z = 0.01;
-  marker_msg.scale = scale;
-  color.r = 1;
-  color.g = 1;
-  color.b = 1;
-  color.a = 0.5;
-  marker_msg.color = color;
+  // Next step
+  auto next_step_marker_msg(support_foot_marker_msg);
+  next_step_marker_msg.id = marker_id_;
+  next_step_marker_msg.ns = "next_step";
+  next_step_marker_msg.scale.x = 0.20;
+  next_step_marker_msg.scale.y = 0.10;
+  next_step_marker_msg.scale.z = 0.01;
+  next_step_marker_msg.color = WHITE;
+  next_step_marker_msg.color.a = 0.5;
   step_pos = response.support_to_next.getOrigin();
-  point.x = step_pos[0];
-  point.y = step_pos[1];
-  pose.position = point;
+  pose.position.x = step_pos[0];
+  pose.position.y = step_pos[1];
+  pose.position.z = 0;
   q.setRPY(0.0, 0.0, step_pos[2]);
   tf2::convert(q, pose.orientation);
-  marker_msg.pose = pose;
-  pub_debug_marker_->publish(marker_msg);
+  next_step_marker_msg.pose = pose;
+  marker_array.markers.push_back(next_step_marker_msg);
+  marker_id_++;  // TODO use consistent marker ids
 
-  marker_id_++;
+  return marker_array;
 }
 
 }  // namespace bitbots_quintic_walk
