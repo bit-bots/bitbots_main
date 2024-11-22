@@ -665,15 +665,13 @@ class RecordUI(Plugin):
                     # Get the angle from the textfield
                     angle = text_field.value()
                     # compare with angles in current keyframe
-                    print(selected_frame)
                     if not self._recorder.get_keyframe(self._selected_frame)["goals"][motor_name] == math.radians(angle):
                         unrecorded_changes.append(motor_name)
                 # warn user about unrecorded changes
                 if unrecorded_changes:
-                    print("displaying warning")
                     message = f"""This will discard your unrecorded changes for {", ".join(unrecorded_changes)}. Continue?"""
                     sure = QMessageBox.question(self._widget, "Sure?", message, QMessageBox.Yes | QMessageBox.No)
-                    # Cancel the open if the user does not want to discard the current animation
+                    # Cancel the open if the user does not want to discard the changes
                     if sure == QMessageBox.No:
                         return
                 # Update state so we have a new selected frame
