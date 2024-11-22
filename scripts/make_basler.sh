@@ -1,4 +1,5 @@
 #!/bin/bash
+set -eEo pipefail
 
 # You need to fill out a form to download the pylon driver.
 # The pylon driver can be found in the download section of the following link:
@@ -25,10 +26,9 @@ else
     SHOW_PROGRESS="--show-progress"
 fi
 
-# Create function to check if we have an internet connection
-function check_internet_connection () {
+check_internet_connection () {
     # Check if we have an internet connection, except in the ci as azure does not support ping by design
-    if [[ $1 != "--ci" ]] && ! ping -q -c 1 -W 1 google.com >/dev/null; then
+    if [[ $1 != "--ci" ]] && ! ping -q -c 1 -W 1 google.com > /dev/null; then
         echo "No internet connection. Please check your internet connection to install the basler drivers."
         exit 1
     fi
@@ -40,7 +40,7 @@ if apt list pylon --installed | grep -q $PYLON_VERSION; then
 else
     echo "Pylon driver $PYLON_VERSION is not installed. Installing..."
     # Check if we have an internet connection
-    check_internet_connection $1
+    check_internet_connection "$1"
     # Check if the url exist
     if ! curl --output /dev/null --silent --head --fail "$PYLON_DOWNLOAD_URL"; then
         echo "Pylon download url does not exist. Please check the url and update the 'PYLON_DOWNLOAD_URL' variable in the 'make_basler.sh' script. The website might have changed."

@@ -18,10 +18,12 @@ bool ServoBusInterface::init() {
   lost_servo_connection_ = false;
   read_vt_counter_ = 0;
   switch_individual_torque_ = false;
+  current_torque_ = false;
   reading_successes_ = 0;
   reading_errors_ = 0;
 
   torqueless_mode_ = nh_->get_parameter("torqueless_mode").as_bool();
+  goal_torque_ = !torqueless_mode_;
   read_volt_temp_ = nh_->get_parameter("servos.read_volt_temp").as_bool();
   vt_update_rate_ = nh_->get_parameter("servos.VT_update_rate").as_int();
   warn_volt_ = nh_->get_parameter("servos.warn_volt").as_double();
@@ -67,18 +69,18 @@ bool ServoBusInterface::init() {
   goal_effort_.resize(joint_count_, 0);
   goal_torque_individual_.resize(joint_count_, 1);
 
-  // malloc memory only once for later reads and writes to improve performance
-  data_sync_read_positions_ = new int32_t;
-  data_sync_read_velocities_ = new int32_t;
-  data_sync_read_efforts_ = new int32_t;
-  data_sync_read_pwms_ = new int32_t;
-  data_sync_read_error_ = new int32_t;
-  sync_write_goal_position_ = new int32_t;
-  sync_write_goal_velocity_ = new int32_t;
-  sync_write_profile_velocity_ = new int32_t;
-  sync_write_profile_acceleration_ = new int32_t;
-  sync_write_goal_current_ = new int32_t;
-  sync_write_goal_pwm_ = new int32_t;
+  // reserve memory only once for later reads and writes to improve performance
+  data_sync_read_positions_.resize(joint_count_);
+  data_sync_read_velocities_.resize(joint_count_);
+  data_sync_read_efforts_.resize(joint_count_);
+  data_sync_read_pwms_.resize(joint_count_);
+  data_sync_read_error_.resize(joint_count_);
+  sync_write_goal_position_.resize(joint_count_);
+  sync_write_goal_velocity_.resize(joint_count_);
+  sync_write_profile_velocity_.resize(joint_count_);
+  sync_write_profile_acceleration_.resize(joint_count_);
+  sync_write_goal_current_.resize(joint_count_);
+  sync_write_goal_pwm_.resize(joint_count_);
 
   // write ROM and RAM values if wanted
   if (nh_->get_parameter("servos.set_ROM_RAM").as_bool()) {
@@ -88,20 +90,6 @@ bool ServoBusInterface::init() {
   }
   writeTorque(nh_->get_parameter("servos.auto_torque").as_bool());
   return true;
-}
-
-ServoBusInterface::~ServoBusInterface() {
-  delete data_sync_read_positions_;
-  delete data_sync_read_velocities_;
-  delete data_sync_read_efforts_;
-  delete data_sync_read_pwms_;
-  delete data_sync_read_error_;
-  delete sync_write_goal_position_;
-  delete sync_write_goal_velocity_;
-  delete sync_write_profile_velocity_;
-  delete sync_write_profile_acceleration_;
-  delete sync_write_goal_current_;
-  delete sync_write_goal_pwm_;
 }
 
 bool ServoBusInterface::loadDynamixels() {
@@ -158,7 +146,7 @@ bool ServoBusInterface::writeROMRAM(bool first_time) {
    */
   RCLCPP_DEBUG(nh_->get_logger(), "Writing ROM and RAM values");
   // Iterate over all groups
-  bool sucess = true;
+  bool success = true;
   // Initilize datastructure to hold the parameters temporarily before we write them all at once
   // Joint id -> Register name -> Register value
   std::map<int, std::map<std::string, int>> joint_register_value_map;
@@ -200,19 +188,19 @@ bool ServoBusInterface::writeROMRAM(bool first_time) {
     // Check that the size is the same
     if (group_params.size() != parameter_names.size()) {
       RCLCPP_ERROR(nh_->get_logger(), "Servo group %s has a different number of servo parameters", group_id.c_str());
-      sucess = false;
+      success = false;
     }
     // Check that all keys are the same
     for (std::string &key : parameter_names) {
       if (group_params.find(key) == group_params.end()) {
         RCLCPP_ERROR(nh_->get_logger(), "Group %s does not have parameter %s", group_id.c_str(), key.c_str());
-        sucess = false;
+        success = false;
       }
     }
   }
 
   // Allocate memory for the values in the driver
-  int *values = (int *)malloc(joint_names_.size() * sizeof(int));
+  std::vector<int> values(joint_names_.size());
   // Iterate over parameter names
   for (auto register_name : parameter_names) {
     // Get the value for each joint
@@ -227,11 +215,9 @@ bool ServoBusInterface::writeROMRAM(bool first_time) {
     if (first_time) {
       driver_->addSyncWrite(register_name.c_str());
     }
-    sucess = sucess && driver_->syncWrite(register_name.c_str(), values);
+    success = success && driver_->syncWrite(register_name.c_str(), values.data());
   }
-  // Free the memory
-  free(values);
-  return sucess;
+  return success;
 }
 
 void ServoBusInterface::read(const rclcpp::Time &t, const rclcpp::Duration &dt) {
@@ -401,6 +387,8 @@ void ServoBusInterface::write(const rclcpp::Time &t, const rclcpp::Duration &dt)
   lost_servo_connection_ = false;
 }
 
+void ServoBusInterface::restoreAfterPowerCycle() { writeROMRAM(false); }
+
 void ServoBusInterface::switchDynamixelControlMode() {
   /**
    * This method switches the control mode of all servos
@@ -448,7 +436,7 @@ diagnostic_msgs::msg::DiagnosticStatus ServoBusInterface::createServoDiagMsg(int
   servo_status.message = message;
   servo_status.hardware_id = std::to_string(id);
   std::vector<diagnostic_msgs::msg::KeyValue> keyValues = std::vector<diagnostic_msgs::msg::KeyValue>();
-  // itarate through map and save it into values
+  // iterate through map and save it into values
   for (auto const &ent1 : map) {
     diagnostic_msgs::msg::KeyValue key_value = diagnostic_msgs::msg::KeyValue();
     key_value.key = ent1.first;
@@ -562,7 +550,7 @@ bool ServoBusInterface::syncReadPositions() {
   /**
    * Reads all position information with a single sync read
    */
-  bool success = driver_->syncRead("Present_Position", data_sync_read_positions_);
+  bool success = driver_->syncRead("Present_Position", data_sync_read_positions_.data());
   if (success) {
     for (int i = 0; i < joint_count_; i++) {
       // TODO test if this is required
@@ -586,7 +574,7 @@ bool ServoBusInterface::syncReadVelocities() {
   /**
    * Reads all velocity information with a single sync read
    */
-  bool success = driver_->syncRead("Present_Velocity", data_sync_read_velocities_);
+  bool success = driver_->syncRead("Present_Velocity", data_sync_read_velocities_.data());
   if (success) {
     for (int i = 0; i < joint_count_; i++) {
       current_velocity_[i] = driver_->convertValue2Velocity(joint_ids_[i], data_sync_read_velocities_[i]);
@@ -599,7 +587,7 @@ bool ServoBusInterface::syncReadEfforts() {
   /**
    * Reads all effort information with a single sync read
    */
-  bool success = driver_->syncRead("Present_Current", data_sync_read_efforts_);
+  bool success = driver_->syncRead("Present_Current", data_sync_read_efforts_.data());
   if (success) {
     for (int i = 0; i < joint_count_; i++) {
       current_effort_[i] = driver_->convertValue2Torque(joint_ids_[i], data_sync_read_efforts_[i]);
@@ -612,7 +600,7 @@ bool ServoBusInterface::syncReadPWMs() {
   /**
    * Reads all PWM information with a single sync read
    */
-  bool success = driver_->syncRead("Present_PWM", data_sync_read_pwms_);
+  bool success = driver_->syncRead("Present_PWM", data_sync_read_pwms_.data());
   if (success) {
     for (int i = 0; i < joint_count_; i++) {
       // the data is in int16
@@ -628,7 +616,7 @@ bool ServoBusInterface::syncReadError() {
   /**
    * Reads all error bytes with a single sync read
    */
-  bool success = driver_->syncRead("Hardware_Error_Status", data_sync_read_error_);
+  bool success = driver_->syncRead("Hardware_Error_Status", data_sync_read_error_.data());
   if (success) {
     for (int i = 0; i < joint_count_; i++) {
       current_error_[i] = data_sync_read_error_[i];
@@ -690,7 +678,7 @@ void ServoBusInterface::syncWritePosition() {
     float radian = goal_position_[num] - joint_mounting_offsets_[num] - joint_offsets_[num];
     sync_write_goal_position_[num] = driver_->convertRadian2Value(joint_ids_[num], radian);
   }
-  driver_->syncWrite("Goal_Position", sync_write_goal_position_);
+  driver_->syncWrite("Goal_Position", sync_write_goal_position_.data());
 }
 
 void ServoBusInterface::syncWriteVelocity() {
@@ -700,7 +688,7 @@ void ServoBusInterface::syncWriteVelocity() {
   for (size_t num = 0; num < joint_names_.size(); num++) {
     sync_write_goal_velocity_[num] = driver_->convertVelocity2Value(joint_ids_[num], goal_velocity_[num]);
   }
-  driver_->syncWrite("Goal_Velocity", sync_write_goal_velocity_);
+  driver_->syncWrite("Goal_Velocity", sync_write_goal_velocity_.data());
 }
 
 void ServoBusInterface::syncWriteProfileVelocity() {
@@ -717,7 +705,7 @@ void ServoBusInterface::syncWriteProfileVelocity() {
           std::max(driver_->convertVelocity2Value(joint_ids_[num], goal_velocity_[num]), 1);
     }
   }
-  driver_->syncWrite("Profile_Velocity", sync_write_profile_velocity_);
+  driver_->syncWrite("Profile_Velocity", sync_write_profile_velocity_.data());
 }
 
 void ServoBusInterface::syncWriteProfileAcceleration() {
@@ -734,7 +722,7 @@ void ServoBusInterface::syncWriteProfileAcceleration() {
           std::max(static_cast<int>(goal_acceleration_[num] * 572.9577952 / 214.577), 1);
     }
   }
-  driver_->syncWrite("Profile_Acceleration", sync_write_profile_acceleration_);
+  driver_->syncWrite("Profile_Acceleration", sync_write_profile_acceleration_.data());
 }
 
 void ServoBusInterface::syncWriteCurrent() {
@@ -755,7 +743,7 @@ void ServoBusInterface::syncWriteCurrent() {
       sync_write_goal_current_[num] = driver_->convertTorque2Value(joint_ids_[num], goal_effort_[num]);
     }
   }
-  driver_->syncWrite("Goal_Current", sync_write_goal_current_);
+  driver_->syncWrite("Goal_Current", sync_write_goal_current_.data());
 }
 
 void ServoBusInterface::syncWritePWM() {
@@ -767,7 +755,7 @@ void ServoBusInterface::syncWritePWM() {
       sync_write_goal_pwm_[num] = goal_effort_[num] / 100.0 * 855.0;
     }
   }
-  driver_->syncWrite("Goal_PWM", sync_write_goal_pwm_);
+  driver_->syncWrite("Goal_PWM", sync_write_goal_pwm_.data());
 }
 
 }  // namespace bitbots_ros_control

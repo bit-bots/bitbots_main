@@ -31,7 +31,8 @@ class RobotPoseObservationModel : public particle_filter::ObservationModel<Robot
    * empty
    */
   RobotPoseObservationModel(std::shared_ptr<Map> map_lines, std::shared_ptr<Map> map_goals,
-                            std::shared_ptr<Map> map_field_boundary, const bitbots_localization::Params &config);
+                            std::shared_ptr<Map> map_field_boundary, const bitbots_localization::Params &config,
+                            const FieldDimensions &field_dimensions);
 
   /**
    *
@@ -77,6 +78,7 @@ class RobotPoseObservationModel : public particle_filter::ObservationModel<Robot
 
   // Parameters
   bitbots_localization::Params config_;
+  FieldDimensions field_dimensions_;
 };
 };  // namespace bitbots_localization
 

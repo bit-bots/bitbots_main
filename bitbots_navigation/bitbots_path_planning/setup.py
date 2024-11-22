@@ -1,7 +1,12 @@
 import glob
 
+from generate_parameter_library_py.setup_helper import generate_parameter_module
 from setuptools import setup
 
+generate_parameter_module(
+    "path_planning_parameters",  # python module name for parameter library
+    "config/path_planning_parameters.yaml",  # path to input yaml file
+)
 package_name = "bitbots_path_planning"
 
 setup(
@@ -15,6 +20,9 @@ setup(
         ("share/" + package_name + "/launch", glob.glob("launch/*.launch")),
     ],
     install_requires=["setuptools"],
+    extras_require={
+        "dev": ["pytest", "syrupy"],
+    },
     zip_safe=True,
     maintainer="Florian Vahl",
     maintainer_email="git@flova.de",

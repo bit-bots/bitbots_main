@@ -1,3 +1,5 @@
+from typing import Optional
+
 from biped_interfaces.msg import Phase
 from bitbots_quintic_walk_py.libpy_quintic_walk import PyWalkWrapper
 from bitbots_utils.utils import parse_parameter_dict
@@ -11,17 +13,24 @@ from bitbots_msgs.msg import JointCommand
 
 
 class PyWalk:
-    def __init__(self, namespace="", parameters: [Parameter] | None = None, set_force_smooth_step_transition=False):
-        serialized_parameters = []
-        if parameters is not None:
-            for parameter in parameters:
-                serialized_parameters.append(serialize_message(parameter))
-                if parameter.value.type == 2:
-                    print(
-                        f"Gave parameter {parameter.name} of integer type. If the code crashes it is maybe because this "
-                        f"should be a float. You may need to add an .0 in some yaml file."
-                    )
-        self.py_walk_wrapper = PyWalkWrapper(namespace, serialized_parameters, set_force_smooth_step_transition)
+    def __init__(
+        self,
+        namespace="",
+        walk_parameters: Optional[list[Parameter]] = None,
+        moveit_parameters: Optional[list[Parameter]] = None,
+        set_force_smooth_step_transition=False,
+    ):
+        def serialize_parameters(parameters):
+            if parameters is None:
+                return []
+            return list(map(serialize_message, parameters))
+
+        self.py_walk_wrapper = PyWalkWrapper(
+            namespace,
+            serialize_parameters(walk_parameters),
+            serialize_parameters(moveit_parameters),
+            set_force_smooth_step_transition,
+        )
 
     def spin_ros(self):
         self.py_walk_wrapper.spin_some()
@@ -98,24 +107,24 @@ class PyWalk:
         for parameter in parameters:
             self.py_walk_wrapper.set_parameter(serialize_message(parameter))
 
-    def get_phase(self):
+    def get_phase(self) -> float:
         return self.py_walk_wrapper.get_phase()
 
-    def get_freq(self):
+    def get_freq(self) -> float:
         return self.py_walk_wrapper.get_freq()
 
-    def get_support_state(self):
+    def get_support_state(self) -> Phase:
         return deserialize_message(self.py_walk_wrapper.get_support_state(), Phase)
 
-    def is_left_support(self):
+    def is_left_support(self) -> bool:
         return self.py_walk_wrapper.is_left_support()
 
-    def get_odom(self):
+    def get_odom(self) -> Odometry:
         odom = self.py_walk_wrapper.get_odom()
         result = deserialize_message(odom, Odometry)
         return result
 
-    def publish_debug(self):
+    def publish_debug(self) -> None:
         self.py_walk_wrapper.publish_debug()
 
     def reset_and_test_if_speed_possible(self, cmd_vel_msg, threshold=0.001):

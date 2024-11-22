@@ -1,20 +1,38 @@
 #include "bitbots_quintic_walk/walk_pywrapper.hpp"
 
-void PyWalkWrapper::spin_some() { rclcpp::spin_some(walk_node_); }
+void PyWalkWrapper::spin_some() { rclcpp::spin_some(node_); }
 
-PyWalkWrapper::PyWalkWrapper(std::string ns, std::vector<py::bytes> parameter_msgs, bool force_smooth_step_transition) {
+PyWalkWrapper::PyWalkWrapper(const std::string &ns, const std::vector<py::bytes> &walk_parameter_msgs,
+                             const std::vector<py::bytes> &moveit_parameter_msgs, bool force_smooth_step_transition) {
   // initialize rclcpp if not already done
   if (!rclcpp::contexts::get_global_default_context()->is_valid()) {
     rclcpp::init(0, nullptr);
   }
 
-  // create parameters from serialized messages
-  std::vector<rclcpp::Parameter> cpp_parameters = {};
-  for (auto &parameter_msg : parameter_msgs) {
-    cpp_parameters.push_back(
-        rclcpp::Parameter::from_parameter_msg(fromPython<rcl_interfaces::msg::Parameter>(parameter_msg)));
-  }
-  walk_node_ = std::make_shared<bitbots_quintic_walk::WalkNode>(ns, cpp_parameters);
+  // internal function to deserialize the parameter messages
+  auto deserialize_parameters = [](std::vector<py::bytes> parameter_msgs) {
+    std::vector<rclcpp::Parameter> cpp_parameters = {};
+    for (auto &parameter_msg : parameter_msgs) {
+      cpp_parameters.push_back(
+          rclcpp::Parameter::from_parameter_msg(fromPython<rcl_interfaces::msg::Parameter>(parameter_msg)));
+    }
+    return cpp_parameters;
+  };
+
+  // Create a node object
+  // Even tho we use python bindings instead of ros's dds, we still need a node object for logging and parameter
+  // handling Because the walking is not started using the launch infrastructure and an appropriate parameter file, we
+  // need to manually set the parameters
+  node_ = rclcpp::Node::make_shared(
+      "walking", ns, rclcpp::NodeOptions().parameter_overrides(deserialize_parameters(walk_parameter_msgs)));
+
+  // Create the walking object
+  // We pass it the node we created. But the walking also creates a helper node for moveit (otherwise dynamic
+  // reconfigure does not work, because moveit does some bullshit with their parameter declarations leading dynamic
+  // reconfigure not working). This way the walking parameters are isolated from the moveit parameters, allowing dynamic
+  // reconfigure to work. Therefore we need to pass the moveit parameters to the walking.
+  walk_node_ =
+      std::make_shared<bitbots_quintic_walk::WalkNode>(node_, ns, deserialize_parameters(moveit_parameter_msgs));
   set_robot_state(0);
   walk_node_->initializeEngine();
   walk_node_->getEngine()->setForceSmoothStepTransition(force_smooth_step_transition);
@@ -83,7 +101,7 @@ void PyWalkWrapper::special_reset(int state, double phase, py::bytes cmd_vel, bo
   } else if (state == 7) {
     walk_state = bitbots_quintic_walk::WalkState::KICK;
   } else {
-    RCLCPP_WARN(walk_node_->get_logger(), "state in special reset not clear");
+    RCLCPP_WARN(node_->get_logger(), "state in special reset not clear");
     return;
   }
   walk_node_->reset(walk_state, phase,
@@ -120,9 +138,8 @@ void PyWalkWrapper::set_parameter(py::bytes parameter_msg) {
   rclcpp::Parameter parameter =
       rclcpp::Parameter::from_parameter_msg(fromPython<rcl_interfaces::msg::Parameter>(parameter_msg));
 
-  // needs to be a vector
-  std::vector<rclcpp::Parameter> parameters = {parameter};
-  walk_node_->onSetParameters(parameters);
+  node_->set_parameter(parameter);
+  walk_node_->updateParams();
 }
 
 void PyWalkWrapper::publish_debug() { walk_node_->publish_debug(); }
@@ -196,7 +213,7 @@ PYBIND11_MODULE(libpy_quintic_walk, m) {
   using namespace bitbots_quintic_walk;
 
   py::class_<PyWalkWrapper, std::shared_ptr<PyWalkWrapper>>(m, "PyWalkWrapper")
-      .def(py::init<std::string, std::vector<py::bytes>, bool>())
+      .def(py::init<std::string, std::vector<py::bytes>, std::vector<py::bytes>, bool>())
       .def("step", &PyWalkWrapper::step)
       .def("step_relative", &PyWalkWrapper::step_relative)
       .def("step_open_loop", &PyWalkWrapper::step_open_loop)

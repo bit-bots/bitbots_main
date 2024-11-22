@@ -1,18 +1,15 @@
-"""
-GameStatusCapsule
-^^^^^^^^^^^^^^^^^
-
-Provides information about the current game state.
-"""
 from bitbots_utils.utils import get_parameters_from_other_node
 from game_controller_hl_interfaces.msg import GameState
-from rclpy.node import Node
+
+from bitbots_blackboard.capsules import AbstractBlackboardCapsule
 
 
-class GameStatusCapsule:
-    def __init__(self, node: Node):
-        self.node = node
-        self.team_id = get_parameters_from_other_node(self.node, "parameter_blackboard", ["team_id"])["team_id"]
+class GameStatusCapsule(AbstractBlackboardCapsule):
+    """Provides information about the current game state."""
+
+    def __init__(self, node, blackboard=None):
+        super().__init__(node, blackboard)
+        self.team_id = get_parameters_from_other_node(self._node, "parameter_blackboard", ["team_id"])["team_id"]
         self.gamestate = GameState()
         self.last_update = 0
         self.unpenalized_time = 0
@@ -58,15 +55,15 @@ class GameStatusCapsule:
         return self.gamestate.rival_score
 
     def get_seconds_since_own_goal(self):
-        return self.node.get_clock().now().nanoseconds / 1e9 - self.last_goal_from_us_time
+        return self._node.get_clock().now().nanoseconds / 1e9 - self.last_goal_from_us_time
 
     def get_seconds_since_any_goal(self):
-        return self.node.get_clock().now().nanoseconds / 1e9 - self.last_goal_time
+        return self._node.get_clock().now().nanoseconds / 1e9 - self.last_goal_time
 
     def get_seconds_remaining(self):
         # Time from the message minus time passed since receiving it
         return max(
-            self.gamestate.seconds_remaining - (self.node.get_clock().now().nanoseconds / 1e9 - self.last_update), 0
+            self.gamestate.seconds_remaining - (self._node.get_clock().now().nanoseconds / 1e9 - self.last_update), 0
         )
 
     def get_secondary_seconds_remaining(self):
@@ -74,7 +71,7 @@ class GameStatusCapsule:
         # Time from the message minus time passed since receiving it
         return max(
             self.gamestate.secondary_seconds_remaining
-            - (self.node.get_clock().now().nanoseconds / 1e9 - self.last_update),
+            - (self._node.get_clock().now().nanoseconds / 1e9 - self.last_update),
             0,
         )
 
@@ -84,10 +81,10 @@ class GameStatusCapsule:
             return None
         else:
             # Time from the message plus seconds passed since receiving it
-            return self.gamestate.drop_in_time + (self.node.get_clock().now().nanoseconds / 1e9 - self.last_update)
+            return self.gamestate.drop_in_time + (self._node.get_clock().now().nanoseconds / 1e9 - self.last_update)
 
     def get_seconds_since_unpenalized(self):
-        return self.node.get_clock().now().nanoseconds / 1e9 - self.unpenalized_time
+        return self._node.get_clock().now().nanoseconds / 1e9 - self.unpenalized_time
 
     def get_is_penalized(self):
         return self.gamestate.penalized
@@ -103,14 +100,14 @@ class GameStatusCapsule:
 
     def gamestate_callback(self, gamestate_msg: GameState):
         if self.gamestate.penalized and not gamestate_msg.penalized:
-            self.unpenalized_time = self.node.get_clock().now().nanoseconds / 1e9
+            self.unpenalized_time = self._node.get_clock().now().nanoseconds / 1e9
 
         if gamestate_msg.own_score > self.gamestate.own_score:
-            self.last_goal_from_us_time = self.node.get_clock().now().nanoseconds / 1e9
-            self.last_goal_time = self.node.get_clock().now().nanoseconds / 1e9
+            self.last_goal_from_us_time = self._node.get_clock().now().nanoseconds / 1e9
+            self.last_goal_time = self._node.get_clock().now().nanoseconds / 1e9
 
         if gamestate_msg.rival_score > self.gamestate.rival_score:
-            self.last_goal_time = self.node.get_clock().now().nanoseconds / 1e9
+            self.last_goal_time = self._node.get_clock().now().nanoseconds / 1e9
 
         if (
             gamestate_msg.secondary_state_mode == 2
@@ -128,5 +125,5 @@ class GameStatusCapsule:
         if self.free_kick_kickoff_team is not None:
             gamestate_msg.has_kick_off = self.free_kick_kickoff_team == self.team_id
 
-        self.last_update = self.node.get_clock().now().nanoseconds / 1e9
+        self.last_update = self._node.get_clock().now().nanoseconds / 1e9
         self.gamestate = gamestate_msg

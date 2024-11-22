@@ -2,13 +2,12 @@ import cv2
 import numpy as np
 import soccer_vision_3d_msgs.msg as sv3dm
 import tf2_ros as tf2
+from bitbots_utils.utils import get_parameters_from_other_node
 from geometry_msgs.msg import Point
 from nav_msgs.msg import OccupancyGrid
 from rclpy.node import Node
 from ros2_numpy import msgify, numpify
-from tf2_geometry_msgs import PointStamped
-
-from bitbots_msgs.msg import PoseWithCertaintyStamped
+from tf2_geometry_msgs import PointStamped, PoseWithCovarianceStamped
 
 
 class Map:
@@ -19,27 +18,35 @@ class Map:
     def __init__(self, node: Node, buffer: tf2.Buffer) -> None:
         self.node = node
         self.buffer = buffer
-        self.resolution: int = self.node.declare_parameter("map.resolution", 20).value
-        self.size: tuple[float, float] = (
-            self.node.declare_parameter("map.size.x", 11.0).value,
-            self.node.declare_parameter("map.size.y", 8.0).value,
+        self.resolution: int = self.node.config.map.resolution
+        parameters = get_parameters_from_other_node(
+            self.node, "/parameter_blackboard", ["field.size.x", "field.size.y", "field.size.padding"]
         )
-        self.map: np.ndarray = np.ones((np.array(self.size) * self.resolution).astype(int), dtype=np.int8)
-        self.frame: str = self.node.declare_parameter("map.planning_frame", "map").value
+        self.size: tuple[float, float] = (
+            parameters["field.size.x"] + 2 * parameters["field.size.padding"],
+            parameters["field.size.y"] + 2 * parameters["field.size.padding"],
+        )
+        self.map: np.ndarray = np.ones(
+            (np.array(self.size) * self.resolution).astype(int),
+            dtype=np.int8,
+        )
+
+        self.frame: str = self.node.config.map.planning_frame
         self.ball_buffer: list[Point] = []
         self.robot_buffer: list[sv3dm.Robot] = []
-        self.config_ball_diameter: float = self.node.declare_parameter("map.ball_diameter", 0.13).value
-        self.config_inflation_blur: int = self.node.declare_parameter("map.inflation.blur", 13).value
-        self.config_inflation_dialation: int = self.node.declare_parameter("map.inflation.dialte", 3).value
-        self.config_obstacle_value: int = self.node.declare_parameter("map.obstacle_value", 50).value
+        self.config_ball_diameter: float = self.node.config.map.ball_diameter
+        self.config_inflation_blur: int = self.node.config.map.inflation.blur
+        self.config_inflation_dialation: int = self.node.config.map.inflation.dialate
+        self.config_obstacle_value: int = self.node.config.map.obstacle_value
+        self.ball_obstacle_active: bool = True
 
-    def set_ball(self, ball: PoseWithCertaintyStamped) -> None:
+    def set_ball(self, ball: PoseWithCovarianceStamped) -> None:
         """
         Adds a given ball to the ball buffer
         """
         point = PointStamped()
         point.header.frame_id = ball.header.frame_id
-        point.point = ball.pose.pose.pose.position
+        point.point = ball.pose.pose.position
         try:
             self.ball_buffer = [self.buffer.transform(point, self.frame).point]
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
@@ -54,7 +61,7 @@ class Map:
             cv2.circle(
                 self.map,
                 self.to_map_space(ball.x, ball.y)[::-1],
-                round(self.config_ball_diameter * self.resolution),
+                round(self.config_ball_diameter / 2 * self.resolution),
                 self.config_obstacle_value,
                 -1,
             )
@@ -134,9 +141,16 @@ class Map:
         Regenerates the costmap based on the ball and robot buffer
         """
         self.clear()
-        self._render_balls()
+        if self.ball_obstacle_active:
+            self._render_balls()
         self._render_robots()
         self.inflate()
+
+    def avoid_ball(self, state: bool) -> None:
+        """
+        Activates or deactivates the ball obstacle
+        """
+        self.ball_obstacle_active = state
 
     def get_map(self) -> np.ndarray:
         """

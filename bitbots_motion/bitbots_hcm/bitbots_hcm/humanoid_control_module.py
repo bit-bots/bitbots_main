@@ -22,9 +22,10 @@ from sensor_msgs.msg import Imu, JointState
 from std_msgs.msg import Bool
 from std_srvs.srv import SetBool
 
+from bitbots_hcm import hcm_dsd
 from bitbots_hcm.hcm_dsd.hcm_blackboard import HcmBlackboard
 from bitbots_msgs.msg import FootPressure, RobotControlState
-from bitbots_msgs.srv import SetTeachingMode
+from bitbots_msgs.srv import ManualPenalize, SetTeachingMode
 
 
 class HardwareControlManager:
@@ -68,19 +69,16 @@ class HardwareControlManager:
         self.blackboard = HcmBlackboard(self.node)
         # Create Dynamic Stack Decider
         self.dsd = DSD(self.blackboard, "debug/dsd/hcm", node=self.node)
-        # Get the path to the python actions and decisions
-        dirname = os.path.join(get_package_share_directory("bitbots_hcm"), "hcm_dsd")
         # Register actions and decisions
-        self.dsd.register_actions(os.path.join(dirname, "actions"))
-        self.dsd.register_decisions(os.path.join(dirname, "decisions"))
+        self.dsd.register_actions(hcm_dsd.actions.__path__[0])
+        self.dsd.register_decisions(hcm_dsd.decisions.__path__[0])
         # Load the behavior file
-        self.dsd.load_behavior(os.path.join(dirname, "hcm.dsd"))
+        self.dsd.load_behavior(os.path.join(hcm_dsd.__path__[0], "hcm.dsd"))
 
         # Flag to deactivate the HCM
         self.hcm_deactivated = False
 
         # Create subscribers
-        self.node.create_subscription(Bool, "pause", self.pause, 1)
         self.node.create_subscription(Bool, "core/power_switch_status", self.power_cb, 1)
         self.node.create_subscription(Bool, "hcm_deactivate", self.deactivate_cb, 1)
         self.node.create_subscription(DiagnosticArray, "diagnostics_agg", self.diag_cb, 1)
@@ -90,6 +88,9 @@ class HardwareControlManager:
         self.node.create_service(SetBool, "play_animation_mode", self.set_animation_mode_callback)
         self.teaching_mode_service = self.node.create_service(
             SetTeachingMode, "teaching_mode", self.set_teaching_mode_callback
+        )
+        self.manual_penalize_service = self.node.create_service(
+            ManualPenalize, "manual_penalize", self.set_manual_penalize_mode_callback
         )
 
         # Store time of the last tick
@@ -123,9 +124,20 @@ class HardwareControlManager:
         """Deactivates the HCM."""
         self.hcm_deactivated = msg.data
 
-    def pause(self, msg: Bool):
-        """Updates the stop state for the state machine"""
-        self.blackboard.stopped = msg.data
+    def set_manual_penalize_mode_callback(self, req: ManualPenalize.Request, resp: ManualPenalize.Response):
+        """Callback for the manual penalize service."""
+        if req.penalize == ManualPenalize.Request.OFF:
+            self.blackboard.stopped = False
+        elif req.penalize == ManualPenalize.Request.ON:
+            self.blackboard.stopped = True
+        elif req.penalize == ManualPenalize.Request.SWITCH:
+            self.blackboard.stopped = not self.blackboard.stopped
+        else:
+            self.node.get_logger().error("Manual penalize call with unspecified request")
+            resp.success = False
+            return resp
+        resp.success = True
+        return resp
 
     def power_cb(self, msg: Bool):
         """Updates the power state."""
@@ -135,14 +147,18 @@ class HardwareControlManager:
         """Updates the diagnostic state."""
         status: DiagnosticStatus
         for status in msg.status:
-            if "//Servos/" in status.name:
-                if status.level == DiagnosticStatus.ERROR and "Overload" in status.message:
-                    self.blackboard.servo_overload = True
-            elif "//Servos" in status.name:
+            if "/Servos/" in status.name:
+                if status.level == DiagnosticStatus.ERROR:
+                    if "Overload" in status.message:
+                        self.blackboard.servo_overload = True
+                    elif "Overheat" in status.message:
+                        self.blackboard.servo_overheat = True
+
+            elif "/Servos" in status.name:
                 self.blackboard.servo_diag_error = status.level in (DiagnosticStatus.ERROR, DiagnosticStatus.STALE)
-            elif "//IMU" in status.name:
+            elif "/IMU" in status.name:
                 self.blackboard.imu_diag_error = status.level in (DiagnosticStatus.ERROR, DiagnosticStatus.STALE)
-            elif "//Pressure" in status.name:
+            elif "/Pressure" in status.name:
                 self.blackboard.pressure_diag_error = status.level in (DiagnosticStatus.ERROR, DiagnosticStatus.STALE)
 
     def get_state(self) -> RobotControlState:

@@ -1,4 +1,4 @@
-bitbots_ball_filter:
+bitbots_robot_filter:
   ros__parameters:
     # Topics
     robot_observation_topic: 'robots_relative'
@@ -6,6 +6,7 @@ bitbots_ball_filter:
     robots_publish_topic: 'robots_relative_filtered'
 
     filter_frame: 'map'
-    robot_dummy_size: 0.4
+    robot_dummy_size: 0.6
     robot_merge_distance: 0.5
     robot_storage_time: 10e9
+    team_data_timeout: 1e9

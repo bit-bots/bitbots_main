@@ -92,6 +92,7 @@ class HCM_CPP : public rclcpp::Node {
         current_state_ == bitbots_msgs::msg::RobotControlState::MOTOR_OFF ||
         current_state_ == bitbots_msgs::msg::RobotControlState::PICKED_UP ||
         current_state_ == bitbots_msgs::msg::RobotControlState::PENALTY ||
+        current_state_ == bitbots_msgs::msg::RobotControlState::RECORD ||
         current_state_ == bitbots_msgs::msg::RobotControlState::CONTROLLABLE) {
       pub_controller_command_->publish(msg);
     }
@@ -247,6 +248,8 @@ int main(int argc, char** argv) {
     // really short sleep to not waste cpu time
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
   }
+  // Join the thread
+  thread_obj.join();
 
   rclcpp::shutdown();
 }

@@ -33,7 +33,6 @@ rosidl_generate_interfaces(
   "msg/NetworkInterface.msg"
   "msg/PoseWithCertainty.msg"
   "msg/PoseWithCertaintyArray.msg"
-  "msg/PoseWithCertaintyStamped.msg"
   "msg/RobotControlState.msg"
   "msg/RobotRelative.msg"
   "msg/RobotRelativeArray.msg"

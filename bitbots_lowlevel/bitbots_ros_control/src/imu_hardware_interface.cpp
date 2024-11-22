@@ -24,23 +24,6 @@ bool ImuHardwareInterface::init() {
   status_imu_.name = name_;
   status_imu_.hardware_id = std::to_string(id_);
 
-  // alloc memory for imu values
-  orientation_ = (double *)malloc(4 * sizeof(double));
-  std::fill(orientation_, orientation_ + 4, 0);
-  orientation_covariance_ = (double *)malloc(9 * sizeof(double));
-  std::fill(orientation_covariance_, orientation_covariance_ + 9, 0);
-  angular_velocity_ = (double *)malloc(3 * sizeof(double));
-  std::fill(angular_velocity_, angular_velocity_ + 3, 0);
-  angular_velocity_covariance_ = (double *)malloc(9 * sizeof(double));
-  std::fill(angular_velocity_covariance_, angular_velocity_covariance_ + 9, 0);
-  linear_acceleration_ = (double *)malloc(3 * sizeof(double));
-  std::fill(linear_acceleration_, linear_acceleration_ + 3, 0);
-  linear_acceleration_covariance_ = (double *)malloc(9 * sizeof(double));
-  std::fill(linear_acceleration_covariance_, linear_acceleration_covariance_ + 9, 0);
-
-  data_ = (uint8_t *)malloc(40 * sizeof(uint8_t));
-  accel_calib_data_ = (uint8_t *)malloc(28 * sizeof(uint8_t));
-
   // make services
   imu_ranges_service_ = nh_->create_service<bitbots_msgs::srv::IMURanges>(
       "/imu/set_imu_ranges", std::bind(&ImuHardwareInterface::setIMURanges, this, _1, _2));
@@ -70,15 +53,15 @@ bool ImuHardwareInterface::init() {
   std::shared_ptr<bitbots_msgs::srv::AccelerometerCalibration::Response> resp =
       std::make_shared<bitbots_msgs::srv::AccelerometerCalibration::Response>();
   readAccelCalibration(req, resp);
-  if (driver_->readMultipleRegisters(id_, 102, 16, data_)) {
+  if (driver_->readMultipleRegisters(id_, 102, 16, data_.data())) {
     gyro_range_ = data_[0];
     accel_range_ = data_[1];
     calibrate_gyro_ = data_[2];
     reset_gyro_calibration_ = data_[3];
     do_adaptive_gain_ = data_[6];
     do_bias_estimation_ = data_[7];
-    accel_gain_ = dxlMakeFloat(data_ + 8);
-    bias_alpha_ = dxlMakeFloat(data_ + 12);
+    accel_gain_ = dxlMakeFloat(&data_[8]);
+    bias_alpha_ = dxlMakeFloat(&data_[12]);
   } else {
     RCLCPP_WARN(nh_->get_logger(), "Could not read IMU %s config values in init", name_.c_str());
   }
@@ -100,23 +83,23 @@ void ImuHardwareInterface::read(const rclcpp::Time &t, const rclcpp::Duration &d
    * Reads the IMU
    */
   bool read_successful = true;
-  if (driver_->readMultipleRegisters(id_, 36, 40, data_)) {
+  if (driver_->readMultipleRegisters(id_, 36, 40, data_.data())) {
     // sometimes we only get 0 right after power on, don't use that data
     // test on orientation is sufficient as 0,0,0,0 would not be a valid quaternion
-    if (dxlMakeFloat(data_ + 24) + dxlMakeFloat(data_ + 28) + dxlMakeFloat(data_ + 32) + dxlMakeFloat(data_ + 36) !=
+    if (dxlMakeFloat(&data_[24]) + dxlMakeFloat(&data_[28]) + dxlMakeFloat(&data_[32]) + dxlMakeFloat(&data_[36]) !=
         0) {
-      angular_velocity_[0] = dxlMakeFloat(data_ + 0);
-      angular_velocity_[1] = dxlMakeFloat(data_ + 4);
-      angular_velocity_[2] = dxlMakeFloat(data_ + 8);
+      angular_velocity_[0] = dxlMakeFloat(&data_[0]);
+      angular_velocity_[1] = dxlMakeFloat(&data_[4]);
+      angular_velocity_[2] = dxlMakeFloat(&data_[8]);
 
-      linear_acceleration_[0] = dxlMakeFloat(data_ + 12);
-      linear_acceleration_[1] = dxlMakeFloat(data_ + 16);
-      linear_acceleration_[2] = dxlMakeFloat(data_ + 20);
+      linear_acceleration_[0] = dxlMakeFloat(&data_[12]);
+      linear_acceleration_[1] = dxlMakeFloat(&data_[16]);
+      linear_acceleration_[2] = dxlMakeFloat(&data_[20]);
 
-      orientation_[0] = dxlMakeFloat(data_ + 24);
-      orientation_[1] = dxlMakeFloat(data_ + 28);
-      orientation_[2] = dxlMakeFloat(data_ + 32);
-      orientation_[3] = dxlMakeFloat(data_ + 36);
+      orientation_[0] = dxlMakeFloat(&data_[24]);
+      orientation_[1] = dxlMakeFloat(&data_[28]);
+      orientation_[2] = dxlMakeFloat(&data_[32]);
+      orientation_[3] = dxlMakeFloat(&data_[36]);
     }
   } else {
     RCLCPP_ERROR_THROTTLE(nh_->get_logger(), *nh_->get_clock(), 1000, "Couldn't read IMU");
@@ -228,15 +211,15 @@ void ImuHardwareInterface::readAccelCalibration(
     std::shared_ptr<bitbots_msgs::srv::AccelerometerCalibration::Response> resp) {
   resp->biases.resize(3);
   resp->scales.resize(3);
-  if (driver_->readMultipleRegisters(id_, 118, 28, accel_calib_data_)) {
+  if (driver_->readMultipleRegisters(id_, 118, 28, accel_calib_data_.data())) {
     // save in class variables for diagnostics
-    accel_calib_threshold_read_ = dxlMakeFloat(accel_calib_data_ + 0);
-    accel_calib_bias_[0] = dxlMakeFloat(accel_calib_data_ + 4);
-    accel_calib_bias_[1] = dxlMakeFloat(accel_calib_data_ + 8);
-    accel_calib_bias_[2] = dxlMakeFloat(accel_calib_data_ + 12);
-    accel_calib_scale_[0] = dxlMakeFloat(accel_calib_data_ + 16);
-    accel_calib_scale_[1] = dxlMakeFloat(accel_calib_data_ + 20);
-    accel_calib_scale_[2] = dxlMakeFloat(accel_calib_data_ + 24);
+    accel_calib_threshold_read_ = dxlMakeFloat(&accel_calib_data_[0]);
+    accel_calib_bias_[0] = dxlMakeFloat(&accel_calib_data_[4]);
+    accel_calib_bias_[1] = dxlMakeFloat(&accel_calib_data_[8]);
+    accel_calib_bias_[2] = dxlMakeFloat(&accel_calib_data_[12]);
+    accel_calib_scale_[0] = dxlMakeFloat(&accel_calib_data_[16]);
+    accel_calib_scale_[1] = dxlMakeFloat(&accel_calib_data_[20]);
+    accel_calib_scale_[2] = dxlMakeFloat(&accel_calib_data_[24]);
 
     resp->threshold = accel_calib_threshold_read_;
     resp->biases[0] = accel_calib_bias_[0];
@@ -306,4 +289,6 @@ void ImuHardwareInterface::write(const rclcpp::Time &t, const rclcpp::Duration &
     set_accel_calib_threshold_ = false;
   }
 }
+
+void ImuHardwareInterface::restoreAfterPowerCycle() { write_complementary_filter_params_ = true; }
 }  // namespace bitbots_ros_control

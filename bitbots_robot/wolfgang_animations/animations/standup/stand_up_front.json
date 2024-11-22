@@ -1,0 +1,93 @@
+{
+    "author": "Unknown",
+    "description": "Standup animation from the front",
+    "keyframes": [
+        {
+            "duration": 0.3,
+            "goals": {
+                "HeadPan": 0.0,
+                "HeadTilt": 45.0,
+                "LAnklePitch": -80.0,
+                "LAnkleRoll": 4.0,
+                "LElbow": 45.0,
+                "LHipPitch": 115.0,
+                "LHipRoll": 0.0,
+                "LHipYaw": 0.0,
+                "LKnee": 160.0,
+                "LShoulderPitch": -45.0,
+                "LShoulderRoll": 0.0,
+                "RAnklePitch": 80.0,
+                "RAnkleRoll": -4.0,
+                "RElbow": -45.0,
+                "RHipPitch": -115.0,
+                "RHipRoll": 0.0,
+                "RHipYaw": 0.0,
+                "RKnee": -160.0,
+                "RShoulderPitch": 45.0,
+                "RShoulderRoll": 0.0
+            },
+            "name": "arms_down",
+            "pause": 0.0,
+            "torque": {}
+        },
+        {
+            "duration": 0.3,
+            "goals": {
+                "HeadPan": 0.0,
+                "HeadTilt": 45.0,
+                "LAnklePitch": -77.0,
+                "LAnkleRoll": 4.0,
+                "LElbow": -70.0,
+                "LHipPitch": 112.0,
+                "LHipRoll": 4.0,
+                "LHipYaw": 0.0,
+                "LKnee": 154.0,
+                "LShoulderPitch": -50.0,
+                "LShoulderRoll": -7.9,
+                "RAnklePitch": 77.0,
+                "RAnkleRoll": -4.0,
+                "RElbow": 70.0,
+                "RHipPitch": -112.0,
+                "RHipRoll": -4.0,
+                "RHipYaw": 0.0,
+                "RKnee": -154.0,
+                "RShoulderPitch": 50.0,
+                "RShoulderRoll": 7.9
+            },
+            "name": "extend_arms",
+            "pause": 0.0,
+            "torque": {}
+        },
+        {
+            "duration": 0.5,
+            "goals": {
+                "HeadPan": 0.0,
+                "HeadTilt": 0.0,
+                "LAnklePitch": -80.0,
+                "LAnkleRoll": 4.0,
+                "LElbow": -70.0,
+                "LHipPitch": 70.0,
+                "LHipRoll": 4.0,
+                "LHipYaw": 0.0,
+                "LKnee": 155.0,
+                "LShoulderPitch": 10.0,
+                "LShoulderRoll": 0.0,
+                "RAnklePitch": 80.0,
+                "RAnkleRoll": -4.0,
+                "RElbow": 70.0,
+                "RHipPitch": -70.0,
+                "RHipRoll": -4.0,
+                "RHipYaw": 0.0,
+                "RKnee": -155.0,
+                "RShoulderPitch": -10.0,
+                "RShoulderRoll": 0.0
+            },
+            "name": "goto_squat",
+            "pause": 0.0,
+            "torque": {}
+        }
+    ],
+    "last_edited": "2024-07-01 16:55:15.339098",
+    "name": "Standup Front",
+    "version": "0"
+}
