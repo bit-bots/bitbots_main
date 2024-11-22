@@ -4,7 +4,7 @@
 # The pylon driver can be found in the download section of the following link:
 # https://www.baslerweb.com/en/downloads/software-downloads/
 # Go to the download button and copy the link address.
-PYLON_DOWNLOAD_URL="https://www2.baslerweb.com/media/downloads/software/pylon_software/pylon_7_4_0_14900_linux_x86_64_debs.tar.gz"
+PYLON_DOWNLOAD_URL="https://data.bit-bots.de/pylon_7_4_0_14900_linux_x86_64_debs.tar.gz.gpg"
 PYLON_VERSION="7.4.0"
 
 # Check let the user confirm that they read the license agreement on the basler website and agree with it.
@@ -47,9 +47,12 @@ else
         exit 1
     fi
     # Download the pylon driver to temp folder
-    wget --no-verbose $SHOW_PROGRESS $PYLON_DOWNLOAD_URL -O /tmp/pylon_${PYLON_VERSION}.tar.gz
+    wget --no-verbose $SHOW_PROGRESS $PYLON_DOWNLOAD_URL -O /tmp/pylon_${PYLON_VERSION}.tar.gz.gpg
     # Extract the pylon driver
     mkdir /tmp/pylon
+    # Decrypt the pylon driver
+    gpg --batch --yes --passphrase "12987318371043223" -o /tmp/pylon_${PYLON_VERSION}.tar.gz -d /tmp/pylon_${PYLON_VERSION}.tar.gz.gpg
+    # Extract the pylon driver
     tar -xzf /tmp/pylon_${PYLON_VERSION}.tar.gz -C /tmp/pylon/
     # Install the pylon driver
     sudo apt-get install /tmp/pylon/pylon_${PYLON_VERSION}*.deb -y
