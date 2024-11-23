@@ -29,11 +29,11 @@ class WalkVisualizer : public bitbots_splines::AbstractVisualizer {
                                                     const geometry_msgs::msg::Pose &pose,
                                                     const std_msgs::msg::ColorRGBA &color);
 
-  std::pair<bitbots_quintic_walk::msg::WalkEngineDebug, visualization_msgs::msg::MarkerArray> publishEngineDebug(
+  std::pair<bitbots_quintic_walk::msg::WalkEngineDebug, visualization_msgs::msg::MarkerArray> buildEngineDebugMsgs(
       WalkResponse response);
-  std::pair<bitbots_quintic_walk::msg::WalkDebug, visualization_msgs::msg::MarkerArray> publishIKDebug(
+  std::pair<bitbots_quintic_walk::msg::WalkDebug, visualization_msgs::msg::MarkerArray> buildIKDebugMsgs(
       WalkResponse response, moveit::core::RobotStatePtr current_state, bitbots_splines::JointGoals joint_goals);
-  visualization_msgs::msg::MarkerArray publishWalkMarkers(WalkResponse response);
+  visualization_msgs::msg::MarkerArray buildWalkMarkers(WalkResponse response);
 
   void init(moveit::core::RobotModelPtr kinematic_model);
 
