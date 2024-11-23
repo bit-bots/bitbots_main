@@ -218,13 +218,13 @@
     },
     // Tell the ROS extension where to find the setup.bash
     // This also utilizes the COLCON_WS environment variable, which needs to be set
-    "ros.distro": "iron",
+    "ros.distro": "jazzy",
     "search.useIgnoreFiles": false,
     "python.autoComplete.extraPaths": [
-        "/opt/ros/iron/lib/python3.10/site-packages"
+        "/opt/ros/jazzy/lib/python3.10/site-packages"
     ],
     "python.analysis.extraPaths": [
-        "/opt/ros/iron/lib/python3.10/site-packages"
+        "/opt/ros/jazzy/lib/python3.10/site-packages"
     ],
     "cmake.configureOnOpen": false,
     "editor.formatOnSave": true,

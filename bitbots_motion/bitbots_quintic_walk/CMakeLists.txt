@@ -8,6 +8,7 @@ endif()
 
 set(PYBIND11_PYTHON_VERSION 3)
 set(PYBIND11_FINDPYTHON ON)
+
 find_package(ament_cmake REQUIRED)
 find_package(backward_ros REQUIRED)
 find_package(biped_interfaces REQUIRED)
@@ -29,20 +30,16 @@ find_package(tf2_eigen REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 
-find_package(ros2_python_extension REQUIRED)
 find_package(pybind11 REQUIRED)
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
+
+find_package(ros2_python_extension REQUIRED)
 
 generate_parameter_library(bitbots_quintic_walk_parameters src/parameters.yaml)
 
 rosidl_generate_interfaces(
-  ${PROJECT_NAME}
-  "msg/WalkDebug.msg"
-  "msg/WalkEngineDebug.msg"
-  DEPENDENCIES
-  std_msgs
-  geometry_msgs
-  Python3)
+  ${PROJECT_NAME} "msg/WalkDebug.msg" "msg/WalkEngineDebug.msg" DEPENDENCIES
+  std_msgs geometry_msgs)
 
 include_directories(include ${PYTHON_INCLUDE_DIRS})
 

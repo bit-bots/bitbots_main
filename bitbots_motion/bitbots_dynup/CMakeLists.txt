@@ -31,9 +31,10 @@ find_package(tf2_eigen REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 
-find_package(ros2_python_extension REQUIRED)
 find_package(pybind11 REQUIRED)
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
+
+find_package(ros2_python_extension REQUIRED)
 
 generate_parameter_library(dynup_parameters config/dynup_config.yaml)
 
@@ -48,7 +49,6 @@ rosidl_generate_interfaces(
 
 include_directories(include ${PYTHON_INCLUDE_DIRS})
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 add_compile_options(-Wall -Werror -Wno-unused -fPIC)
 
 set(SOURCES

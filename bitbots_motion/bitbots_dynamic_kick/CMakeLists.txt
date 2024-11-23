@@ -27,7 +27,7 @@ find_package(tf2_geometry_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(backward_ros REQUIRED)
 
-find_package(PythonLibs COMPONENTS Interpreter Development)
+find_package(Python3 COMPONENTS Interpreter Development)
 
 rosidl_generate_interfaces(${PROJECT_NAME} "msg/KickDebug.msg" DEPENDENCIES
                            std_msgs geometry_msgs Python3)

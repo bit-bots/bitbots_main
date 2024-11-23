@@ -97,5 +97,5 @@ void ImportanceResamplingWE<StateType>::resample(const ParticleList &sourceList,
 // template <class StateType>
 // void ParticleFilter<StateType>::drawAllFromDistribution(const
 // std::shared_ptr<StateDistribution<StateType>>& distribution) {
-};      // namespace bitbots_localization
+};  // namespace bitbots_localization
 #endif  // IMPORTANCERESAMPLINGWE_H
