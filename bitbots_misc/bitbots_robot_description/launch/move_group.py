@@ -72,7 +72,7 @@ def launch_setup(context, *args, **kwargs):
                 "default_planning_response_adapters/AddTimeOptimalParameterization",
                 "default_planning_response_adapters/ValidateSolution",
                 "default_planning_response_adapters/DisplayMotionPath",
-                ],
+            ],
             "start_state_max_bounds_error": 0.1,
         }
     }
