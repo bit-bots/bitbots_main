@@ -13,14 +13,13 @@
 #include <moveit_msgs/msg/robot_state.hpp>
 #include <moveit_msgs/srv/get_position_fk.hpp>
 #include <moveit_msgs/srv/get_position_ik.hpp>
+#include <rcl_interfaces/srv/get_parameters.hpp>
 #include <rclcpp/duration.hpp>
 #include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
 #include <rclcpp/logger.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <ros2_python_extension/serialization.hpp>
 #include <tf2_eigen/tf2_eigen.hpp>
-
-#include "rcl_interfaces/srv/get_parameters.hpp"
 namespace py = pybind11;
 using namespace std::chrono_literals;
 using std::placeholders::_1;
@@ -315,15 +314,15 @@ class BitbotsMoveitBindings {
       ik_options.goals.emplace_back(new bio_ik::LineGoal(m.link_name, p(m.position), p(m.direction), w(m.weight)));
     }
 
-    for (auto& m : ik_request.avoid_joint_limits_goals) {
+    for (const auto& m : ik_request.avoid_joint_limits_goals) {
       ik_options.goals.emplace_back(new bio_ik::AvoidJointLimitsGoal(w(m.weight), !m.primary));
     }
 
-    for (auto& m : ik_request.minimal_displacement_goals) {
+    for (const auto& m : ik_request.minimal_displacement_goals) {
       ik_options.goals.emplace_back(new bio_ik::MinimalDisplacementGoal(w(m.weight), !m.primary));
     }
 
-    for (auto& m : ik_request.center_joints_goals) {
+    for (const auto& m : ik_request.center_joints_goals) {
       ik_options.goals.emplace_back(new bio_ik::CenterJointsGoal(w(m.weight), !m.primary));
     }
 

@@ -5,10 +5,10 @@
 #ifndef IMPORTANCERESAMPLINGWE_H
 #define IMPORTANCERESAMPLINGWE_H
 
-#include <cassert>
+#include <particle_filter/CRandomNumberGenerator.h>
+#include <particle_filter/ImportanceResampling.h>
 
-#include "particle_filter/CRandomNumberGenerator.h"
-#include "particle_filter/ImportanceResampling.h"
+#include <cassert>
 
 namespace bitbots_localization {
 // ImportanceResampling with explorers
@@ -97,5 +97,5 @@ void ImportanceResamplingWE<StateType>::resample(const ParticleList &sourceList,
 // template <class StateType>
 // void ParticleFilter<StateType>::drawAllFromDistribution(const
 // std::shared_ptr<StateDistribution<StateType>>& distribution) {
-};  // namespace bitbots_localization
+};      // namespace bitbots_localization
 #endif  // IMPORTANCERESAMPLINGWE_H

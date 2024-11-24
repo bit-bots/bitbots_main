@@ -1,13 +1,13 @@
 Software installation with ROS2
 ===============================
 
-In this tutorial, we will learn how to install ROS2 Iron Irwini on Ubuntu 22.04 and build our software stack.
+In this tutorial, we will learn how to install ROS2 Jazzy Jalisco on Ubuntu 24.04 and build our software stack.
 
 **TLDR**: single command setup
 ------------------------------
 
 **Prerequirements**
-- You have a running Ubuntu 22.04 environment
+- You have a running Ubuntu 24.04 environment
 - You have an existing Github account and added a SSH key to your account
 - You have root access to your system (sudo)
 
@@ -23,17 +23,17 @@ If you have not previously set up any of our software stack, you can use the fol
 Manual steps with in depth explanation
 --------------------------------------
 
-**0. Use Ubuntu 22.04**
+**0. Use Ubuntu 24.04**
 
 As ROS works best on Ubuntu, we are using this distribution.
-Currently, ROS2 Iron runs on Ubuntu 22.04.
+Currently, ROS2 Jazzy runs on Ubuntu 24.04.
 
-If you are not already using Ubuntu 22.04, consider installing it on your system (perhaps as a dual boot?).
+If you are not already using Ubuntu 24.04, consider installing it on your system (perhaps as a dual boot?).
 Alternatively you can use a devcontainer :doc:`vscode-dev-container`, with a preconfigured environment and follow those instructions, as these docs do not apply to the devcontainer.
 
 **1. Setup and Install ROS 2**
 
-- Follow this guide and when it comes to the section **Install ROS 2 packages**, install the recommended ``ros-iron-desktop-full``: https://docs.ros.org/en/iron/Installation/Ubuntu-Install-Debians.html
+- Follow this guide and when it comes to the section **Install ROS 2 packages**, install the recommended ``ros-jazzy-desktop-full``: https://docs.ros.org/en/jazzy/Installation/Ubuntu-Install-Debs.html
 - Install additional dependencies:
 
 .. code-block:: bash
@@ -88,7 +88,7 @@ If you want to install it, you can do so by running ``make webots`` in the bitbo
 
 **4. Setup colcon workspace**
 
-`Colcon <https://docs.ros.org/en/iron/Tutorials/Beginner-Client-Libraries/Colcon-Tutorial.html>`_ is the tool provided by ROS 2 to build and install our ROS packages, so that they can be launched later.
+`Colcon <https://docs.ros.org/en/jazzy/Tutorials/Beginner-Client-Libraries/Colcon-Tutorial.html>`_ is the tool provided by ROS 2 to build and install our ROS packages, so that they can be launched later.
 The colcon workspace is where your source code gets build and where we use colcon.
 
 - Create colcon workspace directory (typically ``~/colcon_ws/``)

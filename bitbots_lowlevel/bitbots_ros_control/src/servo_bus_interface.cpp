@@ -202,7 +202,7 @@ bool ServoBusInterface::writeROMRAM(bool first_time) {
   // Allocate memory for the values in the driver
   std::vector<int> values(joint_names_.size());
   // Iterate over parameter names
-  for (auto register_name : parameter_names) {
+  for (const auto &register_name : parameter_names) {
     // Get the value for each joint
     for (size_t num = 0; num < joint_names_.size(); num++) {
       // Get the value from the cache

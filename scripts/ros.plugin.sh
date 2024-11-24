@@ -18,7 +18,7 @@ update_ros2_argcomplete() {
   eval "$(register-python-argcomplete ros2)"
 }
 
-# Source the ROS 2 setup files if iron is installed
+# Source the ROS 2 setup files if jazzy is installed
 if [[ -n "$distro" ]]; then
   source "/opt/ros/$distro/setup.$shell" &> /dev/null
 else

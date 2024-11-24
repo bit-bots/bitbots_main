@@ -1,4 +1,4 @@
-#include "bitbots_dynup/dynup_stabilizer.hpp"
+#include <bitbots_dynup/dynup_stabilizer.hpp>
 
 namespace bitbots_dynup {
 

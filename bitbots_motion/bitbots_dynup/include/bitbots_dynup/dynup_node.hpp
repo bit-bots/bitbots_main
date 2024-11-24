@@ -11,29 +11,28 @@
 #include <tf2_ros/transform_listener.h>
 #include <unistd.h>
 
+#include <bitbots_dynup/dynup_engine.hpp>
+#include <bitbots_dynup/dynup_ik.hpp>
+#include <bitbots_dynup/dynup_stabilizer.hpp>
 #include <bitbots_dynup/msg/dynup_poses.hpp>
+#include <bitbots_dynup/visualizer.hpp>
+#include <bitbots_msgs/action/dynup.hpp>
 #include <bitbots_msgs/msg/joint_command.hpp>
 #include <bitbots_utils/utils.hpp>
 #include <cmath>
+#include <dynup_parameters.hpp>
 #include <geometry_msgs/msg/pose.hpp>
 #include <geometry_msgs/msg/pose_array.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <optional>
 #include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <rclcpp_action/rclcpp_action.hpp>
 #include <sensor_msgs/msg/imu.hpp>
 #include <std_msgs/msg/char.hpp>
 #include <string>
 #include <tf2_eigen/tf2_eigen.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
-
-#include "bitbots_dynup/dynup_engine.hpp"
-#include "bitbots_dynup/dynup_ik.hpp"
-#include "bitbots_dynup/dynup_stabilizer.hpp"
-#include "bitbots_dynup/visualizer.hpp"
-#include "bitbots_msgs/action/dynup.hpp"
-#include "dynup_parameters.hpp"
-#include "rclcpp_action/rclcpp_action.hpp"
 
 namespace bitbots_dynup {
 using DynupGoal = bitbots_msgs::action::Dynup;

@@ -9,13 +9,12 @@ https://github.com/Rhoban/model/
 #include <tf2/LinearMath/Transform.h>
 #include <tf2/LinearMath/Vector3.h>
 
+#include <bitbots_quintic_walk/walk_utils.hpp>
+#include <bitbots_quintic_walk_parameters.hpp>
+#include <bitbots_splines/abstract_engine.hpp>
+#include <bitbots_splines/pose_spline.hpp>
+#include <bitbots_splines/smooth_spline.hpp>
 #include <rclcpp/rclcpp.hpp>
-
-#include "bitbots_quintic_walk/walk_utils.hpp"
-#include "bitbots_quintic_walk_parameters.hpp"
-#include "bitbots_splines/abstract_engine.hpp"
-#include "bitbots_splines/pose_spline.hpp"
-#include "bitbots_splines/smooth_spline.hpp"
 
 namespace bitbots_quintic_walk {
 

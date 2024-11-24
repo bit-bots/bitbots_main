@@ -1,21 +1,20 @@
 #include <pybind11/embed.h>
 
+#include <bitbots_msgs/msg/animation.hpp>
+#include <bitbots_msgs/msg/foot_pressure.hpp>
+#include <bitbots_msgs/msg/joint_command.hpp>
+#include <bitbots_msgs/msg/robot_control_state.hpp>
+#include <builtin_interfaces/msg/time.hpp>
 #include <chrono>
+#include <geometry_msgs/msg/point_stamped.hpp>
 #include <iostream>
 #include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <ros2_python_extension/serialization.hpp>
+#include <sensor_msgs/msg/imu.hpp>
+#include <sensor_msgs/msg/joint_state.hpp>
+#include <std_msgs/msg/header.hpp>
 #include <thread>
-
-#include "bitbots_msgs/msg/animation.hpp"
-#include "bitbots_msgs/msg/foot_pressure.hpp"
-#include "bitbots_msgs/msg/joint_command.hpp"
-#include "bitbots_msgs/msg/robot_control_state.hpp"
-#include "builtin_interfaces/msg/time.hpp"
-#include "geometry_msgs/msg/point_stamped.hpp"
-#include "sensor_msgs/msg/imu.hpp"
-#include "sensor_msgs/msg/joint_state.hpp"
-#include "std_msgs/msg/header.hpp"
 
 using std::placeholders::_1;
 namespace py = pybind11;

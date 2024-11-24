@@ -39,14 +39,14 @@ jobs:
 
       - name: Build packages
         run: |
-          . /opt/ros/iron/setup.sh
+          . /opt/ros/jazzy/setup.sh
           colcon build --symlink-install
         working-directory: /colcon_ws
 
       - name: Test packages
         run: |
           # Source workspace
-          . /opt/ros/iron/setup.sh
+          . /opt/ros/jazzy/setup.sh
           . install/setup.sh
           # Run tests for all packages
           colcon test --event-handlers console_direct+ --return-code-on-test-failure --parallel-workers 1

@@ -7,18 +7,17 @@
 #include <tf2/LinearMath/Transform.h>
 #include <tf2/LinearMath/Vector3.h>
 
+#include <bitbots_quintic_walk/msg/walk_debug.hpp>
+#include <bitbots_quintic_walk/msg/walk_engine_debug.hpp>
 #include <bitbots_quintic_walk/walk_engine.hpp>
 #include <bitbots_quintic_walk/walk_utils.hpp>
+#include <bitbots_splines/abstract_ik.hpp>
+#include <bitbots_splines/abstract_visualizer.hpp>
 #include <moveit_msgs/msg/robot_state.hpp>
 #include <ranges>
 #include <rclcpp/rclcpp.hpp>
 #include <tf2_eigen/tf2_eigen.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
-
-#include "bitbots_quintic_walk/msg/walk_debug.hpp"
-#include "bitbots_quintic_walk/msg/walk_engine_debug.hpp"
-#include "bitbots_splines/abstract_ik.hpp"
-#include "bitbots_splines/abstract_visualizer.hpp"
 
 namespace bitbots_quintic_walk {
 class WalkVisualizer : public bitbots_splines::AbstractVisualizer {

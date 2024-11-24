@@ -43,6 +43,7 @@
 #include <geometry_msgs/msg/twist.hpp>
 #include <image_transport/image_transport.hpp>
 #include <iterator>
+#include <localization_parameters.hpp>
 #include <memory>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/camera_info.hpp>
@@ -56,8 +57,6 @@
 #include <vector>
 #include <visualization_msgs/msg/marker.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
-
-#include "localization_parameters.hpp"
 
 namespace sm = sensor_msgs;
 namespace gm = geometry_msgs;

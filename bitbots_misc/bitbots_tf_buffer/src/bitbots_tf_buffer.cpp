@@ -39,7 +39,8 @@ class Buffer {
                                                         py_tf2_ros.attr("TimeoutException"));
 
     // get node name from python node object
-    rcl_node_t *node_handle = (rcl_node_t *)node.attr("handle").attr("pointer").cast<size_t>();
+    rcl_node_t *node_handle =
+        static_cast<rcl_node_t *>(reinterpret_cast<void *>(node.attr("handle").attr("pointer").cast<size_t>()));
     const char *node_name = rcl_node_get_name(node_handle);
     // create node with name <python_node_name>_tf
     node_ = std::make_shared<rclcpp::Node>((std::string(node_name) + "_tf").c_str());

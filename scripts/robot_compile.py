@@ -374,7 +374,7 @@ def build(target, package="", pre_clean=False):
     cmd = (
         "sync;"
         "cd {workspace};"
-        "source /opt/ros/iron/setup.zsh;"
+        "source /opt/ros/jazzy/setup.zsh;"
         "source install/setup.zsh;"
         "{cmd_clean}"
         "ISOLATED_CPUS=\"$(grep -oP 'isolcpus=\\K([\\d-]+)' /proc/cmdline)\";"
@@ -408,7 +408,7 @@ def install_rosdeps(target):
         target_src_path = os.path.join(target.workspace, "src")
         extra_flags = "-q" if _should_run_quietly() else ""
 
-        cmd = f"rosdep install -y {extra_flags} --rosdistro iron --ignore-src --from-paths {target_src_path}"
+        cmd = f"rosdep install -y {extra_flags} --rosdistro jazzy --ignore-src --from-paths {target_src_path}"
 
         rosdep_result = _execute_on_target(target, cmd)
         if rosdep_result.returncode == 0:
