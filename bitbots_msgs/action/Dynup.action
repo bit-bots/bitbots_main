@@ -1,5 +1,6 @@
 # Goal definition
 string direction
+bool arms = True
 
 string DIRECTION_FRONT = "front"
 string DIRECTION_BACK = "back"
