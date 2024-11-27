@@ -28,15 +28,7 @@
     <!-- launch vision -->
     <group if="$(var vision)">
         <include file="$(find-pkg-share bitbots_bringup)/launch/vision.launch">
-            <arg name="sim" value="$(var sim)" />
-        </include>
-    </group>
-
-    <!-- launch inverse perspective mapping (ipm) -->
-    <group if="$(var ipm)">
-        <include file="$(find-pkg-share bitbots_ipm)/launch/ipm.launch">
-            <arg name="sim" value="$(var sim)"/>
-        </include>
+            <arg name="sim" vbehavior
     </group>
 
     <!-- launch teamcom -->
