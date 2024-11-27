@@ -183,9 +183,17 @@ bitbots_msgs::msg::JointCommand WalkNode::step(double dt) {
 
   // update walk engine response
   if (got_new_goals_) {
-    got_new_goals_ = false;
-    walk_engine_.setGoals(request);
+    // got_new_goals_ = false;
   }
+
+  // Apply capture step
+
+  RCLCPP_WARN(node_->get_logger(), "Original step size: %f", request.linear_orders[0]);
+  request = stabilizer_.adjust_step_length(request, current_trunk_fused_roll_, current_trunk_fused_pitch_,
+                                           rclcpp::Duration::from_nanoseconds(1e9 * dt));
+  RCLCPP_WARN(node_->get_logger(), "New step size: %f", request.linear_orders[0]);
+
+  walk_engine_.setGoals(request);
   checkPhaseRestAndReset();
   current_response_ = walk_engine_.update(dt);
 

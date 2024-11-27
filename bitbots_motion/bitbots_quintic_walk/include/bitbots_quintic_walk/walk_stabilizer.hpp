@@ -21,10 +21,14 @@ class WalkStabilizer : public bitbots_splines::AbstractStabilizer<WalkResponse> 
   explicit WalkStabilizer(rclcpp::Node::SharedPtr node);
   void reset() override;
   WalkResponse stabilize(const WalkResponse &response, const rclcpp::Duration &dt) override;
+  WalkRequest adjust_step_length(WalkRequest request, const double imu_roll, const double imu_pitch,
+                                 const rclcpp::Duration &dt);
 
  private:
   control_toolbox::PidROS pid_trunk_fused_pitch_;
   control_toolbox::PidROS pid_trunk_fused_roll_;
+  control_toolbox::PidROS pid_step_length_adjustment_pitch_;
+  control_toolbox::PidROS pid_step_length_adjustment_roll_;
 };
 }  // namespace bitbots_quintic_walk
 

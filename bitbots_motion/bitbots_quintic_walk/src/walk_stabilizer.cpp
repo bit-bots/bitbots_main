@@ -3,9 +3,12 @@
 namespace bitbots_quintic_walk {
 
 WalkStabilizer::WalkStabilizer(rclcpp::Node::SharedPtr node)
-    : pid_trunk_fused_pitch_(node, "node.trunk_pid.pitch"), pid_trunk_fused_roll_(node, "node.trunk_pid.roll") {
-  pid_trunk_fused_pitch_.initPid();
-  pid_trunk_fused_roll_.initPid();
+    : pid_trunk_fused_pitch_(node, "node.trunk_pid.pitch"),
+      pid_trunk_fused_roll_(node, "node.trunk_pid.roll"),
+      pid_step_length_adjustment_pitch_(node, "node.step_length.pitch"),
+      pid_step_length_adjustment_roll_(node, "node.step_length.roll") {
+  pid_step_length_adjustment_pitch_.initPid();
+  pid_step_length_adjustment_roll_.initPid();
 
   reset();
 }
@@ -13,6 +16,16 @@ WalkStabilizer::WalkStabilizer(rclcpp::Node::SharedPtr node)
 void WalkStabilizer::reset() {
   pid_trunk_fused_pitch_.reset();
   pid_trunk_fused_roll_.reset();
+  pid_step_length_adjustment_pitch_.reset();
+  pid_step_length_adjustment_roll_.reset();
+}
+
+WalkRequest WalkStabilizer::adjust_step_length(WalkRequest request, const double imu_roll, const double imu_pitch,
+                                               const rclcpp::Duration& dt) {
+  // adapt step length values based on PID controllers
+  request.linear_orders[0] += pid_step_length_adjustment_pitch_.computeCommand(imu_roll, dt);
+  request.linear_orders[1] += pid_step_length_adjustment_roll_.computeCommand(imu_pitch, dt);
+  return request;
 }
 
 WalkResponse WalkStabilizer::stabilize(const WalkResponse& response, const rclcpp::Duration& dt) {
