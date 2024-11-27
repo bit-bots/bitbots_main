@@ -19,7 +19,8 @@
 
     <node pkg="bitbots_ros_control" name="button_zero" exec="zero_on_button.py" output="screen"/>
 
-    <node pkg="bitbots_ros_control" name="battery_led" exec="battery_led.py" output="screen"/>
+    <!-- This is currently not supported by the hardware, but in theory it should work. But we use the LED for the HCM until this is fixed -->
+    <!-- <node pkg="bitbots_ros_control" name="battery_led" exec="battery_led.py" output="screen"/>  -->
 
     <group>
         <include file="$(find-pkg-share system_monitor)/launch/system_monitor.launch"/>

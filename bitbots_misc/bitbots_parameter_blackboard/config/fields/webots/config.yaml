@@ -1,0 +1,19 @@
+##########
+# Webots #
+##########
+
+# Settings for the webots simulator field
+
+parameter_blackboard:
+  ros__parameters:
+    field:
+      size:
+        x: 9.0
+        y: 6.0
+        padding: 1.0   # Padding (area outside of the lines) of the field in all directions
+      markings:
+        penalty_area:
+          size:
+            x: 2.0   # The distance from the goal line to the boundary of the penalty area
+      goal:
+        width: 2.6   # The width of the goal (center of one goal post to the other goal post)

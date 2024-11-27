@@ -2,17 +2,18 @@
 import math
 import os
 import sys
+from typing import Literal
 
 import rclpy
 from ament_index_python import get_package_share_directory
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import QLocale, Qt
 from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import (
     QAbstractItemView,
+    QDoubleSpinBox,
     QFileDialog,
     QGroupBox,
     QLabel,
-    QLineEdit,
     QListWidgetItem,
     QMainWindow,
     QMessageBox,
@@ -83,8 +84,6 @@ class RecordUI(Plugin):
 
         # Initialize the working values
         self._working_angles: dict[str, float] = {}
-
-        self.update_time = 0.1  # TODO what is this for?
 
         # QT directory for saving files
         self._save_directory = None
@@ -194,13 +193,17 @@ class RecordUI(Plugin):
             return
         # Update working values of non stiff motors
         for motor_name in self.motors:
-            if self._motor_controller_torque_checkbox[motor_name].checkState(0) != Qt.CheckState.Checked:
+            # Get the state from the UI checkboxes
+            motor_active = self._motor_switcher_active_checkbox[motor_name].checkState(0) == Qt.CheckState.Checked
+            motor_torqueless = self._motor_controller_torque_checkbox[motor_name].checkState(0) != Qt.CheckState.Checked
+            # Check if the we are currently positioning the motor and want to store the value
+            if motor_active and motor_torqueless:
                 # Update textfield
-                self._motor_controller_text_fields[motor_name].setText(
-                    str(round(math.degrees(joint_states.position[joint_states.name.index(motor_name)]), 2))
+                self._motor_controller_text_fields[motor_name].setValue(
+                    round(math.degrees(joint_states.position[joint_states.name.index(motor_name)]), 2)
                 )
-        # React to textfield changes
-        self.textfield_update()
+                # Update working values
+                self._working_angles[motor_name] = joint_states.position[joint_states.name.index(motor_name)]
 
     def create_motor_controller(self) -> None:
         """
@@ -220,9 +223,12 @@ class RecordUI(Plugin):
             layout.addWidget(label)
 
             # Add a textfield to display the exact value of the motor
-            textfield = QLineEdit()
-            textfield.setText("0.0")
-            textfield.textEdited.connect(self.textfield_update)
+            textfield = QDoubleSpinBox()
+            textfield.setLocale(QLocale("C"))
+            textfield.setMaximum(180.0)
+            textfield.setMinimum(-180.0)
+            textfield.setValue(0.0)
+            textfield.valueChanged.connect(self.textfield_update)
             layout.addWidget(textfield)
             self._motor_controller_text_fields[motor_name] = textfield
 
@@ -295,8 +301,8 @@ class RecordUI(Plugin):
         self._widget.actionAnimation_until_Frame.triggered.connect(self.play_until)
         self._widget.actionDuplicate_Frame.triggered.connect(self.duplicate)
         self._widget.actionDelete_Frame.triggered.connect(self.delete)
-        self._widget.actionLeft.triggered.connect(lambda: self.mirror_frame("L"))
-        self._widget.actionRight.triggered.connect(lambda: self.mirror_frame("R"))
+        self._widget.actionLeft.triggered.connect(lambda: self.mirror_frame("R"))
+        self._widget.actionRight.triggered.connect(lambda: self.mirror_frame("L"))
         self._widget.actionInvert.triggered.connect(self.invert_frame)
         self._widget.actionUndo.triggered.connect(self.undo)
         self._widget.actionRedo.triggered.connect(self.redo)
@@ -312,7 +318,7 @@ class RecordUI(Plugin):
         """
         Plays the walkready animation on the robot
         """
-        result: Dynup.Result = self.dynup_client.send_goal(Dynup.Goal(direction="walkready")).result
+        result: Dynup.Result = self.dynup_client.send_goal(Dynup.Goal(direction=Dynup.Goal.DIRECTION_WALKREADY)).result
         if not result.successful:
             self._node.get_logger().error("Could not execute walkready animation")
 
@@ -516,6 +522,10 @@ class RecordUI(Plugin):
             self._node.get_logger().error(str(e))
             return
         assert self._recorder.get_keyframe(frame) is not None, "Selected frame not found in list of keyframes"
+        # Check if only one frame is remaining
+        if len(self._widget.frameList) == 1:
+            QMessageBox.warning(self._widget, "Warning", "Cannot delete last remaining frame")
+            return
         self._recorder.delete(frame)
         self._widget.statusBar.showMessage(f"Deleted frame {frame}")
         self.update_frames()
@@ -576,11 +586,32 @@ class RecordUI(Plugin):
         self._widget.statusBar.showMessage(status)
         self.update_frames()
 
-    def mirror_frame(self, direction):
+    def mirror_frame(self, source: Literal["L", "R"]) -> None:
         """
         Copies all motor values from one side of the robot to the other. Inverts values, if necessary
         """
-        raise NotImplementedError("This function is not implemented yet")
+        # Get direction to mirror to
+        mirrored_source = {"R": "L", "L": "R"}[source]
+
+        # Go through all active motors
+        for motor_name, angle in self._working_angles.items():
+            # Set mirrored angles
+            if motor_name.startswith(source):
+                mirrored_motor_name = mirrored_source + motor_name[1:]
+                # Make -0.0 to 0.0
+                mirrored_angle = -angle if angle != 0 else 0.0
+                self._working_angles[mirrored_motor_name] = mirrored_angle
+
+        # Update the UI
+        for motor_name, angle in self._working_angles.items():
+            # Block signals
+            self._motor_controller_text_fields[motor_name].blockSignals(True)
+            # Set values
+            self._motor_controller_text_fields[motor_name].setValue(round(math.degrees(angle), 2))
+            # Enable signals again
+            self._motor_controller_text_fields[motor_name].blockSignals(False)
+
+        self._widget.statusBar.showMessage("Mirrored frame")
 
     def invert_frame(self):
         """
@@ -609,7 +640,12 @@ class RecordUI(Plugin):
 
         # Update the UI
         for motor_name, angle in self._working_angles.items():
-            self._motor_controller_text_fields[motor_name].setText(str(round(math.degrees(angle), 2)))
+            # Block signals
+            self._motor_controller_text_fields[motor_name].blockSignals(True)
+            # Set values
+            self._motor_controller_text_fields[motor_name].setValue(round(math.degrees(angle), 2))
+            # Enable signals again
+            self._motor_controller_text_fields[motor_name].blockSignals(False)
 
         self._widget.statusBar.showMessage("Inverted frame")
 
@@ -653,12 +689,13 @@ class RecordUI(Plugin):
 
             # Update the motor angle controls (value and active state)
             if active:
-                self._motor_controller_text_fields[motor_name].setText(
-                    str(round(math.degrees(selected_frame["goals"][motor_name]), 2))
+                self._motor_controller_text_fields[motor_name].setValue(
+                    round(math.degrees(selected_frame["goals"][motor_name]), 2)
                 )
+
                 self._working_angles[motor_name] = selected_frame["goals"][motor_name]
             else:
-                self._motor_controller_text_fields[motor_name].setText("0.0")
+                self._motor_controller_text_fields[motor_name].setValue(0.0)
 
         # Update the duration and pause
         self._widget.spinBoxDuration.setValue(selected_frame["duration"])
@@ -671,23 +708,12 @@ class RecordUI(Plugin):
         If the textfield is updated, update working values
         """
         for motor_name, text_field in self._motor_controller_text_fields.items():
-            try:
-                # Get the angle from the textfield
-                angle = float(text_field.text())
-            except ValueError:
-                # Display QMessageBox stating that the value is not a number
-                QMessageBox.warning(
-                    self._widget,
-                    "Warning",
-                    f"Please enter a valid number.\n '{text_field.text()}' is not a valid number.",
-                )
-                return
-            # Clip the angle to the maximum and minimum, we do this in degrees,
-            # because we do not want introduce rounding errors in the textfield
-            angle = round(max(-180.0, min(angle, 180.0)), 2)
+            # Get the angle from the textfield
+            angle = text_field.value()
+            angle = round(angle, 2)
             # Set the angle in the textfield
-            if float(text_field.text()) != float(angle):
-                text_field.setText(str(angle))
+            if text_field.value() != angle:
+                text_field.setValue(angle)
             # Set the angle in the working values if the motor is active
             if self._motor_switcher_active_checkbox[motor_name].checkState(0) == Qt.CheckState.Checked:
                 self._working_angles[motor_name] = math.radians(angle)

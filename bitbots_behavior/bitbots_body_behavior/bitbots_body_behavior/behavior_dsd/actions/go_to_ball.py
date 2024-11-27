@@ -1,4 +1,4 @@
-from bitbots_blackboard.blackboard import BodyBlackboard
+from bitbots_blackboard.body_blackboard import BodyBlackboard
 from bitbots_blackboard.capsules.pathfinding_capsule import BallGoalType
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 from geometry_msgs.msg import Vector3
@@ -24,7 +24,7 @@ class GoToBall(AbstractActionElement):
         self.distance = parameters.get("distance", self.blackboard.config["ball_approach_dist"])
 
     def perform(self, reevaluate=False):
-        pose_msg = self.blackboard.pathfinding.get_ball_goal(self.target, self.distance)
+        pose_msg = self.blackboard.pathfinding.get_ball_goal(self.target, self.distance, 0.08)
         self.blackboard.pathfinding.publish(pose_msg)
 
         approach_marker = Marker()

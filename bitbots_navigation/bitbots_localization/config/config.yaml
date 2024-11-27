@@ -2,7 +2,7 @@ bitbots_localization:
   ros__parameters:
     misc:
       init_mode: 0
-      percentage_best_particles: 50
+      percentage_best_particles: 100
       min_motion_linear: 0.0
       min_motion_angular: 0.0
       max_motion_linear: 0.5
@@ -26,17 +26,17 @@ bitbots_localization:
         starting_multiplier: 0.05
         starting_steps_with_higher_diffusion: 40
       drift:
-        distance_to_direction: 0.2
+        distance_to_direction: 1.0
         rotation_to_direction: 0.0
-        distance_to_distance: 0.05
-        rotation_to_distance: 0.1
-        distance_to_rotation: 0.0
-        rotation_to_rotation: 1.0
+        distance_to_distance: 0.1
+        rotation_to_distance: 0.2
+        distance_to_rotation: 0.2
+        rotation_to_rotation: 1.5
         max_rotation: 0.45
         max_translation: 0.09
       weighting:
         min_weight: 0.01
-        particle_reset_weight: 0.1
+        particle_reset_weight: 0.01
         out_of_field_weight_decrease: 0.01
         out_of_field_range: 0.5
       scoring:
@@ -50,6 +50,6 @@ bitbots_localization:
           factor: 0.0
           out_of_field_score: 0.0
       confidences:
-        line_element: 0.04
+        line_element: 0.01
         goal_element: 0.0
         field_boundary_element: 0.0

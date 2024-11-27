@@ -1,6 +1,7 @@
 wolfgang_hardware_interface:
   ros__parameters:
     control_loop_hz: 500.0
+    start_delay: 2.0 # delay after the motor power is turned on until values are written, in seconds
 
     port_info:
       port0:
@@ -43,7 +44,7 @@ wolfgang_hardware_interface:
         # all values are directly values this means not Celsius or rad but the value used by the servo firmware see datasheet
         # ROM
         Return_Delay_Time: 0 # this is a stupid function which has always to be zero or nothing will work correctly anymore
-        Temperature_Limit: 60 # [about 1 deg C]
+        Temperature_Limit: 80 # [about 1 deg C]
         Max_Voltage_Limit: 160 #[About 0.1V]
         Min_Voltage_Limit: 95 #[About 0.1V]
         PWM_Limit: 885 # 885 = 100%
@@ -71,7 +72,7 @@ wolfgang_hardware_interface:
         # all values are directly values this means not Celsius or rad but the value used by the servo firmware see datasheet
         # ROM
         Return_Delay_Time: 0 # this is a stupid function which has always to be zero or nothing will work correctly anymore
-        Temperature_Limit: 60 # [about 1 deg C]
+        Temperature_Limit: 80 # [about 1 deg C]
         Max_Voltage_Limit: 160 #[About 0.1V]
         Min_Voltage_Limit: 95 #[About 0.1V]
         PWM_Limit: 885 # 885 = 100%
@@ -99,7 +100,7 @@ wolfgang_hardware_interface:
         # all values are directly values this means not Celsius or rad but the value used by the servo firmware see datasheet
         # ROM
         Return_Delay_Time: 0 # this is a stupid function which has always to be zero or nothing will work correctly anymore
-        Temperature_Limit: 60 # [about 1 deg C]
+        Temperature_Limit: 80 # [about 1 deg C]
         Max_Voltage_Limit: 160 #[About 0.1V]
         Min_Voltage_Limit: 95 #[About 0.1V]
         PWM_Limit: 885 # 885 = 100%
@@ -117,6 +118,34 @@ wolfgang_hardware_interface:
         Position_I_Gain: 0 #180000 # [/ 65,536] 0~16,383
         #If robot starts to tremble, reduce Position_P_Gain
         Position_P_Gain: 4000 #1100 # [/ 128] 0~16,383
+        Feedforward_2nd_Gain: 0 # [/4]
+        Feedforward_1st_Gain: 0 # [/4]
+        Profile_Acceleration: 0 # 0 for infinite
+        Profile_Velocity: 0 # 0 for infinite
+
+      ROM_RAM_HEAD:
+        # all names of parameters have to be the same as on the dynamixel table (see dynamixel_workbench_toolbox/src/dynamixel_item.cpp )
+        # all values are directly values this means not Celsius or rad but the value used by the servo firmware see datasheet
+        # ROM
+        Return_Delay_Time: 0 # this is a stupid function which has always to be zero or nothing will work correctly anymore
+        Temperature_Limit: 80 # [about 1 deg C]
+        Max_Voltage_Limit: 160 #[About 0.1V]
+        Min_Voltage_Limit: 95 #[About 0.1V]
+        PWM_Limit: 885 # 885 = 100%
+        #Current_Limit: 2047 #[ 3.36 mA] #currently not used since MX-64 and MX-106 have different max values
+        #todo acceleration limit does not exist as register?
+        Acceleration_Limit: 32767 # [214.577 Rev/min2]
+        Velocity_Limit: 1023 # [0.229rpm]
+        Max_Position_Limit: 4095 # [0.088 deg]
+        Min_Position_Limit : 0 # [0.088 deg]
+        # RAM
+        Status_Return_Level: 2 # 0 status for all instructions(not sync or bulk), 1 ping and read, 2 only ping
+        Velocity_I_Gain: 1920 # [/ 65,536]
+        Velocity_P_Gain: 100 # [/128]
+        Position_D_Gain: 0 #2800 # [/16] 0~16,383
+        Position_I_Gain: 0 #180000 # [/ 65,536] 0~16,383
+        #If robot starts to tremble, reduce Position_P_Gain
+        Position_P_Gain: 500 #1100 # [/ 128] 0~16,383
         Feedforward_2nd_Gain: 0 # [/4]
         Feedforward_1st_Gain: 0 # [/4]
         Profile_Acceleration: 0 # 0 for infinite
@@ -268,8 +297,10 @@ wolfgang_hardware_interface:
         model_number: 311
         mounting_offset: 0.0
         joint_offset: 0.0
+        group: HEAD
       HeadTilt:
         id: 20
         model_number: 311
         mounting_offset: 0.0
         joint_offset: 0.0
+        group: HEAD

@@ -2,6 +2,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <tf2_ros/buffer.h>
+#include <tf2_ros/buffer_interface.h>
 #include <tf2_ros/transform_listener.h>
 
 #include <builtin_interfaces/msg/duration.hpp>
@@ -44,10 +45,11 @@ class Buffer {
     node_ = std::make_shared<rclcpp::Node>((std::string(node_name) + "_tf").c_str());
 
     // Get buffer duration from python duration
-    rclcpp::Duration duration{ros2_python_extension::fromPython<builtin_interfaces::msg::Duration>(duration_raw)};
+    auto duration =
+        tf2_ros::fromMsg(ros2_python_extension::fromPython<builtin_interfaces::msg::Duration>(duration_raw));
 
     // create subscribers
-    buffer_ = std::make_shared<tf2_ros::Buffer>(this->node_->get_clock());
+    buffer_ = std::make_shared<tf2_ros::Buffer>(this->node_->get_clock(), duration);
     buffer_->setUsingDedicatedThread(true);
     listener_ = std::make_shared<tf2_ros::TransformListener>(*buffer_, node_, false);
 

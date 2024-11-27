@@ -1,7 +1,7 @@
 import math
 
 import numpy as np
-from bitbots_blackboard.blackboard import BodyBlackboard
+from bitbots_blackboard.body_blackboard import BodyBlackboard
 from bitbots_utils.transforms import quat_from_yaw
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 from tf2_geometry_msgs import PoseStamped
@@ -148,7 +148,7 @@ class GoToBlockPosition(AbstractActionElement):
             goalie_pos_x,
             -self.blackboard.world_model.field_length / 2,
             -self.blackboard.world_model.field_length / 2
-            + self.blackboard.world_model.penalty_area_length
+            + self.blackboard.world_model.penalty_area_size_x
             - self.block_radius,
         )
         return (goalie_pos_x, goalie_pos_y)

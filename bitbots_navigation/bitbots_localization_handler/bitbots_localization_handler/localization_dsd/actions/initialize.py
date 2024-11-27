@@ -26,7 +26,7 @@ class AbstractInitialize(AbstractLocalizationActionElement):
                     )  # wait up to 1 second for odom data
             except (tf2.LookupException, tf2.ConnectivityException, tf2.ExtrapolationException) as e:
                 self.blackboard.node.get_logger().warn(f"Not able to save the odom position due to a tf error: {e}")
-            self.blackboard.node.get_logger().info(
+            self.blackboard.node.get_logger().debug(
                 f"Set last init action type to {self.blackboard.last_init_action_type}"
             )
 
@@ -34,23 +34,23 @@ class AbstractInitialize(AbstractLocalizationActionElement):
         raise NotImplementedError
 
 
-class InitLeftHalf(AbstractInitialize):
+class InitOpponentHalf(AbstractInitialize):
     def perform(self, reevaluate=False):
         self.do_not_reevaluate()
-        self.blackboard.node.get_logger().debug("Initializing on the left half")
+        self.blackboard.node.get_logger().debug("Initializing on the opponent half")
         while not self.blackboard.reset_filter_proxy.wait_for_service(timeout_sec=3.0):
             self.blackboard.node.get_logger().info("Localization reset service not available, waiting again...")
-        self.blackboard.reset_filter_proxy.call_async(ResetFilter.Request(init_mode=ResetFilter.Request.LEFT_HALF))
+        self.blackboard.reset_filter_proxy.call_async(ResetFilter.Request(init_mode=ResetFilter.Request.OPPONENT_HALF))
         return self.pop()
 
 
-class InitRightHalf(AbstractInitialize):
+class InitOwnHalf(AbstractInitialize):
     def perform(self, reevaluate=False):
         self.do_not_reevaluate()
-        self.blackboard.node.get_logger().debug("Initializing on the right half")
+        self.blackboard.node.get_logger().debug("Initializing on our half")
         while not self.blackboard.reset_filter_proxy.wait_for_service(timeout_sec=3.0):
             self.blackboard.node.get_logger().info("Localization reset service not available, waiting again...")
-        self.blackboard.reset_filter_proxy.call_async(ResetFilter.Request(init_mode=ResetFilter.Request.RIGHT_HALF))
+        self.blackboard.reset_filter_proxy.call_async(ResetFilter.Request(init_mode=ResetFilter.Request.OWN_HALF))
         return self.pop()
 
 
@@ -104,7 +104,7 @@ class InitSide(AbstractInitialize):
         self.blackboard.node.get_logger().debug("Initializing on the side lines of our side")
         while not self.blackboard.reset_filter_proxy.wait_for_service(timeout_sec=3.0):
             self.blackboard.node.get_logger().info("Localization reset service not available, waiting again...")
-        self.blackboard.reset_filter_proxy.call_async(ResetFilter.Request(init_mode=ResetFilter.Request.START_RIGHT))
+        self.blackboard.reset_filter_proxy.call_async(ResetFilter.Request(init_mode=ResetFilter.Request.OWN_SIDELINE))
         return self.pop()
 
 

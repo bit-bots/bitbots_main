@@ -1,17 +1,17 @@
 import rclpy
 import soccer_vision_3d_msgs.msg as sv3dm
 from bitbots_tf_buffer import Buffer
-from geometry_msgs.msg import PointStamped, PoseStamped, Twist
+from geometry_msgs.msg import PointStamped, PoseStamped, PoseWithCovarianceStamped, Twist
 from nav_msgs.msg import OccupancyGrid, Path
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.duration import Duration
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
-from std_msgs.msg import Empty
+from std_msgs.msg import Bool, Empty
 
-from bitbots_msgs.msg import PoseWithCertaintyStamped
 from bitbots_path_planning.controller import Controller
 from bitbots_path_planning.map import Map
+from bitbots_path_planning.path_planning_parameters import bitbots_path_planning as parameters
 from bitbots_path_planning.planner import Planner
 
 
@@ -22,13 +22,11 @@ class PathPlanning(Node):
 
     def __init__(self) -> None:
         super().__init__("bitbots_path_planning")
-
-        # Declare params
-        self.declare_parameter("base_footprint_frame", "base_footprint")
-        self.declare_parameter("rate", 20.0)
+        self.param_listener = parameters.ParamListener(self)
+        self.config = self.param_listener.get_params()
 
         # We need to create a tf buffer
-        self.tf_buffer = Buffer(self, Duration(seconds=self.declare_parameter("tf_buffer_duration", 5.0).value))
+        self.tf_buffer = Buffer(self, Duration(seconds=self.config.tf_buffer_duration))
 
         # Create submodules
         self.map = Map(node=self, buffer=self.tf_buffer)
@@ -37,15 +35,15 @@ class PathPlanning(Node):
 
         # Subscriber
         self.create_subscription(
-            PoseWithCertaintyStamped,
-            self.declare_parameter("map.ball_update_topic", "ball_relative_filtered").value,
+            PoseWithCovarianceStamped,
+            self.config.map.ball_update_topic,
             self.map.set_ball,
             5,
             callback_group=MutuallyExclusiveCallbackGroup(),
         )
         self.create_subscription(
             sv3dm.RobotArray,
-            self.declare_parameter("map.robot_update_topic", "robots_relative_filtered").value,
+            self.config.map.robot_update_topic,
             self.map.set_robots,
             5,
             callback_group=MutuallyExclusiveCallbackGroup(),
@@ -60,6 +58,13 @@ class PathPlanning(Node):
             5,
             callback_group=MutuallyExclusiveCallbackGroup(),
         )
+        self.create_subscription(
+            Bool,
+            "ball_obstacle_active",
+            lambda msg: self.map.avoid_ball(msg.data),
+            5,
+            callback_group=MutuallyExclusiveCallbackGroup(),
+        )
 
         # Publisher
         self.cmd_vel_pub = self.create_publisher(Twist, "cmd_vel", 1)
@@ -69,7 +74,7 @@ class PathPlanning(Node):
 
         # Timer that updates the path and command velocity at a given rate
         self.create_timer(
-            1 / self.get_parameter("rate").value,
+            1 / self.config.rate,
             self.step,
             clock=self.get_clock(),
             callback_group=MutuallyExclusiveCallbackGroup(),
@@ -79,6 +84,9 @@ class PathPlanning(Node):
         """
         Performs a single step of the path planning
         """
+        if self.param_listener.is_old(self.config):
+            self.param_listener.refresh_dynamic_parameters()
+            self.config = self.param_listener.get_params()
         try:
             # Update the map with the latest ball and robot positions
             self.map.update()
@@ -105,7 +113,7 @@ def main(args=None):
     node = PathPlanning()
 
     # choose number of threads by number of callback_groups + 1 for simulation time
-    ex = MultiThreadedExecutor(num_threads=7)
+    ex = MultiThreadedExecutor(num_threads=8)
     ex.add_node(node)
     ex.spin()
 

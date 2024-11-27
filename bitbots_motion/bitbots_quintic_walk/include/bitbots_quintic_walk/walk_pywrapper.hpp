@@ -23,7 +23,8 @@ using namespace ros2_python_extension;
 
 class PyWalkWrapper {
  public:
-  explicit PyWalkWrapper(std::string ns, std::vector<py::bytes> parameter_msgs = {},
+  explicit PyWalkWrapper(const std::string &ns, const std::vector<py::bytes> &walk_parameter_msgs = {},
+                         const std::vector<py::bytes> &moveit_parameter_msgs = {},
                          bool force_smooth_step_transition = false);
   py::bytes step(double dt, py::bytes &cmdvel_msg, py::bytes &imu_msg, py::bytes &jointstate_msg,
                  py::bytes &pressure_left, py::bytes &pressure_right);
@@ -46,6 +47,7 @@ class PyWalkWrapper {
   bool reset_and_test_if_speed_possible(py::bytes cmd_vel, double pos_threshold);
 
  private:
+  rclcpp::Node::SharedPtr node_;
   std::shared_ptr<bitbots_quintic_walk::WalkNode> walk_node_;
 };
 

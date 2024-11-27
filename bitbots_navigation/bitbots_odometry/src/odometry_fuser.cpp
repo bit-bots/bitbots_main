@@ -44,11 +44,11 @@ class OdometryFuser : public rclcpp::Node {
  public:
   OdometryFuser()
       : Node("OdometryFuser"),
-        tf_buffer_(std::make_shared<tf2_ros::Buffer>(this->get_clock())),
-        tf_listener_(std::make_shared<tf2_ros::TransformListener>(*tf_buffer_, this)),
+        tf_buffer_(this->get_clock()),
+        tf_listener_(tf_buffer_, this),
         support_state_cache_(100),
         imu_sub_(this, "imu/data"),
-        motion_odom_sub_(this, "walk_engine_odometry"),
+        motion_odom_sub_(this, "motion_odometry"),
         br_(std::make_unique<tf2_ros::TransformBroadcaster>(this)),
         sync_(message_filters::Synchronizer<SyncPolicy>(SyncPolicy(50), imu_sub_, motion_odom_sub_)) {
     this->declare_parameter<std::string>("base_link_frame", "base_link");
@@ -73,7 +73,7 @@ class OdometryFuser : public rclcpp::Node {
   }
 
   void loop() {
-    bitbots_utils::wait_for_tf(this->get_logger(), this->get_clock(), this->tf_buffer_.get(),
+    bitbots_utils::wait_for_tf(this->get_logger(), this->get_clock(), &this->tf_buffer_,
                                {base_link_frame_, r_sole_frame_, l_sole_frame_}, base_link_frame_);
 
     // get motion_odom transform
@@ -115,7 +115,7 @@ class OdometryFuser : public rclcpp::Node {
       tf2::Transform imu_mounting_offset;
       try {
         geometry_msgs::msg::TransformStamped imu_mounting_transform =
-            tf_buffer_->lookupTransform(imu_data_.header.frame_id, base_link_frame_, fused_time_);
+            tf_buffer_.lookupTransform(imu_data_.header.frame_id, base_link_frame_, fused_time_);
         fromMsg(imu_mounting_transform.transform, imu_mounting_offset);
       } catch (tf2::TransformException &ex) {
         RCLCPP_ERROR(this->get_logger(), "Not able to fuse IMU data with odometry due to a tf problem: %s", ex.what());
@@ -161,8 +161,8 @@ class OdometryFuser : public rclcpp::Node {
  private:
   sensor_msgs::msg::Imu imu_data_;
   nav_msgs::msg::Odometry odom_data_;
-  std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
-  std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
+  tf2_ros::Buffer tf_buffer_;
+  tf2_ros::TransformListener tf_listener_;
   rclcpp::Time fused_time_;
   std::string base_link_frame_, r_sole_frame_, l_sole_frame_, odom_frame_, rotation_frame_, imu_frame_;
   bool imu_data_received_ = false;
@@ -241,7 +241,7 @@ class OdometryFuser : public rclcpp::Node {
     }
     // Wait for the forward kinematics of both legs (simplified by transforming from one to the other) to be avalible
     // for the current fusing operation
-    tf_buffer_->canTransform(r_sole_frame_, l_sole_frame_, fused_time_, rclcpp::Duration::from_nanoseconds(0.1 * 1e9));
+    tf_buffer_.canTransform(r_sole_frame_, l_sole_frame_, fused_time_, rclcpp::Duration::from_nanoseconds(0.1 * 1e9));
     // otherwise point of rotation is current support foot sole or center point of the soles if double support
     if (current_support_state == biped_interfaces::msg::Phase::RIGHT_STANCE ||
         current_support_state == biped_interfaces::msg::Phase::LEFT_STANCE) {
@@ -251,7 +251,7 @@ class OdometryFuser : public rclcpp::Node {
           support_frame = r_sole_frame_;
         else
           support_frame = l_sole_frame_;
-        rotation_point = tf_buffer_->lookupTransform(base_link_frame_, support_frame, fused_time_);
+        rotation_point = tf_buffer_.lookupTransform(base_link_frame_, support_frame, fused_time_);
         fromMsg(rotation_point.transform, rotation_point_tf);
       } catch (tf2::TransformException &ex) {
         RCLCPP_ERROR(this->get_logger(), "%s", ex.what());
@@ -260,9 +260,9 @@ class OdometryFuser : public rclcpp::Node {
       try {
         // use point between soles if double support or unknown support
         geometry_msgs::msg::TransformStamped base_to_l_sole;
-        base_to_l_sole = tf_buffer_->lookupTransform(base_link_frame_, l_sole_frame_, fused_time_);
+        base_to_l_sole = tf_buffer_.lookupTransform(base_link_frame_, l_sole_frame_, fused_time_);
         geometry_msgs::msg::TransformStamped l_to_r_sole;
-        l_to_r_sole = tf_buffer_->lookupTransform(l_sole_frame_, r_sole_frame_, fused_time_);
+        l_to_r_sole = tf_buffer_.lookupTransform(l_sole_frame_, r_sole_frame_, fused_time_);
         tf2::Transform base_to_l_sole_tf;
         tf2::fromMsg(base_to_l_sole.transform, base_to_l_sole_tf);
         tf2::Transform l_to_r_sole_tf;

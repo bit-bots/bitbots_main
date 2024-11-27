@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- start udp bridge client to listen to the robot -->
+    <include file="$(find-pkg-share udp_bridge)/launch/receive.launch" />
+
+    <!-- start foxglove bridge -->
+    <include file="$(find-pkg-share foxglove_bridge)/launch/foxglove_bridge_launch.xml" />
+
+    <!-- start foxglove gui -->
+    <executable cmd="foxglove-studio --no-sandbox" name="foxglove-studio" output="screen"/>
+
+    <!-- start dynamic_stack_decider_visualization dsd_gui -->
+    <node pkg="dynamic_stack_decider_visualization" exec="dsd_gui" name="dsd_gui" output="screen" />
+</launch>

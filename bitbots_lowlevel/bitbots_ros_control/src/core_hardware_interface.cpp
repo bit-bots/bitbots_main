@@ -25,7 +25,6 @@ bool CoreHardwareInterface::switch_power(std::shared_ptr<std_srvs::srv::SetBool:
 
 bool CoreHardwareInterface::init() {
   VBAT_individual_.data.resize(6);
-  data_ = (uint8_t *)malloc(16 * sizeof(uint8_t));
   power_pub_ = nh_->create_publisher<std_msgs::msg::Bool>("/core/power_switch_status", 1);
   vcc_pub_ = nh_->create_publisher<std_msgs::msg::Float64>("/core/vcc", 1);
   vbat_pub_ = nh_->create_publisher<std_msgs::msg::Float64>("/core/vbat", 1);
@@ -57,7 +56,7 @@ void CoreHardwareInterface::read(const rclcpp::Time &t, const rclcpp::Duration &
     read_counter_ = 0;
     // read core
     last_read_successful_ = true;
-    if (driver_->readMultipleRegisters(id_, 23, 27, data_)) {
+    if (driver_->readMultipleRegisters(id_, 23, 27, data_.data())) {
       // we read one string of bytes. see CORE firmware for definition of registers
       // convert to volt
       power_control_status_.data = data_[0];
@@ -150,4 +149,7 @@ void CoreHardwareInterface::write(const rclcpp::Time &t, const rclcpp::Duration 
     driver_->writeRegister(id_, "Power", requested_power_status_);
   }
 }
+
+void CoreHardwareInterface::restoreAfterPowerCycle() { requested_power_status_ = true; }
+
 }  // namespace bitbots_ros_control

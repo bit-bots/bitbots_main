@@ -30,9 +30,11 @@ class WolfgangHardwareInterface {
   rclcpp::Node::SharedPtr nh_;
 
   // two dimensional list of all hardware interfaces, sorted by port
-  std::vector<std::vector<bitbots_ros_control::HardwareInterface *>> interfaces_;
+  std::vector<std::vector<std::shared_ptr<bitbots_ros_control::HardwareInterface>>> interfaces_;
   DynamixelServoHardwareInterface servo_interface_;
   rclcpp::Publisher<bitbots_msgs::msg::Audio>::SharedPtr speak_pub_;
+  std::optional<rclcpp::Time> bus_start_time_;
+  bool bus_first_write_{false};
 
   // prevent unnecessary error when power is turned on
   bool first_ping_error_;
@@ -42,7 +44,7 @@ class WolfgangHardwareInterface {
   bool core_present_;
   bool current_power_status_;
   bool last_power_status_;
-  CoreHardwareInterface *core_interface_;
+  std::shared_ptr<CoreHardwareInterface> core_interface_;
 };
 }  // namespace bitbots_ros_control
 

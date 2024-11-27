@@ -1,7 +1,7 @@
 import math
 from typing import Optional
 
-from bitbots_blackboard.blackboard import BodyBlackboard
+from bitbots_blackboard.body_blackboard import BodyBlackboard
 from bitbots_utils.transforms import quat_from_yaw
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 from geometry_msgs.msg import PoseStamped, Twist
@@ -56,7 +56,7 @@ class Turn(AbstractActionElement):
         super().__init__(blackboard, dsd, parameters)
         self.blackboard: BodyBlackboard
         self.current_rotation_vel = 0.0
-        self.max_speed = parameters.get("max_speed", 0.3)
+        self.max_speed = parameters.get("max_speed", 0.4)
 
         # Check if the have a duration
         self.duration: Optional[float] = parameters.get("duration", None)
