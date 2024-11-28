@@ -15,22 +15,22 @@ void WalkVisualizer::publishDebug(const WalkResponse &current_response,
                                   const bitbots_splines::JointGoals &motor_goals) {
   visualization_msgs::msg::MarkerArray marker_array;
 
-  auto [engine_debug, engine_markers] = publishEngineDebug(current_response);
+  auto [engine_debug, engine_markers] = buildEngineDebugMsgs(current_response);
   marker_array.markers.insert(marker_array.markers.end(), engine_markers.markers.begin(), engine_markers.markers.end());
   pub_engine_debug_->publish(engine_debug);
 
-  auto [ik_debug, ik_markers] = publishIKDebug(current_response, current_state, motor_goals);
+  auto [ik_debug, ik_markers] = buildIKDebugMsgs(current_response, current_state, motor_goals);
   marker_array.markers.insert(marker_array.markers.end(), ik_markers.markers.begin(), ik_markers.markers.end());
   pub_debug_->publish(ik_debug);
 
-  auto walk_markers = publishWalkMarkers(current_response);
+  auto walk_markers = buildWalkMarkers(current_response);
   marker_array.markers.insert(marker_array.markers.end(), walk_markers.markers.begin(), walk_markers.markers.end());
 
   pub_debug_marker_->publish(marker_array);
 }
 
 std::pair<bitbots_quintic_walk::msg::WalkEngineDebug, visualization_msgs::msg::MarkerArray>
-WalkVisualizer::publishEngineDebug(WalkResponse response) {
+WalkVisualizer::buildEngineDebugMsgs(WalkResponse response) {
   // Here we will convert the walk engine response to a various debug messages and RViz markers
   // Initialize output containers
   bitbots_quintic_walk::msg::WalkEngineDebug msg;
@@ -111,7 +111,7 @@ WalkVisualizer::publishEngineDebug(WalkResponse response) {
   return {msg, marker_array};
 }
 
-std::pair<bitbots_quintic_walk::msg::WalkDebug, visualization_msgs::msg::MarkerArray> WalkVisualizer::publishIKDebug(
+std::pair<bitbots_quintic_walk::msg::WalkDebug, visualization_msgs::msg::MarkerArray> WalkVisualizer::buildIKDebugMsgs(
     WalkResponse response, moveit::core::RobotStatePtr current_state, bitbots_splines::JointGoals joint_goals) {
   bitbots_quintic_walk::msg::WalkDebug msg;
   visualization_msgs::msg::MarkerArray marker_array;
@@ -277,7 +277,7 @@ visualization_msgs::msg::Marker WalkVisualizer::createArrowMarker(const std::str
   return marker_msg;
 }
 
-visualization_msgs::msg::MarkerArray WalkVisualizer::publishWalkMarkers(WalkResponse response) {
+visualization_msgs::msg::MarkerArray WalkVisualizer::buildWalkMarkers(WalkResponse response) {
   visualization_msgs::msg::MarkerArray marker_array;
 
   // Create a marker for the last step
