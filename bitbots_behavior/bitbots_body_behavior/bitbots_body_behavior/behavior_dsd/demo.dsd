@@ -1,12 +1,6 @@
 #SearchBall
 @ChangeAction + action:searching, @LookAtFieldFeatures, @WalkInPlace + duration:3, @Turn
 
-#DoNothing
-@ChangeAction + action:waiting, @LookForward, @Stand
-
-#StandAndLook
-@ChangeAction + action:waiting, @LookAtFieldFeatures, @Stand
-
 #PerformKickLeft
 @ChangeAction + action:kicking, @LookAtFront, @WalkKick + foot:left + r:false, @WalkInPlace + duration:1 + r:false, @ForgetBall + r:false, @WalkInPlace + duration:1 + r:false, @LookAtFieldFeatures + r:false
 
@@ -26,15 +20,9 @@ $AvoidBall
         YES --> @AvoidBallInactive
         NO --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:close + distance:%ball_far_approach_dist
 
-#Init
-@Stand + duration:0.1 + r:false, @ChangeAction + action:waiting, @LookForward, @Stand
-
-#NormalBehavior
-$BallSeen
-    NO --> #SearchBall
-    YES --> #KickWithAvoidance
-
 -->BodyBehavior
-$IsPenalized
-    YES --> #DoNothing
-    ELSE --> #NormalBehavior
+$DoOnce
+    NOT_DONE --> @Stand + duration:5
+    DONE --> $BallSeen
+        YES --> #KickWithAvoidance
+        NO --> #SearchBall
