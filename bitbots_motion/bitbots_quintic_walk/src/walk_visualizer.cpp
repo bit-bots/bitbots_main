@@ -297,16 +297,7 @@ visualization_msgs::msg::MarkerArray WalkVisualizer::publishWalkMarkers(WalkResp
   support_foot_marker_msg.id = 1;
   support_foot_marker_msg.color = BLACK;
   support_foot_marker_msg.color.a = 0.5;
-
-  tf2::Vector3 step_pos = response.support_to_last.getOrigin();
-  geometry_msgs::msg::Pose pose;
-  pose.position.x = step_pos[0];
-  pose.position.y = step_pos[1];
-  pose.position.z = 0;
-  tf2::Quaternion q;
-  q.setRPY(0.0, 0.0, step_pos[2]);
-  tf2::convert(q, pose.orientation);
-  support_foot_marker_msg.pose = pose;
+  tf2::toMsg(response.support_to_last, support_foot_marker_msg.pose);
   marker_array.markers.push_back(support_foot_marker_msg);
 
   // This step center
@@ -327,13 +318,7 @@ visualization_msgs::msg::MarkerArray WalkVisualizer::publishWalkMarkers(WalkResp
   next_step_marker_msg.scale.z = 0.01;
   next_step_marker_msg.color = WHITE;
   next_step_marker_msg.color.a = 0.5;
-  step_pos = response.support_to_next.getOrigin();
-  pose.position.x = step_pos[0];
-  pose.position.y = step_pos[1];
-  pose.position.z = 0;
-  q.setRPY(0.0, 0.0, step_pos[2]);
-  tf2::convert(q, pose.orientation);
-  next_step_marker_msg.pose = pose;
+  tf2::toMsg(response.support_to_next, next_step_marker_msg.pose);
   marker_array.markers.push_back(next_step_marker_msg);
 
   return marker_array;
