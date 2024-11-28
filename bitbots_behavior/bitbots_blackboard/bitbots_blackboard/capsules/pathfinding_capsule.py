@@ -26,7 +26,6 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
 
     def __init__(self, node, blackboard):
         super().__init__(node, blackboard)
-        self.map_frame: str = self._node.get_parameter("map_frame").value
         self.position_threshold: str = self._node.get_parameter("pathfinding_position_threshold").value
         self.orientation_threshold: str = self._node.get_parameter("pathfinding_orientation_threshold").value
 
@@ -175,16 +174,21 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
         elif BallGoalType.CLOSE == target:
             ball_u, ball_v = self._blackboard.world_model.get_ball_position_uv()
             angle = math.atan2(ball_v, ball_u)
-            ball_point = (ball_u, ball_v, angle, self._blackboard.world_model.base_footprint_frame)
+            goal_u = ball_u - math.cos(angle) * distance
+            goal_v = ball_v - math.sin(angle) * distance + side_offset
+            ball_point = (goal_u, goal_v, angle, self._blackboard.world_model.base_footprint_frame)
 
         else:
             self._node.get_logger().error(f"Target {target} for go_to_ball action not implemented.")
             return
 
+        # Create the goal pose message
         pose_msg = PoseStamped()
-        pose_msg.header.stamp = self._node.get_clock().now().to_msg()
         pose_msg.header.frame_id = ball_point[3]
         pose_msg.pose.position = Point(x=ball_point[0], y=ball_point[1], z=0.0)
         pose_msg.pose.orientation = quat_from_yaw(ball_point[2])
+
+        # Convert the goal to the map frame
+        pose_msg = self._blackboard.tf_buffer.transform(pose_msg, self._blackboard.map_frame)
 
         return pose_msg
