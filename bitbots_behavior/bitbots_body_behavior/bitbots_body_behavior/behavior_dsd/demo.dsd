@@ -22,7 +22,7 @@ $AvoidBall
 
 -->BodyBehavior
 $DoOnce
-    NOT_DONE --> @Stand + duration:5
+    NOT_DONE --> @Stand + duration:15
     DONE --> $BallSeen
         YES --> #KickWithAvoidance
         NO --> #SearchBall
