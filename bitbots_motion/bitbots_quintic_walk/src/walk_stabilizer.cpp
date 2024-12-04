@@ -21,10 +21,18 @@ void WalkStabilizer::reset() {
 }
 
 WalkRequest WalkStabilizer::adjust_step_length(WalkRequest request, const double imu_roll, const double imu_pitch,
+                                               double pitch_threshold, double roll_threshold,
                                                const rclcpp::Duration& dt) {
+  double adjustment_pitch = pid_step_length_adjustment_pitch_.computeCommand(imu_roll, dt);
+  double adjustment_roll = pid_step_length_adjustment_roll_.computeCommand(imu_roll, dt);
   // adapt step length values based on PID controllers
-  request.linear_orders[0] += pid_step_length_adjustment_pitch_.computeCommand(imu_roll, dt);
-  request.linear_orders[1] += pid_step_length_adjustment_roll_.computeCommand(imu_pitch, dt);
+  // we use a threshold to avoid unneeded steps
+  if (adjustment_pitch >= pitch_threshold) {
+    request.linear_orders[0] += adjustment_pitch;
+  }
+  if (adjustment_roll >= roll_threshold) {
+    request.linear_orders[1] += adjustment_roll;
+  }
   return request;
 }
 
