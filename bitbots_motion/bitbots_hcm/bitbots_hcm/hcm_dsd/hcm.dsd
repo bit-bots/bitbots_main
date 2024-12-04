@@ -1,17 +1,20 @@
 #EMERGENCY_FALL
 @RobotStateMotorOff, @CancelGoals, @StopWalking, @PlayAnimationFallingFront, @Wait + time:1 + r:false, @TurnMotorsOff, @Wait
 
+#INIT_PATTERN
+@RobotStateStartup, @SetTorque + stiff:false + r:false, @Wait + time:3 + r:false, @SetTorque + stiff:true + r:false, @PlayAnimationStartup, @PlayAnimationDynup + direction:walkready + r:false
+
 -->HCM
 $StartHCM
     START_UP --> $Simulation
         YES --> @RobotStateStartup, @PlayAnimationStartup, @PlayAnimationDynup + direction:walkready + r:false
-        NO --> @RobotStateStartup, @Wait + time:1 + r:false, @PlayAnimationStartup, @PlayAnimationDynup + direction:walkready + r:false
+        NO --> #INIT_PATTERN
     RUNNING --> $CheckMotors
         MOTORS_NOT_STARTED --> @RobotStateStartup, @Wait
         OVERLOAD --> #EMERGENCY_FALL
         OVERHEAT --> #EMERGENCY_FALL
         PROBLEM --> @RobotStateHardwareProblem, @WaitForMotors
-        TURN_ON --> @TurnMotorsOn, @PlayAnimationDynup + direction:walkready + r:false, @Wait
+        TURN_ON --> #INIT_PATTERN
         OKAY --> $RecordAnimation
             RECORD_ACTIVE --> @RobotStateRecord, @Wait
             FREE --> $TeachingMode
