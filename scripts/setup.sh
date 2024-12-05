@@ -2,7 +2,7 @@
 set -eEuo pipefail
 
 # static/global variables
-ROS_DISTRO=${ROS_DISTRO:-"iron"}
+ROS_DISTRO=${ROS_DISTRO:-"jazzy"}
 DIR="$(dirname "$(readlink -f "$0")")"
 COLCON_WS="${COLCON_WS:-"$HOME/colcon_ws"}"
 REPO_URL="git@github.com:bit-bots/bitbots_main.git"

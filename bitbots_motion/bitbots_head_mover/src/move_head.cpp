@@ -15,6 +15,7 @@
 #include <cmath>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
+#include <head_parameters.hpp>
 #include <iostream>
 #include <memory>
 #include <rclcpp/clock.hpp>
@@ -28,8 +29,6 @@
 #include <string>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <vector>
-
-#include "head_parameters.hpp"
 
 using std::placeholders::_1;
 using namespace std::chrono_literals;
@@ -648,7 +647,7 @@ class HeadMover {
    * @param tilt The current tilt position
    * @return int The index of the pattern keypoint that is closest to the current head position
    */
-  int get_near_pattern_position(std::vector<std::pair<double, double>> pattern, double pan, double tilt) {
+  int get_near_pattern_position(const std::vector<std::pair<double, double>>& pattern, double pan, double tilt) {
     // Store the index and distance of the closest keypoint
     std::pair<double, int> min_distance_point = {10000.0, -1};
     // Iterate over all keypoints and calculate the distance to the current head position

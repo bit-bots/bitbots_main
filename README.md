@@ -2,7 +2,7 @@
 
 [![Build & Test](https://github.com/bit-bots/bitbots_main/actions/workflows/ci.yml/badge.svg)](https://github.com/bit-bots/bitbots_main/actions/workflows/ci.yml)
 [![Code style checks](https://github.com/bit-bots/bitbots_main/actions/workflows/pre-commit.yml/badge.svg)](https://github.com/bit-bots/bitbots_main/actions/workflows/pre-commit.yml)
-[![ROS Version Iron](https://img.shields.io/badge/ROS%20Version-Iron-ab8c71)](https://docs.ros.org/en/iron/index.html)
+[![ROS Version Jazzy](https://img.shields.io/badge/ROS%20Version-Jazzy-00b8ff)](https://docs.ros.org/en/jazzy/index.html)
 
 This git repository contains all RoboCup-related code and documentation from the Hamburg Bit-Bots team.
 All code is written as individual ROS 2 packages targeting Ubuntu.

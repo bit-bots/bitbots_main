@@ -9,13 +9,13 @@
 #include <bitbots_splines/smooth_spline.hpp>
 #include <bitbots_splines/spline_container.hpp>
 #include <cmath>
+#include <dynup_parameters.hpp>
 #include <optional>
 #include <rclcpp/rclcpp.hpp>
 #include <string>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <visualization_msgs/msg/marker.hpp>
 
-#include "dynup_parameters.hpp"
 #include "dynup_stabilizer.hpp"
 
 namespace bitbots_dynup {

@@ -17,6 +17,16 @@ https://github.com/Rhoban/model/
 #include <unistd.h>
 
 #include <Eigen/Dense>
+#include <biped_interfaces/msg/phase.hpp>
+#include <bitbots_msgs/msg/foot_pressure.hpp>
+#include <bitbots_msgs/msg/joint_command.hpp>
+#include <bitbots_msgs/msg/robot_control_state.hpp>
+#include <bitbots_quintic_walk/walk_engine.hpp>
+#include <bitbots_quintic_walk/walk_ik.hpp>
+#include <bitbots_quintic_walk/walk_stabilizer.hpp>
+#include <bitbots_quintic_walk/walk_visualizer.hpp>
+#include <bitbots_quintic_walk_parameters.hpp>
+#include <bitbots_splines/abstract_ik.hpp>
 #include <chrono>
 #include <control_toolbox/pid_ros.hpp>
 #include <geometry_msgs/msg/point_stamped.hpp>
@@ -37,17 +47,6 @@ https://github.com/Rhoban/model/
 #include <string>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <visualization_msgs/msg/marker.hpp>
-
-#include "biped_interfaces/msg/phase.hpp"
-#include "bitbots_msgs/msg/foot_pressure.hpp"
-#include "bitbots_msgs/msg/joint_command.hpp"
-#include "bitbots_msgs/msg/robot_control_state.hpp"
-#include "bitbots_quintic_walk/walk_engine.hpp"
-#include "bitbots_quintic_walk/walk_ik.hpp"
-#include "bitbots_quintic_walk/walk_stabilizer.hpp"
-#include "bitbots_quintic_walk/walk_visualizer.hpp"
-#include "bitbots_quintic_walk_parameters.hpp"
-#include "bitbots_splines/abstract_ik.hpp"
 
 namespace bitbots_quintic_walk {
 

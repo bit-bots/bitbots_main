@@ -6,12 +6,12 @@
 #include <Eigen/Geometry>
 #include <bitbots_splines/abstract_stabilizer.hpp>
 #include <control_toolbox/pid_ros.hpp>
+#include <dynup_parameters.hpp>
 #include <optional>
 #include <sensor_msgs/msg/imu.hpp>
 #include <tf2_eigen/tf2_eigen.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
-#include "dynup_parameters.hpp"
 #include "dynup_utils.hpp"
 namespace bitbots_dynup {
 
