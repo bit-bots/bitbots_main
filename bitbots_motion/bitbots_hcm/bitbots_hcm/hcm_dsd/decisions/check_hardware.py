@@ -12,6 +12,7 @@ class CheckMotors(AbstractHCMDecisionElement):
     def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
         self.had_problem = False
+        self.power_was_off = False
 
     def perform(self, reevaluate=False):
         self.clear_debug_data()
@@ -71,8 +72,16 @@ class CheckMotors(AbstractHCMDecisionElement):
                     # wait for motors to connect
                     return "PROBLEM"
             else:
-                # we have to turn the motors on
-                return "TURN_ON"
+                # The motors are off, so we will not complain
+                self.power_was_off = True
+                return "MOTORS_NOT_STARTED"
+
+        elif self.power_was_off:
+            # motors are now on and we can continue
+            self.blackboard.node.get_logger().info("Motors are now connected. Will resume.")
+            self.power_was_off = False
+            # But we want to perform a clean start, so we don't jump directly into the last goal position
+            return "TURN_ON"
 
         if self.had_problem:
             # had problem before, just tell that this is solved now

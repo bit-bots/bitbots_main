@@ -130,6 +130,28 @@ def get_parameters_from_other_node(
     return results
 
 
+def get_parameters_from_other_node_sync(
+    own_node: Node, other_node_name: str, parameter_names: List[str], service_timeout_sec: float = 20.0
+) -> Dict:
+    """
+    Used to receive parameters from other running nodes. It does not use async internally.
+    It should not be used in callback functions, but it it a bit more reliable than the async version.
+    Returns a dict with requested parameter name as dict key and parameter value as dict value.
+    """
+    client = own_node.create_client(GetParameters, f"{other_node_name}/get_parameters")
+    ready = client.wait_for_service(timeout_sec=service_timeout_sec)
+    if not ready:
+        raise RuntimeError(f"Wait for {other_node_name} parameter service timed out")
+    request = GetParameters.Request()
+    request.names = parameter_names
+    response = client.call(request)
+
+    results = {}  # Received parameter
+    for i, param in enumerate(parameter_names):
+        results[param] = parameter_value_to_python(response.values[i])
+    return results
+
+
 def set_parameters_of_other_node(
     own_node: Node,
     other_node_name: str,

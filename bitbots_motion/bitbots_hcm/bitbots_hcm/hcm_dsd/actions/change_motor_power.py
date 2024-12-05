@@ -21,15 +21,6 @@ class AbstractChangeMotorPower(AbstractHCMActionElement):
         raise NotImplementedError
 
 
-class TurnMotorsOn(AbstractChangeMotorPower):
-    def perform(self, reevaluate=False):
-        if not self.blackboard.visualization_active and not self.blackboard.simulation_active:
-            req = SetBool.Request()
-            req.data = True
-            self.blackboard.motor_switch_service.call(req)
-        return self.pop()
-
-
 class TurnMotorsOff(AbstractChangeMotorPower):
     def perform(self, reevaluate=False):
         if not self.blackboard.visualization_active and not self.blackboard.simulation_active:
