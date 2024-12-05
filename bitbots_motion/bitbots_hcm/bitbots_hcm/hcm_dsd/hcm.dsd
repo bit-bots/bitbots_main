@@ -2,7 +2,7 @@
 @RobotStateMotorOff, @CancelGoals, @StopWalking, @PlayAnimationFallingFront, @Wait + time:1 + r:false, @TurnMotorsOff, @Wait
 
 #INIT_PATTERN
-@RobotStateStartup, @SetTorque + stiff:false + r:false, @Wait + time:3 + r:false, @SetTorque + stiff:true + r:false, @PlayAnimationStartup, @PlayAnimationDynup + direction:walkready + r:false
+@RobotStateStartup, @SetTorque + stiff:false + r:false, @WaitRosControlStartDelay + r:false, @SetTorque + stiff:true + r:false, @PlayAnimationStartup, @PlayAnimationDynup + direction:walkready + r:false
 
 -->HCM
 $StartHCM
