@@ -5,12 +5,12 @@ import soccer_vision_attribute_msgs.msg as svam
 import tf2_geometry_msgs
 import tf2_ros as tf2
 from bitbots_tf_buffer import Buffer
+from geometry_msgs.msg import Vector3
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.duration import Duration
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 from rclpy.time import Time
-from ros2_numpy import numpify
 from std_msgs.msg import Header
 
 from bitbots_msgs.msg import TeamData
@@ -25,9 +25,10 @@ class RobotFilter(Node):
         self.robots: list[tuple[sv3dm.Robot, Time]] = list()
         self.team: dict[int, TeamData] = dict()
 
+        self.base_footprint_frame = self.declare_parameter("base_footprint_frame", "base_footprint").value
         self.filter_frame = self.declare_parameter("filter_frame", "map").value
         self.robot_dummy_size = self.declare_parameter("robot_dummy_size", 0.4).value
-        self.robot_merge_distance = self.declare_parameter("robot_merge_distance", 0.5).value
+        self.robot_merge_angle = self.declare_parameter("robot_merge_angle", 0.05).value  # TODO: Find a good value
         self.robot_storage_time = self.declare_parameter("robot_storage_time", 10e9).value
         self.team_data_timeout = self.declare_parameter("team_data_timeout", 1e9).value
 
@@ -100,6 +101,10 @@ class RobotFilter(Node):
             self.get_logger().warn(str(e))
             return
 
+        # Own position
+        pos: Vector3 = self.tf_buffer.lookup_transform(
+            self.filter_frame, self.base_footprint_frame, Time(), Duration(seconds=0.2)
+        ).transform.translation
         robot: sv3dm.Robot
         for robot in msg.robots:
             # Transfrom robot to map frame
@@ -108,9 +113,12 @@ class RobotFilter(Node):
             cleaned_robots = []
             old_robot: sv3dm.Robot
             for old_robot, stamp in self.robots:
-                # Check if there is another robot in memory close to it
-                distance = np.linalg.norm(numpify(robot.bb.center.position) - numpify(old_robot.bb.center.position))
-                if distance > self.robot_merge_distance:
+                # Check if there is another robot in memory close to it regarding the angle
+                angle_robot = np.arctan2(robot.bb.center.position.y - pos.y, robot.bb.center.position.x - pos.x)
+                angle_old_robot = np.arctan2(
+                    old_robot.bb.center.position.y - pos.y, old_robot.bb.center.position.x - pos.x
+                )
+                if abs(angle_robot - angle_old_robot) > self.robot_merge_angle:
                     cleaned_robots.append((old_robot, stamp))
             # Update our robot list with a new list that does not contain the duplicates
             self.robots = cleaned_robots

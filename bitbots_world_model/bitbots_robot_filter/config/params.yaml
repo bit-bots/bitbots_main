@@ -5,8 +5,9 @@ bitbots_robot_filter:
     team_data_topic: 'team_data'
     robots_publish_topic: 'robots_relative_filtered'
 
+    base_footprint_frame: 'base_footprint'
     filter_frame: 'map'
     robot_dummy_size: 0.6
-    robot_merge_distance: 0.5
+    robot_merge_angle: 0.05
     robot_storage_time: 10e9
     team_data_timeout: 1e9
