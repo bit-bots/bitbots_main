@@ -16,7 +16,7 @@ walking:
       first_step_swing_factor: 1.80591386587488
       foot_distance: 0.179900277671633
       foot_rise: 0.0819786291304007
-      freq: 1.2
+      freq: 1.96331645572213
       trunk_height: 0.394780002666927
       trunk_phase: -0.151653984431689
       trunk_pitch: 0.105566178884548
@@ -78,7 +78,7 @@ walking:
           active: False
           joint_min_effort: 30.0
         imu:
-          active: True
+          active: False
           y_acceleration_threshold: 1.4
 
       trunk_pid:
