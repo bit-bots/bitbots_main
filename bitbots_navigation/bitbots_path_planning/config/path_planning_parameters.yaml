@@ -17,6 +17,12 @@ bitbots_path_planning:
     validation:
       bounds<>: [0.0, 100.0]
 
+  planner:
+    dummy:
+      type: bool
+      default_value: false
+      description: 'If true, the dummy planner is used, which just returns a straight line to the goal. This ignores all obstacles, but also has no limitations on the map size.'
+
   map:
     planning_frame:
       type: string

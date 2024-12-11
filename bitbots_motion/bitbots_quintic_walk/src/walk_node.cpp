@@ -172,11 +172,7 @@ void WalkNode::run() {
   }
 }
 
-void WalkNode::publish_debug() {
-  visualizer_.publishIKDebug(current_stabilized_response_, current_state_, motor_goals_);
-  visualizer_.publishWalkMarkers(current_stabilized_response_);
-  visualizer_.publishEngineDebug(current_response_);
-}
+void WalkNode::publish_debug() { visualizer_.publishDebug(current_stabilized_response_, current_state_, motor_goals_); }
 
 bitbots_msgs::msg::JointCommand WalkNode::step(double dt) {
   WalkRequest request(current_request_);
