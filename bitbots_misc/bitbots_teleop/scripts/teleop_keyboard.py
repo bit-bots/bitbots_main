@@ -20,6 +20,7 @@ from std_srvs.srv import Empty
 
 from bitbots_msgs.action import Dynup, Kick
 from bitbots_msgs.msg import HeadMode, JointCommand
+from bitbots_msgs.srv import SimulatorPush
 
 msg = """
 BitBots Teleop
@@ -121,6 +122,8 @@ class TeleopKeyboard(Node):
         self.th = 0
         self.status = 0
 
+        self.push_force = 100.0
+
         # Head Part
         self.create_subscription(JointState, "joint_states", self.joint_state_cb, 1)
         self.head_mode_pub = self.create_publisher(HeadMode, "head_mode", 1)
@@ -145,6 +148,7 @@ class TeleopKeyboard(Node):
 
         self.reset_robot = self.create_client(Empty, "/reset_pose")
         self.reset_ball = self.create_client(Empty, "/reset_ball")
+        self.simulator_push = self.create_client(SimulatorPush, "/simulator_push")
 
         self.frame_prefix = "" if os.environ.get("ROS_NAMESPACE") is None else os.environ.get("ROS_NAMESPACE") + "/"
 
@@ -308,6 +312,11 @@ class TeleopKeyboard(Node):
                     self.z = 0
                     self.a_x = -1
                     self.th = 0
+                elif key == "p":
+                    push_request = SimulatorPush.Request()
+                    push_request.force.x = self.push_force
+                    push_request.relative = True
+                    self.simulator_push.call_async(push_request)
                 else:
                     self.x = 0
                     self.y = 0
@@ -324,7 +333,14 @@ class TeleopKeyboard(Node):
                 twist.linear = Vector3(x=float(self.x), y=float(self.y), z=0.0)
                 twist.angular = Vector3(x=float(self.a_x), y=0.0, z=float(self.th))
                 self.pub.publish(twist)
-                state_str = f"x:    {self.x}          \ny:    {self.y}          \nturn: {self.th}          \nhead mode: {self.head_mode_msg.head_mode}      \n"
+                state_str = (
+                    f"x:    {self.x}\n"
+                    f"y:    {self.y}\n"
+                    f"turn: {self.th}\n"
+                    f"head mode: {self.head_mode_msg.head_mode}\n"
+                    f"push force: {self.push_force}"
+                )
+
                 for _ in range(state_str.count("\n") + 1):
                     sys.stdout.write("\x1b[A")
                 print(state_str)
