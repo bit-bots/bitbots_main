@@ -58,6 +58,13 @@ Head Modes:
 4: Ball Mode adapted for Penalty Kick
 5: Do a pattern which only looks in front of the robot
 
+Pushing:
+p: execute Push
+Shift-p: reset Power to 0
+ü/ä: increase/decrease power forward (x axis)
++/#: increase/decrease power left (y axis)
+SHIFT increases/decreases with factor 10
+
 CTRL-C to quit
 
 
@@ -122,7 +129,8 @@ class TeleopKeyboard(Node):
         self.th = 0
         self.status = 0
 
-        self.push_force = 100.0
+        self.push_force_x = 0.0
+        self.push_force_y = 0.0
 
         # Head Part
         self.create_subscription(JointState, "joint_states", self.joint_state_cb, 1)
@@ -313,10 +321,31 @@ class TeleopKeyboard(Node):
                     self.a_x = -1
                     self.th = 0
                 elif key == "p":
+                    # push robot in simulation
                     push_request = SimulatorPush.Request()
-                    push_request.force.x = self.push_force
+                    push_request.force.x = self.push_force_x
+                    push_request.force.y = self.push_force_y
                     push_request.relative = True
                     self.simulator_push.call_async(push_request)
+                elif key == "P":
+                    self.push_force_x = 0.0
+                    self.push_force_y = 0.0
+                elif key == "ü":
+                    self.push_force_x += 1
+                elif key == "Ü":
+                    self.push_force_x += 10
+                elif key == "ä":
+                    self.push_force_x -= 1
+                elif key == "Ä":
+                    self.push_force_x -= 10
+                elif key == "+":
+                    self.push_force_y += 1
+                elif key == "*":
+                    self.push_force_y += 10
+                elif key == "#":
+                    self.push_force_y -= 1
+                elif key == "'":
+                    self.push_force_y -= 10
                 else:
                     self.x = 0
                     self.y = 0
@@ -334,11 +363,12 @@ class TeleopKeyboard(Node):
                 twist.angular = Vector3(x=float(self.a_x), y=0.0, z=float(self.th))
                 self.pub.publish(twist)
                 state_str = (
-                    f"x:    {self.x}\n"
-                    f"y:    {self.y}\n"
-                    f"turn: {self.th}\n"
-                    f"head mode: {self.head_mode_msg.head_mode}\n"
-                    f"push force: {self.push_force}"
+                    f"x:    {self.x}     \n"
+                    f"y:    {self.y}     \n"
+                    f"turn: {self.th}     \n"
+                    f"head mode: {self.head_mode_msg.head_mode}     \n"
+                    f"push force x (+forward/-back): {self.push_force_x}     \n"
+                    f"push force y (+left/-right):   {self.push_force_y}     "
                 )
 
                 for _ in range(state_str.count("\n") + 1):
