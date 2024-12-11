@@ -1,0 +1,20 @@
+[package]
+name = "bbpprs"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+name = "bbpprs"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = "0.23.1"
+anyhow = "1.0.93"
+geo = "0.29.2"
+itertools = "0.13.0"
+petgraph = "0.6.5"
+plotters = "0.3.7"
+rand = "0.8.5"
+keyed_priority_queue = "0.4.2"
+ordered-float = "4.5.0"
