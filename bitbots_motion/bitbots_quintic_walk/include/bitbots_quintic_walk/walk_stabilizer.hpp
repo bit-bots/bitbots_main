@@ -25,6 +25,7 @@ class WalkStabilizer : public bitbots_splines::AbstractStabilizer<WalkResponse> 
                                  double pitch_threshold, double roll_threshold, const rclcpp::Duration &dt);
 
  private:
+  rclcpp::Node::SharedPtr node_;
   control_toolbox::PidROS pid_trunk_fused_pitch_;
   control_toolbox::PidROS pid_trunk_fused_roll_;
   control_toolbox::PidROS pid_step_length_adjustment_pitch_;

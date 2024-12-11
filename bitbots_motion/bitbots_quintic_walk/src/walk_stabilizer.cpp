@@ -3,7 +3,8 @@
 namespace bitbots_quintic_walk {
 
 WalkStabilizer::WalkStabilizer(rclcpp::Node::SharedPtr node)
-    : pid_trunk_fused_pitch_(node, "node.trunk_pid.pitch"),
+    : node_(node),
+      pid_trunk_fused_pitch_(node, "node.trunk_pid.pitch"),
       pid_trunk_fused_roll_(node, "node.trunk_pid.roll"),
       pid_step_length_adjustment_pitch_(node, "node.step_length.pitch"),
       pid_step_length_adjustment_roll_(node, "node.step_length.roll") {
@@ -25,6 +26,7 @@ WalkRequest WalkStabilizer::adjust_step_length(WalkRequest request, const double
                                                const rclcpp::Duration& dt) {
   double adjustment_pitch = pid_step_length_adjustment_pitch_.computeCommand(imu_roll, dt);
   double adjustment_roll = pid_step_length_adjustment_roll_.computeCommand(imu_roll, dt);
+  RCLCPP_WARN(node_->get_logger(), "Adjustment pitch, roll: %f, %f", adjustment_pitch, adjustment_roll);
   // adapt step length values based on PID controllers
   // we use a threshold to avoid unneeded steps
   if (adjustment_pitch >= pitch_threshold) {
