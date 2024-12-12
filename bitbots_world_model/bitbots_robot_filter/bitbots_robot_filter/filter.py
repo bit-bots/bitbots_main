@@ -11,6 +11,7 @@ from rclpy.duration import Duration
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 from rclpy.time import Time
+from robot_with_covariance import RobotWithCovariance
 from std_msgs.msg import Header
 
 from bitbots_msgs.msg import TeamData
@@ -70,7 +71,7 @@ class RobotFilter(Node):
         )
 
         # Convert TeamData to Robot Observation
-        def build_robot_detection_from_team_data(msg: TeamData) -> sv3dm.Robot:
+        def build_robot_detection_from_team_data(msg: TeamData) -> RobotWithCovariance:
             robot = sv3dm.Robot()
             robot.bb.center = msg.robot_position.pose
             robot.bb.size.x = self.robot_dummy_size
@@ -78,7 +79,7 @@ class RobotFilter(Node):
             robot.bb.size.z = 1.0
             robot.attributes.team = svam.Robot.TEAM_OWN
             robot.attributes.player_number = msg.robot_id
-            return robot
+            return RobotWithCovariance(robot)
 
         def is_team_data_fresh(msg: TeamData) -> bool:
             return (self.get_clock().now() - Time.from_msg(msg.header.stamp)).nanoseconds < self.team_data_timeout
@@ -111,7 +112,7 @@ class RobotFilter(Node):
             robot.bb.center = tf2_geometry_msgs.do_transform_pose(robot.bb.center, transform)
             # Update robots that are close together
             cleaned_robots = []
-            old_robot: sv3dm.Robot
+            old_robot: RobotWithCovariance
             for old_robot, stamp in self.robots:
                 # Check if there is another robot in memory close to it regarding the angle
                 angle_robot = np.arctan2(robot.bb.center.position.y - pos.y, robot.bb.center.position.x - pos.x)
@@ -123,7 +124,7 @@ class RobotFilter(Node):
             # Update our robot list with a new list that does not contain the duplicates
             self.robots = cleaned_robots
             # Append our new robots
-            self.robots.append((robot, msg.header.stamp))
+            self.robots.append((RobotWithCovariance(robot), msg.header.stamp))
 
     def _team_data_callback(self, msg: TeamData):
         self.team[msg.robot_id] = msg
