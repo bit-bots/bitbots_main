@@ -30,6 +30,7 @@
   <depend>tf_transformations</depend>
   <depend>tf2</depend>
 
+  <test_depend>python3-pytest</test_depend>
 
   <export>
     <rosdoc config="rosdoc.yaml"/>

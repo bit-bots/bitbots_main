@@ -22,6 +22,8 @@
   <depend>rclpy</depend>
   <depend>std_msgs</depend>
 
+  <test_depend>python3-pytest</test_depend>
+
   <export>
     <bitbots_documentation>
       <status>tested_integration</status>

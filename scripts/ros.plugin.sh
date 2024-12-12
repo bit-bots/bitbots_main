@@ -54,6 +54,7 @@ alias cbs='cdc && colcon build --symlink-install --packages-select'
 alias cb='cdc && colcon build --symlink-install --continue-on-error --packages-up-to'
 alias cc='cdc && colcon clean packages --packages-select'
 alias cca='cdc && colcon clean packages'
+alias ct='cdc && colcon test --event-handlers console_direct+ --return-code-on-test-failure'
 
 alias sr="source /opt/ros/$distro/setup.$shell && update_ros2_argcomplete"
 alias sc="source \$COLCON_WS/install/setup.$shell && update_ros2_argcomplete"

@@ -18,6 +18,7 @@ setup(
         "launch",
         "setuptools",
     ],
+    tests_require=["pytest"],
     zip_safe=True,
     keywords=["ROS"],
     license="MIT",

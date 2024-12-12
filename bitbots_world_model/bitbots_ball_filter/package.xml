@@ -23,6 +23,8 @@
   <depend>std_srvs</depend>
   <depend>tf2_geometry_msgs</depend>
 
+  <test_depend>python3-pytest</test_depend>
+
   <export>
     <bitbots_documentation>
       <language>python3</language>
