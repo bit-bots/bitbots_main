@@ -135,7 +135,7 @@ def get_parameters_from_other_node_sync(
 ) -> Dict:
     """
     Used to receive parameters from other running nodes. It does not use async internally.
-    It should not be used in callback functions, but it it a bit more reliable than the async version.
+    It should not be used in callback functions, but it is a bit more reliable than the async version.
     Returns a dict with requested parameter name as dict key and parameter value as dict value.
     """
     client = own_node.create_client(GetParameters, f"{other_node_name}/get_parameters")
