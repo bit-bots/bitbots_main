@@ -90,7 +90,7 @@ rosdep:
 	# Initialize rosdep if not already done
 	[ -f /etc/ros/rosdep/sources.list.d/20-default.list ] || sudo rosdep init
 	# Update rosdep and install dependencies from meta directory
-	rosdep update
+	rosdep update --include-eol-distros
 	rosdep install --from-paths . --ignore-src --rosdistro iron -y
 
 status:
