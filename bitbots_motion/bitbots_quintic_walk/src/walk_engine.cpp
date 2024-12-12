@@ -838,12 +838,23 @@ void WalkEngine::stepFromOrders(const std::vector<double>& linear_orders, double
   // No change in forward step and upward step
   tmp_diff.getOrigin()[0] = linear_orders[0];
   tmp_diff.getOrigin()[2] = linear_orders[2];
+
   // Add lateral foot offset
-  if (is_left_support_foot_) {
-    tmp_diff.getOrigin()[1] = config_.foot_distance;
-  } else {
-    tmp_diff.getOrigin()[1] = -1 * config_.foot_distance;
+  // This is normally just the foot distance, but if we turn we need to also move the foot forward/backward
+  geometry_msgs::msg::Vector3 foot_offset;
+  foot_offset.x = -sin(angular_z / 2) * config_.foot_distance;
+  foot_offset.y = cos(angular_z / 2) * config_.foot_distance;
+
+  // Invert lateral offset for right foot
+  if (!is_left_support_foot_) {
+    foot_offset.x *= -1;
+    foot_offset.y *= -1;
   }
+
+  // Add foot offset to step diff
+  tmp_diff.getOrigin()[0] += foot_offset.x;
+  tmp_diff.getOrigin()[1] += foot_offset.y;
+
   // Allow lateral step only on external foot
   //(internal foot will return to zero pose)
   if ((is_left_support_foot_ && linear_orders[1] > 0.0) || (!is_left_support_foot_ && linear_orders[1] < 0.0)) {
