@@ -1,7 +1,7 @@
 wolfgang_hardware_interface:
   ros__parameters:
     control_loop_hz: 500.0
-    start_delay: 2.0 # delay after the motor power is turned on until values are written, in seconds TODO also only read values after this time
+    start_delay: 2.0 # delay after the motor power is turned on until values are written, in seconds
 
     port_info:
       port0:
