@@ -61,5 +61,5 @@ class RobotMotionModel : public particle_filter::MovementModel<RobotState> {
 
   double sample(double b) const;
 };
-};  // namespace bitbots_localization
+};      // namespace bitbots_localization
 #endif  // BITBOTS_LOCALIZATION_MOTIONMODEL_H

@@ -53,5 +53,5 @@ class Map {
  private:
   double out_of_map_value_;
 };
-};  // namespace bitbots_localization
+};      // namespace bitbots_localization
 #endif  // BITBOTS_LOCALIZATION_MAP_H

@@ -76,7 +76,8 @@ PressureConverter::PressureConverter(rclcpp::Node::SharedPtr nh, char side) {
   }
   for (int i = 0; i < 4; i++) {
     std::stringstream single_wrench_frame;
-    single_wrench_frame << side << "_" << "cleat_" << wrench_topics[i];
+    single_wrench_frame << side << "_"
+                        << "cleat_" << wrench_topics[i];
     wrench_frames_.push_back(single_wrench_frame.str());
   }
 
