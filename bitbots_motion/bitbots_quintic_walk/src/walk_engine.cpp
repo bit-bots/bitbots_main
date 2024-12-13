@@ -494,8 +494,7 @@ void WalkEngine::buildTrajectories(WalkEngine::TrajectoryType type) {
                              support_to_next_.getOrigin().y());
   foot_spline_.y()->addPoint(half_period, support_to_next_.getOrigin().y());
 
-  foot_spline_.z()->addPoint(0.0, foot_pos_at_foot_change_.z(), foot_pos_vel_at_foot_change_.z(),
-                             foot_pos_acc_at_foot_change_.z());
+  foot_spline_.z()->addPoint(0.0, foot_pos_at_foot_change_.z(), foot_pos_vel_at_foot_change_.z());
   foot_spline_.z()->addPoint(double_support_length, foot_pos_at_foot_change_.z());
   foot_spline_.z()->addPoint(double_support_length + single_support_length * config_.foot_apex_phase -
                                  0.5 * config_.foot_z_pause * single_support_length,
@@ -523,7 +522,7 @@ void WalkEngine::buildTrajectories(WalkEngine::TrajectoryType type) {
   foot_spline_.pitch()->addPoint(half_period, 0.0);
 
   foot_spline_.yaw()->addPoint(0.0, foot_orientation_pos_at_last_foot_change_.z(),
-                               foot_orientation_vel_at_last_foot_change_.z(), foot_orientation_acc_at_foot_change_.z());
+                               foot_orientation_vel_at_last_foot_change_.z());
   foot_spline_.yaw()->addPoint(double_support_length, getLastEuler().z());
   foot_spline_.yaw()->addPoint(double_support_length + single_support_length * config_.foot_put_down_phase,
                                getNextEuler().z());
@@ -559,7 +558,7 @@ void WalkEngine::buildTrajectories(WalkEngine::TrajectoryType type) {
 
   // Trunk position
   if (start_movement || start_step) {
-    trunk_spline_.x()->addPoint(0.0, 0.0, 0.0, 0.0);
+    trunk_spline_.x()->addPoint(0.0, 0.0, 0.0);
   } else {
     trunk_spline_.x()->addPoint(0.0, trunk_pos_at_foot_change_.x(), trunk_pos_vel_at_foot_change_.x());
     trunk_spline_.x()->addPoint(half_period + time_shift, trunk_apex_support.x(), trunk_vel_support);
@@ -567,7 +566,7 @@ void WalkEngine::buildTrajectories(WalkEngine::TrajectoryType type) {
   trunk_spline_.x()->addPoint(period + time_shift, trunk_apex_next.x(), trunk_vel_next);
 
   if (start_movement) {
-    trunk_spline_.y()->addPoint(0.0, trunk_point_middle.y(), 0.0, 0.0);
+    trunk_spline_.y()->addPoint(0.0, trunk_point_middle.y(), 0.0);
   } else {
     trunk_spline_.y()->addPoint(0.0, trunk_pos_at_foot_change_.y(), trunk_pos_vel_at_foot_change_.y());
   }
