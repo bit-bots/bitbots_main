@@ -80,6 +80,7 @@ void MotionOdometry::loop() {
       }
       double y = previous_to_current_support.getOrigin().y() * config_.y_scaling;
       previous_to_current_support.setOrigin({x, y, 0});
+      previous_to_current_support.setRotation(tf2::Quaternion(0, 0, 0, 1));
 
       odometry_to_support_foot_ = odometry_to_support_foot_ * previous_to_current_support;
 
