@@ -645,6 +645,12 @@ class RobotController:
 
             self.pub_pres_left = self.ros_node.create_publisher(FootPressure, base_ns + "foot_pressure_left/raw", 1)
             self.pub_pres_right = self.ros_node.create_publisher(FootPressure, base_ns + "foot_pressure_right/raw", 1)
+            self.pub_pres_left_filtered = self.ros_node.create_publisher(
+                FootPressure, base_ns + "foot_pressure_left/filtered", 1
+            )
+            self.pub_pres_right_filtered = self.ros_node.create_publisher(
+                FootPressure, base_ns + "foot_pressure_right/filtered", 1
+            )
             self.cop_l_pub_ = self.ros_node.create_publisher(PointStamped, base_ns + "cop_l", 1)
             self.cop_r_pub_ = self.ros_node.create_publisher(PointStamped, base_ns + "cop_r", 1)
             self.ros_node.create_subscription(JointCommand, base_ns + "DynamixelController/command", self.command_cb, 1)
@@ -1009,6 +1015,8 @@ class RobotController:
     def publish_pressure(self):
         left, right, cop_l, cop_r = self.get_pressure_message()
         self.pub_pres_left.publish(left)
+        self.pub_pres_left_filtered.publish(left)
         self.pub_pres_right.publish(right)
+        self.pub_pres_right_filtered.publish(right)
         self.cop_l_pub_.publish(cop_l)
         self.cop_r_pub_.publish(cop_r)

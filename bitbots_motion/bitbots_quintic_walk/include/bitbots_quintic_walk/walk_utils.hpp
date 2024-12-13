@@ -13,7 +13,16 @@
 
 namespace bitbots_quintic_walk {
 
-enum WalkState { PAUSED, WALKING, IDLE, START_MOVEMENT, STOP_MOVEMENT, START_STEP, STOP_STEP, KICK };
+enum WalkState {
+  IDLE = 0,
+  START_MOVEMENT = 1,
+  START_STEP = 2,
+  WALKING = 3,
+  PAUSED = 4,
+  KICK = 5,
+  STOP_STEP = 6,
+  STOP_MOVEMENT = 7
+};
 
 struct WalkRequest {
   std::vector<double> linear_orders = {0, 0, 0};
