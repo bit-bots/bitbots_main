@@ -33,9 +33,11 @@ class HcmBlackboard:
         self.visualization_active: bool = self.node.get_parameter("visualization_active").value
         self.pickup_accel_threshold: float = self.node.get_parameter("pick_up_accel_threshold").value
         self.pressure_sensors_installed: bool = self.node.get_parameter("pressure_sensors_installed").value
-        self.motor_start_delay: int = get_parameters_from_other_node_sync(
-            self.node, "/wolfgang_hardware_interface", ["start_delay"]
-        )["start_delay"]
+        self.motor_start_delay: int = 0
+        if not self.simulation_active:  # The hardware interface is obviously not available in simulation
+            self.motor_start_delay = get_parameters_from_other_node_sync(
+                self.node, "/wolfgang_hardware_interface", ["start_delay"]
+            )["start_delay"]
 
         # Create service clients
         self.foot_zero_service = self.node.create_client(EmptySrv, "set_foot_zero")
