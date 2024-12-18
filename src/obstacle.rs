@@ -17,8 +17,10 @@ pub trait Obstacle {
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct RoundObstacle {
     /// The center of the obstacle
+    #[pyo3(get, set)]
     center: (f64, f64),
     /// The radius of the obstacle
+    #[pyo3(get, set)]
     radius: f64,
 }
 

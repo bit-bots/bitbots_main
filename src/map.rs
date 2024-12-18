@@ -33,7 +33,9 @@ impl ObstacleMapConfig {
 #[pyclass(eq, str = "ObstacleMap(obstacles={obstacles:?})")]
 #[derive(Debug, Clone, PartialEq)]
 pub struct ObstacleMap {
+    #[pyo3(get, set)]
     config: ObstacleMapConfig,
+    #[pyo3(get, set)]
     obstacles: Vec<RoundObstacle>,
 }
 
