@@ -13,7 +13,6 @@ from std_msgs.msg import Bool, Empty
 from visualization_msgs.msg import MarkerArray
 
 from bitbots_path_planning.controller import Controller
-from bitbots_path_planning.map import Map
 from bitbots_path_planning.path_planning_parameters import bitbots_path_planning as parameters
 from bitbots_path_planning.planner import VisibilityPlanner
 
@@ -31,23 +30,21 @@ class PathPlanning(Node):
         # We need to create a tf buffer
         self.tf_buffer = Buffer(self, Duration(seconds=self.config.tf_buffer_duration))
 
-        # Create submodules
-        self.map = Map(node=self, buffer=self.tf_buffer)
-        self.planner = VisibilityPlanner(node=self, buffer=self.tf_buffer, map=self.map)
+        self.planner = VisibilityPlanner(node=self, buffer=self.tf_buffer)
         self.controller = Controller(node=self, buffer=self.tf_buffer)
 
         # Subscriber
         self.create_subscription(
             PoseWithCovarianceStamped,
             self.config.map.ball_update_topic,
-            self.map.set_ball,
+            self.planner.set_ball,
             5,
             callback_group=MutuallyExclusiveCallbackGroup(),
         )
         self.create_subscription(
             sv3dm.RobotArray,
             self.config.map.robot_update_topic,
-            self.map.set_robots,
+            self.planner.set_robots,
             5,
             callback_group=MutuallyExclusiveCallbackGroup(),
         )
@@ -64,7 +61,7 @@ class PathPlanning(Node):
         self.create_subscription(
             Bool,
             "ball_obstacle_active",
-            lambda msg: self.map.avoid_ball(msg.data),
+            lambda msg: self.planner.avoid_ball(msg.data),
             5,
             callback_group=MutuallyExclusiveCallbackGroup(),
         )
@@ -93,13 +90,7 @@ class PathPlanning(Node):
         try:
             if self.planner.active():
                 # Calculate the path to the goal pose considering the current map
-                t1 = time.time()
                 path = self.planner.step()
-                t2 = time.time()
-                print(f"delta = {t2 - t1}")
-                # Publish the visibility graph for visualization
-                markers = self.planner.visibility_graph_wrapper()
-                self.graph_pub.publish(markers)
                 # Publish the path for visualization
                 self.path_pub.publish(path)
                 # Calculate the command velocity to follow the given path
