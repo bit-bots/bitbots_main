@@ -10,6 +10,7 @@
 #include <bitbots_localization/RobotState.hpp>
 #include <bitbots_localization/map.hpp>
 #include <bitbots_localization/tools.hpp>
+#include <localization_parameters.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <sensor_msgs/point_cloud2_iterator.hpp>
 #include <soccer_vision_3d_msgs/msg/field_boundary.hpp>
@@ -17,8 +18,6 @@
 #include <soccer_vision_3d_msgs/msg/goalpost_array.hpp>
 #include <soccer_vision_3d_msgs/msg/marking_array.hpp>
 #include <soccer_vision_3d_msgs/msg/marking_intersection.hpp>
-
-#include "localization_parameters.hpp"
 
 namespace sm = sensor_msgs;
 namespace bl = bitbots_localization;

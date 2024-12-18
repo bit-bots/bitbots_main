@@ -2,9 +2,8 @@
 // Created by judith on 08.03.19.
 //
 
-#include "bitbots_localization/map.hpp"
-
 #include <ament_index_cpp/get_package_share_directory.hpp>
+#include <bitbots_localization/map.hpp>
 #include <boost/filesystem.hpp>
 
 namespace fs = boost::filesystem;

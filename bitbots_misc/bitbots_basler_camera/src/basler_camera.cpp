@@ -12,13 +12,12 @@
 #include <iostream>
 #include <memory>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <pylon_camera_parameters.hpp>
 #include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
 #include <rclcpp/logger.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <string>
 #include <vector>
-
-#include "pylon_camera_parameters.hpp"
 
 using std::placeholders::_1, std::placeholders::_2;
 using namespace Pylon;
@@ -271,7 +270,8 @@ class BaslerCamera {
     }
 
     // Convert to cv::Mat
-    cv::Mat image(ptrGrabResult->GetHeight(), ptrGrabResult->GetWidth(), CV_8UC1, (uint8_t*)ptrGrabResult->GetBuffer());
+    cv::Mat image(ptrGrabResult->GetHeight(), ptrGrabResult->GetWidth(), CV_8UC1,
+                  static_cast<uint8_t*>(ptrGrabResult->GetBuffer()));
 
     // Create cv::Mat for color image
     cv::Mat color(image.size(), CV_MAKETYPE(CV_8U, 3));

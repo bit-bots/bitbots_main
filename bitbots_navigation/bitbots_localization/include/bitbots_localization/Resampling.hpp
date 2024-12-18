@@ -5,10 +5,10 @@
 #ifndef IMPORTANCERESAMPLINGWE_H
 #define IMPORTANCERESAMPLINGWE_H
 
-#include <cassert>
+#include <particle_filter/CRandomNumberGenerator.h>
+#include <particle_filter/ImportanceResampling.h>
 
-#include "particle_filter/CRandomNumberGenerator.h"
-#include "particle_filter/ImportanceResampling.h"
+#include <cassert>
 
 namespace bitbots_localization {
 // ImportanceResampling with explorers

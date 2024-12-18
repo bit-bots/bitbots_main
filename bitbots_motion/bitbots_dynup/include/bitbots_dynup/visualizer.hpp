@@ -11,13 +11,12 @@
 #include <bitbots_splines/abstract_visualizer.hpp>
 #include <bitbots_splines/smooth_spline.hpp>
 #include <bitbots_splines/spline_container.hpp>
+#include <dynup_parameters.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <string>
 #include <tf2_eigen/tf2_eigen.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
-
-#include "dynup_parameters.hpp"
 
 namespace bitbots_dynup {
 

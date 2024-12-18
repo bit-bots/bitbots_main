@@ -7,10 +7,10 @@
 #include <tf2/convert.h>
 
 #include <bitbots_splines/abstract_ik.hpp>
+#include <dynup_parameters.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
-#include "dynup_parameters.hpp"
 #include "dynup_utils.hpp"
 
 namespace bitbots_dynup {

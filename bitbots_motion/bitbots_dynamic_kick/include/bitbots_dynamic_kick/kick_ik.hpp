@@ -12,7 +12,7 @@ namespace bitbots_dynamic_kick {
 
 class KickIK : public bitbots_splines::AbstractIK<KickPositions> {
  public:
-  KickIK() = default;
+  KickIK() : legs_joints_group_(), left_leg_joints_group_(), right_leg_joints_group_(){};
   void init(moveit::core::RobotModelPtr kinematic_model) override;
   bitbots_splines::JointGoals calculate(const KickPositions &positions) override;
   void reset() override;

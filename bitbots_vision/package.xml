@@ -40,6 +40,8 @@
   <depend>std_msgs</depend>
   <depend>vision_opencv</depend>
 
+  <test_depend>python3-pytest</test_depend>
+
   <export>
     <bitbots_documentation>
       <language>python3</language>
