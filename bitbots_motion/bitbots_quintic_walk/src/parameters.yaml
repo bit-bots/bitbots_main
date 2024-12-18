@@ -374,11 +374,11 @@ walking:
       pitch:
         threshold:
           type: double
-          description: "Threshold to trigger capture steps"
+          description: "Threshold to trigger step length adjustment"
           default_value: 0.0
       roll:
         threshold:
           type: double
-          description: "Threshold to trigger capture steps"
+          description: "Threshold to trigger step length adjustment"
           default_value: 0.0
 
