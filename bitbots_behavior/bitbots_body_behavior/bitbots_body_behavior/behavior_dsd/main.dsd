@@ -71,7 +71,9 @@ $GoalieHandlingBall
     NO --> #KickWithAvoidance
 
 #DefensePositioning
-@LookAtFieldFeatures, @ChangeAction + action:positioning, @GoToDefensePosition
+$GoalieActive
+    YES --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @GoToDefensePosition
+    NO --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @GoToBlockPosition
 
 #SupporterRole
 $PassStarted
