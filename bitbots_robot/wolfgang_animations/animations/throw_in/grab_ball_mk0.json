@@ -1,0 +1,69 @@
+{
+    "author": "Maxim, David, Okan",
+    "description": "Animation to grab the ball",
+    "keyframes": [
+
+        {
+            "duration": 1.2,
+            "goals": {
+                "LAnklePitch": -57.48,
+                "LAnkleRoll": 11.96,
+                "LElbow": -86.22,
+                "LHipPitch": 121.61,
+                "LHipRoll": 14.250000000000002,
+                "LHipYaw": -3.08,
+                "LKnee": 160.21,
+                "LShoulderPitch": -58.89,
+                "LShoulderRoll": -50.0,
+                "RAnklePitch": 58.480000000000004,
+                "RAnkleRoll": -20.39,
+                "RElbow": 82.66,
+                "RHipPitch": -118.74,
+                "RHipRoll": -18.19,
+                "RHipYaw": 17.5,
+                "RKnee": -157.68,
+                "RShoulderPitch": 56.54,
+                "RShoulderRoll": 50.0
+            },
+            "name": "Osu",
+            "pause": 0.0,
+            "torque": {}
+        },
+
+
+        
+        {
+            "duration": 1.2,
+            "goals": {
+                "LElbow": -82.66,
+                "LShoulderPitch": -56.54,
+                "LShoulderRoll": 10.0,
+                "RElbow": 82.66,
+                "RShoulderPitch": 56.54,
+                "RShoulderRoll": -10.0
+            },
+            "name": "Scoop",
+            "pause": 0.0,
+            "torque": {}
+        },
+        {
+            "duration": 1.2,
+            "goals": {
+                "LElbow": -86.22,
+                "LShoulderPitch": -164.79,
+                "LShoulderRoll": 19.35,
+                "LHipPitch" : 0.0,
+                "RElbow": 82.66,
+                "RShoulderPitch": 164.0,
+                "RShoulderRoll": -12.66,
+                "RHipPitch": 0.0
+            },
+            "name": "Lift Ball",
+            "pause": 0.0,
+            "torque": {}
+        }
+    ],
+    "last_edited": "2024-12-11 16:50:13.653211",
+    "name": "grab_ball",
+    "version": ""
+}

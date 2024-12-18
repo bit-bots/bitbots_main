@@ -5,11 +5,23 @@ from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 from bitbots_msgs.action import Dynup
 
 
-class GetWalkready(AbstractActionElement):
+class PlayAnimationDynup(AbstractActionElement):
     blackboard: BodyBlackboard
 
     def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
+        self.direction = parameters.get("direction")
+        assert self.direction in [
+            Dynup.Goal.DIRECTION_FRONT,
+            Dynup.Goal.DIRECTION_FRONT_ONLY,
+            Dynup.Goal.DIRECTION_BACK,
+            Dynup.Goal.DIRECTION_BACK_ONLY,
+            Dynup.Goal.DIRECTION_RISE,
+            Dynup.Goal.DIRECTION_DESCEND,
+            Dynup.Goal.DIRECTION_WALKREADY,
+            Dynup.Goal.DIRECTION_RISE_NO_ARMS,
+            Dynup.Goal.DIRECTION_DESCEND_NO_ARMS,
+        ], f"Direction '{self.direction}' not supported"
         self.first_perform = True
         self.active = False
 
@@ -58,7 +70,7 @@ class GetWalkready(AbstractActionElement):
 
         # Dynup action server is running, we can start the walkready action
         goal = Dynup.Goal()
-        goal.direction = Dynup.Goal.DIRECTION_WALKREADY
+        goal.direction = self.direction
         self.active = True
         self.dynup_action_current_goal = self.blackboard.animation.dynup_action_client.send_goal_async(goal)
         self.dynup_action_current_goal.add_done_callback(
@@ -78,3 +90,11 @@ class GetWalkready(AbstractActionElement):
         :return: True if the animation is finished, False if not
         """
         return not self.active
+
+
+class GetWalkready(PlayAnimationDynup):
+    blackboard: BodyBlackboard
+
+    def __init__(self, blackboard, dsd, parameters):
+        parameters["direction"] = Dynup.Goal.DIRECTION_WALKREADY
+        super().__init__(blackboard, dsd, parameters)

@@ -121,7 +121,7 @@ $DoOnce
                             NOT_DONE --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @AvoidBallActive, @GoToBall + target:gradient + distance:0.3 + blocking:false
                             DONE --> $ReachedAndAlignedToPathPlanningGoalPosition + threshold:0.01 + latch:true
                                 NO --> @GoToBall + target:gradient + distance:0.3
-                                YES --> @LookForward, @ChangeAction + action:kicking, @Stand + duration:1.5 + r:false, @PlayAnimationGrabBall + r:false, @PlayAnimationThrow + r:false, @GetWalkready + r:false, @Stand
+                                YES --> @LookForward, @ChangeAction + action:kicking, @Stand + duration:1.5 + r:false, @PlayAnimationDynup + direction:descend_no_arms, @PlayAnimationGrabBall + r:false, @PlayAnimationDynup + direction:rise_no_arms, @PlayAnimationThrow + r:false, @GetWalkready + r:false, @Stand
                         SECOND --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToPassPreparePosition
                         THIRD --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition
                     OTHER --> $RankToBallNoGoalie

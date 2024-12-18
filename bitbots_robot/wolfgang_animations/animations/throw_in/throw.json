@@ -3,7 +3,7 @@
     "description": "",
     "keyframes": [
         {
-            "duration": 0.0,
+            "duration": 1.0,
             "goals": {
                 "HeadPan": 0.0,
                 "HeadTilt": 0.0,
@@ -25,12 +25,12 @@
                 "HeadTilt": 0.0,
                 "LElbow": -62.49000000000001,
                 "LShoulderPitch": -179.38,
-                "LShoulderRoll": 10.0,
+                "LShoulderRoll": 17.41,
                 "RElbow": 52.23,
                 "RShoulderPitch": 178.94,
-                "RShoulderRoll": -10.0
+                "RShoulderRoll": -12.3
             },
-            "name": "Pull_back",
+            "name": "start frame_copy_1",
             "pause": 0.0,
             "torque": {}
         },
@@ -46,7 +46,7 @@
                 "RShoulderPitch": 147.38,
                 "RShoulderRoll": -7.21
             },
-            "name": "Throw",
+            "name": "start frame_copy_3",
             "pause": 0.5,
             "torque": {}
         },
@@ -62,12 +62,12 @@
                 "RShoulderPitch": -38.85,
                 "RShoulderRoll": 0.62
             },
-            "name": "Osu",
+            "name": "start frame_copy_2",
             "pause": 0.0,
             "torque": {}
         }
     ],
-    "last_edited": "2024-11-27 17:11:42.280966",
+    "last_edited": "2024-10-30 19:13:18.833923",
     "name": "throw",
     "version": ""
 }
