@@ -661,24 +661,25 @@ class RecordUI(Plugin):
             if selected_frame is not None:
                 # check if unrecorded changes would be lost
                 unrecorded_changes = []
-                current_keyframe_goals = self._recorder.get_keyframe(self._selected_frame)["goals"]
+                # current_keyframe_goals = self._recorder.get_keyframe(self._selected_frame)["goals"]
 
-                for motor_name, text_field in self._motor_controller_text_fields.items():
-                    # Get the angle from the textfield
-                    angle = text_field.value()
-                    # compare with angles in current keyframe
-                    if not current_keyframe_goals[motor_name] == math.radians(angle):
-                        unrecorded_changes.append(motor_name)
+                # for motor_name, text_field in self._motor_controller_text_fields.items():
+                #     # Get the angle from the textfield
+                #     angle = text_field.value()
+                # compare with angles in current keyframe
+                # if not current_keyframe_goals[motor_name] == math.radians(angle):
+                #     unrecorded_changes.append(motor_name)
 
                 # warn user about unrecorded changes
                 if unrecorded_changes:
-                    message = (
-                        f"""This will discard your unrecorded changes for {", ".join(unrecorded_changes)}. Continue?"""
-                    )
-                    sure = QMessageBox.question(self._widget, "Sure?", message, QMessageBox.Yes | QMessageBox.No)
-                    # Cancel the open if the user does not want to discard the changes
-                    if sure == QMessageBox.No:
-                        return
+                    pass
+                    # message = (
+                    #     f"""This will discard your unrecorded changes for {", ".join(unrecorded_changes)}. Continue?"""
+                    # )
+                    # sure = QMessageBox.question(self._widget, "Sure?", message, QMessageBox.Yes | QMessageBox.No)
+                    # # Cancel the open if the user does not want to discard the changes
+                    # if sure == QMessageBox.No:
+                    #     return
                 # Update state so we have a new selected frame
                 self._selected_frame = selected_frame_name
 

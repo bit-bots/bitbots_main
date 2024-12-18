@@ -10,11 +10,11 @@
                 "LElbow": -73.74,
                 "LShoulderPitch": -179.38,
                 "LShoulderRoll": 17.15,
-                "RElbow": 68.94,
-                "RShoulderPitch": 178.94,
-                "RShoulderRoll": -12.57
+                "RElbow": 73.74,
+                "RShoulderPitch": 179.38,
+                "RShoulderRoll": -17.15
             },
-            "name": "start frame",
+            "name": "unus",
             "pause": 0.0,
             "torque": {}
         },
@@ -26,11 +26,11 @@
                 "LElbow": -62.49000000000001,
                 "LShoulderPitch": -179.38,
                 "LShoulderRoll": 17.41,
-                "RElbow": 52.23,
-                "RShoulderPitch": 178.94,
-                "RShoulderRoll": -12.3
+                "RElbow": 62.49000000000001,
+                "RShoulderPitch": 179.38,
+                "RShoulderRoll": -17.41
             },
-            "name": "start frame_copy_1",
+            "name": "duo",
             "pause": 0.0,
             "torque": {}
         },
@@ -42,11 +42,11 @@
                 "LElbow": -94.66,
                 "LShoulderPitch": -147.13,
                 "LShoulderRoll": 11.17,
-                "RElbow": 89.16,
-                "RShoulderPitch": 147.38,
-                "RShoulderRoll": -7.21
+                "RElbow": 94.66,
+                "RShoulderPitch": 147.13,
+                "RShoulderRoll": -11.17
             },
-            "name": "start frame_copy_3",
+            "name": "tres",
             "pause": 0.5,
             "torque": {}
         },
@@ -58,16 +58,16 @@
                 "LElbow": 8.35,
                 "LShoulderPitch": 37.81,
                 "LShoulderRoll": -1.93,
-                "RElbow": -25.22,
-                "RShoulderPitch": -38.85,
-                "RShoulderRoll": 0.62
+                "RElbow": -8.35,
+                "RShoulderPitch": -37.81,
+                "RShoulderRoll": 1.93
             },
-            "name": "start frame_copy_2",
+            "name": "quattuor",
             "pause": 0.0,
             "torque": {}
         }
     ],
-    "last_edited": "2024-10-30 19:13:18.833923",
+    "last_edited": "2024-12-18 16:10:48.875357",
     "name": "throw",
     "version": ""
 }
