@@ -64,7 +64,7 @@
                 "LHipRoll": 14.250000000000002,
                 "LHipYaw": -3.08,
                 "LKnee": 160.21,
-                "LShoulderPitch": -58.89,
+                "LShoulderPitch": -64.89,
                 "LShoulderRoll": 19.35,
                 "RAnklePitch": 57.48,
                 "RAnkleRoll": -11.96,
@@ -73,7 +73,7 @@
                 "RHipRoll": -14.250000000000002,
                 "RHipYaw": 3.08,
                 "RKnee": -160.21,
-                "RShoulderPitch": 58.89,
+                "RShoulderPitch": 64.89,
                 "RShoulderRoll": -19.35
             },
             "name": "scoop",
@@ -81,7 +81,7 @@
             "torque": {}
         },
         {
-            "duration": 1.2,
+            "duration": 1.8,
             "goals": {
                 "LAnklePitch": -62.4,
                 "LAnkleRoll": 10.11,
