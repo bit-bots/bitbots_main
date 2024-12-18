@@ -61,7 +61,7 @@ bitbots_path_planning:
     inflation:
       dilate:
         type: double
-        default_value: 0.25
+        default_value: 0.35
         description: 'The dilation value for the inflation'
         read_only: true
       blur:
