@@ -177,13 +177,7 @@ void WalkNode::publish_debug() { visualizer_.publishDebug(current_stabilized_res
 bitbots_msgs::msg::JointCommand WalkNode::step(double dt) {
   WalkRequest request(current_request_);
 
-  // update walk engine response
-  if (got_new_goals_) {
-    // got_new_goals_ = false;
-  }
-
-  // Apply capture step
-
+  // Apply step length adjustment
   RCLCPP_WARN(node_->get_logger(), "Original step size: %f, %f", request.linear_orders[0], request.linear_orders[1]);
   request = stabilizer_.adjust_step_length(
       request, current_trunk_fused_roll_, current_trunk_fused_pitch_, config_.node.step_length.pitch.threshold,

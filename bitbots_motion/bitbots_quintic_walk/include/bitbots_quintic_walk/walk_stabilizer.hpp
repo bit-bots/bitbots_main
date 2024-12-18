@@ -1,6 +1,7 @@
 #ifndef BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALK_STABILIZER_H_
 #define BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALK_STABILIZER_H_
 
+#include <math.h>
 #include <rot_conv/rot_conv.h>
 
 #include <Eigen/Geometry>

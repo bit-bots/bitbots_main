@@ -10,6 +10,8 @@ WalkStabilizer::WalkStabilizer(rclcpp::Node::SharedPtr node)
       pid_step_length_adjustment_roll_(node, "node.step_length.roll") {
   pid_step_length_adjustment_pitch_.initPid();
   pid_step_length_adjustment_roll_.initPid();
+  pid_trunk_fused_pitch_.initPid();
+  pid_trunk_fused_roll_.initPid();
 
   reset();
 }
@@ -29,10 +31,10 @@ WalkRequest WalkStabilizer::adjust_step_length(WalkRequest request, const double
   RCLCPP_WARN(node_->get_logger(), "Adjustment pitch, roll: %f, %f", adjustment_pitch, adjustment_roll);
   // adapt step length values based on PID controllers
   // we use a threshold to avoid unneeded steps
-  if (adjustment_pitch >= pitch_threshold) {
+  if (fabs(adjustment_pitch) >= pitch_threshold) {
     request.linear_orders[0] += adjustment_pitch;
   }
-  if (adjustment_roll >= roll_threshold) {
+  if (fabs(adjustment_roll) >= roll_threshold) {
     request.linear_orders[1] += adjustment_roll;
   }
   return request;
