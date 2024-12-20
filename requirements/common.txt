@@ -5,6 +5,7 @@ git+https://github.com/Flova/pyastar2d
 git+https://github.com/bit-bots/YOEO
 simpleeval
 beartype
+jaxtyping
 
 # The following dependencies are only needed for rl walking and we don't actively use them currently
 #git+https://github.com/bit-bots/deep_quintic.git

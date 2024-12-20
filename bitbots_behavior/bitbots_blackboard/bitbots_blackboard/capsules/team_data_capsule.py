@@ -27,7 +27,7 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
 
         # Data
         # indexed with one to match robot ids
-        self.team_data: Dict[TeamData] = {}
+        self.team_data: Dict[int, TeamData] = {}
         for i in range(1, 7):
             self.team_data[i] = TeamData()
         self.times_to_ball = dict()
@@ -65,8 +65,8 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
         self.action_update: float = 0.0
 
         # Config
-        self.data_timeout: float = self._node.get_parameter("team_data_timeout").value
-        self.ball_max_covariance: float = self._node.get_parameter("ball_max_covariance").value
+        self.data_timeout: float = float(self._node.get_parameter("team_data_timeout").value)
+        self.ball_max_covariance: float = float(self._node.get_parameter("ball_max_covariance").value)
 
     def is_valid(self, data: TeamData) -> bool:
         """
@@ -227,7 +227,7 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
         team_data_infos = filter(self.is_valid, self.team_data.values())
 
         def is_ball_good_enough(team_data: TeamData) -> bool:
-            return (
+            return bool(
                 team_data.ball_absolute.covariance[0] < self.ball_max_covariance
                 and team_data.ball_absolute.covariance[7] < self.ball_max_covariance
             )

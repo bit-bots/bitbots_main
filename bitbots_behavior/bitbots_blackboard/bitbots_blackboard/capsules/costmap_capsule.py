@@ -131,7 +131,7 @@ class CostmapCapsule(AbstractBlackboardCapsule):
         # Smooth obstacle map
         return gaussian_filter(costmap, pass_smooth)
 
-    def field_2_costmap_coord(self, x: float, y: float) -> Tuple[float, float]:
+    def field_2_costmap_coord(self, x: float, y: float) -> Tuple[int, int]:
         """
         Converts a field position to the corresponding indices for the costmap.
 

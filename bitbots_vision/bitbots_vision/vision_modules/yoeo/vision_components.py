@@ -452,7 +452,9 @@ class NoTeamColorRobotDetectionComponent(IVisionComponent):
         robot_msgs.extend(robot_candidate_messages)
 
     @staticmethod
-    def _create_robot_messages(robot_type: Robot, candidates: list[candidate.Candidate]) -> list[Robot]:
+    def _create_robot_messages(
+        robot_type: ros_utils.T_RobotAttributes_Team, candidates: list[candidate.Candidate]
+    ) -> list[Robot]:
         return [ros_utils.build_robot_msg(robot_candidate, robot_type) for robot_candidate in candidates]
 
     def _publish_robots_message(self, image_msg: Image, robot_msgs: list[Robot]) -> None:

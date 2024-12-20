@@ -1,11 +1,12 @@
 import math
-from typing import Callable, List, Optional, Tuple
+from typing import Callable, Optional, Tuple
 
+import numpy as np
 import transforms3d
+from builtin_interfaces.msg import Time
 from game_controller_hl_interfaces.msg import GameState
 from geometry_msgs.msg import PointStamped, PoseStamped, PoseWithCovarianceStamped, Quaternion, Twist
-from numpy import double
-from rclpy.time import Time
+from jaxtyping import Float64
 from soccer_vision_3d_msgs.msg import Robot, RobotArray
 
 import bitbots_team_communication.robocup_extension_pb2 as Proto  # noqa: N812
@@ -63,7 +64,7 @@ class StateToMessageConverter:
         def convert_ball_position(
             ball_position: Optional[PointStamped],
             ball_velocity: Tuple[float, float, float],
-            ball_covariance: List[double],
+            ball_covariance: Float64[np.ndarray, "36"],
             message,
         ):
             if ball_position is not None and is_still_valid_checker(ball_position.header.stamp):
@@ -130,8 +131,8 @@ class StateToMessageConverter:
         def convert_time_to_ball(
             time_to_ball: Optional[float],
             time_to_ball_time: Time,
-            ball_position: PointStamped,
-            current_pose: PoseWithCovarianceStamped,
+            ball_position: Optional[PointStamped],
+            current_pose: Optional[PoseWithCovarianceStamped],
             walking_speed: float,
             message: Proto.Message,
         ):
@@ -174,7 +175,9 @@ class StateToMessageConverter:
     def convert_to_euler(self, quaternion: Quaternion):
         return transforms3d.euler.quat2euler([quaternion.w, quaternion.x, quaternion.y, quaternion.z])
 
-    def convert_to_covariance_matrix(self, covariance_matrix: Proto.fmat3, row_major_covariance: List[double]):
+    def convert_to_covariance_matrix(
+        self, covariance_matrix: Proto.fmat3, row_major_covariance: Float64[np.ndarray, "36"]
+    ):
         # ROS covariance is row-major 36 x float, while protobuf covariance
         # is column-major 9 x float [x, y, θ]
         covariance_matrix.x.x = row_major_covariance[0]

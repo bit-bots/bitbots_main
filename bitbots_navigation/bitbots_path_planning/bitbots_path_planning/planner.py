@@ -16,7 +16,7 @@ class Planner:
     A simple grid based A* interface
     """
 
-    def __init__(self, node: Node, buffer: tf2.Buffer, map: Map) -> None:
+    def __init__(self, node: Node, buffer: tf2.BufferInterface, map: Map) -> None:
         self.node = node
         self.buffer = buffer
         self.map = map
@@ -103,7 +103,7 @@ class Planner:
 
 
 class DummyPlanner(Planner):
-    def __init__(self, node: Node, buffer: tf2.Buffer, map: Map) -> None:
+    def __init__(self, node: Node, buffer: tf2.BufferInterface, map: Map) -> None:
         super().__init__(node, buffer, map)
 
     def step(self) -> Path:

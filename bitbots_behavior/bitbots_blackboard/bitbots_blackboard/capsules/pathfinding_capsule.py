@@ -26,8 +26,8 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
 
     def __init__(self, node, blackboard):
         super().__init__(node, blackboard)
-        self.position_threshold: str = self._node.get_parameter("pathfinding_position_threshold").value
-        self.orientation_threshold: str = self._node.get_parameter("pathfinding_orientation_threshold").value
+        self.position_threshold: float = self._node.get_parameter("pathfinding_position_threshold").value
+        self.orientation_threshold: float = self._node.get_parameter("pathfinding_orientation_threshold").value
 
         self.direct_cmd_vel_pub = self._node.create_publisher(Twist, "cmd_vel", 1)
         self.pathfinding_pub = self._node.create_publisher(PoseStamped, "goal_pose", 1)
@@ -48,7 +48,7 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
         self.goal = msg
         self.pathfinding_pub.publish(msg)
 
-    def get_goal(self) -> PoseStamped:
+    def get_goal(self) -> Optional[PoseStamped]:
         """
         Returns the latest goal that was send to the pathfinding.
         """

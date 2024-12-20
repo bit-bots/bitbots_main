@@ -4,12 +4,16 @@ from typing import Any, Dict, List
 import rclpy
 import yaml
 from ament_index_python import get_package_share_directory
+from beartype import BeartypeConf, BeartypeStrategy, beartype
 from rcl_interfaces.msg import Parameter as ParameterMsg
 from rcl_interfaces.msg import ParameterType as ParameterTypeMsg
 from rcl_interfaces.msg import ParameterValue as ParameterValueMsg
 from rcl_interfaces.srv import GetParameters, SetParameters
 from rclpy.node import Node
 from rclpy.parameter import PARAMETER_SEPARATOR_STRING, Parameter, parameter_value_to_python
+
+# Create a new @nobeartype decorator disabling type-checking.
+nobeartype = beartype(conf=BeartypeConf(strategy=BeartypeStrategy.O0))
 
 
 def read_urdf(robot_name):

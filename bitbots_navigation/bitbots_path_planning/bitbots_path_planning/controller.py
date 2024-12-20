@@ -16,7 +16,7 @@ class Controller:
     A simple follow the carrot controller which controls the robots command velocity to stay on a given path.
     """
 
-    def __init__(self, node: Node, buffer: tf2.Buffer) -> None:
+    def __init__(self, node: Node, buffer: tf2.BufferInterface) -> None:
         self.node = node
         self.buffer = buffer
 
