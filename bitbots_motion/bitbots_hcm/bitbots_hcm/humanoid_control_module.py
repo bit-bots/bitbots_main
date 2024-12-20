@@ -24,6 +24,7 @@ from std_srvs.srv import SetBool
 
 from bitbots_hcm import hcm_dsd
 from bitbots_hcm.hcm_dsd.hcm_blackboard import HcmBlackboard
+from bitbots_hcm.type_utils import T_RobotControlState
 from bitbots_msgs.msg import FootPressure, RobotControlState
 from bitbots_msgs.srv import ManualPenalize, SetTeachingMode
 
@@ -34,13 +35,13 @@ class HardwareControlManager:
         node_name = "hcm_py"
 
         # Load parameters from yaml file because this is a hacky cpp python hybrid node for performance reasons
-        parameter_msgs: list(ParameterMsg) = get_parameters_from_ros_yaml(
+        parameter_msgs: list[ParameterMsg] = get_parameters_from_ros_yaml(
             node_name, f"{get_package_share_directory('bitbots_hcm')}/config/hcm_wolfgang.yaml", use_wildcard=True
         )
         parameters = [
             Parameter("use_sim_time", type_=Parameter.Type.BOOL, value=use_sim_time),
             Parameter("simulation_active", type_=Parameter.Type.BOOL, value=simulation_active),
-            Parameter("visualization_active", type_=Parameter.Type.BOOL, value=visualization_active)
+            Parameter("visualization_active", type_=Parameter.Type.BOOL, value=visualization_active),
         ]
         parameters.extend(map(Parameter.from_parameter_msg, parameter_msgs))
 
@@ -158,7 +159,7 @@ class HardwareControlManager:
             elif "/Pressure" in status.name:
                 self.blackboard.pressure_diag_error = status.level in (DiagnosticStatus.ERROR, DiagnosticStatus.STALE)
 
-    def get_state(self) -> RobotControlState:
+    def get_state(self) -> T_RobotControlState:
         """Returns the current state of the HCM."""
         return self.blackboard.current_state
 

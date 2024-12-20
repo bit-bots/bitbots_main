@@ -1,4 +1,4 @@
-from typing import List, Literal, Optional
+from typing import List, Optional
 
 import numpy
 from bitbots_utils.utils import get_parameters_from_other_node_sync
@@ -12,6 +12,7 @@ from std_msgs.msg import Empty as EmptyMsg
 from std_srvs.srv import Empty as EmptySrv
 from std_srvs.srv import SetBool
 
+from bitbots_hcm.type_utils import T_RobotControlState
 from bitbots_msgs.action import Dynup, PlayAnimation
 from bitbots_msgs.msg import Audio, JointTorque, RobotControlState
 from bitbots_msgs.srv import SetTeachingMode
@@ -22,23 +23,7 @@ class HcmBlackboard:
         self.node = node
 
         # Basic state
-        self.current_state: Literal[
-            RobotControlState.CONTROLLABLE,
-            RobotControlState.FALLING,
-            RobotControlState.FALLEN,
-            RobotControlState.GETTING_UP,
-            RobotControlState.ANIMATION_RUNNING,
-            RobotControlState.STARTUP,
-            RobotControlState.SHUTDOWN,
-            RobotControlState.PENALTY,
-            RobotControlState.RECORD,
-            RobotControlState.WALKING,
-            RobotControlState.MOTOR_OFF,
-            RobotControlState.HCM_OFF,
-            RobotControlState.HARDWARE_PROBLEM,
-            RobotControlState.PICKED_UP,
-            RobotControlState.KICKING
-        ] = RobotControlState.STARTUP
+        self.current_state: T_RobotControlState = RobotControlState.STARTUP
         self.stopped: bool = False
 
         # Save start time
