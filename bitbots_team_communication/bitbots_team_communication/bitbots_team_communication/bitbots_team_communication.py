@@ -252,8 +252,8 @@ class TeamCommunication:
         now = self.get_current_time()
         msg = self.create_empty_message(now)
 
-        def is_still_valid(time) -> bool:
-            return now - Time.from_msg(time) < Duration(seconds=self.lifetime)
+        def is_still_valid(time: Optional[Time]) -> bool:
+            return (time is not None) and (now - Time.from_msg(time) < Duration(seconds=self.lifetime))
 
         message = self.protocol_converter.convert_to_message(self, msg, is_still_valid)
         self.socket_communication.send_message(message.SerializeToString())

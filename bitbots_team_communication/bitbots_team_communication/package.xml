@@ -22,6 +22,7 @@
   <depend>bitbots_msgs</depend>
   <depend>bitbots_tf_buffer</depend>
   <depend>bitbots_utils</depend>
+  <depend>builtin_interfaces</depend>
   <depend>game_controller_hl_interfaces</depend>
   <depend>geometry_msgs</depend>
   <depend>python3-protobuf</depend>
