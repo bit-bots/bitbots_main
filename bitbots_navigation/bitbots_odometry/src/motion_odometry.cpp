@@ -107,7 +107,7 @@ void MotionOdometry::loop() {
   try {
     geometry_msgs::msg::TransformStamped current_support_to_base_msg =
         tf_buffer_.lookupTransform(previous_support_link_, base_link_frame_, rclcpp::Time(0, 0, RCL_ROS_TIME));
-    geometry_msgs::msg::TransformStamped imu_to_previous_support_msg =
+    geometry_msgs::msg::TransformStamped imu_to_previous_support_msg = // TODO: rename to previous_support_to_imu_msg
         tf_buffer_.lookupTransform(previous_support_link_, imu_frame_, rclcpp::Time(0, 0, RCL_ROS_TIME));
 
     tf2::Transform current_support_to_base;
@@ -125,16 +125,21 @@ void MotionOdometry::loop() {
     q.setRPY(0, 0, yaw);
     current_support_to_base.setRotation(q);
 
-    tf2::Quaternion imu_rotation;
-    tf2::Transform imu_to_previous_support;
+    tf2::Transform imu_rotation; 
+    tf2::Transform imu_to_previous_support; // TODO: rename to previous_support_to_imu
     fromMsg(imu_to_previous_support_msg.transform, imu_to_previous_support);
 
-    imu_rotation = current_imu_orientation_ * imu_to_previous_support.getRotation();  // * initial_imu_transform_ *
+    
 
-    tf2::Transform odometry_to_support_foot_with_imu_yaw = odometry_to_support_foot_;
-    odometry_to_support_foot_with_imu_yaw.setRotation(imu_rotation);
+    double imu_yaw = tf2::getYaw(imu_to_previous_support.getRotation());
+    tf2::Quaternion imu_q; //TODO: anders benennen
+    imu_q.setRPY(0,0,imu_yaw);
+    imu_rotation.setRotation(imu_q);
+    tf2::Transform odometry_to_support_foot_with_imu_yaw = odometry_to_support_foot_; // todo: rename to without yaw
+    tf2::Quaternion no_rot;
+    odometry_to_support_foot_with_imu_yaw.setRotation(no_rot);
 
-    tf2::Transform odom_to_base_link = odometry_to_support_foot_with_imu_yaw * current_support_to_base;
+    tf2::Transform odom_to_base_link = odometry_to_support_foot_with_imu_yaw * imu_rotation * current_support_to_base;
     geometry_msgs::msg::TransformStamped odom_to_base_link_msg = geometry_msgs::msg::TransformStamped();
     odom_to_base_link_msg.transform = tf2::toMsg(odom_to_base_link);
     odom_to_base_link_msg.header.stamp = current_support_to_base_msg.header.stamp;
