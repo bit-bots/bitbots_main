@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Literal, Optional, Tuple
 
 import numpy as np
 from bitbots_utils.utils import get_parameters_from_other_node
@@ -78,7 +78,7 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
             and data.state != TeamData.STATE_PENALIZED
         )
 
-    def is_goalie_handling_ball(self):
+    def is_goalie_handling_ball(self) -> bool:
         """Returns true if the goalie is going to the ball."""
         data: TeamData
         for data in self.team_data.values():
@@ -90,7 +90,7 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
                 return True
         return False
 
-    def is_team_mate_kicking(self):
+    def is_team_mate_kicking(self) -> bool:
         """Returns true if one of the players in the own team is kicking."""
         data: TeamData
         for data in self.team_data.values():
@@ -98,7 +98,9 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
                 return True
         return False
 
-    def team_rank_to_ball(self, own_ball_distance: float, count_goalies: bool = True, use_time_to_ball: bool = False):
+    def team_rank_to_ball(
+        self, own_ball_distance: float, count_goalies: bool = True, use_time_to_ball: bool = False
+    ) -> int:
         """
         Returns the rank of this robot compared to the team robots concerning ball distance.
 
@@ -132,7 +134,7 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
                 return rank + 1
         return len(distances) + 1
 
-    def set_action(self, action: int):
+    def set_action(self, action: int) -> None:
         """Set the action of this robot
 
         :param action: An action from bitbots_msgs/Strategy"""
@@ -143,14 +145,11 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
     def get_action(self) -> Tuple[int, float]:
         return self.strategy.action, self.action_update
 
-    def set_role(self, role: str):
+    def set_role(self, role: Literal["goalie", "offense", "defense"]) -> None:
         """Set the role of this robot in the team
 
-        :param role: String describing the role, possible values are:
-            ['goalie', 'offense', 'defense']
+        :param role: String describing the role.
         """
-        assert role in ["goalie", "offense", "defense"]
-
         self.role = role
         self.strategy.role = self.roles_mapping[role]
         self.role_update = self._node.get_clock().now().nanoseconds / 1e9
@@ -158,8 +157,9 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
     def get_role(self) -> Tuple[int, float]:
         return self.strategy.role, self.role_update
 
-    def set_kickoff_strategy(self, strategy: int):
-        assert strategy in [Strategy.SIDE_LEFT, Strategy.SIDE_MIDDLE, Strategy.SIDE_RIGHT]
+    def set_kickoff_strategy(
+        self, strategy: Literal[Strategy.SIDE_LEFT, Strategy.SIDE_MIDDLE, Strategy.SIDE_RIGHT]
+    ) -> None:
         self.strategy.offensive_side = strategy
         self.strategy_update = self._node.get_clock().now().nanoseconds / 1e9
 
@@ -209,14 +209,14 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
         # Save team data
         self.team_data[msg.robot_id] = msg
 
-    def publish_strategy(self):
+    def publish_strategy(self) -> None:
         """Publish for team comm"""
         self.strategy_sender.publish(self.strategy)
 
     def publish_time_to_ball(self):
         self.time_to_ball_publisher.publish(Float32(data=self.own_time_to_ball))
 
-    def teammate_ball_is_valid(self):
+    def teammate_ball_is_valid(self) -> bool:
         """Returns true if a teammate has seen the ball accurately enough"""
         return self.get_teammate_ball() is not None
 

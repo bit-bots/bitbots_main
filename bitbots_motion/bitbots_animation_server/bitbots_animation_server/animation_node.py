@@ -288,7 +288,7 @@ class AnimationNode(Node):
                 sys.exit(0)
         return finish(successful=False)
 
-    def update_current_pose(self, msg) -> None:
+    def update_current_pose(self, msg: JointState) -> None:
         """Gets the current motor positions and updates the representing pose accordingly."""
         self.current_joint_states = msg
 

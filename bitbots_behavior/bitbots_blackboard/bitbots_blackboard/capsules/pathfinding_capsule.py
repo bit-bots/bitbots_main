@@ -15,7 +15,7 @@ from bitbots_blackboard.capsules import AbstractBlackboardCapsule
 
 
 # Type of pathfinding goal relative to the ball
-class BallGoalType(Enum):
+class BallGoalType(str, Enum):
     GRADIENT = "gradient"
     MAP = "map"
     CLOSE = "close"
@@ -41,7 +41,7 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
             self._node, "bitbots_path_planning", ["controller.orient_to_goal_distance"]
         )["controller.orient_to_goal_distance"]
 
-    def publish(self, msg: PoseStamped):
+    def publish(self, msg: PoseStamped) -> None:
         """
         Sends a goal to the pathfinding.
         """
@@ -54,7 +54,7 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
         """
         return self.goal
 
-    def cancel_goal(self):
+    def cancel_goal(self) -> None:
         """
         This function cancels the current goal of the pathfinding,
         which will stop sending cmd_vel messages to the walking.
@@ -62,7 +62,7 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
         """
         self.pathfinding_cancel_pub.publish(Empty())
 
-    def cmd_vel_cb(self, msg: Twist):
+    def cmd_vel_cb(self, msg: Twist) -> None:
         self.current_cmd_vel = msg
 
     def get_current_cmd_vel(self) -> Twist:
@@ -73,7 +73,7 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
         """
         return self.current_cmd_vel
 
-    def stop_walk(self):
+    def stop_walk(self) -> None:
         """
         This function stops the walking. It does not cancel the current goal of the
         pathfinding and the walking will start again if the pathfinding sends a new message.
@@ -86,7 +86,7 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
         # Publish the stop command
         self.direct_cmd_vel_pub.publish(msg)
 
-    def calculate_time_to_ball(self):
+    def calculate_time_to_ball(self) -> None:
         """
         Calculates the time to ball and saves it in the team data capsule.
         """

@@ -53,7 +53,7 @@ class CostmapCapsule(AbstractBlackboardCapsule):
         self.calc_base_costmap()
         self.calc_gradients()
 
-    def robot_callback(self, msg: RobotArray):
+    def robot_callback(self, msg: RobotArray) -> None:
         """
         Callback with new robot detections
         """
@@ -77,7 +77,7 @@ class CostmapCapsule(AbstractBlackboardCapsule):
         # Publish debug costmap
         self.publish_costmap()
 
-    def publish_costmap(self):
+    def publish_costmap(self) -> None:
         """
         Publishes the costmap for rviz
         """
@@ -153,7 +153,7 @@ class CostmapCapsule(AbstractBlackboardCapsule):
         )
         return idx_x, idx_y
 
-    def calc_gradients(self):
+    def calc_gradients(self) -> None:
         """
         Recalculates the gradient map based on the current costmap.
         """
@@ -186,7 +186,7 @@ class CostmapCapsule(AbstractBlackboardCapsule):
 
         return self.get_cost_at_field_position(point.point.x, point.point.y)
 
-    def calc_base_costmap(self):
+    def calc_base_costmap(self) -> None:
         """
         Builds the base costmap based on the behavior parameters.
         This costmap includes a gradient towards the enemy goal and high costs outside the playable area
@@ -299,7 +299,7 @@ class CostmapCapsule(AbstractBlackboardCapsule):
         idx_x, idx_y = self.field_2_costmap_coord(x, y)
         return self.costmap[idx_x, idx_y]
 
-    def get_gradient_direction_at_field_position(self, x: float, y: float):
+    def get_gradient_direction_at_field_position(self, x: float, y: float) -> float:
         """
         Returns the gradient direction at the given position
         :param x: Field coordinate in the x direction
@@ -318,7 +318,9 @@ class CostmapCapsule(AbstractBlackboardCapsule):
         grad = self.get_gradient_at_field_position(x, y)
         return math.atan2(grad[1], grad[0])
 
-    def get_cost_of_kick_relative(self, x: float, y: float, direction: float, kick_length: float, angular_range: float):
+    def get_cost_of_kick_relative(
+        self, x: float, y: float, direction: float, kick_length: float, angular_range: float
+    ) -> float:
         """
         Returns the cost of a kick at the given position and direction in base footprint frame
         :param x: Field coordinate in the x direction
@@ -386,7 +388,7 @@ class CostmapCapsule(AbstractBlackboardCapsule):
         # This should contribute way less than the max and should have an impact if the max values are similar in all directions.
         return masked_costmap.max() * 0.75 + masked_costmap.min() * 0.25
 
-    def get_current_cost_of_kick(self, direction: float, kick_length: float, angular_range: float):
+    def get_current_cost_of_kick(self, direction: float, kick_length: float, angular_range: float) -> float:
         """
         Returns the cost of the kick at the current position
         :param direction: The direction of the kick
