@@ -20,8 +20,8 @@ soccer_ipm:
     robots:
       footpoint_out_of_image_threshold: 0.8
       object_default_dimensions:
-        x: 0.3
-        y: 0.3
+        x: 0.5
+        y: 0.5
         z: 1.0
 
     output_frame: 'base_footprint'
