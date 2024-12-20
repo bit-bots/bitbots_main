@@ -107,7 +107,7 @@ class LocalizationBlackboard:
         mean_long = np.mean(buffer_long[..., 2])
         absolute_diff = abs(mean_long - mean)
 
-        return absolute_diff > 1.0
+        return bool(absolute_diff > 1.0)
 
     def get_imu_yaw(self) -> float:
         """Returns the current yaw of the IMU (this is not an absolute measurement!!! It drifts over time!)"""

@@ -2,6 +2,7 @@ from unittest.mock import Mock
 
 import numpy
 import pytest
+from builtin_interfaces.msg import Time
 from game_controller_hl_interfaces.msg import GameState
 from geometry_msgs.msg import (
     Point,
@@ -14,7 +15,6 @@ from geometry_msgs.msg import (
     Twist,
     Vector3,
 )
-from rclpy.time import Time
 from soccer_vision_3d_msgs.msg import Robot, RobotArray
 from soccer_vision_attribute_msgs.msg import Confidence
 from soccer_vision_attribute_msgs.msg import Robot as RobotAttributes

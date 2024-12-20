@@ -16,7 +16,7 @@ G = 9.81
 class SupervisorController:
     def __init__(
         self,
-        ros_node: Node = None,
+        ros_node: RclpyNode = None,
         ros_active=False,
         mode="normal",
         base_ns="/",

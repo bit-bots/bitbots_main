@@ -171,38 +171,38 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
     # Goal #
     ########
 
-    def get_map_based_opp_goal_center_uv(self):
+    def get_map_based_opp_goal_center_uv(self) -> Tuple[float, float]:
         x, y = self.get_map_based_opp_goal_center_xy()
         return self.get_uv_from_xy(x, y)
 
-    def get_map_based_opp_goal_center_xy(self):
+    def get_map_based_opp_goal_center_xy(self) -> Tuple[float, float]:
         return self.field_length / 2, 0.0
 
-    def get_map_based_own_goal_center_uv(self):
+    def get_map_based_own_goal_center_uv(self) -> Tuple[float, float]:
         x, y = self.get_map_based_own_goal_center_xy()
         return self.get_uv_from_xy(x, y)
 
-    def get_map_based_own_goal_center_xy(self):
+    def get_map_based_own_goal_center_xy(self) -> Tuple[float, float]:
         return -self.field_length / 2, 0.0
 
-    def get_map_based_opp_goal_angle_from_ball(self):
+    def get_map_based_opp_goal_angle_from_ball(self) -> float:
         ball_x, ball_y = self.get_ball_position_xy()
         goal_x, goal_y = self.get_map_based_opp_goal_center_xy()
         return math.atan2(goal_y - ball_y, goal_x - ball_x)
 
-    def get_map_based_opp_goal_distance(self):
+    def get_map_based_opp_goal_distance(self) -> float:
         x, y = self.get_map_based_opp_goal_center_xy()
         return self.get_distance_to_xy(x, y)
 
-    def get_map_based_opp_goal_angle(self):
+    def get_map_based_opp_goal_angle(self) -> float:
         x, y = self.get_map_based_opp_goal_center_uv()
         return math.atan2(y, x)
 
-    def get_map_based_opp_goal_left_post_uv(self):
+    def get_map_based_opp_goal_left_post_uv(self) -> Tuple[float, float]:
         x, y = self.get_map_based_opp_goal_center_xy()
         return self.get_uv_from_xy(x, y - self.goal_width / 2)
 
-    def get_map_based_opp_goal_right_post_uv(self):
+    def get_map_based_opp_goal_right_post_uv(self) -> Tuple[float, float]:
         x, y = self.get_map_based_opp_goal_center_xy()
         return self.get_uv_from_xy(x, y + self.goal_width / 2)
 
@@ -251,7 +251,7 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
     # Common #
     ##########
 
-    def get_uv_from_xy(self, x, y) -> Tuple[float, float]:
+    def get_uv_from_xy(self, x: float, y: float) -> Tuple[float, float]:
         """Returns the relativ positions of the robot to this absolute position"""
         current_position = self.get_current_position()
         x2 = x - current_position[0]
@@ -261,14 +261,14 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
         v = math.cos(theta) * y2 - math.sin(theta) * x2
         return u, v
 
-    def get_xy_from_uv(self, u, v):
+    def get_xy_from_uv(self, u: float, v: float) -> Tuple[float, float]:
         """Returns the absolute position from the given relative position to the robot"""
         pos_x, pos_y, theta = self.get_current_position()
         angle = math.atan2(v, u) + theta
         hypotenuse = math.hypot(u, v)
         return pos_x + math.sin(angle) * hypotenuse, pos_y + math.cos(angle) * hypotenuse
 
-    def get_distance_to_xy(self, x, y):
+    def get_distance_to_xy(self, x: float, y: float) -> float:
         """Returns distance from robot to given position"""
         u, v = self.get_uv_from_xy(x, y)
         dist = math.hypot(u, v)

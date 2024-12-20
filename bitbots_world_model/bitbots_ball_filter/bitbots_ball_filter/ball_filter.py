@@ -1,5 +1,5 @@
 #! /usr/bin/env python3
-from typing import Optional, Tuple
+from typing import Optional
 
 import numpy as np
 import rclpy
@@ -81,7 +81,7 @@ class BallFilter(Node):
         self.ball_state_position = np.zeros(3)
         self.ball_state_covariance = np.eye(3) * 1000
 
-    def reset_filter_cb(self, req, response) -> Tuple[bool, str]:
+    def reset_filter_cb(self, _: Trigger.Request, response: Trigger.Response) -> Trigger.Response:
         self.logger.info("Resetting bitbots ball filter...")
         self.reset_ball()
         response.success = True
@@ -224,8 +224,8 @@ class BallFilter(Node):
         # Make sure that the transformed pixel is on the sensor and not too close to the border
         border_fraction = self.config.filter.covariance.negative_observation.ignore_border
         border_px = np.array([self.camera_info.width, self.camera_info.height]) / 2 * border_fraction
-        in_fov_horizontal = border_px[0] < pixel[0] <= self.camera_info.width - border_px[0]
-        in_fov_vertical = border_px[1] < pixel[1] <= self.camera_info.height - border_px[1]
+        in_fov_horizontal = bool(border_px[0] < pixel[0] <= self.camera_info.width - border_px[0])
+        in_fov_vertical = bool(border_px[1] < pixel[1] <= self.camera_info.height - border_px[1])
         return in_fov_horizontal and in_fov_vertical
 
     def filter_step(self) -> None:

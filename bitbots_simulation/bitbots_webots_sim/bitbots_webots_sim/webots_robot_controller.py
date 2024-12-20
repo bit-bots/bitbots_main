@@ -2,7 +2,7 @@ import math
 import os
 import time
 
-from controller import Node, Robot
+from controller import Robot
 from geometry_msgs.msg import PointStamped
 from rclpy.node import Node as RclpyNode
 from rclpy.time import Time
@@ -16,7 +16,7 @@ CAMERA_DIVIDER = 8  # every nth timestep an image is published, this is n
 class RobotController:
     def __init__(
         self,
-        ros_node: Node = None,
+        ros_node: RclpyNode = None,
         ros_active=False,
         robot="wolfgang",
         robot_node=None,

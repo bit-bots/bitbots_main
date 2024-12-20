@@ -131,7 +131,7 @@ def test_step_cmd_vel_smoothing(snapshot, node, tf2_buffer, config, pose_opponen
     assert str(controller.last_cmd_vel) == snapshot
 
 
-def setup_controller(node: Node, buffer: tf2.Buffer) -> Controller:
+def setup_controller(node: Node, buffer: tf2.BufferInterface) -> Controller:
     return Controller(node, buffer)
 
 

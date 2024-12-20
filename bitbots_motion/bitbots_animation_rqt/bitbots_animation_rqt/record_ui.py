@@ -314,7 +314,7 @@ class RecordUI(Plugin):
         self._widget.frameList.key_pressed.connect(self.delete)
         self._widget.frameList.itemSelectionChanged.connect(self.frame_select)
 
-    def play_walkready(self) -> None:
+    def play_walkready(self, _) -> None:
         """
         Plays the walkready animation on the robot
         """
@@ -401,7 +401,7 @@ class RecordUI(Plugin):
         else:
             self._widget.statusBar.showMessage("There is nothing to save!")
 
-    def open(self) -> None:
+    def open(self, _) -> None:
         """
         Deletes all current frames and instead loads an animation from a json file
         """
@@ -664,10 +664,15 @@ class RecordUI(Plugin):
                 current_keyframe_goals = self._recorder.get_keyframe(self._selected_frame)["goals"]
 
                 for motor_name, text_field in self._motor_controller_text_fields.items():
-                    # Get the angle from the textfield
-                    angle = text_field.value()
-                    # compare with angles in current keyframe
-                    if not current_keyframe_goals[motor_name] == math.radians(angle):
+                    # Check if the motor active state has changed
+                    currently_active = (
+                        self._motor_switcher_active_checkbox[motor_name].checkState(0) == Qt.CheckState.Checked
+                    )
+                    active_in_current_keyframe = motor_name in current_keyframe_goals
+                    motor_active_changed = currently_active != active_in_current_keyframe
+                    # Check if the motor goal has changed
+                    motor_goal_changed = current_keyframe_goals.get(motor_name, 0) != math.radians(text_field.value())
+                    if motor_active_changed or motor_goal_changed:
                         unrecorded_changes.append(motor_name)
 
                 # warn user about unrecorded changes
@@ -678,6 +683,10 @@ class RecordUI(Plugin):
                     sure = QMessageBox.question(self._widget, "Sure?", message, QMessageBox.Yes | QMessageBox.No)
                     # Cancel the open if the user does not want to discard the changes
                     if sure == QMessageBox.No:
+                        # Update the UI to reselect the current frame (blocking signals to avoid infinite loop)
+                        self._widget.frameList.blockSignals(True)
+                        self._widget.frameList.setCurrentRow(self._recorder.get_keyframe_index(self._selected_frame))
+                        self._widget.frameList.blockSignals(False)
                         return
                 # Update state so we have a new selected frame
                 self._selected_frame = selected_frame_name

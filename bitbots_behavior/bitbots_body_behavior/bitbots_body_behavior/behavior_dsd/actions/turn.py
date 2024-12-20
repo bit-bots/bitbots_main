@@ -59,7 +59,7 @@ class Turn(AbstractActionElement):
         self.max_speed = parameters.get("max_speed", 0.4)
 
         # Check if the have a duration
-        self.duration: Optional[float] = parameters.get("duration", None)
+        self.duration: Optional[float] = float(parameters.get("duration", None))
         self.start_time = self.blackboard.node.get_clock().now()
 
     def perform(self, reevaluate=False):

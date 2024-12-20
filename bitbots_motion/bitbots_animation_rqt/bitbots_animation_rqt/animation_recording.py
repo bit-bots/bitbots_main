@@ -26,9 +26,9 @@ class AnimationData:
         self.key_frames: list[dict] = []
         self.author: str = "Unknown"
         self.description: str = "Edit me!"
-        self.last_edited: datetime = datetime.now().isoformat(" ")
+        self.last_edited: str = datetime.now().isoformat(" ")
         self.name: str = "None yet"
-        self.version: int = 0
+        self.version: str = "0"
 
 
 class Recorder:
@@ -79,14 +79,14 @@ class Recorder:
             return None
         return self.get_keyframes().index(key_frame)
 
-    def get_meta_data(self) -> tuple[str, int, str, str]:
+    def get_meta_data(self) -> tuple[str, str, str, str]:
         """
         Returns the meta data of the current animation
         """
         data = self.current_state
         return data.name, data.version, data.author, data.description
 
-    def set_meta_data(self, name: str, version: int, author: str, description: str) -> None:
+    def set_meta_data(self, name: str, version: str, author: str, description: str) -> None:
         self.current_state.name = name
         self.current_state.version = version
         self.current_state.author = author
@@ -174,7 +174,7 @@ class Recorder:
             self.save_step(f"Overriding keyframe at position {seq_pos} with '{frame_name}'", frozen=frozen)
         return True
 
-    def save_animation(self, path: str, file_name: Optional[str] = None) -> None:
+    def save_animation(self, path: str, file_name: Optional[str] = None) -> str:
         """Dumps all keyframe data to an animation .json file
 
         :param path: The folder where the file should be saved
@@ -233,7 +233,7 @@ class Recorder:
         # Set the current state to the loaded animation
         self.current_state.key_frames = data["keyframes"]
         self.current_state.name = data["name"]
-        self.current_state.version = data["version"] if "version" in data else 0
+        self.current_state.version = data["version"] if "version" in data else "0"
         self.current_state.last_edited = data["last_edited"] if "last_edited" in data else datetime.now().isoformat(" ")
         self.current_state.author = data["author"] if "author" in data else "Unknown"
         self.current_state.description = data["description"] if "description" in data else ""

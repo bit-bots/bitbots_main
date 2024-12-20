@@ -13,7 +13,7 @@ from bitbots_blackboard.capsules.world_model_capsule import WorldModelCapsule
 
 
 class BodyBlackboard:
-    def __init__(self, node: Node, tf_buffer: tf2.Buffer):
+    def __init__(self, node: Node, tf_buffer: tf2.BufferInterface):
         # References
         self.node = node
         self.tf_buffer = tf_buffer

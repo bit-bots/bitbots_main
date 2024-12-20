@@ -27,7 +27,7 @@ from bitbots_msgs.msg import JointCommand
 from bitbots_msgs.srv import AddAnimation
 
 # A hashable definition for the UUID of the goals
-UUID = tuple[int]
+UUID = tuple[np.uint8, ...]
 
 
 class AnimationNode(Node):
@@ -288,7 +288,7 @@ class AnimationNode(Node):
                 sys.exit(0)
         return finish(successful=False)
 
-    def update_current_pose(self, msg) -> None:
+    def update_current_pose(self, msg: JointState) -> None:
         """Gets the current motor positions and updates the representing pose accordingly."""
         self.current_joint_states = msg
 

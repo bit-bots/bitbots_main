@@ -15,7 +15,7 @@ class Map:
     Costmap that keeps track of obstacles like the ball or other robots.
     """
 
-    def __init__(self, node: Node, buffer: tf2.Buffer) -> None:
+    def __init__(self, node: Node, buffer: tf2.BufferInterface) -> None:
         self.node = node
         self.buffer = buffer
         self.resolution: int = self.node.config.map.resolution
