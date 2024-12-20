@@ -27,7 +27,7 @@ from bitbots_msgs.msg import JointCommand
 from bitbots_msgs.srv import AddAnimation
 
 # A hashable definition for the UUID of the goals
-UUID = tuple[int]
+UUID = tuple[np.uint8, ...]
 
 
 class AnimationNode(Node):

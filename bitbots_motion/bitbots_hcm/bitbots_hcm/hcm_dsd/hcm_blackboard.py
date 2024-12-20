@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Literal, Optional
 
 import numpy
 from bitbots_utils.utils import get_parameters_from_other_node_sync
@@ -22,7 +22,23 @@ class HcmBlackboard:
         self.node = node
 
         # Basic state
-        self.current_state: RobotControlState = RobotControlState.STARTUP
+        self.current_state: Literal[
+            RobotControlState.CONTROLLABLE,
+            RobotControlState.FALLING,
+            RobotControlState.FALLEN,
+            RobotControlState.GETTING_UP,
+            RobotControlState.ANIMATION_RUNNING,
+            RobotControlState.STARTUP,
+            RobotControlState.SHUTDOWN,
+            RobotControlState.PENALTY,
+            RobotControlState.RECORD,
+            RobotControlState.WALKING,
+            RobotControlState.MOTOR_OFF,
+            RobotControlState.HCM_OFF,
+            RobotControlState.HARDWARE_PROBLEM,
+            RobotControlState.PICKED_UP,
+            RobotControlState.KICKING
+        ] = RobotControlState.STARTUP
         self.stopped: bool = False
 
         # Save start time

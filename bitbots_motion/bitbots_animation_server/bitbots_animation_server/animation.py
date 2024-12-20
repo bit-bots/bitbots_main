@@ -44,9 +44,9 @@ def parse(info: dict) -> Animation:
     This method is parsing an animation from a :class:`dict`
     instance *info*, as created by :func:`as_dict`.
     """
-    anim = Animation(info["name"], ())
+    anim = Animation(info["name"], [])
 
-    keyframes = info.get("keyframes", ())
+    keyframes = info.get("keyframes", [])
     anim.keyframes = [
         Keyframe(
             k.get("goals", {}),

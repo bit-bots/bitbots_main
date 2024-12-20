@@ -37,15 +37,12 @@ class HardwareControlManager:
         parameter_msgs: list(ParameterMsg) = get_parameters_from_ros_yaml(
             node_name, f"{get_package_share_directory('bitbots_hcm')}/config/hcm_wolfgang.yaml", use_wildcard=True
         )
-        parameters = []
-        for parameter_msg in parameter_msgs:
-            parameters.append(Parameter.from_parameter_msg(parameter_msg))
-        if use_sim_time:
-            parameters.append(Parameter("use_sim_time", type_=Parameter.Type.BOOL, value=True))
-        if simulation_active:
-            parameters.append(Parameter("simulation_active", type_=Parameter.Type.BOOL, value=True))
-        if visualization_active:
-            parameters.append(Parameter("visualization_active", type_=Parameter.Type.BOOL, value=True))
+        parameters = [
+            Parameter("use_sim_time", type_=Parameter.Type.BOOL, value=use_sim_time),
+            Parameter("simulation_active", type_=Parameter.Type.BOOL, value=simulation_active),
+            Parameter("visualization_active", type_=Parameter.Type.BOOL, value=visualization_active)
+        ]
+        parameters.extend(map(Parameter.from_parameter_msg, parameter_msgs))
 
         # Create Python node
         self.node = Node(
