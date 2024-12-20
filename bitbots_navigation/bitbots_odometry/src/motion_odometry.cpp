@@ -79,8 +79,12 @@ void MotionOdometry::loop() {
         x = x * config_.x_backward_scaling;
       }
       double y = previous_to_current_support.getOrigin().y() * config_.y_scaling;
+      double yaw = tf2::getYaw(previous_to_current_support.getRotation()) * config_.yaw_scaling;
       previous_to_current_support.setOrigin({x, y, 0});
-      previous_to_current_support.setRotation(tf2::Quaternion(0, 0, 0, 1));
+
+      tf2::Quaternion q;
+      q.setRPY(0, 0, yaw);
+      previous_to_current_support.setRotation(q);
 
       odometry_to_support_foot_ = odometry_to_support_foot_ * previous_to_current_support;
 
@@ -103,8 +107,8 @@ void MotionOdometry::loop() {
   try {
     geometry_msgs::msg::TransformStamped current_support_to_base_msg =
         tf_buffer_.lookupTransform(previous_support_link_, base_link_frame_, rclcpp::Time(0, 0, RCL_ROS_TIME));
-    geometry_msgs::msg::TransformStamped imu_to_base_msg =
-        tf_buffer_.lookupTransform(imu_frame_, base_link_frame_, rclcpp::Time(0, 0, RCL_ROS_TIME));
+    geometry_msgs::msg::TransformStamped imu_to_previous_support_msg =
+        tf_buffer_.lookupTransform(previous_support_link_, imu_frame_, rclcpp::Time(0, 0, RCL_ROS_TIME));
 
     tf2::Transform current_support_to_base;
     tf2::fromMsg(current_support_to_base_msg.transform, current_support_to_base);
@@ -115,16 +119,22 @@ void MotionOdometry::loop() {
       x = x * config_.x_backward_scaling;
     }
     double y = current_support_to_base.getOrigin().y() * config_.y_scaling;
-
-    tf2::Quaternion q;
-    tf2::Transform imu_to_base;
-    fromMsg(imu_to_base_msg.transform, imu_to_base);
-    q = current_imu_orientation_ * initial_imu_transform_ * imu_to_base.getRotation();
-
+    double yaw = tf2::getYaw(current_support_to_base.getRotation()) * config_.yaw_scaling;
     current_support_to_base.setOrigin({x, y, current_support_to_base.getOrigin().z()});
+    tf2::Quaternion q;
+    q.setRPY(0, 0, yaw);
     current_support_to_base.setRotation(q);
 
-    tf2::Transform odom_to_base_link = odometry_to_support_foot_ * current_support_to_base;
+    tf2::Quaternion imu_rotation;
+    tf2::Transform imu_to_previous_support;
+    fromMsg(imu_to_previous_support_msg.transform, imu_to_previous_support);
+
+    imu_rotation = current_imu_orientation_ * imu_to_previous_support.getRotation();  // * initial_imu_transform_ *
+
+    tf2::Transform odometry_to_support_foot_with_imu_yaw = odometry_to_support_foot_;
+    odometry_to_support_foot_with_imu_yaw.setRotation(imu_rotation);
+
+    tf2::Transform odom_to_base_link = odometry_to_support_foot_with_imu_yaw * current_support_to_base;
     geometry_msgs::msg::TransformStamped odom_to_base_link_msg = geometry_msgs::msg::TransformStamped();
     odom_to_base_link_msg.transform = tf2::toMsg(odom_to_base_link);
     odom_to_base_link_msg.header.stamp = current_support_to_base_msg.header.stamp;
