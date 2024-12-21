@@ -2,7 +2,7 @@ from typing import Literal, TypeAlias
 
 from bitbots_msgs.msg import RobotControlState
 
-T_RobotControlState: TypeAlias = Literal[
+T_RobotControlState: TypeAlias = Literal[  # type: ignore[valid-type]
     RobotControlState.CONTROLLABLE,
     RobotControlState.FALLING,
     RobotControlState.FALLEN,

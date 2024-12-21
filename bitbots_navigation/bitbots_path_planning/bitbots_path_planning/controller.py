@@ -4,11 +4,12 @@ from typing import Optional
 import tf2_ros as tf2
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Path
-from rclpy.node import Node
 from rclpy.time import Time
 from ros2_numpy import numpify
 from tf2_geometry_msgs import PointStamped, Pose, PoseStamped
 from tf_transformations import euler_from_quaternion
+
+from bitbots_path_planning import NodeWithConfig
 
 
 class Controller:
@@ -16,7 +17,7 @@ class Controller:
     A simple follow the carrot controller which controls the robots command velocity to stay on a given path.
     """
 
-    def __init__(self, node: Node, buffer: tf2.BufferInterface) -> None:
+    def __init__(self, node: NodeWithConfig, buffer: tf2.BufferInterface) -> None:
         self.node = node
         self.buffer = buffer
 
@@ -27,7 +28,7 @@ class Controller:
         self.last_update_time: Optional[Time] = None
 
         # Accumulator for the angular error
-        self.angular_error_accumulator = 0
+        self.angular_error_accumulator = 0.0
 
     def step(self, path: Path) -> tuple[Twist, PointStamped]:
         """
@@ -52,10 +53,9 @@ class Controller:
         # End conditions with an empty or shorter than carrot distance path need to be considered
         if len(path.poses) > 0:
             end_pose: Pose = path.poses[-1].pose
+            goal_pose: Pose = end_pose
             if len(path.poses) > self.node.config.controller.carrot_distance:
-                goal_pose: Pose = path.poses[self.node.config.controller.carrot_distance].pose
-            else:
-                goal_pose: Pose = end_pose
+                goal_pose = path.poses[self.node.config.controller.carrot_distance].pose
         else:
             return cmd_vel
 
@@ -91,7 +91,7 @@ class Controller:
 
         # Check if we are so close to the final position of the global plan that we want to align us with
         # its orientation and not the heading towards its position
-        diff = 0
+        diff = 0.0
         if distance > self.node.config.controller.orient_to_goal_distance:
             # Calculate the difference between our current heading and the heading towards the final position of
             # the global plan

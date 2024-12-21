@@ -97,7 +97,12 @@ class YOEOHandlerTemplate(IYOEOHandler):
     """
 
     def __init__(
-        self, config: dict, det_class_names: list[str], det_robot_class_ids: list[int], seg_class_names: list[str]
+        self,
+        config: dict,
+        model_directory: str,
+        det_class_names: list[str],
+        det_robot_class_ids: list[int],
+        seg_class_names: list[str],
     ):
         logger.debug("Entering YOEOHandlerTemplate constructor")
 
@@ -149,7 +154,7 @@ class YOEOHandlerTemplate(IYOEOHandler):
     def predict(self) -> None:
         if self._prediction_has_to_be_updated():
             logger.debug("Computing new prediction...")
-
+            assert self._image is not None, "No image set"
             detections, segmentation = self._compute_new_prediction_for(self._image)
             self._create_detection_candidate_lists_from(detections)
             self._create_segmentation_masks_based_on(segmentation)
@@ -161,7 +166,7 @@ class YOEOHandlerTemplate(IYOEOHandler):
 
     def _create_detection_candidate_lists_from(self, detections: np.ndarray) -> None:
         for detection in detections:
-            c = Candidate.from_x1y1x2y2(*detection[0:4].astype(int), detection[4].astype(float))
+            c = Candidate.from_x1y1x2y2(*detection[0:4].astype(int), detection[4].astype(float))  # type: ignore[call-arg]
             self._det_candidates[self._det_class_names[int(detection[5])]].append(c)
 
     def _create_segmentation_masks_based_on(self, segmentation) -> None:
@@ -215,7 +220,7 @@ class YOEOHandlerONNX(YOEOHandlerTemplate):
         det_robot_class_ids: list[int],
         seg_class_names: list[str],
     ):
-        super().__init__(config, det_class_names, det_robot_class_ids, seg_class_names)
+        super().__init__(config, model_directory, det_class_names, det_robot_class_ids, seg_class_names)
 
         logger.debug(f"Entering {self.__class__.__name__} constructor")
 
@@ -288,7 +293,7 @@ class YOEOHandlerOpenVino(YOEOHandlerTemplate):
         det_robot_class_ids: list[int],
         seg_class_names: list[str],
     ):
-        super().__init__(config, det_class_names, det_robot_class_ids, seg_class_names)
+        super().__init__(config, model_directory, det_class_names, det_robot_class_ids, seg_class_names)
 
         logger.debug(f"Entering {self.__class__.__name__} constructor")
 
@@ -376,7 +381,7 @@ class YOEOHandlerPytorch(YOEOHandlerTemplate):
         det_robot_class_ids: list[int],
         seg_class_names: list[str],
     ):
-        super().__init__(config, det_class_names, det_robot_class_ids, seg_class_names)
+        super().__init__(config, model_directory, det_class_names, det_robot_class_ids, seg_class_names)
 
         logger.debug(f"Entering {self.__class__.__name__} constructor")
 
@@ -450,7 +455,7 @@ class YOEOHandlerTVM(YOEOHandlerTemplate):
         det_robot_class_ids: list[int],
         seg_class_names: list[str],
     ):
-        super().__init__(config, det_class_names, det_robot_class_ids, seg_class_names)
+        super().__init__(config, model_directory, det_class_names, det_robot_class_ids, seg_class_names)
 
         logger.debug(f"Entering {self.__class__.__name__} constructor")
 

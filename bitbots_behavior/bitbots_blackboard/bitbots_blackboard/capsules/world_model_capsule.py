@@ -1,5 +1,5 @@
 import math
-from typing import Optional, Tuple
+from typing import Tuple
 
 import numpy as np
 import tf2_ros as tf2
@@ -20,6 +20,18 @@ from tf2_geometry_msgs import Point, PointStamped
 from tf_transformations import euler_from_quaternion
 
 from bitbots_blackboard.capsules import AbstractBlackboardCapsule
+
+
+class WorldModelTFError(Exception):
+    ...
+
+
+class WorldModelPositionTFError(WorldModelTFError):
+    ...
+
+
+class WorldModelBallTFError(WorldModelTFError):
+    ...
 
 
 class WorldModelCapsule(AbstractBlackboardCapsule):
@@ -118,7 +130,7 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
         except tf2.ExtrapolationException as e:
             self._node.get_logger().warn(str(e))
             self._node.get_logger().error("Severe transformation problem concerning the ball!")
-            return None
+            raise WorldModelBallTFError("Could not transform ball to base_footprint frame") from e
         return ball_bfp.x, ball_bfp.y
 
     def get_ball_distance(self) -> float:
@@ -210,23 +222,21 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
     # Pose #
     ########
 
-    def get_current_position(self) -> Optional[Tuple[float, float, float]]:
+    def get_current_position(self) -> Tuple[float, float, float]:
         """
         Returns the current position on the field as determined by the localization.
         0,0,0 is the center of the field looking in the direction of the opponent goal.
         :returns x,y,theta:
         """
-        if not (transform := self.get_current_position_transform()):
-            return None
+        transform = self.get_current_position_transform()
         theta = euler_from_quaternion(numpify(transform.transform.rotation))[2]
         return transform.transform.translation.x, transform.transform.translation.y, theta
 
-    def get_current_position_pose_stamped(self) -> Optional[PoseStamped]:
+    def get_current_position_pose_stamped(self) -> PoseStamped:
         """
         Returns the current position as determined by the localization as a PoseStamped
         """
-        if not (transform := self.get_current_position_transform()):
-            return None
+        transform = self.get_current_position_transform()
         return PoseStamped(
             header=transform.header,
             pose=Pose(
@@ -245,7 +255,7 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
             )
         except (tf2.LookupException, tf2.ConnectivityException, tf2.ExtrapolationException) as e:
             self._node.get_logger().warn(str(e))
-            return None
+            raise WorldModelPositionTFError("Could not get current position transform") from e
 
     ##########
     # Common #

@@ -122,12 +122,12 @@ class BallFilter(Node):
                     diff = numpify(ball_transform.point) - self.ball_state_position
                     if abs(diff[0]) < ignore_threshold_x and abs(diff[1]) < ignore_threshold_y:
                         # Store the ball relative to the robot, the ball in the filter frame and the distance to the filter estimate
-                        filtered_balls.append((ball, ball_transform, np.linalg.norm(diff)))
+                        filtered_balls.append((ball, ball_transform, float(np.linalg.norm(diff))))
 
             # Select the ball with closest distance to the filter estimate
             ball_msg, ball_measurement_map, _ = min(filtered_balls, key=lambda x: x[2], default=(None, None, 0))
             # Only update the measurement if we have a ball that is close enough to the filter's estimate
-            if ball_measurement_map is not None:
+            if ball_measurement_map is not None and ball_msg is not None:
                 # Estimate the covariance of the measurement
                 # Calculate the distance from the robot to the ball
                 distance = np.linalg.norm(numpify(ball_msg.center))
@@ -179,6 +179,7 @@ class BallFilter(Node):
             return self.tf_buffer.transform(point_stamped, frame, timeout=Duration(nanoseconds=int(timeout * (10**9))))
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
             self.logger.warning(str(e))
+            return None
 
     def update_params(self) -> None:
         """

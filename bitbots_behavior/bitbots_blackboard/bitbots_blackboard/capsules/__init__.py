@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from bitbots_utils.utils import nobeartype
 from rclpy.node import Node
@@ -11,6 +11,6 @@ class AbstractBlackboardCapsule:
     """Abstract class for blackboard capsules."""
 
     @nobeartype
-    def __init__(self, node: Node, blackboard: Optional["BodyBlackboard"] = None):
+    def __init__(self, node: Node, blackboard: "BodyBlackboard"):
         self._node = node
         self._blackboard = blackboard

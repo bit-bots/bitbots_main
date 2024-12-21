@@ -81,6 +81,7 @@ class CostmapCapsule(AbstractBlackboardCapsule):
         """
         Publishes the costmap for rviz
         """
+        assert self.costmap is not None, "Costmap is not initialized"
         # Normalize costmap to match the rviz color scheme in a good way
         normalized_costmap = (
             (255 - ((self.costmap - np.min(self.costmap)) / (np.max(self.costmap) - np.min(self.costmap))) * 255 / 2.1)
@@ -157,6 +158,7 @@ class CostmapCapsule(AbstractBlackboardCapsule):
         """
         Recalculates the gradient map based on the current costmap.
         """
+        assert self.base_costmap is not None, "Base costmap is not initialized"
         gradient = np.gradient(self.base_costmap)
         norms = np.linalg.norm(gradient, axis=0)
 
@@ -203,8 +205,8 @@ class CostmapCapsule(AbstractBlackboardCapsule):
 
         # Create Grid
         grid_x, grid_y = np.mgrid[
-            0 : self.field_length + self.map_margin * 2 : (self.field_length + self.map_margin * 2) * 10j,
-            0 : self.field_width + self.map_margin * 2 : (self.field_width + self.map_margin * 2) * 10j,
+            0 : self.field_length + self.map_margin * 2 : (self.field_length + self.map_margin * 2) * 10j,  # type: ignore[misc]
+            0 : self.field_width + self.map_margin * 2 : (self.field_width + self.map_margin * 2) * 10j,  # type: ignore[misc]
         ]
 
         fix_points: List[Tuple[Tuple[float, float], float]] = []
@@ -278,7 +280,8 @@ class CostmapCapsule(AbstractBlackboardCapsule):
         )
 
         # Smooth the costmap to get more continuous gradients
-        self.base_costmap = gaussian_filter(interpolated, self.body_config["base_costmap_smoothing_sigma"])
+        base_costmap: np.ndarray = gaussian_filter(interpolated, self.body_config["base_costmap_smoothing_sigma"])
+        self.base_costmap = base_costmap
         self.costmap = self.base_costmap.copy()
 
     def get_gradient_at_field_position(self, x: float, y: float) -> Tuple[float, float]:
@@ -287,6 +290,7 @@ class CostmapCapsule(AbstractBlackboardCapsule):
         :param x: Field coordinate in the x direction
         :param y: Field coordinate in the y direction
         """
+        assert self.gradient_map is not None, "Gradient map is not initialized"
         idx_x, idx_y = self.field_2_costmap_coord(x, y)
         return -self.gradient_map[0][idx_x, idx_y], -self.gradient_map[1][idx_x, idx_y]
 
@@ -296,6 +300,7 @@ class CostmapCapsule(AbstractBlackboardCapsule):
         :param x: Field coordinate in the x direction
         :param y: Field coordinate in the y direction
         """
+        assert self.costmap is not None, "Costmap is not initialized"
         idx_x, idx_y = self.field_2_costmap_coord(x, y)
         return self.costmap[idx_x, idx_y]
 
@@ -358,6 +363,7 @@ class CostmapCapsule(AbstractBlackboardCapsule):
         :param kick_length: The length of the kick
         :param angular_range: The angular range of the kick
         """
+        assert self.costmap is not None, "Costmap is not initialized"
 
         # create a mask in the size of the costmap consisting of 8-bit values initialized as 0
         mask = Image.new("L", (self.costmap.shape[1], self.costmap.shape[0]))

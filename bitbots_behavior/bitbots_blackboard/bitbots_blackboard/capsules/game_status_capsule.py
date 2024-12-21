@@ -15,8 +15,8 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
         self.gamestate = GameState()
         self.last_update: float = 0.0
         self.unpenalized_time: float = 0.0
-        self.last_goal_from_us_time = -86400
-        self.last_goal_time = -86400
+        self.last_goal_from_us_time = -86400.0
+        self.last_goal_time = -86400.0
         self.free_kick_kickoff_team: Optional[bool] = None
 
     def get_gamestate(self) -> int:

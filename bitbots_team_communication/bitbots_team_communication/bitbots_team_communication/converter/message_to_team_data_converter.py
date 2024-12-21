@@ -1,4 +1,4 @@
-from typing import Iterable, Tuple
+from typing import Iterable, Sequence, Tuple
 
 import numpy as np
 import transforms3d
@@ -45,7 +45,7 @@ class MessageToTeamDataConverter:
         return team_data
 
     def convert_robots(
-        self, message_robots: Iterable[Proto.Robot], message_robot_confidence: Iterable[float]
+        self, message_robots: Iterable[Proto.Robot], message_robot_confidence: Sequence[float]
     ) -> RobotRelativeArray:
         relative_robots = RobotRelativeArray()
         for index, robot in enumerate(message_robots):

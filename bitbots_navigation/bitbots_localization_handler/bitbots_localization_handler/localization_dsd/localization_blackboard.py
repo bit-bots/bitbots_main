@@ -1,3 +1,5 @@
+from typing import Optional, Type
+
 import numpy as np
 import tf2_ros as tf2
 from bitbots_blackboard.capsules.game_status_capsule import GameStatusCapsule
@@ -5,6 +7,7 @@ from bitbots_localization.srv import ResetFilter, SetPaused
 from bitbots_utils.transforms import quat2euler, xyzw2wxyz
 from bitbots_utils.utils import get_parameters_from_other_node
 from geometry_msgs.msg import PoseWithCovarianceStamped, Quaternion
+from jaxtyping import Float
 from rclpy.duration import Duration
 from rclpy.node import Node
 from ros2_numpy import numpify
@@ -52,18 +55,18 @@ class LocalizationBlackboard:
         self.last_state_get_up = False
 
         # IMU
-        self.accel = np.array([0.0, 0.0, 0.0])
+        self.accel: Float[np.ndarray, "3"] = np.array([0.0, 0.0, 0.0])
         self.imu_orientation = Quaternion(w=1.0)
 
         # Falling odometry / imu interpolation during falls
         self.imu_yaw_before_fall: float = 0.0
 
         # Picked up
-        self.pickup_accel_buffer = []
-        self.pickup_accel_buffer_long = []
+        self.pickup_accel_buffer: list[Float[np.ndarray, "3"]] = []
+        self.pickup_accel_buffer_long: list[Float[np.ndarray, "3"]] = []
 
         # Last init action
-        self.last_init_action_type = False
+        self.last_init_action_type: Optional[Type] = None
         self.last_init_odom_transform: TransformStamped | None = None
 
     def _callback_pose(self, msg: PoseWithCovarianceStamped):

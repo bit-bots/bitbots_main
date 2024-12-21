@@ -23,7 +23,7 @@ class KickCapsule(AbstractBlackboardCapsule):
     is_currently_kicking: bool = False
 
     __connected: bool = False
-    __action_client: ActionClient = None
+    __action_client: Optional[ActionClient] = None
 
     class WalkKickTargets(Flag):
         """

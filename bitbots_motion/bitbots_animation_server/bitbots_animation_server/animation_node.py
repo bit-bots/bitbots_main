@@ -165,7 +165,7 @@ class AnimationNode(Node):
 
             # Send request to make the HCM to go into animation play mode
             num_tries = 0
-            while rclpy.ok() and (not self.hcm_animation_mode.call(SetBool.Request(data=True)).success):
+            while rclpy.ok() and (not self.hcm_animation_mode.call(SetBool.Request(data=True)).success):  # type: ignore[attr-defined]
                 if num_tries >= 10:
                     self.get_logger().error("Failed to request HCM to go into animation play mode")
                     return finish(successful=False)
@@ -263,7 +263,7 @@ class AnimationNode(Node):
                 if pose is None or (request.bounds and once and t > animator.get_keyframe_times()[request.end - 1]):
                     # Animation is finished, tell it to the hcm (except if it is from the hcm)
                     if not request.hcm:
-                        hcm_result = self.hcm_animation_mode.call(SetBool.Request(data=False))
+                        hcm_result: SetBool.Response = self.hcm_animation_mode.call(SetBool.Request(data=False))
                         if not hcm_result.success:
                             self.get_logger().error(f"Failed to finish animation on HCM. Reason: {hcm_result.message}")
 
@@ -296,7 +296,7 @@ class AnimationNode(Node):
         """Callback for the IMU data."""
         self.imu_data = msg
 
-    def send_animation(self, from_hcm: bool, pose: dict, torque: Optional[dict]):
+    def send_animation(self, from_hcm: bool, pose: dict[str, float], torque: Optional[dict[str, float]] = None) -> None:
         """Sends an animation to the hcm"""
         self.hcm_publisher.publish(
             AnimationMsg(
@@ -309,8 +309,8 @@ class AnimationNode(Node):
                     positions=pose.values(),
                     velocities=[-1.0] * len(pose),
                     accelerations=[-1.0] * len(pose),
-                    max_currents=[np.clip((torque[joint]), 0.0, 1.0) for joint in pose]
-                    if torque and False  # TODO
+                    max_currents=[np.clip((torque[joint]), 0.0, 1.0) for joint in pose.keys()]  # type: ignore[index]
+                    if torque and False
                     else [-1.0] * len(pose),  # fmt: skip
                 ),
             )

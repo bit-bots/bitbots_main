@@ -188,7 +188,7 @@ class TeamCommunication:
         self.move_base_goal = msg
 
     def robots_cb(self, msg: RobotArray):
-        def transform_to_map(robot_relative: Robot):
+        def transform_to_map(robot_relative: Robot) -> Optional[Robot]:
             # @TODO: check if this is not handled by the transform itself
             robot_pose = PoseStamped(header=msg.header, pose=robot_relative.bb.center)
             try:
@@ -197,8 +197,9 @@ class TeamCommunication:
                 return robot_relative
             except TransformException as err:
                 self.logger.error(f"Could not transform robot to map frame: {err}")
+                return None
 
-        robots_on_map = list(filter(None, map(transform_to_map, msg.robots)))
+        robots_on_map: list[Robot] = list(filter(None, map(transform_to_map, msg.robots)))
         self.seen_robots = RobotArray(header=msg.header, robots=robots_on_map)
         self.seen_robots.header.frame_id = self.map_frame
 

@@ -7,7 +7,7 @@ from std_msgs.msg import Bool
 from bitbots_blackboard.capsules import AbstractBlackboardCapsule
 from bitbots_msgs.msg import Audio, HeadMode, RobotControlState
 
-THeadMode: TypeAlias = Literal[
+THeadMode: TypeAlias = Literal[  # type: ignore[valid-type]
     HeadMode.BALL_MODE,
     HeadMode.FIELD_FEATURES,
     HeadMode.LOOK_FORWARD,

@@ -59,24 +59,3 @@ def parse(info: dict) -> Animation:
     ]
 
     return anim
-
-
-def as_dict(anim: Animation) -> dict:
-    """
-    Convert an animation to builtin python types to
-    make it serializable to formats like ``json``.
-    """
-    return {
-        "name": anim.name,
-        "interpolators": {n: ip.__name__ for n, ip in anim.interpolators},
-        "keyframes": [
-            {
-                "duration": k.duration,
-                "pause": k.pause,
-                "goals": k.goals,
-                "torque": k.torque,
-                "stabilization_functions": k.stabilization_functions,
-            }
-            for k in anim.keyframes
-        ],
-    }

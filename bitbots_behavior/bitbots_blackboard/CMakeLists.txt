@@ -6,17 +6,17 @@ if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
 endif()
 
-find_package(bio_ik_msgs REQUIRED)
 find_package(ament_cmake REQUIRED)
-find_package(sensor_msgs REQUIRED)
-find_package(rclpy REQUIRED)
-find_package(tf2 REQUIRED)
-find_package(bitbots_msgs REQUIRED)
-find_package(std_msgs REQUIRED)
-find_package(tf2_geometry_msgs REQUIRED)
-find_package(std_srvs REQUIRED)
-find_package(geometry_msgs REQUIRED)
+find_package(bio_ik_msgs REQUIRED)
 find_package(bitbots_docs REQUIRED)
+find_package(bitbots_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(rclpy REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(std_srvs REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
 
 set(INCLUDE_DIRS
     ${bio_ik_msgs_INCLUDE_DIRS}
@@ -75,6 +75,11 @@ ament_export_dependencies(std_srvs)
 ament_export_dependencies(geometry_msgs)
 ament_export_dependencies(bitbots_docs)
 ament_export_include_directories(${INCLUDE_DIRS})
+
+if(BUILD_TESTING)
+  find_package(ament_cmake_mypy REQUIRED)
+  ament_mypy(CONFIG_FILE "${CMAKE_CURRENT_LIST_DIR}/mypy.ini")
+endif()
 
 ament_python_install_package(${PROJECT_NAME})
 

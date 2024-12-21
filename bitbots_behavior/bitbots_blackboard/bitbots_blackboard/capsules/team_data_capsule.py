@@ -1,4 +1,4 @@
-from typing import Dict, List, Literal, Optional, Tuple
+from typing import List, Literal, Optional, Tuple
 
 import numpy as np
 from bitbots_utils.utils import get_parameters_from_other_node
@@ -27,7 +27,7 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
 
         # Data
         # indexed with one to match robot ids
-        self.team_data: Dict[int, TeamData] = {}
+        self.team_data: dict[int, TeamData] = {}
         for i in range(1, 7):
             self.team_data[i] = TeamData()
         self.times_to_ball = dict()
@@ -158,7 +158,8 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
         return self.strategy.role, self.role_update
 
     def set_kickoff_strategy(
-        self, strategy: Literal[Strategy.SIDE_LEFT, Strategy.SIDE_MIDDLE, Strategy.SIDE_RIGHT]
+        self,
+        strategy: Literal[Strategy.SIDE_LEFT, Strategy.SIDE_MIDDLE, Strategy.SIDE_RIGHT],  # type: ignore[valid-type]
     ) -> None:
         self.strategy.offensive_side = strategy
         self.strategy_update = self._node.get_clock().now().nanoseconds / 1e9
@@ -184,7 +185,7 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
 
         # Remove goalie data if needed
         if not count_goalie:
-            team_data_infos = filter(is_not_goalie, team_data_infos)
+            team_data_infos = filter(is_not_goalie, team_data_infos)  # type: ignore[assignment]
 
         # Count valid team data infos (aka robots with valid team data)
         return sum(map(self.is_valid, team_data_infos))
@@ -194,10 +195,10 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
             return team_data.strategy.role == Strategy.ROLE_GOALIE
 
         # Get the team data infos for all robots (ignoring the robot id/name)
-        team_data_infos = self.team_data.values()
+        team_data_infos = self.team_data.values()  # type: ignore[assignment]
 
         # Remove none goalie Data
-        team_data_infos = filter(is_a_goalie, team_data_infos)
+        team_data_infos = filter(is_a_goalie, team_data_infos)  # type: ignore[assignment]
 
         # Count valid team data infos (aka robots with valid team data)
         return sum(map(self.is_valid, team_data_infos)) == 1
@@ -246,3 +247,4 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
             return PointStamped(
                 header=team_data_with_best_ball.header, point=team_data_with_best_ball.ball_absolute.pose.position
             )
+        return None

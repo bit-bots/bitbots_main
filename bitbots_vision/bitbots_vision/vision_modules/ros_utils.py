@@ -1,5 +1,5 @@
 import re
-from typing import TypeAlias, Union
+from typing import Optional, TypeAlias
 
 from bitbots_utils.utils import get_parameters_from_other_node
 from cv_bridge import CvBridge
@@ -345,7 +345,7 @@ def get_team_from_robot_color(color: int) -> T_RobotAttributes_Team:
         return RobotAttributes.TEAM_OPPONENT
 
 
-def get_robot_color_for_team(team: T_RobotAttributes_Team) -> Union[int, None]:
+def get_robot_color_for_team(team: T_RobotAttributes_Team) -> Optional[int]:
     """
     Maps team (own, opponent, unknown) to the current robot color.
     """
@@ -360,3 +360,5 @@ def get_robot_color_for_team(team: T_RobotAttributes_Team) -> Union[int, None]:
             return 1
         else:
             return 0
+    else:
+        return None

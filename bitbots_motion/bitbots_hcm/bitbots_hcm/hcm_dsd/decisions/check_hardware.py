@@ -126,10 +126,14 @@ class CheckIMU(AbstractHCMDecisionElement):
             else:
                 return "OKAY"
 
-        if self.blackboard.previous_imu_msg is None or (
-            self.blackboard.node.get_clock().now().nanoseconds
-            - self.blackboard.last_different_imu_state_time.nanoseconds
-            > self.blackboard.imu_timeout_duration * 1e9
+        if (
+            self.blackboard.previous_imu_msg is None
+            or self.blackboard.last_different_imu_state_time is None
+            or (
+                self.blackboard.node.get_clock().now().nanoseconds
+                - self.blackboard.last_different_imu_state_time.nanoseconds
+                > self.blackboard.imu_timeout_duration * 1e9
+            )
         ):
             if (
                 self.blackboard.current_state == RobotControlState.STARTUP

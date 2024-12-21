@@ -12,7 +12,7 @@ from rclpy.duration import Duration
 class GoToRelativePosition(AbstractActionElement):
     blackboard: BodyBlackboard
 
-    def __init__(self, blackboard, dsd, parameters: dict = None):
+    def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
         self.point = float(parameters.get("x", 0)), float(parameters.get("y", 0)), float(parameters.get("t", 0))
         self.threshold = float(parameters.get("threshold", 0.1))

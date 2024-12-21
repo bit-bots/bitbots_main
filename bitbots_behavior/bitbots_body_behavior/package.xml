@@ -30,6 +30,7 @@
   <depend>soccer_vision_3d_msgs</depend>
   <depend>tf_transformations</depend>
   <depend>tf2</depend>
+  <test_depend>ament_mypy</test_depend>
 
 
   <export>

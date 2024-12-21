@@ -72,7 +72,7 @@ class RecordUI(Plugin):
         self.create_initialized_recorder()
 
         # Initialize the window
-        self._widget = QMainWindow()
+        self._widget = QMainWindow()  # type: ignore
 
         # Load XML ui definition
         ui_file = os.path.join(get_package_share_directory("bitbots_animation_rqt"), "resource", "RecordUI.ui")
@@ -453,7 +453,7 @@ class RecordUI(Plugin):
         Plays the animation up to a certain frame
         """
         # Get the index of the selected frame
-        end_index = self._recorder.get_keyframe_index(self._selected_frame) + 1
+        end_index = self._recorder.get_keyframe_index(self._selected_frame) + 1  # type: ignore[operator]
 
         # Play the animation
         status, success = self._recorder.play(until_frame=end_index)
@@ -482,7 +482,7 @@ class RecordUI(Plugin):
 
         # Go to the frame in the UI
         self._widget.frameList.setCurrentRow(next_frame_index)
-        self._selected_frame = self._recorder.get_keyframes()[next_frame_index]["name"]
+        self._selected_frame = self._recorder.get_keyframes()[next_frame_index].name
         self.react_to_frame_change()
 
     def goto_init(self):
@@ -661,17 +661,18 @@ class RecordUI(Plugin):
             if selected_frame is not None:
                 # check if unrecorded changes would be lost
                 unrecorded_changes = []
-                current_keyframe_goals = self._recorder.get_keyframe(self._selected_frame)["goals"]
+                current_keyframe = self._recorder.get_keyframe(self._selected_frame)
+                assert current_keyframe is not None, "Current keyframe not found"
 
                 for motor_name, text_field in self._motor_controller_text_fields.items():
                     # Check if the motor active state has changed
                     currently_active = (
                         self._motor_switcher_active_checkbox[motor_name].checkState(0) == Qt.CheckState.Checked
                     )
-                    active_in_current_keyframe = motor_name in current_keyframe_goals
+                    active_in_current_keyframe = motor_name in current_keyframe.goals
                     motor_active_changed = currently_active != active_in_current_keyframe
                     # Check if the motor goal has changed
-                    motor_goal_changed = current_keyframe_goals.get(motor_name, 0) != math.radians(text_field.value())
+                    motor_goal_changed = current_keyframe.goals.get(motor_name, 0) != math.radians(text_field.value())
                     if motor_active_changed or motor_goal_changed:
                         unrecorded_changes.append(motor_name)
 
@@ -700,6 +701,7 @@ class RecordUI(Plugin):
         """
         # Get the selected frame
         selected_frame = self._recorder.get_keyframe(self._selected_frame)
+        assert selected_frame is not None, "Selected frame not found in recorder"
 
         # Update the name
         self._widget.lineFrameName.setText(self._selected_frame)
@@ -707,28 +709,26 @@ class RecordUI(Plugin):
         # Update what motors are active, what are stiff and set the angles accordingly
         for motor_name in self.motors:
             # Update checkbox if the motor is active or not
-            active = motor_name in selected_frame["goals"]
+            active = motor_name in selected_frame.goals.keys()
             self._motor_switcher_active_checkbox[motor_name].setCheckState(0, Qt.Checked if active else Qt.Unchecked)
 
             # Update checkbox if the motor is stiff or not
-            stiff = "torques" not in selected_frame or (
-                motor_name in selected_frame["torques"] and bool(selected_frame["torques"][motor_name])
-            )
+            stiff = motor_name in selected_frame.torque and bool(selected_frame.torque[motor_name])
             self._motor_controller_torque_checkbox[motor_name].setCheckState(0, Qt.Checked if stiff else Qt.Unchecked)
 
             # Update the motor angle controls (value and active state)
             if active:
                 self._motor_controller_text_fields[motor_name].setValue(
-                    round(math.degrees(selected_frame["goals"][motor_name]), 2)
+                    round(math.degrees(selected_frame.goals[motor_name]), 2)
                 )
 
-                self._working_angles[motor_name] = selected_frame["goals"][motor_name]
+                self._working_angles[motor_name] = selected_frame.goals[motor_name]
             else:
                 self._motor_controller_text_fields[motor_name].setValue(0.0)
 
         # Update the duration and pause
-        self._widget.spinBoxDuration.setValue(selected_frame["duration"])
-        self._widget.spinBoxPause.setValue(selected_frame["pause"])
+        self._widget.spinBoxDuration.setValue(selected_frame.duration)
+        self._widget.spinBoxPause.setValue(selected_frame.pause)
 
         self.react_to_motor_selection()
 
@@ -792,7 +792,7 @@ class RecordUI(Plugin):
         if index is None:
             # If it is not, select the first frame
             index = 0
-            self._selected_frame = keyframes[index]["name"]
+            self._selected_frame = keyframes[index].name
             print(f"Selected frame {self._selected_frame}")
 
         # Clear the list of frames
@@ -801,7 +801,7 @@ class RecordUI(Plugin):
         # Add all frames to the list
         for frame in keyframes:
             item = QListWidgetItem()
-            item.setText(frame["name"])
+            item.setText(frame.name)
             self._widget.frameList.addItem(item)
 
         # Select the correct frame
