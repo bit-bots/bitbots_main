@@ -715,7 +715,9 @@ class RecordUI(Plugin):
             self._motor_switcher_active_checkbox[motor_name].setCheckState(0, Qt.Checked if active else Qt.Unchecked)
 
             # Update checkbox if the motor is stiff or not
-            stiff = len(selected_frame.torque) == 0 or (motor_name in selected_frame.torque and bool(selected_frame.torque[motor_name]))
+            stiff = len(selected_frame.torque) == 0 or (
+                motor_name in selected_frame.torque and bool(selected_frame.torque[motor_name])
+            )
             self._motor_controller_torque_checkbox[motor_name].setCheckState(0, Qt.Checked if stiff else Qt.Unchecked)
 
             # Update the motor angle controls (value and active state)

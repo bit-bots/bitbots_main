@@ -4,7 +4,7 @@ import json
 import math
 import os
 from copy import deepcopy
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Optional
 
@@ -16,7 +16,6 @@ from std_srvs.srv import SetBool
 
 from bitbots_msgs.action import PlayAnimation
 from bitbots_msgs.srv import AddAnimation
-from dataclasses import field
 
 
 @dataclass
@@ -261,7 +260,7 @@ class Recorder:
                         duration=keyframe["duration"],
                         pause=keyframe["pause"],
                         goals={k: math.radians(v) for k, v in keyframe["goals"].items()},
-                        torque=keyframe["torque"]
+                        torque=keyframe["torque"],
                     )
                 )
         except ValueError as e:
