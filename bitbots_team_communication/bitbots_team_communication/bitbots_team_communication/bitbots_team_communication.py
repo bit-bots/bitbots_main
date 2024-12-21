@@ -17,6 +17,7 @@ from rclpy.duration import Duration
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 from rclpy.time import Time
+from builtin_interfaces.msg import Time as TimeMsg
 from soccer_vision_3d_msgs.msg import Robot, RobotArray
 from std_msgs.msg import Float32, Header
 from tf2_geometry_msgs import PointStamped, PoseStamped
@@ -253,7 +254,7 @@ class TeamCommunication:
         now = self.get_current_time()
         msg = self.create_empty_message(now)
 
-        def is_still_valid(time: Optional[Time]) -> bool:
+        def is_still_valid(time: Optional[TimeMsg]) -> bool:
             return (time is not None) and (now - Time.from_msg(time) < Duration(seconds=self.lifetime))
 
         message = self.protocol_converter.convert_to_message(self, msg, is_still_valid)

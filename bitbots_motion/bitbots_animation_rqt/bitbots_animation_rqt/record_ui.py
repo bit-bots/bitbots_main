@@ -567,8 +567,10 @@ class RecordUI(Plugin):
         # Display a message
         self._widget.statusBar.showMessage(f"Recorded frame {self._selected_frame}")
 
-        # Update the frames in the UI
+        # Update the frames in the UI, but don't trigger the frame selection signal
+        self._widget.frameList.blockSignals(True)
         self.update_frames()
+        self._widget.frameList.blockSignals(False)
 
     def undo(self):
         """
@@ -713,7 +715,7 @@ class RecordUI(Plugin):
             self._motor_switcher_active_checkbox[motor_name].setCheckState(0, Qt.Checked if active else Qt.Unchecked)
 
             # Update checkbox if the motor is stiff or not
-            stiff = motor_name in selected_frame.torque and bool(selected_frame.torque[motor_name])
+            stiff = len(selected_frame.torque) == 0 or (motor_name in selected_frame.torque and bool(selected_frame.torque[motor_name]))
             self._motor_controller_torque_checkbox[motor_name].setCheckState(0, Qt.Checked if stiff else Qt.Unchecked)
 
             # Update the motor angle controls (value and active state)
@@ -782,7 +784,7 @@ class RecordUI(Plugin):
 
     def update_frames(self) -> None:
         """
-        Updates the list of frames in the GUI based on the keyframes in the recorder
+        Updates the list of frames in the GUI based on the keyframes in the recorder'
         """
         # Get the current state of the recorder and the index of the selected frame
         keyframes = self._recorder.get_keyframes()
