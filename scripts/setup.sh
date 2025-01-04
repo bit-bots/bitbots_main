@@ -11,7 +11,7 @@ SHELL_CONFIG="$(cat <<EOF
 # >>> bit-bots initialize >>>
 
 # Ignore some deprecation warnings
-export PYTHONWARNINGS=ignore:::setuptools.command.install,ignore:::setuptools.command.easy_install,ignore:::pkg_resources
+export PYTHONWARNINGS="ignore:::setuptools.command.install,ignore:::setuptools.command.easy_install,ignore:::pkg_resources,ignore:easy_install command is deprecated,ignore:setup.py install is deprecated"
 
 # Limit ROS 2 communication to localhost (can be overridden when needed)
 export ROS_DOMAIN_ID=24
