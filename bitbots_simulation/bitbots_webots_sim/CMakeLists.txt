@@ -6,6 +6,8 @@ if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
 endif()
 
+set(IGNORE_GAZEBO_MSGS_WARNING ON)
+
 find_package(bitbots_msgs REQUIRED)
 find_package(rosgraph_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
