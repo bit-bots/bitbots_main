@@ -1,9 +1,20 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.9)
 project(bitbots_tf_buffer)
 
 # Add support for C++17
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
+endif()
+
+# Include CheckIPOSupported module
+include(CheckIPOSupported)
+
+# Check if IPO is supported
+check_ipo_supported(RESULT ipo_supported)
+if(ipo_supported)
+  set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+  # Set the number of parallel LTO jobs
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto=4")
 endif()
 
 set(PYBIND11_PYTHON_VERSION 3)
