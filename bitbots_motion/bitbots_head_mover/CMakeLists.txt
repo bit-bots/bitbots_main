@@ -25,8 +25,6 @@ find_package(tf2_ros REQUIRED)
 
 set(CMAKE_BUILD_TYPE Debug)
 
-# uncomment the following section in order to fill in further dependencies
-# manually. find_package(<dependency> REQUIRED)
 generate_parameter_library(
   head_parameters # cmake target name for the parameter library
   config/head_config.yml)
