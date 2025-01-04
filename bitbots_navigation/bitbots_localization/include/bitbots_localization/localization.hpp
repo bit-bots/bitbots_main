@@ -6,9 +6,6 @@
 #define BITBOTS_LOCALIZATION_LOCALIZATION_H
 
 #include <message_filters/subscriber.h>
-#include <particle_filter/CRandomNumberGenerator.h>
-#include <particle_filter/ParticleFilter.h>
-#include <particle_filter/gaussian_mixture_model.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Transform.h>
 #include <tf2/convert.h>
@@ -45,6 +42,9 @@
 #include <iterator>
 #include <localization_parameters.hpp>
 #include <memory>
+#include <particle_filter/CRandomNumberGenerator.hpp>
+#include <particle_filter/ParticleFilter.hpp>
+#include <particle_filter/gaussian_mixture_model.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/camera_info.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
