@@ -11,7 +11,6 @@ find_package(bitbots_docs REQUIRED)
 find_package(biped_interfaces REQUIRED)
 find_package(bitbots_msgs REQUIRED)
 find_package(bitbots_splines REQUIRED)
-find_package(control_msgs REQUIRED)
 find_package(control_toolbox REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(geometry_msgs REQUIRED)
@@ -48,7 +47,6 @@ ament_target_dependencies(
   biped_interfaces
   bitbots_msgs
   bitbots_splines
-  control_msgs
   control_toolbox
   geometry_msgs
   moveit_ros_planning_interface
@@ -71,7 +69,7 @@ target_link_libraries(KickNode "${cpp_typesupport_target}")
 
 # pybind11_add_module(py_dynamic_kick SHARED src/walk_pywrapper.cpp ${SOURCES})
 # ament_target_dependencies(py_dynamic_kick PUBLIC ament_cmake biped_interfaces
-# bitbots_msgs bitbots_splines control_msgs control_toolbox geometry_msgs
+# bitbots_msgs bitbots_splines control_toolbox geometry_msgs
 # moveit_ros_planning_interface rclcpp ros2_python_extension rot_conv
 # sensor_msgs std_msgs tf2 tf2_eigen tf2_geometry_msgs tf2_ros)
 # target_link_libraries(py_dynamic_kick PRIVATE "${cpp_typesupport_target}")

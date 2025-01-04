@@ -25,7 +25,6 @@ find_package(backward_ros REQUIRED)
 find_package(biped_interfaces REQUIRED)
 find_package(bitbots_msgs REQUIRED)
 find_package(bitbots_splines REQUIRED)
-find_package(control_msgs REQUIRED)
 find_package(control_toolbox REQUIRED)
 find_package(generate_parameter_library REQUIRED)
 find_package(geometry_msgs REQUIRED)
@@ -68,7 +67,6 @@ ament_target_dependencies(
   biped_interfaces
   bitbots_msgs
   bitbots_splines
-  control_msgs
   control_toolbox
   geometry_msgs
   moveit_ros_planning_interface
@@ -97,7 +95,6 @@ ament_target_dependencies(
   biped_interfaces
   bitbots_msgs
   bitbots_splines
-  control_msgs
   control_toolbox
   geometry_msgs
   moveit_ros_planning_interface

@@ -26,7 +26,6 @@ find_package(bio_ik REQUIRED)
 find_package(bitbots_msgs REQUIRED)
 find_package(bitbots_splines REQUIRED)
 find_package(bitbots_utils REQUIRED)
-find_package(control_msgs REQUIRED)
 find_package(control_toolbox REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(generate_parameter_library REQUIRED)
@@ -80,7 +79,6 @@ ament_target_dependencies(
   bitbots_msgs
   bitbots_splines
   bitbots_utils
-  control_msgs
   control_toolbox
   generate_parameter_library
   geometry_msgs
@@ -111,7 +109,6 @@ ament_target_dependencies(
   bitbots_msgs
   bitbots_splines
   bitbots_utils
-  control_msgs
   control_toolbox
   geometry_msgs
   moveit_ros_planning_interface
