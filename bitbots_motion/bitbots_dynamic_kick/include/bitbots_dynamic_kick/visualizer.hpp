@@ -5,10 +5,6 @@
 #ifndef BITBOTS_DYNAMIC_KICK_INCLUDE_BITBOTS_DYNAMIC_KICK_VISUALIZER_H_
 #define BITBOTS_DYNAMIC_KICK_INCLUDE_BITBOTS_DYNAMIC_KICK_VISUALIZER_H_
 
-#include <moveit/robot_state/robot_state.hpp>
-#include <tf2/LinearMath/Vector3.hpp>
-#include <tf2/convert.hpp>
-
 #include <bitbots_dynamic_kick/kick_utils.hpp>
 #include <bitbots_dynamic_kick/msg/kick_debug.hpp>
 #include <bitbots_msgs/action/kick.hpp>
@@ -16,8 +12,11 @@
 #include <bitbots_splines/smooth_spline.hpp>
 #include <bitbots_splines/spline_container.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
+#include <moveit/robot_state/robot_state.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <string>
+#include <tf2/LinearMath/Vector3.hpp>
+#include <tf2/convert.hpp>
 #include <tf2_eigen/tf2_eigen.hpp>
 #include <visualization_msgs/msg/marker.hpp>
 

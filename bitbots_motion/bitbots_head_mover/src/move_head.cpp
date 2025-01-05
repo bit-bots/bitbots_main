@@ -1,12 +1,7 @@
-#include <bio_ik/bio_ik.hpp>
-#include <moveit/planning_scene/planning_scene.hpp>
-#include <moveit/planning_scene_monitor/planning_scene_monitor.hpp>
-#include <moveit/robot_model_loader/robot_model_loader.hpp>
-#include <moveit/robot_state/conversions.hpp>
-#include <tf2/convert.hpp>
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
 
+#include <bio_ik/bio_ik.hpp>
 #include <bio_ik_msgs/msg/ik_response.hpp>
 #include <bitbots_msgs/action/look_at.hpp>
 #include <bitbots_msgs/msg/head_mode.hpp>
@@ -18,6 +13,10 @@
 #include <head_parameters.hpp>
 #include <iostream>
 #include <memory>
+#include <moveit/planning_scene/planning_scene.hpp>
+#include <moveit/planning_scene_monitor/planning_scene_monitor.hpp>
+#include <moveit/robot_model_loader/robot_model_loader.hpp>
+#include <moveit/robot_state/conversions.hpp>
 #include <rclcpp/clock.hpp>
 #include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
 #include <rclcpp/logger.hpp>
@@ -27,6 +26,7 @@
 #include <sensor_msgs/msg/joint_state.hpp>
 #include <std_msgs/msg/string.hpp>
 #include <string>
+#include <tf2/convert.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <vector>
 

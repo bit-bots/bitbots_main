@@ -1,4 +1,3 @@
-#include <tf2/utils.hpp>
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/transform_listener.h>
@@ -12,6 +11,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
 #include <std_msgs/msg/char.hpp>
+#include <tf2/utils.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 using std::placeholders::_1;

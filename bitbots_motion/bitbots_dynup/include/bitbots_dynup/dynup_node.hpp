@@ -1,13 +1,6 @@
 #ifndef BITBOTS_DYNUP_INCLUDE_BITBOTS_DYNUP_DYNUP_NODE_H_
 #define BITBOTS_DYNUP_INCLUDE_BITBOTS_DYNUP_DYNUP_NODE_H_
 
-#include <moveit/kinematics_base/kinematics_base.hpp>
-#include <moveit/move_group_interface/move_group_interface.hpp>
-#include <moveit/robot_model_loader/robot_model_loader.hpp>
-#include <tf2/LinearMath/Matrix3x3.hpp>
-#include <tf2/LinearMath/Quaternion.hpp>
-#include <tf2/LinearMath/Transform.hpp>
-#include <tf2/LinearMath/Vector3.hpp>
 #include <tf2_ros/transform_listener.h>
 #include <unistd.h>
 
@@ -24,6 +17,9 @@
 #include <geometry_msgs/msg/pose.hpp>
 #include <geometry_msgs/msg/pose_array.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
+#include <moveit/kinematics_base/kinematics_base.hpp>
+#include <moveit/move_group_interface/move_group_interface.hpp>
+#include <moveit/robot_model_loader/robot_model_loader.hpp>
 #include <optional>
 #include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -31,6 +27,10 @@
 #include <sensor_msgs/msg/imu.hpp>
 #include <std_msgs/msg/char.hpp>
 #include <string>
+#include <tf2/LinearMath/Matrix3x3.hpp>
+#include <tf2/LinearMath/Quaternion.hpp>
+#include <tf2/LinearMath/Transform.hpp>
+#include <tf2/LinearMath/Vector3.hpp>
 #include <tf2_eigen/tf2_eigen.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 

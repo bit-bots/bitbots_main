@@ -6,15 +6,14 @@ https://github.com/Rhoban/model/
 #ifndef BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALK_ENGINE_H_
 #define BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALK_ENGINE_H_
 
-#include <tf2/LinearMath/Transform.hpp>
-#include <tf2/LinearMath/Vector3.hpp>
-
 #include <bitbots_quintic_walk/walk_utils.hpp>
 #include <bitbots_quintic_walk_parameters.hpp>
 #include <bitbots_splines/abstract_engine.hpp>
 #include <bitbots_splines/pose_spline.hpp>
 #include <bitbots_splines/smooth_spline.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <tf2/LinearMath/Transform.hpp>
+#include <tf2/LinearMath/Vector3.hpp>
 
 namespace bitbots_quintic_walk {
 

@@ -1,12 +1,11 @@
 #ifndef BITBOTS_DYNAMIC_KICK_INCLUDE_BITBOTS_DYNAMIC_KICK_KICK_IK_H_
 #define BITBOTS_DYNAMIC_KICK_INCLUDE_BITBOTS_DYNAMIC_KICK_KICK_IK_H_
 
-#include <moveit/planning_scene/planning_scene.hpp>
-#include <moveit/robot_model_loader/robot_model_loader.hpp>
-
 #include <Eigen/Geometry>
 #include <bitbots_dynamic_kick/kick_utils.hpp>
 #include <bitbots_splines/abstract_ik.hpp>
+#include <moveit/planning_scene/planning_scene.hpp>
+#include <moveit/robot_model_loader/robot_model_loader.hpp>
 
 namespace bitbots_dynamic_kick {
 

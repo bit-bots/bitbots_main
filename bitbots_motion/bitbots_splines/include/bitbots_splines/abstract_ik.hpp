@@ -3,7 +3,6 @@
 #define BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_ABSTRACT_IK_H_
 
 #include <moveit/robot_model/robot_model.hpp>
-
 #include <rclcpp/rclcpp.hpp>
 #include <string>
 #include <vector>

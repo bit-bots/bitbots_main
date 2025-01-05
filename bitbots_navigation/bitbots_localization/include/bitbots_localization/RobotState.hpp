@@ -5,12 +5,11 @@
 #ifndef BITBOTS_LOCALIZATION_ROBOTSTATE_H
 #define BITBOTS_LOCALIZATION_ROBOTSTATE_H
 
-#include <tf2/LinearMath/Quaternion.hpp>
-
 #include <Eigen/Core>
 #include <bitbots_localization/tools.hpp>
 #include <cmath>
 #include <particle_filter/ParticleFilter.hpp>
+#include <tf2/LinearMath/Quaternion.hpp>
 #include <vector>
 
 namespace bitbots_localization {

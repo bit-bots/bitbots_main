@@ -1,11 +1,10 @@
 #ifndef BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_POSITION_SPLINE_H_
 #define BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_POSITION_SPLINE_H_
 
-#include <tf2/LinearMath/Vector3.hpp>
-
 #include <bitbots_splines/smooth_spline.hpp>
 #include <bitbots_splines/spline_container.hpp>
 #include <geometry_msgs/msg/point.hpp>
+#include <tf2/LinearMath/Vector3.hpp>
 
 namespace bitbots_splines {
 

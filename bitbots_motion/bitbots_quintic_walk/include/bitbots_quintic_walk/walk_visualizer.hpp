@@ -1,21 +1,20 @@
 #ifndef BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALK_VISUALIZER_H_
 #define BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALK_VISUALIZER_H_
 
-#include <moveit/robot_state/robot_state.hpp>
-#include <tf2/LinearMath/Matrix3x3.hpp>
-#include <tf2/LinearMath/Quaternion.hpp>
-#include <tf2/LinearMath/Transform.hpp>
-#include <tf2/LinearMath/Vector3.hpp>
-
 #include <bitbots_quintic_walk/msg/walk_debug.hpp>
 #include <bitbots_quintic_walk/msg/walk_engine_debug.hpp>
 #include <bitbots_quintic_walk/walk_engine.hpp>
 #include <bitbots_quintic_walk/walk_utils.hpp>
 #include <bitbots_splines/abstract_ik.hpp>
 #include <bitbots_splines/abstract_visualizer.hpp>
+#include <moveit/robot_state/robot_state.hpp>
 #include <moveit_msgs/msg/robot_state.hpp>
 #include <ranges>
 #include <rclcpp/rclcpp.hpp>
+#include <tf2/LinearMath/Matrix3x3.hpp>
+#include <tf2/LinearMath/Quaternion.hpp>
+#include <tf2/LinearMath/Transform.hpp>
+#include <tf2/LinearMath/Vector3.hpp>
 #include <tf2_eigen/tf2_eigen.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 

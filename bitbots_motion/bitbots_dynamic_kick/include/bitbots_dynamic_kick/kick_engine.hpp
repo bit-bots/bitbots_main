@@ -2,9 +2,6 @@
 #define BITBOTS_DYNAMIC_KICK_INCLUDE_BITBOTS_DYNAMIC_KICK_KICK_ENGINE_H_
 
 #include <rot_conv/rot_conv.h>
-#include <tf2/convert.hpp>
-#include <tf2/exceptions.hpp>
-#include <tf2/utils.hpp>
 
 #include <Eigen/Geometry>
 #include <bitbots_msgs/action/kick.hpp>
@@ -13,6 +10,9 @@
 #include <bitbots_splines/position_spline.hpp>
 #include <cmath>
 #include <optional>
+#include <tf2/convert.hpp>
+#include <tf2/exceptions.hpp>
+#include <tf2/utils.hpp>
 #include <tf2_eigen/tf2_eigen.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
