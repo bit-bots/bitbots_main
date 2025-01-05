@@ -42,7 +42,7 @@ repositories:
   lib/bio_ik:
     type: git
     url: git@github.com:bit-bots/bio_ik.git
-    version: ros2
+    version: iron
   lib/hlvs_player:
     type: git
     url: git@github.com:ros-sports/hlvs_player.git
