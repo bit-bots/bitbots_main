@@ -7,12 +7,12 @@ from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.duration import Duration
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
-from std_msgs.msg import Empty
+from std_msgs.msg import Bool, Empty
 
 from bitbots_path_planning.controller import Controller
 from bitbots_path_planning.map import Map
 from bitbots_path_planning.path_planning_parameters import bitbots_path_planning as parameters
-from bitbots_path_planning.planner import Planner
+from bitbots_path_planning.planner import planner_factory
 
 
 class PathPlanning(Node):
@@ -30,7 +30,7 @@ class PathPlanning(Node):
 
         # Create submodules
         self.map = Map(node=self, buffer=self.tf_buffer)
-        self.planner = Planner(node=self, buffer=self.tf_buffer, map=self.map)
+        self.planner = planner_factory(self)(node=self, buffer=self.tf_buffer, map=self.map)
         self.controller = Controller(node=self, buffer=self.tf_buffer)
 
         # Subscriber
@@ -55,6 +55,13 @@ class PathPlanning(Node):
             Empty,
             "pathfinding/cancel",
             lambda _: self.planner.cancel(),
+            5,
+            callback_group=MutuallyExclusiveCallbackGroup(),
+        )
+        self.create_subscription(
+            Bool,
+            "ball_obstacle_active",
+            lambda msg: self.map.avoid_ball(msg.data),
             5,
             callback_group=MutuallyExclusiveCallbackGroup(),
         )
@@ -106,7 +113,7 @@ def main(args=None):
     node = PathPlanning()
 
     # choose number of threads by number of callback_groups + 1 for simulation time
-    ex = MultiThreadedExecutor(num_threads=7)
+    ex = MultiThreadedExecutor(num_threads=8)
     ex.add_node(node)
     ex.spin()
 

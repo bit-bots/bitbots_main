@@ -13,8 +13,7 @@
             <param from="$(find-pkg-share bitbots_vision)/config/visionparams.yaml" />
 
             <!-- Set debug params-->
-            <param name="vision_publish_debug_image" value="$(var debug)" />
-            <param name="vision_publish_field_mask_image" value="$(var debug)" />
+            <param name="component_debug_image_active" value="$(var debug)" />
         </node>
     </group>
     <!-- Start the YOEO vision in sim configuration-->
@@ -24,8 +23,7 @@
             <param from="$(find-pkg-share bitbots_vision)/config/visionparams_sim.yaml"/>
 
             <!-- Set debug params-->
-            <param name="vision_publish_debug_image" value="$(var debug)" />
-            <param name="vision_publish_field_mask_image" value="$(var debug)" />
+            <param name="component_debug_image_active" value="$(var debug)" />
 
             <!-- Use sim time-->
             <param name="use_sim_time" value="true"/>

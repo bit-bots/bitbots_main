@@ -1,4 +1,4 @@
 <launch>
-    <node pkg="plotjuggler" exec="plotjuggler" name="$(anon plotjuggler)" output="screen" required="true"
+    <node pkg="plotjuggler" exec="plotjuggler" name="$(anon plotjuggler)" output="screen"
           args="--layout $(find-pkg-share system_monitor)/config/plotjuggler_layout.xml"/>
 </launch>

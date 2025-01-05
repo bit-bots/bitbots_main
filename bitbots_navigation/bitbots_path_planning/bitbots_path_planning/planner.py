@@ -1,7 +1,7 @@
 import numpy as np
 import pyastar2d
 import tf2_ros as tf2
-from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import PoseStamped, Vector3
 from nav_msgs.msg import Path
 from rclpy.duration import Duration
 from rclpy.node import Node
@@ -44,6 +44,14 @@ class Planner:
         """
         return self.goal is not None
 
+    def get_my_position(self) -> Vector3:
+        """
+        Returns the current position of the robot
+        """
+        return self.buffer.lookup_transform(
+            self.map.frame, self.base_footprint_frame, Time(), Duration(seconds=0.2)
+        ).transform.translation
+
     def step(self) -> Path:
         """
         Generates a new A* path to the goal pose with respect to the costmap
@@ -54,9 +62,7 @@ class Planner:
         navigation_grid = self.map.get_map()
 
         # Get my pose and position on the map
-        my_position = self.buffer.lookup_transform(
-            self.map.frame, self.base_footprint_frame, Time(), Duration(seconds=0.2)
-        ).transform.translation
+        my_position = self.get_my_position()
 
         # Transform goal pose to map frame if needed
         if goal.header.frame_id != self.map.frame:
@@ -94,3 +100,31 @@ class Planner:
         Returns the most recent path
         """
         return self.path
+
+
+class DummyPlanner(Planner):
+    def __init__(self, node: Node, buffer: tf2.Buffer, map: Map) -> None:
+        super().__init__(node, buffer, map)
+
+    def step(self) -> Path:
+        return self.get_path()
+
+    def get_path(self) -> Path:
+        pose = PoseStamped()
+        my_position = self.get_my_position()
+        pose.pose.position.x = my_position.x
+        pose.pose.position.y = my_position.y
+
+        self.path = Path(
+            header=Header(frame_id=self.map.get_frame(), stamp=self.node.get_clock().now().to_msg()),
+            poses=[pose, self.goal],
+        )
+
+        return self.path
+
+
+def planner_factory(node: Node) -> type:
+    if node.config.planner.dummy:
+        return DummyPlanner
+    else:
+        return Planner
