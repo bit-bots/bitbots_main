@@ -37,6 +37,7 @@
   <depend>yaml-cpp</depend>
 
   <exec_depend>imu_complementary_filter</exec_depend>
+  <exec_depend>rviz_imu_plugin</exec_depend>
 
 
   <export>

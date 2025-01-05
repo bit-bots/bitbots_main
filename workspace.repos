@@ -51,10 +51,6 @@ repositories:
     type: git
     url: git@github.com:ros-sports/humanoid_base_footprint.git
     version: master
-  lib/imu_tools:
-    type: git
-    url: git@github.com:ccny-ros-pkg/imu_tools.git
-    version: rolling
   lib/ipm:
     type: git
     url: git@github.com:ros-sports/ipm.git
