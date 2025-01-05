@@ -5,14 +5,13 @@
 #ifndef BITBOTS_LOCALIZATION_MOTIONMODEL_H
 #define BITBOTS_LOCALIZATION_MOTIONMODEL_H
 
-#include <particle_filter/CRandomNumberGenerator.h>
-#include <particle_filter/MovementModel.h>
-
 #include <bitbots_localization/RobotState.hpp>
 #include <bitbots_localization/tools.hpp>
 #include <cstdlib>
 #include <geometry_msgs/msg/vector3.hpp>
 #include <memory>
+#include <particle_filter/CRandomNumberGenerator.hpp>
+#include <particle_filter/MovementModel.hpp>
 
 namespace bitbots_localization {
 /**
