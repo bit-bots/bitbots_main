@@ -1,7 +1,7 @@
 #ifndef BITBOTS_DYNUP_INCLUDE_BITBOTS_DYNUP_DYNUP_ENGINE_H_
 #define BITBOTS_DYNUP_INCLUDE_BITBOTS_DYNUP_DYNUP_ENGINE_H_
 
-#include <tf2/convert.h>
+#include <tf2/convert.hpp>
 
 #include <bitbots_dynup/msg/dynup_engine_debug.hpp>
 #include <bitbots_splines/abstract_engine.hpp>

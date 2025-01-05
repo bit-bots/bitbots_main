@@ -5,9 +5,9 @@
 #ifndef BITBOTS_DYNAMIC_KICK_INCLUDE_BITBOTS_DYNAMIC_KICK_VISUALIZER_H_
 #define BITBOTS_DYNAMIC_KICK_INCLUDE_BITBOTS_DYNAMIC_KICK_VISUALIZER_H_
 
-#include <moveit/robot_state/robot_state.h>
-#include <tf2/LinearMath/Vector3.h>
-#include <tf2/convert.h>
+#include <moveit/robot_state/robot_state.hpp>
+#include <tf2/LinearMath/Vector3.hpp>
+#include <tf2/convert.hpp>
 
 #include <bitbots_dynamic_kick/kick_utils.hpp>
 #include <bitbots_dynamic_kick/msg/kick_debug.hpp>

@@ -1,7 +1,7 @@
 #ifndef BITBOTS_DYNAMIC_KICK_INCLUDE_BITBOTS_DYNAMIC_KICK_KICK_NODE_H_
 #define BITBOTS_DYNAMIC_KICK_INCLUDE_BITBOTS_DYNAMIC_KICK_KICK_NODE_H_
 
-#include <tf2/convert.h>
+#include <tf2/convert.hpp>
 #include <unistd.h>
 
 #include <Eigen/Geometry>

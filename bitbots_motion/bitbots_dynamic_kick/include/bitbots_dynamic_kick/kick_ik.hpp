@@ -1,8 +1,8 @@
 #ifndef BITBOTS_DYNAMIC_KICK_INCLUDE_BITBOTS_DYNAMIC_KICK_KICK_IK_H_
 #define BITBOTS_DYNAMIC_KICK_INCLUDE_BITBOTS_DYNAMIC_KICK_KICK_IK_H_
 
-#include <moveit/planning_scene/planning_scene.h>
-#include <moveit/robot_model_loader/robot_model_loader.h>
+#include <moveit/planning_scene/planning_scene.hpp>
+#include <moveit/robot_model_loader/robot_model_loader.hpp>
 
 #include <Eigen/Geometry>
 #include <bitbots_dynamic_kick/kick_utils.hpp>

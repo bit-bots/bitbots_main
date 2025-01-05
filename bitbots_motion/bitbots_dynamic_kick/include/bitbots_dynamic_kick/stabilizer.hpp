@@ -1,7 +1,7 @@
 #ifndef BITBOTS_DYNAMIC_KICK_INCLUDE_BITBOTS_DYNAMIC_KICK_STABILIZER_H_
 #define BITBOTS_DYNAMIC_KICK_INCLUDE_BITBOTS_DYNAMIC_KICK_STABILIZER_H_
 
-#include <moveit/robot_state/robot_state.h>
+#include <moveit/robot_state/robot_state.hpp>
 #include <tf2_ros/transform_listener.h>
 
 #include <bitbots_splines/abstract_stabilizer.hpp>

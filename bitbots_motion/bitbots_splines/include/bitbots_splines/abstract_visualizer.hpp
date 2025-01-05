@@ -1,7 +1,7 @@
 #ifndef BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_ABSTRACT_VISUALIZER_H_
 #define BITBOTS_SPLINES_INCLUDE_BITBOTS_SPLINES_ABSTRACT_VISUALIZER_H_
 
-#include <tf2/LinearMath/Vector3.h>
+#include <tf2/LinearMath/Vector3.hpp>
 
 #include <bitbots_splines/pose_spline.hpp>
 #include <visualization_msgs/msg/marker.hpp>

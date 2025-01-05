@@ -5,7 +5,7 @@
 #ifndef BITBOTS_LOCALIZATION_ROBOTSTATE_H
 #define BITBOTS_LOCALIZATION_ROBOTSTATE_H
 
-#include <tf2/LinearMath/Quaternion.h>
+#include <tf2/LinearMath/Quaternion.hpp>
 
 #include <Eigen/Core>
 #include <bitbots_localization/tools.hpp>

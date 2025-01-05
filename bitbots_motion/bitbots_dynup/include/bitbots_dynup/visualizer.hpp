@@ -1,9 +1,9 @@
 #ifndef BITBOTS_DYNUP_INCLUDE_BITBOTS_DYNUP_VISUALIZER_H_
 #define BITBOTS_DYNUP_INCLUDE_BITBOTS_DYNUP_VISUALIZER_H_
 
-#include <moveit/robot_model/robot_model.h>
-#include <moveit/robot_state/robot_state.h>
-#include <tf2/LinearMath/Vector3.h>
+#include <moveit/robot_model/robot_model.hpp>
+#include <moveit/robot_state/robot_state.hpp>
+#include <tf2/LinearMath/Vector3.hpp>
 
 #include <bitbots_dynup/dynup_utils.hpp>
 #include <bitbots_dynup/msg/dynup_ik_offset.hpp>

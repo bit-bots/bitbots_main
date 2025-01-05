@@ -6,11 +6,11 @@
 #define BITBOTS_LOCALIZATION_LOCALIZATION_H
 
 #include <message_filters/subscriber.h>
-#include <tf2/LinearMath/Quaternion.h>
-#include <tf2/LinearMath/Transform.h>
-#include <tf2/convert.h>
-#include <tf2/time.h>
-#include <tf2/utils.h>
+#include <tf2/LinearMath/Quaternion.hpp>
+#include <tf2/LinearMath/Transform.hpp>
+#include <tf2/convert.hpp>
+#include <tf2/time.hpp>
+#include <tf2/utils.hpp>
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/message_filter.h>
 #include <tf2_ros/transform_broadcaster.h>

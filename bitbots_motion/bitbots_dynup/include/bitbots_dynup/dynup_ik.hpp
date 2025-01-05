@@ -1,10 +1,10 @@
 #ifndef BITBOTS_DYNUP_INCLUDE_BITBOTS_DYNUP_DYNUP_IK_H_
 #define BITBOTS_DYNUP_INCLUDE_BITBOTS_DYNUP_DYNUP_IK_H_
 
-#include <bio_ik/bio_ik.h>
-#include <moveit/robot_model_loader/robot_model_loader.h>
-#include <moveit/robot_state/robot_state.h>
-#include <tf2/convert.h>
+#include <bio_ik/bio_ik.hpp>
+#include <moveit/robot_model_loader/robot_model_loader.hpp>
+#include <moveit/robot_state/robot_state.hpp>
+#include <tf2/convert.hpp>
 
 #include <bitbots_splines/abstract_ik.hpp>
 #include <dynup_parameters.hpp>
