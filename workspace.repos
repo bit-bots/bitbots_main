@@ -26,7 +26,7 @@ repositories:
   lib/particle_filter:
     type: git
     url: git@github.com:bit-bots/particle_filter.git
-    version: master
+    version: iron
   lib/ros2_python_extension:
     type: git
     url: git@github.com:bit-bots/ros2_python_extension.git
