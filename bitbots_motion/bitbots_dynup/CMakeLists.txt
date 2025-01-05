@@ -59,7 +59,7 @@ rosidl_generate_interfaces(
 
 include_directories(include ${PYTHON_INCLUDE_DIRS})
 
-add_compile_options(-Wall -Wno-unused -fPIC)
+add_compile_options(-Wall -Werror -Wno-unused -fPIC)
 
 set(SOURCES
     src/dynup_engine.cpp

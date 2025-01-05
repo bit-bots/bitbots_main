@@ -34,7 +34,7 @@ rosidl_generate_interfaces(${PROJECT_NAME} "msg/KickDebug.msg" DEPENDENCIES
 set(INCLUDE_DIRS include ${PYTHON_INCLUDE_DIRS})
 include_directories(${INCLUDE_DIRS})
 
-add_compile_options(-Wall -Wno-unused)
+add_compile_options(-Wall -Werror -Wno-unused)
 
 set(SOURCES src/kick_node.cpp src/kick_engine.cpp src/stabilizer.cpp
             src/visualizer.cpp src/kick_ik.cpp)
