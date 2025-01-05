@@ -10,7 +10,7 @@ from rclpy.time import Time
 from rosgraph_msgs.msg import Clock
 from std_srvs.srv import Empty
 
-from bitbots_msgs.srv import SetObjectPose, SetObjectPosition
+from bitbots_msgs.srv import SetObjectPose, SetObjectPosition, SimulatorPush
 
 G = 9.81
 
@@ -118,6 +118,9 @@ class SupervisorController:
             self.reset_ball_service = self.ros_node.create_service(Empty, base_ns + "reset_ball", self.reset_ball)
             self.set_ball_position_service = self.ros_node.create_service(
                 SetObjectPosition, base_ns + "set_ball_position", self.ball_pos_callback
+            )
+            self.simulator_push_service = self.ros_node.create_service(
+                SimulatorPush, base_ns + "simulator_push", self.simulator_push
             )
 
         self.world_info = self.supervisor.getFromDef("world_info")
@@ -241,6 +244,10 @@ class SupervisorController:
             request.object_name,
         )
         return response or SetObjectPose.Response()
+
+    def simulator_push(self, request=None, response=None):
+        self.robot_nodes[request.robot].addForce([request.force.x, request.force.y, request.force.z], request.relative)
+        return response or Empty.Response()
 
     def reset_ball(self, request=None, response=None):
         self.ball.getField("translation").setSFVec3f([0, 0, 0.0772])
