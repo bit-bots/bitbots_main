@@ -19,6 +19,10 @@ repositories:
     type: git
     url: git@github.com:ros-sports/biped_interfaces.git
     version: rolling
+  lib/control_toolbox:
+    type: git
+    url: git@github.com:ros-controls/control_toolbox.git
+    version: ros2-master
   lib/dynamic_stack_decider:
     type: git
     url: git@github.com:bit-bots/dynamic_stack_decider.git
