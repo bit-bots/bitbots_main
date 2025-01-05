@@ -3,17 +3,25 @@ repositories:
     type: git
     url: git@github.com:bit-bots/RobocupProtocol.git
     version: master
-  lib/dynamic_stack_decider:
+  lib/audio_common:
     type: git
-    url: git@github.com:bit-bots/dynamic_stack_decider.git
-    version: master
-  lib/udp_bridge:
+    url: git@github.com:bit-bots/audio_common.git
+    version: ros2
+  lib/bio_ik:
     type: git
-    url: git@github.com:bit-bots/udp_bridge.git
-    version: master
+    url: git@github.com:bit-bots/bio_ik.git
+    version: ros2
   lib/bio_ik_msgs:
     type: git
     url: git@github.com:bit-bots/bio_ik_msgs.git
+    version: master
+  lib/biped_interfaces:
+    type: git
+    url: git@github.com:ros-sports/biped_interfaces.git
+    version: rolling
+  lib/dynamic_stack_decider:
+    type: git
+    url: git@github.com:bit-bots/dynamic_stack_decider.git
     version: master
   lib/DynamixelSDK:
     type: git
@@ -23,26 +31,10 @@ repositories:
     type: git
     url: git@github.com:bit-bots/dynamixel-workbench.git
     version: master
-  lib/particle_filter:
+  lib/game_controller_hl:
     type: git
-    url: git@github.com:bit-bots/particle_filter.git
-    version: master
-  lib/ros2_python_extension:
-    type: git
-    url: git@github.com:bit-bots/ros2_python_extension.git
-    version: main
-  lib/audio_common:
-    type: git
-    url: git@github.com:bit-bots/audio_common.git
-    version: ros2
-  lib/biped_interfaces:
-    type: git
-    url: git@github.com:ros-sports/biped_interfaces.git
+    url: git@github.com:ros-sports/game_controller_hl.git
     version: rolling
-  lib/bio_ik:
-    type: git
-    url: git@github.com:bit-bots/bio_ik.git
-    version: ros2
   lib/hlvs_player:
     type: git
     url: git@github.com:ros-sports/hlvs_player.git
@@ -55,19 +47,27 @@ repositories:
     type: git
     url: git@github.com:ros-sports/ipm.git
     version: rolling
+  lib/particle_filter:
+    type: git
+    url: git@github.com:bit-bots/particle_filter.git
+    version: master
   lib/ros2_numpy:
     type: git
-    url: git@github.com:Bit-Bots/ros2_numpy.git
+    url: git@github.com:bit-bots/ros2_numpy.git
+    version: rolling
+  lib/ros2_python_extension:
+    type: git
+    url: git@github.com:bit-bots/ros2_python_extension.git
+    version: main
+  lib/soccer_field_map_generator:
+    type: git
+    url: git@github.com:ros-sports/soccer_field_map_generator.git
     version: rolling
   lib/soccer_ipm:
     type: git
     url: git@github.com:ros-sports/soccer_ipm.git
     version: rolling
-  lib/soccer_field_map_generator:
+  lib/udp_bridge:
     type: git
-    url: git@github.com:ros-sports/soccer_field_map_generator.git
-    version: rolling
-  lib/game_controller_hl:
-    type: git
-    url: git@github.com:ros-sports/game_controller_hl.git
-    version: rolling
+    url: git@github.com:bit-bots/udp_bridge.git
+    version: master
