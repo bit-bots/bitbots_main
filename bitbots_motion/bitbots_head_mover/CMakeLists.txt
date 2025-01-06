@@ -27,8 +27,6 @@ find_package(std_msgs REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 
-set(CMAKE_BUILD_TYPE Debug)
-
 # uncomment the following section in order to fill in further dependencies
 # manually. find_package(<dependency> REQUIRED)
 generate_parameter_library(
