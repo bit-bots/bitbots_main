@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.8)
 project(bitbots_head_mover)
 
-
 # Build with release optimizations and debug symbols by default
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE RelWithDebug)
@@ -18,7 +17,6 @@ find_package(bio_ik REQUIRED)
 find_package(bio_ik_msgs REQUIRED)
 find_package(bitbots_msgs REQUIRED)
 find_package(generate_parameter_library REQUIRED)
-find_package(bitbots_msgs REQUIRED)
 find_package(moveit_core REQUIRED)
 find_package(moveit_msgs REQUIRED)
 find_package(moveit_ros_planning REQUIRED)

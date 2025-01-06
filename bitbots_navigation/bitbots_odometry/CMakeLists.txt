@@ -12,6 +12,7 @@ if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
 endif()
 
 find_package(ament_cmake REQUIRED)
+find_package(backward_ros REQUIRED)
 find_package(biped_interfaces REQUIRED)
 find_package(bitbots_docs REQUIRED)
 find_package(bitbots_utils REQUIRED)
@@ -44,6 +45,7 @@ target_link_libraries(motion_odometry rclcpp::rclcpp odometry_parameters)
 ament_target_dependencies(
   motion_odometry
   ament_cmake
+  backward_ros
   biped_interfaces
   bitbots_docs
   bitbots_utils
@@ -62,6 +64,7 @@ ament_target_dependencies(
 ament_target_dependencies(
   odometry_fuser
   ament_cmake
+  backward_ros
   biped_interfaces
   bitbots_docs
   bitbots_utils

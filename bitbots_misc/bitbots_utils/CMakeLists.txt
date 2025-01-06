@@ -12,6 +12,7 @@ if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
 endif()
 
 find_package(bitbots_docs REQUIRED)
+find_package(backward_ros REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_python REQUIRED)
 find_package(rclcpp REQUIRED)
@@ -31,7 +32,7 @@ add_compile_options(-Wall -Werror -Wno-unused -pedantic -Wextra -fPIC)
 add_library(${PROJECT_NAME} src/utils.cpp)
 
 # Add dependencies to cpp library
-ament_target_dependencies(${PROJECT_NAME} rclcpp tf2_ros)
+ament_target_dependencies(${PROJECT_NAME} rclcpp tf2_ros backward_ros)
 
 ament_export_dependencies(rclcpp)
 ament_export_include_directories(${INCLUDE_DIRS})

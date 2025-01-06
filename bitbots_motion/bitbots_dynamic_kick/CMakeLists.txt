@@ -12,8 +12,9 @@ if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
 endif()
 
 find_package(ament_cmake REQUIRED)
-find_package(bitbots_docs REQUIRED)
+find_package(backward_ros REQUIRED)
 find_package(biped_interfaces REQUIRED)
+find_package(bitbots_docs REQUIRED)
 find_package(bitbots_msgs REQUIRED)
 find_package(bitbots_splines REQUIRED)
 find_package(control_msgs REQUIRED)
@@ -30,7 +31,6 @@ find_package(tf2 REQUIRED)
 find_package(tf2_eigen REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
-find_package(backward_ros REQUIRED)
 
 find_package(PythonLibs COMPONENTS Interpreter Development)
 
