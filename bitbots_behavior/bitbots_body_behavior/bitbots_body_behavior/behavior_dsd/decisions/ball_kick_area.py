@@ -25,6 +25,7 @@ class BallKickArea(AbstractDecisionElement):
         ball_position = self.blackboard.world_model.get_ball_position_uv()
 
         self.publish_debug_data("ball_position", {"u": ball_position[0], "v": ball_position[1]})
+        self.publish_debug_data("smoothing_close", f"{self.no_near_decisions} ({self.no_near_decisions / self.smoothing * 10}%)")
 
         # Check if the ball is in the enter area
         if 0 <= ball_position[0] <= self.kick_x_enter and 0 <= abs(ball_position[1]) <= self.kick_y_enter:
