@@ -279,14 +279,17 @@ void Localization::updateMeasurements() {
   auto movement_since_stamp = [this](rclcpp::Time stamp) {
     try {
       tf2::Transform odom_at_measurement;
+      // Get the transform from the time the measurement was taken and copy the transform to a tf2 transform
       tf2::fromMsg(
           tf_buffer_->lookupTransform(config_.ros.odom_frame, config_.ros.base_footprint_frame, stamp).transform,
           odom_at_measurement);
       tf2::Transform odom_now;
+      // Get the latest transform and copy the transform to a tf2 transform
       tf2::fromMsg(
           tf_buffer_->lookupTransform(config_.ros.odom_frame, config_.ros.base_footprint_frame, rclcpp::Time(0))
               .transform,
           odom_now);
+      // Calculate the movement since the measurement was taken (in the local frame)
       return odom_at_measurement.inverseTimes(odom_now);
     } catch (const tf2::TransformException &ex) {
       RCLCPP_WARN(node_->get_logger(), "Could not acquire movement since measurement at time: %s Assumed no movement.",
@@ -318,24 +321,17 @@ void Localization::getMotion() {
     transformStampedNow =
         tf_buffer_->lookupTransform(config_.ros.odom_frame, config_.ros.base_footprint_frame, rclcpp::Time(0));
 
-    // Get linear movement from odometry transform and the transform of the previous filter step
-    double global_diff_x, global_diff_y;
-    global_diff_x = (transformStampedNow.transform.translation.x - previousOdomTransform_.transform.translation.x);
-    global_diff_y = (transformStampedNow.transform.translation.y - previousOdomTransform_.transform.translation.y);
+    // Convert Msgs to tf2 transforms that support mathematical operations
+    tf2::Transform transformNow, transformPreviousOdom;
+    tf2::fromMsg(transformStampedNow.transform, transformNow);
+    tf2::fromMsg(previousOdomTransform_.transform, transformPreviousOdom);
 
-    // Convert to local frame
-    auto [polar_rot, polar_dist] = cartesianToPolar(global_diff_x, global_diff_y);
-    auto [local_movement_x, local_movement_y] =
-        polarToCartesian(polar_rot - tf2::getYaw(previousOdomTransform_.transform.rotation), polar_dist);
-    linear_movement_.x = local_movement_x;
-    linear_movement_.y = local_movement_y;
-    linear_movement_.z = 0;
+    // Calculate the movement in the local frame
+    auto movement = transformPreviousOdom.inverseTimes(transformNow);
 
-    // Get angular movement from odometry transform and the transform of the previous filter step
-    rotational_movement_.x = 0;
-    rotational_movement_.y = 0;
-    rotational_movement_.z =
-        tf2::getYaw(transformStampedNow.transform.rotation) - tf2::getYaw(previousOdomTransform_.transform.rotation);
+    // Copy the movement to the message to comply with the api, which expects messages and not tf2 transforms
+    tf2::convert(movement.getOrigin(), linear_movement_);
+    rotational_movement_.z = tf2::getYaw(movement.getRotation());
 
     // Get the time delta between the two transforms
     double time_delta = rclcpp::Time(transformStampedNow.header.stamp).seconds() -
