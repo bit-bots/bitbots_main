@@ -10,19 +10,9 @@ bitbots_localization:
       description: "Percentage of particles which are considered to be the best ones. These particles are used to calculate the pose estimate"
       validation:
         bounds<>: [0, 100]
-    min_motion_linear:
-      type: double
-      description: "Minimum linear motion (m/s) which is considered to be a movement. This is relevant if we want to deactivate the filter if no movement is detected"
-      validation:
-        gt_eq<>: [0.0]
     max_motion_linear:
       type: double
       description: "Maximum linear motion (m/s) which is considered to be a movement. Updates larger than this are deemed unrealistic and are ignored"
-      validation:
-        gt_eq<>: [0.0]
-    min_motion_angular:
-      type: double
-      description: "Minimum angular motion (rad/s) which is considered to be a movement. This is relevant if we want to deactivate the filter if no movement is detected"
       validation:
         gt_eq<>: [0.0]
     max_motion_angular:
@@ -30,9 +20,6 @@ bitbots_localization:
       description: "Maximum angular motion (rad/s) which is considered to be a movement. Updates larger than this are deemed unrealistic and are ignored"
       validation:
         gt_eq<>: [0.0]
-    filter_only_with_motion:
-      type: bool
-      description: "If true, the filter is only active if a movement is detected"
   ros:
     line_pointcloud_topic:
       type: string

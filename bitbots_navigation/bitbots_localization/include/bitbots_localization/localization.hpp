@@ -179,7 +179,7 @@ class Localization {
   rclcpp::TimerBase::SharedPtr publishing_timer_;
 
   // Declare tf2 objects
-  std::unique_ptr<tf2_ros::Buffer> tfBuffer;
+  std::shared_ptr<tf2_ros::Buffer> tfBuffer;
   std::shared_ptr<tf2_ros::TransformListener> tfListener;
   std::shared_ptr<tf2_ros::TransformBroadcaster> br;
 
@@ -218,9 +218,6 @@ class Localization {
 
   // Keep track of the odometry transform in the last step
   geometry_msgs::msg::TransformStamped previousOdomTransform_;
-
-  // Flag that checks if the robot is moving
-  bool robot_moved = false;
 
   // Keep track of the number of filter steps
   int timer_callback_count_ = 0;

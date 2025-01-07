@@ -9,7 +9,7 @@ Localization::Localization(std::shared_ptr<rclcpp::Node> node)
     : node_(node),
       param_listener_(node->get_node_parameters_interface()),
       config_(param_listener_.get_params()),
-      tfBuffer(std::make_unique<tf2_ros::Buffer>(node->get_clock())),
+      tfBuffer(std::make_shared<tf2_ros::Buffer>(node->get_clock())),
       tfListener(std::make_shared<tf2_ros::TransformListener>(*tfBuffer, node)),
       br(std::make_shared<tf2_ros::TransformBroadcaster>(node)) {
   // Wait for transforms to become available and init them
@@ -175,10 +175,8 @@ void Localization::run_filter_one_step() {
     robot_motion_model_->diffuse_multiplier_ = config_.particle_filter.diffusion.multiplier;
   }
 
-  if ((config_.misc.filter_only_with_motion and robot_moved) or (!config_.misc.filter_only_with_motion)) {
-    robot_pf_->drift(linear_movement_, rotational_movement_);
-    robot_pf_->diffuse();
-  }
+  robot_pf_->drift(linear_movement_, rotational_movement_);
+  robot_pf_->diffuse();
 
   // Apply ratings corresponding to the observations compared with each particle position
   robot_pf_->measure();
@@ -355,15 +353,9 @@ void Localization::getMotion() {
         linear_movement_.y = 0;
         RCLCPP_WARN(node_->get_logger(), "Robot moved an unreasonable amount, dropping motion.");
       }
-
-      // Check if robot moved
-      robot_moved = linear_movement_normalized_x >= config_.misc.min_motion_linear or
-                    linear_movement_normalized_y >= config_.misc.min_motion_linear or
-                    rotational_movement_normalized_z >= config_.misc.min_motion_angular;
     } else {
       RCLCPP_WARN_THROTTLE(node_->get_logger(), *node_->get_clock(), 1000,
                            "Time step delta of zero encountered! Odometry is unavailable.");
-      robot_moved = false;
     }
 
     // Set the variable for the transform of the previous step to the transform of the current step, because we finished
