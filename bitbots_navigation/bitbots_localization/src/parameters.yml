@@ -29,10 +29,6 @@ bitbots_localization:
       type: string
       description: "Topic for the goal input messages"
       read_only: true
-    fieldboundary_topic:
-      type: string
-      description: "Topic for the field boundary input messages"
-      read_only: true
     particle_publishing_topic:
       type: string
       description: "Topic for the particle publishing messages"
@@ -190,17 +186,6 @@ bitbots_localization:
           description: "Score which is given to a measurement (e.g. projected goal post) if it is out of the field"
           validation:
             bounds<>: [0.0, 100.0]
-      field_boundary:
-        factor:
-          type: double
-          description: "Weighing how much the field boundary information is considered for the scoring of a particle"
-          validation:
-            bounds<>: [0.0, 1.0]
-        out_of_field_score:
-          type: double
-          description: "Score which is given to a measurement (e.g. projected field boundary segment) if it is out of the field"
-          validation:
-            bounds<>: [0.0, 100.0]
     confidences:
       line_element:
         type: double
@@ -210,10 +195,5 @@ bitbots_localization:
       goal_element:
         type: double
         description: "Confidence we have in each data point of the goal information. Meaning each projected goal post"
-        validation:
-          bounds<>: [0.0, 1.0]
-      field_boundary_element:
-        type: double
-        description: "Confidence we have in each data point of the field boundary information. Meaning each projected field boundary segment"
         validation:
           bounds<>: [0.0, 1.0]

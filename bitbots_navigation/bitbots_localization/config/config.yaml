@@ -8,7 +8,6 @@ bitbots_localization:
     ros:
       line_pointcloud_topic: 'line_mask_relative_pc'
       goal_topic: 'goals_simulated'
-      fieldboundary_topic: 'field_boundary_relative'
       particle_publishing_topic: 'pose_particles'
       debug_visualization: true
     particle_filter:
@@ -43,10 +42,6 @@ bitbots_localization:
         goal:
           factor: 0.0
           out_of_field_score: 0.0
-        field_boundary:
-          factor: 0.0
-          out_of_field_score: 0.0
       confidences:
         line_element: 0.01
         goal_element: 0.0
-        field_boundary_element: 0.0

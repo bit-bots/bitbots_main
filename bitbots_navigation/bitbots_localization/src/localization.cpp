@@ -9,16 +9,16 @@ Localization::Localization(std::shared_ptr<rclcpp::Node> node)
     : node_(node),
       param_listener_(node->get_node_parameters_interface()),
       config_(param_listener_.get_params()),
-      tfBuffer(std::make_shared<tf2_ros::Buffer>(node->get_clock())),
-      tfListener(std::make_shared<tf2_ros::TransformListener>(*tfBuffer, node)),
+      tf_buffer_(std::make_shared<tf2_ros::Buffer>(node->get_clock())),
+      tf_listener_(std::make_shared<tf2_ros::TransformListener>(*tf_buffer_, node)),
       br(std::make_shared<tf2_ros::TransformBroadcaster>(node)) {
   // Wait for transforms to become available and init them
-  bitbots_utils::wait_for_tf(node->get_logger(), node->get_clock(), tfBuffer.get(), {config_.ros.base_footprint_frame},
-                             config_.ros.odom_frame);
+  bitbots_utils::wait_for_tf(node->get_logger(), node->get_clock(), tf_buffer_.get(),
+                             {config_.ros.base_footprint_frame}, config_.ros.odom_frame);
 
   // Get the initial transform from odom to base_footprint
-  previousOdomTransform_ = tfBuffer->lookupTransform(config_.ros.odom_frame, config_.ros.base_footprint_frame,
-                                                     rclcpp::Time(0), rclcpp::Duration::from_nanoseconds(1e9 * 20.0));
+  previousOdomTransform_ = tf_buffer_->lookupTransform(config_.ros.odom_frame, config_.ros.base_footprint_frame,
+                                                       rclcpp::Time(0), rclcpp::Duration::from_nanoseconds(1e9 * 20.0));
 
   // Init subscribers
   line_point_cloud_subscriber_ = node->create_subscription<sm::msg::PointCloud2>(
@@ -26,9 +26,6 @@ Localization::Localization(std::shared_ptr<rclcpp::Node> node)
 
   goal_subscriber_ = node->create_subscription<sv3dm::msg::GoalpostArray>(
       config_.ros.goal_topic, 1, std::bind(&Localization::GoalPostsCallback, this, _1));
-
-  fieldboundary_subscriber_ = node->create_subscription<sv3dm::msg::FieldBoundary>(
-      config_.ros.fieldboundary_topic, 1, std::bind(&Localization::FieldboundaryCallback, this, _1));
 
   rviz_initial_pose_subscriber_ = node->create_subscription<gm::msg::PoseWithCovarianceStamped>(
       "initialpose", 1, std::bind(&Localization::SetInitialPositionCallback, this, _1));
@@ -38,18 +35,14 @@ Localization::Localization(std::shared_ptr<rclcpp::Node> node)
       node->create_publisher<visualization_msgs::msg::MarkerArray>(config_.ros.particle_publishing_topic, 1);
   pose_with_covariance_publisher_ =
       node->create_publisher<gm::msg::PoseWithCovarianceStamped>("pose_with_covariance", 1);
-  lines_publisher_ = node->create_publisher<visualization_msgs::msg::Marker>("lines", 1);
   line_ratings_publisher_ = node->create_publisher<visualization_msgs::msg::Marker>("line_ratings", 1);
   goal_ratings_publisher_ = node->create_publisher<visualization_msgs::msg::Marker>("goal_ratings", 1);
-  fieldboundary_ratings_publisher_ =
-      node->create_publisher<visualization_msgs::msg::Marker>("field_boundary_ratings", 1);
   field_publisher_ = node->create_publisher<nav_msgs::msg::OccupancyGrid>(
       "field/map", rclcpp::QoS(rclcpp::KeepLast(1)).transient_local());
 
   // Set the measurement timestamps to 0
   line_pointcloud_relative_.header.stamp = rclcpp::Time(0);
   goal_posts_relative_.header.stamp = rclcpp::Time(0);
-  fieldboundary_relative_.header.stamp = rclcpp::Time(0);
 
   // Get the static global configuration from the blackboard
   auto global_params = bitbots_utils::get_parameters_from_other_node(
@@ -100,14 +93,10 @@ void Localization::updateParams(bool force_reload) {
   if (config_.particle_filter.scoring.goal.factor) {
     goals_.reset(new Map(field_name_, "goals.png", config_.particle_filter.scoring.goal.out_of_field_score));
   }
-  if (config_.particle_filter.scoring.field_boundary.factor) {
-    field_boundary_.reset(
-        new Map(field_name_, "field_boundary.png", config_.particle_filter.scoring.field_boundary.out_of_field_score));
-  }
 
   // Init observation model
   robot_pose_observation_model_.reset(
-      new RobotPoseObservationModel(lines_, goals_, field_boundary_, config_, field_dimensions_));
+      new RobotPoseObservationModel(lines_, goals_, config_, field_dimensions_, tf_buffer_));
 
   // Init motion model
   auto drift_config = config_.particle_filter.drift;
@@ -175,6 +164,7 @@ void Localization::run_filter_one_step() {
     robot_motion_model_->diffuse_multiplier_ = config_.particle_filter.diffusion.multiplier;
   }
 
+  // Apply the motion model to the particles
   robot_pf_->drift(linear_movement_, rotational_movement_);
   robot_pf_->diffuse();
 
@@ -201,11 +191,9 @@ void Localization::LinePointcloudCallback(const sm::msg::PointCloud2 &msg) { lin
 
 void Localization::GoalPostsCallback(const sv3dm::msg::GoalpostArray &msg) { goal_posts_relative_ = msg; }
 
-void Localization::FieldboundaryCallback(const sv3dm::msg::FieldBoundary &msg) { fieldboundary_relative_ = msg; }
-
 void Localization::SetInitialPositionCallback(const gm::msg::PoseWithCovarianceStamped &msg) {
   // Transform the given pose to map frame
-  auto pose_in_map = tfBuffer->transform(msg, config_.ros.map_frame, tf2::durationFromSec(1.0));
+  auto pose_in_map = tf_buffer_->transform(msg, config_.ros.map_frame, tf2::durationFromSec(1.0));
 
   // Get yaw from quaternion
   double yaw = tf2::getYaw(pose_in_map.pose.pose.orientation);
@@ -295,15 +283,10 @@ void Localization::updateMeasurements() {
   if (config_.particle_filter.scoring.goal.factor && goal_posts_relative_.header.stamp != last_stamp_goals) {
     robot_pose_observation_model_->set_measurement_goalposts(goal_posts_relative_);
   }
-  if (config_.particle_filter.scoring.field_boundary.factor &&
-      fieldboundary_relative_.header.stamp != last_stamp_fb_points) {
-    robot_pose_observation_model_->set_measurement_field_boundary(fieldboundary_relative_);
-  }
 
   // Set timestamps to mark past messages
   last_stamp_lines = line_pointcloud_relative_.header.stamp;
   last_stamp_goals = goal_posts_relative_.header.stamp;
-  last_stamp_fb_points = fieldboundary_relative_.header.stamp;
 }
 
 void Localization::getMotion() {
@@ -312,7 +295,7 @@ void Localization::getMotion() {
   try {
     // Get current odometry transform
     transformStampedNow =
-        tfBuffer->lookupTransform(config_.ros.odom_frame, config_.ros.base_footprint_frame, rclcpp::Time(0));
+        tf_buffer_->lookupTransform(config_.ros.odom_frame, config_.ros.base_footprint_frame, rclcpp::Time(0));
 
     // Get linear movement from odometry transform and the transform of the previous filter step
     double global_diff_x, global_diff_y;
@@ -380,7 +363,7 @@ void Localization::publish_transforms() {
   // Get the transform from the last measurement timestamp until now
   geometry_msgs::msg::TransformStamped odomDuringMeasurement, odomNow;
   try {
-    odomNow = tfBuffer->lookupTransform(config_.ros.odom_frame, config_.ros.base_footprint_frame, rclcpp::Time(0));
+    odomNow = tf_buffer_->lookupTransform(config_.ros.odom_frame, config_.ros.base_footprint_frame, rclcpp::Time(0));
   } catch (const tf2::TransformException &ex) {
     RCLCPP_WARN(node_->get_logger(), "Could not acquire odom transforms: %s", ex.what());
   }
@@ -501,11 +484,6 @@ void Localization::publish_ratings() {
     publish_debug_rating(robot_pose_observation_model_->get_measurement_goals(), 0.2, "goal_ratings", goals_,
                          goal_ratings_publisher_);
   }
-  if (config_.particle_filter.scoring.field_boundary.factor) {
-    // Publish field boundary ratings
-    publish_debug_rating(robot_pose_observation_model_->get_measurement_field_boundary(), 0.2, "field_boundary_ratings",
-                         field_boundary_, fieldboundary_ratings_publisher_);
-  }
 }
 
 void Localization::publish_debug_rating(std::vector<std::pair<double, double>> measurements, double scale,
@@ -527,14 +505,13 @@ void Localization::publish_debug_rating(std::vector<std::pair<double, double>> m
     // lines are in polar form!
     std::pair<double, double> observationRelative;
 
-    observationRelative = map->observationRelative(measurement, best_estimate.getXPos(), best_estimate.getYPos(),
-                                                   best_estimate.getTheta());
+    observationRelative = map->getObservationCoordinatesInMapFrame(measurement, best_estimate.getXPos(),
+                                                                   best_estimate.getYPos(), best_estimate.getTheta());
     double occupancy = map->get_occupancy(observationRelative.first, observationRelative.second);
 
     geometry_msgs::msg::Point point;
     point.x = observationRelative.first;
     point.y = observationRelative.second;
-    point.z = 0;
 
     std_msgs::msg::ColorRGBA color;
     color.b = 1;

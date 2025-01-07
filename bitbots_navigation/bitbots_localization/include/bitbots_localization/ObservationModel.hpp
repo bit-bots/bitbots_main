@@ -6,17 +6,15 @@
 #define BITBOTS_LOCALIZATION_OBSERVATIONMODEL_H
 
 #include <particle_filter/ParticleFilter.h>
+#include <tf2_ros/buffer.h>
 
 #include <bitbots_localization/RobotState.hpp>
 #include <bitbots_localization/map.hpp>
 #include <bitbots_localization/tools.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <sensor_msgs/point_cloud2_iterator.hpp>
-#include <soccer_vision_3d_msgs/msg/field_boundary.hpp>
 #include <soccer_vision_3d_msgs/msg/goalpost.hpp>
 #include <soccer_vision_3d_msgs/msg/goalpost_array.hpp>
-#include <soccer_vision_3d_msgs/msg/marking_array.hpp>
-#include <soccer_vision_3d_msgs/msg/marking_intersection.hpp>
 
 #include "localization_parameters.hpp"
 
@@ -31,8 +29,8 @@ class RobotPoseObservationModel : public particle_filter::ObservationModel<Robot
    * empty
    */
   RobotPoseObservationModel(std::shared_ptr<Map> map_lines, std::shared_ptr<Map> map_goals,
-                            std::shared_ptr<Map> map_field_boundary, const bitbots_localization::Params &config,
-                            const FieldDimensions &field_dimensions);
+                            const bitbots_localization::Params &config, const FieldDimensions &field_dimensions,
+                            std::shared_ptr<tf2_ros::Buffer> tf_buffer);
 
   /**
    *
@@ -45,15 +43,9 @@ class RobotPoseObservationModel : public particle_filter::ObservationModel<Robot
 
   void set_measurement_goalposts(sv3dm::msg::GoalpostArray measurement);
 
-  void set_measurement_field_boundary(sv3dm::msg::FieldBoundary measurement);
-
-  void set_measurement_markings(sv3dm::msg::MarkingArray measurement);
-
   std::vector<std::pair<double, double>> get_measurement_lines() const;
 
   std::vector<std::pair<double, double>> get_measurement_goals() const;
-
-  std::vector<std::pair<double, double>> get_measurement_field_boundary() const;
 
   double get_min_weight() const override;
 
@@ -68,17 +60,20 @@ class RobotPoseObservationModel : public particle_filter::ObservationModel<Robot
 
   // Measurements
   std::vector<std::pair<double, double>> last_measurement_lines_;
+  rclcpp::Time last_stamp_lines;
   std::vector<std::pair<double, double>> last_measurement_goal_;
-  std::vector<std::pair<double, double>> last_measurement_field_boundary_;
+  rclcpp::Time last_stamp_goals;
 
   // Reference to the maps for the different classes
   std::shared_ptr<Map> map_lines_;
   std::shared_ptr<Map> map_goals_;
-  std::shared_ptr<Map> map_field_boundary_;
 
   // Parameters
   bitbots_localization::Params config_;
   FieldDimensions field_dimensions_;
+
+  // TF Buffer, we need a reference to this to estimate how far the robot has moved since the last measurement
+  std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
 };
 };  // namespace bitbots_localization
 
