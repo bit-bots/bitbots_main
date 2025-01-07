@@ -255,8 +255,8 @@ class Localization {
    * @param map map for this class
    * @param publisher ros publisher for the type visualization_msgs::msg::Marker
    */
-  void publish_debug_rating(std::vector<std::pair<double, double>> measurements, double scale, const char name[24],
-                            std::shared_ptr<Map> map,
+  void publish_debug_rating(const std::vector<std::pair<double, double>> &measurements, double scale,
+                            const char name[24], std::shared_ptr<Map> map,
                             rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr &publisher);
 
   /**

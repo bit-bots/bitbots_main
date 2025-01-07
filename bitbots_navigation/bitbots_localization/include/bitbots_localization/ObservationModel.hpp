@@ -29,8 +29,7 @@ class RobotPoseObservationModel : public particle_filter::ObservationModel<Robot
    * empty
    */
   RobotPoseObservationModel(std::shared_ptr<Map> map_lines, std::shared_ptr<Map> map_goals,
-                            const bitbots_localization::Params &config, const FieldDimensions &field_dimensions,
-                            std::shared_ptr<tf2_ros::Buffer> tf_buffer);
+                            const bitbots_localization::Params &config, const FieldDimensions &field_dimensions);
 
   /**
    *
@@ -43,9 +42,9 @@ class RobotPoseObservationModel : public particle_filter::ObservationModel<Robot
 
   void set_measurement_goalposts(sv3dm::msg::GoalpostArray measurement);
 
-  std::vector<std::pair<double, double>> get_measurement_lines() const;
+  const std::vector<std::pair<double, double>> get_measurement_lines() const;
 
-  std::vector<std::pair<double, double>> get_measurement_goals() const;
+  const std::vector<std::pair<double, double>> get_measurement_goals() const;
 
   double get_min_weight() const override;
 
@@ -53,16 +52,22 @@ class RobotPoseObservationModel : public particle_filter::ObservationModel<Robot
 
   bool measurements_available() override;
 
+  void set_movement_since_line_measurement(const tf2::Transform movement);
+  void set_movement_since_goal_measurement(const tf2::Transform movement);
+
  private:
   double calculate_weight_for_class(const RobotState &state,
                                     const std::vector<std::pair<double, double>> &last_measurement,
-                                    std::shared_ptr<Map> map, double element_weight) const;
+                                    std::shared_ptr<Map> map, double element_weight,
+                                    const tf2::Transform &movement_since_measurement) const;
 
   // Measurements
   std::vector<std::pair<double, double>> last_measurement_lines_;
-  rclcpp::Time last_stamp_lines;
   std::vector<std::pair<double, double>> last_measurement_goal_;
-  rclcpp::Time last_stamp_goals;
+
+  // Movement since last measurement
+  tf2::Transform movement_since_line_measurement_ = tf2::Transform::getIdentity();
+  tf2::Transform movement_since_goal_measurement_ = tf2::Transform::getIdentity();
 
   // Reference to the maps for the different classes
   std::shared_ptr<Map> map_lines_;
@@ -71,9 +76,6 @@ class RobotPoseObservationModel : public particle_filter::ObservationModel<Robot
   // Parameters
   bitbots_localization::Params config_;
   FieldDimensions field_dimensions_;
-
-  // TF Buffer, we need a reference to this to estimate how far the robot has moved since the last measurement
-  std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
 };
 };  // namespace bitbots_localization
 

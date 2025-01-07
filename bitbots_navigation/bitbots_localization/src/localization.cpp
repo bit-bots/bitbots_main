@@ -95,8 +95,7 @@ void Localization::updateParams(bool force_reload) {
   }
 
   // Init observation model
-  robot_pose_observation_model_.reset(
-      new RobotPoseObservationModel(lines_, goals_, config_, field_dimensions_, tf_buffer_));
+  robot_pose_observation_model_.reset(new RobotPoseObservationModel(lines_, goals_, config_, field_dimensions_));
 
   // Init motion model
   auto drift_config = config_.particle_filter.drift;
@@ -276,17 +275,39 @@ void Localization::reset_filter(int distribution, double x, double y, double ang
 }
 
 void Localization::updateMeasurements() {
+  // Define an inner lambda function to calculate the odometry movement since a given timestamp
+  auto movement_since_stamp = [this](rclcpp::Time stamp) {
+    try {
+      tf2::Transform odom_at_measurement;
+      tf2::fromMsg(
+          tf_buffer_->lookupTransform(config_.ros.odom_frame, config_.ros.base_footprint_frame, stamp).transform,
+          odom_at_measurement);
+      tf2::Transform odom_now;
+      tf2::fromMsg(
+          tf_buffer_->lookupTransform(config_.ros.odom_frame, config_.ros.base_footprint_frame, rclcpp::Time(0))
+              .transform,
+          odom_now);
+      return odom_at_measurement.inverseTimes(odom_now);
+    } catch (const tf2::TransformException &ex) {
+      RCLCPP_WARN(node_->get_logger(), "Could not acquire movement since measurement at time: %s Assumed no movement.",
+                  ex.what());
+      return tf2::Transform::getIdentity();
+    }
+  };
+
   // Sets the measurements in the observation model
   if (line_pointcloud_relative_.header.stamp != last_stamp_lines && config_.particle_filter.scoring.lines.factor) {
     robot_pose_observation_model_->set_measurement_lines_pc(line_pointcloud_relative_);
+    robot_pose_observation_model_->set_movement_since_line_measurement(
+        movement_since_stamp(line_pointcloud_relative_.header.stamp));
+    last_stamp_lines = line_pointcloud_relative_.header.stamp;
   }
   if (config_.particle_filter.scoring.goal.factor && goal_posts_relative_.header.stamp != last_stamp_goals) {
     robot_pose_observation_model_->set_measurement_goalposts(goal_posts_relative_);
+    robot_pose_observation_model_->set_movement_since_goal_measurement(
+        movement_since_stamp(goal_posts_relative_.header.stamp));
+    last_stamp_goals = goal_posts_relative_.header.stamp;
   }
-
-  // Set timestamps to mark past messages
-  last_stamp_lines = line_pointcloud_relative_.header.stamp;
-  last_stamp_goals = goal_posts_relative_.header.stamp;
 }
 
 void Localization::getMotion() {
@@ -486,7 +507,7 @@ void Localization::publish_ratings() {
   }
 }
 
-void Localization::publish_debug_rating(std::vector<std::pair<double, double>> measurements, double scale,
+void Localization::publish_debug_rating(const std::vector<std::pair<double, double>> &measurements, double scale,
                                         const char name[], std::shared_ptr<Map> map,
                                         rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr &publisher) {
   RobotState best_estimate = robot_pf_->getBestXPercentEstimate(config_.misc.percentage_best_particles);
@@ -501,7 +522,7 @@ void Localization::publish_debug_rating(std::vector<std::pair<double, double>> m
   marker.scale.x = scale;
   marker.scale.y = scale;
 
-  for (std::pair<double, double> &measurement : measurements) {
+  for (const std::pair<double, double> &measurement : measurements) {
     // lines are in polar form!
     std::pair<double, double> observationRelative;
 
