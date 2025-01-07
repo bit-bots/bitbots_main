@@ -23,7 +23,7 @@ double RobotPoseObservationModel::calculate_weight_for_class(
   double particle_weight_for_class;
   if (!last_measurement.empty()) {
     // Subtract (reverse) the movement from our state to get the hypothetical state at the time of the measurement
-    const RobotState state_at_measurement(state.getTransform() * movement_since_measurement);
+    const RobotState state_at_measurement(state.getTransform() * movement_since_measurement.inverse());
     // Get the ratings for for all points in the measurement based on the map
     const std::vector<double> ratings = map->Map::provideRating(state_at_measurement, last_measurement);
     // Take the average of the ratings (functional)
