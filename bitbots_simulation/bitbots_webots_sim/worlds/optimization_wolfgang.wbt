@@ -1,4 +1,11 @@
-#VRML_SIM R2021b utf8
+#VRML_SIM R2022b utf8
+
+EXTERNPROTO "../protos/robots/Wolfgang/WolfgangOptimization.proto"
+#EXTERNPROTO "../protos/robots/Wolfgang/Wolfgang.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/floors/protos/Floor.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/backgrounds/protos/TexturedBackground.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
+
 DEF world_info WorldInfo {
   basicTimeStep 8
   optimalThreadCount 1
@@ -29,7 +36,7 @@ DEF world_info WorldInfo {
   ]
 }
 Viewpoint {
-  orientation 0.14 -0.605 -0.784 2.78
+  orientation 0.0550798 0.739203 -0.671227 0.221113
   position -2.20 4.06 1.5
 }
 TexturedBackground {
@@ -39,16 +46,17 @@ TexturedBackgroundLight {
   texture "stadium_dry"
 }
 
+Floor {
+  rotation 0 1 0 0
+  contactMaterial "grass"
+  size 100 100
+  tileSize 2 2
+}
+
 DEF amy WolfgangOptimization {
   translation -0.9968797400586715 2.9921102788692946 0.4274542359577024
   rotation 0.12198099937775954 0.12935172908461096 -0.9840674600725422 1.5869763401625028
   name "amy"
   controller "<extern>"
   supervisor TRUE
-}
-Floor {
-  rotation 1 0 0 1.57
-  contactMaterial "grass"
-  size 100 100
-  tileSize 2 2
 }

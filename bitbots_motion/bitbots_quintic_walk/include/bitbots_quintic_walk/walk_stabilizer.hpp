@@ -13,6 +13,7 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 #include "bitbots_quintic_walk/walk_utils.hpp"
+#include "bitbots_quintic_walk_parameters.hpp"
 #include "bitbots_splines/abstract_stabilizer.hpp"
 
 namespace bitbots_quintic_walk {
@@ -23,7 +24,8 @@ class WalkStabilizer : public bitbots_splines::AbstractStabilizer<WalkResponse> 
   void reset() override;
   WalkResponse stabilize(const WalkResponse &response, const rclcpp::Duration &dt) override;
   WalkRequest adjust_step_length(WalkRequest request, const double imu_roll, const double imu_pitch,
-                                 double pitch_threshold, double roll_threshold, const rclcpp::Duration &dt);
+                                 double pitch_threshold, double roll_threshold, const rclcpp::Duration &dt,
+                                 walking::Params config_);
 
  private:
   rclcpp::Node::SharedPtr node_;

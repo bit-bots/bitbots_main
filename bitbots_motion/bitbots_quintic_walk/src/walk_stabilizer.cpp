@@ -25,10 +25,12 @@ void WalkStabilizer::reset() {
 
 WalkRequest WalkStabilizer::adjust_step_length(WalkRequest request, const double imu_roll, const double imu_pitch,
                                                double pitch_threshold, double roll_threshold,
-                                               const rclcpp::Duration& dt) {
+                                               const rclcpp::Duration& dt, walking::Params config_) {
   double adjustment_pitch = pid_step_length_adjustment_pitch_.computeCommand(imu_pitch, dt);
   double adjustment_roll = pid_step_length_adjustment_roll_.computeCommand(imu_roll, dt);
   RCLCPP_WARN(node_->get_logger(), "Adjustment pitch, roll: %f, %f", adjustment_pitch, adjustment_roll);
+  RCLCPP_WARN(node_->get_logger(), "p: %f,", config_.node.step_length.pitch.p);
+
   // adapt step length values based on PID controllers
   // we use a threshold to avoid unneeded steps
   if (fabs(adjustment_pitch) >= pitch_threshold) {

@@ -372,11 +372,27 @@ walking:
           default_value: false
     step_length:
       pitch:
+        p:
+          type: double
+          description: "Proportional gain for the step adjust pitch controller"
+          default_value: 0.0
+        d:
+          type: double
+          description: "Derivative gain for the step adjust pitch controller"
+          default_value: 0.0
         threshold:
           type: double
           description: "Threshold to trigger step length adjustment"
           default_value: 0.0
       roll:
+        p:
+          type: double
+          description: "Proportional gain for the step adjust roll controller"
+          default_value: 0.0
+        d:
+          type: double
+          description: "Derivative gain for the step adjust roll controller"
+          default_value: 0.0
         threshold:
           type: double
           description: "Threshold to trigger step length adjustment"
