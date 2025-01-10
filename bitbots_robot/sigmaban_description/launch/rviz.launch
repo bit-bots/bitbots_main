@@ -1,0 +1,6 @@
+<launch>
+  <node name="rviz2" pkg="rviz2" exec="rviz2" output="screen"
+      args="-d $(find-pkg-share wolfgang_description)/config/wolfgang.rviz" >
+  </node>
+
+</launch>

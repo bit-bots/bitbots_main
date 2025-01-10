@@ -1,0 +1,10 @@
+moveit_setup_assistant_config:
+  urdf:
+    package: sigmaban_description
+    relative_path: urdf/robot.urdf
+  srdf:
+    relative_path: config/sigmaban.srdf
+  package_settings:
+    author_name: Jasper Güldenstein
+    author_email: jasper.gueldenstein@uni-hamburg.de
+    generated_timestamp: 1733392602

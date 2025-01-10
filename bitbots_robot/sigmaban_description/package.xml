@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>sigmaban_description</name>
+  <version>2.1.2</version>
+  <description>URDF description of the wolfgang robot.</description>
+
+  <maintainer email="5guelden@informatik.uni-hamburg.de">Jasper Güldenstein</maintainer>
+  <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+
+  <license>MIT</license>
+
+  <author email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</author>
+  <author email="5guelden@informatik.uni-hamburg.de">Jasper Güldenstein</author>
+  <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
+
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>bitbots_docs</depend>
+  <depend>bitbots_robot_description</depend>
+  <depend>bitbots_utils</depend>
+  <depend>joint_state_publisher_gui</depend>
+  <depend>sensor_msgs</depend>
+  <depend>tf2</depend>
+  <depend>urdf</depend>
+  <depend>xacro</depend>
+
+  <export>
+    <bitbots_documentation>
+      <status>stable</status>
+      <language>xacro</language>
+    </bitbots_documentation>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

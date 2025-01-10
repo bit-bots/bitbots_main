@@ -77,6 +77,52 @@ class MotorVizHelper(Node):
                 0.4,
                 float(0),
             ]
+        elif self.args.robot_type == "sigmaban":
+            # List of all joint names. Do not change the order as it is important for Gazebo
+            self.joint_names = [
+                "HeadPan",
+                "HeadTilt",
+                "LShoulderPitch",
+                "LShoulderRoll",
+                "LElbow",
+                "RShoulderPitch",
+                "RShoulderRoll",
+                "RElbow",
+                "LHipYaw",
+                "LHipRoll",
+                "LHipPitch",
+                "LKnee",
+                "LAnklePitch",
+                "LAnkleRoll",
+                "RHipYaw",
+                "RHipRoll",
+                "RHipPitch",
+                "RKnee",
+                "RAnklePitch",
+                "RAnkleRoll",
+            ]
+            self.joint_goals = [ # TODO: Add correct values
+                float(0),
+                float(0),
+                float(0),
+                float(0),
+                float(0),
+                float(0),
+                float(0),
+                float(0),
+                float(0),
+                float(0),
+                0.7,
+                float(-1),
+                float(-0.4),
+                float(0),
+                float(0),
+                float(0),
+                float(-0.7),
+                float(1),
+                0.4,
+                float(0),
+            ]
         elif self.args.robot_type == "itandroids":
             self.joint_names = [
                 "rightShoulderPitch[shoulder]",
