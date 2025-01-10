@@ -231,6 +231,10 @@ class PlayAnimationDynup(AbstractHCMActionElement):
 
         goal = Dynup.Goal()
         goal.direction = self.direction
+        # This indicates that the goal is send from the hcm and therfore has prio,
+        # canceling other tasks. The published joint goals are also marked with this flag so they
+        # are handled differently in the HCM joint mutex
+        goal.from_hcm = True
         self.blackboard.dynup_action_current_goal = self.blackboard.dynup_action_client.send_goal_async(
             goal, feedback_callback=self.animation_feedback_cb
         )
