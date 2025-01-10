@@ -1,6 +1,9 @@
 from typing import Optional
 
 import tf2_ros as tf2
+
+# Setting up runtime type checking for this package
+from beartype.claw import beartype_this_package
 from builtin_interfaces.msg import Duration as DurationMsg
 from builtin_interfaces.msg import Time as TimeMsg
 from geometry_msgs.msg import TransformStamped
@@ -9,6 +12,8 @@ from rclpy.serialization import deserialize_message, serialize_message
 from rclpy.time import Time
 
 from bitbots_tf_buffer.cpp_wrapper import Buffer as CppBuffer
+
+beartype_this_package()
 
 
 class Buffer(tf2.BufferCore, tf2.BufferInterface):
