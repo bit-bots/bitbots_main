@@ -33,8 +33,11 @@ class RobotController:
 
         :param ros_active: Whether ROS messages should be published
         :param robot: The name of the robot to use, currently one of wolfgang, darwin, nao, op3
-        :param external_controller: Whether an external controller is used, necessary for RobotSupervisorController
+        :param robot_node: The Webots node (!= ROS node) of the robot, can normally be left empty
         :param base_ns: The namespace of this node, can normally be left empty
+        :param recognize: Whether we want to store images and automatically generated ground truth labels
+        :param camera_active: Whether the camera should be active
+        :param foot_sensors_active: Whether the foot sensors should be active
         """
         if ros_node is None:
             ros_node = RclpyNode("robot_controller")
