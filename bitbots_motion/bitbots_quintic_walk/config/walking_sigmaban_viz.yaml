@@ -1,6 +1,6 @@
 /**:
   ros__parameters:
-    use_sim_time: true
+    use_sim_time: False
 walking:
   ros__parameters:
     engine:
@@ -75,7 +75,7 @@ walking:
       phase_reset:
         min_phase: 0.90
         foot_pressure:
-          active: True
+          active: False
           ground_min_pressure: 1.5
         effort:
           active: False

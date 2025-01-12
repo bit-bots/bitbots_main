@@ -45,6 +45,9 @@ class PyWalkWrapper {
   void spin_some();
   void publish_debug();
   bool reset_and_test_if_speed_possible(py::bytes cmd_vel, double pos_threshold);
+  py::bytes get_walkready();
+  double get_trunk_height();
+  double get_trunk_pitch();
 
  private:
   rclcpp::Node::SharedPtr node_;

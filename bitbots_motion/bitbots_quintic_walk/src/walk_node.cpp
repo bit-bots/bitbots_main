@@ -247,6 +247,25 @@ void WalkNode::reset(WalkState state, double phase, geometry_msgs::msg::Twist::S
   stabilizer_.reset();
   cmdVelCb(cmd_vel);
 }
+bitbots_msgs::msg::JointCommand WalkNode::getWalkready(){
+  auto walkready_response = walk_engine_.getWalkreadyResponse();
+  auto walkready_motorgoals = ik_.calculate(walkready_response);
+
+  bitbots_msgs::msg::JointCommand command;
+  command.header.stamp = node_->get_clock()->now();
+  command.joint_names = walkready_motorgoals.first;
+  command.positions = walkready_motorgoals.second;
+  std::vector<double> vels(walkready_motorgoals.first.size(), -1.0);
+  std::vector<double> accs(walkready_motorgoals.first.size(), -1.0);
+  std::vector<double> pwms(walkready_motorgoals.first.size(), -1.0);
+  command.velocities = vels;
+  command.accelerations = accs;
+  command.max_currents = pwms;
+  return command;
+}
+
+double WalkNode::getTrunkHeight() { return config_.engine.trunk_height; }
+double WalkNode::getTrunkPitch() { return config_.engine.trunk_pitch; }
 
 bitbots_msgs::msg::JointCommand WalkNode::step(double dt, const geometry_msgs::msg::Twist::SharedPtr cmdvel_msg,
                                                const sensor_msgs::msg::Imu::SharedPtr imu_msg,

@@ -130,3 +130,8 @@ class PyWalk:
     def reset_and_test_if_speed_possible(self, cmd_vel_msg, threshold=0.001):
         """Returns true if complete walk cycle with cmd_vel is possible without kinematic issues"""
         return self.py_walk_wrapper.reset_and_test_if_speed_possible(serialize_message(cmd_vel_msg), threshold)
+
+    def get_walkready(self) -> JointCommand:
+        walk_ready = self.py_walk_wrapper.get_walkready()
+        result = deserialize_message(walk_ready, JointCommand)
+        return result, self.py_walk_wrapper.get_trunk_height(), self.py_walk_wrapper.get_trunk_pitch()

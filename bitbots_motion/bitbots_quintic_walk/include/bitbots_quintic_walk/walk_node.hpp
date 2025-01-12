@@ -55,6 +55,9 @@ class WalkNode {
  public:
   explicit WalkNode(rclcpp::Node::SharedPtr node, const std::string &ns = "",
                     const std::vector<rclcpp::Parameter> &moveit_parameters = {});
+  bitbots_msgs::msg::JointCommand getWalkready();
+  double getTrunkHeight();
+  double getTrunkPitch();
   bitbots_msgs::msg::JointCommand step(double dt);
   bitbots_msgs::msg::JointCommand step(double dt, geometry_msgs::msg::Twist::SharedPtr cmdvel_msg,
                                        sensor_msgs::msg::Imu::SharedPtr imu_msg,

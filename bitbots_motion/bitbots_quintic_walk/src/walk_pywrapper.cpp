@@ -49,6 +49,20 @@ py::bytes PyWalkWrapper::step(double dt, py::bytes &cmdvel_msg, py::bytes &imu_m
   return toPython<bitbots_msgs::msg::JointCommand>(result);
 }
 
+py::bytes PyWalkWrapper::get_walkready() {
+  bitbots_msgs::msg::JointCommand result = walk_node_->getWalkready(); 
+  return toPython<bitbots_msgs::msg::JointCommand>(result);
+  //TODO: also return the pitch and height of the base link
+}
+
+double PyWalkWrapper::get_trunk_height() {
+  return walk_node_->getTrunkHeight();
+}
+
+double PyWalkWrapper::get_trunk_pitch() {
+  return walk_node_->getTrunkPitch();
+}
+
 py::bytes PyWalkWrapper::step_relative(double dt, py::bytes &step_msg, py::bytes &imu_msg, py::bytes &jointstate_msg,
                                        py::bytes &pressure_left, py::bytes &pressure_right) {
   bitbots_msgs::msg::JointCommand result = walk_node_->step_relative(
@@ -230,5 +244,8 @@ PYBIND11_MODULE(libpy_quintic_walk, m) {
       .def("publish_debug", &PyWalkWrapper::publish_debug)
       .def("get_support_state", &PyWalkWrapper::get_support_state)
       .def("is_left_support", &PyWalkWrapper::is_left_support)
-      .def("reset_and_test_if_speed_possible", &PyWalkWrapper::reset_and_test_if_speed_possible);
+      .def("reset_and_test_if_speed_possible", &PyWalkWrapper::reset_and_test_if_speed_possible)
+      .def("get_walkready", &PyWalkWrapper::get_walkready)
+      .def("get_trunk_height", &PyWalkWrapper::get_trunk_height)
+      .def("get_trunk_pitch", &PyWalkWrapper::get_trunk_pitch);
 }

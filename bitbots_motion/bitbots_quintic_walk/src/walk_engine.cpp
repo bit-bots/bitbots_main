@@ -26,6 +26,37 @@ WalkEngine::WalkEngine(rclcpp::Node::SharedPtr node, walking::Params::Engine con
 
 void WalkEngine::setGoals(const WalkRequest& goals) { request_ = goals; }
 
+WalkResponse WalkEngine::getWalkreadyResponse() {
+  WalkResponse response;
+  tf2::Transform support_to_flying, support_to_trunk;
+  support_to_flying.setIdentity();
+  support_to_trunk.setIdentity();
+  support_to_flying.setOrigin(tf2::Vector3(0, -config_.foot_distance, 0));
+  support_to_trunk.setOrigin(tf2::Vector3(config_.trunk_x_offset,
+                                          -config_.foot_distance / 2.0 + config_.trunk_y_offset,
+                                          config_.trunk_height));
+  tf2::Quaternion q;
+  q.setRPY(0.0, config_.trunk_pitch, 0.0);
+  support_to_trunk.setRotation(q);
+  
+  response.is_left_support_foot = true;
+  response.support_foot_to_flying_foot = support_to_flying;
+  response.support_foot_to_trunk = support_to_trunk;
+
+  // add additional information to response, mainly for debug purposes
+  // maybe not important?
+  response.phase = 0.0;
+  response.traj_time = 0.0;
+  response.foot_distance = config_.foot_distance;
+  response.state = WalkState::PAUSED;
+  response.support_to_last = support_to_last_;
+  response.support_to_next = support_to_next_;
+
+  return response;
+
+}
+
+
 WalkResponse WalkEngine::update(double dt) {
   // First check cases where we do not want to update the phase: pausing, idle and phase rest
   if (engine_state_ == WalkState::PAUSED) {

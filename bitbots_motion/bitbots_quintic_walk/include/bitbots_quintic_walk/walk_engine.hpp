@@ -29,6 +29,7 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
  public:
   explicit WalkEngine(rclcpp::Node::SharedPtr node, walking::Params::Engine config);
 
+  WalkResponse getWalkreadyResponse();
   // methods from abstract engine class
   WalkResponse update(double dt) override;
   void setGoals(const WalkRequest &goals) override;
@@ -85,6 +86,8 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
 
   void setPauseDuration(double duration);
   void setForceSmoothStepTransition(bool force);
+
+
 
   tf2::Transform getLeft();
   tf2::Transform getRight();
