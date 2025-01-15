@@ -45,7 +45,7 @@ class Planner(ABC):
 
 
 class VisibilityPlanner(Planner):
-    def __init__(self, node: NodeWithConfig, buffer: tf2.Buffer) -> None:
+    def __init__(self, node: NodeWithConfig, buffer: tf2.BufferInterface) -> None:
         self.node = node
         self.buffer = buffer
         self.robots = []
@@ -75,7 +75,7 @@ class VisibilityPlanner(Planner):
         point.point = ball.pose.pose.position
         try:
             tf_point = self.buffer.transform(point, self.frame).point
-            self.ball = RoundObstacle(center=(tf_point.x, tf_point.y), radius=self.node.config.map.ball_diameter)
+            self.ball = RoundObstacle(center=(tf_point.x, tf_point.y), radius=self.node.config.map.ball_diameter / 2.0)
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
             self.ball = None
             self.node.get_logger().warn(str(e))
@@ -113,8 +113,8 @@ class VisibilityPlanner(Planner):
         ).transform.translation
         start = (my_position.x, my_position.y)
         config = ObstacleMapConfig(dilate=self.node.config.map.inflation.dilate, num_vertices=12)
-        obstacles = self.robots
-        if self.ball_obstacle_active and self.ball is not None:
+        obstacles = self.robots.copy()
+        if self.ball is not None:
             obstacles.append(self.ball)
         omap = ObstacleMap(config, obstacles)
         path = omap.shortest_path(start, goal)
@@ -124,8 +124,11 @@ class VisibilityPlanner(Planner):
             pose.pose.position.x = position[0]
             pose.pose.position.y = position[1]
             return pose
+        
+        poses = list(map(map_to_pose, path))
+        poses.append(self.goal)
 
         return Path(
             header=Header(frame_id=self.frame, stamp=self.node.get_clock().now().to_msg()),
-            poses=list(map(map_to_pose, path)),
+            poses=poses,
         )
