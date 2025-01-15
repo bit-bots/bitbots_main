@@ -16,6 +16,7 @@ from bitbots_path_planning.controller import Controller
 from bitbots_path_planning.path_planning_parameters import bitbots_path_planning as parameters
 from bitbots_path_planning.planner import VisibilityPlanner
 
+from time import time
 
 class PathPlanning(Node):
     """
@@ -32,6 +33,8 @@ class PathPlanning(Node):
 
         self.planner = VisibilityPlanner(node=self, buffer=self.tf_buffer)
         self.controller = Controller(node=self, buffer=self.tf_buffer)
+
+        self.measurements = dict()
 
         # Subscriber
         self.create_subscription(
@@ -90,7 +93,15 @@ class PathPlanning(Node):
         try:
             if self.planner.active():
                 # Calculate the path to the goal pose considering the current map
+                start = time()
                 path = self.planner.step()
+                end = time()
+                if len(self.planner.robots) not in self.measurements:
+                    self.measurements[len(self.planner.robots)] = (1, end - start)
+                else:
+                    (n, avg) = self.measurements[len(self.planner.robots)]
+                    self.measurements[len(self.planner.robots)] = (n + 1, (n * avg + (end - start)) / (n + 1))
+                self.get_logger().info(f"planning steps={self.measurements}")
                 # Publish the path for visualization
                 self.path_pub.publish(path)
                 # Calculate the command velocity to follow the given path

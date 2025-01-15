@@ -73,7 +73,6 @@ class VisibilityPlanner(Planner):
             except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
                 self.node.get_logger().warn(str(e))
         self.robots = new_buffer
-        self.node.get_logger().info(f"self.robots set to {[str(r) for r in self.robots]}")
 
     def set_ball(self, ball: PoseWithCovarianceStamped) -> None:
         point = PointStamped()
@@ -118,7 +117,6 @@ class VisibilityPlanner(Planner):
             self.frame, self.base_footprint_frame, Time(), Duration(seconds=0.2)
         ).transform.translation
         start = (my_position.x, my_position.y)
-        self.node.get_logger().info(f"got dilation parameter: {self.node.config.map.inflation.dilate}")
         config = ObstacleMapConfig(dilate=self.node.config.map.inflation.dilate, num_vertices=12)
         obstacles = self.robots
         if self.ball_obstacle_active and self.ball is not None:
