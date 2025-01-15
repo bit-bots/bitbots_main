@@ -717,14 +717,14 @@ class HeadMover {
     // Check if the head mode changed and if so, update the search pattern
     if (prev_head_mode_ != curr_head_mode) {
       switch (curr_head_mode) {
-        case bitbots_msgs::msg::HeadMode::BALL_MODE:  // 0
+        case bitbots_msgs::msg::HeadMode::SEARCH_BALL:  // 0
           pan_speed_ = params_.search_pattern.pan_speed;
           tilt_speed_ = params_.search_pattern.tilt_speed;
           pattern_ = generatePattern(params_.search_pattern.scan_lines, params_.search_pattern.pan_max[0],
                                      params_.search_pattern.pan_max[1], params_.search_pattern.tilt_max[0],
                                      params_.search_pattern.tilt_max[1], params_.search_pattern.reduce_last_scanline);
           break;
-        case bitbots_msgs::msg::HeadMode::BALL_MODE_PENALTY:  // 11
+        case bitbots_msgs::msg::HeadMode::SEARCH_BALL_PENALTY:  // 11
           pan_speed_ = params_.search_pattern_penalty.pan_speed;
           tilt_speed_ = params_.search_pattern_penalty.tilt_speed;
           pattern_ =
@@ -733,7 +733,7 @@ class HeadMover {
                               params_.search_pattern_penalty.tilt_max[1], params_.search_pattern.reduce_last_scanline);
           break;
 
-        case bitbots_msgs::msg::HeadMode::FIELD_FEATURES:  // 3
+        case bitbots_msgs::msg::HeadMode::SEARCH_FIELD_FEATURES:  // 3
           pan_speed_ = params_.search_pattern_field_features.pan_speed;
           tilt_speed_ = params_.search_pattern_field_features.tilt_speed;
           pattern_ = generatePattern(
@@ -742,7 +742,7 @@ class HeadMover {
               params_.search_pattern_field_features.tilt_max[1], params_.search_pattern.reduce_last_scanline);
           break;
 
-        case bitbots_msgs::msg::HeadMode::LOOK_FRONT:  // 13
+        case bitbots_msgs::msg::HeadMode::SEARCH_FRONT:  // 13
           pan_speed_ = params_.front_search_pattern.pan_speed;
           tilt_speed_ = params_.front_search_pattern.tilt_speed;
           pattern_ =
