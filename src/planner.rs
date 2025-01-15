@@ -4,7 +4,7 @@ use geo::{Coord, Distance, Euclidean, Intersects, Line, MultiPolygon};
 use keyed_priority_queue::{Entry, KeyedPriorityQueue};
 use ordered_float::OrderedFloat;
 
-use crate::{map::ObstacleMap, obstacle::EPSILON};
+use crate::map::ObstacleMap;
 
 #[derive(Debug, Clone)]
 pub struct PathPlanner {
