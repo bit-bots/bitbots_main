@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="sim" default="false" description="Whether the robot is running in simulation or on real hardware" />
+    <arg name="behavior_dsd_file" default="demo.dsd" description="The behavior dsd file that should be used" />
+
+    <!-- load teamplayer software stack without some unnecessary stuff, that is not needed in the demo -->
+    <include file="$(find-pkg-share bitbots_bringup)/launch/teamplayer.launch">
+        <arg name="behavior_dsd_file" value="$(var behavior_dsd_file)" />
+        <arg name="game_controller" value="false"/>
+        <arg name="localization" value="false" />
+        <arg name="sim" value="$(var sim)" />
+        <arg name="teamcom" value="false" />
+        <arg name="path_planning" value="false" />
+    </include>
+
+    <!-- load the path planning node in dummy mode, because we are limited by the map size otherwise and together with no localization 
+    this could lead to the robot not working after a while, because due to odometry errors the robot could be outside of the map -->
+    <include file="$(find-pkg-share bitbots_path_planning)/launch/path_planning.launch">
+        <arg name="sim" value="$(var sim)" />
+        <arg name="dummy" value="true" />
+    </include>
+</launch>

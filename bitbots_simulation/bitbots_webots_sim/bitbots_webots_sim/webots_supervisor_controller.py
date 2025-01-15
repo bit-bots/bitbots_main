@@ -1,3 +1,5 @@
+from typing import Optional
+
 import numpy as np
 import transforms3d
 from controller import Keyboard, Node, Supervisor
@@ -8,7 +10,7 @@ from rclpy.time import Time
 from rosgraph_msgs.msg import Clock
 from std_srvs.srv import Empty
 
-from bitbots_msgs.srv import SetObjectPose, SetObjectPosition
+from bitbots_msgs.srv import SetObjectPose, SetObjectPosition, SimulatorPush
 
 G = 9.81
 
@@ -16,7 +18,7 @@ G = 9.81
 class SupervisorController:
     def __init__(
         self,
-        ros_node: Node = None,
+        ros_node: Optional[RclpyNode] = None,
         ros_active=False,
         mode="normal",
         base_ns="/",
@@ -31,13 +33,13 @@ class SupervisorController:
         :param mode: Webots mode, one of 'normal', 'paused', or 'fast'
         :param base_ns: The namespace of this node, can normally be left empty
         """
+        if ros_node is None:
+            ros_node = RclpyNode("supervisor_controller")
         self.ros_node = ros_node
-        if self.ros_node is None:
-            self.ros_node = RclpyNode("supervisor_controller")
         # requires WEBOTS_ROBOT_NAME to be set to "supervisor_robot"
         self.ros_active = ros_active
         self.model_states_active = model_states_active
-        self.time = 0
+        self.time = 0.0
         self.clock_msg = Clock()
         self.supervisor = Supervisor()
         self.keyboard_activated = False
@@ -51,8 +53,8 @@ class SupervisorController:
         else:
             self.supervisor.simulationSetMode(Supervisor.SIMULATION_MODE_REAL_TIME)
 
-        self.motors = []
-        self.sensors = []
+        self.motors: list = []
+        self.sensors: list = []
         self.timestep = int(self.supervisor.getBasicTimeStep())
 
         self.robot_nodes = {}
@@ -75,7 +77,7 @@ class SupervisorController:
         }
         if self.robot_type not in reset_heights.keys():
             self.ros_node.get_logger().warn(f"Robot type {self.robot_type} has no reset height defined. Will use 1m")
-            self.reset_height = 1
+            self.reset_height = 1.0
         else:
             self.reset_height = reset_heights[self.robot_type]
 
@@ -116,6 +118,9 @@ class SupervisorController:
             self.reset_ball_service = self.ros_node.create_service(Empty, base_ns + "reset_ball", self.reset_ball)
             self.set_ball_position_service = self.ros_node.create_service(
                 SetObjectPosition, base_ns + "set_ball_position", self.ball_pos_callback
+            )
+            self.simulator_push_service = self.ros_node.create_service(
+                SimulatorPush, base_ns + "simulator_push", self.simulator_push
             )
 
         self.world_info = self.supervisor.getFromDef("world_info")
@@ -239,6 +244,10 @@ class SupervisorController:
             request.object_name,
         )
         return response or SetObjectPose.Response()
+
+    def simulator_push(self, request=None, response=None):
+        self.robot_nodes[request.robot].addForce([request.force.x, request.force.y, request.force.z], request.relative)
+        return response or Empty.Response()
 
     def reset_ball(self, request=None, response=None):
         self.ball.getField("translation").setSFVec3f([0, 0, 0.0772])

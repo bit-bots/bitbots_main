@@ -1,4 +1,8 @@
 std_msgs/Header header
+
+# Mark this message so it has prio
+bool from_hcm
+
 string[] joint_names
 float64[] positions
 

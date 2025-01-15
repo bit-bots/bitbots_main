@@ -1,6 +1,7 @@
 from typing import List, Optional
 
 import numpy
+from bitbots_utils.utils import get_parameters_from_other_node_sync
 from geometry_msgs.msg import Twist
 from rclpy.action import ActionClient
 from rclpy.node import Node
@@ -11,6 +12,7 @@ from std_msgs.msg import Empty as EmptyMsg
 from std_srvs.srv import Empty as EmptySrv
 from std_srvs.srv import SetBool
 
+from bitbots_hcm.type_utils import T_RobotControlState
 from bitbots_msgs.action import Dynup, PlayAnimation
 from bitbots_msgs.msg import Audio, JointTorque, RobotControlState
 from bitbots_msgs.srv import SetTeachingMode
@@ -21,7 +23,7 @@ class HcmBlackboard:
         self.node = node
 
         # Basic state
-        self.current_state: RobotControlState = RobotControlState.STARTUP
+        self.current_state: T_RobotControlState = RobotControlState.STARTUP
         self.stopped: bool = False
 
         # Save start time
@@ -32,6 +34,11 @@ class HcmBlackboard:
         self.visualization_active: bool = self.node.get_parameter("visualization_active").value
         self.pickup_accel_threshold: float = self.node.get_parameter("pick_up_accel_threshold").value
         self.pressure_sensors_installed: bool = self.node.get_parameter("pressure_sensors_installed").value
+        self.motor_start_delay: int = 0
+        if not self.simulation_active:  # The hardware interface is obviously not available in simulation
+            self.motor_start_delay = get_parameters_from_other_node_sync(
+                self.node, "/wolfgang_hardware_interface", ["start_delay"]
+            )["start_delay"]
 
         # Create service clients
         self.foot_zero_service = self.node.create_client(EmptySrv, "set_foot_zero")

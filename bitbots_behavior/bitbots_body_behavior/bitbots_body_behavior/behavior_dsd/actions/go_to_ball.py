@@ -22,9 +22,11 @@ class GoToBall(AbstractActionElement):
 
         self.blocking = parameters.get("blocking", True)
         self.distance = parameters.get("distance", self.blackboard.config["ball_approach_dist"])
+        # Offset so we kick the ball with one foot instead of the center between the feet
+        self.side_offset = parameters.get("side_offset", 0.08)
 
     def perform(self, reevaluate=False):
-        pose_msg = self.blackboard.pathfinding.get_ball_goal(self.target, self.distance, 0.08)
+        pose_msg = self.blackboard.pathfinding.get_ball_goal(self.target, self.distance, self.side_offset)
         self.blackboard.pathfinding.publish(pose_msg)
 
         approach_marker = Marker()

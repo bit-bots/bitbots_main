@@ -1,22 +1,17 @@
-import typing
 from abc import ABC, abstractmethod
-from itertools import product
 
-import geometry_msgs.msg as geom_msg
-import rustworkx as rx
+import soccer_vision_3d_msgs.msg as sv3dm
 import tf2_ros as tf2
-from tf2_geometry_msgs import PointStamped, PoseWithCovarianceStamped
+from bitbots_pathplanning_rust import ObstacleMap, ObstacleMapConfig, RoundObstacle
 from geometry_msgs.msg import PoseStamped
 from nav_msgs.msg import Path
 from rclpy.duration import Duration
-from rclpy.node import Node
 from rclpy.time import Time
-from std_msgs.msg import Header
-from visualization_msgs.msg import Marker, MarkerArray
-import soccer_vision_3d_msgs.msg as sv3dm
 from ros2_numpy import numpify
+from std_msgs.msg import Header
+from tf2_geometry_msgs import PointStamped, PoseWithCovarianceStamped
 
-from bitbots_pathplanning_rust import ObstacleMapConfig, ObstacleMap, RoundObstacle
+from bitbots_path_planning import NodeWithConfig
 
 
 class Planner(ABC):
@@ -50,7 +45,7 @@ class Planner(ABC):
 
 
 class VisibilityPlanner(Planner):
-    def __init__(self, node: Node, buffer: tf2.Buffer) -> None:
+    def __init__(self, node: NodeWithConfig, buffer: tf2.Buffer) -> None:
         self.node = node
         self.buffer = buffer
         self.robots = []
@@ -134,4 +129,3 @@ class VisibilityPlanner(Planner):
             header=Header(frame_id=self.frame, stamp=self.node.get_clock().now().to_msg()),
             poses=list(map(map_to_pose, path)),
         )
-

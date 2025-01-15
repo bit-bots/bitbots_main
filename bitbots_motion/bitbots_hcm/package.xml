@@ -9,7 +9,7 @@
 
   <maintainer email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</maintainer>
   <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
-  
+
     <license>MIT</license>
 
   <author email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</author>
@@ -33,6 +33,7 @@
   <depend>ros2_python_extension</depend>
   <depend>sensor_msgs</depend>
   <depend>std_msgs</depend>
+  <test_depend>ament_cmake_mypy</test_depend>
 
   <export>
     <bitbots_documentation>

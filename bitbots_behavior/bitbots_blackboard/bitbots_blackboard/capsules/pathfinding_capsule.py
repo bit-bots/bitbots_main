@@ -15,7 +15,7 @@ from bitbots_blackboard.capsules import AbstractBlackboardCapsule
 
 
 # Type of pathfinding goal relative to the ball
-class BallGoalType(Enum):
+class BallGoalType(str, Enum):
     GRADIENT = "gradient"
     MAP = "map"
     CLOSE = "close"
@@ -26,9 +26,8 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
 
     def __init__(self, node, blackboard):
         super().__init__(node, blackboard)
-        self.map_frame: str = self._node.get_parameter("map_frame").value
-        self.position_threshold: str = self._node.get_parameter("pathfinding_position_threshold").value
-        self.orientation_threshold: str = self._node.get_parameter("pathfinding_orientation_threshold").value
+        self.position_threshold: float = self._node.get_parameter("pathfinding_position_threshold").value
+        self.orientation_threshold: float = self._node.get_parameter("pathfinding_orientation_threshold").value
 
         self.direct_cmd_vel_pub = self._node.create_publisher(Twist, "cmd_vel", 1)
         self.pathfinding_pub = self._node.create_publisher(PoseStamped, "goal_pose", 1)
@@ -42,20 +41,20 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
             self._node, "bitbots_path_planning", ["controller.orient_to_goal_distance"]
         )["controller.orient_to_goal_distance"]
 
-    def publish(self, msg: PoseStamped):
+    def publish(self, msg: PoseStamped) -> None:
         """
         Sends a goal to the pathfinding.
         """
         self.goal = msg
         self.pathfinding_pub.publish(msg)
 
-    def get_goal(self) -> PoseStamped:
+    def get_goal(self) -> Optional[PoseStamped]:
         """
         Returns the latest goal that was send to the pathfinding.
         """
         return self.goal
 
-    def cancel_goal(self):
+    def cancel_goal(self) -> None:
         """
         This function cancels the current goal of the pathfinding,
         which will stop sending cmd_vel messages to the walking.
@@ -63,7 +62,7 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
         """
         self.pathfinding_cancel_pub.publish(Empty())
 
-    def cmd_vel_cb(self, msg: Twist):
+    def cmd_vel_cb(self, msg: Twist) -> None:
         self.current_cmd_vel = msg
 
     def get_current_cmd_vel(self) -> Twist:
@@ -74,7 +73,7 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
         """
         return self.current_cmd_vel
 
-    def stop_walk(self):
+    def stop_walk(self) -> None:
         """
         This function stops the walking. It does not cancel the current goal of the
         pathfinding and the walking will start again if the pathfinding sends a new message.
@@ -87,7 +86,7 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
         # Publish the stop command
         self.direct_cmd_vel_pub.publish(msg)
 
-    def calculate_time_to_ball(self):
+    def calculate_time_to_ball(self) -> None:
         """
         Calculates the time to ball and saves it in the team data capsule.
         """
@@ -175,16 +174,21 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
         elif BallGoalType.CLOSE == target:
             ball_u, ball_v = self._blackboard.world_model.get_ball_position_uv()
             angle = math.atan2(ball_v, ball_u)
-            ball_point = (ball_u, ball_v, angle, self._blackboard.world_model.base_footprint_frame)
+            goal_u = ball_u - math.cos(angle) * distance
+            goal_v = ball_v - math.sin(angle) * distance + side_offset
+            ball_point = (goal_u, goal_v, angle, self._blackboard.world_model.base_footprint_frame)
 
         else:
             self._node.get_logger().error(f"Target {target} for go_to_ball action not implemented.")
             return
 
+        # Create the goal pose message
         pose_msg = PoseStamped()
-        pose_msg.header.stamp = self._node.get_clock().now().to_msg()
         pose_msg.header.frame_id = ball_point[3]
         pose_msg.pose.position = Point(x=ball_point[0], y=ball_point[1], z=0.0)
         pose_msg.pose.orientation = quat_from_yaw(ball_point[2])
+
+        # Convert the goal to the map frame
+        pose_msg = self._blackboard.tf_buffer.transform(pose_msg, self._blackboard.map_frame)
 
         return pose_msg

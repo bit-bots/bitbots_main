@@ -7,6 +7,7 @@ import numpy as np
 import rclpy
 from game_controller_hl_interfaces.msg import GameState
 from rclpy.node import Node
+from rclpy.publisher import Publisher
 from sensor_msgs.msg import Image
 from soccer_vision_2d_msgs.msg import BallArray, GoalpostArray, Robot, RobotArray
 
@@ -31,7 +32,8 @@ class DebugImageFactory:
         Get an instance of debug.DebugImage.
         """
         if cls._new_debug_image_has_to_be_created(config):
-            cls._create_new_debug_image(config)
+            return cls._create_new_debug_image(config)
+        assert cls._debug_image is not None, "Debug image not created!"
         return cls._debug_image
 
     @classmethod
@@ -41,9 +43,10 @@ class DebugImageFactory:
         )
 
     @classmethod
-    def _create_new_debug_image(cls, config: dict) -> None:
+    def _create_new_debug_image(cls, config: dict) -> debug.DebugImage:
         cls._debug_image = debug.DebugImage(config["component_debug_image_active"])
         cls._config = config
+        return cls._debug_image
 
 
 class IVisionComponent(ABC):
@@ -86,9 +89,11 @@ class YOEOComponent(IVisionComponent):
         self._yoeo_instance = object_manager.YOEOObjectManager.get()
 
     def run(self, image_msg: Image) -> None:
+        assert self._yoeo_instance is not None, "YOEO handler instance not set!"
         self._yoeo_instance.predict()
 
     def set_image(self, image: np.ndarray) -> None:
+        assert self._yoeo_instance is not None, "YOEO handler instance not set!"
         self._yoeo_instance.set_image(image)
 
 
@@ -103,7 +108,7 @@ class BallDetectionComponent(IVisionComponent):
         self._debug_image: Optional[debug.DebugImage] = None
         self._debug_mode: bool = False
         self._node: Node = node
-        self._publisher: Optional[rclpy.publisher.Publisher] = None
+        self._publisher: Optional[Publisher] = None
 
     def configure(self, config: dict, debug_mode: bool) -> None:
         self._ball_detector = detectors.BallDetector(object_manager.YOEOObjectManager.get())
@@ -129,6 +134,7 @@ class BallDetectionComponent(IVisionComponent):
             self._add_final_candidates_to_debug_image(final_candidates)
 
     def _get_best_ball_candidates(self) -> list[candidate.Candidate]:
+        assert self._ball_detector is not None, "Ball detector not set!"
         return self._ball_detector.get_top_candidates(count=self._config["ball_candidate_max_count"])
 
     def _filter_by_candidate_threshold(self, candidates: list[candidate.Candidate]) -> list[candidate.Candidate]:
@@ -137,15 +143,19 @@ class BallDetectionComponent(IVisionComponent):
     def _publish_balls_message(self, image_msg: Image, candidates: list[candidate.Candidate]) -> None:
         ball_messages = list(map(ros_utils.build_ball_msg, candidates))
         balls_message = ros_utils.build_ball_array_msg(image_msg.header, ball_messages)
+        assert self._publisher is not None, "Publisher not set!"
         self._publisher.publish(balls_message)
 
     def _add_candidates_to_debug_image(self, candidates: list[candidate.Candidate]) -> None:
+        assert self._debug_image is not None, "Debug image cpomponent not set!"
         self._debug_image.draw_ball_candidates(candidates, DebugImageComponent.Colors.ball, thickness=1)
 
     def _add_candidates_within_convex_fb_to_debug_image(self, candidates: list[candidate.Candidate]) -> None:
+        assert self._debug_image is not None, "Debug image component not set!"
         self._debug_image.draw_ball_candidates(candidates, DebugImageComponent.Colors.ball, thickness=2)
 
     def _add_final_candidates_to_debug_image(self, candidates: list[candidate.Candidate]) -> None:
+        assert self._debug_image is not None, "Debug image component not set!"
         self._debug_image.draw_ball_candidates(candidates, DebugImageComponent.Colors.ball, thickness=3)
 
     def set_image(self, image: np.ndarray) -> None:
@@ -163,7 +173,7 @@ class GoalpostDetectionComponent(IVisionComponent):
         self._debug_mode: bool = False
         self._goalpost_detector: Optional[detectors.GoalpostDetector] = None
         self._node: Node = node
-        self._publisher: Optional[rclpy.publisher.Publisher] = None
+        self._publisher: Optional[Publisher] = None
 
     def configure(self, config: dict, debug_mode: bool) -> None:
         self._debug_image = DebugImageFactory.get(config)
@@ -183,21 +193,25 @@ class GoalpostDetectionComponent(IVisionComponent):
         self._publish_goalposts_message(image_msg, candidates)
 
         if self._debug_mode:
-            self._add_candidates_to_debug_image(self._goalpost_detector.get_candidates())
+            self._add_candidates_to_debug_image(self._get_candidates())
             self._add_final_candidates_to_debug_image(candidates)
 
     def _get_candidates(self) -> list[candidate.Candidate]:
+        assert self._goalpost_detector is not None, "Goalpost detector not set!"
         return self._goalpost_detector.get_candidates()
 
     def _publish_goalposts_message(self, image_msg: Image, candidates: list[candidate.Candidate]) -> None:
         goalpost_messages = [ros_utils.build_goal_post_msg(candidate) for candidate in candidates]
         goalposts_message = ros_utils.build_goal_post_array_msg(image_msg.header, goalpost_messages)
+        assert self._publisher is not None, "Publisher not set!"
         self._publisher.publish(goalposts_message)
 
     def _add_candidates_to_debug_image(self, candidates: list[candidate.Candidate]) -> None:
+        assert self._debug_image is not None, "Debug image component not set!"
         self._debug_image.draw_robot_candidates(candidates, DebugImageComponent.Colors.goalposts, thickness=1)
 
     def _add_final_candidates_to_debug_image(self, candidates: list[candidate.Candidate]) -> None:
+        assert self._debug_image is not None, "Debug image component not set!"
         self._debug_image.draw_robot_candidates(candidates, DebugImageComponent.Colors.goalposts, thickness=3)
 
     def set_image(self, image: np.ndarray) -> None:
@@ -215,7 +229,7 @@ class LineDetectionComponent(IVisionComponent):
         self._debug_mode: bool = False
         self._line_detector: Optional[detectors.ISegmentation] = None
         self._node: Node = node
-        self._publisher: Optional[rclpy.publisher.Publisher] = None
+        self._publisher: Optional[Publisher] = None
 
     def configure(self, config: dict, debug_mode: bool) -> None:
         self._debug_image = DebugImageFactory.get(config)
@@ -231,6 +245,7 @@ class LineDetectionComponent(IVisionComponent):
         )
 
     def run(self, image_msg: Image) -> None:
+        assert self._line_detector is not None, "Line detector not set!"
         line_mask = self._line_detector.get_mask_image()
         self._publish_line_mask_msg(image_msg, line_mask)
 
@@ -239,9 +254,11 @@ class LineDetectionComponent(IVisionComponent):
 
     def _publish_line_mask_msg(self, image_msg: Image, line_mask: np.ndarray) -> None:
         line_mask_msg = ros_utils.build_image_msg(image_msg.header, line_mask, "8UC1")
+        assert self._publisher is not None, "Publisher not set!"
         self._publisher.publish(line_mask_msg)
 
     def _add_line_mask_to_debug_image(self, line_mask: np.ndarray) -> None:
+        assert self._debug_image is not None, "Debug image component not set!"
         self._debug_image.draw_mask(line_mask, color=DebugImageComponent.Colors.lines)
 
     def set_image(self, image: np.ndarray) -> None:
@@ -257,7 +274,7 @@ class FieldDetectionComponent(IVisionComponent):
         self._config: dict = {}
         self._field_detector: Optional[detectors.ISegmentation] = None
         self._node: Node = node
-        self._publisher: Optional[rclpy.publisher.Publisher] = None
+        self._publisher: Optional[Publisher] = None
 
     def configure(self, config: dict, debug_mode: bool) -> None:
         self._field_detector = detectors.FieldSegmentation(object_manager.YOEOObjectManager.get())
@@ -276,10 +293,12 @@ class FieldDetectionComponent(IVisionComponent):
         self._publish_field_mask_msg(image_msg, field_mask)
 
     def _get_field_mask(self) -> np.ndarray:
+        assert self._field_detector is not None, "Field detector not set!"
         return self._field_detector.get_mask_image()
 
     def _publish_field_mask_msg(self, image_msg: Image, field_mask: np.ndarray) -> None:
         field_mask_msg = ros_utils.build_image_msg(image_msg.header, field_mask, "8UC1")
+        assert self._publisher is not None, "Publisher not set!"
         self._publisher.publish(field_mask_msg)
 
     def set_image(self, image: np.ndarray) -> None:
@@ -301,7 +320,7 @@ class RobotDetectionComponent(IVisionComponent):
         self._team_mates_detector: Optional[candidate.CandidateFinder] = None
 
         self._node: Node = node
-        self._publisher: Optional[rclpy.publisher.Publisher] = None
+        self._publisher: Optional[Publisher] = None
 
     def configure(self, config: dict, debug_mode: bool) -> None:
         own_color, opponent_color = self._determine_team_colors()
@@ -337,6 +356,7 @@ class RobotDetectionComponent(IVisionComponent):
             self._add_robots_to_debug_image()
 
     def _add_team_mates_to(self, robots_msgs: list[Robot]) -> None:
+        assert self._team_mates_detector is not None, "Team mates detector not set!"
         team_mate_candidates = self._team_mates_detector.get_candidates()
         team_mate_candidate_messages = self._create_robots_messages(Robot().attributes.TEAM_OWN, team_mate_candidates)
         robots_msgs.extend(team_mate_candidate_messages)
@@ -346,6 +366,7 @@ class RobotDetectionComponent(IVisionComponent):
         return [ros_utils.build_robot_msg(obstacle_candidate, robot_type) for obstacle_candidate in candidates]
 
     def _add_opponents_to(self, robot_msgs: list[Robot]) -> None:
+        assert self._opponents_detector is not None, "Opponents detector not set!"
         opponent_candidates = self._opponents_detector.get_candidates()
         opponent_candidate_messages = self._create_robots_messages(
             Robot().attributes.TEAM_OPPONENT, opponent_candidates
@@ -353,6 +374,7 @@ class RobotDetectionComponent(IVisionComponent):
         robot_msgs.extend(opponent_candidate_messages)
 
     def _add_remaining_obstacles_to(self, robot_msgs: list[Robot]) -> None:
+        assert self._unknown_detector is not None, "Unknown detector not set!"
         remaining_candidates = self._unknown_detector.get_candidates()
         remaining_candidate_messages = self._create_robots_messages(
             Robot().attributes.TEAM_UNKNOWN, remaining_candidates
@@ -361,6 +383,7 @@ class RobotDetectionComponent(IVisionComponent):
 
     def _publish_robots_message(self, image_msg: Image, robot_msgs: list[Robot]) -> None:
         robots_msg = ros_utils.build_robot_array_msg(image_msg.header, robot_msgs)
+        assert self._publisher is not None, "Publisher not set!"
         self._publisher.publish(robots_msg)
 
     def _add_robots_to_debug_image(self) -> None:
@@ -369,35 +392,45 @@ class RobotDetectionComponent(IVisionComponent):
         self._add_remaining_objects_to_debug_image()
 
     def _add_team_mates_to_debug_image(self) -> None:
+        assert self._team_mates_detector is not None, "Team mates detector not set!"
         team_mate_candidates = self._team_mates_detector.get_candidates()
+        assert self._debug_image is not None, "Debug image component not set!"
         self._debug_image.draw_robot_candidates(
             team_mate_candidates, DebugImageComponent.Colors.robot_team_mates, thickness=3
         )
 
     def _add_opponents_to_debug_image(self) -> None:
+        assert self._opponents_detector is not None, "Opponents detector not set!"
         opponent_candidates = self._opponents_detector.get_candidates()
+        assert self._debug_image is not None, "Debug image component not set!"
         self._debug_image.draw_robot_candidates(
             opponent_candidates, DebugImageComponent.Colors.robot_opponents, thickness=3
         )
 
     def _add_remaining_objects_to_debug_image(self) -> None:
+        assert self._unknown_detector is not None, "Unknown detector not set!"
         remaining_candidates = self._unknown_detector.get_candidates()
+        assert self._debug_image is not None, "Debug image component not set!"
         self._debug_image.draw_robot_candidates(
             remaining_candidates, DebugImageComponent.Colors.robot_unknown, thickness=3
         )
 
     def set_image(self, image: np.ndarray) -> None:
+        assert self._team_mates_detector is not None, "Team mates detector not set!"
         self._team_mates_detector.set_image(image)
+        assert self._opponents_detector is not None, "Opponents detector not set!"
         self._opponents_detector.set_image(image)
+        assert self._unknown_detector is not None, "Unknown detector not set!"
         self._unknown_detector.set_image(image)
 
-    def _configure_detectors(self, config: dict, own_color: int, opponent_color: int) -> None:
+    def _configure_detectors(self, config: dict, own_color: Optional[int], opponent_color: Optional[int]) -> None:
         self._team_mates_detector = self._select_detector_based_on(own_color)
         self._opponents_detector = self._select_detector_based_on(opponent_color)
         self._unknown_detector = self._select_detector_based_on(None)
 
     @classmethod
     def _select_detector_based_on(cls, team_color: Optional[int]):
+        color_detector: detectors.DetectorTemplate
         if team_color == GameState.BLUE:
             color_detector = detectors.BlueRobotDetector(object_manager.YOEOObjectManager.get())
         elif team_color == GameState.RED:
@@ -421,7 +454,7 @@ class NoTeamColorRobotDetectionComponent(IVisionComponent):
         self._robot_detector: Optional[candidate.CandidateFinder] = None
 
         self._node: Node = node
-        self._publisher: Optional[rclpy.publisher.Publisher] = None
+        self._publisher: Optional[Publisher] = None
 
     def configure(self, config: dict, debug_mode: bool) -> None:
         self._debug_image = DebugImageFactory.get(config)
@@ -447,23 +480,30 @@ class NoTeamColorRobotDetectionComponent(IVisionComponent):
             self._add_robots_to_debug_image()
 
     def _add_robots_to(self, robot_msgs: list[Robot]) -> None:
+        assert self._robot_detector is not None, "Robot detector not set!"
         robot_candidates = self._robot_detector.get_candidates()
         robot_candidate_messages = self._create_robot_messages(Robot().attributes.TEAM_UNKNOWN, robot_candidates)
         robot_msgs.extend(robot_candidate_messages)
 
     @staticmethod
-    def _create_robot_messages(robot_type: Robot, candidates: list[candidate.Candidate]) -> list[Robot]:
+    def _create_robot_messages(
+        robot_type: ros_utils.T_RobotAttributes_Team, candidates: list[candidate.Candidate]
+    ) -> list[Robot]:
         return [ros_utils.build_robot_msg(robot_candidate, robot_type) for robot_candidate in candidates]
 
     def _publish_robots_message(self, image_msg: Image, robot_msgs: list[Robot]) -> None:
         robots_msg = ros_utils.build_robot_array_msg(image_msg.header, robot_msgs)
+        assert self._publisher is not None, "Publisher not set!"
         self._publisher.publish(robots_msg)
 
     def _add_robots_to_debug_image(self) -> None:
+        assert self._robot_detector is not None, "Robot detector not set!"
         robot_candidates = self._robot_detector.get_candidates()
+        assert self._debug_image is not None, "Debug image component not set!"
         self._debug_image.draw_robot_candidates(robot_candidates, DebugImageComponent.Colors.robot_unknown, thickness=3)
 
     def set_image(self, image: np.ndarray) -> None:
+        assert self._robot_detector is not None, "Robot detector not set!"
         self._robot_detector.set_image(image)
 
 
@@ -488,7 +528,7 @@ class DebugImageComponent(IVisionComponent):
         self._config: dict = {}
         self._node: Node = node
         self._debug_image: Optional[debug.DebugImage] = None
-        self._publisher: Optional[rclpy.publisher.Publisher] = None
+        self._publisher: Optional[Publisher] = None
 
     def configure(self, config: dict, debug_mode: bool) -> None:
         self._debug_image = DebugImageFactory.get(config)
@@ -507,10 +547,13 @@ class DebugImageComponent(IVisionComponent):
         self._publish_debug_image_msg(debug_image_msg)
 
     def _create_debug_image_msg(self, image_msg: Image) -> Image:
+        assert self._debug_image is not None, "Debug image component not set!"
         return ros_utils.build_image_msg(image_msg.header, self._debug_image.get_image(), "bgr8")
 
     def _publish_debug_image_msg(self, debug_image_msg: Image) -> None:
+        assert self._publisher is not None, "Publisher not set!"
         self._publisher.publish(debug_image_msg)
 
     def set_image(self, image: np.ndarray) -> None:
+        assert self._debug_image is not None, "Debug image component not set!"
         self._debug_image.set_image(image)
