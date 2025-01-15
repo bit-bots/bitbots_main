@@ -605,11 +605,15 @@ class RobotController:
         self.accel.enable(self.timestep)
         self.gyro = self.robot_node.getDevice(gyro_name)
         self.gyro.enable(self.timestep)
+        self.inertial = self.robot_node.getDevice("imu inertial")
+        self.inertial.enable(self.timestep)
         if self.is_wolfgang:
             self.accel_head = self.robot_node.getDevice("imu_head accelerometer")
             self.accel_head.enable(self.timestep)
             self.gyro_head = self.robot_node.getDevice("imu_head gyro")
             self.gyro_head.enable(self.timestep)
+            self.inertial_head = self.robot_node.getDevice("imu_head inertial")
+            self.inertial_head.enable(self.timestep)
         self.camera = self.robot_node.getDevice(camera_name)
         self.camera_counter = 0
         if self.camera_active:
@@ -790,7 +794,7 @@ class RobotController:
     def publish_joint_states(self):
         self.pub_js.publish(self.get_joint_state_msg())
 
-    def get_imu_msg(self, head=False):
+    def get_imu_msg(self, head=False, orientation=False):
         msg = Imu()
         msg.header.stamp = Time(seconds=int(self.time), nanoseconds=self.time % 1 * 1e9).to_msg()
         if head:
@@ -828,6 +832,16 @@ class RobotController:
                 msg.angular_velocity.z = gyro_vels[2]
             else:
                 msg.angular_velocity.z = 0.0
+
+        if orientation:
+            if head:
+                inertial_quat = self.inertial_head.getQuaternion()
+            else:
+                inertial_quat = self.inertial.getQuaternion()
+            msg.orientation.w = inertial_quat[3]
+            msg.orientation.x = inertial_quat[0]
+            msg.orientation.y = inertial_quat[1]
+            msg.orientation.z = inertial_quat[2]
         return msg
 
     def publish_imu(self):

@@ -245,7 +245,7 @@ class SupervisorController:
 
     def simulator_push(self, request=None, response=None):
         self.robot_nodes[request.robot].addForce([request.force.x, request.force.y, request.force.z], request.relative)
-        return response or Empty.Response()
+        return response or SimulatorPush.Response()
 
     def reset_ball(self, request=None, response=None):
         self.ball.getField("translation").setSFVec3f([0, 0, 0.0772])

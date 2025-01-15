@@ -355,6 +355,9 @@ PROTO Wolfgang [
         translation -0.036975 -0.047461 0.224000
         rotation 0.000000 1.000000 0.000000 0.000000
         children [
+          InertialUnit {
+            name "imu inertial"
+          }
           Accelerometer {
             name "imu accelerometer"
             lookupTable [
@@ -4522,6 +4525,9 @@ PROTO Wolfgang [
                     translation -0.025450 0.053500 -0.023500
                     rotation -1.000000 -0.000000 -0.000000 1.570800
                     children [
+                      InertialUnit {
+                        name "imu_head inertial"
+                      }
                       Accelerometer {
                         name "imu_head accelerometer"
                         lookupTable [
