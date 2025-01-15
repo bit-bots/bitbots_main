@@ -18,6 +18,9 @@ pub struct PathPlanner {
     from: HashMap<usize, usize>,
 }
 
+const MULTIPLIER: f64 = 10.0;
+
+
 impl PathPlanner {
     pub fn new(map: &ObstacleMap, start: (f64, f64), goal: (f64, f64)) -> Self {
         let mut vertices = map.as_vertices();
@@ -78,11 +81,17 @@ impl PathPlanner {
                 .unwrap_or(&OrderedFloat(std::f64::INFINITY))
                 .clone();
         for successor in self.successors.iter().cloned() {
-            if self.obstacle.intersects(&Line::new(self.vertices[vertex], self.vertices[successor])) {
-                continue;
-            }
+            let multiplier = if self.obstacle.intersects(&Line::new(self.vertices[vertex], self.vertices[successor])) {
+                if self.goal == successor || self.start == vertex {
+                    OrderedFloat(MULTIPLIER)
+                } else {
+                    continue;
+                }
+            } else {
+                OrderedFloat(1.0)
+            };
             let g_successor = self.g_score.get(&successor).unwrap_or(&OrderedFloat(std::f64::INFINITY)).clone();
-            let g_tentative = g_vertex + self.distance(vertex, successor);
+            let g_tentative = g_vertex + multiplier * self.distance(vertex, successor);
             if g_tentative < g_successor {
                 self.from.insert(successor, vertex);
                 self.g_score.insert(successor, g_tentative);
@@ -100,20 +109,13 @@ impl PathPlanner {
     }
 
     pub fn shortest_path(mut self) -> Vec<(f64, f64)> {
-        let mut closest_vertex = self.start;
-        let mut closest_distance = OrderedFloat(std::f64::INFINITY);
         while let Some((vertex, _)) = self.open.pop() {
-            if self.heuristic(vertex) < closest_distance - EPSILON {
-                closest_vertex = vertex;
-                closest_distance = self.heuristic(vertex);
-            }
             if vertex == self.goal {
                 return self.reconstruct_path(vertex);
             }
             self.successors.remove(&vertex);
             self.expand_node(vertex);
         }
-        self.from.insert(self.goal, closest_vertex);
-        self.reconstruct_path(self.goal)
+        unreachable!()
     }
 }
