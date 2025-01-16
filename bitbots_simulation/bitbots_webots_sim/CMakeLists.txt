@@ -81,6 +81,11 @@ install(
            scripts/start_single.py scripts/start_webots_ros_supervisor.py
   DESTINATION lib/${PROJECT_NAME})
 
+if(BUILD_TESTING)
+  find_package(ament_cmake_mypy REQUIRED)
+  ament_mypy(CONFIG_FILE "${CMAKE_CURRENT_LIST_DIR}/mypy.ini")
+endif()
+
 ament_python_install_package(${PROJECT_NAME})
 
 ament_package()
