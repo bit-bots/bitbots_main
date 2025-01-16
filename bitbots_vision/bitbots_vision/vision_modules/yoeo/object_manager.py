@@ -1,5 +1,5 @@
 import os.path as osp
-from typing import Dict, Optional
+from typing import Dict, Optional, Type
 
 import rclpy
 
@@ -16,7 +16,7 @@ class YOEOObjectManager:
     This class manages the creation and update of the YOEO handler instance.
     """
 
-    _HANDLERS_BY_NAME = {
+    _HANDLERS_BY_NAME: dict[str, Type[yoeo_handlers.YOEOHandlerTemplate]] = {
         "openvino": yoeo_handlers.YOEOHandlerOpenVino,
         "onnx": yoeo_handlers.YOEOHandlerONNX,
         "pytorch": yoeo_handlers.YOEOHandlerPytorch,
@@ -47,10 +47,8 @@ class YOEOObjectManager:
         :return: the current YOEO handler instance
         :rtype: IYOEOHandler
         """
-        if cls._yoeo_instance is None:
-            logger.error("No yoeo handler created yet!")
-        else:
-            return cls._yoeo_instance
+        assert cls._yoeo_instance is not None, "YOEO handler instance not set!"
+        return cls._yoeo_instance
 
     @classmethod
     def get_id(cls) -> int:
@@ -60,10 +58,8 @@ class YOEOObjectManager:
         :return: the ID of the current YOEO handler instance
         :rtype: int
         """
-        if cls._yoeo_instance is None:
-            logger.error("No yoeo handler created yet")
-        else:
-            return id(cls._yoeo_instance)
+        assert cls._yoeo_instance is not None, "YOEO handler instance not set!"
+        return id(cls._yoeo_instance)
 
     @classmethod
     def is_team_color_detection_supported(cls) -> bool:
@@ -116,6 +112,7 @@ class YOEOObjectManager:
             cls._load_model_config(model_path)
             cls._instantiate_new_yoeo_handler(config, framework, model_path)
         elif cls._yoeo_parameters_have_changed(config):
+            assert cls._yoeo_instance is not None, "YOEO handler instance not set!"
             cls._yoeo_instance.configure(config)
 
     @classmethod

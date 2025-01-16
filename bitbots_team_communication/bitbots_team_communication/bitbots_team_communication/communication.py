@@ -43,12 +43,12 @@ class SocketCommunication:
 
     def close_connection(self):
         if self.is_setup():
-            self.socket.close()
+            self.socket.close()  # type: ignore[union-attr]
             self.logger.info("Connection closed.")
 
     def receive_message(self) -> Optional[bytes]:
         self.assert_is_setup()
-        msg, _, flags, _ = self.socket.recvmsg(self.buffer_size)
+        msg, _, flags, _ = self.socket.recvmsg(self.buffer_size)  # type: ignore[union-attr]
         is_message_truncated = flags & socket.MSG_TRUNC
         if is_message_truncated:
             self.handle_truncated_message()
@@ -67,7 +67,7 @@ class SocketCommunication:
         self.assert_is_setup()
         for port in self.target_ports:
             self.logger.debug(f"Sending message to {port} on {self.target_ip}")
-            self.socket.sendto(message, (str(self.target_ip), port))
+            self.socket.sendto(message, (str(self.target_ip), port))  # type: ignore[union-attr]
 
     def assert_is_setup(self):
         assert self.is_setup(), "Socket is not yet initialized"

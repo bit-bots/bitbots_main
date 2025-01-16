@@ -1,8 +1,9 @@
 import math
 import os
 import time
+from typing import Optional
 
-from controller import Node, Robot
+from controller import Robot
 from geometry_msgs.msg import PointStamped
 from rclpy.node import Node as RclpyNode
 from rclpy.time import Time
@@ -16,7 +17,7 @@ CAMERA_DIVIDER = 8  # every nth timestep an image is published, this is n
 class RobotController:
     def __init__(
         self,
-        ros_node: Node = None,
+        ros_node: Optional[RclpyNode] = None,
         ros_active=False,
         robot="wolfgang",
         robot_node=None,
@@ -32,12 +33,15 @@ class RobotController:
 
         :param ros_active: Whether ROS messages should be published
         :param robot: The name of the robot to use, currently one of wolfgang, darwin, nao, op3
-        :param external_controller: Whether an external controller is used, necessary for RobotSupervisorController
+        :param robot_node: The Webots node (!= ROS node) of the robot, can normally be left empty
         :param base_ns: The namespace of this node, can normally be left empty
+        :param recognize: Whether we want to store images and automatically generated ground truth labels
+        :param camera_active: Whether the camera should be active
+        :param foot_sensors_active: Whether the foot sensors should be active
         """
+        if ros_node is None:
+            ros_node = RclpyNode("robot_controller")
         self.ros_node = ros_node
-        if self.ros_node is None:
-            self.ros_node = RclpyNode("robot_controller")
         self.ros_active = ros_active
         self.recognize = recognize
         self.camera_active = camera_active
@@ -47,7 +51,7 @@ class RobotController:
         else:
             self.robot_node = robot_node
         self.walkready = [0] * 20
-        self.time = 0
+        self.time = 0.0
 
         self.motors = []
         self.sensors = []
@@ -57,7 +61,7 @@ class RobotController:
         self.timestep = int(self.robot_node.getBasicTimeStep())
 
         self.is_wolfgang = False
-        self.pressure_sensors = None
+        self.pressure_sensors: Optional[list[tuple]] = None
         self.pressure_sensor_names = []
         if robot == "wolfgang":
             self.is_wolfgang = True
@@ -618,7 +622,7 @@ class RobotController:
             self.camera.recognitionEnable(self.timestep)
             self.last_img_saved = 0.0
             self.img_save_dir = (
-                "/tmp/webots/images" + time.strftime("%Y-%m-%d-%H-%M-%S") + os.getenv("WEBOTS_ROBOT_NAME")
+                "/tmp/webots/images" + time.strftime("%Y-%m-%d-%H-%M-%S") + os.getenv("WEBOTS_ROBOT_NAME", "")
             )
             if not os.path.exists(self.img_save_dir):
                 os.makedirs(self.img_save_dir)
@@ -925,17 +929,17 @@ class RobotController:
 
         left_pressure = FootPressure()
         left_pressure.header.stamp = current_time
-        left_pressure.left_back = self.pressure_sensors[0].getValue()
-        left_pressure.left_front = self.pressure_sensors[1].getValue()
-        left_pressure.right_front = self.pressure_sensors[2].getValue()
-        left_pressure.right_back = self.pressure_sensors[3].getValue()
+        left_pressure.left_back = self.pressure_sensors[0].getValue()  # type: ignore
+        left_pressure.left_front = self.pressure_sensors[1].getValue()  # type: ignore
+        left_pressure.right_front = self.pressure_sensors[2].getValue()  # type: ignore
+        left_pressure.right_back = self.pressure_sensors[3].getValue()  # type: ignore
 
         right_pressure = FootPressure()
         right_pressure.header.stamp = current_time
-        right_pressure.left_back = self.pressure_sensors[4].getValue()
-        right_pressure.left_front = self.pressure_sensors[5].getValue()
-        right_pressure.right_front = self.pressure_sensors[6].getValue()
-        right_pressure.right_back = self.pressure_sensors[7].getValue()
+        right_pressure.left_back = self.pressure_sensors[4].getValue()  # type: ignore
+        right_pressure.left_front = self.pressure_sensors[5].getValue()  # type: ignore
+        right_pressure.right_front = self.pressure_sensors[6].getValue()  # type: ignore
+        right_pressure.right_back = self.pressure_sensors[7].getValue()  # type: ignore
 
         # compute center of pressures of the feet
         pos_x = 0.085

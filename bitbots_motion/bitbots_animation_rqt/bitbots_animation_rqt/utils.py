@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Any, Callable
 
 from PyQt5.QtCore import QObject, Qt, pyqtSignal
 from PyQt5.QtWidgets import QListWidget, QWidget
@@ -28,12 +28,12 @@ class DragDropList(QListWidget):
     # fmt: off
     def keyPressEvent(self, event): # noqa: N802
         # fmt: on
-        if event.key() == Qt.Key_Delete:
+        if event.key() == Qt.Key_Delete:  # type: ignore[attr-defined]
             super().keyPressEvent(event)
             self.key_pressed.emit()
-        elif event.key() == Qt.Key_Up and self.currentRow() - 1 >= 0:
+        elif event.key() == Qt.Key_Up and self.currentRow() - 1 >= 0:  # type: ignore[attr-defined]
             self.setCurrentRow(self.currentRow() - 1)
-        elif event.key() == Qt.Key_Down and self.currentRow() + 1 < self.count():
+        elif event.key() == Qt.Key_Down and self.currentRow() + 1 < self.count():  # type: ignore[attr-defined]
             self.setCurrentRow(self.currentRow() + 1)
 
 
@@ -43,7 +43,7 @@ class JointStateCommunicate(QObject):
 
 def flatten_dict(input_dict: dict, parent_key: str = "", sep: str = ".") -> dict:
     """Flatten a nested dictionary."""
-    items = []
+    items: list[Any] = []
     for k, v in input_dict.items():
         new_key = f"{parent_key}{sep}{k}" if parent_key else k
         if isinstance(v, dict):
