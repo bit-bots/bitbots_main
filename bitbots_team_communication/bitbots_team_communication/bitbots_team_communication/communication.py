@@ -1,5 +1,5 @@
 import socket
-from ipaddress import IPv4Address
+from ipaddress import AddressValueError, IPv4Address
 from typing import List, Optional
 
 from rclpy.node import Node
@@ -11,7 +11,19 @@ class SocketCommunication:
 
         self.buffer_size: int = 1024
         self.socket: Optional[socket.socket] = None
-        self.target_ip: IPv4Address = IPv4Address(node.get_parameter("target_ip").value)
+        if node.get_parameter("detect_target_ip").value:
+            try:
+                # automatically detect from subnet
+                import netifaces
+
+                self.target_ip: IPv4Address = IPv4Address(
+                    netifaces.ifaddresses(node.get_parameter("wifi_interface"))[netifaces.AF_INET][0]["broadcast"]
+                )
+            except (ImportError, ValueError, KeyError, AddressValueError):
+                self.logger.warn("Could not detect broadcast address, falling back to configured address")
+                self.target_ip = None
+        if self.target_ip is None:
+            self.target_ip: IPv4Address = IPv4Address(node.get_parameter("target_ip").value)
 
         if self.target_ip.is_loopback:
             # local mode on loopback device, bind to port depending on bot id and team id
