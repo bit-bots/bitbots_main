@@ -7,6 +7,8 @@
 #include <bitbots_msgs/msg/foot_pressure.hpp>
 #include <bitbots_msgs/msg/joint_command.hpp>
 #include <bitbots_msgs/msg/robot_control_state.hpp>
+#include <bitbots_quintic_walk/walk_node.hpp>
+#include <bitbots_quintic_walk/walk_utils.hpp>
 #include <cmath>
 #include <geometry_msgs/msg/pose_array.hpp>
 #include <geometry_msgs/msg/twist.hpp>
@@ -14,9 +16,6 @@
 #include <map>
 #include <rclcpp/rclcpp.hpp>
 #include <ros2_python_extension/serialization.hpp>
-
-#include "bitbots_quintic_walk/walk_node.hpp"
-#include "bitbots_quintic_walk/walk_utils.hpp"
 
 namespace py = pybind11;
 using namespace ros2_python_extension;

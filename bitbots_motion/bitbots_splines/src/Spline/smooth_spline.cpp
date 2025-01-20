@@ -3,11 +3,10 @@ This code is largely based on the original code by Quentin "Leph" Rouxel and Tea
 The original files can be found at:
 https://github.com/Rhoban/model/
 */
-#include "bitbots_splines/smooth_spline.hpp"
-
 #include <math.h>
 
 #include <algorithm>
+#include <bitbots_splines/smooth_spline.hpp>
 #include <stdexcept>
 
 namespace bitbots_splines {
@@ -98,7 +97,7 @@ Polynom SmoothSpline::polynomFit(double t, double pos_1, double vel_1, double ac
 std::string SmoothSpline::getDebugString() {
   std::string output;
   int i = 0;
-  for (auto &p : points_) {
+  for (const auto &p : points_) {
     output += "Point:" + std::to_string(i) + "\n";
     output += "  Time: " + std::to_string(p.time) + "\n";
     output += "  Pos: " + std::to_string(p.position) + "\n";

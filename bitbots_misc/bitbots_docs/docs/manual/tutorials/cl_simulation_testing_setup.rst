@@ -35,7 +35,7 @@ For compilation of the whole meta repository run ``cba``, which is an alias for:
 ``cd $COLCON_WS; colcon build --symlink-install --continue-on-error``
 After a successful run, before we are able to use any ros commands we now need to source colcon built sources
 with ``sa``, which is an alias for:
-``source "/opt/ros/iron/setup.$SHELL" && source "$COLCON_WS/install/setup.$SHELL"``
+``source "/opt/ros/jazzy/setup.$SHELL" && source "$COLCON_WS/install/setup.$SHELL"``
 
 **3. Run Webots Simulation**
 

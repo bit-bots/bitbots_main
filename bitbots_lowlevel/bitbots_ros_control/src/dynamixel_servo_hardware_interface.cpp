@@ -1,8 +1,7 @@
-#include <moveit/robot_model/robot_model.h>
-#include <moveit/robot_model_loader/robot_model_loader.h>
-
 #include <bitbots_ros_control/dynamixel_servo_hardware_interface.hpp>
 #include <bitbots_ros_control/utils.hpp>
+#include <moveit/robot_model/robot_model.hpp>
+#include <moveit/robot_model_loader/robot_model_loader.hpp>
 #include <utility>
 
 namespace bitbots_ros_control {
@@ -148,7 +147,7 @@ void DynamixelServoHardwareInterface::individualTorqueCb(bitbots_msgs::msg::Join
       RCLCPP_WARN(nh_->get_logger(), "Couldn't set torque for servo %s ", msg.joint_names[i].c_str());
     }
   }
-  for (auto &bus : bus_interfaces_) {
+  for (const auto &bus : bus_interfaces_) {
     bus->switch_individual_torque_ = true;
   }
 }
@@ -157,7 +156,7 @@ void DynamixelServoHardwareInterface::setTorqueCb(std_msgs::msg::Bool::SharedPtr
   /**
    * This saves the given required value, so that it can be written to the servos in the write method
    */
-  for (auto &bus : bus_interfaces_) {
+  for (const auto &bus : bus_interfaces_) {
     bus->goal_torque_ = enabled->data;
   }
   for (size_t j = 0; j < joint_names_.size(); j++) {
@@ -196,7 +195,7 @@ void DynamixelServoHardwareInterface::write(const rclcpp::Time &t, const rclcpp:
   // set all values from controller to the buses
   // todo improve performance
   int i = 0;
-  for (auto &bus : bus_interfaces_) {
+  for (const auto &bus : bus_interfaces_) {
     for (int j = 0; j < bus->joint_count_; j++) {
       bus->goal_position_[j] = goal_position_[i];
       bus->goal_velocity_[j] = goal_velocity_[i];

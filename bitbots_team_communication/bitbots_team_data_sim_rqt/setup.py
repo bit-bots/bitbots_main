@@ -4,7 +4,7 @@ package_name = "bitbots_team_data_sim_rqt"
 
 setup(
     name=package_name,
-    packages=find_packages(),
+    packages=find_packages(exclude=["test"]),
     data_files=[
         ("share/" + package_name + "/resource", ["resource/RobotTeamDataSimulator.ui"]),
         ("share/ament_index/resource_index/packages", ["resource/" + package_name]),
@@ -12,8 +12,8 @@ setup(
         ("share/" + package_name, ["plugin.xml"]),
     ],
     install_requires=["setuptools"],
-    zip_safe=True,
     tests_require=["pytest"],
+    zip_safe=True,
     entry_points={
         "console_scripts": [
             "team_data_sim_gui = " + package_name + ".team_data_ui:main",

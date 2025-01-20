@@ -32,6 +32,7 @@
   <depend>tf2</depend>
   <test_depend>ament_mypy</test_depend>
 
+  <test_depend>python3-pytest</test_depend>
 
   <export>
     <rosdoc config="rosdoc.yaml"/>

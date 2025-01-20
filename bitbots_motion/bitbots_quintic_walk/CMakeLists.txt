@@ -1,9 +1,20 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.9)
 project(bitbots_quintic_walk)
 
 # Add support for C++20
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 20)
+endif()
+
+# Include CheckIPOSupported module
+include(CheckIPOSupported)
+
+# Check if IPO is supported
+check_ipo_supported(RESULT ipo_supported)
+if(ipo_supported)
+  set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+  # Set the number of parallel LTO jobs
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto=4")
 endif()
 
 # Build with release optimizations and debug symbols by default
@@ -13,12 +24,12 @@ endif()
 
 set(PYBIND11_PYTHON_VERSION 3)
 set(PYBIND11_FINDPYTHON ON)
+
 find_package(ament_cmake REQUIRED)
 find_package(backward_ros REQUIRED)
 find_package(biped_interfaces REQUIRED)
 find_package(bitbots_msgs REQUIRED)
 find_package(bitbots_splines REQUIRED)
-find_package(control_msgs REQUIRED)
 find_package(control_toolbox REQUIRED)
 find_package(generate_parameter_library REQUIRED)
 find_package(geometry_msgs REQUIRED)
@@ -34,20 +45,16 @@ find_package(tf2_eigen REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 
-find_package(ros2_python_extension REQUIRED)
 find_package(pybind11 REQUIRED)
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
+
+find_package(ros2_python_extension REQUIRED)
 
 generate_parameter_library(bitbots_quintic_walk_parameters src/parameters.yaml)
 
 rosidl_generate_interfaces(
-  ${PROJECT_NAME}
-  "msg/WalkDebug.msg"
-  "msg/WalkEngineDebug.msg"
-  DEPENDENCIES
-  std_msgs
-  geometry_msgs
-  Python3)
+  ${PROJECT_NAME} "msg/WalkDebug.msg" "msg/WalkEngineDebug.msg" DEPENDENCIES
+  std_msgs geometry_msgs)
 
 include_directories(include ${PYTHON_INCLUDE_DIRS})
 
@@ -65,7 +72,6 @@ ament_target_dependencies(
   biped_interfaces
   bitbots_msgs
   bitbots_splines
-  control_msgs
   control_toolbox
   geometry_msgs
   moveit_ros_planning_interface
@@ -94,7 +100,6 @@ ament_target_dependencies(
   biped_interfaces
   bitbots_msgs
   bitbots_splines
-  control_msgs
   control_toolbox
   geometry_msgs
   moveit_ros_planning_interface

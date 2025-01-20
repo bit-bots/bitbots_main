@@ -31,13 +31,13 @@
   <depend>bitbots_tts</depend>
   <depend>pluginlib</depend>
   <depend>rclcpp</depend>
-  <depend>realtime_tools</depend>
   <depend>std_msgs</depend>
   <depend>system_monitor</depend>
   <depend>transmission_interface</depend>
   <depend>yaml-cpp</depend>
 
   <exec_depend>imu_complementary_filter</exec_depend>
+  <exec_depend>rviz_imu_plugin</exec_depend>
 
 
   <export>

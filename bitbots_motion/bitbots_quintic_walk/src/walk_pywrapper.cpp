@@ -1,4 +1,4 @@
-#include "bitbots_quintic_walk/walk_pywrapper.hpp"
+#include <bitbots_quintic_walk/walk_pywrapper.hpp>
 
 void PyWalkWrapper::spin_some() { rclcpp::spin_some(node_); }
 
