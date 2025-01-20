@@ -12,6 +12,7 @@ class CheckMotors(AbstractHCMDecisionElement):
     def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
         self.had_problem = False
+        self.power_was_off = False
 
     def perform(self, reevaluate=False):
         self.clear_debug_data()
@@ -71,8 +72,16 @@ class CheckMotors(AbstractHCMDecisionElement):
                     # wait for motors to connect
                     return "PROBLEM"
             else:
-                # we have to turn the motors on
-                return "TURN_ON"
+                # The motors are off, so we will not complain
+                self.power_was_off = True
+                return "MOTORS_NOT_STARTED"
+
+        elif self.power_was_off:
+            # motors are now on and we can continue
+            self.blackboard.node.get_logger().info("Motors are now connected. Will resume.")
+            self.power_was_off = False
+            # But we want to perform a clean start, so we don't jump directly into the last goal position
+            return "TURN_ON"
 
         if self.had_problem:
             # had problem before, just tell that this is solved now
@@ -117,10 +126,14 @@ class CheckIMU(AbstractHCMDecisionElement):
             else:
                 return "OKAY"
 
-        if self.blackboard.previous_imu_msg is None or (
-            self.blackboard.node.get_clock().now().nanoseconds
-            - self.blackboard.last_different_imu_state_time.nanoseconds
-            > self.blackboard.imu_timeout_duration * 1e9
+        if (
+            self.blackboard.previous_imu_msg is None
+            or self.blackboard.last_different_imu_state_time is None
+            or (
+                self.blackboard.node.get_clock().now().nanoseconds
+                - self.blackboard.last_different_imu_state_time.nanoseconds
+                > self.blackboard.imu_timeout_duration * 1e9
+            )
         ):
             if (
                 self.blackboard.current_state == RobotControlState.STARTUP

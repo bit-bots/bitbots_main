@@ -1,7 +1,7 @@
 from os.path import join
 from typing import Dict, List, Optional
 
-import yaml
+import yaml  # type: ignore[import-untyped]
 
 
 class ModelConfig:

@@ -58,6 +58,9 @@ if(BUILD_TESTING)
   ament_add_pytest_test(
     hcm_py_test test/pytest PYTHON_EXECUTABLE "${PYTHON_EXECUTABLE}" APPEND_ENV
     PYTHONPATH=${CMAKE_CURRENT_BINARY_DIR})
+
+  find_package(ament_cmake_mypy REQUIRED)
+  ament_mypy(CONFIG_FILE "${CMAKE_CURRENT_LIST_DIR}/mypy.ini")
 endif()
 
 ament_python_install_package(${PROJECT_NAME})
