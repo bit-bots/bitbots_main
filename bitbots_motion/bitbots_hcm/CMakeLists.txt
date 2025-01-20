@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.5)
 project(bitbots_hcm)
 
+# Build with release optimizations and debug symbols by default
+if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE RelWithDebug)
+endif()
+
 set(PYBIND11_PYTHON_VERSION 3)
 set(PYBIND11_FINDPYTHON ON)
 find_package(ament_cmake REQUIRED)
@@ -19,7 +24,7 @@ find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-fvisibility=hidden)
+  add_compile_options(-fvisibility=hidden -Wall -Wextra -Wpedantic)
 endif()
 
 include_directories(${PYTHON_INCLUDE_DIRS})
