@@ -12,6 +12,7 @@ from std_msgs.msg import Empty as EmptyMsg
 from std_srvs.srv import Empty as EmptySrv
 from std_srvs.srv import SetBool
 
+from bitbots_hcm.type_utils import T_RobotControlState
 from bitbots_msgs.action import Dynup, PlayAnimation
 from bitbots_msgs.msg import Audio, JointTorque, RobotControlState
 from bitbots_msgs.srv import SetTeachingMode
@@ -22,7 +23,7 @@ class HcmBlackboard:
         self.node = node
 
         # Basic state
-        self.current_state: RobotControlState = RobotControlState.STARTUP
+        self.current_state: T_RobotControlState = RobotControlState.STARTUP
         self.stopped: bool = False
 
         # Save start time

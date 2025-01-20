@@ -5,9 +5,10 @@ import tf2_ros as tf2
 from bitbots_utils.utils import get_parameters_from_other_node
 from geometry_msgs.msg import Point
 from nav_msgs.msg import OccupancyGrid
-from rclpy.node import Node
 from ros2_numpy import msgify, numpify
 from tf2_geometry_msgs import PointStamped, PoseWithCovarianceStamped
+
+from bitbots_path_planning import NodeWithConfig
 
 
 class Map:
@@ -15,7 +16,7 @@ class Map:
     Costmap that keeps track of obstacles like the ball or other robots.
     """
 
-    def __init__(self, node: Node, buffer: tf2.Buffer) -> None:
+    def __init__(self, node: NodeWithConfig, buffer: tf2.BufferInterface) -> None:
         self.node = node
         self.buffer = buffer
         self.resolution: int = self.node.config.map.resolution
@@ -64,7 +65,7 @@ class Map:
                 round(self.config_ball_diameter / 2 * self.resolution),
                 self.config_obstacle_value,
                 -1,
-            )
+            )  # type: ignore
 
     def set_robots(self, robots: sv3dm.RobotArray):
         """
@@ -95,7 +96,7 @@ class Map:
                 round(max(numpify(robot.bb.size)[:2]) * self.resolution),
                 self.config_obstacle_value,
                 -1,
-            )
+            )  # type: ignore
 
     def to_map_space(self, x: float, y: float) -> tuple[int, int]:
         """

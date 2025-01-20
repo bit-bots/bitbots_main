@@ -1,4 +1,5 @@
 import math
+from typing import Literal
 
 import numpy as np
 from geometry_msgs.msg import Quaternion
@@ -37,7 +38,7 @@ def sixd2quat(sixd):
     return mat2quat(mat)
 
 
-def quat2fused(q, order="wxyz"):
+def quat2fused(q, order: Literal["xyzw", "wxyz"] = "wxyz"):
     # Convert to numpy array if necessary
     q = np.asarray(q)
 
@@ -46,8 +47,6 @@ def quat2fused(q, order="wxyz"):
         q_xyzw = q
     elif order == "wxyz":
         q_xyzw = wxyz2xyzw(q)
-    else:
-        raise ValueError(f"Unknown quaternion order: {order}")
 
     # Fused yaw of Quaternion
     fused_yaw = 2.0 * math.atan2(
@@ -78,7 +77,7 @@ def quat2fused(q, order="wxyz"):
 
 
 # Conversion: Fused angles (3D/4D) --> Quaternion (wxyz)
-def fused2quat(fused_roll, fused_pitch, fused_yaw, hemi):
+def fused2quat(fused_roll: float, fused_pitch: float, fused_yaw: float, hemi: bool) -> np.ndarray:
     # Precalculate the sine values
     sth = math.sin(fused_pitch)
     sphi = math.sin(fused_roll)
@@ -115,7 +114,7 @@ def fused2quat(fused_roll, fused_pitch, fused_yaw, hemi):
     return np.array([chalpha * chpsi, shalpha * chgampsi, shalpha * shgampsi, chalpha * shpsi])  # Order: (w,x,y,z)
 
 
-def compute_imu_orientation_from_world(robot_quat_in_world):
+def compute_imu_orientation_from_world(robot_quat_in_world) -> tuple[tuple[float, float, float], np.ndarray]:
     # imu orientation has roll and pitch relative to gravity vector. yaw in world frame
     # get global yaw
     yrp_world_frame = quat2euler(robot_quat_in_world, axes="szxy")
@@ -126,5 +125,5 @@ def compute_imu_orientation_from_world(robot_quat_in_world):
     return [rp[0], rp[1], 0], yaw_quat
 
 
-def quat_from_yaw(yaw: float) -> Quaternion:
+def quat_from_yaw(yaw: float | int) -> Quaternion:
     return msgify(Quaternion, wxyz2xyzw(euler2quat(yaw, 0, 0, axes="szxy")))

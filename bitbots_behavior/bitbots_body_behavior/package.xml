@@ -19,6 +19,7 @@
 
   <depend>bitbots_blackboard</depend>
   <depend>bitbots_msgs</depend>
+  <depend>bitbots_tts</depend>
   <depend>bitbots_utils</depend>
   <depend>dynamic_stack_decider</depend>
   <depend>game_controller_hl_interfaces</depend>
@@ -29,6 +30,7 @@
   <depend>soccer_vision_3d_msgs</depend>
   <depend>tf_transformations</depend>
   <depend>tf2</depend>
+  <test_depend>ament_mypy</test_depend>
 
   <test_depend>python3-pytest</test_depend>
 

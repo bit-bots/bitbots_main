@@ -43,7 +43,6 @@
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/camera_info.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
-#include <soccer_vision_3d_msgs/msg/field_boundary.hpp>
 #include <soccer_vision_3d_msgs/msg/goalpost_array.hpp>
 #include <std_msgs/msg/color_rgba.hpp>
 #include <std_srvs/srv/trigger.hpp>
@@ -110,12 +109,6 @@ class Localization {
   void GoalPostsCallback(const sv3dm::msg::GoalpostArray &msg);  // TODO
 
   /**
-   * Callback for the relative field boundary measurements
-   * @param msg Message containing the field boundary points.
-   */
-  void FieldboundaryCallback(const sv3dm::msg::FieldBoundary &msg);
-
-  /**
    * Resets the state distribution of the state space
    * @param distribution The type of the distribution
    */
@@ -157,17 +150,13 @@ class Localization {
   // Declare subscribers
   rclcpp::Subscription<sm::msg::PointCloud2>::SharedPtr line_point_cloud_subscriber_;
   rclcpp::Subscription<sv3dm::msg::GoalpostArray>::SharedPtr goal_subscriber_;
-  rclcpp::Subscription<sv3dm::msg::FieldBoundary>::SharedPtr fieldboundary_subscriber_;
-
   rclcpp::Subscription<gm::msg::PoseWithCovarianceStamped>::SharedPtr rviz_initial_pose_subscriber_;
 
   // Declare publishers
   rclcpp::Publisher<gm::msg::PoseWithCovarianceStamped>::SharedPtr pose_with_covariance_publisher_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr pose_particles_publisher_;
-  rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr lines_publisher_;
   rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr line_ratings_publisher_;
   rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr goal_ratings_publisher_;
-  rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr fieldboundary_ratings_publisher_;
   rclcpp::Publisher<nav_msgs::msg::OccupancyGrid>::SharedPtr field_publisher_;
 
   // Declare services
@@ -178,8 +167,8 @@ class Localization {
   rclcpp::TimerBase::SharedPtr publishing_timer_;
 
   // Declare tf2 objects
-  std::unique_ptr<tf2_ros::Buffer> tfBuffer;
-  std::shared_ptr<tf2_ros::TransformListener> tfListener;
+  std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
+  std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
   std::shared_ptr<tf2_ros::TransformBroadcaster> br;
 
   // Declare particle filter components
@@ -200,7 +189,6 @@ class Localization {
   // Declare input message buffers
   sm::msg::PointCloud2 line_pointcloud_relative_;
   sv3dm::msg::GoalpostArray goal_posts_relative_;
-  sv3dm::msg::FieldBoundary fieldboundary_relative_;
 
   // Declare time stamps
   rclcpp::Time last_stamp_lines = rclcpp::Time(0);
@@ -218,16 +206,12 @@ class Localization {
   // Keep track of the odometry transform in the last step
   geometry_msgs::msg::TransformStamped previousOdomTransform_;
 
-  // Flag that checks if the robot is moving
-  bool robot_moved = false;
-
   // Keep track of the number of filter steps
   int timer_callback_count_ = 0;
 
   // Maps for the different measurement classes
   std::shared_ptr<Map> lines_;
   std::shared_ptr<Map> goals_;
-  std::shared_ptr<Map> field_boundary_;
 
   // RNG that is used for the different sampling steps
   particle_filter::CRandomNumberGenerator random_number_generator_;
@@ -270,8 +254,8 @@ class Localization {
    * @param map map for this class
    * @param publisher ros publisher for the type visualization_msgs::msg::Marker
    */
-  void publish_debug_rating(std::vector<std::pair<double, double>> measurements, double scale, const char name[24],
-                            std::shared_ptr<Map> map,
+  void publish_debug_rating(const std::vector<std::pair<double, double>> &measurements, double scale,
+                            const char name[24], std::shared_ptr<Map> map,
                             rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr &publisher);
 
   /**

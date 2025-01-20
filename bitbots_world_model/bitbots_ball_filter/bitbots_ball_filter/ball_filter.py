@@ -1,5 +1,5 @@
 #! /usr/bin/env python3
-from typing import Optional, Tuple
+from typing import Optional
 
 import numpy as np
 import rclpy
@@ -81,7 +81,7 @@ class BallFilter(Node):
         self.ball_state_position = np.zeros(3)
         self.ball_state_covariance = np.eye(3) * 1000
 
-    def reset_filter_cb(self, req, response) -> Tuple[bool, str]:
+    def reset_filter_cb(self, _: Trigger.Request, response: Trigger.Response) -> Trigger.Response:
         self.logger.info("Resetting bitbots ball filter...")
         self.reset_ball()
         response.success = True
@@ -122,12 +122,12 @@ class BallFilter(Node):
                     diff = numpify(ball_transform.point) - self.ball_state_position
                     if abs(diff[0]) < ignore_threshold_x and abs(diff[1]) < ignore_threshold_y:
                         # Store the ball relative to the robot, the ball in the filter frame and the distance to the filter estimate
-                        filtered_balls.append((ball, ball_transform, np.linalg.norm(diff)))
+                        filtered_balls.append((ball, ball_transform, float(np.linalg.norm(diff))))
 
             # Select the ball with closest distance to the filter estimate
             ball_msg, ball_measurement_map, _ = min(filtered_balls, key=lambda x: x[2], default=(None, None, 0))
             # Only update the measurement if we have a ball that is close enough to the filter's estimate
-            if ball_measurement_map is not None:
+            if ball_measurement_map is not None and ball_msg is not None:
                 # Estimate the covariance of the measurement
                 # Calculate the distance from the robot to the ball
                 distance = np.linalg.norm(numpify(ball_msg.center))
@@ -179,6 +179,7 @@ class BallFilter(Node):
             return self.tf_buffer.transform(point_stamped, frame, timeout=Duration(nanoseconds=int(timeout * (10**9))))
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
             self.logger.warning(str(e))
+            return None
 
     def update_params(self) -> None:
         """
@@ -224,8 +225,8 @@ class BallFilter(Node):
         # Make sure that the transformed pixel is on the sensor and not too close to the border
         border_fraction = self.config.filter.covariance.negative_observation.ignore_border
         border_px = np.array([self.camera_info.width, self.camera_info.height]) / 2 * border_fraction
-        in_fov_horizontal = border_px[0] < pixel[0] <= self.camera_info.width - border_px[0]
-        in_fov_vertical = border_px[1] < pixel[1] <= self.camera_info.height - border_px[1]
+        in_fov_horizontal = bool(border_px[0] < pixel[0] <= self.camera_info.width - border_px[0])
+        in_fov_vertical = bool(border_px[1] < pixel[1] <= self.camera_info.height - border_px[1])
         return in_fov_horizontal and in_fov_vertical
 
     def filter_step(self) -> None:

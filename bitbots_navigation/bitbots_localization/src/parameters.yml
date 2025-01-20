@@ -10,19 +10,9 @@ bitbots_localization:
       description: "Percentage of particles which are considered to be the best ones. These particles are used to calculate the pose estimate"
       validation:
         bounds<>: [0, 100]
-    min_motion_linear:
-      type: double
-      description: "Minimum linear motion (m/s) which is considered to be a movement. This is relevant if we want to deactivate the filter if no movement is detected"
-      validation:
-        gt_eq<>: [0.0]
     max_motion_linear:
       type: double
       description: "Maximum linear motion (m/s) which is considered to be a movement. Updates larger than this are deemed unrealistic and are ignored"
-      validation:
-        gt_eq<>: [0.0]
-    min_motion_angular:
-      type: double
-      description: "Minimum angular motion (rad/s) which is considered to be a movement. This is relevant if we want to deactivate the filter if no movement is detected"
       validation:
         gt_eq<>: [0.0]
     max_motion_angular:
@@ -30,9 +20,6 @@ bitbots_localization:
       description: "Maximum angular motion (rad/s) which is considered to be a movement. Updates larger than this are deemed unrealistic and are ignored"
       validation:
         gt_eq<>: [0.0]
-    filter_only_with_motion:
-      type: bool
-      description: "If true, the filter is only active if a movement is detected"
   ros:
     line_pointcloud_topic:
       type: string
@@ -41,10 +28,6 @@ bitbots_localization:
     goal_topic:
       type: string
       description: "Topic for the goal input messages"
-      read_only: true
-    fieldboundary_topic:
-      type: string
-      description: "Topic for the field boundary input messages"
       read_only: true
     particle_publishing_topic:
       type: string
@@ -203,17 +186,6 @@ bitbots_localization:
           description: "Score which is given to a measurement (e.g. projected goal post) if it is out of the field"
           validation:
             bounds<>: [0.0, 100.0]
-      field_boundary:
-        factor:
-          type: double
-          description: "Weighing how much the field boundary information is considered for the scoring of a particle"
-          validation:
-            bounds<>: [0.0, 1.0]
-        out_of_field_score:
-          type: double
-          description: "Score which is given to a measurement (e.g. projected field boundary segment) if it is out of the field"
-          validation:
-            bounds<>: [0.0, 100.0]
     confidences:
       line_element:
         type: double
@@ -223,10 +195,5 @@ bitbots_localization:
       goal_element:
         type: double
         description: "Confidence we have in each data point of the goal information. Meaning each projected goal post"
-        validation:
-          bounds<>: [0.0, 1.0]
-      field_boundary_element:
-        type: double
-        description: "Confidence we have in each data point of the field boundary information. Meaning each projected field boundary segment"
         validation:
           bounds<>: [0.0, 1.0]

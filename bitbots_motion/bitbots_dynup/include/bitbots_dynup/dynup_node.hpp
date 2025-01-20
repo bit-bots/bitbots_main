@@ -115,6 +115,7 @@ class DynupNode {
   double start_time_ = 0;
   bool server_free_ = true;
   bool debug_ = false;
+  bool cancel_goal_ = false;
 
   // TF2 related things
   tf2_ros::Buffer tf_buffer_;

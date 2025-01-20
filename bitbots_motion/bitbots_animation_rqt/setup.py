@@ -14,6 +14,7 @@ setup(
     install_requires=["setuptools"],
     tests_require=["pytest"],
     zip_safe=True,
+    tests_require=["pytest"],
     entry_points={
         "console_scripts": [
             "animation_gui = " + package_name + ".record_ui:main",

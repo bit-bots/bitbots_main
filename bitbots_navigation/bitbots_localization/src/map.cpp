@@ -56,7 +56,7 @@ std::vector<double> Map::provideRating(const RobotState &state,
     std::pair<double, double> lineRelative;
 
     // get rating per line
-    lineRelative = observationRelative(observation, state.getXPos(), state.getYPos(), state.getTheta());
+    lineRelative = getObservationCoordinatesInMapFrame(observation, state.getXPos(), state.getYPos(), state.getTheta());
     double occupancy = get_occupancy(lineRelative.first, lineRelative.second);
 
     rating.push_back(occupancy);
@@ -64,12 +64,12 @@ std::vector<double> Map::provideRating(const RobotState &state,
   return rating;
 }
 
-std::pair<double, double> Map::observationRelative(
-    std::pair<double, double> observation, double stateX, double stateY,
-    double stateT) {  // todo rename to a more correct name like observationonmap?
-  // transformes observation from particle to map (assumes particle is correct)
-  // input: obsservation relative in polar coordinates and particle
-  // output: hypothetical observation on map
+std::pair<double, double> Map::getObservationCoordinatesInMapFrame(std::pair<double, double> observation, double stateX,
+                                                                   double stateY, double stateT) {
+  // queries the Cartesian metric map coordinates for a given observation (in polar coordinates)
+  // taken relative to a given state (in Cartesian coordinates)
+  // Input: Observation coordinates in polar coordinates, state coordinates in Cartesian coordinates
+  // Output: Observation coordinates in Cartesian coordinates in the map frame
 
   // add theta and convert back to cartesian
   std::pair<double, double> observationWithTheta = polarToCartesian(observation.first + stateT, observation.second);
@@ -77,14 +77,6 @@ std::pair<double, double> Map::observationRelative(
   // add to particle
   std::pair<double, double> observationRelative =
       std::make_pair(stateX + observationWithTheta.first, stateY + observationWithTheta.second);
-
-  // alternativ:
-  // Thrun 6.32, seite 169
-  //  but both equivalent
-  // double xGlobal = stateX + observation.second * (cos(stateT + observation.first));
-  // double yGlobal = stateY + observation.second * (sin(stateT + observation.first));
-
-  // std::pair<double, double> observationRelative = std::make_pair(xGlobal, yGlobal);
 
   return observationRelative;  // in cartesian
 }

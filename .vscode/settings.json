@@ -215,7 +215,8 @@
         "regex": "cpp",
         "future": "cpp",
         "*.ipp": "cpp",
-        "span": "cpp"
+        "span": "cpp",
+        "ranges": "cpp"
     },
     // Tell the ROS extension where to find the setup.bash
     // This also utilizes the COLCON_WS environment variable, which needs to be set

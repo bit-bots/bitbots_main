@@ -5,6 +5,8 @@
 #ifndef BITBOTS_LOCALIZATION_OBSERVATIONMODEL_H
 #define BITBOTS_LOCALIZATION_OBSERVATIONMODEL_H
 
+#include <tf2_ros/buffer.h>
+
 #include <bitbots_localization/RobotState.hpp>
 #include <bitbots_localization/map.hpp>
 #include <bitbots_localization/tools.hpp>
@@ -12,11 +14,8 @@
 #include <particle_filter/ParticleFilter.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <sensor_msgs/point_cloud2_iterator.hpp>
-#include <soccer_vision_3d_msgs/msg/field_boundary.hpp>
 #include <soccer_vision_3d_msgs/msg/goalpost.hpp>
 #include <soccer_vision_3d_msgs/msg/goalpost_array.hpp>
-#include <soccer_vision_3d_msgs/msg/marking_array.hpp>
-#include <soccer_vision_3d_msgs/msg/marking_intersection.hpp>
 
 namespace sm = sensor_msgs;
 namespace bl = bitbots_localization;
@@ -29,8 +28,7 @@ class RobotPoseObservationModel : public particle_filter::ObservationModel<Robot
    * empty
    */
   RobotPoseObservationModel(std::shared_ptr<Map> map_lines, std::shared_ptr<Map> map_goals,
-                            std::shared_ptr<Map> map_field_boundary, const bitbots_localization::Params &config,
-                            const FieldDimensions &field_dimensions);
+                            const bitbots_localization::Params &config, const FieldDimensions &field_dimensions);
 
   /**
    *
@@ -43,15 +41,9 @@ class RobotPoseObservationModel : public particle_filter::ObservationModel<Robot
 
   void set_measurement_goalposts(sv3dm::msg::GoalpostArray measurement);
 
-  void set_measurement_field_boundary(sv3dm::msg::FieldBoundary measurement);
+  const std::vector<std::pair<double, double>> get_measurement_lines() const;
 
-  void set_measurement_markings(sv3dm::msg::MarkingArray measurement);
-
-  std::vector<std::pair<double, double>> get_measurement_lines() const;
-
-  std::vector<std::pair<double, double>> get_measurement_goals() const;
-
-  std::vector<std::pair<double, double>> get_measurement_field_boundary() const;
+  const std::vector<std::pair<double, double>> get_measurement_goals() const;
 
   double get_min_weight() const override;
 
@@ -59,20 +51,26 @@ class RobotPoseObservationModel : public particle_filter::ObservationModel<Robot
 
   bool measurements_available() override;
 
+  void set_movement_since_line_measurement(const tf2::Transform movement);
+  void set_movement_since_goal_measurement(const tf2::Transform movement);
+
  private:
   double calculate_weight_for_class(const RobotState &state,
                                     const std::vector<std::pair<double, double>> &last_measurement,
-                                    std::shared_ptr<Map> map, double element_weight) const;
+                                    std::shared_ptr<Map> map, double element_weight,
+                                    const tf2::Transform &movement_since_measurement) const;
 
   // Measurements
   std::vector<std::pair<double, double>> last_measurement_lines_;
   std::vector<std::pair<double, double>> last_measurement_goal_;
-  std::vector<std::pair<double, double>> last_measurement_field_boundary_;
+
+  // Movement since last measurement
+  tf2::Transform movement_since_line_measurement_ = tf2::Transform::getIdentity();
+  tf2::Transform movement_since_goal_measurement_ = tf2::Transform::getIdentity();
 
   // Reference to the maps for the different classes
   std::shared_ptr<Map> map_lines_;
   std::shared_ptr<Map> map_goals_;
-  std::shared_ptr<Map> map_field_boundary_;
 
   // Parameters
   bitbots_localization::Params config_;

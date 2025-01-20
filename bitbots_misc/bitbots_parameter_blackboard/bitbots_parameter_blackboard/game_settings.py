@@ -29,7 +29,7 @@ OPTIONS_PATH = os.path.join(
 )
 
 
-def provide_config(path):
+def provide_config(path: str) -> dict:
     """
     reads out the yaml you are asking for with the path parameter
     :param path: filepath for your yaml
@@ -113,7 +113,7 @@ def check_new_value(new_value: str, value_type: Any, valid_options: Optional[lis
     return True
 
 
-def ask_for_confirmation(question) -> bool:
+def ask_for_confirmation(question: str) -> bool:
     result = None
     prompt = " [Y/n] "
     valid = {"": True, "y": True, "n": False}

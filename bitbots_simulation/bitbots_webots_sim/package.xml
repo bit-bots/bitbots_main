@@ -27,7 +27,7 @@
   <depend>python3-numpy</depend>
   <depend>python3-psutil</depend>
   <depend>std_srvs</depend>
-
+  <test_depend>ament_cmake_mypy</test_depend>
 
   <exec_depend>imu_complementary_filter</exec_depend>
   <exec_depend>xvfb</exec_depend>

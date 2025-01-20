@@ -15,6 +15,10 @@ repositories:
     type: git
     url: git@github.com:bit-bots/bio_ik_msgs.git
     version: master
+  lib/bitbots_tf_buffer:
+    type: git
+    url: git@github.com:bit-bots/bitbots_tf_buffer.git
+    version: main
   lib/biped_interfaces:
     type: git
     url: git@github.com:ros-sports/biped_interfaces.git
