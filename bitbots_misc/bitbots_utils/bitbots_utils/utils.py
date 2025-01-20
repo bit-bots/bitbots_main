@@ -1,5 +1,5 @@
 import os
-from typing import Any, Dict, List
+from typing import Any
 
 import rclpy
 import yaml
@@ -24,7 +24,7 @@ def read_urdf(robot_name: str) -> str:
     return urdf
 
 
-def load_moveit_parameter(robot_name: str) -> List[ParameterMsg]:
+def load_moveit_parameter(robot_name: str) -> list[ParameterMsg]:
     moveit_parameters = get_parameters_from_plain_yaml(
         f"{get_package_share_directory(f'{robot_name}_moveit_config')}/config/kinematics.yaml",
         "robot_description_kinematics.",
@@ -44,7 +44,7 @@ def load_moveit_parameter(robot_name: str) -> List[ParameterMsg]:
     return moveit_parameters
 
 
-def get_parameters_from_ros_yaml(node_name: str, parameter_file: str, use_wildcard: bool) -> List[ParameterMsg]:
+def get_parameters_from_ros_yaml(node_name: str, parameter_file: str, use_wildcard: bool) -> list[ParameterMsg]:
     # Remove leading slash and namespaces
     with open(parameter_file) as f:
         param_file = yaml.safe_load(f)
@@ -70,24 +70,21 @@ def get_parameters_from_ros_yaml(node_name: str, parameter_file: str, use_wildca
         return parse_parameter_dict(namespace="", parameter_dict=param_dict)
 
 
-def get_parameters_from_plain_yaml(parameter_file, namespace="") -> List[ParameterMsg]:
+def get_parameters_from_plain_yaml(parameter_file, namespace="") -> list[ParameterMsg]:
     with open(parameter_file) as f:
         param_dict = yaml.safe_load(f)
         return parse_parameter_dict(namespace=namespace, parameter_dict=param_dict)
 
 
-def get_parameter_dict(node: Node, prefix: str) -> Dict:
+def get_parameter_dict(node: Node, prefix: str) -> dict:
     """
     Get a dictionary of parameters from a node.
 
     :param node: Node to get parameters from
-    :type node: Node
     :param prefix: Prefix for the nesting of the parameter query (e.g. 'body.nice_param.index' could have the prefix 'body')
-    :type prefix: str
     :return: Dictionary of parameters without prefix nesting
-    :rtype: Dict
     """
-    parameter_config: Dict[str, Parameter] = node.get_parameters_by_prefix(prefix)
+    parameter_config: dict[str, Parameter] = node.get_parameters_by_prefix(prefix)
     config = dict()
     for param in parameter_config.values():
         # Split separated keys into nested dicts
@@ -112,8 +109,8 @@ def get_parameter_dict(node: Node, prefix: str) -> Dict:
 
 
 def get_parameters_from_other_node(
-    own_node: Node, other_node_name: str, parameter_names: List[str], service_timeout_sec: float = 20.0
-) -> Dict:
+    own_node: Node, other_node_name: str, parameter_names: list[str], service_timeout_sec: float = 20.0
+) -> dict:
     """
     Used to receive parameters from other running nodes.
     Returns a dict with requested parameter name as dict key and parameter value as dict value.
@@ -135,8 +132,8 @@ def get_parameters_from_other_node(
 
 
 def get_parameters_from_other_node_sync(
-    own_node: Node, other_node_name: str, parameter_names: List[str], service_timeout_sec: float = 20.0
-) -> Dict:
+    own_node: Node, other_node_name: str, parameter_names: list[str], service_timeout_sec: float = 20.0
+) -> dict:
     """
     Used to receive parameters from other running nodes. It does not use async internally.
     It should not be used in callback functions, but it is a bit more reliable than the async version.
@@ -159,10 +156,10 @@ def get_parameters_from_other_node_sync(
 def set_parameters_of_other_node(
     own_node: Node,
     other_node_name: str,
-    parameter_names: List[str],
-    parameter_values: List[Any],
+    parameter_names: list[str],
+    parameter_values: list[Any],
     service_timeout_sec: float = 20.0,
-) -> List[bool]:
+) -> list[bool]:
     """
     Used to set parameters of another running node.
     Returns a list of booleans indicating success or failure.

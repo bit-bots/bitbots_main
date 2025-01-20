@@ -3,7 +3,7 @@
 import socket
 import struct
 import threading
-from typing import List, Optional, Tuple
+from typing import Optional
 
 import rclpy
 from ament_index_python.packages import get_package_share_directory
@@ -84,8 +84,8 @@ class TeamCommunication:
         self.cmd_vel: Optional[Twist] = None
         self.cmd_vel_time = Time(clock_type=self.node.get_clock().clock_type)
         self.ball: Optional[PointStamped] = None
-        self.ball_velocity: Tuple[float, float, float] = (0.0, 0.0, 0.0)
-        self.ball_covariance: List[double] = []
+        self.ball_velocity: tuple[float, float, float] = (0.0, 0.0, 0.0)
+        self.ball_covariance: list[double] = []
         self.strategy: Optional[Strategy] = None
         self.strategy_time = Time(clock_type=self.node.get_clock().clock_type)
         self.time_to_ball: Optional[float] = None

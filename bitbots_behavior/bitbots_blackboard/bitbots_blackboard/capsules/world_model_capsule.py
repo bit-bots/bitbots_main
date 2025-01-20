@@ -1,5 +1,4 @@
 import math
-from typing import Tuple
 
 import numpy as np
 import tf2_ros as tf2
@@ -90,7 +89,7 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
         """Returns true if we or a teammate are reasonably sure that we have seen the ball"""
         return self.ball_seen_self() or self._blackboard.team_data.teammate_ball_is_valid()
 
-    def get_ball_position_xy(self) -> Tuple[float, float]:
+    def get_ball_position_xy(self) -> tuple[float, float]:
         """Return the ball saved in the map frame, meaning the absolute position of the ball on the field"""
         ball = self.get_best_ball_point_stamped()
         return ball.point.x, ball.point.y
@@ -117,7 +116,7 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
         self.debug_publisher_which_ball.publish(Header(stamp=own_ball.header.stamp, frame_id="own_ball_map"))
         return own_ball
 
-    def get_ball_position_uv(self) -> Tuple[float, float]:
+    def get_ball_position_uv(self) -> tuple[float, float]:
         """
         Returns the ball position relative to the robot in the base_footprint frame.
         U and V are returned, where positive U is forward, positive V is to the left.
@@ -183,18 +182,18 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
     # Goal #
     ########
 
-    def get_map_based_opp_goal_center_uv(self) -> Tuple[float, float]:
+    def get_map_based_opp_goal_center_uv(self) -> tuple[float, float]:
         x, y = self.get_map_based_opp_goal_center_xy()
         return self.get_uv_from_xy(x, y)
 
-    def get_map_based_opp_goal_center_xy(self) -> Tuple[float, float]:
+    def get_map_based_opp_goal_center_xy(self) -> tuple[float, float]:
         return self.field_length / 2, 0.0
 
-    def get_map_based_own_goal_center_uv(self) -> Tuple[float, float]:
+    def get_map_based_own_goal_center_uv(self) -> tuple[float, float]:
         x, y = self.get_map_based_own_goal_center_xy()
         return self.get_uv_from_xy(x, y)
 
-    def get_map_based_own_goal_center_xy(self) -> Tuple[float, float]:
+    def get_map_based_own_goal_center_xy(self) -> tuple[float, float]:
         return -self.field_length / 2, 0.0
 
     def get_map_based_opp_goal_angle_from_ball(self) -> float:
@@ -210,11 +209,11 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
         x, y = self.get_map_based_opp_goal_center_uv()
         return math.atan2(y, x)
 
-    def get_map_based_opp_goal_left_post_uv(self) -> Tuple[float, float]:
+    def get_map_based_opp_goal_left_post_uv(self) -> tuple[float, float]:
         x, y = self.get_map_based_opp_goal_center_xy()
         return self.get_uv_from_xy(x, y - self.goal_width / 2)
 
-    def get_map_based_opp_goal_right_post_uv(self) -> Tuple[float, float]:
+    def get_map_based_opp_goal_right_post_uv(self) -> tuple[float, float]:
         x, y = self.get_map_based_opp_goal_center_xy()
         return self.get_uv_from_xy(x, y + self.goal_width / 2)
 
@@ -222,7 +221,7 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
     # Pose #
     ########
 
-    def get_current_position(self) -> Tuple[float, float, float]:
+    def get_current_position(self) -> tuple[float, float, float]:
         """
         Returns the current position on the field as determined by the localization.
         0,0,0 is the center of the field looking in the direction of the opponent goal.
@@ -261,7 +260,7 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
     # Common #
     ##########
 
-    def get_uv_from_xy(self, x: float, y: float) -> Tuple[float, float]:
+    def get_uv_from_xy(self, x: float, y: float) -> tuple[float, float]:
         """Returns the relativ positions of the robot to this absolute position"""
         current_position = self.get_current_position()
         x2 = x - current_position[0]
@@ -271,7 +270,7 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
         v = math.cos(theta) * y2 - math.sin(theta) * x2
         return u, v
 
-    def get_xy_from_uv(self, u: float, v: float) -> Tuple[float, float]:
+    def get_xy_from_uv(self, u: float, v: float) -> tuple[float, float]:
         """Returns the absolute position from the given relative position to the robot"""
         pos_x, pos_y, theta = self.get_current_position()
         angle = math.atan2(v, u) + theta
