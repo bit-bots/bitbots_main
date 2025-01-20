@@ -16,15 +16,16 @@
 
 
   <buildtool_depend>ament_cmake</buildtool_depend>
-  <depend>std_msgs</depend>
-  <depend>geometry_msgs</depend>
+  <depend>backward_ros</depend>
   <depend>bitbots_docs</depend>
-  <depend>rclcpp</depend>
-  <depend>tf2_geometry_msgs</depend>
+  <depend>eigen</depend>
+  <depend>geometry_msgs</depend>
   <depend>moveit_core</depend>
   <depend>moveit_ros_planning</depend>
-  <depend>eigen</depend>
   <depend>python3-matplotlib</depend>
+  <depend>rclcpp</depend>
+  <depend>std_msgs</depend>
+  <depend>tf2_geometry_msgs</depend>
 
   <export>
     <bitbots_documentation>

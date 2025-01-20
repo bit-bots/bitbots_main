@@ -222,12 +222,12 @@ class TeleopKeyboard(Node):
                     self.head_pub.publish(self.head_msg)
                 elif key == "0":
                     # Search for Ball and track it if found
-                    self.head_mode_msg.head_mode = HeadMode.BALL_MODE
-                    assert int(key) == HeadMode.BALL_MODE
+                    self.head_mode_msg.head_mode = HeadMode.SEARCH_BALL
+                    assert int(key) == HeadMode.SEARCH_BALL
                 elif key == "1":
                     # Look generally for all features on the field (ball, goals, corners, center point)
-                    self.head_mode_msg.head_mode = HeadMode.FIELD_FEATURES
-                    assert int(key) == HeadMode.FIELD_FEATURES
+                    self.head_mode_msg.head_mode = HeadMode.SEARCH_FIELD_FEATURES
+                    assert int(key) == HeadMode.SEARCH_FIELD_FEATURES
                 elif key == "2":
                     # Simply look directly forward
                     self.head_mode_msg.head_mode = HeadMode.LOOK_FORWARD
@@ -238,12 +238,12 @@ class TeleopKeyboard(Node):
                     assert int(key) == HeadMode.DONT_MOVE
                 elif key == "4":
                     # Ball Mode adapted for Penalty Kick
-                    self.head_mode_msg.head_mode = HeadMode.BALL_MODE_PENALTY
-                    assert int(key) == HeadMode.BALL_MODE_PENALTY
+                    self.head_mode_msg.head_mode = HeadMode.SEARCH_BALL_PENALTY
+                    assert int(key) == HeadMode.SEARCH_BALL_PENALTY
                 elif key == "5":
                     # Do a pattern which only looks in front of the robot
-                    self.head_mode_msg.head_mode = HeadMode.LOOK_FRONT
-                    assert int(key) == HeadMode.LOOK_FRONT
+                    self.head_mode_msg.head_mode = HeadMode.SEARCH_FRONT
+                    assert int(key) == HeadMode.SEARCH_FRONT
                 elif key == "y":
                     # kick left forward
                     pass

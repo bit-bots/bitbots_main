@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.8)
 project(bitbots_head_mover)
 
+# Build with release optimizations and debug symbols by default
+if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE RelWithDebug)
+endif()
+
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
@@ -12,7 +17,6 @@ find_package(bio_ik REQUIRED)
 find_package(bio_ik_msgs REQUIRED)
 find_package(bitbots_msgs REQUIRED)
 find_package(generate_parameter_library REQUIRED)
-find_package(bitbots_msgs REQUIRED)
 find_package(moveit_core REQUIRED)
 find_package(moveit_msgs REQUIRED)
 find_package(moveit_ros_planning REQUIRED)
@@ -22,8 +26,6 @@ find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
-
-set(CMAKE_BUILD_TYPE Debug)
 
 generate_parameter_library(
   head_parameters # cmake target name for the parameter library

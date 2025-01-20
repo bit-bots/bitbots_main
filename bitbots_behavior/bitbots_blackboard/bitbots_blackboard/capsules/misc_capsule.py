@@ -8,12 +8,12 @@ from bitbots_blackboard.capsules import AbstractBlackboardCapsule
 from bitbots_msgs.msg import Audio, HeadMode, RobotControlState
 
 THeadMode: TypeAlias = Literal[  # type: ignore[valid-type]
-    HeadMode.BALL_MODE,
-    HeadMode.FIELD_FEATURES,
+    HeadMode.SEARCH_BALL,
+    HeadMode.SEARCH_FIELD_FEATURES,
     HeadMode.LOOK_FORWARD,
     HeadMode.DONT_MOVE,
-    HeadMode.BALL_MODE_PENALTY,
-    HeadMode.LOOK_FRONT,
+    HeadMode.SEARCH_BALL_PENALTY,
+    HeadMode.SEARCH_FRONT,
 ]
 
 
