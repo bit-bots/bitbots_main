@@ -93,7 +93,7 @@ class YOEOHandlerTemplate(IYOEOHandler):
     Abstract base implementation of the IYOEOHandler interface. Actual YOEO handlers need to only implement the
     following two hook methods if they inherit from this template:
         - model_files_exist(model_directory: str) -> bool:
-        - _compute_new_prediction_for(self, image) -> Tuple:
+        - _compute_new_prediction_for(self, image) -> tuple:
     """
 
     def __init__(
@@ -197,9 +197,7 @@ class YOEOHandlerTemplate(IYOEOHandler):
         Hook method to be implemented by actual YOEO handlers.
 
         :param image: the image that should be input into the network
-        :type image: np.ndarray
         :return: post-processed YOEO detections and segmentations (in this order)
-        :rtype: Tuple[np.ndarray, np.ndarray]
         """
         ...
 
