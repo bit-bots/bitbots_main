@@ -88,6 +88,9 @@ class AbstractPlayAnimation(AbstractHCMActionElement, ABC):
         self.publish_debug_data("Animation Percent Done", str(feedback.percent_done))
 
     def animation_finished(self):
+        assert (
+            self.blackboard.animation_action_current_goal is not None
+        ), "No animation action goal set, so we cannot check if it is finished"
         return (
             self.blackboard.animation_action_current_goal.done()
             and self.blackboard.animation_action_current_goal.result().status
@@ -202,7 +205,7 @@ class PlayAnimationDynup(AbstractHCMActionElement):
         Cancel the current goal when the action is popped
         """
         super().on_pop()
-        if not self.animation_finished():
+        if self.blackboard.dynup_action_current_goal is not None and not self.animation_finished():
             self.blackboard.dynup_action_current_goal.result().cancel_goal_async()
 
     def start_animation(self):
@@ -231,6 +234,10 @@ class PlayAnimationDynup(AbstractHCMActionElement):
 
         goal = Dynup.Goal()
         goal.direction = self.direction
+        # This indicates that the goal is send from the hcm and therfore has prio,
+        # canceling other tasks. The published joint goals are also marked with this flag so they
+        # are handled differently in the HCM joint mutex
+        goal.from_hcm = True
         self.blackboard.dynup_action_current_goal = self.blackboard.dynup_action_client.send_goal_async(
             goal, feedback_callback=self.animation_feedback_cb
         )
@@ -241,6 +248,9 @@ class PlayAnimationDynup(AbstractHCMActionElement):
         self.publish_debug_data("Dynup Percent Done", str(feedback.percent_done))
 
     def animation_finished(self):
+        assert (
+            self.blackboard.dynup_action_current_goal is not None
+        ), "No dynup action goal set, so we cannot check if it is finished"
         return (
             self.blackboard.dynup_action_current_goal.done()
             and self.blackboard.dynup_action_current_goal.result().status

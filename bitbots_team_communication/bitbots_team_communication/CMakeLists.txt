@@ -48,6 +48,9 @@ if(BUILD_TESTING)
       WORKING_DIRECTORY
       "${CMAKE_SOURCE_DIR}")
   endforeach()
+
+  find_package(ament_cmake_mypy REQUIRED)
+  ament_mypy(CONFIG_FILE "${CMAKE_CURRENT_LIST_DIR}/mypy.ini")
 endif()
 
 ament_package()

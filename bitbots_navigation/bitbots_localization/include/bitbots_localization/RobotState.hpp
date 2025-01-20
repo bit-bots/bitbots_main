@@ -7,6 +7,8 @@
 
 #include <particle_filter/ParticleFilter.h>
 #include <tf2/LinearMath/Quaternion.h>
+#include <tf2/LinearMath/Transform.h>
+#include <tf2/utils.h>
 
 #include <Eigen/Core>
 #include <bitbots_localization/tools.hpp>
@@ -25,9 +27,16 @@ class RobotState {
   /**
    * @param x Position of the robot.
    * @param y Position of the robot.
-   * @param T Orientaion of the robot in radians.
+   * @param T Orientation of the robot in radians.
    */
   RobotState(double x, double y, double T);
+
+  /**
+   * @brief Constructor for a robot state based on a tf2::Transform.
+   *
+   * @param transform Transform of the robots base_footprint in the map frame.
+   */
+  explicit RobotState(tf2::Transform transform);
 
   RobotState operator*(float factor) const;
 
@@ -62,6 +71,8 @@ class RobotState {
 
   visualization_msgs::msg::Marker renderMarker(std::string n_space, std::string frame, rclcpp::Duration lifetime,
                                                std_msgs::msg::ColorRGBA color, rclcpp::Time stamp) const;
+
+  tf2::Transform getTransform() const;
 
  private:
   double m_XPos;

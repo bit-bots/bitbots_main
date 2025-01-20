@@ -9,6 +9,9 @@ string DIRECTION_RISE = "rise"
 string DIRECTION_DESCEND = "descend"
 string DIRECTION_WALKREADY = "walkready"
 
+# Requests from the HCM have higher prio and are published to a different topic
+bool from_hcm 
+
 ---
 # Result definition
 bool successful

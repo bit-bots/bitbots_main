@@ -5,6 +5,7 @@ from typing import List, Optional, Tuple
 import cv2
 import numpy as np
 import rclpy
+from jaxtyping import UInt8
 
 logger = rclpy.logging.get_logger("yoeo_handler_utils")
 
@@ -178,8 +179,8 @@ class DefaultImagePreProcessor(IImagePreProcessor):
             max_dim=np.max(self._image_dimensions_HW),
         )
 
-    def process(self, image: np.ndarray) -> np.ndarray:
-        self._image_dimensions_HW = image.shape[:2]
+    def process(self, image: UInt8[np.ndarray, "h w 3"]) -> UInt8[np.ndarray, "3 network_input_h network_input_w"]:
+        self._image_dimensions_HW = image.shape[:2]  # type: ignore[assignment]
         self._calculate_paddings()
 
         image = self._normalize_image_to_range_0_1(image)
@@ -213,7 +214,7 @@ class DefaultImagePreProcessor(IImagePreProcessor):
             right=self._padding_right,
             borderType=cv2.BORDER_CONSTANT,
             value=0,
-        )
+        )  # type: ignore[call-overload]
 
     def _resize_to_network_input_shape(self, image: np.ndarray) -> np.ndarray:
         return cv2.resize(src=image, dsize=self._network_input_shape_WH)
