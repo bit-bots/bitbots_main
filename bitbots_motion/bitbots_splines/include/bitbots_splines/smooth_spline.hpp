@@ -25,14 +25,13 @@ class SmoothSpline : public Spline {
     double time;
     double position;
     double velocity;
-    double acceleration;
   };
 
   /**
    * Add a new point with its time, position value,
    * velocity and acceleration
    */
-  void addPoint(double time, double position, double velocity = 0.0, double acceleration = 0.0);
+  void addPoint(double time, double position, double velocity = 0.0);
 
   /**
    * Access to points container
@@ -68,8 +67,7 @@ class SmoothSpline : public Spline {
    * Fit a polynom between 0 and t with given
    * pos, vel and acc initial and final conditions
    */
-  Polynom polynomFit(double t, double pos_1, double vel_1, double acc_1, double pos_2, double vel_2,
-                     double acc_2) const;
+  Polynom polynomFit(double t, double pos_1, double vel_1, double pos_2, double vel_2) const;
 };
 
 }  // namespace bitbots_splines
