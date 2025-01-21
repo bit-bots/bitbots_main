@@ -1,4 +1,4 @@
-from typing import List, Literal, Optional, Tuple
+from typing import Literal, Optional
 
 import numpy as np
 from bitbots_utils.utils import get_parameters_from_other_node
@@ -142,7 +142,7 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
         self.strategy.action = action
         self.action_update = self._node.get_clock().now().nanoseconds / 1e9
 
-    def get_action(self) -> Tuple[int, float]:
+    def get_action(self) -> tuple[int, float]:
         return self.strategy.action, self.action_update
 
     def set_role(self, role: Literal["goalie", "offense", "defense"]) -> None:
@@ -154,7 +154,7 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
         self.strategy.role = self.roles_mapping[role]
         self.role_update = self._node.get_clock().now().nanoseconds / 1e9
 
-    def get_role(self) -> Tuple[int, float]:
+    def get_role(self) -> tuple[int, float]:
         return self.strategy.role, self.role_update
 
     def set_kickoff_strategy(
@@ -164,10 +164,10 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
         self.strategy.offensive_side = strategy
         self.strategy_update = self._node.get_clock().now().nanoseconds / 1e9
 
-    def get_kickoff_strategy(self) -> Tuple[int, float]:
+    def get_kickoff_strategy(self) -> tuple[int, float]:
         return self.strategy.offensive_side, self.strategy_update
 
-    def get_active_teammate_poses(self, count_goalies: bool = False) -> List[Pose]:
+    def get_active_teammate_poses(self, count_goalies: bool = False) -> list[Pose]:
         """Returns the poses of all playing robots"""
         poses = []
         data: TeamData

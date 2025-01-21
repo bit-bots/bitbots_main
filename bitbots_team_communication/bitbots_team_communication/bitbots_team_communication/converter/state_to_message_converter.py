@@ -1,5 +1,5 @@
 import math
-from typing import Callable, Optional, Tuple
+from typing import Callable, Optional
 
 import numpy as np
 import transforms3d
@@ -67,7 +67,7 @@ class StateToMessageConverter:
 
         def convert_ball_position(
             ball_position: Optional[PointStamped],
-            ball_velocity: Tuple[float, float, float],
+            ball_velocity: tuple[float, float, float],
             ball_covariance: Float64[np.ndarray, "36"],
             message,
         ):
