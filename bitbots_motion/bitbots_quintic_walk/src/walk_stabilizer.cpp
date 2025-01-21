@@ -26,10 +26,13 @@ void WalkStabilizer::reset() {
 WalkRequest WalkStabilizer::adjust_step_length(WalkRequest request, const double imu_roll, const double imu_pitch,
                                                double pitch_threshold, double roll_threshold,
                                                const rclcpp::Duration& dt, walking::Params config_) {
+  double imu_pitch_adjusted = imu_pitch - config_.engine.trunk_pitch;
+  double pitch_threshold = config_.node.step_length.pitch.threshold;
+  double roll_threshold = config_.node.step_length.roll.threshold;
   pid_step_length_adjustment_pitch_.setGains(config_.node.step_length.pitch.p, 0.0, config_.node.step_length.pitch.d,
                                              0.0, 0.0, false);
-  double adjustment_pitch = pid_step_length_adjustment_pitch_.computeCommand(imu_pitch, dt);
-  RCLCPP_WARN(node_->get_logger(), "imu pitch: %f,", imu_pitch);
+  double adjustment_pitch = pid_step_length_adjustment_pitch_.computeCommand(imu_pitch_adjusted, dt);
+  RCLCPP_WARN(node_->get_logger(), "imu pitch: %f,", imu_pitch_adjusted);
   RCLCPP_WARN(node_->get_logger(), "pitch adjust: %f,", adjustment_pitch);
   double adjustment_roll = pid_step_length_adjustment_roll_.computeCommand(imu_roll, dt);
   // RCLCPP_WARN(node_->get_logger(), "Adjustment pitch, roll: %f, %f", adjustment_pitch, adjustment_roll);
