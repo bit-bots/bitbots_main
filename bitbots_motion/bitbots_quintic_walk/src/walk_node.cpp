@@ -179,9 +179,8 @@ bitbots_msgs::msg::JointCommand WalkNode::step(double dt) {
 
   // Apply step length adjustment
   RCLCPP_WARN(node_->get_logger(), "Original step size: %f, %f", request.linear_orders[0], request.linear_orders[1]);
-  request = stabilizer_.adjust_step_length(
-      request, current_trunk_fused_roll_, current_trunk_fused_pitch_, config_.node.step_length.pitch.threshold,
-      config_.node.step_length.roll.threshold, rclcpp::Duration::from_nanoseconds(1e9 * dt), config_);
+  request = stabilizer_.adjust_step_length(request, current_trunk_fused_roll_, current_trunk_fused_pitch_,
+                                           rclcpp::Duration::from_nanoseconds(1e9 * dt), config_);
   RCLCPP_WARN(node_->get_logger(), "New step size: %f, %f", request.linear_orders[0], request.linear_orders[1]);
 
   walk_engine_.setGoals(request);

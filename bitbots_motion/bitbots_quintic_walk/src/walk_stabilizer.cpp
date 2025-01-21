@@ -24,7 +24,6 @@ void WalkStabilizer::reset() {
 }
 
 WalkRequest WalkStabilizer::adjust_step_length(WalkRequest request, const double imu_roll, const double imu_pitch,
-                                               double pitch_threshold, double roll_threshold,
                                                const rclcpp::Duration& dt, walking::Params config_) {
   double imu_pitch_adjusted = imu_pitch - config_.engine.trunk_pitch;
   double pitch_threshold = config_.node.step_length.pitch.threshold;

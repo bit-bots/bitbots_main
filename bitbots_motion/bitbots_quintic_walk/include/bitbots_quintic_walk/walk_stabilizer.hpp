@@ -24,8 +24,7 @@ class WalkStabilizer : public bitbots_splines::AbstractStabilizer<WalkResponse> 
   void reset() override;
   WalkResponse stabilize(const WalkResponse &response, const rclcpp::Duration &dt) override;
   WalkRequest adjust_step_length(WalkRequest request, const double imu_roll, const double imu_pitch,
-                                 double pitch_threshold, double roll_threshold, const rclcpp::Duration &dt,
-                                 walking::Params config_);
+                                 const rclcpp::Duration &dt, walking::Params config_);
 
  private:
   rclcpp::Node::SharedPtr node_;
