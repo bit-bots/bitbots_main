@@ -15,7 +15,6 @@ include:
         - bitbots_parameter_blackboard
         - bitbots_robot_description
         - bitbots_teleop
-        - bitbots_tf_buffer
         - bitbots_tts
         - bitbots_utils
         - system_monitor
@@ -51,6 +50,7 @@ include:
         - bio_ik
         - bio_ik_msgs
         - biped_interfaces
+        - bitbots_tf_buffer
         - dynamic_stack_decider
         - dynamixel-workbench
         - DynamixelSDK
