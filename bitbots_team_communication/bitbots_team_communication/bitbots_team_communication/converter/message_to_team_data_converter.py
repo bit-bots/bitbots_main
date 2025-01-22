@@ -1,4 +1,4 @@
-from typing import Iterable, Sequence, Tuple
+from typing import Iterable, Sequence
 
 import numpy as np
 import transforms3d
@@ -85,7 +85,7 @@ class MessageToTeamDataConverter:
 
         return robot
 
-    def convert_to_quat(self, euler_angles: Tuple[float, float, float]):
+    def convert_to_quat(self, euler_angles: tuple[float, float, float]):
         return transforms3d.euler.euler2quat(*euler_angles)
 
     def convert_to_row_major_covariance(

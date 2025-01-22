@@ -6,16 +6,22 @@ if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
 endif()
 
+# Build with release optimizations and debug symbols by default
+if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE RelWithDebug)
+endif()
+
 find_package(ament_cmake REQUIRED)
+find_package(backward_ros REQUIRED)
 find_package(bitbots_docs REQUIRED)
-find_package(rclcpp REQUIRED)
-find_package(std_msgs REQUIRED)
+find_package(Eigen3 REQUIRED)
 find_package(geometry_msgs REQUIRED)
-find_package(tf2_geometry_msgs REQUIRED)
 find_package(moveit_core REQUIRED)
 find_package(moveit_ros_planning REQUIRED)
-find_package(Eigen3 REQUIRED)
 find_package(PkgConfig REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
 
 set(INCLUDE_DIRS include)
 include_directories(${INCLUDE_DIRS})
@@ -38,6 +44,7 @@ add_library(${PROJECT_NAME} SHARED ${SOURCES})
 ament_target_dependencies(
   ${PROJECT_NAME}
   ament_cmake
+  backward_ros
   bitbots_docs
   rclcpp
   std_msgs
