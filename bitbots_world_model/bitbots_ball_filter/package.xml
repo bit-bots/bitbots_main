@@ -22,6 +22,7 @@
   <depend>std_msgs</depend>
   <depend>std_srvs</depend>
   <depend>tf2_geometry_msgs</depend>
+  <test_depend>ament_mypy</test_depend>
 
   <export>
     <bitbots_documentation>

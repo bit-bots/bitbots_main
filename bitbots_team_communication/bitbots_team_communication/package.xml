@@ -22,6 +22,7 @@
   <depend>bitbots_msgs</depend>
   <depend>bitbots_tf_buffer</depend>
   <depend>bitbots_utils</depend>
+  <depend>builtin_interfaces</depend>
   <depend>game_controller_hl_interfaces</depend>
   <depend>geometry_msgs</depend>
   <depend>python3-protobuf</depend>
@@ -31,6 +32,7 @@
   <depend>tf2_geometry_msgs</depend>
   <depend>tf2_ros</depend>
   <depend>tf2</depend>
+  <test_depend>ament_cmake_mypy</test_depend>
 
   <test_depend>python3-pytest</test_depend>
 

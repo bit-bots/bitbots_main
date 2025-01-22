@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Optional
 
 import numpy
 from bitbots_utils.utils import get_parameters_from_other_node_sync
@@ -12,6 +12,7 @@ from std_msgs.msg import Empty as EmptyMsg
 from std_srvs.srv import Empty as EmptySrv
 from std_srvs.srv import SetBool
 
+from bitbots_hcm.type_utils import T_RobotControlState
 from bitbots_msgs.action import Dynup, PlayAnimation
 from bitbots_msgs.msg import Audio, JointTorque, RobotControlState
 from bitbots_msgs.srv import SetTeachingMode
@@ -22,7 +23,7 @@ class HcmBlackboard:
         self.node = node
 
         # Basic state
-        self.current_state: RobotControlState = RobotControlState.STARTUP
+        self.current_state: T_RobotControlState = RobotControlState.STARTUP
         self.stopped: bool = False
 
         # Save start time
@@ -116,8 +117,8 @@ class HcmBlackboard:
 
         # Pressure sensors
         # Initialize values high to prevent wrongly thinking the robot is picked up during start or in simulation
-        self.pressures: List[float] = [100.0] * 8
-        self.previous_pressures: List[float] = self.pressures.copy()
+        self.pressures: list[float] = [100.0] * 8
+        self.previous_pressures: list[float] = self.pressures.copy()
         self.last_different_pressure_state_time: Optional[Time] = None
 
         # Diagnostics state

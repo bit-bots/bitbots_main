@@ -4,10 +4,10 @@ import tf2_ros as tf2
 from geometry_msgs.msg import PoseStamped, Vector3
 from nav_msgs.msg import Path
 from rclpy.duration import Duration
-from rclpy.node import Node
 from rclpy.time import Time
 from std_msgs.msg import Header
 
+from bitbots_path_planning import NodeWithConfig
 from bitbots_path_planning.map import Map
 
 
@@ -16,7 +16,7 @@ class Planner:
     A simple grid based A* interface
     """
 
-    def __init__(self, node: Node, buffer: tf2.Buffer, map: Map) -> None:
+    def __init__(self, node: NodeWithConfig, buffer: tf2.BufferInterface, map: Map) -> None:
         self.node = node
         self.buffer = buffer
         self.map = map
@@ -56,7 +56,8 @@ class Planner:
         """
         Generates a new A* path to the goal pose with respect to the costmap
         """
-        goal = self.goal
+        goal: PoseStamped = self.goal
+        assert goal is not None, "No goal set, cannot plan path"
 
         # Get current costmap
         navigation_grid = self.map.get_map()
@@ -103,7 +104,7 @@ class Planner:
 
 
 class DummyPlanner(Planner):
-    def __init__(self, node: Node, buffer: tf2.Buffer, map: Map) -> None:
+    def __init__(self, node: NodeWithConfig, buffer: tf2.BufferInterface, map: Map) -> None:
         super().__init__(node, buffer, map)
 
     def step(self) -> Path:
@@ -123,7 +124,7 @@ class DummyPlanner(Planner):
         return self.path
 
 
-def planner_factory(node: Node) -> type:
+def planner_factory(node: NodeWithConfig) -> type:
     if node.config.planner.dummy:
         return DummyPlanner
     else:

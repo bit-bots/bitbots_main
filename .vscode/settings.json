@@ -222,9 +222,11 @@
     "ros.distro": "iron",
     "search.useIgnoreFiles": false,
     "python.autoComplete.extraPaths": [
+        "/opt/openrobots/lib/python3.10/site-packages",
         "/opt/ros/iron/lib/python3.10/site-packages"
     ],
     "python.analysis.extraPaths": [
+        "/opt/openrobots/lib/python3.10/site-packages",
         "/opt/ros/iron/lib/python3.10/site-packages"
     ],
     "cmake.configureOnOpen": false,

@@ -23,7 +23,7 @@ class KickCapsule(AbstractBlackboardCapsule):
     is_currently_kicking: bool = False
 
     __connected: bool = False
-    __action_client: ActionClient = None
+    __action_client: Optional[ActionClient] = None
 
     class WalkKickTargets(Flag):
         """
@@ -43,14 +43,14 @@ class KickCapsule(AbstractBlackboardCapsule):
         self.walk_kick_pub = self._node.create_publisher(Bool, "/kick", 1)
         # self.connect_dynamic_kick()  Do not connect if dynamic_kick is disabled
 
-    def walk_kick(self, target: WalkKickTargets):
+    def walk_kick(self, target: WalkKickTargets) -> None:
         """
         Kick the ball while walking
         :param target: Target for the walk kick (e.g. left or right foot)
         """
         self.walk_kick_pub.publish(Bool(data=target.value))
 
-    def connect_dynamic_kick(self):
+    def connect_dynamic_kick(self) -> None:
         topic = self._blackboard.config["dynamic_kick"]["topic"]
         self.__action_client = ActionClient(self._node, Kick, topic, callback_group=ReentrantCallbackGroup())
         self.__connected = self.__action_client.wait_for_server(self._blackboard.config["dynamic_kick"]["wait_time"])
@@ -58,7 +58,7 @@ class KickCapsule(AbstractBlackboardCapsule):
         if not self.__connected:
             self._node.get_logger().error(f"No dynamic_kick server running on {topic}")
 
-    def dynamic_kick(self, goal: Kick.Goal):
+    def dynamic_kick(self, goal: Kick.Goal) -> None:
         """
         :param goal: Goal to kick to
         :type goal: KickGoal
