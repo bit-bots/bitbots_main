@@ -239,6 +239,9 @@ void WalkEngine::reset(WalkState state, double phase, std::array<double, 4> step
   engine_state_ = state;
   time_paused_ = 0.0;
   pause_requested_ = false;
+  positioning_step_to_kick_point_ = false;
+  left_kick_requested_ = false;
+  right_kick_requested_ = false;
 
   if (state == WalkState::IDLE) {
     // we don't need to build trajectories in idle, just reset everything
@@ -894,13 +897,9 @@ void WalkEngine::stepToApproachKick(const tf2::Transform kick_point_and_directio
       foot_distance.getOrigin().setY(-config_.foot_distance);
     }
     foot_goal = kick_foot_placement * foot_distance;
-    RCLCPP_WARN(node_->get_logger(), "Placing the kick foot not possible, placing the other foot next to it");
   } else {
     // Now we do the step to the kick point (the positioning step)
     positioning_step_to_kick_point_ = true;
-
-    RCLCPP_WARN(node_->get_logger(), "Placing the kick foot");
-
     foot_goal = kick_foot_placement;
   }
 
@@ -910,7 +909,6 @@ void WalkEngine::stepToApproachKick(const tf2::Transform kick_point_and_directio
   // in turn, delays the kick, as we might not be able to reach the kick point yet
   if ((is_left_support_foot_ && foot_goal.getOrigin().getY() < config_.foot_distance - 0.01) ||
      (!is_left_support_foot_ && foot_goal.getOrigin().getY() > -config_.foot_distance + 0.01)) {
-    RCLCPP_WARN(node_->get_logger(), "Side step not possible, placing the foot back to zero pose");
 
    if (is_left_support_foot_) {
      foot_goal.getOrigin().setY(config_.foot_distance);
