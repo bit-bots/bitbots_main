@@ -123,13 +123,14 @@ WalkResponse WalkEngine::update(double dt) {
       engine_state_ = WalkState::PAUSED;
       pause_requested_ = false;
       return createResponse();
-    } else if (half_step_finished &&
+    } else if (half_step_finished && positioning_step_to_kick_point_ &&
                ((left_kick_requested_ && !is_left_support_foot_) || (right_kick_requested_ && is_left_support_foot_))) {
       // lets do a kick
       buildTrajectories(TrajectoryType::KICK);
       engine_state_ = WalkState::KICK;
       left_kick_requested_ = false;
       right_kick_requested_ = false;
+      positioning_step_to_kick_point_ = false;
     } else if (half_step_finished) {
       // current step is finished, lets see if we have to change state
       if (request_.single_step) {
@@ -395,7 +396,14 @@ void WalkEngine::buildTrajectories(WalkEngine::TrajectoryType type) {
   if (!start_movement) {
     saveCurrentRobotState();
     if (!stop_step) {
-      stepFromOrders(request_.linear_orders, request_.angular_z);
+      if (left_kick_requested_ or right_kick_requested_) {
+        // we are in a kick step, so
+        // we need to position ourselves to the kick point
+        stepToApproachKick(kick_point_, left_kick_requested_);
+      } else {
+        // we are in a normal step, the requested translation/rotation is the step
+        stepFromOrders(request_.linear_orders, request_.angular_z);
+      }
     } else {
       stepFromOrders({0, 0, 0}, 0);
     }
@@ -812,12 +820,15 @@ bool WalkEngine::isDoubleSupport() {
   return is_double_support_spline_.pos(getTrajsTime()) >= 0.5;
 }
 
-void WalkEngine::requestKick(bool left) {
-  if (left) {
-    left_kick_requested_ = true;
+void WalkEngine::requestKick(tf2::Transform kick_point) {
+  // We assume that the kick point is given in the support foot frame
+  if (is_left_support_foot_) {
+    kick_point = left_in_world_ * kick_point;
   } else {
-    right_kick_requested_ = true;
+    kick_point = right_in_world_ * kick_point;
   }
+
+  left_kick_requested_ = true;  // TODO better feet selection
 }
 
 void WalkEngine::requestPause() { pause_requested_ = true; }
@@ -851,10 +862,73 @@ void WalkEngine::stepFromSupport(const tf2::Transform& diff) {
   is_left_support_foot_ = !is_left_support_foot_;
 }
 
+void WalkEngine::stepToApproachKick(const tf2::Transform kick_point_and_direction, bool kick_with_left) {
+  // Compute where it is relative to the support foot, the kick point and direction are given in "world" / walk odom
+  // coordinates
+  tf2::Transform kick_point_from_support;
+  if (is_left_support_foot_) {
+    kick_point_from_support = right_in_world_.inverseTimes(kick_point_and_direction);
+  } else {
+    kick_point_from_support = left_in_world_.inverseTimes(kick_point_and_direction);
+  }
+
+  double distance_to_kick_point = 0.15;  // Offset to the kick point, because we don't want to accidentally touch it and
+                                         // our feet have a certain size
+  tf2::Transform kick_point_from_support_with_offset = tf2::Transform::getIdentity();
+  kick_point_from_support_with_offset.getOrigin().setX(-distance_to_kick_point);
+
+  tf2::Transform kick_foot_placement = kick_point_from_support * kick_point_from_support_with_offset;
+
+  tf2::Transform foot_goal;
+
+  if (is_left_support_foot_ == kick_with_left) {
+    // We can not place the foot on the kick point, because it is the support foot
+    // Therfore we try to place the other foot next to it in an attempt to get as close as possible
+    // and place the kick foot in the step after
+
+    tf2::Transform foot_distance = tf2::Transform::getIdentity();
+    if (is_left_support_foot_) {
+      foot_distance.getOrigin().setY(config_.foot_distance);
+    } else {
+      foot_distance.getOrigin().setY(-config_.foot_distance);
+    }
+    foot_goal = kick_foot_placement * foot_distance;
+    RCLCPP_WARN(node_->get_logger(), "Placing the kick foot not possible, placing the other foot next to it");
+  } else {
+    // Now we do the step to the kick point (the positioning step)
+    positioning_step_to_kick_point_ = true;
+
+    RCLCPP_WARN(node_->get_logger(), "Placing the kick foot");
+
+    foot_goal = kick_foot_placement;
+  }
+
+  // Allow lateral step only on external foot
+  //(internal foot will return to zero pose)
+  // We need to subtract a small value from the foot distance, otherwise the claming is triggered which,
+  // in turn, delays the kick, as we might not be able to reach the kick point yet
+  if ((is_left_support_foot_ && foot_goal.getOrigin().getY() < config_.foot_distance - 0.01) ||
+      (!is_left_support_foot_ && foot_goal.getOrigin().getY() > -config_.foot_distance + 0.01)) {
+    RCLCPP_WARN(node_->get_logger(), "Side step not possible, placing the foot back to zero pose");
+
+    if (is_left_support_foot_) {
+      foot_goal.getOrigin().setY(config_.foot_distance);
+    } else {
+      foot_goal.getOrigin().setY(-config_.foot_distance);
+    }
+
+    // If we tried to position the foot with this step this is not possible anymore and we need to do a normal step
+    positioning_step_to_kick_point_ = false;
+  }
+
+  // Now we can perform the step
+  stepFromSupport(foot_goal);
+}
+
 void WalkEngine::stepFromOrders(const std::vector<double>& linear_orders, double angular_z) {
   // Compute step diff in next support foot frame
-  tf2::Transform tmp_diff = tf2::Transform();
-  tmp_diff.setIdentity();
+  tf2::Transform tmp_diff = tf2::Transform::getIdentity();
+
   // No change in forward step and upward step
   tmp_diff.getOrigin()[0] = linear_orders[0];
   tmp_diff.getOrigin()[2] = linear_orders[2];

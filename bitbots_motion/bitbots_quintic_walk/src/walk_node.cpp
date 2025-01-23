@@ -15,6 +15,8 @@ WalkNode::WalkNode(rclcpp::Node::SharedPtr node, const std::string& ns,
       param_listener_(node_),
       config_(param_listener_.get_params()),
       walk_engine_(node_, config_.engine),
+      tf_buffer_(node_->get_clock()),
+      tf_listener_(tf_buffer_, node),
       stabilizer_(node_),
       ik_(node_, config_.node.ik),
       visualizer_(node_, config_.node.tf) {
@@ -73,7 +75,8 @@ WalkNode::WalkNode(rclcpp::Node::SharedPtr node, const std::string& ns,
       "robot_state", 1, std::bind(&WalkNode::robotStateCb, this, _1));
   joint_state_sub_ = node_->create_subscription<sensor_msgs::msg::JointState>(
       "joint_states", 1, std::bind(&WalkNode::jointStateCb, this, _1));
-  kick_sub_ = node_->create_subscription<std_msgs::msg::Bool>("kick", 1, std::bind(&WalkNode::kickCb, this, _1));
+  kick_sub_ =
+      node_->create_subscription<geometry_msgs::msg::PoseStamped>("kick", 1, std::bind(&WalkNode::kickCb, this, _1));
   imu_sub_ = node_->create_subscription<sensor_msgs::msg::Imu>("imu/data", 1, std::bind(&WalkNode::imuCb, this, _1));
   pressure_sub_left_ = node_->create_subscription<bitbots_msgs::msg::FootPressure>(
       "foot_pressure_left/filtered", 1, std::bind(&WalkNode::pressureLeftCb, this, _1));
@@ -520,7 +523,20 @@ void WalkNode::jointStateCb(const sensor_msgs::msg::JointState::SharedPtr msg) {
   }
 }
 
-void WalkNode::kickCb(const std_msgs::msg::Bool::SharedPtr msg) { walk_engine_.requestKick(msg->data); }
+void WalkNode::kickCb(const geometry_msgs::msg::PoseStamped::SharedPtr msg) {
+  // Transform the goal pose of the contact point to the support foot frame
+  std::string support_foot_frame =
+      walk_engine_.isLeftSupport() ? config_.node.tf.l_sole_frame : config_.node.tf.r_sole_frame;
+  try {
+    tf2::Transform transform;
+    tf2::fromMsg(tf_buffer_.transform(msg, support_foot_frame)->pose, transform);
+    walk_engine_.requestKick(transform);
+  } catch (tf2::TransformException& ex) {
+    RCLCPP_ERROR(node_->get_logger(), "Skipping kick, Could not transform kick goal to support foot frame: %s",
+                 ex.what());
+    return;
+  }
+}
 
 nav_msgs::msg::Odometry WalkNode::getOdometry() {
   // odometry to trunk is transform to support foot * transform from support to trunk

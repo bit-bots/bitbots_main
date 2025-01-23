@@ -66,7 +66,7 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
    */
   bool isDoubleSupport();
 
-  void requestKick(bool left);
+  void requestKick(tf2::Transform kick_point);
 
   void requestPause();
 
@@ -120,6 +120,8 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
   // kick handling
   bool left_kick_requested_ = false;
   bool right_kick_requested_ = false;
+  bool positioning_step_to_kick_point_ = false;
+  tf2::Transform kick_point_ = tf2::Transform::getIdentity();
 
   // Current support foot (left or right).
   bool is_left_support_foot_ = false;
@@ -173,6 +175,8 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
    * The target foot pose diff is given with respect to next support foot pose (current flying foot target).
    */
   void stepFromSupport(const tf2::Transform &diff);
+
+  void stepToApproachKick(const tf2::Transform kick_point_and_direction, bool kick_with_left);
 
   /**
    * Set target pose of current support foot using diff orders.

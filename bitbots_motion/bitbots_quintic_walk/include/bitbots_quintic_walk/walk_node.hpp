@@ -13,7 +13,9 @@ https://github.com/Rhoban/model/
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Transform.h>
 #include <tf2/LinearMath/Vector3.h>
+#include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_broadcaster.h>
+#include <tf2_ros/transform_listener.h>
 #include <unistd.h>
 
 #include <Eigen/Dense>
@@ -131,7 +133,7 @@ class WalkNode {
 
   void jointStateCb(sensor_msgs::msg::JointState::SharedPtr msg);
 
-  void kickCb(std_msgs::msg::Bool::SharedPtr msg);
+  void kickCb(geometry_msgs::msg::PoseStamped::SharedPtr msg);
 
   double getTimeDelta();
 
@@ -167,7 +169,7 @@ class WalkNode {
   rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_sub_;
   rclcpp::Subscription<bitbots_msgs::msg::RobotControlState>::SharedPtr robot_state_sub_;
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_sub_;
-  rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr kick_sub_;
+  rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr kick_sub_;
   rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_sub_;
   rclcpp::Subscription<bitbots_msgs::msg::FootPressure>::SharedPtr pressure_sub_left_;
   rclcpp::Subscription<bitbots_msgs::msg::FootPressure>::SharedPtr pressure_sub_right_;
@@ -176,6 +178,10 @@ class WalkNode {
   std::shared_ptr<robot_model_loader::RobotModelLoader> robot_model_loader_;
   moveit::core::RobotModelPtr kinematic_model_;
   moveit::core::RobotStatePtr current_state_;
+
+  // TF listener and buffer
+  tf2_ros::Buffer tf_buffer_;
+  tf2_ros::TransformListener tf_listener_;
 
   WalkStabilizer stabilizer_;
   WalkIK ik_;
