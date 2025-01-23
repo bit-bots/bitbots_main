@@ -20,11 +20,8 @@ $DoOnce
 #GetWalkreadyAndLocalize
 @ChangeAction + action:waiting + r:false, @PlayAnimationInitInSim + r:false, @LookAtFieldFeatures + r:false, @GetWalkready + r:false, @WalkInPlace
 
-#PerformKickLeft
-@ChangeAction + action:kicking, @LookAtFront, @WalkKick + foot:left + r:false, @WalkInPlace + duration:1 + r:false, @ForgetBall + r:false, @WalkInPlace + duration:1 + r:false, @LookAtFieldFeatures + r:false
-
-#PerformKickRight
-@ChangeAction + action:kicking, @LookAtFront, @WalkKick + foot:right + r:false, @WalkInPlace + duration:1 + r:false, @ForgetBall + r:false, @WalkInPlace + duration:1 + r:false, @LookAtFieldFeatures + r:false
+#PerformKick
+@ChangeAction + action:kicking, @LookAtFront, @WalkKick + r:false, @WalkInPlace + duration:1 + r:false, @ForgetBall + r:false, @WalkInPlace + duration:1 + r:false, @LookAtFieldFeatures + r:false
 
 #Dribble
 @ChangeAction + action:going_to_ball, @CancelPathplanning, @LookAtBall, @LookAtFront, @DribbleForward
@@ -40,9 +37,7 @@ $DoOnce
 $AvoidBall
     NO --> $BallClose + distance:%ball_reapproach_dist + angle:%ball_reapproach_angle
         YES --> $BallKickArea
-            NEAR --> $FootSelection
-                LEFT --> #PerformKickLeft
-                RIGHT --> #PerformKickRight
+            NEAR --> #PerformKick
             FAR --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:map
         NO --> @ChangeAction + action:going_to_ball + r:false, @LookAtFieldFeatures + r:false, @AvoidBallActive + r:false, @GoToBall + target:map + blocking:false + distance:%ball_far_approach_dist
     YES --> $ReachedPathPlanningGoalPosition + threshold:%ball_far_approach_position_thresh

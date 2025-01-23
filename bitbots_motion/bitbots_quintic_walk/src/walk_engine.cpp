@@ -124,7 +124,7 @@ WalkResponse WalkEngine::update(double dt) {
       pause_requested_ = false;
       return createResponse();
     } else if (half_step_finished && positioning_step_to_kick_point_ &&
-               ((left_kick_requested_ && !is_left_support_foot_) || (right_kick_requested_ && is_left_support_foot_))) {
+               ((left_kick_requested_ && is_left_support_foot_) || (right_kick_requested_ && !is_left_support_foot_))) {
       // lets do a kick
       buildTrajectories(TrajectoryType::KICK);
       engine_state_ = WalkState::KICK;
@@ -820,15 +820,16 @@ bool WalkEngine::isDoubleSupport() {
   return is_double_support_spline_.pos(getTrajsTime()) >= 0.5;
 }
 
-void WalkEngine::requestKick(tf2::Transform kick_point) {
+void WalkEngine::requestKick(tf2::Transform kick_point, bool left_kick) {
   // We assume that the kick point is given in the support foot frame
   if (is_left_support_foot_) {
-    kick_point = left_in_world_ * kick_point;
+    kick_point_ = left_in_world_ * kick_point;
   } else {
-    kick_point = right_in_world_ * kick_point;
+    kick_point_ = right_in_world_ * kick_point;
   }
 
-  left_kick_requested_ = true;  // TODO better feet selection
+  left_kick_requested_ = left_kick;
+  right_kick_requested_ = !left_kick;
 }
 
 void WalkEngine::requestPause() { pause_requested_ = true; }
@@ -881,7 +882,7 @@ void WalkEngine::stepToApproachKick(const tf2::Transform kick_point_and_directio
 
   tf2::Transform foot_goal;
 
-  if (is_left_support_foot_ == kick_with_left) {
+  if (is_left_support_foot_ != kick_with_left) {
     // We can not place the foot on the kick point, because it is the support foot
     // Therfore we try to place the other foot next to it in an attempt to get as close as possible
     // and place the kick foot in the step after
@@ -908,17 +909,17 @@ void WalkEngine::stepToApproachKick(const tf2::Transform kick_point_and_directio
   // We need to subtract a small value from the foot distance, otherwise the claming is triggered which,
   // in turn, delays the kick, as we might not be able to reach the kick point yet
   if ((is_left_support_foot_ && foot_goal.getOrigin().getY() < config_.foot_distance - 0.01) ||
-      (!is_left_support_foot_ && foot_goal.getOrigin().getY() > -config_.foot_distance + 0.01)) {
+     (!is_left_support_foot_ && foot_goal.getOrigin().getY() > -config_.foot_distance + 0.01)) {
     RCLCPP_WARN(node_->get_logger(), "Side step not possible, placing the foot back to zero pose");
 
-    if (is_left_support_foot_) {
-      foot_goal.getOrigin().setY(config_.foot_distance);
-    } else {
-      foot_goal.getOrigin().setY(-config_.foot_distance);
-    }
+   if (is_left_support_foot_) {
+     foot_goal.getOrigin().setY(config_.foot_distance);
+   } else {
+     foot_goal.getOrigin().setY(-config_.foot_distance);
+   }
 
-    // If we tried to position the foot with this step this is not possible anymore and we need to do a normal step
-    positioning_step_to_kick_point_ = false;
+   // If we tried to position the foot with this step this is not possible anymore and we need to do a normal step
+   positioning_step_to_kick_point_ = false;
   }
 
   // Now we can perform the step

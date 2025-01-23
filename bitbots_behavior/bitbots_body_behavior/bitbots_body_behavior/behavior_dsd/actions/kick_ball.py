@@ -2,6 +2,7 @@ from bitbots_blackboard.body_blackboard import BodyBlackboard
 from bitbots_blackboard.capsules.kick_capsule import KickCapsule
 from bitbots_utils.transforms import quat_from_yaw
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
+from geometry_msgs.msg import PoseStamped
 
 from bitbots_msgs.action import Kick
 
@@ -19,17 +20,17 @@ class WalkKick(AbstractKickAction):
 
     def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
-        if "foot" not in parameters.keys():
-            raise ValueError("No foot specified for walk kick")
-        elif "right" == parameters["foot"]:
-            self.target = KickCapsule.WalkKickTargets.RIGHT
-        elif "left" == parameters["foot"]:
-            self.target = KickCapsule.WalkKickTargets.LEFT
-        else:
-            raise ValueError(f"Invalid foot specified for walk kick: {parameters['foot']}")
 
     def perform(self, reevaluate=False):
-        self.blackboard.kick.walk_kick(self.target)
+
+        ball_u, ball_v = self.blackboard.world_model.get_ball_position_uv()
+
+        pose = PoseStamped()
+        pose.header.frame_id = self.blackboard.world_model.base_footprint_frame
+        pose.pose.position.x = ball_u - 0.13 / 2 - 0.02
+        pose.pose.position.y = ball_v
+
+        self.blackboard.kick.walk_kick(pose)
         self.pop()
 
 

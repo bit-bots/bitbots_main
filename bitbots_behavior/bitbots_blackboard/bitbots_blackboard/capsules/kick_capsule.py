@@ -7,6 +7,7 @@ from rclpy.duration import Duration
 from rclpy.publisher import Publisher
 from rclpy.time import Time
 from std_msgs.msg import Bool
+from geometry_msgs.msg import PoseStamped
 
 from bitbots_blackboard.capsules import AbstractBlackboardCapsule
 from bitbots_msgs.action import Kick
@@ -40,15 +41,15 @@ class KickCapsule(AbstractBlackboardCapsule):
         """
         :param blackboard: Global blackboard instance
         """
-        self.walk_kick_pub = self._node.create_publisher(Bool, "/kick", 1)
+        self.walk_kick_pub = self._node.create_publisher(PoseStamped, "/kick", 1)
         # self.connect_dynamic_kick()  Do not connect if dynamic_kick is disabled
 
-    def walk_kick(self, target: WalkKickTargets) -> None:
+    def walk_kick(self, kick_point: PoseStamped) -> None:
         """
         Kick the ball while walking
-        :param target: Target for the walk kick (e.g. left or right foot)
+        :param kick_point: Target point to kick at
         """
-        self.walk_kick_pub.publish(Bool(data=target.value))
+        self.walk_kick_pub.publish(kick_point)
 
     def connect_dynamic_kick(self) -> None:
         topic = self._blackboard.config["dynamic_kick"]["topic"]

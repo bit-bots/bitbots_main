@@ -66,7 +66,7 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
    */
   bool isDoubleSupport();
 
-  void requestKick(tf2::Transform kick_point);
+  void requestKick(tf2::Transform kick_point, bool left_kick);
 
   void requestPause();
 

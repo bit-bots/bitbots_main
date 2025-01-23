@@ -528,9 +528,17 @@ void WalkNode::kickCb(const geometry_msgs::msg::PoseStamped::SharedPtr msg) {
   std::string support_foot_frame =
       walk_engine_.isLeftSupport() ? config_.node.tf.l_sole_frame : config_.node.tf.r_sole_frame;
   try {
-    tf2::Transform transform;
-    tf2::fromMsg(tf_buffer_.transform(msg, support_foot_frame)->pose, transform);
-    walk_engine_.requestKick(transform);
+      // Select foot used for kick
+      auto pose_base_footprint = tf_buffer_.transform(*msg, "base_footprint", tf2::durationFromSec(0.1)).pose;
+      bool use_left_foot = pose_base_footprint.position.y > 0;
+
+      // Transform the goal pose of the contact point to the support foot frame
+      auto pose = tf_buffer_.transform(*msg, support_foot_frame, tf2::durationFromSec(0.1)).pose;
+      tf2::Transform transform;
+      tf2::fromMsg(pose, transform);
+
+      // Request the kick
+      walk_engine_.requestKick(transform, use_left_foot);
   } catch (tf2::TransformException& ex) {
     RCLCPP_ERROR(node_->get_logger(), "Skipping kick, Could not transform kick goal to support foot frame: %s",
                  ex.what());
