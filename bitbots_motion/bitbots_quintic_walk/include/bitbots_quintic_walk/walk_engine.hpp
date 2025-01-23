@@ -16,6 +16,7 @@ https://github.com/Rhoban/model/
 #include "bitbots_splines/abstract_engine.hpp"
 #include "bitbots_splines/pose_spline.hpp"
 #include "bitbots_splines/smooth_spline.hpp"
+#include "bitbots_splines/abstract_ik.hpp"
 
 namespace bitbots_quintic_walk {
 
@@ -60,6 +61,8 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
    * Return if true if left is current support foot
    */
   [[nodiscard]] bool isLeftSupport() const;
+
+  void fastKick(bitbots_splines::JointGoals &JointGoals);
 
   /**
    * Return true if both feet are currently on the ground

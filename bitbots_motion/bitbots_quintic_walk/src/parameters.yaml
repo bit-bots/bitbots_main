@@ -151,6 +151,26 @@ walking:
       description: "Scales the step rise parameter, as the kick is a special case, where the foot is moved higher of the ground than in normal walking (ratio)"
       validation:
         bounds<>: [0.0, 5.0]
+    fast_kick_knee_offset:
+      type: double
+      description: "Offset of knee for fast kick"  
+      validation:
+        bounds<>: [0, 1.2] 
+    fast_kick_hip_offset:
+      type: double
+      description: "Offset of hip for fast kick"  
+      validation:
+        bounds<>: [0, 1.2]  
+    fast_kick_phase_start:
+      type: double
+      description: "Offset of hip for fast kick"  
+      validation:
+        bounds<>: [0, 1]  
+    fast_kick_phase_end:
+      type: double
+      description: "Offset of hip for fast kick"  
+      validation:
+        bounds<>: [0, 1]      
   node:
     engine_freq:
       type: double

@@ -472,6 +472,7 @@ void WalkEngine::buildTrajectories(WalkEngine::TrajectoryType type) {
                              foot_pos_acc_at_foot_change_.x());
   foot_spline_.x()->addPoint(double_support_length, foot_pos_at_foot_change_.x());
   if (kick_step) {
+    foot_spline_.x()->addPoint(t,x);
     foot_spline_.x()->addPoint(double_support_length + single_support_length * config_.kick_phase,
                                support_to_next_.getOrigin().x() + config_.kick_length, config_.kick_vel);
     foot_spline_.x()->addPoint(double_support_length + single_support_length * config_.kick_put_down_phase,
@@ -803,6 +804,46 @@ double WalkEngine::getTrajsTime() const {
 
   return t;
 }
+
+void WalkEngine::fastKick(bitbots_splines::JointGoals &motor_goals_) {
+  // in this state we do a kick while doing a step
+  if (engine_state_ == WalkState::KICK and is_left_support_foot_ && (phase_ > config_.fast_kick_phase_start && phase_ < config_.fast_kick_phase_end)) {
+    RCLCPP_WARN(node_->get_logger(),
+          "fastKick right");
+    for (size_t i = 0; i < motor_goals_.first.size(); i++) {
+      if (motor_goals_.first[i] == "RHipPitch") {
+        motor_goals_.second[i] -= config_.fast_kick_hip_offset;
+      }
+    }  
+
+    for (size_t i = 0; i < motor_goals_.first.size(); i++) {
+      if (motor_goals_.first[i] == "RKnee") {
+        motor_goals_.second[i] += config_.fast_kick_knee_offset;
+        RCLCPP_WARN(node_->get_logger(),
+          "change goal of joint %ld at %s", i, motor_goals_.first[i].c_str());
+      }
+    }
+  }
+  if (engine_state_ == WalkState::KICK and !is_left_support_foot_ && (phase_ > (config_.fast_kick_phase_start + 0.5) && phase_ < (config_.fast_kick_phase_end + 0.5))) {
+    RCLCPP_WARN(node_->get_logger(),
+            "fastKick left");
+
+    for (size_t i = 0; i < motor_goals_.first.size(); i++) {
+      if (motor_goals_.first[i] == "LHipPitch") {
+        motor_goals_.second[i] += config_.fast_kick_hip_offset;
+      }
+    }
+
+    for (size_t i = 0; i < motor_goals_.first.size(); i++) {
+      if (motor_goals_.first[i] == "LKnee") {
+        motor_goals_.second[i] -= config_.fast_kick_knee_offset;
+      }
+    }
+    
+  }
+}
+
+
 
 bool WalkEngine::isLeftSupport() const { return is_left_support_foot_; }
 

@@ -198,24 +198,7 @@ bitbots_msgs::msg::JointCommand WalkNode::step(double dt) {
     // compute motor goals from IK
     motor_goals_ = ik_.calculate(current_stabilized_response_);
 
-    if (engine_state_ == WalkState::KICK) {
-      // in this state we do a kick while doing a step
-      if (left_kick_requested_ && !is_left_support_foot_) {
-        for (int i = 0; i < motor_goal_.first.size() - 1; i++) {
-          if (motor_goal.first[i].compare("LKnee")) {
-            motor_goal.second[i] += 0.1;
-          }
-        }
-      }
-      if (right_kick_requested_ && is_left_support_foot_) {
-      }
-
-      if (half_step_finished) {
-        // kick step is finished, go on walking
-        buildTrajectories(TrajectoryType::NORMAL);
-        engine_state_ = WalkState::WALKING;
-      }
-    }
+    walk_engine_.fastKick(motor_goals_);
 
     command.header.stamp = node_->get_clock()->now();
     /*
