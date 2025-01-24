@@ -6,11 +6,9 @@
 
 #include <biped_interfaces/msg/phase.hpp>
 #include <bitbots_utils/utils.hpp>
-#include <geometry_msgs/msg/quaternion_stamped.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <sensor_msgs/msg/imu.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
 #include <std_msgs/msg/char.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
@@ -33,12 +31,11 @@ class MotionOdometry : public rclcpp::Node {
   rclcpp::Time current_support_state_time_{rclcpp::Time(0, 0, RCL_ROS_TIME)};
   nav_msgs::msg::Odometry current_odom_msg_;
   tf2::Transform odometry_to_support_foot_;
-  std::string base_link_frame_, r_sole_frame_, l_sole_frame_, odom_frame_, imu_frame_;
+  std::string base_link_frame_, r_sole_frame_, l_sole_frame_, odom_frame_;
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr pub_odometry_;
   rclcpp::Subscription<biped_interfaces::msg::Phase>::SharedPtr walk_support_state_sub_;
   rclcpp::Subscription<biped_interfaces::msg::Phase>::SharedPtr kick_support_state_sub_;
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_subscriber_;
-  rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_subscriber_;
 
   // Declare parameter listener and struct from the generate_parameter_library
   motion_odometry::ParamListener param_listener_;
@@ -47,7 +44,6 @@ class MotionOdometry : public rclcpp::Node {
 
   void supportCallback(const biped_interfaces::msg::Phase::SharedPtr msg);
   void odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg);
-  void IMUCallback(const sensor_msgs::msg::Imu::SharedPtr msg);
 
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener tf_listener_;
@@ -56,11 +52,6 @@ class MotionOdometry : public rclcpp::Node {
   std::string previous_support_link_;
   std::string current_support_link_;
   rclcpp::Time start_time_;
-
-  tf2::Quaternion current_imu_orientation_;
-  tf2::Quaternion initial_imu_transform_;
-
-  bool is_initial_transform_set_ = false;
 };
 
 }  // namespace bitbots_odometry
