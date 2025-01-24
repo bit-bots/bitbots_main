@@ -87,12 +87,10 @@ void FusedOdometry::loop() {
     previous_to_current_imu = (previous_imu * prev_imu_mounting_offset).inverseTimes(current_imu * imu_mounting_offset);
 
     tf2::Transform prev_to_curr_odom = tf2::Transform();
-    double yaw = tf2::getYaw(previous_to_current_imu.getRotation());
     prev_to_curr_odom.setOrigin(
         {previous_to_current_motion_odom.getOrigin().x(), previous_to_current_motion_odom.getOrigin().y(), 0});
-    tf2::Quaternion q;
-    q.setRPY(0, 0, yaw);
-    prev_to_curr_odom.setRotation(q);
+
+    prev_to_curr_odom.setRotation(previous_to_current_imu.getRotation());
 
     odom_to_base_ = odom_to_base_ * prev_to_curr_odom;
 
