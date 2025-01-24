@@ -39,6 +39,7 @@
   <depend>soccer_vision_2d_msgs</depend>
   <depend>std_msgs</depend>
   <depend>vision_opencv</depend>
+  <test_depend>ament_mypy</test_depend>
 
   <export>
     <bitbots_documentation>

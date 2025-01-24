@@ -6,24 +6,21 @@ from nav_msgs.msg import OccupancyGrid, Path
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.duration import Duration
 from rclpy.executors import MultiThreadedExecutor
-from rclpy.node import Node
 from std_msgs.msg import Bool, Empty
 
+from bitbots_path_planning import NodeWithConfig
 from bitbots_path_planning.controller import Controller
 from bitbots_path_planning.map import Map
-from bitbots_path_planning.path_planning_parameters import bitbots_path_planning as parameters
 from bitbots_path_planning.planner import planner_factory
 
 
-class PathPlanning(Node):
+class PathPlanning(NodeWithConfig):
     """
     A minimal python path planning.
     """
 
     def __init__(self) -> None:
         super().__init__("bitbots_path_planning")
-        self.param_listener = parameters.ParamListener(self)
-        self.config = self.param_listener.get_params()
 
         # We need to create a tf buffer
         self.tf_buffer = Buffer(self, Duration(seconds=self.config.tf_buffer_duration))
@@ -61,7 +58,7 @@ class PathPlanning(Node):
         self.create_subscription(
             Bool,
             "ball_obstacle_active",
-            lambda msg: self.map.avoid_ball(msg.data),
+            lambda msg: self.map.avoid_ball(msg.data),  # type: ignore
             5,
             callback_group=MutuallyExclusiveCallbackGroup(),
         )
