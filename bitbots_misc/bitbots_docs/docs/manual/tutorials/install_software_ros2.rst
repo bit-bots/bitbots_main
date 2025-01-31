@@ -46,29 +46,14 @@ Alternatively you can use a devcontainer :doc:`vscode-dev-container`, with a pre
     python3-pip \
     python3-rosdep \
     python3-vcstool \
-    ros-iron-plotjuggler-ros \
-    ros-iron-rmw-cyclonedds-cpp \
-    ros-iron-rqt-robot-monitor \
-    ros-iron-rqt-runtime-monitor
+    ros-jazzy-plotjuggler-ros \
+    ros-jazzy-rmw-cyclonedds-cpp \
+    ros-jazzy-rqt-robot-monitor \
+    ros-jazzy-rqt-runtime-monitor
 
 - Run ``sudo rosdep init`` to initialize ``rosdep``, a tool that helps you install system dependencies for ROS packages.
-- Optionally, to get nice colored output from colcon, you can install the following pip packages:
 
-.. code-block:: bash
-
-  python3 -m pip install \
-    git+https://github.com/ruffsl/colcon-clean \
-    git+https://github.com/timonegk/colcon-core.git@colors \
-    git+https://github.com/timonegk/colcon-notification.git@colors \
-    git+https://github.com/timonegk/colcon-output.git@colors
-
-**2. Install Webots**
-
-Webots is a robot simulator, which we use to simulate our robots and test our software.
-It is not strictly necessary to install it, but it is very useful for development and testing.
-If you want to install it, you can do so by running ``make webots`` in the bitbots_main repository.
-
-**3. Download our software**
+**2. Download our software (if not already done)**
 
 - Create a GitHub account, if not already done (see `here <http://doku.bit-bots.de/private/manual/dienste_accounts.html>`_ for further information)
 - Add your SSH key to GitHub to access and sync our repositories
@@ -85,6 +70,12 @@ If you want to install it, you can do so by running ``make webots`` in the bitbo
     - Clone all code and other files by running: ``make install``
       This will take a while, as it downloads all the code and other files from our repositories and additionally installs all missing dependencies (using rosdep and pip).
       Finally, it will register pre-commit hooks (automatic code-formatting and warnings), which will be run every time you commit code to our repositories.
+
+**3. Install Webots**
+
+Webots is a robot simulator, which we use to simulate our robots and test our software.
+It is not strictly necessary to install it, but it is very useful for development and testing.
+If you want to install it, you can do so by running ``make webots`` in the bitbots_main repository.
 
 **4. Setup colcon workspace**
 
