@@ -4,9 +4,9 @@
 #include <rot_conv/rot_conv.h>
 
 #include <Eigen/Geometry>
+#include <bitbots_dynup/dynup_parameters.hpp>
 #include <bitbots_splines/abstract_stabilizer.hpp>
 #include <control_toolbox/pid_ros.hpp>
-#include <dynup_parameters.hpp>
 #include <optional>
 #include <sensor_msgs/msg/imu.hpp>
 #include <tf2_eigen/tf2_eigen.hpp>

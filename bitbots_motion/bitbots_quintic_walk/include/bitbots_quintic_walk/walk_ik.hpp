@@ -1,7 +1,7 @@
 #ifndef BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALK_IK_H_
 #define BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALK_IK_H_
+#include <bitbots_quintic_walk/bitbots_quintic_walk_parameters.hpp>
 #include <bitbots_quintic_walk/walk_utils.hpp>
-#include <bitbots_quintic_walk_parameters.hpp>
 #include <bitbots_splines/abstract_ik.hpp>
 #include <moveit/robot_state/robot_state.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>

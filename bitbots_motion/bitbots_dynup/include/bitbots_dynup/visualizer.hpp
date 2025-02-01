@@ -1,13 +1,13 @@
 #ifndef BITBOTS_DYNUP_INCLUDE_BITBOTS_DYNUP_VISUALIZER_H_
 #define BITBOTS_DYNUP_INCLUDE_BITBOTS_DYNUP_VISUALIZER_H_
 
+#include <bitbots_dynup/dynup_parameters.hpp>
 #include <bitbots_dynup/dynup_utils.hpp>
 #include <bitbots_dynup/msg/dynup_ik_offset.hpp>
 #include <bitbots_splines/abstract_ik.hpp>
 #include <bitbots_splines/abstract_visualizer.hpp>
 #include <bitbots_splines/smooth_spline.hpp>
 #include <bitbots_splines/spline_container.hpp>
-#include <dynup_parameters.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <moveit/robot_model/robot_model.hpp>
 #include <moveit/robot_state/robot_state.hpp>

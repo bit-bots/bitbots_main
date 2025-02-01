@@ -14,11 +14,11 @@ https://github.com/Rhoban/model/
 #include <bitbots_msgs/msg/foot_pressure.hpp>
 #include <bitbots_msgs/msg/joint_command.hpp>
 #include <bitbots_msgs/msg/robot_control_state.hpp>
+#include <bitbots_quintic_walk/bitbots_quintic_walk_parameters.hpp>
 #include <bitbots_quintic_walk/walk_engine.hpp>
 #include <bitbots_quintic_walk/walk_ik.hpp>
 #include <bitbots_quintic_walk/walk_stabilizer.hpp>
 #include <bitbots_quintic_walk/walk_visualizer.hpp>
-#include <bitbots_quintic_walk_parameters.hpp>
 #include <bitbots_splines/abstract_ik.hpp>
 #include <chrono>
 #include <control_toolbox/pid_ros.hpp>
