@@ -238,4 +238,8 @@
     "[json]": {
         "editor.defaultFormatter": "vscode.json-language-features"
     },
+    "makefile.configureOnOpen": true,
+    "[jsonc]": {
+        "editor.defaultFormatter": "vscode.json-language-features"
+    },
 }
