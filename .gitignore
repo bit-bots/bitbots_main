@@ -222,6 +222,7 @@ doku/*
 /bitbots_team_communication/bitbots_team_communication/bitbots_team_communication/RobocupProtocol
 # Protobuf generated file
 /bitbots_team_communication/bitbots_team_communication/bitbots_team_communication/robocup_extension_pb2.py
+/bitbots_team_communication/bitbots_team_communication/bitbots_team_communication/robocup_extension_pb2.pyi
 
 # Workspace git status file from the deploy tool
 **/workspace_status.json
