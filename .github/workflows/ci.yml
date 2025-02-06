@@ -4,6 +4,9 @@ on:
     - cron: '0 0 * * *'
   push:
 
+env:
+  PYTHONWARNINGS: "ignore:::setuptools.command.install,ignore:::setuptools.command.easy_install,ignore:::pkg_resources,ignore:easy_install command is deprecated,ignore:setup.py install is deprecated"
+
 jobs:
   build:
     runs-on: ubuntu-latest

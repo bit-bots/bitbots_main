@@ -6,8 +6,8 @@ https://github.com/Rhoban/model/
 #ifndef BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALK_ENGINE_H_
 #define BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALK_ENGINE_H_
 
+#include <bitbots_quintic_walk/bitbots_quintic_walk_parameters.hpp>
 #include <bitbots_quintic_walk/walk_utils.hpp>
-#include <bitbots_quintic_walk_parameters.hpp>
 #include <bitbots_splines/abstract_engine.hpp>
 #include <bitbots_splines/pose_spline.hpp>
 #include <bitbots_splines/smooth_spline.hpp>

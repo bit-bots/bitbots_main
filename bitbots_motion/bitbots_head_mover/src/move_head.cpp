@@ -3,6 +3,7 @@
 
 #include <bio_ik/bio_ik.hpp>
 #include <bio_ik_msgs/msg/ik_response.hpp>
+#include <bitbots_head_mover/head_parameters.hpp>
 #include <bitbots_msgs/action/look_at.hpp>
 #include <bitbots_msgs/msg/head_mode.hpp>
 #include <bitbots_msgs/msg/joint_command.hpp>
@@ -10,7 +11,6 @@
 #include <cmath>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
-#include <head_parameters.hpp>
 #include <iostream>
 #include <memory>
 #include <moveit/planning_scene/planning_scene.hpp>

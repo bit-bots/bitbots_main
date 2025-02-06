@@ -17,6 +17,7 @@
 #include <bitbots_localization/Resampling.hpp>
 #include <bitbots_localization/RobotState.hpp>
 #include <bitbots_localization/StateDistribution.hpp>
+#include <bitbots_localization/localization_parameters.hpp>
 #include <bitbots_localization/map.hpp>
 #include <bitbots_localization/srv/reset_filter.hpp>
 #include <bitbots_localization/srv/set_paused.hpp>
@@ -35,7 +36,6 @@
 #include <geometry_msgs/msg/twist.hpp>
 #include <image_transport/image_transport.hpp>
 #include <iterator>
-#include <localization_parameters.hpp>
 #include <memory>
 #include <particle_filter/CRandomNumberGenerator.hpp>
 #include <particle_filter/ParticleFilter.hpp>

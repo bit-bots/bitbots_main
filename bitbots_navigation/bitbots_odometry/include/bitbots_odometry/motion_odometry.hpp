@@ -4,9 +4,9 @@
 #include <unistd.h>
 
 #include <biped_interfaces/msg/phase.hpp>
+#include <bitbots_odometry/odometry_parameters.hpp>
 #include <bitbots_utils/utils.hpp>
 #include <nav_msgs/msg/odometry.hpp>
-#include <odometry_parameters.hpp>
 #include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>

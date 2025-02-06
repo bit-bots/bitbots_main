@@ -3,6 +3,7 @@
 #include <pylon/_InstantCameraParams.h>
 
 #include <ament_index_cpp/get_package_share_directory.hpp>
+#include <bitbots_basler_camera/pylon_camera_parameters.hpp>
 #include <camera_info_manager/camera_info_manager.hpp>
 #include <cmath>
 #include <cv_bridge/cv_bridge.hpp>
@@ -12,7 +13,6 @@
 #include <iostream>
 #include <memory>
 #include <opencv2/imgproc/imgproc.hpp>
-#include <pylon_camera_parameters.hpp>
 #include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
 #include <rclcpp/logger.hpp>
 #include <rclcpp/rclcpp.hpp>
