@@ -4,8 +4,8 @@ namespace bitbots_quintic_walk {
 
 WalkStabilizer::WalkStabilizer(rclcpp::Node::SharedPtr node)
     : pid_trunk_fused_pitch_(node, "node.trunk_pid.pitch"), pid_trunk_fused_roll_(node, "node.trunk_pid.roll") {
-  pid_trunk_fused_pitch_.initPid();
-  pid_trunk_fused_roll_.initPid();
+  pid_trunk_fused_pitch_.initialize_from_ros_parameters();
+  pid_trunk_fused_roll_.initialize_from_ros_parameters();
 
   reset();
 }
@@ -29,9 +29,9 @@ WalkResponse WalkStabilizer::stabilize(const WalkResponse& response, const rclcp
 
   // adapt trunk values based on PID controllers
   double fused_roll_correction =
-      pid_trunk_fused_roll_.computeCommand(goal_fused.fusedRoll - response.current_fused_roll, dt);
+      pid_trunk_fused_roll_.compute_command(goal_fused.fusedRoll - response.current_fused_roll, dt);
   double fused_pitch_correction =
-      pid_trunk_fused_pitch_.computeCommand(goal_fused.fusedPitch - response.current_fused_pitch, dt);
+      pid_trunk_fused_pitch_.compute_command(goal_fused.fusedPitch - response.current_fused_pitch, dt);
 
   // Change trunk x offset (in the trunks frame of reference) based on the PID controllers
   WalkResponse stabilized_response{response};
