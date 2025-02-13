@@ -1,4 +1,4 @@
-from typing import Optional, Type
+from typing import Optional
 
 import numpy as np
 import tf2_ros as tf2
@@ -55,18 +55,18 @@ class LocalizationBlackboard:
         self.last_state_get_up = False
 
         # IMU
-        self.accel: Float[np.ndarray, "3"] = np.array([0.0, 0.0, 0.0])
+        self.accel: Float[np.ndarray, 3] = np.array([0.0, 0.0, 0.0])
         self.imu_orientation = Quaternion(w=1.0)
 
         # Falling odometry / imu interpolation during falls
         self.imu_yaw_before_fall: float = 0.0
 
         # Picked up
-        self.pickup_accel_buffer: list[Float[np.ndarray, "3"]] = []
-        self.pickup_accel_buffer_long: list[Float[np.ndarray, "3"]] = []
+        self.pickup_accel_buffer: list[Float[np.ndarray, 3]] = []
+        self.pickup_accel_buffer_long: list[Float[np.ndarray, 3]] = []
 
         # Last init action
-        self.last_init_action_type: Optional[Type] = None
+        self.last_init_action_type: Optional[type] = None
         self.last_init_odom_transform: TransformStamped | None = None
 
     def _callback_pose(self, msg: PoseWithCovarianceStamped):

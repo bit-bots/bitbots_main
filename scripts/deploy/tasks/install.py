@@ -176,9 +176,9 @@ class Install(AbstractTaskWhichRequiresSudo):
             apt_command_prefix = "sudo -H apt-get install -y "
             apt_packages: list[str] = []
 
-            install_result: Optional[
-                Result
-            ] = None  # This collects the result of the last run install command, failed if exception occurred
+            install_result: Optional[Result] = (
+                None  # This collects the result of the last run install command, failed if exception occurred
+            )
             for install_command in install_commands:
                 if install_command.startswith(apt_command_prefix):
                     # Remove prefix from command, as we collect all apt commands into one

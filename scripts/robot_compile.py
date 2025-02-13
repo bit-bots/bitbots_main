@@ -162,13 +162,12 @@ class Target:
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
-        description="Compile and configure software for the Wolfgang humanoid robot " "platform"
+        description="Compile and configure software for the Wolfgang humanoid robot platform"
     )
     parser.add_argument(
         "target",
         type=str,
-        help="The target robot or computer you want to compile for. Multiple "
-        "targets can be specified seperated by ,",
+        help="The target robot or computer you want to compile for. Multiple targets can be specified seperated by ,",
     )
 
     mode = parser.add_mutually_exclusive_group(required=False)
@@ -190,7 +189,7 @@ def parse_arguments():
         action="store_false",
         default=True,
         dest="install_rosdeps",
-        help="Don't install rosdeps on the target." "Might be useful when no internet connection is available.",
+        help="Don't install rosdeps on the target.Might be useful when no internet connection is available.",
     )
     parser.add_argument("--print-bit-bot", action="store_true", default=False, help="Print our logo at script start")
     parser.add_argument("-v", "--verbose", action="count", default=0, help="More output")
