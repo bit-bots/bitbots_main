@@ -36,7 +36,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ace50bade8e6234aa140d9a2f552bbee1db4d353f69b8217bc503490fc1a9f26"
 
 [[package]]
-name = "bitbots_pathplanning_rust"
+name = "bitbots_rust_nav"
 version = "0.1.2"
 dependencies = [
  "geo",

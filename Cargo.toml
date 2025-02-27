@@ -1,11 +1,11 @@
 [package]
-name = "bitbots_pathplanning_rust"
+name = "bitbots_rust_nav"
 version = "0.1.2"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [lib]
-name = "bitbots_pathplanning_rust"
+name = "bitbots_rust_nav"
 crate-type = ["cdylib"]
 
 [dependencies]

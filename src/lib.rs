@@ -7,7 +7,7 @@ mod obstacle;
 mod planner;
 
 #[pymodule]
-fn bitbots_pathplanning_rust(m: &Bound<'_, PyModule>) -> PyResult<()> {
+fn bitbots_rust_nav(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<RoundObstacle>()?;
     m.add_class::<ObstacleMap>()?;
     m.add_class::<ObstacleMapConfig>()?;
