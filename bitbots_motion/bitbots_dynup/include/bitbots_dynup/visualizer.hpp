@@ -1,10 +1,7 @@
 #ifndef BITBOTS_DYNUP_INCLUDE_BITBOTS_DYNUP_VISUALIZER_H_
 #define BITBOTS_DYNUP_INCLUDE_BITBOTS_DYNUP_VISUALIZER_H_
 
-#include <moveit/robot_model/robot_model.h>
-#include <moveit/robot_state/robot_state.h>
-#include <tf2/LinearMath/Vector3.h>
-
+#include <bitbots_dynup/dynup_parameters.hpp>
 #include <bitbots_dynup/dynup_utils.hpp>
 #include <bitbots_dynup/msg/dynup_ik_offset.hpp>
 #include <bitbots_splines/abstract_ik.hpp>
@@ -12,12 +9,13 @@
 #include <bitbots_splines/smooth_spline.hpp>
 #include <bitbots_splines/spline_container.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
+#include <moveit/robot_model/robot_model.hpp>
+#include <moveit/robot_state/robot_state.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <string>
+#include <tf2/LinearMath/Vector3.hpp>
 #include <tf2_eigen/tf2_eigen.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
-
-#include "dynup_parameters.hpp"
 
 namespace bitbots_dynup {
 

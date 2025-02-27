@@ -60,9 +60,9 @@ def convert_from_message(message: Proto.Message, team_data: TeamData | None = No
 
 @pytest.fixture
 def message_with_strategy(message) -> Proto.Message:
-    message.role = Proto.Role.ROLE_STRIKER
-    message.action = Proto.Action.ACTION_KICKING
-    message.offensive_side = Proto.OffensiveSide.SIDE_RIGHT
+    message.role = Proto.ROLE_STRIKER
+    message.action = Proto.ACTION_KICKING
+    message.offensive_side = Proto.SIDE_RIGHT
 
     return message
 
@@ -111,9 +111,9 @@ def message() -> Proto.Message:
 def robot_message(player_id, is_own_team):
     robot = Proto.Robot()
     robot.player_id = player_id
-    robot.team = own_team_id
+    robot.team = own_team_id  # type: ignore[assignment]
     if not is_own_team:
-        robot.team = own_team_id + 1
+        robot.team = own_team_id + 1  # type: ignore[assignment]
 
     set_position(robot.position)
     set_covariance_matrix(robot.covariance)

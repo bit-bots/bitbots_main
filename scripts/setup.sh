@@ -2,7 +2,7 @@
 set -eEuo pipefail
 
 # static/global variables
-ROS_DISTRO=${ROS_DISTRO:-"iron"}
+ROS_DISTRO=${ROS_DISTRO:-"jazzy"}
 DIR="$(dirname "$(readlink -f "$0")")"
 COLCON_WS="${COLCON_WS:-"$HOME/colcon_ws"}"
 REPO_URL="git@github.com:bit-bots/bitbots_main.git"
@@ -11,7 +11,7 @@ SHELL_CONFIG="$(cat <<EOF
 # >>> bit-bots initialize >>>
 
 # Ignore some deprecation warnings
-export PYTHONWARNINGS=ignore:::setuptools.command.install,ignore:::setuptools.command.easy_install,ignore:::pkg_resources
+export PYTHONWARNINGS="ignore:::setuptools.command.install,ignore:::setuptools.command.easy_install,ignore:::pkg_resources,ignore:easy_install command is deprecated,ignore:setup.py install is deprecated"
 
 # Limit ROS 2 communication to localhost (can be overridden when needed)
 export ROS_DOMAIN_ID=24

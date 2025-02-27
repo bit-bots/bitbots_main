@@ -779,7 +779,7 @@ class RobotController:
     def get_joint_state_msg(self):
         js = JointState()
         js.name = []
-        js.header.stamp = Time(seconds=int(self.time), nanoseconds=self.time % 1 * 1e9).to_msg()
+        js.header.stamp = Time(seconds=int(self.time), nanoseconds=int(self.time % 1 * 1e9)).to_msg()
         js.position = []
         js.effort = []
         for joint_name in self.external_motor_names:
@@ -796,7 +796,7 @@ class RobotController:
 
     def get_imu_msg(self, head=False):
         msg = Imu()
-        msg.header.stamp = Time(seconds=int(self.time), nanoseconds=self.time % 1 * 1e9).to_msg()
+        msg.header.stamp = Time(seconds=int(self.time), nanoseconds=int(self.time % 1 * 1e9)).to_msg()
         if head:
             msg.header.frame_id = self.head_imu_frame
         else:
@@ -841,7 +841,7 @@ class RobotController:
 
     def publish_camera(self):
         img_msg = Image()
-        img_msg.header.stamp = Time(seconds=int(self.time), nanoseconds=self.time % 1 * 1e9).to_msg()
+        img_msg.header.stamp = Time(seconds=int(self.time), nanoseconds=int(self.time % 1 * 1e9)).to_msg()
         img_msg.header.frame_id = self.camera_optical_frame
         img_msg.height = self.camera.getHeight()
         img_msg.width = self.camera.getWidth()
@@ -917,7 +917,7 @@ class RobotController:
         return self.camera.getImage()
 
     def get_pressure_message(self):
-        current_time = Time(seconds=int(self.time), nanoseconds=self.time % 1 * 1e9).to_msg()
+        current_time = Time(seconds=int(self.time), nanoseconds=int(self.time % 1 * 1e9)).to_msg()
         if not self.foot_sensors_active or self.pressure_sensors is None:
             cop_r = PointStamped()
             cop_r.header.frame_id = self.r_sole_frame

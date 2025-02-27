@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.12)
 project(bitbots_hcm)
 
 # Build with release optimizations and debug symbols by default
@@ -16,8 +16,7 @@ find_package(bitbots_msgs REQUIRED)
 find_package(builtin_interfaces REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(pybind11 REQUIRED)
-find_package(Python3 REQUIRED)
-find_package(PythonLibs REQUIRED)
+find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
 find_package(rclpy REQUIRED)
 find_package(ros2_python_extension REQUIRED)
 find_package(sensor_msgs REQUIRED)
@@ -44,7 +43,7 @@ ament_target_dependencies(
   sensor_msgs
   std_msgs)
 
-target_link_libraries(HCM ${PYTHON_LIBRARIES})
+target_link_libraries(HCM Python3::Python)
 
 enable_bitbots_docs()
 

@@ -1584,8 +1584,8 @@ PROTO Wolfgang [
                 RotationalMotor {
                   name "RHipRoll [hip]"
                   maxVelocity IS MX106-vel
-                  minPosition -1.5708
-                  maxPosition 1.5708
+                  minPosition -1.9
+                  maxPosition 1.6
                   maxTorque IS MX106-torque
                   controlPID IS pid
                 }
@@ -1652,8 +1652,8 @@ PROTO Wolfgang [
                       RotationalMotor {
                         name "RHipPitch"
                         maxVelocity IS MX106-vel
-                        minPosition -2.0944
-                        maxPosition 1.91986
+                        minPosition -2.77
+                        maxPosition 0.79
                         maxTorque IS MX106-torque
                         controlPID IS pid
                       }
@@ -1736,7 +1736,7 @@ PROTO Wolfgang [
                             RotationalMotor {
                               name "RKnee"
                               maxVelocity IS XH540W270-vel
-                              minPosition -2.96706
+                              minPosition -2.8
                               maxPosition 0.2
                               maxTorque IS XH540W270-torque
                               controlPID IS pid
@@ -1828,8 +1828,8 @@ PROTO Wolfgang [
                                   RotationalMotor {
                                     name "RAnklePitch"
                                     maxVelocity IS MX106-vel
-                                    minPosition -1.74533
-                                    maxPosition 1.45
+                                    minPosition -0.37
+                                    maxPosition 1.42
                                     maxTorque IS MX106-torque
                                     controlPID IS pid
                                   }
@@ -1895,8 +1895,8 @@ PROTO Wolfgang [
                                         RotationalMotor {
                                           name "RAnkleRoll"
                                           maxVelocity IS MX106-vel
-                                          minPosition -1.0472
-                                          maxPosition 1.0472
+                                          minPosition -1.4
+                                          maxPosition 1.58
                                           maxTorque IS MX106-torque
                                           controlPID IS pid
                                         }
@@ -3005,8 +3005,8 @@ PROTO Wolfgang [
                 RotationalMotor {
                   name "LHipRoll [hip]"
                   maxVelocity IS MX106-vel
-                  minPosition -1.5708
-                  maxPosition 1.5708
+                  minPosition -1.6
+                  maxPosition 1.9
                   maxTorque IS MX106-torque
                   controlPID IS pid
                 }
@@ -3073,8 +3073,8 @@ PROTO Wolfgang [
                       RotationalMotor {
                         name "LHipPitch"
                         maxVelocity IS MX106-vel
-                        minPosition -1.91986
-                        maxPosition 2.0944
+                        minPosition -0.79
+                        maxPosition 2.77
                         maxTorque IS MX106-torque
                         controlPID IS pid
                       }
@@ -3158,7 +3158,7 @@ PROTO Wolfgang [
                               name "LKnee"
                               maxVelocity IS XH540W270-vel
                               minPosition -0.2
-                              maxPosition 2.96706
+                              maxPosition 2.8
                               maxTorque IS XH540W270-torque
                               controlPID IS pid
                             }
@@ -3249,8 +3249,8 @@ PROTO Wolfgang [
                                   RotationalMotor {
                                     name "LAnklePitch"
                                     maxVelocity IS MX106-vel
-                                    minPosition -1.45
-                                    maxPosition 1.74533
+                                    minPosition -1.42
+                                    maxPosition 0.37
                                     maxTorque IS MX106-torque
                                     controlPID IS pid
                                   }
@@ -3316,8 +3316,8 @@ PROTO Wolfgang [
                                         RotationalMotor {
                                           name "LAnkleRoll"
                                           maxVelocity IS MX106-vel
-                                          minPosition -1.0472
-                                          maxPosition 1.0472
+                                          minPosition -1.58
+                                          maxPosition 1.4
                                           maxTorque IS MX106-torque
                                           controlPID IS pid
                                         }
@@ -4428,8 +4428,8 @@ PROTO Wolfgang [
                 RotationalMotor {
                   name "HeadTilt"
                   maxVelocity IS MX64-vel
-                  minPosition -1.5708
-                  maxPosition 1.0472
+                  minPosition -1.923
+                  maxPosition 1.24
                   maxTorque IS MX64-torque
                   controlPID IS pid
                 }

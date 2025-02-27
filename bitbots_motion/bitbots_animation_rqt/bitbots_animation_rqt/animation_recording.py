@@ -240,7 +240,7 @@ class Recorder:
         with open(path, "w") as fp:
             json.dump(animation_dict, fp, sort_keys=True, indent=4)
 
-        return "Saving to '%s'" % path + ". Done."
+        return f"Saving to '{path}'. Done."
 
     def load_animation(self, path: str) -> Optional[str]:
         """Record command, load a animation '.json' file
@@ -298,9 +298,9 @@ class Recorder:
         else:
             # Check if the given frame id is in bounds
             assert until_frame > 0, "Upper bound must be positive"
-            assert until_frame <= len(
-                self.current_state.key_frames
-            ), "Upper bound must be less than or equal to the number of frames"
+            assert until_frame <= len(self.current_state.key_frames), (
+                "Upper bound must be less than or equal to the number of frames"
+            )
         assert from_frame >= 0, "Lower bound must be positive"
 
         # Create name for the temporary animation that is send to the animation server

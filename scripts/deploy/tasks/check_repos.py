@@ -292,7 +292,7 @@ class CheckReposTask(AbstractTask):
                 commit_name: str = self._get_friendly_name(commit_hash)
                 warnings: str = ""
                 for i, warning in enumerate(repo_warnings):
-                    warnings += f"{i+1}. {warning}\n"
+                    warnings += f"{i + 1}. {warning}\n"
                 warning_table.add_row(repo_name, f"{commit_name} ({commit_hash[:8]})", warnings)
             print_warning(
                 RichGroup(
@@ -422,7 +422,7 @@ class CheckReposTask(AbstractTask):
             "Zebra",
         ]
 
-        friendly_name: str = f"{friendly_adjectives[int(hash[:len(hash)//2], 16) % len(friendly_adjectives)]} {friendly_animals[int(hash[len(hash)//2:], 16) % len(friendly_animals)]}"
+        friendly_name: str = f"{friendly_adjectives[int(hash[: len(hash) // 2], 16) % len(friendly_adjectives)]} {friendly_animals[int(hash[len(hash) // 2 :], 16) % len(friendly_animals)]}"
         print_debug(f"Generated friendly commit name: '{friendly_name}'.")
         return friendly_name
 

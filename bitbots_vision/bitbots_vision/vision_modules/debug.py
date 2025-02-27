@@ -1,4 +1,5 @@
-from typing import Callable, Optional, Sequence
+from collections.abc import Sequence
+from typing import Callable, Optional
 
 import cv2
 import numpy as np

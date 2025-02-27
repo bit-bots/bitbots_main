@@ -12,11 +12,11 @@ class HardwareInterface {
  public:
   virtual bool init() = 0;
 
-  virtual void read(const rclcpp::Time &t, const rclcpp::Duration &dt){};
+  virtual void read(const rclcpp::Time &t, const rclcpp::Duration &dt) {};
 
-  virtual void write(const rclcpp::Time &t, const rclcpp::Duration &dt){};
+  virtual void write(const rclcpp::Time &t, const rclcpp::Duration &dt) {};
 
-  virtual void restoreAfterPowerCycle(){};
+  virtual void restoreAfterPowerCycle() {};
 
   virtual ~HardwareInterface(){};
 };

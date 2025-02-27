@@ -4,7 +4,7 @@ package_name = "bitbots_animation_rqt"
 
 setup(
     name=package_name,
-    packages=find_packages(),
+    packages=find_packages(exclude=["test"]),
     data_files=[
         ("share/" + package_name + "/resource", ["resource/RecordUI.ui"]),
         ("share/ament_index/resource_index/packages", ["resource/" + package_name]),
@@ -12,8 +12,8 @@ setup(
         ("share/" + package_name, ["plugin.xml"]),
     ],
     install_requires=["setuptools"],
-    zip_safe=True,
     tests_require=["pytest"],
+    zip_safe=True,
     entry_points={
         "console_scripts": [
             "animation_gui = " + package_name + ".record_ui:main",

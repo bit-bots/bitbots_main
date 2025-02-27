@@ -134,7 +134,7 @@ class Install(AbstractTaskWhichRequiresSudo):
         remote_src_path = os.path.join(self._remote_workspace, "src")
         print_debug(f"Gathering rosdep install commands in {remote_src_path}")
 
-        cmd = f"rosdep update --include-eol-distros && rosdep install --simulate --default-yes --ignore-src --from-paths {remote_src_path}"
+        cmd = f"rosdep update && rosdep install --simulate --default-yes --ignore-src --from-paths {remote_src_path}"
         print_debug(f"Calling {cmd}")
         try:
             gather_results = connections.run(cmd, hide=hide_output())
@@ -176,9 +176,9 @@ class Install(AbstractTaskWhichRequiresSudo):
             apt_command_prefix = "sudo -H apt-get install -y "
             apt_packages: list[str] = []
 
-            install_result: Optional[
-                Result
-            ] = None  # This collects the result of the last run install command, failed if exception occurred
+            install_result: Optional[Result] = (
+                None  # This collects the result of the last run install command, failed if exception occurred
+            )
             for install_command in install_commands:
                 if install_command.startswith(apt_command_prefix):
                     # Remove prefix from command, as we collect all apt commands into one

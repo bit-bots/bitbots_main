@@ -44,7 +44,7 @@ JOINT_NAMES = [
 
 def num_to_emoji(num: int) -> str:
     emoji_numbers = ["0️⃣", "1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"]
-    return f'{"".join([emoji_numbers[int(digit)] for digit in str(num)])} '
+    return f"{''.join([emoji_numbers[int(digit)] for digit in str(num)])} "
 
 
 def move_to_joint_position(publisher: Publisher, joint_goals: dict[str, float], offsets=True):

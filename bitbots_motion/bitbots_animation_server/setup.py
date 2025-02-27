@@ -18,10 +18,10 @@ setup(
         "launch",
         "setuptools",
     ],
+    tests_require=["pytest"],
     zip_safe=True,
     keywords=["ROS"],
     license="MIT",
-    tests_require=["pytest"],
     entry_points={
         "console_scripts": [
             "animation_node = bitbots_animation_server.animation_node:main",

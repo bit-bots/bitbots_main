@@ -4,7 +4,7 @@
 
     <!-- record rosbag -->
     <group if="$(var record)">
-        <include file="$(find-pkg-share bitbots_utils)/launch/rosbag_record.launch.py">
+        <include file="$(find-pkg-share bitbots_bringup)/launch/rosbag_record.launch.py">
             <arg name="sim" value="true" />
         </include>
     </group>
