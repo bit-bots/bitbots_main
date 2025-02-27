@@ -1,6 +1,3 @@
-import time
-from time import time
-
 import rclpy
 import soccer_vision_3d_msgs.msg as sv3dm
 from bitbots_tf_buffer import Buffer

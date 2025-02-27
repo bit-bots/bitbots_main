@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Optional
 
 import soccer_vision_3d_msgs.msg as sv3dm
 import tf2_ros as tf2
@@ -48,9 +49,9 @@ class VisibilityPlanner(Planner):
     def __init__(self, node: NodeWithConfig, buffer: tf2.BufferInterface) -> None:
         self.node = node
         self.buffer = buffer
-        self.robots = []
-        self.ball = None
-        self.goal: PoseStamped | None = None
+        self.robots: list[RoundObstacle] = []
+        self.ball: Optional[RoundObstacle] = None
+        self.goal: Optional[PoseStamped] = None
         self.base_footprint_frame: str = self.node.config.base_footprint_frame
         self.ball_obstacle_active: bool = True
         self.frame: str = self.node.config.map.planning_frame
@@ -61,9 +62,12 @@ class VisibilityPlanner(Planner):
             point = PointStamped()
             point.header.frame_id = robots.header.frame_id
             point.point = robot.bb.center.position
+            # Use the maximum dimension of the bounding box as the radius
             radius = max(numpify(robot.bb.size)[:2]) / 2
             try:
+                # Transform the point to the planning frame
                 position = self.buffer.transform(point, self.frame).point
+                # Add the robot to the buffer if the transformation was successful
                 new_buffer.append(RoundObstacle(center=(position.x, position.y), radius=radius))
             except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
                 self.node.get_logger().warn(str(e))
@@ -74,7 +78,9 @@ class VisibilityPlanner(Planner):
         point.header.frame_id = ball.header.frame_id
         point.point = ball.pose.pose.position
         try:
+            # Transform the point to the planning frame
             tf_point = self.buffer.transform(point, self.frame).point
+            # Create a new ball obstacle
             self.ball = RoundObstacle(center=(tf_point.x, tf_point.y), radius=self.node.config.map.ball_diameter / 2.0)
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
             self.ball = None
@@ -107,28 +113,38 @@ class VisibilityPlanner(Planner):
         return self.goal is not None
 
     def step(self) -> Path:
+        """
+        Computes the next path to the goal
+        """
+        # Define goal
         goal = (self.goal.pose.position.x, self.goal.pose.position.y)
+        # Get our current position
         my_position = self.buffer.lookup_transform(
             self.frame, self.base_footprint_frame, Time(), Duration(seconds=0.2)
         ).transform.translation
         start = (my_position.x, my_position.y)
+
+        # Configure how obstacles are represented
         config = ObstacleMapConfig(dilate=self.node.config.map.inflation.dilate, num_vertices=12)
+        # Add robots to obstacles
         obstacles = self.robots.copy()
+        # Add ball to obstacles if active
         if self.ball is not None:
             obstacles.append(self.ball)
-        omap = ObstacleMap(config, obstacles)
-        path = omap.shortest_path(start, goal)
+        obstacle_map = ObstacleMap(config, obstacles)
 
+        # Calculate the shortest path
+        path = obstacle_map.shortest_path(start, goal)
+
+        # Convert the path to a ROS messages
         def map_to_pose(position):
             pose = PoseStamped()
             pose.pose.position.x = position[0]
             pose.pose.position.y = position[1]
             return pose
-        
-        poses = list(map(map_to_pose, path))
-        poses.append(self.goal)
 
+        # Generate the path message
         return Path(
             header=Header(frame_id=self.frame, stamp=self.node.get_clock().now().to_msg()),
-            poses=poses,
+            poses=list(map(map_to_pose, path)) + [self.goal],
         )
