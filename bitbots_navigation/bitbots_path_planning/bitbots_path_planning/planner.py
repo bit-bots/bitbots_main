@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 import soccer_vision_3d_msgs.msg as sv3dm
 import tf2_ros as tf2
-from bitbots_pathplanning_rust import ObstacleMap, ObstacleMapConfig, RoundObstacle
+from bitbots_rust_nav import ObstacleMap, ObstacleMapConfig, RoundObstacle
 from geometry_msgs.msg import PoseStamped
 from nav_msgs.msg import Path
 from rclpy.duration import Duration
