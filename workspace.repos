@@ -37,8 +37,8 @@ repositories:
     version: master
   lib/game_controller_hl:
     type: git
-    url: git@github.com:ros-sports/game_controller_hl.git
-    version: rolling
+    url: git@github.com:texhnolyze/game_controller_hl.git
+    version: feature/simulation-timeout-issues
   lib/hlvs_player:
     type: git
     url: git@github.com:ros-sports/hlvs_player.git
