@@ -134,7 +134,7 @@ class Install(AbstractTaskWhichRequiresSudo):
         remote_src_path = os.path.join(self._remote_workspace, "src")
         print_debug(f"Gathering rosdep install commands in {remote_src_path}")
 
-        cmd = f"rosdep update && rosdep install --simulate --default-yes --ignore-src --from-paths {remote_src_path}"
+        cmd = f"rosdep update --include-eol-distros && rosdep install --simulate --default-yes --ignore-src --from-paths {remote_src_path}"
         print_debug(f"Calling {cmd}")
         try:
             gather_results = connections.run(cmd, hide=hide_output())
