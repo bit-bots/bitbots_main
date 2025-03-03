@@ -1,4 +1,7 @@
-use std::{cmp::Reverse, collections::{HashMap, HashSet}};
+use std::{
+    cmp::Reverse,
+    collections::{HashMap, HashSet},
+};
 
 use geo::{Coord, Distance, Euclidean, Intersects, Line, MultiPolygon};
 use keyed_priority_queue::{Entry, KeyedPriorityQueue};
@@ -19,7 +22,6 @@ pub struct PathPlanner {
 }
 
 const MULTIPLIER: f64 = 10.0;
-
 
 impl PathPlanner {
     pub fn new(map: &ObstacleMap, start: (f64, f64), goal: (f64, f64)) -> Self {
@@ -76,12 +78,15 @@ impl PathPlanner {
 
     fn expand_node(&mut self, vertex: usize) {
         let g_vertex = self
-                .g_score
-                .get(&vertex)
-                .unwrap_or(&OrderedFloat(std::f64::INFINITY))
-                .clone();
+            .g_score
+            .get(&vertex)
+            .unwrap_or(&OrderedFloat(std::f64::INFINITY))
+            .clone();
         for successor in self.successors.iter().cloned() {
-            let multiplier = if self.obstacle.intersects(&Line::new(self.vertices[vertex], self.vertices[successor])) {
+            let multiplier = if self
+                .obstacle
+                .intersects(&Line::new(self.vertices[vertex], self.vertices[successor]))
+            {
                 if self.goal == successor || self.start == vertex {
                     OrderedFloat(MULTIPLIER)
                 } else {
@@ -90,7 +95,11 @@ impl PathPlanner {
             } else {
                 OrderedFloat(1.0)
             };
-            let g_successor = self.g_score.get(&successor).unwrap_or(&OrderedFloat(std::f64::INFINITY)).clone();
+            let g_successor = self
+                .g_score
+                .get(&successor)
+                .unwrap_or(&OrderedFloat(std::f64::INFINITY))
+                .clone();
             let g_tentative = g_vertex + multiplier * self.distance(vertex, successor);
             if g_tentative < g_successor {
                 self.from.insert(successor, vertex);
@@ -99,10 +108,10 @@ impl PathPlanner {
                 match self.open.entry(successor) {
                     Entry::Occupied(entry) => {
                         entry.set_priority(new_f_score);
-                    },
+                    }
                     Entry::Vacant(entry) => {
                         entry.set_priority(new_f_score);
-                    },
+                    }
                 }
             }
         }

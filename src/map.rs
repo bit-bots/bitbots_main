@@ -1,7 +1,10 @@
 use geo::{BooleanOps, Coord, LineString, MultiPolygon, Polygon};
 use pyo3::prelude::*;
 
-use crate::{obstacle::{Obstacle, RoundObstacle}, planner::PathPlanner};
+use crate::{
+    obstacle::{Obstacle, RoundObstacle},
+    planner::PathPlanner,
+};
 
 /// Configuration values for the ObstacleMap, these should be given by ROS parameters
 #[pyclass(
