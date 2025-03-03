@@ -70,18 +70,16 @@ impl PathPlanner {
             path.push(*previous);
         }
         path.reverse();
-        return path
-            .into_iter()
+        path.into_iter()
             .map(|idx| self.vertices[idx].x_y())
-            .collect();
+            .collect()
     }
 
     fn expand_node(&mut self, vertex: usize) {
-        let g_vertex = self
+        let g_vertex = *self
             .g_score
             .get(&vertex)
-            .unwrap_or(&OrderedFloat(std::f64::INFINITY))
-            .clone();
+            .unwrap_or(&OrderedFloat(f64::INFINITY));
         for successor in self.successors.iter().cloned() {
             let multiplier = if self
                 .obstacle
@@ -95,11 +93,10 @@ impl PathPlanner {
             } else {
                 OrderedFloat(1.0)
             };
-            let g_successor = self
+            let g_successor = *self
                 .g_score
                 .get(&successor)
-                .unwrap_or(&OrderedFloat(std::f64::INFINITY))
-                .clone();
+                .unwrap_or(&OrderedFloat(f64::INFINITY));
             let g_tentative = g_vertex + multiplier * self.distance(vertex, successor);
             if g_tentative < g_successor {
                 self.from.insert(successor, vertex);

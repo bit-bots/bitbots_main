@@ -50,7 +50,7 @@ impl ObstacleMap {
     }
 
     pub fn shortest_path(&self, start: (f64, f64), goal: (f64, f64)) -> Vec<(f64, f64)> {
-        PathPlanner::new(&self, start, goal).shortest_path()
+        PathPlanner::new(self, start, goal).shortest_path()
     }
 }
 
@@ -58,8 +58,7 @@ impl ObstacleMap {
     pub fn as_vertices(&self) -> Vec<Coord> {
         self.obstacles
             .iter()
-            .map(|obstacle| obstacle.as_vertices(&self.config))
-            .flatten()
+            .flat_map(|obstacle| obstacle.as_vertices(&self.config))
             .collect()
     }
 
