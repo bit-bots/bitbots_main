@@ -5,11 +5,11 @@ use geo::{Coord, LineString, Polygon};
 use crate::map::ObstacleMapConfig;
 
 pub trait Obstacle {
-    /// Return the vertices of this obstacle for the visibility graph
+    /// Return the vertices of this obstacle inflated by the robot size and margin for the visibility graph generation
     fn as_vertices(&self, config: &ObstacleMapConfig) -> Vec<Coord>;
 
-    /// Return the polygon representation of this obstacle for intersection checking
-    fn as_polygon(&self, config: &ObstacleMapConfig) -> Polygon;
+    /// Return the polygon representation of this obstacle inflated by the robot size and optionally the margin for intersection checking
+    fn as_polygon(&self, config: &ObstacleMapConfig, margin: bool) -> Polygon;
 }
 
 /// A round obstacle
@@ -18,10 +18,10 @@ pub trait Obstacle {
 pub struct RoundObstacle {
     /// The center of the obstacle
     #[pyo3(get, set)]
-    center: (f64, f64),
+    pub center: (f64, f64),
     /// The radius of the obstacle
     #[pyo3(get, set)]
-    radius: f64,
+    pub radius: f64,
 }
 
 #[pymethods]
@@ -50,11 +50,16 @@ pub const EPSILON: f64 = 0.01;
 
 impl Obstacle for RoundObstacle {
     fn as_vertices(&self, config: &ObstacleMapConfig) -> Vec<Coord> {
-        self.regular_ngon(config.num_vertices, config.dilate)
+        self.regular_ngon(config.num_vertices, config.robot_radius + config.margin)
     }
 
-    fn as_polygon(&self, config: &ObstacleMapConfig) -> Polygon {
-        let vertices = self.regular_ngon(config.num_vertices, config.dilate - EPSILON);
+    fn as_polygon(&self, config: &ObstacleMapConfig, margin: bool) -> Polygon {
+        let inflation = if margin {
+            config.robot_radius + config.margin
+        } else {
+            config.robot_radius
+        };
+        let vertices = self.regular_ngon(config.num_vertices, inflation - EPSILON);
         Polygon::new(LineString::new(vertices), vec![])
     }
 }

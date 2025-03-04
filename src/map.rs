@@ -9,13 +9,17 @@ use crate::{
 /// Configuration values for the ObstacleMap, these should be given by ROS parameters
 #[pyclass(
     eq,
-    str = "ObstacleMapConfig(dilate={dilate:?} num_vertices={num_vertices:?})"
+    str = "ObstacleMapConfig(robot_radius={robot_radius:?}, margin={margin:?}, num_vertices={num_vertices:?})"
 )]
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct ObstacleMapConfig {
-    /// A distance by which the obstacles should be dilated
+    /// All obstacles are inflated by this amount, so we can assume the robot itself is a point
     #[pyo3(set, get)]
-    pub dilate: f64,
+    pub robot_radius: f64,
+    /// Normal plans should not be directly on the edge of an obstacle,
+    /// this margin is added if possible
+    #[pyo3(set, get)]
+    pub margin: f64,
     /// The number of vertices that the polygon representing an obstacle has
     #[pyo3(set, get)]
     pub num_vertices: usize,
@@ -25,9 +29,10 @@ pub struct ObstacleMapConfig {
 impl ObstacleMapConfig {
     #[new]
     /// Create a new config with the given values
-    pub fn new(dilate: f64, num_vertices: usize) -> Self {
+    pub fn new(robot_radius: f64, margin: f64, num_vertices: usize) -> Self {
         Self {
-            dilate,
+            robot_radius,
+            margin,
             num_vertices,
         }
     }
@@ -62,15 +67,15 @@ impl ObstacleMap {
             .collect()
     }
 
-    fn as_polygons(&self) -> Vec<Polygon> {
+    fn as_polygons(&self, margin: bool) -> Vec<Polygon> {
         self.obstacles
             .iter()
-            .map(|obstacle| obstacle.as_polygon(&self.config))
+            .map(|obstacle| obstacle.as_polygon(&self.config, margin))
             .collect()
     }
 
-    pub fn as_multipolygon(&self) -> MultiPolygon {
-        let polygons = self.as_polygons();
+    pub fn as_multipolygon(&self, margin: bool) -> MultiPolygon {
+        let polygons = self.as_polygons(margin);
         polygons.iter().fold(
             MultiPolygon::new(vec![Polygon::new(LineString::new(vec![]), vec![])]),
             |a, b| a.union(b),

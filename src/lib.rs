@@ -2,9 +2,9 @@ use map::{ObstacleMap, ObstacleMapConfig};
 use obstacle::RoundObstacle;
 use pyo3::prelude::*;
 
-mod map;
-mod obstacle;
-mod planner;
+pub mod map;
+pub mod obstacle;
+pub mod planner;
 
 #[pymodule]
 fn bitbots_rust_nav(m: &Bound<'_, PyModule>) -> PyResult<()> {
