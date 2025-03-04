@@ -1,9 +1,7 @@
 <launch>
     <arg name="sim" default="false" description="true: activates simulation time" />
-    <arg name="dummy" default="false" description="true: activates dummy mode, that just walks a straight line" />
 
     <node pkg="bitbots_path_planning" exec="path_planning" name="bitbots_path_planning" output="screen">
         <param name="use_sim_time" value="$(var sim)"/>
-        <param name="planner.dummy" value="$(var dummy)"/>
     </node>
 </launch>
