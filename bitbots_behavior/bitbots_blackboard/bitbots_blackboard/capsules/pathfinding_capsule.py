@@ -166,8 +166,17 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
             elif ball_x > self._blackboard.world_model.field_length / 2 - 0.2:
                 goal_angle = math.pi + np.copysign(math.pi / 4, ball_y)
 
-            goal_x = ball_x - math.cos(goal_angle) * distance + math.sin(goal_angle) * side_offset
-            goal_y = ball_y - math.sin(goal_angle) * distance + math.cos(goal_angle) * side_offset
+            # We don't want to walk into the ball, so we add an offset to stop before the ball
+            approach_offset_x = math.cos(goal_angle) * distance
+            approach_offset_y = math.sin(goal_angle) * distance
+
+            # We also want to kick the ball with one foot instead of the center between the feet
+            side_offset_x = math.cos(goal_angle - math.pi / 2) * side_offset
+            side_offset_y = math.sin(goal_angle - math.pi / 2) * side_offset
+
+            # Calculate the goal position (has nothing to do with the soccer goal)
+            goal_x = ball_x - approach_offset_x + side_offset_x
+            goal_y = ball_y - approach_offset_y + side_offset_y
 
             ball_point = (goal_x, goal_y, goal_angle, self._blackboard.map_frame)
 
