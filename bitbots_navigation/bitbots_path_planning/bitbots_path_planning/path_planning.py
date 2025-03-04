@@ -3,9 +3,7 @@ import soccer_vision_3d_msgs.msg as sv3dm
 from bitbots_tf_buffer import Buffer
 from geometry_msgs.msg import PointStamped, PoseStamped, PoseWithCovarianceStamped, Twist
 from nav_msgs.msg import Path
-from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.duration import Duration
-from rclpy.executors import MultiThreadedExecutor
 from std_msgs.msg import Bool, Empty
 from visualization_msgs.msg import MarkerArray
 
@@ -31,36 +29,15 @@ class PathPlanning(NodeWithConfig):
         self.measurements = dict()
 
         # Subscriber
-        self.create_subscription(
-            PoseWithCovarianceStamped,
-            self.config.map.ball_update_topic,
-            self.planner.set_ball,
-            5,
-            callback_group=MutuallyExclusiveCallbackGroup(),
-        )
-        self.create_subscription(
-            sv3dm.RobotArray,
-            self.config.map.robot_update_topic,
-            self.planner.set_robots,
-            5,
-            callback_group=MutuallyExclusiveCallbackGroup(),
-        )
-        self.goal_sub = self.create_subscription(
-            PoseStamped, "goal_pose", self.planner.set_goal, 5, callback_group=MutuallyExclusiveCallbackGroup()
-        )
-        self.create_subscription(
-            Empty,
-            "pathfinding/cancel",
-            lambda _: self.planner.cancel_goal(),
-            5,
-            callback_group=MutuallyExclusiveCallbackGroup(),
-        )
+        self.create_subscription(PoseWithCovarianceStamped, self.config.map.ball_update_topic, self.planner.set_ball, 5)
+        self.create_subscription(sv3dm.RobotArray, self.config.map.robot_update_topic, self.planner.set_robots, 5)
+        self.goal_sub = self.create_subscription(PoseStamped, "goal_pose", self.planner.set_goal, 5)
+        self.create_subscription(Empty, "pathfinding/cancel", lambda _: self.planner.cancel_goal(), 5)
         self.create_subscription(
             Bool,
             "ball_obstacle_active",
             lambda msg: self.planner.avoid_ball(msg.data),  # type: ignore
             5,
-            callback_group=MutuallyExclusiveCallbackGroup(),
         )
 
         # Publisher
@@ -70,12 +47,7 @@ class PathPlanning(NodeWithConfig):
         self.graph_pub = self.create_publisher(MarkerArray, "visibility_graph", 1)
 
         # Timer that updates the path and command velocity at a given rate
-        self.create_timer(
-            1 / self.config.rate,
-            self.step,
-            clock=self.get_clock(),
-            callback_group=MutuallyExclusiveCallbackGroup(),
-        )
+        self.create_timer(1 / self.config.rate, self.step, clock=self.get_clock())
 
     def step(self) -> None:
         """
@@ -104,10 +76,7 @@ def main(args=None):
     rclpy.init(args=args)
     node = PathPlanning()
 
-    # choose number of threads by number of callback_groups + 1 for simulation time
-    ex = MultiThreadedExecutor(num_threads=8)
-    ex.add_node(node)
-    ex.spin()
+    rclpy.spin(node)
 
     node.destroy_node()
     rclpy.shutdown()
