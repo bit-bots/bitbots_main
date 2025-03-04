@@ -125,7 +125,11 @@ class VisibilityPlanner(Planner):
         start = (my_position.x, my_position.y)
 
         # Configure how obstacles are represented
-        config = ObstacleMapConfig(dilate=self.node.config.map.inflation.dilate, num_vertices=12)
+        config = ObstacleMapConfig(
+            robot_radius=self.node.config.map.inflation.robot_radius,
+            margin=self.node.config.map.inflation.obstacle_margin,
+            num_vertices=12,
+        )
         # Add robots to obstacles
         obstacles = self.robots.copy()
         # Add ball to obstacles if active
