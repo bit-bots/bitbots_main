@@ -1,6 +1,6 @@
 #SearchBall
 $DoOnce
-    NOT_DONE --> @ChangeAction + action:searching, @LookAtFieldFeatures, @WalkInPlace + duration:3, @Turn + duration:15, @GoToAbsolutePositionFieldFraction + x:0.5 + blocking:false
+    NOT_DONE --> @ChangeAction + action:searching, @LookAtFieldFeatures, @WalkInPlace + duration:3, @TurnLastSeenBallSide + duration:15, @GoToAbsolutePositionFieldFraction + x:0.5 + blocking:false
     DONE --> $ReachedAndAlignedToPathPlanningGoalPosition + threshold:0.5 + latch:true
         NO --> @LookAtFieldFeatures, @GoToAbsolutePositionFieldFraction + x:0.5
         YES --> $DoOnce

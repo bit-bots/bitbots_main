@@ -104,7 +104,7 @@ bitbots_path_planning:
         bounds<>: [0.0, 1.0]
     orient_to_goal_distance:
       type: double
-      default_value: 0.25
+      default_value: 0.4
       description: 'Distance at which we switch from orienting towards the path to orienting towards the goal poses orientation (in meters)'
       validation:
         bounds<>: [0.0, 10.0]
