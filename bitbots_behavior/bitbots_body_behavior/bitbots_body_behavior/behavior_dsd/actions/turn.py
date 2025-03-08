@@ -64,7 +64,7 @@ class Turn(AbstractActionElement):
 
     def perform(self, reevaluate=False):
         # Increase the rotation speed if we are not at max speed
-        if abs(self.current_rotation_vel) < self.max_speed:
+        if abs(self.current_rotation_vel) < abs(self.max_speed):
             self.current_rotation_vel += math.copysign(0.05, self.max_speed)
 
         # Create the cmd_vel message
@@ -81,3 +81,13 @@ class Turn(AbstractActionElement):
             # Check if the duration is over
             if (self.blackboard.node.get_clock().now() - self.start_time).nanoseconds / 1e9 > self.duration:
                 self.pop()
+
+
+class TurnLastSeenBallSide(Turn):
+    """
+    Turns to the side where the ball was last seen for a given duration.
+    """
+
+    def __init__(self, blackboard, dsd, parameters):
+        super().__init__(blackboard, dsd, parameters)
+        self.max_speed = math.copysign(abs(self.max_speed), self.blackboard.world_model.get_ball_position_uv()[1])

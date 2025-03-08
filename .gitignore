@@ -227,3 +227,5 @@ doku/*
 
 # Workspace git status file from the deploy tool
 **/workspace_status.json
+
+.pytest_cache/
