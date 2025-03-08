@@ -116,6 +116,7 @@ bool WolfgangHardwareInterface::create_interfaces(std::vector<std::pair<std::str
               core_interface_ = std::make_shared<CoreHardwareInterface>(nh_, driver, id, read_rate);
               // turn on power, just to be sure
               core_interface_->write(nh_->get_clock()->now(), rclcpp::Duration::from_nanoseconds(1e9 * 0));
+              RCLCPP_INFO(nh_->get_logger(), "CORE found on port %s", port_name.c_str());
               interfaces_on_port.push_back(core_interface_);
               core_present_ = true;
             } else if (model_number_specified == 0 && !only_imu_) {  // model number is currently 0 on foot sensors
@@ -141,6 +142,7 @@ bool WolfgangHardwareInterface::create_interfaces(std::vector<std::pair<std::str
               /* Hardware interfaces must be registered at the main RobotHW class.
                * Therefore, a pointer to this class is passed down to the RobotHW classes
                * registering further interfaces */
+              RCLCPP_INFO(nh_->get_logger(), "IMU found on port %s", port_name.c_str());
               interfaces_on_port.push_back(interface);
             } else if (model_number_specified == 0xBAFF && interface_type == "Button" && !only_pressure_) {
               // Buttons
@@ -152,6 +154,7 @@ bool WolfgangHardwareInterface::create_interfaces(std::vector<std::pair<std::str
               nh_->get_parameter("device_info." + name + ".read_rate", read_rate);
               interfaces_on_port.push_back(
                   std::make_shared<ButtonHardwareInterface>(nh_, driver, id, topic, read_rate));
+              RCLCPP_INFO(nh_->get_logger(), "Button found on port %s", port_name.c_str());
             } else if ((model_number_specified == 0xBAFF || model_number_specified == 0xABBA) &&
                        interface_type == "LED" && !only_pressure_) {
               // LEDs
@@ -160,6 +163,7 @@ bool WolfgangHardwareInterface::create_interfaces(std::vector<std::pair<std::str
               nh_->get_parameter("device_info." + name + ".start_number", start_number);
               interfaces_on_port.push_back(
                   std::make_shared<LedsHardwareInterface>(nh_, driver, id, number_of_LEDs, start_number));
+              RCLCPP_INFO(nh_->get_logger(), "LEDs found on port %s", port_name.c_str());
             } else if ((model_number_specified == 311 || model_number_specified == 321 ||
                         model_number_specified == 1100) &&
                        !only_pressure_ && !only_imu_) {
