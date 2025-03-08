@@ -26,8 +26,6 @@ class PathPlanning(NodeWithConfig):
         self.planner = VisibilityPlanner(node=self, buffer=self.tf_buffer)
         self.controller = Controller(node=self, buffer=self.tf_buffer)
 
-        self.measurements = dict()
-
         # Subscriber
         self.create_subscription(PoseWithCovarianceStamped, self.config.map.ball_update_topic, self.planner.set_ball, 5)
         self.create_subscription(sv3dm.RobotArray, self.config.map.robot_update_topic, self.planner.set_robots, 5)

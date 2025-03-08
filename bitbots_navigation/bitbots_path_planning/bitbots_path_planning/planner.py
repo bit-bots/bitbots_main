@@ -116,6 +116,7 @@ class VisibilityPlanner(Planner):
         """
         Computes the next path to the goal
         """
+        assert self.goal is not None, "No goal set"
         # Define goal
         goal = (self.goal.pose.position.x, self.goal.pose.position.y)
         # Get our current position
