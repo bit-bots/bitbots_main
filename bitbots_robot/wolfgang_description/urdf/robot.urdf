@@ -732,7 +732,7 @@
     <axis xyz="-0.0 -0.0 -1.0"/>
     <parent link="r_shoulder"/>
     <child link="r_upper_arm"/>
-    <limit effort="7.3" lower="-0.12" upper="3.1416" velocity="8.17"/>
+    <limit effort="7.3" lower="-0.33" upper="3.1416" velocity="8.17"/>
     <dynamics damping="0.65" friction="1.73"/>
   </joint>
   <joint name="RShoulderPitch" type="revolute">
@@ -1087,7 +1087,7 @@
     <axis xyz="-0.0 -0.0 -1.0"/>
     <parent link="l_shoulder"/>
     <child link="l_upper_arm"/>
-    <limit effort="7.3" lower="-3.1416" upper="0.12" velocity="8.17"/>
+    <limit effort="7.3" lower="-3.1416" upper="0.33" velocity="8.17"/>
     <dynamics damping="0.65" friction="1.73"/>
   </joint>
   <joint name="LShoulderPitch" type="revolute">
