@@ -1,8 +1,9 @@
 # This file includes common dependencies for all environments
 pip
 transforms3d==0.4.1
-git+https://github.com/Flova/pyastar2d
 git+https://github.com/bit-bots/YOEO
+git+https://github.com/bit-bots/bitbots_rust_nav
+maturin
 simpleeval
 beartype
 jaxtyping
