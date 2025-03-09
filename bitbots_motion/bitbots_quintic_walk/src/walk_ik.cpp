@@ -38,15 +38,18 @@ bitbots_splines::JointGoals WalkIK::calculate(const WalkResponse &ik_goals) {
   // call IK two times, since we have two legs
   bool success;
 
+  kinematics::KinematicsQueryOptions ik_options;
+  ik_options.return_approximate_solution = true;
+
   // we have to do this otherwise there is an error
   goal_state_->updateLinkTransforms();
 
   success = goal_state_->setFromIK(left_leg_joints_group_, left_foot_goal_msg, config_.timeout,
-                                   moveit::core::GroupStateValidityCallbackFn());
+                                   moveit::core::GroupStateValidityCallbackFn(), ik_options);
   goal_state_->updateLinkTransforms();
 
   success &= goal_state_->setFromIK(right_leg_joints_group_, right_foot_goal_msg, config_.timeout,
-                                    moveit::core::GroupStateValidityCallbackFn());
+                                    moveit::core::GroupStateValidityCallbackFn(), ik_options);
 
   if (!success) {
     RCLCPP_ERROR(node_->get_logger(), "IK failed with no solution found");
