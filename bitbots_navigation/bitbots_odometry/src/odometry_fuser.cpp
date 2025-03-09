@@ -44,6 +44,9 @@ class OdometryFuser : public rclcpp::Node {
  public:
   OdometryFuser()
       : Node("OdometryFuser"),
+        odom_to_base_(tf2::Transform::getIdentity()),
+        previous_motion_odom_(tf2::Transform::getIdentity()),
+        previous_imu_(tf2::Quaternion::getIdentity()),
         tf_buffer_(this->get_clock()),
         tf_listener_(tf_buffer_, this),
         support_state_cache_(100),
@@ -80,7 +83,7 @@ class OdometryFuser : public rclcpp::Node {
     tf2::Transform motion_odometry;
     tf2::fromMsg(odom_data_.pose.pose, motion_odometry);
 
-    // combine orientations to new quaternion if IMU is active, use purely odom otherwise
+    // Our output data structure
     tf2::Transform fused_odometry{motion_odometry};
 
     // Check if the imu is active
@@ -96,7 +99,8 @@ class OdometryFuser : public rclcpp::Node {
         return;
       }
 
-      // get roll an pitch from imu
+      // We use the orientation provided by the IMU and merge it with translation from the walking
+      // (the double integration makes using the linear acceleration of the IMU as translation not feasible)
       tf2::Quaternion imu_orientation;
       tf2::fromMsg(imu_data_.orientation, imu_orientation);
 
@@ -105,11 +109,6 @@ class OdometryFuser : public rclcpp::Node {
       // get base_link in rotation point frame
       tf2::Transform base_link_in_rotation_point = rotation_point_in_base.inverse();
 
-      // get only translation and yaw from motion odometry
-      tf2::Quaternion odom_orientation_yaw = getCurrentMotionOdomYaw(motion_odometry.getRotation());
-      tf2::Transform motion_odometry_yaw;
-      motion_odometry_yaw.setRotation(odom_orientation_yaw);
-      motion_odometry_yaw.setOrigin(motion_odometry.getOrigin());
 
       // Get the rotation offset between the IMU and the baselink
       tf2::Transform imu_mounting_offset;
@@ -121,17 +120,19 @@ class OdometryFuser : public rclcpp::Node {
         RCLCPP_ERROR(this->get_logger(), "Not able to fuse IMU data with odometry due to a tf problem: %s", ex.what());
       }
 
-      // get imu transform without yaw
-      tf2::Quaternion imu_orientation_without_yaw_component =
-          getCurrentImuRotationWithoutYaw(imu_orientation * imu_mounting_offset.getRotation());
-      tf2::Transform imu_without_yaw_component;
-      imu_without_yaw_component.setRotation(imu_orientation_without_yaw_component);
-      imu_without_yaw_component.setOrigin({0, 0, 0});
+      // Get imu orientation in base_link frame
+      tf2::Quaternion imu_orientation_in_base = imu_orientation * imu_mounting_offset.getRotation();
 
+      // Get how far we walked since the last time
+      tf2::Transform previous_to_current = tf2::Transform(
+        previous_imu_.inverse() * imu_orientation_in_base,
+        previous_motion_odom_.inverseTimes(motion_odometry).getOrigin()
+      );
+
+      // Apply the walked amount to the current state
       // transformation chain to get correctly rotated odom frame
       // go to the rotation point in the odom frame. rotate the transform to the base link at this point
-      fused_odometry =
-          motion_odometry_yaw * rotation_point_in_base * imu_without_yaw_component * base_link_in_rotation_point;
+      fused_odometry = odom_to_base_ * rotation_point_in_base * previous_to_current * base_link_in_rotation_point;
     } else {
       fused_odometry = motion_odometry;
     }
@@ -159,6 +160,9 @@ class OdometryFuser : public rclcpp::Node {
   }
 
  private:
+  tf2::Transform odom_to_base_;
+  tf2::Transform previous_motion_odom_;
+  tf2::Quaternion previous_imu_;
   sensor_msgs::msg::Imu imu_data_;
   nav_msgs::msg::Odometry odom_data_;
   tf2_ros::Buffer tf_buffer_;
