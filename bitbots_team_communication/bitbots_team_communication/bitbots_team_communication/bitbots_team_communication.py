@@ -3,12 +3,13 @@
 import socket
 import struct
 import threading
-from typing import List, Optional, Tuple
+from typing import Optional
 
 import rclpy
 from ament_index_python.packages import get_package_share_directory
 from bitbots_tf_buffer import Buffer
 from bitbots_utils.utils import get_parameter_dict, get_parameters_from_other_node
+from builtin_interfaces.msg import Time as TimeMsg
 from game_controller_hl_interfaces.msg import GameState
 from geometry_msgs.msg import PoseWithCovarianceStamped, Twist, TwistWithCovarianceStamped
 from numpy import double
@@ -83,8 +84,8 @@ class TeamCommunication:
         self.cmd_vel: Optional[Twist] = None
         self.cmd_vel_time = Time(clock_type=self.node.get_clock().clock_type)
         self.ball: Optional[PointStamped] = None
-        self.ball_velocity: Tuple[float, float, float] = (0, 0, 0)
-        self.ball_covariance: List[double] = []
+        self.ball_velocity: tuple[float, float, float] = (0.0, 0.0, 0.0)
+        self.ball_covariance: list[double] = []
         self.strategy: Optional[Strategy] = None
         self.strategy_time = Time(clock_type=self.node.get_clock().clock_type)
         self.time_to_ball: Optional[float] = None
@@ -188,7 +189,7 @@ class TeamCommunication:
         self.move_base_goal = msg
 
     def robots_cb(self, msg: RobotArray):
-        def transform_to_map(robot_relative: Robot):
+        def transform_to_map(robot_relative: Robot) -> Optional[Robot]:
             # @TODO: check if this is not handled by the transform itself
             robot_pose = PoseStamped(header=msg.header, pose=robot_relative.bb.center)
             try:
@@ -197,8 +198,9 @@ class TeamCommunication:
                 return robot_relative
             except TransformException as err:
                 self.logger.error(f"Could not transform robot to map frame: {err}")
+                return None
 
-        robots_on_map = list(filter(None, map(transform_to_map, msg.robots)))
+        robots_on_map: list[Robot] = list(filter(None, map(transform_to_map, msg.robots)))
         self.seen_robots = RobotArray(header=msg.header, robots=robots_on_map)
         self.seen_robots.header.frame_id = self.map_frame
 
@@ -252,8 +254,8 @@ class TeamCommunication:
         now = self.get_current_time()
         msg = self.create_empty_message(now)
 
-        def is_still_valid(time) -> bool:
-            return now - Time.from_msg(time) < Duration(seconds=self.lifetime)
+        def is_still_valid(time: Optional[TimeMsg]) -> bool:
+            return (time is not None) and (now - Time.from_msg(time) < Duration(seconds=self.lifetime))
 
         message = self.protocol_converter.convert_to_message(self, msg, is_still_valid)
         self.socket_communication.send_message(message.SerializeToString())

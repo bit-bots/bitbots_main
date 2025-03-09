@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Tuple
+from typing import Literal, Optional
 
 import numpy as np
 from bitbots_utils.utils import get_parameters_from_other_node
@@ -27,7 +27,7 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
 
         # Data
         # indexed with one to match robot ids
-        self.team_data: Dict[TeamData] = {}
+        self.team_data: dict[int, TeamData] = {}
         for i in range(1, 7):
             self.team_data[i] = TeamData()
         self.times_to_ball = dict()
@@ -65,8 +65,8 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
         self.action_update: float = 0.0
 
         # Config
-        self.data_timeout: float = self._node.get_parameter("team_data_timeout").value
-        self.ball_max_covariance: float = self._node.get_parameter("ball_max_covariance").value
+        self.data_timeout: float = float(self._node.get_parameter("team_data_timeout").value)
+        self.ball_max_covariance: float = float(self._node.get_parameter("ball_max_covariance").value)
 
     def is_valid(self, data: TeamData) -> bool:
         """
@@ -78,7 +78,7 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
             and data.state != TeamData.STATE_PENALIZED
         )
 
-    def is_goalie_handling_ball(self):
+    def is_goalie_handling_ball(self) -> bool:
         """Returns true if the goalie is going to the ball."""
         data: TeamData
         for data in self.team_data.values():
@@ -90,7 +90,7 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
                 return True
         return False
 
-    def is_team_mate_kicking(self):
+    def is_team_mate_kicking(self) -> bool:
         """Returns true if one of the players in the own team is kicking."""
         data: TeamData
         for data in self.team_data.values():
@@ -98,7 +98,9 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
                 return True
         return False
 
-    def team_rank_to_ball(self, own_ball_distance: float, count_goalies: bool = True, use_time_to_ball: bool = False):
+    def team_rank_to_ball(
+        self, own_ball_distance: float, count_goalies: bool = True, use_time_to_ball: bool = False
+    ) -> int:
         """
         Returns the rank of this robot compared to the team robots concerning ball distance.
 
@@ -132,7 +134,7 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
                 return rank + 1
         return len(distances) + 1
 
-    def set_action(self, action: int):
+    def set_action(self, action: int) -> None:
         """Set the action of this robot
 
         :param action: An action from bitbots_msgs/Strategy"""
@@ -140,33 +142,32 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
         self.strategy.action = action
         self.action_update = self._node.get_clock().now().nanoseconds / 1e9
 
-    def get_action(self) -> Tuple[int, float]:
+    def get_action(self) -> tuple[int, float]:
         return self.strategy.action, self.action_update
 
-    def set_role(self, role: str):
+    def set_role(self, role: Literal["goalie", "offense", "defense"]) -> None:
         """Set the role of this robot in the team
 
-        :param role: String describing the role, possible values are:
-            ['goalie', 'offense', 'defense']
+        :param role: String describing the role.
         """
-        assert role in ["goalie", "offense", "defense"]
-
         self.role = role
         self.strategy.role = self.roles_mapping[role]
         self.role_update = self._node.get_clock().now().nanoseconds / 1e9
 
-    def get_role(self) -> Tuple[int, float]:
+    def get_role(self) -> tuple[int, float]:
         return self.strategy.role, self.role_update
 
-    def set_kickoff_strategy(self, strategy: int):
-        assert strategy in [Strategy.SIDE_LEFT, Strategy.SIDE_MIDDLE, Strategy.SIDE_RIGHT]
+    def set_kickoff_strategy(
+        self,
+        strategy: Literal[Strategy.SIDE_LEFT, Strategy.SIDE_MIDDLE, Strategy.SIDE_RIGHT],  # type: ignore[valid-type]
+    ) -> None:
         self.strategy.offensive_side = strategy
         self.strategy_update = self._node.get_clock().now().nanoseconds / 1e9
 
-    def get_kickoff_strategy(self) -> Tuple[int, float]:
+    def get_kickoff_strategy(self) -> tuple[int, float]:
         return self.strategy.offensive_side, self.strategy_update
 
-    def get_active_teammate_poses(self, count_goalies: bool = False) -> List[Pose]:
+    def get_active_teammate_poses(self, count_goalies: bool = False) -> list[Pose]:
         """Returns the poses of all playing robots"""
         poses = []
         data: TeamData
@@ -184,7 +185,7 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
 
         # Remove goalie data if needed
         if not count_goalie:
-            team_data_infos = filter(is_not_goalie, team_data_infos)
+            team_data_infos = filter(is_not_goalie, team_data_infos)  # type: ignore[assignment]
 
         # Count valid team data infos (aka robots with valid team data)
         return sum(map(self.is_valid, team_data_infos))
@@ -194,10 +195,10 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
             return team_data.strategy.role == Strategy.ROLE_GOALIE
 
         # Get the team data infos for all robots (ignoring the robot id/name)
-        team_data_infos = self.team_data.values()
+        team_data_infos = self.team_data.values()  # type: ignore[assignment]
 
         # Remove none goalie Data
-        team_data_infos = filter(is_a_goalie, team_data_infos)
+        team_data_infos = filter(is_a_goalie, team_data_infos)  # type: ignore[assignment]
 
         # Count valid team data infos (aka robots with valid team data)
         return sum(map(self.is_valid, team_data_infos)) == 1
@@ -209,14 +210,14 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
         # Save team data
         self.team_data[msg.robot_id] = msg
 
-    def publish_strategy(self):
+    def publish_strategy(self) -> None:
         """Publish for team comm"""
         self.strategy_sender.publish(self.strategy)
 
     def publish_time_to_ball(self):
         self.time_to_ball_publisher.publish(Float32(data=self.own_time_to_ball))
 
-    def teammate_ball_is_valid(self):
+    def teammate_ball_is_valid(self) -> bool:
         """Returns true if a teammate has seen the ball accurately enough"""
         return self.get_teammate_ball() is not None
 
@@ -227,7 +228,7 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
         team_data_infos = filter(self.is_valid, self.team_data.values())
 
         def is_ball_good_enough(team_data: TeamData) -> bool:
-            return (
+            return bool(
                 team_data.ball_absolute.covariance[0] < self.ball_max_covariance
                 and team_data.ball_absolute.covariance[7] < self.ball_max_covariance
             )
@@ -246,3 +247,4 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
             return PointStamped(
                 header=team_data_with_best_ball.header, point=team_data_with_best_ball.ball_absolute.pose.position
             )
+        return None

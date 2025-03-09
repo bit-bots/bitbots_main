@@ -63,33 +63,8 @@
   '''
   current_pose {
     player_id: 2
-    covariance {
-      x {
-        x: 100.0
-      }
-      y {
-        y: 100.0
-      }
-      z {
-        z: 100.0
-      }
-    }
     team: BLUE
   }
-  ball {
-    covariance {
-      x {
-        x: 100.0
-      }
-      y {
-        y: 100.0
-      }
-      z {
-        z: 100.0
-      }
-    }
-  }
-  time_to_ball: 9999.0
   
   '''
 # ---
@@ -136,5 +111,5 @@
   '''
 # ---
 # name: test_convert_time_to_ball_calculated
-  1.2856487035751343
+  0.0
 # ---

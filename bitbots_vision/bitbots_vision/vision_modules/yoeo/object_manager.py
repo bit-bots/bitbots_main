@@ -1,5 +1,5 @@
 import os.path as osp
-from typing import Dict, Optional
+from typing import Optional, Type
 
 import rclpy
 
@@ -16,14 +16,14 @@ class YOEOObjectManager:
     This class manages the creation and update of the YOEO handler instance.
     """
 
-    _HANDLERS_BY_NAME = {
+    _HANDLERS_BY_NAME: dict[str, Type[yoeo_handlers.YOEOHandlerTemplate]] = {
         "openvino": yoeo_handlers.YOEOHandlerOpenVino,
         "onnx": yoeo_handlers.YOEOHandlerONNX,
         "pytorch": yoeo_handlers.YOEOHandlerPytorch,
         "tvm": yoeo_handlers.YOEOHandlerTVM,
     }
 
-    _config: Dict = {}
+    _config: dict = {}
     _framework: str = ""
     _model_config: ModelConfig = ModelConfig()
     _model_path: str = ""
@@ -47,10 +47,8 @@ class YOEOObjectManager:
         :return: the current YOEO handler instance
         :rtype: IYOEOHandler
         """
-        if cls._yoeo_instance is None:
-            logger.error("No yoeo handler created yet!")
-        else:
-            return cls._yoeo_instance
+        assert cls._yoeo_instance is not None, "YOEO handler instance not set!"
+        return cls._yoeo_instance
 
     @classmethod
     def get_id(cls) -> int:
@@ -60,10 +58,8 @@ class YOEOObjectManager:
         :return: the ID of the current YOEO handler instance
         :rtype: int
         """
-        if cls._yoeo_instance is None:
-            logger.error("No yoeo handler created yet")
-        else:
-            return id(cls._yoeo_instance)
+        assert cls._yoeo_instance is not None, "YOEO handler instance not set!"
+        return id(cls._yoeo_instance)
 
     @classmethod
     def is_team_color_detection_supported(cls) -> bool:
@@ -76,7 +72,7 @@ class YOEOObjectManager:
         return cls._model_config.team_colors_are_provided()
 
     @classmethod
-    def configure(cls, config: Dict) -> None:
+    def configure(cls, config: dict) -> None:
         if not cls._package_directory_set:
             logger.error("Package directory not set!")
 
@@ -111,11 +107,12 @@ class YOEOObjectManager:
         return cls._HANDLERS_BY_NAME[framework].model_files_exist(model_path)
 
     @classmethod
-    def _configure_yoeo_instance(cls, config: Dict, framework: str, model_path: str) -> None:
+    def _configure_yoeo_instance(cls, config: dict, framework: str, model_path: str) -> None:
         if cls._new_yoeo_handler_is_needed(framework, model_path):
             cls._load_model_config(model_path)
             cls._instantiate_new_yoeo_handler(config, framework, model_path)
         elif cls._yoeo_parameters_have_changed(config):
+            assert cls._yoeo_instance is not None, "YOEO handler instance not set!"
             cls._yoeo_instance.configure(config)
 
     @classmethod
@@ -127,7 +124,7 @@ class YOEOObjectManager:
         cls._model_config = ModelConfigLoader.load_from(model_path)
 
     @classmethod
-    def _instantiate_new_yoeo_handler(cls, config: Dict, framework: str, model_path: str) -> None:
+    def _instantiate_new_yoeo_handler(cls, config: dict, framework: str, model_path: str) -> None:
         cls._yoeo_instance = cls._HANDLERS_BY_NAME[framework](
             config,
             model_path,
@@ -138,5 +135,5 @@ class YOEOObjectManager:
         logger.info(f"Using {cls._yoeo_instance.__class__.__name__}")
 
     @classmethod
-    def _yoeo_parameters_have_changed(cls, new_config: Dict) -> bool:
+    def _yoeo_parameters_have_changed(cls, new_config: dict) -> bool:
         return ros_utils.config_param_change(cls._config, new_config, r"yoeo_")

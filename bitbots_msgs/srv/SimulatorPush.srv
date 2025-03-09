@@ -1,0 +1,4 @@
+geometry_msgs/Vector3 force
+bool relative
+string robot "amy"
+---

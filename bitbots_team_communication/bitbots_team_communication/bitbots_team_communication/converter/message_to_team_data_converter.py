@@ -1,8 +1,9 @@
-from typing import List, Tuple
+from typing import Iterable, Sequence
 
+import numpy as np
 import transforms3d
 from geometry_msgs.msg import PoseWithCovariance
-from numpy import double
+from jaxtyping import Float64
 
 import bitbots_team_communication.robocup_extension_pb2 as Proto  # noqa: N812
 from bitbots_msgs.msg import RobotRelative, RobotRelativeArray, TeamData
@@ -44,7 +45,7 @@ class MessageToTeamDataConverter:
         return team_data
 
     def convert_robots(
-        self, message_robots: List[Proto.Robot], message_robot_confidence: List[float]
+        self, message_robots: Iterable[Proto.Robot], message_robot_confidence: Sequence[float]
     ) -> RobotRelativeArray:
         relative_robots = RobotRelativeArray()
         for index, robot in enumerate(message_robots):
@@ -74,7 +75,7 @@ class MessageToTeamDataConverter:
         robot.pose.position.x = message_robot_pose.position.x
         robot.pose.position.y = message_robot_pose.position.y
 
-        quaternion = self.convert_to_quat((0, 0, message_robot_pose.position.z))
+        quaternion = self.convert_to_quat((0.0, 0.0, message_robot_pose.position.z))
         robot.pose.orientation.w = quaternion[0]
         robot.pose.orientation.x = quaternion[1]
         robot.pose.orientation.y = quaternion[2]
@@ -84,10 +85,12 @@ class MessageToTeamDataConverter:
 
         return robot
 
-    def convert_to_quat(self, euler_angles: Tuple[float, float, float]):
+    def convert_to_quat(self, euler_angles: tuple[float, float, float]):
         return transforms3d.euler.euler2quat(*euler_angles)
 
-    def convert_to_row_major_covariance(self, row_major_covariance: List[double], covariance_matrix: Proto.fmat3):
+    def convert_to_row_major_covariance(
+        self, row_major_covariance: Float64[np.ndarray, "36"], covariance_matrix: Proto.fmat3
+    ):
         # ROS covariance is row-major 36 x float, while protobuf covariance
         # is column-major 9 x float [x, y, θ]
         row_major_covariance[0] = covariance_matrix.x.x
