@@ -6,7 +6,7 @@
     'max_vel_x': 0.12,
     'max_vel_y': 0.07,
     'min_vel_x': -0.06,
-    'orient_to_goal_distance': 0.25,
+    'orient_to_goal_distance': 0.4,
     'rotation_i_factor': 0.0,
     'rotation_slow_down_factor': 0.6,
     'smoothing_tau': 0.1,
