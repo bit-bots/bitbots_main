@@ -715,9 +715,11 @@ void DynupEngine::setGoals(const DynupRequest &goals) {
       duration_ = calcBackSplines();
       break;
     case DynupDirection::RISE:
+    case DynupDirection::RISE_NO_ARMS:
       duration_ = calcWalkreadySplines(0, params_.rise.rise_time);
       break;
     case DynupDirection::DESCEND:
+    case DynupDirection::DESCEND_NO_ARMS:
       duration_ = calcDescendSplines();
       break;
     case DynupDirection::WALKREADY:
