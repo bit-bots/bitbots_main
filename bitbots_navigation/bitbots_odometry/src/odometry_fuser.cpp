@@ -119,18 +119,19 @@ class OdometryFuser : public rclcpp::Node {
       tf2::Quaternion imu_orientation_in_base_link = imu_orientation * imu_mounting_offset.getRotation();
 
       // Get how far we walked since the last time
-      tf2::Transform previous_to_current = tf2::Transform(
-        previous_imu_orientation_in_base_link.inverse() * imu_orientation_in_base_link,
-        (previous_motion_odom_.inverseTimes(motion_odometry)).getOrigin()
-      );
-      
+      tf2::Transform previous_to_current =
+          tf2::Transform(previous_imu_orientation_in_base_link.inverse() * imu_orientation_in_base_link,
+                         (previous_motion_odom_.inverseTimes(motion_odometry)).getOrigin());
+
       // Apply the walked amount to the current state
       // Go from odom to base_link, then to the rotation point and apply the movement since the last time there
-      tf2::Transform odom_to_rotation_point = odom_to_base_link_ = odom_to_base_link_ * rotation_point_in_base_link * previous_to_current;
-      
+      tf2::Transform odom_to_rotation_point = odom_to_base_link_ =
+          odom_to_base_link_ * rotation_point_in_base_link * previous_to_current;
+
       // While we are still in the rotation point frame, we can set the z to 0 as the rotation point is on the ground
-      odom_to_rotation_point.setOrigin({odom_to_rotation_point.getOrigin().x(), odom_to_rotation_point.getOrigin().y(), 0});
-      
+      odom_to_rotation_point.setOrigin(
+          {odom_to_rotation_point.getOrigin().x(), odom_to_rotation_point.getOrigin().y(), 0});
+
       // Go back to the base_link frame as the odom is defined between odom and base_link
       odom_to_base_link_ = odom_to_rotation_point * rotation_point_in_base_link.inverse();
 
@@ -308,7 +309,7 @@ class OdometryFuser : public rclcpp::Node {
       RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(), 2, "cop not available and unknown support state %c",
                             current_support_state);
     }
-    //rotation_point_tf.setRotation(tf2::Quaternion::getIdentity());
+    // rotation_point_tf.setRotation(tf2::Quaternion::getIdentity());
     return rotation_point_tf;
   }
 };
