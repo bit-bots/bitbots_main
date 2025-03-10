@@ -214,6 +214,9 @@ class Localization {
   std::shared_ptr<Map> lines_;
   std::shared_ptr<Map> goals_;
 
+  // Flag that enables or disables observations
+  bool observe_ = true;
+
   // RNG that is used for the different sampling steps
   particle_filter::CRandomNumberGenerator random_number_generator_;
 

@@ -152,7 +152,9 @@ void Localization::run_filter_one_step() {
   updateParams();
 
   // Set the measurements in the observation model
-  updateMeasurements();
+  if (observe_) {
+    updateMeasurements();
+  }
 
   // Get the odometry offset since the last cycle
   getMotion();
@@ -204,11 +206,7 @@ void Localization::SetInitialPositionCallback(const gm::msg::PoseWithCovarianceS
 
 bool Localization::set_paused_callback(const std::shared_ptr<bl::srv::SetPaused::Request> req,
                                        std::shared_ptr<bl::srv::SetPaused::Response> res) {
-  if (req->paused) {
-    publishing_timer_->cancel();
-  } else {
-    publishing_timer_->reset();
-  }
+  observe_ = !req->paused;
   res->success = true;
   return true;
 }
