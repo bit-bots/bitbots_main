@@ -44,11 +44,12 @@ class OdometryFuser : public rclcpp::Node {
  public:
   OdometryFuser()
       : Node("OdometryFuser"),
-        odom_to_base_(tf2::Transform::getIdentity()),
+        odom_to_base_link_(tf2::Transform::getIdentity()),
         previous_motion_odom_(tf2::Transform::getIdentity()),
-        previous_imu_(tf2::Quaternion::getIdentity()),
+        previous_imu_orientation_in_base_link(tf2::Quaternion::getIdentity()),
         tf_buffer_(this->get_clock()),
         tf_listener_(tf_buffer_, this),
+        odom_pub_(this->create_publisher<nav_msgs::msg::Odometry>("fused_odometry", 1)),
         support_state_cache_(100),
         imu_sub_(this, "imu/data"),
         motion_odom_sub_(this, "motion_odometry"),
@@ -83,9 +84,6 @@ class OdometryFuser : public rclcpp::Node {
     tf2::Transform motion_odometry;
     tf2::fromMsg(odom_data_.pose.pose, motion_odometry);
 
-    // Our output data structure
-    tf2::Transform fused_odometry{motion_odometry};
-
     // Check if the imu is active
     if (imu_data_received_) {
       // Check if fused_time_ is recent enough
@@ -105,10 +103,7 @@ class OdometryFuser : public rclcpp::Node {
       tf2::fromMsg(imu_data_.orientation, imu_orientation);
 
       // compute the point of rotation (in base_link frame)
-      tf2::Transform rotation_point_in_base = getCurrentRotationPoint();
-      // get base_link in rotation point frame
-      tf2::Transform base_link_in_rotation_point = rotation_point_in_base.inverse();
-
+      tf2::Transform rotation_point_in_base_link = getCurrentRotationPoint();
 
       // Get the rotation offset between the IMU and the baselink
       tf2::Transform imu_mounting_offset;
@@ -121,30 +116,52 @@ class OdometryFuser : public rclcpp::Node {
       }
 
       // Get imu orientation in base_link frame
-      tf2::Quaternion imu_orientation_in_base = imu_orientation * imu_mounting_offset.getRotation();
+      tf2::Quaternion imu_orientation_in_base_link = imu_orientation * imu_mounting_offset.getRotation();
 
       // Get how far we walked since the last time
       tf2::Transform previous_to_current = tf2::Transform(
-        previous_imu_.inverse() * imu_orientation_in_base,
-        previous_motion_odom_.inverseTimes(motion_odometry).getOrigin()
+        previous_imu_orientation_in_base_link.inverse() * imu_orientation_in_base_link,
+        (previous_motion_odom_.inverseTimes(motion_odometry)).getOrigin()
       );
-
+      
       // Apply the walked amount to the current state
-      // transformation chain to get correctly rotated odom frame
-      // go to the rotation point in the odom frame. rotate the transform to the base link at this point
-      fused_odometry = odom_to_base_ * rotation_point_in_base * previous_to_current * base_link_in_rotation_point;
+      // Go from odom to base_link, then to the rotation point and apply the movement since the last time there
+      tf2::Transform odom_to_rotation_point = odom_to_base_link_ = odom_to_base_link_ * rotation_point_in_base_link * previous_to_current;
+      
+      // While we are still in the rotation point frame, we can set the z to 0 as the rotation point is on the ground
+      odom_to_rotation_point.setOrigin({odom_to_rotation_point.getOrigin().x(), odom_to_rotation_point.getOrigin().y(), 0});
+      
+      // Go back to the base_link frame as the odom is defined between odom and base_link
+      odom_to_base_link_ = odom_to_rotation_point * rotation_point_in_base_link.inverse();
+
+      // Just to be sure, we set the rotation to the current imu orientation
+      odom_to_base_link_.setRotation(imu_orientation_in_base_link);
+
+      // Update the previous states
+      previous_imu_orientation_in_base_link = imu_orientation_in_base_link;
+      previous_motion_odom_ = motion_odometry;
     } else {
-      fused_odometry = motion_odometry;
+      odom_to_base_link_ = motion_odometry;
     }
 
-    // combine it all into a tf
+    // Combine it all into a tf
     tf_.header.stamp = fused_time_;
     tf_.header.frame_id = odom_frame_;
     tf_.child_frame_id = base_link_frame_;
-    geometry_msgs::msg::Transform fused_odom_msg;
-    fused_odom_msg = toMsg(fused_odometry);
-    tf_.transform = fused_odom_msg;
+    tf_.transform = toMsg(odom_to_base_link_);
     br_->sendTransform(tf_);
+
+    // Publish the odometry message for debugging
+    nav_msgs::msg::Odometry odom_msg;
+    odom_msg.header.stamp = fused_time_;
+    odom_msg.header.frame_id = odom_frame_;
+    odom_msg.child_frame_id = base_link_frame_;
+    odom_msg.pose.pose.position.x = odom_to_base_link_.getOrigin().x();
+    odom_msg.pose.pose.position.y = odom_to_base_link_.getOrigin().y();
+    odom_msg.pose.pose.position.z = odom_to_base_link_.getOrigin().z();
+    odom_msg.pose.pose.orientation = toMsg(odom_to_base_link_.getRotation());
+    odom_msg.twist = odom_data_.twist;
+    odom_pub_->publish(odom_msg);
   }
 
   void supportCallback(const biped_interfaces::msg::Phase::SharedPtr msg) { support_state_cache_.add(msg); }
@@ -160,9 +177,9 @@ class OdometryFuser : public rclcpp::Node {
   }
 
  private:
-  tf2::Transform odom_to_base_;
+  tf2::Transform odom_to_base_link_;
   tf2::Transform previous_motion_odom_;
-  tf2::Quaternion previous_imu_;
+  tf2::Quaternion previous_imu_orientation_in_base_link;
   sensor_msgs::msg::Imu imu_data_;
   nav_msgs::msg::Odometry odom_data_;
   tf2_ros::Buffer tf_buffer_;
@@ -173,6 +190,8 @@ class OdometryFuser : public rclcpp::Node {
 
   rclcpp::Subscription<biped_interfaces::msg::Phase>::SharedPtr walk_support_state_sub_;
   rclcpp::Subscription<biped_interfaces::msg::Phase>::SharedPtr kick_support_state_sub_;
+
+  rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub_;
 
   message_filters::Cache<biped_interfaces::msg::Phase> support_state_cache_;
 
@@ -233,7 +252,7 @@ class OdometryFuser : public rclcpp::Node {
 
   tf2::Transform getCurrentRotationPoint() {
     geometry_msgs::msg::TransformStamped rotation_point;
-    tf2::Transform rotation_point_tf;
+    tf2::Transform rotation_point_tf = tf2::Transform::getIdentity();
 
     char current_support_state = biped_interfaces::msg::Phase::DOUBLE_STANCE;
 
@@ -278,12 +297,10 @@ class OdometryFuser : public rclcpp::Node {
                                   l_to_r_sole_tf.getOrigin().z() / 2});
 
         // Set to zero rotation, because the rotation measurement is done by the imu
-        tf2::Quaternion zero_rotation;
-        zero_rotation.setRPY(0, 0, 0);
-        l_to_center_tf.setRotation(zero_rotation);
+        l_to_center_tf.setRotation(tf2::Quaternion::getIdentity());
 
         rotation_point_tf = base_to_l_sole_tf * l_to_center_tf;
-        rotation_point_tf.setRotation(zero_rotation);
+        rotation_point_tf.setRotation(tf2::Quaternion::getIdentity());
       } catch (tf2::TransformException &ex) {
         RCLCPP_ERROR(this->get_logger(), "%s", ex.what());
       }
@@ -291,6 +308,7 @@ class OdometryFuser : public rclcpp::Node {
       RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(), 2, "cop not available and unknown support state %c",
                             current_support_state);
     }
+    //rotation_point_tf.setRotation(tf2::Quaternion::getIdentity());
     return rotation_point_tf;
   }
 };

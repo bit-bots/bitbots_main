@@ -38,7 +38,6 @@ add_compile_options(-Wall -Werror -Wno-unused)
 
 add_executable(odometry_fuser src/odometry_fuser.cpp)
 add_executable(motion_odometry src/motion_odometry.cpp)
-add_executable(fused_odometry src/fused_odometry.cpp)
 
 target_link_libraries(motion_odometry rclcpp::rclcpp odometry_parameters)
 
@@ -81,31 +80,11 @@ ament_target_dependencies(
   tf2_geometry_msgs
   tf2_ros)
 
-ament_target_dependencies(
-  fused_odometry
-  ament_cmake
-  biped_interfaces
-  bitbots_docs
-  bitbots_utils
-  Eigen3
-  geometry_msgs
-  message_filters
-  nav_msgs
-  rclcpp
-  rot_conv
-  sensor_msgs
-  tf2
-  tf2_eigen
-  tf2_geometry_msgs
-  tf2_ros)
-
 enable_bitbots_docs()
 
 install(TARGETS motion_odometry DESTINATION lib/${PROJECT_NAME})
 
 install(TARGETS odometry_fuser DESTINATION lib/${PROJECT_NAME})
-
-install(TARGETS fused_odometry DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 
