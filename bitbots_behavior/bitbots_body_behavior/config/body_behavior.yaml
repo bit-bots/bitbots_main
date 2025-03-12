@@ -146,7 +146,7 @@ body_behavior:
     dribble_ball_distance_threshold: 0.5
     dribble_kick_angle: 0.6
 
-    kick_decision_smoothing: 1.0
+    kick_decision_smoothing: 10.0
 
     ##################
     # costmap params #
