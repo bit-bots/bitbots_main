@@ -3,6 +3,7 @@ import os
 from typing import Optional
 
 from deploy.misc import Connection, get_connections_from_succeeded, hide_output, print_debug, print_error, print_warning
+from deploy.tasks import INTERNET_TIMEOUT
 from deploy.tasks.abstract_task import AbstractTaskWhichRequiresSudo
 from fabric import Group, GroupResult, Result
 from fabric.exceptions import GroupException
@@ -56,7 +57,7 @@ class Install(AbstractTaskWhichRequiresSudo):
         apt_mirror = "de.archive.ubuntu.com"
         print_debug("Checking internet connections")
 
-        cmd = f"timeout --foreground 0.5 curl -sSLI {apt_mirror}"
+        cmd = f"timeout --foreground {INTERNET_TIMEOUT} curl -sSLI {apt_mirror}"
         print_debug(f"Calling {cmd}")
         try:
             results = connections.run(cmd, hide=hide_output())
