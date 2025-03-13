@@ -61,7 +61,7 @@ body_behavior:
     # An area in which the ball can be kicked
     # defined by min/max x/y values in meters which represent ball positions relative to base_footprint
     # http://www.ros.org/reps/rep-0103.html#axis-orientation
-    kick_x_enter: 0.25
+    kick_x_enter: 0.23
     kick_x_leave: 0.25
     kick_y_enter: 0.12
     kick_y_leave: 0.12
