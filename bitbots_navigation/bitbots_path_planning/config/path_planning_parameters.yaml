@@ -56,7 +56,7 @@ bitbots_path_planning:
         bounds<>: [0, 100]
     max_rotation_vel:
       type: double
-      default_value: 0.6
+      default_value: 0.4
       description: 'The maximum rotation velocity of the robot in rad/s around the z-axis'
       validation:
         bounds<>: [0.0, 1.0]
@@ -98,13 +98,13 @@ bitbots_path_planning:
         bounds<>: [0.0, 1.0]
     translation_slow_down_factor:
       type: double
-      default_value: 1.0
+      default_value: 0.6
       description: 'Clamped p gain of the translation controller'
       validation:
         bounds<>: [0.0, 1.0]
     orient_to_goal_distance:
       type: double
-      default_value: 0.4
+      default_value: 0.5
       description: 'Distance at which we switch from orienting towards the path to orienting towards the goal poses orientation (in meters)'
       validation:
         bounds<>: [0.0, 10.0]
