@@ -665,7 +665,7 @@ void DynupEngine::setGoals(const DynupRequest &goals) {
   // Get params and wait for walking to be ready
   walking_params = walking_param_client_->get_parameters(
       {"engine.trunk_pitch", "engine.trunk_height", "engine.foot_distance", "engine.trunk_x_offset"},
-      std::chrono::seconds(1));
+      std::chrono::seconds(5));
 
   // when the walking was killed, service_is_ready is still true but the parameters come back empty
   if (walking_params.size() != 4) {
