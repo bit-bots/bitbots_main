@@ -25,7 +25,6 @@ class GoToBall(AbstractActionElement):
         self.side_offset = parameters.get("side_offset", 0.08)
 
     def perform(self, reevaluate=False):
-        #math.copysign
         ball_position_y_relative = self.blackboard.world_model.get_ball_position_uv[1]
         self.side_offset = -1 * math.copysign(self.side_offset)
         pose_msg = self.blackboard.pathfinding.get_ball_goal(self.target, self.distance, self.side_offset)
