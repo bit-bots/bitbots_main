@@ -27,6 +27,7 @@ class PlayAnimationDynup(AbstractActionElement):
 
     def perform(self, reevaluate=False):
         # deactivate falling since it will be wrongly detected
+        return self.pop()
         self.do_not_reevaluate()
         if self.first_perform:
             # get the animation that should be played
@@ -42,9 +43,6 @@ class PlayAnimationDynup(AbstractActionElement):
             self.first_perform = False
             return
 
-        if self.animation_finished():
-            # we are finished playing this animation
-            return self.pop()
 
     def start_animation(self) -> bool:
         """
@@ -54,6 +52,7 @@ class PlayAnimationDynup(AbstractActionElement):
         :return: True if the animation was started, False if not
         """
         server_running = self.blackboard.animation.dynup_action_client.wait_for_server(timeout_sec=1.0)
+        return True
         if not server_running:
             while not server_running and rclpy.ok():
                 self.blackboard.node.get_logger().warn(
@@ -78,7 +77,6 @@ class PlayAnimationDynup(AbstractActionElement):
             .get_result_async()
             .add_done_callback(lambda result_future: self.__done_cb(result_future))
         )
-        return True
 
     def __done_cb(self, result_future):
         self.active = False

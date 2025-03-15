@@ -23,12 +23,6 @@ class AnimationCapsule(AbstractBlackboardCapsule):
         self.cheering_animation: str = self._node.get_parameter("Animations.Misc.cheering").value
         self.init_animation: str = self._node.get_parameter("Animations.Misc.init").value
 
-        self.animation_client = ActionClient(
-            self._node, PlayAnimation, "animation", callback_group=ReentrantCallbackGroup()
-        )
-
-        self.dynup_action_client = ActionClient(self._node, Dynup, "dynup", callback_group=ReentrantCallbackGroup())
-
         self.lookat_action_client = ActionClient(self._node, LookAt, "look_at_goal")
 
     def play_animation(self, animation: str, from_hcm: bool) -> bool:
@@ -39,28 +33,7 @@ class AnimationCapsule(AbstractBlackboardCapsule):
         :param from_hcm: Marks the action call as a call from the hcm
         :returns: True if the animation was successfully dispatched
         """
-        if self.active:
-            return False
-
-        if animation is None or animation == "":
-            self._node.get_logger().warn("Tried to play an animation with an empty name!")
-            return False
-
-        if not self.animation_client.wait_for_server(Duration(seconds=10)):
-            self._node.get_logger().error(
-                "Animation Action Server not running! Motion can not work without animation action server."
-            )
-            return False
-
-        goal = PlayAnimation.Goal()
-        goal.animation = animation
-        goal.hcm = from_hcm  # the animation is from the hcm
-        self.animation_client.send_goal_async(goal).add_done_callback(
-            lambda future: future.result().get_result_async().add_done_callback(lambda _: self.__done_cb())
-        )
-
-        self.active = True
-
+    
         return True
 
     def __done_cb(self) -> None:
