@@ -36,6 +36,13 @@ $DoOnce
         YES -->  #StandAndLook
         NO --> @LookAtFieldFeatures, @GoToRolePosition
 
+#DefenseBlockPositionWithPause
+$DoOnce
+    NOT_DONE --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @GoToBlockPosition
+    DONE --> $ReachedAndAlignedToPathPlanningGoalPosition + threshold:0.2 + latch:true
+        YES -->  #StandAndLook
+        NO --> @LookAtFieldFeatures, @GoToBlockPosition
+
 #KickWithAvoidance
 $AvoidBall
     NO --> $BallClose + distance:%ball_reapproach_dist + angle:%ball_reapproach_angle
@@ -75,8 +82,8 @@ $GoalieHandlingBall
 
 #DefenseBlocking
 $BallInOwnPercent + p:40
-    YES --> @ChangeAction + action:positioning, @AvoidBallActive, @LookAtFieldFeatures, @GoToBlockPosition
-    NO --> #RolePositionWithPause!!!!!
+    YES --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToBlockPosition
+    NO --> #DefenseBlockPositionWithPause
 
 #SupporterRole
 $PassStarted
