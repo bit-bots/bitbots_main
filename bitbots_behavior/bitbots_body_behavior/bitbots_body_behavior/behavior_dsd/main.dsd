@@ -163,7 +163,21 @@ $BallSeen
         NO_FREEKICK --> #Placing
         YES --> $ConfigRole
             GOALIE --> #GoalieRole
-            ELSE --> $CountActiveRobotsWithoutGoalie
+            ELSE --> $GoalieHandlingBall
+                YES -->$RankToGoalNoGoalie
+                    FIRST --> #DefenseBlocking
+                    SECOND --> #DefensePositioning
+                    THIRD --> #SupporterRole
+                NO --> $CountActiveRobotsWithoutGoalie
+                    ONE --> $RankToBallNoGoalie
+                        FIRST --> #StrikerRole
+                        SECOND --> #DefensePositioning
+                    ELSE --> $RankToBallNoGoalie
+                        FIRST --> #StrikerRole
+                        SECOND --> #SupporterRole
+                        THIRD --> #DefensePositioning
+
+$CountActiveRobotsWithoutGoalie
                 ONE --> $RankToBallNoGoalie
                     FIRST --> #StrikerRole
                     SECOND --> #DefensePositioning
