@@ -14,6 +14,7 @@ from rclpy.clock import ClockType
 from rclpy.duration import Duration
 from rclpy.time import Time
 from ros2_numpy import msgify, numpify
+from soccer_vision_3d_msgs.msg import Robot, RobotArray
 from std_msgs.msg import Header
 from std_srvs.srv import Trigger
 from tf2_geometry_msgs import Point, PointStamped
@@ -58,6 +59,7 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
             header=Header(stamp=Time(clock_type=ClockType.ROS_TIME), frame_id=self.map_frame)
         )  # The ball in the map frame (default to the center of the field if ball is not seen yet)
         self._ball_covariance: np.ndarray = np.zeros((2, 2))  # Covariance of the ball
+        self.opponents_Dist_to_Ball: float = 10000000000.0
 
         # Publisher for visualization in RViZ
         self.debug_publisher_used_ball = self._node.create_publisher(PointStamped, "debug/behavior/used_ball", 1)
@@ -65,6 +67,28 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
 
         # Services
         self.reset_ball_filter = self._node.create_client(Trigger, "ball_filter_reset")
+
+    def robot_callback_world_model(self, msg: RobotArray):
+        """
+        Callback with new robot detections
+        """
+        # Iterate over all robots
+        robot: Robot
+        for robot in msg.robots:
+            # check if robot is a opponent
+            """Robots from an Unknown team were handeled like opponents"""
+            nearestTotalDist = 10000000000.0
+            ball = self.get_best_ball_point_stamped()
+            if robot.attributes.team == 2 or robot.attributes.team == 0:
+                # check if robot is nearest to ball
+                if (robot.bb.center.position.x - ball.point.x) ** 2 + (
+                    robot.bb.center.position.y - ball.point.y
+                ) ** 2 < nearestTotalDist:
+                    nearestTotalDist = (robot.bb.center.position.x - ball.point.x) ** 2 + (
+                        robot.bb.center.position.y - ball.point.y
+                    ) ** 2
+
+        self.opponents_Dist_to_Ball = nearestTotalDist
 
     ############
     ### Ball ###
@@ -166,6 +190,13 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
         result: Trigger.Response = self.reset_ball_filter.call(Trigger.Request())
         if not result.success:
             self._node.get_logger().error(f"Ball filter reset failed with: '{result.message}'")
+
+    def team_next_to_ball(self) -> int:
+        """returns wich team is closest to ball: 1 = ownTeam, 2 = oppoentsTeam"""
+        if self.opponents_Dist_to_Ball > self.get_ball_distance:
+            return 1
+        else:
+            return 2
 
     ########
     # Goal #

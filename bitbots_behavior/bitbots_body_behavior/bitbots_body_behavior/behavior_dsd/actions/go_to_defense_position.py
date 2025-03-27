@@ -82,9 +82,40 @@ class GoToDefensePosition(AbstractActionElement):
             x, y, z, w = quaternion_from_euler(0, 0, yaw)
             pose_msg.pose.orientation = Quaternion(x=x, y=y, z=z, w=w)
         else:
-            # center point between ball and own goal
-            pose_msg.pose.position.x = (goal_position[0] + ball_position[0]) / 2
-            pose_msg.pose.position.y = ball_position[1] / 2 + self.y_offset
-            pose_msg.pose.orientation.w = 1.0
+            # predicts ball postion after opponents kick
+            yGradient = (ball_position[1] - goal_position[1]) / (ball_position[0] - goal_position[0])
+            self.publish_debug_data("yGradient: ", yGradient)
+            ballGoalDist = math.sqrt(
+                (ball_position[0] - goal_position[0]) ** 2 + (ball_position[1] - goal_position[1]) ** 2
+            )
+            self.publish_debug_data("ballGoalDist: ", ballGoalDist)
+            # kick dist should be depend on opponents skills.
+            # the y prediction based on the yGradient in the direction of the goal to find a block position between ball and goal.
+            # Was tun, wenn sehr nah an Block Position (auch für else Fall) -> Goalie Kommunizeirt, def Position wird zwischen Goalie und Torpfosten näher zum Ball
+            # Pressen wenn stürmer in schlechter Position? Achtung sollte def nähre an ball ändern sich rollen sowieso
+            kickDistOpponent = 3.0
+            self.publish_debug_data("goalPosX: ", goal_position[0])
+            self.publish_debug_data("goalPosY: ", goal_position[1])
+            self.publish_debug_data("ballPosX: ", ball_position[0])
+            self.publish_debug_data("ballPosY: ", ball_position[1])
+            xDist = (ball_position[0] - goal_position[0]) * (kickDistOpponent / ballGoalDist)
+            predictedX = ball_position[0] - xDist
+            self.publish_debug_data("xDist: ", xDist)
+            predictedY = ball_position[1] - xDist * yGradient
+            self.publish_debug_data("predictedX: ", predictedX)
+            self.publish_debug_data("predictedY: ", predictedY)
+            predicted_pose = [predictedX, predictedY]
+            # use predicted Pose only if its inside the field
+            if predicted_pose[0] > goal_position[0]:
+                # use pred
+                # wirkung y_offset?
+                pose_msg.pose.position.x = predicted_pose[0]
+                pose_msg.pose.position.y = predicted_pose[1]
+                pose_msg.pose.orientation.w = 1.0
+            else:
+                # center point between ball and own goal
+                pose_msg.pose.position.x = (goal_position[0] + ball_position[0]) / 2
+                pose_msg.pose.position.y = ball_position[1] / 2 + self.y_offset
+                pose_msg.pose.orientation.w = 1.0
 
         self.blackboard.pathfinding.publish(pose_msg)

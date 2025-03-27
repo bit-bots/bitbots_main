@@ -9,7 +9,7 @@ from ros2_numpy import numpify
 from std_msgs.msg import Float32
 
 from bitbots_blackboard.capsules import AbstractBlackboardCapsule
-from bitbots_msgs.msg import Strategy, TeamData
+from bitbots_msgs.msg import Strategy, TeamData, RobotRelative, RobotRelativeArray
 
 
 class TeamDataCapsule(AbstractBlackboardCapsule):
@@ -22,12 +22,13 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
         self.time_to_ball_publisher = self._node.create_publisher(Float32, "time_to_ball", 2)
 
         # Retrieve game settings from parameter blackboard
-        params = get_parameters_from_other_node(self._node, "parameter_blackboard", ["role"])
+        params = get_parameters_from_other_node(self._node, "parameter_blackboard", ["role","bot_id"])
         self.role = params["role"]
+        self.id = params["bot_id"]
 
         # Data
         # indexed with one to match robot ids
-        self.team_data: Dict[TeamData] = {}
+        self.team_data: Dict[int, TeamData] = {}
         for i in range(1, 7):
             self.team_data[i] = TeamData()
         self.times_to_ball = dict()
@@ -89,6 +90,41 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
             ):
                 return True
         return False
+
+    #def is_goalie_at_block_position(self):
+        """Returns true if the goalie stays at the block position"""
+        data: TeamData
+        for data in self.team_data.values():
+            if (
+                self.is_valid(data)
+                and data.strategy.role == Strategy.ROLE_GOALIE
+                and data.strategy.action in [Strategy.ACTION_GOING_TO_BALL, Strategy.ACTION_KICKING]
+            ):
+                return True
+        return False
+
+    def team_next_to_ball(self):
+        """Returns Number of the team that is close to the ball"""
+        """1 = own Team, 2 = opponent, -1 if function was unsuccesfull"""
+        #roboter der am nächsten zum ball ist soll entscheiden
+        #vorher prüfen ob überhaubt verwertbare Daten vorhanden?
+        data: TeamData
+        if self.team_rank_to_ball(self.own_time_to_ball) == 1:
+            ownData: TeamData = self.team_data.get(self.id)
+            if self.is_valid(data):
+                if self.own_time_to_ball > self.opponentsTimeToBall(ownData.robots):
+                    return 1
+                else
+                    return 2
+
+        return -1
+        #über roboter itterieren und ausgeben wr am nächsten ist
+
+    def opponents_time_to_ball(self,opponentData: RobotRelativeArray):
+
+        opponentX: RobotRelative[]
+        for opponentX in opponentData:
+
 
     def is_team_mate_kicking(self):
         """Returns true if one of the players in the own team is kicking."""
