@@ -223,10 +223,12 @@
     "ros.distro": "jazzy",
     "search.useIgnoreFiles": false,
     "python.autoComplete.extraPaths": [
+
         "/opt/ros/jazzy/lib/python3.10/site-packages"
     ],
     "python.analysis.extraPaths": [
         "/opt/ros/jazzy/lib/python3.10/site-packages"
+
     ],
     "cmake.configureOnOpen": false,
     "editor.formatOnSave": true,

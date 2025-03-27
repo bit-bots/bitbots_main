@@ -4,6 +4,7 @@ import threading
 from hashlib import md5
 
 from deploy.misc import be_quiet, hide_output, print_debug, print_info, print_success, print_warning
+from deploy.tasks import INTERNET_TIMEOUT
 from deploy.tasks.abstract_task import AbstractTask
 from fabric import Connection, Group, GroupResult, Result
 from git import Repo
@@ -203,7 +204,7 @@ class CheckReposTask(AbstractTask):
         github: str = "https://github.com"
         print_debug(f"Checking for internet connection to {github}")
 
-        cmd = f"timeout --foreground 0.5 curl -sSLI {github}"
+        cmd = f"timeout --foreground {INTERNET_TIMEOUT:.2f} curl -sSLI {github}"
         print_debug(f"Calling {cmd}")
         available = False
         result: Result | None = None
@@ -424,6 +425,7 @@ class CheckReposTask(AbstractTask):
 
         friendly_name: str = f"{friendly_adjectives[int(hash[: len(hash) // 2], 16) % len(friendly_adjectives)]} {friendly_animals[int(hash[len(hash) // 2 :], 16) % len(friendly_animals)]}"
         print_debug(f"Generated friendly commit name: '{friendly_name}'.")
+
         return friendly_name
 
     def _write_commits(self) -> None:
