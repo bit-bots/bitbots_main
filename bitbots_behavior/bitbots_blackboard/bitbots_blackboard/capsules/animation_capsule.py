@@ -14,6 +14,8 @@ class AnimationCapsule(AbstractBlackboardCapsule):
         self.active = False
 
         # Config
+        self.grab_ball_animation: str = self._node.get_parameter("Animations.Throw_in.grabBall").value
+        self.throw_animation: str = self._node.get_parameter("Animations.Throw_in.throw").value
         self.goalie_arms_animation: str = self._node.get_parameter("Animations.Goalie.goalieArms").value
         self.goalie_falling_right_animation: str = self._node.get_parameter("Animations.Goalie.fallRight").value
         self.goalie_falling_left_animation: str = self._node.get_parameter("Animations.Goalie.fallLeft").value

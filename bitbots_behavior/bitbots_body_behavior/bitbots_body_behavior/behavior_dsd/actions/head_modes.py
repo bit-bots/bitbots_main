@@ -45,7 +45,7 @@ class SearchBall(AbstractHeadModeElement):
     """Look for ball"""
 
     def perform(self):
-        self.blackboard.misc.set_head_duty(HeadMode.BALL_MODE)
+        self.blackboard.misc.set_head_duty(HeadMode.SEARCH_BALL)
         return self.pop()
 
 
@@ -53,7 +53,7 @@ class LookAtFieldFeatures(AbstractHeadModeElement):
     """Look generally for all features on the field (ball, goals, corners, center point)"""
 
     def perform(self):
-        self.blackboard.misc.set_head_duty(HeadMode.FIELD_FEATURES)
+        self.blackboard.misc.set_head_duty(HeadMode.SEARCH_FIELD_FEATURES)
         return self.pop()
 
 
@@ -77,7 +77,7 @@ class LookAtBallPenalty(AbstractHeadModeElement):
     """Ball Mode adapted for Penalty Kick"""
 
     def perform(self):
-        self.blackboard.misc.set_head_duty(HeadMode.BALL_MODE_PENALTY)
+        self.blackboard.misc.set_head_duty(HeadMode.SEARCH_BALL_PENALTY)
         return self.pop()
 
 
@@ -85,5 +85,5 @@ class LookAtFront(AbstractHeadModeElement):
     """Search in front of the robot"""
 
     def perform(self):
-        self.blackboard.misc.set_head_duty(HeadMode.LOOK_FRONT)
+        self.blackboard.misc.set_head_duty(HeadMode.SEARCH_FRONT)
         return self.pop()

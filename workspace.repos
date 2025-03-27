@@ -3,6 +3,10 @@ repositories:
     type: git
     url: git@github.com:bit-bots/RobocupProtocol.git
     version: master
+  lib/bitbots_tf_buffer:
+    type: git
+    url: git@github.com:bit-bots/bitbots_tf_buffer.git
+    version: iron
   lib/dynamic_stack_decider:
     type: git
     url: git@github.com:bit-bots/dynamic_stack_decider.git

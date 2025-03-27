@@ -2,7 +2,6 @@ from bitbots_blackboard.body_blackboard import BodyBlackboard
 from bitbots_blackboard.capsules.pathfinding_capsule import BallGoalType
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 from geometry_msgs.msg import Vector3
-from rclpy.duration import Duration
 from std_msgs.msg import ColorRGBA
 from visualization_msgs.msg import Marker
 
@@ -31,6 +30,7 @@ class GoToBall(AbstractActionElement):
 
         approach_marker = Marker()
         approach_marker.pose.position.x = self.distance
+        approach_marker.pose.position.y = self.side_offset
         approach_marker.type = Marker.SPHERE
         approach_marker.action = Marker.MODIFY
         approach_marker.id = 1
@@ -40,7 +40,6 @@ class GoToBall(AbstractActionElement):
         color.b = 1.0
         color.a = 1.0
         approach_marker.color = color
-        approach_marker.lifetime = Duration(seconds=0.5).to_msg()
         scale = Vector3(x=0.2, y=0.2, z=0.2)
         approach_marker.scale = scale
         approach_marker.header.stamp = self.blackboard.node.get_clock().now().to_msg()

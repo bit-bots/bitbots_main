@@ -1,6 +1,6 @@
 import socket
 from ipaddress import IPv4Address
-from typing import List, Optional
+from typing import Optional
 
 from rclpy.node import Node
 
@@ -15,7 +15,7 @@ class SocketCommunication:
 
         if self.target_ip.is_loopback:
             # local mode on loopback device, bind to port depending on bot id and team id
-            local_target_ports: List[int] = node.get_parameter("local_target_ports").value
+            local_target_ports: list[int] = node.get_parameter("local_target_ports").value
             self.target_ports = [port + 10 * team_id for port in local_target_ports]
             self.receive_port = self.target_ports[robot_id - 1]
         else:

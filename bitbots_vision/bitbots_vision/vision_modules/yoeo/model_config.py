@@ -1,23 +1,23 @@
 from os.path import join
-from typing import Dict, List, Optional
+from typing import Optional
 
 import yaml  # type: ignore[import-untyped]
 
 
 class ModelConfig:
-    def __init__(self, config: Optional[Dict] = None):
-        self._config: Dict = config if config else {}
+    def __init__(self, config: Optional[dict] = None):
+        self._config: dict = config if config else {}
 
-    def get_detection_classes(self) -> List[str]:
+    def get_detection_classes(self) -> list[str]:
         return self._config["detection"]["classes"]
 
-    def get_segmentation_classes(self) -> List[str]:
+    def get_segmentation_classes(self) -> list[str]:
         return self._config["segmentation"]["classes"]
 
     def team_colors_are_provided(self) -> bool:
         return self._config["detection"].get("team_colors", False)
 
-    def get_robot_class_ids(self) -> List[int]:
+    def get_robot_class_ids(self) -> list[int]:
         ids = []
         for i, c in enumerate(self.get_detection_classes()):
             if "robot" in c:

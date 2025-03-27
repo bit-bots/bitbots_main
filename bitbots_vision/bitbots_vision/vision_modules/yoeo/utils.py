@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import List, Optional, Tuple
+from typing import Optional
 
 import cv2
 import numpy as np
 import rclpy
-from jaxtyping import UInt8
+from jaxtyping import Float64, UInt8
 
 logger = rclpy.logging.get_logger("yoeo_handler_utils")
 
@@ -16,15 +16,10 @@ class ImagePreProcessorData:
     This dataclass is used to exchange relevant parameters of the applied image preprocessing between instances of type
     IImagePreProcessor and instances of type ISegmentationPostProcessor and IDetectionPostProcessor, respectively.
     :param padding_top: applied padding (number of pixels) at the top of the image
-    :type padding_top: int
     :param padding_bottom: applied padding (number of pixels) at the bottom of the image
-    :type padding_bottom: int
     :param padding_left: applied padding (number of pixels) at the left-hand side of the image
-    :type padding_left: int
     :param padding_right: applied padding (number of pixels) at the right-hand side of the image
-    :type padding_right: int
     :param max_dim: the larger of the two dimensions of the original unprocessed image (number of pixels)
-    :type max_dim: int
     """
 
     padding_top: int
@@ -41,12 +36,11 @@ class IImagePreProcessor(ABC):
     """
 
     @abstractmethod
-    def configure(self, network_input_shape: Tuple[int, int]) -> None:
+    def configure(self, network_input_shape: tuple[int, int]) -> None:
         """
         Allows to (re-) configure the current instance.
 
         :param network_input_shape: input shape of the YOEO network (height, width)
-        :type network_input_shape: Tuple[int, int]
         """
         ...
 
@@ -66,9 +60,7 @@ class IImagePreProcessor(ABC):
         Run the image pre-processing on the method's argument.
 
         :param image: the image to pre-process (axis order: height, width, channels)
-        :type image: np.ndarray
         :return: the pre-processed image  (axis order: channels, height, width)
-        :rtype: np.ndarray
         """
         ...
 
@@ -92,7 +84,6 @@ class ISegmentationPostProcessor:
         Allows to (re-) configure the current instance.
 
         :param image_preprocessor: instance of IImagePreProcessor that handles the image pre-processing
-        :type image_preprocessor: IImagePreProcessor
         """
         ...
 
@@ -102,9 +93,7 @@ class ISegmentationPostProcessor:
         Run the segmentation post-processing on the method's argument.
 
         :param segmentation: YOEO segmentation network output (axis order: channels, height, width)
-        :type segmentation: np.ndarray
         :return: the post-processed segmentation output (axis order: height, width)
-        :rtype: np.ndarray
         """
         ...
 
@@ -122,21 +111,16 @@ class IDetectionPostProcessor:
         output_img_size: int,
         conf_thresh: float,
         nms_thresh: float,
-        robot_class_ids: List[int],
+        robot_class_ids: list[int],
     ) -> None:
         """
         Allows to (re-) configure the current instance.
 
         :param image_preprocessor: instance of IImagePreProcessor that handles the image pre-processing
-        :type image_preprocessor: IImagePreProcessor
         :param output_img_size: image size (1D) for which the detections are calculated by the YOEO network
-        :type output_img_size: int
         :param conf_thresh: class confidence threshold used in non-maximum suppression
-        :type conf_thresh: float
         :param nms_thresh: threshold used in non-maximum suppression
-        :type nms_thresh: float
         :param robot_class_ids: class ids of robot classes (required for nms across all robot classes)
-        :type robot_class_ids: List[int]
         """
         ...
 
@@ -147,26 +131,24 @@ class IDetectionPostProcessor:
 
         :param detections: YOEO detection network output (axis layout: 1, number of boxes, boxes),
                            (boxes layout: x, y, w, h, obj_conf, cond_class_conf_1, cond_class_conf_2, ...)
-        :type detections: np.ndarray
         :return: the post-processed detection output
-        :rtype: np.ndarray
         """
         ...
 
 
 class DefaultImagePreProcessor(IImagePreProcessor):
     def __init__(self, network_input_shape):
-        self._network_input_shape_WH: Optional[Tuple[int, int]] = None  # (width, height)
+        self._network_input_shape_WH: Optional[tuple[int, int]] = None  # (width, height)
         self.configure(network_input_shape)
 
         # these attributes change for every image!
-        self._image_dimensions_HW: Tuple[int, int] = (0, 0)  # (height, width)
+        self._image_dimensions_HW: tuple[int, int] = (0, 0)  # (height, width)
         self._padding_top: int = 0
         self._padding_bottom: int = 0
         self._padding_left: int = 0
         self._padding_right: int = 0
 
-    def configure(self, network_input_shape: Tuple[int, int]) -> None:
+    def configure(self, network_input_shape: tuple[int, int]) -> None:
         # change layout from (height, width) to (width, height)
         self._network_input_shape_WH = network_input_shape[::-1]
 
@@ -176,10 +158,10 @@ class DefaultImagePreProcessor(IImagePreProcessor):
             padding_bottom=self._padding_bottom,
             padding_left=self._padding_left,
             padding_right=self._padding_right,
-            max_dim=np.max(self._image_dimensions_HW),
+            max_dim=int(np.max(self._image_dimensions_HW)),
         )
 
-    def process(self, image: UInt8[np.ndarray, "h w 3"]) -> UInt8[np.ndarray, "3 network_input_h network_input_w"]:
+    def process(self, image: UInt8[np.ndarray, "h w 3"]) -> Float64[np.ndarray, "3 network_input_h network_input_w"]:
         self._image_dimensions_HW = image.shape[:2]  # type: ignore[assignment]
         self._calculate_paddings()
 
@@ -285,7 +267,7 @@ class DefaultDetectionPostProcessor(IDetectionPostProcessor):
         output_img_size: int,
         conf_thresh: float,
         nms_thresh: float,
-        robot_class_ids: List[int],
+        robot_class_ids: list[int],
     ):
         self._image_preprocessor: IImagePreProcessor = image_preprocessor
         self._output_img_size: int = output_img_size
@@ -313,7 +295,7 @@ class DefaultDetectionPostProcessor(IDetectionPostProcessor):
         output_img_size: int,
         conf_thresh: float,
         nms_thresh: float,
-        robot_class_ids: List[int],
+        robot_class_ids: list[int],
     ) -> None:
         self._image_preprocessor = image_preprocessor
         self._output_img_size = output_img_size
@@ -379,7 +361,7 @@ class DefaultDetectionPostProcessor(IDetectionPostProcessor):
 
         return x
 
-    def _get_boxes_and_scores_for_nms(self, detections: np.ndarray) -> Tuple:
+    def _get_boxes_and_scores_for_nms(self, detections: np.ndarray) -> tuple:
         if self._robot_class_ids:
             class_offsets = np.where(
                 self._is_robot_class(detections[:, 5:6]), self._robot_class_ids[0], detections[:, 5:6]

@@ -29,7 +29,7 @@ dynup:
         wait_in_squat_front: 0.032
 
       rise:
-        rise_time: 0.4
+        rise_time: 2.0
 
     stabilizer:
       end_pause:

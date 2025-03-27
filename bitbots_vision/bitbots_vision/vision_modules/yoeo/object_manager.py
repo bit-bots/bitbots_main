@@ -1,5 +1,5 @@
 import os.path as osp
-from typing import Dict, Optional, Type
+from typing import Optional, Type
 
 import rclpy
 
@@ -23,7 +23,7 @@ class YOEOObjectManager:
         "tvm": yoeo_handlers.YOEOHandlerTVM,
     }
 
-    _config: Dict = {}
+    _config: dict = {}
     _framework: str = ""
     _model_config: ModelConfig = ModelConfig()
     _model_path: str = ""
@@ -72,7 +72,7 @@ class YOEOObjectManager:
         return cls._model_config.team_colors_are_provided()
 
     @classmethod
-    def configure(cls, config: Dict) -> None:
+    def configure(cls, config: dict) -> None:
         if not cls._package_directory_set:
             logger.error("Package directory not set!")
 
@@ -107,7 +107,7 @@ class YOEOObjectManager:
         return cls._HANDLERS_BY_NAME[framework].model_files_exist(model_path)
 
     @classmethod
-    def _configure_yoeo_instance(cls, config: Dict, framework: str, model_path: str) -> None:
+    def _configure_yoeo_instance(cls, config: dict, framework: str, model_path: str) -> None:
         if cls._new_yoeo_handler_is_needed(framework, model_path):
             cls._load_model_config(model_path)
             cls._instantiate_new_yoeo_handler(config, framework, model_path)
@@ -124,7 +124,7 @@ class YOEOObjectManager:
         cls._model_config = ModelConfigLoader.load_from(model_path)
 
     @classmethod
-    def _instantiate_new_yoeo_handler(cls, config: Dict, framework: str, model_path: str) -> None:
+    def _instantiate_new_yoeo_handler(cls, config: dict, framework: str, model_path: str) -> None:
         cls._yoeo_instance = cls._HANDLERS_BY_NAME[framework](
             config,
             model_path,
@@ -135,5 +135,5 @@ class YOEOObjectManager:
         logger.info(f"Using {cls._yoeo_instance.__class__.__name__}")
 
     @classmethod
-    def _yoeo_parameters_have_changed(cls, new_config: Dict) -> bool:
+    def _yoeo_parameters_have_changed(cls, new_config: dict) -> bool:
         return ros_utils.config_param_change(cls._config, new_config, r"yoeo_")

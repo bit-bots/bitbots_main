@@ -1,5 +1,5 @@
 import math
-from typing import List, Optional, Tuple
+from typing import Optional
 
 import numpy as np
 import tf2_ros as tf2
@@ -132,7 +132,7 @@ class CostmapCapsule(AbstractBlackboardCapsule):
         # Smooth obstacle map
         return gaussian_filter(costmap, pass_smooth)
 
-    def field_2_costmap_coord(self, x: float, y: float) -> Tuple[int, int]:
+    def field_2_costmap_coord(self, x: float, y: float) -> tuple[int, int]:
         """
         Converts a field position to the corresponding indices for the costmap.
 
@@ -209,7 +209,7 @@ class CostmapCapsule(AbstractBlackboardCapsule):
             0 : self.field_width + self.map_margin * 2 : (self.field_width + self.map_margin * 2) * 10j,  # type: ignore[misc]
         ]
 
-        fix_points: List[Tuple[Tuple[float, float], float]] = []
+        fix_points: list[tuple[tuple[float, float], float]] = []
 
         # Add base points
         fix_points.extend(
@@ -284,7 +284,7 @@ class CostmapCapsule(AbstractBlackboardCapsule):
         self.base_costmap = base_costmap
         self.costmap = self.base_costmap.copy()
 
-    def get_gradient_at_field_position(self, x: float, y: float) -> Tuple[float, float]:
+    def get_gradient_at_field_position(self, x: float, y: float) -> tuple[float, float]:
         """
         Gets the gradient tuple at a given field position
         :param x: Field coordinate in the x direction
