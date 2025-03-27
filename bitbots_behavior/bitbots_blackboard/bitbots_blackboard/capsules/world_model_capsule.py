@@ -201,6 +201,10 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
         goal_x, goal_y = self.get_map_based_opp_goal_center_xy()
         return math.atan2(goal_y - ball_y, goal_x - ball_x)
 
+    def get_map_based_own_goal_distance(self) -> float:
+        x, y = self.get_map_based_own_goal_center_xy()
+        return self.get_distance_to_xy(x, y)
+
     def get_map_based_opp_goal_distance(self) -> float:
         x, y = self.get_map_based_opp_goal_center_xy()
         return self.get_distance_to_xy(x, y)

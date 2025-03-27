@@ -32,8 +32,8 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
             self.team_data[i] = TeamData()
         self.times_to_ball = dict()
         self.own_time_to_ball = 9999.0
-        #Hier Subscibtion hinzufügen
-        self.own_time_to_goal = 9999.0
+        # Hier Subscibtion hinzufügen
+        # self.own_time_to_goal = 9999.0
 
         # Mapping
         self.roles_mapping = {
@@ -135,10 +135,8 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
             if own_ball_distance < distance:
                 return rank + 1
         return len(distances) + 1
-    
-    def team_rank_to_goal(
-        self, own_goal_distance: float, count_goalies: bool = True, use_time_to_goal: bool = False
-    ) -> int:
+
+    def team_rank_to_goal(self, own_goal_distance: float) -> int:
         """
         Returns the rank of this robot compared to the team robots concerning the distance to the own goal.
 
@@ -150,23 +148,18 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
         data: TeamData
         for data in self.team_data.values():
             # data should not be outdated, from a robot in play, only goalie if desired,
-            if (
-                self.is_valid(data)
-                and (data.strategy.role != Strategy.ROLE_GOALIE or count_goalies)
-            ):
-                if use_time_to_ball:
-                    distances.append(data.time_to_position_at_ball)
-                else:
-                    distances.append(
-                        np.linalg.norm(
-                            numpify(self._blackboard.world_model.get_map_based_own_goal_center_xy()) - numpify(data.robot_position.pose.position)
-                        )
+            if self.is_valid(data) and (data.strategy.role != Strategy.ROLE_GOALIE):
+                distances.append(
+                    np.linalg.norm(
+                        numpify(self._blackboard.world_model.get_map_based_own_goal_center_xy())
+                        - numpify(data.robot_position.pose.position)
                     )
+                )
         for rank, distance in enumerate(sorted(distances)):
             if own_goal_distance < distance:
                 return rank + 1
         return len(distances) + 1
-   
+
     def set_action(self, action: int) -> None:
         """Set the action of this robot
 

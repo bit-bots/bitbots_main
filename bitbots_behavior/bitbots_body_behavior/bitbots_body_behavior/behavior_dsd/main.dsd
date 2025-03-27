@@ -72,17 +72,12 @@ $ClosestToBall
         NO --> #RolePositionWithPause
     YES --> #KickWithAvoidance
 
-#StrikerRole
-$GoalieHandlingBall
-    YES --> @ChangeAction + action:positioning, @AvoidBallActive, @LookAtFieldFeatures, @GoToDefensePosition //quick fix for playing with two robots during GO
-    NO --> #KickWithAvoidance
-
 #DefensePositioning
 @LookAtFieldFeatures, @ChangeAction + action:positioning, @GoToDefensePosition
 
 #DefenseBlocking
 $BallInOwnPercent + p:40
-    YES --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToBlockPosition
+    YES --> @ChangeAction + action:positioning, @AvoidBallActive, @LookAtFieldFeatures, @GoToBlockPosition
     NO --> #DefenseBlockPositionWithPause
 
 #SupporterRole
@@ -95,7 +90,7 @@ $PassStarted
 #GoalieRole
 $CurrentScore
     BEHIND --> $LastPlayer
-        YES --> #StrikerRole
+        YES --> #KickWithAvoidance
         NO --> #GoalieBehavior
     ELSE --> #GoalieBehavior
 
@@ -170,21 +165,12 @@ $BallSeen
                     THIRD --> #SupporterRole
                 NO --> $CountActiveRobotsWithoutGoalie
                     ONE --> $RankToBallNoGoalie
-                        FIRST --> #StrikerRole
+                        FIRST --> #KickWithAvoidance
                         SECOND --> #DefensePositioning
                     ELSE --> $RankToBallNoGoalie
-                        FIRST --> #StrikerRole
+                        FIRST --> #KickWithAvoidance
                         SECOND --> #SupporterRole
                         THIRD --> #DefensePositioning
-
-$CountActiveRobotsWithoutGoalie
-                ONE --> $RankToBallNoGoalie
-                    FIRST --> #StrikerRole
-                    SECOND --> #DefensePositioning
-                ELSE --> $RankToBallNoGoalie
-                    FIRST --> #StrikerRole
-                    SECOND --> #SupporterRole
-                    THIRD --> #DefensePositioning
 
 -->BodyBehavior
 $IsPenalized

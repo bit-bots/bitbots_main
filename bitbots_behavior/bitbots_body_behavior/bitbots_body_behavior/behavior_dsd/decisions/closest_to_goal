@@ -47,10 +47,10 @@ class RankToGoalNoGoalie(AbstractDecisionElement):
         super().__init__(blackboard, dsd, parameters)
 
     def perform(self, reevaluate=False):
-        my_time_to_ball = self.blackboard.team_data.get_own_time_to_ball()
-        rank = self.blackboard.team_data.team_rank_to_ball(my_time_to_ball, count_goalies=False, use_time_to_ball=True)
-        self.publish_debug_data("time to ball", my_time_to_ball)
-        self.publish_debug_data("Rank to ball", rank)
+        my_time_to_goal = self.blackboard.world_model.get_map_based_own_goal_distance()
+        rank = self.blackboard.team_data.team_rank_to_goal(my_time_to_goal)
+        self.publish_debug_data("time to goal", my_time_to_goal)
+        self.publish_debug_data("Rank to goal", rank)
         if rank == 1:
             return "FIRST"
         elif rank == 2:
