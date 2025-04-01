@@ -367,19 +367,20 @@ class SupervisorController:
                 msg.twist.append(twist)
 
                 head_node = robot_node.getFromProtoDef("head")
-                head_position = head_node.getPosition()
-                head_orientation = head_node.getOrientation()
-                head_orientation_quat = transforms3d.quaternions.mat2quat(np.reshape(head_orientation, (3, 3)))
-                head_pose = Pose()
-                head_pose.position = Point(x=head_position[0], y=head_position[1], z=head_position[2])
-                head_pose.orientation = Quaternion(
-                    x=head_orientation_quat[1],
-                    y=head_orientation_quat[2],
-                    z=head_orientation_quat[3],
-                    w=head_orientation_quat[0],
-                )
-                msg.name.append(robot_name + "_head")
-                msg.pose.append(head_pose)
+                if head_node:
+                    head_position = head_node.getPosition()
+                    head_orientation = head_node.getOrientation()
+                    head_orientation_quat = transforms3d.quaternions.mat2quat(np.reshape(head_orientation, (3, 3)))
+                    head_pose = Pose()
+                    head_pose.position = Point(x=head_position[0], y=head_position[1], z=head_position[2])
+                    head_pose.orientation = Quaternion(
+                        x=head_orientation_quat[1],
+                        y=head_orientation_quat[2],
+                        z=head_orientation_quat[3],
+                        w=head_orientation_quat[0],
+                    )
+                    msg.name.append(robot_name + "_head")
+                    msg.pose.append(head_pose)
 
             if self.ball is not None:
                 ball_position = self.ball.getField("translation").getSFVec3f()

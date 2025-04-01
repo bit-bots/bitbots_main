@@ -25,7 +25,7 @@ class WebotsSim(Node):
             if multi_robot:
                 world_name = "4_bots.wbt"
             else:
-                world_name = "1_bot.wbt"
+                world_name = "1_bot_and_npc.wbt"
         else:
             world_name = f"robocup_{robot_type}.wbt"
 
