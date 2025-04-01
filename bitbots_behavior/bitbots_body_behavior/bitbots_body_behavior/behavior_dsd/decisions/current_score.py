@@ -9,7 +9,7 @@ class CurrentScore(AbstractDecisionElement):
         super().__init__(blackboard, dsd, parameters)
 
     def perform(self, reevaluate=False):
-        own_goals = self.blackboard.gamestate.get_own_goals()
+        own_goals = self.blackboard.gamestate.get_our_goals()
         opp_goals = self.blackboard.gamestate.get_opp_goals()
 
         if own_goals == opp_goals:

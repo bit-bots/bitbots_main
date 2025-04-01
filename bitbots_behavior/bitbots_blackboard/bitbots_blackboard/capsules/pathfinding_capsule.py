@@ -15,7 +15,7 @@ from bitbots_blackboard.capsules import AbstractBlackboardCapsule
 
 
 # Type of pathfinding goal relative to the ball
-class BallGoalType(Enum):
+class BallGoalType(str, Enum):
     GRADIENT = "gradient"
     MAP = "map"
     CLOSE = "close"
@@ -26,8 +26,8 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
 
     def __init__(self, node, blackboard):
         super().__init__(node, blackboard)
-        self.position_threshold: str = self._node.get_parameter("pathfinding_position_threshold").value
-        self.orientation_threshold: str = self._node.get_parameter("pathfinding_orientation_threshold").value
+        self.position_threshold: float = self._node.get_parameter("pathfinding_position_threshold").value
+        self.orientation_threshold: float = self._node.get_parameter("pathfinding_orientation_threshold").value
 
         self.direct_cmd_vel_pub = self._node.create_publisher(Twist, "cmd_vel", 1)
         self.pathfinding_pub = self._node.create_publisher(PoseStamped, "goal_pose", 1)
@@ -41,20 +41,20 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
             self._node, "bitbots_path_planning", ["controller.orient_to_goal_distance"]
         )["controller.orient_to_goal_distance"]
 
-    def publish(self, msg: PoseStamped):
+    def publish(self, msg: PoseStamped) -> None:
         """
         Sends a goal to the pathfinding.
         """
         self.goal = msg
         self.pathfinding_pub.publish(msg)
 
-    def get_goal(self) -> PoseStamped:
+    def get_goal(self) -> Optional[PoseStamped]:
         """
         Returns the latest goal that was send to the pathfinding.
         """
         return self.goal
 
-    def cancel_goal(self):
+    def cancel_goal(self) -> None:
         """
         This function cancels the current goal of the pathfinding,
         which will stop sending cmd_vel messages to the walking.
@@ -62,7 +62,7 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
         """
         self.pathfinding_cancel_pub.publish(Empty())
 
-    def cmd_vel_cb(self, msg: Twist):
+    def cmd_vel_cb(self, msg: Twist) -> None:
         self.current_cmd_vel = msg
 
     def get_current_cmd_vel(self) -> Twist:
@@ -73,7 +73,7 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
         """
         return self.current_cmd_vel
 
-    def stop_walk(self):
+    def stop_walk(self) -> None:
         """
         This function stops the walking. It does not cancel the current goal of the
         pathfinding and the walking will start again if the pathfinding sends a new message.
@@ -86,7 +86,7 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
         # Publish the stop command
         self.direct_cmd_vel_pub.publish(msg)
 
-    def calculate_time_to_ball(self):
+    def calculate_time_to_ball(self) -> None:
         """
         Calculates the time to ball and saves it in the team data capsule.
         """
@@ -166,8 +166,17 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
             elif ball_x > self._blackboard.world_model.field_length / 2 - 0.2:
                 goal_angle = math.pi + np.copysign(math.pi / 4, ball_y)
 
-            goal_x = ball_x - math.cos(goal_angle) * distance + math.sin(goal_angle) * side_offset
-            goal_y = ball_y - math.sin(goal_angle) * distance + math.cos(goal_angle) * side_offset
+            # We don't want to walk into the ball, so we add an offset to stop before the ball
+            approach_offset_x = math.cos(goal_angle) * distance
+            approach_offset_y = math.sin(goal_angle) * distance
+
+            # We also want to kick the ball with one foot instead of the center between the feet
+            side_offset_x = math.cos(goal_angle - math.pi / 2) * side_offset
+            side_offset_y = math.sin(goal_angle - math.pi / 2) * side_offset
+
+            # Calculate the goal position (has nothing to do with the soccer goal)
+            goal_x = ball_x - approach_offset_x + side_offset_x
+            goal_y = ball_y - approach_offset_y + side_offset_y
 
             ball_point = (goal_x, goal_y, goal_angle, self._blackboard.map_frame)
 

@@ -20,6 +20,7 @@ from std_srvs.srv import Empty
 
 from bitbots_msgs.action import Dynup, Kick
 from bitbots_msgs.msg import HeadMode, JointCommand
+from bitbots_msgs.srv import SimulatorPush
 
 msg = """
 BitBots Teleop
@@ -56,6 +57,13 @@ Head Modes:
 3: Don't move the head
 4: Ball Mode adapted for Penalty Kick
 5: Do a pattern which only looks in front of the robot
+
+Pushing:
+p: execute Push
+Shift-p: reset Power to 0
+ü/ä: increase/decrease power forward (x axis)
++/#: increase/decrease power left (y axis)
+SHIFT increases/decreases with factor 10
 
 CTRL-C to quit
 
@@ -121,6 +129,9 @@ class TeleopKeyboard(Node):
         self.th = 0
         self.status = 0
 
+        self.push_force_x = 0.0
+        self.push_force_y = 0.0
+
         # Head Part
         self.create_subscription(JointState, "joint_states", self.joint_state_cb, 1)
         self.head_mode_pub = self.create_publisher(HeadMode, "head_mode", 1)
@@ -145,6 +156,7 @@ class TeleopKeyboard(Node):
 
         self.reset_robot = self.create_client(Empty, "/reset_pose")
         self.reset_ball = self.create_client(Empty, "/reset_ball")
+        self.simulator_push = self.create_client(SimulatorPush, "/simulator_push")
 
         self.frame_prefix = "" if os.environ.get("ROS_NAMESPACE") is None else os.environ.get("ROS_NAMESPACE") + "/"
 
@@ -210,12 +222,12 @@ class TeleopKeyboard(Node):
                     self.head_pub.publish(self.head_msg)
                 elif key == "0":
                     # Search for Ball and track it if found
-                    self.head_mode_msg.head_mode = HeadMode.BALL_MODE
-                    assert int(key) == HeadMode.BALL_MODE
+                    self.head_mode_msg.head_mode = HeadMode.SEARCH_BALL
+                    assert int(key) == HeadMode.SEARCH_BALL
                 elif key == "1":
                     # Look generally for all features on the field (ball, goals, corners, center point)
-                    self.head_mode_msg.head_mode = HeadMode.FIELD_FEATURES
-                    assert int(key) == HeadMode.FIELD_FEATURES
+                    self.head_mode_msg.head_mode = HeadMode.SEARCH_FIELD_FEATURES
+                    assert int(key) == HeadMode.SEARCH_FIELD_FEATURES
                 elif key == "2":
                     # Simply look directly forward
                     self.head_mode_msg.head_mode = HeadMode.LOOK_FORWARD
@@ -226,12 +238,12 @@ class TeleopKeyboard(Node):
                     assert int(key) == HeadMode.DONT_MOVE
                 elif key == "4":
                     # Ball Mode adapted for Penalty Kick
-                    self.head_mode_msg.head_mode = HeadMode.BALL_MODE_PENALTY
-                    assert int(key) == HeadMode.BALL_MODE_PENALTY
+                    self.head_mode_msg.head_mode = HeadMode.SEARCH_BALL_PENALTY
+                    assert int(key) == HeadMode.SEARCH_BALL_PENALTY
                 elif key == "5":
                     # Do a pattern which only looks in front of the robot
-                    self.head_mode_msg.head_mode = HeadMode.LOOK_FRONT
-                    assert int(key) == HeadMode.LOOK_FRONT
+                    self.head_mode_msg.head_mode = HeadMode.SEARCH_FRONT
+                    assert int(key) == HeadMode.SEARCH_FRONT
                 elif key == "y":
                     # kick left forward
                     pass
@@ -308,6 +320,32 @@ class TeleopKeyboard(Node):
                     self.z = 0
                     self.a_x = -1
                     self.th = 0
+                elif key == "p":
+                    # push robot in simulation
+                    push_request = SimulatorPush.Request()
+                    push_request.force.x = self.push_force_x
+                    push_request.force.y = self.push_force_y
+                    push_request.relative = True
+                    self.simulator_push.call_async(push_request)
+                elif key == "P":
+                    self.push_force_x = 0.0
+                    self.push_force_y = 0.0
+                elif key == "ü":
+                    self.push_force_x += 1
+                elif key == "Ü":
+                    self.push_force_x += 10
+                elif key == "ä":
+                    self.push_force_x -= 1
+                elif key == "Ä":
+                    self.push_force_x -= 10
+                elif key == "+":
+                    self.push_force_y += 1
+                elif key == "*":
+                    self.push_force_y += 10
+                elif key == "#":
+                    self.push_force_y -= 1
+                elif key == "'":
+                    self.push_force_y -= 10
                 else:
                     self.x = 0
                     self.y = 0
@@ -324,7 +362,15 @@ class TeleopKeyboard(Node):
                 twist.linear = Vector3(x=float(self.x), y=float(self.y), z=0.0)
                 twist.angular = Vector3(x=float(self.a_x), y=0.0, z=float(self.th))
                 self.pub.publish(twist)
-                state_str = f"x:    {self.x}          \ny:    {self.y}          \nturn: {self.th}          \nhead mode: {self.head_mode_msg.head_mode}      \n"
+                state_str = (
+                    f"x:    {self.x}     \n"
+                    f"y:    {self.y}     \n"
+                    f"turn: {self.th}     \n"
+                    f"head mode: {self.head_mode_msg.head_mode}     \n"
+                    f"push force x (+forward/-back): {self.push_force_x}     \n"
+                    f"push force y (+left/-right):   {self.push_force_y}     "
+                )
+
                 for _ in range(state_str.count("\n") + 1):
                     sys.stdout.write("\x1b[A")
                 print(state_str)
