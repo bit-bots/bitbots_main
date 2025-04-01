@@ -1,0 +1,40 @@
+<launch>
+    <!-- Get launch params-->
+    <arg name="sim" default="false"/>
+    <arg name="viz" default="false"/>
+    <arg name="torqueless_mode" default="false" description="start without torque, for example for testing the falling detection"/>
+    <arg name="camera" default="true" description="true: launches an image provider to get images from a camera (unless sim:=true)" />
+    <arg name="debug" default="false" description="true: activates publishing of several debug images" />
+
+    <include file="$(find-pkg-share bitbots_parameter_blackboard)/launch/parameter_blackboard.launch">
+        <arg name="sim" value="$(var sim)"/>
+    </include>
+
+    <include file="$(find-pkg-share bitbots_robot_description)/launch/load_robot_description.launch">
+        <arg name="sim" value="$(var sim)"/>
+    </include>
+
+    <group if="$(var viz)">
+        <node pkg="bitbots_utils" exec="motor_goals_viz_helper.py" output="screen" args="--all"/>
+        <node pkg="rviz2" exec="rviz2" args="-d $(find-pkg-share bitbots_quintic_walk)/config/walk.rviz"/>
+        <node pkg="bitbots_utils" exec="dummy_imu.py"/>
+    </group>
+
+    <include file="$(find-pkg-share bitbots_bringup)/launch/motion.launch">
+        <arg name="sim" value="$(var sim)"/>
+        <arg name="viz" value="$(var viz)"/>
+        <arg name="torqueless_mode" value="$(var torqueless_mode)" />
+    </include>
+
+    <include file="$(find-pkg-share bitbots_bringup)/launch/vision.launch">
+        <arg name="sim" value="$(var sim)" />
+        <arg name="camera" value="$(var camera)" />
+        <arg name="debug" value="$(var debug)" />
+    </include>
+
+    <include file="$(find-pkg-share bitbots_head_mover)/launch/head_mover.launch">
+        <arg name="sim" value="$(var sim)"/>
+    </include>
+
+    <node pkg="bitbots_extrinsic_calibration_capture_data" exec="capture_node" output="screen" name="capture_node"></node>
+</launch>
