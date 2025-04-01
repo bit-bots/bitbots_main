@@ -18,6 +18,7 @@ include:
         - bitbots_tts
         - bitbots_utils
         - system_monitor
+        - bitbots_extrinsic_calibration_capture_data
     - bitbots_motion:
         - bitbots_animation_rqt
         - bitbots_animation_server
