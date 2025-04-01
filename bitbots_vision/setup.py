@@ -30,6 +30,7 @@ setup(
     entry_points={
         "console_scripts": [
             "vision = bitbots_vision.vision:main",
+            "vision_base_footprint = bitbots_vision.vision_base_footprint:main",
         ],
     },
 )
