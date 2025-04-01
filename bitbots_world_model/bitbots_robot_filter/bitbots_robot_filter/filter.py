@@ -1,3 +1,6 @@
+#! /usr/bin/env python3
+from typing import Optional
+
 import numpy as np
 import rclpy
 import soccer_vision_3d_msgs.msg as sv3dm
@@ -11,8 +14,10 @@ from rclpy.duration import Duration
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 from rclpy.time import Time
-from robot_with_covariance import RobotWithCovariance
+from ros2_numpy import numpify
+from sensor_msgs.msg import CameraInfo
 from std_msgs.msg import Header
+from tf2_geometry_msgs import PoseStamped
 
 from bitbots_msgs.msg import TeamData
 
@@ -22,6 +27,7 @@ class RobotFilter(Node):
         super().__init__("bitbots_robot_filter")
 
         self.tf_buffer = Buffer(self, Duration(seconds=10.0))
+        self.camera_info: Optional[CameraInfo] = None
 
         self.robots: list[tuple[sv3dm.Robot, Time]] = list()
         self.team: dict[int, TeamData] = dict()
@@ -49,6 +55,10 @@ class RobotFilter(Node):
             callback_group=MutuallyExclusiveCallbackGroup(),
         )
 
+        self.camera_info_subscriber = self.create_subscription(
+            CameraInfo, "camera/camera_info", self.camera_info_callback, 1
+        )  # TODO: add parameter (self.camera_info_topic)
+
         self.robot_obstacle_publisher = self.create_publisher(
             sv3dm.RobotArray, self.declare_parameter("robots_publish_topic", "robots_relative_filtered").value, 1
         )
@@ -71,7 +81,7 @@ class RobotFilter(Node):
         )
 
         # Convert TeamData to Robot Observation
-        def build_robot_detection_from_team_data(msg: TeamData) -> RobotWithCovariance:
+        def build_robot_detection_from_team_data(msg: TeamData) -> sv3dm.Robot:
             robot = sv3dm.Robot()
             robot.bb.center = msg.robot_position.pose
             robot.bb.size.x = self.robot_dummy_size
@@ -79,7 +89,7 @@ class RobotFilter(Node):
             robot.bb.size.z = 1.0
             robot.attributes.team = svam.Robot.TEAM_OWN
             robot.attributes.player_number = msg.robot_id
-            return RobotWithCovariance(robot)
+            return robot
 
         def is_team_data_fresh(msg: TeamData) -> bool:
             return (self.get_clock().now() - Time.from_msg(msg.header.stamp)).nanoseconds < self.team_data_timeout
@@ -92,6 +102,47 @@ class RobotFilter(Node):
 
         # Publish the robot obstacles
         self.robot_obstacle_publisher.publish(sv3dm.RobotArray(header=dummy_header, robots=robots))
+
+    def is_estimate_in_fov(self, header: Header, robot: sv3dm.Robot) -> bool:
+        """
+        Calculates if a robot should be currently visible
+        """
+        # Check if we got a camera info to do this stuff TODO
+        if self.camera_info is None:
+            self.logger.info("No camera info received. Not checking if the ball is currently visible.")
+            return False
+
+        # Build a robot pose
+        robot_pose = PoseStamped()
+        robot_pose.header.frame_id = self.filter_frame
+        robot_pose.header.stamp = header.stamp
+        robot_pose.pose.position = robot.bb.center.position
+
+        # Transform to camera frame
+        try:
+            robot_in_camera_optical_frame = self.tf_buffer.transform(
+                robot_pose, self.camera_info.header.frame_id, timeout=Duration(nanoseconds=0.5 * (10**9))
+            )
+        except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
+            self.logger.warning(str(e))
+            return False
+
+        # Check if the ball is in front of the camera
+        if robot_in_camera_optical_frame.pose.position.z < 0:
+            return False
+
+        # Quick math to get the pixel
+        p = numpify(robot_in_camera_optical_frame.pose.position)
+        k = np.reshape(self.camera_info.k, (3, 3))
+        pixel = np.matmul(k, p)
+        pixel = pixel * (1 / pixel[2])
+
+        # Make sure that the transformed pixel is on the sensor and not too close to the border
+        border_fraction = 0.1  # TODO: add parameter (self.negative_observation_ignore_border)
+        border_px = np.array([self.camera_info.width, self.camera_info.height]) / 2 * border_fraction
+        in_fov_horizontal = bool(border_px[0] < pixel[0] <= self.camera_info.width - border_px[0])
+        in_fov_vertical = bool(border_px[1] < pixel[1] <= self.camera_info.height - border_px[1])
+        return in_fov_horizontal and in_fov_vertical
 
     def _robot_vision_callback(self, msg: sv3dm.RobotArray):
         try:
@@ -112,22 +163,28 @@ class RobotFilter(Node):
             robot.bb.center = tf2_geometry_msgs.do_transform_pose(robot.bb.center, transform)
             # Update robots that are close together
             cleaned_robots = []
-            old_robot: RobotWithCovariance
+            old_robot: sv3dm.Robot
             for old_robot, stamp in self.robots:
                 # Check if there is another robot in memory close to it regarding the angle
                 angle_robot = np.arctan2(robot.bb.center.position.y - pos.y, robot.bb.center.position.x - pos.x)
                 angle_old_robot = np.arctan2(
                     old_robot.bb.center.position.y - pos.y, old_robot.bb.center.position.x - pos.x
                 )
-                if abs(angle_robot - angle_old_robot) > self.robot_merge_angle:
+                if abs(angle_robot - angle_old_robot) > self.robot_merge_angle and not self.is_estimate_in_fov(
+                    msg.header, old_robot
+                ):
                     cleaned_robots.append((old_robot, stamp))
             # Update our robot list with a new list that does not contain the duplicates
             self.robots = cleaned_robots
             # Append our new robots
-            self.robots.append((RobotWithCovariance(robot), msg.header.stamp))
+            self.robots.append((robot, msg.header.stamp))
 
     def _team_data_callback(self, msg: TeamData):
         self.team[msg.robot_id] = msg
+
+    def camera_info_callback(self, msg: CameraInfo):
+        """Updates the camera intrinsics"""
+        self.camera_info = msg
 
 
 def main(args=None):
