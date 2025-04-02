@@ -1,5 +1,4 @@
 #! /usr/bin/env python3
-from typing import Optional
 
 import numpy as np
 import rclpy
@@ -27,7 +26,8 @@ class RobotFilter(Node):
         super().__init__("bitbots_robot_filter")
 
         self.tf_buffer = Buffer(self, Duration(seconds=10.0))
-        self.camera_info: Optional[CameraInfo] = None
+        self.camera_info: CameraInfo | None = None
+        self.logger = self.get_logger()
 
         self.robots: list[tuple[sv3dm.Robot, Time]] = list()
         self.team: dict[int, TeamData] = dict()
@@ -36,7 +36,9 @@ class RobotFilter(Node):
         self.filter_frame = self.declare_parameter("filter_frame", "map").value
         self.robot_dummy_size = self.declare_parameter("robot_dummy_size", 0.4).value
         self.robot_merge_angle = self.declare_parameter("robot_merge_angle", 0.05).value  # TODO: Find a good value
-        self.robot_storage_time = self.declare_parameter("robot_storage_time", 10e9).value
+        self.robot_storage_time = self.declare_parameter(
+            "robot_storage_time", 10e9
+        ).value  # TODO: increase value (maybe 60s)
         self.team_data_timeout = self.declare_parameter("team_data_timeout", 1e9).value
 
         self.create_subscription(
@@ -103,11 +105,11 @@ class RobotFilter(Node):
         # Publish the robot obstacles
         self.robot_obstacle_publisher.publish(sv3dm.RobotArray(header=dummy_header, robots=robots))
 
-    def is_estimate_in_fov(self, header: Header, robot: sv3dm.Robot) -> bool:
+    def is_robot_in_fov(self, header: Header, robot: sv3dm.Robot) -> bool:
         """
-        Calculates if a robot should be currently visible
+        Calculates if the whole robot should be currently visible
         """
-        # Check if we got a camera info to do this stuff TODO
+        # Check if we got a camera info to do this stuff
         if self.camera_info is None:
             self.logger.info("No camera info received. Not checking if the ball is currently visible.")
             return False
@@ -118,31 +120,43 @@ class RobotFilter(Node):
         robot_pose.header.stamp = header.stamp
         robot_pose.pose.position = robot.bb.center.position
 
-        # Transform to camera frame
-        try:
-            robot_in_camera_optical_frame = self.tf_buffer.transform(
-                robot_pose, self.camera_info.header.frame_id, timeout=Duration(nanoseconds=0.5 * (10**9))
+        # For the base footprint z is 0 and for the head z is the height
+        for z in [0.0, robot.bb.size.z]:
+            robot_pose.pose.position.z = z
+
+            # Transform to camera frame
+            try:
+                robot_in_camera_optical_frame = self.tf_buffer.transform(
+                    robot_pose, self.camera_info.header.frame_id, timeout=Duration(nanoseconds=0.5 * (10**9))
+                )
+            except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
+                self.logger.warning(str(e))
+                return False
+
+            # Check if the robot is in front of the camera
+            if robot_in_camera_optical_frame.pose.position.z < 0:
+                return False
+
+            # Quick math to get the pixel
+            p = numpify(robot_in_camera_optical_frame.pose.position)
+            k = np.reshape(self.camera_info.k, (3, 3))
+            pixel = np.matmul(k, p)
+            pixel = pixel * (1 / pixel[2])
+
+            # Make sure that the transformed pixel is on the sensor and not too close to the border
+            border_fraction_horizontal = 0.1  # TODO: add parameter (self.negative_observation_ignore_border)
+            border_px_horizontal = (
+                np.array([self.camera_info.width, self.camera_info.height]) / 2 * border_fraction_horizontal
             )
-        except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
-            self.logger.warning(str(e))
-            return False
+            in_fov_horizontal = bool(
+                border_px_horizontal[0] < pixel[0] <= self.camera_info.width - border_px_horizontal[0]
+            )
+            in_fov_vertical = bool(pixel[1] <= self.camera_info.height)
+            if not (in_fov_horizontal and in_fov_vertical):
+                return False
 
-        # Check if the ball is in front of the camera
-        if robot_in_camera_optical_frame.pose.position.z < 0:
-            return False
-
-        # Quick math to get the pixel
-        p = numpify(robot_in_camera_optical_frame.pose.position)
-        k = np.reshape(self.camera_info.k, (3, 3))
-        pixel = np.matmul(k, p)
-        pixel = pixel * (1 / pixel[2])
-
-        # Make sure that the transformed pixel is on the sensor and not too close to the border
-        border_fraction = 0.1  # TODO: add parameter (self.negative_observation_ignore_border)
-        border_px = np.array([self.camera_info.width, self.camera_info.height]) / 2 * border_fraction
-        in_fov_horizontal = bool(border_px[0] < pixel[0] <= self.camera_info.width - border_px[0])
-        in_fov_vertical = bool(border_px[1] < pixel[1] <= self.camera_info.height - border_px[1])
-        return in_fov_horizontal and in_fov_vertical
+        # If we reach this point the robot is in the field of view
+        return True
 
     def _robot_vision_callback(self, msg: sv3dm.RobotArray):
         try:
@@ -150,34 +164,39 @@ class RobotFilter(Node):
                 self.filter_frame, msg.header.frame_id, msg.header.stamp, Duration(seconds=1.0)
             )
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
-            self.get_logger().warn(str(e))
+            self.logger.warning(str(e))
             return
 
         # Own position
         pos: Vector3 = self.tf_buffer.lookup_transform(
             self.filter_frame, self.base_footprint_frame, Time(), Duration(seconds=0.2)
         ).transform.translation
+
+        old_robots = self.robots
+        self.robots = list()
         robot: sv3dm.Robot
         for robot in msg.robots:
             # Transfrom robot to map frame
             robot.bb.center = tf2_geometry_msgs.do_transform_pose(robot.bb.center, transform)
-            # Update robots that are close together
-            cleaned_robots = []
+
+            # Remove robots that are too close to the new robot or in the field of view
             old_robot: sv3dm.Robot
-            for old_robot, stamp in self.robots:
-                # Check if there is another robot in memory close to it regarding the angle
+            for old_robot, stamp in old_robots.copy():
                 angle_robot = np.arctan2(robot.bb.center.position.y - pos.y, robot.bb.center.position.x - pos.x)
                 angle_old_robot = np.arctan2(
                     old_robot.bb.center.position.y - pos.y, old_robot.bb.center.position.x - pos.x
                 )
-                if abs(angle_robot - angle_old_robot) > self.robot_merge_angle and not self.is_estimate_in_fov(
+
+                # Check if there is another robot in memory close to it regarding the angle or in the field of view
+                if abs(angle_robot - angle_old_robot) < self.robot_merge_angle or self.is_robot_in_fov(
                     msg.header, old_robot
                 ):
-                    cleaned_robots.append((old_robot, stamp))
-            # Update our robot list with a new list that does not contain the duplicates
-            self.robots = cleaned_robots
+                    old_robots.remove((old_robot, stamp))
+
             # Append our new robots
             self.robots.append((robot, msg.header.stamp))
+        # Extend our robot list with a list that does not contain duplicates and robots that are not in the field of view
+        self.robots.extend(old_robots)
 
     def _team_data_callback(self, msg: TeamData):
         self.team[msg.robot_id] = msg
