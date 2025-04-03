@@ -1,0 +1,81 @@
+from argparse import ArgumentParser
+
+import matplotlib.pyplot as plt
+import numpy as np
+import yaml
+
+parser = ArgumentParser()
+args = parser.parse_args()
+
+idx = range(0, 9)
+
+folder = "/homes/15guelden/footstep_ws/src/bitbots_main/bitbots_vision/saved_data_donna/realworld_wolfgang/"
+
+
+def load_yaml_file(file_path):
+    with open(file_path) as file:
+        data = yaml.safe_load(file)
+    distance_measured = data["measured"]["distance"]
+    distance_base_footprint = data["relative_base_footprint"]["d"]
+    distance_baseline = data["relative_baseline"]["d"]
+    return distance_measured, distance_base_footprint, distance_baseline
+
+
+measured_distances = []
+base_footprint_distances = []
+baseline_distances = []
+for i in idx:
+    file_path = f"{folder}{i:03d}_data.yaml"
+    distance_measured, distance_base_footprint, distance_baseline = load_yaml_file(file_path)
+    measured_distances.append(distance_measured)
+    base_footprint_distances.append(distance_base_footprint)
+    baseline_distances.append(distance_baseline)
+
+# put all into np 2d array
+data = np.array([measured_distances, base_footprint_distances, baseline_distances])
+# sort by measured distance
+data = data[:, np.argsort(data[0])]
+# plot data as points
+plt.scatter(data[0], data[1], label="Base Footprint")
+plt.scatter(data[0], data[2], label="Baseline")
+plt.xlabel("Measured Distance")
+plt.ylabel("Distance")
+# plot diagonal line
+plt.plot(data[0], data[0], label="Ideal")
+plt.legend()
+plt.title("Distance Comparison")
+plt.show()
+
+# get number of samples where base footprint distance is cloaser to measured distance
+num_base_footprint_closer = 0
+num_baseline_closer = 0
+for i in range(len(data[0])):
+    if abs(data[0][i] - data[1][i]) < abs(data[0][i] - data[2][i]):
+        num_base_footprint_closer += 1
+    else:
+        num_baseline_closer += 1
+print(f"Number of samples where base footprint distance is closer to measured distance: {num_base_footprint_closer}")
+
+relative_errors_bf = []
+relative_erros_baseline = []
+for i in range(len(data[0])):
+    relative_error_bf = abs(data[0][i] - data[1][i]) / data[0][i]
+    relative_error_baseline = abs(data[0][i] - data[2][i]) / data[0][i]
+    relative_errors_bf.append(relative_error_bf)
+    relative_erros_baseline.append(relative_error_baseline)
+print(f"Mean relative error base footprint: {np.mean(relative_errors_bf):.5f}")
+print(f"Std dev relative error base footprint: {np.std(relative_errors_bf):.5f}")
+print(f"Mean relative error baseline: {np.mean(relative_erros_baseline):.5f}")
+print(f"Std dev relative error baseline: {np.std(relative_erros_baseline):.5f}")
+
+absolute_errors_bf = []
+absolute_errors_baseline = []
+for i in range(len(data[0])):
+    absolute_error_bf = abs(data[0][i] - data[1][i])
+    absolute_error_baseline = abs(data[0][i] - data[2][i])
+    absolute_errors_bf.append(absolute_error_bf)
+    absolute_errors_baseline.append(absolute_error_baseline)
+print(f"Mean absolute error base footprint: {np.mean(absolute_errors_bf):.5f}")
+print(f"Std dev absolute error base footprint: {np.std(absolute_errors_bf):.5f}")
+print(f"Mean absolute error baseline: {np.mean(absolute_errors_baseline):.5f}")
+print(f"Std dev absolute error baseline: {np.std(absolute_errors_baseline):.5f}")
