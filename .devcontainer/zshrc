@@ -79,6 +79,11 @@ if [[ -f $COLCON_WS/src/bitbots_main/scripts/ros.plugin.sh ]]; then
   source $COLCON_WS/src/bitbots_main/scripts/ros.plugin.sh
 fi
 
+# set the paths for webots
+export WEBOTS_HOME="/usr/local/webots"
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${WEBOTS_HOME}/lib/controller
+export PYTHONPATH=$PYTHONPATH:${WEBOTS_HOME}/lib/controller/python310
+
 # <<< bit-bots initialize <<<
 
 # Set default editor

@@ -74,6 +74,10 @@ RUN python3 -m pip install \
   git+https://github.com/timonegk/colcon-notification.git@colors \
   git+https://github.com/timonegk/colcon-output.git@colors
 
+# Download and install webots
+RUN wget https://github.com/cyberbotics/webots/releases/download/R2022b/webots_2022b_amd64.deb
+RUN apt-get install -y ./webots_2022b_amd64.deb
+
 # Set zsh as default shell
 SHELL ["/bin/zsh", "-c"]
 
