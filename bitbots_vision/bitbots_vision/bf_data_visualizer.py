@@ -11,7 +11,9 @@ args = parser.parse_args()
 idx = range(0, 20)
 
 # folder = "/homes/15guelden/footstep_ws/src/bitbots_main/bitbots_vision/saved_data_donna/realworld_wolfgang/"
-folder = "/homes/15guelden/saved_data/sim_op3/"
+#folder = "/homes/15guelden/saved_data/sim_op3/"
+folder = "/homes/21stahl/bitbots_main/bitbots_vision/saved_data_donna/sim_op3/"
+#folder = "/homes/21stahl/bitbots_main/bitbots_vision/saved_data_donna/realworld_wolfgang/"
 
 
 def load_yaml_file(file_path):
@@ -36,6 +38,7 @@ for i in idx:
     base_footprint_distances.append(distance_base_footprint)
     baseline_distances.append(distance_baseline)
 
+
 # put all into np 2d array
 data = np.array([measured_distances, base_footprint_distances, baseline_distances])
 # sort by measured distance
@@ -46,7 +49,7 @@ plt.scatter(data[0], data[2], label="Baseline")
 plt.xlabel("Measured Distance")
 plt.ylabel("Distance")
 # plot diagonal line
-plt.plot(data[0], data[0], label="Ideal")
+plt.plot(data[0], data[0], label="Ideal", color="green")
 plt.legend()
 plt.title("Distance Comparison")
 plt.show()
@@ -84,3 +87,31 @@ print(f"Mean absolute error base footprint: {np.mean(absolute_errors_bf):.5f}")
 print(f"Std dev absolute error base footprint: {np.std(absolute_errors_bf):.5f}")
 print(f"Mean absolute error baseline: {np.mean(absolute_errors_baseline):.5f}")
 print(f"Std dev absolute error baseline: {np.std(absolute_errors_baseline):.5f}")
+
+
+# plot absulute distance error for base footprint and baseline against distance
+base_footprint_distance_deviation = []
+baseline_distance_deviation = []
+for i in range(len(measured_distances)):
+    base_footprint_distance_deviation.append(abs(base_footprint_distances[i] - measured_distances[i]))
+    baseline_distance_deviation.append(abs(baseline_distances[i] - measured_distances[i]))
+
+mean_base_footprint_distance_deviation = np.mean(base_footprint_distance_deviation)
+mean_baseline_distance_deviation = np.mean(baseline_distance_deviation)
+
+m, b = np.polyfit(measured_distances, base_footprint_distance_deviation, 1)
+plt.plot(measured_distances, m * np.array(measured_distances) + b, label="Base Footprint Fit")
+
+m, b = np.polyfit(measured_distances, baseline_distance_deviation, 1)
+plt.plot(measured_distances, m * np.array(measured_distances) + b, label="Baseline Fit")
+
+plt.scatter(measured_distances, base_footprint_distance_deviation, label="Base Footprint", marker="x")
+plt.scatter(measured_distances, baseline_distance_deviation, label="Baseline", marker="x")
+#plt.plot(measured_distances, [mean_base_footprint_distance_deviation] * len(measured_distances), label="Mean Base Footprint")
+#plt.plot(measured_distances, [mean_baseline_distance_deviation] * len(measured_distances), label="Mean Baseline")
+
+plt.xlabel("Ground Truth Distance")
+plt.ylabel("Distance Deviation")
+plt.title("Distance Deviation")
+plt.legend()
+plt.show()
