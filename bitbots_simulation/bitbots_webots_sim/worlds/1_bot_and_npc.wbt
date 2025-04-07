@@ -6,14 +6,14 @@ EXTERNPROTO "../protos/RobocupTexturedSoccerBall.proto"
 EXTERNPROTO "../protos/lighting/RoboCupMainLight.proto"
 EXTERNPROTO "../protos/lighting/RoboCupOffLight.proto"
 EXTERNPROTO "../protos/lighting/RoboCupTopLight.proto"
-
 EXTERNPROTO "../protos/robots/Wolfgang/Wolfgang.proto"
 EXTERNPROTO "../protos/hl_supervisor/hl_supervisor.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/robots/robotis/darwin-op/protos/RobotisOp3.proto"
-
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/robots/softbank/nao/protos/Nao.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/robots/robotis/darwin-op/protos/Darwin-op.proto"
 
 WorldInfo {
-    info [
+  info [
     "Description: Bit-Bots Robocup Virtual Humanoid League (kid size) field including one Wolfgang robot"
     "Version 0.1"
   ]
@@ -46,43 +46,30 @@ WorldInfo {
   ]
 }
 Viewpoint {
-  orientation 0.13074775069234934 0.15392461377846517 -0.9793938119888453 1.674637090314644
-  position 0.0918799331514291 15.742602735510587 6.669799372347793
+  orientation 0.21387193374425342 0.341528967210319 -0.9152140517456812 1.3534746526432142
+  position -3.142528786301897 8.650127888939332 5.657342356234108
 }
-
 DEF robocup_background RoboCupBackground {
-  texture "stadium_dry"
-  luminosity 1.0
 }
-
 DEF robocup_main_light RoboCupMainLight {
-  texture "stadium_dry"
-  luminosity 1.0
 }
-
 DEF robocup_off_light RoboCupOffLight {
-  texture "stadium_dry"
-  luminosity 1.0
 }
-
 DEF robocup_top_light RoboCupTopLight {
-  texture "stadium_dry"
-  luminosity 1.0
 }
-
 DEF robocup_soccer_field RobocupSoccerField {
   size "kid"
 }
-
-DEF BALL RobocupTexturedSoccerBall {
-  translation 0.0 0.0 0.07
-  size 1
-  texture "telstar"
+Darwin-op {
+  translation -1.17 0 0.267
+  rotation 0 1 0 0
 }
-
+DEF BALL RobocupTexturedSoccerBall {
+  translation 0 0 0.07
+}
 DEF amy Wolfgang {
-  translation -1.0 3.14 0.4274
-  rotation 0.0 0.0 -1.0 1.5869763401625028
+  translation -1 3.14 0.4274
+  rotation 0 0 -1 1.5869763401625028
   name "amy"
   controller "<extern>"
 }
@@ -90,5 +77,13 @@ DEF supervisor_robot hl_supervisor {
   name "supervisor_robot"
   controller "<extern>"
 }
-
-DEF op3 RobotisOp3 {}
+DEF op3 RobotisOp3 {
+  translation -0.269609 0.120919 0.289
+}
+Nao {
+  translation -0.416661 0.950748 0.334
+}
+Wolfgang {
+  translation 0.28 0.54 0.43
+  synchronization FALSE
+}

@@ -5,14 +5,11 @@ import cv2
 import numpy as np
 import rclpy
 import yaml
-from bitbots_utils.transforms import quat2fused
 from cv_bridge import CvBridge
 from gazebo_msgs.msg import ModelStates
 from rclpy.node import Node
 from sensor_msgs.msg import Image
 from soccer_vision_3d_msgs.msg import RobotArray
-from transforms3d.affines import compose, decompose
-from transforms3d.euler import euler2mat
 
 
 class BFDataCollector(Node):
@@ -31,10 +28,9 @@ class BFDataCollector(Node):
         self.relative_base_footprint = None
         self.relative_baseline = None
         self.sample_index = 0
-        dir_name = "testlog1"  # input("Enter directory name: ")
+        dir_name = input("Enter directory name: ")
         self.path = f"/homes/15guelden/saved_data/{dir_name}"
         os.makedirs(self.path, exist_ok=True)
-        input("enter to start collecting datas")
 
     def loop(self):
         while rclpy.ok():
@@ -43,7 +39,7 @@ class BFDataCollector(Node):
 
     def save_data(self):
         with open(self.path + f"/{self.sample_index:03d}_data.yaml", "w") as f:
-            fused_roll, fused_pitch, fused_yaw, hemi = quat2fused(
+            """fused_roll, fused_pitch, fused_yaw, hemi = quat2fused(
                 [
                     self.own_robot_pose.orientation.x,
                     self.own_robot_pose.orientation.y,
@@ -64,11 +60,16 @@ class BFDataCollector(Node):
             )
             t_bf_other_robot = np.linalg.inv(world_to_own_robot) @ world_to_other_robot
             translation, _, _, _ = decompose(t_bf_other_robot)
+            """
+            translation = [
+                self.other_robot_pose.position.x,
+                self.other_robot_pose.position.y,
+            ]
             data = {
                 "ground_truth_robot_pose": {
                     "x": float(translation[0]),
                     "y": float(translation[1]),
-                    "d": float(np.linalg.norm(translation[:2])),
+                    "d": float(np.linalg.norm(translation)),
                 },
                 "relative_base_footprint": {
                     "x": self.relative_base_footprint.x,
@@ -92,8 +93,8 @@ class BFDataCollector(Node):
         for name, pose in zip(model_state_msg.name, model_state_msg.pose):
             if name == self.other_robot_name:
                 self.other_robot_pose = pose
-            if name == "amy":
-                self.own_robot_pose = pose
+            # if name == "amy":
+            #    self.own_robot_pose = pose
 
     def robot_relative_callback(self, robot_relative_msg: RobotArray):
         if len(robot_relative_msg.robots) < 2:

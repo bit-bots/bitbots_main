@@ -1,27 +1,20 @@
 #! /usr/bin/env python3
-from copy import deepcopy
-from typing import Dict, List
+from typing import Dict
 
-import numpy as np
+import cv2
 import rclpy
 from cv_bridge import CvBridge
 from rclpy.node import Node
 from sensor_msgs.msg import Image
+from soccer_vision_2d_msgs.msg import Robot, RobotArray
 from yoeo import detect, models
-import cv2
-from soccer_vision_2d_msgs.msg import RobotArray, Robot
-from soccer_vision_attribute_msgs.msg import Robot as RobotAttribute
-from soccer_vision_attribute_msgs.msg import Confidence
-from vision_msgs.msg import BoundingBox2D, Pose2D
-#from bitbots_vision.ros_utils import build_bounding_box_2d, build_robot_msg, build_robot_array_msg
 
+# from bitbots_vision.ros_utils import build_bounding_box_2d, build_robot_msg, build_robot_array_msg
 
 
 class YOEOVision(Node):
     def __init__(self) -> None:
         super().__init__("bitbots_vision")
-
-
 
         self._config: Dict = {}
         self._cv_bridge = CvBridge()
@@ -35,15 +28,16 @@ class YOEOVision(Node):
         )
         self.model = models.load_model(
             "/homes/15guelden/bf_yoeo/yoeo.cfg",
-            "/homes/15guelden/bf_yoeo/yoeo_checkpoint_500.pth",)
+            "/homes/15guelden/bf_yoeo/yoeo_checkpoint_500.pth",
+        )
         print("model loaded")
         # debug image publisher
         self.debug_img_pub = self.create_publisher(Image, "/debug_image", 1)
         self.robot_pub = self.create_publisher(RobotArray, "/robots_in_image", 1)
 
-    def image_cb(self, img_msg : Image):
+    def image_cb(self, img_msg: Image):
         img = self._cv_bridge.imgmsg_to_cv2(img_msg, "bgr8")
-        boxes, _ = detect.detect_image(self.model, img)
+        boxes, _ = detect.detect_image(self.model, img, conf_thres=0.25)
         debug_img = img.copy()
         for box in boxes:
             debug_img = cv2.rectangle(debug_img, (int(box[0]), int(box[1])), (int(box[2]), int(box[3])), (0, 255, 0), 2)
@@ -64,7 +58,7 @@ class YOEOVision(Node):
                 robot_msg_baseline.attributes.player_number = i
                 robot_msg_baseline.attributes.team = 0
                 robot_array_msg.robots.append(robot_msg_baseline)
-            
+
                 robot_msg_bf = Robot()
                 robot_msg_bf.bb.center.position.x = float(box[7])
                 robot_msg_bf.bb.center.position.y = float(box[8])
@@ -74,11 +68,6 @@ class YOEOVision(Node):
                 robot_msg_bf.attributes.team = 1
                 robot_array_msg.robots.append(robot_msg_bf)
         self.robot_pub.publish(robot_array_msg)
-
-
-
-
-
 
 
 def main(args=None):

@@ -7,15 +7,20 @@ import yaml
 parser = ArgumentParser()
 args = parser.parse_args()
 
-idx = range(0, 9)
+# idx = range(0, 9)
+idx = range(0, 20)
 
-folder = "/homes/15guelden/footstep_ws/src/bitbots_main/bitbots_vision/saved_data_donna/realworld_wolfgang/"
+# folder = "/homes/15guelden/footstep_ws/src/bitbots_main/bitbots_vision/saved_data_donna/realworld_wolfgang/"
+folder = "/homes/15guelden/saved_data/sim_op3/"
 
 
 def load_yaml_file(file_path):
     with open(file_path) as file:
         data = yaml.safe_load(file)
-    distance_measured = data["measured"]["distance"]
+    try:
+        distance_measured = data["measured"]["distance"]
+    except KeyError:
+        distance_measured = data["ground_truth_robot_pose"]["d"]
     distance_base_footprint = data["relative_base_footprint"]["d"]
     distance_baseline = data["relative_baseline"]["d"]
     return distance_measured, distance_base_footprint, distance_baseline
