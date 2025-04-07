@@ -20,7 +20,7 @@
     <set_env name="PYTHONPATH" value="$(env PYTHONPATH):$(env WEBOTS_HOME)/lib/controller/python310"/>
 
     <!-- start simulation and supervisor either with or without gui -->
-    <node pkg="bitbots_webots_sim" exec="start_simulator.py" name="webots_sim" output="screen" args="$(var multi_robot_flag) $(var gui_flag) $(var headless_flag) --sim-port $(var sim_port) --robot-type $(var robot_type)"/>
+    <!-- removed sim here because it is running on localhost, not in docker-->
     <node pkg="bitbots_webots_sim" exec="start_webots_ros_supervisor.py" name="webots_ros_supervisor" output="screen" args="--sim-port $(var sim_port)"/>
 
     <group unless="$(var multi_robot)">

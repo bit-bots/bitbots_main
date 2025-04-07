@@ -690,14 +690,17 @@ class RobotController:
             self.publish_ros()
 
     def publish_ros(self):
-        self.publish_imu()
-        self.publish_joint_states()
-        if self.camera_active and self.camera_counter == 0:
-            self.publish_camera()
-        self.publish_pressure()
-        if self.recognize:
-            self.save_recognition()
-        self.camera_counter = (self.camera_counter + 1) % CAMERA_DIVIDER
+        try:
+            self.publish_imu()
+            self.publish_joint_states()
+            if self.camera_active and self.camera_counter == 0:
+                self.publish_camera()
+            self.publish_pressure()
+            if self.recognize:
+                self.save_recognition()
+            self.camera_counter = (self.camera_counter + 1) % CAMERA_DIVIDER
+        except Exception as e:
+            print(e)
 
     def convert_joint_radiant_to_scaled(self, joint_name, pos):
         # helper method to convert to scaled position between [-1,1] for this joint using min max scaling
