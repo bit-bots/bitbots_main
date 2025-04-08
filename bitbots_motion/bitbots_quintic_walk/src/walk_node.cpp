@@ -9,7 +9,8 @@ using namespace std::chrono_literals;
 
 namespace bitbots_quintic_walk {
 
-WalkNode::WalkNode(rclcpp::Node::SharedPtr node, const std::string& ns, std::vector<rclcpp::Parameter> parameters)
+WalkNode::WalkNode(rclcpp::Node::SharedPtr node, const std::string& ns,
+                   const std::vector<rclcpp::Parameter>& moveit_parameters)
     : node_(node),
       param_listener_(node_),
       config_(param_listener_.get_params()),
@@ -17,21 +18,15 @@ WalkNode::WalkNode(rclcpp::Node::SharedPtr node, const std::string& ns, std::vec
       stabilizer_(node_),
       ik_(node_, config_.node.ik),
       visualizer_(node_, config_.node.tf) {
-  // Create dummy node for moveit
-  auto moveit_node = std::make_shared<rclcpp::Node>(ns + "walking_moveit_node");
-
-  // when called from python, parameters are given to the constructor
-  for (auto parameter : parameters) {
-    if (node_->has_parameter(parameter.get_name())) {
-      // this is the case for walk engine params set via python
-      node_->set_parameter(parameter);
-    } else {
-      // parameter is not for the walking, set on moveit node
-      moveit_node->declare_parameter(parameter.get_name(), parameter.get_type());
-      moveit_node->set_parameter(parameter);
-    }
-  }
-
+  // Create dummy node for moveit. This is necessary for dynamic reconfigure to work (moveit does some bullshit with
+  // parameter declarations, so we need to isolate the walking parameters from the moveit parameters).
+  // If the walking is instantiated using the python wrapper, moveit parameters are passed because no moveit config
+  // is loaded in the conventional way. Normally the moveit config is loaded via launch file and the passed vector is
+  // empty.
+  auto moveit_node = std::make_shared<rclcpp::Node>(
+      "walking_moveit_node", ns,
+      rclcpp::NodeOptions().automatically_declare_parameters_from_overrides(true).parameter_overrides(
+          moveit_parameters));
   // get all kinematics parameters from the move_group node if they are not set manually via constructor
   std::string check_kinematic_parameters;
   if (!moveit_node->get_parameter("robot_description_kinematics.LeftLeg.kinematics_solver",
@@ -177,11 +172,7 @@ void WalkNode::run() {
   }
 }
 
-void WalkNode::publish_debug() {
-  visualizer_.publishIKDebug(current_stabilized_response_, current_state_, motor_goals_);
-  visualizer_.publishWalkMarkers(current_stabilized_response_);
-  visualizer_.publishEngineDebug(current_response_);
-}
+void WalkNode::publish_debug() { visualizer_.publishDebug(current_stabilized_response_, current_state_, motor_goals_); }
 
 bitbots_msgs::msg::JointCommand WalkNode::step(double dt) {
   WalkRequest request(current_request_);

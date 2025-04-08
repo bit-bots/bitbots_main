@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<launch>
+     <arg name="robot_name" default="amy" description="The name of the robot" />
+     <arg name="tf_prefix" default="" description="Prefix applied to the published frames in the headers"/>
+     <arg name="camera" default="false" description="Turn on or off the camera (to speed up if only motion is required)"/>
+     <arg name="recognition" default="false" description="Turn on or off automatic recognition for collection of training data"/>
+     <arg name="void_controller" default="false" description="If set to true, the robot is not controllable"/>
+     <arg name="robot_type" default="wolfgang" description="What type of robot should be used"/>
+     <arg name="sim_port" default="1234" description="Port used for the simulator communication. Relevant if multiple simulations are run at the same time"/>
+
+     <arg name="void_flag" default="$(eval '\'--void-controller\' if \'$(var void_controller)\'==\'true\' else \'\'')" description="do not set, used internally"/>
+     <arg name="recognition_flag" default="$(eval '\'--recognize\' if \'$(var recognition)\'==\'true\' else \'\'')" description="do not set, used internally"/>
+     <arg name="camera_disable_flag" default="$(eval '\'--disable-camera\' if not \'$(var camera)\'==\'true\' else \'\'')" description="do not set, used internally"/>
+
+     <node pkg="bitbots_webots_sim" exec="start_single.py" name="webots_ros_interface" respawn="true" output="screen" args="--robot_name $(var robot_name) $(var void_flag) $(var recognition_flag) $(var camera_disable_flag) --robot-type $(var robot_type) --sim-port $(var sim_port)">
+          <param name="base_link_frame" value="$(var tf_prefix)base_link"/>
+          <param name="r_sole_frame" value="$(var tf_prefix)r_sole"/>
+          <param name="l_sole_frame" value="$(var tf_prefix)l_sole"/>
+          <param name="camera_optical_frame" value="$(var tf_prefix)camera_optical_frame"/>
+          <param name="head_imu_frame" value="$(var tf_prefix)imu_frame_2"/>
+          <param name="imu_frame" value="$(var tf_prefix)imu_frame"/>
+     </node>
+</launch>

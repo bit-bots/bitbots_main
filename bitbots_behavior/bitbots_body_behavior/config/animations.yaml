@@ -6,6 +6,9 @@
         fallLeft: "goalie_falling_left"
         fallRight: "goalie_falling_right"
         fallCenter: "goalie_falling_center"
+      Throw_in:
+        grabBall: "grab_ball"
+        throw: "throw"
       Misc:
         cheering: "cheering"
         init: "init_sim"

@@ -1,4 +1,5 @@
 #include <bitbots_dynup/dynup_ik.hpp>
+
 namespace bitbots_dynup {
 
 DynupIK::DynupIK(rclcpp::Node::SharedPtr node) : node_(node) {}
@@ -41,7 +42,7 @@ void DynupIK::setDirection(DynupDirection direction) { direction_ = direction; }
 
 bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse& ik_goals) {
   /* ik options is basically the command which we send to bio_ik and which describes what we want to do */
-  auto ik_options = kinematics::KinematicsQueryOptions();
+  kinematics::KinematicsQueryOptions ik_options;
   ik_options.return_approximate_solution = true;
 
   geometry_msgs::msg::Pose right_foot_goal_msg, left_foot_goal_msg, right_hand_goal_msg, left_hand_goal_msg;
@@ -54,23 +55,29 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse& ik_goals) {
   bool success;
   goal_state_->updateLinkTransforms();
 
+  bio_ik::BioIKKinematicsQueryOptions leg_ik_options;
+  leg_ik_options.return_approximate_solution = true;
+
+  // Add auxiliary goal to prevent bending the knees in the wrong direction when we go from init to walkready
+  leg_ik_options.goals.push_back(std::make_unique<bio_ik::AvoidJointLimitsGoal>());
+
   success = goal_state_->setFromIK(l_leg_joints_group_, left_foot_goal_msg, 0.005,
-                                   moveit::core::GroupStateValidityCallbackFn(), ik_options);
+                                   moveit::core::GroupStateValidityCallbackFn(), leg_ik_options);
 
   goal_state_->updateLinkTransforms();
 
   success &= goal_state_->setFromIK(r_leg_joints_group_, right_foot_goal_msg, 0.005,
-                                    moveit::core::GroupStateValidityCallbackFn(), ik_options);
+                                    moveit::core::GroupStateValidityCallbackFn(), leg_ik_options);
 
-  goal_state_->updateLinkTransforms();
+  if (direction_ != DynupDirection::RISE_NO_ARMS and direction_ != DynupDirection::DESCEND_NO_ARMS) {
+    goal_state_->updateLinkTransforms();
+    success &= goal_state_->setFromIK(l_arm_joints_group_, left_hand_goal_msg, 0.005,
+                                      moveit::core::GroupStateValidityCallbackFn(), ik_options);
 
-  success &= goal_state_->setFromIK(l_arm_joints_group_, left_hand_goal_msg, 0.005,
-                                    moveit::core::GroupStateValidityCallbackFn(), ik_options);
-
-  goal_state_->updateLinkTransforms();
-
-  success &= goal_state_->setFromIK(r_arm_joints_group_, right_hand_goal_msg, 0.005,
-                                    moveit::core::GroupStateValidityCallbackFn(), ik_options);
+    goal_state_->updateLinkTransforms();
+    success &= goal_state_->setFromIK(r_arm_joints_group_, right_hand_goal_msg, 0.005,
+                                      moveit::core::GroupStateValidityCallbackFn(), ik_options);
+  }
   if (success) {
     /* retrieve joint names and associated positions from  */
     auto joint_names = all_joints_group_->getActiveJointModelNames();
@@ -79,6 +86,11 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse& ik_goals) {
 
     /* construct result object */
     bitbots_splines::JointGoals result = {joint_names, joint_goals};
+
+    // Store the name of the arm joins so we can remove them if they are not needed
+    const auto r_arm_motors = r_arm_joints_group_->getActiveJointModelNames();
+    const auto l_arm_motors = l_arm_joints_group_->getActiveJointModelNames();
+
     /* sets head motors to correct positions, as the IK will return random values for those unconstrained motors. */
     for (size_t i = result.first.size(); i-- > 0;) {
       if (result.first[i] == "HeadPan") {
@@ -103,6 +115,13 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse& ik_goals) {
         } else {
           result.second[i] = 0;
         }
+      }
+      // Remove the arm motors from the goals if we have a goal without arms
+      else if ((std::find(r_arm_motors.begin(), r_arm_motors.end(), result.first[i]) != r_arm_motors.end() or
+                std::find(l_arm_motors.begin(), l_arm_motors.end(), result.first[i]) != l_arm_motors.end()) and
+               (direction_ == DynupDirection::RISE_NO_ARMS or direction_ == DynupDirection::DESCEND_NO_ARMS)) {
+        result.first.erase(result.first.begin() + i);
+        result.second.erase(result.second.begin() + i);
       }
     }
     return result;

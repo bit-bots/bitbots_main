@@ -37,6 +37,10 @@
     <exec_depend>std_srvs</exec_depend>
     <exec_depend>tf2_geometry_msgs</exec_depend>
     <exec_depend>tf2</exec_depend>
+    <test_depend>ament_mypy</test_depend>
+    <test_depend>ament_cmake_mypy</test_depend>
+
+    <buildtool_depend>ament_cmake</buildtool_depend>
 
     <export>
         <bitbots_documentation>

@@ -3,6 +3,7 @@ from unittest.mock import Mock
 
 import pytest
 import tf2_ros as tf2
+from bitbots_path_planning import NodeWithConfig
 from bitbots_path_planning.controller import Controller
 from bitbots_path_planning.path_planning_parameters import bitbots_path_planning as gen_params
 from geometry_msgs.msg import Twist
@@ -131,7 +132,7 @@ def test_step_cmd_vel_smoothing(snapshot, node, tf2_buffer, config, pose_opponen
     assert str(controller.last_cmd_vel) == snapshot
 
 
-def setup_controller(node: Node, buffer: tf2.Buffer) -> Controller:
+def setup_controller(node: NodeWithConfig, buffer: tf2.BufferInterface) -> Controller:
     return Controller(node, buffer)
 
 
@@ -228,7 +229,7 @@ def config() -> gen_params.Params:
 
 @pytest.fixture
 def node(config) -> Node:
-    node = Mock(Node)
+    node = Mock(NodeWithConfig)
 
     node.config = config
 

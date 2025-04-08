@@ -20,6 +20,8 @@ if __name__ == "__main__":
         Dynup.Goal.DIRECTION_RISE,
         Dynup.Goal.DIRECTION_DESCEND,
         Dynup.Goal.DIRECTION_WALKREADY,
+        Dynup.Goal.DIRECTION_RISE_NO_ARMS,
+        Dynup.Goal.DIRECTION_DESCEND_NO_ARMS,
     ]
     if len(sys.argv) != 2 or sys.argv[1] not in directions:
         print("Use " + str(directions) + " as parameters!")

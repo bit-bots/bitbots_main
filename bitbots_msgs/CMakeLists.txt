@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.5)
 project(bitbots_msgs)
 
+# Build with release optimizations and debug symbols by default
+if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE RelWithDebug)
+endif()
+
 find_package(ament_cmake REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(action_msgs REQUIRED)
@@ -50,6 +55,7 @@ rosidl_generate_interfaces(
   "srv/SetObjectPose.srv"
   "srv/SetObjectPosition.srv"
   "srv/SetTeachingMode.srv"
+  "srv/SimulatorPush.srv"
   DEPENDENCIES
   action_msgs
   geometry_msgs

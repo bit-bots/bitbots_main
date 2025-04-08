@@ -11,6 +11,11 @@ RobotState::RobotState() : is_explorer_(false), m_XPos(0.0), m_YPos(0.0), m_SinT
 RobotState::RobotState(double x, double y, double T)
     : is_explorer_(false), m_XPos(x), m_YPos(y), m_SinTheta(sin(T)), m_CosTheta(cos(T)) {}
 
+RobotState::RobotState(tf2::Transform transform)
+    : is_explorer_(false), m_XPos(transform.getOrigin().x()), m_YPos(transform.getOrigin().y()) {
+  setTheta(tf2::getYaw(transform.getRotation()));
+}
+
 RobotState RobotState::operator*(float factor) const {
   RobotState newState;
   newState.m_XPos = m_XPos * factor;
@@ -119,4 +124,14 @@ visualization_msgs::msg::Marker RobotState::renderMarker(std::string n_space, st
 
   return msg;
 }
+
+tf2::Transform RobotState::getTransform() const {
+  tf2::Transform transform;
+  transform.setOrigin(tf2::Vector3(getXPos(), getYPos(), 0));
+  tf2::Quaternion q;
+  q.setRPY(0, 0, getTheta());
+  transform.setRotation(q);
+  return transform;
+}
+
 }  // namespace bitbots_localization

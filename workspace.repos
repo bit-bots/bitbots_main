@@ -3,6 +3,10 @@ repositories:
     type: git
     url: git@github.com:bit-bots/RobocupProtocol.git
     version: master
+  lib/bitbots_tf_buffer:
+    type: git
+    url: git@github.com:bit-bots/bitbots_tf_buffer.git
+    version: iron
   lib/dynamic_stack_decider:
     type: git
     url: git@github.com:bit-bots/dynamic_stack_decider.git
@@ -26,7 +30,7 @@ repositories:
   lib/particle_filter:
     type: git
     url: git@github.com:bit-bots/particle_filter.git
-    version: master
+    version: iron
   lib/ros2_python_extension:
     type: git
     url: git@github.com:bit-bots/ros2_python_extension.git
@@ -42,7 +46,7 @@ repositories:
   lib/bio_ik:
     type: git
     url: git@github.com:bit-bots/bio_ik.git
-    version: ros2
+    version: iron
   lib/hlvs_player:
     type: git
     url: git@github.com:ros-sports/hlvs_player.git

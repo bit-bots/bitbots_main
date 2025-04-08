@@ -75,6 +75,18 @@ class PlayAnimationCheering(AbstractPlayAnimation):
         return self.blackboard.animation.cheering_animation
 
 
+class PlayAnimationGrabBall(AbstractPlayAnimation):
+    def get_animation_name(self):
+        self.blackboard.node.get_logger().info("PLAYING GRAB-BALL ANIMATION")
+        return self.blackboard.animation.grab_ball_animation
+
+
+class PlayAnimationThrow(AbstractPlayAnimation):
+    def get_animation_name(self):
+        self.blackboard.node.get_logger().info("PLAYING THROW-IN ANIMATION")
+        return self.blackboard.animation.throw_animation
+
+
 class PlayAnimationInit(AbstractPlayAnimation):
     def get_animation_name(self):
         return self.blackboard.animation.init_animation

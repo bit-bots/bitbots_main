@@ -1,5 +1,5 @@
 import re
-from typing import Union
+from typing import Optional, TypeAlias
 
 from bitbots_utils.utils import get_parameters_from_other_node
 from cv_bridge import CvBridge
@@ -31,6 +31,8 @@ general_parameters = []
 
 global own_team_color
 own_team_color = None
+
+T_RobotAttributes_Team: TypeAlias = int  # Type for RobotAttributes.team
 
 
 def create_or_update_publisher(
@@ -325,7 +327,7 @@ def update_own_team_color(vision_node: Node):
     vision_node._logger.debug(f"Own team color is: {own_team_color}")
 
 
-def get_team_from_robot_color(color: int) -> RobotAttributes.team:
+def get_team_from_robot_color(color: int) -> T_RobotAttributes_Team:
     """
     Maps the detected robot color to the current team.
     If the color is the same as the current team, returns own team, else returns opponent team.
@@ -343,7 +345,7 @@ def get_team_from_robot_color(color: int) -> RobotAttributes.team:
         return RobotAttributes.TEAM_OPPONENT
 
 
-def get_robot_color_for_team(team: RobotAttributes.team) -> Union[int, None]:
+def get_robot_color_for_team(team: T_RobotAttributes_Team) -> Optional[int]:
     """
     Maps team (own, opponent, unknown) to the current robot color.
     """
@@ -358,3 +360,5 @@ def get_robot_color_for_team(team: RobotAttributes.team) -> Union[int, None]:
             return 1
         else:
             return 0
+    else:
+        return None

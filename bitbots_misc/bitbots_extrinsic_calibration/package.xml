@@ -9,17 +9,17 @@
     <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
 
     <license>MIT</license>
-    
+
     <author email="florian.vahl@uni-hamburg.de">Florian Vahl</author>
 
     <buildtool_depend>ament_cmake</buildtool_depend>
 
-    <depend>bitbots_docs</depend>
-    <depend>std_msgs</depend>
-    <depend>tf2</depend>
-    <depend>tf2_ros</depend>
-    <depend>rot_conv</depend>
     <depend>backward_ros</depend>
+    <depend>bitbots_docs</depend>
+    <depend>rot_conv</depend>
+    <depend>std_msgs</depend>
+    <depend>tf2_ros</depend>
+    <depend>tf2</depend>
 
     <export>
         <bitbots_documentation>

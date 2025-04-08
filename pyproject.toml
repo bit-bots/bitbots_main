@@ -3,7 +3,7 @@ line-length = 120
 
 [tool.ruff.lint]
 # Never enforce `E501` (line length violations)
-ignore = ["E501", "UP007"]
+ignore = ["E501", "UP007", "F722"]
 # Additionally enable the following rules
 # - pycodestyle warnings (`W`)
 # - flake8-bugbear warnings (`B`)

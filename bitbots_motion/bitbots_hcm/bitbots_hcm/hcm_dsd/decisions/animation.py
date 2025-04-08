@@ -29,6 +29,9 @@ class PlayingExternalAnimation(AbstractHCMDecisionElement):
 
         # We can safely assume that the last animation start time is set because the animation is running
         # Calculate time since last animation start
+        assert (
+            self.blackboard.last_animation_start_time is not None
+        ), "Last animation start time is not set, this should be impossible"
         time_delta_since_last_animation_start = (
             self.blackboard.node.get_clock().now().nanoseconds / 1e9
             - self.blackboard.last_animation_start_time.nanoseconds / 1e9

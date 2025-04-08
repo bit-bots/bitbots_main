@@ -1,6 +1,5 @@
 #! /usr/bin/env python3
 from copy import deepcopy
-from typing import Dict, List
 
 import numpy as np
 import rclpy
@@ -43,12 +42,12 @@ class YOEOVision(Node):
 
         yoeo.YOEOObjectManager.set_package_directory(self._package_path)
 
-        self._config: Dict = {}
+        self._config: dict = {}
         self._cv_bridge = CvBridge()
 
         self._sub_image = None
 
-        self._vision_components: List[yoeo.IVisionComponent] = []
+        self._vision_components: list[yoeo.IVisionComponent] = []
 
         # Setup reconfiguration
         gen.declare_params(self)
@@ -76,19 +75,19 @@ class YOEOVision(Node):
 
         return SetParametersResult(successful=True)
 
-    def _get_updated_config_with(self, params) -> Dict:
+    def _get_updated_config_with(self, params) -> dict:
         new_config = deepcopy(self._config)
         for param in params:
             new_config[param.name] = param.value
         return new_config
 
-    def _configure_vision(self, new_config: Dict) -> None:
+    def _configure_vision(self, new_config: dict) -> None:
         yoeo.YOEOObjectManager.configure(new_config)
 
         self._set_up_vision_components(new_config)
         self._register_subscribers(new_config)
 
-    def _set_up_vision_components(self, new_config: Dict) -> None:
+    def _set_up_vision_components(self, new_config: dict) -> None:
         self._vision_components = []
         self._vision_components.append(yoeo.YOEOComponent())
 
@@ -111,7 +110,7 @@ class YOEOVision(Node):
         for vision_component in self._vision_components:
             vision_component.configure(new_config, new_config["component_debug_image_active"])
 
-    def _register_subscribers(self, config: Dict) -> None:
+    def _register_subscribers(self, config: dict) -> None:
         self._sub_image = ros_utils.create_or_update_subscriber(
             self,
             self._config,

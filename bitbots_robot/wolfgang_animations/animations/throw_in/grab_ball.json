@@ -1,0 +1,113 @@
+{
+    "author": "Maxim, David, Okan",
+    "description": "Play grab ball animation",
+    "keyframes": [
+        {
+            "duration": 3.0,
+            "goals": {
+                "LAnklePitch": -55.99,
+                "LAnkleRoll": 2.99,
+                "LElbow": -86.22,
+                "LHipPitch": 71.75,
+                "LHipRoll": 6.86,
+                "LHipYaw": -2.72,
+                "LKnee": 139.37,
+                "LShoulderPitch": -173.58,
+                "LShoulderRoll": -56.43,
+                "RAnklePitch": 55.99,
+                "RAnkleRoll": -2.99,
+                "RElbow": 86.22,
+                "RHipPitch": -71.75,
+                "RHipRoll": -6.86,
+                "RHipYaw": 2.72,
+                "RKnee": -139.37,
+                "RShoulderPitch": 173.58,
+                "RShoulderRoll": 56.43
+            },
+            "name": "praise_the_sun",
+            "pause": 0.0,
+            "torque": {}
+        },
+        {
+            "duration": 3.0,
+            "goals": {
+                "LElbow": -86.22,
+                "LShoulderPitch": -58.89,
+                "LShoulderRoll": -56.43,
+                "RElbow": 86.22,
+                "RShoulderPitch": 58.89,
+                "RShoulderRoll": 56.43,
+                "LAnklePitch": -57.48,
+                "LAnkleRoll": 11.96,
+                "LHipPitch": 121.61,
+                "LHipRoll": 14.250000000000002,
+                "LHipYaw": -3.08,
+                "LKnee": 160.21,
+                "RAnklePitch": 57.48,
+                "RAnkleRoll": -11.96,
+                "RHipPitch": -121.61,
+                "RHipRoll": -14.250000000000002,
+                "RHipYaw": 3.08,
+                "RKnee": -160.21
+            },
+            "name": "osu",
+            "pause": 0.0,
+            "torque": {}
+        },
+        {
+            "duration": 2.2,
+            "goals": {
+                "LAnklePitch": -57.48,
+                "LAnkleRoll": 11.96,
+                "LElbow": -86.22,
+                "LHipPitch": 121.61,
+                "LHipRoll": 14.250000000000002,
+                "LHipYaw": -3.08,
+                "LKnee": 160.21,
+                "LShoulderPitch": -64.89,
+                "LShoulderRoll": 19.35,
+                "RAnklePitch": 57.48,
+                "RAnkleRoll": -11.96,
+                "RElbow": 86.22,
+                "RHipPitch": -121.61,
+                "RHipRoll": -14.250000000000002,
+                "RHipYaw": 3.08,
+                "RKnee": -160.21,
+                "RShoulderPitch": 64.89,
+                "RShoulderRoll": -19.35
+            },
+            "name": "scoop",
+            "pause": 0.0,
+            "torque": {}
+        },
+        {
+            "duration": 1.8,
+            "goals": {
+                "LAnklePitch": -62.4,
+                "LAnkleRoll": 10.11,
+                "LElbow": -86.22,
+                "LHipPitch": 71.05,
+                "LHipRoll": 13.37,
+                "LHipYaw": 1.23,
+                "LKnee": 142.19,
+                "LShoulderPitch": -164.79,
+                "LShoulderRoll": 19.35,
+                "RAnklePitch": 62.4,
+                "RAnkleRoll": -10.11,
+                "RElbow": 86.22,
+                "RHipPitch": -71.05,
+                "RHipRoll": -13.37,
+                "RHipYaw": -1.23,
+                "RKnee": -142.19,
+                "RShoulderPitch": 164.79,
+                "RShoulderRoll": -19.35
+            },
+            "name": "pick_up_ball",
+            "pause": 0.0,
+            "torque": {}
+        }
+    ],
+    "last_edited": "2024-12-18 16:01:10.522911",
+    "name": "grab_ball",
+    "version": ""
+}

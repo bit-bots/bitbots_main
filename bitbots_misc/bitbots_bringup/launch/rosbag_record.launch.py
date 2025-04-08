@@ -43,7 +43,7 @@ TOPICS_TO_RECORD: list[str] = [
     "/goal_pose",
     "/head_mode",
     "/imu_head/data",
-    "/imu/data_raw",
+    "/imu/data",
     "/joint_states",
     "/motion_odometry",
     "/move_base/current_goal",

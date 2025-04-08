@@ -6,16 +6,24 @@ if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 20)
 endif()
 
+# Build with release optimizations and debug symbols by default
+if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE RelWithDebug)
+endif()
+
 set(PYBIND11_PYTHON_VERSION 3)
 set(PYBIND11_FINDPYTHON ON)
 
 find_package(ament_cmake REQUIRED)
 find_package(backward_ros REQUIRED)
+find_package(bio_ik REQUIRED)
 find_package(bitbots_msgs REQUIRED)
 find_package(bitbots_splines REQUIRED)
 find_package(bitbots_utils REQUIRED)
 find_package(control_msgs REQUIRED)
 find_package(control_toolbox REQUIRED)
+find_package(Eigen3 REQUIRED)
+find_package(generate_parameter_library REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(moveit_ros_planning_interface REQUIRED)
 find_package(rclcpp REQUIRED)
@@ -27,8 +35,6 @@ find_package(tf2 REQUIRED)
 find_package(tf2_eigen REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
-find_package(Eigen3 REQUIRED)
-find_package(generate_parameter_library REQUIRED)
 
 find_package(ros2_python_extension REQUIRED)
 find_package(pybind11 REQUIRED)
@@ -64,13 +70,14 @@ add_executable(DynupNode ${SOURCES})
 ament_target_dependencies(
   DynupNode
   ament_cmake
+  bio_ik
   bitbots_msgs
   bitbots_splines
   bitbots_utils
   control_msgs
   control_toolbox
-  geometry_msgs
   generate_parameter_library
+  geometry_msgs
   moveit_ros_planning_interface
   rclcpp
   ros2_python_extension
@@ -94,6 +101,7 @@ ament_target_dependencies(
   libpy_dynup
   PUBLIC
   ament_cmake
+  bio_ik
   bitbots_msgs
   bitbots_splines
   bitbots_utils

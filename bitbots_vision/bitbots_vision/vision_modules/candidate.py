@@ -127,8 +127,7 @@ class Candidate:
         """
         return self._y1 + self._height
 
-    def get_lower_center_point(self):
-        # type: () -> (int, int)
+    def get_lower_center_point(self) -> tuple[int, int]:
         """
         :return tuple: Returns the lowest point of the candidate. The point is horizontally centered inside the candidate.
         """

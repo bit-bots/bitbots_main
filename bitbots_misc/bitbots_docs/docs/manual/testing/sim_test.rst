@@ -6,7 +6,7 @@ Test Motion
 
 .. code-block:: bash
 
-    ros2 launch wolfgang_webots_sim simulation.launch
+    ros2 launch bitbots_webots_sim simulation.launch
     ros2 launch bitbots_bringup motion_standalone.launch sim:=true
 
 To control walking of the robot, teleop needs to be startet as well:

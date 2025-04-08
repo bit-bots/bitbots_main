@@ -1,0 +1,73 @@
+{
+    "author": "",
+    "description": "",
+    "keyframes": [
+        {
+            "duration": 1.0,
+            "goals": {
+                "HeadPan": 0.0,
+                "HeadTilt": 0.0,
+                "LElbow": -73.74,
+                "LShoulderPitch": -179.38,
+                "LShoulderRoll": 17.15,
+                "RElbow": 73.74,
+                "RShoulderPitch": 179.38,
+                "RShoulderRoll": -17.15
+            },
+            "name": "unus",
+            "pause": 0.0,
+            "torque": {}
+        },
+        {
+            "duration": 1.0,
+            "goals": {
+                "HeadPan": 0.0,
+                "HeadTilt": 0.0,
+                "LElbow": -62.49000000000001,
+                "LShoulderPitch": -179.38,
+                "LShoulderRoll": 17.41,
+                "RElbow": 62.49000000000001,
+                "RShoulderPitch": 179.38,
+                "RShoulderRoll": -17.41
+            },
+            "name": "duo",
+            "pause": 0.0,
+            "torque": {}
+        },
+        {
+            "duration": 0.3,
+            "goals": {
+                "HeadPan": 0.0,
+                "HeadTilt": 0.0,
+                "LElbow": -94.66,
+                "LShoulderPitch": -147.13,
+                "LShoulderRoll": 11.17,
+                "RElbow": 94.66,
+                "RShoulderPitch": 147.13,
+                "RShoulderRoll": -11.17
+            },
+            "name": "tres",
+            "pause": 0.5,
+            "torque": {}
+        },
+        {
+            "duration": 1.0,
+            "goals": {
+                "HeadPan": 0.0,
+                "HeadTilt": 0.0,
+                "LElbow": 8.35,
+                "LShoulderPitch": 37.81,
+                "LShoulderRoll": -1.93,
+                "RElbow": -8.35,
+                "RShoulderPitch": -37.81,
+                "RShoulderRoll": 1.93
+            },
+            "name": "quattuor",
+            "pause": 0.0,
+            "torque": {}
+        }
+    ],
+    "last_edited": "2024-12-18 16:10:48.875357",
+    "name": "throw",
+    "version": ""
+}

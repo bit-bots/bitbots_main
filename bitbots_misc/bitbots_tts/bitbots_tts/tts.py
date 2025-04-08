@@ -4,7 +4,6 @@ import os
 import subprocess
 import time
 import traceback
-from typing import List, Tuple
 
 import rclpy
 import requests
@@ -44,7 +43,7 @@ class Speaker(Node):
         super().__init__("tts_speaker")
 
         # Class Variables
-        self.prio_queue: List[Tuple[str, int]] = []
+        self.prio_queue: list[tuple[str, int]] = []
         self.speak_enabled = None
         self.print_say = None
         self.message_level = None
@@ -77,7 +76,7 @@ class Speaker(Node):
         # Start processing the queue
         self.create_timer(0.1, self.run_speaker, callback_group=MutuallyExclusiveCallbackGroup())
 
-    def on_set_parameters(self, parameters: List[Parameter]) -> SetParametersResult:
+    def on_set_parameters(self, parameters: list[Parameter]) -> SetParametersResult:
         """Callback for parameter changes."""
         for parameter in parameters:
             if parameter.name == "print":

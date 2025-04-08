@@ -74,8 +74,8 @@ class SplineAnimator:
 
         return ret_dict
 
-    def get_torque(self, current_time):
-        torque = {}
+    def get_torque(self, current_time) -> dict[str, float]:
+        torque: dict[str, float] = {}
         if current_time < 0 or current_time > self.animation_duration:
             return torque
 

@@ -1,3 +1,5 @@
+# type: ignore
+
 from unittest.mock import MagicMock
 
 import pytest

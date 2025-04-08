@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+# type: ignore
+
 import argparse
 import os
 
@@ -9,8 +11,7 @@ from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
 
 
-def yes_or_no_input(question, default=None):
-    # type: (str) -> bool
+def yes_or_no_input(question, default=None) -> bool | None:
     """
     Prints a yes or no question and returns the answer.
 

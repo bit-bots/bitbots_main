@@ -9,18 +9,19 @@ As such you can lookup some of the needed requirements there.
 **0. Requirements**
 
 - have an LDAP mafiasi account for access to the CLs
-- have ros2 aliases setup (see linked docs)
-- have GitHub ssh access setup for bitbots_main (see linked docs)
 
 **1. Setup and download our software**
 
 - SSH into the ``cl0*`` with your mafiasi user
+- Add your SSH key to GitHub to access and sync our repositories
+   - If you don't know what I am talking about or you don't yet have a SSH key, follow this guide: https://docs.github.com/en/authentication/connecting-to-github-with-ssh/checking-for-existing-ssh-keys
+   - Go to your account settings and add your SSH key (the ``.pub`` file) to `GitHub <https://github.com/settings/keys>`_
 - setup bitbots_main in your home directory
 
 .. code-block:: bash
 
-  mkdir -p "~/colcon_ws/src"
-  cd "~/colcon_ws/src"
+  mkdir -p "$HOME/colcon_ws/src"
+  cd "$HOME/colcon_ws/src"
   git clone git@github.com:bit-bots/bitbots_main.git && cd bitbots_main
   make install-no-root
 

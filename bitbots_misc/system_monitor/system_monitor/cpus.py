@@ -36,7 +36,8 @@ def collect_all():
 def _get_cpu_stats():
     """
     read and parse /proc/stat
-    :returns timings which contains accumulative busy and total cpu time
+
+    :returns: timings which contains accumulative busy and total cpu time
     """
     timings = {}
     with open("/proc/stat") as file_obj:

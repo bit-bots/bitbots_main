@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Literal, Optional, TypeAlias
 
 from bitbots_utils.utils import get_parameters_from_other_node
 from rclpy.duration import Duration
@@ -6,6 +6,15 @@ from std_msgs.msg import Bool
 
 from bitbots_blackboard.capsules import AbstractBlackboardCapsule
 from bitbots_msgs.msg import Audio, HeadMode, RobotControlState
+
+THeadMode: TypeAlias = Literal[  # type: ignore[valid-type]
+    HeadMode.SEARCH_BALL,
+    HeadMode.SEARCH_FIELD_FEATURES,
+    HeadMode.LOOK_FORWARD,
+    HeadMode.DONT_MOVE,
+    HeadMode.SEARCH_BALL_PENALTY,
+    HeadMode.SEARCH_FRONT,
+]
 
 
 class MiscCapsule(AbstractBlackboardCapsule):
@@ -33,7 +42,10 @@ class MiscCapsule(AbstractBlackboardCapsule):
     # ## Tracking Part ##
     #####################
 
-    def set_head_duty(self, head_duty: int):
+    def set_head_duty(
+        self,
+        head_duty: THeadMode,
+    ) -> None:
         head_duty_msg = HeadMode()
         head_duty_msg.head_mode = head_duty
         self.head_pub.publish(head_duty_msg)
@@ -42,7 +54,7 @@ class MiscCapsule(AbstractBlackboardCapsule):
     # ## Robot state ##
     ###################
 
-    def robot_state_callback(self, msg: RobotControlState):
+    def robot_state_callback(self, msg: RobotControlState) -> None:
         self.robot_control_state = msg
 
     def is_currently_walking(self) -> bool:
@@ -52,7 +64,7 @@ class MiscCapsule(AbstractBlackboardCapsule):
     # ## Timer ##
     #############
 
-    def start_timer(self, timer_name: str, duration_secs: int):
+    def start_timer(self, timer_name: str, duration_secs: int) -> None:
         """
         Starts a timer
         :param timer_name: Name of the timer
@@ -61,7 +73,7 @@ class MiscCapsule(AbstractBlackboardCapsule):
         """
         self.timers[timer_name] = self._node.get_clock().now() + Duration(seconds=duration_secs)
 
-    def end_timer(self, timer_name: str):
+    def end_timer(self, timer_name: str) -> None:
         """
         Ends a timer
         :param timer_name: Name of the timer

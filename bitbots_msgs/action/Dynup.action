@@ -8,6 +8,11 @@ string DIRECTION_BACK_ONLY = "back_only"
 string DIRECTION_RISE = "rise"
 string DIRECTION_DESCEND = "descend"
 string DIRECTION_WALKREADY = "walkready"
+string DIRECTION_RISE_NO_ARMS = "rise_no_arms"
+string DIRECTION_DESCEND_NO_ARMS = "descend_no_arms"
+
+# Requests from the HCM have higher prio and are published to a different topic
+bool from_hcm 
 
 ---
 # Result definition

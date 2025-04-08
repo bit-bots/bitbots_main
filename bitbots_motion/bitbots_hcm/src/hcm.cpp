@@ -87,12 +87,15 @@ class HCM_CPP : public rclcpp::Node {
   }
 
   void dynup_callback(const bitbots_msgs::msg::JointCommand msg) {
-    if (current_state_ == bitbots_msgs::msg::RobotControlState::STARTUP ||
-        current_state_ == bitbots_msgs::msg::RobotControlState::GETTING_UP ||
-        current_state_ == bitbots_msgs::msg::RobotControlState::MOTOR_OFF ||
-        current_state_ == bitbots_msgs::msg::RobotControlState::PICKED_UP ||
-        current_state_ == bitbots_msgs::msg::RobotControlState::PENALTY ||
-        current_state_ == bitbots_msgs::msg::RobotControlState::RECORD ||
+    if (msg.from_hcm and (current_state_ == bitbots_msgs::msg::RobotControlState::STARTUP ||
+                          current_state_ == bitbots_msgs::msg::RobotControlState::GETTING_UP ||
+                          current_state_ == bitbots_msgs::msg::RobotControlState::MOTOR_OFF ||
+                          current_state_ == bitbots_msgs::msg::RobotControlState::PICKED_UP ||
+                          current_state_ == bitbots_msgs::msg::RobotControlState::PENALTY ||
+                          current_state_ == bitbots_msgs::msg::RobotControlState::CONTROLLABLE)) {
+      pub_controller_command_->publish(msg);
+    }
+    if (current_state_ == bitbots_msgs::msg::RobotControlState::RECORD ||
         current_state_ == bitbots_msgs::msg::RobotControlState::CONTROLLABLE) {
       pub_controller_command_->publish(msg);
     }

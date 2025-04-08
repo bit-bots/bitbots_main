@@ -4,8 +4,9 @@ import json
 import math
 import os
 from copy import deepcopy
+from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Optional
+from typing import Any, Optional
 
 import regex as re
 from rclpy.action import ActionClient
@@ -17,18 +18,40 @@ from bitbots_msgs.action import PlayAnimation
 from bitbots_msgs.srv import AddAnimation
 
 
+@dataclass
+class Keyframe:
+    """
+    Defines a keyframe of the recorded Animation
+    """
+
+    name: str
+    duration: float
+    pause: float
+    goals: dict[str, float]
+    torque: dict[str, int]
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "name": self.name,
+            "duration": self.duration,
+            "pause": self.pause,
+            "goals": self.goals,
+            "torque": self.torque,
+        }
+
+
+@dataclass
 class AnimationData:
     """
     Defines a current status of the recorded Animation
     """
 
-    def __init__(self):
-        self.key_frames: list[dict] = []
-        self.author: str = "Unknown"
-        self.description: str = "Edit me!"
-        self.last_edited: datetime = datetime.now().isoformat(" ")
-        self.name: str = "None yet"
-        self.version: int = 0
+    author: str = "Unknown"
+    key_frames: list[Keyframe] = field(default_factory=list)
+    last_edited: str = datetime.now().isoformat(" ")
+    description: str = "Edit me!"
+    version: str = "0"
+    name: str = "None yet"
 
 
 class Recorder:
@@ -48,7 +71,7 @@ class Recorder:
         self.hcm_record_mode_client = hcm_record_mode_client
         self.save_step("Initial step", frozen=True)
 
-    def get_keyframes(self) -> list[dict]:
+    def get_keyframes(self) -> list[Keyframe]:
         """
         Gets the keyframes of the current animation
 
@@ -56,7 +79,7 @@ class Recorder:
         """
         return self.current_state.key_frames
 
-    def get_keyframe(self, name: str) -> Optional[dict]:
+    def get_keyframe(self, name: str) -> Optional[Keyframe]:
         """
         Gets the keyframe with the given name
 
@@ -64,7 +87,7 @@ class Recorder:
         :return: the keyframe with the given name
         """
         # Get the first keyframe with the given name or None
-        return next(filter(lambda key_frame: key_frame["name"] == name, self.get_keyframes()), None)
+        return next(filter(lambda key_frame: key_frame.name == name, self.get_keyframes()), None)  # type: ignore[arg-type, union-attr]
 
     def get_keyframe_index(self, name: str) -> Optional[int]:
         """
@@ -79,20 +102,20 @@ class Recorder:
             return None
         return self.get_keyframes().index(key_frame)
 
-    def get_meta_data(self) -> tuple[str, int, str, str]:
+    def get_meta_data(self) -> tuple[str, str, str, str]:
         """
         Returns the meta data of the current animation
         """
         data = self.current_state
         return data.name, data.version, data.author, data.description
 
-    def set_meta_data(self, name: str, version: int, author: str, description: str) -> None:
+    def set_meta_data(self, name: str, version: str, author: str, description: str) -> None:
         self.current_state.name = name
         self.current_state.version = version
         self.current_state.author = author
         self.current_state.description = description
 
-    def save_step(self, description: str, state: Optional[dict] = None, frozen: bool = False) -> None:
+    def save_step(self, description: str, state: Optional[AnimationData] = None, frozen: bool = False) -> None:
         """Save the current state of the Animation
         for later restoration by the undo-command
 
@@ -161,8 +184,15 @@ class Recorder:
         :param override: Wether or not to override the frame at the given position
         :param frozen: if True, the step cannot be undone
         """
-        frame = {"name": frame_name, "duration": duration, "pause": pause, "goals": motor_pos, "torque": motor_torque}
-        new_frame = deepcopy(frame)
+        new_frame = deepcopy(
+            Keyframe(
+                name=frame_name,
+                duration=duration,
+                pause=pause,
+                goals=motor_pos,
+                torque=motor_torque,
+            )
+        )
         if seq_pos is None:
             self.current_state.key_frames.append(new_frame)
             self.save_step(f"Appending new keyframe '{frame_name}'", frozen=frozen)
@@ -172,9 +202,8 @@ class Recorder:
         else:
             self.current_state.key_frames[seq_pos] = new_frame
             self.save_step(f"Overriding keyframe at position {seq_pos} with '{frame_name}'", frozen=frozen)
-        return True
 
-    def save_animation(self, path: str, file_name: Optional[str] = None) -> None:
+    def save_animation(self, path: str, file_name: Optional[str] = None) -> str:
         """Dumps all keyframe data to an animation .json file
 
         :param path: The folder where the file should be saved
@@ -194,8 +223,8 @@ class Recorder:
         # Convert the angles from radians to degrees
         keyframes = deepcopy(self.current_state.key_frames)
         for kf in keyframes:
-            for k, v in kf["goals"].items():
-                kf["goals"][k] = math.degrees(v)
+            for k, v in kf.goals.items():
+                kf.goals[k] = math.degrees(v)
 
         # Construct the animation dictionary with meta data and keyframes
         animation_dict = {
@@ -213,7 +242,7 @@ class Recorder:
 
         return "Saving to '%s'" % path + ". Done."
 
-    def load_animation(self, path: str) -> None:
+    def load_animation(self, path: str) -> Optional[str]:
         """Record command, load a animation '.json' file
 
         :param path: path of the animation to load
@@ -223,23 +252,34 @@ class Recorder:
             data = json.load(fp)
         # Check if the file is a valid animation and convert the angles from degrees to radians
         try:
+            keyframes: list[Keyframe] = []
             for keyframe in data["keyframes"]:
-                for k, v in keyframe["goals"].items():
-                    keyframe["goals"][k] = math.radians(v)
+                keyframes.append(
+                    Keyframe(
+                        name=keyframe["name"],
+                        duration=keyframe["duration"],
+                        pause=keyframe["pause"],
+                        goals={k: math.radians(v) for k, v in keyframe["goals"].items()},
+                        torque=keyframe["torque"],
+                    )
+                )
         except ValueError as e:
             self._node.get_logger().error("Animation {} is corrupt:\n {}".format(path, e.message.partition("\n")[0]))
             return "Animation {} is corrupt:\n {}".format(path, e.message.partition("\n")[0])
 
         # Set the current state to the loaded animation
-        self.current_state.key_frames = data["keyframes"]
-        self.current_state.name = data["name"]
-        self.current_state.version = data["version"] if "version" in data else 0
-        self.current_state.last_edited = data["last_edited"] if "last_edited" in data else datetime.now().isoformat(" ")
-        self.current_state.author = data["author"] if "author" in data else "Unknown"
-        self.current_state.description = data["description"] if "description" in data else ""
+        self.current_state = AnimationData(
+            key_frames=keyframes,
+            name=data["name"],
+            version=data["version"] if "version" in data else "0",
+            last_edited=data["last_edited"] if "last_edited" in data else datetime.now().isoformat(" "),
+            author=data["author"] if "author" in data else "Unknown",
+            description=data["description"] if "description" in data else "",
+        )
 
         # Save the current state
         self.save_step(f"Loading of animation named '{data['name']}'")
+        return None
 
     def play(self, from_frame: int = 0, until_frame: int = -1) -> tuple[str, bool]:
         """Plays (a range of) the current animation using the animation server
@@ -275,13 +315,13 @@ class Recorder:
             "last_edited": datetime.isoformat(datetime.now(), " "),
             "author": self.current_state.author,
             "description": self.current_state.description,
-            "keyframes": deepcopy(self.current_state.key_frames),
+            "keyframes": deepcopy(list(map(Keyframe.as_dict, self.current_state.key_frames))),
         }
 
         # Convert the angles from radians to degrees
         for key_frame in animation_dict["keyframes"]:
-            for joint, v in key_frame["goals"].items():
-                key_frame["goals"][joint] = math.degrees(v)
+            for joint, v in key_frame["goals"].items():  # type: ignore[index]
+                key_frame["goals"][joint] = math.degrees(v)  # type: ignore[index]
 
         self._node.get_logger().debug(f"Playing {len(animation_dict['keyframes'])} frames...")
 
@@ -317,7 +357,7 @@ class Recorder:
         """Changes the order of the frames given an array of frame names"""
         new_ordered_frames = [self.get_keyframe(frame_name) for frame_name in new_order]
         assert None not in new_ordered_frames, "One of the given frame names does not exist"
-        self.current_state.key_frames = new_ordered_frames
+        self.current_state.key_frames = new_ordered_frames  # type: ignore[assignment]
         self.save_step("Reordered frames")
 
     def duplicate(self, frame_name: str) -> None:
@@ -329,15 +369,16 @@ class Recorder:
         assert index is not None, "The given frame name does not exist"
         # Create a deep copy of the frame
         new_frame = deepcopy(self.get_keyframe(frame_name))
+        assert new_frame is not None, "The given frame name does not exist (even less possible here)"
         # Add suffix to the frame name if it already exists and increment the number instead of making it longer
-        while new_frame["name"] in [frame["name"] for frame in self.current_state.key_frames]:
+        while new_frame.name in [frame.name for frame in self.current_state.key_frames]:
             # Check if the frame name ends with "_copy_" and a number, if so increment the number
-            if re.match(r".*?_copy_(\d+)", new_frame["name"]):
-                new_frame["name"] = re.sub(
-                    r"(_copy_)(\d+)", lambda m: f"{m.group(1)}{int(m.group(2)) + 1}", new_frame["name"]
+            if re.match(r".*?_copy_(\d+)", new_frame.name):
+                new_frame.name = re.sub(
+                    r"(_copy_)(\d+)", lambda m: f"{m.group(1)}{int(m.group(2)) + 1}", new_frame.name
                 )
             else:
-                new_frame["name"] = f"{frame_name}_copy_1"
+                new_frame.name = f"{frame_name}_copy_1"
         # Insert the new frame after the original frame
         self.current_state.key_frames.insert(index + 1, new_frame)
         self.save_step(f"Duplicated Frame '{frame_name}'")

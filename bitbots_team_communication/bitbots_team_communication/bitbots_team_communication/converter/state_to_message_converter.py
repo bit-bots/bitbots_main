@@ -1,11 +1,12 @@
 import math
-from typing import Callable, List, Optional, Tuple
+from typing import Callable, Optional
 
+import numpy as np
 import transforms3d
+from builtin_interfaces.msg import Time
 from game_controller_hl_interfaces.msg import GameState
 from geometry_msgs.msg import PointStamped, PoseStamped, PoseWithCovarianceStamped, Quaternion, Twist
-from numpy import double
-from rclpy.time import Time
+from jaxtyping import Float64
 from soccer_vision_3d_msgs.msg import Robot, RobotArray
 
 import bitbots_team_communication.robocup_extension_pb2 as Proto  # noqa: N812
@@ -19,7 +20,9 @@ class StateToMessageConverter:
         self.action_mapping = action_mapping
         self.side_mapping = side_mapping
 
-    def convert(self, state, message: Proto.Message, is_still_valid_checker: Callable[[Time], bool]) -> Proto.Message:
+    def convert(
+        self, state, message: Proto.Message, is_still_valid_checker: Callable[[Optional[Time]], bool]
+    ) -> Proto.Message:
         def convert_gamestate(gamestate: Optional[GameState], message: Proto.Message):
             if gamestate is not None and is_still_valid_checker(gamestate.header.stamp):
                 message.state = Proto.State.PENALISED if gamestate.penalized else Proto.State.UNPENALISED
@@ -43,7 +46,9 @@ class StateToMessageConverter:
 
             return message
 
-        def convert_walk_command(walk_command: Optional[Twist], walk_command_time: Time, message: Proto.Message):
+        def convert_walk_command(
+            walk_command: Optional[Twist], walk_command_time: Optional[Time], message: Proto.Message
+        ):
             if walk_command is not None and is_still_valid_checker(walk_command_time):
                 message.walk_command.x = walk_command.linear.x
                 message.walk_command.y = walk_command.linear.y
@@ -62,8 +67,8 @@ class StateToMessageConverter:
 
         def convert_ball_position(
             ball_position: Optional[PointStamped],
-            ball_velocity: Tuple[float, float, float],
-            ball_covariance: List[double],
+            ball_velocity: tuple[float, float, float],
+            ball_covariance: Float64[np.ndarray, "36"],
             message,
         ):
             if ball_position is not None and is_still_valid_checker(ball_position.header.stamp):
@@ -99,7 +104,7 @@ class StateToMessageConverter:
 
             return message
 
-        def convert_strategy(strategy: Optional[Strategy], strategy_time: Time, message: Proto.Message):
+        def convert_strategy(strategy: Optional[Strategy], strategy_time: Optional[Time], message: Proto.Message):
             if strategy is not None and is_still_valid_checker(strategy_time):
                 message.role = self.role_mapping[strategy.role]
                 message.action = self.action_mapping[strategy.action]
@@ -129,9 +134,9 @@ class StateToMessageConverter:
 
         def convert_time_to_ball(
             time_to_ball: Optional[float],
-            time_to_ball_time: Time,
-            ball_position: PointStamped,
-            current_pose: PoseWithCovarianceStamped,
+            time_to_ball_time: Optional[Time],
+            ball_position: Optional[PointStamped],
+            current_pose: Optional[PoseWithCovarianceStamped],
             walking_speed: float,
             message: Proto.Message,
         ):
@@ -147,16 +152,24 @@ class StateToMessageConverter:
         message.current_pose.player_id = state.player_id
         message.current_pose.team = state.team_id
 
-        message = convert_gamestate(state.gamestate, message)
-        message = convert_current_pose(state.pose, message)
-        message = convert_walk_command(state.cmd_vel, state.cmd_vel_time, message)
-        message = convert_target_position(state.move_base_goal, message)
-        message = convert_ball_position(state.ball, state.ball_velocity, state.ball_covariance, message)
-        message = convert_seen_robots(state.seen_robots, message)
-        message = convert_strategy(state.strategy, state.strategy_time, message)
-        message = convert_time_to_ball(
-            state.time_to_ball, state.time_to_ball_time, state.ball, state.pose, state.avg_walking_speed, message
-        )
+        if state.gamestate is not None:
+            message = convert_gamestate(state.gamestate, message)
+        if state.pose is not None:
+            message = convert_current_pose(state.pose, message)
+        if state.cmd_vel is not None:
+            message = convert_walk_command(state.cmd_vel, state.cmd_vel_time, message)
+        if convert_target_position is not None:
+            message = convert_target_position(state.move_base_goal, message)
+        if state.ball is not None:
+            message = convert_ball_position(state.ball, state.ball_velocity, state.ball_covariance, message)
+        if state.seen_robots is not None:
+            message = convert_seen_robots(state.seen_robots, message)
+        if state.strategy is not None:
+            message = convert_strategy(state.strategy, state.strategy_time, message)
+        if state.time_to_ball is not None:
+            message = convert_time_to_ball(
+                state.time_to_ball, state.time_to_ball_time, state.ball, state.pose, state.avg_walking_speed, message
+            )
 
         return message
 
@@ -174,7 +187,9 @@ class StateToMessageConverter:
     def convert_to_euler(self, quaternion: Quaternion):
         return transforms3d.euler.quat2euler([quaternion.w, quaternion.x, quaternion.y, quaternion.z])
 
-    def convert_to_covariance_matrix(self, covariance_matrix: Proto.fmat3, row_major_covariance: List[double]):
+    def convert_to_covariance_matrix(
+        self, covariance_matrix: Proto.fmat3, row_major_covariance: Float64[np.ndarray, "36"]
+    ):
         # ROS covariance is row-major 36 x float, while protobuf covariance
         # is column-major 9 x float [x, y, θ]
         covariance_matrix.x.x = row_major_covariance[0]

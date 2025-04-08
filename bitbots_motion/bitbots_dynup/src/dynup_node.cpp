@@ -215,6 +215,10 @@ rclcpp_action::GoalResponse DynupNode::goalCb(const rclcpp_action::GoalUUID &uui
     server_free_ = false;
     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
   } else {
+    if (goal->from_hcm) {
+      cancel_goal_ = true;
+      return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
+    }
     RCLCPP_WARN(node_->get_logger(), "Dynup is busy, goal rejected!");
     return rclcpp_action::GoalResponse::REJECT;
   }
@@ -259,9 +263,18 @@ void DynupNode::loopEngine(int loop_rate, std::shared_ptr<DynupGoalHandle> goal_
   /* Do the loop as long as nothing cancels it */
   while (rclcpp::ok()) {
     rclcpp::Time startTime = node_->get_clock()->now();
+    // This is used when the cancelation is requested externally
     if (goal_handle->is_canceling()) {
       goal_handle->canceled(result);
       RCLCPP_INFO(node_->get_logger(), "Goal canceled");
+      return;
+    }
+    // This is used when the dynup server descides to cancel itself
+    if (cancel_goal_) {
+      result->successful = false;
+      goal_handle->abort(result);
+      server_free_ = true;
+      cancel_goal_ = false;
       return;
     }
     msg = step(getTimeDelta());
@@ -282,9 +295,12 @@ void DynupNode::loopEngine(int loop_rate, std::shared_ptr<DynupGoalHandle> goal_
     if (msg.joint_names.empty()) {
       continue;
     }
+    msg.from_hcm = goal_handle->get_goal()->from_hcm;
     joint_goal_publisher_->publish(msg);
     node_->get_clock()->sleep_until(startTime + rclcpp::Duration::from_nanoseconds(1e9 / loop_rate));
   }
+  // Wether we canceled the goal or we finished cleanly the cancelation request is not valid anymore
+  cancel_goal_ = false;
 }
 
 bitbots_dynup::msg::DynupPoses DynupNode::getCurrentPoses() {

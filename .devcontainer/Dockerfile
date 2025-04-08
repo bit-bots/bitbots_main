@@ -32,7 +32,6 @@ RUN apt-get update -y \
     tree \
     uvcdynctrl \
     vim \
-    vlc \
     wget \
     x11-apps \
     zsh

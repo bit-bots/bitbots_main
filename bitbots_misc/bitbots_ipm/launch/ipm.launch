@@ -2,7 +2,7 @@
 <launch>
     <arg name="sim" default="false"/>
     <arg name="full_image" default="false" description="Whether to project the full-size RGB image for debugging or showcasing"/>
-    <arg name="markers" default="false" description="Whether to publish markers for visualization of the detected objects in RViz"/>
+    <arg name="markers" default="true" description="Whether to publish markers for visualization of the detected objects in RViz"/>
     <arg name="rviz" default="false" description="Whether to start RViz with the ipm configuration"/>
 
     <node pkg="ipm_image_node" exec="ipm" name="ipm_line_mask" output="screen">

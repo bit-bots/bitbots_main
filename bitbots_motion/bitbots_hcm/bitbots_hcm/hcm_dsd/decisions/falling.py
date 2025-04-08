@@ -4,6 +4,7 @@ from enum import Enum
 import numpy as np
 from bitbots_utils.transforms import quat2fused
 from rclpy.duration import Duration
+from rclpy.time import Time
 
 from bitbots_hcm.hcm_dsd.decisions import AbstractHCMDecisionElement
 
@@ -32,7 +33,7 @@ class Falling(AbstractHCMDecisionElement):
         self.smoothing = self.blackboard.node.get_parameter("smooth_threshold").value
 
         # Initialize smoothing list that stores the last results
-        self.smoothing_list: list[FallDirection] = []
+        self.smoothing_list: list[tuple[Time, FallDirection]] = []
 
     def perform(self, reevaluate=False):
         """Checks if the robot is currently falling and in which direction."""
@@ -77,7 +78,7 @@ class Falling(AbstractHCMDecisionElement):
         # Prune old elements from smoothing history
         self.smoothing_list = list(
             filter(
-                lambda x: x[0] > self.blackboard.node.get_clock().now() - Duration(seconds=self.smoothing),
+                lambda x: x[0] > self.blackboard.node.get_clock().now() - Duration(seconds=self.smoothing),  # type: ignore[arg-type]
                 self.smoothing_list,
             )
         )

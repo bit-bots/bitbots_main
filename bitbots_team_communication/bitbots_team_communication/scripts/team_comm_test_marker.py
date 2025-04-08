@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# type: ignore
 
 import copy
 import math
@@ -23,6 +24,9 @@ BALL_DIAMETER = 0.13
 
 
 class TeamCommMarker:
+    marker_name: str
+    interaction_mode: int
+
     def __init__(self, server):
         self.server = server
         self.pose = Pose()

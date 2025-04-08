@@ -50,7 +50,7 @@ class RobotWidget(QGroupBox):
         self.publish_button = PublishButton()
         self.main_layout.addWidget(self.publish_button)
 
-        self.id_spin_box.valueChanged.connect(self.id_spin_box_update)
+        self.id_spin_box.valueChanged.connect(self.id_spin_box_update)  # type: ignore[attr-defined]
 
     def id_spin_box_update(self):
         enabled = self.id_spin_box.value() != 0
@@ -110,12 +110,12 @@ class TimeToPositionBox(QGroupBox):
         self.time_spin_box.setRange(0, 200)
         self.main_layout.addWidget(self.time_spin_box)
         # Create slider
-        self.time_slider = QSlider(Qt.Horizontal)
+        self.time_slider = QSlider(Qt.Horizontal)  # type: ignore[attr-defined]
         self.time_slider.setRange(0, 200)
         self.main_layout.addWidget(self.time_slider)
         # Connect spin box and slider
-        self.time_spin_box.valueChanged.connect(self.time_slider.setValue)
-        self.time_slider.valueChanged.connect(self.time_spin_box.setValue)
+        self.time_spin_box.valueChanged.connect(self.time_slider.setValue)  # type: ignore[attr-defined]
+        self.time_slider.valueChanged.connect(self.time_spin_box.setValue)  # type: ignore[attr-defined]
 
     def get_time(self) -> float:
         return float(self.time_spin_box.value())
@@ -178,7 +178,7 @@ class PublishButton(QPushButton):
         self.setCheckable(True)
         self.setEnabled(False)
 
-        self.clicked.connect(self.publish_button_clicked)
+        self.clicked.connect(self.publish_button_clicked)  # type: ignore[attr-defined]
 
     def publish_button_clicked(self):
         if self.isChecked():
@@ -202,9 +202,6 @@ class TeamDataSimulator(Plugin):
 
         # Create publishers
         self.team_data_pub = self._node.create_publisher(TeamData, "/team_data", 1)
-
-        # Initialize the window
-        self._widget = QMainWindow()
 
         # Load XML ui definition
         ui_file = os.path.join(

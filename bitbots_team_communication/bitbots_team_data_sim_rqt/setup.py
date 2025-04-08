@@ -13,6 +13,7 @@ setup(
     ],
     install_requires=["setuptools"],
     zip_safe=True,
+    tests_require=["pytest"],
     entry_points={
         "console_scripts": [
             "team_data_sim_gui = " + package_name + ".team_data_ui:main",

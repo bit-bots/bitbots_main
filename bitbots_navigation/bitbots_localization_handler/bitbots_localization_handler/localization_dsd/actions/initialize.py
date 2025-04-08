@@ -60,6 +60,15 @@ class InitPosition(AbstractInitialize):
         self.blackboard.node.get_logger().debug("Initializing position")
         while not self.blackboard.reset_filter_proxy.wait_for_service(timeout_sec=3.0):
             self.blackboard.node.get_logger().info("Localization reset service not available, waiting again...")
+
+        # Abort if we don't know the current position
+        if self.blackboard.robot_pose is None:
+            self.blackboard.node.get_logger().warn(
+                "Can't initialize position, because we don't know the current position"
+            )
+            return self.pop()
+
+        # Reset the localization to the current position
         self.blackboard.reset_filter_proxy.call_async(
             ResetFilter.Request(
                 init_mode=ResetFilter.Request.POSITION,
@@ -76,6 +85,13 @@ class InitPoseAfterFall(AbstractInitialize):
         self.blackboard.node.get_logger().debug("Initializing at pose after fall")
         while not self.blackboard.reset_filter_proxy.wait_for_service(timeout_sec=3.0):
             self.blackboard.node.get_logger().info("Localization reset service not available, waiting again...")
+
+        # Abort if we don't know the current pose
+        if self.blackboard.robot_pose is None:
+            self.blackboard.node.get_logger().warn(
+                "Can't initialize position, because we don't know the current position"
+            )
+            return self.pop()
 
         # Calculate the angle of the robot after the fall by adding the yaw difference during the fall
         # (estimated by the IMU) to the last known localization yaw
@@ -113,9 +129,7 @@ class InitGoal(AbstractInitialize):
         self.do_not_reevaluate()
         self.blackboard.node.get_logger().debug("Initializing on the side lines of our side")
         while not self.blackboard.reset_filter_proxy.wait_for_service(timeout_sec=3.0):
-            self.blackboard.reset_filter_proxy.node.get_logger().info(
-                "Localization reset service not available, waiting again..."
-            )
+            self.blackboard.node.get_logger().info("Localization reset service not available, waiting again...")
         self.blackboard.reset_filter_proxy.call_async(
             ResetFilter.Request(init_mode=ResetFilter.Request.POSE, x=float(-self.blackboard.field_length / 2), y=0.0)
         )
@@ -143,6 +157,9 @@ class RedoLastInit(AbstractInitialize):
 
     def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
+        if self.blackboard.last_init_action_type is None:
+            raise ValueError("There is no last init action to redo")
+
         # Creates an instance of the last init action
         self.sub_action: AbstractInitialize = self.blackboard.last_init_action_type(blackboard, dsd, parameters)
 

@@ -18,9 +18,9 @@ class ResourceManager:
         # Get the path to the animations folder
         self.basepath = abspath(os.path.join(get_package_share_directory(robot_type + "_animations"), "animations"))
 
-        self.cache = {}
-        self.files = []
-        self.names = []  # Plain animation names, without filename-extension
+        self.cache: dict[str, str] = {}
+        self.files: list[str] = []
+        self.names: list[str] = []  # Plain animation names, without filename-extension
         self.animpath = self._get_animpath()
 
     def search(self, path, folders, filename=""):
@@ -121,7 +121,7 @@ class ResourceManager:
         """Finds a resource relative to self.basepath"""
         return self.find(name)
 
-    def _get_animpath(self):
+    def _get_animpath(self) -> list[str]:
         """
         Get a list of folders in the animations/ folder.
         """

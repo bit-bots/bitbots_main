@@ -1,5 +1,4 @@
 import math
-from typing import Optional, Tuple
 
 import numpy as np
 import tf2_ros as tf2
@@ -20,6 +19,18 @@ from tf2_geometry_msgs import Point, PointStamped
 from tf_transformations import euler_from_quaternion
 
 from bitbots_blackboard.capsules import AbstractBlackboardCapsule
+
+
+class WorldModelTFError(Exception):
+    ...
+
+
+class WorldModelPositionTFError(WorldModelTFError):
+    ...
+
+
+class WorldModelBallTFError(WorldModelTFError):
+    ...
 
 
 class WorldModelCapsule(AbstractBlackboardCapsule):
@@ -78,7 +89,7 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
         """Returns true if we or a teammate are reasonably sure that we have seen the ball"""
         return self.ball_seen_self() or self._blackboard.team_data.teammate_ball_is_valid()
 
-    def get_ball_position_xy(self) -> Tuple[float, float]:
+    def get_ball_position_xy(self) -> tuple[float, float]:
         """Return the ball saved in the map frame, meaning the absolute position of the ball on the field"""
         ball = self.get_best_ball_point_stamped()
         return ball.point.x, ball.point.y
@@ -105,7 +116,7 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
         self.debug_publisher_which_ball.publish(Header(stamp=own_ball.header.stamp, frame_id="own_ball_map"))
         return own_ball
 
-    def get_ball_position_uv(self) -> Tuple[float, float]:
+    def get_ball_position_uv(self) -> tuple[float, float]:
         """
         Returns the ball position relative to the robot in the base_footprint frame.
         U and V are returned, where positive U is forward, positive V is to the left.
@@ -118,7 +129,7 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
         except tf2.ExtrapolationException as e:
             self._node.get_logger().warn(str(e))
             self._node.get_logger().error("Severe transformation problem concerning the ball!")
-            return None
+            raise WorldModelBallTFError("Could not transform ball to base_footprint frame") from e
         return ball_bfp.x, ball_bfp.y
 
     def get_ball_distance(self) -> float:
@@ -171,38 +182,38 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
     # Goal #
     ########
 
-    def get_map_based_opp_goal_center_uv(self):
+    def get_map_based_opp_goal_center_uv(self) -> tuple[float, float]:
         x, y = self.get_map_based_opp_goal_center_xy()
         return self.get_uv_from_xy(x, y)
 
-    def get_map_based_opp_goal_center_xy(self):
+    def get_map_based_opp_goal_center_xy(self) -> tuple[float, float]:
         return self.field_length / 2, 0.0
 
-    def get_map_based_own_goal_center_uv(self):
+    def get_map_based_own_goal_center_uv(self) -> tuple[float, float]:
         x, y = self.get_map_based_own_goal_center_xy()
         return self.get_uv_from_xy(x, y)
 
-    def get_map_based_own_goal_center_xy(self):
+    def get_map_based_own_goal_center_xy(self) -> tuple[float, float]:
         return -self.field_length / 2, 0.0
 
-    def get_map_based_opp_goal_angle_from_ball(self):
+    def get_map_based_opp_goal_angle_from_ball(self) -> float:
         ball_x, ball_y = self.get_ball_position_xy()
         goal_x, goal_y = self.get_map_based_opp_goal_center_xy()
         return math.atan2(goal_y - ball_y, goal_x - ball_x)
 
-    def get_map_based_opp_goal_distance(self):
+    def get_map_based_opp_goal_distance(self) -> float:
         x, y = self.get_map_based_opp_goal_center_xy()
         return self.get_distance_to_xy(x, y)
 
-    def get_map_based_opp_goal_angle(self):
+    def get_map_based_opp_goal_angle(self) -> float:
         x, y = self.get_map_based_opp_goal_center_uv()
         return math.atan2(y, x)
 
-    def get_map_based_opp_goal_left_post_uv(self):
+    def get_map_based_opp_goal_left_post_uv(self) -> tuple[float, float]:
         x, y = self.get_map_based_opp_goal_center_xy()
         return self.get_uv_from_xy(x, y - self.goal_width / 2)
 
-    def get_map_based_opp_goal_right_post_uv(self):
+    def get_map_based_opp_goal_right_post_uv(self) -> tuple[float, float]:
         x, y = self.get_map_based_opp_goal_center_xy()
         return self.get_uv_from_xy(x, y + self.goal_width / 2)
 
@@ -210,23 +221,21 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
     # Pose #
     ########
 
-    def get_current_position(self) -> Optional[Tuple[float, float, float]]:
+    def get_current_position(self) -> tuple[float, float, float]:
         """
         Returns the current position on the field as determined by the localization.
         0,0,0 is the center of the field looking in the direction of the opponent goal.
         :returns x,y,theta:
         """
-        if not (transform := self.get_current_position_transform()):
-            return None
+        transform = self.get_current_position_transform()
         theta = euler_from_quaternion(numpify(transform.transform.rotation))[2]
         return transform.transform.translation.x, transform.transform.translation.y, theta
 
-    def get_current_position_pose_stamped(self) -> Optional[PoseStamped]:
+    def get_current_position_pose_stamped(self) -> PoseStamped:
         """
         Returns the current position as determined by the localization as a PoseStamped
         """
-        if not (transform := self.get_current_position_transform()):
-            return None
+        transform = self.get_current_position_transform()
         return PoseStamped(
             header=transform.header,
             pose=Pose(
@@ -245,13 +254,13 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
             )
         except (tf2.LookupException, tf2.ConnectivityException, tf2.ExtrapolationException) as e:
             self._node.get_logger().warn(str(e))
-            return None
+            raise WorldModelPositionTFError("Could not get current position transform") from e
 
     ##########
     # Common #
     ##########
 
-    def get_uv_from_xy(self, x, y) -> Tuple[float, float]:
+    def get_uv_from_xy(self, x: float, y: float) -> tuple[float, float]:
         """Returns the relativ positions of the robot to this absolute position"""
         current_position = self.get_current_position()
         x2 = x - current_position[0]
@@ -261,14 +270,14 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
         v = math.cos(theta) * y2 - math.sin(theta) * x2
         return u, v
 
-    def get_xy_from_uv(self, u, v):
+    def get_xy_from_uv(self, u: float, v: float) -> tuple[float, float]:
         """Returns the absolute position from the given relative position to the robot"""
         pos_x, pos_y, theta = self.get_current_position()
         angle = math.atan2(v, u) + theta
         hypotenuse = math.hypot(u, v)
         return pos_x + math.sin(angle) * hypotenuse, pos_y + math.cos(angle) * hypotenuse
 
-    def get_distance_to_xy(self, x, y):
+    def get_distance_to_xy(self, x: float, y: float) -> float:
         """Returns distance from robot to given position"""
         u, v = self.get_uv_from_xy(x, y)
         dist = math.hypot(u, v)

@@ -26,10 +26,6 @@ class AlignedToGoal(AbstractDecisionElement):
         # Get our position
         current_pose = self.blackboard.world_model.get_current_position()
 
-        # Check if we know our position
-        if current_pose is None:
-            return "NO"
-
         # Get maximum kick angle relative to our base footprint
         angle_difference_right = current_pose[2] - self.max_kick_angle
         angle_difference_left = current_pose[2] + self.max_kick_angle
