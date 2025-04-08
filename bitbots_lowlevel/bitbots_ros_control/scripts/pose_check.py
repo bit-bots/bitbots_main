@@ -126,37 +126,6 @@ def main():
             f"{Style.BRIGHT}Press enter to continue.{Style.RESET_ALL}"
         )
 
-        ################
-        # Arms-Up-Pose #
-        ################
-
-        step += 1
-        input(
-            f"\n{Fore.YELLOW}{num_to_emoji(step)}: The robot will now move {Style.BRIGHT}its arms up and its head to the right.{Style.RESET_ALL}\n"
-            f"{Style.BRIGHT}Press enter to move.{Style.RESET_ALL}"
-        )
-
-        move_to_joint_position(
-            pub,
-            {
-                "LElbow": -math.pi / 2,
-                "LShoulderRoll": -math.pi,
-                "RElbow": math.pi / 2,
-                "RShoulderRoll": math.pi,
-                "HeadPan": -math.pi / 2,
-            },
-        )
-
-        input(
-            f"{Style.BRIGHT}\nChecks:{Style.RESET_ALL}\n"
-            "- Check that all limbs are straight.\n"
-            "- Check that both arms are symmetrical.\n"
-            "- Check that the head looks 90 degrees to the right.\n"
-            "- Check that the head is horizontal.\n"
-            "- Check for backlash and loose parts.\n"
-            f"{Style.BRIGHT}Press enter to continue.{Style.RESET_ALL}"
-        )
-
         ##########################
         # Arms-To-The-Front-Pose #
         ##########################

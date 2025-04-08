@@ -16,34 +16,12 @@ bitbots_path_planning:
     description: 'The rate at which the path planning is executed'
     validation:
       bounds<>: [0.0, 100.0]
-
-  planner:
-    dummy:
-      type: bool
-      default_value: false
-      description: 'If true, the dummy planner is used, which just returns a straight line to the goal. This ignores all obstacles, but also has no limitations on the map size.'
-
+  
   map:
     planning_frame:
       type: string
       default_value: map
       description: 'The frame in which the path planning is done'
-    resolution:
-      type: int
-      default_value: 20
-      description: 'Pixel per meter'
-      read_only: true
-    size:
-      x:
-        type: double
-        default_value: 11.0
-        description: 'The size of the map in x direction'
-        read_only: true
-      y:
-        type: double
-        default_value: 8.0
-        description: 'The size of the map in y direction'
-        read_only: true
     ball_update_topic:
       type: string
       default_value: ball_position_relative_filtered
@@ -59,33 +37,26 @@ bitbots_path_planning:
       default_value: 0.13
       description: 'The diameter of the ball'
       read_only: true
-    obstacle_value:
-      type: int
-      default_value: 50
-      description: 'The value of the obstacles in the map'
-      read_only: true
     inflation:
-      dialate:
-        type: int
-        default_value: 3
-        description: 'The dialte value for the inflation'
-        read_only: true
-      blur:
-        type: int
-        default_value: 11
-        description: 'The blur value for the inflation'
-        read_only: true
+      robot_radius:
+        type: double
+        default_value: 0.3
+        description: 'Radius of a circle on the ground that represents the space occupied by our robot. Instead of planning with both a robot polygon/circle and an obstacle polygon, we just inflate the obstacles and assume the robot is a point. This is faster and simpler.'
+      obstacle_margin:
+        type: double
+        default_value: 0.1
+        description: "Distance we want to keep to obstacles when planning a path around them. No immediate action is required if the robot is closer than this distance to an obstacle, but we don't consider paths this close during the visibility graph generation."
 
   controller:
     carrot_distance:
       type: int
-      default_value: 4
+      default_value: 1
       description: 'The distance to the carrot that we want to reach on the path'
       validation:
         bounds<>: [0, 100]
     max_rotation_vel:
       type: double
-      default_value: 0.3
+      default_value: 0.4
       description: 'The maximum rotation velocity of the robot in rad/s around the z-axis'
       validation:
         bounds<>: [0.0, 1.0]
@@ -109,7 +80,7 @@ bitbots_path_planning:
         bounds<>: [0.0, 1.0]
     smoothing_tau:
       type: double
-      default_value: 1.0
+      default_value: 0.1
       description: 'This is the time constant of the exponential smoothing filter. The higher the value, the more smoothing is applied. It denotes the time after which a unit step function input signal reaches 63% (1-1/e) of its original strength. In other words, it denotes the time it takes for a new input to be 63% integrated into the output. It is update rate independent!'
       validation:
         bounds<>: [0.0, 1.0]
@@ -121,19 +92,19 @@ bitbots_path_planning:
         bounds<>: [0.0, 1.0]
     rotation_slow_down_factor:
       type: double
-      default_value: 0.3
+      default_value: 0.6
       description: 'Clamped p gain of the rotation controller'
       validation:
         bounds<>: [0.0, 1.0]
     translation_slow_down_factor:
       type: double
-      default_value: 1.0
+      default_value: 0.6
       description: 'Clamped p gain of the translation controller'
       validation:
         bounds<>: [0.0, 1.0]
     orient_to_goal_distance:
       type: double
-      default_value: 1.0
+      default_value: 0.5
       description: 'Distance at which we switch from orienting towards the path to orienting towards the goal poses orientation (in meters)'
       validation:
         bounds<>: [0.0, 10.0]

@@ -66,7 +66,7 @@ class Controller:
 
         # Calculate the heading angle from our current position to the final position of the global plan
         final_walk_angle = math.atan2(
-            end_pose.position.y - current_pose.position.y, end_pose.position.x - current_pose.position.x
+            goal_pose.position.y - current_pose.position.y, goal_pose.position.x - current_pose.position.x
         )
 
         if len(path.poses) < 3:

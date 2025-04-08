@@ -8,8 +8,9 @@
   <license>MIT</license>
 
   <depend>bitbots_tf_buffer</depend>
-  <depend>geometry_msgs</depend>
+  <depend>cargo</depend>
   <depend>generate_parameter_library</depend>
+  <depend>geometry_msgs</depend>
   <depend>nav_msgs</depend>
   <depend>python3-numpy</depend>
   <depend>python3-opencv</depend>
