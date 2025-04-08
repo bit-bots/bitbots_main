@@ -12,12 +12,12 @@ from bitbots_animation_server.animation import Animation
 class SplineAnimator:
     def __init__(self, animation: Animation, current_joint_states: JointState, logger: Logger, clock: Clock):
         self.anim = deepcopy(animation)
-        self.start_time = clock.now().nanoseconds / 1e9
+        self.start_time: float = clock.now().nanoseconds / 1e9
 
         self.animation_duration: float = 0.0
         self.spline_dict: dict[str, SmoothSpline] = {}
-        self.torques = {}
-        self.stabilizations = {}
+        self.torques: dict[float, dict[str, float]] = {}
+        self.stabilizations: dict[float, dict[str, str]] = {}
         self.keyframe_times: list[float] = []
 
         # Load keyframe positions into the splines
@@ -54,54 +54,45 @@ class SplineAnimator:
             self.spline_dict[joint].compute_spline()
 
     def get_keyframe_times(self) -> list[float]:
-        assert len(self.keyframe_times) == len(self.anim.keyframes)
+        assert len(self.keyframe_times) == len(self.anim.keyframes), "Keyframe times not set correctly"
         return self.keyframe_times
 
-    def get_positions_deg(self, time):
+    def get_positions_deg(self, time: float) -> dict[str, float] | None:
         if time < 0 or time > self.animation_duration:
             return None
-        ret_dict = {}
-        for joint in self.spline_dict:
-            ret_dict[joint] = self.spline_dict[joint].pos(time)
-        return ret_dict
+        return {joint: self.spline_dict[joint].pos(time) for joint in self.spline_dict}
 
-    def get_positions_rad(self, time):
+    def get_positions_rad(self, time: float) -> dict[str, float] | None:
         if time < 0 or time > self.animation_duration:
             return None
-        ret_dict = {}
-        for joint in self.spline_dict:
-            ret_dict[joint] = math.radians(self.spline_dict[joint].pos(time))
+        return {joint: math.radians(self.spline_dict[joint].pos(time)) for joint in self.spline_dict}
 
-        return ret_dict
-
-    def get_torque(self, current_time) -> dict[str, float]:
-        torque: dict[str, float] = {}
+    def get_torque(self, current_time: float) -> dict[str, float]:
         if current_time < 0 or current_time > self.animation_duration:
-            return torque
+            return {}
 
-        # find previous time
+        # Find previous time
         sorted_keys = sorted(self.torques.keys())
         keyframe_time = sorted_keys[0]
         for keyframe_time in reversed(sorted_keys):
             if keyframe_time <= current_time:
                 break
-
         return self.torques[keyframe_time]
 
-    def get_start_time(self):
+    def get_start_time(self) -> float:
         return self.start_time
 
-    def get_duration(self):
+    def get_duration(self) -> float:
         return self.animation_duration
 
-    def get_stabilization_functions(self, current_time) -> dict[str, str]:
+    def get_stabilization_functions(self, current_time: float) -> dict[str, str]:
         if current_time < 0 or current_time > self.animation_duration:
             return {}
-        # find previous time
+
+        # Find previous time
         sorted_keys = sorted(self.stabilizations.keys())
         keyframe_time = sorted_keys[0]
         for keyframe_time in reversed(sorted_keys):
             if keyframe_time <= current_time:
                 break
-
         return self.stabilizations[keyframe_time]

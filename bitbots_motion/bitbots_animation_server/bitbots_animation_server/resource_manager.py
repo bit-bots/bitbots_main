@@ -1,11 +1,3 @@
-"""
-ResourceManager
-^^^^^^^^^^^^^^^
-
-The ResourceManager module provides functions to search and list animations for a given robot.
-Thus, it is possible to find resources without knowing the current location in the file system.
-"""
-
 import os
 from os import walk
 from os.path import abspath, dirname, exists, join, normpath
@@ -15,6 +7,12 @@ from ament_index_python import get_package_share_directory
 
 class ResourceManager:
     def __init__(self, robot_type: str):
+        """
+        The ResourceManager module provides functions to search and list animations for a given robot.
+        Thus, it is possible to find resources without knowing the current location in the file system.
+
+        :param robot_type: Suffixed with "_animations" to get the package name and thus the path to the animations
+        """
         # Get the path to the animations folder
         self.basepath = abspath(os.path.join(get_package_share_directory(robot_type + "_animations"), "animations"))
 
@@ -23,23 +21,16 @@ class ResourceManager:
         self.names: list[str] = []  # Plain animation names, without filename-extension
         self.animpath = self._get_animpath()
 
-    def search(self, path, folders, filename=""):
+    def search(self, path: str, folders: str | list[str], filename: str = "") -> str:
         """
-        :param path: path to search in
-        :type path: String
-        :param folders: folder or file to search for
-        :type folders: String or List of Strings
-        :param filename: will be appended to each element in `folders` to complete it
-        :type filename: String
-        :raises: IOError
-        :return: absolute path to the file
-        :rtype: String
+        Searches in all folders in `path` recursively for the file specified in folders + filename.
+        If folders is a list, every item of the list will be treated as a single folder.
 
-        This method searches in all folders in `path` recursively for the file
-        specified in folders + filename. If folders is a list, every item of the list will
-        be treated as a single folder. This can be used to search in multiple folders.
-
-        An IOError is raised when the file has not been found.
+        :param path: Path to search in
+        :param folders: Folder or file to search for
+        :param filename: Will be appended to each element in `folders` to complete it
+        :raises IOError: When the file has not been found
+        :return: Absolute path to the file
 
         Example:
         When
@@ -71,26 +62,18 @@ class ResourceManager:
 
                 path = next_path
         if not folders:
-            return OSError(f"Resource '{filename}' not found. folders was empty, only filename provided")
-        return OSError(f"Resource '{str(folders) + filename}' not found")
+            raise OSError(f"Resource '{filename}' not found. folders was empty, only filename provided")
+        raise OSError(f"Resource '{str(folders) + filename}' not found")
 
-    def find(self, name, filename=""):
+    def find(self, name: str | list[str], filename: str = "") -> str:
         """
+        Searches the requested resource using `search` with folders = name and filename = filename,
+        and saves the result to reuse it the next time the same resource is requested.
+
         :param name: Name of the file or folder to be searched
-        :type name: String or List
         :param filename: Appended to name, default=""
-        :type filename: String
-        :raises: IOError
+        :raises IOError: When the file has not been found
         :return: Absolute path to the file
-        :rtype: String
-
-        Searches the requested resource using :func:`search` with
-        folders = name and filename = filename, and saves the result to
-        reuse it the next time the same resource is requested.
-
-        self.basepath will be used as search path.
-
-        An IOError is raised when the file has not been found.
         """
         cache_name = str(name) + filename
         if cache_name not in self.cache:
@@ -105,7 +88,7 @@ class ResourceManager:
 
         return result
 
-    def find_animation(self, name):
+    def find_animation(self, name: str) -> str:
         """
         Find an animation in <robot_name>_animations/animations/*. The filename
         should be given without ``.json``.
@@ -113,7 +96,7 @@ class ResourceManager:
         """
         return self.find(self.animpath, f"{name}.json")
 
-    def find_resource(self, name):
+    def find_resource(self, name: str) -> str:
         """Finds a resource relative to self.basepath"""
         return self.find(name)
 
@@ -128,7 +111,7 @@ class ResourceManager:
             anim_dirs.append(path[0] + "/")
         return anim_dirs
 
-    def find_all_animations(self, force_reload=False):
+    def find_all_animations(self, force_reload: bool = False) -> list[str]:
         """Finds all animations in the animations-directory
 
         returns a list of all animation-paths in the system.
@@ -143,7 +126,7 @@ class ResourceManager:
                         self.names.append(name)
         return self.files
 
-    def find_all_animations_by_name(self, force_reload=False):
+    def find_all_animations_by_name(self, force_reload: bool = False) -> dict[str, str]:
         """Finds all animations in the animations directory.
 
         returns a dict from animation names to animation paths

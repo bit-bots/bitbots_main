@@ -50,7 +50,7 @@ class AnimationNode(Node):
         self.resource_manager = ResourceManager(self.get_parameter("robot_type").value)
 
         # Load all animations into memory
-        all_animations = self.resource_manager.find_all_animations_by_name(self)
+        all_animations = self.resource_manager.find_all_animations_by_name()
         for animation_name, animation_file in all_animations.items():
             try:
                 with open(animation_file) as fp:
