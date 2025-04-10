@@ -24,11 +24,14 @@
     <node pkg="bitbots_webots_sim" exec="start_webots_ros_supervisor.py" name="webots_ros_supervisor" output="screen" args="--sim-port $(var sim_port)"/>
 
     <group unless="$(var multi_robot)">
+        <let name="robot_name" value="$(eval '\'amy\' if \'$(var robot_type)\'==\'wolfgang\' else \'nao\'')"/>
+
         <include file="$(find-pkg-share bitbots_webots_sim)/launch/single_robot_controller.launch">
             <arg name="camera" value="$(var camera)"/>
             <arg name="sim_port" value="$(var sim_port)"/>
             <arg name="recognition" value="$(var recognition)"/>
             <arg name="robot_type" value="$(var robot_type)"/>
+            <arg name="robot_name" value="$(var robot_name)" />
         </include>
         <include file="$(find-pkg-share bitbots_webots_sim)/launch/imu_filter_sim.launch"/>
     </group>

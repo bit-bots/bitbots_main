@@ -230,6 +230,7 @@ class SupervisorController:
         self.reset_robot_pose_rpy([-3, 3, self.reset_height], [0, 0.24, -1.57], name="jack")
         self.reset_robot_pose_rpy([-3, -3, self.reset_height], [0, 0.24, 1.57], name="donna")
         self.reset_robot_pose_rpy([0, 6, self.reset_height], [0, 0.24, -1.57], name="melody")
+        self.reset_robot_pose_rpy([-1, 3, self.reset_height], [0, 0.24, -1.57], name="nao")
         return response or Empty.Response()
 
     def robot_pose_callback(self, request=None, response=None):

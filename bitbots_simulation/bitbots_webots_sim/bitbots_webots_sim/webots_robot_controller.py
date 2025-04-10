@@ -55,9 +55,11 @@ class RobotController:
 
         self.motors = []
         self.sensors = []
+        self.cameras = []
         # for direct access
         self.motors_dict = {}
         self.sensors_dict = {}
+        self.cameras_dict = {}
         self.timestep = int(self.robot_node.getBasicTimeStep())
 
         self.is_wolfgang = False
@@ -136,7 +138,7 @@ class RobotController:
             self.sensor_suffix = "_sensor"
             accel_name = "imu accelerometer"
             gyro_name = "imu gyro"
-            camera_name = "camera"
+            camera_names = ["camera"]
             if self.foot_sensors_active:
                 self.pressure_sensor_names = ["llb", "llf", "lrf", "lrb", "rlb", "rlf", "rrf", "rrb"]
             self.pressure_sensors = []
@@ -194,7 +196,7 @@ class RobotController:
             self.sensor_suffix = "S"
             accel_name = "Accelerometer"
             gyro_name = "Gyro"
-            camera_name = "Camera"
+            camera_names = ["Camera"]
         elif robot == "nao":
             self.proto_motor_names = [
                 "RShoulderPitch",
@@ -218,12 +220,33 @@ class RobotController:
                 "HeadYaw",
                 "HeadPitch",
             ]
+            self.external_motor_names = [
+                "RShoulderPitch",
+                "LShoulderPitch",
+                "RShoulderRoll",
+                "LShoulderRoll",
+                "RElbow",
+                "LElbow",
+                "RHipYaw",
+                "LHipYaw",
+                "RHipRoll",
+                "LHipRoll",
+                "RHipPitch",
+                "LHipPitch",
+                "RKnee",
+                "LKnee",
+                "RAnklePitch",
+                "LAnklePitch",
+                "RAnkleRoll",
+                "LAnkleRoll",
+                "HeadPan",
+                "HeadTilt",
+            ]
             self.pressure_sensors = None
-            self.external_motor_names = self.proto_motor_names
             self.sensor_suffix = "S"
             accel_name = "accelerometer"
             gyro_name = "gyro"
-            camera_name = "CameraTop"
+            camera_names = ["CameraTop", "CameraBottom"]
         elif robot == "op3":  # robotis
             self.proto_motor_names = [
                 "ShoulderR",
@@ -273,7 +296,7 @@ class RobotController:
             self.sensor_suffix = "S"
             accel_name = "Accelerometer"
             gyro_name = "Gyro"
-            camera_name = "Camera"
+            camera_names = ["Camera"]
         elif robot == "rfc":
             self.proto_motor_names = [
                 "RightShoulderPitch [shoulder]",
@@ -323,7 +346,7 @@ class RobotController:
             self.sensor_suffix = "_sensor"
             accel_name = "Accelerometer"
             gyro_name = "Gyroscope"
-            camera_name = "Camera"
+            camera_names = ["Camera"]
         elif robot == "gankenkun":  # CITBrains
             self.proto_motor_names = [
                 "right_shoulder_pitch_joint [shoulder]",
@@ -351,7 +374,7 @@ class RobotController:
             self.sensor_suffix = "_sensor"
             accel_name = "accelerometer"
             gyro_name = "gyro"
-            camera_name = "camera_sensor"
+            camera_names = ["camera_sensor"]
         elif robot == "chape":  # itandroids
             self.proto_motor_names = [
                 "rightShoulderPitch[shoulder]",
@@ -401,7 +424,7 @@ class RobotController:
             self.sensor_suffix = "_sensor"
             accel_name = "Accelerometer"
             gyro_name = "Gyro"
-            camera_name = "Camera"
+            camera_names = ["Camera"]
         elif robot == "mrl_hsl":
             self.proto_motor_names = [
                 "Shoulder-R [shoulder]",
@@ -451,7 +474,7 @@ class RobotController:
             self.sensor_suffix = "S"
             accel_name = "Accelerometer"
             gyro_name = "Gyro"
-            camera_name = "Camera"
+            camera_names = ["Camera"]
         elif robot == "nugus":  # NUbots
             self.proto_motor_names = [
                 "neck_yaw",
@@ -501,7 +524,7 @@ class RobotController:
             self.sensor_suffix = "_sensor"
             accel_name = "accelerometer"
             gyro_name = "gyroscope"
-            camera_name = "left_camera"
+            camera_names = ["left_camera"]
         elif robot == "sahrv74":  # Starkit
             self.proto_motor_names = [
                 "right_shoulder_pitch [shoulder]",
@@ -530,7 +553,7 @@ class RobotController:
             self.sensor_suffix = "_sensor"
             accel_name = "accelerometer"
             gyro_name = "gyro"
-            camera_name = "left_camera"
+            camera_names = ["left_camera"]
         elif robot == "bez":  # UTRA
             self.proto_motor_names = [
                 "head_motor_0",
@@ -576,7 +599,7 @@ class RobotController:
             self.sensor_suffix = "_sensor"
             accel_name = "imu accelerometer"
             gyro_name = "imu gyro"
-            camera_name = "camera"
+            camera_names = ["camera"]
         else:
             raise ValueError(f"Robot type not supported: {robot}")
 
@@ -614,18 +637,23 @@ class RobotController:
             self.accel_head.enable(self.timestep)
             self.gyro_head = self.robot_node.getDevice("imu_head gyro")
             self.gyro_head.enable(self.timestep)
-        self.camera = self.robot_node.getDevice(camera_name)
+
         self.camera_counter = 0
-        if self.camera_active:
-            self.camera.enable(self.timestep * CAMERA_DIVIDER)
-        if self.recognize:
-            self.camera.recognitionEnable(self.timestep)
-            self.last_img_saved = 0.0
-            self.img_save_dir = (
-                "/tmp/webots/images" + time.strftime("%Y-%m-%d-%H-%M-%S") + os.getenv("WEBOTS_ROBOT_NAME", "")
-            )
-            if not os.path.exists(self.img_save_dir):
-                os.makedirs(self.img_save_dir)
+        for camera_name in camera_names:
+            camera = self.robot_node.getDevice(camera_name)
+            self.cameras.append(camera)
+            self.cameras_dict[camera_name] = camera
+
+            if self.camera_active:
+                camera.enable(self.timestep * CAMERA_DIVIDER)
+            if self.recognize:
+                camera.recognitionEnable(self.timestep)
+                self.last_img_saved = 0.0
+                self.img_save_dir = (
+                    "/tmp/webots/images" + time.strftime("%Y-%m-%d-%H-%M-%S") + os.getenv("WEBOTS_ROBOT_NAME", "")
+                )
+                if not os.path.exists(self.img_save_dir):
+                    os.makedirs(self.img_save_dir)
 
         self.ros_node.declare_parameter("imu_frame", "imu_frame")
         self.imu_frame = self.ros_node.get_parameter("imu_frame").get_parameter_value().string_value
@@ -718,6 +746,10 @@ class RobotController:
             goal_position = self.convert_joint_scaled_to_radiant(joint_name, goal_position)
         if relative:
             goal_position = goal_position + self.get_joint_values([joint_name])[0]
+        # if joint_name in ["RShoulderPitch", "LShoulderPitch"]:
+        #     print(f"Inveritng {joint_name} {goal_position}")
+        #     goal_position = -goal_position
+
         motor.setPosition(goal_position)
         if goal_velocity == -1:
             motor.setVelocity(motor.getMaxVelocity())
@@ -840,41 +872,42 @@ class RobotController:
             self.pub_imu_head.publish(self.get_imu_msg(head=True))
 
     def publish_camera(self):
-        img_msg = Image()
-        img_msg.header.stamp = Time(seconds=int(self.time), nanoseconds=self.time % 1 * 1e9).to_msg()
-        img_msg.header.frame_id = self.camera_optical_frame
-        img_msg.height = self.camera.getHeight()
-        img_msg.width = self.camera.getWidth()
-        img_msg.encoding = "bgra8"
-        img_msg.step = 4 * self.camera.getWidth()
-        img = self.camera.getImage()
-        img_msg.data = img
-        self.pub_cam.publish(img_msg)
+        for camera in self.cameras:
+            img_msg = Image()
+            img_msg.header.stamp = Time(seconds=int(self.time), nanoseconds=self.time % 1 * 1e9).to_msg()
+            img_msg.header.frame_id = self.camera_optical_frame
+            img_msg.height = camera.getHeight()
+            img_msg.width = camera.getWidth()
+            img_msg.encoding = "bgra8"
+            img_msg.step = 4 * camera.getWidth()
+            img = camera.getImage()
+            img_msg.data = img
+            self.pub_cam.publish(img_msg)
 
-        self.cam_info = CameraInfo()
-        self.cam_info.header = img_msg.header
-        self.cam_info.height = self.camera.getHeight()
-        self.cam_info.width = self.camera.getWidth()
-        f_y = self.mat_from_fov_and_resolution(
-            self.h_fov_to_v_fov(self.camera.getFov(), self.cam_info.height, self.cam_info.width), self.cam_info.height
-        )
-        f_x = self.mat_from_fov_and_resolution(self.camera.getFov(), self.cam_info.width)
-        self.cam_info.k = [f_x, 0.0, self.cam_info.width / 2, 0.0, f_y, self.cam_info.height / 2, 0.0, 0.0, 1.0]
-        self.cam_info.p = [
-            f_x,
-            0.0,
-            self.cam_info.width / 2,
-            0.0,
-            0.0,
-            f_y,
-            self.cam_info.height / 2,
-            0.0,
-            0.0,
-            0.0,
-            1.0,
-            0.0,
-        ]
-        self.pub_cam_info.publish(self.cam_info)
+            cam_info = CameraInfo()
+            cam_info.header = img_msg.header
+            cam_info.height = camera.getHeight()
+            cam_info.width = camera.getWidth()
+            f_y = self.mat_from_fov_and_resolution(
+                self.h_fov_to_v_fov(camera.getFov(), cam_info.height, cam_info.width), cam_info.height
+            )
+            f_x = self.mat_from_fov_and_resolution(camera.getFov(), cam_info.width)
+            cam_info.k = [f_x, 0.0, cam_info.width / 2, 0.0, f_y, cam_info.height / 2, 0.0, 0.0, 1.0]
+            cam_info.p = [
+                f_x,
+                0.0,
+                cam_info.width / 2,
+                0.0,
+                0.0,
+                f_y,
+                cam_info.height / 2,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+            ]
+            self.pub_cam_info.publish(cam_info)
 
     def save_recognition(self):
         if self.time - self.last_img_saved < 1.0:
@@ -913,8 +946,8 @@ class RobotController:
             f.write(annotation)
         self.camera.saveImage(filename=os.path.join(self.img_save_dir, img_name), quality=100)
 
-    def get_image(self):
-        return self.camera.getImage()
+    # def get_image(self):
+    #     return self.camera.getImage()
 
     def get_pressure_message(self):
         current_time = Time(seconds=int(self.time), nanoseconds=self.time % 1 * 1e9).to_msg()

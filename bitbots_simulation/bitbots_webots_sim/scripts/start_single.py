@@ -39,7 +39,7 @@ class RobotNode:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--robot_name", help="which robot should be started", default="amy")
+    parser.add_argument("--robot-name", help="which robot should be started", default="amy")
     parser.add_argument("--robot-type", help="which robot should be started", default="wolfgang")
     parser.add_argument("--sim-port", help="port of the simulation", default="1234")
     parser.add_argument(
