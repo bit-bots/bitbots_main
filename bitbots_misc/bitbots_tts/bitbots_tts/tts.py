@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 
-import os
-import subprocess
+import io
 import time
 import traceback
+import wave
+from pathlib import Path
 
 import rclpy
 import requests
-from ament_index_python import get_package_prefix
+import sounddevice as sd
+from piper import PiperVoice
 from rcl_interfaces.msg import Parameter, SetParametersResult
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.executors import MultiThreadedExecutor
@@ -15,6 +17,12 @@ from rclpy.node import Node
 from rclpy.publisher import Publisher
 
 from bitbots_msgs.msg import Audio
+
+# Load the Piper voice
+bb_tts_dir = Path(__file__).parent + "/model"  # TODO: check how to get nice relative paths
+model_path = bb_tts_dir + "/en_US-lessac-medium.onnx"
+config_path = bb_tts_dir + "/en_US-lessac-medium.onnx.json"
+voice = PiperVoice.load(model_path, config_path=config_path, use_cuda=False)
 
 
 def speak(text: str, publisher: Publisher, priority: int = 20, speaking_active: bool = True) -> None:
@@ -27,10 +35,23 @@ def speak(text: str, publisher: Publisher, priority: int = 20, speaking_active: 
 
 
 def say(text: str) -> None:
-    """Start the shell `say.sh` script to output given text with mimic3. Beware: this is blocking."""
-    script_path = os.path.join(get_package_prefix("bitbots_tts"), "lib/bitbots_tts/say.sh")
-    process = subprocess.Popen((script_path, text))
-    process.wait()
+    """Use piper for speech synthesis and audio playback.
+    This is also used for speaking the ip adress during startup."""
+    synthesize_args = {
+        "speaker_id": 0,  # Adjust if you're using multi-speaker models
+        "length_scale": 1.0,
+        "noise_scale": 0.667,
+        "noise_w": 0.8,
+        "sentence_silence": 0.0,
+    }
+    with io.BytesIO() as buffer:
+        with wave.open(buffer, "wb") as wav_file:
+            voice.synthesize(text, wav_file, **synthesize_args)
+
+        buffer.seek(0)
+        with wave.open(buffer, "rb") as wav:
+            audio = wav.readframes(wav.getnframes())
+            sd.play(audio, samplerate=wav.getframerate(), blocking=True)
 
 
 class Speaker(Node):
