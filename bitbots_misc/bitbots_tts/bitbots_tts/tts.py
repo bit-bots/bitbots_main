@@ -5,6 +5,7 @@ import traceback
 import wave
 from pathlib import Path
 
+import numpy as np
 import rclpy
 import sounddevice as sd
 from piper import PiperVoice
@@ -36,11 +37,10 @@ def say(text: str) -> None:
     """Use piper for speech synthesis and audio playback.
     This is also used for speaking the ip adress during startup."""
     synthesize_args = {
-        "speaker_id": 0,  # Adjust if you're using multi-speaker models
-        "length_scale": 1.0,
-        "noise_scale": 0.667,
-        "noise_w": 0.8,
-        "sentence_silence": 0.0,
+        "length_scale": 1.0,  # Phoneme length, if lower -> faster
+        "noise_scale": 0.667,  # Generator noise, if lower -> more robotic
+        "noise_w": 0.8,  # Phoneme width noise, if lower -> more robotic
+        "sentence_silence": 0.1,  # seconds of silence after each sentence
     }
     with io.BytesIO() as buffer:
         with wave.open(buffer, "wb") as wav_file:
@@ -48,8 +48,21 @@ def say(text: str) -> None:
 
         buffer.seek(0)
         with wave.open(buffer, "rb") as wav:
-            audio = wav.readframes(wav.getnframes())
-            sd.play(audio, samplerate=wav.getframerate(), blocking=True)
+            framerate = wav.getframerate()
+            sampwidth = wav.getsampwidth()
+            nchannels = wav.getnchannels()
+            nframes = wav.getnframes()
+            audio_bytes = wav.readframes(nframes)
+
+            # bytes to np array
+            dtype_map = {1: np.int8, 2: np.int16, 4: np.int32}
+            if sampwidth not in dtype_map:
+                raise ValueError(f"Unsupported sample width: {sampwidth}")
+            audio = np.frombuffer(audio_bytes, dtype=dtype_map[sampwidth])
+            if nchannels > 1:
+                audio = audio.reshape(-1, nchannels)
+
+            sd.play(audio, samplerate=framerate, blocking=True)
 
 
 class Speaker(Node):
