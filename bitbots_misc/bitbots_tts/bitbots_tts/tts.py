@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
 
 import io
-import time
 import traceback
 import wave
 from pathlib import Path
 
 import rclpy
-import requests
 import sounddevice as sd
 from piper import PiperVoice
 from rcl_interfaces.msg import Parameter, SetParametersResult
@@ -82,17 +80,6 @@ class Speaker(Node):
 
         # Subscribe to the speak topic
         self.create_subscription(Audio, "speak", self.speak_cb, 10, callback_group=MutuallyExclusiveCallbackGroup())
-
-        # Wait for the mimic server to start
-        while True:
-            try:
-                requests.get("http://localhost:59125")
-                break
-            except requests.exceptions.ConnectionError:
-                # log once per second that the server is not yet available
-                self.get_logger().info("Waiting for mimic server to start...", throttle_duration_sec=2.0)
-                time.sleep(0.5)
-                pass
 
         # Start processing the queue
         self.create_timer(0.1, self.run_speaker, callback_group=MutuallyExclusiveCallbackGroup())
