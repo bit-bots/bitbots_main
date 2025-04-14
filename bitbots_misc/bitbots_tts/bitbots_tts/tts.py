@@ -19,9 +19,9 @@ from rclpy.publisher import Publisher
 from bitbots_msgs.msg import Audio
 
 # Load the Piper voice
-bb_tts_dir = Path(__file__).parent + "/model"  # TODO: check how to get nice relative paths
-model_path = bb_tts_dir + "/en_US-lessac-medium.onnx"
-config_path = bb_tts_dir + "/en_US-lessac-medium.onnx.json"
+bb_tts_dir = Path(__file__).parent.parent / "model"  # TODO: check how to get nice relative paths
+model_path = bb_tts_dir / "en_US-lessac-medium.onnx"
+config_path = bb_tts_dir / "en_US-lessac-medium.onnx.json"
 voice = PiperVoice.load(model_path, config_path=config_path, use_cuda=False)
 
 
