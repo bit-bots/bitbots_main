@@ -16,9 +16,13 @@ install(DIRECTORY worlds DESTINATION share/${PROJECT_NAME})
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 
 install(
-  PROGRAMS scripts/fix_urdf_for_webots.py scripts/imu_lut_gen.py
-           scripts/localization_faker.py scripts/start_simulator.py
-           scripts/start_single.py scripts/start_webots_ros_supervisor.py
+  PROGRAMS scripts/fix_urdf_for_webots.py
+           scripts/imu_lut_gen.py
+           scripts/localization_faker.py
+           scripts/start_simulator.py
+           scripts/start_single.py
+           scripts/start_webots_ros_supervisor.py
+           scripts/field_publisher.py
   DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
