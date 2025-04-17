@@ -10,8 +10,8 @@ args = parser.parse_args()
 
 # folder = "/homes/15guelden/footstep_ws/src/bitbots_main/bitbots_vision/saved_data_donna/realworld_wolfgang/"
 #folder = "/homes/15guelden/saved_data/sim_op3/"
-folder = "/homes/21stahl/bitbots_main/bitbots_vision/saved_data_donna/sim_op3/"
-#older = "/homes/21stahl/bitbots_main/bitbots_vision/saved_data_donna/realworld_wolfgang/"
+#folder = "/homes/21stahl/bitbots_main/bitbots_vision/saved_data_donna/sim_op3/"
+folder = "/homes/21stahl/bitbots_main/bitbots_vision/saved_data_donna/realworld_wolfgang/"
 
 if folder.endswith("sim_op3/"):
     idx = range(0, 20)
@@ -53,7 +53,7 @@ plt.ylabel("Calculated Distance")
 # plot diagonal line
 plt.plot(data[0], data[0], label="Ideal", color="green")
 plt.legend()
-plt.title("Simulator Test - Distance Comparison")
+plt.tight_layout()
 plt.show()
 
 # get number of samples where base footprint distance is cloaser to measured distance
@@ -114,8 +114,8 @@ plt.scatter(measured_distances, baseline_distance_deviation, label="Baseline", m
 
 plt.xlabel("Ground Truth Distance")
 plt.ylabel("Absulute Distance Deviation")
-plt.title("Simulator Test - Absulute Distance Deviation")
 plt.legend()
+plt.tight_layout()
 plt.show()
 
 
@@ -136,7 +136,7 @@ plt.plot(measured_distances, [0] * len(measured_distances), label="Ideal", color
 
 plt.xlabel("Ground Truth Distance")
 plt.ylabel("Signed Distance Deviation")
-plt.title("Simulator Test - Signed Distance Deviation")
 plt.legend(loc="upper left")
+plt.tight_layout()
 plt.show()
 
