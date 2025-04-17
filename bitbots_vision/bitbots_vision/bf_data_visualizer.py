@@ -8,6 +8,9 @@ parser = ArgumentParser()
 args = parser.parse_args()
 
 
+plt.rcParams.update({'font.size': 16})
+
+
 # folder = "/homes/15guelden/footstep_ws/src/bitbots_main/bitbots_vision/saved_data_donna/realworld_wolfgang/"
 #folder = "/homes/15guelden/saved_data/sim_op3/"
 #folder = "/homes/21stahl/bitbots_main/bitbots_vision/saved_data_donna/sim_op3/"
@@ -16,8 +19,7 @@ folder = "/homes/21stahl/bitbots_main/bitbots_vision/saved_data_donna/realworld_
 if folder.endswith("sim_op3/"):
     idx = range(0, 20)
 elif folder.endswith("realworld_wolfgang/"):
-    idx = [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11]
-
+    idx = range(0, 9)
 
 def load_yaml_file(file_path):
     with open(file_path) as file:
@@ -46,15 +48,34 @@ data = np.array([measured_distances, base_footprint_distances, baseline_distance
 # sort by measured distance
 data = data[:, np.argsort(data[0])]
 # plot data as points
-plt.scatter(data[0], data[1], label="Base Footprint", color="#648fff")
-plt.scatter(data[0], data[2], label="Baseline", color="#dc267f")
+
+plt.plot(data[0], data[0], label="Ideal", color="#ffb000", linewidth=2, zorder=0)
+
+plt.scatter(data[0], data[1], label="Base Footprint", color="#648fff", marker="+", s=110, linewidths=2, zorder=2)
+plt.scatter(data[0], data[2], label="Baseline", color="#dc267f", marker="x", s=70, linewidths=2, zorder=1)
 plt.xlabel("Ground Truth Distance")
 plt.ylabel("Calculated Distance")
 # plot diagonal line
-plt.plot(data[0], data[0], label="Ideal", color="green")
 plt.legend()
 plt.tight_layout()
+fig = plt.gcf()
+fig.set_size_inches(5, 5)
 plt.show()
+
+
+plt.plot(data[0], data[0], label="Ideal", color="limegreen", linewidth=2, zorder=0)
+
+plt.scatter(data[0], data[1], label="Base Footprint", color="#648fff", marker="+", s=110, linewidths=2, zorder=2)
+plt.scatter(data[0], data[2], label="Baseline", color="#dc267f", marker="x", s=70, linewidths=2, zorder=1)
+plt.xlabel("Ground Truth Distance")
+plt.ylabel("Calculated Distance")
+# plot diagonal line
+plt.legend()
+plt.tight_layout()
+fig = plt.gcf()
+fig.set_size_inches(5, 5)
+plt.show()
+
 
 # get number of samples where base footprint distance is cloaser to measured distance
 num_base_footprint_closer = 0
@@ -107,8 +128,8 @@ plt.plot(measured_distances, m * np.array(measured_distances) + b, label="Base F
 m, b = np.polyfit(measured_distances, baseline_distance_deviation, deg=1, rcond=rcond)
 plt.plot(measured_distances, m * np.array(measured_distances) + b, label="Baseline Fit", color="#dc267f")
 
-plt.scatter(measured_distances, base_footprint_distance_deviation, label="Base Footprint", marker="x", color="#648fff")
-plt.scatter(measured_distances, baseline_distance_deviation, label="Baseline", marker="x", color="#dc267f")
+plt.scatter(measured_distances, base_footprint_distance_deviation, label="Base Footprint", color="#648fff", marker="+", s=110, linewidths=2, zorder=2)
+plt.scatter(measured_distances, baseline_distance_deviation, label="Baseline", color="#dc267f", marker="x", s=70, linewidths=2, zorder=1)
 #plt.plot(measured_distances, [mean_base_footprint_distance_deviation] * len(measured_distances), label="Mean Base Footprint")
 #plt.plot(measured_distances, [mean_baseline_distance_deviation] * len(measured_distances), label="Mean Baseline")
 
@@ -116,9 +137,11 @@ plt.xlabel("Ground Truth Distance")
 plt.ylabel("Absulute Distance Deviation")
 plt.legend()
 plt.tight_layout()
+fig = plt.gcf()
+fig.set_size_inches(5, 5)
 plt.show()
 
-
+"""
 base_footprint_distance_deviation = []
 baseline_distance_deviation = []
 for i in range(len(measured_distances)):
@@ -138,5 +161,7 @@ plt.xlabel("Ground Truth Distance")
 plt.ylabel("Signed Distance Deviation")
 plt.legend(loc="upper left")
 plt.tight_layout()
+fig = plt.gcf()
+fig.set_size_inches(5, 5)
 plt.show()
-
+"""
