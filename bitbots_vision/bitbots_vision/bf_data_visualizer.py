@@ -15,8 +15,8 @@ plt.rcParams.update({'font.size': 16})
 #folder = "/homes/15guelden/saved_data/sim_op3/"
 #folder = "/homes/21stahl/bitbots_main/bitbots_vision/saved_data_donna/sim_op3/"
 #folder = "/homes/21stahl/bitbots_main/bitbots_vision/saved_data_donna/realworld_wolfgang/"
-#folder = "/Users/benedict/UHH/bitbots/bitbots_main/bitbots_vision/saved_data_donna/realworld_wolfgang/"
-folder = "/Users/benedict/UHH/bitbots/bitbots_main/bitbots_vision/saved_data_donna/sim_op3/"
+folder = "/Users/benedict/UHH/bitbots/bitbots_main/bitbots_vision/saved_data_donna/realworld_wolfgang/"
+#folder = "/Users/benedict/UHH/bitbots/bitbots_main/bitbots_vision/saved_data_donna/sim_op3/"
 
 if folder.endswith("sim_op3/"):
     idx = range(0, 20)
@@ -55,8 +55,8 @@ plt.plot(data[0], data[0], label="ideal", color="#ffb000", linewidth=2, zorder=0
 
 plt.scatter(data[0], data[1], label="base footprint", color="#648fff", marker="+", s=110, linewidths=2, zorder=2)
 plt.scatter(data[0], data[2], label="baseline", color="#dc267f", marker="x", s=70, linewidths=2, zorder=1)
-plt.xlabel("ground truth distance")
-plt.ylabel("estimated distance")
+plt.xlabel("ground truth distance (m)")
+plt.ylabel("estimated distance (m)")
 # plot diagonal line
 plt.legend()
 plt.tight_layout()
@@ -135,8 +135,8 @@ plt.scatter(measured_distances, baseline_distance_deviation, label="baseline", c
 #plt.plot(measured_distances, [mean_base_footprint_distance_deviation] * len(measured_distances), label="Mean base footprint")
 #plt.plot(measured_distances, [mean_baseline_distance_deviation] * len(measured_distances), label="Mean baseline")
 
-plt.xlabel("ground truth distance")
-plt.ylabel("absulute distance deviation")
+plt.xlabel("ground truth distance (m)")
+plt.ylabel("absulute distance deviation (m)")
 plt.legend()
 plt.tight_layout()
 fig = plt.gcf()
