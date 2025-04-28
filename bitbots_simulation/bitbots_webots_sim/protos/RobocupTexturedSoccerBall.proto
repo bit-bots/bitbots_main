@@ -42,6 +42,9 @@ PROTO RobocupTexturedSoccerBall [
     ]
     name IS name
     model "soccer ball"
+    recognitionColors [
+      1 0 0
+    ]
     contactMaterial "robocup soccer ball"
     boundingObject Sphere {
       radius %<= radius / scale >%
