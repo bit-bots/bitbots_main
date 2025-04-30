@@ -880,7 +880,7 @@ class RobotController:
         self.pub_cam_info.publish(self.cam_info)
 
     def save_recognition(self):
-        if self.time - self.last_img_saved < 1.0:
+        if self.time - self.last_img_saved < 0.5:
             return
         self.last_img_saved = self.time
         annotation = ""
