@@ -5,5 +5,5 @@
     <node pkg="web_video_server" exec="web_video_server" name="talker"> 
         <param name="port" value="8081"/>
     </node>
-    <executable name="webserver_education_page" cmd="python3 -m http.server" output="screen" />
+    <executable name="webserver_education_page" cmd="python3 -m http.server --directory $(find-pkg-share bitbots_education)/web/" output="screen" />
 </launch>

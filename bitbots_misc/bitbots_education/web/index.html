@@ -33,7 +33,7 @@
   return { roll, pitch, yaw };
   }
   window.onload = function() {
-    document.getElementById("videofeed").src=`http://${window.location.hostname}:8081/stream?topic=/camera/image_proc`;
+    document.getElementById("videofeed").src=`http://${window.location.hostname}:8081/stream?topic=/debug_image`;
     };
   // Connecting to ROS
   // -----------------
