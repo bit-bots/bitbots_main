@@ -1,97 +1,46 @@
 <!DOCTYPE html>
-<html>
+<html class="h-full">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/eventemitter2@6.4.9/lib/eventemitter2.min.js"></script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/roslib@1/build/roslib.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-<script type="text/javascript" type="text/javascript">
-
-  function quaternionToEuler(q) {
-  const { x, y, z, w } = q;
-  
-  // Roll (x-axis rotation)
-  const sinr_cosp = 2 * (w * x + y * z);
-  const cosr_cosp = 1 - 2 * (x * x + y * y);
-  const roll = Math.atan2(sinr_cosp, cosr_cosp);
-  
-  // Pitch (y-axis rotation)
-  const sinp = 2 * (w * y - z * x);
-  let pitch;
-  if (Math.abs(sinp) >= 1) {
-    pitch = Math.sign(sinp) * Math.PI / 2; // use 90 degrees if out of range
-  } else {
-    pitch = Math.asin(sinp);
-  }
-  
-  // Yaw (z-axis rotation)
-  const siny_cosp = 2 * (w * z + x * y);
-  const cosy_cosp = 1 - 2 * (y * y + z * z);
-  const yaw = Math.atan2(siny_cosp, cosy_cosp);
-  
-  return { roll, pitch, yaw };
-  }
-  window.onload = function() {
-    document.getElementById("videofeed").src=`http://${window.location.hostname}:8081/stream?topic=/debug_image`;
-    };
-  // Connecting to ROS
-  // -----------------
-
-  var ros = new ROSLIB.Ros({
-    url : `ws://${window.location.hostname}:9090`
-  });
-
-  ros.on('connection', function() {
-    console.log('Connected to websocket server.');
-  });
-
-  ros.on('error', function(error) {
-    console.log('Error connecting to websocket server: ', error);
-  });
-
-  ros.on('close', function() {
-    console.log('Connection to websocket server closed.');
-  });
-
-
-  // Subscribing to a Topic
-  // ----------------------
-
-  var listener = new ROSLIB.Topic({
-    ros : ros,
-    name : '/imu/data',
-    messageType : 'sensor_msgs/msg/Imu'
-  });
-  
-  listener.subscribe(function(message) {
-    const quaternion = message.orientation;
-    const euler = quaternionToEuler(quaternion);
-    euler.roll = euler.roll/(2*Math.PI)*360
-    euler.pitch = euler.pitch/(2*Math.PI)*360
-    //document.getElementById("imu").innerHTML = String(euler.roll);
-    document.getElementById("logo").style.transform = `rotate(${-euler.roll}deg)`;
-  });
-
-
-
-</script>
+<script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>  
 </head>
 
-<body>
-  <div class="flex justify-center p-4 bg-lime-100">
-    <h1 class="text-2xl">IMU</h1>
+<body class="h-full bg-cover bg-linear-to-bl/oklch from-indigo-300 to-teal-200">
+  <div class="flex justify-center p-4 bg-zinc-50 border-b-2 border-zinc-800 shadow-md">
+    <h1 class="text-2xl">Inner workings of robot</h1>
   </div>
-  <div class="flex justify-center flex-col">
-    <div class="flex justify-center">
-      <img class="p-8" id="logo" style="transform-origin: bottom center;"  src="bitBot_color.svg" width="200" height="300"></img>
+  <div class="grid grid-cols-2 gap-2 mx-2 my-30 ">
+    <a href="pages/imu.html" class="flex justify-center flex-col border-2 border-zinc-800 rounded-2xl bg-zinc-50 shadow-md">
+      <div class="flex justify-center flex-col">
+        <div class="flex justify-center">
+          <div style="width: 70%;" hx-get="../components/imu.html" hx-trigger="load" hx-swap="innerHTML"></div>
+        </div>
+        <p class="pb-4 px-2 text-center">imu</p>
+      </div>
+    </a>
+    <div class="flex justify-center flex-col border-2 border-zinc-800 rounded-2xl bg-zinc-50 shadow-md">
+      <div class="flex justify-center flex-col">
+        <div hx-get="../components/vision.html" hx-trigger="load" hx-swap="outerHTML"></div>
+        <p class="pb-4 px-2 text-center">vision</p>
+      </div>
+    </div> 
+    <div class="flex justify-center flex-col border-2 border-zinc-800 rounded-2xl bg-zinc-50 shadow-md">
+      <div class="flex justify-center flex-col">
+        <div class="flex justify-center">
+          <div style="width: 70%;" hx-get="../components/imu.html" hx-trigger="load" hx-swap="innerHTML"></div>
+        </div>
+        <p class="pb-4 px-2 text-center">motor heat</p>
+      </div>
     </div>
-    <p class="pb-10 px-4">informative text about imu</p>
+    <div class="flex justify-center flex-col border-2 border-zinc-800 rounded-2xl bg-zinc-50 shadow-md">
+      <div class="flex justify-center flex-col">
+        <div hx-get="../components/vision.html" hx-trigger="load" hx-swap="outerHTML"></div>
+        <p class="pb-4 px-2 text-center">behavior</p>
+      </div> 
   </div>
-  <div class="flex justify-center p-4 bg-lime-100">
-    <h1 class="text-2xl">Vision</h1>
-  </div>
-  <img class="my-6 p-3" id="videofeed"></img>
-  <p class="pb-10 px-4">informative text about vision</p>
 </body>
 </html>
