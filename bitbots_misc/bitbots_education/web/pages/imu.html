@@ -1,22 +1,7 @@
-<!DOCTYPE html>
-<html class="h-full">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/eventemitter2@6.4.9/lib/eventemitter2.min.js"></script>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/roslib@1/build/roslib.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-<script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>  
-</head>
+<h1 id="banner" hx-swap-oob="innerHTML">IMU</h1>
+<div class="flex justify-center flex-col">
+  <div hx-get="../components/imu.html" hx-trigger="load" hx-swap="outerHTML">
+  </div>
+  <p class="pb-10 px-4">informative text about imu</p>
+</div>
 
-<body class="h-full bg-cover bg-linear-to-bl/oklch from-indigo-300 to-teal-200">
-  <div class="flex justify-center p-4 bg-zinc-50 border-b-2 border-zinc-800 shadow-md">
-    <h1 class="text-2xl">IMU</h1>
-  </div>
-  <div class="flex justify-center flex-col">
-    <div hx-get="../components/imu.html" hx-trigger="load" hx-swap="outerHTML">
-    </div>
-    <p class="pb-10 px-4">informative text about imu</p>
-  </div>
-</body>
-</html>
