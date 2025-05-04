@@ -7,8 +7,28 @@
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/roslib@1/build/roslib.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 <script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>  
-</head>
+<script type="text/javascript" >
+  // Connecting to ROS
+  // -----------------
 
+  var ros = new ROSLIB.Ros({
+    url : `ws://${window.location.hostname}:9090`
+  });
+
+  ros.on('connection', function() {
+    console.log('Connected to websocket server.');
+  });
+
+  ros.on('error', function(error) {
+    console.log('Error connecting to websocket server: ', error);
+  });
+
+  ros.on('close', function() {
+    console.log('Connection to websocket server closed.');
+  });
+</script>
+
+</head>
 <body class="h-full bg-cover bg-linear-to-bl/oklch from-indigo-300 to-teal-200">
   <script>
     document.body.addEventListener('htmx:configRequest', function(evt) {
