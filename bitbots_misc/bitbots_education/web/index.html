@@ -22,9 +22,9 @@
         <p class="pb-4 px-2 text-center">imu</p>
       </div>
     </a>
-    <a href="pages/vision.html" class="flex justify-center flex-col border-2 border-zinc-800 rounded-2xl bg-zinc-50 shadow-md">
+    <a href="pages/vision.html" class="relative overflow-hidden justify-center flex-col border-2 border-zinc-800 rounded-2xl bg-zinc-50 shadow-md">
       <div class="flex justify-center flex-col">
-        <div hx-get="../components/vision.html" hx-trigger="load" hx-swap="outerHTML"></div>
+        <div style="width: 100%;" hx-get="../components/vision.html" hx-trigger="load" hx-swap="innerHTML"></div>
         <p class="pb-4 px-2 text-center">vision</p>
       </div>
     </a> 
@@ -41,6 +41,7 @@
         <div hx-get="../components/vision.html" hx-trigger="load" hx-swap="outerHTML"></div>
         <p class="pb-4 px-2 text-center">behavior</p>
       </div> 
+    </a>  
   </div>
 </body>
 </html>

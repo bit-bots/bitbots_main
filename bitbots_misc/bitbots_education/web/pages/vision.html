@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html class="h-full">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -9,8 +9,8 @@
 <script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>  
 </head>
 
-<body>
-  <div class="flex justify-center p-4 bg-lime-100">
+<body class="h-full bg-cover bg-linear-to-bl/oklch from-indigo-300 to-teal-200">
+  <div class="flex justify-center p-4 bg-zinc-50 border-b-2 border-zinc-800 shadow-md">
     <h1 class="text-2xl">Vision</h1>
   </div>
   <div hx-get="../components/vision.html" hx-trigger="load" hx-swap="outerHTML">
