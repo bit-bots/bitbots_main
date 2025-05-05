@@ -1,14 +1,8 @@
 import glob
-import inspect
 import os
 import shutil
-import sys
-import tempfile
 
 from setuptools import find_packages, setup
-from setuptools.command.develop import develop
-from setuptools.command.install import install
-import distutils.command.install as distutils_install
 from jinja2 import Environment, FileSystemLoader
 
 package_name = "bitbots_education"
