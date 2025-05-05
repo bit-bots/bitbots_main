@@ -2,31 +2,33 @@
 
 <div class="grid grid-cols-2 gap-2">
     <a hx-get="pages/imu.html" hx-target="#content" hx-swap="innerHTML" hx-trigger="click" class="flex justify-center flex-col border-2 border-zinc-800 rounded-2xl bg-zinc-50 shadow-md">
-      <div class="flex justify-center flex-col">
+      <div class="flex justify-between flex-col h-full">
         <div class="flex justify-center">
-          <div style="width: 70%;" hx-get="components/imu.html" hx-target="this" hx-trigger="load" hx-swap="innerHTML"></div>
+          <div style="width: 60%;" hx-get="components/imu.html" hx-target="this" hx-trigger="load" hx-swap="innerHTML"></div>
         </div>
-        <p class="pb-4 px-2 text-center">imu</p>
+        <p class="pb-4 px-2 text-center font-medium">IMU</p>
       </div>
     </a>
     <a hx-get="pages/vision.html" hx-target="#content" hx-swap="innerHTML" hx-trigger="click" class="relative overflow-hidden justify-center flex-col border-2 border-zinc-800 rounded-2xl bg-zinc-50 shadow-md">
-      <div class="flex justify-center flex-col">
+      <div class="flex justify-between flex-col h-full">
         <div style="width: 100%;" hx-get="components/vision.html" hx-target="this" hx-trigger="load" hx-swap="innerHTML"></div>
-        <p class="pb-4 px-2 text-center">vision</p>
+        <p class="pb-4 px-2 text-center font-medium">Vision</p>
       </div>
     </a> 
     <a hx-get="pages/motor_heat.html" hx-target="#content" hx-swap="innerHTML" hx-trigger="click" class="flex justify-center flex-col border-2 border-zinc-800 rounded-2xl bg-zinc-50 shadow-md">
-      <div class="flex justify-center flex-col">
+      <div class="flex justify-between flex-col h-full">
         <div class="flex justify-center">
-          <div style="width: 70%;" hx-get="components/imu.html" hx-target="this" hx-trigger="load" hx-swap="innerHTML"></div>
+          <div style="width: 60%;" hx-get="components/imu.html" hx-target="this" hx-trigger="load" hx-swap="innerHTML"></div>
         </div>
-        <p class="pb-4 px-2 text-center">motor heat</p>
+        <p class="pb-4 px-2 text-center font-medium">Motor Heat</p>
       </div>
     </a>
     <a hx-get="pages/behavior.html" hx-target="#content" hx-swap="innerHTML" hx-trigger="click" class="flex justify-center flex-col border-2 border-zinc-800 rounded-2xl bg-zinc-50 shadow-md">
-      <div class="flex justify-center flex-col">
-        <div hx-get="components/current_action.html" hx-target="this" hx-trigger="load" hx-swap="outerHTML"></div>
-        <p class="pb-4 px-2 text-center">behavior</p>
+      <div class="flex justify-between flex-col h-full">
+      <div class="flex justify-center h-full flex-col">
+        <div hx-get="components/current_action.html" hx-target="this" hx-trigger="load" hx-swap="innerHTML" class="border-2 border-zinc-800 rounded-2xl p-2 m-6 bg-linear-to-bl/oklch from-indigo-300 to-teal-200"></div>
+      </div>
+        <p class="pb-4 px-2 text-center font-medium">Behavior</p>
       </div> 
     </a>  
 </div>
