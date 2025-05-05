@@ -2,22 +2,23 @@ import glob
 import os
 import shutil
 
-from setuptools import find_packages, setup
 from jinja2 import Environment, FileSystemLoader
+from setuptools import find_packages, setup
 
 package_name = "bitbots_education"
+
 
 def generate_data_files(share_path, dir):
     data_files = []
 
     for path, _, files in os.walk(dir):
-        list_entry = (share_path + path, [os.path.join(path, f) for f in files if not f.startswith('.')])
+        list_entry = (share_path + path, [os.path.join(path, f) for f in files if not f.startswith(".")])
         data_files.append(list_entry)
 
     return data_files
 
-def build_html():
 
+def build_html():
     output_path = "out"
     components_path = os.path.join(output_path, "components")
     template_path = "templates"
@@ -25,7 +26,7 @@ def build_html():
     env = Environment(loader=FileSystemLoader(template_path))
 
     # Render all templates excluding the ones in the components folder
-    for root, dirs, files in os.walk(template_path):
+    for root, _, files in os.walk(template_path):
         for file in files:
             if os.path.abspath(root) != os.path.abspath(components_path):
                 if file.endswith(".html"):
@@ -46,6 +47,7 @@ def build_html():
                     os.makedirs(os.path.dirname(dst), exist_ok=True)
                     shutil.copy2(src, dst)
 
+
 build_html()
 
 setup(
@@ -54,7 +56,8 @@ setup(
         ("share/ament_index/resource_index/packages", ["resource/" + package_name]),
         ("share/" + package_name, ["package.xml"]),
         ("share/" + package_name + "/launch", glob.glob("launch/*.launch")),
-    ] + generate_data_files("share/" + package_name + "/", "out/"),
+    ]
+    + generate_data_files("share/" + package_name + "/", "out/"),
     version="0.0.0",
     packages=find_packages(exclude=["test"]),
     install_requires=["setuptools"],
