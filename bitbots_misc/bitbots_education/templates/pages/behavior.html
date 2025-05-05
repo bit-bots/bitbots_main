@@ -1,6 +1,8 @@
 {% import "components/current_action.html" as current_action_components %}
+{% import "components/behavior_stack.html" as behavior_stack_component %}
 
 <h1 id="banner" hx-swap-oob="innerHTML">Behavior</h1>
 {{ current_action_components.current_action_component() }}
-<p class="pb-10 px-4">Informationen über verhalten</p>
+{{ behavior_stack_component.behavior_stack_component() }}
+<p class="pb-10 px-4">Informationen über Verhalten</p>
 

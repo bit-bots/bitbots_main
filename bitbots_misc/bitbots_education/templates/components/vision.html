@@ -2,7 +2,11 @@
 <script type="text/javascript">
 
   htmx.onLoad( function() {
-    document.getElementById("videofeed").src=`http://${window.location.hostname}:8081/stream?topic=/debug_image`;
+    let element = document.getElementById("videofeed");
+    if (element != null)
+    {
+      document.getElementById("videofeed").src=`http://${window.location.hostname}:8081/stream?topic=/debug_image`;
+    }
     });
 </script>
 

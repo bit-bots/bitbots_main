@@ -29,18 +29,24 @@
   // Subscribing to a Topic
   // ----------------------
 
-  var listener = new ROSLIB.Topic({
+  var imu_listener = new ROSLIB.Topic({
     ros : ros,
     name : '/imu/data',
     messageType : 'sensor_msgs/msg/Imu'
   });
 
-  listener.subscribe(function(message) {
+  imu_listener.subscribe(function(message) {
     const quaternion = message.orientation;
     const euler = quaternionToEuler(quaternion);
     euler.roll = euler.roll/(2*Math.PI)*360
     euler.pitch = euler.pitch/(2*Math.PI)*360
     //document.getElementById("imu").innerHTML = String(euler.roll);
+    let element = document.getElementById("logo");
+    if (element === null)
+  {
+    imu_listener.unsubscribe();
+    return;
+  }
     document.getElementById("logo").style.transform = `rotate(${-euler.roll}deg)`;
   });
 

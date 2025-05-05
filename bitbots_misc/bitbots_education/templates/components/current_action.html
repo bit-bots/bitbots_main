@@ -7,6 +7,12 @@
   });
 
   action_listener.subscribe(function(message) {
+        let element = document.getElementById("action_label");
+    if (element === null)
+  {
+    action_listener.unsubscribe();
+    return;
+  }
     document.getElementById("action_label").innerHTML = message.data;
   });
 </script>
