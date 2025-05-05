@@ -1,6 +1,6 @@
 <h1 id="banner" hx-swap-oob="innerHTML">IMU</h1>
-<div class="flex justify-center flex-col">
-  <div hx-get="../components/imu.html" hx-trigger="load" hx-swap="outerHTML">
+<div class="grid place-items-center">
+  <div style="width: 60%;" hx-get="../components/imu.html" hx-trigger="load" hx-swap="innerHTML">
   </div>
   <p class="visualization_explanation_text">An Inertial Measurement Unit, or IMU, is an essential sensor commonly used in robotics to measure a robot’s orientation, velocity, and acceleration. It typically combines multiple sensing elements—most commonly accelerometers, gyroscopes, and sometimes magnetometers—to provide real-time data about the robot’s motion and position in three-dimensional space.</p>
   <p>The accelerometer in an IMU detects linear acceleration along the X, Y, and Z axes, helping the robot sense movements such as tilting, sudden changes in speed, or falls. The gyroscope measures angular velocity, or how quickly the robot is rotating around each axis, which is crucial for maintaining balance and stable orientation during motion. In some cases, a magnetometer is included to measure magnetic fields, allowing the robot to determine its heading relative to the Earth's magnetic north, similar to how a digital compass works.</p>
