@@ -1,0 +1,10 @@
+{% import "components/imu.html" as imu_components %}
+
+<h1 id="banner" hx-swap-oob="innerHTML">Motor Heat</h1>
+
+<div class="flex justify-center flex-col">
+    {{ imu_components.imu_component() }}
+    <p class="pb-10 px-4">informative text about motor heat</p>
+</div>
+
+

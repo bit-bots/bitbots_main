@@ -1,10 +1,11 @@
+{% macro current_action_component() %}
 <script type="text/javascript">
   var action_listener = new ROSLIB.Topic({
     ros : ros,
     name : '/debug/dsd/body_behavior/dsd_current_action',
     messageType : 'std_msgs/msg/String'
   });
-  
+
   action_listener.subscribe(function(message) {
     document.getElementById("action_label").innerHTML = message.data;
   });
@@ -14,3 +15,4 @@
 <div class="flex justify-center overflow-hidden">
     <p id="action_label"></p>
 </div>
+{% endmacro %}

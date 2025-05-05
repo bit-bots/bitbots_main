@@ -1,24 +1,32 @@
+{% import "components/imu.html" as imu_components %}
+{% import "components/vision.html" as vision_components %}
+{% import "components/current_action.html" as current_action_components %}
+
 <h1 id="banner" hx-swap-oob="innerHTML">Hamburg Bit-Bots</h1>
 
 <div class="grid grid-cols-2 gap-2">
     <a hx-get="pages/imu.html" hx-target="#content" hx-swap="innerHTML" hx-trigger="click" class="flex justify-center flex-col border-2 border-zinc-800 rounded-2xl bg-zinc-50 shadow-md">
       <div class="flex justify-between flex-col h-full">
         <div class="flex justify-center">
-          <div style="width: 60%;" hx-get="components/imu.html" hx-target="this" hx-trigger="load" hx-swap="innerHTML"></div>
+          <div style="width: 60%;">
+            {{ imu_components.imu_component() }}
+          </div>
         </div>
         <p class="pb-4 px-2 text-center font-medium">IMU</p>
       </div>
     </a>
     <a hx-get="pages/vision.html" hx-target="#content" hx-swap="innerHTML" hx-trigger="click" class="relative overflow-hidden justify-center flex-col border-2 border-zinc-800 rounded-2xl bg-zinc-50 shadow-md">
       <div class="flex justify-between flex-col h-full">
-        <div style="width: 100%;" hx-get="components/vision.html" hx-target="this" hx-trigger="load" hx-swap="innerHTML"></div>
+        {{ vision_components.vision_component() }}
         <p class="pb-4 px-2 text-center font-medium">Vision</p>
       </div>
-    </a> 
+    </a>
     <a hx-get="pages/motor_heat.html" hx-target="#content" hx-swap="innerHTML" hx-trigger="click" class="flex justify-center flex-col border-2 border-zinc-800 rounded-2xl bg-zinc-50 shadow-md">
       <div class="flex justify-between flex-col h-full">
         <div class="flex justify-center">
-          <div style="width: 60%;" hx-get="components/imu.html" hx-target="this" hx-trigger="load" hx-swap="innerHTML"></div>
+          <div style="width: 60%;">
+            {{ imu_components.imu_component() }}
+          </div>
         </div>
         <p class="pb-4 px-2 text-center font-medium">Motor Heat</p>
       </div>
@@ -26,9 +34,11 @@
     <a hx-get="pages/behavior.html" hx-target="#content" hx-swap="innerHTML" hx-trigger="click" class="flex justify-center flex-col border-2 border-zinc-800 rounded-2xl bg-zinc-50 shadow-md">
       <div class="flex justify-between flex-col h-full">
       <div class="flex justify-center h-full flex-col">
-        <div hx-get="components/current_action.html" hx-target="this" hx-trigger="load" hx-swap="innerHTML" class="border-2 border-zinc-800 rounded-2xl p-2 m-6 bg-linear-to-bl/oklch from-indigo-300 to-teal-200"></div>
+        <div class="border-2 border-zinc-800 rounded-2xl p-2 m-6 bg-linear-to-bl/oklch from-indigo-300 to-teal-200">
+          {{ current_action_components.current_action_component() }}
+        </div>
       </div>
         <p class="pb-4 px-2 text-center font-medium">Behavior</p>
-      </div> 
-    </a>  
+      </div>
+    </a>
 </div>

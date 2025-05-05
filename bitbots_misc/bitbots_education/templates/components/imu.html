@@ -1,14 +1,14 @@
-
+{% macro imu_component() %}
 <script type="text/javascript" >
 
   function quaternionToEuler(q) {
   const { x, y, z, w } = q;
-  
+
   // Roll (x-axis rotation)
   const sinr_cosp = 2 * (w * x + y * z);
   const cosr_cosp = 1 - 2 * (x * x + y * y);
   const roll = Math.atan2(sinr_cosp, cosr_cosp);
-  
+
   // Pitch (y-axis rotation)
   const sinp = 2 * (w * y - z * x);
   let pitch;
@@ -17,12 +17,12 @@
   } else {
     pitch = Math.asin(sinp);
   }
-  
+
   // Yaw (z-axis rotation)
   const siny_cosp = 2 * (w * z + x * y);
   const cosy_cosp = 1 - 2 * (y * y + z * z);
   const yaw = Math.atan2(siny_cosp, cosy_cosp);
-  
+
   return { roll, pitch, yaw };
   }
 
@@ -34,7 +34,7 @@
     name : '/imu/data',
     messageType : 'sensor_msgs/msg/Imu'
   });
-  
+
   listener.subscribe(function(message) {
     const quaternion = message.orientation;
     const euler = quaternionToEuler(quaternion);
@@ -52,3 +52,4 @@
 <div class="flex justify-center overflow-hidden">
     <img id="logo" style="transform-origin: bottom center;"  src="../assets/bitBot_color.svg"></img>
 </div>
+{% endmacro %}
