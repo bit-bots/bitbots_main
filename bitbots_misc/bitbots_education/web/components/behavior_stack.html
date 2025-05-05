@@ -1,0 +1,45 @@
+<script type="text/javascript">
+  var stack_listener = new ROSLIB.Topic({
+    ros : ros,
+    name : '/debug/dsd/body_behavior/dsd_stack',
+    messageType : 'std_msgs/msg/String'
+  });
+  
+  stack_listener.subscribe(function(message) {
+    const behavior_stack = JSON.parse(message.data);
+    let subtree =behavior_stack;
+    let output_string = "";
+    do {
+    if (subtree.name != "DoOnce")
+    {
+      if(subtree.type === "sequence")
+      {
+        output_string += ` ${subtree.type} ${subtree.current_action.type} ${subtree.current_action.name}`;
+      }
+
+      else if (subtree.next === null)
+      {
+        output_string += ` ${subtree.type} ${subtree.name}`;
+      }
+      else 
+      {
+        output_string += ` ${subtree.type} ${subtree.name} --> ${subtree.next.activation_reason} <br/>`;
+      }
+    }
+    subtree = subtree.next;
+    }
+    while (subtree != null)
+    let element = document.getElementById("stack_label");
+    if (element === null)
+    {
+    stack_listener.unsubscribe();
+    return;
+    }
+    document.getElementById("stack_label").innerHTML = output_string;
+  });
+</script>
+
+
+<div class="flex justify-center overflow-hidden">
+    <p id="stack_label"></p>
+</div>
