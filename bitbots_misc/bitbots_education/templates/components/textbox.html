@@ -1,7 +1,7 @@
-{% macro textbox(label, content, color) %}
-<div class="p-4 border rounded-lg shadow-md bg-{{ color }}-100">
-  <label class="block text-sm font-medium text-gray-800">{{ label }}</label>
+{% macro textbox(label, content, color, textcolor) %}
+<div class="p-6 w-full bg-{{ color }}">
+  <label class="block text-sm font-medium text-{{textcolor}}">{{ label }}</label>
 
-  <p class="mt-1 text-sm text-gray-700">{{ content }}</p>
+  <p class="text-sm text-{{textcolor}}">{{ content }}</p>
 </div>
 {% endmacro %}
