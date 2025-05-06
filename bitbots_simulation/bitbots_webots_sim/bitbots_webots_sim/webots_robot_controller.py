@@ -3,6 +3,8 @@ import os
 import time
 from typing import Optional
 
+# import numpy as np
+# import cv2
 from controller import Robot
 from geometry_msgs.msg import PointStamped
 from rclpy.node import Node as RclpyNode
@@ -626,6 +628,9 @@ class RobotController:
             )
             if not os.path.exists(self.img_save_dir):
                 os.makedirs(self.img_save_dir)
+        #     self.camera.enableRecognitionSegmentation()
+
+        # self.logger = self.ros_node.get_logger()
 
         self.ros_node.declare_parameter("imu_frame", "imu_frame")
         self.imu_frame = self.ros_node.get_parameter("imu_frame").get_parameter_value().string_value
