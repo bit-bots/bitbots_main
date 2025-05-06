@@ -883,38 +883,59 @@ class RobotController:
         if self.time - self.last_img_saved < 0.5:
             return
         self.last_img_saved = self.time
-        annotation = ""
+        # annotation = ""
         img_stamp = f"{self.time:.2f}".replace(".", "_")
         img_name = f"img_{os.getenv('WEBOTS_ROBOT_NAME')}_{img_stamp}.PNG"
-        recognized_objects = self.camera.getRecognitionObjects()
-        # variables for saving not in image later
-        found_ball = False
+        # recognized_objects = self.camera.getRecognitionObjects()
+
+        # find ball in segmentation
+        # segmentation = self.camera.getRecognitionSegmentationImageArray()
+        self.camera.saveImage(filename=os.path.join(self.img_save_dir, img_name), quality=100)
+        # segmentation = np.array(segmentation)
+        # seg_mask = segmentation[:, :, 0] > 0
+        # seg_mask = np.uint8(seg_mask) * 255
+        # seg_mask = seg_mask.T
+        # contours, _ = cv2.findContours(seg_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        # if contours:
+        #     bounding_box = contours[0]
+        #     x, y, w, h = cv2.boundingRect(bounding_box)
+        #     self.ros_node.get_logger().warn(f"bounding box: {x}, {y}, {w}, {h}")
+        #     vector = f"""{{"x1": {float(x)}, "y1": {float(y)}, "x2": {float(x + w)}, "y2": {float(y + h)}}}"""
+        #     annotation += f"{img_name}|"
+        #     annotation += "ball|"
+        #     annotation += vector
+        #     annotation += "\n"
+        # else:
+        #     annotation += f"{img_name}|ball|not in image\n"
+        # cv2.imshow("segmentation", seg_mask)
+        # cv2.waitKey(1)
+        # # variables for saving not in image later
+        # found_ball = False
         # found_wolfgang = False
-        for e in range(self.camera.getRecognitionNumberOfObjects()):
-            model = recognized_objects[e].getModel()
-            position = recognized_objects[e].getPositionOnImage()
-            size = recognized_objects[e].getSizeOnImage()
-            if model == b"soccer ball":
-                found_ball = True
-                vector = f"""{{"x1": {position[0] - 0.5 * size[0]}, "y1": {position[1] - 0.5 * size[1]}, "x2": {position[0] + 0.5 * size[0]}, "y2": {position[1] + 0.5 * size[1]}}}"""
-                annotation += f"{img_name}|"
-                annotation += "ball|"
-                annotation += vector
-                annotation += "\n"
-            # if model == b"wolfgang":
-            #     found_wolfgang = True
-            #     vector = f"""{{"x1": {position[0] - 0.5 * size[0]}, "y1": {position[1] - 0.5 * size[1]}, "x2": {position[0] + 0.5 * size[0]}, "y2": {position[1] + 0.5 * size[1]}}}"""
-            #     annotation += f"{img_name}|"
-            #     annotation += "robot|"
-            #     annotation += vector
-            #     annotation += "\n"
-        if not found_ball:
-            annotation += f"{img_name}|ball|not in image\n"
+        # for e in range(self.camera.getRecognitionNumberOfObjects()):
+        #     model = recognized_objects[e].getModel()
+        #     position = recognized_objects[e].getPositionOnImage()
+        #     size = recognized_objects[e].getSizeOnImage()
+        #     if model == b"soccer ball":
+        #         found_ball = True
+        #         vector = f"""{{"x1": {position[0] - 0.5 * size[0]}, "y1": {position[1] - 0.5 * size[1]}, "x2": {position[0] + 0.5 * size[0]}, "y2": {position[1] + 0.5 * size[1]}}}"""
+        #         annotation += f"{img_name}|"
+        #         annotation += "ball|"
+        #         annotation += vector
+        #         annotation += "\n"
+        #     if model == b"wolfgang":
+        #         found_wolfgang = True
+        #         vector = f"""{{"x1": {position[0] - 0.5 * size[0]}, "y1": {position[1] - 0.5 * size[1]}, "x2": {position[0] + 0.5 * size[0]}, "y2": {position[1] + 0.5 * size[1]}}}"""
+        #         annotation += f"{img_name}|"
+        #         annotation += "robot|"
+        #         annotation += vector
+        #         annotation += "\n"
+        # if not found_ball:
+        #     annotation += f"{img_name}|ball|not in image\n"
         # if not found_wolfgang:
         #     annotation += f"{img_name}|robot|not in image\n"
-        with open(os.path.join(self.img_save_dir, "annotations.txt"), "a") as f:
-            f.write(annotation)
-        self.camera.saveImage(filename=os.path.join(self.img_save_dir, img_name), quality=100)
+        # with open(os.path.join(self.img_save_dir, "annotations.txt"), "a") as f:
+        #     f.write(annotation)
 
     def get_image(self):
         return self.camera.getImage()
