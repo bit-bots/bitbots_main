@@ -624,7 +624,7 @@ class RobotController:
             self.camera.recognitionEnable(self.timestep)
             self.last_img_saved = 0.0
             self.img_save_dir = (
-                "/tmp/webots/images" + time.strftime("%Y-%m-%d-%H-%M-%S") + os.getenv("WEBOTS_ROBOT_NAME", "")
+                "/root/" + time.strftime("%Y-%m-%d-%H-%M-%S") + os.getenv("WEBOTS_ROBOT_NAME", "")
             )
             if not os.path.exists(self.img_save_dir):
                 os.makedirs(self.img_save_dir)
