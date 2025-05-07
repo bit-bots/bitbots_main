@@ -23,34 +23,23 @@ class LocalizationFaker(Node):
 
     def model_state_to_tf(self, model_state_msg):
         t = TransformStamped()
-        try:
-            time = self.get_clock().now() - Duration(seconds=0.5)
-        except Exception:
-            return
-        t.header.stamp = time.to_msg()
         for i, name in enumerate(model_state_msg.name):
             if name != "amy":
                 continue
             t.header.frame_id = "map"
             t.child_frame_id = "odom"
             try:
-                robot_in_odom = self.tf_buffer.lookup_transform(
-                    "odom", "base_link", t.header.stamp, timeout=Duration(seconds=0.1)
-                )
+                robot_in_odom = self.tf_buffer.lookup_transform("odom", "base_link", rclpy.time.Time())
             except tf2_ros.LookupException as ex:
                 self.get_logger().warn(self.get_name() + ": " + str(ex), throttle_duration_sec=5.0)
                 return
             except tf2_ros.ExtrapolationException as ex:
                 self.get_logger().warn(self.get_name() + ": " + str(ex), throttle_duration_sec=5.0)
                 return
-            rot_odom = transforms3d.quaternions.quat2mat(
-                [
-                    robot_in_odom.transform.rotation.w,
-                    robot_in_odom.transform.rotation.x,
-                    robot_in_odom.transform.rotation.y,
-                    robot_in_odom.transform.rotation.z,
-                ]
-            )
+            t.header.stamp = robot_in_odom.header.stamp
+            q = robot_in_odom.transform.rotation
+            _, _, r_odom_robot_yaw = transforms3d.euler.quat2euler([q.w, q.x, q.y, q.z])
+            r_odom_robot = transforms3d.euler.euler2mat(0, 0, r_odom_robot_yaw)
 
             transform_odom = transforms3d.affines.compose(
                 [
@@ -58,7 +47,7 @@ class LocalizationFaker(Node):
                     robot_in_odom.transform.translation.y,
                     robot_in_odom.transform.translation.z,
                 ],
-                rot_odom,
+                r_odom_robot,
                 [1, 1, 1],
             )
 
@@ -67,14 +56,10 @@ class LocalizationFaker(Node):
                 model_state_msg.pose[i].position.y,
                 model_state_msg.pose[i].position.z,
             ]
-            rot_robot = transforms3d.quaternions.quat2mat(
-                [
-                    model_state_msg.pose[i].orientation.w,
-                    model_state_msg.pose[i].orientation.x,
-                    model_state_msg.pose[i].orientation.y,
-                    model_state_msg.pose[i].orientation.z,
-                ]
-            )
+
+            q = model_state_msg.pose[i].orientation
+            _, _, rot_robot_yaw = transforms3d.euler.quat2euler([q.w, q.x, q.y, q.z])
+            rot_robot = transforms3d.euler.euler2mat(0, 0, rot_robot_yaw)
             transform_robot = transforms3d.affines.compose(pos_robot, rot_robot, [1, 1, 1])
 
             transform_final = np.matmul(transform_robot, np.linalg.inv(transform_odom))
