@@ -16,16 +16,23 @@
     {
       if(subtree.type === "sequence")
       {
-        output_string += `<div class="block text-sm font-medium text-zinc-800 text-center p-2">${subtree.type}</div> <div class="block text-sm font-medium text-zinc-800"> ${subtree.current_action.type} </div> <div class="border-2 border-zinc-800 rounded-xl bg-zinc-100 p-2 text-center">${subtree.current_action.name} </div>`;
+        output_string += `<div class="border-2 border-zinc-800 rounded-xl bg-blue-100 p-2 text-center">${subtree.current_action.name}</div>`;
       }
-
       else if (subtree.next === null)
       {
-        output_string += ` <div class="block text-sm font-medium text-zinc-800 "> ${subtree.type} </div> <div class="border-2 border-zinc-800 rounded-xl bg-zinc-100 p-2 text-center"> ${subtree.name} </div>`;
+        output_string += `<div class="border-2 border-zinc-800 rounded-xl bg-blue-100 p-2 text-center w-full"> ${subtree.name} </div>`;
       }
       else
       {
-        output_string += `<div class="block text-sm font-medium text-zinc-800"> ${subtree.type} </div> <div class="border-2 border-zinc-800 rounded-xl bg-zinc-100 p-2 text-center"> ${subtree.name} --> ${subtree.next.activation_reason}</div> <br/>`;
+        output_string += `
+        
+        <div class="border-2 border-zinc-800 rounded-xl bg-orange-100 p-2 text-center w-full"> ${subtree.name}</div> 
+        <div class="flex justify-center flex-row m-2">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3" />
+          </svg> 
+          ${subtree.next.activation_reason} 
+        </div>`;
       }
     }
     subtree = subtree.next;
@@ -42,8 +49,8 @@
 </script>
 
 
-<div class="flex justify-center overflow-scroll">
-    <div id="stack_label"></div>
+<div class="flex justify-center overflow-scroll p-6">
+    <div id="stack_label" class="text-center w-full"></div>
 </div>
 
 {% endmacro %}
