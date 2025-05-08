@@ -16,16 +16,16 @@
     {
       if(subtree.type === "sequence")
       {
-        output_string += ` ${subtree.type} ${subtree.current_action.type} ${subtree.current_action.name}`;
+        output_string += `<div class="block text-sm font-medium text-zinc-800 text-center p-2">${subtree.type}</div> <div class="block text-sm font-medium text-zinc-800"> ${subtree.current_action.type} </div> <div class="border-2 border-zinc-800 rounded-xl bg-zinc-100 p-2 text-center">${subtree.current_action.name} </div>`;
       }
 
       else if (subtree.next === null)
       {
-        output_string += ` ${subtree.type} ${subtree.name}`;
+        output_string += ` <div class="block text-sm font-medium text-zinc-800 "> ${subtree.type} </div> <div class="border-2 border-zinc-800 rounded-xl bg-zinc-100 p-2 text-center"> ${subtree.name} </div>`;
       }
       else
       {
-        output_string += ` ${subtree.type} ${subtree.name} --> ${subtree.next.activation_reason} <br/>`;
+        output_string += `<div class="block text-sm font-medium text-zinc-800"> ${subtree.type} </div> <div class="border-2 border-zinc-800 rounded-xl bg-zinc-100 p-2 text-center"> ${subtree.name} --> ${subtree.next.activation_reason}</div> <br/>`;
       }
     }
     subtree = subtree.next;
@@ -37,14 +37,13 @@
     stack_listener.unsubscribe();
     return;
     }
-    document.getElementById("stack_label").innerHTML = output_string;
+    document.getElementById("stack_label").innerHTML = ` <div class="flex justify-center flex-col"> <div class="overflow-scroll"> ${output_string}</div> </div>`;
   });
 </script>
 
 
-<div class="flex justify-center overflow-hidden">
-    <p id="stack_label">
-    </p>
+<div class="flex justify-center overflow-scroll">
+    <div id="stack_label"></div>
 </div>
 
 {% endmacro %}
