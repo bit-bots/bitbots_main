@@ -7,6 +7,24 @@
     messageType : 'std_msgs/msg/String'
   });
 
+  function toggleBehavior()
+  {
+    if (behavior_changes)
+    {
+      behavior_changes = false;
+      document.getElementById("play_button").innerHTML =`<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
+      </svg>`; 
+    }
+    else
+    {
+      behavior_changes = true;
+      document.getElementById("play_button").innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25v13.5m-7.5-13.5v13.5" />
+      </svg>`;
+    }
+  }
+
   stack_listener.subscribe(function(message) {
     const behavior_stack = JSON.parse(message.data);
     let subtree =behavior_stack;
@@ -16,17 +34,17 @@
     {
       if(subtree.type === "sequence")
       {
-        output_string += `<div class="border-2 border-zinc-800 rounded-xl bg-blue-100 p-2 text-center">${subtree.current_action.name}</div>`;
+        output_string += `<div class="border-2 border-zinc-800 rounded-xl bg-zinc-100 p-2 text-center">${subtree.current_action.name}</div>`;
       }
       else if (subtree.next === null)
       {
-        output_string += `<div class="border-2 border-zinc-800 rounded-xl bg-blue-100 p-2 text-center w-full"> ${subtree.name} </div>`;
+        output_string += `<div class="border-2 border-zinc-800 rounded-xl bg-zinc-100 p-2 text-center w-full"> ${subtree.name} </div>`;
       }
       else
       {
         output_string += `
         
-        <div class="border-2 border-zinc-800 rounded-xl bg-orange-100 p-2 text-center w-full"> ${subtree.name}</div> 
+        <div class="border-2 border-zinc-800 rounded-xl bg-sky-800 p-2 text-center text-white w-full"> ${subtree.name}</div> 
         <div class="flex justify-center flex-row m-2">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
             <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3" />
@@ -44,13 +62,19 @@
     stack_listener.unsubscribe();
     return;
     }
-    document.getElementById("stack_label").innerHTML = ` <div class="flex justify-center flex-col"> <div class="overflow-scroll"> ${output_string}</div> </div>`;
+    if (behavior_changes)
+    {
+      document.getElementById("stack_label").innerHTML = ` <div class="flex justify-center flex-col"> <div class="overflow-scroll"> ${output_string}</div> </div>`;
+    }
   });
 </script>
 
 
-<div class="flex justify-center overflow-scroll p-6">
+<div class="flex justify-center flex-col grid place-items-center p-6">
     <div id="stack_label" class="text-center w-full"></div>
+    <button id="play_button" onclick="toggleBehavior()" class="border-2 border-zinc-800 rounded-md bg-zinc-100 mt-4 grid place-items-center" >
+     Klicke hier um das behavior zu starten oder anzuhalten
+    </button>
 </div>
 
 {% endmacro %}
