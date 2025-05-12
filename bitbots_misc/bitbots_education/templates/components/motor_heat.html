@@ -124,7 +124,7 @@
     output_string += `<div class="absolute top-[28%] left-[50%] w-8 h-8 bg-red-500 rounded-full blur-xs opacity-${Math.round(head_temperature/60 * 100)} pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>`
     
     let camera_temperature = camera;
-    output_string += `<div class="absolute top-[12%] left-[50%] w-8 h-8 bg-red-500 rounded-full blur opacity-${Math.round(camera_temperature/60 * 100)} pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>`
+    output_string += `<div class="absolute top-[12%] left-[50%] w-8 h-8 bg-amber-500 rounded-full blur opacity-${Math.round(camera_temperature/60 * 100)} pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>`
     
     r_hip_temperature = Math.max(r_hip_pitch,r_hip_roll,r_hip_yaw);
     let r_knee_temperature = r_knee
