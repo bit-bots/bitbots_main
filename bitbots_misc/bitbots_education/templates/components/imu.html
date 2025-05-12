@@ -47,7 +47,7 @@
     imu_listener.unsubscribe();
     return;
   }
-    document.getElementById("logo").style.transform = `rotate(${-euler.roll}deg)`;
+    document.getElementById("logo").style.transform = `rotateZ(${- euler.roll}deg) rotateX(${-euler.pitch}deg)`;
   });
 
 
