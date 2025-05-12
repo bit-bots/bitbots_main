@@ -1,0 +1,185 @@
+{% macro motor_heat_component(max_temperature) %}
+<script type="text/javascript" >
+
+  // Subscribing to a Topic
+  // ----------------------
+
+  var diagnostics_listener = new ROSLIB.Topic({
+    ros : ros,
+    name : '/diagnostics_agg',
+    messageType : 'diagnostic_msgs/msg/DiagnosticArray'
+  });
+
+  diagnostics_listener.subscribe(function(message)
+  {
+    let output_string = "";
+    let head_pen = 0.0;
+    let head_tilt = 0.0;
+    let camera = 0.0;
+
+    let l_ancle_pitch = 0.0;
+    let l_ancle_roll = 0.0;
+
+    let l_hip_pitch = 0.0;
+    let l_hip_roll = 0.0;
+    let l_hip_yaw = 0.0;
+
+    let l_knee = 0.0;
+
+    let l_shoulder_pitch = 0.0;
+    let l_shoulder_roll = 0.0;
+
+    let r_ancle_pitch = 0.0;
+    let r_ancle_roll = 0.0;
+
+    let r_hip_pitch = 0.0;
+    let r_hip_roll = 0.0;
+    let r_hip_yaw = 0.0;
+
+    let r_knee = 0.0;
+
+    let r_shoulder_pitch = 0.0;
+    let r_shoulder_roll = 0.0;
+    for(let i = 0; i < message.status.length; i++)
+    {
+        if (message.status[i].name === "/Robot/Camera/")
+        {
+            camera = message.status[i].values[1].value
+        }
+        else if (message.status[i].name === "/Robot/Servos/HeadPan")
+        {
+            head_pen = message.status[i].values[2].value
+        }
+        else if (message.status[i].name === "/Robot/Servos/HeadTilt")
+        {
+            head_tilt = message.status[i].values[2].value
+        }
+        else if (message.status[i].name === "/Robot/Servos/LAnklePitch")
+        {
+            l_ancle_pitch = message.status[i].values[2].value
+        }
+        else if (message.status[i].name === "/Robot/Servos/LAnkleRoll")
+        {
+            l_ancle_roll = message.status[i].values[2].value
+        }
+        else if (message.status[i].name === "/Robot/Servos/LHipPitch")
+        {
+            l_hip_pitch = message.status[i].values[2].value
+        }
+        else if (message.status[i].name === "/Robot/Servos/LHipRoll")
+        {
+            l_hip_roll = message.status[i].values[2].value
+        }
+        else if (message.status[i].name === "/Robot/Servos/LHipYaw")
+        {
+            l_hip_yaw = message.status[i].values[2].value
+        }
+        else if (message.status[i].name === "/Robot/Servos/LKnee")
+        {
+            l_knee = message.status[i].values[2].value
+        }
+        else if (message.status[i].name === "/Robot/Servos/LShoulderPitch")
+        {
+            l_shoulder_pitch = message.status[i].values[2].value
+        }
+        else if (message.status[i].name === "/Robot/Servos/LShoulderRoll")
+        {
+            l_shoulder_roll = message.status[i].values[2].value
+        }
+         else if (message.status[i].name === "/Robot/Servos/RAnklePitch")
+        {
+            r_ancle_pitch = message.status[i].values[2].value
+        }
+        else if (message.status[i].name === "/Robot/Servos/RAnkleRoll")
+        {
+            r_ancle_roll = message.status[i].values[2].value
+        }
+        else if (message.status[i].name === "/Robot/Servos/RHipPitch")
+        {
+            r_hip_pitch = message.status[i].values[2].value
+        }
+        else if (message.status[i].name === "/Robot/Servos/RHipRoll")
+        {
+            r_hip_roll = message.status[i].values[2].value
+        }
+        else if (message.status[i].name === "/Robot/Servos/RHipYaw")
+        {
+            r_hip_yaw = message.status[i].values[2].value
+        }
+        else if (message.status[i].name === "/Robot/Servos/RKnee")
+        {
+            r_knee = message.status[i].values[2].value
+        }
+        else if (message.status[i].name === "/Robot/Servos/RShoulderPitch")
+        {
+            r_shoulder_pitch = message.status[i].values[2].value
+        }
+        else if (message.status[i].name === "/Robot/Servos/RShoulderRoll")
+        {
+            r_shoulder_roll = message.status[i].values[2].value
+        }
+    }
+    
+    let head_temperature = Math.max(head_pen,head_tilt);
+    output_string += `<div class="absolute top-[28%] left-[50%] w-8 h-8 bg-red-500 rounded-full blur-xs opacity-${Math.round(head_temperature/60 * 100)} pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>`
+    
+    let camera_temperature = camera;
+    output_string += `<div class="absolute top-[12%] left-[50%] w-8 h-8 bg-red-500 rounded-full blur opacity-${Math.round(camera_temperature/60 * 100)} pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>`
+    
+    r_hip_temperature = Math.max(r_hip_pitch,r_hip_roll,r_hip_yaw);
+    let r_knee_temperature = r_knee
+    let r_ankle_temperature = Math.max(r_ancle_pitch,r_ancle_roll);
+    output_string += `
+    <div class="absolute top-[56%] left-[65%] w-8 h-8 bg-red-500 rounded-full blur-xs opacity-${Math.round(r_hip_temperature/60 * 100)} pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>
+    <div class="absolute top-[71%] left-[66%] w-8 h-8 bg-red-500 rounded-full blur-xs opacity-${Math.round(r_knee_temperature/60 * 100)} pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>
+    <div class="absolute top-[93%] left-[67%] w-8 h-8 bg-red-500 rounded-full blur-xs  opacity-${Math.round(r_ankle_temperature/60 * 100)} pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>`
+    
+    let l_hip_temperature = Math.max(l_hip_pitch,l_hip_roll,l_hip_yaw);
+    let l_knee_temperature = l_knee;
+    let l_ankle_temperature = Math.max(l_ancle_pitch,l_ancle_roll);
+    output_string += `
+    <div class="absolute top-[56%] left-[35%] w-8 h-8 bg-red-500 rounded-full blur-xs opacity-${Math.round(l_hip_temperature/60 * 100)} pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div> 
+    <div class="absolute top-[71%] left-[33%] w-8 h-8 bg-red-500 rounded-full blur-xs opacity-${Math.round(l_knee_temperature/60 * 100)} pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>
+    <div class="absolute top-[93%] left-[33%] w-8 h-8 bg-red-500 rounded-full blur-xs opacity-${Math.round(l_ankle_temperature/60 * 100)} pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>`
+    
+    let r_shoulder_temperature = Math.max(r_shoulder_pitch,r_shoulder_roll);
+    output_string += ` <div class="absolute top-[35%] left-[81%] w-8 h-8 bg-red-500 rounded-full blur-xs opacity-${Math.round(r_shoulder_temperature/60 * 100)} pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>`
+    
+    let l_shoulder_temperature = Math.max(l_shoulder_pitch,l_shoulder_roll);
+    output_string += ` <div class="absolute top-[35%] left-[19%] w-8 h-8 bg-red-500 rounded-full blur-xs opacity-${Math.round(l_shoulder_temperature/60 * 100)} pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>`
+   
+    let max_temperature = Math.max(head_temperature, l_hip_temperature, r_hip_temperature, l_knee_temperature, r_knee_temperature, l_ankle_temperature, r_ankle_temperature, l_shoulder_temperature, r_shoulder_temperature);
+   
+    let element = document.getElementById("temperature_points");
+    let max_element = document.getElementById("max_tmp");
+
+   
+    if (element === null && max_element === null) 
+    {
+      diagnostics_listener.unsubscribe();
+      return;
+    }
+    else if(element != null)
+    {
+      document.getElementById("temperature_points").innerHTML = output_string;
+    }
+    else if (max_element != null)
+    {
+      document.getElementById("max_tmp").innerHTML = `${max_temperature} °C`;
+    }
+  });
+
+</script>
+
+
+{% if max_temperature == True %}
+<div id="max_tmp" class="text-3xl text-center text-red-800 my-8"></div>
+{% else %} 
+<div class="p-6 overflow-hidden bg-sky-100 grid place-items-center">
+  <div class="relative w-full" style="width: 60%;">
+    <img src="assets/abstract_robot.svg" class="w-full">
+    <div id="temperature_points"></div>
+  </div>
+</div>
+{% endif %}
+{% endmacro %}

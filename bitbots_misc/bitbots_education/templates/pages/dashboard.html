@@ -2,6 +2,7 @@
 {% import "components/vision.html" as vision_components %}
 {% import "components/current_action.html" as current_action_components %}
 {% import "components/textbox.html" as components %}
+{% import "components/motor_heat.html" as heat_components %}
 
 <h1 id="banner" hx-swap-oob="innerHTML">Hamburg Bit-Bots</h1>
 
@@ -29,7 +30,7 @@
     <a hx-get="pages/motor_heat.html" hx-target="#content" hx-swap="innerHTML" hx-trigger="click" hx-push-url="?page=motor_heat" class="flex justify-center flex-col border-2 border-zinc-800 rounded-2xl bg-zinc-100 shadow-md">
       <div class="flex justify-between flex-col h-full">
         <div class="flex justify-center h-full flex-col">
-          <div class="text-3xl text-center text-red-800 my-8">42°C</div>
+          {{ heat_components.motor_heat_component(true) }}
         </div>
         <p class="pb-4 px-2 text-center font-medium">Motor Heat</p>
       </div>
