@@ -37,9 +37,6 @@
     "--cap-add=SYS_PTRACE",
     "--security-opt",
     "seccomp=unconfined",
-    "--gpus",
-    "all",
-    // "-t nvidia/cuda"
   ],
 
   "postCreateCommand": "git config --global --add safe.directory '*'"
