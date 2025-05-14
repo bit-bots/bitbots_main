@@ -151,6 +151,36 @@ walking:
       description: "Scales the step rise parameter, as the kick is a special case, where the foot is moved higher of the ground than in normal walking (ratio)"
       validation:
         bounds<>: [0.0, 5.0]
+    kick_early_pitch_prevention_phase:
+      type: double
+      description: "Time at which the foot is not supposed to pitch yet, in order to prevent falling to the side (time relative within the kick phase)"
+      default_value: 0.4
+      validation:
+        bounds<>: [0.2, 0.5]
+    kick_pitch_downwards_phase:
+      type: double
+      description: "Time at which the foot pitches downwards during the kick phase"
+      default_value: 0.9
+      validation:
+        bounds<>: [0.6, 0.9]
+    kick_pitch_downwards:
+      type: double
+      description: "Angle at which the foot pitches down (in rad)"
+      default_value: 0.8
+      validation:
+        bounds<>: [0.6, 0.9]
+    kick_pitch_upwards_phase:
+      type: double
+      description: "Time at which the foot pitches upwards during the kick phase"
+      default_value: 1.1
+      validation:
+        bounds<>: [0.95, 1.5]
+    kick_pitch_upwards:
+      type: double
+      description: "Angle at which the foot pitches up (in rad)"
+      default_value: -0.9
+      validation:
+        bounds<>: [-1.5, -0.5]
   node:
     engine_freq:
       type: double
