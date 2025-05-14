@@ -2,6 +2,7 @@
 import cv2
 import rclpy
 import yaml
+from ament_index_python import get_package_share_directory
 from nav_msgs.msg import OccupancyGrid
 from rclpy.node import Node
 from rclpy.qos import QoSProfile
@@ -28,13 +29,16 @@ class FieldPublisher(Node):
         self.y = None
         self.padding = None
         timer_period = 1
-        self.load_map()
+        self.load_map(
+            get_package_share_directory("bitbots_parameter_blackboard") + "/config/fields/webots/lines.png",
+            get_package_share_directory("bitbots_parameter_blackboard") + "/config/fields/webots/config.yaml",
+        )
         self.timer = self.create_timer(timer_period, self.publish_map)
 
     def load_map(
         self,
-        map_path: str = "/root/colcon_ws/src/bitbots_main/bitbots_misc/bitbots_parameter_blackboard/config/fields/webots/lines.png",
-        yaml_path: str = "/root/colcon_ws/src/bitbots_main/bitbots_misc/bitbots_parameter_blackboard/config/fields/webots/config.yaml",
+        map_path: str,
+        yaml_path: str,
     ) -> None:
         """
         loads the map and map config and saves it in this class
