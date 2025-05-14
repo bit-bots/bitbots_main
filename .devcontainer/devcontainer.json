@@ -36,7 +36,7 @@
     "--volume=/tmp/.X11-unix:/tmp/.X11-unix",
     "--cap-add=SYS_PTRACE",
     "--security-opt",
-    "seccomp=unconfined"
+    "seccomp=unconfined",
   ],
 
   "postCreateCommand": "git config --global --add safe.directory '*'"
