@@ -36,6 +36,9 @@ class LocalizationFaker(Node):
             except tf2_ros.ExtrapolationException as ex:
                 self.get_logger().warn(self.get_name() + ": " + str(ex), throttle_duration_sec=5.0)
                 return
+            except tf2_ros.ConnectivityException as ex:
+                self.get_logger().warn(self.get_name() + ": " + str(ex), throttle_duration_sec=5.0)
+                return
             t.header.stamp = robot_in_odom.header.stamp
             q = robot_in_odom.transform.rotation
             _, _, r_odom_robot_yaw = transforms3d.euler.quat2euler([q.w, q.x, q.y, q.z])
