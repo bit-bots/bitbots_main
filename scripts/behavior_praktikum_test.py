@@ -50,6 +50,7 @@ class StateMachine(Node):
         self.timer = self.create_timer(0.1, self.timer_callback)
 
         self.has_kickoff = True
+        self.ball_position = None
 
     def listener_callback(self, msg):
         self.get_logger().info(f"Received game state: {msg.game_state}")
@@ -64,7 +65,8 @@ class StateMachine(Node):
                 self.go_to_ball()
         self.has_kickoff = msg.has_kick_off
 
-    # def vision_callback(self, msg):
+    def vision_callback(self, msg):
+        self.ball_position = msg.pose.pose.position
 
     def timer_callback(self):
         # match the states
@@ -85,7 +87,11 @@ class StateMachine(Node):
                 pose.pose.orientation.w = 1.0
                 self.goal_pose_publisher_.publish(pose)
             case States.GO_TO_BALL:
-                self.get_logger().info("State: GO_TO_BALL")
+                pose = PoseStamped()
+                pose.header.frame_id = "map"
+                pose.pose.position.x = self.ball_position.x - 0.2
+                pose.pose.position.y = self.ball_position.y
+                self.goal_pose_publisher_.publish(pose)
             case _:
                 self.get_logger().warn("State: Unknown state")
 
