@@ -2,11 +2,15 @@ import enum
 
 import rclpy
 from game_controller_hl_interfaces.msg import GameState
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped, Twist  # noqa
 from rclpy.node import Node
+from std_msgs.msg import Empty  # noqa
 from transitions.extensions import GraphMachine
 
+from bitbots_msgs.msg import HeadMode  # noqa
 
+
+# Hier stehen alle states, die eure StateMachine benutzt
 class States(enum.Enum):
     INITIAL = 0
     # TODO add more states here
@@ -20,11 +24,15 @@ class StateMachine(Node):
             [rclpy.parameter.Parameter("use_sim_time", rclpy.Parameter.Type.BOOL, True)],
         )
 
-        # Create state machine
         self.state: States
+
+        # Hier erstellt ihr eure StateMachine. Dabei wird in "states" das enum von oben angegeben und in "initial" der anfangs state gesetzt.
         self.machine = GraphMachine(
             model=self, states=States, initial=States.INITIAL, title="Behavior", show_conditions=True
         )
+
+        # Wenn ihr eine Transition erstellt, müsst ihr einen Trigger, einen oder mehrere source states angeben, aus denen dann in den dest state gewechselt werden kann.
+        # Hier kann aus jedem anderen state in initial gewechselt werden, wenn die Triggerfunktion initial() aufgerufen wird.
         self.machine.add_transition(trigger="initial", source="*", dest=States.INITIAL)
         # TODO add more transitions here
 
@@ -35,17 +43,18 @@ class StateMachine(Node):
         self.velocity_publisher_ = self.create_publisher(Twist, "/cmd_vel", 10)
 
         # Create subscriber
-        self.subscription = self.create_subscription(GameState, "gamestate", self.listener_callback, 10)
+        self.gamestate_subscription = self.create_subscription(GameState, "gamestate", self.gamestate_callback, 10)
 
         # Create timer
         self.timer = self.create_timer(0.1, self.timer_callback)
 
-    def listener_callback(self, msg):
+    def gamestate_callback(self, msg):
         match msg.game_state:
             case GameState.GAMESTATE_INITIAL:
                 self.initial()
             # TODO add more cases for other gamestates and call trigger functions
 
+    # Hier implementiert ihr, was der Roboter in jedem State tun soll.
     def timer_callback(self):
         match self.state:
             case States.INITIAL:
