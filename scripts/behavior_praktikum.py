@@ -32,7 +32,7 @@ class StateMachine(Node):
         self.machine.add_transition(trigger="initial", source="*", dest=States.INITIAL)
         # TODO add more transitions here
 
-        # Render the state machine as a graph
+        # Render the state machine as a graph, png can be found in colcon_ws folder
         self.get_graph().draw("behavior.png", prog="dot")
 
         # Create publisher

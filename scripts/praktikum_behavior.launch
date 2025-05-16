@@ -1,21 +1,27 @@
 <?xml version="1.0"?>
 <launch>
     <arg name="sim" default="true"/>
+
+    <!--launches ipm-->
     <include file="$(find-pkg-share bitbots_ipm)/launch/ipm.launch">
         <arg name="sim" value="$(var sim)"/>
     </include>
+    <!--launches simulation-->
     <include file="$(find-pkg-share bitbots_webots_sim)/launch/simulation.launch">
     </include>
+
+    <!--launches motion-->
     <include file="$(find-pkg-share bitbots_bringup)/launch/motion_standalone.launch">
         <arg name="sim" value="$(var sim)"/>
     </include>
+    <!--launches ball filter-->
     <include file="$(find-pkg-share bitbots_ball_filter)/launch/ball_filter.launch">
         <arg name="sim" value="$(var sim)"/>
     </include>
 
     <!--Add your three scripts here like:
     <node pkg="your_package_name" exec="name of file you want to run" name="" output="screen">
-        <param name="use_sim_time" value="$(var sim)"/>
+        (This sets sim_time parameter so you dont't have to do it in your node)<param name="use_sim_time" value="$(var sim)"/>
     </node>
     -->
 </launch>
