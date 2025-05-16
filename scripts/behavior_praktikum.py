@@ -19,10 +19,6 @@ class States(enum.Enum):
 class StateMachine(Node):
     def __init__(self):
         super().__init__("behavior_praktikum")
-        self.get_logger().info("Activate sim time")
-        self.set_parameters(
-            [rclpy.parameter.Parameter("use_sim_time", rclpy.Parameter.Type.BOOL, True)],
-        )
 
         self.state: States
 
