@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="sim" default="true"/>
+
+    <!--launches ipm-->
+    <include file="$(find-pkg-share bitbots_ipm)/launch/ipm.launch">
+        <arg name="sim" value="$(var sim)"/>
+    </include>
+    <!--launches motion-->
+    <include file="$(find-pkg-share bitbots_bringup)/launch/motion_standalone.launch">
+        <arg name="sim" value="$(var sim)"/>
+    </include>
+    <!--launches ball filter-->
+    <include file="$(find-pkg-share bitbots_ball_filter)/launch/ball_filter.launch">
+        <arg name="sim" value="$(var sim)"/>
+    </include>
+
+    <include file="$(find-pkg-share bitbots_path_planning)/launch/path_planning.launch">
+        <arg name="sim" value="$(var sim)"/>
+    </include>
+
+    <include file="$(find-pkg-share bitbots_vision)/launch/vision.launch">
+        <arg name="sim" value="$(var sim)"/>
+    </include>
+
+    <node pkg="praktikum_pepper" exec="behavior_praktikum" name="behavior" output="screen">
+        <param name="use_sim_time" value="$(var sim)"/>
+    </node>
+</launch>
