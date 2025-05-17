@@ -9,11 +9,19 @@
 </div>
 <div class="bg-sky-100">
     {{ behavior_stack_component.behavior_stack_component() }}
-    {{ components.textbox("Explanation Text", "An Inertial Measurement Unit, or IMU, is an essential sensor commonly used in robotics to measure a robot’s orientation, velocity, and acceleration. It typically combines multiple sensing elements—most commonly accelerometers, gyroscopes, and sometimes magnetometers—to provide real-time data about the robot’s motion and position in three-dimensional space.", true) }}
-    {{ components.textbox("Comparison to humans", "The IMU is like the sense of balance in humans", true)}}
-    {{ components.textbox("Accerelometer", "The accelerometer in an IMU detects linear acceleration along the X, Y, and Z axes, helping the robot sense movements such as tilting, sudden changes in speed, or falls. The gyroscope measures angular velocity, or how quickly the robot is rotating around each axis, which is crucial for maintaining balance and stable orientation during motion. In some cases, a magnetometer is included to measure magnetic fields, allowing the robot to determine its heading relative to the Earth's magnetic north, similar to how a digital compass works.", true)}}
-    {{ components.textbox("IMU in robotics", "IMUs are widely used in robots for navigation and localization, especially in environments where GPS signals are unavailable or unreliable. By tracking changes in orientation and motion, an IMU helps a robot understand how it has moved relative to its previous position. Robots that rely on dynamic balance, such as humanoid robots or drones, use IMU data to continuously adjust their posture and maintain stability. IMUs also support precise motion tracking, making them valuable in applications where robotic arms, wheels, or legs need to move with accuracy and control. Often, IMU data is combined with information from other sensors such as cameras or LiDAR in a process called sensor fusion, which enhances the robot’s understanding of its environment and improves navigation performance.", false)}}
-    {{ components.textbox("Advantage of IMUs", "The main advantages of IMUs include their compact size, lightweight design, low power consumption, and ability to deliver real-time motion data. However, they are not without limitations. One common issue is drift, especially with gyroscopes, where small errors accumulate over time and can lead to incorrect position or orientation readings. Additionally, magnetometers can be affected by external magnetic interference, reducing the accuracy of heading measurements.", false)}}
-    {{ components.textbox("Bringing it all together", "In summary, IMUs play a fundamental role in modern robotics by enabling robots to perceive and react to their motion and orientation. When integrated effectively, they significantly enhance a robot’s ability to move, navigate, and interact with the physical world.", false)}}
+    {{ components.textbox("Warum bewegen die Boxen sich und wieso haben sie unterschiedliche Farben?", 
+    "Jede Box steht für eine Entscheidung oder eine Aktion, die der Roboter macht. Dabei macht er meist viele unterschiedliche Abwägungen (blaue Boxen), 
+    bis er sich am Ende für eine Aktion entscheidet, die er dann ausführt(helle Box). Zusätzlich steht auch unter jeder Entscheidung neben dem Pfeil nach unten,
+    wofür der Roboter sich entschieden hat. Da der Roboter während des Spiels in unterschiedliche Situationen kommt, änders sich seine Entscheidungen dementsprechend.
+    Sollten Sie sich eine Reihe an Entscheidungen etwas länger angucken wollen, können sie auf den Button unter der Aktion drücken und können damit den Fluss an Entscheidungen
+    anhalten und wieder starten. ", true) }}
+    {{ components.textbox("Vergleich zum Menschen", "Das Verhalten ist ähnlich zur Entscheidungsfindung des Menschen, wobei durch kleine Entscheidungen verschiedene Einflüsse abgewogen werden, 
+    bis sich der Roboter für eine endgültige Aktion entscheidet.", true)}}
+    {{ components.textbox("Nutzen im Roboter", "Das Verhalten stuert, wo der Roboter hin läuft und was er als nächstes tut. 
+    Hier sind Strategien für das Spiel gespeichert, also Spielzüge, wer wann zum Ball stürmt oder als Verteidiger zurück bleibt. Um diese Entscheidungen treffen zu können,
+    bekommt das Verhalten sehr viele Informationen von anderen Sensoren, wie zum Beispiel die Position des Balls von der Bildverarbeitung.", true)}}
+    {{ components.textbox("Wie funktioniert das Verhalten?", "Im Vergleich zur Bildverarbeitung ist das Verhalten nicht gelernt, sondern besteht aus vielen Abwägungen ähnlich zu: wenn X, dann Y.
+    Wobei X und Y durch einen Informatiker im Code festgelegt worden sind. Es gibt verschiedene Strukturen in denen man diese Abwägungen ordnen kann. Darunter Finite Zustands Machinen oder Verhaltens Bäume.
+    Doch die Bit-Bots haben sich eine eigene Struktur überlegt: den Dynamic Stack Decider (kurz DSD, in Deutsch sowas wie dynamischer Stapel Entscheider). ", false)}}
 </div>
 
