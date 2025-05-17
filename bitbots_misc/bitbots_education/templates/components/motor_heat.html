@@ -152,9 +152,10 @@
    
     let element = document.getElementById("temperature_points");
     let max_element = document.getElementById("max_tmp");
+    let max = document.getElementById("max");
 
    
-    if (element === null && max_element === null) 
+    if (element === null && max_element === null && max === null) 
     {
       diagnostics_listener.unsubscribe();
       return;
@@ -162,6 +163,7 @@
     else if(element != null)
     {
       document.getElementById("temperature_points").innerHTML = output_string;
+      document.getElementById("max").innerHTML = `${max_temperature} °C`;
     }
     else if (max_element != null)
     {
@@ -176,10 +178,11 @@
 <div id="max_tmp" class="text-3xl text-center text-red-800 my-8"></div>
 {% else %} 
 <div class="p-6 overflow-hidden bg-sky-100 grid place-items-center">
-  <div class="relative w-full" style="width: 60%;">
-    <img src="assets/abstract_robot.svg" class="w-full">
-    <div id="temperature_points"></div>
-  </div>
+    <div id="max" class="text-xl text-center text-red-900 mb-4 border-2 bg-zinc-100 border-zinc-800 rounded-md p-1"></div>
+    <div class="relative w-full" style="width: 60%;">
+        <img src="assets/abstract_robot.svg" class="w-full">
+        <div id="temperature_points"></div>
+    </div>
 </div>
 {% endif %}
 {% endmacro %}
