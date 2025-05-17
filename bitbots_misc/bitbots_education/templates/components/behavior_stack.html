@@ -1,31 +1,7 @@
 {% macro behavior_stack_component() %}
 
 <script type="text/javascript">
-  var stack_listener = new ROSLIB.Topic({
-    ros : ros,
-    name : '/debug/dsd/body_behavior/dsd_stack',
-    messageType : 'std_msgs/msg/String'
-  });
-
-  function toggleBehavior()
-  {
-    if (behavior_changes)
-    {
-      behavior_changes = false;
-      document.getElementById("play_button").innerHTML =`<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
-      </svg>`; 
-    }
-    else
-    {
-      behavior_changes = true;
-      document.getElementById("play_button").innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25v13.5m-7.5-13.5v13.5" />
-      </svg>`;
-    }
-  }
-
-  stack_listener.subscribe(function(message) {
+  function behavior_callback(message) {
     const behavior_stack = JSON.parse(message.data);
     let subtree =behavior_stack;
     let output_string = "";
@@ -43,37 +19,63 @@
       else
       {
         output_string += `
-        
-        <div class="border-2 border-zinc-800 rounded-xl bg-sky-800 p-2 text-center text-white w-full"> ${subtree.name}</div> 
+
+        <div class="border-2 border-zinc-800 rounded-xl bg-sky-800 p-2 text-center text-white w-full"> ${subtree.name}</div>
         <div class="flex justify-center flex-row m-2">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
             <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3" />
-          </svg> 
-          ${subtree.next.activation_reason} 
+          </svg>
+          ${subtree.next.activation_reason}
         </div>`;
       }
     }
     subtree = subtree.next;
-    }
-    while (subtree != null)
-    let element = document.getElementById("stack_label");
-    if (element === null)
-    {
-    stack_listener.unsubscribe();
-    return;
-    }
-    if (behavior_changes)
-    {
-      document.getElementById("stack_label").innerHTML = ` <div class="flex justify-center flex-col"> <div class="overflow-scroll"> ${output_string}</div> </div>`;
-    }
-  });
+    } while (subtree != null)
+    document.getElementById("stack_label").innerHTML = output_string;
+  };
 </script>
 
 
-<div class="flex justify-center flex-col grid place-items-center p-6">
-    <div id="stack_label" class="text-center w-full"></div>
-    <button id="play_button" onclick="toggleBehavior()" class="border-1 border-zinc-800 rounded-md bg-zinc-50 shadow-xl p-1 mt-4 grid place-items-center" >
-     Klicke hier
+<div x-data="{
+    listener: null,
+    run: true,
+    init() {
+      this.listener = new ROSLIB.Topic({
+        ros : ros,
+        name : '/debug/dsd/body_behavior/dsd_stack',
+        messageType : 'std_msgs/msg/String'
+      });
+      this.listener.subscribe(behavior_callback);
+    },
+    toggle() {
+      this.run = !this.run;
+      if (this.run) {
+        this.listener.subscribe(behavior_callback);
+      } else {
+        this.listener.unsubscribe();
+      }
+    },
+    destroy() {
+      this.listener.unsubscribe();
+    },
+  }"
+  class="flex justify-center flex-col grid place-items-center p-6">
+    <div class="text-center w-full">
+      <div class="flex justify-center flex-col">
+        <div id="stack_label" class="overflow-scroll">
+        </div>
+      </div>
+    </div>
+    <button id="play_button" x-on:click="toggle()" class="border-1 border-zinc-800 rounded-md bg-zinc-50 shadow-xl p-1 mt-4 grid place-items-center" >
+      <div x-show="run">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25v13.5m-7.5-13.5v13.5" />
+        </svg>
+      </div>
+      <div x-show="!run">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
+        </svg>
     </button>
 </div>
 

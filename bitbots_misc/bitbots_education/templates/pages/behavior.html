@@ -9,17 +9,17 @@
 </div>
 <div class="bg-sky-100">
     {{ behavior_stack_component.behavior_stack_component() }}
-    {{ components.textbox("Warum bewegen die Boxen sich und wieso haben sie unterschiedliche Farben?", 
-    "Jede Box steht für eine Entscheidung oder eine Aktion, die der Roboter macht. Dabei macht er meist viele unterschiedliche Abwägungen (blaue Boxen), 
-    bis er sich am Ende für eine Aktion entscheidet, die er dann ausführt(helle Box). Zusätzlich steht auch unter jeder Entscheidung neben dem Pfeil nach unten,
+    {{ components.textbox("Warum ändern sich die Boxen und wieso haben sie unterschiedliche Farben?",
+    "Jede Box steht für eine Entscheidung oder eine Aktion, die der Roboter macht. Dabei macht er meist viele unterschiedliche Abwägungen (blaue Boxen),
+    bis er sich am Ende für eine Aktion entscheidet, die er dann ausführt (helle Box). Zusätzlich steht auch unter jeder Entscheidung neben dem Pfeil nach unten,
     wofür der Roboter sich entschieden hat. Da der Roboter während des Spiels in unterschiedliche Situationen kommt, änders sich seine Entscheidungen dementsprechend.
     Sollten Sie sich eine Reihe an Entscheidungen etwas länger angucken wollen, können sie auf den Button unter der Aktion drücken und können damit den Fluss an Entscheidungen
     anhalten und wieder starten. ", true) }}
-    {{ components.textbox("Vergleich zum Menschen", "Das Verhalten ist ähnlich zur Entscheidungsfindung des Menschen, wobei durch kleine Entscheidungen verschiedene Einflüsse abgewogen werden, 
+    {{ components.textbox("Vergleich zum Menschen", "Das Verhalten ist ähnlich zur Entscheidungsfindung des Menschen, wobei durch kleine Entscheidungen verschiedene Einflüsse abgewogen werden,
     bis sich der Roboter für eine endgültige Aktion entscheidet.", true)}}
-    {{ components.textbox("Nutzen im Roboter", "Das Verhalten stuert, wo der Roboter hin läuft und was er als nächstes tut. 
+    {{ components.textbox("Nutzen im Roboter", "Das Verhalten steuert, wo der Roboter hin läuft und was er als Nächstes tut.
     Hier sind Strategien für das Spiel gespeichert, also Spielzüge, wer wann zum Ball stürmt oder als Verteidiger zurück bleibt. Um diese Entscheidungen treffen zu können,
-    bekommt das Verhalten sehr viele Informationen von anderen Sensoren, wie zum Beispiel die Position des Balls von der Bildverarbeitung.", true)}}
+    bekommt das Verhalten sehr viele Informationen von anderen Softwarekomponenten, wie zum Beispiel die Position des Balls von der Bildverarbeitung.", true)}}
     {{ components.textbox("Wie funktioniert das Verhalten?", "Im Vergleich zur Bildverarbeitung ist das Verhalten nicht gelernt, sondern besteht aus vielen Abwägungen ähnlich zu: wenn X, dann Y.
     Wobei X und Y durch einen Informatiker im Code festgelegt worden sind. Es gibt verschiedene Strukturen in denen man diese Abwägungen ordnen kann. Darunter Finite Zustands Machinen oder Verhaltens Bäume.
     Doch die Bit-Bots haben sich eine eigene Struktur überlegt: den Dynamic Stack Decider (kurz DSD, in Deutsch sowas wie dynamischer Stapel Entscheider). ", false)}}
