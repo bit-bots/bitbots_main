@@ -1,9 +1,13 @@
 
 {% import "components/textbox.html" as components %}
 {% import "components/motor_heat.html" as heat_components %}
+{% import "components/icon_footer.html" as icon_components %}
 
 
 <h1 id="banner" hx-swap-oob="innerHTML">Motor Heat</h1>
+<div id="icons" hx-swap-oob="innerHTML">
+    {{ icon_components.icons("heat") }}
+</div>
 
 <div class="flex justify-center flex-col bg-sky-1">
     

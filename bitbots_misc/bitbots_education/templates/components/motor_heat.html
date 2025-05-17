@@ -121,33 +121,33 @@
     }
     
     let head_temperature = Math.max(head_pen,head_tilt);
-    output_string += `<div class="absolute top-[28%] left-[50%] w-8 h-8 bg-red-500 rounded-full blur-xs opacity-${Math.round(head_temperature/60 * 100)} pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>`
+    output_string += `<div class="absolute top-[28%] left-[50%] w-4 h-4 bg-red-500 rounded-full blur-xs opacity-${Math.round((head_temperature-20)/40 * 100)} pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>`
     
     let camera_temperature = camera;
-    output_string += `<div class="absolute top-[12%] left-[50%] w-8 h-8 bg-amber-500 rounded-full blur opacity-${Math.round(camera_temperature/60 * 100)} pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>`
+    output_string += `<div class="absolute top-[16%] left-[50%] w-6 h-6 bg-amber-600 rounded-full blur opacity-${Math.round(camera_temperature/60 * 100)} pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>`
     
     r_hip_temperature = Math.max(r_hip_pitch,r_hip_roll,r_hip_yaw);
     let r_knee_temperature = r_knee
     let r_ankle_temperature = Math.max(r_ancle_pitch,r_ancle_roll);
     output_string += `
-    <div class="absolute top-[56%] left-[65%] w-8 h-8 bg-red-500 rounded-full blur-xs opacity-${Math.round(r_hip_temperature/60 * 100)} pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>
-    <div class="absolute top-[71%] left-[66%] w-8 h-8 bg-red-500 rounded-full blur-xs opacity-${Math.round(r_knee_temperature/60 * 100)} pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>
-    <div class="absolute top-[93%] left-[67%] w-8 h-8 bg-red-500 rounded-full blur-xs  opacity-${Math.round(r_ankle_temperature/60 * 100)} pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>`
+    <div class="absolute top-[56%] left-[65%] w-4 h-4 bg-red-500 rounded-full blur-xs opacity-${Math.round((r_hip_temperature-20)/40 * 100)} pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>
+    <div class="absolute top-[71%] left-[67%] w-4 h-4 bg-red-500 rounded-full blur-xs opacity-${Math.round((r_knee_temperature-20)/40 * 100)} pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>
+    <div class="absolute top-[95%] left-[67%] w-4 h-4 bg-red-500 rounded-full blur-xs  opacity-${Math.round((r_ankle_temperature-20)/40 * 100)} pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>`
     
     let l_hip_temperature = Math.max(l_hip_pitch,l_hip_roll,l_hip_yaw);
     let l_knee_temperature = l_knee;
     let l_ankle_temperature = Math.max(l_ancle_pitch,l_ancle_roll);
     output_string += `
-    <div class="absolute top-[56%] left-[35%] w-8 h-8 bg-red-500 rounded-full blur-xs opacity-${Math.round(l_hip_temperature/60 * 100)} pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div> 
-    <div class="absolute top-[71%] left-[33%] w-8 h-8 bg-red-500 rounded-full blur-xs opacity-${Math.round(l_knee_temperature/60 * 100)} pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>
-    <div class="absolute top-[93%] left-[33%] w-8 h-8 bg-red-500 rounded-full blur-xs opacity-${Math.round(l_ankle_temperature/60 * 100)} pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>`
+    <div class="absolute top-[56%] left-[35%] w-4 h-4 bg-red-500 rounded-full blur-xs opacity-${Math.round((l_hip_temperature-20)/40 * 100)} pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div> 
+    <div class="absolute top-[71%] left-[33%] w-4 h-4 bg-red-500 rounded-full blur-xs opacity-${Math.round((l_knee_temperature-20)/40 * 100)} pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>
+    <div class="absolute top-[95%] left-[33%] w-4 h-4 bg-red-500 rounded-full blur-xs opacity-${Math.round((l_ankle_temperature-20)/40 * 100)} pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>`
     
     let r_shoulder_temperature = Math.max(r_shoulder_pitch,r_shoulder_roll);
-    output_string += ` <div class="absolute top-[35%] left-[81%] w-8 h-8 bg-red-500 rounded-full blur-xs opacity-${Math.round(r_shoulder_temperature/60 * 100)} pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>`
+    output_string += ` <div class="absolute top-[41%] left-[85%] w-4 h-4 bg-red-500 rounded-full blur-xs opacity-${Math.round((r_shoulder_temperature-20)/40 * 100)} pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>`
     
     let l_shoulder_temperature = Math.max(l_shoulder_pitch,l_shoulder_roll);
-    output_string += ` <div class="absolute top-[35%] left-[19%] w-8 h-8 bg-red-500 rounded-full blur-xs opacity-${Math.round(l_shoulder_temperature/60 * 100)} pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>`
-   
+    output_string += ` <div class="absolute top-[41%] left-[15%] w-4 h-4 bg-red-500 rounded-full blur-xs opacity-${Math.round((l_shoulder_temperature-20)/40 * 100)} pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>`
+    console.log(head_temperature, l_hip_temperature, r_hip_temperature, l_knee_temperature, r_knee_temperature, l_ankle_temperature, r_ankle_temperature, l_shoulder_temperature, r_shoulder_temperature)
     let max_temperature = Math.max(head_temperature, l_hip_temperature, r_hip_temperature, l_knee_temperature, r_knee_temperature, l_ankle_temperature, r_ankle_temperature, l_shoulder_temperature, r_shoulder_temperature);
    
     let element = document.getElementById("temperature_points");

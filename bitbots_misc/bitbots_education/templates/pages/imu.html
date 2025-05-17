@@ -1,7 +1,11 @@
 {% import "components/imu.html" as imu_components %}
 {% import "components/textbox.html" as components %}
+{% import "components/icon_footer.html" as icon_components %}
 
 <h1 id="banner" hx-swap-oob="innerHTML">IMU</h1>
+<div id="icons" hx-swap-oob="innerHTML">
+    {{ icon_components.icons("imu") }}
+</div>
 <div class="grid place-items-center bg-sky-100">
   <div style="width: 60%;">
     {{ imu_components.imu_component() }}

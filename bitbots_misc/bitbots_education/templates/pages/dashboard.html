@@ -3,8 +3,12 @@
 {% import "components/current_action.html" as current_action_components %}
 {% import "components/textbox.html" as components %}
 {% import "components/motor_heat.html" as heat_components %}
+{% import "components/icon_footer.html" as icon_components %}
 
 <h1 id="banner" hx-swap-oob="innerHTML">Hamburg Bit-Bots</h1>
+<div id="icons" hx-swap-oob="innerHTML">
+    {{ icon_components.icons("dashboard") }}
+</div>
 
 <div class="bg-sky-800 h-full">
 <div class="pb-6">

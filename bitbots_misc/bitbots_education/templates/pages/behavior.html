@@ -1,8 +1,12 @@
 {% import "components/current_action.html" as current_action_components %}
 {% import "components/behavior_stack.html" as behavior_stack_component %}
 {% import "components/textbox.html" as components %}
+{% import "components/icon_footer.html" as icon_components %}
 
 <h1 id="banner" hx-swap-oob="innerHTML">Behavior</h1>
+<div id="icons" hx-swap-oob="innerHTML">
+    {{ icon_components.icons("behavior") }}
+</div>
 <div class="bg-sky-100">
     {{ behavior_stack_component.behavior_stack_component() }}
     {{ components.textbox("Explanation Text", "An Inertial Measurement Unit, or IMU, is an essential sensor commonly used in robotics to measure a robot’s orientation, velocity, and acceleration. It typically combines multiple sensing elements—most commonly accelerometers, gyroscopes, and sometimes magnetometers—to provide real-time data about the robot’s motion and position in three-dimensional space.", true) }}
