@@ -1,6 +1,47 @@
 {% macro behavior_stack_component() %}
 
 <script type="text/javascript">
+  function translate(input) {
+
+    // Cast input to string
+    input = String(input).trim();
+
+    const mapping = {
+      // Decision nodes ($)
+      "BallClose": "Ball nah",
+      "FootSelection": "Fußwahl",
+      "ReachedPathPlanningGoalPosition": "Zielposition erreicht",
+      "AvoidBall": "Ball ausweichen",
+      "BallKickArea": "Ball im Schussbereich",
+      "DoOnce": "Einmal ausführen",
+      "BallSeen": "Ball gesehen",
+
+      // Action nodes (@)
+      "ChangeAction": "Aktion ändern",
+      "LookAtFront": "Schau nach vorne",
+      "GoToBall": "Zum Ball gehen",
+      "LookAtFieldFeatures": "Schau auf Spielfeldmerkmale",
+      "AvoidBallActive": "Ball ausweichen aktiv",
+      "AvoidBallInactive": "Ball ausweichen inaktiv",
+      "WalkKick": "Schuss",
+      "WalkInPlace": "Auf der Stelle gehen",
+      "ForgetBall": "Ball vergessen",
+      "Turn": "Drehen",
+      "Stand": "Stehen",
+
+      // Results
+      "YES": "JA",
+      "NO": "NEIN",
+      "LEFT": "LINKS",
+      "RIGHT": "RECHTS",
+      "NEAR": "NAH",
+      "FAR": "WEIT",
+      "DONE": "ERLEDIGT",
+      "NOT_DONE": "NICHT ERLEDIGT",
+    };
+    return mapping.hasOwnProperty(input) ? mapping[input] : input;
+  }
+
   function behavior_callback(message) {
     const behavior_stack = JSON.parse(message.data);
     let subtree =behavior_stack;
@@ -10,22 +51,22 @@
     {
       if(subtree.type === "sequence")
       {
-        output_string += `<div class="border-2 border-zinc-800 rounded-xl bg-zinc-100 p-2 text-center">${subtree.current_action.name}</div>`;
+        output_string += `<div class="border-2 border-zinc-800 rounded-xl bg-zinc-100 p-2 text-center">${translate(subtree.current_action.name)}</div>`;
       }
       else if (subtree.next === null)
       {
-        output_string += `<div class="border-2 border-zinc-800 rounded-xl bg-zinc-100 p-2 text-center w-full"> ${subtree.name} </div>`;
+        output_string += `<div class="border-2 border-zinc-800 rounded-xl bg-zinc-100 p-2 text-center w-full"> ${translate(subtree.name)} </div>`;
       }
       else
       {
         output_string += `
 
-        <div class="border-2 border-zinc-800 rounded-xl bg-sky-800 p-2 text-center text-white w-full"> ${subtree.name}</div>
+        <div class="border-2 border-zinc-800 rounded-xl bg-sky-800 p-2 text-center text-white w-full"> ${translate(subtree.name)}</div>
         <div class="flex justify-center flex-row m-2">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
             <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3" />
           </svg>
-          ${subtree.next.activation_reason}
+          ${translate(subtree.next.activation_reason)}
         </div>`;
       }
     }
