@@ -12,7 +12,7 @@
     {{ components.textbox("Warum ändern sich die Boxen und wieso haben sie unterschiedliche Farben?",
     "Jede Box steht für eine Entscheidung oder eine Aktion, die der Roboter macht. Dabei macht er meist viele unterschiedliche Abwägungen (blaue Boxen),
     bis er sich am Ende für eine Aktion entscheidet, die er dann ausführt (helle Box). Zusätzlich steht auch unter jeder Entscheidung neben dem Pfeil nach unten,
-    wofür der Roboter sich entschieden hat. Da der Roboter während des Spiels in unterschiedliche Situationen kommt, änders sich seine Entscheidungen dementsprechend.
+    wofür der Roboter sich entschieden hat. Da der Roboter während des Spiels in unterschiedliche Situationen kommt, ändert sich seine Entscheidungen dementsprechend.
     Sollten Sie sich eine Reihe an Entscheidungen etwas länger angucken wollen, können sie auf den Button unter der Aktion drücken und können damit den Fluss an Entscheidungen
     anhalten und wieder starten. ", true) }}
     {{ components.textbox("Vergleich zum Menschen", "Das Verhalten ist ähnlich zur Entscheidungsfindung des Menschen, wobei durch kleine Entscheidungen verschiedene Einflüsse abgewogen werden,
@@ -21,7 +21,12 @@
     Hier sind Strategien für das Spiel gespeichert, also Spielzüge, wer wann zum Ball stürmt oder als Verteidiger zurück bleibt. Um diese Entscheidungen treffen zu können,
     bekommt das Verhalten sehr viele Informationen von anderen Softwarekomponenten, wie zum Beispiel die Position des Balls von der Bildverarbeitung.", true)}}
     {{ components.textbox("Wie funktioniert das Verhalten?", "Im Vergleich zur Bildverarbeitung ist das Verhalten nicht gelernt, sondern besteht aus vielen Abwägungen ähnlich zu: wenn X, dann Y.
-    Wobei X und Y durch einen Informatiker im Code festgelegt worden sind. Es gibt verschiedene Strukturen in denen man diese Abwägungen ordnen kann. Darunter Finite Zustands Machinen oder Verhaltens Bäume.
-    Doch die Bit-Bots haben sich eine eigene Struktur überlegt: den Dynamic Stack Decider (kurz DSD, in Deutsch sowas wie dynamischer Stapel Entscheider). ", false)}}
+    Wobei X und Y durch einen Informatiker im Code festgelegt worden sind. Es gibt verschiedene Strukturen in denen man diese Abwägungen ordnen kann. Darunter Finite Zustands Maschinen oder Entscheidungsbäume.
+    Doch die Bit-Bots haben sich eine eigene Struktur überlegt: den Dynamic Stack Decider (kurz DSD, in Deutsch so was wie dynamischer Stapel Entscheider). Der DSD ist zunächst sehr ähnlich zu einem
+    Entscheidungsbaum. Die Baumstruktur entsteht dabei durch die verschiedenen Antwortmöglichkeiten auf eine Entscheidung. Oben in der Visualisierung sehen sie nur die gewählten
+    Antworten, aber sie können sich vorstellen, dass jede Entscheidung eine Astgabelung darstellt und je nach Antwort der eine oder der andere Ast ausgewählt wird. Was der DSD nun besonders macht,
+    ist, dass er sich für den aktuell ausgewählten Pfad für jede Entscheidung Zusatzinformationen merkt, indem er die gemachten Entscheidungen auf einen Stapel legt. Ändert sich nun der Pfad,
+    weil ein Entscheidung sich an einer Stelle aufgrund einer veränderten Spielsituation ändert, ändert sich auch der ganze Stapel da drüber und alles was sich die Software dort
+    gemerkt hat, wird zurückgesetzt.", false)}}
 </div>
 

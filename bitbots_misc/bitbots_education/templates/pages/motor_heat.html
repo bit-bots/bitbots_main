@@ -23,7 +23,14 @@
     {{ components.textbox("Nutzen im Roboter", "Die Motoren braucht der Roboter vor allem für seine Fortbewegung, sie unterstützen jedoch auch die Bilderkennung. Mit seinen Beinen läuft er über das Ganze Feld,
     während seine Arme ihm beim Aufstehen helfen, wenn er mal hingefallen ist. Die Motoren im Kopf bewegen die Kamera,
      damit er sich noch besser auf dem Feld umsehen und orientieren kann.", true)}}
-    {{ components.textbox("Wie gut können Roboter laufen?", "IMUs are widely used in robots for navigation and localization, especially in environments where GPS signals are unavailable or unreliable. By tracking changes in orientation and motion, an IMU helps a robot understand how it has moved relative to its previous position. Robots that rely on dynamic balance, such as humanoid robots or drones, use IMU data to continuously adjust their posture and maintain stability. IMUs also support precise motion tracking, making them valuable in applications where robotic arms, wheels, or legs need to move with accuracy and control. Often, IMU data is combined with information from other sensors such as cameras or LiDAR in a process called sensor fusion, which enhances the robot’s understanding of its environment and improves navigation performance.", false)}}
+    {{ components.textbox("Wie gut können Roboter laufen?", "Wir Menschen laufen unser Leben lang, meist auch schon ab sehr jungen Jahren. Einmal gelernt, machen wir die Bewegungsabläufe fast schon automatisch.
+    Darüber hinaus helfen uns unsere Reflexe bei der Laufstabilisierung ohne, dass wir aktiv etwas entscheiden müssen. Um nun einen Roboter zum Laufen zu bringen, müssen wir verstehen,
+    welche Bewegungsabläufe wir Menschen beim Laufen machen und diese auf den Roboter übertragen, was gar nicht so einfach ist, weil vieles am Laufen z.B. auch das Gleichgewicht halten,
+    eher ein unbewusster Prozess ist. Daher ist vor allem das zweibeinige Laufen ein relativ schweres Problem für Roboter bzw. für herkömmliche Algorithmen. Hier wird dann mit
+    sogenannten Splines gearbeitet, was am Ende schön geschwungene Kurven zwischen Punkten auf einem Graphen sind, die die Bewegung der Füße zeigen. Mittlerweile benutzen viele Roboter bestärkendes
+     Lernen (eine Form von KI), hierbei lernt der Roboter das Laufen mehr wie ein Mensch. Dabei soll der Roboter in einer Simulation versuchen zu laufen, schafft er dies, wird er
+    belohnt, schafft er es nicht, wird ihm das auch mitgeteilt und er versucht einen neuen Ansatz. Meist ist das Laufen lernen hier auch ein Prozess, der über viele Wiederholungen
+    stattfindet, dann aber auch bessere Ergebnisse liefert, als herkömmliche Algorithmen.", false)}}
 </div>
 
 
