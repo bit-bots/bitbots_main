@@ -21,7 +21,7 @@
     Hier sind Strategien für das Spiel gespeichert, also Spielzüge, wer wann zum Ball stürmt oder als Verteidiger zurück bleibt. Um diese Entscheidungen treffen zu können,
     bekommt das Verhalten sehr viele Informationen von anderen Softwarekomponenten, wie zum Beispiel die Position des Balls von der Bildverarbeitung.", true)}}
     {{ components.textbox("Wie funktioniert das Verhalten?", "Im Vergleich zur Bildverarbeitung ist das Verhalten nicht gelernt, sondern besteht aus vielen Abwägungen ähnlich zu: wenn X, dann Y.
-    Wobei X und Y durch einen Informatiker im Code festgelegt worden sind. Es gibt verschiedene Strukturen in denen man diese Abwägungen ordnen kann. Darunter Finite Zustands Maschinen oder Entscheidungsbäume.
+    Wobei X und Y durch einen Informatiker im Code festgelegt worden sind. Es gibt verschiedene Strukturen in denen man diese Abwägungen ordnen kann. Darunter Endliche Automaten oder Entscheidungsbäume.
     Doch die Bit-Bots haben sich eine eigene Struktur überlegt: den Dynamic Stack Decider (kurz DSD, in Deutsch so was wie dynamischer Stapel Entscheider). Der DSD ist zunächst sehr ähnlich zu einem
     Entscheidungsbaum. Die Baumstruktur entsteht dabei durch die verschiedenen Antwortmöglichkeiten auf eine Entscheidung. Oben in der Visualisierung sehen sie nur die gewählten
     Antworten, aber sie können sich vorstellen, dass jede Entscheidung eine Astgabelung darstellt und je nach Antwort der eine oder der andere Ast ausgewählt wird. Was der DSD nun besonders macht,
