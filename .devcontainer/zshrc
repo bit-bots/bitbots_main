@@ -50,12 +50,12 @@ bindkey "^[[1;5D" backward-word
 
 
 # Settings for the prompt to show that we are in a docker container
-export PROMPT="%K{black} 🐋 %K{blue}%F{black}%/ %f%k%F{blue}%f "  # Prefix the prompt with DOCKER
+export PROMPT="%K{black} 🐋 %K{blue}%F{black} %~ %f%k%F{blue}%f "  # Prefix the prompt with DOCKER
 
 # >>> bit-bots initialize >>>
 
 # Ignore some deprecation warnings
-export PYTHONWARNINGS=ignore:::setuptools.command.install,ignore:::setuptools.command.easy_install,ignore:::pkg_resources
+export PYTHONWARNINGS="ignore:::setuptools.command.install,ignore:::setuptools.command.easy_install,ignore:::pkg_resources,ignore:easy_install command is deprecated,ignore:setup.py install is deprecated"
 
 # Limit ROS 2 communication to localhost (can be overridden when needed)
 export ROS_DOMAIN_ID=24

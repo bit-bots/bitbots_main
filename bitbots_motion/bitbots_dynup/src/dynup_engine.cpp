@@ -1,5 +1,4 @@
-#include "bitbots_dynup/dynup_engine.hpp"
-
+#include <bitbots_dynup/dynup_engine.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 namespace bitbots_dynup {

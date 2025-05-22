@@ -1,5 +1,4 @@
-#include "bitbots_dynamic_kick/kick_engine.hpp"
-
+#include <bitbots_dynamic_kick/kick_engine.hpp>
 #include <utility>
 
 namespace bitbots_dynamic_kick {

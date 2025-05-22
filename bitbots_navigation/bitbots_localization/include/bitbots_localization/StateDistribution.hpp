@@ -5,10 +5,9 @@
 #ifndef BITBOTS_LOCALIZATION_STATEDISTRIBUTION_H
 #define BITBOTS_LOCALIZATION_STATEDISTRIBUTION_H
 
-#include <particle_filter/CRandomNumberGenerator.h>
-#include <particle_filter/StateDistribution.h>
-
 #include <bitbots_localization/RobotState.hpp>
+#include <particle_filter/CRandomNumberGenerator.hpp>
+#include <particle_filter/StateDistribution.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <utility>
 

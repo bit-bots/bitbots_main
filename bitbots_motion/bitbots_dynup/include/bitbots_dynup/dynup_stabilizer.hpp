@@ -4,6 +4,7 @@
 #include <rot_conv/rot_conv.h>
 
 #include <Eigen/Geometry>
+#include <bitbots_dynup/dynup_parameters.hpp>
 #include <bitbots_splines/abstract_stabilizer.hpp>
 #include <control_toolbox/pid_ros.hpp>
 #include <optional>
@@ -11,7 +12,6 @@
 #include <tf2_eigen/tf2_eigen.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
-#include "dynup_parameters.hpp"
 #include "dynup_utils.hpp"
 namespace bitbots_dynup {
 

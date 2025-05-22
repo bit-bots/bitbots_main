@@ -16,40 +16,40 @@ class TeamColor(IntEnum):
 class RobocupProtocolConverter:
     def __init__(self, own_team_color: TeamColor):
         self.role_mapping = (
-            (Proto.Role.ROLE_UNDEFINED, Strategy.ROLE_UNDEFINED),
-            (Proto.Role.ROLE_IDLING, Strategy.ROLE_IDLING),
-            (Proto.Role.ROLE_OTHER, Strategy.ROLE_OTHER),
-            (Proto.Role.ROLE_STRIKER, Strategy.ROLE_STRIKER),
-            (Proto.Role.ROLE_SUPPORTER, Strategy.ROLE_SUPPORTER),
-            (Proto.Role.ROLE_DEFENDER, Strategy.ROLE_DEFENDER),
-            (Proto.Role.ROLE_GOALIE, Strategy.ROLE_GOALIE),
+            (Proto.ROLE_UNDEFINED, Strategy.ROLE_UNDEFINED),
+            (Proto.ROLE_IDLING, Strategy.ROLE_IDLING),
+            (Proto.ROLE_OTHER, Strategy.ROLE_OTHER),
+            (Proto.ROLE_STRIKER, Strategy.ROLE_STRIKER),
+            (Proto.ROLE_SUPPORTER, Strategy.ROLE_SUPPORTER),
+            (Proto.ROLE_DEFENDER, Strategy.ROLE_DEFENDER),
+            (Proto.ROLE_GOALIE, Strategy.ROLE_GOALIE),
         )
         self.action_mapping = (
-            (Proto.Action.ACTION_UNDEFINED, Strategy.ACTION_UNDEFINED),
-            (Proto.Action.ACTION_POSITIONING, Strategy.ACTION_POSITIONING),
-            (Proto.Action.ACTION_GOING_TO_BALL, Strategy.ACTION_GOING_TO_BALL),
-            (Proto.Action.ACTION_TRYING_TO_SCORE, Strategy.ACTION_TRYING_TO_SCORE),
-            (Proto.Action.ACTION_WAITING, Strategy.ACTION_WAITING),
-            (Proto.Action.ACTION_KICKING, Strategy.ACTION_KICKING),
-            (Proto.Action.ACTION_SEARCHING, Strategy.ACTION_SEARCHING),
-            (Proto.Action.ACTION_LOCALIZING, Strategy.ACTION_LOCALIZING),
+            (Proto.ACTION_UNDEFINED, Strategy.ACTION_UNDEFINED),
+            (Proto.ACTION_POSITIONING, Strategy.ACTION_POSITIONING),
+            (Proto.ACTION_GOING_TO_BALL, Strategy.ACTION_GOING_TO_BALL),
+            (Proto.ACTION_TRYING_TO_SCORE, Strategy.ACTION_TRYING_TO_SCORE),
+            (Proto.ACTION_WAITING, Strategy.ACTION_WAITING),
+            (Proto.ACTION_KICKING, Strategy.ACTION_KICKING),
+            (Proto.ACTION_SEARCHING, Strategy.ACTION_SEARCHING),
+            (Proto.ACTION_LOCALIZING, Strategy.ACTION_LOCALIZING),
         )
         self.side_mapping = (
-            (Proto.OffensiveSide.SIDE_UNDEFINED, Strategy.SIDE_UNDEFINED),
-            (Proto.OffensiveSide.SIDE_LEFT, Strategy.SIDE_LEFT),
-            (Proto.OffensiveSide.SIDE_MIDDLE, Strategy.SIDE_MIDDLE),
-            (Proto.OffensiveSide.SIDE_RIGHT, Strategy.SIDE_RIGHT),
+            (Proto.SIDE_UNDEFINED, Strategy.SIDE_UNDEFINED),
+            (Proto.SIDE_LEFT, Strategy.SIDE_LEFT),
+            (Proto.SIDE_MIDDLE, Strategy.SIDE_MIDDLE),
+            (Proto.SIDE_RIGHT, Strategy.SIDE_RIGHT),
         )
 
         self.proto_to_team_data_team_mapping = {
-            Proto.Team.UNKNOWN_TEAM: RobotRelative.ROBOT_UNDEFINED,
-            Proto.Team.BLUE: RobotRelative.ROBOT_BLUE,
-            Proto.Team.RED: RobotRelative.ROBOT_RED,
+            Proto.UNKNOWN_TEAM: RobotRelative.ROBOT_UNDEFINED,
+            Proto.BLUE: RobotRelative.ROBOT_BLUE,
+            Proto.RED: RobotRelative.ROBOT_RED,
         }
         self.state_to_proto_team_mapping = {
-            RobotAttributes.TEAM_OWN: Proto.Team.RED if own_team_color == TeamColor.RED else Proto.Team.BLUE,
-            RobotAttributes.TEAM_OPPONENT: Proto.Team.BLUE if own_team_color == TeamColor.RED else Proto.Team.RED,
-            RobotAttributes.TEAM_UNKNOWN: Proto.Team.UNKNOWN_TEAM,
+            RobotAttributes.TEAM_OWN: Proto.RED if own_team_color == TeamColor.RED else Proto.BLUE,
+            RobotAttributes.TEAM_OPPONENT: Proto.BLUE if own_team_color == TeamColor.RED else Proto.RED,
+            RobotAttributes.TEAM_UNKNOWN: Proto.UNKNOWN_TEAM,
         }
 
         proto_to_team_data_mappings = {

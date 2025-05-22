@@ -8,7 +8,5 @@ setup(
     install_requires=[
         "setuptools",
     ],
-    extras_require={
-        "dev": ["pytest", "syrupy"],
-    },
+    tests_require=["pytest", "syrupy"],
 )

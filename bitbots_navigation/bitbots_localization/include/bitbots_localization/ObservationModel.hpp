@@ -5,18 +5,17 @@
 #ifndef BITBOTS_LOCALIZATION_OBSERVATIONMODEL_H
 #define BITBOTS_LOCALIZATION_OBSERVATIONMODEL_H
 
-#include <particle_filter/ParticleFilter.h>
 #include <tf2_ros/buffer.h>
 
 #include <bitbots_localization/RobotState.hpp>
+#include <bitbots_localization/localization_parameters.hpp>
 #include <bitbots_localization/map.hpp>
 #include <bitbots_localization/tools.hpp>
+#include <particle_filter/ParticleFilter.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <sensor_msgs/point_cloud2_iterator.hpp>
 #include <soccer_vision_3d_msgs/msg/goalpost.hpp>
 #include <soccer_vision_3d_msgs/msg/goalpost_array.hpp>
-
-#include "localization_parameters.hpp"
 
 namespace sm = sensor_msgs;
 namespace bl = bitbots_localization;

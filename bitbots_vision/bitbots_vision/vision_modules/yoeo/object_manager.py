@@ -1,5 +1,5 @@
 import os.path as osp
-from typing import Optional, Type
+from typing import Optional
 
 import rclpy
 
@@ -16,7 +16,7 @@ class YOEOObjectManager:
     This class manages the creation and update of the YOEO handler instance.
     """
 
-    _HANDLERS_BY_NAME: dict[str, Type[yoeo_handlers.YOEOHandlerTemplate]] = {
+    _HANDLERS_BY_NAME: dict[str, type[yoeo_handlers.YOEOHandlerTemplate]] = {
         "openvino": yoeo_handlers.YOEOHandlerOpenVino,
         "onnx": yoeo_handlers.YOEOHandlerONNX,
         "pytorch": yoeo_handlers.YOEOHandlerPytorch,

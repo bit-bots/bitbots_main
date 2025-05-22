@@ -193,7 +193,7 @@ class SupervisorController:
         return key
 
     def publish_clock(self):
-        self.clock_msg.clock = Time(seconds=int(self.time), nanoseconds=self.time % 1 * 1e9).to_msg()
+        self.clock_msg.clock = Time(seconds=int(self.time), nanoseconds=int(self.time % 1 * 1e9)).to_msg()
         self.clock_publisher.publish(self.clock_msg)
 
     def set_gravity(self, active):

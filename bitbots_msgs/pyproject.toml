@@ -3,6 +3,8 @@ line-length = 120
 
 [tool.ruff]
 line-length = 120
+
+[tool.ruff.lint]
  # Never enforce `E501` (line length violations), as black takes care of this.
 ignore = ["E501"]
 # Additionally enable the following rules

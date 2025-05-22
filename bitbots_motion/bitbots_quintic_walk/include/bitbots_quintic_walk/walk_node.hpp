@@ -6,17 +6,20 @@ https://github.com/Rhoban/model/
 #ifndef BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALK_NODE_H_
 #define BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALK_NODE_H_
 
-#include <moveit/kinematics_base/kinematics_base.h>
-#include <moveit/move_group_interface/move_group_interface.h>
-#include <moveit/robot_model_loader/robot_model_loader.h>
-#include <tf2/LinearMath/Matrix3x3.h>
-#include <tf2/LinearMath/Quaternion.h>
-#include <tf2/LinearMath/Transform.h>
-#include <tf2/LinearMath/Vector3.h>
 #include <tf2_ros/transform_broadcaster.h>
 #include <unistd.h>
 
 #include <Eigen/Dense>
+#include <biped_interfaces/msg/phase.hpp>
+#include <bitbots_msgs/msg/foot_pressure.hpp>
+#include <bitbots_msgs/msg/joint_command.hpp>
+#include <bitbots_msgs/msg/robot_control_state.hpp>
+#include <bitbots_quintic_walk/bitbots_quintic_walk_parameters.hpp>
+#include <bitbots_quintic_walk/walk_engine.hpp>
+#include <bitbots_quintic_walk/walk_ik.hpp>
+#include <bitbots_quintic_walk/walk_stabilizer.hpp>
+#include <bitbots_quintic_walk/walk_visualizer.hpp>
+#include <bitbots_splines/abstract_ik.hpp>
 #include <chrono>
 #include <control_toolbox/pid_ros.hpp>
 #include <geometry_msgs/msg/point_stamped.hpp>
@@ -24,6 +27,9 @@ https://github.com/Rhoban/model/
 #include <geometry_msgs/msg/pose_array.hpp>
 #include <geometry_msgs/msg/twist.hpp>
 #include <iostream>
+#include <moveit/kinematics_base/kinematics_base.hpp>
+#include <moveit/move_group_interface/move_group_interface.hpp>
+#include <moveit/robot_model_loader/robot_model_loader.hpp>
 #include <moveit_msgs/msg/robot_state.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
@@ -35,19 +41,12 @@ https://github.com/Rhoban/model/
 #include <std_msgs/msg/float64.hpp>
 #include <std_msgs/msg/string.hpp>
 #include <string>
+#include <tf2/LinearMath/Matrix3x3.hpp>
+#include <tf2/LinearMath/Quaternion.hpp>
+#include <tf2/LinearMath/Transform.hpp>
+#include <tf2/LinearMath/Vector3.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <visualization_msgs/msg/marker.hpp>
-
-#include "biped_interfaces/msg/phase.hpp"
-#include "bitbots_msgs/msg/foot_pressure.hpp"
-#include "bitbots_msgs/msg/joint_command.hpp"
-#include "bitbots_msgs/msg/robot_control_state.hpp"
-#include "bitbots_quintic_walk/walk_engine.hpp"
-#include "bitbots_quintic_walk/walk_ik.hpp"
-#include "bitbots_quintic_walk/walk_stabilizer.hpp"
-#include "bitbots_quintic_walk/walk_visualizer.hpp"
-#include "bitbots_quintic_walk_parameters.hpp"
-#include "bitbots_splines/abstract_ik.hpp"
 
 namespace bitbots_quintic_walk {
 

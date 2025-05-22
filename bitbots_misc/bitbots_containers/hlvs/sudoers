@@ -1,7 +1,0 @@
-##
-## User privilege specification
-##
-## Uncomment to allow any user to run sudo if they know the password
-## of the user they are running the command as (root by default).
-# Defaults targetpw  # Ask for the password of the target user
-ALL ALL=(ALL) NOPASSWD: ALL
