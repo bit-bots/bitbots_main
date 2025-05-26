@@ -3,10 +3,11 @@
 {% import "components/textbox.html" as components %}
 {% import "components/icon_footer.html" as icon_components %}
 
-<h1 id="banner" hx-swap-oob="innerHTML">Behavior</h1>
-<div id="icons" hx-swap-oob="innerHTML">
-    {{ icon_components.icons("behavior") }}
-</div>
+{% extends "base.html" %}
+
+{% block banner %}Behavior{% endblock %}
+
+{% block content %}
 <div class="bg-sky-100">
     {{ behavior_stack_component.behavior_stack_component() }}
     {{ components.textbox("Warum ändern sich die Boxen und wieso haben sie unterschiedliche Farben?",
@@ -29,4 +30,9 @@
     weil ein Entscheidung sich an einer Stelle aufgrund einer veränderten Spielsituation ändert, ändert sich auch der ganze Stapel da drüber und alles was sich die Software dort
     gemerkt hat, wird zurückgesetzt.", false)}}
 </div>
+{% endblock %}
+
+{% block icons %}
+    {{ icon_components.icons("behavior") }}
+{% endblock %}
 

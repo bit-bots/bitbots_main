@@ -4,11 +4,11 @@
 {% import "components/icon_footer.html" as icon_components %}
 
 
-<h1 id="banner" hx-swap-oob="innerHTML">Motor Heat</h1>
-<div id="icons" hx-swap-oob="innerHTML">
-    {{ icon_components.icons("heat") }}
-</div>
+{% extends "base.html" %}
 
+{% block banner %}Motors{% endblock %}
+
+{% block content %}
 <div class="flex justify-center flex-col bg-sky-1">
 
     {{ heat_components.motor_heat_component(false) }}
@@ -32,6 +32,11 @@
     belohnt, schafft er es nicht, wird ihm das auch mitgeteilt und er versucht einen neuen Ansatz. Meist ist das Laufen lernen hier auch ein Prozess, der über viele Wiederholungen
     stattfindet, dann aber auch bessere Ergebnisse liefert, als herkömmliche Algorithmen.", false)}}
 </div>
+{% endblock %}
+
+{% block icons %}
+{{ icon_components.icons("motors_heat") }}
+{% endblock %}
 
 
 

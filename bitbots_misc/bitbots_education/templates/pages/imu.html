@@ -2,10 +2,11 @@
 {% import "components/textbox.html" as components %}
 {% import "components/icon_footer.html" as icon_components %}
 
-<h1 id="banner" hx-swap-oob="innerHTML">IMU</h1>
-<div id="icons" hx-swap-oob="innerHTML">
-    {{ icon_components.icons("imu") }}
-</div>
+{% extends "base.html" %}
+
+{% block banner %}IMU{% endblock %}
+
+{% block content %}
 <div class="grid place-items-center bg-sky-100">
   <div style="width: 60%;">
     {{ imu_components.imu_component() }}
@@ -22,4 +23,9 @@
   Richtungen misst. Meist nimmt eine IMU nicht nur Daten auf, sondern verarbeitet diese auch gleich ein wenig. Hierbei wird zum Beispiel die Schräglage des Roboters über kurze Zeit
   durch integrieren (vereinfacht: aufsummieren von Werten) des Gyroskop errechnet. Über lange Zeit wird dieser Wert dann jedoch über die von den Beschleunigungssensoren gemessene Erdbeschleunigung korrigiert. ", false)}}
 </div>
+{% endblock %}
+
+{% block icons %}
+  {{ icon_components.icons("imu") }}
+{% endblock %}
 

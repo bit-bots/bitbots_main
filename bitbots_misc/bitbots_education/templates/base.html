@@ -36,32 +36,18 @@
 </head>
 <body class="h-full bg-sky-800 flex justify-center items-start p-0 sm:p-8">
   <div class="w-full max-w-md h-full shadow-xl sm:rounded-3xl overflow-hidden sm:border-2 sm:border-zinc-800">
-    <script>
-      document.body.addEventListener('htmx:configRequest', function(evt) {
-          const url = new URL(evt.detail.path, window.location.origin);
-          url.searchParams.set('_', Date.now()); // cache-busting query param
-          evt.detail.path = url.pathname + url.search;
-        });
-
-        // This enables us to use the htmx with both partial and full page loads without a dynamic backend
-        // It loads the page for a full page load dynamically by injecting the partial page into the index.html
-        document.addEventListener("DOMContentLoaded", function () {
-          // Get url parameter
-          const urlParams = new URLSearchParams(window.location.search);
-          const page = urlParams.get('page') || 'dashboard'; // Default to 'dashboard' if no page is specified
-          htmx.ajax('GET', `pages/${page}.html`, {
-            target: '#content',
-            swap: 'innerHTML'
-          });
-        });
-    </script>
     <div class="h-full flex justify-between flex-col">
       <div class="grid place-items-center p-4 bg-zinc-100 border-b-2 border-zinc-800 shadow-md">
-        <h1 id="banner" class="text-2xl font-medium"></h1>
+        <h1 id="banner" class="text-2xl font-medium">
+          {% block banner %}{% endblock %}
+        </h1>
       </div>
       <div id="content" class="overflow-scroll">
+        {% block content %}{% endblock %}
       </div>
-      <div id="icons"></div>
+      <div id="icons">
+        {% block icons %}{% endblock %}
+      </div>
     </div>
   </div>
 </body>
