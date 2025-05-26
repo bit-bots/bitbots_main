@@ -23,7 +23,8 @@ setup(
         ("share/" + package_name, ["package.xml"]),
         ("share/" + package_name + "/launch", glob.glob("launch/*.launch")),
     ]
-    + generate_data_files("share/" + package_name + "/", "templates/"),
+    + generate_data_files("share/" + package_name + "/", "templates/")
+    + generate_data_files("share/" + package_name + "/", "static/"),
     version="0.0.0",
     packages=find_packages(exclude=["test"]),
     install_requires=["setuptools"],

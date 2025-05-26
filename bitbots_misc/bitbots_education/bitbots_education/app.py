@@ -6,8 +6,11 @@ from ament_index_python import get_package_share_directory
 template_dir = os.path.join(
     get_package_share_directory("bitbots_education"), "templates"
 )
+static_folder = os.path.join(
+    get_package_share_directory("bitbots_education"), "static"
+)
 
-app = Flask(__name__, template_folder=template_dir)
+app = Flask(__name__, template_folder=template_dir, static_folder=static_folder)
 
 
 @app.route("/")
