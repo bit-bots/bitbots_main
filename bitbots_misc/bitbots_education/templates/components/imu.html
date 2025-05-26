@@ -1,4 +1,5 @@
 {% macro imu_component() %}
+
 <script type="text/javascript" >
   function quaternionToFusedAngles(q) {
     let x, y, z, w;
@@ -33,11 +34,9 @@
       hemi
     };
   }
-</script>
 
-
-<div class="flex justify-center overflow-hidden"
-     x-data="{
+  function imu_state() {
+    return {
       listener: null,
       init() {
         this.listener = new ROSLIB.Topic({
@@ -50,13 +49,17 @@
           // Convert quaternion to fused angles
           const fused_angles = quaternionToFusedAngles(quaternion);
           // Update the logo rotation
-          $refs.logo.style.transform = `rotateZ(${- fused_angles.fusedRoll}rad) rotateX(${-fused_angles.fusedPitch}rad)`;
+          this.$refs.logo.style.transform = `rotateZ(${- fused_angles.fusedRoll}rad) rotateX(${-fused_angles.fusedPitch}rad)`;
         });
       },
       destroy() {
         this.listener.unsubscribe();
       },
-     }" >
+    };
+  }
+</script>
+
+<div class="flex justify-center overflow-hidden" x-data="imu_state()">
     <img style="transform-origin: bottom center;"  src="{{ url_for('static', filename='bitBot_color.svg') }}" x-ref="logo"></img>
 </div>
 {% endmacro %}

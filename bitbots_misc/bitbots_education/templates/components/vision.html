@@ -1,14 +1,15 @@
 {% macro vision_component() %}
 <script type="text/javascript">
-
-  htmx.onLoad( function() {
-    let element = document.getElementById("videofeed");
-    if (element != null)
-    {
-      document.getElementById("videofeed").src=`http://${window.location.hostname}:8081/stream?topic=/debug_image&quality=10`;
-    }
-    });
+  function vision_state() {
+    return {
+      init() {
+        this.$refs.videofeed.src = `http://${window.location.hostname}:8081/stream?topic=/debug_image&quality=10`;
+      },
+    };
+  }
 </script>
 
-<img id="videofeed"></img>
+<div x-data="vision_state()">
+  <img x-ref="videofeed"></img>
+</div>
 {% endmacro %}

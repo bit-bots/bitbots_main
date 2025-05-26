@@ -1,23 +1,28 @@
 {% macro current_action_component() %}
 
-<div x-data="{
-    listener: null,
-    action: null,
-    init() {
-      this.listener = new ROSLIB.Topic({
-        ros : ros,
-        name : '/debug/dsd/body_behavior/dsd_current_action',
-        messageType : 'std_msgs/msg/String'
-      });
-      this.listener.subscribe((message) => {
-        this.action = message.data;
-      });
-    },
-    destroy() {
-      this.listener.unsubscribe();
-    },
-  }"
-  class="flex justify-center overflow-hidden">
+<script type="text/javascript">
+  function current_action_state() {
+    return {
+      listener: null,
+      action: null,
+      init() {
+        this.listener = new ROSLIB.Topic({
+          ros : ros,
+          name : '/debug/dsd/body_behavior/dsd_current_action',
+          messageType : 'std_msgs/msg/String'
+        });
+        this.listener.subscribe((message) => {
+          this.action = message.data;
+        });
+      },
+      destroy() {
+        this.listener.unsubscribe();
+      },
+    };
+  }
+</script>
+
+<div x-data="current_action_state()" class="flex justify-center overflow-hidden">
   <p>
     <div x-show="action !== null" x-text="action"></div>
     <svg x-show="action === null" aria-hidden="true" class="inline w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-gray-600 dark:fill-gray-300" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">

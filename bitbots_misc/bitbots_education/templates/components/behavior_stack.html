@@ -75,34 +75,35 @@
     document.getElementById("stack_label").innerHTML = output_string;
   };
 
-
+  function behavior_stack_state() {
+    return {
+      listener: null,
+      run: true,
+      init() {
+        this.listener = new ROSLIB.Topic({
+          ros : ros,
+          name : '/debug/dsd/body_behavior/dsd_stack',
+          messageType : 'std_msgs/msg/String'
+        });
+        this.listener.subscribe(behavior_callback);
+      },
+      toggle() {
+        this.run = !this.run;
+        if (this.run) {
+          this.listener.subscribe(behavior_callback);
+        } else {
+          this.listener.unsubscribe();
+        }
+      },
+      destroy() {
+        this.listener.unsubscribe();
+      },
+    };
+  }
 </script>
 
 
-<div x-data="{
-    listener: null,
-    run: true,
-    init() {
-      this.listener = new ROSLIB.Topic({
-        ros : ros,
-        name : '/debug/dsd/body_behavior/dsd_stack',
-        messageType : 'std_msgs/msg/String'
-      });
-      this.listener.subscribe(behavior_callback);
-    },
-    toggle() {
-      this.run = !this.run;
-      if (this.run) {
-        this.listener.subscribe(behavior_callback);
-      } else {
-        this.listener.unsubscribe();
-      }
-    },
-    destroy() {
-      this.listener.unsubscribe();
-    },
-  }"
-  class="flex justify-center flex-col grid place-items-center p-6">
+<div x-data="behavior_stack_state()" class="flex justify-center flex-col grid place-items-center p-6">
     <div class="text-center w-full">
       <div class="flex justify-center flex-col">
         <div id="stack_label" class="overflow-scroll">
