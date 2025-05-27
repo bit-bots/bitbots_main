@@ -8,15 +8,6 @@
     input = String(input).trim();
 
     const mapping = {
-      // Decision nodes ($)
-      "BallClose": "Ball nah",
-      "FootSelection": "Fußwahl",
-      "ReachedPathPlanningGoalPosition": "Zielposition erreicht",
-      "AvoidBall": "Ball ausweichen",
-      "BallKickArea": "Ball im Schussbereich",
-      "DoOnce": "Einmal ausführen",
-      "BallSeen": "Ball gesehen",
-
       // Action nodes (@)
       "ChangeAction": "Aktion ändern",
       "LookAtFront": "Schau nach vorne",
@@ -29,16 +20,6 @@
       "ForgetBall": "Ball vergessen",
       "Turn": "Drehen",
       "Stand": "Stehen",
-
-      // Results
-      "YES": "JA",
-      "NO": "NEIN",
-      "LEFT": "LINKS",
-      "RIGHT": "RECHTS",
-      "NEAR": "NAH",
-      "FAR": "WEIT",
-      "DONE": "ERLEDIGT",
-      "NOT_DONE": "NICHT ERLEDIGT",
     };
     return mapping.hasOwnProperty(input) ? mapping[input] : input;
   }
