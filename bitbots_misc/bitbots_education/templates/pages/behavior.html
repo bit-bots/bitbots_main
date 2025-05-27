@@ -1,5 +1,6 @@
 {% import "components/current_action.html" as current_action_components %}
 {% import "components/behavior_stack.html" as behavior_stack_component %}
+{% import "components/behavior_tree.html" as behavior_tree_component %}
 {% import "components/textbox.html" as components %}
 {% import "components/icon_footer.html" as icon_components %}
 
@@ -9,7 +10,7 @@
 
 {% block content %}
 <div class="bg-sky-100">
-    {{ behavior_stack_component.behavior_stack_component() }}
+    {{ behavior_tree_component.behavior_tree_component() }}
     {{ components.textbox("Warum ändern sich die Boxen und wieso haben sie unterschiedliche Farben?",
     "Jede Box steht für eine Entscheidung oder eine Aktion, die der Roboter macht. Dabei macht er meist viele unterschiedliche Abwägungen (blaue Boxen),
     bis er sich am Ende für eine Aktion entscheidet, die er dann ausführt (helle Box). Zusätzlich steht auch unter jeder Entscheidung neben dem Pfeil nach unten,

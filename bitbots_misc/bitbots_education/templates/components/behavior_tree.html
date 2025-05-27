@@ -1,0 +1,207 @@
+{% macro behavior_tree_component() %}
+
+<script type="text/javascript">
+  function translate(input) {
+
+    // Cast input to string
+    input = String(input).trim();
+
+    const mapping = {
+      // Decision nodes ($)
+      "BallClose": "Ball nah",
+      "FootSelection": "Fußwahl",
+      "ReachedPathPlanningGoalPosition": "Zielposition erreicht",
+      "AvoidBall": "Ball ausweichen",
+      "BallKickArea": "Ball im Schussbereich",
+      "DoOnce": "Einmal ausführen",
+      "BallSeen": "Ball gesehen",
+
+      // Action nodes (@)
+      "ChangeAction": "Aktion ändern",
+      "LookAtFront": "Schau nach vorne",
+      "GoToBall": "Zum Ball gehen",
+      "LookAtFieldFeatures": "Schau auf Spielfeldmerkmale",
+      "AvoidBallActive": "Ball ausweichen aktiv",
+      "AvoidBallInactive": "Ball ausweichen inaktiv",
+      "WalkKick": "Schuss",
+      "WalkInPlace": "Auf der Stelle gehen",
+      "ForgetBall": "Ball vergessen",
+      "Turn": "Drehen",
+      "Stand": "Stehen",
+
+      // Results
+      "YES": "JA",
+      "NO": "NEIN",
+      "LEFT": "LINKS",
+      "RIGHT": "RECHTS",
+      "NEAR": "NAH",
+      "FAR": "WEIT",
+      "DONE": "ERLEDIGT",
+      "NOT_DONE": "NICHT ERLEDIGT",
+    };
+    return mapping.hasOwnProperty(input) ? mapping[input] : input;
+  }
+
+  function behavior_callback(message) {
+    const behavior_tree = JSON.parse(message.data);
+    let output_string = make_tree_string(behavior_tree, "START");
+    document.getElementById("tree").innerHTML = output_string;
+    console.log(behavior_tree)
+  };
+
+  function make_tree_string(tree, reason){
+    console.log(tree);
+    if (tree.children !== undefined)
+    {
+        let string = `<li><code>${reason} --> ${tree.name}</code>
+            <ul>`;
+        for (let key in tree.children)
+        {
+            string += make_tree_string(tree.children[key], key);
+        }
+        return string + `</ul>
+            </li>`;
+    }
+    else
+    {
+        if (tree.type === "action")
+        {
+            return `<li><code>${reason} --> ${tree.name}</code></li>`;
+        }
+        else if (tree.type ==="sequence")
+        {
+            function make_sequence(sequence)
+            {
+                const action = sequence.shift();
+                if (sequence.length > 1)
+                {
+                    return `<li><code>${action.name}</code><ul>${make_sequence(sequence)}</ul></li>`;
+                }
+                else
+                {
+                    return `<li><code>${action.name}</code></li>`;
+                }
+            }
+            return make_sequence(tree.action_elements);
+        }
+    }
+  }
+
+  function behavior_tree_state() {
+    return {
+      listener: null,
+      run: true,
+      init() {
+        this.listener = new ROSLIB.Topic({
+          ros : ros,
+          name : '/debug/dsd/body_behavior/dsd_tree',
+          messageType : 'std_msgs/msg/String'
+        });
+        this.listener.subscribe(behavior_callback);
+      },
+      toggle() {
+        this.run = !this.run;
+        if (this.run) {
+          this.listener.subscribe(behavior_callback);
+        } else {
+          this.listener.unsubscribe();
+        }
+      },
+      destroy() {
+        this.listener.unsubscribe();
+      },
+    };
+  }
+</script>
+
+<style>
+body {
+  font-family: Calibri, Segoe, "Segoe UI", "Gill Sans", "Gill Sans MT", sans-serif;
+}
+
+/* It's supposed to look like a tree diagram */
+.tree, .tree ul, .tree li {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    position: relative;
+}
+
+.tree {
+    margin: 0 0 1em;
+    text-align: center;
+}
+.tree, .tree ul {
+    display: table;
+}
+.tree ul {
+  width: 100%;
+}
+    .tree li {
+        display: table-cell;
+        padding: .5em 0;
+        vertical-align: top;
+    }
+        /* _________ */
+        .tree li:before {
+            outline: solid 1px #666;
+            content: "";
+            left: 0;
+            position: absolute;
+            right: 0;
+            top: 0;
+        }
+        .tree li:first-child:before {left: 50%;}
+        .tree li:last-child:before {right: 50%;}
+
+        .tree code, .tree span {
+            border: solid .1em #666;
+            border-radius: .2em;
+            display: inline-block;
+            margin: 0 .2em .5em;
+            padding: .2em .5em;
+            position: relative;
+        }
+        /* If the tree represents DOM structure */
+        .tree code {
+            font-family: monaco, Consolas, 'Lucida Console', monospace;
+        }
+
+            /* | */
+            .tree ul:before,
+            .tree code:before,
+            .tree span:before {
+                outline: solid 1px #666;
+                content: "";
+                height: .5em;
+                left: 50%;
+                position: absolute;
+            }
+            .tree ul:before {
+                top: -.5em;
+            }
+            .tree code:before,
+            .tree span:before {
+                top: -.55em;
+            }
+
+/* The root node doesn't connect upwards */
+.tree > li {margin-top: 0;}
+    .tree > li:before,
+    .tree > li:after,
+    .tree > li > code:before,
+    .tree > li > span:before {
+      outline: none;
+    }
+</style>
+
+<div x-data="behavior_tree_state()" class="flex justify-center flex-col grid place-items-center p-6 w-100">
+     <ul id="tree" class ="tree overflow-y-scroll" x-ref="tree"></ul>
+      <div x-show="!run">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
+        </svg>
+    </button>
+</div>
+
+{% endmacro %}
