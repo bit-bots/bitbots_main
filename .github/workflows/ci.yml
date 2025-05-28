@@ -18,11 +18,12 @@ jobs:
         uses: fkirc/skip-duplicate-actions@v5
         with:
           cancel_others: 'true'
-      
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-        with:   
-          detached: true
+     
+     # Remove comments to spawn an interactive debigging ssh shell in the ci 
+     #- name: Setup tmate session
+     #   uses: mxschmitt/action-tmate@v3
+     #   with:   
+     #     detached: true
       
       - name: Set up ROS ecosystem
         uses: ros-tooling/setup-ros@v0.7
@@ -39,7 +40,9 @@ jobs:
           echo "PATH=$PATH:/github/home/.local/bin" >> "$GITHUB_ENV"
 
       - name: Pull source code for libraries and install dependencies
-        run: make install HTTPS=true ARGS="--ci"
+        run: |
+          sudo apt-get remove python3-pytest-repeat  #TODO remove once the upstream apt package reports the correct version on the newest pip version
+          make install HTTPS=true ARGS="--ci"
 
       - name: Set up colcon workspace
         run: |
