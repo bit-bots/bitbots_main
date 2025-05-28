@@ -41,7 +41,7 @@ jobs:
 
       - name: Pull source code for libraries and install dependencies
         run: |
-          sudo apt-get remove python3-pytest-repeat  #TODO remove once the upstream apt package reports the correct version on the newest pip version
+          sudo apt-get remove -y python3-pytest-repeat  #TODO remove once the upstream apt package reports the correct version on the newest pip version
           make install HTTPS=true ARGS="--ci"
 
       - name: Set up colcon workspace
