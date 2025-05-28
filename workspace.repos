@@ -58,7 +58,7 @@ repositories:
   lib/imu_tools:
     type: git
     url: git@github.com:ccny-ros-pkg/imu_tools.git
-    version: rolling
+    version: iron
   lib/ipm:
     type: git
     url: git@github.com:ros-sports/ipm.git
