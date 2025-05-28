@@ -18,6 +18,10 @@ jobs:
         uses: fkirc/skip-duplicate-actions@v5
         with:
           cancel_others: 'true'
+      
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+      
       - name: Set up ROS ecosystem
         uses: ros-tooling/setup-ros@v0.7
 

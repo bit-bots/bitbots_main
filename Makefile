@@ -18,7 +18,6 @@ install-no-root: pull-init update-no-root
 pip:
 	# Install and upgrade pip dependencies
 	pip install --upgrade pip --user --break-system-packages -v
-	pip list
 	pip install --upgrade -r requirements/dev.txt --user --break-system-packages -v
 
 pre-commit:
