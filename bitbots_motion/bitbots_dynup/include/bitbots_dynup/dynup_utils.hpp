@@ -17,7 +17,17 @@ struct DynupResponse {
   bool is_head_zero;
 };
 
-enum DynupDirection { FRONT = 1, BACK = 0, FRONT_ONLY = 4, BACK_ONLY = 5, RISE = 2, DESCEND = 3, WALKREADY = 6 };
+enum DynupDirection {
+  FRONT = 1,
+  BACK = 0,
+  FRONT_ONLY = 4,
+  BACK_ONLY = 5,
+  RISE = 2,
+  DESCEND = 3,
+  WALKREADY = 6,
+  RISE_NO_ARMS = 8,
+  DESCEND_NO_ARMS = 7
+};
 
 DynupDirection getDynupDirection(const std::string& direction);
 

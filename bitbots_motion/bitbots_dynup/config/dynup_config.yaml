@@ -239,7 +239,7 @@ bitbots_dynup:
       descend_time:
         type: double
         description: "Time to descend in seconds"
-        default_value: 0.25
+        default_value: 1.5
         validation:
           bounds<>: [0.0, 5.0]
 

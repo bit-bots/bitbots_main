@@ -1,6 +1,6 @@
 #SearchBall
 $DoOnce
-    NOT_DONE --> @ChangeAction + action:searching, @LookAtFieldFeatures, @WalkInPlace + duration:3, @Turn + duration:15, @GoToAbsolutePositionFieldFraction + x:0.5 + blocking:false
+    NOT_DONE --> @ChangeAction + action:searching, @LookAtFieldFeatures, @WalkInPlace + duration:3, @TurnLastSeenBallSide + duration:15, @GoToAbsolutePositionFieldFraction + x:0.5 + blocking:false
     DONE --> $ReachedAndAlignedToPathPlanningGoalPosition + threshold:0.5 + latch:true
         NO --> @LookAtFieldFeatures, @GoToAbsolutePositionFieldFraction + x:0.5
         YES --> $DoOnce
@@ -117,6 +117,19 @@ $DoOnce
                         SECOND --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToCornerKickPosition + mode:supporter
                         THIRD --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition
                     OTHER --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToCornerKickPosition + mode:others
+                THROW_IN --> $SecondaryStateTeamDecider
+                    OUR --> $RankToBallNoGoalie
+                        FIRST --> $DoOnce
+                            NOT_DONE --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @AvoidBallActive, @GoToBall + target:gradient + distance:0.3 + blocking:false
+                            DONE --> $ReachedAndAlignedToPathPlanningGoalPosition + threshold:0.03 + latch:true
+                                NO --> @GoToBall + target:gradient + distance:0.3
+                                YES --> @LookForward, @ChangeAction + action:kicking, @Stand + duration:1.5 + r:false, @PlayAnimationDynup + direction:descend_no_arms, @PlayAnimationGrabBall + r:false, @PlayAnimationDynup + direction:rise_no_arms, @PlayAnimationThrow + r:false, @GetWalkready + r:false, @Stand
+                        SECOND --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToPassPreparePosition
+                        THIRD --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition
+                    OTHER --> $RankToBallNoGoalie
+                        FIRST --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition + mode:freekick_first
+                        SECOND --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition + mode:freekick_second
+                        THIRD --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition
                 ELSE --> $SecondaryStateTeamDecider
                     OUR --> $RankToBallNoGoalie
                         FIRST --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToBall + target:gradient + distance:0.5

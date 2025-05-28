@@ -4,16 +4,17 @@
     <arg name="viz" default="false"/>
     <arg name="walking" default="true" description="start the walking" />
     <arg name="torqueless_mode" default="false" description="start without torque, for example for testing the falling detection"/>
+    <arg name="tts" default="true" description="Whether to speak" />
 
     <!-- launch the base footprint -->
     <node pkg="humanoid_base_footprint" exec="base_footprint" output="screen">
-      <param name="support_state_topics" value="[walk_support_state, dynamic_kick_support_state]"/>
-      <param name="use_sim_time" value="$(var sim)"/>
+        <param name="support_state_topics" value="[walk_support_state, dynamic_kick_support_state]"/>
+        <param name="use_sim_time" value="$(var sim)"/>
     </node>
 
     <!-- launch the odometry -->
     <include file="$(find-pkg-share bitbots_odometry)/launch/odometry.launch">
-      <arg name="sim" value="$(var sim)"/>
+        <arg name="sim" value="$(var sim)"/>
     </include>
 
     <!-- if not in simulation or visualization, launch ros_control -->
@@ -21,6 +22,7 @@
         <group unless="$(var viz)">
             <include file="$(find-pkg-share bitbots_ros_control)/launch/ros_control.launch">
                 <arg name="torqueless_mode" value="$(var torqueless_mode)" />
+                <arg name="tts" value="$(var tts)" />
             </include>
             <node name="set_volume" pkg="bitbots_utils" exec="set_volume.sh" args="100%" />
         </group>

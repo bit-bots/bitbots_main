@@ -14,6 +14,8 @@
     <arg name="world_model" default="true" description="Whether the world model should be started"/>
     <arg name="monitoring" default="true" description="Whether the system monitor and udp bridge should be started" />
     <arg name="record" default="false" description="Whether the ros bag recording should be started" />
+    <arg name="tts" default="true" description="Whether to speak" />
+
 
     <!-- load the global parameters -->
     <include file="$(find-pkg-share bitbots_parameter_blackboard)/launch/parameter_blackboard.launch">
@@ -32,6 +34,7 @@
     <group if="$(var motion)">
         <include file="$(find-pkg-share bitbots_bringup)/launch/motion.launch">
             <arg name="sim" value="$(var sim)"/>
+            <arg name="tts" value="$(var tts)" />
         </include>
     </group>
 

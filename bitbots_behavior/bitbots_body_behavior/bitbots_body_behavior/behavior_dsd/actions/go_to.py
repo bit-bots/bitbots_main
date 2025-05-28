@@ -1,4 +1,5 @@
 import math
+from typing import Optional
 
 import numpy as np
 import tf2_ros as tf2
@@ -17,7 +18,7 @@ class GoToRelativePosition(AbstractActionElement):
         self.point = float(parameters.get("x", 0)), float(parameters.get("y", 0)), float(parameters.get("t", 0))
         self.threshold = float(parameters.get("threshold", 0.1))
         self.first = True
-        self.odom_goal_pose: PoseStamped = None
+        self.goal_pose: Optional[PoseStamped] = None
 
     def perform(self, reevaluate=False):
         if self.first:
@@ -32,18 +33,18 @@ class GoToRelativePosition(AbstractActionElement):
             goal_pose.pose.orientation = quat_from_yaw(math.radians(self.point[2]))
 
             try:
-                self.odom_goal_pose = self.blackboard.tf_buffer.transform(
-                    goal_pose, self.blackboard.odom_frame, timeout=Duration(seconds=0.5)
+                self.goal_pose = self.blackboard.tf_buffer.transform(
+                    goal_pose, self.blackboard.map_frame, timeout=Duration(seconds=0.5)
                 )
-                self.blackboard.pathfinding.publish(self.odom_goal_pose)
+                self.blackboard.pathfinding.publish(self.goal_pose)
             except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
                 self.blackboard.node.get_logger().warning("Could not transform goal pose: " + str(e))
                 self.first = False
         else:
-            current_position = self.blackboard.world_model.get_current_position(self.blackboard.odom_frame)
-            if self.odom_goal_pose is not None and current_position is not None:
+            current_position = self.blackboard.world_model.get_current_position()
+            if self.goal_pose is not None and current_position is not None:
                 position = np.array(current_position[:2])
-                goal = np.array([self.odom_goal_pose.pose.position.x, self.odom_goal_pose.pose.position.y])
+                goal = np.array([self.goal_pose.pose.position.x, self.goal_pose.pose.position.y])
                 distance = np.linalg.norm(goal - position)
                 if distance < self.threshold:
                     self.pop()
