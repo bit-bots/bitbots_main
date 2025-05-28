@@ -89,6 +89,7 @@ setup_repo() {
     else
         if [[ ! -d "$PWD/bitbots_main" ]]; then
             git clone "$REPO_URL"
+            git switch feature/jazzy-ubuntu2404-devcontainer
         fi
 
         meta_dir="$(realpath "$PWD/bitbots_main")"
@@ -108,7 +109,7 @@ setup_colcon() {
     echo "Installing/Updating colcon extensions..."
 
     # Install/Update colcon extensions / patches
-    python3 -m pip install --upgrade --user \
+    python3 -m pip install --upgrade --user --break-system-packages \
       git+https://github.com/timonegk/colcon-core.git@colors \
       git+https://github.com/timonegk/colcon-notification.git@colors \
       git+https://github.com/timonegk/colcon-output.git@colors
