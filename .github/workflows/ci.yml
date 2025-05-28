@@ -21,6 +21,8 @@ jobs:
       
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@v3
+        with:   
+          detached: true
       
       - name: Set up ROS ecosystem
         uses: ros-tooling/setup-ros@v0.7
