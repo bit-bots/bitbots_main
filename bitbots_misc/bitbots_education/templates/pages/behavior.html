@@ -9,7 +9,7 @@
 {% block banner %}Behavior{% endblock %}
 
 {% block content %}
-<div class="bg-sky-100">
+<div class="bg-sky-100 overflow-hidden">
     {{ behavior_tree_component.behavior_tree_component() }}
     {{ components.textbox("Warum ändern sich die Boxen und wieso haben sie unterschiedliche Farben?",
     "Jede Box steht für eine Entscheidung oder eine Aktion, die der Roboter macht. Dabei macht er meist viele unterschiedliche Abwägungen (blaue Boxen),
