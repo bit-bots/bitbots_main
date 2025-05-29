@@ -12,6 +12,7 @@ from rclpy.node import Node
 from rclpy.time import Time
 from ros2_numpy import numpify
 from std_msgs.msg import Header
+from rclpy.experimental.events_executor import EventsExecutor
 
 from bitbots_msgs.msg import TeamData
 
@@ -124,11 +125,10 @@ class RobotFilter(Node):
 def main(args=None):
     rclpy.init(args=args)
     node = RobotFilter()
-    # Number of executor threads is the number of MutuallyExclusiveCallbackGroups + 2 threads the tf listener and executor needs
-    ex = MultiThreadedExecutor(num_threads=5)
-    ex.add_node(node)
+    executor = EventsExecutor()
+    executor.add_node(node)
     try:
-        ex.spin()
+        executor.spin()
     except KeyboardInterrupt:
         pass
     node.destroy_node()

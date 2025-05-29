@@ -7,6 +7,7 @@ from geometry_msgs.msg import Twist
 from rclpy.duration import Duration
 from rclpy.node import Node
 from sensor_msgs.msg import Joy
+from rclpy.experimental.events_executor import EventsExecutor
 
 from bitbots_msgs.msg import Audio, HeadMode, JointCommand
 
@@ -240,6 +241,12 @@ class JoyNode(Node):
 def main():
     rclpy.init(args=None)
     node = JoyNode()
-    rclpy.spin(node)
+
+    executor = EventsExecutor()
+    executor.add_node(node)
+    try:
+        executor.spin()
+    except KeyboardInterrupt:
+        node.get_logger().info("Joy node stopped by user")
+        
     node.destroy_node()
-    rclpy.shutdown()

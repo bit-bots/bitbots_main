@@ -4,6 +4,7 @@ import os
 import threading
 
 import rclpy
+from rclpy.experimental.events_executor import EventsExecutor
 from bitbots_webots_sim.webots_supervisor_controller import SupervisorController
 from rclpy.node import Node
 
@@ -29,9 +30,12 @@ if __name__ == "__main__":
 
     rclpy.init()
     supervisor = SupervisorNode(args.sim_port)
-    thread = threading.Thread(target=rclpy.spin, args=(supervisor.node,), daemon=True)
+
+    executor = EventsExecutor()
+    executor.add_node(supervisor.node)
+
+    thread = threading.Thread(target=executor.spin, daemon=True)
     thread.start()
     supervisor.run()
 
     supervisor.node.destroy_node()
-    rclpy.shutdown()

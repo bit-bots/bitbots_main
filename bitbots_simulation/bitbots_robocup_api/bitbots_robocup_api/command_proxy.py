@@ -1,6 +1,7 @@
 import os
 
 import rclpy
+from rclpy.experimental.events_executor import EventsExecutor
 from ament_index_python.packages import get_package_share_directory
 from rclpy.node import Node
 from sensor_msgs.msg import JointState
@@ -42,6 +43,10 @@ class CommandProxy(Node):
 def main(args=None):
     rclpy.init(args=args)
     command_proxy = CommandProxy()
-    rclpy.spin(command_proxy)
+    executor = EventsExecutor()
+    executor.add_node(command_proxy)
+    try:
+        executor.spin()
+    except KeyboardInterrupt:
+        command_proxy.get_logger().info("Shutting down command proxy due to keyboard interrupt.")
     command_proxy.destroy_node()
-    rclpy.shutdown()

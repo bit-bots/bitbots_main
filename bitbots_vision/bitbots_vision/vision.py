@@ -7,6 +7,7 @@ from ament_index_python.packages import get_package_share_directory
 from cv_bridge import CvBridge
 from rcl_interfaces.msg import SetParametersResult
 from rclpy.node import Node
+from rclpy.experimental.events_executor import EventsExecutor
 from sensor_msgs.msg import Image
 
 from bitbots_vision.vision_modules import ros_utils, yoeo
@@ -146,8 +147,10 @@ class YOEOVision(Node):
 def main(args=None):
     rclpy.init(args=args)
     node = YOEOVision()
+    executor = EventsExecutor()
+    executor.add_node(node)
     try:
-        rclpy.spin(node)
+        executor.spin()
     except KeyboardInterrupt:
         pass
     node.destroy_node()

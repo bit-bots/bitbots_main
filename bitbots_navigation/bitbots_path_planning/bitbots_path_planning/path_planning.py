@@ -6,6 +6,7 @@ from nav_msgs.msg import Path
 from rclpy.duration import Duration
 from std_msgs.msg import Bool, Empty
 from visualization_msgs.msg import MarkerArray
+from rclpy.experimental.events_executor import EventsExecutor
 
 from bitbots_path_planning import NodeWithConfig
 from bitbots_path_planning.controller import Controller
@@ -74,7 +75,11 @@ def main(args=None):
     rclpy.init(args=args)
     node = PathPlanning()
 
-    rclpy.spin(node)
+    executor = EventsExecutor()
+    executor.add_node(node)
+    try:
+        executor.spin()
+    except KeyboardInterrupt:
+        node.get_logger().info("Path planning node stopped by user")
 
     node.destroy_node()
-    rclpy.shutdown()

@@ -14,6 +14,8 @@ from bitbots_localization_handler import localization_dsd
 from bitbots_localization_handler.localization_dsd.localization_blackboard import LocalizationBlackboard
 from bitbots_msgs.msg import RobotControlState
 
+from rclpy.experimental.events_executor import EventsExecutor
+
 
 def init(node: Node):
     # Create blackboard to store state
@@ -65,7 +67,7 @@ def main(args=None):
     node.create_timer(1 / 25.0, dsd.update, callback_group=MutuallyExclusiveCallbackGroup())
 
     # Create executor
-    multi_executor = MultiThreadedExecutor(4)
+    multi_executor = EventsExecutor()
     multi_executor.add_node(node)
 
     # Spin the executor

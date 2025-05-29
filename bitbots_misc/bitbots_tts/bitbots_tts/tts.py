@@ -13,6 +13,7 @@ from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 from rclpy.publisher import Publisher
+from rclpy.experimental.events_executor import EventsExecutor
 
 from bitbots_msgs.msg import Audio
 
@@ -121,7 +122,7 @@ class Speaker(Node):
 def main(args=None):
     rclpy.init(args=args)
     node = Speaker()
-    executor = MultiThreadedExecutor(num_threads=2)
+    executor = EventsExecutor()
     executor.add_node(node)
     try:
         executor.spin()
