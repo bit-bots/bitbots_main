@@ -6,8 +6,8 @@ import rclpy
 from ament_index_python.packages import get_package_share_directory
 from cv_bridge import CvBridge
 from rcl_interfaces.msg import SetParametersResult
-from rclpy.node import Node
 from rclpy.experimental.events_executor import EventsExecutor
+from rclpy.node import Node
 from sensor_msgs.msg import Image
 
 from bitbots_vision.vision_modules import ros_utils, yoeo

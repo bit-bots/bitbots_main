@@ -4,9 +4,9 @@ from bitbots_tf_buffer import Buffer
 from geometry_msgs.msg import PointStamped, PoseStamped, PoseWithCovarianceStamped, Twist
 from nav_msgs.msg import Path
 from rclpy.duration import Duration
+from rclpy.experimental.events_executor import EventsExecutor
 from std_msgs.msg import Bool, Empty
 from visualization_msgs.msg import MarkerArray
-from rclpy.experimental.events_executor import EventsExecutor
 
 from bitbots_path_planning import NodeWithConfig
 from bitbots_path_planning.controller import Controller
