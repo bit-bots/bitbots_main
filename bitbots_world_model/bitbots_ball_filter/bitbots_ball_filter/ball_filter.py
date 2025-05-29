@@ -206,7 +206,7 @@ class BallFilter(Node):
         # Transform to camera frame
         try:
             ball_in_camera_optical_frame = self.tf_buffer.transform(
-                ball_pose, self.camera_info.header.frame_id, timeout=Duration(nanoseconds=0.5 * (10**9))
+                ball_pose, self.camera_info.header.frame_id, timeout=Duration(nanoseconds=int(0.5 * 1e9))
             )
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
             self.logger.warning(str(e))

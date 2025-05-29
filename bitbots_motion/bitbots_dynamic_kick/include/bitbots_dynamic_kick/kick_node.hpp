@@ -1,7 +1,6 @@
 #ifndef BITBOTS_DYNAMIC_KICK_INCLUDE_BITBOTS_DYNAMIC_KICK_KICK_NODE_H_
 #define BITBOTS_DYNAMIC_KICK_INCLUDE_BITBOTS_DYNAMIC_KICK_KICK_NODE_H_
 
-#include <tf2/convert.h>
 #include <unistd.h>
 
 #include <Eigen/Geometry>
@@ -20,6 +19,7 @@
 #include <sensor_msgs/msg/joint_state.hpp>
 #include <std_msgs/msg/char.hpp>
 #include <string>
+#include <tf2/convert.hpp>
 #include <tf2_eigen/tf2_eigen.hpp>
 
 namespace bitbots_dynamic_kick {

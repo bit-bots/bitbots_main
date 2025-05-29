@@ -21,16 +21,13 @@ from tf_transformations import euler_from_quaternion
 from bitbots_blackboard.capsules import AbstractBlackboardCapsule
 
 
-class WorldModelTFError(Exception):
-    ...
+class WorldModelTFError(Exception): ...
 
 
-class WorldModelPositionTFError(WorldModelTFError):
-    ...
+class WorldModelPositionTFError(WorldModelTFError): ...
 
 
-class WorldModelBallTFError(WorldModelTFError):
-    ...
+class WorldModelBallTFError(WorldModelTFError): ...
 
 
 class WorldModelCapsule(AbstractBlackboardCapsule):

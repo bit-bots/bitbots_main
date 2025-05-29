@@ -1,4 +1,4 @@
-#include "bitbots_dynup/dynup_node.hpp"
+#include <bitbots_dynup/dynup_node.hpp>
 
 namespace bitbots_dynup {
 using namespace std::chrono_literals;
