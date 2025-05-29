@@ -21,7 +21,7 @@ class PathPlanning(NodeWithConfig):
         super().__init__("bitbots_path_planning")
 
         # We need to create a tf buffer
-        self.tf_buffer = Buffer(self, Duration(seconds=self.config.tf_buffer_duration))
+        self.tf_buffer = Buffer(Duration(seconds=self.config.tf_buffer_duration), self)
 
         self.planner = VisibilityPlanner(node=self, buffer=self.tf_buffer)
         self.controller = Controller(node=self, buffer=self.tf_buffer)
