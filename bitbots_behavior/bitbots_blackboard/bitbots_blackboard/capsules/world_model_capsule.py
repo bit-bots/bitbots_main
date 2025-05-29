@@ -10,7 +10,6 @@ from geometry_msgs.msg import (
     TransformStamped,
 )
 from rclpy.clock import ClockType
-from rclpy.duration import Duration
 from rclpy.time import Time
 from ros2_numpy import msgify, numpify
 from std_msgs.msg import Header
@@ -18,16 +17,13 @@ from std_srvs.srv import Trigger
 from tf2_geometry_msgs import Point, PointStamped
 from tf_transformations import euler_from_quaternion
 
-from bitbots_blackboard.capsules import AbstractBlackboardCapsule
+from bitbots_blackboard.capsules import AbstractBlackboardCapsule, cached_capsule_function
 
 
 class WorldModelTFError(Exception): ...
 
 
 class WorldModelPositionTFError(WorldModelTFError): ...
-
-
-class WorldModelBallTFError(WorldModelTFError): ...
 
 
 class WorldModelCapsule(AbstractBlackboardCapsule):
@@ -78,10 +74,12 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
     ### Ball ###
     ############
 
+    @cached_capsule_function
     def ball_seen_self(self) -> bool:
         """Returns true we are reasonably sure that we have seen the ball"""
         return all(np.diag(self._ball_covariance) < self.ball_max_covariance)
 
+    @cached_capsule_function
     def ball_has_been_seen(self) -> bool:
         """Returns true if we or a teammate are reasonably sure that we have seen the ball"""
         return self.ball_seen_self() or self._blackboard.team_data.teammate_ball_is_valid()
@@ -91,6 +89,7 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
         ball = self.get_best_ball_point_stamped()
         return ball.point.x, ball.point.y
 
+    @cached_capsule_function
     def get_best_ball_point_stamped(self) -> PointStamped:
         """
         Returns the best ball, either its own ball has been in the ball_lost_lost time
@@ -113,21 +112,25 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
         self.debug_publisher_which_ball.publish(Header(stamp=own_ball.header.stamp, frame_id="own_ball_map"))
         return own_ball
 
+    @cached_capsule_function
     def get_ball_position_uv(self) -> tuple[float, float]:
         """
         Returns the ball position relative to the robot in the base_footprint frame.
         U and V are returned, where positive U is forward, positive V is to the left.
         """
         ball = self.get_best_ball_point_stamped()
-        try:
-            ball_bfp = self._blackboard.tf_buffer.transform(
-                ball, self.base_footprint_frame, timeout=Duration(seconds=0.2)
-            ).point
-        except tf2.ExtrapolationException as e:
-            self._node.get_logger().warn(str(e))
-            self._node.get_logger().error("Severe transformation problem concerning the ball!")
-            raise WorldModelBallTFError("Could not transform ball to base_footprint frame") from e
-        return ball_bfp.x, ball_bfp.y
+        assert ball.header.frame_id == self.map_frame, "Ball needs to be in the map frame"
+        our_pose = self.get_current_position_transform()
+        assert our_pose.header.frame_id == self.map_frame, "Our pose needs to be in the map frame"
+        # Construct the homogeneous transformation matrix for the ball position
+        ball_transform = np.eye(4)
+        ball_transform[0, 3] = ball.point.x
+        ball_transform[1, 3] = ball.point.y
+        # Get the homogeneous transformation matrix for the robot's current position
+        our_pose_transform = numpify(our_pose.transform)
+        # Calculate the relative position of the ball to the robot
+        relative_transform = np.linalg.inv(our_pose_transform) @ ball_transform
+        return relative_transform[0, 3], relative_transform[1, 3]
 
     def get_ball_distance(self) -> float:
         """
@@ -171,9 +174,7 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
         """
         Forget that we saw a ball
         """
-        result: Trigger.Response = self.reset_ball_filter.call(Trigger.Request())
-        if not result.success:
-            self._node.get_logger().error(f"Ball filter reset failed with: '{result.message}'")
+        self.reset_ball_filter.call_async(Trigger.Request())
 
     ########
     # Goal #
@@ -218,6 +219,7 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
     # Pose #
     ########
 
+    @cached_capsule_function
     def get_current_position(self) -> tuple[float, float, float]:
         """
         Returns the current position on the field as determined by the localization.
@@ -228,6 +230,7 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
         theta = euler_from_quaternion(numpify(transform.transform.rotation))[2]
         return transform.transform.translation.x, transform.transform.translation.y, theta
 
+    @cached_capsule_function
     def get_current_position_pose_stamped(self) -> PoseStamped:
         """
         Returns the current position as determined by the localization as a PoseStamped
@@ -241,6 +244,7 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
             ),
         )
 
+    @cached_capsule_function
     def get_current_position_transform(self) -> TransformStamped:
         """
         Returns the current position as determined by the localization as a TransformStamped

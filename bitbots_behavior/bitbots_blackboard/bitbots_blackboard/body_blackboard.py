@@ -34,3 +34,19 @@ class BodyBlackboard:
         self.costmap = CostmapCapsule(self.node, self)
         self.pathfinding = PathfindingCapsule(self.node, self)
         self.team_data = TeamDataCapsule(self.node, self)
+
+        self.capsules = [
+            self.misc,
+            self.gamestate,
+            self.animation,
+            self.kick,
+            self.world_model,
+            self.costmap,
+            self.pathfinding,
+            self.team_data,
+        ]
+
+    def clear_cache(self):
+        """Clear the cache of all capsules."""
+        for capsule in self.capsules:
+            capsule.clear_cache()
