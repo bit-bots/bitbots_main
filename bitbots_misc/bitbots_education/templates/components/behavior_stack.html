@@ -47,8 +47,6 @@
     let subtree =behavior_stack;
     let output_string = "";
     do {
-    if (subtree.name != "DoOnce")
-    {
       if(subtree.type === "sequence")
       {
         output_string += `<div class="border-2 border-zinc-800 rounded-xl bg-zinc-100 p-2 text-center">${translate(subtree.current_action.name)}</div>`;
@@ -69,7 +67,6 @@
           ${translate(subtree.next.activation_reason)}
         </div>`;
       }
-    }
     subtree = subtree.next;
     } while (subtree != null)
     document.getElementById("stack_label").innerHTML = output_string;
