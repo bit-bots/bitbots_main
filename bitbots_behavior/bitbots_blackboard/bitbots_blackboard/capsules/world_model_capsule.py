@@ -171,9 +171,7 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
         """
         Forget that we saw a ball
         """
-        result: Trigger.Response = self.reset_ball_filter.call(Trigger.Request())
-        if not result.success:
-            self._node.get_logger().error(f"Ball filter reset failed with: '{result.message}'")
+        self.reset_ball_filter.call_async(Trigger.Request())
 
     ########
     # Goal #
