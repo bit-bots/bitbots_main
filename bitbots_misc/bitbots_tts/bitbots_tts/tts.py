@@ -10,10 +10,9 @@ import requests
 from ament_index_python import get_package_prefix
 from rcl_interfaces.msg import Parameter, SetParametersResult
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
-from rclpy.executors import MultiThreadedExecutor
+from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
 from rclpy.publisher import Publisher
-from rclpy.experimental.events_executor import EventsExecutor
 
 from bitbots_msgs.msg import Audio
 

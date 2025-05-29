@@ -5,8 +5,8 @@ import threading
 
 import rclpy
 from bitbots_webots_sim.webots_robot_controller import RobotController
-from rclpy.experimental.events_executor import EventsExecutor
 from controller import Robot
+from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
 
 

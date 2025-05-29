@@ -6,15 +6,13 @@ from dynamic_stack_decider.dsd import DSD
 from game_controller_hl_interfaces.msg import GameState
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup, ReentrantCallbackGroup
-from rclpy.executors import MultiThreadedExecutor
+from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
 from sensor_msgs.msg import Imu
 
 from bitbots_localization_handler import localization_dsd
 from bitbots_localization_handler.localization_dsd.localization_blackboard import LocalizationBlackboard
 from bitbots_msgs.msg import RobotControlState
-
-from rclpy.experimental.events_executor import EventsExecutor
 
 
 def init(node: Node):

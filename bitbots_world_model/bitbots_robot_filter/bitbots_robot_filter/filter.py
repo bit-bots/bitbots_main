@@ -7,12 +7,11 @@ import tf2_ros as tf2
 from bitbots_tf_buffer import Buffer
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.duration import Duration
-from rclpy.executors import MultiThreadedExecutor
+from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
 from rclpy.time import Time
 from ros2_numpy import numpify
 from std_msgs.msg import Header
-from rclpy.experimental.events_executor import EventsExecutor
 
 from bitbots_msgs.msg import TeamData
 

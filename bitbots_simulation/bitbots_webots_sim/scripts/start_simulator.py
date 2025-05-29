@@ -5,8 +5,8 @@ import sys
 import threading
 
 import rclpy
-from rclpy.experimental.events_executor import EventsExecutor
 from ament_index_python import get_package_share_directory
+from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
 
 

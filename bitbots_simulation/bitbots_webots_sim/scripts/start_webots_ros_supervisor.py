@@ -4,8 +4,8 @@ import os
 import threading
 
 import rclpy
-from rclpy.experimental.events_executor import EventsExecutor
 from bitbots_webots_sim.webots_supervisor_controller import SupervisorController
+from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
 
 

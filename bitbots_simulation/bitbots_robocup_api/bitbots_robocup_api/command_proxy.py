@@ -1,8 +1,8 @@
 import os
 
 import rclpy
-from rclpy.experimental.events_executor import EventsExecutor
 from ament_index_python.packages import get_package_share_directory
+from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
 from sensor_msgs.msg import JointState
 from urdf_parser_py.urdf import URDF
