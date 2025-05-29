@@ -1,7 +1,7 @@
 {% macro textbox(label, content, style) %}
 <div class="p-6 w-full bg-{% if style == True %}sky-100{% else %}sky-800{% endif %}">
-  <label class="block text-sm font-medium text-{% if style == True %}zinc-800{% else %}white{% endif %}">{{ label }}</label>
+  <label class="block text-lg font-semibold text-{% if style == True %}zinc-800{% else %}white{% endif %}">{{ label }}</label>
 
-  <p class="text-sm text-{% if style == True %}zinc-900{%else%}white{%endif%}">{{ content }}</p>
+  <p class="text-base text-{% if style == True %}zinc-900{%else%}white{%endif%}">{{ content }}</p>
 </div>
 {% endmacro %}
