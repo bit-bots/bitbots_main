@@ -1,5 +1,5 @@
-from typing import TYPE_CHECKING
 from functools import wraps
+from typing import TYPE_CHECKING
 
 from bitbots_utils.utils import nobeartype
 from rclpy.node import Node
@@ -20,6 +20,7 @@ def cached_capsule_function(method):
 
     return wrapper
 
+
 class AbstractBlackboardCapsule:
     """Abstract class for blackboard capsules."""
 
@@ -33,4 +34,3 @@ class AbstractBlackboardCapsule:
     def clear_cache(self):
         """Clear the cache of this capsule."""
         self._cache.clear()
-

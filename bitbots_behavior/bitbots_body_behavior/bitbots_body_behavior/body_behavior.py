@@ -99,7 +99,7 @@ def main(args=None):
     body_dsd = BodyDSD(node)
     node.create_timer(1 / 60.0, body_dsd.loop, callback_group=MutuallyExclusiveCallbackGroup(), clock=node.get_clock())
 
-    executor =  EventsExecutor()
+    executor = EventsExecutor()
     executor.add_node(node)
     try:
         executor.spin()
