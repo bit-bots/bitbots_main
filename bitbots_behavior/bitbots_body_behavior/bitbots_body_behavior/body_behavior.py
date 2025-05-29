@@ -22,7 +22,7 @@ class BodyDSD:
         self.step_running = False
         self.node = node
 
-        self.tf_buffer = Buffer(node, Duration(seconds=30))
+        self.tf_buffer = Buffer(Duration(seconds=30), node)
 
         blackboard = BodyBlackboard(node, self.tf_buffer)
         self.dsd = DSD(blackboard, "debug/dsd/body_behavior", node)  # TODO: use config

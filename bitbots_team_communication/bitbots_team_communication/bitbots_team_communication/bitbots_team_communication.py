@@ -60,7 +60,7 @@ class TeamCommunication:
 
         self.set_state_defaults()
 
-        self.tf_buffer = Buffer(self.node)
+        self.tf_buffer = Buffer(node=self.node)
 
         self.run_spin_in_thread()
         self.try_to_establish_connection()
