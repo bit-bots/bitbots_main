@@ -1,29 +1,6 @@
 {% macro current_action_component() %}
 
 <script type="text/javascript">
-
-  function translate(input) {
-
-    // Cast input to string
-    input = String(input).trim();
-
-    const mapping = {
-      // Action nodes (@)
-      "ChangeAction": "Aktion ändern",
-      "LookAtFront": "Schau nach vorne",
-      "GoToBall": "Zum Ball gehen",
-      "LookAtFieldFeatures": "Schau auf Spielfeldmerkmale",
-      "AvoidBallActive": "Ball ausweichen aktiv",
-      "AvoidBallInactive": "Ball ausweichen inaktiv",
-      "WalkKick": "Schuss",
-      "WalkInPlace": "Auf der Stelle gehen",
-      "ForgetBall": "Ball vergessen",
-      "Turn": "Drehen",
-      "Stand": "Stehen",
-    };
-    return mapping.hasOwnProperty(input) ? mapping[input] : input;
-  }
-
   function current_action_state() {
     return {
       listener: null,
@@ -42,11 +19,11 @@
           {
             if(subtree.type === "sequence")
             {
-              this.action = `${translate(subtree.current_action.name)}`;
+              this.action = `${behavior_translate(subtree.current_action.name)}`;
             }
             else if (subtree.type === "action")
             {
-              this.action = `${translate(subtree.name)}`;
+              this.action = `${behavior_translate(subtree.name)}`;
             }
           }
           subtree = subtree.next;

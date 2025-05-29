@@ -1,75 +1,28 @@
 {% macro behavior_stack_component() %}
 
 <script type="text/javascript">
-  function translate(input) {
 
-    // Cast input to string
-    input = String(input).trim();
-
-    const mapping = {
-      // Decision nodes ($)
-      "BallClose": "Ball nah",
-      "FootSelection": "Fußwahl",
-      "ReachedPathPlanningGoalPosition": "Zielposition erreicht",
-      "AvoidBall": "Ball ausweichen",
-      "BallKickArea": "Ball im Schussbereich",
-      "DoOnce": "Einmal ausführen",
-      "BallSeen": "Ball gesehen",
-
-      // Action nodes (@)
-      "ChangeAction": "Aktion ändern",
-      "LookAtFront": "Schau nach vorne",
-      "GoToBall": "Zum Ball gehen",
-      "LookAtFieldFeatures": "Schau auf Spielfeldmerkmale",
-      "AvoidBallActive": "Ball ausweichen aktiv",
-      "AvoidBallInactive": "Ball ausweichen inaktiv",
-      "WalkKick": "Schuss",
-      "WalkInPlace": "Auf der Stelle gehen",
-      "ForgetBall": "Ball vergessen",
-      "Turn": "Drehen",
-      "Stand": "Stehen",
-
-      // Results
-      "YES": "JA",
-      "NO": "NEIN",
-      "LEFT": "LINKS",
-      "RIGHT": "RECHTS",
-      "NEAR": "NAH",
-      "FAR": "WEIT",
-      "DONE": "ERLEDIGT",
-      "NOT_DONE": "NICHT ERLEDIGT",
-    };
-    return mapping.hasOwnProperty(input) ? mapping[input] : input;
-  }
-
-  function behavior_callback(message) {
-    const behavior_stack = JSON.parse(message.data);
-    let subtree =behavior_stack;
-    let output_string = "";
-    do {
-      if(subtree.type === "sequence")
-      {
-        output_string += `<div class="border-2 border-zinc-800 rounded-xl bg-zinc-100 p-2 text-center">${translate(subtree.current_action.name)}</div>`;
-      }
-      else if (subtree.next === null)
-      {
-        output_string += `<div class="border-2 border-zinc-800 rounded-xl bg-zinc-100 p-2 text-center w-full"> ${translate(subtree.name)} </div>`;
-      }
-      else
-      {
-        output_string += `
-
-        <div class="border-2 border-zinc-800 rounded-xl bg-sky-800 p-2 text-center text-white w-full"> ${translate(subtree.name)}</div>
-        <div class="flex justify-center flex-row m-2">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3" />
-          </svg>
-          ${translate(subtree.next.activation_reason)}
-        </div>`;
-      }
-    subtree = subtree.next;
-    } while (subtree != null)
-    document.getElementById("stack_label").innerHTML = output_string;
+  function render_stack(subtree) {
+    if(subtree.type === "sequence")
+    {
+      return `<div class="border-2 border-zinc-800 rounded-xl bg-zinc-100 p-2 text-center">${behavior_translate(subtree.current_action.name)}</div>`;
+    }
+    else if (subtree.next === null)
+    {
+      return `<div class="border-2 border-zinc-800 rounded-xl bg-zinc-100 p-2 text-center w-full"> ${behavior_translate(subtree.name)} </div>`;
+    }
+    else
+    {
+      return `
+      <div class="border-2 border-zinc-800 rounded-xl bg-sky-800 p-2 text-center text-white w-full"> ${behavior_translate(subtree.name)}</div>
+      <div class="flex justify-center flex-row m-2">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3" />
+        </svg>
+        ${behavior_translate(subtree.next.activation_reason)}
+      </div>
+      ${render_stack(subtree.next)}`;
+    }
   };
 
   function behavior_stack_state() {
@@ -82,12 +35,16 @@
           name : '/debug/dsd/body_behavior/dsd_stack',
           messageType : 'std_msgs/msg/String'
         });
-        this.listener.subscribe(behavior_callback);
+        this.listener.subscribe(this.behavior_stack_callback.bind(this));
+      },
+      behavior_stack_callback(message) {
+        const behavior_stack = JSON.parse(message.data);
+        this.$refs.stack.innerHTML = render_stack(behavior_stack);
       },
       toggle() {
         this.run = !this.run;
         if (this.run) {
-          this.listener.subscribe(behavior_callback);
+          this.listener.subscribe(this.behavior_stack_callback.bind(this));
         } else {
           this.listener.unsubscribe();
         }
@@ -103,7 +60,7 @@
 <div x-data="behavior_stack_state()" class="flex justify-center flex-col grid place-items-center p-6">
     <div class="text-center w-full">
       <div class="flex justify-center flex-col">
-        <div id="stack_label" class="overflow-scroll">
+        <div class="overflow-scroll" x-ref="stack">
         </div>
       </div>
     </div>

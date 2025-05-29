@@ -30,7 +30,47 @@
     console.log('Connection to websocket server closed.');
   });
 
-  let behavior_changes = true;
+  // Function to translate dsd names
+  function behavior_translate(input) {
+
+    // Cast input to string
+    input = String(input).trim();
+
+    const mapping = {
+      // Decision nodes ($)
+      "BallClose": "Ball nah",
+      "FootSelection": "Fußwahl",
+      "ReachedPathPlanningGoalPosition": "Zielposition erreicht",
+      "AvoidBall": "Ball ausweichen",
+      "BallKickArea": "Ball im Schussbereich",
+      "DoOnce": "Einmal ausführen",
+      "BallSeen": "Ball gesehen",
+
+      // Action nodes (@)
+      "ChangeAction": "Aktion ändern",
+      "LookAtFront": "Schau nach vorne",
+      "GoToBall": "Zum Ball gehen",
+      "LookAtFieldFeatures": "Schau auf Spielfeldmerkmale",
+      "AvoidBallActive": "Ball ausweichen aktiv",
+      "AvoidBallInactive": "Ball ausweichen inaktiv",
+      "WalkKick": "Schuss",
+      "WalkInPlace": "Auf der Stelle gehen",
+      "ForgetBall": "Ball vergessen",
+      "Turn": "Drehen",
+      "Stand": "Stehen",
+
+      // Results
+      "YES": "JA",
+      "NO": "NEIN",
+      "LEFT": "LINKS",
+      "RIGHT": "RECHTS",
+      "NEAR": "NAH",
+      "FAR": "WEIT",
+      "DONE": "ERLEDIGT",
+      "NOT_DONE": "NICHT ERLEDIGT",
+    };
+    return mapping.hasOwnProperty(input) ? mapping[input] : input;
+  }
 </script>
 
 </head>

@@ -9,8 +9,25 @@
 {% block banner %}Behavior{% endblock %}
 
 {% block content %}
-<div class="bg-sky-100 overflow-hidden">
-    {{ behavior_tree_component.behavior_tree_component() }}
+    <script type="text/javascript">
+        function behavior_visualization_change() {
+            return {
+                stack: true,
+                toggleStack() {
+                    this.stack = !this.stack;
+                },
+            };
+          }
+    </script>
+<div class="bg-sky-100 overflow-hidden" x-data="behavior_visualization_change()">
+    <button x-on:click="toggleStack()" class="border-1 border-zinc-800 rounded-md bg-zinc-50 shadow-xl p-1 mt-4 grid place-items-center" > Tree
+    </button>
+    <div x-show="stack">
+        {{ behavior_stack_component.behavior_stack_component() }}
+    </div>
+    <div x-show="!stack">
+        {{ behavior_tree_component.behavior_tree_component() }}
+    </div>
     {{ components.textbox("Warum ändern sich die Boxen und wieso haben sie unterschiedliche Farben?",
     "Jede Box steht für eine Entscheidung oder eine Aktion, die der Roboter macht. Dabei macht er meist viele unterschiedliche Abwägungen (blaue Boxen),
     bis er sich am Ende für eine Aktion entscheidet, die er dann ausführt (helle Box). Zusätzlich steht auch unter jeder Entscheidung neben dem Pfeil nach unten,
