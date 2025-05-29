@@ -85,6 +85,7 @@ class BodyDSD:
             self.counter = (self.counter + 1) % blackboard.config["time_to_ball_divider"]
             if self.counter == 0:
                 blackboard.pathfinding.calculate_time_to_ball()
+            blackboard.clear_cache()
         except Exception as e:
             import traceback
 
