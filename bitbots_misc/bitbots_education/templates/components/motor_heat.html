@@ -1,134 +1,135 @@
 {% macro motor_heat_component(max_temperature) %}
 <script type="text/javascript" >
 
-  // Subscribing to a Topic
-  // ----------------------
+    function temperature_state() {
+        return {
+            max_temperature: 80.0,
+            min_temperature: 20.0,
+            motor_temperatures: null,
+            listener: null,
+            init() {
+                this.listener = new ROSLIB.Topic({
+                    ros : ros,
+                    name : '/diagnostics_agg',
+                    messageType : 'diagnostic_msgs/msg/DiagnosticArray'
+                });
+                this.listener.subscribe((message) => {
+                    this.motor_temperatures = new Map();
 
-  var diagnostics_listener = new ROSLIB.Topic({
-    ros : ros,
-    name : '/diagnostics_agg',
-    messageType : 'diagnostic_msgs/msg/DiagnosticArray'
-  });
+                    function search_for_key(values, key) {
+                        for (let i = 0; i < values.length; i++) {
+                            if (values[i].key.toLowerCase() === key.toLowerCase()) {
+                                return values[i].value;
+                            }
+                        }
+                        return null;
+                    }
 
-  function render_blob(temperature, x, y, size, max_temp) {
-    // Define a continuous blue to green to red gradient based on temperature
-    let min_temp = 20.0; // Minimum temperature in °C
-    //let max_temp = 70.0; // Maximum temperature in °C
-    let normalized_temp = (temperature - min_temp) / (max_temp - min_temp);
-    normalized_temp = Math.max(0, Math.min(1, normalized_temp)); // Clamp to [0, 1]
+                    for(let i = 0; i < message.status.length; i++)
+                    {
+                        if (message.status[i].name === "/Robot/Camera/")
+                        {
+                            let camera_temperature = search_for_key(message.status[i].values, "temperature");
+                            if (camera_temperature === null)
+                            {
+                                // Warning: No camera temperature found
+                                console.warn("No camera temperature found in diagnostics message.");
+                            }
+                            else
+                            {
+                                this.motor_temperatures.set("Camera", camera_temperature);
+                            }
+                        }
+                        else if (message.status[i].name.startsWith("/Robot/Servos/"))
+                        {
+                            let servo_name = message.status[i].name.replace("/Robot/Servos/", "");
 
-    // Only add red if temperature is above 50%
-    let red = normalized_temp > 0.5 ? Math.floor((normalized_temp - 0.5) * 2 * 255) : 0;
-    // Green is maximum in the middle of the range decreasing towards the edges
-    let green = Math.floor((1 - 2 * Math.abs(normalized_temp - 0.5)) * 255);
-    // Blue is maximum at the start and decreases towards the middle
-    let blue = Math.floor((0.5 - normalized_temp) * 2 * 255);
+                            let servo_temperature = search_for_key(message.status[i].values, "temperature");
+                            if (servo_temperature === null)
+                            {
+                                // Warning: No servo temperature found
+                                console.warn(`No temperature found for servo ${servo_name} in diagnostics message.`);
+                            }
+                            else
+                            {
+                                this.motor_temperatures.set(servo_name, servo_temperature);
+                            }
+                        }
+                    }
 
-    // Build the HTML for the blob
-    return `<div style="background-color: rgb(${red}, ${green}, ${blue});" class="absolute top-[${y}%] left-[${x}%] w-${size} h-${size} rounded-full blur-xs pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>`;
-  }
+                    this.max_temperature = Math.max(...Array.from(this.motor_temperatures.values()));
+                    this.min_temperature = Math.min(...Array.from(this.motor_temperatures.values()));
+                });
+            },
+            render_blob(temperature, x, y, size) {
+                // Define a continuous blue to green to red gradient based on temperature
+                let normalized_temp = (temperature - this.min_temperature) / (this.max_temperature - this.min_temperature);
+                normalized_temp = Math.max(0, Math.min(1, normalized_temp)); // Clamp to [0, 1]
 
-  diagnostics_listener.subscribe(function(message)
-  {
-    let map = new Map();
+                // Only add red if temperature is above 50%
+                let red = normalized_temp > 0.5 ? Math.floor((normalized_temp - 0.5) * 2 * 255) : 0;
+                // Green is maximum in the middle of the range decreasing towards the edges
+                let green = Math.floor((1 - 2 * Math.abs(normalized_temp - 0.5)) * 255);
+                // Blue is maximum at the start and decreases towards the middle
+                let blue = Math.floor((0.5 - normalized_temp) * 2 * 255);
 
-    function search_for_key(values, key) {
-      for (let i = 0; i < values.length; i++) {
-        if (values[i].key.toLowerCase() === key.toLowerCase()) {
-          return values[i].value;
-        }
-      }
-      return null;
-    }
+                // Build the HTML for the blob
+                return `<div style="background-color: rgb(${red}, ${green}, ${blue});" class="absolute top-[${y}%] left-[${x}%] w-1/${size} h-1/${size} rounded-full blur-xs pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>`;
+            },
+            render_blobs() {
+                if (this.motor_temperatures === null) {
+                    return "";
+                }
 
-    for(let i = 0; i < message.status.length; i++)
-    {
-        if (message.status[i].name === "/Robot/Camera/")
-        {
-            let camera_temperature = search_for_key(message.status[i].values, "temperature");
-            if (camera_temperature === null)
-            {
-                // Warning: No camera temperature found
-                console.warn("No camera temperature found in diagnostics message.");
+                let output_string = "";
+                output_string += this.render_blob(Math.max(this.motor_temperatures.get("HeadPan"), this.motor_temperatures.get("HeadTilt")), 50, 28, 11);
+                output_string += this.render_blob(this.motor_temperatures.get("Camera"), 50, 16, 11);
+                output_string += this.render_blob(Math.max(this.motor_temperatures.get("RHipPitch"), this.motor_temperatures.get("RHipRoll"), this.motor_temperatures.get("RHipYaw")), 65, 56, 11);
+                output_string += this.render_blob(this.motor_temperatures.get("RKnee"), 67, 71, 11);
+                output_string += this.render_blob(Math.max(this.motor_temperatures.get("RAnklePitch"), this.motor_temperatures.get("RAnkleRoll")), 67, 95, 11);
+                output_string += this.render_blob(Math.max(this.motor_temperatures.get("LHipPitch"), this.motor_temperatures.get("LHipRoll"), this.motor_temperatures.get("LHipYaw")), 35, 56, 11);
+                output_string += this.render_blob(this.motor_temperatures.get("LKnee"), 33, 71, 11);
+                output_string += this.render_blob(Math.max(this.motor_temperatures.get("LAnklePitch"), this.motor_temperatures.get("LAnkleRoll")), 33, 95, 11);
+                output_string += this.render_blob(Math.max(this.motor_temperatures.get("RShoulderPitch"), this.motor_temperatures.get("RShoulderRoll")), 85, 41, 11);
+                output_string += this.render_blob(Math.max(this.motor_temperatures.get("LShoulderPitch"), this.motor_temperatures.get("LShoulderRoll")), 15, 41, 11);
+                return output_string;
+            },
+            destroy() {
+                this.listener.unsubscribe();
             }
-            else
-            {
-                map.set("Camera", camera_temperature);
-            }
-        }
-        else if (message.status[i].name.startsWith("/Robot/Servos/"))
-        {
-            let servo_name = message.status[i].name.replace("/Robot/Servos/", "");
-
-            let servo_temperature = search_for_key(message.status[i].values, "temperature");
-            if (servo_temperature === null)
-            {
-                // Warning: No servo temperature found
-                console.warn(`No temperature found for servo ${servo_name} in diagnostics message.`);
-            }
-            else
-            {
-                map.set(servo_name, servo_temperature);
-            }
-        }
+        };
     }
-
-    let max_temperature = Math.max(...Array.from(map.values()));
-
-    let output_string = "";
-    output_string += render_blob(Math.max(map.get("HeadPan"), map.get("HeadTilt")), 50, 28, 4, max_temperature);
-    output_string += render_blob(map.get("Camera"), 50, 16, 6, max_temperature);
-    output_string += render_blob(Math.max(map.get("RHipPitch"), map.get("RHipRoll"), map.get("RHipYaw")), 65, 56, 4, max_temperature);
-    output_string += render_blob(map.get("RKnee"), 67, 71, 4, max_temperature);
-    output_string += render_blob(Math.max(map.get("RAnklePitch"), map.get("RAnkleRoll")), 67, 95, 4, max_temperature);
-    output_string += render_blob(Math.max(map.get("LHipPitch"), map.get("LHipRoll"), map.get("LHipYaw")), 35, 56, 4, max_temperature);
-    output_string += render_blob(map.get("LKnee"), 33, 71, 4, max_temperature);
-    output_string += render_blob(Math.max(map.get("LAnklePitch"), map.get("LAnkleRoll")), 33, 95, 4, max_temperature);
-    output_string += render_blob(Math.max(map.get("RShoulderPitch"), map.get("RShoulderRoll")), 85, 41, 4, max_temperature);
-    output_string += render_blob(Math.max(map.get("LShoulderPitch"), map.get("LShoulderRoll")), 15, 41, 4, max_temperature);
-
-    let element = document.getElementById("temperature_points");
-    let max_element = document.getElementById("max_tmp");
-    let max = document.getElementById("max");
-
-
-    if (element === null && max_element === null && max === null)
-    {
-      diagnostics_listener.unsubscribe();
-      return;
-    }
-    else if(element != null)
-    {
-      document.getElementById("temperature_points").innerHTML = output_string;
-      document.getElementById("max").innerHTML = `${max_temperature} °C`;
-    }
-    else if (max_element != null)
-    {
-      document.getElementById("max_tmp").innerHTML = `${max_temperature} °C`;
-    }
-  });
-
 </script>
 
 
 {% if max_temperature == True %}
-<div id="max_tmp" class="text-3xl text-center text-red-800 my-8"></div>
+<div x-data="temperature_state()" class="text-3xl text-center text-red-800 my-8">
+    <span x-text="max_temperature"></span> °C
+</div>
 {% else %}
-<div class="p-6 overflow-hidden bg-sky-100 grid place-items-center">
-    <div id="max" class="text-xl text-center text-red-900 mb-4 border-2 bg-zinc-100 border-zinc-800 rounded-md p-1"></div>
+<div x-data="temperature_state()" class="p-6 overflow-hidden bg-sky-100 grid place-items-center">
+    <div class="text-xl text-center text-red-900 mb-4 border-2 bg-zinc-100 border-zinc-800 rounded-md p-1">
+        <span x-text="max_temperature"></span> °C
+    </div>
     <div class="relative w-full" style="width: 60%;">
         <img src="{{url_for('static', filename='abstract_robot.svg') }}" class="w-full">
-        <div id="temperature_points"></div>
+        <div x-html="render_blobs()"></div>
     </div>
 
     <!-- Horizontally centered legend showing the color gradient -->
-    <div class="mt-4">
+    <div class="mt-4 w-1/2 relative">
+        <!-- Temperature labels with vertical lines -->
         <div class="flex justify-between text-xs text-gray-600 gap-3">
-            <span>20 °C</span>
-            <span>50 °C</span>
-            <span>70 °C</span>
+            <div class="relative [&::after]:content-[''] [&::after]:absolute [&::after]:top-full [&::after]:left-1/2 [&::after]:-translate-x-1/2 [&::after]:h-3 [&::after]:w-px [&::after]:bg-gray-600">
+                <span x-text="min_temperature"></span> °C
+            </div>
+            <div class="relative [&::after]:content-[''] [&::after]:absolute [&::after]:top-full [&::after]:left-1/2 [&::after]:-translate-x-1/2 [&::after]:h-3 [&::after]:w-px [&::after]:bg-gray-600">
+                <span x-text="max_temperature"></span>°C
+            </div>
         </div>
-        <div class="h-2 rounded-full mt-2 w-full overflow-hidden flex flex-row justify-center">
+
+        <!-- Color bar -->
+        <div class="h-2 rounded-full mt-1 w-full overflow-hidden flex flex-row justify-center">
             <div class="w-full h-full bg-gradient-to-r from-blue-500 to-green-500"></div>
             <div class="w-full h-full bg-gradient-to-r from-green-500 via-yellow-500 to-red-500"></div>
         </div>
