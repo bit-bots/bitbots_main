@@ -120,6 +120,19 @@
         <img src="{{url_for('static', filename='abstract_robot.svg') }}" class="w-full">
         <div id="temperature_points"></div>
     </div>
+
+    <!-- Horizontally centered legend showing the color gradient -->
+    <div class="mt-4">
+        <div class="flex justify-between text-xs text-gray-600 gap-3">
+            <span>20 °C</span>
+            <span>50 °C</span>
+            <span>70 °C</span>
+        </div>
+        <div class="h-2 rounded-full mt-2 w-full overflow-hidden flex flex-row justify-center">
+            <div class="w-full h-full bg-gradient-to-r from-blue-500 to-green-500"></div>
+            <div class="w-full h-full bg-gradient-to-r from-green-500 via-yellow-500 to-red-500"></div>
+        </div>
+    </div>
 </div>
 {% endif %}
 {% endmacro %}
