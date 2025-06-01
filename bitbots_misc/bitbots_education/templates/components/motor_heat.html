@@ -10,144 +10,82 @@
     messageType : 'diagnostic_msgs/msg/DiagnosticArray'
   });
 
+  function render_blob(temperature, x, y, size, max_temp) {
+    // Define a continuous blue to green to red gradient based on temperature
+    let min_temp = 20.0; // Minimum temperature in °C
+    //let max_temp = 70.0; // Maximum temperature in °C
+    let normalized_temp = (temperature - min_temp) / (max_temp - min_temp);
+    normalized_temp = Math.max(0, Math.min(1, normalized_temp)); // Clamp to [0, 1]
+
+    // Only add red if temperature is above 50%
+    let red = normalized_temp > 0.5 ? Math.floor((normalized_temp - 0.5) * 2 * 255) : 0;
+    // Green is maximum in the middle of the range decreasing towards the edges
+    let green = Math.floor((1 - 2 * Math.abs(normalized_temp - 0.5)) * 255);
+    // Blue is maximum at the start and decreases towards the middle
+    let blue = Math.floor((0.5 - normalized_temp) * 2 * 255);
+
+    // Build the HTML for the blob
+    return `<div style="background-color: rgb(${red}, ${green}, ${blue});" class="absolute top-[${y}%] left-[${x}%] w-${size} h-${size} rounded-full blur-xs pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>`;
+  }
+
   diagnostics_listener.subscribe(function(message)
   {
-    let output_string = "";
-    let head_pen = 0.0;
-    let head_tilt = 0.0;
-    let camera = 0.0;
+    let map = new Map();
 
-    let l_ancle_pitch = 0.0;
-    let l_ancle_roll = 0.0;
+    function search_for_key(values, key) {
+      for (let i = 0; i < values.length; i++) {
+        if (values[i].key.toLowerCase() === key.toLowerCase()) {
+          return values[i].value;
+        }
+      }
+      return null;
+    }
 
-    let l_hip_pitch = 0.0;
-    let l_hip_roll = 0.0;
-    let l_hip_yaw = 0.0;
-
-    let l_knee = 0.0;
-
-    let l_shoulder_pitch = 0.0;
-    let l_shoulder_roll = 0.0;
-
-    let r_ancle_pitch = 0.0;
-    let r_ancle_roll = 0.0;
-
-    let r_hip_pitch = 0.0;
-    let r_hip_roll = 0.0;
-    let r_hip_yaw = 0.0;
-
-    let r_knee = 0.0;
-
-    let r_shoulder_pitch = 0.0;
-    let r_shoulder_roll = 0.0;
     for(let i = 0; i < message.status.length; i++)
     {
         if (message.status[i].name === "/Robot/Camera/")
         {
-            camera = message.status[i].values[1].value
+            let camera_temperature = search_for_key(message.status[i].values, "temperature");
+            if (camera_temperature === null)
+            {
+                // Warning: No camera temperature found
+                console.warn("No camera temperature found in diagnostics message.");
+            }
+            else
+            {
+                map.set("Camera", camera_temperature);
+            }
         }
-        else if (message.status[i].name === "/Robot/Servos/HeadPan")
+        else if (message.status[i].name.startsWith("/Robot/Servos/"))
         {
-            head_pen = message.status[i].values[2].value
-        }
-        else if (message.status[i].name === "/Robot/Servos/HeadTilt")
-        {
-            head_tilt = message.status[i].values[2].value
-        }
-        else if (message.status[i].name === "/Robot/Servos/LAnklePitch")
-        {
-            l_ancle_pitch = message.status[i].values[2].value
-        }
-        else if (message.status[i].name === "/Robot/Servos/LAnkleRoll")
-        {
-            l_ancle_roll = message.status[i].values[2].value
-        }
-        else if (message.status[i].name === "/Robot/Servos/LHipPitch")
-        {
-            l_hip_pitch = message.status[i].values[2].value
-        }
-        else if (message.status[i].name === "/Robot/Servos/LHipRoll")
-        {
-            l_hip_roll = message.status[i].values[2].value
-        }
-        else if (message.status[i].name === "/Robot/Servos/LHipYaw")
-        {
-            l_hip_yaw = message.status[i].values[2].value
-        }
-        else if (message.status[i].name === "/Robot/Servos/LKnee")
-        {
-            l_knee = message.status[i].values[2].value
-        }
-        else if (message.status[i].name === "/Robot/Servos/LShoulderPitch")
-        {
-            l_shoulder_pitch = message.status[i].values[2].value
-        }
-        else if (message.status[i].name === "/Robot/Servos/LShoulderRoll")
-        {
-            l_shoulder_roll = message.status[i].values[2].value
-        }
-         else if (message.status[i].name === "/Robot/Servos/RAnklePitch")
-        {
-            r_ancle_pitch = message.status[i].values[2].value
-        }
-        else if (message.status[i].name === "/Robot/Servos/RAnkleRoll")
-        {
-            r_ancle_roll = message.status[i].values[2].value
-        }
-        else if (message.status[i].name === "/Robot/Servos/RHipPitch")
-        {
-            r_hip_pitch = message.status[i].values[2].value
-        }
-        else if (message.status[i].name === "/Robot/Servos/RHipRoll")
-        {
-            r_hip_roll = message.status[i].values[2].value
-        }
-        else if (message.status[i].name === "/Robot/Servos/RHipYaw")
-        {
-            r_hip_yaw = message.status[i].values[2].value
-        }
-        else if (message.status[i].name === "/Robot/Servos/RKnee")
-        {
-            r_knee = message.status[i].values[2].value
-        }
-        else if (message.status[i].name === "/Robot/Servos/RShoulderPitch")
-        {
-            r_shoulder_pitch = message.status[i].values[2].value
-        }
-        else if (message.status[i].name === "/Robot/Servos/RShoulderRoll")
-        {
-            r_shoulder_roll = message.status[i].values[2].value
+            let servo_name = message.status[i].name.replace("/Robot/Servos/", "");
+
+            let servo_temperature = search_for_key(message.status[i].values, "temperature");
+            if (servo_temperature === null)
+            {
+                // Warning: No servo temperature found
+                console.warn(`No temperature found for servo ${servo_name} in diagnostics message.`);
+            }
+            else
+            {
+                map.set(servo_name, servo_temperature);
+            }
         }
     }
 
-    let head_temperature = Math.max(head_pen,head_tilt);
-    output_string += `<div class="absolute top-[28%] left-[50%] w-4 h-4 bg-red-500 rounded-full blur-xs opacity-${Math.round((head_temperature-20)/40 * 100)} pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>`
+    let max_temperature = Math.max(...Array.from(map.values()));
 
-    let camera_temperature = camera;
-    output_string += `<div class="absolute top-[16%] left-[50%] w-6 h-6 bg-amber-600 rounded-full blur opacity-${Math.round(camera_temperature/60 * 100)} pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>`
-
-    r_hip_temperature = Math.max(r_hip_pitch,r_hip_roll,r_hip_yaw);
-    let r_knee_temperature = r_knee
-    let r_ankle_temperature = Math.max(r_ancle_pitch,r_ancle_roll);
-    output_string += `
-    <div class="absolute top-[56%] left-[65%] w-4 h-4 bg-red-500 rounded-full blur-xs opacity-${Math.round((r_hip_temperature-20)/40 * 100)} pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>
-    <div class="absolute top-[71%] left-[67%] w-4 h-4 bg-red-500 rounded-full blur-xs opacity-${Math.round((r_knee_temperature-20)/40 * 100)} pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>
-    <div class="absolute top-[95%] left-[67%] w-4 h-4 bg-red-500 rounded-full blur-xs  opacity-${Math.round((r_ankle_temperature-20)/40 * 100)} pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>`
-
-    let l_hip_temperature = Math.max(l_hip_pitch,l_hip_roll,l_hip_yaw);
-    let l_knee_temperature = l_knee;
-    let l_ankle_temperature = Math.max(l_ancle_pitch,l_ancle_roll);
-    output_string += `
-    <div class="absolute top-[56%] left-[35%] w-4 h-4 bg-red-500 rounded-full blur-xs opacity-${Math.round((l_hip_temperature-20)/40 * 100)} pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>
-    <div class="absolute top-[71%] left-[33%] w-4 h-4 bg-red-500 rounded-full blur-xs opacity-${Math.round((l_knee_temperature-20)/40 * 100)} pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>
-    <div class="absolute top-[95%] left-[33%] w-4 h-4 bg-red-500 rounded-full blur-xs opacity-${Math.round((l_ankle_temperature-20)/40 * 100)} pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>`
-
-    let r_shoulder_temperature = Math.max(r_shoulder_pitch,r_shoulder_roll);
-    output_string += ` <div class="absolute top-[41%] left-[85%] w-4 h-4 bg-red-500 rounded-full blur-xs opacity-${Math.round((r_shoulder_temperature-20)/40 * 100)} pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>`
-
-    let l_shoulder_temperature = Math.max(l_shoulder_pitch,l_shoulder_roll);
-    output_string += ` <div class="absolute top-[41%] left-[15%] w-4 h-4 bg-red-500 rounded-full blur-xs opacity-${Math.round((l_shoulder_temperature-20)/40 * 100)} pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>`
-    let max_temperature = Math.max(head_temperature, l_hip_temperature, r_hip_temperature, l_knee_temperature, r_knee_temperature, l_ankle_temperature, r_ankle_temperature, l_shoulder_temperature, r_shoulder_temperature);
+    let output_string = "";
+    output_string += render_blob(Math.max(map.get("HeadPan"), map.get("HeadTilt")), 50, 28, 4, max_temperature);
+    output_string += render_blob(map.get("Camera"), 50, 16, 6, max_temperature);
+    output_string += render_blob(Math.max(map.get("RHipPitch"), map.get("RHipRoll"), map.get("RHipYaw")), 65, 56, 4, max_temperature);
+    output_string += render_blob(map.get("RKnee"), 67, 71, 4, max_temperature);
+    output_string += render_blob(Math.max(map.get("RAnklePitch"), map.get("RAnkleRoll")), 67, 95, 4, max_temperature);
+    output_string += render_blob(Math.max(map.get("LHipPitch"), map.get("LHipRoll"), map.get("LHipYaw")), 35, 56, 4, max_temperature);
+    output_string += render_blob(map.get("LKnee"), 33, 71, 4, max_temperature);
+    output_string += render_blob(Math.max(map.get("LAnklePitch"), map.get("LAnkleRoll")), 33, 95, 4, max_temperature);
+    output_string += render_blob(Math.max(map.get("RShoulderPitch"), map.get("RShoulderRoll")), 85, 41, 4, max_temperature);
+    output_string += render_blob(Math.max(map.get("LShoulderPitch"), map.get("LShoulderRoll")), 15, 41, 4, max_temperature);
 
     let element = document.getElementById("temperature_points");
     let max_element = document.getElementById("max_tmp");
