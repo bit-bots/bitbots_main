@@ -1,43 +1,49 @@
 {% macro behavior_tree_component() %}
 
 <script type="text/javascript">
+
+  function render_reason(reason, child_string)
+  {
+    return `<li><ul><li><span>${behavior_translate(reason)}</span><ul>${child_string}</ul></li></ul></li>`;
+  }
+
+  function render_action(action, successor)
+  {
+    return `<li><code class="bg-zinc-100">${behavior_translate(action.name)}</code>${successor}</li>`;
+  }
+
   function render_tree(tree, reason){
     if (tree.children !== undefined)
     {
-        let string = `<li><code class="bg-sky-800 text-white">${behavior_translate(reason)} --> <br> ${behavior_translate(tree.name)}</code>
-            <ul>`;
+        let string = `<li><code class="bg-sky-800 text-white">${behavior_translate(tree.name)}</code><ul>`;
         for (let key in tree.children)
         {
             string += render_tree(tree.children[key], key);
         }
-        return string + `</ul>
-            </li>`;
+        string += `</ul></li>`;
+        return render_reason(reason, string);
     }
     else
     {
         if (tree.type === "action")
         {
-            return `<li><code class= "bg-zinc-100">${behavior_translate(reason)} --> <br> ${behavior_translate(tree.name)}</code></li>`;
+            return render_reason(reason, render_action(tree, ""));
         }
         else if (tree.type ==="sequence")
         {
-            function make_sequence(sequence, first, reason)
+            function make_sequence(sequence)
             {
-                const action = sequence.shift();
-                if (first)
-                {
-                  return `<li><code class= "bg-zinc-100">${behavior_translate(reason)} --> <br> ${behavior_translate(action.name)}</code><ul>${make_sequence(sequence,false)}</ul></li>`;
-                }
-                else if (sequence.length > 1)
-                {
-                    return `<li><code class="bg-zinc-100">${behavior_translate(action.name)}</code><ul>${make_sequence(sequence,false)}</ul></li>`;
-                }
-                else
-                {
-                    return `<li><code class = "bg-zinc-100">${behavior_translate(action.name)}</code></li>`;
-                }
+              const action = sequence.shift();
+              if (sequence.length > 1)
+              {
+                return render_action(action, `<ul>${make_sequence(sequence)}</ul>`);
+              }
+              else
+              {
+                return render_action(action, "");
+              }
             }
-            return make_sequence(tree.action_elements, true, reason);
+            return render_reason(reason, make_sequence(tree.action_elements));
         }
     }
   }
@@ -65,10 +71,6 @@
 </script>
 
 <style>
-  body {
-    overflow-x: hidden;
-  }
-
   /* It's supposed to look like a tree diagram */
   .tree, .tree ul, .tree li {
       list-style: none;
@@ -113,7 +115,7 @@
   .tree li:first-child:before {left: 50%;}
   .tree li:last-child:before {right: 50%;}
 
-  .tree code, .tree span {
+  .tree code {
   border: solid .1em #666;
   border-radius: .2em;
   display: inline-block;
@@ -121,8 +123,17 @@
   padding: .2em .5em;
   position: relative;
   }
+
+  .tree span {
+  display: inline-block;
+  margin: 0 .2em .5em;
+  padding: .2em .5em;
+  position: relative;
+  }
+
+
   /* If the tree represents DOM structure */
-  .tree code {
+  .tree code, .tree span {
   font-family: monaco, Consolas, 'Lucida Console', monospace;
   }
 
