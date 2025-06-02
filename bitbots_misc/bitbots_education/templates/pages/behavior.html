@@ -26,7 +26,7 @@
         <label for="defaultToggle" class=" inline-flex items-center gap-3">
             <input id="defaultToggle" x-model="stack" type="checkbox" class="peer sr-only" role="switch" checked  />
             <span class="trancking-wide text-sm font-medium text-zinc-800 peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Baum</span>
-            <div class="relative h-6 w-11 after:h-5 after:w-5 peer-checked:after:translate-x-5 rounded-full border border-neutral-300 bg-neutral-50 after:absolute after:bottom-0 after:left-[0.0625rem] after:top-0 after:my-auto after:rounded-full after:bg-zinc-800 after:transition-all after:content-[''] peer-checked:bg-zinc-800 peer-checked:after:bg-neutral-100 peer-focus:outline-2 peer-focus:outline-offset-2 peer-focus:outline-neutral-800 peer-focus:peer-checked:outline-black peer-active:outline-offset-0 peer-disabled:cursor-not-allowed peer-disabled:opacity-70" aria-hidden="true"></div>
+            <div class="relative h-6 w-11 after:h-5 after:w-5 peer-checked:after:translate-x-5 rounded-full border border-zinc-800 bg-zinc-800 after:absolute after:bottom-0 after:left-[0.0625rem] after:top-0 after:my-auto after:rounded-full after:bg-zinc-100 after:transition-all after:content-[''] peer-checked:bg-zinc-800 peer-checked:after:bg-neutral-100 peer-focus:peer-checked:outline-black peer-active:outline-offset-0 peer-disabled:cursor-not-allowed peer-disabled:opacity-70" aria-hidden="true"></div>
             <span class="trancking-wide text-sm font-medium text-zinc-800 peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Stapel</span>
         </label>
     </dev>
@@ -41,9 +41,13 @@
     {{ components.textbox("Warum ändern sich die Boxen und wieso haben sie unterschiedliche Farben?",
     "Jede Box steht für eine Entscheidung oder eine Aktion, die der Roboter macht. Dabei macht er meist viele unterschiedliche Abwägungen (blaue Boxen),
     bis er sich am Ende für eine Aktion entscheidet, die er dann ausführt (helle Box). Zusätzlich steht auch unter jeder Entscheidung neben dem Pfeil nach unten,
-    wofür der Roboter sich entschieden hat. Da der Roboter während des Spiels in unterschiedliche Situationen kommt, ändert sich seine Entscheidungen dementsprechend.
+    wofür der Roboter sich entschieden hat. Da der Roboter während des Spiels in unterschiedliche Situationen kommt, ändert sich seine Entscheidungen dementsprechend. Sie könne auch 
+    in die Verhaltensbaum Ansicht wechseln, indem sie oben auf den Toggle Button klicken. Dort sehen sie die Entscheidungen in einer Baumstruktur, die sich aus den Abwägungen ergeben.
     Sollten Sie sich eine Reihe an Entscheidungen etwas länger angucken wollen, können sie auf den Button unter der Aktion drücken und können damit den Fluss an Entscheidungen
     anhalten und wieder starten. ", true) }}
+    <div style="width: 100%;" class="grid place-items-center">
+        <img  src="{{ url_for('static', filename='bitBot_whiteboard.svg') }}" x-ref="whiteboard"></img>
+    </div>
     {{ components.textbox("Vergleich zum Menschen", "Das Verhalten ist ähnlich zur Entscheidungsfindung des Menschen, wobei durch kleine Entscheidungen verschiedene Einflüsse abgewogen werden,
     bis sich der Roboter für eine endgültige Aktion entscheidet.", true)}}
     {{ components.textbox("Nutzen im Roboter", "Das Verhalten steuert, wo der Roboter hin läuft und was er als Nächstes tut.
