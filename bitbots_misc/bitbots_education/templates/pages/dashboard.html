@@ -5,8 +5,32 @@
 {% import "components/motor_heat.html" as heat_components %}
 {% import "components/icon_footer.html" as icon_components %}
 
+{% if logging %}
+<script type="text/javascript" >
+function setCookie(cname,cvalue,exdays) {
+  const d = new Date();
+  d.setTime(d.getTime() + (exdays*24*60*60*1000));
+  let expires = "expires=" + d.toUTCString();
+  document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+}
+
+function checkCookie() {
+  let user = getCookie("vp_number");
+  if (user == null) {
+    user = prompt("Gib deine Versuchspernonen ID ein:","");
+    if (user != "" && user != null) {
+      setCookie("vp_number", user, 30);
+    }
+  }
+}
+checkCookie();
+</script>
+{% endif %}
+
 
 {% extends "base.html" %}
+
+
 
 {% block banner %}Hamburg Bit-Bots{% endblock %}
 
