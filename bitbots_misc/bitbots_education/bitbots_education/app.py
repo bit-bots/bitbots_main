@@ -3,7 +3,7 @@ import os
 import time
 
 from ament_index_python import get_package_share_directory
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 
 template_dir = os.path.join(get_package_share_directory("bitbots_education"), "templates")
 static_folder = os.path.join(get_package_share_directory("bitbots_education"), "static")
@@ -20,13 +20,13 @@ def write_csv(vp, button):
         # Kopfzeile nur schreiben, wenn die Datei neu ist
         if not file_exists or os.stat("logs.csv").st_size == 0:
             writer.writerow(["VP", "Button", "Timestamp"])
-        curr_time = time.strftime("%H:%M:%S", time.localtime())
+        curr_time = time.strftime("%H:%M:%S", time.localtime())  # TODO use unix timestamp
         writer.writerow([vp, button, curr_time])
 
 
-@app.route("//<logging>")
-def index(logging="false"):
-    return render_template("pages/dashboard.html", logging=logging)
+@app.route("/")
+def index():
+    return render_template("pages/dashboard.html", logging=bool(request.args.get("logging", False)))
 
 
 @app.route("/imu")

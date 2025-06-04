@@ -5,27 +5,6 @@
 {% import "components/motor_heat.html" as heat_components %}
 {% import "components/icon_footer.html" as icon_components %}
 
-{% if logging %}
-<script type="text/javascript" >
-function setCookie(cname,cvalue,exdays) {
-  const d = new Date();
-  d.setTime(d.getTime() + (exdays*24*60*60*1000));
-  let expires = "expires=" + d.toUTCString();
-  document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
-}
-
-function checkCookie() {
-  let user = getCookie("vp_number");
-  if (user == null) {
-    user = prompt("Gib deine Versuchspernonen ID ein:","");
-    if (user != "" && user != null) {
-      setCookie("vp_number", user, 30);
-    }
-  }
-}
-checkCookie();
-</script>
-{% endif %}
 
 
 {% extends "base.html" %}
@@ -35,6 +14,34 @@ checkCookie();
 {% block banner %}Hamburg Bit-Bots{% endblock %}
 
 {% block content %}
+
+{% if logging %}
+<script type="text/javascript" >
+function setCookie(cname,cvalue,exdays) {
+  const d = new Date();
+  d.setTime(d.getTime() + (exdays*24*60*60*1000));
+  let expires = "expires=" + d.toUTCString();
+  document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/;SameSite=Strict";
+}
+
+function promptCookie() {
+  while (true)
+  {
+    user = prompt("Gib deine Versuchspernonen ID ein:","");
+    if (user != "" && user != null && user.match(/^[0-9]+$/)) {
+      setCookie("vp_number", user, 30);
+      break
+    }
+    else {
+      alert("Bitte gib eine gültige Versuchspernonen ID ein.");
+    }
+  }
+}
+
+promptCookie();
+</script>
+{% endif %}
+
 <div class="grid grid-cols-2 gap-2 py-4 px-2 ">
   <a href="imu" class="flex justify-center flex-col border-2 border-zinc-800 rounded-2xl bg-zinc-100 shadow-md">
     <div class="flex justify-between flex-col h-full">
