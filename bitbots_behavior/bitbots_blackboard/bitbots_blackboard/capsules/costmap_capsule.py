@@ -47,7 +47,7 @@ class CostmapCapsule(AbstractBlackboardCapsule):
 
         self.base_costmap: Optional[np.ndarray] = None  # generated once in constructor field features
         self.costmap: Optional[np.ndarray] = None  # updated on the fly based on the base_costmap
-        self.gradient_map: Optional[np.ndarray] = None  # global heading map (static) only dependent on field structure
+        self.gradient_map: Optional[list[np.ndarray]] = None  # global heading map (static) only dependent on field structure
 
         # Calculates the base costmap and gradient map based on it
         self.calc_base_costmap()
