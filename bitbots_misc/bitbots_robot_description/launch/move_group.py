@@ -33,8 +33,6 @@ def load_yaml(package_name, file_path):
 
 def launch_setup(context, *args, **kwargs):
     sim = LaunchConfiguration("sim")
-    fake_walk = LaunchConfiguration("fake_walk")
-    sim_ns = LaunchConfiguration("sim_ns")
     robot_type = LaunchConfiguration("robot_type")
 
     robot_description = ParameterValue(
@@ -45,11 +43,7 @@ def launch_setup(context, *args, **kwargs):
                     get_package_share_directory(f"{robot_type.perform(context)}_description"),
                     "urdf",
                     "robot.urdf",
-                ),
-                " use_fake_walk:=",
-                fake_walk,
-                " sim_ns:=",
-                sim_ns,
+                )
             ]
         ),
         value_type=str,
@@ -155,10 +149,8 @@ def launch_setup(context, *args, **kwargs):
 
 def generate_launch_description():
     sim_arg = DeclareLaunchArgument("sim", default_value="False")
-    fake_walk_arg = DeclareLaunchArgument("fake_walk", default_value="False")
-    sim_ns_arg = DeclareLaunchArgument("sim_ns", default_value=TextSubstitution(text="/"))
-    robot_type_arg = DeclareLaunchArgument("robot_type", default_value=TextSubstitution(text="wolfgang"))
+    robot_type_arg = DeclareLaunchArgument("robot_type", default_value=TextSubstitution(text="x02"))
 
     return LaunchDescription(
-        [sim_arg, fake_walk_arg, sim_ns_arg, robot_type_arg, OpaqueFunction(function=launch_setup)]
+        [sim_arg, robot_type_arg, OpaqueFunction(function=launch_setup)]
     )

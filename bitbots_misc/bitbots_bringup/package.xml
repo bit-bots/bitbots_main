@@ -40,7 +40,7 @@
     <exec_depend>topic_tools</exec_depend>
     <exec_depend>udp_bridge</exec_depend>
     <exec_depend>wolfgang_description</exec_depend>
-    <exec_depend>wolfgang_moveit_config</exec_depend>
+    <exec_depend>x02_moveit_config</exec_depend>
 
     <export>
         <bitbots_documentation>

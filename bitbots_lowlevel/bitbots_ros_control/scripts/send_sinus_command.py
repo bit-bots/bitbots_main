@@ -8,12 +8,12 @@ from rclpy.node import Node
 from bitbots_msgs.msg import JointCommand
 
 DYNAMIXEL_CMD_TOPIC = "/DynamixelController/command"
-JOINT_NAME = "LAnkleRoll"
+JOINT_NAME = "RAnklePitch"
 PUBLISH_RATE = 1000
 
 # sin function
 FREQUENCY = 0.5
-AMPLITUDE = 72  # degree
+AMPLITUDE = 32  # degree
 
 if __name__ == "__main__":
     msg = JointCommand(joint_names=[JOINT_NAME], velocities=[-1], accelerations=[-1], max_currents=[-1])

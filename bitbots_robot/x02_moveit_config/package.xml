@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
 
-  <name>wolfgang_moveit_config</name>
+  <name>x02_moveit_config</name>
   <version>0.3.0</version>
   <description>
      An automatically generated package with all the configuration and launch files for using the wolfgang with the MoveIt! Motion Planning Framework
@@ -16,6 +16,7 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
+  <depend>bitbots_docs</depend>
   <exec_depend>moveit_ros_move_group</exec_depend>
   <exec_depend>moveit_simple_controller_manager</exec_depend>
   <exec_depend>moveit_kinematics</exec_depend>

@@ -18,11 +18,6 @@ robot_description_planning:
       max_velocity: 8.220000000000001
       has_acceleration_limits: false
       max_acceleration: 0
-    LAnkleRoll:
-      has_velocity_limits: true
-      max_velocity: 8.220000000000001
-      has_acceleration_limits: false
-      max_acceleration: 0
     LElbow:
       has_velocity_limits: true
       max_velocity: 10.33
@@ -59,11 +54,6 @@ robot_description_planning:
       has_acceleration_limits: false
       max_acceleration: 0
     RAnklePitch:
-      has_velocity_limits: true
-      max_velocity: 8.220000000000001
-      has_acceleration_limits: false
-      max_acceleration: 0
-    RAnkleRoll:
       has_velocity_limits: true
       max_velocity: 8.220000000000001
       has_acceleration_limits: false

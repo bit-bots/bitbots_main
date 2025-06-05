@@ -41,7 +41,7 @@ include:
     - bitbots_robot:
         - wolfgang_animations
         - wolfgang_description
-        - wolfgang_moveit_config
+        - x02_moveit_config
     - bitbots_world_model:
         - bitbots_ball_filter
         - bitbots_robot_filter

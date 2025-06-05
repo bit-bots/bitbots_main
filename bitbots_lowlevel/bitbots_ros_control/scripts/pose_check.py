@@ -32,13 +32,11 @@ JOINT_NAMES = [
     "LHipPitch",
     "LKnee",
     "LAnklePitch",
-    "LAnkleRoll",
     "RHipYaw",
     "RHipRoll",
     "RHipPitch",
     "RKnee",
     "RAnklePitch",
-    "RAnkleRoll",
 ]
 
 
@@ -325,26 +323,6 @@ def main():
         input(
             f"{Style.BRIGHT}\nChecks:{Style.RESET_ALL}\n"
             f"- Check that the feet are lifted at a 45 degree angle\n"
-            f"{Style.BRIGHT}Press enter to continue.{Style.RESET_ALL}"
-        )
-
-        input(
-            f"\n{Fore.YELLOW}{num_to_emoji(step)}: The robot will now move its {Style.BRIGHT}ankles.{Style.RESET_ALL}\n"
-            f"{Fore.RED}Make sure to pick the robot up and keep clear!{Style.RESET_ALL}\n\n"
-            f"{Style.BRIGHT}Press enter to move.{Style.RESET_ALL}"
-        )
-
-        move_to_joint_position(
-            pub,
-            {
-                "LAnkleRoll": -math.pi / 2,
-                "RAnkleRoll": math.pi / 2,
-            },
-        )
-
-        input(
-            f"{Style.BRIGHT}\nChecks:{Style.RESET_ALL}\n"
-            f"- Check that the feet are rolled to the side at a 90 degree angle\n"
             f"{Style.BRIGHT}Press enter to continue.{Style.RESET_ALL}"
         )
 
