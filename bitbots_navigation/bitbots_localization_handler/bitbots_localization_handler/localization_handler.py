@@ -65,12 +65,12 @@ def main(args=None):
     node.create_timer(1 / 25.0, dsd.update, callback_group=MutuallyExclusiveCallbackGroup())
 
     # Create executor
-    multi_executor = EventsExecutor()
-    multi_executor.add_node(node)
+    executor = EventsExecutor()
+    executor.add_node(node)
 
     # Spin the executor
     try:
-        multi_executor.spin()
+        executor.spin()
     except KeyboardInterrupt:
         pass
 
