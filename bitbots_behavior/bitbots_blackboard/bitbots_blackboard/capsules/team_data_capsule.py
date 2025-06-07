@@ -8,7 +8,7 @@ from rclpy.time import Time
 from ros2_numpy import numpify
 from std_msgs.msg import Float32
 
-from bitbots_blackboard.capsules import AbstractBlackboardCapsule
+from bitbots_blackboard.capsules import AbstractBlackboardCapsule, cached_capsule_function
 from bitbots_msgs.msg import Strategy, TeamData
 
 
@@ -68,16 +68,22 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
         self.data_timeout: float = float(self._node.get_parameter("team_data_timeout").value)
         self.ball_max_covariance: float = float(self._node.get_parameter("ball_max_covariance").value)
 
+    @cached_capsule_function
+    def time(self) -> Time:
+        """Returns the current time of the node, this is its own function so it can be cached during the decision loop."""
+        return self._node.get_clock().now()
+
     def is_valid(self, data: TeamData) -> bool:
         """
         Checks if a team data message from a given robot is valid.
         Meaning it is not too old and the robot is not penalized.
         """
         return (
-            self._node.get_clock().now() - Time.from_msg(data.header.stamp) < Duration(seconds=self.data_timeout)
+            self.time() - Time.from_msg(data.header.stamp) < Duration(seconds=self.data_timeout)
             and data.state != TeamData.STATE_PENALIZED
         )
 
+    @cached_capsule_function
     def is_goalie_handling_ball(self) -> bool:
         """Returns true if the goalie is going to the ball."""
         data: TeamData
@@ -90,6 +96,7 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
                 return True
         return False
 
+    @cached_capsule_function
     def is_team_mate_kicking(self) -> bool:
         """Returns true if one of the players in the own team is kicking."""
         data: TeamData
@@ -190,6 +197,7 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
         # Count valid team data infos (aka robots with valid team data)
         return sum(map(self.is_valid, team_data_infos))
 
+    @cached_capsule_function
     def get_is_goalie_active(self) -> bool:
         def is_a_goalie(team_data: TeamData) -> bool:
             return team_data.strategy.role == Strategy.ROLE_GOALIE
@@ -221,6 +229,7 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
         """Returns true if a teammate has seen the ball accurately enough"""
         return self.get_teammate_ball() is not None
 
+    @cached_capsule_function
     def get_teammate_ball(self) -> Optional[PointStamped]:
         """Returns the best ball from all teammates that satisfies a minimum ball precision"""
 
