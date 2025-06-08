@@ -13,10 +13,8 @@ app = Flask(__name__, template_folder=template_dir, static_folder=static_folder)
 
 def write_csv(vp, button):
     file_exists = os.path.isfile("logs.csv")
-
     with open("logs.csv", "a", newline="") as file:
         writer = csv.writer(file)
-
         # Kopfzeile nur schreiben, wenn die Datei neu ist
         if not file_exists or os.stat("logs.csv").st_size == 0:
             writer.writerow(["VP", "Button", "Timestamp"])
@@ -31,6 +29,8 @@ def index():
 
 @app.route("/imu")
 def imu():
+    username = request.cookies.get('vp_number')
+    write_csv(username, "test")
     return render_template("pages/imu.html")
 
 
