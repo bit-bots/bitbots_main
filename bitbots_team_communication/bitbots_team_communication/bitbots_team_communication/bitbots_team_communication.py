@@ -74,7 +74,7 @@ class TeamCommunication:
         try:
             executor.spin()
         except KeyboardInterrupt:
-            self.logger.info("Shutting down team communication node.")
+            pass
 
     def run_spin_in_thread(self):
         # Necessary in ROS2, else we are forever stuck receiving messages

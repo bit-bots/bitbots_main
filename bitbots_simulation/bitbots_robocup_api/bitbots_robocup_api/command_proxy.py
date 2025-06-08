@@ -48,5 +48,5 @@ def main(args=None):
     try:
         executor.spin()
     except KeyboardInterrupt:
-        command_proxy.get_logger().info("Shutting down command proxy due to keyboard interrupt.")
+        pass
     command_proxy.destroy_node()

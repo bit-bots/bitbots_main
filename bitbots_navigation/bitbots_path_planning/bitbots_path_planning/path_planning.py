@@ -80,6 +80,6 @@ def main(args=None):
     try:
         executor.spin()
     except KeyboardInterrupt:
-        node.get_logger().info("Path planning node stopped by user")
+        pass
 
     node.destroy_node()

@@ -247,6 +247,6 @@ def main():
     try:
         executor.spin()
     except KeyboardInterrupt:
-        node.get_logger().info("Joy node stopped by user")
+        pass
 
     node.destroy_node()
