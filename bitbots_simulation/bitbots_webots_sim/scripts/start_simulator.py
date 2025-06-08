@@ -6,6 +6,7 @@ import threading
 
 import rclpy
 from ament_index_python import get_package_share_directory
+from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
 
 
@@ -71,9 +72,12 @@ if __name__ == "__main__":
 
     rclpy.init()
     node = WebotsSim(args.nogui, args.multi_robot, args.headless, args.sim_port, args.robot_type)
-    thread = threading.Thread(target=rclpy.spin, args=(node,), daemon=True)
+
+    executor = EventsExecutor()
+    executor.add_node(node)
+
+    thread = threading.Thread(target=executor.spin, daemon=True)
     thread.start()
     node.run_simulation()
 
     node.destroy_node()
-    rclpy.shutdown()

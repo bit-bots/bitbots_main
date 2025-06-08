@@ -8,7 +8,7 @@ from game_controller_hl_interfaces.msg import GameState
 from geometry_msgs.msg import PoseWithCovarianceStamped, Twist
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.duration import Duration
-from rclpy.executors import MultiThreadedExecutor
+from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
 from soccer_vision_3d_msgs.msg import RobotArray
 
@@ -85,6 +85,7 @@ class BodyDSD:
             self.counter = (self.counter + 1) % blackboard.config["time_to_ball_divider"]
             if self.counter == 0:
                 blackboard.pathfinding.calculate_time_to_ball()
+            blackboard.clear_cache()
         except Exception as e:
             import traceback
 
@@ -97,12 +98,11 @@ def main(args=None):
     node = Node("body_behavior", automatically_declare_parameters_from_overrides=True)
     body_dsd = BodyDSD(node)
     node.create_timer(1 / 60.0, body_dsd.loop, callback_group=MutuallyExclusiveCallbackGroup(), clock=node.get_clock())
-    # Number of executor threads is the number of MutuallyExclusiveCallbackGroups + 2 threads needed by the tf listener and executor
-    multi_executor = MultiThreadedExecutor(num_threads=12)
-    multi_executor.add_node(node)
 
+    executor = EventsExecutor()
+    executor.add_node(node)
     try:
-        multi_executor.spin()
+        executor.spin()
     except KeyboardInterrupt:
         pass
 

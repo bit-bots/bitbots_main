@@ -8,7 +8,7 @@ from bitbots_tf_buffer import Buffer
 from geometry_msgs.msg import Point, PoseWithCovarianceStamped
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.duration import Duration
-from rclpy.executors import MultiThreadedExecutor
+from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
 from rclpy.time import Time
 from ros2_numpy import msgify, numpify
@@ -264,11 +264,10 @@ def main(args=None) -> None:
     rclpy.init(args=args)
 
     node = BallFilter()
-    # Number of executor threads is the number of MutiallyExclusiveCallbackGroups + 1 thread for the executor
-    ex = MultiThreadedExecutor(num_threads=3)
-    ex.add_node(node)
+    executor = EventsExecutor()
+    executor.add_node(node)
     try:
-        ex.spin()
+        executor.spin()
     except KeyboardInterrupt:
         pass
     node.destroy_node()

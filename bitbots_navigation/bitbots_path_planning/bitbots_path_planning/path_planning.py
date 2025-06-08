@@ -4,6 +4,7 @@ from bitbots_tf_buffer import Buffer
 from geometry_msgs.msg import PointStamped, PoseStamped, PoseWithCovarianceStamped, Twist
 from nav_msgs.msg import Path
 from rclpy.duration import Duration
+from rclpy.experimental.events_executor import EventsExecutor
 from std_msgs.msg import Bool, Empty
 from visualization_msgs.msg import MarkerArray
 
@@ -74,7 +75,11 @@ def main(args=None):
     rclpy.init(args=args)
     node = PathPlanning()
 
-    rclpy.spin(node)
+    executor = EventsExecutor()
+    executor.add_node(node)
+    try:
+        executor.spin()
+    except KeyboardInterrupt:
+        pass
 
     node.destroy_node()
-    rclpy.shutdown()

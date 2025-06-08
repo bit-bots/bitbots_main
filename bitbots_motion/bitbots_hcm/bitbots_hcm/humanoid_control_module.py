@@ -12,7 +12,7 @@ from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus
 from dynamic_stack_decider.dsd import DSD
 from rcl_interfaces.msg import Parameter as ParameterMsg
 from rclpy.duration import Duration
-from rclpy.executors import MultiThreadedExecutor
+from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
 from rclpy.parameter import Parameter
 from rclpy.serialization import deserialize_message
@@ -54,9 +54,9 @@ class HardwareControlManager:
         )
 
         # Create own executor for Python part
-        multi_executor = MultiThreadedExecutor(num_threads=10)
-        multi_executor.add_node(self.node)
-        self.spin_thread = threading.Thread(target=multi_executor.spin, args=(), daemon=True)
+        executor = EventsExecutor()
+        executor.add_node(self.node)
+        self.spin_thread = threading.Thread(target=executor.spin, args=(), daemon=True)
         self.spin_thread.start()
 
         # Otherwise messages will get lost, bc the init is not finished
