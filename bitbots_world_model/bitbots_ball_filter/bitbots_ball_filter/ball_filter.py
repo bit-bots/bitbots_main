@@ -264,10 +264,10 @@ def main(args=None) -> None:
     rclpy.init(args=args)
 
     node = BallFilter()
-    ex = EventsExecutor()
-    ex.add_node(node)
+    executor = EventsExecutor()
+    executor.add_node(node)
     try:
-        ex.spin()
+        executor.spin()
     except KeyboardInterrupt:
         pass
     node.destroy_node()
