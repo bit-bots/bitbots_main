@@ -5,6 +5,6 @@
     <node pkg="web_video_server" exec="web_video_server" name="web_video_server_education">
         <param name="port" value="8081"/>
     </node>
-    <node pkg="bitbots_education" exec="webserver" name="education_webserver">
+    <node pkg="bitbots_education" exec="webserver" name="education_webserver" output="screen">
     </node>
 </launch>
