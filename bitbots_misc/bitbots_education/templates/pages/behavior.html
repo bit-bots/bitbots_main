@@ -44,15 +44,17 @@
     wofür der Roboter sich entschieden hat. Da der Roboter während des Spiels in unterschiedliche Situationen kommt, ändert sich seine Entscheidungen dementsprechend. Sie könne auch 
     in die Verhaltensbaum Ansicht wechseln, indem sie oben auf den Toggle Button klicken. Dort sehen sie die Entscheidungen in einer Baumstruktur, die sich aus den Abwägungen ergeben.
     Sollten Sie sich eine Reihe an Entscheidungen etwas länger angucken wollen, können sie auf den Button unter der Aktion drücken und können damit den Fluss an Entscheidungen
-    anhalten und wieder starten. ", true) }}
+    anhalten und wieder starten. ", true, true, false) }}
     <div style="width: 100%;" class="grid place-items-center p-6">
         <img  src="{{ url_for('static', filename='bitBot_whiteboard.svg') }}" x-ref="whiteboard"></img>
     </div>
     {{ components.textbox("Vergleich zum Menschen", "Das Verhalten ist ähnlich zur Entscheidungsfindung des Menschen, wobei durch kleine Entscheidungen verschiedene Einflüsse abgewogen werden,
-    bis sich der Roboter für eine endgültige Aktion entscheidet.", true)}}
+    bis sich der Roboter für eine endgültige Aktion entscheidet.", true, false, false)}}
+
     {{ components.textbox("Nutzen im Roboter", "Das Verhalten steuert, wo der Roboter hin läuft und was er als Nächstes tut.
     Hier sind Strategien für das Spiel gespeichert, also Spielzüge, wer wann zum Ball stürmt oder als Verteidiger zurück bleibt. Um diese Entscheidungen treffen zu können,
-    bekommt das Verhalten sehr viele Informationen von anderen Softwarekomponenten, wie zum Beispiel die Position des Balls von der Bildverarbeitung.", true)}}
+    bekommt das Verhalten sehr viele Informationen von anderen Softwarekomponenten, wie zum Beispiel die Position des Balls von der Bildverarbeitung.", true, false,false)}}
+
     {{ components.textbox("Wie funktioniert das Verhalten?", "Im Vergleich zur Bildverarbeitung ist das Verhalten nicht gelernt, sondern besteht aus vielen Abwägungen ähnlich zu: wenn X, dann Y.
     Wobei X und Y durch einen Informatiker im Code festgelegt worden sind. Es gibt verschiedene Strukturen in denen man diese Abwägungen ordnen kann. Darunter Endliche Automaten oder Entscheidungsbäume.
     Doch die Bit-Bots haben sich eine eigene Struktur überlegt: den Dynamic Stack Decider (kurz DSD, in Deutsch so was wie dynamischer Stapel Entscheider). Der DSD ist zunächst sehr ähnlich zu einem
@@ -60,7 +62,7 @@
     Antworten, aber sie können sich vorstellen, dass jede Entscheidung eine Astgabelung darstellt und je nach Antwort der eine oder der andere Ast ausgewählt wird. Was der DSD nun besonders macht,
     ist, dass er sich für den aktuell ausgewählten Pfad für jede Entscheidung Zusatzinformationen merkt, indem er die gemachten Entscheidungen auf einen Stapel legt. Ändert sich nun der Pfad,
     weil ein Entscheidung sich an einer Stelle aufgrund einer veränderten Spielsituation ändert, ändert sich auch der ganze Stapel da drüber und alles was sich die Software dort
-    gemerkt hat, wird zurückgesetzt.", false)}}
+    gemerkt hat, wird zurückgesetzt.", false, false, true)}}
 </div>
 {% endblock %}
 

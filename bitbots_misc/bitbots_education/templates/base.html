@@ -147,21 +147,19 @@
 </script>
 
 </head>
-<body class="h-full bg-sky-800 flex justify-center items-start p-0 sm:p-8">
-  <div class="w-full max-w-md h-full shadow-xl sm:rounded-3xl overflow-hidden sm:border-2 sm:border-zinc-800">
-    <div class="h-full flex justify-between flex-col">
-      <div class="grid place-items-center p-4 bg-zinc-100 border-b-2 border-zinc-800 shadow-md">
-        <h1 id="banner" class="text-2xl font-medium">
+<body class="h-full bg-sky-800 flex justify-center items-start sm:p-8">
+  <div class="w-full max-w-md sm:rounded-3xl sm:border-2 sm:border-zinc-800">
+      <div class="flex flex-col justify-center p-4 bg-zinc-100 border-b-2 border-zinc-800 shadow-md relative top-0 inset-x-0">
+        <div id="banner" class="text-2xl text-center font-medium">
           {% block banner %}{% endblock %}
-        </h1>
+        </div>
       </div>
-      <div id="content" class="overflow-scroll">
+      <div id="content" class=>
         {% block content %}{% endblock %}
       </div>
-      <div id="icons">
+      <div id="icons" class="text-2xl font-medium fixed bottom-0 z-50 inset-x-0 overflow-visible w-full">
         {% block icons %}{% endblock %}
       </div>
     </div>
-  </div>
-</body>
+  </body>
 </html>
