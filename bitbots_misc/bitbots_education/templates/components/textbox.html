@@ -1,7 +1,26 @@
 {% macro textbox(label, content, style, top, bottom) %}
-<div class="{% if top == True %}pt-12 pb-6 px-6{% elif bottom == True%} pb-21 pt-6 px-6{% else %}py-6 px-6{% endif %} w-full bg-{% if style == True %}sky-100{% else %}sky-800{% endif %}">
-  <label class="block text-lg font-semibold text-{% if style == True %}zinc-800{% else %}white{% endif %}">{{ label }}</label>
+<script type="text/javascript">
+  function change_text() {
+      return {
+          full: false,
+          toggleText() {
+              this.full = !this.full;
+          },
+      };
+    }
+  </script>
 
-  <p class="text-base text-{% if style == True %}zinc-900{%else%}white{%endif%}">{{ content }}</p>
+<div x-data="change_text()"class="{% if top == True %}pt-12 pb-6 px-6{% elif bottom == True%} pb-21 pt-6 px-6{% else %}py-6 px-6{% endif %} w-full bg-{% if style == True %}sky-100{% else %}sky-800{% endif %}">
+  <label class="block text-lg font-semibold text-{% if style == True %}zinc-800{% else %}white{% endif %}">{{ label }}</label>
+    <p x-show="full" class="text-base text-{% if style == True %}zinc-900{%else%}white{%endif%}">{{ content }}</p>
+    <p x-show="!full" class="text-base text-{% if style == True %}zinc-900{%else%}white{%endif%} line-clamp-3">{{ content }}</p>
+
+  <button x-on:click="toggleText()">
+    <div x-show="!full" class="font-semibold italic text-{% if style == True %}zinc-900{%else%}white{%endif%}">Mehr</div>
+    <div x-show="full" class="font-semibold italic text-{% if style == True %}zinc-900{%else%}white{%endif%}">Weniger</div>
+  </button>
+
 </div>
+
+
 {% endmacro %}

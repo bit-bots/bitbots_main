@@ -22,18 +22,20 @@
           }
     </script>
 <div class="bg-sky-100 overflow-hidden" x-data="behavior_visualization_change()">
-
-
-    <dev class=" flex flex-row justify-center mt-4">
-        <label for="defaultToggle" class=" inline-flex items-center gap-3">
-            <input id="defaultToggle" x-model="stack" type="checkbox" class="peer sr-only" role="switch" checked  />
-            <span class="trancking-wide text-sm font-medium text-zinc-800 peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Baum</span>
-            <div class="relative h-6 w-11 after:h-5 after:w-5 peer-checked:after:translate-x-5 rounded-full border border-zinc-800 bg-zinc-800 after:absolute after:bottom-0 after:left-[0.0625rem] after:top-0 after:my-auto after:rounded-full after:bg-zinc-100 after:transition-all after:content-[''] peer-checked:bg-zinc-800 peer-checked:after:bg-neutral-100 peer-focus:peer-checked:outline-black peer-active:outline-offset-0 peer-disabled:cursor-not-allowed peer-disabled:opacity-70" aria-hidden="true"></div>
-            <span class="trancking-wide text-sm font-medium text-zinc-800 peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Stapel</span>
-        </label>
-    </dev>
-
-
+    <div class="grid place-items-center mt-4" x-show="stack">
+        <div class="flex justify-around border-2 border-zinc-800 rounded-2xl bg-zinc-100 w-1/4">
+            <button class="py-2 px-1 grid place-items-center text-xs" x-on:click="toggleStack()">Baum</button>
+            <button class="py-2 px-1 grid place-items-center bg-sky-100 text-xs rounded-r-2xl" x-on:click="toggleStack()">Stapel</button>
+        </div>
+    </div>    
+    <div class="grid place-items-center mt-4" x-show="!stack">
+        <div class="flex justify-around border-2 border-zinc-800 bg-zinc-100 rounded-2xl w-1/4">
+            <button class="py-2 px-1 grid place-items-center text-xs bg-sky-100 rounded-l-2xl" x-on:click="toggleStack()">Baum</button>
+            <button class="py-2 px-1 grid place-items-center text-xs" x-on:click="toggleStack()">Stapel</button>
+        </div>
+    </div>   
+    
+   
     <div x-show="stack">
         {{ behavior_stack_component.behavior_stack_component() }}
     </div>
