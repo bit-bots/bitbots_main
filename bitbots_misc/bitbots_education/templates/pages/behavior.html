@@ -22,20 +22,16 @@
           }
     </script>
 <div class="bg-sky-100 overflow-hidden" x-data="behavior_visualization_change()">
-    <div class="grid place-items-center mt-4" x-show="stack">
-        <div class="flex justify-around border-2 border-zinc-800 rounded-2xl bg-zinc-100 w-1/4">
-            <button class="py-2 px-1 grid place-items-center text-xs" x-on:click="toggleStack()">Baum</button>
-            <button class="py-2 px-1 grid place-items-center bg-sky-100 text-xs rounded-r-2xl" x-on:click="toggleStack()">Stapel</button>
+    <div x-on:click="toggleStack()">
+        <div class="grid place-items-center mt-4">
+            <div class="flex justify-around border-2 border-zinc-800 bg-zinc-100 rounded-2xl w-1/4">
+                <button class="py-2 px-1 grid place-items-center text-xs" x-bind:class="stack && 'bg-sky-100 rounded-l-2xl'">Stapel</button>
+                <button class="py-2 px-1 grid place-items-center text-xs" x-bind:class="stack || 'bg-sky-100 rounded-r-2xl'">Baum</button>
+            </div>
         </div>
-    </div>    
-    <div class="grid place-items-center mt-4" x-show="!stack">
-        <div class="flex justify-around border-2 border-zinc-800 bg-zinc-100 rounded-2xl w-1/4">
-            <button class="py-2 px-1 grid place-items-center text-xs bg-sky-100 rounded-l-2xl" x-on:click="toggleStack()">Baum</button>
-            <button class="py-2 px-1 grid place-items-center text-xs" x-on:click="toggleStack()">Stapel</button>
-        </div>
-    </div>   
-    
-   
+    </div>
+
+
     <div x-show="stack">
         {{ behavior_stack_component.behavior_stack_component() }}
     </div>
@@ -45,7 +41,7 @@
     {{ components.textbox("Warum ändern sich die Boxen und wieso haben sie unterschiedliche Farben?",
     "Jede Box steht für eine Entscheidung oder eine Aktion, die der Roboter macht. Dabei macht er meist viele unterschiedliche Abwägungen (blaue Boxen),
     bis er sich am Ende für eine Aktion entscheidet, die er dann ausführt (helle Box). Zusätzlich steht auch unter jeder Entscheidung neben dem Pfeil nach unten,
-    wofür der Roboter sich entschieden hat. Da der Roboter während des Spiels in unterschiedliche Situationen kommt, ändert sich seine Entscheidungen dementsprechend. Sie könne auch 
+    wofür der Roboter sich entschieden hat. Da der Roboter während des Spiels in unterschiedliche Situationen kommt, ändert sich seine Entscheidungen dementsprechend. Sie könne auch
     in die Verhaltensbaum Ansicht wechseln, indem sie oben auf den Toggle Button klicken. Dort sehen sie die Entscheidungen in einer Baumstruktur, die sich aus den Abwägungen ergeben.
     Sollten Sie sich eine Reihe an Entscheidungen etwas länger angucken wollen, können sie auf den Button unter der Aktion drücken und können damit den Fluss an Entscheidungen
     anhalten und wieder starten. ", true, true, false) }}
