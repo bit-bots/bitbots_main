@@ -17,7 +17,7 @@
 
 {% if logging %}
 <script type="text/javascript" >
-function setCookie(cname,cvalue,exdays) {
+  function setCookie(cname,cvalue,exdays) {
   const d = new Date();
   d.setTime(d.getTime() + (exdays*24*60*60*1000));
   let expires = "expires=" + d.toUTCString();
@@ -27,13 +27,13 @@ function setCookie(cname,cvalue,exdays) {
 function promptCookie() {
   while (true)
   {
-    user = prompt("Gib deine Versuchspernonen ID ein:","");
+    user = prompt("Gib deine Versuchspersonen ID ein:","");
     if (user != "" && user != null && user.match(/^[0-9]+$/)) {
       setCookie("vp_number", user, 30);
       break
     }
     else {
-      alert("Bitte gib eine gültige Versuchspernonen ID ein.");
+      alert("Bitte gib eine gültige Versuchspersonen ID ein.");
     }
   }
 }
@@ -42,7 +42,9 @@ promptCookie();
 </script>
 {% endif %}
 
-<div class="grid grid-cols-2 gap-2 py-4 px-2 ">
+{{ components.textbox("Willkommen!", "Klicke auf eine der Boxen oder eine der Ikons in der Leiste um mehr Informationen zu bekommen.", true, false)}}
+
+<div class="grid grid-cols-2 gap-3 pb-7 pt-7 px-6 auto-rows-fr">
   <a href="imu" class="flex justify-center flex-col border-2 border-zinc-800 rounded-2xl bg-zinc-100 shadow-md">
     <div class="flex justify-between flex-col h-full">
       <div class="flex justify-center">
@@ -81,9 +83,6 @@ promptCookie();
 
 
 
-  {{ components.textbox("Was sind das für Boxen da oben? Kann man da drauf drücken?", "Jeder der Boxen geht auf eine
-  andere Komponente des Roboters ein. Wenn du mehr über eine Komponente erfahren möchtest,
-  kannst du auf die jeweilige Box drücken und wirst zu einer anderen Seite weitergeleitet, die mehr detaillierte Information bereit hält.", true, false)}}
 {% endblock %}
 
 {% block icons %}
