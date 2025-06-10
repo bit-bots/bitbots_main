@@ -24,13 +24,12 @@
 <div class="bg-sky-100 overflow-hidden" x-data="behavior_visualization_change()">
     <div x-on:click="toggleStack()">
         <div class="grid place-items-center mt-4">
-            <div class="flex justify-around border-2 border-zinc-800 bg-zinc-100 rounded-2xl w-1/4">
-                <button class="py-2 px-1 grid place-items-center text-xs" x-bind:class="stack && 'bg-sky-100 rounded-l-2xl'">Stapel</button>
-                <button class="py-2 px-1 grid place-items-center text-xs" x-bind:class="stack || 'bg-sky-100 rounded-r-2xl'">Baum</button>
+            <div class="flex justify-around border-2 border-zinc-800 bg-zinc-100 rounded-2xl shadow-md">
+                <button class="py-2 px-2 grid place-items-center text-xs" x-bind:class="stack && 'bg-sky-100 rounded-l-2xl'">Stapel</button>
+                <button class="py-2 px-2 grid place-items-center text-xs" x-bind:class="stack || 'bg-sky-100 rounded-r-2xl'">Baum</button>
             </div>
         </div>
     </div>
-
 
     <div x-show="stack">
         {{ behavior_stack_component.behavior_stack_component() }}
@@ -44,16 +43,16 @@
     wofür der Roboter sich entschieden hat. Da der Roboter während des Spiels in unterschiedliche Situationen kommt, ändert sich seine Entscheidungen dementsprechend. Sie könne auch
     in die Verhaltensbaum Ansicht wechseln, indem sie oben auf den Toggle Button klicken. Dort sehen sie die Entscheidungen in einer Baumstruktur, die sich aus den Abwägungen ergeben.
     Sollten Sie sich eine Reihe an Entscheidungen etwas länger angucken wollen, können sie auf den Button unter der Aktion drücken und können damit den Fluss an Entscheidungen
-    anhalten und wieder starten. ", true, true, false) }}
+    anhalten und wieder starten. ", true, true) }}
     <div style="width: 100%;" class="grid place-items-center p-6">
         <img  src="{{ url_for('static', filename='bitBot_whiteboard.svg') }}" x-ref="whiteboard"></img>
     </div>
     {{ components.textbox("Vergleich zum Menschen", "Das Verhalten ist ähnlich zur Entscheidungsfindung des Menschen, wobei durch kleine Entscheidungen verschiedene Einflüsse abgewogen werden,
-    bis sich der Roboter für eine endgültige Aktion entscheidet.", true, false, false)}}
+    bis sich der Roboter für eine endgültige Aktion entscheidet.", true, false)}}
 
     {{ components.textbox("Nutzen im Roboter", "Das Verhalten steuert, wo der Roboter hin läuft und was er als Nächstes tut.
     Hier sind Strategien für das Spiel gespeichert, also Spielzüge, wer wann zum Ball stürmt oder als Verteidiger zurück bleibt. Um diese Entscheidungen treffen zu können,
-    bekommt das Verhalten sehr viele Informationen von anderen Softwarekomponenten, wie zum Beispiel die Position des Balls von der Bildverarbeitung.", true, false,false)}}
+    bekommt das Verhalten sehr viele Informationen von anderen Softwarekomponenten, wie zum Beispiel die Position des Balls von der Bildverarbeitung.", true, false)}}
 
     {{ components.textbox("Wie funktioniert das Verhalten?", "Im Vergleich zur Bildverarbeitung ist das Verhalten nicht gelernt, sondern besteht aus vielen Abwägungen ähnlich zu: wenn X, dann Y.
     Wobei X und Y durch einen Informatiker im Code festgelegt worden sind. Es gibt verschiedene Strukturen in denen man diese Abwägungen ordnen kann. Darunter Endliche Automaten oder Entscheidungsbäume.
@@ -62,7 +61,7 @@
     Antworten, aber sie können sich vorstellen, dass jede Entscheidung eine Astgabelung darstellt und je nach Antwort der eine oder der andere Ast ausgewählt wird. Was der DSD nun besonders macht,
     ist, dass er sich für den aktuell ausgewählten Pfad für jede Entscheidung Zusatzinformationen merkt, indem er die gemachten Entscheidungen auf einen Stapel legt. Ändert sich nun der Pfad,
     weil ein Entscheidung sich an einer Stelle aufgrund einer veränderten Spielsituation ändert, ändert sich auch der ganze Stapel da drüber und alles was sich die Software dort
-    gemerkt hat, wird zurückgesetzt.", false, false, true)}}
+    gemerkt hat, wird zurückgesetzt.", false, false)}}
 </div>
 {% endblock %}
 

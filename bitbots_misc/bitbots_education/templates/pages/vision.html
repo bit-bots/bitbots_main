@@ -12,24 +12,24 @@
 <div class bg-sky-100>
     {{ components.textbox(
         "Was ist das für ein Kreis um dem Ball herum?",
-        "Das hier ist nicht einfach nur der Lifestream der Kamera des Roboters.
+        "Das hier ist nicht einfach nur der Livestream der Kamera des Roboters.
         Er beinhaltet zudem Markierungen der Dinge, die der Roboter in dem Bild zu sehen glaubt.
         Dabei werden Bälle mit einem grünen Kreis versehen, andere Roboter eingerahmt und Linien in blau markiert.",
-        true, true, false) }}
-    {{ components.textbox("Vergleich zum Menschen", "Die Vision gleicht der Objekterkennung des Menschen. Sie schaut auf ein Bild und sagt: An der Stelle ist ein Ball. Ähnlich wie beim Menschen wird sie nicht etwa manuell einprogrammiert, sondern erlernt.", true, false, false)}}
+        true, true) }}
+    {{ components.textbox("Vergleich zum Menschen", "Die Vision gleicht der Objekterkennung des Menschen. Sie schaut auf ein Bild und sagt: An der Stelle ist ein Ball. Ähnlich wie beim Menschen wird sie nicht etwa manuell einprogrammiert, sondern erlernt.", true, false)}}
     <div style="width: 100%;" class="grid place-items-center p-12 bg-sky-100">
         <img  src="{{ url_for('static', filename='camera.png') }}" x-ref="camera"></img>
         <p class="text-center text-base text-zinc-900">Die aktuelle Kamera des Roboters. Die dunkle "Frisur" hilft bei der Kühlung der Kamera.</p>
     </div>
-    {{ components.textbox("Nutzen im Roboter", "Viele Komponenten des Roboters brauchen die Daten aus der Vision: Das Wissen über die Position des Balles ist für Verhaltensentscheidungen sehr spannend, erkannte Feldlinien dienen zur Orientierung auf dem Feld und erkannte Roboter werden in der Strategie, sowie der Pfadplanung berücksichtigt. Letzters vor allem damit es möglicht wenig Zusammenstöße gibt.", true, false, false)}}
+    {{ components.textbox("Nutzen im Roboter", "Viele Komponenten des Roboters brauchen die Daten aus der Vision: Das Wissen über die Position des Balles ist für Verhaltensentscheidungen sehr spannend, erkannte Feldlinien dienen zur Orientierung auf dem Feld und erkannte Roboter werden in der Strategie, sowie der Pfadplanung berücksichtigt. Letzteres vor allem damit es möglichst wenig Zusammenstöße gibt.", true, false)}}
     {{ components.textbox("Woher weiß die Vision dass da ein Ball ist?", "Sie hat es durch Maschinelles Lernen (Methode für Künstliche Intelligenz) gelernt.
      Ein Mensch lernt z.B. von seinen Eltern was ein Ball ist. Zuerst zeigt ein Elternteil auf einen Ball und sagt: Das ist ein Ball.
-     Später zeigt das Kind selber auf Gegenstände, die wie ein Ball aussehen und der Erwachsene bestätigt die Annahme oder berichtigt. 
-     Bei dem Machienellen Lernen funktioniert es ähnlich. Während des Lernens versucht ein künsliches neuronales Netz immer wieder zu raten ob 
-     und wo auf einem Bild ein Ball ist. Das wird dann abgeglichen mit einem vorher von Menschen annotierten Bild, wo der Ball an der richtigen Stelle markiert wurde. 
-     Das Netz ändert daraufhin die Gewichte seiner Neuronen und wird dadurch über die Zeit besser, bis es gut genug ist und das Training beendet wird. 
-     Das fertig gelerte Netz wird dann noch mit neuen Bildern getestet um Schummeln durch Außwendiglernen zu vermeiden und schließlich verbaut. 
-     Ab diesem Punkt wird nicht weiter gelernt, sondern nur bereits gelerntes auf neue Bilder anwendet.", false, false, true)}}
+     Später zeigt das Kind selber auf Gegenstände, die wie ein Ball aussehen und der Erwachsene bestätigt die Annahme oder berichtigt.
+     Bei dem maschinellen Lernen funktioniert es ähnlich. Während des Lernens versucht ein künstliches neuronales Netz immer wieder zu raten ob
+     und wo auf einem Bild ein Ball ist. Das wird dann abgeglichen mit einem vorher von Menschen annotierten Bild, wo der Ball an der richtigen Stelle markiert wurde.
+     Das Netz ändert daraufhin die Gewichte seiner Neuronen und wird dadurch über die Zeit besser, bis es gut genug ist und das Training beendet wird.
+     Das fertig gelernte Netz wird dann noch mit neuen Bildern getestet um Schummeln durch Auswendiglernen zu vermeiden und schließlich verbaut.
+     Ab diesem Punkt wird nicht weiter gelernt, sondern nur bereits gelerntes auf neue Bilder anwendet.", false, false)}}
 </div>
 {% endblock %}
 
