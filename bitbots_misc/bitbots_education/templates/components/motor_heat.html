@@ -93,14 +93,14 @@
     <span x-text="max_temperature"></span> °C
 </div>
 {% else %}
-<div x-data="temperature_state()" class="p-6 overflow-hidden bg-sky-100 flex flex-row justify-center">
+<div x-data="temperature_state()" class="p-6 overflow-hidden bg-sky-100 flex flex-row justify-around">
     <div class="relative w-full" style="width: 60%;">
         <img src="{{url_for('static', filename='abstract_robot.svg') }}" class="w-full">
         <div x-html="render_blobs()"></div>
     </div>
 
-    <!-- Horizontally centered legend showing the color gradient -->
-    <div class="m-6 flex flex-col justify-center items-center">
+    <!-- Vertically centered legend showing the color gradient -->
+    <div class=" mx-6 flex flex-col justify-center items-center ">
          <div class="text-xs text-gray-600 mb-1 relative">
             <span x-text="max_temperature"></span>°C
         </div>
@@ -111,7 +111,6 @@
             <div class="w-full h-full bg-gradient-to-b from-green-500 to-blue-500"></div>
         </div>
 
-        <!-- Min temperature label -->
         <div class="text-xs text-gray-600 mt-1 relative">
             <span x-text="min_temperature"></span>°C
         </div>
