@@ -13,10 +13,9 @@
 
     {{ heat_components.motor_heat_component(false) }}
 
-    {{ components.textbox("Was sind das für bunte Punkte auf dem Roboter?", "Jeder farbige Punkt, außer dem obersten Punkt, zeigt den jeweils wärmsten Motor des Gelenkes an.
-    Desto weiter rechts die Farbe des Punktes auf der Skala unter dem Roboter dabei ist, desto wärmer ist der wärmste Motor an der Stelle. Die Wärme des wärmsten Motor im ganzen Roboter ist an
-    der Temperatur ganz rechts an der Skala abzulesen. Ganz links an der Skala ist die Temperatur des kältesten Motors im Roboter angegeben. Der meist rote Punkt zwischen den Augen steht für die
-    Kamera des Roboters. Diese ist meist deutlich wärmer als die Motoren und setzt damit mit ihrer Temperatur den obersten Wert in der Skala.", true, true) }}
+    {{ components.textbox("Was sind das für bunte Punkte auf dem Roboter?", "Jeder farbige Punkt zeigt den jeweils wärmsten Motor des Gelenkes an.
+    Desto weiter oben die Farbe des Punktes auf der Skala neben dem Roboter dabei ist, desto wärmer ist der wärmste Motor an der Stelle. Die Wärme des wärmsten Motor im ganzen Roboter ist an
+    der Temperatur über der Skala abzulesen. Unter der Skala ist die Temperatur des kältesten Motors im Roboter angegeben.", true, true) }}
     {{ components.textbox("Vergleich zum Menschen", "Die Motoren sind wie Muskeln, die den Roboter bewegen. Mit der Zeit werden die Motoren durch die Bewegung immer wärmer,
     ähnlich dazu, wie uns Menschen beim Sport meist auch wärmer wird. Desto wärmer die Motoren werden, desto ungenauer werden sie, wodurch der Roboter über die Zeit hinweg
     immer schlechter läuft. Ähnlich dazu, wie wir Menschen durch Sport erschöpfter werden.", true,false)}}
