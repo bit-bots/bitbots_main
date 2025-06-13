@@ -37,18 +37,18 @@
     <div x-show="!stack">
         {{ behavior_tree_minimal.behavior_tree_minimal_component() }}
     </div>
-    <div class="flex flex-row justify-evenly">
-        <div class="flex flex-row justify-center">
+    <div class="flex flex-row justify-center pt-4">
+        <div class="flex flex-row justify-center px-3 basis-1/4">
             <div class="flex flex-col justify-center">
                 <div class="p-2 rounded-2xl border-2 border-zinc-800 bg-sky-800 w-2 h-2"></div>
             </div>
-            <div class="text-base p-2 text-zinc-900">Abwägung</div>
+            <div class="text-base px-1 text-zinc-900">Abwägung</div>
         </div>
-        <div class="flex flex-row justify-center">
+        <div class="flex flex-row justify-center px-3 basis-1/4">
             <div class="flex flex-col justify-center">
                 <div class="p-2 rounded-2xl border-2 border-zinc-800 bg-zinc-100 w-2 h-2"></div>
             </div>
-            <div class="text-base p-2 text-zinc-900">Aktion</div>
+            <div class="text-base px-1 text-zinc-900">Aktion</div>
         </div>
     </div>
     {{ components.textbox("Warum ändern sich die Boxen und wieso haben sie unterschiedliche Farben?",

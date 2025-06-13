@@ -9,13 +9,13 @@
 
   function render_action(action)
   {
-    return `<li><code class="bg-zinc-100 border-2 rounded-md border-zinc-800">${behavior_translate(action.name)}</code></li>`;
+    return `<li><code class="bg-zinc-100 border-2 w-max rounded-md border-zinc-800">${behavior_translate(action.name)}</code></li>`;
   }
 
   function render_tree(tree, reason){
     if (tree.children !== undefined)
     {
-        let string = `<li><details ><summary class="bg-sky-800 border-2 rounded-md border-zinc-800 text-white">${behavior_translate(tree.name)}</summary><ul>`;
+        let string = `<li><details ><summary class="bg-sky-800 border-2 w-max rounded-md border-zinc-800 text-white">${behavior_translate(tree.name)}</summary><ul>`;
         for (let key in tree.children)
         {
             string += render_tree(tree.children[key], key);
@@ -68,26 +68,25 @@
 </script>
 
 <style>
- .tree {
-  --spacing: 1.5rem;
-  --radius: 10px;
-  display: inline-block;
-  padding-right: 1rem;
-}
 
-.tree-container {
-    overflow-x: auto; /* enables horizontal scrolling */
-    max-width: 100%;
-    -webkit-overflow-scrolling: touch; /* smooth scrolling on iOS */
-    white-space: nowrap;
-    padding-right: 2rem;
-    padding-bottom: 2rem;
-  }
+.tree {
+  --spacing: 2rem;
+  --radius: 10px;
+  box-sizing: unset;
+}
 
 .tree li {
   display: block;
   position: relative;
   padding-left: calc(2 * var(--spacing) - var(--radius) - 2px);
+  min-height: calc(var(--spacing) + 1px);
+}
+
+.tree summary {
+  height: calc(var(--spacing) + 4px);
+  padding-left: 10px;
+  padding-right: 10px;
+  align-content: center;
 }
 
 .tree ul {
@@ -107,12 +106,13 @@
   content: '';
   display: block;
   position: absolute;
-  top: calc(var(--spacing) / -2);
+  top: calc(-0.5 * var(--spacing));
   left: -2px;
-  width: calc(var(--spacing) + 4px);
-  height: calc(var(--spacing) + 3px);
+  width: calc(var(--spacing) + 2px);
+  height: calc(var(--spacing) + 1px);
   border: solid #ddd;
   border-width: 0 0 2px 2px;
+  box-shadow: contend-box;
 }
 
 .tree summary {
@@ -139,13 +139,15 @@
   display: block;
   position: absolute;
   top: calc(var(--spacing) / 2 - var(--radius));
-  left: calc(var(--spacing) - var(--radius) - 3px);
-  width: calc(2 * var(--radius) + 4px);
-  height: calc(2 * var(--radius) + 4px);
+  left: calc(var(--spacing) - var(--radius) - 1px - 2px);
+  width: calc(2 * var(--radius));
+  height: calc(2 * var(--radius));
   border-radius: 50%;
   border: 2px solid #27272A;
   background: #F4F4F5;
+  box-sizing: content-box;
 }
+
 
 .tree summary::before {
   z-index: 1;
@@ -155,14 +157,10 @@
 .tree details[open] > summary::before {
   background-position: calc(-2 * var(--radius)) 0;
 }
-
-
 </style>
 
 <div x-data="behavior_tree_state()" class=" pt-2  py-6 w-100 bg-sky-100">
-  <div class="tree-container">
-    <ul class="tree bg-sky-100" x-ref="tree"></ul>
-  </div>
+  <ul class="tree bg-sky-100" x-ref="tree"></ul>
 </div>
 
 {% endmacro %}
