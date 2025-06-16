@@ -22,25 +22,34 @@
           }
     </script>
 <div class="bg-sky-100 overflow-hidden" x-data="behavior_visualization_change()">
-    <div class="grid place-items-center mt-4" x-show="stack">
-        <div class="flex justify-around border-2 border-zinc-800 rounded-2xl bg-zinc-100 w-1/4">
-            <button class="py-2 px-1 grid place-items-center text-xs" x-on:click="toggleStack()">Baum</button>
-            <button class="py-2 px-1 grid place-items-center bg-sky-100 text-xs rounded-r-2xl" x-on:click="toggleStack()">Stapel</button>
+    <div x-on:click="toggleStack()">
+        <div class="grid place-items-center mt-4">
+            <div class="flex justify-around border-2 border-zinc-800 bg-zinc-100 rounded-2xl shadow-md">
+                <button class="py-2 px-2 grid place-items-center text-xs" x-bind:class="stack && 'bg-sky-100 rounded-l-2xl font-semibold'">Stapel</button>
+                <button class="py-2 px-2 grid place-items-center text-xs" x-bind:class="stack || 'bg-sky-100 rounded-r-2xl font-semibold'">Baum</button>
+            </div>
         </div>
-    </div>    
-    <div class="grid place-items-center mt-4" x-show="!stack">
-        <div class="flex justify-around border-2 border-zinc-800 bg-zinc-100 rounded-2xl w-1/4">
-            <button class="py-2 px-1 grid place-items-center text-xs bg-sky-100 rounded-l-2xl" x-on:click="toggleStack()">Baum</button>
-            <button class="py-2 px-1 grid place-items-center text-xs" x-on:click="toggleStack()">Stapel</button>
-        </div>
-    </div>   
-    
-   
+    </div>
+
     <div x-show="stack">
         {{ behavior_stack_component.behavior_stack_component() }}
     </div>
     <div x-show="!stack">
         {{ behavior_tree_minimal.behavior_tree_minimal_component() }}
+    </div>
+    <div class="flex flex-row justify-center pt-4">
+        <div class="flex flex-row justify-center px-3 basis-1/4">
+            <div class="flex flex-col justify-center">
+                <div class="p-2 rounded-2xl border-2 border-zinc-800 bg-sky-800 w-2 h-2"></div>
+            </div>
+            <div class="text-base px-1 text-zinc-900">Abwägung</div>
+        </div>
+        <div class="flex flex-row justify-center px-3 basis-1/4">
+            <div class="flex flex-col justify-center">
+                <div class="p-2 rounded-2xl border-2 border-zinc-800 bg-zinc-100 w-2 h-2"></div>
+            </div>
+            <div class="text-base px-1 text-zinc-900">Aktion</div>
+        </div>
     </div>
     {{ components.textbox("Warum ändern sich die Boxen und wieso haben sie unterschiedliche Farben?",
     "Jede Box steht für eine Entscheidung oder eine Aktion, die der Roboter macht. Dabei macht er meist viele unterschiedliche Abwägungen (blaue Boxen),
@@ -53,11 +62,11 @@
         <img  src="{{ url_for('static', filename='bitBot_whiteboard.svg') }}" x-ref="whiteboard"></img>
     </div>
     {{ components.textbox("Vergleich zum Menschen", "Das Verhalten ist ähnlich zur Entscheidungsfindung des Menschen, wobei durch kleine Entscheidungen verschiedene Einflüsse abgewogen werden,
-    bis sich der Roboter für eine endgültige Aktion entscheidet.", true, false, false)}}
+    bis sich der Roboter für eine endgültige Aktion entscheidet.", true, false)}}
 
     {{ components.textbox("Nutzen im Roboter", "Das Verhalten steuert, wo der Roboter hin läuft und was er als Nächstes tut.
     Hier sind Strategien für das Spiel gespeichert, also Spielzüge, wer wann zum Ball stürmt oder als Verteidiger zurück bleibt. Um diese Entscheidungen treffen zu können,
-    bekommt das Verhalten sehr viele Informationen von anderen Softwarekomponenten, wie zum Beispiel die Position des Balls von der Bildverarbeitung.", true, false,false)}}
+    bekommt das Verhalten sehr viele Informationen von anderen Softwarekomponenten, wie zum Beispiel die Position des Balls von der Bildverarbeitung.", true, false)}}
 
     {{ components.textbox("Wie funktioniert das Verhalten?", "Im Vergleich zur Bildverarbeitung ist das Verhalten nicht gelernt, sondern besteht aus vielen Abwägungen ähnlich zu: wenn X, dann Y.
     Wobei X und Y durch einen Informatiker im Code festgelegt worden sind. Es gibt verschiedene Strukturen in denen man diese Abwägungen ordnen kann. Darunter Endliche Automaten oder Entscheidungsbäume.
@@ -66,7 +75,7 @@
     Antworten, aber sie können sich vorstellen, dass jede Entscheidung eine Astgabelung darstellt und je nach Antwort der eine oder der andere Ast ausgewählt wird. Was der DSD nun besonders macht,
     ist, dass er sich für den aktuell ausgewählten Pfad für jede Entscheidung Zusatzinformationen merkt, indem er die gemachten Entscheidungen auf einen Stapel legt. Ändert sich nun der Pfad,
     weil ein Entscheidung sich an einer Stelle aufgrund einer veränderten Spielsituation ändert, ändert sich auch der ganze Stapel da drüber und alles was sich die Software dort
-    gemerkt hat, wird zurückgesetzt.", false, false, true)}}
+    gemerkt hat, wird zurückgesetzt.", false, false)}}
 </div>
 {% endblock %}
 
