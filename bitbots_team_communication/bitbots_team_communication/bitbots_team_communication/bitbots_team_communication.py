@@ -15,7 +15,7 @@ from geometry_msgs.msg import PoseWithCovarianceStamped, Twist, TwistWithCovaria
 from numpy import double
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.duration import Duration
-from rclpy.executors import MultiThreadedExecutor
+from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
 from rclpy.time import Time
 from soccer_vision_3d_msgs.msg import Robot, RobotArray
@@ -60,7 +60,7 @@ class TeamCommunication:
 
         self.set_state_defaults()
 
-        self.tf_buffer = Buffer(self.node)
+        self.tf_buffer = Buffer(node=self.node)
 
         self.run_spin_in_thread()
         self.try_to_establish_connection()
@@ -69,9 +69,12 @@ class TeamCommunication:
         self.receive_forever()
 
     def spin(self):
-        multi_executor = MultiThreadedExecutor(num_threads=10)
-        multi_executor.add_node(self.node)
-        multi_executor.spin()
+        executor = EventsExecutor()
+        executor.add_node(self.node)
+        try:
+            executor.spin()
+        except KeyboardInterrupt:
+            pass
 
     def run_spin_in_thread(self):
         # Necessary in ROS2, else we are forever stuck receiving messages
