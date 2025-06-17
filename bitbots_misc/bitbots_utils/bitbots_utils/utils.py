@@ -1,4 +1,5 @@
 import os
+from threading import Thread
 from typing import Any
 
 import rclpy
@@ -11,6 +12,7 @@ from rcl_interfaces.msg import ParameterValue as ParameterValueMsg
 from rcl_interfaces.srv import GetParameters, SetParameters
 from rclpy.node import Node
 from rclpy.parameter import PARAMETER_SEPARATOR_STRING, Parameter, parameter_value_to_python
+from rclpy.task import Future
 
 # Create a new @nobeartype decorator disabling type-checking.
 nobeartype = beartype(conf=BeartypeConf(strategy=BeartypeStrategy.O0))
@@ -194,3 +196,36 @@ def parse_parameter_dict(*, namespace: str, parameter_dict: dict) -> list[Parame
             parameter = Parameter(name=full_param_name, value=param_value)
             parameters.append(parameter.to_parameter_msg())
     return parameters
+
+
+async def async_wait_for(node: Node, rel_time: float):
+    """
+    ROS2 does not provide an async sleep function, so we implement our own using a timer.
+    This function will wait for the specified relative time in seconds.
+
+    :param node: The ROS2 node to create the timer on.
+    :param rel_time: The relative time in seconds to wait.
+    :return: None
+    """
+    future = Future()
+    rel_time = max(rel_time, 0.0)
+
+    def done_waiting():
+        future.set_result(None)
+
+    timer = node.create_timer(rel_time, done_waiting, clock=node.get_clock())
+    await future
+    timer.cancel()
+    node.destroy_timer(timer)
+
+
+async def async_run_thread(func: callable) -> None:
+    """
+    Allows the usage of blocking functions in an async context.
+
+    Spawns a thread to run the function and returns a Future that will be set when the function is done.
+    """
+    future = Future()
+    thread = Thread(target=lambda: future.set_result(func()))
+    thread.start()
+    await future
