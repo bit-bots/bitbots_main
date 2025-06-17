@@ -9,6 +9,28 @@
 {% block content %}
 
 {{ vision_components.vision_component() }}
+<div class="bg-sky-100 pt-4 flex flex-row justify-center">
+    <div class="grid grid-cols-3 gap-3 auto-cols-fr">
+        <div class="flex flex-row justify-left">
+            <div class="flex flex-col justify-center">
+                <div class="p-2 w-2 h-2 rounded-2xl border-2 border-zinc-800" style="background-color: #00FF00;"></div>
+            </div>
+            <div class="text-base px-1 text-zinc-900">Ball</div>
+        </div>
+        <div class="flex flex-row justify-left">
+            <div class="flex flex-col justify-center">
+                <div class="p-2 w-2 h-2 rounded-2xl border-2 border-zinc-800" style="background-color: #0000FF;"></div>
+            </div>
+            <div class="text-base px-1 text-zinc-900">Linien</div>
+        </div>
+        <div class="flex flex-row justify-left">
+            <div class="flex flex-col justify-center">
+                <div class="p-2 w-2 h-2 rounded-2xl border-2 border-zinc-800" style="background-color: #A0A0A0;"></div>
+            </div> 
+            <div class="text-base px-1 text-zinc-900">Roboter</div>
+        </div>
+    </div>
+</div>
 <div class bg-sky-100>
     {{ components.textbox(
         "Was ist das für ein Kreis um dem Ball herum?",
