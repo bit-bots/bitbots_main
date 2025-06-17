@@ -74,6 +74,13 @@
   --radius: 10px;
 }
 
+.tree-container {
+    overflow-x: auto; /* enables horizontal scrolling */
+    max-width: 100%;
+    -webkit-overflow-scrolling: touch; /* smooth scrolling on iOS */
+    white-space: nowrap; 
+}
+
 .tree li {
   display: block;
   position: relative;
@@ -81,6 +88,7 @@
   min-height: calc(var(--spacing) + 4px);
   padding-top: 2px;
   padding-bottom: 2px;
+  width: max-content;
 }
 
 .tree summary {
@@ -101,6 +109,7 @@
 .tree ul {
   margin-left: calc(var(--radius) - var(--spacing));
   padding-left: 0;
+  width: max-content;
 }
 
 .tree ul li {
@@ -179,8 +188,10 @@
 }
 </style>
 
-<div x-data="behavior_tree_state()" class=" pt-2  py-6 w-100 bg-sky-100">
-  <ul class="tree bg-sky-100" x-ref="tree"></ul>
+<div x-data="behavior_tree_state()" class="p-6 w-full bg-sky-100">
+  <div class="tree-container">
+    <ul class="tree bg-sky-100" x-ref="tree"></ul>
+  </div>
 </div>
 
 {% endmacro %}
