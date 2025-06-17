@@ -4,12 +4,12 @@
 
   function render_reason(reason, child_string)
   {
-    return `<li><details><summary>${behavior_translate(reason)}</summary><ul>${child_string}</ul></details></li>`;
+    return `<li><code class="reason">${behavior_translate(reason)}</code><ul>${child_string}</ul></li>`;
   }
 
   function render_action(action)
   {
-    return `<li><code class="bg-zinc-100 border-2 w-max rounded-md border-zinc-800">${behavior_translate(action.name)}</code></li>`;
+    return `<li><code class="bg-zinc-100 border-2 m-1[px] w-max rounded-md border-zinc-800 action" >${behavior_translate(action.name)}</code></li>`;
   }
 
   function render_tree(tree, reason){
@@ -72,17 +72,26 @@
 .tree {
   --spacing: 2rem;
   --radius: 10px;
-  box-sizing: unset;
 }
 
 .tree li {
   display: block;
   position: relative;
   padding-left: calc(2 * var(--spacing) - var(--radius) - 2px);
-  min-height: calc(var(--spacing) + 1px);
+  min-height: calc(var(--spacing) + 4px);
+  padding-top: 2px;
+  padding-bottom: 2px;
 }
 
 .tree summary {
+  height: calc(var(--spacing) + 4px);
+  padding-left: 10px;
+  padding-right: 10px;
+  align-content: center;
+}
+
+.tree code {
+  display: block;
   height: calc(var(--spacing) + 4px);
   padding-left: 10px;
   padding-right: 10px;
@@ -95,7 +104,7 @@
 }
 
 .tree ul li {
-  border-left: 2px solid #ddd;
+  border-left: 2px solid #000;
 }
 
 .tree ul li:last-child {
@@ -110,7 +119,7 @@
   left: -2px;
   width: calc(var(--spacing) + 2px);
   height: calc(var(--spacing) + 1px);
-  border: solid #ddd;
+  border: solid #000;
   border-width: 0 0 2px 2px;
   box-shadow: contend-box;
 }
@@ -124,7 +133,10 @@
 .tree summary::-webkit-details-marker {
   display: none;
 }
-
+.tree li::after,
+.tree .action::before {
+  background: #F4F4F5;
+}
 .tree summary:focus {
   outline: none;
 }
@@ -133,7 +145,7 @@
   outline: 1px dotted #000;
 }
 
-.tree li::after,
+.tree code::before,
 .tree summary::before {
   content: '';
   display: block;
@@ -144,10 +156,18 @@
   height: calc(2 * var(--radius));
   border-radius: 50%;
   border: 2px solid #27272A;
-  background: #F4F4F5;
   box-sizing: content-box;
 }
 
+.tree code.action::before {
+  background: #F4F4F5;
+  z-index: 1;
+}
+
+.tree code.reason::before {
+  background: #90a1b9;
+  z-index: 1;
+}
 
 .tree summary::before {
   z-index: 1;
