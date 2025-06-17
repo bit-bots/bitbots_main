@@ -17,7 +17,7 @@ Er beinhaltet zudem Markierungen der Dinge, die der Roboter in dem Bild zu sehen
 Dabei werden Bälle mit einem grünen Kreis versehen, andere Roboter eingerahmt und Linien in blau markiert.",
         true, true) }}
     {{ components.textbox("Vergleich zum Menschen", "Die Vision gleicht der Objekterkennung des Menschen. Sie schaut auf ein Bild und sagt: An der Stelle ist ein Ball. Ähnlich wie beim Menschen wird sie nicht etwa manuell einprogrammiert, sondern erlernt.", true, false)}}
-    <div style="width: 100%;" class="grid place-items-center p-12 bg-sky-100">
+    <div style="width: 100%;" class="grid place-items-center px-18 py-6 bg-sky-100">
         <img  src="{{ url_for('static', filename='camera.png') }}" x-ref="camera"></img>
         <p class="text-center text-base text-zinc-900">Die aktuelle Kamera des Roboters. Die dunkle "Frisur" hilft bei der Kühlung der Kamera.</p>
     </div>
