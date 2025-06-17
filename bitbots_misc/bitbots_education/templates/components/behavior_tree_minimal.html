@@ -78,7 +78,9 @@
     overflow-x: auto; /* enables horizontal scrolling */
     max-width: 100%;
     -webkit-overflow-scrolling: touch; /* smooth scrolling on iOS */
-    white-space: nowrap; 
+    white-space: nowrap;
+    mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
 }
 
 .tree li {
@@ -96,6 +98,7 @@
   padding-left: 10px;
   padding-right: 10px;
   align-content: center;
+  margin-right: 1em;
 }
 
 .tree code {
@@ -103,6 +106,7 @@
   height: calc(var(--spacing) + 4px);
   padding-left: 10px;
   padding-right: 10px;
+  margin-right: 1em;
   align-content: center;
 }
 
