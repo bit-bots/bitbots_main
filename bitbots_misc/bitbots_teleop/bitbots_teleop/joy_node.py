@@ -5,6 +5,7 @@ import copy
 import rclpy
 from geometry_msgs.msg import Twist
 from rclpy.duration import Duration
+from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
 from sensor_msgs.msg import Joy
 
@@ -240,6 +241,12 @@ class JoyNode(Node):
 def main():
     rclpy.init(args=None)
     node = JoyNode()
-    rclpy.spin(node)
+
+    executor = EventsExecutor()
+    executor.add_node(node)
+    try:
+        executor.spin()
+    except KeyboardInterrupt:
+        pass
+
     node.destroy_node()
-    rclpy.shutdown()

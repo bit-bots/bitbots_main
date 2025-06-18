@@ -179,8 +179,7 @@ class SegmentationTemplate(ISegmentation):
         self._yoeo_handler.set_image(image)
 
     @abstractmethod
-    def get_mask(self):
-        ...
+    def get_mask(self): ...
 
 
 class BackgroundSegmentation(SegmentationTemplate):

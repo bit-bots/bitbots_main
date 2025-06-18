@@ -20,9 +20,9 @@ def test_setup_of_mappings(snapshot):
 
 def test_setup_of_team_color_mapping(snapshot):
     converter = protocol_converter()
-    assert converter.state_to_proto_team_mapping[RobotAttributes.TEAM_OWN] == Proto.Team.BLUE
-    assert converter.state_to_proto_team_mapping[RobotAttributes.TEAM_OPPONENT] == Proto.Team.RED
-    assert converter.state_to_proto_team_mapping[RobotAttributes.TEAM_UNKNOWN] == Proto.Team.UNKNOWN_TEAM
+    assert converter.state_to_proto_team_mapping[RobotAttributes.TEAM_OWN] == Proto.BLUE
+    assert converter.state_to_proto_team_mapping[RobotAttributes.TEAM_OPPONENT] == Proto.RED
+    assert converter.state_to_proto_team_mapping[RobotAttributes.TEAM_UNKNOWN] == Proto.UNKNOWN_TEAM
     assert converter.proto_to_team_data_team_mapping == snapshot
 
 

@@ -10,7 +10,7 @@ import requests
 from ament_index_python import get_package_prefix
 from rcl_interfaces.msg import Parameter, SetParametersResult
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
-from rclpy.executors import MultiThreadedExecutor
+from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
 from rclpy.publisher import Publisher
 
@@ -121,7 +121,7 @@ class Speaker(Node):
 def main(args=None):
     rclpy.init(args=args)
     node = Speaker()
-    executor = MultiThreadedExecutor(num_threads=2)
+    executor = EventsExecutor()
     executor.add_node(node)
     try:
         executor.spin()

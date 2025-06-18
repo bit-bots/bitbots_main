@@ -6,14 +6,6 @@
 #define BITBOTS_LOCALIZATION_LOCALIZATION_H
 
 #include <message_filters/subscriber.h>
-#include <particle_filter/CRandomNumberGenerator.h>
-#include <particle_filter/ParticleFilter.h>
-#include <particle_filter/gaussian_mixture_model.h>
-#include <tf2/LinearMath/Quaternion.h>
-#include <tf2/LinearMath/Transform.h>
-#include <tf2/convert.h>
-#include <tf2/time.h>
-#include <tf2/utils.h>
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/message_filter.h>
 #include <tf2_ros/transform_broadcaster.h>
@@ -25,6 +17,7 @@
 #include <bitbots_localization/Resampling.hpp>
 #include <bitbots_localization/RobotState.hpp>
 #include <bitbots_localization/StateDistribution.hpp>
+#include <bitbots_localization/localization_parameters.hpp>
 #include <bitbots_localization/map.hpp>
 #include <bitbots_localization/srv/reset_filter.hpp>
 #include <bitbots_localization/srv/set_paused.hpp>
@@ -44,19 +37,25 @@
 #include <image_transport/image_transport.hpp>
 #include <iterator>
 #include <memory>
+#include <particle_filter/CRandomNumberGenerator.hpp>
+#include <particle_filter/ParticleFilter.hpp>
+#include <particle_filter/gaussian_mixture_model.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/camera_info.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <soccer_vision_3d_msgs/msg/goalpost_array.hpp>
 #include <std_msgs/msg/color_rgba.hpp>
 #include <std_srvs/srv/trigger.hpp>
+#include <tf2/LinearMath/Quaternion.hpp>
+#include <tf2/LinearMath/Transform.hpp>
+#include <tf2/convert.hpp>
+#include <tf2/time.hpp>
+#include <tf2/utils.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <thread>
 #include <vector>
 #include <visualization_msgs/msg/marker.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
-
-#include "localization_parameters.hpp"
 
 namespace sm = sensor_msgs;
 namespace gm = geometry_msgs;

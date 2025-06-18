@@ -2,13 +2,13 @@
 #define BITBOTS_DYNAMIC_KICK_INCLUDE_BITBOTS_DYNAMIC_KICK_KICK_PYWRAPPER_H_
 
 #include <Python.h>
-#include <moveit/py_bindings_tools/serialize_msg.h>
 
 #include <Eigen/Geometry>
 #include <bitbots_dynamic_kick/kick_node.hpp>
 #include <geometry_msgs/msg/pose.hpp>
 #include <iostream>
 #include <map>
+#include <moveit/py_bindings_tools/serialize_msg.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
 
