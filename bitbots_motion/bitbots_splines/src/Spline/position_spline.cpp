@@ -11,16 +11,10 @@ geometry_msgs::msg::Point PositionSpline::getGeometryMsgPosition(double time) {
   return msg;
 }
 
-tf2::Vector3 PositionSpline::getPos(double time) {
-  return tf2::Vector3(x_.pos(time), y_.pos(time), z_.pos(time));
-}
+tf2::Vector3 PositionSpline::getPos(double time) { return tf2::Vector3(x_.pos(time), y_.pos(time), z_.pos(time)); }
 
-tf2::Vector3 PositionSpline::getVel(double time) {
-  return tf2::Vector3(x_.vel(time), y_.vel(time), z_.vel(time));
-}
-tf2::Vector3 PositionSpline::getAcc(double time) {
-  return tf2::Vector3(x_.acc(time), y_.acc(time), z_.acc(time));
-}
+tf2::Vector3 PositionSpline::getVel(double time) { return tf2::Vector3(x_.vel(time), y_.vel(time), z_.vel(time)); }
+tf2::Vector3 PositionSpline::getAcc(double time) { return tf2::Vector3(x_.acc(time), y_.acc(time), z_.acc(time)); }
 
 SmoothSpline *PositionSpline::x() { return &x_; }
 
