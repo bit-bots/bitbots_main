@@ -226,6 +226,13 @@ async def async_run_thread(func: callable) -> None:
     Spawns a thread to run the function and returns a Future that will be set when the function is done.
     """
     future = Future()
-    thread = Thread(target=lambda: future.set_result(func()))
+
+    def thread_func():
+        try:
+            future.set_result(func())
+        except Exception as e:
+            future.set_exception(e)
+
+    thread = Thread(target=thread_func)
     thread.start()
     await future
