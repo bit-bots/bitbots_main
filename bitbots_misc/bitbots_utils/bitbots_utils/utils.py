@@ -1,6 +1,6 @@
 import os
 from threading import Thread
-from typing import Any
+from typing import Any, Callable
 
 import rclpy
 import yaml
@@ -219,7 +219,7 @@ async def async_wait_for(node: Node, rel_time: float):
     node.destroy_timer(timer)
 
 
-async def async_run_thread(func: callable) -> None:
+async def async_run_thread(func: Callable[[], Any]) -> None:
     """
     Allows the usage of blocking functions in an async context.
 
