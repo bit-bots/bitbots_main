@@ -2,45 +2,72 @@
 
 <script type="text/javascript">
 
-  function render_reason(reason, child_string)
+  function render_reason(reason, child_string, stack)
   {
+    if (stack !== null)
+    {
+      return `<li><code class="reason active">${behavior_translate(reason)}</code><ul>${child_string}</ul></li>`;
+    }
     return `<li><code class="reason">${behavior_translate(reason)}</code><ul>${child_string}</ul></li>`;
   }
 
-  function render_action(action)
+  function render_action(action, stack)
   {
-    return `<li><code class="bg-zinc-100 border-2 m-1[px] w-max rounded-md border-zinc-800 action" >${behavior_translate(action.name)}</code></li>`;
+    if (stack !== null)
+    {
+      return `<li><code class="bg-zinc-100 border-2 m-1[px] w-max rounded-md border-zinc-800 action active" >${behavior_translate(action.name)}</code></li>`;
+    }
+    return `<li><code class="bg-zinc-100 border-2 m-1[px] w-max rounded-md border-zinc-800 action" >${behavior_translate(action.name)}</ console.log(stack.next.name, tree.children[key].name, stack, tree);code></li>`;
   }
 
-  function render_tree(tree, reason){
-    if (tree.children !== undefined)
-    {
+  function render_tree(tree, reason, stack){
+    if (tree !== null && tree.children !== undefined)
+    {   
+        if (stack !== null)
+        {
+          let string = `<li><details ><summary class="bg-sky-800 border-2 w-max rounded-md border-zinc-800 text-white active">${behavior_translate(tree.name)}</summary><ul>`;
+        }
         let string = `<li><details ><summary class="bg-sky-800 border-2 w-max rounded-md border-zinc-800 text-white">${behavior_translate(tree.name)}</summary><ul>`;
         for (let key in tree.children)
-        {
-            string += render_tree(tree.children[key], key);
+        { if ( stack == null) 
+          {
+            string += render_tree(tree.children[key], key, stack);
+          }
+          else if (stack.next.name === tree.children[key].name)
+          {
+            console.log(stack.next.name, tree.children[key].name, stack, tree);
+            string += render_tree(tree.children[key], key, stack.next);
+          }
+          else
+          {
+            string += render_tree(tree.children[key], key, null);
+          }
         }
         string += `</ul></details</li>`;
-        return render_reason(reason, string);
+        return render_reason(reason, string, stack);
     }
     else
     {
-        if (tree.type === "action")
+        if ( tree !== null && tree.type === "action")
         {
-            return render_reason(reason, render_action(tree));
+            return render_reason(reason, render_action(tree), stack);
         }
-        else if (tree.type ==="sequence")
+        else if (tree !== null && tree.type ==="sequence")
         {
             function make_sequence(sequence)
             {
               let sequence_string = "";
               for (let i = 0; i < sequence.length; i++)
               {
-                sequence_string += render_action(sequence[i]);
+                if (stack !== null && stack.next.activation_reason === sequence[i].name)
+                {
+                  sequence_string += render_action(sequence[i], stack);
+                }
+                sequence_string += render_action(sequence[i], null);
               }
               return sequence_string;
             }
-            return render_reason(reason, make_sequence(tree.action_elements));
+            return render_reason(reason, make_sequence(tree.action_elements, stack), stack);
         }
     }
   }
@@ -48,6 +75,7 @@
   function behavior_tree_state() {
     return {
       listener: null,
+      behavior_tree: null,
       init() {
         this.listener = new ROSLIB.Topic({
           ros : ros,
@@ -55,10 +83,18 @@
           messageType : 'std_msgs/msg/String'
         });
         this.listener.subscribe((message) => {
-          const behavior_tree = JSON.parse(message.data);
-          let output_string = render_tree(behavior_tree, "START");
-          this.$refs.tree.innerHTML = output_string;
+          this.behavior_tree = JSON.parse(message.data);
         });
+        this.listener = new ROSLIB.Topic({
+          ros : ros,
+          name : '/debug/dsd/body_behavior/dsd_stack',
+          messageType : 'std_msgs/msg/String'
+        });
+        this.listener.subscribe(this.behavior_stack_callback.bind(this));
+        },
+      behavior_stack_callback(message) {
+        const behavior_stack = JSON.parse(message.data);
+        this.$refs.tree.innerHTML = render_tree(this.behavior_tree, "START",behavior_stack);
       },
       destroy() {
         this.listener.unsubscribe();
@@ -179,6 +215,10 @@
 
 .tree code.reason::before {
   background: #90a1b9;
+  z-index: 1;
+}
+.tree code.active::before {
+  border: 2px solid #F4F4F5;
   z-index: 1;
 }
 
