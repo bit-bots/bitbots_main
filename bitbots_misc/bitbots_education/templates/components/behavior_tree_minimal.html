@@ -4,70 +4,44 @@
 
   function render_reason(reason, child_string, stack)
   {
-    if (stack !== null)
-    {
-      return `<li><code class="reason active">${behavior_translate(reason)}</code><ul>${child_string}</ul></li>`;
-    }
     return `<li><code class="reason">${behavior_translate(reason)}</code><ul>${child_string}</ul></li>`;
   }
 
   function render_action(action, stack)
   {
-    if (stack !== null)
-    {
-      return `<li><code class="bg-zinc-100 border-2 m-1[px] w-max rounded-md border-zinc-800 action active" >${behavior_translate(action.name)}</code></li>`;
-    }
     return `<li><code class="bg-zinc-100 border-2 m-1[px] w-max rounded-md border-zinc-800 action" >${behavior_translate(action.name)}</ console.log(stack.next.name, tree.children[key].name, stack, tree);code></li>`;
   }
 
-  function render_tree(tree, reason, stack){
-    if (tree !== null && tree.children !== undefined)
-    {   
-        if (stack !== null)
-        {
-          let string = `<li><details ><summary class="bg-sky-800 border-2 w-max rounded-md border-zinc-800 text-white active">${behavior_translate(tree.name)}</summary><ul>`;
-        }
-        let string = `<li><details ><summary class="bg-sky-800 border-2 w-max rounded-md border-zinc-800 text-white">${behavior_translate(tree.name)}</summary><ul>`;
+  function render_tree(tree, reason){
+    if (tree.children !== undefined)
+    { 
+        let id = tree.id;
+        let string = `<li><details ><summary x-bind:class="active_elements[${id}] && 'active'" class="bg-sky-800 border-2 w-max rounded-md border-zinc-800 text-white">${behavior_translate(tree.name)}</summary><ul>`;
         for (let key in tree.children)
-        { if ( stack == null) 
-          {
-            string += render_tree(tree.children[key], key, stack);
-          }
-          else if (stack.next.name === tree.children[key].name)
-          {
-            console.log(stack.next.name, tree.children[key].name, stack, tree);
-            string += render_tree(tree.children[key], key, stack.next);
-          }
-          else
-          {
-            string += render_tree(tree.children[key], key, null);
-          }
+        { 
+          string += render_tree(tree.children[key], key);
         }
         string += `</ul></details</li>`;
-        return render_reason(reason, string, stack);
+        return render_reason(reason, string);
     }
     else
     {
-        if ( tree !== null && tree.type === "action")
+        if (tree.type === "action")
         {
-            return render_reason(reason, render_action(tree), stack);
+            return render_reason(reason, render_action(tree));
         }
-        else if (tree !== null && tree.type ==="sequence")
+        else if (tree.type ==="sequence")
         {
             function make_sequence(sequence)
             {
               let sequence_string = "";
               for (let i = 0; i < sequence.length; i++)
               {
-                if (stack !== null && stack.next.activation_reason === sequence[i].name)
-                {
-                  sequence_string += render_action(sequence[i], stack);
-                }
                 sequence_string += render_action(sequence[i], null);
               }
               return sequence_string;
             }
-            return render_reason(reason, make_sequence(tree.action_elements, stack), stack);
+            return render_reason(reason, make_sequence(tree.action_elements));
         }
     }
   }
@@ -84,6 +58,7 @@
         });
         this.listener.subscribe((message) => {
           this.behavior_tree = JSON.parse(message.data);
+          this.$refs.tree.innerHTML = render_tree(this.behavior_tree, "START");
         });
         this.listener = new ROSLIB.Topic({
           ros : ros,
@@ -94,7 +69,6 @@
         },
       behavior_stack_callback(message) {
         const behavior_stack = JSON.parse(message.data);
-        this.$refs.tree.innerHTML = render_tree(this.behavior_tree, "START",behavior_stack);
       },
       destroy() {
         this.listener.unsubscribe();
