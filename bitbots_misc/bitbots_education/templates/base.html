@@ -1,170 +1,168 @@
 <!DOCTYPE html>
 <html class="h-full">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='bitBot_color.svg') }}" />
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/eventemitter2@6.4.9/lib/eventemitter2.min.js"></script>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/roslib@1/build/roslib.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-<script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='bitBot_color.svg') }}" />
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/eventemitter2@6.4.9/lib/eventemitter2.min.js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/roslib@1/build/roslib.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
-<script type="text/javascript" >
-  // Connecting to ROS
-  // -----------------
+  <script type="text/javascript" >
+    // Connecting to ROS
+    // -----------------
 
-  var ros = new ROSLIB.Ros({
-    url : `ws://${window.location.hostname}:9090`
-  });
+    var ros = new ROSLIB.Ros({
+      url : `ws://${window.location.hostname}:9090`
+    });
 
-  ros.on('connection', function() {
-    console.log('Connected to websocket server.');
-  });
+    ros.on('connection', function() {
+      console.log('Connected to websocket server.');
+    });
 
-  ros.on('error', function(error) {
-    console.log('Error connecting to websocket server: ', error);
-  });
+    ros.on('error', function(error) {
+      console.log('Error connecting to websocket server: ', error);
+    });
 
-  ros.on('close', function() {
-    console.log('Connection to websocket server closed.');
-  });
+    ros.on('close', function() {
+      console.log('Connection to websocket server closed.');
+    });
 
-  // Function to translate dsd names
-  function behavior_translate(input) {
+    // Function to translate dsd names
+    function behavior_translate(input) {
 
-    // Cast input to string
-    input = String(input).trim();
+      // Cast input to string
+      input = String(input).trim();
 
-  const mapping = {
+    const mapping = {
 
-  // Action nodes (@)
-  "AvoidBall": "Ball ausweichen",
-  "AvoidBallActive": "Ball ausweichen aktiv",
-  "AvoidBallInactive": "Ball ausweichen inaktiv",
-  "CancelPathplanning": "Pfadplanung abbrechen",
-  "ChangeAction": "Aktion ändern",
-  "DeactivateHCM": "HCM deaktivieren",
-  "DribbleForward": "Dribbeln nach vorne",
-  "ForgetBall": "Ball vergessen",
-  "GetWalkready": "Laufbereit machen",
-  "GoToAbsolutePositionFieldFraction": "Gehe zu Feldposition (Anteil)",
-  "GoToBall": "Zum Ball gehen",
-  "GoToBlockPosition": "Zur Block-Position gehen",
-  "GoToCornerKickPosition": "Gehe zur Eckstoßposition",
-  "GoToDefensePosition": "Zur Verteidigungsposition gehen",
-  "GoToPassAcceptPosition": "Gehe zur Passannahmeposition",
-  "GoToPassPreparePosition": "Gehe zur Passvorbereitungsposition",
-  "GoToRelativePosition": "Gehe zur relativen Position",
-  "GoToRolePosition": "Zur Rollenposition gehen",
-  "KickBallDynamic": "Dynamisch schießen",
-  "LookAtBall": "Schau auf den Ball",
-  "LookAtFieldFeatures": "Schau auf Spielfeldmerkmale",
-  "LookAtFront": "Schau nach vorne",
-  "LookForward": "Nach vorne schauen",
-  "PlayAnimationCheering": "Jubel-Animation",
-  "PlayAnimationDynup": "Dynup-Animation",
-  "PlayAnimationGoalieArms": "Torwart-Arme Animation",
-  "PlayAnimationGoalieFallCenter": "Torwart-Animation Mitte",
-  "PlayAnimationGoalieFallLeft": "Torwart-Animation links",
-  "PlayAnimationGoalieFallRight": "Torwart-Animation rechts",
-  "PlayAnimationGrabBall": "Ballaufnahme-Animation",
-  "PlayAnimationInitInSim": "Animation initialisieren",
-  "PlayAnimationThrow": "Wurf-Animation",
-  "PlaySound": "Ton abspielen",
-  "SearchBall": "Ball suchen",
-  "Stand": "Stehen",
-  "StandAndWaitRandom": "Stehen und zufällig warten",
-  "Turn": "Drehen",
-  "TurnLastSeenBallSide": "Drehe zur letzten Ballposition",
-  "WalkInPlace": "Auf der Stelle gehen",
-  "WalkKick": "Schuss",
+    // Action nodes (@)
+    "AvoidBall": "Ball ausweichen",
+    "AvoidBallActive": "Ball ausweichen aktiv",
+    "AvoidBallInactive": "Ball ausweichen inaktiv",
+    "CancelPathplanning": "Pfadplanung abbrechen",
+    "ChangeAction": "Aktion ändern",
+    "DeactivateHCM": "HCM deaktivieren",
+    "DribbleForward": "Dribbeln nach vorne",
+    "ForgetBall": "Ball vergessen",
+    "GetWalkready": "Laufbereit machen",
+    "GoToAbsolutePositionFieldFraction": "Gehe zu Feldposition (Anteil)",
+    "GoToBall": "Zum Ball gehen",
+    "GoToBlockPosition": "Zur Block-Position gehen",
+    "GoToCornerKickPosition": "Gehe zur Eckstoßposition",
+    "GoToDefensePosition": "Zur Verteidigungsposition gehen",
+    "GoToPassAcceptPosition": "Gehe zur Passannahmeposition",
+    "GoToPassPreparePosition": "Gehe zur Passvorbereitungsposition",
+    "GoToRelativePosition": "Gehe zur relativen Position",
+    "GoToRolePosition": "Zur Rollenposition gehen",
+    "KickBallDynamic": "Dynamisch schießen",
+    "LookAtBall": "Schau auf den Ball",
+    "LookAtFieldFeatures": "Schau auf Spielfeldmerkmale",
+    "LookAtFront": "Schau nach vorne",
+    "LookForward": "Nach vorne schauen",
+    "PlayAnimationCheering": "Jubel-Animation",
+    "PlayAnimationDynup": "Dynup-Animation",
+    "PlayAnimationGoalieArms": "Torwart-Arme Animation",
+    "PlayAnimationGoalieFallCenter": "Torwart-Animation Mitte",
+    "PlayAnimationGoalieFallLeft": "Torwart-Animation links",
+    "PlayAnimationGoalieFallRight": "Torwart-Animation rechts",
+    "PlayAnimationGrabBall": "Ballaufnahme-Animation",
+    "PlayAnimationInitInSim": "Animation initialisieren",
+    "PlayAnimationThrow": "Wurf-Animation",
+    "PlaySound": "Ton abspielen",
+    "SearchBall": "Ball suchen",
+    "Stand": "Stehen",
+    "StandAndWaitRandom": "Stehen und zufällig warten",
+    "Turn": "Drehen",
+    "TurnLastSeenBallSide": "Drehe zur letzten Ballposition",
+    "WalkInPlace": "Auf der Stelle gehen",
+    "WalkKick": "Schuss",
 
-  // Decision nodes ($)
-  "AvoidBall": "Ball ausweichen",
-  "BallClose": "Ball nah",
-  "BallDangerous": "Ball gefährlich",
-  "BallInOwnPercent": "Ball in eigenem Bereich",
-  "BallKickArea": "Ball im Schussbereich",
-  "BallReapproachAngle": "Ball erneut annähern (Winkel)",
-  "BallReapproachDist": "Ball erneut annähern (Distanz)",
-  "BallSeen": "Ball gesehen",
-  "ClosestToBall": "Nächst zum Ball",
-  "ConfigRole": "Rolle konfigurieren",
-  "CurrentScore": "Aktueller Spielstand",
-  "DoOnce": "Einmal ausführen",
-  "FootSelection": "Fußwahl",
-  "GameStateDecider": "Spielzustands-Entscheider",
-  "GoalScoreRecently": "Tor kürzlich erzielt",
-  "GoalieActive": "Torwart aktiv",
-  "GoalieHandlingBall": "Torwart hält Ball",
-  "IsPenalized": "hat Strafe",
-  "KickOffTimeUp": "Anstoßzeit abgelaufen",
-  "LastPlayer": "Letzter Spieler",
-  "PassStarted": "Pass gestartet",
-  "RankToBallNoGoalie": "Reihenfolge zum Ball (ohne Torwart)",
-  "ReachedPathPlanningGoalPosition": "Zielposition erreicht",
-  "ReachedAndAlignedToPathPlanningGoalPosition": "Zielposition erreicht und ausgerichtet",
-  "RobotInOwnPercentOfField": "Roboter im eigenen Bereich",
-  "SecondaryStateDecider": "Sekundärer Zustands-Entscheider",
-  "SecondaryStateModeDecider": "Sekundärer Zustands-Entscheider (Modus)",
-  "SecondaryStateTeamDecider": "Sekundärer Zustands-Entscheider (Team)",
+    // Decision nodes ($)
+    "AvoidBall": "Ball ausweichen",
+    "BallClose": "Ball nah",
+    "BallDangerous": "Ball gefährlich",
+    "BallInOwnPercent": "Ball in eigenem Bereich",
+    "BallKickArea": "Ball im Schussbereich",
+    "BallReapproachAngle": "Ball erneut annähern (Winkel)",
+    "BallReapproachDist": "Ball erneut annähern (Distanz)",
+    "BallSeen": "Ball gesehen",
+    "ClosestToBall": "Nächst zum Ball",
+    "ConfigRole": "Rolle konfigurieren",
+    "CurrentScore": "Aktueller Spielstand",
+    "DoOnce": "Einmal ausführen",
+    "FootSelection": "Fußwahl",
+    "GameStateDecider": "Spielzustands-Entscheider",
+    "GoalScoreRecently": "Tor kürzlich erzielt",
+    "GoalieActive": "Torwart aktiv",
+    "GoalieHandlingBall": "Torwart hält Ball",
+    "IsPenalized": "hat Strafe",
+    "KickOffTimeUp": "Anstoßzeit abgelaufen",
+    "LastPlayer": "Letzter Spieler",
+    "PassStarted": "Pass gestartet",
+    "RankToBallNoGoalie": "Reihenfolge zum Ball (ohne Torwart)",
+    "ReachedPathPlanningGoalPosition": "Zielposition erreicht",
+    "ReachedAndAlignedToPathPlanningGoalPosition": "Zielposition erreicht und ausgerichtet",
+    "RobotInOwnPercentOfField": "Roboter im eigenen Bereich",
+    "SecondaryStateDecider": "Sekundärer Zustands-Entscheider",
+    "SecondaryStateModeDecider": "Sekundärer Zustands-Entscheider (Modus)",
+    "SecondaryStateTeamDecider": "Sekundärer Zustands-Entscheider (Team)",
 
-  // Result keywords
-  "AHEAD": "VORNE",
-  "BEHIND": "HINTEN",
-  "CENTER": "MITTE",
-  "CORNER_KICK": "ECKENBALL",
-  "DONE": "ERLEDIGT",
-  "ELSE": "ANDERENFALLS",
-  "FAR": "WEIT",
-  "FINISHED": "ABGESCHLOSSEN",
-  "FIRST": "ERSTER",
-  "GOALIE": "TORWART",
-  "INITIAL": "INITIAL",
-  "LEFT": "LINKS",
-  "NEAR": "NAH",
-  "NO": "NEIN",
-  "NOT_DONE": "NICHT ERLEDIGT",
-  "OTHER": "ANDERE",
-  "OUR": "UNSERE",
-  "OVERTIME": "VERLÄNGERUNG",
-  "PENALTYSHOOT": "ELFMETERSCHIESSEN",
-  "PLAYING": "SPIELEND",
-  "READY": "BEREIT",
-  "RIGHT": "RECHTS",
-  "SECOND": "ZWEITER",
-  "SET": "FESTGELEGT",
-  "THIRD": "DRITTER",
-  "THROW_IN": "EINWURF",
-  "TIMEOUT": "ZEITUNTERBRECHUNG",
-  "YES": "JA"
-};
+    // Result keywords
+    "AHEAD": "VORNE",
+    "BEHIND": "HINTEN",
+    "CENTER": "MITTE",
+    "CORNER_KICK": "ECKENBALL",
+    "DONE": "ERLEDIGT",
+    "ELSE": "ANDERENFALLS",
+    "FAR": "WEIT",
+    "FINISHED": "ABGESCHLOSSEN",
+    "FIRST": "ERSTER",
+    "GOALIE": "TORWART",
+    "INITIAL": "INITIAL",
+    "LEFT": "LINKS",
+    "NEAR": "NAH",
+    "NO": "NEIN",
+    "NOT_DONE": "NICHT ERLEDIGT",
+    "OTHER": "ANDERE",
+    "OUR": "UNSERE",
+    "OVERTIME": "VERLÄNGERUNG",
+    "PENALTYSHOOT": "ELFMETERSCHIESSEN",
+    "PLAYING": "SPIELEND",
+    "READY": "BEREIT",
+    "RIGHT": "RECHTS",
+    "SECOND": "ZWEITER",
+    "SET": "FESTGELEGT",
+    "THIRD": "DRITTER",
+    "THROW_IN": "EINWURF",
+    "TIMEOUT": "ZEITUNTERBRECHUNG",
+    "YES": "JA"
+  };
 
 
-    return mapping.hasOwnProperty(input) ? mapping[input] : input;
-  }
-</script>
+      return mapping.hasOwnProperty(input) ? mapping[input] : input;
+    }
+  </script>
 
-</head>
-<body class="h-full bg-sky-800 flex justify-center items-start sm:p-8">
-  <div class="w-full max-w-md sm:rounded-3xl sm:border-2 sm:border-zinc-800">
-      <div class="flex flex-col justify-center p-4 bg-zinc-100 border-b-2 border-zinc-800 shadow-md relative top-0 inset-x-0">
-        <div id="banner" class="text-2xl text-center font-medium">
-          {% block banner %}{% endblock %}
-        </div>
+  </head>
+  <body class="bg-sky-800">
+    <div class="flex flex-col justify-center p-4 bg-zinc-100 border-b-2 border-zinc-800 shadow-md relative top-0 inset-x-0">
+      <div id="banner" class="text-2xl text-center font-medium">
+        {% block banner %}{% endblock %}
       </div>
-      <div id="content" class=>
-        {% block content %}{% endblock %}
-      </div>
-      <div class=" relative bottom-0 text-zinc-900 text-xs text-center px-6 mb-6">
-        Uicons by <a class="text-zinc-900 text-xs" href="https://www.flaticon.com/uicons">Flaticon</a>
-      </div>
-      <div id="placeholder" class="h-16"></div>
-      <div id="icons" class="text-2xl font-medium fixed bottom-4 z-50 inset-x-0 overflow-hidden w-full">
-        <div class="mx-4 ">
-          {% block icons %}{% endblock %}
-        </div>
+    </div>
+    <div id="content" class=>
+      {% block content %}{% endblock %}
+    </div>
+    <div class=" relative bottom-0 text-zinc-900 text-xs text-center px-6 mb-6">
+      Uicons by <a class="text-zinc-900 text-xs" href="https://www.flaticon.com/uicons">Flaticon</a>
+    </div>
+    <div id="placeholder" class="h-16"></div>
+    <div id="icons" class="text-2xl font-medium fixed bottom-4 z-50 inset-x-0 overflow-hidden w-full">
+      <div class="mx-4 ">
+        {% block icons %}{% endblock %}
       </div>
     </div>
   </body>
