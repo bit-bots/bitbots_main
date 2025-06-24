@@ -200,7 +200,7 @@ def parse_parameter_dict(*, namespace: str, parameter_dict: dict) -> list[Parame
 
 async def async_wait_for(node: Node, rel_time: float):
     """
-    ROS2 does not provide an async sleep function, so we implement our own using a timer.
+    ROS 2 does not provide an async sleep function, so we implement our own using a timer.
     This function will wait for the specified relative time in seconds.
 
     :param node: The ROS2 node to create the timer on.
