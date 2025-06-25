@@ -9,12 +9,16 @@ from rclpy.node import Node
 
 
 class SupervisorNode:
-    def __init__(self, simulator_port):
+    def __init__(self, simulator_port, robot_name):
         self.node = Node("supervisor_node")
+        self.node.get_logger().warn(f"tcp://localhost:{simulator_port}/supervisor_robot_{robot_name}")
 
-        os.environ["WEBOTS_CONTROLLER_URL"] = f"tcp://localhost:{simulator_port}/supervisor_robot"
+        # if match:
+        os.environ["WEBOTS_CONTROLLER_URL"] = f"tcp://localhost:{simulator_port}/supervisor_robot_{robot_name}"
+        # else:
+        #     os.environ["WEBOTS_CONTROLLER_URL"] = f"tcp://localhost:{simulator_port}/supervisor_robot"
 
-        self.supervisor_controller = SupervisorController(ros_active=True, ros_node=self.node)
+        self.supervisor_controller = SupervisorController(ros_active=True, ros_node=self.node, robot_name=robot_name)
         self.node.get_logger().info("started webots ros supervisor")
 
     def run(self):
@@ -25,10 +29,12 @@ class SupervisorNode:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--sim-port", help="port of the simulation", default="1234")
+    parser.add_argument("--robot_name", help="name of the robot that the supervisor controlls", default="amy")
+    # parser.add_argument("--match", help="true if the a 1vs1 match is played", default="false")
     args, _ = parser.parse_known_args()
 
     rclpy.init()
-    supervisor = SupervisorNode(args.sim_port)
+    supervisor = SupervisorNode(args.sim_port, args.robot_name)  # , args.match == "true"
     thread = threading.Thread(target=rclpy.spin, args=(supervisor.node,), daemon=True)
     thread.start()
     supervisor.run()

@@ -24,6 +24,7 @@ class SupervisorController:
         base_ns="/",
         model_states_active=True,
         robot="wolfgang",
+        robot_name="amy",
     ):
         """
         The SupervisorController, a Webots controller that can control the world.
@@ -33,6 +34,8 @@ class SupervisorController:
         :param mode: Webots mode, one of 'normal', 'paused', or 'fast'
         :param base_ns: The namespace of this node, can normally be left empty
         """
+        self.robot_name = robot_name
+
         if ros_node is None:
             ros_node = RclpyNode("supervisor_controller")
         self.ros_node = ros_node
@@ -90,7 +93,7 @@ class SupervisorController:
             if name_field is not None and node.getType() == Node.ROBOT:
                 # this is a robot
                 name = name_field.getSFString()
-                if name == "supervisor_robot":
+                if not name == self.robot_name:
                     continue
                 self.robot_nodes[name] = node
                 self.translation_fields[name] = node.getField("translation")
@@ -347,6 +350,7 @@ class SupervisorController:
     def publish_model_states(self):
         if self.model_state_publisher.get_subscription_count() != 0:
             msg = ModelStates()
+            # self.ros_node.get_logger().warn(str(self.robot_nodes))
             for robot_name, robot_node in self.robot_nodes.items():
                 position, orientation = self.get_robot_pose_quat(name=robot_name)
                 robot_pose = Pose()

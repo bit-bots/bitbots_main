@@ -12,11 +12,12 @@ EXTERNPROTO "../protos/hl_supervisor/hl_supervisor.proto"
 
 WorldInfo {
     info [
-    "Description: Bit-Bots Robocup Virtual Humanoid League (kid size) field including one Wolfgang robot"
+    "Description: Bit-Bots Robocup Virtual Humanoid League (kid size) field including four Wolfgang robots"
     "Version 0.1"
   ]
-  title "Bit-Bots Field One Robot"
+  title "Bit-Bots Field Two Robots"
   basicTimeStep 8
+  optimalThreadCount 2
   physicsDisableTime 0.1
   physicsDisableLinearThreshold 0.1
   physicsDisableAngularThreshold 0.1
@@ -84,7 +85,17 @@ DEF amy Wolfgang {
   name "amy"
   controller "<extern>"
 }
-DEF supervisor_robot hl_supervisor {
+DEF rory Wolfgang {
+  translation 1.0 -3.14 0.4274
+  rotation 0.0 0.0 1.0 1.5869763401625028
+  name "rory"
+  controller "<extern>"
+}
+DEF supervisor_robot_amy hl_supervisor {
   name "supervisor_robot_amy"
+  controller "<extern>"
+}
+DEF supervisor_robot_rory hl_supervisor {
+  name "supervisor_robot_rory"
   controller "<extern>"
 }
