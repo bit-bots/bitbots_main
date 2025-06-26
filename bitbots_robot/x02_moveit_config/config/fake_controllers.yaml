@@ -25,6 +25,7 @@ fake_LeftLeg_controller:
     - LHipPitch
     - LKnee
     - LAnklePitch
+    - LAnkleRoll
 fake_RightLeg_controller:
   action_ns: fake_RightLeg_controller
   type: FollowJointTrajectory
@@ -35,6 +36,7 @@ fake_RightLeg_controller:
     - RHipPitch
     - RKnee
     - RAnklePitch
+    - RAnkleRoll
 fake_Legs_controller:
   action_ns: fake_Legs_controller
   type: FollowJointTrajectory
@@ -45,11 +47,13 @@ fake_Legs_controller:
     - LHipPitch
     - LKnee
     - LAnklePitch
+    - LAnkleRoll
     - RHipYaw
     - RHipRoll
     - RHipPitch
     - RKnee
     - RAnklePitch
+    - RAnkleRoll
 fake_RightArm_controller:
   action_ns: fake_RightArm_controller
   type: FollowJointTrajectory
@@ -96,6 +100,7 @@ fake_All_controller:
     - LHipPitch
     - LKnee
     - LAnklePitch
+    - LAnkleRoll
     - LShoulderPitch
     - LShoulderRoll
     - LElbow
@@ -104,6 +109,7 @@ fake_All_controller:
     - RHipPitch
     - RKnee
     - RAnklePitch
+    - RAnkleRoll
     - RShoulderPitch
     - RShoulderRoll
     - RElbow

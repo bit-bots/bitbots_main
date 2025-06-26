@@ -47,11 +47,13 @@ class MotorVizHelper(Node):
                 "LHipPitch",
                 "LKnee",
                 "LAnklePitch",
+                "LAnkleRoll",
                 "RHipYaw",
                 "RHipRoll",
                 "RHipPitch",
                 "RKnee",
                 "RAnklePitch",
+                "RAnkleRoll",
             ]
             self.joint_goals = [
                 float(0),

@@ -32,6 +32,7 @@ class PredefinedCommands:
         "RHipPitch",
         "RKnee",
         "RAnklePitch",
+        "RAnkleRoll",
     ]
     __velocity__ = 5.0
     __accelerations__ = -1.0
@@ -70,6 +71,7 @@ class PredefinedCommands:
             -0.4732,  # RHipPitch
             -1.0059,  # RKnee
             0.4512,  # RAnklePitch
+            -0.0625,  # RAnkleRoll
         ],
     )
 
