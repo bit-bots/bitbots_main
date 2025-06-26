@@ -18,7 +18,7 @@ class MotorVizHelper(Node):
         # get rid of additional ROS args when used in launch file
 
         parser = argparse.ArgumentParser()
-        parser.add_argument("--robot-type", "-t", help="What type of robot to use", default="wolfgang")
+        parser.add_argument("--robot-type", "-t", help="What type of robot to use", default="x02")
         parser.add_argument("--walking", "-w", help="Directly get walking motor goals", action="store_true")
         parser.add_argument("--animation", "-a", help="Directly get animation motor goals", action="store_true")
         parser.add_argument("--head", help="Directly get head motor goals", action="store_true")
@@ -32,6 +32,52 @@ class MotorVizHelper(Node):
         self.args, unknown = parser.parse_known_args()
 
         if self.args.robot_type == "wolfgang":
+            # List of all joint names. Do not change the order as it is important for Gazebo
+            self.joint_names = [
+                "HeadPan",
+                "HeadTilt",
+                "LShoulderPitch",
+                "LShoulderRoll",
+                "LElbow",
+                "RShoulderPitch",
+                "RShoulderRoll",
+                "RElbow",
+                "LHipYaw",
+                "LHipRoll",
+                "LHipPitch",
+                "LKnee",
+                "LAnklePitch",
+                "LAnkleRoll",
+                "RHipYaw",
+                "RHipRoll",
+                "RHipPitch",
+                "RKnee",
+                "RAnklePitch",
+                "RAnkleRoll",
+            ]
+            self.joint_goals = [
+                float(0),
+                float(0),
+                float(0),
+                float(0),
+                float(0),
+                float(0),
+                float(0),
+                float(0),
+                float(0),
+                float(0),
+                0.7,
+                float(-1),
+                -0.4,
+                float(0),
+                float(0),
+                float(0),
+                -0.7,
+                float(1),
+                0.4,
+                float(0),
+            ]
+        elif self.args.robot_type == "x02":
             # List of all joint names. Do not change the order as it is important for Gazebo
             self.joint_names = [
                 "HeadPan",

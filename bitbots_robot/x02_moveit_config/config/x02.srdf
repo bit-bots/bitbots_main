@@ -100,4 +100,20 @@
         <joint name="RAnklePitch" value="0.4" />
         <joint name="RAnkleRoll" value="0.0" />
     </group_state>
+
+    <!--DISABLE COLLISIONS: By default it is assumed that any link of the robot could potentially come into collision with any other link in the robot. This tag disables collision checking between a specified pair of links. -->
+    <disable_collisions link1="L_elbow_pitch_link" link2="L_shoulder_yaw_link" reason="Never" />
+    <disable_collisions link1="L_hip_pitch_link" link2="L_knee_pitch_link" reason="Never" />
+    <disable_collisions link1="L_shoulder_pitch_link" link2="L_shoulder_roll_link" reason="Never" />
+    <disable_collisions link1="L_shoulder_pitch_link" link2="base_link" reason="Never" />
+    <disable_collisions link1="L_shoulder_roll_link" link2="L_shoulder_yaw_link" reason="Never" />
+    <disable_collisions link1="R_elbow_pitch_link" link2="R_shoulder_yaw_link" reason="Never" />
+    <disable_collisions link1="R_hip_pitch_link" link2="R_knee_pitch_link" reason="Never" />
+    <disable_collisions link1="R_shoulder_pitch_link" link2="R_shoulder_roll_link" reason="Never" />
+    <disable_collisions link1="R_shoulder_pitch_link" link2="base_link" reason="Never" />
+    <disable_collisions link1="R_shoulder_roll_link" link2="R_shoulder_yaw_link" reason="Never" />
+    <disable_collisions link1="base_link" link2="head_link" reason="Never" />
+    <disable_collisions link1="base_link" link2="logo_link" reason="Never" />
+    <disable_collisions link1="base_link" link2="waist_yaw_link" reason="Never" />
+
 </robot>

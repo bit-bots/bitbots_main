@@ -2,7 +2,7 @@
 <launch>
   <arg name="sim" default="false"/>
   <arg name="viz" default="false"/>
-  <arg name="robot_type" default="wolfgang"/>
+  <arg name="robot_type" default="x02"/>
 
   <let if="$(env IS_ROBOT false)" name="taskset" value="taskset -c 3,4"/>
   <let unless="$(env IS_ROBOT false)" name="taskset" value=""/>
