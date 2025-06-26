@@ -21,10 +21,12 @@
     Wenn der echte Roboter also zur Seite kippt, dann misst die IMU dies und der kleine Bit-Bot hier 
     oben neigt sich ebenfalls.", true, true, false) }}
   {{ components.textbox("Vergleich zum Menschen", "Die IMU ist vergleichbar zum menschlichen Gleichgewichtssinn.", true, false, false)}}
-  <div style="width: 100%;" class="grid place-items-center px-18 py-6 relative">
-    <img  src="{{ url_for('static', filename='imunew.png') }}" x-ref="imu"></img>
+  <div class="w-full grid place-items-center px-18 py-6">
+    <div class ="relative">
+      <img  src="{{ url_for('static', filename='imunew.png') }}" x-ref="imu"></img>
+      <div class="absolute top-[21%] left-[85%] w-[14%] h-[16%] rounded-full border-4 border-sky-800 pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>
+    </div>
     <p class="text-center text-base text-zinc-900">Die blau umkreiste Komponente ist die IMU</p>
-    <div class="absolute top-18 left-62 w-8 h-10 rounded-full border-2 border-sky-800 pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>
   </div>
   {{ components.textbox("Nutzen im Roboter", "Die Daten, welche die IMU aufnimmt, können zur Laufstabilisierung beitragen. 
   Kippt der Roboter zu weit in die eine Richtung, kann die Software darauf reagieren und Maßnahmen 
