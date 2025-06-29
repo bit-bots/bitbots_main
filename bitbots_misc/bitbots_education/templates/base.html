@@ -13,7 +13,7 @@
   <script type="text/javascript" >
     // Connecting to ROS
     // -----------------
-
+    let scrollDirection = document.documentElement.scrollTop; // Initial scroll direction
     var ros = new ROSLIB.Ros({
       url : `ws://${window.location.hostname}:9090`
     });
@@ -144,16 +144,33 @@
 
       return mapping.hasOwnProperty(input) ? mapping[input] : input;
     }
+
+    // Function to log scroll events
+    function log() {
+      console.log(scrollDirection);
+      dist = Math.abs(document.documentElement.scrollTop - scrollDirection);
+      if (dist > 200 && scrollDirection < document.documentElement.scrollTop)
+      {
+        fetch(`/logs?button=scroll&status=scrolledDownTo ${document.documentElement.scrollTop}`);
+        scrollDirection = document.documentElement.scrollTop;
+      }
+      else if (dist > 200)
+      {
+        fetch(`/logs?button=scroll&status=scrolledUpTo ${document.documentElement.scrollTop}`);
+          scrollDirection = document.documentElement.scrollTop;
+      }
+
+    }
   </script>
 
   </head>
-  <body class="bg-sky-800">
+  <body class="bg-sky-800" onscroll="log()">
     <div class="flex flex-col justify-center p-4 bg-zinc-100 border-b-2 border-zinc-800 shadow-md relative top-0 inset-x-0">
       <div id="banner" class="text-2xl text-center font-medium">
         {% block banner %}{% endblock %}
       </div>
     </div>
-    <div id="content" class=>
+    <div id="content">
       {% block content %}{% endblock %}
     </div>
     <div class=" relative bottom-0 text-zinc-900 text-xs text-center px-6 mb-6">

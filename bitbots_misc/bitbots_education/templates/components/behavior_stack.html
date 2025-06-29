@@ -45,8 +45,10 @@
         this.run = !this.run;
         if (this.run) {
           this.listener.subscribe(this.behavior_stack_callback.bind(this));
+          fetch(`/logs?button=playStack&status=gestartet`);
         } else {
           this.listener.unsubscribe();
+          fetch(`/logs?button=playStack&status=gestoppt`);
         }
       },
       destroy() {

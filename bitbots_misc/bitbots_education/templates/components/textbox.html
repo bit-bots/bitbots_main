@@ -6,13 +6,11 @@
           collapsable: true,
           toggleText() {
               this.full = !this.full;
-              let status = "";
               if (this.full) {
-                  status = "aufgeklappt";
+                  fetch(`/logs?button=${this.$refs.label.innerText}&status=aufgeklappt`);
               } else {
-                  status = "eingeklappt";
+                  fetch(`/logs?button=${this.$refs.label.innerText}&status=eingeklappt`);
               }
-              fetch(`/logs?button=${this.$refs.label.innerText}&status=${status}`)
           },
           init() {
               // Get height of the content
