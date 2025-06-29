@@ -12,51 +12,58 @@ csv_file_path = os.path.realpath("logs.csv")
 app = Flask(__name__, template_folder=template_dir, static_folder=static_folder)
 
 
-def write_csv(vp, button):
+def write_csv(vp, page, button, status):
     file_exists = os.path.isfile(csv_file_path)
     with open(csv_file_path, "a+", newline="") as file:
         writer = csv.writer(file)
         # Kopfzeile nur schreiben, wenn die Datei neu ist
         if not file_exists or os.stat("logs.csv").st_size == 0:
-            writer.writerow(["VP", "Button", "Timestamp"])
+            writer.writerow(["VP", "Page", "Button", "Status", "Timestamp"])
         curr_time = time.time()
-        writer.writerow([vp, button, curr_time])
+        writer.writerow([vp, page, button, status, curr_time])
 
 
-def vp_track(button):
+def vp_track(page, button, status):
     username = request.cookies.get("vp_number")
     if username is not None:
-        write_csv(username, button)
+        write_csv(username, page, button, status)
 
 
 @app.route("/")
 def index():
-    vp_track("dashboard")
+    vp_track("dashboard", "", "")
     return render_template("pages/dashboard.html", logging=bool(request.args.get("logging", False)))
 
 
 @app.route("/imu")
 def imu():
-    vp_track("imu")
+    vp_track("imu", "", "")
     return render_template("pages/imu.html")
 
 
 @app.route("/vision")
 def vision():
-    vp_track("vision")
+    vp_track("vision", "", "")
     return render_template("pages/vision.html")
 
 
 @app.route("/motors")
 def motors():
-    vp_track("motors")
+    vp_track("motors", "", "")
     return render_template("pages/motors.html")
 
 
 @app.route("/behavior")
 def behavior():
-    vp_track("behavior")
+    vp_track("behavior", "", "")
     return render_template("pages/behavior.html")
+
+
+@app.route("/logs")
+def logs():
+    button = request.args.get("button")
+    status = request.args.get("status")
+    vp_track("", button, status)
 
 
 def main():

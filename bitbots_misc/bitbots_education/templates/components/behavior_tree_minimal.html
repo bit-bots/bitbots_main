@@ -86,9 +86,7 @@
         });
         this.listener.subscribe((message) => {
           const stack = JSON.parse(message.data);
-          console.log(stack);
           this.active_path = extract_active_path_from_stack(stack);
-          console.log(this.active_path);
         });
         },
       destroy() {
