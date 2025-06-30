@@ -16,6 +16,5 @@
         <arg name="teamcom" value="true" />
         <arg name="vision" value="true" />
         <arg name="world_model" value="true" />
-        <arg name="record" value="$(var record)" />
     </include>
 </launch>

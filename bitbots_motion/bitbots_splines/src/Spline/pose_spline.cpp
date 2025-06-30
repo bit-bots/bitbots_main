@@ -30,49 +30,19 @@ geometry_msgs::msg::Quaternion PoseSpline::getGeometryMsgOrientation(double time
   return msg;
 }
 
-tf2::Vector3 PoseSpline::getPositionPos(double time) {
-  tf2::Vector3 pos;
-  pos[0] = x_.pos(time);
-  pos[1] = y_.pos(time);
-  pos[2] = z_.pos(time);
-  return pos;
-}
+tf2::Vector3 PoseSpline::getPositionPos(double time) { return tf2::Vector3(x_.pos(time), y_.pos(time), z_.pos(time)); }
 
-tf2::Vector3 PoseSpline::getPositionVel(double time) {
-  tf2::Vector3 vel;
-  vel[0] = x_.vel(time);
-  vel[1] = y_.vel(time);
-  vel[2] = z_.vel(time);
-  return vel;
-}
-tf2::Vector3 PoseSpline::getPositionAcc(double time) {
-  tf2::Vector3 acc;
-  acc[0] = x_.acc(time);
-  acc[1] = y_.acc(time);
-  acc[2] = z_.acc(time);
-  return acc;
-}
+tf2::Vector3 PoseSpline::getPositionVel(double time) { return tf2::Vector3(x_.vel(time), y_.vel(time), z_.vel(time)); }
+tf2::Vector3 PoseSpline::getPositionAcc(double time) { return tf2::Vector3(x_.acc(time), y_.acc(time), z_.acc(time)); }
 
 tf2::Vector3 PoseSpline::getEulerAngles(double time) {
-  tf2::Vector3 pos;
-  pos[0] = roll_.pos(time);
-  pos[1] = pitch_.pos(time);
-  pos[2] = yaw_.pos(time);
-  return pos;
+  return tf2::Vector3(roll_.pos(time), pitch_.pos(time), yaw_.pos(time));
 }
 tf2::Vector3 PoseSpline::getEulerVel(double time) {
-  tf2::Vector3 vel;
-  vel[0] = roll_.vel(time);
-  vel[1] = pitch_.vel(time);
-  vel[2] = yaw_.vel(time);
-  return vel;
+  return tf2::Vector3(roll_.vel(time), pitch_.vel(time), yaw_.vel(time));
 }
 tf2::Vector3 PoseSpline::getEulerAcc(double time) {
-  tf2::Vector3 acc;
-  acc[0] = roll_.acc(time);
-  acc[1] = pitch_.acc(time);
-  acc[2] = yaw_.acc(time);
-  return acc;
+  return tf2::Vector3(roll_.acc(time), pitch_.acc(time), yaw_.acc(time));
 }
 
 tf2::Quaternion PoseSpline::getOrientation(double time) {

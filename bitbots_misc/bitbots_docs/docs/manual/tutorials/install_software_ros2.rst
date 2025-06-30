@@ -99,6 +99,9 @@ In case you are not using the bash shell, replace ``~/.bashrc`` and ``bash`` wit
 
   # >>> bit-bots initialize >>>
 
+  # Add python pip bins to PATH
+  export PATH="\$HOME/.local/bin:\$PATH"
+
   # Ignore some deprecation warnings
   export PYTHONWARNINGS="ignore:::setuptools.command.install,ignore:::setuptools.command.easy_install,ignore:::pkg_resources,ignore:easy_install command is deprecated,ignore:setup.py install is deprecated"
 

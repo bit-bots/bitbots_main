@@ -6,7 +6,7 @@ from dynamic_stack_decider.dsd import DSD
 from game_controller_hl_interfaces.msg import GameState
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup, ReentrantCallbackGroup
-from rclpy.executors import MultiThreadedExecutor
+from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
 from sensor_msgs.msg import Imu
 
@@ -65,12 +65,12 @@ def main(args=None):
     node.create_timer(1 / 25.0, dsd.update, callback_group=MutuallyExclusiveCallbackGroup())
 
     # Create executor
-    multi_executor = MultiThreadedExecutor(4)
-    multi_executor.add_node(node)
+    executor = EventsExecutor()
+    executor.add_node(node)
 
     # Spin the executor
     try:
-        multi_executor.spin()
+        executor.spin()
     except KeyboardInterrupt:
         pass
 
