@@ -124,7 +124,7 @@ class SupervisorController:
             )
 
         self.world_info = self.supervisor.getFromDef("world_info")
-        self.ball = self.supervisor.getFromDef("ball")
+        self.ball = self.supervisor.getFromDef("BALL")
 
     def collect_joint_and_link_node_references(self, node, joint_dict, link_dict):
         # this is a recursive function that iterates through the whole robot as this seems to be the only way to
