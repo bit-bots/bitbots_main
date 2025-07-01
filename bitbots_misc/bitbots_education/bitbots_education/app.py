@@ -64,6 +64,7 @@ def logs():
     button = request.args.get("button")
     status = request.args.get("status")
     vp_track("", button, status)
+    return ("", 204)
 
 
 def main():

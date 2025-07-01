@@ -2,6 +2,11 @@
 
 <script type="text/javascript">
 
+  function logDetails(path, status)
+  {
+    fetch(`/logs?button=details/${path}&status=${status}`);
+  }
+
   function render_alpine_set_active_class(path)
   {
     return `x-bind:class="active_path.startsWith('${path}') ? 'active' : ''"`;
@@ -20,7 +25,7 @@
   function render_tree(tree, reason, path){
     if (tree.children !== undefined)
     { 
-        let string = `<li><details ><summary ${render_alpine_set_active_class(path)} class="bg-sky-800 border-2 w-max rounded-md border-zinc-800 text-white">${behavior_translate(tree.name)}</summary><ul>`;
+        let string = `<li><details x-on:toggle= "logDetails('${path}', $event.target.open)" ><summary ${render_alpine_set_active_class(path)} class="bg-sky-800 border-2 w-max rounded-md border-zinc-800 text-white">${behavior_translate(tree.name)}</summary><ul>`;
         for (let key in tree.children)
         { 
           string += render_tree(tree.children[key], key,path + "/" + key);
