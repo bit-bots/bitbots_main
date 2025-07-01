@@ -91,12 +91,11 @@
     sondern besteht aus vielen Abwägungen ähnlich zu: wenn X, dann Y. Wobei X und Y durch einen Informatiker im Code festgelegt worden sind. 
     Es gibt verschiedene Strukturen, in denen man diese Abwägungen ordnen kann — darunter endliche Automaten oder Entscheidungsbäume. 
     Doch die Bit-Bots haben sich eine eigene Struktur überlegt: den Dynamic Stack Decider (kurz DSD, in Deutsch so etwas wie dynamischer Stapel-Entscheider). 
-    Der DSD ist zunächst sehr ähnlich zu einem Entscheidungsbaum. Die Baumstruktur entsteht dabei durch die verschiedenen Antwortmöglichkeiten auf eine Entscheidung. 
-    Oben in der Visualisierung sehen Sie nur die gewählten Antworten, aber Sie können sich vorstellen, dass jede Entscheidung eine Astgabelung 
-    darstellt und je nach Antwort der eine oder der andere Ast ausgewählt wird. Was den DSD nun besonders macht, ist, dass er sich für den 
-    aktuell ausgewählten Pfad für jede Entscheidung Zusatzinformationen merkt, indem er die gemachten Entscheidungen auf einen Stapel legt. 
+    Der DSD ist zunächst sehr ähnlich zu einem Entscheidungsbaum. Die Baumstruktur entsteht dabei durch die verschiedenen Antwortmöglichkeiten auf eine Entscheidung 
+    der ganze Baum ist oben in der Baum-Ansicht zu sehen. Was den DSD nun besonders macht, ist, dass er sich für den 
+    aktuell ausgewählten Pfad für jede Entscheidung Zusatzinformationen merkt, indem er die gemachten Entscheidungen auf einen Stapel legt. Der Stapel ist in der Stapel-Ansicht zu sehen.
     Ändert sich nun der Pfad, weil sich eine Entscheidung an einer Stelle aufgrund einer veränderten Spielsituation ändert, 
-    ändert sich auch der ganze Stapel darüber und alles, was sich die Software dort gemerkt hat, wird zurückgesetzt.", false, false, false)}}
+    ändert sich auch der ganze Stapel darunter und alles, was sich die Software dort gemerkt hat, wird zurückgesetzt.", false, false, false)}}
 </div>
 {% endblock %}
 
