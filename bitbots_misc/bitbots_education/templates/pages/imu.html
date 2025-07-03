@@ -13,10 +13,9 @@
       {{ imu_components.imu_component() }}
     </div>
   </div>
-  {{ components.textbox("
-    Warum wackelt der Bit-Bot da so?",
-    "Die Abbildung mit dem Roboter visualisiert die Drehgeschwindigkeiten und Beschleunigungen des Roboters. 
-    Diese wurden durch eine inertiale Messeinheit (im Englischen inertial measurement unit, kurz IMU) gemessen. Wenn der echte Roboter also zur Seite kippt, 
+  {{ components.textbox("Warum wackelt der Bit-Bot da so?",
+    "Die Abbildung mit dem Roboter visualisiert die Drehgeschwindigkeiten und Beschleunigungen des Roboters.
+    Diese wurden durch eine inertiale Messeinheit (im Englischen inertial measurement unit, kurz IMU) gemessen. Wenn der echte Roboter also zur Seite kippt,
     dann misst die IMU dies und der kleine Bit-Bot hier oben neigt sich ebenfalls.", true, true, false) }}
   {{ components.textbox("Vergleich zum Menschen", "Die IMU ist vergleichbar mit dem menschlichen Gleichgewichtssinn.", true, false, false)}}
   <div class="w-full grid place-items-center px-18 py-6">
@@ -26,18 +25,18 @@
     </div>
     <p class="text-center text-base text-zinc-900">Die blau umkreiste Komponente ist die IMU</p>
   </div>
-  {{ components.textbox("Nutzen im Roboter", "Die Daten, welche die IMU aufnimmt, können zur Laufstabilisierung beitragen. 
-  Kippt der Roboter zu weit in die eine Richtung, kann die Software darauf reagieren und Maßnahmen vornehmen, die ein Fallen verhindern. 
-  Sollte der Roboter zu weit kippen, zeigt das die IMU ebenfalls an und der Roboter kann noch im Fallen darauf reagieren. 
-  Dadurch wird eine möglichst hardwareschonende Landung möglich. Zudem wird sie genutzt, um festzustellen, auf welche 
+  {{ components.textbox("Nutzen im Roboter", "Die Daten, welche die IMU aufnimmt, können zur Laufstabilisierung beitragen.
+  Kippt der Roboter zu weit in die eine Richtung, kann die Software darauf reagieren und Maßnahmen vornehmen, die ein Fallen verhindern.
+  Sollte der Roboter zu weit kippen, zeigt das die IMU ebenfalls an und der Roboter kann noch im Fallen darauf reagieren.
+  Dadurch wird eine möglichst hardwareschonende Landung möglich. Zudem wird sie genutzt, um festzustellen, auf welche
   Seite der Roboter gefallen ist und was er machen muss, um wieder aufzustehen.", true, false, true)}}
-  {{ components.textbox("Wie funktioniert die IMU?", "Unsere IMU besitzt zwei Hauptbestandteile. Das erste ist ein Gyroskop, 
-  welches die Rotationsgeschwindigkeit der IMU misst. Das zweite ist ein Beschleunigungssensor, welcher die Beschleunigung der 
-  IMU in verschiedene Richtungen misst. Meist nimmt eine IMU nicht nur Daten auf, sondern verarbeitet diese auch gleich ein wenig. 
+  {{ components.textbox("Wie funktioniert die IMU?", "Unsere IMU besitzt zwei Hauptbestandteile. Das erste ist ein Gyroskop,
+  welches die Rotationsgeschwindigkeit der IMU misst. Das zweite ist ein Beschleunigungssensor, welcher die Beschleunigung der
+  IMU in verschiedene Richtungen misst. Meist nimmt eine IMU nicht nur Daten auf, sondern verarbeitet diese auch gleich ein wenig.
   Hierbei wird zum Beispiel die Schräglage des Roboters über kurze Zeit durch Integrieren (vereinfacht: Aufsummieren von Werten) des Gyroskops errechnet.
-   Dabei werden auch kleine Messfehler aufsummiert, welche kurzzeitig wenig Einfluss haben, über lange Zeit das Ergebnis deutlich verändern. 
+   Dabei werden auch kleine Messfehler aufsummiert, welche kurzzeitig wenig Einfluss haben, über lange Zeit das Ergebnis deutlich verändern.
    Deshalb wird der Wert über lange Zeit mithilfe der von den Beschleunigungssensoren gemessenen Erdbeschleunigung korrigiert.
- ", false, false, false)}}
+  ", false, false, false)}}
 </div>
 {% endblock %}
 

@@ -19,18 +19,18 @@
 
   function render_action(action, path)
   {
-    return `<li><code class="bg-zinc-100 border-2 m-1[px] w-max rounded-md border-zinc-800 action" ${render_alpine_set_active_class(path)} >${behavior_translate(action.name)}</code></li>`;
+    return `<li><code class="bg-zinc-100 border-2 m-[1px] w-max rounded-md border-zinc-800 action" ${render_alpine_set_active_class(path)} >${behavior_translate(action.name)}</code></li>`;
   }
 
   function render_tree(tree, reason, path){
     if (tree.children !== undefined)
-    { 
+    {
         let string = `<li><details x-on:toggle= "logDetails('${path}', $event.target.open)" ><summary ${render_alpine_set_active_class(path)} class="bg-sky-800 border-2 w-max rounded-md border-zinc-800 text-white">${behavior_translate(tree.name)}</summary><ul>`;
         for (let key in tree.children)
-        { 
+        {
           string += render_tree(tree.children[key], key,path + "/" + key);
         }
-        string += `</ul></details</li>`;
+        string += `</ul></details></li>`;
         return render_reason(reason, string, path);
     }
     else
@@ -168,7 +168,7 @@
   height: calc(var(--spacing) + 1px);
   border: solid #000;
   border-width: 0 0 2px 2px;
-  box-shadow: contend-box;
+  box-shadow: content-box;
 }
 
 .tree summary {

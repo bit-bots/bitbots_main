@@ -28,7 +28,7 @@
     </script>
 <div class="bg-sky-100 overflow-hidden" x-data="behavior_visualization_change()">
     <div class="grid place-items-center mt-4">
-        <div class=" grid grid-cols-2 place-items-center border-2 border-zinc-800 bg-zinc-100 rounded-2xl shadow-md w-28" x-on:click="toggleStack()">
+        <div class="grid grid-cols-2 place-items-center border-2 border-zinc-800 bg-zinc-100 rounded-2xl shadow-md w-28" x-on:click="toggleStack()" role="button">
             <button class="py-2 px-2 w-full grid place-items-center text-xs" x-bind:class="stack && 'bg-sky-100 rounded-l-2xl font-semibold'">Stapel</button>
             <button class="py-2 px-2 w-full grid place-items-center text-xs" x-bind:class="stack || 'bg-sky-100 rounded-r-2xl font-semibold'">Baum</button>
         </div>
@@ -68,33 +68,33 @@
         </div>
     </div>
     {{ components.textbox("Warum ändern sich die Boxen und wieso haben sie unterschiedliche Farben?",
-    "JJede Box steht für eine Entscheidung oder eine Aktion, die der Roboter macht. 
-    Dabei macht er meist viele unterschiedliche Abwägungen (blaue Boxen), bis er sich am Ende für eine Aktion entscheidet, 
+    "Jede Box steht für eine Entscheidung oder eine Aktion, die der Roboter macht.
+    Dabei macht er meist viele unterschiedliche Abwägungen (blaue Boxen), bis er sich am Ende für eine Aktion entscheidet,
     die er dann ausführt (helle Box). Zusätzlich steht unter jeder Entscheidung neben dem Pfeil nach unten, wofür der Roboter sich entschieden hat.
-     Da der Roboter während des Spiels in unterschiedliche Situationen kommt, ändern sich seine Entscheidungen dementsprechend. 
-     Es gibt auch eine alternative Verhaltensbaum-Ansicht, in die durch einen Klick oben auf der Leiste gewechselt werden kann. 
-     Dort sind die Entscheidungen in einer Baumstruktur zu sehen, die sich aus den Abwägungen ergibt. 
-     Der Baum ist anfangs noch eingeklappt und kann durch Klicken auf die blauen Abwägungen erweitert werden. 
+     Da der Roboter während des Spiels in unterschiedliche Situationen kommt, ändern sich seine Entscheidungen dementsprechend.
+     Es gibt auch eine alternative Verhaltensbaum-Ansicht, in die durch einen Klick oben auf der Leiste gewechselt werden kann.
+     Dort sind die Entscheidungen in einer Baumstruktur zu sehen, die sich aus den Abwägungen ergibt.
+     Der Baum ist anfangs noch eingeklappt und kann durch Klicken auf die blauen Abwägungen erweitert werden.
      Zusätzlich stoppt und startet der Button unter der Aktion des Stapels den Fluss an Entscheidungen. ", true, true, false) }}
     <div style="width: 100%;" class="grid place-items-center px-18 py-6 ">
-        <img  src="{{ url_for('static', filename='bitBot_whiteboard.svg') }}" x-ref="whiteboard"></img>
+        <img  src="{{ url_for('static', filename='bitBot_whiteboard.svg') }}"></img>
     </div>
-    {{ components.textbox("Vergleich zum Menschen", "Das Verhalten ist ähnlich zur Entscheidungsfindung des Menschen, 
-    wobei durch kleine Entscheidungen verschiedene Einflüsse abgewogen werden, bis sich der Roboter für eine endgültige Aktion entscheidet.", true, ture, flase)}}
+    {{ components.textbox("Vergleich zum Menschen", "Das Verhalten ist ähnlich zur Entscheidungsfindung des Menschen,
+    wobei durch kleine Entscheidungen verschiedene Einflüsse abgewogen werden, bis sich der Roboter für eine endgültige Aktion entscheidet.", true, true, false)}}
 
-    {{ components.textbox("Nutzen im Roboter", "Das Verhalten steuert, wo der Roboter hinläuft und was er als Nächstes tut. 
+    {{ components.textbox("Nutzen im Roboter", "Das Verhalten steuert, wo der Roboter hinläuft und was er als Nächstes tut.
     Hier sind Strategien für das Spiel gespeichert, also Spielzüge: wer wann zum Ball stürmt oder als Verteidiger zurückbleibt.
-    Um diese Entscheidungen treffen zu können, bekommt das Verhalten sehr viele Informationen von anderen Softwarekomponenten, 
+    Um diese Entscheidungen treffen zu können, bekommt das Verhalten sehr viele Informationen von anderen Softwarekomponenten,
     wie zum Beispiel die Position des Balls von der Bildverarbeitung.", true, false, true)}}
 
-    {{ components.textbox("Wie funktioniert das Verhalten?", "Im Vergleich zur Bildverarbeitung ist das Verhalten nicht gelernt, 
-    sondern besteht aus vielen Abwägungen ähnlich zu: wenn X, dann Y. Wobei X und Y durch einen Informatiker im Code festgelegt worden sind. 
-    Es gibt verschiedene Strukturen, in denen man diese Abwägungen ordnen kann — darunter endliche Automaten oder Entscheidungsbäume. 
-    Doch die Bit-Bots haben sich eine eigene Struktur überlegt: den Dynamic Stack Decider (kurz DSD, in Deutsch so etwas wie dynamischer Stapel-Entscheider). 
-    Der DSD ist zunächst sehr ähnlich zu einem Entscheidungsbaum. Die Baumstruktur entsteht dabei durch die verschiedenen Antwortmöglichkeiten auf eine Entscheidung 
-    der ganze Baum ist oben in der Baum-Ansicht zu sehen. Was den DSD nun besonders macht, ist, dass er sich für den 
+    {{ components.textbox("Wie funktioniert das Verhalten?", "Im Vergleich zur Bildverarbeitung ist das Verhalten nicht gelernt,
+    sondern besteht aus vielen Abwägungen ähnlich zu: wenn X, dann Y. Wobei X und Y durch einen Informatiker im Code festgelegt worden sind.
+    Es gibt verschiedene Strukturen, in denen man diese Abwägungen ordnen kann — darunter endliche Automaten oder Entscheidungsbäume.
+    Doch die Bit-Bots haben sich eine eigene Struktur überlegt: den Dynamic Stack Decider (kurz DSD, in Deutsch so etwas wie dynamischer Stapel-Entscheider).
+    Der DSD ist zunächst sehr ähnlich zu einem Entscheidungsbaum. Die Baumstruktur entsteht dabei durch die verschiedenen Antwortmöglichkeiten auf eine Entscheidung
+    der ganze Baum ist oben in der Baum-Ansicht zu sehen. Was den DSD nun besonders macht, ist, dass er sich für den
     aktuell ausgewählten Pfad für jede Entscheidung Zusatzinformationen merkt, indem er die gemachten Entscheidungen auf einen Stapel legt. Der Stapel ist in der Stapel-Ansicht zu sehen.
-    Ändert sich nun der Pfad, weil sich eine Entscheidung an einer Stelle aufgrund einer veränderten Spielsituation ändert, 
+    Ändert sich nun der Pfad, weil sich eine Entscheidung an einer Stelle aufgrund einer veränderten Spielsituation ändert,
     ändert sich auch der ganze Stapel darunter und alles, was sich die Software dort gemerkt hat, wird zurückgesetzt.", false, false, false)}}
 </div>
 {% endblock %}

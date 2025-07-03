@@ -27,7 +27,7 @@
 function promptCookie() {
   while (true)
   {
-    user = prompt("Gib deine Versuchspersonen ID ein:","");
+    const user = prompt("Gib deine Versuchspersonen ID ein:","");
     if (user != "" && user != null && user.match(/^[0-9]+$/)) {
       setCookie("vp_number", user, 30);
       break
