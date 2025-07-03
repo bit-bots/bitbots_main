@@ -62,7 +62,7 @@ repositories:
   lib/ipm:
     type: git
     url: git@github.com:ros-sports/ipm.git
-    version: rolling
+    version: humble
   lib/ros2_numpy:
     type: git
     url: git@github.com:Bit-Bots/ros2_numpy.git
@@ -70,7 +70,7 @@ repositories:
   lib/soccer_ipm:
     type: git
     url: git@github.com:ros-sports/soccer_ipm.git
-    version: rolling
+    version: humble
   lib/soccer_field_map_generator:
     type: git
     url: git@github.com:ros-sports/soccer_field_map_generator.git
