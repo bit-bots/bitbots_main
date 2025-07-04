@@ -25,7 +25,7 @@ wolfgang_hardware_interface:
     servos:
       # specifies which information should be read
       read_position: true
-      read_velocity: false
+      read_velocity: true
       read_effort: false
       read_pwm: false
       read_volt_temp: true # this also corresponds for the error byte
@@ -61,7 +61,7 @@ wolfgang_hardware_interface:
         Position_D_Gain: 0 #2800 # [/16] 0~16,383
         Position_I_Gain: 0 #180000 # [/ 65,536] 0~16,383
         #If robot starts to tremble, reduce Position_P_Gain
-        Position_P_Gain: 1200 #1100 # [/ 128] 0~16,383
+        Position_P_Gain: 200 #1100 # [/ 128] 0~16,383
         Feedforward_2nd_Gain: 0 # [/4]
         Feedforward_1st_Gain: 0 # [/4]
         Profile_Acceleration: 0 # 0 for infinite
@@ -89,7 +89,7 @@ wolfgang_hardware_interface:
         Position_D_Gain: 0 #2800 # [/16] 0~16,383
         Position_I_Gain: 0 #180000 # [/ 65,536] 0~16,383
         #If robot starts to tremble, reduce Position_P_Gain
-        Position_P_Gain: 800 #1100 # [/ 128] 0~16,383
+        Position_P_Gain: 1100 #1100 # [/ 128] 0~16,383
         Feedforward_2nd_Gain: 0 # [/4]
         Feedforward_1st_Gain: 0 # [/4]
         Profile_Acceleration: 0 # 0 for infinite
@@ -117,7 +117,7 @@ wolfgang_hardware_interface:
         Position_D_Gain: 0 #2800 # [/16] 0~16,383
         Position_I_Gain: 0 #180000 # [/ 65,536] 0~16,383
         #If robot starts to tremble, reduce Position_P_Gain
-        Position_P_Gain: 4000 #1100 # [/ 128] 0~16,383
+        Position_P_Gain: 600 #1100 # [/ 128] 0~16,383
         Feedforward_2nd_Gain: 0 # [/4]
         Feedforward_1st_Gain: 0 # [/4]
         Profile_Acceleration: 0 # 0 for infinite
@@ -145,7 +145,7 @@ wolfgang_hardware_interface:
         Position_D_Gain: 0 #2800 # [/16] 0~16,383
         Position_I_Gain: 0 #180000 # [/ 65,536] 0~16,383
         #If robot starts to tremble, reduce Position_P_Gain
-        Position_P_Gain: 500 #1100 # [/ 128] 0~16,383
+        Position_P_Gain: 100 #1100 # [/ 128] 0~16,383
         Feedforward_2nd_Gain: 0 # [/4]
         Feedforward_1st_Gain: 0 # [/4]
         Profile_Acceleration: 0 # 0 for infinite
