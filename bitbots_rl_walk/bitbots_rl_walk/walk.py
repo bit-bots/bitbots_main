@@ -16,6 +16,7 @@
 
 
 import time
+import os
 
 from typing import Optional
 from rclpy.node import Node
@@ -26,15 +27,17 @@ from sensor_msgs.msg import JointState, Imu
 from bitbots_msgs.msg import JointCommand
 from geometry_msgs.msg import Twist, PoseStamped, Pose
 from transforms3d.quaternions import quat2mat
+from transforms3d.euler import euler2mat
 from gazebo_msgs.msg import ModelStates
 from ros2_numpy import numpify
 
 import numpy as np
 import onnxruntime as rt
+from ament_index_python import get_package_share_directory
 
-ONNX_MODEL = (
-    "/home/florian/colcon_ws/src/bitbots_meta/bitbots_rl_walk/bitbots_rl_walk/wolfgang_policy.onnx"
-)  # Path to the ONNX model file
+ONNX_MODEL = os.path.join(
+    get_package_share_directory("bitbots_rl_walk"), "models", "wolfgang_policy.onnx"
+)
 
 WALKREADY_STATE = np.array([
     0.023628265148262724, -0.10401795710581162, -0.7352626990449959, -1.3228415184260092, 0.5495038397740458, -0.12913515511895796,
@@ -66,26 +69,18 @@ class WalkNode(Node):
     _previous_action: np.ndarray = np.zeros(
         len(ORDERED_RELEVANT_JOINT_NAMES), dtype=np.float32
     )
-    _previous_joint_state: Optional[JointState] = None
     _imu_data: Optional[Imu] = None
     _joint_state: Optional[JointState] = None
     _cmd_vel: Optional[Twist] = None
     _phase: np.ndarray = np.array([0.0, np.pi], dtype=np.float32)
     _phase_dt: float
 
-    _robot_pose: Optional[PoseStamped] = None
-    _last_robot_pose: Optional[PoseStamped] = None
-
-    _lin_vel: np.ndarray = np.zeros(3, dtype=np.float32)
-
-    _orientation: Optional[Pose] = None
-
     def __init__(self):
         super().__init__("reinforcement_learning_walk_inference_node")
 
         # Set sim time parameter to true
-        self.set_parameters([
-            Parameter('use_sim_time', Parameter.Type.BOOL, True), ])
+        #self.set_parameters([
+        #    Parameter('use_sim_time', Parameter.Type.BOOL, True), ])
 
         self._phase_dt = 2 * np.pi * GAIT_FREQUENCY * CONTROL_DT
 
@@ -108,10 +103,6 @@ class WalkNode(Node):
             Twist, "cmd_vel", self._cmd_vel_callback, 10
         )
 
-        self.model_states_sub = self.create_subscription(
-            ModelStates, "/model_states", self.model_states_callback, 10
-        )
-
         self._timer = self.create_timer(CONTROL_DT, self._timer_callback)
 
 
@@ -119,16 +110,15 @@ class WalkNode(Node):
         joint_command = JointCommand()
         joint_command.joint_names = ORDERED_RELEVANT_JOINT_NAMES
         joint_command.positions = WALKREADY_STATE
-        joint_command.velocities = [-1.0] * len(ORDERED_RELEVANT_JOINT_NAMES)
+        joint_command.velocities = [0.2] * len(ORDERED_RELEVANT_JOINT_NAMES)
         joint_command.accelerations = [-1.0] * len(ORDERED_RELEVANT_JOINT_NAMES)
         joint_command.max_currents = [-1.0] * len(ORDERED_RELEVANT_JOINT_NAMES) # -1.0 means no limit
         joint_command.header.stamp = self.get_clock().now().to_msg()
         self._joint_command_pub.publish(joint_command)
-        time.sleep(3)
+        time.sleep(10)
 
 
     def _joint_state_callback(self, msg: JointState):
-        self._previous_joint_state = self._joint_state
         self._joint_state = msg
 
     def _cmd_vel_callback(self, msg: Twist):
@@ -137,39 +127,9 @@ class WalkNode(Node):
     def _imu_callback(self, msg: Imu):
         self._imu_data = msg
 
-    def model_states_callback(self, msg: ModelStates):
-        """Callback for the robot pose."""
-
-
-        self._last_robot_pose = self._robot_pose
-        self._robot_pose = PoseStamped()
-        self._robot_pose.header.stamp = self.get_clock().now().to_msg()
-        self._robot_pose.header.frame_id = "map"
-        self._robot_pose.pose = msg.pose[msg.name.index("amy")]
-
-        # If we have a last robot pose, we can calculate the delta time
-        if self._last_robot_pose is not None:
-            delta_time = (
-                Time.from_msg(self._robot_pose.header.stamp) -
-                Time.from_msg(self._last_robot_pose.header.stamp)
-            ).nanoseconds / 1e9
-
-            # Calculate the local transformation from the last pose to the current pose
-
-            # Get affine transformation from last pose to current pose
-            last_pose = numpify(self._last_robot_pose.pose)
-            current_pose = numpify(self._robot_pose.pose)
-
-            delta_transform = np.linalg.inv(last_pose) @ current_pose
-
-            print(f"Delta transform: {delta_transform}")
-
-            # Calculate the linear velocity in the local frame
-            self._lin_vel = delta_transform[:3, 3] / delta_time if delta_time > 0 else np.zeros(3)
-
     def _timer_callback(self):
         """Timer callback to publish joint commands based on the ONNX policy."""
-        if self._imu_data is None or self._joint_state is None or self._cmd_vel is None or self._previous_joint_state is None or self._robot_pose is None:
+        if self._imu_data is None or self._joint_state is None or self._cmd_vel is None:
             self.get_logger().warning(
                 "Waiting for all sensors to be available", throttle_duration_sec=1.0
             )
@@ -181,53 +141,36 @@ class WalkNode(Node):
                 self.get_logger().warning("Waiting for joint state data", throttle_duration_sec=1.0)
             if self._cmd_vel is None:
                 self.get_logger().warning("Waiting for cmd_vel data", throttle_duration_sec=1.0)
-            if self._previous_joint_state is None:
-                self.get_logger().warning("Waiting for previous joint state data", throttle_duration_sec=1.0)
 
             return
 
         # TODO consider IMU mounting offset
 
         # Prepare the observation vector
-        linvel = np.array([
-            self._lin_vel[0],  # Sideways velocity
-            self._lin_vel[1],  # Forward velocity
-            self._lin_vel[2],  # Vertical velocity
-        ], dtype=np.float32)
-
         gyro = np.array([
             self._imu_data.angular_velocity.x,
             self._imu_data.angular_velocity.y,
             self._imu_data.angular_velocity.z,
         ], dtype=np.float32)
 
-        gravity = quat2mat(
+        gravity = (quat2mat(
             [self._imu_data.orientation.w,
              self._imu_data.orientation.x,
              self._imu_data.orientation.y,
              self._imu_data.orientation.z]
-        ).T @ np.array([0, 0, -1], dtype=np.float32)
+        ) @ euler2mat(0, -0.2, 0)).T @ np.array([0, 0, -1], dtype=np.float32)
 
         joint_angles = np.array([
             self._joint_state.position[self._joint_state.name.index(name)]
             for name in ORDERED_RELEVANT_JOINT_NAMES
         ], dtype=np.float32) - WALKREADY_STATE
 
-        # Calculate the joint velocities based on the previous joint state
-        joint_states_delta_t = (
-            Time.from_msg(self._joint_state.header.stamp) -
-            Time.from_msg(self._previous_joint_state.header.stamp)
-        ).nanoseconds / 1e9  # Convert to seconds
-
         joint_velocities = np.array([
-            (self._joint_state.position[self._joint_state.name.index(name)] -
-                self._previous_joint_state.position[self._previous_joint_state.name.index(name)]) /
-            joint_states_delta_t
+            self._joint_state.velocity[self._joint_state.name.index(name)]
             for name in ORDERED_RELEVANT_JOINT_NAMES
         ], dtype=np.float32)
 
         phase = np.array([np.cos(self._phase), np.sin(self._phase)], dtype=np.float32).flatten()
-
 
         command = np.array([
             self._cmd_vel.linear.x,
@@ -235,21 +178,7 @@ class WalkNode(Node):
             self._cmd_vel.angular.z
         ], dtype=np.float32)
 
-
-        """
-        print(f"Joint angles: {joint_angles}")
-        print(f"Joint velocities: {joint_velocities}")
-        print(f"IMU angular velocity: {gyro}")
-        print(f"IMU gravity vector: {gravity}")
-        print(f"Command velocity: {command}")
-        print(f"Previous action: {self._previous_action}")
-        print(f"Phase: {phase}, Phase dt: {self._phase_dt}")
-
-        print(f"IMU linear acceleration: {linvel}")
-        """
-
         obs = np.hstack([
-            linvel,
             gyro,
             gravity,
             command,
@@ -283,17 +212,9 @@ class WalkNode(Node):
 
 def main():
     import rclpy
-    from rclpy.executors import SingleThreadedExecutor
 
     rclpy.init()
     node = WalkNode()
-    executor = SingleThreadedExecutor()
-    executor.add_node(node)
-
-    try:
-        executor.spin()
-    except KeyboardInterrupt:
-        pass
-    finally:
-        node.destroy_node()
-        rclpy.try_shutdown()
+    rclpy.spin(node)
+    node.destroy_node()
+    rclpy.try_shutdown()
