@@ -27,7 +27,7 @@ class Monitoring(Node):
         base_name = time.strftime("%Y-%m-%dT%H:%M")
         i = 0
         while True:
-            name = base_name if i == 0 else f"{base_name}-i"
+            name = base_name if i == 0 else f"{base_name}-{i}"
             name += ".csv"
             if (log_folder / name).exists():
                 i += 1

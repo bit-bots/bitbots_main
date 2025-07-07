@@ -23,8 +23,10 @@ from bitbots_msgs.srv import SetObjectPose, SetObjectPosition
 
 
 class TestCase:
-    def __init__(self, handle: AutoTest):
+    def __init__(self, handle: AutoTest, test_id: int, test_repeat: int):
         self.handle = handle
+        self.test_id = test_id
+        self.test_repeat = test_repeat
         self.start_time = 0
         self.end_time = 0
         self.is_done = False
@@ -129,6 +131,7 @@ class AutoTest(Node):
         self.monitoring_node = monitoring_node
 
         self.settings = termios.tcgetattr(sys.stdin)
+        self.test_id = 0
         self.current_test = None
 
         self.set_robot_pose_service = self.create_client(SetObjectPose, "set_robot_pose")
@@ -162,6 +165,11 @@ class AutoTest(Node):
         termios.tcsetattr(sys.stdin, termios.TCSADRAIN, self.settings)
         return key
 
+    def next_test(self):
+        if self.current_test is not None:
+            self.test_id += 1
+            self.current_test = self.current_test.__class__(self, self.test_id, self.current_test.test_repeat + 1)
+
     def setup_sequence(self):
         gs_msg = GameState()
         gs_msg.header.stamp = self.get_clock().now().to_msg()
@@ -177,6 +185,20 @@ class AutoTest(Node):
         gs_msg.game_state = 3  # 3=PLAYING, make robot play ball
         self.gamestate_publisher.publish(gs_msg)
         self.current_test.start_recording()
+        self.monitoring_node.write_event(
+            "test_start",
+            str(self.current_test.test_id),
+            self.current_test.__class__.__name__,
+            str(self.current_test.test_repeat),
+        )
+
+    def finished(self):
+        self.monitoring_node.write_event(
+            "test_end",
+            str(self.current_test.test_id),
+            self.current_test.__class__.__name__,
+            str(self.current_test.score()),
+        )
 
     def loop(self):
         print(msg)
@@ -184,7 +206,7 @@ class AutoTest(Node):
             while True:
                 key = self.get_key()
                 if key in test_cases:
-                    self.current_test = test_cases[key](self)
+                    self.current_test = test_cases[key](self, self.test_id, 1)
                     self.setup_sequence()
                 elif key == "r":
                     if self.current_test is not None:
@@ -204,6 +226,10 @@ class AutoTest(Node):
                 for _ in range(state_str.count("\n") + 1):
                     sys.stdout.write("\x1b[A")
                 print(state_str)
+                if self.current_test is not None and self.current_test.is_done:
+                    self.finished()
+                    self.next_test()
+                    self.setup_sequence()
 
         except Exception as e:
             print(e)
