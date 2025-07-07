@@ -8,11 +8,14 @@ import threading
 import tty
 
 import rclpy
+from game_controller_hl_interfaces.msg import GameState
 from gazebo_msgs.msg import ModelStates
 from geometry_msgs.msg import Pose, Twist
+from rclpy.clock import Duration
 from rclpy.constants import S_TO_NS
 from rclpy.node import Node
 from rclpy.parameter import Parameter
+from rclpy.qos import DurabilityPolicy, QoSProfile
 
 from bitbots_msgs.srv import SetObjectPose, SetObjectPosition
 
@@ -26,6 +29,9 @@ class TestCase:
         self.final_score = None
 
     def setup(self):
+        pass
+
+    def start_recording(self):
         self.start_time = self.handle.get_clock().now()
 
     def judge(self) -> float:
@@ -107,6 +113,7 @@ CTRL-C to quit
 
 
 """
+TEAM_ID = 6
 
 
 class AutoTest(Node):
@@ -114,8 +121,12 @@ class AutoTest(Node):
         # create node
         super().__init__("AutoTest")
 
+        use_sim_time_param = Parameter("use_sim_time", Parameter.Type.BOOL, True)
+        self.set_parameters([use_sim_time_param])
+
         self.settings = termios.tcgetattr(sys.stdin)
         self.current_test = None
+
         self.set_robot_pose_service = self.create_client(SetObjectPose, "set_robot_pose")
         self.set_ball_pos_service = self.create_client(SetObjectPosition, "set_ball_position")
         self.create_subscription(ModelStates, "/model_states", qos_profile=10, callback=self.model_states_callback)
@@ -123,8 +134,11 @@ class AutoTest(Node):
         self.ball_twist = Twist()
         self.robot_pose = Pose()
 
-        use_sim_time_param = Parameter("use_sim_time", Parameter.Type.BOOL, True)
-        self.set_parameters([use_sim_time_param])
+        self.gamestate_publisher = self.create_publisher(
+            GameState,
+            "gamestate",
+            QoSProfile(durability=DurabilityPolicy.TRANSIENT_LOCAL, depth=1),
+        )
 
     def model_states_callback(self, model_state_msg: ModelStates):
         for i, name in enumerate(model_state_msg.name):
@@ -132,7 +146,7 @@ class AutoTest(Node):
                 self.robot_pose = model_state_msg.pose[i]
             elif name == "ball":
                 self.ball_pose = model_state_msg.pose[i]
-                # self.ball_twist = model_state_msg.twist[i]
+                self.ball_twist = model_state_msg.twist[i]
 
     def get_key(self):
         tty.setraw(sys.stdin.fileno())
@@ -144,6 +158,22 @@ class AutoTest(Node):
         termios.tcsetattr(sys.stdin, termios.TCSADRAIN, self.settings)
         return key
 
+    def setup_sequence(self):
+        gs_msg = GameState()
+        gs_msg.header.stamp = self.get_clock().now().to_msg()
+        gs_msg.secondary_state_team = TEAM_ID
+        gs_msg.game_state = 2  # 2=SET, force robot to stand still
+        self.gamestate_publisher.publish(gs_msg)
+
+        self.get_clock().sleep_for(Duration(seconds=2))  # Let robot react & simulation settle
+        self.current_test.setup()  # Teleport robot
+        self.get_clock().sleep_for(Duration(seconds=2))  # Let simulation settle
+
+        gs_msg.header.stamp = self.get_clock().now().to_msg()
+        gs_msg.game_state = 3  # 3=PLAYING, make robot play ball
+        self.gamestate_publisher.publish(gs_msg)
+        self.current_test.start_recording()
+
     def loop(self):
         print(msg)
         try:
@@ -151,9 +181,10 @@ class AutoTest(Node):
                 key = self.get_key()
                 if key in test_cases:
                     self.current_test = test_cases[key](self)
-                    self.current_test.setup()
+                    self.setup_sequence()
                 elif key == "r":
-                    self.current_test.setup()
+                    if self.current_test is not None:
+                        self.setup_sequence()
                 elif key == "\x03":
                     break
                 if self.current_test is not None:

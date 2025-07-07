@@ -378,8 +378,10 @@ class SupervisorController:
                     z=head_orientation_quat[3],
                     w=head_orientation_quat[0],
                 )
+                head_twist = Twist()
                 msg.name.append(robot_name + "_head")
                 msg.pose.append(head_pose)
+                msg.twist.append(head_twist)
 
             if self.ball is not None:
                 ball_position = self.ball.getField("translation").getSFVec3f()
@@ -388,5 +390,11 @@ class SupervisorController:
                 ball_pose.orientation = Quaternion()
                 msg.name.append("ball")
                 msg.pose.append(ball_pose)
+                lin_vel = self.get_ball_velocity()
+                twist = Twist()
+                twist.linear.x = lin_vel[0]
+                twist.linear.y = lin_vel[1]
+                twist.linear.z = lin_vel[2]
+                msg.twist.append(twist)
 
             self.model_state_publisher.publish(msg)
