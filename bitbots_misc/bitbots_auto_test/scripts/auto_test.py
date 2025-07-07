@@ -191,6 +191,12 @@ class AutoTest(Node):
             self.current_test.__class__.__name__,
             str(self.current_test.test_repeat),
         )
+        self.monitoring_node.write_reduced_pose(
+            "test_start_robot_pose", self.monitoring_node.last_robot_pose, self.monitoring_node.last_model_states_time
+        )
+        self.monitoring_node.write_reduced_pose(
+            "test_start_ball_pose", self.monitoring_node.last_ball_pose, self.monitoring_node.last_model_states_time
+        )
 
     def finished(self):
         self.monitoring_node.write_event(
@@ -198,6 +204,12 @@ class AutoTest(Node):
             str(self.current_test.test_id),
             self.current_test.__class__.__name__,
             str(self.current_test.score()),
+        )
+        self.monitoring_node.write_reduced_pose(
+            "test_end_robot_pose", self.monitoring_node.last_robot_pose, self.monitoring_node.last_model_states_time
+        )
+        self.monitoring_node.write_reduced_pose(
+            "test_end_ball_pose", self.monitoring_node.last_ball_pose, self.monitoring_node.last_model_states_time
         )
 
     def loop(self):
