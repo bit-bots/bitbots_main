@@ -8,6 +8,8 @@ import threading
 import tty
 
 import rclpy
+import rclpy.executors
+from bitbots_auto_test.monitoring_node import Monitoring
 from game_controller_hl_interfaces.msg import GameState
 from gazebo_msgs.msg import ModelStates
 from geometry_msgs.msg import Pose, Twist
@@ -117,12 +119,14 @@ TEAM_ID = 6
 
 
 class AutoTest(Node):
-    def __init__(self):
+    def __init__(self, monitoring_node: Monitoring):
         # create node
         super().__init__("AutoTest")
 
         use_sim_time_param = Parameter("use_sim_time", Parameter.Type.BOOL, True)
         self.set_parameters([use_sim_time_param])
+
+        self.monitoring_node = monitoring_node
 
         self.settings = termios.tcgetattr(sys.stdin)
         self.current_test = None
@@ -192,7 +196,7 @@ class AutoTest(Node):
                     state_str = (
                         f"Current test: {self.current_test.__class__.__name__}\n"
                         f"Score       : {self.current_test.score()}\n"
-                        f"Is done     : {self.current_test.is_done}"
+                        f"Is done     : {self.current_test.is_done}\n"
                     )
                 else:
                     state_str = "Current test: None\nScore       : \nIs done     : \n"
@@ -211,11 +215,18 @@ class AutoTest(Node):
 
 if __name__ == "__main__":
     rclpy.init(args=None)
-    node = AutoTest()
-    # necessary so that sleep in loop() is not blocking
-    thread = threading.Thread(target=rclpy.spin, args=(node,), daemon=True)
-    thread.start()
-    node.loop()
+    monitoring = Monitoring()
+    auto_test = AutoTest(monitoring)
+    executor = rclpy.executors.MultiThreadedExecutor()
+    executor.add_node(monitoring)
+    executor.add_node(auto_test)
 
-    node.destroy_node()
+    # necessary so that sleep in loop() is not blocking
+    thread = threading.Thread(target=executor.spin, args=(), daemon=True)
+    thread.start()
+    auto_test.loop()
+
+    auto_test.destroy_node()
+    monitoring.destroy_node()
+    executor.shutdown()
     rclpy.shutdown()
