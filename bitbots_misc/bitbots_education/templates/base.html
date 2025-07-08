@@ -147,7 +147,6 @@
 
     // Function to log scroll events
     function log() {
-      console.log(scrollDirection);
       const dist = Math.abs(document.documentElement.scrollTop - scrollDirection);
       if (dist > 200 && scrollDirection < document.documentElement.scrollTop)
       {
