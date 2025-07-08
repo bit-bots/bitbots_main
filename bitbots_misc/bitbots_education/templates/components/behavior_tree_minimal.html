@@ -4,7 +4,7 @@
 
   function logDetails(path, status)
   {
-    fetch(`/logs?button=details/${path}&status=${status}`);
+    fetch(`/logs?page=${window.location.pathname}&button=details/${path}&status=${status}`);
   }
 
   function render_alpine_set_active_class(path)

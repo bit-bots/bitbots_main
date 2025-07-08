@@ -18,9 +18,9 @@
                 toggleStack() {
                     this.stack = !this.stack;
                     if (this.stack) {
-                        fetch(`/logs?button=changeBehaviorView&status=stack`);
+                        fetch(`/logs?page=${window.location.pathname}&button=changeBehaviorView&status=stack`);
                     } else {
-                        fetch(`/logs?button=changeBehaviorView&status=tree`);
+                        fetch(`/logs?page=${window.location.pathname}&button=changeBehaviorView&status=tree`);
                     }
                 },
             };

@@ -61,9 +61,10 @@ def behavior():
 
 @app.route("/logs")
 def logs():
+    page = request.args.get("page")
     button = request.args.get("button")
     status = request.args.get("status")
-    vp_track("", button, status)
+    vp_track(page[1:], button, status)
     return ("", 204)
 
 
