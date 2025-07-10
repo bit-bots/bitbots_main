@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+from enum import Enum
+from typing import Optional
+
 import numpy as np
 import rclpy
 import tf2_ros
@@ -11,6 +14,11 @@ from rclpy.node import Node
 from rclpy.parameter import Parameter
 
 
+class Side(Enum):
+    LEFT = 1
+    RIGHT = 2
+
+
 class LocalizationFaker(Node):
     def __init__(self):
         super().__init__("localization_faker")
@@ -20,10 +28,10 @@ class LocalizationFaker(Node):
         self.br = tf2_ros.TransformBroadcaster(self)
         use_sim_time_param = Parameter("use_sim_time", Parameter.Type.BOOL, True)
         self.set_parameters([use_sim_time_param])
+        self.side: Optional[Side] = None
 
     def model_state_to_tf(self, model_state_msg):
         t = TransformStamped()
-        # self.get_logger().warn(str(model_state_msg.name))
         for i, name in enumerate(model_state_msg.name):
             if name not in ["amy", "rory", "blue player 1", "red player 1"]:
                 continue
@@ -66,6 +74,24 @@ class LocalizationFaker(Node):
             rot_robot = transforms3d.euler.euler2mat(0, 0, rot_robot_yaw)
             transform_robot = transforms3d.affines.compose(pos_robot, rot_robot, [1, 1, 1])
 
+            # If the starting side is not yet set, store it
+            if self.side is None:
+                if transform_robot[0, 3] < 0:
+                    self.side = Side.RIGHT
+                else:
+                    self.side = Side.LEFT
+
+            # Rotate the robots coordinate frame in the simulation based on the side it is playing on
+            if self.side == Side.LEFT:
+                flip_side = transforms3d.affines.compose(
+                    [0, 0, 0],
+                    transforms3d.euler.euler2mat(0, 0, np.pi),
+                    [1, 1, 1],
+                )
+
+                # Rotate the coordinate frame of the robot to match the side it is playing on
+                transform_robot = flip_side @ transform_robot
+
             transform_final = np.matmul(transform_robot, np.linalg.inv(transform_odom))
             translation, r, _, _ = transforms3d.affines.decompose(transform_final)
             t.transform.translation.x = translation[0]
@@ -77,6 +103,8 @@ class LocalizationFaker(Node):
             t.transform.rotation.y = q[2]
             t.transform.rotation.z = q[3]
             self.br.sendTransform(t)
+
+            break
 
 
 if __name__ == "__main__":
