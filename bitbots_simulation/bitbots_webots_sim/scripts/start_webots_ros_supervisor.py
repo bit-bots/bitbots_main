@@ -2,6 +2,7 @@
 import argparse
 import os
 import threading
+import urllib
 
 import rclpy
 from bitbots_webots_sim.webots_supervisor_controller import SupervisorController
@@ -10,11 +11,16 @@ from rclpy.node import Node
 
 class SupervisorNode:
     def __init__(self, simulator_port, robot_name):
+        robot_name_without_spaces = urllib.parse.quote(robot_name)
         self.node = Node("supervisor_node")
-        self.node.get_logger().warn(f"tcp://localhost:{simulator_port}/supervisor_robot_{robot_name}")
+        self.node.get_logger().warn(f"tcp://localhost:{simulator_port}/supervisor_robot_{robot_name_without_spaces}")
+
+        self.node.get_logger().warn(robot_name_without_spaces)
 
         # if match:
-        os.environ["WEBOTS_CONTROLLER_URL"] = f"tcp://localhost:{simulator_port}/supervisor_robot_{robot_name}"
+        os.environ[
+            "WEBOTS_CONTROLLER_URL"
+        ] = f"tcp://localhost:{simulator_port}/supervisor_robot_{robot_name_without_spaces}"
         # else:
         #     os.environ["WEBOTS_CONTROLLER_URL"] = f"tcp://localhost:{simulator_port}/supervisor_robot"
 
