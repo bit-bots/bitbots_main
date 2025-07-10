@@ -6,11 +6,20 @@
         <remap from="imu/data" to="imu/data_raw"/>
     </node>
     <!-- The hlvs_player expects the joint command positions as a 'JointState' message.
-    We therfore need to convert the messages from our custom 'JointCommand' message to the
+    We therefor need to convert the messages from our custom 'JointCommand' message to the
     more common 'JointState' layout. -->
     <node pkg="bitbots_robocup_api" exec="command_proxy" output="screen">
         <remap from="input" to="DynamixelController/command"/>
         <remap from="output" to="joint_command"/>
     </node>
+    <!-- The hlvs_player provides foot pressure as 'WrenchStamped' msgs for each cleat separately.
+    For this reason we need to combine all cleats into a single 'FootPressure' message for each foot
+    and also calculate and publish the center of pressure (CoP) for each foot if we are running
+    without the actual 'ros_control/pressure_converter' node.
+    -->
+    <node pkg="bitbots_robocup_api" exec="foot_pressure_proxy" output="screen">
+        <param name="without_pressure_converter" value="false"/>
+    </node>
+
     <include file="$(find-pkg-share bitbots_webots_sim)/launch/imu_filter_sim.launch" />
 </launch>

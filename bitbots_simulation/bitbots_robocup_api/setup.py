@@ -25,6 +25,7 @@ setup(
     entry_points={
         "console_scripts": [
             f"command_proxy = {package_name}.command_proxy:main",
+            f"foot_pressure_proxy = {package_name}.foot_pressure_proxy:main",
         ],
     },
 )
