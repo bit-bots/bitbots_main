@@ -82,20 +82,20 @@ DEF BALL RobocupTexturedSoccerBall {
 DEF amy Wolfgang {
   translation -1.0 3.14 0.4274
   rotation 0.0 0.0 -1.0 1.5869763401625028
-  name "amy"
+  name "blue player 1"
   controller "<extern>"
 }
 DEF rory Wolfgang {
   translation 1.0 -3.14 0.4274
   rotation 0.0 0.0 1.0 1.5869763401625028
-  name "rory"
+  name "red player 1"
   controller "<extern>"
 }
 DEF supervisor_robot_amy hl_supervisor {
-  name "supervisor_robot_amy"
+  name "supervisor_robot_blue player 1"
   controller "<extern>"
 }
 DEF supervisor_robot_rory hl_supervisor {
-  name "supervisor_robot_rory"
+  name "supervisor_robot_red player 1"
   controller "<extern>"
 }
