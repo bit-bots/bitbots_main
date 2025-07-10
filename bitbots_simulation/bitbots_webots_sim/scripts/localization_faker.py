@@ -23,8 +23,9 @@ class LocalizationFaker(Node):
 
     def model_state_to_tf(self, model_state_msg):
         t = TransformStamped()
+        # self.get_logger().warn(str(model_state_msg.name))
         for i, name in enumerate(model_state_msg.name):
-            if name != "amy":
+            if name not in ["amy", "rory", "blue player 1", "red player 1"]:
                 continue
             t.header.frame_id = "map"
             t.child_frame_id = "odom"
