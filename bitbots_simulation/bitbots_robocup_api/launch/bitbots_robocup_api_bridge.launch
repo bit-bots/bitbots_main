@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-    <arg name="without_pressure_converter" default="false"/>
+    <arg name="without_pressure_converter" default="true"/>
 
     <node pkg="hlvs_player" exec="hlvs_player" output="screen">
         <param name="devices_file" value="$(find-pkg-share bitbots_robocup_api)/config/devices.json"/>
