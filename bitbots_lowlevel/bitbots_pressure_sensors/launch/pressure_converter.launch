@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="bitbots_pressure_sensors" exec="pressure_converter">
+        <param from="$(find-pkg-share bitbots_pressure_sensors)/config/pressure_converter.yaml" />
+        <param from="$(find-pkg-share bitbots_pressure_sensors)/config/pressure_$(env ROBOT_NAME nobot).yaml" />
+    </node>
+</launch>
