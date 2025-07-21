@@ -52,6 +52,6 @@ class WaitForMotors(AbstractHCMActionElement):
 
     def perform(self, reevaluate=False):
         self.blackboard.node.get_logger().warn(
-            "HCM gets no data from the motors (/joint_states). Waiting for the motors to " "connect.",
+            "HCM gets no data from the motors (/joint_states). Waiting for the motors to connect.",
             throttle_duration_sec=10,
         )

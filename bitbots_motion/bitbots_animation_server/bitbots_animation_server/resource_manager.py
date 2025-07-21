@@ -71,12 +71,8 @@ class ResourceManager:
 
                 path = next_path
         if not folders:
-            return OSError(
-                "Resource '%s' not found. folders was empty, \
-                only filename provided"
-                % (filename)
-            )
-        return OSError("Resource '%s' not found" % (str(folders) + filename))
+            return OSError(f"Resource '{filename}' not found. folders was empty, only filename provided")
+        return OSError(f"Resource '{str(folders) + filename}' not found")
 
     def find(self, name, filename=""):
         """
@@ -115,7 +111,7 @@ class ResourceManager:
         should be given without ``.json``.
         path = find_animation('walkready')
         """
-        return self.find(self.animpath, "%s.json" % name)
+        return self.find(self.animpath, f"{name}.json")
 
     def find_resource(self, name):
         """Finds a resource relative to self.basepath"""

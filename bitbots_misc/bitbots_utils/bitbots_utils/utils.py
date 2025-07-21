@@ -64,7 +64,7 @@ def get_parameters_from_ros_yaml(node_name: str, parameter_file: str, use_wildca
 
         if param_keys == []:
             raise RuntimeError(
-                f"Param file does not contain parameters for {node_name}, " f" only for nodes: {param_file.keys()}"
+                f"Param file does not contain parameters for {node_name},  only for nodes: {param_file.keys()}"
             )
         param_dict = {}
         for k in param_keys:

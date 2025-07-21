@@ -131,9 +131,9 @@ class YOEOHandlerTemplate(IYOEOHandler):
         return self._seg_class_names
 
     def get_detection_candidates_for(self, class_name: str) -> list[Candidate]:
-        assert (
-            class_name in self._det_class_names
-        ), f"Class '{class_name}' is not available for the current YOEO model (detection)"
+        assert class_name in self._det_class_names, (
+            f"Class '{class_name}' is not available for the current YOEO model (detection)"
+        )
 
         self.predict()
 
@@ -143,9 +143,9 @@ class YOEOHandlerTemplate(IYOEOHandler):
         return self._det_robot_class_ids
 
     def get_segmentation_mask_for(self, class_name: str):
-        assert (
-            class_name in self._seg_class_names
-        ), f"Class '{class_name}' ist not available for the current YOEO model (segmentation)"
+        assert class_name in self._seg_class_names, (
+            f"Class '{class_name}' ist not available for the current YOEO model (segmentation)"
+        )
 
         self.predict()
 
@@ -188,8 +188,7 @@ class YOEOHandlerTemplate(IYOEOHandler):
 
     @staticmethod
     @abstractmethod
-    def model_files_exist(model_directory: str) -> bool:
-        ...
+    def model_files_exist(model_directory: str) -> bool: ...
 
     @abstractmethod
     def _compute_new_prediction_for(self, image: np.ndarray) -> tuple[np.ndarray, np.ndarray]:

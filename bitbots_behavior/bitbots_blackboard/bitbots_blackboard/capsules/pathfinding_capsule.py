@@ -182,7 +182,8 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
 
         elif BallGoalType.CLOSE == target:
             ball_u, ball_v = self._blackboard.world_model.get_ball_position_uv()
-            angle = math.atan2(ball_v, ball_u)
+            ball_v_from_kick_foot = ball_v + side_offset
+            angle = math.atan2(ball_v_from_kick_foot, ball_u)
             goal_u = ball_u - math.cos(angle) * distance
             goal_v = ball_v - math.sin(angle) * distance + side_offset
             ball_point = (goal_u, goal_v, angle, self._blackboard.world_model.base_footprint_frame)
