@@ -16,6 +16,14 @@ from rclpy.parameter import PARAMETER_SEPARATOR_STRING, Parameter, parameter_val
 nobeartype = beartype(conf=BeartypeConf(strategy=BeartypeStrategy.O0))
 
 
+class RobotNotConfiguredError(Exception):
+    """Exception raised when the robot is not configured properly."""
+
+    def __init__(self, message):
+        self.message = message
+        super().__init__(message)
+
+
 def read_urdf(robot_name: str) -> str:
     urdf = os.popen(
         f"xacro {get_package_share_directory(f'{robot_name}_description')}"
