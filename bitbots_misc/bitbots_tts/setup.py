@@ -12,6 +12,7 @@ setup(
         ("share/ament_index/resource_index/packages", ["resource/" + package_name]),
         ("share/" + package_name + "/config", glob.glob("config/*.yaml")),
         ("share/" + package_name + "/launch", glob.glob("launch/*.launch")),
+        ("share/" + package_name + "/model", glob.glob("model/*")),
     ],
     install_requires=[
         "setuptools",
