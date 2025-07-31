@@ -26,5 +26,5 @@ class TurnMotorsOff(AbstractChangeMotorPower):
         if not self.blackboard.visualization_active and not self.blackboard.simulation_active:
             req = SetBool.Request()
             req.data = False
-            self.blackboard.motor_switch_service.call(req)
+            self.blackboard.motor_switch_service.call_async(req)
         return self.pop()
