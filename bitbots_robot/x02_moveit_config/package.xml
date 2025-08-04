@@ -29,8 +29,8 @@
   <exec_depend>xacro</exec_depend>
 
 
-  <build_depend>wolfgang_description</build_depend>
-  <exec_depend>wolfgang_description</exec_depend>
+  <build_depend>x02_description</build_depend>
+  <exec_depend>x02_description</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

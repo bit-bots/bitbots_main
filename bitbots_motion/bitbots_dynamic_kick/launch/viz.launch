@@ -12,7 +12,7 @@
   <include file="$(find-pkg-share bitbots_odometry)/launch/odometry.launch" />
 
   <node name="rviz2" pkg="rviz2" exec="rviz2" output="screen"
-    args="-d $(find-pkg-share wolfgang_description)/config/wolfgang.rviz" />
+    args="-d $(find-pkg-share x02_description)/config/wolfgang.rviz" />
 
   <node name="motor_goals_viz_helper" pkg="bitbots_utils" exec="motor_goals_viz_helper.py" args="--kick" />
 

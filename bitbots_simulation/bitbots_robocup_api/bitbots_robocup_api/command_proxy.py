@@ -14,7 +14,7 @@ class CommandProxy(Node):
         super().__init__("joint_command_proxy")
 
         # Get joints max velocities from URDF
-        urdf_path = os.path.join(get_package_share_directory("wolfgang_description"), "urdf", "robot.urdf")
+        urdf_path = os.path.join(get_package_share_directory("x02_description"), "urdf", "robot.urdf")
         urdf = URDF.from_xml_file(urdf_path)
         self.joints_max_velocities = {
             joint.name: joint.limit.velocity for joint in urdf.joints if joint.type == "revolute"

@@ -203,7 +203,7 @@ class Simulation:
             elif self.robot_type == "sigmaban":
                 self.urdf_path = get_package_share_directory("sigmaban_description") + "/urdf/robot.urdf"
             else:
-                self.urdf_path = get_package_share_directory("wolfgang_description") + "/urdf/robot.urdf"
+                self.urdf_path = get_package_share_directory("x02_description") + "/urdf/robot.urdf"
         robot_index = p.loadURDF(
             self.urdf_path, self.start_position, self.start_orientation, flags=flags, useFixedBase=not physics_active
         )

@@ -54,7 +54,7 @@
       <param name="l_wrist_frame" value="$(var tf_prefix)l_wrist"/>
       <param from="$(find-pkg-share bitbots_dynup)/config/dynup_robot.yaml"/>
     </node>
-    <node pkg="rviz2" exec="rviz2" output="screen" args="-d $(find-pkg-share wolfgang_description)/config/wolfgang.rviz" />
+    <node pkg="rviz2" exec="rviz2" output="screen" args="-d $(find-pkg-share x02_description)/config/wolfgang.rviz" />
     <node pkg="bitbots_utils" exec="dummy_imu.py"/>
   </group>
 

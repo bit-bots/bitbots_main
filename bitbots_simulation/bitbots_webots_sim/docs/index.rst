@@ -15,7 +15,7 @@ To remove these inertial components for webots2urdf there is a script which is l
 Instructions
 ------------
 
-First we need to have the current simplified URDF model. To get this look at the documentation of the wolfang_description package :doc:`../wolfgang_description/index`.
+First we need to have the current simplified URDF model. To get this look at the documentation of the x02_description package :doc:`../x02_description/index`.
 
 To use the URDF in webots we need to create a .proto file from the URDF. To do this clone the urdf2robot repository
 
@@ -29,7 +29,7 @@ Run the script to adapt the urdf to be usable by webots2urdf
 .. code-block:: bash
 
   roscd bitbots_webots_sim
-  python scripts/fix_urdf_for_webots.py ../wolfgang_description/urdf/robot.urdf webots_robot.urdf
+  python scripts/fix_urdf_for_webots.py ../x02_description/urdf/robot.urdf webots_robot.urdf
 
 Run the conversion script from urdf to proto file
 

@@ -1,10 +1,10 @@
 moveit_setup_assistant_config:
   URDF:
-    package: wolfgang_description
+    package: x02_description
     relative_path: urdf/robot.urdf
     xacro_args: ""
   SRDF:
-    relative_path: config/wolfgang.srdf
+    relative_path: config/x02.srdf
   CONFIG:
     author_name: Marc Bestmann
     author_email: bestmann@informatik.uni-hamburg.de
