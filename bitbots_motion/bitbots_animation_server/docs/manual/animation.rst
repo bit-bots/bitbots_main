@@ -10,7 +10,7 @@ Actively running animations, can be interrupted by the HCM. This ensures that, s
 Animations consist of a series of keyframes. Each keyframe is a snapshot of motor positions at a certain point in time. During playback a file containing the recorded keyframes is read and each frame is played one after the other at a given interval. To achieve a fluid motion the frequency of interpolation is set to 200 Hz with the help of quintic splines. This interpolation is done in the 'Joint Space' (inbetween the motor positions, not inbetween the actual positions of the robot's extremities in the Cartesian space), due to the development of the project and better usability.
 
 Animations can be run manually with `ros2 run bitbots_animation_server run_animation <name>`.
-All animations can be found in the package `wolfgang_animations`.
+All animations can be found in the package `x02_animations`.
 
 If an animation fails to run, the first thing to check is, if the HCM outputs a different 'Robot State' than 'Controllable' or 'Walking'.
 Animations can only be played if the robot is in one of these two states.

@@ -46,7 +46,7 @@ class AnimationNode(Node):
         self.goals_to_abort: set[UUID] = set()
 
         # Get robot type and create resource manager
-        self.declare_parameter("robot_type", "wolfgang")
+        self.declare_parameter("robot_type", "x02")
         self.resource_manager = ResourceManager(self.get_parameter("robot_type").value)
 
         # Load all animations into memory

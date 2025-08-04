@@ -414,7 +414,7 @@ class RecordUI(Plugin):
                 return
         # Open the file dialog in the animations build directory
         my_file = QFileDialog.getOpenFileName(
-            directory=os.path.join(get_package_share_directory("wolfgang_animations"), "animations"), filter="*.json"
+            directory=os.path.join(get_package_share_directory("x02_animations"), "animations"), filter="*.json"
         )
 
         # Cancel the open if the user does not select a file

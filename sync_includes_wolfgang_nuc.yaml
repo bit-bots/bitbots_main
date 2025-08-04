@@ -39,8 +39,8 @@ include:
         - bitbots_team_data_sim_rqt
     - bitbots_vision
     - bitbots_robot:
-        - wolfgang_animations
-        - wolfgang_description
+        - x02_animations
+        - x02_description
         - x02_moveit_config
     - bitbots_world_model:
         - bitbots_ball_filter
