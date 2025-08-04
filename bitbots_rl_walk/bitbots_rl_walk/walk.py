@@ -158,7 +158,7 @@ class WalkNode(Node):
              self._imu_data.orientation.x,
              self._imu_data.orientation.y,
              self._imu_data.orientation.z]
-        ) @ euler2mat(0, -0.2, 0)).T @ np.array([0, 0, -1], dtype=np.float32)
+        ) @ euler2mat(0, -0.0, 0)).T @ np.array([0, 0, -1], dtype=np.float32)
 
         joint_angles = np.array([
             self._joint_state.position[self._joint_state.name.index(name)]
