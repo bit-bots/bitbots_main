@@ -41,6 +41,7 @@ class PathPlanning(NodeWithConfig):
 
         # Publisher
         self.cmd_vel_pub = self.create_publisher(Twist, "cmd_vel", 1)
+        self.step_pub = self.create_publisher(Twist, "step", 1)
         self.path_pub = self.create_publisher(Path, "path", 1)
         self.carrot_pub = self.create_publisher(PointStamped, "carrot", 1)
         self.graph_pub = self.create_publisher(MarkerArray, "visibility_graph", 1)
@@ -64,12 +65,28 @@ class PathPlanning(NodeWithConfig):
                 # Calculate the command velocity to follow the given path
                 cmd_vel, carrot_point = self.controller.step(path)
                 # Publish the walk command to control the robot
-                self.cmd_vel_pub.publish(cmd_vel)
+                #self.cmd_vel_pub.publish(cmd_vel)
+                self.step_publish_test(cmd_vel)
                 # Publish the carrot point for visualization
                 self.carrot_pub.publish(carrot_point)
         except Exception as e:
             self.get_logger().error(f"Caught exception during calculation of path planning step: {e}")
 
+    def step_publish_test(self, cmd_vel):
+        factor = (1.0 / 1.2) / 2.0
+
+        step = [cmd_vel.linear.x * factor ,
+                                        cmd_vel.linear.y * factor * 2 ,
+                                        cmd_vel.linear.z * factor,
+                                        cmd_vel.angular.z * factor]
+        
+        step_msg = Twist()
+        step_msg.linear.x = step[0]
+        step_msg.linear.y = step[1]
+        step_msg.linear.z = step[2]
+        step_msg.angular.z = step[3]
+
+        self.step_pub.publish(step_msg)
 
 def main(args=None):
     rclpy.init(args=args)
