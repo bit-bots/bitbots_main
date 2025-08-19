@@ -34,11 +34,11 @@ if __name__ == "__main__":
     eval = StudyEvaluation(test_data1, test_data2, data_raw)
     print(eval.quiz_data["Quiz Score"])
 
-    # This code block is used to visualize the quiz scores using a box plot.
+    """ This code block is used to visualize the quiz scores using a box plot.
     fig, axs = plt.subplots(figsize=(4,4))
     eval.quiz_data['Quiz Score'].plot.box(ax=axs)
     axs.set_ylabel("Quiz Score")
     axs.set_yticks(range(0, 16, 1))
     plt.show()
     eval.quiz_data[['Quiz Score']].plot.box()
-    plt.show()
+    plt.show() """
