@@ -10,18 +10,23 @@ class StudyEvaluation:
         # Assert that the ID columns are the same in both study datasets
         assert study_data1["Demographic00. Gib deine ID ei.. "].equals(study_data2["Demographic00. Gib deine ID ei.. "]), "ID columns in study datasets do not match."
 
-        self.study_score1 = qs.QuizScore(study_data1, "study1")
-        self.study_data1 = self.study_score1.quiz_data
-        self.sus1 = ss.SUSScore(self.study_data1, "study1")
+        study_score1 = qs.QuizScore(study_data1, "study1")
+        study_data1 = study_score1.quiz_data
+        sus1 = ss.SUSScore(study_data1, "study1")
+        self.full_data1 = sus1.sus_data
 
-        self.study_score2 = qs.QuizScore(study_data2, "study2")
-        self.study_data2 = self.study_score2.quiz_data
-        self.sus2 = ss.SUSScore(self.study_data2, "study2")
+        study_score2 = qs.QuizScore(study_data2, "study2")
+        study_data2 = study_score2.quiz_data
+        sus2 = ss.SUSScore(study_data2, "study2")
+        self.full_data2 = sus2.sus_data
 
-        self.quiz_score = qs.QuizScore(quiz_data, "quiz")
-        self.quiz_data = self.quiz_score.quiz_data
+        quiz_score = qs.QuizScore(quiz_data, "quiz")
+        self.quiz_data = quiz_score.quiz_data
 
-
+    def evaluate_quiz_scores(self):
+        print(self.quiz_data["Quiz Score"].mean())
+        print(self.full_data1["Quiz Score"].mean())
+        print(self.full_data2["Quiz Score"].mean())
 
 
 if __name__ == "__main__":
@@ -32,7 +37,7 @@ if __name__ == "__main__":
     test_data2 = pd.read_csv("test_zweiterDurchganag.csv", delimiter=";")
 
     eval = StudyEvaluation(test_data1, test_data2, data_raw)
-    print(eval.quiz_data["Quiz Score"])
+    print(eval.evaluate_quiz_scores())
 
     """ This code block is used to visualize the quiz scores using a box plot.
     fig, axs = plt.subplots(figsize=(4,4))
