@@ -18,7 +18,7 @@ if apt list webots --installed | grep -q "$WEBOTS_VERSION"; then
 else
     echo "Webots simulator release $WEBOTS_VERSION is not installed. Installing..."
     # Check if we have an internet connection
-    check_internet_connection
+    check_internet_connection "$1"
     # Check if the url exist
     if ! curl --output /dev/null --silent --head --fail "$WEBOTS_DOWNLOAD_URL"; then
         echo "Webots download url does not exist. Please check the url and update the 'WEBOTS_DOWNLOAD_URL' variable in the 'make_webots.sh' script."
