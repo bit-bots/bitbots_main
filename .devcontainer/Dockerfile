@@ -20,6 +20,7 @@ RUN apt-get update -y \
     iputils-ping \
     ipython3 \
     jq \
+    just \
     less \
     libncurses5-dev \
     locales \
@@ -91,9 +92,6 @@ RUN python3 -m pip install --user --break-system-packages \
     git+https://github.com/timonegk/colcon-notification.git@colors \
     git+https://github.com/timonegk/colcon-output.git@colors
 
-# Create colcon workspace
-RUN mkdir -p /home/$user/colcon_ws/src
-
 # Install oh-my-zsh for pretty terminal
 RUN sh -c "$(wget -O- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" && \
   git clone https://github.com/zsh-users/zsh-autosuggestions "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions"
@@ -105,4 +103,4 @@ COPY --chown=$user:$user zshrc /home/$user/.zshrc
 ENV QT_X11_NO_MITSHM=1
 
 # Switch to the workspace directory
-WORKDIR /home/$user/colcon_ws
+WORKDIR /home/$user/bitbots_main

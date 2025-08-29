@@ -48,4 +48,4 @@ Five different tasks can be performed:
 
 ## `make_basler.sh`
 
-Downloads and installs the Basler Pylon SDK for Linux. This is needed to communicate with our camera. Normally called by the `make basler` or other `make` targets.
+Downloads and installs the Basler Pylon SDK for Linux. This is needed to communicate with our camera. Normally called by the `just basler` or other `just` recipes.

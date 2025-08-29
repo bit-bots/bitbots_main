@@ -10,7 +10,3 @@ simpleeval
 beartype
 jaxtyping
 mypy
-
-# The following dependencies are only needed for rl walking and we don't actively use them currently
-#git+https://github.com/bit-bots/deep_quintic.git
-#git+https://github.com/SammyRamone/stable-baselines3.git

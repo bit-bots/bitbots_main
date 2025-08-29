@@ -18,13 +18,13 @@ jobs:
         uses: fkirc/skip-duplicate-actions@v5
         with:
           cancel_others: 'true'
-     
-     # Remove comments to spawn an interactive debigging ssh shell in the ci 
+
+     # Remove comments to spawn an interactive debigging ssh shell in the ci
      #- name: Setup tmate session
      #   uses: mxschmitt/action-tmate@v3
-     #   with:   
+     #   with:
      #     detached: true
-      
+
       - name: Set up ROS ecosystem
         uses: ros-tooling/setup-ros@v0.7
 
@@ -39,21 +39,20 @@ jobs:
           mkdir -p $HOME/.local/bin
           echo "PATH=$PATH:/github/home/.local/bin" >> "$GITHUB_ENV"
 
+      - name: Install just
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y just
+
       - name: Pull source code for libraries and install dependencies
         run: |
           sudo apt-get remove -y python3-pytest-repeat  #TODO remove once the upstream apt package reports the correct version on the newest pip version
-          make install HTTPS=true ARGS="--ci"
-
-      - name: Set up colcon workspace
-        run: |
-          mkdir -p /colcon_ws/src
-          ln -s $(realpath .) /colcon_ws/src/bitbots_main
+          just HTTPS=true CI=true install
 
       - name: Build packages
         run: |
           . /opt/ros/jazzy/setup.sh
-          colcon build --symlink-install
-        working-directory: /colcon_ws
+          just build
 
       - name: Test packages
         run: |
@@ -62,4 +61,3 @@ jobs:
           . install/setup.sh
           # Run tests for all packages
           colcon test --event-handlers console_direct+ --return-code-on-test-failure --parallel-workers 1
-        working-directory: /colcon_ws

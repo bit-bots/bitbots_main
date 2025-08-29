@@ -8,7 +8,7 @@ This git repository contains all RoboCup-related code and documentation from the
 All code is written as individual ROS 2 packages targeting Ubuntu.
 
 <p align="center">
-  <img width="30%" src="logo.png" alt="marimba playing robot" />
+  <img width="30%" src="logo.png" alt="Bit-Bots Logo" />
 </p>
 
 ## Installation
@@ -16,20 +16,30 @@ All code is written as individual ROS 2 packages targeting Ubuntu.
 Full step-by-step instructions for installing the Bit-Bots software stack and ROS 2 can be found in our documentation [here](https://doku.bit-bots.de/meta/manual/tutorials/install_software_ros2.html).
 
 
-## Update the codebase
-
-If you want to update this repo, all third party source files as well as the supplementing files, run
+Run the following command to install all dependencies and clone all necessary repositories. Make sure you have [just](https://just.systems/) and correct ROS 2 version installed.
 
 ``` shell
-make pull-all
+just install
 ```
 
-If you encounter any problems consider cleaning the third party source files (the `lib` folder) first:
+## Building
 
-**THIS DELETES ALL CHANGES YOU MADE TO THE THIRD PARTY SOURCE FILES!**
+To build the code, run
 
 ``` shell
-make fresh-libs
+just build
+```
+
+and source the setup file with
+
+``` shell
+. install/setup.sh
+```
+
+To see all available recipes, run
+
+``` shell
+just -l
 ```
 
 ## Run auto formatting
@@ -37,7 +47,7 @@ make fresh-libs
 To format all code in the repository, run
 
 ``` shell
-make format
+just format
 ```
 
 ## More documentation

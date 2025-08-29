@@ -35,8 +35,8 @@ export RCUTILS_CONSOLE_OUTPUT_FORMAT="[{severity}] [{name}]: {message}"
 export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 
 # Load our ros plugin script containing useful functions and aliases for ROS 2 development
-if [[ -f \$COLCON_WS/src/bitbots_main/scripts/ros.plugin.sh ]]; then
-  source \$COLCON_WS/src/bitbots_main/scripts/ros.plugin.sh
+if [[ -f \$COLCON_WS/scripts/ros.plugin.sh ]]; then
+  source \$COLCON_WS/scripts/ros.plugin.sh
 fi
 
 # <<< bit-bots initialize <<<
