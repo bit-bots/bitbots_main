@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 set -eEo pipefail
 
 WEBOTS_VERSION="2022b"
