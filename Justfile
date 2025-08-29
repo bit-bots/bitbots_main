@@ -16,10 +16,7 @@ install-basler:
 
 # Install Webots Simulation environment
 install-webots:
-	# Only install Webots if not running in CI as it is not needed there
-	if [ "{{CI}}" != "true" ]; then \
-		scripts/make_webots.sh; \
-	fi
+	scripts/make_webots.sh {{ if CI != "" {"--ci"} else {""} }}
 
 # Install all dependencies, pull all repositories, ...
 install: pull-init install-basler install-webots update

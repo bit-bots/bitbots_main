@@ -5,7 +5,8 @@ WEBOTS_VERSION="2022b"
 WEBOTS_DOWNLOAD_URL="https://github.com/cyberbotics/webots/releases/download/R${WEBOTS_VERSION}/webots_${WEBOTS_VERSION}_amd64.deb"
 
 check_internet_connection () {
-    if ! ping -q -c 1 -W 1 google.com > /dev/null; then
+    # Check if we have an internet connection, except in the ci as azure does not support ping by design
+    if [[ $1 != "--ci" ]] && ! ping -q -c 1 -W 1 google.com > /dev/null; then
         echo "No internet connection. Please check your internet connection to install the webots simulator."
         exit 1
     fi
