@@ -3,7 +3,7 @@
 namespace bitbots_quintic_walk {
 
 WalkStabilizer::WalkStabilizer(rclcpp::Node::SharedPtr node)
-    : pid_trunk_fused_pitch_(node, "node.trunk_pid.pitch"), pid_trunk_fused_roll_(node, "node.trunk_pid.roll") {
+    : pid_trunk_fused_pitch_(node, "node.trunk_pid.pitch", "", false), pid_trunk_fused_roll_(node, "node.trunk_pid.roll", "", false) {
   pid_trunk_fused_pitch_.initialize_from_ros_parameters();
   pid_trunk_fused_roll_.initialize_from_ros_parameters();
 
