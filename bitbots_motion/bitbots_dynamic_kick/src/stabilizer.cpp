@@ -21,8 +21,8 @@ Stabilizer::Stabilizer(std::string ns) {
   roll_node_->declare_parameter<double>("i_clamp_min", 0.0);
   roll_node_->declare_parameter<bool>("antiwindup", false);
 
-  pid_trunk_fused_pitch_ = std::make_shared<control_toolbox::PidROS>(pitch_node_, "");
-  pid_trunk_fused_roll_ = std::make_shared<control_toolbox::PidROS>(roll_node_, "");
+  pid_trunk_fused_pitch_ = std::make_shared<control_toolbox::PidROS>(pitch_node_, "", "", false);
+  pid_trunk_fused_roll_ = std::make_shared<control_toolbox::PidROS>(roll_node_, "", "", false);
   pid_trunk_fused_pitch_->initialize_from_ros_parameters();
   pid_trunk_fused_roll_->initialize_from_ros_parameters();
 
