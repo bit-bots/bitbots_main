@@ -75,7 +75,7 @@ Alternatively you can use a devcontainer :doc:`vscode-dev-container`, with a pre
 
 Webots is a robot simulator, which we use to simulate our robots and test our software.
 It is not strictly necessary to install it, but it is very useful for development and testing.
-If you want to install it, you can do so by running ``make webots`` in the bitbots_main repository.
+If you want to install it, you can do so by running ``just install-webots`` in the bitbots_main repository.
 
 **4. Setup colcon workspace**
 

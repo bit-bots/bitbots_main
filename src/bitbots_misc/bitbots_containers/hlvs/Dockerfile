@@ -190,14 +190,14 @@ ENV LANG=en_US.UTF-8
 ENV LANGUAGE=en_US:en
 ENV LC_ALL=en_US.UTF-8
 
-RUN mkdir -p /colcon_ws/src \
-    && useradd -M -d /colcon_ws -s /bin/bash -u $UID robot \
-    && chown -R robot:robot /colcon_ws \
+RUN mkdir -p /ws \
+    && useradd -M -d /ws -s /bin/bash -u $UID robot \
+    && chown -R robot:robot /ws \
     && echo "robot ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/robot
 
-WORKDIR /colcon_ws
+WORKDIR /ws
 USER robot:robot
-ENV PATH=$PATH:/colcon_ws/.local/bin
+ENV PATH=$PATH:/ws/.local/bin
 
 RUN . /opt/ros/${ROS_DISTRO}/setup.sh \
     && sudo rosdep init
@@ -205,15 +205,18 @@ RUN . /opt/ros/${ROS_DISTRO}/setup.sh \
 RUN mkdir -p -m 700 $HOME/.ssh \
     && ssh-keyscan github.com >> $HOME/.ssh/known_hosts
 
-RUN --mount=type=ssh,uid=$UID git clone --branch "$BITBOTS_MAIN_BRANCH" git@github.com:bit-bots/bitbots_main.git src/bitbots_main \
-    && cd src/bitbots_main \
-    && make pull-init rosdep pip
+RUN --mount=type=ssh,uid=$UID git clone --branch "$BITBOTS_MAIN_BRANCH" git@github.com:bit-bots/bitbots_main.git  \
+    && cd bitbots_main \
+    && just pull-init rosdep pip
+
+WORKDIR /ws/bitbots_main
 
 # From here on, we don't want to cache anything. That's achieved by adding the current time.
 ADD https://www.timeapi.io/api/Time/current/zone?timeZone=UTC /tmp/build-time
 
-RUN --mount=type=ssh,uid=$UID cd src/bitbots_main \
-    && make pull-all \
+RUN --mount=type=ssh,uid=$UID \
+    && just pull-init \
+    && cd src \
     && rm -rf bitbots_lowlevel \
         bitbots_misc/bitbots_basler_camera \
         bitbots_misc/bitbots_ceiling_cam \
@@ -232,11 +235,11 @@ RUN --mount=type=ssh,uid=$UID cd src/bitbots_main \
 # Install missing ros dependencies with rosdep
 RUN sudo apt update \
   && rosdep update \
-  && rosdep install --rosdistro=${ROS_DISTRO} --from-paths src/bitbots_main --ignore-src -r -y \
+  && rosdep install --rosdistro=${ROS_DISTRO} --from-paths src --ignore-src -r -y \
   && . /opt/ros/${ROS_DISTRO}/setup.sh \
   && colcon build --cmake-args -DBUILD_TESTING=OFF
 
-RUN cp src/bitbots_main/bitbots_simulation/bitbots_robocup_api/scripts/start.sh .local/bin/start
+RUN cp src/bitbots_simulation/bitbots_robocup_api/scripts/start.sh $HOME/.local/bin/start
 
 # Volume for logs
 VOLUME /robocup-logs
