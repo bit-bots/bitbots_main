@@ -18,7 +18,25 @@
         "dev.containers.copyGitConfig": false,
         "dev.containers.gitCredentialHelperConfigLocation": "none"
       },
-      "extensions": ["ms-iot.vscode-ros"]
+      "extensions": [
+        "charliermarsh.ruff", // Ruff linting and formatting support
+        "DavidAnson.vscode-markdownlint", // Lints markdown files
+        "DotJoshJohnson.xml", // XML support
+        "lextudio.restructuredtext", // Rendering rst files in preview
+        "Mastermori.dsd", // DSD support
+        "mohsen1.prettify-json", // JSON formatting
+        "MS-CEINTL.vscode-language-pack-de", // German language pack
+        "Ranch-Hand-Robotics.rde-pack", // ROS2 development environment
+        "ms-python.python", // Python support
+        "ms-python.vscode-pylance", // Python support
+        "ms-vscode.cpptools-extension-pack", // C++ support
+        "ms-vscode.cpptools-themes", // C++ support
+        "ms-vscode.cpptools", // C++ support
+        "streetsidesoftware.code-spell-checker-german", // Spell checker
+        "streetsidesoftware.code-spell-checker", // Spell checker
+        "tamasfe.even-better-toml", // TOML support
+        "trond-snekvik.simple-rst" // Syntax highlighting for rst files
+      ]
     }
   },
 
