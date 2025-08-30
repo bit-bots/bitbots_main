@@ -32,7 +32,7 @@ pip:
 
 
 # Sets up pre-commit hooks that check code formatting etc. before each commit
-pre-commit:
+install-pre-commit:
     pre-commit install
 
 # This is needed as the ROS vscode extension adds absolute paths to some files and we do not want to commit those.
