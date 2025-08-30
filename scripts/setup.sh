@@ -5,7 +5,7 @@ set -eEuo pipefail
 DIR="$(dirname "$(readlink -f "$0")")"
 BRANCH="${1:-main}"
 ROS_DISTRO=${ROS_DISTRO:-"jazzy"}
-COLCON_WS="${COLCON_WS:-"$HOME/colcon_ws"}"
+COLCON_WS="${COLCON_WS:-"$HOME/bitbots_main"}"
 REPO_URL="git@github.com:bit-bots/bitbots_main.git"
 SHELL_CONFIG="$(cat <<EOF
 
@@ -22,7 +22,7 @@ export ROS_DOMAIN_ID=24
 export ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST
 
 # Set the default colcon workspace
-export COLCON_WS="\$HOME/colcon_ws"
+export COLCON_WS="\$HOME/bitbots_main"
 
 # Set the default log level for colcon
 export COLCON_LOG_LEVEL=30
@@ -68,6 +68,7 @@ setup_ros() {
         fi
 
         sudo apt update && sudo apt install -y \
+            just \
             clang-format \
             cppcheck \
             python3-colcon-clean \
@@ -103,10 +104,10 @@ setup_repo() {
 
     echo "Installing dependencies..."
     if (( has_sudo )); then
-        make install
+        just install
     else
         echo "Cannot use rosdep as it requires sudo."
-        make install-no-root
+        just install-no-root
     fi
 }
 
@@ -118,12 +119,6 @@ setup_colcon() {
       git+https://github.com/timonegk/colcon-core.git@colors \
       git+https://github.com/timonegk/colcon-notification.git@colors \
       git+https://github.com/timonegk/colcon-output.git@colors
-
-    if [[ ! -d "$COLCON_WS/src/bitbots_main" ]]; then
-        echo "Setting up colcon workspace in $COLCON_WS..."
-        mkdir -p "$COLCON_WS/src"
-        ln -s "$meta_dir" "$COLCON_WS/src/bitbots_main"
-    fi
 }
 
 build_repository() {
@@ -133,7 +128,7 @@ build_repository() {
     set +u
     source "/opt/ros/${ROS_DISTRO}/setup.bash"
 
-    colcon build --symlink-install --continue-on-error
+    just build
 }
 
 setup_shell_aliases() {
