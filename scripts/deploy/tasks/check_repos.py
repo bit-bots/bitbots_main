@@ -169,7 +169,7 @@ class CheckReposTask(AbstractTask):
         )  # bitbots_main/scripts/deploy/tasks
 
         self.results_file: str = os.path.join(
-            self.main_repo_path, "bitbots_misc/bitbots_utils/config/", "workspace_status.json"
+            self.main_repo_path, "src/bitbots_misc/bitbots_utils/config/", "workspace_status.json"
         )
 
         self.only_workspace_status: bool = only_workspace_status

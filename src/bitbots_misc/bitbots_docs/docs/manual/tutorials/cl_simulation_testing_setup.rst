@@ -19,19 +19,16 @@ As such you can lookup some of the needed requirements there.
 - setup bitbots_main in your home directory
 
 .. code-block:: bash
-
-  mkdir -p "$HOME/colcon_ws/src"
-  cd "$HOME/colcon_ws/src"
   git clone git@github.com:bit-bots/bitbots_main.git && cd bitbots_main
-  make install-no-root
+  just install-no-root
 
 - set PATH and COLCON_WS (see `section 5 <https://docs.bit-bots.de/meta/manual/tutorials/install_software_ros2.html>`_)
 
 **2. Compile the packages**
 
-If while testing you are changing code or updating ``bitbots_main`` via ``make pull-all``,
+If while testing you are changing code or updating ``bitbots_main`` via ``just update-no-root``,
 this step needs to be done again.
-For compilation of the whole meta repository run ``cba``, which is an alias for:
+For compilation of the whole meta repository run ``just build``, which is an alias for:
 ``cd $COLCON_WS; colcon build --symlink-install --continue-on-error``
 After a successful run, before we are able to use any ros commands we now need to source colcon built sources
 with ``sa``, which is an alias for:

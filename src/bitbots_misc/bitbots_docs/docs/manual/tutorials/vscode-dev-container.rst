@@ -35,7 +35,7 @@ Known issues
 ------------
 
 - Rebuilding the container results in all modifications to the container being lost. This does not include the repository, which itself is persisted in the container.
-- Sometimes `make install` results in an `mktemp: failed to create file via template ‘/tmp/tmp.XXXXXXXXXX’: Permission denied`. I spend some time trying to fix this but couldn't find a solution. The workaround is to run `make install` again. This time it should work.
+- Sometimes `just install` results in an `mktemp: failed to create file via template ‘/tmp/tmp.XXXXXXXXXX’: Permission denied`. I spend some time trying to fix this but couldn't find a solution. The workaround is to run `just install` again. This time it should work.
 - I did everything as stated, but my python IntelliSense does not pick up bit-bots related packages. To solve this open the command palette (Ctrl+Shift+P) and run `ROS: Update Python Path`. This should fix the issue.
 - GUI applications do not start. Run `xhost local:root` on the **host** machine to fix this.
 - I can not find my files in the home directory. The home directory is mounted at `/srv/host_home` in the container. You can find your files there.

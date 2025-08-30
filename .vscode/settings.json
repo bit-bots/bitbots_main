@@ -240,4 +240,9 @@
     "[jsonc]": {
         "editor.defaultFormatter": "vscode.json-language-features"
     },
+    "search.exclude": {
+        "build": true,
+        "install": true,
+        "log": true,
+    },
 }

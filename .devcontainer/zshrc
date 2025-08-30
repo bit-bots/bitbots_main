@@ -62,7 +62,7 @@ export ROS_DOMAIN_ID=24
 export ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST
 
 # Set the default colcon workspace
-export COLCON_WS="$HOME/colcon_ws"
+export COLCON_WS="$HOME/bitbots_main"
 
 # Set the default log level for colcon
 export COLCON_LOG_LEVEL=30
@@ -75,8 +75,8 @@ export RCUTILS_CONSOLE_OUTPUT_FORMAT="[{severity}] [{name}]: {message}"
 export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 
 # Load our ros plugin script containing useful functions and aliases for ROS 2 development
-if [[ -f $COLCON_WS/src/bitbots_main/scripts/ros.plugin.sh ]]; then
-  source $COLCON_WS/src/bitbots_main/scripts/ros.plugin.sh
+if [[ -f $COLCON_WS/scripts/ros.plugin.sh ]]; then
+  source $COLCON_WS/scripts/ros.plugin.sh
 fi
 
 # <<< bit-bots initialize <<<
@@ -89,7 +89,7 @@ echo "Hello there! Welcome to the Bit-Bots ROS 2 development environment!"
 echo "If you just (re)build this container a few manual steps are nessessary:"
 echo "Create a ssh key with 'ssh-keygen -q -f $HOME/.ssh/id_rsa -N \"\" &&  cat $HOME/.ssh/id_rsa.pub'."
 echo "Copy the commands output and add it to your GitHub account ('https://github.com/settings/keys') (ctrl+click to open in browser)."
-echo "Now you can install the rest of the workspace and compile everything with 'make install && cba'."
-echo "To update an existing workspace you can use 'make update && cba'."
-echo "To compile all packages in the workspace use 'cba'. If you want to compile only a specific package use 'cbs <package_name>'."
+echo "Now you can install the rest of the workspace and compile everything with 'just install && just build'."
+echo "To update an existing workspace you can use 'just update'."
+echo "To compile all packages in the workspace use 'just build'. If you want to compile only a specific package use 'just build <package_name>'."
 echo "Run 'xhost local:root' in a terminal on the host machine to enable GUI applications (e.g. rviz2) in the container. This needs to be done after every restart of the host machine."
