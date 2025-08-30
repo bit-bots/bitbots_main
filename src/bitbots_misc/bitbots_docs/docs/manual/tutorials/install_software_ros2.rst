@@ -3,6 +3,8 @@ Software installation with ROS2
 
 In this tutorial, we will learn how to install ROS2 Jazzy Jalisco on Ubuntu 24.04 and build our software stack.
 
+You might want to look at the :doc:`vscode-dev-container` tutorial, if you want to use a preconfigured development environment with Visual Studio Code and devcontainers.
+
 **TLDR**: single command setup
 ------------------------------
 
@@ -51,8 +53,6 @@ Alternatively you can use a devcontainer :doc:`vscode-dev-container`, with a pre
     ros-jazzy-rqt-robot-monitor \
     ros-jazzy-rqt-runtime-monitor
 
-- Run ``sudo rosdep init`` to initialize ``rosdep``, a tool that helps you install system dependencies for ROS packages.
-
 **2. Download our software (if not already done)**
 
 - Create a GitHub account, if not already done (see `here <http://doku.bit-bots.de/private/manual/dienste_accounts.html>`_ for further information)
@@ -67,29 +67,19 @@ Alternatively you can use a devcontainer :doc:`vscode-dev-container`, with a pre
     - Clone the code repository with: ``git clone git@github.com:bit-bots/bitbots_main.git``
       Confirm the host key by typing ``yes``, if asked.
     - Move into the newly created directory with: ``cd bitbots_main``
-    - Clone all code and other files by running: ``make install``
+    - Clone all code and other files by running: ``just install``
       This will take a while, as it downloads all the code and other files from our repositories and additionally installs all missing dependencies (using rosdep and pip).
-      Finally, it will register pre-commit hooks (automatic code-formatting and warnings), which will be run every time you commit code to our repositories.
+    - Finally, you can register pre-commit hooks with ``just install-pre-commit`` (automatic code-formatting and warnings), which will be run every time you commit code to our repositories.
 
-**3. Install Webots**
-
-Webots is a robot simulator, which we use to simulate our robots and test our software.
-It is not strictly necessary to install it, but it is very useful for development and testing.
-If you want to install it, you can do so by running ``just install-webots`` in the bitbots_main repository.
-
-**4. Setup colcon workspace**
+**3. Setup colcon workspace**
 
 `Colcon <https://docs.ros.org/en/jazzy/Tutorials/Beginner-Client-Libraries/Colcon-Tutorial.html>`_ is the tool provided by ROS 2 to build and install our ROS packages, so that they can be launched later.
-The colcon workspace is where your source code gets build and where we use colcon.
+The colcon workspace is where your source code gets build and where we use colcon. Nowerdays, we just use the ``bitbots_main`` repository as our colcon workspace, so no further setup is needed.
 
-- Create colcon workspace directory (typically ``~/colcon_ws/``)
-    - Create directory with: ``mkdir -p ~/colcon_ws/src``
-    - Link our software contained in the bitbots_main repo to the newly created ``src`` directory with: ``ln -s ~/git/bitbots/bitbots_main/ ~/colcon_ws/src/bitbots_main``
-
-**5. Final touches**
+**4. Final touches**
 
 To let your system know where it should find all the ROS 2 dependencies and packages and to add colored output etc., we add a little bit of config to your ``~/.bashrc`` file, which will be run every time you open a new terminal.
-In case you are not using the bash shell, replace ``~/.bashrc`` and ``bash`` with your shell's configuration file.
+In case you are not using the bash shell, replace ``~/.bashrc`` and ``bash`` with your shell's configuration file. Adapt the colcon workspace path, if you have chosen a different location than ``~/git/bitbots/bitbots_main``.
 
 - Run the following command:
 
@@ -110,7 +100,7 @@ In case you are not using the bash shell, replace ``~/.bashrc`` and ``bash`` wit
   export ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST
 
   # Set the default colcon workspace
-  export COLCON_WS="\$HOME/colcon_ws"
+  export COLCON_WS="\$HOME/git/bitbots/bitbots_main"
 
   # Set the default log level for colcon
   export COLCON_LOG_LEVEL=30
@@ -123,8 +113,8 @@ In case you are not using the bash shell, replace ``~/.bashrc`` and ``bash`` wit
   export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 
   # Load our ros plugin script containing useful functions and aliases for ROS 2 development
-  if [[ -f \$COLCON_WS/src/bitbots_main/scripts/ros.plugin.sh ]]; then
-    source \$COLCON_WS/src/bitbots_main/scripts/ros.plugin.sh
+  if [[ -f \$COLCON_WS/scripts/ros.plugin.sh ]]; then
+    source \$COLCON_WS/scripts/ros.plugin.sh
   fi
 
   # <<< bit-bots initialize <<<

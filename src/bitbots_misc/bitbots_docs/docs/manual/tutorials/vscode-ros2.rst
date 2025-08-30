@@ -5,8 +5,6 @@ Setup VSCode with ROS2
 Open a terminal.
 Navigate to your colcon workspace.
 
-`cd colcon_ws`
-
 Source ros
 
 `source /opt/ros/jazzy/setup.zsh`
@@ -40,7 +38,7 @@ An example vscode launch configuration and the corresponding python launch file 
             {
                 "name": "head behavior",
                 "request": "launch",
-                "target": "$HOME/colcon_ws/install/bitbots_head_behavior/share/bitbots_head_behavior/launch/test.py",
+                "target": "$COLCON_WS/src/bitbots_head_behavior/share/bitbots_head_behavior/launch/test.py",
                 "launch": "[rviz, gz, gzclient, gzserver]",
                 "type": "ros"
             }

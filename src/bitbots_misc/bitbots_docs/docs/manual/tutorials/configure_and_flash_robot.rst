@@ -50,7 +50,7 @@ At a competition, follow these steps:
 
    .. code-block:: bash
 
-      ./scripts/deploy_robots.py <nuc* | robot_name | ALL>
+      just deploy <nuc* | robot_name | ALL>
 
    This does the 5 following tasks:
    - Synchronize/Copy the current state of your local bitbots_main directory to the robot(s)
@@ -63,7 +63,7 @@ At a competition, follow these steps:
 
    .. code-block:: bash
 
-      ./scripts/deploy_robots.py -h
+      just deploy -h
 
 #. **Optional: Connect to the robot:**
    Simply copy-paste the command provided by the deploy-tool when its finished.
@@ -97,7 +97,6 @@ Our Ansible setup is able to configure the following aspects of the robot:
    - Configuration of competition Wi-Fi networks (see :doc:`competition_wifi`)
    - Configuration of USB-Ethernet adapter as slave of a bridge interface, to allow for removal without losing the interface utilized by ros/dds
    - Configuration of custom MTU of 9000 (jumbo frames) for Ethernet connection to the basler camera
-- Setup of custom apt repositories/packages (e.g. `packages.bit-bots.de <https://packages.bit-bots.de>`_ if applicable)
 - Installation and configuration of ROS and DDS
 - Configuration of Vulkan packages/drivers
 
@@ -114,39 +113,3 @@ Ansible will execute the playbook with the ``bitbots`` user on the robots and wi
 .. note::
    Does DNS not resolve ``nuc*``? See :doc:`configure_hostnames` to fix this.
 
-
-LEGACY: Sync/Build the software using the ``robot_compile`` tool:
------------------------------------------------------------------
-
-We utilize a python script located in ``bitbots_main/scripts/robot_compile.py`` to allow doing the following:
-
-- sync the local code of the whole ``bitbots_main`` or a single package onto a robot
-- build the synced code on the robot afterwards
-- automatically install required dependencies with ``rosdep install`` if the robot has an active internet connection
-- clean the whole ``~/colcon_ws`` on a robot
-- interactively configure the ``game_settings.yaml`` on a robot to prepare it for a game
-- activate the fields Wi-Fi connection and disable all others
-
-A full overview all the options are viewable with the ``-h`` flag.
-
-**Exemplary commands:**
-
-.. code-block:: bash
-
-   # full sync/build of bitbots_main
-   ./scripts/robot_compile.py nuc1
-
-   # rm everything before full sync/compile
-   ./scripts/robot_compile.py --clean-src --clean-build nuc1
-
-   # sync/build and configure robot for game after
-   ./scripts/robot_compile.py -k nuc1
-
-   # only configure robot for game
-   ./scripts/robot_compile.py -K nuc1
-
-   # only sync/build a single package (bitbots_vision)
-   ./scripts/robot_compile.py -p bitbots_vision nuc1
-
-   # sync/clean build a single package (bitbots_vision)
-   ./scripts/robot_compile.py -p bitbots_vision nuc1
