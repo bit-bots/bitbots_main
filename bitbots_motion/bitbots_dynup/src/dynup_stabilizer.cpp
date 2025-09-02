@@ -4,8 +4,8 @@ namespace bitbots_dynup {
 
 Stabilizer::Stabilizer(rclcpp::Node::SharedPtr node, bitbots_dynup::Params::Stabilizer params)
     : params_(params),
-      pid_trunk_pitch_(node, "stabilizer.trunk_pid.pitch"),
-      pid_trunk_roll_(node, "stabilizer.trunk_pid.roll") {
+      pid_trunk_pitch_(node, "stabilizer.trunk_pid.pitch", "", false),
+      pid_trunk_roll_(node, "stabilizer.trunk_pid.roll", "", false) {
   pid_trunk_pitch_.initialize_from_ros_parameters();
   pid_trunk_roll_.initialize_from_ros_parameters();
 
