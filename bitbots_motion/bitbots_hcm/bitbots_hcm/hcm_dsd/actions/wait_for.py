@@ -5,8 +5,8 @@ class WaitForIMUStartup(AbstractHCMActionElement):
     """
     Waits for the IMU to connect and does not complain as we are still in start up.
     """
-
-    pass
+    def perform(self, reevaluate=False):
+        pass
 
 
 class WaitForIMU(AbstractHCMActionElement):
@@ -25,7 +25,8 @@ class WaitForPressureStartup(AbstractHCMActionElement):
     Waits for the pressure sensors to connect and not complain since we are still starting up.
     """
 
-    pass
+    def perform(self, reevaluate=False):
+        pass
 
 
 class WaitForPressure(AbstractHCMActionElement):
