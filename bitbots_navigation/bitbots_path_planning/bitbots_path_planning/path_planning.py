@@ -1,5 +1,6 @@
 import rclpy
 import soccer_vision_3d_msgs.msg as sv3dm
+from biped_interfaces.msg import Phase
 from bitbots_tf_buffer import Buffer
 from geometry_msgs.msg import PointStamped, PoseStamped, PoseWithCovarianceStamped, Twist
 from nav_msgs.msg import Path
@@ -7,7 +8,6 @@ from rclpy.duration import Duration
 from rclpy.experimental.events_executor import EventsExecutor
 from std_msgs.msg import Bool, Empty
 from visualization_msgs.msg import MarkerArray
-from biped_interfaces.msg import Phase
 
 from bitbots_path_planning import NodeWithConfig
 from bitbots_path_planning.controller import Controller
@@ -39,7 +39,7 @@ class PathPlanning(NodeWithConfig):
             lambda msg: self.planner.avoid_ball(msg.data),  # type: ignore
             5,
         )
-        self.create_subscription(Phase, "walk_support_state", self.update_foot_change,1)
+        self.create_subscription(Phase, "walk_support_state", self.update_foot_change, 1)
 
         # Publisher
         self.cmd_vel_pub = self.create_publisher(Twist, "cmd_vel", 1)
@@ -53,6 +53,7 @@ class PathPlanning(NodeWithConfig):
 
         self.foot_changed = True
         self.last_phase = Phase()
+        self.last_cmd_vel = Twist()
 
     def step(self) -> None:
         """
@@ -70,7 +71,7 @@ class PathPlanning(NodeWithConfig):
                 # Calculate the command velocity to follow the given path
                 cmd_vel, carrot_point = self.controller.step(path)
                 # Publish the walk command to control the robot
-                #self.cmd_vel_pub.publish(cmd_vel)
+                # self.cmd_vel_pub.publish(cmd_vel)
                 self.step_publish_test(cmd_vel)
                 # Publish the carrot point for visualization
                 self.carrot_pub.publish(carrot_point)
@@ -78,15 +79,18 @@ class PathPlanning(NodeWithConfig):
             self.get_logger().error(f"Caught exception during calculation of path planning step: {e}")
 
     def step_publish_test(self, cmd_vel):
-        if self.foot_changed:
+        if self.foot_changed or (self.last_cmd_vel.angular.x != 0 and cmd_vel.angular.x == 0):
             self.foot_changed = False
+            self.last_cmd_vel = cmd_vel
             factor = (1.0 / 1.2) / 2.0
 
-            step = [cmd_vel.linear.x * factor ,
-                                            cmd_vel.linear.y * factor * 2 ,
-                                            cmd_vel.linear.z * factor,
-                                            cmd_vel.angular.z * factor]
-            
+            step = [
+                cmd_vel.linear.x * factor,
+                cmd_vel.linear.y * factor * 2,
+                cmd_vel.linear.z * factor,
+                cmd_vel.angular.z * factor,
+            ]
+
             step_msg = Twist()
             step_msg.linear.x = step[0]
             step_msg.linear.y = step[1]
@@ -96,10 +100,9 @@ class PathPlanning(NodeWithConfig):
             self.step_pub.publish(step_msg)
 
     def update_foot_change(self, msg: Phase):
-        if self.last_phase.phase != msg.phase: 
+        if self.last_phase.phase != msg.phase:
             self.foot_changed = True
             self.last_phase = msg
-        
 
 
 def main(args=None):
