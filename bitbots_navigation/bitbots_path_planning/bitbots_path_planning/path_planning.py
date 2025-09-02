@@ -7,6 +7,7 @@ from rclpy.duration import Duration
 from rclpy.experimental.events_executor import EventsExecutor
 from std_msgs.msg import Bool, Empty
 from visualization_msgs.msg import MarkerArray
+from biped_interfaces.msg import Phase
 
 from bitbots_path_planning import NodeWithConfig
 from bitbots_path_planning.controller import Controller
@@ -38,6 +39,7 @@ class PathPlanning(NodeWithConfig):
             lambda msg: self.planner.avoid_ball(msg.data),  # type: ignore
             5,
         )
+        self.create_subscription(Phase, "walk_support_state", self.update_foot_change,1)
 
         # Publisher
         self.cmd_vel_pub = self.create_publisher(Twist, "cmd_vel", 1)
@@ -48,6 +50,9 @@ class PathPlanning(NodeWithConfig):
 
         # Timer that updates the path and command velocity at a given rate
         self.create_timer(1 / self.config.rate, self.step, clock=self.get_clock())
+
+        self.foot_changed = True
+        self.last_phase = Phase()
 
     def step(self) -> None:
         """
@@ -73,20 +78,29 @@ class PathPlanning(NodeWithConfig):
             self.get_logger().error(f"Caught exception during calculation of path planning step: {e}")
 
     def step_publish_test(self, cmd_vel):
-        factor = (1.0 / 1.2) / 2.0
+        if self.foot_changed:
+            self.foot_changed = False
+            factor = (1.0 / 1.2) / 2.0
 
-        step = [cmd_vel.linear.x * factor ,
-                                        cmd_vel.linear.y * factor * 2 ,
-                                        cmd_vel.linear.z * factor,
-                                        cmd_vel.angular.z * factor]
+            step = [cmd_vel.linear.x * factor ,
+                                            cmd_vel.linear.y * factor * 2 ,
+                                            cmd_vel.linear.z * factor,
+                                            cmd_vel.angular.z * factor]
+            
+            step_msg = Twist()
+            step_msg.linear.x = step[0]
+            step_msg.linear.y = step[1]
+            step_msg.linear.z = step[2]
+            step_msg.angular.z = step[3]
+
+            self.step_pub.publish(step_msg)
+
+    def update_foot_change(self, msg: Phase):
+        if self.last_phase.phase != msg.phase: 
+            self.foot_changed = True
+            self.last_phase = msg
         
-        step_msg = Twist()
-        step_msg.linear.x = step[0]
-        step_msg.linear.y = step[1]
-        step_msg.linear.z = step[2]
-        step_msg.angular.z = step[3]
 
-        self.step_pub.publish(step_msg)
 
 def main(args=None):
     rclpy.init(args=args)
