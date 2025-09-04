@@ -5,6 +5,7 @@ class WaitForIMUStartup(AbstractHCMActionElement):
     """
     Waits for the IMU to connect and does not complain as we are still in start up.
     """
+
     def perform(self, reevaluate=False):
         pass
 
