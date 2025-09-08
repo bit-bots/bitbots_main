@@ -2,6 +2,7 @@ import os
 
 import rclpy
 from ament_index_python.packages import get_package_share_directory
+from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
 from sensor_msgs.msg import JointState
 from urdf_parser_py.urdf import URDF
@@ -42,6 +43,10 @@ class CommandProxy(Node):
 def main(args=None):
     rclpy.init(args=args)
     command_proxy = CommandProxy()
-    rclpy.spin(command_proxy)
+    executor = EventsExecutor()
+    executor.add_node(command_proxy)
+    try:
+        executor.spin()
+    except KeyboardInterrupt:
+        pass
     command_proxy.destroy_node()
-    rclpy.shutdown()
