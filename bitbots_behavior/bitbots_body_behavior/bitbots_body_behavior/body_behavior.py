@@ -62,6 +62,13 @@ class BodyDSD:
             callback_group=MutuallyExclusiveCallbackGroup(),
         )
         node.create_subscription(
+            RobotArray,
+            "robots_relative_filtered",
+            blackboard.world_model.robots_array_msg_callback,
+            qos_profile=1,
+            callback_group=MutuallyExclusiveCallbackGroup(),
+        )
+        node.create_subscription(
             RobotControlState,
             "robot_state",
             blackboard.misc.robot_state_callback,

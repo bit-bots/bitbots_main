@@ -66,9 +66,11 @@ $ClosestToBall
     YES --> #KickWithAvoidance
 
 #StrikerRole
-$GoalieHandlingBall
-    YES --> @ChangeAction + action:positioning, @AvoidBallActive, @LookAtFieldFeatures, @GoToDefensePosition //quick fix for playing with two robots during GO
-    NO --> #KickWithAvoidance
+$OwnTeamIsInPossession
+    YES --> $GoalieHandlingBall
+        YES --> @ChangeAction + action:positioning, @AvoidBallActive, @LookAtFieldFeatures, @GoToDefensePosition //quick fix for playing with two robots during GO
+        NO --> #KickWithAvoidance
+    NO --> @ChangeAction + action:positioning, @AvoidBallActive, @LookAtFieldFeatures, @GoToDefensePosition //quick fix for playing with two robots during GO
 
 #DefensePositioning
 $GoalieActive

@@ -12,6 +12,7 @@ from geometry_msgs.msg import (
 from rclpy.clock import ClockType
 from rclpy.time import Time
 from ros2_numpy import msgify, numpify
+from soccer_vision_3d_msgs.msg import Robot, RobotArray
 from std_msgs.msg import Header
 from std_srvs.srv import Trigger
 from tf2_geometry_msgs import Point, PointStamped
@@ -62,6 +63,9 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
             header=Header(stamp=Time(clock_type=ClockType.ROS_TIME), frame_id=self.map_frame)
         )  # The ball in the map frame (default to the center of the field if ball is not seen yet)
         self._ball_covariance: np.ndarray = np.zeros((2, 2))  # Covariance of the ball
+
+        # lastRobotMessage
+        self.last_robot_msg = None
 
         # Publisher for visualization in RViZ
         self.debug_publisher_used_ball = self._node.create_publisher(PointStamped, "debug/behavior/used_ball", 1)
@@ -175,6 +179,39 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
         Forget that we saw a ball
         """
         self.reset_ball_filter.call_async(Trigger.Request())
+
+    def robots_array_msg_callback(self, msg: RobotArray) -> None:
+        self.last_robot_msg = msg.robots
+
+    def distance_to_ball_own_team(self) -> float:
+        min_squared_dist = 100000.0
+        robot: Robot
+        if self.last_robot_msg is not None:
+            for robot in self.last_robot_msg:
+                if robot.attributes._team == 1:
+                    pos_x = robot.bb._center._position.x
+                    pos_y = robot.bb._center._position.y
+                    ball_point = self.get_best_ball_point_stamped()
+                    dist = (pos_x - ball_point._point.x) ** 2 * (pos_y - ball_point._point.y) ** 2
+                    if dist < min_squared_dist:
+                        min_squared_dist = dist
+
+        return min_squared_dist
+
+    def distance_to_ball_opponent_team(self) -> float:
+        min_squared_dist = 100000.1
+        robot: Robot
+        if self.last_robot_msg is not None:
+            for robot in self.last_robot_msg:
+                if robot.attributes._team == 2:
+                    pos_x = robot.bb._center._position.x
+                    pos_y = robot.bb._center._position.y
+                    ball_point = self.get_best_ball_point_stamped()
+                    dist = (pos_x - ball_point._point.x) ** 2 * (pos_y - ball_point._point.y) ** 2
+                    if dist < min_squared_dist:
+                        min_squared_dist = dist
+
+        return min_squared_dist
 
     ########
     # Goal #
