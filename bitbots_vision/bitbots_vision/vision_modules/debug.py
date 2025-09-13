@@ -134,8 +134,7 @@ class DebugImage:
 
         # Blend color directly where mask is true
         self._debug_image[mask_bool, :] = (
-            self._debug_image[mask_bool, :] * (1.0 - opacity)
-            + np.array(color, dtype=np.float32) * opacity
+            self._debug_image[mask_bool, :] * (1.0 - opacity) + np.array(color, dtype=np.float32) * opacity
         ).astype(np.uint8)
 
     def get_image(self):
