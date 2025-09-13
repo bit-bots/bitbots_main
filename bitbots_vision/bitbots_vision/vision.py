@@ -127,7 +127,7 @@ class YOEOVision(Node):
         )
 
     @profile
-    def _run_vision_pipeli ne(self, image_msg: Image) -> None:
+    def _run_vision_pipeline(self, image_msg: Image) -> None:
         image = self._cv_bridge.imgmsg_to_cv2(image_msg, "bgr8")
 
         assert self._debug_image is not None, "Debug image not initialized"
