@@ -1,4 +1,5 @@
 import re
+from enum import Enum
 from typing import Optional, TypeAlias
 
 from bitbots_utils.utils import get_parameters_from_other_node
@@ -18,6 +19,8 @@ from soccer_vision_2d_msgs.msg import (
 from soccer_vision_attribute_msgs.msg import Robot as RobotAttributes
 from vision_msgs.msg import BoundingBox2D, Pose2D
 
+from bitbots_vision.vision_modules import candidate
+
 """
 This module provides some methods needed for the ros environment,
 e.g. methods to convert candidates to ROS messages or methods to modify the dynamic reconfigure objects.
@@ -29,10 +32,18 @@ logger = logging.get_logger("bitbots_vision")
 
 general_parameters = []
 
-global own_team_color
-own_team_color = None
-
 T_RobotAttributes_Team: TypeAlias = int  # Type for RobotAttributes.team
+
+
+# These values are taken from the game settings
+class RobotColor(Enum):
+    BLUE = 0
+    RED = 1
+    UNKNOWN = None
+
+
+global own_team_color
+own_team_color: RobotColor = RobotColor.UNKNOWN
 
 
 def create_or_update_publisher(
@@ -201,20 +212,20 @@ def build_robot_array_msg(header, robots):
     return robots_msg
 
 
-def build_robot_msg(obstacle, obstacle_color=None):
+def build_robot_msg(robot: candidate.Candidate, team: Optional[T_RobotAttributes_Team] = None) -> Robot:
     """
-    Builds a Robot msg of a detected obstacle of a certain color
+    Builds a Robot msg of a detected robot of a certain color
 
-    :param Candidate obstacle: Obstacle candidate
-    :param GameState.team_color obstacle_color: Color of the obstacle, defaults to None
-    :return: Robot msg
+    :param robot: Robot candidate
+    :param team: Team of the robot, defaults to None
+    :return: Robot message
     """
-    obstacle_msg = Robot()
-    obstacle_msg.bb = build_bounding_box_2d(obstacle)
-    obstacle_msg.attributes.team = get_team_from_robot_color(obstacle_color)
-    if obstacle.get_rating() is not None:
-        obstacle_msg.confidence.confidence = float(obstacle.get_rating())
-    return obstacle_msg
+    robot_msg = Robot()
+    robot_msg.bb = build_bounding_box_2d(robot)
+    robot_msg.attributes.team = team or RobotAttributes.TEAM_UNKNOWN
+    if robot.get_rating() is not None:
+        robot_msg.confidence.confidence = float(robot.get_rating())
+    return robot_msg
 
 
 def build_marking_array_msg(header, marking_segments):
@@ -323,42 +334,23 @@ def update_own_team_color(vision_node: Node):
     params = get_parameters_from_other_node(
         vision_node, "parameter_blackboard", ["team_color"], service_timeout_sec=2.0
     )
-    own_team_color = params["team_color"]
+    own_team_color = RobotColor(params["team_color"])
     vision_node._logger.debug(f"Own team color is: {own_team_color}")
 
 
-def get_team_from_robot_color(color: int) -> T_RobotAttributes_Team:
-    """
-    Maps the detected robot color to the current team.
-    If the color is the same as the current team, returns own team, else returns opponent team.
-    """
-    global own_team_color
-    if own_team_color is not None and 0 >= own_team_color <= 1:
-        return RobotAttributes.TEAM_UNKNOWN
-
-    if 0 >= color <= 1:  # If color is not known, we can just return unknown
-        return Robot().attributes.TEAM_UNKNOWN
-
-    if color == own_team_color:  # Robot is in own team, if same color
-        return RobotAttributes.TEAM_OWN
-    else:  # Robot is not same color, therefore it is from the opponent's team
-        return RobotAttributes.TEAM_OPPONENT
-
-
-def get_robot_color_for_team(team: T_RobotAttributes_Team) -> Optional[int]:
+def get_robot_color_for_team(team: T_RobotAttributes_Team) -> RobotColor:
     """
     Maps team (own, opponent, unknown) to the current robot color.
     """
     global own_team_color
-    if own_team_color is None:
-        return None  # This gets handled later
 
     if team == RobotAttributes.TEAM_OWN:
         return own_team_color
     elif team == RobotAttributes.TEAM_OPPONENT:
-        if own_team_color == 0:  # 0 is blue, 1 is red
-            return 1
-        else:
-            return 0
+        return {
+            RobotColor.RED: RobotColor.BLUE,
+            RobotColor.BLUE: RobotColor.RED,
+            RobotColor.UNKNOWN: RobotColor.UNKNOWN,
+        }[own_team_color]
     else:
-        return None
+        raise ValueError(f"Unknown team value: {team}")

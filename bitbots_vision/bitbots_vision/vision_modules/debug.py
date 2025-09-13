@@ -1,4 +1,5 @@
 from typing import Callable, Optional, Sequence
+from collections.abc import Sequence
 
 import cv2
 import numpy as np
@@ -145,41 +146,3 @@ class DebugImage:
         :return: image with debug stuff
         """
         return self._debug_image
-
-    def draw(self, debug_image_description, image=None):
-        """
-        Draws a debug image description, that contains the style and the data for each object/class that we debug
-        E.g.:
-        {
-            'type': 'field_boundary',
-            'thickness': 1,
-            'color': (255,255,255),
-            'data': #Some data
-        }
-
-        :param debug_image_description: List of dicts contains the style and the date for each object/class that we debug
-        In the dict 'type' refers to the type that we want to draw. Some types are ['robot', 'field_boundary', 'ball', 'line_point', 'line_segment'].
-        The key 'color' defines the color as BRG. For most types this is the border color.
-        The key 'thickness' refers to the border thickness.
-        The data, so the candidates we want to draw are defined with the 'data' key.
-        :return: Image with debug stuff
-        """
-        # Set Image if transmitted (optional). Otherwise take the manual set image.
-        if image:
-            self.set_image(image)
-        # Define the draw functions for each type
-        draw_functions: dict[str, Callable] = {
-            "robot": self.draw_robot_candidates,
-            "field_boundary": self.draw_field_boundary,
-            "ball": self.draw_ball_candidates,
-            "line_point": self.draw_points,
-            "line_segment": self.draw_line_segments,
-        }
-        # Draw all entries
-        for draw_type in debug_image_description:
-            # Get drawing function from dict
-            draw_function = draw_functions[draw_type["type"]]
-            # Call drawing function
-            draw_function(draw_type["data"], draw_type["color"], draw_type["thickness"])
-        # Return the image
-        return self.get_image()
