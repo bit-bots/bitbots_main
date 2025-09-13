@@ -6,7 +6,6 @@ from .vision_components import (
     FieldDetectionComponent,
     GoalpostDetectionComponent,
     LineDetectionComponent,
-    NoTeamColorRobotDetectionComponent,
     RobotDetectionComponent,
     YOEOComponent,
 )
@@ -18,7 +17,6 @@ __all__ = [
     "GoalpostDetectionComponent",
     "AbstractVisionComponent",
     "LineDetectionComponent",
-    "NoTeamColorRobotDetectionComponent",
     "RobotDetectionComponent",
     "YOEOComponent",
     "YOEOObjectManager",

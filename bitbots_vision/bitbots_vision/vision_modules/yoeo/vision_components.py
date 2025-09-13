@@ -5,7 +5,6 @@ from abc import ABC, abstractmethod
 import numpy as np
 import rclpy
 from rclpy.node import Node
-from rclpy.publisher import Publisher
 from sensor_msgs.msg import Image
 from soccer_vision_2d_msgs.msg import BallArray, GoalpostArray, Robot, RobotArray
 from std_msgs.msg import Header
@@ -58,11 +57,9 @@ class BallDetectionComponent(AbstractVisionComponent):
     ):
         super().__init__(node, yoeo_handler, debug_image, config)
 
-        self._publisher = ros_utils.create_or_update_publisher(
-            self._node, self._config, self._config, self._publisher, "ROS_ball_msg_topic", BallArray
-        )
+        self._publisher = self._node.create_publisher(BallArray, self._config["ROS_ball_msg_topic"], qos_profile=1)
 
-    def run(self, header: Header) -> None:
+    def run(self, image: np.ndarray, header: Header) -> None:
         # Get all ball candidates from YOEO
         candidates = self._yoeo_handler.get_detection_candidates_for("ball")
 
@@ -98,17 +95,20 @@ class GoalpostDetectionComponent(AbstractVisionComponent):
     ):
         super().__init__(node, yoeo_handler, debug_image, config)
 
-        self._publisher: Publisher = ros_utils.create_or_update_publisher(
-            self._node, self._config, self._config, self._publisher, "ROS_goal_posts_msg_topic", GoalpostArray
+        self._publisher = self._node.create_publisher(
+            GoalpostArray, self._config["ROS_goal_posts_msg_topic"], qos_profile=1
         )
 
-    def run(self, header: Header) -> None:
+    def run(self, image: np.ndarray, header: Header) -> None:
+        # Get all goalpost candidates from YOEO
         candidates = self._yoeo_handler.get_detection_candidates_for("goalpost")
+
+        # Publish goalpost candidates
         self._publish_goalposts_message(header, candidates)
 
-        if self._debug_mode:
-            self._debug_image.draw_robot_candidates(candidates, DebugImageComponent.Colors.goalposts, thickness=1)
-            self._debug_image.draw_robot_candidates(candidates, DebugImageComponent.Colors.goalposts, thickness=3)
+        # Draw candidates on debug image
+        self._debug_image.draw_robot_candidates(candidates, DebugImageComponent.Colors.goalposts, thickness=1)
+        self._debug_image.draw_robot_candidates(candidates, DebugImageComponent.Colors.goalposts, thickness=3)
 
     def _publish_goalposts_message(self, header: Header, candidates: list[candidate.Candidate]) -> None:
         goalpost_messages = [ros_utils.build_goal_post_msg(candidate) for candidate in candidates]
@@ -126,17 +126,17 @@ class LineDetectionComponent(AbstractVisionComponent):
         self, node: Node, yoeo_handler: yoeo_handlers.IYOEOHandler, debug_image: debug.DebugImage, config: dict
     ):
         super().__init__(node, yoeo_handler, debug_image, config)
-        self._publisher: Publisher = ros_utils.create_or_update_publisher(
-            self._node, self._config, self._config, self._publisher, "ROS_line_mask_msg_topic", Image
-        )
+        self._publisher = self._node.create_publisher(Image, self._config["ROS_line_mask_msg_topic"], qos_profile=1)
 
-    def run(self, header: Header) -> None:
-        assert self._line_detector is not None, "Line detector not set!"
+    def run(self, image: np.ndarray, header: Header) -> None:
+        # Get line mask from YOEO
         line_mask = (self._yoeo_handler.get_segmentation_mask_for("lines")) * 255
+
+        # Publish line mask
         self._publish_line_mask_msg(header, line_mask)
 
-        if self._debug_mode:
-            self._debug_image.draw_mask(line_mask, color=DebugImageComponent.Colors.lines)
+        # Draw line mask on debug image
+        self._debug_image.draw_mask(line_mask, color=DebugImageComponent.Colors.lines)
 
     def _publish_line_mask_msg(self, header: Header, line_mask: np.ndarray) -> None:
         line_mask_msg = ros_utils.build_image_msg(header, line_mask, "8UC1")
@@ -153,12 +153,15 @@ class FieldDetectionComponent(AbstractVisionComponent):
         self, node: Node, yoeo_handler: yoeo_handlers.IYOEOHandler, debug_image: debug.DebugImage, config: dict
     ):
         super().__init__(node, yoeo_handler, debug_image, config)
-        self._publisher: Publisher = ros_utils.create_or_update_publisher(
-            self._node, self._config, self._config, self._publisher, "ROS_field_mask_image_msg_topic", Image
+        self._publisher = self._node.create_publisher(
+            Image, self._config["ROS_field_mask_image_msg_topic"], qos_profile=1
         )
 
-    def run(self, header: Header) -> None:
+    def run(self, image: np.ndarray, header: Header) -> None:
+        # Get field mask from YOEO
         field_mask = (self._yoeo_handler.get_segmentation_mask_for("field")) * 255
+
+        # Publish field mask
         self._publish_field_mask_msg(header, field_mask)
 
     def _publish_field_mask_msg(self, header: Header, field_mask: np.ndarray) -> None:
@@ -181,14 +184,11 @@ class RobotDetectionComponent(AbstractVisionComponent):
         team_color_detection_supported: bool,
     ):
         super().__init__(node, yoeo_handler, debug_image, config)
+
         self._team_color_detection_supported = team_color_detection_supported
+        self._publisher = self._node.create_publisher(RobotArray, self._config["ROS_robot_msg_topic"], qos_profile=1)
 
-        self._yoeo_handler: yoeo_handlers.IYOEOHandler = yoeo_handler
-        self._publisher: Publisher = ros_utils.create_or_update_publisher(
-            self._node, self._config, self._config, self._publisher, "ROS_robot_msg_topic", RobotArray
-        )
-
-    def run(self, header: Header) -> None:
+    def run(self, image: np.ndarray, header: Header) -> None:
         robot_msgs: list[Robot] = []
         own_color = ros_utils.get_robot_color_for_team(Robot().attributes.TEAM_OWN)
         assert own_color != ros_utils.RobotColor.UNKNOWN
@@ -283,15 +283,8 @@ class DebugImageComponent(AbstractVisionComponent):
     ):
         super().__init__(node, yoeo_handler, debug_image, config)
 
-        self._publisher: Publisher = ros_utils.create_or_update_publisher(
-            self._node, self._config, config, self._publisher, "ROS_debug_image_msg_topic", Image
-        )
+        self._publisher = self._node.create_publisher(Image, self._config["ROS_debug_image_msg_topic"], qos_profile=1)
 
-    def run(self, header: Header) -> None:
-        assert self._debug_image is not None, "Debug image component not set!"
+    def run(self, image: np.ndarray, header: Header) -> None:
         debug_image_msg = ros_utils.build_image_msg(header, self._debug_image.get_image(), "bgr8")
         self._publisher.publish(debug_image_msg)
-
-    def set_image(self, image: np.ndarray) -> None:
-        assert self._debug_image is not None, "Debug image component not set!"
-        self._debug_image.set_image(image)

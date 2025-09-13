@@ -46,38 +46,6 @@ global own_team_color
 own_team_color: RobotColor = RobotColor.UNKNOWN
 
 
-def create_or_update_publisher(
-    node, old_config, new_config, publisher_object, topic_key, data_class, qos_profile=1, callback_group=None
-):
-    """
-    Creates or updates a publisher
-
-    :param node: ROS node to which the publisher is bound
-    :param old_config: Previous config dict
-    :param new_config: Current config dict
-    :param publisher_object: The python object, that represents the publisher
-    :param topic_key: The name of the topic variable in the config dict
-    :param data_class: Data type class for ROS messages of the topic we want to subscribe
-    :param qos_profile: A QoSProfile or a history depth to apply to the publisher.
-        In the case that a history depth is provided, the QoS history is set to
-        KEEP_LAST, the QoS history depth is set to the value
-        of the parameter, and all other QoS settings are set to their default values.
-        Reference: https://github.com/ros2/rclpy/blob/6f7cfd0c73bda1afefba36b6785516f343d6b634/rclpy/rclpy/node.py#L1258
-    :param callback_group: The callback group for the publisher's event handlers.
-        If ``None``, then the node's default callback group is used.
-        Reference: https://github.com/ros2/rclpy/blob/6f7cfd0c73bda1afefba36b6785516f343d6b634/rclpy/rclpy/node.py#L1262
-    :return: adjusted publisher object
-    """
-    # Check if topic parameter has changed
-    if config_param_change(old_config, new_config, topic_key):
-        # Create the new publisher
-        publisher_object = node.create_publisher(
-            data_class, new_config[topic_key], qos_profile, callback_group=callback_group
-        )
-        logger.debug("Registered new publisher to " + str(new_config[topic_key]))
-    return publisher_object
-
-
 def create_or_update_subscriber(
     node, old_config, new_config, subscriber_object, topic_key, data_class, callback, qos_profile=1, callback_group=None
 ):

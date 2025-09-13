@@ -85,46 +85,44 @@ class YOEOVision(Node):
     def _configure_vision(self, new_config: dict) -> None:
         yoeo.YOEOObjectManager.configure(new_config)
 
-        self._debug_image = debug.DebugImage(new_config["component_debug_image_active"])
+        debug_image = debug.DebugImage(new_config["component_debug_image_active"])
+        self._debug_image = debug_image
 
-        self._set_up_vision_components(new_config)
-        self._register_subscribers(new_config)
+        def make_vision_component(
+            component_class: type[yoeo.AbstractVisionComponent], **kwargs
+        ) -> yoeo.AbstractVisionComponent:
+            return component_class(
+                node=self,
+                yoeo_handler=yoeo.YOEOObjectManager.get(),
+                debug_image=debug_image,
+                config=new_config,
+                **kwargs,
+            )
 
-    def _set_up_vision_components(self, new_config: dict) -> None:
-        assert self._debug_image is not None, "Debug image not initialized"
-
-        component_base_parameters = {
-            "node": self,
-            "yoeo_handler": yoeo.YOEOObjectManager.get(),
-            "debug_image": self._debug_image,
-            "config": new_config,
-        }
-
-        self._vision_components = [yoeo.YOEOComponent(**component_base_parameters)]
+        self._vision_components = [make_vision_component(yoeo.YOEOComponent)]
 
         if new_config["component_ball_detection_active"]:
-            self._vision_components.append(yoeo.BallDetectionComponent(**component_base_parameters))
+            self._vision_components.append(make_vision_component(yoeo.BallDetectionComponent))
         if new_config["component_robot_detection_active"]:
             self._vision_components.append(
-                yoeo.RobotDetectionComponent(
-                    **component_base_parameters,
-                    is_team_color_detection_supported=yoeo.YOEOObjectManager.is_team_color_detection_supported(),
+                make_vision_component(
+                    yoeo.RobotDetectionComponent,
+                    team_color_detection_supported=yoeo.YOEOObjectManager.is_team_color_detection_supported(),
                 )
             )
         if new_config["component_goalpost_detection_active"]:
-            self._vision_components.append(yoeo.GoalpostDetectionComponent(**component_base_parameters))
+            self._vision_components.append(make_vision_component(yoeo.GoalpostDetectionComponent))
         if new_config["component_line_detection_active"]:
-            self._vision_components.append(yoeo.LineDetectionComponent(**component_base_parameters))
+            self._vision_components.append(make_vision_component(yoeo.LineDetectionComponent))
         if new_config["component_field_detection_active"]:
-            self._vision_components.append(yoeo.FieldDetectionComponent(**component_base_parameters))
+            self._vision_components.append(make_vision_component(yoeo.FieldDetectionComponent))
         if new_config["component_debug_image_active"]:
-            self._vision_components.append(yoeo.DebugImageComponent(**component_base_parameters))
+            self._vision_components.append(make_vision_component(yoeo.DebugImageComponent))
 
-    def _register_subscribers(self, config: dict) -> None:
         self._sub_image = ros_utils.create_or_update_subscriber(
             self,
             self._config,
-            config,
+            new_config,
             self._sub_image,
             "ROS_img_msg_topic",
             Image,
