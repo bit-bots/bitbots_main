@@ -75,7 +75,6 @@ class BallDetectionComponent(AbstractVisionComponent):
 
         # Draw candidates on debug image
         self._debug_image.draw_ball_candidates(candidates, DebugImageComponent.Colors.ball, thickness=1)
-        self._debug_image.draw_ball_candidates(candidates, DebugImageComponent.Colors.ball, thickness=2)
         self._debug_image.draw_ball_candidates(final_candidates, DebugImageComponent.Colors.ball, thickness=3)
 
     def _publish_balls_message(self, header: Header, candidates: list[candidate.Candidate]) -> None:
