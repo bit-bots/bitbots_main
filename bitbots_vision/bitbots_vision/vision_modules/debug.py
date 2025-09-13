@@ -1,4 +1,3 @@
-from collections.abc import Sequence
 from typing import Optional, Sequence
 
 import cv2
