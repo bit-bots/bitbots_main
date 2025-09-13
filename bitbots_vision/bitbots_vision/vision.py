@@ -9,7 +9,7 @@ from rcl_interfaces.msg import SetParametersResult
 from rclpy.node import Node
 from sensor_msgs.msg import Image
 
-from bitbots_vision.vision_modules import ros_utils, yoeo, debug
+from bitbots_vision.vision_modules import debug, ros_utils, yoeo
 
 from .params import gen
 
@@ -97,7 +97,7 @@ class YOEOVision(Node):
             "node": self,
             "yoeo_handler": yoeo.YOEOObjectManager.get(),
             "debug_image": self._debug_image,
-            "config": new_config
+            "config": new_config,
         }
 
         self._vision_components = [yoeo.YOEOComponent(**component_base_parameters)]
@@ -105,7 +105,12 @@ class YOEOVision(Node):
         if new_config["component_ball_detection_active"]:
             self._vision_components.append(yoeo.BallDetectionComponent(**component_base_parameters))
         if new_config["component_robot_detection_active"]:
-            self._vision_components.append(yoeo.RobotDetectionComponent(**component_base_parameters, is_team_color_detection_supported=yoeo.YOEOObjectManager.is_team_color_detection_supported()))
+            self._vision_components.append(
+                yoeo.RobotDetectionComponent(
+                    **component_base_parameters,
+                    is_team_color_detection_supported=yoeo.YOEOObjectManager.is_team_color_detection_supported(),
+                )
+            )
         if new_config["component_goalpost_detection_active"]:
             self._vision_components.append(yoeo.GoalpostDetectionComponent(**component_base_parameters))
         if new_config["component_line_detection_active"]:
