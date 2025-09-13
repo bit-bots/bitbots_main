@@ -11,7 +11,7 @@
   <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
 
   <license>MIT</license>
-  
+
   <author email="7sell@informatik.uni-hamburg.de">Finn-Thorben Sell</author>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
@@ -21,7 +21,10 @@
   <depend>rclpy</depend>
   <depend>bitbots_msgs</depend>
 
-  <export><build_type>ament_python</build_type>
+  <test_depend>python3-pytest</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
   </export>
 
-  </package>
+</package>

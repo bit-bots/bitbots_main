@@ -19,6 +19,9 @@
   <depend>rclpy</depend>
   <depend>std_msgs</depend>
   <depend>tf_transformations</depend>
+  <depend>joy_linux</depend>
+
+  <test_depend>python3-pytest</test_depend>
 
   <export>
     <bitbots_documentation>

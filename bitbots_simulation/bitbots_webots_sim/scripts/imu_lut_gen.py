@@ -4,13 +4,13 @@ def noise_table(my_min, noise, iters, indent):
     for i in range(iters):
         val = my_min / 2**i
         print(indent * " ", end="")
-        print(f"  {val:f} {val:f} {noise/-val:f},")
+        print(f"  {val:f} {val:f} {noise / -val:f},")
     print(indent * " ", end="")
     print("  0 0 0")
     for i in range(iters):
         val = -my_min / 2 ** (iters - i - 1)
         print(indent * " ", end="")
-        print(f"  {val:f} {val:f} {noise/val:f},")
+        print(f"  {val:f} {val:f} {noise / val:f},")
     print(indent * " ", end="")
     print("]")
 

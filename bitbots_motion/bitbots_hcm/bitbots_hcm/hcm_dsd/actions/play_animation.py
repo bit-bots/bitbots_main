@@ -88,9 +88,9 @@ class AbstractPlayAnimation(AbstractHCMActionElement, ABC):
         self.publish_debug_data("Animation Percent Done", str(feedback.percent_done))
 
     def animation_finished(self):
-        assert (
-            self.blackboard.animation_action_current_goal is not None
-        ), "No animation action goal set, so we cannot check if it is finished"
+        assert self.blackboard.animation_action_current_goal is not None, (
+            "No animation action goal set, so we cannot check if it is finished"
+        )
         return (
             self.blackboard.animation_action_current_goal.done()
             and self.blackboard.animation_action_current_goal.result().status
@@ -248,9 +248,9 @@ class PlayAnimationDynup(AbstractHCMActionElement):
         self.publish_debug_data("Dynup Percent Done", str(feedback.percent_done))
 
     def animation_finished(self):
-        assert (
-            self.blackboard.dynup_action_current_goal is not None
-        ), "No dynup action goal set, so we cannot check if it is finished"
+        assert self.blackboard.dynup_action_current_goal is not None, (
+            "No dynup action goal set, so we cannot check if it is finished"
+        )
         return (
             self.blackboard.dynup_action_current_goal.done()
             and self.blackboard.dynup_action_current_goal.result().status

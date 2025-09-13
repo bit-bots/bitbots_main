@@ -1,13 +1,13 @@
 Software installation with ROS2
 ===============================
 
-In this tutorial, we will learn how to install ROS2 Iron Irwini on Ubuntu 22.04 and build our software stack.
+In this tutorial, we will learn how to install ROS2 Jazzy Jalisco on Ubuntu 24.04 and build our software stack.
 
 **TLDR**: single command setup
 ------------------------------
 
 **Prerequirements**
-- You have a running Ubuntu 22.04 environment
+- You have a running Ubuntu 24.04 environment
 - You have an existing Github account and added a SSH key to your account
 - You have root access to your system (sudo)
 
@@ -23,17 +23,17 @@ If you have not previously set up any of our software stack, you can use the fol
 Manual steps with in depth explanation
 --------------------------------------
 
-**0. Use Ubuntu 22.04**
+**0. Use Ubuntu 24.04**
 
 As ROS works best on Ubuntu, we are using this distribution.
-Currently, ROS2 Iron runs on Ubuntu 22.04.
+Currently, ROS2 Jazzy runs on Ubuntu 24.04.
 
-If you are not already using Ubuntu 22.04, consider installing it on your system (perhaps as a dual boot?).
+If you are not already using Ubuntu 24.04, consider installing it on your system (perhaps as a dual boot?).
 Alternatively you can use a devcontainer :doc:`vscode-dev-container`, with a preconfigured environment and follow those instructions, as these docs do not apply to the devcontainer.
 
 **1. Setup and Install ROS 2**
 
-- Follow this guide and when it comes to the section **Install ROS 2 packages**, install the recommended ``ros-iron-desktop-full``: https://docs.ros.org/en/iron/Installation/Ubuntu-Install-Debians.html
+- Follow this guide and when it comes to the section **Install ROS 2 packages**, install the recommended ``ros-jazzy-desktop-full``: https://docs.ros.org/en/jazzy/Installation/Ubuntu-Install-Debs.html
 - Install additional dependencies:
 
 .. code-block:: bash
@@ -46,29 +46,14 @@ Alternatively you can use a devcontainer :doc:`vscode-dev-container`, with a pre
     python3-pip \
     python3-rosdep \
     python3-vcstool \
-    ros-iron-plotjuggler-ros \
-    ros-iron-rmw-cyclonedds-cpp \
-    ros-iron-rqt-robot-monitor \
-    ros-iron-rqt-runtime-monitor
+    ros-jazzy-plotjuggler-ros \
+    ros-jazzy-rmw-cyclonedds-cpp \
+    ros-jazzy-rqt-robot-monitor \
+    ros-jazzy-rqt-runtime-monitor
 
 - Run ``sudo rosdep init`` to initialize ``rosdep``, a tool that helps you install system dependencies for ROS packages.
-- Optionally, to get nice colored output from colcon, you can install the following pip packages:
 
-.. code-block:: bash
-
-  python3 -m pip install \
-    git+https://github.com/ruffsl/colcon-clean \
-    git+https://github.com/timonegk/colcon-core.git@colors \
-    git+https://github.com/timonegk/colcon-notification.git@colors \
-    git+https://github.com/timonegk/colcon-output.git@colors
-
-**2. Install Webots**
-
-Webots is a robot simulator, which we use to simulate our robots and test our software.
-It is not strictly necessary to install it, but it is very useful for development and testing.
-If you want to install it, you can do so by running ``make webots`` in the bitbots_main repository.
-
-**3. Download our software**
+**2. Download our software (if not already done)**
 
 - Create a GitHub account, if not already done (see `here <http://doku.bit-bots.de/private/manual/dienste_accounts.html>`_ for further information)
 - Add your SSH key to GitHub to access and sync our repositories
@@ -86,9 +71,15 @@ If you want to install it, you can do so by running ``make webots`` in the bitbo
       This will take a while, as it downloads all the code and other files from our repositories and additionally installs all missing dependencies (using rosdep and pip).
       Finally, it will register pre-commit hooks (automatic code-formatting and warnings), which will be run every time you commit code to our repositories.
 
+**3. Install Webots**
+
+Webots is a robot simulator, which we use to simulate our robots and test our software.
+It is not strictly necessary to install it, but it is very useful for development and testing.
+If you want to install it, you can do so by running ``make webots`` in the bitbots_main repository.
+
 **4. Setup colcon workspace**
 
-`Colcon <https://docs.ros.org/en/iron/Tutorials/Beginner-Client-Libraries/Colcon-Tutorial.html>`_ is the tool provided by ROS 2 to build and install our ROS packages, so that they can be launched later.
+`Colcon <https://docs.ros.org/en/jazzy/Tutorials/Beginner-Client-Libraries/Colcon-Tutorial.html>`_ is the tool provided by ROS 2 to build and install our ROS packages, so that they can be launched later.
 The colcon workspace is where your source code gets build and where we use colcon.
 
 - Create colcon workspace directory (typically ``~/colcon_ws/``)
@@ -108,8 +99,11 @@ In case you are not using the bash shell, replace ``~/.bashrc`` and ``bash`` wit
 
   # >>> bit-bots initialize >>>
 
+  # Add python pip bins to PATH
+  export PATH="\$HOME/.local/bin:\$PATH"
+
   # Ignore some deprecation warnings
-  export PYTHONWARNINGS=ignore:::setuptools.command.install,ignore:::setuptools.command.easy_install,ignore:::pkg_resources
+  export PYTHONWARNINGS="ignore:::setuptools.command.install,ignore:::setuptools.command.easy_install,ignore:::pkg_resources,ignore:easy_install command is deprecated,ignore:setup.py install is deprecated"
 
   # Limit ROS 2 communication to localhost (can be overridden when needed)
   export ROS_DOMAIN_ID=24
