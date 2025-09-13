@@ -128,15 +128,15 @@ class DebugImage:
         if not self.active:
             return
         assert self._debug_image is not None, "No image set"
-        # Make a colored image
-        colored_image = np.zeros_like(self._debug_image)
-        colored_image[:, :] = tuple(np.multiply(color, opacity).astype(np.uint8))
 
-        # Compose debug image with lines
-        self._debug_image = cv2.add(
-            cv2.bitwise_and(self._debug_image, self._debug_image, mask=255 - mask),
-            cv2.add(colored_image * opacity, self._debug_image * (1 - opacity), mask=mask).astype(np.uint8),
-        )
+        # Bring mask into canonical form
+        mask_bool = mask.astype(bool).squeeze()
+
+        # Blend color directly where mask is true
+        self._debug_image[mask_bool, :] = (
+            self._debug_image[mask_bool, :] * (1.0 - opacity)
+            + np.array(color, dtype=np.float32) * opacity
+        ).astype(np.uint8)
 
     def get_image(self):
         """
