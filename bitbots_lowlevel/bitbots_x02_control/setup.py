@@ -20,6 +20,7 @@ setup(
     entry_points={
         "console_scripts": [
             "x02_control = " + package_name + ".x02_control:main",
+            "x02_control_websocket = " + package_name + ".x02_control_websocket:main",
         ],
     },
 )

@@ -50,31 +50,31 @@ bitbots_path_planning:
   controller:
     carrot_distance:
       type: int
-      default_value: 1
+      default_value: 5
       description: 'The distance to the carrot that we want to reach on the path'
       validation:
         bounds<>: [0, 100]
     max_rotation_vel:
       type: double
-      default_value: 0.4
+      default_value: 0.7
       description: 'The maximum rotation velocity of the robot in rad/s around the z-axis'
       validation:
         bounds<>: [0.0, 1.0]
     max_vel_x:
       type: double
-      default_value: 0.12
+      default_value: 0.8
       description: 'Maximum velocity we want to reach in different directions (base_footprint coordinate system)'
       validation:
         bounds<>: [0.0, 1.0]
     min_vel_x:
       type: double
-      default_value: -0.06
+      default_value: -0.2
       description: 'Minimum velocity we want to reach in different directions (base_footprint coordinate system)'
       validation:
         bounds<>: [-1.0, 0.0]
     max_vel_y:
       type: double
-      default_value: 0.07
+      default_value: 0.4
       description: 'Maximum velocity we want to reach in different directions (base_footprint coordinate system)'
       validation:
         bounds<>: [0.0, 1.0]
@@ -92,16 +92,16 @@ bitbots_path_planning:
         bounds<>: [0.0, 1.0]
     rotation_slow_down_factor:
       type: double
-      default_value: 0.6
+      default_value: 1.0
       description: 'Clamped p gain of the rotation controller'
       validation:
-        bounds<>: [0.0, 1.0]
+        bounds<>: [0.0, 2.0]
     translation_slow_down_factor:
       type: double
-      default_value: 0.6
+      default_value: 0.95
       description: 'Clamped p gain of the translation controller'
       validation:
-        bounds<>: [0.0, 1.0]
+        bounds<>: [0.0, 2.0]
     orient_to_goal_distance:
       type: double
       default_value: 0.5

@@ -2,14 +2,14 @@
   ros__parameters:
     xbox:
       walking:
-        gain_x: 0.2
+        gain_x: 1.0
         stick_x: 1
-        gain_y: 0.2
+        gain_y: 0.4
         stick_y: 0
         stick_left: 2
         stick_right: 5
         duo_turn: True
-        gain_turn: -0.5
+        gain_turn: -1.0
         btn_full_stop: 1
       head:
         gain_tilt: 1.5

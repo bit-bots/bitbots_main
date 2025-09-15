@@ -7,11 +7,11 @@
     <compiler meshdir="./meshes" discardvisual="false" />
   </mujoco>
 
-  <link name="world"></link>
+  <!--<link name="world"></link>
   <joint name="pelvis_link" type="fixed">
     <parent link="world" />
     <child link="pelvis_link" />
-  </joint>
+  </joint>-->
 
   <link name="pelvis_link">
     <inertial>
@@ -438,11 +438,11 @@
     </collision>
   </link>
   <joint name="waist_yaw" type="fixed">
-    <origin xyz="0 0 0.08375" rpy="0 0 0" />
-    <parent link="pelvis_link" />
-    <child link="waist_yaw_link" />
-    <axis xyz="0 0 1" />
-    <limit lower="-1.047" upper="1.047" effort="83.5" velocity="43" />
+    <origin xyz="0 0 -0.08375" rpy="0 0 0" />
+    <parent link="waist_yaw_link" />
+    <child link="pelvis_link" />
+    <!--<axis xyz="0 0 1" />
+    <limit lower="-1.047" upper="1.047" effort="83.5" velocity="43" />-->
   </joint>
   <link name="base_link">
     <inertial>
@@ -467,10 +467,9 @@
     </collision>
   </link>
   <joint name="torso" type="fixed">
-    <origin xyz="0 0 0.03675" rpy="0 0 0" />
-    <parent link="waist_yaw_link" />
-    <child link="base_link" />
-    <axis xyz="0 0 0" />
+    <origin xyz="0 0 -0.03675" rpy="0 0 0" />
+    <parent link="base_link" />
+    <child link="waist_yaw_link" />
   </joint>
   <link name="logo_link">
     <inertial>
@@ -498,7 +497,6 @@
     <origin xyz="0 0 0" rpy="0 0 0" />
     <parent link="base_link" />
     <child link="logo_link" />
-    <axis xyz="0 0 0" />
   </joint>
   <link name="head_link">
     <inertial>
@@ -627,8 +625,8 @@
     <origin xyz="0 0 -0.112" rpy="0 0 0" />
     <parent link="L_shoulder_roll_link" />
     <child link="L_shoulder_yaw_link" />
-    <axis xyz="0 0 1" />
-    <limit lower="-2.618" upper="2.618" effort="45" velocity="30" />
+    <!--<axis xyz="0 0 1" />
+    <limit lower="-2.618" upper="2.618" effort="45" velocity="30" />-->
   </joint>
   <link name="L_elbow_pitch_link">
     <inertial>
@@ -743,8 +741,8 @@
     <origin xyz="-3.8964E-05 0 -0.112" rpy="0 0 0" />
     <parent link="R_shoulder_roll_link" />
     <child link="R_shoulder_yaw_link" />
-    <axis xyz="0 0 -1" />
-    <limit lower="-2.618" upper="2.618" effort="45" velocity="30" />
+    <!--<axis xyz="0 0 -1" />
+    <limit lower="-2.618" upper="2.618" effort="45" velocity="30" />-->
   </joint>
   <link name="R_elbow_pitch_link">
     <inertial>
@@ -775,4 +773,11 @@
     <axis xyz="0 -1 0" />
     <limit lower="0" upper="2.443" effort="83.5" velocity="43" />
   </joint>
+  <link name="imu_frame_uncalibrated"/>
+  <joint name="imu_frame_uncalibrated_joint" type="fixed">
+    <origin xyz="0.0 0 0.0" rpy="0 0 0" />
+    <parent link="base_link" />
+    <child link="imu_frame_uncalibrated" />
+  </joint>
+  
 </robot>

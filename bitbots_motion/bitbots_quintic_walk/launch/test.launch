@@ -29,7 +29,7 @@
 
   <group unless="$(var sim)">
     <group unless="$(var viz)">
-      <include file="$(find-pkg-share bitbots_ros_control)/launch/ros_control.launch" />
+      <!--<include file="$(find-pkg-share bitbots_ros_control)/launch/ros_control.launch" />-->
       <node pkg="bitbots_quintic_walk" exec="WalkNode" output="screen" launch-prefix="$(var taskset)">
         <param from="$(find-pkg-share bitbots_quintic_walk)/config/walking_$(var robot_type)_robot.yaml"/>
         <remap from="/walking_motor_goals" to="/DynamixelController/command"/>
