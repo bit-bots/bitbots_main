@@ -11,6 +11,8 @@ class OwnTeamIsInPossession(AbstractDecisionElement):
     def perform(self, reevaluate=False):
         own_ball_distance = self.blackboard.world_model.distance_to_ball_own_team()
         opponent_ball_distance = self.blackboard.world_model.distance_to_ball_opponent_team()
+        self.publish_debug_data("own dist to ball", own_ball_distance)
+        self.publish_debug_data("opponent dist to ball", opponent_ball_distance)
         if own_ball_distance < opponent_ball_distance:
             return "YES"
         else:

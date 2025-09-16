@@ -196,6 +196,11 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
                     if dist < min_squared_dist:
                         min_squared_dist = dist
 
+        ball_point = self.get_best_ball_point_stamped()
+        own_pos = self.get_current_position()
+        own_dist = (own_pos[0] - ball_point._point.x) ** 2 * (own_pos[1] - ball_point._point.y) ** 2
+        if own_dist < min_squared_dist:
+            min_squared_dist = own_dist
         return min_squared_dist
 
     def distance_to_ball_opponent_team(self) -> float:
@@ -203,7 +208,7 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
         robot: Robot
         if self.last_robot_msg is not None:
             for robot in self.last_robot_msg:
-                if robot.attributes._team == 2:
+                if robot.attributes._team == 0:
                     pos_x = robot.bb._center._position.x
                     pos_y = robot.bb._center._position.y
                     ball_point = self.get_best_ball_point_stamped()
