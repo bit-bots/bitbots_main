@@ -184,6 +184,9 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
         self.last_robot_msg = msg.robots
 
     def distance_to_ball_own_team(self) -> float:
+        """
+        Returns the distance between the ball and the closest robot of the own team
+        """
         min_squared_dist = 100000.0
         robot: Robot
         if self.last_robot_msg is not None:
@@ -204,6 +207,9 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
         return min_squared_dist
 
     def distance_to_ball_opponent_team(self) -> float:
+        """
+        Returns the distance between the ball and the closest robot of the opponent team
+        """
         min_squared_dist = 100000.1
         robot: Robot
         if self.last_robot_msg is not None:

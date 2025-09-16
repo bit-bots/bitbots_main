@@ -9,6 +9,7 @@ class OwnTeamIsInPossession(AbstractDecisionElement):
         super().__init__(blackboard, dsd, parameters)
 
     def perform(self, reevaluate=False):
+        # attention: if we didnt see any opponent robot we sugesst that we are in possesion, so the usage of this method is
         own_ball_distance = self.blackboard.world_model.distance_to_ball_own_team()
         opponent_ball_distance = self.blackboard.world_model.distance_to_ball_opponent_team()
         self.publish_debug_data("own dist to ball", own_ball_distance)
