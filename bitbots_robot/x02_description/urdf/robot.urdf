@@ -779,5 +779,16 @@
     <parent link="base_link" />
     <child link="imu_frame_uncalibrated" />
   </joint>
-  
+  <link name="camera_frame_uncalibrated"/>
+  <joint name="camera_frame_uncalibrated_joint" type="fixed">
+    <origin xyz="0.085 0.0 0.43" rpy="0 1.035398163 0" />
+    <parent link="base_link" />
+    <child link="camera_frame_uncalibrated" />
+  </joint>
+  <link name="camera_optical_frame_uncalibrated"/>
+  <joint name="camera_optical_frame_uncalibrated_joint" type="fixed">
+    <origin xyz="0.0 0.0 0.0" rpy="-1.570796327 0 -1.570796327" />
+    <parent link="camera_frame_uncalibrated" />
+    <child link="camera_optical_frame_uncalibrated" />
+  </joint>
 </robot>

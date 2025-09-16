@@ -17,6 +17,7 @@
         <arg name="sim" value="$(var sim)"/>
     </include>
 
+    <node pkg="bitbots_x02_control" exec="x02_control_websocket"/>
     <!-- if not in simulation or visualization, launch ros_control -->
     <!--
     <group unless="$(var sim)">

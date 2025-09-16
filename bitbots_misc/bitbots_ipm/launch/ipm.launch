@@ -43,7 +43,7 @@
             <remap to="/obstacles_relative" from="soccer_vision_3d/obstacles"/>
             <remap to="/markings_relative" from="soccer_vision_3d/markings"/>
             <!-- IMPORTANT: Ball diameter is ALSO defined in the soccer_ipm config file -->
-            <param name="ball_diameter" value="0.153"/>
+            <param name="ball_diameter" value="0.21"/>
             <param name="use_sim_time" value="$(var sim)"/>
         </node>
     </group>

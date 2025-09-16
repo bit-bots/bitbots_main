@@ -14,7 +14,16 @@
     <!-- Start the camera only when necessary -->
     <group if="$(var camera)">
         <group unless="$(var sim)">
-            <include file="$(find-pkg-share bitbots_basler_camera)/launch/basler_camera.launch" />
+            <!-- <include file="$(find-pkg-share bitbots_basler_camera)/launch/basler_camera.launch" />-->
+            <node pkg="v4l2_camera" exec="v4l2_camera_node">
+                <param name="video_device" value="/dev/video0" />
+                <param name="pixel_format" value="YUYV" />
+                <param name="output_encoding" value="yuv422_yuy2" />
+                <param name="image_size" value="[1280,720]" />
+                <param name="camera_frame_id" value="camera_optical_frame" />
+                <remap from="image_raw" to="camera/image_proc" />
+                <remap from="camera_info" to="camera/camera_info" />
+            </node>
         </group>
     </group>
 </launch>

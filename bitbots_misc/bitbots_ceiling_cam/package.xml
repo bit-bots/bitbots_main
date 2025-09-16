@@ -13,7 +13,7 @@
   <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
 
   <depend>apriltag_ros</depend>
-  <depend>bitbots_basler_camera</depend>
+  <!--<depend>bitbots_basler_camera</depend>-->
   <depend>bitbots_docs</depend>
   <depend>image_proc</depend>
   <depend>tf2_ros</depend>
