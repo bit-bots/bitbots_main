@@ -215,6 +215,9 @@ log/
 .pyenv2/*
 .pyenv3/*
 
+# Generated parameter library files
+**/vision_parameters/
+
 ansible_robots/*
 doc_internal/*
 doku/*
