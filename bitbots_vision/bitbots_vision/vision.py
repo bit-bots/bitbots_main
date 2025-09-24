@@ -5,11 +5,11 @@ import rclpy
 from ament_index_python.packages import get_package_share_directory
 from cv_bridge import CvBridge
 from rcl_interfaces.msg import SetParametersResult
-from rclpy.experimental.events_executor import EventsExecutor
+from rclpy.node import Node
 from sensor_msgs.msg import Image
 
-from bitbots_vision import NodeWithConfig
 from bitbots_vision.vision_modules import debug, ros_utils, yoeo
+from bitbots_vision.vision_parameters import bitbots_vision as parameters
 
 logger = rclpy.logging.get_logger("bitbots_vision")
 
@@ -23,7 +23,7 @@ except ImportError:
     logger.info("No Profiling available")
 
 
-class YOEOVision(NodeWithConfig):
+class YOEOVision(Node):
     """
     The Vision is the main ROS-node for handling all tasks related to image processing.
 
@@ -36,6 +36,10 @@ class YOEOVision(NodeWithConfig):
 
         logger.debug(f"Entering {self.__class__.__name__} constructor")
 
+        # Setup parameter listener directly
+        self.param_listener = parameters.ParamListener(self)
+        self.config = self.param_listener.get_params()
+
         self._package_path = get_package_share_directory("bitbots_vision")
 
         yoeo.YOEOObjectManager.set_package_directory(self._package_path)
@@ -47,7 +51,7 @@ class YOEOVision(NodeWithConfig):
         self._vision_components: list[yoeo.AbstractVisionComponent] = []
         self._debug_image: Optional[debug.DebugImage] = None
 
-        # Setup reconfiguration - now we use the generated parameter listener
+        # Setup reconfiguration callback
         self.add_on_set_parameters_callback(self._dynamic_reconfigure_callback)
 
         # Add general params
@@ -61,50 +65,11 @@ class YOEOVision(NodeWithConfig):
 
         logger.debug(f"Leaving {self.__class__.__name__} constructor")
 
-    def _config_to_dict(self) -> dict:
-        """
-        Convert the generated parameter config object to a dictionary for compatibility
-        with existing code that expects dictionary access.
-        """
-        return {
-            # Component activation parameters
-            "component_ball_detection_active": self.config.component_ball_detection_active,
-            "component_debug_image_active": self.config.component_debug_image_active,
-            "component_field_detection_active": self.config.component_field_detection_active,
-            "component_goalpost_detection_active": self.config.component_goalpost_detection_active,
-            "component_line_detection_active": self.config.component_line_detection_active,
-            "component_robot_detection_active": self.config.component_robot_detection_active,
-            
-            # ROS topic parameters
-            "ROS_img_msg_topic": self.config.ROS_img_msg_topic,
-            "ROS_ball_msg_topic": self.config.ROS_ball_msg_topic,
-            "ROS_goal_posts_msg_topic": self.config.ROS_goal_posts_msg_topic,
-            "ROS_robot_msg_topic": self.config.ROS_robot_msg_topic,
-            "ROS_line_msg_topic": self.config.ROS_line_msg_topic,
-            "ROS_line_mask_msg_topic": self.config.ROS_line_mask_msg_topic,
-            "ROS_debug_image_msg_topic": self.config.ROS_debug_image_msg_topic,
-            "ROS_field_mask_image_msg_topic": self.config.ROS_field_mask_image_msg_topic,
-            
-            # YOEO model parameters
-            "yoeo_model_path": self.config.yoeo_model_path,
-            "yoeo_nms_threshold": self.config.yoeo_nms_threshold,
-            "yoeo_conf_threshold": self.config.yoeo_conf_threshold,
-            "yoeo_framework": self.config.yoeo_framework,
-            
-            # Ball detection parameters
-            "ball_candidate_rating_threshold": self.config.ball_candidate_rating_threshold,
-            "ball_candidate_max_count": self.config.ball_candidate_max_count,
-            
-            # Caching parameter
-            "caching": self.config.caching,
-        }
-
     def _configure_vision_from_config(self) -> None:
         """
         Configure vision components using the current config.
         """
-        config_dict = self._config_to_dict()
-        self._configure_vision(config_dict)
+        self._configure_vision(self.config)
 
     def _dynamic_reconfigure_callback(self, params) -> SetParametersResult:
         """
@@ -120,10 +85,29 @@ class YOEOVision(NodeWithConfig):
 
         return SetParametersResult(successful=True)
 
-    def _configure_vision(self, new_config: dict) -> None:
-        yoeo.YOEOObjectManager.configure(new_config)
+    def _configure_vision(self, config) -> None:
+        # Create a minimal config dict for compatibility with existing subsystems
+        # TODO: Update subsystems to use dot notation and remove this compatibility layer
+        config_dict = {
+            "component_ball_detection_active": config.component_ball_detection_active,
+            "component_debug_image_active": config.component_debug_image_active,
+            "component_field_detection_active": config.component_field_detection_active,
+            "component_goalpost_detection_active": config.component_goalpost_detection_active,
+            "component_line_detection_active": config.component_line_detection_active,
+            "component_robot_detection_active": config.component_robot_detection_active,
+            "ROS_img_msg_topic": config.ROS_img_msg_topic,
+            "yoeo_model_path": config.yoeo_model_path,
+            "yoeo_nms_threshold": config.yoeo_nms_threshold,
+            "yoeo_conf_threshold": config.yoeo_conf_threshold,
+            "yoeo_framework": config.yoeo_framework,
+            "ball_candidate_rating_threshold": config.ball_candidate_rating_threshold,
+            "ball_candidate_max_count": config.ball_candidate_max_count,
+            "caching": config.caching,
+        }
+        
+        yoeo.YOEOObjectManager.configure(config_dict)
 
-        debug_image = debug.DebugImage(new_config["component_debug_image_active"])
+        debug_image = debug.DebugImage(config.component_debug_image_active)
         self._debug_image = debug_image
 
         def make_vision_component(
@@ -133,28 +117,28 @@ class YOEOVision(NodeWithConfig):
                 node=self,
                 yoeo_handler=yoeo.YOEOObjectManager.get(),
                 debug_image=debug_image,
-                config=new_config,
+                config=config_dict,  # Still passing dict for compatibility
                 **kwargs,
             )
 
         self._vision_components = [make_vision_component(yoeo.YOEOComponent)]
 
-        if new_config["component_ball_detection_active"]:
+        if config.component_ball_detection_active:
             self._vision_components.append(make_vision_component(yoeo.BallDetectionComponent))
-        if new_config["component_robot_detection_active"]:
+        if config.component_robot_detection_active:
             self._vision_components.append(
                 make_vision_component(
                     yoeo.RobotDetectionComponent,
                     team_color_detection_supported=yoeo.YOEOObjectManager.is_team_color_detection_supported(),
                 )
             )
-        if new_config["component_goalpost_detection_active"]:
+        if config.component_goalpost_detection_active:
             self._vision_components.append(make_vision_component(yoeo.GoalpostDetectionComponent))
-        if new_config["component_line_detection_active"]:
+        if config.component_line_detection_active:
             self._vision_components.append(make_vision_component(yoeo.LineDetectionComponent))
-        if new_config["component_field_detection_active"]:
+        if config.component_field_detection_active:
             self._vision_components.append(make_vision_component(yoeo.FieldDetectionComponent))
-        if new_config["component_debug_image_active"]:
+        if config.component_debug_image_active:
             self._vision_components.append(make_vision_component(yoeo.DebugImageComponent))
 
         # For the subscriber update, we'll pass the last config dict or None for the first time
@@ -162,14 +146,14 @@ class YOEOVision(NodeWithConfig):
         self._sub_image = ros_utils.create_or_update_subscriber(
             self,
             old_config_dict,
-            new_config,
+            config_dict,
             self._sub_image,
             "ROS_img_msg_topic",
             Image,
             callback=self._run_vision_pipeline,
         )
         # Remember this config for next time
-        self._last_config_dict = new_config.copy()
+        self._last_config_dict = config_dict.copy()
 
     @profile
     def _run_vision_pipeline(self, image_msg: Image) -> None:

@@ -216,7 +216,7 @@ log/
 .pyenv3/*
 
 # Generated parameter library files
-**/vision_parameters/
+**/vision_parameters.py
 
 ansible_robots/*
 doc_internal/*
