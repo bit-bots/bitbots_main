@@ -4,6 +4,7 @@ from typing import Optional
 import rclpy
 
 from bitbots_vision.vision_modules import ros_utils
+from bitbots_vision.vision_parameters import bitbots_vision as parameters
 
 from . import yoeo_handlers
 from .model_config import ModelConfig, ModelConfigLoader
@@ -72,14 +73,14 @@ class YOEOObjectManager:
         return cls._model_config.team_colors_are_provided()
 
     @classmethod
-    def configure(cls, config) -> None:
+    def configure(cls, config: parameters.Params) -> None:
         if not cls._package_directory_set:
             logger.error("Package directory not set!")
 
-        framework = config.yoeo_framework
+        framework = config.yoeo.framework
         cls._verify_framework_parameter(framework)
 
-        model_path = cls._get_full_model_path(config.yoeo_model_path)
+        model_path = cls._get_full_model_path(config.yoeo.model_path)
         cls._verify_required_neural_network_files_exist(framework, model_path)
 
         cls._configure_yoeo_instance(config, framework, model_path)
@@ -107,7 +108,7 @@ class YOEOObjectManager:
         return cls._HANDLERS_BY_NAME[framework].model_files_exist(model_path)
 
     @classmethod
-    def _configure_yoeo_instance(cls, config, framework: str, model_path: str) -> None:
+    def _configure_yoeo_instance(cls, config: parameters.Params, framework: str, model_path: str) -> None:
         if cls._new_yoeo_handler_is_needed(framework, model_path):
             cls._load_model_config(model_path)
             cls._instantiate_new_yoeo_handler(config, framework, model_path)
@@ -124,7 +125,7 @@ class YOEOObjectManager:
         cls._model_config = ModelConfigLoader.load_from(model_path)
 
     @classmethod
-    def _instantiate_new_yoeo_handler(cls, config, framework: str, model_path: str) -> None:
+    def _instantiate_new_yoeo_handler(cls, config: parameters.Params, framework: str, model_path: str) -> None:
         cls._yoeo_instance = cls._HANDLERS_BY_NAME[framework](
             config,
             model_path,
@@ -135,15 +136,9 @@ class YOEOObjectManager:
         logger.info(f"Using {cls._yoeo_instance.__class__.__name__}")
 
     @classmethod
-    def _yoeo_parameters_have_changed(cls, new_config) -> bool:
+    def _yoeo_parameters_have_changed(cls, new_config: parameters.Params) -> bool:
         if cls._config is None:
             return True
         
-        # Compare YOEO-related parameters using direct attribute access
-        return (
-            cls._config.yoeo_framework != new_config.yoeo_framework or
-            cls._config.yoeo_model_path != new_config.yoeo_model_path or
-            cls._config.yoeo_nms_threshold != new_config.yoeo_nms_threshold or
-            cls._config.yoeo_conf_threshold != new_config.yoeo_conf_threshold or
-            cls._config.caching != new_config.caching
-        )
+        # Compare YOEO parameters using the hierarchical structure
+        return cls._config.yoeo != new_config.yoeo

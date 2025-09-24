@@ -61,15 +61,9 @@ class YOEOVision(Node):
         ros_utils.update_own_team_color(self)
 
         # Configure vision with initial parameters
-        self._configure_vision_from_config()
+        self._configure_vision(self.config)
 
         logger.debug(f"Leaving {self.__class__.__name__} constructor")
-
-    def _configure_vision_from_config(self) -> None:
-        """
-        Configure vision components using the current config.
-        """
-        self._configure_vision(self.config)
 
     def _dynamic_reconfigure_callback(self, params) -> SetParametersResult:
         """
@@ -81,7 +75,7 @@ class YOEOVision(Node):
         self.config = self.param_listener.get_params()
         
         # Configure vision with the updated config
-        self._configure_vision_from_config()
+        self._configure_vision(self.config)
 
         return SetParametersResult(successful=True)
 
@@ -122,18 +116,18 @@ class YOEOVision(Node):
         if config.component_debug_image_active:
             self._vision_components.append(make_vision_component(yoeo.DebugImageComponent))
 
-        # For the subscriber update, handle the topic name directly
+        # For the subscriber update, use the improved ros_utils function
         old_topic = getattr(self, '_last_img_topic', None)
         current_topic = config.ROS_img_msg_topic
         
-        if old_topic != current_topic:
-            self._sub_image = self.create_subscription(
-                Image, 
-                current_topic, 
-                self._run_vision_pipeline, 
-                1
-            )
-            logger.debug(f"Registered new subscriber at {current_topic}")
+        self._sub_image = ros_utils.create_or_update_subscriber_with_config(
+            self,
+            old_topic,
+            current_topic,
+            self._sub_image,
+            Image,
+            self._run_vision_pipeline,
+        )
             
         # Remember this topic for next time
         self._last_img_topic = current_topic
