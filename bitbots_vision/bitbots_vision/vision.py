@@ -80,7 +80,7 @@ class YOEOVision(Node):
         return SetParametersResult(successful=True)
 
     def _configure_vision(self, config) -> None:
-        yoeo.YOEOObjectManager.configure(config)
+        yoeo.YOEOObjectManager.configure(config.yoeo)
 
         debug_image = debug.DebugImage(config.component_debug_image_active)
         self._debug_image = debug_image

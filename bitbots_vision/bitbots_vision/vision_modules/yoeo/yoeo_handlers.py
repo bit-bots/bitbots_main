@@ -24,7 +24,7 @@ class IYOEOHandler(ABC):
     """
 
     @abstractmethod
-    def configure(self, config: parameters.Params) -> None:
+    def configure(self, yoeo_config) -> None:
         """
         Allows to (re-) configure the YOEO handler.
         """
@@ -100,7 +100,7 @@ class YOEOHandlerTemplate(IYOEOHandler):
 
     def __init__(
         self,
-        config: parameters.Params,
+        yoeo_config,
         model_directory: str,
         det_class_names: list[str],
         det_robot_class_ids: list[int],
@@ -119,12 +119,12 @@ class YOEOHandlerTemplate(IYOEOHandler):
         self._seg_class_names: list[str] = seg_class_names
         self._seg_masks: dict = dict()
 
-        self._use_caching: bool = config.caching
+        self._use_caching: bool = yoeo_config.caching
 
         logger.debug("Leaving YOEOHandlerTemplate constructor")
 
-    def configure(self, config: parameters.Params) -> None:
-        self._use_caching = config.caching
+    def configure(self, yoeo_config) -> None:
+        self._use_caching = yoeo_config.caching
 
     def get_available_detection_class_names(self) -> list[str]:
         return self._det_class_names
@@ -213,7 +213,7 @@ class YOEOHandlerONNX(YOEOHandlerTemplate):
 
     def __init__(
         self,
-        config: parameters.Params,
+        yoeo_config,
         model_directory: str,
         det_class_names: list[str],
         det_robot_class_ids: list[int],
@@ -240,8 +240,8 @@ class YOEOHandlerONNX(YOEOHandlerTemplate):
         self._det_postprocessor: utils.IDetectionPostProcessor = utils.DefaultDetectionPostProcessor(
             image_preprocessor=self._img_preprocessor,
             output_img_size=self._input_layer.shape[2],
-            conf_thresh=config.yoeo.conf_threshold,
-            nms_thresh=config.yoeo.nms_threshold,
+            conf_thresh=yoeo_config.conf_threshold,
+            nms_thresh=yoeo_config.nms_threshold,
             robot_class_ids=self.get_robot_class_ids(),
         )
         self._seg_postprocessor: utils.ISegmentationPostProcessor = utils.DefaultSegmentationPostProcessor(
@@ -250,13 +250,13 @@ class YOEOHandlerONNX(YOEOHandlerTemplate):
 
         logger.debug(f"Leaving {self.__class__.__name__} constructor")
 
-    def configure(self, config: parameters.Params) -> None:
+    def configure(self, yoeo_config) -> None:
         super().configure(config)
         self._det_postprocessor.configure(
             image_preprocessor=self._img_preprocessor,
             output_img_size=self._input_layer.shape[2],
-            conf_thresh=config.yoeo.conf_threshold,
-            nms_thresh=config.yoeo.nms_threshold,
+            conf_thresh=yoeo_config.conf_threshold,
+            nms_thresh=yoeo_config.nms_threshold,
             robot_class_ids=self.get_robot_class_ids(),
         )
 
@@ -286,7 +286,7 @@ class YOEOHandlerOpenVino(YOEOHandlerTemplate):
 
     def __init__(
         self,
-        config: parameters.Params,
+        yoeo_config,
         model_directory: str,
         det_class_names: list[str],
         det_robot_class_ids: list[int],
@@ -322,8 +322,8 @@ class YOEOHandlerOpenVino(YOEOHandlerTemplate):
         self._det_postprocessor: utils.IDetectionPostProcessor = utils.DefaultDetectionPostProcessor(
             image_preprocessor=self._img_preprocessor,
             output_img_size=self._input_layer.shape[2],
-            conf_thresh=config.yoeo.conf_threshold,
-            nms_thresh=config.yoeo.nms_threshold,
+            conf_thresh=yoeo_config.conf_threshold,
+            nms_thresh=yoeo_config.nms_threshold,
             robot_class_ids=self.get_robot_class_ids(),
         )
         self._seg_postprocessor: utils.ISegmentationPostProcessor = utils.DefaultSegmentationPostProcessor(
@@ -339,13 +339,13 @@ class YOEOHandlerOpenVino(YOEOHandlerTemplate):
             device = "CPU"
         return device
 
-    def configure(self, config: parameters.Params) -> None:
+    def configure(self, yoeo_config) -> None:
         super().configure(config)
         self._det_postprocessor.configure(
             image_preprocessor=self._img_preprocessor,
             output_img_size=self._input_layer.shape[2],
-            conf_thresh=config.yoeo.conf_threshold,
-            nms_thresh=config.yoeo.nms_threshold,
+            conf_thresh=yoeo_config.conf_threshold,
+            nms_thresh=yoeo_config.nms_threshold,
             robot_class_ids=self.get_robot_class_ids(),
         )
 
@@ -374,7 +374,7 @@ class YOEOHandlerPytorch(YOEOHandlerTemplate):
 
     def __init__(
         self,
-        config: parameters.Params,
+        yoeo_config,
         model_directory: str,
         det_class_names: list[str],
         det_robot_class_ids: list[int],
@@ -400,8 +400,8 @@ class YOEOHandlerPytorch(YOEOHandlerTemplate):
         logger.debug(f"Loading files...\n\t{config_path}\n\t{weights_path}")
         self._model = torch_models.load_model(config_path, weights_path)
 
-        self._conf_thresh: float = config.yoeo.conf_threshold
-        self._nms_thresh: float = config.yoeo.nms_threshold
+        self._conf_thresh: float = yoeo_config.conf_threshold
+        self._nms_thresh: float = yoeo_config.nms_threshold
         self._group_config: torch_GroupConfig = self._update_group_config()
 
         logger.debug(f"Leaving {self.__class__.__name__} constructor")
@@ -411,10 +411,10 @@ class YOEOHandlerPytorch(YOEOHandlerTemplate):
 
         return self.torch_group_config(group_ids=robot_class_ids, surrogate_id=robot_class_ids[0])
 
-    def configure(self, config: parameters.Params) -> None:
+    def configure(self, yoeo_config) -> None:
         super().configure(config)
-        self._conf_thresh = config.yoeo.conf_threshold
-        self._nms_thresh = config.yoeo.nms_threshold
+        self._conf_thresh = yoeo_config.conf_threshold
+        self._nms_thresh = yoeo_config.nms_threshold
         self._group_config = self._update_group_config()
 
     @staticmethod
@@ -448,7 +448,7 @@ class YOEOHandlerTVM(YOEOHandlerTemplate):
 
     def __init__(
         self,
-        config: parameters.Params,
+        yoeo_config,
         model_directory: str,
         det_class_names: list[str],
         det_robot_class_ids: list[int],
@@ -487,8 +487,8 @@ class YOEOHandlerTVM(YOEOHandlerTemplate):
         self._det_postprocessor: utils.IDetectionPostProcessor = utils.DefaultDetectionPostProcessor(
             image_preprocessor=self._img_preprocessor,
             output_img_size=self._input_layer_shape[2],
-            conf_thresh=config.yoeo.conf_threshold,
-            nms_thresh=config.yoeo.nms_threshold,
+            conf_thresh=yoeo_config.conf_threshold,
+            nms_thresh=yoeo_config.nms_threshold,
             robot_class_ids=self.get_robot_class_ids(),
         )
         self._seg_postprocessor: utils.ISegmentationPostProcessor = utils.DefaultSegmentationPostProcessor(
@@ -497,13 +497,13 @@ class YOEOHandlerTVM(YOEOHandlerTemplate):
 
         logger.debug(f"Leaving {self.__class__.__name__} constructor")
 
-    def configure(self, config: parameters.Params) -> None:
+    def configure(self, yoeo_config) -> None:
         super().configure(config)
         self._det_postprocessor.configure(
             image_preprocessor=self._img_preprocessor,
             output_img_size=self._input_layer_shape[2],
-            conf_thresh=config.yoeo.conf_threshold,
-            nms_thresh=config.yoeo.nms_threshold,
+            conf_thresh=yoeo_config.conf_threshold,
+            nms_thresh=yoeo_config.nms_threshold,
             robot_class_ids=self.get_robot_class_ids(),
         )
 

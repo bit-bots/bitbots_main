@@ -73,19 +73,19 @@ class YOEOObjectManager:
         return cls._model_config.team_colors_are_provided()
 
     @classmethod
-    def configure(cls, config: parameters.Params) -> None:
+    def configure(cls, yoeo_config) -> None:
         if not cls._package_directory_set:
             logger.error("Package directory not set!")
 
-        framework = config.yoeo.framework
+        framework = yoeo_config.framework
         cls._verify_framework_parameter(framework)
 
-        model_path = cls._get_full_model_path(config.yoeo.model_path)
+        model_path = cls._get_full_model_path(yoeo_config.model_path)
         cls._verify_required_neural_network_files_exist(framework, model_path)
 
-        cls._configure_yoeo_instance(config, framework, model_path)
+        cls._configure_yoeo_instance(yoeo_config, framework, model_path)
 
-        cls._config = config
+        cls._config = yoeo_config
         cls._framework = framework
         cls._model_path = model_path
 
@@ -108,13 +108,13 @@ class YOEOObjectManager:
         return cls._HANDLERS_BY_NAME[framework].model_files_exist(model_path)
 
     @classmethod
-    def _configure_yoeo_instance(cls, config: parameters.Params, framework: str, model_path: str) -> None:
+    def _configure_yoeo_instance(cls, yoeo_config, framework: str, model_path: str) -> None:
         if cls._new_yoeo_handler_is_needed(framework, model_path):
             cls._load_model_config(model_path)
             cls._instantiate_new_yoeo_handler(config, framework, model_path)
-        elif cls._yoeo_parameters_have_changed(config):
+        elif cls._yoeo_parameters_have_changed(yoeo_config):
             assert cls._yoeo_instance is not None, "YOEO handler instance not set!"
-            cls._yoeo_instance.configure(config)
+            cls._yoeo_instance.configure(yoeo_config)
 
     @classmethod
     def _new_yoeo_handler_is_needed(cls, framework: str, model_path: str) -> bool:
@@ -125,9 +125,9 @@ class YOEOObjectManager:
         cls._model_config = ModelConfigLoader.load_from(model_path)
 
     @classmethod
-    def _instantiate_new_yoeo_handler(cls, config: parameters.Params, framework: str, model_path: str) -> None:
+    def _instantiate_new_yoeo_handler(cls, yoeo_config, framework: str, model_path: str) -> None:
         cls._yoeo_instance = cls._HANDLERS_BY_NAME[framework](
-            config,
+            yoeo_config,
             model_path,
             cls._model_config.get_detection_classes(),
             cls._model_config.get_robot_class_ids(),
@@ -136,9 +136,9 @@ class YOEOObjectManager:
         logger.info(f"Using {cls._yoeo_instance.__class__.__name__}")
 
     @classmethod
-    def _yoeo_parameters_have_changed(cls, new_config: parameters.Params) -> bool:
+    def _yoeo_parameters_have_changed(cls, new_yoeo_config) -> bool:
         if cls._config is None:
             return True
         
         # Compare YOEO parameters using the hierarchical structure
-        return cls._config.yoeo != new_config.yoeo
+        return cls._config != new_yoeo_config
