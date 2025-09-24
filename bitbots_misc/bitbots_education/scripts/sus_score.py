@@ -1,5 +1,6 @@
 import pandas as pd
 
+
 class SUSScore:
     def __init__(self, data, questionnaire):
         sus_study1_list = [

@@ -1,11 +1,10 @@
 import glob
 import os
-import shutil
 
-from jinja2 import Environment, FileSystemLoader
 from setuptools import find_packages, setup
 
 package_name = "bitbots_education"
+
 
 def generate_data_files(share_path, dir):
     data_files = []
@@ -15,6 +14,7 @@ def generate_data_files(share_path, dir):
         data_files.append(list_entry)
 
     return data_files
+
 
 setup(
     name=package_name,

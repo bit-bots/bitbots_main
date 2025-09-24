@@ -1,26 +1,19 @@
-import pandas as pd
-import matplotlib.pyplot as plt
-import numpy as np
 from datetime import datetime, timedelta
+
+import pandas as pd
+
 
 class LogEvaluation:
     def __init__(self, log_data1, log_data2):
         self.log_data = log_data1
         self.log_data2 = log_data2
         self.button_dict = {}
-        self.df = pd.DataFrame({
-            "VP": [],
-            "Behavior Time": [],
-            "Motors Time": [],
-            "IMU Time": [],
-            "Vision Time": [],
-            "Dashboard Time": []
-        })
+        self.df = pd.DataFrame(
+            {"VP": [], "Behavior Time": [], "Motors Time": [], "IMU Time": [], "Vision Time": [], "Dashboard Time": []}
+        )
         self.get_page_times(log_data1)
         self.get_page_times(log_data2)
 
-
-        
     def get_page_times(self, data):
         behavior_time = timedelta(0)
         motors_time = timedelta(0)
@@ -37,9 +30,9 @@ class LogEvaluation:
 
         current_vp = data.iloc[0]["VP"]
         current_page = data.iloc[0]["Page"]
-        #restart_time = self.find_start_time(self.log_data.iloc[-1]["Timestamp"])
+        # restart_time = self.find_start_time(self.log_data.iloc[-1]["Timestamp"])
         current_page_start_time: datetime = data.iloc[0]["Timestamp"]
-        
+
         for _, row in data.iterrows():
             self.count_buttons(row)
             if row["Page"] != current_page and row["VP"] == current_vp:
@@ -61,7 +54,9 @@ class LogEvaluation:
                 current_page_start_time = row["Timestamp"]
 
             elif row["VP"] != current_vp:
-                time_spent = datetime.fromtimestamp(data.iloc[-1]["Timestamp"]) - datetime.fromtimestamp(current_page_start_time)
+                time_spent = datetime.fromtimestamp(data.iloc[-1]["Timestamp"]) - datetime.fromtimestamp(
+                    current_page_start_time
+                )
                 match current_page:
                     case "behavior":
                         behavior_time += time_spent
@@ -78,8 +73,8 @@ class LogEvaluation:
                 current_vp = row["VP"]
                 if current_vp not in vp_list:
                     vp_list.append(current_vp)
-                
-                #get times for first VP
+
+                # get times for first VP
                 current_page = row["Page"]
                 current_page_start_time = row["Timestamp"]
                 behavior_list.append(behavior_time)
@@ -88,12 +83,12 @@ class LogEvaluation:
                 vision_list.append(vision_time)
                 dashboard_list.append(dashboard_time)
 
-                #reset times for next VP
+                # reset times for next VP
                 behavior_time = timedelta(0)
                 motors_time = timedelta(0)
                 imu_time = timedelta(0)
                 vision_time = timedelta(0)
-                dashboard_time = timedelta(0)   
+                dashboard_time = timedelta(0)
 
         # Append times for the last VP
         behavior_list.append(behavior_time)
@@ -108,16 +103,18 @@ class LogEvaluation:
         imu_time_series = pd.Series(imu_list, name="IMU Time")
         vision_time_series = pd.Series(vision_list, name="Vision Time")
         dashboard_time_series = pd.Series(dashboard_list, name="Dashboard Time")
-        current_data_frame = pd.concat([vp_series, behavior_time_series, motors_time_series, imu_time_series, vision_time_series, dashboard_time_series,], axis=1)
+        current_data_frame = pd.concat(
+            [
+                vp_series,
+                behavior_time_series,
+                motors_time_series,
+                imu_time_series,
+                vision_time_series,
+                dashboard_time_series,
+            ],
+            axis=1,
+        )
         self.df = pd.concat([self.df, current_data_frame])
-
-        # print (f"Behavior time: {behavior_time}")
-        # print (f"Motors time: {motors_time}")
-        # print (f"IMU time: {imu_time}")        
-        # print (f"Vision time: {vision_time}")
-        # print (f"Dashboard time: {dashboard_time}")
-        # total_time = behavior_time + motors_time + imu_time + vision_time + dashboard_time
-        # print (f"Total time: {total_time}")
 
     # def find_start_time(self, time):
     #     time = datetime.fromtimestamp(time)
@@ -126,9 +123,16 @@ class LogEvaluation:
     #     return new_time.timestamp()
 
     def count_buttons(self, row):
-        if row["Status"] == "aufgeklappt" or row["Status"] =="eingeklappt" or row["Status"] == "gestoppt" or row["Status"] == "gestartet" or row["Status"] == "stack" or row["Status"] == "tree":
+        if (
+            row["Status"] == "aufgeklappt"
+            or row["Status"] == "eingeklappt"
+            or row["Status"] == "gestoppt"
+            or row["Status"] == "gestartet"
+            or row["Status"] == "stack"
+            or row["Status"] == "tree"
+        ):
             button_name = row["Button"] + " " + row["Page"]
-            button_status = row["Status"] 
+            button_status = row["Status"]
 
             if button_name not in self.button_dict:
                 self.button_dict[button_name] = {}
@@ -138,11 +142,12 @@ class LogEvaluation:
 
             self.button_dict[button_name][button_status] += 1
 
+
 data_raw1 = pd.read_csv("04.09.2025.csv")
 data_raw2 = pd.read_csv("04.09.2025(2).csv")
-data_sorted1 = data_raw1.sort_values(by=["VP","Timestamp"])
+data_sorted1 = data_raw1.sort_values(by=["VP", "Timestamp"])
 data_sorted1["Page"].fillna("dashboard", inplace=True)
-data_sorted2 = data_raw2.sort_values(by=["VP","Timestamp"])
+data_sorted2 = data_raw2.sort_values(by=["VP", "Timestamp"])
 data_sorted2["Page"].fillna("dashboard", inplace=True)
 eval = LogEvaluation(data_sorted1, data_sorted2)
 print(eval.button_dict)

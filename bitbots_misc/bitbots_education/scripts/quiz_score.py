@@ -1,8 +1,8 @@
 import pandas as pd
 
+
 class QuizScore:
     def __init__(self, data, questionnaire):
-
         self.quiz_list = [
             "Wo befindet sic.. ",
             "Was ist kein Te.. ",
@@ -180,4 +180,3 @@ class QuizScore:
         m = len(s1)
         n = len(s2)
         return self.lcsRec(s1, s2, m, n)
-

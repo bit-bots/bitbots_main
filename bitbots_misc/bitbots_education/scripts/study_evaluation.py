@@ -1,14 +1,14 @@
 import pandas as pd
 import quiz_score as qs
 import sus_score as ss
-import matplotlib.pyplot as plt
-import numpy as np
+
 
 class StudyEvaluation:
     def __init__(self, study_data1, study_data2, quiz_data):
-
         # Assert that the ID columns are the same in both study datasets
-        assert study_data1["Demographic00. Gib deine ID ei.. "].equals(study_data2["Demographic00. Gib deine ID ei.. "]), "ID columns in study datasets do not match."
+        assert study_data1["Demographic00. Gib deine ID ei.. "].equals(
+            study_data2["Demographic00. Gib deine ID ei.. "]
+        ), "ID columns in study datasets do not match."
 
         study_score1 = qs.QuizScore(study_data1, "study1")
         study_data1 = study_score1.quiz_data
