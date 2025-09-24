@@ -1,10 +1,14 @@
 # Setting up runtime type checking for this package
-from beartype.claw import beartype_this_package
+try:
+    from beartype.claw import beartype_this_package
+    beartype_this_package()
+except ImportError:
+    # beartype not available, skip type checking
+    pass
+
 from rclpy.node import Node
 
 from bitbots_vision.vision_parameters import bitbots_vision as parameters
-
-beartype_this_package()
 
 
 class NodeWithConfig(Node):
