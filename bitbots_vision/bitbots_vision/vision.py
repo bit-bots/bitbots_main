@@ -86,26 +86,7 @@ class YOEOVision(Node):
         return SetParametersResult(successful=True)
 
     def _configure_vision(self, config) -> None:
-        # Create a minimal config dict for compatibility with existing subsystems
-        # TODO: Update subsystems to use dot notation and remove this compatibility layer
-        config_dict = {
-            "component_ball_detection_active": config.component_ball_detection_active,
-            "component_debug_image_active": config.component_debug_image_active,
-            "component_field_detection_active": config.component_field_detection_active,
-            "component_goalpost_detection_active": config.component_goalpost_detection_active,
-            "component_line_detection_active": config.component_line_detection_active,
-            "component_robot_detection_active": config.component_robot_detection_active,
-            "ROS_img_msg_topic": config.ROS_img_msg_topic,
-            "yoeo_model_path": config.yoeo_model_path,
-            "yoeo_nms_threshold": config.yoeo_nms_threshold,
-            "yoeo_conf_threshold": config.yoeo_conf_threshold,
-            "yoeo_framework": config.yoeo_framework,
-            "ball_candidate_rating_threshold": config.ball_candidate_rating_threshold,
-            "ball_candidate_max_count": config.ball_candidate_max_count,
-            "caching": config.caching,
-        }
-        
-        yoeo.YOEOObjectManager.configure(config_dict)
+        yoeo.YOEOObjectManager.configure(config)
 
         debug_image = debug.DebugImage(config.component_debug_image_active)
         self._debug_image = debug_image
@@ -117,7 +98,7 @@ class YOEOVision(Node):
                 node=self,
                 yoeo_handler=yoeo.YOEOObjectManager.get(),
                 debug_image=debug_image,
-                config=config_dict,  # Still passing dict for compatibility
+                config=config,  # Now passing config object directly
                 **kwargs,
             )
 
@@ -141,19 +122,21 @@ class YOEOVision(Node):
         if config.component_debug_image_active:
             self._vision_components.append(make_vision_component(yoeo.DebugImageComponent))
 
-        # For the subscriber update, we'll pass the last config dict or None for the first time
-        old_config_dict = getattr(self, '_last_config_dict', None)
-        self._sub_image = ros_utils.create_or_update_subscriber(
-            self,
-            old_config_dict,
-            config_dict,
-            self._sub_image,
-            "ROS_img_msg_topic",
-            Image,
-            callback=self._run_vision_pipeline,
-        )
-        # Remember this config for next time
-        self._last_config_dict = config_dict.copy()
+        # For the subscriber update, handle the topic name directly
+        old_topic = getattr(self, '_last_img_topic', None)
+        current_topic = config.ROS_img_msg_topic
+        
+        if old_topic != current_topic:
+            self._sub_image = self.create_subscription(
+                Image, 
+                current_topic, 
+                self._run_vision_pipeline, 
+                1
+            )
+            logger.debug(f"Registered new subscriber at {current_topic}")
+            
+        # Remember this topic for next time
+        self._last_img_topic = current_topic
 
     @profile
     def _run_vision_pipeline(self, image_msg: Image) -> None:

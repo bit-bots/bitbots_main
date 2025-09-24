@@ -57,7 +57,7 @@ class BallDetectionComponent(AbstractVisionComponent):
     ):
         super().__init__(node, yoeo_handler, debug_image, config)
 
-        self._publisher = self._node.create_publisher(BallArray, self._config["ROS_ball_msg_topic"], qos_profile=1)
+        self._publisher = self._node.create_publisher(BallArray, self._config.ROS_ball_msg_topic, qos_profile=1)
 
     def run(self, image: np.ndarray, header: Header) -> None:
         # Get all ball candidates from YOEO
@@ -65,9 +65,9 @@ class BallDetectionComponent(AbstractVisionComponent):
 
         # Filter candidates by rating and count
         candidates = candidate.Candidate.sort_candidates(candidates)
-        top_candidates = candidates[: self._config["ball_candidate_max_count"]]
+        top_candidates = candidates[: self._config.ball_candidate_max_count]
         final_candidates = candidate.Candidate.rating_threshold(
-            top_candidates, self._config["ball_candidate_rating_threshold"]
+            top_candidates, self._config.ball_candidate_rating_threshold
         )
 
         # Publish ball candidates
@@ -95,7 +95,7 @@ class GoalpostDetectionComponent(AbstractVisionComponent):
         super().__init__(node, yoeo_handler, debug_image, config)
 
         self._publisher = self._node.create_publisher(
-            GoalpostArray, self._config["ROS_goal_posts_msg_topic"], qos_profile=1
+            GoalpostArray, self._config.ROS_goal_posts_msg_topic, qos_profile=1
         )
 
     def run(self, image: np.ndarray, header: Header) -> None:
@@ -125,7 +125,7 @@ class LineDetectionComponent(AbstractVisionComponent):
         self, node: Node, yoeo_handler: yoeo_handlers.IYOEOHandler, debug_image: debug.DebugImage, config: dict
     ):
         super().__init__(node, yoeo_handler, debug_image, config)
-        self._publisher = self._node.create_publisher(Image, self._config["ROS_line_mask_msg_topic"], qos_profile=1)
+        self._publisher = self._node.create_publisher(Image, self._config.ROS_line_mask_msg_topic, qos_profile=1)
 
     def run(self, image: np.ndarray, header: Header) -> None:
         # Get line mask from YOEO
@@ -153,7 +153,7 @@ class FieldDetectionComponent(AbstractVisionComponent):
     ):
         super().__init__(node, yoeo_handler, debug_image, config)
         self._publisher = self._node.create_publisher(
-            Image, self._config["ROS_field_mask_image_msg_topic"], qos_profile=1
+            Image, self._config.ROS_field_mask_image_msg_topic, qos_profile=1
         )
 
     def run(self, image: np.ndarray, header: Header) -> None:
@@ -185,7 +185,7 @@ class RobotDetectionComponent(AbstractVisionComponent):
         super().__init__(node, yoeo_handler, debug_image, config)
 
         self._team_color_detection_supported = team_color_detection_supported
-        self._publisher = self._node.create_publisher(RobotArray, self._config["ROS_robot_msg_topic"], qos_profile=1)
+        self._publisher = self._node.create_publisher(RobotArray, self._config.ROS_robot_msg_topic, qos_profile=1)
 
     def run(self, image: np.ndarray, header: Header) -> None:
         robot_msgs: list[Robot] = []
@@ -282,7 +282,7 @@ class DebugImageComponent(AbstractVisionComponent):
     ):
         super().__init__(node, yoeo_handler, debug_image, config)
 
-        self._publisher = self._node.create_publisher(Image, self._config["ROS_debug_image_msg_topic"], qos_profile=1)
+        self._publisher = self._node.create_publisher(Image, self._config.ROS_debug_image_msg_topic, qos_profile=1)
 
     def run(self, image: np.ndarray, header: Header) -> None:
         debug_image_msg = ros_utils.build_image_msg(header, self._debug_image.get_image(), "bgr8")
