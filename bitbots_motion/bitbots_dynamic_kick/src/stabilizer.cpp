@@ -1,4 +1,4 @@
-#include "bitbots_dynamic_kick/stabilizer.hpp"
+#include <bitbots_dynamic_kick/stabilizer.hpp>
 
 namespace bitbots_dynamic_kick {
 
@@ -21,10 +21,10 @@ Stabilizer::Stabilizer(std::string ns) {
   roll_node_->declare_parameter<double>("i_clamp_min", 0.0);
   roll_node_->declare_parameter<bool>("antiwindup", false);
 
-  pid_trunk_fused_pitch_ = std::make_shared<control_toolbox::PidROS>(pitch_node_, "");
-  pid_trunk_fused_roll_ = std::make_shared<control_toolbox::PidROS>(roll_node_, "");
-  pid_trunk_fused_pitch_->initPid();
-  pid_trunk_fused_roll_->initPid();
+  pid_trunk_fused_pitch_ = std::make_shared<control_toolbox::PidROS>(pitch_node_, "", "", false);
+  pid_trunk_fused_roll_ = std::make_shared<control_toolbox::PidROS>(roll_node_, "", "", false);
+  pid_trunk_fused_pitch_->initialize_from_ros_parameters();
+  pid_trunk_fused_roll_->initialize_from_ros_parameters();
 
   reset();
 }
@@ -51,8 +51,8 @@ KickPositions Stabilizer::stabilize(const KickPositions &positions, const rclcpp
     cop_x_error = cop_x - positions.trunk_pose.translation().x();
     cop_y_error = cop_y - positions.trunk_pose.translation().y();
 
-    double x_correction = pid_trunk_fused_roll_->computeCommand(cop_x_error, dt);
-    double y_correction = pid_trunk_fused_pitch_->computeCommand(cop_y_error, dt);
+    double x_correction = pid_trunk_fused_roll_->compute_command(cop_x_error, dt);
+    double y_correction = pid_trunk_fused_pitch_->compute_command(cop_y_error, dt);
 
     stabilized_positions.trunk_pose.translation().x() += x_correction;
     stabilized_positions.trunk_pose.translation().y() += y_correction;

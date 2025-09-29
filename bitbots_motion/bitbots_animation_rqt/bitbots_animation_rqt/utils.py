@@ -21,8 +21,8 @@ class DragDropList(QListWidget):
         # fmt: on
         super().dropEvent(e)
         items = []
-        for i in range(0, self.count()):
-            items.append(self.item(i).text())
+        for i in range(self.count()):
+            items.append(self.item(i).text())  # type: ignore[union-attr]
         self.frame_order_callback(items)
 
     # fmt: off

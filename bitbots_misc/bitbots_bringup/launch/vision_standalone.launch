@@ -4,10 +4,13 @@
     <arg name="sim" default="false" description="true: activates simulation time, switches to simulation color settings and deactivates launching of an image provider" />
     <arg name="camera" default="true" description="true: launches an image provider to get images from a camera (unless sim:=true)" />
     <arg name="debug" default="false" description="true: activates publishing of several debug images" />
+    <arg unless="$(var sim)" name="fieldname" default="labor" description="Loads field settings (labor, webots, ...)." />
+    <arg if="$(var sim)" name="fieldname" default="webots" description="Loads field settings (labor, webots, ...)." />
 
     <!-- Load the global parameters-->
     <include file="$(find-pkg-share bitbots_parameter_blackboard)/launch/parameter_blackboard.launch">
         <arg name="sim" value="$(var sim)" />
+        <arg name="fieldname" value="$(var fieldname)" />
     </include>
 
     <!-- Load the diagnostic aggregator-->

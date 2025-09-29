@@ -25,9 +25,9 @@ class StateToMessageConverter:
     ) -> Proto.Message:
         def convert_gamestate(gamestate: Optional[GameState], message: Proto.Message):
             if gamestate is not None and is_still_valid_checker(gamestate.header.stamp):
-                message.state = Proto.State.PENALISED if gamestate.penalized else Proto.State.UNPENALISED
+                message.state = Proto.PENALISED if gamestate.penalized else Proto.UNPENALISED
             else:
-                message.state = Proto.State.UNKNOWN_STATE
+                message.state = Proto.UNKNOWN_STATE
 
             return message
 

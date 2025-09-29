@@ -3,7 +3,8 @@ import ipaddress
 import os
 import subprocess
 import sys
-from typing import Any, Iterable, Optional
+from collections.abc import Iterable
+from typing import Any, Optional
 
 import yaml
 from fabric import Connection, GroupResult, ThreadingGroup

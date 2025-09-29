@@ -6,7 +6,7 @@ package_name = "system_monitor"
 
 setup(
     name=package_name,
-    packages=find_packages(),
+    packages=find_packages(exclude=["test"]),
     data_files=[
         ("share/" + package_name, ["package.xml"]),
         ("share/ament_index/resource_index/packages", ["resource/" + package_name]),
@@ -18,6 +18,7 @@ setup(
     install_requires=[
         "setuptools",
     ],
+    tests_require=["pytest"],
     entry_points={
         "console_scripts": [
             "monitor = system_monitor.monitor:main",

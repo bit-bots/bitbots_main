@@ -4,17 +4,27 @@ on:
     - cron: '0 0 * * *'
   push:
 
+env:
+  PYTHONWARNINGS: "ignore:::setuptools.command.install,ignore:::setuptools.command.easy_install,ignore:::pkg_resources,ignore:easy_install command is deprecated,ignore:setup.py install is deprecated"
+
 jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: ubuntu:jammy
+      image: ubuntu:noble
 
     steps:
       - name: Cancel outdated jobs
         uses: fkirc/skip-duplicate-actions@v5
         with:
           cancel_others: 'true'
+     
+     # Remove comments to spawn an interactive debigging ssh shell in the ci 
+     #- name: Setup tmate session
+     #   uses: mxschmitt/action-tmate@v3
+     #   with:   
+     #     detached: true
+      
       - name: Set up ROS ecosystem
         uses: ros-tooling/setup-ros@v0.7
 
@@ -30,7 +40,9 @@ jobs:
           echo "PATH=$PATH:/github/home/.local/bin" >> "$GITHUB_ENV"
 
       - name: Pull source code for libraries and install dependencies
-        run: make install HTTPS=true ARGS="--ci"
+        run: |
+          sudo apt-get remove -y python3-pytest-repeat  #TODO remove once the upstream apt package reports the correct version on the newest pip version
+          make install HTTPS=true ARGS="--ci"
 
       - name: Set up colcon workspace
         run: |
@@ -39,14 +51,14 @@ jobs:
 
       - name: Build packages
         run: |
-          . /opt/ros/iron/setup.sh
+          . /opt/ros/jazzy/setup.sh
           colcon build --symlink-install
         working-directory: /colcon_ws
 
       - name: Test packages
         run: |
           # Source workspace
-          . /opt/ros/iron/setup.sh
+          . /opt/ros/jazzy/setup.sh
           . install/setup.sh
           # Run tests for all packages
           colcon test --event-handlers console_direct+ --return-code-on-test-failure --parallel-workers 1

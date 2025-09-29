@@ -1,7 +1,6 @@
 #define M_TAU M_PI * 2
 
-#include "bitbots_quintic_walk/walk_node.hpp"
-
+#include <bitbots_quintic_walk/walk_node.hpp>
 #include <iostream>
 #include <memory>
 using std::placeholders::_1;
@@ -122,9 +121,6 @@ void WalkNode::run() {
       stabilizer_.reset();
     } else {
       // we don't want to walk, even if we have orders, if we are not in the right state
-      /* Our robots will soon^TM be able to sit down and stand up autonomously, when sitting down the motors are
-       * off but will turn on automatically which is why MOTOR_OFF is a valid walkable state. */
-      // TODO Figure out a better way than having integration knowledge that HCM will play an animation to stand up
       current_request_.walkable_state = robot_state_ == bitbots_msgs::msg::RobotControlState::CONTROLLABLE ||
                                         robot_state_ == bitbots_msgs::msg::RobotControlState::WALKING ||
                                         robot_state_ == bitbots_msgs::msg::RobotControlState::MOTOR_OFF;
