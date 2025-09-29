@@ -47,6 +47,7 @@ class HeadMover {
   // Declare subscriber
   rclcpp::Subscription<bitbots_msgs::msg::HeadMode>::SharedPtr head_mode_subscriber_;
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_subscriber_;
+  rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr ball_filter_subscriber_;
 
   // Declare publisher
   rclcpp::Publisher<bitbots_msgs::msg::JointCommand>::SharedPtr position_publisher_;
@@ -86,6 +87,9 @@ class HeadMover {
   double pan_speed_ = 0;
   double tilt_speed_ = 0;
 
+  // World model state
+  geometry_msgs::msg::PoseWithCovarianceStamped ball_position_;
+
   // Action server for the look at action
   rclcpp_action::Server<LookAtGoal>::SharedPtr action_server_;
   bool action_running_ = false;
@@ -97,11 +101,24 @@ class HeadMover {
 
     // Initialize subscriber for head mode
     head_mode_subscriber_ = node_->create_subscription<bitbots_msgs::msg::HeadMode>(
-        "head_mode", 10, [this](const bitbots_msgs::msg::HeadMode::SharedPtr msg) { head_mode_callback(msg); });
+        "head_mode", 10, [this](const bitbots_msgs::msg::HeadMode::SharedPtr msg) {
+          head_mode_ = msg->head_mode;
+        });
 
     // Initialize subscriber for the current joint states of the robot
     joint_state_subscriber_ = node_->create_subscription<sensor_msgs::msg::JointState>(
-        "joint_states", 1, [this](const sensor_msgs::msg::JointState::SharedPtr msg) { joint_state_callback(msg); });
+        "joint_states", 1, [this](const sensor_msgs::msg::JointState::SharedPtr msg) {
+          current_joint_state_ = *msg;
+        });
+
+    // Initialize subscriber for the ball filter
+    ball_filter_subscriber_ = node_->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
+        "ball_position_relative_filtered", 10, [this](const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg) {
+          ball_position_ = *msg;
+        });
+
+    // Initialize the ball state with a very high covariance so we do not look at it until we receive a valid message
+    ball_position_.header.frame_id = "base_footprint";
 
     // Create parameter listener and load initial set of parameters
     param_listener_ = std::make_shared<move_head::ParamListener>(node_);
@@ -175,16 +192,6 @@ class HeadMover {
     // Initialize timer for main loop
     timer_ = rclcpp::create_timer(node_, node_->get_clock(), 50ms, [this] { behave(); });
   }
-
-  /**
-   * @brief Callback used to update the head mode
-   */
-  void head_mode_callback(const bitbots_msgs::msg::HeadMode::SharedPtr msg) { head_mode_ = msg->head_mode; }
-
-  /**
-   * @brief Callback used to get updates of the current joint states of the robot
-   */
-  void joint_state_callback(const sensor_msgs::msg::JointState::SharedPtr msg) { current_joint_state_ = *msg; }
 
   /***
    * @brief Handles the goal request for the look at action
@@ -271,7 +278,7 @@ class HeadMover {
 
     // Execute the action until we reach the goal or the action is canceled
     while (!success && rclcpp::ok()) {
-      RCLCPP_INFO(node_->get_logger(), "Looking at point");
+      RCLCPP_DEBUG(node_->get_logger(), "Looking at point");
 
       // Check if the action was canceled and if so, set the result accordingly
       if (goal_handle->is_canceling()) {
@@ -717,15 +724,10 @@ class HeadMover {
     // Check if the head mode changed and if so, update the search pattern
     if (prev_head_mode_ != curr_head_mode) {
       switch (curr_head_mode) {
-        case bitbots_msgs::msg::HeadMode::SEARCH_BALL:
-          pan_speed_ = params_.search_patterns.search_ball.pan_speed;
-          tilt_speed_ = params_.search_patterns.search_ball.tilt_speed;
-          pattern_ = generatePattern(
-              params_.search_patterns.search_ball.scan_lines, params_.search_patterns.search_ball.pan_max[0],
-              params_.search_patterns.search_ball.pan_max[1], params_.search_patterns.search_ball.tilt_max[0],
-              params_.search_patterns.search_ball.tilt_max[1],
-              params_.search_patterns.search_ball.reduce_last_scanline);
-          break;
+          case bitbots_msgs::msg::HeadMode::TRACK_BALL:
+          case bitbots_msgs::msg::HeadMode::DONT_MOVE:
+            // Do nothing to do if we go into track ball or dont move mode
+            break;
         case bitbots_msgs::msg::HeadMode::SEARCH_BALL_PENALTY:
           pan_speed_ = params_.search_patterns.search_ball_penalty.pan_speed;
           tilt_speed_ = params_.search_patterns.search_ball_penalty.tilt_speed;
@@ -734,7 +736,7 @@ class HeadMover {
                                      params_.search_patterns.search_ball_penalty.pan_max[1],
                                      params_.search_patterns.search_ball_penalty.tilt_max[0],
                                      params_.search_patterns.search_ball_penalty.tilt_max[1],
-                                     params_.search_patterns.search_ball.reduce_last_scanline);
+                                     params_.search_patterns.search_ball_penalty.reduce_last_scanline);
           break;
 
         case bitbots_msgs::msg::HeadMode::SEARCH_FIELD_FEATURES:
@@ -745,7 +747,7 @@ class HeadMover {
                                      params_.search_patterns.search_field_features.pan_max[1],
                                      params_.search_patterns.search_field_features.tilt_max[0],
                                      params_.search_patterns.search_field_features.tilt_max[1],
-                                     params_.search_patterns.search_ball.reduce_last_scanline);
+                                     params_.search_patterns.search_field_features.reduce_last_scanline);
           break;
 
         case bitbots_msgs::msg::HeadMode::SEARCH_FRONT:
@@ -755,7 +757,7 @@ class HeadMover {
               params_.search_patterns.search_front.scan_lines, params_.search_patterns.search_front.pan_max[0],
               params_.search_patterns.search_front.pan_max[1], params_.search_patterns.search_front.tilt_max[0],
               params_.search_patterns.search_front.tilt_max[1],
-              params_.search_patterns.search_ball.reduce_last_scanline);
+              params_.search_patterns.search_front.reduce_last_scanline);
           break;
 
         case bitbots_msgs::msg::HeadMode::LOOK_FORWARD:
@@ -765,7 +767,7 @@ class HeadMover {
               params_.search_patterns.look_forward.scan_lines, params_.search_patterns.look_forward.pan_max[0],
               params_.search_patterns.look_forward.pan_max[1], params_.search_patterns.look_forward.tilt_max[0],
               params_.search_patterns.look_forward.tilt_max[1],
-              params_.search_patterns.search_ball.reduce_last_scanline);
+              params_.search_patterns.look_forward.reduce_last_scanline);
           break;
 
         default:
@@ -785,8 +787,19 @@ class HeadMover {
     {
       // Store the current head mode as the previous head mode to detect changes
       prev_head_mode_ = curr_head_mode;
-      // Execute the search pattern
-      perform_search_pattern();
+
+      // If we are in search track mode look at the ball
+      if (curr_head_mode == bitbots_msgs::msg::HeadMode::TRACK_BALL) {
+        // Convert the ball position to a PointStamped
+        geometry_msgs::msg::PointStamped look_at_point;
+        look_at_point.header = ball_position_.header;
+        look_at_point.point = ball_position_.pose.pose.position;
+        // Try to look at the ball
+        look_at(look_at_point);
+      } else {
+        // Execute the search pattern
+        perform_search_pattern();
+      }
     }
   }
 

@@ -222,8 +222,8 @@ class TeleopKeyboard(Node):
                     self.head_pub.publish(self.head_msg)
                 elif key == "0":
                     # Search for Ball and track it if found
-                    self.head_mode_msg.head_mode = HeadMode.SEARCH_BALL
-                    assert int(key) == HeadMode.SEARCH_BALL
+                    self.head_mode_msg.head_mode = HeadMode.TRACK_BALL
+                    assert int(key) == HeadMode.TRACK_BALL
                 elif key == "1":
                     # Look generally for all features on the field (ball, goals, corners, center point)
                     self.head_mode_msg.head_mode = HeadMode.SEARCH_FIELD_FEATURES
