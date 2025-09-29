@@ -27,16 +27,14 @@ class LookAt(AbstractHeadModeElement):
             self.finished = True
             return
 
-        # Validate parameters
-        assert "x" in parameters, "LookAt action missing x parameter"
-        assert "y" in parameters, "LookAt action missing y parameter"
+        # Validate parameter
         assert "frame" in parameters, "LookAt action missing frame parameter"
 
         # Create look at goal
         goal = LookAtROSAction.Goal()
-        goal.look_at_position.point.x = parameters["x"]
-        goal.look_at_position.point.y = parameters["y"]
-        goal.look_at_position.point.z = parameters.get("z", 0.0)  # Default to 0.0 if not provided
+        goal.look_at_position.point.x = parameters.get("x", 0.0)
+        goal.look_at_position.point.y = parameters.get("y", 0.0)
+        goal.look_at_position.point.z = parameters.get("z", 0.0)
         goal.look_at_position.header.frame_id = parameters["frame"]
 
         # Handle action server responses
