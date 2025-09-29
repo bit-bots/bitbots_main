@@ -1,6 +1,6 @@
-from rclpy.task import Future
 from bitbots_blackboard.body_blackboard import BodyBlackboard
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
+from rclpy.task import Future
 
 from bitbots_msgs.action import LookAt as LookAtROSAction
 from bitbots_msgs.msg import HeadMode
@@ -43,14 +43,14 @@ class LookAt(AbstractHeadModeElement):
         def goal_response_callback(future: Future):
             goal_handle = future.result()
             if not goal_handle.accepted:
-                self.blackboard.node.get_logger().warn('Can not perform look at, goal rejected')
+                self.blackboard.node.get_logger().warn("Can not perform look at, goal rejected")
                 self.finished = True
                 return
 
             def done_callback(future: Future):
                 result = future.result().result
                 if not result.success:
-                    self.blackboard.node.get_logger().warn('Looking at failed')
+                    self.blackboard.node.get_logger().warn("Looking at failed")
                 self.finished = True
 
             goal_handle.get_result_async().add_done_callback(done_callback)
@@ -61,6 +61,7 @@ class LookAt(AbstractHeadModeElement):
     def perform(self):
         if self.finished:
             return self.pop()
+
 
 class TrackBall(AbstractHeadModeElement):
     """Tracks the last known ball position"""

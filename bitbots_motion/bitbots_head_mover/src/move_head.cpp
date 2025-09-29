@@ -101,18 +101,23 @@ class HeadMover {
     // Initialize subscriber for head mode
     head_mode_subscriber_ = node_->create_subscription<bitbots_msgs::msg::HeadMode>(
         "head_mode", 10, [this](const bitbots_msgs::msg::HeadMode::SharedPtr msg) {
+          // Cppcheck misses the lambda and thinks we do this in the constructor itself
+          // cppcheck-suppress useInitializationList
           head_mode_ = msg->head_mode;
         });
 
     // Initialize subscriber for the current joint states of the robot
     joint_state_subscriber_ = node_->create_subscription<sensor_msgs::msg::JointState>(
         "joint_states", 1, [this](const sensor_msgs::msg::JointState::SharedPtr msg) {
+          // cppcheck-suppress useInitializationList
           current_joint_state_ = *msg;
         });
 
     // Initialize subscriber for the ball filter
     ball_filter_subscriber_ = node_->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
-        "ball_position_relative_filtered", 10, [this](const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg) {
+        "ball_position_relative_filtered", 10,
+        [this](const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg) {
+          // cppcheck-suppress useInitializationList
           ball_position_ = *msg;
         });
 
@@ -723,10 +728,10 @@ class HeadMover {
     // Check if the head mode changed and if so, update the search pattern
     if (prev_head_mode_ != curr_head_mode) {
       switch (curr_head_mode) {
-          case bitbots_msgs::msg::HeadMode::TRACK_BALL:
-          case bitbots_msgs::msg::HeadMode::DONT_MOVE:
-            // Do nothing to do if we go into track ball or dont move mode
-            break;
+        case bitbots_msgs::msg::HeadMode::TRACK_BALL:
+        case bitbots_msgs::msg::HeadMode::DONT_MOVE:
+          // Do nothing to do if we go into track ball or dont move mode
+          break;
         case bitbots_msgs::msg::HeadMode::SEARCH_BALL_PENALTY:
           pan_speed_ = params_.search_patterns.search_ball_penalty.pan_speed;
           tilt_speed_ = params_.search_patterns.search_ball_penalty.tilt_speed;
