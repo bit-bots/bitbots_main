@@ -13,7 +13,7 @@ class AbstractHeadModeElement(AbstractActionElement):
 
 
 class LookAt(AbstractHeadModeElement):
-    """Looks at a given point in a given frame."""
+    """Looks at a given point in a given frame. Pass x, y, z and frame as parameters."""
 
     def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
