@@ -121,7 +121,7 @@ class HeadMover {
           ball_position_ = *msg;
         });
 
-    // Initialize the ball state with a very high covariance so we do not look at it until we receive a valid message
+    // Initialize with a valid frame
     ball_position_.header.frame_id = "base_footprint";
 
     // Create parameter listener and load initial set of parameters
