@@ -2,61 +2,88 @@ import pandas as pd
 import quiz_score as qs
 import sus_score as ss
 import log_evaluation as le
-import os 
+import scipy.stats as stats
+import matplotlib.pyplot as plt
+import os
 
 
 class StudyEvaluation:
-    def __init__(self, study_data1, study_data2, quiz_data, logs_list):
+    def __init__(self, audio_condition1_data, audio_condition2_data, web_condition1_data, web_condition2_data, quiz_data): # add logs_list
         # Assert that the ID columns are the same in both study datasets
-        assert study_data1["Demographic00. Gib deine ID ei.. "].equals(
-            study_data2["Demographic00. Gib deine ID ei.. "]
-        ), "ID columns in study datasets do not match."
+        assert audio_condition1_data["Demographic00. Gib deine ID ei.. "].equals(
+            audio_condition2_data["Demographic00. Gib deine ID ei.. "]), "ID columns in study datasets do not match."
+        assert web_condition1_data["Demographic00. Gib deine ID ei.. "].equals(
+            web_condition2_data["Demographic00. Gib deine ID ei.. "]), "ID columns in study datasets do not match."
 
         # Evaluate logs
-        log_data_list = []
-        for log_file in logs_list:
-            log_data = pd.read_csv(os.path.join("/homes/21wedmann/colcon_ws/src/bitbots_main/bitbots_misc/bitbots_education/scripts/logs", log_file))
-            log_data_sorted = log_data.sort_values(by=["VP", "Timestamp"])
-            log_data_sorted["Page"].fillna("dashboard", inplace=True)
-            log_data_list.append(log_data_sorted)
+        # log_data_list = []
+        # for log_file in logs_list:
+        #     log_data = pd.read_csv(os.path.join("/homes/21wedmann/colcon_ws/src/bitbots_main/bitbots_misc/bitbots_education/scripts/logs", log_file))
+        #     log_data_sorted = log_data.sort_values(by=["VP", "Timestamp"])
+        #     log_data_sorted["Page"].fillna("dashboard", inplace=True)
+        #     log_data_list.append(log_data_sorted)
 
-        self.log_eval = le.LogEvaluation(log_data_list)
+        # self.log_eval = le.LogEvaluation(log_data_list)
 
-        study_score1 = qs.QuizScore(study_data1, "study1")
-        study_data1 = study_score1.quiz_data
-        sus1 = ss.SUSScore(study_data1, "study1")
-        self.full_data1 = sus1.sus_data
-
-        study_score2 = qs.QuizScore(study_data2, "study2")
-        study_data2 = study_score2.quiz_data
-        sus2 = ss.SUSScore(study_data2, "study2")
-        self.full_data2 = sus2.sus_data
+        self.audio1_data = self.get_quiz_and_sus_data(audio_condition1_data, study="study1")
+        self.audio2_data = self.get_quiz_and_sus_data(audio_condition2_data, study="study2")
+        self.web1_data = self.get_quiz_and_sus_data(web_condition1_data, study="study1")
+        self.web2_data = self.get_quiz_and_sus_data(web_condition2_data, study="study2")
 
         quiz_score = qs.QuizScore(quiz_data, "quiz")
         self.quiz_data = quiz_score.quiz_data
 
     def evaluate_quiz_scores(self):
-        print(self.quiz_data["Quiz Score"].mean())
-        print(self.full_data1["Quiz Score"].mean())
-        print(self.full_data2["Quiz Score"].mean())
+
+        #self.make_quiz_histogram(self.audio2_data['Quiz Score'])
+        self.calculate_significance(pd.concat([self.web1_data['SUS Score'],self.audio2_data['SUS Score']]), pd.concat([self.audio1_data['SUS Score'],self.web2_data['SUS Score']]), is_within_subject=False)
+        #self.calculate_significance(self.audio1_data["Quiz Score"], self.audio2_data["Quiz Score"], is_within_subject=True)
+
+    def make_quiz_histogram(self, data: pd.Series):
+        # Compute min and max
+        min_val = int(data.min())
+        max_val = int(data.max())
+
+        # Define bins for each integer value
+        bins = range(min_val, max_val + 2) # +2 to include the last value
+
+        plt.hist(data, bins=bins, edgecolor='black')
+        plt.title("Audio Condition 2 - Quiz Score Distribution")
+        plt.xlabel("Quiz Score")
+        plt.ylabel("Frequency")
+        plt.show()
+
+    def get_quiz_and_sus_data(self, data, study):
+        study_score = qs.QuizScore(data, study)
+        sus = ss.SUSScore(study_score.quiz_data, study)
+        return sus.sus_data
+
+    def calculate_significance(self, data1, data2, is_within_subject):
+        if is_within_subject:
+            stat, p_value = stats.wilcoxon(data1, data2, alternative="greater")
+            print(f"Wilcoxon signed-rank test statistic: {stat}, p-value: {p_value}")
+        else:
+            stat, p_value = stats.mannwhitneyu(data1, data2, alternative="greater")
+            print(f"Mann-Whitney U test statistic: {stat}, p-value: {p_value}")
 
 
 if __name__ == "__main__":
-    data_raw = pd.read_csv("quizAnswerOptions.csv", delimiter=";")
+    data_raw = pd.read_csv("quiz_answers.csv", delimiter=";")
 
-    test_data1 = pd.read_csv("ersterDurchganag.csv", delimiter=";")
+    audio_1_condition = pd.read_csv("first_condition_audio.csv", delimiter=";")
+    audio_2_condition = pd.read_csv("second_condition_audio.csv", delimiter=";")
+    web_1_condition = pd.read_csv("first_condition_web.csv", delimiter=";")
+    web_2_condition = pd.read_csv("second_condition_web.csv", delimiter=";")
 
-    test_data2 = pd.read_csv("test_zweiterDurchganag.csv", delimiter=";")
+    # path = "/homes/21wedmann/colcon_ws/src/bitbots_main/bitbots_misc/bitbots_education/scripts/logs"
+    # dir_list = os.listdir(path)
 
-    path = "/homes/21wedmann/colcon_ws/src/bitbots_main/bitbots_misc/bitbots_education/scripts/logs"
-    dir_list = os.listdir(path)
-
-    eval = StudyEvaluation(test_data1, test_data2, data_raw, dir_list)
+    eval = StudyEvaluation(audio_1_condition, audio_2_condition, web_1_condition, web_2_condition, data_raw) #dir_list
     print(eval.evaluate_quiz_scores())
-    print(eval.log_eval.button_dict, eval.log_eval.df)
+    # print(eval.log_eval.button_dict, eval.log_eval.df)
 
-    eval.log_eval.df.sort_values(by=["VP"], inplace=True)
-    eval.log_eval.df.to_csv("evaluation_output.csv")
+    #eval.log_eval.df.sort_values(by=["VP"], inplace=True)
+    #eval.log_eval.df.to_csv("evaluation_output.csv")
 
     """ This code block is used to visualize the quiz scores using a box plot.
     fig, axs = plt.subplots(figsize=(4,4))
