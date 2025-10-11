@@ -730,7 +730,7 @@ class HeadMover {
       switch (curr_head_mode) {
         case bitbots_msgs::msg::HeadMode::TRACK_BALL:
         case bitbots_msgs::msg::HeadMode::DONT_MOVE:
-          // Do nothing to do if we go into track ball or dont move mode
+          // Nothing to do if we go into track ball or dont move mode
           break;
         case bitbots_msgs::msg::HeadMode::SEARCH_BALL_PENALTY:
           pan_speed_ = params_.search_patterns.search_ball_penalty.pan_speed;
