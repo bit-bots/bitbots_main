@@ -115,7 +115,9 @@ void WalkNode::run() {
   // necessary as timer in simulation does not work correctly https://github.com/ros2/rclcpp/issues/465
   if (dt != 0.0) {
     if (robot_state_ == bitbots_msgs::msg::RobotControlState::FALLING ||
-        robot_state_ == bitbots_msgs::msg::RobotControlState::GETTING_UP) {
+        robot_state_ == bitbots_msgs::msg::RobotControlState::GETTING_UP ||
+        robot_state_ == bitbots_msgs::msg::RobotControlState::PENALTY
+      ) {
       // the robot fell, we have to reset everything and do nothing else
       walk_engine_.reset();
       stabilizer_.reset();
