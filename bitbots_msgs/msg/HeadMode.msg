@@ -1,8 +1,8 @@
 # This message is used for communicating between the body behavior and the head behavior.
 # The body tells the head by this message what it shall do.
 
-# Search for Ball and track it if found
-uint8 SEARCH_BALL=0 
+# Track the last seen ball position
+uint8 TRACK_BALL=0
 # Look generally for all features on the field (ball, goals, corners, center point)
 uint8 SEARCH_FIELD_FEATURES=1
 # Simply look directly forward
