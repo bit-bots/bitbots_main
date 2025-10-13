@@ -116,8 +116,7 @@ void WalkNode::run() {
   if (dt != 0.0) {
     if (robot_state_ == bitbots_msgs::msg::RobotControlState::FALLING ||
         robot_state_ == bitbots_msgs::msg::RobotControlState::GETTING_UP ||
-        robot_state_ == bitbots_msgs::msg::RobotControlState::PENALTY
-      ) {
+        robot_state_ == bitbots_msgs::msg::RobotControlState::PENALTY) {
       // the robot fell, we have to reset everything and do nothing else
       walk_engine_.reset();
       stabilizer_.reset();
