@@ -47,6 +47,9 @@ class StudyEvaluation:
         SUS_within_audio_stat, SUS_within_audio_p = self.calculate_significance(self.audio2_data['SUS Score'], self.audio1_data['SUS Score'], is_within_subject=True)
         SUS_within_web_stat, SUS_within_web_p = self.calculate_significance(self.web1_data['SUS Score'], self.web2_data['SUS Score'], is_within_subject=True)
         SUS_between_condition1_stat, SUS_between_condition1_p = self.calculate_significance(self.audio1_data['SUS Score'], self.web1_data['SUS Score'], is_within_subject=False)
+        SUS_within_study_stat, SUS_within_study_p = self.calculate_significance(pd.concat([self.web1_data['SUS Score'], self.audio2_data['SUS Score']]),
+                                                                                             pd.concat([self.audio1_data['SUS Score'], self.web2_data['SUS Score']]), is_within_subject=True)
+
 
         Quiz_between_baseline_audio_stat, Quiz_between_baseline_audio_p = self.calculate_significance(self.audio1_data['Quiz Score'], self.quiz_data['Quiz Score'], is_within_subject=False)
         Quiz_between_baseline_web_stat, Quiz_between_baseline_web_p = self.calculate_significance(self.web1_data['Quiz Score'], self.quiz_data['Quiz Score'], is_within_subject=False)
@@ -54,31 +57,39 @@ class StudyEvaluation:
         Quiz_within_audio_stat, Quiz_within_audio_p = self.calculate_significance(self.audio2_data['Quiz Score'], self.audio1_data['Quiz Score'], is_within_subject=True)
         Quiz_within_web_stat, Quiz_within_web_p = self.calculate_significance(self.web2_data['Quiz Score'], self.web1_data['Quiz Score'], is_within_subject=True)
         Quiz_between_condition1_stat, Quiz_between_condition1_p = self.calculate_significance(self.audio1_data['Quiz Score'], self.web1_data['Quiz Score'], is_within_subject=False)
+        Quiz_within_study_stat, Quiz_within_study_p = self.calculate_significance(pd.concat([self.web1_data['Quiz Score'], self.audio2_data['Quiz Score']]),
+                                                                                             pd.concat([self.audio1_data['Quiz Score'], self.web2_data['Quiz Score']]), is_within_subject=True)
+
 
         IOS_robot_within_audio_stat, IOS_robot_within_audio_p = self.calculate_significance(self.audio2_data['IOS Robot Score'], self.audio1_data['IOS Robot Score'], is_within_subject=True)
         IOS_robot_within_web_stat, IOS_robot_within_web_p = self.calculate_significance(self.web1_data['IOS Robot Score'], self.web2_data['IOS Robot Score'], is_within_subject=True)
         IOS_robot_between_condition1_stat, IOS_robot_between_condition1_p = self.calculate_significance(self.audio1_data['IOS Robot Score'], self.web1_data['IOS Robot Score'], is_within_subject=False)
+        IOS_robot_within_study_stat, IOS_robot_within_study_p = self.calculate_significance(pd.concat([self.web1_data['IOS Robot Score'], self.audio2_data['IOS Robot Score']]),
+                                                                                             pd.concat([self.audio1_data['IOS Robot Score'], self.web2_data['IOS Robot Score']]), is_within_subject=True)
 
         IOS_group_within_audio_stat, IOS_group_within_audio_p = self.calculate_significance(self.audio2_data['IOS Group Score'], self.audio1_data['IOS Group Score'], is_within_subject=True)
         IOS_group_within_web_stat, IOS_group_within_web_p = self.calculate_significance(self.web1_data['IOS Group Score'], self.web2_data['IOS Group Score'], is_within_subject=True)
         IOS_group_between_condition1_stat, IOS_group_between_condition1_p = self.calculate_significance(self.audio1_data['IOS Group Score'], self.web1_data['IOS Group Score'], is_within_subject=False)
+        IOS_group_within_study_stat, IOS_group_within_study_p = self.calculate_significance(pd.concat([self.audio1_data['IOS Group Score'], self.web2_data['IOS Group Score']]),
+                                                                                             pd.concat([self.web1_data['IOS Group Score'], self.audio2_data['IOS Group Score']]), is_within_subject=True)
+
 
         self.significance_data = pd.DataFrame({
-            "Test": ["SUS within audio", "SUS within web", "SUS between condition 1",
-                     "Quiz between baseline audio", "Quiz between baseline web",
-                     "Quiz within audio", "Quiz within web", "Quiz between condition 1",
-                     "IOS robot within audio", "IOS robot within web", "IOS robot between condition 1",
-                     "IOS group within audio", "IOS group within web", "IOS group between condition 1"],
-            "Statistic": [SUS_within_audio_stat, SUS_within_web_stat, SUS_between_condition1_stat,
-                          Quiz_between_baseline_audio_stat, Quiz_between_baseline_web_stat,
-                          Quiz_within_audio_stat, Quiz_within_web_stat, Quiz_between_condition1_stat,
-                          IOS_robot_within_audio_stat, IOS_robot_within_web_stat, IOS_robot_between_condition1_stat,
-                          IOS_group_within_audio_stat, IOS_group_within_web_stat, IOS_group_between_condition1_stat],
-            "p-value": [SUS_within_audio_p, SUS_within_web_p, SUS_between_condition1_p,
-                        Quiz_between_baseline_audio_p, Quiz_between_baseline_web_p,
-                        Quiz_within_audio_p, Quiz_within_web_p, Quiz_between_condition1_p,
-                        IOS_robot_within_audio_p, IOS_robot_within_web_p, IOS_robot_between_condition1_p,
-                        IOS_group_within_audio_p, IOS_group_within_web_p, IOS_group_between_condition1_p]
+            "Test": ["SUS within audio", "SUS within web", "SUS between condition 1", "SUS within study",
+                     "Quiz between baseline audio", "Quiz between baseline web", 
+                     "Quiz within audio", "Quiz within web", "Quiz between condition 1", "Quiz within study",
+                     "IOS robot within audio", "IOS robot within web", "IOS robot between condition 1", "IOS robot within study",
+                     "IOS group within audio", "IOS group within web", "IOS group between condition 1", "IOS group within study"],
+            "Statistic": [SUS_within_audio_stat, SUS_within_web_stat, SUS_between_condition1_stat, SUS_within_study_stat,
+                          Quiz_between_baseline_audio_stat, Quiz_between_baseline_web_stat, 
+                          Quiz_within_audio_stat, Quiz_within_web_stat, Quiz_between_condition1_stat, Quiz_within_study_stat,
+                          IOS_robot_within_audio_stat, IOS_robot_within_web_stat, IOS_robot_between_condition1_stat, IOS_robot_within_study_stat,
+                          IOS_group_within_audio_stat, IOS_group_within_web_stat, IOS_group_between_condition1_stat, IOS_group_within_study_stat],
+            "p-value": [SUS_within_audio_p, SUS_within_web_p, SUS_between_condition1_p, SUS_within_study_p,
+                        Quiz_between_baseline_audio_p, Quiz_between_baseline_web_p, 
+                        Quiz_within_audio_p, Quiz_within_web_p, Quiz_between_condition1_p, Quiz_within_study_p,
+                        IOS_robot_within_audio_p, IOS_robot_within_web_p, IOS_robot_between_condition1_p, IOS_robot_within_study_p,
+                        IOS_group_within_audio_p, IOS_group_within_web_p, IOS_group_between_condition1_p, IOS_group_within_study_p]
         })
 
     def make_descriptive_statistics(self,):
