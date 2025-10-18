@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import quiz_score as qs
 import sus_score as ss
 import ios_score as io
@@ -9,7 +10,7 @@ import os
 
 
 class StudyEvaluation:
-    def __init__(self, audio_condition1_data, audio_condition2_data, web_condition1_data, web_condition2_data, quiz_data, logs_list): 
+    def __init__(self, audio_condition1_data, audio_condition2_data, web_condition1_data, web_condition2_data, quiz_data): #logs_list): 
         # Assert that the ID columns are the same in both study datasets
         assert audio_condition1_data["Demographic00. Gib deine ID ei.. "].equals(
             audio_condition2_data["Demographic00. Gib deine ID ei.. "]), "ID columns in study datasets do not match."
@@ -18,13 +19,13 @@ class StudyEvaluation:
 
         #Evaluate logs
         log_data_list = []
-        for log_file in logs_list:
-            log_data = pd.read_csv(os.path.join("/homes/21wedmann/colcon_ws/src/bitbots_main/bitbots_misc/bitbots_education/scripts/logs", log_file))
-            log_data_sorted = log_data.sort_values(by=["VP", "Timestamp"])
-            log_data_sorted["Page"].fillna("dashboard", inplace=True)
-            log_data_list.append(log_data_sorted)
+        # for log_file in logs_list:
+        #     log_data = pd.read_csv(os.path.join("/homes/21wedmann/colcon_ws/src/bitbots_main/bitbots_misc/bitbots_education/scripts/logs", log_file))
+        #     log_data_sorted = log_data.sort_values(by=["VP", "Timestamp"])
+        #     log_data_sorted["Page"].fillna("dashboard", inplace=True)
+        #     log_data_list.append(log_data_sorted)
 
-        self.log_eval = le.LogEvaluation(log_data_list)
+        # self.log_eval = le.LogEvaluation(log_data_list)
 
         self.audio1_data = self.get_quiz_and_sus_data_and_ios(audio_condition1_data, study="study1")
         self.audio2_data = self.get_quiz_and_sus_data_and_ios(audio_condition2_data, study="study2")
@@ -44,33 +45,33 @@ class StudyEvaluation:
     def evaluate_scores(self):
         #self.calculate_significance(pd.concat([self.web1_data['SUS Score'],self.audio2_data['SUS Score']]), pd.concat([self.audio1_data['SUS Score'],self.web2_data['SUS Score']]), is_within_subject=False)
 
-        SUS_within_audio_stat, SUS_within_audio_p = self.calculate_significance(self.audio2_data['SUS Score'], self.audio1_data['SUS Score'], is_within_subject=True)
-        SUS_within_web_stat, SUS_within_web_p = self.calculate_significance(self.web1_data['SUS Score'], self.web2_data['SUS Score'], is_within_subject=True)
-        SUS_between_condition1_stat, SUS_between_condition1_p = self.calculate_significance(self.audio1_data['SUS Score'], self.web1_data['SUS Score'], is_within_subject=False)
-        SUS_within_study_stat, SUS_within_study_p = self.calculate_significance(pd.concat([self.web1_data['SUS Score'], self.audio2_data['SUS Score']]),
+        SUS_within_audio_stat, SUS_within_audio_p, SUS_within_audio_test = self.calculate_significance(self.audio2_data['SUS Score'], self.audio1_data['SUS Score'], is_within_subject=True)
+        SUS_within_web_stat, SUS_within_web_p, SUS_within_web_test = self.calculate_significance(self.web1_data['SUS Score'], self.web2_data['SUS Score'], is_within_subject=True)
+        SUS_between_condition1_stat, SUS_between_condition1_p, SUS_between_condition1_test = self.calculate_significance(self.audio1_data['SUS Score'], self.web1_data['SUS Score'], is_within_subject=False)
+        SUS_within_study_stat, SUS_within_study_p, SUS_within_study_test = self.calculate_significance(pd.concat([self.web1_data['SUS Score'], self.audio2_data['SUS Score']]),
                                                                                              pd.concat([self.audio1_data['SUS Score'], self.web2_data['SUS Score']]), is_within_subject=True)
 
 
-        Quiz_between_baseline_audio_stat, Quiz_between_baseline_audio_p = self.calculate_significance(self.audio1_data['Quiz Score'], self.quiz_data['Quiz Score'], is_within_subject=False)
-        Quiz_between_baseline_web_stat, Quiz_between_baseline_web_p = self.calculate_significance(self.web1_data['Quiz Score'], self.quiz_data['Quiz Score'], is_within_subject=False)
+        Quiz_between_baseline_audio_stat, Quiz_between_baseline_audio_p, Quiz_between_baseline_audio_test = self.calculate_significance(self.audio1_data['Quiz Score'], self.quiz_data['Quiz Score'], is_within_subject=False)
+        Quiz_between_baseline_web_stat, Quiz_between_baseline_web_p, Quiz_between_baseline_web_test = self.calculate_significance(self.web1_data['Quiz Score'], self.quiz_data['Quiz Score'], is_within_subject=False)
 
-        Quiz_within_audio_stat, Quiz_within_audio_p = self.calculate_significance(self.audio2_data['Quiz Score'], self.audio1_data['Quiz Score'], is_within_subject=True)
-        Quiz_within_web_stat, Quiz_within_web_p = self.calculate_significance(self.web2_data['Quiz Score'], self.web1_data['Quiz Score'], is_within_subject=True)
-        Quiz_between_condition1_stat, Quiz_between_condition1_p = self.calculate_significance(self.audio1_data['Quiz Score'], self.web1_data['Quiz Score'], is_within_subject=False)
-        Quiz_within_study_stat, Quiz_within_study_p = self.calculate_significance(pd.concat([self.web1_data['Quiz Score'], self.audio2_data['Quiz Score']]),
+        Quiz_within_audio_stat, Quiz_within_audio_p, Quiz_within_audio_test = self.calculate_significance(self.audio2_data['Quiz Score'], self.audio1_data['Quiz Score'], is_within_subject=True)
+        Quiz_within_web_stat, Quiz_within_web_p, Quiz_within_web_test = self.calculate_significance(self.web2_data['Quiz Score'], self.web1_data['Quiz Score'], is_within_subject=True)
+        Quiz_between_condition1_stat, Quiz_between_condition1_p, Quiz_between_condition1_test = self.calculate_significance(self.audio1_data['Quiz Score'], self.web1_data['Quiz Score'], is_within_subject=False)
+        Quiz_within_study_stat, Quiz_within_study_p, Quiz_within_study_test = self.calculate_significance(pd.concat([self.web1_data['Quiz Score'], self.audio2_data['Quiz Score']]),
                                                                                              pd.concat([self.audio1_data['Quiz Score'], self.web2_data['Quiz Score']]), is_within_subject=True)
 
 
-        IOS_robot_within_audio_stat, IOS_robot_within_audio_p = self.calculate_significance(self.audio2_data['IOS Robot Score'], self.audio1_data['IOS Robot Score'], is_within_subject=True)
-        IOS_robot_within_web_stat, IOS_robot_within_web_p = self.calculate_significance(self.web1_data['IOS Robot Score'], self.web2_data['IOS Robot Score'], is_within_subject=True)
-        IOS_robot_between_condition1_stat, IOS_robot_between_condition1_p = self.calculate_significance(self.audio1_data['IOS Robot Score'], self.web1_data['IOS Robot Score'], is_within_subject=False)
-        IOS_robot_within_study_stat, IOS_robot_within_study_p = self.calculate_significance(pd.concat([self.web1_data['IOS Robot Score'], self.audio2_data['IOS Robot Score']]),
+        IOS_robot_within_audio_stat, IOS_robot_within_audio_p, IOS_robot_within_audio_test = self.calculate_significance(self.audio2_data['IOS Robot Score'], self.audio1_data['IOS Robot Score'], is_within_subject=True)
+        IOS_robot_within_web_stat, IOS_robot_within_web_p, IOS_robot_within_web_test = self.calculate_significance(self.web1_data['IOS Robot Score'], self.web2_data['IOS Robot Score'], is_within_subject=True)
+        IOS_robot_between_condition1_stat, IOS_robot_between_condition1_p, IOS_robot_between_condition1_test = self.calculate_significance(self.audio1_data['IOS Robot Score'], self.web1_data['IOS Robot Score'], is_within_subject=False)
+        IOS_robot_within_study_stat, IOS_robot_within_study_p, IOS_robot_within_study_test = self.calculate_significance(pd.concat([self.web1_data['IOS Robot Score'], self.audio2_data['IOS Robot Score']]),
                                                                                              pd.concat([self.audio1_data['IOS Robot Score'], self.web2_data['IOS Robot Score']]), is_within_subject=True)
 
-        IOS_group_within_audio_stat, IOS_group_within_audio_p = self.calculate_significance(self.audio2_data['IOS Group Score'], self.audio1_data['IOS Group Score'], is_within_subject=True)
-        IOS_group_within_web_stat, IOS_group_within_web_p = self.calculate_significance(self.web1_data['IOS Group Score'], self.web2_data['IOS Group Score'], is_within_subject=True)
-        IOS_group_between_condition1_stat, IOS_group_between_condition1_p = self.calculate_significance(self.audio1_data['IOS Group Score'], self.web1_data['IOS Group Score'], is_within_subject=False)
-        IOS_group_within_study_stat, IOS_group_within_study_p = self.calculate_significance(pd.concat([self.audio1_data['IOS Group Score'], self.web2_data['IOS Group Score']]),
+        IOS_group_within_audio_stat, IOS_group_within_audio_p, IOS_group_within_audio_test = self.calculate_significance(self.audio2_data['IOS Group Score'], self.audio1_data['IOS Group Score'], is_within_subject=True)
+        IOS_group_within_web_stat, IOS_group_within_web_p, IOS_group_within_web_test = self.calculate_significance(self.web1_data['IOS Group Score'], self.web2_data['IOS Group Score'], is_within_subject=True)
+        IOS_group_between_condition1_stat, IOS_group_between_condition1_p, IOS_group_between_condition1_test = self.calculate_significance(self.audio1_data['IOS Group Score'], self.web1_data['IOS Group Score'], is_within_subject=False)
+        IOS_group_within_study_stat, IOS_group_within_study_p, IOS_group_within_study_test = self.calculate_significance(pd.concat([self.audio1_data['IOS Group Score'], self.web2_data['IOS Group Score']]),
                                                                                              pd.concat([self.web1_data['IOS Group Score'], self.audio2_data['IOS Group Score']]), is_within_subject=True)
 
 
@@ -89,7 +90,18 @@ class StudyEvaluation:
                         Quiz_between_baseline_audio_p, Quiz_between_baseline_web_p, 
                         Quiz_within_audio_p, Quiz_within_web_p, Quiz_between_condition1_p, Quiz_within_study_p,
                         IOS_robot_within_audio_p, IOS_robot_within_web_p, IOS_robot_between_condition1_p, IOS_robot_within_study_p,
-                        IOS_group_within_audio_p, IOS_group_within_web_p, IOS_group_between_condition1_p, IOS_group_within_study_p]
+                        IOS_group_within_audio_p, IOS_group_within_web_p, IOS_group_between_condition1_p, IOS_group_within_study_p],
+            "test statistic": [SUS_within_audio_stat, SUS_within_web_stat, SUS_between_condition1_stat, SUS_within_study_stat,
+                               Quiz_between_baseline_audio_stat, Quiz_between_baseline_web_stat, 
+                               Quiz_within_audio_stat, Quiz_within_web_stat, Quiz_between_condition1_stat, Quiz_within_study_stat,
+                               IOS_robot_within_audio_stat, IOS_robot_within_web_stat, IOS_robot_between_condition1_stat, IOS_robot_within_study_stat,
+                               IOS_group_within_audio_stat, IOS_group_within_web_stat, IOS_group_between_condition1_stat, IOS_group_within_study_stat],          
+            "test type":[SUS_within_audio_test, SUS_within_web_test, SUS_between_condition1_test, SUS_within_study_test,
+                          Quiz_between_baseline_audio_test, Quiz_between_baseline_web_test, 
+                          Quiz_within_audio_test, Quiz_within_web_test, Quiz_between_condition1_test, Quiz_within_study_test,
+                          IOS_robot_within_audio_test, IOS_robot_within_web_test, IOS_robot_between_condition1_test, IOS_robot_within_study_test,
+                          IOS_group_within_audio_test, IOS_group_within_web_test, IOS_group_between_condition1_test, IOS_group_within_study_test],
+
         })
 
     def make_descriptive_statistics(self,):
@@ -138,44 +150,44 @@ class StudyEvaluation:
                                            self.descriptive_data],
                                           axis=1)
         
-        #describe times
-        behavior_time_describe = self.log_eval.df["Behavior Time"].describe()
-        motors_time_describe = self.log_eval.df["Motors Time"].describe()
-        imu_time_describe = self.log_eval.df["IMU Time"].describe()
-        vision_time_describe = self.log_eval.df["Vision Time"].describe()
-        dashboard_time_describe = self.log_eval.df["Dashboard Time"].describe()
+        # #describe times
+        # behavior_time_describe = self.log_eval.df["Behavior Time"].describe()
+        # motors_time_describe = self.log_eval.df["Motors Time"].describe()
+        # imu_time_describe = self.log_eval.df["IMU Time"].describe()
+        # vision_time_describe = self.log_eval.df["Vision Time"].describe()
+        # dashboard_time_describe = self.log_eval.df["Dashboard Time"].describe()
 
-        #describe button presses
-        txt_button_click_describe = self.log_eval.df["Text Button Clicks"].describe()
-        stop_stack_button_click_describe = self.log_eval.df["Stop Stack Button Clicks"].describe()
-        change_behavior_view_button_click_describe = self.log_eval.df["Change Behavior View Button Clicks"].describe()
-        behavior_tree_button_click_describe = self.log_eval.df["Behavior Tree Button Clicks"].describe()
+        # #describe button presses
+        # txt_button_click_describe = self.log_eval.df["Text Button Clicks"].describe()
+        # stop_stack_button_click_describe = self.log_eval.df["Stop Stack Button Clicks"].describe()
+        # change_behavior_view_button_click_describe = self.log_eval.df["Change Behavior View Button Clicks"].describe()
+        # behavior_tree_button_click_describe = self.log_eval.df["Behavior Tree Button Clicks"].describe()
 
-        #describe scrolled pixels
-        amount_scrolled_describe = self.log_eval.df["Amount Scrolled"].describe()
-        behavior_scroll_describe = self.log_eval.df["Behavior Scroll"].describe()
-        motor_scroll_describe = self.log_eval.df["Motors Scroll"].describe()
-        imu_scroll_describe = self.log_eval.df["IMU Scroll"].describe()
-        vision_scroll_describe = self.log_eval.df["Vision Scroll"].describe()
-        dashboard_scroll_describe = self.log_eval.df["Dashboard Scroll"].describe()
+        # #describe scrolled pixels
+        # amount_scrolled_describe = self.log_eval.df["Amount Scrolled"].describe()
+        # behavior_scroll_describe = self.log_eval.df["Behavior Scroll"].describe()
+        # motor_scroll_describe = self.log_eval.df["Motors Scroll"].describe()
+        # imu_scroll_describe = self.log_eval.df["IMU Scroll"].describe()
+        # vision_scroll_describe = self.log_eval.df["Vision Scroll"].describe()
+        # dashboard_scroll_describe = self.log_eval.df["Dashboard Scroll"].describe()
 
-        self.descriptive_log_data = pd.concat([behavior_time_describe.to_frame(name="Behavior Time"),
-                                              motors_time_describe.to_frame(name="Motors Time"),
-                                              imu_time_describe.to_frame(name="IMU Time"),
-                                              vision_time_describe.to_frame(name="Vision Time"),
-                                              dashboard_time_describe.to_frame(name="Dashboard Time"),
-                                              txt_button_click_describe.to_frame(name="Text Button Clicks"),
-                                              stop_stack_button_click_describe.to_frame(name="Stop Stack Button Clicks"),
-                                              change_behavior_view_button_click_describe.to_frame(name="Change Behavior View Button Clicks"),
-                                              behavior_tree_button_click_describe.to_frame(name="Behavior Tree Button Clicks"),
-                                              amount_scrolled_describe.to_frame(name="Amount Scrolled"),
-                                              behavior_scroll_describe.to_frame(name="Behavior Scroll"),
-                                              motor_scroll_describe.to_frame(name="Motor Scroll"),
-                                              imu_scroll_describe.to_frame(name="IMU Scroll"),
-                                              vision_scroll_describe.to_frame(name="Vision Scroll"),
-                                              dashboard_scroll_describe.to_frame(name="Dashboard Scroll"),
-                                              self.descriptive_log_data],
-                                             axis=1)
+        # self.descriptive_log_data = pd.concat([behavior_time_describe.to_frame(name="Behavior Time"),
+        #                                       motors_time_describe.to_frame(name="Motors Time"),
+        #                                       imu_time_describe.to_frame(name="IMU Time"),
+        #                                       vision_time_describe.to_frame(name="Vision Time"),
+        #                                       dashboard_time_describe.to_frame(name="Dashboard Time"),
+        #                                       txt_button_click_describe.to_frame(name="Text Button Clicks"),
+        #                                       stop_stack_button_click_describe.to_frame(name="Stop Stack Button Clicks"),
+        #                                       change_behavior_view_button_click_describe.to_frame(name="Change Behavior View Button Clicks"),
+        #                                       behavior_tree_button_click_describe.to_frame(name="Behavior Tree Button Clicks"),
+        #                                       amount_scrolled_describe.to_frame(name="Amount Scrolled"),
+        #                                       behavior_scroll_describe.to_frame(name="Behavior Scroll"),
+        #                                       motor_scroll_describe.to_frame(name="Motor Scroll"),
+        #                                       imu_scroll_describe.to_frame(name="IMU Scroll"),
+        #                                       vision_scroll_describe.to_frame(name="Vision Scroll"),
+        #                                       dashboard_scroll_describe.to_frame(name="Dashboard Scroll"),
+        #                                       self.descriptive_log_data],
+        #                                      axis=1)
 
 
     def make_quiz_histogram(self, data: pd.Series):
@@ -198,13 +210,45 @@ class StudyEvaluation:
         ios = io.IOSScore(sus.sus_data, study)
         return ios.ios_data
 
+    def is_normal_distribution(self, data: pd.Series) -> tuple[bool, float, float]:
+        # Copy the data so we can mutate it
+        data_copy = data.copy()
+
+        # Make random generator
+        rng = np.random.default_rng(1310)
+
+        # Add small noise to the data to avoid issues with identical values
+        # The noise should be uniformly distributed between -0.5 and 0.5 
+        # so the integers cover the float range evenly
+        data_copy += rng.uniform(-0.5, 0.5, size=len(data_copy))
+
+        # Make Shapiro-Wilk test
+        stat, p_value = stats.shapiro(data_copy)
+        return p_value > 0.05, stat, p_value
+
     def calculate_significance(self, data1, data2, is_within_subject):
-        if is_within_subject:
-            stat, p_value = stats.wilcoxon(data1, data2, alternative="greater")
-            return stat, p_value
+        data1_normal, data1_stat, data1_p = self.is_normal_distribution(data1)
+        data2_normal, data2_stat, data2_p = self.is_normal_distribution(data2)
+
+        print(f"Data 1 normal: {data1_normal} (stat={data1_stat}, p={data1_p})")
+        print(f"Data 2 normal: {data2_normal} (stat={data2_stat}, p={data2_p})")
+
+        if data1_normal and data2_normal:
+            if is_within_subject:
+                stat, p_value = stats.ttest_rel(data1, data2, alternative="greater")
+                test_name = "Paired t-test"
+            else:
+                stat, p_value = stats.ttest_ind(data1, data2, alternative="greater")
+                test_name = "Independent t-test"
         else:
-            stat, p_value = stats.mannwhitneyu(data1, data2, alternative="greater")
-            return stat, p_value
+            if is_within_subject:
+                stat, p_value = stats.wilcoxon(data1, data2, alternative="greater")
+                test_name = "Wilcoxon signed-rank test"
+            else:
+                stat, p_value = stats.mannwhitneyu(data1, data2, alternative="greater")
+                test_name = "Mann-Whitney U test"
+
+        return stat, p_value, test_name
 
 
 if __name__ == "__main__":
@@ -215,26 +259,71 @@ if __name__ == "__main__":
     web_1_condition = pd.read_csv("first_condition_web.csv", delimiter=";")
     web_2_condition = pd.read_csv("second_condition_web.csv", delimiter=";")
 
-    path = "/homes/21wedmann/colcon_ws/src/bitbots_main/bitbots_misc/bitbots_education/scripts/logs"
-    dir_list = os.listdir(path)
+    #path = "/homes/21wedmann/colcon_ws/src/bitbots_main/bitbots_misc/bitbots_education/scripts/logs"
+    #dir_list = os.listdir(path)
 
-    eval = StudyEvaluation(audio_1_condition, audio_2_condition, web_1_condition, web_2_condition, data_raw, dir_list)
-    print(eval.descriptive_data)
+    evaluation = StudyEvaluation(audio_1_condition, audio_2_condition, web_1_condition, web_2_condition, data_raw) #dir_list)
+    print(evaluation.descriptive_data)
 
-    eval.significance_data.to_csv("significance_data.csv")
-    eval.descriptive_data.to_csv("descriptive_data.csv")
-    eval.descriptive_log_data.to_csv("descriptive_log_data.csv")
+    evaluation.significance_data.to_csv("significance_data.csv")
+    evaluation.descriptive_data.to_csv("descriptive_data.csv")
+    #eval.descriptive_log_data.to_csv("descriptive_log_data.csv")
     # print(eval.log_eval.button_dict, eval.log_eval.df)
 
-    eval.log_eval.df.sort_values(by=["VP"], inplace=True)
-    eval.log_eval.df.to_csv("evaluation_output.csv")
+    #eval.log_eval.df.sort_values(by=["VP"], inplace=True)
+    #eval.log_eval.df.to_csv("evaluation_output.csv")
 
-    """ This code block is used to visualize the quiz scores using a box plot.
+    # This code block is used to visualize the quiz scores using a box plot.
+    colors1 = ['lightskyblue', 'darkslateblue', 'lavender']
+    colors2 = ['darkslateblue', 'lightskyblue']
     fig, axs = plt.subplots(figsize=(4,4))
-    eval.quiz_data['Quiz Score'].plot.box(ax=axs)
+    bplot1 = axs.boxplot([evaluation.audio1_data['Quiz Score'], evaluation.web1_data['Quiz Score'], 
+                 evaluation.quiz_data['Quiz Score']], patch_artist=True, labels=['Audio', 'Web', 'Baseline'])
     axs.set_ylabel("Quiz Score")
-    axs.set_yticks(range(0, 16, 1))
+    axs.set_title("Between-Subject Quiz Score")
+    axs.set_yticks(range(4, 16, 1))
+    for patch, color in zip(bplot1['boxes'], colors1):
+        patch.set_facecolor(color)
+
+    plt.tight_layout()
     plt.show()
-    eval.quiz_data[['Quiz Score']].plot.box()
-    plt.show() """
+
+    fig2, (axs2, axs3) = plt.subplots(1, 2, figsize=(7, 4))
+    fig2.suptitle("Learning Effects for the Quiz Scores")
+    bplot2 = axs2.boxplot([evaluation.audio1_data['Quiz Score'], evaluation.audio2_data['Quiz Score']], 
+                patch_artist=True, labels=['Audio', 'Web'])
+    axs2.set_title("Audio First Condition")
+    axs3.set_title("Web First Condition")
+    bplot3 = axs3.boxplot([evaluation.web1_data['Quiz Score'], evaluation.web2_data['Quiz Score']],
+                 patch_artist=True, labels=['Web', 'Audio'])
+    axs2.set_ylabel("Quiz Score")
+    axs3.set_ylabel("Quiz Score")
+    for patch, color in zip(bplot2['boxes'], colors1):
+        patch.set_facecolor(color)
+    for patch, color in zip(bplot3['boxes'], colors2):
+        patch.set_facecolor(color)
+    plt.tight_layout()
+    plt.show()
+
+    fig4, axs4 = plt.subplots(figsize=(4,4))
+    bplot4 = axs4.boxplot([pd.concat([evaluation.audio1_data['SUS Score'], evaluation.web2_data['SUS Score']]),
+                  pd.concat([evaluation.web1_data['SUS Score'], evaluation.audio2_data['SUS Score']])], 
+                  patch_artist=True, labels=['Audio', 'Web'])
+    axs4.set_ylabel("SUS Score")
+    axs4.set_title("Within-Subject SUS Score")
+    for patch, color in zip(bplot4['boxes'], colors1):
+        patch.set_facecolor(color)
+    plt.tight_layout()
+    plt.show()
+
+    fig5, axs5 = plt.subplots(figsize=(4,4))
+    bplot5 = axs5.boxplot([evaluation.audio1_data['IOS Robot Score'], evaluation.web1_data['IOS Robot Score']],
+                           patch_artist=True, labels=['Audio', 'Web'])
+    axs5.set_ylabel("IOS Robot Score")
+    axs5.set_title("Between-Subject IOS Robot Score")
+    for patch, color in zip(bplot5['boxes'], colors1):
+        patch.set_facecolor(color)
+    plt.tight_layout()
+    plt.show()
+
 
