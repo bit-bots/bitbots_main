@@ -4,6 +4,7 @@ import quiz_score as qs
 import sus_score as ss
 import ios_score as io
 import ueq_score as ue
+import demografic as dm
 import log_evaluation as le
 import scipy.stats as stats
 import matplotlib.pyplot as plt
@@ -391,9 +392,10 @@ if __name__ == "__main__":
     evaluation.descriptive_data.to_csv("descriptive_data.csv")
     #evaluation.descriptive_log_data.to_csv("descriptive_log_data.csv")
 
-
+    sex_of_audio_group = dm.Demographic(evaluation.quiz_data["Wie viel Kontak.. "], "Wie viel Kontak.. ")
+    print(sex_of_audio_group.demographic_data.value_counts())
     #evaluation.log_eval.df.sort_values(by=["VP"], inplace=True)
-    #evaluation.log_eval.df.to_csv("evaluation_output.csv")
+    #evaluation.log_eval.df.to_csv("evaluation_output.c
 
     # This code block is used to visualize the quiz scores using a box plot.
     #colors1 = ['lightskyblue', 'darkslateblue', 'lavender', 'mediumpurple' ] #,'plum'
