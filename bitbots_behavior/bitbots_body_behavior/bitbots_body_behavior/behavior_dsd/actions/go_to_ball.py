@@ -1,3 +1,5 @@
+import math
+
 from bitbots_blackboard.body_blackboard import BodyBlackboard
 from bitbots_blackboard.capsules.pathfinding_capsule import BallGoalType
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
@@ -22,7 +24,9 @@ class GoToBall(AbstractActionElement):
         self.blocking = parameters.get("blocking", True)
         self.distance = parameters.get("distance", self.blackboard.config["ball_approach_dist"])
         # Offset so we kick the ball with one foot instead of the center between the feet
-        self.side_offset = parameters.get("side_offset", 0.08)
+        self.side_offset = parameters.get("side_offset", 0.00)
+        ball_position_y_relative = self.blackboard.world_model.get_ball_position_uv()[1]
+        self.side_offset = math.copysign(self.side_offset, ball_position_y_relative)
 
     def perform(self, reevaluate=False):
         pose_msg = self.blackboard.pathfinding.get_ball_goal(self.target, self.distance, self.side_offset)
