@@ -73,6 +73,7 @@
         "pathfinding",
         "penaltykick",
         "penaltyshoot",
+        "playsound",
         "pointcloud",
         "pointclouds",
         "popen",
