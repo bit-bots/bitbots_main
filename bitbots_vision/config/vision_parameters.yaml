@@ -1,0 +1,128 @@
+bitbots_vision:
+  # Component activation parameters
+  component_ball_detection_active:
+    type: bool
+    default_value: true
+    description: "Activate/Deactivate the ball detection component"
+  
+  component_debug_image_active:
+    type: bool
+    default_value: false
+    description: "Activate/Deactivate the debug image component"
+  
+  component_field_detection_active:
+    type: bool
+    default_value: true
+    description: "Activate/Deactivate the field detection component"
+  
+  component_goalpost_detection_active:
+    type: bool
+    default_value: false
+    description: "Activate/Deactivate the goalpost detection component"
+  
+  component_line_detection_active:
+    type: bool
+    default_value: true
+    description: "Activate/Deactivate the line detection component"
+  
+  component_robot_detection_active:
+    type: bool
+    default_value: true
+    description: "Activate/Deactivate the robot detection component"
+
+  # ROS topic parameters  
+  ROS_img_msg_topic:
+    type: string
+    default_value: "camera/image_proc"
+    description: "ROS topic of the image message"
+    read_only: true
+  
+  ROS_ball_msg_topic:
+    type: string
+    default_value: "balls_in_image"
+    description: "ROS topic of the ball message"
+    read_only: true
+  
+  ROS_goal_posts_msg_topic:
+    type: string
+    default_value: "goal_posts_in_image"
+    description: "ROS topic of the goal posts message"
+    read_only: true
+  
+  ROS_robot_msg_topic:
+    type: string
+    default_value: "robots_in_image"
+    description: "ROS topic of the robots message"
+    read_only: true
+  
+  ROS_line_msg_topic:
+    type: string
+    default_value: "line_in_image"
+    description: "ROS topic of the line message"
+    read_only: true
+  
+  ROS_line_mask_msg_topic:
+    type: string
+    default_value: "line_mask_in_image"
+    description: "ROS topic of the line mask message"
+    read_only: true
+  
+  ROS_debug_image_msg_topic:
+    type: string
+    default_value: "debug_image"
+    description: "ROS topic of the debug image message"
+    read_only: true
+  
+  ROS_field_mask_image_msg_topic:
+    type: string
+    default_value: "field_mask"
+    description: "ROS topic of the field mask debug image message"
+    read_only: true
+
+  # YOEO model parameters with hierarchy
+  yoeo:
+    model_path:
+      type: string
+      default_value: "2022_10_07_flo_torso21_yoeox"
+      description: "Name of YOEO model"
+    
+    nms_threshold:
+      type: double
+      default_value: 0.4
+      description: "YOEO Non-maximum suppression threshold"
+      validation:
+        bounds<>: [0.0, 1.0]
+    
+    conf_threshold:
+      type: double
+      default_value: 0.5
+      description: "YOEO confidence threshold"
+      validation:
+        bounds<>: [0.0, 1.0]
+    
+    framework:
+      type: string
+      default_value: "tvm"
+      description: "The neural network framework that should be used"
+      validation:
+        one_of<>: [["pytorch", "openvino", "onnx", "tvm"]]
+    
+    caching:
+      type: bool
+      default_value: true
+      description: "Used to deactivate caching for profiling reasons"
+
+  # Ball detection parameters
+  ball_candidate_rating_threshold:
+    type: double
+    default_value: 0.5
+    description: "A threshold for the minimum candidate rating"
+    validation:
+      bounds<>: [0.0, 1.0]
+  
+  ball_candidate_max_count:
+    type: int
+    default_value: 1
+    description: "The maximum number of balls that should be published"
+    validation:
+      bounds<>: [0, 50]

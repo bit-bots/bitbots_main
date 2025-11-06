@@ -46,6 +46,32 @@ global own_team_color
 own_team_color: RobotColor = RobotColor.UNKNOWN
 
 
+def create_or_update_subscriber_with_config(
+    node, old_topic, new_topic, subscriber_object, data_class, callback, qos_profile=1, callback_group=None
+):
+    """
+    Creates or updates a subscriber using direct topic names instead of config dicts
+    
+    :param node: ROS node to which the publisher is bound
+    :param old_topic: Previous topic name
+    :param new_topic: New topic name  
+    :param subscriber_object: The python object, that represents the subscriber
+    :param data_class: Data type class for ROS messages of the topic we want to subscribe
+    :param callback: The subscriber callback function
+    :param qos_profile: A QoSProfile or a history depth to apply to the subscription.
+    :param callback_group: The callback group for the subscription.
+    :return: adjusted subscriber object
+    """
+    # Check if topic has changed
+    if old_topic != new_topic:
+        # Create the new subscriber
+        subscriber_object = node.create_subscription(
+            data_class, new_topic, callback, qos_profile, callback_group=callback_group
+        )
+        logger.debug("Registered new subscriber at " + str(new_topic))
+    return subscriber_object
+
+
 def create_or_update_subscriber(
     node, old_config, new_config, subscriber_object, topic_key, data_class, callback, qos_profile=1, callback_group=None
 ):
