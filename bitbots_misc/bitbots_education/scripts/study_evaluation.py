@@ -368,98 +368,257 @@ if __name__ == "__main__":
 
     # This code block is used to visualize the quiz scores using a box plot.
     colors1 = ['lightskyblue', 'darkslateblue', 'lavender', 'mediumpurple' ] #,'plum'
-    colors2 = ['darkslateblue', 'lightskyblue']
-    # fig, axs = plt.subplots(figsize=(4,4))
-    # bplot1 = axs.boxplot([evaluation.audio1_data['Quiz Score'], evaluation.web1_data['Quiz Score'], 
-    #              evaluation.quiz_data['Quiz Score']], patch_artist=True, labels=['Audio', 'Web', 'Baseline'])
-    # axs.set_ylabel("Quiz Score")
-    # axs.set_title("Between-Subject Quiz Score")
-    # axs.set_yticks(range(4, 16, 1))
-    # for patch, color in zip(bplot1['boxes'], colors1):
+    colors2 = ['#6C8EBF', '#D79B00', 'lavender']
+    colors3 = ['#D79B00', '#6C8EBF',]
+    colors4 = ['lavender', '#6C8EBF', '#D79B00']
+    # fig, axs = plt.subplots(figsize=(4, 4))
+    # bplot1 = axs.boxplot(
+    #     [evaluation.quiz_data['Quiz Score'], 
+    #     evaluation.web1_data['Quiz Score'],
+    #     evaluation.audio1_data['Quiz Score']], 
+    #     patch_artist=True, 
+    #     labels=['Baseline', 'Web', 'Audio'],
+    #     showmeans=True,
+    #     meanline=True,
+    #     meanprops=dict(color='black', linewidth=2, linestyle='-'),
+    #     medianprops=dict(color='none', linewidth=0),
+    #     whiskerprops=dict(color='black', linewidth=1),
+    #     capprops=dict(color='black', linewidth=1)
+    # )
+
+    # # Fill box colors
+    # for patch, color in zip(bplot1['boxes'], colors4):
     #     patch.set_facecolor(color)
 
+    # axs.set_ylabel("Quiz Score")
+    # axs.set_title("Between-Subject Quiz Score")
+    # axs.set_yticks(range(2, 16, 1))
+    # axs.set_ylim(2, 16)  # extend lower limit to give more space for brackets
+
     # plt.tight_layout()
+    # plt.subplots_adjust(top=0.95)
+
+    # # === Significance brackets below whiskers ===
+
+    # # First bracket: Baseline → Web
+    # x1, x2 = 1, 2
+    # y_whisker1 = bplot1['whiskers'][0].get_ydata()[1]
+    # y_whisker2 = bplot1['whiskers'][2].get_ydata()[1]
+    # y_base1 = min(y_whisker1, y_whisker2) - 0.5 # first bracket lower
+    # h = 0.3
+
+    # axs.plot([x1, x1], [y_base1, y_base1 - h], lw=1, c='black')
+    # axs.plot([x2, x2], [y_base1, y_base1 - h], lw=1, c='black')
+    # axs.plot([x1, x2], [y_base1 - h, y_base1 - h], lw=1, c='black')
+    # axs.text((x1 + x2)/2, y_base1 - h - 0.7, "*", ha='center', va='bottom', color='black', fontsize=10)
+
+    # # Second bracket: Baseline → Audio
+    # x1, x2 = 1, 3
+    # y_whisker1 = bplot1['whiskers'][0].get_ydata()[1]
+    # y_whisker2 = bplot1['whiskers'][4].get_ydata()[1]
+    # y_base2 = min(y_whisker1, y_whisker2) - 1.2  # second bracket lower than the first
+    # h = 0.3
+
+    # axs.plot([x1, x1], [y_base2, y_base2 - h], lw=1, c='black')
+    # axs.plot([x2, x2], [y_base2, y_base2 - h], lw=1, c='black')
+    # axs.plot([x1, x2], [y_base2 - h, y_base2 - h], lw=1, c='black')
+    # axs.text((x1 + x2)/2, y_base2 - h - 0.7, "*", ha='center', va='bottom', color='black', fontsize=10)
+
     # plt.show()
+
+
+
 
     # fig2, (axs2, axs3) = plt.subplots(1, 2, figsize=(7, 4))
     # fig2.suptitle("Learning Effects for the Quiz Scores")
-    # bplot2 = axs2.boxplot([evaluation.audio1_data['Quiz Score'], evaluation.audio2_data['Quiz Score']], 
-    #             patch_artist=True, labels=['Audio', 'Web'])
-    # axs2.set_title("Audio First Condition")
-    # axs3.set_title("Web First Condition")
-    # bplot3 = axs3.boxplot([evaluation.web1_data['Quiz Score'], evaluation.web2_data['Quiz Score']],
-    #              patch_artist=True, labels=['Web', 'Audio'])
+    # bplot3 = axs3.boxplot([evaluation.audio1_data['Quiz Score'], evaluation.audio2_data['Quiz Score']], 
+    #             patch_artist=True, labels=['Audio', 'Web'],
+    #             showmeans=True,
+    #             meanline=True,  
+    #             meanprops=dict(
+    #                 color='black',     
+    #                 linewidth=2,       
+    #                 linestyle='-'      
+    #             ),
+    #     medianprops=dict(color='none', linewidth=0) 
+    # )   
+
+    # # Bottom whiskers
+    # y_whisker1 = bplot3['whiskers'][0].get_ydata()[1]  # first box lower whisker
+    # y_whisker2 = bplot3['whiskers'][2].get_ydata()[1]  # second box lower whisker
+    # y_base = min(y_whisker1, y_whisker2) - 0.5  # position below the lower whiskers
+
+    # # Significance bracket attached to whiskers
+    # x1, x2 = 1, 2
+    # h = 0.3  # vertical tick length above horizontal line
+
+    # axs3.plot([x1, x1], [y_base, y_base - (h)], lw=1, c='black')  # vertical tick
+    # axs3.plot([x2, x2], [y_base, y_base - (h)], lw=1, c='black')
+    # axs3.plot([x1, x2], [y_base - (h), y_base - (h)], lw=1, c='black')  # horizontal line
+    # axs3.text((x1+x2)/2, y_base + h - 1.3, "*", ha='center', va='bottom', color='black', fontsize=10)
+
+
+    # axs3.set_title("Audio First Condition")
+    # axs2.set_title("Web First Condition")
+    # bplot2 = axs2.boxplot([evaluation.web1_data['Quiz Score'], evaluation.web2_data['Quiz Score']],
+    #             patch_artist=True, labels=['Web', 'Audio'],
+    #             showmeans=True,
+    #             meanline=True,  
+    #             meanprops=dict(
+    #                 color='black',     
+    #                 linewidth=2,       
+    #                 linestyle='-'      
+    #             ),
+    #     medianprops=dict(color='none', linewidth=0) )
+    
+    # # Bottom whiskers
+    # y_whisker1 = bplot2['whiskers'][0].get_ydata()[1]  # first box lower whisker
+    # y_whisker2 = bplot2['whiskers'][2].get_ydata()[1]  # second box lower whisker
+    # y_base = min(y_whisker1, y_whisker2) - 0.5 # position below the lower whiskers
+    
+    # # Significance bracket in empty space below
+    # x1, x2 = 1, 2
+    # h = 0.3  # vertical tick length above horizontal line
+
+    # axs2.plot([x1, x1], [y_base, y_base - (h)], lw=1, c='black')  # vertical tick
+    # axs2.plot([x2, x2], [y_base, y_base - (h)], lw=1, c='black')
+    # axs2.plot([x1, x2], [y_base - (h), y_base - (h)], lw=1, c='black')  # horizontal line
+    # axs2.text((x1+x2)/2, y_base + h - 1.3, "*", ha='center', va='bottom', color='black', fontsize=10)
+    
     # axs2.set_ylabel("Quiz Score")
     # axs3.set_ylabel("Quiz Score")
-    # for patch, color in zip(bplot2['boxes'], colors1):
+    # axs2.set_yticks(range(2, 16, 1))
+    # axs3.set_yticks(range(2, 16, 1))
+
+    # for patch, color in zip(bplot3['boxes'], colors3):
     #     patch.set_facecolor(color)
-    # for patch, color in zip(bplot3['boxes'], colors2):
+    # for patch, color in zip(bplot2['boxes'], colors2):
     #     patch.set_facecolor(color)
+
     # plt.tight_layout()
     # plt.show()
 
-    # fig4, axs4 = plt.subplots(figsize=(4,4))
-    # bplot4 = axs4.boxplot([pd.concat([evaluation.audio1_data['SUS Score'], evaluation.web2_data['SUS Score']]),
-    #               pd.concat([evaluation.web1_data['SUS Score'], evaluation.audio2_data['SUS Score']])], 
-    #               patch_artist=True, labels=['Audio', 'Web'])
-    # axs4.set_ylabel("SUS Score")
-    # axs4.set_title("Within-Subject SUS Score")
-    # for patch, color in zip(bplot4['boxes'], colors1):
-    #     patch.set_facecolor(color)
-    # plt.tight_layout()
-    # plt.show()
+    fig4, axs4 = plt.subplots(figsize=(4,4))
+    bplot4 = axs4.boxplot([pd.concat([evaluation.web1_data['SUS Score'], evaluation.audio2_data['SUS Score']]),
+                pd.concat([evaluation.audio1_data['SUS Score'], evaluation.web2_data['SUS Score']])], 
+                patch_artist=True, labels=['Web', 'Audio'],
+                showmeans=True,
+                meanline=True,  
+                meanprops=dict(
+                    color='black',     
+                    linewidth=2,       
+                    linestyle='-'      
+                ),
+                medianprops=dict(color='none', linewidth=0) )
+ 
+    x1, x2 = 1, 2
+    y, h, col = 105, 0.3, 'black'  # adjust y according to your IOS Score scale
+    axs4.plot([x1, x1, x2, x2], [y, y+h, y+h, y], lw=1, c=col)
+    axs4.text((x1+x2)/2, y+h-0.15, "*", ha='center', va='bottom', color=col, fontsize=10)
 
-    # fig5, axs5 = plt.subplots(figsize=(4,4))
-    # bplot5 = axs5.boxplot([evaluation.audio1_data['IOS Robot Score'], evaluation.web1_data['IOS Robot Score']],
-    #                        patch_artist=True, labels=['Audio', 'Web'])
-    # axs5.set_ylabel("IOS Robot Score")
-    # axs5.set_title("Between-Subject IOS Robot Score")
-    # for patch, color in zip(bplot5['boxes'], colors1):
-    #     patch.set_facecolor(color)
-    # plt.tight_layout()
-    # plt.show()
+    axs4.set_title("Within-Subject SUS Score")
+    for patch, color in zip(bplot4['boxes'], colors2):
+        patch.set_facecolor(color)
+    plt.tight_layout()
+    plt.show()
 
-    # fig6, axs6 = plt.subplots(figsize=(6,4))
-    # bplot6 = axs6.boxplot([evaluation.log_eval.df['Behavior Time'], evaluation.log_eval.df['Motors Time'],
-    #                        evaluation.log_eval.df['IMU Time'], evaluation.log_eval.df['Vision Time']],
-    #                        patch_artist=True, labels=['Behavior', 'Motors', 'IMU', 'Vision'])
-    # axs6.set_ylabel("Time Spent (s)")
-    # axs6.set_title("Time Spent on Different Pages")
-    # for patch, color in zip(bplot6['boxes'], colors1):
-    #     patch.set_facecolor(color)
-    # plt.tight_layout()
-    # plt.show()
+    fig5, axs5 = plt.subplots(figsize=(4,4))
+    bplot5 = axs5.boxplot([evaluation.web1_data['IOS Robot Score'], evaluation.audio1_data['IOS Robot Score']],
+                            patch_artist=True, labels=['Web', 'Audio'],
+                            showmeans=True,
+                            meanline=True,  
+                            meanprops=dict(
+                                color='black',     
+                                linewidth=2,       
+                                linestyle='-'      
+                            ),
+        medianprops=dict(color='none', linewidth=0) )
+    
+    x1, x2 = 1, 2
+    y, h, col = 3.5, 0.3, 'black'  # adjust y according to your IOS Score scale
+    axs5.plot([x1, x1, x2, x2], [y, y+h, y+h, y], lw=1, c=col)
+    axs5.text((x1+x2)/2, y+h-0.05, "*", ha='center', va='bottom', color=col, fontsize=10)
 
-    # fig7, axs7 = plt.subplots(figsize=(6,4))
-    # bplot7 = axs7.boxplot([evaluation.log_eval.df['Text Button Clicks'], evaluation.log_eval.df['Stop Stack Button Clicks'],
-    #                        evaluation.log_eval.df['Change Behavior View Button Clicks'], evaluation.log_eval.df['Behavior Tree Button Clicks']],
-    #                        patch_artist=True, labels=['Text', 'Stop Stack', 'Change Behavior View', 'Behavior Tree'])
-    # axs7.set_ylabel("Number of Clicks")
-    # axs7.set_title("Button Clicks on Different Buttons")
-    # for patch, color in zip(bplot7['boxes'], colors1):
-    #     patch.set_facecolor(color)
-    # plt.tight_layout()
-    # plt.show()
+    axs5.set_ylabel("IOS Robot Score")
+    axs5.set_title("Between-Subject IOS Robot Score")
+    for patch, color in zip(bplot5['boxes'], colors2):
+        patch.set_facecolor(color)
+    plt.tight_layout()
+    plt.show()
 
-    # fig8, axs8 = plt.subplots(figsize=(6,4))
-    # bplot8 = axs8.boxplot([evaluation.log_eval.df['Behavior Scroll'], evaluation.log_eval.df['Motors Scroll'],
-    #                        evaluation.log_eval.df['IMU Scroll'], evaluation.log_eval.df['Vision Scroll']],
-    #                        patch_artist=True, labels=['Behavior', 'Motors', 'IMU', 'Vision',])
-    # axs8.set_ylabel("Amount Scrolled (pixels)")
-    # axs8.set_title("Amount Scrolled on Different Pages")
-    # for patch, color in zip(bplot8['boxes'], colors1):
-    #     patch.set_facecolor(color)
-    # plt.tight_layout()
-    # plt.show()
+    fig6, axs6 = plt.subplots(figsize=(6,4))
+    bplot6 = axs6.boxplot([evaluation.log_eval.df['Behavior Time'], evaluation.log_eval.df['Motors Time'],
+                            evaluation.log_eval.df['IMU Time'], evaluation.log_eval.df['Vision Time']],
+                            patch_artist=True, labels=['Behavior', 'Motors', 'IMU', 'Vision'],
+                            showmeans=True,
+                            meanline=True,  
+                            meanprops=dict(
+                                color='black',     
+                                linewidth=2,       
+                                linestyle='-'      
+                            ),
+        medianprops=dict(color='none', linewidth=0) )
+    axs6.set_ylabel("Time Spent (s)")
+    axs6.set_title("Time Spent on Different Pages")
+    for patch, color in zip(bplot6['boxes'], colors1):
+        patch.set_facecolor(color)
+    plt.tight_layout()
+    plt.show()
+
+    fig7, axs7 = plt.subplots(figsize=(6,4))
+    bplot7 = axs7.boxplot([evaluation.log_eval.df['Text Button Clicks'], evaluation.log_eval.df['Stop Stack Button Clicks'],
+                            evaluation.log_eval.df['Change Behavior View Button Clicks'], evaluation.log_eval.df['Behavior Tree Button Clicks']],
+                            patch_artist=True, labels=['Text', 'Stop Stack', 'Change Behavior View', 'Behavior Tree'],
+                            showmeans=True,
+                            meanline=True,  
+                            meanprops=dict(
+                                color='black',     
+                                linewidth=2,       
+                                linestyle='-'      
+                            ),
+        medianprops=dict(color='none', linewidth=0) )
+    axs7.set_ylabel("Number of Clicks")
+    axs7.set_title("Button Clicks on Different Buttons")
+    for patch, color in zip(bplot7['boxes'], colors1):
+        patch.set_facecolor(color)
+    plt.tight_layout()
+    plt.show()
+
+    fig8, axs8 = plt.subplots(figsize=(6,4))
+    bplot8 = axs8.boxplot([evaluation.log_eval.df['Behavior Scroll'], evaluation.log_eval.df['Motors Scroll'],
+                            evaluation.log_eval.df['IMU Scroll'], evaluation.log_eval.df['Vision Scroll']],
+                            patch_artist=True, labels=['Behavior', 'Motors', 'IMU', 'Vision',],
+                            showmeans=True,
+                            meanline=True,  
+                            meanprops=dict(
+                                color='black',     
+                                linewidth=2,       
+                                linestyle='-'      
+                            ),
+        medianprops=dict(color='none', linewidth=0) )
+    axs8.set_ylabel("Amount Scrolled (pixels)")
+    axs8.set_title("Amount Scrolled on Different Pages")
+    for patch, color in zip(bplot8['boxes'], colors1):
+        patch.set_facecolor(color)
+    plt.tight_layout()
+    plt.show()
 
     # Define positions so boxes appear in pairs
     positions = [1, 2, 4, 5, 7, 8]  # two per group, with gaps between
 
     fig9, axs9 = plt.subplots(figsize=(7,5))
-    bplot9 = axs9.boxplot([evaluation.audio1_data['UEQs Overall Score'], evaluation.web1_data['UEQs Overall Score'],
-                                    evaluation.audio1_data['UEQs Pragmatic Score'], evaluation.web1_data['UEQs Pragmatic Score'],
-                                      evaluation.audio1_data['UEQs Hedonic Score'], evaluation.web1_data['UEQs Hedonic Score']],
-                          patch_artist=True, positions= positions,)
+    bplot9 = axs9.boxplot([evaluation.web1_data['UEQs Overall Score'], evaluation.audio1_data['UEQs Overall Score'],
+                                    evaluation.web1_data['UEQs Pragmatic Score'], evaluation.audio1_data['UEQs Pragmatic Score'],
+                                      evaluation.web1_data['UEQs Hedonic Score'], evaluation.audio1_data['UEQs Hedonic Score']],
+                            patch_artist=True, positions= positions,
+                            showmeans=True,
+                            meanline=True,  
+                            meanprops=dict(
+                                color='black',     
+                                linewidth=2,       
+                                linestyle='-'      
+                            ),
+        medianprops=dict(color='none', linewidth=0) )
     axs9.set_yticks(range(1, 10, 1))
 
     # Set shared x-axis labels
@@ -467,17 +626,17 @@ if __name__ == "__main__":
     axs9.set_xticklabels(['Overall', 'Pragmatic', 'Hedonic'])
 
     # Colors for each pair
-    audio_color = 'lightskyblue'
-    web_color = 'darkslateblue'
-    colors = [audio_color, web_color] * 3
+    audio_color = '#D79B00'
+    web_color = '#6C8EBF'
+    colors = [ web_color, audio_color] * 3
 
     # Apply colors
     for patch, color in zip(bplot9['boxes'], colors):
         patch.set_facecolor(color)
 
     # Create legend patches manually
-    audio_patch = mpatches.Patch(color=audio_color, label='Audio')
     web_patch = mpatches.Patch(color=web_color, label='Web')
+    audio_patch = mpatches.Patch(color=audio_color, label='Audio')
 
     # Add legend to the plot
     axs9.legend(handles=[audio_patch, web_patch], title='Condition', loc='upper right')
@@ -489,13 +648,21 @@ if __name__ == "__main__":
     plt.show()
 
     fig10, axs10 = plt.subplots(figsize=(7,5))
-    bplot10 = axs10.boxplot([pd.concat([evaluation.audio1_data['UEQs Overall Score'], evaluation.web2_data['UEQs Overall Score']]),
-                   pd.concat([evaluation.web1_data['UEQs Overall Score'], evaluation.audio2_data['UEQs Overall Score']]),
-                             pd.concat([evaluation.audio1_data['UEQs Pragmatic Score'], evaluation.web2_data['UEQs Pragmatic Score']]),
-                  pd.concat([evaluation.web1_data['UEQs Pragmatic Score'], evaluation.audio2_data['UEQs Pragmatic Score']]),
-                            pd.concat([evaluation.audio1_data['UEQs Hedonic Score'], evaluation.web2_data['UEQs Hedonic Score']]),
-                 pd.concat([evaluation.web1_data['UEQs Hedonic Score'], evaluation.audio2_data['UEQs Hedonic Score']])],
-                          patch_artist=True, positions= positions,)
+    bplot10 = axs10.boxplot([pd.concat([evaluation.web1_data['UEQs Overall Score'], evaluation.audio2_data['UEQs Overall Score']]),
+                   pd.concat([evaluation.audio1_data['UEQs Overall Score'], evaluation.web2_data['UEQs Overall Score']]),
+                             pd.concat([evaluation.web1_data['UEQs Pragmatic Score'], evaluation.audio2_data['UEQs Pragmatic Score']]),
+                  pd.concat([evaluation.audio1_data['UEQs Pragmatic Score'], evaluation.web2_data['UEQs Pragmatic Score']]),
+                            pd.concat([evaluation.web1_data['UEQs Hedonic Score'], evaluation.audio2_data['UEQs Hedonic Score']]),
+                 pd.concat([evaluation.audio1_data['UEQs Hedonic Score'], evaluation.web2_data['UEQs Hedonic Score']])],
+                        patch_artist=True, positions= positions,
+                        showmeans=True,
+                        meanline=True,  
+                        meanprops=dict(
+                            color='black',     
+                            linewidth=2,       
+                            linestyle='-'      
+                        ),
+        medianprops=dict(color='none', linewidth=0) )
     
     axs10.set_yticks(range(1, 10, 1))
 
