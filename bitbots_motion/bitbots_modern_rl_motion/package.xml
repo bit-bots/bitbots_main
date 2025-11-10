@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>bitbots_modern_rl_motion</name>
+  <version>0.0.0</version>
+  <description>The bitbots_modern_rl_motion starts RL walking.</description>
+
+  <maintainer email="22krueger@studium.uni-hamburg.de">Mark Oliver Krüger</maintainer>
+  <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+
+  <license>MIT</license>
+  
+  <author email="22krueger@studium.uni-hamburg.de">Mark Oliver Krüger</author>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>bitbots_docs</depend>
+  <depend>rclpy</depend>
+  <depend>geometry_msgs</depend>
+  <depend>tf_transformations</depend>
+
+  <test_depend>python3-pytest</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+
+  <exec_depend>rosidl_default_runtime</exec_depend>
+  </package>
