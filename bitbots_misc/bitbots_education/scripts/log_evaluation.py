@@ -322,12 +322,3 @@ class LogEvaluation:
 
             self.button_dict[button_name][button_status] += 1
 
-
-# data_raw1 = pd.read_csv("04.09.2025.csv")
-# data_raw2 = pd.read_csv("04.09.2025(2).csv")
-# data_sorted1 = data_raw1.sort_values(by=["VP", "Timestamp"])
-# data_sorted1["Page"].fillna("dashboard", inplace=True)
-# data_sorted2 = data_raw2.sort_values(by=["VP", "Timestamp"])
-# data_sorted2["Page"].fillna("dashboard", inplace=True)
-# eval = LogEvaluation([data_sorted1, data_sorted2])
-# print(eval.button_dict, eval.df)

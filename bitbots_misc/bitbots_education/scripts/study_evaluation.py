@@ -393,15 +393,15 @@ if __name__ == "__main__":
     evaluation.descriptive_log_data.to_csv("descriptive_log_data.csv")
 
     sex_of_audio_group = dm.Demographic(evaluation.quiz_data["Wie viel Kontak.. "], "Wie viel Kontak.. ")
-    print(sex_of_audio_group.demographic_data.value_counts())
     evaluation.log_eval.df.sort_values(by=["VP"], inplace=True)
     evaluation.log_eval.df.to_csv("evaluation_output.csv")
 
-    # This code block is used to visualize the quiz scores using a box plot.
-    colors1 = ['lightskyblue', 'darkslateblue', 'lavender', 'mediumpurple' ] #,'plum'
-    colors2 = ['#6C8EBF', '#D79B00', 'lavender']
-    colors3 = ['#D79B00', '#6C8EBF',]
-    colors4 = ['lavender', '#6C8EBF', '#D79B00']
+    # The code below is used to visualize varius data using box plots.
+
+    # colors1 = ['lightskyblue', 'darkslateblue', 'lavender', 'mediumpurple' ] #,'plum'
+    # colors2 = ['#6C8EBF', '#D79B00', 'lavender']
+    # colors3 = ['#D79B00', '#6C8EBF',]
+    # colors4 = ['lavender', '#6C8EBF', '#D79B00']
     # fig, axs = plt.subplots(figsize=(4, 4))
     # bplot1 = axs.boxplot(
     #     [evaluation.quiz_data['Quiz Score'], 
@@ -577,66 +577,66 @@ if __name__ == "__main__":
     # plt.tight_layout()
     # plt.show()
 
-    fig6, axs6 = plt.subplots(figsize=(6,4))
-    bplot6 = axs6.boxplot([evaluation.log_eval.df['Behavior Time'], evaluation.log_eval.df['Motors Time'],
-                            evaluation.log_eval.df['IMU Time'], evaluation.log_eval.df['Vision Time']],
-                            patch_artist=True, labels=['Behavior', 'Motors', 'IMU', 'Vision'],
-                            showmeans=True,
-                            meanline=True,
-                            showfliers=False,   
-                            meanprops=dict(
-                                color='black',     
-                                linewidth=2,       
-                                linestyle='-'      
-                            ),
-        medianprops=dict(color='none', linewidth=0) )
-    axs6.set_ylabel("Time Spent (s)")
-    axs6.set_title("Time Spent on Different Pages")
-    for patch, color in zip(bplot6['boxes'], colors1):
-        patch.set_facecolor(color)
-    plt.tight_layout()
-    plt.show()
+    # fig6, axs6 = plt.subplots(figsize=(6,4))
+    # bplot6 = axs6.boxplot([evaluation.log_eval.df['Behavior Time'], evaluation.log_eval.df['Motors Time'],
+    #                         evaluation.log_eval.df['IMU Time'], evaluation.log_eval.df['Vision Time']],
+    #                         patch_artist=True, labels=['Behavior', 'Motors', 'IMU', 'Vision'],
+    #                         showmeans=True,
+    #                         meanline=True,
+    #                         showfliers=False,   
+    #                         meanprops=dict(
+    #                             color='black',     
+    #                             linewidth=2,       
+    #                             linestyle='-'      
+    #                         ),
+    #     medianprops=dict(color='none', linewidth=0) )
+    # axs6.set_ylabel("Time Spent (s)")
+    # axs6.set_title("Time Spent on Different Pages")
+    # for patch, color in zip(bplot6['boxes'], colors1):
+    #     patch.set_facecolor(color)
+    # plt.tight_layout()
+    # plt.show()
 
-    fig7, axs7 = plt.subplots(figsize=(6,4))
-    bplot7 = axs7.boxplot([evaluation.log_eval.df['Text Button Clicks'], evaluation.log_eval.df['Stop Stack Button Clicks'],
-                            evaluation.log_eval.df['Change Behavior View Button Clicks'], evaluation.log_eval.df['Behavior Tree Button Clicks']],
-                            patch_artist=True, labels=['Text', 'Stop Stack', 'Change Behavior View', 'Behavior Tree'],
-                            showmeans=True,
-                            meanline=True,
-                            showfliers=False,   
-                            meanprops=dict(
-                                color='black',     
-                                linewidth=2,       
-                                linestyle='-'      
-                            ),
-        medianprops=dict(color='none', linewidth=0) )
-    axs7.set_ylabel("Number of Clicks")
-    axs7.set_title("Clicks on Different Buttons")
-    for patch, color in zip(bplot7['boxes'], colors1):
-        patch.set_facecolor(color)
-    plt.tight_layout()
-    plt.show()
+    # fig7, axs7 = plt.subplots(figsize=(6,4))
+    # bplot7 = axs7.boxplot([evaluation.log_eval.df['Text Button Clicks'], evaluation.log_eval.df['Stop Stack Button Clicks'],
+    #                         evaluation.log_eval.df['Change Behavior View Button Clicks'], evaluation.log_eval.df['Behavior Tree Button Clicks']],
+    #                         patch_artist=True, labels=['Text', 'Stop Stack', 'Change Behavior View', 'Behavior Tree'],
+    #                         showmeans=True,
+    #                         meanline=True,
+    #                         showfliers=False,   
+    #                         meanprops=dict(
+    #                             color='black',     
+    #                             linewidth=2,       
+    #                             linestyle='-'      
+    #                         ),
+    #     medianprops=dict(color='none', linewidth=0) )
+    # axs7.set_ylabel("Number of Clicks")
+    # axs7.set_title("Clicks on Different Buttons")
+    # for patch, color in zip(bplot7['boxes'], colors1):
+    #     patch.set_facecolor(color)
+    # plt.tight_layout()
+    # plt.show()
 
-    fig8, axs8 = plt.subplots(figsize=(6,5))
-    bplot8 = axs8.boxplot([evaluation.log_eval.df['Behavior Scroll'], evaluation.log_eval.df['Motors Scroll'],
-                            evaluation.log_eval.df['IMU Scroll'], evaluation.log_eval.df['Vision Scroll']],
-                            patch_artist=True, labels=['Behavior', 'Motors', 'IMU', 'Vision',],
-                            showmeans=True,
-                            meanline=True,
-                            showfliers=False,   
-                            meanprops=dict(
-                                color='black',     
-                                linewidth=2,       
-                                linestyle='-'      
-                            ),
-        medianprops=dict(color='none', linewidth=0) )
-    axs8.set_yticks(range(0, 11000, 1000))
-    axs8.set_ylabel("Amount Scrolled (pixels)")
-    axs8.set_title("Amount Scrolled on Different Pages")
-    for patch, color in zip(bplot8['boxes'], colors1):
-        patch.set_facecolor(color)
-    plt.tight_layout()
-    plt.show()
+    # fig8, axs8 = plt.subplots(figsize=(6,5))
+    # bplot8 = axs8.boxplot([evaluation.log_eval.df['Behavior Scroll'], evaluation.log_eval.df['Motors Scroll'],
+    #                         evaluation.log_eval.df['IMU Scroll'], evaluation.log_eval.df['Vision Scroll']],
+    #                         patch_artist=True, labels=['Behavior', 'Motors', 'IMU', 'Vision',],
+    #                         showmeans=True,
+    #                         meanline=True,
+    #                         showfliers=False,   
+    #                         meanprops=dict(
+    #                             color='black',     
+    #                             linewidth=2,       
+    #                             linestyle='-'      
+    #                         ),
+    #     medianprops=dict(color='none', linewidth=0) )
+    # axs8.set_yticks(range(0, 11000, 1000))
+    # axs8.set_ylabel("Amount Scrolled (pixels)")
+    # axs8.set_title("Amount Scrolled on Different Pages")
+    # for patch, color in zip(bplot8['boxes'], colors1):
+    #     patch.set_facecolor(color)
+    # plt.tight_layout()
+    # plt.show()
 
     # # Define positions so boxes appear in pairs
     # positions = [1, 2, 4, 5, 7, 8]  # two per group, with gaps between

@@ -19,7 +19,6 @@ class Demographic:
 
     def getDemographicFromRow(self, row):
         demographic = 0
-        print(row)
         match row:
             case "A1":
                 demographic = 1
