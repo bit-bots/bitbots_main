@@ -2,21 +2,22 @@ import math
 from abc import ABC, abstractmethod
 from typing import Optional
 
+import numpy as np
+import numpy.typing as npt
 import soccer_vision_3d_msgs.msg as sv3dm
 import tf2_ros as tf2
-from bitbots_rust_nav import ObstacleMap, ObstacleMapConfig, RoundObstacle
-from geometry_msgs.msg import PoseStamped
+from bitbots_rust_nav import RoundObstacle
+from geometry_msgs.msg import Pose, PoseStamped
 from nav_msgs.msg import Path
-from rclpy.duration import Duration
 from rclpy.time import Time
 from ros2_numpy import numpify
-from std_msgs.msg import Header
 from tf2_geometry_msgs import PointStamped, PoseWithCovarianceStamped
+from tf_transformations import euler_from_quaternion
 
 from bitbots_path_planning import NodeWithConfig
 
 
-class Planner(ABC):
+class FootstepPlanner(ABC):
     @abstractmethod
     def set_goal(self, pose: PoseStamped) -> None:
         pass
@@ -42,15 +43,11 @@ class Planner(ABC):
         pass
 
     @abstractmethod
-    def close_to_ball(self) -> bool:
-        pass
-
-    @abstractmethod
     def step(self) -> Path:
         pass
 
 
-class VisibilityPlanner(Planner):
+class VisibilityFootstepPlanner(FootstepPlanner):
     def __init__(self, node: NodeWithConfig, buffer: tf2.BufferInterface) -> None:
         self.node = node
         self.buffer = buffer
@@ -61,6 +58,7 @@ class VisibilityPlanner(Planner):
         self.ball_obstacle_active: bool = True
         self.frame: str = self.node.config.map.planning_frame
 
+    # Roboter erstmal außenvor gelassen
     def set_robots(self, robots: sv3dm.RobotArray):
         new_buffer: list[RoundObstacle] = []
         for robot in robots.robots:
@@ -117,56 +115,54 @@ class VisibilityPlanner(Planner):
         """
         return self.goal is not None
 
-    def close_to_ball(self) -> bool:
+    def step(self) -> npt.NDArray[np.float64]:
         """
-        Determine if we are close enough to the ball to start footstep planning
-        """
-        my_position = self.buffer.lookup_transform(
-            self.frame, self.base_footprint_frame, Time(), Duration(seconds=0.2)
-        ).transform.translation
-
-        dist = (my_position.x - self.goal.pose.position.x) ** 2 + (my_position.y - self.goal.pose.position.y) ** 2
-
-        return math.sqrt(dist) < 0.2
-
-    def step(self) -> Path:
-        """
-        Computes the next path to the goal
+        Computes the next step to the goal
         """
         assert self.goal is not None, "No goal set"
         # Define goal
-        goal = (self.goal.pose.position.x, self.goal.pose.position.y)
-        # Get our current position
-        my_position = self.buffer.lookup_transform(
-            self.frame, self.base_footprint_frame, Time(), Duration(seconds=0.2)
-        ).transform.translation
-        start = (my_position.x, my_position.y)
-
-        # Configure how obstacles are represented
-        config = ObstacleMapConfig(
-            robot_radius=self.node.config.map.inflation.robot_radius,
-            margin=self.node.config.map.inflation.obstacle_margin,
-            num_vertices=12,
+        goal = (
+            self.goal.pose.position.x,
+            self.goal.pose.position.y,
+            self.goal.pose.orientation.z,
+            self.goal.pose.orientation.w,
         )
-        # Add robots to obstacles
-        obstacles = self.robots.copy()
-        # Add ball to obstacles if active
-        if self.ball is not None:
-            obstacles.append(self.ball)
-        obstacle_map = ObstacleMap(config, obstacles)
 
-        # Calculate the shortest path
-        path = obstacle_map.shortest_path(start, goal)
+        # Create an default pose in the origin of our base footprint
+        pose_geometry_msgs = PoseStamped()
+        pose_geometry_msgs.header.frame_id = self.node.config.base_footprint_frame
 
-        # Convert the path to a ROS messages
-        def map_to_pose(position):
-            pose = PoseStamped()
-            pose.pose.position.x = position[0]
-            pose.pose.position.y = position[1]
-            return pose
+        # We get our pose in respect to the map frame (also frame of the path message)
+        # by transforming the pose above into this frame
+        try:
+            current_pose: Pose = self.buffer.transform(pose_geometry_msgs, self.frame).pose
+        except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
+            self.node.get_logger().warn("Failed to perform controller step: " + str(e))
+            return np.array([0, 0, 0.0, 0.0])
 
-        # Generate the path message
-        return Path(
-            header=Header(frame_id=self.frame, stamp=self.node.get_clock().now().to_msg()),
-            poses=list(map(map_to_pose, path)) + [self.goal],
-        )
+        start = (current_pose.position.x, current_pose.position.y)
+
+        max_x = 0.08
+        max_y = 0.08
+
+        dist_x = abs(goal[0] - start[0])
+        dist_y = abs(goal[1] - start[1])
+
+        needed_steps = max(math.ceil(dist_x / max_x), math.ceil(dist_y / max_y))
+        # self.node.get_logger().info(str(dist_x) + " " + str(dist_y))
+
+        angle = self._get_yaw(current_pose)
+
+        rot_vec = self.rotate_vector_2d(goal[0] - start[0], goal[1] - start[1], angle)
+
+        return np.array([-rot_vec[0] / needed_steps, -rot_vec[1] / needed_steps, 0.0, 0.0])
+        # return np.array([1/needed_steps, 1/needed_steps,0.0,0.0])
+
+    def rotate_vector_2d(self, x, y, a) -> npt.NDArray[np.float64]:
+        return np.array([x * math.cos(a) - y * math.sin(a), x * math.sin(a) + y * math.cos(a)])
+
+    def _get_yaw(self, pose: Pose) -> float:
+        """
+        Returns the yaw angle of a given pose
+        """
+        return euler_from_quaternion(numpify(pose.orientation))[2]
