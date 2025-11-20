@@ -122,7 +122,7 @@ class VisibilityFootstepPlanner(FootstepPlanner):
         assert self.goal is not None, "No goal set"
         # Define goal
         goal = (
-            self.goal.pose.position.x,
+            self.goal.pose.position.x - 0.05,
             self.goal.pose.position.y,
             self.goal.pose.orientation.z,
             self.goal.pose.orientation.w,
@@ -142,8 +142,8 @@ class VisibilityFootstepPlanner(FootstepPlanner):
 
         start = (current_pose.position.x, current_pose.position.y)
 
-        max_x = 0.08
-        max_y = 0.08
+        max_x = 0.03
+        max_y = 0.03
 
         dist_x = abs(goal[0] - start[0])
         dist_y = abs(goal[1] - start[1])
@@ -155,7 +155,7 @@ class VisibilityFootstepPlanner(FootstepPlanner):
 
         rot_vec = self.rotate_vector_2d(goal[0] - start[0], goal[1] - start[1], angle)
 
-        return np.array([-rot_vec[0] / needed_steps, -rot_vec[1] / needed_steps, 0.0, 0.0])
+        return np.array([rot_vec[0] / needed_steps, rot_vec[1] / needed_steps, 0.0, 0.0])
         # return np.array([1/needed_steps, 1/needed_steps,0.0,0.0])
 
     def rotate_vector_2d(self, x, y, a) -> npt.NDArray[np.float64]:

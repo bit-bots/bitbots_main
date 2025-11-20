@@ -127,7 +127,7 @@ class VisibilityPlanner(Planner):
 
         dist = (my_position.x - self.goal.pose.position.x) ** 2 + (my_position.y - self.goal.pose.position.y) ** 2
 
-        return math.sqrt(dist) < 0.2
+        return math.sqrt(dist) < 0.15
 
     def step(self) -> Path:
         """
