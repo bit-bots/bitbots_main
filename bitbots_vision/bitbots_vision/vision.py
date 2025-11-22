@@ -1,18 +1,15 @@
 #! /usr/bin/env python3
-from copy import deepcopy
 from typing import Optional
 
 import rclpy
 from ament_index_python.packages import get_package_share_directory
 from cv_bridge import CvBridge
 from rcl_interfaces.msg import SetParametersResult
-from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
 from sensor_msgs.msg import Image
 
 from bitbots_vision.vision_modules import debug, ros_utils, yoeo
-
-from .params import gen
+from bitbots_vision.vision_parameters import bitbots_vision as parameters
 
 logger = rclpy.logging.get_logger("bitbots_vision")
 
@@ -39,11 +36,14 @@ class YOEOVision(Node):
 
         logger.debug(f"Entering {self.__class__.__name__} constructor")
 
+        # Setup parameter listener directly
+        self.param_listener = parameters.ParamListener(self)
+        self.config = self.param_listener.get_params()
+
         self._package_path = get_package_share_directory("bitbots_vision")
 
         yoeo.YOEOObjectManager.set_package_directory(self._package_path)
 
-        self._config: dict = {}
         self._cv_bridge = CvBridge()
 
         self._sub_image = None
@@ -51,8 +51,7 @@ class YOEOVision(Node):
         self._vision_components: list[yoeo.AbstractVisionComponent] = []
         self._debug_image: Optional[debug.DebugImage] = None
 
-        # Setup reconfiguration
-        gen.declare_params(self)
+        # Setup reconfiguration callback
         self.add_on_set_parameters_callback(self._dynamic_reconfigure_callback)
 
         # Add general params
@@ -61,7 +60,8 @@ class YOEOVision(Node):
         # Update team color
         ros_utils.update_own_team_color(self)
 
-        self._dynamic_reconfigure_callback(self.get_parameters_by_prefix("").values())
+        # Configure vision with initial parameters
+        self._configure_vision(self.config)
 
         logger.debug(f"Leaving {self.__class__.__name__} constructor")
 
@@ -69,24 +69,20 @@ class YOEOVision(Node):
         """
         Callback for the dynamic reconfigure configuration.
 
-        :param dict params: new config
+        :param params: list of changed parameters
         """
-        new_config = self._get_updated_config_with(params)
-        self._configure_vision(new_config)
-        self._config = new_config
+        # Update the config from the parameter listener
+        self.config = self.param_listener.get_params()
+        
+        # Configure vision with the updated config
+        self._configure_vision(self.config)
 
         return SetParametersResult(successful=True)
 
-    def _get_updated_config_with(self, params) -> dict:
-        new_config = deepcopy(self._config)
-        for param in params:
-            new_config[param.name] = param.value
-        return new_config
+    def _configure_vision(self, config) -> None:
+        yoeo.YOEOObjectManager.configure(config.yoeo)
 
-    def _configure_vision(self, new_config: dict) -> None:
-        yoeo.YOEOObjectManager.configure(new_config)
-
-        debug_image = debug.DebugImage(new_config["component_debug_image_active"])
+        debug_image = debug.DebugImage(config.component_debug_image_active)
         self._debug_image = debug_image
 
         def make_vision_component(
@@ -96,39 +92,45 @@ class YOEOVision(Node):
                 node=self,
                 yoeo_handler=yoeo.YOEOObjectManager.get(),
                 debug_image=debug_image,
-                config=new_config,
+                config=config,  # Now passing config object directly
                 **kwargs,
             )
 
         self._vision_components = [make_vision_component(yoeo.YOEOComponent)]
 
-        if new_config["component_ball_detection_active"]:
+        if config.component_ball_detection_active:
             self._vision_components.append(make_vision_component(yoeo.BallDetectionComponent))
-        if new_config["component_robot_detection_active"]:
+        if config.component_robot_detection_active:
             self._vision_components.append(
                 make_vision_component(
                     yoeo.RobotDetectionComponent,
                     team_color_detection_supported=yoeo.YOEOObjectManager.is_team_color_detection_supported(),
                 )
             )
-        if new_config["component_goalpost_detection_active"]:
+        if config.component_goalpost_detection_active:
             self._vision_components.append(make_vision_component(yoeo.GoalpostDetectionComponent))
-        if new_config["component_line_detection_active"]:
+        if config.component_line_detection_active:
             self._vision_components.append(make_vision_component(yoeo.LineDetectionComponent))
-        if new_config["component_field_detection_active"]:
+        if config.component_field_detection_active:
             self._vision_components.append(make_vision_component(yoeo.FieldDetectionComponent))
-        if new_config["component_debug_image_active"]:
+        if config.component_debug_image_active:
             self._vision_components.append(make_vision_component(yoeo.DebugImageComponent))
 
-        self._sub_image = ros_utils.create_or_update_subscriber(
+        # For the subscriber update, use the improved ros_utils function
+        old_topic = getattr(self, '_last_img_topic', None)
+        current_topic = config.ROS_img_msg_topic
+        
+        self._sub_image = ros_utils.create_or_update_subscriber_with_config(
             self,
-            self._config,
-            new_config,
+            old_topic,
+            current_topic,
             self._sub_image,
-            "ROS_img_msg_topic",
             Image,
-            callback=self._run_vision_pipeline,
+            self._run_vision_pipeline,
         )
+            
+        # Remember this topic for next time
+        self._last_img_topic = current_topic
 
     @profile
     def _run_vision_pipeline(self, image_msg: Image) -> None:
