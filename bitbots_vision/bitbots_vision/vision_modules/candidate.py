@@ -3,9 +3,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    import numpy as np
+    pass
 
-import abc
 
 from rclpy import logging
 
@@ -229,61 +228,3 @@ class Candidate:
         width = abs(x1 - x2)
         height = abs(y1 - y2)
         return cls(min(x1, x2), min(y1, y2), width, height, rating)
-
-
-class CandidateFinder:
-    """
-    The abstract class :class:`.CandidateFinder` requires its subclasses to implement the methods
-    :meth:`.get_candidates`,  :meth:`.compute` and :meth:`set_image`.
-
-    CandidateFinder implementations produce a set of so called *Candidates* which are instances of the class :class:`bitbots_vision.vision_modules.candidate.Candidate`.
-    """
-
-    def __init__(self):
-        """
-        Initialization of :class:`.CandidateFinder`.
-        """
-        super().__init__()
-
-    def get_top_candidates(self, count: int = 1) -> list[Candidate]:
-        """
-        Returns the count highest rated candidates.
-
-        :param int count: Number of top-candidates to return
-        :return [Candidate]: The count top-candidates
-        """
-        candidates = self.get_candidates()
-        candidates = Candidate.sort_candidates(candidates)
-        return candidates[:count]
-
-    def get_top_candidate(self) -> Candidate:
-        """
-        Returns the highest rated candidate.
-
-        :return Candidate: Top candidate or None
-        """
-        return Candidate.select_top_candidate(self.get_candidates())
-
-    @abc.abstractmethod
-    def get_candidates(self) -> list[Candidate]:
-        """
-        Returns a list of all candidates.
-
-        :return [Candidate]: Candidates
-        """
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def compute(self) -> None:
-        """
-        Runs the most intense calculation without returning any output and caches the result.
-        """
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def set_image(self, image: np.ndarray) -> None:
-        """
-        Set the image which is going to be processed by calling :meth:`.compute.
-        """
-
-        raise NotImplementedError

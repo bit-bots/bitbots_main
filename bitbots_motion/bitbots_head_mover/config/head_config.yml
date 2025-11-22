@@ -45,49 +45,6 @@ move_head:
 
   # Search pattern for ball
   search_patterns:
-    search_ball:
-      # search pattern speed
-      tilt_speed:
-        type: double
-        description: "Tilt speed for the search pattern"
-        default_value: 3.0
-
-      pan_speed:
-        type: double
-        description: "Pan speed for the search pattern"
-        default_value: 3.0
-
-      # Max values for the search pattern
-      pan_max:
-        type: double_array
-        default_value: [90.0, -90.0]
-        description: "Maximum pan values for the search pattern (in degrees)"
-        validation:
-          fixed_size<>: 2
-
-      tilt_max:
-        type: double_array
-        default_value: [-10.0, -60.0]
-        description: "Maximum tilt values for the search pattern (in degrees)"
-        validation:
-          fixed_size<>: 2
-
-      # Number of scan lines for the search pattern
-      scan_lines:
-        type: int
-        default_value: 2
-        description: "Number of scan lines for the search pattern"
-        validation:
-          gt_eq<>: [1]
-
-      # Reduces last scanline by that factor so that robot does not collide
-      reduce_last_scanline:
-        type: double
-        default_value: 0.2
-        description: "Reduces last scanline by that factor so that robot does not collide"
-        validation:
-          bounds<>: [0.0, 1.0]
-
     search_ball_penalty:
       tilt_speed:
         type: double

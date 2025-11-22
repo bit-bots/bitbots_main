@@ -73,6 +73,7 @@
         "pathfinding",
         "penaltykick",
         "penaltyshoot",
+        "playsound",
         "pointcloud",
         "pointclouds",
         "popen",
@@ -117,6 +118,7 @@
         "unpenalize",
         "unpenalized",
         "urdf",
+        "vcstool",
         "walkready",
         "wandb",
         "webots",
@@ -217,15 +219,13 @@
         "span": "cpp",
         "ranges": "cpp"
     },
-    // Tell the ROS extension where to find the setup.bash
-    // This also utilizes the COLCON_WS environment variable, which needs to be set
-    "ros.distro": "iron",
+    "ROS2.distro": "jazzy",
     "search.useIgnoreFiles": false,
     "python.autoComplete.extraPaths": [
-        "/opt/ros/iron/lib/python3.10/site-packages"
+        "/opt/ros/jazzy/lib/python3.12/site-packages"
     ],
     "python.analysis.extraPaths": [
-        "/opt/ros/iron/lib/python3.10/site-packages"
+        "/opt/ros/jazzy/lib/python3.12/site-packages"
     ],
     "cmake.configureOnOpen": false,
     "editor.formatOnSave": true,
@@ -235,6 +235,10 @@
         "editor.defaultFormatter": "DotJoshJohnson.xml"
     },
     "[json]": {
+        "editor.defaultFormatter": "vscode.json-language-features"
+    },
+    "makefile.configureOnOpen": true,
+    "[jsonc]": {
         "editor.defaultFormatter": "vscode.json-language-features"
     },
 }

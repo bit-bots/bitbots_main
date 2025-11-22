@@ -2,16 +2,20 @@
 set -eEuo pipefail
 
 # static/global variables
-ROS_DISTRO=${ROS_DISTRO:-"iron"}
 DIR="$(dirname "$(readlink -f "$0")")"
+BRANCH="${1:-main}"
+ROS_DISTRO=${ROS_DISTRO:-"jazzy"}
 COLCON_WS="${COLCON_WS:-"$HOME/colcon_ws"}"
 REPO_URL="git@github.com:bit-bots/bitbots_main.git"
 SHELL_CONFIG="$(cat <<EOF
 
 # >>> bit-bots initialize >>>
 
+# Add python pip bins to PATH
+export PATH="\$HOME/.local/bin:\$PATH"
+
 # Ignore some deprecation warnings
-export PYTHONWARNINGS=ignore:::setuptools.command.install,ignore:::setuptools.command.easy_install,ignore:::pkg_resources
+export PYTHONWARNINGS="ignore:::setuptools.command.install,ignore:::setuptools.command.easy_install,ignore:::pkg_resources,ignore:easy_install command is deprecated,ignore:setup.py install is deprecated"
 
 # Limit ROS 2 communication to localhost (can be overridden when needed)
 export ROS_DOMAIN_ID=24
@@ -59,7 +63,7 @@ setup_ros() {
         if [[ ! -f /etc/apt/sources.list.d/ros2.list ]]; then
             echo "Adding ROS 2 repository..."
             sudo apt install -y curl lsb-release
-            curl -fsSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key > /usr/share/keyrings/ros-archive-keyring.gpg
+            sudo sh -c "curl -fsSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key > /usr/share/keyrings/ros-archive-keyring.gpg"
             sudo sh -c "echo 'deb [signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main' > /etc/apt/sources.list.d/ros2.list"
         fi
 
@@ -86,9 +90,11 @@ setup_repo() {
 
     if (( in_repo )); then
         cd "$meta_dir" || exit
+        git checkout "$BRANCH"
     else
         if [[ ! -d "$PWD/bitbots_main" ]]; then
             git clone "$REPO_URL"
+            git checkout "$BRANCH"
         fi
 
         meta_dir="$(realpath "$PWD/bitbots_main")"
@@ -108,7 +114,7 @@ setup_colcon() {
     echo "Installing/Updating colcon extensions..."
 
     # Install/Update colcon extensions / patches
-    python3 -m pip install --upgrade --user \
+    python3 -m pip install --upgrade --user --break-system-packages \
       git+https://github.com/timonegk/colcon-core.git@colors \
       git+https://github.com/timonegk/colcon-notification.git@colors \
       git+https://github.com/timonegk/colcon-output.git@colors

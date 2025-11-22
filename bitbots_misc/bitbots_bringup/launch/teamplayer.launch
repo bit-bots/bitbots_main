@@ -15,11 +15,14 @@
     <arg name="monitoring" default="true" description="Whether the system monitor and udp bridge should be started" />
     <arg name="record" default="false" description="Whether the ros bag recording should be started" />
     <arg name="tts" default="true" description="Whether to speak" />
+    <arg unless="$(var sim)" name="fieldname" default="labor" description="Loads field settings (labor, webots, ...)." />
+    <arg if="$(var sim)" name="fieldname" default="webots" description="Loads field settings (labor, webots, ...)." />
 
 
     <!-- load the global parameters -->
     <include file="$(find-pkg-share bitbots_parameter_blackboard)/launch/parameter_blackboard.launch">
         <arg name="sim" value="$(var sim)" />
+        <arg name="fieldname" value="$(var fieldname)" />
     </include>
 
     <!-- load the diagnostic aggregator -->

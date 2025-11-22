@@ -1,5 +1,6 @@
 import os
-from typing import Any
+from threading import Thread
+from typing import Any, Callable
 
 import rclpy
 import yaml
@@ -11,9 +12,18 @@ from rcl_interfaces.msg import ParameterValue as ParameterValueMsg
 from rcl_interfaces.srv import GetParameters, SetParameters
 from rclpy.node import Node
 from rclpy.parameter import PARAMETER_SEPARATOR_STRING, Parameter, parameter_value_to_python
+from rclpy.task import Future
 
 # Create a new @nobeartype decorator disabling type-checking.
 nobeartype = beartype(conf=BeartypeConf(strategy=BeartypeStrategy.O0))
+
+
+class RobotNotConfiguredError(Exception):
+    """Exception raised when the robot is not configured properly."""
+
+    def __init__(self, message):
+        self.message = message
+        super().__init__(message)
 
 
 def read_urdf(robot_name: str) -> str:
@@ -56,7 +66,7 @@ def get_parameters_from_ros_yaml(node_name: str, parameter_file: str, use_wildca
 
         if param_keys == []:
             raise RuntimeError(
-                f"Param file does not contain parameters for {node_name}, " f" only for nodes: {param_file.keys()}"
+                f"Param file does not contain parameters for {node_name},  only for nodes: {param_file.keys()}"
             )
         param_dict = {}
         for k in param_keys:
@@ -194,3 +204,43 @@ def parse_parameter_dict(*, namespace: str, parameter_dict: dict) -> list[Parame
             parameter = Parameter(name=full_param_name, value=param_value)
             parameters.append(parameter.to_parameter_msg())
     return parameters
+
+
+async def async_wait_for(node: Node, rel_time: float):
+    """
+    ROS 2 does not provide an async sleep function, so we implement our own using a timer.
+    This function will wait for the specified relative time in seconds.
+
+    :param node: The ROS2 node to create the timer on.
+    :param rel_time: The relative time in seconds to wait.
+    :return: None
+    """
+    future = Future()
+    rel_time = max(rel_time, 0.0)
+
+    def done_waiting():
+        future.set_result(None)
+
+    timer = node.create_timer(rel_time, done_waiting, clock=node.get_clock())
+    await future
+    timer.cancel()
+    node.destroy_timer(timer)
+
+
+async def async_run_thread(func: Callable[[], Any]) -> None:
+    """
+    Allows the usage of blocking functions in an async context.
+
+    Spawns a thread to run the function and returns a Future that will be set when the function is done.
+    """
+    future = Future()
+
+    def thread_func():
+        try:
+            future.set_result(func())
+        except Exception as e:
+            future.set_exception(e)
+
+    thread = Thread(target=thread_func)
+    thread.start()
+    await future

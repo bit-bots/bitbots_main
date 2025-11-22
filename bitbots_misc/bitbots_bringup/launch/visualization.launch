@@ -5,6 +5,7 @@
     <arg name="ipm" default="false" description="if the soccer ipm should be used" />
     <arg name="motion" default="true" description="if the motion should be started" />
     <arg name="game_controller" default="false" description="if the game controller node should be started" />
+    <arg name="fieldname" default="labor" description="Loads field settings (labor, webots, ...)." />
 
     <!-- load the global parameters -->
     <include file="$(find-pkg-share bitbots_parameter_blackboard)/launch/parameter_blackboard.launch" />

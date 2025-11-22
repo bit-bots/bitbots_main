@@ -36,7 +36,6 @@ class ButtonNode : public rclcpp::Node {
 
     if (manual_penalty_mode_) {
       manual_penalize_client_ = this->create_client<bitbots_msgs::srv::ManualPenalize>("manual_penalize");
-      manual_penalty_mode_ = manual_penalize_client_->wait_for_service(3s);
     }
 
     foot_zero_client_ = this->create_client<std_srvs::srv::Empty>("set_foot_zero");

@@ -1,4 +1,5 @@
 import re
+from enum import Enum
 from typing import Optional, TypeAlias
 
 from bitbots_utils.utils import get_parameters_from_other_node
@@ -18,6 +19,8 @@ from soccer_vision_2d_msgs.msg import (
 from soccer_vision_attribute_msgs.msg import Robot as RobotAttributes
 from vision_msgs.msg import BoundingBox2D, Pose2D
 
+from bitbots_vision.vision_modules import candidate
+
 """
 This module provides some methods needed for the ros environment,
 e.g. methods to convert candidates to ROS messages or methods to modify the dynamic reconfigure objects.
@@ -29,42 +32,18 @@ logger = logging.get_logger("bitbots_vision")
 
 general_parameters = []
 
-global own_team_color
-own_team_color = None
-
 T_RobotAttributes_Team: TypeAlias = int  # Type for RobotAttributes.team
 
 
-def create_or_update_publisher(
-    node, old_config, new_config, publisher_object, topic_key, data_class, qos_profile=1, callback_group=None
-):
-    """
-    Creates or updates a publisher
+# These values are taken from the game settings
+class RobotColor(Enum):
+    BLUE = 0
+    RED = 1
+    UNKNOWN = None
 
-    :param node: ROS node to which the publisher is bound
-    :param old_config: Previous config dict
-    :param new_config: Current config dict
-    :param publisher_object: The python object, that represents the publisher
-    :param topic_key: The name of the topic variable in the config dict
-    :param data_class: Data type class for ROS messages of the topic we want to subscribe
-    :param qos_profile: A QoSProfile or a history depth to apply to the publisher.
-        In the case that a history depth is provided, the QoS history is set to
-        KEEP_LAST, the QoS history depth is set to the value
-        of the parameter, and all other QoS settings are set to their default values.
-        Reference: https://github.com/ros2/rclpy/blob/6f7cfd0c73bda1afefba36b6785516f343d6b634/rclpy/rclpy/node.py#L1258
-    :param callback_group: The callback group for the publisher's event handlers.
-        If ``None``, then the node's default callback group is used.
-        Reference: https://github.com/ros2/rclpy/blob/6f7cfd0c73bda1afefba36b6785516f343d6b634/rclpy/rclpy/node.py#L1262
-    :return: adjusted publisher object
-    """
-    # Check if topic parameter has changed
-    if config_param_change(old_config, new_config, topic_key):
-        # Create the new publisher
-        publisher_object = node.create_publisher(
-            data_class, new_config[topic_key], qos_profile, callback_group=callback_group
-        )
-        logger.debug("Registered new publisher to " + str(new_config[topic_key]))
-    return publisher_object
+
+global own_team_color
+own_team_color: RobotColor = RobotColor.UNKNOWN
 
 
 def create_or_update_subscriber(
@@ -201,20 +180,20 @@ def build_robot_array_msg(header, robots):
     return robots_msg
 
 
-def build_robot_msg(obstacle, obstacle_color=None):
+def build_robot_msg(robot: candidate.Candidate, team: Optional[T_RobotAttributes_Team] = None) -> Robot:
     """
-    Builds a Robot msg of a detected obstacle of a certain color
+    Builds a Robot msg of a detected robot of a certain color
 
-    :param Candidate obstacle: Obstacle candidate
-    :param GameState.team_color obstacle_color: Color of the obstacle, defaults to None
-    :return: Robot msg
+    :param robot: Robot candidate
+    :param team: Team of the robot, defaults to None
+    :return: Robot message
     """
-    obstacle_msg = Robot()
-    obstacle_msg.bb = build_bounding_box_2d(obstacle)
-    obstacle_msg.attributes.team = get_team_from_robot_color(obstacle_color)
-    if obstacle.get_rating() is not None:
-        obstacle_msg.confidence.confidence = float(obstacle.get_rating())
-    return obstacle_msg
+    robot_msg = Robot()
+    robot_msg.bb = build_bounding_box_2d(robot)
+    robot_msg.attributes.team = team or RobotAttributes.TEAM_UNKNOWN
+    if robot.get_rating() is not None:
+        robot_msg.confidence.confidence = float(robot.get_rating())
+    return robot_msg
 
 
 def build_marking_array_msg(header, marking_segments):
@@ -323,42 +302,23 @@ def update_own_team_color(vision_node: Node):
     params = get_parameters_from_other_node(
         vision_node, "parameter_blackboard", ["team_color"], service_timeout_sec=2.0
     )
-    own_team_color = params["team_color"]
+    own_team_color = RobotColor(params["team_color"])
     vision_node._logger.debug(f"Own team color is: {own_team_color}")
 
 
-def get_team_from_robot_color(color: int) -> T_RobotAttributes_Team:
-    """
-    Maps the detected robot color to the current team.
-    If the color is the same as the current team, returns own team, else returns opponent team.
-    """
-    global own_team_color
-    if own_team_color is not None and 0 >= own_team_color <= 1:
-        return RobotAttributes.TEAM_UNKNOWN
-
-    if 0 >= color <= 1:  # If color is not known, we can just return unknown
-        return Robot().attributes.TEAM_UNKNOWN
-
-    if color == own_team_color:  # Robot is in own team, if same color
-        return RobotAttributes.TEAM_OWN
-    else:  # Robot is not same color, therefore it is from the opponent's team
-        return RobotAttributes.TEAM_OPPONENT
-
-
-def get_robot_color_for_team(team: T_RobotAttributes_Team) -> Optional[int]:
+def get_robot_color_for_team(team: T_RobotAttributes_Team) -> RobotColor:
     """
     Maps team (own, opponent, unknown) to the current robot color.
     """
     global own_team_color
-    if own_team_color is None:
-        return None  # This gets handled later
 
     if team == RobotAttributes.TEAM_OWN:
         return own_team_color
     elif team == RobotAttributes.TEAM_OPPONENT:
-        if own_team_color == 0:  # 0 is blue, 1 is red
-            return 1
-        else:
-            return 0
+        return {
+            RobotColor.RED: RobotColor.BLUE,
+            RobotColor.BLUE: RobotColor.RED,
+            RobotColor.UNKNOWN: RobotColor.UNKNOWN,
+        }[own_team_color]
     else:
-        return None
+        raise ValueError(f"Unknown team value: {team}")

@@ -1,3 +1,4 @@
+from typing import Optional
 from unittest.mock import Mock
 
 import numpy
@@ -44,11 +45,11 @@ def test_convert_gamestate(state_with_gamestate):
 
     gamestate.penalized = False
     result = convert_to_message(state_with_gamestate)
-    assert result.state == Proto.State.UNPENALISED
+    assert result.state == Proto.UNPENALISED
 
     gamestate.penalized = True
     result = convert_to_message(state_with_gamestate)
-    assert result.state == Proto.State.PENALISED
+    assert result.state == Proto.PENALISED
 
     assert validity_checker_valid.call_count == 2
     validity_checker_valid.assert_called_with(gamestate.header.stamp)
@@ -56,11 +57,11 @@ def test_convert_gamestate(state_with_gamestate):
 
 def test_convert_gamestate_expired_headers(state_with_gamestate):
     message = Proto.Message()
-    message.state = Proto.State.UNPENALISED
+    message.state = Proto.UNPENALISED
 
     result = convert_to_message(state_with_gamestate, message, is_state_expired=True)
 
-    assert result.state == Proto.State.UNKNOWN_STATE
+    assert result.state == Proto.UNKNOWN_STATE
 
 
 def test_convert_current_pose(snapshot, state_with_current_pose):
@@ -164,22 +165,22 @@ def test_convert_obstacles_to_robots_expired_headers(state_with_seen_robots):
 def test_convert_strategy(state_with_strategy):
     result = convert_to_message(state_with_strategy)
 
-    assert result.role == Proto.Role.ROLE_STRIKER
-    assert result.action == Proto.Action.ACTION_KICKING
-    assert result.offensive_side == Proto.OffensiveSide.SIDE_RIGHT
+    assert result.role == Proto.ROLE_STRIKER
+    assert result.action == Proto.ACTION_KICKING
+    assert result.offensive_side == Proto.SIDE_RIGHT
 
     validity_checker_valid.assert_called_with(state_with_strategy.strategy_time)
 
 
 def test_convert_strategy_expired_headers(state_with_strategy):
     message = Proto.Message()
-    message.role = Proto.Role.ROLE_DEFENDER
+    message.role = Proto.ROLE_DEFENDER
 
     result = convert_to_message(state_with_strategy, message, is_state_expired=True)
 
-    assert result.role == Proto.Role.ROLE_DEFENDER
-    assert result.action == Proto.Action.ACTION_UNDEFINED
-    assert result.offensive_side == Proto.OffensiveSide.SIDE_UNDEFINED
+    assert result.role == Proto.ROLE_DEFENDER
+    assert result.action == Proto.ACTION_UNDEFINED
+    assert result.offensive_side == Proto.SIDE_UNDEFINED
 
 
 def test_convert_time_to_ball(state_with_time_to_ball):
@@ -208,7 +209,7 @@ def test_convert_time_to_ball_expired_headers(state_with_time_to_ball):
     assert pytest.approx(result.time_to_ball) == 9999.0
 
 
-def convert_to_message(team_data_state, message: Proto.Message = None, is_state_expired=False):
+def convert_to_message(team_data_state, message: Optional[Proto.Message] = None, is_state_expired=False):
     message = message if message else Proto.Message()
     validity_checker = validity_checker_expired if is_state_expired else validity_checker_valid
     return RobocupProtocolConverter(own_team_color).convert_to_message(team_data_state, message, validity_checker)

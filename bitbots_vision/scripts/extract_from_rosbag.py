@@ -119,7 +119,7 @@ if len(image_topics_and_info) == 0:  # no topics found
     exit()
 elif len(image_topics_and_info) == 1:  # 1 topic found
     print(
-        f"Found exactly one topic ({image_topics_and_info[0][0],}) of type sensor_msgs/Image with {image_topics_and_info[0][1].message_count} messages."
+        f"Found exactly one topic ({(image_topics_and_info[0][0],)}) of type sensor_msgs/Image with {image_topics_and_info[0][1].message_count} messages."
     )
     if image_topics_and_info[0][0] == args.topic:
         chosen_set_num = 0

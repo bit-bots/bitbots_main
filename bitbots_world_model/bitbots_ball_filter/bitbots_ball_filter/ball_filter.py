@@ -8,7 +8,7 @@ from bitbots_tf_buffer import Buffer
 from geometry_msgs.msg import Point, PoseWithCovarianceStamped
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.duration import Duration
-from rclpy.executors import MultiThreadedExecutor
+from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
 from rclpy.time import Time
 from ros2_numpy import msgify, numpify
@@ -32,7 +32,7 @@ class BallFilter(Node):
         """
         super().__init__("ball_filter")
         self.logger = self.get_logger()
-        self.tf_buffer = Buffer(self, Duration(seconds=2))
+        self.tf_buffer = Buffer(Duration(seconds=2), self)
         # Setup dynamic reconfigure config
         self.param_listener = parameters.ParamListener(self)
 
@@ -206,7 +206,7 @@ class BallFilter(Node):
         # Transform to camera frame
         try:
             ball_in_camera_optical_frame = self.tf_buffer.transform(
-                ball_pose, self.camera_info.header.frame_id, timeout=Duration(nanoseconds=0.5 * (10**9))
+                ball_pose, self.camera_info.header.frame_id, timeout=Duration(nanoseconds=int(0.5 * 1e9))
             )
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
             self.logger.warning(str(e))
@@ -264,11 +264,10 @@ def main(args=None) -> None:
     rclpy.init(args=args)
 
     node = BallFilter()
-    # Number of executor threads is the number of MutiallyExclusiveCallbackGroups + 1 thread for the executor
-    ex = MultiThreadedExecutor(num_threads=3)
-    ex.add_node(node)
+    executor = EventsExecutor()
+    executor.add_node(node)
     try:
-        ex.spin()
+        executor.spin()
     except KeyboardInterrupt:
         pass
     node.destroy_node()
