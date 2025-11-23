@@ -489,6 +489,7 @@ environments:
       - conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-bio-ik-2.0.0-np126py312h3bd2861_10.conda
       - conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-bio-ik-msgs-0.0.0-np126py312h3bd2861_10.conda
       - conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-biped-interfaces-0.0.0-np126py312h3bd2861_10.conda
+      - conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-bitbots-dynamixel-sdk-3.7.21-np126py312h3bd2861_10.conda
       - conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-bitbots-tf-buffer-1.0.0-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-builtin-interfaces-2.0.3-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-camera-calibration-parsers-5.1.7-np126py312h3bd2861_10.conda
@@ -524,6 +525,8 @@ environments:
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-dummy-sensors-0.33.7-np126py312h3bd2861_10.conda
       - conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-dynamic-stack-decider-0.5.3-np126py312h3bd2861_10.conda
       - conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-dynamic-stack-decider-visualization-0.2.1-np126py312h3bd2861_10.conda
+      - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-dynamixel-sdk-3.8.4-np126py312h3bd2861_10.conda
+      - conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-dynamixel-workbench-toolbox-0.1.8-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-eigen-stl-containers-1.1.0-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-eigen3-cmake-module-0.3.0-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-example-interfaces-0.12.0-np126py312h3bd2861_10.conda
@@ -8478,6 +8481,25 @@ packages:
   license: BSD-3-Clause
   size: 88965
   timestamp: 1763897835674
+- conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-bitbots-dynamixel-sdk-3.7.21-np126py312h3bd2861_10.conda
+  sha256: e7bf99df736a30c8bd1425579a84e31feb25dff5cb979554891631900e83421c
+  md5: e2cf1bdb30b84d265b597ef57ef8ce11
+  depends:
+  - python
+  - ros-jazzy-rclcpp
+  - ros-jazzy-rclpy
+  - ros-jazzy-ros-workspace
+  - ros2-distro-mutex 0.11.* jazzy_*
+  - libgcc >=14
+  - __glibc >=2.17,<3.0.a0
+  - libstdcxx >=14
+  - libgcc >=14
+  - python_abi 3.12.* *_cp312
+  - ros2-distro-mutex >=0.11.0,<0.12.0a0
+  - numpy >=1.26.4,<2.0a0
+  license: BSD-3-Clause
+  size: 117514
+  timestamp: 1763924887131
 - conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-bitbots-tf-buffer-1.0.0-np126py312h3bd2861_10.conda
   sha256: aa054d9ee7acdecdf696d3fe9709bf6dedd86f362d0edcc26c0906c103b7bd9e
   md5: 8c01f716fe10049d5ed447300522ae42
@@ -9312,6 +9334,41 @@ packages:
   license: BSD-3-Clause
   size: 51848
   timestamp: 1763900423945
+- conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-dynamixel-sdk-3.8.4-np126py312h3bd2861_10.conda
+  sha256: 88a292b769876402260f98e399116b4e8de78d924709d5fa42eb456ee5f2fd28
+  md5: 9864819a0ad81dd5ccf687f9ff6a6e96
+  depends:
+  - python
+  - ros-jazzy-ros-workspace
+  - ros2-distro-mutex 0.11.* jazzy_*
+  - libstdcxx >=14
+  - libgcc >=14
+  - __glibc >=2.17,<3.0.a0
+  - ros2-distro-mutex >=0.11.0,<0.12.0a0
+  - numpy >=1.26.4,<2.0a0
+  - python_abi 3.12.* *_cp312
+  license: BSD-3-Clause
+  size: 123474
+  timestamp: 1759134549056
+- conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-dynamixel-workbench-toolbox-0.1.8-np126py312h3bd2861_10.conda
+  sha256: c866d66beb88130a6557d0c20c25befa66773490a0dd7ff61456eb3d251e8dff
+  md5: 49e293224ce1c08e9a0723131460b025
+  depends:
+  - python
+  - ros-jazzy-dynamixel-sdk
+  - ros-jazzy-rclcpp
+  - ros-jazzy-ros-workspace
+  - ros2-distro-mutex 0.11.* jazzy_*
+  - libgcc >=14
+  - libstdcxx >=14
+  - libgcc >=14
+  - __glibc >=2.17,<3.0.a0
+  - ros2-distro-mutex >=0.11.0,<0.12.0a0
+  - python_abi 3.12.* *_cp312
+  - numpy >=1.26.4,<2.0a0
+  license: BSD-3-Clause
+  size: 66959
+  timestamp: 1763925070334
 - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-eigen-stl-containers-1.1.0-np126py312h3bd2861_10.conda
   sha256: 2b9faed224455e47e7dcaf9ffae4b9a8aeec53c56349f6c20bd1fc0831bc90ad
   md5: bf3f26d4dbda7f81561789a7545f93bf

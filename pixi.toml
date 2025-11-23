@@ -145,6 +145,8 @@ ros-jazzy-udp-bridge = ">=0.0.0,<0.0.1"
 ros-jazzy-particle-filter = ">=0.0.1,<0.0.2"
 ros-jazzy-ros2-numpy = ">=2.0.9,<3"
 ros-jazzy-gazebo-msgs = ">=3.8.0,<4"
+ros-jazzy-bitbots-dynamixel-sdk = ">=3.7.21,<4"
+ros-jazzy-dynamixel-workbench-toolbox = ">=0.1.8,<0.2"
 
 [pypi-dependencies]
 syrupy = ">=5.0.0, <6"
