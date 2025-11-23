@@ -23,7 +23,7 @@ class ImportanceResamplingWE : public particle_filter::ImportanceResampling<Stat
   /**
    * The constructor of this base class inits some members.
    */
-  ImportanceResamplingWE<StateType>(int explorer_count,
+  ImportanceResamplingWE(int explorer_count,
                                     std::shared_ptr<particle_filter::StateDistribution<StateType>> distribution);
 
   /**

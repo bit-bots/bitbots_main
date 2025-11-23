@@ -18,7 +18,6 @@
 
   <depend>bitbots_docs</depend>
   <depend>bitbots_msgs</depend>
-  <depend>espeak</depend>
   <depend>std_msgs</depend>
 
   <test_depend>python3-pytest</test_depend>
