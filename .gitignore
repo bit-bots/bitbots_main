@@ -240,3 +240,10 @@ doku/*
 
 # Pytest cache
 .pytest_cache/
+
+# pixi environments
+.pixi/*
+!.pixi/config.toml
+
+CMakeFiles/
+CMakeCache.txt
