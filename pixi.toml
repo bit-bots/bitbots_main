@@ -147,6 +147,8 @@ ros-jazzy-ros2-numpy = ">=2.0.9,<3"
 ros-jazzy-gazebo-msgs = ">=3.8.0,<4"
 ros-jazzy-bitbots-dynamixel-sdk = ">=3.7.21,<4"
 ros-jazzy-dynamixel-workbench-toolbox = ">=0.1.8,<0.2"
+ipython = ">=9.7.0,<10"
+ros-jazzy-better-launch = ">=1.0.2,<2"
 
 [pypi-dependencies]
 syrupy = ">=5.0.0, <6"
