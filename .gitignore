@@ -218,11 +218,6 @@ ansible_robots/*
 doc_internal/*
 doku/*
 
-# library subdirectories
-/src/lib/
-
-# Path to the protocol buffer definitions, which are a different repository and managed by vcstool
-/src/bitbots_team_communication/bitbots_team_communication/bitbots_team_communication/RobocupProtocol
 # Protobuf generated file
 /src/bitbots_team_communication/bitbots_team_communication/bitbots_team_communication/robocup_extension_pb2.py
 /src/bitbots_team_communication/bitbots_team_communication/bitbots_team_communication/robocup_extension_pb2.pyi
