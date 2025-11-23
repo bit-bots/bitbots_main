@@ -1,6 +1,6 @@
 [workspace]
 authors = ["Florian Vahl <7vahl@informatik.uni-hamburg.de>"]
-channels = ["robostack-jazzy", "conda-forge", "../robostack_vendor/ros-jazzy/output/"]
+channels = ["robostack-jazzy", "conda-forge", "https://data.bit-bots.de/conda/"]
 name = "bitbots_main"
 platforms = ["linux-64"]
 version = "0.1.0"
@@ -8,7 +8,6 @@ version = "0.1.0"
 [tasks]
 build = "colcon build --symlink-install --cmake-args -G Ninja"
 clean = "rm -rf build install log"
-run = "ros2 run"
 
 [dependencies]
 breathe = ">=4.36.0,<5"

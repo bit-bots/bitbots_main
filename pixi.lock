@@ -4,7 +4,7 @@ environments:
     channels:
     - url: https://conda.anaconda.org/robostack-jazzy/
     - url: https://conda.anaconda.org/conda-forge/
-    - url: file:///homes/17vahl/robostack_vendor/ros-jazzy/output/
+    - url: https://data.bit-bots.de/conda/
     indexes:
     - https://pypi.org/simple
     packages:
@@ -56,7 +56,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/colcon-cd-0.1.1-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/colcon-cmake-0.2.29-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/colcon-common-extensions-0.3.0-py312h7900ff3_4.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/colcon-core-0.19.0-pyhd8ed1ab_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/colcon-core-0.20.1-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/colcon-defaults-0.2.9-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/colcon-devtools-0.3.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/colcon-library-path-0.2.1-pyhd8ed1ab_1.conda
@@ -486,6 +486,10 @@ environments:
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-apriltag-msgs-2.0.1-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-apriltag-ros-3.3.0-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-backward-ros-1.0.8-np126py312h3bd2861_10.conda
+      - conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-bio-ik-2.0.0-np126py312h3bd2861_10.conda
+      - conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-bio-ik-msgs-0.0.0-np126py312h3bd2861_10.conda
+      - conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-biped-interfaces-0.0.0-np126py312h3bd2861_10.conda
+      - conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-bitbots-tf-buffer-1.0.0-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-builtin-interfaces-2.0.3-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-camera-calibration-parsers-5.1.7-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-camera-info-manager-5.1.7-np126py312h3bd2861_10.conda
@@ -518,6 +522,8 @@ environments:
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-dummy-map-server-0.33.7-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-dummy-robot-bringup-0.33.7-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-dummy-sensors-0.33.7-np126py312h3bd2861_10.conda
+      - conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-dynamic-stack-decider-0.5.3-np126py312h3bd2861_10.conda
+      - conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-dynamic-stack-decider-visualization-0.2.1-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-eigen-stl-containers-1.1.0-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-eigen3-cmake-module-0.3.0-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-example-interfaces-0.12.0-np126py312h3bd2861_10.conda
@@ -543,6 +549,9 @@ environments:
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-filters-2.2.2-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-foonathan-memory-vendor-1.3.1-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-foxglove-bridge-0.8.5-np126py312h3bd2861_10.conda
+      - conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-game-controller-hl-1.1.0-np126py312h3bd2861_10.conda
+      - conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-game-controller-hl-interfaces-0.0.1-np126py312h3bd2861_10.conda
+      - conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-gazebo-msgs-3.8.0-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-generate-parameter-library-0.5.0-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-generate-parameter-library-py-0.5.0-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-geometric-shapes-2.3.2-np126py312h3bd2861_10.conda
@@ -556,6 +565,7 @@ environments:
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-gz-tools-vendor-0.0.7-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-gz-utils-vendor-0.0.5-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-hardware-interface-4.37.0-np126py312h3bd2861_10.conda
+      - conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-humanoid-base-footprint-0.1.2-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-iceoryx-binding-c-2.0.6-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-iceoryx-hoofs-2.0.6-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-iceoryx-posh-2.0.6-np126py312h3bd2861_10.conda
@@ -565,8 +575,12 @@ environments:
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-image-transport-5.1.7-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-image-transport-plugins-4.0.6-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-image-view-5.0.11-np126py312h3bd2861_10.conda
+      - conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-imu-complementary-filter-2.1.5-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-interactive-markers-2.5.4-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-intra-process-demo-0.33.7-np126py312h5cbfcd5_10.conda
+      - conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-ipm-image-node-0.0.0-np126py312h5cbfcd5_10.conda
+      - conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-ipm-interfaces-0.0.0-np126py312h3bd2861_10.conda
+      - conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-ipm-library-0.0.0-np126py312h5cbfcd5_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-joint-limits-4.37.0-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-joint-state-publisher-2.4.0-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-joint-state-publisher-gui-2.4.0-np126py312h3bd2861_10.conda
@@ -625,6 +639,7 @@ environments:
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-pal-statistics-2.7.0-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-pal-statistics-msgs-2.7.0-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-parameter-traits-0.5.0-np126py312h3bd2861_10.conda
+      - conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-particle-filter-0.0.1-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-pcl-conversions-2.6.2-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-pcl-msgs-1.0.0-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-pendulum-control-0.33.7-np126py312h3bd2861_10.conda
@@ -675,6 +690,8 @@ environments:
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-ros-environment-4.2.1-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-ros-workspace-1.0.3-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-ros2-control-test-assets-4.37.0-np126py312h3bd2861_10.conda
+      - conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-ros2-numpy-2.0.9-np126py312h3bd2861_10.conda
+      - conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-ros2-python-extension-1.0.0-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-ros2action-0.32.6-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-ros2bag-0.26.9-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-ros2cli-0.32.6-np126py312h3bd2861_10.conda
@@ -729,6 +746,7 @@ environments:
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-rosidl-typesupport-introspection-c-4.6.6-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-rosidl-typesupport-introspection-cpp-4.6.6-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-rosx-introspection-1.0.2-np126py312h3bd2861_10.conda
+      - conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-rot-conv-1.1.0-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-rpyutils-0.4.2-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-rqt-action-2.2.0-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-rqt-bag-1.5.5-np126py312h3bd2861_10.conda
@@ -757,6 +775,7 @@ environments:
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-rviz-assimp-vendor-14.1.15-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-rviz-common-14.1.15-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-rviz-default-plugins-14.1.15-np126py312h3bd2861_10.conda
+      - conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-rviz-imu-plugin-2.1.5-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-rviz-ogre-vendor-14.1.15-np126py312h39124df_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-rviz-rendering-14.1.15-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-rviz2-14.1.15-np126py312h3bd2861_10.conda
@@ -767,6 +786,11 @@ environments:
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-sensor-msgs-py-5.3.6-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-service-msgs-2.0.3-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-shape-msgs-5.3.6-np126py312h3bd2861_10.conda
+      - conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-soccer-field-map-generator-0.0.0-np126py312h5cbfcd5_10.conda
+      - conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-soccer-ipm-0.0.0-np126py312h3bd2861_10.conda
+      - conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-soccer-vision-2d-msgs-1.0.0-np126py312h3bd2861_10.conda
+      - conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-soccer-vision-3d-msgs-1.0.0-np126py312h3bd2861_10.conda
+      - conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-soccer-vision-attribute-msgs-1.0.0-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-spdlog-vendor-1.6.1-np126py312he340118_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-sqlite3-vendor-0.26.9-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-srdfdom-2.0.7-np126py312h3bd2861_10.conda
@@ -808,6 +832,7 @@ environments:
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-transmission-interface-4.37.0-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-turtlesim-1.8.3-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-type-description-interfaces-2.0.3-np126py312h3bd2861_10.conda
+      - conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-udp-bridge-0.0.0-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-uncrustify-vendor-3.0.1-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-unique-identifier-msgs-2.5.0-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-urdf-2.10.0-np126py312h3bd2861_10.conda
@@ -927,31 +952,6 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/zstandard-0.25.0-py312h5253ce2_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/zstd-1.5.7-hb8e6e7a_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/zziplib-0.13.69-he45264a_2.conda
-      - conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-bio-ik-2.0.0-np126py312h3bd2861_10.conda
-      - conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-bio-ik-msgs-0.0.0-np126py312h3bd2861_10.conda
-      - conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-biped-interfaces-0.0.0-np126py312h3bd2861_10.conda
-      - conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-bitbots-tf-buffer-1.0.0-np126py312h3bd2861_10.conda
-      - conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-dynamic-stack-decider-0.5.3-np126py312h3bd2861_10.conda
-      - conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-dynamic-stack-decider-visualization-0.2.1-np126py312h3bd2861_10.conda
-      - conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-game-controller-hl-1.1.0-np126py312h3bd2861_10.conda
-      - conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-game-controller-hl-interfaces-0.0.1-np126py312h3bd2861_10.conda
-      - conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-gazebo-msgs-3.8.0-np126py312h3bd2861_10.conda
-      - conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-humanoid-base-footprint-0.1.2-np126py312h3bd2861_10.conda
-      - conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-imu-complementary-filter-2.1.5-np126py312h3bd2861_10.conda
-      - conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-ipm-image-node-0.0.0-np126py312h5cbfcd5_10.conda
-      - conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-ipm-interfaces-0.0.0-np126py312h3bd2861_10.conda
-      - conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-ipm-library-0.0.0-np126py312h5cbfcd5_10.conda
-      - conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-particle-filter-0.0.1-np126py312h3bd2861_10.conda
-      - conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-ros2-numpy-2.0.9-np126py312h3bd2861_10.conda
-      - conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-ros2-python-extension-1.0.0-np126py312h3bd2861_10.conda
-      - conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-rot-conv-1.1.0-np126py312h3bd2861_10.conda
-      - conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-rviz-imu-plugin-2.1.5-np126py312h3bd2861_10.conda
-      - conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-soccer-field-map-generator-0.0.0-np126py312h5cbfcd5_10.conda
-      - conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-soccer-ipm-0.0.0-np126py312h3bd2861_10.conda
-      - conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-soccer-vision-2d-msgs-1.0.0-np126py312h3bd2861_10.conda
-      - conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-soccer-vision-3d-msgs-1.0.0-np126py312h3bd2861_10.conda
-      - conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-soccer-vision-attribute-msgs-1.0.0-np126py312h3bd2861_10.conda
-      - conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-udp-bridge-0.0.0-np126py312h3bd2861_10.conda
       - pypi: https://files.pythonhosted.org/packages/bc/8a/340a1555ae33d7354dbca4faa54948d76d89a27ceef032c8c3bc661d003e/aiofiles-25.1.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/94/fe/3aed5d0be4d404d12d36ab97e2f1791424d9ca39c2f754a6285d59a3b01d/beautifulsoup4-4.14.2-py3-none-any.whl
       - pypi: git+https://github.com/bit-bots/bitbots_rust_nav#9cd0669b6cd5709ba7d2b83b3fe816177340fbc0
@@ -1672,10 +1672,11 @@ packages:
   - pkg:pypi/colcon-common-extensions?source=hash-mapping
   size: 13032
   timestamp: 1759757821346
-- conda: https://conda.anaconda.org/conda-forge/noarch/colcon-core-0.19.0-pyhd8ed1ab_1.conda
-  sha256: 565322c13eb28db869d8de16f5ae14caebb2b58f76c11ab8eaddeb5eaa2e50e9
-  md5: d7c6db7125d9f78ec34451f4b4d471cb
+- conda: https://conda.anaconda.org/conda-forge/noarch/colcon-core-0.20.1-pyhcf101f3_0.conda
+  sha256: 488babf2d1649d60ca2505de6f2bb8f2d66c41805e9ffeba0446a0fd2eeaafc0
+  md5: 243a645c3e76d48a1a62209cd1477d0c
   depends:
+  - python >=3.10
   - coloredlogs
   - distlib
   - empy
@@ -1683,15 +1684,16 @@ packages:
   - pytest-cov
   - pytest-repeat
   - pytest-rerunfailures
-  - python >=3.9
-  - setuptools >=30.3.0
+  - setuptools >=30.3.0,<80
+  - tomli >=1.0.0
+  - python
   license: Apache-2.0
   license_family: APACHE
   purls:
   - pkg:pypi/colcon-core?source=hash-mapping
   - pkg:pypi/colcon-distutils-commands?source=hash-mapping
-  size: 88696
-  timestamp: 1742163247059
+  size: 95568
+  timestamp: 1759822473386
 - conda: https://conda.anaconda.org/conda-forge/noarch/colcon-defaults-0.2.9-pyhd8ed1ab_1.conda
   sha256: dd89f3e92a80532b9c6427ec9dd12742be9e27c3d6639555a4f786787fb5f33d
   md5: 1bc984ddc9434fd2fdabde2e0e44dd14
@@ -8409,8 +8411,7 @@ packages:
   license: BSD-3-Clause
   size: 333536
   timestamp: 1759134113567
-- conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-bio-ik-2.0.0-np126py312h3bd2861_10.conda
-  subdir: linux-64
+- conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-bio-ik-2.0.0-np126py312h3bd2861_10.conda
   sha256: 613657695674e551f7c7aa91d0351887b8d8e3d4f026999f90cb12dd3650ae12
   md5: 58a6f78e76f806c04551d52768eccb32
   depends:
@@ -8433,12 +8434,10 @@ packages:
   - python_abi 3.12.* *_cp312
   - ros2-distro-mutex >=0.11.0,<0.12.0a0
   - numpy >=1.26.4,<2.0a0
-  channel: file:///homes/17vahl/robostack_vendor/ros-jazzy/output
   license: BSD-3-Clause
   size: 386910
   timestamp: 1763895791249
-- conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-bio-ik-msgs-0.0.0-np126py312h3bd2861_10.conda
-  subdir: linux-64
+- conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-bio-ik-msgs-0.0.0-np126py312h3bd2861_10.conda
   sha256: c09bb8e1b0e455a4bc63b0c2b32a8e471b01607b3b55286688d32d60f7579e9e
   md5: d064df553420aa233bb6a0203e2f8f40
   depends:
@@ -8456,12 +8455,10 @@ packages:
   - python_abi 3.12.* *_cp312
   - ros2-distro-mutex >=0.11.0,<0.12.0a0
   - numpy >=1.26.4,<2.0a0
-  channel: file:///homes/17vahl/robostack_vendor/ros-jazzy/output
   license: BSD-3-Clause
   size: 410833
   timestamp: 1763898713367
-- conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-biped-interfaces-0.0.0-np126py312h3bd2861_10.conda
-  subdir: linux-64
+- conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-biped-interfaces-0.0.0-np126py312h3bd2861_10.conda
   sha256: 262fc9b41c679b0e211cb2609bb7b14b3ec456f5158f29d96ff7deb4d2ec53d3
   md5: 9869da4559cdd8b935f43e4d3898f204
   depends:
@@ -8478,12 +8475,10 @@ packages:
   - python_abi 3.12.* *_cp312
   - numpy >=1.26.4,<2.0a0
   - ros2-distro-mutex >=0.11.0,<0.12.0a0
-  channel: file:///homes/17vahl/robostack_vendor/ros-jazzy/output
   license: BSD-3-Clause
   size: 88965
   timestamp: 1763897835674
-- conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-bitbots-tf-buffer-1.0.0-np126py312h3bd2861_10.conda
-  subdir: linux-64
+- conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-bitbots-tf-buffer-1.0.0-np126py312h3bd2861_10.conda
   sha256: aa054d9ee7acdecdf696d3fe9709bf6dedd86f362d0edcc26c0906c103b7bd9e
   md5: 8c01f716fe10049d5ed447300522ae42
   depends:
@@ -8507,7 +8502,6 @@ packages:
   - ros2-distro-mutex >=0.11.0,<0.12.0a0
   - numpy >=1.26.4,<2.0a0
   - python_abi 3.12.* *_cp312
-  channel: file:///homes/17vahl/robostack_vendor/ros-jazzy/output
   license: BSD-3-Clause
   size: 243077
   timestamp: 1763898713618
@@ -9274,8 +9268,7 @@ packages:
   license: BSD-3-Clause
   size: 118414
   timestamp: 1759138298663
-- conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-dynamic-stack-decider-0.5.3-np126py312h3bd2861_10.conda
-  subdir: linux-64
+- conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-dynamic-stack-decider-0.5.3-np126py312h3bd2861_10.conda
   sha256: 6d80f4ca9c8ce3b40c34510db98b9e4be6ec9b70dbc3f72f8cb76460d2232609
   md5: 6dcbf5d108ca2ade7f72a7de04fd3d98
   depends:
@@ -9293,12 +9286,10 @@ packages:
   - numpy >=1.26.4,<2.0a0
   - ros2-distro-mutex >=0.11.0,<0.12.0a0
   - python_abi 3.12.* *_cp312
-  channel: file:///homes/17vahl/robostack_vendor/ros-jazzy/output
   license: BSD-3-Clause
   size: 65670
   timestamp: 1763898958458
-- conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-dynamic-stack-decider-visualization-0.2.1-np126py312h3bd2861_10.conda
-  subdir: linux-64
+- conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-dynamic-stack-decider-visualization-0.2.1-np126py312h3bd2861_10.conda
   sha256: 7944cc2206f065cde8ddb78c1367828ca6a2263148179557c83bcecd1dff41ab
   md5: c09990039bca38f790b7f20674b4cd8d
   depends:
@@ -9318,7 +9309,6 @@ packages:
   - numpy >=1.26.4,<2.0a0
   - ros2-distro-mutex >=0.11.0,<0.12.0a0
   - python_abi 3.12.* *_cp312
-  channel: file:///homes/17vahl/robostack_vendor/ros-jazzy/output
   license: BSD-3-Clause
   size: 51848
   timestamp: 1763900423945
@@ -9801,8 +9791,7 @@ packages:
   license: BSD-3-Clause
   size: 1039491
   timestamp: 1759140904325
-- conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-game-controller-hl-1.1.0-np126py312h3bd2861_10.conda
-  subdir: linux-64
+- conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-game-controller-hl-1.1.0-np126py312h3bd2861_10.conda
   sha256: 5f01c92d528169f5c5cbabffeb5b88709b08736f848992c0146bbb543e241e47
   md5: f6e72ed7f1ac8674dc5b65ca23682c3b
   depends:
@@ -9821,12 +9810,10 @@ packages:
   - python_abi 3.12.* *_cp312
   - ros2-distro-mutex >=0.11.0,<0.12.0a0
   - numpy >=1.26.4,<2.0a0
-  channel: file:///homes/17vahl/robostack_vendor/ros-jazzy/output
   license: BSD-3-Clause
   size: 49128
   timestamp: 1763895791197
-- conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-game-controller-hl-interfaces-0.0.1-np126py312h3bd2861_10.conda
-  subdir: linux-64
+- conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-game-controller-hl-interfaces-0.0.1-np126py312h3bd2861_10.conda
   sha256: 2f37cb2dfb682f520e361ab7390cb0adb73554f43b34bbe5c7248495d8e9fc35
   md5: 6a27e75103e47432a92196a28c99bcf5
   depends:
@@ -9842,12 +9829,10 @@ packages:
   - python_abi 3.12.* *_cp312
   - numpy >=1.26.4,<2.0a0
   - ros2-distro-mutex >=0.11.0,<0.12.0a0
-  channel: file:///homes/17vahl/robostack_vendor/ros-jazzy/output
   license: BSD-3-Clause
   size: 101332
   timestamp: 1763895791362
-- conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-gazebo-msgs-3.8.0-np126py312h3bd2861_10.conda
-  subdir: linux-64
+- conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-gazebo-msgs-3.8.0-np126py312h3bd2861_10.conda
   sha256: 254c8620ed02dbc801a5ffa464c10c1698f751e118fe7978450bc1cca79f1d54
   md5: 1a028ade43b05b29d17d09f03a9cd069
   depends:
@@ -9865,7 +9850,6 @@ packages:
   - python_abi 3.12.* *_cp312
   - ros2-distro-mutex >=0.11.0,<0.12.0a0
   - numpy >=1.26.4,<2.0a0
-  channel: file:///homes/17vahl/robostack_vendor/ros-jazzy/output
   license: BSD-3-Clause
   size: 1308487
   timestamp: 1763904047962
@@ -10162,8 +10146,7 @@ packages:
   license: BSD-3-Clause
   size: 426204
   timestamp: 1759139499957
-- conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-humanoid-base-footprint-0.1.2-np126py312h3bd2861_10.conda
-  subdir: linux-64
+- conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-humanoid-base-footprint-0.1.2-np126py312h3bd2861_10.conda
   sha256: a51a422df2d038ece7112629e0e2ea40bd46e6093e0d6f6515da404e261f62ef
   md5: 8fa5ce27dca75f86d710db40bca6e8c4
   depends:
@@ -10184,7 +10167,6 @@ packages:
   - numpy >=1.26.4,<2.0a0
   - python_abi 3.12.* *_cp312
   - ros2-distro-mutex >=0.11.0,<0.12.0a0
-  channel: file:///homes/17vahl/robostack_vendor/ros-jazzy/output
   license: BSD-3-Clause
   size: 247872
   timestamp: 1763897835576
@@ -10418,8 +10400,7 @@ packages:
   license: BSD-3-Clause
   size: 437472
   timestamp: 1759139246351
-- conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-imu-complementary-filter-2.1.5-np126py312h3bd2861_10.conda
-  subdir: linux-64
+- conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-imu-complementary-filter-2.1.5-np126py312h3bd2861_10.conda
   sha256: 0d3c6339e5692d4399e12e7cb268c6557d92ca78232c32ba3d87e2502f0175f9
   md5: 5fc2af3aaf569bcce05ca9a28601faaa
   depends:
@@ -10433,7 +10414,6 @@ packages:
   - python_abi 3.12.* *_cp312
   - ros2-distro-mutex >=0.11.0,<0.12.0a0
   - numpy >=1.26.4,<2.0a0
-  channel: file:///homes/17vahl/robostack_vendor/ros-jazzy/output
   license: BSD-3-Clause
   size: 300855
   timestamp: 1763892435005
@@ -10494,8 +10474,7 @@ packages:
   license: BSD-3-Clause
   size: 498439
   timestamp: 1759138296940
-- conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-ipm-image-node-0.0.0-np126py312h5cbfcd5_10.conda
-  subdir: linux-64
+- conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-ipm-image-node-0.0.0-np126py312h5cbfcd5_10.conda
   sha256: 429537d34b955fef278f509facd759fe053c301a72e142b4f3c69a529c08e6bf
   md5: 2b551c87f359927e097848da199c054b
   depends:
@@ -10520,12 +10499,10 @@ packages:
   - ros2-distro-mutex >=0.11.0,<0.12.0a0
   - py-opencv >=4.11.0,<5.0a0
   - python_abi 3.12.* *_cp312
-  channel: file:///homes/17vahl/robostack_vendor/ros-jazzy/output
   license: BSD-3-Clause
   size: 60948
   timestamp: 1763898713451
-- conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-ipm-interfaces-0.0.0-np126py312h3bd2861_10.conda
-  subdir: linux-64
+- conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-ipm-interfaces-0.0.0-np126py312h3bd2861_10.conda
   sha256: e5790ee0c147b97597456de68718678d12121496ac39bc0e319ed3d39f551111
   md5: b840e580c7710e92cca1b8d51ef82a9b
   depends:
@@ -10544,12 +10521,10 @@ packages:
   - python_abi 3.12.* *_cp312
   - ros2-distro-mutex >=0.11.0,<0.12.0a0
   - numpy >=1.26.4,<2.0a0
-  channel: file:///homes/17vahl/robostack_vendor/ros-jazzy/output
   license: BSD-3-Clause
   size: 172022
   timestamp: 1763895791558
-- conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-ipm-library-0.0.0-np126py312h5cbfcd5_10.conda
-  subdir: linux-64
+- conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-ipm-library-0.0.0-np126py312h5cbfcd5_10.conda
   sha256: 4bd3172a08ea1f72c585413742886a3c832e9722a32db5ccb917d5e5d755b449
   md5: 071393d6c4cd86bd66083cb40910237d
   depends:
@@ -10576,7 +10551,6 @@ packages:
   - python_abi 3.12.* *_cp312
   - ros2-distro-mutex >=0.11.0,<0.12.0a0
   - numpy >=1.26.4,<2.0a0
-  channel: file:///homes/17vahl/robostack_vendor/ros-jazzy/output
   license: BSD-3-Clause
   size: 65002
   timestamp: 1763895791572
@@ -11961,8 +11935,7 @@ packages:
   license: BSD-3-Clause
   size: 50590
   timestamp: 1759138491031
-- conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-particle-filter-0.0.1-np126py312h3bd2861_10.conda
-  subdir: linux-64
+- conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-particle-filter-0.0.1-np126py312h3bd2861_10.conda
   sha256: ffacdac12be346521394ff6cb2ff561dfe5aa748100213fa3a60da9515c299b2
   md5: 43a01bc1b7a8f881a50088db39c9a581
   depends:
@@ -11983,7 +11956,6 @@ packages:
   - numpy >=1.26.4,<2.0a0
   - ros2-distro-mutex >=0.11.0,<0.12.0a0
   - python_abi 3.12.* *_cp312
-  channel: file:///homes/17vahl/robostack_vendor/ros-jazzy/output
   license: BSD-3-Clause
   size: 230997
   timestamp: 1763901836865
@@ -13191,8 +13163,7 @@ packages:
   license: BSD-3-Clause
   size: 31131
   timestamp: 1759134500444
-- conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-ros2-numpy-2.0.9-np126py312h3bd2861_10.conda
-  subdir: linux-64
+- conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-ros2-numpy-2.0.9-np126py312h3bd2861_10.conda
   sha256: e676fb970f2b62b729de26778983897676e954ad68000db6984f811df3c398c1
   md5: a41f524aa7b8239f2400fd76b5df457b
   depends:
@@ -13211,12 +13182,10 @@ packages:
   - numpy >=1.26.4,<2.0a0
   - ros2-distro-mutex >=0.11.0,<0.12.0a0
   - python_abi 3.12.* *_cp312
-  channel: file:///homes/17vahl/robostack_vendor/ros-jazzy/output
   license: BSD-3-Clause
   size: 56088
   timestamp: 1763901495263
-- conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-ros2-python-extension-1.0.0-np126py312h3bd2861_10.conda
-  subdir: linux-64
+- conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-ros2-python-extension-1.0.0-np126py312h3bd2861_10.conda
   sha256: 0950846a55234e6adcbff25656e0b9c94ca576aab8669d44debc679031f3dcb2
   md5: 478718051dd938014098b3f7a29a8b92
   depends:
@@ -13232,7 +13201,6 @@ packages:
   - python_abi 3.12.* *_cp312
   - numpy >=1.26.4,<2.0a0
   - ros2-distro-mutex >=0.11.0,<0.12.0a0
-  channel: file:///homes/17vahl/robostack_vendor/ros-jazzy/output
   license: BSD-3-Clause
   size: 37284
   timestamp: 1763895791240
@@ -14464,8 +14432,7 @@ packages:
   license: BSD-3-Clause
   size: 221716
   timestamp: 1759139882376
-- conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-rot-conv-1.1.0-np126py312h3bd2861_10.conda
-  subdir: linux-64
+- conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-rot-conv-1.1.0-np126py312h3bd2861_10.conda
   sha256: aa64edd1087e13e39aaacf2407d8f049a009fdbafb9cc1bb0d1b2314c044ebdf
   md5: 95c90e14bc638b7d7216a3d27fdd7f60
   depends:
@@ -14481,7 +14448,6 @@ packages:
   - python_abi 3.12.* *_cp312
   - numpy >=1.26.4,<2.0a0
   - ros2-distro-mutex >=0.11.0,<0.12.0a0
-  channel: file:///homes/17vahl/robostack_vendor/ros-jazzy/output
   license: BSD-3-Clause
   size: 62030
   timestamp: 1763893047114
@@ -15166,8 +15132,7 @@ packages:
   license: BSD-3-Clause
   size: 2285873
   timestamp: 1759140028444
-- conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-rviz-imu-plugin-2.1.5-np126py312h3bd2861_10.conda
-  subdir: linux-64
+- conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-rviz-imu-plugin-2.1.5-np126py312h3bd2861_10.conda
   sha256: 73e70d96c5f60f3f278860ce1374056ef9ecde074988a37a04bc5e6b624bc98c
   md5: 602211c06e1f3cb3f4e52033a97fb17e
   depends:
@@ -15198,7 +15163,6 @@ packages:
   - libopengl >=1.7.0,<2.0a0
   - qt-main >=5.15.15,<5.16.0a0
   - libgl >=1.7.0,<2.0a0
-  channel: file:///homes/17vahl/robostack_vendor/ros-jazzy/output
   license: BSD-3-Clause
   size: 268903
   timestamp: 1763893047088
@@ -15449,8 +15413,7 @@ packages:
   license: BSD-3-Clause
   size: 128005
   timestamp: 1759137079790
-- conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-soccer-field-map-generator-0.0.0-np126py312h5cbfcd5_10.conda
-  subdir: linux-64
+- conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-soccer-field-map-generator-0.0.0-np126py312h5cbfcd5_10.conda
   sha256: 2db48671143f34887b068d6ef98d1f8365feb4042ea00f2755fd82b8dbcf70e8
   md5: 407760b67de2d16a40bb87f5ea1051dc
   depends:
@@ -15474,12 +15437,10 @@ packages:
   - python_abi 3.12.* *_cp312
   - py-opencv >=4.11.0,<5.0a0
   - ros2-distro-mutex >=0.11.0,<0.12.0a0
-  channel: file:///homes/17vahl/robostack_vendor/ros-jazzy/output
   license: BSD-3-Clause
   size: 60806
   timestamp: 1763898713582
-- conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-soccer-ipm-0.0.0-np126py312h3bd2861_10.conda
-  subdir: linux-64
+- conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-soccer-ipm-0.0.0-np126py312h3bd2861_10.conda
   sha256: 8f878dc12457847db3fe84d004d23bb784163f323d3db5bf50a67fe15dcb48f3
   md5: cb61cd2565d3e57eb3fcca7f94832ef1
   depends:
@@ -15503,12 +15464,10 @@ packages:
   - python_abi 3.12.* *_cp312
   - ros2-distro-mutex >=0.11.0,<0.12.0a0
   - numpy >=1.26.4,<2.0a0
-  channel: file:///homes/17vahl/robostack_vendor/ros-jazzy/output
   license: BSD-3-Clause
   size: 35909
   timestamp: 1763895791231
-- conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-soccer-vision-2d-msgs-1.0.0-np126py312h3bd2861_10.conda
-  subdir: linux-64
+- conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-soccer-vision-2d-msgs-1.0.0-np126py312h3bd2861_10.conda
   sha256: d80a9920bfd5196b9129762f6de12642a8a46c6a4cf2b8a1e66b15cefe122364
   md5: 5e8b18102a31684f844ecbf81eca5082
   depends:
@@ -15524,12 +15483,10 @@ packages:
   - ros2-distro-mutex >=0.11.0,<0.12.0a0
   - numpy >=1.26.4,<2.0a0
   - python_abi 3.12.* *_cp312
-  channel: file:///homes/17vahl/robostack_vendor/ros-jazzy/output
   license: BSD-3-Clause
   size: 234015
   timestamp: 1763895791530
-- conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-soccer-vision-3d-msgs-1.0.0-np126py312h3bd2861_10.conda
-  subdir: linux-64
+- conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-soccer-vision-3d-msgs-1.0.0-np126py312h3bd2861_10.conda
   sha256: 856de31d8fd156f136e5bba0e9fb89739b4a87cb4ae115a734998eff4e9a7de3
   md5: ff1ce764e847535772f57ef0ebd0738a
   depends:
@@ -15546,12 +15503,10 @@ packages:
   - numpy >=1.26.4,<2.0a0
   - python_abi 3.12.* *_cp312
   - ros2-distro-mutex >=0.11.0,<0.12.0a0
-  channel: file:///homes/17vahl/robostack_vendor/ros-jazzy/output
   license: BSD-3-Clause
   size: 233642
   timestamp: 1763892800762
-- conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-soccer-vision-attribute-msgs-1.0.0-np126py312h3bd2861_10.conda
-  subdir: linux-64
+- conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-soccer-vision-attribute-msgs-1.0.0-np126py312h3bd2861_10.conda
   sha256: 3666bc340ccac49e320957c2f5dc4942c94fe93422728f93f89a32eae570833b
   md5: ea5c222d984676f3065e031451ae22c4
   depends:
@@ -15566,7 +15521,6 @@ packages:
   - ros2-distro-mutex >=0.11.0,<0.12.0a0
   - python_abi 3.12.* *_cp312
   - numpy >=1.26.4,<2.0a0
-  channel: file:///homes/17vahl/robostack_vendor/ros-jazzy/output
   license: BSD-3-Clause
   size: 96789
   timestamp: 1763892800737
@@ -16431,8 +16385,7 @@ packages:
   license: BSD-3-Clause
   size: 232014
   timestamp: 1759136425687
-- conda: /homes/17vahl/robostack_vendor/ros-jazzy/output/linux-64/ros-jazzy-udp-bridge-0.0.0-np126py312h3bd2861_10.conda
-  subdir: linux-64
+- conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-udp-bridge-0.0.0-np126py312h3bd2861_10.conda
   sha256: 73e9839b498d074abfc658261929af82cf9c9fe1400bebdbcaf8438525a1e5bf
   md5: 0d7bda31f50c28b1fc7b425a6e57d1f6
   depends:
@@ -16448,7 +16401,6 @@ packages:
   - ros2-distro-mutex >=0.11.0,<0.12.0a0
   - numpy >=1.26.4,<2.0a0
   - python_abi 3.12.* *_cp312
-  channel: file:///homes/17vahl/robostack_vendor/ros-jazzy/output
   license: BSD-3-Clause
   size: 46002
   timestamp: 1763898713395
