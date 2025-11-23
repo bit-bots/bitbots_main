@@ -83,7 +83,7 @@ class PathPlanning(NodeWithConfig):
                 # Publish the walk command to control the robot
                 if self.planner.close_to_ball():
                     # self.cmd_vel_pub.publish(cmd_vel)
-                    self.step_publish_test(cmd_vel)
+                    self.step_publish_test()
                 else:
                     self.cmd_vel_pub.publish(cmd_vel)
                 # Publish the carrot point for visualization
@@ -91,10 +91,9 @@ class PathPlanning(NodeWithConfig):
         except Exception as e:
             self.get_logger().error(f"Caught exception during calculation of path planning step: {e}")
 
-    def step_publish_test(self, cmd_vel):
-        if self.foot_changed or (self.last_cmd_vel.angular.x != 0 and cmd_vel.angular.x == 0):
+    def step_publish_test(self):
+        if self.foot_changed or (self.last_cmd_vel.angular.x != 0):
             self.foot_changed = False
-            self.last_cmd_vel = cmd_vel
             # factor = (1.0 / 1.2) / 2.0
             next_step_vec = self.simple_planner.step()
 

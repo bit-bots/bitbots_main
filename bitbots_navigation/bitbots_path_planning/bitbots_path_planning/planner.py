@@ -2,16 +2,19 @@ import math
 from abc import ABC, abstractmethod
 from typing import Optional
 
+import numpy as np
+import numpy.typing as npt
 import soccer_vision_3d_msgs.msg as sv3dm
 import tf2_ros as tf2
 from bitbots_rust_nav import ObstacleMap, ObstacleMapConfig, RoundObstacle
-from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import Pose, PoseStamped
 from nav_msgs.msg import Path
 from rclpy.duration import Duration
 from rclpy.time import Time
 from ros2_numpy import numpify
 from std_msgs.msg import Header
 from tf2_geometry_msgs import PointStamped, PoseWithCovarianceStamped
+from tf_transformations import euler_from_quaternion
 
 from bitbots_path_planning import NodeWithConfig
 
@@ -47,6 +50,14 @@ class Planner(ABC):
 
     @abstractmethod
     def step(self) -> Path:
+        pass
+
+    @abstractmethod
+    def _get_yaw(self, pose: Pose) -> float:
+        pass
+
+    @abstractmethod
+    def rotate_vector_2d(self, x, y, a) -> npt.NDArray[np.float64]:
         pass
 
 
@@ -125,9 +136,32 @@ class VisibilityPlanner(Planner):
             self.frame, self.base_footprint_frame, Time(), Duration(seconds=0.2)
         ).transform.translation
 
-        dist = (my_position.x - self.goal.pose.position.x) ** 2 + (my_position.y - self.goal.pose.position.y) ** 2
+        # Create an default pose in the origin of our base footprint
+        pose_geometry_msgs = PoseStamped()
+        pose_geometry_msgs.header.frame_id = self.node.config.base_footprint_frame
 
-        return math.sqrt(dist) < 0.15
+        # We get our pose in respect to the map frame (also frame of the path message)
+        # by transforming the pose above into this frame
+        try:
+            current_pose: Pose = self.buffer.transform(pose_geometry_msgs, self.frame).pose
+        except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
+            self.node.get_logger().warn("Failed to perform controller step: " + str(e))
+            return np.array([0, 0, 0.0, 0.0])
+
+        offset_vec = self.rotate_vector_2d(0.15, 0.00, self._get_yaw(self.goal.pose))
+        optimum_point_x = self.goal.pose.position.x - offset_vec[0]
+        optimum_point_y = self.goal.pose.position.y - offset_vec[1]
+
+        dist_opt = math.hypot((my_position.x - optimum_point_x), (my_position.y - optimum_point_y))
+        dist = math.hypot((my_position.x - self.goal.pose.position.x), (my_position.y - self.goal.pose.position.y))
+
+        self.node.get_logger().warn(
+            "rot diff: " + str(abs(self._get_yaw(current_pose) - self._get_yaw(self.goal.pose)))
+        )
+
+        return (
+            dist < 0.15 and dist_opt < 0.18 and abs(self._get_yaw(current_pose) - self._get_yaw(self.goal.pose)) < 0.3
+        )
 
     def step(self) -> Path:
         """
@@ -170,3 +204,15 @@ class VisibilityPlanner(Planner):
             header=Header(frame_id=self.frame, stamp=self.node.get_clock().now().to_msg()),
             poses=list(map(map_to_pose, path)) + [self.goal],
         )
+
+    # def rotate_vector_2d(self, x, y, a) -> npt.NDArray[np.float64]:
+    #     return np.array([x * math.cos(a) - y * math.sin(a), x * math.sin(a) + y * math.cos(a)])
+
+    def _get_yaw(self, pose: Pose) -> float:
+        """
+        Returns the yaw angle of a given pose
+        """
+        return euler_from_quaternion(numpify(pose.orientation))[2]
+
+    def rotate_vector_2d(self, x, y, a) -> npt.NDArray[np.float64]:
+        return np.array([x * math.cos(a) - y * math.sin(a), x * math.sin(a) + y * math.cos(a)])
