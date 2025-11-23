@@ -13,6 +13,11 @@ walking:
       kick_phase: 0.28
       kick_put_down_phase: 0.8
       kick_rise_factor: 1.5
+      kick_early_pitch_prevention_phase: 0.4
+      kick_pitch_downwards_phase: 0.9
+      kick_pitch_downwards: 0.8
+      kick_pitch_upwards_phase: 1.1
+      kick_pitch_upwards: -0.9
 
       double_support_ratio: 0.0264282002140171
       first_step_swing_factor: 2.9
