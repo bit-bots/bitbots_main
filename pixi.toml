@@ -149,6 +149,7 @@ ros-jazzy-bitbots-dynamixel-sdk = ">=3.7.21,<4"
 ros-jazzy-dynamixel-workbench-toolbox = ">=0.1.8,<0.2"
 ipython = ">=9.7.0,<10"
 ros-jazzy-better-launch = ">=1.0.2,<2"
+pillow = "<12" # this constraint is needed as yoeo specifies the 11 major version and otherwise uv fails to solve given the constrains from the conda ecosystem.
 
 [pypi-dependencies]
 syrupy = ">=5.0.0, <6"
@@ -157,6 +158,7 @@ pyamdgpuinfo = ">=2.1.7, <3"
 mycroft-mimic3-tts = ">=0.2.4, <0.3"
 pyttsx3 = ">=2.99, <3"
 bitbots-rust-nav = { git = "https://github.com/bit-bots/bitbots_rust_nav" }
+yoeo = { git = "https://github.com/bit-bots/YOEO" }
 
 [activation]
 scripts = ["install/setup.sh"]
