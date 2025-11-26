@@ -244,5 +244,6 @@
         "build": true,
         "install": true,
         "log": true,
+        ".pixi": true,
     },
 }
