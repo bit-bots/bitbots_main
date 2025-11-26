@@ -8,8 +8,9 @@ enable_bitbots_docs()
 
 install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
-install(DIRECTORY rl_walk_models DESTINATION share/${PROJECT_NAME})
-
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/rl_walk_models")
+    install(DIRECTORY rl_walk_models DESTINATION share/${PROJECT_NAME})
+endif()
 install(PROGRAMS scripts/rl_walk.py DESTINATION lib/${PROJECT_NAME})
 
 ament_package()
