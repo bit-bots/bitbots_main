@@ -153,7 +153,7 @@ ros-jazzy-gazebo-msgs = ">=3.8.0,<4"
 ros-jazzy-bitbots-dynamixel-sdk = ">=3.7.21,<4"
 ros-jazzy-dynamixel-workbench-toolbox = ">=0.1.8,<0.2"
 ipython = ">=9.7.0,<10"
-ros-jazzy-better-launch = ">=1.0.2,<2"
+ros-jazzy-better-launch = ">=1.0.3,<2"
 pillow = "<12" # this constraint is needed as yoeo specifies the 11 major version and otherwise uv fails to solve given the constrains from the conda ecosystem.
 
 [pypi-dependencies]
