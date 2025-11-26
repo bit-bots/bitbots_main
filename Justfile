@@ -18,18 +18,6 @@ install-basler:
 install-webots:
 	scripts/make_webots.sh {{ if CI != "" {"--ci"} else {""} }}
 
-# Install all dependencies, pull all repositories, ...
-install: pull-init install-basler install-webots update
-
-# Same as install but without sudo commands (apt/ros dependencies must be already installed on the system)
-install-no-root: pull-init update-no-root
-
-# Install python dependencies
-pip:
-    # Install and upgrade pip dependencies
-    pip install --upgrade pip --user --break-system-packages -v
-    pip install --upgrade -r requirements/dev.txt --user --break-system-packages -v
-
 
 # Sets up pre-commit hooks that check code formatting etc. before each commit
 install-pre-commit:
@@ -41,47 +29,10 @@ install-git-filters:
     # Install git filters
     git config filter.removeFullHomePath.clean "sed '/\/\(home\|root\).*\(install\|build\)/d'"
 
-# Formats the code according to our style guidelines
-format:
-    pre-commit run --all-files
-
-# Clones/Overrides all library repositories and pulls all auxiliary files (like neural network weights)
-pull-init: fresh-libs pull-files
-
 # Pull all auxiliary files (like neural network weights) from the http server
 pull-files:
     wget --no-verbose --show-progress --timeout=15 --tries=2 --recursive --timestamping --no-parent --no-host-directories --directory-prefix={{REPO}}/src/bitbots_vision --reject "index.html*" "https://data.bit-bots.de/models/"
     wget --no-verbose --show-progress --timeout=15 --tries=2 --recursive --timestamping --no-parent --no-host-directories --directory-prefix={{REPO}}/src/bitbots_motion/bitbots_rl_motion --reject "index.html*" "https://data.bit-bots.de/rl_walk_models/"
-
-# Remove all library repositories and re-clone them
-fresh-libs: remove-libs clone-libs
-
-# Remove all library repositories
-remove-libs:
-    rm -rf src/lib/*
-    rm -rf src/bitbots_team_communication/bitbots_team_communication/bitbots_team_communication/RobocupProtocol
-    rm src/bitbots_team_communication/bitbots_team_communication/robocup_extension_pb2.py || true
-
-# Clone all library repositories
-clone-libs:
-    if [ "{{HTTPS}}" = "true" ]; then \
-        awk '{sub("git@github.com:", "https://github.com/"); print "  " $$0}' workspace.repos | vcs import .; \
-    else \
-        vcs import . < workspace.repos; \
-    fi
-
-# Install all ROS managed dependencies
-rosdep:
-    [ -f /etc/ros/rosdep/sources.list.d/20-default.list ] || sudo rosdep init
-    rosdep update
-    rosdep install --from-paths src --ignore-src --rosdistro jazzy -y
-
-# Update everything (download all lib repositories, update dependencies, ...)
-update: pull-init rosdep pip install-git-filters
-
-# Same as update but without sudo commands (all apt/ros dependencies must be already installed on the system)
-update-no-root: pull-init pip install-git-filters
-
 
 # Build related targets
 
