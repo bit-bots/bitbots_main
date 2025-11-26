@@ -1,4 +1,4 @@
-import os.path as osp
+import os
 from typing import Optional
 
 import rclpy
@@ -27,17 +27,7 @@ class YOEOObjectManager:
     _framework: str = ""
     _model_config: ModelConfig = ModelConfig()
     _model_path: str = ""
-    _package_directory: str = ""
-    _package_directory_set: bool = False
     _yoeo_instance: Optional[yoeo_handlers.IYOEOHandler] = None
-
-    @classmethod
-    def set_package_directory(cls, package_directory: str) -> None:
-        """
-        Set the package directory. Required before first use in order to have the correct paths for the models.
-        """
-        cls._package_directory = package_directory
-        cls._package_directory_set = True
 
     @classmethod
     def get(cls) -> yoeo_handlers.IYOEOHandler:
@@ -73,13 +63,19 @@ class YOEOObjectManager:
 
     @classmethod
     def configure(cls, config: dict) -> None:
-        if not cls._package_directory_set:
-            logger.error("Package directory not set!")
-
         framework = config["yoeo_framework"]
         cls._verify_framework_parameter(framework)
 
-        model_path = cls._get_full_model_path(config["yoeo_model_path"])
+        conda_prefix = os.environ.get("CONDA_PREFIX", "")
+        if not conda_prefix:
+            raise ValueError("CONDA_PREFIX environment variable not set! We now expect YOEO models to be shared as conda packages.")
+
+        # Assemble model package name and look at its share directory
+        model_path = os.path.join(
+            conda_prefix,
+            "share",
+            "bitbots_model_" + config["yoeo_model_path"])
+
         cls._verify_required_neural_network_files_exist(framework, model_path)
 
         cls._configure_yoeo_instance(config, framework, model_path)
@@ -92,10 +88,6 @@ class YOEOObjectManager:
     def _verify_framework_parameter(framework: str) -> None:
         if framework not in {"openvino", "onnx", "pytorch", "tvm"}:
             logger.error(f"Unknown neural network framework '{framework}'")
-
-    @classmethod
-    def _get_full_model_path(cls, model_path: str) -> str:
-        return osp.join(cls._package_directory, "models", model_path)
 
     @classmethod
     def _verify_required_neural_network_files_exist(cls, framework: str, model_path: str) -> None:
