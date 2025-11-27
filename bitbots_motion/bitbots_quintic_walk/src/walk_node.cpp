@@ -370,8 +370,8 @@ std::array<double, 4> WalkNode::get_step_from_vel(const geometry_msgs::msg::Twis
 void WalkNode::stepCb(const geometry_msgs::msg::Twist::SharedPtr msg) {
   current_request_.linear_orders = {msg->linear.x, msg->linear.y, msg->linear.z};
   current_request_.angular_z = msg->angular.z;
-  current_request_.single_step = true;
-  current_request_.stop_walk = true;
+  current_request_.single_step = false;
+  current_request_.stop_walk = false;
   got_new_goals_ = true;
 }
 

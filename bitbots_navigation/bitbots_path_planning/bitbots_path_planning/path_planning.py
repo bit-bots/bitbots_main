@@ -1,5 +1,6 @@
 import rclpy
 import soccer_vision_3d_msgs.msg as sv3dm
+from biped_interfaces.msg import Phase
 from bitbots_tf_buffer import Buffer
 from geometry_msgs.msg import PointStamped, PoseStamped, PoseWithCovarianceStamped, Twist
 from nav_msgs.msg import Path
@@ -10,6 +11,7 @@ from visualization_msgs.msg import MarkerArray
 
 from bitbots_path_planning import NodeWithConfig
 from bitbots_path_planning.controller import Controller
+from bitbots_path_planning.footstep_planner_simple import VisibilityFootstepPlanner
 from bitbots_path_planning.planner import VisibilityPlanner
 
 
@@ -25,28 +27,43 @@ class PathPlanning(NodeWithConfig):
         self.tf_buffer = Buffer(Duration(seconds=self.config.tf_buffer_duration), self)
 
         self.planner = VisibilityPlanner(node=self, buffer=self.tf_buffer)
+        self.simple_planner = VisibilityFootstepPlanner(node=self, buffer=self.tf_buffer)
         self.controller = Controller(node=self, buffer=self.tf_buffer)
 
         # Subscriber
         self.create_subscription(PoseWithCovarianceStamped, self.config.map.ball_update_topic, self.planner.set_ball, 5)
+        self.create_subscription(
+            PoseWithCovarianceStamped, self.config.map.ball_update_topic, self.simple_planner.set_ball, 5
+        )
         self.create_subscription(sv3dm.RobotArray, self.config.map.robot_update_topic, self.planner.set_robots, 5)
+        self.create_subscription(
+            sv3dm.RobotArray, self.config.map.robot_update_topic, self.simple_planner.set_robots, 5
+        )
         self.goal_sub = self.create_subscription(PoseStamped, "goal_pose", self.planner.set_goal, 5)
+        self.goal_sub = self.create_subscription(PoseStamped, "goal_pose", self.simple_planner.set_goal, 5)
         self.create_subscription(Empty, "pathfinding/cancel", lambda _: self.planner.cancel_goal(), 5)
+        self.create_subscription(Empty, "pathfinding/cancel", lambda _: self.simple_planner.cancel_goal(), 5)
         self.create_subscription(
             Bool,
             "ball_obstacle_active",
             lambda msg: self.planner.avoid_ball(msg.data),  # type: ignore
             5,
         )
+        self.create_subscription(Phase, "walk_support_state", self.update_foot_change, 1)
 
         # Publisher
         self.cmd_vel_pub = self.create_publisher(Twist, "cmd_vel", 1)
+        self.step_pub = self.create_publisher(Twist, "step", 1)
         self.path_pub = self.create_publisher(Path, "path", 1)
         self.carrot_pub = self.create_publisher(PointStamped, "carrot", 1)
         self.graph_pub = self.create_publisher(MarkerArray, "visibility_graph", 1)
 
         # Timer that updates the path and command velocity at a given rate
         self.create_timer(1 / self.config.rate, self.step, clock=self.get_clock())
+
+        self.foot_changed = True
+        self.last_phase = Phase()
+        self.last_cmd_vel = Twist()
 
     def step(self) -> None:
         """
@@ -64,11 +81,45 @@ class PathPlanning(NodeWithConfig):
                 # Calculate the command velocity to follow the given path
                 cmd_vel, carrot_point = self.controller.step(path)
                 # Publish the walk command to control the robot
-                self.cmd_vel_pub.publish(cmd_vel)
+                if self.planner.close_to_ball():
+                    # self.cmd_vel_pub.publish(cmd_vel)
+                    self.step_publish_test()
+                else:
+                    self.cmd_vel_pub.publish(cmd_vel)
                 # Publish the carrot point for visualization
                 self.carrot_pub.publish(carrot_point)
         except Exception as e:
             self.get_logger().error(f"Caught exception during calculation of path planning step: {e}")
+
+    def step_publish_test(self):
+        if self.foot_changed or (self.last_cmd_vel.angular.x != 0):
+            self.foot_changed = False
+            # factor = (1.0 / 1.2) / 2.0
+            next_step_vec = self.simple_planner.step()
+
+            step = [
+                # cmd_vel.linear.x * factor,
+                # cmd_vel.linear.y * factor * 2,
+                # cmd_vel.linear.z * factor,
+                # cmd_vel.angular.z * factor,
+                next_step_vec[0],
+                next_step_vec[1],
+                next_step_vec[2],
+                next_step_vec[3],
+            ]
+
+            step_msg = Twist()
+            step_msg.linear.x = step[0]
+            step_msg.linear.y = step[1]
+            step_msg.linear.z = step[2]
+            step_msg.angular.z = step[3]
+
+            self.step_pub.publish(step_msg)
+
+    def update_foot_change(self, msg: Phase):
+        if self.last_phase.phase != msg.phase:
+            self.foot_changed = True
+            self.last_phase = msg
 
 
 def main(args=None):

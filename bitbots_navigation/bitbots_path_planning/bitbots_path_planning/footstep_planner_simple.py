@@ -6,20 +6,18 @@ import numpy as np
 import numpy.typing as npt
 import soccer_vision_3d_msgs.msg as sv3dm
 import tf2_ros as tf2
-from bitbots_rust_nav import ObstacleMap, ObstacleMapConfig, RoundObstacle
+from bitbots_rust_nav import RoundObstacle
 from geometry_msgs.msg import Pose, PoseStamped
 from nav_msgs.msg import Path
-from rclpy.duration import Duration
 from rclpy.time import Time
 from ros2_numpy import numpify
-from std_msgs.msg import Header
 from tf2_geometry_msgs import PointStamped, PoseWithCovarianceStamped
 from tf_transformations import euler_from_quaternion
 
 from bitbots_path_planning import NodeWithConfig
 
 
-class Planner(ABC):
+class FootstepPlanner(ABC):
     @abstractmethod
     def set_goal(self, pose: PoseStamped) -> None:
         pass
@@ -45,23 +43,11 @@ class Planner(ABC):
         pass
 
     @abstractmethod
-    def close_to_ball(self) -> bool:
-        pass
-
-    @abstractmethod
     def step(self) -> Path:
         pass
 
-    @abstractmethod
-    def _get_yaw(self, pose: Pose) -> float:
-        pass
 
-    @abstractmethod
-    def rotate_vector_2d(self, x, y, a) -> npt.NDArray[np.float64]:
-        pass
-
-
-class VisibilityPlanner(Planner):
+class VisibilityFootstepPlanner(FootstepPlanner):
     def __init__(self, node: NodeWithConfig, buffer: tf2.BufferInterface) -> None:
         self.node = node
         self.buffer = buffer
@@ -72,6 +58,7 @@ class VisibilityPlanner(Planner):
         self.ball_obstacle_active: bool = True
         self.frame: str = self.node.config.map.planning_frame
 
+    # Roboter erstmal außenvor gelassen
     def set_robots(self, robots: sv3dm.RobotArray):
         new_buffer: list[RoundObstacle] = []
         for robot in robots.robots:
@@ -128,13 +115,26 @@ class VisibilityPlanner(Planner):
         """
         return self.goal is not None
 
-    def close_to_ball(self) -> bool:
+    def step(self) -> npt.NDArray[np.float64]:
         """
-        Determine if we are close enough to the ball to start footstep planning
+        Computes the next step to the goal
         """
-        my_position = self.buffer.lookup_transform(
-            self.frame, self.base_footprint_frame, Time(), Duration(seconds=0.2)
-        ).transform.translation
+        assert self.goal is not None, "No goal set"
+
+        offset_vec = self.rotate_vector_2d(0.04, 0.00, self._get_yaw(self.goal.pose))
+        if self._get_yaw(self.goal.pose) < -0.05:
+            self.node.get_logger().warn("Offset for negative used")
+            offset_vec = self.rotate_vector_2d(0.4, -0.3, self._get_yaw(self.goal.pose))
+        if self._get_yaw(self.goal.pose) > 0.05:
+            self.node.get_logger().warn("Offset for positive used")
+            offset_vec = self.rotate_vector_2d(0.06, 0.05, self._get_yaw(self.goal.pose))
+        # Define goal
+        goal = (
+            self.goal.pose.position.x - offset_vec[0],
+            self.goal.pose.position.y - offset_vec[1],
+            self.goal.pose.orientation.z,
+            self.goal.pose.orientation.w,
+        )
 
         # Create an default pose in the origin of our base footprint
         pose_geometry_msgs = PoseStamped()
@@ -148,71 +148,29 @@ class VisibilityPlanner(Planner):
             self.node.get_logger().warn("Failed to perform controller step: " + str(e))
             return np.array([0, 0, 0.0, 0.0])
 
-        offset_vec = self.rotate_vector_2d(0.15, 0.00, self._get_yaw(self.goal.pose))
-        optimum_point_x = self.goal.pose.position.x - offset_vec[0]
-        optimum_point_y = self.goal.pose.position.y - offset_vec[1]
+        start = (current_pose.position.x, current_pose.position.y)
 
-        dist_opt = math.hypot((my_position.x - optimum_point_x), (my_position.y - optimum_point_y))
-        dist = math.hypot((my_position.x - self.goal.pose.position.x), (my_position.y - self.goal.pose.position.y))
+        max_x = 0.03
+        max_y = 0.07
+        dist_x = abs(goal[0] - start[0])
+        dist_y = abs(goal[1] - start[1])
 
-        self.node.get_logger().warn(
-            "rot diff: " + str(abs(self._get_yaw(current_pose) - self._get_yaw(self.goal.pose)))
-        )
+        needed_steps = max(math.ceil(dist_x / max_x), math.ceil(dist_y / max_y))
+        # self.node.get_logger().info(str(dist_x) + " " + str(dist_y))
 
-        return (
-            dist < 0.15 and dist_opt < 0.18 and abs(self._get_yaw(current_pose) - self._get_yaw(self.goal.pose)) < 0.3
-        )
+        angle = self._get_yaw(current_pose)
 
-    def step(self) -> Path:
-        """
-        Computes the next path to the goal
-        """
-        assert self.goal is not None, "No goal set"
-        # Define goal
-        goal = (self.goal.pose.position.x, self.goal.pose.position.y)
-        # Get our current position
-        my_position = self.buffer.lookup_transform(
-            self.frame, self.base_footprint_frame, Time(), Duration(seconds=0.2)
-        ).transform.translation
-        start = (my_position.x, my_position.y)
+        rot_vec = self.rotate_vector_2d(goal[0] - start[0], goal[1] - start[1], angle)
 
-        # Configure how obstacles are represented
-        config = ObstacleMapConfig(
-            robot_radius=self.node.config.map.inflation.robot_radius,
-            margin=self.node.config.map.inflation.obstacle_margin,
-            num_vertices=12,
-        )
-        # Add robots to obstacles
-        obstacles = self.robots.copy()
-        # Add ball to obstacles if active
-        if self.ball is not None:
-            obstacles.append(self.ball)
-        obstacle_map = ObstacleMap(config, obstacles)
+        return np.array([rot_vec[0] / needed_steps, (rot_vec[1] / needed_steps), 0.0, 0.0])
 
-        # Calculate the shortest path
-        path = obstacle_map.shortest_path(start, goal)
+        # return np.array([1/needed_steps, 1/needed_steps,0.0,0.0])
 
-        # Convert the path to a ROS messages
-        def map_to_pose(position):
-            pose = PoseStamped()
-            pose.pose.position.x = position[0]
-            pose.pose.position.y = position[1]
-            return pose
-
-        # Generate the path message
-        return Path(
-            header=Header(frame_id=self.frame, stamp=self.node.get_clock().now().to_msg()),
-            poses=list(map(map_to_pose, path)) + [self.goal],
-        )
-
-    # def rotate_vector_2d(self, x, y, a) -> npt.NDArray[np.float64]:
-    #     return np.array([x * math.cos(a) - y * math.sin(a), x * math.sin(a) + y * math.cos(a)])
+    def rotate_vector_2d(self, x, y, a) -> npt.NDArray[np.float64]:
+        return np.array([x * math.cos(a) - y * math.sin(a), x * math.sin(a) + y * math.cos(a)])
 
     def _get_yaw(self, pose: Pose) -> float:
         """
         Returns the yaw angle of a given pose
         """
         return euler_from_quaternion(numpify(pose.orientation))[2]
-
-    def rotate_vector_2d(self, x, y, a) -> npt.NDArray[np.float64]:
-        return np.array([x * math.cos(a) - y * math.sin(a), x * math.sin(a) + y * math.cos(a)])
