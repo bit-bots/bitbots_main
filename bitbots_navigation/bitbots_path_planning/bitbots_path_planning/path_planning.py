@@ -11,6 +11,7 @@ from visualization_msgs.msg import MarkerArray
 
 from bitbots_path_planning import NodeWithConfig
 from bitbots_path_planning.controller import Controller
+from bitbots_path_planning.finalstep_planner import VisibilityFinalstepPlanner
 from bitbots_path_planning.footstep_planner_simple import VisibilityFootstepPlanner
 from bitbots_path_planning.planner import VisibilityPlanner
 
@@ -28,6 +29,7 @@ class PathPlanning(NodeWithConfig):
 
         self.planner = VisibilityPlanner(node=self, buffer=self.tf_buffer)
         self.simple_planner = VisibilityFootstepPlanner(node=self, buffer=self.tf_buffer)
+        self.finalstep_planner = VisibilityFinalstepPlanner(node=self, buffer=self.tf_buffer)
         self.controller = Controller(node=self, buffer=self.tf_buffer)
 
         # Subscriber
@@ -35,18 +37,32 @@ class PathPlanning(NodeWithConfig):
         self.create_subscription(
             PoseWithCovarianceStamped, self.config.map.ball_update_topic, self.simple_planner.set_ball, 5
         )
+        self.create_subscription(
+            PoseWithCovarianceStamped, self.config.map.ball_update_topic, self.finalstep_planner.set_ball, 5
+        )
         self.create_subscription(sv3dm.RobotArray, self.config.map.robot_update_topic, self.planner.set_robots, 5)
         self.create_subscription(
             sv3dm.RobotArray, self.config.map.robot_update_topic, self.simple_planner.set_robots, 5
         )
+        self.create_subscription(
+            sv3dm.RobotArray, self.config.map.robot_update_topic, self.finalstep_planner.set_robots, 5
+        )
         self.goal_sub = self.create_subscription(PoseStamped, "goal_pose", self.planner.set_goal, 5)
         self.goal_sub = self.create_subscription(PoseStamped, "goal_pose", self.simple_planner.set_goal, 5)
+        self.goal_sub = self.create_subscription(PoseStamped, "goal_pose", self.finalstep_planner.set_goal, 5)
         self.create_subscription(Empty, "pathfinding/cancel", lambda _: self.planner.cancel_goal(), 5)
         self.create_subscription(Empty, "pathfinding/cancel", lambda _: self.simple_planner.cancel_goal(), 5)
+        self.create_subscription(Empty, "pathfinding/cancel", lambda _: self.finalstep_planner.cancel_goal(), 5)
         self.create_subscription(
             Bool,
             "ball_obstacle_active",
             lambda msg: self.planner.avoid_ball(msg.data),  # type: ignore
+            5,
+        )
+        self.create_subscription(
+            Bool,
+            "ball_obstacle_active",
+            lambda msg: self.finalstep_planner.avoid_ball(msg.data),  # type: ignore
             5,
         )
         self.create_subscription(Phase, "walk_support_state", self.update_foot_change, 1)
@@ -81,11 +97,13 @@ class PathPlanning(NodeWithConfig):
                 # Calculate the command velocity to follow the given path
                 cmd_vel, carrot_point = self.controller.step(path)
                 # Publish the walk command to control the robot
-                if self.planner.close_to_ball():
+                # insert decision method here
+                if self.planner.ready_for_final_step():
                     # self.cmd_vel_pub.publish(cmd_vel)
-                    self.step_publish_test()
+                    self.finalstep_publish()
                 else:
                     self.cmd_vel_pub.publish(cmd_vel)
+                    self.finalstep_planner.reset_counter()
                 # Publish the carrot point for visualization
                 self.carrot_pub.publish(carrot_point)
         except Exception as e:
@@ -120,6 +138,31 @@ class PathPlanning(NodeWithConfig):
         if self.last_phase.phase != msg.phase:
             self.foot_changed = True
             self.last_phase = msg
+
+    def finalstep_publish(self):
+        if self.foot_changed or (self.last_cmd_vel.angular.x != 0):
+            self.foot_changed = False
+            # factor = (1.0 / 1.2) / 2.0
+            next_step_vec = self.finalstep_planner.step()
+
+            step = [
+                # cmd_vel.linear.x * factor,
+                # cmd_vel.linear.y * factor * 2,
+                # cmd_vel.linear.z * factor,
+                # cmd_vel.angular.z * factor,
+                next_step_vec[0],
+                next_step_vec[1],
+                next_step_vec[2],
+                next_step_vec[3],
+            ]
+
+            step_msg = Twist()
+            step_msg.linear.x = step[0]
+            step_msg.linear.y = step[1]
+            step_msg.linear.z = step[2]
+            step_msg.angular.z = step[3]
+
+            self.step_pub.publish(step_msg)
 
 
 def main(args=None):
