@@ -31,7 +31,8 @@ class PathPlanning(NodeWithConfig):
         self.simple_planner = VisibilityFootstepPlanner(node=self, buffer=self.tf_buffer)
         self.finalstep_planner = VisibilityFinalstepPlanner(node=self, buffer=self.tf_buffer)
         self.controller = Controller(node=self, buffer=self.tf_buffer)
-
+        self.node = self
+        self.finalsteps_pubished = 0
         # Subscriber
         self.create_subscription(PoseWithCovarianceStamped, self.config.map.ball_update_topic, self.planner.set_ball, 5)
         self.create_subscription(
@@ -100,10 +101,10 @@ class PathPlanning(NodeWithConfig):
                 # insert decision method here
                 if self.planner.ready_for_final_step():
                     # self.cmd_vel_pub.publish(cmd_vel)
-                    self.finalstep_publish()
+                    self.finalstep_publish(cmd_vel)
                 else:
                     self.cmd_vel_pub.publish(cmd_vel)
-                    self.finalstep_planner.reset_counter()
+                    self.finalsteps_pubished = 0
                 # Publish the carrot point for visualization
                 self.carrot_pub.publish(carrot_point)
         except Exception as e:
@@ -139,11 +140,18 @@ class PathPlanning(NodeWithConfig):
             self.foot_changed = True
             self.last_phase = msg
 
-    def finalstep_publish(self):
+    def finalstep_publish(self, cmd_vel: Twist):
         if self.foot_changed or (self.last_cmd_vel.angular.x != 0):
             self.foot_changed = False
             # factor = (1.0 / 1.2) / 2.0
-            next_step_vec = self.finalstep_planner.step()
+            self.node.get_logger().info(str(self.last_phase.phase))
+            if self.last_phase.phase != 0 and self.finalsteps_pubished == 0:
+                self.cmd_vel_pub.publish(cmd_vel)
+                self.node.get_logger().info("finalstep star skiped: wrong phase")
+                return
+
+            next_step_vec = self.finalstep_planner.step(self.finalsteps_pubished)
+            self.finalsteps_pubished += 1
 
             step = [
                 # cmd_vel.linear.x * factor,

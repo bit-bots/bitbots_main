@@ -62,7 +62,6 @@ class VisibilityFinalstepPlanner(FootstepPlanner):
         self.ball_obstacle_active: bool = True
         self.frame: str = self.node.config.map.planning_frame
         self.ready_for_final_step: bool = False
-        self.published_steps: int = 0
 
     # Roboter erstmal außenvor gelassen
     def set_robots(self, robots: sv3dm.RobotArray):
@@ -119,7 +118,7 @@ class VisibilityFinalstepPlanner(FootstepPlanner):
         """
         Resets_counter when distance is to high for final steps
         """
-        self.published_steps = 0
+        # self.published_steps = 0
 
     def active(self) -> bool:
         """
@@ -127,7 +126,7 @@ class VisibilityFinalstepPlanner(FootstepPlanner):
         """
         return self.goal is not None
 
-    def step(self) -> npt.NDArray[np.float64]:
+    def step(self, published_steps: int) -> npt.NDArray[np.float64]:
         """
         Computes the next step to the goal
         """
@@ -160,35 +159,51 @@ class VisibilityFinalstepPlanner(FootstepPlanner):
 
         rot_vec = self.rotate_vector_2d(goal[0] - start[0], goal[1] - start[1], angle)
 
-        if self.published_steps < 2:
-            self.published_steps += 1
+        if published_steps < 2:
             self.node.get_logger().info(
                 "final_step published: nr: "
-                + str(self.published_steps)
+                + str(published_steps)
                 + " x,y: "
                 + str(rot_vec[0])
                 + " , "
                 + str(rot_vec[1])
             )
-            return np.array([rot_vec[0] * 0.7, (rot_vec[1] * 0.7), 0.0, 0.0])
-        elif self.published_steps < 4:
-            self.published_steps += 1
+            return np.array([rot_vec[0] * 0.6, (rot_vec[1] * 0.6), 0.0, 0.0])
+        elif published_steps < 3:
             self.node.get_logger().info(
                 "final_step published: nr: "
-                + str(self.published_steps)
+                + str(published_steps)
                 + " x,y: "
                 + str(rot_vec[0])
                 + " , "
                 + str(rot_vec[1])
             )
             return np.array([rot_vec[0] - 0.03, (rot_vec[1]), 0.0, 0.0])
+        elif published_steps < 4:
+            self.node.get_logger().info(
+                "final_step published: nr: "
+                + str(published_steps)
+                + " x,y: "
+                + str(rot_vec[0])
+                + " , "
+                + str(rot_vec[1])
+            )
+            return np.array([rot_vec[0] + 0.02, (rot_vec[1]), 0.0, 0.0])
         else:
             if abs(goal[1] - start[1]) > 0.05:
-                self.node.get_logger().info("final_step published: overhead" + " x,y: " + str(0.0) + " , " + str(0.05))
-                return np.array([0.0, 0.05, 0.0, 0.0])
+                if abs(goal[0] - start[0]) > 0.05:
+                    self.node.get_logger().info(
+                        "final_step published: overhead" + " x,y: " + str(0.1) + " , " + str(0.1)
+                    )
+                    return np.array([0.1, 0.1, 0.0, 0.0])
+                else:
+                    self.node.get_logger().info(
+                        "final_step published: overhead" + " x,y: " + str(0.0) + " , " + str(0.1)
+                    )
+                    return np.array([0.0, 0.1, 0.0, 0.0])
             elif abs(goal[0] - start[0]) > 0.05:
-                self.node.get_logger().info("final_step published: overhead" + " x,y: " + str(0.05) + " , " + str(0.0))
-                return np.array([0.05, 0.0, 0.0, 0.0])
+                self.node.get_logger().info("final_step published: overhead" + " x,y: " + str(0.1) + " , " + str(0.0))
+                return np.array([0.1, 0.0, 0.0, 0.0])
             else:
                 self.node.get_logger().info("final_step published: overhead" + " x,y: " + str(0.0) + " , " + str(0.0))
                 return np.array([0.0, 0.0, 0.0, 0.0])
