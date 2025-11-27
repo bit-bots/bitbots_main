@@ -2,15 +2,20 @@
 <launch>
     <arg name="behavior" default="true" description="Whether the behavior control system should be started" />
     <arg name="behavior_dsd_file" default="main.dsd" description="The behavior dsd file that should be used" />
+    <arg name="fake_localization" default="true" description="Whether to use the fake localizator"/>
+
+    <let name="use_vision" value="false" if="$(var fake_localization)"/>
+    <let name="use_vision" value="true" unless="$(var fake_localization)"/>
 
     <node pkg="bitbots_auto_test" exec="auto_test" name="auto_test" output="screen">
+        <param name="fake_localization" value="$(var fake_localization)"/>
     </node>
 
     <!-- load the general simulator -->
     <include file="$(find-pkg-share bitbots_webots_sim)/launch/simulation.launch">
-        <arg name="fake_localization" value="true" />
-        <arg name="fake_localization_ball" value="true" />
-        <arg name="camera" value="false" />
+        <arg name="fake_localization" value="$(var fake_localization)" />
+        <arg name="fake_localization_ball" value="$(var fake_localization)" />
+        <arg name="camera" value="$(var use_vision)" />
     </include>
 
     <!-- load teamplayer software stack -->
@@ -18,14 +23,14 @@
         <arg name="behavior" value="$(var behavior)" />
         <arg name="behavior_dsd_file" value="$(var behavior_dsd_file)" />
         <arg name="game_controller" value="false"/>
-        <arg name="ipm" value="false" />
-        <arg name="localization" value="false" />
+        <arg name="ipm" value="$(var use_vision)" />
+        <arg name="localization" value="$(var use_vision)" />
         <arg name="motion" value="true" />
         <arg name="sim" value="true" />
         <arg name="path_planning" value="true" />
         <arg name="teamcom" value="false" />
-        <arg name="vision" value="false"/>
-        <arg name="world_model" value="false"/>
+        <arg name="vision" value="$(var use_vision)"/>
+        <arg name="world_model" value="$(var use_vision)"/>
     </include>
 
     <include file="$(find-pkg-share bitbots_auto_test)/launch/rosbag_record_test.launch.py">

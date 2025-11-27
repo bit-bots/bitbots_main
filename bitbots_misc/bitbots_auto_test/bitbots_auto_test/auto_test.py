@@ -5,6 +5,7 @@ import threading
 
 import rclpy
 import rclpy.executors
+from bitbots_localization.srv import ResetFilter
 from game_controller_hl_interfaces.msg import GameState
 from gazebo_msgs.msg import ModelStates
 from geometry_msgs.msg import Pose, Twist
@@ -108,6 +109,7 @@ class AutoTest(Node):
         super().__init__("AutoTest")
 
         use_sim_time_param = Parameter("use_sim_time", Parameter.Type.BOOL, True)
+        self.declare_parameter("fake_localization", True)
         self.set_parameters([use_sim_time_param])
 
         self.monitoring_node = monitoring_node
@@ -127,6 +129,8 @@ class AutoTest(Node):
             "gamestate",
             QoSProfile(durability=DurabilityPolicy.TRANSIENT_LOCAL, depth=1),
         )
+        if not self.get_parameter("fake_localization").value:
+            self.reset_localization = self.create_client(ResetFilter, "reset_localization")
 
     def model_states_callback(self, model_state_msg: ModelStates):
         for i, name in enumerate(model_state_msg.name):
@@ -150,6 +154,14 @@ class AutoTest(Node):
 
         self.get_clock().sleep_for(Duration(seconds=2))  # Let robot react & simulation settle
         self.current_test.setup()  # Teleport robot
+        if not self.get_parameter("fake_localization").value:
+            rf = ResetFilter.Request()
+            rf.init_mode = ResetFilter.Request.POSE
+            rf.x = 0.0
+            rf.y = 0.0
+            rf.angle = 0.0
+            self.reset_localization.call(rf)
+
         self.get_clock().sleep_for(Duration(seconds=2))  # Let simulation settle
 
         gs_msg.header.stamp = self.get_clock().now().to_msg()
