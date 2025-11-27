@@ -237,7 +237,7 @@ doku/*
 .pytest_cache/
 
 # pixi environments
-.pixi/*
+.pixi/
 !.pixi/config.toml
 
 CMakeFiles/
