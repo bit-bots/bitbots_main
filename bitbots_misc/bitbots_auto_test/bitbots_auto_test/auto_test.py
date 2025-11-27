@@ -1,15 +1,10 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import select
-import sys
-import termios
 import threading
-import tty
 
 import rclpy
 import rclpy.executors
-from bitbots_auto_test.monitoring_node import Monitoring
 from game_controller_hl_interfaces.msg import GameState
 from gazebo_msgs.msg import ModelStates
 from geometry_msgs.msg import Pose, Twist
@@ -19,6 +14,7 @@ from rclpy.node import Node
 from rclpy.parameter import Parameter
 from rclpy.qos import DurabilityPolicy, QoSProfile
 
+from bitbots_auto_test.monitoring_node import Monitoring
 from bitbots_msgs.srv import SetObjectPose, SetObjectPosition
 
 
@@ -101,22 +97,8 @@ class MakeGoal(TestCase):
         return self.is_ball_in_goal()
 
 
-test_cases = {"g": MakeGoal}
+test_cases = [MakeGoal]
 
-msg = f"""
-BitBots Auto Test
------------------
-r : Restart the current test
-Test Cases:
-  {"\n  ".join(f"{k}: {t.__name__:20} {t.__doc__.strip().splitlines()[0]}" for k, t in test_cases.items())}
-
-CTRL-C to quit
-
-
-
-
-
-"""
 TEAM_ID = 6
 
 
@@ -130,7 +112,6 @@ class AutoTest(Node):
 
         self.monitoring_node = monitoring_node
 
-        self.settings = termios.tcgetattr(sys.stdin)
         self.test_id = 0
         self.current_test = None
 
@@ -154,16 +135,6 @@ class AutoTest(Node):
             elif name == "ball":
                 self.ball_pose = model_state_msg.pose[i]
                 self.ball_twist = model_state_msg.twist[i]
-
-    def get_key(self):
-        tty.setraw(sys.stdin.fileno())
-        rlist, _, _ = select.select([sys.stdin], [], [], 0.1)
-        if not rlist:
-            termios.tcsetattr(sys.stdin, termios.TCSADRAIN, self.settings)
-            return None
-        key = sys.stdin.read(1)
-        termios.tcsetattr(sys.stdin, termios.TCSADRAIN, self.settings)
-        return key
 
     def next_test(self):
         if self.current_test is not None:
@@ -213,45 +184,29 @@ class AutoTest(Node):
         )
 
     def loop(self):
-        print(msg)
-        try:
-            while True:
-                key = self.get_key()
-                if key in test_cases:
-                    self.current_test = test_cases[key](self, self.test_id, 1)
-                    self.setup_sequence()
-                elif key == "r":
-                    if self.current_test is not None:
-                        self.setup_sequence()
-                elif key == "\x03":
-                    break
-                if self.current_test is not None:
-                    self.current_test.update()
-                    state_str = (
-                        f"Current test: {self.current_test.__class__.__name__}\n"
-                        f"Score       : {self.current_test.score()}\n"
-                        f"Is done     : {self.current_test.is_done}\n"
-                    )
-                else:
-                    state_str = "Current test: None\nScore       : \nIs done     : \n"
-
-                for _ in range(state_str.count("\n") + 1):
-                    sys.stdout.write("\x1b[A")
+        self.current_test = test_cases[0](self, 1, 0)
+        self.setup_sequence()
+        last_print = self.get_clock().now()
+        while True:
+            if self.current_test is not None:
+                self.current_test.update()
+                state_str = (
+                    f"Current test: {self.current_test.__class__.__name__}\n"
+                    f"Score       : {self.current_test.score()}\n"
+                    f"Is done     : {self.current_test.is_done}\n"
+                )
+            else:
+                state_str = "Current test: None\nScore       : \nIs done     : \n"
+            if self.get_clock().now() - last_print > Duration(seconds=2):
                 print(state_str)
-                if self.current_test is not None and self.current_test.is_done:
-                    self.finished()
-                    self.next_test()
-                    self.setup_sequence()
-
-        except Exception as e:
-            print(e)
-
-        finally:
-            print("\n")
-            termios.tcsetattr(sys.stdin, termios.TCSADRAIN, self.settings)
+                last_print = self.get_clock().now()
+            if self.current_test is not None and self.current_test.is_done:
+                self.finished()
+                self.next_test()
+                self.setup_sequence()
 
 
-if __name__ == "__main__":
+def main():
     rclpy.init(args=None)
     monitoring = Monitoring()
     auto_test = AutoTest(monitoring)
@@ -259,7 +214,6 @@ if __name__ == "__main__":
     executor.add_node(monitoring)
     executor.add_node(auto_test)
 
-    # necessary so that sleep in loop() is not blocking
     thread = threading.Thread(target=executor.spin, args=(), daemon=True)
     thread.start()
     auto_test.loop()

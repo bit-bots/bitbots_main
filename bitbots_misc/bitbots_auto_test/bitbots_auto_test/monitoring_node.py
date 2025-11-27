@@ -3,20 +3,18 @@ from pathlib import Path
 from threading import Lock
 
 from gazebo_msgs.msg import ModelStates
-from geometry_msgs.msg import Pose, PoseStamped
+from geometry_msgs.msg import Pose, PoseStamped, Twist
 from rclpy.node import Node
 from rclpy.parameter import Parameter
-from rclpy.time import Time
+from rclpy.time import Duration, Time
 from ros2_numpy import numpify
 from std_msgs.msg import Bool
 from tf_transformations import euler_from_quaternion
 
 DEFAULT_LOG_FOLDER = Path("~/monitoring_logs").expanduser()
 
-SPEED_THRESHOLD = 0.1
-POS_THRESHOLD = SPEED_THRESHOLD / (1000 / 8)
-
-BALL_DELTA_THRESHOLDS = ((POS_THRESHOLD * 0.99) ** 2, (POS_THRESHOLD * 1.01) ** 2)
+SPEED_THRESHOLD = 0.05  # m/s
+BALL_DELTA_THRESHOLDS = ((SPEED_THRESHOLD * 0.95) ** 2, (SPEED_THRESHOLD / 0.98) ** 2)
 
 
 class Monitoring(Node):
@@ -81,23 +79,28 @@ class Monitoring(Node):
         self.last_goal_pose = msg
 
     def model_states_cb(self, msg: ModelStates):
-        self.last_model_states_time = self.get_clock().now()
+        new_time = self.get_clock().now()
+        time_delta = (
+            new_time - self.last_model_states_time if self.last_model_states_time is not None else Duration(seconds=0.1)
+        )
+        if time_delta.nanoseconds < 1000:
+            return
+        self.last_model_states_time = new_time
         for i, name in enumerate(msg.name):
             if name == "amy":
                 self.last_robot_pose = msg.pose[i]
             if name == "ball":
-                self.ball_pose_cb(msg.pose[i])
+                self.ball_pose_cb(msg.pose[i], msg.twist[i])
                 self.last_ball_pose = msg.pose[i]
 
-    def ball_pose_cb(self, new_ball_pose: Pose):
-        old = numpify(self.last_ball_pose.position)[:2]
+    def ball_pose_cb(self, new_ball_pose: Pose, ball_twist: Twist):
         new = numpify(new_ball_pose.position)[:2]
-        delta = old - new
+        delta = numpify(ball_twist.linear)[:2]
         vel_sq = delta.dot(delta)
         if self.ball_moving:
             if vel_sq < BALL_DELTA_THRESHOLDS[0]:
                 self.ball_moving = False
-                self.write_event("ball_stopped", f"{new[0]:.2f}", f"{new[1]:.2f}")
+                self.write_event("ball_stopped", f"{new[0]:.4f}", f"{new[1]:.4f}")
                 self.write_reduced_pose(
                     "ball_stopped_goal_pose", self.last_goal_pose.pose, self.last_goal_pose.header.stamp
                 )
@@ -105,4 +108,4 @@ class Monitoring(Node):
         else:
             if vel_sq > BALL_DELTA_THRESHOLDS[1]:
                 self.ball_moving = True
-                self.write_event("ball_started", f"{new[0]:.2f}", f"{new[1]:.2f}")
+                self.write_event("ball_started", f"{new[0]:.4f}", f"{new[1]:.4f}")
