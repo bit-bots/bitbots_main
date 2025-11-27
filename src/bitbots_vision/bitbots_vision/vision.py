@@ -3,7 +3,6 @@ from copy import deepcopy
 
 import numpy as np
 import rclpy
-from ament_index_python.packages import get_package_share_directory
 from cv_bridge import CvBridge
 from rcl_interfaces.msg import SetParametersResult
 from rclpy.experimental.events_executor import EventsExecutor
@@ -38,10 +37,6 @@ class YOEOVision(Node):
         super().__init__("bitbots_vision")
 
         logger.debug(f"Entering {self.__class__.__name__} constructor")
-
-        self._package_path = get_package_share_directory("bitbots_vision")
-
-        yoeo.YOEOObjectManager.set_package_directory(self._package_path)
 
         self._config: dict = {}
         self._cv_bridge = CvBridge()
@@ -147,10 +142,10 @@ class YOEOVision(Node):
 def main(args=None):
     rclpy.init(args=args)
     node = YOEOVision()
-    executor = EventsExecutor()
-    executor.add_node(node)
+    # executor = EventsExecutor()
+    # executor.add_node(node)
     try:
-        executor.spin()
+        rclpy.spin(node)
     except KeyboardInterrupt:
         pass
     node.destroy_node()
