@@ -161,6 +161,7 @@ bitbots_model_2023_04_04_philipp_yoeox_with_team_colors = ">=1.0.0,<2"
 bitbots_model_2022_10_07_flo_torso21_yoeox = ">=1.0.0,<2"
 
 bitbots_rust_nav = { path = "src/bitbots_navigation/bitbots_rust_nav" }
+readline = ">=8.2.999"  # This is needed because we want to install an empty readline package from our models channel that leads to the system version being used. Otherwise we might have a missmatch between bash (often accessed globally ignoring the env) and readline (provided by the env)  breaking everything.
 
 [pypi-dependencies]
 syrupy = ">=5.0.0, <6"
