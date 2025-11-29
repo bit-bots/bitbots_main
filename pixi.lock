@@ -34,9 +34,9 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/binutils-2.45-default_h4852527_104.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/binutils_impl_linux-64-2.45-default_hfdba357_104.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/binutils_linux-64-2.45-default_h4852527_104.conda
-      - conda: https://data.bit-bots.de/model_packaging/output/noarch/bitbots_model_2021_12_06_flo_torso21_yoeo_7-1.0.0-h4616a5c_0.conda
-      - conda: https://data.bit-bots.de/model_packaging/output/noarch/bitbots_model_2022_10_07_flo_torso21_yoeox-1.0.0-h4616a5c_0.conda
-      - conda: https://data.bit-bots.de/model_packaging/output/noarch/bitbots_model_2023_04_04_philipp_yoeox_with_team_colors-1.0.0-h4616a5c_0.conda
+      - conda: https://data.bit-bots.de/model_packaging/output/noarch/bitbots_model_2021_12_06_flo_torso21_yoeo_7-1.0.1-h4616a5c_0.conda
+      - conda: https://data.bit-bots.de/model_packaging/output/noarch/bitbots_model_2022_10_07_flo_torso21_yoeox-1.0.1-h4616a5c_0.conda
+      - conda: https://data.bit-bots.de/model_packaging/output/noarch/bitbots_model_2023_04_04_philipp_yoeox_with_team_colors-1.0.1-h4616a5c_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/blosc-1.21.6-he440d0b_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/breathe-4.36.0-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/brotli-1.2.0-hed03a55_1.conda
@@ -446,7 +446,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/qt6-main-6.9.2-h5bd77bc_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/rapidjson-1.1.0.post20240409-h3f2d84a_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/rav1e-0.7.1-h8fae777_3.conda
-      - conda: https://data.bit-bots.de/model_packaging/output/noarch/readline-8.2.999-h4616a5c_0.conda
+      - conda: https://data.bit-bots.de/model_packaging/output/noarch/readline-8.2.9999-h4616a5c_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/requests-2.32.5-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/rhash-1.4.6-hb9d3cd8_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/rich-14.2.0-pyhcf101f3_0.conda
@@ -1381,24 +1381,24 @@ packages:
   purls: []
   size: 36180
   timestamp: 1764007883258
-- conda: https://data.bit-bots.de/model_packaging/output/noarch/bitbots_model_2021_12_06_flo_torso21_yoeo_7-1.0.0-h4616a5c_0.conda
-  sha256: a60302524ab86a073d9efdbaccaa43610cfee3e8199c608a5badce01a320078f
-  md5: 1bb761e4ae8bc51c28e547964c0aaf73
+- conda: https://data.bit-bots.de/model_packaging/output/noarch/bitbots_model_2021_12_06_flo_torso21_yoeo_7-1.0.1-h4616a5c_0.conda
+  sha256: dd273a5c1e4256d2aaf59d66baa4530f4a7df828b689d4e056a15433c53f17ae
+  md5: d731bf398ac069ce2dd97a6061aa7b4d
   license: MIT
-  size: 210616086
-  timestamp: 1764196978685
-- conda: https://data.bit-bots.de/model_packaging/output/noarch/bitbots_model_2022_10_07_flo_torso21_yoeox-1.0.0-h4616a5c_0.conda
-  sha256: 52ca206738b4c98e260f15fbfd91d096e5105d657607fb27d547ccf52902f40b
-  md5: 8f17773f0b1e6b37973ffcac609f463b
+  size: 27253666
+  timestamp: 1764378517256
+- conda: https://data.bit-bots.de/model_packaging/output/noarch/bitbots_model_2022_10_07_flo_torso21_yoeox-1.0.1-h4616a5c_0.conda
+  sha256: 52fe9c2fb6585b92f36290face8abd9ce9c8b1d8f8f5eb842616ebf62fbcc286
+  md5: 64af621be88fb228ff02f611ab7ac91b
   license: MIT
-  size: 261337412
-  timestamp: 1764196978685
-- conda: https://data.bit-bots.de/model_packaging/output/noarch/bitbots_model_2023_04_04_philipp_yoeox_with_team_colors-1.0.0-h4616a5c_0.conda
-  sha256: eb6520183cf2f9e35bf4d7d45463c7b3c88dc100a1d7195ab18c420f37f1eeed
-  md5: f58a019c2324a6c520df54608961fd62
+  size: 77978905
+  timestamp: 1764378517255
+- conda: https://data.bit-bots.de/model_packaging/output/noarch/bitbots_model_2023_04_04_philipp_yoeox_with_team_colors-1.0.1-h4616a5c_0.conda
+  sha256: 89be0ffb2cdd41d433ba2717196b7d3de84e34732b4ce280cc6bc5d6c82b7792
+  md5: 0b9488c7b39f5c91f724df95b7a2ac8c
   license: MIT
-  size: 235038928
-  timestamp: 1764196978684
+  size: 51676315
+  timestamp: 1764378517255
 - conda: src/bitbots_navigation/bitbots_rust_nav
   name: bitbots_rust_nav
   version: 0.1.0
@@ -7860,12 +7860,12 @@ packages:
   purls: []
   size: 5176669
   timestamp: 1746622023242
-- conda: https://data.bit-bots.de/model_packaging/output/noarch/readline-8.2.999-h4616a5c_0.conda
-  sha256: eb5e0e872e4522cc60691fd379ccd3a9928f577d1f14c1fcff8144beb21724c1
-  md5: 31ef4ccc5411bb50e5755a41dbc3827b
+- conda: https://data.bit-bots.de/model_packaging/output/noarch/readline-8.2.9999-h4616a5c_0.conda
+  sha256: 9afc087ebd4e9576ea49736138281a601ba02569ae98f564f436caa134c0c3c7
+  md5: b3d8f6fdb0120c801b92c2f777fd9724
   license: MIT
-  size: 183364598
-  timestamp: 1764376464969
+  size: 1038
+  timestamp: 1764378517250
 - pypi: https://files.pythonhosted.org/packages/84/bd/9ce9f629fcb714ffc2c3faf62b6766ecb7a585e1e885eb699bcf130a5209/regex-2025.11.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
   name: regex
   version: 2025.11.3
