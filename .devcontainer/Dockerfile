@@ -1,4 +1,4 @@
-FROM ros:jazzy
+FROM --platform=linux/arm64 ros:jazzy
 
 ARG user=bitbots
 ARG uid=1000
