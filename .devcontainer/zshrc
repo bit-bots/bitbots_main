@@ -1,5 +1,5 @@
 # If you come from bash you might have to change your $PATH.
-export PATH=$HOME/bin:/usr/local/bin:$HOME/.local/bin:$PATH
+export PATH=$HOME/bin:/usr/local/bin:$HOME/.local/bin:$HOME/.pixi/bin:$PATH
 
 # Set the default shell to zsh when running zsh
 export SHELL="$(which zsh)"
@@ -48,48 +48,12 @@ bindkey "^H" backward-kill-word
 bindkey "^[[1;5C" forward-word
 bindkey "^[[1;5D" backward-word
 
-
 # Settings for the prompt to show that we are in a docker container
 export PROMPT="%K{black} 🐋 %K{blue}%F{black} %~ %f%k%F{blue}%f "  # Prefix the prompt with DOCKER
-
-# >>> bit-bots initialize >>>
-
-# Ignore some deprecation warnings
-export PYTHONWARNINGS="ignore:::setuptools.command.install,ignore:::setuptools.command.easy_install,ignore:::pkg_resources,ignore:easy_install command is deprecated,ignore:setup.py install is deprecated"
-
-# Limit ROS 2 communication to localhost (can be overridden when needed)
-export ROS_DOMAIN_ID=24
-export ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST
-
-# Set the default colcon workspace
-export COLCON_WS="$HOME/bitbots_main"
-
-# Set the default log level for colcon
-export COLCON_LOG_LEVEL=30
-
-# Define a log layout
-export RCUTILS_COLORIZED_OUTPUT=1
-export RCUTILS_CONSOLE_OUTPUT_FORMAT="[{severity}] [{name}]: {message}"
-
-# Set the default Middleware
-export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
-
-# Load our ros plugin script containing useful functions and aliases for ROS 2 development
-if [[ -f $COLCON_WS/scripts/ros.plugin.sh ]]; then
-  source $COLCON_WS/scripts/ros.plugin.sh
-fi
-
-# <<< bit-bots initialize <<<
-
-# Set default editor
-export VISUAL="vim"
 
 # Some user instructions
 echo "Hello there! Welcome to the Bit-Bots ROS 2 development environment!"
 echo "If you just (re)build this container a few manual steps are nessessary:"
 echo "Create a ssh key with 'ssh-keygen -q -f $HOME/.ssh/id_rsa -N \"\" &&  cat $HOME/.ssh/id_rsa.pub'."
 echo "Copy the commands output and add it to your GitHub account ('https://github.com/settings/keys') (ctrl+click to open in browser)."
-echo "Now you can install the rest of the workspace and compile everything with 'just install && just build'."
-echo "To update an existing workspace you can use 'just update'."
-echo "To compile all packages in the workspace use 'just build'. If you want to compile only a specific package use 'just build <package_name>'."
-echo "Run 'xhost local:root' in a terminal on the host machine to enable GUI applications (e.g. rviz2) in the container. This needs to be done after every restart of the host machine."
+echo "Now you can install the rest of the workspace and compile everything with 'pixi run build'."
