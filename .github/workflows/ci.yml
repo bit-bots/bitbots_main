@@ -4,14 +4,9 @@ on:
     - cron: '0 0 * * *'
   push:
 
-env:
-  PYTHONWARNINGS: "ignore:::setuptools.command.install,ignore:::setuptools.command.easy_install,ignore:::pkg_resources,ignore:easy_install command is deprecated,ignore:setup.py install is deprecated"
-
 jobs:
   build:
     runs-on: ubuntu-latest
-    container:
-      image: ubuntu:noble
 
     steps:
       - name: Cancel outdated jobs
@@ -19,14 +14,11 @@ jobs:
         with:
           cancel_others: 'true'
 
-     # Remove comments to spawn an interactive debigging ssh shell in the ci
+     # Remove comments to spawn an interactive debugging ssh shell in the ci
      #- name: Setup tmate session
      #   uses: mxschmitt/action-tmate@v3
      #   with:
      #     detached: true
-
-      - name: Set up ROS ecosystem
-        uses: ros-tooling/setup-ros@v0.7
 
       - name: Check out repository
         uses: actions/checkout@v4
@@ -34,30 +26,14 @@ jobs:
       - name: Configure git to trust repository
         run: git config --global --add safe.directory /__w/bitbots_main/bitbots_main
 
-      - name: Add '$HOME/.local/bin' to PATH
-        run: |
-          mkdir -p $HOME/.local/bin
-          echo "PATH=$PATH:/github/home/.local/bin" >> "$GITHUB_ENV"
+      - name: Set up workspace
+        uses: prefix-dev/setup-pixi@v0.9.3
+        with:
+          pixi-version: v0.59.0
+          cache: true
 
-      - name: Install just
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y just
+      - name: Build
+        run: pixi run build
 
-      - name: Pull source code for libraries and install dependencies
-        run: |
-          sudo apt-get remove -y python3-pytest-repeat  #TODO remove once the upstream apt package reports the correct version on the newest pip version
-          just HTTPS=true CI=true install
-
-      - name: Build packages
-        run: |
-          . /opt/ros/jazzy/setup.sh
-          just build
-
-      - name: Test packages
-        run: |
-          # Source workspace
-          . /opt/ros/jazzy/setup.sh
-          . install/setup.sh
-          # Run tests for all packages
-          colcon test --event-handlers console_direct+ --return-code-on-test-failure --parallel-workers 1
+      - name: Test
+        run: pixi run test --parallel-workers 1
