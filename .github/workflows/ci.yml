@@ -30,7 +30,7 @@ jobs:
         uses: prefix-dev/setup-pixi@v0.9.3
         with:
           pixi-version: v0.59.0
-          cache: true
+          cache: false  # Our deps exceed the cache size limit :(
 
       - name: Build
         run: pixi run build
