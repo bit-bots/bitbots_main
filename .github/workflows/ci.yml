@@ -26,6 +26,9 @@ jobs:
       - name: Configure git to trust repository
         run: git config --global --add safe.directory /__w/bitbots_main/bitbots_main
 
+      - name: Install host dependencies
+        run: scripts/make_basler.sh --ci
+
       - name: Set up workspace
         uses: prefix-dev/setup-pixi@v0.9.3
         with:
