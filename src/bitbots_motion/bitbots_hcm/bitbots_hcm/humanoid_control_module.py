@@ -54,9 +54,9 @@ class HardwareControlManager:
         )
 
         # Create own executor for Python part
-        #executor = EventsExecutor()
-        #executor.add_node(self.node)
-        self.spin_thread = threading.Thread(target=rclpy.spin, args=(self.node,), daemon=True)
+        executor = EventsExecutor()
+        executor.add_node(self.node)
+        self.spin_thread = threading.Thread(target=executor.spin, args=(), daemon=True)
         self.spin_thread.start()
 
         # Otherwise messages will get lost, bc the init is not finished

@@ -31,10 +31,10 @@ if __name__ == "__main__":
     rclpy.init()
     supervisor = SupervisorNode(args.sim_port)
 
-    #executor = EventsExecutor()
-    #executor.add_node(supervisor.node)
+    executor = EventsExecutor()
+    executor.add_node(supervisor.node)
 
-    thread = threading.Thread(target=rclpy.spin, args=(supervisor.node,), daemon=True)
+    thread = threading.Thread(target=executor.spin, args=(), daemon=True)
     thread.start()
     supervisor.run()
 

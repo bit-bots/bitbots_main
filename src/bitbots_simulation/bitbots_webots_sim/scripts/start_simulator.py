@@ -73,10 +73,10 @@ if __name__ == "__main__":
     rclpy.init()
     node = WebotsSim(args.nogui, args.multi_robot, args.headless, args.sim_port, args.robot_type)
 
-    #executor = EventsExecutor()
-    #executor.add_node(node)
+    executor = EventsExecutor()
+    executor.add_node(node)
 
-    thread = threading.Thread(target=rclpy.spin, args=(node,), daemon=True)
+    thread = threading.Thread(target=executor.spin, args=(), daemon=True)
     thread.start()
     node.run_simulation()
 

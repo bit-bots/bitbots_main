@@ -61,10 +61,10 @@ if __name__ == "__main__":
         args.sim_port, args.robot_name, args.void_controller, args.disable_camera, args.recognize, args.robot_type
     )
 
-    #executor = EventsExecutor()
-    #executor.add_node(robot.node)
+    executor = EventsExecutor()
+    executor.add_node(robot.node)
 
-    thread = threading.Thread(target=rclpy.spin, args=(robot.node,), daemon=True)
+    thread = threading.Thread(target=executor.spin, args=(), daemon=True)
     thread.start()
     robot.run()
 
