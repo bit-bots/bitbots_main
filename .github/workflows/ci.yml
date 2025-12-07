@@ -33,10 +33,12 @@ jobs:
         uses: prefix-dev/setup-pixi@v0.9.3
         with:
           pixi-version: v0.59.0
-          cache: false  # Our deps exceed the cache size limit :(
+          cache: true
+          environments: >-
+            ci
 
       - name: Build
-        run: pixi run build
+        run: pixi run -e ci build
 
       - name: Test
-        run: pixi run test --parallel-workers 1
+        run: pixi run -e ci test --parallel-workers 1
