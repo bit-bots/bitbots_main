@@ -36,7 +36,7 @@ void wait_for_tf(const rclcpp::Logger& logger, std::shared_ptr<rclcpp::Clock> cl
       }
 
       // Check if we can transform from the given root frame to all given frames
-      if (!std::all_of(frames.begin(), frames.end(), [tf_buffer, root_frame, check_interval](const std::string frame) {
+      if (!std::all_of(frames.begin(), frames.end(), [tf_buffer, root_frame, check_interval](const std::string& frame) {
             return tf_buffer->canTransform(root_frame, frame, rclcpp::Time(0), check_interval);
           })) {
         // Here it is fine not to wait as the canTransform function already includes a timeout

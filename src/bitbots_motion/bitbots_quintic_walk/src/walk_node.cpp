@@ -405,10 +405,6 @@ void WalkNode::imuCb(const sensor_msgs::msg::Imu::SharedPtr msg) {
   current_trunk_fused_pitch_ = imu_fused.fusedPitch;
   current_trunk_fused_roll_ = imu_fused.fusedRoll;
 
-  // get angular velocities
-  double roll_vel = msg->angular_velocity.x;
-  double pitch_vel = msg->angular_velocity.y;
-
   // Calculate ema (exponential moving average) of y (sideways) acceleration in a time-independet manner
   if (last_imu_measurement_time_) {
     auto time_delta = rclcpp::Time(msg->header.stamp) - last_imu_measurement_time_.value();
@@ -426,6 +422,10 @@ void WalkNode::imuCb(const sensor_msgs::msg::Imu::SharedPtr msg) {
 
     // Get the sub struct of the imu stability stop config
     auto params = config_.node.stability_stop.imu;
+
+    // Get angular velocities
+    double roll_vel = msg->angular_velocity.x;
+    double pitch_vel = msg->angular_velocity.y;
 
     // Check if we have to stop the walk
     double pitch_delta = pitch - wanted_pitch;

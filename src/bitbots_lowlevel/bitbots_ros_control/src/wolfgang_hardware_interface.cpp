@@ -89,10 +89,10 @@ bool WolfgangHardwareInterface::create_interfaces(std::vector<std::pair<std::str
       for (std::pair<std::string, int>& device : dxl_devices) {
         // RCLCPP_INFO_STREAM(nh_->get_logger(), device.first);
         std::string name = device.first;
-        int id = device.second;
         if (std::find(pinged.begin(), pinged.end(), device.first) != pinged.end()) {
           // we already found this and don't have to search again
         } else {
+          int id = device.second;
           int model_number_specified;
           nh_->get_parameter("device_info." + name + ".model_number", model_number_specified);
           // some devices provide more than one type of interface, e.g. the IMU provides additionally buttons and LEDs
@@ -220,8 +220,8 @@ bool WolfgangHardwareInterface::create_interfaces(std::vector<std::pair<std::str
   }
 }
 
-void threaded_init(const std::vector<std::shared_ptr<HardwareInterface>>& port_interfaces, rclcpp::Node::SharedPtr& nh,
-                   int& success) {
+void threaded_init(const std::vector<std::shared_ptr<HardwareInterface>>& port_interfaces,
+                   const rclcpp::Node::SharedPtr& nh, int& success) {
   success = std::all_of(port_interfaces.begin(), port_interfaces.end(),
                         [](std::shared_ptr<HardwareInterface> interface) -> bool { return interface->init(); });
 }
