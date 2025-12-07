@@ -33,12 +33,10 @@ jobs:
         uses: prefix-dev/setup-pixi@v0.9.3
         with:
           pixi-version: v0.59.0
-          cache: true
-          environments: >-
-            ci
+          cache: false  # Disable caching to avoid issues with large pytorch packages
 
       - name: Build
-        run: pixi run -e ci build
+        run: pixi run build
 
       - name: Test
-        run: pixi run -e ci test --parallel-workers 1
+        run: pixi run test --parallel-workers 1

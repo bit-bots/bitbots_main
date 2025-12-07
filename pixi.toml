@@ -186,19 +186,25 @@ syrupy = ">=5.0.0, <6"
 exhale = ">=0.3.7, <0.4"
 mycroft-mimic3-tts = ">=0.2.4, <0.3"
 pyttsx3 = ">=2.99, <3"
+yoeo = { git = "https://github.com/bit-bots/YOEO" }
 
 [feature.robot.pypi-dependencies]
 # These are only needed on the robot
 pyamdgpuinfo = ">=2.1.7, <3"
 
-[feature.pytorch.pypi-dependencies]
-yoeo = { git = "https://github.com/bit-bots/YOEO" }
+
+[feature.ros.activation.env]
+ROS_DOMAIN_ID = "24"
+ROS_AUTOMATIC_DISCOVERY_RANGE = "LOCALHOST"
+RCUTILS_COLORIZED_OUTPUT = "1"
+RMW_IMPLEMENTATION = "rmw_cyclonedds_cpp"
+COLCON_LOG_LEVEL = "30"
+PYTHONWARNINGS="ignore:::setuptools.command.install,ignore:::setuptools.command.easy_install,ignore:::pkg_resources,ignore:easy_install command is deprecated,ignore:setup.py install is deprecated"
 
 [feature.ros.activation]
 scripts = ["install/setup.sh"]
 
 [environments]
-default = ["ros", "format", "pytorch"]  # Full development environment (excluding robot-only deps)
+default = ["ros", "format"]  # Full development environment (excluding robot-only deps)
 format = ["format"]  # Format only environment
-robot = ["ros", "robot", "pytorch"]  # Robot environment with additional robot-only dependencies
-ci = ["ros"]  # CI does not need format or full pytorch to save time and space
+robot = ["ros", "format", "robot"]  # Robot environment with additional robot-only dependencies
