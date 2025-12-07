@@ -20,7 +20,6 @@ RUN apt-get update -y \
     iputils-ping \
     ipython3 \
     jq \
-    just \
     less \
     libncurses5-dev \
     locales \
