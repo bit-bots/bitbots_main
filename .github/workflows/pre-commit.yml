@@ -15,8 +15,7 @@ jobs:
         with:
           pixi-version: v0.59.0
           cache: true
-          environments: >-
-            format
+          environment: format
 
       - name: Run pre-commit
-        run: pixi run format
+        run: pixi run -e format format
