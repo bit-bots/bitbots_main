@@ -643,7 +643,7 @@ double DynupEngine::calcDescendSplines(double time) {
   return time;
 }
 
-void DynupEngine::setGoals(const DynupRequest &goals) {
+void DynupEngine::setGoals(const DynupRequest& goals) {
   // we use hand splines from shoulder frame instead of base_link
   geometry_msgs::msg::Pose l_hand = goals.l_hand_pose;
   geometry_msgs::msg::Pose r_hand = goals.r_hand_pose;
@@ -672,7 +672,7 @@ void DynupEngine::setGoals(const DynupRequest &goals) {
   } else {
     // Placeholders for the parameters, we assure that we have all parameters before, so we can use -1 as a placeholder
     double foot_distance = -1, trunk_x_final = -1, trunk_pitch = -1, trunk_height = -1;
-    for (auto &param : walking_params) {
+    for (auto& param : walking_params) {
       if (param.get_name() == "engine.trunk_pitch") {
         trunk_pitch = param.get_value<double>();
       } else if (param.get_name() == "engine.trunk_height") {

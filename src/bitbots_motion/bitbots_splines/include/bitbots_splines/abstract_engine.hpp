@@ -19,7 +19,7 @@ class AbstractEngine {
    * Set new goals for the engine to calculate splines from.
    * @param goals An instance of RequestType that describes the goals that the spline should fulfill
    */
-  virtual void setGoals(const RequestType &goals) = 0;
+  virtual void setGoals(const RequestType& goals) = 0;
   /**
    * Reset the engine to its initial state.
    */

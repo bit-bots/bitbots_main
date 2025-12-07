@@ -39,7 +39,7 @@ class RobotState {
 
   RobotState operator*(float factor) const;
 
-  RobotState &operator+=(const RobotState &other);
+  RobotState& operator+=(const RobotState& other);
 
   double getXPos() const;
 
@@ -61,10 +61,10 @@ class RobotState {
 
   void setCosTheta(double t);
 
-  double calcDistance(const RobotState &state) const;
+  double calcDistance(const RobotState& state) const;
 
-  static void convertParticleListToEigen(const std::vector<particle_filter::Particle<RobotState> *> &particle_list,
-                                         Eigen::MatrixXd &matrix, const bool ignore_explorers);
+  static void convertParticleListToEigen(const std::vector<particle_filter::Particle<RobotState>*>& particle_list,
+                                         Eigen::MatrixXd& matrix, const bool ignore_explorers);
 
   bool is_explorer_;
 

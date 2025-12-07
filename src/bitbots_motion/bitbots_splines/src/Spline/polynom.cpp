@@ -15,11 +15,11 @@ Polynom::Polynom(unsigned int degree) : coefs_() {
   }
 }
 
-const std::vector<double> &Polynom::getCoefs() const { return coefs_; }
-std::vector<double> &Polynom::getCoefs() { return coefs_; }
+const std::vector<double>& Polynom::getCoefs() const { return coefs_; }
+std::vector<double>& Polynom::getCoefs() { return coefs_; }
 
-const double &Polynom::operator()(size_t index) const { return coefs_.at(index); }
-double &Polynom::operator()(size_t index) { return coefs_.at(index); }
+const double& Polynom::operator()(size_t index) const { return coefs_.at(index); }
+double& Polynom::operator()(size_t index) { return coefs_.at(index); }
 
 size_t Polynom::degree() const { return coefs_.size() - 1; }
 
@@ -61,11 +61,11 @@ double Polynom::jerk(double x) const {
 }
 
 void Polynom::operator*=(double coef) {
-  for (double &_coef : coefs_) {
+  for (double& _coef : coefs_) {
     _coef *= coef;
   }
 }
-void Polynom::operator+=(const Polynom &p) {
+void Polynom::operator+=(const Polynom& p) {
   while (p.coefs_.size() > coefs_.size()) {
     coefs_.push_back(0.0);
   }
@@ -89,7 +89,7 @@ void Polynom::shift(double delta) {
   *this = n;
 }
 
-std::ostream &operator<<(std::ostream &os, const Polynom &p) {
+std::ostream& operator<<(std::ostream& os, const Polynom& p) {
   os << "degree=" << p.degree() << " ";
   for (size_t i = 0; i < p.degree() + 1; i++) {
     os << p(i) << " ";

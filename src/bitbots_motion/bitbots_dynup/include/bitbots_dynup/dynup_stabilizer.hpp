@@ -18,7 +18,7 @@ namespace bitbots_dynup {
 class Stabilizer : public bitbots_splines::AbstractStabilizer<DynupResponse> {
  public:
   explicit Stabilizer(rclcpp::Node::SharedPtr node, bitbots_dynup::Params::Stabilizer params);
-  DynupResponse stabilize(const DynupResponse &response, const rclcpp::Duration &dt) override;
+  DynupResponse stabilize(const DynupResponse& response, const rclcpp::Duration& dt) override;
   void setRSoleToTrunk(geometry_msgs::msg::TransformStamped r_sole_to_trunk);
   void setParams(bitbots_dynup::Params::Stabilizer params);
   void reset() override;

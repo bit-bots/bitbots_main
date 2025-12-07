@@ -100,20 +100,20 @@ class Localization {
    * Callback for the line point cloud measurements
    * @param msg Message containing the line point cloud.
    */
-  void LinePointcloudCallback(const sm::msg::PointCloud2 &msg);
+  void LinePointcloudCallback(const sm::msg::PointCloud2& msg);
 
   /**
    * Callback for goal posts measurements
    * @param msg Message containing the goal posts.
    */
-  void GoalPostsCallback(const sv3dm::msg::GoalpostArray &msg);  // TODO
+  void GoalPostsCallback(const sv3dm::msg::GoalpostArray& msg);  // TODO
 
   /**
    * Resets the state distribution of the state space
    * @param distribution The type of the distribution
    */
 
-  void SetInitialPositionCallback(const gm::msg::PoseWithCovarianceStamped &msg);
+  void SetInitialPositionCallback(const gm::msg::PoseWithCovarianceStamped& msg);
 
   void reset_filter(int distribution);
 
@@ -254,9 +254,9 @@ class Localization {
    * @param map map for this class
    * @param publisher ros publisher for the type visualization_msgs::msg::Marker
    */
-  void publish_debug_rating(const std::vector<std::pair<double, double>> &measurements, double scale,
+  void publish_debug_rating(const std::vector<std::pair<double, double>>& measurements, double scale,
                             const char name[24], std::shared_ptr<Map> map,
-                            rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr &publisher);
+                            rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr& publisher);
 
   /**
    * Updates the measurements for all classes

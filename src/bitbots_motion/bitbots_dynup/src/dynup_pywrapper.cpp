@@ -12,7 +12,7 @@ PyDynupWrapper::PyDynupWrapper(const std::string ns) {
 
 void PyDynupWrapper::spin_some() { rclcpp::spin_some(node_); }
 
-py::bytes PyDynupWrapper::step(double dt, py::bytes &imu_msg, py::bytes &joint_state_msg) {
+py::bytes PyDynupWrapper::step(double dt, py::bytes& imu_msg, py::bytes& joint_state_msg) {
   bitbots_msgs::msg::JointCommand result = dynup_->step(
       dt, std::make_shared<sensor_msgs::msg::Imu>(fromPython<sensor_msgs::msg::Imu>(imu_msg)),
       std::make_shared<sensor_msgs::msg::JointState>(fromPython<sensor_msgs::msg::JointState>(joint_state_msg)));
@@ -49,7 +49,7 @@ py::bytes PyDynupWrapper::get_poses() {
   return toPython<bitbots_dynup::msg::DynupPoses>(poses);
 }
 
-bool string2bool(const std::string &v) {
+bool string2bool(const std::string& v) {
   return !v.empty() && (strcasecmp(v.c_str(), "true") == 0 || atoi(v.c_str()) != 0);
 }
 

@@ -11,17 +11,17 @@ namespace bitbots_dynamic_kick {
 
 class KickIK : public bitbots_splines::AbstractIK<KickPositions> {
  public:
-  KickIK() : legs_joints_group_(), left_leg_joints_group_(), right_leg_joints_group_(){};
+  KickIK() : legs_joints_group_(), left_leg_joints_group_(), right_leg_joints_group_() {};
   void init(moveit::core::RobotModelPtr kinematic_model) override;
-  bitbots_splines::JointGoals calculate(const KickPositions &positions) override;
+  bitbots_splines::JointGoals calculate(const KickPositions& positions) override;
   void reset() override;
 
  private:
   moveit::core::RobotStatePtr goal_state_;
   planning_scene::PlanningScenePtr planning_scene_;
-  moveit::core::JointModelGroup *legs_joints_group_;
-  moveit::core::JointModelGroup *left_leg_joints_group_;
-  moveit::core::JointModelGroup *right_leg_joints_group_;
+  moveit::core::JointModelGroup* legs_joints_group_;
+  moveit::core::JointModelGroup* left_leg_joints_group_;
+  moveit::core::JointModelGroup* right_leg_joints_group_;
 };
 }  // namespace bitbots_dynamic_kick
 

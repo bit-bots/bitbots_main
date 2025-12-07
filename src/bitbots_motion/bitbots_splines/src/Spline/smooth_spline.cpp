@@ -16,8 +16,8 @@ void SmoothSpline::addPoint(double time, double position, double velocity, doubl
   computeSplines();
 }
 
-const std::vector<SmoothSpline::Point> &SmoothSpline::points() const { return points_; }
-std::vector<SmoothSpline::Point> &SmoothSpline::points() { return points_; }
+const std::vector<SmoothSpline::Point>& SmoothSpline::points() const { return points_; }
+std::vector<SmoothSpline::Point>& SmoothSpline::points() { return points_; }
 
 void SmoothSpline::computeSplines() {
   Spline::splines_.clear();
@@ -26,7 +26,7 @@ void SmoothSpline::computeSplines() {
   }
 
   std::sort(points_.begin(), points_.end(),
-            [](const Point &p_1, const Point &p_2) -> bool { return p_1.time < p_2.time; });
+            [](const Point& p_1, const Point& p_2) -> bool { return p_1.time < p_2.time; });
 
   for (size_t i = 1; i < points_.size(); i++) {
     double time = points_[i].time - points_[i - 1].time;
@@ -97,7 +97,7 @@ Polynom SmoothSpline::polynomFit(double t, double pos_1, double vel_1, double ac
 std::string SmoothSpline::getDebugString() {
   std::string output;
   int i = 0;
-  for (const auto &p : points_) {
+  for (const auto& p : points_) {
     output += "Point:" + std::to_string(i) + "\n";
     output += "  Time: " + std::to_string(p.time) + "\n";
     output += "  Pos: " + std::to_string(p.position) + "\n";

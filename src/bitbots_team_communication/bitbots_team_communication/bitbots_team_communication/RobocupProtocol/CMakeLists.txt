@@ -4,23 +4,17 @@ project(RobocupProtocol)
 # We need protobuf to generate the messages
 find_package(Protobuf REQUIRED)
 
-function(COMPILE_PROTO
-         proto_file
-         output_dir
-         return_var)
+function(COMPILE_PROTO proto_file output_dir return_var)
   # Get the file without the extension
   get_filename_component(file_we ${proto_file} NAME_WE)
 
   # Run the protocol buffer compiler on the builtin protocol buffers
-  add_custom_command(OUTPUT "${output_dir}/${file_we}.pb.cc"
-                            "${output_dir}/${file_we}.pb.h"
-                     COMMAND ${PROTOBUF_PROTOC_EXECUTABLE}
-                             ARGS
-                             --cpp_out=${output_dir}
-                             -I${CMAKE_CURRENT_SOURCE_DIR}
-                             ${proto_file}
-                     DEPENDS ${proto_file}
-                     COMMENT "Compiling protocol buffer ${proto_file}")
+  add_custom_command(
+    OUTPUT "${output_dir}/${file_we}.pb.cc" "${output_dir}/${file_we}.pb.h"
+    COMMAND ${PROTOBUF_PROTOC_EXECUTABLE} ARGS --cpp_out=${output_dir}
+            -I${CMAKE_CURRENT_SOURCE_DIR} ${proto_file}
+    DEPENDS ${proto_file}
+    COMMENT "Compiling protocol buffer ${proto_file}")
 
   set_source_files_properties(
     "${output_dir}/${file_we}.pb"
@@ -30,16 +24,16 @@ function(COMPILE_PROTO
     "${output_dir}/${file_we}.cpp"
     "${output_dir}/${file_we}.py.cpp"
     "${output_dir}/${file_we}.h"
-    PROPERTIES
-    GENERATED
-    TRUE
-    # Prevent Effective C++ and unused parameter error checks being performed on
-    # generated files.
-    COMPILE_FLAGS "-Wno-unused-parameter -Wno-error=unused-parameter -Wno-error"
-    )
+    PROPERTIES GENERATED TRUE
+               # Prevent Effective C++ and unused parameter error checks being
+               # performed on
+               # generated files.
+               COMPILE_FLAGS
+               "-Wno-unused-parameter -Wno-error=unused-parameter -Wno-error")
 
-  set(${return_var} "${output_dir}/${file_we}.pb.cc"
-                    "${output_dir}/${file_we}.pb.h" PARENT_SCOPE)
+  set(${return_var}
+      "${output_dir}/${file_we}.pb.cc" "${output_dir}/${file_we}.pb.h"
+      PARENT_SCOPE)
 endfunction(COMPILE_PROTO)
 
 # Build our protobuf classes

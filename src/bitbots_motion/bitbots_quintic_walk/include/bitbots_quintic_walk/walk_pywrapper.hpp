@@ -22,14 +22,14 @@ using namespace ros2_python_extension;
 
 class PyWalkWrapper {
  public:
-  explicit PyWalkWrapper(const std::string &ns, const std::vector<py::bytes> &walk_parameter_msgs = {},
-                         const std::vector<py::bytes> &moveit_parameter_msgs = {},
+  explicit PyWalkWrapper(const std::string& ns, const std::vector<py::bytes>& walk_parameter_msgs = {},
+                         const std::vector<py::bytes>& moveit_parameter_msgs = {},
                          bool force_smooth_step_transition = false);
-  py::bytes step(double dt, py::bytes &cmdvel_msg, py::bytes &imu_msg, py::bytes &jointstate_msg,
-                 py::bytes &pressure_left, py::bytes &pressure_right);
-  py::bytes step_relative(double dt, py::bytes &step_msg, py::bytes &imu_msg, py::bytes &jointstate_msg,
-                          py::bytes &pressure_left, py::bytes &pressure_right);
-  py::bytes step_open_loop(double dt, py::bytes &cmdvel_msg);
+  py::bytes step(double dt, py::bytes& cmdvel_msg, py::bytes& imu_msg, py::bytes& jointstate_msg,
+                 py::bytes& pressure_left, py::bytes& pressure_right);
+  py::bytes step_relative(double dt, py::bytes& step_msg, py::bytes& imu_msg, py::bytes& jointstate_msg,
+                          py::bytes& pressure_left, py::bytes& pressure_right);
+  py::bytes step_open_loop(double dt, py::bytes& cmdvel_msg);
   py::bytes get_left_foot_pose();
   py::bytes get_right_foot_pose();
   py::bytes get_odom();

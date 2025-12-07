@@ -3,7 +3,7 @@
 
 namespace bitbots_ros_control {
 
-ServoBusInterface::ServoBusInterface(rclcpp::Node::SharedPtr nh, std::shared_ptr<DynamixelDriver> &driver,
+ServoBusInterface::ServoBusInterface(rclcpp::Node::SharedPtr nh, std::shared_ptr<DynamixelDriver>& driver,
                                      std::vector<std::tuple<int, std::string, float, float, std::string>> servos)
     : first_cycle_(true), read_position_(true), read_velocity_(false), read_effort_(true) {
   nh_ = nh;
@@ -120,7 +120,7 @@ bool ServoBusInterface::loadDynamixels() {
 
   // iterate over all servos and save the information
   // the wolfgang hardware interface already loaded them into the driver by pinging
-  for (std::tuple<int, std::string, float, float, std::string> &servo : servos_) {
+  for (std::tuple<int, std::string, float, float, std::string>& servo : servos_) {
     int motor_id = std::get<0>(servo);
     joint_ids_.push_back(uint8_t(motor_id));
     std::string joint_name = std::get<1>(servo);
@@ -164,7 +164,7 @@ bool ServoBusInterface::writeROMRAM(bool first_time) {
       rcl_interfaces::msg::ListParametersResult rom_ram_parameter_list =
           nh_->list_parameters({ROM_RAM_PARAMETER_NAMESPACE + joint_group}, 0);
       // Iterate over the parameters and set each one
-      for (std::string &register_parameter_name : rom_ram_parameter_list.names) {
+      for (std::string& register_parameter_name : rom_ram_parameter_list.names) {
         // Get the value of the parameter
         int value = nh_->get_parameter(register_parameter_name).as_int();
         // Get only the name of the register without the namespace
@@ -181,17 +181,17 @@ bool ServoBusInterface::writeROMRAM(bool first_time) {
   // Check that all groups have the same parameters not only the same number of parameters
   // Get all keys of the first group
   std::vector<std::string> parameter_names;
-  for (auto const &[key, value] : joint_register_value_map[0]) {
+  for (auto const& [key, value] : joint_register_value_map[0]) {
     parameter_names.push_back(key);
   }
-  for (auto const &[group_id, group_params] : group_param_cache) {
+  for (auto const& [group_id, group_params] : group_param_cache) {
     // Check that the size is the same
     if (group_params.size() != parameter_names.size()) {
       RCLCPP_ERROR(nh_->get_logger(), "Servo group %s has a different number of servo parameters", group_id.c_str());
       success = false;
     }
     // Check that all keys are the same
-    for (std::string &key : parameter_names) {
+    for (std::string& key : parameter_names) {
       if (group_params.find(key) == group_params.end()) {
         RCLCPP_ERROR(nh_->get_logger(), "Group %s does not have parameter %s", group_id.c_str(), key.c_str());
         success = false;
@@ -202,7 +202,7 @@ bool ServoBusInterface::writeROMRAM(bool first_time) {
   // Allocate memory for the values in the driver
   std::vector<int> values(joint_names_.size());
   // Iterate over parameter names
-  for (const auto &register_name : parameter_names) {
+  for (const auto& register_name : parameter_names) {
     // Get the value for each joint
     for (size_t num = 0; num < joint_names_.size(); num++) {
       // Get the value from the cache
@@ -220,7 +220,7 @@ bool ServoBusInterface::writeROMRAM(bool first_time) {
   return success;
 }
 
-void ServoBusInterface::read(const rclcpp::Time &t, const rclcpp::Duration &dt) {
+void ServoBusInterface::read(const rclcpp::Time& t, const rclcpp::Duration& dt) {
   /**
    * This is part of the main loop and handles reading of all connected devices
    */
@@ -320,7 +320,7 @@ void ServoBusInterface::read(const rclcpp::Time &t, const rclcpp::Duration &dt) 
   }
 }
 
-void ServoBusInterface::write(const rclcpp::Time &t, const rclcpp::Duration &dt) {
+void ServoBusInterface::write(const rclcpp::Time& t, const rclcpp::Duration& dt) {
   /**
    * This is part of the mainloop and handles all the writing to the connected devices
    */
@@ -415,7 +415,7 @@ void ServoBusInterface::switchDynamixelControlMode() {
   }
 
   std::vector<int32_t> operating_mode(joint_names_.size(), value);
-  int32_t *o = &operating_mode[0];
+  int32_t* o = &operating_mode[0];
   driver_->syncWrite("Operating_Mode", o);
 
   nh_->get_clock()->sleep_for(rclcpp::Duration::from_nanoseconds(1e9 * 0.5));
@@ -437,7 +437,7 @@ diagnostic_msgs::msg::DiagnosticStatus ServoBusInterface::createServoDiagMsg(int
   servo_status.hardware_id = std::to_string(id);
   std::vector<diagnostic_msgs::msg::KeyValue> keyValues = std::vector<diagnostic_msgs::msg::KeyValue>();
   // iterate through map and save it into values
-  for (auto const &ent1 : map) {
+  for (auto const& ent1 : map) {
     diagnostic_msgs::msg::KeyValue key_value = diagnostic_msgs::msg::KeyValue();
     key_value.key = ent1.first;
     key_value.value = ent1.second;
@@ -525,7 +525,7 @@ void ServoBusInterface::writeTorque(bool enabled) {
   // only set values if we're not in torqueless mode
   if (!torqueless_mode_) {
     std::vector<int32_t> torque(joint_names_.size(), enabled);
-    int32_t *t = &torque[0];
+    int32_t* t = &torque[0];
     driver_->syncWrite("Torque_Enable", t);
     current_torque_ = enabled;
     goal_torque_ = enabled;
@@ -541,7 +541,7 @@ void ServoBusInterface::writeTorqueForServos(std::vector<int32_t> torque) {
   if (!torqueless_mode_) {
     // this actually writes each value in the torque vector
     // but the dynamixel_toolbox requires a reference to the first element
-    int32_t *t = &torque[0];
+    int32_t* t = &torque[0];
     driver_->syncWrite("Torque_Enable", t);
   }
 }

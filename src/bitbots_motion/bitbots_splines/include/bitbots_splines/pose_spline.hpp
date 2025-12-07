@@ -33,12 +33,12 @@ class PoseSpline {
 
   std::string getDebugString();
 
-  SmoothSpline *x();
-  SmoothSpline *y();
-  SmoothSpline *z();
-  SmoothSpline *roll();
-  SmoothSpline *pitch();
-  SmoothSpline *yaw();
+  SmoothSpline* x();
+  SmoothSpline* y();
+  SmoothSpline* z();
+  SmoothSpline* roll();
+  SmoothSpline* pitch();
+  SmoothSpline* yaw();
 
  private:
   SmoothSpline x_;

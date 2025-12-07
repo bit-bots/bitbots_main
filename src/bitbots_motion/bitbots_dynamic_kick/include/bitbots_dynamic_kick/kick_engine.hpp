@@ -84,7 +84,7 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
    *
    * @throws tf2::TransformException when goal cannot be converted into needed tf frames
    */
-  void setGoals(const KickGoals &goals) override;
+  void setGoals(const KickGoals& goals) override;
 
   /**
    * Reset this KickEngine completely, removing the goal, all splines and thereby stopping all output
@@ -149,7 +149,7 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
    *  @param flying_foot_pose Current pose of the flying foot relative to the support foot
    *  @param trunk_pose Current pose of the trunk relative to the support foot
    */
-  void calcSplines(const Eigen::Isometry3d &flying_foot_pose, const Eigen::Isometry3d &trunk_pose);
+  void calcSplines(const Eigen::Isometry3d& flying_foot_pose, const Eigen::Isometry3d& trunk_pose);
 
   /**
    *  Calculate the point from which to perform the final kicking movement
@@ -169,7 +169,7 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
    *
    * @throws tf2::TransformException when ball_position and kick_direction cannot be converted into base_footprint frame
    */
-  bool calcIsLeftFootKicking(const Eigen::Vector3d &ball_position, const Eigen::Quaterniond &kick_direction);
+  bool calcIsLeftFootKicking(const Eigen::Vector3d& ball_position, const Eigen::Quaterniond& kick_direction);
 
   /**
    * Calculate the yaw of the kicking foot, so that it is turned
@@ -187,10 +187,10 @@ class KickEngine : public bitbots_splines::AbstractEngine<KickGoals, KickPositio
    *
    * @throws tf2::TransformException when goal cannot be transformed into support_foot_frame
    */
-  std::pair<Eigen::Vector3d, Eigen::Quaterniond> transformGoal(const std::string &support_foot_frame,
-                                                               const Eigen::Isometry3d &trunk_to_base_footprint,
-                                                               const Eigen::Vector3d &ball_position,
-                                                               const Eigen::Quaterniond &kick_direction);
+  std::pair<Eigen::Vector3d, Eigen::Quaterniond> transformGoal(const std::string& support_foot_frame,
+                                                               const Eigen::Isometry3d& trunk_to_base_footprint,
+                                                               const Eigen::Vector3d& ball_position,
+                                                               const Eigen::Quaterniond& kick_direction);
 };
 }  // namespace bitbots_dynamic_kick
 

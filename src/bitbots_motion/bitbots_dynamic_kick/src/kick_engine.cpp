@@ -11,7 +11,7 @@ void KickEngine::reset() {
   flying_foot_spline_ = bitbots_splines::PoseSpline();
 }
 
-void KickEngine::setGoals(const KickGoals &goals) {
+void KickEngine::setGoals(const KickGoals& goals) {
   is_left_kick_ = calcIsLeftFootKicking(goals.ball_position, goals.kick_direction);
   // TODO Internal state is dirty when goal transformation fails
 
@@ -65,7 +65,7 @@ KickPositions KickEngine::update(double dt) {
   return positions;
 }
 
-void KickEngine::calcSplines(const Eigen::Isometry3d &flying_foot_pose, const Eigen::Isometry3d &trunk_pose) {
+void KickEngine::calcSplines(const Eigen::Isometry3d& flying_foot_pose, const Eigen::Isometry3d& trunk_pose) {
   /*
    * Add current position, target position and current position to splines so that they describe a smooth
    * curve to the ball and back
@@ -195,8 +195,8 @@ void KickEngine::calcSplines(const Eigen::Isometry3d &flying_foot_pose, const Ei
 }
 
 std::pair<Eigen::Vector3d, Eigen::Quaterniond> KickEngine::transformGoal(
-    const std::string &support_foot_frame, const Eigen::Isometry3d &trunk_to_base_footprint,
-    const Eigen::Vector3d &ball_position, const Eigen::Quaterniond &kick_direction) {
+    const std::string& support_foot_frame, const Eigen::Isometry3d& trunk_to_base_footprint,
+    const Eigen::Vector3d& ball_position, const Eigen::Quaterniond& kick_direction) {
   /* ball_position and kick_direction are currently in base_footprint, we want them in support foot frame */
   /* first, get transform from base_footprint to support foot */
   Eigen::Isometry3d trunk_to_support_foot = current_state_->getGlobalLinkTransform(support_foot_frame);
@@ -229,7 +229,7 @@ Eigen::Vector3d KickEngine::calcKickWindupPoint() {
   return vec;
 }
 
-bool KickEngine::calcIsLeftFootKicking(const Eigen::Vector3d &ball_position, const Eigen::Quaterniond &kick_direction) {
+bool KickEngine::calcIsLeftFootKicking(const Eigen::Vector3d& ball_position, const Eigen::Quaterniond& kick_direction) {
   /* it is important that everything is in base_footprint frame! */
 
   /*

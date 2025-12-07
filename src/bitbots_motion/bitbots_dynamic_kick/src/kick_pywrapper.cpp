@@ -4,7 +4,7 @@
  * Read a ROS message from a serialized string.
  */
 template <typename M>
-M from_python(const std::string &str_msg) {
+M from_python(const std::string& str_msg) {
   size_t serial_size = str_msg.size();
   // todo
   //  boost::shared_array<uint8_t> buffer(new uint8_t[serial_size]);
@@ -21,7 +21,7 @@ M from_python(const std::string &str_msg) {
  * Write a ROS message into a serialized string.
  */
 template <typename M>
-std::string to_python(const M &msg) {
+std::string to_python(const M& msg) {
   size_t serial_size = ros::serialization::serializationLength(msg);
   // todo
   //  boost::shared_array<uint8_t> buffer(new uint8_t[serial_size]);
@@ -39,7 +39,7 @@ PyKickWrapper::PyKickWrapper(const std::string ns) {
   kick_node_ = std::make_shared<bitbots_dynamic_kick::KickNode>(ns);
 }
 
-moveit::py_bindings_tools::ByteString PyKickWrapper::step(double dt, const std::string &joint_state_str) {
+moveit::py_bindings_tools::ByteString PyKickWrapper::step(double dt, const std::string& joint_state_str) {
   auto joint_state = from_python<sensor_msgs::msg::JointState>(joint_state_str);
   kick_node_->jointStateCallback(joint_state);
   std::string result = to_python<bitbots_msgs::msg::JointCommand>(kick_node_->stepWrapper(dt));
@@ -90,7 +90,7 @@ void PyKickWrapper::set_params(const boost::python::object params) {
   kick_node_->reconfigureCallback(conf, 0xff);
 }*/
 
-bool PyKickWrapper::set_goal(const std::string &goal_str, const std::string &joint_state_str) {
+bool PyKickWrapper::set_goal(const std::string& goal_str, const std::string& joint_state_str) {
   auto joint_state = from_python<sensor_msgs::msg::JointState>(joint_state_str);
   kick_node_->jointStateCallback(joint_state);
   auto goal = from_python<bitbots_msgs::KickGoal>(goal_str);

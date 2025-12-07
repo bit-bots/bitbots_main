@@ -34,8 +34,8 @@ double Spline::max() const {
   }
 }
 
-void Spline::exportData(std::ostream &os) const {
-  for (const auto &spline : splines_) {
+void Spline::exportData(std::ostream& os) const {
+  for (const auto& spline : splines_) {
     os << std::setprecision(17) << spline.min << " ";
     os << std::setprecision(17) << spline.max << " ";
     os << std::setprecision(17) << spline.polynom.getCoefs().size() << " ";
@@ -45,7 +45,7 @@ void Spline::exportData(std::ostream &os) const {
   }
   os << std::endl;
 }
-void Spline::importData(std::istream &is) {
+void Spline::importData(std::istream& is) {
   bool is_format_error = false;
   while (is.good()) {
     is_format_error = true;
@@ -86,11 +86,11 @@ void Spline::importData(std::istream &is) {
 
 size_t Spline::size() const { return splines_.size(); }
 
-const Spline::SplineT &Spline::part(size_t index) const { return splines_.at(index); }
+const Spline::SplineT& Spline::part(size_t index) const { return splines_.at(index); }
 
-void Spline::addPart(const Polynom &poly, double min, double max) { splines_.push_back({poly, min, max}); }
+void Spline::addPart(const Polynom& poly, double min, double max) { splines_.push_back({poly, min, max}); }
 
-void Spline::copyData(const Spline &sp) {
+void Spline::copyData(const Spline& sp) {
   splines_ = sp.splines_;
   // Call possible post import
   importCallBack();

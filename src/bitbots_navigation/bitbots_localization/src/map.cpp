@@ -10,7 +10,7 @@ namespace fs = boost::filesystem;
 
 namespace bitbots_localization {
 
-Map::Map(const std::string &name, const std::string &type, const double out_of_map_value) {
+Map::Map(const std::string& name, const std::string& type, const double out_of_map_value) {
   // Set config
   out_of_map_value_ = out_of_map_value;
   // get package path
@@ -48,10 +48,10 @@ double Map::get_occupancy(double x, double y) {
   return occupancy / 100.0;
 }
 
-std::vector<double> Map::provideRating(const RobotState &state,
-                                       const std::vector<std::pair<double, double>> &observations) {
+std::vector<double> Map::provideRating(const RobotState& state,
+                                       const std::vector<std::pair<double, double>>& observations) {
   std::vector<double> rating;
-  for (const std::pair<double, double> &observation : observations) {
+  for (const std::pair<double, double>& observation : observations) {
     // lines are in polar form!
     std::pair<double, double> lineRelative;
 

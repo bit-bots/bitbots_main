@@ -7,8 +7,8 @@
 namespace bitbots_localization {
 
 RobotPoseObservationModel::RobotPoseObservationModel(std::shared_ptr<Map> map_lines, std::shared_ptr<Map> map_goals,
-                                                     const bitbots_localization::Params &config,
-                                                     const FieldDimensions &field_dimensions)
+                                                     const bitbots_localization::Params& config,
+                                                     const FieldDimensions& field_dimensions)
     : particle_filter::ObservationModel<RobotState>(),
       map_lines_(map_lines),
       map_goals_(map_goals),
@@ -18,8 +18,8 @@ RobotPoseObservationModel::RobotPoseObservationModel(std::shared_ptr<Map> map_li
 }
 
 double RobotPoseObservationModel::calculate_weight_for_class(
-    const RobotState &state, const std::vector<std::pair<double, double>> &last_measurement, std::shared_ptr<Map> map,
-    double element_weight, const tf2::Transform &movement_since_measurement) const {
+    const RobotState& state, const std::vector<std::pair<double, double>>& last_measurement, std::shared_ptr<Map> map,
+    double element_weight, const tf2::Transform& movement_since_measurement) const {
   double particle_weight_for_class;
   if (!last_measurement.empty()) {
     // Subtract (reverse) the movement from our state to get the hypothetical state at the time of the measurement
@@ -34,7 +34,7 @@ double RobotPoseObservationModel::calculate_weight_for_class(
   return particle_weight_for_class;
 }
 
-double RobotPoseObservationModel::measure(const RobotState &state) const {
+double RobotPoseObservationModel::measure(const RobotState& state) const {
   double particle_weight_lines =
       calculate_weight_for_class(state, last_measurement_lines_, map_lines_,
                                  config_.particle_filter.confidences.line_element, movement_since_line_measurement_);
@@ -75,7 +75,7 @@ void RobotPoseObservationModel::set_measurement_lines_pc(sm::msg::PointCloud2 me
 
 void RobotPoseObservationModel::set_measurement_goalposts(sv3dm::msg::GoalpostArray measurement) {
   // convert to polar
-  for (sv3dm::msg::Goalpost &post : measurement.posts) {
+  for (sv3dm::msg::Goalpost& post : measurement.posts) {
     std::pair<double, double> postPolar = cartesianToPolar(post.bb.center.position.x, post.bb.center.position.y);
     last_measurement_goal_.push_back(postPolar);
   }

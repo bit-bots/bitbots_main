@@ -16,9 +16,9 @@ class PositionSpline {
   tf2::Vector3 getVel(double time);
   tf2::Vector3 getAcc(double time);
 
-  SmoothSpline *x();
-  SmoothSpline *y();
-  SmoothSpline *z();
+  SmoothSpline* x();
+  SmoothSpline* y();
+  SmoothSpline* z();
 
  private:
   SmoothSpline x_;

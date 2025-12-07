@@ -81,7 +81,7 @@ void MotionOdometry::loop() {
       q.setRPY(0, 0, yaw);
       previous_to_current_support.setRotation(q);
       odometry_to_support_foot_ = odometry_to_support_foot_ * previous_to_current_support;
-    } catch (tf2::TransformException &ex) {
+    } catch (tf2::TransformException& ex) {
       RCLCPP_WARN(this->get_logger(), "%s", ex.what());
       rclcpp::sleep_for(std::chrono::milliseconds(1000));
       return;
@@ -138,7 +138,7 @@ void MotionOdometry::loop() {
     odom_msg.twist = current_odom_msg_.twist;
     pub_odometry_->publish(odom_msg);
 
-  } catch (tf2::TransformException &ex) {
+  } catch (tf2::TransformException& ex) {
     RCLCPP_WARN(this->get_logger(), "%s", ex.what());
     rclcpp::sleep_for(std::chrono::milliseconds(1000));
     return;
@@ -167,7 +167,7 @@ void MotionOdometry::supportCallback(const biped_interfaces::msg::Phase::SharedP
                                      rclcpp::Duration::from_nanoseconds(1e9));
       odometry_to_support_foot_.setOrigin({-1 * base_to_current_support_msg.transform.translation.x,
                                            -1 * base_to_current_support_msg.transform.translation.y, 0});
-    } catch (tf2::TransformException &ex) {
+    } catch (tf2::TransformException& ex) {
       RCLCPP_WARN(this->get_logger(),
                   "Could not initialize motion odometry correctly, since there were no transforms available fast "
                   "enough on startup. Will initialize with 0,0,0");
@@ -179,7 +179,7 @@ void MotionOdometry::odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg) 
 
 }  // namespace bitbots_odometry
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   rclcpp::init(argc, argv);
   auto node = std::make_shared<bitbots_odometry::MotionOdometry>();
 

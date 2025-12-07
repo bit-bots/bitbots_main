@@ -27,7 +27,7 @@ class Stabilizer : public bitbots_splines::AbstractStabilizer<KickPositions> {
    * @return BioIK Options that can be used by an instance of AbstractIK
    */
 
-  KickPositions stabilize(const KickPositions &positions, const rclcpp::Duration &dt) override;
+  KickPositions stabilize(const KickPositions& positions, const rclcpp::Duration& dt) override;
   void reset() override;
   void useCop(bool use);
   void setRobotModel(moveit::core::RobotModelPtr model);

@@ -2,7 +2,7 @@
 
 namespace bitbots_ros_control {
 
-CoreHardwareInterface::CoreHardwareInterface(rclcpp::Node::SharedPtr nh, std::shared_ptr<DynamixelDriver> &driver,
+CoreHardwareInterface::CoreHardwareInterface(rclcpp::Node::SharedPtr nh, std::shared_ptr<DynamixelDriver>& driver,
                                              int id, int read_rate) {
   nh_ = nh;
   driver_ = driver;
@@ -47,7 +47,7 @@ bool CoreHardwareInterface::get_power_status() {
   return power_control_status_.data && power_switch_status_.data;
 }
 
-void CoreHardwareInterface::read(const rclcpp::Time &t, const rclcpp::Duration &dt) {
+void CoreHardwareInterface::read(const rclcpp::Time& t, const rclcpp::Duration& dt) {
   /**
    * Reads the CORE board
    */
@@ -128,7 +128,7 @@ void CoreHardwareInterface::read(const rclcpp::Time &t, const rclcpp::Duration &
     }
     std::vector<diagnostic_msgs::msg::KeyValue> keyValues = std::vector<diagnostic_msgs::msg::KeyValue>();
     // iterate through map and save it into values
-    for (auto const &ent1 : map) {
+    for (auto const& ent1 : map) {
       diagnostic_msgs::msg::KeyValue key_value = diagnostic_msgs::msg::KeyValue();
       key_value.key = ent1.first;
       key_value.value = ent1.second;
@@ -142,7 +142,7 @@ void CoreHardwareInterface::read(const rclcpp::Time &t, const rclcpp::Duration &
   read_counter_++;
 }
 
-void CoreHardwareInterface::write(const rclcpp::Time &t, const rclcpp::Duration &dt) {
+void CoreHardwareInterface::write(const rclcpp::Time& t, const rclcpp::Duration& dt) {
   // we only need to write something if requested power status and current power status do not match
   // we don't use power_switch_status here because we cannot overwrite the physical switch
   if (requested_power_status_ != power_control_status_.data && last_read_successful_) {

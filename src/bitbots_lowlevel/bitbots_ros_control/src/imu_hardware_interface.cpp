@@ -7,7 +7,7 @@ namespace bitbots_ros_control {
 using std::placeholders::_1;
 using std::placeholders::_2;
 
-ImuHardwareInterface::ImuHardwareInterface(rclcpp::Node::SharedPtr nh, std::shared_ptr<DynamixelDriver> &driver, int id,
+ImuHardwareInterface::ImuHardwareInterface(rclcpp::Node::SharedPtr nh, std::shared_ptr<DynamixelDriver>& driver, int id,
                                            std::string topic, std::string frame, std::string name) {
   nh_ = nh;
   driver_ = driver;
@@ -78,7 +78,7 @@ bool ImuHardwareInterface::init() {
   return true;
 }
 
-void ImuHardwareInterface::read(const rclcpp::Time &t, const rclcpp::Duration &dt) {
+void ImuHardwareInterface::read(const rclcpp::Time& t, const rclcpp::Duration& dt) {
   /**
    * Reads the IMU
    */
@@ -155,7 +155,7 @@ void ImuHardwareInterface::read(const rclcpp::Time &t, const rclcpp::Duration &d
     }
     std::vector<diagnostic_msgs::msg::KeyValue> keyValues = std::vector<diagnostic_msgs::msg::KeyValue>();
     // itarate through map and save it into values
-    for (auto const &ent1 : map) {
+    for (auto const& ent1 : map) {
       diagnostic_msgs::msg::KeyValue key_value = diagnostic_msgs::msg::KeyValue();
       key_value.key = ent1.first;
       key_value.value = ent1.second;
@@ -239,7 +239,7 @@ void ImuHardwareInterface::setAccelCalibrationThreshold(
   set_accel_calib_threshold_ = true;
 }
 
-void ImuHardwareInterface::write(const rclcpp::Time &t, const rclcpp::Duration &dt) {
+void ImuHardwareInterface::write(const rclcpp::Time& t, const rclcpp::Duration& dt) {
   if (write_ranges_) {
     RCLCPP_INFO_STREAM(nh_->get_logger(), "Setting Gyroscope range to " << gyroRangeToString(gyro_range_));
     RCLCPP_INFO_STREAM(nh_->get_logger(), "Setting Accelerometer range to " << accelRangeToString(accel_range_));

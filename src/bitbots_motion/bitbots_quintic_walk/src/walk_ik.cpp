@@ -17,7 +17,7 @@ void WalkIK::init(moveit::core::RobotModelPtr kinematic_model) {
   }
 }
 
-bitbots_splines::JointGoals WalkIK::calculate(const WalkResponse &ik_goals) {
+bitbots_splines::JointGoals WalkIK::calculate(const WalkResponse& ik_goals) {
   // change goals from support foot based coordinate system to trunk based coordinate system
   tf2::Transform trunk_to_support_foot_goal = ik_goals.support_foot_to_trunk.inverse();
   tf2::Transform trunk_to_flying_foot_goal = trunk_to_support_foot_goal * ik_goals.support_foot_to_flying_foot;
@@ -76,9 +76,9 @@ void WalkIK::reset() {
 
 void WalkIK::setConfig(walking::Params::Node::Ik config) { config_ = config; }
 
-const std::vector<std::string> &WalkIK::getLeftLegJointNames() { return left_leg_joints_group_->getJointModelNames(); }
+const std::vector<std::string>& WalkIK::getLeftLegJointNames() { return left_leg_joints_group_->getJointModelNames(); }
 
-const std::vector<std::string> &WalkIK::getRightLegJointNames() {
+const std::vector<std::string>& WalkIK::getRightLegJointNames() {
   return right_leg_joints_group_->getJointModelNames();
 }
 

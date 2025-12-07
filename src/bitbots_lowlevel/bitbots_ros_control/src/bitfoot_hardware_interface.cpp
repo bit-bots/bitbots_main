@@ -3,7 +3,7 @@
 
 namespace bitbots_ros_control {
 
-BitFootHardwareInterface::BitFootHardwareInterface(rclcpp::Node::SharedPtr nh, std::shared_ptr<DynamixelDriver> &driver,
+BitFootHardwareInterface::BitFootHardwareInterface(rclcpp::Node::SharedPtr nh, std::shared_ptr<DynamixelDriver>& driver,
                                                    int id, std::string topic_name, std::string name) {
   nh_ = nh;
   driver_ = driver;
@@ -19,7 +19,7 @@ bool BitFootHardwareInterface::init() {
   return true;
 }
 
-void BitFootHardwareInterface::read(const rclcpp::Time &t, const rclcpp::Duration &dt) {
+void BitFootHardwareInterface::read(const rclcpp::Time& t, const rclcpp::Duration& dt) {
   /**
    * Reads the foot pressure sensors of the BitFoot
    */
@@ -101,7 +101,7 @@ void BitFootHardwareInterface::read(const rclcpp::Time &t, const rclcpp::Duratio
     }
     std::vector<diagnostic_msgs::msg::KeyValue> keyValues = std::vector<diagnostic_msgs::msg::KeyValue>();
     // iterate through map and save it into values
-    for (auto const &ent1 : map) {
+    for (auto const& ent1 : map) {
       diagnostic_msgs::msg::KeyValue key_value = diagnostic_msgs::msg::KeyValue();
       key_value.key = ent1.first;
       key_value.value = ent1.second;
@@ -115,5 +115,5 @@ void BitFootHardwareInterface::read(const rclcpp::Time &t, const rclcpp::Duratio
 }
 
 // we dont write anything to the pressure sensors
-void BitFootHardwareInterface::write(const rclcpp::Time &t, const rclcpp::Duration &dt) {}
+void BitFootHardwareInterface::write(const rclcpp::Time& t, const rclcpp::Duration& dt) {}
 }  // namespace bitbots_ros_control

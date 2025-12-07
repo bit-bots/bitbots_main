@@ -21,13 +21,13 @@ namespace bitbots_dynup {
 
 class Visualizer : bitbots_splines::AbstractVisualizer {
  public:
-  Visualizer(rclcpp::Node::SharedPtr node, bitbots_dynup::Params::Visualizer params, const std::string &base_topic);
+  Visualizer(rclcpp::Node::SharedPtr node, bitbots_dynup::Params::Visualizer params, const std::string& base_topic);
 
   void setParams(bitbots_dynup::Params::Visualizer params);
 
-  void displaySplines(bitbots_splines::PoseSpline splines, const std::string &frame);
-  void publishIKOffsets(const moveit::core::RobotModelPtr &model, const DynupResponse &response,
-                        const bitbots_splines::JointGoals &ik_joint_goals);
+  void displaySplines(bitbots_splines::PoseSpline splines, const std::string& frame);
+  void publishIKOffsets(const moveit::core::RobotModelPtr& model, const DynupResponse& response,
+                        const bitbots_splines::JointGoals& ik_joint_goals);
 
  private:
   rclcpp::Node::SharedPtr node_;

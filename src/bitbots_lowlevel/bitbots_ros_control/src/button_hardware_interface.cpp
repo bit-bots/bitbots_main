@@ -1,7 +1,7 @@
 #include <bitbots_ros_control/button_hardware_interface.hpp>
 
 namespace bitbots_ros_control {
-ButtonHardwareInterface::ButtonHardwareInterface(rclcpp::Node::SharedPtr nh, std::shared_ptr<DynamixelDriver> &driver,
+ButtonHardwareInterface::ButtonHardwareInterface(rclcpp::Node::SharedPtr nh, std::shared_ptr<DynamixelDriver>& driver,
                                                  int id, std::string topic, int read_rate) {
   nh_ = nh;
   driver_ = driver;
@@ -16,7 +16,7 @@ bool ButtonHardwareInterface::init() {
   return true;
 }
 
-void ButtonHardwareInterface::read(const rclcpp::Time &t, const rclcpp::Duration &dt) {
+void ButtonHardwareInterface::read(const rclcpp::Time& t, const rclcpp::Duration& dt) {
   /**
    * Reads the buttons
    */
@@ -56,5 +56,5 @@ void ButtonHardwareInterface::read(const rclcpp::Time &t, const rclcpp::Duration
 }
 
 // we don't write anything to the buttons
-void ButtonHardwareInterface::write(const rclcpp::Time &t, const rclcpp::Duration &dt) {}
+void ButtonHardwareInterface::write(const rclcpp::Time& t, const rclcpp::Duration& dt) {}
 }  // namespace bitbots_ros_control

@@ -17,7 +17,7 @@ class DynupIK : public bitbots_splines::AbstractIK<DynupResponse> {
  public:
   explicit DynupIK(rclcpp::Node::SharedPtr node);
   void init(moveit::core::RobotModelPtr kinematic_model) override;
-  bitbots_splines::JointGoals calculate(const DynupResponse &ik_goals) override;
+  bitbots_splines::JointGoals calculate(const DynupResponse& ik_goals) override;
   void reset() override;
   void setDirection(DynupDirection direction);
   moveit::core::RobotStatePtr get_goal_state();
@@ -25,11 +25,11 @@ class DynupIK : public bitbots_splines::AbstractIK<DynupResponse> {
 
  private:
   rclcpp::Node::SharedPtr node_;
-  moveit::core::JointModelGroup *all_joints_group_;
-  moveit::core::JointModelGroup *l_arm_joints_group_;
-  moveit::core::JointModelGroup *l_leg_joints_group_;
-  moveit::core::JointModelGroup *r_arm_joints_group_;
-  moveit::core::JointModelGroup *r_leg_joints_group_;
+  moveit::core::JointModelGroup* all_joints_group_;
+  moveit::core::JointModelGroup* l_arm_joints_group_;
+  moveit::core::JointModelGroup* l_leg_joints_group_;
+  moveit::core::JointModelGroup* r_arm_joints_group_;
+  moveit::core::JointModelGroup* r_leg_joints_group_;
   moveit::core::RobotStatePtr goal_state_;
   sensor_msgs::msg::JointState::ConstSharedPtr joint_state_;
   DynupDirection direction_;

@@ -24,11 +24,11 @@ namespace bitbots_utils {
  * @param warn_interval Interval in which to keep warning if the frames are not available
  * @param verbose Can be used to disable the warning messages
  */
-void wait_for_tf(const rclcpp::Logger &logger, std::shared_ptr<rclcpp::Clock> clock, tf2_ros::Buffer *tf_buffer,
-                 const std::vector<std::string> &frames, const std::string &root_frame,
-                 const rclcpp::Duration &check_interval = rclcpp::Duration(0.1s),
-                 const rclcpp::Duration &warn_duration = rclcpp::Duration(5.0s),
-                 const rclcpp::Duration &warn_interval = rclcpp::Duration(1.0s), bool verbose = true);
+void wait_for_tf(const rclcpp::Logger& logger, std::shared_ptr<rclcpp::Clock> clock, tf2_ros::Buffer* tf_buffer,
+                 const std::vector<std::string>& frames, const std::string& root_frame,
+                 const rclcpp::Duration& check_interval = rclcpp::Duration(0.1s),
+                 const rclcpp::Duration& warn_duration = rclcpp::Duration(5.0s),
+                 const rclcpp::Duration& warn_interval = rclcpp::Duration(1.0s), bool verbose = true);
 
 /**
  * @brief Get the parameters from other node by calling the get_parameters service
@@ -42,9 +42,9 @@ void wait_for_tf(const rclcpp::Logger &logger, std::shared_ptr<rclcpp::Clock> cl
  */
 
 std::map<std::string, rclcpp::Parameter> get_parameters_from_other_node(rclcpp::Node::SharedPtr own_node,
-                                                                        const std::string &other_node_name,
-                                                                        const std::vector<std::string> &parameter_names,
-                                                                        const std::chrono::seconds &service_timeout);
+                                                                        const std::string& other_node_name,
+                                                                        const std::vector<std::string>& parameter_names,
+                                                                        const std::chrono::seconds& service_timeout);
 
 }  // namespace bitbots_utils
 

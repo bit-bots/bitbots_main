@@ -25,7 +25,7 @@ RobotState RobotState::operator*(float factor) const {
   return newState;
 }
 
-RobotState &RobotState::operator+=(const RobotState &other) {
+RobotState& RobotState::operator+=(const RobotState& other) {
   m_XPos += other.m_XPos;
   m_YPos += other.m_YPos;
   m_SinTheta += other.m_SinTheta;
@@ -57,7 +57,7 @@ void RobotState::setSinTheta(double st) { m_SinTheta = st; }
 
 void RobotState::setCosTheta(double ct) { m_SinTheta = ct; }
 
-double RobotState::calcDistance(const RobotState &state) const {
+double RobotState::calcDistance(const RobotState& state) const {
   double diff = std::sqrt(std::pow(getXPos() - state.getXPos(), 2) + std::pow(getYPos() - state.getYPos(), 2));
   if (diff == 0.0) {
     diff = 0.0001;
@@ -65,17 +65,17 @@ double RobotState::calcDistance(const RobotState &state) const {
   return diff;
 }
 
-void RobotState::convertParticleListToEigen(const std::vector<particle_filter::Particle<RobotState> *> &particle_list,
-                                            Eigen::MatrixXd &matrix, const bool ignore_explorers) {
+void RobotState::convertParticleListToEigen(const std::vector<particle_filter::Particle<RobotState>*>& particle_list,
+                                            Eigen::MatrixXd& matrix, const bool ignore_explorers) {
   if (ignore_explorers) {
     int non_explorer_count =
         std::count_if(particle_list.begin(), particle_list.end(),
-                      [](particle_filter::Particle<RobotState> *particle) { return !particle->is_explorer_; });
+                      [](particle_filter::Particle<RobotState>* particle) { return !particle->is_explorer_; });
 
     matrix.resize(non_explorer_count, 3);
     int counter = 0;
     // #pragma parallel for
-    for (particle_filter::Particle<RobotState> *particle : particle_list) {
+    for (particle_filter::Particle<RobotState>* particle : particle_list) {
       if (!particle->is_explorer_) {
         matrix(counter, 0) = particle->getState().getXPos();
         matrix(counter, 1) = particle->getState().getYPos();

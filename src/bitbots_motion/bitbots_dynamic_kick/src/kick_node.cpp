@@ -3,7 +3,7 @@
 namespace bitbots_dynamic_kick {
 using namespace std::chrono_literals;
 
-KickNode::KickNode(const std::string &ns, std::vector<rclcpp::Parameter> parameters)
+KickNode::KickNode(const std::string& ns, std::vector<rclcpp::Parameter> parameters)
     : Node(ns + "dynamic_kick", rclcpp::NodeOptions()
                                     .allow_undeclared_parameters(true)
                                     .parameter_overrides(parameters)
@@ -145,8 +145,8 @@ void KickNode::jointStateCallback(const sensor_msgs::msg::JointState::SharedPtr 
   }
 }
 
-rcl_interfaces::msg::SetParametersResult KickNode::onSetParameters(const std::vector<rclcpp::Parameter> &parameters) {
-  for (const auto &parameter : parameters) {
+rcl_interfaces::msg::SetParametersResult KickNode::onSetParameters(const std::vector<rclcpp::Parameter>& parameters) {
+  for (const auto& parameter : parameters) {
     if (parameter.get_name() == "engine_rate") {
       engine_rate_ = parameter.as_int();
     } else if (parameter.get_name() == "foot_rise") {
@@ -197,7 +197,7 @@ rcl_interfaces::msg::SetParametersResult KickNode::onSetParameters(const std::ve
   return result;
 }
 
-bool KickNode::init(const bitbots_msgs::action::Kick::Goal &goal_msg, std::string &error_string) {
+bool KickNode::init(const bitbots_msgs::action::Kick::Goal& goal_msg, std::string& error_string) {
   /* currently, the ball must always be in the base_footprint frame */
   if (goal_msg.header.frame_id != base_footprint_frame_) {
     RCLCPP_ERROR_STREAM(this->get_logger(), "Goal should be in " << base_footprint_frame_ << " frame");
@@ -257,7 +257,7 @@ void KickNode::acceptedCb(const std::shared_ptr<KickGoalHandle> goal) {
   std::thread{std::bind(&KickNode::executeCb, this, std::placeholders::_1), goal}.detach();
 }
 
-rclcpp_action::GoalResponse KickNode::goalCb(const rclcpp_action::GoalUUID &uuid,
+rclcpp_action::GoalResponse KickNode::goalCb(const rclcpp_action::GoalUUID& uuid,
                                              std::shared_ptr<const bitbots_msgs::action::Kick::Goal> goal) {
   RCLCPP_INFO(this->get_logger(), "Received goal request");
   (void)uuid;
@@ -375,7 +375,7 @@ bitbots_splines::JointGoals KickNode::kickStep(double dt) {
   return motor_goals;
 }
 
-bitbots_msgs::msg::JointCommand KickNode::getJointCommand(const bitbots_splines::JointGoals &goals) {
+bitbots_msgs::msg::JointCommand KickNode::getJointCommand(const bitbots_splines::JointGoals& goals) {
   /* Construct JointCommand message */
   bitbots_msgs::msg::JointCommand command;
   command.header.stamp = this->get_clock()->now();
@@ -428,7 +428,7 @@ bool KickNode::isLeftKick() { return engine_.isLeftKick(); }
 
 }  // namespace bitbots_dynamic_kick
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   /* Setup ROS node */
   rclcpp::init(argc, argv);
   bitbots_dynamic_kick::KickNode node;

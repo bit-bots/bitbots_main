@@ -14,14 +14,14 @@ namespace bitbots_ros_control {
 
 class BitFootHardwareInterface : public bitbots_ros_control::HardwareInterface {
  public:
-  explicit BitFootHardwareInterface(rclcpp::Node::SharedPtr nh, std::shared_ptr<DynamixelDriver> &driver, int id,
+  explicit BitFootHardwareInterface(rclcpp::Node::SharedPtr nh, std::shared_ptr<DynamixelDriver>& driver, int id,
                                     std::string topic_name, std::string name);
 
   bool init();
 
-  void read(const rclcpp::Time &t, const rclcpp::Duration &dt);
+  void read(const rclcpp::Time& t, const rclcpp::Duration& dt);
 
-  void write(const rclcpp::Time &t, const rclcpp::Duration &dt);
+  void write(const rclcpp::Time& t, const rclcpp::Duration& dt);
 
  private:
   rclcpp::Node::SharedPtr nh_;

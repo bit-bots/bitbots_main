@@ -28,14 +28,14 @@ class RobotPoseObservationModel : public particle_filter::ObservationModel<Robot
    * empty
    */
   RobotPoseObservationModel(std::shared_ptr<Map> map_lines, std::shared_ptr<Map> map_goals,
-                            const bitbots_localization::Params &config, const FieldDimensions &field_dimensions);
+                            const bitbots_localization::Params& config, const FieldDimensions& field_dimensions);
 
   /**
    *
    * @param state Reference to the state that has to be weighted.
    * @return weight for the given state.
    */
-  double measure(const RobotState &state) const override;
+  double measure(const RobotState& state) const override;
 
   void set_measurement_lines_pc(sm::msg::PointCloud2 measurement);
 
@@ -55,10 +55,10 @@ class RobotPoseObservationModel : public particle_filter::ObservationModel<Robot
   void set_movement_since_goal_measurement(const tf2::Transform movement);
 
  private:
-  double calculate_weight_for_class(const RobotState &state,
-                                    const std::vector<std::pair<double, double>> &last_measurement,
+  double calculate_weight_for_class(const RobotState& state,
+                                    const std::vector<std::pair<double, double>>& last_measurement,
                                     std::shared_ptr<Map> map, double element_weight,
-                                    const tf2::Transform &movement_since_measurement) const;
+                                    const tf2::Transform& movement_since_measurement) const;
 
   // Measurements
   std::vector<std::pair<double, double>> last_measurement_lines_;

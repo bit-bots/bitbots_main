@@ -32,14 +32,14 @@ class Polynom {
    * indexed from constant to
    * higher degree
    */
-  const std::vector<double> &getCoefs() const;
-  std::vector<double> &getCoefs();
+  const std::vector<double>& getCoefs() const;
+  std::vector<double>& getCoefs();
 
   /**
    * Access to coefficient
    */
-  const double &operator()(size_t index) const;
-  double &operator()(size_t index);
+  const double& operator()(size_t index) const;
+  double& operator()(size_t index);
 
   /**
    * Return polynom degree
@@ -60,7 +60,7 @@ class Polynom {
    * Some useful operators
    */
   void operator*=(double coef);
-  void operator+=(const Polynom &p);
+  void operator+=(const Polynom& p);
 
   /**
    * Update the polynom coefficients
@@ -79,7 +79,7 @@ class Polynom {
 /**
  * Print operator
  */
-std::ostream &operator<<(std::ostream &os, const Polynom &p);
+std::ostream& operator<<(std::ostream& os, const Polynom& p);
 
 }  // namespace bitbots_splines
 

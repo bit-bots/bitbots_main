@@ -29,7 +29,7 @@ class RobotMotionModel : public particle_filter::MovementModel<RobotState> {
    * empty
 
    */
-  RobotMotionModel(const particle_filter::CRandomNumberGenerator &random_number_generator, double diffuse_xStdDev,
+  RobotMotionModel(const particle_filter::CRandomNumberGenerator& random_number_generator, double diffuse_xStdDev,
                    double diffuse_yStdDev, double diffuse_tStdDev, double diffuse_multiplier,
                    Eigen::Matrix<double, 3, 2> drift_cov);
 
@@ -38,14 +38,14 @@ class RobotMotionModel : public particle_filter::MovementModel<RobotState> {
    * @param linear Linear movement relative to the base footprint in cartesian space
    * @param angular Anular movement of of the robot in its z-axis, therefore only the z axis needs to be set
    */
-  void drift(RobotState &state, geometry_msgs::msg::Vector3 linear, geometry_msgs::msg::Vector3 angular) const override;
+  void drift(RobotState& state, geometry_msgs::msg::Vector3 linear, geometry_msgs::msg::Vector3 angular) const override;
 
   /**
    * The diffusion consists of a very small gaussian jitter on the
    * state's variable.
    * @param state Pointer to the state that has to be manipulated.
    */
-  void diffuse(RobotState &state) const override;
+  void diffuse(RobotState& state) const override;
 
   double diffuse_multiplier_;
 

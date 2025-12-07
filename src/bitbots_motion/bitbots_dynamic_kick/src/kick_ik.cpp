@@ -27,7 +27,7 @@ void KickIK::reset() {
   }
 }
 
-bitbots_splines::JointGoals KickIK::calculate(const KickPositions &positions) {
+bitbots_splines::JointGoals KickIK::calculate(const KickPositions& positions) {
   // change goals from support foot based coordinate system to trunk based coordinate system
   Eigen::Isometry3d trunk_to_support_foot_goal = positions.trunk_pose.inverse();
   Eigen::Isometry3d trunk_to_flying_foot_goal = trunk_to_support_foot_goal * positions.flying_foot_pose;

@@ -185,11 +185,11 @@ void Localization::run_filter_one_step() {
   robot_pose_observation_model_->clear_measurement();
 }
 
-void Localization::LinePointcloudCallback(const sm::msg::PointCloud2 &msg) { line_pointcloud_relative_ = msg; }
+void Localization::LinePointcloudCallback(const sm::msg::PointCloud2& msg) { line_pointcloud_relative_ = msg; }
 
-void Localization::GoalPostsCallback(const sv3dm::msg::GoalpostArray &msg) { goal_posts_relative_ = msg; }
+void Localization::GoalPostsCallback(const sv3dm::msg::GoalpostArray& msg) { goal_posts_relative_ = msg; }
 
-void Localization::SetInitialPositionCallback(const gm::msg::PoseWithCovarianceStamped &msg) {
+void Localization::SetInitialPositionCallback(const gm::msg::PoseWithCovarianceStamped& msg) {
   // Transform the given pose to map frame
   auto pose_in_map = tf_buffer_->transform(msg, config_.ros.map_frame, tf2::durationFromSec(1.0));
 
@@ -290,7 +290,7 @@ void Localization::updateMeasurements() {
           odom_now);
       // Calculate the movement since the measurement was taken (in the local frame)
       return odom_at_measurement.inverseTimes(odom_now);
-    } catch (const tf2::TransformException &ex) {
+    } catch (const tf2::TransformException& ex) {
       RCLCPP_WARN(node_->get_logger(), "Could not acquire movement since measurement at time: %s Assumed no movement.",
                   ex.what());
       return tf2::Transform::getIdentity();
@@ -360,7 +360,7 @@ void Localization::getMotion() {
     // Set the variable for the transform of the previous step to the transform of the current step, because we finished
     // this step.
     previousOdomTransform_ = transformStampedNow;
-  } catch (const tf2::TransformException &ex) {
+  } catch (const tf2::TransformException& ex) {
     RCLCPP_WARN(node_->get_logger(), "Could not acquire motion for odom transforms: %s", ex.what());
   }
 }
@@ -380,7 +380,7 @@ void Localization::publish_transforms() {
   geometry_msgs::msg::TransformStamped odomDuringMeasurement, odomNow;
   try {
     odomNow = tf_buffer_->lookupTransform(config_.ros.odom_frame, config_.ros.base_footprint_frame, rclcpp::Time(0));
-  } catch (const tf2::TransformException &ex) {
+  } catch (const tf2::TransformException& ex) {
     RCLCPP_WARN(node_->get_logger(), "Could not acquire odom transforms: %s", ex.what());
   }
 
@@ -441,7 +441,7 @@ void Localization::publish_transforms() {
       map_odom_tf_last_published_time_ = map_odom_transform.header.stamp;
       br->sendTransform(map_odom_transform);
     }
-  } catch (const tf2::TransformException &ex) {
+  } catch (const tf2::TransformException& ex) {
     RCLCPP_WARN(node_->get_logger(), "Odom not available, therefore odom offset can not be published: %s", ex.what());
   }
 }
@@ -502,9 +502,9 @@ void Localization::publish_ratings() {
   }
 }
 
-void Localization::publish_debug_rating(const std::vector<std::pair<double, double>> &measurements, double scale,
+void Localization::publish_debug_rating(const std::vector<std::pair<double, double>>& measurements, double scale,
                                         const char name[], std::shared_ptr<Map> map,
-                                        rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr &publisher) {
+                                        rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr& publisher) {
   RobotState best_estimate = robot_pf_->getBestXPercentEstimate(config_.misc.percentage_best_particles);
 
   visualization_msgs::msg::Marker marker;
@@ -517,7 +517,7 @@ void Localization::publish_debug_rating(const std::vector<std::pair<double, doub
   marker.scale.x = scale;
   marker.scale.y = scale;
 
-  for (const std::pair<double, double> &measurement : measurements) {
+  for (const std::pair<double, double>& measurement : measurements) {
     // lines are in polar form!
     std::pair<double, double> observationRelative;
 
@@ -544,7 +544,7 @@ void Localization::publish_debug_rating(const std::vector<std::pair<double, doub
 }
 }  // namespace bitbots_localization
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   rclcpp::init(argc, argv);
   auto node = rclcpp::Node::make_shared("bitbots_localization");
   [[maybe_unused]] auto localization = bitbots_localization::Localization(node);

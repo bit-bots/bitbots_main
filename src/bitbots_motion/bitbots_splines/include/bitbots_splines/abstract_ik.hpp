@@ -19,8 +19,8 @@ typedef std::pair<std::vector<std::string>, std::vector<double>> JointGoals;
  * @param values New values for the previously defined joint names
  * @return new joint goals with updated values
  */
-inline JointGoals joint_goals_update(const JointGoals &goals, const std::vector<std::string> &names,
-                                     const std::vector<double> &values, rclcpp::Logger logger) {
+inline JointGoals joint_goals_update(const JointGoals& goals, const std::vector<std::string>& names,
+                                     const std::vector<double>& values, rclcpp::Logger logger) {
   JointGoals result = goals;
 
   if (names.size() != values.size()) {
@@ -46,8 +46,8 @@ inline JointGoals joint_goals_update(const JointGoals &goals, const std::vector<
  * @param diffs Differences to be applied to the previously defined joint names
  * @return new joint goals with updated values
  */
-inline JointGoals joint_goals_update_diff(const JointGoals &goals, const std::vector<std::string> &names,
-                                          const std::vector<double> &diffs, rclcpp::Logger logger) {
+inline JointGoals joint_goals_update_diff(const JointGoals& goals, const std::vector<std::string>& names,
+                                          const std::vector<double>& diffs, rclcpp::Logger logger) {
   JointGoals result = goals;
 
   if (names.size() != diffs.size()) {
@@ -77,7 +77,7 @@ class AbstractIK {
    * @param positions the cartesian positions of end points and custom additional information (e.g. support foot)
    * @return motor positions
    */
-  virtual JointGoals calculate(const Positions &positions) = 0;
+  virtual JointGoals calculate(const Positions& positions) = 0;
   /**
    * Reset the IK to its initial state.
    */

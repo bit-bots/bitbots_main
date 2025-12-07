@@ -10,9 +10,9 @@ WalkVisualizer::WalkVisualizer(rclcpp::Node::SharedPtr node, walking::Params::No
 
 void WalkVisualizer::init(moveit::core::RobotModelPtr kinematic_model) { kinematic_model_ = kinematic_model; }
 
-void WalkVisualizer::publishDebug(const WalkResponse &current_response,
-                                  const moveit::core::RobotStatePtr &current_state,
-                                  const bitbots_splines::JointGoals &motor_goals) {
+void WalkVisualizer::publishDebug(const WalkResponse& current_response,
+                                  const moveit::core::RobotStatePtr& current_state,
+                                  const bitbots_splines::JointGoals& motor_goals) {
   visualization_msgs::msg::MarkerArray marker_array;
 
   auto [engine_debug, engine_markers] = buildEngineDebugMsgs(current_response);
@@ -140,7 +140,7 @@ std::pair<bitbots_quintic_walk::msg::WalkDebug, visualization_msgs::msg::MarkerA
   // IK results
   moveit::core::RobotStatePtr goal_state;
   goal_state.reset(new moveit::core::RobotState(kinematic_model_));
-  auto &[names, goals] = joint_goals;
+  auto& [names, goals] = joint_goals;
   for (size_t i = 0; i < names.size(); i++) {
     // besides its name, this method only changes a single joint position...
     goal_state->setJointPositions(names[i], &goals[i]);
@@ -254,10 +254,10 @@ std::pair<bitbots_quintic_walk::msg::WalkDebug, visualization_msgs::msg::MarkerA
   return {msg, marker_array};
 }
 
-visualization_msgs::msg::Marker WalkVisualizer::createArrowMarker(const std::string &name_space,
-                                                                  const std::string &frame,
-                                                                  const geometry_msgs::msg::Pose &pose,
-                                                                  const std_msgs::msg::ColorRGBA &color) {
+visualization_msgs::msg::Marker WalkVisualizer::createArrowMarker(const std::string& name_space,
+                                                                  const std::string& frame,
+                                                                  const geometry_msgs::msg::Pose& pose,
+                                                                  const std_msgs::msg::ColorRGBA& color) {
   visualization_msgs::msg::Marker marker_msg;
   marker_msg.header.frame_id = frame;
 

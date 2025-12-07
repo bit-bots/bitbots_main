@@ -19,12 +19,12 @@ namespace bitbots_ros_control {
 
 class ImuHardwareInterface : public bitbots_ros_control::HardwareInterface {
  public:
-  explicit ImuHardwareInterface(rclcpp::Node::SharedPtr nh, std::shared_ptr<DynamixelDriver> &driver, int id,
+  explicit ImuHardwareInterface(rclcpp::Node::SharedPtr nh, std::shared_ptr<DynamixelDriver>& driver, int id,
                                 std::string topic, std::string frame, std::string name);
 
   bool init();
-  void read(const rclcpp::Time &t, const rclcpp::Duration &dt);
-  void write(const rclcpp::Time &t, const rclcpp::Duration &dt);
+  void read(const rclcpp::Time& t, const rclcpp::Duration& dt);
+  void write(const rclcpp::Time& t, const rclcpp::Duration& dt);
   void restoreAfterPowerCycle();
 
  private:

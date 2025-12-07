@@ -28,8 +28,8 @@ class ExtrinsicCalibrationBroadcaster : public rclcpp::Node {
         this->add_on_set_parameters_callback(std::bind(&ExtrinsicCalibrationBroadcaster::onSetParameters, this, _1));
   }
 
-  rcl_interfaces::msg::SetParametersResult onSetParameters(const std::vector<rclcpp::Parameter> &parameters) {
-    for (const auto &parameter : parameters) {
+  rcl_interfaces::msg::SetParametersResult onSetParameters(const std::vector<rclcpp::Parameter>& parameters) {
+    for (const auto& parameter : parameters) {
       if (parameter.get_name() == "offset_x") {
         offset_x_ = parameter.as_double();
       } else if (parameter.get_name() == "offset_y") {
@@ -72,7 +72,7 @@ class ExtrinsicCalibrationBroadcaster : public rclcpp::Node {
   double offset_x_ = 0, offset_y_ = 0, offset_z_ = 0;
 };
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   rclcpp::init(argc, argv);
 
   auto node = std::make_shared<ExtrinsicCalibrationBroadcaster>();

@@ -257,7 +257,7 @@ bool PressureConverter::zeroCallback(const std::shared_ptr<std_srvs::srv::Empty:
   return true;
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   rclcpp::init(argc, argv);
   // declare parameters automatically
   rclcpp::NodeOptions options = rclcpp::NodeOptions().automatically_declare_parameters_from_overrides(true);

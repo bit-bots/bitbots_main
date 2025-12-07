@@ -103,7 +103,7 @@ inline double angleDistance(double angle_src, double angle_dst) {
   }
 }
 
-inline void tf_pose_to_msg(tf2::Transform &tf_pose, geometry_msgs::msg::Pose &msg_pose) {
+inline void tf_pose_to_msg(tf2::Transform& tf_pose, geometry_msgs::msg::Pose& msg_pose) {
   msg_pose.position.x = tf_pose.getOrigin().getX();
   msg_pose.position.y = tf_pose.getOrigin().getY();
   msg_pose.position.z = tf_pose.getOrigin().getZ();

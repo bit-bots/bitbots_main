@@ -22,7 +22,7 @@ class TfDelayPlot : public rclcpp::Node {
 
   void tf_callback(const tf2_msgs::msg::TFMessage::SharedPtr msg) {
     RCLCPP_INFO(this->get_logger(), "Got transform message");
-    for (auto &transform : msg->transforms) {
+    for (auto& transform : msg->transforms) {
       // Calculate delay
       double delay =
           ((transform.header.stamp.sec * 1.0e9 + transform.header.stamp.nanosec) - this->now().nanoseconds()) / 1.0e9;
@@ -45,7 +45,7 @@ class TfDelayPlot : public rclcpp::Node {
   rclcpp::Subscription<tf2_msgs::msg::TFMessage>::SharedPtr tf_sub_;
 };
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   rclcpp::init(argc, argv);
   rclcpp::spin(std::make_shared<TfDelayPlot>());
   rclcpp::shutdown();

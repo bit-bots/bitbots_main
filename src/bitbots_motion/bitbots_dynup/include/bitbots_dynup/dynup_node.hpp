@@ -50,7 +50,7 @@ using namespace std::placeholders;
  */
 class DynupNode {
  public:
-  explicit DynupNode(rclcpp::Node::SharedPtr node, const std::string &ns = "",
+  explicit DynupNode(rclcpp::Node::SharedPtr node, const std::string& ns = "",
                      std::vector<rclcpp::Parameter> parameters = {});
 
   void onSetParameters();
@@ -59,9 +59,9 @@ class DynupNode {
 
   void jointStateCallback(const sensor_msgs::msg::JointState::SharedPtr joint_states);
 
-  DynupEngine *getEngine();
+  DynupEngine* getEngine();
 
-  DynupIK *getIK();
+  DynupIK* getIK();
 
   /**
    * Retrieve current positions of left foot and trunk relative to right foot
@@ -84,7 +84,7 @@ class DynupNode {
    * Callback that gets executed whenever #m_server receives a new goal.
    * @param goal New goal to process
    */
-  rclcpp_action::GoalResponse goalCb(const rclcpp_action::GoalUUID &uuid, std::shared_ptr<const DynupGoal::Goal> goal);
+  rclcpp_action::GoalResponse goalCb(const rclcpp_action::GoalUUID& uuid, std::shared_ptr<const DynupGoal::Goal> goal);
 
   rclcpp_action::CancelResponse cancelCb(std::shared_ptr<DynupGoalHandle> goal);
 
@@ -147,7 +147,7 @@ class DynupNode {
   /**
    * Creates the Goal Msg
    */
-  bitbots_msgs::msg::JointCommand createGoalMsg(const bitbots_splines::JointGoals &goals);
+  bitbots_msgs::msg::JointCommand createGoalMsg(const bitbots_splines::JointGoals& goals);
 
   /**
    * Helper method to achieve correctly sampled rate

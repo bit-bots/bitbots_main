@@ -21,9 +21,9 @@ class WolfgangHardwareInterface {
 
   bool init();
 
-  void read(const rclcpp::Time &t, const rclcpp::Duration &dt);
+  void read(const rclcpp::Time& t, const rclcpp::Duration& dt);
 
-  void write(const rclcpp::Time &t, const rclcpp::Duration &dt);
+  void write(const rclcpp::Time& t, const rclcpp::Duration& dt);
 
  private:
   bool create_interfaces(std::vector<std::pair<std::string, int>> dxl_devices);

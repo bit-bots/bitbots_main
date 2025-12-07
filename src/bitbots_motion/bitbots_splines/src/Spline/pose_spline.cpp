@@ -53,17 +53,17 @@ tf2::Quaternion PoseSpline::getOrientation(double time) {
   return quat;
 }
 
-SmoothSpline *PoseSpline::x() { return &x_; }
+SmoothSpline* PoseSpline::x() { return &x_; }
 
-SmoothSpline *PoseSpline::y() { return &y_; }
+SmoothSpline* PoseSpline::y() { return &y_; }
 
-SmoothSpline *PoseSpline::z() { return &z_; }
+SmoothSpline* PoseSpline::z() { return &z_; }
 
-SmoothSpline *PoseSpline::roll() { return &roll_; }
+SmoothSpline* PoseSpline::roll() { return &roll_; }
 
-SmoothSpline *PoseSpline::pitch() { return &pitch_; }
+SmoothSpline* PoseSpline::pitch() { return &pitch_; }
 
-SmoothSpline *PoseSpline::yaw() { return &yaw_; }
+SmoothSpline* PoseSpline::yaw() { return &yaw_; }
 
 std::string PoseSpline::getDebugString() {
   std::string output;

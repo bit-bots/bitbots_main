@@ -38,7 +38,7 @@ using namespace std::placeholders;
  */
 class KickNode : public rclcpp::Node {
  public:
-  explicit KickNode(const std::string &ns = std::string(), std::vector<rclcpp::Parameter> parameters = {});
+  explicit KickNode(const std::string& ns = std::string(), std::vector<rclcpp::Parameter> parameters = {});
 
   /**
    * Callback that gets executed whenever #server_ receives a new goal.
@@ -65,7 +65,7 @@ class KickNode : public rclcpp::Node {
    * @param trunk_to_base_footprint transform from trunk to base_footprint
    * @return whether the setup was successful
    */
-  bool init(const bitbots_msgs::action::Kick::Goal &goal_msg, std::string &error_string);
+  bool init(const bitbots_msgs::action::Kick::Goal& goal_msg, std::string& error_string);
 
   /**
    * Set the current joint state of the robot
@@ -114,7 +114,7 @@ class KickNode : public rclcpp::Node {
    */
   void loopEngine(const std::shared_ptr<rclcpp_action::ServerGoalHandle<bitbots_msgs::action::Kick>> goal_handle);
 
-  rclcpp_action::GoalResponse goalCb(const rclcpp_action::GoalUUID &uuid,
+  rclcpp_action::GoalResponse goalCb(const rclcpp_action::GoalUUID& uuid,
                                      std::shared_ptr<const bitbots_msgs::action::Kick::Goal> goal);
 
   rclcpp_action::CancelResponse cancelCb(
@@ -137,13 +137,13 @@ class KickNode : public rclcpp::Node {
   /**
    * Get JointCommand message for JointGoals
    */
-  bitbots_msgs::msg::JointCommand getJointCommand(const bitbots_splines::JointGoals &goals);
+  bitbots_msgs::msg::JointCommand getJointCommand(const bitbots_splines::JointGoals& goals);
 
   void copLCallback(const geometry_msgs::msg::PointStamped::SharedPtr cop);
 
   void copRCallback(const geometry_msgs::msg::PointStamped::SharedPtr cop);
 
-  rcl_interfaces::msg::SetParametersResult onSetParameters(const std::vector<rclcpp::Parameter> &parameters);
+  rcl_interfaces::msg::SetParametersResult onSetParameters(const std::vector<rclcpp::Parameter>& parameters);
 };
 }  // namespace bitbots_dynamic_kick
 

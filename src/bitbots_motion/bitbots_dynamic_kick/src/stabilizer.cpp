@@ -34,7 +34,7 @@ void Stabilizer::reset() {
   pid_trunk_fused_roll_->reset();
 }
 
-KickPositions Stabilizer::stabilize(const KickPositions &positions, const rclcpp::Duration &dt) {
+KickPositions Stabilizer::stabilize(const KickPositions& positions, const rclcpp::Duration& dt) {
   KickPositions stabilized_positions = positions;
   if (positions.cop_support_point && use_cop_) {
     /* calculate stabilizing target from center of pressure

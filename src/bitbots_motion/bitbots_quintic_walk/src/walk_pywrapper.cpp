@@ -2,8 +2,8 @@
 
 void PyWalkWrapper::spin_some() { rclcpp::spin_some(node_); }
 
-PyWalkWrapper::PyWalkWrapper(const std::string &ns, const std::vector<py::bytes> &walk_parameter_msgs,
-                             const std::vector<py::bytes> &moveit_parameter_msgs, bool force_smooth_step_transition) {
+PyWalkWrapper::PyWalkWrapper(const std::string& ns, const std::vector<py::bytes>& walk_parameter_msgs,
+                             const std::vector<py::bytes>& moveit_parameter_msgs, bool force_smooth_step_transition) {
   // initialize rclcpp if not already done
   if (!rclcpp::contexts::get_global_default_context()->is_valid()) {
     rclcpp::init(0, nullptr);
@@ -12,7 +12,7 @@ PyWalkWrapper::PyWalkWrapper(const std::string &ns, const std::vector<py::bytes>
   // internal function to deserialize the parameter messages
   auto deserialize_parameters = [](std::vector<py::bytes> parameter_msgs) {
     std::vector<rclcpp::Parameter> cpp_parameters = {};
-    for (auto &parameter_msg : parameter_msgs) {
+    for (auto& parameter_msg : parameter_msgs) {
       cpp_parameters.push_back(
           rclcpp::Parameter::from_parameter_msg(fromPython<rcl_interfaces::msg::Parameter>(parameter_msg)));
     }
@@ -38,8 +38,8 @@ PyWalkWrapper::PyWalkWrapper(const std::string &ns, const std::vector<py::bytes>
   walk_node_->getEngine()->setForceSmoothStepTransition(force_smooth_step_transition);
 }
 
-py::bytes PyWalkWrapper::step(double dt, py::bytes &cmdvel_msg, py::bytes &imu_msg, py::bytes &jointstate_msg,
-                              py::bytes &pressure_left, py::bytes &pressure_right) {
+py::bytes PyWalkWrapper::step(double dt, py::bytes& cmdvel_msg, py::bytes& imu_msg, py::bytes& jointstate_msg,
+                              py::bytes& pressure_left, py::bytes& pressure_right) {
   bitbots_msgs::msg::JointCommand result = walk_node_->step(
       dt, std::make_shared<geometry_msgs::msg::Twist>(fromPython<geometry_msgs::msg::Twist>(cmdvel_msg)),
       std::make_shared<sensor_msgs::msg::Imu>(fromPython<sensor_msgs::msg::Imu>(imu_msg)),
@@ -49,8 +49,8 @@ py::bytes PyWalkWrapper::step(double dt, py::bytes &cmdvel_msg, py::bytes &imu_m
   return toPython<bitbots_msgs::msg::JointCommand>(result);
 }
 
-py::bytes PyWalkWrapper::step_relative(double dt, py::bytes &step_msg, py::bytes &imu_msg, py::bytes &jointstate_msg,
-                                       py::bytes &pressure_left, py::bytes &pressure_right) {
+py::bytes PyWalkWrapper::step_relative(double dt, py::bytes& step_msg, py::bytes& imu_msg, py::bytes& jointstate_msg,
+                                       py::bytes& pressure_left, py::bytes& pressure_right) {
   bitbots_msgs::msg::JointCommand result = walk_node_->step_relative(
       dt, std::make_shared<geometry_msgs::msg::Twist>(fromPython<geometry_msgs::msg::Twist>(step_msg)),
       std::make_shared<sensor_msgs::msg::Imu>(fromPython<sensor_msgs::msg::Imu>(imu_msg)),
@@ -60,7 +60,7 @@ py::bytes PyWalkWrapper::step_relative(double dt, py::bytes &step_msg, py::bytes
   return toPython<bitbots_msgs::msg::JointCommand>(result);
 }
 
-py::bytes PyWalkWrapper::step_open_loop(double dt, py::bytes &cmdvel_msg) {
+py::bytes PyWalkWrapper::step_open_loop(double dt, py::bytes& cmdvel_msg) {
   geometry_msgs::msg::PoseArray result = walk_node_->step_open_loop(
       dt, std::make_shared<geometry_msgs::msg::Twist>(fromPython<geometry_msgs::msg::Twist>(cmdvel_msg)));
   return toPython<geometry_msgs::msg::PoseArray>(result);
@@ -147,8 +147,8 @@ void PyWalkWrapper::publish_debug() { walk_node_->publish_debug(); }
 bool PyWalkWrapper::reset_and_test_if_speed_possible(py::bytes cmd_vel, double pos_threshold) {
   walk_node_->reset(bitbots_quintic_walk::WalkState::WALKING, 0.0,
                     std::make_shared<geometry_msgs::msg::Twist>(fromPython<geometry_msgs::msg::Twist>(cmd_vel)), true);
-  bitbots_quintic_walk::WalkEngine *engine = walk_node_->getEngine();
-  bitbots_quintic_walk::WalkIK *ik = walk_node_->getIk();
+  bitbots_quintic_walk::WalkEngine* engine = walk_node_->getEngine();
+  bitbots_quintic_walk::WalkIK* ik = walk_node_->getIk();
   bitbots_quintic_walk::WalkResponse current_response;
   bitbots_splines::JointGoals joint_goals;
   moveit::core::RobotStatePtr goal_state;

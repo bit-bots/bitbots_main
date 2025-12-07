@@ -19,7 +19,7 @@
 
 namespace bitbots_ros_control {
 template <typename T>
-std::string vecToString(const std::vector<T> &vec) {
+std::string vecToString(const std::vector<T>& vec) {
   std::stringstream ss;
   ss << "[";
   for (unsigned int i = 0; i < vec.size(); ++i) {
@@ -50,8 +50,8 @@ class DynamixelServoHardwareInterface : public bitbots_ros_control::HardwareInte
   explicit DynamixelServoHardwareInterface(rclcpp::Node::SharedPtr nh);
 
   bool init();
-  void read(const rclcpp::Time &t, const rclcpp::Duration &dt);
-  void write(const rclcpp::Time &t, const rclcpp::Duration &dt);
+  void read(const rclcpp::Time& t, const rclcpp::Duration& dt);
+  void write(const rclcpp::Time& t, const rclcpp::Duration& dt);
   void addBusInterface(std::shared_ptr<ServoBusInterface> bus);
   void writeROMRAM(bool first_time);
 
@@ -61,7 +61,7 @@ class DynamixelServoHardwareInterface : public bitbots_ros_control::HardwareInte
 
   void setTorqueCb(std_msgs::msg::Bool::SharedPtr enabled);
   void individualTorqueCb(bitbots_msgs::msg::JointTorque msg);
-  void commandCb(const bitbots_msgs::msg::JointCommand &command_msg);
+  void commandCb(const bitbots_msgs::msg::JointCommand& command_msg);
 
   std::vector<int32_t> goal_torque_individual_;
 

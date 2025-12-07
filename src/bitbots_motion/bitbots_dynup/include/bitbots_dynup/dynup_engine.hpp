@@ -27,7 +27,7 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
 
   DynupResponse update(double dt) override;
 
-  void setGoals(const DynupRequest &goals) override;
+  void setGoals(const DynupRequest& goals) override;
 
   /*
    * Publishes debug markers

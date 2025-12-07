@@ -62,8 +62,8 @@ class Spline {
    * Write and read splines data into given
    * iostream in ascii format
    */
-  void exportData(std::ostream &os) const;
-  void importData(std::istream &is);
+  void exportData(std::ostream& os) const;
+  void importData(std::istream& is);
 
   /**
    * Return the number of internal polynom
@@ -73,19 +73,19 @@ class Spline {
   /**
    * Access to given by its index
    */
-  const SplineT &part(size_t index) const;
+  const SplineT& part(size_t index) const;
 
   /**
    * Add a part with given polynom
    * and min/max time range
    */
-  void addPart(const Polynom &poly, double min, double max);
+  void addPart(const Polynom& poly, double min, double max);
 
   /**
    * Replace this spline part with the
    * internal data of given spline
    */
-  void copyData(const Spline &sp);
+  void copyData(const Spline& sp);
 
  protected:
   /**

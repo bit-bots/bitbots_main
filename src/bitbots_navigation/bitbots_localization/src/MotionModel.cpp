@@ -6,7 +6,7 @@
 
 namespace bitbots_localization {
 
-RobotMotionModel::RobotMotionModel(const particle_filter::CRandomNumberGenerator &random_number_generator,
+RobotMotionModel::RobotMotionModel(const particle_filter::CRandomNumberGenerator& random_number_generator,
                                    double diffuse_xStdDev, double diffuse_yStdDev, double diffuse_tStdDev,
                                    double diffuse_multiplier, Eigen::Matrix<double, 3, 2> drift_cov)
     : particle_filter::MovementModel<RobotState>(),
@@ -17,7 +17,7 @@ RobotMotionModel::RobotMotionModel(const particle_filter::CRandomNumberGenerator
       diffuse_tStdDev_(diffuse_tStdDev),
       drift_cov_(drift_cov) {}
 
-void RobotMotionModel::drift(RobotState &state, geometry_msgs::msg::Vector3 linear_movement,
+void RobotMotionModel::drift(RobotState& state, geometry_msgs::msg::Vector3 linear_movement,
                              geometry_msgs::msg::Vector3 rotational_movement) const {
   // Convert cartesian coordinates to polarcoordinates with an orientation
   auto [polar_rot, polar_dist] = cartesianToPolar(linear_movement.x, linear_movement.y);
@@ -44,7 +44,7 @@ void RobotMotionModel::drift(RobotState &state, geometry_msgs::msg::Vector3 line
   state.setTheta(theta);
 }
 
-void RobotMotionModel::diffuse(RobotState &state) const {
+void RobotMotionModel::diffuse(RobotState& state) const {
   state.setXPos(state.getXPos() + sample(diffuse_xStdDev_) * diffuse_multiplier_);
   state.setYPos(state.getYPos() + sample(diffuse_yStdDev_) * diffuse_multiplier_);
   double theta = state.getTheta() + sample(diffuse_tStdDev_) * diffuse_multiplier_;

@@ -12,12 +12,12 @@ namespace bitbots_ros_control {
 
 class LedsHardwareInterface : public bitbots_ros_control::HardwareInterface {
  public:
-  LedsHardwareInterface(rclcpp::Node::SharedPtr nh, std::shared_ptr<DynamixelDriver> &driver, uint8_t id,
+  LedsHardwareInterface(rclcpp::Node::SharedPtr nh, std::shared_ptr<DynamixelDriver>& driver, uint8_t id,
                         uint8_t num_leds, uint8_t start_number);
 
   bool init();
-  void read(const rclcpp::Time &t, const rclcpp::Duration &dt);
-  void write(const rclcpp::Time &t, const rclcpp::Duration &dt);
+  void read(const rclcpp::Time& t, const rclcpp::Duration& dt);
+  void write(const rclcpp::Time& t, const rclcpp::Duration& dt);
 
  private:
   rclcpp::Node::SharedPtr nh_;

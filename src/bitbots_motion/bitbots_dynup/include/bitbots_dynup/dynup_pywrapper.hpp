@@ -17,7 +17,7 @@ using namespace ros2_python_extension;
 class PyDynupWrapper {
  public:
   explicit PyDynupWrapper(std::string ns);
-  py::bytes step(double dt, py::bytes &imu_msg, py::bytes &joint_state_msg);
+  py::bytes step(double dt, py::bytes& imu_msg, py::bytes& joint_state_msg);
   py::bytes step_open_loop(double dt);
   py::bytes get_poses();
   void reset();

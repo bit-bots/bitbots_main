@@ -3,7 +3,7 @@
 namespace bitbots_dynup {
 using namespace std::chrono_literals;
 
-DynupNode::DynupNode(rclcpp::Node::SharedPtr node, const std::string &ns, std::vector<rclcpp::Parameter> parameters)
+DynupNode::DynupNode(rclcpp::Node::SharedPtr node, const std::string& ns, std::vector<rclcpp::Parameter> parameters)
     : node_(node),
       param_listener_(node_),
       params_(param_listener_.get_params()),
@@ -48,7 +48,7 @@ DynupNode::DynupNode(rclcpp::Node::SharedPtr node, const std::string &ns, std::v
     rcl_interfaces::msg::ListParametersResult parameter_list =
         parameters_client->list_parameters({"robot_description_kinematics"}, 10);
     auto copied_parameters = parameters_client->get_parameters(parameter_list.names);
-    for (auto &parameter : copied_parameters) {
+    for (auto& parameter : copied_parameters) {
       moveit_node->declare_parameter(parameter.get_name(), parameter.get_type());
       moveit_node->set_parameter(parameter);
     }
@@ -207,7 +207,7 @@ void DynupNode::execute(const std::shared_ptr<DynupGoalHandle> goal_handle) {
   }
 }
 
-rclcpp_action::GoalResponse DynupNode::goalCb(const rclcpp_action::GoalUUID &uuid,
+rclcpp_action::GoalResponse DynupNode::goalCb(const rclcpp_action::GoalUUID& uuid,
                                               std::shared_ptr<const DynupGoal::Goal> goal) {
   RCLCPP_INFO(node_->get_logger(), "Received goal request");
   (void)uuid;
@@ -339,13 +339,13 @@ bitbots_dynup::msg::DynupPoses DynupNode::getCurrentPoses() {
     msg.r_arm_pose = transform2pose(r_hand_transformed);
     msg.header.stamp = node_->get_clock()->now();
     return msg;
-  } catch (tf2::TransformException &exc) {
+  } catch (tf2::TransformException& exc) {
     RCLCPP_ERROR_STREAM(node_->get_logger(), exc.what());
     return msg;
   }
 }
 
-bitbots_msgs::msg::JointCommand DynupNode::createGoalMsg(const bitbots_splines::JointGoals &goals) {
+bitbots_msgs::msg::JointCommand DynupNode::createGoalMsg(const bitbots_splines::JointGoals& goals) {
   /* Construct JointCommand message */
   bitbots_msgs::msg::JointCommand command;
   command.header.stamp = node_->get_clock()->now();
@@ -367,13 +367,13 @@ bitbots_msgs::msg::JointCommand DynupNode::createGoalMsg(const bitbots_splines::
   return command;
 }
 
-DynupEngine *DynupNode::getEngine() { return &engine_; }
+DynupEngine* DynupNode::getEngine() { return &engine_; }
 
-DynupIK *DynupNode::getIK() { return &ik_; }
+DynupIK* DynupNode::getIK() { return &ik_; }
 
 }  // namespace bitbots_dynup
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   // init node
   rclcpp::init(argc, argv);
 

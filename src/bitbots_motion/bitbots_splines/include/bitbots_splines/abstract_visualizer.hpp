@@ -17,7 +17,7 @@ class AbstractVisualizer {
    * @param frame The frame in which the position is given
    * @return The visualization marker
    */
-  visualization_msgs::msg::Marker getMarker(const tf2::Vector3 &position, const std::string &frame,
+  visualization_msgs::msg::Marker getMarker(const tf2::Vector3& position, const std::string& frame,
                                             rclcpp::Node::SharedPtr node) {
     visualization_msgs::msg::Marker marker;
 
@@ -46,7 +46,7 @@ class AbstractVisualizer {
    * @param smoothness The smoothness of the splines
    * @return The visualization markers
    */
-  visualization_msgs::msg::MarkerArray getPath(bitbots_splines::PoseSpline &spline, const std::string &frame,
+  visualization_msgs::msg::MarkerArray getPath(bitbots_splines::PoseSpline& spline, const std::string& frame,
                                                const double smoothness, rclcpp::Node::SharedPtr node) {
     visualization_msgs::msg::MarkerArray marker_array;
     visualization_msgs::msg::Marker base_marker;
@@ -83,13 +83,13 @@ class AbstractVisualizer {
     // Marker for spline orientation
     // Get all times of manually added points
     std::list<double> times;
-    for (const SmoothSpline::Point &p : spline.roll()->points()) {
+    for (const SmoothSpline::Point& p : spline.roll()->points()) {
       times.push_back(p.time);
     }
-    for (const SmoothSpline::Point &p : spline.pitch()->points()) {
+    for (const SmoothSpline::Point& p : spline.pitch()->points()) {
       times.push_back(p.time);
     }
-    for (const SmoothSpline::Point &p : spline.yaw()->points()) {
+    for (const SmoothSpline::Point& p : spline.yaw()->points()) {
       times.push_back(p.time);
     }
     times.sort();

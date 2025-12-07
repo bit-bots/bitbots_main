@@ -117,7 +117,7 @@ class OdometryFuser : public rclcpp::Node {
         geometry_msgs::msg::TransformStamped imu_mounting_transform =
             tf_buffer_.lookupTransform(imu_data_.header.frame_id, base_link_frame_, fused_time_);
         fromMsg(imu_mounting_transform.transform, imu_mounting_offset);
-      } catch (tf2::TransformException &ex) {
+      } catch (tf2::TransformException& ex) {
         RCLCPP_ERROR(this->get_logger(), "Not able to fuse IMU data with odometry due to a tf problem: %s", ex.what());
       }
 
@@ -148,8 +148,8 @@ class OdometryFuser : public rclcpp::Node {
 
   void supportCallback(const biped_interfaces::msg::Phase::SharedPtr msg) { support_state_cache_.add(msg); }
 
-  void imuCallback(const sensor_msgs::msg::Imu::SharedPtr &imu_msg,
-                   const nav_msgs::msg::Odometry::SharedPtr &motion_odom_msg) {
+  void imuCallback(const sensor_msgs::msg::Imu::SharedPtr& imu_msg,
+                   const nav_msgs::msg::Odometry::SharedPtr& motion_odom_msg) {
     imu_data_ = *imu_msg;
     odom_data_ = *motion_odom_msg;
     // Use the time of the imu as a baseline to do transforms and stuff because it is more timecritical than the walking
@@ -253,7 +253,7 @@ class OdometryFuser : public rclcpp::Node {
           support_frame = l_sole_frame_;
         rotation_point = tf_buffer_.lookupTransform(base_link_frame_, support_frame, fused_time_);
         fromMsg(rotation_point.transform, rotation_point_tf);
-      } catch (tf2::TransformException &ex) {
+      } catch (tf2::TransformException& ex) {
         RCLCPP_ERROR(this->get_logger(), "%s", ex.what());
       }
     } else if (current_support_state == biped_interfaces::msg::Phase::DOUBLE_STANCE) {
@@ -280,7 +280,7 @@ class OdometryFuser : public rclcpp::Node {
 
         rotation_point_tf = base_to_l_sole_tf * l_to_center_tf;
         rotation_point_tf.setRotation(zero_rotation);
-      } catch (tf2::TransformException &ex) {
+      } catch (tf2::TransformException& ex) {
         RCLCPP_ERROR(this->get_logger(), "%s", ex.what());
       }
     } else {
@@ -291,7 +291,7 @@ class OdometryFuser : public rclcpp::Node {
   }
 };
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   rclcpp::init(argc, argv);
   auto node = std::make_shared<OdometryFuser>();
   rclcpp::experimental::executors::EventsExecutor exec;

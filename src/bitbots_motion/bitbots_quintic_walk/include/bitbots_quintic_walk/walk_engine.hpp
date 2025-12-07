@@ -29,7 +29,7 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
 
   // methods from abstract engine class
   WalkResponse update(double dt) override;
-  void setGoals(const WalkRequest &goals) override;
+  void setGoals(const WalkRequest& goals) override;
   void reset() override;
   [[nodiscard]] int getPercentDone() const override;
 
@@ -170,14 +170,14 @@ class WalkEngine : public bitbots_splines::AbstractEngine<WalkRequest, WalkRespo
    * Set the target pose of current support foot during next support phase and update support foot.
    * The target foot pose diff is given with respect to next support foot pose (current flying foot target).
    */
-  void stepFromSupport(const tf2::Transform &diff);
+  void stepFromSupport(const tf2::Transform& diff);
 
   /**
    * Set target pose of current support foot using diff orders.
    * Zero vector means in place walking.
    * Special handle of lateral and turn step to avoid foot collision.
    */
-  void stepFromOrders(const std::vector<double> &linear_orders, double angular_z);
+  void stepFromOrders(const std::vector<double>& linear_orders, double angular_z);
 
   /**
    * Small helper method to get euler angle instead of quaternion.

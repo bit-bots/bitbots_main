@@ -37,8 +37,8 @@ class SmoothSpline : public Spline {
   /**
    * Access to points container
    */
-  const std::vector<Point> &points() const;
-  std::vector<Point> &points();
+  const std::vector<Point>& points() const;
+  std::vector<Point>& points();
 
   /**
    * Recompute splines interpolation model

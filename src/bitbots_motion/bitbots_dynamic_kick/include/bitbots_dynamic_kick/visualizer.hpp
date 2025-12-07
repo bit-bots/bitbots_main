@@ -34,20 +34,20 @@ struct VisualizationParams {
 
 class Visualizer : bitbots_splines::AbstractVisualizer {
  public:
-  explicit Visualizer(const std::string &base_topic, rclcpp::Node::SharedPtr node);
+  explicit Visualizer(const std::string& base_topic, rclcpp::Node::SharedPtr node);
 
   void setParams(VisualizationParams params);
 
-  void displayReceivedGoal(const bitbots_msgs::action::Kick::Goal &goal);
+  void displayReceivedGoal(const bitbots_msgs::action::Kick::Goal& goal);
 
-  void displayFlyingSplines(bitbots_splines::PoseSpline splines, const std::string &support_foot_frame);
+  void displayFlyingSplines(bitbots_splines::PoseSpline splines, const std::string& support_foot_frame);
 
-  void displayTrunkSplines(bitbots_splines::PoseSpline splines, const std::string &support_foot_frame);
+  void displayTrunkSplines(bitbots_splines::PoseSpline splines, const std::string& support_foot_frame);
 
-  void displayWindupPoint(const Eigen::Vector3d &kick_windup_point, const std::string &support_foot_frame);
+  void displayWindupPoint(const Eigen::Vector3d& kick_windup_point, const std::string& support_foot_frame);
 
-  void publishGoals(const KickPositions &positions, const KickPositions &stabilized_positions,
-                    const moveit::core::RobotStatePtr &robot_state, KickPhase engine_phase);
+  void publishGoals(const KickPositions& positions, const KickPositions& stabilized_positions,
+                    const moveit::core::RobotStatePtr& robot_state, KickPhase engine_phase);
 
  private:
   rclcpp::Node::SharedPtr node_;

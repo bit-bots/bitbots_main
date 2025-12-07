@@ -17,14 +17,14 @@ class ImportanceResamplingWE : public particle_filter::ImportanceResampling<Stat
   /**
    * A ParticleList is an array of pointers to Particles.
    */
-  typedef std::vector<particle_filter::Particle<StateType> *> ParticleList;
+  typedef std::vector<particle_filter::Particle<StateType>*> ParticleList;
 
  public:
   /**
    * The constructor of this base class inits some members.
    */
   ImportanceResamplingWE(int explorer_count,
-                                    std::shared_ptr<particle_filter::StateDistribution<StateType>> distribution);
+                         std::shared_ptr<particle_filter::StateDistribution<StateType>> distribution);
 
   /**
    * This is the main method of ImportanceResampling. It takes two references
@@ -33,7 +33,7 @@ class ImportanceResamplingWE : public particle_filter::ImportanceResampling<Stat
    * @param source the source list to draw new particles from.
    * @param destination the destination list where to put the copies.
    */
-  void resample(const ParticleList &source, const ParticleList &destination) const;
+  void resample(const ParticleList& source, const ParticleList& destination) const;
 
   /**
    * Sets the Random Number Generator to use in resample() to generate
@@ -61,8 +61,8 @@ ImportanceResamplingWE<StateType>::ImportanceResamplingWE(
 // this is an implementation of the algorithm presented in Propabilistic
 // Robotics by Sebastian Thrun et al.
 template <class StateType>
-void ImportanceResamplingWE<StateType>::resample(const ParticleList &sourceList,
-                                                 const ParticleList &destinationList) const {
+void ImportanceResamplingWE<StateType>::resample(const ParticleList& sourceList,
+                                                 const ParticleList& destinationList) const {
   assert(sourceList.size() == destinationList.size());
   // some particles (most of them usually) get resampled and explorer_count
   // particles get assigned a random state

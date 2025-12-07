@@ -14,7 +14,7 @@ void DynamixelServoHardwareInterface::addBusInterface(std::shared_ptr<ServoBusIn
 }
 
 void DynamixelServoHardwareInterface::writeROMRAM(bool first_time) {
-  for (auto &bus : bus_interfaces_) {
+  for (auto& bus : bus_interfaces_) {
     bus->writeROMRAM(first_time);
   }
 }
@@ -41,7 +41,7 @@ bool DynamixelServoHardwareInterface::init() {
 
   // init merged vectors for controller
   joint_count_ = 0;
-  for (const auto &bus : bus_interfaces_) {
+  for (const auto& bus : bus_interfaces_) {
     joint_count_ = joint_count_ + bus->joint_count_;
     for (int i = 0; i < bus->joint_count_; i++) {
       joint_names_.push_back(bus->joint_names_[i]);
@@ -70,8 +70,8 @@ bool DynamixelServoHardwareInterface::init() {
   moveit::core::RobotModelPtr model = rml.getModel();
   lower_joint_limits_.resize(joint_count_);
   upper_joint_limits_.resize(joint_count_);
-  for (const std::string &joint_name : joint_names_) {
-    moveit::core::JointModel *jm = model->getJointModel(joint_name);
+  for (const std::string& joint_name : joint_names_) {
+    moveit::core::JointModel* jm = model->getJointModel(joint_name);
     // we use getVariableBounds()[0] because there is only a single variable for all of our joints
     lower_joint_limits_[joint_map_[joint_name]] = jm->getVariableBounds()[0].min_position_;
     upper_joint_limits_[joint_map_[joint_name]] = jm->getVariableBounds()[0].max_position_;
@@ -94,7 +94,7 @@ bool DynamixelServoHardwareInterface::init() {
   return true;
 }
 
-void DynamixelServoHardwareInterface::commandCb(const bitbots_msgs::msg::JointCommand &command_msg) {
+void DynamixelServoHardwareInterface::commandCb(const bitbots_msgs::msg::JointCommand& command_msg) {
   if (!(command_msg.joint_names.size() == command_msg.positions.size() &&
         command_msg.joint_names.size() == command_msg.velocities.size() &&
         command_msg.joint_names.size() == command_msg.accelerations.size() &&
@@ -147,7 +147,7 @@ void DynamixelServoHardwareInterface::individualTorqueCb(bitbots_msgs::msg::Join
       RCLCPP_WARN(nh_->get_logger(), "Couldn't set torque for servo %s ", msg.joint_names[i].c_str());
     }
   }
-  for (const auto &bus : bus_interfaces_) {
+  for (const auto& bus : bus_interfaces_) {
     bus->switch_individual_torque_ = true;
   }
 }
@@ -156,7 +156,7 @@ void DynamixelServoHardwareInterface::setTorqueCb(std_msgs::msg::Bool::SharedPtr
   /**
    * This saves the given required value, so that it can be written to the servos in the write method
    */
-  for (const auto &bus : bus_interfaces_) {
+  for (const auto& bus : bus_interfaces_) {
     bus->goal_torque_ = enabled->data;
   }
   for (size_t j = 0; j < joint_names_.size(); j++) {
@@ -164,11 +164,11 @@ void DynamixelServoHardwareInterface::setTorqueCb(std_msgs::msg::Bool::SharedPtr
   }
 }
 
-void DynamixelServoHardwareInterface::read(const rclcpp::Time &t, const rclcpp::Duration &dt) {
+void DynamixelServoHardwareInterface::read(const rclcpp::Time& t, const rclcpp::Duration& dt) {
   // retrieve values from the buses and set controller vector accordingly
   // todo improve performance
   int i = 0;
-  for (const auto &bus : bus_interfaces_) {
+  for (const auto& bus : bus_interfaces_) {
     for (int j = 0; j < bus->joint_count_; j++) {
       current_position_[i] = bus->current_position_[j];
       current_velocity_[i] = bus->current_velocity_[j];
@@ -191,11 +191,11 @@ void DynamixelServoHardwareInterface::read(const rclcpp::Time &t, const rclcpp::
   pwm_pub_->publish(pwm_msg_);
 }
 
-void DynamixelServoHardwareInterface::write(const rclcpp::Time &t, const rclcpp::Duration &dt) {
+void DynamixelServoHardwareInterface::write(const rclcpp::Time& t, const rclcpp::Duration& dt) {
   // set all values from controller to the buses
   // todo improve performance
   int i = 0;
-  for (const auto &bus : bus_interfaces_) {
+  for (const auto& bus : bus_interfaces_) {
     for (int j = 0; j < bus->joint_count_; j++) {
       bus->goal_position_[j] = goal_position_[i];
       bus->goal_velocity_[j] = goal_velocity_[i];

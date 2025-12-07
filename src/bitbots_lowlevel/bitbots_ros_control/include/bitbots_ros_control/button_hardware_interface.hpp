@@ -16,12 +16,12 @@ namespace bitbots_ros_control {
 
 class ButtonHardwareInterface : public bitbots_ros_control::HardwareInterface {
  public:
-  explicit ButtonHardwareInterface(rclcpp::Node::SharedPtr nh, std::shared_ptr<DynamixelDriver> &driver, int id,
+  explicit ButtonHardwareInterface(rclcpp::Node::SharedPtr nh, std::shared_ptr<DynamixelDriver>& driver, int id,
                                    std::string topic, int read_rate_);
 
   bool init();
-  void read(const rclcpp::Time &t, const rclcpp::Duration &dt);
-  void write(const rclcpp::Time &t, const rclcpp::Duration &dt);
+  void read(const rclcpp::Time& t, const rclcpp::Duration& dt);
+  void write(const rclcpp::Time& t, const rclcpp::Duration& dt);
 
  private:
   rclcpp::Node::SharedPtr nh_;

@@ -23,9 +23,9 @@ class WalkVisualizer : public bitbots_splines::AbstractVisualizer {
  public:
   explicit WalkVisualizer(rclcpp::Node::SharedPtr node, walking::Params::Node::Tf tf_config);
 
-  visualization_msgs::msg::Marker createArrowMarker(const std::string &name_space, const std::string &frame,
-                                                    const geometry_msgs::msg::Pose &pose,
-                                                    const std_msgs::msg::ColorRGBA &color);
+  visualization_msgs::msg::Marker createArrowMarker(const std::string& name_space, const std::string& frame,
+                                                    const geometry_msgs::msg::Pose& pose,
+                                                    const std_msgs::msg::ColorRGBA& color);
 
   std::pair<bitbots_quintic_walk::msg::WalkEngineDebug, visualization_msgs::msg::MarkerArray> buildEngineDebugMsgs(
       WalkResponse response);
@@ -35,8 +35,8 @@ class WalkVisualizer : public bitbots_splines::AbstractVisualizer {
 
   void init(moveit::core::RobotModelPtr kinematic_model);
 
-  void publishDebug(const WalkResponse &current_response, const moveit::core::RobotStatePtr &current_state,
-                    const bitbots_splines::JointGoals &motor_goals);
+  void publishDebug(const WalkResponse& current_response, const moveit::core::RobotStatePtr& current_state,
+                    const bitbots_splines::JointGoals& motor_goals);
 
   std_msgs::msg::ColorRGBA colorFactory(double r, double g, double b) {
     std_msgs::msg::ColorRGBA color;

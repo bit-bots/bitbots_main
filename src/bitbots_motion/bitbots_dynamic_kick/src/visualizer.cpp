@@ -3,7 +3,7 @@
 
 namespace bitbots_dynamic_kick {
 
-Visualizer::Visualizer(const std::string &base_topic, rclcpp::Node::SharedPtr node)
+Visualizer::Visualizer(const std::string& base_topic, rclcpp::Node::SharedPtr node)
     : node_(node), base_topic_(base_topic) {
   /* make sure base_topic_ has consistent scheme */
   if (base_topic.compare(base_topic.size() - 1, 1, "/") != 0) {
@@ -22,7 +22,7 @@ Visualizer::Visualizer(const std::string &base_topic, rclcpp::Node::SharedPtr no
 
 void Visualizer::setParams(VisualizationParams params) { params_ = params; }
 
-void Visualizer::displayFlyingSplines(bitbots_splines::PoseSpline splines, const std::string &support_foot_frame) {
+void Visualizer::displayFlyingSplines(bitbots_splines::PoseSpline splines, const std::string& support_foot_frame) {
   if (foot_spline_publisher_->get_subscription_count() == 0) return;
 
   visualization_msgs::msg::MarkerArray path = getPath(splines, support_foot_frame, params_.spline_smoothness, node_);
@@ -31,7 +31,7 @@ void Visualizer::displayFlyingSplines(bitbots_splines::PoseSpline splines, const
   foot_spline_publisher_->publish(path);
 }
 
-void Visualizer::displayTrunkSplines(bitbots_splines::PoseSpline splines, const std::string &support_foot_frame) {
+void Visualizer::displayTrunkSplines(bitbots_splines::PoseSpline splines, const std::string& support_foot_frame) {
   if (trunk_spline_publisher_->get_subscription_count() == 0) return;
 
   visualization_msgs::msg::MarkerArray path = getPath(splines, support_foot_frame, params_.spline_smoothness, node_);
@@ -40,7 +40,7 @@ void Visualizer::displayTrunkSplines(bitbots_splines::PoseSpline splines, const 
   trunk_spline_publisher_->publish(path);
 }
 
-void Visualizer::displayReceivedGoal(const bitbots_msgs::action::Kick::Goal &goal) {
+void Visualizer::displayReceivedGoal(const bitbots_msgs::action::Kick::Goal& goal) {
   if (goal_publisher_->get_subscription_count() == 0) return;
 
   visualization_msgs::msg::Marker marker =
@@ -57,7 +57,7 @@ void Visualizer::displayReceivedGoal(const bitbots_msgs::action::Kick::Goal &goa
   goal_publisher_->publish(marker);
 }
 
-void Visualizer::displayWindupPoint(const Eigen::Vector3d &kick_windup_point, const std::string &support_foot_frame) {
+void Visualizer::displayWindupPoint(const Eigen::Vector3d& kick_windup_point, const std::string& support_foot_frame) {
   if (windup_publisher_->get_subscription_count() == 0) return;
 
   tf2::Vector3 tf_kick_windup_point;
@@ -71,8 +71,8 @@ void Visualizer::displayWindupPoint(const Eigen::Vector3d &kick_windup_point, co
   windup_publisher_->publish(marker);
 }
 
-void Visualizer::publishGoals(const KickPositions &positions, const KickPositions &stabilized_positions,
-                              const moveit::core::RobotStatePtr &robot_state, KickPhase engine_phase) {
+void Visualizer::publishGoals(const KickPositions& positions, const KickPositions& stabilized_positions,
+                              const moveit::core::RobotStatePtr& robot_state, KickPhase engine_phase) {
   /* only calculate the debug information if someone is subscribing */
   if (debug_publisher_->get_subscription_count() == 0) {
     return;

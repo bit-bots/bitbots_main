@@ -14,10 +14,10 @@ namespace bitbots_utils {
  * @param warn_interval Interval in which to keep warning if the frames are not available
  * @param verbose Can be used to disable the warning messages
  */
-void wait_for_tf(const rclcpp::Logger &logger, std::shared_ptr<rclcpp::Clock> clock, tf2_ros::Buffer *tf_buffer,
-                 const std::vector<std::string> &frames, const std::string &root_frame,
-                 const rclcpp::Duration &check_interval, const rclcpp::Duration &warn_duration,
-                 const rclcpp::Duration &warn_interval, bool verbose) {
+void wait_for_tf(const rclcpp::Logger& logger, std::shared_ptr<rclcpp::Clock> clock, tf2_ros::Buffer* tf_buffer,
+                 const std::vector<std::string>& frames, const std::string& root_frame,
+                 const rclcpp::Duration& check_interval, const rclcpp::Duration& warn_duration,
+                 const rclcpp::Duration& warn_interval, bool verbose) {
   // Store the beginning time
   auto start_time = clock->now();
 
@@ -45,7 +45,7 @@ void wait_for_tf(const rclcpp::Logger &logger, std::shared_ptr<rclcpp::Clock> cl
       }
       // We can transform to all frames, so we are done
       return;
-    } catch (const std::exception &e) {
+    } catch (const std::exception& e) {
       if (verbose) {
         RCLCPP_ERROR(logger, "Error while waiting for transforms: %s \n", e.what());
       }
@@ -62,9 +62,9 @@ void wait_for_tf(const rclcpp::Logger &logger, std::shared_ptr<rclcpp::Clock> cl
 }
 
 std::map<std::string, rclcpp::Parameter> get_parameters_from_other_node(rclcpp::Node::SharedPtr own_node,
-                                                                        const std::string &other_node_name,
-                                                                        const std::vector<std::string> &parameter_names,
-                                                                        const std::chrono::seconds &service_timeout) {
+                                                                        const std::string& other_node_name,
+                                                                        const std::vector<std::string>& parameter_names,
+                                                                        const std::chrono::seconds& service_timeout) {
   // Create a client to the other node
   auto client = own_node->create_client<rcl_interfaces::srv::GetParameters>(other_node_name + "/get_parameters");
 

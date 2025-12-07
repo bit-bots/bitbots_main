@@ -3,7 +3,7 @@
 
 namespace bitbots_dynup {
 Visualizer::Visualizer(rclcpp::Node::SharedPtr node, bitbots_dynup::Params::Visualizer params,
-                       const std::string &base_topic)
+                       const std::string& base_topic)
     : node_(node), base_topic_(base_topic), params_(params) {
   /* make sure base_topic_ has consistent scheme */
   if (base_topic.compare(base_topic.size() - 1, 1, "/") != 0) {
@@ -18,7 +18,7 @@ Visualizer::Visualizer(rclcpp::Node::SharedPtr node, bitbots_dynup::Params::Visu
 
 void Visualizer::setParams(bitbots_dynup::Params::Visualizer params) { params_ = params; }
 
-void Visualizer::displaySplines(bitbots_splines::PoseSpline splines, const std::string &frame) {
+void Visualizer::displaySplines(bitbots_splines::PoseSpline splines, const std::string& frame) {
   // if (spline_publisher_->get_subscription_count() == 0)
   //     return;
   visualization_msgs::msg::MarkerArray path = getPath(splines, frame, params_.spline_smoothness, node_);
@@ -26,8 +26,8 @@ void Visualizer::displaySplines(bitbots_splines::PoseSpline splines, const std::
   spline_publisher_->publish(path);
 }
 
-void Visualizer::publishIKOffsets(const moveit::core::RobotModelPtr &model, const DynupResponse &response,
-                                  const bitbots_splines::JointGoals &ik_joint_goals) {
+void Visualizer::publishIKOffsets(const moveit::core::RobotModelPtr& model, const DynupResponse& response,
+                                  const bitbots_splines::JointGoals& ik_joint_goals) {
   bitbots_dynup::msg::DynupIkOffset msg;
   // those are the motor goals for the robot computed by the IK
   moveit::core::RobotStatePtr ik_state = std::make_shared<moveit::core::RobotState>(model);

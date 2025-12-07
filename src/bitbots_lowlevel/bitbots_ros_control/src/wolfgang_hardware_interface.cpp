@@ -31,7 +31,7 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(rclcpp::Node::SharedPtr nh)
 
   // Convert dxls to native type: a vector of tuples with name and id for sorting purposes
   std::vector<std::pair<std::string, int>> dxl_devices;
-  for (const std::string &parameter_name : device_name_list.names) {
+  for (const std::string& parameter_name : device_name_list.names) {
     // we get directly the parameters and not the groups. use id parameter to identify them
     if (parameter_name.find(".id") != std::string::npos) {
       int id = nh->get_parameter(parameter_name).as_int();
@@ -45,7 +45,7 @@ WolfgangHardwareInterface::WolfgangHardwareInterface(rclcpp::Node::SharedPtr nh)
   // easier.
   std::sort(
       dxl_devices.begin(), dxl_devices.end(),
-      [](const std::pair<std::string, int> &a, const std::pair<std::string, int> &b) { return a.second < b.second; });
+      [](const std::pair<std::string, int>& a, const std::pair<std::string, int>& b) { return a.second < b.second; });
 
   // create overall servo interface since we need a single interface for the controllers
   servo_interface_ = DynamixelServoHardwareInterface(nh);
@@ -64,7 +64,7 @@ bool WolfgangHardwareInterface::create_interfaces(std::vector<std::pair<std::str
   // init bus drivers
   std::vector<std::string> pinged;
   rcl_interfaces::msg::ListParametersResult port_list = nh_->list_parameters({"port_info"}, 3);
-  for (const std::string &parameter_name : port_list.names) {
+  for (const std::string& parameter_name : port_list.names) {
     // we get directly the parameters and not the groups. use id parameter to identify them
     if (parameter_name.find(".device_file") != std::string::npos) {
       std::string port_name = parameter_name.substr(10, parameter_name.size() - 11 - 11);
@@ -86,7 +86,7 @@ bool WolfgangHardwareInterface::create_interfaces(std::vector<std::pair<std::str
       std::vector<std::shared_ptr<HardwareInterface>> interfaces_on_port;
       // iterate over all devices and ping them to see what is connected to this bus
       std::vector<std::tuple<int, std::string, float, float, std::string>> servos_on_port;
-      for (std::pair<std::string, int> &device : dxl_devices) {
+      for (std::pair<std::string, int>& device : dxl_devices) {
         // RCLCPP_INFO_STREAM(nh_->get_logger(), device.first);
         std::string name = device.first;
         int id = device.second;
@@ -205,7 +205,7 @@ bool WolfgangHardwareInterface::create_interfaces(std::vector<std::pair<std::str
         RCLCPP_ERROR(nh_->get_logger(), "Could not ping all devices!");
         speakError(speak_pub_, "error starting ross control");
         // check which devices were not pinged successful
-        for (std::pair<std::string, int> &device : dxl_devices) {
+        for (std::pair<std::string, int>& device : dxl_devices) {
           if (std::find(pinged.begin(), pinged.end(), device.first) != pinged.end()) {
           } else {
             RCLCPP_ERROR(nh_->get_logger(), "%s with id %d missing", device.first.c_str(), device.second);
@@ -220,8 +220,8 @@ bool WolfgangHardwareInterface::create_interfaces(std::vector<std::pair<std::str
   }
 }
 
-void threaded_init(const std::vector<std::shared_ptr<HardwareInterface>> &port_interfaces, rclcpp::Node::SharedPtr &nh,
-                   int &success) {
+void threaded_init(const std::vector<std::shared_ptr<HardwareInterface>>& port_interfaces, rclcpp::Node::SharedPtr& nh,
+                   int& success) {
   success = std::all_of(port_interfaces.begin(), port_interfaces.end(),
                         [](std::shared_ptr<HardwareInterface> interface) -> bool { return interface->init(); });
 }
@@ -229,9 +229,9 @@ void threaded_init(const std::vector<std::shared_ptr<HardwareInterface>> &port_i
 bool WolfgangHardwareInterface::init() {
   // iterate through all ports
   std::vector<std::thread> threads;
-  std::vector<int *> successes;
+  std::vector<int*> successes;
   int i = 0;
-  for (std::vector<std::shared_ptr<HardwareInterface>> &port_interfaces : interfaces_) {
+  for (std::vector<std::shared_ptr<HardwareInterface>>& port_interfaces : interfaces_) {
     // iterate through all interfaces on this port
     // we use an int instead of bool, since std::ref can't handle bool
     int suc = 0;
@@ -240,24 +240,24 @@ bool WolfgangHardwareInterface::init() {
     i++;
   }
   // wait for all inits to finish
-  for (std::thread &thread : threads) {
+  for (std::thread& thread : threads) {
     thread.join();
   }
   // see if all inits were successful
-  bool success = std::all_of(successes.begin(), successes.end(), [](int *s) { return *s; });
+  bool success = std::all_of(successes.begin(), successes.end(), [](int* s) { return *s; });
   // init servo interface last after all servo busses are there
   success &= servo_interface_.init();
   return success;
 }
 
-void threaded_read(const std::vector<std::shared_ptr<HardwareInterface>> &port_interfaces, const rclcpp::Time &t,
-                   const rclcpp::Duration &dt) {
+void threaded_read(const std::vector<std::shared_ptr<HardwareInterface>>& port_interfaces, const rclcpp::Time& t,
+                   const rclcpp::Duration& dt) {
   for (std::shared_ptr<HardwareInterface> interface : port_interfaces) {
     interface->read(t, dt);
   }
 }
 
-void WolfgangHardwareInterface::read(const rclcpp::Time &t, const rclcpp::Duration &dt) {
+void WolfgangHardwareInterface::read(const rclcpp::Time& t, const rclcpp::Duration& dt) {
   // give feedback to power changes
   if (core_present_) {
     if (current_power_status_ && !last_power_status_) {
@@ -270,11 +270,11 @@ void WolfgangHardwareInterface::read(const rclcpp::Time &t, const rclcpp::Durati
     // only read all hardware if power is on
     std::vector<std::thread> threads;
     // start all reads
-    for (std::vector<std::shared_ptr<HardwareInterface>> &port_interfaces : interfaces_) {
+    for (std::vector<std::shared_ptr<HardwareInterface>>& port_interfaces : interfaces_) {
       threads.push_back(std::thread(threaded_read, std::ref(port_interfaces), std::ref(t), std::ref(dt)));
     }
     // wait for all reads to finish
-    for (std::thread &thread : threads) {
+    for (std::thread& thread : threads) {
       thread.join();
     }
     // aggregate all servo values for controller
@@ -292,14 +292,14 @@ void WolfgangHardwareInterface::read(const rclcpp::Time &t, const rclcpp::Durati
   }
 }
 
-void threaded_write(const std::vector<std::shared_ptr<HardwareInterface>> &port_interfaces, const rclcpp::Time &t,
-                    const rclcpp::Duration &dt) {
+void threaded_write(const std::vector<std::shared_ptr<HardwareInterface>>& port_interfaces, const rclcpp::Time& t,
+                    const rclcpp::Duration& dt) {
   for (std::shared_ptr<HardwareInterface> interface : port_interfaces) {
     interface->write(t, dt);
   }
 }
 
-void WolfgangHardwareInterface::write(const rclcpp::Time &t, const rclcpp::Duration &dt) {
+void WolfgangHardwareInterface::write(const rclcpp::Time& t, const rclcpp::Duration& dt) {
   if (core_present_ && !last_power_status_ && current_power_status_ &&
       nh_->get_parameter("servos.set_ROM_RAM").as_bool()) {
     bus_start_time_ = t + rclcpp::Duration::from_seconds(nh_->get_parameter("start_delay").as_double());
@@ -307,7 +307,7 @@ void WolfgangHardwareInterface::write(const rclcpp::Time &t, const rclcpp::Durat
   }
   if (!bus_start_time_ || t > bus_start_time_.value()) {
     if (bus_first_write_) {
-      for (std::vector<std::shared_ptr<HardwareInterface>> const &port_interfaces : interfaces_) {
+      for (std::vector<std::shared_ptr<HardwareInterface>> const& port_interfaces : interfaces_) {
         for (std::shared_ptr<HardwareInterface> interface : port_interfaces) {
           interface->restoreAfterPowerCycle();
         }
@@ -322,12 +322,12 @@ void WolfgangHardwareInterface::write(const rclcpp::Time &t, const rclcpp::Durat
       servo_interface_.write(t, dt);
       std::vector<std::thread> threads;
       // start all writes
-      for (std::vector<std::shared_ptr<HardwareInterface>> &port_interfaces : interfaces_) {
+      for (std::vector<std::shared_ptr<HardwareInterface>>& port_interfaces : interfaces_) {
         threads.push_back(std::thread(threaded_write, std::ref(port_interfaces), std::ref(t), std::ref(dt)));
       }
 
       // wait for all writes to finish
-      for (std::thread &thread : threads) {
+      for (std::thread& thread : threads) {
         thread.join();
       }
     }

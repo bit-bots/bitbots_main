@@ -13,7 +13,7 @@ void sigintHandler(int sig) {
   request_shutdown = 1;
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   // register signal handler for ctrl-c that we use to request shutdown but give extra time for other nodes to finish
   signal(SIGINT, sigintHandler);
 

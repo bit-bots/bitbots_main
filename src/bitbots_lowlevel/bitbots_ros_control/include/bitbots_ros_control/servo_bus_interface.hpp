@@ -21,11 +21,11 @@ namespace bitbots_ros_control {
 
 class ServoBusInterface : public bitbots_ros_control::HardwareInterface {
  public:
-  explicit ServoBusInterface(rclcpp::Node::SharedPtr nh, std::shared_ptr<DynamixelDriver> &driver,
+  explicit ServoBusInterface(rclcpp::Node::SharedPtr nh, std::shared_ptr<DynamixelDriver>& driver,
                              std::vector<std::tuple<int, std::string, float, float, std::string>> servos);
   bool init();
-  void read(const rclcpp::Time &t, const rclcpp::Duration &dt);
-  void write(const rclcpp::Time &t, const rclcpp::Duration &dt);
+  void read(const rclcpp::Time& t, const rclcpp::Duration& dt);
+  void write(const rclcpp::Time& t, const rclcpp::Duration& dt);
   void restoreAfterPowerCycle();
 
   bool loadDynamixels();

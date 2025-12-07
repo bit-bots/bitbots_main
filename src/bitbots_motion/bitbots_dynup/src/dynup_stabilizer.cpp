@@ -17,7 +17,7 @@ void Stabilizer::reset() {
   pid_trunk_roll_.reset();
 }
 
-DynupResponse Stabilizer::stabilize(const DynupResponse &ik_goals, const rclcpp::Duration &dt) {
+DynupResponse Stabilizer::stabilize(const DynupResponse& ik_goals, const rclcpp::Duration& dt) {
   tf2::Transform right_foot_goal;
 
   // Check if we have all the necessary data to stabilize

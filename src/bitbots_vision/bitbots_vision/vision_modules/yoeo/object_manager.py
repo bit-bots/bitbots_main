@@ -68,13 +68,12 @@ class YOEOObjectManager:
 
         conda_prefix = os.environ.get("CONDA_PREFIX", "")
         if not conda_prefix:
-            raise ValueError("CONDA_PREFIX environment variable not set! We now expect YOEO models to be shared as conda packages.")
+            raise ValueError(
+                "CONDA_PREFIX environment variable not set! We now expect YOEO models to be shared as conda packages."
+            )
 
         # Assemble model package name and look at its share directory
-        model_path = os.path.join(
-            conda_prefix,
-            "share",
-            "bitbots_model_" + config["yoeo_model_path"])
+        model_path = os.path.join(conda_prefix, "share", "bitbots_model_" + config["yoeo_model_path"])
 
         cls._verify_required_neural_network_files_exist(framework, model_path)
 

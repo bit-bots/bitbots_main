@@ -40,7 +40,7 @@ enum EulerType {
 /**
  * Return false if given Euler angles range are no valid
  */
-inline bool CheckEulerBounds(const Eigen::Vector3d &angles) {
+inline bool CheckEulerBounds(const Eigen::Vector3d& angles) {
   return (angles(0) >= -M_PI && angles(0) <= M_PI) &&
          ((angles(1) > -M_PI / 2.0 && angles(1) < M_PI / 2.0) ||
           (angles(0) == 0 && angles(2) == 0 && (angles(1) == -M_PI / 2.0 || angles(1) == M_PI / 2.0))) &&
@@ -51,7 +51,7 @@ inline bool CheckEulerBounds(const Eigen::Vector3d &angles) {
  * Convert given Euler angles of given
  * convention type to rotation matrix
  */
-inline Eigen::Matrix3d EulerToMatrix(const Eigen::Vector3d &angles, EulerType eulerType) {
+inline Eigen::Matrix3d EulerToMatrix(const Eigen::Vector3d& angles, EulerType eulerType) {
   Eigen::Quaternion<double> quat;
   switch (eulerType) {
     case EulerYawPitchRoll: {
@@ -101,7 +101,7 @@ inline Eigen::Matrix3d EulerToMatrix(const Eigen::Vector3d &angles, EulerType eu
  * Convert the given rotation matrix into
  * Euler angles of given convention
  */
-inline Eigen::Vector3d MatrixToEuler(const Eigen::Matrix3d &mat, EulerType eulerType) {
+inline Eigen::Vector3d MatrixToEuler(const Eigen::Matrix3d& mat, EulerType eulerType) {
   Eigen::Vector3d tmp(0.0, 0.0, 0.0);
   switch (eulerType) {
     case EulerYawPitchRoll: {
@@ -135,7 +135,7 @@ inline Eigen::Vector3d MatrixToEuler(const Eigen::Matrix3d &mat, EulerType euler
  * to [Roll, Pitch, Yaw] ZYX intrinsic euler
  * angle (Better range than Eigen conversion).
  */
-inline Eigen::Vector3d MatrixToEulerIntrinsic(const Eigen::Matrix3d &mat) {
+inline Eigen::Vector3d MatrixToEulerIntrinsic(const Eigen::Matrix3d& mat) {
   // Eigen euler angles and with better range)
   Eigen::Vector3d angles;
   // Roll
@@ -152,7 +152,7 @@ inline Eigen::Vector3d MatrixToEulerIntrinsic(const Eigen::Matrix3d &mat) {
  * Convert given Euler angles in [Roll, Pitch, Yaw]
  * ZYX intrinsic format to rotation matrix
  */
-inline Eigen::Matrix3d EulerIntrinsicToMatrix(const Eigen::Vector3d &angles) {
+inline Eigen::Matrix3d EulerIntrinsicToMatrix(const Eigen::Vector3d& angles) {
   Eigen::AngleAxisd yawRot(angles.z(), Eigen::Vector3d::UnitZ());
   Eigen::AngleAxisd pitchRot(angles.y(), Eigen::Vector3d::UnitY());
   Eigen::AngleAxisd rollRot(angles.x(), Eigen::Vector3d::UnitX());

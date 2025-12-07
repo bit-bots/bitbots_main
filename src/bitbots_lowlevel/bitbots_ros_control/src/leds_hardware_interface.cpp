@@ -6,7 +6,7 @@ using std::placeholders::_1;
 using std::placeholders::_2;
 using std::placeholders::_3;
 
-LedsHardwareInterface::LedsHardwareInterface(rclcpp::Node::SharedPtr nh, std::shared_ptr<DynamixelDriver> &driver,
+LedsHardwareInterface::LedsHardwareInterface(rclcpp::Node::SharedPtr nh, std::shared_ptr<DynamixelDriver>& driver,
                                              uint8_t id, uint8_t num_leds, uint8_t start_number) {
   nh_ = nh;
   driver_ = driver;
@@ -61,7 +61,7 @@ void LedsHardwareInterface::ledCb2(std_msgs::msg::ColorRGBA msg) {
   }
 }
 
-void LedsHardwareInterface::read(const rclcpp::Time &t, const rclcpp::Duration &dt) {}
+void LedsHardwareInterface::read(const rclcpp::Time& t, const rclcpp::Duration& dt) {}
 
 void LedsHardwareInterface::setLeds(const std::shared_ptr<bitbots_msgs::srv::Leds::Request> req,
                                     std::shared_ptr<bitbots_msgs::srv::Leds::Response> resp) {
@@ -92,7 +92,7 @@ uint32_t rgba_to_int32(std_msgs::msg::ColorRGBA rgba) {
   return led;
 }
 
-void LedsHardwareInterface::write(const rclcpp::Time &t, const rclcpp::Duration &dt) {
+void LedsHardwareInterface::write(const rclcpp::Time& t, const rclcpp::Duration& dt) {
   if (write_leds_) {
     // resort LEDs to go from left to right
     driver_->writeRegister(id_, "LED_2", rgba_to_int32(leds_[0]));
