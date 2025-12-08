@@ -22,7 +22,7 @@ Setup VSCode Dev Container
 
 1. Clone the repository: `git clone git@github.com:bit-bots/bitbots_main.git` or `git clone https://github.com/bit-bots/bitbots_main.git && git remote set-url origin git@github.com:bit-bots/bitbots_main.git` if you don't have an SSH key setup yet.
 2. Open the repository in VSCode
-3. Install the "Remote - Containers" extension
+3. Install the "Dev - Containers" extension
 4. Click on the green icon in the bottom left corner of the window and select "Reopen in Container"
 5. Wait for the container to build and start
 6. Open a terminal in VSCode, you should see a number of instructions on how to setup the container. Follow them.

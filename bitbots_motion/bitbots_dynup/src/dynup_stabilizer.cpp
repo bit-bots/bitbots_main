@@ -1,13 +1,13 @@
-#include "bitbots_dynup/dynup_stabilizer.hpp"
+#include <bitbots_dynup/dynup_stabilizer.hpp>
 
 namespace bitbots_dynup {
 
 Stabilizer::Stabilizer(rclcpp::Node::SharedPtr node, bitbots_dynup::Params::Stabilizer params)
     : params_(params),
-      pid_trunk_pitch_(node, "stabilizer.trunk_pid.pitch"),
-      pid_trunk_roll_(node, "stabilizer.trunk_pid.roll") {
-  pid_trunk_pitch_.initPid();
-  pid_trunk_roll_.initPid();
+      pid_trunk_pitch_(node, "stabilizer.trunk_pid.pitch", "", false),
+      pid_trunk_roll_(node, "stabilizer.trunk_pid.roll", "", false) {
+  pid_trunk_pitch_.initialize_from_ros_parameters();
+  pid_trunk_roll_.initialize_from_ros_parameters();
 
   reset();
 }
@@ -43,8 +43,8 @@ DynupResponse Stabilizer::stabilize(const DynupResponse &ik_goals, const rclcpp:
 
     // Adapt trunk based on PID controller
     goal_fused.fusedPitch +=
-        pid_trunk_pitch_.computeCommand(goal_fused.fusedPitch - current_orientation.fusedPitch, dt);
-    goal_fused.fusedRoll += pid_trunk_roll_.computeCommand(goal_fused.fusedRoll - current_orientation.fusedRoll, dt);
+        pid_trunk_pitch_.compute_command(goal_fused.fusedPitch - current_orientation.fusedPitch, dt);
+    goal_fused.fusedRoll += pid_trunk_roll_.compute_command(goal_fused.fusedRoll - current_orientation.fusedRoll, dt);
 
     // Check if the trunk is stable, meaning it isn't leaning too much
     // TODO it would be better to use the rotational velocity of the imu to determine stability

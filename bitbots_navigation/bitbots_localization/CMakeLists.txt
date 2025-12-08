@@ -15,7 +15,10 @@ find_package(ament_cmake REQUIRED)
 find_package(ament_index_cpp REQUIRED)
 find_package(backward_ros REQUIRED)
 find_package(bitbots_utils REQUIRED)
-find_package(Boost COMPONENTS filesystem REQUIRED)
+find_package(
+  Boost
+  COMPONENTS filesystem
+  REQUIRED)
 find_package(builtin_interfaces REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(generate_parameter_library REQUIRED)

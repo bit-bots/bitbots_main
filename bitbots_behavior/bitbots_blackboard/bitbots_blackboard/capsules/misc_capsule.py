@@ -1,6 +1,6 @@
 from typing import Literal, Optional, TypeAlias
 
-from bitbots_utils.utils import get_parameters_from_other_node
+from bitbots_utils.utils import RobotNotConfiguredError, get_parameters_from_other_node
 from rclpy.duration import Duration
 from std_msgs.msg import Bool
 
@@ -8,7 +8,7 @@ from bitbots_blackboard.capsules import AbstractBlackboardCapsule
 from bitbots_msgs.msg import Audio, HeadMode, RobotControlState
 
 THeadMode: TypeAlias = Literal[  # type: ignore[valid-type]
-    HeadMode.SEARCH_BALL,
+    HeadMode.TRACK_BALL,
     HeadMode.SEARCH_FIELD_FEATURES,
     HeadMode.LOOK_FORWARD,
     HeadMode.DONT_MOVE,
@@ -29,6 +29,14 @@ class MiscCapsule(AbstractBlackboardCapsule):
         gamestate_settings = get_parameters_from_other_node(
             self._node, "parameter_blackboard", ["bot_id", "position_number"]
         )
+
+        if any(param_val is None for param_val in gamestate_settings.values()):
+            error_text = """
+The robot is not configured properly or the parameter_blackboard is not found.
+It is likely that the robot was not configured when you syncronised your clean code onto the robot.
+Run the deploy_robots script with the -c option to configure the robot and set parameters like the robot id and its role."""
+            self._node.get_logger().fatal(error_text)
+            raise RobotNotConfiguredError(error_text)
 
         self.position_number: int = gamestate_settings["position_number"]
         self.bot_id: int = gamestate_settings["bot_id"]

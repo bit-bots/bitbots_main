@@ -10,7 +10,7 @@
         "mohsen1.prettify-json", // JSON formatting
         "ms-azuretools.vscode-docker", // Docker support
         "MS-CEINTL.vscode-language-pack-de", // German language pack
-        "ms-iot.vscode-ros", // ROS support
+        "Ranch-Hand-Robotics.rde-pack", // ROS2 development environment
         "ms-python.python", // Python support
         "ms-python.vscode-pylance", // Python support
         "ms-vscode.cmake-tools", // CMake support

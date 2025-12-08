@@ -58,7 +58,6 @@ include:
         - game_controller_hl
         - game_controller_hl_interfaces
         - humanoid_base_footprint
-        - imu_tools
         - ipm
         - particle_filter
         - ros2_numpy

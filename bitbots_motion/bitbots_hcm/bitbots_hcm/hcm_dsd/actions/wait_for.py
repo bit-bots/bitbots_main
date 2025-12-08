@@ -6,7 +6,8 @@ class WaitForIMUStartup(AbstractHCMActionElement):
     Waits for the IMU to connect and does not complain as we are still in start up.
     """
 
-    pass
+    def perform(self, reevaluate=False):
+        pass
 
 
 class WaitForIMU(AbstractHCMActionElement):
@@ -25,7 +26,8 @@ class WaitForPressureStartup(AbstractHCMActionElement):
     Waits for the pressure sensors to connect and not complain since we are still starting up.
     """
 
-    pass
+    def perform(self, reevaluate=False):
+        pass
 
 
 class WaitForPressure(AbstractHCMActionElement):
@@ -52,6 +54,6 @@ class WaitForMotors(AbstractHCMActionElement):
 
     def perform(self, reevaluate=False):
         self.blackboard.node.get_logger().warn(
-            "HCM gets no data from the motors (/joint_states). Waiting for the motors to " "connect.",
+            "HCM gets no data from the motors (/joint_states). Waiting for the motors to connect.",
             throttle_duration_sec=10,
         )

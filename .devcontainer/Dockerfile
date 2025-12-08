@@ -1,4 +1,8 @@
-FROM ros:iron
+FROM ros:jazzy
+
+ARG user=bitbots
+ARG uid=1000
+ARG gid=1000
 
 # Basic Utilities
 ENV DEBIAN_FRONTEND=noninteractive
@@ -54,41 +58,51 @@ RUN apt update -y \
 RUN apt-get install -y \
   python3-rosdep \
   python3-vcstool \
-  ros-iron-camera-calibration \
-  ros-iron-desktop \
-  ros-iron-joint-state-publisher-gui \
-  ros-iron-plotjuggler \
-  ros-iron-plotjuggler-msgs \
-  ros-iron-plotjuggler-ros \
-  ros-iron-rmw-cyclonedds-cpp \
-  ros-iron-rqt-robot-monitor \
-  ros-iron-soccer-vision-3d-rviz-markers
-
-# Update pip and install colcon-clean
-RUN pip3 install pip -U
-
-# Install colcon extensions / patches
-RUN python3 -m pip install \
-  git+https://github.com/ruffsl/colcon-clean \
-  git+https://github.com/timonegk/colcon-core.git@colors \
-  git+https://github.com/timonegk/colcon-notification.git@colors \
-  git+https://github.com/timonegk/colcon-output.git@colors
+  python3-virtualenv \
+  ros-jazzy-camera-calibration \
+  ros-jazzy-desktop \
+  ros-jazzy-joint-state-publisher-gui \
+  ros-jazzy-plotjuggler \
+  ros-jazzy-plotjuggler-msgs \
+  ros-jazzy-plotjuggler-ros \
+  ros-jazzy-rmw-cyclonedds-cpp \
+  ros-jazzy-rqt-robot-monitor \
+  ros-jazzy-soccer-vision-3d-rviz-markers
 
 # Set zsh as default shell
 SHELL ["/bin/zsh", "-c"]
 
-# Create home directory and colcon workspace
-RUN mkdir -p "/root/colcon_ws"
+# Remove the users group, because when it exists on the host system
+# the devcontainer will not dynamically update the containerUser GID,
+# when the host user is part of the users group.
+# Then create a bitbots user with home directory and add allow it to use sudo
+RUN groupdel users \
+  && userdel -r ubuntu \
+  && useradd -m -U -u "$uid" -G sudo -s /bin/zsh $user \
+  && groupmod -g "$gid" $user \
+  && echo "$user ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+
+USER $user
+
+# Install pip colcon extensions / patches as user
+RUN python3 -m pip install --user --break-system-packages \
+    git+https://github.com/ruffsl/colcon-clean \
+    git+https://github.com/timonegk/colcon-core.git@colors \
+    git+https://github.com/timonegk/colcon-notification.git@colors \
+    git+https://github.com/timonegk/colcon-output.git@colors
+
+# Create colcon workspace
+RUN mkdir -p /home/$user/colcon_ws/src
 
 # Install oh-my-zsh for pretty terminal
 RUN sh -c "$(wget -O- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" && \
-  git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
+  git clone https://github.com/zsh-users/zsh-autosuggestions "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions"
 
-# Add zshrc
-COPY zshrc "/root/.zshrc"
+# Add zshrc to bitbots home directory
+COPY --chown=$user:$user zshrc /home/$user/.zshrc
 
 # This is required for sharing Xauthority
 ENV QT_X11_NO_MITSHM=1
 
 # Switch to the workspace directory
-WORKDIR "/root/colcon_ws"
+WORKDIR /home/$user/colcon_ws
