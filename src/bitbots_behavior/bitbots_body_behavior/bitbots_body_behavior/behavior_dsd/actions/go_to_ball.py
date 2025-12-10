@@ -14,7 +14,7 @@ class GoToBall(AbstractActionElement):
 
         if "target" not in parameters.keys():
             self.blackboard.node.get_logger().error(
-                'The parameter "target" could not be used to decide whether map information is accesible'
+                'The parameter "target" could not be used to decide whether map information is accessible'
             )
         else:
             self.target = BallGoalType(parameters["target"])
