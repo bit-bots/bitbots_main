@@ -5,7 +5,7 @@
 [![ROS Version Jazzy](https://img.shields.io/badge/ROS%20Version-Jazzy-00b8ff)](https://docs.ros.org/en/jazzy/index.html)
 
 This git repository contains all RoboCup-related code and documentation from the Hamburg Bit-Bots team.
-All code is written as individual ROS 2 packages targeting Ubuntu.
+All code is written as individual ROS 2 packages.
 
 <p align="center">
   <img width="30%" src="logo.png" alt="Bit-Bots Logo" />
@@ -13,33 +13,35 @@ All code is written as individual ROS 2 packages targeting Ubuntu.
 
 ## Installation
 
+The workspace is managed using the [pixi](https://pixi.sh) package manager. This allows us to have reproducible builds and easy user space dependency management similar to tools like `uv` or `cargo`. This also means that no system wide ROS installation or superuser privileges are required to install or run the code.
+
 Full step-by-step instructions for installing the Bit-Bots software stack and ROS 2 can be found in our documentation [here](https://doku.bit-bots.de/meta/manual/tutorials/install_software_ros2.html).
 
 
-Run the following command to install all dependencies and clone all necessary repositories. Make sure you have [just](https://just.systems/) and correct ROS 2 version installed.
+Run the following command inside this repository to build the workspace. All dependencies will be installed automatically. Make sure you have [pixi](https://pixi.sh) installed. A few optional proprietary dependencies will be needed for full functionality, see the documentation for details.
 
 ``` shell
-just install
+pixi run build
 ```
 
-## Building
+## Using the workspace
 
-To build the code, run
+To activate the workspace run the following command in the terminal you want to use:
 
 ``` shell
-just build
+pixi shell
 ```
 
-and source the setup file with
+alternatively, you can run individual commands inside the workspace without activating the shell:
 
 ``` shell
-. install/setup.sh
+pixi run <command>
 ```
 
-To see all available recipes, run
+To see some predefined tasks, run
 
 ``` shell
-just -l
+pixi run -v
 ```
 
 ## Run auto formatting
@@ -47,7 +49,7 @@ just -l
 To format all code in the repository, run
 
 ``` shell
-just format
+pixi run format
 ```
 
 ## More documentation
