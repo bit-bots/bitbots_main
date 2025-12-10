@@ -204,10 +204,6 @@ bitbots_docs_internal
 # VS Code ROS extension
 .vscode/browse.vc.*
 
-# Do not commit VS Code settings by default because the ROS extension adds absolute paths to the config
-# Only commit it if you want to share your settings with others and also have removed the absolute paths!
-.vscode/settings.json
-
 # Neural Network Model Path
 /src/bitbots_vision/models/
 /src/bitbots_motion/bitbots_rl_motion/rl_walk_models/

@@ -8,17 +8,11 @@
             // Set include paths so the editor can find the c++ header files for the auto completion
             // The Bit-Bots specific environment variable COLCON_WS is utilized here and needs to be set
             "includePath": [
-                "${env:COLCON_WS}/install/*/include/**",
-                "${env:COLCON_WS}/build/**/include/**",
-                "${env:COLCON_WS}/build/**/rosidl_generator_cpp/**",
-                "/root/colcon_ws/install/*/include/**",
-                "/root/colcon_ws/build/**/include/**",
-                "/root/colcon_ws/build/**/rosidl_generator_cpp/**",
                 "${workspaceFolder}/install/*/include/**",
                 "${workspaceFolder}/build/**/include/**",
                 "${workspaceFolder}/build/**/rosidl_generator_cpp/**",
                 "${workspaceFolder}/**/include/**",
-                "/opt/ros/${env:ROS_DISTRO}/include/**",
+                "${workspaceFolder}/.pixi/envs/default/include/**",
                 "/usr/include/**",
                 "/opt/pylon/include/**"
             ],
