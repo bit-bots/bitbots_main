@@ -14,7 +14,7 @@ setup(
         ("share/" + package_name + "/config", glob.glob("config/*.yaml")),
         ("share/" + package_name + "/launch", glob.glob("launch/*.launch") + glob.glob("launch/*.launch.py")),
     ],
-    scripts=[],
+    scripts=["scripts/auto_test_script.py"],
     install_requires=[
         "launch",
         "setuptools",

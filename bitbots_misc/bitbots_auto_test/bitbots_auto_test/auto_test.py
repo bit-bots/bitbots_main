@@ -66,6 +66,13 @@ class TestCase:
         request.pose.orientation.z = 0.0
         request.pose.orientation.w = 0.0
         self.handle.set_robot_pose_service.call(request)
+        if not self.handle.get_parameter("fake_localization").value:
+            rf = ResetFilter.Request()
+            rf.init_mode = ResetFilter.Request.POSE
+            rf.x = x
+            rf.y = y
+            rf.angle = 0.0
+            self.handle.reset_localization.call(rf)
 
     def set_ball(self, x: float, y: float):
         request = SetObjectPosition.Request()
@@ -98,7 +105,49 @@ class MakeGoal(TestCase):
         return self.is_ball_in_goal()
 
 
+class MakeGoalDiagonalLeft(TestCase):
+    def setup(self):
+        self.set_robot(0.0, 0.0)
+        self.set_ball(0.75, 2.6)
+        super().setup()
+
+    def judge(self):
+        return (self.handle.get_clock().now() - self.start_time).nanoseconds / S_TO_NS
+
+    def is_over(self):
+        return self.is_ball_in_goal()
+
+
+class MakeGoalDiagonalRight(TestCase):
+    def setup(self):
+        self.set_robot(0.0, 0.0)
+        self.set_ball(0.75, -2.6)
+        super().setup()
+
+    def judge(self):
+        return (self.handle.get_clock().now() - self.start_time).nanoseconds / S_TO_NS
+
+    def is_over(self):
+        return self.is_ball_in_goal()
+
+
+class MakeGoalClose(TestCase):
+    """Robot - Ball - Goal"""
+
+    def setup(self):
+        self.set_robot(4.6 - 1.5, 0.0)
+        self.set_ball(4.6 - 0.75, 0.0)
+        super().setup()
+
+    def judge(self):
+        return (self.handle.get_clock().now() - self.start_time).nanoseconds / S_TO_NS
+
+    def is_over(self):
+        return self.is_ball_in_goal()
+
+
 test_cases = [MakeGoal]
+test_repeats = 10
 
 TEAM_ID = 6
 
@@ -115,6 +164,7 @@ class AutoTest(Node):
         self.monitoring_node = monitoring_node
 
         self.test_id = 0
+        self.test_type_index = 0
         self.current_test = None
 
         self.set_robot_pose_service = self.create_client(SetObjectPose, "set_robot_pose")
@@ -143,7 +193,16 @@ class AutoTest(Node):
     def next_test(self):
         if self.current_test is not None:
             self.test_id += 1
-            self.current_test = self.current_test.__class__(self, self.test_id, self.current_test.test_repeat + 1)
+            if self.current_test.test_repeat >= test_repeats:
+                self.test_type_index += 1
+                if self.test_type_index >= len(test_cases):
+                    self.current_test = None
+                    return
+                rep = 1
+            else:
+                rep = self.current_test.test_repeat + 1
+
+            self.current_test = test_cases[self.test_type_index](self, self.test_id, rep)
 
     def setup_sequence(self):
         gs_msg = GameState()
@@ -154,13 +213,6 @@ class AutoTest(Node):
 
         self.get_clock().sleep_for(Duration(seconds=2))  # Let robot react & simulation settle
         self.current_test.setup()  # Teleport robot
-        if not self.get_parameter("fake_localization").value:
-            rf = ResetFilter.Request()
-            rf.init_mode = ResetFilter.Request.POSE
-            rf.x = 0.0
-            rf.y = 0.0
-            rf.angle = 0.0
-            self.reset_localization.call(rf)
 
         self.get_clock().sleep_for(Duration(seconds=2))  # Let simulation settle
 
@@ -196,7 +248,7 @@ class AutoTest(Node):
         )
 
     def loop(self):
-        self.current_test = test_cases[0](self, 1, 0)
+        self.current_test = test_cases[0](self, self.test_id, 1)
         self.setup_sequence()
         last_print = self.get_clock().now()
         while True:
@@ -215,6 +267,9 @@ class AutoTest(Node):
             if self.current_test is not None and self.current_test.is_done:
                 self.finished()
                 self.next_test()
+                if self.current_test is None:
+                    print("Done with all tests")
+                    break
                 self.setup_sequence()
 
 

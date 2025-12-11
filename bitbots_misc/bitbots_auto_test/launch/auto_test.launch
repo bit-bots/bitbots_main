@@ -3,23 +3,25 @@
     <arg name="behavior" default="true" description="Whether the behavior control system should be started" />
     <arg name="behavior_dsd_file" default="main.dsd" description="The behavior dsd file that should be used" />
     <arg name="fake_localization" default="true" description="Whether to use the fake localizator"/>
+    <arg name="only_script" default="false"/>
+    <arg name="no_script" default="false"/>
 
     <let name="use_vision" value="false" if="$(var fake_localization)"/>
     <let name="use_vision" value="true" unless="$(var fake_localization)"/>
 
-    <node pkg="bitbots_auto_test" exec="auto_test" name="auto_test" output="screen">
+    <node pkg="bitbots_auto_test" exec="auto_test" name="auto_test" output="screen" unless="$(var no_script)">
         <param name="fake_localization" value="$(var fake_localization)"/>
     </node>
 
     <!-- load the general simulator -->
-    <include file="$(find-pkg-share bitbots_webots_sim)/launch/simulation.launch">
+    <include file="$(find-pkg-share bitbots_webots_sim)/launch/simulation.launch" unless="$(var only_script)">
         <arg name="fake_localization" value="$(var fake_localization)" />
         <arg name="fake_localization_ball" value="$(var fake_localization)" />
         <arg name="camera" value="$(var use_vision)" />
     </include>
 
     <!-- load teamplayer software stack -->
-    <include file="$(find-pkg-share bitbots_bringup)/launch/teamplayer.launch">
+    <include file="$(find-pkg-share bitbots_bringup)/launch/teamplayer.launch" unless="$(var only_script)">
         <arg name="behavior" value="$(var behavior)" />
         <arg name="behavior_dsd_file" value="$(var behavior_dsd_file)" />
         <arg name="game_controller" value="false"/>
@@ -33,7 +35,7 @@
         <arg name="world_model" value="$(var use_vision)"/>
     </include>
 
-    <include file="$(find-pkg-share bitbots_auto_test)/launch/rosbag_record_test.launch.py">
+    <include file="$(find-pkg-share bitbots_auto_test)/launch/rosbag_record_test.launch.py" unless="$(var only_script)">
     </include>
 
 </launch>
