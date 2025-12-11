@@ -3,14 +3,16 @@
     <arg name="behavior" default="true" description="Whether the behavior control system should be started" />
     <arg name="behavior_dsd_file" default="main.dsd" description="The behavior dsd file that should be used" />
     <arg name="fake_localization" default="true" description="Whether to use the fake localizator"/>
+    <arg name="test_series" default="straight_goal" description="Which tests to run"/>
     <arg name="only_script" default="false"/>
     <arg name="no_script" default="false"/>
 
     <let name="use_vision" value="false" if="$(var fake_localization)"/>
     <let name="use_vision" value="true" unless="$(var fake_localization)"/>
 
-    <node pkg="bitbots_auto_test" exec="auto_test" name="auto_test" output="screen" unless="$(var no_script)">
+    <node pkg="bitbots_auto_test" exec="auto_test" output="screen" unless="$(var no_script)">
         <param name="fake_localization" value="$(var fake_localization)"/>
+        <param from="$(find-pkg-share bitbots_auto_test)/config/$(var test_series).yaml"/>
     </node>
 
     <!-- load the general simulator -->

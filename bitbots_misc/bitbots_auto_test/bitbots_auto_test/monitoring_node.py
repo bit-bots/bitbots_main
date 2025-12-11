@@ -20,7 +20,7 @@ BALL_DELTA_THRESHOLDS = ((SPEED_THRESHOLD * 0.95) ** 2, (SPEED_THRESHOLD / 0.98)
 class Monitoring(Node):
     def __init__(self, log_folder: Path = DEFAULT_LOG_FOLDER):
         # create node
-        super().__init__("Monitoring")
+        super().__init__("monitoring")
         use_sim_time_param = Parameter("use_sim_time", Parameter.Type.BOOL, True)
         self.set_parameters([use_sim_time_param])
 
@@ -95,8 +95,8 @@ class Monitoring(Node):
 
     def ball_pose_cb(self, new_ball_pose: Pose, ball_twist: Twist):
         new = numpify(new_ball_pose.position)[:2]
-        delta = numpify(ball_twist.linear)[:2]
-        vel_sq = delta.dot(delta)
+        delta = numpify(ball_twist.linear)[:3]
+        vel_sq = delta[:2].dot(delta[:2])
         if self.ball_moving:
             if vel_sq < BALL_DELTA_THRESHOLDS[0]:
                 self.ball_moving = False
@@ -105,6 +105,8 @@ class Monitoring(Node):
                     "ball_stopped_goal_pose", self.last_goal_pose.pose, self.last_goal_pose.header.stamp
                 )
                 self.write_reduced_pose("ball_stopped_robot_pose", self.last_robot_pose, self.last_model_states_time)
+            else:
+                self.write_event("ball_vel", f"{delta[0]:.4f}", f"{delta[1]:.4f}", f"{delta[2]:.4f}")
         else:
             if vel_sq > BALL_DELTA_THRESHOLDS[1]:
                 self.ball_moving = True

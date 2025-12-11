@@ -1,0 +1,6 @@
+auto_test:
+  ros__parameters:
+    test_cases:
+      - MakeGoalStraight
+    repeats: 1
+    loop: true
