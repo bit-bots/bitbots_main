@@ -90,7 +90,7 @@ class TestCase:
         return False
 
 
-class MakeGoal(TestCase):
+class MakeGoalStraight(TestCase):
     """Robot - Ball - Goal"""
 
     def setup(self):
@@ -146,19 +146,35 @@ class MakeGoalClose(TestCase):
         return self.is_ball_in_goal()
 
 
-test_cases = [MakeGoal]
-test_repeats = 10
+class MakeGoalBehind(TestCase):
+    """Ball - Robot - Goal"""
+
+    def setup(self):
+        self.set_robot(4.6 - 1.5, 0.0)
+        self.set_ball(4.6 - 3, 0.0)
+        super().setup()
+
+    def judge(self):
+        return (self.handle.get_clock().now() - self.start_time).nanoseconds / S_TO_NS
+
+    def is_over(self):
+        return self.is_ball_in_goal()
+
 
 TEAM_ID = 6
+TEST_CASES = {c.__name__: c for c in TestCase.__subclasses__()}
 
 
 class AutoTest(Node):
     def __init__(self, monitoring_node: Monitoring):
         # create node
-        super().__init__("AutoTest")
+        super().__init__("auto_test")
 
-        use_sim_time_param = Parameter("use_sim_time", Parameter.Type.BOOL, True)
         self.declare_parameter("fake_localization", True)
+        self.declare_parameter("loop", False)
+        self.declare_parameter("repeats", 1)
+        self.declare_parameter("test_cases", ["MakeGoalStraight"])
+        use_sim_time_param = Parameter("use_sim_time", Parameter.Type.BOOL, True)
         self.set_parameters([use_sim_time_param])
 
         self.monitoring_node = monitoring_node
@@ -191,18 +207,27 @@ class AutoTest(Node):
                 self.ball_twist = model_state_msg.twist[i]
 
     def next_test(self):
+        test_repeats = self.get_parameter("repeats").value
+        test_cases = self.get_parameter("test_cases").value
+        do_loop = self.get_parameter("loop").value
         if self.current_test is not None:
             self.test_id += 1
             if self.current_test.test_repeat >= test_repeats:
                 self.test_type_index += 1
                 if self.test_type_index >= len(test_cases):
-                    self.current_test = None
-                    return
+                    if not do_loop:
+                        self.current_test = None
+                        return
+                    else:
+                        self.test_type_index = 0
                 rep = 1
             else:
                 rep = self.current_test.test_repeat + 1
-
-            self.current_test = test_cases[self.test_type_index](self, self.test_id, rep)
+        else:
+            rep = 1
+            self.test_id += 1
+        test_cls = TEST_CASES[test_cases[self.test_type_index]]
+        self.current_test = test_cls(self, self.test_id, rep)
 
     def setup_sequence(self):
         gs_msg = GameState()
@@ -248,7 +273,7 @@ class AutoTest(Node):
         )
 
     def loop(self):
-        self.current_test = test_cases[0](self, self.test_id, 1)
+        self.next_test()
         self.setup_sequence()
         last_print = self.get_clock().now()
         while True:
