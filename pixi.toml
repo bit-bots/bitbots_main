@@ -1,6 +1,11 @@
 [workspace]
 authors = ["Florian Vahl <7vahl@informatik.uni-hamburg.de>"]
-channels = ["https://data.bit-bots.de/conda/", "https://data.bit-bots.de/model_packaging/output/", "robostack-jazzy", "conda-forge"]
+channels = [
+    "https://data.bit-bots.de/conda/",  # For self hosted ROS / robostack packages
+    "https://data.bit-bots.de/conda-misc/output/",  # For self hosted misc (non-ROS, neural network weights, ...) packages
+    "robostack-jazzy",  # Robostack jazzy channel for ROS packages
+    "conda-forge"  # General conda-forge channel
+]
 name = "bitbots_main"
 platforms = ["linux-64"]
 preview = ["pixi-build"]

@@ -3,7 +3,7 @@ environments:
   default:
     channels:
     - url: https://data.bit-bots.de/conda/
-    - url: https://data.bit-bots.de/model_packaging/output/
+    - url: https://data.bit-bots.de/conda-misc/output/
     - url: https://conda.anaconda.org/robostack-jazzy/
     - url: https://conda.anaconda.org/conda-forge/
     indexes:
@@ -35,9 +35,9 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/binutils-2.45-default_h4852527_104.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/binutils_impl_linux-64-2.45-default_hfdba357_104.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/binutils_linux-64-2.45-default_h4852527_104.conda
-      - conda: https://data.bit-bots.de/model_packaging/output/noarch/bitbots_model_2021_12_06_flo_torso21_yoeo_7-1.0.1-h4616a5c_0.conda
-      - conda: https://data.bit-bots.de/model_packaging/output/noarch/bitbots_model_2022_10_07_flo_torso21_yoeox-1.0.1-h4616a5c_0.conda
-      - conda: https://data.bit-bots.de/model_packaging/output/noarch/bitbots_model_2023_04_04_philipp_yoeox_with_team_colors-1.0.1-h4616a5c_0.conda
+      - conda: https://data.bit-bots.de/conda-misc/output/noarch/bitbots_model_2021_12_06_flo_torso21_yoeo_7-1.0.1-h4616a5c_2.conda
+      - conda: https://data.bit-bots.de/conda-misc/output/noarch/bitbots_model_2022_10_07_flo_torso21_yoeox-1.0.1-h4616a5c_2.conda
+      - conda: https://data.bit-bots.de/conda-misc/output/noarch/bitbots_model_2023_04_04_philipp_yoeox_with_team_colors-1.0.1-h4616a5c_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/blosc-1.21.6-he440d0b_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/breathe-4.36.0-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/brotli-1.2.0-hed03a55_1.conda
@@ -448,7 +448,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/qt6-main-6.9.2-h5bd77bc_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/rapidjson-1.1.0.post20240409-h3f2d84a_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/rav1e-0.7.1-h8fae777_3.conda
-      - conda: https://data.bit-bots.de/model_packaging/output/noarch/readline-8.2.9999-h4616a5c_0.conda
+      - conda: https://data.bit-bots.de/conda-misc/output/noarch/readline-8.2.9999-h4616a5c_3.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/requests-2.32.5-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/rhash-1.4.6-hb9d3cd8_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/rich-14.2.0-pyhcf101f3_0.conda
@@ -927,7 +927,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/urdfdom-4.0.1-hae71d53_3.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/urdfdom-py-1.2.1-py312h200335b_6.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/urdfdom_headers-1.1.2-h84d6215_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/urllib3-2.6.1-pyhd8ed1ab_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/urllib3-2.6.2-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/utfcpp-4.0.8-ha770c72_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/virtualenv-20.35.4-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/vtk-9.4.2-hf9009d3_4.conda
@@ -937,7 +937,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/wayland-1.24.0-h3e06ad9_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/wayland-protocols-1.46-hd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/wcwidth-0.2.14-pyhd8ed1ab_0.conda
-      - conda: https://data.bit-bots.de/model_packaging/output/linux-64/webots-2022b-hb0f4dca_3.conda
+      - conda: https://data.bit-bots.de/conda-misc/output/linux-64/webots-2022b-hb0f4dca_4.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/wrapt-1.17.3-py312h4c3975b_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/wslink-2.5.0-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/x264-1!164.3095-h166bdaf_2.tar.bz2
@@ -1064,7 +1064,7 @@ environments:
   format:
     channels:
     - url: https://data.bit-bots.de/conda/
-    - url: https://data.bit-bots.de/model_packaging/output/
+    - url: https://data.bit-bots.de/conda-misc/output/
     - url: https://conda.anaconda.org/robostack-jazzy/
     - url: https://conda.anaconda.org/conda-forge/
     packages:
@@ -1111,7 +1111,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/python-3.12.0-hab00c5b_0_cpython.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/python_abi-3.12-8_cp312.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/pyyaml-6.0.3-py312h8a5da7c_0.conda
-      - conda: https://data.bit-bots.de/model_packaging/output/noarch/readline-8.2.9999-h4616a5c_0.conda
+      - conda: https://data.bit-bots.de/conda-misc/output/noarch/readline-8.2.9999-h4616a5c_3.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/setuptools-80.9.0-pyhff2d567_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/tinyxml2-11.0.0-h3f2d84a_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/tk-8.6.13-noxft_ha0e22de_103.conda
@@ -1127,7 +1127,7 @@ environments:
   robot:
     channels:
     - url: https://data.bit-bots.de/conda/
-    - url: https://data.bit-bots.de/model_packaging/output/
+    - url: https://data.bit-bots.de/conda-misc/output/
     - url: https://conda.anaconda.org/robostack-jazzy/
     - url: https://conda.anaconda.org/conda-forge/
     indexes:
@@ -1159,9 +1159,9 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/binutils-2.45-default_h4852527_104.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/binutils_impl_linux-64-2.45-default_hfdba357_104.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/binutils_linux-64-2.45-default_h4852527_104.conda
-      - conda: https://data.bit-bots.de/model_packaging/output/noarch/bitbots_model_2021_12_06_flo_torso21_yoeo_7-1.0.1-h4616a5c_0.conda
-      - conda: https://data.bit-bots.de/model_packaging/output/noarch/bitbots_model_2022_10_07_flo_torso21_yoeox-1.0.1-h4616a5c_0.conda
-      - conda: https://data.bit-bots.de/model_packaging/output/noarch/bitbots_model_2023_04_04_philipp_yoeox_with_team_colors-1.0.1-h4616a5c_0.conda
+      - conda: https://data.bit-bots.de/conda-misc/output/noarch/bitbots_model_2021_12_06_flo_torso21_yoeo_7-1.0.1-h4616a5c_2.conda
+      - conda: https://data.bit-bots.de/conda-misc/output/noarch/bitbots_model_2022_10_07_flo_torso21_yoeox-1.0.1-h4616a5c_2.conda
+      - conda: https://data.bit-bots.de/conda-misc/output/noarch/bitbots_model_2023_04_04_philipp_yoeox_with_team_colors-1.0.1-h4616a5c_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/blosc-1.21.6-he440d0b_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/breathe-4.36.0-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/brotli-1.2.0-hed03a55_1.conda
@@ -1572,7 +1572,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/qt6-main-6.9.2-h5bd77bc_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/rapidjson-1.1.0.post20240409-h3f2d84a_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/rav1e-0.7.1-h8fae777_3.conda
-      - conda: https://data.bit-bots.de/model_packaging/output/noarch/readline-8.2.9999-h4616a5c_0.conda
+      - conda: https://data.bit-bots.de/conda-misc/output/noarch/readline-8.2.9999-h4616a5c_3.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/requests-2.32.5-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/rhash-1.4.6-hb9d3cd8_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/rich-14.2.0-pyhcf101f3_0.conda
@@ -2051,7 +2051,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/urdfdom-4.0.1-hae71d53_3.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/urdfdom-py-1.2.1-py312h200335b_6.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/urdfdom_headers-1.1.2-h84d6215_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/urllib3-2.6.1-pyhd8ed1ab_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/urllib3-2.6.2-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/utfcpp-4.0.8-ha770c72_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/virtualenv-20.35.4-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/vtk-9.4.2-hf9009d3_4.conda
@@ -2061,7 +2061,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/wayland-1.24.0-h3e06ad9_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/wayland-protocols-1.46-hd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/wcwidth-0.2.14-pyhd8ed1ab_0.conda
-      - conda: https://data.bit-bots.de/model_packaging/output/linux-64/webots-2022b-hb0f4dca_3.conda
+      - conda: https://data.bit-bots.de/conda-misc/output/linux-64/webots-2022b-hb0f4dca_4.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/wrapt-1.17.3-py312h4c3975b_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/wslink-2.5.0-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/x264-1!164.3095-h166bdaf_2.tar.bz2
@@ -2523,24 +2523,24 @@ packages:
   purls: []
   size: 36180
   timestamp: 1764007883258
-- conda: https://data.bit-bots.de/model_packaging/output/noarch/bitbots_model_2021_12_06_flo_torso21_yoeo_7-1.0.1-h4616a5c_0.conda
-  sha256: dd273a5c1e4256d2aaf59d66baa4530f4a7df828b689d4e056a15433c53f17ae
-  md5: d731bf398ac069ce2dd97a6061aa7b4d
+- conda: https://data.bit-bots.de/conda-misc/output/noarch/bitbots_model_2021_12_06_flo_torso21_yoeo_7-1.0.1-h4616a5c_2.conda
+  sha256: 8a0f1816263ac215af757058fb11d825dc01d3286fe86ceac254e8173053899a
+  md5: 8432320046dd788791336325220c8026
   license: MIT
-  size: 27253666
-  timestamp: 1764378517256
-- conda: https://data.bit-bots.de/model_packaging/output/noarch/bitbots_model_2022_10_07_flo_torso21_yoeox-1.0.1-h4616a5c_0.conda
-  sha256: 52fe9c2fb6585b92f36290face8abd9ce9c8b1d8f8f5eb842616ebf62fbcc286
-  md5: 64af621be88fb228ff02f611ab7ac91b
+  size: 27253667
+  timestamp: 1765723527934
+- conda: https://data.bit-bots.de/conda-misc/output/noarch/bitbots_model_2022_10_07_flo_torso21_yoeox-1.0.1-h4616a5c_2.conda
+  sha256: e3f8f4b678ac44207856a0af6ac18991068d7b79e3ffc04fb309a76c19a83fa1
+  md5: dc4c52e1094a5c41c22ce2ddce7c68f5
   license: MIT
-  size: 77978905
-  timestamp: 1764378517255
-- conda: https://data.bit-bots.de/model_packaging/output/noarch/bitbots_model_2023_04_04_philipp_yoeox_with_team_colors-1.0.1-h4616a5c_0.conda
-  sha256: 89be0ffb2cdd41d433ba2717196b7d3de84e34732b4ce280cc6bc5d6c82b7792
-  md5: 0b9488c7b39f5c91f724df95b7a2ac8c
+  size: 77978904
+  timestamp: 1765723527934
+- conda: https://data.bit-bots.de/conda-misc/output/noarch/bitbots_model_2023_04_04_philipp_yoeox_with_team_colors-1.0.1-h4616a5c_2.conda
+  sha256: 9fb7cf4e3285ae5a098a0f540a5367083c32cfb35e2c687b7684234e1172bcbb
+  md5: d214f45eb9dc7ee210eff2e8ea3df023
   license: MIT
-  size: 51676315
-  timestamp: 1764378517255
+  size: 51676317
+  timestamp: 1765723527933
 - conda: src/bitbots_navigation/bitbots_rust_nav
   name: bitbots_rust_nav
   version: 0.1.0
@@ -9147,12 +9147,11 @@ packages:
   purls: []
   size: 5176669
   timestamp: 1746622023242
-- conda: https://data.bit-bots.de/model_packaging/output/noarch/readline-8.2.9999-h4616a5c_0.conda
-  sha256: 9afc087ebd4e9576ea49736138281a601ba02569ae98f564f436caa134c0c3c7
-  md5: b3d8f6fdb0120c801b92c2f777fd9724
-  license: MIT
-  size: 1038
-  timestamp: 1764378517250
+- conda: https://data.bit-bots.de/conda-misc/output/noarch/readline-8.2.9999-h4616a5c_3.conda
+  sha256: a4117ce5fbd5796524598d7d3eebf38a40b928073305395ac67c6dc2b0b09315
+  md5: bfe8ff7926064ecc8830dd46b8a9a101
+  size: 1076
+  timestamp: 1765723527937
 - pypi: https://files.pythonhosted.org/packages/84/bd/9ce9f629fcb714ffc2c3faf62b6766ecb7a585e1e885eb699bcf130a5209/regex-2025.11.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
   name: regex
   version: 2025.11.3
@@ -19634,9 +19633,9 @@ packages:
   purls: []
   size: 19201
   timestamp: 1726152409175
-- conda: https://conda.anaconda.org/conda-forge/noarch/urllib3-2.6.1-pyhd8ed1ab_0.conda
-  sha256: a66fc716c9dc6eb048c40381b0d1c5842a1d74bba7ce3d16d80fc0a7232d8644
-  md5: fb84f0f6ee8a0ad67213cd1bea98bf5b
+- conda: https://conda.anaconda.org/conda-forge/noarch/urllib3-2.6.2-pyhd8ed1ab_0.conda
+  sha256: f4302a80ee9b76279ad061df05003abc2a29cc89751ffab2fd2919b43455dac0
+  md5: 4949ca7b83065cfe94ebe320aece8c72
   depends:
   - backports.zstd >=1.0.0
   - brotli-python >=1.2.0
@@ -19647,8 +19646,8 @@ packages:
   license_family: MIT
   purls:
   - pkg:pypi/urllib3?source=compressed-mapping
-  size: 102817
-  timestamp: 1765212810619
+  size: 102842
+  timestamp: 1765719817255
 - conda: https://conda.anaconda.org/conda-forge/linux-64/utfcpp-4.0.8-ha770c72_0.conda
   sha256: bbfbfc43bc028ec8acc5c9c2bb9a52c7652140cef91fdb6219a52d91d773a474
   md5: a480ee3eb9c95364a229673a28384899
@@ -19797,12 +19796,12 @@ packages:
   - pkg:pypi/wcwidth?source=hash-mapping
   size: 33670
   timestamp: 1758622418893
-- conda: https://data.bit-bots.de/model_packaging/output/linux-64/webots-2022b-hb0f4dca_3.conda
-  sha256: 1519ec5cb902d031b3386ef214b4a057033273039b4cc43941029e42935aef9b
-  md5: dfb99f6ce07885ae95b58eee903ecc5b
+- conda: https://data.bit-bots.de/conda-misc/output/linux-64/webots-2022b-hb0f4dca_4.conda
+  sha256: 0c6b64edc23156a19a5065b3a12ad3cf54550b6184caf1fb3d41c64fcc9758d4
+  md5: 9abb0c08f0109888d29259ea6fc2a41a
   license: Apache-2.0
-  size: 172089806
-  timestamp: 1765721135276
+  size: 172089694
+  timestamp: 1765723527936
 - pypi: https://files.pythonhosted.org/packages/2f/f9/9e082990c2585c744734f85bec79b5dae5df9c974ffee58fe421652c8e91/werkzeug-3.1.4-py3-none-any.whl
   name: werkzeug
   version: 3.1.4
