@@ -46,7 +46,6 @@ setup_host() {
     echo "Setting up system dependencies not covered by pixi. This may require sudo rights. For non-Ubuntu systems, please install the required packages manually."
     if (( has_sudo )); then
         $meta_dir/scripts/make_basler.sh
-        $meta_dir/scripts/make_webots.sh
     fi
 }
 
