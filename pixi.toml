@@ -207,6 +207,7 @@ RCUTILS_COLORIZED_OUTPUT = "1"
 RMW_IMPLEMENTATION = "rmw_cyclonedds_cpp"
 COLCON_LOG_LEVEL = "30"
 PYTHONWARNINGS="ignore:::setuptools.command.install,ignore:::setuptools.command.easy_install,ignore:::pkg_resources,ignore:easy_install command is deprecated,ignore:setup.py install is deprecated"
+WEBOTS_HOME = "$CONDA_PREFIX/share/webots"
 
 [feature.ros.activation]
 scripts = ["install/setup.sh"]
