@@ -1,16 +1,17 @@
-import glob
+data_filesimport glob
 import os
 
 from setuptools import find_packages, setup
 
-package_name = "bitbots_education"
+package_name = 'bitbots_education'
 
 
-def generate_data_files(share_path, dir):
+def generate_data_files(share_path, directory):
     data_files = []
 
-    for path, _, files in os.walk(dir):
-        list_entry = (share_path + path, [os.path.join(path, f) for f in files if not f.startswith(".")])
+    for path, _, files in os.walk(directory):
+        p = share_path + path
+        list_entry = (p, [os.path.join(path, f) for f in files if not f.startswith('.')])
         data_files.append(list_entry)
 
     return data_files
@@ -19,24 +20,24 @@ def generate_data_files(share_path, dir):
 setup(
     name=package_name,
     data_files=[
-        ("share/ament_index/resource_index/packages", ["resource/" + package_name]),
-        ("share/" + package_name, ["package.xml"]),
-        ("share/" + package_name + "/launch", glob.glob("launch/*.launch")),
+        ('share/ament_index/resource_index/packages', ['resource/' + package_name]),
+        ('share/' + package_name, ['package.xml']),
+        ('share/' + package_name + '/launch', glob.glob('launch/*.launch')),
     ]
-    + generate_data_files("share/" + package_name + "/", "templates/")
-    + generate_data_files("share/" + package_name + "/", "static/"),
-    version="0.0.0",
-    packages=find_packages(exclude=["test"]),
-    install_requires=["setuptools"],
+    + generate_data_files('share/' + package_name + '/', 'templates/')
+    + generate_data_files('share/' + package_name + '/', 'static/'),
+    version='0.0.0',
+    packages=find_packages(exclude=['test']),
+    install_requires=['setuptools'],
     zip_safe=True,
-    maintainer="root",
-    maintainer_email="wedmann.lea@gmail.com",
-    description="TODO: Package description",
-    license="Apache-2.0",
-    tests_require=["pytest"],
+    maintainer='root',
+    maintainer_email='wedmann.lea@gmail.com',
+    description='TODO: Package description',
+    license='Apache-2.0',
+    tests_require=['pytest'],
     entry_points={
-        "console_scripts": [
-            "webserver = bitbots_education.app:main",
+        'console_scripts': [
+            'webserver = bitbots_education.app:main',
         ],
     },
 )

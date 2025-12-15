@@ -32,7 +32,8 @@ def vp_track(page, button, status):
 @app.route("/")
 def index():
     vp_track("dashboard", "", "")
-    return render_template("pages/dashboard.html", logging=bool(request.args.get("logging", False)))
+    dashboard = "pages/dashboard.html"
+    return render_template(dashboard, logging=bool(request.args.get("logging", False)))
 
 
 @app.route("/imu")
