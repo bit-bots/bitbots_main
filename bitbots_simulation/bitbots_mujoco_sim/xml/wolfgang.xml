@@ -30,58 +30,58 @@
   </default>
 
   <asset>
-    <mesh name="mx-64-body" file="mx-64-body.stl"/>
-    <mesh name="nuc_holder_right_front" file="nuc_holder_right_front.stl"/>
-    <mesh name="torso_bumper_right" file="torso_bumper_right.stl"/>
-    <mesh name="core" file="core.stl"/>
-    <mesh name="battery" file="battery.stl"/>
-    <mesh name="mx-106_body" file="mx-106_body.stl"/>
-    <mesh name="torso_bumper_left" file="torso_bumper_left.stl"/>
-    <mesh name="nuc_holder_right_back" file="nuc_holder_right_back.stl"/>
-    <mesh name="battery_clip" file="battery_clip.stl"/>
-    <mesh name="nuc_holder_left_back" file="nuc_holder_left_back.stl"/>
-    <mesh name="imu_holder" file="imu_holder.stl"/>
-    <mesh name="torso_bottom" file="torso_bottom.stl"/>
-    <mesh name="speaker_holder" file="speaker_holder.stl"/>
-    <mesh name="nuc_main" file="nuc_main.stl"/>
-    <mesh name="torso_top" file="torso_top.stl"/>
-    <mesh name="baseplate_odroid_xu4_core" file="baseplate_odroid_xu4_core.stl"/>
-    <mesh name="dummy_speaker" file="dummy_speaker.stl"/>
-    <mesh name="nuc_holder_left_front" file="nuc_holder_left_front.stl"/>
-    <mesh name="battery_cage" file="battery_cage.stl"/>
-    <mesh name="sea_connector" file="sea_connector.stl"/>
-    <mesh name="sea_ninjaflex" file="sea_ninjaflex.stl"/>
-    <mesh name="shoulder_connector" file="shoulder_connector.stl"/>
-    <mesh name="upper_arm" file="upper_arm.stl"/>
-    <mesh name="connector_shoulder" file="connector_shoulder.stl"/>
-    <mesh name="upper_arm_spacer" file="upper_arm_spacer.stl"/>
-    <mesh name="lower_arm" file="lower_arm.stl"/>
-    <mesh name="hand" file="hand.stl"/>
-    <mesh name="hip_u_connector" file="hip_u_connector.stl"/>
-    <mesh name="motor_connector" file="motor_connector.stl"/>
-    <mesh name="thrustbearingholder" file="thrustbearingholder.stl"/>
-    <mesh name="knee_connector" file="knee_connector.stl"/>
-    <mesh name="upper_leg" file="upper_leg.stl"/>
-    <mesh name="xh-540" file="xh-540.stl"/>
-    <mesh name="spring_holder_upper" file="spring_holder_upper.stl"/>
-    <mesh name="upper_leg_spacer" file="upper_leg_spacer.stl"/>
-    <mesh name="knee_spacer" file="knee_spacer.stl"/>
-    <mesh name="lower_leg" file="lower_leg.stl"/>
-    <mesh name="lower_leg_spacer" file="lower_leg_spacer.stl"/>
-    <mesh name="springholder_new" file="springholder_new.stl"/>
-    <mesh name="spring_holder_lower" file="spring_holder_lower.stl"/>
-    <mesh name="springholder_bottom" file="springholder_bottom.stl"/>
-    <mesh name="load_cell" file="load_cell.stl"/>
-    <mesh name="ankle" file="ankle.stl"/>
-    <mesh name="foot_printed_right" file="foot_printed_right.stl"/>
-    <mesh name="foot_cover" file="foot_cover.stl"/>
-    <mesh name="flex_stollen" file="flex_stollen.stl"/>
-    <mesh name="foot_printed_left" file="foot_printed_left.stl"/>
-    <mesh name="lense" file="lense.stl"/>
-    <mesh name="camera_side_basler_wolfgang_v2.2_right" file="camera_side_basler_wolfgang_v2.2_right.stl"/>
-    <mesh name="camera_side_basler_wolfgang_v2.2_left" file="camera_side_basler_wolfgang_v2.2_left.stl"/>
-    <mesh name="basler_ace_gige_c-mount_v01" file="basler_ace_gige_c-mount_v01.stl"/>
-    <mesh name="camera_lower_basler_wolfgang_imu_v2.2" file="camera_lower_basler_wolfgang_imu_v2.2.stl"/>
+    <mesh name="mx-64-body" file="assets/mx-64-body.stl"/>
+    <mesh name="nuc_holder_right_front" file="assets/nuc_holder_right_front.stl"/>
+    <mesh name="torso_bumper_right" file="assets/torso_bumper_right.stl"/>
+    <mesh name="core" file="assets/core.stl"/>
+    <mesh name="battery" file="assets/battery.stl"/>
+    <mesh name="mx-106_body" file="assets/mx-106_body.stl"/>
+    <mesh name="torso_bumper_left" file="assets/torso_bumper_left.stl"/>
+    <mesh name="nuc_holder_right_back" file="assets/nuc_holder_right_back.stl"/>
+    <mesh name="battery_clip" file="assets/battery_clip.stl"/>
+    <mesh name="nuc_holder_left_back" file="assets/nuc_holder_left_back.stl"/>
+    <mesh name="imu_holder" file="assets/imu_holder.stl"/>
+    <mesh name="torso_bottom" file="assets/torso_bottom.stl"/>
+    <mesh name="speaker_holder" file="assets/speaker_holder.stl"/>
+    <mesh name="nuc_main" file="assets/nuc_main.stl"/>
+    <mesh name="torso_top" file="assets/torso_top.stl"/>
+    <mesh name="baseplate_odroid_xu4_core" file="assets/baseplate_odroid_xu4_core.stl"/>
+    <mesh name="dummy_speaker" file="assets/dummy_speaker.stl"/>
+    <mesh name="nuc_holder_left_front" file="assets/nuc_holder_left_front.stl"/>
+    <mesh name="battery_cage" file="assets/battery_cage.stl"/>
+    <mesh name="sea_connector" file="assets/sea_connector.stl"/>
+    <mesh name="sea_ninjaflex" file="assets/sea_ninjaflex.stl"/>
+    <mesh name="shoulder_connector" file="assets/shoulder_connector.stl"/>
+    <mesh name="upper_arm" file="assets/upper_arm.stl"/>
+    <mesh name="connector_shoulder" file="assets/connector_shoulder.stl"/>
+    <mesh name="upper_arm_spacer" file="assets/upper_arm_spacer.stl"/>
+    <mesh name="lower_arm" file="assets/lower_arm.stl"/>
+    <mesh name="hand" file="assets/hand.stl"/>
+    <mesh name="hip_u_connector" file="assets/hip_u_connector.stl"/>
+    <mesh name="motor_connector" file="assets/motor_connector.stl"/>
+    <mesh name="thrustbearingholder" file="assets/thrustbearingholder.stl"/>
+    <mesh name="knee_connector" file="assets/knee_connector.stl"/>
+    <mesh name="upper_leg" file="assets/upper_leg.stl"/>
+    <mesh name="xh-540" file="assets/xh-540.stl"/>
+    <mesh name="spring_holder_upper" file="assets/spring_holder_upper.stl"/>
+    <mesh name="upper_leg_spacer" file="assets/upper_leg_spacer.stl"/>
+    <mesh name="knee_spacer" file="assets/knee_spacer.stl"/>
+    <mesh name="lower_leg" file="assets/lower_leg.stl"/>
+    <mesh name="lower_leg_spacer" file="assets/lower_leg_spacer.stl"/>
+    <mesh name="springholder_new" file="assets/springholder_new.stl"/>
+    <mesh name="spring_holder_lower" file="assets/spring_holder_lower.stl"/>
+    <mesh name="springholder_bottom" file="assets/springholder_bottom.stl"/>
+    <mesh name="load_cell" file="assets/load_cell.stl"/>
+    <mesh name="ankle" file="assets/ankle.stl"/>
+    <mesh name="foot_printed_right" file="assets/foot_printed_right.stl"/>
+    <mesh name="foot_cover" file="assets/foot_cover.stl"/>
+    <mesh name="flex_stollen" file="assets/flex_stollen.stl"/>
+    <mesh name="foot_printed_left" file="assets/foot_printed_left.stl"/>
+    <mesh name="lense" file="assets/lense.stl"/>
+    <mesh name="camera_side_basler_wolfgang_v2.2_right" file="assets/camera_side_basler_wolfgang_v2.2_right.stl"/>
+    <mesh name="camera_side_basler_wolfgang_v2.2_left" file="assets/camera_side_basler_wolfgang_v2.2_left.stl"/>
+    <mesh name="basler_ace_gige_c-mount_v01" file="assets/basler_ace_gige_c-mount_v01.stl"/>
+    <mesh name="camera_lower_basler_wolfgang_imu_v2.2" file="assets/camera_lower_basler_wolfgang_imu_v2.2.stl"/>
     <material name="black" rgba="0.2 0.2 0.2 1"/>
   </asset>
 
@@ -389,18 +389,22 @@
                   <geom pos="0.0234568 0.0618337 -0.0463905" quat="0.707105 0 0 -0.707108" type="mesh" mesh="foot_cover" class="visual"/>
                   <geom size="0.02 0.053 0.0095" pos="0.0149998 0.120225 -0.0192245" quat="0.707105 0 0 -0.707108" type="box" rgba="0.717647 0.717647 0.717647 1" class="collision"/>
                   <geom size="0.0255 0.037 0.001" pos="0.0149998 0.1625 -0.0232245" quat="0.171497 0.685994 0.685997 -0.171495" type="box" rgba="0.717647 0.717647 0.717647 1" class="collision"/>
+                  
                   <geom pos="-0.03 -0.007 -0.044" quat="0.707105 0 0 -0.707108" type="mesh" mesh="flex_stollen" class="visual"/>
-                  <geom size="0.006 0.005" pos="-0.03 -0.007 -0.039" quat="0.707105 0 0 -0.707108" type="cylinder" rgba="0.717647 0.717647 0.717647 1" class="collision"/>
-                  <geom size="0.006" pos="-0.03 -0.007 -0.044" quat="0.707105 0 0 -0.707108" rgba="0.717647 0.717647 0.717647 1" class="collision"/>
+                  <geom name="rlb_stollen1" size="0.006 0.005" pos="-0.03 -0.007 -0.039" quat="0.707105 0 0 -0.707108" type="cylinder" rgba="0.717647 0.717647 0.717647 1" class="collision"/>
+                  <geom name="rlb_stollen2" size="0.006" pos="-0.03 -0.007 -0.044" quat="0.707105 0 0 -0.707108" rgba="0.717647 0.717647 0.717647 1" class="collision"/>
+
                   <geom pos="-0.03 0.177 -0.044" quat="0.707105 0 0 -0.707108" type="mesh" mesh="flex_stollen" class="visual"/>
-                  <geom size="0.006 0.005" pos="-0.03 0.177 -0.039" quat="0.707105 0 0 -0.707108" type="cylinder" rgba="0.717647 0.717647 0.717647 1" class="collision"/>
-                  <geom size="0.006" pos="-0.03 0.177 -0.044" quat="0.707105 0 0 -0.707108" rgba="0.717647 0.717647 0.717647 1" class="collision"/>
+                  <geom name="rlf_stollen1" size="0.006 0.005" pos="-0.03 0.177 -0.039" quat="0.707105 0 0 -0.707108" type="cylinder" rgba="0.717647 0.717647 0.717647 1" class="collision"/>
+                  <geom name="rlf_stollen2" size="0.006" pos="-0.03 0.177 -0.044" quat="0.707105 0 0 -0.707108" rgba="0.717647 0.717647 0.717647 1" class="collision"/>
+
                   <geom pos="0.06 0.177 -0.044" quat="0.707105 0 0 -0.707108" type="mesh" mesh="flex_stollen" class="visual"/>
-                  <geom size="0.006 0.005" pos="0.06 0.177 -0.039" quat="0.707105 0 0 -0.707108" type="cylinder" rgba="0.717647 0.717647 0.717647 1" class="collision"/>
-                  <geom size="0.006" pos="0.06 0.177 -0.044" quat="0.707105 0 0 -0.707108" rgba="0.717647 0.717647 0.717647 1" class="collision"/>
+                  <geom name="rrf_stollen1" size="0.006 0.005" pos="0.06 0.177 -0.039" quat="0.707105 0 0 -0.707108" type="cylinder" rgba="0.717647 0.717647 0.717647 1" class="collision"/>
+                  <geom name="rrf_stollen2" size="0.006" pos="0.06 0.177 -0.044" quat="0.707105 0 0 -0.707108" rgba="0.717647 0.717647 0.717647 1" class="collision"/>
+
                   <geom pos="0.06 -0.007 -0.044" quat="0.707105 0 0 -0.707108" type="mesh" mesh="flex_stollen" class="visual"/>
-                  <geom size="0.006 0.005" pos="0.06 -0.007 -0.039" quat="0.707105 0 0 -0.707108" type="cylinder" rgba="0.717647 0.717647 0.717647 1" class="collision"/>
-                  <geom size="0.006" pos="0.06 -0.007 -0.044" quat="0.707105 0 0 -0.707108" rgba="0.717647 0.717647 0.717647 1" class="collision"/>
+                  <geom name="rrb_stollen1" size="0.006 0.005" pos="0.06 -0.007 -0.039" quat="0.707105 0 0 -0.707108" type="cylinder" rgba="0.717647 0.717647 0.717647 1" class="collision"/>
+                  <geom name="rrb_stollen2" size="0.006" pos="0.06 -0.007 -0.044" quat="0.707105 0 0 -0.707108" rgba="0.717647 0.717647 0.717647 1" class="collision"/>
                 </body>
               </body>
             </body>
@@ -549,18 +553,21 @@
                 <geom size="0.004 0.02 0.002" pos="0.03 0.1635 -0.032" quat="1 0 0 0" type="box" rgba="0.717647 0.717647 0.717647 1" class="collision"/>
                 <geom pos="-0.06 0.0065 -0.034" quat="1 0 0 0" type="mesh" mesh="load_cell" class="visual"/>
                 <geom size="0.004 0.02 0.002" pos="-0.06 0.0065 -0.032" quat="1 0 0 0" type="box" rgba="0.717647 0.717647 0.717647 1" class="collision"/>
+
                 <geom pos="-0.06 -0.007 -0.044" quat="0.707105 0 0 -0.707108" type="mesh" mesh="flex_stollen" class="visual"/>
-                <geom size="0.006 0.005" pos="-0.06 -0.007 -0.039" quat="0.707105 0 0 -0.707108" type="cylinder" rgba="0.717647 0.717647 0.717647 1" class="collision"/>
-                <geom size="0.006" pos="-0.06 -0.007 -0.044" quat="0.707105 0 0 -0.707108" rgba="0.717647 0.717647 0.717647 1" class="collision"/>
+                <geom name="llb_stollen1" size="0.006 0.005" pos="-0.06 -0.007 -0.039" quat="0.707105 0 0 -0.707108" type="cylinder" rgba="0.717647 0.717647 0.717647 1" class="collision"/>
+                <geom name="llb_stollen2" size="0.006" pos="-0.06 -0.007 -0.044" quat="0.707105 0 0 -0.707108" rgba="0.717647 0.717647 0.717647 1" class="collision"/>
+
                 <geom pos="-0.06 0.177 -0.044" quat="0.707105 0 0 -0.707108" type="mesh" mesh="flex_stollen" class="visual"/>
-                <geom size="0.006 0.005" pos="-0.06 0.177 -0.039" quat="0.707105 0 0 -0.707108" type="cylinder" rgba="0.717647 0.717647 0.717647 1" class="collision"/>
-                <geom size="0.006" pos="-0.06 0.177 -0.044" quat="0.707105 0 0 -0.707108" rgba="0.717647 0.717647 0.717647 1" class="collision"/>
+                <geom name="llf_stollen1" size="0.006 0.005" pos="-0.06 0.177 -0.039" quat="0.707105 0 0 -0.707108" type="cylinder" rgba="0.717647 0.717647 0.717647 1" class="collision"/>
+                <geom name="llf_stollen2" size="0.006" pos="-0.06 0.177 -0.044" quat="0.707105 0 0 -0.707108" rgba="0.717647 0.717647 0.717647 1" class="collision"/>
+                
                 <geom pos="0.03 0.177 -0.044" quat="0.707105 0 0 -0.707108" type="mesh" mesh="flex_stollen" class="visual"/>
-                <geom size="0.006 0.005" pos="0.03 0.177 -0.039" quat="0.707105 0 0 -0.707108" type="cylinder" rgba="0.717647 0.717647 0.717647 1" class="collision"/>
-                <geom size="0.006" pos="0.03 0.177 -0.044" quat="0.707105 0 0 -0.707108" rgba="0.717647 0.717647 0.717647 1" class="collision"/>
+                <geom name="lrf_stollen1" size="0.006 0.005" pos="0.03 0.177 -0.039" quat="0.707105 0 0 -0.707108" type="cylinder" rgba="0.717647 0.717647 0.717647 1" class="collision"/>
+                <geom name="lrf_stollen2" size="0.006" pos="0.03 0.177 -0.044" quat="0.707105 0 0 -0.707108" rgba="0.717647 0.717647 0.717647 1" class="collision"/>
                 <geom pos="0.03 -0.007 -0.044" quat="0.707105 0 0 -0.707108" type="mesh" mesh="flex_stollen" class="visual"/>
-                <geom size="0.006 0.005" pos="0.03 -0.007 -0.039" quat="0.707105 0 0 -0.707108" type="cylinder" rgba="0.717647 0.717647 0.717647 1" class="collision"/>
-                <geom size="0.006" pos="0.03 -0.007 -0.044" quat="0.707105 0 0 -0.707108" rgba="0.717647 0.717647 0.717647 1" class="collision"/>
+                <geom name="lrb_stollen1" size="0.006 0.005" pos="0.03 -0.007 -0.039" quat="0.707105 0 0 -0.707108" type="cylinder" rgba="0.717647 0.717647 0.717647 1" class="collision"/>
+                <geom name="lrb_stollen2" size="0.006" pos="0.03 -0.007 -0.044" quat="0.707105 0 0 -0.707108" rgba="0.717647 0.717647 0.717647 1" class="collision"/>
                 </body>
               </body>
             </body>
@@ -662,8 +669,18 @@
     <framexaxis objtype="site" objname="r_foot" name="r_foot_upvector"/>
     <framepos objtype="site" objname="l_foot" name="l_foot_pos"/>
     <framepos objtype="site" objname="r_foot" name="r_foot_pos"/>
-    <!-- <contact name="l_foot1_floor_found" geom1="l_foot1" geom2="floor" reduce="mindist" num="1" data="found"/>
-    <contact name="r_foot1_floor_found" geom1="r_foot1" geom2="floor" reduce="mindist" num="1" data="found"/>
-    <contact name="right_foot_left_foot_found" geom1="l_foot1" geom2="r_foot1" reduce="mindist" num="1" data="found"/> -->
+    <!-- left footsenosrs -->
+    <contact name="llb_foot_floor_found" geom1="llb_stollen2" geom2="pitch" reduce="netforce" num="1" data="force"/>
+    <contact name="llf_foot_floor_found" geom1="llf_stollen2" geom2="pitch" reduce="netforce" num="1" data="force"/>
+    <contact name="lrf_foot_floor_found" geom1="lrf_stollen2" geom2="pitch" reduce="netforce" num="1" data="force"/>
+    <contact name="lrb_foot_floor_found" geom1="lrb_stollen2" geom2="pitch" reduce="netforce" num="1" data="force"/>
+    <!-- right foot sensors -->
+    <contact name="rlb_foot_floor_found" geom1="rlb_stollen2" geom2="pitch" reduce="netforce" num="1" data="force"/>
+    <contact name="rlf_foot_floor_found" geom1="rlf_stollen2" geom2="pitch" reduce="netforce" num="1" data="force"/>
+    <contact name="rrf_foot_floor_found" geom1="rrf_stollen2" geom2="pitch" reduce="netforce" num="1" data="force"/>
+    <contact name="rrb_foot_floor_found" geom1="rrb_stollen2" geom2="pitch" reduce="netforce" num="1" data="force"/>
+    <!-- <contact name="right_foot_left_foot_found" geom1="l_foot1" geom2="r_foot1" reduce="mindist" num="1" data="found"/> -->
   </sensor>
 </mujoco>
+               
+               

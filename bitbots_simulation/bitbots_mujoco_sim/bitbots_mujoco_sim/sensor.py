@@ -25,3 +25,12 @@ class Sensor:
     def dim(self) -> int:
         """Gets the dimension of the sensor data."""
         return int(self.instance.dim)
+
+
+class FootPressureSensor(Sensor):
+    """Represents a foot pressure sensor, providing access to individual pressure readings."""
+
+    @property
+    def force(self) -> float:
+        """Gets the total force measured by the sensor."""
+        return self.data[2]

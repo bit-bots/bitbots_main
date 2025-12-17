@@ -16,6 +16,7 @@ setup(
         ("share/" + package_name + "/xml/assets", glob.glob("xml/assets/*.png")),
         ("share/" + package_name + "/xml/assets", glob.glob("xml/assets/*.stl")),
         ("share/" + package_name + "/xml/assets/ball", glob.glob("xml/assets/ball/*.png")),
+        ("share/" + package_name + "/xml/assets/backgrounds", glob.glob("xml/assets/backgrounds/*.png")),
     ],
     install_requires=["setuptools"],
     zip_safe=True,
