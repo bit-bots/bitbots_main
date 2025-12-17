@@ -8,6 +8,7 @@ from rclpy.node import Node
 from rclpy.time import Time
 from rosgraph_msgs.msg import Clock
 from sensor_msgs.msg import CameraInfo, Image, Imu, JointState
+from std_msgs.msg import Float32
 
 from bitbots_msgs.msg import JointCommand
 from bitbots_mujoco_sim.robot import Robot
@@ -28,9 +29,11 @@ class Simulation(Node):
         self.timestep = self.model.opt.timestep
         self.step_number = 0
         self.clock_publisher = self.create_publisher(Clock, "clock", 1)
+        self.real_time_factor = 1.0
 
         self.js_publisher = self.create_publisher(JointState, "joint_states", 1)
         self.create_subscription(JointCommand, "DynamixelController/command", self.joint_command_callback, 1)
+        self.create_subscription(Float32, "real_time_factor", self.real_time_factor_callback, 1)
 
         self.imu_frame_id = self.get_parameter_or("imu_frame", "imu_frame")
         self.imu_publisher = self.create_publisher(Imu, "imu/data_raw", 1)
@@ -75,7 +78,11 @@ class Simulation(Node):
                 event_config["handler"]()
 
         real_end_time = time.time()
-        time.sleep(max(0.0, self.timestep - (real_end_time - real_start_time)))
+        expected_step_time = self.timestep / self.real_time_factor
+        time.sleep(max(0.0, expected_step_time - (real_end_time - real_start_time)))
+
+    def real_time_factor_callback(self, msg: Float32) -> None:
+        self.real_time_factor = msg.data
 
     def publish_clock_event(self) -> None:
         clock_msg = Clock()
