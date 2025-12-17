@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 
+import jax
 import orbax.checkpoint as ocp
 from brax.training.acme import running_statistics
 from brax.training.agents.ppo import networks as ppo_networks
@@ -63,3 +64,9 @@ ppo_net = ppo_networks.make_ppo_networks(
     policy_hidden_layer_sizes=policy_layer_sizes[1:-1],
     value_hidden_layer_sizes=value_layer_sizes[1:-1],
 )
+
+make_inference = ppo_networks.make_inference_fn(ppo_net)
+
+policy_fn = make_inference(policy_params, deterministic=True)
+
+policy_fn = jax.jit(policy_fn)
