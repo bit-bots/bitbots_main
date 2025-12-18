@@ -1,9 +1,7 @@
 auto_test:
   ros__parameters:
     test_cases:
-      - MakeGoalStraight
       - MakeGoalDiagonalLeft
       - MakeGoalDiagonalRight
-      - MakeGoalBehind
-    repeats: 5
-    loop: false
+    repeats: 1
+    loop: true

@@ -56,7 +56,7 @@ class Monitoring(Node):
         if time is None:
             time = self.get_clock().now()
         time = time.nanoseconds
-        time = f"{time // 60_000_000_000:02}:{(time / 1_000_000_000) % 60:05.2f}"
+        time = f"{time // 60_000_000_000:02}:{(time / 1_000_000_000) % 60:07.4f}"
         msg = ", ".join((time, event, data1, data2, data3))
         with self.lock:
             index = self.index
