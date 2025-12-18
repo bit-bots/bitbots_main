@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <launch>
     <include file="$(find-pkg-share rosbridge_server)/launch/rosbridge_websocket_launch.xml">
+        <arg name="delay_between_messages" value="0.0"/>
     </include>
     <node pkg="web_video_server" exec="web_video_server" name="web_video_server_education">
         <param name="port" value="8081"/>
