@@ -1,15 +1,21 @@
 #!/usr/bin/env python3
 
 import copy
+import os
 
 import rclpy
+from dotenv import load_dotenv
 from geometry_msgs.msg import Twist
 from rclpy.duration import Duration
 from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
 from sensor_msgs.msg import Joy
 
-from bitbots_msgs.msg import Audio, HeadMode, JointCommand
+from bitbots_msgs.msg import HeadMode, JointCommand
+
+load_dotenv()
+
+CKPT_PATH = f"{os.getenv('RL_MODELS_PATH')}/walking_without_delay"  # path to checkpoint directory
 
 
 class Runner(Node):
