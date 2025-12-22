@@ -13,7 +13,7 @@ version = "0.1.0"
 
 [tasks]
 build = "colcon build --symlink-install --cmake-args -G Ninja"
-clean = "rm -rf build install log"
+clean = "rm -rf build install log target"
 test = "colcon test --event-handlers console_direct+ --return-code-on-test-failure"
 _format = "pre-commit run --all-files"
 format = [{ task = "_format", environment = "format" }]
@@ -29,6 +29,7 @@ readline = ">=8.2.999"  # This is needed because we want to install an empty rea
 [feature.ros.dependencies]
 # Misc dependencies for our ROS 2 packages
 compilers = ">=1.11.0,<2"
+clang = ">=21.1.0,<22"  # Needed for r2r rust bindings generation
 beartype = ">=0.22.6,<0.23"
 breathe = ">=4.36.0,<5"
 cmake = "<3.30"  # Constraint to avoid issues with deprecated features in newer cmake versions

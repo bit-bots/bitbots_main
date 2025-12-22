@@ -1,0 +1,12 @@
+[workspace]
+members = [
+    "src/bitbots_rust_test",
+]
+
+# Optional but recommended for modern Cargo
+resolver = "2"
+
+# We use a custom profile to keep colcon
+# separate from "normal" rust building.
+[profile.colcon]
+inherits = "release"

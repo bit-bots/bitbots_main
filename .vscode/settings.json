@@ -323,6 +323,28 @@
     "[jsonc]": {
         "editor.defaultFormatter": "vscode.json-language-features"
     },
+    "rust-analyzer.check.overrideCommand": [
+        "pixi",
+        "run",
+        "cargo",
+        "check",
+        "--quiet",
+        "--workspace",
+        "--message-format=json",
+        "--all-targets",
+        "--keep-going"
+    ],
+    "rust-analyzer.cargo.buildScripts.overrideCommand": [
+        "pixi",
+        "run",
+        "cargo",
+        "check",
+        "--quiet",
+        "--workspace",
+        "--message-format=json",
+        "--all-targets",
+        "--keep-going"
+    ],
     "search.exclude": {
         "build": true,
         "install": true,
