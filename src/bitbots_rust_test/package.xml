@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="2">
+  <name>bitbots_rust_test</name>
+  <version>0.0.1</version>
+  <description>Examples of a minimal r2r node</description>
+  <maintainer email="git@flova.de">Florian Vahl</maintainer>
+  <license>MIT</license>
+  <author>Florian Vahl</author>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <build_depend>rcl</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>bitbots_msgs</build_depend>
+
+  <exec_depend>rcl</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>bitbots_msgs</exec_depend>
+  <exec_depend>rosgraph_msgs</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
