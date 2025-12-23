@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "src/bitbots_rust_test",
+    "src/bitbots_navigation/bitbots_rust_nav"
 ]
 
 # Optional but recommended for modern Cargo
