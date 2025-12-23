@@ -82,6 +82,4 @@ function(r2r_cargo)
       VERBATIM
   )
 
-
-
 endfunction()
