@@ -18,6 +18,7 @@
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>bitbots_msgs</exec_depend>
   <exec_depend>rosgraph_msgs</exec_depend>
+  <exec_depend>bitbots_cargo</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

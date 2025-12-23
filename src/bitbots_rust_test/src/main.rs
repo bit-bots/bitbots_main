@@ -45,11 +45,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Parameter handling
     let params = Arc::new(StdMutex::new(Params::default()));
-    let (paramater_handler, _) =
-        node.make_derived_parameter_handler(params.clone())?;
+    let (paramater_handler, _) = node.make_derived_parameter_handler(params.clone())?;
     tokio::task::spawn(paramater_handler);
 
-    println!("Sim time is set to: {}", node.get_parameter::<bool>("use_sim_time").unwrap());
+    println!(
+        "Sim time is set to: {}",
+        node.get_parameter::<bool>("use_sim_time").unwrap()
+    );
 
     // Share the node between tasks / threads
     let node = Arc::new(Mutex::new(node));
