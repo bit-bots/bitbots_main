@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>bitbots_ccc</name>
+  <version>2.0.0</version>
+  <description>Demo for the CCC Congress 2025</description>
+
+  <maintainer email="git@flova.de">Florian Vahl</maintainer>
+  <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+
+  <license>MIT</license>
+
+  <author email="git@flova.de">Florian Vahl</author>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>bitbots_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>rclpy</depend>
+  <depend>bitbots_animation_server</depend>
+
+
+  <export>
+    <bitbots_documentation>
+      <status>broken</status>
+      <language>python3</language>
+    </bitbots_documentation>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

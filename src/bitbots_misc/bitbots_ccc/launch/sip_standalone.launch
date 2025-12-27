@@ -1,0 +1,15 @@
+<launch>
+    <arg name="sim" default="false"/>
+
+    <node name="sip_animator" pkg="bitbots_ccc" exec="sip_animator">
+        <param name="use_sim_time" value="$(var sim)"/>
+    </node>
+
+    <include file="$(find-pkg-share bitbots_animation_server)/launch/animation.launch">
+        <arg name="sim" value="$(var sim)"/>
+    </include>
+
+    <node name="animation_hcm_bridge" pkg="bitbots_animation_server" exec="animation_hcm_bridge.py"  output="screen">
+        <param name="use_sim_time" value="$(var sim)"/>
+    </node>
+</launch>

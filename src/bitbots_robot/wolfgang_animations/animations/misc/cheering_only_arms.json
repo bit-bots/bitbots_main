@@ -1,0 +1,84 @@
+{
+    "author": "Jan-Niklas Feldhusen",
+    "description": "Cheers with the arms up.",
+    "keyframes": [
+        {
+            "duration": 2.0,
+            "goals": {
+                "HeadPan": 0.0,
+                "HeadTilt": 0.0,
+                "LElbow": 2.0,
+                "LShoulderPitch": -103.0,
+                "LShoulderRoll": -28.0,
+                "RElbow": 4.0,
+                "RShoulderPitch": 99.0,
+                "RShoulderRoll": 46.0
+            },
+            "name": "arms up",
+            "pause": 0.0
+        },
+        {
+            "duration": 1.0,
+            "goals": {
+                "HeadPan": 0.0,
+                "HeadTilt": 0.0,
+                "LElbow": -66.0,
+                "LShoulderPitch": -170.0,
+                "LShoulderRoll": -18.0,
+                "RElbow": 73.0,
+                "RShoulderPitch": 174.0,
+                "RShoulderRoll": 14.0
+            },
+            "name": "arms over head",
+            "pause": 0.5
+        },
+        {
+            "duration": 1.0,
+            "goals": {
+                "HeadPan": 0.0,
+                "HeadTilt": 0.0,
+                "LElbow": -58.00000000000001,
+                "LShoulderPitch": -166.0,
+                "LShoulderRoll": -37.0,
+                "RElbow": 74.0,
+                "RShoulderPitch": 175.0,
+                "RShoulderRoll": 0.0
+            },
+            "name": "arms up left",
+            "pause": 0.5
+        },
+        {
+            "duration": 2.0,
+            "goals": {
+                "HeadPan": 0.0,
+                "HeadTilt": 0.0,
+                "LElbow": -54.0,
+                "LShoulderPitch": -165.0,
+                "LShoulderRoll": 0.0,
+                "RElbow": 71.0,
+                "RShoulderPitch": 174.0,
+                "RShoulderRoll": 23.0
+            },
+            "name": "arms up right",
+            "pause": 0.2
+        },
+        {
+            "duration": 3.0,
+            "goals": {
+                "HeadPan": 0.0,
+                "HeadTilt": 0.0,
+                "LElbow": 35.86,
+                "LShoulderPitch": 50.28,
+                "LShoulderRoll": -0.02,
+                "RElbow": -36.1,
+                "RShoulderPitch": -50.59,
+                "RShoulderRoll": 0.02
+            },
+            "name": "walkready",
+            "pause": 0.0
+        }
+    ],
+    "last_edited": "2024-03-13 21:02:47.391643",
+    "name": "cheering",
+    "version": "0"
+}

@@ -1035,6 +1035,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/5e/5f/82c8074f7e84978129347c2c6ec8b6c59f3584ff1a20bc3c940a3e061790/priority-2.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/54/a3/6af8a68bdfe4d8c001a1fdb84b6fa1154d2b772dbd619050697f4cc2fe39/python_crfsuite-0.9.11-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/84/14/9fb5842581f0419b5eb85f8c26c1c0c0f4cf6b4d5be638ae3157316a2650/pyttsx3-2.99-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/6b/0c/c4ab3c8d5c9e392d5342f7268bc35c3b28ae28a8c4a4c2fdadb64d4fe561/pyVoIP-1.6.8-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/7e/e9/cc28f21f52913adf333f653b9e0a3bf9cb223f5083a26422968ba73edd8d/quart-0.20.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ea/31/da390a5a10674481dea2909178973de81fa3a246c0eedcc0e1e4114f52f8/quart_cors-0.8.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/84/bd/9ce9f629fcb714ffc2c3faf62b6766ecb7a585e1e885eb699bcf130a5209/regex-2025.11.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
@@ -2160,6 +2161,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/fc/b7/ba5551480e397c6e86805cc381dd6dc36b15411a806c00c35b661d8dd77e/pyamdgpuinfo-2.1.7-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/54/a3/6af8a68bdfe4d8c001a1fdb84b6fa1154d2b772dbd619050697f4cc2fe39/python_crfsuite-0.9.11-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/84/14/9fb5842581f0419b5eb85f8c26c1c0c0f4cf6b4d5be638ae3157316a2650/pyttsx3-2.99-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/6b/0c/c4ab3c8d5c9e392d5342f7268bc35c3b28ae28a8c4a4c2fdadb64d4fe561/pyVoIP-1.6.8-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/7e/e9/cc28f21f52913adf333f653b9e0a3bf9cb223f5083a26422968ba73edd8d/quart-0.20.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ea/31/da390a5a10674481dea2909178973de81fa3a246c0eedcc0e1e4114f52f8/quart_cors-0.8.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/84/bd/9ce9f629fcb714ffc2c3faf62b6766ecb7a585e1e885eb699bcf130a5209/regex-2025.11.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
@@ -8948,6 +8950,11 @@ packages:
   - pkg:pypi/pytz?source=hash-mapping
   size: 189015
   timestamp: 1742920947249
+- pypi: https://files.pythonhosted.org/packages/6b/0c/c4ab3c8d5c9e392d5342f7268bc35c3b28ae28a8c4a4c2fdadb64d4fe561/pyVoIP-1.6.8-py3-none-any.whl
+  name: pyvoip
+  version: 1.6.8
+  sha256: ef9aa4518a888dc4523e76e36ac8cb2222b2131672eec8fe6f8d225caeed1faf
+  requires_python: '>=3.6'
 - conda: https://conda.anaconda.org/conda-forge/linux-64/pyyaml-6.0.3-py312h8a5da7c_0.conda
   sha256: 1b3dc4c25c83093fff08b86a3574bc6b94ba355c8eba1f35d805c5e256455fc7
   md5: fba10c2007c8b06f77c5a23ce3a635ad
