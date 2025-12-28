@@ -173,7 +173,6 @@ ros-jazzy-dynamixel-workbench-toolbox = ">=0.1.8,<0.2"
 ros-jazzy-better-launch = ">=1.0.3,<2"
 
 # Neural network models / data packages
-bitbots_model_2021_12_06_flo_torso21_yoeo_7 = ">=1.0.0,<2"
 bitbots_model_2023_04_04_philipp_yoeox_with_team_colors = ">=1.0.0,<2"
 bitbots_model_2022_10_07_flo_torso21_yoeox = ">=1.0.0,<2"
 
@@ -195,7 +194,7 @@ syrupy = ">=5.0.0, <6"
 exhale = ">=0.3.7, <0.4"
 mycroft-mimic3-tts = ">=0.2.4, <0.3"
 pyttsx3 = ">=2.99, <3"
-yoeo = { git = "https://github.com/bit-bots/YOEO" }
+onnxruntime-webgpu = ">=1.24.0.dev20251218001, <2"
 
 [feature.robot.pypi-dependencies]
 # These are only needed on the robot

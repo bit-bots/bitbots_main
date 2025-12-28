@@ -229,7 +229,7 @@ class YOEOHandlerONNX(YOEOHandlerTemplate):
             raise ImportError("Could not import onnxruntime. The selected handler requires this package.") from e
 
         logger.debug(f"Loading file...\n\t{onnx_path}")
-        self._inference_session = onnxruntime.InferenceSession(onnx_path)
+        self._inference_session = onnxruntime.InferenceSession(onnx_path, providers=["WebGpuExecutionProvider"])
         self._input_layer = self._inference_session.get_inputs()[0]
 
         self._img_preprocessor: utils.IImagePreProcessor = utils.DefaultImagePreProcessor(
