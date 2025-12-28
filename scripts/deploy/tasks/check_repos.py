@@ -12,7 +12,6 @@ from git.exc import GitCommandError
 from invoke.exceptions import UnexpectedExit
 from rich.console import Group as RichGroup
 from rich.table import Table
-from yaml import safe_load
 
 
 class OurRepo(Repo):
@@ -21,7 +20,7 @@ class OurRepo(Repo):
         Custom class for a GIT-repository.
 
         :param path: The path to the repository.
-        :param specified_branch: The branch this repository should be in (e.g. as defined in the workspace.repo file).
+        :param specified_branch: The branch this repository should be in (e.g. 'main').
         """
         super().__init__(path)
         assert not self.bare, f"Repo {self}: Repository is bare. Is it a real GIT-repository?"
@@ -152,11 +151,11 @@ class OurRepo(Repo):
 class CheckReposTask(AbstractTask):
     def __init__(self, only_workspace_status: bool = False) -> None:
         """
-        Task to check the local repositories (bitbots_main and others as specified in workspace.repos file).
+        Task to check the local repository 'bitbots_main'.
         Displays the current commit status (with a friendly name) to compare with other people in a hurry.
         Also displays warnings and requires confirmation before proceeding when:
         - A repository is dirty (uncommitted changes).
-        - A repository is not on the specified branch.
+        - A repository is not on the 'main' branch.
         - A repository is ahead or behind of the remote repository.
 
         :param only_workspace_status: If True, only collect the workspace commit hashes and skip the local workspace check.
@@ -165,8 +164,11 @@ class CheckReposTask(AbstractTask):
         self._show_status = False
 
         self.main_repo_path: str = os.path.join(
-            os.path.dirname(__file__), "..", "..", ".."
-        )  # bitbots_main/scripts/deploy/tasks
+            os.path.dirname(__file__),
+            "..",
+            "..",
+            "..",
+        )  # src/scripts/deploy/tasks
 
         self.results_file: str = os.path.join(
             self.main_repo_path, "src/bitbots_misc/bitbots_utils/config/", "workspace_status.json"
@@ -175,25 +177,10 @@ class CheckReposTask(AbstractTask):
         self.only_workspace_status: bool = only_workspace_status
 
         self.main_repo: OurRepo = OurRepo(self.main_repo_path, "main")
-        self.repos: dict[str, OurRepo] = {"bitbots_main": self.main_repo, **self._get_workspace_repos()}
+        self.repos: dict[str, OurRepo] = {"bitbots_main": self.main_repo}
 
         self.commit_hashes: dict[str, str] = {}
         self.warnings: dict[str, list[str]] = {}
-
-    def _get_workspace_repos(self) -> dict[str, OurRepo]:
-        """
-        Get the paths of the workspace repositories.
-
-        :return: List of workspace repository paths.
-        """
-        result: dict[str, OurRepo] = {}
-        with open(os.path.join(self.main_repo_path, "workspace.repos")) as file:
-            workspace_repos: dict = safe_load(file)
-            for path, repo in workspace_repos["repositories"].items():
-                if repo["type"] == "git":
-                    our_repo = OurRepo(os.path.join(self.main_repo_path, path), repo.get("version", "main"))
-                    result[str(our_repo)] = our_repo
-        return result
 
     def _github_available(self, connection: Connection) -> bool:
         """
@@ -205,7 +192,7 @@ class CheckReposTask(AbstractTask):
         print_debug(f"Checking for internet connection to {github}")
 
         cmd = f"timeout --foreground {INTERNET_TIMEOUT:.2f} curl -sSLI {github}"
-        print_debug(f"Calling {cmd}")
+        print_debug(f"Calling '{cmd}'")
         available = False
         result: Result | None = None
         try:
@@ -214,7 +201,7 @@ class CheckReposTask(AbstractTask):
             pass
         if result is not None:
             available = result.ok
-        print_debug(f"Internet connection to github.com is {'' if available else 'NOT'} available.")
+        print_debug(f"Internet connection to github.com is{' ' if available else ' NOT '}available.")
         if not available:
             print_info("Internet connection is not available. We may skip some checks!")
         return available
@@ -333,6 +320,12 @@ class CheckReposTask(AbstractTask):
         :param commit_hashes: The commit hashes of the repositories.
         :return: The hash of the workspace.
         """
+        assert len(commit_hashes) > 0, "No commit hashes provided to generate workspace hash."
+
+        # If there is only one repository, return its commit hash directly
+        if len(commit_hashes) == 1:
+            return list(commit_hashes.values())[0]
+
         return md5("".join(commit_hashes.values()).encode()).hexdigest()
 
     def _get_friendly_name(self, hash: str) -> str:

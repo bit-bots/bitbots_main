@@ -44,6 +44,16 @@ To see some predefined tasks, run
 pixi run -v
 ```
 
+## Deploy to robots
+
+To deploy the software to a robot, run
+
+``` shell
+pixi run deploy <robot_ip|robot_name>
+```
+
+For more information on the deployment tooling, see [this documentation](scripts/README.md).
+
 ## Run auto formatting
 
 To format all code in the repository, run
