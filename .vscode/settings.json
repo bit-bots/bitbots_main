@@ -329,4 +329,7 @@
         "log": true,
         ".pixi": true,
     },
+    "[toml]": {
+        "editor.defaultFormatter": "tamasfe.even-better-toml"
+    },
 }

@@ -596,6 +596,7 @@ environments:
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-iceoryx-posh-2.0.6-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-image-geometry-4.1.0-np126py312h5cbfcd5_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-image-proc-5.0.11-np126py312h5cbfcd5_10.conda
+      - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-image-publisher-5.0.11-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-image-tools-0.33.7-np126py312h5cbfcd5_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-image-transport-5.1.7-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-image-transport-plugins-4.0.6-np126py312h3bd2861_10.conda
@@ -1690,6 +1691,7 @@ environments:
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-iceoryx-posh-2.0.6-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-image-geometry-4.1.0-np126py312h5cbfcd5_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-image-proc-5.0.11-np126py312h5cbfcd5_10.conda
+      - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-image-publisher-5.0.11-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-image-tools-0.33.7-np126py312h5cbfcd5_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-image-transport-5.1.7-np126py312h3bd2861_10.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-image-transport-plugins-4.0.6-np126py312h3bd2861_10.conda
@@ -11874,6 +11876,29 @@ packages:
   license: BSD-3-Clause
   size: 367395
   timestamp: 1759139648233
+- conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-image-publisher-5.0.11-np126py312h3bd2861_10.conda
+  sha256: 406ffccba5c55ff550fc95224b207ab4e5d43a1fa8a1cf89644221e69ed5c105
+  md5: b09522e4a4ca9b342e787d76139bccb5
+  depends:
+  - python
+  - ros-jazzy-camera-info-manager
+  - ros-jazzy-cv-bridge
+  - ros-jazzy-image-transport
+  - ros-jazzy-rcl-interfaces
+  - ros-jazzy-rclcpp
+  - ros-jazzy-rclcpp-components
+  - ros-jazzy-ros-workspace
+  - ros2-distro-mutex 0.11.* jazzy_*
+  - __glibc >=2.17,<3.0.a0
+  - libgcc >=14
+  - libstdcxx >=14
+  - libgcc >=14
+  - numpy >=1.26.4,<2.0a0
+  - ros2-distro-mutex >=0.11.0,<0.12.0a0
+  - python_abi 3.12.* *_cp312
+  license: BSD-3-Clause
+  size: 204637
+  timestamp: 1759139297523
 - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-image-tools-0.33.7-np126py312h5cbfcd5_10.conda
   sha256: f43eb16626f4cdcc326bb804fd64cf40b8aca099f0a422c727b3c22988007c48
   md5: 11f059ae4f47bd6151a014ac0c77e6b8
