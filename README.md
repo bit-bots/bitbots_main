@@ -38,10 +38,10 @@ alternatively, you can run individual commands inside the workspace without acti
 pixi run <command>
 ```
 
-To see some predefined tasks, run
+To see some predefined  / commands, run
 
 ``` shell
-pixi run -v
+pixi task list
 ```
 
 ## Run auto formatting
