@@ -193,7 +193,7 @@ syrupy = ">=5.0.0, <6"
 exhale = ">=0.3.7, <0.4"
 mycroft-mimic3-tts = ">=0.2.4, <0.3"
 pyttsx3 = ">=2.99, <3"
-onnxruntime-gpu = ">=1.23.2, <2"
+onnxruntime-webgpu = ">=1.24.0.dev20251218001, <2"
 
 [feature.robot.pypi-dependencies]
 # These are only needed on the robot

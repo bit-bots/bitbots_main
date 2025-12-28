@@ -1009,7 +1009,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/9e/c9/b2622292ea83fbb4ec318f5b9ab867d0a28ab43c5717bb85b0a5f6b3b0a4/networkx-3.6.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/d6/5b/545e9267a1cc080c8a1be2746113a063e34bcdd0f5173fd665a5c13cb234/num2words-0.5.14-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ef/88/9cc25d2bafe6bc0d4d3c1db3ade98196d5b355c0b273e6a5dc09c5d5d0d5/onnxruntime-1.23.2-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
-      - pypi: https://files.pythonhosted.org/packages/6c/d9/b7140a4f1615195938c7e358c0804bb84271f0d6886b5cbf105c6cb58aae/onnxruntime_gpu-1.23.2-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
+      - pypi: https://files.pythonhosted.org/packages/26/ff/e94fd3e90638b89dd231d33eac671cf265bcdc96b8e3fa9180744577e7b9/onnxruntime_webgpu-1.24.0.dev20251218001-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/e5/63/cd7d615331b328e287d8233ba9fdf191a9c2d11b6af0c7a59cfcec23de68/pandas-2.3.3-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/72/2a/05a47a6c291414f5a66901f8d1f6ba68e8ec9fccb341d56fa0b31479d41d/panphon-0.22.2-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/27/6f/0cf0746d02a356103b7c3a065dbc188d8b5092e58bb363d74aa668ee1ad1/phonemes2ids-1.2.2.tar.gz
@@ -2103,7 +2103,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/9e/c9/b2622292ea83fbb4ec318f5b9ab867d0a28ab43c5717bb85b0a5f6b3b0a4/networkx-3.6.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/d6/5b/545e9267a1cc080c8a1be2746113a063e34bcdd0f5173fd665a5c13cb234/num2words-0.5.14-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ef/88/9cc25d2bafe6bc0d4d3c1db3ade98196d5b355c0b273e6a5dc09c5d5d0d5/onnxruntime-1.23.2-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
-      - pypi: https://files.pythonhosted.org/packages/6c/d9/b7140a4f1615195938c7e358c0804bb84271f0d6886b5cbf105c6cb58aae/onnxruntime_gpu-1.23.2-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
+      - pypi: https://files.pythonhosted.org/packages/26/ff/e94fd3e90638b89dd231d33eac671cf265bcdc96b8e3fa9180744577e7b9/onnxruntime_webgpu-1.24.0.dev20251218001-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/e5/63/cd7d615331b328e287d8233ba9fdf191a9c2d11b6af0c7a59cfcec23de68/pandas-2.3.3-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/72/2a/05a47a6c291414f5a66901f8d1f6ba68e8ec9fccb341d56fa0b31479d41d/panphon-0.22.2-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/27/6f/0cf0746d02a356103b7c3a065dbc188d8b5092e58bb363d74aa668ee1ad1/phonemes2ids-1.2.2.tar.gz
@@ -7479,10 +7479,10 @@ packages:
   - protobuf
   - sympy
   requires_python: '>=3.10'
-- pypi: https://files.pythonhosted.org/packages/6c/d9/b7140a4f1615195938c7e358c0804bb84271f0d6886b5cbf105c6cb58aae/onnxruntime_gpu-1.23.2-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
-  name: onnxruntime-gpu
-  version: 1.23.2
-  sha256: 4f2d1f720685d729b5258ec1b36dee1de381b8898189908c98cbeecdb2f2b5c2
+- pypi: https://files.pythonhosted.org/packages/26/ff/e94fd3e90638b89dd231d33eac671cf265bcdc96b8e3fa9180744577e7b9/onnxruntime_webgpu-1.24.0.dev20251218001-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
+  name: onnxruntime-webgpu
+  version: 1.24.0.dev20251218001
+  sha256: ac2202d17a677f31ce15b54173605e1cc263ca435c3f56195ed01462bd6aef3f
   requires_dist:
   - coloredlogs
   - flatbuffers
@@ -7490,11 +7490,6 @@ packages:
   - packaging
   - protobuf
   - sympy
-  - nvidia-cuda-nvrtc-cu12~=12.0 ; extra == 'cuda'
-  - nvidia-cuda-runtime-cu12~=12.0 ; extra == 'cuda'
-  - nvidia-cufft-cu12~=11.0 ; extra == 'cuda'
-  - nvidia-curand-cu12~=10.0 ; extra == 'cuda'
-  - nvidia-cudnn-cu12~=9.0 ; extra == 'cudnn'
   requires_python: '>=3.10'
 - conda: https://conda.anaconda.org/conda-forge/linux-64/opencl-headers-2025.06.13-h5888daf_0.conda
   sha256: 2b6ce54174ec19110e1b3c37455f7cd138d0e228a75727a9bba443427da30a36
