@@ -16,6 +16,7 @@ class SIPAnimator(Node):
 
         # Action client
         self.action_client = ActionClient(self, PlayAnimation, 'animation')
+        self.reset_timer = self.create_timer(60*10, self.reset)
 
         # Get environment variables for SIP configuration
         sip_server = os.getenv("SIP_SERVER_IP")
@@ -42,22 +43,34 @@ class SIPAnimator(Node):
         self.phone.start()
         self.get_logger().info("Phone action node started")
 
+    def reset(self):
+        self.get_logger().info("Reset connection")
+        self.phone.stop()
+        time.sleep(0.2)
+        self.phone.start()
+
     def answer_call(self, call):
         try:
             self.get_logger().info("Incoming call")
             call.answer()
 
-            while call.state == CallState.ANSWERED:
-                dtmf = call.get_dtmf()
+            def done_cb():
+                if call.state == CallState.ANSWERED:
+                    call.hangup()
 
-                if dtmf == "1":
-                    self.get_logger().info("DTMF 1 pressed")
-                    self.run_animation("cheering_only_arms")
+            self.run_animation("cheering_only_arms", done_cb)
 
-                elif dtmf == "2":
-                    self.get_logger().info("DTMF 2 pressed")
-
-                time.sleep(0.1)
+            #while call.state == CallState.ANSWERED:
+            #    dtmf = call.get_dtmf()
+            #
+            #    if dtmf == "1":
+            #        self.get_logger().info("DTMF 1 pressed")
+            #        self.run_animation("cheering_only_arms")
+            #
+            #    elif dtmf == "2":
+            #        self.get_logger().info("DTMF 2 pressed")
+            #
+            #    time.sleep(0.1)
 
         except InvalidStateError:
             pass
@@ -65,7 +78,7 @@ class SIPAnimator(Node):
             self.get_logger().error(str(e))
             call.hangup()
 
-    def run_animation(self, animation_name: str):
+    def run_animation(self, animation_name: str, done_cb = None):
         if not self.action_client.wait_for_server(timeout_sec=2.0):
             self.get_logger().error("Action server not available")
             return
@@ -79,6 +92,8 @@ class SIPAnimator(Node):
             if not result.successful:
                 self.get_logger().error(f"Animation '{animation_name}' failed")
             self.get_logger().info(f"Animation '{animation_name}' completed")
+            if done_cb is not None:
+                done_cb()
 
         def accept_cb(future: Future):
             goal_handle = future.result()
