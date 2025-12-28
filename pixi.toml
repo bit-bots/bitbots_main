@@ -12,26 +12,21 @@ preview = ["pixi-build"]
 version = "0.1.0"
 
 [tasks]
-# Deploys the current environment
-deploy = "scripts/deploy_robots.py"
-# Runs code formatting and linting
-_format = "pre-commit run --all-files"
-format = [{ task = "_format", environment = "format" }]
+deploy = {cmd = "scripts/deploy_robots.py", description = "Deploys the current environment."}
+format = {cmd = "pre-commit run --all-files", description = "Runs code formatting and linting."}
 
-# Builds all ROS 2 packages or a specific one if given
 [tasks.build]
-cmd = "colcon build --symlink-install --cmake-args -G Ninja {{ '--packages-select ' + package if package }}"
-args = [{ arg = "package", default = "" }]
+cmd = "colcon build --symlink-install --cmake-args -G Ninja "
+description = "Builds all ROS 2 packages. Add --packages-select <package names> to build specific packages."
 
-# Cleans all build and install files or those of a specific package if given
 [tasks.clean]
-cmd = "rm -rf build/{{ package }} install/{{ package }} {{ 'log' if not package }}"
+cmd = "rm -rf 'build/{{ package }}' 'install/{{ package }}' {{ 'log' if not package }}"
 args = [{ arg = "package", default = "" }]
+description = "Cleans build and install files for all ROS 2 packages or a specific one if given."
 
-# Runs tests for all ROS 2 packages or a specific one if given
 [tasks.test]
-cmd = "colcon test --event-handlers console_direct+ --return-code-on-test-failure {{ '--packages-select ' + package if package }}"
-args = [{ arg = "package", default = "" }]
+cmd = "colcon test --event-handlers console_direct+ --return-code-on-test-failure "
+description = "Runs tests for all ROS 2 packages. Add --packages-select <package names> to test specific packages."
 
 
 [dependencies]
