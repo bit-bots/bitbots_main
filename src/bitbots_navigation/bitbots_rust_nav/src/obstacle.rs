@@ -41,7 +41,7 @@ impl RoundObstacle {
                 let radius = self.radius + offset;
                 Coord::from(self.center) + Coord::from((radius * angle.cos(), radius * angle.sin()))
             })
-            .collect::<Vec<Coord>>()
+            .collect()
     }
 }
 
