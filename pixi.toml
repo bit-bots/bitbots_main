@@ -193,6 +193,7 @@ bitbots_rust_nav = { path = "src/bitbots_navigation/bitbots_rust_nav" }
 pillow = "<12" # this constraint is needed as yoeo specifies the 11 major version and otherwise uv fails to solve given the constrains from the conda ecosystem.
 setuptools = "==68.1.2"  # Pinning setuptools to avoid issues with colcon build
 git = ">=2.52.0,<3"  # Otherwise the system git might be used causing ABI issues
+curl = ">=8.17.0,<9"
 
 [feature.format.dependencies]
 clang-format = ">=21.1.0,<22"
