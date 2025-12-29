@@ -40,10 +40,9 @@
 
     <!-- launch the walking -->
     <group if="$(var walking)">
-        <include file="$(find-pkg-share bitbots_quintic_walk)/launch/quintic_walk.launch">
-            <arg name="sim" value="$(var sim)"/>
-            <arg name="viz" value="$(var viz)"/>
-        </include>
+        <node pkg="bitbots_rl_walk" exec="walk" output="screen">
+            <param name="use_sim_time" value="$(var sim)"/>
+        </node>
     </group>
 
     <!-- launch the hcm -->
