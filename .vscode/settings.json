@@ -97,6 +97,7 @@
         "rosout",
         "roundrobin",
         "Rouxel",
+        "rsyncignore",
         "rtype",
         "rviz",
         "scipy",
@@ -350,5 +351,8 @@
         "install": true,
         "log": true,
         ".pixi": true,
+    },
+    "[toml]": {
+        "editor.defaultFormatter": "tamasfe.even-better-toml"
     },
 }

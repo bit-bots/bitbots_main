@@ -7,14 +7,16 @@ from fabric.exceptions import GroupException
 
 
 class Launch(AbstractTask):
-    def __init__(self, tmux_session_name: str) -> None:
+    def __init__(self, remote_workspace: str, tmux_session_name: str) -> None:
         """
         Launch the teamplayer ROS software on a remote machine in a new tmux session.
 
+        :param remote_workspace: Path to the remote workspace to run colcon in
         :param tmux_session_name: Name of the fresh tmux session to launch the teamplayer in
         """
         super().__init__()
 
+        self._remote_workspace = remote_workspace
         self._tmux_session_name = tmux_session_name
 
     def _run(self, connections: Group) -> GroupResult:
@@ -32,8 +34,8 @@ class Launch(AbstractTask):
         node_running_results = self._check_nodes_already_running(connections)
         if not node_running_results.succeeded:
             return node_running_results
+        # Some hosts have no ROS 2 nodes already running, continuing
 
-        # Some nodes have no ROS 2 nodes already running, continuing
         # Check if tmux session is already running
         tmux_session_running_results = self._check_tmux_session_already_running(
             get_connections_from_succeeded(node_running_results)
@@ -53,14 +55,14 @@ class Launch(AbstractTask):
         :return: Results, with success if ROS 2 nodes are not already running
         """
         print_debug("Checking if ROS 2 nodes are already running")
-        cmd = "ros2 node list -c"
+        cmd = f"cd {self._remote_workspace} && pixi run ros2 node list -c"
 
-        print_debug(f"Calling {cmd}")
+        print_debug(f"Calling '{cmd}'")
         try:
             node_list_results = connections.run(cmd, hide=hide_output())
-            print_debug(f"Calling {cmd} succeeded on {self._succeeded_hosts(node_list_results)}")
+            print_debug(f"Calling '{cmd}' succeeded on: {self._succeeded_hosts(node_list_results)}")
         except GroupException as e:
-            print_error(f"Calling {cmd} failed on {self._failed_hosts(e.result)}")
+            print_error(f"Calling '{cmd}' failed on: {self._failed_hosts(e.result)}")
             if not e.result.succeeded:  # TODO: Does run immediately fail if one host fails? Do we even get here?
                 return e.result
             else:
@@ -104,12 +106,12 @@ class Launch(AbstractTask):
         # The tmux ls command outputs names of all running tmux sessions.
         cmd = "test -S /tmp/tmux-1000/default && tmux ls -F '#S' ; true"
 
-        print_debug(f"Calling: {cmd}")
+        print_debug(f"Calling: '{cmd}'")
         try:
             tmux_ls_results = connections.run(cmd, hide=hide_output())
-            print_debug(f"Calling {cmd} succeeded on {self._succeeded_hosts(tmux_ls_results)}")
+            print_debug(f"Calling '{cmd}' succeeded on: {self._succeeded_hosts(tmux_ls_results)}")
         except GroupException as e:
-            print_error(f"Calling {cmd} failed on {self._failed_hosts(e.result)}")
+            print_error(f"Calling '{cmd}' failed on: {self._failed_hosts(e.result)}")
             if not e.result.succeeded:
                 return e.result
             else:
@@ -150,9 +152,9 @@ class Launch(AbstractTask):
     def _launch_teamplayer(self, connections: Group) -> GroupResult:
         print_debug("Launching teamplayer")
         # Create tmux session
-        cmd = f"tmux new-session -d -s {self._tmux_session_name} && tmux send-keys -t {self._tmux_session_name} 'ros2 launch bitbots_bringup teamplayer.launch record:=true tts:=false' Enter"
+        cmd = f"tmux new-session -d -s {self._tmux_session_name} && tmux send-keys -t {self._tmux_session_name} 'cd {self._remote_workspace} && pixi run ros2 launch bitbots_bringup teamplayer.launch record:=true tts:=false' Enter"
 
-        print_debug(f"Calling {cmd}")
+        print_debug(f"Calling '{cmd}'")
         try:
             results = connections.run(cmd, hide=hide_output())
             # Print commands to connect to teamplayer tmux session

@@ -38,11 +38,21 @@ alternatively, you can run individual commands inside the workspace without acti
 pixi run <command>
 ```
 
-To see some predefined tasks, run
+To see some predefined  / commands, run
 
 ``` shell
-pixi run -v
+pixi task list
 ```
+
+## Deploy to robots
+
+To deploy the software to a robot, run
+
+``` shell
+pixi run deploy <robot_ip|robot_name>
+```
+
+For more information on the deployment tooling, see [this documentation](scripts/README.md).
 
 ## Run auto formatting
 

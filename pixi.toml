@@ -7,17 +7,27 @@ channels = [
     "conda-forge"  # General conda-forge channel
 ]
 name = "bitbots_main"
-platforms = ["linux-64"]
+platforms = ["linux-64", "linux-aarch64"]
 preview = ["pixi-build"]
 version = "0.1.0"
 
 [tasks]
-build = "colcon build --symlink-install --cmake-args -G Ninja"
-clean = "rm -rf build install log target"
-test = "colcon test --event-handlers console_direct+ --return-code-on-test-failure"
-_format = "pre-commit run --all-files"
-format = [{ task = "_format", environment = "format" }]
-deploy = "scripts/deploy_robots.py"
+deploy = {cmd = "scripts/deploy_robots.py", description = "Deploys the current environment."}
+format = {cmd = "pre-commit run --all-files", description = "Runs code formatting and linting."}
+
+[tasks.build]
+cmd = "colcon build --symlink-install --cmake-args -G Ninja "
+description = "Builds all ROS 2 packages. Add --packages-select <package names> to build specific packages."
+
+[tasks.clean]
+cmd = "rm -rf 'build/{{ package }}' 'install/{{ package }}' {{ 'log' if not package }} {{ 'target' if not package }}"
+args = [{ arg = "package", default = "" }]
+description = "Cleans build and install files for all ROS 2 packages or a specific one if given."
+
+[tasks.test]
+cmd = "colcon test --event-handlers console_direct+ --return-code-on-test-failure "
+description = "Runs tests for all ROS 2 packages. Add --packages-select <package names> to test specific packages."
+
 
 [dependencies]
 # Base dependencies
@@ -68,7 +78,6 @@ sysroot_linux-64 = ">=2.28,<3"
 transforms3d = ">=0.4.2,<0.5"
 ipython = ">=9.7.0,<10"
 yaml-cpp = ">=0.8.0,<0.9"
-webots = ">=2022b,<2023a"
 
 # Official ROS 2 packages
 colcon-common-extensions = ">=0.3.0,<0.4"
@@ -96,6 +105,7 @@ ros-jazzy-generate-parameter-library = ">=0.5.0,<0.6"
 ros-jazzy-geometry-msgs = ">=5.3.6,<6"
 ros-jazzy-hardware-interface = ">=4.37.0,<5"
 ros-jazzy-image-proc = ">=5.0.11,<6"
+ros-jazzy-image-publisher = ">=5.0.11,<6"
 ros-jazzy-image-transport = ">=5.1.7,<6"
 ros-jazzy-joint-state-publisher = ">=2.4.0,<3"
 ros-jazzy-joint-state-publisher-gui = ">=2.4.0,<3"
@@ -147,13 +157,13 @@ ros-jazzy-pybind11-vendor = ">=3.1.3,<4"
 ros-jazzy-soccer-vision-3d-rviz-markers = ">=1.0.0,<2"
 ros-jazzy-soccer-vision-3d-msgs = ">=1.0.0,<2"
 ros-jazzy-soccer-vision-attribute-msgs = ">=1.0.0,<2"
-ros-jazzy-rviz-imu-plugin = ">=2.1.5,<3"
 ros-jazzy-rot-conv = ">=1.1.0,<2"
 ros-jazzy-bio-ik = ">=2.0.0,<3"
 ros-jazzy-bio-ik-msgs = ">=0.0.0,<0.0.1"
 ros-jazzy-biped-interfaces = ">=0.0.0,<0.0.1"
 ros-jazzy-bitbots-tf-buffer = ">=1.0.0,<2"
 ros-jazzy-ros2-python-extension = ">=1.0.0,<2"
+ros-jazzy-audio-common = ">=0.3.15,<0.4"
 ros-jazzy-dynamic-stack-decider = ">=0.5.3,<0.6"
 ros-jazzy-dynamic-stack-decider-visualization = ">=0.2.1,<0.3"
 ros-jazzy-game-controller-hl = ">=1.1.0,<2"
@@ -182,6 +192,12 @@ bitbots_rust_nav = { path = "src/bitbots_navigation/bitbots_rust_nav" }
 # Patches
 pillow = "<12" # this constraint is needed as yoeo specifies the 11 major version and otherwise uv fails to solve given the constrains from the conda ecosystem.
 setuptools = "==68.1.2"  # Pinning setuptools to avoid issues with colcon build
+git = ">=2.52.0,<3"  # Otherwise the system git might be used causing ABI issues
+curl = ">=8.17.0,<9"
+
+[feature.ros.target.linux-64.dependencies]
+# For now Webots is only packaged for x86-64 Linux
+webots = ">=2022b,<2023a"
 
 [feature.format.dependencies]
 clang-format = ">=21.1.0,<22"
@@ -194,7 +210,13 @@ syrupy = ">=5.0.0, <6"
 exhale = ">=0.3.7, <0.4"
 mycroft-mimic3-tts = ">=0.2.4, <0.3"
 pyttsx3 = ">=2.99, <3"
+
+[feature.ros.target.linux-64.pypi-dependencies]
 onnxruntime-webgpu = ">=1.24.0.dev20251218001, <2"
+
+[feature.ros.target.linux-aarch64.pypi-dependencies]
+# Currently onnxruntime-webgpu is not available on ARM, so we fallback to CPU onnx for now
+onnxruntime = ">=1.23.2, <2"
 
 [feature.robot.pypi-dependencies]
 # These are only needed on the robot
