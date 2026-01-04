@@ -1,4 +1,4 @@
-use futures::prelude::*;
+use futures::StreamExt;
 use glam::{EulerRot, Quat};
 use r2r::{
     geometry_msgs::msg::{Quaternion, Transform, TransformStamped, Vector3},
