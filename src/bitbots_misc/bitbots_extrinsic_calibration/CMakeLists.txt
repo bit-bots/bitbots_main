@@ -10,8 +10,7 @@ r2r_cargo(
   rcl_action # as of r2r 0.1.0, we also need the action api
   rosgraph_msgs # for the Clock message
   geometry_msgs
-  tf2_msgs
-)
+  tf2_msgs)
 
 # install binaries
 if(WIN32)
