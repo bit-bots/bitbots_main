@@ -1,48 +1,38 @@
 cmake_minimum_required(VERSION 3.5)
 project(bitbots_extrinsic_calibration)
 
-# Add support for C++17
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 17)
-endif()
-
-# Build with release optimizations and debug symbols by default
-if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE RelWithDebug)
-endif()
-
 find_package(ament_cmake REQUIRED)
-find_package(backward_ros REQUIRED)
-find_package(bitbots_docs REQUIRED)
-find_package(geometry_msgs REQUIRED)
-find_package(rclcpp REQUIRED)
-find_package(rot_conv REQUIRED)
-find_package(std_msgs REQUIRED)
-find_package(tf2 REQUIRED)
-find_package(tf2_geometry_msgs REQUIRED)
-find_package(tf2_ros REQUIRED)
+find_package(bitbots_cargo REQUIRED)
 
-add_compile_options(-Wall -Werror -Wno-unused)
+# put ros package dependencies here.
+r2r_cargo(
+  rcl # we need the c ros2 api
+  rcl_action # as of r2r 0.1.0, we also need the action api
+  rosgraph_msgs # for the Clock message
+  geometry_msgs
+  tf2_msgs
+)
 
-add_executable(extrinsic_calibration src/extrinsic_calibration.cpp)
+# install binaries
+if(WIN32)
+  set(SUFFIX ".exe")
+else()
+  set(SUFFIX "")
+endif()
 
-ament_target_dependencies(
-  extrinsic_calibration
-  ament_cmake
-  bitbots_docs
-  rclcpp
-  std_msgs
-  tf2
-  tf2_geometry_msgs
-  tf2_ros
-  rot_conv)
+execute_process(
+  COMMAND cargo metadata --no-deps --format-version=1
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  OUTPUT_VARIABLE CARGO_METADATA_JSON
+  OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-enable_bitbots_docs()
+# Extract "target_directory" from JSON
+string(JSON CARGO_TARGET_DIR GET "${CARGO_METADATA_JSON}" target_directory)
 
-install(TARGETS extrinsic_calibration DESTINATION lib/${PROJECT_NAME})
+message(STATUS "Cargo target dir: ${CARGO_TARGET_DIR}")
 
-install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
+install(PROGRAMS ${CARGO_TARGET_DIR}/colcon/${PROJECT_NAME}${SUFFIX}
+        DESTINATION lib/${PROJECT_NAME})
 
-install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
-
+# we need this for ros/colcon
 ament_package()
