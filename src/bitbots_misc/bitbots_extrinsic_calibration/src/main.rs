@@ -46,51 +46,63 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         node.make_derived_parameter_handler(params.clone())?;
     tokio::task::spawn(parameter_handler);
 
-    let tf_static_broadcaster = node.create_publisher("/tf_static", r2r::QosProfile::default())?;
+    let tf_static_broadcaster =
+        node.create_publisher("/tf_static", r2r::QosProfile::default().transient_local())?;
     let ros_clock = node.get_ros_clock();
 
     tokio::task::spawn(async move {
         loop {
-            parameter_events.next().await;
-            let params = params.lock().unwrap();
+            {
+                let params = params.lock().unwrap();
 
-            r2r::log_info!(&nl, "New parameters: {:#?}", params);
+                r2r::log_info!(&nl, "New parameters: {:#?}", params);
 
-            tf_static_broadcaster
-                .publish(&TFMessage {
-                    transforms: vec![TransformStamped {
-                        header: Header {
-                            frame_id: params.parent_frame.clone(),
-                            stamp: Clock::to_builtin_time(
-                                &ros_clock.lock().unwrap().get_now().unwrap(),
-                            ),
-                        },
-                        child_frame_id: params.child_frame.clone(),
-                        transform: Transform {
-                            translation: Vector3::default(),
-                            rotation: {
-                                let quat = Quat::from_euler(
-                                    EulerRot::ZYX,
-                                    params.offset_z,
-                                    params.offset_y,
-                                    params.offset_x,
-                                );
-                                Quaternion {
-                                    x: quat.x as f64,
-                                    y: quat.y as f64,
-                                    z: quat.z as f64,
-                                    w: quat.w as f64,
-                                }
+                tf_static_broadcaster
+                    .publish(&TFMessage {
+                        transforms: vec![TransformStamped {
+                            header: Header {
+                                frame_id: params.parent_frame.clone(),
+                                stamp: Clock::to_builtin_time(
+                                    &ros_clock.lock().unwrap().get_now().unwrap(),
+                                ),
                             },
-                        },
-                    }],
-                })
-                .expect("Failed to publish updated transform");
+                            child_frame_id: params.child_frame.clone(),
+                            transform: Transform {
+                                translation: Vector3::default(),
+                                rotation: {
+                                    let quat = Quat::from_euler(
+                                        EulerRot::ZYX,
+                                        params.offset_z,
+                                        params.offset_y,
+                                        params.offset_x,
+                                    );
+                                    Quaternion {
+                                        x: quat.x as f64,
+                                        y: quat.y as f64,
+                                        z: quat.z as f64,
+                                        w: quat.w as f64,
+                                    }
+                                },
+                            },
+                        }],
+                    })
+                    .expect("Failed to publish updated transform");
+            }
+            // Wait for next parameter update
+            parameter_events.next().await;
         }
     });
 
     // Spin the node
-    loop {
-        node.spin_once(std::time::Duration::from_millis(100));
-    }
+    tokio::task::spawn(async move {
+        loop {
+            node.spin_once(std::time::Duration::from_millis(100));
+            tokio::task::yield_now().await; // Let the other tasks run too
+        }
+    });
+
+    // Await shutdown signal
+    tokio::signal::ctrl_c().await?;
+
+    Ok(())
 }
