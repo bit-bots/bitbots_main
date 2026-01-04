@@ -4,8 +4,7 @@ use r2r::{
     geometry_msgs::msg::{Quaternion, Transform, TransformStamped, Vector3},
     std_msgs::msg::Header,
     tf2_msgs::msg::TFMessage,
-    Clock,
-    RosParams,
+    Clock, RosParams,
 };
 use std::sync::{Arc, Mutex as StdMutex};
 
@@ -62,7 +61,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     transforms: vec![TransformStamped {
                         header: Header {
                             frame_id: params.parent_frame.clone(),
-                            stamp: Clock::to_builtin_time(&ros_clock.lock().unwrap().get_now().unwrap()),
+                            stamp: Clock::to_builtin_time(
+                                &ros_clock.lock().unwrap().get_now().unwrap(),
+                            ),
                         },
                         child_frame_id: params.child_frame.clone(),
                         transform: Transform {

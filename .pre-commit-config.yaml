@@ -38,3 +38,10 @@ repos:
       - id: check-yaml
         exclude: *exclude_robocup_protocol
       - id: detect-private-key
+  - repo: local
+    hooks:
+      - id: cargo-fmt
+        name: cargo fmt
+        entry: cargo fmt
+        language: system
+        pass_filenames: false
