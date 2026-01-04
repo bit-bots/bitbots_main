@@ -8,7 +8,7 @@ use r2r::{
 };
 use std::sync::{Arc, Mutex as StdMutex};
 
-#[derive(RosParams, Debug, Clone)]
+#[derive(RosParams, Debug, Default, Clone)]
 struct CalibrationParams {
     /// Parent frame for the calibration transform
     parent_frame: String,
@@ -20,18 +20,6 @@ struct CalibrationParams {
     offset_y: f32,
     /// Yaw offset in radians
     offset_z: f32,
-}
-
-impl Default for CalibrationParams {
-    fn default() -> Self {
-        Self {
-            parent_frame: "camera_optical_frame_uncalibrated".to_string(),
-            child_frame: "camera_optical_frame".to_string(),
-            offset_x: 0.,
-            offset_y: 0.,
-            offset_z: 0.,
-        }
-    }
 }
 
 #[tokio::main]
@@ -54,8 +42,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         loop {
             {
                 let params = params.lock().unwrap();
-
-                r2r::log_info!(&nl, "New parameters: {:#?}", params);
 
                 tf_static_broadcaster
                     .publish(&TFMessage {
@@ -90,6 +76,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
             // Wait for next parameter update
             parameter_events.next().await;
+            r2r::log_info!(&nl, "Extrinsic parameter update");
         }
     });
 
