@@ -477,6 +477,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5e764a1d40d510daf35e07be9eb06e75770908c27d411ee6c92109c9840eaaf7"
 
 [[package]]
+name = "bitbots_extrinsic_calibration"
+version = "0.1.0"
+dependencies = [
+ "futures",
+ "glam",
+ "r2r",
+ "tokio",
+]
+
+[[package]]
 name = "bitbots_rust_nav"
 version = "0.1.2"
 dependencies = [
@@ -1462,6 +1472,12 @@ dependencies = [
  "log",
  "xml-rs",
 ]
+
+[[package]]
+name = "glam"
+version = "0.30.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bd47b05dddf0005d850e5644cae7f2b14ac3df487979dbfff3b56f20b1a6ae46"
 
 [[package]]
 name = "glob"
