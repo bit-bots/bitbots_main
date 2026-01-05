@@ -149,6 +149,11 @@ impl Controller {
         let local_heading_vector_x = local_heading.cos();
         let local_heading_vector_y = local_heading.sin();
 
-        Ok((cmd_vel, PointStamped::default()))
+        let carrot_point = PointStamped {
+            header: path.header.clone(),
+            point: goal_pose.position.clone(),
+        };
+
+        Ok((cmd_vel, carrot_point))
     }
 }
