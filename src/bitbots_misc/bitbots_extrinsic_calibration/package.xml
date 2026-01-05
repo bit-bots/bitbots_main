@@ -23,7 +23,7 @@
 
     <export>
         <bitbots_documentation>
-            <language>c++</language>
+            <language>rust</language>
             <status>tested_robot</status>
         </bitbots_documentation>
         <rosdoc config="rosdoc.yaml"/>
