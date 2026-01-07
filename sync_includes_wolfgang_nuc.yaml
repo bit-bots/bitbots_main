@@ -10,6 +10,7 @@ include:
         - bitbots_bringup
         - bitbots_diagnostic
         - bitbots_docs
+        - bitbots_education
         - bitbots_extrinsic_calibration
         - bitbots_ipm
         - bitbots_parameter_blackboard
