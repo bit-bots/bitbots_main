@@ -3,17 +3,14 @@
 <package format="3">
   <name>bitbots_education</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
+  <description>A web interface that shows live data in easy to understand visualizations for public events.</description>
   <maintainer email="wedmann.lea@gmail.com">root</maintainer>
-  <license>Apache-2.0</license>
+  <license>MIT</license>
 
   <depend>web_video_server</depend>
   <depend>rosbridge_suite</depend>
   <depend>python3-jinja2</depend>
   <depend>python3-flask</depend>
-  <test_depend>ament_copyright</test_depend>
-  <test_depend>ament_flake8</test_depend>
-  <test_depend>ament_pep257</test_depend>
   <test_depend>python3-pytest</test_depend>
 
   <export>
