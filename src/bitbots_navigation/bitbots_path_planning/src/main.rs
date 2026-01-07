@@ -14,7 +14,7 @@ use r2r::RosParams;
 mod controller;
 mod planner;
 
-#[derive(RosParams, Default, Debug)]
+#[derive(RosParams, Default, Debug, Clone)]
 pub struct Params {
     // The rate at which the path planning is executed
     pub rate: f32,
@@ -71,7 +71,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         1. / params.lock().unwrap().rate,
     ))?;
 
-    let tf_listener = Arc::new(Mutex::new(tf_r2r::TfListener::new(&mut node)));
+    let tf_listener = tf_r2r::TfListener::new(&mut node);
 
     // Share the node between tasks / threads
     let node = Arc::new(Mutex::new(node));
@@ -79,24 +79,27 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     tokio::task::spawn(async move {
         // Define a thread-local state
-        let mut planner = Planner::new(tf_listener.clone(), params.clone());
-        let controller = Controller::new(tf_listener.clone(), params.clone());
+        let mut planner = Planner::new(&tf_listener, params.clone());
+        let controller = Controller::new(&tf_listener, params.clone());
 
         // Handle events
         loop {
             tokio::select! {
                 _ = timer.tick() => {
+                    r2r::log_warn!(&nl, "Planner step");
                     if planner.active() {
+                        r2r::log_warn!(&nl, "Planner active");
                         // Calculate the path to the goal pose considering the current map
-                        match planner.step().await {
+                        match planner.step() {
                             Err(e) => {
                                 r2r::log_warn!(&nl, "Planner step failed: {:}", e);
                             },
                             Ok(path) => {
+                                r2r::log_warn!(&nl, "Got path");
                                 // Publish the path for visualization
                                 path_pub.publish(&path).expect("Publishing the path failed");
                                 // Calculate the command velocity to follow the given path
-                                match controller.step(&path).await {
+                                match controller.step(&path) {
                                     Err(e) => {
                                         r2r::log_warn!(&nl, "Controller step failed: {:}", e);
                                     },
@@ -112,6 +115,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     }
                 },
                 Some(msg) = goal_sub.next() => {
+                    r2r::log_warn!(&nl, "Got goal");
                     planner.set_goal(msg);
                 },
                 _ = cancel_sub.next() => {
@@ -124,11 +128,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     });
 
-    // Spin the underlying rcl node object
-    loop {
-        spin_node
-            .lock()
-            .await
-            .spin_once(std::time::Duration::from_millis(100));
-    }
+    // Spin the node
+    tokio::task::spawn(async move {
+        loop {
+            spin_node
+                .lock()
+                .await
+                .spin_once(std::time::Duration::from_millis(100));
+            tokio::task::yield_now().await; // Let the other tasks run too
+        }
+    });
+
+    // Await shutdown signal
+    tokio::signal::ctrl_c().await?;
+
+    Ok(())
 }

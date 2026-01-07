@@ -1,7 +1,8 @@
 <launch>
     <arg name="sim" default="false" description="true: activates simulation time" />
 
-    <node pkg="bitbots_path_planning" exec="path_planning" name="bitbots_path_planning" output="screen">
+    <node pkg="bitbots_path_planning" exec="bitbots_path_planning" name="bitbots_path_planning" output="screen">
         <param name="use_sim_time" value="$(var sim)"/>
+        <param from="$(find-pkg-share bitbots_path_planning)/config/path_planning.yaml"/>
     </node>
 </launch>

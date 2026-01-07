@@ -14,7 +14,7 @@ use tf_r2r::{TfError, TfListener};
 use thiserror::Error;
 use tokio::sync::Mutex;
 
-#[derive(RosParams, Default, Debug)]
+#[derive(RosParams, Default, Debug, Clone)]
 pub struct MapParams {
     // The frame in which the path planning is done
     pub frame: String,
@@ -24,7 +24,7 @@ pub struct MapParams {
     pub inflation: InflationParams,
 }
 
-#[derive(RosParams, Default, Debug)]
+#[derive(RosParams, Default, Debug, Clone)]
 pub struct InflationParams {
     // Radius of a circle on the ground that represents the space occupied by our robot. Instead of planning with both a robot polygon/circle and an obstacle polygon, we just inflate the obstacles and assume the robot is a point. This is faster and simpler
     pub robot_radius: f64,
@@ -32,8 +32,8 @@ pub struct InflationParams {
     pub obstacle_margin: f64,
 }
 
-pub struct Planner {
-    tf: Arc<Mutex<TfListener>>,
+pub struct Planner<'a> {
+    tf: &'a TfListener,
     goal: Option<PoseStamped>,
     ball_obstacle_active: bool,
     params: Arc<StdMutex<Params>>,
@@ -41,14 +41,14 @@ pub struct Planner {
 
 #[derive(Error, Debug)]
 pub enum PlannerStepError {
-    #[error("Could not determine the robot location")]
+    #[error("Could not determine the robot location. Tf error: {0}")]
     LocalizationError(#[from] TfError),
     #[error("No goal was given when step was called")]
     NoGoalError(),
 }
 
-impl Planner {
-    pub fn new(tf: Arc<Mutex<TfListener>>, params: Arc<StdMutex<Params>>) -> Self {
+impl<'a> Planner<'a> {
+    pub fn new(tf: &'a TfListener, params: Arc<StdMutex<Params>>) -> Self {
         Self {
             tf,
             goal: None,
@@ -80,29 +80,31 @@ impl Planner {
     }
 
     // Compute the next path to the goal
-    pub async fn step(&self) -> Result<Path, PlannerStepError> {
+    pub fn step(&self) -> Result<Path, PlannerStepError> {
         // Check if we have a goal
         let goal = self.goal.as_ref().ok_or(PlannerStepError::NoGoalError())?;
+
+        let params = self.params.lock().unwrap().clone();
+
+        r2r::log_warn!("bitbots_path_planning", "Fetched goal {:?}", params.map.inflation.robot_radius);
 
         // Get our current position
         let my_position = self
             .tf
-            .lock()
-            .await
-            .lookup_transform(
-                &self.params.lock().unwrap().map.frame,
-                &self.params.lock().unwrap().base_footprint_frame,
-                Time::default(),
-            )
+            .lookup_transform(&params.map.frame, &params.base_footprint_frame, Time::default())
             .map_err(|e| PlannerStepError::LocalizationError(e))?
             .transform
             .translation;
 
+        r2r::log_warn!("bitbots_path_planning", "Fetched our position");
+
         let map_config = ObstacleMapConfig::new(
-            self.params.lock().unwrap().map.inflation.robot_radius,
-            self.params.lock().unwrap().map.inflation.obstacle_margin,
+            params.map.inflation.robot_radius,
+            params.map.inflation.obstacle_margin,
             12,
         );
+
+        r2r::log_warn!("bitbots_path_planning", "Made obstacle map config");
 
         let obstacles = vec![];
         // TODO add robot to map

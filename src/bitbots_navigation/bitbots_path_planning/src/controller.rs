@@ -11,10 +11,10 @@ use crate::Params;
 
 use thiserror::Error;
 
-#[derive(RosParams, Default, Debug)]
+#[derive(RosParams, Default, Debug, Clone)]
 pub struct ControllerParams {
     // The distance to the carrot that we want to reach on the path
-    carrot_distance: f32,
+    carrot_distance: i32,
     // The maximum rotation velocity of the robot in rad/s around the z-axis
     max_rotation_vel: f64,
     // Clamped p gain of the rotation controller
@@ -23,6 +23,12 @@ pub struct ControllerParams {
     translation_slow_down_factor: f64,
     // Distance at which we switch from orienting towards the path to orienting towards the goal poses orientation (in meters)
     orient_to_goal_distance: f64,
+    // Maximum velocity we want to reach in different directions (base_footprint coordinate system)
+    max_vel_x: f64,
+    // Minimum velocity we want to reach in different directions (base_footprint coordinate system)
+    min_vel_x: f64,
+    // Maximum velocity we want to reach in different directions (base_footprint coordinate system)
+    max_vel_y: f64,
 }
 
 #[derive(Error, Debug)]
@@ -31,8 +37,8 @@ pub enum ControllerStepError {
     LocalizationError(#[from] TfError),
 }
 
-pub struct Controller {
-    tf: Arc<Mutex<TfListener>>,
+pub struct Controller<'a> {
+    tf: &'a TfListener,
     params: Arc<StdMutex<Params>>,
 }
 
@@ -47,22 +53,22 @@ fn get_yaw_from_quaternion(quaternion: &Quaternion) -> f64 {
     .0 as f64
 }
 
-impl Controller {
-    pub fn new(tf: Arc<Mutex<TfListener>>, params: Arc<StdMutex<Params>>) -> Self {
+impl<'a> Controller<'a> {
+    pub fn new(tf: &'a TfListener, params: Arc<StdMutex<Params>>) -> Self {
         Self { tf, params }
     }
 
     // Calculates a command velocity based on a given path
-    pub async fn step(&self, path: &Path) -> Result<(Twist, PointStamped), ControllerStepError> {
+    pub fn step(&self, path: &Path) -> Result<(Twist, PointStamped), ControllerStepError> {
         let mut cmd_vel = Twist::default();
+
+        let params = self.params.lock().unwrap().clone();
 
         let my_position = self
             .tf
-            .lock()
-            .await
             .lookup_transform(
-                &self.params.lock().unwrap().map.frame,
-                &self.params.lock().unwrap().base_footprint_frame,
+                &params.map.frame,
+                &params.base_footprint_frame,
                 Time::default(),
             )
             .map_err(|e| ControllerStepError::LocalizationError(e))?
@@ -74,7 +80,7 @@ impl Controller {
             .expect("Expect path to contain at least one pose")
             .pose;
         let goal_pose = {
-            let carrot_distance = self.params.lock().unwrap().controller.carrot_distance as usize;
+            let carrot_distance = params.controller.carrot_distance as usize;
             if path.poses.len() > carrot_distance {
                 &path.poses[path.poses.len() - carrot_distance].pose
             } else {
@@ -110,18 +116,10 @@ impl Controller {
         };
 
         let walk_vel = distance
-            * self
-                .params
-                .lock()
-                .unwrap()
-                .controller
-                .translation_slow_down_factor;
+            * params.controller.translation_slow_down_factor;
 
         let diff = if distance
-            > self
-                .params
-                .lock()
-                .unwrap()
+            > params
                 .controller
                 .orient_to_goal_distance
         {
@@ -134,20 +132,40 @@ impl Controller {
         let min_angle = diff % std::f64::consts::TAU; // TODO check math / remainder implementation
 
         cmd_vel.angular.z = (min_angle
-            * self
-                .params
-                .lock()
-                .unwrap()
+            * params
                 .controller
                 .rotation_slow_down_factor)
             .clamp(
-                -self.params.lock().unwrap().controller.max_rotation_vel,
-                self.params.lock().unwrap().controller.max_rotation_vel,
+                -params.controller.max_rotation_vel,
+                params.controller.max_rotation_vel,
             );
 
         let local_heading = walk_angle - get_yaw_from_quaternion(&my_position.rotation);
         let local_heading_vector_x = local_heading.cos();
         let local_heading_vector_y = local_heading.sin();
+
+        // Returns interpolates the x and y maximum velocity linearly based on our heading
+        // See https://github.com/bit-bots/bitbots_main/issues/366#issuecomment-2161460917
+        fn interpolate_max_vel(x_limit: f64, y_limit: f64, target_x: f64, target_y: f64) -> f64 {
+            let n = (x_limit * target_y.abs()) + (y_limit * target_x);
+            let intersection_x = (x_limit * y_limit * target_x) / n;
+            let intersection_y = (x_limit * y_limit * target_y.abs()) / n;
+            intersection_x.hypot(intersection_y)
+        }
+
+        let walk_vel = walk_vel.min(interpolate_max_vel(
+            if local_heading_vector_x > 0. {
+                params.controller.max_vel_x
+            } else {
+                params.controller.min_vel_x
+            },
+            params.controller.max_vel_y,
+            local_heading_vector_x,
+            local_heading_vector_y,
+        ));
+
+        cmd_vel.linear.x = walk_vel * local_heading_vector_x;
+        cmd_vel.linear.y = walk_vel * local_heading_vector_y;
 
         let carrot_point = PointStamped {
             header: path.header.clone(),
