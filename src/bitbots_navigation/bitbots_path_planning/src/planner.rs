@@ -7,6 +7,7 @@ use bitbots_rust_nav::map::ObstacleMapConfig;
 use bitbots_rust_nav::obstacle::RoundObstacle;
 use r2r::builtin_interfaces::msg::Time;
 use r2r::geometry_msgs::msg::PoseStamped;
+use r2r::geometry_msgs::msg::PoseWithCovarianceStamped;
 use r2r::nav_msgs::msg::Path;
 use r2r::std_msgs::msg::Header;
 use r2r::RosParams;
@@ -32,8 +33,8 @@ pub struct InflationParams {
     pub obstacle_margin: f64,
 }
 
-pub struct Planner<'a> {
-    tf: &'a TfListener,
+pub struct Planner {
+    current_pose: Option<PoseStamped>,
     goal: Option<PoseStamped>,
     ball_obstacle_active: bool,
     params: Arc<StdMutex<Params>>,
@@ -41,16 +42,16 @@ pub struct Planner<'a> {
 
 #[derive(Error, Debug)]
 pub enum PlannerStepError {
-    #[error("Could not determine the robot location. Tf error: {0}")]
-    LocalizationError(#[from] TfError),
+    #[error("Could not determine the robot location.")]
+    LocalizationError(),
     #[error("No goal was given when step was called")]
     NoGoalError(),
 }
 
-impl<'a> Planner<'a> {
-    pub fn new(tf: &'a TfListener, params: Arc<StdMutex<Params>>) -> Self {
+impl Planner {
+    pub fn new(params: Arc<StdMutex<Params>>) -> Self {
         Self {
-            tf,
+            current_pose: None,
             goal: None,
             ball_obstacle_active: false,
             params,
@@ -79,6 +80,14 @@ impl<'a> Planner<'a> {
         self.ball_obstacle_active = state;
     }
 
+    // Updates the current robot pose
+    pub fn update_own_pose(&mut self, pose: PoseWithCovarianceStamped) {
+        self.current_pose = Some(PoseStamped {
+            header: pose.header,
+            pose: pose.pose.pose,
+        });
+    }
+
     // Compute the next path to the goal
     pub fn step(&self) -> Result<Path, PlannerStepError> {
         // Check if we have a goal
@@ -86,17 +95,12 @@ impl<'a> Planner<'a> {
 
         let params = self.params.lock().unwrap().clone();
 
-        r2r::log_warn!("bitbots_path_planning", "Fetched goal {:?}", params.map.inflation.robot_radius);
-
         // Get our current position
-        let my_position = self
-            .tf
-            .lookup_transform(&params.map.frame, &params.base_footprint_frame, Time::default())
-            .map_err(|e| PlannerStepError::LocalizationError(e))?
-            .transform
-            .translation;
-
-        r2r::log_warn!("bitbots_path_planning", "Fetched our position");
+        let my_pose = self
+            .current_pose
+            .as_ref()
+            .ok_or(PlannerStepError::LocalizationError())?
+            .clone(); // Todo handle timeout
 
         let map_config = ObstacleMapConfig::new(
             params.map.inflation.robot_radius,
@@ -104,25 +108,27 @@ impl<'a> Planner<'a> {
             12,
         );
 
-        r2r::log_warn!("bitbots_path_planning", "Made obstacle map config");
-
         let obstacles = vec![];
         // TODO add robot to map
 
         // TODO add ball to map
 
-        let path = ObstacleMap::new(map_config, obstacles)
+        let path: Vec<_> = ObstacleMap::new(map_config, obstacles)
             .shortest_path(
-                (my_position.x, my_position.y),
-                (goal.pose.position.x, goal.pose.position.x),
+                (my_pose.pose.position.x, my_pose.pose.position.y),
+                (goal.pose.position.x, goal.pose.position.y),
             )
             .iter()
             .map(|position| {
                 let mut pose = PoseStamped::default();
                 pose.pose.position.x = position.0;
                 pose.pose.position.y = position.1;
-                pose
+                pose.clone()
             })
+            .collect();
+
+        let path: Vec<PoseStamped> = std::iter::once(my_pose)
+            .chain(path)
             .chain([goal.clone()])
             .collect();
 

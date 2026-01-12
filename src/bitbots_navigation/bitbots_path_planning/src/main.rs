@@ -60,6 +60,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut avoid_ball_sub = node
         .subscribe::<Bool>("ball_obstacle_active", r2r::QosProfile::default())?
         .fuse();
+    let mut pose_sub = node
+        .subscribe::<r2r::geometry_msgs::msg::PoseWithCovarianceStamped>(
+            "/pose_with_covariance",
+            r2r::QosProfile::default(),
+        )?
+        .fuse();
 
     let cmd_vel_pub = node.create_publisher::<Twist>("cmd_vel", r2r::QosProfile::default())?;
     let path_pub = node.create_publisher::<Path>("path", r2r::QosProfile::default())?;
@@ -71,45 +77,46 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         1. / params.lock().unwrap().rate,
     ))?;
 
-    let tf_listener = tf_r2r::TfListener::new(&mut node);
-
     // Share the node between tasks / threads
     let node = Arc::new(Mutex::new(node));
     let spin_node = node.clone();
 
     tokio::task::spawn(async move {
         // Define a thread-local state
-        let mut planner = Planner::new(&tf_listener, params.clone());
-        let controller = Controller::new(&tf_listener, params.clone());
+        let mut planner = Planner::new(params.clone());
+        let controller = Controller::new(params.clone());
 
         // Handle events
         loop {
             tokio::select! {
+                Some(msg) = pose_sub.next() => {
+                    planner.update_own_pose(msg);
+                },
                 _ = timer.tick() => {
-                    r2r::log_warn!(&nl, "Planner step");
                     if planner.active() {
-                        r2r::log_warn!(&nl, "Planner active");
                         // Calculate the path to the goal pose considering the current map
-                        match planner.step() {
+                        let path = match planner.step() {
                             Err(e) => {
                                 r2r::log_warn!(&nl, "Planner step failed: {:}", e);
+                                continue;
                             },
                             Ok(path) => {
-                                r2r::log_warn!(&nl, "Got path");
                                 // Publish the path for visualization
                                 path_pub.publish(&path).expect("Publishing the path failed");
-                                // Calculate the command velocity to follow the given path
-                                match controller.step(&path) {
-                                    Err(e) => {
-                                        r2r::log_warn!(&nl, "Controller step failed: {:}", e);
-                                    },
-                                    Ok((cmd_vel, carrot_point)) => {
-                                        // Publish the walk command to control the robot
-                                        cmd_vel_pub.publish(&cmd_vel).expect("Publishing command velocity failed");
-                                        // Publish the carrot point for visualization
-                                        carrot_pub.publish(&carrot_point).expect("Publishing carrot failed");
-                                    }
-                                }
+                                path
+                            }
+                        };
+                        // Calculate the command velocity to follow the given path
+                        match controller.step(&path) {
+                            Err(e) => {
+                                r2r::log_warn!(&nl, "Controller step failed: {:}", e);
+                                continue;
+                            },
+                            Ok((cmd_vel, carrot_point)) => {
+                                // Publish the walk command to control the robot
+                                cmd_vel_pub.publish(&cmd_vel).expect("Publishing command velocity failed");
+                                // Publish the carrot point for visualization
+                                carrot_pub.publish(&carrot_point).expect("Publishing carrot failed");
                             }
                         }
                     }

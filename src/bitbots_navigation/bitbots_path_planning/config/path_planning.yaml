@@ -5,7 +5,7 @@ bitbots_path_planning:
     rate: 20.0
 
     map:
-      planning_frame: map
+      frame: map
       robot_update_topic: robots_relative_filtered
       ball_diameter: 0.13
       inflation:

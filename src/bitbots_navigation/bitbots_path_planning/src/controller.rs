@@ -37,8 +37,7 @@ pub enum ControllerStepError {
     LocalizationError(#[from] TfError),
 }
 
-pub struct Controller<'a> {
-    tf: &'a TfListener,
+pub struct Controller {
     params: Arc<StdMutex<Params>>,
 }
 
@@ -53,9 +52,9 @@ fn get_yaw_from_quaternion(quaternion: &Quaternion) -> f64 {
     .0 as f64
 }
 
-impl<'a> Controller<'a> {
-    pub fn new(tf: &'a TfListener, params: Arc<StdMutex<Params>>) -> Self {
-        Self { tf, params }
+impl Controller {
+    pub fn new(params: Arc<StdMutex<Params>>) -> Self {
+        Self { params }
     }
 
     // Calculates a command velocity based on a given path
@@ -64,15 +63,12 @@ impl<'a> Controller<'a> {
 
         let params = self.params.lock().unwrap().clone();
 
-        let my_position = self
-            .tf
-            .lookup_transform(
-                &params.map.frame,
-                &params.base_footprint_frame,
-                Time::default(),
-            )
-            .map_err(|e| ControllerStepError::LocalizationError(e))?
-            .transform;
+        let my_position = path
+            .poses
+            .first()
+            .expect("Path must contain at least one pose")
+            .pose
+            .clone();
 
         let end_pose = &path
             .poses
@@ -88,59 +84,43 @@ impl<'a> Controller<'a> {
             }
         };
 
-        let walk_angle = (goal_pose.position.y - my_position.translation.y)
-            .atan2(goal_pose.position.x - my_position.translation.x);
+        let walk_angle = (goal_pose.position.y - my_position.position.y)
+            .atan2(goal_pose.position.x - my_position.position.x);
 
         let distance = if path.poses.len() < 3 {
-            (end_pose.position.x - my_position.translation.x)
-                .hypot(end_pose.position.y - my_position.translation.y)
+            (end_pose.position.x - my_position.position.x)
+                .hypot(end_pose.position.y - my_position.position.y)
         } else {
             path.poses
                 .iter()
                 .fold(
-                    (0.0, my_position.translation),
+                    (0.0, my_position.position),
                     |(distance, last_pose), pose| {
                         let dx = pose.pose.position.x - last_pose.x;
                         let dy = pose.pose.position.y - last_pose.y;
-                        (
-                            distance + dx.hypot(dy),
-                            Vector3 {
-                                x: pose.pose.position.x,
-                                y: pose.pose.position.y,
-                                z: 0.0,
-                            },
-                        )
+                        (distance + dx.hypot(dy), pose.pose.position.clone())
                     },
                 )
                 .0
         };
 
-        let walk_vel = distance
-            * params.controller.translation_slow_down_factor;
+        let walk_vel = distance * params.controller.translation_slow_down_factor;
 
-        let diff = if distance
-            > params
-                .controller
-                .orient_to_goal_distance
-        {
-            walk_angle - get_yaw_from_quaternion(&my_position.rotation)
+        let diff = if distance > params.controller.orient_to_goal_distance {
+            walk_angle - get_yaw_from_quaternion(&my_position.orientation)
         } else {
             get_yaw_from_quaternion(&end_pose.orientation)
-                - get_yaw_from_quaternion(&my_position.rotation)
+                - get_yaw_from_quaternion(&my_position.orientation)
         };
 
-        let min_angle = diff % std::f64::consts::TAU; // TODO check math / remainder implementation
+        let min_angle = diff.sin().atan2(diff.cos());
 
-        cmd_vel.angular.z = (min_angle
-            * params
-                .controller
-                .rotation_slow_down_factor)
-            .clamp(
-                -params.controller.max_rotation_vel,
-                params.controller.max_rotation_vel,
-            );
+        cmd_vel.angular.z = (min_angle * params.controller.rotation_slow_down_factor).clamp(
+            -params.controller.max_rotation_vel,
+            params.controller.max_rotation_vel,
+        );
 
-        let local_heading = walk_angle - get_yaw_from_quaternion(&my_position.rotation);
+        let local_heading = walk_angle - get_yaw_from_quaternion(&my_position.orientation);
         let local_heading_vector_x = local_heading.cos();
         let local_heading_vector_y = local_heading.sin();
 
