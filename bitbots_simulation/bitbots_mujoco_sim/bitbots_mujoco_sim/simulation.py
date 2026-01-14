@@ -56,11 +56,11 @@ class Simulation(Node):
 
         self.events = [
             {"frequency": 1, "handler": self.publish_clock_event},
-            {"frequency": 3, "handler": self.publish_all_joint_states},
-            {"frequency": 3, "handler": self.publish_all_imu},
-            {"frequency": 24, "handler": self.publish_all_cameras},
-            {"frequency": 3, "handler": self.publish_all_pressure},
-            {"frequency": 3, "handler": self.publish_all_center_of_pressure},
+            {"frequency": 4, "handler": self.publish_all_joint_states},
+            {"frequency": 4, "handler": self.publish_all_imu},
+            {"frequency": 4, "handler": self.publish_all_pressure},
+            {"frequency": 4, "handler": self.publish_all_center_of_pressure},
+            {"frequency": 32, "handler": self.publish_all_cameras},
         ]
 
     def _find_robot_indices(self) -> list[int]:
