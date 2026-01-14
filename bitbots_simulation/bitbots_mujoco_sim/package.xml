@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>bitbots_mujoco_sim</name>
+  <version>1.0.0</version>
+  <description>Simulation environment using Mujoco for Wolfgang robot.</description>
+
+  <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+
+  <license>MIT</license>
+
+  <author email="arshia.delavar@studium.uni-hamburg.de">Arshia Delavar</author>
+  <author email="sebastian.fromm@studium.uni-hamburg.de">Sebastian Fromm</author>
+  <author email="samim.maschal@studium.uni-hamburg.de">Samim Maschal</author>
+  <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>rclpy</depend>
+  <depend>sensor_msgs</depend>
+  <depend>rosgraph_msgs</depend>
+  <depend>bitbots_msgs</depend>
+  <depend>ament_index_python</depend>
+  <depend>python3-numpy</depend>
+  <depend>python3-mujoco</depend>
+
+  <test_depend>ament_cmake_mypy</test_depend>
+
+  <export>
+    <bitbots_documentation>
+      <status>unknown</status>
+      <language>python</language>
+    </bitbots_documentation>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

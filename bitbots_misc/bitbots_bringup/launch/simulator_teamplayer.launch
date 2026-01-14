@@ -10,10 +10,18 @@
     <arg name="teamcom" default="false" description="Whether the team communication system should be started" />
     <arg name="vision" default="true" description="Whether the vision system should be started" />
     <arg name="world_model" default="true" description="Whether the world model should be started"/>
+    <arg name="mujoco" default="false" description="Whether to use the Mujoco simulator instead of Webots"/>
 
     <!-- load the general simulator -->
-    <include file="$(find-pkg-share bitbots_webots_sim)/launch/simulation.launch" />
-
+    <group if="$(var mujoco)">
+        <node pkg="bitbots_mujoco_sim" exec="sim" name="mujoco_simulation_node" output="screen"/>
+        <include file="$(find-pkg-share bitbots_webots_sim)/launch/imu_filter_sim.launch">
+            <arg name="sim" value="true"/>
+        </include>
+    </group>
+    <group unless="$(var mujoco)">
+        <include file="$(find-pkg-share bitbots_webots_sim)/launch/simulation.launch" />
+    </group>
     <!-- load teamplayer software stack -->
     <include file="$(find-pkg-share bitbots_bringup)/launch/teamplayer.launch">
         <arg name="behavior" value="$(var behavior)" />
