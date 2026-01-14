@@ -1,0 +1,66 @@
+{% import "components/vision.html" as vision_components %}
+{% import "components/textbox.html" as components %}
+{% import "components/icon_footer.html" as icon_components %}
+
+{% extends "base.html" %}
+
+{% block banner %}Bildverarbeitung{% endblock %}
+
+{% block content %}
+
+{{ vision_components.vision_component() }}
+<div class="bg-sky-100 pt-4 flex flex-row justify-center">
+    <div class="grid grid-cols-3 gap-3 auto-cols-fr">
+        <div class="flex flex-row justify-left">
+            <div class="flex flex-col justify-center">
+                <div class="p-2 w-2 h-2 rounded-2xl border-2 border-zinc-800" style="background-color: #00FF00;"></div>
+            </div>
+            <div class="text-base px-1 text-zinc-900">Ball</div>
+        </div>
+        <div class="flex flex-row justify-left">
+            <div class="flex flex-col justify-center">
+                <div class="p-2 w-2 h-2 rounded-2xl border-2 border-zinc-800" style="background-color: #0000FF;"></div>
+            </div>
+            <div class="text-base px-1 text-zinc-900">Linien</div>
+        </div>
+        <div class="flex flex-row justify-left">
+            <div class="flex flex-col justify-center">
+                <div class="p-2 w-2 h-2 rounded-2xl border-2 border-zinc-800" style="background-color: #A0A0A0;"></div>
+            </div>
+            <div class="text-base px-1 text-zinc-900">Roboter</div>
+        </div>
+    </div>
+</div>
+<div class="bg-sky-100">
+    {{ components.textbox(
+        "Was ist das für ein Kreis um dem Ball herum?",
+        "Das hier ist nicht einfach nur der Live-Stream der Kamera des Roboters. Er beinhaltet zudem Markierungen der Dinge,
+        die der Roboter in dem Bild zu sehen glaubt. Dabei werden Bälle mit einem grünen Kreis versehen, andere Roboter eingerahmt und Linien in Blau markiert.",
+        true, true, false) }}
+    {{ components.textbox("Vergleich zum Menschen", "Die Bilderkennung des Roboters gleicht der Objekterkennung des Menschen.
+    Sie schaut auf ein Bild und sagt: An der Stelle ist ein Ball. Ähnlich wie beim Menschen wird sie nicht etwa manuell einprogrammiert,
+    sondern durch das Betrachten von vielen Bildern erlernt.
+", true, false, false)}}
+    <div style="width: 100%;" class="grid place-items-center px-18 py-6 bg-sky-100">
+        <img  src="{{ url_for('static', filename='camera.png') }}" x-ref="camera"></img>
+        <p class="text-center text-base text-zinc-900">Die aktuelle Kamera des Roboters. Die dunkle "Frisur" hilft bei der Kühlung der Kamera.</p>
+    </div>
+    {{ components.textbox("Nutzen im Roboter", "Viele Komponenten des Roboters benutzen die Erkenntnisse aus der Bildverarbeitung:
+    Das Wissen über die Position des Balls ist für Verhaltensentscheidungen sehr wichtig, erkannte Feldlinien dienen zur Orientierung
+    auf dem Feld und erkannte Roboter werden in der Strategie sowie der Pfadplanung berücksichtigt — Letzteres vor allem, damit es möglichst wenig Zusammenstöße gibt.", true, false, true)}}
+    {{ components.textbox("Woher weiß die Vision dass da ein Ball ist?",
+    "Sie hat es durch maschinelles Lernen gelernt. Doch wie funktioniert das? Ein Mensch lernt z.B. von seinen Eltern,
+    was ein Ball ist. Zuerst zeigt ein Elternteil auf einen Ball und sagt: Das ist ein Ball. Später zeigt das Kind selbst auf Gegenstände,
+    die wie ein Ball aussehen, und der Erwachsene bestätigt die Annahme oder berichtigt. Beim maschinellen Lernen funktioniert es ähnlich.
+    Während des Lernens versucht ein künstliches neuronales Netz immer wieder zu raten, ob und wo auf einem Bild ein Ball ist.
+    Das wird dann abgeglichen mit einem vorher von Menschen annotierten Bild, auf dem der Ball an der richtigen Stelle markiert wurde.
+    Das Netz ändert daraufhin die Gewichte seiner Neuronen und wird dadurch über die Zeit besser, bis es gut genug ist und das Training beendet wird.
+    Das fertig gelernte Netz wird dann noch mit neuen Bildern getestet und schließlich verbaut. Ab diesem Punkt wird nicht weiter gelernt,
+    sondern nur bereits Gelerntes auf neue Bilder angewendet.", false, false, false)}}
+</div>
+{% endblock %}
+
+{% block icons %}
+{{ icon_components.icons("vision") }}
+{% endblock %}
+

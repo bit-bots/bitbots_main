@@ -1,0 +1,43 @@
+{% macro textbox(label, content, style, top, bottom) %}
+<script type="text/javascript">
+  function change_text() {
+      return {
+          full: false,
+          collapsable: true,
+          toggleText() {
+              this.full = !this.full;
+              if (this.full) {
+                  fetch(`/logs?page=${window.location.pathname}&button=${this.$refs.label.innerText}&status=aufgeklappt`);
+              } else {
+                  fetch(`/logs?page=${window.location.pathname}&button=${this.$refs.label.innerText}&status=eingeklappt`);
+              }
+          },
+          init() {
+              // Get height of the content
+              const contentElement = this.$refs.content;
+              const contentHeight = contentElement.scrollHeight;
+
+              // Make it collapsable if content height is greater than 3 lines
+              const lineHeight = parseFloat(getComputedStyle(contentElement).lineHeight);
+              const maxHeight = lineHeight * 3; // 3 lines
+              this.collapsable = contentHeight > maxHeight;
+          }
+      };
+    }
+  </script>
+
+<div x-data="change_text()"class="{% if bottom == True and top == True %}px-6 p-12{% elif top == True or style == False %}pt-12 pb-6 px-6{% elif bottom == True %}pt-6 pb-12 px-6 {% else %}py-6 px-6{% endif %} w-full bg-{% if style == True %}sky-100{% else %}sky-800{% endif %}">
+  <label x-ref="label" class="block text-lg font-semibold text-{% if style == True %}zinc-800{% else %}white{% endif %}">{{ label }}</label>
+  <p x-ref="content" class="text-base text-{% if style == True %}zinc-900{%else%}white{%endif%}" x-bind:class="full || 'line-clamp-3'">{{ content }}</p>
+
+  <button x-show="collapsable" x-on:click="toggleText()">
+    <div class="font-semibold italic text-{% if style == True %}zinc-900{%else%}white{%endif%}">
+      <span x-show="!full">Mehr</span>
+      <span x-show="full">Weniger</span>
+    </div>
+  </button>
+
+</div>
+
+
+{% endmacro %}
