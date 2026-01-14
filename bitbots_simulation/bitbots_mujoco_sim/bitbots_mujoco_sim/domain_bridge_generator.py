@@ -51,8 +51,8 @@ class DomainBridgeConfigGenerator:
             f"{robot_namespace}/imu/data_raw": {"type": "sensor_msgs/msg/Imu", "dir": "RX"},
             f"{robot_namespace}/camera/image_proc": {"type": "sensor_msgs/msg/Image", "dir": "RX"},
             f"{robot_namespace}/camera/camera_info": {"type": "sensor_msgs/msg/CameraInfo", "dir": "RX"},
-            f"{robot_namespace}/foot_pressure_left/raw": {"type": "bitbots_msgs/msg/FootPressure", "dir": "RX"},
-            f"{robot_namespace}/foot_pressure_right/raw": {"type": "bitbots_msgs/msg/FootPressure", "dir": "RX"},
+            f"{robot_namespace}/foot_pressure_left/filtered": {"type": "bitbots_msgs/msg/FootPressure", "dir": "RX"},
+            f"{robot_namespace}/foot_pressure_right/filtered": {"type": "bitbots_msgs/msg/FootPressure", "dir": "RX"},
             f"{robot_namespace}/foot_center_of_pressure_left": {"type": "geometry_msgs/msg/PointStamped", "dir": "RX"},
             f"{robot_namespace}/foot_center_of_pressure_right": {"type": "geometry_msgs/msg/PointStamped", "dir": "RX"},
         }

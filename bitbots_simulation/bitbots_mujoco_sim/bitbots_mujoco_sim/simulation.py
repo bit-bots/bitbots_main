@@ -146,8 +146,8 @@ class RobotSimulation:
             "imu": node.create_publisher(Imu, self._topic("imu/data_raw"), 1),
             "camera_proc": node.create_publisher(Image, self._topic("camera/image_proc"), 1),
             "camera_info": node.create_publisher(CameraInfo, self._topic("camera/camera_info"), 1),
-            "foot_pressure_left": node.create_publisher(FootPressure, self._topic("foot_pressure_left/raw"), 1),
-            "foot_pressure_right": node.create_publisher(FootPressure, self._topic("foot_pressure_right/raw"), 1),
+            "foot_pressure_left": node.create_publisher(FootPressure, self._topic("foot_pressure_left/filtered"), 1),
+            "foot_pressure_right": node.create_publisher(FootPressure, self._topic("foot_pressure_right/filtered"), 1),
             "cop_left": node.create_publisher(PointStamped, self._topic("cop_l"), 1),
             "cop_right": node.create_publisher(PointStamped, self._topic("cop_r"), 1),
         }
@@ -239,14 +239,14 @@ class RobotSimulation:
         left = FootPressure()
         left.header.stamp = self.simulation.time_message
         left.left_back, left.left_front, left.right_front, left.right_back = [
-            sensor.force for sensor in self.robot.feet_sensors.left
+            -sensor.force for sensor in self.robot.feet_sensors.left
         ]
         self.node_publishers["foot_pressure_left"].publish(left)
 
         right = FootPressure()
         right.header.stamp = self.simulation.time_message
         right.left_back, right.left_front, right.right_front, right.right_back = [
-            sensor.force for sensor in self.robot.feet_sensors.right
+            -sensor.force for sensor in self.robot.feet_sensors.right
         ]
         self.node_publishers["foot_pressure_right"].publish(right)
 
