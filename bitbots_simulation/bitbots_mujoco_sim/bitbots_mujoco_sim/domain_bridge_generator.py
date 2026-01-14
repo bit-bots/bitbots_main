@@ -1,98 +1,73 @@
-"""Generates domain bridge configuration files for multi-robot simulation."""
-
+import os
 from pathlib import Path
 
 import yaml
 
 
 class DomainBridgeConfigGenerator:
-    """Generates ROS 2 domain bridge configuration for isolating multiple robots."""
+    """Generates ROS 2 domain bridge configuration for all robots."""
 
-    def __init__(self, robot_count: int, main_domain: int = 0):
-        """
-        Initialize the domain bridge config generator.
+    def __init__(self, robots: list):
+        self.main_domain = int(os.getenv("ROS_DOMAIN_ID", "0"))
+        self.robots = robots
 
-        Args:
-            robot_count: Number of robots in the simulation
-            main_domain: The main domain ID (default: 0)
-        """
-        self.robot_count = robot_count
-        self.main_domain = main_domain
+    def generate_config_file(self, output_dir: Path) -> Path:
+        """Generate a single config file for all robots with bidirectional bridging."""
+        output_dir.mkdir(parents=True, exist_ok=True)
 
-    def generate_config(self, robot_index: int) -> dict:
-        """
-        Generate domain bridge config for a specific robot.
-
-        Args:
-            robot_index: The robot index (0-based)
-
-        Returns:
-            Dictionary containing the bridge configuration
-        """
-        robot_domain = self.main_domain + robot_index + 1
-        robot_namespace = f"robot{robot_index}"
-
-        config = {
-            "name": f"robot_{robot_index}_bridge",
-            "from_domain": self.main_domain,
-            "to_domain": robot_domain,
-            "topics": {},
-        }
-
-        # Topics from main domain to robot domain (robot subscribes)
-        robot_topics = {
-            f"{robot_namespace}/DynamixelController/command": {"type": "bitbots_msgs/msg/JointCommand", "dir": "TX"}
-        }
-
-        # Topics from robot domain to main domain (robot publishes)
-        main_topics = {
-            "clock": {"type": "rosgraph_msgs/msg/Clock", "dir": "RX"},
-            f"{robot_namespace}/joint_states": {"type": "sensor_msgs/msg/JointState", "dir": "RX"},
-            f"{robot_namespace}/imu/data_raw": {"type": "sensor_msgs/msg/Imu", "dir": "RX"},
-            f"{robot_namespace}/camera/image_proc": {"type": "sensor_msgs/msg/Image", "dir": "RX"},
-            f"{robot_namespace}/camera/camera_info": {"type": "sensor_msgs/msg/CameraInfo", "dir": "RX"},
-            f"{robot_namespace}/foot_pressure_left/filtered": {"type": "bitbots_msgs/msg/FootPressure", "dir": "RX"},
-            f"{robot_namespace}/foot_pressure_right/filtered": {"type": "bitbots_msgs/msg/FootPressure", "dir": "RX"},
-            f"{robot_namespace}/foot_center_of_pressure_left": {"type": "geometry_msgs/msg/PointStamped", "dir": "RX"},
-            f"{robot_namespace}/foot_center_of_pressure_right": {"type": "geometry_msgs/msg/PointStamped", "dir": "RX"},
-        }
-
-        # Merge topics
-        config["topics"].update(robot_topics)
-        config["topics"].update(main_topics)
-
-        return config
-
-    def save_config(self, robot_index: int, output_path: Path) -> None:
-        """
-        Save domain bridge config to YAML file.
-
-        Args:
-            robot_index: The robot index
-            output_path: Path where to save the config file
-        """
-        config = self.generate_config(robot_index)
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-
+        output_path = output_dir / "multi_robot_bridge.yaml"
+        config = self.generate_config()
         with open(output_path, "w") as f:
             yaml.dump(config, f, default_flow_style=False, sort_keys=False)
 
-    def generate_all_configs(self, output_dir: Path) -> list[Path]:
-        """
-        Generate config files for all robots.
+        return output_path
 
-        Args:
-            output_dir: Directory where to save all config files
+    def generate_config(self) -> dict:
+        """Generate unified configuration for all robots."""
+        config = {
+            "name": "multi_robot_bridge",
+            "from_domain": self.main_domain,
+            "to_domain": self.main_domain,  # Default, overridden per-topic
+            "topics": {},
+        }
 
-        Returns:
-            List of paths to generated config files
-        """
-        output_dir.mkdir(parents=True, exist_ok=True)
-        config_paths = []
+        # Clock is shared - add it once for the first robot domain
+        # (only bridges to one domain, but multiple robots can subscribe in that domain)
+        if self.robots:
+            config["topics"]["clock"] = {
+                "type": "rosgraph_msgs/msg/Clock",
+                "to_domain": self.robots[0].domain,
+            }
 
-        for i in range(self.robot_count):
-            config_path = output_dir / f"robot_{i}_bridge.yaml"
-            self.save_config(i, config_path)
-            config_paths.append(config_path)
+        for robot in self.robots:
+            # Sensor topics: main → robot (with remap to remove namespace)
+            sensor_topics = [
+                ("joint_states", "sensor_msgs/msg/JointState"),
+                ("imu/data_raw", "sensor_msgs/msg/Imu"),
+                ("camera/image_proc", "sensor_msgs/msg/Image"),
+                ("camera/camera_info", "sensor_msgs/msg/CameraInfo"),
+                ("foot_pressure_left/raw", "bitbots_msgs/msg/FootPressure"),
+                ("foot_pressure_right/raw", "bitbots_msgs/msg/FootPressure"),
+                ("foot_center_of_pressure_left", "geometry_msgs/msg/PointStamped"),
+                ("foot_center_of_pressure_right", "geometry_msgs/msg/PointStamped"),
+            ]
 
-        return config_paths
+            for topic_suffix, msg_type in sensor_topics:
+                # YAML key is the SOURCE topic (what we subscribe to in main domain)
+                src_topic = f"{robot.namespace}/{topic_suffix}"
+                config["topics"][src_topic] = {
+                    "type": msg_type,
+                    "to_domain": robot.domain,
+                    "remap": topic_suffix,  # Remove namespace in robot domain
+                }
+
+            # Command topic: robot → main
+            # Subscribe to "DynamixelController/command" in robot domain, publish to "robot{N}/DynamixelController/command" in main
+            config["topics"][f"DynamixelController/command_{robot.namespace}"] = {
+                "type": "bitbots_msgs/msg/JointCommand",
+                "from_domain": robot.domain,
+                "to_domain": self.main_domain,
+                "remap": f"{robot.namespace}/DynamixelController/command",
+            }
+
+        return config
