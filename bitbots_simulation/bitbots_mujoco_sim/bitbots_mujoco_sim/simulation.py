@@ -30,13 +30,17 @@ class Simulation(Node):
         self.model: mujoco.MjModel = mujoco.MjModel.from_xml_path(self.package_path + "/xml/adult_field.xml")
         self.data: mujoco.MjData = mujoco.MjData(self.model)
         self.robots: list[RobotSimulation] = [
-            RobotSimulation(self, Robot(self.model, self.data, idx), idx + 1) for idx in self._find_robot_indices()
+            RobotSimulation(
+                self, Robot(self.model, self.data, idx), -1 if len(self._find_robot_indices()) <= 1 else idx + 1
+            )
+            for idx in self._find_robot_indices()
         ]
 
-        bridge_gen = DomainBridgeConfigGenerator(self.robots)
-        config_dir = Path(self.package_path) / "config" / "domain_bridges"
-        config_path = bridge_gen.generate_config_file(config_dir)
-        self.get_logger().info(f"Generated domain bridge config at {config_path}")
+        if len(self.robots) > 1:
+            bridge_gen = DomainBridgeConfigGenerator(self.robots)
+            config_dir = Path(self.package_path) / "config" / "domain_bridges"
+            config_path = bridge_gen.generate_config_file(config_dir)
+            self.get_logger().info(f"Generated domain bridge config at {config_path}")
 
         self.time = 0.0
         self.time_message = Time(seconds=0, nanoseconds=0).to_msg()
@@ -113,9 +117,10 @@ class RobotSimulation:
         self.data = simulation.data
         self.domain = domain
         self.namespace = f"robot{domain}"
+        self.namespace = f"robot{domain}" if domain != -1 else ""
 
         def _topic(name: str) -> str:
-            return f"{self.namespace}/{name}"
+            return "/".join(filter(None, [self.namespace, name]))
 
         self.node_publishers = {
             "joint_states": self.simulation.create_publisher(JointState, _topic("joint_states"), 1),

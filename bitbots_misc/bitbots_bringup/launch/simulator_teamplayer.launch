@@ -15,6 +15,9 @@
     <!-- load the general simulator -->
     <group if="$(var mujoco)">
         <node pkg="bitbots_mujoco_sim" exec="sim" name="mujoco_simulation_node" output="screen"/>
+        <include file="$(find-pkg-share bitbots_webots_sim)/launch/imu_filter_sim.launch">
+            <arg name="sim" value="true"/>
+        </include>
     </group>
     <group unless="$(var mujoco)">
         <include file="$(find-pkg-share bitbots_webots_sim)/launch/simulation.launch" />
