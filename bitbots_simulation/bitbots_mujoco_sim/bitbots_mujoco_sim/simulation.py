@@ -12,6 +12,7 @@ from sensor_msgs.msg import CameraInfo, Image, Imu, JointState
 from std_msgs.msg import Float32
 
 from bitbots_msgs.msg import FootPressure, JointCommand
+from bitbots_mujoco_sim.domain_bridge_generator import DomainBridgeConfigGenerator
 from bitbots_mujoco_sim.robot import Robot
 
 
@@ -30,8 +31,7 @@ class Simulation(Node):
         self.timestep = self.model.opt.timestep
         self.step_number = 0
         self.real_time_factor = 1.0
-
-        self.create_subscription(JointCommand, "DynamixelController/command", self.joint_command_callback, 1)
+        self.clock_publisher = self.create_publisher(Clock, "clock", 1)
         self.create_subscription(Float32, "real_time_factor", self.real_time_factor_callback, 1)
 
         self.imu_frame_id = self.get_parameter_or("imu_frame", "imu_frame")
@@ -39,41 +39,29 @@ class Simulation(Node):
         self.camera_optical_frame_id = self.get_parameter_or("camera_optical_frame", "camera_optical_frame")
         self.camera_active = True
 
-        self.node_publishers = {
-            "clock": self.create_publisher(Clock, "clock", 1),
-            "joint_states": self.create_publisher(JointState, "joint_states", 1),
-            "imu": self.create_publisher(Imu, "imu/data_raw", 1),
-            "camera_proc": self.create_publisher(Image, "camera/image_proc", 1),
-            "camera_info": self.create_publisher(CameraInfo, "camera/camera_info", 1),
-            "foot_pressure_left": self.create_publisher(FootPressure, "foot_pressure_left/raw", 1),
-            "foot_pressure_right": self.create_publisher(FootPressure, "foot_pressure_right/raw", 1),
-            "foot_center_of_pressure_left": self.create_publisher(PointStamped, "cop_l", 1),
-            "foot_center_of_pressure_right": self.create_publisher(PointStamped, "cop_r", 1),
-        }
+        # Create RobotSimulation instances for each robot
+        self.robots: list[RobotSimulation] = []
+        for idx, robot in enumerate(self.robots):
+            robot = RobotSimulation(self, robot, idx, f"robot{idx}")
+            self.robots.append(robot)
 
-        self.js_publisher = self.node_publishers["joint_states"]
-        self.clock_publisher = self.node_publishers["clock"]
-        self.imu_publisher = self.node_publishers["imu"]
-        self.camera_publisher = self.node_publishers["camera_proc"]
-        self.camera_info_publisher = self.node_publishers["camera_info"]
-        self.pressure_left_publisher = self.node_publishers["foot_pressure_left"]
-        self.pressure_right_publisher = self.node_publishers["foot_pressure_right"]
-        self.center_of_pressure_left_publisher = self.node_publishers["foot_center_of_pressure_left"]
-        self.center_of_pressure_right_publisher = self.node_publishers["foot_center_of_pressure_right"]
+        # Generate domain bridge configs if multiple robots
+        if len(self.robots) > 1:
+            bridge_gen = DomainBridgeConfigGenerator(len(self.robots))
+            from pathlib import Path
 
-        self.events = {
-            "clock": {"frequency": 1, "handler": self.publish_clock_event},
-            "joint_states": {"frequency": 3, "handler": self.publish_ros_joint_states_event},
-            "imu": {"frequency": 3, "handler": self.publish_imu_event},
-            "camera": {"frequency": 24, "handler": self.publish_camera_event},
-            "pressure": {"frequency": 3, "handler": self.publish_pressure_events},
-            "center_of_pressure": {"frequency": 3, "handler": self.publish_center_of_pressure_events},
-        }
+            config_dir = Path(package_path) / "config" / "domain_bridges"
+            bridge_gen.generate_all_configs(config_dir)
+            self.get_logger().info(f"Generated domain bridge configs in {config_dir}")
 
-    # Deprecated, Replace all instances with self.robots to support multiple robots
-    @property
-    def robot(self) -> Robot:
-        return self.robots[0]
+        self.events = [
+            {"frequency": 1, "handler": self.publish_clock_event},
+            {"frequency": 3, "handler": self.publish_all_joint_states},
+            {"frequency": 3, "handler": self.publish_all_imu},
+            {"frequency": 24, "handler": self.publish_all_cameras},
+            {"frequency": 3, "handler": self.publish_all_pressure},
+            {"frequency": 3, "handler": self.publish_all_center_of_pressure},
+        ]
 
     def _find_robot_indices(self) -> list[int]:
         """Find all robot instances by looking for bodies named 'robot_torso_X'."""
@@ -89,12 +77,6 @@ class Simulation(Node):
                 self.step()
                 view.sync()
 
-    def joint_command_callback(self, command: JointCommand) -> None:
-        if len(command.positions) != 0:
-            for i in range(len(command.joint_names)):
-                joint = self.robot.joints.get(command.joint_names[i])
-                joint.position = command.positions[i]
-
     def step(self) -> None:
         real_start_time = time.time()
         self.step_number += 1
@@ -103,7 +85,7 @@ class Simulation(Node):
 
         mujoco.mj_step(self.model, self.data)
 
-        for _, event_config in self.events.items():
+        for event_config in self.events:
             if self.step_number % event_config["frequency"] == 0:
                 event_config["handler"]()
 
@@ -119,23 +101,86 @@ class Simulation(Node):
         clock_msg.clock = self.time_message
         self.clock_publisher.publish(clock_msg)
 
+    def publish_all_joint_states(self) -> None:
+        self.publish(lambda robot: robot.publish_joint_states(self.time_message))
+
+    def publish_all_imu(self) -> None:
+        self.publish(lambda robot: robot.publish_imu())
+
+    def publish_all_cameras(self) -> None:
+        if self.camera_active:
+            self.publish(lambda robot: robot.publish_camera())
+
+    def publish_all_pressure(self) -> None:
+        self.publish(lambda robot: robot.publish_pressure(self.time_message))
+
+    def publish_all_center_of_pressure(self) -> None:
+        self.publish(lambda robot: robot.publish_center_of_pressure(self.time_message))
+
+    def publish(self, executor: callable) -> None:
+        for robot in self.robots:
+            executor(robot)
+
+
+class RobotSimulation:
+    """Holds the simulation state for a single robot instance."""
+
+    def __init__(self, simulation: Simulation, robot: Robot, namespace: str):
+        self.simulation = simulation
+        self.robot = robot
+        self.namespace = namespace
+        self.model = simulation.model
+        self.data = simulation.data
+
+        # Setup publishers and subscriptions
+        self._setup_interface()
+
+    def _topic(self, name: str) -> str:
+        return f"{self.namespace}/{name}" if self.namespace else name
+
+    def _setup_interface(self) -> None:
+        node = self.simulation
+
+        self.node_publishers = {
+            "joint_states": node.create_publisher(JointState, self._topic("joint_states"), 1),
+            "imu": node.create_publisher(Imu, self._topic("imu/data_raw"), 1),
+            "camera_proc": node.create_publisher(Image, self._topic("camera/image_proc"), 1),
+            "camera_info": node.create_publisher(CameraInfo, self._topic("camera/camera_info"), 1),
+            "foot_pressure_left": node.create_publisher(FootPressure, self._topic("foot_pressure_left/raw"), 1),
+            "foot_pressure_right": node.create_publisher(FootPressure, self._topic("foot_pressure_right/raw"), 1),
+            "cop_left": node.create_publisher(PointStamped, self._topic("cop_l"), 1),
+            "cop_right": node.create_publisher(PointStamped, self._topic("cop_r"), 1),
+        }
+
+        # Create subscription with robot-specific callback
+        node.create_subscription(
+            JointCommand, self._topic("DynamixelController/command"), self.joint_command_callback, 1
+        )
+
+    def joint_command_callback(self, command: JointCommand) -> None:
+        if len(command.positions) != 0:
+            for i in range(len(command.joint_names)):
+                joint = self.robot.joints.get(command.joint_names[i])
+                joint.position = command.positions[i]
+
     def publish_ros_joint_states_event(self) -> None:
         js = JointState()
         js.name = []
-        js.header.stamp = self.time_message
+        js.header.stamp = self.simulation.time_message
         js.position = []
+        js.velocity = []
         js.effort = []
         for joint in self.robot.joints:
             js.name.append(joint.ros_name)
             js.position.append(joint.position)
             js.velocity.append(joint.velocity)
             js.effort.append(joint.effort)
-        self.js_publisher.publish(js)
+        self.node_publishers["joint_states"].publish(js)
 
     def publish_imu_event(self) -> None:
         imu = Imu()
-        imu.header.stamp = self.time_message
-        imu.header.frame_id = self.imu_frame_id
+        imu.header.stamp = self.simulation.time_message
+        imu.header.frame_id = self.simulation.imu_frame_id
         imu.linear_acceleration.x, imu.linear_acceleration.y, imu.linear_acceleration.z = (
             self.robot.sensors.accelerometer.data
         )
@@ -147,21 +192,21 @@ class Simulation(Node):
 
         imu.angular_velocity.x, imu.angular_velocity.y, imu.angular_velocity.z = self.robot.sensors.gyro.data
 
-        self.imu_publisher.publish(imu)
+        self.node_publishers["imu"].publish(imu)
 
     def publish_camera_event(self) -> None:
-        if not self.camera_active:
+        if not self.simulation.camera_active:
             return
 
         img = Image()
-        img.header.stamp = self.time_message
-        img.header.frame_id = self.camera_optical_frame_id
+        img.header.stamp = self.simulation.time_message
+        img.header.frame_id = self.simulation.camera_optical_frame_id
         img.encoding = "bgra8"
         img.height = self.robot.camera.height
         img.width = self.robot.camera.width
         img.step = 4 * self.robot.camera.width
         img.data = self.robot.camera.render()
-        self.camera_publisher.publish(img)
+        self.node_publishers["camera_proc"].publish(img)
 
         cam_info = CameraInfo()
         cam_info.header = img.header
@@ -188,40 +233,32 @@ class Simulation(Node):
         cam_info.k = [f_x, 0.0, cx, 0.0, f_y, cy, 0.0, 0.0, 1.0]
         cam_info.p = [f_x, 0.0, cx, 0.0, 0.0, f_y, cy, 0.0, 0.0, 0.0, 1.0, 0.0]
 
-        self.camera_info_publisher.publish(cam_info)
+        self.node_publishers["camera_info"].publish(cam_info)
 
     def publish_pressure_events(self) -> None:
         left = FootPressure()
-        left.header.stamp = self.time_message
+        left.header.stamp = self.simulation.time_message
         left.left_back, left.left_front, left.right_front, left.right_back = [
             sensor.force for sensor in self.robot.feet_sensors.left
         ]
-        self.pressure_left_publisher.publish(left)
+        self.node_publishers["foot_pressure_left"].publish(left)
 
         right = FootPressure()
-        right.header.stamp = self.time_message
+        right.header.stamp = self.simulation.time_message
         right.left_back, right.left_front, right.right_front, right.right_back = [
             sensor.force for sensor in self.robot.feet_sensors.right
         ]
-        self.pressure_right_publisher.publish(right)
+        self.node_publishers["foot_pressure_right"].publish(right)
 
     def publish_center_of_pressure_events(self) -> None:
         left = PointStamped()
         left.header.frame_id = "l_foot_frame"
-        left.header.stamp = self.time_message
+        left.header.stamp = self.simulation.time_message
         left.point.x, left.point.y = self.robot.feet_sensors.left.center_of_pressure
-        self.center_of_pressure_left_publisher.publish(left)
+        self.node_publishers["foot_center_of_pressure_left"].publish(left)
 
         right = PointStamped()
         right.header.frame_id = "r_foot_frame"
-        right.header.stamp = self.time_message
+        right.header.stamp = self.simulation.time_message
         right.point.x, right.point.y = self.robot.feet_sensors.right.center_of_pressure
-        print("cop" + str(self.robot.feet_sensors.right.center_of_pressure))
-        print("right " + str(right.point.x), right.point.y)
-        self.center_of_pressure_right_publisher.publish(right)
-
-    def publish(self, domain_id: int, executor: callable) -> None:
-        for robot in self.robots:
-            # Set the environment variable here maybe if we don't use the domain bridge
-            executor(robot, domain_id)
-            # Unset the environment variable here maybe if we don't use the domain bridge
+        self.node_publishers["foot_center_of_pressure_right"].publish(right)

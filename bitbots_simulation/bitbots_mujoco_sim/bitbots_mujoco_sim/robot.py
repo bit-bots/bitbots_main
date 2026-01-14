@@ -118,7 +118,6 @@ class RobotFeetSensors(list[FootPressureSensor]):
                 # we can take a very small threshold, since simulation gives more accurate values than reality
                 threshold = 1
                 if self.total_force < threshold:
-                    print(self.total_force, " < 1")
                     return [0.0, 0.0]
 
                 pos_x, pos_y = 0.085, 0.045
