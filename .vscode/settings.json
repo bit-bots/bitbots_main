@@ -73,6 +73,7 @@
         "pathfinding",
         "penaltykick",
         "penaltyshoot",
+        "playsound",
         "pointcloud",
         "pointclouds",
         "popen",
@@ -218,9 +219,7 @@
         "span": "cpp",
         "ranges": "cpp"
     },
-    // Tell the ROS extension where to find the setup.bash
-    // This also utilizes the COLCON_WS environment variable, which needs to be set
-    "ros.distro": "jazzy",
+    "ROS2.distro": "jazzy",
     "search.useIgnoreFiles": false,
     "python.autoComplete.extraPaths": [
         "/opt/ros/jazzy/lib/python3.12/site-packages"

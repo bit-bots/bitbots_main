@@ -201,6 +201,10 @@ bitbots_docs_internal
 **/__pycache__
 **/cmake-build-*
 
+# VS Code ROS extension
+.vscode/browse.vc.*
+log/
+
 # Neural Network Model Path
 /bitbots_vision/models/
 /bitbots_motion/bitbots_rl_motion/rl_walk_models/
