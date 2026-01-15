@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import threading
+from dataclasses import dataclass
 
 import rclpy
 import rclpy.executors
@@ -19,14 +20,33 @@ from bitbots_auto_test.monitoring_node import Monitoring
 from bitbots_msgs.srv import SetObjectPose, SetObjectPosition
 
 
+class TestResult:
+    pass
+
+
+@dataclass
+class TestSuccess:
+    pass
+
+
+@dataclass
+class TestFailure(TestResult):
+    reason: str
+
+
 class TestCase:
+    FIELD_BOUNDS = ((-5.5, -4), (5.5, 4))
+    PLAY_BOUNDS = ((-4.5, -3), (4.5, 3))
+    GOAL_BOUNDS = ((4.6, -1.3), (5.5, 1.3))
+    TIMEOUT = Duration(seconds=5 * 60)
+
     def __init__(self, handle: AutoTest, test_id: int, test_repeat: int):
         self.handle = handle
         self.test_id = test_id
         self.test_repeat = test_repeat
         self.start_time = 0
         self.end_time = 0
-        self.is_done = False
+        self.result: None | TestResult = None
         self.final_score = None
 
     def setup(self):
@@ -38,19 +58,24 @@ class TestCase:
     def judge(self) -> float:
         pass
 
-    def is_over(self) -> bool:
-        pass
+    def is_over(self) -> TestResult | None:
+        if not self.is_pose_in(self.handle.robot_pose, self.FIELD_BOUNDS):
+            return TestFailure("robot_out_of_bounds")
+        if not self.is_pose_in(self.handle.ball_pose, self.FIELD_BOUNDS):
+            return TestFailure("ball_out_of_bounds")
+        if self.start_time + self.TIMEOUT < self.handle.get_clock().now():
+            return TestFailure("timeout")
 
     def update(self):
-        if self.is_done:
+        if self.result is not None:
             return
-        if self.is_over():
+        if res := self.is_over():
             self.end_time = self.handle.get_clock().now()
             self.final_score = self.judge()
-            self.is_done = True
+            self.result = res
 
     def score(self):
-        if self.is_done:
+        if self.result is not None:
             return self.final_score
         else:
             return self.judge()
@@ -80,14 +105,14 @@ class TestCase:
         request.position.y = y
         self.handle.set_ball_pos_service.call(request)
 
+    def is_pose_in(self, pose, rect) -> bool:
+        x = pose.position.x
+        y = pose.position.y
+        (ax, ay), (bx, by) = rect
+        return ax <= x <= bx and ay <= y <= by
+
     def is_ball_in_goal(self) -> bool:
-        x = self.handle.ball_pose.position.x
-        y = self.handle.ball_pose.position.y
-        if x <= 4.6:
-            return False
-        if -1.3 <= y <= 1.3:
-            return True
-        return False
+        return self.is_pose_in(self.handle.ball_pose, self.GOAL_BOUNDS)
 
 
 class MakeGoalStraight(TestCase):
@@ -102,7 +127,9 @@ class MakeGoalStraight(TestCase):
         return (self.handle.get_clock().now() - self.start_time).nanoseconds / S_TO_NS
 
     def is_over(self):
-        return self.is_ball_in_goal()
+        if self.is_ball_in_goal():
+            return TestSuccess()
+        return super().is_over()
 
 
 class MakeGoalDiagonalLeft(TestCase):
@@ -115,7 +142,9 @@ class MakeGoalDiagonalLeft(TestCase):
         return (self.handle.get_clock().now() - self.start_time).nanoseconds / S_TO_NS
 
     def is_over(self):
-        return self.is_ball_in_goal()
+        if self.is_ball_in_goal():
+            return TestSuccess()
+        return super().is_over()
 
 
 class MakeGoalDiagonalRight(TestCase):
@@ -128,7 +157,9 @@ class MakeGoalDiagonalRight(TestCase):
         return (self.handle.get_clock().now() - self.start_time).nanoseconds / S_TO_NS
 
     def is_over(self):
-        return self.is_ball_in_goal()
+        if self.is_ball_in_goal():
+            return TestSuccess()
+        return super().is_over()
 
 
 class MakeGoalClose(TestCase):
@@ -143,7 +174,9 @@ class MakeGoalClose(TestCase):
         return (self.handle.get_clock().now() - self.start_time).nanoseconds / S_TO_NS
 
     def is_over(self):
-        return self.is_ball_in_goal()
+        if self.is_ball_in_goal():
+            return TestSuccess()
+        return super().is_over()
 
 
 class MakeGoalBehind(TestCase):
@@ -158,7 +191,9 @@ class MakeGoalBehind(TestCase):
         return (self.handle.get_clock().now() - self.start_time).nanoseconds / S_TO_NS
 
     def is_over(self):
-        return self.is_ball_in_goal()
+        if self.is_ball_in_goal():
+            return TestSuccess()
+        return super().is_over()
 
 
 TEAM_ID = 6
@@ -262,7 +297,7 @@ class AutoTest(Node):
         self.monitoring_node.write_event(
             "test_end",
             str(self.current_test.test_id),
-            self.current_test.__class__.__name__,
+            ("success" if isinstance(self.current_test.result, TestSuccess) else self.current_test.result.reason),
             str(self.current_test.score()),
         )
         self.monitoring_node.write_reduced_pose(
@@ -279,17 +314,9 @@ class AutoTest(Node):
         while True:
             if self.current_test is not None:
                 self.current_test.update()
-                state_str = (
-                    f"Current test: {self.current_test.__class__.__name__}\n"
-                    f"Score       : {self.current_test.score()}\n"
-                    f"Is done     : {self.current_test.is_done}\n"
-                )
-            else:
-                state_str = "Current test: None\nScore       : \nIs done     : \n"
             if self.get_clock().now() - last_print > Duration(seconds=2):
-                print(state_str)
                 last_print = self.get_clock().now()
-            if self.current_test is not None and self.current_test.is_done:
+            if self.current_test is not None and self.current_test.result is not None:
                 self.finished()
                 self.next_test()
                 if self.current_test is None:
