@@ -476,6 +476,19 @@ void WalkEngine::buildTrajectories(WalkEngine::TrajectoryType type) {
                                support_to_next_.getOrigin().x() + config_.kick_length, config_.kick_vel);
     foot_spline_.x()->addPoint(double_support_length + single_support_length * config_.kick_put_down_phase,
                                support_to_next_.getOrigin().x());
+    // playing around with pitch
+    foot_spline_.pitch()->addPoint(
+        double_support_length + single_support_length * config_.kick_phase * config_.kick_early_pitch_prevention_phase,
+        0.0,
+        config_.kick_vel);  // prevent fall pls
+    foot_spline_.pitch()->addPoint(
+        double_support_length + single_support_length * config_.kick_phase * config_.kick_pitch_downwards_phase,
+        config_.kick_pitch_downwards, config_.kick_vel);
+    foot_spline_.pitch()->addPoint(
+        double_support_length + single_support_length * config_.kick_phase * config_.kick_pitch_upwards_phase,
+        config_.kick_pitch_upwards, config_.kick_vel);
+    // foot_spline_.pitch()->addPoint(double_support_length + single_support_length *
+    // config_.kick_put_down_phase,0,config_.kick_vel);
   } else {
     foot_spline_.x()->addPoint(
         double_support_length + single_support_length * config_.foot_put_down_phase * config_.foot_overshoot_phase,
