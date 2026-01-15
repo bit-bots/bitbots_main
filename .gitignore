@@ -232,3 +232,6 @@ doku/*
 **/workspace_status.json
 
 .pytest_cache/
+
+# tts model
+*/bitbots_tts/model/*
