@@ -97,8 +97,6 @@ qtcreator-*
 # Emacs
 .#*
 
-# Catkin custom files
-CATKIN_IGNORE
 ### Python template
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -203,6 +201,10 @@ bitbots_docs_internal
 **/__pycache__
 **/cmake-build-*
 
+# VS Code ROS extension
+.vscode/browse.vc.*
+log/
+
 # Neural Network Model Path
 /bitbots_vision/models/
 /bitbots_motion/bitbots_rl_motion/rl_walk_models/
@@ -220,10 +222,11 @@ doku/*
 # library subdirectories
 /lib/
 
-# Path to the protocol buffer definitions, which are a diffrerent repository and managed by vcstool
+# Path to the protocol buffer definitions, which are a different repository and managed by vcstool
 /bitbots_team_communication/bitbots_team_communication/bitbots_team_communication/RobocupProtocol
 # Protobuf generated file
 /bitbots_team_communication/bitbots_team_communication/bitbots_team_communication/robocup_extension_pb2.py
+/bitbots_team_communication/bitbots_team_communication/bitbots_team_communication/robocup_extension_pb2.pyi
 
 # Workspace git status file from the deploy tool
 **/workspace_status.json

@@ -3,6 +3,7 @@
 #include <pylon/_InstantCameraParams.h>
 
 #include <ament_index_cpp/get_package_share_directory.hpp>
+#include <bitbots_basler_camera/pylon_camera_parameters.hpp>
 #include <camera_info_manager/camera_info_manager.hpp>
 #include <cmath>
 #include <cv_bridge/cv_bridge.hpp>
@@ -17,8 +18,6 @@
 #include <rclcpp/rclcpp.hpp>
 #include <string>
 #include <vector>
-
-#include "pylon_camera_parameters.hpp"
 
 using std::placeholders::_1, std::placeholders::_2;
 using namespace Pylon;
@@ -271,7 +270,8 @@ class BaslerCamera {
     }
 
     // Convert to cv::Mat
-    cv::Mat image(ptrGrabResult->GetHeight(), ptrGrabResult->GetWidth(), CV_8UC1, (uint8_t*)ptrGrabResult->GetBuffer());
+    cv::Mat image(ptrGrabResult->GetHeight(), ptrGrabResult->GetWidth(), CV_8UC1,
+                  static_cast<uint8_t*>(ptrGrabResult->GetBuffer()));
 
     // Create cv::Mat for color image
     cv::Mat color(image.size(), CV_MAKETYPE(CV_8U, 3));

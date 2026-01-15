@@ -1,15 +1,16 @@
 #! /usr/bin/env python3
 from copy import deepcopy
+from typing import Optional
 
-import numpy as np
 import rclpy
 from ament_index_python.packages import get_package_share_directory
 from cv_bridge import CvBridge
 from rcl_interfaces.msg import SetParametersResult
+from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
 from sensor_msgs.msg import Image
 
-from bitbots_vision.vision_modules import ros_utils, yoeo
+from bitbots_vision.vision_modules import debug, ros_utils, yoeo
 
 from .params import gen
 
@@ -47,7 +48,8 @@ class YOEOVision(Node):
 
         self._sub_image = None
 
-        self._vision_components: list[yoeo.IVisionComponent] = []
+        self._vision_components: list[yoeo.AbstractVisionComponent] = []
+        self._debug_image: Optional[debug.DebugImage] = None
 
         # Setup reconfiguration
         gen.declare_params(self)
@@ -84,37 +86,44 @@ class YOEOVision(Node):
     def _configure_vision(self, new_config: dict) -> None:
         yoeo.YOEOObjectManager.configure(new_config)
 
-        self._set_up_vision_components(new_config)
-        self._register_subscribers(new_config)
+        debug_image = debug.DebugImage(new_config["component_debug_image_active"])
+        self._debug_image = debug_image
 
-    def _set_up_vision_components(self, new_config: dict) -> None:
-        self._vision_components = []
-        self._vision_components.append(yoeo.YOEOComponent())
+        def make_vision_component(
+            component_class: type[yoeo.AbstractVisionComponent], **kwargs
+        ) -> yoeo.AbstractVisionComponent:
+            return component_class(
+                node=self,
+                yoeo_handler=yoeo.YOEOObjectManager.get(),
+                debug_image=debug_image,
+                config=new_config,
+                **kwargs,
+            )
+
+        self._vision_components = [make_vision_component(yoeo.YOEOComponent)]
 
         if new_config["component_ball_detection_active"]:
-            self._vision_components.append(yoeo.BallDetectionComponent(self))
+            self._vision_components.append(make_vision_component(yoeo.BallDetectionComponent))
         if new_config["component_robot_detection_active"]:
-            if yoeo.YOEOObjectManager.is_team_color_detection_supported():
-                self._vision_components.append(yoeo.RobotDetectionComponent(self))
-            else:
-                self._vision_components.append(yoeo.NoTeamColorRobotDetectionComponent(self))
+            self._vision_components.append(
+                make_vision_component(
+                    yoeo.RobotDetectionComponent,
+                    team_color_detection_supported=yoeo.YOEOObjectManager.is_team_color_detection_supported(),
+                )
+            )
         if new_config["component_goalpost_detection_active"]:
-            self._vision_components.append(yoeo.GoalpostDetectionComponent(self))
+            self._vision_components.append(make_vision_component(yoeo.GoalpostDetectionComponent))
         if new_config["component_line_detection_active"]:
-            self._vision_components.append(yoeo.LineDetectionComponent(self))
+            self._vision_components.append(make_vision_component(yoeo.LineDetectionComponent))
         if new_config["component_field_detection_active"]:
-            self._vision_components.append(yoeo.FieldDetectionComponent(self))
+            self._vision_components.append(make_vision_component(yoeo.FieldDetectionComponent))
         if new_config["component_debug_image_active"]:
-            self._vision_components.append(yoeo.DebugImageComponent(self))
+            self._vision_components.append(make_vision_component(yoeo.DebugImageComponent))
 
-        for vision_component in self._vision_components:
-            vision_component.configure(new_config, new_config["component_debug_image_active"])
-
-    def _register_subscribers(self, config: dict) -> None:
         self._sub_image = ros_utils.create_or_update_subscriber(
             self,
             self._config,
-            config,
+            new_config,
             self._sub_image,
             "ROS_img_msg_topic",
             Image,
@@ -123,31 +132,22 @@ class YOEOVision(Node):
 
     @profile
     def _run_vision_pipeline(self, image_msg: Image) -> None:
-        image = self._extract_image_from_message(image_msg)
-        if image is None:
-            logger.error("Vision pipeline - Image content is None")
-            return
+        image = self._cv_bridge.imgmsg_to_cv2(image_msg, "bgr8")
 
-        self._forward_image_to_components(image)
-        self._run_components(image_msg)
+        assert self._debug_image is not None, "Debug image not initialized"
+        self._debug_image.set_image(image)
 
-    def _extract_image_from_message(self, image_msg: Image) -> np.ndarray:
-        return self._cv_bridge.imgmsg_to_cv2(image_msg, "bgr8")
-
-    def _forward_image_to_components(self, image: np.ndarray) -> None:
         for vision_component in self._vision_components:
-            vision_component.set_image(image)
-
-    def _run_components(self, image_msg: Image) -> None:
-        for vision_component in self._vision_components:
-            vision_component.run(image_msg)
+            vision_component.run(image, image_msg.header)
 
 
 def main(args=None):
     rclpy.init(args=args)
     node = YOEOVision()
+    executor = EventsExecutor()
+    executor.add_node(node)
     try:
-        rclpy.spin(node)
+        executor.spin()
     except KeyboardInterrupt:
         pass
     node.destroy_node()

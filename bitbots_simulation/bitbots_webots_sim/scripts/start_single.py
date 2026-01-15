@@ -6,6 +6,7 @@ import threading
 import rclpy
 from bitbots_webots_sim.webots_robot_controller import RobotController
 from controller import Robot
+from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
 
 
@@ -59,9 +60,12 @@ if __name__ == "__main__":
     robot = RobotNode(
         args.sim_port, args.robot_name, args.void_controller, args.disable_camera, args.recognize, args.robot_type
     )
-    thread = threading.Thread(target=rclpy.spin, args=(robot.node,), daemon=True)
+
+    executor = EventsExecutor()
+    executor.add_node(robot.node)
+
+    thread = threading.Thread(target=executor.spin, daemon=True)
     thread.start()
     robot.run()
 
     robot.node.destroy_node()
-    rclpy.shutdown()

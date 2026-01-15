@@ -26,13 +26,13 @@ class PlaySound(AbstractActionElement):
 
     def perform(self, reevaluate=False):
         try:
-            import playsound
+            import playsound3
         except ImportError:
             return self.pop()
 
         try:
-            playsound.playsound(self.audio_file, block=False)
-        except playsound.PlaysoundException:
+            playsound3.playsound(self.audio_file, block=False)
+        except playsound3.playsound3.PlaysoundException:
             pass
 
         return self.pop()

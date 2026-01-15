@@ -29,6 +29,8 @@
   <depend>topic_tools</depend>
   <depend>rosbag2</depend>
 
+  <test_depend>python3-pytest</test_depend>
+
   <export>
     <build_type>ament_python</build_type>
     <bitbots_documentation>

@@ -307,7 +307,7 @@ void WolfgangHardwareInterface::write(const rclcpp::Time &t, const rclcpp::Durat
   }
   if (!bus_start_time_ || t > bus_start_time_.value()) {
     if (bus_first_write_) {
-      for (std::vector<std::shared_ptr<HardwareInterface>> &port_interfaces : interfaces_) {
+      for (std::vector<std::shared_ptr<HardwareInterface>> const &port_interfaces : interfaces_) {
         for (std::shared_ptr<HardwareInterface> interface : port_interfaces) {
           interface->restoreAfterPowerCycle();
         }

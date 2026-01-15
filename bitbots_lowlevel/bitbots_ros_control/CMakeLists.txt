@@ -25,7 +25,6 @@ find_package(moveit_core REQUIRED)
 find_package(moveit_ros_planning REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(realtime_tools REQUIRED)
 find_package(rosidl_typesupport_cpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
@@ -71,7 +70,6 @@ ament_target_dependencies(
   moveit_ros_planning
   pluginlib
   rclcpp
-  realtime_tools
   rosidl_typesupport_cpp
   std_msgs
   std_srvs
@@ -94,7 +92,6 @@ ament_target_dependencies(
   hardware_interface
   pluginlib
   rclcpp
-  realtime_tools
   rosidl_typesupport_cpp
   std_msgs
   std_srvs
@@ -112,7 +109,6 @@ ament_export_dependencies(controller_manager)
 ament_export_dependencies(dynamixel_workbench_toolbox)
 ament_export_dependencies(hardware_interface)
 ament_export_dependencies(pluginlib)
-ament_export_dependencies(realtime_tools)
 ament_export_dependencies(std_msgs)
 ament_export_dependencies(tf2_ros)
 ament_export_dependencies(transmission_interface)

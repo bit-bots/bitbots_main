@@ -4,15 +4,13 @@
 #include <rot_conv/rot_conv.h>
 
 #include <Eigen/Geometry>
+#include <bitbots_quintic_walk/walk_utils.hpp>
 #include <bitbots_splines/abstract_stabilizer.hpp>
 #include <control_toolbox/pid_ros.hpp>
 #include <optional>
 #include <rclcpp/logger.hpp>
 #include <tf2_eigen/tf2_eigen.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
-
-#include "bitbots_quintic_walk/walk_utils.hpp"
-#include "bitbots_splines/abstract_stabilizer.hpp"
 
 namespace bitbots_quintic_walk {
 

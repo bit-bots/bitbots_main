@@ -7,11 +7,11 @@ from typing import Optional
 import numpy as np
 import rclpy
 from bitbots_utils.transforms import quat2fused
+from bitbots_utils.utils import async_wait_for
 from rclpy.action import ActionServer, GoalResponse
 from rclpy.action.server import ServerGoalHandle
-from rclpy.callback_groups import ReentrantCallbackGroup
-from rclpy.duration import Duration
-from rclpy.executors import ExternalShutdownException, MultiThreadedExecutor
+from rclpy.executors import ExternalShutdownException
+from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
 from sensor_msgs.msg import Imu, JointState
 from simpleeval import simple_eval
@@ -65,11 +65,9 @@ class AnimationNode(Node):
                 )
                 traceback.print_exc()
 
-        callback_group = ReentrantCallbackGroup()
-
         # Subscribers
-        self.create_subscription(JointState, "joint_states", self.update_current_pose, 1, callback_group=callback_group)
-        self.create_subscription(Imu, "imu/data", self.imu_callback, 1, callback_group=callback_group)
+        self.create_subscription(JointState, "joint_states", self.update_current_pose, 1)
+        self.create_subscription(Imu, "imu/data", self.imu_callback, 1)
 
         # Service clients
         self.hcm_animation_mode = self.create_client(SetBool, "play_animation_mode")
@@ -79,7 +77,7 @@ class AnimationNode(Node):
 
         # Action server for playing animations
         self._action_server = ActionServer(
-            self, PlayAnimation, "animation", self.execute_cb, callback_group=callback_group, goal_callback=self.goal_cb
+            self, PlayAnimation, "animation", self.execute_cb, goal_callback=self.goal_cb
         )
 
         # Service to temporarily add an animation to the cache
@@ -125,7 +123,7 @@ class AnimationNode(Node):
         # Everything is fine we are good to go
         return GoalResponse.ACCEPT
 
-    def execute_cb(self, goal: ServerGoalHandle) -> PlayAnimation.Result:
+    async def execute_cb(self, goal: ServerGoalHandle) -> PlayAnimation.Result:
         """This is called, when the action should be executed."""
 
         # Convert goal id uuid to hashable tuple (custom UUID type)
@@ -165,16 +163,16 @@ class AnimationNode(Node):
 
             # Send request to make the HCM to go into animation play mode
             num_tries = 0
-            while rclpy.ok() and (not self.hcm_animation_mode.call(SetBool.Request(data=True)).success):  # type: ignore[attr-defined]
+            while rclpy.ok() and (not (await self.hcm_animation_mode.call_async(SetBool.Request(data=True))).success):  # type: ignore[attr-defined]
                 if num_tries >= 10:
                     self.get_logger().error("Failed to request HCM to go into animation play mode")
                     return finish(successful=False)
                 num_tries += 1
-                self.get_clock().sleep_for(Duration(seconds=0.1))
+                await async_wait_for(self, 0.1)
 
         # Make sure we have our current joint states
         while rclpy.ok() and self.current_joint_states is None:
-            self.get_clock().sleep_for(Duration(seconds=0.1))
+            await async_wait_for(self, 0.1)
 
         # Create splines
         animator = SplineAnimator(
@@ -263,7 +261,9 @@ class AnimationNode(Node):
                 if pose is None or (request.bounds and once and t > animator.get_keyframe_times()[request.end - 1]):
                     # Animation is finished, tell it to the hcm (except if it is from the hcm)
                     if not request.hcm:
-                        hcm_result: SetBool.Response = self.hcm_animation_mode.call(SetBool.Request(data=False))
+                        hcm_result: SetBool.Response = await self.hcm_animation_mode.call_async(
+                            SetBool.Request(data=False)
+                        )
                         if not hcm_result.success:
                             self.get_logger().error(f"Failed to finish animation on HCM. Reason: {hcm_result.message}")
 
@@ -283,7 +283,10 @@ class AnimationNode(Node):
 
                 once = True
 
-                self.get_clock().sleep_until(last_time + Duration(seconds=0.02))
+                execution_duration = (self.get_clock().now() - last_time).nanoseconds / 1e9
+
+                await async_wait_for(self, execution_duration + 0.02)  # Wait for the next iteration
+
             except (ExternalShutdownException, KeyboardInterrupt):
                 sys.exit(0)
         return finish(successful=False)
@@ -339,7 +342,7 @@ class AnimationNode(Node):
 def main(args=None):
     rclpy.init(args=args)
     node = AnimationNode()
-    ex = MultiThreadedExecutor(num_threads=10)
+    ex = EventsExecutor()
     ex.add_node(node)
     try:
         ex.spin()

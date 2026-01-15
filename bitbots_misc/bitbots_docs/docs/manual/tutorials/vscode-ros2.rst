@@ -9,14 +9,14 @@ Navigate to your colcon workspace.
 
 Source ros
 
-`source /opt/ros/iron/setup.zsh`
+`source /opt/ros/jazzy/setup.zsh`
 
 Open VSCode
 
 `code .`
 
 Install the ROS extension (from Microsoft).
-You should see a `ROS2.iron` in the lower left corner.
+You should see a `ROS2.jazzy` in the lower left corner.
 
 Now you should be able to build the code with `Ctrl+Shift+B`
 
