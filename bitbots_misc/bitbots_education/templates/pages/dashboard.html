@@ -46,7 +46,7 @@ promptCookie();
 
 <div class="grid grid-cols-2 gap-3 py-12 px-6 auto-rows-fr"
 x-data="{ width: window.innerWidth, height: window.innerHeight, 
-  get isMobileDevice() { return ((this.width <= 640) && (this.height <= 480)); } }"
+  get isMobileDevice() { return ((this.width <= 800) && (this.height <= 600)); } }"
 x-resize="width = $width; height = $height">
   <a href="imu" class="flex justify-center flex-col border-2 border-zinc-800 rounded-2xl bg-zinc-100 shadow-md">
     <div class="flex justify-between flex-col h-full">

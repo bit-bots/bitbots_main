@@ -93,7 +93,7 @@
     <span x-text="max_temperature"></span> °C
 </div>
 {% else %}
-<div x-data="temperature_state()" class="p-6 overflow-hidden bg-sky-100 flex flex-row justify-evenly">
+<div x-data="temperature_state()" class="p-6 overflow-hidden bg-sky-100 flex flex-row justify-evenly rounded-2xl">
     <div class="relative" style="width: 60%;">
         <img src="{{url_for('static', filename='abstract_robot.svg') }}" class="w-full">
         <div x-html="render_blobs()"></div>
