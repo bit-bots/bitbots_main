@@ -1,4 +1,4 @@
-{% macro behavior_stack_component() %}
+{% macro behavior_stack_component(is_dashboard_view) %}
 
 <script type="text/javascript">
 
@@ -66,6 +66,7 @@
         </div>
       </div>
     </div>
+    {% if is_dashboard_view == False %}
     <button id="play_button" x-on:click="toggle()" class="border-2 border-zinc-800 rounded-md bg-zinc-50 shadow-md p-1 mt-4 grid place-items-center" >
       <div x-show="run">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
@@ -78,6 +79,7 @@
         </svg>
       </div>
     </button>
+    {% endif %}
 </div>
 
 {% endmacro %}
