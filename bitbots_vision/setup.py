@@ -1,7 +1,13 @@
 import glob
 import os
 
+from generate_parameter_library_py.setup_helper import generate_parameter_module
 from setuptools import find_packages, setup
+
+generate_parameter_module(
+    "vision_parameters",  # python module name for parameter library
+    "config/vision_parameters.yaml",  # path to input yaml file
+)
 
 package_name = "bitbots_vision"
 
