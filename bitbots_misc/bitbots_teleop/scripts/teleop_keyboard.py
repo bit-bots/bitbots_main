@@ -51,7 +51,7 @@ r: reset robot in simulation
 R: reset ball in simulation
 
 Head Modes:
-0: Search for Ball and track it if found
+0: Track the last known ball position
 1: Look generally for all features on the field (ball, goals, corners, center point)
 2: Simply look directly forward
 3: Don't move the head
@@ -147,7 +147,7 @@ class TeleopKeyboard(Node):
         self.head_msg.joint_names = ["HeadPan", "HeadTilt"]
         self.head_msg.positions = [0.0] * 2
 
-        self.head_mode_msg = HeadMode()
+        self.head_mode_msg = HeadMode(head_mode=HeadMode.DONT_MOVE)
 
         self.head_pan_step = 0.05
         self.head_tilt_step = 0.05
@@ -221,9 +221,9 @@ class TeleopKeyboard(Node):
                     self.head_msg.positions[1] = 0
                     self.head_pub.publish(self.head_msg)
                 elif key == "0":
-                    # Search for Ball and track it if found
-                    self.head_mode_msg.head_mode = HeadMode.SEARCH_BALL
-                    assert int(key) == HeadMode.SEARCH_BALL
+                    # Track the last known ball position
+                    self.head_mode_msg.head_mode = HeadMode.TRACK_BALL
+                    assert int(key) == HeadMode.TRACK_BALL
                 elif key == "1":
                     # Look generally for all features on the field (ball, goals, corners, center point)
                     self.head_mode_msg.head_mode = HeadMode.SEARCH_FIELD_FEATURES

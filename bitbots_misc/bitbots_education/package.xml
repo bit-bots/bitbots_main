@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>bitbots_education</name>
+  <version>0.0.0</version>
+  <description>A web interface that shows live data in easy to understand visualizations for public events.</description>
+  <maintainer email="wedmann.lea@gmail.com">root</maintainer>
+  <license>MIT</license>
+
+  <depend>web_video_server</depend>
+  <depend>rosbridge_suite</depend>
+  <depend>python3-jinja2</depend>
+  <depend>python3-flask</depend>
+  <test_depend>python3-pytest</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>
