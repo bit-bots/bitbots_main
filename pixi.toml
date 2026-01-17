@@ -16,7 +16,7 @@ deploy = {cmd = "scripts/deploy_robots.py", description = "Deploys the current e
 format = {cmd = "pre-commit run --all-files", description = "Runs code formatting and linting."}
 
 [tasks.build]
-cmd = "colcon build --symlink-install --cmake-args -G Ninja "
+cmd = "colcon build --symlink-install --cmake-args -G 'Unix Makefiles' "
 description = "Builds all ROS 2 packages. Add --packages-select <package names> to build specific packages."
 
 [tasks.clean]
