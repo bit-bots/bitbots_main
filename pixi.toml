@@ -198,6 +198,7 @@ pillow = "<12" # this constraint is needed as yoeo specifies the 11 major versio
 setuptools = "==68.1.2"  # Pinning setuptools to avoid issues with colcon build
 git = ">=2.52.0,<3"  # Otherwise the system git might be used causing ABI issues
 curl = ">=8.17.0,<9"
+make = ">=4.4.1,<5"  # To avoid issues in the CI
 
 [feature.ros.target.linux-64.dependencies]
 # For now Webots is only packaged for x86-64 Linux
