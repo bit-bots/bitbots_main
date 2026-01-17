@@ -227,7 +227,6 @@ onnxruntime = ">=1.23.2, <2"
 pyamdgpuinfo = ">=2.1.7, <3"
 
 [feature.ros.activation.env]
-ROS_DOMAIN_ID = "24"
 ROS_AUTOMATIC_DISCOVERY_RANGE = "LOCALHOST"
 RCUTILS_COLORIZED_OUTPUT = "1"
 RMW_IMPLEMENTATION = "rmw_cyclonedds_cpp"
