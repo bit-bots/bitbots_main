@@ -155,9 +155,9 @@ class VisibilityFinalstepPlanner(FootstepPlanner):
 
         start = (current_pose.position.x, current_pose.position.y)
 
-        angle = self._get_yaw(current_pose)
+        robot_angle = self._get_yaw(current_pose)
 
-        rot_vec = self.rotate_vector_2d(goal[0] - start[0], goal[1] - start[1], angle)
+        rot_vec = self.rotate_vector_2d(goal[0] - start[0], goal[1] - start[1], -robot_angle)
 
         if published_steps < 2:
             self.node.get_logger().info(
@@ -168,7 +168,7 @@ class VisibilityFinalstepPlanner(FootstepPlanner):
                 + " , "
                 + str(rot_vec[1])
             )
-            return np.array([rot_vec[0] * 0.6, (rot_vec[1] * 0.6), 0.0, 0.0])
+            return np.array([rot_vec[0] * 0.5, (rot_vec[1] * 0.5), 0.0, 0.0])
         elif published_steps < 3:
             self.node.get_logger().info(
                 "final_step published: nr: "
@@ -178,7 +178,7 @@ class VisibilityFinalstepPlanner(FootstepPlanner):
                 + " , "
                 + str(rot_vec[1])
             )
-            return np.array([rot_vec[0] - 0.03, (rot_vec[1]), 0.0, 0.0])
+            return np.array([rot_vec[0], (rot_vec[1]), 0.0, 0.0])
         elif published_steps < 4:
             self.node.get_logger().info(
                 "final_step published: nr: "
@@ -188,7 +188,7 @@ class VisibilityFinalstepPlanner(FootstepPlanner):
                 + " , "
                 + str(rot_vec[1])
             )
-            return np.array([rot_vec[0] + 0.02, (rot_vec[1]), 0.0, 0.0])
+            return np.array([rot_vec[0], (rot_vec[1]), 0.0, 0.0])
         else:
             if abs(goal[1] - start[1]) > 0.05:
                 if abs(goal[0] - start[0]) > 0.05:
@@ -207,8 +207,6 @@ class VisibilityFinalstepPlanner(FootstepPlanner):
             else:
                 self.node.get_logger().info("final_step published: overhead" + " x,y: " + str(0.0) + " , " + str(0.0))
                 return np.array([0.0, 0.0, 0.0, 0.0])
-
-        # return np.array([1/needed_steps, 1/needed_steps,0.0,0.0])
 
     def rotate_vector_2d(self, x, y, a) -> npt.NDArray[np.float64]:
         return np.array([x * math.cos(a) - y * math.sin(a), x * math.sin(a) + y * math.cos(a)])
