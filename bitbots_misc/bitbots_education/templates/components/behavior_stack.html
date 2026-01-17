@@ -2,8 +2,11 @@
 
 <script type="text/javascript">
 
-  function render_stack(subtree) {
-    if(subtree.type === "sequence")
+  function render_stack(subtree, max_stack_depth) {
+    if (max_stack_depth !== null && max_stack_depth > 0 && !!subtree.next) {
+      return render_stack(subtree.next, max_stack_depth - 1);
+    }
+    else if (subtree.type === "sequence")
     {
       return `<div class="border-2 border-zinc-800 rounded-xl bg-zinc-100 p-2 text-center">${behavior_translate(subtree.current_action.name)}</div>`;
     }
@@ -21,14 +24,15 @@
         </svg>
         ${behavior_translate(subtree.next.activation_reason)}
       </div>
-      ${render_stack(subtree.next)}`;
+      ${render_stack(subtree.next, max_stack_depth - 1)}`;
     }
   };
 
-  function behavior_stack_state() {
+  function behavior_stack_state(max_stack_depth) {
     return {
       listener: null,
       run: true,
+      stack_depth: 0,
       init() {
         this.listener = new ROSLIB.Topic({
           ros : ros,
@@ -39,7 +43,13 @@
       },
       behavior_stack_callback(message) {
         const behavior_stack = JSON.parse(message.data);
-        this.$refs.stack.innerHTML = render_stack(behavior_stack);
+        // count the stack depth
+        this.stack_depth = 0;
+        for (let elem = behavior_stack; !!elem; elem = elem.next) {
+          this.stack_depth++;
+        }
+        this.$refs.stack.innerHTML = render_stack(behavior_stack, 
+          (max_stack_depth === null) ? null : this.stack_depth - max_stack_depth);
       },
       toggle() {
         this.run = !this.run;
@@ -58,8 +68,11 @@
   }
 </script>
 
-
-<div x-data="behavior_stack_state()" class="flex justify-center flex-col grid place-items-center pt-6">
+{% if is_dashboard_view == False %}
+<div x-data="behavior_stack_state(null)" class="flex justify-center flex-col grid place-items-center pt-6">
+{% else %}
+<div x-data="behavior_stack_state(3)" class="flex justify-center flex-col grid place-items-center pt-6">
+{% endif %}
     <div class="text-center w-full">
       <div class="flex justify-center flex-col">
         <div class="overflow-scroll" x-ref="stack">
