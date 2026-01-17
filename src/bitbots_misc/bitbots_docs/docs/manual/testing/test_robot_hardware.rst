@@ -14,14 +14,6 @@ Do the test in the provided order, to find out which part is faulty.
 #. Check if all cables are correctly connected
 #. Open diagnostic view in rqt, it will provide a lot of information
 
-Test hardware and ros_control
------------------------------
-
-The easiest way to do this is using the semi automatic script for this. Just start it and follow the instructions
-
-``rosrun bitbots_bringup check_robot.py``
-
-
 
 Manual procedure
 ~~~~~~~~~~~~~~~~

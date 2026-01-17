@@ -43,18 +43,17 @@ At a competition, follow these steps:
 
    #. Check that you are on the ``master`` branch
    #. ``git pull`` to get the latest changes
-   #. ``make fresh-libs`` to clean and update all third party libraries
 
 #. **Sync, configure, compile and launch software:**
-   In the ``bitbots_main`` directory call the ``deploy_robots.py`` tool:
+   In the ``bitbots_main`` directory run the deploy tool:
 
    .. code-block:: bash
 
-      just deploy <nuc* | robot_name | ALL>
+      pixi run deploy <nuc* | robot_name | ALL>
 
    This does the 5 following tasks:
    - Synchronize/Copy the current state of your local bitbots_main directory to the robot(s)
-   - Install ROS 2 dependencies using `rosdep` on the robot(s), if internet is available
+   - Install necessary dependencies on the robot(s)
    - Configure game specific settings and the Wi-Fi connection on the robot(s)
    - Build/Compile the source code you just synchronized to the robot(s)
    - Launch the teamplayer software on the robot(s)
@@ -63,7 +62,7 @@ At a competition, follow these steps:
 
    .. code-block:: bash
 
-      just deploy -h
+      pixi run deploy -h
 
 #. **Optional: Connect to the robot:**
    Simply copy-paste the command provided by the deploy-tool when its finished.
