@@ -3,7 +3,7 @@ name = "bitbots_rust_nav"
 version = "0.1.0"
 
 [package.build]
-backend = { name = "pixi-build-python", version = "==0.4.0" }
+backend = { name = "pixi-build-python", version = ">=0.4.0" }
 
 [package.host-dependencies]
 rust = ">=1.91.1,<1.92"
