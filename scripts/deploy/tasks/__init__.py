@@ -5,7 +5,6 @@ from deploy.tasks.abstract_task import AbstractTask, AbstractTaskWhichRequiresSu
 from deploy.tasks.build import Build  # noqa: E402
 from deploy.tasks.check_repos import CheckReposTask  # noqa: E402
 from deploy.tasks.configure import Configure  # noqa: E402
-from deploy.tasks.install import Install  # noqa: E402
 from deploy.tasks.launch import Launch  # noqa: E402
 from deploy.tasks.sync import Sync  # noqa: E402
 
@@ -16,7 +15,6 @@ __all__ = [
     "Build",
     "CheckReposTask",
     "Configure",
-    "Install",
     "Launch",
     "Sync",
 ]
