@@ -63,7 +63,7 @@ Run the following command in the ``bitbots_main`` directory to build the softwar
   pixi run build --packages-skip bitbots_basler_camera
 
 The compilation of the basler camera driver is skipped, as it requires the Pylon SDK to be installed manually.
-If you need the basler camera driver, install the Pylon SDK manually or run `bash scripts/make_basler.sh` if you are using Ubuntu 22.04 and have root access.
+If you need the basler camera driver, install the Pylon SDK manually or run `bash scripts/make_basler.sh` if you are using Ubuntu 24.04 and have root access.
 
 
 Notes
