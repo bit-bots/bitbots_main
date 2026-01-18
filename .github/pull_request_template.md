@@ -11,7 +11,7 @@
 
 ## Checklist
 
-- [ ] Run `colcon build`
+- [ ] Run `just build`
 - [ ] Write documentation
 - [ ] Test on your machine
 - [ ] Test on the robot

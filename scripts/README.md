@@ -2,6 +2,8 @@
 
 This directory contains scripts that are very useful for development, testing and deployment.
 
+This tool is also callable via `pixi run deploy <arguments>`.
+
 ## `deploy_robots.py`
 
 Deploy, configure, and launch the Bit-Bots software remotely on a robot.
@@ -9,7 +11,6 @@ This tool can target all, multiple, or single robots at once, specified by their
 Five different tasks can be performed:
 
 1. Synchronize the local source code to the target workspace
-2. Install ROS 2 dependencies using `rosdep` on the target
 3. Configure game-settings and wifi on the target
 4. Build (compile) the workspace on the target
 5. Launch the teamplayer software on the target
@@ -48,4 +49,4 @@ Five different tasks can be performed:
 
 ## `make_basler.sh`
 
-Downloads and installs the Basler Pylon SDK for Linux. This is needed to communicate with our camera. Normally called by the `make basler` or other `make` targets.
+Downloads and installs the Basler Pylon SDK for Linux. This is needed to communicate with our camera.

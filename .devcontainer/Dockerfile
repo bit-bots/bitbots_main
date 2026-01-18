@@ -1,4 +1,4 @@
-FROM ros:jazzy
+FROM ubuntu:24.04
 
 ARG user=bitbots
 ARG uid=1000
@@ -50,24 +50,9 @@ ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 
-# Setup and prioritize packages.bit-bots.de repository
+# Update and upgrade all packages
 RUN apt update -y \
   && apt upgrade -y --allow-downgrades
-
-# Additional robotics related packages
-RUN apt-get install -y \
-  python3-rosdep \
-  python3-vcstool \
-  python3-virtualenv \
-  ros-jazzy-camera-calibration \
-  ros-jazzy-desktop \
-  ros-jazzy-joint-state-publisher-gui \
-  ros-jazzy-plotjuggler \
-  ros-jazzy-plotjuggler-msgs \
-  ros-jazzy-plotjuggler-ros \
-  ros-jazzy-rmw-cyclonedds-cpp \
-  ros-jazzy-rqt-robot-monitor \
-  ros-jazzy-soccer-vision-3d-rviz-markers
 
 # Set zsh as default shell
 SHELL ["/bin/zsh", "-c"]
@@ -84,25 +69,22 @@ RUN groupdel users \
 
 USER $user
 
-# Install pip colcon extensions / patches as user
-RUN python3 -m pip install --user --break-system-packages \
-    git+https://github.com/ruffsl/colcon-clean \
-    git+https://github.com/timonegk/colcon-core.git@colors \
-    git+https://github.com/timonegk/colcon-notification.git@colors \
-    git+https://github.com/timonegk/colcon-output.git@colors
-
-# Create colcon workspace
-RUN mkdir -p /home/$user/colcon_ws/src
-
 # Install oh-my-zsh for pretty terminal
 RUN sh -c "$(wget -O- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" && \
   git clone https://github.com/zsh-users/zsh-autosuggestions "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions"
 
 # Add zshrc to bitbots home directory
-COPY --chown=$user:$user zshrc /home/$user/.zshrc
+COPY --chown=$user:$user .devcontainer/zshrc /home/$user/.zshrc
 
 # This is required for sharing Xauthority
 ENV QT_X11_NO_MITSHM=1
 
+# Install pixi
+RUN curl -fsSL https://pixi.sh/install.sh | sh
+
+# Install basler SDK
+COPY scripts/make_basler.sh /tmp/make_basler.sh
+RUN /tmp/make_basler.sh --ci
+
 # Switch to the workspace directory
-WORKDIR /home/$user/colcon_ws
+WORKDIR /home/$user/bitbots_main

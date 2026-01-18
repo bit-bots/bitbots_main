@@ -2,7 +2,7 @@
 line-length = 120
 
 [tool.ruff.lint]
-# Never enforce 
+# Never enforce
 # - `E501` (line length violations)
 # - `UP007` (usage of | instead of Union and Optional)
 # - `F722` (no forward type references by quoting)
@@ -14,8 +14,6 @@ ignore = ["E501", "UP007", "F722", "UP037"]
 # - pycodestyle warnings (`W`)
 # - flake8-bugbear warnings (`B`)
 # - isort import sorting (`I001`)
-# - pep8-naming convenrtions (`N`)
+# - pep8-naming conventions (`N`)
 # - pyupgrade prefer newer language constructs (`UP`)
 select = ["F", "E", "B", "W", "I001", "N", "UP"]
-# Do not lint the following directories
-exclude = ["lib"]

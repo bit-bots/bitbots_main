@@ -1,5 +1,4 @@
 import abc
-from typing import Optional
 
 from deploy.misc import CONSOLE
 from fabric import Group, GroupResult
@@ -67,7 +66,7 @@ class AbstractTask(abc.ABC):
 class AbstractTaskWhichRequiresSudo(AbstractTask):
     def __init__(self) -> None:
         super().__init__()
-        self._sudo_password: Optional[str] = None
+        self._sudo_password: str | None = None
 
     def set_sudo_password(self, sudo_password: str) -> None:
         self._sudo_password = sudo_password

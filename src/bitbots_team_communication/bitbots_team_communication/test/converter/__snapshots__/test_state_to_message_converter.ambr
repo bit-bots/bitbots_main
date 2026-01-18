@@ -1,0 +1,115 @@
+# serializer version: 1
+# name: test_convert_ball_position
+  '''
+  position {
+    x: 4.6
+    y: 2.8
+    z: 2.9
+  }
+  velocity {
+    x: 1.1
+    y: 0.2
+    z: 0.3
+  }
+  covariance {
+    x {
+      x: 1
+      y: 2
+      z: 3
+    }
+    y {
+      x: 4
+      y: 5
+      z: 6
+    }
+    z {
+      x: 7
+      y: 8
+      z: 9
+    }
+  }
+  
+  '''
+# ---
+# name: test_convert_current_pose
+  '''
+  x: 3.6
+  y: 1.8
+  z: 1.2167989
+  
+  '''
+# ---
+# name: test_convert_current_pose.1
+  '''
+  x {
+    x: 1
+    y: 2
+    z: 3
+  }
+  y {
+    x: 4
+    y: 5
+    z: 6
+  }
+  z {
+    x: 7
+    y: 8
+    z: 9
+  }
+  
+  '''
+# ---
+# name: test_convert_empty_state
+  '''
+  current_pose {
+    player_id: 2
+    team: BLUE
+  }
+  
+  '''
+# ---
+# name: test_convert_seen_robots
+  '''
+  [player_id: 2
+  position {
+    x: 3.6
+    y: 1.8
+    z: 1.2167989
+  }
+  team: BLUE
+  , player_id: 3
+  position {
+    x: 3.6
+    y: 1.8
+    z: 1.2167989
+  }
+  team: RED
+  , player_id: 4
+  position {
+    x: 3.6
+    y: 1.8
+    z: 1.2167989
+  }
+  ]
+  '''
+# ---
+# name: test_convert_seen_robots.1
+  list([
+    0.800000011920929,
+    0.800000011920929,
+    0.800000011920929,
+  ])
+# ---
+# name: test_convert_target_pose
+  '''
+  position {
+    x: 2.6
+    y: 0.8
+    z: 1.2167989
+  }
+  
+  '''
+# ---
+# name: test_convert_time_to_ball_calculated
+  0.0
+# ---
