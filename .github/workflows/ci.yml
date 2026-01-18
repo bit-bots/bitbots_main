@@ -7,6 +7,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      PSModulePath: ""  # Otherwise colcon might think that PowerShell is being used
 
     steps:
       - name: Cancel outdated jobs
@@ -36,9 +38,7 @@ jobs:
           cache: true
 
       - name: Build
-        run: |
-          unset PSModulePath  # Otherwise colcon might think that PowerShell is being used
-          pixi run build
+        run: pixi run build
 
       - name: Test
         run: pixi run test --parallel-workers 1
