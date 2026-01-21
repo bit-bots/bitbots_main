@@ -14,6 +14,26 @@ from launch.actions import (
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
+# Teamplayer arguments to expose (name, description)
+# Empty string default means "not set" - will use teamplayer's default
+# sim is always true for mujoco simulation
+TEAMPLAYER_ARGS = [
+    ("audio", "Whether the audio system should be started"),
+    ("behavior", "Whether the behavior control system should be started"),
+    ("behavior_dsd_file", "The behavior dsd file that should be used"),
+    ("game_controller", "Whether the Gamecontroller module should be started"),
+    ("ipm", "Whether the inverse perspective mapping should be started"),
+    ("localization", "Whether the localization system should be started"),
+    ("motion", "Whether the motion control system should be started"),
+    ("path_planning", "Whether the path planning should be started"),
+    ("teamcom", "Whether the team communication system should be started"),
+    ("vision", "Whether the vision system should be started"),
+    ("world_model", "Whether the world model should be started"),
+    ("monitoring", "Whether the system monitor and udp bridge should be started"),
+    ("record", "Whether the ros bag recording should be started"),
+    ("tts", "Whether to speak"),
+]
+
 
 def generate_domain_bridge_config(robot_domain: int, output_dir: Path) -> Path:
     """Generate domain bridge config file for a single robot.
@@ -95,6 +115,13 @@ def launch_setup(context):
     package_share = get_package_share_directory("bitbots_mujoco_sim")
     bridge_config_dir = Path(package_share) / "config" / "domain_bridges"
 
+    # Get teamplayer argument values - only pass if explicitly set (not empty)
+    teamplayer_args = ["sim:=true"]  # sim is always true for mujoco simulation
+    for arg_name, _ in TEAMPLAYER_ARGS:
+        value = LaunchConfiguration(arg_name).perform(context)
+        if value:  # Only pass if not empty string
+            teamplayer_args.append(f"{arg_name}:={value}")
+
     world_file = generate_world_xml(num_robots, package_share)
 
     actions = []
@@ -140,9 +167,8 @@ def launch_setup(context):
                             "launch",
                             "bitbots_bringup",
                             "teamplayer.launch",
-                            "sim:=true",
-                            "teamcom:=false",  # Disable team_comm to avoid port conflicts
-                        ],
+                        ]
+                        + teamplayer_args,
                         output="screen",
                         additional_env={"ROS_DOMAIN_ID": str(robot_domain)},
                     ),
@@ -156,13 +182,27 @@ def launch_setup(context):
 def generate_launch_description():
     """Launch MuJoCo simulation with domain bridge for multi-robot support."""
 
-    return LaunchDescription(
-        [
+    declared_args = [
+        DeclareLaunchArgument(
+            "num_robots",
+            default_value="1",
+            description="Number of robots in the simulation",
+        ),
+    ]
+
+    # Add all teamplayer arguments with empty default (means use teamplayer's default)
+    for arg_name, description in TEAMPLAYER_ARGS:
+        declared_args.append(
             DeclareLaunchArgument(
-                "num_robots",
-                default_value="1",
-                description="Number of robots in the simulation",
-            ),
+                arg_name,
+                default_value="",
+                description=description,
+            )
+        )
+
+    return LaunchDescription(
+        declared_args
+        + [
             # All setup happens in OpaqueFunction to ensure proper ordering
             OpaqueFunction(function=launch_setup),
         ]
