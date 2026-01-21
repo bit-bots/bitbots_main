@@ -29,17 +29,10 @@ def generate_launch_description():
                 output="screen",
                 emulate_tty=True,
             ),
-            # IMU complementary filter node and motion stack (delayed 5s, only when motion is enabled)
+            # Motion stack (delayed 5s, only when motion is enabled)
             TimerAction(
                 period=5.0,
                 actions=[
-                    Node(
-                        package="imu_complementary_filter",
-                        executable="complementary_filter_node",
-                        name="complementary_filter_gain_node",
-                        output="screen",
-                        parameters=[{"use_sim_time": True}],
-                    ),
                     IncludeLaunchDescription(
                         AnyLaunchDescriptionSource(
                             PathJoinSubstitution([bringup_share, "launch", "motion_standalone.launch"])

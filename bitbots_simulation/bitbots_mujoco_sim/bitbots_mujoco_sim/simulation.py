@@ -124,7 +124,7 @@ class RobotSimulation:
 
         self.node_publishers = {
             "joint_states": self.simulation.create_publisher(JointState, _topic("joint_states"), 1),
-            "imu": self.simulation.create_publisher(Imu, _topic("imu/data_raw"), 1),
+            "imu": self.simulation.create_publisher(Imu, _topic("imu/data"), 1),
             "camera_proc": self.simulation.create_publisher(Image, _topic("camera/image_proc"), 1),
             "camera_info": self.simulation.create_publisher(CameraInfo, _topic("camera/camera_info"), 1),
             "foot_pressure_left": self.simulation.create_publisher(
@@ -180,6 +180,8 @@ class RobotSimulation:
 
         imu.angular_velocity.x, imu.angular_velocity.y, imu.angular_velocity.z = self.robot.sensors.gyro.data
 
+        # Use ground-truth orientation from MuJoCo (quaternion: w, x, y, z)
+        imu.orientation.w, imu.orientation.x, imu.orientation.y, imu.orientation.z = self.robot.sensors.orientation.data
         self.node_publishers["imu"].publish(imu)
 
     def publish_camera_event(self) -> None:

@@ -43,7 +43,7 @@ class DomainBridgeConfigGenerator:
             # Sensor topics: main → robot (with remap to remove namespace)
             sensor_topics = [
                 ("joint_states", "sensor_msgs/msg/JointState"),
-                ("imu/data_raw", "sensor_msgs/msg/Imu"),
+                ("imu/data", "sensor_msgs/msg/Imu"),
                 ("camera/image_proc", "sensor_msgs/msg/Image"),
                 ("camera/camera_info", "sensor_msgs/msg/CameraInfo"),
                 ("foot_pressure_left/raw", "bitbots_msgs/msg/FootPressure"),

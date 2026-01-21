@@ -159,6 +159,10 @@ class RobotSensors(list[Sensor]):
     def accelerometer(self) -> Sensor:
         return self.get("IMU_accelerometer")
 
+    @property
+    def orientation(self) -> Sensor:
+        return self.get("IMU_orientation")
+
 
 class RobotJoints(list[Joint]):
     """A list of Robot Joints with additional helper methods."""
