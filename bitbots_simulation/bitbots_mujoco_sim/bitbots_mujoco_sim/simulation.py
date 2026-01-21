@@ -1,6 +1,5 @@
 import math
 import time
-from pathlib import Path
 from typing import TYPE_CHECKING, Callable
 
 import mujoco
@@ -14,7 +13,6 @@ from sensor_msgs.msg import CameraInfo, Image, Imu, JointState
 from std_msgs.msg import Float32
 
 from bitbots_msgs.msg import FootPressure, JointCommand
-from bitbots_mujoco_sim.domain_bridge_generator import DomainBridgeConfigGenerator
 from bitbots_mujoco_sim.robot import Robot
 
 if TYPE_CHECKING:
@@ -30,17 +28,8 @@ class Simulation(Node):
         self.model: mujoco.MjModel = mujoco.MjModel.from_xml_path(self.package_path + "/xml/adult_field.xml")
         self.data: mujoco.MjData = mujoco.MjData(self.model)
         self.robots: list[RobotSimulation] = [
-            RobotSimulation(
-                self, Robot(self.model, self.data, idx), -1 if len(self._find_robot_indices()) <= 1 else idx + 1
-            )
-            for idx in self._find_robot_indices()
+            RobotSimulation(self, Robot(self.model, self.data, idx)) for idx in self._find_robot_indices()
         ]
-
-        if len(self.robots) > 1:
-            bridge_gen = DomainBridgeConfigGenerator(self.robots)
-            config_dir = Path(self.package_path) / "config" / "domain_bridges"
-            config_path = bridge_gen.generate_config_file(config_dir)
-            self.get_logger().info(f"Generated domain bridge config at {config_path}")
 
         self.time = 0.0
         self.time_message = Time(seconds=0, nanoseconds=0).to_msg()
@@ -110,17 +99,14 @@ class Simulation(Node):
 class RobotSimulation:
     """Holds the simulation state for a single robot instance."""
 
-    def __init__(self, simulation: Simulation, robot: Robot, domain: int):
+    def __init__(self, simulation: Simulation, robot: Robot):
         self.simulation = simulation
         self.robot = robot
         self.model = simulation.model
         self.data = simulation.data
-        self.domain = domain
-        self.namespace = f"robot{domain}"
-        self.namespace = f"robot{domain}" if domain != -1 else ""
 
         def _topic(name: str) -> str:
-            return "/".join(filter(None, [self.namespace, name]))
+            return f"{self.namespace}/{name}"
 
         self.node_publishers = {
             "joint_states": self.simulation.create_publisher(JointState, _topic("joint_states"), 1),
@@ -144,6 +130,14 @@ class RobotSimulation:
         self.simulation.create_subscription(
             JointCommand, _topic("DynamixelController/command"), self.joint_command_callback, 1
         )
+
+    @property
+    def domain(self) -> int:
+        return self.robot.domain
+
+    @property
+    def namespace(self) -> str:
+        return self.robot.namespace
 
     def joint_command_callback(self, command: JointCommand) -> None:
         if len(command.positions) != 0:

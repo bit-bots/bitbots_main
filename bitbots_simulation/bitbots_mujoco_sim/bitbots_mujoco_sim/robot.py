@@ -77,6 +77,14 @@ class Robot:
     def _get_name(self, base_name: str) -> str:
         return f"robot_{base_name}_{self.index}"
 
+    @property
+    def domain(self) -> int:
+        return self.index
+
+    @property
+    def namespace(self) -> str:
+        return f"robot{self.domain}"
+
 
 class RobotFeetSensors(list[FootPressureSensor]):
     """A list of Robot Foot Pressure Sensors with additional helper methods."""
