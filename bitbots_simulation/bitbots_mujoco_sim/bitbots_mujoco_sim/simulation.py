@@ -24,8 +24,14 @@ class Simulation(Node):
 
     def __init__(self):
         super().__init__("sim_interface")
+        self.declare_parameter("world_file", "")
+
         self.package_path = get_package_share_directory("bitbots_mujoco_sim")
-        self.model: mujoco.MjModel = mujoco.MjModel.from_xml_path(self.package_path + "/xml/adult_field.xml")
+        world_file = self.get_parameter("world_file").get_parameter_value().string_value
+        if not world_file:
+            world_file = self.package_path + "/xml/generated_world.xml"
+
+        self.model: mujoco.MjModel = mujoco.MjModel.from_xml_path(world_file)
         self.data: mujoco.MjData = mujoco.MjData(self.model)
         self.robots: list[RobotSimulation] = [
             RobotSimulation(self, Robot(self.model, self.data, idx)) for idx in self._find_robot_indices()
