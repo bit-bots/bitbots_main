@@ -1,7 +1,6 @@
 import argparse
 import os
 import sys
-from typing import Optional
 
 from deploy.misc import (
     CONSOLE,
@@ -20,19 +19,16 @@ from deploy.tasks import (
     Build,
     CheckReposTask,
     Configure,
-    Install,
     Launch,
     Sync,
 )
 from rich.prompt import Prompt
 
-# TODO: Install this script as a command line tool
-
 
 class DeployRobots:
     def __init__(self):
         self._bitbots_main_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        print_debug(f"Bit-Bots meta path: {self._bitbots_main_path}")
+        print_debug(f"Bit-Bots main path: {self._bitbots_main_path}")
         os.chdir(self._bitbots_main_path)
 
         # Handle arguments
@@ -48,7 +44,7 @@ class DeployRobots:
             print_bit_bot()
 
         self._tasks = self._register_tasks()
-        self._sudo_password: Optional[str] = self._optionally_ask_for_and_set_sudo_password()
+        self._sudo_password: str | None = self._optionally_ask_for_and_set_sudo_password()
 
         # Execute tasks on all given targets
         self.run_tasks()
@@ -56,7 +52,7 @@ class DeployRobots:
     def _parse_arguments(self) -> argparse.Namespace:
         parser = ArgumentParserShowTargets(
             description="Deploy the Bit-Bots software on a robot. "
-            "This script provides 5 tasks: sync, install, configure, build, launch. "
+            "This script provides 4 tasks: sync, configure, build, launch. "
             "By default, it runs all tasks. You can select a subset of tasks by using the corresponding flags. "
             "For example, to only run the sync and build task, use the -sb."
         )
@@ -65,7 +61,8 @@ class DeployRobots:
         parser.add_argument(
             "targets",
             type=str,
-            help="The targets to deploy to. Multiple targets can be specified separated by commas. 'ALL' can be used to target all known robots.",
+            nargs="+",
+            help="The targets to deploy to. Multiple targets can be specified. 'ALL' can be used to target all known robots.",
         )
 
         parser.add_argument("--show-targets", action="store_true", help="Show all known targets and exit.")
@@ -79,17 +76,18 @@ class DeployRobots:
             help="Only synchronize (copy) files from you to the target machine.",
         )
         parser.add_argument(
-            "-i",
-            "--install",
-            dest="only_install",
+            "-c",
+            "--configure",
+            dest="only_configure",
             action="store_true",
-            help="Only install ROS dependencies on the targets.",
+            help="Only configure the target machines.",
         )
         parser.add_argument(
-            "-c", "--configure", dest="only_configure", action="store_true", help="Only configure the target machines."
-        )
-        parser.add_argument(
-            "-b", "--build", dest="only_build", action="store_true", help="Only build/compile on the target machines."
+            "-b",
+            "--build",
+            dest="only_build",
+            action="store_true",
+            help="Only build/compile on the target machines.",
         )
         parser.add_argument(
             "-l",
@@ -100,16 +98,12 @@ class DeployRobots:
         )
 
         # Optional arguments
-        parser.add_argument("-p", "--package", default="", help="Synchronize and build only the given ROS package.")
+        parser.add_argument("-p", "--package", default="", help="Build only the given ROS package.")
         parser.add_argument(
             "--clean",
-            action="store_true",
-            help="Clean complete workspace (source and install, ...) before syncing and building.",
-        )
-        parser.add_argument("--clean-src", action="store_true", help="Clean source directory before syncing.")
-        parser.add_argument(
             "--clean-build",
             action="store_true",
+            dest="clean_build",
             help="Clean workspace before building. If --package is given, clean only that package.",
         )
         parser.add_argument("--connection-timeout", default=10, help="Timeout to establish SSH connections in seconds.")
@@ -124,31 +118,26 @@ class DeployRobots:
         parser.add_argument(
             "-w",
             "--workspace",
-            default="~/colcon_ws",
-            help="Path to the workspace directory to deploy to. Defaults to '~/colcon_ws'",
+            default=".",
+            help="Path to the workspace directory to deploy to. Defaults to the current directory.",
         )
         parser.add_argument("--skip-local-repo-check", action="store_true", help="Skip the local repository check.")
 
         args = parser.parse_args()
 
-        if not (args.only_sync or args.only_install or args.only_configure or args.only_build or args.only_launch):
+        if not (args.only_sync or args.only_configure or args.only_build or args.only_launch):
             # By default all tasks are enabled
-            args.sync = args.install = args.configure = args.build = args.launch = True
+            args.sync = args.configure = args.build = args.launch = True
         else:
             # If any of the --only-* arguments is given, disable all tasks and enable only the given ones
             args.sync = args.only_sync
-            args.install = args.only_install
             args.configure = args.only_configure
             args.build = args.only_build
             args.launch = args.only_launch
 
-        if args.clean:
-            args.clean_src = True
-            args.clean_build = True
-
         return args
 
-    def _optionally_ask_for_and_set_sudo_password(self) -> Optional[str]:
+    def _optionally_ask_for_and_set_sudo_password(self) -> str | None:
         """
         Asks the user for the sudo password and returns it.
         Asks only, if tasks that require sudo are enabled.
@@ -181,13 +170,8 @@ class DeployRobots:
                 Sync(
                     self._bitbots_main_path,
                     self._args.workspace,
-                    self._args.package,
-                    self._args.clean_src,
                 )
             )
-
-        if self._args.install:
-            tasks.append(Install(self._args.workspace))
 
         if self._args.configure:
             tasks.append(Configure(self._args.workspace))
@@ -202,7 +186,7 @@ class DeployRobots:
             )
 
         if self._args.launch:
-            tasks.append(Launch("teamplayer"))
+            tasks.append(Launch(self._args.workspace, "teamplayer"))
 
         return tasks
 

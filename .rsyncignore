@@ -1,0 +1,22 @@
+# Ignore files and directories for rsync synchronization
+
+# Don't sync the pixi virtual environment
+.pixi/
+
+# Ignore build, install, and log directories
+build/
+install/
+log/
+
+# Don't overwrite the configured game settings
+src/bitbots_misc/bitbots_parameter_blackboard/config/game_settings.yaml
+
+*.bag
+*.git
+*.github
+*.idea
+*.pyc
+*.vscode
+
+__pycache__
+

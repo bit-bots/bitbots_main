@@ -41,16 +41,10 @@ class Build(AbstractTask):
         :param connections: The connections to remote servers.
         :return: The results of the task.
         """
-        if self._package:
-            print_debug(f"Cleaning the following packages before building: {self._package}")
-            cmd_clean = f"colcon clean packages -y --packages-select {self._package}"
-        else:
-            print_debug("Cleaning ALL packages before building")
-            cmd_clean = (
-                f"rm -rf {self._remote_workspace}/build {self._remote_workspace}/install {self._remote_workspace}/log"
-            )
+        print_debug(f"Cleaning the following packages before building: {self._package}")
+        cmd_clean = f"cd {self._remote_workspace} && pixi run clean {self._package}"
 
-        print_debug(f"Calling {cmd_clean}")
+        print_debug(f"Calling '{cmd_clean}'")
         try:
             results = connections.run(cmd_clean, hide=hide_output())
             print_debug(f"Clean succeeded on the following hosts: {self._succeeded_hosts(results)}")
@@ -67,23 +61,10 @@ class Build(AbstractTask):
         :param connections: The connections to remote servers.
         :return: The results of the task.
         """
-        if self._package:
-            print_debug(f"Building the following packages: {self._package}")
-            package_option = f"--packages-up-to {self._package}"
-        else:
-            print_debug("Building ALL packages")
-            package_option = ""
-        cmd = (
-            "sync;"
-            f"cd {self._remote_workspace};"
-            "source /opt/ros/jazzy/setup.zsh;"
-            "ISOLATED_CPUS=\"$(grep -oP 'isolcpus=\\K([\\d-]+)' /proc/cmdline)\";"  # type: ignore[reportInvalidStringEscapeSequence]
-            f"chrt -r 1 taskset -c ${{ISOLATED_CPUS:-0-15}} colcon build --symlink-install {package_option} --continue-on-error || exit 1;"
-            "sync;"
-        )
-        # TODO make output colored
+        print_debug("Building packages")
+        cmd = f"cd {self._remote_workspace} && pixi run build {self._package}"
 
-        print_debug(f"Calling {cmd}")
+        print_debug(f"Calling '{cmd}'")
         try:
             results = connections.run(cmd, hide=hide_output())
             print_debug(f"Build succeeded on the following hosts: {self._succeeded_hosts(results)}")

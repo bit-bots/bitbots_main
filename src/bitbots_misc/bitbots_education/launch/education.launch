@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<launch>
+    <include file="$(find-pkg-share rosbridge_server)/launch/rosbridge_websocket_launch.xml"></include>
+    <node pkg="web_video_server" exec="web_video_server" name="web_video_server_education">
+        <param name="port" value="8081"/>
+    </node>
+    <node pkg="bitbots_education" exec="webserver" name="education_webserver" output="screen">
+    </node>
+
+    <executable cmd="ros2 param set bitbots_vision component_debug_image_active true --timeout 20000" name="education_vision_debug_activator" output="screen"/>
+</launch>
