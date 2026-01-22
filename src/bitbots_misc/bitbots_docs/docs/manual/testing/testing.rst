@@ -66,10 +66,18 @@ We can test with values closer to real data if we do not use random data from hu
 We mainly use Webots for simulation.
 It offers us two possibilities.
 
-:code:ros2 launch bitbots_bringup simulator_teamplayer.launch <param>:=false/true
+
+.. code-block:: bash
+
+ros2 launch bitbots_bringup simulator_teamplayer.launch <param>:=false/true
+
 Starts the simulator with designated params.
 
-:code:ros2 launch bitbots_bringup highlevel.launch <param>:=true/false
+
+.. code-block:: bash
+
+ros2 launch bitbots_bringup highlevel.launch <param>:=true/false
+
 Starts high-level software (Gamecontroller, Teamcomm, Behavior, Vision, Localization, Pathfinding)
 
 Testing on the robot (tested_robot)
