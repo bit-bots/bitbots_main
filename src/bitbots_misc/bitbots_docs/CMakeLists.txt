@@ -7,9 +7,9 @@ find_package(ament_cmake REQUIRED)
 # then, we can't build the documentation in this package
 file(COPY files DESTINATION ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME})
 
-# we cannot use the compiled package of bitbots_docs since that would
-# require this package to depend on itself. therefore we need to compile the sub
-# cmake file ourselves and include it manually
+# we cannot use the compiled package of bitbots_docs since that would require
+# this package to depend on itself. therefore we need to compile the sub cmake
+# file ourselves and include it manually
 configure_file(cmake/enable_bitbots_docs.cmake.in
                ${CMAKE_BINARY_DIR}/enable_bitbots_docs.cmake @ONLY)
 include(${CMAKE_BINARY_DIR}/enable_bitbots_docs.cmake)
