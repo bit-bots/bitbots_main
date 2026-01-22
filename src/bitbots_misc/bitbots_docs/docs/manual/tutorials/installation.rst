@@ -1,15 +1,14 @@
-Software installation with ROS2
-===============================
+Software installation guide
+===========================
 
 In this tutorial, we will learn how to install all dependencies and build our software stack.
-
-You might want to look at the :doc:`vscode-dev-container` tutorial, if you want to use a preconfigured development environment with Visual Studio Code and devcontainers.
 
 **TLDR**: single command setup
 ------------------------------
 
-**Prerequirements**
-- You have an existing Github account and added a SSH key to your account
+**Prerequisites**
+
+- You have an existing GitHub account and added a SSH key to your account.
 
 If you have not previously set up any of our software stack, you can use the following command to install and setup everything in one go:
 
@@ -28,7 +27,7 @@ Manual steps with in depth explanation
 We mainly develop and test our software on Ubuntu so we recommend using Ubuntu for development as well.
 Due to the use of pixi other distributions as well as Mac OS might work as well, but might require some tweaks.
 
-Alternatively you can use a devcontainer :doc:`vscode-dev-container`, with a preconfigured environment and follow those instructions, as these docs do not apply to the devcontainer.
+Alternatively you can use a devcontainer :doc:`vscode-dev-container`, with a pre-configured environment and follow those instructions, as these docs do not apply to the devcontainer.
 
 **1. Install Pixi**
 
@@ -41,9 +40,9 @@ Run the following command to install pixi for your user:
 
 **2. Download our software**
 
-- Create a GitHub account, if not already done (see `here <http://doku.bit-bots.de/private/manual/dienste_accounts.html>`_ for further information)
+- Create a GitHub account, if not already done (see `here <https://doku.bit-bots.de/private/manual/dienste_accounts.html>`_ for further information)
 - Add your SSH key to GitHub to access and sync our repositories
-    - If you don't know what I am talking about or you don't yet have a SSH key, follow this guide: https://docs.github.com/en/authentication/connecting-to-github-with-ssh/checking-for-existing-ssh-keys
+    - If you don't know what I am talking about or you don't yet have a SSH key, follow `this guide <https://docs.github.com/en/authentication/connecting-to-github-with-ssh/checking-for-existing-ssh-keys>`_.
     - Go to your account settings and add your SSH key (the ``.pub`` file) to `GitHub <https://github.com/settings/keys>`_
 - Now, you can clone (download) our main code repository (repo) called `bitbots_main <https://github.com/bit-bots/bitbots_main>`_:
     - Open a terminal and go to the directory where you want to download our code, e.g. ``~/git/bitbots/``
@@ -55,7 +54,7 @@ Run the following command to install pixi for your user:
 
 Now that you have downloaded the code, you need to build it.
 A number of dependencies will be installed automatically during the build process.
-Make sure you have about 10 GB of free disk space available.
+Make sure you have about *10 GB of free disk space* available.
 Run the following command in the ``bitbots_main`` directory to build the software:
 
 .. code-block:: bash
@@ -66,8 +65,8 @@ The compilation of the basler camera driver is skipped, as it requires the Pylon
 If you need the basler camera driver, install the Pylon SDK manually or run `bash scripts/make_basler.sh` if you are using Ubuntu 24.04 and have root access.
 
 
-Notes
------
+Legacy install methods
+----------------------
 
 Custom docker setup
   Before utilizing a devcontainer, we used a custom docker setup for ROS 2 development.
