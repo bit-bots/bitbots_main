@@ -6,11 +6,12 @@
     <arg name="test_series" default="straight_goal" description="Which tests to run"/>
     <arg name="only_script" default="false"/>
     <arg name="no_script" default="false"/>
+    <arg name="headless" default="false"/>
 
     <let name="use_vision" value="false" if="$(var fake_localization)"/>
     <let name="use_vision" value="true" unless="$(var fake_localization)"/>
 
-    <node pkg="bitbots_auto_test" exec="auto_test" output="screen" unless="$(var no_script)">
+    <node pkg="bitbots_auto_test" exec="auto_test" output="screen" unless="$(var no_script)" on_exit="shutdown">
         <param name="fake_localization" value="$(var fake_localization)"/>
         <param from="$(find-pkg-share bitbots_auto_test)/config/$(var test_series).yaml"/>
     </node>
@@ -20,6 +21,7 @@
         <arg name="fake_localization" value="$(var fake_localization)" />
         <arg name="fake_localization_ball" value="$(var fake_localization)" />
         <arg name="camera" value="$(var use_vision)" />
+        <arg name="headless" value="$(var headless)" />
     </include>
 
     <!-- load teamplayer software stack -->
