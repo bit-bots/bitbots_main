@@ -148,7 +148,7 @@ The corresponding ROS node can be launched with `roslaunch bitbots_ros_control r
 Help, I have a problem!
 -----------------------
 
-Also consider our documentation at ::doc:`../testing/test_robot_hardware` for general robot hardware troubleshooting.
+Also consider our documentation at :doc:`../testing/test_robot_hardware` for general robot hardware troubleshooting.
 
 Error Opening Serial Port
 ~~~~~~~~~~~~~~~~~~~~~~~~~
