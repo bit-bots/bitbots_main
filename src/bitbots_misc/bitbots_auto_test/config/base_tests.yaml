@@ -5,5 +5,5 @@ auto_test:
       - MakeGoalDiagonalLeft
       - MakeGoalDiagonalRight
       - MakeGoalBehind
-    repeats: 5
+    repeats: 50
     loop: false
