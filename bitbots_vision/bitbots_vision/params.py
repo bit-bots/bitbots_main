@@ -94,7 +94,7 @@ gen.add("yoeo_conf_threshold", float, description="YOEO confidence threshold", m
 gen.add(
     "yoeo_framework",
     str,
-    description="The neural network framework that should be used ['pytorch', 'openvino', 'onnx', 'tvm']",
+    description="The neural network framework that should be used ['pytorch', 'openvino', 'onnx', 'tvm', 'rfdetr']",
 )
 
 gen.add(

@@ -90,7 +90,7 @@ class YOEOObjectManager:
 
     @staticmethod
     def _verify_framework_parameter(framework: str) -> None:
-        if framework not in {"openvino", "onnx", "pytorch", "tvm"}:
+        if framework not in {"openvino", "onnx", "pytorch", "tvm", "rfdetr"}:
             logger.error(f"Unknown neural network framework '{framework}'")
 
     @classmethod

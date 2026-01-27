@@ -526,6 +526,78 @@ class YOEOHandlerTVM(YOEOHandlerTemplate):
         return detections, segmentation
 
 
+class RFDETREHandlerONNX(YOEOHandlerTemplate):
+    """
+    RF-Detr handler for the ONNX framework.
+    """
+
+    def __init__(
+        self,
+        config: dict,
+        model_directory: str,
+        det_class_names: list[str],
+        det_robot_class_ids: list[int],
+        seg_class_names: list[str],
+    ):
+        super().__init__(config, model_directory, det_class_names, det_robot_class_ids, seg_class_names)
+
+        logger.debug(f"Entering {self.__class__.__name__} constructor")
+
+        onnx_path = YOEOPathGetter.get_rfdetr_onnx_file_path(model_directory)
+
+        try:
+            import onnxruntime
+        except ImportError as e:
+            raise ImportError("Could not import onnxruntime. The selected handler requires this package.") from e
+
+        logger.debug(f"Loading file...\n\t{onnx_path}")
+        self._inference_session = onnxruntime.InferenceSession(onnx_path)
+        self._input_layer = self._inference_session.get_inputs()[0]
+
+        print("input layer shape:", self._input_layer.shape)
+
+        self._img_preprocessor: utils.IImagePreProcessor = utils.DefaultImagePreProcessor(
+            tuple(self._input_layer.shape[2:])
+        )
+        self._det_postprocessor: utils.IDetectionPostProcessor = utils.DefaultDetectionPostProcessor(
+            image_preprocessor=self._img_preprocessor,
+            output_img_size=self._input_layer.shape[2],
+            conf_thresh=config["yoeo_conf_threshold"],
+            nms_thresh=config["yoeo_nms_threshold"],
+            robot_class_ids=self.get_robot_class_ids(),
+        )
+        # self._seg_postprocessor: utils.ISegmentationPostProcessor = utils.DefaultSegmentationPostProcessor(
+        #     self._img_preprocessor
+        # )
+
+        logger.debug(f"Leaving {self.__class__.__name__} constructor")
+
+    def configure(self, config: dict) -> None:
+        super().configure(config)
+        self._det_postprocessor.configure(
+            image_preprocessor=self._img_preprocessor,
+            output_img_size=self._input_layer.shape[2],
+            conf_thresh=config["yoeo_conf_threshold"],
+            nms_thresh=config["yoeo_nms_threshold"],
+            robot_class_ids=self.get_robot_class_ids(),
+        )
+
+    @staticmethod
+    def model_files_exist(model_directory: str) -> bool:
+        return os.path.exists(YOEOPathGetter.get_rfdetr_onnx_file_path(model_directory))
+
+    def _compute_new_prediction_for(self, image: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        preproccessed_image = self._img_preprocessor.process(image)
+
+        network_input = preproccessed_image.reshape(self._input_layer.shape)
+        outputs = self._inference_session.run(None, {"InputLayer": network_input.astype(np.float32)})
+
+        detections = self._det_postprocessor.process(outputs)
+        # segmentation = self._seg_postprocessor.process(outputs[1])
+
+        return detections, None
+
+
 class YOEOPathGetter:
     """
     PathGetter class for all YOEO handlers. They idea behind this class is to have all path information in one place so
@@ -575,3 +647,7 @@ class YOEOPathGetter:
     @classmethod
     def get_tvm_so_file_path(cls, model_directory: str) -> str:
         return cls._assemble_full_path(model_directory, "tvm", "yoeo.so")
+
+    @classmethod
+    def get_rfdetr_onnx_file_path(cls, model_directory) -> str:
+        return cls._assemble_full_path(model_directory, "onnx", "rfdetr.onnx")
