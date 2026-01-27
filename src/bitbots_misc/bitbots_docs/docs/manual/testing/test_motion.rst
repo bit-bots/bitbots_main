@@ -48,7 +48,7 @@ Easiest way to do both, is to use the following script:
 
     ros2 run bitbots_bringup check_robot.py
 
-Alternativly, you can do it manually by following the following steps.
+Alternatively, you can do it manually by following the following steps.
 
 #. Test Kick on Robot:
     .. code-block:: bash

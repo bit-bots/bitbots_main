@@ -15,14 +15,7 @@ All code is written as individual ROS 2 packages.
 
 The workspace is managed using the [pixi](https://pixi.sh) package manager. This allows us to have reproducible builds and easy user space dependency management similar to tools like `uv` or `cargo`. This also means that no system wide ROS installation or superuser privileges are required to install or run the code.
 
-Full step-by-step instructions for installing the Bit-Bots software stack and ROS 2 can be found in our documentation [here](https://doku.bit-bots.de/meta/manual/tutorials/install_software_ros2.html).
-
-
-Run the following command inside this repository to build the workspace. All dependencies will be installed automatically. Make sure you have [pixi](https://pixi.sh) installed. A few optional proprietary dependencies will be needed for full functionality, see the documentation for details.
-
-``` shell
-pixi run build
-```
+Follow our [installation guide](https://docs.bit-bots.de/meta/manual/tutorials/installation.html) for a quick installation or step-by-step instructions.
 
 ## Using the workspace
 
@@ -38,7 +31,13 @@ alternatively, you can run individual commands inside the workspace without acti
 pixi run <command>
 ```
 
-To see some predefined  / commands, run
+To build the workspace, run the following command in the terminal:
+
+``` shell
+pixi run build
+```
+
+To see some predefined tasks / commands, run
 
 ``` shell
 pixi task list
@@ -49,7 +48,7 @@ pixi task list
 To deploy the software to a robot, run
 
 ``` shell
-pixi run deploy <robot_ip|robot_name>
+pixi run deploy
 ```
 
 For more information on the deployment tooling, see [this documentation](scripts/README.md).
