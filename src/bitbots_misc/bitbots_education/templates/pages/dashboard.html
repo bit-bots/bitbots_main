@@ -4,6 +4,7 @@
 {% import "components/textbox.html" as components %}
 {% import "components/motor_heat.html" as heat_components %}
 {% import "components/icon_footer.html" as icon_components %}
+{% import "components/behavior_stack.html" as behavior_stack_component %}
 
 
 
@@ -44,7 +45,10 @@ promptCookie();
 
 {{ components.textbox("Willkommen!", "Klicke auf eine der Boxen oder eines der Icons in der Leiste, um mehr Informationen zu bekommen.", true, true, true) }}
 
-<div class="grid grid-cols-2 gap-3 py-12 px-6 auto-rows-fr">
+<div class="grid grid-cols-2 gap-3 py-12 px-6 auto-rows-fr"
+x-data="{ width: window.innerWidth, height: window.innerHeight, 
+  get isMobileDevice() { return ((this.width <= 800) || (this.height <= 600)); } }"
+x-resize="width = $width; height = $height">
   <a href="imu" class="flex justify-center flex-col border-2 border-zinc-800 rounded-2xl bg-zinc-100 shadow-md">
     <div class="flex justify-between flex-col h-full">
       <div class="flex justify-center">
@@ -62,9 +66,12 @@ promptCookie();
       </div>
     </a>
     <a href="motors" class="flex justify-center flex-col border-2 border-zinc-800 rounded-2xl bg-zinc-100 shadow-md">
-      <div class="flex justify-between flex-col h-full">
-        <div class="flex justify-center h-full flex-col">
+      <div class="flex justify-between flex-col h-full" >
+        <div class="flex justify-center h-full flex-col" x-show="isMobileDevice">
           {{ heat_components.motor_heat_component(true) }}
+        </div>
+        <div class="flex justify-center h-full flex-col"  x-show="!isMobileDevice">
+          {{ heat_components.motor_heat_component(false) }}
         </div>
         <p class="pb-4 px-2 text-center font-medium">Motoren</p>
       </div>
@@ -72,8 +79,11 @@ promptCookie();
     <a href="behavior" class="flex justify-center flex-col border-2 border-zinc-800 rounded-2xl bg-zinc-100 shadow-md">
       <div class="flex justify-between flex-col h-full">
         <div class="flex justify-center h-full flex-col">
-          <div class="border-2 border-zinc-800 rounded-2xl p-2 m-6 bg-sky-100 to-teal-200">
+          <div class="border-2 border-zinc-800 rounded-2xl p-2 m-6 bg-sky-100 to-teal-200" x-show="isMobileDevice">
             {{ current_action_components.current_action_component() }}
+          </div>
+          <div x-show="!isMobileDevice">
+            {{ behavior_stack_component.behavior_stack_component(true) }}
           </div>
         </div>
         <p class="pb-4 px-2 text-center font-medium">Verhalten</p>
