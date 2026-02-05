@@ -1,8 +1,6 @@
 Bitbots Lowlevel
 ================
 
-`Github repository <https://github.com/bit-bots/bitbots_lowlevel>`_
-
 What do the low level packages do?
 ----------------------------------
 
@@ -39,9 +37,6 @@ When crimping new cables or when connecting a logic analyzer, it is important to
 
 The cables for TTL only have three wires: Ground, VCC and data.
 For the correct crimping, the same as for the RS-485 cables applies.
-
-
-| 
 
 .. figure:: lowlevel/pinouts.jpg
 
@@ -153,10 +148,12 @@ The corresponding ROS node can be launched with `roslaunch bitbots_ros_control r
 Help, I have a problem!
 -----------------------
 
+Also consider our documentation at :doc:`../testing/test_robot_hardware` for general robot hardware troubleshooting.
+
 Error Opening Serial Port
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If you encounter the message "Error opening serial port", no connection between the NUC and the CORE board could be established.
+If you encounter the message "Error opening serial port", no connection between the PC and the CORE board could be established.
 Therefore your first instinct should be checking whether the cable is plugged in correctly.
 If this does not solve the problem, you can check whether the board can be found by using `lsusb` (look for the "leaf" entry).
 You can further investigate this by using `ls /dev/`. You should find the devices "/dev/ttyUSB0" through "/dev/ttyUSB3", one for each of the four busses.
