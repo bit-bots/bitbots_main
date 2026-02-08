@@ -29,7 +29,7 @@ from transforms3d.quaternions import quat2mat
 
 from bitbots_msgs.msg import JointCommand
 
-ONNX_MODEL = os.path.join(get_package_share_directory("bitbots_rl_walk"), "models", "wolfgang_policy.onnx")
+ONNX_MODEL = os.path.join(get_package_share_directory("bitbots_rl_walk"), "models", "wolfgang_walk_ppo.onnx")
 
 PREPARATION_STATE = np.array(
     [
@@ -225,7 +225,8 @@ class WalkNode(Node):
             if self._joint_state is None:
                 self.get_logger().warning("Waiting for joint state data", throttle_duration_sec=1.0)
             if self._cmd_vel is None:
-                self.get_logger().warning("Waiting for cmd_vel data", throttle_duration_sec=1.0)
+                # self.get_logger().warning("Waiting for cmd_vel data", throttle_duration_sec=1.0)
+                self._cmd_vel = Twist(x=1.0, y=0.0, z=0.0)  # Testing purpose
 
             return
 
@@ -275,19 +276,19 @@ class WalkNode(Node):
 
         obs = np.hstack(
             [
-                gyro,
-                gravity,
-                command,
-                joint_angles,
-                joint_velocities,
-                self._previous_action,  # Previous action
-                phase,
+                gyro,  # 3
+                gravity,  # 4
+                command,  # 3
+                joint_angles,  # 18
+                joint_velocities,  # 18
+                self._previous_action,  # 18  # Previous action
+                phase,  # 2
             ]
         ).astype(np.float32)
 
         # Run the ONNX model
-        onnx_input = {"obs": obs.reshape(1, -1)}
-        onnx_pred = self._onnx_session.run(["continuous_actions"], onnx_input)[0][0]
+        onnx_input = {"in_0": obs.reshape(1, -1)}
+        onnx_pred = self._onnx_session.run(["tanh_out_0"], onnx_input)[0][0]
         self._previous_action = onnx_pred
 
         # Publish the joint commands
