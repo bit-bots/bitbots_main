@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html class="h-full">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='bitBot_color.svg') }}" />
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/eventemitter2@6.4.9/lib/eventemitter2.min.js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/roslib@1/build/roslib.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/resize@3.x.x/dist/cdn.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+  <script type="text/javascript" >
+    // Connecting to ROS
+    // -----------------
+    let scrollDirection = document.documentElement.scrollTop; // Initial scroll direction
+    var ros = new ROSLIB.Ros({
+      url : `ws://${window.location.hostname}:9090`
+    });
+
+    ros.on('connection', function() {
+      console.log('Connected to websocket server.');
+    });
+
+    ros.on('error', function(error) {
+      console.log('Error connecting to websocket server: ', error);
+    });
+
+    ros.on('close', function() {
+      console.log('Connection to websocket server closed.');
+    });
+
+    // Function to translate dsd names
+    function behavior_translate(input) {
+
+      // Cast input to string
+      input = String(input).trim();
+
+    const mapping = {
+
+    // Action nodes (@)
+    "AvoidBall": "Ball ausweichen",
+    "AvoidBallActive": "Ball ausweichen aktiv",
+    "AvoidBallInactive": "Ball ausweichen inaktiv",
+    "CancelPathplanning": "Pfadplanung abbrechen",
+    "ChangeAction": "Teamkameraden informieren",
+    "DeactivateHCM": "HCM deaktivieren",
+    "DribbleForward": "Dribbeln nach vorne",
+    "ForgetBall": "Ball vergessen",
+    "GetWalkready": "Laufbereit machen",
+    "GoToAbsolutePositionFieldFraction": "Gehe zu Feldposition (Anteil)",
+    "GoToBall": "Zum Ball gehen",
+    "GoToBlockPosition": "Zur Block-Position gehen",
+    "GoToCornerKickPosition": "Gehe zur Eckstoßposition",
+    "GoToDefensePosition": "Zur Verteidigungsposition gehen",
+    "GoToPassAcceptPosition": "Gehe zur Passannahmeposition",
+    "GoToPassPreparePosition": "Gehe zur Passvorbereitungsposition",
+    "GoToRelativePosition": "Gehe zur relativen Position",
+    "GoToRolePosition": "Zur Rollenposition gehen",
+    "KickBallDynamic": "Dynamisch schießen",
+    "LookAtBall": "Schau auf den Ball",
+    "LookAtFieldFeatures": "Schau auf Spielfeldmerkmale",
+    "LookAtFront": "Schau nach vorne",
+    "LookForward": "Nach vorne schauen",
+    "PlayAnimationCheering": "Jubel-Animation",
+    "PlayAnimationDynup": "Dynup-Animation",
+    "PlayAnimationGoalieArms": "Torwart-Arme Animation",
+    "PlayAnimationGoalieFallCenter": "Torwart-Animation Mitte",
+    "PlayAnimationGoalieFallLeft": "Torwart-Animation links",
+    "PlayAnimationGoalieFallRight": "Torwart-Animation rechts",
+    "PlayAnimationGrabBall": "Ballaufnahme-Animation",
+    "PlayAnimationInitInSim": "Animation initialisieren",
+    "PlayAnimationThrow": "Wurf-Animation",
+    "PlaySound": "Ton abspielen",
+    "SearchBall": "Ball suchen",
+    "Stand": "Stehen",
+    "StandAndWaitRandom": "Stehen und zufällig warten",
+    "Turn": "Drehen",
+    "TurnLastSeenBallSide": "Drehe zur letzten Ballposition",
+    "WalkInPlace": "Auf der Stelle gehen",
+    "WalkKick": "Schuss",
+
+    // Decision nodes ($)
+    "AvoidBall": "Ball ausweichen",
+    "BallClose": "Ball nah",
+    "BallDangerous": "Ball gefährlich",
+    "BallInOwnPercent": "Ball in eigenem Bereich",
+    "BallKickArea": "Ball im Schussbereich",
+    "BallReapproachAngle": "Ball erneut annähern (Winkel)",
+    "BallReapproachDist": "Ball erneut annähern (Distanz)",
+    "BallSeen": "Ball gesehen",
+    "ClosestToBall": "Nächst zum Ball",
+    "ConfigRole": "Rolle konfigurieren",
+    "CurrentScore": "Aktueller Spielstand",
+    "DoOnce": "Einmal ausführen",
+    "FootSelection": "Fußwahl",
+    "GameStateDecider": "Spielzustands-Entscheider",
+    "GoalScoreRecently": "Tor kürzlich erzielt",
+    "GoalieActive": "Torwart aktiv",
+    "GoalieHandlingBall": "Torwart hält Ball",
+    "IsPenalized": "Hat Strafe",
+    "KickOffTimeUp": "Anstoßzeit abgelaufen",
+    "LastPlayer": "Letzter Spieler",
+    "PassStarted": "Pass gestartet",
+    "RankToBallNoGoalie": "Reihenfolge zum Ball (ohne Torwart)",
+    "ReachedPathPlanningGoalPosition": "Zielposition erreicht",
+    "ReachedAndAlignedToPathPlanningGoalPosition": "Zielposition erreicht und ausgerichtet",
+    "RobotInOwnPercentOfField": "Roboter im eigenen Bereich",
+    "SecondaryStateDecider": "Sekundärer Zustands-Entscheider",
+    "SecondaryStateModeDecider": "Sekundärer Zustands-Entscheider (Modus)",
+    "SecondaryStateTeamDecider": "Sekundärer Zustands-Entscheider (Team)",
+
+    // Result keywords
+    "AHEAD": "VORNE",
+    "BEHIND": "HINTEN",
+    "CENTER": "MITTE",
+    "CORNER_KICK": "ECKENBALL",
+    "DONE": "ERLEDIGT",
+    "ELSE": "ANDERENFALLS",
+    "FAR": "WEIT",
+    "FINISHED": "ABGESCHLOSSEN",
+    "FIRST": "ERSTER",
+    "GOALIE": "TORWART",
+    "INITIAL": "INITIAL",
+    "LEFT": "LINKS",
+    "NEAR": "NAH",
+    "NO": "NEIN",
+    "NOT_DONE": "NICHT ERLEDIGT",
+    "OTHER": "ANDERE",
+    "OUR": "UNSERE",
+    "OVERTIME": "VERLÄNGERUNG",
+    "PENALTYSHOOT": "ELFMETERSCHIESSEN",
+    "PLAYING": "SPIELEND",
+    "READY": "BEREIT",
+    "RIGHT": "RECHTS",
+    "SECOND": "ZWEITER",
+    "SET": "FESTGELEGT",
+    "THIRD": "DRITTER",
+    "THROW_IN": "EINWURF",
+    "TIMEOUT": "ZEITUNTERBRECHUNG",
+    "YES": "JA"
+  };
+
+
+      return mapping.hasOwnProperty(input) ? mapping[input] : input;
+    }
+
+    // Function to log scroll events
+    function log() {
+      const dist = Math.abs(document.documentElement.scrollTop - scrollDirection);
+      if (dist > 200 && scrollDirection < document.documentElement.scrollTop)
+      {
+        fetch(`/logs?page=${window.location.pathname}&button=scroll&status=scrolledDownTo ${document.documentElement.scrollTop}`);
+        scrollDirection = document.documentElement.scrollTop;
+      }
+      else if (dist > 200)
+      {
+        fetch(`/logs?page=${window.location.pathname}&button=scroll&status=scrolledUpTo ${document.documentElement.scrollTop}`);
+          scrollDirection = document.documentElement.scrollTop;
+      }
+
+    }
+  </script>
+
+  </head>
+  <body class="bg-sky-800" onscroll="log()">
+    <div class="flex flex-col justify-center p-4 bg-zinc-100 border-b-2 border-zinc-800 shadow-md relative top-0 inset-x-0">
+      <div id="banner" class="text-2xl text-center font-medium">
+        {% block banner %}{% endblock %}
+      </div>
+    </div>
+    <div id="content">
+      {% block content %}{% endblock %}
+    </div>
+    <div class=" relative bottom-0 text-zinc-900 text-xs text-center px-6 mb-6">
+      Uicons by <a class="text-zinc-900 text-xs" href="https://www.flaticon.com/uicons">Flaticon</a>
+    </div>
+    <div id="placeholder" class="h-16"></div>
+    <div id="icons" class="text-2xl font-medium fixed bottom-4 z-50 inset-x-0 overflow-hidden w-full">
+      <div class="mx-4 ">
+        {% block icons %}{% endblock %}
+      </div>
+    </div>
+  </body>
+</html>

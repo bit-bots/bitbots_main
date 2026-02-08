@@ -3,7 +3,8 @@ import ipaddress
 import os
 import subprocess
 import sys
-from typing import Any, Iterable, Optional
+from collections.abc import Iterable
+from typing import Any
 
 import yaml
 from fabric import Connection, GroupResult, ThreadingGroup
@@ -164,29 +165,29 @@ def _identify_ip(identifier: str) -> str | None:
                 print_debug(f"Robot name '{known_robot_name}' does not match '{identifier}'.")
 
 
-def _parse_targets(input_targets: str) -> list[str]:
+def _parse_targets(targets: list[str]) -> list[str]:
     """
     Parse target input into usable target IP addresses.
 
-    :param input_targets: The input string of targets as a comma separated string of either hostnames, robot names or IPs.
+    :param targets: Targets as a list of strings of either hostnames, robot names or IPs.
     :return: List of target IP addresses.
     """
     target_ips: list[str] = []
-    for input_target in input_targets.split(","):
+    for target in targets:
         try:
-            target_ip = _identify_ip(input_target)
+            target_ip = _identify_ip(target)
         except ValueError:
-            print_error(f"Could not determine IP address from input: '{input_target}'")
+            print_error(f"Could not determine IP address from input: '{target}'")
             sys.exit(1)
         if target_ip is None:
-            print_error(f"Could not determine IP address from input:' {input_target}'")
+            print_error(f"Could not determine IP address from input:' {target}'")
             sys.exit(1)
         target_ips.append(target_ip)
     return target_ips
 
 
 def _get_connections_from_targets(
-    target_ips: list[str], user: str, connection_timeout: Optional[int] = 10
+    target_ips: list[str], user: str, connection_timeout: int | None = 10
 ) -> ThreadingGroup:
     """
     Get connections to the given target IP addresses using the given username.
@@ -236,7 +237,7 @@ def _get_connections_from_targets(
     return connections
 
 
-def _get_connections_from_all_known_targets(user: str, connection_timeout: Optional[int] = 10) -> ThreadingGroup:
+def _get_connections_from_all_known_targets(user: str, connection_timeout: int | None = 10) -> ThreadingGroup:
     """
     Get connections to all known targets using the given username.
     NOTE: This still continues if not all connections could be established.
@@ -270,24 +271,22 @@ def _get_connections_from_all_known_targets(user: str, connection_timeout: Optio
     return ThreadingGroup.from_connections(open_connections)
 
 
-def get_connections_from_targets(
-    input_targets: str, user: str, connection_timeout: Optional[int] = 10
-) -> ThreadingGroup:
+def get_connections_from_targets(targets: list[str], user: str, connection_timeout: int | None = 10) -> ThreadingGroup:
     """
-    First parse the input targets, then get connections to the targets.
-    NOTE: If input_targets is 'ALL', all known targets will be used and failed connections will be ignored.
+    Parses the given targets, then creates connections to the parsed hosts.
+    NOTE: If targets is 'ALL', all known targets will be used and failed connections will be ignored.
 
-    :param input_targets: The input string of targets as a comma separated string of either hostnames, robot names or IPs. 'ALL' is a valid argument and will be expanded to all known targets.
+    :param targets: List of target strings (either hostnames, robot names or IPs, or 'ALL'). If 'ALL' is included, it will be expanded to all known targets.
     :param user: The username to connect with
     :param connection_timeout: Timeout for establishing the connection
     :return: The connections to the targets
     """
-    if input_targets == "ALL":
-        print_info(f"Connecting to all known targets: {KNOWN_TARGETS.keys()}")
+    if "ALL" in targets:
+        print_info(f"Connecting to targets: {KNOWN_TARGETS.keys()}")
         return _get_connections_from_all_known_targets(user=user, connection_timeout=connection_timeout)
 
     return _get_connections_from_targets(
-        target_ips=_parse_targets(input_targets), user=user, connection_timeout=connection_timeout
+        target_ips=_parse_targets(targets), user=user, connection_timeout=connection_timeout
     )
 
 

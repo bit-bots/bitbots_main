@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>bitbots_animation_server</name>
+  <version>1.0.3</version>
+  <description>The bitbots_animation_server package provides an action server which interpolates keyframe animations and
+  sends the next motor values to the hardware control manager.</description>
+
+  <maintainer email="6stelter@informatik.uni-hamburg.de">Sebastian Stelter</maintainer>
+  <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+
+  <license>MIT</license>
+
+  <author email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</author>
+  <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
+
+  <depend>bitbots_docs</depend>
+  <depend>bitbots_msgs</depend>
+  <depend>bitbots_robot_description</depend>
+  <depend>bitbots_splines</depend>
+  <depend>bitbots_utils</depend>
+  <depend>rclpy</depend>
+  <depend>std_msgs</depend>
+  <test_depend>ament_mypy</test_depend>
+
+  <test_depend>python3-pytest</test_depend>
+
+  <export>
+    <bitbots_documentation>
+      <status>tested_integration</status>
+      <language>python3</language>
+    </bitbots_documentation>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

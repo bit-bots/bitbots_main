@@ -1,7 +1,0 @@
-# This file is used for installation of dependencies on the robot
--r common.txt  # Includes all common dependencies
-mycroft-mimic3-tts
-protobuf==3.20.3 # Required for mycroft-mimic3-tts, but we want to enshure that the version is compatible binaries build using the system version, but it should also be compatiple with all the python dependencies
-pyttsx3
-playsound
-pyamdgpuinfo

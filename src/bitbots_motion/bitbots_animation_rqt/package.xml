@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>bitbots_animation_rqt</name>
+  <version>2.0.0</version>
+  <description>
+    A Python GUI plugin to record joint space animations.
+  </description>
+
+  <maintainer email="git@flova.de">Florian Vahl</maintainer>
+  <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+
+  <author email="5guelden@informatik.uni-hamburg.de">Jasper Güldenstein</author>
+
+  <license>MIT</license>
+
+  <exec_depend>bitbots_hcm</exec_depend>
+  <exec_depend>python3-pyqt5</exec_depend>
+  <exec_depend>python3-rospkg</exec_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>rqt_gui_py</exec_depend>
+  <exec_depend>rqt_gui</exec_depend>
+  <exec_depend>std_srvs</exec_depend>
+  <test_depend>ament_mypy</test_depend>
+
+  <test_depend>python3-pytest</test_depend>
+
+  <export>
+    <architecture_independent/>
+    <rqt_gui plugin="${prefix}/plugin.xml"/>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

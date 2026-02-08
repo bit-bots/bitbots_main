@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.1.6
+    rev: v0.9.6
     hooks:
       - id: ruff
         args:
@@ -14,23 +14,27 @@ repos:
         args:
           - "-i"
       - id: cppcheck
+        exclude: &exclude_robocup_protocol ^src/bitbots_team_communication/bitbots_team_communication/bitbots_team_communication/RobocupProtocol/
         args:
           - "--inline-suppr"
-          - "--suppress=missingInclude"
+          - "--suppress=missingIncludeSystem"
           - "--suppress=unmatchedSuppression"
           - "--suppress=unusedFunction"
           - "--suppress=unusedStructMember"
           - "--suppress=useStlAlgorithm"
+          - "--check-level=exhaustive"
   - repo: https://github.com/cheshirekow/cmake-format-precommit
-    rev: v0.6.10
+    rev: v0.6.13
     hooks:
       - id: cmake-format
       - id: cmake-lint
+        exclude: *exclude_robocup_protocol
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v5.0.0
     hooks:
       - id: check-merge-conflict
       - id: check-toml
       - id: check-xml
       - id: check-yaml
+        exclude: *exclude_robocup_protocol
       - id: detect-private-key

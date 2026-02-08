@@ -1,16 +1,21 @@
 name: Code style checks
 
 on:
-  pull_request:
   push:
-    branches: [main]
 
 jobs:
   pre-commit:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-slim
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
-      - name: Install cppcheck
-        run: sudo apt install cppcheck -y
-      - uses: pre-commit/action@v3.0.0
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up workspace
+        uses: prefix-dev/setup-pixi@v0.9.4
+        with:
+          pixi-version: v0.59.0
+          cache: true
+          environments: format
+
+      - name: Run pre-commit
+        run: pixi run -e format format

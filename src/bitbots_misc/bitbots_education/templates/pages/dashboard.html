@@ -1,0 +1,101 @@
+{% import "components/imu.html" as imu_components %}
+{% import "components/vision.html" as vision_components %}
+{% import "components/current_action.html" as current_action_components %}
+{% import "components/textbox.html" as components %}
+{% import "components/motor_heat.html" as heat_components %}
+{% import "components/icon_footer.html" as icon_components %}
+{% import "components/behavior_stack.html" as behavior_stack_component %}
+
+
+
+{% extends "base.html" %}
+
+
+
+{% block banner %}Hamburg Bit-Bots{% endblock %}
+
+{% block content %}
+
+{% if logging %}
+<script type="text/javascript" >
+  function setCookie(cname,cvalue,exdays) {
+  const d = new Date();
+  d.setTime(d.getTime() + (exdays*24*60*60*1000));
+  let expires = "expires=" + d.toUTCString();
+  document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/;SameSite=Strict";
+}
+
+function promptCookie() {
+  while (true)
+  {
+    const user = prompt("Gib deine Versuchspersonen ID ein:","");
+    if (user != "" && user != null && user.match(/^[0-9]+$/)) {
+      setCookie("vp_number", user, 30);
+      break
+    }
+    else {
+      alert("Bitte gib eine gültige Versuchspersonen ID ein.");
+    }
+  }
+}
+
+promptCookie();
+</script>
+{% endif %}
+
+{{ components.textbox("Willkommen!", "Klicke auf eine der Boxen oder eines der Icons in der Leiste, um mehr Informationen zu bekommen.", true, true, true) }}
+
+<div class="grid grid-cols-2 gap-3 py-12 px-6 auto-rows-fr"
+x-data="{ width: window.innerWidth, height: window.innerHeight, 
+  get isMobileDevice() { return ((this.width <= 800) || (this.height <= 600)); } }"
+x-resize="width = $width; height = $height">
+  <a href="imu" class="flex justify-center flex-col border-2 border-zinc-800 rounded-2xl bg-zinc-100 shadow-md">
+    <div class="flex justify-between flex-col h-full">
+      <div class="flex justify-center">
+        <div style="width: 60%;">
+            {{ imu_components.imu_component() }}
+          </div>
+        </div>
+        <p class="pb-4 px-2 text-center font-medium">IMU</p>
+      </div>
+    </a>
+    <a href="vision" class="relative overflow-hidden justify-center flex-col border-2 border-zinc-800 rounded-2xl bg-zinc-100 shadow-md">
+      <div class="flex justify-between flex-col h-full">
+        {{ vision_components.vision_component() }}
+        <p class="pb-4 px-2 text-center font-medium">Bildverarbeitung</p>
+      </div>
+    </a>
+    <a href="motors" class="flex justify-center flex-col border-2 border-zinc-800 rounded-2xl bg-zinc-100 shadow-md">
+      <div class="flex justify-between flex-col h-full" >
+        <div class="flex justify-center h-full flex-col" x-show="isMobileDevice">
+          {{ heat_components.motor_heat_component(true) }}
+        </div>
+        <div class="flex justify-center h-full flex-col"  x-show="!isMobileDevice">
+          {{ heat_components.motor_heat_component(false) }}
+        </div>
+        <p class="pb-4 px-2 text-center font-medium">Motoren</p>
+      </div>
+    </a>
+    <a href="behavior" class="flex justify-center flex-col border-2 border-zinc-800 rounded-2xl bg-zinc-100 shadow-md">
+      <div class="flex justify-between flex-col h-full">
+        <div class="flex justify-center h-full flex-col">
+          <div class="border-2 border-zinc-800 rounded-2xl p-2 m-6 bg-sky-100 to-teal-200" x-show="isMobileDevice">
+            {{ current_action_components.current_action_component() }}
+          </div>
+          <div x-show="!isMobileDevice">
+            {{ behavior_stack_component.behavior_stack_component(true) }}
+          </div>
+        </div>
+        <p class="pb-4 px-2 text-center font-medium">Verhalten</p>
+      </div>
+    </a>
+  </div>
+
+
+
+{% endblock %}
+
+{% block icons %}
+  {{ icon_components.icons("dashboard") }}
+{% endblock %}
+

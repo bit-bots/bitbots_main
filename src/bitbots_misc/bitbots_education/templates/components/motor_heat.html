@@ -1,0 +1,121 @@
+{% macro motor_heat_component(max_temperature) %}
+<script type="text/javascript" >
+
+    function temperature_state() {
+        return {
+            max_temperature: 80.0,
+            min_temperature: 20.0,
+            motor_temperatures: null,
+            listener: null,
+            init() {
+                this.listener = new ROSLIB.Topic({
+                    ros : ros,
+                    name : '/diagnostics_agg',
+                    messageType : 'diagnostic_msgs/msg/DiagnosticArray'
+                });
+                this.listener.subscribe((message) => {
+                    this.motor_temperatures = new Map();
+
+                    function search_for_key(values, key) {
+                        for (let i = 0; i < values.length; i++) {
+                            if (values[i].key.toLowerCase() === key.toLowerCase()) {
+                                return values[i].value;
+                            }
+                        }
+                        return null;
+                    }
+
+                    for(let i = 0; i < message.status.length; i++)
+                    {
+                        if (message.status[i].name.startsWith("/Robot/Servos/"))
+                        {
+                            let servo_name = message.status[i].name.replace("/Robot/Servos/", "");
+
+                            let servo_temperature = search_for_key(message.status[i].values, "temperature");
+                            if (servo_temperature === null)
+                            {
+                                // Warning: No servo temperature found
+                                console.warn(`No temperature found for servo ${servo_name} in diagnostics message.`);
+                            }
+                            else
+                            {
+                                this.motor_temperatures.set(servo_name, parseFloat(servo_temperature));
+                            }
+                        }
+                    }
+
+                    this.max_temperature = Math.max(Math.max(...Array.from(this.motor_temperatures.values())), 40.0);
+                    this.min_temperature = Math.min(...Array.from(this.motor_temperatures.values()));
+                });
+            },
+            render_blob(temperature, x, y, size) {
+                // Define a continuous blue to green to red gradient based on temperature
+                let normalized_temp = (temperature - this.min_temperature) / (this.max_temperature - this.min_temperature);
+                normalized_temp = Math.max(0, Math.min(1, normalized_temp)); // Clamp to [0, 1]
+
+                // Only add red if temperature is above 50%
+                let red = normalized_temp > 0.5 ? Math.floor((normalized_temp - 0.5) * 2 * 255) : 0;
+                // Green is maximum in the middle of the range decreasing towards the edges
+                let green = Math.floor((1 - 2 * Math.abs(normalized_temp - 0.5)) * 255);
+                // Blue is maximum at the start and decreases towards the middle
+                let blue = Math.floor((0.5 - normalized_temp) * 2 * 255);
+
+                // Build the HTML for the blob
+                return `<div style="background-color: rgb(${red}, ${green}, ${blue});" class="absolute top-[${y}%] left-[${x}%] w-1/${size} h-1/${size} rounded-full blur-xs pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>`;
+            },
+            render_blobs() {
+                if (this.motor_temperatures === null) {
+                    return "";
+                }
+
+                let output_string = "";
+                output_string += this.render_blob(Math.max(this.motor_temperatures.get("HeadPan"), this.motor_temperatures.get("HeadTilt")), 50, 28, 11);
+                output_string += this.render_blob(Math.max(this.motor_temperatures.get("RHipPitch"), this.motor_temperatures.get("RHipRoll"), this.motor_temperatures.get("RHipYaw")), 65, 56, 11);
+                output_string += this.render_blob(this.motor_temperatures.get("RKnee"), 67, 71, 11);
+                output_string += this.render_blob(Math.max(this.motor_temperatures.get("RAnklePitch"), this.motor_temperatures.get("RAnkleRoll")), 67, 95, 11);
+                output_string += this.render_blob(Math.max(this.motor_temperatures.get("LHipPitch"), this.motor_temperatures.get("LHipRoll"), this.motor_temperatures.get("LHipYaw")), 35, 56, 11);
+                output_string += this.render_blob(this.motor_temperatures.get("LKnee"), 33, 71, 11);
+                output_string += this.render_blob(Math.max(this.motor_temperatures.get("LAnklePitch"), this.motor_temperatures.get("LAnkleRoll")), 33, 95, 11);
+                output_string += this.render_blob(Math.max(this.motor_temperatures.get("RShoulderPitch"), this.motor_temperatures.get("RShoulderRoll")), 85, 41, 11);
+                output_string += this.render_blob(Math.max(this.motor_temperatures.get("LShoulderPitch"), this.motor_temperatures.get("LShoulderRoll")), 15, 41, 11);
+                return output_string;
+            },
+            destroy() {
+                this.listener.unsubscribe();
+            }
+        };
+    }
+</script>
+
+
+{% if max_temperature == True %}
+<div x-data="temperature_state()" class="text-4xl text-center text-sky-900 my-8">
+    <span x-text="max_temperature"></span> °C
+</div>
+{% else %}
+<div x-data="temperature_state()" class="p-6 overflow-hidden flex flex-row justify-evenly rounded-2xl">
+    <div class="relative" style="width: 60%;">
+        <img src="{{url_for('static', filename='abstract_robot.svg') }}" class="w-full">
+        <div x-html="render_blobs()"></div>
+    </div>
+
+    <!-- Vertically centered legend showing the color gradient -->
+    <div class="flex flex-col justify-center items-center ">
+         <div class="text-xs text-gray-600 mb-1 relative">
+            <span x-text="max_temperature"></span>°C
+        </div>
+
+        <!-- Color bar -->
+        <div class="w-2 rounded-full h-full overflow-hidden flex flex-col justify-center">
+            <div class="w-full h-1/2 bg-gradient-to-b from-red-500 via-yellow-500 to-green-500"></div>
+            <div class="w-full h-1/2 bg-gradient-to-b from-green-500 to-blue-500"></div>
+        </div>
+
+        <div class="text-xs text-gray-600 mt-1 relative">
+            <span x-text="min_temperature"></span>°C
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endmacro %}
+

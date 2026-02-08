@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>bitbots_teleop</name>
+  <version>1.2.1</version>
+  <description>The bitbots_teleop takes messages from the joy node and converts them to messages for /cmd_vel.</description>
+
+  <maintainer email="5guelden@informatik.uni-hamburg.de">Jasper Güldenstein</maintainer>
+  <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+
+  <license>MIT</license>
+  
+  <author email="5guelden@informatik.uni-hamburg.de">Jasper Güldenstein</author>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>bitbots_docs</depend>
+  <depend>bitbots_msgs</depend>
+  <depend>rclpy</depend>
+  <depend>std_msgs</depend>
+  <depend>tf_transformations</depend>
+  <depend>joy_linux</depend>
+
+  <test_depend>python3-pytest</test_depend>
+
+  <export>
+    <bitbots_documentation>
+      <language>python2</language>
+      <status>tested_robot</status>
+    </bitbots_documentation>
+    <build_type>ament_python</build_type>
+  </export>
+
+  <exec_depend>rosidl_default_runtime</exec_depend>
+  </package>
