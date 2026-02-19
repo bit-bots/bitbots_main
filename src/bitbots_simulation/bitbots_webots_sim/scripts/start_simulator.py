@@ -3,6 +3,7 @@ import argparse
 import subprocess
 import sys
 import threading
+from time import sleep
 
 import rclpy
 from ament_index_python import get_package_share_directory
@@ -46,13 +47,19 @@ class WebotsSim(Node):
             cmd + list(extra_args) + [f"--mode={mode}", f"--port={sim_port}", f"{pkg_path}/worlds/{world_name}"]
         )
         print(f"running {' '.join(cmd_with_args)}")
-        self.sim_proc = subprocess.Popen(cmd_with_args)
+        # We move webots out of the current process group so that it doesn't receive CTRL+C early
+        self.sim_proc = subprocess.Popen(cmd_with_args, process_group=0)
 
     def run_simulation(self):
         # join with child process
         try:
             sys.exit(self.sim_proc.wait())
         except KeyboardInterrupt:
+            # We wait a bit before actually terminating WeBots
+            # This is such that cleanup actions, e.g. stopping the recording
+            # can happen. Otherwise webots completely throws away the animation...
+            sleep(1)
+            self.sim_proc.terminate()
             sys.exit(self.sim_proc.returncode)
 
 

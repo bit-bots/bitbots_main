@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Optional
 
 import numpy as np
@@ -62,6 +63,7 @@ class SupervisorController:
         self.rotation_fields = {}
         self.joint_nodes = {}
         self.link_nodes = {}
+        self.currently_recording = False
 
         # set reset height based on the robot, so that we can reset different robots easily
         self.robot_type = robot
@@ -121,6 +123,9 @@ class SupervisorController:
             )
             self.simulator_push_service = self.ros_node.create_service(
                 SimulatorPush, base_ns + "simulator_push", self.simulator_push
+            )
+            self.simulator_record_service = self.ros_node.create_service(
+                Empty, base_ns + "simulator_record", self.simulator_record
             )
 
         self.world_info = self.supervisor.getFromDef("world_info")
@@ -248,6 +253,21 @@ class SupervisorController:
     def simulator_push(self, request=None, response=None):
         self.robot_nodes[request.robot].addForce([request.force.x, request.force.y, request.force.z], request.relative)
         return response or Empty.Response()
+
+    def simulator_record(self, request=None, response=None):
+        if not self.currently_recording:
+            file_path = str((Path.home() / "latest_run" /"latest_run.html").absolute())
+            self.ros_node.get_logger().info(f"Starting recording to file {file_path}")
+            self.currently_recording = self.supervisor.animationStartRecording(file_path)
+        else:
+            self.ros_node.get_logger().info("Stopping recording")
+            self.currently_recording = not self.supervisor.animationStopRecording()
+        return response or Empty.Response()
+
+    def on_shutdown(self):
+        if self.currently_recording:
+            self.ros_node.get_logger().info("Stopping recording")
+            self.currently_recording = not self.supervisor.animationStopRecording()
 
     def reset_ball(self, request=None, response=None):
         self.ball.getField("translation").setSFVec3f([0, 0, 0.0772])

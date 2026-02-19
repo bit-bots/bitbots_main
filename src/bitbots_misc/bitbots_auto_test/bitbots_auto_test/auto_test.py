@@ -15,6 +15,8 @@ from rclpy.constants import S_TO_NS
 from rclpy.node import Node
 from rclpy.parameter import Parameter
 from rclpy.qos import DurabilityPolicy, QoSProfile
+from std_srvs.srv import Empty
+
 
 from bitbots_auto_test.monitoring_node import Monitoring
 from bitbots_msgs.srv import SetObjectPose, SetObjectPosition
@@ -220,6 +222,7 @@ class AutoTest(Node):
 
         self.set_robot_pose_service = self.create_client(SetObjectPose, "set_robot_pose")
         self.set_ball_pos_service = self.create_client(SetObjectPosition, "set_ball_position")
+        self.recording_service = self.create_client(Empty, "simulator_record")
         self.create_subscription(ModelStates, "/model_states", qos_profile=10, callback=self.model_states_callback)
         self.ball_pose = Pose()
         self.ball_twist = Twist()
@@ -310,21 +313,25 @@ class AutoTest(Node):
         )
 
     def loop(self):
+        start = self.get_clock().now()
+        while self.get_clock().now() - start < Duration(seconds=1):
+            pass
+        self.get_logger().info("Starting main loop")
+        request = Empty.Request()
+        self.recording_service.call(request) # start
         self.next_test()
         self.setup_sequence()
-        last_print = self.get_clock().now()
         while True:
             if self.current_test is not None:
                 self.current_test.update()
-            if self.get_clock().now() - last_print > Duration(seconds=2):
-                last_print = self.get_clock().now()
             if self.current_test is not None and self.current_test.result is not None:
                 self.finished()
                 self.next_test()
                 if self.current_test is None:
-                    print("Done with all tests")
+                    self.get_logger().info("Done with all tests")
                     break
                 self.setup_sequence()
+        self.recording_service.call(request) # stop
 
 
 def main():
