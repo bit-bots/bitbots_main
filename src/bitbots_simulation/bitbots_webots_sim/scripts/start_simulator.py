@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 import argparse
+import os
+import signal
 import subprocess
 import sys
 import threading
@@ -57,9 +59,13 @@ class WebotsSim(Node):
         except KeyboardInterrupt:
             # We wait a bit before actually terminating WeBots
             # This is such that cleanup actions, e.g. stopping the recording
-            # can happen. Otherwise webots completely throws away the animation...
+            # can happen. Otherwise webots completely throws away the animation file
             sleep(1)
-            self.sim_proc.terminate()
+            # When running headless we need to kill the process group, not just
+            # the xvfb-run process. This confuses webots for a bit because the
+            # x-server shuts down before it can. This shouldn't be an issue.
+            os.killpg(os.getpgid(self.sim_proc.pid), signal.SIGTERM)
+            self.sim_proc.wait()
             sys.exit(self.sim_proc.returncode)
 
 
