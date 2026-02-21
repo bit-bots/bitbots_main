@@ -9,7 +9,7 @@ setup(
     data_files=[
         ("share/ament_index/resource_index/packages", ["resource/" + package_name]),
         ("share/" + package_name, ["package.xml"]),
-        ("share/" + package_name + "/models", ["models/wolfgang_walk_ppo.onnx"]),
+        ("share/" + package_name + "/models", ["models/wolfgang_kick_ppo.onnx"]),
     ],
     install_requires=["setuptools"],
     zip_safe=True,
@@ -21,6 +21,7 @@ setup(
     entry_points={
         "console_scripts": [
             "walk = bitbots_rl_walk.walk:main",
+            "kick = bitbots_rl_walk.kick:main",
         ],
     },
 )

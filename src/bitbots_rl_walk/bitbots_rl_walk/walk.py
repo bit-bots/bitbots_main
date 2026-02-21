@@ -21,9 +21,10 @@ from typing import Optional
 import numpy as np
 import onnxruntime as rt
 from ament_index_python import get_package_share_directory
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import PoseWithCovarianceStamped, Twist
 from rclpy.node import Node
 from sensor_msgs.msg import Imu, JointState
+from soccer_vision_3d_msgs.msg import GoalpostArray
 from transforms3d.euler import euler2mat
 from transforms3d.quaternions import quat2mat
 
@@ -160,6 +161,8 @@ class WalkNode(Node):
     _imu_data: Optional[Imu] = None
     _joint_state: Optional[JointState] = None
     _cmd_vel: Optional[Twist] = None
+    _ball_pos_rel_filter: Optional[PoseWithCovarianceStamped] = None
+    _goal_posts_rel: Optional[GoalpostArray] = None
     _phase: np.ndarray = np.array([0.0, np.pi], dtype=np.float32)
     _phase_dt: float
 
@@ -179,6 +182,12 @@ class WalkNode(Node):
         self._imu_sub = self.create_subscription(Imu, "imu/data", self._imu_callback, 10)
         self._joint_state_sub = self.create_subscription(JointState, "joint_states", self._joint_state_callback, 10)
         self._cmd_vel_sub = self.create_subscription(Twist, "cmd_vel", self._cmd_vel_callback, 10)
+        self._ball_pos_rel_filter_sub = self.create_subscription(
+            PoseWithCovarianceStamped, "ball_position_relative_filtered", self._ball_pos_rel_filter_callback, 10
+        )
+        self._goal_posts_rel_sub = self.create_subscription(
+            GoalpostArray, "goal_posts_relative", self._goal_posts_rel_callback, 10
+        )
 
         self._timer = self.create_timer(CONTROL_DT, self._timer_callback)
 
@@ -214,6 +223,12 @@ class WalkNode(Node):
     def _imu_callback(self, msg: Imu):
         self._imu_data = msg
 
+    def _ball_pos_rel_filter_callback(self, msg: PoseWithCovarianceStamped):
+        self._ball_pos_rel_filter = msg
+
+    def _goal_posts_rel_callback(self, msg: GoalpostArray):
+        self._goal_posts_rel = msg
+
     def _timer_callback(self):
         """Timer callback to publish joint commands based on the ONNX policy."""
         if self._imu_data is None or self._joint_state is None or self._cmd_vel is None:
@@ -226,7 +241,7 @@ class WalkNode(Node):
                 self.get_logger().warning("Waiting for joint state data", throttle_duration_sec=1.0)
             if self._cmd_vel is None:
                 # self.get_logger().warning("Waiting for cmd_vel data", throttle_duration_sec=1.0)
-                self._cmd_vel = Twist(x=1.0, y=0.0, z=0.0)  # Testing purpose
+                self._cmd_vel = Twist(x=0.3, y=0.0, z=0.0)  # Testing purpose
 
             return
 
@@ -274,6 +289,18 @@ class WalkNode(Node):
 
         command = np.array([self._cmd_vel.linear.x, self._cmd_vel.linear.y, self._cmd_vel.angular.z], dtype=np.float32)
 
+        """
+        rel_ball_pos = np.array(
+            [
+                self._ball_pos_rel_filter.pose.pose.position.x,
+                self._ball_pos_rel_filter.pose.pose.position.y,
+            ],
+            dtype=np.float32,
+        )
+
+        rel_target_pos = np.array([])
+        """
+
         obs = np.hstack(
             [
                 gyro,  # 3
@@ -283,6 +310,7 @@ class WalkNode(Node):
                 joint_velocities,  # 18
                 self._previous_action,  # 18  # Previous action
                 phase,  # 2
+                # rel_ball_pos,  # 2
             ]
         ).astype(np.float32)
 
