@@ -9,7 +9,10 @@ setup(
     data_files=[
         ("share/ament_index/resource_index/packages", ["resource/" + package_name]),
         ("share/" + package_name, ["package.xml"]),
-        ("share/" + package_name + "/models", ["models/wolfgang_kick_ppo.onnx"]),
+        (
+            "share/" + package_name + "/models",
+            ["models/wolfgang_policy.onnx", "models/wolfgang_walk_ppo.onnx", "models/wolfgang_kick_ppo.onnx"],
+        ),
     ],
     install_requires=["setuptools"],
     zip_safe=True,

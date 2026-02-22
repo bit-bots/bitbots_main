@@ -123,3 +123,39 @@ class KickBallDynamic(AbstractKickAction):
                 self._goal_sent = True
             else:
                 self.pop()
+
+
+class RLKick(AbstractKickAction):
+    def __init__(self, blackboard, dsd, parameters):
+        super().__init__(blackboard, dsd, parameters)
+
+        self.kick_length = self.blackboard.config["kick_cost_kick_length"]
+        self.angular_range = self.blackboard.config["kick_cost_angular_range"]
+        self.max_kick_angle = self.blackboard.config["max_kick_angle"]
+        self.num_kick_angles = self.blackboard.config["num_kick_angles"]
+        self.penalty_kick_angle = self.blackboard.config["penalty_kick_angle"]
+
+    def perform(self, reevaluate=False):
+        goal = Kick.Goal()
+        goal.header.stamp = self.blackboard.node.get_clock().now().to_msg()
+        goal.header.frame_id = self.blackboard.world_model.base_footprint_frame
+
+        ball_u, ball_v = self.blackboard.world_model.get_ball_position_uv()
+        goal.kick_speed = 1.0
+        goal.ball_position.x = ball_u
+        goal.ball_position.y = ball_v
+        goal.ball_position.z = 0.0
+        goal.unstable = False
+
+        kick_direction = self.blackboard.costmap.get_best_kick_direction(
+            -self.max_kick_angle,
+            self.max_kick_angle,
+            self.num_kick_angles,
+            self.kick_length,
+            self.angular_range,
+        )
+
+        goal.kick_direction = quat_from_yaw(kick_direction)
+
+        self.blackboard.kick.rl_kick(goal)
+        self.pop()

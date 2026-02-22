@@ -21,7 +21,7 @@ from typing import Optional
 import numpy as np
 import onnxruntime as rt
 from ament_index_python import get_package_share_directory
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import PoseStamped, Twist
 from rclpy.node import Node
 from sensor_msgs.msg import Imu, JointState
 from transforms3d.euler import euler2mat
@@ -153,18 +153,19 @@ ORDERED_RELEVANT_JOINT_NAMES = [
 ]
 
 
-class WalkNode(Node):
+class KickNode(Node):
     """Node to control the wolfgang humanoid."""
 
     _previous_action: np.ndarray = np.zeros(len(ORDERED_RELEVANT_JOINT_NAMES), dtype=np.float32)
     _imu_data: Optional[Imu] = None
     _joint_state: Optional[JointState] = None
     _cmd_vel: Optional[Twist] = None
+    _goal_pose: Optional[PoseStamped] = None
     _phase: np.ndarray = np.array([0.0, np.pi], dtype=np.float32)
     _phase_dt: float
 
     def __init__(self):
-        super().__init__("reinforcement_learning_walk_inference_node")
+        super().__init__("reinforcement_learning_kick_inference_node")
 
         # Set sim time parameter to true
         # self.set_parameters([
@@ -179,6 +180,7 @@ class WalkNode(Node):
         self._imu_sub = self.create_subscription(Imu, "imu/data", self._imu_callback, 10)
         self._joint_state_sub = self.create_subscription(JointState, "joint_states", self._joint_state_callback, 10)
         self._cmd_vel_sub = self.create_subscription(Twist, "cmd_vel", self._cmd_vel_callback, 10)
+        self._goal_pose_sub = self.create_subscription(PoseStamped, "goal_pose", self._goal_pose_callback, 10)
 
         self._timer = self.create_timer(CONTROL_DT, self._timer_callback)
 
@@ -210,6 +212,9 @@ class WalkNode(Node):
 
     def _cmd_vel_callback(self, msg: Twist):
         self._cmd_vel = msg
+
+    def _goal_pose_callback(self, msg: PoseStamped):
+        self._goal_pose = msg
 
     def _imu_callback(self, msg: Imu):
         self._imu_data = msg
@@ -274,6 +279,18 @@ class WalkNode(Node):
 
         command = np.array([self._cmd_vel.linear.x, self._cmd_vel.linear.y, self._cmd_vel.angular.z], dtype=np.float32)
 
+        """
+        rel_ball_pos = np.array(
+            [
+                self._ball_pos_rel_filter.pose.pose.position.x,
+                self._ball_pos_rel_filter.pose.pose.position.y,
+            ],
+            dtype=np.float32,
+        )
+
+        rel_target_pos = np.array([])
+        """
+
         obs = np.hstack(
             [
                 gyro,  # 3
@@ -283,6 +300,7 @@ class WalkNode(Node):
                 joint_velocities,  # 18
                 self._previous_action,  # 18  # Previous action
                 phase,  # 2
+                # rel_ball_pos,  # 2
             ]
         ).astype(np.float32)
 
@@ -310,7 +328,7 @@ def main():
     import rclpy
 
     rclpy.init()
-    node = WalkNode()
+    node = KickNode()
     rclpy.spin(node)
     node.destroy_node()
     rclpy.try_shutdown()
