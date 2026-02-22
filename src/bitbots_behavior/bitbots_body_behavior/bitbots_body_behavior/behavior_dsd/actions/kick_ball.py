@@ -2,6 +2,7 @@ from bitbots_blackboard.body_blackboard import BodyBlackboard
 from bitbots_blackboard.capsules.kick_capsule import KickCapsule
 from bitbots_utils.transforms import quat_from_yaw
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
+from geometry_msgs.msg import PoseStamped
 
 from bitbots_msgs.action import Kick
 
@@ -136,16 +137,14 @@ class RLKick(AbstractKickAction):
         self.penalty_kick_angle = self.blackboard.config["penalty_kick_angle"]
 
     def perform(self, reevaluate=False):
-        goal = Kick.Goal()
-        goal.header.stamp = self.blackboard.node.get_clock().now().to_msg()
-        goal.header.frame_id = self.blackboard.world_model.base_footprint_frame
+        goal_pose = PoseStamped()
+        goal_pose.header.stamp = self.blackboard.node.get_clock().now().to_msg()
+        goal_pose.header.frame_id = self.blackboard.world_model.base_footprint_frame
 
         ball_u, ball_v = self.blackboard.world_model.get_ball_position_uv()
-        goal.kick_speed = 1.0
-        goal.ball_position.x = ball_u
-        goal.ball_position.y = ball_v
-        goal.ball_position.z = 0.0
-        goal.unstable = False
+        goal_pose.pose.position.x = ball_u
+        goal_pose.pose.position.y = ball_v
+        goal_pose.pose.position.z = 0.0
 
         kick_direction = self.blackboard.costmap.get_best_kick_direction(
             -self.max_kick_angle,
@@ -155,7 +154,7 @@ class RLKick(AbstractKickAction):
             self.angular_range,
         )
 
-        goal.kick_direction = quat_from_yaw(kick_direction)
+        goal_pose.pose.orientation = quat_from_yaw(kick_direction)
 
-        self.blackboard.kick.rl_kick(goal)
+        self.blackboard.kick.rl_kick(goal_pose)
         self.pop()

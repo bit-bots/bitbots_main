@@ -87,7 +87,7 @@ class KickCapsule(AbstractBlackboardCapsule):
     def rl_kick(self, goal_pose: PoseStamped) -> None:
         """
         Kick the ball using the RL kick
-        :param target: Target for the RL kick (e.g. left or right foot)
+        :param goal_pose: Pose to kick to
         """
         self.rl_kick_pub.publish(goal_pose)
 
