@@ -279,17 +279,15 @@ class KickNode(Node):
 
         command = np.array([self._cmd_vel.linear.x, self._cmd_vel.linear.y, self._cmd_vel.angular.z], dtype=np.float32)
 
-        """
         rel_ball_pos = np.array(
             [
-                self._ball_pos_rel_filter.pose.pose.position.x,
-                self._ball_pos_rel_filter.pose.pose.position.y,
+                self._goal_pose.pose.position.x,
+                self._goal_pose.pose.position.y,
             ],
             dtype=np.float32,
         )
 
         rel_target_pos = np.array([])
-        """
 
         obs = np.hstack(
             [
@@ -300,7 +298,8 @@ class KickNode(Node):
                 joint_velocities,  # 18
                 self._previous_action,  # 18  # Previous action
                 phase,  # 2
-                # rel_ball_pos,  # 2
+                rel_ball_pos,  # 2
+                rel_target_pos,  # 0
             ]
         ).astype(np.float32)
 
