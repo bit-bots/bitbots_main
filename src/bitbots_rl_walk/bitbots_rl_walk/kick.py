@@ -31,78 +31,6 @@ from bitbots_msgs.msg import JointCommand
 
 ONNX_MODEL = os.path.join(get_package_share_directory("bitbots_rl_walk"), "models", "wolfgang_kick_ppo.onnx")
 
-PREPARATION_STATE = np.array(
-    [
-        0,  # RShoulderPitch
-        0,  # RShoulderRoll
-        0,  # RElbow (angewinkelt)
-        0,  # LShoulderPitch
-        0,  # LShoulderRoll
-        0,  # LElbow (angewinkelt)
-        0,  # RHipYaw
-        0,  # RHipRoll
-        0,  # RHipPitch
-        0,  # RKnee (durchgestreckt)
-        -0.2,  # RAnklePitch (leichte Verlagerung nach hinten)
-        0,  # RAnkleRoll
-        0,  # LHipYaw
-        0,  # LHipRoll
-        0,  # LHipPitch
-        0,  # LKnee (durchgestreckt)
-        0.2,  # LAnklePitch (leichte Verlagerung nach hinten)
-        0,  # LAnkleRoll
-    ],
-    dtype=np.float32,
-)
-
-PREPARATION_STATE2 = np.array(
-    [
-        0,  # RShoulderPitch
-        0,  # RShoulderRoll
-        0,  # RElbow
-        0,  # LShoulderPitch
-        0,  # LShoulderRoll
-        0,  # LElbow
-        0,  # RHipYaw
-        0,  # RHipRoll
-        0,  # RHipPitch    ← stark reduziert (oder probiere +0.10, falls negativ = vorne)
-        -1.0,  # RKnee        ← deutlich weniger Beugung → sanfter
-        0.60,  # RAnklePitch  ← stärker Zehen hoch → mehr Gegengewicht nach hinten
-        0,  # RAnkleRoll
-        0,  # LHipYaw
-        0,  # LHipRoll
-        0,  # LHipPitch    ← symmetrisch – teste ggf. -0.10
-        1.0,  # LKnee        ← symmetrisch weniger Beugung
-        -0.60,  # LAnklePitch  ← stärker kompensierend
-        0,  # LAnkleRoll
-    ],
-    dtype=np.float32,
-)
-
-PREPARATION_STATE3 = np.array(
-    [
-        0,  # RShoulderPitch
-        0,  # RShoulderRoll
-        0,  # RElbow
-        0,  # LShoulderPitch
-        0,  # LShoulderRoll
-        0,  # LElbow
-        0.012,  # RHipYaw      ← leichter Übergang zu 0.024
-        -0.05,  # RHipRoll     ← leichter zu -0.104
-        -0.32,  # RHipPitch    ← Mittel zwischen -0.10 und -0.735 (weniger vorwärts)
-        -1.06,  # RKnee        ← Mittel zwischen -0.80 und -1.323
-        0.57,  # RAnklePitch  ← etwas stärker als in STATE2 (mehr nach hinten)
-        -0.06,  # RAnkleRoll   ← leichter zu -0.129
-        -0.008,  # LHipYaw      ← zu -0.016
-        0.04,  # LHipRoll     ← zu 0.073
-        0.32,  # LHipPitch    ← Mittel zwischen 0.10 und 0.742 (mirrored Sign)
-        1.07,  # LKnee        ← Mittel zwischen 0.80 und 1.335
-        -0.57,  # LAnklePitch  ← mirrored, stärker kompensierend
-        0.04,  # LAnkleRoll   ← zu 0.074
-    ],
-    dtype=np.float32,
-)
-
 WALKREADY_STATE = np.array(
     [
         0,
@@ -187,21 +115,10 @@ class KickNode(Node):
         # First send the walkready state to the robot for 100 iterations
         joint_command = JointCommand()
         joint_command.joint_names = ORDERED_RELEVANT_JOINT_NAMES
-        joint_command.positions = PREPARATION_STATE
         joint_command.velocities = [0.2] * len(ORDERED_RELEVANT_JOINT_NAMES)
         joint_command.accelerations = [-1.0] * len(ORDERED_RELEVANT_JOINT_NAMES)
         joint_command.max_currents = [-1.0] * len(ORDERED_RELEVANT_JOINT_NAMES)  # -1.0 means no limit
         joint_command.header.stamp = self.get_clock().now().to_msg()
-        self._joint_command_pub.publish(joint_command)
-        time.sleep(8)
-
-        joint_command.positions = PREPARATION_STATE2
-        self._joint_command_pub.publish(joint_command)
-        time.sleep(12)
-
-        joint_command.positions = PREPARATION_STATE3
-        self._joint_command_pub.publish(joint_command)
-        time.sleep(12)
 
         joint_command.positions = WALKREADY_STATE
         self._joint_command_pub.publish(joint_command)
@@ -219,6 +136,19 @@ class KickNode(Node):
     def _imu_callback(self, msg: Imu):
         self._imu_data = msg
 
+    def _calculate_target_from_direction(self, kick_direction):
+        # Convert the kick direction quaternion to a 2D unit vector
+        kick_direction_mat = quat2mat(
+            [
+                kick_direction.w,
+                kick_direction.x,
+                kick_direction.y,
+                kick_direction.z,
+            ]
+        )
+        kick_direction_vec = kick_direction_mat @ np.array([1, 0, 0], dtype=np.float32)
+        return kick_direction_vec[:2]
+
     def _timer_callback(self):
         """Timer callback to publish joint commands based on the ONNX policy."""
         if self._imu_data is None or self._joint_state is None or self._cmd_vel is None:
@@ -230,8 +160,8 @@ class KickNode(Node):
             if self._joint_state is None:
                 self.get_logger().warning("Waiting for joint state data", throttle_duration_sec=1.0)
             if self._cmd_vel is None:
-                # self.get_logger().warning("Waiting for cmd_vel data", throttle_duration_sec=1.0)
-                self._cmd_vel = Twist(x=0.3, y=0.0, z=0.0)  # Testing purpose
+                self.get_logger().warning("Waiting for cmd_vel data", throttle_duration_sec=1.0)
+                # self._cmd_vel = Twist(x=0.3, y=0.0, z=0.0)  # Testing purpose
 
             return
 
@@ -287,7 +217,9 @@ class KickNode(Node):
             dtype=np.float32,
         )
 
-        rel_target_pos = np.array([])
+        kick_direction = self._goal_pose.pose.orientation
+
+        rel_target_pos = self._calculate_target_from_direction(kick_direction)
 
         obs = np.hstack(
             [
