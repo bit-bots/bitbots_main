@@ -12,6 +12,8 @@
         <arg name="sim" value="$(var sim)"/>
     </include>
 
+    <include file="$(find-pkg-share bitbots_tts)/launch/tts.launch"/>
+
     <group if="$(var viz)">
         <node pkg="bitbots_utils" exec="motor_goals_viz_helper.py" output="screen" args="--all"/>
         <node pkg="rviz2" exec="rviz2" args="-d $(find-pkg-share bitbots_quintic_walk)/config/walk.rviz"/>

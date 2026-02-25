@@ -25,6 +25,11 @@
         <arg name="fieldname" value="$(var fieldname)" />
     </include>
 
+    <!-- load the text to speech engine -->
+    <group if="$(var tts)">
+        <include file="$(find-pkg-share bitbots_tts)/launch/tts.launch"/>
+    </group >
+
     <!-- load the diagnostic aggregator -->
     <include file="$(find-pkg-share bitbots_diagnostic)/launch/aggregator.launch" />
 

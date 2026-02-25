@@ -4,7 +4,6 @@
     <arg name="torqueless_mode" default="false"/>
     <arg name="only_imu" default="false"/>
     <arg name="only_pressure" default="false"/>
-    <arg name="tts" default="true" description="Whether to speak" />
 
     <let if="$(env IS_ROBOT false)" name="taskset" value="taskset -c 0"/>
     <let unless="$(env IS_ROBOT false)" name="taskset" value=""/>
@@ -28,9 +27,5 @@
         <include file="$(find-pkg-share bitbots_buttons)/launch/buttons.launch"/>
         <!--include file="$(find-pkg-share bitbots_ros_control)/launch/pressure_converter.launch"/-->
     </group>
-
-    <group if="$(var tts)">
-        <include file="$(find-pkg-share bitbots_tts)/launch/tts.launch"/>
-    </group >
 </launch>
 
