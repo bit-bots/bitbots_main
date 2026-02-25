@@ -216,7 +216,7 @@ syrupy = ">=5.0.0, <6"
 exhale = ">=0.3.7, <0.4"
 
 [feature.ros.target.linux-64.pypi-dependencies]
-onnxruntime-webgpu = ">=1.24.0.dev20251218001, <1.24.1"
+onnxruntime-webgpu = ">=1.24.0.dev20251218001, <2"
 
 [feature.ros.target.linux-aarch64.pypi-dependencies]
 # Currently onnxruntime-webgpu is not available on ARM, so we fallback to CPU onnx for now

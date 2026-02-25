@@ -1024,7 +1024,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/ea/78/9a8a174011682d71cb4922f4014ebbeb9d3067922678e7059351fd9207cf/exhale-0.3.7-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/e8/2d/d2a548598be01649e2d46231d151a6c56d10b964d94043a335ae56ea2d92/flatbuffers-25.12.19-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/43/e3/7d92a15f894aa0c9c4b49b8ee9ac9850d6e63b03c9c32c0367a13ae62209/mpmath-1.3.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/26/ff/e94fd3e90638b89dd231d33eac671cf265bcdc96b8e3fa9180744577e7b9/onnxruntime_webgpu-1.24.0.dev20251218001-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
+      - pypi: https://files.pythonhosted.org/packages/b2/f1/d5318874aed3b57bd00bf76e8f9698b73b578137d9d403314a4e649fbb63/onnxruntime_webgpu-1.25.0.dev20260212001-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/46/2c/1462b1d0a634697ae9e55b3cecdcb64788e8b7d63f54d923fcd0bb140aed/soupsieve-2.8.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/a2/09/77d55d46fd61b4a135c444fc97158ef34a095e5681d0a6c10b75bf356191/sympy-1.14.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/de/70/cf880c3b95a6034ef673e74b369941b42315c01f1554a5637a4f8b911009/syrupy-5.1.0-py3-none-any.whl
@@ -3187,7 +3187,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/ea/78/9a8a174011682d71cb4922f4014ebbeb9d3067922678e7059351fd9207cf/exhale-0.3.7-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/e8/2d/d2a548598be01649e2d46231d151a6c56d10b964d94043a335ae56ea2d92/flatbuffers-25.12.19-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/43/e3/7d92a15f894aa0c9c4b49b8ee9ac9850d6e63b03c9c32c0367a13ae62209/mpmath-1.3.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/26/ff/e94fd3e90638b89dd231d33eac671cf265bcdc96b8e3fa9180744577e7b9/onnxruntime_webgpu-1.24.0.dev20251218001-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
+      - pypi: https://files.pythonhosted.org/packages/b2/f1/d5318874aed3b57bd00bf76e8f9698b73b578137d9d403314a4e649fbb63/onnxruntime_webgpu-1.25.0.dev20260212001-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/fc/b7/ba5551480e397c6e86805cc381dd6dc36b15411a806c00c35b661d8dd77e/pyamdgpuinfo-2.1.7-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/46/2c/1462b1d0a634697ae9e55b3cecdcb64788e8b7d63f54d923fcd0bb140aed/soupsieve-2.8.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/a2/09/77d55d46fd61b4a135c444fc97158ef34a095e5681d0a6c10b75bf356191/sympy-1.14.0-py3-none-any.whl
@@ -13266,12 +13266,11 @@ packages:
   - protobuf
   - sympy
   requires_python: '>=3.10'
-- pypi: https://files.pythonhosted.org/packages/26/ff/e94fd3e90638b89dd231d33eac671cf265bcdc96b8e3fa9180744577e7b9/onnxruntime_webgpu-1.24.0.dev20251218001-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
+- pypi: https://files.pythonhosted.org/packages/b2/f1/d5318874aed3b57bd00bf76e8f9698b73b578137d9d403314a4e649fbb63/onnxruntime_webgpu-1.25.0.dev20260212001-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
   name: onnxruntime-webgpu
-  version: 1.24.0.dev20251218001
-  sha256: ac2202d17a677f31ce15b54173605e1cc263ca435c3f56195ed01462bd6aef3f
+  version: 1.25.0.dev20260212001
+  sha256: 81b6669fcc9ec4435576eabb7ce14c262ce9b18a0b35e391a334e7a7f54243f8
   requires_dist:
-  - coloredlogs
   - flatbuffers
   - numpy>=1.21.6
   - packaging
