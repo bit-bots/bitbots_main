@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
 
 import os
-import subprocess
-import time
 import traceback
+from functools import partial
 
+import numpy as np
 import rclpy
-import requests
-from ament_index_python import get_package_prefix
 from rcl_interfaces.msg import Parameter, SetParametersResult
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
 from rclpy.publisher import Publisher
+import soundcard as sc
 
 from bitbots_msgs.msg import Audio
+from bitbots_tts.supertonic.helper import load_text_to_speech, load_voice_style, timer
 
 
 def speak(text: str, publisher: Publisher, priority: int = 20, speaking_active: bool = True) -> None:
@@ -25,12 +25,6 @@ def speak(text: str, publisher: Publisher, priority: int = 20, speaking_active: 
         msg.text = text
         publisher.publish(msg)
 
-
-def say(text: str) -> None:
-    """Start the shell `say.sh` script to output given text with mimic3. Beware: this is blocking."""
-    script_path = os.path.join(get_package_prefix("bitbots_tts"), "lib/bitbots_tts/say.sh")
-    process = subprocess.Popen((script_path, text))
-    process.wait()
 
 
 class Speaker(Node):
@@ -62,16 +56,25 @@ class Speaker(Node):
         # Subscribe to the speak topic
         self.create_subscription(Audio, "speak", self.speak_cb, 10, callback_group=MutuallyExclusiveCallbackGroup())
 
-        # Wait for the mimic server to start
-        while True:
-            try:
-                requests.get("http://localhost:59125")
-                break
-            except requests.exceptions.ConnectionError:
-                # log once per second that the server is not yet available
-                self.get_logger().info("Waiting for mimic server to start...", throttle_duration_sec=2.0)
-                time.sleep(0.5)
-                pass
+        # Load the tts model 
+        conda_prefix = os.environ.get("CONDA_PREFIX", "")
+        if not conda_prefix:
+            raise ValueError(
+                "CONDA_PREFIX environment variable not set! We now expect models to be shared as conda packages."
+            )
+
+        # Assemble model package name and look at its share directory
+        model_path = os.path.join(conda_prefix, "share", "tts_supertonic")
+
+        self.text_to_speech_engine = load_text_to_speech(os.path.join(model_path, "onnx"), use_gpu=True)
+
+        # TODO make this configurable via parameters
+        voice = "F2"
+        steps = 5  # Number of diffusion steps, higher is better quality but also slower
+
+        style = load_voice_style([os.path.join(model_path, "voice_styles", f"{voice}.json")])
+
+        self.generate_speech = partial(self.text_to_speech_engine, style=style, total_step=steps)
 
         # Start processing the queue
         self.create_timer(0.1, self.run_speaker, callback_group=MutuallyExclusiveCallbackGroup())
@@ -96,7 +99,14 @@ class Speaker(Node):
             # Get the next message and speak it
             text, _ = self.prio_queue.pop(0)
             try:
-                say(text)
+                with timer("TTS Generation Time"):
+                    wav_untrimmed, duration = self.generate_speech(f"{text}")
+                wav = wav_untrimmed[0, : int(self.text_to_speech_engine.sample_rate * duration[0].item())] 
+                wav = np.concatenate([np.zeros(2000), wav])
+                speaker = sc.default_speaker()
+                with speaker.player(samplerate=self.text_to_speech_engine.sample_rate) as p:
+                    p.play(wav)
+                self.get_logger().info(f"Finished speaking: {text} (Duration: {duration[0].item():.2f}s) Used device: {speaker.name}")
             except OSError:
                 self.get_logger().error(str(traceback.format_exc()))
 
