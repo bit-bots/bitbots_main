@@ -2,7 +2,7 @@ from datetime import datetime
 
 from launch import LaunchDescription
 from launch.actions import ExecuteProcess, OpaqueFunction
-from launch.substitutions import EnvironmentVariable, PathJoinSubstitution
+from launch.substitutions import EnvironmentVariable, PathJoinSubstitution, FindExecutable
 
 # from launch_ros.actions import Node
 
@@ -85,7 +85,8 @@ def generate_action(context):
         # Constructing the complete command
         cmd=[
             # Main command to start recording ros2 bags
-            "ros2",
+            "python",
+            FindExecutable(name="ros2"),
             "bag",
             "record",
             "-o",
@@ -98,11 +99,12 @@ def generate_action(context):
             "--polling-interval",
             "1000",
             "--use-sim-time",
+            "--topics"
         ]
         + TOPICS_TO_RECORD,
         output="screen",
         name=node_name,
-        shell=True,
+        shell=False,
     )
     return [main_process]
 
