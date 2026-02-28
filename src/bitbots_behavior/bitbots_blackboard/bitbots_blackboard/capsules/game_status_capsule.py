@@ -20,6 +20,7 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
         self.last_goal_from_us_time = -86400.0
         self.last_goal_time = -86400.0
         self.free_kick_kickoff_team: Optional[bool] = None
+        self.whistle_detected: bool = False
         self.game_controller_stop: bool = False
         # publish stopped msg for hcm
         self.stop_pub = node.create_publisher(Bool, "game_controller/stop_msg", 1)
@@ -127,3 +128,9 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
         """
         self.last_update = self._node.get_clock().now().nanoseconds / 1e9
         self.gamestate = gamestate_msg
+
+    def whistle_detected(self) -> bool:
+        return self.whistle_detected
+
+    def whistle_detection_callback(self, msg) -> None:  # MSG type is assumed to be bool for now, prototyping
+        self.whistle_detected = msg.data

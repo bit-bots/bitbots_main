@@ -11,6 +11,7 @@ from rclpy.duration import Duration
 from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
 from soccer_vision_3d_msgs.msg import RobotArray
+from std_msgs.msg import Bool
 
 from bitbots_body_behavior import behavior_dsd
 from bitbots_msgs.msg import RobotControlState, TeamData
@@ -72,6 +73,13 @@ class BodyDSD:
             Twist,
             "cmd_vel",
             blackboard.pathfinding.cmd_vel_cb,
+            qos_profile=1,
+            callback_group=MutuallyExclusiveCallbackGroup(),
+        )
+        node.create_subscription(
+            Bool,
+            "whistle_detected",
+            blackboard.gamestate.whistle_detection_callback,
             qos_profile=1,
             callback_group=MutuallyExclusiveCallbackGroup(),
         )
