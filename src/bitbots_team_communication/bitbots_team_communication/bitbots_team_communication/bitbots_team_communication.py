@@ -104,6 +104,9 @@ class TeamCommunication:
 
     def create_publishers(self):
         self.team_data_publisher = self.node.create_publisher(TeamData, self.topics["team_data_topic"], qos_profile=1)
+        self.pose_stamped_publisher = self.node.create_publisher(
+            PoseWithCovarianceStamped, "hsl_gamecontroller/pose_stamped", 1
+        )
 
     def create_subscribers(self):
         self.node.create_subscription(
@@ -174,6 +177,7 @@ class TeamCommunication:
         self.gamestate = msg
 
     def pose_cb(self, msg: PoseWithCovarianceStamped):
+        self.pose_stamped_publisher.publish(msg)
         self.pose = msg
 
     def cmd_vel_cb(self, msg: Twist):

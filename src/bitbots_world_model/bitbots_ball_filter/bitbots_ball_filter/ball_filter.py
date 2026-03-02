@@ -17,6 +17,8 @@ from soccer_vision_3d_msgs.msg import Ball, BallArray
 from std_msgs.msg import Header
 from std_srvs.srv import Trigger
 from tf2_geometry_msgs import PointStamped, PoseStamped
+from soccer_model_msgs.msg import Ball as BallWithCovariance
+from std_msgs.msg import Float32
 
 from bitbots_ball_filter.ball_filter_parameters import bitbots_ball_filter as parameters
 
@@ -39,6 +41,7 @@ class BallFilter(Node):
         # Initialize parameters
         self.update_params()
         self.logger.info(f"Using frame '{self.config.filter.frame}' for ball filtering")
+        self.last_ball_time = self.get_clock().now()
 
         self.camera_info: Optional[CameraInfo] = None
 
@@ -48,6 +51,12 @@ class BallFilter(Node):
         # publishes positions of ball
         self.ball_pose_publisher = self.create_publisher(
             PoseWithCovarianceStamped, self.config.ros.ball_position_publish_topic, 1
+        )
+        self.ball_pose_with_covariance_publisher = self.create_publisher(
+            BallWithCovariance, "hsl_gamecontroller/ball_with_covariance", 1
+        )
+        self.ball_age_publisher = self.create_publisher(
+            Float32 , "hsl_gamecontroller/ball_age", 1
         )
 
         # Create callback group
@@ -141,6 +150,7 @@ class BallFilter(Node):
                 # Store the ball measurement
                 self.ball_state_position = numpify(ball_measurement_map.point)
                 self.ball_state_covariance = covariance
+                self.last_ball_time = Time.from_msg(ball_msg.header.stamp)
                 ball_measurement_updated = True
 
         # Get our estimate in the base footprint frame for easier distance calculation
@@ -246,7 +256,7 @@ class BallFilter(Node):
         # Increase covariance
         self.ball_state_covariance[:2, :2] += np.eye(2) * self.config.filter.covariance.process_noise
 
-        # Build message
+        # Build message 
         pose_msg = PoseWithCovarianceStamped()
         pose_msg.header = Header(
             stamp=Time.to_msg(self.get_clock().now()),
@@ -258,6 +268,23 @@ class BallFilter(Node):
         pose_msg.pose.covariance = covariance.flatten()
         pose_msg.pose.pose.orientation.w = 1.0
         self.ball_pose_publisher.publish(pose_msg)
+
+        # Build message for Ball with Covariance
+        ball_msg = BallWithCovariance()
+        ball_msg.header = Header(
+            stamp=Time.to_msg(self.get_clock().now()),
+            frame_id=self.config.filter.frame,
+        )
+        ball_msg.point.point = msgify(Point, self.ball_state_position)
+        covariance = np.zeros((6, 6))
+        covariance[:3, :3] = self.ball_state_covariance
+        ball_msg.point.covariance = covariance.flatten()
+        self.ball_pose_with_covariance_publisher.publish(ball_msg)
+
+        # Build message for Ball age
+        ball_age_msg = Float32()
+        ball_age_msg.data = np.float32(self.get_clock().now() - self.last_ball_time)
+        self.ball_age_publisher.publish(ball_age_msg)
 
 
 def main(args=None) -> None:
