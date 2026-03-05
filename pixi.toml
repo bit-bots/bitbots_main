@@ -3,7 +3,7 @@ authors = ["Florian Vahl <7vahl@informatik.uni-hamburg.de>"]
 channels = [
     "https://data.bit-bots.de/conda/",  # For self hosted ROS / robostack packages
     "https://data.bit-bots.de/conda-misc/output/",  # For self hosted misc (non-ROS, neural network weights, ...) packages
-    "https://github.com/bit-bots/robostack-jazzy-custom-pkgs/tree/pixi_update_hsl_gamecontroller",  # Robostack jazzy channel for ROS packages
+    "https://github.com/bit-bots/robostack-jazzy-custom-pkgs/blob/pixi_update_hsl_gamecontroller/rosdistro_additional_recipes.yaml",  # Robostack jazzy channel for ROS packages
     "conda-forge"  # General conda-forge channel
 ]
 name = "bitbots_main"
