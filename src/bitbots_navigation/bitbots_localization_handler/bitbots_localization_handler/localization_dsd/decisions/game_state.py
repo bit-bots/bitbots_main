@@ -44,6 +44,8 @@ class GameStateDecider(AbstractLocalizationDecisionElement):
             return "PLAYING"
         elif game_state_number == GameState.GAMESTATE_FINISHED:
             return "FINISHED"
+        elif game_state_number == GameState.STATE_STANDBY:
+            return "STANDBY"
 
     def get_reevaluate(self):
         """

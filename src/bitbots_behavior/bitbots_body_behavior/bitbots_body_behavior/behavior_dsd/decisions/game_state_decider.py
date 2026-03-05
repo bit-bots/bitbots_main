@@ -18,16 +18,18 @@ class GameStateDecider(AbstractDecisionElement):
 
         game_state_number = self.blackboard.gamestate.get_gamestate()
         # todo this is a temporary hack to make GUI work
-        if game_state_number == GameState.GAMESTATE_INITIAL:
+        if game_state_number == GameState.STATE_INITIAL:
             return "INITIAL"
-        elif game_state_number == GameState.GAMESTATE_READY:
+        elif game_state_number == GameState.STATE_READY:
             return "READY"
-        elif game_state_number == GameState.GAMESTATE_SET:
+        elif game_state_number == GameState.STATE_SET:
             return "SET"
-        elif game_state_number == GameState.GAMESTATE_PLAYING:
+        elif game_state_number == GameState.STATE_PLAYING:
             return "PLAYING"
-        elif game_state_number == GameState.GAMESTATE_FINISHED:
+        elif game_state_number == GameState.STATE_FINISHED:
             return "FINISHED"
+        elif game_state_number == GameState.STATE_STANDBY:
+            return "STANDBY"
 
     def get_reevaluate(self):
         """

@@ -95,7 +95,7 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
         if gamestate_msg.rival_score > self.gamestate.rival_score:
             self.last_goal_time = self._node.get_clock().now().nanoseconds / 1e9
 
-        '''Was soll das? self.free_kick_kickoff wird nirgends weiter verwendet...
+        '''Anstoß im Falle von Overtime jetzt erstmal nicht genauer geregelt
         if (
             gamestate_msg.main_state == GameState.STATE_SET
             and self.gamestate.setPlay != 2
