@@ -186,3 +186,5 @@ $IsPenalized
                 PLACING --> #Placing
             NORMAL --> #NormalBehavior
             OVERTIME --> #NormalBehavior
+        STANDBY --> #StandAndLook
+            
