@@ -82,13 +82,6 @@ $PassStarted
         NO --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @AvoidBallActive, @GoToPassAcceptPosition
     NO --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @AvoidBallActive, @GoToPassPreparePosition
 
-#GoalieRole
-$CurrentScore
-    BEHIND --> $LastPlayer
-        YES --> #StrikerRole
-        NO --> #GoalieBehavior
-    ELSE --> #GoalieBehavior
-
 #PenaltyShootoutBehavior
 $SecondaryStateTeamDecider
     OUR --> @StandAndWaitRandom + min:10 + max:30, @KickBallDynamic + r:true + type:penalty, @Stand
@@ -152,7 +145,7 @@ $BallSeen
         NO_NORMAL --> #StandAndLook
         NO_FREEKICK --> #Placing
         YES --> $ConfigRole
-            GOALIE --> #GoalieRole
+            GOALIE --> #GoalieBehavior
             ELSE --> $CountActiveRobotsWithoutGoalie
                 ONE --> $RankToBallNoGoalie
                     FIRST --> #StrikerRole
