@@ -25,6 +25,7 @@ setup(
         "console_scripts": [
             "walk = bitbots_rl_walk.walk:main",
             "kick = bitbots_rl_walk.kick:main",
+            "walk_kick = bitbots_rl_walk.walk_kick:main",
         ],
     },
 )

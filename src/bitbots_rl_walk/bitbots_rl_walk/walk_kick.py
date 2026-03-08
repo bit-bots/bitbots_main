@@ -29,7 +29,8 @@ from transforms3d.quaternions import quat2mat
 
 from bitbots_msgs.msg import JointCommand
 
-ONNX_MODEL = os.path.join(get_package_share_directory("bitbots_rl_walk"), "models", "wolfgang_kick_ppo.onnx")
+ONNX_WALK_MODEL = os.path.join(get_package_share_directory("bitbots_rl_walk"), "models", "wolfgang_walk_ppo.onnx")
+ONNX_KICK_MODEL = os.path.join(get_package_share_directory("bitbots_rl_walk"), "models", "wolfgang_kick_ppo.onnx")
 
 WALKREADY_STATE = np.array(
     [
@@ -102,7 +103,8 @@ class KickNode(Node):
         self._phase_dt = 2 * np.pi * GAIT_FREQUENCY * CONTROL_DT
 
         # Load the ONNX model
-        self._onnx_session = rt.InferenceSession(ONNX_MODEL, providers=["CPUExecutionProvider"])
+        self._onnx_walk_session = rt.InferenceSession(ONNX_KICK_MODEL, providers=["CPUExecutionProvider"])
+        self._onnx_kick_session = rt.InferenceSession(ONNX_KICK_MODEL, providers=["CPUExecutionProvider"])
 
         self._joint_command_pub = self.create_publisher(JointCommand, "DynamixelController/command", 10)
         self._imu_sub = self.create_subscription(Imu, "imu/data", self._imu_callback, 10)
@@ -162,8 +164,6 @@ class KickNode(Node):
             if self._cmd_vel is None:
                 self.get_logger().warning("Waiting for cmd_vel data", throttle_duration_sec=1.0)
                 # self._cmd_vel = Twist(x=0.3, y=0.0, z=0.0)  # Testing purpose
-            if self._goal_pose is None:
-                self.get_logger().warning("Waiting for goal pose data", throttle_duration_sec=1.0)
 
             return
 
@@ -211,35 +211,55 @@ class KickNode(Node):
 
         command = np.array([self._cmd_vel.linear.x, self._cmd_vel.linear.y, self._cmd_vel.angular.z], dtype=np.float32)
 
-        rel_ball_pos = np.array(
-            [
-                self._goal_pose.pose.position.x,
-                self._goal_pose.pose.position.y,
-            ],
-            dtype=np.float32,
-        )
+        # Check whether kicking mode is active - TODO: check whether true
+        if self._goal_pose is not None:
+            self.get_logger().warning("Kicking is active")
+            rel_ball_pos = np.array(
+                [
+                    self._goal_pose.pose.position.x,
+                    self._goal_pose.pose.position.y,
+                ],
+                dtype=np.float32,
+            )
 
-        kick_direction = self._goal_pose.pose.orientation
+            kick_direction = self._goal_pose.pose.orientation
 
-        rel_target_pos = self._calculate_target_from_direction(kick_direction)
+            rel_target_pos = self._calculate_target_from_direction(kick_direction)
 
-        obs = np.hstack(
-            [
-                gyro,  # 3
-                gravity,  # 4
-                command,  # 3
-                joint_angles,  # 18
-                joint_velocities,  # 18
-                self._previous_action,  # 18  # Previous action
-                phase,  # 2
-                rel_ball_pos,  # 2
-                rel_target_pos,  # 0
-            ]
-        ).astype(np.float32)
+            obs = np.hstack(
+                [
+                    gyro,  # 3
+                    gravity,  # 4
+                    command,  # 3
+                    joint_angles,  # 18
+                    joint_velocities,  # 18
+                    self._previous_action,  # 18  # Previous action
+                    phase,  # 2
+                    rel_ball_pos,  # 2
+                    rel_target_pos,  # 0
+                ]
+            ).astype(np.float32)
+        else:
+            obs = np.hstack(
+                [
+                    gyro,  # 3
+                    gravity,  # 4
+                    command,  # 3
+                    joint_angles,  # 18
+                    joint_velocities,  # 18
+                    self._previous_action,  # 18  # Previous action
+                    phase,  # 2
+                ]
+            ).astype(np.float32)
 
         # Run the ONNX model
         onnx_input = {"in_0": obs.reshape(1, -1)}
-        onnx_pred = self._onnx_session.run(["tanh_out_0"], onnx_input)[0][0]
+
+        if self._goal_pose is not None:
+            onnx_pred = self._onnx_kick_session.run(["tanh_out_0"], onnx_input)[0][0]
+        else:
+            onnx_pred = self._onnx_walk_session.run(["tanh_out_0"], onnx_input)[0][0]
+
         self._previous_action = onnx_pred
 
         # Publish the joint commands

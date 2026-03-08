@@ -3,7 +3,7 @@
     <arg name="sim" default="false"/>
     <arg name="viz" default="false"/>
     <arg name="walking" default="true" description="start the walking" />
-    <arg name="kicking" default="true" description="start the kicking" />
+    <!--<arg name="kicking" default="true" description="start the kicking" />-->
     <arg name="torqueless_mode" default="false" description="start without torque, for example for testing the falling detection"/>
     <arg name="tts" default="true" description="Whether to speak" />
 
@@ -39,9 +39,9 @@
         <arg name="sim" value="$(var sim)" />
     </include>
 
-    <!-- launch the walking -->
+    <!-- launch the walking and kicking -->
     <group if="$(var walking)">
-        <node pkg="bitbots_rl_walk" exec="walk" output="screen">
+        <node pkg="bitbots_rl_walk" exec="walk_kick" output="screen">
             <param name="use_sim_time" value="$(var sim)"/>
         </node>
     </group>
@@ -58,12 +58,13 @@
         </include>
     -->
 
-    <!-- launch the kick -->
+    <!-- launch pure rl_kick currently disabled
     <group if="$(var kicking)">
         <node pkg="bitbots_rl_walk" exec="kick" output="screen">
             <param name="use_sim_time" value="$(var sim)"/>
         </node>
     </group>
+    -->
 
     <!-- launch dynup -->
     <include file="$(find-pkg-share bitbots_dynup)/launch/dynup.launch">
