@@ -82,7 +82,7 @@ ORDERED_RELEVANT_JOINT_NAMES = [
 ]
 
 
-class KickNode(Node):
+class WalkKickNode(Node):
     """Node to control the wolfgang humanoid."""
 
     _previous_action: np.ndarray = np.zeros(len(ORDERED_RELEVANT_JOINT_NAMES), dtype=np.float32)
@@ -94,7 +94,7 @@ class KickNode(Node):
     _phase_dt: float
 
     def __init__(self):
-        super().__init__("reinforcement_learning_kick_inference_node")
+        super().__init__("reinforcement_learning_walk_kick_inference_node")
 
         # Set sim time parameter to true
         # self.set_parameters([
@@ -103,7 +103,7 @@ class KickNode(Node):
         self._phase_dt = 2 * np.pi * GAIT_FREQUENCY * CONTROL_DT
 
         # Load the ONNX model
-        self._onnx_walk_session = rt.InferenceSession(ONNX_KICK_MODEL, providers=["CPUExecutionProvider"])
+        self._onnx_walk_session = rt.InferenceSession(ONNX_WALK_MODEL, providers=["CPUExecutionProvider"])
         self._onnx_kick_session = rt.InferenceSession(ONNX_KICK_MODEL, providers=["CPUExecutionProvider"])
 
         self._joint_command_pub = self.create_publisher(JointCommand, "DynamixelController/command", 10)
@@ -153,7 +153,7 @@ class KickNode(Node):
 
     def _timer_callback(self):
         """Timer callback to publish joint commands based on the ONNX policy."""
-        if self._imu_data is None or self._joint_state is None or self._cmd_vel is None or self._goal_pose is None:
+        if self._imu_data is None or self._joint_state is None or self._cmd_vel is None:
             self.get_logger().warning("Waiting for all sensors to be available", throttle_duration_sec=1.0)
 
             # Print the sensor that we are still waiting for
@@ -281,7 +281,7 @@ def main():
     import rclpy
 
     rclpy.init()
-    node = KickNode()
+    node = WalkKickNode()
     rclpy.spin(node)
     node.destroy_node()
     rclpy.try_shutdown()
