@@ -17,6 +17,7 @@ src/bitbots_misc/bitbots_parameter_blackboard/config/game_settings.yaml
 *.idea
 *.pyc
 *.vscode
+*.devcontainer
 
 __pycache__
 
