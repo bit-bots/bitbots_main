@@ -39,7 +39,7 @@ class BallFilter(Node):
         # Initialize parameters
         self.update_params()
         self.logger.info(f"Using frame '{self.config.filter.frame}' for ball filtering")
-        self.last_ball_time = self.get_clock().now()
+        self.last_ball_time: Time = self.get_clock().now()
 
         self.camera_info: Optional[CameraInfo] = None
 
@@ -146,7 +146,8 @@ class BallFilter(Node):
                 # Store the ball measurement
                 self.ball_state_position = numpify(ball_measurement_map.point)
                 self.ball_state_covariance = covariance
-                self.last_ball_time = Time.from_msg(ball_msg.header.stamp)
+                # @TODO: actually give last ball time
+                self.last_ball_time = self.get_clock().now()
                 ball_measurement_updated = True
 
         # Get our estimate in the base footprint frame for easier distance calculation
@@ -275,8 +276,8 @@ class BallFilter(Node):
 
         # Build message for Ball age
         ball_age_msg = Float32()
-        nanoseconds_since_last_ball = np.float32((self.get_clock().now() - self.last_ball_time).nanoseconds)
-        ball_age_msg.data = nanoseconds_since_last_ball / 1e9
+        seconds_since_last_ball = (self.get_clock().now() - self.last_ball_time).nanoseconds / 1e9
+        ball_age_msg.data = seconds_since_last_ball
 
         self.ball_age_publisher.publish(ball_age_msg)
 

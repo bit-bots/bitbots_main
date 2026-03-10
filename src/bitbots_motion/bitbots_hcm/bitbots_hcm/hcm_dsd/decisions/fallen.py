@@ -2,6 +2,7 @@ import math
 
 import numpy as np
 from bitbots_utils.transforms import quat2fused
+from std_msgs.msg import Bool
 
 from bitbots_hcm.hcm_dsd.decisions import AbstractHCMDecisionElement
 
@@ -19,12 +20,6 @@ class Fallen(AbstractHCMDecisionElement):
             self.blackboard.node.get_parameter("fallen_orientation_thresh").value
         )
         self.fallen_angular_velocity_thresh = self.blackboard.node.get_parameter("fallen_angular_velocity_thresh").value
-
-        # publishes if robot is fallen
-        self.is_fallen_publisher = self.create_publisher(
-            bool, "hsl_gamecontroller/is_fallen", 1
-        )
-
 
     def perform(self, reevaluate=False):
         # Check of the fallen detection is active
@@ -62,10 +57,10 @@ class Fallen(AbstractHCMDecisionElement):
 
         self.publish_if_fallen(False)
         return "NOT_FALLEN"
-    
+
     def publish_if_fallen(self, is_fallen):
         # publishes if robot is fallen
-        self.is_fallen_publisher.publish(is_fallen)
+        self.blackboard.is_fallen_publisher.publish(Bool(data=is_fallen))
 
     def get_reevaluate(self):
         return True

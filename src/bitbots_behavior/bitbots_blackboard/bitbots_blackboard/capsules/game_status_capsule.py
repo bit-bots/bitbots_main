@@ -1,7 +1,7 @@
 from typing import Optional
 
 from bitbots_utils.utils import get_parameters_from_other_node
-from game_controller_hl_interfaces.msg import GameState
+from game_controller_hsl_interfaces.msg import GameState
 from std_msgs.msg import Bool
 
 from bitbots_blackboard.capsules import AbstractBlackboardCapsule
@@ -20,32 +20,37 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
         self.last_goal_from_us_time = -86400.0
         self.last_goal_time = -86400.0
         self.free_kick_kickoff_team: Optional[bool] = None
-        self.game_controller_stop: Bool = False
+        self.game_controller_stop: bool = False
         # publish stopped msg for hcm
-        self.stop_pub = self.node.create_publisher(Bool, "game_controller/stop_msg", 1)
+        self.stop_pub = node.create_publisher(Bool, "game_controller/stop_msg", 1)
 
-    def get_gamestate(self) -> int:
-        # Init, ready, set, playing, finished, standby
+    def get_game_state(self) -> int:
+        # Init, ready, set, playing, finished
         return self.gamestate.main_state
 
-    def get_gamePhase(self) -> int:
-        # Timeout, Normal, Penaltyshoot
-        return self.gamestate.gamePhase
+    def get_game_phase(self) -> int:
+        # Timeout, Normal, Extratime, Penaltyshoot
+        return self.gamestate.game_phase
 
-    def get_setPlay(self) -> int:
-        # None, Kick In, Goalkick, Cornerkick, Pushing Freekick, Penaltykick
-        return self.gamestate.setPlay
+    def get_set_play(self) -> int:
+        # None, Direct Freekick, Indirect Freekick, Penalty, Throw in, Goalkick, Cornerkick,
+        return self.gamestate.set_play
 
     def get_secondary_team(self) -> int:
-        # Team ID, wer in set Play den Baall hat
-        return self.gamestate.kickingTeam
+        # Team ID, wer in set Play den Ball hat
+        return self.gamestate.kicking_team
 
     def has_kickoff(self) -> bool:
         # vegelcih mit eigener Teamnummer
-        return self.gamestate.kickingTeam == self.team_id
+        return self.gamestate.kicking_team == self.team_id
+
+    def is_stopped(self) -> bool:
+        return self.gamestate.stopped
 
     def has_penalty_kick(self) -> bool:
-        return self.gamestate.set_play == GameState.SET_PLAY_PENALTY_KICK and self.gamestate.kickingTeam == self.team_id
+        return (
+            self.gamestate.set_play == GameState.SET_PLAY_PENALTY_KICK and self.gamestate.kicking_team == self.team_id
+        )
 
     def get_our_goals(self) -> int:
         return self.gamestate.own_score
@@ -74,7 +79,7 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
         )
 
     def get_seconds_since_unpenalized(self) -> float:
-        return self._node.get_clock().now().nanoseconds / 1e9 - self.seconds_till_unpenalized
+        return self._node.get_clock().now().nanoseconds / 1e9 - self.unpenalized_time
 
     def get_is_penalized(self) -> bool:
         return self.gamestate.penalized
@@ -98,7 +103,7 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
 
         self.game_controller_stop = gamestate_msg.stopped
 
-        self.stop_pub.publish(self.game_controller_stop)
+        self.stop_pub.publish(Bool(data=self.game_controller_stop))
 
         """Anstoß im Falle von Overtime jetzt erstmal nicht genauer geregelt
         if (
@@ -109,12 +114,13 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
             # secondary action is now executed but we will not see this in the new messages.
             # it will look like a normal kick off, but we need to remember that this is some sort of free kick
             # we set the kickoff value accordingly, then we will not be allowed to move if it is a kick for the others
-            self.free_kick_kickoff_team = gamestate_msg.kickingTeam
+            self.free_kick_kickoff_team = gamestate_msg.kicking_team
 
+        if gamestate_msg.set_play != 2 and gamestate_msg.secondary_time == 0:
+            self.free_kick_kickoff_team = gamestate_msg.kicking_team
 
-        if gamestate_msg.setPlay != 2 and gamestate_msg.secondaryTime == 0:
+        if gamestate_msg.set_play != 2 and gamestate_msg.secondary_time == 0:
             self.free_kick_kickoff_team = None
-
 
         if self.free_kick_kickoff_team is not None:
             gamestate_msg.has_kick_off = self.free_kick_kickoff_team == self.team_id

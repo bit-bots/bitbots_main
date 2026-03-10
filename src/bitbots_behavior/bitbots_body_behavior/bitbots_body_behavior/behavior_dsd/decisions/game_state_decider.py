@@ -1,6 +1,6 @@
 from bitbots_blackboard.body_blackboard import BodyBlackboard
 from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
-from game_controller_hl_interfaces.msg import GameState
+from game_controller_hsl_interfaces.msg import GameState
 
 
 class GameStateDecider(AbstractDecisionElement):
@@ -30,6 +30,11 @@ class GameStateDecider(AbstractDecisionElement):
             return "FINISHED"
         elif game_state_number == GameState.STATE_STANDBY:
             return "STANDBY"
+        else:
+            # This should never happen, but all cases required string response
+            # as we do not get any stack trace otherwise
+            self.blackboard.node.get_logger().error(f"Received unknown game state number: {game_state_number}")
+            return "UNKNOWN"
 
     def get_reevaluate(self):
         """
