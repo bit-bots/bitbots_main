@@ -25,6 +25,7 @@ class HcmBlackboard:
         # Basic state
         self.current_state: T_RobotControlState = RobotControlState.STARTUP
         self.stopped: bool = False
+        self.game_controller_stop: bool = False
 
         # Save start time
         self.start_time: Time = self.node.get_clock().now()
