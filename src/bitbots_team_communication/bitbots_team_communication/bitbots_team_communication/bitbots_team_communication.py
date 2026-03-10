@@ -95,6 +95,9 @@ class TeamCommunication:
         self.time_to_ball_time = Time(clock_type=self.node.get_clock().clock_type)
         self.seen_robots: Optional[RobotArray] = None
         self.move_base_goal: Optional[PoseStamped] = None
+        self.team_data: dict[int, TeamData] = {}
+        for i in range(1, 7):
+            self.team_data[i] = TeamData()
 
     def try_to_establish_connection(self):
         # we will try multiple times till we manage to get a connection
@@ -169,7 +172,7 @@ class TeamCommunication:
             qos_profile=1,
             callback_group=MutuallyExclusiveCallbackGroup(),
         )
-
+        
     def gamestate_cb(self, msg: GameState):
         self.gamestate = msg
 
@@ -247,6 +250,7 @@ class TeamCommunication:
             return
 
         team_data = self.protocol_converter.convert_from_message(message, self.create_team_data())
+        self.team_data[team_data.robot_id] = team_data
         self.team_data_publisher.publish(team_data)
 
     def send_message(self):
@@ -286,11 +290,34 @@ class TeamCommunication:
         return is_own_message or is_message_from_oposite_team
 
     def is_robot_allowed_to_send_message(self) -> bool:
-        return self.gamestate is not None and not self.gamestate.penalized
+        if self.get_number_of_active_field_players() <= 1:
+            self.logger.debug("One or less active field players, we dont neet team data, so we dont send any")
+            return False
+        elif self.get_number_of_active_field_players() >= 2 and self.get_number_of_active_field_players() - self.get_number_of_penalized_field_players() <= 1:
+            self.logger.debug("All except one active field player is penalized, we dont neet team data, so we dont send any")
+            return False
+        else:
+            return self.gamestate is not None and not self.gamestate.penalized
 
     def get_current_time(self) -> Time:
         return self.node.get_clock().now()
+    
+    def get_number_of_active_field_players(self) -> int:
 
+        # Get the team data infos for all robots (ignoring the robot id/name)
+        team_data_infos = self.team_data.values()
+
+        # Count valid team data infos (aka robots with valid team data)
+        return sum(map(self.is_valid, team_data_infos))
+
+    def get_number_of_penalized_field_players(self) -> int:
+        # Get the team data infos for all robots (ignoring the robot id/name)
+        team_data_infos = self.team_data.values()
+        if self.gamestate.team_mates_with_penalty == False:
+            self.logger.debug("gamestate.team_mates_with_penalty is False, so we assume that no team mate is penalized")
+            return 0
+        # Count penalized team data infos (aka robots with valid team data that are penalized)
+        return sum(map(lambda team_data: self.is_valid(team_data) and team_data.penalized, team_data_infos))
 
 def main():
     rclpy.init(args=None)
