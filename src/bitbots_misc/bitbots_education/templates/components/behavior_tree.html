@@ -1,0 +1,176 @@
+{% macro behavior_tree_component() %}
+
+<script type="text/javascript">
+
+  function render_reason(reason, child_string)
+  {
+    return `<li><ul><li><span>${behavior_translate(reason)}</span><ul>${child_string}</ul></li></ul></li>`;
+  }
+
+  function render_action(action, successor)
+  {
+    return `<li><code class="bg-zinc-100">${behavior_translate(action.name)}</code>${successor}</li>`;
+  }
+
+  function render_tree(tree, reason){
+    if (tree.children !== undefined)
+    {
+        let string = `<li><code class="bg-sky-800 text-white">${behavior_translate(tree.name)}</code><ul>`;
+        for (let key in tree.children)
+        {
+            string += render_tree(tree.children[key], key);
+        }
+        string += `</ul></li>`;
+        return render_reason(reason, string);
+    }
+    else
+    {
+        if (tree.type === "action")
+        {
+            return render_reason(reason, render_action(tree, ""));
+        }
+        else if (tree.type ==="sequence")
+        {
+            function make_sequence(sequence)
+            {
+              const action = sequence.shift();
+              if (sequence.length > 1)
+              {
+                return render_action(action, `<ul>${make_sequence(sequence)}</ul>`);
+              }
+              else
+              {
+                return render_action(action, "");
+              }
+            }
+            return render_reason(reason, make_sequence(tree.action_elements));
+        }
+    }
+  }
+
+  function behavior_tree_state() {
+    return {
+      listener: null,
+      init() {
+        this.listener = new ROSLIB.Topic({
+          ros : ros,
+          name : '/debug/dsd/body_behavior/dsd_tree',
+          messageType : 'std_msgs/msg/String'
+        });
+        this.listener.subscribe((message) => {
+          const behavior_tree = JSON.parse(message.data);
+          let output_string = render_tree(behavior_tree, "START");
+          this.$refs.tree.innerHTML = output_string;
+        });
+      },
+      destroy() {
+        this.listener.unsubscribe();
+      },
+    };
+  }
+</script>
+
+<style>
+  /* It's supposed to look like a tree diagram */
+  .tree, .tree ul, .tree li {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      position: relative;
+  }
+  .tree-container {
+    overflow-x: auto; /* enables horizontal scrolling */
+    max-width: 100%;
+    -webkit-overflow-scrolling: touch; /* smooth scrolling on iOS */
+    white-space: nowrap; 
+    text-align: center;
+  }
+  .tree {
+      margin: 0 0 1em;
+      display: inline-block;
+      min-width: 600px;
+  }
+  .tree ul {
+    display: flex;
+    justify-content: center; 
+    width: 100%;
+    padding: 0;
+  }
+    .tree li {
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    position: relative;
+    padding: .5em;
+  }
+  /* _________ */
+  .tree li:before {
+  outline: solid 1px #666;
+  content: "";
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  }
+  .tree li:first-child:before {left: 50%;}
+  .tree li:last-child:before {right: 50%;}
+
+  .tree code {
+  border: solid .1em #666;
+  border-radius: .2em;
+  display: inline-block;
+  margin: 0 .2em .5em;
+  padding: .2em .5em;
+  position: relative;
+  }
+
+  .tree span {
+  display: inline-block;
+  margin: 0 .2em .5em;
+  padding: .2em .5em;
+  position: relative;
+  }
+
+
+  /* If the tree represents DOM structure */
+  .tree code, .tree span {
+  font-family: monaco, Consolas, 'Lucida Console', monospace;
+  }
+
+  /* | */
+  .tree ul:before,
+  .tree code:before,
+  .tree span:before {
+      outline: solid 1px #666;
+      content: "";
+      height: .5em;
+      left: 50%;
+      position: absolute;
+  }
+  .tree ul:before {
+      top: -.5em;
+  }
+  .tree code:before,
+  .tree span:before {
+      top: -.55em;
+  }
+
+  /* The root node doesn't connect upwards */
+  .tree > li {margin-top: 0;}
+
+  .tree > li:before,
+  .tree > li:after,
+  .tree > li > code:before,
+  .tree > li > span:before {
+    outline: none;
+  }
+  
+</style>
+
+<div x-data="behavior_tree_state()" class=" pt-2 w-100 bg-sky-100">
+  <div class="tree-container">
+    <ul class="tree bg-sky-100" x-ref="tree"></ul>
+  </div>
+</div>
+
+{% endmacro %}

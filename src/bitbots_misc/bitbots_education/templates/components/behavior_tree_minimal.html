@@ -1,0 +1,242 @@
+{% macro behavior_tree_minimal_component() %}
+
+<script type="text/javascript">
+
+  function logDetails(path, status)
+  {
+    fetch(`/logs?page=${window.location.pathname}&button=details/${path}&status=${status}`);
+  }
+
+  function render_alpine_set_active_class(path)
+  {
+    return `x-bind:class="active_path.startsWith('${path}') ? 'active' : ''"`;
+  }
+
+  function render_reason(reason, child_string, path)
+  {
+    return `<li><code class="reason" ${render_alpine_set_active_class(path)} >${behavior_translate(reason)}</code><ul>${child_string}</ul></li>`;
+  }
+
+  function render_action(action, path)
+  {
+    return `<li><code class="bg-zinc-100 border-2 m-[1px] w-max rounded-md border-zinc-800 action" ${render_alpine_set_active_class(path)} >${behavior_translate(action.name)}</code></li>`;
+  }
+
+  function render_tree(tree, reason, path){
+    if (tree.children !== undefined)
+    {
+        let string = `<li><details x-on:toggle= "logDetails('${path}', $event.target.open)" ><summary ${render_alpine_set_active_class(path)} class="bg-sky-800 border-2 w-max rounded-md border-zinc-800 text-white">${behavior_translate(tree.name)}</summary><ul>`;
+        for (let key in tree.children)
+        {
+          string += render_tree(tree.children[key], key,path + "/" + key);
+        }
+        string += `</ul></details></li>`;
+        return render_reason(reason, string, path);
+    }
+    else
+    {
+        if (tree.type === "action")
+        {
+            return render_reason(reason, render_action(tree, path), path);
+        }
+        else if (tree.type ==="sequence")
+        {
+            function make_sequence(sequence, path)
+            {
+              let sequence_string = "";
+              for (let i = 0; i < sequence.length; i++)
+              {
+                sequence_string += render_action(sequence[i], path + "/" + i);
+              }
+              return sequence_string;
+            }
+            return render_reason(reason, make_sequence(tree.action_elements, path), path);
+        }
+    }
+  }
+
+  function extract_active_path_from_stack(subtree) {
+    if(subtree.type === "sequence")
+    {
+      return `${subtree.activation_reason}/${subtree.current_action_index}`;
+    }
+    else if (subtree.next === null)
+    {
+      return `${subtree.activation_reason}`;
+    }
+    else
+    {
+      return `${subtree.activation_reason}/${extract_active_path_from_stack(subtree.next)}`;
+    }
+  };
+
+  function behavior_tree_state() {
+    return {
+      listener: null,
+      active_path: "",
+      init() {
+        this.listener = new ROSLIB.Topic({
+          ros : ros,
+          name : '/debug/dsd/body_behavior/dsd_tree',
+          messageType : 'std_msgs/msg/String'
+        });
+        this.listener.subscribe((message) => {
+          const behavior_tree = JSON.parse(message.data);
+          this.$refs.tree.innerHTML = render_tree(behavior_tree, "START", "null");
+        });
+        this.listener = new ROSLIB.Topic({
+          ros : ros,
+          name : '/debug/dsd/body_behavior/dsd_stack',
+          messageType : 'std_msgs/msg/String'
+        });
+        this.listener.subscribe((message) => {
+          const stack = JSON.parse(message.data);
+          this.active_path = extract_active_path_from_stack(stack);
+        });
+        },
+      destroy() {
+        this.listener.unsubscribe();
+      },
+    };
+  }
+</script>
+
+<style>
+
+.tree {
+  --spacing: 2rem;
+  --radius: 10px;
+}
+
+.tree-container {
+    overflow-x: auto; /* enables horizontal scrolling */
+    max-width: 100%;
+    -webkit-overflow-scrolling: touch; /* smooth scrolling on iOS */
+    white-space: nowrap;
+    mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+}
+
+.tree li {
+  display: block;
+  position: relative;
+  padding-left: calc(2 * var(--spacing) - var(--radius) - 2px);
+  min-height: calc(var(--spacing) + 4px);
+  padding-top: 2px;
+  padding-bottom: 2px;
+  width: max-content;
+}
+
+.tree summary {
+  height: calc(var(--spacing) + 4px);
+  padding-left: 10px;
+  padding-right: 10px;
+  align-content: center;
+  margin-right: 1em;
+}
+
+.tree code {
+  display: block;
+  height: calc(var(--spacing) + 4px);
+  padding-left: 10px;
+  padding-right: 10px;
+  margin-right: 1em;
+  align-content: center;
+}
+
+.tree ul {
+  margin-left: calc(var(--radius) - var(--spacing));
+  padding-left: 0;
+  width: max-content;
+}
+
+.tree ul li {
+  border-left: 2px solid #000;
+}
+
+.tree ul li:last-child {
+  border-color: transparent;
+}
+
+.tree ul li::before {
+  content: '';
+  display: block;
+  position: absolute;
+  top: calc(-0.5 * var(--spacing));
+  left: -2px;
+  width: calc(var(--spacing) + 2px);
+  height: calc(var(--spacing) + 1px);
+  border: solid #000;
+  border-width: 0 0 2px 2px;
+  box-shadow: content-box;
+}
+
+.tree summary {
+  display: block;
+  cursor: pointer;
+}
+
+.tree summary::marker,
+.tree summary::-webkit-details-marker {
+  display: none;
+}
+.tree li::after,
+.tree .action::before {
+  background: #F4F4F5;
+}
+.tree summary:focus {
+  outline: none;
+}
+
+.tree summary:focus-visible {
+  outline: 1px dotted #000;
+}
+
+.tree code::before,
+.tree summary::before {
+  content: '';
+  display: block;
+  position: absolute;
+  top: calc(var(--spacing) / 2 - var(--radius));
+  left: calc(var(--spacing) - var(--radius) - 1px - 2px);
+  width: calc(2 * var(--radius));
+  height: calc(2 * var(--radius));
+  border-radius: 50%;
+  border: 2px solid #27272A;
+  box-sizing: content-box;
+}
+
+.tree code.action::before {
+  background: #F4F4F5;
+  z-index: 1;
+}
+
+.tree code.reason::before {
+  background: #90a1b9;
+  z-index: 1;
+}
+.tree summary.active::before,
+.tree code.active::before {
+  background-color: #b91229;
+  border-color: #d8d8d5;
+  filter: invert(1);
+  z-index: 1;
+}
+
+.tree summary::before {
+  z-index: 1;
+  background: #00598A url("{{ url_for('static', filename='expand-collapse.svg') }}") 0 0;
+}
+
+.tree details[open] > summary::before {
+  background-position: calc(-2 * var(--radius)) 0;
+}
+</style>
+
+<div x-data="behavior_tree_state()" class="p-6 w-full bg-sky-100">
+  <div class="tree-container">
+    <ul class="tree bg-sky-100" x-ref="tree"></ul>
+  </div>
+</div>
+
+{% endmacro %}

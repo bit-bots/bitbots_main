@@ -1,0 +1,65 @@
+{% macro imu_component() %}
+
+<script type="text/javascript" >
+  function quaternionToFusedAngles(q) {
+    let x, y, z, w;
+    [w, x, y, z] = [q.w, q.x, q.y, q.z];
+
+    // Fused yaw
+    let fusedYaw = 2 * Math.atan2(z, w); // in [-2π, 2π]
+    if (fusedYaw > Math.PI) {
+      fusedYaw -= 2 * Math.PI;
+    } else if (fusedYaw <= -Math.PI) {
+      fusedYaw += 2 * Math.PI;
+    }
+
+    // Fused pitch and roll
+    let stheta = 2 * (y * w - x * z);
+    let sphi = 2 * (y * z + x * w);
+
+    // Clamp to [-1, 1] to avoid NaNs from asin
+    stheta = Math.max(-1.0, Math.min(1.0, stheta));
+    sphi = Math.max(-1.0, Math.min(1.0, sphi));
+
+    const fusedPitch = Math.asin(stheta);
+    const fusedRoll = Math.asin(sphi);
+
+    // Hemi parameter
+    const hemi = (0.5 - (x * x + y * y)) >= 0;
+
+    return {
+      fusedRoll,
+      fusedPitch,
+      fusedYaw,
+      hemi
+    };
+  }
+
+  function imu_state() {
+    return {
+      listener: null,
+      init() {
+        this.listener = new ROSLIB.Topic({
+          ros : ros,
+          name : '/imu/data',
+          messageType : 'sensor_msgs/msg/Imu'
+        });
+        this.listener.subscribe((message) => {
+          const quaternion = message.orientation;
+          // Convert quaternion to fused angles
+          const fused_angles = quaternionToFusedAngles(quaternion);
+          // Update the logo rotation
+          this.$refs.logo.style.transform = `rotateZ(${- fused_angles.fusedRoll}rad) rotateX(${-fused_angles.fusedPitch}rad)`;
+        });
+      },
+      destroy() {
+        this.listener.unsubscribe();
+      },
+    };
+  }
+</script>
+
+<div class="flex justify-center overflow-hidden" x-data="imu_state()">
+    <img style="transform-origin: bottom center;"  src="{{ url_for('static', filename='bitBot_color.svg') }}" x-ref="logo" />
+</div>
+{% endmacro %}
