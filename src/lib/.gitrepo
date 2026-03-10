@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/ingydotnet/git-subrepo#readme
+;
+[subrepo]
+	remote = git@github.com:ros-drivers/audio_common.git
+	branch = master
+	commit = 6a84996653eada328f6ea7b14e1804e9876aa3af
+	parent = 47da9a5c909072613a4b43ac0ff2f2368e4d2048
+	method = merge
+	cmdver = 0.4.9
