@@ -13,17 +13,21 @@
     <arg name="audio_topic" default="audio" />
 
     <group unless="$(var sim)">
-        <include file="$(find-pkg-share audio_capture)/launch/capture.launch.xml">
-            <arg name="dst" value="$(var dst)"/>
-            <arg name="device" value="$(var device)"/>
-            <arg name="format" value="$(var format)"/>
-            <arg name="bitrate" value="$(var bitrate)"/>
-            <arg name="channels" value="$(var channels)"/>
-            <arg name="depth" value="$(var depth)"/>
-            <arg name="sample_rate" value="$(var sample_rate)"/>
-            <arg name="sample_format" value="$(var sample_format)"/>
-            <arg name="ns" value="$(var ns)"/>
-            <arg name="audio_topic" value="$(var audio_topic)"/>
-        </include>
+        <node
+            pkg="audio_common"
+            exec="audio_capturer_node"
+            name="audio_capturer_node"
+            ns="$(var ns)"
+            output="screen">
+
+            <param name="format" value="$(var format)"/>
+            <param name="channels" value="$(var channels)"/>
+            <param name="rate" value="$(var sample_rate)"/>
+            <param name="chunk" value="$(var bitrate)"/>
+            <param name="device" value="$(var device)"/>
+            <param name="frame_id" value="$(var dst)"/>
+
+            <remap from="audio" to="$(var audio_topic)"/>
+        </node>
     </group>
 </launch>
