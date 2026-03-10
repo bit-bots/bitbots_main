@@ -59,7 +59,7 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
 
         # Ball state
         self._ball: PointStamped = PointStamped(
-            header=Header(stamp=Time(clock_type=ClockType.ROS_TIME).to_msg(), frame_id=self.map_frame)
+            header=Header(stamp=Time(clock_type=ClockType.ROS_TIME), frame_id=self.map_frame)
         )  # The ball in the map frame (default to the center of the field if ball is not seen yet)
         self._ball_covariance: np.ndarray = np.zeros((2, 2))  # Covariance of the ball
 

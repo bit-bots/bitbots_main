@@ -175,7 +175,7 @@ class WalkNode(Node):
         # Load the ONNX model
         self._onnx_session = rt.InferenceSession(ONNX_MODEL, providers=["CPUExecutionProvider"])
 
-        self._joint_command_pub = self.create_publisher(JointCommand, "DynamixelController/command", 10)
+        self._joint_command_pub = self.create_publisher(JointCommand, "walking_motor_goals", 10)
         self._imu_sub = self.create_subscription(Imu, "imu/data", self._imu_callback, 10)
         self._joint_state_sub = self.create_subscription(JointState, "joint_states", self._joint_state_callback, 10)
         self._cmd_vel_sub = self.create_subscription(Twist, "cmd_vel", self._cmd_vel_callback, 10)

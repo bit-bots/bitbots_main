@@ -104,7 +104,7 @@ class KickNode(Node):
         # Load the ONNX model
         self._onnx_session = rt.InferenceSession(ONNX_MODEL, providers=["CPUExecutionProvider"])
 
-        self._joint_command_pub = self.create_publisher(JointCommand, "DynamixelController/command", 10)
+        self._joint_command_pub = self.create_publisher(JointCommand, "kick_motor_goals", 10)
         self._imu_sub = self.create_subscription(Imu, "imu/data", self._imu_callback, 10)
         self._joint_state_sub = self.create_subscription(JointState, "joint_states", self._joint_state_callback, 10)
         self._cmd_vel_sub = self.create_subscription(Twist, "cmd_vel", self._cmd_vel_callback, 10)
@@ -122,7 +122,7 @@ class KickNode(Node):
 
         joint_command.positions = WALKREADY_STATE
         self._joint_command_pub.publish(joint_command)
-        time.sleep(20)
+        time.sleep(1)
 
     def _joint_state_callback(self, msg: JointState):
         self._joint_state = msg
@@ -166,6 +166,8 @@ class KickNode(Node):
                 self.get_logger().warning("Waiting for goal pose data", throttle_duration_sec=1.0)
 
             return
+        else:
+            self.get_logger().warning("RL Kick has all data!")
 
         # TODO consider IMU mounting offset
 

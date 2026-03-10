@@ -100,7 +100,11 @@ class KickBallDynamic(AbstractKickAction):
 
                     # only check 2 directions, left and right
                     kick_direction = self.blackboard.costmap.get_best_kick_direction(
-                        -self.penalty_kick_angle, self.penalty_kick_angle, 2, self.kick_length, self.angular_range
+                        -self.penalty_kick_angle,
+                        self.penalget_ball_position_uvty_kick_angle,
+                        2,
+                        self.kick_length,
+                        self.angular_range,
                     )
                 else:
                     ball_u, ball_v = self.blackboard.world_model.get_ball_position_uv()
@@ -141,6 +145,7 @@ class RLKick(AbstractKickAction):
         goal_pose.header.stamp = self.blackboard.node.get_clock().now().to_msg()
         goal_pose.header.frame_id = self.blackboard.world_model.base_footprint_frame
 
+        # TODO: Extract
         ball_u, ball_v = self.blackboard.world_model.get_ball_position_uv()
         goal_pose.pose.position.x = ball_u
         goal_pose.pose.position.y = ball_v

@@ -39,7 +39,7 @@
         <arg name="sim" value="$(var sim)" />
     </include>
 
-    <!-- launch the walking and kicking -->
+    <!-- launch the walking -->
     <group if="$(var walking)">
         <node pkg="bitbots_rl_walk" exec="walk" output="screen">
             <param name="use_sim_time" value="$(var sim)"/>
