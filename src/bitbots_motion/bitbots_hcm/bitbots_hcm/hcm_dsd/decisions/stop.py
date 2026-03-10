@@ -15,7 +15,8 @@ class Stop(AbstractHCMDecisionElement):
 
     def get_reevaluate(self):
         return True
-    
+
+
 class GameControllerStop(AbstractHCMDecisionElement):
     """
     Handles manual stops

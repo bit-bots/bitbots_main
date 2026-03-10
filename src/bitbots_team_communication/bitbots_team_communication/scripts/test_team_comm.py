@@ -5,7 +5,7 @@ This script publishes dummy values for ball, goalpost, position and obstacles fo
 
 import numpy
 import rclpy
-from game_controller_hl_interfaces.msg import GameState
+from game_controller_hsl_interfaces.msg import GameState
 from geometry_msgs.msg import Point, Pose, PoseWithCovariance, PoseWithCovarianceStamped, Quaternion, TransformStamped
 from rclpy.qos import QoSDurabilityPolicy, QoSProfile
 from soccer_vision_3d_msgs.msg import Robot, RobotArray

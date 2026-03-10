@@ -1,6 +1,6 @@
 from bitbots_blackboard.body_blackboard import BodyBlackboard
 from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
-from game_controller_hl_interfaces.msg import GameState
+from game_controller_hsl_interfaces.msg import GameState
 
 
 class SecondaryStateDecider(AbstractDecisionElement):
@@ -16,7 +16,7 @@ class SecondaryStateDecider(AbstractDecisionElement):
 
     def perform(self, reevaluate=False):
         set_play_number = self.blackboard.gamestate.get_set_play()
-        game_phase_number = self.blackboard.gamestate.get_game_phase
+        game_phase_number = self.blackboard.gamestate.get_game_phase()
         # todo this is a temporary hack to make GUI work
         if game_phase_number == GameState.GAME_PHASE_NORMAL and set_play_number == GameState.SET_PLAY_NONE:
             return "NORMAL"
@@ -38,6 +38,11 @@ class SecondaryStateDecider(AbstractDecisionElement):
             return "GOAL_KICK"
         elif set_play_number == GameState.SET_PLAY_THROW_IN:
             return "THROW_IN"
+        else:
+            self.blackboard.node.get_logger().error(
+                f"Unknown secondary state with game phase {game_phase_number} and set play {set_play_number}"
+            )
+            return "UNKNOWN"
 
     def get_reevaluate(self):
         """

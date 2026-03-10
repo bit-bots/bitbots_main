@@ -16,7 +16,7 @@
 
     <!-- launch game controller -->
     <group if="$(var game_controller)">
-        <include file="$(find-pkg-share game_controller_hl)/launch/game_controller.launch">
+        <include file="$(find-pkg-share game_controller_hsl)/launch/game_controller.launch">
             <arg name="sim" value="$(var sim)" />
             <arg name="use_parameter_blackboard" value="true" />
             <arg name="parameter_blackboard_name" value="parameter_blackboard" />
