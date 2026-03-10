@@ -129,8 +129,5 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
         self.last_update = self._node.get_clock().now().nanoseconds / 1e9
         self.gamestate = gamestate_msg
 
-    def whistle_detected(self) -> bool:
-        return self.whistle_detected
-
     def whistle_detection_callback(self, msg) -> None:  # MSG type is assumed to be bool for now, prototyping
-        self.whistle_detected = msg.data
+        self.whistle_detected = msg.data  # This stays true after the first whistle detection which is incorrect

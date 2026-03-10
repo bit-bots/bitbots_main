@@ -130,6 +130,16 @@ $BallSeen
                     SECOND --> #SupporterRole
                     THIRD --> #DefensePositioning
 
+#PlayingBehavior
+$SecondaryStateDecider
+    PENALTYSHOOT --> #PenaltyShootoutBehavior
+    TIMEOUT --> #StandAndLook
+    ELSE --> $SecondaryStateTeamDecider
+        OUR --> #NormalBehavior
+        OTHER --> #Placing
+    NORMAL --> #NormalBehavior
+    OVERTIME --> #NormalBehavior
+
 -->BodyBehavior
 $IsPenalized
     YES --> #DoNothing
@@ -143,23 +153,18 @@ $IsPenalized
             NO --> $DoOnce
                 NOT_DONE --> @ChangeAction + action:waiting + r:false, @LookAtFieldFeatures + r:false, @Stand + duration:2
                 DONE --> #PositioningReady
-        SET --> $SecondaryStateDecider
-            PENALTYSHOOT --> $SecondaryStateTeamDecider
-                OUR --> @Stand + duration:0.1 + r:false, @DeactivateHCM + r:false, @LookForward + r:false, @PlayAnimationInitInSim + r:false, @GetWalkready + r:false, @Stand
-                OTHER --> $BallSeen
-                    YES --> @Stand + duration:0.1 + r:false, @DeactivateHCM + r:false, @LookForward + r:false, @PlayAnimationInitInSim + r:false, @GetWalkready + r:false, @TrackBall + r:false, @PlayAnimationGoalieArms + r:false, @Stand // goalie only needs to care about the ball
-                    NO --> @Stand + duration:0.1 + r:false, @DeactivateHCM + r:false, @LookForward + r:false, @PlayAnimationInitInSim + r:false, @GetWalkready + r:false, @LookAtFieldFeatures + r:false, @PlayAnimationGoalieArms + r:false, @Stand
-            ELSE --> #StandAndLook
+        SET --> $WhistleDetected
+            YES --> #PlayingBehavior
+            NO --> $SecondaryStateDecider
+                PENALTYSHOOT --> $SecondaryStateTeamDecider
+                    OUR --> @Stand + duration:0.1 + r:false, @DeactivateHCM + r:false, @LookForward + r:false, @PlayAnimationInitInSim + r:false, @GetWalkready + r:false, @Stand // we need to also see the goalie
+                    OTHER --> $BallSeen
+                        YES --> @Stand + duration:0.1 + r:false, @DeactivateHCM + r:false, @LookForward + r:false, @PlayAnimationInitInSim + r:false, @GetWalkready + r:false, @TrackBall + r:false, @PlayAnimationGoalieArms + r:false, @Stand // goalie only needs to care about the ball
+                        NO --> @Stand + duration:0.1 + r:false, @DeactivateHCM + r:false, @LookForward + r:false, @PlayAnimationInitInSim + r:false, @GetWalkready + r:false, @LookAtFieldFeatures + r:false, @PlayAnimationGoalieArms + r:false, @Stand
+                ELSE --> #StandAndLook
         FINISHED --> $CurrentScore
             AHEAD --> @Stand + duration:0.5 + r:false, @PlaySound + file:fanfare.wav, @PlayAnimationCheering + r:false, @GetWalkready + r:false, @LookForward, @Stand
             ELSE --> #Init
-        PLAYING --> $SecondaryStateDecider
-            PENALTYSHOOT --> #PenaltyShootoutBehavior
-            TIMEOUT --> #StandAndLook
-            ELSE --> $SecondaryStateTeamDecider
-                OUR --> #NormalBehavior
-                OTHER --> #Placing
-            NORMAL --> #NormalBehavior
-            OVERTIME --> #NormalBehavior
+        PLAYING --> #PlayingBehavior
         STANDBY --> #StandAndLook
         STOPPED --> #DoNothing

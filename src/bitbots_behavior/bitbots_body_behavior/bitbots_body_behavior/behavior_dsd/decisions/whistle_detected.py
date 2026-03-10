@@ -7,14 +7,11 @@ class WhistleDetected(AbstractDecisionElement):
 
     def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
+        self.bb = blackboard
+        self.bb.game_state_capsule.whistle_detected = False
 
     def perform(self, reevaluate=False):
-        """
-        Determines whether we are confident regarding the ball's position.
-        :param reevaluate:
-        :return:
-        """
-        if self.blackboard.world_model.ball_has_been_seen():  # TODO
+        if self.bb.game_state_capsule.whistle_detected:
             return "YES"
         return "NO"
 
