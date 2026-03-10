@@ -54,24 +54,7 @@ class RLNode(Node):
         # Load the ONNX model
         self._onnx_session = rt.InferenceSession(self._onnx_model, providers=["CPUExecutionProvider"])
 
-        self._pubs = []
-        self._subs = {}
-        self._states = {}
-        self.handlers = handlers
-
-        # Unpack handlers
-        # TODO: Handler template!
-        for handler in handlers:
-            confg = handler.getConfg()
-            for sub in confg["subscriber"]:
-                self._subs[sub.key] = sub.value
-                self._states[f"{sub.key()}"] = None
-
-        # Create subscribers
-        self.create_rl_subscriptions(self._subs)
-
         # Phase time
-        # TODO: Check whether handler is necessary
         self._phase_dt = 2 * np.pi * GAIT_FREQUENCY * CONTROL_DT
 
         self._timer = self.create_timer(CONTROL_DT, self._timer_callback)
@@ -92,34 +75,17 @@ class RLNode(Node):
 
         # TODO consider IMU mounting offset
 
-        # TODO: is not used! phase = np.array([np.cos(self._phase), np.sin(self._phase)], dtype=np.float32).flatten()
+        self._obs_phase = np.array([np.cos(self._phase), np.sin(self._phase)], dtype=np.float32).flatten()
 
         """
         command = np.array([self._cmd_vel.linear.x, self._cmd_vel.linear.y, self._cmd_vel.angular.z], dtype=np.float32)
         """
 
-        # TODO:
-        """
-        obs = np.hstack(
-            [
-                gyro,  # 3
-                gravity,  # 4
-                command,  # 3
-                joint_angles,  # 18
-                joint_velocities,  # 18
-                self._previous_action,  # 18  # Previous action
-                phase,  # 2
-            ]
-        ).astype(np.float32)
-        """
-
+        # TODO: Integrate obs
         # Run the ONNX model
-        # TODO:
-        """
-        onnx_input = {"in_0": obs.reshape(1, -1)}
+        onnx_input = {"in_0": self.obs().reshape(1, -1)}
         onnx_pred = self._onnx_session.run(["tanh_out_0"], onnx_input)[0][0]
         self._previous_action = onnx_pred
-        """
 
         """
         # Publish the joint commands

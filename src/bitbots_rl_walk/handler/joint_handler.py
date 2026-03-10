@@ -54,7 +54,7 @@ class JointsHandler:
         self._walkready_state = walkready_state
         self._joint_state = None
 
-    def get_joint_angles(self):
+    def get_angle_data(self):
         joint_angles = (
             np.array(
                 [
@@ -68,7 +68,7 @@ class JointsHandler:
 
         return joint_angles
 
-    def get_joint_velocities(self):
+    def get_velocity_data(self):
         joint_velocities = np.array(
             [
                 self._joint_state.velocity[self._joint_state.name.index(name)]
@@ -80,7 +80,7 @@ class JointsHandler:
         return joint_velocities
 
     def get_data(self):
-        return self.get_joint_angles(), self.get_joint_velocities()
+        return self.get_angle_data(), self.get_velocity_data()
 
     def get_walkready_joints_command(self, timestamp):
         joint_command = JointCommand()
