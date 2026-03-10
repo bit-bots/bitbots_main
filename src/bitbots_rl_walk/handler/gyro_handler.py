@@ -1,7 +1,6 @@
 import numpy as np
 
 
-# TODO: Adapt to software
 class GyroHandler:
     def __init__(self):
         self._imu_data = None
