@@ -1,3 +1,5 @@
+import time
+
 import numpy as np
 from geometry_msgs.msg import Twist
 from handler.command_handler import CommandHandler
@@ -46,10 +48,18 @@ class WalkNode(RLNode):
                 self._command_handler.get_data(),  # 3
                 self._joint_handler.get_velocitiy_data(),  # 18
                 self._joint_handler.get_angle_data(),  # 18
-                # TODO: fix
                 self._previous_action,  # 18  # Previous action
                 self._obs_phase,  # 2
             ]
         ).astype(np.float32)
 
         return obs
+
+    def load_phase(self):
+        walkready_command = self._joint_handler.get_walkready_joints_command()
+        self._joint_command_pub.publish(walkready_command)
+        time.sleep(10)
+
+    def publisher(self, onnx_pred):
+        joint_command = self._joint_handler.get_joint_commands(onnx_pred)
+        self._joint_command_pub.publish(joint_command)

@@ -82,7 +82,7 @@ class JointHandler:
     def get_data(self):
         return self.get_angle_data(), self.get_velocity_data()
 
-    def get_walkready_joints_command(self, timestamp):
+    def get_walkready_joint_command(self, timestamp):
         joint_command = JointCommand()
         joint_command.joint_names = self._ordered_relevant_joint_names
         joint_command.velocities = [0.2] * len(self._ordered_relevant_joint_names)
@@ -90,6 +90,17 @@ class JointHandler:
         joint_command.max_currents = [-1.0] * len(self._ordered_relevant_joint_names)  # -1.0 means no limit
         joint_command.header.stamp = timestamp.to_msg()
         joint_command.positions = self._walkready_state
+
+        return joint_command
+
+    def get_joint_commands(self, onnx_pred):
+        joint_command = JointCommand()
+        joint_command.header.stamp = self._joint_state.header.stamp
+        joint_command.joint_names = self._ordered_relevant_joint_names
+        joint_command.positions = onnx_pred * 0.5 + self._walkready_state
+        joint_command.velocities = [-1.0] * len(self._ordered_relevant_joint_names)
+        joint_command.accelerations = [-1.0] * len(self._ordered_relevant_joint_names)
+        joint_command.max_currents = [-1.0] * len(self._ordered_relevant_joint_names)
 
         return joint_command
 

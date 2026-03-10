@@ -14,7 +14,6 @@
 # ==============================================================================
 """Deploy an MJX policy in ONNX format to C MuJoCo and play with it."""
 
-import time
 from pathlib import Path
 from typing import Callable, NamedTuple
 
@@ -22,9 +21,9 @@ import numpy as np
 import onnxruntime as rt
 from rclpy.node import Node
 from rclpy.qos import QoSProfile
+from rclpy.subscription import Subscription
 
 CONTROL_DT = 0.02  # Control loop frequency in seconds
-
 GAIT_FREQUENCY = 1.5  # Gait frequency in Hz
 
 
@@ -59,9 +58,15 @@ class RLNode(Node):
 
         self._timer = self.create_timer(CONTROL_DT, self._timer_callback)
 
-        # TODO: self._joint_command_pub.publish(joint_command)
-        time.sleep(10)
+        self.load_phase()
 
+        self._subs = []
+
+        for key, value in self.__dict__.values():
+            if type(value) is Subscription:
+                self._subs.append(key)
+
+    # TODO: fix
     def _timer_callback(self):
         for subscription in self._subs:
             if subscription is None:
@@ -77,31 +82,27 @@ class RLNode(Node):
 
         self._obs_phase = np.array([np.cos(self._phase), np.sin(self._phase)], dtype=np.float32).flatten()
 
-        """
-        command = np.array([self._cmd_vel.linear.x, self._cmd_vel.linear.y, self._cmd_vel.angular.z], dtype=np.float32)
-        """
-
-        # TODO: Integrate obs
         # Run the ONNX model
         onnx_input = {"in_0": self.obs().reshape(1, -1)}
         onnx_pred = self._onnx_session.run(["tanh_out_0"], onnx_input)[0][0]
         self._previous_action = onnx_pred
 
-        """
-        # Publish the joint commands
-        joint_command = JointCommand()
-        joint_command.header.stamp = self._joint_state.header.stamp
-        joint_command.joint_names = ORDERED_RELEVANT_JOINT_NAMES
-        joint_command.positions = onnx_pred * 0.5 + WALKREADY_STATE
-        joint_command.velocities = [-1.0] * len(ORDERED_RELEVANT_JOINT_NAMES)
-        joint_command.accelerations = [-1.0] * len(ORDERED_RELEVANT_JOINT_NAMES)
-        joint_command.max_currents = [-1.0] * len(ORDERED_RELEVANT_JOINT_NAMES)
-
-        self._joint_command_pub.publish(joint_command)
-        """
+        self.publisher(onnx_pred)
 
         phase_tp1 = self._phase + self._phase_dt
         self._phase = np.fmod(phase_tp1 + np.pi, 2 * np.pi) - np.pi
+
+    def obs():
+        # Should be defined in subclass
+        pass
+
+    def publisher():
+        # Should be defined in subclass
+        pass
+
+    def load_phase():
+        # Should be defined in subclass
+        pass
 
 
 def main():
