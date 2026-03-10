@@ -238,6 +238,7 @@ RMW_IMPLEMENTATION = "rmw_cyclonedds_cpp"
 COLCON_LOG_LEVEL = "30"
 PYTHONWARNINGS="ignore:::setuptools.command.install,ignore:::setuptools.command.easy_install,ignore:::pkg_resources,ignore:easy_install command is deprecated,ignore:setup.py install is deprecated"
 WEBOTS_HOME = "$CONDA_PREFIX/share/webots"
+ALSA_PLUGIN_DIR = "/usr/lib/x86_64-linux-gnu/alsa-lib"
 
 [feature.ros.activation]
 scripts = [
