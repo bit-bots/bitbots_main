@@ -2,6 +2,7 @@ from typing import Optional
 
 from bitbots_utils.utils import get_parameters_from_other_node
 from game_controller_hl_interfaces.msg import GameState
+from std_msgs.msg import Bool
 
 from bitbots_blackboard.capsules import AbstractBlackboardCapsule
 
@@ -20,6 +21,9 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
         self.last_goal_from_us_time = -86400.0
         self.last_goal_time = -86400.0
         self.free_kick_kickoff_team: Optional[bool] = None
+        self.game_controller_stop: Bool = False
+        #publish stopped msg for hcm
+        self.stop_pub = self.node.create_publisher(Bool, "game_controller/stop_msg", 1)
 
     def get_game_state(self) -> int:
         #Init, ready, set, playing, finished
@@ -70,14 +74,12 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
         # Time from the message minus time passed since receiving it
         return max(
             self.gamestate.secs_remaining - (self._node.get_clock().now().nanoseconds / 1e9 - self.last_update), 0.0
-            self.gamestate.secs_remaining - (self._node.get_clock().now().nanoseconds / 1e9 - self.last_update), 0.0
         )
 
     def get_secondary_seconds_remaining(self) -> float:
         """Seconds remaining for things like kickoff"""
         # Time from the message minus time passed since receiving it
         return max(
-            self.gamestate.secondary_time
             self.gamestate.secondary_time
             - (self._node.get_clock().now().nanoseconds / 1e9 - self.last_update),
             0.0,
@@ -107,7 +109,10 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
         if gamestate_msg.rival_score > self.gamestate.rival_score:
             self.last_goal_time = self._node.get_clock().now().nanoseconds / 1e9
 
-        '''Anstoß im Falle von Overtime jetzt erstmal nicht genauer geregelt
+        self.game_controller_stop = gamestate_msg.stopped
+
+        self.stop_pub.publish(self.game_controller_stop)
+
         '''Anstoß im Falle von Overtime jetzt erstmal nicht genauer geregelt
         if (
             gamestate_msg.main_state == GameState.STATE_SET
@@ -134,7 +139,6 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
 
         if self.free_kick_kickoff_team is not None:
             gamestate_msg.has_kick_off = self.free_kick_kickoff_team == self.team_id
-        '''
         '''
         self.last_update = self._node.get_clock().now().nanoseconds / 1e9
         self.gamestate = gamestate_msg
