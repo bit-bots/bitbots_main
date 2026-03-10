@@ -45,7 +45,6 @@ class Sync(AbstractTask):
                 "rsync",
                 "--checksum",
                 "--archive",
-                "--delete",
                 "-e",
                 '"ssh -o StrictHostKeyChecking=no"',
                 f"--exclude-from={os.path.join(self._local_workspace, '.rsyncignore')}",
