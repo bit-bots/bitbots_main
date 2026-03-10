@@ -7,6 +7,7 @@ set -eEo pipefail
 # Go to the download button and copy the link address.
 PYLON_DOWNLOAD_URL="https://data.bit-bots.de/pylon_7_4_0_14900_linux_x86_64_debs.tar.gz.gpg"
 PYLON_VERSION="7.4.0"
+REQUIRED_UBUNTU_VERSION="24.04"
 
 # Check let the user confirm that they read the license agreement on the basler website and agree with it.
 echo "You need to confirm that you read the license agreements for pylon $PYLON_VERSION on the basler download page (https://www.baslerweb.com/en/downloads/software-downloads/) and agree with it."
@@ -26,6 +27,20 @@ else
     SHOW_PROGRESS="--show-progress"
 fi
 
+check_os_is_required_ubuntu_version () {
+    # Check if the OS is ubuntu
+    if [[ "$(lsb_release -is)" != "Ubuntu" ]]; then
+        echo "This driver package only supports Ubuntu. Please install Ubuntu $REQUIRED_UBUNTU_VERSION and try again."
+        exit 1
+    fi
+
+    # Check if the ubuntu version is the required one
+    if [[ "$(lsb_release -rs)" != "$REQUIRED_UBUNTU_VERSION" ]]; then
+        echo "This driver package only supports Ubuntu $REQUIRED_UBUNTU_VERSION. Please install Ubuntu $REQUIRED_UBUNTU_VERSION and try again."
+        exit 1
+    fi
+}
+
 check_internet_connection () {
     # Check if we have an internet connection, except in the ci as azure does not support ping by design
     if [[ $1 != "--ci" ]] && ! ping -q -c 1 -W 1 google.com > /dev/null; then
@@ -39,6 +54,8 @@ if apt list pylon --installed | grep -q $PYLON_VERSION; then
     echo "Pylon driver $PYLON_VERSION is already installed."
 else
     echo "Pylon driver $PYLON_VERSION is not installed. Installing..."
+    # Check if the OS is the required ubuntu version
+    check_os_is_required_ubuntu_version
     # Check if we have an internet connection
     check_internet_connection "$1"
     # Check if the url exist

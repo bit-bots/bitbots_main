@@ -3,7 +3,7 @@ Configuration of competition Wi-Fi
 
 At a competition, there will be different WiFi networks for each field.
 These can be setup with our ansible playbook for the robots.
-This is done by editing the `group_vars/robots.yml <https://git.mafiasi.de/Bit-Bots/ansible/src/branch/master/group_vars/robots.yml>`_ config variables e.g.:
+This is done by editing the `group_vars/robots.yml <https://github.com/bit-bots/ansible/blob/main/group_vars/robots.yml>`_ config variables e.g.:
 
 .. code-block:: yaml
 
