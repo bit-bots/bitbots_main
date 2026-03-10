@@ -1,0 +1,82 @@
+#! /usr/bin/env python3
+from typing import Optional
+
+import numpy as np
+
+import rclpy
+from rclpy.node import Node
+from rclpy.experimental.events_executor import EventsExecutor
+
+from std_msgs.msg import Bool
+from audio_common_msgs.msg import AudioStamped
+from rclpy.qos import qos_profile_sensor_data
+
+
+
+class WhistleDetector(Node):
+
+    def __init__(self) -> None:
+        super().__init__("whistle_detector")
+        self.logger = self.get_logger()
+        
+        self.whistle_publisher = self.create_publisher(Bool, "whistle_detected", 1)
+
+        self.audio_buffer = np.array([], dtype=np.float32)
+        self.sample_rate = 16000
+        self.chunk_size = 512
+
+        self.audio_sub = self.create_subscription(AudioStamped, "/audio", self.audio_cb, qos_profile=qos_profile_sensor_data)
+        self.timer = self.create_timer(0.02, self.process_audio)  
+
+        self.logger.info("Whistle detector initialized")
+
+    def audio_cb(self, msg):
+        audio_np = np.frombuffer(msg.audio.audio_data.int16_data, dtype=np.int16).astype(np.float32)
+        audio_np /= 32768.0  # normalize, as from ints in range +/- 32768 to +/-1.0
+
+        self.audio_buffer = np.concatenate([self.audio_buffer, audio_np])
+
+        if len(self.audio_buffer) > self.chunk_size:
+            self.audio_buffer = self.audio_buffer[-self.chunk_size:]
+
+
+    def process_audio(self) -> None:
+        if len(self.audio_buffer) < self.chunk_size:
+            return  
+
+        audio = self.audio_buffer.copy()
+
+        whistle_detected = self.detect_whistle(audio, self.sample_rate)
+
+        if whistle_detected:
+            msg = Bool(data=True)
+            self.whistle_publisher.publish(msg)
+
+    def detect_whistle(self, audio, sample_rate):
+        spectrum = np.abs(np.fft.rfft(audio))
+        freqs = np.fft.rfftfreq(len(audio), 1/sample_rate)
+
+        band = (freqs > 2000) & (freqs < 4500) # Google: range of whistle frequencies
+
+        whistle_energy = np.sum(spectrum[band])
+        total_energy = np.sum(spectrum)
+
+        if total_energy == 0:
+            return False
+
+        ratio = whistle_energy / total_energy
+
+        return ratio > 0.5 # TODO: Tune, worked well on my Laptop
+
+
+
+def main(args=None) -> None:
+    rclpy.init(args=args)
+
+    node = WhistleDetector()
+    executor = EventsExecutor()
+    executor.add_node(node)
+    try:
+        executor.spin()
+    except KeyboardInterrupt:
+        pass
