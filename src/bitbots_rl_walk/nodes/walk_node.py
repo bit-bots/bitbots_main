@@ -7,7 +7,7 @@ from sensor_msgs.msg import Imu, JointState
 
 from bitbots_msgs.msg import JointCommand
 from bitbots_rl_walk.handler.joint_handler import JointHandler
-from src.rl_node import RLNode
+from bitbots_rl_walk.nodes.rl_node import RLNode
 
 
 class WalkNode(RLNode):
