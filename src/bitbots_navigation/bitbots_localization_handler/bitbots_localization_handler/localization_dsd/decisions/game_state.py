@@ -32,7 +32,7 @@ class GameStateDecider(AbstractLocalizationDecisionElement):
         :param reevaluate:
         :return:
         """
-        game_state_number = self.blackboard.gamestate.get_gamestate()
+        game_state_number = self.blackboard.gamestate.get_game_state()
 
         if game_state_number == GameState.GAMESTATE_INITIAL:
             return "INITIAL"
@@ -145,11 +145,11 @@ class InitialToReady(AbstractLocalizationDecisionElement):
 
     def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
-        self.previous_game_state_number = self.blackboard.gamestate.get_gamestate()
+        self.previous_game_state_number = self.blackboard.gamestate.get_game_state()
 
     def perform(self, reevaluate=False):
         previous_game_state_number = self.previous_game_state_number
-        game_state_number = self.blackboard.gamestate.get_gamestate()
+        game_state_number = self.blackboard.gamestate.get_game_state()
         self.previous_game_state_number = game_state_number
 
         self.publish_debug_data("Previous game state", previous_game_state_number)

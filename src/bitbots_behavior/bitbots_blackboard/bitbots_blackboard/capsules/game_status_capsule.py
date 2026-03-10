@@ -20,16 +20,16 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
         self.last_goal_time = -86400.0
         self.free_kick_kickoff_team: Optional[bool] = None
 
-    def get_gamestate(self) -> int:
-        #Init, ready, set, playing, finished, standby
+    def get_game_state(self) -> int:
+        #Init, ready, set, playing, finished
         return self.gamestate.main_state
 
-    def get_gamePhase(self) -> int:
-        #Timeout, Normal, Penaltyshoot
+    def get_game_phase(self) -> int:
+        #Timeout, Normal, Extratime, Penaltyshoot
         return self.gamestate.gamePhase
 
-    def get_setPlay(self) -> int:
-        #None, Kick In, Goalkick, Cornerkick, Pushing Freekick, Penaltykick
+    def get_set_play(self) -> int:
+        #None, Direct Freekick, Indirect Freekick, Penalty, Throw in, Goalkick, Cornerkick,
         return self.gamestate.setPlay
 
     def get_secondary_team(self) -> int:
@@ -39,6 +39,9 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
     def has_kickoff(self) -> bool:
         #vegelcih mit eigener Teamnummer
         return self.gamestate.kickingTeam == self.team_id
+    
+    def is_stopped(self) -> bool:
+        return self.gamestate.stopped
 
     def has_penalty_kick(self) -> bool:
         return( 

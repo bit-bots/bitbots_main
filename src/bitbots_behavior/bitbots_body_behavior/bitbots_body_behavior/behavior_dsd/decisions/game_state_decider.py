@@ -16,7 +16,7 @@ class GameStateDecider(AbstractDecisionElement):
         :return:
         """
 
-        game_state_number = self.blackboard.gamestate.get_gamestate()
+        game_state_number = self.blackboard.gamestate.get_game_state()
         # todo this is a temporary hack to make GUI work
         if game_state_number == GameState.STATE_INITIAL:
             return "INITIAL"
@@ -28,8 +28,6 @@ class GameStateDecider(AbstractDecisionElement):
             return "PLAYING"
         elif game_state_number == GameState.STATE_FINISHED:
             return "FINISHED"
-        elif game_state_number == GameState.STATE_STANDBY:
-            return "STANDBY"
 
     def get_reevaluate(self):
         """
