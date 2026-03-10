@@ -32,6 +32,9 @@
         <arg name="sim" value="$(var sim)"/>
     </include>
 
+    <include file="$(find-pkg-share bitbots_whistle_detector)/launch/whistle_detector.launch">
+    </include>
+
     <group if="$(var viz)">
         <!-- translate joint goals to joint states -->
         <node pkg="bitbots_utils" exec="motor_goals_viz_helper.py" args="--head"/>
