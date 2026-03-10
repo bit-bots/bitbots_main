@@ -1,32 +1,29 @@
 #! /usr/bin/env python3
-from typing import Optional
 
 import numpy as np
-
 import rclpy
-from rclpy.node import Node
-from rclpy.experimental.events_executor import EventsExecutor
-
-from std_msgs.msg import Bool
 from audio_common_msgs.msg import AudioStamped
+from rclpy.experimental.events_executor import EventsExecutor
+from rclpy.node import Node
 from rclpy.qos import qos_profile_sensor_data
-
+from std_msgs.msg import Bool
 
 
 class WhistleDetector(Node):
-
     def __init__(self) -> None:
         super().__init__("whistle_detector")
         self.logger = self.get_logger()
-        
+
         self.whistle_publisher = self.create_publisher(Bool, "whistle_detected", 1)
 
         self.audio_buffer = np.array([], dtype=np.float32)
         self.sample_rate = 16000
         self.chunk_size = 512
 
-        self.audio_sub = self.create_subscription(AudioStamped, "/audio", self.audio_cb, qos_profile=qos_profile_sensor_data)
-        self.timer = self.create_timer(0.02, self.process_audio)  
+        self.audio_sub = self.create_subscription(
+            AudioStamped, "/audio", self.audio_cb, qos_profile=qos_profile_sensor_data
+        )
+        self.timer = self.create_timer(0.02, self.process_audio)
 
         self.logger.info("Whistle detector initialized")
 
@@ -37,12 +34,11 @@ class WhistleDetector(Node):
         self.audio_buffer = np.concatenate([self.audio_buffer, audio_np])
 
         if len(self.audio_buffer) > self.chunk_size:
-            self.audio_buffer = self.audio_buffer[-self.chunk_size:]
-
+            self.audio_buffer = self.audio_buffer[-self.chunk_size :]
 
     def process_audio(self) -> None:
         if len(self.audio_buffer) < self.chunk_size:
-            return  
+            return
 
         audio = self.audio_buffer.copy()
 
@@ -54,9 +50,9 @@ class WhistleDetector(Node):
 
     def detect_whistle(self, audio, sample_rate):
         spectrum = np.abs(np.fft.rfft(audio))
-        freqs = np.fft.rfftfreq(len(audio), 1/sample_rate)
+        freqs = np.fft.rfftfreq(len(audio), 1 / sample_rate)
 
-        band = (freqs > 2000) & (freqs < 4500) # Google: range of whistle frequencies
+        band = (freqs > 2000) & (freqs < 4500)  # Google: range of whistle frequencies
 
         whistle_energy = np.sum(spectrum[band])
         total_energy = np.sum(spectrum)
@@ -66,8 +62,7 @@ class WhistleDetector(Node):
 
         ratio = whistle_energy / total_energy
 
-        return ratio > 0.5 # TODO: Tune, worked well on my Laptop
-
+        return ratio > 0.5  # TODO: Tune, worked well on my Laptop
 
 
 def main(args=None) -> None:
