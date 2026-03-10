@@ -28,6 +28,8 @@ class GameStateDecider(AbstractDecisionElement):
             return "PLAYING"
         elif game_state_number == GameState.STATE_FINISHED:
             return "FINISHED"
+        elif game_state_number == GameState.STATE_STANDBY:
+            return "STANDBY"
 
     def get_reevaluate(self):
         """

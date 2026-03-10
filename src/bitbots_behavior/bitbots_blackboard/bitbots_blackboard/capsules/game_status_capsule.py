@@ -13,6 +13,7 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
         super().__init__(node, blackboard)
         self.team_id: int = get_parameters_from_other_node(self._node, "parameter_blackboard", ["team_id"])["team_id"]
         self.own_id: int = get_parameters_from_other_node(self._node, "parameter_blackboard", ["bot_id"])["bot_id"]
+        self.own_id: int = get_parameters_from_other_node(self._node, "parameter_blackboard", ["bot_id"])["bot_id"]
         self.gamestate = GameState()
         self.last_update: float = 0.0
         self.unpenalized_time: float = 0.0
@@ -35,6 +36,8 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
     def get_secondary_team(self) -> int:
         #Team ID, wer in set Play den Baall hat
         return self.gamestate.kickingTeam
+        #Team ID, wer in set Play den Baall hat
+        return self.gamestate.kickingTeam
 
     def has_kickoff(self) -> bool:
         #vegelcih mit eigener Teamnummer
@@ -44,6 +47,9 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
         return self.gamestate.stopped
 
     def has_penalty_kick(self) -> bool:
+        return( 
+            self.gamestate.set_play == GameState.SET_PLAY_PENALTY_KICK
+            and self.gamestate.kickingTeam == self.team_id)
         return( 
             self.gamestate.set_play == GameState.SET_PLAY_PENALTY_KICK
             and self.gamestate.kickingTeam == self.team_id)
@@ -64,6 +70,7 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
         # Time from the message minus time passed since receiving it
         return max(
             self.gamestate.secs_remaining - (self._node.get_clock().now().nanoseconds / 1e9 - self.last_update), 0.0
+            self.gamestate.secs_remaining - (self._node.get_clock().now().nanoseconds / 1e9 - self.last_update), 0.0
         )
 
     def get_secondary_seconds_remaining(self) -> float:
@@ -71,11 +78,13 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
         # Time from the message minus time passed since receiving it
         return max(
             self.gamestate.secondary_time
+            self.gamestate.secondary_time
             - (self._node.get_clock().now().nanoseconds / 1e9 - self.last_update),
             0.0,
         )
 
     def get_seconds_since_unpenalized(self) -> float:
+        return self._node.get_clock().now().nanoseconds / 1e9 - self.seconds_till_unpenalized
         return self._node.get_clock().now().nanoseconds / 1e9 - self.seconds_till_unpenalized
 
     def get_is_penalized(self) -> bool:
@@ -99,7 +108,11 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
             self.last_goal_time = self._node.get_clock().now().nanoseconds / 1e9
 
         '''Anstoß im Falle von Overtime jetzt erstmal nicht genauer geregelt
+        '''Anstoß im Falle von Overtime jetzt erstmal nicht genauer geregelt
         if (
+            gamestate_msg.main_state == GameState.STATE_SET
+            and self.gamestate.setPlay != 2
+            and gamestate_msg.state == GameState.STATE_PLAYING
             gamestate_msg.main_state == GameState.STATE_SET
             and self.gamestate.setPlay != 2
             and gamestate_msg.state == GameState.STATE_PLAYING
@@ -111,11 +124,17 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
             
         
         if gamestate_msg.setPlay != 2 and gamestate_msg.secondaryTime == 0:
+            self.free_kick_kickoff_team = gamestate_msg.kickingTeam
+            
+        
+        if gamestate_msg.setPlay != 2 and gamestate_msg.secondaryTime == 0:
             self.free_kick_kickoff_team = None
+        
         
 
         if self.free_kick_kickoff_team is not None:
             gamestate_msg.has_kick_off = self.free_kick_kickoff_team == self.team_id
+        '''
         '''
         self.last_update = self._node.get_clock().now().nanoseconds / 1e9
         self.gamestate = gamestate_msg
