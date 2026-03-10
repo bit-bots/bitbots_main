@@ -228,6 +228,7 @@ pyamdgpuinfo = ">=2.1.7, <3"
 [feature.ros.activation.env]
 ROS_AUTOMATIC_DISCOVERY_RANGE = "LOCALHOST"
 RCUTILS_COLORIZED_OUTPUT = "1"
+RCUTILS_CONSOLE_OUTPUT_FORMAT="[{severity}] [{name}]: {message} ({function_name}() at {file_name}:{line_number})"
 RMW_IMPLEMENTATION = "rmw_cyclonedds_cpp"
 COLCON_LOG_LEVEL = "30"
 PYTHONWARNINGS="ignore:::setuptools.command.install,ignore:::setuptools.command.easy_install,ignore:::pkg_resources,ignore:easy_install command is deprecated,ignore:setup.py install is deprecated"
@@ -235,7 +236,10 @@ WEBOTS_HOME = "$CONDA_PREFIX/share/webots"
 ALSA_PLUGIN_DIR = "/usr/lib/x86_64-linux-gnu/alsa-lib"
 
 [feature.ros.activation]
-scripts = ["install/setup.sh"]
+scripts = [
+    "install/setup.sh",
+    "scripts/ros.plugin.sh",
+]
 
 [environments]
 default = ["ros", "format"]  # Full development environment (excluding robot-only deps)
