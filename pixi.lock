@@ -962,6 +962,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/wayland-protocols-1.47-hd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/wcwidth-0.6.0-pyhd8ed1ab_0.conda
       - conda: https://data.bit-bots.de/conda-misc/output/linux-64/webots-2022b-hb0f4dca_5.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/websockets-16.0-py312h5253ce2_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/werkzeug-3.1.6-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/wrapt-2.1.1-py312h4c3975b_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/wslink-2.5.0-pyhd8ed1ab_0.conda
@@ -1995,6 +1996,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/wadler-lindig-0.1.7-pyhe01879c_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/wayland-1.24.0-h4f8a99f_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/wcwidth-0.6.0-pyhd8ed1ab_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/websockets-16.0-py312hd41f8a7_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/werkzeug-3.1.6-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/wrapt-2.1.1-py312hcd1a082_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/wslink-2.5.0-pyhd8ed1ab_0.conda
@@ -3173,6 +3175,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/wayland-protocols-1.47-hd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/wcwidth-0.6.0-pyhd8ed1ab_0.conda
       - conda: https://data.bit-bots.de/conda-misc/output/linux-64/webots-2022b-hb0f4dca_5.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/websockets-16.0-py312h5253ce2_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/werkzeug-3.1.6-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/wrapt-2.1.1-py312h4c3975b_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/wslink-2.5.0-pyhd8ed1ab_0.conda
@@ -4207,6 +4210,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/wadler-lindig-0.1.7-pyhe01879c_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/wayland-1.24.0-h4f8a99f_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/wcwidth-0.6.0-pyhd8ed1ab_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/websockets-16.0-py312hd41f8a7_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/werkzeug-3.1.6-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/wrapt-2.1.1-py312hcd1a082_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/wslink-2.5.0-pyhd8ed1ab_0.conda
@@ -35625,6 +35629,34 @@ packages:
   license: Apache-2.0
   size: 172089451
   timestamp: 1771970041026
+- conda: https://conda.anaconda.org/conda-forge/linux-64/websockets-16.0-py312h5253ce2_1.conda
+  sha256: dd598cab9175a9ab11c8a1798c49ccabe923263d12aababa84a296cb18206464
+  md5: e35ffb48178b20ee1a43fbe7abc93746
+  depends:
+  - python
+  - __glibc >=2.17,<3.0.a0
+  - libgcc >=14
+  - python_abi 3.12.* *_cp312
+  license: BSD-3-Clause
+  license_family: BSD
+  purls:
+  - pkg:pypi/websockets?source=hash-mapping
+  size: 358659
+  timestamp: 1768087389177
+- conda: https://conda.anaconda.org/conda-forge/linux-aarch64/websockets-16.0-py312hd41f8a7_1.conda
+  sha256: 2437ac324f0c89cb62af9471cca8e14267201199eb2716bc2de7cc1530b9edb0
+  md5: 5fb3255c604a88f389c84d063098bcbe
+  depends:
+  - python
+  - python 3.12.* *_cpython
+  - libgcc >=14
+  - python_abi 3.12.* *_cp312
+  license: BSD-3-Clause
+  license_family: BSD
+  purls:
+  - pkg:pypi/websockets?source=hash-mapping
+  size: 363221
+  timestamp: 1768087416186
 - conda: https://conda.anaconda.org/conda-forge/noarch/werkzeug-3.1.6-pyhcf101f3_0.conda
   sha256: 06e3d5bec9d2730a23ecf023b7cba329c0772c51f2704714c17b3080b0385113
   md5: 2d9bfc6055e55ff58b2c359323a753d2
