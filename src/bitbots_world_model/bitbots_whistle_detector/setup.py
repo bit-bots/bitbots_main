@@ -1,5 +1,5 @@
 import glob
-
+from setuptools import find_packages, setup
 from setuptools import find_packages, setup
 
 
@@ -9,7 +9,7 @@ package_name = "bitbots_whistle_detector"
 
 setup(
     name=package_name,
-    packages=[package_name],
+    packages=find_packages(exclude=["test"]),
     data_files=[
         ("share/" + package_name, ["package.xml"]),
         ("share/" + package_name + "/launch", glob.glob("launch/*.launch")),
