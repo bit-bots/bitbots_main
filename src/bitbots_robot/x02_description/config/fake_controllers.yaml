@@ -1,0 +1,22 @@
+controller_list:
+  - name: fake_minibot_controller
+    joints:
+      - HeadPan
+      - HeadTilt
+      - RShoulderPitch
+      - RShoulderRoll
+      - RElbow
+      - RHipYaw
+      - RHipRoll
+      - RHipPitch
+      - RKnee
+      - RAnklePitch
+      - LShoulderPitch
+      - LShoulderRoll
+      - LElbow
+      - LHipYaw
+      - LHipRoll
+      - LHipPitch
+      - LKnee
+      - LAnklePitch
+

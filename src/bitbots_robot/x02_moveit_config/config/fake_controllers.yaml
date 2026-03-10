@@ -1,0 +1,115 @@
+trajectory_execution:
+  allowed_execution_duration_scaling: 1.2
+  allowed_goal_duration_margin: 0.5
+  allowed_start_tolerance: 0.01
+
+moveit_controller_manager: moveit_simple_controller_manager/MoveItSimpleControllerManager
+
+controller_names:
+  - fake_LeftLeg_controller
+  - fake_RightLeg_controller
+  - fake_Legs_controller
+  - fake_RightArm_controller
+  - fake_LeftArm_controller
+  - fake_Arms_controller
+  - fake_Head_controller
+  - fake_All_controller
+
+fake_LeftLeg_controller:
+  action_ns: fake_LeftLeg_controller
+  type: FollowJointTrajectory
+  default: true
+  joints:
+    - LHipYaw
+    - LHipRoll
+    - LHipPitch
+    - LKnee
+    - LAnklePitch
+    - LAnkleRoll
+fake_RightLeg_controller:
+  action_ns: fake_RightLeg_controller
+  type: FollowJointTrajectory
+  default: true
+  joints:
+    - RHipYaw
+    - RHipRoll
+    - RHipPitch
+    - RKnee
+    - RAnklePitch
+    - RAnkleRoll
+fake_Legs_controller:
+  action_ns: fake_Legs_controller
+  type: FollowJointTrajectory
+  default: false
+  joints:
+    - LHipYaw
+    - LHipRoll
+    - LHipPitch
+    - LKnee
+    - LAnklePitch
+    - LAnkleRoll
+    - RHipYaw
+    - RHipRoll
+    - RHipPitch
+    - RKnee
+    - RAnklePitch
+    - RAnkleRoll
+fake_RightArm_controller:
+  action_ns: fake_RightArm_controller
+  type: FollowJointTrajectory
+  default: true
+  joints:
+    - RShoulderPitch
+    - RShoulderRoll
+    - RElbow
+fake_LeftArm_controller:
+  action_ns: fake_LeftArm_controller
+  type: FollowJointTrajectory
+  default: true
+  joints:
+    - LShoulderPitch
+    - LShoulderRoll
+    - LElbow
+fake_Arms_controller:
+  action_ns: fake_Arms_controller
+  type: FollowJointTrajectory
+  default: false
+  joints:
+    - LShoulderPitch
+    - LShoulderRoll
+    - LElbow
+    - RShoulderPitch
+    - RShoulderRoll
+    - RElbow
+fake_Head_controller:
+  action_ns: fake_Head_controller
+  type: FollowJointTrajectory
+  default: true
+  joints:
+    - HeadPan
+    - HeadTilt
+fake_All_controller:
+  action_ns: fake_All_controller
+  type: FollowJointTrajectory
+  default: false
+  joints:
+    - HeadPan
+    - HeadTilt
+    - LHipYaw
+    - LHipRoll
+    - LHipPitch
+    - LKnee
+    - LAnklePitch
+    - LAnkleRoll
+    - LShoulderPitch
+    - LShoulderRoll
+    - LElbow
+    - RHipYaw
+    - RHipRoll
+    - RHipPitch
+    - RKnee
+    - RAnklePitch
+    - RAnkleRoll
+    - RShoulderPitch
+    - RShoulderRoll
+    - RElbow
