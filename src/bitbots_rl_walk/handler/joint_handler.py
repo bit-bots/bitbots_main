@@ -48,7 +48,7 @@ WALKREADY_STATE = np.array(
 )
 
 
-class JointsHandler:
+class JointHandler:
     def __init__(self, ordered_relevant_joint_names=ORDERED_RELEVANT_JOINT_NAMES, walkready_state=WALKREADY_STATE):
         self._ordered_relevant_joint_names = ordered_relevant_joint_names
         self._walkready_state = walkready_state
