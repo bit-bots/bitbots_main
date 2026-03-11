@@ -1,0 +1,64 @@
+syntax = "proto3";
+package droidgrpc;
+
+message Empty {
+};
+
+message DroidConfigs {
+  repeated string joint_name = 1;
+  repeated float pzero = 2;
+  repeated float pmin = 3;
+  repeated float pmax = 4;
+  repeated float imax = 5;
+  repeated float kp = 11;
+  repeated float kd = 12;
+};
+
+message DroidStateResponse {
+  optional uint64 system_tic = 1;
+  repeated float position = 2;
+  repeated float velocity = 3;
+  repeated float torque = 4;
+  repeated float temperature = 5;
+  repeated float abs_encoder = 6;
+  repeated uint32 pack_loss = 7;
+  optional int32 lowlevel_init = 8;
+  repeated float imu_acc = 10;
+  repeated float imu_euler = 11;
+  repeated float imu_gyro = 12;
+  repeated float est_euler = 13;
+  repeated float est_com_pos = 14;
+  repeated float est_com_vel = 15;
+  repeated float foot_force = 16;
+  optional uint64 imu_stamp = 20;
+  optional float bus_voltage = 21;
+  optional float bus_current = 22;
+  optional float bus_energy = 23;
+  repeated float rc_du = 24;
+  repeated int32 rc_keys = 25;
+};
+
+message DroidArmResponse {
+  optional uint64 system_tic = 1;
+  repeated float position = 2;
+  repeated float velocity = 3;
+  repeated float torque = 4;
+  repeated float temperature = 5;
+  repeated float abs_encoder = 6;
+  repeated uint32 pack_loss = 7;
+  optional int32 lowlevel_init = 8;
+};
+
+message DroidCommandRequest {
+  repeated int32 mode = 1;
+  repeated float position = 2;
+  repeated float velocity = 3;
+  repeated float torque = 4;
+  optional int32 cmd_enable = 5;
+  repeated int32 ens = 6;
+  repeated float kp = 10;
+  repeated float kd = 11;
+  repeated float max_torque = 20;
+  repeated int32 finger = 21;
+};
+

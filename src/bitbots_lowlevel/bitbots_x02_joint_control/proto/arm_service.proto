@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package droidgrpc;
+
+import "droid_msg.proto";
+
+service ArmService {
+  // Simple Request-Response
+  rpc GetArmConfig (Empty) returns (DroidConfigs);
+
+  rpc GetArmState (Empty) returns (DroidArmResponse);
+
+  // Server Streaming (State Updates)
+  rpc GetArmStateStream (Empty) returns (stream DroidArmResponse);
+
+  // Simple Request-Response (Single Command)
+  rpc SetArmCommand (DroidCommandRequest) returns (Empty);
+
+  // Client Streaming (Command Stream)
+  rpc SetArmCommandStream (stream DroidCommandRequest) returns (Empty);
+
+  // Bidirectional Streaming (Control Loop)
+  rpc ExchangeArmControlStream (stream DroidCommandRequest) returns (stream DroidArmResponse);
+}

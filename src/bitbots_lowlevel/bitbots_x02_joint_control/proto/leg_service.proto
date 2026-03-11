@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package droidgrpc;
+
+import "droid_msg.proto";
+
+service LegService {
+  rpc GetLegConfig (Empty) returns (DroidConfigs);
+
+  rpc GetLegState (Empty) returns (DroidStateResponse);
+
+  rpc GetLegStateStream (Empty) returns (stream DroidStateResponse);
+
+  rpc SetLegCommand (DroidCommandRequest) returns (Empty);
+
+  rpc SetLegCommandStream (stream DroidCommandRequest) returns (Empty);
+
+  rpc ExchangeLegControlStream (stream DroidCommandRequest) returns (stream DroidStateResponse);
+}
