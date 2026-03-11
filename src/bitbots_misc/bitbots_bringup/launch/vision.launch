@@ -13,8 +13,7 @@
 
     <!-- Start the camera only when necessary -->
     <group if="$(var camera)">
-        <group unless="$(var sim)">
-            <include file="$(find-pkg-share bitbots_basler_camera)/launch/basler_camera.launch" />
-        </group>
+        <node pkg="bitbots_vision" exec="x02_cam">
+        </node>
     </group>
 </launch>

@@ -30,6 +30,7 @@ setup(
     entry_points={
         "console_scripts": [
             "vision = bitbots_vision.vision:main",
+            "x02_cam = bitbots_vision.scripts.x02_cam:main",
         ],
     },
 )
