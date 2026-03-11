@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import Callable, NamedTuple
 
 import numpy as np
+import onnx
 import onnxruntime as rt
 from rclpy.node import Node
 from rclpy.qos import QoSProfile
@@ -46,12 +47,21 @@ class RLNode(Node):
         qos_profile: int | QoSProfile
 
     def __init__(self, path_to_model, handlers):
-        self._onnx_model = Path(path_to_model)
-        model_name = self._onnx_model.stem
+        self._onnx_model_path = Path(path_to_model)
+        model_name = self._onnx_model_path.stem
         super().__init__(f"{model_name}")
 
         # Load the ONNX model
-        self._onnx_session = rt.InferenceSession(self._onnx_model, providers=["CPUExecutionProvider"])
+        self._onnx_session = rt.InferenceSession(self._onnx_model_path, providers=["CPUExecutionProvider"])
+        self._onnx_model = onnx.load(self._onnx_model_path)
+
+        self._onnx_input_name = []
+        for inp in self._onnx_model.graph.input:
+            self._onnx_input_name.append(inp)
+
+        self._onnx_output_name = []
+        for out in self._onnx_model.graph.output:
+            self._onnx_output_name.append(out)
 
         # Phase time
         self._phase_dt = 2 * np.pi * GAIT_FREQUENCY * CONTROL_DT
@@ -83,8 +93,8 @@ class RLNode(Node):
         self._obs_phase = np.array([np.cos(self._phase), np.sin(self._phase)], dtype=np.float32).flatten()
 
         # Run the ONNX model
-        onnx_input = {"in_0": self.obs().reshape(1, -1)}
-        onnx_pred = self._onnx_session.run(["tanh_out_0"], onnx_input)[0][0]
+        onnx_input = {self._onnx_input_name[0]: self.obs().reshape(1, -1)}  # TODO: Improve input
+        onnx_pred = self._onnx_session.run(self._onnx_output_name, onnx_input)[0][0]
         self._previous_action = onnx_pred
 
         self.publisher(onnx_pred)
