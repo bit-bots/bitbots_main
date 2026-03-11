@@ -1,7 +1,9 @@
 import numpy as np
 
+from bitbots_rl_walk.handler.handler import Handler
 
-class CommandHandler:
+
+class CommandHandler(Handler):
     def __init__(self):
         self._cmd_vel = None
 

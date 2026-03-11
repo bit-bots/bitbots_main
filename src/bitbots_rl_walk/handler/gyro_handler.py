@@ -1,7 +1,9 @@
 import numpy as np
 
+from bitbots_rl_walk.handler.handler import Handler
 
-class GyroHandler:
+
+class GyroHandler(Handler):
     def __init__(self):
         self._imu_data = None
 

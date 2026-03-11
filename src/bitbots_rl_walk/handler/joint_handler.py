@@ -1,6 +1,7 @@
 import numpy as np
 
 from bitbots_msgs.msg import JointCommand
+from bitbots_rl_walk.handler.handler import Handler
 
 ORDERED_RELEVANT_JOINT_NAMES = [
     "RShoulderPitch",
@@ -48,7 +49,7 @@ WALKREADY_STATE = np.array(
 )
 
 
-class JointHandler:
+class JointHandler(Handler):
     def __init__(self, ordered_relevant_joint_names=ORDERED_RELEVANT_JOINT_NAMES, walkready_state=WALKREADY_STATE):
         self._ordered_relevant_joint_names = ordered_relevant_joint_names
         self._walkready_state = walkready_state

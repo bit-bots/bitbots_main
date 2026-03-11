@@ -2,8 +2,10 @@ import numpy as np
 from transforms3d.euler import euler2mat
 from transforms3d.quaternions import quat2mat
 
+from bitbots_rl_walk.handler.handler import Handler
 
-class GravityHandler:
+
+class GravityHandler(Handler):
     def __init__(self):
         self._imu_data = None
         self._gravity = None
