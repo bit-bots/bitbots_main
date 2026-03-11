@@ -12,6 +12,7 @@
     <arg name="vision" default="true" description="Whether the vision system should be started" />
     <arg name="workspace_status" default="true" description="Whether to publish the current workspace status"/>
     <arg name="world_model" default="true" description="Whether the world model should be started"/>
+    <arg name="whistle_detector" default="true" description="Whether whistle detector should be started"/>
 
 
     <!-- launch game controller -->
@@ -54,10 +55,10 @@
         <include file="$(find-pkg-share bitbots_robot_filter)/launch/robot_filter.launch">
             <arg name="sim" value="$(var sim)"/>
         </include>
-        <include file="$(find-pkg-share bitbots_whistle_detector)/launch/whistle_detector.launch">
-        </include>
     </group>
-
+    <group if="$(var whistle_detector)">
+        <include file="$(find-pkg-share bitbots_whistle_detector)/launch/whistle_detector.launch"/>
+    </group>
     <!-- launch localization or fake localization -->
     <group if="$(var localization)">
         <include file="$(find-pkg-share bitbots_localization)/launch/localization.launch">
