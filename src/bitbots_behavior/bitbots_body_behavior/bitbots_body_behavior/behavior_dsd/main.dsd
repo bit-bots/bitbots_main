@@ -130,7 +130,7 @@ $BallSeen
                     SECOND --> #SupporterRole
                     THIRD --> #DefensePositioning
 
--->BodyBehavior
+#BodyBehavior
 $IsPenalized
     YES --> #DoNothing
     JUST_UNPENALIZED --> $GameStateDecider
@@ -162,4 +162,5 @@ $IsPenalized
             NORMAL --> #NormalBehavior
             OVERTIME --> #NormalBehavior
         STANDBY --> #StandAndLook
+        STOPPED --> #DoNothing
             
