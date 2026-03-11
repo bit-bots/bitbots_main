@@ -59,7 +59,7 @@ class Speaker(Node):
         conda_prefix = os.environ.get("CONDA_PREFIX", "")
         if not conda_prefix:
             raise ValueError(
-                "CONDA_PREFIX environment variable not set! We now expect models to be shared as conda packages."
+                "CONDA_PREFIX environment variable not set! We expect models to be shared as conda packages."
             )
 
         # Assemble model package name and look at its share directory
