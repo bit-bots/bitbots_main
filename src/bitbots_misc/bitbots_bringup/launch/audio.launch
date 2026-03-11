@@ -17,17 +17,7 @@
             pkg="audio_common"
             exec="audio_capturer_node"
             name="audio_capturer_node"
-            ns="$(var ns)"
             output="screen">
-
-            <param name="format" value="$(var format)"/>
-            <param name="channels" value="$(var channels)"/>
-            <param name="rate" value="$(var sample_rate)"/>
-            <param name="chunk" value="$(var bitrate)"/>
-            <param name="device" value="$(var device)"/>
-            <param name="frame_id" value="$(var dst)"/>
-
-            <remap from="audio" to="$(var audio_topic)"/>
         </node>
     </group>
 </launch>
