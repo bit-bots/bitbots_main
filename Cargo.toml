@@ -3,7 +3,8 @@ members = [
     "src/bitbots_misc/bitbots_extrinsic_calibration",
     "src/bitbots_rust_test",
     "src/bitbots_navigation/bitbots_rust_nav",
-    "src/bitbots_navigation/bitbots_path_planning"
+    "src/bitbots_navigation/bitbots_path_planning",
+    "src/bitbots_lowlevel/bitbots_x02_joint_control",
 ]
 
 # Optional but recommended for modern Cargo

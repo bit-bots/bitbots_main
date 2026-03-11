@@ -37,13 +37,13 @@ readline = ">=8.2.999"  # This is needed because we want to install an empty rea
 
 [feature.ros.dependencies]
 # Misc dependencies for our ROS 2 packages
-compilers = ">=1.11.0,<2"
-clang = ">=21.1.0,<22"  # Needed for r2r rust bindings generation
 beartype = ">=0.22.6,<0.23"
 breathe = ">=4.36.0,<5"
 cmake = "<3.30"  # Constraint to avoid issues with deprecated features in newer cmake versions
 colorama = ">=0.4.6,<0.5"
 compilers = ">=1.11.0,<2"
+rust = ">=1.94.0,<1.95"
+clang = ">=21.1.0,<22"  # Needed for r2r rust bindings generation
 eigen = ">=3.4.0,<4"
 fabric = ">=3.2.2,<4"
 flask = ">=3.1.2,<4"
