@@ -261,7 +261,9 @@ class TeamCommunication:
             return (time is not None) and (now - Time.from_msg(time) < Duration(seconds=self.lifetime))
 
         message = self.protocol_converter.convert_to_message(self, msg, is_still_valid)
-        self.socket_communication.send_message(message.SerializeToString())
+        proto_msg = message.SerializeToString()
+        self.logger.debug(f"Sending msg with size {len(proto_msg)} bytes")
+        self.socket_communication.send_message(proto_msg)
 
     def create_empty_message(self, now: Time) -> Proto.Message:
         message = Proto.Message()
