@@ -35600,6 +35600,7 @@ packages:
   - msgpack-python >=1,<2
   - python >=3.10
   license: BSD-3-Clause
+  license_family: BSD
   purls:
   - pkg:pypi/wslink?source=compressed-mapping
   size: 36729
