@@ -46,8 +46,9 @@ class WalkNode(RLNode):
                 self._gyro_handler.get_data(),  # 3
                 self._gravity_handler.get_data(),  # 4
                 self._command_handler.get_data(),  # 3
-                self._joint_handler.get_velocitiy_data(),  # 18
+                self._joint_handler.get_velocity_data(),  # 18
                 self._joint_handler.get_angle_data(),  # 18
+                # TODO: fix
                 self._previous_action,  # 18  # Previous action
                 self._obs_phase,  # 2
             ]
@@ -56,7 +57,7 @@ class WalkNode(RLNode):
         return obs
 
     def load_phase(self):
-        walkready_command = self._joint_handler.get_walkready_joints_command()
+        walkready_command = self._joint_handler.get_walkready_joint_command()
         self._joint_command_pub.publish(walkready_command)
         time.sleep(10)
 

@@ -46,7 +46,7 @@ class RLNode(Node):
         callback: Callable
         qos_profile: int | QoSProfile
 
-    def __init__(self, path_to_model, handlers):
+    def __init__(self, path_to_model):
         self._onnx_model_path = Path(path_to_model)
         model_name = self._onnx_model_path.stem
         super().__init__(f"{model_name}")
@@ -113,13 +113,3 @@ class RLNode(Node):
     def load_phase():
         # Should be defined in subclass
         pass
-
-
-def main():
-    import rclpy
-
-    rclpy.init()
-    node = RLNode()
-    rclpy.spin(node)
-    node.destroy_node()
-    rclpy.try_shutdown()
