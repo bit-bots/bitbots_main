@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<launch>
+    <arg name="sim" default="false" description="Whether the robot is running in simulation or on real hardware" />
+
+    <arg name="team_id" default="1" description="The team id of the team the robot is playing in (not used if use_parameter_blackboard is true)" />
+    <arg name="bot_id" default="1" description="The id of the robot in the team (not used if use_parameter_blackboard is true)" />
+
+    <arg name="use_parameter_blackboard" default="false" description="Whether the parameter blackboard should be used to get the team and bot id dynamically" />
+    <arg name="parameter_blackboard_name" default="parameter_blackboard" description="The name of the parameter blackboard when it is used (see use_parameter_blackboard)" />
+    <arg name="team_id_param_name" default="team_id" description="The name of the parameter for the team id on the parameter blackboard when it is used (see use_parameter_blackboard)" />
+    <arg name="bot_id_param_name" default="bot_id" description="The name of the parameter for the bot id on the parameter blackboard when it is used (see use_parameter_blackboard)" />
+
+
+    <!-- launch the game controller client without a parameter blackboard -->
+    <node pkg="game_controller_hsl" exec="game_controller" name="game_controller_hsl" output="screen" unless="$(var use_parameter_blackboard)">
+        <param from="$(find-pkg-share game_controller_hsl)/config/game_controller_settings.yaml" />
+        <param name="use_sim_time" value="$(var sim)" />
+
+        <param name="team_id" value="$(var team_id)" />
+        <param name="bot_id" value="$(var bot_id)" />
+    </node>
+
+    <!-- or -->
+
+    <!-- launch the game controller client with a parameter blackboard -->
+    <node pkg="game_controller_hsl" exec="game_controller" name="game_controller_hsl" output="screen" if="$(var use_parameter_blackboard)">
+        <param from="$(find-pkg-share game_controller_hsl)/config/game_controller_settings.yaml" />
+        <param name="use_sim_time" value="$(var sim)" />
+
+        <param name="parameter_blackboard_name" value="$(var parameter_blackboard_name)" />
+        <param name="team_id_param_name" value="$(var team_id_param_name)" /> 
+        <param name="bot_id_param_name" value="$(var bot_id_param_name)" />
+    </node>
+</launch>

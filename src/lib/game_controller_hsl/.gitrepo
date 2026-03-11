@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/ingydotnet/git-subrepo#readme
+;
+[subrepo]
+	remote = git@github.com:bit-bots/game_controller_hsl.git
+	branch = rolling
+	commit = d55ef420ed7d4e4dfc0d88d5db2ef573038284c0
+	parent = 215848ae8d261ddade8c6555bacd92d37f2862bb
+	method = merge
+	cmdver = 0.4.9
