@@ -21,11 +21,11 @@ from game_controller_hsl.utils import get_parameters_from_other_node
 class SimGamestate(Node):
     msg = """Setting the GameState by entering a number:
 
-0: GAMESTATE_INITIAL = 0
-1: GAMESTATE_READY = 1
-2: GAMESTATE_SET = 2
-3: GAMESTATE_PLAYING =3
-4: GAMESTATE_FINISHED = 4
+0: STATE_INITIAL = 0
+1: STATE_READY = 1
+2: STATE_SET = 2
+3: STATE_PLAYING =3
+4: STATE_FINISHED = 4
 
 5: COMPETITION_TYPE_SMALL = 0
 6: COMPETITION_TYPE_MIDDLE = 1
