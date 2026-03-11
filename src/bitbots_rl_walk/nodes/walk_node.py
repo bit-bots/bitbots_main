@@ -15,6 +15,8 @@ from bitbots_rl_walk.nodes.rl_node import RLNode
 
 class WalkNode(RLNode):
     def __init__(self, walk_policy_path):
+        super().__init__(walk_policy_path)
+
         # publishers
         self._joint_command_pub = self.create_publisher(JointCommand, "walking_motor_goals", 10)
 
@@ -45,8 +47,6 @@ class WalkNode(RLNode):
                 self._timer_phase_confg.get_obs_phase(),  # 2
             ]
         ).astype(np.float32)
-
-        super().__init__(walk_policy_path)
 
     def _imu_callback(self, msg):
         self._gyro_handler.imu_callback(msg)

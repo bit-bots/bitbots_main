@@ -104,14 +104,14 @@ class RLNode(Node):
         phase_tp1 = self._timer_phase_confg.get_phase() + self._timer_phase_confg.get_phase_dt()
         self._timer_phase_confg.set_phase(np.fmod(phase_tp1 + np.pi, 2 * np.pi) - np.pi)
 
-    def obs():
+    def obs(self):
         # Should be defined in subclass
         pass
 
-    def publisher():
+    def publisher(self):
         # Should be defined in subclass
         pass
 
-    def load_phase():
+    def load_phase(self):
         # Should be defined in subclass
         pass
