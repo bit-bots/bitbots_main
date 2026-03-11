@@ -36,7 +36,7 @@ class Speaker(Node):
         super().__init__("tts_speaker")
 
         # Class Variables
-        self.prio_queue: list[tuple[str, int]] = []
+        self.priority_queue: list[tuple[str, int]] = []
         self.speak_enabled = None
         self.print_say = None
         self.message_level = None
@@ -94,9 +94,9 @@ class Speaker(Node):
     def run_speaker(self) -> None:
         """Continuously checks the queue and speaks the next message."""
         # Check if there is a message in the queue
-        if len(self.prio_queue) > 0:
+        if len(self.priority_queue) > 0:
             # Get the next message and speak it
-            text, _ = self.prio_queue.pop(0)
+            text, _ = self.priority_queue.pop(0)
             try:
                 with timer("TTS Generation Time"):
                     wav_untrimmed, duration = self.generate_speech(f"{text}")
@@ -105,7 +105,8 @@ class Speaker(Node):
                 speaker = sc.default_speaker()
                 with speaker.player(samplerate=self.text_to_speech_engine.sample_rate) as p:
                     p.play(wav)
-                self.get_logger().info(
+                self.get_logger().info(f"Spoke: '{text}'.")
+                self.get_logger().debug(
                     f"Finished speaking: {text} (Duration: {duration[0].item():.2f}s) Used device: {speaker.name}"
                 )
             except OSError:
@@ -117,16 +118,16 @@ class Speaker(Node):
         text = msg.text
         if text is None:
             self.get_logger().warn("Speaker got message without content.")
-        prio = msg.priority
+        priority = msg.priority
 
         # If printing is enabled and it's a text, print it
         if self.print_say:
             self.get_logger().info("Said: " + text)
 
         # Check if the message is already in the queue or if it's priority is high enough to be added
-        if self.speak_enabled and prio >= self.message_level and (text, prio) not in self.prio_queue:
-            self.prio_queue.append((text, prio))
-            self.prio_queue.sort(key=lambda x: x[1], reverse=True)
+        if self.speak_enabled and priority >= self.message_level and (text, priority) not in self.priority_queue:
+            self.priority_queue.append((text, priority))
+            self.priority_queue.sort(key=lambda x: x[1], reverse=True)
 
 
 def main(args=None):
