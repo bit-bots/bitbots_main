@@ -206,6 +206,7 @@ webots = ">=2022b,<2023a"
 clang-format = ">=21.1.0,<22"
 cppcheck = ">=2.18.3,<3"
 pre-commit = ">=4.4.0,<5"
+git-subrepo = ">=0.4.9,<0.5"
 
 [feature.ros.pypi-dependencies]
 # These are are pypi dependencies needed for our ROS 2 packages

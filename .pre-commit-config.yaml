@@ -6,7 +6,10 @@ repos:
         args:
           - "--fix"
           - "--exit-non-zero-on-fix"
+          - "--exclude=src/lib/**"
       - id: ruff-format
+        args:
+          - "--exclude=src/lib/**"
   - repo: https://github.com/pocc/pre-commit-hooks
     rev: v1.3.5
     hooks:
