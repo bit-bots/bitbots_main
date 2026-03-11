@@ -29,5 +29,3 @@ setup(
         ],
     },
 )
-
-# https://roboticsbackend.com/ros2-rclpy-parameter-callback/
