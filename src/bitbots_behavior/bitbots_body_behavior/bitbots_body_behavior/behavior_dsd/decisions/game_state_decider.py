@@ -16,9 +16,12 @@ class GameStateDecider(AbstractDecisionElement):
         :return:
         """
 
-        game_state_number = self.blackboard.gamestate.get_gamestate()
+        game_state_number = self.blackboard.gamestate.get_game_state()
+        is_stopped = self.blackboard.gamestate.is_stopped()
         # todo this is a temporary hack to make GUI work
-        if game_state_number == GameState.STATE_INITIAL:
+        if is_stopped:
+            return "STOPPED"
+        elif game_state_number == GameState.STATE_INITIAL:
             return "INITIAL"
         elif game_state_number == GameState.STATE_READY:
             return "READY"
