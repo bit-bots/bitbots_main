@@ -4,7 +4,7 @@ import rclpy
 from bitbots_blackboard.body_blackboard import BodyBlackboard
 from bitbots_tf_buffer import Buffer
 from dynamic_stack_decider.dsd import DSD
-from game_controller_hl_interfaces.msg import GameState
+from game_controller_hsl_interfaces.msg import GameState
 from geometry_msgs.msg import PoseWithCovarianceStamped, Twist
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.duration import Duration

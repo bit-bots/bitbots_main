@@ -22,7 +22,7 @@
   <depend>bitbots_tts</depend>
   <depend>bitbots_utils</depend>
   <depend>dynamic_stack_decider</depend>
-  <depend>game_controller_hl_interfaces</depend>
+  <depend>game_controller_hsl_interfaces</depend>
   <depend>geometry_msgs</depend>
   <depend>python3-numpy</depend>
   <depend>rclpy</depend>

@@ -20,14 +20,14 @@
   <depend>backward_ros</depend>
   <depend>bitbots_docs</depend>
   <depend>bitbots_msgs</depend>
-  <depend>game_controller_hl_interfaces</depend>
+  <depend>game_controller_hsl_interfaces</depend>
   <depend>rclcpp</depend>
   <depend>std_msgs</depend>
   <depend>std_srvs</depend>
   <depend>test_msgs</depend>
 
   <export>
-      <bitbots_documentation>
+    <bitbots_documentation>
       <language>python3</language>
       <status>tested_robot</status>
     </bitbots_documentation>

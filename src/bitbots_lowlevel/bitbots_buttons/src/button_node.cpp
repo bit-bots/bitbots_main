@@ -4,7 +4,7 @@
 #include <bitbots_msgs/msg/buttons.hpp>
 #include <bitbots_msgs/srv/manual_penalize.hpp>
 #include <bitbots_msgs/srv/set_teaching_mode.hpp>
-#include <game_controller_hl_interfaces/msg/game_state.hpp>
+#include <game_controller_hsl_interfaces/msg/game_state.hpp>
 #include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <std_msgs/msg/bool.hpp>
@@ -53,12 +53,12 @@ class ButtonNode : public rclcpp::Node {
     teaching_mode_client_ = this->create_client<bitbots_msgs::srv::SetTeachingMode>("teaching_mode");
     buttons_sub_ = this->create_subscription<bitbots_msgs::msg::Buttons>(
         "/buttons", 1, std::bind(&bitbots_buttons::ButtonNode::buttonCb, this, _1));
-    gamestate_sub_ = this->create_subscription<game_controller_hl_interfaces::msg::GameState>(
+    gamestate_sub_ = this->create_subscription<game_controller_hsl_interfaces::msg::GameState>(
         "gamestate", 1, std::bind(&bitbots_buttons::ButtonNode::gamestateCb, this, _1));
   }
 
   // Sets the in_game_ variable to true, if a Gamestate message from the Gamecontroller arrives.
-  void gamestateCb(const game_controller_hl_interfaces::msg::GameState::SharedPtr msg) { in_game_ = true; }
+  void gamestateCb(const game_controller_hsl_interfaces::msg::GameState::SharedPtr msg) { in_game_ = true; }
 
   void buttonCb(const bitbots_msgs::msg::Buttons::SharedPtr msg) {
     // button1 - red
@@ -197,7 +197,7 @@ class ButtonNode : public rclcpp::Node {
   rclcpp::Client<std_srvs::srv::Empty>::SharedPtr foot_zero_client_;
   rclcpp::Client<std_srvs::srv::SetBool>::SharedPtr power_client_;
   rclcpp::Subscription<bitbots_msgs::msg::Buttons>::SharedPtr buttons_sub_;
-  rclcpp::Subscription<game_controller_hl_interfaces::msg::GameState>::SharedPtr gamestate_sub_;
+  rclcpp::Subscription<game_controller_hsl_interfaces::msg::GameState>::SharedPtr gamestate_sub_;
 };
 }  // namespace bitbots_buttons
 
