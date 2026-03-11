@@ -22,7 +22,7 @@ $StartHCM
                 HOLD --> @SetTorque + stiff:true, @Wait
                 FINISHED --> @SetTorque + stiff:true + r:false, @RobotStateControllable, @PlayAnimationDynup + direction:walkready + r:false
                 OFF --> $GameControllerStop
-                    STOPPED --> @RobotStatePenalty, @CancelGoals, @StopWalking, @Wait
+                    STOPPED --> @RobotStatePenalty, @CancelGoals, @StopWalking, @PlayAnimationDynup + direction:walkready + r:false, @Wait
                     FREE --> $Stop
                         STOPPED --> @RobotStatePenalty, @CancelGoals, @StopWalking, @PlayAnimationDynup + direction:walkready + r:false, @Wait
                         FREE -->$CheckIMU
