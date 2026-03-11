@@ -1,0 +1,98 @@
+{% macro behavior_stack_component(is_dashboard_view) %}
+
+<script type="text/javascript">
+
+  function render_stack(subtree, max_stack_depth) {
+    if (max_stack_depth !== null && max_stack_depth > 0 && !!subtree.next) {
+      return render_stack(subtree.next, max_stack_depth - 1);
+    }
+    else if (subtree.type === "sequence")
+    {
+      return `<div class="border-2 border-zinc-800 rounded-xl bg-zinc-100 p-2 text-center">${behavior_translate(subtree.current_action.name)}</div>`;
+    }
+    else if (subtree.next === null)
+    {
+      return `<div class="border-2 border-zinc-800 rounded-xl bg-zinc-100 p-2 text-center w-full"> ${behavior_translate(subtree.name)} </div>`;
+    }
+    else
+    {
+      return `
+      <div class="border-2 border-zinc-800 rounded-xl bg-sky-800 p-2 text-center text-white w-full"> ${behavior_translate(subtree.name)}</div>
+      <div class="flex justify-center flex-row m-2">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3" />
+        </svg>
+        ${behavior_translate(subtree.next.activation_reason)}
+      </div>
+      ${render_stack(subtree.next, max_stack_depth - 1)}`;
+    }
+  };
+
+  function behavior_stack_state(max_stack_depth) {
+    return {
+      listener: null,
+      run: true,
+      stack_depth: 0,
+      init() {
+        this.listener = new ROSLIB.Topic({
+          ros : ros,
+          name : '/debug/dsd/body_behavior/dsd_stack',
+          messageType : 'std_msgs/msg/String'
+        });
+        this.listener.subscribe(this.behavior_stack_callback.bind(this));
+      },
+      behavior_stack_callback(message) {
+        const behavior_stack = JSON.parse(message.data);
+        // count the stack depth
+        this.stack_depth = 0;
+        for (let elem = behavior_stack; !!elem; elem = elem.next) {
+          this.stack_depth++;
+        }
+        this.$refs.stack.innerHTML = render_stack(behavior_stack, 
+          (max_stack_depth === null) ? null : this.stack_depth - max_stack_depth);
+      },
+      toggle() {
+        this.run = !this.run;
+        if (this.run) {
+          this.listener.subscribe(this.behavior_stack_callback.bind(this));
+          fetch(`/logs?page=${window.location.pathname}&button=playStack&status=gestartet`);
+        } else {
+          this.listener.unsubscribe();
+          fetch(`/logs?page=${window.location.pathname}&button=playStack&status=gestoppt`);
+        }
+      },
+      destroy() {
+        this.listener.unsubscribe();
+      },
+    };
+  }
+</script>
+
+{% if is_dashboard_view == False %}
+<div x-data="behavior_stack_state(null)" class="flex justify-center flex-col grid place-items-center pt-6">
+{% else %}
+<div x-data="behavior_stack_state(3)" class="flex justify-center flex-col grid place-items-center pt-6">
+{% endif %}
+    <div class="text-center w-full">
+      <div class="flex justify-center flex-col">
+        <div class="overflow-scroll" x-ref="stack">
+        </div>
+      </div>
+    </div>
+    {% if is_dashboard_view == False %}
+    <button id="play_button" x-on:click="toggle()" class="border-2 border-zinc-800 rounded-md bg-zinc-50 shadow-md p-1 mt-4 grid place-items-center" >
+      <div x-show="run">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25v13.5m-7.5-13.5v13.5" />
+        </svg>
+      </div>
+      <div x-show="!run">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
+        </svg>
+      </div>
+    </button>
+    {% endif %}
+</div>
+
+{% endmacro %}

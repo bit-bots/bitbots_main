@@ -1,0 +1,47 @@
+
+{% import "components/textbox.html" as components %}
+{% import "components/motor_heat.html" as heat_components %}
+{% import "components/icon_footer.html" as icon_components %}
+
+
+{% extends "base.html" %}
+
+{% block banner %}Motoren{% endblock %}
+
+{% block content %}
+<div class="flex justify-center flex-col bg-sky-100">
+
+    {{ heat_components.motor_heat_component(false) }}
+
+    {{ components.textbox("Was sind das für bunte Punkte auf dem Roboter?", "Jeder farbige Punkt zeigt den jeweils wärmsten Motor des Gelenks an.
+    Je weiter oben die Farbe des Punktes auf der Skala neben dem Roboter dabei ist, desto wärmer ist der wärmste Motor an der Stelle.
+    Die beiden Werte über und unter der Skala geben an, in welchem Spektrum sich die Temperaturen der Motoren bewegen.
+    Dabei ist kein Motor kühler als die untere Temperatur oder wärmer als die obere Temperatur.", true, true, false) }}
+    {{ components.textbox("Vergleich zum Menschen", "Die Motoren sind wie Muskeln, die den Roboter bewegen. Mit der Zeit werden die Motoren durch die Bewegung immer wärmer,
+    ähnlich dazu, wie uns Menschen beim Sport meist auch wärmer wird. Je wärmer die Motoren werden, desto ungenauer werden sie,
+    wodurch der Roboter über die Zeit hinweg immer schlechter läuft — ähnlich dazu, wie wir Menschen durch Sport erschöpfter werden.", true, false, false)}}
+    <div style="width: 100%;" class="grid place-items-center px-18 py-6 bg-sky-100 ">
+        <img  src="{{ url_for('static', filename='motor.png') }}"></img>
+        <p class="text-center text-base text-zinc-900">Dieses Motormodell ist aktuell vor allem in den Beinen zu finden.</p>
+    </div>
+    {{ components.textbox("Nutzen im Roboter", "Die Motoren führen Befehle aus und fahren die Positionen an, die die Software ihnen vorgibt.
+    Dabei hat jede Motorposition eine wichtige Aufgabe im Spielgeschehen: Die Motoren in den Beinen bewegen den Roboter über das Spielfeld,
+    die Motoren in den Armen werden hauptsächlich beim Aufstehen genutzt, und die Motoren im Hals bewegen unaufhörlich die Kamera, damit diese ein möglichst großes
+    Feld nach wichtigen Informationen absuchen kann.", true, false, true)}}
+    {{ components.textbox("Wie gut können Roboter laufen?", "Wir Menschen laufen unser Leben lang,
+    meist auch schon ab sehr jungen Jahren. Einmal gelernt, machen wir die Bewegungsabläufe fast schon automatisch.
+     Darüber hinaus helfen uns unsere Reflexe bei der Laufstabilisierung, ohne dass wir aktiv etwas entscheiden müssen.
+      Um nun einen Roboter zum Laufen zu bringen, müssen wir verstehen, welche Bewegungsabläufe wir Menschen beim Laufen machen,
+      und diese auf den Roboter übertragen — was gar nicht so einfach ist, weil vieles am Laufen, z.B. auch das Gleichgewicht halten,
+      eher ein unbewusster Prozess ist. Daher ist vor allem das zweibeinige Laufen ein relativ schweres Problem für Roboter bzw.
+      für herkömmliche Algorithmen. Hier wird dann mit sogenannten Splines gearbeitet, dies sind Kurven zwischen Punkten auf einem Graphen,
+      die ruckfreie Bewegungsabläufe modellieren. Mittlerweile benutzen viele Roboter bestärkendes Lernen. Hierbei lernt der Roboter das Laufen mehr wie ein Mensch.
+      Dabei soll der Roboter in einer Simulation versuchen zu laufen: Schafft er dies, wird er belohnt, schafft er es nicht, wird ihm das auch mitgeteilt,
+      und er versucht einen neuen Ansatz. Meist ist das Laufenlernen hier auch ein Prozess, der über viele Wiederholungen stattfindet,
+      dann aber auch bessere Ergebnisse liefert als herkömmliche Algorithmen.", false, false, false)}}
+</div>
+{% endblock %}
+
+{% block icons %}
+{{ icon_components.icons("heat") }}
+{% endblock %}

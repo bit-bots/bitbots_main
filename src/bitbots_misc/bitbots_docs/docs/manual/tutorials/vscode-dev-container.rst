@@ -28,14 +28,15 @@ Setup VSCode Dev Container
 6. Open a terminal in VSCode, you should see a number of instructions on how to setup the container. Follow them.
 7. Install recommended extensions for the repository
 
-You should now have a fully working development environment (IntelliSense, Build, ...) for the repository. You can source the workspace by running `sa`. Now all the commands should be available to you.
+You should now have a fully working development environment (IntelliSense, Build, ...) for the repository.
+You still need to setup your SSH keys in the container to be able to push.
+Instructions for that are shown in the terminal when the container starts.
+To activate the pixi environment in a terminal run `pixi shell` or prefix commands with `pixi run ...`.
 
 
 Known issues
 ------------
 
 - Rebuilding the container results in all modifications to the container being lost. This does not include the repository, which itself is persisted in the container.
-- Sometimes `just install` results in an `mktemp: failed to create file via template ‘/tmp/tmp.XXXXXXXXXX’: Permission denied`. I spend some time trying to fix this but couldn't find a solution. The workaround is to run `just install` again. This time it should work.
-- I did everything as stated, but my python IntelliSense does not pick up bit-bots related packages. To solve this open the command palette (Ctrl+Shift+P) and run `ROS: Update Python Path`. This should fix the issue.
 - GUI applications do not start. Run `xhost local:root` on the **host** machine to fix this.
 - I can not find my files in the home directory. The home directory is mounted at `/srv/host_home` in the container. You can find your files there.

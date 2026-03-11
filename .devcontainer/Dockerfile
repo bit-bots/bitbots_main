@@ -74,13 +74,17 @@ RUN sh -c "$(wget -O- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/t
   git clone https://github.com/zsh-users/zsh-autosuggestions "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions"
 
 # Add zshrc to bitbots home directory
-COPY --chown=$user:$user zshrc /home/$user/.zshrc
+COPY --chown=$user:$user .devcontainer/zshrc /home/$user/.zshrc
 
 # This is required for sharing Xauthority
 ENV QT_X11_NO_MITSHM=1
 
 # Install pixi
 RUN curl -fsSL https://pixi.sh/install.sh | sh
+
+# Install basler SDK
+COPY scripts/make_basler.sh /tmp/make_basler.sh
+RUN /tmp/make_basler.sh --ci
 
 # Switch to the workspace directory
 WORKDIR /home/$user/bitbots_main

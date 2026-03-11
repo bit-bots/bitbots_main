@@ -1,0 +1,15 @@
+{% macro vision_component() %}
+<script type="text/javascript">
+  function vision_state() {
+    return {
+      init() {
+        this.$refs.videofeed.src = `http://${window.location.hostname}:8081/stream?topic=/debug_image&quality=10`;
+      },
+    };
+  }
+</script>
+
+<div x-data="vision_state()">
+  <img x-ref="videofeed"></img>
+</div>
+{% endmacro %}
