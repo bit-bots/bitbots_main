@@ -167,3 +167,4 @@ $IsPenalized
             ELSE --> #Init
         PLAYING --> #PlayingBehavior
         STANDBY --> #StandAndLook
+        STOPPED --> #DoNothing
