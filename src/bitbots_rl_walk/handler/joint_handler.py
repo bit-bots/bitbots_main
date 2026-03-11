@@ -53,7 +53,16 @@ class JointHandler(Handler):
     def __init__(self, ordered_relevant_joint_names=ORDERED_RELEVANT_JOINT_NAMES, walkready_state=WALKREADY_STATE):
         self._ordered_relevant_joint_names = ordered_relevant_joint_names
         self._walkready_state = walkready_state
+        self._previous_action: np.ndarray = np.zeros(len(self._ordered_relevant_joint_names), dtype=np.float32)
         self._joint_state = None
+        self._obs_phase = None
+        self._phase = None
+
+    def set_obs_phase(self, phase):
+        self._obs_phase = phase
+
+    def set_phase(self, phase):
+        self._phase = phase
 
     def get_angle_data(self):
         joint_angles = (
@@ -92,6 +101,8 @@ class JointHandler(Handler):
         joint_command.header.stamp = timestamp.to_msg()
         joint_command.positions = self._walkready_state
 
+        self._previous_action = joint_command
+
         return joint_command
 
     def get_joint_commands(self, onnx_pred):
@@ -103,7 +114,18 @@ class JointHandler(Handler):
         joint_command.accelerations = [-1.0] * len(self._ordered_relevant_joint_names)
         joint_command.max_currents = [-1.0] * len(self._ordered_relevant_joint_names)
 
+        self._previous_action = joint_command
+
         return joint_command
+
+    def get_previous_action(self):
+        return self._previous_action
+
+    def get_obs_phase(self):
+        return self._obs_phase
+
+    def get_phase(self):
+        return self._phase
 
     def joint_state_callback(self, msg):
         self._joint_state = msg

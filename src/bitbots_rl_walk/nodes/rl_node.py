@@ -31,10 +31,6 @@ GAIT_FREQUENCY = 1.5  # Gait frequency in Hz
 class RLNode(Node):
     """Node to control the wolfgang humanoid."""
 
-    # TODO: _previous_action: np.ndarray = np.zeros(len(ORDERED_RELEVANT_JOINT_NAMES), dtype=np.float32)
-    _phase: np.ndarray = np.array([0.0, np.pi], dtype=np.float32)
-    _phase_dt: float
-
     class PublisherParam(NamedTuple):
         msg_type: int
         topic: str
@@ -63,9 +59,7 @@ class RLNode(Node):
         for out in self._onnx_model.graph.output:
             self._onnx_output_name.append(out)
 
-        # Phase time
-        self._phase_dt = 2 * np.pi * GAIT_FREQUENCY * CONTROL_DT
-
+        # TODO: Move timer to child class
         self._timer = self.create_timer(CONTROL_DT, self._timer_callback)
 
         self.load_phase()
@@ -75,6 +69,9 @@ class RLNode(Node):
         for key, value in self.__dict__.values():
             if type(value) is Subscription:
                 self._subs.append(key)
+
+        self._obs = None  # should be defined in subclass
+        self._timer_phase_confg = None  # Should be defined in subclass
 
     # TODO: fix
     def _timer_callback(self):
@@ -90,17 +87,22 @@ class RLNode(Node):
 
         # TODO consider IMU mounting offset
 
-        self._obs_phase = np.array([np.cos(self._phase), np.sin(self._phase)], dtype=np.float32).flatten()
+        self._timer_phase_confg.set_obs_phase(
+            np.array(
+                [np.cos(self._timer_phase_confg.get_phase()), np.sin(self._timer_phase_confg.get_phase())],
+                dtype=np.float32,
+            ).flatten()
+        )
 
         # Run the ONNX model
-        onnx_input = {self._onnx_input_name[0]: self.obs().reshape(1, -1)}  # TODO: Improve input
+        onnx_input = {self._onnx_input_name[0]: self._obs.reshape(1, -1)}  # TODO: Improve input
         onnx_pred = self._onnx_session.run(self._onnx_output_name, onnx_input)[0][0]
         self._previous_action = onnx_pred
 
         self.publisher(onnx_pred)
 
-        phase_tp1 = self._phase + self._phase_dt
-        self._phase = np.fmod(phase_tp1 + np.pi, 2 * np.pi) - np.pi
+        phase_tp1 = self._timer_phase_confg.get_phase() + self._timer_phase_confg.get_phase_dt()
+        self._timer_phase_confg.set_phase(np.fmod(phase_tp1 + np.pi, 2 * np.pi) - np.pi)
 
     def obs():
         # Should be defined in subclass

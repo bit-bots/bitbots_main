@@ -8,6 +8,7 @@ from handler.gyro_handler import GyroHandler
 from sensor_msgs.msg import Imu, JointState
 
 from bitbots_msgs.msg import JointCommand
+from bitbots_rl_walk.confg.timer_phase_confg import TimerPhaseConfg
 from bitbots_rl_walk.handler.joint_handler import JointHandler
 from bitbots_rl_walk.nodes.rl_node import RLNode
 
@@ -28,6 +29,23 @@ class WalkNode(RLNode):
         self._joint_handler = JointHandler()
         self._command_handler = CommandHandler()
 
+        self._timer_phase_confg = TimerPhaseConfg()
+
+        # TODO: timer is missing
+
+        self._obs = np.hstack(
+            [
+                self._gyro_handler.get_data(),  # 3
+                self._gravity_handler.get_data(),  # 4
+                self._command_handler.get_data(),  # 3
+                self._joint_handler.get_velocity_data(),  # 18
+                self._joint_handler.get_angle_data(),  # 18
+                # TODO: fix
+                self._joint_handler.get_previous_action(),  # 18  # Previous action
+                self._timer_phase_confg.get_obs_phase(),  # 2
+            ]
+        ).astype(np.float32)
+
         super().__init__(walk_policy_path)
 
     def _imu_callback(self, msg):
@@ -39,22 +57,6 @@ class WalkNode(RLNode):
 
     def _cmd_vel_callback(self, msg):
         self._command_handler.cmd_vel_callback(msg)
-
-    def obs(self):
-        obs = np.hstack(
-            [
-                self._gyro_handler.get_data(),  # 3
-                self._gravity_handler.get_data(),  # 4
-                self._command_handler.get_data(),  # 3
-                self._joint_handler.get_velocity_data(),  # 18
-                self._joint_handler.get_angle_data(),  # 18
-                # TODO: fix
-                self._previous_action,  # 18  # Previous action
-                self._obs_phase,  # 2
-            ]
-        ).astype(np.float32)
-
-        return obs
 
     def load_phase(self):
         walkready_command = self._joint_handler.get_walkready_joint_command()
