@@ -165,7 +165,6 @@ ros-jazzy-bio-ik-msgs = ">=0.0.0,<0.0.1"
 ros-jazzy-biped-interfaces = ">=0.0.0,<0.0.1"
 ros-jazzy-bitbots-tf-buffer = ">=1.0.0,<2"
 ros-jazzy-ros2-python-extension = ">=1.0.0,<2"
-ros-jazzy-audio-common = ">=0.3.15,<0.4"
 ros-jazzy-dynamic-stack-decider = ">=0.5.3,<0.6"
 ros-jazzy-dynamic-stack-decider-visualization = ">=0.2.1,<0.3"
 ros-jazzy-game-controller-hl = ">=1.1.0,<2"
@@ -197,6 +196,12 @@ setuptools = "==68.1.2"  # Pinning setuptools to avoid issues with colcon build
 git = ">=2.52.0,<3"  # Otherwise the system git might be used causing ABI issues
 curl = ">=8.17.0,<9"
 make = ">=4.4.1,<5"  # To avoid issues in the CI
+libflac = "==1.4.3"
+portaudio = ">=19.7.0,<20"
+ros-jazzy-ament-cmake-clang-format = ">=0.17.3,<0.18"
+ros-jazzy-rosidl-runtime-c = ">=4.6.7,<5"
+alsa-plugins = ">=1.2.12,<2"
+git-subrepo = ">=0.4.9,<0.5"
 
 [feature.ros.target.linux-64.dependencies]
 # For now Webots is only packaged for x86-64 Linux
@@ -250,3 +255,4 @@ scripts = [
 default = ["ros", "format"]  # Full development environment (excluding robot-only deps)
 format = ["format"]  # Format only environment
 robot = ["ros", "format", "robot"]  # Robot environment with additional robot-only dependencies
+
