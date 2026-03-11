@@ -213,6 +213,7 @@ pre-commit = ">=4.4.0,<5"
 
 [feature.ros.pypi-dependencies]
 # These are are pypi dependencies needed for our ROS 2 packages
+construct = ">=2.10.56, <3"
 syrupy = ">=5.0.0, <6"
 exhale = ">=0.3.7, <0.4"
 mycroft-mimic3-tts = ">=0.2.4, <0.3"
