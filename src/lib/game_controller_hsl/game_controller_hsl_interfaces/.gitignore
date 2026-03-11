@@ -1,0 +1,12 @@
+# auto-generated documentation
+**/docs/_build
+**/docs/_out
+**/docs/cppapi
+**/docs/pyapi
+
+.idea/*
+*.pyc
+.pyenv2/*
+.pyenv3/*
+.vscode/* 
+
