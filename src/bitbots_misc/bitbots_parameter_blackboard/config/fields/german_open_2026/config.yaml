@@ -1,8 +1,8 @@
 ############################
-# RoboCup German Open 2024 #
+# RoboCup German Open 2026 #
 ############################
 
-# Settings for the RoboCup German Open 2024 field
+# Settings for the RoboCup German Open 2026 field
 
 parameter_blackboard:
   ros__parameters:
