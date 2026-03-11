@@ -1,3 +1,4 @@
+import glob
 from setuptools import find_packages, setup
 
 package_name = 'bitbots_rl_walk'
@@ -10,7 +11,7 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
-        ('share/' + package_name + '/models', ['models/wolfgang_policy.onnx']),
+        ('share/' + package_name + '/models', glob.glob('models/*.onnx')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
