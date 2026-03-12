@@ -31,7 +31,7 @@ class CameraPublisher(Node):
         self.frame_id = 'camera_optical_frame'
         
         # Initialize OpenCV VideoCapture
-        self.cap = cv2.VideoCapture(self.device_id)
+        self.cap = cv2.VideoCapture("/dev/video6")
         self.cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'YUYV'))
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, self.width)
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self.height)
