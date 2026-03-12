@@ -1,7 +1,7 @@
-use tonic::{Request, Response, Status};
-use tonic::transport::Server;
-use tokio_stream::wrappers::ReceiverStream;
 use futures_util::StreamExt;
+use tokio_stream::wrappers::ReceiverStream;
+use tonic::transport::Server;
+use tonic::{Request, Response, Status};
 
 pub mod droidgrpc {
     tonic::include_proto!("droidgrpc");
@@ -9,7 +9,7 @@ pub mod droidgrpc {
 
 use droidgrpc::arm_service_server::{ArmService, ArmServiceServer};
 use droidgrpc::leg_service_server::{LegService, LegServiceServer};
-use droidgrpc::{DroidConfigs, DroidStateResponse, DroidArmResponse, DroidCommandRequest, Empty};
+use droidgrpc::{DroidArmResponse, DroidCommandRequest, DroidConfigs, DroidStateResponse, Empty};
 
 #[derive(Debug, Default)]
 pub struct DummyArmService {}
@@ -30,18 +30,27 @@ impl ArmService for DummyArmService {
         Ok(Response::new(DroidArmResponse::default()))
     }
 
-    async fn get_arm_state_stream(&self, _: Request<Empty>) -> Result<Response<Self::GetArmStateStreamStream>, Status> {
+    async fn get_arm_state_stream(
+        &self,
+        _: Request<Empty>,
+    ) -> Result<Response<Self::GetArmStateStreamStream>, Status> {
         let (tx, rx) = tokio::sync::mpsc::channel(4);
         // Minimal result: just one empty response
         let _ = tx.try_send(Ok(DroidArmResponse::default()));
         Ok(Response::new(ReceiverStream::new(rx)))
     }
 
-    async fn set_arm_command(&self, _: Request<DroidCommandRequest>) -> Result<Response<Empty>, Status> {
+    async fn set_arm_command(
+        &self,
+        _: Request<DroidCommandRequest>,
+    ) -> Result<Response<Empty>, Status> {
         Ok(Response::new(Empty::default()))
     }
 
-    async fn set_arm_command_stream(&self, request: Request<tonic::Streaming<DroidCommandRequest>>) -> Result<Response<Empty>, Status> {
+    async fn set_arm_command_stream(
+        &self,
+        request: Request<tonic::Streaming<DroidCommandRequest>>,
+    ) -> Result<Response<Empty>, Status> {
         let mut stream = request.into_inner();
         while let Some(_cmd) = stream.next().await {
             // Echo/Process logic here
@@ -65,7 +74,9 @@ impl ArmService for DummyArmService {
                     torque: cmd.torque,
                     ..Default::default()
                 };
-                if tx.send(Ok(echo)).await.is_err() { break; }
+                if tx.send(Ok(echo)).await.is_err() {
+                    break;
+                }
             }
         });
 
@@ -86,22 +97,34 @@ impl LegService for DummyLegService {
         Ok(Response::new(DroidConfigs::default()))
     }
 
-    async fn get_leg_state(&self, _: Request<Empty>) -> Result<Response<DroidStateResponse>, Status> {
+    async fn get_leg_state(
+        &self,
+        _: Request<Empty>,
+    ) -> Result<Response<DroidStateResponse>, Status> {
         Ok(Response::new(DroidStateResponse::default()))
     }
 
-    async fn get_leg_state_stream(&self, _: Request<Empty>) -> Result<Response<Self::GetLegStateStreamStream>, Status> {
+    async fn get_leg_state_stream(
+        &self,
+        _: Request<Empty>,
+    ) -> Result<Response<Self::GetLegStateStreamStream>, Status> {
         let (tx, rx) = tokio::sync::mpsc::channel(4);
         // Minimal pulse: send one default state
         let _ = tx.try_send(Ok(DroidStateResponse::default()));
         Ok(Response::new(ReceiverStream::new(rx)))
     }
 
-    async fn set_leg_command(&self, _: Request<DroidCommandRequest>) -> Result<Response<Empty>, Status> {
+    async fn set_leg_command(
+        &self,
+        _: Request<DroidCommandRequest>,
+    ) -> Result<Response<Empty>, Status> {
         Ok(Response::new(Empty::default()))
     }
 
-    async fn set_leg_command_stream(&self, request: Request<tonic::Streaming<DroidCommandRequest>>) -> Result<Response<Empty>, Status> {
+    async fn set_leg_command_stream(
+        &self,
+        request: Request<tonic::Streaming<DroidCommandRequest>>,
+    ) -> Result<Response<Empty>, Status> {
         let mut stream = request.into_inner();
         while let Some(Ok(_cmd)) = stream.next().await {
             // Echo logic could be added here for processing

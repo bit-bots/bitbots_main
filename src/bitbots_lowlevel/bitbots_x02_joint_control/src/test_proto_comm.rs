@@ -1,7 +1,7 @@
-use std::env;
 use droidgrpc::Empty;
 use droidgrpc::arm_service_client::ArmServiceClient;
 use droidgrpc::leg_service_client::LegServiceClient;
+use std::env;
 
 pub mod droidgrpc {
     tonic::include_proto!("droidgrpc");
