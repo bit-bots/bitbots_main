@@ -62,7 +62,7 @@ class WhistleDetector(Node):
 
         ratio = whistle_energy / total_energy
 
-        return ratio > 0.6  # TODO: Tune, worked well on my Laptop
+        return ratio > 0.6
 
 
 def main(args=None) -> None:
