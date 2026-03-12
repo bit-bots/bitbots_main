@@ -1,9 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 project(bio_ik)
 
-if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Release)
-endif()
+set(CMAKE_BUILD_TYPE Release)
 
 find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_ros REQUIRED)
@@ -178,7 +176,7 @@ if(BUILD_TESTING)
   target_include_directories(bio_ik_test
     PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     PUBLIC $<INSTALL_INTERFACE:include>)
-  
+
 endif()
 
 ament_package()

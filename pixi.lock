@@ -531,7 +531,6 @@ environments:
       - conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-audio-play-0.3.15-np2py312h2ed9cc7_14.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-backward-ros-1.0.8-np2py312h2ed9cc7_14.conda
       - conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-better-launch-1.0.4-np2py312h2ed9cc7_14.conda
-      - conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-bio-ik-2.0.0-np2py312h2ed9cc7_14.conda
       - conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-bio-ik-msgs-0.0.0-np2py312h2ed9cc7_14.conda
       - conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-biped-interfaces-0.0.0-np2py312h2ed9cc7_14.conda
       - conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-bitbots-dynamixel-sdk-3.7.21-np2py312h2ed9cc7_14.conda
@@ -1566,7 +1565,6 @@ environments:
       - conda: https://data.bit-bots.de/conda/linux-aarch64/ros-jazzy-audio-play-0.3.15-np2py312h3575a3a_14.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-aarch64/ros-jazzy-backward-ros-1.0.8-np2py312h61f2ce4_14.conda
       - conda: https://data.bit-bots.de/conda/linux-aarch64/ros-jazzy-better-launch-1.0.4-np2py312h3575a3a_14.conda
-      - conda: https://data.bit-bots.de/conda/linux-aarch64/ros-jazzy-bio-ik-2.0.0-np2py312h3575a3a_14.conda
       - conda: https://data.bit-bots.de/conda/linux-aarch64/ros-jazzy-bio-ik-msgs-0.0.0-np2py312h3575a3a_14.conda
       - conda: https://data.bit-bots.de/conda/linux-aarch64/ros-jazzy-biped-interfaces-0.0.0-np2py312h3575a3a_14.conda
       - conda: https://data.bit-bots.de/conda/linux-aarch64/ros-jazzy-bitbots-dynamixel-sdk-3.7.21-np2py312h3575a3a_14.conda
@@ -2770,7 +2768,6 @@ environments:
       - conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-audio-play-0.3.15-np2py312h2ed9cc7_14.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-backward-ros-1.0.8-np2py312h2ed9cc7_14.conda
       - conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-better-launch-1.0.4-np2py312h2ed9cc7_14.conda
-      - conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-bio-ik-2.0.0-np2py312h2ed9cc7_14.conda
       - conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-bio-ik-msgs-0.0.0-np2py312h2ed9cc7_14.conda
       - conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-biped-interfaces-0.0.0-np2py312h2ed9cc7_14.conda
       - conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-bitbots-dynamixel-sdk-3.7.21-np2py312h2ed9cc7_14.conda
@@ -3806,7 +3803,6 @@ environments:
       - conda: https://data.bit-bots.de/conda/linux-aarch64/ros-jazzy-audio-play-0.3.15-np2py312h3575a3a_14.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-aarch64/ros-jazzy-backward-ros-1.0.8-np2py312h61f2ce4_14.conda
       - conda: https://data.bit-bots.de/conda/linux-aarch64/ros-jazzy-better-launch-1.0.4-np2py312h3575a3a_14.conda
-      - conda: https://data.bit-bots.de/conda/linux-aarch64/ros-jazzy-bio-ik-2.0.0-np2py312h3575a3a_14.conda
       - conda: https://data.bit-bots.de/conda/linux-aarch64/ros-jazzy-bio-ik-msgs-0.0.0-np2py312h3575a3a_14.conda
       - conda: https://data.bit-bots.de/conda/linux-aarch64/ros-jazzy-biped-interfaces-0.0.0-np2py312h3575a3a_14.conda
       - conda: https://data.bit-bots.de/conda/linux-aarch64/ros-jazzy-bitbots-dynamixel-sdk-3.7.21-np2py312h3575a3a_14.conda
@@ -18125,56 +18121,6 @@ packages:
   license: MIT
   size: 272425
   timestamp: 1769782730367
-- conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-bio-ik-2.0.0-np2py312h2ed9cc7_14.conda
-  sha256: 2f0120a219e1e66b4af5d69b0578e5b207727de71ca75d551f047acf42567d07
-  md5: 36aabe0e1293f6e83e83a2fb8360c34d
-  depends:
-  - eigen
-  - python
-  - ros-jazzy-moveit-core
-  - ros-jazzy-moveit-ros-planning
-  - ros-jazzy-pluginlib
-  - ros-jazzy-rclcpp
-  - ros-jazzy-ros-workspace
-  - ros-jazzy-tf2
-  - ros-jazzy-tf2-eigen
-  - ros-jazzy-tf2-geometry-msgs
-  - ros-jazzy-tf2-kdl
-  - ros2-distro-mutex 0.13.* jazzy_*
-  - libgcc >=14
-  - __glibc >=2.17,<3.0.a0
-  - libstdcxx >=14
-  - python_abi 3.12.* *_cp312
-  - ros2-distro-mutex >=0.13.0,<0.14.0a0
-  - numpy >=1.23,<3
-  license: BSD-3-Clause
-  size: 391107
-  timestamp: 1769782373236
-- conda: https://data.bit-bots.de/conda/linux-aarch64/ros-jazzy-bio-ik-2.0.0-np2py312h3575a3a_14.conda
-  sha256: e21c2799218df840d171e874f8d12108cfe18a557a9a23922be6b600aee7b573
-  md5: 61b8cb075d36cc82167c47c0e4639555
-  depends:
-  - eigen
-  - python
-  - ros-jazzy-moveit-core
-  - ros-jazzy-moveit-ros-planning
-  - ros-jazzy-pluginlib
-  - ros-jazzy-rclcpp
-  - ros-jazzy-ros-workspace
-  - ros-jazzy-tf2
-  - ros-jazzy-tf2-eigen
-  - ros-jazzy-tf2-geometry-msgs
-  - ros-jazzy-tf2-kdl
-  - ros2-distro-mutex 0.13.* jazzy_*
-  - libstdcxx >=14
-  - libgcc >=14
-  - python 3.12.* *_cpython
-  - numpy >=1.23,<3
-  - ros2-distro-mutex >=0.13.0,<0.14.0a0
-  - python_abi 3.12.* *_cp312
-  license: BSD-3-Clause
-  size: 360300
-  timestamp: 1769782730555
 - conda: https://data.bit-bots.de/conda/linux-64/ros-jazzy-bio-ik-msgs-0.0.0-np2py312h2ed9cc7_14.conda
   sha256: e00965c8fd6f32f09d5917ec48f749c90a6b2ba1a032e1b0c461839cf42763f4
   md5: 47c76e9de0decb9cad64b18b6761c5d5
