@@ -40,12 +40,6 @@
     </include>
 
     <!-- launch the walking -->
-    <group if="$(var walking)">
-        <include file="$(find-pkg-share bitbots_quintic_walk)/launch/quintic_walk.launch">
-            <arg name="sim" value="$(var sim)"/>
-            <arg name="viz" value="$(var viz)"/>
-        </include>
-    </group>
 
 
     <!-- launch the rl walking 
@@ -75,7 +69,7 @@
         </node>
     </group>
 
-    <!-- launch dynup -->
+    <!-- launch dyn up -->
     <include file="$(find-pkg-share bitbots_dynup)/launch/dynup.launch">
         <arg name="sim" value="$(var sim)"/>
         <arg name="viz" value="$(var viz)"/>

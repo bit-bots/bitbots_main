@@ -29,6 +29,8 @@ from transforms3d.quaternions import quat2mat
 
 from bitbots_msgs.msg import JointCommand
 
+from soccer_vision_3d_msgs.msg import Ball, BallArray
+
 ONNX_MODEL = os.path.join(get_package_share_directory("bitbots_rl_walk"), "models", "wolfgang_forward_kick_ppo.onnx")
 
 WALKREADY_STATE = np.array(
@@ -88,7 +90,7 @@ class KickNode(Node):
     _imu_data: Optional[Imu] = None
     _joint_state: Optional[JointState] = None
     _cmd_vel: Optional[Twist] = None
-    _ball_pose: Optional[PoseStamped] = None
+    _ball_pose: Optional[BallArray] = None
     _phase: np.ndarray = np.array([0.0, np.pi], dtype=np.float32)
     _phase_dt: float
 
@@ -108,7 +110,7 @@ class KickNode(Node):
         self._imu_sub = self.create_subscription(Imu, "imu/data", self._imu_callback, 10)
         self._joint_state_sub = self.create_subscription(JointState, "joint_states", self._joint_state_callback, 10)
         self._cmd_vel_sub = self.create_subscription(Twist, "cmd_vel", self._cmd_vel_callback, 10)
-        self._goal_pose_sub = self.create_subscription(PoseStamped, "ball_pose", self._ball_pose_callback, 10)
+        self._goal_pose_sub = self.create_subscription(BallArray, "balls_relative", self._ball_pose_callback, 10)
 
         self._timer = self.create_timer(CONTROL_DT, self._timer_callback)
 
@@ -130,15 +132,16 @@ class KickNode(Node):
     def _cmd_vel_callback(self, msg: Twist):
         self._cmd_vel = msg
 
-    def _ball_pose_callback(self, msg: PoseStamped):
-        self._ball_pose = msg
+    def _ball_pose_callback(self, msg: BallArray):
+        if msg.balls:
+            self._ball_pose = msg.balls[0].center
 
     def _imu_callback(self, msg: Imu):
         self._imu_data = msg
 
     def _timer_callback(self):
         """Timer callback to publish joint commands based on the ONNX policy."""
-        if self._imu_data is None or self._joint_state is None or self._cmd_vel is None or self._ball_pose is None:
+        if self._imu_data is None or self._joint_state is None or self._ball_pose is None:
             self.get_logger().warning("Waiting for all sensors to be available", throttle_duration_sec=1.0)
 
             # Print the sensor that we are still waiting for
@@ -146,8 +149,6 @@ class KickNode(Node):
                 self.get_logger().warning("Waiting for IMU data", throttle_duration_sec=1.0)
             if self._joint_state is None:
                 self.get_logger().warning("Waiting for joint state data", throttle_duration_sec=1.0)
-            if self._cmd_vel is None:
-                self.get_logger().warning("Waiting for cmd_vel data", throttle_duration_sec=1.0)
                 # self._cmd_vel = Twist(x=0.3, y=0.0, z=0.0)  # Testing purpose
             if self._ball_pose is None:
                 self.get_logger().warning("Waiting for ball pose data", throttle_duration_sec=1.0)
@@ -177,7 +178,7 @@ class KickNode(Node):
                     self._imu_data.orientation.z,
                 ]
             )
-            @ euler2mat(0, -0.0, 0)
+            @ euler2mat(0, -0.1, 0)
         ).T @ np.array([0, 0, -1], dtype=np.float32)
 
         joint_angles = (
@@ -198,12 +199,12 @@ class KickNode(Node):
 
         phase = np.array([np.cos(self._phase), np.sin(self._phase)], dtype=np.float32).flatten()
 
-        command = np.array([self._cmd_vel.linear.x, self._cmd_vel.linear.y, self._cmd_vel.angular.z], dtype=np.float32)
+        command = np.zeros(3)
 
         rel_ball_pos = np.array(
             [
-                self._ball_pose.pose.position.x,
-                self._ball_pose.pose.position.y,
+                self._ball_pose.x,
+                self._ball_pose.y,
             ],
             dtype=np.float32,
         )
