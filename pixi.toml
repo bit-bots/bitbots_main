@@ -3,7 +3,7 @@ authors = ["Florian Vahl <7vahl@informatik.uni-hamburg.de>"]
 channels = [
     "https://data.bit-bots.de/conda/",  # For self hosted ROS / robostack packages
     "https://data.bit-bots.de/conda-misc/output/",  # For self hosted misc (non-ROS, neural network weights, ...) packages
-    "robostack-jazzy",  # Robostack jazzy channel for ROS packages
+    "robostack-jazzy", # Robostack jazzy channel for ROS packages
     "conda-forge"  # General conda-forge channel
 ]
 name = "bitbots_main"
@@ -208,11 +208,12 @@ webots = ">=2022b,<2023a"
 # of pre-commit hooks running after commits from the git-subrepo cli
 git-subrepo = ">=0.4.9,<0.5"
 clang-format = ">=21.1.0,<22"
-cppcheck = ">=2.18.3,<3"
+cppcheck = ">=2.18.3,<2.20"
 pre-commit = ">=4.4.0,<5"
 
 [feature.ros.pypi-dependencies]
 # These are are pypi dependencies needed for our ROS 2 packages
+construct = ">=2.10.56, <3"
 syrupy = ">=5.0.0, <6"
 exhale = ">=0.3.7, <0.4"
 mycroft-mimic3-tts = ">=0.2.4, <0.3"

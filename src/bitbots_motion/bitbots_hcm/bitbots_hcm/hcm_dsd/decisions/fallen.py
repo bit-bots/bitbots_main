@@ -2,6 +2,7 @@ import math
 
 import numpy as np
 from bitbots_utils.transforms import quat2fused
+from std_msgs.msg import Bool
 
 from bitbots_hcm.hcm_dsd.decisions import AbstractHCMDecisionElement
 
@@ -23,6 +24,7 @@ class Fallen(AbstractHCMDecisionElement):
     def perform(self, reevaluate=False):
         # Check of the fallen detection is active
         if not self.blackboard.is_stand_up_active:
+            self.publish_if_fallen(False)
             return "NOT_FALLEN"
 
         # Get angular velocity from the IMU
@@ -30,6 +32,7 @@ class Fallen(AbstractHCMDecisionElement):
 
         # Check if the robot is rotating
         if np.mean(np.abs(angular_velocity)) >= 0.2:
+            self.publish_if_fallen(False)
             return "NOT_FALLEN"
 
         # Convert quaternion to fused angles
@@ -37,18 +40,27 @@ class Fallen(AbstractHCMDecisionElement):
 
         # Decides which side is facing downwards.
         if fused_pitch > self.fallen_orientation_thresh:
+            self.publish_if_fallen(True)
             return "FALLEN_FRONT"
 
         if fused_pitch < -self.fallen_orientation_thresh:
+            self.publish_if_fallen(True)
             return "FALLEN_BACK"
 
         if fused_roll > self.fallen_orientation_thresh:
+            self.publish_if_fallen(True)
             return "FALLEN_RIGHT"
 
         if fused_roll < -self.fallen_orientation_thresh:
+            self.publish_if_fallen(True)
             return "FALLEN_LEFT"
 
+        self.publish_if_fallen(False)
         return "NOT_FALLEN"
+
+    def publish_if_fallen(self, is_fallen):
+        # publishes if robot is fallen
+        self.blackboard.is_fallen_publisher.publish(Bool(data=is_fallen))
 
     def get_reevaluate(self):
         return True

@@ -15,7 +15,7 @@ find_package(ament_cmake REQUIRED)
 find_package(backward_ros REQUIRED)
 find_package(bitbots_docs REQUIRED)
 find_package(bitbots_msgs REQUIRED)
-find_package(game_controller_hl_interfaces REQUIRED)
+find_package(game_controller_hsl_interfaces REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
@@ -27,7 +27,7 @@ ament_target_dependencies(
   ament_cmake
   backward_ros
   bitbots_msgs
-  game_controller_hl_interfaces
+  game_controller_hsl_interfaces
   rclcpp
   std_msgs
   std_srvs
