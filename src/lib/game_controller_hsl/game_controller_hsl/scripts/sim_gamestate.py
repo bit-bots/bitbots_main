@@ -50,6 +50,7 @@ p:     toggle penalized
 t:     toggle kicking team
 s:     toggle stopped state
 +:     increase own score by 1
+-:     increase rival score by 1
 
 
 
@@ -82,6 +83,7 @@ CTRL-C to quit
             self.team_id = int(input("Please enter team id: "))
 
         self.has_kick_off = True
+        
 
         self.settings = termios.tcgetattr(sys.stdin)
 
@@ -90,11 +92,13 @@ CTRL-C to quit
             "gamestate",
             QoSProfile(durability=DurabilityPolicy.TRANSIENT_LOCAL, depth=1),
         )
+        
+
 
     def loop(self):
         game_state_msg = GameState()
         game_state_msg.header.stamp = self.get_clock().now().to_msg()
-
+        game_state_msg.players_per_team = 4
         # Init kicking team to our teamID
         game_state_msg.kicking_team = self.team_id
 
@@ -125,6 +129,8 @@ CTRL-C to quit
                     game_state_msg.stopped = not game_state_msg.stopped
                 elif key == "+":
                     game_state_msg.own_score += 1
+                elif key == "-":
+                    game_state_msg.rival_score += 1
 
                 sys.stdout.write("\x1b[A")
                 sys.stdout.write("\x1b[A")
@@ -144,6 +150,7 @@ CTRL-C to quit
                 sys.stdout.write("\x1b[A")
                 self.publisher.publish(game_state_msg)
                 print(
+
 
 
 
