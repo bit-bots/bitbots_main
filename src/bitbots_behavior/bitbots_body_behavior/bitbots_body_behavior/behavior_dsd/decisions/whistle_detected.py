@@ -7,13 +7,13 @@ class WhistleDetected(AbstractDecisionElement):
 
     def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
-        self.bb = blackboard
-        self.bb.gamestate.whistle_detected = False
+        self.blackboard = blackboard
+        self.last_timestep_whistle_detected = self.blackboard.last_timestep_whistle_detected
 
     def perform(self, reevaluate=False):
-        if self.bb.gamestate.whistle_detected: 
-            return "YES"
-        return "NO"
+        if self.last_timestep_whistle_detected == self.blackboard.last_timestep_whistle_detected: 
+            return "NOT_DETECTED"
+        return "DETECTED"
 
     def get_reevaluate(self):
         return True

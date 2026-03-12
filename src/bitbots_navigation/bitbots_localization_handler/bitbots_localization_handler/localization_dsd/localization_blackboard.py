@@ -13,6 +13,7 @@ from rclpy.node import Node
 from ros2_numpy import numpify
 from sensor_msgs.msg import Imu
 from tf2_geometry_msgs import TransformStamped
+from rclpy.time import Time
 
 from bitbots_msgs.msg import RobotControlState
 
@@ -68,6 +69,9 @@ class LocalizationBlackboard:
         # Last init action
         self.last_init_action_type: Optional[type] = None
         self.last_init_odom_transform: TransformStamped | None = None
+        
+        # Last time we have detected a whistle
+        self.last_timestep_whistle_detected: Time = self.node.get_clock().now()
 
     def _callback_pose(self, msg: PoseWithCovarianceStamped):
         self.robot_pose = msg
@@ -122,3 +126,6 @@ class LocalizationBlackboard:
         if self.robot_pose is None:
             return 0.0
         return quat2euler(xyzw2wxyz(numpify(self.robot_pose.pose.pose.orientation)), axes="szxy")[0]
+    
+    def whistle_detection_callback(self, _):
+        self.last_timestep_whistle_detected = self.node.get_clock().now()
