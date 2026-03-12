@@ -41,7 +41,7 @@ impl ArmService for DummyArmService {
         Ok(Response::new(Empty::default()))
     }
 
-    async fn set_arm_command_stream(&self, mut request: Request<tonic::Streaming<DroidCommandRequest>>) -> Result<Response<Empty>, Status> {
+    async fn set_arm_command_stream(&self, request: Request<tonic::Streaming<DroidCommandRequest>>) -> Result<Response<Empty>, Status> {
         let mut stream = request.into_inner();
         while let Some(_cmd) = stream.next().await {
             // Echo/Process logic here
@@ -101,7 +101,7 @@ impl LegService for DummyLegService {
         Ok(Response::new(Empty::default()))
     }
 
-    async fn set_leg_command_stream(&self, mut request: Request<tonic::Streaming<DroidCommandRequest>>) -> Result<Response<Empty>, Status> {
+    async fn set_leg_command_stream(&self, request: Request<tonic::Streaming<DroidCommandRequest>>) -> Result<Response<Empty>, Status> {
         let mut stream = request.into_inner();
         while let Some(Ok(_cmd)) = stream.next().await {
             // Echo logic could be added here for processing
@@ -138,8 +138,8 @@ impl LegService for DummyLegService {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 1. Define the addresses
-    let leg_addr = "[::1]:50051".parse()?;
-    let arm_addr = "[::1]:50052".parse()?;
+    let leg_addr = "127.0.0.1:50051".parse()?;
+    let arm_addr = "127.0.0.1:50052".parse()?;
 
     println!("LegService starting on {}", leg_addr);
     println!("ArmService starting on {}", arm_addr);

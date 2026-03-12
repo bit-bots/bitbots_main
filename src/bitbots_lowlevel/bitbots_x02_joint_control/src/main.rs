@@ -1,101 +1,140 @@
-use std::sync::{Arc, Mutex as StdMutex};
-use tokio::sync::Mutex;
+use r2r;
+use std::collections::HashMap;
+use std::env;
+use std::sync::{Arc, Mutex};
+use std::time::Duration;
+use tokio::time::interval;
 
-use futures::StreamExt;
-use r2r::bitbots_msgs::msg::Workload;
-use r2r::bitbots_msgs::srv::Leds;
-use r2r::std_msgs::msg::Empty;
-use r2r::RosParams;
-
-#[derive(RosParams, Default, Debug)]
-struct Params {
-    /// Parameter description (Yes this comment will appear in the parameter description)
-    par1: f64,
-    /// Dummy parameter [m/s]
-    par2: i32,
-    nested: NestedParams,
+pub mod droidgrpc {
+    tonic::include_proto!("droidgrpc");
 }
 
-#[derive(RosParams, Default, Debug)]
-struct NestedParams {
-    par3: String,
-    par4: u16,
+use droidgrpc::{Empty};
+// Note: Ensure these matches your generated code exactly
+use droidgrpc::arm_service_client::ArmServiceClient;
+use droidgrpc::leg_service_client::LegServiceClient;
+
+// This struct holds the latest known positions for all joints
+#[derive(Default)]
+struct RobotState {
+    // Key: ROS joint name, Value: position
+    joint_data: HashMap<String, f64>,
 }
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let args: Vec<String> = env::args().collect();
+    let ip = args.get(1).map(|s| s.as_str()).unwrap_or("127.0.0.1");
+
     let ctx = r2r::Context::create()?;
-
-    // Create a node
-    let mut node = r2r::Node::create(ctx, "test_node", "")?;
-
-    // Get a logger name for easier logging
-    let nl = node.logger().to_string();
-
-    // Create subscribers, publishers, services, timers, etc.
-    let mut sub = node
-        .subscribe::<Empty>("/hello_world", r2r::QosProfile::default())?
-        .fuse();
-    let mut timer = node.create_timer(std::time::Duration::from_secs_f32(0.05))?;
-    let mut timer1 = node.create_timer(std::time::Duration::from_secs_f32(0.1))?;
-    let publ = node.create_publisher::<Empty>("/out", r2r::QosProfile::default())?;
-    let mut srv = node
-        .create_service::<Leds::Service>("/led", r2r::QosProfile::default())?
-        .fuse();
-
-    // Parameter handling
-    let params = Arc::new(StdMutex::new(Params::default()));
-    let (paramater_handler, _) = node.make_derived_parameter_handler(params.clone())?;
-    tokio::task::spawn(paramater_handler);
-
-    println!(
-        "Sim time is set to: {}",
-        node.get_parameter::<bool>("use_sim_time").unwrap()
-    );
-
-    // Share the node between tasks / threads
+    let mut node = r2r::Node::create(ctx, "x02_joint_control", "")?;
+    let state_pub = node.create_publisher::<r2r::sensor_msgs::msg::JointState>("/joint_states", r2r::QosProfile::default())?;
     let node = Arc::new(Mutex::new(node));
-    let spin_node = node.clone();
 
-    tokio::task::spawn(async move {
-        // Define a thread-local state
-        let mut state = Workload::default();
+    // --- 1. Mapping & Virtual Joints ---
+    let mut name_map = HashMap::new();
+    let mappings = [
+        ("muT", "LHipYaw"), ("msL", "LHipRoll"), ("mhL", "LHipPitch"), ("mkL", "LKnee"), ("maL", "LAnklePitch"),
+        ("mbT", "RHipYaw"), ("msR", "RHipRoll"), ("mhR", "RHipPitch"), ("mkR", "RKnee"), ("maR", "RAnklePitch"),
+        ("UL1", "LShoulderPitch"), ("UL2", "LShoulderRoll"), ("UL3", "LShoulderYaw"), ("UL4", "LElbow"),
+        ("UR1", "RShoulderPitch"), ("UR2", "RShoulderRoll"), ("UR3", "RShoulderYaw"), ("UR4", "RElbow"),
+    ];
+    for (hw, ros) in mappings { name_map.insert(hw.to_string(), ros.to_string()); }
 
-        // Handle events
+    let virtual_joints = [];
+
+    // --- 2. Shared State Initialization ---
+    let mut initial_state = RobotState::default();
+    mappings.iter().map(|(_, ros)| ros).chain(virtual_joints.iter())
+        .for_each(|&name| { initial_state.joint_data.insert(name.to_string(), 0.0); });
+    let shared_state = Arc::new(Mutex::new(initial_state));
+
+    // --- 3. gRPC Setup & Config ---
+    let mut leg_client = LegServiceClient::connect(format!("http://{}:50051", ip)).await?;
+    let mut arm_client = ArmServiceClient::connect(format!("http://{}:50052", ip)).await?;
+
+    let leg_joint_names = leg_client.get_leg_config(Empty {}).await?.into_inner().joint_name;
+    let arm_joint_names = arm_client.get_arm_config(Empty {}).await?.into_inner().joint_name;
+
+    // --- 4. Writer Tasks: Update shared state when data arrives ---
+
+    // Leg Poller
+    let mut l_client = leg_client.clone();
+    let l_state = shared_state.clone();
+    let l_names = leg_joint_names.clone();
+    let l_map = name_map.clone();
+    tokio::spawn(async move {
+        let mut ticker = interval(Duration::from_millis(20)); // Poll at 50Hz
         loop {
-            tokio::select! {
-                req = srv.next() => {
-                    let req = req.unwrap();
-                    r2r::log_info!(&nl, "leds: {:?}", req.message);
-                    // Flush the stdout buffer to ensure the print appears in the logs
-                    let resp = Leds::Response::default();
-                    req.respond(resp).unwrap();
-                },
-                msg = sub.next() => {
-                    r2r::log_info!(&nl, "message: {:?}", msg);
-                    // Flush the stdout buffer to ensure the print appears in the logs
-                    state.memory_used += 1;
-                },
-                _ = timer.tick() => {
-                    publ.publish(&Empty {}).inspect_err(|e| {
-                        r2r::log_error!(&nl, "Error publishing message: {}", e);
-                    }).ok();
-                    r2r::log_info!(&nl, "timer tick {}", state.memory_used);
-                },
-                _ = timer1.tick() => {
-                    let my_param = node.lock().await.get_parameter::<f64>("par1").unwrap();
-                    r2r::log_info!(&nl, "Parameter par1: {}", my_param);
-                    r2r::log_info!(&nl, "timer1 tick {}", state.memory_used);
-                },
+            ticker.tick().await;
+            if let Ok(resp) = l_client.get_leg_state(Empty {}).await {
+                let positions = resp.into_inner().position;
+                let mut state = l_state.lock().unwrap();
+                for (i, hw_id) in l_names.iter().enumerate() {
+                    if let Some(ros_name) = l_map.get(hw_id) {
+                        state.joint_data.insert(ros_name.clone(), positions.get(i).cloned().unwrap_or(0.0) as f64);
+                    }
+                }
             }
         }
     });
 
-    // Spin the underlying rcl node object
+    // Arm Poller
+    let mut a_client = arm_client.clone();
+    let a_state = shared_state.clone();
+    let a_names = arm_joint_names.clone();
+    let a_map = name_map.clone();
+    tokio::spawn(async move {
+        let mut ticker = interval(Duration::from_millis(20));
+        loop {
+            ticker.tick().await;
+            if let Ok(resp) = a_client.get_arm_state(Empty {}).await {
+                let positions = resp.into_inner().position;
+                let mut state = a_state.lock().unwrap();
+                for (i, hw_id) in a_names.iter().enumerate() {
+                    if let Some(ros_name) = a_map.get(hw_id) {
+                        state.joint_data.insert(ros_name.clone(), positions.get(i).cloned().unwrap_or(0.0) as f64);
+                    }
+                }
+            }
+        }
+    });
+
+    // --- 5. Reader Task: Publish at Fixed ROS Rate ---
+    let pub_state = shared_state.clone();
+    tokio::spawn(async move {
+        let mut ticker = interval(Duration::from_millis(10)); // Publish at 100Hz
+        loop {
+            ticker.tick().await;
+            let mut ros_msg = r2r::sensor_msgs::msg::JointState::default();
+
+            // Lock briefly to copy data
+            {
+                let state = pub_state.lock().unwrap();
+                for (name, pos) in &state.joint_data {
+                    ros_msg.name.push(name.clone());
+                    ros_msg.position.push(*pos);
+                }
+            }
+
+            // Always add virtual joints (ensures consistency even before 1st gRPC response)
+            for v_joint in virtual_joints {
+                if !ros_msg.name.contains(&v_joint.to_string()) {
+                    ros_msg.name.push(v_joint.to_string());
+                    ros_msg.position.push(0.0);
+                }
+            }
+
+            if !ros_msg.name.is_empty() {
+                let _ = state_pub.publish(&ros_msg);
+            }
+        }
+    });
+
+    let spin_node = node.clone();
+
+    // --- 6. ROS Spin ---
     loop {
-        spin_node
-            .lock()
-            .await
-            .spin_once(std::time::Duration::from_millis(100));
+        spin_node.lock().expect("Node died").spin_once(std::time::Duration::from_millis(100));
     }
 }

@@ -11,7 +11,7 @@ pub mod droidgrpc {
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 1. Get IP from CLI argument or default to localhost
     let args: Vec<String> = env::args().collect();
-    let ip_str = args.get(1).map(|s| s.as_str()).unwrap_or("[::1]");
+    let ip_str = args.get(1).map(|s| s.as_str()).unwrap_or("127.0.0.1");
 
     // Parse the string into an IpAddr to ensure it's a valid IPv4/IPv6
     let leg_uri = format!("http://{}:50051", ip_str);
