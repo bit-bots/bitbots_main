@@ -16,7 +16,7 @@
     <arg name="record" default="false" description="Whether the ros bag recording should be started" />
     <arg name="tts" default="true" description="Whether to speak" />
     <arg name="whistle_detector" default="true" description="Whether to detect whistles"/>
-    <arg unless="$(var sim)" name="fieldname" default="labor" description="Loads field settings (labor, webots, ...)." />
+    <arg unless="$(var sim)" name="fieldname" default="german_open_2026" description="Loads field settings (labor, webots, ...)." />
     <arg if="$(var sim)" name="fieldname" default="webots" description="Loads field settings (labor, webots, ...)." />
 
 
