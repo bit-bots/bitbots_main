@@ -154,8 +154,8 @@ $IsPenalized
                 NOT_DONE --> @ChangeAction + action:waiting + r:false, @LookAtFieldFeatures + r:false, @Stand + duration:2
                 DONE --> #PositioningReady
         SET --> $WhistleDetected
-            YES --> #PlayingBehavior
-            NO --> $SecondaryStateDecider
+            DETECTED --> #PlayingBehavior
+            NOT_DETECTED --> $SecondaryStateDecider
                 PENALTYSHOOT --> $SecondaryStateTeamDecider
                     OUR --> @Stand + duration:0.1 + r:false, @DeactivateHCM + r:false, @LookForward + r:false, @PlayAnimationInitInSim + r:false, @GetWalkready + r:false, @Stand // we need to also see the goalie
                     OTHER --> $BallSeen

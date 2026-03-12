@@ -1,5 +1,3 @@
-from typing import Optional
-
 import numpy as np
 import tf2_ros as tf2
 from bitbots_blackboard.capsules.game_status_capsule import GameStatusCapsule
@@ -10,6 +8,7 @@ from geometry_msgs.msg import PoseWithCovarianceStamped, Quaternion
 from jaxtyping import Float
 from rclpy.duration import Duration
 from rclpy.node import Node
+from rclpy.time import Time
 from ros2_numpy import numpify
 from sensor_msgs.msg import Imu
 from tf2_geometry_msgs import TransformStamped
@@ -66,8 +65,11 @@ class LocalizationBlackboard:
         self.pickup_accel_buffer_long: list[Float[np.ndarray, "3"]] = []
 
         # Last init action
-        self.last_init_action_type: Optional[type] = None
+        self.last_init_action_type: type | None = None
         self.last_init_odom_transform: TransformStamped | None = None
+
+        # Last time we have detected a whistle
+        self.last_timestep_whistle_detected: Time | None = None
 
     def _callback_pose(self, msg: PoseWithCovarianceStamped):
         self.robot_pose = msg
@@ -122,3 +124,6 @@ class LocalizationBlackboard:
         if self.robot_pose is None:
             return 0.0
         return quat2euler(xyzw2wxyz(numpify(self.robot_pose.pose.pose.orientation)), axes="szxy")[0]
+
+    def whistle_detection_callback(self, _):
+        self.last_timestep_whistle_detected = self.node.get_clock().now()

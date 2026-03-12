@@ -9,6 +9,7 @@ from rclpy.callback_groups import MutuallyExclusiveCallbackGroup, ReentrantCallb
 from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
 from sensor_msgs.msg import Imu
+from std_msgs.msg import Empty
 
 from bitbots_localization_handler import localization_dsd
 from bitbots_localization_handler.localization_dsd.localization_blackboard import LocalizationBlackboard
@@ -47,6 +48,13 @@ def init(node: Node):
     )
     node.create_subscription(
         Imu, "/imu/data", blackboard._callback_imu, 1, callback_group=MutuallyExclusiveCallbackGroup()
+    )
+    node.create_subscription(
+        Empty,
+        "whistle_detected",
+        blackboard.whistle_detection_callback,
+        qos_profile=1,
+        callback_group=MutuallyExclusiveCallbackGroup(),
     )
 
     return dsd

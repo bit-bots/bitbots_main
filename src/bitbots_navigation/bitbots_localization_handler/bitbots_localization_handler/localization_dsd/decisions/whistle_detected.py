@@ -1,13 +1,13 @@
-from bitbots_blackboard.body_blackboard import BodyBlackboard
-from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
+from bitbots_localization_handler.localization_dsd.decisions import AbstractLocalizationDecisionElement
+from bitbots_localization_handler.localization_dsd.localization_blackboard import LocalizationBlackboard
 
 
-class WhistleDetected(AbstractDecisionElement):
-    blackboard: BodyBlackboard
+class WhistleDetected(AbstractLocalizationDecisionElement):
+    blackboard: LocalizationBlackboard
 
     def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
-        self.previous_timestep_whistle_detected = self.blackboard.gamestate.last_timestep_whistle_detected
+        self.previous_timestep_whistle_detected = self.blackboard.last_timestep_whistle_detected
 
     def perform(self, reevaluate=False):
         """
@@ -15,7 +15,7 @@ class WhistleDetected(AbstractDecisionElement):
         DSD stack. If we have detected a whistle previously, but not during this decision element being on
         the decision stack it counts as "NOT_DETECTED".
         """
-        if self.previous_timestep_whistle_detected == self.blackboard.gamestate.last_timestep_whistle_detected:
+        if self.previous_timestep_whistle_detected == self.blackboard.last_timestep_whistle_detected:
             return "NOT_DETECTED"
 
         return "DETECTED"

@@ -6,7 +6,7 @@ from audio_common_msgs.msg import AudioStamped
 from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
 from rclpy.qos import qos_profile_sensor_data
-from std_msgs.msg import Bool
+from std_msgs.msg import Empty
 
 
 class WhistleDetector(Node):
@@ -14,7 +14,7 @@ class WhistleDetector(Node):
         super().__init__("whistle_detector")
         self.logger = self.get_logger()
 
-        self.whistle_publisher = self.create_publisher(Bool, "whistle_detected", 1)
+        self.whistle_publisher = self.create_publisher(Empty, "whistle_detected", 1)
 
         self.audio_buffer = np.array([], dtype=np.float32)
         self.sample_rate = 16000
@@ -45,7 +45,7 @@ class WhistleDetector(Node):
         whistle_detected = self.detect_whistle(audio, self.sample_rate)
 
         if whistle_detected:
-            msg = Bool(data=True)
+            msg = Empty()
             self.whistle_publisher.publish(msg)
 
     def detect_whistle(self, audio, sample_rate):

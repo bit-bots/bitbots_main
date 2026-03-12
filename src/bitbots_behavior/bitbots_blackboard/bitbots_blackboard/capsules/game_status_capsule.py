@@ -1,7 +1,6 @@
-from typing import Optional
-
 from bitbots_utils.utils import get_parameters_from_other_node
 from game_controller_hsl_interfaces.msg import GameState
+from rclpy.time import Time
 from std_msgs.msg import Bool
 
 from bitbots_blackboard.capsules import AbstractBlackboardCapsule
@@ -19,9 +18,9 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
         self.unpenalized_time: float = 0.0
         self.last_goal_from_us_time = -86400.0
         self.last_goal_time = -86400.0
-        self.free_kick_kickoff_team: Optional[bool] = None
-        self.whistle_detected: bool = False
+        self.free_kick_kickoff_team: bool | None = None
         self.game_controller_stop: bool = False
+        self.last_timestep_whistle_detected: Time | None = None
         # publish stopped msg for hcm
         self.stop_pub = node.create_publisher(Bool, "game_controller/stop_msg", 1)
 
@@ -129,5 +128,5 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
         self.last_update = self._node.get_clock().now().nanoseconds / 1e9
         self.gamestate = gamestate_msg
 
-    def whistle_detection_callback(self, msg) -> None:
-        self.whistle_detected = msg.data
+    def whistle_detection_callback(self, _) -> None:
+        self.last_timestep_whistle_detected = self._node.get_clock().now()
