@@ -823,6 +823,7 @@ environments:
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-rqt-py-common-1.6.2-np2py312h2ed9cc7_14.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-rqt-py-console-1.2.3-np2py312h2ed9cc7_14.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-rqt-reconfigure-1.6.2-np2py312h2ed9cc7_14.conda
+      - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-rqt-robot-monitor-1.0.6-np2py312h2ed9cc7_14.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-rqt-service-caller-1.2.1-np2py312h2ed9cc7_14.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-rqt-shell-1.2.2-np2py312h2ed9cc7_14.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-rqt-srv-1.2.2-np2py312h2ed9cc7_14.conda
@@ -1870,6 +1871,7 @@ environments:
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-aarch64/ros-jazzy-rqt-py-common-1.6.2-np2py312h61f2ce4_14.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-aarch64/ros-jazzy-rqt-py-console-1.2.3-np2py312h61f2ce4_14.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-aarch64/ros-jazzy-rqt-reconfigure-1.6.2-np2py312h61f2ce4_14.conda
+      - conda: https://conda.anaconda.org/robostack-jazzy/linux-aarch64/ros-jazzy-rqt-robot-monitor-1.0.6-np2py312h61f2ce4_14.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-aarch64/ros-jazzy-rqt-service-caller-1.2.1-np2py312h61f2ce4_14.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-aarch64/ros-jazzy-rqt-shell-1.2.2-np2py312h61f2ce4_14.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-aarch64/ros-jazzy-rqt-srv-1.2.2-np2py312h61f2ce4_14.conda
@@ -3063,6 +3065,7 @@ environments:
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-rqt-py-common-1.6.2-np2py312h2ed9cc7_14.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-rqt-py-console-1.2.3-np2py312h2ed9cc7_14.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-rqt-reconfigure-1.6.2-np2py312h2ed9cc7_14.conda
+      - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-rqt-robot-monitor-1.0.6-np2py312h2ed9cc7_14.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-rqt-service-caller-1.2.1-np2py312h2ed9cc7_14.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-rqt-shell-1.2.2-np2py312h2ed9cc7_14.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-rqt-srv-1.2.2-np2py312h2ed9cc7_14.conda
@@ -4111,6 +4114,7 @@ environments:
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-aarch64/ros-jazzy-rqt-py-common-1.6.2-np2py312h61f2ce4_14.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-aarch64/ros-jazzy-rqt-py-console-1.2.3-np2py312h61f2ce4_14.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-aarch64/ros-jazzy-rqt-reconfigure-1.6.2-np2py312h61f2ce4_14.conda
+      - conda: https://conda.anaconda.org/robostack-jazzy/linux-aarch64/ros-jazzy-rqt-robot-monitor-1.0.6-np2py312h61f2ce4_14.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-aarch64/ros-jazzy-rqt-service-caller-1.2.1-np2py312h61f2ce4_14.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-aarch64/ros-jazzy-rqt-shell-1.2.2-np2py312h61f2ce4_14.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-aarch64/ros-jazzy-rqt-srv-1.2.2-np2py312h61f2ce4_14.conda
@@ -30965,6 +30969,57 @@ packages:
   license: BSD-3-Clause OR Apache-2.0
   size: 78772
   timestamp: 1768947778955
+- conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-rqt-robot-monitor-1.0.6-np2py312h2ed9cc7_14.conda
+  sha256: 69d8175fdbc6f1398fcc3525e55f06f7244f4e7e39ed5fc624c851a9244f86e6
+  md5: 1ee2b8f82798fad9593f3162800fa0d2
+  depends:
+  - python
+  - ros-jazzy-diagnostic-msgs
+  - ros-jazzy-python-qt-binding
+  - ros-jazzy-qt-gui
+  - ros-jazzy-qt-gui-py-common
+  - ros-jazzy-rclpy
+  - ros-jazzy-ros-workspace
+  - ros-jazzy-rqt-gui
+  - ros-jazzy-rqt-gui-py
+  - ros-jazzy-rqt-py-common
+  - ros2-distro-mutex 0.13.* jazzy_*
+  - rospkg
+  - __glibc >=2.17,<3.0.a0
+  - libgcc >=14
+  - libstdcxx >=14
+  - libgcc >=14
+  - ros2-distro-mutex >=0.13.0,<0.14.0a0
+  - numpy >=1.23,<3
+  - python_abi 3.12.* *_cp312
+  license: BSD-3-Clause
+  size: 60531
+  timestamp: 1769461613463
+- conda: https://conda.anaconda.org/robostack-jazzy/linux-aarch64/ros-jazzy-rqt-robot-monitor-1.0.6-np2py312h61f2ce4_14.conda
+  sha256: 83bc5509692a844f3e46ee063effe84269f3e38f3333dd1666eed48eeede3bf3
+  md5: 42778a7b207c93fbbab0150ba76fed93
+  depends:
+  - python
+  - ros-jazzy-diagnostic-msgs
+  - ros-jazzy-python-qt-binding
+  - ros-jazzy-qt-gui
+  - ros-jazzy-qt-gui-py-common
+  - ros-jazzy-rclpy
+  - ros-jazzy-ros-workspace
+  - ros-jazzy-rqt-gui
+  - ros-jazzy-rqt-gui-py
+  - ros-jazzy-rqt-py-common
+  - ros2-distro-mutex 0.13.* jazzy_*
+  - rospkg
+  - libgcc >=14
+  - libstdcxx >=14
+  - libgcc >=14
+  - numpy >=1.23,<3
+  - ros2-distro-mutex >=0.13.0,<0.14.0a0
+  - python_abi 3.12.* *_cp312
+  license: BSD-3-Clause
+  size: 60465
+  timestamp: 1769461842372
 - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-rqt-service-caller-1.2.1-np2py312h2ed9cc7_14.conda
   sha256: 005f91023491f133dbfc4855088a91891e82a844038fcdaeba3042fbbb94eac6
   md5: 7e0f7d22aca24120b74324a871c07123

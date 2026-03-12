@@ -29,7 +29,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let ctx = r2r::Context::create()?;
     let mut node = r2r::Node::create(ctx, "x02_joint_control", "")?;
     let state_pub = node.create_publisher::<r2r::sensor_msgs::msg::JointState>("/joint_states", r2r::QosProfile::default())?;
+    let state_pub = Arc::new(Mutex::new(state_pub));
     let node = Arc::new(Mutex::new(node));
+    let spin_node = node.clone();
 
     // --- 1. Mapping & Virtual Joints ---
     let mut name_map = HashMap::new();
@@ -41,7 +43,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     ];
     for (hw, ros) in mappings { name_map.insert(hw.to_string(), ros.to_string()); }
 
-    let virtual_joints = [];
+    let virtual_joints = ["torso"];
 
     // --- 2. Shared State Initialization ---
     let mut initial_state = RobotState::default();
@@ -106,32 +108,51 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let mut ticker = interval(Duration::from_millis(10)); // Publish at 100Hz
         loop {
             ticker.tick().await;
-            let mut ros_msg = r2r::sensor_msgs::msg::JointState::default();
+            let res: Result<(), Box<dyn std::error::Error + Send + Sync>> = (|| async {
+                let mut ros_msg = r2r::sensor_msgs::msg::JointState::default();
+                // Get the duration from the clock
+                let now_duration = {
+                    let n_lock = node.lock().expect("node lock poisoned");
+                    let clock_res = n_lock.get_ros_clock();
+                    let mut c_lock = clock_res.lock().expect("clock lock poisoned");
+                    c_lock.get_now().expect("Clock failed")
+                };
 
-            // Lock briefly to copy data
-            {
-                let state = pub_state.lock().unwrap();
-                for (name, pos) in &state.joint_data {
-                    ros_msg.name.push(name.clone());
-                    ros_msg.position.push(*pos);
+                // Convert Duration to ROS Time message
+                ros_msg.header.stamp = r2r::builtin_interfaces::msg::Time {
+                    sec: now_duration.as_secs() as i32,
+                    nanosec: now_duration.subsec_nanos(),
+                };
+
+                // Lock briefly to copy data
+                {
+                    let state = pub_state.lock().unwrap();
+                    for (name, pos) in &state.joint_data {
+                        ros_msg.name.push(name.clone());
+                        ros_msg.position.push(*pos);
+                    }
                 }
-            }
 
-            // Always add virtual joints (ensures consistency even before 1st gRPC response)
-            for v_joint in virtual_joints {
-                if !ros_msg.name.contains(&v_joint.to_string()) {
-                    ros_msg.name.push(v_joint.to_string());
-                    ros_msg.position.push(0.0);
+                // Always add virtual joints (ensures consistency even before 1st gRPC response)
+                for v_joint in virtual_joints {
+                    if !ros_msg.name.contains(&v_joint.to_string()) {
+                        ros_msg.name.push(v_joint.to_string());
+                        ros_msg.position.push(0.0);
+                    }
                 }
-            }
 
-            if !ros_msg.name.is_empty() {
-                let _ = state_pub.publish(&ros_msg);
+                if !ros_msg.name.is_empty() {
+                    let _ = state_pub.lock().expect("Publisher Poisoned").publish(&ros_msg);
+                }
+                Ok(())
+            })().await;
+
+            if let Err(e) = res {
+                eprintln!("Publisher loop error: {}", e);
             }
         }
     });
 
-    let spin_node = node.clone();
 
     // --- 6. ROS Spin ---
     loop {

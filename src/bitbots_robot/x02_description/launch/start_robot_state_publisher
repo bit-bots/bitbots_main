@@ -1,0 +1,5 @@
+<launch>
+  <node pkg="robot_state_publisher" exec="robot_state_publisher">
+    <param name='robot_description' value="$(command 'cat $(find-pkg-share x02_description)/urdf/x02.urdf')"/>
+  </node>
+</launch>

@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
-     Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
-     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+
 <robot name="x2">
   <mujoco>
     <compiler meshdir="./meshes" discardvisual="false" />
@@ -24,7 +22,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://x02_description/urdf/package://x02_description/urdf/meshes/pelvis_link.STL" />
+        <mesh filename="package://x02_description/urdf/meshes/pelvis_link.STL" />
       </geometry>
       <material name="">
         <color rgba="1 1 1 1" />
@@ -33,20 +31,20 @@
     <collision>
     <origin xyz="0 0 0" rpy="0 0 0" />
     <geometry>
-      <mesh filename="package://x02_description/urdf/package://x02_description/urdf/meshes/pelvis_link.STL" />
+      <mesh filename="package://x02_description/urdf/meshes/pelvis_link.STL" />
     </geometry>
     </collision>
   </link>
   <link name="L_hip_yaw_link">
     <inertial>
       <origin xyz="0.001115 0.049187 -0.051444" rpy="0 0 0" />
-      <mass value="1.758" /> 
+      <mass value="1.758" />
       <inertia ixx="0.004988888" ixy="0.000039059" ixz="-0.000005421" iyy="0.002479734" iyz="-0.0001035324" izz="0.003849267" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://x02_description/urdf/package://x02_description/urdf/meshes/L_hip_yaw_link.STL" />
+        <mesh filename="package://x02_description/urdf/meshes/L_hip_yaw_link.STL" />
       </geometry>
       <material name="">
         <color rgba="0.898039215686275 0.917647058823529 0.929411764705882 1" />
@@ -55,7 +53,7 @@
     <collision>
     <origin xyz="0 0 0" rpy="0 0 0" />
     <geometry>
-      <mesh filename="package://x02_description/urdf/package://x02_description/urdf/meshes/L_hip_yaw_link.STL" />
+      <mesh filename="package://x02_description/urdf/meshes/L_hip_yaw_link.STL" />
     </geometry>
     </collision>
   </link>
@@ -75,7 +73,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://x02_description/urdf/package://x02_description/urdf/meshes/L_hip_roll_link.STL" />
+        <mesh filename="package://x02_description/urdf/meshes/L_hip_roll_link.STL" />
       </geometry>
       <material name="">
         <color rgba="1 1 1 1" />
@@ -84,9 +82,9 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://x02_description/urdf/package://x02_description/urdf/meshes/L_hip_roll_link.STL" />
+        <mesh filename="package://x02_description/urdf/meshes/L_hip_roll_link.STL" />
       </geometry>
-    </collision> 
+    </collision>
   </link>
   <joint name="LHipRoll" type="revolute">
     <origin xyz="-0.0095 0.1 -0.0474" rpy="0 0 0" />
@@ -104,7 +102,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://x02_description/urdf/package://x02_description/urdf/meshes/L_hip_pitch_link.STL" />
+        <mesh filename="package://x02_description/urdf/meshes/L_hip_pitch_link.STL" />
       </geometry>
       <material name="">
         <color rgba="1 1 1 1" />
@@ -113,7 +111,7 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://x02_description/urdf/package://x02_description/urdf/meshes/L_hip_pitch_link.STL" />
+        <mesh filename="package://x02_description/urdf/meshes/L_hip_pitch_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -133,7 +131,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://x02_description/urdf/package://x02_description/urdf/meshes/L_knee_pitch_link.STL" />
+        <mesh filename="package://x02_description/urdf/meshes/L_knee_pitch_link.STL" />
       </geometry>
       <material name="">
         <color rgba="1 1 1 1" />
@@ -142,7 +140,7 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://x02_description/urdf/package://x02_description/urdf/meshes/L_knee_pitch_link.STL" />
+        <mesh filename="package://x02_description/urdf/meshes/L_knee_pitch_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -163,7 +161,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://x02_description/urdf/package://x02_description/urdf/meshes/L_ankle_pitch_link.STL" />
+        <mesh filename="package://x02_description/urdf/meshes/L_ankle_pitch_link.STL" />
       </geometry>
       <material name="">
         <color rgba="1 1 1 1" />
@@ -216,13 +214,13 @@
   <link name="R_hip_yaw_link">
     <inertial>
       <origin xyz="0.001115 -0.049187 0.001444" rpy="0 0 0" />
-      <mass value="0.907" /> 
+      <mass value="0.907" />
       <inertia ixx="0.002067018" ixy="-0.000035043" ixz="-0.000000909" iyy="0.000567723" iyz="0.000020295" izz="0.002016525" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://x02_description/urdf/package://x02_description/urdf/meshes/R_hip_yaw_link.STL" />
+        <mesh filename="package://x02_description/urdf/meshes/R_hip_yaw_link.STL" />
       </geometry>
       <material name="">
         <color rgba="0.898039215686275 0.917647058823529 0.929411764705882 1" />
@@ -231,7 +229,7 @@
     <collision>
     <origin xyz="0 0 0" rpy="0 0 0" />
     <geometry>
-      <mesh filename="package://x02_description/urdf/package://x02_description/urdf/meshes/R_hip_yaw_link.STL" />
+      <mesh filename="package://x02_description/urdf/meshes/R_hip_yaw_link.STL" />
     </geometry>
     </collision>
   </link>
@@ -251,7 +249,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://x02_description/urdf/package://x02_description/urdf/meshes/R_hip_roll_link.STL" />
+        <mesh filename="package://x02_description/urdf/meshes/R_hip_roll_link.STL" />
       </geometry>
       <material name="">
         <color rgba="1 1 1 1" />
@@ -260,7 +258,7 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://x02_description/urdf/package://x02_description/urdf/meshes/R_hip_roll_link.STL" />
+        <mesh filename="package://x02_description/urdf/meshes/R_hip_roll_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -280,7 +278,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://x02_description/urdf/package://x02_description/urdf/meshes/R_hip_pitch_link.STL" />
+        <mesh filename="package://x02_description/urdf/meshes/R_hip_pitch_link.STL" />
       </geometry>
       <material name="">
         <color rgba="1 1 1 1" />
@@ -289,7 +287,7 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://x02_description/urdf/package://x02_description/urdf/meshes/R_hip_pitch_link.STL" />
+        <mesh filename="package://x02_description/urdf/meshes/R_hip_pitch_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -309,7 +307,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://x02_description/urdf/package://x02_description/urdf/meshes/R_knee_pitch_link.STL" />
+        <mesh filename="package://x02_description/urdf/meshes/R_knee_pitch_link.STL" />
       </geometry>
       <material name="">
         <color rgba="1 1 1 1" />
@@ -318,7 +316,7 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://x02_description/urdf/package://x02_description/urdf/meshes/R_knee_pitch_link.STL" />
+        <mesh filename="package://x02_description/urdf/meshes/R_knee_pitch_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -339,7 +337,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://x02_description/urdf/package://x02_description/urdf/meshes/R_ankle_pitch_link.STL" />
+        <mesh filename="package://x02_description/urdf/meshes/R_ankle_pitch_link.STL" />
       </geometry>
       <material name="">
         <color rgba="1 1 1 1" />
@@ -398,7 +396,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://x02_description/urdf/package://x02_description/urdf/meshes/torso_link.STL" />
+        <mesh filename="package://x02_description/urdf/meshes/torso_link.STL" />
       </geometry>
       <material name="">
         <color rgba="0.823529411764706 0.823529411764706 0.823529411764706 1" />
@@ -407,7 +405,7 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://x02_description/urdf/package://x02_description/urdf/meshes/torso_link.STL" />
+        <mesh filename="package://x02_description/urdf/meshes/torso_link.STL" />
       </geometry>
     </collision>
   </link>
