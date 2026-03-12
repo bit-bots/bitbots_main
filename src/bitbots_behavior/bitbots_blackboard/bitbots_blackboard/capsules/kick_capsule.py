@@ -44,7 +44,7 @@ class KickCapsule(AbstractBlackboardCapsule):
         """
         self.walk_kick_pub = self._node.create_publisher(Bool, "/kick", 1)
         # self.connect_dynamic_kick()  Do not connect if dynamic_kick is disabled
-        self.rl_kick_pub = self._node.create_publisher(PoseStamped, "/rl_kick/goal", 1)
+        self.rl_kick_pub = self._node.create_publisher(PoseStamped, "/ball_pose", 1)
 
     def walk_kick(self, target: WalkKickTargets) -> None:
         """
@@ -84,12 +84,12 @@ class KickCapsule(AbstractBlackboardCapsule):
         self.last_goal = goal
         self.last_goal_sent = self._node.get_clock().now()
 
-    def rl_kick(self, goal_pose: PoseStamped) -> None:
+    def rl_kick(self, ball_pose: PoseStamped) -> None:
         """
         Kick the ball using the RL kick
         :param goal_pose: Pose to kick to
         """
-        self.rl_kick_pub.publish(goal_pose)
+        self.rl_kick_pub.publish(ball_pose)
 
     def __feedback_cb(self, feedback):
         self.last_feedback: Kick.Feedback = feedback.feedback

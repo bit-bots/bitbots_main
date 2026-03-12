@@ -141,25 +141,20 @@ class RLKick(AbstractKickAction):
         self.penalty_kick_angle = self.blackboard.config["penalty_kick_angle"]
 
     def perform(self, reevaluate=False):
-        goal_pose = PoseStamped()
-        goal_pose.header.stamp = self.blackboard.node.get_clock().now().to_msg()
-        goal_pose.header.frame_id = self.blackboard.world_model.base_footprint_frame
+        ball_pose = PoseStamped()
+        ball_pose.header.stamp = self.blackboard.node.get_clock().now().to_msg()
+        ball_pose.header.frame_id = self.blackboard.world_model.base_footprint_frame
 
         # TODO: Extract
         ball_u, ball_v = self.blackboard.world_model.get_ball_position_uv()
-        goal_pose.pose.position.x = ball_u
-        goal_pose.pose.position.y = ball_v
-        goal_pose.pose.position.z = 0.0
+        ball_pose.pose.position.x = ball_u
+        ball_pose.pose.position.y = ball_v
+        ball_pose.pose.position.z = 0.0
 
-        kick_direction = self.blackboard.costmap.get_best_kick_direction(
-            -self.max_kick_angle,
-            self.max_kick_angle,
-            self.num_kick_angles,
-            self.kick_length,
-            self.angular_range,
-        )
+        ball_pose.pose.orientation.x = 0.0  # isn't used
+        ball_pose.pose.orientation.y = 0.0
+        ball_pose.pose.orientation.z = 0.0
+        ball_pose.pose.orientation.w = 1.0
 
-        goal_pose.pose.orientation = quat_from_yaw(kick_direction)
-
-        self.blackboard.kick.rl_kick(goal_pose)
+        self.blackboard.kick.rl_kick(ball_pose)
         self.pop()

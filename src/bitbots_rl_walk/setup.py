@@ -11,7 +11,12 @@ setup(
         ("share/" + package_name, ["package.xml"]),
         (
             "share/" + package_name + "/models",
-            ["models/wolfgang_policy.onnx", "models/wolfgang_walk_ppo.onnx", "models/wolfgang_kick_ppo.onnx"],
+            [
+                "models/wolfgang_policy.onnx",
+                "models/wolfgang_walk_ppo.onnx",
+                "models/wolfgang_kick_ppo.onnx",
+                "models/wolfgang_forward_kick_ppo.onnx",
+            ],
         ),
     ],
     install_requires=["setuptools"],
@@ -26,6 +31,7 @@ setup(
             "walk = bitbots_rl_walk.walk:main",
             "kick = bitbots_rl_walk.kick:main",
             "walk_kick = bitbots_rl_walk.walk_kick:main",
+            "forward_kick = bitbots_rl_walk.forward_kick:main",
         ],
     },
 )
