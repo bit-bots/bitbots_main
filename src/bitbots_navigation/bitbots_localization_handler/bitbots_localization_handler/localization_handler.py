@@ -3,7 +3,7 @@ import os
 
 import rclpy
 from dynamic_stack_decider.dsd import DSD
-from game_controller_hl_interfaces.msg import GameState
+from game_controller_hsl_interfaces.msg import GameState
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup, ReentrantCallbackGroup
 from rclpy.experimental.events_executor import EventsExecutor

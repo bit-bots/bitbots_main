@@ -55,7 +55,7 @@ class Launch(AbstractTask):
         :return: Results, with success if ROS 2 nodes are not already running
         """
         print_debug("Checking if ROS 2 nodes are already running")
-        cmd = f"cd {self._remote_workspace} && pixi run ros2 node list -c"
+        cmd = f"cd {self._remote_workspace} && pixi run --environment robot ros2 node list -c"
 
         print_debug(f"Calling '{cmd}'")
         try:
@@ -152,7 +152,7 @@ class Launch(AbstractTask):
     def _launch_teamplayer(self, connections: Group) -> GroupResult:
         print_debug("Launching teamplayer")
         # Create tmux session
-        cmd = f"tmux new-session -d -s {self._tmux_session_name} && tmux send-keys -t {self._tmux_session_name} 'cd {self._remote_workspace} && pixi run ros2 launch bitbots_bringup teamplayer.launch record:=true tts:=false' Enter"
+        cmd = f"tmux new-session -d -s {self._tmux_session_name} && tmux send-keys -t {self._tmux_session_name} 'cd {self._remote_workspace} && pixi run --environment robot ros2 launch bitbots_bringup teamplayer.launch record:=true tts:=false' Enter"
 
         print_debug(f"Calling '{cmd}'")
         try:

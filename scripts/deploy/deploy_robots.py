@@ -118,8 +118,8 @@ class DeployRobots:
         parser.add_argument(
             "-w",
             "--workspace",
-            default=".",
-            help="Path to the workspace directory to deploy to. Defaults to the current directory.",
+            default="~/bitbots_main",
+            help="Path to the workspace directory to deploy to. Defaults to 'bitbots_main' in $HOME dir.",
         )
         parser.add_argument("--skip-local-repo-check", action="store_true", help="Skip the local repository check.")
 
