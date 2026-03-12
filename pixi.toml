@@ -208,7 +208,7 @@ webots = ">=2022b,<2023a"
 # of pre-commit hooks running after commits from the git-subrepo cli
 git-subrepo = ">=0.4.9,<0.5"
 clang-format = ">=21.1.0,<22"
-cppcheck = ">=2.18.3,<3"
+cppcheck = ">=2.18.3,<2.20"
 pre-commit = ">=4.4.0,<5"
 
 [feature.ros.pypi-dependencies]
