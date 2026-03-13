@@ -52,6 +52,7 @@ class TeamCommunication:
         self.rate: int = self.node.get_parameter("rate").value
         self.lifetime: int = self.node.get_parameter("lifetime").value
         self.avg_walking_speed: float = self.node.get_parameter("avg_walking_speed").value
+        self.rate_is_reduced: bool = False
 
         self.topics = get_parameter_dict(self.node, "topics")
         self.map_frame: str = self.node.get_parameter("map_frame").value
@@ -66,7 +67,7 @@ class TeamCommunication:
         self.run_spin_in_thread()
         self.try_to_establish_connection()
 
-        self.node.create_timer(1 / self.rate, self.send_message, callback_group=MutuallyExclusiveCallbackGroup())
+        self.timer = self.node.create_timer(1 / self.rate, self.send_message, callback_group=MutuallyExclusiveCallbackGroup())
         self.receive_forever()
 
     def spin(self):
@@ -263,6 +264,11 @@ class TeamCommunication:
         self.team_data_publisher.publish(team_data)
 
     def send_message(self):
+        
+        if not self.rate_is_reduced:
+            if self.gamestate is not None and self.gamestate.secs_remaining > 180 and (self.gamestate.message_budget / self.gamestate.secs_remaining) < 11.2:
+                self.reduce_rate()
+
         if not self.is_robot_allowed_to_send_message():
             self.logger.debug("Robot is not allowed to send message")
             return
@@ -301,7 +307,17 @@ class TeamCommunication:
         return is_own_message or is_message_from_oposite_team
 
     def is_robot_allowed_to_send_message(self) -> bool:
-        return self.gamestate is not None and not self.gamestate.penalized
+        #a penalized robot doesn't need to publish
+        if self.gamestate is not None and not self.gamestate.penalized:
+            return False
+        #if we are close to our message budget, we dont want to continue publishing
+        if self.gamestate is not None and (self.gamestate.message_budget > 40):
+            return False
+        #we dont want to publish messages if only one robot is in a team. (this may never occure since this is the max team size, not the number of active players)
+        if self.gamestate is not None and self.gamestate.players_per_team == 1:
+            return False
+        
+        return True
 
     def get_current_time(self) -> Time:
         return self.node.get_clock().now()
@@ -313,6 +329,13 @@ class TeamCommunication:
 
     def convert_to_euler(self, quaternion: Quaternion):
         return transforms3d.euler.quat2euler([quaternion.w, quaternion.x, quaternion.y, quaternion.z])
+    
+    def reduce_rate(self):
+        self.rate = 1
+        self.timer.cancel()
+        self.timer = self.node.create_timer(1 / self.rate, self.send_message, callback_group=MutuallyExclusiveCallbackGroup())
+        self.rate_is_reduced = True
+
 
 
 def main():
