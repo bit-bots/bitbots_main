@@ -23,7 +23,15 @@ impl ArmService for DummyArmService {
     // --- 2. Implement the methods ---
 
     async fn get_arm_config(&self, _: Request<Empty>) -> Result<Response<DroidConfigs>, Status> {
-        Ok(Response::new(DroidConfigs::default()))
+        Ok(Response::new(DroidConfigs {
+            joint_name: ["UL1", "UL2", "UL3", "UL4", "UL5", "UR1", "UR2", "UR3", "UR4", "UR5"].into_iter().map(String::from).collect(),
+            pzero: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0].to_vec(),
+            pmin: [-120.0, 0.0, -130.0, 0.0, -200.0, -120.0, 0.0, -130.0, 0.0, -200.0].to_vec(),
+            pmax: [160.0, 160.0, 130.0, 140.0, 90.0, 160.0, 200.0, 130.0, 140.0, 90.0].to_vec(),
+            imax: [15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0].to_vec(),
+            kp: [48.8, 48.8, 40.8, 48.8, 9.76, 48.8, 48.8, 40.8, 48.8, 9.76].to_vec(),
+            kd: [1.39, 1.39, 1.19, 1.39, 0.195, 1.39, 1.39, 1.19, 1.39, 0.195].to_vec(),
+        }))
     }
 
     async fn get_arm_state(&self, _: Request<Empty>) -> Result<Response<DroidArmResponse>, Status> {
@@ -42,8 +50,9 @@ impl ArmService for DummyArmService {
 
     async fn set_arm_command(
         &self,
-        _: Request<DroidCommandRequest>,
+        req: Request<DroidCommandRequest>,
     ) -> Result<Response<Empty>, Status> {
+        println!("{:?}",req);
         Ok(Response::new(Empty::default()))
     }
 
@@ -94,7 +103,15 @@ impl LegService for DummyLegService {
     type ExchangeLegControlStreamStream = ReceiverStream<Result<DroidStateResponse, Status>>;
 
     async fn get_leg_config(&self, _: Request<Empty>) -> Result<Response<DroidConfigs>, Status> {
-        Ok(Response::new(DroidConfigs::default()))
+        Ok(Response::new(DroidConfigs {
+            joint_name: ["muT", "msL", "mhL", "mkL", "maL", "mbT", "msR", "mhR", "mkR", "maR"].into_iter().map(String::from).collect(),
+            pzero: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0].to_vec(),
+            pmin: [-30.0, -10.0, -30.0, -140.0, -360.0, -30.0, -10.0, -30.0, -140.0, -360.0].to_vec(),
+            pmax: [30.0, 15.0, 90.0, 5.0, 360.0, 30.0, 15.0, 90.0, 5.0, 360.0].to_vec(),
+            imax: [15.0, 30.0, 60.0, 60.0, 60.0, 15.0, 30.0, 60.0, 60.0, 60.0].to_vec(),
+            kp: [0.003, 0.02, 0.0269, 0.02, 0.0309, 0.003, 0.02, 0.0269, 0.02, 0.0309].to_vec(),
+            kd: [0.0001, 0.0004, 0.00043, 0.0004, 0.0005, 0.0001, 0.0004, 0.00043, 0.0004, 0.0005].to_vec(),
+        }))
     }
 
     async fn get_leg_state(
@@ -116,8 +133,9 @@ impl LegService for DummyLegService {
 
     async fn set_leg_command(
         &self,
-        _: Request<DroidCommandRequest>,
+        req: Request<DroidCommandRequest>,
     ) -> Result<Response<Empty>, Status> {
+        println!("{:?}",req);
         Ok(Response::new(Empty::default()))
     }
 

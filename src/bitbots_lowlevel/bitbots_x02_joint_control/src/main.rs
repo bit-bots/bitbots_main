@@ -4,6 +4,7 @@ use std::env;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use tokio::time::interval;
+use tokio_stream::StreamExt;
 
 pub mod droidgrpc {
     tonic::include_proto!("droidgrpc");
@@ -20,6 +21,11 @@ struct RobotState {
     // Key: ROS joint name, Value: position
     joint_data: HashMap<String, f64>,
 }
+#[derive(Default)]
+struct GoalState {
+    // Key: ROS joint name, Value: position target
+    joint_targets: HashMap<String, f32>,
+}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -32,9 +38,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         "/joint_states",
         r2r::QosProfile::default(),
     )?;
+    let mut cmd_sub = node.subscribe::<r2r::bitbots_msgs::msg::JointCommand>(
+        "/x02_joint_commands",
+        r2r::QosProfile::default()
+    )?;
     let state_pub = Arc::new(Mutex::new(state_pub));
-    let node = Arc::new(Mutex::new(node));
-    let spin_node = node.clone();
+    let spin_node = Arc::new(Mutex::new(node));
 
     // --- 1. Mapping & Virtual Joints ---
     let mut name_map = HashMap::new();
@@ -90,13 +99,38 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .into_inner()
         .joint_name;
 
-    // --- 4. Writer Tasks: Update shared state when data arrives ---
+    let mut initial_goals = GoalState::default();
+
+    // Seed Leg goals
+    if let Ok(resp) = leg_client.get_leg_state(Empty {}).await {
+        let current_pos = resp.into_inner().position;
+        for (i, hw_id) in leg_joint_names.iter().enumerate() {
+            if let Some(ros_name) = name_map.get(hw_id) {
+                initial_goals.joint_targets.insert(ros_name.clone(), current_pos.get(i).cloned().unwrap_or(0.0));
+            }
+        }
+    }
+
+    // Seed Arm goals
+    if let Ok(resp) = arm_client.get_arm_state(Empty {}).await {
+        let current_pos = resp.into_inner().position;
+        for (i, hw_id) in arm_joint_names.iter().enumerate() {
+            if let Some(ros_name) = name_map.get(hw_id) {
+                initial_goals.joint_targets.insert(ros_name.clone(), current_pos.get(i).cloned().unwrap_or(0.0));
+            }
+        }
+    }
+
+    let shared_goals = Arc::new(Mutex::new(initial_goals));
+
+    // --- GPRC Tasks: Update shared state when data arrives, send out commands ---
 
     // Leg Poller
     let mut l_client = leg_client.clone();
     let l_state = shared_state.clone();
     let l_names = leg_joint_names.clone();
     let l_map = name_map.clone();
+    let l_goals = shared_goals.clone();
     tokio::spawn(async move {
         let mut ticker = interval(Duration::from_millis(20)); // Poll at 50Hz
         loop {
@@ -113,6 +147,23 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     }
                 }
             }
+            let cmd_request = {
+                let goals = l_goals.lock().unwrap();
+                let positions: Vec<f32> = l_names.iter()
+                    .map(|hw_id| {
+                        let ros_name = l_map.get(hw_id).expect("Map error");
+                        *goals.joint_targets.get(ros_name).expect("Leg Joint has no value assigned")
+                    })
+                    .collect();
+
+                droidgrpc::DroidCommandRequest {
+                    position: positions,
+                    ..Default::default()
+                }
+            };
+            if let Err(e) = l_client.set_leg_command(cmd_request).await{
+                eprintln!("gRPC Error: Failed to set Arm command: {}", e);
+            }
         }
     });
 
@@ -121,9 +172,28 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let a_state = shared_state.clone();
     let a_names = arm_joint_names.clone();
     let a_map = name_map.clone();
+    let a_goals = shared_goals.clone();
     tokio::spawn(async move {
         let mut ticker = interval(Duration::from_millis(20));
         loop {
+            let cmd_request = {
+                let goals = a_goals.lock().unwrap();
+                let positions: Vec<f32> = a_names.iter()
+                    .map(|hw_id| {
+                        let ros_name = a_map.get(hw_id).expect("Arm mapping error");
+                        *goals.joint_targets.get(ros_name).expect("Arm Joint has no value assigned")
+                    })
+                    .collect();
+
+                droidgrpc::DroidCommandRequest {
+                    position: positions,
+                    ..Default::default()
+                }
+            };
+
+            if let Err(e) = a_client.set_arm_command(cmd_request).await {
+                eprintln!("gRPC Error: Failed to set Arm command: {}", e);
+            }
             ticker.tick().await;
             if let Ok(resp) = a_client.get_arm_state(Empty {}).await {
                 let positions = resp.into_inner().position;
@@ -140,7 +210,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     });
 
-    // --- 5. Reader Task: Publish at Fixed ROS Rate ---
+    // --- Reader Task: Publish at Fixed ROS Rate ---
+    let read_node = spin_node.clone();
     let pub_state = shared_state.clone();
     tokio::spawn(async move {
         let mut ticker = interval(Duration::from_millis(10)); // Publish at 100Hz
@@ -150,7 +221,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let mut ros_msg = r2r::sensor_msgs::msg::JointState::default();
                 // Get the duration from the clock
                 let now_duration = {
-                    let n_lock = node.lock().expect("node lock poisoned");
+                    let n_lock = read_node.lock().expect("node lock poisoned");
                     let clock_res = n_lock.get_ros_clock();
                     let mut c_lock = clock_res.lock().expect("clock lock poisoned");
                     c_lock.get_now().expect("Clock failed")
@@ -194,8 +265,24 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
         }
     });
+    // ---ROS receive goals---
+    let sub_goals = shared_goals.clone();
 
-    // --- 6. ROS Spin ---
+    tokio::spawn(async move {
+        while let Some(msg) = cmd_sub.next().await {
+            if msg.joint_names.len() != msg.positions.len() { continue; }
+
+            let mut goals = sub_goals.lock().unwrap();
+            for (i, ros_name) in msg.joint_names.iter().enumerate() {
+                // Only update if it's a joint we actually track
+                if goals.joint_targets.contains_key(ros_name) {
+                    goals.joint_targets.insert(ros_name.clone(), msg.positions[i] as f32);
+                }
+            }
+        }
+    });
+
+    // ---ROS Spin ---
     loop {
         spin_node
             .lock()
