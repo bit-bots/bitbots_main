@@ -49,9 +49,9 @@ using JointAngles = std::map<std::string, double>;
 // Joint names in the order we want to print them.
 // Adjust these to match your robot's URDF joint names.
 static const std::vector<std::string> JOINT_NAMES = {
-    "LHipYaw", "LHipRoll", "LHipPitch",
-    "LKnee",
-    "LAnklePitch", "LAnkleRoll"
+    "RHipYaw", "RHipRoll", "RHipPitch",
+    "RKnee",
+    "RAnklePitch", "RAnkleRoll"
 };
 
 class LegIKNode : public rclcpp::Node {
@@ -81,7 +81,7 @@ private:
         try {
             ts = tf_buffer_->lookupTransform(
                 "base_link",  // target frame
-                "l_sole",     // source frame
+                "r_sole",     // source frame
                 tf2::TimePointZero);
         } catch (const tf2::TransformException& ex) {
             RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 2000,
@@ -114,15 +114,26 @@ private:
         // ── 2. Run IK ───────────────────────────────────────────────────────
         JointAngles ik_solution;
         try {
-            ik_solution = calculate_ik(T_target, true);
+            bool left = true;
+
+
+            ik_solution = calculate_ik(T_target, left);
 
             // Apply joint offsets to match actual robot configuration (if needed)
-            ik_solution["HipYaw"]   *= -1;
-            ik_solution["HipPitch"]   *= -1;
-            ik_solution["AnkleRoll"]       *= -1;
-            ik_solution["HipPitch"]   += HIP_PITCH_ANGLE_OFFSET;
-            ik_solution["Knee"]       += KNEE_OFFSET;
-
+            if (left){
+                ik_solution["HipYaw"]   *= -1;
+                ik_solution["HipPitch"]   *= -1;
+                ik_solution["AnkleRoll"]       *= -1;
+                ik_solution["HipPitch"]   += HIP_PITCH_ANGLE_OFFSET;
+                ik_solution["Knee"]       += KNEE_OFFSET;
+            } else {
+                ik_solution["HipYaw"]   *= -1;
+                ik_solution["HipPitch"]   -= HIP_PITCH_ANGLE_OFFSET;
+                ik_solution["Knee"]       += KNEE_OFFSET;
+                ik_solution["Knee"]       *= -1;
+                ik_solution["AnklePitch"]   *= -1;
+                ik_solution["AnkleRoll"]   *= -1;
+            }
         } catch (const SolverError& e) {
             RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 1000,
                 "IK solver error: %s", e.what());

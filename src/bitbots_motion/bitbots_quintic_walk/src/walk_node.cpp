@@ -318,17 +318,11 @@ geometry_msgs::msg::PoseArray WalkNode::step_open_loop(double dt,
 }
 
 geometry_msgs::msg::Pose WalkNode::get_left_foot_pose() {
-  moveit::core::RobotStatePtr goal_state = ik_.get_goal_state();
-  geometry_msgs::msg::Pose pose;
-  tf2::convert(goal_state->getGlobalLinkTransform("l_sole"), pose);
-  return pose;
+  return ik_.get_left_goal();
 }
 
 geometry_msgs::msg::Pose WalkNode::get_right_foot_pose() {
-  moveit::core::RobotStatePtr goal_state = ik_.get_goal_state();
-  geometry_msgs::msg::Pose pose;
-  tf2::convert(goal_state->getGlobalLinkTransform("r_sole"), pose);
-  return pose;
+  return ik_.get_right_goal();
 }
 
 std::array<double, 4> WalkNode::get_step_from_vel(const geometry_msgs::msg::Twist::SharedPtr msg) {
