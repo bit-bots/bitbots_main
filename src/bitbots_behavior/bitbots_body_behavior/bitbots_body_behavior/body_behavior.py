@@ -3,6 +3,7 @@ import os
 import rclpy
 from bitbots_blackboard.body_blackboard import BodyBlackboard
 from bitbots_tf_buffer import Buffer
+from builtin_interfaces.msg import Time as TimeMsg
 from dynamic_stack_decider.dsd import DSD
 from game_controller_hsl_interfaces.msg import GameState
 from geometry_msgs.msg import PoseWithCovarianceStamped, Twist
@@ -11,7 +12,6 @@ from rclpy.duration import Duration
 from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
 from soccer_vision_3d_msgs.msg import RobotArray
-from std_msgs.msg import Empty
 
 from bitbots_body_behavior import behavior_dsd
 from bitbots_msgs.msg import RobotControlState, TeamData
@@ -77,7 +77,7 @@ class BodyDSD:
             callback_group=MutuallyExclusiveCallbackGroup(),
         )
         node.create_subscription(
-            Empty,
+            TimeMsg,
             "whistle_detected",
             blackboard.gamestate.whistle_detection_callback,
             qos_profile=1,

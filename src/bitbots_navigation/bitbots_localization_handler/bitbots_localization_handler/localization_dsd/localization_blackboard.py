@@ -4,6 +4,7 @@ from bitbots_blackboard.capsules.game_status_capsule import GameStatusCapsule
 from bitbots_localization.srv import ResetFilter, SetPaused
 from bitbots_utils.transforms import quat2euler, xyzw2wxyz
 from bitbots_utils.utils import get_parameters_from_other_node
+from builtin_interfaces.msg import Time as TimeMsg
 from geometry_msgs.msg import PoseWithCovarianceStamped, Quaternion
 from jaxtyping import Float
 from rclpy.duration import Duration
@@ -125,5 +126,5 @@ class LocalizationBlackboard:
             return 0.0
         return quat2euler(xyzw2wxyz(numpify(self.robot_pose.pose.pose.orientation)), axes="szxy")[0]
 
-    def whistle_detection_callback(self, _):
-        self.last_timestep_whistle_detected = self.node.get_clock().now()
+    def whistle_detection_callback(self, msg: TimeMsg) -> None:
+        self.last_timestep_whistle_detected = Time.from_msg(msg)

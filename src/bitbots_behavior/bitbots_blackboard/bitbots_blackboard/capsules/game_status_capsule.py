@@ -1,4 +1,5 @@
 from bitbots_utils.utils import get_parameters_from_other_node
+from builtin_interfaces.msg import Time as TimeMsg
 from game_controller_hsl_interfaces.msg import GameState
 from rclpy.time import Time
 from std_msgs.msg import Bool
@@ -128,5 +129,5 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
         self.last_update = self._node.get_clock().now().nanoseconds / 1e9
         self.gamestate = gamestate_msg
 
-    def whistle_detection_callback(self, _) -> None:
-        self.last_timestep_whistle_detected = self._node.get_clock().now()
+    def whistle_detection_callback(self, msg: TimeMsg) -> None:
+        self.last_timestep_whistle_detected = Time.from_msg(msg)

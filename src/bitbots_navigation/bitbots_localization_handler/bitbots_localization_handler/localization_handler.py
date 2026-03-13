@@ -2,6 +2,7 @@
 import os
 
 import rclpy
+from builtin_interfaces.msg import Time as TimeMsg
 from dynamic_stack_decider.dsd import DSD
 from game_controller_hsl_interfaces.msg import GameState
 from geometry_msgs.msg import PoseWithCovarianceStamped
@@ -9,7 +10,6 @@ from rclpy.callback_groups import MutuallyExclusiveCallbackGroup, ReentrantCallb
 from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
 from sensor_msgs.msg import Imu
-from std_msgs.msg import Empty
 
 from bitbots_localization_handler import localization_dsd
 from bitbots_localization_handler.localization_dsd.localization_blackboard import LocalizationBlackboard
@@ -50,7 +50,7 @@ def init(node: Node):
         Imu, "/imu/data", blackboard._callback_imu, 1, callback_group=MutuallyExclusiveCallbackGroup()
     )
     node.create_subscription(
-        Empty,
+        TimeMsg,
         "whistle_detected",
         blackboard.whistle_detection_callback,
         qos_profile=1,
