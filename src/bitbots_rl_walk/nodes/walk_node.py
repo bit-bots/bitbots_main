@@ -33,7 +33,7 @@ class WalkNode(RLNode):
 
         self._timer_phase_confg = TimerPhaseConfg()
 
-        # TODO: timer is missing
+        self.confg()
 
         self._obs = np.hstack(
             [
