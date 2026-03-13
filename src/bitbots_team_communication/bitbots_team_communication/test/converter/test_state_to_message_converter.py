@@ -4,7 +4,7 @@ from unittest.mock import Mock
 import numpy
 import pytest
 from builtin_interfaces.msg import Time
-from game_controller_hl_interfaces.msg import GameState
+from game_controller_hsl_interfaces.msg import GameState
 from geometry_msgs.msg import (
     Point,
     PointStamped,

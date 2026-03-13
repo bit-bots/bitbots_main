@@ -1,7 +1,8 @@
-from typing import Optional
-
 from bitbots_utils.utils import get_parameters_from_other_node
-from game_controller_hl_interfaces.msg import GameState
+from builtin_interfaces.msg import Time as TimeMsg
+from game_controller_hsl_interfaces.msg import GameState
+from rclpy.time import Time
+from std_msgs.msg import Bool
 
 from bitbots_blackboard.capsules import AbstractBlackboardCapsule
 
@@ -12,33 +13,45 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
     def __init__(self, node, blackboard=None):
         super().__init__(node, blackboard)
         self.team_id: int = get_parameters_from_other_node(self._node, "parameter_blackboard", ["team_id"])["team_id"]
+        self.own_id: int = get_parameters_from_other_node(self._node, "parameter_blackboard", ["bot_id"])["bot_id"]
         self.gamestate = GameState()
         self.last_update: float = 0.0
         self.unpenalized_time: float = 0.0
         self.last_goal_from_us_time = -86400.0
         self.last_goal_time = -86400.0
-        self.free_kick_kickoff_team: Optional[bool] = None
+        self.free_kick_kickoff_team: bool | None = None
+        self.game_controller_stop: bool = False
+        self.last_timestep_whistle_detected: Time | None = None
+        # publish stopped msg for hcm
+        self.stop_pub = node.create_publisher(Bool, "game_controller/stop_msg", 1)
 
-    def get_gamestate(self) -> int:
-        return self.gamestate.game_state
+    def get_game_state(self) -> int:
+        # Init, ready, set, playing, finished
+        return self.gamestate.main_state
 
-    def get_secondary_state(self) -> int:
-        return self.gamestate.secondary_state
+    def get_game_phase(self) -> int:
+        # Timeout, Normal, Extratime, Penaltyshoot
+        return self.gamestate.game_phase
 
-    def get_secondary_state_mode(self) -> int:
-        return self.gamestate.secondary_state_mode
+    def get_set_play(self) -> int:
+        # None, Direct Freekick, Indirect Freekick, Penalty, Throw in, Goalkick, Cornerkick,
+        return self.gamestate.set_play
 
     def get_secondary_team(self) -> int:
-        return self.gamestate.secondary_state_team
+        # Team ID, wer in set Play den Ball hat
+        return self.gamestate.kicking_team
 
     def has_kickoff(self) -> bool:
-        return self.gamestate.has_kick_off
+        # vegelcih mit eigener Teamnummer
+        return self.gamestate.kicking_team == self.team_id
+
+    def is_stopped(self) -> bool:
+        return self.gamestate.stopped
 
     def has_penalty_kick(self) -> bool:
         return (
-            self.gamestate.secondary_state == GameState.STATE_PENALTYKICK
-            or self.gamestate.secondary_state == GameState.STATE_PENALTYSHOOT
-        ) and self.gamestate._secondary_state_team == self.team_id
+            self.gamestate.set_play == GameState.SET_PLAY_PENALTY_KICK and self.gamestate.kicking_team == self.team_id
+        )
 
     def get_our_goals(self) -> int:
         return self.gamestate.own_score
@@ -55,25 +68,16 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
     def get_seconds_remaining(self) -> float:
         # Time from the message minus time passed since receiving it
         return max(
-            self.gamestate.seconds_remaining - (self._node.get_clock().now().nanoseconds / 1e9 - self.last_update), 0.0
+            self.gamestate.secs_remaining - (self._node.get_clock().now().nanoseconds / 1e9 - self.last_update), 0.0
         )
 
     def get_secondary_seconds_remaining(self) -> float:
         """Seconds remaining for things like kickoff"""
         # Time from the message minus time passed since receiving it
         return max(
-            self.gamestate.secondary_seconds_remaining
-            - (self._node.get_clock().now().nanoseconds / 1e9 - self.last_update),
+            self.gamestate.secondary_time - (self._node.get_clock().now().nanoseconds / 1e9 - self.last_update),
             0.0,
         )
-
-    def get_seconds_since_last_drop_ball(self) -> Optional[float]:
-        """Returns the seconds since the last drop in"""
-        if self.gamestate.drop_in_time == -1:
-            return None
-        else:
-            # Time from the message plus seconds passed since receiving it
-            return self.gamestate.drop_in_time + (self._node.get_clock().now().nanoseconds / 1e9 - self.last_update)
 
     def get_seconds_since_unpenalized(self) -> float:
         return self._node.get_clock().now().nanoseconds / 1e9 - self.unpenalized_time
@@ -87,9 +91,6 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
     def get_team_id(self) -> int:
         return self.team_id
 
-    def get_red_cards(self) -> int:
-        return self.gamestate.team_mates_with_red_card
-
     def gamestate_callback(self, gamestate_msg: GameState) -> None:
         if self.gamestate.penalized and not gamestate_msg.penalized:
             self.unpenalized_time = self._node.get_clock().now().nanoseconds / 1e9
@@ -101,21 +102,32 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
         if gamestate_msg.rival_score > self.gamestate.rival_score:
             self.last_goal_time = self._node.get_clock().now().nanoseconds / 1e9
 
+        self.game_controller_stop = gamestate_msg.stopped
+
+        self.stop_pub.publish(Bool(data=self.game_controller_stop))
+
+        """Anstoß im Falle von Overtime jetzt erstmal nicht genauer geregelt
         if (
-            gamestate_msg.secondary_state_mode == 2
-            and self.gamestate.secondary_state_mode != 2
-            and gamestate_msg.game_state == GameState.GAMESTATE_PLAYING
+            gamestate_msg.main_state == GameState.STATE_SET
+            and self.gamestate.setPlay != 2
+            and gamestate_msg.state == GameState.STATE_PLAYING
         ):
             # secondary action is now executed but we will not see this in the new messages.
             # it will look like a normal kick off, but we need to remember that this is some sort of free kick
             # we set the kickoff value accordingly, then we will not be allowed to move if it is a kick for the others
-            self.free_kick_kickoff_team = gamestate_msg.secondary_state_team
+            self.free_kick_kickoff_team = gamestate_msg.kicking_team
 
-        if gamestate_msg.secondary_state_mode != 2 and gamestate_msg.secondary_seconds_remaining == 0:
+        if gamestate_msg.set_play != 2 and gamestate_msg.secondary_time == 0:
+            self.free_kick_kickoff_team = gamestate_msg.kicking_team
+
+        if gamestate_msg.set_play != 2 and gamestate_msg.secondary_time == 0:
             self.free_kick_kickoff_team = None
 
         if self.free_kick_kickoff_team is not None:
             gamestate_msg.has_kick_off = self.free_kick_kickoff_team == self.team_id
-
+        """
         self.last_update = self._node.get_clock().now().nanoseconds / 1e9
         self.gamestate = gamestate_msg
+
+    def whistle_detection_callback(self, msg: TimeMsg) -> None:
+        self.last_timestep_whistle_detected = Time.from_msg(msg)

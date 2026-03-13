@@ -36,7 +36,7 @@ Instead of doing `pixi run ...` you can also activate the pixi environment for t
 
 With ``game_controller:=false`` we ensure, that the game_controller_listener is not started as well, but instead
 we will simulate the current gamestate by our own script (in another terminal):
-``pixi run ros2 run game_controller_hl sim_gamestate.py``
+``pixi run ros2 run game_controller_hsl sim_gamestate.py``
 
 Which allows us to simulate the current gamestate and different phases of the game.
 Now everything is ready for some simulation testing.

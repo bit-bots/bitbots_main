@@ -8,6 +8,7 @@ from rclpy.node import Node
 from rclpy.task import Future
 from rclpy.time import Time
 from sensor_msgs.msg import Imu, JointState
+from std_msgs.msg import Bool
 from std_msgs.msg import Empty as EmptyMsg
 from std_srvs.srv import Empty as EmptySrv
 from std_srvs.srv import SetBool
@@ -25,6 +26,7 @@ class HcmBlackboard:
         # Basic state
         self.current_state: T_RobotControlState = RobotControlState.STARTUP
         self.stopped: bool = False
+        self.game_controller_stop: bool = False
 
         # Save start time
         self.start_time: Time = self.node.get_clock().now()
@@ -55,6 +57,7 @@ class HcmBlackboard:
         self.cancel_path_planning_pub = self.node.create_publisher(EmptyMsg, "pathfinding/cancel", 1)
         self.speak_publisher = self.node.create_publisher(Audio, "speak", 1)
         self.torque_publisher = self.node.create_publisher(JointTorque, "set_torque_individual", 10)
+        self.is_fallen_publisher = self.node.create_publisher(Bool, "hsl_gamecontroller/is_fallen", 1)
 
         # Latest imu data
         self.accel = numpy.array([0, 0, 0])

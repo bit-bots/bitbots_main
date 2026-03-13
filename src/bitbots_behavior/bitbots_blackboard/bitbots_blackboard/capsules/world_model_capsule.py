@@ -58,9 +58,10 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
         self.map_margin: float = self._node.get_parameter("map_margin").value
 
         # Ball state
+        # The ball in the map frame (default to the center of the field if ball is not seen yet)
         self._ball: PointStamped = PointStamped(
-            header=Header(stamp=Time(clock_type=ClockType.ROS_TIME), frame_id=self.map_frame)
-        )  # The ball in the map frame (default to the center of the field if ball is not seen yet)
+            header=Header(stamp=Time(clock_type=ClockType.ROS_TIME).to_msg(), frame_id=self.map_frame)
+        )
         self._ball_covariance: np.ndarray = np.zeros((2, 2))  # Covariance of the ball
 
         # Publisher for visualization in RViZ
