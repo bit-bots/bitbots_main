@@ -496,11 +496,11 @@
     </collision>
   </link>
   <joint name="LShoulderPitch" type="revolute">
-    <origin xyz="-0.01 0.14477 0.31534" rpy="0.17453 0 0" />
+    <origin xyz="-0.01 0.14477 0.31534" rpy="0.17453 0.12 0" />
     <parent link="base_link" />
     <child link="L_shoulder_pitch_link" />
     <axis xyz="0 -1 0" />
-    <limit lower="-1.57" upper="3.14" effort="24" velocity="37" />
+    <limit lower="-2.66" upper="2.88" effort="24" velocity="37" />
   </joint>
   <link name="L_shoulder_roll_link">
     <inertial>
@@ -529,7 +529,7 @@
     <parent link="L_shoulder_pitch_link" />
     <child link="L_shoulder_roll_link" />
     <axis xyz="1 0 0" />
-    <limit lower="0" upper="3.141" effort="24" velocity="37" />
+    <limit lower="-0.15" upper="3.54" effort="24" velocity="37" />
   </joint>
   <link name="L_shoulder_yaw_link">
     <inertial>
@@ -558,7 +558,7 @@
     <parent link="L_shoulder_roll_link" />
     <child link="L_shoulder_yaw_link" />
     <axis xyz="0 0 1" />
-    <limit lower="-2.1" upper="2.1" effort="24" velocity="37" />
+    <limit lower="-2.1" upper="2.25" effort="24" velocity="37" />
   </joint>
   <link name="L_elbow_pitch_link">
     <inertial>
@@ -583,11 +583,11 @@
     </collision>
   </link>
   <joint name="LElbow" type="revolute">
-    <origin xyz="0.01 0 -0.173" rpy="0 -1.57 0" />
+    <origin xyz="0.01 0 -0.173" rpy="0 -0.25 0" />
     <parent link="L_shoulder_yaw_link" />
     <child link="L_elbow_pitch_link" />
     <axis xyz="0 -1 0" />
-    <limit lower="-1.57" upper="0.9" effort="24" velocity="37" />
+    <limit lower="-0.25" upper="2.35" effort="24" velocity="37" />
   </joint>
   <link name="R_shoulder_pitch_link">
     <inertial>
@@ -612,11 +612,11 @@
     </collision>
   </link>
   <joint name="RShoulderPitch" type="revolute">
-    <origin xyz="-0.01 -0.14477 0.31534" rpy="-0.17453 0 0" />
+    <origin xyz="-0.01 -0.14477 0.31534" rpy="-0.17453 0.12 0" />
     <parent link="base_link" />
     <child link="R_shoulder_pitch_link" />
     <axis xyz="0 -1 0" />
-    <limit lower="-1.57" upper="3.14" effort="24" velocity="37" />
+    <limit lower="-2.66" upper="2.88" effort="24" velocity="37" />
   </joint>
   <link name="R_shoulder_roll_link">
     <inertial>
@@ -645,7 +645,7 @@
     <parent link="R_shoulder_pitch_link" />
     <child link="R_shoulder_roll_link" />
     <axis xyz="-1 0 0" />
-    <limit lower="0" upper="3.141" effort="24" velocity="37"/>
+    <limit lower="-0.15" upper="3.54" effort="24" velocity="37"/>
   </joint>
   <link name="R_shoulder_yaw_link">
     <inertial>
@@ -674,7 +674,7 @@
     <parent link="R_shoulder_roll_link" />
     <child link="R_shoulder_yaw_link" />
     <axis xyz="0 0 -1" />
-    <limit lower="-2.1" upper="2.1" effort="24" velocity="37" />
+    <limit lower="-2.1" upper="2.25" effort="24" velocity="37" />
   </joint>
   <link name="R_elbow_pitch_link">
     <inertial>
@@ -699,11 +699,11 @@
     </collision>
   </link>
   <joint name="RElbow" type="revolute">
-    <origin xyz="0.010039 0 -0.173" rpy="0 -1.57 0" />
+    <origin xyz="0.010039 0 -0.173" rpy="0 -0.25 0" />
     <parent link="R_shoulder_yaw_link" />
     <child link="R_elbow_pitch_link" />
     <axis xyz="0 -1 0" />
-    <limit lower="-1.57" upper="0.9" effort="24" velocity="37" />
+    <limit lower="-0.25" upper="2.35" effort="24" velocity="37" />
   </joint>
   <link name="imu_frame_uncalibrated"/>
   <joint name="imu_frame_uncalibrated_joint" type="fixed">
