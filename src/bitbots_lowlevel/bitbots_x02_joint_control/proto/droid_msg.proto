@@ -6,10 +6,14 @@ message Empty {
 
 message DroidConfigs {
   repeated string joint_name = 1;
+  // Purpose unclear; is always all 0 currently.
   repeated float pzero = 2;
+  // Values in degree; Currently hand configured
   repeated float pmin = 3;
   repeated float pmax = 4;
+  // max torque
   repeated float imax = 5;
+  // Pre configured kp/kd values. Should be resend via the commands, but could be changed if needed.
   repeated float kp = 11;
   repeated float kd = 12;
 };
@@ -50,11 +54,24 @@ message DroidArmResponse {
 };
 
 message DroidCommandRequest {
+  // Turns on of each individual motor, at least for leg. mode=0 means the motor doesn't exert any torque
   repeated int32 mode = 1;
   repeated float position = 2;
+  // Not used for BodyLower
+  // Seems to be used for something by BodyUpper
   repeated float velocity = 3;
+  // used by BodyLower
+  // is added to the result of normal PDI
   repeated float torque = 4;
+  // cmd_enable can be 0, 1, 2.
+  //  - What exactly 0 is supposed to do is unclear. might disable the command being processed
+  //  - 1 enables "motor mode", i.e. control of the motors directly. Used for the arms
+  //  - 2 enables "joint mode", i.e. control of the more abstract joints, which don't necessarily directly map to motors.
+  //                            used by the legs because of the pullies
+  // Only relevant for the legs, the UpperBody completely ignores this value
   optional int32 cmd_enable = 5;
+  // Not used by BodyLower
+  // Used by BodyUpper. Might be a disable
   repeated int32 ens = 6;
   repeated float kp = 10;
   repeated float kd = 11;
