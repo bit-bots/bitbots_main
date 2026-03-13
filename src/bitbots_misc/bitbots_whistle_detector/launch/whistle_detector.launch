@@ -1,0 +1,4 @@
+<launch>
+    <node pkg="bitbots_whistle_detector" exec="whistle_detector" name="bitbots_whistle_detector" output="screen">
+    </node>
+</launch>
