@@ -31,7 +31,7 @@ from bitbots_msgs.msg import JointCommand
 
 from soccer_vision_3d_msgs.msg import Ball, BallArray
 
-ONNX_MODEL = os.path.join(get_package_share_directory("bitbots_rl_walk"), "models", "wolfgang_forward_kick_ppo.onnx")
+ONNX_MODEL = os.path.join(get_package_share_directory("bitbots_rl_walk"), "models", "wolfgang_forward_kick_better_ball_ppo.onnx")
 
 WALKREADY_STATE = np.array(
     [
