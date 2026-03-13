@@ -6,12 +6,13 @@ import threading
 from typing import Optional
 
 import rclpy
+import transforms3d
 from ament_index_python.packages import get_package_share_directory
 from bitbots_tf_buffer import Buffer
 from bitbots_utils.utils import get_parameter_dict, get_parameters_from_other_node
 from builtin_interfaces.msg import Time as TimeMsg
-from game_controller_hl_interfaces.msg import GameState
-from geometry_msgs.msg import PoseWithCovarianceStamped, Twist, TwistWithCovarianceStamped
+from game_controller_hsl_interfaces.msg import GameState, PlayerStatusPose
+from geometry_msgs.msg import PoseWithCovarianceStamped, Quaternion, Twist, TwistWithCovarianceStamped
 from numpy import double
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.duration import Duration
@@ -104,6 +105,9 @@ class TeamCommunication:
 
     def create_publishers(self):
         self.team_data_publisher = self.node.create_publisher(TeamData, self.topics["team_data_topic"], qos_profile=1)
+        self.game_controller_player_pose_publisher = self.node.create_publisher(
+            PlayerStatusPose, "hsl_gamecontroller/pose_stamped", 1
+        )
 
     def create_subscribers(self):
         self.node.create_subscription(
@@ -175,6 +179,15 @@ class TeamCommunication:
 
     def pose_cb(self, msg: PoseWithCovarianceStamped):
         self.pose = msg
+
+        player_pose_msg = PlayerStatusPose()
+        player_pose_msg.header = msg.header
+        player_pose_msg.pose = [
+            msg.pose.pose.position.x,
+            msg.pose.pose.position.y,
+            self.extract_orientation_yaw_angle(msg.pose.pose.orientation),
+        ]
+        self.game_controller_player_pose_publisher.publish(player_pose_msg)
 
     def cmd_vel_cb(self, msg: Twist):
         self.cmd_vel = msg
@@ -261,7 +274,9 @@ class TeamCommunication:
             return (time is not None) and (now - Time.from_msg(time) < Duration(seconds=self.lifetime))
 
         message = self.protocol_converter.convert_to_message(self, msg, is_still_valid)
-        self.socket_communication.send_message(message.SerializeToString())
+        proto_msg = message.SerializeToString()
+        self.logger.debug(f"Sending msg with size {len(proto_msg)} bytes")
+        self.socket_communication.send_message(proto_msg)
 
     def create_empty_message(self, now: Time) -> Proto.Message:
         message = Proto.Message()
@@ -290,6 +305,14 @@ class TeamCommunication:
 
     def get_current_time(self) -> Time:
         return self.node.get_clock().now()
+
+    def extract_orientation_yaw_angle(self, quaternion: Quaternion):
+        angles = self.convert_to_euler(quaternion)
+        theta = angles[2]
+        return theta
+
+    def convert_to_euler(self, quaternion: Quaternion):
+        return transforms3d.euler.quat2euler([quaternion.w, quaternion.x, quaternion.y, quaternion.z])
 
 
 def main():

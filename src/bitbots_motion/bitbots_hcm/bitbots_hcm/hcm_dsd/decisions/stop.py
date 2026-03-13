@@ -15,3 +15,19 @@ class Stop(AbstractHCMDecisionElement):
 
     def get_reevaluate(self):
         return True
+
+
+class GameControllerStop(AbstractHCMDecisionElement):
+    """
+    Handles manual stops
+    """
+
+    def perform(self, reevaluate=False):
+        if self.blackboard.game_controller_stop:
+            # we do an action sequence to go into stop and to stay there
+            return "STOPPED"
+        else:
+            return "FREE"
+
+    def get_reevaluate(self):
+        return True
