@@ -108,7 +108,7 @@ class RLNode(Node):
 
         self._subs = []
 
-        for key, value in self.__dict__.values():
+        for (key, value) in self.__dict__.values():
             if type(value) is Subscription:
                 self._subs.append(key)
 
