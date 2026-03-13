@@ -21,17 +21,18 @@ from typing import Optional
 import numpy as np
 import onnxruntime as rt
 from ament_index_python import get_package_share_directory
-from geometry_msgs.msg import PoseStamped, Twist
+from geometry_msgs.msg import Twist
 from rclpy.node import Node
 from sensor_msgs.msg import Imu, JointState
+from soccer_vision_3d_msgs.msg import BallArray
 from transforms3d.euler import euler2mat
 from transforms3d.quaternions import quat2mat
 
 from bitbots_msgs.msg import JointCommand
 
-from soccer_vision_3d_msgs.msg import Ball, BallArray
-
-ONNX_MODEL = os.path.join(get_package_share_directory("bitbots_rl_walk"), "models", "wolfgang_forward_kick_better_ball_ppo.onnx")
+ONNX_MODEL = os.path.join(
+    get_package_share_directory("bitbots_rl_walk"), "models", "wolfgang_forward_kick_better_ball_ppo.onnx"
+)
 
 WALKREADY_STATE = np.array(
     [
@@ -199,7 +200,7 @@ class KickNode(Node):
 
         phase = np.array([np.cos(self._phase), np.sin(self._phase)], dtype=np.float32).flatten()
 
-        command = np.zeros(3)
+        # command = np.zeros(3)
 
         rel_ball_pos = np.array(
             [
@@ -213,7 +214,7 @@ class KickNode(Node):
             [
                 gyro,  # 3
                 gravity,  # 4
-                command,  # 3
+                # command,  # 3
                 joint_angles,  # 18
                 joint_velocities,  # 18
                 self._previous_action,  # 18  # Previous action
