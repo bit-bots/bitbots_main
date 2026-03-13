@@ -31,17 +31,17 @@ from transforms3d.quaternions import quat2mat
 from bitbots_msgs.msg import JointCommand
 
 ONNX_MODEL = os.path.join(
-    get_package_share_directory("bitbots_rl_walk"), "models", "wolfgang_forward_kick_better_ball_ppo.onnx"
+    get_package_share_directory("bitbots_rl_walk"), "models", "wolfgang_forward_kick_better_ball_without_arms_ppo.onnx"
 )
 
 WALKREADY_STATE = np.array(
     [
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
+        # 0,
+        # 0,
+        # 0,
+        # 0,
+        # 0,
+        # 0,
         0.023628265148262724,
         -0.10401795710581162,
         -0.7352626990449959,
@@ -63,12 +63,12 @@ CONTROL_DT = 0.02  # Control loop frequency in seconds
 GAIT_FREQUENCY = 1.5  # Gait frequency in Hz
 
 ORDERED_RELEVANT_JOINT_NAMES = [
-    "RShoulderPitch",
-    "RShoulderRoll",
-    "RElbow",
-    "LShoulderPitch",
-    "LShoulderRoll",
-    "LElbow",
+    # "RShoulderPitch",
+    # "RShoulderRoll",
+    # "RElbow",
+    # "LShoulderPitch",
+    # "LShoulderRoll",
+    # "LElbow",
     "RHipYaw",
     "RHipRoll",
     "RHipPitch",
@@ -215,9 +215,9 @@ class KickNode(Node):
                 gyro,  # 3
                 gravity,  # 4
                 # command,  # 3
-                joint_angles,  # 18
-                joint_velocities,  # 18
-                self._previous_action,  # 18  # Previous action
+                joint_angles,  # 18 (or 12)
+                joint_velocities,  # 18 (or 12)
+                self._previous_action,  # 18 (or 12) # Previous action
                 phase,  # 2
                 rel_ball_pos,  # 2
             ]
