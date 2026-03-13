@@ -9,8 +9,7 @@ from launch.substitutions import EnvironmentVariable, LaunchConfiguration, PathJ
 
 TOPICS_TO_RECORD: list[str] = [
     "/animation",
-    "/audio/audio_info",
-    "/audio/audio",
+    "/audio",
     "/ball_obstacle_active",
     "/ball_position_relative_filtered",
     "/balls_relative",
@@ -62,6 +61,7 @@ TOPICS_TO_RECORD: list[str] = [
     "/tf",
     "/time_to_ball",
     "/workspace_status",
+    "/whistle_detected",
 ]
 
 

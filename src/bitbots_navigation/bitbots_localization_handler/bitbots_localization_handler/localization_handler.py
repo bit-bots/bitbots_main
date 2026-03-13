@@ -2,6 +2,7 @@
 import os
 
 import rclpy
+from builtin_interfaces.msg import Time as TimeMsg
 from dynamic_stack_decider.dsd import DSD
 from game_controller_hsl_interfaces.msg import GameState
 from geometry_msgs.msg import PoseWithCovarianceStamped
@@ -47,6 +48,13 @@ def init(node: Node):
     )
     node.create_subscription(
         Imu, "/imu/data", blackboard._callback_imu, 1, callback_group=MutuallyExclusiveCallbackGroup()
+    )
+    node.create_subscription(
+        TimeMsg,
+        "whistle_detected",
+        blackboard.whistle_detection_callback,
+        qos_profile=1,
+        callback_group=MutuallyExclusiveCallbackGroup(),
     )
 
     return dsd
