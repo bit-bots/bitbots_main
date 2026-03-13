@@ -1,5 +1,6 @@
-from setuptools import find_packages, setup
 import glob
+
+from setuptools import find_packages, setup
 
 package_name = "bitbots_rl_walk"
 
@@ -12,9 +13,7 @@ setup(
         ("share/" + package_name, ["package.xml"]),
         (
             "share/" + package_name + "/models",
-            [
-                glob.glob("models/*.onnx"),
-            ],
+            glob.glob("models/*.onnx"),
         ),
     ],
     install_requires=["setuptools"],
