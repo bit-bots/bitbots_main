@@ -12,11 +12,12 @@
     <arg name="vision" default="true" description="Whether the vision system should be started" />
     <arg name="workspace_status" default="true" description="Whether to publish the current workspace status"/>
     <arg name="world_model" default="true" description="Whether the world model should be started"/>
+    <arg name="whistle_detector" default="true" description="Whether whistle detector should be started"/>
 
 
     <!-- launch game controller -->
     <group if="$(var game_controller)">
-        <include file="$(find-pkg-share game_controller_hl)/launch/game_controller.launch">
+        <include file="$(find-pkg-share game_controller_hsl)/launch/game_controller.launch">
             <arg name="sim" value="$(var sim)" />
             <arg name="use_parameter_blackboard" value="true" />
             <arg name="parameter_blackboard_name" value="parameter_blackboard" />
@@ -55,7 +56,9 @@
             <arg name="sim" value="$(var sim)"/>
         </include>
     </group>
-
+    <group if="$(var whistle_detector)">
+        <include file="$(find-pkg-share bitbots_whistle_detector)/launch/whistle_detector.launch"/>
+    </group>
     <!-- launch localization or fake localization -->
     <group if="$(var localization)">
         <include file="$(find-pkg-share bitbots_localization)/launch/localization.launch">
@@ -87,7 +90,6 @@
     <!-- launch audio processing -->
     <group if="$(var audio)">
         <include file="$(find-pkg-share bitbots_bringup)/launch/audio.launch">
-            <arg name="sim" value="$(var sim)" />
         </include>
     </group>
 

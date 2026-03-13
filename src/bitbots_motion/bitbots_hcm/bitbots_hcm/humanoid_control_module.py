@@ -80,6 +80,7 @@ class HardwareControlManager:
         self.node.create_subscription(Bool, "core/power_switch_status", self.power_cb, 1)
         self.node.create_subscription(Bool, "hcm_deactivate", self.deactivate_cb, 1)
         self.node.create_subscription(DiagnosticArray, "diagnostics_agg", self.diag_cb, 1)
+        self.node.create_subscription(Bool, "game_controller/stop_msg", self.stop_cb, 1)
 
         # Create services
         self.node.create_service(SetBool, "record_mode", self.set_record_mode_callback)
@@ -121,6 +122,9 @@ class HardwareControlManager:
     def deactivate_cb(self, msg: Bool):
         """Deactivates the HCM."""
         self.hcm_deactivated = msg.data
+
+    def stop_cb(self, msg: Bool):
+        self.blackboard.game_controller_stop = msg.data
 
     def set_manual_penalize_mode_callback(self, req: ManualPenalize.Request, resp: ManualPenalize.Response):
         """Callback for the manual penalize service."""
