@@ -97,6 +97,9 @@ class Speaker(Node):
         if len(self.priority_queue) > 0:
             # Get the next message and speak it
             text, _ = self.priority_queue.pop(0)
+            if len(text) == 0:
+                self.get_logger().warn("Did not speak empty message.")
+                return
             try:
                 with timer("TTS Generation Time"):
                     wav_untrimmed, duration = self.generate_speech(f"{text}")
@@ -105,10 +108,6 @@ class Speaker(Node):
                 speaker = sc.default_speaker()
                 with speaker.player(samplerate=self.text_to_speech_engine.sample_rate) as p:
                     p.play(wav)
-                self.get_logger().info(f"Spoke: '{text}'.")
-                self.get_logger().debug(
-                    f"Finished speaking: {text} (Duration: {duration[0].item():.2f}s) Used device: {speaker.name}"
-                )
             except OSError:
                 self.get_logger().error(str(traceback.format_exc()))
 
