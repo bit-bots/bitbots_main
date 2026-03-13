@@ -64,7 +64,7 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse& ik_goals) {
   tf2::toMsg(ik_goals.r_hand_goal_pose, right_hand_goal_msg);
   tf2::toMsg(ik_goals.l_hand_goal_pose, left_hand_goal_msg);
 
-  bool success;
+  bool success = true;
   goal_state_->updateLinkTransforms();
 
   // Kann man den einfach löschen? Scheint ja nciht so benutzt zu werden
