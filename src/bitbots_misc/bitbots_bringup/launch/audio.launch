@@ -1,10 +1,14 @@
 <?xml version="1.0"?>
 <launch>
+    <!-- Our code currently is not sample_rate agnostic, but this must be overwritable to start the audio_capturer_node
+    on some audio drivers/devices if they do not support the default sample_rate of 16000. -->
+    <arg name="sample_rate" default="16000" description="The sample_rate with which the audio should be captured"/>
 
     <node
         pkg="audio_common"
         exec="audio_capturer_node"
         name="audio_capturer_node"
         output="screen">
+        <param name="rate" value="$(var sample_rate)"/>
     </node>
 </launch>
