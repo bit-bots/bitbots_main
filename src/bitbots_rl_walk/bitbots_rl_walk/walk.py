@@ -36,12 +36,12 @@ import onnxruntime as rt
 from ament_index_python import get_package_share_directory
 
 ONNX_MODEL = os.path.join(
-    get_package_share_directory("bitbots_rl_walk"), "models", "wolfgang_policy_delayed.onnx"
+    get_package_share_directory("bitbots_rl_walk"), "models", "wolfgang_grc_rand_bl.onnx"
 )
 
 WALKREADY_STATE = np.array([
-    0.023628265148262724, -0.10401795710581162, -0.7352626990449959, -1.3228415184260092, 0.5495038397740458, -0.12913515511895796,
-    -0.016441795868928723, 0.07253788412595062, 0.7420808433462046, 1.334527650998329, -0.5537397918567754, 0.07437380704149316
+    0.023, -0.1, -0.74, -1.33, 0.55, -0.12,
+  -0.023, 0.1, 0.74, 1.33, -0.55, 0.12
 ], dtype=np.float32)
 
 CONTROL_DT = 0.02  # Control loop frequency in seconds
@@ -158,17 +158,17 @@ class WalkNode(Node):
              self._imu_data.orientation.x,
              self._imu_data.orientation.y,
              self._imu_data.orientation.z]
-        ) @ euler2mat(0, -0.2, 0)).T @ np.array([0, 0, -1], dtype=np.float32)
+        ) @ euler2mat(0, -0.1, 0)).T @ np.array([0, 0, -1], dtype=np.float32)
 
         joint_angles = np.array([
             self._joint_state.position[self._joint_state.name.index(name)]
             for name in ORDERED_RELEVANT_JOINT_NAMES
         ], dtype=np.float32) - WALKREADY_STATE
 
-        joint_velocities = np.array([
+        joint_velocities = np.zeros_like(np.array([
             self._joint_state.velocity[self._joint_state.name.index(name)]
             for name in ORDERED_RELEVANT_JOINT_NAMES
-        ], dtype=np.float32)
+        ], dtype=np.float32))
 
         phase = np.array([np.cos(self._phase), np.sin(self._phase)], dtype=np.float32).flatten()
 
