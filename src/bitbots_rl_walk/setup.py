@@ -1,4 +1,5 @@
 from setuptools import find_packages, setup
+import glob
 
 package_name = "bitbots_rl_walk"
 
@@ -12,10 +13,7 @@ setup(
         (
             "share/" + package_name + "/models",
             [
-                "models/wolfgang_policy.onnx",
-                "models/wolfgang_walk_ppo.onnx",
-                "models/wolfgang_kick_ppo.onnx",
-                "models/wolfgang_forward_kick_ppo.onnx",
+                glob.glob("models/*.onnx"),
             ],
         ),
     ],

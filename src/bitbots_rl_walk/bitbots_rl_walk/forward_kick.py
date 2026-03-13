@@ -29,7 +29,7 @@ from transforms3d.quaternions import quat2mat
 
 from bitbots_msgs.msg import JointCommand
 
-ONNX_MODEL = os.path.join(get_package_share_directory("bitbots_rl_walk"), "models", "wolfgang_forward_kick_ppo.onnx")
+ONNX_MODEL = os.path.join(get_package_share_directory("bitbots_rl_walk"), "models", "wolfgang_forward_kick_better_ball_ppo.onnx")
 
 WALKREADY_STATE = np.array(
     [
