@@ -37,6 +37,7 @@ readline = ">=8.2.999"  # This is needed because we want to install an empty rea
 
 [feature.ros.dependencies]
 # Misc dependencies for our ROS 2 packages
+alsa-plugins = ">=1.2.12,<2"
 beartype = ">=0.22.6,<0.23"
 breathe = ">=4.36.0,<5"
 cmake = "<3.30"  # Constraint to avoid issues with deprecated features in newer cmake versions
@@ -51,6 +52,7 @@ ipython = ">=9.7.0,<10"
 jaxtyping = ">=0.3.2,<0.4"
 jinja2 = ">=3.1.6,<4"
 libboost-devel = ">=1.86.0,<2"
+libflac = "==1.4.3"
 libnuma = ">=2.0.18,<3"
 libopencv = ">=4.11.0,<5"
 libprotobuf = ">=6.31.1,<7"
@@ -62,6 +64,7 @@ opencv = ">=4.11.0,<5"
 paramiko =   ">=4.0.0,<5"
 pkg-config = ">=0.29.2,<0.30"
 playsound = ">=1.3.0,<2"
+portaudio = ">=19.7.0,<20"
 protobuf = ">=6.31.1,<7"
 psutil = ">=7.1.3,<8"
 pthread-stubs = ">=0.4,<0.5"
@@ -84,6 +87,7 @@ colcon-common-extensions = ">=0.3.0,<0.4"
 colcon-notification = ">=0.3.0,<0.4"
 ros-jazzy-action-msgs = ">=2.0.3,<3"
 ros-jazzy-ament-cmake = ">=2.5.4,<3"
+ros-jazzy-ament-cmake-clang-format = ">=0.17.3,<0.18"
 ros-jazzy-ament-cmake-mypy = ">=0.17.3,<0.18"
 ros-jazzy-ament-copyright = ">=0.17.3,<0.18"
 ros-jazzy-ament-flake8 = ">=0.17.3,<0.18"
@@ -131,6 +135,7 @@ ros-jazzy-rosbridge-suite = ">=2.3.0,<3"
 ros-jazzy-rosgraph-msgs = ">=2.0.3,<3"
 ros-jazzy-rosidl-default-generators = ">=1.6.0,<2"
 ros-jazzy-rosidl-default-runtime = ">=1.6.0,<2"
+ros-jazzy-rosidl-runtime-c = ">=4.6.7,<5"
 ros-jazzy-rqt-gui = ">=1.6.0,<2"
 ros-jazzy-rqt-gui-py = ">=1.6.0,<2"
 ros-jazzy-sensor-msgs = ">=5.3.6,<6"
@@ -196,12 +201,6 @@ setuptools = "==68.1.2"  # Pinning setuptools to avoid issues with colcon build
 git = ">=2.52.0,<3"  # Otherwise the system git might be used causing ABI issues
 curl = ">=8.17.0,<9"
 make = ">=4.4.1,<5"  # To avoid issues in the CI
-libflac = "==1.4.3"
-portaudio = ">=19.7.0,<20"
-ros-jazzy-ament-cmake-clang-format = ">=0.17.3,<0.18"
-ros-jazzy-rosidl-runtime-c = ">=4.6.7,<5"
-alsa-plugins = ">=1.2.12,<2"
-git-subrepo = ">=0.4.9,<0.5"
 
 [feature.ros.target.linux-64.dependencies]
 # For now Webots is only packaged for x86-64 Linux
