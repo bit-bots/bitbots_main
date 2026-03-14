@@ -81,6 +81,7 @@ class DynupEngine : public bitbots_splines::AbstractEngine<DynupRequest, DynupRe
   bitbots_splines::PoseSpline r_hand_spline_;
 
   DynupResponse goals_;
+  std::shared_ptr<rclcpp::Executor> walk_param_executor_;
   std::shared_ptr<rclcpp::Node> walking_param_node_;
   std::shared_ptr<rclcpp::SyncParametersClient> walking_param_client_;
 
