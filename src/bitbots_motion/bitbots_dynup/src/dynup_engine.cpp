@@ -15,7 +15,8 @@ DynupEngine::DynupEngine(rclcpp::Node::SharedPtr node, bitbots_dynup::Params::En
 
   walk_param_executor_ = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
   walking_param_node_ = std::make_shared<rclcpp::Node>(std::string(node->get_name()) + "_walking_param_node");
-  walking_param_client_ = std::make_shared<rclcpp::SyncParametersClient>(walk_param_executor_, walking_param_node_, "/walking");
+  walking_param_client_ =
+      std::make_shared<rclcpp::SyncParametersClient>(walk_param_executor_, walking_param_node_, "/walking");
 }
 
 void DynupEngine::init(double arm_offset_y, double arm_offset_z) {
@@ -666,15 +667,12 @@ void DynupEngine::setGoals(const DynupRequest& goals) {
   // which is not allowed to be called inside of another callback recusively.
   // It should however use a different executor from the beginning,
   // but somehow this does not work.
-  std::vector<rclcpp::Parameter> walking_params = std::async(
-    std::launch::async, [&]() {
-      return walking_param_client_->get_parameters({
-        "engine.trunk_pitch",
-        "engine.trunk_height",
-        "engine.foot_distance",
-        "engine.trunk_x_offset"
-      }, std::chrono::seconds(15));
-     }).get();
+  std::vector<rclcpp::Parameter> walking_params =
+      std::async(std::launch::async, [&]() {
+        return walking_param_client_->get_parameters(
+            {"engine.trunk_pitch", "engine.trunk_height", "engine.foot_distance", "engine.trunk_x_offset"},
+            std::chrono::seconds(15));
+      }).get();
 
   // when the walking was killed, service_is_ready is still true but the parameters come back empty
   if (walking_params.size() != 4) {
