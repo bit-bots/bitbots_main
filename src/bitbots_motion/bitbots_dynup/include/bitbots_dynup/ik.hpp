@@ -155,9 +155,9 @@ static Mat3 axangle2mat(Vec3 axis, double angle) {
     axis /= n;
     // Rodrigues' formula
     Mat3 K;
-    K <<         0, -axis(2),  axis(1),
-          axis(2),         0, -axis(0),
-         -axis(1),  axis(0),        0;
+    //std::cout << K <<         0, -axis(2),  axis(1),
+    //      axis(2),         0, -axis(0),
+    //     -axis(1),  axis(0),        0;
     return Mat3::Identity() + std::sin(angle) * K + (1.0 - std::cos(angle)) * K * K;
 }
 
@@ -298,7 +298,7 @@ static JointAngles calculate_ik(const Mat4& target_transform, bool left) {
     joint_angles["HipRoll"] = hip_euler[1];
     // hip_euler[2] would be HipPitch, but we compute it properly below
     //std::cout << "Hip angles (spherical): " << joint_angles["HipYaw"]
-              << ", " << joint_angles["HipRoll"] << "\n";
+    //          << ", " << joint_angles["HipRoll"] << "\n";
 
     // Virtual leg length (distance from ankle axis intersection to hip axis intersection)
     double virtual_leg_length = leg_vec.norm();
@@ -333,7 +333,7 @@ static JointAngles calculate_ik(const Mat4& target_transform, bool left) {
     joint_angles["AnkleRoll"]  = -ankle_euler[0];
     joint_angles["AnklePitch"] = -ankle_euler[1];
     //std::cout << "Ankle to real leg: " << joint_angles["AnkleRoll"]
-              << ", " << joint_angles["AnklePitch"] << "\n";
+    //          << ", " << joint_angles["AnklePitch"] << "\n";
 
     // Knee from cosine rule
     double knee_arg = (real_leg_length*real_leg_length
