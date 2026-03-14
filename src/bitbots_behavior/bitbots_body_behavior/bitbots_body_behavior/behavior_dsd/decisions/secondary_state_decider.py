@@ -73,6 +73,13 @@ class SecondaryStateTeamDecider(AbstractDecisionElement):
         else:
             if self.blackboard.gamestate.get_secondary_team() == self.team_id:
                 return "OUR"
+            # @TODO: handle this better and potentially adapt KickOffTimeUp
+            elif (
+                self.blackboard.gamestate.get_secondary_team() == 255
+                or self.blackboard.gamestate.get_secondary_team() == 0
+            ):
+                return "NONE"
+
             return "OTHER"
 
     def get_reevaluate(self):
