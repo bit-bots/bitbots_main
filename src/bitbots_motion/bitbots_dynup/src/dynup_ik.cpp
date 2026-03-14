@@ -43,7 +43,7 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse& ik_goals) {
   ik_options.return_approximate_solution = true;
 
   geometry_msgs::msg::Transform left_foot_goal_tf, right_foot_goal_tf;
-  
+
   auto transform_to_geo_tf = [](const tf2::Transform& transform) {
     geometry_msgs::msg::Transform msg;
     msg.translation.x = transform.getOrigin().x();
@@ -55,12 +55,12 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse& ik_goals) {
     msg.rotation.w = transform.getRotation().w();
     return msg;
   };
-  
+
   right_foot_goal_tf = transform_to_geo_tf(ik_goals.r_foot_goal_pose);
   left_foot_goal_tf = transform_to_geo_tf(ik_goals.l_foot_goal_pose);
-  
+
   geometry_msgs::msg::Pose right_hand_goal_msg, left_hand_goal_msg;
-  
+
   tf2::toMsg(ik_goals.r_hand_goal_pose, right_hand_goal_msg);
   tf2::toMsg(ik_goals.l_hand_goal_pose, left_hand_goal_msg);
 
@@ -85,7 +85,8 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse& ik_goals) {
 
   for (const auto& joint : getRightLegJointNames()) {
     result.first.push_back(joint);
-    result.second.push_back(result_right[joint.substr(1)]);  // remove the "R" from the joint name to get the corresponding left joint
+    result.second.push_back(
+        result_right[joint.substr(1)]);  // remove the "R" from the joint name to get the corresponding left joint
   }
 
   Eigen::Isometry3d left_iso = tf2::transformToEigen(left_foot_goal_tf);
@@ -94,10 +95,11 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse& ik_goals) {
 
   for (const auto& joint : getLeftLegJointNames()) {
     result.first.push_back(joint);
-    result.second.push_back(result_left[joint.substr(1)]);  // remove the "R" from the joint name to get the corresponding right joint
+    result.second.push_back(
+        result_left[joint.substr(1)]);  // remove the "R" from the joint name to get the corresponding right joint
   }
 
-  // arms 
+  // arms
   if (direction_ != DynupDirection::RISE_NO_ARMS and direction_ != DynupDirection::DESCEND_NO_ARMS) {
     goal_state_->updateLinkTransforms();
     success &= goal_state_->setFromIK(l_arm_joints_group_, left_hand_goal_msg, 0.005,
@@ -108,7 +110,6 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse& ik_goals) {
                                       moveit::core::GroupStateValidityCallbackFn(), ik_options);
   }
   if (success) {
-
     // Store the name of the arm joins so we can remove them if they are not needed
     const auto r_arm_motors = r_arm_joints_group_->getActiveJointModelNames();
     const auto l_arm_motors = l_arm_joints_group_->getActiveJointModelNames();
@@ -135,37 +136,37 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse& ik_goals) {
     result.second.push_back(goal_state_->getVariablePosition("HeadTilt"));
 
     for (size_t i = result.first.size(); i-- > 0;) {
-    if (result.first[i] == "HeadPan") {
-      if (direction_ == DynupDirection::WALKREADY) {
+      if (result.first[i] == "HeadPan") {
+        if (direction_ == DynupDirection::WALKREADY) {
           // remove head from the goals so that we can move it freely
-        result.first.erase(result.first.begin() + i);
-        result.second.erase(result.second.begin() + i);
-      } else {
-        result.second[i] = 0;
-      }
-    } else if (result.first[i] == "HeadTilt") {
-      if (ik_goals.is_head_zero) {
-        result.second[i] = 0;
+          result.first.erase(result.first.begin() + i);
+          result.second.erase(result.second.begin() + i);
+        } else {
+          result.second[i] = 0;
+        }
+      } else if (result.first[i] == "HeadTilt") {
+        if (ik_goals.is_head_zero) {
+          result.second[i] = 0;
         } else if (direction_ == DynupDirection::FRONT or direction_ == DynupDirection::FRONT_ONLY) {
-        result.second[i] = 1.0;
+          result.second[i] = 1.0;
         } else if (direction_ == DynupDirection::BACK or direction_ == DynupDirection::BACK_ONLY) {
-        result.second[i] = -1.5;
-      } else if (direction_ == DynupDirection::WALKREADY) {
+          result.second[i] = -1.5;
+        } else if (direction_ == DynupDirection::WALKREADY) {
           // remove head from the goals so that we can move it freely
-        result.first.erase(result.first.begin() + i);
-        result.second.erase(result.second.begin() + i);
-      } else {
-        result.second[i] = 0;
-      }
+          result.first.erase(result.first.begin() + i);
+          result.second.erase(result.second.begin() + i);
+        } else {
+          result.second[i] = 0;
+        }
       }
       // Remove the arm motors from the goals if we have a goal without arms
       else if ((std::find(r_arm_motors.begin(), r_arm_motors.end(), result.first[i]) != r_arm_motors.end() or
                 std::find(l_arm_motors.begin(), l_arm_motors.end(), result.first[i]) != l_arm_motors.end()) and
                (direction_ == DynupDirection::RISE_NO_ARMS or direction_ == DynupDirection::DESCEND_NO_ARMS)) {
-      result.first.erase(result.first.begin() + i);
-      result.second.erase(result.second.begin() + i);
+        result.first.erase(result.first.begin() + i);
+        result.second.erase(result.second.begin() + i);
+      }
     }
-  }
     return result;
   } else {
     // node will count this as a missing tick and provide warning
@@ -173,19 +174,11 @@ bitbots_splines::JointGoals DynupIK::calculate(const DynupResponse& ik_goals) {
   }
 }
 const std::vector<std::string> DynupIK::getLeftLegJointNames() {
-  return {
-    "LHipYaw", "LHipRoll", "LHipPitch",
-    "LKnee",
-    "LAnklePitch", "LAnkleRoll"
-  };
+  return {"LHipYaw", "LHipRoll", "LHipPitch", "LKnee", "LAnklePitch", "LAnkleRoll"};
 }
 
 const std::vector<std::string> DynupIK::getRightLegJointNames() {
-  return {
-    "RHipYaw", "RHipRoll", "RHipPitch",
-    "RKnee",
-    "RAnklePitch", "RAnkleRoll"
-  };
+  return {"RHipYaw", "RHipRoll", "RHipPitch", "RKnee", "RAnklePitch", "RAnkleRoll"};
 }
 moveit::core::RobotStatePtr DynupIK::get_goal_state() { return goal_state_; }
 
