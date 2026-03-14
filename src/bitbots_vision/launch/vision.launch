@@ -4,11 +4,9 @@
     <arg name="sim" default="false" description="true: activates simulation time and switches to simulation color settings" />
     <arg name="debug" default="false" description="true: activates publishing of several debug images" />
 
-    <let if="$(env IS_ROBOT false)" name="taskset" value="taskset -c 6,7"/>
-    <let unless="$(env IS_ROBOT false)" name="taskset" value=""/>
 
     <group unless="$(var sim)">
-        <node pkg="bitbots_vision" exec="vision" name="bitbots_vision" output="screen" launch-prefix="$(var taskset)">
+        <node pkg="bitbots_vision" exec="vision" name="bitbots_vision" output="screen">
             <!-- Set vision config -->
             <param from="$(find-pkg-share bitbots_vision)/config/visionparams.yaml" />
 
@@ -18,7 +16,7 @@
     </group>
     <!-- Start the YOEO vision in sim configuration-->
     <group if="$(var sim)">
-        <node pkg="bitbots_vision" exec="vision" name="bitbots_vision" output="screen" launch-prefix="$(var taskset)">
+        <node pkg="bitbots_vision" exec="vision" name="bitbots_vision" output="screen">
             <!-- Set vision config -->
             <param from="$(find-pkg-share bitbots_vision)/config/visionparams_sim.yaml"/>
 
