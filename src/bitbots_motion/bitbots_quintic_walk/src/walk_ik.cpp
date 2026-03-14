@@ -63,7 +63,8 @@ bitbots_splines::JointGoals WalkIK::calculate(const WalkResponse& ik_goals) {
 
   for (const auto& joint : getRightLegJointNames()) {
     result.first.push_back(joint);
-    result.second.push_back(result_right[joint.substr(1)]);  // remove the "R" from the joint name to get the corresponding left joint
+    result.second.push_back(
+        result_right[joint.substr(1)]);  // remove the "R" from the joint name to get the corresponding left joint
   }
 
   Eigen::Isometry3d left_iso = tf2::transformToEigen(left_foot_goal);
@@ -72,39 +73,27 @@ bitbots_splines::JointGoals WalkIK::calculate(const WalkResponse& ik_goals) {
 
   for (const auto& joint : getLeftLegJointNames()) {
     result.first.push_back(joint);
-    result.second.push_back(result_left[joint.substr(1)]);  // remove the "R" from the joint name to get the corresponding right joint
+    result.second.push_back(
+        result_left[joint.substr(1)]);  // remove the "R" from the joint name to get the corresponding right joint
   }
 
   return result;
 }
 
-void WalkIK::reset() {
-}
+void WalkIK::reset() {}
 
 void WalkIK::setConfig(walking::Params::Node::Ik config) { config_ = config; }
 
 const std::vector<std::string> WalkIK::getLeftLegJointNames() {
-  return {
-    "LHipYaw", "LHipRoll", "LHipPitch",
-    "LKnee",
-    "LAnklePitch", "LAnkleRoll"
-  };
+  return {"LHipYaw", "LHipRoll", "LHipPitch", "LKnee", "LAnklePitch", "LAnkleRoll"};
 }
 
 const std::vector<std::string> WalkIK::getRightLegJointNames() {
-  return {
-    "RHipYaw", "RHipRoll", "RHipPitch",
-    "RKnee",
-    "RAnklePitch", "RAnkleRoll"
-  };
+  return {"RHipYaw", "RHipRoll", "RHipPitch", "RKnee", "RAnklePitch", "RAnkleRoll"};
 }
 
-const geometry_msgs::msg::Pose WalkIK::get_right_goal() {
-  return right_foot_goal_;
-}
+const geometry_msgs::msg::Pose WalkIK::get_right_goal() { return right_foot_goal_; }
 
-const geometry_msgs::msg::Pose WalkIK::get_left_goal() {
-  return left_foot_goal_;
-}
+const geometry_msgs::msg::Pose WalkIK::get_left_goal() { return left_foot_goal_; }
 
 }  // namespace bitbots_quintic_walk

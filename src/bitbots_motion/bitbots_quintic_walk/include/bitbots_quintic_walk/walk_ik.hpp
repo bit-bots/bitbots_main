@@ -1,12 +1,12 @@
 #ifndef BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALK_IK_H_
 #define BITBOTS_QUINTIC_WALK_INCLUDE_BITBOTS_QUINTIC_WALK_WALK_IK_H_
 #include <bitbots_quintic_walk/bitbots_quintic_walk_parameters.hpp>
-#include <bitbots_quintic_walk/walk_utils.hpp>
 #include <bitbots_quintic_walk/ik.hpp>
+#include <bitbots_quintic_walk/walk_utils.hpp>
 #include <bitbots_splines/abstract_ik.hpp>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
-#include <tf2_eigen/tf2_eigen.hpp>
 #include <tf2/convert.hpp>
+#include <tf2_eigen/tf2_eigen.hpp>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 namespace bitbots_quintic_walk {
 

@@ -317,13 +317,9 @@ geometry_msgs::msg::PoseArray WalkNode::step_open_loop(double dt,
   return pose_array;
 }
 
-geometry_msgs::msg::Pose WalkNode::get_left_foot_pose() {
-  return ik_.get_left_goal();
-}
+geometry_msgs::msg::Pose WalkNode::get_left_foot_pose() { return ik_.get_left_goal(); }
 
-geometry_msgs::msg::Pose WalkNode::get_right_foot_pose() {
-  return ik_.get_right_goal();
-}
+geometry_msgs::msg::Pose WalkNode::get_right_foot_pose() { return ik_.get_right_goal(); }
 
 std::array<double, 4> WalkNode::get_step_from_vel(const geometry_msgs::msg::Twist::SharedPtr msg) {
   // We have to compute by dividing by step frequency which is a double step
