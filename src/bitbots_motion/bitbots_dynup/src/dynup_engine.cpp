@@ -12,8 +12,10 @@ DynupEngine::DynupEngine(rclcpp::Node::SharedPtr node, bitbots_dynup::Params::En
   pub_debug_marker_ = node_->create_publisher<visualization_msgs::msg::Marker>("dynup_engine_marker", 1);
   // We need a separate node for the parameter client because the parameter client adds the node to an executor
   // and our dynup node is already added to an executor
+
+  walk_param_executor_ = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
   walking_param_node_ = std::make_shared<rclcpp::Node>(std::string(node->get_name()) + "_walking_param_node");
-  walking_param_client_ = std::make_shared<rclcpp::SyncParametersClient>(walking_param_node_, "/walking");
+  walking_param_client_ = std::make_shared<rclcpp::SyncParametersClient>(walk_param_executor_, walking_param_node_, "/walking");
 }
 
 void DynupEngine::init(double arm_offset_y, double arm_offset_z) {
@@ -660,11 +662,19 @@ void DynupEngine::setGoals(const DynupRequest& goals) {
   // get parameters from walking. If walking is not running, use default values
   // we re-request the values every time because they can be changed by dynamic reconfigure
   // and re-requesting them is fast enough
-  std::vector<rclcpp::Parameter> walking_params;
-  // Get params and wait for walking to be ready
-  walking_params = walking_param_client_->get_parameters(
-      {"engine.trunk_pitch", "engine.trunk_height", "engine.foot_distance", "engine.trunk_x_offset"},
-      std::chrono::seconds(5));
+  // We need to do this in another thread, because the sync parameter client runs spin_until_future_complete,
+  // which is not allowed to be called inside of another callback recusively.
+  // It should however use a different executor from the beginning,
+  // but somehow this does not work.
+  std::vector<rclcpp::Parameter> walking_params = std::async(
+    std::launch::async, [&]() {
+      return walking_param_client_->get_parameters({
+        "engine.trunk_pitch",
+        "engine.trunk_height",
+        "engine.foot_distance",
+        "engine.trunk_x_offset"
+      }, std::chrono::seconds(15));
+     }).get();
 
   // when the walking was killed, service_is_ready is still true but the parameters come back empty
   if (walking_params.size() != 4) {
