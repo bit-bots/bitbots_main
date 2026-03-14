@@ -252,7 +252,7 @@ static JointAngles calculate_ik(const Mat4& target_transform, bool left) {
         {"AnkleRoll", 0.0}
     };
 
-    std::cout << "Target transformation matrix:\n" << target_transform << "\n";
+    //std::cout << "Target transformation matrix:\n" << target_transform << "\n";
 
     auto make_T = [](const Mat3& R, const Vec3& t = Vec3::Zero()) {
         Mat4 T = Mat4::Identity();
@@ -274,7 +274,7 @@ static JointAngles calculate_ik(const Mat4& target_transform, bool left) {
 
     auto target_transform_leg_only = (T_base_link_to_hip_intersection.inverse() * target_transform) * T_ankle_to_sole.inverse();
 
-    std::cout << "Target transformation matrix (leg only):\n" << target_transform_leg_only << "\n";
+    //std::cout << "Target transformation matrix (leg only):\n" << target_transform_leg_only << "\n";
 
     // Axis-intersection transforms (identity = at origin)
     Mat4 T_hip_axis_intersection   = Mat4::Identity();
@@ -282,7 +282,7 @@ static JointAngles calculate_ik(const Mat4& target_transform, bool left) {
 
     // ankle-to-hip transform
     Mat4 T_ankle_to_hip = T_ankle_axis_intersection.inverse() * T_hip_axis_intersection;
-    std::cout << "Ankle to hip:\n" << T_ankle_to_hip << "\n";
+    //std::cout << "Ankle to hip:\n" << T_ankle_to_hip << "\n";
 
     // ankle-to-leg alignment (inverse of foot_to_leg subproblem)
     Vec3 leg_vec = T_ankle_to_hip.block<3,1>(0,3);
@@ -290,19 +290,19 @@ static JointAngles calculate_ik(const Mat4& target_transform, bool left) {
 
     // hip-to-leg alignment
     Mat4 T_hip_to_leg = T_ankle_to_hip.inverse() * T_ankle_to_leg;
-    std::cout << "Hip to leg:\n" << T_hip_to_leg << "\n";
+    //std::cout << "Hip to leg:\n" << T_hip_to_leg << "\n";
 
     // HipYaw and HipRoll from rzxy decomposition: M = Rz(yaw)*Rx(roll)*Ry(pitch)
     auto hip_euler = mat2euler_rzxy(T_hip_to_leg.block<3,3>(0,0));
     joint_angles["HipYaw"]  = hip_euler[0];
     joint_angles["HipRoll"] = hip_euler[1];
     // hip_euler[2] would be HipPitch, but we compute it properly below
-    std::cout << "Hip angles (spherical): " << joint_angles["HipYaw"]
+    //std::cout << "Hip angles (spherical): " << joint_angles["HipYaw"]
               << ", " << joint_angles["HipRoll"] << "\n";
 
     // Virtual leg length (distance from ankle axis intersection to hip axis intersection)
     double virtual_leg_length = leg_vec.norm();
-    std::cout << "Leg length: " << virtual_leg_length << "\n";
+    //std::cout << "Leg length: " << virtual_leg_length << "\n";
 
     // Hip transform without pitch component
     Mat4 T_hip_without_pitch = Mat4::Identity();
@@ -319,10 +319,10 @@ static JointAngles calculate_ik(const Mat4& target_transform, bool left) {
     Mat4 T_real_leg = T_ankle_axis_intersection.inverse()
                      * T_hip_axis_intersection
                      * T_hip_pitch_origin;
-    std::cout << "Real leg transformation matrix:\n" << T_real_leg << "\n";
+    //std::cout << "Real leg transformation matrix:\n" << T_real_leg << "\n";
 
     double real_leg_length = T_real_leg.block<3,1>(0,3).norm();
-    std::cout << "Real leg length: " << real_leg_length << "\n";
+    //std::cout << "Real leg length: " << real_leg_length << "\n";
 
     // Ankle angles from real-leg direction
     Vec3 real_leg_vec = T_real_leg.block<3,1>(0,3);
@@ -332,7 +332,7 @@ static JointAngles calculate_ik(const Mat4& target_transform, bool left) {
     auto ankle_euler = mat2euler_rxyz(T_ankle_to_real_leg.block<3,3>(0,0));
     joint_angles["AnkleRoll"]  = -ankle_euler[0];
     joint_angles["AnklePitch"] = -ankle_euler[1];
-    std::cout << "Ankle to real leg: " << joint_angles["AnkleRoll"]
+    //std::cout << "Ankle to real leg: " << joint_angles["AnkleRoll"]
               << ", " << joint_angles["AnklePitch"] << "\n";
 
     // Knee from cosine rule
@@ -353,7 +353,7 @@ static JointAngles calculate_ik(const Mat4& target_transform, bool left) {
                                    - LOWER_LEG_LENGTH*LOWER_LEG_LENGTH)
                                    / (2.0 * UPPER_LEG_LENGTH * real_leg_length);
     double hip_pitch_offset_val = std::acos(std::clamp(hip_pitch_offset_arg, -1.0, 1.0));
-    std::cout << "Hip pitch offset: " << hip_pitch_offset_val << "\n";
+    //std::cout << "Hip pitch offset: " << hip_pitch_offset_val << "\n";
 
     // Ankle pitch offset (cosine rule)
     double ankle_pitch_offset_arg = (LOWER_LEG_LENGTH*LOWER_LEG_LENGTH
@@ -361,7 +361,7 @@ static JointAngles calculate_ik(const Mat4& target_transform, bool left) {
                                      - UPPER_LEG_LENGTH*UPPER_LEG_LENGTH)
                                      / (2.0 * LOWER_LEG_LENGTH * real_leg_length);
     double ankle_pitch_offset_val = std::acos(std::clamp(ankle_pitch_offset_arg, -1.0, 1.0));
-    std::cout << "Ankle pitch offset: " << ankle_pitch_offset_val << "\n";
+    //std::cout << "Ankle pitch offset: " << ankle_pitch_offset_val << "\n";
 
     // Solution i=0 (matches Python solutions[0])
     joint_angles["HipPitch"]   = hip_pitch_base - hip_pitch_offset_val;
