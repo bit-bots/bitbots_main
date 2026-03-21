@@ -1,0 +1,32 @@
+<?xml version='1.0' encoding='utf-8'?>
+<package format="2">
+  <name>humanoid_base_footprint</name>
+  <version>1.2.0</version>
+
+  <description>Publishes a transform to the base footprint of the robot, based on the orientation and position of the feet.</description>
+
+  <maintainer email="5guelden@informatik.uni-hamburg.de">Jasper Güldenstein</maintainer>
+  <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+
+  <author email="5guelden@informatik.uni-hamburg.de">Jasper Güldenstein</author>
+
+  <license>Apache License 2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>tf2_eigen</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>tf2_ros</depend>
+  <depend>rclcpp_components</depend>
+  <depend>eigen</depend>
+  <depend>rot_conv</depend>
+  <depend>biped_interfaces</depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+  <test_depend>sensor_msgs</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/ingydotnet/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/ros-sports/humanoid_base_footprint.git
+	branch = master
+	commit = 8930ff89dd1ca5b75bfa896c5b5ca4b313d64c79
+	parent = f0c173c5578f48148c6e7b3459d3137a1b66a917
+	method = merge
+	cmdver = 0.4.9
