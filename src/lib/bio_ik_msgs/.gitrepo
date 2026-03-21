@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/ingydotnet/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/bit-bots/bio_ik_msgs.git
+	branch = master
+	commit = b0d1b5e46a55d5f52e5bc7c5405014ca29626b90
+	parent = e598a04695f8eb6d342f2821adcd447a1dc502ba
+	method = merge
+	cmdver = 0.4.9

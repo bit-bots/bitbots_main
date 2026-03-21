@@ -1,0 +1,3 @@
+moveit_msgs/RobotState solution
+moveit_msgs/MoveItErrorCodes error_code
+float64 solution_fitness
