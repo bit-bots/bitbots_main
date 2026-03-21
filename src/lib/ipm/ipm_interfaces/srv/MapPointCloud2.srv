@@ -1,0 +1,13 @@
+shape_msgs/Plane plane
+sensor_msgs/PointCloud2 points
+string plane_frame_id
+string output_frame_id
+---
+# Result code defintions
+uint8 RESULT_SUCCESS=0
+uint8 RESULT_NO_CAMERA_INFO=1
+uint8 RESULT_INVALID_PLANE=2
+
+# Returned pointcloud is only valid if result equals RESULT_SUCCESS
+sensor_msgs/PointCloud2 points
+uint8 result

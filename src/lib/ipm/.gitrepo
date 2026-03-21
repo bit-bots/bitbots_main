@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/ingydotnet/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/ros-sports/ipm.git
+	branch = rolling
+	commit = 8003178ba83aa102e7fb9740c8d1403a1d6cdebf
+	parent = 71394ec7c4ee3e0a35eb13575ae824777bc1e665
+	method = merge
+	cmdver = 0.4.9
