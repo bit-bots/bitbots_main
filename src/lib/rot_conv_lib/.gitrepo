@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/ingydotnet/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/bit-bots/rot_conv_lib.git
+	branch = master
+	commit = b38b899cbf848cd52d0e54489f141e252792e1fe
+	parent = 353742867517359c5377501d4a60a16471debb9f
+	method = merge
+	cmdver = 0.4.9
