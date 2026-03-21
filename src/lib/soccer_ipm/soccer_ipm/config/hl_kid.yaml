@@ -1,0 +1,28 @@
+soccer_ipm:
+  ros__parameters:
+    balls:
+      ball_diameter: 0.153
+
+    goalposts:
+      footpoint_out_of_image_threshold: 0.8
+      object_default_dimensions:
+        x: 0.1
+        y: 0.1
+        z: 1.0
+
+    obstacles:
+      footpoint_out_of_image_threshold: 0.8
+      object_default_dimensions:
+        x: 0.2
+        y: 0.2
+        z: 1.0
+
+    robots:
+      footpoint_out_of_image_threshold: 0.8
+      object_default_dimensions:
+        x: 0.2
+        y: 0.2
+        z: 1.0
+
+    output_frame: 'base_footprint'
+    use_distortion: false
