@@ -1,0 +1,19 @@
+<library path="src">
+  <class name="DsdVizPlugin" type="dynamic_stack_decider_visualization.dsd_visualization_plugin.DsdVizPlugin" base_class_type="rqt_gui_py::Plugin">
+    <description>
+      A Python GUI plugin to visualize any bitbots stackmachine.
+    </description>
+    <qtgui>
+
+      <group>
+        <label>RoboCup</label>
+        <icon type="theme">folder</icon>
+        <statustip>Plugins related to RoboCup.</statustip>
+      </group>
+      <label>DSD-Visualization</label>
+      <icon type="theme">preferences-system-network</icon>
+      <statustip>A Python GUI plugin to visualize any bitbots-dynamic-stack-decider</statustip>
+
+    </qtgui>
+  </class>
+</library>

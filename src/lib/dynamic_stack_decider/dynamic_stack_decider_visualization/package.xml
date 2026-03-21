@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>dynamic_stack_decider_visualization</name>
+  <version>0.2.1</version>
+  <description>
+    A Python GUI plugin to visualize the bitbots-dynamic-stack-decider (DSD)
+    <br />
+	Loosly based on rqt_graph
+  </description>
+  <maintainer email="7sell@informatik.uni-hamburg.de">Finn-Thorben Sell</maintainer>
+  <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+  <author email="7sell@informatik.uni-hamburg.de">Finn-Thorben Sell</author>
+  <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
+
+  <license>MIT</license>
+
+  <exec_depend>dynamic_stack_decider</exec_depend>
+  <exec_depend>python3-pyqt5</exec_depend>
+  <exec_depend>qt_dotgraph</exec_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>rosgraph_msgs</exec_depend>
+  <exec_depend>rqt_gui_py</exec_depend>
+  <exec_depend>rqt_gui</exec_depend>
+
+  <depend>python3-pydot</depend>
+
+  <test_depend>python3-pytest</test_depend>
+
+  <export>
+    <architecture_independent/>
+    <rqt_gui plugin="${prefix}/plugin.xml"/>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

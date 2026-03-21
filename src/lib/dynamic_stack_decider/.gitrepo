@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/ingydotnet/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/bit-bots/dynamic_stack_decider.git
+	branch = master
+	commit = aa895fe01ecd50b6a01a2292ce1e825e9ab58e6a
+	parent = 6f24d59165cd0c8f941aa327a7348f1c25bde77d
+	method = merge
+	cmdver = 0.4.9
