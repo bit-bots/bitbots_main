@@ -1,0 +1,8 @@
+string text
+string language "en"
+float32 volume 1.0
+float32 rate 1.0
+---
+string text
+---
+audio_common_msgs/AudioStamped audio

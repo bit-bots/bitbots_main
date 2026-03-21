@@ -22,5 +22,7 @@ $GettingUpState
             NO --> $InitialToReady
                 YES --> @InitSide, @DoNothing
                 NO --> $GameStateDecider
-                    SET --> #InitSet
+                    SET --> $WhistleDetected
+                        NOT_DETECTED --> #InitSet
+                        DETECTED --> @DoNothing
                     ELSE --> @DoNothing
