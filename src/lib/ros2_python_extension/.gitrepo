@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/ingydotnet/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/bit-bots/ros2_python_extension.git
+	branch = main
+	commit = c5a8446e997871f9d720d643b7a60448f89da363
+	parent = 4ccda76aacaf02328b4a5ef0aa7a98ae7a9a9db8
+	method = merge
+	cmdver = 0.4.9
