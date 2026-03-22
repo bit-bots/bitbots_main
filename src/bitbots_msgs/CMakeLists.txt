@@ -35,6 +35,7 @@ rosidl_generate_interfaces(
   "msg/HeadMode.msg"
   "msg/JointCommand.msg"
   "msg/JointTorque.msg"
+  "msg/ModelStates.msg",
   "msg/NetworkInterface.msg"
   "msg/PoseWithCertainty.msg"
   "msg/PoseWithCertaintyArray.msg"

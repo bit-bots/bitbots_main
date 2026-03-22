@@ -3,7 +3,7 @@ from typing import Optional
 import numpy as np
 import transforms3d
 from controller import Keyboard, Node, Supervisor
-from gazebo_msgs.msg import ModelStates
+from bitbots_msgs.msg import ModelStates
 from geometry_msgs.msg import Point, Pose, Quaternion, Twist
 from rclpy.node import Node as RclpyNode
 from rclpy.time import Time

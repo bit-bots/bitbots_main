@@ -4,7 +4,7 @@ import numpy as np
 import rclpy
 import tf2_ros
 import transforms3d
-from gazebo_msgs.msg import ModelStates
+from bitbots_msgs.msg import ModelStates
 from geometry_msgs.msg import TransformStamped
 from rclpy.duration import Duration
 from rclpy.node import Node
