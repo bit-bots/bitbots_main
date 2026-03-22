@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/ingydotnet/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/ros-sports/soccer_field_map_generator.git
+	branch = rolling
+	commit = 17e8f8addeb20b5ab1601a980a3f3f38011c72dc
+	parent = c6810dbe985da51d09e3f984b521bd376f5dd163
+	method = merge
+	cmdver = 0.4.9
