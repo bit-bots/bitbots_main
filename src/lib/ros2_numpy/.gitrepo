@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/ingydotnet/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/Box-Robotics/ros2_numpy.git
+	branch = jazzy
+	commit = d5ebf723e1d2457d36fa89bf021b212e340c3c11
+	parent = 7d03b12ffdc65492bf25001eabc11df42f32c76a
+	method = merge
+	cmdver = 0.4.9
