@@ -7,6 +7,7 @@
 
 import json
 import os
+import re
 import time
 from contextlib import contextmanager
 from typing import Optional
@@ -15,12 +16,10 @@ from unicodedata import normalize
 import numpy as np
 import onnxruntime as ort
 
-import re
-
 
 class UnicodeProcessor:
     def __init__(self, unicode_indexer_path: str):
-        with open(unicode_indexer_path, "r") as f:
+        with open(unicode_indexer_path) as f:
             self.indexer = json.load(f)
 
     def _preprocess_text(self, text: str) -> str:
@@ -54,8 +53,8 @@ class UnicodeProcessor:
             "—": "-",
             "¯": " ",
             "_": " ",
-            "\u201C": '"',  # left double quote "
-            "\u201D": '"',  # right double quote "
+            "\u201c": '"',  # left double quote "
+            "\u201d": '"',  # right double quote "
             "\u2018": "'",  # left single quote '
             "\u2019": "'",  # right single quote '
             "´": "'",
@@ -121,9 +120,7 @@ class UnicodeProcessor:
         return text_mask
 
     def _text_to_unicode_values(self, text: str) -> np.ndarray:
-        unicode_values = np.array(
-            [ord(char) for char in text], dtype=np.uint16
-        )  # 2 bytes
+        unicode_values = np.array([ord(char) for char in text], dtype=np.uint16)  # 2 bytes
         return unicode_values
 
     def __call__(self, text_list: list[str]) -> tuple[np.ndarray, np.ndarray]:
@@ -132,9 +129,7 @@ class UnicodeProcessor:
         text_ids = np.zeros((len(text_list), text_ids_lengths.max()), dtype=np.int64)
         for i, text in enumerate(text_list):
             unicode_vals = self._text_to_unicode_values(text)
-            text_ids[i, : len(unicode_vals)] = np.array(
-                [self.indexer[val] for val in unicode_vals], dtype=np.int64
-            )
+            text_ids[i, : len(unicode_vals)] = np.array([self.indexer[val] for val in unicode_vals], dtype=np.int64)
         text_mask = self._get_text_mask(text_ids_lengths)
         return text_ids, text_mask
 
@@ -166,9 +161,7 @@ class TextToSpeech:
         self.chunk_compress_factor = cfgs["ttl"]["chunk_compress_factor"]
         self.ldim = cfgs["ttl"]["latent_dim"]
 
-    def sample_noisy_latent(
-        self, duration: np.ndarray
-    ) -> tuple[np.ndarray, np.ndarray]:
+    def sample_noisy_latent(self, duration: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         bsz = len(duration)
         wav_len_max = duration.max() * self.sample_rate
         wav_lengths = (duration * self.sample_rate).astype(np.int64)
@@ -176,23 +169,17 @@ class TextToSpeech:
         latent_len = ((wav_len_max + chunk_size - 1) / chunk_size).astype(np.int32)
         latent_dim = self.ldim * self.chunk_compress_factor
         noisy_latent = np.random.randn(bsz, latent_dim, latent_len).astype(np.float32)
-        latent_mask = get_latent_mask(
-            wav_lengths, self.base_chunk_size, self.chunk_compress_factor
-        )
+        latent_mask = get_latent_mask(wav_lengths, self.base_chunk_size, self.chunk_compress_factor)
         noisy_latent = noisy_latent * latent_mask
         return noisy_latent, latent_mask
 
     def _infer(
         self, text_list: list[str], style: Style, total_step: int, speed: float = 1.05
     ) -> tuple[np.ndarray, np.ndarray]:
-        assert (
-            len(text_list) == style.ttl.shape[0]
-        ), "Number of texts must match number of style vectors"
+        assert len(text_list) == style.ttl.shape[0], "Number of texts must match number of style vectors"
         bsz = len(text_list)
         text_ids, text_mask = self.text_processor(text_list)
-        dur_onnx, *_ = self.dp_ort.run(
-            None, {"text_ids": text_ids, "style_dp": style.dp, "text_mask": text_mask}
-        )
+        dur_onnx, *_ = self.dp_ort.run(None, {"text_ids": text_ids, "style_dp": style.dp, "text_mask": text_mask})
         dur_onnx = dur_onnx / speed
         text_emb_onnx, *_ = self.text_enc_ort.run(
             None,
@@ -225,9 +212,7 @@ class TextToSpeech:
         speed: float = 1.05,
         silence_duration: float = 0.3,
     ) -> tuple[np.ndarray, np.ndarray]:
-        assert (
-            style.ttl.shape[0] == 1
-        ), "Single speaker text to speech only supports single style"
+        assert style.ttl.shape[0] == 1, "Single speaker text to speech only supports single style"
         text_list = chunk_text(text)
         wav_cat = None
         dur_cat = None
@@ -237,9 +222,7 @@ class TextToSpeech:
                 wav_cat = wav
                 dur_cat = dur_onnx
             else:
-                silence = np.zeros(
-                    (1, int(silence_duration * self.sample_rate)), dtype=np.float32
-                )
+                silence = np.zeros((1, int(silence_duration * self.sample_rate)), dtype=np.float32)
                 wav_cat = np.concatenate([wav_cat, silence, wav], axis=1)
                 dur_cat += dur_onnx + silence_duration
         return wav_cat, dur_cat
@@ -267,18 +250,14 @@ def length_to_mask(lengths: np.ndarray, max_len: Optional[int] = None) -> np.nda
     return mask.reshape(-1, 1, max_len)
 
 
-def get_latent_mask(
-    wav_lengths: np.ndarray, base_chunk_size: int, chunk_compress_factor: int
-) -> np.ndarray:
+def get_latent_mask(wav_lengths: np.ndarray, base_chunk_size: int, chunk_compress_factor: int) -> np.ndarray:
     latent_size = base_chunk_size * chunk_compress_factor
     latent_lengths = (wav_lengths + latent_size - 1) // latent_size
     latent_mask = length_to_mask(latent_lengths)
     return latent_mask
 
 
-def load_onnx(
-    onnx_path: str, opts: ort.SessionOptions, providers: list[str]
-) -> ort.InferenceSession:
+def load_onnx(onnx_path: str, opts: ort.SessionOptions, providers: list[str]) -> ort.InferenceSession:
     return ort.InferenceSession(onnx_path, sess_options=opts, providers=providers)
 
 
@@ -304,7 +283,7 @@ def load_onnx_all(
 
 def load_cfgs(onnx_dir: str) -> dict:
     cfg_path = os.path.join(onnx_dir, "tts.json")
-    with open(cfg_path, "r") as f:
+    with open(cfg_path) as f:
         cfgs = json.load(f)
     return cfgs
 
@@ -322,20 +301,16 @@ def load_text_to_speech(onnx_dir: str, use_gpu: bool = False) -> TextToSpeech:
     else:
         providers = ["CPUExecutionProvider"]
     cfgs = load_cfgs(onnx_dir)
-    dp_ort, text_enc_ort, vector_est_ort, vocoder_ort = load_onnx_all(
-        onnx_dir, opts, providers
-    )
+    dp_ort, text_enc_ort, vector_est_ort, vocoder_ort = load_onnx_all(onnx_dir, opts, providers)
     text_processor = load_text_processor(onnx_dir)
-    return TextToSpeech(
-        cfgs, text_processor, dp_ort, text_enc_ort, vector_est_ort, vocoder_ort
-    )
+    return TextToSpeech(cfgs, text_processor, dp_ort, text_enc_ort, vector_est_ort, vocoder_ort)
 
 
 def load_voice_style(voice_style_paths: list[str], verbose: bool = False) -> Style:
     bsz = len(voice_style_paths)
 
     # Read first file to get dimensions
-    with open(voice_style_paths[0], "r") as f:
+    with open(voice_style_paths[0]) as f:
         first_style = json.load(f)
     ttl_dims = first_style["style_ttl"]["dims"]
     dp_dims = first_style["style_dp"]["dims"]
@@ -346,12 +321,10 @@ def load_voice_style(voice_style_paths: list[str], verbose: bool = False) -> Sty
 
     # Fill in the data
     for i, voice_style_path in enumerate(voice_style_paths):
-        with open(voice_style_path, "r") as f:
+        with open(voice_style_path) as f:
             voice_style = json.load(f)
 
-        ttl_data = np.array(
-            voice_style["style_ttl"]["data"], dtype=np.float32
-        ).flatten()
+        ttl_data = np.array(voice_style["style_ttl"]["data"], dtype=np.float32).flatten()
         ttl_style[i] = ttl_data.reshape(ttl_dims[1], ttl_dims[2])
 
         dp_data = np.array(voice_style["style_dp"]["data"], dtype=np.float32).flatten()

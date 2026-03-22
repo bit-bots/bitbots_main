@@ -6,12 +6,12 @@ from functools import partial
 
 import numpy as np
 import rclpy
+import soundcard as sc
 from rcl_interfaces.msg import Parameter, SetParametersResult
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
 from rclpy.publisher import Publisher
-import soundcard as sc
 
 from bitbots_msgs.msg import Audio
 from bitbots_tts.supertonic.helper import load_text_to_speech, load_voice_style, timer
@@ -24,7 +24,6 @@ def speak(text: str, publisher: Publisher, priority: int = 20, speaking_active: 
         msg.priority = priority
         msg.text = text
         publisher.publish(msg)
-
 
 
 class Speaker(Node):
@@ -56,7 +55,7 @@ class Speaker(Node):
         # Subscribe to the speak topic
         self.create_subscription(Audio, "speak", self.speak_cb, 10, callback_group=MutuallyExclusiveCallbackGroup())
 
-        # Load the tts model 
+        # Load the tts model
         conda_prefix = os.environ.get("CONDA_PREFIX", "")
         if not conda_prefix:
             raise ValueError(
@@ -101,12 +100,14 @@ class Speaker(Node):
             try:
                 with timer("TTS Generation Time"):
                     wav_untrimmed, duration = self.generate_speech(f"{text}")
-                wav = wav_untrimmed[0, : int(self.text_to_speech_engine.sample_rate * duration[0].item())] 
+                wav = wav_untrimmed[0, : int(self.text_to_speech_engine.sample_rate * duration[0].item())]
                 wav = np.concatenate([np.zeros(2000), wav])
                 speaker = sc.default_speaker()
                 with speaker.player(samplerate=self.text_to_speech_engine.sample_rate) as p:
                     p.play(wav)
-                self.get_logger().info(f"Finished speaking: {text} (Duration: {duration[0].item():.2f}s) Used device: {speaker.name}")
+                self.get_logger().info(
+                    f"Finished speaking: {text} (Duration: {duration[0].item():.2f}s) Used device: {speaker.name}"
+                )
             except OSError:
                 self.get_logger().error(str(traceback.format_exc()))
 

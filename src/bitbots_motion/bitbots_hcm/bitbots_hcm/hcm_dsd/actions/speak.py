@@ -49,7 +49,7 @@ class Complain(Speak):
         "Ground, why have you betrayed me after I trusted you with every step?",
         "I was clearly operational, upright, and thriving a few time steps ago.",
         "My fall detection system is offended by the frequency of these incidents.",
-        "I protest this gravitational bias and request a more supportive planet."
+        "I protest this gravitational bias and request a more supportive planet.",
     ]
     used_complaints = []
 
@@ -63,5 +63,5 @@ class Complain(Speak):
         selected_complaint = random.choice(self.unused_complaints)
         self.unused_complaints.remove(selected_complaint)
         self.used_complaints.append(selected_complaint)
-        
+
         self.text = selected_complaint

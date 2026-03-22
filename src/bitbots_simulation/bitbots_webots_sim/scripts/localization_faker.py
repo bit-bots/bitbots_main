@@ -4,10 +4,11 @@ import numpy as np
 import rclpy
 import tf2_ros
 import transforms3d
-from bitbots_msgs.msg import ModelStates
 from geometry_msgs.msg import TransformStamped
 from rclpy.duration import Duration
 from rclpy.node import Node
+
+from bitbots_msgs.msg import ModelStates
 
 
 class LocalizationFaker(Node):

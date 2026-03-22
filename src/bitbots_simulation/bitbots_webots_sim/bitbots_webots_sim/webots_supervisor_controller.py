@@ -3,13 +3,13 @@ from typing import Optional
 import numpy as np
 import transforms3d
 from controller import Keyboard, Node, Supervisor
-from bitbots_msgs.msg import ModelStates
 from geometry_msgs.msg import Point, Pose, Quaternion, Twist
 from rclpy.node import Node as RclpyNode
 from rclpy.time import Time
 from rosgraph_msgs.msg import Clock
 from std_srvs.srv import Empty
 
+from bitbots_msgs.msg import ModelStates
 from bitbots_msgs.srv import SetObjectPose, SetObjectPosition, SimulatorPush
 
 G = 9.81
