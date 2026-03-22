@@ -1,0 +1,5 @@
+<launch>
+    <node pkg="udp_bridge" exec="receiver" output="screen">
+        <param from="$(find-pkg-share udp_bridge)/config/udp_bridge.yaml"/>
+    </node>
+</launch>

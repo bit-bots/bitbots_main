@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/ingydotnet/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/bit-bots/udp_bridge.git
+	branch = master
+	commit = b89512ebd4af994d933236d21ae40050da9c829e
+	parent = 5794e36c9b9f0c1e48f3589b8b72f1d135d6a9dd
+	method = merge
+	cmdver = 0.4.9

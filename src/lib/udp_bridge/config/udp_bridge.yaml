@@ -1,0 +1,29 @@
+/**:
+  ros__parameters:
+    encryption_key: "robocup2024"
+    port: 1234
+    send_frequency: 300
+    sender_queue_max_size: 5
+
+    topics:
+      - /ball_position_relative_filtered
+      - /cmd_vel
+      - /debug/dsd/body_behavior/dsd_current_action
+      - /debug/dsd/body_behavior/dsd_stack
+      - /debug/dsd/body_behavior/dsd_tree
+      - /debug/dsd/hcm/dsd_current_action
+      - /debug/dsd/hcm/dsd_stack
+      - /debug/dsd/hcm/dsd_tree
+      - /debug/dsd/localization/dsd_current_action
+      - /debug/dsd/localization/dsd_stack
+      - /debug/dsd/localization/dsd_tree
+      - /diagnostics_agg
+      - /field/map
+      - /gamestate
+      - /goal_pose
+      - /pose_with_covariance
+      - /robot_state
+      - /rosout
+      - /system_workload
+      - /team_data
+      - /workspace_status

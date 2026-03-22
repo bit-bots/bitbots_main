@@ -1,0 +1,5 @@
+<launch>
+    <!-- load the global parameters -->
+    <include file="$(find-pkg-share bitbots_utils)/launch/parameter_blackboard.launch" />
+    <include file="$(find-pkg-share udp_bridge)/launch/sender.launch" />
+</launch>

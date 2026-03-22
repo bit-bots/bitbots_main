@@ -1,0 +1,9 @@
+# auto-generated documentation
+docs/_build
+docs/_out
+docs/cppapi
+docs/pyapi
+
+**/__pycache__
+**.pyc
+**/.hypothesis
