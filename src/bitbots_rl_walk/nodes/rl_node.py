@@ -59,12 +59,12 @@ class RLNode(Node):
         for out in self._onnx_model.graph.output:
             self._onnx_output_name.append(out)
 
-        self._timer_phase_confg = None  # Should be implemented in the subclass
+        self._timer_phase_config = None  # Should be implemented in the subclass
 
         self._config = False
 
         self._obs = None  # should be defined in subclass
-        self._timer_phase_confg = None  # Should be defined in subclass
+        self._timer_phase_config = None  # Should be defined in subclass
 
     # TODO: fix
     def _timer_callback(self):
@@ -83,9 +83,9 @@ class RLNode(Node):
 
             # TODO consider IMU mounting offset
 
-            self._timer_phase_confg.set_obs_phase(
+            self._timer_phase_config.set_obs_phase(
                 np.array(
-                    [np.cos(self._timer_phase_confg.get_phase()), np.sin(self._timer_phase_confg.get_phase())],
+                    [np.cos(self._timer_phase_config.get_phase()), np.sin(self._timer_phase_config.get_phase())],
                     dtype=np.float32,
                 ).flatten()
             )
@@ -97,18 +97,18 @@ class RLNode(Node):
 
             self.publisher(onnx_pred)
 
-            phase_tp1 = self._timer_phase_confg.get_phase() + self._timer_phase_confg.get_phase_dt()
-            self._timer_phase_confg.set_phase(np.fmod(phase_tp1 + np.pi, 2 * np.pi) - np.pi)
+            phase_tp1 = self._timer_phase_config.get_phase() + self._timer_phase_config.get_phase_dt()
+            self._timer_phase_config.set_phase(np.fmod(phase_tp1 + np.pi, 2 * np.pi) - np.pi)
         else:
             raise ConfigError("Configuration is missing! Try to run self.config() in init.")
 
     def config(self):
-        self._timer = self.create_timer(self._timer_phase_confg.get_control_dt(), self._timer_callback)
+        self._timer = self.create_timer(self._timer_phase_config.get_control_dt(), self._timer_callback)
         self.load_phase()
 
         self._subs = []
 
-        for (key, value) in self.__dict__.values():
+        for key, value in self.__dict__.values():
             if type(value) is Subscription:
                 self._subs.append(key)
 

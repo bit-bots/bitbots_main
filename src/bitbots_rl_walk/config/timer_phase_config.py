@@ -4,7 +4,7 @@ CONTROL_DT = 0.02  # Control loop frequency in seconds
 GAIT_FREQUENCY = 1.5  # Gait frequency in Hz
 
 
-class TimerPhaseConfg:
+class TimerPhaseConfig:
     _phase: np.ndarray = np.array([0.0, np.pi], dtype=np.float32)
     _phase_dt: float
 
