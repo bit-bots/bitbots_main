@@ -22,7 +22,6 @@ import numpy as np
 import onnxruntime as rt
 from ament_index_python import get_package_share_directory
 from geometry_msgs.msg import PoseStamped, Twist
-from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
 from sensor_msgs.msg import Imu, JointState
 from transforms3d.euler import euler2mat
@@ -30,9 +29,7 @@ from transforms3d.quaternions import quat2mat
 
 from bitbots_msgs.msg import JointCommand
 
-ONNX_MODEL = os.path.join(
-    get_package_share_directory("bitbots_rl_walk"), "models", "wolfgang_forward_kick_better_ball_ppo.onnx"
-)
+ONNX_MODEL = os.path.join(get_package_share_directory("bitbots_rl_motion"), "models", "wolfgang_kick_ppo.onnx")
 
 WALKREADY_STATE = np.array(
     [
@@ -139,6 +136,19 @@ class KickNode(Node):
     def _imu_callback(self, msg: Imu):
         self._imu_data = msg
 
+    def _calculate_target_from_direction(self, kick_direction):
+        # Convert the kick direction quaternion to a 2D unit vector
+        kick_direction_mat = quat2mat(
+            [
+                kick_direction.w,
+                kick_direction.x,
+                kick_direction.y,
+                kick_direction.z,
+            ]
+        )
+        kick_direction_vec = kick_direction_mat @ np.array([1, 0, 0], dtype=np.float32)
+        return kick_direction_vec[:2]
+
     def _timer_callback(self):
         """Timer callback to publish joint commands based on the ONNX policy."""
         if self._imu_data is None or self._joint_state is None or self._cmd_vel is None or self._ball_pose is None:
@@ -201,7 +211,7 @@ class KickNode(Node):
 
         phase = np.array([np.cos(self._phase), np.sin(self._phase)], dtype=np.float32).flatten()
 
-        # command = np.array([self._cmd_vel.linear.x, self._cmd_vel.linear.y, self._cmd_vel.angular.z], dtype=np.float32)
+        command = np.array([self._cmd_vel.linear.x, self._cmd_vel.linear.y, self._cmd_vel.angular.z], dtype=np.float32)
 
         rel_ball_pos = np.array(
             [
@@ -211,16 +221,21 @@ class KickNode(Node):
             dtype=np.float32,
         )
 
+        kick_direction = self._ball_pose.pose.orientation
+
+        rel_target_pos = self._calculate_target_from_direction(kick_direction)
+
         obs = np.hstack(
             [
                 gyro,  # 3
                 gravity,  # 4
-                # command,  # 3
+                command,  # 3
                 joint_angles,  # 18
                 joint_velocities,  # 18
                 self._previous_action,  # 18  # Previous action
                 phase,  # 2
                 rel_ball_pos,  # 2
+                rel_target_pos,  # 0
             ]
         ).astype(np.float32)
 
@@ -249,11 +264,6 @@ def main():
 
     rclpy.init()
     node = KickNode()
-    executor = EventsExecutor()
-    executor.add_node(node)
-    try:
-        executor.spin(node)
-    except KeyboardInterrupt:
-        pass
-
+    rclpy.spin(node)
     node.destroy_node()
+    rclpy.try_shutdown()

@@ -91,7 +91,7 @@ class RLNode(Node):
             raise ConfigError("Configuration is missing! Try to run self.config() in init.")
 
     def load_model(self, model):
-        path_to_model = os.path.join(get_package_share_directory("bitbots_rl_walk"), "models", model)
+        path_to_model = os.path.join(get_package_share_directory("bitbots_rl_motion"), "models", model)
 
         self._onnx_model_path = Path(path_to_model)
         model_name = self._onnx_model_path.stem

@@ -50,7 +50,7 @@
 
     <!-- launch the rl walking 
     <group if="$(var walking)">
-        <node pkg="bitbots_rl_walk" exec="walk" output="screen">
+        <node pkg="bitbots_rl_motion" exec="walk" output="screen">
             <param name="use_sim_time" value="$(var sim)"/>
         </node>
     </group>
@@ -70,7 +70,7 @@
 
     <!-- launch the rl kick -->
     <group if="$(var kicking)">
-        <node pkg="bitbots_rl_walk" exec="forward_kick" output="screen">
+        <node pkg="bitbots_rl_motion" exec="forward_kick" output="screen">
             <param name="use_sim_time" value="$(var sim)"/>
         </node>
     </group>

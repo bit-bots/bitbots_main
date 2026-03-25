@@ -21,7 +21,7 @@ from typing import Optional
 import numpy as np
 import onnxruntime as rt
 from ament_index_python import get_package_share_directory
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import PoseStamped, Twist
 from rclpy.node import Node
 from sensor_msgs.msg import Imu, JointState
 from transforms3d.euler import euler2mat
@@ -29,79 +29,8 @@ from transforms3d.quaternions import quat2mat
 
 from bitbots_msgs.msg import JointCommand
 
-ONNX_MODEL = os.path.join(get_package_share_directory("bitbots_rl_walk"), "models", "wolfgang_walk_ppo.onnx")
-
-PREPARATION_STATE = np.array(
-    [
-        0,  # RShoulderPitch
-        0,  # RShoulderRoll
-        0,  # RElbow (angewinkelt)
-        0,  # LShoulderPitch
-        0,  # LShoulderRoll
-        0,  # LElbow (angewinkelt)
-        0,  # RHipYaw
-        0,  # RHipRoll
-        0,  # RHipPitch
-        0,  # RKnee (durchgestreckt)
-        -0.2,  # RAnklePitch (leichte Verlagerung nach hinten)
-        0,  # RAnkleRoll
-        0,  # LHipYaw
-        0,  # LHipRoll
-        0,  # LHipPitch
-        0,  # LKnee (durchgestreckt)
-        0.2,  # LAnklePitch (leichte Verlagerung nach hinten)
-        0,  # LAnkleRoll
-    ],
-    dtype=np.float32,
-)
-
-PREPARATION_STATE2 = np.array(
-    [
-        0,  # RShoulderPitch
-        0,  # RShoulderRoll
-        0,  # RElbow
-        0,  # LShoulderPitch
-        0,  # LShoulderRoll
-        0,  # LElbow
-        0,  # RHipYaw
-        0,  # RHipRoll
-        0,  # RHipPitch    ← stark reduziert (oder probiere +0.10, falls negativ = vorne)
-        -1.0,  # RKnee        ← deutlich weniger Beugung → sanfter
-        0.60,  # RAnklePitch  ← stärker Zehen hoch → mehr Gegengewicht nach hinten
-        0,  # RAnkleRoll
-        0,  # LHipYaw
-        0,  # LHipRoll
-        0,  # LHipPitch    ← symmetrisch – teste ggf. -0.10
-        1.0,  # LKnee        ← symmetrisch weniger Beugung
-        -0.60,  # LAnklePitch  ← stärker kompensierend
-        0,  # LAnkleRoll
-    ],
-    dtype=np.float32,
-)
-
-PREPARATION_STATE3 = np.array(
-    [
-        0,  # RShoulderPitch
-        0,  # RShoulderRoll
-        0,  # RElbow
-        0,  # LShoulderPitch
-        0,  # LShoulderRoll
-        0,  # LElbow
-        0.012,  # RHipYaw      ← leichter Übergang zu 0.024
-        -0.05,  # RHipRoll     ← leichter zu -0.104
-        -0.32,  # RHipPitch    ← Mittel zwischen -0.10 und -0.735 (weniger vorwärts)
-        -1.06,  # RKnee        ← Mittel zwischen -0.80 und -1.323
-        0.57,  # RAnklePitch  ← etwas stärker als in STATE2 (mehr nach hinten)
-        -0.06,  # RAnkleRoll   ← leichter zu -0.129
-        -0.008,  # LHipYaw      ← zu -0.016
-        0.04,  # LHipRoll     ← zu 0.073
-        0.32,  # LHipPitch    ← Mittel zwischen 0.10 und 0.742 (mirrored Sign)
-        1.07,  # LKnee        ← Mittel zwischen 0.80 und 1.335
-        -0.57,  # LAnklePitch  ← mirrored, stärker kompensierend
-        0.04,  # LAnkleRoll   ← zu 0.074
-    ],
-    dtype=np.float32,
-)
+ONNX_WALK_MODEL = os.path.join(get_package_share_directory("bitbots_rl_motion"), "models", "wolfgang_walk_ppo.onnx")
+ONNX_KICK_MODEL = os.path.join(get_package_share_directory("bitbots_rl_motion"), "models", "wolfgang_kick_ppo.onnx")
 
 WALKREADY_STATE = np.array(
     [
@@ -153,18 +82,19 @@ ORDERED_RELEVANT_JOINT_NAMES = [
 ]
 
 
-class WalkNode(Node):
+class WalkKickNode(Node):
     """Node to control the wolfgang humanoid."""
 
     _previous_action: np.ndarray = np.zeros(len(ORDERED_RELEVANT_JOINT_NAMES), dtype=np.float32)
     _imu_data: Optional[Imu] = None
     _joint_state: Optional[JointState] = None
     _cmd_vel: Optional[Twist] = None
+    _goal_pose: Optional[PoseStamped] = None
     _phase: np.ndarray = np.array([0.0, np.pi], dtype=np.float32)
     _phase_dt: float
 
     def __init__(self):
-        super().__init__("reinforcement_learning_walk_inference_node")
+        super().__init__("reinforcement_learning_walk_kick_inference_node")
 
         # Set sim time parameter to true
         # self.set_parameters([
@@ -173,33 +103,24 @@ class WalkNode(Node):
         self._phase_dt = 2 * np.pi * GAIT_FREQUENCY * CONTROL_DT
 
         # Load the ONNX model
-        self._onnx_session = rt.InferenceSession(ONNX_MODEL, providers=["CPUExecutionProvider"])
+        self._onnx_walk_session = rt.InferenceSession(ONNX_WALK_MODEL, providers=["CPUExecutionProvider"])
+        self._onnx_kick_session = rt.InferenceSession(ONNX_KICK_MODEL, providers=["CPUExecutionProvider"])
 
-        self._joint_command_pub = self.create_publisher(JointCommand, "walking_motor_goals", 10)
+        self._joint_command_pub = self.create_publisher(JointCommand, "DynamixelController/command", 10)
         self._imu_sub = self.create_subscription(Imu, "imu/data", self._imu_callback, 10)
         self._joint_state_sub = self.create_subscription(JointState, "joint_states", self._joint_state_callback, 10)
         self._cmd_vel_sub = self.create_subscription(Twist, "cmd_vel", self._cmd_vel_callback, 10)
+        self._goal_pose_sub = self.create_subscription(PoseStamped, "goal_pose", self._goal_pose_callback, 10)
 
         self._timer = self.create_timer(CONTROL_DT, self._timer_callback)
 
         # First send the walkready state to the robot for 100 iterations
         joint_command = JointCommand()
         joint_command.joint_names = ORDERED_RELEVANT_JOINT_NAMES
-        joint_command.positions = PREPARATION_STATE
         joint_command.velocities = [0.2] * len(ORDERED_RELEVANT_JOINT_NAMES)
         joint_command.accelerations = [-1.0] * len(ORDERED_RELEVANT_JOINT_NAMES)
         joint_command.max_currents = [-1.0] * len(ORDERED_RELEVANT_JOINT_NAMES)  # -1.0 means no limit
         joint_command.header.stamp = self.get_clock().now().to_msg()
-        self._joint_command_pub.publish(joint_command)
-        time.sleep(8)
-
-        joint_command.positions = PREPARATION_STATE2
-        self._joint_command_pub.publish(joint_command)
-        time.sleep(12)
-
-        joint_command.positions = PREPARATION_STATE3
-        self._joint_command_pub.publish(joint_command)
-        time.sleep(12)
 
         joint_command.positions = WALKREADY_STATE
         self._joint_command_pub.publish(joint_command)
@@ -211,8 +132,24 @@ class WalkNode(Node):
     def _cmd_vel_callback(self, msg: Twist):
         self._cmd_vel = msg
 
+    def _goal_pose_callback(self, msg: PoseStamped):
+        self._goal_pose = msg
+
     def _imu_callback(self, msg: Imu):
         self._imu_data = msg
+
+    def _calculate_target_from_direction(self, kick_direction):
+        # Convert the kick direction quaternion to a 2D unit vector
+        kick_direction_mat = quat2mat(
+            [
+                kick_direction.w,
+                kick_direction.x,
+                kick_direction.y,
+                kick_direction.z,
+            ]
+        )
+        kick_direction_vec = kick_direction_mat @ np.array([1, 0, 0], dtype=np.float32)
+        return kick_direction_vec[:2]
 
     def _timer_callback(self):
         """Timer callback to publish joint commands based on the ONNX policy."""
@@ -225,8 +162,8 @@ class WalkNode(Node):
             if self._joint_state is None:
                 self.get_logger().warning("Waiting for joint state data", throttle_duration_sec=1.0)
             if self._cmd_vel is None:
-                # self.get_logger().warning("Waiting for cmd_vel data", throttle_duration_sec=1.0)
-                self._cmd_vel = Twist(x=0.3, y=0.0, z=0.0)  # Testing purpose
+                self.get_logger().warning("Waiting for cmd_vel data", throttle_duration_sec=1.0)
+                # self._cmd_vel = Twist(x=0.3, y=0.0, z=0.0)  # Testing purpose
 
             return
 
@@ -274,21 +211,55 @@ class WalkNode(Node):
 
         command = np.array([self._cmd_vel.linear.x, self._cmd_vel.linear.y, self._cmd_vel.angular.z], dtype=np.float32)
 
-        obs = np.hstack(
-            [
-                gyro,  # 3
-                gravity,  # 4
-                command,  # 3
-                joint_angles,  # 18
-                joint_velocities,  # 18
-                self._previous_action,  # 18  # Previous action
-                phase,  # 2
-            ]
-        ).astype(np.float32)
+        # Check whether kicking mode is active - TODO: check whether true
+        if self._goal_pose is not None:
+            self.get_logger().warning("Kicking is active")
+            rel_ball_pos = np.array(
+                [
+                    self._goal_pose.pose.position.x,
+                    self._goal_pose.pose.position.y,
+                ],
+                dtype=np.float32,
+            )
+
+            kick_direction = self._goal_pose.pose.orientation
+
+            rel_target_pos = self._calculate_target_from_direction(kick_direction)
+
+            obs = np.hstack(
+                [
+                    gyro,  # 3
+                    gravity,  # 4
+                    command,  # 3
+                    joint_angles,  # 18
+                    joint_velocities,  # 18
+                    self._previous_action,  # 18  # Previous action
+                    phase,  # 2
+                    rel_ball_pos,  # 2
+                    rel_target_pos,  # 0
+                ]
+            ).astype(np.float32)
+        else:
+            obs = np.hstack(
+                [
+                    gyro,  # 3
+                    gravity,  # 4
+                    command,  # 3
+                    joint_angles,  # 18
+                    joint_velocities,  # 18
+                    self._previous_action,  # 18  # Previous action
+                    phase,  # 2
+                ]
+            ).astype(np.float32)
 
         # Run the ONNX model
         onnx_input = {"in_0": obs.reshape(1, -1)}
-        onnx_pred = self._onnx_session.run(["tanh_out_0"], onnx_input)[0][0]
+
+        if self._goal_pose is not None:
+            onnx_pred = self._onnx_kick_session.run(["tanh_out_0"], onnx_input)[0][0]
+        else:
+            onnx_pred = self._onnx_walk_session.run(["tanh_out_0"], onnx_input)[0][0]
+
         self._previous_action = onnx_pred
 
         # Publish the joint commands
@@ -310,7 +281,7 @@ def main():
     import rclpy
 
     rclpy.init()
-    node = WalkNode()
+    node = WalkKickNode()
     rclpy.spin(node)
     node.destroy_node()
     rclpy.try_shutdown()

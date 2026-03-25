@@ -1,8 +1,7 @@
 import numpy as np
+from bitbots_rl_motion.handlers.handler import Handler
 from transforms3d.euler import euler2mat
 from transforms3d.quaternions import quat2mat
-
-from bitbots_rl_walk.handlers.handler import Handler
 
 
 class GravityHandler(Handler):

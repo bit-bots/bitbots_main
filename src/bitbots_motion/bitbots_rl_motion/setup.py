@@ -1,11 +1,34 @@
-from distutils.core import setup
+import glob
 
-from catkin_pkg.python_setup import generate_distutils_setup
+from setuptools import find_packages, setup
 
-d = generate_distutils_setup(
-    packages=["bitbots_rl_motion"],
-    # scripts=['bin/myscript'],
-    package_dir={"": "src"},
+package_name = "bitbots_rl_motion"
+
+setup(
+    name=package_name,
+    version="0.0.0",
+    packages=find_packages(exclude=["test"]),
+    data_files=[
+        ("share/ament_index/resource_index/packages", ["resource/" + package_name]),
+        ("share/" + package_name, ["package.xml"]),
+        (
+            "share/" + package_name + "/models",
+            glob.glob("models/*.onnx"),
+        ),
+    ],
+    install_requires=["setuptools"],
+    zip_safe=True,
+    maintainer="florian",
+    maintainer_email="git@flova.de",
+    description="TODO: Package description",
+    license="TODO: License declaration",
+    tests_require=["pytest"],
+    entry_points={
+        "console_scripts": [
+            "walk = bitbots_rl_motion.walk:main",
+            "kick = bitbots_rl_motion.kick:main",
+            "walk_kick = bitbots_rl_motion.walk_kick:main",
+            "forward_kick = bitbots_rl_motion.forward_kick:main",
+        ],
+    },
 )
-
-setup(**d)

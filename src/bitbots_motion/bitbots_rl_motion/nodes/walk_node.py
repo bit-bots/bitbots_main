@@ -1,6 +1,9 @@
 import time
 
 import numpy as np
+from bitbots_rl_motion.handlers.joint_handler import JointHandler
+from bitbots_rl_motion.handlers.phase_handler import PhaseHandler
+from bitbots_rl_motion.nodes.rl_node import RLNode
 from geometry_msgs.msg import Twist
 from handlers.command_handler import CommandHandler
 from handlers.gravity_handler import GravityHandler
@@ -8,9 +11,6 @@ from handlers.gyro_handler import GyroHandler
 from sensor_msgs.msg import Imu, JointState
 
 from bitbots_msgs.msg import JointCommand
-from bitbots_rl_walk.handlers.joint_handler import JointHandler
-from bitbots_rl_walk.handlers.phase_handler import PhaseHandler
-from bitbots_rl_walk.nodes.rl_node import RLNode
 
 
 class WalkNode(RLNode):

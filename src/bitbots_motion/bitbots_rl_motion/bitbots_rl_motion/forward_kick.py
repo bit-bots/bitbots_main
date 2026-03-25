@@ -22,6 +22,7 @@ import numpy as np
 import onnxruntime as rt
 from ament_index_python import get_package_share_directory
 from geometry_msgs.msg import PoseStamped, Twist
+from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
 from sensor_msgs.msg import Imu, JointState
 from transforms3d.euler import euler2mat
@@ -29,8 +30,9 @@ from transforms3d.quaternions import quat2mat
 
 from bitbots_msgs.msg import JointCommand
 
-ONNX_WALK_MODEL = os.path.join(get_package_share_directory("bitbots_rl_walk"), "models", "wolfgang_walk_ppo.onnx")
-ONNX_KICK_MODEL = os.path.join(get_package_share_directory("bitbots_rl_walk"), "models", "wolfgang_kick_ppo.onnx")
+ONNX_MODEL = os.path.join(
+    get_package_share_directory("bitbots_rl_motion"), "models", "wolfgang_forward_kick_better_ball_ppo.onnx"
+)
 
 WALKREADY_STATE = np.array(
     [
@@ -82,19 +84,19 @@ ORDERED_RELEVANT_JOINT_NAMES = [
 ]
 
 
-class WalkKickNode(Node):
+class KickNode(Node):
     """Node to control the wolfgang humanoid."""
 
     _previous_action: np.ndarray = np.zeros(len(ORDERED_RELEVANT_JOINT_NAMES), dtype=np.float32)
     _imu_data: Optional[Imu] = None
     _joint_state: Optional[JointState] = None
     _cmd_vel: Optional[Twist] = None
-    _goal_pose: Optional[PoseStamped] = None
+    _ball_pose: Optional[PoseStamped] = None
     _phase: np.ndarray = np.array([0.0, np.pi], dtype=np.float32)
     _phase_dt: float
 
     def __init__(self):
-        super().__init__("reinforcement_learning_walk_kick_inference_node")
+        super().__init__("reinforcement_learning_kick_inference_node")
 
         # Set sim time parameter to true
         # self.set_parameters([
@@ -103,14 +105,13 @@ class WalkKickNode(Node):
         self._phase_dt = 2 * np.pi * GAIT_FREQUENCY * CONTROL_DT
 
         # Load the ONNX model
-        self._onnx_walk_session = rt.InferenceSession(ONNX_WALK_MODEL, providers=["CPUExecutionProvider"])
-        self._onnx_kick_session = rt.InferenceSession(ONNX_KICK_MODEL, providers=["CPUExecutionProvider"])
+        self._onnx_session = rt.InferenceSession(ONNX_MODEL, providers=["CPUExecutionProvider"])
 
-        self._joint_command_pub = self.create_publisher(JointCommand, "DynamixelController/command", 10)
+        self._joint_command_pub = self.create_publisher(JointCommand, "kick_motor_goals", 10)
         self._imu_sub = self.create_subscription(Imu, "imu/data", self._imu_callback, 10)
         self._joint_state_sub = self.create_subscription(JointState, "joint_states", self._joint_state_callback, 10)
         self._cmd_vel_sub = self.create_subscription(Twist, "cmd_vel", self._cmd_vel_callback, 10)
-        self._goal_pose_sub = self.create_subscription(PoseStamped, "goal_pose", self._goal_pose_callback, 10)
+        self._goal_pose_sub = self.create_subscription(PoseStamped, "ball_pose", self._ball_pose_callback, 10)
 
         self._timer = self.create_timer(CONTROL_DT, self._timer_callback)
 
@@ -124,7 +125,7 @@ class WalkKickNode(Node):
 
         joint_command.positions = WALKREADY_STATE
         self._joint_command_pub.publish(joint_command)
-        time.sleep(20)
+        time.sleep(1)
 
     def _joint_state_callback(self, msg: JointState):
         self._joint_state = msg
@@ -132,28 +133,15 @@ class WalkKickNode(Node):
     def _cmd_vel_callback(self, msg: Twist):
         self._cmd_vel = msg
 
-    def _goal_pose_callback(self, msg: PoseStamped):
-        self._goal_pose = msg
+    def _ball_pose_callback(self, msg: PoseStamped):
+        self._ball_pose = msg
 
     def _imu_callback(self, msg: Imu):
         self._imu_data = msg
 
-    def _calculate_target_from_direction(self, kick_direction):
-        # Convert the kick direction quaternion to a 2D unit vector
-        kick_direction_mat = quat2mat(
-            [
-                kick_direction.w,
-                kick_direction.x,
-                kick_direction.y,
-                kick_direction.z,
-            ]
-        )
-        kick_direction_vec = kick_direction_mat @ np.array([1, 0, 0], dtype=np.float32)
-        return kick_direction_vec[:2]
-
     def _timer_callback(self):
         """Timer callback to publish joint commands based on the ONNX policy."""
-        if self._imu_data is None or self._joint_state is None or self._cmd_vel is None:
+        if self._imu_data is None or self._joint_state is None or self._cmd_vel is None or self._ball_pose is None:
             self.get_logger().warning("Waiting for all sensors to be available", throttle_duration_sec=1.0)
 
             # Print the sensor that we are still waiting for
@@ -164,8 +152,12 @@ class WalkKickNode(Node):
             if self._cmd_vel is None:
                 self.get_logger().warning("Waiting for cmd_vel data", throttle_duration_sec=1.0)
                 # self._cmd_vel = Twist(x=0.3, y=0.0, z=0.0)  # Testing purpose
+            if self._ball_pose is None:
+                self.get_logger().warning("Waiting for ball pose data", throttle_duration_sec=1.0)
 
             return
+        else:
+            self.get_logger().warning("RL Kick has all data!")
 
         # TODO consider IMU mounting offset
 
@@ -209,57 +201,32 @@ class WalkKickNode(Node):
 
         phase = np.array([np.cos(self._phase), np.sin(self._phase)], dtype=np.float32).flatten()
 
-        command = np.array([self._cmd_vel.linear.x, self._cmd_vel.linear.y, self._cmd_vel.angular.z], dtype=np.float32)
+        # command = np.array([self._cmd_vel.linear.x, self._cmd_vel.linear.y, self._cmd_vel.angular.z], dtype=np.float32)
 
-        # Check whether kicking mode is active - TODO: check whether true
-        if self._goal_pose is not None:
-            self.get_logger().warning("Kicking is active")
-            rel_ball_pos = np.array(
-                [
-                    self._goal_pose.pose.position.x,
-                    self._goal_pose.pose.position.y,
-                ],
-                dtype=np.float32,
-            )
+        rel_ball_pos = np.array(
+            [
+                self._ball_pose.pose.position.x,
+                self._ball_pose.pose.position.y,
+            ],
+            dtype=np.float32,
+        )
 
-            kick_direction = self._goal_pose.pose.orientation
-
-            rel_target_pos = self._calculate_target_from_direction(kick_direction)
-
-            obs = np.hstack(
-                [
-                    gyro,  # 3
-                    gravity,  # 4
-                    command,  # 3
-                    joint_angles,  # 18
-                    joint_velocities,  # 18
-                    self._previous_action,  # 18  # Previous action
-                    phase,  # 2
-                    rel_ball_pos,  # 2
-                    rel_target_pos,  # 0
-                ]
-            ).astype(np.float32)
-        else:
-            obs = np.hstack(
-                [
-                    gyro,  # 3
-                    gravity,  # 4
-                    command,  # 3
-                    joint_angles,  # 18
-                    joint_velocities,  # 18
-                    self._previous_action,  # 18  # Previous action
-                    phase,  # 2
-                ]
-            ).astype(np.float32)
+        obs = np.hstack(
+            [
+                gyro,  # 3
+                gravity,  # 4
+                # command,  # 3
+                joint_angles,  # 18
+                joint_velocities,  # 18
+                self._previous_action,  # 18  # Previous action
+                phase,  # 2
+                rel_ball_pos,  # 2
+            ]
+        ).astype(np.float32)
 
         # Run the ONNX model
         onnx_input = {"in_0": obs.reshape(1, -1)}
-
-        if self._goal_pose is not None:
-            onnx_pred = self._onnx_kick_session.run(["tanh_out_0"], onnx_input)[0][0]
-        else:
-            onnx_pred = self._onnx_walk_session.run(["tanh_out_0"], onnx_input)[0][0]
-
+        onnx_pred = self._onnx_session.run(["tanh_out_0"], onnx_input)[0][0]
         self._previous_action = onnx_pred
 
         # Publish the joint commands
@@ -281,7 +248,12 @@ def main():
     import rclpy
 
     rclpy.init()
-    node = WalkKickNode()
-    rclpy.spin(node)
+    node = KickNode()
+    executor = EventsExecutor()
+    executor.add_node(node)
+    try:
+        executor.spin(node)
+    except KeyboardInterrupt:
+        pass
+
     node.destroy_node()
-    rclpy.try_shutdown()

@@ -1,6 +1,5 @@
 import numpy as np
-
-from bitbots_rl_walk.handlers.handler import Handler
+from bitbots_rl_motion.handlers.handler import Handler
 
 
 class GyroHandler(Handler):
