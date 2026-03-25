@@ -1,10 +1,11 @@
 import numpy as np
 
-from bitbots_rl_walk.handler.handler import Handler
+from bitbots_rl_walk.handlers.handler import Handler
 
 
 class GyroHandler(Handler):
-    def __init__(self):
+    def __init__(self, config_file: str):
+        super().__init__(config_file=config_file)
         self._imu_data = None
 
     # Callables

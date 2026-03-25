@@ -8,14 +8,14 @@ from handler.gyro_handler import GyroHandler
 from sensor_msgs.msg import Imu, JointState
 
 from bitbots_msgs.msg import JointCommand
-from bitbots_rl_walk.config.timer_phase_config import TimerPhaseConfig
 from bitbots_rl_walk.handler.joint_handler import JointHandler
+from bitbots_rl_walk.handler.phase_handler import PhaseHandler
 from bitbots_rl_walk.nodes.rl_node import RLNode
 
 
 class WalkNode(RLNode):
-    def __init__(self, walk_policy_path):
-        super().__init__(walk_policy_path)
+    def __init__(self, config):
+        super().__init__(config)
 
         # publishers
         self._joint_command_pub = self.create_publisher(JointCommand, "walking_motor_goals", 10)
@@ -30,8 +30,7 @@ class WalkNode(RLNode):
         self._gravity_handler = GravityHandler()
         self._joint_handler = JointHandler()
         self._command_handler = CommandHandler()
-
-        self._timer_phase_config = TimerPhaseConfig()
+        self._phase_handler = PhaseHandler()
 
         self.config()
 
@@ -44,7 +43,7 @@ class WalkNode(RLNode):
                 self._joint_handler.get_angle_data(),  # 18
                 # TODO: fix
                 self._joint_handler.get_previous_action(),  # 18  # Previous action
-                self._timer_phase_config.get_obs_phase(),  # 2
+                self._phase_handler.get_obs_phase(),  # 2
             ]
         ).astype(np.float32)
 

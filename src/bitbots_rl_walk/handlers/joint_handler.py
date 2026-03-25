@@ -1,62 +1,22 @@
 import numpy as np
 
 from bitbots_msgs.msg import JointCommand
-from bitbots_rl_walk.handler.handler import Handler
-
-ORDERED_RELEVANT_JOINT_NAMES = [
-    "RShoulderPitch",
-    "RShoulderRoll",
-    "RElbow",
-    "LShoulderPitch",
-    "LShoulderRoll",
-    "LElbow",
-    "RHipYaw",
-    "RHipRoll",
-    "RHipPitch",
-    "RKnee",
-    "RAnklePitch",
-    "RAnkleRoll",
-    "LHipYaw",
-    "LHipRoll",
-    "LHipPitch",
-    "LKnee",
-    "LAnklePitch",
-    "LAnkleRoll",
-]
-
-WALKREADY_STATE = np.array(
-    [
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0.023628265148262724,
-        -0.10401795710581162,
-        -0.7352626990449959,
-        -1.3228415184260092,
-        0.5495038397740458,
-        -0.12913515511895796,
-        -0.016441795868928723,
-        0.07253788412595062,
-        0.7420808433462046,
-        1.334527650998329,
-        -0.5537397918567754,
-        0.07437380704149316,
-    ],
-    dtype=np.float32,
-)
+from bitbots_rl_walk.handlers.handler import Handler
 
 
 class JointHandler(Handler):
-    def __init__(self, ordered_relevant_joint_names=ORDERED_RELEVANT_JOINT_NAMES, walkready_state=WALKREADY_STATE):
-        self._ordered_relevant_joint_names = ordered_relevant_joint_names
-        self._walkready_state = walkready_state
+    def __init__(self, config_file: str):
+        super().__init__(config_file=config_file)
+
+        self._ordered_relevant_joint_names = self._config["joints"]["ordered_relevant_joint_names"]
+        self._walkready_state = self._config["joints"]["walkready_state"]
         self._previous_action: np.ndarray = np.zeros(len(self._ordered_relevant_joint_names), dtype=np.float32)
         self._joint_state = None
         self._obs_phase = None
         self._phase = None
+
+    def joint_state_callback(self, msg):
+        self._joint_state = msg
 
     def set_obs_phase(self, phase):
         self._obs_phase = phase
@@ -126,6 +86,3 @@ class JointHandler(Handler):
 
     def get_phase(self):
         return self._phase
-
-    def joint_state_callback(self, msg):
-        self._joint_state = msg

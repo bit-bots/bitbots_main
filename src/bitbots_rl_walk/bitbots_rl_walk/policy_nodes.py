@@ -8,10 +8,10 @@ from nodes.walk_node import WalkNode
 def main():
     rclpy.init()
 
-    walk_policy_path = os.path.join(get_package_share_directory("bitbots_rl_walk"), "models", "wolfgang_walk_ppo.onnx")
+    wolfgang_config = os.path.join(get_package_share_directory("bitbots_rl_walk"), "config", "wolfgang_config.yaml")
     # kick_policy_path = os.path.join(get_package_share_directory("bitbots_rl_walk"), "models", "wolfgang_kick_ppo.onnx")
 
-    walk_node = WalkNode(walk_policy_path)
+    walk_node = WalkNode(wolfgang_config)
     # kick_node = RLNode(kick_policy_path)
 
     rclpy.spin(walk_node)
