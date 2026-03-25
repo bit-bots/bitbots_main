@@ -2,14 +2,14 @@ import time
 
 import numpy as np
 from geometry_msgs.msg import Twist
-from handler.command_handler import CommandHandler
-from handler.gravity_handler import GravityHandler
-from handler.gyro_handler import GyroHandler
+from handlers.command_handler import CommandHandler
+from handlers.gravity_handler import GravityHandler
+from handlers.gyro_handler import GyroHandler
 from sensor_msgs.msg import Imu, JointState
 
 from bitbots_msgs.msg import JointCommand
-from bitbots_rl_walk.handler.joint_handler import JointHandler
-from bitbots_rl_walk.handler.phase_handler import PhaseHandler
+from bitbots_rl_walk.handlers.joint_handler import JointHandler
+from bitbots_rl_walk.handlers.phase_handler import PhaseHandler
 from bitbots_rl_walk.nodes.rl_node import RLNode
 
 
