@@ -7,8 +7,8 @@ class PhaseHandler(Handler):
     _phase: np.ndarray = np.array([0.0, np.pi], dtype=np.float32)
     _phase_dt: float
 
-    def __init__(self, config_file: str):
-        super().__init__(config_file=config_file)
+    def __init__(self, config):
+        super().__init__(config)
 
         self._control_dt = self._config["phase"]["control_dt"]
         self._gait_frequency = self._config["phase"]["gait_frequency"]

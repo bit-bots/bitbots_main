@@ -5,8 +5,8 @@ from bitbots_rl_walk.handlers.handler import Handler
 
 
 class JointHandler(Handler):
-    def __init__(self, config_file: str):
-        super().__init__(config_file=config_file)
+    def __init__(self, config):
+        super().__init__(config)
 
         self._ordered_relevant_joint_names = self._config["joints"]["ordered_relevant_joint_names"]
         self._walkready_state = self._config["joints"]["walkready_state"]

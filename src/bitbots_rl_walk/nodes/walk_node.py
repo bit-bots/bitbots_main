@@ -14,8 +14,12 @@ from bitbots_rl_walk.nodes.rl_node import RLNode
 
 
 class WalkNode(RLNode):
-    def __init__(self, config):
-        super().__init__(config)
+    def __init__(self, config_path: str):
+        super().__init__(config_path)
+
+        # loading model
+        model = self._config["models"]["walk_model"]
+        self.load_model(model)
 
         # publishers
         self._joint_command_pub = self.create_publisher(JointCommand, "walking_motor_goals", 10)
@@ -26,11 +30,11 @@ class WalkNode(RLNode):
         self._cmd_vel_sub = self.create_subscription(Twist, "cmd_vel", self._cmd_vel_callback, 10)
 
         # handlers
-        self._gyro_handler = GyroHandler()
-        self._gravity_handler = GravityHandler()
-        self._joint_handler = JointHandler()
-        self._command_handler = CommandHandler()
-        self._phase_handler = PhaseHandler()
+        self._gyro_handler = GyroHandler(self._config)
+        self._gravity_handler = GravityHandler(self._config)
+        self._joint_handler = JointHandler(self._config)
+        self._command_handler = CommandHandler(self._config)
+        self._phase_handler = PhaseHandler(self._config)
 
         self.config()
 

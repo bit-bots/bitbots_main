@@ -14,12 +14,15 @@
 # ==============================================================================
 """Deploy an MJX policy in ONNX format to C MuJoCo and play with it."""
 
+import os
 from pathlib import Path
 from typing import Callable, NamedTuple
 
 import numpy as np
 import onnx
 import onnxruntime as rt
+import yaml
+from ament_index_python import get_package_share_directory
 from rclpy.node import Node
 from rclpy.qos import QoSProfile
 from rclpy.subscription import Subscription
@@ -42,29 +45,14 @@ class RLNode(Node):
         callback: Callable
         qos_profile: int | QoSProfile
 
-    def __init__(self, path_to_model):
-        self._onnx_model_path = Path(path_to_model)
-        model_name = self._onnx_model_path.stem
-        super().__init__(f"{model_name}")
-
-        # Load the ONNX model
-        self._onnx_session = rt.InferenceSession(self._onnx_model_path, providers=["CPUExecutionProvider"])
-        self._onnx_model = onnx.load(self._onnx_model_path)
-
-        self._onnx_input_name = []
-        for inp in self._onnx_model.graph.input:
-            self._onnx_input_name.append(inp)
-
-        self._onnx_output_name = []
-        for out in self._onnx_model.graph.output:
-            self._onnx_output_name.append(out)
-
-        self._timer_phase_config = None  # Should be implemented in the subclass
-
-        self._config = False
-
+    def __init__(self, config_path: str):
+        self._config = self._load_config(config_path)
         self._obs = None  # should be defined in subclass
-        self._timer_phase_config = None  # Should be defined in subclass
+        self._phase_handler = None  # shoul be defined in subclass
+
+    def _load_config(self, path: str):
+        with open(path) as f:
+            return yaml.safe_load(f)
 
     # TODO: fix
     def _timer_callback(self):
@@ -85,7 +73,7 @@ class RLNode(Node):
 
             self._timer_phase_config.set_obs_phase(
                 np.array(
-                    [np.cos(self._timer_phase_config.get_phase()), np.sin(self._timer_phase_config.get_phase())],
+                    [np.cos(self._phase_handler.get_phase()), np.sin(self._phase_handler.get_phase())],
                     dtype=np.float32,
                 ).flatten()
             )
@@ -97,10 +85,30 @@ class RLNode(Node):
 
             self.publisher(onnx_pred)
 
-            phase_tp1 = self._timer_phase_config.get_phase() + self._timer_phase_config.get_phase_dt()
-            self._timer_phase_config.set_phase(np.fmod(phase_tp1 + np.pi, 2 * np.pi) - np.pi)
+            phase_tp1 = self._phase_handler.get_phase() + self._phase_handler.get_phase_dt()
+            self._phase_handler.set_phase(np.fmod(phase_tp1 + np.pi, 2 * np.pi) - np.pi)
         else:
             raise ConfigError("Configuration is missing! Try to run self.config() in init.")
+
+    def load_model(self, model):
+        path_to_model = os.path.join(get_package_share_directory("bitbots_rl_walk"), "models", model)
+
+        self._onnx_model_path = Path(path_to_model)
+        model_name = self._onnx_model_path.stem
+
+        super().__init__(f"{model_name}")
+
+        # Load the ONNX model
+        self._onnx_session = rt.InferenceSession(self._onnx_model_path, providers=["CPUExecutionProvider"])
+        self._onnx_model = onnx.load(self._onnx_model_path)
+
+        self._onnx_input_name = []
+        for inp in self._onnx_model.graph.input:
+            self._onnx_input_name.append(inp)
+
+        self._onnx_output_name = []
+        for out in self._onnx_model.graph.output:
+            self._onnx_output_name.append(out)
 
     def config(self):
         self._timer = self.create_timer(self._timer_phase_config.get_control_dt(), self._timer_callback)
