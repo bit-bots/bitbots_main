@@ -36,8 +36,6 @@ class WalkNode(RLNode):
         self._command_handler = CommandHandler(self._config)
         self._phase_handler = PhaseHandler(self._config)
 
-        self.config()
-
         # observations
 
         self._obs = np.hstack(
@@ -63,6 +61,8 @@ class WalkNode(RLNode):
 
     def _cmd_vel_callback(self, msg):
         self._command_handler.cmd_vel_callback(msg)
+
+    # load phase function
 
     def load_phase(self):
         walkready_command = self._joint_handler.get_walkready_joint_command()

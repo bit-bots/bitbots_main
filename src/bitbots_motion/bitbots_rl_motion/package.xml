@@ -4,7 +4,7 @@
   <name>bitbots_rl_motion</name>
   <version>0.0.0</version>
   <description>TODO: Package description</description>
-  <maintainer email="git@flova.de">florian</maintainer>
+  <maintainer email="git@sWintermoor.de">florian</maintainer>
   <license>TODO: License declaration</license>
 
   <test_depend>ament_copyright</test_depend>

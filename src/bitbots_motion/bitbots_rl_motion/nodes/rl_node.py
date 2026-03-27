@@ -45,7 +45,16 @@ class RLNode(Node):
     def __init__(self, config_path: str):
         self._config = self._load_config(config_path)
         self._obs = None  # should be defined in subclass
-        self._phase_handler = None  # shoul be defined in subclass
+        self._phase_handler = None  # should be defined in subclass
+
+        self._timer = self.create_timer(self._config["phase"]["control_dt"], self._timer_callback)
+        self.load_phase()
+
+        self._subs = []
+
+        for key, value in self.__dict__.values():
+            if type(value) is Subscription:
+                self._subs.append(key)
 
     def _load_config(self, path: str):
         with open(path) as f:
@@ -68,7 +77,7 @@ class RLNode(Node):
 
             # TODO consider IMU mounting offset
 
-            self._timer_phase_config.set_obs_phase(
+            self._phase_handler.set_obs_phase(
                 np.array(
                     [np.cos(self._phase_handler.get_phase()), np.sin(self._phase_handler.get_phase())],
                     dtype=np.float32,
@@ -106,16 +115,6 @@ class RLNode(Node):
         self._onnx_output_name = []
         for out in self._onnx_model.graph.output:
             self._onnx_output_name.append(out)
-
-    def config(self):
-        self._timer = self.create_timer(self._timer_phase_config.get_control_dt(), self._timer_callback)
-        self.load_phase()
-
-        self._subs = []
-
-        for key, value in self.__dict__.values():
-            if type(value) is Subscription:
-                self._subs.append(key)
 
     def obs(self):
         # Should be defined in subclass

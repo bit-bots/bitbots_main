@@ -13,12 +13,6 @@ class PhaseHandler(Handler):
         self._gait_frequency = self._config["phase"]["gait_frequency"]
         self._phase_dt = 2 * np.pi * self._gait_frequency * self._control_dt
 
-    def get_control_dt(self):
-        return self._control_dt
-
-    def get_gait_frequency(self):
-        return self._gait_frequency
-
     def get_phase(self):
         return self._phase
 
