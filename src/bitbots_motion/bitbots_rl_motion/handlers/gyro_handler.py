@@ -11,7 +11,7 @@ class GyroHandler(Handler):
     def imu_callback(self, msg):
         self._imu_data = msg
 
-    def get_data(self):
+    def get_gyro(self):
         gyro = np.array(
             [
                 self._imu_data.angular_velocity.x,

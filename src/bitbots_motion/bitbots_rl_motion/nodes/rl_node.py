@@ -27,9 +27,6 @@ from rclpy.node import Node
 from rclpy.qos import QoSProfile
 from rclpy.subscription import Subscription
 
-CONTROL_DT = 0.02  # Control loop frequency in seconds
-GAIT_FREQUENCY = 1.5  # Gait frequency in Hz
-
 
 class RLNode(Node):
     """Node to control the wolfgang humanoid."""
@@ -99,7 +96,7 @@ class RLNode(Node):
         super().__init__(f"{model_name}")
 
         # Load the ONNX model
-        self._onnx_session = rt.InferenceSession(self._onnx_model_path, providers=["CPUExecutionProvider"])
+        self._onnx_session = rt.InferenceSession(self._onnx_model_path, self._config["providers"])
         self._onnx_model = onnx.load(self._onnx_model_path)
 
         self._onnx_input_name = []
@@ -119,8 +116,6 @@ class RLNode(Node):
         for key, value in self.__dict__.values():
             if type(value) is Subscription:
                 self._subs.append(key)
-
-        self._config = True
 
     def obs(self):
         # Should be defined in subclass

@@ -15,7 +15,7 @@ class GravityHandler(Handler):
     def imu_callback(self, msg):
         self._imu_data = msg
 
-    def get_data(self):
+    def get_gravity(self):
         gravity = (
             quat2mat(
                 [

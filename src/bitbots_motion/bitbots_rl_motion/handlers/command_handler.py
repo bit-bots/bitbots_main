@@ -8,7 +8,7 @@ class CommandHandler(Handler):
 
         self._cmd_vel = None
 
-    def get_data(self):
+    def get_command(self):
         command = np.array([self._cmd_vel.linear.x, self._cmd_vel.linear.y, self._cmd_vel.angular.z], dtype=np.float32)
         return command
 

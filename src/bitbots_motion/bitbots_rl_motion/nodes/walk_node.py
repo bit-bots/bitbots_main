@@ -38,18 +38,21 @@ class WalkNode(RLNode):
 
         self.config()
 
+        # observations
+
         self._obs = np.hstack(
             [
-                self._gyro_handler.get_data(),  # 3
-                self._gravity_handler.get_data(),  # 4
-                self._command_handler.get_data(),  # 3
-                self._joint_handler.get_velocity_data(),  # 18
-                self._joint_handler.get_angle_data(),  # 18
-                # TODO: fix
-                self._joint_handler.get_previous_action(),  # 18  # Previous action
-                self._phase_handler.get_obs_phase(),  # 2
+                self._gyro_handler.get_gyro(),
+                self._gravity_handler.get_gravity(),
+                self._command_handler.get_command(),
+                self._joint_handler.get_velocity_data(),
+                self._joint_handler.get_angle_data(),
+                self._joint_handler.get_previous_action(),
+                self._phase_handler.get_phase(),  # TODO: Check whether correct
             ]
         ).astype(np.float32)
+
+    # callback functions
 
     def _imu_callback(self, msg):
         self._gyro_handler.imu_callback(msg)
@@ -65,6 +68,8 @@ class WalkNode(RLNode):
         walkready_command = self._joint_handler.get_walkready_joint_command()
         self._joint_command_pub.publish(walkready_command)
         time.sleep(10)
+
+    # publisher function
 
     def publisher(self, onnx_pred):
         joint_command = self._joint_handler.get_joint_commands(onnx_pred)

@@ -47,3 +47,5 @@ joints:
 phase:
   control_dt: 0.02
   gait_frequency: 1.5
+
+providers: ["CPUExecutionProvider"]
