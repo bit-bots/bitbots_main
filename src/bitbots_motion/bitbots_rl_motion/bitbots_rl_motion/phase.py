@@ -1,8 +1,9 @@
 import numpy as np
-from bitbots_rl_motion.handlers.handler import Handler
+
+# Please pay attention to the code in rl_node.py if you wanna change here sth.
 
 
-class PhaseHandler(Handler):
+class PhaseObject:
     _phase: np.ndarray = np.array([0.0, np.pi], dtype=np.float32)
     _phase_dt: float
 
