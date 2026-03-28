@@ -28,6 +28,8 @@ from rclpy.node import Node
 from rclpy.qos import QoSProfile
 from rclpy.subscription import Subscription
 
+from handlers.handler import Handler
+
 
 class RLNode(Node):
     """Node to control the wolfgang humanoid."""
@@ -56,6 +58,14 @@ class RLNode(Node):
 
     # TODO: fix
     def _timer_callback(self):
+        if not self._config:
+            raise ConfigError("Configuration is missing!")
+
+        # Prüfen ob alle Subscriber schon mindestens eine Nachricht hatten
+        if not self._all_sensors_ready():
+            self.get_logger().warning("Waiting for all sensors to be available", throttle_duration_sec=1.0)
+            return
+
         if self._config:
             for subscription in self._subs:
                 if subscription is None:
@@ -89,6 +99,13 @@ class RLNode(Node):
             self._phase.set_phase(np.fmod(phase_tp1 + np.pi, 2 * np.pi) - np.pi)
         else:
             raise ConfigError("Configuration is missing! Try to run self.config() in init.")
+        
+    def _all_sensors_ready(self):
+        for handler in self._handlers:
+            if not handler.has_data():
+                return False
+            
+        return True
 
     def load_model(self, model):
         path_to_model = os.path.join(get_package_share_directory("bitbots_rl_motion"), "models", model)
@@ -107,19 +124,18 @@ class RLNode(Node):
         for out in self._onnx_model.graph.output:
             self._onnx_output_name.append(out)
 
+        self._subs = []
+        self._handlers = []
+
+        for key, value in self.__dict__.items():
+            if isinstance(value, Subscription):
+                self._subs.append(value)
+            if isinstance(value, Handler):
+                self._handlers.append(value)
+        
         self._timer = self.create_timer(self._config["phase"]["control_dt"], self._timer_callback)
 
-        self._subs = []
-
-        for (key, value) in self.__dict__.values():
-            if type(value) is Subscription:
-                self._subs.append(key)
-
         self.load_phase()
-
-    def obs(self):
-        # Should be defined in subclass
-        pass
 
     def publisher(self):
         # Should be defined in subclass

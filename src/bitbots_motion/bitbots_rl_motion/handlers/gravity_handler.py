@@ -9,27 +9,26 @@ class GravityHandler(Handler):
         super().__init__(config)
 
         self._imu_data = None
-        self._gravity = None
 
     # Callables
     def imu_callback(self, msg):
         self._imu_data = msg
 
+    def has_data(self):
+        return (self._imu_data != None)
 
     def get_gravity(self):
-        try:
-            gravity = (
-                quat2mat(
-                    [
-                        self._imu_data.orientation.w,
-                        self._imu_data.orientation.x,
-                        self._imu_data.orientation.y,
-                        self._imu_data.orientation.z,
-                    ]
-                )
-                @ euler2mat(0, -0.0, 0)
-            ).T @ np.array([0, 0, -1], dtype=np.float32)
-            return gravity
-        except:
-            return None
+        gravity = (
+            quat2mat(
+                [
+                    self._imu_data.orientation.w,
+                    self._imu_data.orientation.x,
+                    self._imu_data.orientation.y,
+                    self._imu_data.orientation.z,
+                ]
+            )
+            @ euler2mat(0, -0.0, 0)
+        ).T @ np.array([0, 0, -1], dtype=np.float32)
+        return gravity
+
 

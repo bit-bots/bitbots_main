@@ -10,7 +10,9 @@ class GyroHandler(Handler):
     # Callables
     def imu_callback(self, msg):
         self._imu_data = msg
-        
+
+    def has_data(self):
+        return (self._imu_data != None)
 
     def get_gyro(self):
         try:

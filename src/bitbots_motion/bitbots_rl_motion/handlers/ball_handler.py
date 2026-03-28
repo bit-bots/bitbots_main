@@ -9,9 +9,8 @@ class BallHandler(Handler):
     def ball_pos_callback(self, msg):
         self.ball_pos = msg
 
+    def has_data(self):
+        return (self.ball_pos != None)
 
     def get_ball_pos(self):
-        try:
-            return self.ball_pos
-        except:
-            return None
+        return self.ball_pos

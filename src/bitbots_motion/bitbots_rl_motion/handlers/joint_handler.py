@@ -17,6 +17,9 @@ class JointHandler(Handler):
     def joint_state_callback(self, msg):
         self._joint_state = msg
 
+    def has_data(self):
+        return (self._joint_state != None)
+
     def get_angle_data(self):
         try:
             joint_angles = (

@@ -9,11 +9,11 @@ class CommandHandler(Handler):
         self._cmd_vel = None
 
     def get_command(self):
-        try:
-            command = np.array([self._cmd_vel.linear.x, self._cmd_vel.linear.y, self._cmd_vel.angular.z], dtype=np.float32)
-            return command
-        except: 
-            return None
+        command = np.array([self._cmd_vel.linear.x, self._cmd_vel.linear.y, self._cmd_vel.angular.z], dtype=np.float32)
+        return command
+
+    def has_data(self):
+        return (self._cmd_vel != None)
 
     def cmd_vel_callback(self, msg):
         self._cmd_vel = msg
