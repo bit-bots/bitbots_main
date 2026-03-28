@@ -18,6 +18,7 @@ import os
 from pathlib import Path
 from typing import Callable, NamedTuple
 
+from abc import ABC, abstractmethod
 import numpy as np
 import onnx
 import onnxruntime as rt
@@ -31,19 +32,8 @@ from rclpy.subscription import Subscription
 from handlers.handler import Handler
 
 
-class RLNode(Node):
+class RLNode(Node, ABC):
     """Node to control the wolfgang humanoid."""
-
-    class PublisherParam(NamedTuple):
-        msg_type: int
-        topic: str
-        qos_profile: int | QoSProfile
-
-    class SubscriptionParam(NamedTuple):
-        msg_type: int
-        topic: str
-        callback: Callable
-        qos_profile: int | QoSProfile
 
     def __init__(self, config_path: str, node_name: str):
         super().__init__(f"{node_name}")
@@ -56,7 +46,6 @@ class RLNode(Node):
         with open(path) as f:
             return yaml.safe_load(f)
 
-    # TODO: fix
     def _timer_callback(self):
         if not self._config:
             raise ConfigError("Configuration is missing!")
@@ -64,41 +53,26 @@ class RLNode(Node):
         # Prüfen ob alle Subscriber schon mindestens eine Nachricht hatten
         if not self._all_sensors_ready():
             self.get_logger().warning("Waiting for all sensors to be available", throttle_duration_sec=1.0)
-            return
 
-        if self._config:
-            for subscription in self._subs:
-                if subscription is None:
-                    self.get_logger().warning("Waiting for all sensors to be available", throttle_duration_sec=1.0)
+        # TODO consider IMU mounting offset
 
-                    for subscription in self._subs:
-                        if subscription is None:
-                            self.get_logger().warning(
-                                f"Waiting for: {subscription} to be available", throttle_duration=1.0
-                            )
+        self._phase.set_phase(
+            np.array(
+                [np.cos(self._phase.get_phase()), np.sin(self._phase.get_phase())],
+                dtype=np.float32,
+            ).flatten()
+        )
 
-                    return
+        # Run the ONNX model
+        onnx_input = {self._onnx_input_name[0]: self._obs.reshape(1, -1)}  # TODO: Improve input
+        onnx_pred = self._onnx_session.run(self._onnx_output_name, onnx_input)[0][0]
+        self._previous_action = onnx_pred
 
-            # TODO consider IMU mounting offset
+        self.publisher(onnx_pred)
 
-            self._phase.set_phase(
-                np.array(
-                    [np.cos(self._phase.get_phase()), np.sin(self._phase.get_phase())],
-                    dtype=np.float32,
-                ).flatten()
-            )
+        phase_tp1 = self._phase.get_phase() + self._phase.get_phase_dt()
+        self._phase.set_phase(np.fmod(phase_tp1 + np.pi, 2 * np.pi) - np.pi)
 
-            # Run the ONNX model
-            onnx_input = {self._onnx_input_name[0]: self._obs.reshape(1, -1)}  # TODO: Improve input
-            onnx_pred = self._onnx_session.run(self._onnx_output_name, onnx_input)[0][0]
-            self._previous_action = onnx_pred
-
-            self.publisher(onnx_pred)
-
-            phase_tp1 = self._phase.get_phase() + self._phase.get_phase_dt()
-            self._phase.set_phase(np.fmod(phase_tp1 + np.pi, 2 * np.pi) - np.pi)
-        else:
-            raise ConfigError("Configuration is missing! Try to run self.config() in init.")
         
     def _all_sensors_ready(self):
         for handler in self._handlers:
@@ -116,13 +90,8 @@ class RLNode(Node):
         self._onnx_session = rt.InferenceSession(self._onnx_model_path, providers=self._config["providers"])
         self._onnx_model = onnx.load(self._onnx_model_path)
 
-        self._onnx_input_name = []
-        for inp in self._onnx_model.graph.input:
-            self._onnx_input_name.append(inp)
-
-        self._onnx_output_name = []
-        for out in self._onnx_model.graph.output:
-            self._onnx_output_name.append(out)
+        self._onnx_input_name = [inp.name for inp in self._onnx_model.graph.input]
+        self._onnx_output_name = [out.name for out in self._onnx_model.graph.output]
 
         self._subs = []
         self._handlers = []
@@ -137,12 +106,12 @@ class RLNode(Node):
 
         self.load_phase()
 
-    def publisher(self):
-        # Should be defined in subclass
+    @abstractmethod
+    def publisher(self, action):
         pass
 
+    @abstractmethod
     def load_phase(self):
-        # Should be defined in subclass
         pass
 
 
