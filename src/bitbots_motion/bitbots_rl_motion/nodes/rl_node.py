@@ -50,6 +50,7 @@ class RLNode(Node, ABC):
         # Prüfen ob alle Subscriber schon mindestens eine Nachricht hatten
         if not self._all_sensors_ready():
             self.get_logger().warning("Waiting for all sensors to be available", throttle_duration_sec=1.0)
+            return
 
         # TODO consider IMU mounting offset
 
