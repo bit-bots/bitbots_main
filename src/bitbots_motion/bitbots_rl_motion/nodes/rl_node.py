@@ -23,6 +23,7 @@ import onnx
 import onnxruntime as rt
 import yaml
 from ament_index_python import get_package_share_directory
+from bitbots_rl_motion.bitbots_rl_motion.phase import PhaseObject
 from rclpy.node import Node
 from rclpy.qos import QoSProfile
 from rclpy.subscription import Subscription
@@ -44,8 +45,8 @@ class RLNode(Node):
 
     def __init__(self, config_path: str):
         self._config = self._load_config(config_path)
+        self._phase = PhaseObject(self._config)
         self._obs = None  # should be defined in subclass
-        self._phase_handler = None  # should be defined in subclass
 
         self._timer = self.create_timer(self._config["phase"]["control_dt"], self._timer_callback)
         self.load_phase()
@@ -77,9 +78,9 @@ class RLNode(Node):
 
             # TODO consider IMU mounting offset
 
-            self._phase_handler.set_obs_phase(
+            self._phase.set_phase(
                 np.array(
-                    [np.cos(self._phase_handler.get_phase()), np.sin(self._phase_handler.get_phase())],
+                    [np.cos(self._phase.get_phase()), np.sin(self._phase.get_phase())],
                     dtype=np.float32,
                 ).flatten()
             )
@@ -91,8 +92,8 @@ class RLNode(Node):
 
             self.publisher(onnx_pred)
 
-            phase_tp1 = self._phase_handler.get_phase() + self._phase_handler.get_phase_dt()
-            self._phase_handler.set_phase(np.fmod(phase_tp1 + np.pi, 2 * np.pi) - np.pi)
+            phase_tp1 = self._phase.get_phase() + self._phase.get_phase_dt()
+            self._phase.set_phase(np.fmod(phase_tp1 + np.pi, 2 * np.pi) - np.pi)
         else:
             raise ConfigError("Configuration is missing! Try to run self.config() in init.")
 

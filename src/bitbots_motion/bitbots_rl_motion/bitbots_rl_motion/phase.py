@@ -14,6 +14,9 @@ class PhaseObject:
         self._gait_frequency = self._config["phase"]["gait_frequency"]
         self._phase_dt = 2 * np.pi * self._gait_frequency * self._control_dt
 
+    def set_phase(self, new_phase):
+        self._phase = new_phase
+
     def get_phase(self):
         return self._phase
 

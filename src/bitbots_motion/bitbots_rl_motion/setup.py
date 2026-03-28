@@ -18,17 +18,14 @@ setup(
     ],
     install_requires=["setuptools"],
     zip_safe=True,
-    maintainer="florian",
-    maintainer_email="git@flova.de",
+    maintainer="mark oliver",
+    maintainer_email="git@sWintermoor.de",
     description="TODO: Package description",
     license="TODO: License declaration",
     tests_require=["pytest"],
     entry_points={
         "console_scripts": [
-            "walk = bitbots_rl_motion.walk:main",
-            "kick = bitbots_rl_motion.kick:main",
-            "walk_kick = bitbots_rl_motion.walk_kick:main",
-            "forward_kick = bitbots_rl_motion.forward_kick:main",
+            "run_policies = bitbots_rl_motion.policy_nodes:main",
         ],
     },
 )
