@@ -2200,7 +2200,7 @@
     <dynamics damping="0.0" friction="0.0"/>
   </joint>
   <joint name="RAnkleRoll" type="revolute">
-    <origin rpy="-1.46564e-14 1.54833 -1.5708" xyz="-0.0691 -1.11022e-16 -0.026"/>
+    <origin rpy="-1.46564e-14 1.5708 -1.5708" xyz="-0.0691 -1.11022e-16 -0.026"/>
     <axis xyz="0.0 -1.0 0.0"/>
     <parent link="r_ankle"/>
     <child link="r_foot"/>
