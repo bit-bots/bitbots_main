@@ -68,7 +68,7 @@
         </include>
     -->
 
-    <!-- launch the rl kick -->
+    <!-- launch rl policies -->
     <group if="$(var kicking)">
         <node pkg="bitbots_rl_motion" exec="run_policies" output="screen">
             <param name="use_sim_time" value="$(var sim)"/>
