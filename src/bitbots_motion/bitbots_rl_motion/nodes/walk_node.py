@@ -61,7 +61,8 @@ class WalkNode(RLNode):
 
     # load phase function
     def load_phase(self):
-        walkready_command = self._joint_handler.get_walkready_joint_command()
+        timestamp = self.get_clock().now().to_msg()
+        walkready_command = self._joint_handler.get_walkready_joint_command(timestamp=timestamp)
         self._joint_command_pub.publish(walkready_command)
         time.sleep(10)
 
