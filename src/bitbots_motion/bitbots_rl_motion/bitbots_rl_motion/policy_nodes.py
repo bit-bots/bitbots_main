@@ -12,7 +12,7 @@ def main():
 
     wolfgang_config = os.path.join(get_package_share_directory("bitbots_rl_motion"), "configs", "wolfgang_config.yaml")
 
-    walk_node = WalkNode(wolfgang_config)
+    #walk_node = WalkNode(wolfgang_config)
     kick_node = KickNode(wolfgang_config)
 
     executor = MultiThreadedExecutor()
@@ -22,6 +22,6 @@ def main():
     try:
         executor.spin()
     finally:
-        walk_node.destroy_node()
+        #walk_node.destroy_node()
         kick_node.destroy_node()
         rclpy.shutdown()
