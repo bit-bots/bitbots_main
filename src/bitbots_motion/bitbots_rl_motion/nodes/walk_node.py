@@ -14,7 +14,7 @@ from bitbots_msgs.msg import JointCommand
 
 class WalkNode(RLNode):
     def __init__(self, config_path: str):
-        super().__init__(config_path, "walk_node")
+        super().__init__(config_path, node_name="walk_node")
 
         # publishers
         self._joint_command_pub = self.create_publisher(JointCommand, "walking_motor_goals", 10)
@@ -30,9 +30,24 @@ class WalkNode(RLNode):
         self._joint_handler = JointHandler(self._config)
         self._command_handler = CommandHandler(self._config)
 
-        # observations
+        # loading model
+        model = self._config["models"]["walk_model"]
+        self.load_model(model)
 
-        self._obs = np.hstack(
+    # callback functions
+    def _imu_callback(self, msg):
+        self._gyro_handler.imu_callback(msg)
+        self._gravity_handler.imu_callback(msg)
+
+    def _joint_state_callback(self, msg):
+        self._joint_handler.joint_state_callback(msg)
+
+    def _cmd_vel_callback(self, msg):
+        self._command_handler.cmd_vel_callback(msg)
+
+    # observations
+    def obs(self):
+        return np.hstack(
             [
                 self._gyro_handler.get_gyro(),
                 self._gravity_handler.get_gravity(),
@@ -44,31 +59,13 @@ class WalkNode(RLNode):
             ]
         ).astype(np.float32)
 
-        # loading model
-        model = self._config["models"]["walk_model"]
-        self.load_model(model)
-
-    # callback functions
-
-    def _imu_callback(self, msg):
-        self._gyro_handler.imu_callback(msg)
-        self._gravity_handler.imu_callback(msg)
-
-    def _joint_state_callback(self, msg):
-        self._joint_handler.joint_state_callback(msg)
-
-    def _cmd_vel_callback(self, msg):
-        self._command_handler.cmd_vel_callback(msg)
-
     # load phase function
-
     def load_phase(self):
         walkready_command = self._joint_handler.get_walkready_joint_command()
         self._joint_command_pub.publish(walkready_command)
         time.sleep(10)
 
     # publisher function
-
     def publisher(self, onnx_pred):
         joint_command = self._joint_handler.get_joint_commands(onnx_pred)
         self._joint_command_pub.publish(joint_command)

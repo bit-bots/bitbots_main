@@ -1,6 +1,6 @@
 models: 
   walk_model: wolfang_walk_ppo.onnx
-  kick_model: wolfgang_kick_ppo.onnx
+  kick_model: wolfgang_forward_kick_better_ball_ppo.onnx
 
 joints:
   ordered_relevant_joint_names: [

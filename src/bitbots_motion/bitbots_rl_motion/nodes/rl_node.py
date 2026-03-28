@@ -16,7 +16,6 @@
 
 import os
 from pathlib import Path
-from typing import Callable, NamedTuple
 
 from abc import ABC, abstractmethod
 import numpy as np
@@ -26,7 +25,6 @@ import yaml
 from ament_index_python import get_package_share_directory
 from bitbots_rl_motion.phase import PhaseObject
 from rclpy.node import Node
-from rclpy.qos import QoSProfile
 from rclpy.subscription import Subscription
 
 from handlers.handler import Handler
@@ -40,7 +38,6 @@ class RLNode(Node, ABC):
         
         self._config = self._load_config(config_path)
         self._phase = PhaseObject(self._config)
-        self._obs = None  # should be defined in subclass
 
     def _load_config(self, path: str):
         with open(path) as f:
@@ -64,7 +61,7 @@ class RLNode(Node, ABC):
         )
 
         # Run the ONNX model
-        onnx_input = {self._onnx_input_name[0]: self._obs.reshape(1, -1)}  # TODO: Improve input
+        onnx_input = {self._onnx_input_name[0]: self.obs().reshape(1, -1)}  # TODO: Improve input
         onnx_pred = self._onnx_session.run(self._onnx_output_name, onnx_input)[0][0]
         self._previous_action = onnx_pred
 
@@ -114,6 +111,9 @@ class RLNode(Node, ABC):
     def load_phase(self):
         pass
 
+    @abstractmethod
+    def obs(self):
+        pass
 
 class ConfigError(Exception):
     pass

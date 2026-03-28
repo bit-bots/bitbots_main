@@ -12,7 +12,7 @@ from bitbots_msgs.msg import JointCommand
 
 class KickNode(RLNode):
     def __init__(self, config_path: str):
-        super().__init__(config_path, "kick_node")
+        super().__init__(config_path, node_name="kick_node")
 
         # publishers
         self._joint_command_pub = self.create_publisher(JointCommand, "walking_motor_goals", 10)
@@ -28,9 +28,24 @@ class KickNode(RLNode):
         self._joint_handler = JointHandler(self._config)
         self._ball_handler = BallHandler(self._config)
 
-        # observations
+        # loading model
+        model = self._config["models"]["kick_model"]
+        self.load_model(model)
 
-        self._obs = np.hstack(
+    # callback functions
+    def _imu_callback(self, msg):
+        self._gyro_handler.imu_callback(msg)
+        self._gravity_handler.imu_callback(msg)
+
+    def _joint_state_callback(self, msg):
+        self._joint_handler.joint_state_callback(msg)
+
+    def _ball_pos_callback(self, msg):
+        self._ball_handler.ball_pos_callback(msg)
+
+    # observations
+    def obs(self):
+        return np.hstack(
             [
                 self._gyro_handler.get_gyro(),
                 self._gravity_handler.get_gravity(),
@@ -42,29 +57,11 @@ class KickNode(RLNode):
             ]
         ).astype(np.float32)
 
-         # loading model
-        model = self._config["models"]["kick_model"]
-        self.load_model(model)
-
-    # callback functions
-
-    def _imu_callback(self, msg):
-        self._gyro_handler.imu_callback(msg)
-        self._gravity_handler.imu_callback(msg)
-
-    def _joint_state_callback(self, msg):
-        self._joint_handler.joint_state_callback(msg)
-
-    def _ball_pos_callback(self, msg):
-        self._ball_handler.ball_pos_callback(msg)
-
     # load phase function
-
     def load_phase(self):
         pass
 
     # publisher function
-
     def publisher(self, onnx_pred):
         joint_command = self._joint_handler.get_joint_commands(onnx_pred)
         self._joint_command_pub.publish(joint_command)
