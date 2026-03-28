@@ -14,7 +14,8 @@
     <arg name="world_model" default="true" description="Whether the world model should be started"/>
     <arg name="monitoring" default="true" description="Whether the system monitor and udp bridge should be started" />
     <arg name="record" default="false" description="Whether the ros bag recording should be started" />
-    <arg name="tts" default="true" description="Whether to speak" />
+    <arg name="tts" default="false" description="Whether to speak" />
+    <arg name="whistle_detector" default="true" description="Whether to detect whistles"/>
     <arg unless="$(var sim)" name="fieldname" default="german_open_2026" description="Loads field settings (labor, webots, ...)." />
     <arg if="$(var sim)" name="fieldname" default="webots" description="Loads field settings (labor, webots, ...)." />
 
@@ -54,6 +55,7 @@
         <arg name="teamcom" value="$(var teamcom)" />
         <arg name="vision" value="$(var vision)" />
         <arg name="world_model" value="$(var world_model)" />
+        <arg name="whistle_detector" value="$(var whistle_detector)" />
     </include>
 
     <!-- load monitoring -->
