@@ -1,6 +1,6 @@
 models: 
   walk_model: wolfgang_walk_ppo.onnx
-  kick_model: wolfgang_forward_kick_better_ball_without_arms_ppo.onnx
+  kick_model: wolfgang_dribbling_ppo.onnx
 
 joints:
   ordered_relevant_joint_names: [
