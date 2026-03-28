@@ -8,10 +8,9 @@ class PhaseObject:
     _phase_dt: float
 
     def __init__(self, config):
-        super().__init__(config)
 
-        self._control_dt = self._config["phase"]["control_dt"]
-        self._gait_frequency = self._config["phase"]["gait_frequency"]
+        self._control_dt = config["phase"]["control_dt"]
+        self._gait_frequency = config["phase"]["gait_frequency"]
         self._phase_dt = 2 * np.pi * self._gait_frequency * self._control_dt
 
     def set_phase(self, new_phase):

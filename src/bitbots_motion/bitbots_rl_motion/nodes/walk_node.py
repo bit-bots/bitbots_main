@@ -1,8 +1,8 @@
 import time
 
 import numpy as np
-from bitbots_rl_motion.handlers.joint_handler import JointHandler
-from bitbots_rl_motion.nodes.rl_node import RLNode
+from handlers.joint_handler import JointHandler
+from nodes.rl_node import RLNode
 from geometry_msgs.msg import Twist
 from handlers.command_handler import CommandHandler
 from handlers.gravity_handler import GravityHandler
@@ -14,11 +14,7 @@ from bitbots_msgs.msg import JointCommand
 
 class WalkNode(RLNode):
     def __init__(self, config_path: str):
-        super().__init__(config_path)
-
-        # loading model
-        model = self._config["models"]["walk_model"]
-        self.load_model(model)
+        super().__init__(config_path, "walk_node")
 
         # publishers
         self._joint_command_pub = self.create_publisher(JointCommand, "walking_motor_goals", 10)
@@ -47,6 +43,10 @@ class WalkNode(RLNode):
                 self._phase.get_phase(),
             ]
         ).astype(np.float32)
+
+        # loading model
+        model = self._config["models"]["walk_model"]
+        self.load_model(model)
 
     # callback functions
 

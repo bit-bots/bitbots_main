@@ -1,7 +1,7 @@
 import numpy as np
-from bitbots_rl_motion.nodes.rl_node import RLNode
-from bitbots_rl_motion.handlers.joint_handler import JointHandler
-from bitbots_rl_motion.handlers.ball_handler import BallHandler
+from nodes.rl_node import RLNode
+from handlers.joint_handler import JointHandler
+from handlers.ball_handler import BallHandler
 from geometry_msgs.msg import PoseStamped
 from handlers.gravity_handler import GravityHandler
 from handlers.gyro_handler import GyroHandler
@@ -12,11 +12,7 @@ from bitbots_msgs.msg import JointCommand
 
 class KickNode(RLNode):
     def __init__(self, config_path: str):
-        super().__init__(config_path)
-
-        # loading model
-        model = self._config["models"]["kick_model"]
-        self.load_model(model)
+        super().__init__(config_path, "kick_node")
 
         # publishers
         self._joint_command_pub = self.create_publisher(JointCommand, "walking_motor_goals", 10)
@@ -45,6 +41,10 @@ class KickNode(RLNode):
                 self._ball_handler.get_ball_pos(),
             ]
         ).astype(np.float32)
+
+         # loading model
+        model = self._config["models"]["kick_model"]
+        self.load_model(model)
 
     # callback functions
 

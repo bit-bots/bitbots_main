@@ -15,6 +15,10 @@ setup(
             "share/" + package_name + "/models",
             glob.glob("models/*.onnx"),
         ),
+        (
+            "share/" + package_name + "/configs", 
+            glob.glob("configs/*.yaml")
+        ),
     ],
     install_requires=["setuptools"],
     zip_safe=True,

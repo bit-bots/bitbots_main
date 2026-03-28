@@ -1,5 +1,5 @@
 import numpy as np
-from bitbots_rl_motion.handlers.handler import Handler
+from handlers.handler import Handler
 
 
 class CommandHandler(Handler):
@@ -9,8 +9,12 @@ class CommandHandler(Handler):
         self._cmd_vel = None
 
     def get_command(self):
-        command = np.array([self._cmd_vel.linear.x, self._cmd_vel.linear.y, self._cmd_vel.angular.z], dtype=np.float32)
-        return command
+        try:
+            command = np.array([self._cmd_vel.linear.x, self._cmd_vel.linear.y, self._cmd_vel.angular.z], dtype=np.float32)
+            return command
+        except: 
+            return None
 
     def cmd_vel_callback(self, msg):
         self._cmd_vel = msg
+    

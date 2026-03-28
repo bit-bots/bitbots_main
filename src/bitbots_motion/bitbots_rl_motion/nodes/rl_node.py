@@ -23,7 +23,7 @@ import onnx
 import onnxruntime as rt
 import yaml
 from ament_index_python import get_package_share_directory
-from bitbots_rl_motion.bitbots_rl_motion.phase import PhaseObject
+from bitbots_rl_motion.phase import PhaseObject
 from rclpy.node import Node
 from rclpy.qos import QoSProfile
 from rclpy.subscription import Subscription
@@ -43,19 +43,12 @@ class RLNode(Node):
         callback: Callable
         qos_profile: int | QoSProfile
 
-    def __init__(self, config_path: str):
+    def __init__(self, config_path: str, node_name: str):
+        super().__init__(f"{node_name}")
+        
         self._config = self._load_config(config_path)
         self._phase = PhaseObject(self._config)
         self._obs = None  # should be defined in subclass
-
-        self._timer = self.create_timer(self._config["phase"]["control_dt"], self._timer_callback)
-        self.load_phase()
-
-        self._subs = []
-
-        for key, value in self.__dict__.values():
-            if type(value) is Subscription:
-                self._subs.append(key)
 
     def _load_config(self, path: str):
         with open(path) as f:
@@ -101,12 +94,9 @@ class RLNode(Node):
         path_to_model = os.path.join(get_package_share_directory("bitbots_rl_motion"), "models", model)
 
         self._onnx_model_path = Path(path_to_model)
-        model_name = self._onnx_model_path.stem
-
-        super().__init__(f"{model_name}")
 
         # Load the ONNX model
-        self._onnx_session = rt.InferenceSession(self._onnx_model_path, self._config["providers"])
+        self._onnx_session = rt.InferenceSession(self._onnx_model_path, providers=self._config["providers"])
         self._onnx_model = onnx.load(self._onnx_model_path)
 
         self._onnx_input_name = []
@@ -116,6 +106,16 @@ class RLNode(Node):
         self._onnx_output_name = []
         for out in self._onnx_model.graph.output:
             self._onnx_output_name.append(out)
+
+        self._timer = self.create_timer(self._config["phase"]["control_dt"], self._timer_callback)
+
+        self._subs = []
+
+        for (key, value) in self.__dict__.values():
+            if type(value) is Subscription:
+                self._subs.append(key)
+
+        self.load_phase()
 
     def obs(self):
         # Should be defined in subclass

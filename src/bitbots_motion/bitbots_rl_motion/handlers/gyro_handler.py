@@ -1,5 +1,5 @@
 import numpy as np
-from bitbots_rl_motion.handlers.handler import Handler
+from handlers.handler import Handler
 
 
 class GyroHandler(Handler):
@@ -10,15 +10,19 @@ class GyroHandler(Handler):
     # Callables
     def imu_callback(self, msg):
         self._imu_data = msg
+        
 
     def get_gyro(self):
-        gyro = np.array(
-            [
-                self._imu_data.angular_velocity.x,
-                self._imu_data.angular_velocity.y,
-                self._imu_data.angular_velocity.z,
-            ],
-            dtype=np.float32,
-        )
+        try:
+            gyro = np.array(
+                [
+                    self._imu_data.angular_velocity.x,
+                    self._imu_data.angular_velocity.y,
+                    self._imu_data.angular_velocity.z,
+                ],
+                dtype=np.float32,
+            )
 
-        return gyro
+            return gyro
+        except:
+            return None

@@ -1,4 +1,4 @@
-from bitbots_rl_motion.handlers.handler import Handler
+from handlers.handler import Handler
 
 
 class BallHandler(Handler):
@@ -9,5 +9,9 @@ class BallHandler(Handler):
     def ball_pos_callback(self, msg):
         self.ball_pos = msg
 
+
     def get_ball_pos(self):
-        return self.ball_pos
+        try:
+            return self.ball_pos
+        except:
+            return None
