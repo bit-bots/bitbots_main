@@ -20,7 +20,7 @@ class KickNode(RLNode):
         # subscribers
         self._imu_sub = self.create_subscription(Imu, "imu/data", self._imu_callback, 10)
         self._joint_state_sub = self.create_subscription(JointState, "joint_states", self._joint_state_callback, 10)
-        self._ball_pos_sub = self.create_subscription(BallArray, "ball_pos", self._ball_pos_callback, 10)
+        self._ball_pos_sub = self.create_subscription(BallArray, "balls_relative", self._ball_pos_callback, 10)
 
         # handlers
         self._gyro_handler = GyroHandler(self._config)

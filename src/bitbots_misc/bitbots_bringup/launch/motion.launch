@@ -3,7 +3,7 @@
     <arg name="sim" default="false"/>
     <arg name="viz" default="false"/>
     <arg name="walking" default="true" description="start the walking" />
-    <arg name="kicking" default="true" description="start the kicking" />
+    <arg name="rl_policies" default="true" description="start the policies" />
     <arg name="torqueless_mode" default="false" description="start without torque, for example for testing the falling detection"/>
     <arg name="tts" default="true" description="Whether to speak" />
 
@@ -59,14 +59,13 @@
         </include>
     -->
 
-    <!--
-     launch rl policies 
-    <group if="$(var kicking)">
+    
+     <!--launch rl policies--> 
+    <group if="$(var rl_policies)">
         <node pkg="bitbots_rl_motion" exec="run_policies" output="screen">
             <param name="use_sim_time" value="$(var sim)"/>
         </node>
     </group>
-    -->
 
     <!-- launch dynup -->
     <include file="$(find-pkg-share bitbots_dynup)/launch/dynup.launch">

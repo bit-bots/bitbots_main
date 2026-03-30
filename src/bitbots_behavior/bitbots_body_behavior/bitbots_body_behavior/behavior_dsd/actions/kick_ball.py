@@ -2,7 +2,7 @@ from bitbots_blackboard.body_blackboard import BodyBlackboard
 from bitbots_blackboard.capsules.kick_capsule import KickCapsule
 from bitbots_utils.transforms import quat_from_yaw
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
-from soccer_vision_3d_msgs.msg import BallArray
+from geometry_msgs.msg import PoseStamped
 
 from bitbots_msgs.action import Kick
 
@@ -141,7 +141,8 @@ class RLKick(AbstractKickAction):
         self.penalty_kick_angle = self.blackboard.config["penalty_kick_angle"]
 
     def perform(self, reevaluate=False):
-        ball_pose = BallArray()
+        #TODO: Check whether relevant
+        ball_pose = PoseStamped()
         ball_pose.header.stamp = self.blackboard.node.get_clock().now().to_msg()
         ball_pose.header.frame_id = self.blackboard.world_model.base_footprint_frame
 
