@@ -47,15 +47,6 @@
         </include>
     </group>
 
-
-    <!-- launch the rl walking 
-    <group if="$(var walking)">
-        <node pkg="bitbots_rl_motion" exec="walk" output="screen">
-            <param name="use_sim_time" value="$(var sim)"/>
-        </node>
-    </group>
-    -->
-
     <!-- launch the hcm -->
     <include file="$(find-pkg-share bitbots_hcm)/launch/hcm.launch">
         <arg name="sim" value="$(var sim)"/>
@@ -68,12 +59,14 @@
         </include>
     -->
 
-    <!-- launch rl policies -->
+    <!--
+     launch rl policies 
     <group if="$(var kicking)">
         <node pkg="bitbots_rl_motion" exec="run_policies" output="screen">
             <param name="use_sim_time" value="$(var sim)"/>
         </node>
     </group>
+    -->
 
     <!-- launch dynup -->
     <include file="$(find-pkg-share bitbots_dynup)/launch/dynup.launch">
