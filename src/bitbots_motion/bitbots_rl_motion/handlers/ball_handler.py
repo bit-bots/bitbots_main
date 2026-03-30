@@ -15,8 +15,8 @@ class BallHandler(Handler):
     def get_ball_pos(self):
         ball_pos = np.array(
             [
-                self._ball_pos.pose.position.x,
-                self._ball_pos.pose.position.y,
+                self._ball_pos.x,
+                self._ball_pos.y,
             ],
             dtype=np.float32,
         )

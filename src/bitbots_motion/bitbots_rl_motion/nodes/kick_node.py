@@ -2,10 +2,10 @@ import numpy as np
 from nodes.rl_node import RLNode
 from handlers.joint_handler import JointHandler
 from handlers.ball_handler import BallHandler
-from geometry_msgs.msg import PoseStamped
 from handlers.gravity_handler import GravityHandler
 from handlers.gyro_handler import GyroHandler
 from sensor_msgs.msg import Imu, JointState
+from soccer_vision_3d_msgs.msg import BallArray
 
 from bitbots_msgs.msg import JointCommand
 
@@ -20,7 +20,7 @@ class KickNode(RLNode):
         # subscribers
         self._imu_sub = self.create_subscription(Imu, "imu/data", self._imu_callback, 10)
         self._joint_state_sub = self.create_subscription(JointState, "joint_states", self._joint_state_callback, 10)
-        self._ball_pos_sub = self.create_subscription(PoseStamped, "ball_pos", self._ball_pos_callback, 10)
+        self._ball_pos_sub = self.create_subscription(BallArray, "ball_pos", self._ball_pos_callback, 10)
 
         # handlers
         self._gyro_handler = GyroHandler(self._config)
