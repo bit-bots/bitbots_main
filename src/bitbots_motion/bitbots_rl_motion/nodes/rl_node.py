@@ -48,8 +48,10 @@ class RLNode(Node, ABC):
             raise ConfigError("Configuration is missing!")
 
         # Prüfen ob alle Subscriber schon mindestens eine Nachricht hatten
-        if not self._all_sensors_ready():
-            self.get_logger().warning("Waiting for all sensors to be available", throttle_duration_sec=1.0)
+
+        sensors_ready, missing_handler = self._all_sensors_ready()
+        if not sensors_ready:
+            self.get_logger().warning(f"Waiting for all sensors to be available. Following handler hasn't got the needed information: {missing_handler}", throttle_duration_sec=1.0)
             return
 
         # TODO consider IMU mounting offset
@@ -75,9 +77,9 @@ class RLNode(Node, ABC):
     def _all_sensors_ready(self):
         for handler in self._handlers:
             if not handler.has_data():
-                return False
+                return False, type(handler).__name__
             
-        return True
+        return True, "No missing handler"
 
     def load_model(self, model):
         path_to_model = os.path.join(get_package_share_directory("bitbots_rl_motion"), "models", model)
