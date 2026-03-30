@@ -7,7 +7,8 @@ class BallHandler(Handler):
         self._ball_pos = None
 
     def ball_pos_callback(self, msg):
-        self._ball_pos = msg
+        if msg.balls:
+            self._ball_pose = msg.balls[0].center
 
     def has_data(self):
         return (self._ball_pos != None)
