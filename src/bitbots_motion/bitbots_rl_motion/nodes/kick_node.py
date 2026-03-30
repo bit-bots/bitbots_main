@@ -15,7 +15,7 @@ class KickNode(RLNode):
         super().__init__(config_path, node_name="kick_node")
 
         # publishers
-        self._joint_command_pub = self.create_publisher(JointCommand, "walking_motor_goals", 10)
+        self._joint_command_pub = self.create_publisher(JointCommand, "kick_motor_goals", 10)
 
         # subscribers
         self._imu_sub = self.create_subscription(Imu, "imu/data", self._imu_callback, 10)
