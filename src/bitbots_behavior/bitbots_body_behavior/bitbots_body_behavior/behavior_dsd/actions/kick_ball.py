@@ -131,6 +131,7 @@ class KickBallDynamic(AbstractKickAction):
 
 
 class RLKick(AbstractKickAction):
+    # TODO: Currently no connection between this class and rl kick policy
     def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
 
@@ -141,7 +142,7 @@ class RLKick(AbstractKickAction):
         self.penalty_kick_angle = self.blackboard.config["penalty_kick_angle"]
 
     def perform(self, reevaluate=False):
-        #TODO: Check whether relevant
+        # TODO: Check whether relevant
         ball_pose = PoseStamped()
         ball_pose.header.stamp = self.blackboard.node.get_clock().now().to_msg()
         ball_pose.header.frame_id = self.blackboard.world_model.base_footprint_frame
