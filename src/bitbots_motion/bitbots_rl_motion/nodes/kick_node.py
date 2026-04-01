@@ -46,17 +46,19 @@ class KickNode(RLNode):
 
     # observations
     def obs(self):
-        return np.hstack(
+        observation = np.hstack(
             [
                 self._gyro_handler.get_gyro(),
                 self._gravity_handler.get_gravity(),
                 self._joint_handler.get_velocity_data(),
                 self._joint_handler.get_angle_data(),
                 self._previous_action.get_previous_action(),
-                self._phase.get_phase(),
+                self._phase.get_obs_phase(),
                 self._ball_handler.get_ball_pos(),
             ]
         ).astype(np.float32)
+
+        return observation
 
     # load phase function
     def load_phase(self):

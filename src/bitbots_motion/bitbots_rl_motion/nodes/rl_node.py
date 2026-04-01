@@ -62,15 +62,17 @@ class RLNode(Node, ABC):
 
         # TODO consider IMU mounting offset
 
-        self._phase.set_phase(
+        self._phase.set_obs_phase(
             np.array(
                 [np.cos(self._phase.get_phase()), np.sin(self._phase.get_phase())],
                 dtype=np.float32,
             ).flatten()
         )
 
+        observation = self.obs()
+
         # Run the ONNX model
-        onnx_input = {self._onnx_input_name[0]: self.obs().reshape(1, -1)}  # TODO: Improve input
+        onnx_input = {self._onnx_input_name[0]: observation.reshape(1, -1)}  # TODO: Improve input
         onnx_pred = self._onnx_session.run(self._onnx_output_name, onnx_input)[0][0]
         self._previous_action.set_previous_action(onnx_pred)
 

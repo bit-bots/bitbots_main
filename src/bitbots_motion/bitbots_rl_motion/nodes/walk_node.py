@@ -56,7 +56,7 @@ class WalkNode(RLNode):
                 self._joint_handler.get_velocity_data(),
                 self._joint_handler.get_angle_data(),
                 self._previous_action.get_previous_action(),
-                self._phase.get_phase(),
+                self._phase.get_obs_phase(),
             ]
         ).astype(np.float32)
 
