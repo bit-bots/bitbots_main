@@ -1,19 +1,20 @@
 import time
 
 import numpy as np
-from handlers.joint_handler import JointHandler
-from nodes.rl_node import RLNode
 from geometry_msgs.msg import Twist
 from handlers.command_handler import CommandHandler
 from handlers.gravity_handler import GravityHandler
 from handlers.gyro_handler import GyroHandler
+from handlers.joint_handler import JointHandler
 from sensor_msgs.msg import Imu, JointState
 
 from bitbots_msgs.msg import JointCommand
+from nodes.rl_node import RLNode
 
 
 class WalkNode(RLNode):
     def __init__(self, config_path: str):
+        # Configuring self._config, self._phase, self._previous_action
         super().__init__(config_path, node_name="walk_node")
 
         # publishers
@@ -54,7 +55,7 @@ class WalkNode(RLNode):
                 self._command_handler.get_command(),
                 self._joint_handler.get_velocity_data(),
                 self._joint_handler.get_angle_data(),
-                self._joint_handler.get_previous_action(),
+                self._previous_action.get_previous_action(),
                 self._phase.get_phase(),
             ]
         ).astype(np.float32)

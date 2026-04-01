@@ -1,5 +1,7 @@
-from handlers.handler import Handler
 import numpy as np
+
+from handlers.handler import Handler
+
 
 class BallHandler(Handler):
     def __init__(self, config):
@@ -8,10 +10,10 @@ class BallHandler(Handler):
 
     def ball_pos_callback(self, msg):
         if msg.balls:
-            self._ball_pose = msg.balls[0].center
+            self._ball_pos = msg.balls[0].center
 
     def has_data(self):
-        return (self._ball_pos != None)
+        return self._ball_pos is not None
 
     def get_ball_pos(self):
         ball_pos = np.array(

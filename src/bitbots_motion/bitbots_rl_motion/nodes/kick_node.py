@@ -1,17 +1,18 @@
 import numpy as np
-from nodes.rl_node import RLNode
-from handlers.joint_handler import JointHandler
 from handlers.ball_handler import BallHandler
 from handlers.gravity_handler import GravityHandler
 from handlers.gyro_handler import GyroHandler
+from handlers.joint_handler import JointHandler
 from sensor_msgs.msg import Imu, JointState
 from soccer_vision_3d_msgs.msg import BallArray
 
 from bitbots_msgs.msg import JointCommand
+from nodes.rl_node import RLNode
 
 
 class KickNode(RLNode):
     def __init__(self, config_path: str):
+        # Configuring self._config, self._phase, self._previous_action
         super().__init__(config_path, node_name="kick_node")
 
         # publishers
@@ -51,7 +52,7 @@ class KickNode(RLNode):
                 self._gravity_handler.get_gravity(),
                 self._joint_handler.get_velocity_data(),
                 self._joint_handler.get_angle_data(),
-                self._joint_handler.get_previous_action(),
+                self._previous_action.get_previous_action(),
                 self._phase.get_phase(),
                 self._ball_handler.get_ball_pos(),
             ]

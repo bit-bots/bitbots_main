@@ -15,19 +15,19 @@
 """Deploy an MJX policy in ONNX format to C MuJoCo and play with it."""
 
 import os
+from abc import ABC, abstractmethod
 from pathlib import Path
 
-from abc import ABC, abstractmethod
 import numpy as np
 import onnx
 import onnxruntime as rt
 import yaml
 from ament_index_python import get_package_share_directory
 from bitbots_rl_motion.phase import PhaseObject
+from bitbots_rl_motion.previous_action import PreviousActionObject
+from handlers.handler import Handler
 from rclpy.node import Node
 from rclpy.subscription import Subscription
-
-from handlers.handler import Handler
 
 
 class RLNode(Node, ABC):
@@ -35,9 +35,10 @@ class RLNode(Node, ABC):
 
     def __init__(self, config_path: str, node_name: str):
         super().__init__(f"{node_name}")
-        
+
         self._config = self._load_config(config_path)
         self._phase = PhaseObject(self._config)
+        self._previous_action = PreviousActionObject(self._config)
 
     def _load_config(self, path: str):
         with open(path) as f:
@@ -51,8 +52,13 @@ class RLNode(Node, ABC):
 
         sensors_ready, missing_handler = self._all_sensors_ready()
         if not sensors_ready:
-            self.get_logger().warning(f"Waiting for all sensors to be available. Following handler hasn't got the needed information: {missing_handler}", throttle_duration_sec=1.0)
+            self.get_logger().warning(
+                f"Waiting for all sensors to be available. Following handler hasn't got the needed information: {missing_handler}",
+                throttle_duration_sec=1.0,
+            )
             return
+        else:
+            self.get_logger().info("All sensors are available!")
 
         # TODO consider IMU mounting offset
 
@@ -66,19 +72,18 @@ class RLNode(Node, ABC):
         # Run the ONNX model
         onnx_input = {self._onnx_input_name[0]: self.obs().reshape(1, -1)}  # TODO: Improve input
         onnx_pred = self._onnx_session.run(self._onnx_output_name, onnx_input)[0][0]
-        self._previous_action = onnx_pred
+        self._previous_action.set_previous_action(onnx_pred)
 
         self.publisher(onnx_pred)
 
         phase_tp1 = self._phase.get_phase() + self._phase.get_phase_dt()
         self._phase.set_phase(np.fmod(phase_tp1 + np.pi, 2 * np.pi) - np.pi)
 
-        
     def _all_sensors_ready(self):
         for handler in self._handlers:
             if not handler.has_data():
                 return False, type(handler).__name__
-            
+
         return True, "No missing handler"
 
     def load_model(self, model):
@@ -96,12 +101,12 @@ class RLNode(Node, ABC):
         self._subs = []
         self._handlers = []
 
-        for key, value in self.__dict__.items():
+        for _, value in self.__dict__.items():
             if isinstance(value, Subscription):
                 self._subs.append(value)
             if isinstance(value, Handler):
                 self._handlers.append(value)
-        
+
         self._timer = self.create_timer(self._config["phase"]["control_dt"], self._timer_callback)
 
         self.load_phase()
@@ -117,6 +122,7 @@ class RLNode(Node, ABC):
     @abstractmethod
     def obs(self):
         pass
+
 
 class ConfigError(Exception):
     pass

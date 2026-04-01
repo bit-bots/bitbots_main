@@ -1,7 +1,7 @@
 import numpy as np
-from handlers.handler import Handler
 
 from bitbots_msgs.msg import JointCommand
+from handlers.handler import Handler
 
 
 class JointHandler(Handler):
@@ -13,12 +13,11 @@ class JointHandler(Handler):
         self._previous_action: np.ndarray = np.zeros(len(self._ordered_relevant_joint_names), dtype=np.float32)
         self._joint_state = None
 
-
     def joint_state_callback(self, msg):
         self._joint_state = msg
 
     def has_data(self):
-        return (self._joint_state != None)
+        return self._joint_state is not None
 
     def get_angle_data(self):
         joint_angles = (
@@ -57,8 +56,6 @@ class JointHandler(Handler):
         joint_command.header.stamp = timestamp
         joint_command.positions = self._walkready_state
 
-        self._previous_action = joint_command
-
         return joint_command
 
     def get_joint_commands(self, onnx_pred):
@@ -70,10 +67,7 @@ class JointHandler(Handler):
         joint_command.accelerations = [-1.0] * len(self._ordered_relevant_joint_names)
         joint_command.max_currents = [-1.0] * len(self._ordered_relevant_joint_names)
 
-        self._previous_action = joint_command
-
         return joint_command
 
-    def get_previous_action(self):
+    def get_previous_action_initial(self):
         return self._previous_action
-

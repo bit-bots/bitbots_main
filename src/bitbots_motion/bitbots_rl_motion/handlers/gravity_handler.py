@@ -1,7 +1,8 @@
 import numpy as np
-from handlers.handler import Handler
 from transforms3d.euler import euler2mat
 from transforms3d.quaternions import quat2mat
+
+from handlers.handler import Handler
 
 
 class GravityHandler(Handler):
@@ -15,7 +16,7 @@ class GravityHandler(Handler):
         self._imu_data = msg
 
     def has_data(self):
-        return (self._imu_data != None)
+        return self._imu_data is not None
 
     def get_gravity(self):
         gravity = (
@@ -30,5 +31,3 @@ class GravityHandler(Handler):
             @ euler2mat(0, -0.0, 0)
         ).T @ np.array([0, 0, -1], dtype=np.float32)
         return gravity
-
-

@@ -1,4 +1,5 @@
 import numpy as np
+
 from handlers.handler import Handler
 
 
@@ -13,8 +14,7 @@ class CommandHandler(Handler):
         return command
 
     def has_data(self):
-        return (self._cmd_vel != None)
+        return self._cmd_vel is not None
 
     def cmd_vel_callback(self, msg):
         self._cmd_vel = msg
-    
