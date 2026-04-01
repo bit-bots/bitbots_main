@@ -16,8 +16,8 @@ The Handlers-folder contains all handlers. A handler is a specific type of objec
 
 The Configs-folder contains all robot/policy specific configurations. Files in the Configs-folder should be in .yaml-format.
 
-phase.py and policy_nodes.py are two files, which do not fall in any of the aforementioned categories. 
-phase.py defines a PhaseObject, which is responsible for the phase management. policy_nodes.py can be looked as the launch file. It defines, which nodes and policies will be used. 
+phase.py, policy_nodes.py and previous_action.py are two files, which do not fall in any of the aforementioned categories. 
+phase.py defines a PhaseObject, which is responsible for the phase management. previous_action.py defindes a PreviousAction object, which is responsible for saving and provide the previous action. policy_nodes.py can be looked as the launch file. It defines, which nodes and policies will be used. 
 Both files are located in the bitbots_rl_motion folder. 
 
 ## Execution
