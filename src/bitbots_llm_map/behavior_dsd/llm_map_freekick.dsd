@@ -1,0 +1,5 @@
+#LLM_MAP_FreeKick
+    @ChangeAction + action:llm_planning, @LookAtFieldFeatures
+    $LLMPlanSuccess
+        YES --> @ExecuteLLMPlan         
+        NO  --> @ChangeAction + action:waiting, @Stand  
