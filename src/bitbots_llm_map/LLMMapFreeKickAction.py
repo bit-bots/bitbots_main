@@ -23,3 +23,38 @@ class LLMMapFreeKickAction(AbstractActionElement):
 
         # Logger für ROS 2
         self.logger = get_logger("llm_map_freekick")
+
+    def perform(self):
+        self.logger.info("[LLM+MAP] FreeKick Action starting – start Planning...")
+
+        # Reading world model
+        state = {}
+        wm = self.blackboard.world_model
+
+        try:
+            state["own_position"] = wm.get_current_position()
+            state["ball_position"] = wm.get_ball_position_xy()
+            state["ball_seen"] = True  # maybe not always true
+            state["free_kick"] = True
+
+            self.logger.info(
+                f"Reading WorldModel finished → own: {state['own_position']} | ball: {state['ball_position']}"
+            )
+
+        except Exception as e:
+            self.logger.error(f"Error in World Model!: {e}")
+            # Using minimal fallback
+            state = {"own_position": (0.0, 0.0), "ball_position": (2.0, 0.5), "ball_seen": True, "free_kick": True}
+            self.logger.warn("→ Fallback state was used!")
+
+        # LLM creates a problem.pddl
+        problem_pddl = self.problem_generator.generate(state, task="free_kick")
+
+        # Planner finds a solution for the problem
+        result = self.planner.solve(domain=self.blackboard.llm_map.domain_pddl, problem=problem_pddl, timeout=8)
+
+        if result.success:
+            self.logger.info(f"[LLM+MAP] plan was found! ({len(result.plan)} Schritte, {result.time_taken:.2f}s)")
+            self.dsd.set_action("ExecuteLLMPlan")
+        else:
+            self.logger.warn("[LLM+MAP] Kein Plan gefunden → Fallback")
