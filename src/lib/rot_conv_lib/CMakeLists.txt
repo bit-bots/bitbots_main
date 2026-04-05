@@ -5,7 +5,7 @@ project(rot_conv)
 # Enable C++11
 message(STATUS "Enabling C++11")
 set(CMAKE_CXX_STANDARD 11)
-add_compile_options(-Wall -Werror -Wno-unused)
+add_compile_options(-Wall -Werror -Wno-unused -Wno-class-memaccess)
 
 # Find Eigen
 find_package(ament_cmake REQUIRED)
