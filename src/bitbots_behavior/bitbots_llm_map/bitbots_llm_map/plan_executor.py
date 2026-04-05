@@ -47,7 +47,6 @@ class PlanExecutor:
             self.logger("Not enough params")
             return False
 
-        robot = params[0]
         target_symbol = params[1]
 
         wm = self.blackboard.world_model
@@ -82,7 +81,6 @@ class PlanExecutor:
             self.logger.error("kick_towards_goal: not enough parameter")
             return False
 
-        robot = params[0]
         target = params[1]
 
         self.logger.info(f"→ Shoot to goal! (Ziel: {target})")

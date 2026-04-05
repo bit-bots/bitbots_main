@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>bitbots_llm_map</name>
+  <version>0.0.1</version>
+  <description>LLM+MAP integration for Bit-Bots (Free-Kick behavior)</description>
+  <maintainer email="bit-bots@uni-hamburg.de">Bit-Bots</maintainer>
+  <license>TODO</license>
+
+  <!-- Build dependencies -->
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <build_depend>python3</build_depend>
+
+  <!-- Dependencies needed for building and running -->
+  <depend>rclpy</depend>
+  <depend>dynamic_stack_decider</depend>
+  <depend>bitbots_msgs</depend>
+  <depend>bitbots_body_behavior</depend>        
+  <depend>geometry_msgs</depend>
+  <depend>std_msgs</depend>
+
+  <!-- LLM / LangChain dependencies -->
+  <depend>langchain</depend>
+  <depend>langchain-openai</depend>
+  <exec_depend>openai</exec_depend>             
+
+  <!-- Test dependencies (optional) -->
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

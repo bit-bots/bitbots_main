@@ -3,13 +3,12 @@ import subprocess
 import tempfile
 import time
 from pathlib import Path
-from typing import Dict, List
 
 from rclpy.logging import get_logger
 
 
 class PlanningResult:
-    def __init__(self, plan: List[Dict], success: bool, raw_output: str = "", time_taken: float = 0.0):
+    def __init__(self, plan: list[dict], success: bool, raw_output: str = "", time_taken: float = 0.0):
         self.plan = plan
         self.success = success
         self.raw_output = raw_output
@@ -70,7 +69,7 @@ class PlannerInterface:
                 return PlanningResult([], False, str(e), 0.0)
 
     # Parses the fast-downward output-text in a list of actions
-    def _parse_plan(self, output: str) -> List[Dict]:
+    def _parse_plan(self, output: str) -> list[dict]:
         plan = []
         for line in output.splitlines():
             line = line.strip()

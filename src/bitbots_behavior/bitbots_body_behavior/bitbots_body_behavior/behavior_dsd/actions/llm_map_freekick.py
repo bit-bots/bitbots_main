@@ -1,10 +1,9 @@
 from bitbots_blackboard.body_blackboard import BodyBlackboard
+from bitbots_llm_map.bitbots_llm_map.plan_executor import PlanExecutor
+from bitbots_llm_map.bitbots_llm_map.planner_interface import PlannerInterface
+from bitbots_llm_map.bitbots_llm_map.problem_generator import ProblemGenerator
 from dynamic_stack_decider import AbstractActionElement
 from rclpy.logging import get_logger
-
-from bitbots_behavior.bitbots_llm_map.plan_executor import PlanExecutor
-from bitbots_behavior.bitbots_llm_map.planner_interface import PlannerInterface
-from bitbots_behavior.bitbots_llm_map.problem_generator import ProblemGenerator
 
 
 class LLMMapFreeKick(AbstractActionElement):
@@ -57,7 +56,7 @@ class LLMMapFreeKick(AbstractActionElement):
         result = self.planner.solve(domain=self.blackboard.llm_map.domain_pddl, problem=problem_pddl, timeout=8)
 
         if result.success:
-            self.logger.info(f"[LLM+MAP] plan was found! ({len(result.plan)} Schritte, {result.time_taken:.2f}s)")
+            self.logger.info(f"[LLM+MAP] plan was found! ({len(result.plan)} steps, {result.time_taken:.2f}s)")
             self.dsd.set_action("ExecuteLLMPlan")
         else:
-            self.logger.warn("[LLM+MAP] Kein Plan gefunden → Fallback")
+            self.logger.warn("[LLM+MAP] hasn't found a plan → Fallback")
