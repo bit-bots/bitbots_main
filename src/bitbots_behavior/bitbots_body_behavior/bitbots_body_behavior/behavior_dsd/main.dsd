@@ -104,7 +104,7 @@ $DoOnce
                 OUR --> #SearchBall
                 OTHER --> @AvoidBallActive, @LookAtFieldFeatures, @WalkInPlace + duration:2, @GoToRelativePosition + x:1 + y:0 + t:0, @Stand
             YES --> $RankToBallNoGoalie
-                FIRST --> @LLM_MAP_FreeKick
+                FIRST --> @LLMMapFreeKick
                 SECOND --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition + mode:freekick_second
                 THIRD --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition
 

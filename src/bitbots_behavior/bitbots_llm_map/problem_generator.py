@@ -8,7 +8,7 @@ class ProblemGenerator:
     def __init__(self):
         # Open-AI Key
         if not os.getenv("OPENAI_API_KEY"):
-            raise ValueError("❌ OPENAI_API_KEY isn't set!")
+            raise ValueError("OPENAI_API_KEY isn't set!")
 
         self.logger = get_logger()
 

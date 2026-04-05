@@ -1,4 +1,4 @@
-#LLM_MAP_FreeKick
+#LLMMapFreeKick
     @ChangeAction + action:llm_planning, @LookAtFieldFeatures
     $LLMPlanSuccess
         YES --> @ExecuteLLMPlan         
