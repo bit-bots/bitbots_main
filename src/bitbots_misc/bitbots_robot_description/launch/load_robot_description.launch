@@ -3,7 +3,10 @@
     <arg name="sim" default="false"/>
 
     <!--- TODO load the robot state publisher here -->
-    
+    <node name="robot_state_publisher" pkg="robot_state_publisher" exec="robot_state_publisher">
+        <param name="publish_frequency" value="100.0"/>
+        <param name="robot_description" value="$(command '$(find-exec xacro) $(find-pkg-share piplus_description)/urdf/pi_plus_22dof.urdf.xacro')"/>
+    </node>
 
     <include file="$(find-pkg-share bitbots_extrinsic_calibration)/launch/calibration.launch">
       <arg name="sim" value="$(var sim)"/>
