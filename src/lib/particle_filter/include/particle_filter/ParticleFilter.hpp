@@ -190,7 +190,7 @@ class ParticleFilter {
    * @param ms MovementModel to use for propagation of particles
    */
   ParticleFilter(unsigned int numParticles, std::shared_ptr<ObservationModel<StateType>> os,
-                            std::shared_ptr<MovementModel<StateType>> ms);
+                 std::shared_ptr<MovementModel<StateType>> ms);
 
   /**
    * The destructor releases the particle lists.
