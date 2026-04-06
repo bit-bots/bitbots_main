@@ -5,8 +5,8 @@
 ;
 [subrepo]
 	remote = https://github.com/bit-bots/particle_filter.git
-	branch = master
-	commit = ae7f5a50ac1ed69b077c5d32e70754118c61329c
-	parent = 831cbf330d06ba3086a907695a6f446d63c6fa95
+	branch = fix/cpp20
+	commit = 4ee883f5a5bac10cc794a4e105959cea6331ac3e
+	parent = f3ec49a6066a9e387a45fbf77282adc758cd974f
 	method = merge
 	cmdver = 0.4.9
