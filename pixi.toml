@@ -1,7 +1,7 @@
 [workspace]
 authors = ["Florian Vahl <7vahl@informatik.uni-hamburg.de>"]
 channels = [
-    #"https://data.bit-bots.de/conda-misc/output/",  # For self hosted misc (non-ROS, neural network weights, ...) packages
+    "https://data.bit-bots.de/conda-misc/output/",  # For self hosted misc (non-ROS, neural network weights, ...) packages
     "robostack-jazzy", # Robostack jazzy channel for ROS packages
     "conda-forge"  # General conda-forge channel
 ]
@@ -152,8 +152,10 @@ ros-jazzy-web-video-server = ">=2.1.1,<3"
 ros-jazzy-xacro = ">=2.1.1,<3"
 
 # Neural network models / data packages
-# bitbots_model_2023_04_04_philipp_yoeox_with_team_colors = ">=1.0.0,<2"
-# bitbots_model_2022_10_07_flo_torso21_yoeox = ">=1.0.0,<2"
+bitbots_model_2023_04_04_philipp_yoeox_with_team_colors = ">=1.0.0,<2"
+bitbots_model_2022_10_07_flo_torso21_yoeox = ">=1.0.0,<2"
+tts-supertonic = ">=1.0.0,<2"
+
 
 # Local packages
 bitbots_rust_nav = { path = "src/bitbots_navigation/bitbots_rust_nav" }
