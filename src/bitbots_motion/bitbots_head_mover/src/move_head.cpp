@@ -1,8 +1,6 @@
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
 
-#include <bio_ik/bio_ik.hpp>
-#include <bio_ik_msgs/msg/ik_response.hpp>
 #include <bitbots_head_mover/head_parameters.hpp>
 #include <bitbots_msgs/action/look_at.hpp>
 #include <bitbots_msgs/msg/head_mode.hpp>
@@ -13,10 +11,6 @@
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <iostream>
 #include <memory>
-#include <moveit/planning_scene/planning_scene.hpp>
-#include <moveit/planning_scene_monitor/planning_scene_monitor.hpp>
-#include <moveit/robot_model_loader/robot_model_loader.hpp>
-#include <moveit/robot_state/conversions.hpp>
 #include <rclcpp/clock.hpp>
 #include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
 #include <rclcpp/logger.hpp>
@@ -59,14 +53,6 @@ class HeadMover {
   uint head_mode_ = bitbots_msgs::msg::HeadMode::LOOK_FORWARD;
   std::optional<sensor_msgs::msg::JointState> current_joint_state_;
   geometry_msgs::msg::PoseWithCovarianceStamped tf_precision_pose_;
-
-  // Declare robot model and planning scene for moveit
-  robot_model_loader::RobotModelLoaderPtr loader_;
-  moveit::core::RobotModelPtr robot_model_;
-  moveit::core::RobotStatePtr robot_state_;
-  moveit::core::RobotStatePtr collision_state_;
-  planning_scene_monitor::PlanningSceneMonitorPtr planning_scene_monitor_;
-  planning_scene::PlanningScenePtr planning_scene_;
 
   // Declare parameters and parameter listener
   move_head::Params params_;
@@ -127,58 +113,6 @@ class HeadMover {
     // Create parameter listener and load initial set of parameters
     param_listener_ = std::make_shared<move_head::ParamListener>(node_);
     params_ = param_listener_->get_params();
-
-    // Create a seperate node for moveit, this way we can use rqt to change parameters,
-    // because some moveit parameters break the gui
-    auto moveit_node = std::make_shared<rclcpp::Node>("moveit_head_mover_node");
-
-    // Get the parameters from the move_group node
-    auto parameters_client = std::make_shared<rclcpp::SyncParametersClient>(node_, "/move_group");
-    while (!parameters_client->wait_for_service(1s)) {
-      if (!rclcpp::ok()) {
-        RCLCPP_ERROR(node_->get_logger(), "Interrupted while waiting for the service. Exiting.");
-        return;
-      }
-      RCLCPP_INFO(node_->get_logger(), "service not available, waiting again...");
-    }
-
-    // Extract the robot_description
-    rcl_interfaces::msg::ListParametersResult parameter_list =
-        parameters_client->list_parameters({"robot_description_kinematics"}, 10);
-
-    // Set the robot description parameters in the moveit node
-    auto copied_parameters = parameters_client->get_parameters(parameter_list.names);
-    for (auto& parameter : copied_parameters) {
-      moveit_node->declare_parameter(parameter.get_name(), parameter.get_type());
-      moveit_node->set_parameter(parameter);
-    }
-
-    // Load robot description / robot model into moveit
-    std::string robot_description = "robot_description";
-    loader_ = std::make_shared<robot_model_loader::RobotModelLoader>(
-        robot_model_loader::RobotModelLoader(moveit_node, robot_description, true));
-    robot_model_ = loader_->getModel();
-    if (!robot_model_) {
-      RCLCPP_ERROR(node_->get_logger(),
-                   "failed to load robot model %s. Did you start the "
-                   "blackboard (bitbots_bringup base.launch)?",
-                   robot_description.c_str());
-    }
-
-    // Recreate robot state
-    robot_state_.reset(new moveit::core::RobotState(robot_model_));
-    robot_state_->setToDefaultValues();
-
-    // Recreate collision state
-    collision_state_.reset(new moveit::core::RobotState(robot_model_));
-    collision_state_->setToDefaultValues();
-
-    // Get planning scene for collision checking
-    planning_scene_monitor_ = std::make_shared<planning_scene_monitor::PlanningSceneMonitor>(moveit_node, loader_);
-    planning_scene_ = planning_scene_monitor_->getPlanningScene();
-    if (!planning_scene_) {
-      RCLCPP_ERROR_ONCE(node_->get_logger(), "failed to connect to planning scene");
-    }
 
     // Create tf buffer and listener to update it
     tf_buffer_ = std::make_shared<tf2_ros::Buffer>(node_->get_clock());
@@ -588,35 +522,10 @@ class HeadMover {
    * @brief Calculates the motor goals that are needed to look at a given point using the inverse kinematics
    */
   std::pair<double, double> get_motor_goals_from_point(geometry_msgs::msg::Point point) {
-    // Create a new IK options object
-    bio_ik::BioIKKinematicsQueryOptions ik_options;
-    ik_options.return_approximate_solution = true;
-    ik_options.replace = true;
-
-    // Create a new look at goal and set the target point as the position the camera link should look at
-    ik_options.goals.emplace_back(new bio_ik::LookAtGoal("camera", {1.0, 0.0, 0.0}, {point.x, point.y, point.z}));
-
-    // Get the joint model group for the head
-    auto joint_model_group = robot_model_->getJointModelGroup("Head");
-
     // Try to calculate the inverse kinematics
-    double timeout_seconds = 1.0;
-    bool success = robot_state_->setFromIK(joint_model_group, EigenSTL::vector_Isometry3d(), std::vector<std::string>(),
-                                           timeout_seconds, moveit::core::GroupStateValidityCallbackFn(), ik_options);
-    robot_state_->update();
-
-    // Get the solution from the IK response
-    bio_ik_msgs::msg::IKResponse response;
-    moveit::core::robotStateToRobotStateMsg(*robot_state_, response.solution);
-    response.solution_fitness = ik_options.solution_fitness;
-    // Return the motor goals if the IK was successful
-    if (success) {
-      return {response.solution.joint_state.position[0], response.solution.joint_state.position[1]};
-    } else {
-      RCLCPP_ERROR_STREAM_THROTTLE(node_->get_logger(), *node_->get_clock(), 1000,
-                                   "BioIK failed with error code: " << response.error_code.val);
-      return {0.0, 0.0};
-    }
+    // TODO we do not have inverse kinematics for the pi plus setup yet, so we need to implement this function properly
+    RCLCPP_ERROR_STREAM(node_->get_logger(), "Inverse kinematics for the pi plus head is not implemented yet");
+    return {0.0, 0.0}; 
   }
 
   /**

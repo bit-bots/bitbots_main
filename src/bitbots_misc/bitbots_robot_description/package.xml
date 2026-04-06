@@ -19,7 +19,6 @@
 
     <depend>bitbots_docs</depend>
     <depend>bitbots_extrinsic_calibration</depend>
-    <depend>moveit_ros_move_group</depend>
     <depend>robot_state_publisher</depend>
     <depend>xacro</depend>
 
