@@ -11,7 +11,7 @@ Therefore, we first need to simplify the model by using the following.
 
 .. code-block:: bash
 
-    roscd wolfgang_description
+    roscd piplus_description
     cd urdf
     rosrun simplify_urdf_collision simplify.py robot.urdf robot.urdf -r -s
 

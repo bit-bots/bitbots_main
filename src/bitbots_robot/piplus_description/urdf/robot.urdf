@@ -21,7 +21,7 @@
     <visual>
       <origin rpy="-3.14159 1.5708 0.0" xyz="-0.0015 0.053 0.2035"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/mx-64-body.stl"/>
+        <mesh filename="package://piplus_description/urdf/mx-64-body.stl"/>
       </geometry>
       <material name="mx-64-body_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -36,7 +36,7 @@
     <visual>
       <origin rpy="-1.2326e-32 -1.5708 0.0" xyz="-0.0015 -0.053 0.2035"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/mx-64-body.stl"/>
+        <mesh filename="package://piplus_description/urdf/mx-64-body.stl"/>
       </geometry>
       <material name="mx-64-body_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -51,7 +51,7 @@
     <visual>
       <origin rpy="0.0 -0.0 1.5708" xyz="-0.01485 -0.059 0.152"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/nuc_holder_right_front.stl"/>
+        <mesh filename="package://piplus_description/urdf/nuc_holder_right_front.stl"/>
       </geometry>
       <material name="nuc_holder_right_front_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -60,7 +60,7 @@
     <visual>
       <origin rpy="-1.5708 6.08341e-17 1.5708" xyz="-0.057 0.077 0.213915"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/torso_bumper_right.stl"/>
+        <mesh filename="package://piplus_description/urdf/torso_bumper_right.stl"/>
       </geometry>
       <material name="torso_bumper_right_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -87,7 +87,7 @@
     <visual>
       <origin rpy="-5.55112e-17 8.2173e-33 -1.5708" xyz="-0.01 0.001 0.118"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/core.stl"/>
+        <mesh filename="package://piplus_description/urdf/core.stl"/>
       </geometry>
       <material name="core_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -96,7 +96,7 @@
     <visual>
       <origin rpy="-5.55112e-17 5.55112e-17 -1.5708" xyz="-0.0175 -0.0035 0.0295"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/battery.stl"/>
+        <mesh filename="package://piplus_description/urdf/battery.stl"/>
       </geometry>
       <material name="battery_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -111,7 +111,7 @@
     <visual>
       <origin rpy="1.5708 -0.0 -1.5708" xyz="0.0 -0.055 0.026"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/mx-106_body.stl"/>
+        <mesh filename="package://piplus_description/urdf/mx-106_body.stl"/>
       </geometry>
       <material name="mx-106_body_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -126,7 +126,7 @@
     <visual>
       <origin rpy="-1.5708 -6.08341e-17 -1.5708" xyz="0.053 0.077 0.213915"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/torso_bumper_left.stl"/>
+        <mesh filename="package://piplus_description/urdf/torso_bumper_left.stl"/>
       </geometry>
       <material name="torso_bumper_left_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -153,7 +153,7 @@
     <visual>
       <origin rpy="1.11022e-16 1.0261e-16 1.5708" xyz="-0.04715 -0.0589 0.152"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/nuc_holder_right_back.stl"/>
+        <mesh filename="package://piplus_description/urdf/nuc_holder_right_back.stl"/>
       </geometry>
       <material name="nuc_holder_right_back_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -162,7 +162,7 @@
     <visual>
       <origin rpy="1.5708 -0.0 -1.5708" xyz="-2.2754e-16 0.055 0.026"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/mx-106_body.stl"/>
+        <mesh filename="package://piplus_description/urdf/mx-106_body.stl"/>
       </geometry>
       <material name="mx-106_body_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -177,7 +177,7 @@
     <visual>
       <origin rpy="0.0 -0.0 1.5708" xyz="-0.0375 -0.00925 0.0295"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/battery_clip.stl"/>
+        <mesh filename="package://piplus_description/urdf/battery_clip.stl"/>
       </geometry>
       <material name="battery_clip_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -186,7 +186,7 @@
     <visual>
       <origin rpy="1.11022e-16 1.0261e-16 1.5708" xyz="-0.04715 0.0359 0.149"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/nuc_holder_left_back.stl"/>
+        <mesh filename="package://piplus_description/urdf/nuc_holder_left_back.stl"/>
       </geometry>
       <material name="nuc_holder_left_back_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -196,7 +196,7 @@
     <visual>
       <origin rpy="-3.14159 1.5708 0.0" xyz="-0.0015 -0.036 0.2035"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/imu_holder.stl"/>
+        <mesh filename="package://piplus_description/urdf/imu_holder.stl"/>
       </geometry>
       <material name="imu_holder_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -205,7 +205,7 @@
     <visual>
       <origin rpy="0.0 -0.0 0.0" xyz="-0.062 0.075 0.003"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/torso_bottom.stl"/>
+        <mesh filename="package://piplus_description/urdf/torso_bottom.stl"/>
       </geometry>
       <material name="torso_bottom_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -220,7 +220,7 @@
     <visual>
       <origin rpy="-1.5708 -0.0 1.5708" xyz="-0.0095 2.94903e-16 0.211"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/mx-64-body.stl"/>
+        <mesh filename="package://piplus_description/urdf/mx-64-body.stl"/>
       </geometry>
       <material name="mx-64-body_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -235,7 +235,7 @@
     <visual>
       <origin rpy="-1.5708 -6.08341e-17 1.5708" xyz="-0.057 -0.077 0.213915"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/torso_bumper_left.stl"/>
+        <mesh filename="package://piplus_description/urdf/torso_bumper_left.stl"/>
       </geometry>
       <material name="torso_bumper_left_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -262,7 +262,7 @@
     <visual>
       <origin rpy="0.0 -0.0 1.5708" xyz="0.03 5.89806e-17 0.006"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/speaker_holder.stl"/>
+        <mesh filename="package://piplus_description/urdf/speaker_holder.stl"/>
       </geometry>
       <material name="speaker_holder_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -271,7 +271,7 @@
     <visual>
       <origin rpy="1.11022e-16 2.83582e-16 1.5708" xyz="-0.002 -0.0115 0.152"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/nuc_main.stl"/>
+        <mesh filename="package://piplus_description/urdf/nuc_main.stl"/>
       </geometry>
       <material name="nuc_main_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -280,7 +280,7 @@
     <visual>
       <origin rpy="-1.5708 6.08341e-17 -1.5708" xyz="0.053 -0.077 0.213915"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/torso_bumper_right.stl"/>
+        <mesh filename="package://piplus_description/urdf/torso_bumper_right.stl"/>
       </geometry>
       <material name="torso_bumper_right_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -307,7 +307,7 @@
     <visual>
       <origin rpy="0.0 -0.0 1.5708" xyz="-0.077 -0.075 0.083"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/torso_top.stl"/>
+        <mesh filename="package://piplus_description/urdf/torso_top.stl"/>
       </geometry>
       <material name="torso_top_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -316,7 +316,7 @@
     <visual>
       <origin rpy="-5.55112e-17 -1.64346e-32 -1.5708" xyz="-0.002 -3.19189e-16 0.088"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/baseplate_odroid_xu4_core.stl"/>
+        <mesh filename="package://piplus_description/urdf/baseplate_odroid_xu4_core.stl"/>
       </geometry>
       <material name="baseplate_odroid_xu4_core_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -349,7 +349,7 @@
     <visual>
       <origin rpy="0.0 -0.0 1.5708" xyz="0.0314886 3.95288e-17 0.011"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/dummy_speaker.stl"/>
+        <mesh filename="package://piplus_description/urdf/dummy_speaker.stl"/>
       </geometry>
       <material name="dummy_speaker_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -358,7 +358,7 @@
     <visual>
       <origin rpy="0.0 -0.0 1.5708" xyz="-0.01485 0.036 0.149"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/nuc_holder_left_front.stl"/>
+        <mesh filename="package://piplus_description/urdf/nuc_holder_left_front.stl"/>
       </geometry>
       <material name="nuc_holder_left_front_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -367,7 +367,7 @@
     <visual>
       <origin rpy="0.0 -0.0 1.5708" xyz="-0.0375 -0.00925 0.0295"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/battery_cage.stl"/>
+        <mesh filename="package://piplus_description/urdf/battery_cage.stl"/>
       </geometry>
       <material name="battery_cage_material">
         <color rgba="0.4 0.4 0.4 1.0"/>
@@ -397,7 +397,7 @@
     <visual>
       <origin rpy="-1.5708 2.89513e-24 1.5708" xyz="-0.02595 0.042 2.77556e-17"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/sea_connector.stl"/>
+        <mesh filename="package://piplus_description/urdf/sea_connector.stl"/>
       </geometry>
       <material name="sea_connector_material">
         <color rgba="0.717647 0.717647 0.717647 1.0"/>
@@ -412,7 +412,7 @@
     <visual>
       <origin rpy="-1.5708 2.89513e-24 1.5708" xyz="-0.01695 0.042 8.32667e-17"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/sea_ninjaflex.stl"/>
+        <mesh filename="package://piplus_description/urdf/sea_ninjaflex.stl"/>
       </geometry>
       <material name="sea_ninjaflex_material">
         <color rgba="0.717647 0.717647 0.717647 1.0"/>
@@ -427,7 +427,7 @@
     <visual>
       <origin rpy="2.4048e-34 -1.72563e-31 -1.5783e-33" xyz="0.0 0.0 2.77556e-17"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/shoulder_connector.stl"/>
+        <mesh filename="package://piplus_description/urdf/shoulder_connector.stl"/>
       </geometry>
       <material name="shoulder_connector_material">
         <color rgba="0.717647 0.717647 0.717647 1.0"/>
@@ -461,7 +461,7 @@
     <visual>
       <origin rpy="-1.5708 4.16334e-16 -2.10942e-15" xyz="1.38778e-17 1.11022e-16 -0.0235"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/mx-64-body.stl"/>
+        <mesh filename="package://piplus_description/urdf/mx-64-body.stl"/>
       </geometry>
       <material name="mx-64-body_material">
         <color rgba="0.717647 0.717647 0.717647 1.0"/>
@@ -476,7 +476,7 @@
     <visual>
       <origin rpy="-1.5708 -1.5708 0.0" xyz="0.0265 -0.144 -0.0235"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/upper_arm.stl"/>
+        <mesh filename="package://piplus_description/urdf/upper_arm.stl"/>
       </geometry>
       <material name="upper_arm_material">
         <color rgba="0.717647 0.717647 0.717647 1.0"/>
@@ -503,7 +503,7 @@
     <visual>
       <origin rpy="-1.5708 -8.88178e-16 1.5708" xyz="-0.0147 -0.0105 -0.0235"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/connector_shoulder.stl"/>
+        <mesh filename="package://piplus_description/urdf/connector_shoulder.stl"/>
       </geometry>
       <material name="connector_shoulder_material">
         <color rgba="0.717647 0.717647 0.717647 1.0"/>
@@ -518,7 +518,7 @@
     <visual>
       <origin rpy="-1.5708 1.5708 0.0" xyz="-0.0265 -0.144 -0.0235"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/upper_arm.stl"/>
+        <mesh filename="package://piplus_description/urdf/upper_arm.stl"/>
       </geometry>
       <material name="upper_arm_material">
         <color rgba="0.717647 0.717647 0.717647 1.0"/>
@@ -545,7 +545,7 @@
     <visual>
       <origin rpy="1.5708 -8.88178e-16 1.5708" xyz="0.0147 -0.0105 -0.0235"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/connector_shoulder.stl"/>
+        <mesh filename="package://piplus_description/urdf/connector_shoulder.stl"/>
       </geometry>
       <material name="connector_shoulder_material">
         <color rgba="0.717647 0.717647 0.717647 1.0"/>
@@ -560,7 +560,7 @@
     <visual>
       <origin rpy="-1.72085e-15 -1.5708 0.0" xyz="0.024 -0.064 -0.038499"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/upper_arm_spacer.stl"/>
+        <mesh filename="package://piplus_description/urdf/upper_arm_spacer.stl"/>
       </geometry>
       <material name="upper_arm_spacer_material">
         <color rgba="0.717647 0.717647 0.717647 1.0"/>
@@ -582,7 +582,7 @@
     <visual>
       <origin rpy="-1.5708 -1.02349e-15 -3.14159" xyz="3.19189e-16 -0.163682 -0.0065"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/lower_arm.stl"/>
+        <mesh filename="package://piplus_description/urdf/lower_arm.stl"/>
       </geometry>
       <material name="lower_arm_material">
         <color rgba="0.960784 0.960784 0.960784 1.0"/>
@@ -621,7 +621,7 @@
     <visual>
       <origin rpy="-1.5708 5.6205e-16 -5.30016e-31" xyz="0.0 -3.46945e-18 -0.0235"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/mx-64-body.stl"/>
+        <mesh filename="package://piplus_description/urdf/mx-64-body.stl"/>
       </geometry>
       <material name="mx-64-body_material">
         <color rgba="0.960784 0.960784 0.960784 1.0"/>
@@ -636,7 +636,7 @@
     <visual>
       <origin rpy="1.5708 1.84661e-15 9.4369e-16" xyz="2.70617e-16 -0.163682 -0.0065"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/hand.stl"/>
+        <mesh filename="package://piplus_description/urdf/hand.stl"/>
       </geometry>
       <material name="hand_material">
         <color rgba="0.960784 0.960784 0.960784 1.0"/>
@@ -669,7 +669,7 @@
     <visual>
       <origin rpy="-1.5708 -7.02563e-16 -3.14159" xyz="2.84495e-16 -0.163682 -0.0425"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/lower_arm.stl"/>
+        <mesh filename="package://piplus_description/urdf/lower_arm.stl"/>
       </geometry>
       <material name="lower_arm_material">
         <color rgba="0.960784 0.960784 0.960784 1.0"/>
@@ -752,7 +752,7 @@
     <visual>
       <origin rpy="1.5708 2.69257e-16 -1.5708" xyz="-0.02595 0.042 -2.77556e-17"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/sea_connector.stl"/>
+        <mesh filename="package://piplus_description/urdf/sea_connector.stl"/>
       </geometry>
       <material name="sea_connector_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -767,7 +767,7 @@
     <visual>
       <origin rpy="4.03198e-33 -5.25487e-46 -1.08705e-48" xyz="0.0 0.0 -2.77556e-17"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/shoulder_connector.stl"/>
+        <mesh filename="package://piplus_description/urdf/shoulder_connector.stl"/>
       </geometry>
       <material name="shoulder_connector_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -794,7 +794,7 @@
     <visual>
       <origin rpy="1.5708 3.67828e-16 -1.5708" xyz="-0.01695 0.042 -5.55112e-17"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/sea_ninjaflex.stl"/>
+        <mesh filename="package://piplus_description/urdf/sea_ninjaflex.stl"/>
       </geometry>
       <material name="sea_ninjaflex_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -816,7 +816,7 @@
     <visual>
       <origin rpy="-1.5708 -4.38538e-15 -2.0118e-29" xyz="0.0 2.77556e-17 -0.0235"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/mx-64-body.stl"/>
+        <mesh filename="package://piplus_description/urdf/mx-64-body.stl"/>
       </geometry>
       <material name="mx-64-body_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -831,7 +831,7 @@
     <visual>
       <origin rpy="-1.5708 3.44169e-15 1.5708" xyz="-0.0147 -0.0105 -0.0235"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/connector_shoulder.stl"/>
+        <mesh filename="package://piplus_description/urdf/connector_shoulder.stl"/>
       </geometry>
       <material name="connector_shoulder_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -846,7 +846,7 @@
     <visual>
       <origin rpy="1.5708 3.44169e-15 1.5708" xyz="0.0147 -0.0105 -0.0235"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/connector_shoulder.stl"/>
+        <mesh filename="package://piplus_description/urdf/connector_shoulder.stl"/>
       </geometry>
       <material name="connector_shoulder_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -861,7 +861,7 @@
     <visual>
       <origin rpy="4.35589e-15 -1.5708 0.0" xyz="0.024 -0.064 -0.038499"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/upper_arm_spacer.stl"/>
+        <mesh filename="package://piplus_description/urdf/upper_arm_spacer.stl"/>
       </geometry>
       <material name="upper_arm_spacer_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -876,7 +876,7 @@
     <visual>
       <origin rpy="-1.5708 1.5708 0.0" xyz="-0.0265 -0.144 -0.0235"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/upper_arm.stl"/>
+        <mesh filename="package://piplus_description/urdf/upper_arm.stl"/>
       </geometry>
       <material name="upper_arm_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -903,7 +903,7 @@
     <visual>
       <origin rpy="-1.5708 -1.5708 0.0" xyz="0.0265 -0.144 -0.0235"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/upper_arm.stl"/>
+        <mesh filename="package://piplus_description/urdf/upper_arm.stl"/>
       </geometry>
       <material name="upper_arm_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -937,7 +937,7 @@
     <visual>
       <origin rpy="-1.5708 1.77494e-30 1.26218e-29" xyz="0.0 -1.73472e-18 -0.0235"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/mx-64-body.stl"/>
+        <mesh filename="package://piplus_description/urdf/mx-64-body.stl"/>
       </geometry>
       <material name="mx-64-body_material">
         <color rgba="0.960784 0.960784 0.960784 1.0"/>
@@ -952,7 +952,7 @@
     <visual>
       <origin rpy="1.5708 -1.0102e-29 1.41995e-29" xyz="-6.93889e-18 -0.163682 -0.0405"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/lower_arm.stl"/>
+        <mesh filename="package://piplus_description/urdf/lower_arm.stl"/>
       </geometry>
       <material name="lower_arm_material">
         <color rgba="0.960784 0.960784 0.960784 1.0"/>
@@ -991,7 +991,7 @@
     <visual>
       <origin rpy="-1.5708 1.65734e-29 -3.14159" xyz="-8.32667e-17 -0.163682 -0.0405"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/hand.stl"/>
+        <mesh filename="package://piplus_description/urdf/hand.stl"/>
       </geometry>
       <material name="hand_material">
         <color rgba="0.960784 0.960784 0.960784 1.0"/>
@@ -1024,7 +1024,7 @@
     <visual>
       <origin rpy="1.5708 -1.65734e-29 4.01294e-27" xyz="-6.245e-17 -0.163682 -0.0045"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/lower_arm.stl"/>
+        <mesh filename="package://piplus_description/urdf/lower_arm.stl"/>
       </geometry>
       <material name="lower_arm_material">
         <color rgba="0.960784 0.960784 0.960784 1.0"/>
@@ -1107,7 +1107,7 @@
     <visual>
       <origin rpy="-5.5278e-33 -0.0 0.0" xyz="0.0 -0.0006 -0.018"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/hip_u_connector.stl"/>
+        <mesh filename="package://piplus_description/urdf/hip_u_connector.stl"/>
       </geometry>
       <material name="hip_u_connector_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -1147,7 +1147,7 @@
     <visual>
       <origin rpy="-1.5708 4.34181e-16 -6.8556e-16" xyz="6.93889e-18 0.0 -0.026"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/mx-106_body.stl"/>
+        <mesh filename="package://piplus_description/urdf/mx-106_body.stl"/>
       </geometry>
       <material name="mx-106_body_material">
         <color rgba="0.262745 0.282353 0.301961 1.0"/>
@@ -1162,7 +1162,7 @@
     <visual>
       <origin rpy="-3.14159 -3.01408e-17 1.5708" xyz="-0.0145 -0.021 -0.043"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/motor_connector.stl"/>
+        <mesh filename="package://piplus_description/urdf/motor_connector.stl"/>
       </geometry>
       <material name="motor_connector_material">
         <color rgba="0.262745 0.282353 0.301961 1.0"/>
@@ -1183,7 +1183,7 @@
     <visual>
       <origin rpy="2.03474e-16 7.21579e-17 -3.14159" xyz="0.014 0.0105 -0.0892"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/thrustbearingholder.stl"/>
+        <mesh filename="package://piplus_description/urdf/thrustbearingholder.stl"/>
       </geometry>
       <material name="thrustbearingholder_material">
         <color rgba="0.262745 0.282353 0.301961 1.0"/>
@@ -1192,7 +1192,7 @@
     <visual>
       <origin rpy="-3.14159 -2.1475e-16 -1.5708" xyz="0.0145 0.007 -0.043"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/motor_connector.stl"/>
+        <mesh filename="package://piplus_description/urdf/motor_connector.stl"/>
       </geometry>
       <material name="motor_connector_material">
         <color rgba="0.262745 0.282353 0.301961 1.0"/>
@@ -1213,7 +1213,7 @@
     <visual>
       <origin rpy="-1.5708 -1.5708 0.0" xyz="-4.44089e-15 -1.11022e-16 -0.0691"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/mx-106_body.stl"/>
+        <mesh filename="package://piplus_description/urdf/mx-106_body.stl"/>
       </geometry>
       <material name="mx-106_body_material">
         <color rgba="0.262745 0.282353 0.301961 1.0"/>
@@ -1235,7 +1235,7 @@
     <visual>
       <origin rpy="-1.5708 -0.523599 3.14159" xyz="0.0182355 -0.0226528 -0.130164"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/knee_connector.stl"/>
+        <mesh filename="package://piplus_description/urdf/knee_connector.stl"/>
       </geometry>
       <material name="knee_connector_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -1256,7 +1256,7 @@
     <visual>
       <origin rpy="2.67816e-33 1.87111e-31 -7.84766e-32" xyz="-3.46945e-18 0.002 0.0"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/upper_leg.stl"/>
+        <mesh filename="package://piplus_description/urdf/upper_leg.stl"/>
       </geometry>
       <material name="upper_leg_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -1349,7 +1349,7 @@
     <visual>
       <origin rpy="-1.5708 -0.523599 3.14159" xyz="-0.00392295 -0.0265 -0.169043"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/xh-540.stl"/>
+        <mesh filename="package://piplus_description/urdf/xh-540.stl"/>
       </geometry>
       <material name="xh-540_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -1364,7 +1364,7 @@
     <visual>
       <origin rpy="1.5708 -1.25941e-15 -6.88035e-16" xyz="0.014 -0.055 -0.138"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/spring_holder_upper.stl"/>
+        <mesh filename="package://piplus_description/urdf/spring_holder_upper.stl"/>
       </geometry>
       <material name="spring_holder_upper_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -1385,7 +1385,7 @@
     <visual>
       <origin rpy="8.32667e-17 -8.32667e-17 -7.99057e-16" xyz="-3.46945e-18 -0.053 -6.93889e-18"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/upper_leg.stl"/>
+        <mesh filename="package://piplus_description/urdf/upper_leg.stl"/>
       </geometry>
       <material name="upper_leg_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -1472,7 +1472,7 @@
     <visual>
       <origin rpy="-1.5708 0.523599 -7.03051e-16" xyz="0.0186686 -0.0303472 -0.130414"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/knee_connector.stl"/>
+        <mesh filename="package://piplus_description/urdf/knee_connector.stl"/>
       </geometry>
       <material name="knee_connector_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -1493,7 +1493,7 @@
     <visual>
       <origin rpy="1.5708 0.261799 3.14159" xyz="0.0220754 -0.053 -0.0939778"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/upper_leg_spacer.stl"/>
+        <mesh filename="package://piplus_description/urdf/upper_leg_spacer.stl"/>
       </geometry>
       <material name="upper_leg_spacer_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -1515,7 +1515,7 @@
     <visual>
       <origin rpy="-1.29858e-17 1.20206e-16 -1.87639e-31" xyz="0.02797 0.068019 -0.15413"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/knee_spacer.stl"/>
+        <mesh filename="package://piplus_description/urdf/knee_spacer.stl"/>
       </geometry>
       <material name="knee_spacer_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -1530,7 +1530,7 @@
     <visual>
       <origin rpy="-1.29858e-17 3.88714e-17 3.24404e-33" xyz="4.3715e-16 0.0525 -0.17"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/lower_leg.stl"/>
+        <mesh filename="package://piplus_description/urdf/lower_leg.stl"/>
       </geometry>
       <material name="lower_leg_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -1569,7 +1569,7 @@
     <visual>
       <origin rpy="1.4561e-17 4.65191e-17 3.07336e-31" xyz="6.93889e-18 -0.0015 -0.17"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/lower_leg.stl"/>
+        <mesh filename="package://piplus_description/urdf/lower_leg.stl"/>
       </geometry>
       <material name="lower_leg_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -1608,7 +1608,7 @@
     <visual>
       <origin rpy="1.5708 1.48353 3.14159" xyz="-0.00951565 -0.0015 -0.03402"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/lower_leg_spacer.stl"/>
+        <mesh filename="package://piplus_description/urdf/lower_leg_spacer.stl"/>
       </geometry>
       <material name="lower_leg_spacer_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -1623,7 +1623,7 @@
     <visual>
       <origin rpy="7.13209e-18 -5.78502e-18 -2.31072e-30" xyz="2.96985e-15 -0.0035 -0.17"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/springholder_new.stl"/>
+        <mesh filename="package://piplus_description/urdf/springholder_new.stl"/>
       </geometry>
       <material name="springholder_new_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -1644,7 +1644,7 @@
     <visual>
       <origin rpy="3.14159 -0.174533 3.14159" xyz="0.0202407 0.0033 0.0613528"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/spring_holder_lower.stl"/>
+        <mesh filename="package://piplus_description/urdf/spring_holder_lower.stl"/>
       </geometry>
       <material name="spring_holder_lower_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -1659,7 +1659,7 @@
     <visual>
       <origin rpy="-6.57331e-32 -8.99202e-18 -8.70947e-32" xyz="0.02797 0.017519 -0.15413"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/knee_spacer.stl"/>
+        <mesh filename="package://piplus_description/urdf/knee_spacer.stl"/>
       </geometry>
       <material name="knee_spacer_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -1674,7 +1674,7 @@
     <visual>
       <origin rpy="4.49839e-17 -5.78502e-18 4.78903e-30" xyz="1.38778e-17 -0.0035 0.0"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/springholder_bottom.stl"/>
+        <mesh filename="package://piplus_description/urdf/springholder_bottom.stl"/>
       </geometry>
       <material name="springholder_bottom_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -1696,7 +1696,7 @@
     <visual>
       <origin rpy="1.5708 8.07766e-17 1.5708" xyz="-0.0261 -0.021 -0.0405"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/motor_connector.stl"/>
+        <mesh filename="package://piplus_description/urdf/motor_connector.stl"/>
       </geometry>
       <material name="motor_connector_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -1717,7 +1717,7 @@
     <visual>
       <origin rpy="-1.5708 -1.5708 0.0" xyz="-0.0431 -5.55112e-17 -0.026"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/mx-106_body.stl"/>
+        <mesh filename="package://piplus_description/urdf/mx-106_body.stl"/>
       </geometry>
       <material name="mx-106_body_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -1732,7 +1732,7 @@
     <visual>
       <origin rpy="-1.5708 -1.33068e-15 -1.5708" xyz="-0.0261 0.007 -0.0115"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/motor_connector.stl"/>
+        <mesh filename="package://piplus_description/urdf/motor_connector.stl"/>
       </geometry>
       <material name="motor_connector_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -1753,7 +1753,7 @@
     <visual>
       <origin rpy="3.14159 1.5708 0.0" xyz="0.0201 0.0105 -0.0109"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/thrustbearingholder.stl"/>
+        <mesh filename="package://piplus_description/urdf/thrustbearingholder.stl"/>
       </geometry>
       <material name="thrustbearingholder_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -1762,7 +1762,7 @@
     <visual>
       <origin rpy="-1.5708 3.4122e-32 1.32553e-17" xyz="1.38778e-17 -5.55112e-17 -0.026"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/mx-106_body.stl"/>
+        <mesh filename="package://piplus_description/urdf/mx-106_body.stl"/>
       </geometry>
       <material name="mx-106_body_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -1784,7 +1784,7 @@
     <visual>
       <origin rpy="-3.52812e-15 1.12974e-16 -1.00224e-17" xyz="-0.03 0.0065 -0.034"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/load_cell.stl"/>
+        <mesh filename="package://piplus_description/urdf/load_cell.stl"/>
       </geometry>
       <material name="load_cell_material">
         <color rgba="0.717647 0.717647 0.717647 1.0"/>
@@ -1799,7 +1799,7 @@
     <visual>
       <origin rpy="5.20592e-17 -2.1633e-18 2.92836e-19" xyz="-6.93889e-18 0.046 -0.036"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/ankle.stl"/>
+        <mesh filename="package://piplus_description/urdf/ankle.stl"/>
       </geometry>
       <material name="ankle_material">
         <color rgba="0.717647 0.717647 0.717647 1.0"/>
@@ -1862,7 +1862,7 @@
     <visual>
       <origin rpy="-3.52812e-15 1.12974e-16 -1.00224e-17" xyz="0.06 0.1635 -0.034"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/load_cell.stl"/>
+        <mesh filename="package://piplus_description/urdf/load_cell.stl"/>
       </geometry>
       <material name="load_cell_material">
         <color rgba="0.717647 0.717647 0.717647 1.0"/>
@@ -1877,7 +1877,7 @@
     <visual>
       <origin rpy="-2.92213e-15 1.32096e-19 -1.13088e-17" xyz="-0.03 0.1635 -0.034"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/load_cell.stl"/>
+        <mesh filename="package://piplus_description/urdf/load_cell.stl"/>
       </geometry>
       <material name="load_cell_material">
         <color rgba="0.717647 0.717647 0.717647 1.0"/>
@@ -1892,7 +1892,7 @@
     <visual>
       <origin rpy="1.35293e-15 -2.61682e-15 -1.5708" xyz="-0.145 0.085 -0.0395"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/foot_printed_right.stl"/>
+        <mesh filename="package://piplus_description/urdf/foot_printed_right.stl"/>
       </geometry>
       <material name="foot_printed_right_material">
         <color rgba="0.717647 0.717647 0.717647 1.0"/>
@@ -1943,7 +1943,7 @@
     <visual>
       <origin rpy="-7.26031e-15 9.3687e-16 3.14159" xyz="0.06 0.0065 -0.034"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/load_cell.stl"/>
+        <mesh filename="package://piplus_description/urdf/load_cell.stl"/>
       </geometry>
       <material name="load_cell_material">
         <color rgba="0.717647 0.717647 0.717647 1.0"/>
@@ -1958,7 +1958,7 @@
     <visual>
       <origin rpy="1.42744e-16 -6.57336e-16 -1.5708" xyz="0.0234568 0.0618337 -0.0463905"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/foot_cover.stl"/>
+        <mesh filename="package://piplus_description/urdf/foot_cover.stl"/>
       </geometry>
       <material name="foot_cover_material">
         <color rgba="0.717647 0.717647 0.717647 1.0"/>
@@ -2012,7 +2012,7 @@
     <visual>
       <origin rpy="3.23006e-18 -1.19123e-17 2.03698e-19" xyz="1.38778e-17 0.0 -0.01"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
+        <mesh filename="package://piplus_description/urdf/flex_stollen.stl"/>
       </geometry>
       <material name="flex_stollen_material">
         <color rgba="0.717647 0.717647 0.717647 1.0"/>
@@ -2061,7 +2061,7 @@
     <visual>
       <origin rpy="-3.73069e-18 2.62616e-17 -9.07888e-20" xyz="-1.38778e-17 0.0 -0.01"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
+        <mesh filename="package://piplus_description/urdf/flex_stollen.stl"/>
       </geometry>
       <material name="flex_stollen_material">
         <color rgba="0.717647 0.717647 0.717647 1.0"/>
@@ -2110,7 +2110,7 @@
     <visual>
       <origin rpy="-2.05778e-18 -5.89301e-17 1.25017e-18" xyz="-4.16334e-17 1.38778e-17 -0.01"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
+        <mesh filename="package://piplus_description/urdf/flex_stollen.stl"/>
       </geometry>
       <material name="flex_stollen_material">
         <color rgba="0.717647 0.717647 0.717647 1.0"/>
@@ -2159,7 +2159,7 @@
     <visual>
       <origin rpy="3.60539e-18 -8.45708e-17 1.33887e-18" xyz="-1.38778e-17 0.0 -0.01"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
+        <mesh filename="package://piplus_description/urdf/flex_stollen.stl"/>
       </geometry>
       <material name="flex_stollen_material">
         <color rgba="0.717647 0.717647 0.717647 1.0"/>
@@ -2256,7 +2256,7 @@
     <visual>
       <origin rpy="0.0 -0.0 0.0" xyz="0.0 -0.0006 -0.018"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/hip_u_connector.stl"/>
+        <mesh filename="package://piplus_description/urdf/hip_u_connector.stl"/>
       </geometry>
       <material name="hip_u_connector_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -2296,7 +2296,7 @@
     <visual>
       <origin rpy="-3.14159 1.52095e-16 -1.5708" xyz="0.0145 0.007 -0.043"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/motor_connector.stl"/>
+        <mesh filename="package://piplus_description/urdf/motor_connector.stl"/>
       </geometry>
       <material name="motor_connector_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -2317,7 +2317,7 @@
     <visual>
       <origin rpy="-1.5708 -1.96517e-16 7.99616e-16" xyz="6.93889e-18 0.0 -0.026"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/mx-106_body.stl"/>
+        <mesh filename="package://piplus_description/urdf/mx-106_body.stl"/>
       </geometry>
       <material name="mx-106_body_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -2332,7 +2332,7 @@
     <visual>
       <origin rpy="-1.5708 1.5708 0.0" xyz="2.08167e-17 -6.93889e-18 -0.0691"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/mx-106_body.stl"/>
+        <mesh filename="package://piplus_description/urdf/mx-106_body.stl"/>
       </geometry>
       <material name="mx-106_body_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -2347,7 +2347,7 @@
     <visual>
       <origin rpy="3.14159 -1.57669e-16 1.5708" xyz="-0.0145 -0.021 -0.043"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/motor_connector.stl"/>
+        <mesh filename="package://piplus_description/urdf/motor_connector.stl"/>
       </geometry>
       <material name="motor_connector_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -2368,7 +2368,7 @@
     <visual>
       <origin rpy="-1.52095e-16 2.65906e-16 -3.14159" xyz="0.0151 0.0105 -0.0892"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/thrustbearingholder.stl"/>
+        <mesh filename="package://piplus_description/urdf/thrustbearingholder.stl"/>
       </geometry>
       <material name="thrustbearingholder_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -2384,7 +2384,7 @@
     <visual>
       <origin rpy="3.14159 6.1423e-17 0.523599" xyz="-0.0182355 -0.130164 0.0283472"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/knee_connector.stl"/>
+        <mesh filename="package://piplus_description/urdf/knee_connector.stl"/>
       </geometry>
       <material name="knee_connector_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -2411,7 +2411,7 @@
     <visual>
       <origin rpy="1.28647e-15 9.85727e-17 -2.61799" xyz="-0.0178025 -0.129914 0.0206528"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/knee_connector.stl"/>
+        <mesh filename="package://piplus_description/urdf/knee_connector.stl"/>
       </geometry>
       <material name="knee_connector_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -2432,7 +2432,7 @@
     <visual>
       <origin rpy="5.2714e-16 -4.13578e-16 -2.61799" xyz="0.00435596 -0.168793 0.0245"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/xh-540.stl"/>
+        <mesh filename="package://piplus_description/urdf/xh-540.stl"/>
       </geometry>
       <material name="xh-540_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -2447,7 +2447,7 @@
     <visual>
       <origin rpy="-9.82513e-16 6.31125e-16 2.61799" xyz="-0.014 -0.138 0.053"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/spring_holder_upper.stl"/>
+        <mesh filename="package://piplus_description/urdf/spring_holder_upper.stl"/>
       </geometry>
       <material name="spring_holder_upper_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -2468,7 +2468,7 @@
     <visual>
       <origin rpy="1.5708 -2.22045e-16 -3.14159" xyz="0.0 0.0 -0.002"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/upper_leg.stl"/>
+        <mesh filename="package://piplus_description/urdf/upper_leg.stl"/>
       </geometry>
       <material name="upper_leg_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -2555,7 +2555,7 @@
     <visual>
       <origin rpy="1.5708 3.88578e-16 3.14159" xyz="1.73472e-17 6.93889e-18 0.053"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/upper_leg.stl"/>
+        <mesh filename="package://piplus_description/urdf/upper_leg.stl"/>
       </geometry>
       <material name="upper_leg_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -2642,7 +2642,7 @@
     <visual>
       <origin rpy="-9.30089e-16 -9.78424e-16 -0.261799" xyz="-0.0220754 -0.0939778 -0.002"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/upper_leg_spacer.stl"/>
+        <mesh filename="package://piplus_description/urdf/upper_leg_spacer.stl"/>
       </geometry>
       <material name="upper_leg_spacer_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -2664,7 +2664,7 @@
     <visual>
       <origin rpy="3.14159 -2.7177e-17 1.78089e-30" xyz="5.2458e-15 0.0035 0.17"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/springholder_new.stl"/>
+        <mesh filename="package://piplus_description/urdf/springholder_new.stl"/>
       </geometry>
       <material name="springholder_new_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -2685,7 +2685,7 @@
     <visual>
       <origin rpy="2.81675e-17 9.32698e-14 -3.14159" xyz="0.00217889 -0.0033 -0.145095"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/spring_holder_lower.stl"/>
+        <mesh filename="package://piplus_description/urdf/spring_holder_lower.stl"/>
       </geometry>
       <material name="spring_holder_lower_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -2700,7 +2700,7 @@
     <visual>
       <origin rpy="-3.14159 7.62793e-17 -4.63861e-30" xyz="1.38778e-17 0.0035 0.0"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/springholder_bottom.stl"/>
+        <mesh filename="package://piplus_description/urdf/springholder_bottom.stl"/>
       </geometry>
       <material name="springholder_bottom_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -2715,7 +2715,7 @@
     <visual>
       <origin rpy="3.55107e-18 5.35814e-17 1.13857e-31" xyz="0.02797 -0.031481 -0.15413"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/knee_spacer.stl"/>
+        <mesh filename="package://piplus_description/urdf/knee_spacer.stl"/>
       </geometry>
       <material name="knee_spacer_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -2730,7 +2730,7 @@
     <visual>
       <origin rpy="1.5708 1.48353 3.14159" xyz="-0.00951565 -0.0495 -0.03402"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/lower_leg_spacer.stl"/>
+        <mesh filename="package://piplus_description/urdf/lower_leg_spacer.stl"/>
       </geometry>
       <material name="lower_leg_spacer_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -2745,7 +2745,7 @@
     <visual>
       <origin rpy="-4.88838e-32 1.50937e-17 -4.85271e-32" xyz="0.02797 0.019019 -0.15413"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/knee_spacer.stl"/>
+        <mesh filename="package://piplus_description/urdf/knee_spacer.stl"/>
       </geometry>
       <material name="knee_spacer_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -2760,7 +2760,7 @@
     <visual>
       <origin rpy="1.47349e-18 3.96832e-17 4.56098e-32" xyz="1.17961e-16 -0.0505 -0.17"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/lower_leg.stl"/>
+        <mesh filename="package://piplus_description/urdf/lower_leg.stl"/>
       </geometry>
       <material name="lower_leg_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -2799,7 +2799,7 @@
     <visual>
       <origin rpy="3.957e-17 6.87133e-17 -1.40498e-32" xyz="1.80411e-16 0.0035 -0.17"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/lower_leg.stl"/>
+        <mesh filename="package://piplus_description/urdf/lower_leg.stl"/>
       </geometry>
       <material name="lower_leg_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -2845,7 +2845,7 @@
     <visual>
       <origin rpy="1.5708 1.52434e-16 -1.5708" xyz="0.0261 0.007 -0.0405"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/motor_connector.stl"/>
+        <mesh filename="package://piplus_description/urdf/motor_connector.stl"/>
       </geometry>
       <material name="motor_connector_material">
         <color rgba="0.262745 0.282353 0.301961 1.0"/>
@@ -2866,7 +2866,7 @@
     <visual>
       <origin rpy="-3.14159 -1.5708 0.0" xyz="-0.0201 0.0105 -0.04"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/thrustbearingholder.stl"/>
+        <mesh filename="package://piplus_description/urdf/thrustbearingholder.stl"/>
       </geometry>
       <material name="thrustbearingholder_material">
         <color rgba="0.262745 0.282353 0.301961 1.0"/>
@@ -2875,7 +2875,7 @@
     <visual>
       <origin rpy="-1.5708 1.17853e-16 1.5708" xyz="0.0261 -0.021 -0.0115"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/motor_connector.stl"/>
+        <mesh filename="package://piplus_description/urdf/motor_connector.stl"/>
       </geometry>
       <material name="motor_connector_material">
         <color rgba="0.262745 0.282353 0.301961 1.0"/>
@@ -2896,7 +2896,7 @@
     <visual>
       <origin rpy="-1.5708 -5.16101e-15 1.90688e-17" xyz="2.77556e-17 0.0 -0.026"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/mx-106_body.stl"/>
+        <mesh filename="package://piplus_description/urdf/mx-106_body.stl"/>
       </geometry>
       <material name="mx-106_body_material">
         <color rgba="0.262745 0.282353 0.301961 1.0"/>
@@ -2911,7 +2911,7 @@
     <visual>
       <origin rpy="-1.5708 1.5708 0.0" xyz="0.0431 0.0 -0.026"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/mx-106_body.stl"/>
+        <mesh filename="package://piplus_description/urdf/mx-106_body.stl"/>
       </geometry>
       <material name="mx-106_body_material">
         <color rgba="0.262745 0.282353 0.301961 1.0"/>
@@ -2933,7 +2933,7 @@
     <visual>
       <origin rpy="-4.38555e-15 -1.5553e-15 5.73848e-18" xyz="-0.06 0.1635 -0.034"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/load_cell.stl"/>
+        <mesh filename="package://piplus_description/urdf/load_cell.stl"/>
       </geometry>
       <material name="load_cell_material">
         <color rgba="0.717647 0.717647 0.717647 1.0"/>
@@ -2948,7 +2948,7 @@
     <visual>
       <origin rpy="4.00009e-15 5.77818e-15 3.14159" xyz="0.03 0.0065 -0.034"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/load_cell.stl"/>
+        <mesh filename="package://piplus_description/urdf/load_cell.stl"/>
       </geometry>
       <material name="load_cell_material">
         <color rgba="0.717647 0.717647 0.717647 1.0"/>
@@ -2963,7 +2963,7 @@
     <visual>
       <origin rpy="5.77818e-15 6.88971e-15 -1.5708" xyz="-0.015 0.085 -0.0395"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/foot_printed_left.stl"/>
+        <mesh filename="package://piplus_description/urdf/foot_printed_left.stl"/>
       </geometry>
       <material name="foot_printed_left_material">
         <color rgba="0.717647 0.717647 0.717647 1.0"/>
@@ -3014,7 +3014,7 @@
     <visual>
       <origin rpy="1.29452e-15 -3.52385e-15 -1.5708" xyz="-0.00654316 0.0618337 -0.0463905"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/foot_cover.stl"/>
+        <mesh filename="package://piplus_description/urdf/foot_cover.stl"/>
       </geometry>
       <material name="foot_cover_material">
         <color rgba="0.717647 0.717647 0.717647 1.0"/>
@@ -3035,7 +3035,7 @@
     <visual>
       <origin rpy="2.07221e-17 1.23247e-32 4.97835e-31" xyz="0.0 0.046 -0.036"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/ankle.stl"/>
+        <mesh filename="package://piplus_description/urdf/ankle.stl"/>
       </geometry>
       <material name="ankle_material">
         <color rgba="0.717647 0.717647 0.717647 1.0"/>
@@ -3098,7 +3098,7 @@
     <visual>
       <origin rpy="-4.38555e-15 -1.5553e-15 5.73848e-18" xyz="0.03 0.1635 -0.034"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/load_cell.stl"/>
+        <mesh filename="package://piplus_description/urdf/load_cell.stl"/>
       </geometry>
       <material name="load_cell_material">
         <color rgba="0.717647 0.717647 0.717647 1.0"/>
@@ -3113,7 +3113,7 @@
     <visual>
       <origin rpy="-4.38555e-15 -1.5553e-15 5.73848e-18" xyz="-0.06 0.0065 -0.034"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/load_cell.stl"/>
+        <mesh filename="package://piplus_description/urdf/load_cell.stl"/>
       </geometry>
       <material name="load_cell_material">
         <color rgba="0.717647 0.717647 0.717647 1.0"/>
@@ -3161,7 +3161,7 @@
     <visual>
       <origin rpy="3.52487e-31 -2.31079e-18 4.55783e-31" xyz="1.38778e-17 -1.38778e-17 -0.01"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
+        <mesh filename="package://piplus_description/urdf/flex_stollen.stl"/>
       </geometry>
       <material name="flex_stollen_material">
         <color rgba="0.717647 0.717647 0.717647 1.0"/>
@@ -3210,7 +3210,7 @@
     <visual>
       <origin rpy="1.27589e-31 2.04832e-18 -3.75079e-32" xyz="-1.38778e-17 0.0 -0.01"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
+        <mesh filename="package://piplus_description/urdf/flex_stollen.stl"/>
       </geometry>
       <material name="flex_stollen_material">
         <color rgba="0.717647 0.717647 0.717647 1.0"/>
@@ -3259,7 +3259,7 @@
     <visual>
       <origin rpy="1.27589e-31 2.04832e-18 -3.75079e-32" xyz="2.77556e-17 -3.46945e-18 -0.01"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
+        <mesh filename="package://piplus_description/urdf/flex_stollen.stl"/>
       </geometry>
       <material name="flex_stollen_material">
         <color rgba="0.717647 0.717647 0.717647 1.0"/>
@@ -3308,7 +3308,7 @@
     <visual>
       <origin rpy="8.27693e-33 1.54334e-17 -1.78073e-30" xyz="-1.38778e-17 0.0 -0.01"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/flex_stollen.stl"/>
+        <mesh filename="package://piplus_description/urdf/flex_stollen.stl"/>
       </geometry>
       <material name="flex_stollen_material">
         <color rgba="0.717647 0.717647 0.717647 1.0"/>
@@ -3405,7 +3405,7 @@
     <visual>
       <origin rpy="-7.1415e-32 2.28711e-32 -3.97109e-33" xyz="0.0035 0.0 -0.0093"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/connector_shoulder.stl"/>
+        <mesh filename="package://piplus_description/urdf/connector_shoulder.stl"/>
       </geometry>
       <material name="connector_shoulder_material">
         <color rgba="0.247059 0.247059 0.247059 1.0"/>
@@ -3420,7 +3420,7 @@
     <visual>
       <origin rpy="3.14159 -1.5708 0.0" xyz="0.036 3.10152e-17 -0.024"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/mx-64-body.stl"/>
+        <mesh filename="package://piplus_description/urdf/mx-64-body.stl"/>
       </geometry>
       <material name="mx-64-body_material">
         <color rgba="0.247059 0.247059 0.247059 1.0"/>
@@ -3442,7 +3442,7 @@
     <visual>
       <origin rpy="-1.5708 -1.5708 0.0" xyz="0.0432 0.0795 -0.0235"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/lense.stl"/>
+        <mesh filename="package://piplus_description/urdf/lense.stl"/>
       </geometry>
       <material name="lense_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -3463,7 +3463,7 @@
     <visual>
       <origin rpy="3.88389e-31 -1.5433e-31 1.35585e-31" xyz="0.0 0.0 3.46945e-18"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/sea_ninjaflex.stl"/>
+        <mesh filename="package://piplus_description/urdf/sea_ninjaflex.stl"/>
       </geometry>
       <material name="sea_ninjaflex_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -3478,7 +3478,7 @@
     <visual>
       <origin rpy="-8.16317e-16 -2.22045e-16 3.14159" xyz="-2.08167e-17 -5.55112e-17 0.009"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/sea_connector.stl"/>
+        <mesh filename="package://piplus_description/urdf/sea_connector.stl"/>
       </geometry>
       <material name="sea_connector_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -3493,7 +3493,7 @@
     <visual>
       <origin rpy="-1.74915e-15 -1.11022e-15 -1.38778e-15" xyz="0.01 0.065 0.024"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/camera_side_basler_wolfgang_v2.2_right.stl"/>
+        <mesh filename="package://piplus_description/urdf/camera_side_basler_wolfgang_v2.2_right.stl"/>
       </geometry>
       <material name="camera_side_basler_wolfgang_v2.2_right_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -3508,7 +3508,7 @@
     <visual>
       <origin rpy="-1.14124e-18 -9.99201e-16 -7.21645e-16" xyz="0.01 0.065 -0.051"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/camera_side_basler_wolfgang_v2.2_left.stl"/>
+        <mesh filename="package://piplus_description/urdf/camera_side_basler_wolfgang_v2.2_left.stl"/>
       </geometry>
       <material name="camera_side_basler_wolfgang_v2.2_left_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -3523,7 +3523,7 @@
     <visual>
       <origin rpy="-1.5708 -1.5708 0.0" xyz="0.015 0.0795 -0.0235"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/basler_ace_gige_c-mount_v01.stl"/>
+        <mesh filename="package://piplus_description/urdf/basler_ace_gige_c-mount_v01.stl"/>
       </geometry>
       <material name="basler_ace_gige_c-mount_v01_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>
@@ -3544,7 +3544,7 @@
     <visual>
       <origin rpy="3.33067e-16 -1.5708 0.0" xyz="0.003 0.065 -0.037945"/>
       <geometry>
-        <mesh filename="package://wolfgang_description/urdf/camera_lower_basler_wolfgang_imu_v2.2.stl"/>
+        <mesh filename="package://piplus_description/urdf/camera_lower_basler_wolfgang_imu_v2.2.stl"/>
       </geometry>
       <material name="camera_lower_basler_wolfgang_imu_v2.2_material">
         <color rgba="0.647059 0.647059 0.647059 1.0"/>

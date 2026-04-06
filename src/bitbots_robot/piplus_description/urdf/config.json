@@ -1,4 +1,4 @@
-{  
+{
     "documentId": "8c6aa9a8917f764cb7039c2d",
     "assemblyName": "WolfgangV3",
     "outputFormat": "urdf",
@@ -9,10 +9,9 @@
     "mergeSTLs": false,
     "maxSTLSize": 1,
     "addDummyBaseLink": true,
-    "packageName": "wolfgang_description/urdf/",
+    "packageName": "piplus_description/urdf/",
     "robotName": "wolfgang",
     "additionalUrdfFile": "/additionalURDF.txt",
-
     // in Nm
     // 3/4 of the stall torque from robotis emanual at 14.8V
     // original values
@@ -100,7 +99,7 @@
         "hex_socket_head_cap_screw_m3x0.50_x_8",
         "rx64-cap",
         "mf128zz",
-        "hn05-n101",        
+        "hn05-n101",
         "hn05-i101",
         "hn07-i101",
         "nuc_usb",

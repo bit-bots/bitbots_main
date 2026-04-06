@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(wolfgang_description)
+project(piplus_description)
 
 find_package(bitbots_docs REQUIRED)
 find_package(ament_cmake REQUIRED)

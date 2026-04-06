@@ -39,7 +39,7 @@
     <exec_depend>system_monitor</exec_depend>
     <exec_depend>topic_tools</exec_depend>
     <exec_depend>udp_bridge</exec_depend>
-    <exec_depend>wolfgang_description</exec_depend>
+    <exec_depend>piplus_description</exec_depend>
 
     <export>
         <bitbots_documentation>
