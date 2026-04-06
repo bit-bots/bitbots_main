@@ -27,7 +27,7 @@ class StateDistribution {
   /**
    * The constructor of this base class is empty.
    */
-  StateDistribution<StateType>();
+  StateDistribution();
 
   /**
    * The destructor is empty.

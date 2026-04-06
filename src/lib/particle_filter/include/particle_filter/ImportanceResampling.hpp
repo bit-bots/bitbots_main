@@ -31,7 +31,7 @@ class ImportanceResampling : public ResamplingStrategy<StateType> {
   /**
    * The constructor of this base class inits some members.
    */
-  explicit ImportanceResampling<StateType>(bool reset_weights = false, double particle_reset_weight = 0);
+  explicit ImportanceResampling(bool reset_weights = false, double particle_reset_weight = 0);
 
   /**
    * The destructor is empty.

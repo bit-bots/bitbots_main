@@ -27,7 +27,7 @@ class Particle {
    * @param state The initial state of the particle
    * @param weight The initial weight of the particle
    */
-  Particle<StateType>(const StateType& state, double weight);
+  Particle(const StateType& state, double weight);
 
   /**
    * The destructor is empty.
