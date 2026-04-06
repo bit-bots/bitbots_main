@@ -147,7 +147,7 @@ class HeadMover {
     geometry_msgs::msg::PointStamped new_point;
     try {
       new_point =
-          tf_buffer_->transform(goal->look_at_position, planning_scene_->getPlanningFrame(), tf2::durationFromSec(0.9));
+          tf_buffer_->transform(goal->look_at_position, "base_footprint", tf2::durationFromSec(0.9));
     } catch (tf2::TransformException& ex) {
       RCLCPP_ERROR(node_->get_logger(), "Could not transform goal point: %s", ex.what());
       return rclcpp_action::GoalResponse::REJECT;
@@ -351,13 +351,9 @@ class HeadMover {
    * @brief Checks if the head collides with the body at a given pan and tilt position
    */
   bool check_head_collision(double pan, double tilt) {
-    collision_state_->setJointPositions("HeadPan", &pan);
-    collision_state_->setJointPositions("HeadTilt", &tilt);
-    collision_detection::CollisionRequest req;
-    collision_detection::CollisionResult res;
-    collision_detection::AllowedCollisionMatrix acm = planning_scene_->getAllowedCollisionMatrix();
-    planning_scene_->checkCollision(req, res, *collision_state_, acm);
-    return res.collision;
+    // TODO we do not have a collision model for the pi plus head yet, so we need to implement this function properly
+    RCLCPP_ERROR_STREAM(node_->get_logger(), "Collision checking for the pi plus head is not implemented yet");
+    return false;
   }
 
   /**
@@ -535,7 +531,7 @@ class HeadMover {
     try {
       // Transform the point into the planning frame
       geometry_msgs::msg::PointStamped new_point =
-          tf_buffer_->transform(point, planning_scene_->getPlanningFrame(), tf2::durationFromSec(0.9));
+          tf_buffer_->transform(point, "base_footprint", tf2::durationFromSec(0.9));
 
       // Get the motor goals that are needed to look at the point from the inverse kinematics
       std::pair<double, double> pan_tilt = get_motor_goals_from_point(new_point.point);
