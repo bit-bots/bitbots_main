@@ -525,7 +525,7 @@ class HeadMover {
     // Try to calculate the inverse kinematics
     // TODO we do not have inverse kinematics for the pi plus setup yet, so we need to implement this function properly
     RCLCPP_ERROR_STREAM(node_->get_logger(), "Inverse kinematics for the pi plus head is not implemented yet");
-    return {0.0, 0.0}; 
+    return {0.0, 0.0};
   }
 
   /**
