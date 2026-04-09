@@ -1,28 +1,29 @@
 bitbots_vision:
   ros__parameters:
-    # Defining the simulation parameters for YOEO vision
-    component_ball_detection_active: true # activate the ball detection
-    component_debug_image_active: false # activate the debug image
-    component_field_detection_active: true # activate the field detection
-    component_goalpost_detection_active: false      # activate the goalpost detection
-    component_line_detection_active: true           # activate the line detection
-    component_robot_detection_active: true       # activate the robot detection
+    topics:
+      image: "camera/image_proc"
+      balls: "balls_in_image"
+      robots: "robots_in_image"
+      goalposts: "goal_posts_in_image"
+      line_mask: "line_mask_in_image"
+      field_mask: "field_mask"
+      debug_image: "debug_image"
 
-    ROS_img_msg_topic: "camera/image_proc" # ROS topic of the image message
-    ROS_ball_msg_topic: "balls_in_image" # ROS topic of the ball message
-    ROS_goal_posts_msg_topic: "goal_posts_in_image" # ROS topic of the goal posts message
-    ROS_robot_msg_topic: "robots_in_image" # ROS topic of the robots message
-    ROS_line_msg_topic: "line_in_image" # ROS topic of the line message
-    ROS_line_mask_msg_topic: "line_mask_in_image" # ROS topic of the line mask message
-    ROS_debug_image_msg_topic: "debug_image" # ROS topic of the debug image message
-    ROS_field_mask_image_msg_topic: "field_mask" # ROS topic of the field mask debug image message
+    model:
+      path: "2022_10_07_flo_torso21_yoeox"
 
-    yoeo_model_path: '2022_10_07_flo_torso21_yoeox'
-    yoeo_nms_threshold: 0.4  # Non-maximum suppression threshold
-    yoeo_conf_threshold: 0.5  # YOEO confidence threshold
-    yoeo_framework: 'onnx'  # The neural network framework that should be used ['openvino', 'onnx', 'pytorch', 'tvm']
+    yoeo:
+      conf_threshold: 0.5
+      nms_threshold: 0.4
 
-    ball_candidate_rating_threshold: 0.5 # A threshold for the minimum candidate rating
-    ball_candidate_max_count: 1 # The maximum number of balls that should be published
+    components:
+      ball_active: true
+      robot_active: true
+      goalpost_active: false
+      line_active: true
+      field_active: true
+      debug_active: false
 
-    caching: true # Used to deactivate caching for profiling reasons
+    ball:
+      rating_threshold: 0.5
+      max_count: 1

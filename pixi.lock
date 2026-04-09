@@ -395,6 +395,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/numpy-1.26.4-py312heda63a1_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/ocl-icd-2.3.3-hb9d3cd8_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/octomap-1.10.0-h84d6215_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/onnxruntime-cpp-1.24.2-hc421db2_0_cpu.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/opencl-headers-2025.06.13-hecca717_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/opencv-4.12.0-qt6_py312h7bb6282_612.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/openexr-3.4.8-h40f6f1d_0.conda
@@ -969,11 +970,7 @@ environments:
         build: hb0f4dca_0
       - pypi: https://files.pythonhosted.org/packages/1a/39/47f9197bdd44df24d67ac8893641e16f386c984a0619ef2ee4c51fbbc019/beautifulsoup4-4.14.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ea/78/9a8a174011682d71cb4922f4014ebbeb9d3067922678e7059351fd9207cf/exhale-0.3.7-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/e8/2d/d2a548598be01649e2d46231d151a6c56d10b964d94043a335ae56ea2d92/flatbuffers-25.12.19-py2.py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/43/e3/7d92a15f894aa0c9c4b49b8ee9ac9850d6e63b03c9c32c0367a13ae62209/mpmath-1.3.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/26/ff/e94fd3e90638b89dd231d33eac671cf265bcdc96b8e3fa9180744577e7b9/onnxruntime_webgpu-1.24.0.dev20251218001-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/46/2c/1462b1d0a634697ae9e55b3cecdcb64788e8b7d63f54d923fcd0bb140aed/soupsieve-2.8.3-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/a2/09/77d55d46fd61b4a135c444fc97158ef34a095e5681d0a6c10b75bf356191/sympy-1.14.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/de/70/cf880c3b95a6034ef673e74b369941b42315c01f1554a5637a4f8b911009/syrupy-5.1.0-py3-none-any.whl
       linux-aarch64:
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/_openmp_mutex-4.5-20_gnu.conda
@@ -1352,6 +1349,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/nss-3.118-h544fa81_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/numpy-1.26.4-py312h470d778_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/octomap-1.10.0-h17cf362_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/onnxruntime-cpp-1.24.2-h106f1d4_0_cpu.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/opencv-4.12.0-qt6_py312h750a492_612.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/openexr-3.4.8-hd0c962a_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/openh264-2.6.0-h0564a2a_0.conda
@@ -1925,11 +1923,7 @@ environments:
         build: he8cfe8b_0
       - pypi: https://files.pythonhosted.org/packages/1a/39/47f9197bdd44df24d67ac8893641e16f386c984a0619ef2ee4c51fbbc019/beautifulsoup4-4.14.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ea/78/9a8a174011682d71cb4922f4014ebbeb9d3067922678e7059351fd9207cf/exhale-0.3.7-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/e8/2d/d2a548598be01649e2d46231d151a6c56d10b964d94043a335ae56ea2d92/flatbuffers-25.12.19-py2.py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/43/e3/7d92a15f894aa0c9c4b49b8ee9ac9850d6e63b03c9c32c0367a13ae62209/mpmath-1.3.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/aa/60/c4d1c8043eb42f8a9aa9e931c8c293d289c48ff463267130eca97d13357f/onnxruntime-1.24.4-cp312-cp312-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl
       - pypi: https://files.pythonhosted.org/packages/46/2c/1462b1d0a634697ae9e55b3cecdcb64788e8b7d63f54d923fcd0bb140aed/soupsieve-2.8.3-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/a2/09/77d55d46fd61b4a135c444fc97158ef34a095e5681d0a6c10b75bf356191/sympy-1.14.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/de/70/cf880c3b95a6034ef673e74b369941b42315c01f1554a5637a4f8b911009/syrupy-5.1.0-py3-none-any.whl
   format:
     channels:
@@ -2478,6 +2472,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/numpy-1.26.4-py312heda63a1_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/ocl-icd-2.3.3-hb9d3cd8_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/octomap-1.10.0-h84d6215_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/onnxruntime-cpp-1.24.2-hc421db2_0_cpu.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/opencl-headers-2025.06.13-hecca717_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/opencv-4.12.0-qt6_py312h7bb6282_612.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/openexr-3.4.8-h40f6f1d_0.conda
@@ -3052,12 +3047,8 @@ environments:
         build: hb0f4dca_0
       - pypi: https://files.pythonhosted.org/packages/1a/39/47f9197bdd44df24d67ac8893641e16f386c984a0619ef2ee4c51fbbc019/beautifulsoup4-4.14.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ea/78/9a8a174011682d71cb4922f4014ebbeb9d3067922678e7059351fd9207cf/exhale-0.3.7-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/e8/2d/d2a548598be01649e2d46231d151a6c56d10b964d94043a335ae56ea2d92/flatbuffers-25.12.19-py2.py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/43/e3/7d92a15f894aa0c9c4b49b8ee9ac9850d6e63b03c9c32c0367a13ae62209/mpmath-1.3.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/26/ff/e94fd3e90638b89dd231d33eac671cf265bcdc96b8e3fa9180744577e7b9/onnxruntime_webgpu-1.24.0.dev20251218001-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/a7/af/1431c481ec0f52e3313773b0244c65081ccc18e40b485eabe846a494914d/pyamdgpuinfo-2.1.8-cp312-cp312-manylinux_2_28_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/46/2c/1462b1d0a634697ae9e55b3cecdcb64788e8b7d63f54d923fcd0bb140aed/soupsieve-2.8.3-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/a2/09/77d55d46fd61b4a135c444fc97158ef34a095e5681d0a6c10b75bf356191/sympy-1.14.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/de/70/cf880c3b95a6034ef673e74b369941b42315c01f1554a5637a4f8b911009/syrupy-5.1.0-py3-none-any.whl
       linux-aarch64:
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/_openmp_mutex-4.5-20_gnu.conda
@@ -3436,6 +3427,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/nss-3.118-h544fa81_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/numpy-1.26.4-py312h470d778_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/octomap-1.10.0-h17cf362_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/onnxruntime-cpp-1.24.2-h106f1d4_0_cpu.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/opencv-4.12.0-qt6_py312h750a492_612.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/openexr-3.4.8-hd0c962a_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/openh264-2.6.0-h0564a2a_0.conda
@@ -4009,12 +4001,8 @@ environments:
         build: he8cfe8b_0
       - pypi: https://files.pythonhosted.org/packages/1a/39/47f9197bdd44df24d67ac8893641e16f386c984a0619ef2ee4c51fbbc019/beautifulsoup4-4.14.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ea/78/9a8a174011682d71cb4922f4014ebbeb9d3067922678e7059351fd9207cf/exhale-0.3.7-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/e8/2d/d2a548598be01649e2d46231d151a6c56d10b964d94043a335ae56ea2d92/flatbuffers-25.12.19-py2.py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/43/e3/7d92a15f894aa0c9c4b49b8ee9ac9850d6e63b03c9c32c0367a13ae62209/mpmath-1.3.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/aa/60/c4d1c8043eb42f8a9aa9e931c8c293d289c48ff463267130eca97d13357f/onnxruntime-1.24.4-cp312-cp312-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl
       - pypi: https://files.pythonhosted.org/packages/61/b1/399158002f4246d54d2757021544dea89038ecd320cc8ea1db36bdddac23/pyamdgpuinfo-2.1.8.tar.gz
       - pypi: https://files.pythonhosted.org/packages/46/2c/1462b1d0a634697ae9e55b3cecdcb64788e8b7d63f54d923fcd0bb140aed/soupsieve-2.8.3-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/a2/09/77d55d46fd61b4a135c444fc97158ef34a095e5681d0a6c10b75bf356191/sympy-1.14.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/de/70/cf880c3b95a6034ef673e74b369941b42315c01f1554a5637a4f8b911009/syrupy-5.1.0-py3-none-any.whl
 packages:
 - conda: https://conda.anaconda.org/conda-forge/linux-64/_openmp_mutex-4.5-20_gnu.conda
@@ -6555,10 +6543,6 @@ packages:
   - pkg:pypi/flask?source=hash-mapping
   size: 87428
   timestamp: 1771489274528
-- pypi: https://files.pythonhosted.org/packages/e8/2d/d2a548598be01649e2d46231d151a6c56d10b964d94043a335ae56ea2d92/flatbuffers-25.12.19-py2.py3-none-any.whl
-  name: flatbuffers
-  version: 25.12.19
-  sha256: 7634f50c427838bb021c2d66a3d1168e9d199b0607e6329399f04846d42e20b4
 - conda: https://conda.anaconda.org/conda-forge/linux-64/fmt-12.1.0-hff5e90c_0.conda
   sha256: d4e92ba7a7b4965341dc0fca57ec72d01d111b53c12d11396473115585a9ead6
   md5: f7d7a4104082b39e3b3473fbd4a38229
@@ -12598,19 +12582,6 @@ packages:
   purls: []
   size: 558708
   timestamp: 1730581372400
-- pypi: https://files.pythonhosted.org/packages/43/e3/7d92a15f894aa0c9c4b49b8ee9ac9850d6e63b03c9c32c0367a13ae62209/mpmath-1.3.0-py3-none-any.whl
-  name: mpmath
-  version: 1.3.0
-  sha256: a0b2b9fe80bbcd81a6647ff13108738cfb482d481d826cc0e02f5b35e5c88d2c
-  requires_dist:
-  - pytest>=4.6 ; extra == 'develop'
-  - pycodestyle ; extra == 'develop'
-  - pytest-cov ; extra == 'develop'
-  - codecov ; extra == 'develop'
-  - wheel ; extra == 'develop'
-  - sphinx ; extra == 'docs'
-  - gmpy2>=2.1.0a4 ; platform_python_implementation != 'PyPy' and extra == 'gmpy'
-  - pytest>=4.6 ; extra == 'tests'
 - conda: https://conda.anaconda.org/conda-forge/linux-64/msgpack-python-1.1.2-py312hd9148b4_1.conda
   sha256: 94068fd39d1a672f8799e3146a18ba4ef553f0fcccefddb3c07fbdabfd73667a
   md5: 2e489969e38f0b428c39492619b5e6e5
@@ -12976,29 +12947,27 @@ packages:
   purls: []
   size: 239860
   timestamp: 1728635298509
-- pypi: https://files.pythonhosted.org/packages/aa/60/c4d1c8043eb42f8a9aa9e931c8c293d289c48ff463267130eca97d13357f/onnxruntime-1.24.4-cp312-cp312-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl
-  name: onnxruntime
-  version: 1.24.4
-  sha256: 1a5c5a544b22f90859c88617ecb30e161ee3349fcc73878854f43d77f00558b5
-  requires_dist:
-  - flatbuffers
-  - numpy>=1.21.6
-  - packaging
-  - protobuf
-  - sympy
-  requires_python: '>=3.11'
-- pypi: https://files.pythonhosted.org/packages/26/ff/e94fd3e90638b89dd231d33eac671cf265bcdc96b8e3fa9180744577e7b9/onnxruntime_webgpu-1.24.0.dev20251218001-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
-  name: onnxruntime-webgpu
-  version: 1.24.0.dev20251218001
-  sha256: ac2202d17a677f31ce15b54173605e1cc263ca435c3f56195ed01462bd6aef3f
-  requires_dist:
-  - coloredlogs
-  - flatbuffers
-  - numpy>=1.21.6
-  - packaging
-  - protobuf
-  - sympy
-  requires_python: '>=3.10'
+- conda: https://conda.anaconda.org/conda-forge/linux-64/onnxruntime-cpp-1.24.2-hc421db2_0_cpu.conda
+  sha256: b7bfb985994f2fd5efec3e513e07f4ee54b5b452db93f9e3c377fbffc4a1561c
+  md5: c82c2dc1c3a43e58ee22476978507092
+  depends:
+  - __glibc >=2.17,<3.0.a0
+  - libgcc >=14
+  - libstdcxx >=14
+  license: MIT AND BSL-1.0
+  purls: []
+  size: 19517790
+  timestamp: 1772489493508
+- conda: https://conda.anaconda.org/conda-forge/linux-aarch64/onnxruntime-cpp-1.24.2-h106f1d4_0_cpu.conda
+  sha256: bc05a96241ad20ed8ee4362a70c7f0fdbf1c0fc55357a1b19670878f81584104
+  md5: 9982f2e698cd0996a6f2cbf432db500c
+  depends:
+  - libgcc >=14
+  - libstdcxx >=14
+  license: MIT AND BSL-1.0
+  purls: []
+  size: 17142483
+  timestamp: 1772513256561
 - conda: https://conda.anaconda.org/conda-forge/linux-64/opencl-headers-2025.06.13-hecca717_0.conda
   sha256: 8de2f0cd8a659b01abf86e7fbb8cea4f28ada62fd288429a2bbc040db1b98dd0
   md5: c930c8052d780caa41216af7de472226
@@ -31649,15 +31618,6 @@ packages:
   purls: []
   size: 2042800
   timestamp: 1769668627820
-- pypi: https://files.pythonhosted.org/packages/a2/09/77d55d46fd61b4a135c444fc97158ef34a095e5681d0a6c10b75bf356191/sympy-1.14.0-py3-none-any.whl
-  name: sympy
-  version: 1.14.0
-  sha256: e091cc3e99d2141a0ba2847328f5479b05d94a6635cb96148ccb3f34671bd8f5
-  requires_dist:
-  - mpmath>=1.1.0,<1.4
-  - pytest>=7.1.0 ; extra == 'dev'
-  - hypothesis>=6.70.0 ; extra == 'dev'
-  requires_python: '>=3.9'
 - pypi: https://files.pythonhosted.org/packages/de/70/cf880c3b95a6034ef673e74b369941b42315c01f1554a5637a4f8b911009/syrupy-5.1.0-py3-none-any.whl
   name: syrupy
   version: 5.1.0

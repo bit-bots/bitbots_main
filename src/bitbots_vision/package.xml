@@ -2,52 +2,41 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>bitbots_vision</name>
-
-  <version>1.4.1</version>
+  <version>2.0.0</version>
 
   <description>
-    This is the vision ROS package of the Hamburg Bit-Bots.
-
-    The vision is able to detect balls, lines, the field itself, the field boundary, goal posts, teammates, enemies and other obstacles.
-
-    For further information and getting started, see the documentation of this package at our website: http://doku.bit-bots.de/package/bitbots_vision/latest/index.html
+    YOEO-based vision for the Hamburg Bit-Bots.
+    Detects balls, goal posts, robots, and segments field/lines using an ONNX model.
+    Runs inference via ONNX Runtime with TensorRT, CUDA, WebGPU, or CPU execution providers.
   </description>
 
   <maintainer email="7vahl@informatik.uni-hamburg.de">Florian Vahl</maintainer>
-  <maintainer email="7gutsche@informatik.uni-hamburg.de">Jan Gutsche</maintainer>
   <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
 
   <license>MIT</license>
 
   <author email="7vahl@informatik.uni-hamburg.de">Florian Vahl</author>
   <author email="7gutsche@informatik.uni-hamburg.de">Jan Gutsche</author>
-  <author email="8hbrandt@informatik.uni-hamburg.de">Hendrik Brandt</author>
-  <author email="git@nfiedler.de">Niklas Fiedler</author>
   <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
 
-  <buildtool_depend>rosidl_default_generators</buildtool_depend>
-  <exec_depend>rosidl_default_runtime</exec_depend>
-  <depend>bitbots_utils</depend>
-  <depend>game_controller_hsl_interfaces</depend>
-  <depend>geometry_msgs</depend>
-  <depend>image_transport</depend>
-  <depend>python3-numpy</depend>
-  <depend>python3-opencv</depend>
-  <depend>python3-yaml</depend>
-  <depend>rclpy</depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>cv_bridge</depend>
+  <depend>generate_parameter_library</depend>
+  <depend>rclcpp</depend>
   <depend>sensor_msgs</depend>
   <depend>soccer_vision_2d_msgs</depend>
+  <depend>soccer_vision_attribute_msgs</depend>
   <depend>std_msgs</depend>
-  <depend>vision_opencv</depend>
-  <test_depend>ament_mypy</test_depend>
+  <depend>vision_msgs</depend>
 
-  <test_depend>python3-pytest</test_depend>
+  <build_depend>backward_ros</build_depend>
+
+  <test_depend>ament_cmake_gtest</test_depend>
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
 
   <export>
-    <bitbots_documentation>
-      <language>python3</language>
-      <status>unknown</status>
-    </bitbots_documentation>
-    <build_type>ament_python</build_type>
+    <build_type>ament_cmake</build_type>
   </export>
 </package>
