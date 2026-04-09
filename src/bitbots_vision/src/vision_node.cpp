@@ -4,6 +4,7 @@
 #include <memory>
 #include <string>
 
+#include <opencv2/core.hpp>
 #include <cv_bridge/cv_bridge.hpp>
 #include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -421,6 +422,11 @@ private:
 
 int main(int argc, char ** argv)
 {
+  // OpenCV's OpenMP thread pool spin-waits between frames and consumes multiple
+  // CPU cores even when idle.  For the small network-input images (~416×416)
+  // single-threaded OpenCV is faster due to lower synchronisation overhead.
+  cv::setNumThreads(1);
+
   rclcpp::init(argc, argv);
   auto node = std::make_shared<bitbots_vision::VisionNode>();
   rclcpp::experimental::executors::EventsExecutor executor;

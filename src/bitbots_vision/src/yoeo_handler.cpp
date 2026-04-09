@@ -44,24 +44,47 @@ void YoeoHandler::init_session(const std::string & model_path)
   session_options_.SetIntraOpNumThreads(1);
   session_options_.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_ALL);
 
-  // Register execution providers in priority order using ORT's built-in availability list.
-  // Ort::GetAvailableProviders() returns only providers compiled into this ORT build, so
-  // we skip ones that aren't present rather than catching exceptions at registration time.
+  // Register execution providers in priority order.
+  // Ort::GetAvailableProviders() returns providers compiled into this ORT build.
+  // CUDA and TensorRT require typed registration APIs; other providers use the generic API.
   const auto available = Ort::GetAvailableProviders();
-  const std::vector<std::string> priority = {
-    "TensorrtExecutionProvider",
-    "CUDAExecutionProvider",
-    "WebGPUExecutionProvider",
-    "CPUExecutionProvider",
+  auto has_ep = [&](const std::string & name) {
+    return std::find(available.begin(), available.end(), name) != available.end();
   };
 
-  for (const auto & ep : priority) {
-    if (std::find(available.begin(), available.end(), ep) == available.end()) {
-      continue;
+  // TRT and CUDA use typed registration APIs and dynamically load their provider shared
+  // libraries at registration time. Wrap in try/catch so a missing system library
+  // (e.g. libcublasLt.so) causes graceful fallback rather than a crash.
+  if (has_ep("TensorrtExecutionProvider")) {
+    try {
+      OrtTensorRTProviderOptions trt_opts{};
+      session_options_.AppendExecutionProvider_TensorRT(trt_opts);
+      RCLCPP_INFO(logger_, "ONNX Runtime: registered TensorrtExecutionProvider");
+    } catch (const Ort::Exception & e) {
+      RCLCPP_WARN(logger_, "TensorrtExecutionProvider unavailable: %s", e.what());
     }
-    session_options_.AppendExecutionProvider(ep, {});
-    RCLCPP_INFO(logger_, "ONNX Runtime: registered %s", ep.c_str());
   }
+
+  if (has_ep("CUDAExecutionProvider")) {
+    try {
+      OrtCUDAProviderOptions cuda_opts{};
+      session_options_.AppendExecutionProvider_CUDA(cuda_opts);
+      RCLCPP_INFO(logger_, "ONNX Runtime: registered CUDAExecutionProvider");
+    } catch (const Ort::Exception & e) {
+      RCLCPP_WARN(logger_, "CUDAExecutionProvider unavailable: %s", e.what());
+    }
+  }
+
+  if (has_ep("WebGPUExecutionProvider")) {
+    try {
+      session_options_.AppendExecutionProvider("WebGPU", {});
+      RCLCPP_INFO(logger_, "ONNX Runtime: registered WebGPUExecutionProvider");
+    } catch (const Ort::Exception & e) {
+      RCLCPP_WARN(logger_, "WebGPUExecutionProvider unavailable: %s", e.what());
+    }
+  }
+
+  // CPU is always the implicit fallback — no explicit registration needed.
 
   RCLCPP_INFO(logger_, "Loading ONNX model: %s", onnx_file.c_str());
   session_ = std::make_unique<Ort::Session>(env_, onnx_file.c_str(), session_options_);

@@ -147,7 +147,7 @@ ros-jazzy-urdf = ">=2.10.0,<3"
 ros-jazzy-urdfdom-py = ">=1.2.1,<2"
 ros-jazzy-vision-msgs = ">=4.1.1,<5"
 ros-jazzy-vision-opencv = ">=4.1.0,<5"
-onnxruntime-cpp = ">=1.24.2,<2"  # C++ headers + shared library for bitbots_vision (CUDA build selected automatically when __cuda is available)
+onnxruntime-cpp = ">=1.19.2,<2"  # CUDA builds selected per-platform via [feature.ros.target.*]
 ros-jazzy-visualization-msgs = ">=5.3.6,<6"
 ros-jazzy-web-video-server = ">=2.1.1,<3"
 ros-jazzy-xacro = ">=2.1.1,<3"
@@ -168,9 +168,17 @@ git = ">=2.52.0,<3"  # Otherwise the system git might be used causing ABI issues
 curl = ">=8.17.0,<9"
 make = ">=4.4.1,<5"  # To avoid issues in the CI
 
+[feature.ros.system-requirements]
+cuda = "12.4"  # cl04 driver 550.163 supports CUDA 12.4
+
 [feature.ros.target.linux-64.dependencies]
 # For now Webots is only packaged for x86-64 Linux
 # webots = ">=2022b,<2023a"
+onnxruntime-cpp = {version = "==1.19.2", build = "*cuda*"}  # CUDA 12.0+ build, compatible with driver 550 (CUDA 12.4)
+cuda-libraries = "==12.4.1"  # CUDA runtime libs (cufft, cublas, etc.) — no visual tools to avoid libxcb conflict
+cudnn = ">=9.7,<9.8"  # cuDNN 9.7 for CUDA 12.x (provides libcudnn.so.9 for onnxruntime)
+
+[feature.ros.target.linux-aarch64.dependencies]
 
 [feature.format.dependencies]
 # Add git-subrepo to format dependencies as currently there are
