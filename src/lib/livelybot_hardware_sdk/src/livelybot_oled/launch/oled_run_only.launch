@@ -1,0 +1,8 @@
+<launch>
+  <include file='$(find livelybot_description)/launch/livelybot_description.launch' />
+
+  <node pkg="livelybot_power" type="power_node" name="power_node" output="screen"/>
+
+  <node pkg="livelybot_oled" type="livelybot_oled_node" name="livelybot_oled_node" output="screen"/>
+
+</launch>

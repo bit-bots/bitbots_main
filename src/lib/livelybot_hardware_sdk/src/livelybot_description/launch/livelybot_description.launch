@@ -1,0 +1,21 @@
+<launch>
+    <!-- <arg name="debug" default="false"/> -->
+    <!-- <arg name="debug" default="false"/> -->
+    <arg name = "dof_type" default = "12"/>
+    <arg name = "mcu_type" default = "STM32H730"/>
+    <arg name = "model_type" default = "test"/>
+    <arg name = "design" default = "Orin"/>   
+    <rosparam file="$(find livelybot_description)/robot_param/$(arg dof_type)dof_$(arg mcu_type)_model_$(arg model_type)_$(arg design)_params.yaml" command="load" />
+    <!-- <rosparam file="$(find serial_test)/robot_param/10dof_STM32H730_model_P_Hector_params.yaml" command="load" /> -->
+</launch>
+<!-- 
+pkg： 节点所在的功能包名称
+type: 节点的可执行文件名称
+name: 节点运行时的名称
+output  =“log | screen” (可选)，日志发送目标，可以设置为 log 日志文件，或 screen 屏幕,默认是 log
+respawn =“true | false” (可选)，如果节点退出，是否自动重启
+required=“true | false” (可选)，该节点是否必须，如果为 true,那么如果该节点退出，将杀死整个 roslaunch
+ns=“xxx” (可选)，在指定命名空间 xxx 中启动节点
+machine=“机器名”，在指定机器上启动节点
+args=“xxx xxx xxx” (可选)，将参数传递给节点
+-->

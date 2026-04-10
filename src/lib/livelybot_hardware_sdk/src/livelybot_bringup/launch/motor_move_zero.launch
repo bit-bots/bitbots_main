@@ -1,0 +1,4 @@
+<launch>
+  <include file='$(find livelybot_description)/launch/livelybot_description.launch' />
+  <node pkg="livelybot_bringup" name="motor_move_zero" type="motor_move_zero" output="screen" />
+</launch> 

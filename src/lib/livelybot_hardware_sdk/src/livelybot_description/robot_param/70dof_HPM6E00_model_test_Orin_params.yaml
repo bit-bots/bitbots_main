@@ -1,0 +1,815 @@
+robot:
+  SDK_version: 2
+  robot_name: "multi-motor test"
+  arm_dof: 0
+  leg_dof: 5
+  Serial_Type: "/dev/ttyACM"
+  Seial_baudrate: 4000000
+  CAN_Type: "CAN-FD BRS" # "CAN-FD"\"CAN-FD BRS"\"CAN 2.0B"
+  control_type: 9  # 运行模式
+  imu_limt_flag: false  # 角度限制开关
+  imu_dir: false        # IMU安装方向
+  imu_limt_num: 1.0    # 角度限制值（幅度制, 范围：[0, 1.57)）
+  CANboard_num: 1
+  CANboard:
+    No_1_CANboard:
+      CANport_num: 7
+      CANport:
+        CANport_1:
+          serial_id: 1
+          motor_num: 10
+          motor:
+            motor1:
+                type: "4438_32"
+                id: 1
+                name: "L_toe_up"
+                num: 1
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor2:
+                type: "5047_36"
+                id: 2
+                name: "L_calf"
+                num: 2
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor3:
+                type: "5047_36"
+                id: 3
+                name: "L_hip"
+                num: 3
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor4:
+                type: "5047_36"
+                id: 4
+                name: "L_hip2"
+                num: 4
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor5:
+                type: "5047_36"
+                id: 5
+                name: "L_thigh"
+                num: 5
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor6:
+                type: "5047_36"
+                id: 6
+                name: "L_thigh"
+                num: 5
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor7:
+                type: "5047_36"
+                id: 7
+                name: "L_thigh"
+                num: 5
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor8:
+                type: "5047_36"
+                id: 8
+                name: "L_thigh"
+                num: 5
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor9:
+                type: "5047_36"
+                id: 9
+                name: "L_thigh"
+                num: 5
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor10:
+                type: "5047_36"
+                id: 10
+                name: "L_thigh"
+                num: 5
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+        CANport_2:
+          serial_id: 2
+          motor_num: 10
+          motor:
+            motor1:
+                type: "4438_32"
+                id: 1
+                name: "L_toe_up"
+                num: 1
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor2:
+                type: "5047_36"
+                id: 2
+                name: "L_calf"
+                num: 2
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor3:
+                type: "5047_36"
+                id: 3
+                name: "L_hip"
+                num: 3
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor4:
+                type: "5047_36"
+                id: 4
+                name: "L_hip2"
+                num: 4
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor5:
+                type: "5047_36"
+                id: 5
+                name: "L_thigh"
+                num: 5
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor6:
+                type: "5047_36"
+                id: 6
+                name: "L_thigh"
+                num: 5
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor7:
+                type: "5047_36"
+                id: 7
+                name: "L_thigh"
+                num: 5
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor8:
+                type: "5047_36"
+                id: 8
+                name: "L_thigh"
+                num: 5
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor9:
+                type: "5047_36"
+                id: 9
+                name: "L_thigh"
+                num: 5
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor10:
+                type: "5047_36"
+                id: 10
+                name: "L_thigh"
+                num: 5
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+        CANport_3:
+          serial_id: 3
+          motor_num: 10
+          motor:
+            motor1:
+                type: "4438_32"
+                id: 1
+                name: "L_toe_up"
+                num: 1
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor2:
+                type: "5047_36"
+                id: 2
+                name: "L_calf"
+                num: 2
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor3:
+                type: "5047_36"
+                id: 3
+                name: "L_hip"
+                num: 3
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor4:
+                type: "5047_36"
+                id: 4
+                name: "L_hip2"
+                num: 4
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor5:
+                type: "5047_36"
+                id: 5
+                name: "L_thigh"
+                num: 5
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor6:
+                type: "5047_36"
+                id: 6
+                name: "L_thigh"
+                num: 5
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor7:
+                type: "5047_36"
+                id: 7
+                name: "L_thigh"
+                num: 5
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor8:
+                type: "5047_36"
+                id: 8
+                name: "L_thigh"
+                num: 5
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor9:
+                type: "5047_36"
+                id: 9
+                name: "L_thigh"
+                num: 5
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor10:
+                type: "5047_36"
+                id: 10
+                name: "L_thigh"
+                num: 5
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+        CANport_4:
+          serial_id: 4
+          motor_num: 10
+          motor:
+            motor1:
+                type: "4438_32"
+                id: 1
+                name: "L_toe_up"
+                num: 1
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor2:
+                type: "5047_36"
+                id: 2
+                name: "L_calf"
+                num: 2
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor3:
+                type: "5047_36"
+                id: 3
+                name: "L_hip"
+                num: 3
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor4:
+                type: "5047_36"
+                id: 4
+                name: "L_hip2"
+                num: 4
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor5:
+                type: "5047_36"
+                id: 5
+                name: "L_thigh"
+                num: 5
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor6:
+                type: "5047_36"
+                id: 6
+                name: "L_thigh"
+                num: 5
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor7:
+                type: "5047_36"
+                id: 7
+                name: "L_thigh"
+                num: 5
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor8:
+                type: "5047_36"
+                id: 8
+                name: "L_thigh"
+                num: 5
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor9:
+                type: "5047_36"
+                id: 9
+                name: "L_thigh"
+                num: 5
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor10:
+                type: "5047_36"
+                id: 10
+                name: "L_thigh"
+                num: 5
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+        CANport_5:
+          serial_id: 5
+          motor_num: 10
+          motor:
+            motor1:
+                type: "4438_32"
+                id: 1
+                name: "L_toe_up"
+                num: 1
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor2:
+                type: "5047_36"
+                id: 2
+                name: "L_calf"
+                num: 2
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor3:
+                type: "5047_36"
+                id: 3
+                name: "L_hip"
+                num: 3
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor4:
+                type: "5047_36"
+                id: 4
+                name: "L_hip2"
+                num: 4
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor5:
+                type: "5047_36"
+                id: 5
+                name: "L_thigh"
+                num: 5
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor6:
+                type: "5047_36"
+                id: 6
+                name: "L_thigh"
+                num: 5
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor7:
+                type: "5047_36"
+                id: 7
+                name: "L_thigh"
+                num: 5
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor8:
+                type: "5047_36"
+                id: 8
+                name: "L_thigh"
+                num: 5
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor9:
+                type: "5047_36"
+                id: 9
+                name: "L_thigh"
+                num: 5
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor10:
+                type: "5047_36"
+                id: 10
+                name: "L_thigh"
+                num: 5
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+        CANport_6:
+          serial_id: 6
+          motor_num: 10
+          motor:
+            motor1:
+                type: "4438_32"
+                id: 1
+                name: "L_toe_up"
+                num: 1
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor2:
+                type: "5047_36"
+                id: 2
+                name: "L_calf"
+                num: 2
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor3:
+                type: "5047_36"
+                id: 3
+                name: "L_hip"
+                num: 3
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor4:
+                type: "5047_36"
+                id: 4
+                name: "L_hip2"
+                num: 4
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor5:
+                type: "5047_36"
+                id: 5
+                name: "L_thigh"
+                num: 5
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor6:
+                type: "5047_36"
+                id: 6
+                name: "L_thigh"
+                num: 5
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor7:
+                type: "5047_36"
+                id: 7
+                name: "L_thigh"
+                num: 5
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor8:
+                type: "5047_36"
+                id: 8
+                name: "L_thigh"
+                num: 5
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor9:
+                type: "5047_36"
+                id: 9
+                name: "L_thigh"
+                num: 5
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor10:
+                type: "5047_36"
+                id: 10
+                name: "L_thigh"
+                num: 5
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+        CANport_7:
+          serial_id: 7
+          motor_num: 10
+          motor:
+            motor1:
+                type: "4438_32"
+                id: 1
+                name: "L_toe_up"
+                num: 1
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor2:
+                type: "5047_36"
+                id: 2
+                name: "L_calf"
+                num: 2
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor3:
+                type: "5047_36"
+                id: 3
+                name: "L_hip"
+                num: 3
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor4:
+                type: "5047_36"
+                id: 4
+                name: "L_hip2"
+                num: 4
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor5:
+                type: "5047_36"
+                id: 5
+                name: "L_thigh"
+                num: 5
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor6:
+                type: "5047_36"
+                id: 6
+                name: "L_thigh"
+                num: 5
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor7:
+                type: "5047_36"
+                id: 7
+                name: "L_thigh"
+                num: 5
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor8:
+                type: "5047_36"
+                id: 8
+                name: "L_thigh"
+                num: 5
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor9:
+                type: "5047_36"
+                id: 9
+                name: "L_thigh"
+                num: 5
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3
+            motor10:
+                type: "5047_36"
+                id: 10
+                name: "L_thigh"
+                num: 5
+                pos_limit_enable: false
+                pos_upper: 5
+                pos_lower: -5
+                tor_limit_enable: false
+                tor_upper: 5
+                tor_lower: -3

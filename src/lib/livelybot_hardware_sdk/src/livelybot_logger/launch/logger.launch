@@ -1,0 +1,20 @@
+<launch>
+  <!-- 日志目录参数设置 -->
+  <arg name="log_dir" default="/tmp/livelybot_logs"/>
+  
+  <!-- 启动 power_node 以确保电源开关状态可用 -->
+  <node pkg="livelybot_power" type="power_node" name="power_node" output="screen"/>
+
+  <!-- 启动 yesense_imu_node 以确保 IMU 数据可用 -->
+  <node pkg="yesense_imu" type="yesense_imu_node" name="yesense_imu_node"  output = "screen" >
+    <param name="yesense_port"      type="string" value="/dev/ttyACM"/>
+    <param name="yesense_baudrate"  type="int"    value="460800"/>
+  </node>
+
+
+  
+  <!-- 启动 livelybot_logger 节点 -->
+  <node name="livelybot_logger" pkg="livelybot_logger" type="livelybot_logger_node" output="screen">
+    <param name="log_dir" value="$(arg log_dir)"/>
+  </node>
+</launch> 

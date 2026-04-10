@@ -1,0 +1,16 @@
+[Unit]
+Description=Livelybot Logger Service
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/logger_service
+Restart=always
+RestartSec=5
+User=1000
+Group=1000
+WorkingDirectory=/var/lib/livelybot_logger
+UMask=0002
+
+[Install]
+WantedBy=multi-user.target

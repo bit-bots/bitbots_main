@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>livelybot_msg</name>
+  <version>0.0.0</version>
+  <description>The livelybot_msg package</description>
+  <maintainer email="hpx@todo.todo">hpx</maintainer>
+  <license>TODO</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>message_runtime</depend>
+  <depend>message_generation</depend>
+  <depend>std_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>sensor_msgs</depend>
+  
+</package>

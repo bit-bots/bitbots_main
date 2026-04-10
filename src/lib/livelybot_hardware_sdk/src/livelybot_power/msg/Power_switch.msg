@@ -1,0 +1,2 @@
+uint8 control_switch
+uint8 power_switch

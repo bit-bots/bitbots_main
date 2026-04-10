@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/ingydotnet/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/HighTorque-Robotics/livelybot_hardware_sdk.git
+	branch = master
+	commit = fd09ab033e0f26c08db456ec1589311dbab9645b
+	parent = 58c470e7bb65b2ecea60d22125f4c1c05e9df1de
+	method = merge
+	cmdver = 0.4.9

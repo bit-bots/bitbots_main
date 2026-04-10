@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>livelybot_logger</name>
+  <version>0.0.1</version>
+  <description>The livelybot logger package</description>
+  <maintainer email="hightonque@robotics.com">HighTorque Robotics</maintainer>
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  
+  <build_depend>roscpp</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>message_generation</build_depend>
+  <build_depend>livelybot_power</build_depend>
+  <build_depend>livelybot_serial</build_depend>
+  <build_depend>livelybot_msg</build_depend>
+  
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>message_runtime</exec_depend>
+  <exec_depend>livelybot_power</exec_depend>
+  <exec_depend>livelybot_serial</exec_depend>
+  <exec_depend>livelybot_msg</exec_depend>
+
+  <export>
+  </export>
+</package>
