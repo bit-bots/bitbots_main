@@ -37,6 +37,7 @@ class RLNode(Node, ABC):
         super().__init__(f"{node_name}")
 
         self._config = self._load_config(config_path)
+        # Phase is optional - if phase shouldn't be used, than self._phase.get_phase() will return None
         self._phase = PhaseObject(self._config)
         self._previous_action = PreviousActionObject(self._config)
 
