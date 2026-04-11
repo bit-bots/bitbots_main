@@ -1,10 +1,9 @@
 #pragma once
 
+#include <opencv2/core.hpp>
 #include <string>
 #include <unordered_map>
 #include <vector>
-
-#include <opencv2/core.hpp>
 
 #include "bitbots_vision/candidate.hpp"
 
@@ -23,7 +22,7 @@ namespace bitbots_vision::processing {
 struct PreprocessInfo {
   int orig_h{0};
   int orig_w{0};
-  int max_dim{0};      ///< max(orig_h, orig_w) == side length of the padded square
+  int max_dim{0};  ///< max(orig_h, orig_w) == side length of the padded square
   int pad_top{0};
   int pad_bottom{0};
   int pad_left{0};
@@ -46,8 +45,7 @@ struct PreprocessInfo {
 /// @param net_w    Network input width
 /// @param info     [out] Padding / sizing metadata for use in postprocessors
 /// @return         Flattened CHW float32 tensor of size 3 * net_h * net_w
-std::vector<float> preprocess_image(
-  const cv::Mat & bgr, int net_h, int net_w, PreprocessInfo & info);
+std::vector<float> preprocess_image(const cv::Mat& bgr, int net_h, int net_w, PreprocessInfo& info);
 
 // ---------------------------------------------------------------------------
 // Non-maximum suppression
@@ -66,13 +64,9 @@ std::vector<float> preprocess_image(
 /// @param nms_threshold    IoU threshold for suppression
 /// @param max_detections   Upper limit on kept boxes
 /// @return                 Indices of kept boxes
-std::vector<int> nms_boxes(
-  const std::vector<cv::Rect2d> & boxes,
-  const std::vector<float> & scores,
-  const std::vector<int> & class_ids,
-  const std::vector<int> & robot_class_ids,
-  float nms_threshold,
-  int max_detections = 30);
+std::vector<int> nms_boxes(const std::vector<cv::Rect2d>& boxes, const std::vector<float>& scores,
+                           const std::vector<int>& class_ids, const std::vector<int>& robot_class_ids,
+                           float nms_threshold, int max_detections = 30);
 
 // ---------------------------------------------------------------------------
 // Detection postprocessing
@@ -94,14 +88,8 @@ std::vector<int> nms_boxes(
 /// @param info             Preprocessing metadata for coordinate rescaling
 /// @return                 Map of class_name → kept Candidates
 std::unordered_map<std::string, std::vector<Candidate>> postprocess_detections(
-  const float * data,
-  int64_t num_boxes,
-  int64_t stride,
-  const std::vector<std::string> & class_names,
-  const std::vector<int> & robot_class_ids,
-  float conf_thresh,
-  float nms_thresh,
-  const PreprocessInfo & info);
+    const float* data, int64_t num_boxes, int64_t stride, const std::vector<std::string>& class_names,
+    const std::vector<int>& robot_class_ids, float conf_thresh, float nms_thresh, const PreprocessInfo& info);
 
 // ---------------------------------------------------------------------------
 // Segmentation postprocessing
@@ -122,11 +110,8 @@ std::unordered_map<std::string, std::vector<Candidate>> postprocess_detections(
 /// @param class_names  Segmentation class names (index == class id)
 /// @param info         Preprocessing metadata for unpadding
 /// @return             Map of class_name → CV_8UC1 binary mask
-std::unordered_map<std::string, cv::Mat> postprocess_segmentation(
-  const float * data,
-  int seg_h,
-  int seg_w,
-  const std::vector<std::string> & class_names,
-  const PreprocessInfo & info);
+std::unordered_map<std::string, cv::Mat> postprocess_segmentation(const uint8_t* data, int seg_h, int seg_w,
+                                                                  const std::vector<std::string>& class_names,
+                                                                  const PreprocessInfo& info);
 
 }  // namespace bitbots_vision::processing

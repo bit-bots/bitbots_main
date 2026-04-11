@@ -146,8 +146,7 @@ class HeadMover {
     // Bring the goal point into the planning frame
     geometry_msgs::msg::PointStamped new_point;
     try {
-      new_point =
-          tf_buffer_->transform(goal->look_at_position, "base_footprint", tf2::durationFromSec(0.9));
+      new_point = tf_buffer_->transform(goal->look_at_position, "base_footprint", tf2::durationFromSec(0.9));
     } catch (tf2::TransformException& ex) {
       RCLCPP_ERROR(node_->get_logger(), "Could not transform goal point: %s", ex.what());
       return rclcpp_action::GoalResponse::REJECT;

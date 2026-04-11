@@ -14,11 +14,9 @@ using bitbots_vision::ModelConfig;
 // ---------------------------------------------------------------------------
 
 /// Write a minimal model_config.yaml to a temp directory and return the dir.
-static std::string make_temp_model_dir(const std::string & yaml_content)
-{
+static std::string make_temp_model_dir(const std::string& yaml_content) {
   // Use /tmp/<test-pid>-bitbots_vision_test as temp dir so we don't collide.
-  const std::string dir =
-    "/tmp/bitbots_vision_test_" + std::to_string(getpid());
+  const std::string dir = "/tmp/bitbots_vision_test_" + std::to_string(getpid());
   std::filesystem::create_directories(dir);
 
   std::ofstream f(dir + "/model_config.yaml");
@@ -30,8 +28,7 @@ static std::string make_temp_model_dir(const std::string & yaml_content)
 // Basic loading
 // ---------------------------------------------------------------------------
 
-TEST(ModelConfig, DetectionClasses)
-{
+TEST(ModelConfig, DetectionClasses) {
   const std::string yaml = R"(
 detection:
   classes:
@@ -53,8 +50,7 @@ segmentation:
   EXPECT_EQ(cfg.detection_classes()[2], "robot");
 }
 
-TEST(ModelConfig, SegmentationClasses)
-{
+TEST(ModelConfig, SegmentationClasses) {
   const std::string yaml = R"(
 detection:
   classes:
@@ -78,8 +74,7 @@ segmentation:
 // team_colors_provided
 // ---------------------------------------------------------------------------
 
-TEST(ModelConfig, TeamColorsProvidedFalse_WhenKeyAbsent)
-{
+TEST(ModelConfig, TeamColorsProvidedFalse_WhenKeyAbsent) {
   const std::string yaml = R"(
 detection:
   classes:
@@ -93,8 +88,7 @@ segmentation:
   EXPECT_FALSE(cfg.team_colors_provided());
 }
 
-TEST(ModelConfig, TeamColorsProvidedTrue)
-{
+TEST(ModelConfig, TeamColorsProvidedTrue) {
   const std::string yaml = R"(
 detection:
   classes:
@@ -110,8 +104,7 @@ segmentation:
   EXPECT_TRUE(cfg.team_colors_provided());
 }
 
-TEST(ModelConfig, TeamColorsProvidedFalse_WhenExplicitFalse)
-{
+TEST(ModelConfig, TeamColorsProvidedFalse_WhenExplicitFalse) {
   const std::string yaml = R"(
 detection:
   classes:
@@ -130,8 +123,7 @@ segmentation:
 // robot_class_ids
 // ---------------------------------------------------------------------------
 
-TEST(ModelConfig, RobotClassIds_SingleRobotClass)
-{
+TEST(ModelConfig, RobotClassIds_SingleRobotClass) {
   const std::string yaml = R"(
 detection:
   classes:
@@ -150,8 +142,7 @@ segmentation:
   EXPECT_EQ(ids[0], 2);  // "robot" is at index 2
 }
 
-TEST(ModelConfig, RobotClassIds_MultipleRobotClasses)
-{
+TEST(ModelConfig, RobotClassIds_MultipleRobotClasses) {
   const std::string yaml = R"(
 detection:
   classes:
@@ -173,8 +164,7 @@ segmentation:
   EXPECT_EQ(ids[2], 3);
 }
 
-TEST(ModelConfig, RobotClassIds_NoRobotClass)
-{
+TEST(ModelConfig, RobotClassIds_NoRobotClass) {
   const std::string yaml = R"(
 detection:
   classes:
@@ -193,7 +183,6 @@ segmentation:
 // Error handling
 // ---------------------------------------------------------------------------
 
-TEST(ModelConfig, ThrowsOnMissingFile)
-{
+TEST(ModelConfig, ThrowsOnMissingFile) {
   EXPECT_THROW(ModelConfig::load_from("/nonexistent/path"), std::runtime_error);
 }
