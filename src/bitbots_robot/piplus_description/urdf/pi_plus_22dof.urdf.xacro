@@ -55,11 +55,11 @@
     <axis xyz="0 0 0" />
     <dynamics damping="0.02" friction="0.0"/>
   </joint>
-  <link name="imu_frame"/>
+  <link name="imu_frame_uncalibrated"/>
   <joint name="imu_frame_joint" type="fixed">
     <origin xyz="0 0 0.1" rpy="0 0 0" />
     <parent link="torso_link" />
-    <child link="imu_frame" />
+    <child link="imu_frame_uncalibrated" />
   </joint>
   <link name="r_shoulder_pitch_link">
     <inertial>
@@ -423,6 +423,18 @@
     <child link="camera_link" />
     <axis xyz="0 0 0" />
     <dynamics damping="0.02" friction="0.0"/>
+  </joint>
+  <link name="camera_optical_frame_uncalibrated" /> <!-- left camera -->
+  <joint name="camera_joint_uncalibrated" type="fixed">
+    <origin xyz="0.03 -0.039 0.0" rpy="-1.57 0 -1.57" />
+    <parent link="camera_link" />
+    <child link="camera_optical_frame_uncalibrated" />
+  </joint>
+  <link name="camera_optical_frame_right_uncalibrated" /> <!-- right camera -->
+  <joint name="camera_joint_right_uncalibrated" type="fixed">
+    <origin xyz="0.03 0.024 0.0" rpy="-1.57 0 -1.57" />
+    <parent link="camera_link" />
+    <child link="camera_optical_frame_right_uncalibrated" />
   </joint>
   <link name="r_hip_pitch_link">
     <inertial>
