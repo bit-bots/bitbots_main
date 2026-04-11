@@ -44,7 +44,7 @@ class KickCapsule(AbstractBlackboardCapsule):
         """
         self.walk_kick_pub = self._node.create_publisher(Bool, "/kick", 1)
         # self.connect_dynamic_kick()  Do not connect if dynamic_kick is disabled
-        self.rl_kick_pub = self._node.create_publisher(PoseStamped, "/ball_pose", 1)
+        self.rl_kick_pub = self._node.create_publisher(PoseStamped, "/rl_command/kick_command", 1)
 
     def walk_kick(self, target: WalkKickTargets) -> None:
         """
