@@ -3,17 +3,17 @@ Setup VSCode with ROS2
 ======================
 
 Open a terminal.
-Navigate to your colcon workspace.
+Navigate to your bitbots_main workspace.
 
-Source ros
+Activate the pixi environment:
 
-`source /opt/ros/jazzy/setup.zsh`
+`pixi shell`
 
 Open VSCode
 
 `code .`
 
-Install the ROS extension (from Microsoft).
+Install the `Robotics Developer Extension <https://marketplace.visualstudio.com/items?itemName=Ranch-Hand-Robotics.rde-pack>`_.
 You should see a `ROS2.jazzy` in the lower left corner.
 
 Now you should be able to build the code with `Ctrl+Shift+B`
