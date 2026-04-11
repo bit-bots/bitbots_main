@@ -60,13 +60,11 @@
     -->
 
     
-     <!--launch rl policies (currently diabled) 
-    <group if="$(var rl_policies)">
-        <node pkg="bitbots_rl_motion" exec="run_policies" output="screen">
-            <param name="use_sim_time" value="$(var sim)"/>
-        </node>
-    </group>
-    -->
+     <!--launch rl policies -->
+    <include file="$(find-pkg-share bitbots_rl_motion)/launch/rl_motion.launch">
+        <arg name="sim" value="$(var sim)"/>
+        <arg name="viz" value="$(var viz)"/>
+    </include>
 
     <!-- launch dynup -->
     <include file="$(find-pkg-share bitbots_dynup)/launch/dynup.launch">
