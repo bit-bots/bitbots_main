@@ -49,7 +49,7 @@ else
     # Download the pylon driver to temp folder
     wget --no-verbose $SHOW_PROGRESS $PYLON_DOWNLOAD_URL -O /tmp/pylon_${PYLON_VERSION}.tar.gz.gpg
     # Extract the pylon driver
-    mkdir /tmp/pylon
+    mkdir -p /tmp/pylon
     # Decrypt the pylon driver
     gpg --batch --yes --passphrase "12987318371043223" -o /tmp/pylon_${PYLON_VERSION}.tar.gz -d /tmp/pylon_${PYLON_VERSION}.tar.gz.gpg
     # Extract the pylon driver
