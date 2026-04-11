@@ -3,11 +3,13 @@
 
 #include <bio_ik/bio_ik.hpp>
 #include <bitbots_dynup/dynup_parameters.hpp>
+#include <bitbots_dynup/ik.hpp>
 #include <bitbots_splines/abstract_ik.hpp>
 #include <moveit/robot_model_loader/robot_model_loader.hpp>
 #include <moveit/robot_state/robot_state.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
 #include <tf2/convert.hpp>
+#include <tf2_eigen/tf2_eigen.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 #include "dynup_utils.hpp"
@@ -23,13 +25,13 @@ class DynupIK : public bitbots_splines::AbstractIK<DynupResponse> {
   moveit::core::RobotStatePtr get_goal_state();
   void set_joint_positions(sensor_msgs::msg::JointState::ConstSharedPtr joint_state);
 
+  const std::vector<std::string> getLeftLegJointNames();
+  const std::vector<std::string> getRightLegJointNames();
+
  private:
   rclcpp::Node::SharedPtr node_;
-  moveit::core::JointModelGroup* all_joints_group_;
   moveit::core::JointModelGroup* l_arm_joints_group_;
-  moveit::core::JointModelGroup* l_leg_joints_group_;
   moveit::core::JointModelGroup* r_arm_joints_group_;
-  moveit::core::JointModelGroup* r_leg_joints_group_;
   moveit::core::RobotStatePtr goal_state_;
   sensor_msgs::msg::JointState::ConstSharedPtr joint_state_;
   DynupDirection direction_;
