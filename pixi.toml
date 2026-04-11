@@ -190,6 +190,11 @@ exhale = ">=0.3.7, <0.4"
 # onnxruntime was removed: the vision package is now C++ and uses the conda onnxruntime
 
 [feature.robot.pypi-dependencies]
+
+[feature.robot.dependencies]
+ros-jazzy-nmea-msgs = ">=2.1.0,<3"
+ros-jazzy-geographic-msgs = ">=1.0.6,<2"
+ros-jazzy-robot-localization = ">=3.8.3,<4"
 # These are only needed on the robot
 
 
