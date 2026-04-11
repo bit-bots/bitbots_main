@@ -2,7 +2,7 @@
 <launch>
     <arg name="sim" default="false"/>
     <arg name="viz" default="false"/>
-    <arg name="walking" default="true" description="start the walking" />
+    <arg name="walking" default="false" description="start the walking" /> <!--should be removed-->
     <arg name="rl_policies" default="true" description="start the policies" />
     <arg name="torqueless_mode" default="false" description="start without torque, for example for testing the falling detection"/>
     <arg name="tts" default="true" description="Whether to speak" />
@@ -39,7 +39,7 @@
         <arg name="sim" value="$(var sim)" />
     </include>
 
-    <!-- launch the walking -->
+    <!-- launch the old walking - exists for debug purpose-->
     <group if="$(var walking)">
         <include file="$(find-pkg-share bitbots_quintic_walk)/launch/quintic_walk.launch">
             <arg name="sim" value="$(var sim)"/>
