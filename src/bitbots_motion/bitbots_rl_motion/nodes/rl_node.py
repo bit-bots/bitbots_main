@@ -62,12 +62,13 @@ class RLNode(Node, ABC):
 
         # TODO consider IMU mounting offset
 
-        self._phase.set_obs_phase(
-            np.array(
-                [np.cos(self._phase.get_phase()), np.sin(self._phase.get_phase())],
-                dtype=np.float32,
-            ).flatten()
-        )
+        if self._phase.get_phase():
+            self._phase.set_obs_phase(
+                np.array(
+                    [np.cos(self._phase.get_phase()), np.sin(self._phase.get_phase())],
+                    dtype=np.float32,
+                ).flatten()
+            )
 
         observation = self.obs()
 
@@ -78,8 +79,9 @@ class RLNode(Node, ABC):
 
         self.publisher(onnx_pred)
 
-        phase_tp1 = self._phase.get_phase() + self._phase.get_phase_dt()
-        self._phase.set_phase(np.fmod(phase_tp1 + np.pi, 2 * np.pi) - np.pi)
+        if self._phase.get_phase():
+            phase_tp1 = self._phase.get_phase() + self._phase.get_phase_dt()
+            self._phase.set_phase(np.fmod(phase_tp1 + np.pi, 2 * np.pi) - np.pi)
 
     def _all_sensors_ready(self):
         for handler in self._handlers:
