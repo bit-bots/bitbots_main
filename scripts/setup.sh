@@ -20,6 +20,10 @@ ask_question() {
 }
 
 setup_pixi() {
+    if ! type pixi &> /dev/null; then
+        curl -fsSL https://pixi.sh/install.sh | sh
+    fi
+}
     curl -fsSL https://pixi.sh/install.sh | sh
 }
 
