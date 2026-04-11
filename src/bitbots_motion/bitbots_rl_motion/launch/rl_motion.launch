@@ -1,0 +1,10 @@
+<launch>
+  <arg name="sim" default="false"/>
+
+  <group unless="$(var sim)">
+    <node pkg="bitbots_rl_motion" exec="policy_nodes" output="screen" launch-prefix="$(var taskset)">
+      <param from="$(find-pkg-share bitbots_rl_motion)/configs/wolfgang_dribbling_model_config.yaml" />
+      <param from="$(find-pkg-share bitbots_rl_motion)/configs/wolfgang_walking_model_config.yaml" />
+    </node>
+  </group>
+</launch>
