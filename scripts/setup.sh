@@ -36,10 +36,17 @@ setup_repo() {
     else
         if [[ ! -d "$PWD/bitbots_main" ]]; then
             echo "Cloning repository bitbots_main..."
-            # Try to clone via SSH first, fall back to HTTPS if that fails
+            # Try to clone via SSH first. If it fails, warn and ask user how to proceed.
             if ! git clone "$REPO_URL_SSH"; then
-                echo "SSH clone failed, trying HTTPS..."
-                git clone "$REPO_URL_HTTPS"
+                echo "SSH clone failed. This may mean your SSH keys are not set up for GitHub."
+                echo "See: https://docs.github.com/en/authentication/connecting-to-github-with-ssh"
+                if ask_question "Do you want to continue with an HTTPS clone instead of fixing SSH keys now?"; then
+                    echo "Cloning via HTTPS..."
+                    git clone "$REPO_URL_HTTPS"
+                else
+                    echo "Please set up your SSH keys and re-run this script. Exiting."
+                    exit 1
+                fi
             fi
             git checkout "$BRANCH"
         fi
