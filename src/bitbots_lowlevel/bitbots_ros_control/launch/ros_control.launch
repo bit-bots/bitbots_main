@@ -6,10 +6,7 @@
     <arg name="only_pressure" default="false"/>
     <arg name="tts" default="true" description="Whether to speak" />
 
-    <let if="$(env IS_ROBOT false)" name="taskset" value="taskset -c 0"/>
-    <let unless="$(env IS_ROBOT false)" name="taskset" value=""/>
-
-    <node pkg="bitbots_ros_control" exec="ros_control" output="screen" launch-prefix="$(var taskset)">
+    <node pkg="bitbots_ros_control" exec="ros_control" output="screen" >
         <param from="$(find-pkg-share bitbots_ros_control)/config/wolfgang.yaml" />
         <param name="torqueless_mode" value="$(var torqueless_mode)"/>
         <param name="only_imu" value="$(var only_imu)"/>

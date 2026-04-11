@@ -5,9 +5,6 @@
   <arg name="viz" default="false"/>
   <arg name="robot_type" default="wolfgang"/>
 
-  <let if="$(env IS_ROBOT false)" name="taskset" value="taskset -c 3,4"/>
-  <let unless="$(env IS_ROBOT false)" name="taskset" value=""/>
-
   <include file="$(find-pkg-share bitbots_parameter_blackboard)/launch/parameter_blackboard.launch" >
     <arg name="sim" value="$(var sim)"/>
   </include>
@@ -20,7 +17,7 @@
   <group unless="$(var sim)">
     <group unless="$(var viz)">
       <include file="$(find-pkg-share bitbots_ros_control)/launch/ros_control.launch" />
-      <node pkg="bitbots_dynup" exec="DynupNode" output="screen" launch-prefix="$(var taskset)">
+      <node pkg="bitbots_dynup" exec="DynupNode" output="screen" >
         <param name="base_link_frame" value="$(var tf_prefix)base_link"/>
         <param name="r_sole_frame" value="$(var tf_prefix)r_sole"/>
         <param name="l_sole_frame" value="$(var tf_prefix)l_sole"/>
@@ -33,7 +30,7 @@
   </group>
 
   <group if="$(var sim)">
-    <node pkg="bitbots_dynup" exec="DynupNode" output="screen" launch-prefix="$(var taskset)">
+    <node pkg="bitbots_dynup" exec="DynupNode" output="screen" >
       <param name="base_link_frame" value="$(var tf_prefix)base_link"/>
       <param name="r_sole_frame" value="$(var tf_prefix)r_sole"/>
       <param name="l_sole_frame" value="$(var tf_prefix)l_sole"/>
@@ -46,7 +43,7 @@
 
   <group if="$(var viz)">
     <node pkg="bitbots_utils" exec="motor_goals_viz_helper.py" args="--all" />
-    <node pkg="bitbots_dynup" exec="DynupNode" output="screen" launch-prefix="$(var taskset)">
+    <node pkg="bitbots_dynup" exec="DynupNode" output="screen" >
       <param name="base_link_frame" value="$(var tf_prefix)base_link"/>
       <param name="r_sole_frame" value="$(var tf_prefix)r_sole"/>
       <param name="l_sole_frame" value="$(var tf_prefix)l_sole"/>
