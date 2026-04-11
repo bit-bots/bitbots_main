@@ -126,6 +126,7 @@ class KickBallDynamic(AbstractKickAction):
                 self.pop()
 
 
+# TODO: Fix integration
 class RLKick(AbstractKickAction):
     def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
