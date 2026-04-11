@@ -42,7 +42,7 @@ class HCM_CPP : public rclcpp::Node {
     hcm_py_ = hcm_module.attr("HardwareControlManager")(use_sim_time, simulation_active, visualization_active);
 
     // Create publishers
-    pub_controller_command_ = this->create_publisher<bitbots_msgs::msg::JointCommand>("DynamixelController/command", 1);
+    pub_controller_command_ = this->create_publisher<bitbots_msgs::msg::JointCommand>("joint_command", 1);
     pub_robot_state_ = this->create_publisher<bitbots_msgs::msg::RobotControlState>("robot_state", 1);
 
     // Create subscribers for goals

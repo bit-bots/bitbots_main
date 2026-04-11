@@ -312,7 +312,7 @@ class AnimationNode(Node):
                     positions=pose.values(),
                     velocities=[-1.0] * len(pose),
                     accelerations=[-1.0] * len(pose),
-                    max_currents=[np.clip((torque[joint]), 0.0, 1.0) for joint in pose.keys()]  # type: ignore[index]
+                    max_torques=[np.clip((torque[joint]), 0.0, 1.0) for joint in pose.keys()]  # type: ignore[index]
                     if torque and False
                     else [-1.0] * len(pose),  # fmt: skip
                 ),

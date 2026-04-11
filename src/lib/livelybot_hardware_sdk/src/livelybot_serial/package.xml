@@ -16,6 +16,9 @@
   <depend>std_msgs</depend>
   <depend>sensor_msgs</depend>
   <depend>livelybot_msg</depend>
+  <depend>bitbots_msgs</depend>
+  <depend>std_srvs</depend>
+  <depend>diagnostic_updater</depend>
   <depend>serial</depend>
 
   <test_depend>ament_lint_auto</test_depend>

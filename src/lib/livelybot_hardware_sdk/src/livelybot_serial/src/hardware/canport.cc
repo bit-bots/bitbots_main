@@ -4,7 +4,7 @@
 
 
 canport::canport(int _CANport_num, int _CANboard_num, lively_serial *_ser, rclcpp::Node::SharedPtr node)
-    : ser(_ser), node_(node)
+    : node_(node), ser(_ser)
 {
     canboard_id = _CANboard_num;
     canport_id = _CANport_num;
@@ -42,7 +42,7 @@ canport::canport(int _CANport_num, int _CANboard_num, lively_serial *_ser, rclcp
         }
     }
 
-    for (size_t i = 1; i <= motor_num; i++)
+    for (int i = 1; i <= motor_num; i++)
     {
         Motors.push_back(new motor(i, _CANport_num, _CANboard_num, &cdc_tr_message, id_max, node_));
     }

@@ -13,7 +13,7 @@ canboard::canboard(int _CANboard_ID, std::vector<lively_serial *> *ser, rclcpp::
         RCLCPP_ERROR(node_->get_logger(), "Failed to get params CANport_num");
     }
 
-    for (size_t j = 1; j <= CANport_num; j++)  // one serial port per CAN port
+    for (int j = 1; j <= CANport_num; j++)  // one serial port per CAN port
     {
         CANport.push_back(new canport(j, _CANboard_ID,
                                      (*ser)[(_CANboard_ID - 1) * CANport_num + j - 1], node_));

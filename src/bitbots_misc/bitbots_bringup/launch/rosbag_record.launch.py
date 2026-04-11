@@ -34,7 +34,7 @@ TOPICS_TO_RECORD: list[str] = [
     "/debug/behavior/which_ball_is_used",
     "/diagnostics_agg",
     "/diagnostics",
-    "/DynamixelController/command",
+    "/joint_command",
     "/field_boundary_relative",
     "/field/map",
     "/game_controller_connected",

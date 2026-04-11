@@ -134,7 +134,7 @@ class JoyNode(Node):
         self.head_mode_pub = self.create_publisher(HeadMode, "head_mode", 1)
 
         self.head_msg = JointCommand()
-        self.head_msg.max_currents = [-1.0] * 2
+        self.head_msg.max_torques = [-1.0] * 2
         self.head_msg.velocities = [5.0] * 2
         self.head_msg.accelerations = [40.0] * 2
 

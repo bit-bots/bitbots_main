@@ -189,13 +189,13 @@ typedef struct
 /** Decoded motor feedback stored in the motor object. */
 typedef struct motor_back_struct
 {
-    double  time;      /**< Timestamp (steady_clock seconds) of the last update */
-    uint8_t ID;        /**< Motor CAN ID */
-    uint8_t mode;      /**< Current operational mode */
-    uint8_t fault;     /**< Fault code (0 = no fault) */
-    float   position;  /**< Joint position (rad) */
-    float   velocity;  /**< Joint velocity (rad/s) */
-    float   torque;    /**< Output torque (N·m) */
+    double  time;        /**< Timestamp (steady_clock seconds) of the last update */
+    uint8_t ID;          /**< Motor CAN ID */
+    uint8_t mode;        /**< Current operational mode */
+    uint8_t fault;       /**< Fault code (0 = no fault) */
+    float   position;    /**< Joint position (rad) */
+    float   velocity;    /**< Joint velocity (rad/s) */
+    float   torque;      /**< Output torque (N·m) */
 } motor_back_t;
 
 #pragma pack()

@@ -382,7 +382,7 @@ class HeadMover {
     pos_msg.positions = {goal_pan, goal_tilt};
     pos_msg.velocities = {pan_speed, tilt_speed};
     pos_msg.accelerations = {params_.max_acceleration_pan, params_.max_acceleration_pan};
-    pos_msg.max_currents = {-1, -1};
+    pos_msg.max_torques = {-1, -1};
 
     position_publisher_->publish(pos_msg);
   }

@@ -10,6 +10,9 @@ find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(livelybot_msg REQUIRED)
+find_package(bitbots_msgs REQUIRED)
+find_package(std_srvs REQUIRED)
+find_package(diagnostic_updater REQUIRED)
 find_package(serial REQUIRED)
 
 set(serial_SRCS
@@ -32,8 +35,11 @@ target_include_directories(livelybot_serial PUBLIC
 ament_target_dependencies(livelybot_serial
   rclcpp
   std_msgs
+  std_srvs
   sensor_msgs
   livelybot_msg
+  bitbots_msgs
+  diagnostic_updater
   serial
 )
 target_link_libraries(livelybot_serial
@@ -69,6 +75,6 @@ endif()
 ament_export_targets(livelybot_serialTargets HAS_LIBRARY_TARGET)
 ament_export_include_directories(include)
 ament_export_libraries(livelybot_serial)
-ament_export_dependencies(rclcpp sensor_msgs livelybot_msg serial)
+ament_export_dependencies(rclcpp sensor_msgs livelybot_msg bitbots_msgs std_srvs diagnostic_updater serial)
 
 ament_package()

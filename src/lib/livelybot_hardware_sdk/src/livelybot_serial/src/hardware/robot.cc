@@ -1,7 +1,11 @@
 #include "robot.h"
 #include <chrono>
+#include <iomanip>
+#include <sstream>
 #include <thread>
 #include <unistd.h>
+
+using DiagStatus = diagnostic_msgs::msg::DiagnosticStatus;
 
 
 namespace livelybot_serial
@@ -97,7 +101,7 @@ robot::robot(rclcpp::Node::SharedPtr node)
     init_ser();
     error_check_thread_ = std::thread(&robot::check_error, this);
 
-    for (size_t i = 1; i <= CANboard_num; i++)
+    for (int i = 1; i <= CANboard_num; i++)
     {
         CANboards.push_back(canboard(i, &ser, node_));
     }
@@ -133,9 +137,46 @@ robot::robot(rclcpp::Node::SharedPtr node)
         RCLCPP_ERROR(node_->get_logger(), "Motor firmware is too old for control_type 12.");
     }
 
+    // Diagnostic parameters (overridable via YAML).
+    diag_connection_timeout_       = node_->declare_parameter("diagnostics.connection_timeout",       0.5);
+    diag_torque_overload_threshold_= node_->declare_parameter("diagnostics.torque_overload_threshold", 10.0);
+    diag_torque_overload_duration_ = node_->declare_parameter("diagnostics.torque_overload_duration",  3.0);
+    diag_updater_ = std::make_unique<diagnostic_updater::Updater>(node_.get());
+    diag_updater_->setHardwareID(robot_name);
+
+    for (motor *m : Motors)
+    {
+        const std::string name = m->get_motor_name();
+        diag_state_.emplace(name, MotorDiagState{});
+        // "DS " prefix routes to the Servos group in the diagnostic aggregator.
+        diag_updater_->add("DS " + name,
+            [this, name, m](diagnostic_updater::DiagnosticStatusWrapper &stat) {
+                motorDiagnostic(name, m, stat);
+            });
+    }
+
     publish_joint_state = true;
-    joint_state_pub_ = node_->create_publisher<sensor_msgs::msg::JointState>("error_joint_states", 10);
+    joint_state_pub_ = node_->create_publisher<sensor_msgs::msg::JointState>("joint_states", 10);
     pub_thread_ = std::thread(&robot::publishJointStates, this);
+
+    joint_cmd_sub_ = node_->create_subscription<bitbots_msgs::msg::JointCommand>(
+        "joint_command", 1,
+        std::bind(&robot::jointCommandCallback, this, std::placeholders::_1));
+
+    torque_sub_ = node_->create_subscription<bitbots_msgs::msg::JointTorque>(
+        "set_torque_individual", 10,
+        std::bind(&robot::torqueCallback, this, std::placeholders::_1));
+
+    power_status_pub_ = node_->create_publisher<std_msgs::msg::Bool>("core/power_switch_status", 1);
+    switch_power_srv_ = node_->create_service<std_srvs::srv::SetBool>(
+        "core/switch_power",
+        std::bind(&robot::switchPowerCallback, this,
+                  std::placeholders::_1, std::placeholders::_2));
+
+    // Publish initial power-on status.
+    std_msgs::msg::Bool status_msg;
+    status_msg.data = true;
+    power_status_pub_->publish(status_msg);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
@@ -194,37 +235,217 @@ void robot::imuCallback(const sensor_msgs::msg::Imu::SharedPtr msg)
 
 void robot::publishJointStates()
 {
-    rclcpp::Rate rate(10);
+    rclcpp::Rate rate(100);
     while (publish_joint_state && rclcpp::ok())
     {
-        sensor_msgs::msg::JointState joint_state_msg;
-        joint_state_msg.header.stamp = node_->now();
+        sensor_msgs::msg::JointState js;
+        js.header.stamp = node_->now();
 
         const double now_sec = std::chrono::duration<double>(
             std::chrono::steady_clock::now().time_since_epoch()).count();
 
         for (motor *m : Motors)
         {
-            joint_state_msg.name.push_back(m->get_motor_name());
             motor_back_t *data_ptr = m->get_current_motor_state();
 
-            if (now_sec - data_ptr->time > 0.1)
+            // Drop motors with no recent data entirely — consumers must not
+            // assume every motor is always present in the message.
+            if (data_ptr->time == 0.0 || now_sec - data_ptr->time > 0.1)
+                continue;
+
+            js.name.push_back(m->get_motor_name());
+            js.position.push_back(data_ptr->position);
+            js.velocity.push_back(data_ptr->velocity);
+            js.effort.push_back(data_ptr->torque);
+        }
+
+        joint_state_pub_->publish(js);
+        rate.sleep();
+    }
+}
+
+
+void robot::jointCommandCallback(bitbots_msgs::msg::JointCommand::ConstSharedPtr msg)
+{
+    if (!power_on_)
+        return;
+
+    if (msg->joint_names.empty())
+        return;
+
+    for (size_t i = 0; i < msg->joint_names.size(); ++i)
+    {
+        const std::string &name = msg->joint_names[i];
+
+        // Skip motors that are currently torque-off (puppeteering / teach mode).
+        {
+            std::lock_guard<std::mutex> lock(torque_off_mutex_);
+            if (torque_off_motors_.count(name))
+                continue;
+        }
+
+        // Find the motor whose name matches this joint.
+        motor *m = nullptr;
+        for (motor *candidate : Motors)
+        {
+            if (candidate->get_motor_name() == name)
             {
-                joint_state_msg.position.push_back(-999);
-                joint_state_msg.velocity.push_back(0);
-                joint_state_msg.effort.push_back(0);
-            }
-            else
-            {
-                joint_state_msg.position.push_back(data_ptr->position);
-                joint_state_msg.velocity.push_back(data_ptr->velocity);
-                joint_state_msg.effort.push_back(data_ptr->torque);
+                m = candidate;
+                break;
             }
         }
 
-        joint_state_pub_->publish(joint_state_msg);
-        rate.sleep();
+        if (!m)
+        {
+            RCLCPP_WARN_THROTTLE(node_->get_logger(), *node_->get_clock(), 5000,
+                                  "JointCommand: joint '%s' not found — ignoring", name.c_str());
+            continue;
+        }
+
+        const float pos = static_cast<float>(msg->positions[i]);
+        const float vel = (i < msg->velocities.size() && msg->velocities[i] > 0.0)
+                          ? static_cast<float>(msg->velocities[i]) : 0.0f;
+        const float max_tqe = (i < msg->max_torques.size() && msg->max_torques[i] > 0.0)
+                               ? static_cast<float>(msg->max_torques[i]) : -1.0f;
+
+        if (max_tqe > 0.0f)
+            m->pos_vel_MAXtqe(pos, vel, max_tqe);
+        else
+            m->position(pos);
     }
+
+    motor_send_2();
+}
+
+
+void robot::torqueCallback(bitbots_msgs::msg::JointTorque::ConstSharedPtr msg)
+{
+    if (msg->joint_names.size() != msg->on.size())
+    {
+        RCLCPP_ERROR(node_->get_logger(),
+                     "JointTorque: joint_names length (%zu) != on length (%zu) — ignoring",
+                     msg->joint_names.size(), msg->on.size());
+        return;
+    }
+
+    bool need_send = false;
+
+    for (size_t i = 0; i < msg->joint_names.size(); ++i)
+    {
+        const std::string &name = msg->joint_names[i];
+
+        // Find matching motor.
+        motor *m = nullptr;
+        for (motor *candidate : Motors)
+        {
+            if (candidate->get_motor_name() == name)
+            {
+                m = candidate;
+                break;
+            }
+        }
+        if (!m)
+        {
+            RCLCPP_WARN_THROTTLE(node_->get_logger(), *node_->get_clock(), 5000,
+                                  "JointTorque: joint '%s' not found — ignoring", name.c_str());
+            continue;
+        }
+
+        {
+            std::lock_guard<std::mutex> lock(torque_off_mutex_);
+            if (msg->on[i])
+            {
+                torque_off_motors_.erase(name);
+            }
+            else
+            {
+                torque_off_motors_.insert(name);
+                // Send zero-torque so the motor is immediately back-driveable.
+                m->torque(0.0f);
+                need_send = true;
+            }
+        }
+    }
+
+    if (need_send)
+        motor_send_2();
+}
+
+
+void robot::motorDiagnostic(const std::string &name, motor *m,
+                             diagnostic_updater::DiagnosticStatusWrapper &stat)
+{
+    stat.hardware_id = name;
+    motor_back_t *d = m->get_current_motor_state();
+
+    const double now = std::chrono::duration<double>(
+        std::chrono::steady_clock::now().time_since_epoch()).count();
+
+    // --- connection check ---
+    const double age = now - d->time;
+    if (d->time == 0.0 || age > diag_connection_timeout_)
+    {
+        stat.summary(DiagStatus::STALE, "No CAN data");
+        stat.add("last_update_age_s", age);
+        return;
+    }
+
+    stat.summary(DiagStatus::OK, "OK");
+
+    // --- fault code ---
+    if (d->fault != 0)
+    {
+        std::ostringstream ss;
+        ss << "Fault 0x" << std::hex << std::setw(2) << std::setfill('0')
+           << static_cast<int>(d->fault);
+        stat.mergeSummary(DiagStatus::ERROR, ss.str());
+    }
+
+    // --- torque overload (sustained) ---
+    auto &ds = diag_state_[name];
+    if (std::fabs(d->torque) > diag_torque_overload_threshold_)
+    {
+        if (ds.torque_high_since == 0.0)
+            ds.torque_high_since = now;
+        else if (now - ds.torque_high_since >= diag_torque_overload_duration_)
+            stat.mergeSummary(DiagStatus::WARN,
+                              "Torque overload (" +
+                              std::to_string(static_cast<int>(d->torque)) + " N·m)");
+    }
+    else
+    {
+        ds.torque_high_since = 0.0;
+    }
+
+    // --- values ---
+    stat.add("torque_nm",      d->torque);
+    stat.add("fault_code",     static_cast<int>(d->fault));
+    stat.add("mode",           static_cast<int>(d->mode));
+}
+
+
+void robot::switchPowerCallback(
+    const std_srvs::srv::SetBool::Request::SharedPtr request,
+    std_srvs::srv::SetBool::Response::SharedPtr response)
+{
+    if (request->data)
+    {
+        power_on_ = true;
+        RCLCPP_INFO(node_->get_logger(), "Motor power ON");
+    }
+    else
+    {
+        power_on_ = false;
+        set_stop();
+        RCLCPP_INFO(node_->get_logger(), "Motor power OFF");
+    }
+
+    std_msgs::msg::Bool status_msg;
+    status_msg.data = power_on_.load();
+    power_status_pub_->publish(status_msg);
+
+    response->success = true;
+    response->message = power_on_ ? "motors on" : "motors off";
 }
 
 
@@ -547,7 +768,7 @@ void robot::check_error()
         {
             std::cerr << "Reconnect start." << std::endl;
             init_ser();
-            for (size_t i = 1; i <= CANboard_num; i++)
+            for (int i = 1; i <= CANboard_num; i++)
             {
                 CANboards.push_back(canboard(i, &ser, node_));
             }

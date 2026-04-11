@@ -138,10 +138,10 @@ class TeleopKeyboard(Node):
         if self.get_parameter("use_sim_time").get_parameter_value().bool_value:
             self.head_pub = self.create_publisher(JointCommand, "head_motor_goals", 1)
         else:
-            self.head_pub = self.create_publisher(JointCommand, "DynamixelController/command", 1)
+            self.head_pub = self.create_publisher(JointCommand, "joint_command", 1)
 
         self.head_msg = JointCommand()
-        self.head_msg.max_currents = [-1.0] * 2
+        self.head_msg.max_torques = [-1.0] * 2
         self.head_msg.velocities = [5.0] * 2
         self.head_msg.accelerations = [40.0] * 2
         self.head_msg.joint_names = ["HeadPan", "HeadTilt"]

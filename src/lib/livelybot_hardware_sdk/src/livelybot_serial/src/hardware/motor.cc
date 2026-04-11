@@ -4,7 +4,7 @@
 motor::motor(int _motor_num, int _CANport_num, int _CANboard_num, cdc_tr_message_s *_p_cdc_tx_message, int _id_max,
              rclcpp::Node::SharedPtr node)
 : CANport_num(_CANport_num), CANboard_num(_CANboard_num),
-  p_cdc_tx_message(_p_cdc_tx_message), id_max(_id_max), node_(node)
+  node_(node), p_cdc_tx_message(_p_cdc_tx_message), id_max(_id_max)
 {
     const std::string base = "robot.CANboard.No_" + std::to_string(_CANboard_num) +
                              "_CANboard.CANport.CANport_" + std::to_string(_CANport_num) +
@@ -365,7 +365,7 @@ inline float motor::vel_int2float(int16_t in_data, uint8_t type)
 }
 
 
-void motor::fresh_cmd_int16(float position, float velocity, float torque, float kp, float ki, float kd, float acc, float voltage, float current)
+void motor::fresh_cmd_int16(float position, float velocity, float torque, float kp, float /*ki*/, float kd, float acc, float voltage, float current)
 {
     switch (control_type)
     {

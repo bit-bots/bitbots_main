@@ -38,13 +38,13 @@ class AnimationHcmBridge(Node):
     def __init__(self):
         rclpy.init(args=None)
         super().__init__("animation")
-        self.joint_publisher = self.create_publisher(JointCommand, "DynamixelController/command", 1)
+        self.joint_publisher = self.create_publisher(JointCommand, "joint_command", 1)
         self.joint_command_msg = JointCommand()
         self.joint_command_msg.joint_names = JOINT_NAMES
         self.joint_command_msg.positions = [0.0] * len(JOINT_NAMES)
         self.joint_command_msg.velocities = [-1.0] * len(JOINT_NAMES)
         self.joint_command_msg.accelerations = [-1.0] * len(JOINT_NAMES)
-        self.joint_command_msg.max_currents = [-1.0] * len(JOINT_NAMES)
+        self.joint_command_msg.max_torques = [-1.0] * len(JOINT_NAMES)
 
         self.create_subscription(Animation, "animation", self.animation_cb, 10)
 

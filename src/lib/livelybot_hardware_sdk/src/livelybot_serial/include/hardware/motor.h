@@ -95,7 +95,7 @@ private:
     bool tor_limit_enable = false;
     float tor_upper = 0.0f;
     float tor_lower = 0.0f;
-    cdc_rx_motor_version_s version = {0};
+    cdc_rx_motor_version_s version = {};
 
     /* Unit-conversion helpers — all inlined for performance */
     inline int16_t pos_float2int(float in_data, uint8_t type);

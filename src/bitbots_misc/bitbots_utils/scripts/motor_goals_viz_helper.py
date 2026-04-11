@@ -141,7 +141,7 @@ class MotorVizHelper(Node):
             self.create_subscription(JointCommand, "kick_motor_goals", self.joint_command_cb, 10)
         if self.args.dynup or self.args.all:
             self.create_subscription(JointCommand, "dynup_motor_goals", self.joint_command_cb, 10)
-        self.create_subscription(JointCommand, "/DynamixelController/command", self.joint_command_cb, 10)
+        self.create_subscription(JointCommand, "/joint_command", self.joint_command_cb, 10)
 
         self.joint_state_msg = JointState()
         self.joint_state_msg.header.stamp = self.get_clock().now().to_msg()

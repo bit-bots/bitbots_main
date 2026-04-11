@@ -12,6 +12,15 @@
 #include <atomic>
 #include <sensor_msgs/msg/joint_state.hpp>
 #include <sensor_msgs/msg/imu.hpp>
+#include <bitbots_msgs/msg/joint_command.hpp>
+#include <bitbots_msgs/msg/joint_torque.hpp>
+#include <std_msgs/msg/bool.hpp>
+#include <std_srvs/srv/set_bool.hpp>
+#include <diagnostic_updater/diagnostic_updater.hpp>
+#include <mutex>
+#include <unordered_map>
+#include <unordered_set>
+#include <string>
 #include <cmath>
 #include <functional>
 
@@ -42,6 +51,27 @@ private:
     std::string SDK_version_str = "4.3.3";
     std::atomic<bool> publish_joint_state{false};
     rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_state_pub_;
+    rclcpp::Subscription<bitbots_msgs::msg::JointCommand>::SharedPtr joint_cmd_sub_;
+    rclcpp::Subscription<bitbots_msgs::msg::JointTorque>::SharedPtr torque_sub_;
+    std::unordered_set<std::string> torque_off_motors_;
+    std::mutex torque_off_mutex_;
+
+    rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr switch_power_srv_;
+    rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr power_status_pub_;
+    std::atomic<bool> power_on_{true};
+
+    // --- diagnostics ---
+    /** Per-motor state used by the diagnostic task to detect sustained faults. */
+    struct MotorDiagState {
+        double torque_high_since = 0.0;  /**< steady_clock seconds when overload started; 0 = not overloaded */
+    };
+
+    std::unique_ptr<diagnostic_updater::Updater>        diag_updater_;
+    std::unordered_map<std::string, MotorDiagState>     diag_state_;
+
+    double diag_connection_timeout_;
+    double diag_torque_overload_threshold_;
+    double diag_torque_overload_duration_;
     std::thread pub_thread_;
     std::thread error_check_thread_;
     fun_version fun_v = fun_v1;
@@ -74,6 +104,34 @@ public:
 
     void publishJointStates();
     void detect_motor_limit();
+
+    /** Receive a JointCommand and forward position/velocity goals to matching motors. */
+    void jointCommandCallback(bitbots_msgs::msg::JointCommand::ConstSharedPtr msg);
+
+    /** Populate one motor's DiagnosticStatus (called by the updater timer). */
+    void motorDiagnostic(const std::string &name, motor *m,
+                         diagnostic_updater::DiagnosticStatusWrapper &stat);
+
+    /**
+     * Handle the `core/switch_power` SetBool service used by the HCM.
+     *
+     * data=false  sends MODE_STOP to all motors and blocks further commands.
+     * data=true   re-arms the driver so the next JointCommand restores control.
+     * Power status is published to `core/power_switch_status` after each change.
+     */
+    void switchPowerCallback(
+        const std_srvs::srv::SetBool::Request::SharedPtr request,
+        std_srvs::srv::SetBool::Response::SharedPtr response);
+
+    /**
+     * Enable or disable torque for individual motors.
+     *
+     * Mirrors the Dynamixel-era `set_torque_individual` API used by the HCM
+     * and the animation recorder for puppeteering (teach mode):
+     *   on=false — zero-torque command, motor becomes back-driveable.
+     *   on=true  — re-enable; the next JointCommand will restore position control.
+     */
+    void torqueCallback(bitbots_msgs::msg::JointTorque::ConstSharedPtr msg);
     void motor_send_2();
 
     /** Classify a serial port by its USB VID/PID; returns number of ports per board, or <0 on mismatch. */
