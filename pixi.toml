@@ -147,7 +147,6 @@ ros-jazzy-urdf = ">=2.10.0,<3"
 ros-jazzy-urdfdom-py = ">=1.2.1,<2"
 ros-jazzy-vision-msgs = ">=4.1.1,<5"
 ros-jazzy-vision-opencv = ">=4.1.0,<5"
-onnxruntime-cpp = ">=1.19.2,<2"
 ros-jazzy-visualization-msgs = ">=5.3.6,<6"
 ros-jazzy-web-video-server = ">=2.1.1,<3"
 ros-jazzy-xacro = ">=2.1.1,<3"
@@ -167,6 +166,12 @@ setuptools = "==68.1.2"  # Pinning setuptools to avoid issues with colcon build
 git = ">=2.52.0,<3"  # Otherwise the system git might be used causing ABI issues
 curl = ">=8.17.0,<9"
 make = ">=4.4.1,<5"  # To avoid issues in the CI
+
+[feature.ros.target.linux-64.dependencies]
+libonnxruntime-webgpu = {path= "./libonnxruntime-webgpu-1.24.3-hb0f4dca_0.conda"}
+
+[feature.ros.target.linux-aarch64.dependencies]
+libonnxruntime-webgpu = {path= "./libonnxruntime-webgpu-1.24.3-he8cfe8b_0.conda"}
 
 [feature.format.dependencies]
 # Add git-subrepo to format dependencies as currently there are
