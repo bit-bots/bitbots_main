@@ -32,7 +32,7 @@ class WalkNode(RLNode):
         self._command_handler = CommandHandler(self._config)
 
         # loading model
-        model = self._config["models"]["walk_model"]
+        model = self._config["model"]
         self.load_model(model)
 
     # callback functions

@@ -30,7 +30,7 @@ class KickNode(RLNode):
         self._ball_handler = BallHandler(self._config)
 
         # loading model
-        model = self._config["models"]["kick_model"]
+        model = self._config["model"]
         self.load_model(model)
 
     # callback functions
