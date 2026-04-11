@@ -1,27 +1,31 @@
 <?xml version="1.0"?>
-<package format="2">
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
   <name>livelybot_logger</name>
   <version>0.0.1</version>
-  <description>The livelybot logger package</description>
+  <description>System logger for livelybot: monitors motors, IMU, power, and system resources,
+  forwarding status via Unix domain socket and ROS 2 topics.</description>
   <maintainer email="hightonque@robotics.com">HighTorque Robotics</maintainer>
   <license>BSD</license>
 
-  <buildtool_depend>catkin</buildtool_depend>
-  
-  <build_depend>roscpp</build_depend>
-  <build_depend>std_msgs</build_depend>
-  <build_depend>message_generation</build_depend>
-  <build_depend>livelybot_power</build_depend>
-  <build_depend>livelybot_serial</build_depend>
-  <build_depend>livelybot_msg</build_depend>
-  
-  <exec_depend>roscpp</exec_depend>
-  <exec_depend>std_msgs</exec_depend>
-  <exec_depend>message_runtime</exec_depend>
-  <exec_depend>livelybot_power</exec_depend>
-  <exec_depend>livelybot_serial</exec_depend>
-  <exec_depend>livelybot_msg</exec_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>generate_parameter_library</buildtool_depend>
+  <buildtool_depend>rosidl_default_generators</buildtool_depend>
+
+  <depend>rclcpp</depend>
+  <depend>std_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>builtin_interfaces</depend>
+  <depend>tf2</depend>
+  <depend>livelybot_power</depend>
+  <depend>livelybot_serial</depend>
+  <depend>livelybot_msg</depend>
+
+  <exec_depend>rosidl_default_runtime</exec_depend>
+
+  <member_of_group>rosidl_interface_packages</member_of_group>
 
   <export>
+    <build_type>ament_cmake</build_type>
   </export>
 </package>

@@ -1,64 +1,50 @@
-#include "ros/ros.h"
-#ifndef RELEASE
-#include "robot.h"
-#else
-#include "livelybot_serial/hardware/robot.h"
-#endif
+#include <rclcpp/rclcpp.hpp>
+#include "hardware/robot.h"
 #include <iostream>
-#include <thread>
-#include <condition_variable>
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "test_motor");
-    ros::NodeHandle n;
-    ros::Rate r(200);
-    livelybot_serial::robot rb;
-    //rb.set_motor_runzero();     // 电机上电自动回零
-    const int motor_num = rb.Motors.size();
-    ROS_INFO("ALL Motor: %d\n", motor_num);
-    ROS_INFO("\033[1;32mSTART\033[0m");
-    // ========================== singlethread send =====================
+    rclcpp::init(argc, argv);
+    auto node = std::make_shared<rclcpp::Node>(
+        "motor_rerun",
+        rclcpp::NodeOptions().automatically_declare_parameters_from_overrides(true));
+
+    livelybot_serial::robot rb(node);
+    const int motor_num = static_cast<int>(rb.Motors.size());
+    RCLCPP_INFO(node->get_logger(), "All motors: %d", motor_num);
+    RCLCPP_INFO(node->get_logger(), "\033[1;32mSTART\033[0m");
+
+    rclcpp::Rate rate(200);
     int cont = 0;
-    float angle = 0.2;
-    while (ros::ok()) // 此用法为逐个电机发送控制指令
+    float angle = 0.2f;
+
+    while (rclcpp::ok())
     {
-        /////////////////////////send
-        for (int i = 0; i < motor_num; i++)
+        for (int idx = 0; idx < motor_num; idx++)
         {
-            if(i < (int)motor_num/2)
-            {
-                rb.Motors[i]->pos_vel_MAXtqe(angle, 0.1, 10);  // 这里为了方便出厂测试，直接使用了 pos_vel_MAXtqe 函数（不推荐）
-                // rb.Motors[i]->fresh_cmd_int16(0, 0, 0, 0, 0, 0, 0, 0, 0);
-            }
+            if (idx < motor_num / 2)
+                rb.Motors[idx]->pos_vel_MAXtqe(angle, 0.1f, 10.0f);
             else
-            {
-                rb.Motors[i]->pos_vel_MAXtqe(-angle, 0.1, 10);  // 这里为了方便出厂测试，直接使用了 pos_vel_MAXtqe 函数（不推荐）
-                // rb.Motors[i]->fresh_cmd_int16(0, 0, 0, 0, 0, 0, 0, 0, 0);
-            }
+                rb.Motors[idx]->pos_vel_MAXtqe(-angle, 0.1f, 10.0f);
         }
-        cont++;
-        if(cont>=250)
+        if (++cont >= 250)
         {
             cont = 0;
-            angle*=-1;
+            angle *= -1;
         }
         rb.motor_send_2();
-        ////////////////////////recv
+
         for (motor *m : rb.Motors)
         {
-            motor_back_t motor;
-            motor = *m->get_current_motor_state();
-            ROS_INFO("ID:%2d,mode: %2d,fluat: %2X,pos: %8f,vel: %8f,tor: %8f", motor.ID, motor.mode, motor.fault, motor.position, motor.velocity, motor.torque);
+            motor_back_t s = *m->get_current_motor_state();
+            RCLCPP_INFO(node->get_logger(),
+                        "ID:%2d mode:%2d fault:%2X pos:%8.4f vel:%8.4f tor:%8.4f",
+                        s.ID, s.mode, s.fault, s.position, s.velocity, s.torque);
         }
-        ros::spinOnce();
-        r.sleep();
+        rclcpp::spin_some(node);
+        rate.sleep();
     }
 
-    ros::spin();
+    rclcpp::shutdown();
     return 0;
 }
-
-
-
-

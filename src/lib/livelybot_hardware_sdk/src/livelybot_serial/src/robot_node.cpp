@@ -1,20 +1,20 @@
-#include <ros/ros.h>
-#include <sensor_msgs/JointState.h>
-// #include "robot_node.h"
+#include <rclcpp/rclcpp.hpp>
+#include "hardware/robot.h"
 
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
-    // 初始化ROS节点
-    ros::init(argc, argv, "joint_state_listener");
-    ros::NodeHandle nh;
-    
+    rclcpp::init(argc, argv);
 
-    // 创建一个订阅者对象，订阅名为"joint_states"的topic，队列长度设置为10
-    livelybot_serial::robot_node rbn;
-    
+    // automatically_declare_parameters_from_overrides allows parameters loaded
+    // from a YAML param file (--ros-args --params-file robot.yaml) to be
+    // accessible via get_parameter() without prior declare_parameter() calls.
+    auto node = std::make_shared<rclcpp::Node>(
+        "robot_node",
+        rclcpp::NodeOptions().automatically_declare_parameters_from_overrides(true));
 
-    // 进入ROS事件循环
-    ros::spin();
+    livelybot_serial::robot robot(node);
 
+    rclcpp::spin(node);
+    rclcpp::shutdown();
     return 0;
 }

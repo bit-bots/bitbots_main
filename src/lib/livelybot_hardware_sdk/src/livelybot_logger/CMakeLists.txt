@@ -1,78 +1,71 @@
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 3.8)
 project(livelybot_logger)
 
-find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  std_msgs
-  message_generation
-  livelybot_power
-  livelybot_serial
-  livelybot_msg
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra)
+endif()
+
+find_package(ament_cmake REQUIRED)
+find_package(generate_parameter_library REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(builtin_interfaces REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(livelybot_power REQUIRED)
+
+rosidl_generate_interfaces(${PROJECT_NAME}
+  "msg/LoggerStatus.msg"
+  "msg/LoggerOperation.msg"
+  DEPENDENCIES builtin_interfaces std_msgs
 )
 
-add_message_files(
-  FILES
-  LoggerStatus.msg
-  LoggerOperation.msg
+# Logger interface library (used by other nodes to publish operations)
+add_library(livelybot_logger_iface SHARED src/logger_interface.cpp)
+ament_target_dependencies(livelybot_logger_iface rclcpp)
+target_include_directories(livelybot_logger_iface PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} "rosidl_typesupport_cpp")
+target_link_libraries(livelybot_logger_iface "${cpp_typesupport_target}")
+
+generate_parameter_library(logger_parameters
+  config/logger_params.yml
 )
 
-generate_messages(
-  DEPENDENCIES
-  std_msgs
+# Logger node executable
+add_executable(${PROJECT_NAME}_node src/logger_node.cpp)
+ament_target_dependencies(${PROJECT_NAME}_node rclcpp std_msgs sensor_msgs tf2 livelybot_power)
+target_include_directories(${PROJECT_NAME}_node PRIVATE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
-
-catkin_package(
-  LIBRARIES livelybot_logger
-  INCLUDE_DIRS include
-  CATKIN_DEPENDS roscpp std_msgs message_runtime livelybot_power livelybot_serial livelybot_msg
-)
-
-include_directories(
-  include
-  ${catkin_INCLUDE_DIRS}
-)
-
-add_executable(${PROJECT_NAME}_node src/logger_node.cpp src/logger_interface.cpp)
-add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} livelybot_logger_gencpp)
-target_link_libraries(${PROJECT_NAME}_node
-  ${catkin_LIBRARIES}
-)
-
-#.so
-add_library(${PROJECT_NAME} SHARED src/logger_interface.cpp)
-
-add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} livelybot_logger_gencpp)
-target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} )
-
-#add_dependencies(livelybot_serial ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencfg)
-
-#for intall
+rosidl_get_typesupport_target(cpp_typesupport_target_node ${PROJECT_NAME} "rosidl_typesupport_cpp")
+target_link_libraries(${PROJECT_NAME}_node livelybot_logger_iface logger_parameters "${cpp_typesupport_target_node}")
 
 install(TARGETS ${PROJECT_NAME}_node
-   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+  RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 
-
-install(DIRECTORY scripts
-    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+install(TARGETS livelybot_logger_iface
+  LIBRARY DESTINATION lib
 )
 
-# 安装 launch 文件
+install(DIRECTORY include/
+  DESTINATION include
+)
+
+install(DIRECTORY config/
+  DESTINATION share/${PROJECT_NAME}/config
+)
+
 install(DIRECTORY launch/
-    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
-    FILES_MATCHING PATTERN "*.launch"
+  DESTINATION share/${PROJECT_NAME}/launch
 )
 
-install(TARGETS ${PROJECT_NAME}
-#   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+install(DIRECTORY scripts/
+  DESTINATION share/${PROJECT_NAME}/scripts
 )
 
-install(DIRECTORY include/${PROJECT_NAME}/
-   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-   FILES_MATCHING PATTERN "*.h"
-   PATTERN ".svn" EXCLUDE
-)
-# 安装头文件到 install/include
-install(DIRECTORY include/ DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
+ament_package()

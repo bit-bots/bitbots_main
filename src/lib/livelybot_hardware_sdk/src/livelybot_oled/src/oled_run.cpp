@@ -1,12 +1,15 @@
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 #include "oled_interface.hpp"
 
-int main(int argc, char **argv) {
-    // 初始化ROS节点
-    ros::init(argc, argv, "oled_run");
+int main(int argc, char **argv)
+{
+    rclcpp::init(argc, argv);
+    auto node = std::make_shared<rclcpp::Node>(
+        "livelybot_oled_node",
+        rclcpp::NodeOptions().automatically_declare_parameters_from_overrides(true));
 
-    // 创建节点句柄
-    ros::NodeHandle n;
+    oled_mission(node);
 
-    oled_mission(n);
+    rclcpp::shutdown();
+    return 0;
 }

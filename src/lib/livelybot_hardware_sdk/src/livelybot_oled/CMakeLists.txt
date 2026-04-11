@@ -1,67 +1,48 @@
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 3.8)
 project(livelybot_oled)
 
-
-message(${CMAKE_HOST_SYSTEM_PROCESSOR})
-
-## Compile as C++11, supported in ROS Kinetic and newer
-# add_compile_options(-std=c++11)
-
-## Find catkin macros and libraries
-## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
-## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  sensor_msgs
-  std_msgs
-  serial  
-  livelybot_msg  
-  livelybot_power
-)
-
-## DEPENDS: system dependencies of this project that dependent projects also need
-catkin_package(
-  INCLUDE_DIRS include
-  # LIBRARIES livelybot_oled
-  CATKIN_DEPENDS roscpp sensor_msgs std_msgs
-  # DEPENDS system_lib
-)
-
-
-
-## Specify additional locations of header files
-## Your package locations should be listed before other locations
-include_directories(
-  include
-  ${catkin_INCLUDE_DIRS}
-)
-
-set(OLED_NODE_FILE
-    src/sensor_actuator_status.cpp
-    src/ip_addr.cpp
-    src/oled_interface.cpp
-)
-
-find_library(SERIALPORT_LIBRARY serialport)
-if(NOT SERIALPORT_LIBRARY)
-  message(FATAL_ERROR "libserialport not found")
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra)
 endif()
 
-add_library(livelybot_oled STATIC ${OLED_NODE_FILE})
-target_link_libraries(livelybot_oled ${catkin_LIBRARIES} ${SERIALPORT_LIBRARY})
+find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(serial REQUIRED)
+find_package(tf2 REQUIRED)
 
-link_directories(lib)
+# Static library for OLED hardware abstraction (no ROS dependency)
+add_library(livelybot_oled_lib STATIC
+  src/sensor_actuator_status.cpp
+  src/ip_addr.cpp
+  src/oled_interface.cpp
+)
+target_include_directories(livelybot_oled_lib PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+ament_target_dependencies(livelybot_oled_lib rclcpp sensor_msgs std_msgs serial tf2)
 
+# Main OLED node
 add_executable(livelybot_oled_node src/oled_run.cpp)
-target_link_libraries(livelybot_oled_node livelybot_oled ${catkin_LIBRARIES} ${SERIALPORT_LIBRARY})
+target_link_libraries(livelybot_oled_node livelybot_oled_lib)
+ament_target_dependencies(livelybot_oled_node rclcpp)
 
+# Hardware test (standalone, no ROS)
 add_executable(livelybot_oled_hd_test src/oled_hardware_test.cpp)
-target_link_libraries(livelybot_oled_hd_test livelybot_oled ${catkin_LIBRARIES} ${SERIALPORT_LIBRARY})
+target_include_directories(livelybot_oled_hd_test PRIVATE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+)
+ament_target_dependencies(livelybot_oled_hd_test serial)
+target_link_libraries(livelybot_oled_hd_test livelybot_oled_lib)
 
-install(TARGETS ${PROJECT_NAME}_node
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+install(TARGETS livelybot_oled_node livelybot_oled_hd_test
+  RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 
- install(TARGETS ${PROJECT_NAME}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+install(DIRECTORY launch/
+  DESTINATION share/${PROJECT_NAME}/launch
 )
+
+ament_package()

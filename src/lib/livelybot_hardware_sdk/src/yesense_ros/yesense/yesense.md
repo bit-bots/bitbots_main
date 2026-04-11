@@ -1,541 +1,279 @@
 
-## 1. 使用
+## 1. Usage
 
-```shell
-roslaunch yesense_imu test_yesense.launch
+```bash
+ros2 launch yesense_imu yesense.launch.xml
 ```
 
-```html
+Example launch file:
+
+```xml
 <launch>
-
-  <node pkg="yesense_imu" type="yesense_node" name="yesense_node"  output = "screen" >
-    <param name="yesense_port"      type="string" value="/dev/ttyUSB0"/>
-    <param name="yesense_baudrate"  type="int"    value="460800"/>
+  <node pkg="yesense_imu" exec="yesense_imu_node" name="yesense_node" output="screen">
+    <param name="yesense_port"     value="/dev/ttyUSB0"/>
+    <param name="yesense_baudrate" value="460800"/>
   </node>
-
-  <!-- <node pkg="rviz" type="rviz" name="rviz" args="-d $(find yesense_imu)/rviz/demo.rviz" required="true"/> -->
-
 </launch>
 ```
 
-
-
-其中，**yesense_port**表示设备串口号， **yesense_baudrate**表示设备波特率
+`yesense_port` is the serial device path; `yesense_baudrate` is the baud rate.
 
 
 
-## 2. 参数设置指令表
+## 2. Parameter command reference
 
-### 2.1 查询
+### 2.1 Queries
 
-#### 2.1.1 产品信息相关查询(0x00)
+#### 2.1.1 Product information (0x00)
 
-1. 查询软件版本号
+1. Query software version
 
-```shell
-rostopic pub /production_query std_msgs/Int8 "data: 1" 
+```bash
+ros2 topic pub /production_query std_msgs/msg/Int8 "{data: 1}"
 ```
 
-2. 查询产品型号
+2. Query product model
 
-```shell
-rostopic pub /production_query std_msgs/Int8 "data: 2" 
+```bash
+ros2 topic pub /production_query std_msgs/msg/Int8 "{data: 2}"
 ```
 
-#### 2.1.2 查询波特率(0x02)
+#### 2.1.2 Query baud rate (0x02)
 
-```shell
-rostopic pub /baudrate_query std_msgs/Empty "{}"
+```bash
+ros2 topic pub /baudrate_query std_msgs/msg/Empty "{}"
 ```
 
-#### 2.1.3 查询输出频率(0x03)
+#### 2.1.3 Query output frequency (0x03)
 
-```
-rostopic pub /freequency_query std_msgs/Empty "{}"
-```
-
-#### 2.1.4 查询输出内容(0x04)
-
-```
-rostopic pub /output_content_query std_msgs/Empty "{}"
+```bash
+ros2 topic pub /freequency_query std_msgs/msg/Empty "{}"
 ```
 
-#### 2.1.5 查询标准参数（0x05）
+#### 2.1.4 Query output content (0x04)
 
-1. 查询陀螺用户零偏
-
-   ```
-   rostopic pub /standard_param_query std_msgs/UInt8 "data: 1"
-   ```
-
-2. 读取静态阈值
-
-   ```
-   rostopic pub /standard_param_query std_msgs/UInt8 "data: 2"
-   ```
-
-#### 2.1.6 查询算法模式(0x4d)
-
-1. 算法模式
-
-```
-rostopic pub /mode_query  std_msgs/UInt8 "data: 1"
+```bash
+ros2 topic pub /output_content_query std_msgs/msg/Empty "{}"
 ```
 
-2. 动态模式查询
+#### 2.1.5 Query standard parameters (0x05)
 
+1. Query gyro user bias
+
+   ```bash
+   ros2 topic pub /standard_param_query std_msgs/msg/UInt8 "{data: 1}"
+   ```
+
+2. Read static threshold
+
+   ```bash
+   ros2 topic pub /standard_param_query std_msgs/msg/UInt8 "{data: 2}"
+   ```
+
+#### 2.1.6 Query algorithm mode (0x4D)
+
+1. Algorithm mode
+
+```bash
+ros2 topic pub /mode_query std_msgs/msg/UInt8 "{data: 1}"
 ```
-rostopic pub /mode_query  std_msgs/UInt8 "data: 2"
+
+2. Dynamic mode query
+
+```bash
+ros2 topic pub /mode_query std_msgs/msg/UInt8 "{data: 2}"
 ```
 
-3. SYNC OUT 查询
+3. SYNC OUT query
 
+```bash
+ros2 topic pub /mode_query std_msgs/msg/UInt8 "{data: 3}"
 ```
-rostopic pub /mode_query  std_msgs/UInt8 "data: 3"
+
+
+
+### 2.2 Volatile configuration (lost on power-off)
+
+If the MSB of `data` is 1, the setting is volatile (RAM only). If the MSB is 0, the setting is saved to flash.
+
+#### 2.2.1 Reset all parameters (0x01)
+
+Deprecated.
+
+#### 2.2.3 Set baud rate (0x02)
+
+Low 4 bits select the baud rate value.
+
+| Value | Baud rate |
+| :---- | :-------- |
+| 0x81  | 9600      |
+| 0x82  | 38400     |
+| 0x83  | 115200    |
+| 0x84  | 460800    |
+| 0x85  | 921600    |
+| 0x86  | 19200     |
+| 0x87  | 57600     |
+| 0x88  | 76800     |
+| 0x89  | 230400    |
+
+```bash
+ros2 topic pub /baudrate_setting std_msgs/msg/UInt8 "{data: 0x84}"
+```
+
+#### 2.2.3 Set output frequency (0x03)
+
+| Value | Frequency |
+| :---- | :-------- |
+| 0x81  | 1 Hz      |
+| 0x82  | 2 Hz      |
+| 0x83  | 5 Hz      |
+| 0x84  | 10 Hz     |
+| 0x85  | 20 Hz     |
+| 0x86  | 25 Hz     |
+| 0x87  | 50 Hz     |
+| 0x88  | 100 Hz    |
+| 0x89  | 200 Hz    |
+
+```bash
+ros2 topic pub /freequency_setting std_msgs/msg/UInt8 "{data: 0x88}"
+```
+
+#### 2.2.4 Set output content (0x04)
+
+1. Output nothing
+
+   ```bash
+   ros2 topic pub /output_content_setting std_msgs/msg/UInt8 "{data: 0x80}"
+   ```
+
+2. Accel, gyro, mag, euler, quaternion
+
+   ```bash
+   ros2 topic pub /output_content_setting std_msgs/msg/UInt8 "{data: 0x81}"
+   ```
+
+3. Position, velocity, UTC, accel, gyro, mag, euler, quaternion
+
+   ```bash
+   ros2 topic pub /output_content_setting std_msgs/msg/UInt8 "{data: 0x82}"
+   ```
+
+#### 2.2.5 Standard parameter settings (0x05)
+
+1. Reset gyro user bias
+
+   ```bash
+   ros2 topic pub /standard_param_setting std_msgs/msg/UInt8 "{data: 0x80}"
+   ```
+
+#### 2.2.6 Set algorithm mode (0x4D)
+
+| Value | Mode              |
+| :---- | :---------------- |
+| 0x81  | AHRS              |
+| 0x82  | VRU               |
+| 0x83  | IMU               |
+| 0x84  | GenerPos          |
+| 0x85  | AutoMotive        |
+| 0x86  | Data ready        |
+| 0x87  | PPS               |
+| 0x88  | General mode      |
+| 0x89  | Quadruped robot   |
+| 0x8A  | Embedded bias cal |
+
+```bash
+ros2 topic pub /mode_setting std_msgs/msg/UInt8 "{data: 0x81}"
 ```
 
 
 
-### 2.2 配置掉电不保存
+### 2.3 Persistent configuration (saved to flash)
 
-#### 2.2.1 复位所有参数(0x01)
+Same commands as section 2.2 but with MSB = 0.
 
-已弃用
+#### 2.3.1 Reset all parameters (0x01)
 
-#### 2.2.3 设置波特率(0x02)
+Deprecated.
 
-最高位为1，则参数设置掉电不保存，最高位为0，则参数设置掉电保存。低4位为设置的波特率代表的数值。
+#### 2.3.2 Set baud rate (0x02)
 
-1. 设置波特率为9600
+| Value | Baud rate |
+| :---- | :-------- |
+| 0x01  | 9600      |
+| 0x02  | 38400     |
+| 0x03  | 115200    |
+| 0x04  | 460800    |
+| 0x05  | 921600    |
+| 0x06  | 19200     |
+| 0x07  | 57600     |
+| 0x08  | 76800     |
+| 0x09  | 230400    |
 
-   ```
-   rostopic pub /baudrate_setting std_msgs/UInt8 "data: 0x81"
-   ```
-
-2. 设置波特率为38400
-
-   ```
-   rostopic pub /baudrate_setting std_msgs/UInt8 "data: 0x82"
-   ```
-
-3. 设置波特率为115200
-
-   ```
-   rostopic pub /baudrate_setting std_msgs/UInt8 "data: 0x83"
-   ```
-
-4. 设置波特率为460800
-
-   ```
-   rostopic pub /baudrate_setting std_msgs/UInt8 "data: 0x84"
-   ```
-
-5. 设置波特率为921600
-
-   ```
-   rostopic pub /baudrate_setting std_msgs/UInt8 "data: 0x85"
-   ```
-
-6. 设置波特率为19200
-
-   ```
-   rostopic pub /baudrate_setting std_msgs/UInt8 "data: 0x86"
-   ```
-
-7. 设置波特率为57600
-
-   ```
-   rostopic pub /baudrate_setting std_msgs/UInt8 "data: 0x87"
-   ```
-
-8. 设置波特率为76800
-
-   ```
-   rostopic pub /baudrate_setting std_msgs/UInt8 "data: 0x88"
-   ```
-
-9. 设置波特率为230400
-
-   ```
-   rostopic pub /baudrate_setting std_msgs/UInt8 "data: 0x89"
-   ```
-
-#### 2.2.3 设置输出频率(0x03)
-
-最高位为1，则参数设置掉电不保存，最高位为0，则参数设置掉电保存。低4位为设置的输出频率代表的数值。
-
-1. 设置输出频率为1 HZ
-
-   ```
-   rostopic pub /freequency_setting std_msgs/UInt8 "data: 0x81" 
-   ```
-
-2. 设置输出频率为2 HZ
-
-   ```
-   rostopic pub /freequency_setting std_msgs/UInt8 "data: 0x82"
-   ```
-
-3. 设置输出频率为5 HZ
-
-   ```
-   rostopic pub /freequency_setting std_msgs/UInt8 "data: 0x83"
-   ```
-
-4. 设置输出频率为10 HZ
-
-   ```
-   rostopic pub /freequency_setting std_msgs/UInt8 "data: 0x84"
-   ```
-
-5. 设置输出频率为20 HZ
-
-   ```
-   rostopic pub /freequency_setting std_msgs/UInt8 "data: 0x85"
-   ```
-
-6. 设置输出频率为25 HZ
-
-   ```
-   rostopic pub /freequency_setting std_msgs/UInt8 "data: 0x86"
-   ```
-
-7. 设置输出频率为50 HZ
-
-   ```
-   rostopic pub /freequency_setting std_msgs/UInt8 "data: 0x87"
-   ```
-
-8. 设置输出频率为100 HZ
-
-   ```
-   rostopic pub /freequency_setting std_msgs/UInt8 "data: 0x88"
-   ```
-
-9. 设置输出频率为200 HZ
-
-   ```
-   rostopic pub /freequency_setting std_msgs/UInt8 "data: 0x89"
-   ```
-
-#### 2.2.4 设置输出内容(0x04)
-
-1. 全部不输出
-
-   ```
-   rostopic pub /output_content_setting std_msgs/UInt8 "data: 0x80"
-   ```
-
-2. 加计、陀螺、磁、欧拉、四元素
-
-   ```
-   rostopic pub /output_content_setting std_msgs/UInt8 "data: 0x81"
-   ```
-
-3. 位置、速度、UTC、加计、陀螺、磁、欧拉、四元素
-
-   ```
-   rostopic pub /output_content_setting std_msgs/UInt8 "data: 0x82"
-   ```
-
-#### 2.2.5 标准参数设置(0x05)
-
-1. 陀螺用户零偏差值
-
-   ```
-   rostopic pub /standard_param_setting std_msgs/UInt8 "data: 0x80"
-   ```
-
-#### 2.2.6 设置算法模式(0x4d)
-
-1. AHRS
-
-   ```\
-   rostopic pub /mode_setting std_msgs/UInt8 "data: 0x81"
-   ```
-
-2. VRU
-
-   ```
-   rostopic pub /mode_setting std_msgs/UInt8 "data: 0x82"
-   ```
-
-3. IMU
-
-   ```
-   rostopic pub /mode_setting std_msgs/UInt8 "data: 0x83"
-   ```
-
-4. GenerPos
-
-   ```
-   rostopic pub /mode_setting std_msgs/UInt8 "data: 0x84"
-   ```
-
-5. AutoMotive
-
-   ```
-   rostopic pub /mode_setting std_msgs/UInt8 "data: 0x85"
-   ```
-
-6. Data ready
-
-   ```
-   rostopic pub /mode_setting std_msgs/UInt8 "data: 0x86"
-   ```
-
-7. pps
-
-   ```
-   rostopic pub /mode_setting std_msgs/UInt8 "data: 0x87"
-   ```
-
-8. General mode
-
-   ```
-   rostopic pub /mode_setting std_msgs/UInt8 "data: 0x88"
-   ```
-
-9. Quadruped_robot_mode
-
-   ```
-   rostopic pub /mode_setting std_msgs/UInt8 "data: 0x89"
-   ```
+#### 2.3.3 Set output frequency (0x03)
 
-10. 嵌入式零偏校准
+| Value | Frequency |
+| :---- | :-------- |
+| 0x01  | 1 Hz      |
+| 0x02  | 2 Hz      |
+| 0x03  | 5 Hz      |
+| 0x04  | 10 Hz     |
+| 0x05  | 20 Hz     |
+| 0x06  | 25 Hz     |
+| 0x07  | 50 Hz     |
+| 0x08  | 100 Hz    |
+| 0x09  | 200 Hz    |
 
-    ```
-    rostopic pub /mode_setting std_msgs/UInt8 "data: 0x8A"
-    ```
+#### 2.3.4 Set output content (0x04)
 
+1. Output nothing
 
-### 2.3 配置掉电保存
-
-#### 2.3.1 复位所有参数(0x01)
-
-已弃用
-
-#### 2.3.2 设置波特率(0x02)
-
-最高位为1，则参数设置掉电不保存，最高位为0，则参数设置掉电保存。低4位为设置的波特率代表的数值。
-
-1. 设置波特率为9600
-
-   ```
-   rostopic pub /baudrate_setting std_msgs/UInt8 "data: 0x01"
-   ```
-
-2. 设置波特率为38400
-
-   ```
-   rostopic pub /baudrate_setting std_msgs/UInt8 "data: 0x02"
-   ```
-
-3. 设置波特率为115200
-
-   ```
-   rostopic pub /baudrate_setting std_msgs/UInt8 "data: 0x03"
-   ```
-
-4. 设置波特率为460800
-
-   ```
-   rostopic pub /baudrate_setting std_msgs/UInt8 "data: 0x04"
-   ```
-
-5. 设置波特率为921600
-
-   ```
-   rostopic pub /baudrate_setting std_msgs/UInt8 "data: 0x05"
-   ```
-
-6. 设置波特率为19200
-
-   ```
-   rostopic pub /baudrate_setting std_msgs/UInt8 "data: 0x06"
-   ```
-
-7. 设置波特率为57600
-
-   ```
-   rostopic pub /baudrate_setting std_msgs/UInt8 "data: 0x07"
-   ```
-
-8. 设置波特率为76800
-
-   ```
-   rostopic pub /baudrate_setting std_msgs/UInt8 "data: 0x08"
-   ```
-
-9. 设置波特率为230400
-
-   ```
-   rostopic pub /baudrate_setting std_msgs/UInt8 "data: 0x09"
-   ```
-
-#### 2.3.3 设置输出频率(0x03)
-
-最高位为1，则参数设置掉电不保存，最高位为0，则参数设置掉电保存。低4位为设置的输出频率代表的数值。
-
-1. 设置输出频率为1 HZ
-
-   ```
-   rostopic pub /freequency_setting std_msgs/UInt8 "data: 0x01" 
-   ```
-
-2. 设置输出频率为2 HZ
-
-   ```
-   rostopic pub /freequency_setting std_msgs/UInt8 "data: 0x02"
-   ```
-
-3. 设置输出频率为5 HZ
-
-   ```
-   rostopic pub /freequency_setting std_msgs/UInt8 "data: 0x03"
-   ```
-
-4. 设置输出频率为10 HZ
-
-   ```
-   rostopic pub /freequency_setting std_msgs/UInt8 "data: 0x04"
-   ```
-
-5. 设置输出频率为20 HZ
-
-   ```
-   rostopic pub /freequency_setting std_msgs/UInt8 "data: 0x05"
-   ```
-
-6. 设置输出频率为25 HZ
-
-   ```
-   rostopic pub /freequency_setting std_msgs/UInt8 "data: 0x06"
-   ```
-
-7. 设置输出频率为50 HZ
-
-   ```
-   rostopic pub /freequency_setting std_msgs/UInt8 "data: 0x07"
-   ```
-
-8. 设置输出频率为100 HZ
-
-   ```
-   rostopic pub /freequency_setting std_msgs/UInt8 "data: 0x08"
-   ```
-
-9. 设置输出频率为200 HZ
-
-   ```
-   rostopic pub /freequency_setting std_msgs/UInt8 "data: 0x09"
-   ```
-
-#### 2.3.4 设置输出内容(0x04)
-
-最高位为1，则参数设置掉电不保存，最高位为0，则参数设置掉电保存。低4位为设置的波特率代表的数值。
-
-1. 全部不输出
-
-   ```
-   rostopic pub /output_content_setting std_msgs/UInt8 "data: 0x00"
-   ```
-
-2. 加计、陀螺、磁、欧拉、四元素
-
-   ```
-   rostopic pub /output_content_setting std_msgs/UInt8 "data: 0x01"
-   ```
-
-3. 位置、速度、UTC、加计、陀螺、磁、欧拉、四元素
-
-   ```
-   rostopic pub /output_content_setting std_msgs/UInt8 "data: 0x02"
-   ```
-
-#### 2.3.5 标准参数设置(0x05)
-
-最高位为1，则参数设置掉电不保存，最高位为0，则参数设置掉电保存。低4位为设置的波特率代表的数值。
-
-1. 姿态角设置为0
-
-   ```
-   rostopic pub /standard_param_setting std_msgs/UInt8 "data: 0x01"
-   ```
-
-2. 航向角设置为零
-
-   ```
-   rostopic pub /standard_param_setting std_msgs/UInt8 "data: 0x02"
-   ```
-
-3. 陀螺用户零偏差值
-
-   ```
-   rostopic pub /standard_param_setting std_msgs/UInt8 "data: 0x03"
-   ```
-
-#### 2.3.6 设置算法模式(0x4d)
-
-最高位为1，则参数设置掉电不保存，最高位为0，则参数设置掉电保存。低4位为设置的波特率代表的数值。
-
-1. AHRS
-
-   ```\
-   rostopic pub /mode_setting std_msgs/UInt8 "data: 0x01"
-   ```
-
-2. VRU
-
-   ```
-   rostopic pub /mode_setting std_msgs/UInt8 "data: 0x02"
-   ```
-
-3. IMU
-
+   ```bash
+   ros2 topic pub /output_content_setting std_msgs/msg/UInt8 "{data: 0x00}"
    ```
-   rostopic pub /mode_setting std_msgs/UInt8 "data: 0x03"
-   ```
 
-4. GenerPos
+2. Accel, gyro, mag, euler, quaternion
 
-   ```
-   rostopic pub /mode_setting std_msgs/UInt8 "data: 0x04"
+   ```bash
+   ros2 topic pub /output_content_setting std_msgs/msg/UInt8 "{data: 0x01}"
    ```
 
-5. AutoMotive
+3. Position, velocity, UTC, accel, gyro, mag, euler, quaternion
 
+   ```bash
+   ros2 topic pub /output_content_setting std_msgs/msg/UInt8 "{data: 0x02}"
    ```
-   rostopic pub /mode_setting std_msgs/UInt8 "data: 0x05"
-   ```
-
-6. Data ready
 
-   ```
-   rostopic pub /mode_setting std_msgs/UInt8 "data: 0x06"
-   ```
+#### 2.3.5 Standard parameter settings (0x05)
 
-7. pps
+1. Reset attitude angle to zero
 
+   ```bash
+   ros2 topic pub /standard_param_setting std_msgs/msg/UInt8 "{data: 0x01}"
    ```
-   rostopic pub /mode_setting std_msgs/UInt8 "data: 0x07"
-   ```
 
-8. General mode
+2. Reset heading to zero
 
-   ```
-   rostopic pub /mode_setting std_msgs/UInt8 "data: 0x08"
+   ```bash
+   ros2 topic pub /standard_param_setting std_msgs/msg/UInt8 "{data: 0x02}"
    ```
 
-9. Quadruped_robot_mode
+3. Reset gyro user bias
 
+   ```bash
+   ros2 topic pub /standard_param_setting std_msgs/msg/UInt8 "{data: 0x03}"
    ```
-   rostopic pub /mode_setting std_msgs/UInt8 "data: 0x09"
-   ```
-
-10. 嵌入式零偏校准
 
-    ```
-    rostopic pub /mode_setting std_msgs/UInt8 "data: 0x0A"
-    ```
+#### 2.3.6 Set algorithm mode (0x4D)
 
+| Value | Mode              |
+| :---- | :---------------- |
+| 0x01  | AHRS              |
+| 0x02  | VRU               |
+| 0x03  | IMU               |
+| 0x04  | GenerPos          |
+| 0x05  | AutoMotive        |
+| 0x06  | Data ready        |
+| 0x07  | PPS               |
+| 0x08  | General mode      |
+| 0x09  | Quadruped robot   |
+| 0x0A  | Embedded bias cal |

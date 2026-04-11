@@ -1,4 +1,6 @@
 <launch>
-  <include file='$(find livelybot_description)/launch/livelybot_description.launch' />
-  <node pkg="livelybot_bringup" name="motor_timeout" type="motor_timeout" output="screen" />
-</launch> 
+  <include file="$(find-pkg-share livelybot_description)/launch/livelybot_description.launch"/>
+  <node pkg="livelybot_bringup" exec="motor_timeout" name="motor_timeout" output="screen">
+    <param from="$(find-pkg-share livelybot_description)/robot_param/robot.yaml"/>
+  </node>
+</launch>

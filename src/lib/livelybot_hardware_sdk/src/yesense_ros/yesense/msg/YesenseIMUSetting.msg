@@ -10,7 +10,7 @@
 #uint8 ID_MEMERY               = 1
 #uint8 ID_FLASH                = 2
 
-uint8 class
+uint8 cmd_class
 uint8 id
 uint8 length
 uint8[] msg

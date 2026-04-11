@@ -1,40 +1,36 @@
-#include "ros/ros.h"
-#ifndef RELEASE
-#include "robot.h"
-#else
-#include "livelybot_serial/hardware/robot.h"
-#endif
+#include <rclcpp/rclcpp.hpp>
+#include "hardware/robot.h"
 #include <iostream>
 #include <thread>
-#include <condition_variable>
-#include "std_msgs/Float32MultiArray.h"
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "test_motor_feedback");
-    ros::NodeHandle n;
-    ros::Rate r(300);
-    livelybot_serial::robot rb;
-    //rb.set_motor_runzero();     // 电机上电自动回零
-    ROS_INFO("\033[1;32mSTART\033[0m");
+    rclcpp::init(argc, argv);
+    auto node = std::make_shared<rclcpp::Node>(
+        "motor_feedback",
+        rclcpp::NodeOptions().automatically_declare_parameters_from_overrides(true));
 
-
-    // ========================== singlethread send ===================== 
-    ROS_INFO("motor num %ld" ,rb.Motors.size());
+    livelybot_serial::robot rb(node);
+    RCLCPP_INFO(node->get_logger(), "\033[1;32mSTART\033[0m");
+    RCLCPP_INFO(node->get_logger(), "Motor count: %ld", rb.Motors.size());
 
     rb.send_get_motor_state_cmd();
-    while (ros::ok())
+
+    rclcpp::Rate rate(300);
+    while (rclcpp::ok())
     {
         rb.detect_motor_limit();
         for (motor *m : rb.Motors)
         {
-            auto motor_state = m->get_current_motor_state();
-            ROS_INFO("motor:%d, position:%f, velocity:%f, torque:%f", motor_state->ID, motor_state->position, motor_state->velocity, motor_state->torque);
+            auto *s = m->get_current_motor_state();
+            RCLCPP_INFO(node->get_logger(), "motor:%d  pos:%.4f  vel:%.4f  tor:%.4f",
+                        s->ID, s->position, s->velocity, s->torque);
         }
         rb.motor_send_2();
-        ros::spinOnce();
-        r.sleep();
+        rclcpp::spin_some(node);
+        rate.sleep();
     }
-    
+
+    rclcpp::shutdown();
     return 0;
 }

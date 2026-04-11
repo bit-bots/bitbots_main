@@ -1,4 +1,6 @@
 <launch>
-  <include file='$(find livelybot_description)/launch/livelybot_description.launch' />
-  <node pkg="livelybot_bringup" name="canboard_update" type="canboard_update" output="screen" />
-</launch> 
+  <include file="$(find-pkg-share livelybot_description)/launch/livelybot_description.launch"/>
+  <node pkg="livelybot_bringup" exec="canboard_update" name="canboard_update" output="screen">
+    <param from="$(find-pkg-share livelybot_description)/robot_param/robot.yaml"/>
+  </node>
+</launch>

@@ -1,0 +1,57 @@
+yesense_imu:
+
+  yesense_port:
+    type: string
+    default_value: "/dev/ttyS7"
+    description: "Serial port the Yesense IMU is connected to"
+
+  yesense_baudrate:
+    type: int
+    default_value: 460800
+    description: "Serial baud rate for the Yesense IMU (e.g. 9600, 115200, 460800, 921600)"
+
+  tf_parent_frame_id:
+    type: string
+    default_value: "imu_base"
+    description: "Parent frame ID used when broadcasting the IMU TF transform"
+
+  tf_frame_id:
+    type: string
+    default_value: "imu_link"
+    description: "Child frame ID used when broadcasting the IMU TF transform"
+
+  frame_id:
+    type: string
+    default_value: "imu_link"
+    description: "Frame ID stamped on published sensor_msgs/Imu messages"
+
+  time_offset_in_seconds:
+    type: double
+    default_value: 0.0
+    description: "Time offset (seconds) added to each IMU message timestamp"
+
+  broadcast_tf:
+    type: bool
+    default_value: true
+    description: "Whether to broadcast the IMU pose as a TF transform"
+
+  linear_acceleration_stddev:
+    type: double
+    default_value: 0.0
+    description: "Standard deviation for the linear acceleration covariance diagonal"
+    validation:
+      bounds<>: [0.0, 100.0]
+
+  angular_velocity_stddev:
+    type: double
+    default_value: 0.0
+    description: "Standard deviation for the angular velocity covariance diagonal"
+    validation:
+      bounds<>: [0.0, 100.0]
+
+  orientation_stddev:
+    type: double
+    default_value: 0.0
+    description: "Standard deviation for the orientation covariance diagonal"
+    validation:
+      bounds<>: [0.0, 100.0]

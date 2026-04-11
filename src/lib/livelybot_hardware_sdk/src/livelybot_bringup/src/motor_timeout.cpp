@@ -1,30 +1,21 @@
-#include "ros/ros.h"
-#ifndef RELEASE
-#include "robot.h"
-#else
-#include "livelybot_serial/hardware/robot.h"
-#endif
-#include <iostream>
+#include <rclcpp/rclcpp.hpp>
+#include "hardware/robot.h"
 #include <thread>
-#include <condition_variable>
-
-
+#include <chrono>
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "test_timeout");
-    ros::NodeHandle n;
-    ros::Rate r(100);
-    livelybot_serial::robot rb;
-    //rb.set_motor_runzero();     // 电机上电自动回零
-    const int motor_num = rb.Motors.size();
-    ROS_INFO("ALL Motor: %d\n", motor_num);
-    ROS_INFO("\033[1;32mSTART\033[0m");
-    // ========================== singlethread send =====================
-    int cont = 0;
-    float angle = 0.2;
+    rclcpp::init(argc, argv);
+    auto node = std::make_shared<rclcpp::Node>(
+        "motor_timeout",
+        rclcpp::NodeOptions().automatically_declare_parameters_from_overrides(true));
 
-    /* 逐个设置电机的超时时间，在 robot 的构造函数中有 set_motorout 函数可以对设置所有电机的超时时间 */ 
+    livelybot_serial::robot rb(node);
+    const int motor_num = static_cast<int>(rb.Motors.size());
+    RCLCPP_INFO(node->get_logger(), "All motors: %d", motor_num);
+    RCLCPP_INFO(node->get_logger(), "\033[1;32mSTART\033[0m");
+
+    // Set per-motor timeout individually
     for (int i = 0; i < 5; i++)
     {
         for (motor *m : rb.Motors)
@@ -32,31 +23,29 @@ int main(int argc, char **argv)
             m->set_motorout(10000);
         }
         rb.motor_send_2();
-        ros::Duration(0.01).sleep();
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
-    
 
-    while (ros::ok()) // 此用法为逐个电机发送控制指令
+    rclcpp::Rate rate(100);
+    while (rclcpp::ok())
     {
-        /////////////////////////send
-        for (int i = 0; i < motor_num; i++)
+        for (int idx = 0; idx < motor_num; idx++)
         {
-            rb.Motors[i]->velocity(0.3);
+            rb.Motors[idx]->velocity(0.3f);
         }
         rb.motor_send_2();
 
-
-        ////////////////////////recv
         for (motor *m : rb.Motors)
         {
-            motor_back_t motor;
-            motor = *m->get_current_motor_state();
-            ROS_INFO("ID:%d pos: %8f,vel: %8f,tor: %8f", motor.ID, motor.position, motor.velocity, motor.torque);
+            motor_back_t s = *m->get_current_motor_state();
+            RCLCPP_INFO(node->get_logger(),
+                        "ID:%d  pos:%8.4f  vel:%8.4f  tor:%8.4f",
+                        s.ID, s.position, s.velocity, s.torque);
         }
-        ros::spinOnce();
-        r.sleep();
+        rclcpp::spin_some(node);
+        rate.sleep();
     }
 
+    rclcpp::shutdown();
     return 0;
 }
-

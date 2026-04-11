@@ -1,10 +1,8 @@
 <launch>
-
-  <node pkg="yesense_imu" type="yesense_imu_node" name="yesense_imu_node" required="true" output = "screen" >
-    <param name="yesense_port"      type="string" value="/dev/ttyS7"/>
-    <param name="yesense_baudrate"  type="int"    value="460800"/>
+  <node pkg="yesense_imu" exec="yesense_imu_node" name="yesense_imu_node" output="screen" required="true">
+    <param name="yesense_port" value="/dev/ttyS7"/>
+    <param name="yesense_baudrate" value="460800"/>
   </node>
 
-  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find yesense_imu)/rviz/yesense.rviz" required="true"/>
-
+  <node pkg="rviz2" exec="rviz2" name="rviz2" args="-d $(find-pkg-share yesense_imu)/rviz/yesense.rviz" required="true"/>
 </launch>

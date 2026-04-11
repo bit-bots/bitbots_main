@@ -1,1029 +1,988 @@
 #include "robot.h"
-
+#include <chrono>
+#include <thread>
+#include <unistd.h>
 
 
 namespace livelybot_serial
 {
-    robot::robot()
+
+bool robot::read_usb_vid_pid(const std::string &device, int &vid, int &pid)
+{
+    // Extract the device basename (e.g. "ttyACM0" from "/dev/ttyACM0")
+    const std::string devname = device.substr(device.rfind('/') + 1);
+    const std::string base = "/sys/class/tty/" + devname + "/device/../";
+
+    auto read_hex = [](const std::string &path, int &val) -> bool {
+        std::ifstream f(path);
+        if (!f.is_open()) { return false; }
+        f >> std::hex >> val;
+        return !f.fail();
+    };
+
+    return read_hex(base + "idVendor", vid) && read_hex(base + "idProduct", pid);
+}
+
+
+robot::robot(rclcpp::Node::SharedPtr node)
+    : node_(node)
+{
+    if (!node_->get_parameter("robot.SDK_version", SDK_version))
     {
-        if (n.getParam("robot/SDK_version", SDK_version))
-        {
-            // ROS_INFO("Got params SDK_version: %f",SDK_version);
-        }
-        else
-        {
-            ROS_ERROR("Faile to get params SDK_version");
-            SDK_version = -1;
-        }
-        if (n.getParam("robot/Seial_baudrate", Seial_baudrate))
-        {
-            // ROS_INFO("Got params seial_baudrate: %s",seial_baudrate.c_str());
-        }
-        else
-        {
-            ROS_ERROR("Faile to get params seial_baudrate");
-        }
-        if (n.getParam("robot/robot_name", robot_name))
-        {
-            // ROS_INFO("Got params robot_name: %s",robot_name.c_str());
-        }
-        else
-        {
-            ROS_ERROR("Faile to get params robot_name");
-        }
-        if (n.getParam("robot/CANboard_num", CANboard_num))
-        {
-            // ROS_INFO("Got params CANboard_num: %d",CANboard_num);
-        }
-        else
-        {
-            ROS_ERROR("Faile to get params CANboard_num");
-        }
-        
-        if (n.getParam("robot/Serial_Type", Serial_Type))
-        {
-            // ROS_INFO("Got params Serial_Type: %s",Serial_Type.c_str());
-        }
-        else
-        {
-            ROS_ERROR("Faile to get params Serial_Type");
-        }
+        RCLCPP_ERROR(node_->get_logger(), "Failed to get params SDK_version");
+        SDK_version = -1;
+    }
+    if (!node_->get_parameter("robot.serial_baudrate", Seial_baudrate))
+    {
+        RCLCPP_ERROR(node_->get_logger(), "Failed to get params serial_baudrate");
+    }
+    if (!node_->get_parameter("robot.robot_name", robot_name))
+    {
+        RCLCPP_ERROR(node_->get_logger(), "Failed to get params robot_name");
+    }
+    if (!node_->get_parameter("robot.CANboard_num", CANboard_num))
+    {
+        RCLCPP_ERROR(node_->get_logger(), "Failed to get params CANboard_num");
+    }
+    if (!node_->get_parameter("robot.Serial_Type", Serial_Type))
+    {
+        RCLCPP_ERROR(node_->get_logger(), "Failed to get params Serial_Type");
+    }
+    if (!node_->get_parameter("robot.control_type", control_type))
+    {
+        RCLCPP_ERROR(node_->get_logger(), "Failed to get params control_type");
+    }
 
-        if (n.getParam("robot/control_type", control_type))
-        {
-            // ROS_INFO("Got params ontrol_type: %f",SDK_version);
-        }
-        else
-        {
-            ROS_ERROR("Faile to get params control_type");
-        }
+    if (!node_->get_parameter("robot.imu_limit_flag", imu_limit_flag))
+    {
+        RCLCPP_ERROR(node_->get_logger(), "Failed to get params imu_limit_flag");
+        exit(-1);
+    }
+    if (imu_limit_flag)
+    {
+        RCLCPP_INFO(node_->get_logger(), "IMU limiting is enabled.");
+        imu_sub_ = node_->create_subscription<sensor_msgs::msg::Imu>(
+            "/imu/data", 100,
+            std::bind(&robot::imuCallback, this, std::placeholders::_1));
+    }
+
+    if (!node_->get_parameter("robot.imu_dir", imu_dir))
+    {
+        RCLCPP_ERROR(node_->get_logger(), "Failed to get params imu_dir");
+        exit(-1);
+    }
+
+    double imu_limit_num_d = 0.0;
+    if (!node_->get_parameter("robot.imu_limit_num", imu_limit_num_d))
+    {
+        RCLCPP_ERROR(node_->get_logger(), "Failed to get params imu_limit_num");
+        exit(-1);
+    }
+    imu_limit_num = static_cast<float>(imu_limit_num_d);
+    if (imu_limit_num > 1.57f)
+    {
+        RCLCPP_ERROR(node_->get_logger(), "imu_limit_num must not exceed 1.57");
+        exit(-1);
+    }
+
+    RCLCPP_INFO(node_->get_logger(),
+                "\033[1;32mSDK version: v%s\033[0m", SDK_version_str.c_str());
+    RCLCPP_INFO(node_->get_logger(),
+                "\033[1;32mRobot name: %s\033[0m", robot_name.c_str());
+    RCLCPP_INFO(node_->get_logger(),
+                "\033[1;32mCAN boards: %d\033[0m", CANboard_num);
+    RCLCPP_INFO(node_->get_logger(),
+                "\033[1;32mSerial type: %s\033[0m", Serial_Type.c_str());
+
+    init_ser();
+    error_check_thread_ = std::thread(&robot::check_error, this);
+
+    for (size_t i = 1; i <= CANboard_num; i++)
+    {
+        CANboards.push_back(canboard(i, &ser, node_));
+    }
+
+    for (canboard &cb : CANboards)
+    {
+        cb.push_CANport(&CANPorts);
+    }
+    for (canport *cp : CANPorts)
+    {
+        cp->puch_motor(&Motors);
+    }
+
+    set_port_motor_num();  // configure motor count per port and query firmware version
+    if (slave_v >= 4.1f)
+    {
+        canboard_fdcan_reset();
+    }
+
+    if (slave_v < 4.0f)  // detect motor connections (older firmware path)
+    {
+        fun_v = fun_v1;
+        chevk_motor_connection_position();
+    }
+    else
+    {
+        fun_v = fun_v2;
+        chevk_motor_connection_version();
+    }
+
+    if (control_type == 12 && fun_v < fun_v5)
+    {
+        RCLCPP_ERROR(node_->get_logger(), "Motor firmware is too old for control_type 12.");
+    }
+
+    publish_joint_state = true;
+    joint_state_pub_ = node_->create_publisher<sensor_msgs::msg::JointState>("error_joint_states", 10);
+    pub_thread_ = std::thread(&robot::publishJointStates, this);
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+    RCLCPP_INFO(node_->get_logger(),
+                "\033[1;32mRobot has %ld motors\033[0m", Motors.size());
+    RCLCPP_INFO(node_->get_logger(), "Robot init complete.");
+}
 
 
-        if (n.getParam("robot/imu_limt_flag", imu_limt_flag))
+robot::~robot()
+{
+    publish_joint_state = false;
+    set_stop();
+    motor_send_2();
+    motor_send_2();
+    for (auto &thread : ser_recv_threads)
+    {
+        if (thread.joinable())
+            thread.join();
+    }
+
+    if (pub_thread_.joinable())
+    {
+        pub_thread_.join();
+    }
+
+    if (error_check_thread_.joinable())
+    {
+        error_check_thread_.join();
+    }
+}
+
+
+void robot::imuCallback(const sensor_msgs::msg::Imu::SharedPtr msg)
+{
+    const double w = msg->orientation.w;
+    const double x = msg->orientation.x;
+    const double y = msg->orientation.y;
+    const double z = msg->orientation.z;
+
+    const double sinr_cosp = 2 * (w * x + y * z);
+    const double cosr_cosp = 1 - 2 * (x * x + y * y);
+    roll = std::atan2(sinr_cosp, cosr_cosp);
+
+    const double sinp = 2 * (w * y - z * x);
+    if (std::abs(sinp) >= 1)
+    {
+        pitch = std::copysign(M_PI / 2, sinp);
+    }
+    else
+    {
+        pitch = std::asin(sinp);
+    }
+}
+
+
+void robot::publishJointStates()
+{
+    rclcpp::Rate rate(10);
+    while (publish_joint_state && rclcpp::ok())
+    {
+        sensor_msgs::msg::JointState joint_state_msg;
+        joint_state_msg.header.stamp = node_->now();
+
+        const double now_sec = std::chrono::duration<double>(
+            std::chrono::steady_clock::now().time_since_epoch()).count();
+
+        for (motor *m : Motors)
         {
-            if (imu_limt_flag != false)
+            joint_state_msg.name.push_back(m->get_motor_name());
+            motor_back_t *data_ptr = m->get_current_motor_state();
+
+            if (now_sec - data_ptr->time > 0.1)
             {
-                ROS_INFO("IMU needs to be enabled");
-                imu_sub = n.subscribe("/imu/data", 100, &robot::imuCallback, this);
-            }
-        }
-        else
-        {
-            ROS_ERROR("Faile to get params imu_limt_flag");
-            exit(-1);
-        }
-
-        if (!n.getParam("robot/imu_dir", imu_dir))
-        {
-            ROS_ERROR("Faile to get params imu_dir");
-            exit(-1);
-        }
-
-        if (n.getParam("robot/imu_limt_num", imu_limt_num))
-        {
-            if (imu_limt_num > 1.57f)
-            {
-                ROS_ERROR("The value of imu_limt_num must not exceed 1.57");
-                exit(-1);
-            }
-        }
-        else
-        {
-            ROS_ERROR("Faile to get params imu_limt_num");
-            exit(-1);
-        }
-
-        ROS_INFO("\033[1;32mGot params SDK_version: v%s\033[0m", SDK_version2.c_str());
-        ROS_INFO("\033[1;32mThe robot name is %s\033[0m", robot_name.c_str());
-        ROS_INFO("\033[1;32mThe robot has %d CANboards\033[0m", CANboard_num);
-        ROS_INFO("\033[1;32mThe Serial type is %s\033[0m", Serial_Type.c_str());
-        init_ser();
-        error_check_thread_ = std::thread(&robot::check_error, this);
-
-        for (size_t i = 1; i <= CANboard_num; i++)
-        {
-            CANboards.push_back(canboard(i, &ser));
-        }
-
-        for (canboard &cb : CANboards)
-        {
-            cb.push_CANport(&CANPorts);
-        }
-        for (canport *cp : CANPorts)
-        {
-            // std::thread(&canport::send, &cp);
-            cp->puch_motor(&Motors);
-        }
-        set_port_motor_num(); // 设置通道上挂载的电机数，并获取主控板固件版本号
-        if (slave_v >= 4.1f)
-        {
-            canboard_fdcan_reset();
-        }
-
-        if (slave_v < 4.0f)  // 检测电机连接是否正常
-        {
-            fun_v = fun_v1;
-            chevk_motor_connection_position();   
-        }
-        else
-        {
-            fun_v = fun_v2;
-            chevk_motor_connection_version();
-        }
-
-        
-        if (control_type == 12 && fun_v < fun_v5)
-        {
-            ROS_ERROR("The motor version is too old.");
-        }
-        // set_timeout(5000);  // 设置所有电机的超时时间，单位ms，这里默认给 5s
-        // set_timeout(0, 5000);  // 设置一条 can 通道所有电机的超时时间
-
-        publish_joint_state=1;
-        joint_state_pub_ = n.advertise<sensor_msgs::JointState>("error_joint_states", 10);
-        pub_thread_ = std::thread(&robot::publishJointStates, this);
-
-        ros::Duration(0.1).sleep();
-
-        ROS_INFO("\033[1;32mThe robot has %ld motors\033[0m", Motors.size());
-        ROS_INFO("robot init");
-        // for (motor m:Motors)
-        // {
-        //     std::cout<<m.get_motor_belong_canboard()<<" "<<m.get_motor_belong_canport()<<" "<<m.get_motor_id()<<std::endl;
-        // }
-    }
-    robot::~robot()
-    {
-        publish_joint_state=0;
-        set_stop();
-        motor_send_2();
-        motor_send_2();
-        for (auto &thread : ser_recv_threads)
-        {
-            if (thread.joinable())
-                thread.join();
-        }
-        
-        if(pub_thread_.joinable())
-        {
-            pub_thread_.join(); 
-        }
-
-        if(error_check_thread_.joinable())
-        {
-            error_check_thread_.join(); 
-        }
-        
-    }
-
-    void robot::imuCallback(const sensor_msgs::Imu::ConstPtr& msg)
-    {
-        const double w = msg->orientation.w;
-        const double x = msg->orientation.x;
-        const double y = msg->orientation.y;
-        const double z = msg->orientation.z;
-
-        const double sinr_cosp = 2 * (w * x + y * z);
-        const double cosr_cosp = 1 - 2 * (x * x + y * y);
-        roll = std::atan2(sinr_cosp, cosr_cosp);
-
-        const double sinp = 2 * (w * y - z * x);
-        if (std::abs(sinp) >= 1)
-        {
-            pitch = std::copysign(M_PI / 2, sinp); 
-        }
-        else
-        {
-            pitch = std::asin(sinp);
-        }
-    }
-
-    void robot::publishJointStates()
-    {
-        ros::Rate rate(10); 
-        while (publish_joint_state && ros::ok())
-        {
-            sensor_msgs::JointState joint_state_msg;
-
-            // Fill in the joint state message
-            joint_state_msg.header.stamp = ros::Time::now();
-
-            for (motor *m : Motors)
-            {    
-                joint_state_msg.name.push_back(m->get_motor_name());
-                motor_back_t* data_ptr=m->get_current_motor_state();
-                ros::Time  now_time= ros::Time::now();
-                if(now_time.toSec()-data_ptr->time>0.1)
-                {
-                    joint_state_msg.position.push_back(-999);
-                    joint_state_msg.velocity.push_back(0);
-                    joint_state_msg.effort.push_back(0);
-                }
-                else
-                {
-                    joint_state_msg.position.push_back(data_ptr->position);
-                    joint_state_msg.velocity.push_back(data_ptr->velocity);
-                    joint_state_msg.effort.push_back(data_ptr->torque);
-                }
-            }
-            // Publish the joint state message
-            joint_state_pub_.publish(joint_state_msg);
-
-            // Sleep to maintain the loop rate
-            rate.sleep();
-        }
-    }
-    void robot::detect_motor_limit()
-    {
-        // 电机正常运行时检测是否超过限位，停机之后不检测
-        if(!motor_position_limit_flag && !motor_torque_limit_flag)
-        {
-            for (motor *m : Motors)
-            {
-                if(m->pos_limit_flag)
-                {                    
-                    ROS_ERROR("robot pos limit, motor stop.");
-                    set_stop();
-                    motor_position_limit_flag = m->pos_limit_flag;
-                    break;
-                }
-
-                if(m->tor_limit_flag)
-                {
-                    ROS_ERROR("robot torque limit, motor stop.");
-                    set_stop();
-                    motor_torque_limit_flag = m->tor_limit_flag;
-                    break;
-                }
-            }            
-        }
-    }
-
-
-    bool robot::imu_limt()
-    {
-        float roll_err = 0.0f;
-
-        if (imu_limt_flag != true)
-        {
-            return true;
-        }
-
-        if (imu_dir == true)
-        {
-            roll_err = fabs(roll - 0.0f);
-        }
-        else
-        {
-            if(roll < 0)
-            {
-                roll_err = roll + 3.14;
+                joint_state_msg.position.push_back(-999);
+                joint_state_msg.velocity.push_back(0);
+                joint_state_msg.effort.push_back(0);
             }
             else
             {
-                roll_err = 3.14 - roll;
+                joint_state_msg.position.push_back(data_ptr->position);
+                joint_state_msg.velocity.push_back(data_ptr->velocity);
+                joint_state_msg.effort.push_back(data_ptr->torque);
             }
         }
 
-        if (roll_err > imu_limt_num || pitch > imu_limt_num)
-        {
-            return false;
-        }
+        joint_state_pub_->publish(joint_state_msg);
+        rate.sleep();
+    }
+}
 
+
+void robot::detect_motor_limit()
+{
+    if (!motor_position_limit_flag && !motor_torque_limit_flag)
+    {
+        for (motor *m : Motors)
+        {
+            if (m->pos_limit_flag)
+            {
+                RCLCPP_ERROR(node_->get_logger(), "Robot position limit reached — stopping motors.");
+                set_stop();
+                motor_position_limit_flag = m->pos_limit_flag;
+                break;
+            }
+
+            if (m->tor_limit_flag)
+            {
+                RCLCPP_ERROR(node_->get_logger(), "Robot torque limit reached — stopping motors.");
+                set_stop();
+                motor_torque_limit_flag = m->tor_limit_flag;
+                break;
+            }
+        }
+    }
+}
+
+
+bool robot::imu_limit()
+{
+    float roll_err = 0.0f;
+
+    if (!imu_limit_flag)
+    {
         return true;
     }
 
-
-    void robot::motor_send_2()
+    if (imu_dir)
     {
-        if (imu_limt() == false)
+        roll_err = std::fabs(roll - 0.0f);
+    }
+    else
+    {
+        if (roll < 0)
         {
-            for (motor *m : Motors)
-            {
-                m->pos_vel_tqe_kp_kd(m->get_current_motor_state()->position, 0, 0, 10, 1);
-            }
+            roll_err = roll + 3.14f;
         }
-
-        if(!motor_position_limit_flag && !motor_torque_limit_flag)
+        else
         {
-            for (canboard &cb : CANboards)
-            {
-                cb.motor_send_2();
-            }
+            roll_err = 3.14f - roll;
         }
-        
     }
 
-
-    int robot::serial_pid_vid(const char *name, int *pid, int *vid)
+    if (roll_err > imu_limit_num || pitch > imu_limit_num)
     {
-        int r = 0;
-        struct sp_port *port;
-        try
-        {
-            /* code */
-            sp_get_port_by_name(name, &port);
-            sp_open(port, SP_MODE_READ);
-            if (sp_get_port_usb_vid_pid(port, vid, pid) != SP_OK) 
-            {
-                r = 1;
-            } 
-            std::cout << "Port: " << name << ", PID: 0x" << std::hex << *pid << ", VID: 0x" << *vid << std::dec << std::endl;
-
-            // 关闭端口
-            sp_close(port);
-            sp_free_port(port);
-        }
-        catch(const std::exception& e)
-        {
-            std::cerr << e.what() << '\n';
-            sp_close(port);
-            sp_free_port(port);
-        }
-        return r;
+        return false;
     }
 
+    return true;
+}
 
-    int robot::serial_pid_vid(const char *name)
+
+void robot::motor_send_2()
+{
+    if (!imu_limit())
     {
-        int pid, vid;
-        int r = 0;
-        struct sp_port *port;
-        try
+        for (motor *m : Motors)
         {
-            /* code */
-            sp_get_port_by_name(name, &port);
-            sp_open(port, SP_MODE_READ);
-            if (sp_get_port_usb_vid_pid(port, &vid, &pid) != SP_OK) 
-            {
-                r = -1;
-            } 
-            else 
-            {
-                if (pid == 0xFFFF)
-                {
-                    switch (vid)
-                    {
-                    case (0xCAF1):
-                        r = 4;
-                        break;
-                    case (0xCAE1):
-                        r = 7;
-                        break;
-                    default:
-                        r = -3;
-                        break;
-                    }
-                }
-                else
-                {
-                    r = -1;
-                }
-            }
-            // std::cout << "Port: " << name << ", PID: 0x" << std::hex << pid << ", VID: 0x" << vid << std::dec << std::endl;
-
-            // 关闭端口
-            sp_close(port);
-            sp_free_port(port);
+            m->pos_vel_tqe_kp_kd(m->get_current_motor_state()->position, 0, 0, 10, 1);
         }
-        catch(const std::exception& e)
-        {
-            std::cerr << e.what() << '\n';
-            r = -3;
-            sp_close(port);
-            sp_free_port(port);
-        }
-
-        return r;
     }
 
-
-    std::vector<std::string> robot::list_serial_ports(const std::string& full_prefix) 
+    if (!motor_position_limit_flag && !motor_torque_limit_flag)
     {
-        std::string base_path = full_prefix.substr(0, full_prefix.rfind('/') + 1);
-        std::string prefix = full_prefix.substr(full_prefix.rfind('/') + 1);
-        std::vector<std::string> serial_ports;
-        DIR *directory;
-        struct dirent *entry;
-
-        directory = opendir(base_path.c_str());
-        if (!directory)
+        for (canboard &cb : CANboards)
         {
-            std::cerr << "Could not open the directory " << base_path << std::endl;
-            return serial_ports; // Return an empty vector if cannot open directory
+            cb.motor_send_2();
         }
+    }
+}
 
-        while ((entry = readdir(directory)) != NULL)
+
+int robot::serial_pid_vid(const char *name, int *pid, int *vid)
+{
+    if (!read_usb_vid_pid(std::string(name), *vid, *pid))
+    {
+        return 1;
+    }
+    std::cout << "Port: " << name
+              << ", PID: 0x" << std::hex << *pid
+              << ", VID: 0x" << *vid << std::dec << std::endl;
+    return 0;
+}
+
+
+int robot::serial_pid_vid(const char *name)
+{
+    int vid = 0, pid = 0;
+    if (!read_usb_vid_pid(std::string(name), vid, pid))
+    {
+        return -1;
+    }
+
+    if (pid == 0xFFFF)
+    {
+        switch (vid)
         {
-            std::string entryName = entry->d_name;
-            if (entryName.find(prefix) == 0)
-            { // Check if the entry name starts with the given prefix
-                serial_ports.push_back(base_path + entryName);
-            }
+        case 0xCAF1:
+            return 4;
+        case 0xCAE1:
+            return 7;
+        default:
+            return -3;
         }
+    }
 
-        closedir(directory);
+    return -1;
+}
 
-        // Sort the vector in ascending order
-        std::sort(serial_ports.begin(), serial_ports.end());
 
+std::vector<std::string> robot::list_serial_ports(const std::string &full_prefix)
+{
+    const std::string base_path = full_prefix.substr(0, full_prefix.rfind('/') + 1);
+    const std::string prefix = full_prefix.substr(full_prefix.rfind('/') + 1);
+    std::vector<std::string> serial_ports;
+
+    DIR *directory = opendir(base_path.c_str());
+    if (!directory)
+    {
+        std::cerr << "Could not open directory " << base_path << std::endl;
         return serial_ports;
     }
 
-
-    void robot::init_ser()
+    struct dirent *entry;
+    while ((entry = readdir(directory)) != nullptr)
     {
-        ser.clear();
-        ser_recv_threads.clear();
-        str.clear();   
-        std::vector<std::string> ports = list_serial_ports(Serial_Type);
-        std::cout << "Serial Port List: " << std::endl;
-        int8_t board_port_num = 99;
-        for (const std::string& port : ports) 
-        {   
-            const int8_t r = serial_pid_vid(port.c_str());
-            if (r > 0)
-            {
-                ROS_INFO("Serial Port%ld = %s", str.size(), port.c_str());
-                str.push_back(port);
-                board_port_num = r > board_port_num ? board_port_num : r;
-            }
-        }
-
-        if (board_port_num == 0xff)
+        const std::string entry_name = entry->d_name;
+        if (entry_name.find(prefix) == 0)
         {
-            ROS_ERROR("Communication board not detected!!!");
+            serial_ports.push_back(base_path + entry_name);
+        }
+    }
+
+    closedir(directory);
+    std::sort(serial_ports.begin(), serial_ports.end());
+    return serial_ports;
+}
+
+
+void robot::init_ser()
+{
+    ser.clear();
+    ser_recv_threads.clear();
+    str.clear();
+
+    std::vector<std::string> ports = list_serial_ports(Serial_Type);
+    std::cout << "Serial port list:" << std::endl;
+    int8_t board_port_num = 99;
+    for (const std::string &port : ports)
+    {
+        const int8_t r = serial_pid_vid(port.c_str());
+        if (r > 0)
+        {
+            RCLCPP_INFO(node_->get_logger(), "Serial port %ld = %s", str.size(), port.c_str());
+            str.push_back(port);
+            board_port_num = r > board_port_num ? board_port_num : r;
+        }
+    }
+
+    if (board_port_num == 0x63)  // 99 — no valid port found
+    {
+        RCLCPP_ERROR(node_->get_logger(), "No communication board detected!");
+        exit(-1);
+    }
+
+    const uint8_t port_max_num = board_port_num * CANboard_num;
+    if (str.size() < port_max_num)
+    {
+        RCLCPP_INFO(node_->get_logger(), "Expected port count: %d", port_max_num);
+        RCLCPP_ERROR(node_->get_logger(),
+                     "Fewer communication board serial ports detected than expected.");
+        exit(-1);
+    }
+
+    for (int cb_id = 1; cb_id <= CANboard_num; cb_id++)
+    {
+        int cp_num = 0;
+        const std::string board_key = "robot.CANboard.No_" + std::to_string(cb_id) + "_CANboard.CANport_num";
+        if (node_->get_parameter(board_key, cp_num))
+        {
+            RCLCPP_INFO(node_->get_logger(), "Board %d has %d port(s)", cb_id, cp_num);
+        }
+        else
+        {
+            RCLCPP_ERROR(node_->get_logger(), "Failed to get CANport_num for board %d", cb_id);
             exit(-1);
         }
 
-        const uint8_t port_max_num = board_port_num * CANboard_num;
-        if (str.size() < port_max_num)
+        std::vector<int> serial_id_used;
+        for (int cp_id = 1; cp_id <= cp_num; cp_id++)
         {
-            ROS_INFO("port max num = %d", port_max_num);
-            ROS_ERROR("The number of detected communication board serial ports is less than expected");
-            exit(-1);
-        }
-
-        for (int cb_id = 1; cb_id <= CANboard_num; cb_id++)
-        {
-            int cp_num = 0;
-            if (n.getParam("robot/CANboard/No_" + std::to_string(cb_id) + "_CANboard/CANport_num", cp_num))
+            int serial_id = 0;
+            const std::string ser_key = "robot.CANboard.No_" + std::to_string(cb_id) +
+                                        "_CANboard.CANport.CANport_" + std::to_string(cp_id) +
+                                        ".serial_id";
+            if (node_->get_parameter(ser_key, serial_id))
             {
-                ROS_INFO("board %d has %d port", cb_id, cp_num);
+                if (serial_id > static_cast<int>(str.size()) || serial_id < 1)
+                {
+                    RCLCPP_ERROR(node_->get_logger(), "serial_id %d is out of range!", serial_id);
+                    exit(-1);
+                }
+                if (std::find(serial_id_used.begin(), serial_id_used.end(), serial_id)
+                    != serial_id_used.end())
+                {
+                    RCLCPP_ERROR(node_->get_logger(), "Duplicate serial_id %d!", serial_id);
+                    exit(-1);
+                }
+                serial_id_used.push_back(serial_id);
+
+                lively_serial *s = new lively_serial(&str[serial_id - 1], Seial_baudrate);
+                ser.push_back(s);
+                ser_recv_threads.push_back(std::thread(&lively_serial::recv_1for6_42, s));
             }
             else
             {
-                ROS_ERROR("Faile to get params CANboard_num");
-                exit(-1);
-            }
-
-            std::vector<int> serial_id_old;
-            for (int cp_id = 1; cp_id <= cp_num; cp_id++)
-            {
-                int serial_id = 0;
-                if (n.getParam("robot/CANboard/No_" + std::to_string(cb_id) + "_CANboard/CANport/CANport_" + std::to_string(cp_id) + "/serial_id", serial_id))
-                {
-                    if (serial_id > str.size() || serial_id < 1)
-                    {
-                        ROS_ERROR("serial_id error!!!");
-                        exit(-1);
-                    }
-                    if (!serial_id_old.empty() && std::find(serial_id_old.begin(), serial_id_old.end(), serial_id) != serial_id_old.end())
-                    {
-                        ROS_ERROR("The serial_id is duplicated!!!");
-                        exit(-1);
-                    }
-                    serial_id_old.push_back(serial_id);
-
-                    lively_serial *s = new lively_serial(&str[serial_id - 1], Seial_baudrate);
-                    ser.push_back(s);
-                    ser_recv_threads.push_back(std::thread(&lively_serial::recv_1for6_42, s));
-                }
-                else
-                {
-                    ROS_ERROR("serial_id error!!!");
-                }
+                RCLCPP_ERROR(node_->get_logger(),
+                             "Failed to get serial_id for board %d port %d", cb_id, cp_id);
             }
         }
     }
+}
 
-    typedef enum{
-        error_check = 0,    // 正常
-        error_clear,        // 报错，清理     
-        error_wait_dev,     // 报错，等待设备
-        error_reconnect,    // 报错，重连
-    }error_run_state_e;
 
-    void robot::check_error(void)
+typedef enum
+{
+    error_check = 0,    // normal operation
+    error_clear,        // error detected, cleaning up
+    error_wait_dev,     // waiting for device to reappear
+    error_reconnect,    // reconnecting
+} error_run_state_e;
+
+
+void robot::check_error()
+{
+    while (true)
     {
-        std::mutex robot_mutex;
-        while(true)
+        static error_run_state_e last_state = error_reconnect;
+        static error_run_state_e state = error_check;
+
+        switch (state)
         {
-            static error_run_state_e last_error_run_state = error_reconnect;
-            static error_run_state_e error_run_state = error_check;// 0：正常，1：报错,清理，2：重连
-            switch(error_run_state)
+        case error_check:
+        {
+            bool serial_error = false;
+            for (lively_serial *s : ser)
             {
-                case 0:
+                if (s->is_serial_error())
                 {
-                    bool serial_error = false;
-                    for (lively_serial *s : ser)
-                    {
-                        if (s->is_serial_error())
-                        {
-                            serial_error = true;
-                            break;
-                        }
-                    }
-                    if(serial_error)
-                    {
-                        serial_error = false;
-                        error_run_state = error_clear;
-                        std::cerr << "Serial error" << std::endl;
-                    }
+                    serial_error = true;
+                    break;
                 }
-                break;
-                case error_clear:
-                {
-                    std::lock_guard<std::mutex> lock(robot_mutex);
-                    for (lively_serial *s : ser)
-                    {
-                        s->set_run_flag(false);
-                        // s->close();
-                    }
-                    for (auto &_thread : ser_recv_threads)
-                    {
-                        if (_thread.joinable())
-                        {
-                            _thread.join();
-                        }
-                    }
-
-                    CANboards.clear();
-                    CANPorts.clear();
-                    Motors.clear();
-        
-                    for (lively_serial *s : ser)
-                    {
-                        delete s;
-                    }
-
-                    ser.clear();
-                    error_run_state = error_wait_dev;
-                    std::cerr << "clear obj and thread" << std::endl;
-                }
-                break;
-                case error_wait_dev:
-                {
-                    int exist_num = this->check_serial_dev_exist(8);
-                    std::cerr << "find "  << exist_num << " device(s)" << std::endl;
-                    if (exist_num < 4)
-                    {
-                        std::cerr << "Cannot find 4 motor serial port, please check if the USB connection is normal." << std::endl;
-                    }
-                    else
-                    {
-                        std::cout << "file all diveces" << std::endl;
-                        error_run_state = error_reconnect;
-                        std::this_thread::sleep_for(std::chrono::milliseconds(5000));
-                    }
-                }
-                break;
-                case error_reconnect:
-                {
-                    std::cerr << "reconnect start " << std::endl;
-                    this->init_ser();
-                    for (size_t i = 1; i <= CANboard_num; i++)
-                    {
-                        CANboards.push_back(canboard(i, &ser));
-                    }
-
-                    for (canboard &cb : CANboards)
-                    {
-                        cb.push_CANport(&CANPorts);
-                    }
-                    for (canport *cp : CANPorts)
-                    {
-                        // std::thread(&canport::send, &cp);
-                        cp->puch_motor(&Motors);
-                    }
-                    set_port_motor_num(); // 设置通道上挂载的电机数，并获取主控板固件版本号
-                    chevk_motor_connection_version();  // 检测电机连接是否正常
-                    error_run_state = error_check;
-                    std::cerr << "reconnect end" << std::endl;
-                }
-                break;
-                default:
-                break;
             }
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-            // only state chaged, print state.
-            if(error_run_state != last_error_run_state)
+            if (serial_error)
             {
-                last_error_run_state = error_run_state;
-                std::cout << "error_run_state = " << error_run_state << std::endl;
+                state = error_clear;
+                std::cerr << "Serial error detected." << std::endl;
             }
         }
-    }
+        break;
 
-    int robot::check_serial_dev_exist(int file_num)
-    {
-        int exist_num = 0;
-        std::cout << "check serial dev exist" << std::endl;
-        std::vector<std::string> dev_vec;
-        for (size_t i = 0; i < file_num; i++)
+        case error_clear:
         {
-            std::string _dev = std::string("/dev/ttyACM") + std::to_string(i);
-            std::cout << "check: " << _dev << std::endl;
-            dev_vec.push_back(_dev);
-        }
-        for (auto &dev : dev_vec)
-        {
-            if(access(dev.c_str(),F_OK) == 0)
+            for (lively_serial *s : ser)
             {
-                exist_num++;
-                std::cout << "exist: " << dev << std::endl;
+                s->set_run_flag(false);
+            }
+            for (auto &_thread : ser_recv_threads)
+            {
+                if (_thread.joinable())
+                {
+                    _thread.join();
+                }
+            }
+
+            CANboards.clear();
+            CANPorts.clear();
+            Motors.clear();
+
+            for (lively_serial *s : ser)
+            {
+                delete s;
+            }
+
+            ser.clear();
+            state = error_wait_dev;
+            std::cerr << "Objects and threads cleared." << std::endl;
+        }
+        break;
+
+        case error_wait_dev:
+        {
+            const int exist_num = check_serial_dev_exist(8);
+            std::cerr << "Found " << exist_num << " device(s)." << std::endl;
+            if (exist_num < 4)
+            {
+                std::cerr << "Cannot find 4 motor serial ports — check USB connections." << std::endl;
+            }
+            else
+            {
+                std::cout << "All devices found." << std::endl;
+                state = error_reconnect;
+                std::this_thread::sleep_for(std::chrono::milliseconds(5000));
             }
         }
-        std::cout << "exist_num = " << exist_num << std::endl;
-        return exist_num;
-    }
+        break;
 
-
-    /**
-     * @brief 设置每个通道的电机数量，并查询主控板固件版本
-     */
-    void robot::set_port_motor_num()
-    {
-        for (canboard &cb : CANboards)
+        case error_reconnect:
         {
-            slave_v = cb.set_port_motor_num();
-        }
-    }
-    
-    
-    void robot::send_get_motor_state_cmd()
-    {
-        if (fun_v >= fun_v4)
-        {
+            std::cerr << "Reconnect start." << std::endl;
+            init_ser();
+            for (size_t i = 1; i <= CANboard_num; i++)
+            {
+                CANboards.push_back(canboard(i, &ser, node_));
+            }
             for (canboard &cb : CANboards)
             {
-                cb.send_get_motor_state_cmd2();
+                cb.push_CANport(&CANPorts);
             }
-        }
-        else if (fun_v >= fun_v2 || control_type == 0)
-        {
-            for (canboard &cb : CANboards)
+            for (canport *cp : CANPorts)
             {
-                cb.send_get_motor_state_cmd();
+                cp->puch_motor(&Motors);
             }
+            set_port_motor_num();
+            chevk_motor_connection_version();
+            state = error_check;
+            std::cerr << "Reconnect complete." << std::endl;
         }
-        else
+        break;
+
+        default:
+            break;
+        }
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+        if (state != last_state)
         {
-            for (motor *m : Motors)
-            {
-                m->velocity(0.0f);
-            }
-            motor_send_2();
+            last_state = state;
+            std::cout << "error_run_state = " << state << std::endl;
+        }
+    }
+}
+
+
+int robot::check_serial_dev_exist(int file_num)
+{
+    int exist_num = 0;
+    std::cout << "Checking serial device existence..." << std::endl;
+
+    for (int i = 0; i < file_num; i++)
+    {
+        const std::string dev = "/dev/ttyACM" + std::to_string(i);
+        if (access(dev.c_str(), F_OK) == 0)
+        {
+            exist_num++;
+            std::cout << "Exists: " << dev << std::endl;
         }
     }
 
+    std::cout << "Devices found: " << exist_num << std::endl;
+    return exist_num;
+}
 
-    void robot::send_get_motor_version_cmd()
+
+void robot::set_port_motor_num()
+{
+    for (canboard &cb : CANboards)
     {
-        if (slave_v < 4.0f)
-        {
-            ROS_ERROR("The current communication board does not support this function!!!");
-            exit(-1);
-        }
+        slave_v = cb.set_port_motor_num();
+    }
+}
 
+
+void robot::send_get_motor_state_cmd()
+{
+    if (fun_v >= fun_v4)
+    {
         for (canboard &cb : CANboards)
         {
-            cb.send_get_motor_version_cmd();
+            cb.send_get_motor_state_cmd2();
         }
     }
-
-
-    void robot::motor_version_detection()
+    else if (fun_v >= fun_v2 || control_type == 0)
     {
-        uint16_t v_old = 0xFFFF;
-        uint16_t i = 0;
-
-        ROS_INFO("---------------motor version---------------------");
+        for (canboard &cb : CANboards)
+        {
+            cb.send_get_motor_state_cmd();
+        }
+    }
+    else
+    {
         for (motor *m : Motors)
         {
-            const auto v = m->get_version();
-            ROS_INFO("motors[%02d]: id:%02d v%d.%d.%d", i++, v.id, v.major, v.minor, v.patch);
-            const uint16_t v_new = v.major << 12 | (v.minor << 4) | v.patch;
-            if (v_old > v_new && v_new != 0)
-            {
-                v_old = v_new;
-            }
-        }
-        ROS_INFO("-------------------------------------------------");
-
-        if (v_old >= COMBINE_VERSION(4, 4, 6))
-        {
-            fun_v = fun_v5;
-        }
-        else if (v_old >= COMBINE_VERSION(4, 2, 3))
-        {
-            fun_v = fun_v4;
-        }
-        else if (v_old >= COMBINE_VERSION(4, 2, 2))
-        {
-            fun_v = fun_v3;
-        }
-        else if (v_old >= COMBINE_VERSION(4, 2, 0))
-        {
-            fun_v = fun_v2;
-        }
-        else
-        {
-            fun_v = fun_v1;
-        }
-
-        for (canboard &cb : CANboards)
-        {
-            cb.set_fun_v(fun_v);
-        }
-
-        ROS_INFO("fun_v = %d", fun_v);
-
-
-        uint8_t v = 0;
-        uint8_t v2 = 0;
-
-        for (motor *m : Motors)
-        {
-            v = m->get_version().major;
-
-            if (v == 5 && v2 != 0 && v != v2)
-            {
-                ROS_ERROR("The motor version is notInconsistent motor version!!!");
-                exit(-1);
-            }
-
-            v2 = v;
-
-            if (v == 5)
-            {
-                m->set_type(mGeneral);
-            }
-        }
-    }
-
-
-    // 将所有数据置为 0xFF
-    void robot::set_data_reset()
-    {
-        if (fun_v < fun_v3)
-        {
-            ROS_ERROR("The current feature version is not supported!!!");
-            exit(-3);
-        }
-
-        for (canboard &cb : CANboards)
-        {
-            cb.set_data_reset();
-        }
-    }
-
-
-    void robot::chevk_motor_connection_version()
-    {
-        int t = 0;
-        int num = 0;
-        std::vector<int> board;
-        std::vector<int> port;
-        std::vector<int> id;
-
-        ROS_INFO("Detecting motor connection");
-        while (t++ < 20)
-        {
-            send_get_motor_version_cmd();
-            ros::Duration(0.1).sleep();
-
-            num = 0;
-            std::vector<int>().swap(board);
-            std::vector<int>().swap(port);
-            std::vector<int>().swap(id);
-            for (motor *m : Motors)
-            {
-                cdc_rx_motor_version_s &v = m->get_version();
-                if (v.major != 0)
-                {
-                    ++num;
-                }
-                else
-                {
-                    board.push_back(m->get_motor_belong_canboard());
-                    port.push_back(m->get_motor_belong_canport());
-                    id.push_back(m->get_motor_id());
-                }
-            }
-
-            if (num == Motors.size())
-            {
-                break;
-            }
-
-            if (t % 100 == 0)
-            {
-                ROS_INFO(".");
-            }
-        }
-
-        if (num == Motors.size())
-        {
-            ROS_INFO("\033[1;32mAll motor connections are normal\033[0m");
-        }
-        else
-        {
-            for (int i = 0; i < Motors.size() - num; i++)
-            {
-                ROS_ERROR("CANboard(%d) CANport(%d) id(%d) Motor connection disconnected!!!", board[i], port[i], id[i]);
-            }
-            ros::Duration(3).sleep();
-        }
-        motor_version_detection();
-    }
-
-
-    void robot::chevk_motor_connection_position()
-    {
-        int t = 0;
-        int num = 0;
-        std::vector<int> board;
-        std::vector<int> port;
-        std::vector<int> id;
-
-#define MAX_DELAY 2000 // 单位 ms
-
-        ROS_INFO("Detecting motor connection");
-        while (t++ < MAX_DELAY)
-        {
-            send_get_motor_state_cmd();
-            ros::Duration(0.001).sleep();
-
-            num = 0;
-            std::vector<int>().swap(board);
-            std::vector<int>().swap(port);
-            std::vector<int>().swap(id);
-            for (motor *m : Motors)
-            {
-                if (m->get_current_motor_state()->position != 999.0f)
-                {
-                    ++num;
-                }
-                else
-                {
-                    board.push_back(m->get_motor_belong_canboard());
-                    port.push_back(m->get_motor_belong_canport());
-                    id.push_back(m->get_motor_id());
-                }
-            }
-
-            if (num == Motors.size())
-            {
-                break;
-            }
-
-            if (t % 1000 == 0)
-            {
-                ROS_INFO(".");
-            }
-        }
-
-        if (num == Motors.size())
-        {
-            ROS_INFO("\033[1;32mAll motor connections are normal\033[0m");
-        }
-        else
-        {
-            for (int i = 0; i < Motors.size() - num; i++)
-            {
-                ROS_ERROR("CANboard(%d) CANport(%d) id(%d) Motor connection disconnected!!!", board[i], port[i], id[i]);
-            }
-            // exit(-1);
-            ros::Duration(3).sleep();
-        }
-    }
-
-
-    void robot::set_stop()
-    {
-        for (canboard &cb : CANboards)
-        {
-            cb.set_stop();
+            m->velocity(0.0f);
         }
         motor_send_2();
     }
+}
 
 
-    void robot::set_reset()
+void robot::send_get_motor_version_cmd()
+{
+    if (slave_v < 4.0f)
     {
-        for (canboard &cb : CANboards)
-        {
-            cb.set_reset();
-        }
+        RCLCPP_ERROR(node_->get_logger(),
+                     "The current communication board does not support this function!");
+        exit(-1);
     }
 
-
-    void robot::set_reset_zero()
+    for (canboard &cb : CANboards)
     {
-        for (canboard &cb : CANboards)
+        cb.send_get_motor_version_cmd();
+    }
+}
+
+
+void robot::motor_version_detection()
+{
+    uint16_t v_old = 0xFFFF;
+    uint16_t i = 0;
+
+    RCLCPP_INFO(node_->get_logger(), "--------------- Motor versions ---------------");
+    for (motor *m : Motors)
+    {
+        const auto v = m->get_version();
+        RCLCPP_INFO(node_->get_logger(), "motors[%02d]: id:%02d v%d.%d.%d",
+                    i++, v.id, v.major, v.minor, v.patch);
+        const uint16_t v_new = (v.major << 12) | (v.minor << 4) | v.patch;
+        if (v_old > v_new && v_new != 0)
         {
-            cb.set_reset_zero();
+            v_old = v_new;
         }
     }
+    RCLCPP_INFO(node_->get_logger(), "----------------------------------------------");
 
-
-    void robot::set_reset_zero(std::initializer_list<int> motors)
+    if (v_old >= COMBINE_VERSION(4, 4, 6))
     {
-        for (auto const &motor : motors)
-        {
-            int board_id = Motors[motor]->get_motor_belong_canboard() - 1;
-            int port_id = Motors[motor]->get_motor_belong_canport() - 1;
-            int motor_id = Motors[motor]->get_motor_id();
-            ROS_INFO("%d, %d, %d\n", board_id, port_id, motor_id);
+        fun_v = fun_v5;
+    }
+    else if (v_old >= COMBINE_VERSION(4, 2, 3))
+    {
+        fun_v = fun_v4;
+    }
+    else if (v_old >= COMBINE_VERSION(4, 2, 2))
+    {
+        fun_v = fun_v3;
+    }
+    else if (v_old >= COMBINE_VERSION(4, 2, 0))
+    {
+        fun_v = fun_v2;
+    }
+    else
+    {
+        fun_v = fun_v1;
+    }
 
-            if (CANPorts[port_id]->set_conf_load(motor_id) != 0)
+    for (canboard &cb : CANboards)
+    {
+        cb.set_fun_v(fun_v);
+    }
+
+    RCLCPP_INFO(node_->get_logger(), "fun_v = %d", fun_v);
+
+    uint8_t v = 0;
+    uint8_t v2 = 0;
+    for (motor *m : Motors)
+    {
+        v = m->get_version().major;
+
+        if (v == 5 && v2 != 0 && v != v2)
+        {
+            RCLCPP_ERROR(node_->get_logger(), "Inconsistent motor firmware versions!");
+            exit(-1);
+        }
+
+        v2 = v;
+
+        if (v == 5)
+        {
+            m->set_type(mGeneral);
+        }
+    }
+}
+
+
+void robot::set_data_reset()
+{
+    if (fun_v < fun_v3)
+    {
+        RCLCPP_ERROR(node_->get_logger(), "Current feature version does not support set_data_reset!");
+        exit(-3);
+    }
+
+    for (canboard &cb : CANboards)
+    {
+        cb.set_data_reset();
+    }
+}
+
+
+void robot::chevk_motor_connection_version()
+{
+    int t = 0;
+    int num = 0;
+    std::vector<int> board;
+    std::vector<int> port;
+    std::vector<int> id;
+
+    RCLCPP_INFO(node_->get_logger(), "Detecting motor connections...");
+    while (t++ < 20)
+    {
+        send_get_motor_version_cmd();
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+        num = 0;
+        board.clear();
+        port.clear();
+        id.clear();
+        for (motor *m : Motors)
+        {
+            cdc_rx_motor_version_s &v = m->get_version();
+            if (v.major != 0)
             {
-                ROS_ERROR("Motor %d settings restoration failed.", motor);
-                return;
-            }
-            
-            ROS_INFO("Motor %d settings have been successfully restored. Initiating zero position reset.", motor);
-            if (CANPorts[port_id]->set_reset_zero(motor_id) == 0)
-            {
-                ROS_INFO("Motor %d reset to zero position successfully, awaiting settings save.null", motor);
-                if (CANPorts[port_id]->set_conf_write(motor_id) == 0)
-                {
-                    ROS_INFO("Motor %d settings saved successfully.", motor);
-                }
-                else
-                {
-                    ROS_ERROR("Motor %d settings saved failed.", motor);
-                }
+                ++num;
             }
             else
             {
-                ROS_ERROR("Motor %d reset to zero position failed.", motor);
+                board.push_back(m->get_motor_belong_canboard());
+                port.push_back(m->get_motor_belong_canport());
+                id.push_back(m->get_motor_id());
             }
+        }
+
+        if (num == static_cast<int>(Motors.size()))
+        {
+            break;
+        }
+
+        if (t % 10 == 0)
+        {
+            RCLCPP_INFO(node_->get_logger(), "Waiting for motor connection...");
         }
     }
 
-
-    void robot::set_motor_runzero()
+    if (num == static_cast<int>(Motors.size()))
     {
-        for (int i = 0; i < 5; i++)
+        RCLCPP_INFO(node_->get_logger(), "\033[1;32mAll motor connections are normal.\033[0m");
+    }
+    else
+    {
+        for (int i = 0; i < static_cast<int>(Motors.size()) - num; i++)
         {
-            for (canboard &cb : CANboards)
+            RCLCPP_ERROR(node_->get_logger(),
+                         "CANboard(%d) CANport(%d) id(%d) — motor disconnected!",
+                         board[i], port[i], id[i]);
+        }
+        std::this_thread::sleep_for(std::chrono::seconds(3));
+    }
+    motor_version_detection();
+}
+
+
+void robot::chevk_motor_connection_position()
+{
+    int t = 0;
+    int num = 0;
+    std::vector<int> board;
+    std::vector<int> port;
+    std::vector<int> id;
+
+    const int max_delay_ms = 2000;
+
+    RCLCPP_INFO(node_->get_logger(), "Detecting motor connections...");
+    while (t++ < max_delay_ms)
+    {
+        send_get_motor_state_cmd();
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
+        num = 0;
+        board.clear();
+        port.clear();
+        id.clear();
+        for (motor *m : Motors)
+        {
+            if (m->get_current_motor_state()->position != 999.0f)
             {
-                cb.set_motor_runzero();
+                ++num;
             }
-            ros::Duration(0.01).sleep();
-        }
-        ros::Duration(4).sleep();
-    }
-
-
-    void robot::set_timeout(int16_t t_ms)
-    {
-        for (int i = 0; i < 5; i++)
-        {
-            for (canboard &cb : CANboards)
+            else
             {
-                cb.set_time_out(t_ms);
+                board.push_back(m->get_motor_belong_canboard());
+                port.push_back(m->get_motor_belong_canport());
+                id.push_back(m->get_motor_id());
             }
-            ros::Duration(0.01).sleep();
+        }
+
+        if (num == static_cast<int>(Motors.size()))
+        {
+            break;
+        }
+
+        if (t % 1000 == 0)
+        {
+            RCLCPP_INFO(node_->get_logger(), "Waiting for motor state...");
         }
     }
 
-    void robot::set_timeout(uint8_t portx, int16_t t_ms)
+    if (num == static_cast<int>(Motors.size()))
     {
-        for (int i = 0; i < 5; i++)
-        {
-            CANboards[0].set_time_out(portx, t_ms);
-            ros::Duration(0.01).sleep();
-        }
+        RCLCPP_INFO(node_->get_logger(), "\033[1;32mAll motor connections are normal.\033[0m");
     }
-
-    void robot::canboard_bootloader()
+    else
     {
-        for (canboard &cb : CANboards)
+        for (int i = 0; i < static_cast<int>(Motors.size()) - num; i++)
         {
-            cb.canboard_bootloader();
+            RCLCPP_ERROR(node_->get_logger(),
+                         "CANboard(%d) CANport(%d) id(%d) — motor disconnected!",
+                         board[i], port[i], id[i]);
         }
-    }
-
-    void robot::canboard_fdcan_reset()
-    {
-        ROS_INFO("canboard fdcan reset");
-        for (canboard &cb : CANboards)
-        {
-            cb.canboard_fdcan_reset();
-        }
-        ros::Duration(0.01).sleep();
+        std::this_thread::sleep_for(std::chrono::seconds(3));
     }
 }
+
+
+void robot::set_stop()
+{
+    for (canboard &cb : CANboards)
+    {
+        cb.set_stop();
+    }
+    motor_send_2();
+}
+
+
+void robot::set_reset()
+{
+    for (canboard &cb : CANboards)
+    {
+        cb.set_reset();
+    }
+}
+
+
+void robot::set_reset_zero()
+{
+    for (canboard &cb : CANboards)
+    {
+        cb.set_reset_zero();
+    }
+}
+
+
+void robot::set_reset_zero(std::initializer_list<int> motors)
+{
+    for (auto const &motor_idx : motors)
+    {
+        const int board_id = Motors[motor_idx]->get_motor_belong_canboard() - 1;
+        const int port_id  = Motors[motor_idx]->get_motor_belong_canport() - 1;
+        const int motor_id = Motors[motor_idx]->get_motor_id();
+        RCLCPP_INFO(node_->get_logger(), "Motor index=%d board=%d port=%d id=%d",
+                    motor_idx, board_id, port_id, motor_id);
+
+        if (CANPorts[port_id]->set_conf_load(motor_id) != 0)
+        {
+            RCLCPP_ERROR(node_->get_logger(), "Motor %d settings restoration failed.", motor_idx);
+            return;
+        }
+
+        RCLCPP_INFO(node_->get_logger(),
+                    "Motor %d settings restored. Initiating zero position reset.", motor_idx);
+        if (CANPorts[port_id]->set_reset_zero(motor_id) == 0)
+        {
+            RCLCPP_INFO(node_->get_logger(),
+                        "Motor %d zero position reset successfully.", motor_idx);
+            if (CANPorts[port_id]->set_conf_write(motor_id) == 0)
+            {
+                RCLCPP_INFO(node_->get_logger(), "Motor %d settings saved.", motor_idx);
+            }
+            else
+            {
+                RCLCPP_ERROR(node_->get_logger(), "Motor %d settings save failed.", motor_idx);
+            }
+        }
+        else
+        {
+            RCLCPP_ERROR(node_->get_logger(),
+                         "Motor %d zero position reset failed.", motor_idx);
+        }
+    }
+}
+
+
+void robot::set_motor_runzero()
+{
+    for (int i = 0; i < 5; i++)
+    {
+        for (canboard &cb : CANboards)
+        {
+            cb.set_motor_runzero();
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+    std::this_thread::sleep_for(std::chrono::seconds(4));
+}
+
+
+void robot::set_timeout(int16_t t_ms)
+{
+    for (int i = 0; i < 5; i++)
+    {
+        for (canboard &cb : CANboards)
+        {
+            cb.set_time_out(t_ms);
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+}
+
+
+void robot::set_timeout(uint8_t portx, int16_t t_ms)
+{
+    for (int i = 0; i < 5; i++)
+    {
+        CANboards[0].set_time_out(portx, t_ms);
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+}
+
+
+void robot::canboard_bootloader()
+{
+    for (canboard &cb : CANboards)
+    {
+        cb.canboard_bootloader();
+    }
+}
+
+
+void robot::canboard_fdcan_reset()
+{
+    RCLCPP_INFO(node_->get_logger(), "CAN board FDCAN reset.");
+    for (canboard &cb : CANboards)
+    {
+        cb.canboard_fdcan_reset();
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+}
+
+}  // namespace livelybot_serial

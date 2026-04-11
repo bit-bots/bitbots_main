@@ -1,19 +1,22 @@
 #include "canboard.h"
+#include <thread>
+#include <chrono>
 
 
-canboard::canboard(int _CANboard_ID, std::vector<lively_serial *> *ser)
+canboard::canboard(int _CANboard_ID, std::vector<lively_serial *> *ser, rclcpp::Node::SharedPtr node)
+    : node_(node)
 {
-    if (n.getParam("robot/CANboard/No_" + std::to_string(_CANboard_ID) + "_CANboard/CANport_num", CANport_num))
+    const std::string board_base = "robot.CANboard.No_" + std::to_string(_CANboard_ID) + "_CANboard";
+
+    if (!node_->get_parameter(board_base + ".CANport_num", CANport_num))
     {
-        // ROS_INFO("Got params CANport_num: %d",CANport_num);
+        RCLCPP_ERROR(node_->get_logger(), "Failed to get params CANport_num");
     }
-    else
+
+    for (size_t j = 1; j <= CANport_num; j++)  // one serial port per CAN port
     {
-        ROS_ERROR("Faile to get params CANport_num");
-    }
-    for (size_t j = 1; j <= CANport_num; j++) // 一个串口对应一个CANport
-    {
-        CANport.push_back(new canport(j, _CANboard_ID, (*ser)[(_CANboard_ID - 1) * CANport_num + j - 1]));
+        CANport.push_back(new canport(j, _CANboard_ID,
+                                     (*ser)[(_CANboard_ID - 1) * CANport_num + j - 1], node_));
     }
 }
 
@@ -131,18 +134,18 @@ void canboard::set_reset_zero()
         {
             c->set_reset();
             c->motor_send_2();
-            ros::Duration(0.1).sleep();
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
-        ros::Duration(1).sleep();
+        std::this_thread::sleep_for(std::chrono::seconds(1));
         if (c->set_reset_zero() == 0)
         {
             c->set_conf_write();
         }
         c->set_reset();
         c->motor_send_2();
-        ros::Duration(1).sleep();
+        std::this_thread::sleep_for(std::chrono::seconds(1));
         c->motor_send_2();
-        ros::Duration(1).sleep();
+        std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 }
 

@@ -1,28 +1,29 @@
-#include <ros/ros.h>
-#include <ros/assert.h>
+#include <rclcpp/rclcpp.hpp>
+#include <yesense_imu/yesense_parameters.hpp>
 #include <serial/serial.h>
-#include <boost/circular_buffer.hpp>
-#include <boost/thread.hpp>
-#include <boost/thread/mutex.hpp>
+#include <deque>
+#include <mutex>
+#include <thread>
+#include <memory>
 
-#include <std_msgs/Int8.h>
-#include <std_msgs/UInt8.h>
-#include <std_msgs/UInt32.h>
-#include <std_msgs/Empty.h>
-#include <std_msgs/String.h>
+#include <std_msgs/msg/int8.hpp>
+#include <std_msgs/msg/u_int8.hpp>
+#include <std_msgs/msg/u_int32.hpp>
+#include <std_msgs/msg/empty.hpp>
+#include <std_msgs/msg/string.hpp>
 
-#include <sensor_msgs/Imu.h>
-#include <geometry_msgs/PoseStamped.h>
-#include <tf/transform_broadcaster.h>
-#include <tf/transform_datatypes.h>
-#include <visualization_msgs/Marker.h>
-#include <nav_msgs/Path.h>
+#include <sensor_msgs/msg/imu.hpp>
+#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <tf2_ros/transform_broadcaster.h>
+#include <visualization_msgs/msg/marker.hpp>
+#include <nav_msgs/msg/path.hpp>
 
-// #include "yesense_imu/YesenseIMUSetting.h"
-#include "yesense_imu/YesenseImuAllData.h"
-#include "yesense_imu/YesenseImuStatus.h"
-#include "yesense_imu/YesenseImuSensorData.h"
-#include "yesense_imu/YesenseImuCmdResp.h"
+#include "yesense_imu/msg/yesense_imu_all_data.hpp"
+#include "yesense_imu/msg/yesense_imu_status.hpp"
+#include "yesense_imu/msg/yesense_imu_sensor_data.hpp"
+#include "yesense_imu/msg/yesense_imu_cmd_resp.hpp"
+#include "yesense_imu/msg/yesense_imu_gnss_data.hpp"
+#include "yesense_imu/msg/yesense_imu_gps_data.hpp"
 
 #include "analysis_data.h"
 #include <iostream>
@@ -36,14 +37,14 @@ namespace yesense{
 
 //IMU Data protocal
 /*--------------------------------------------------------------------------------------------------------------
-* 输出协议为：header1(0x59) + header2(0x53) + tid(2B) + payload_len(1B) + payload_data(Nbytes) + ck1(1B) + ck2(1B)
-* crc校验从TID开始到payload data的最后一个字节
+* Output protocol: header1(0x59) + header2(0x53) + tid(2B) + payload_len(1B) + payload_data(Nbytes) + ck1(1B) + ck2(1B)
+* CRC check starts from TID through the last byte of payload data
 */
 const uint8_t MODE_HEADER1            = 0;
 const uint8_t MODE_HEADER2            = 1;
 const uint8_t MODE_TID_L              = 2;
 const uint8_t MODE_TID_H              = 3;
-const uint8_t MODE_LENGTH             = 4;    
+const uint8_t MODE_LENGTH             = 4;
 const uint8_t MODE_MESSAGE            = 5;
 const uint8_t MODE_CHECKSUM_L         = 6;    // checksum for msg and topic id
 const uint8_t MODE_CHECKSUM_H         = 7;    // checksum for msg and topic id
@@ -53,8 +54,8 @@ const uint8_t MODE_GPS_RAW            = 10;
 
 //IMU Param protocal
 /*--------------------------------------------------------------------------------------------------------------
-* 输入协议为：header1(0x59) + header2(0x53) + class(1B) + id(3-bit) + len(13-bit) + message(Nbytes) + ck1(1B) + ck2(1B)
-* crc校验从class开始到message的最后一个字节
+* Input protocol: header1(0x59) + header2(0x53) + class(1B) + id(3-bit) + len(13-bit) + message(Nbytes) + ck1(1B) + ck2(1B)
+* CRC check starts from class through the last byte of message
 */
 const uint8_t    PORDUCTION_INFO   = 0x00;
 const uint8_t    RESET_ALL_PARAM   = 0x01;
@@ -76,7 +77,7 @@ typedef enum _Id{
 
 class YesenseDriver{
 public:
-    YesenseDriver(ros::NodeHandle& nh, ros::NodeHandle& nh_private);
+    explicit YesenseDriver(rclcpp::Node::SharedPtr node);
     ~YesenseDriver();
 
     void run();
@@ -87,90 +88,90 @@ protected:
     void initSerial();
     void _spin();
     void spin();
-    
-    void update_position_by_gps(const protocol_info_t &imu_data, geometry_msgs::PoseStamped &pose);
 
-    // 产品信息相关0x00
-    void onProductionInformationQuery(const std_msgs::Int8::ConstPtr& msg);
-    
-    //复位所有参数
-    void onResetAllParam(const std_msgs::UInt8::ConstPtr& msg);
+    void update_position_by_gps(const protocol_info_t &imu_data, geometry_msgs::msg::PoseStamped &pose);
 
-    // 波特率相关 0x02
-    void onBaudrateQuery(const std_msgs::Empty::ConstPtr& msg);
-    void onBaudrateSetting(const std_msgs::UInt8::ConstPtr& msg);
+    // product information queries 0x00
+    void onProductionInformationQuery(std_msgs::msg::Int8::SharedPtr msg);
 
-    // 频率相关 0x03
-    void onFrequencyQuery(const std_msgs::Empty::ConstPtr& msg);
-    void onFrequencySetting(const std_msgs::UInt8::ConstPtr& msg);
+    // reset all parameters
+    void onResetAllParam(std_msgs::msg::UInt8::SharedPtr msg);
 
-    // 输出内容相关 0x04
-    void onOutputContentQuery(const std_msgs::Empty::ConstPtr& msg);
-    void onOutputContentSetting(const std_msgs::UInt8::ConstPtr& msg);
+    // baud rate 0x02
+    void onBaudrateQuery(std_msgs::msg::Empty::SharedPtr msg);
+    void onBaudrateSetting(std_msgs::msg::UInt8::SharedPtr msg);
 
-    // 标准参数设置相关0x05
-    void onStandardParamQuery(const std_msgs::UInt8::ConstPtr& msg);
-    void onStandardParamSetting(const std_msgs::UInt8::ConstPtr& msg);
-    
-    // 模式设置相关0x4D
-    void onModeSettingQuery(const std_msgs::UInt8::ConstPtr& msg);
-    void onModeSettingSetting(const std_msgs::UInt8::ConstPtr& msg);
+    // output frequency 0x03
+    void onFrequencyQuery(std_msgs::msg::Empty::SharedPtr msg);
+    void onFrequencySetting(std_msgs::msg::UInt8::SharedPtr msg);
 
-    // NMEA输出设置相关
-    void onNmeaQuery(const std_msgs::Empty::ConstPtr& msg);
-    void onNmeaSetting(const std_msgs::UInt8::ConstPtr& msg);
+    // output content 0x04
+    void onOutputContentQuery(std_msgs::msg::Empty::SharedPtr msg);
+    void onOutputContentSetting(std_msgs::msg::UInt8::SharedPtr msg);
 
-    //void onExecYesenseCmd(const std_msgs::String::ConstPtr& msg);
+    // standard parameter settings 0x05
+    void onStandardParamQuery(std_msgs::msg::UInt8::SharedPtr msg);
+    void onStandardParamSetting(std_msgs::msg::UInt8::SharedPtr msg);
 
-    void on_gyro_bias_estimate(const std_msgs::String::ConstPtr& msg);
+    // mode settings 0x4D
+    void onModeSettingQuery(std_msgs::msg::UInt8::SharedPtr msg);
+    void onModeSettingSetting(std_msgs::msg::UInt8::SharedPtr msg);
+
+    // NMEA output settings
+    void onNmeaQuery(std_msgs::msg::Empty::SharedPtr msg);
+    void onNmeaSetting(std_msgs::msg::UInt8::SharedPtr msg);
+
+    void on_gyro_bias_estimate(std_msgs::msg::String::SharedPtr msg);
 
     int serial_pid_vid(const char *name);
 
 private:
-    std::string port_;                      //串口端口
-	int baudrate_;                          //波特率
-    serial::Serial serial_;                 //串口实例
-    ros::NodeHandle nh_,nh_private_;
+    serial::Serial serial_;                 // serial port instance
+    rclcpp::Node::SharedPtr node_;
 
-    ros::Subscriber sub_product_info_;
-    ros::Subscriber sub_reset_param_;
-    ros::Subscriber sub_baudrate_request_, sub_baudrate_setting_;
-    ros::Subscriber sub_frequency_request_, sub_frequency_setting_;
-    ros::Subscriber sub_output_content_request_, sub_output_content_setting_;
-    ros::Subscriber sub_standard_request_, sub_standard_setting_;
-    ros::Subscriber sub_mode_request_, sub_mode_setting_;
-    ros::Subscriber sub_nmea_request_, sub_nmea_setting_;
-    //ros::Subscriber sub_cmd_exec_;
+    rclcpp::Subscription<std_msgs::msg::Int8>::SharedPtr sub_product_info_;
+    rclcpp::Subscription<std_msgs::msg::UInt8>::SharedPtr sub_reset_param_;
+    rclcpp::Subscription<std_msgs::msg::Empty>::SharedPtr sub_baudrate_request_;
+    rclcpp::Subscription<std_msgs::msg::UInt8>::SharedPtr sub_baudrate_setting_;
+    rclcpp::Subscription<std_msgs::msg::Empty>::SharedPtr sub_frequency_request_;
+    rclcpp::Subscription<std_msgs::msg::UInt8>::SharedPtr sub_frequency_setting_;
+    rclcpp::Subscription<std_msgs::msg::Empty>::SharedPtr sub_output_content_request_;
+    rclcpp::Subscription<std_msgs::msg::UInt8>::SharedPtr sub_output_content_setting_;
+    rclcpp::Subscription<std_msgs::msg::UInt8>::SharedPtr sub_standard_request_;
+    rclcpp::Subscription<std_msgs::msg::UInt8>::SharedPtr sub_standard_setting_;
+    rclcpp::Subscription<std_msgs::msg::UInt8>::SharedPtr sub_mode_request_;
+    rclcpp::Subscription<std_msgs::msg::UInt8>::SharedPtr sub_mode_setting_;
+    rclcpp::Subscription<std_msgs::msg::Empty>::SharedPtr sub_nmea_request_;
+    rclcpp::Subscription<std_msgs::msg::UInt8>::SharedPtr sub_nmea_setting_;
+    rclcpp::Subscription<std_msgs::msg::String>::SharedPtr sub_gyro_bias_estimate_;
 
-    ros::Subscriber sub_gyro_bias_estimate_;
+    rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr imu_pub_;
+    rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr imu_pose_pub_;
+    rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr imu_marker_pub_;
+    rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr imu_path_pub_;
+    rclcpp::Publisher<yesense_imu::msg::YesenseImuAllData>::SharedPtr imu_data_pub_;
+    rclcpp::Publisher<yesense_imu::msg::YesenseImuAllData>::SharedPtr imu_all_data_pub_;
+    rclcpp::Publisher<yesense_imu::msg::YesenseImuGpsData>::SharedPtr imu_gps_data_pub_;
+    rclcpp::Publisher<yesense_imu::msg::YesenseImuGnssData>::SharedPtr imu_gnss_data_pub_;
+    rclcpp::Publisher<yesense_imu::msg::YesenseImuStatus>::SharedPtr imu_status_pub_;
+    rclcpp::Publisher<yesense_imu::msg::YesenseImuSensorData>::SharedPtr imu_sensor_data_pub_;
+    rclcpp::Publisher<yesense_imu::msg::YesenseImuCmdResp>::SharedPtr pub_cmd_exec_resp_;
 
-    ros::Publisher imu_pub_, imu_pose_pub_, imu_marker_pub_, imu_path_pub_;
-    ros::Publisher imu_data_pub_, imu_all_data_pub_,
-        imu_gps_data_pub_, imu_gnss_data_pub_,
-        imu_status_pub_, imu_sensor_data_pub_;
-    ros::Publisher pub_cmd_exec_resp_;
-
-    sensor_msgs::Imu g_imu_;
-    std::string tf_parent_frame_id_;
-	std::string tf_frame_id_;
-	std::string frame_id_;
-	double time_offset_in_seconds_;
-	bool broadcast_tf_;
-	double linear_acceleration_stddev_;
-	double angular_velocity_stddev_;
-	double orientation_stddev_;
+    sensor_msgs::msg::Imu g_imu_;
+    yesense_imu::Params params_;
+    std::shared_ptr<yesense_imu::ParamListener> param_listener_;
 
 
-    // RingBuffer环形存储区，用于存储从串口中读出的数据
+    // Ring-buffer for storing data read from the serial port
     std::string data_;
-    boost::mutex m_mutex_;  
+    std::mutex m_mutex_;
     const int buffer_size_;
-    boost::shared_ptr<boost::circular_buffer<char> > data_buffer_ptr_;
+    std::unique_ptr<std::deque<char>> data_buffer_ptr_;
 
-    //检校码
+    // checksum bytes
     uint8_t ck1_;
     uint8_t ck2_;
-    
+
     //State machine variables for spinOnce
     int mode_;
     int bytes_;
@@ -189,8 +190,8 @@ private:
     uint32_t gps_buf_index;
     std::map<uint32_t, std::string> gsp_raw;
 
-    //查询参数返回值相关
-    boost::mutex m_response_mutex_;  
+    // variables related to parameter query responses
+    std::mutex m_response_mutex_;
     bool wait_response_flag_;
     bool check_respose_flag_;
     int error_respose_cnt_;
@@ -202,8 +203,8 @@ private:
     std::string param_prev_topic_id_;
     std::string param_prev_topic_cmd_;
 
-    //数据处理线程
-    boost::thread deseralize_thread_;
+    // data processing thread
+    std::thread deseralize_thread_;
 };
 
 }

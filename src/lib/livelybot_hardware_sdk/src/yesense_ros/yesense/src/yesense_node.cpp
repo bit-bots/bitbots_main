@@ -1,12 +1,12 @@
+#include <rclcpp/rclcpp.hpp>
 #include "yesense_driver.h"
 
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
-    ros::init(argc,argv,"yesense_imu");
-    ros::NodeHandle nh, nh_private("~");
-
-    yesense::YesenseDriver yesense_dirver(nh,nh_private);
-    yesense_dirver.run();
-
+    rclcpp::init(argc, argv);
+    auto node = std::make_shared<rclcpp::Node>("yesense_imu");
+    yesense::YesenseDriver driver(node);
+    driver.run();
+    rclcpp::shutdown();
     return 0;
 }

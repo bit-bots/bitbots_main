@@ -1,67 +1,35 @@
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 3.8)
 project(livelybot_bringup)
 
-# add_definitions(-DDEBUG)
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra)
+endif()
 
-find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  sensor_msgs
-  std_msgs
-  serial  
-  livelybot_msg  
-  livelybot_serial
+find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(livelybot_serial REQUIRED)
+
+set(TOOL_NODES
+  canboard_update
+  motor_feedback
+  motor_move_zero
+  motor_rerun
+  motor_set_zero
+  motor_timeout
 )
 
-catkin_package(
-  CATKIN_DEPENDS roscpp sensor_msgs std_msgs
-  # DEPENDS system_lib
-)
-
-include_directories(
-  ${catkin_INCLUDE_DIRS}
-)
-
-add_executable(canboard_update src/canboard_update.cpp)
-target_link_libraries(canboard_update ${catkin_LIBRARIES} ${SERIALPORT_LIBRARY})
-
-add_executable(motor_feedback src/motor_feedback.cpp)
-target_link_libraries(motor_feedback ${catkin_LIBRARIES} ${SERIALPORT_LIBRARY})
-
-add_executable(motor_rerun src/motor_rerun.cpp)
-target_link_libraries(motor_rerun ${catkin_LIBRARIES} ${SERIALPORT_LIBRARY})
-
-add_executable(motor_move_zero src/motor_move_zero.cpp)
-target_link_libraries(motor_move_zero ${catkin_LIBRARIES} ${SERIALPORT_LIBRARY})
-
-add_executable(motor_set_zero src/motor_set_zero.cpp)
-target_link_libraries(motor_set_zero ${catkin_LIBRARIES} ${SERIALPORT_LIBRARY})
-
-add_executable(motor_timeout src/motor_timeout.cpp)
-target_link_libraries(motor_timeout ${catkin_LIBRARIES} ${SERIALPORT_LIBRARY})
-
-install(TARGETS canboard_update
-   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
-install(TARGETS motor_feedback
-   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
-install(TARGETS motor_move_zero
-   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
-install(TARGETS motor_rerun
-   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
-install(TARGETS motor_set_zero
-   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
-install(TARGETS motor_timeout
-   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
+foreach(target ${TOOL_NODES})
+  add_executable(${target} src/${target}.cpp)
+  ament_target_dependencies(${target} rclcpp sensor_msgs std_msgs livelybot_serial)
+  install(TARGETS ${target}
+    RUNTIME DESTINATION lib/${PROJECT_NAME}
+  )
+endforeach()
 
 install(DIRECTORY launch/
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+  DESTINATION share/${PROJECT_NAME}/launch
 )
- 
-install(DIRECTORY script/
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/script
-)
+
+ament_package()

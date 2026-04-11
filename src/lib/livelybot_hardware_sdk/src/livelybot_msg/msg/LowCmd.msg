@@ -1,1 +1,1 @@
-MotorCmd[10] motorCmd
+MotorCmd[10] motor_cmd

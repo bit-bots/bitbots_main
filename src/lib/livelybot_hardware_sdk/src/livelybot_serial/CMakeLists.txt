@@ -1,75 +1,74 @@
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 3.8)
 project(livelybot_serial)
 
-
-# add_definitions(-DDEBUG)
-
-# Find catkin
-find_package(catkin REQUIRED COMPONENTS
-    roscpp
-    std_msgs
-    livelybot_msg  
-    serial
-    dynamic_reconfigure
-)
-
-set(rt_LIBRARIES rt)
-set(pthread_LIBRARIES pthread)
-set(serial_SRCS
-    src/lively_serial.cc
-    src/hardware/motor.cc
-    src/hardware/canport.cc
-    src/hardware/canboard.cc
-    src/hardware/robot.cc
-    src/crc/crc8.cc
-    src/crc/crc16.cc
-)
-
-
-generate_dynamic_reconfigure_options(
-  cfg/robot_dynamic_config_20.cfg
-)
-
-catkin_package(
-    LIBRARIES ${PROJECT_NAME}
-    INCLUDE_DIRS include include/crc include/hardware
-    DEPENDS rt pthread
-    CATKIN_DEPENDS roscpp std_msgs livelybot_msg serial dynamic_reconfigure
-)
-find_library(SERIALPORT_LIBRARY serialport)
-if(NOT SERIALPORT_LIBRARY)
-  message(FATAL_ERROR "libserialport not found")
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra)
 endif()
 
-include_directories(
-  include
-  include/crc
-  include/hardware
-  ${catkin_INCLUDE_DIRS}
+find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(livelybot_msg REQUIRED)
+find_package(serial REQUIRED)
+
+set(serial_SRCS
+  src/lively_serial.cc
+  src/hardware/motor.cc
+  src/hardware/canport.cc
+  src/hardware/canboard.cc
+  src/hardware/robot.cc
+  src/crc/crc8.cc
+  src/crc/crc16.cc
 )
 
 add_library(livelybot_serial SHARED ${serial_SRCS})
-add_dependencies(livelybot_serial ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencfg)
-target_link_libraries(livelybot_serial ${catkin_LIBRARIES} rt pthread ${SERIALPORT_LIBRARY})
-
-link_directories(lib)
-
-install(DIRECTORY cfg/
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/cfg
+target_include_directories(livelybot_serial PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/hardware>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/crc>
+  $<INSTALL_INTERFACE:include>
 )
-install(TARGETS ${PROJECT_NAME}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+ament_target_dependencies(livelybot_serial
+  rclcpp
+  std_msgs
+  sensor_msgs
+  livelybot_msg
+  serial
+)
+target_link_libraries(livelybot_serial
+  rt
+  pthread
 )
 
-install(DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-  FILES_MATCHING PATTERN "*.h"
-  PATTERN ".svn" EXCLUDE
-)
-# 安装头文件到 install/include
-install(DIRECTORY include/ DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
+add_executable(robot_node src/robot_node.cpp)
+ament_target_dependencies(robot_node rclcpp sensor_msgs livelybot_msg)
+target_link_libraries(robot_node livelybot_serial)
 
-install(TARGETS ${PROJECT_NAME}
-        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+install(TARGETS livelybot_serial
+  EXPORT livelybot_serialTargets
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION lib/${PROJECT_NAME}
+)
+install(TARGETS robot_node
+  RUNTIME DESTINATION lib/${PROJECT_NAME}
+)
+install(DIRECTORY include/ DESTINATION include)
+
+if(BUILD_TESTING)
+  find_package(ament_cmake_gtest REQUIRED)
+
+  ament_add_gtest(test_crc test/test_crc.cpp)
+  target_link_libraries(test_crc livelybot_serial)
+
+  ament_add_gtest(test_motor_conversion test/test_motor_conversion.cpp)
+  # test_motor_conversion is fully self-contained (no ROS / hardware deps)
+endif()
+
+ament_export_targets(livelybot_serialTargets HAS_LIBRARY_TARGET)
+ament_export_include_directories(include)
+ament_export_libraries(livelybot_serial)
+ament_export_dependencies(rclcpp sensor_msgs livelybot_msg serial)
+
+ament_package()

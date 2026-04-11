@@ -183,7 +183,7 @@ typedef struct
 	float angle_y;
 	float angle_z;
 
-	float mag_x;			/*unit: 归一化值*/
+	float mag_x;			/*unit: normalized value*/
 	float mag_y;
 	float mag_z;
 

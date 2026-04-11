@@ -1,8 +1,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include "analysis_data.h"
-#include <ros/ros.h>
-
+#include <cstring>
 /*------------------------------------------------MARCOS define------------------------------------------------*/
 
 #define PROTOCOL_FIRST_BYTE			(unsigned char)0x59
@@ -33,8 +32,8 @@
 
 #define ACCEL_ID				(unsigned char)0x10
 #define ANGLE_ID				(unsigned char)0x20
-#define MAGNETIC_ID				(unsigned char)0x30     /*归一化值*/
-#define RAW_MAGNETIC_ID			(unsigned char)0x31     /*原始值*/
+#define MAGNETIC_ID				(unsigned char)0x30     /*normalized value*/
+#define RAW_MAGNETIC_ID			(unsigned char)0x31     /*raw value*/
 #define EULER_ID				(unsigned char)0x40
 #define QUATERNION_ID			(unsigned char)0x41
 #define UTC_ID					(unsigned char)0x50

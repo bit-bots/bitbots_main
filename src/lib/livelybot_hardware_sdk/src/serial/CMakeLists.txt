@@ -1,37 +1,40 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.8)
 project(serial)
 
-# Find catkin
-find_package(catkin REQUIRED)
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra)
+endif()
 
-# If Linux, add rt and pthread
-set(rt_LIBRARIES rt)
-set(pthread_LIBRARIES pthread)
-catkin_package(
-    LIBRARIES ${PROJECT_NAME}
-    INCLUDE_DIRS include
-    DEPENDS rt pthread
-)
-## Sources
+find_package(ament_cmake REQUIRED)
+
 set(serial_SRCS
-    src/serial.cc
-    include/serial/serial.h
-    include/serial/v8stdint.h
+  src/serial.cc
+  src/impl/unix.cc
+  src/impl/list_ports/list_ports_linux.cc
 )
-list(APPEND serial_SRCS src/impl/unix.cc)
-list(APPEND serial_SRCS src/impl/list_ports/list_ports_linux.cc)
-## Add serial library
-add_library(${PROJECT_NAME} ${serial_SRCS})
-target_link_libraries(${PROJECT_NAME} rt pthread)
-## Include headers
-include_directories(include)
-## Install executable
-install(TARGETS ${PROJECT_NAME}
-    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-    RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
-)
-## Install headers
-install(FILES include/serial/serial.h include/serial/v8stdint.h
-  DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}/serial)
 
+add_library(serial SHARED ${serial_SRCS})
+target_include_directories(serial PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+target_link_libraries(serial rt pthread)
+target_compile_features(serial PUBLIC cxx_std_14)
+
+install(TARGETS serial
+  EXPORT serialTargets
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+install(DIRECTORY include/ DESTINATION include)
+install(EXPORT serialTargets
+  FILE serialTargets.cmake
+  DESTINATION share/${PROJECT_NAME}/cmake
+)
+
+ament_export_targets(serialTargets HAS_LIBRARY_TARGET)
+ament_export_include_directories(include)
+ament_export_libraries(serial)
+
+ament_package()

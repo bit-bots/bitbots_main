@@ -1,23 +1,16 @@
-#include "ros/ros.h"
-#ifndef RELEASE
-#include "robot.h"
-#else
-#include "livelybot_serial/hardware/robot.h"
-#endif
-#include <iostream>
-#include <thread>
-#include <condition_variable>
-
+#include <rclcpp/rclcpp.hpp>
+#include "hardware/robot.h"
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "test_bootloader");
-    ros::NodeHandle n;
-    ros::Rate r(1);
-    livelybot_serial::robot rb;
+    rclcpp::init(argc, argv);
+    auto node = std::make_shared<rclcpp::Node>(
+        "canboard_update",
+        rclcpp::NodeOptions().automatically_declare_parameters_from_overrides(true));
 
-    ros::ok();
-    
+    livelybot_serial::robot rb(node);
     rb.canboard_bootloader();
-}
 
+    rclcpp::shutdown();
+    return 0;
+}

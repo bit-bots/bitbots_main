@@ -1,15 +1,13 @@
 <launch>
-  <include file='$(find livelybot_description)/launch/livelybot_description.launch' />
+  <include file="$(find-pkg-share livelybot_description)/launch/livelybot_description.launch"/>
 
-  <node pkg="yesense_imu" type="yesense_imu_node" name="yesense_imu_node"  output = "screen" >
-    <param name="yesense_port"      type="string" value="/dev/ttyS7"/>
-    <param name="yesense_baudrate"  type="int"    value="460800"/>
+  <node pkg="livelybot_power" exec="power_node" name="power_node" output="screen"/>
+
+  <node pkg="livelybot_bringup" exec="motor_feedback" name="motor_feedback" output="screen">
+    <param from="$(find-pkg-share livelybot_description)/robot_param/robot.yaml"/>
   </node>
 
-  <node pkg="livelybot_power" type="power_node" name="power_node" output="screen"/>
-
-  <node pkg="livelybot_bringup" type="motor_feedback" name="motor_feedback" output="screen"/>
-
-  <node pkg="livelybot_oled" type="livelybot_oled_node" name="livelybot_oled_node" output="screen"/>
-
+  <node pkg="livelybot_oled" exec="livelybot_oled_node" name="livelybot_oled_node" output="screen">
+    <param from="$(find-pkg-share livelybot_description)/robot_param/robot.yaml"/>
+  </node>
 </launch>

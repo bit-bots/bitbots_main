@@ -1,32 +1,47 @@
-#ifndef livelybot_logger_INTERFACE_H
-#define livelybot_logger_INTERFACE_H
+#ifndef LIVELYBOT_LOGGER_INTERFACE_H
+#define LIVELYBOT_LOGGER_INTERFACE_H
 
-#include <ros/ros.h>
-#include "livelybot_logger/LoggerOperation.h"
+#include <rclcpp/rclcpp.hpp>
+#include "livelybot_logger/msg/logger_operation.hpp"
 
 namespace livelybot_logger
 {
-    class LoggerInterface
-    {
-    private:
-        static ros::Publisher operation_pub_; // 静态成员声明
-        static std::string node_name_;
-        static bool initialized_;
 
-        // 私有化构造函数，防止外部实例化
-        LoggerInterface();
+/**
+ * Singleton utility class that lets any node publish a LoggerOperation message
+ * to the /logger/operation topic without owning the ROS 2 node directly.
+ *
+ * Usage:
+ *   LoggerInterface::init(node, "my_node");
+ *   LoggerInterface::logOperation("MODE_SWITCH", "entering walk");
+ */
+class LoggerInterface
+{
+private:
+    static rclcpp::Publisher<livelybot_logger::msg::LoggerOperation>::SharedPtr operation_pub_;
+    static std::string node_name_;
+    static bool initialized_;
+    static rclcpp::Node::SharedPtr node_;
 
-    public:
-        // 获取单例对象的接口
-        static LoggerInterface &getInstance();
+    LoggerInterface() = default;
 
-        // 初始化函数
-        static void init(ros::NodeHandle &nh, const std::string &node_name);
+public:
+    static LoggerInterface &getInstance();
 
-        // 日志记录函数
-        static void logOperation(const std::string &operation_type, const std::string &operation_data, const std::string &result = "success");
-    };
+    /** Must be called once before logOperation(). */
+    static void init(rclcpp::Node::SharedPtr node, const std::string &node_name);
 
-} // namespace livelybot_logger
+    /**
+     * Publish a LoggerOperation message.
+     * @param operation_type  Short category string, e.g. "MODE_SWITCH" or "ERROR".
+     * @param operation_data  Human-readable detail string.
+     * @param result          Outcome string, defaults to "success".
+     */
+    static void logOperation(const std::string &operation_type,
+                             const std::string &operation_data,
+                             const std::string &result = "success");
+};
 
-#endif // livelybot_logger_INTERFACE_H
+}  // namespace livelybot_logger
+
+#endif  // LIVELYBOT_LOGGER_INTERFACE_H

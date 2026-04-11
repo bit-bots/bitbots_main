@@ -1,112 +1,76 @@
 #include "motor.h"
+#include <chrono>
 
-
-motor::motor(int _motor_num, int _CANport_num, int _CANboard_num, cdc_tr_message_s *_p_cdc_tx_message, int _id_max)
-: CANport_num(_CANport_num), CANboard_num(_CANboard_num), p_cdc_tx_message(_p_cdc_tx_message), id_max(_id_max)
+motor::motor(int _motor_num, int _CANport_num, int _CANboard_num, cdc_tr_message_s *_p_cdc_tx_message, int _id_max,
+             rclcpp::Node::SharedPtr node)
+: CANport_num(_CANport_num), CANboard_num(_CANboard_num),
+  p_cdc_tx_message(_p_cdc_tx_message), id_max(_id_max), node_(node)
 {
-    if (n.getParam("robot/CANboard/No_" + std::to_string(_CANboard_num) + "_CANboard/CANport/CANport_" + std::to_string(_CANport_num) + "/motor/motor" + std::to_string(_motor_num) + "/name", motor_name))
-    {
-        // ROS_INFO("Got params name: %s",motor_name);
-    }
-    else
-    {
-        ROS_ERROR("Faile to get params name");
-    }
-    _motor_pub = n.advertise<livelybot_msg::MotorState>("/livelybot_real_real/" + motor_name + "_controller/state", 1);
+    const std::string base = "robot.CANboard.No_" + std::to_string(_CANboard_num) +
+                             "_CANboard.CANport.CANport_" + std::to_string(_CANport_num) +
+                             ".motor.motor" + std::to_string(_motor_num);
 
-    if (n.getParam("robot/CANboard/No_" + std::to_string(_CANboard_num) + "_CANboard/CANport/CANport_" + std::to_string(_CANport_num) + "/motor/motor" + std::to_string(_motor_num) + "/id", id))
-    {
-        // ROS_INFO("Got params id: %d",id);
+    if (!node_->get_parameter(base + ".name", motor_name)) {
+        RCLCPP_ERROR(node_->get_logger(), "Failed to get params name");
     }
-    else
-    {
-        ROS_ERROR("Faile to get params id");
+
+    motor_pub_ = node_->create_publisher<livelybot_msg::msg::MotorState>(
+        "/livelybot_real_real/" + motor_name + "_controller/state", 1);
+
+    if (!node_->get_parameter(base + ".id", id)) {
+        RCLCPP_ERROR(node_->get_logger(), "Failed to get params id");
     }
 
     std::string type_str;
-    if (n.getParam("robot/CANboard/No_" + std::to_string(_CANboard_num) + "_CANboard/CANport/CANport_" + std::to_string(_CANport_num) + "/motor/motor" + std::to_string(_motor_num) + "/type", type_str))
-    {
-        try 
-        {
-            ROS_INFO("Got params type: %s", type_str.c_str());
+    if (!node_->get_parameter(base + ".type", type_str)) {
+        RCLCPP_ERROR(node_->get_logger(), "Failed to get params type");
+    } else {
+        try {
+            RCLCPP_INFO(node_->get_logger(), "Got params type: %s", type_str.c_str());
             type = motor_type2.at(type_str);
-        } 
-        catch (const std::out_of_range& e) 
-        {
-            ROS_ERROR("Motor model error: %s", type_str.c_str());
-            exit(-2); 
+        } catch (const std::out_of_range &) {
+            RCLCPP_ERROR(node_->get_logger(), "Motor model error: %s", type_str.c_str());
+            exit(-2);
         }
     }
-    else
-    {
-        ROS_ERROR("Faile to get params type");
+
+    if (!node_->get_parameter(base + ".num", num)) {
+        RCLCPP_ERROR(node_->get_logger(), "Failed to get params num");
     }
-    if (n.getParam("robot/CANboard/No_" + std::to_string(_CANboard_num) + "_CANboard/CANport/CANport_" + std::to_string(_CANport_num) + "/motor/motor" + std::to_string(_motor_num) + "/num", num))
-    {
-        // ROS_INFO("Got params num: %d",num);
+
+    // Position limits
+    if (!node_->get_parameter(base + ".pos_limit_enable", pos_limit_enable)) {
+        RCLCPP_ERROR(node_->get_logger(), "Failed to get params pos_limit_enable");
     }
-    else
-    {
-        ROS_ERROR("Faile to get params num");
+    double tmp = 0.0;
+    if (!node_->get_parameter(base + ".pos_upper", tmp)) {
+        RCLCPP_ERROR(node_->get_logger(), "Failed to get params pos_upper");
     }
-    // position limit
-    if (n.getParam("robot/CANboard/No_" + std::to_string(_CANboard_num) + "_CANboard/CANport/CANport_" + std::to_string(_CANport_num) + "/motor/motor" + std::to_string(_motor_num) + "/pos_limit_enable", pos_limit_enable))
-    {
-        // ROS_INFO("Got params pos_limit_enable: %s",pos_limit_enable?"true":"false");
+    pos_upper = static_cast<float>(tmp);
+    tmp = 0.0;
+    if (!node_->get_parameter(base + ".pos_lower", tmp)) {
+        RCLCPP_ERROR(node_->get_logger(), "Failed to get params pos_lower");
     }
-    else
-    {
-        ROS_ERROR("Faile to get params pos_upper");
+    pos_lower = static_cast<float>(tmp);
+
+    // Torque limits
+    if (!node_->get_parameter(base + ".tor_limit_enable", tor_limit_enable)) {
+        RCLCPP_ERROR(node_->get_logger(), "Failed to get params tor_limit_enable");
     }
-    if (n.getParam("robot/CANboard/No_" + std::to_string(_CANboard_num) + "_CANboard/CANport/CANport_" + std::to_string(_CANport_num) + "/motor/motor" + std::to_string(_motor_num) + "/pos_upper", pos_upper))
-    {
-        // ROS_INFO("Got params pos_upper: %f",pos_upper);
+    if (!node_->get_parameter(base + ".tor_upper", tmp)) {
+        RCLCPP_ERROR(node_->get_logger(), "Failed to get params tor_upper");
     }
-    else
-    {
-        ROS_ERROR("Faile to get params pos_upper");
+    tor_upper = static_cast<float>(tmp);
+    tmp = 0.0;
+    if (!node_->get_parameter(base + ".tor_lower", tmp)) {
+        RCLCPP_ERROR(node_->get_logger(), "Failed to get params tor_lower");
     }
-    if (n.getParam("robot/CANboard/No_" + std::to_string(_CANboard_num) + "_CANboard/CANport/CANport_" + std::to_string(_CANport_num) + "/motor/motor" + std::to_string(_motor_num) + "/pos_lower", pos_lower))
-    {
-        // ROS_INFO("Got params pos_lower: %f",pos_lower);
+    tor_lower = static_cast<float>(tmp);
+
+    if (!node_->get_parameter("robot.control_type", control_type)) {
+        RCLCPP_ERROR(node_->get_logger(), "Failed to get params control_type");
     }
-    else
-    {
-        ROS_ERROR("Faile to get params pos_lower");
-    }
-    // torque limit
-    if (n.getParam("robot/CANboard/No_" + std::to_string(_CANboard_num) + "_CANboard/CANport/CANport_" + std::to_string(_CANport_num) + "/motor/motor" + std::to_string(_motor_num) + "/tor_limit_enable", tor_limit_enable))
-    {
-        // ROS_INFO("Got params tor_limit_enable: %s",tor_limit_enable?"true":"false");
-    }
-    else
-    {
-        ROS_ERROR("Faile to get params tor_upper");
-    }
-    if (n.getParam("robot/CANboard/No_" + std::to_string(_CANboard_num) + "_CANboard/CANport/CANport_" + std::to_string(_CANport_num) + "/motor/motor" + std::to_string(_motor_num) + "/tor_upper", tor_upper))
-    {
-        // ROS_INFO("Got params tor_upper: %f",tor_upper);
-    }
-    else
-    {
-        ROS_ERROR("Faile to get params tor_upper");
-    }
-    if (n.getParam("robot/CANboard/No_" + std::to_string(_CANboard_num) + "_CANboard/CANport/CANport_" + std::to_string(_CANport_num) + "/motor/motor" + std::to_string(_motor_num) + "/tor_lower", tor_lower))
-    {
-        // ROS_INFO("Got params tor_lower: %f",tor_lower);
-    }
-    else
-    {
-        ROS_ERROR("Faile to get params tor_lower");
-    }
-    if (n.getParam("robot/control_type", control_type))
-    {
-        // ROS_INFO("Got params ontrol_type: %f",SDK_version);
-    }
-    else
-    {
-        ROS_ERROR("Faile to get params control_type");
-    }
+
     set_motor_type(type);
     data.time = 0;
     data.ID = id;
@@ -155,7 +119,7 @@ inline int16_t motor::tqe_float2int(float in_data, motor_type motor_type)
     switch (motor_type)
     {
     case motor_type::null:
-        ROS_ERROR("motor type not set,fresh command fault");
+        RCLCPP_ERROR(node_->get_logger(), "motor type not set, fresh command fault");
         return int16_t();
     case motor_type::m3536_32:
         return TQE_ADJUST(in_data, 0.004581, -0.105);
@@ -185,7 +149,7 @@ inline int16_t motor::tqe_float2int(float in_data, motor_type motor_type)
     case motor_type::mGeneral:
         return TQE_ADJUST(in_data, 0.005000, 0);
     default:
-        ROS_ERROR("Motor Type SettingMotor type setting error");
+        RCLCPP_ERROR(node_->get_logger(), "Motor type setting error");
         exit(-1);
         return int16_t();
     }
@@ -199,7 +163,7 @@ inline float motor::tqe_int2float(int16_t in_data, motor_type type)
     switch (type)
     {
     case motor_type::null:
-        ROS_ERROR("motor type not set,fresh command fault");
+        RCLCPP_ERROR(node_->get_logger(), "motor type not set, fresh command fault");
         return int16_t();
     case motor_type::m3536_32:
         return TQE_RESTORE(in_data, 0.004581, -0.105);
@@ -229,7 +193,7 @@ inline float motor::tqe_int2float(int16_t in_data, motor_type type)
     case motor_type::mGeneral:
         return TQE_RESTORE(in_data, 0.005000, 0);
     default:
-        ROS_ERROR("Motor Type SettingMotor type setting error");
+        RCLCPP_ERROR(node_->get_logger(), "Motor type setting error");
         exit(-1);
         return int16_t();
     }
@@ -243,7 +207,7 @@ inline float motor::pid_scale(float in_data, motor_type motor_type)
     switch (motor_type)
     {
     case motor_type::null:
-        ROS_ERROR("motor type not set,fresh command fault");
+        RCLCPP_ERROR(node_->get_logger(), "motor type not set, fresh command fault");
         return int16_t();
     case motor_type::m3536_32:
         return PID_SCALE(in_data, 0.004581);
@@ -273,7 +237,7 @@ inline float motor::pid_scale(float in_data, motor_type motor_type)
     case motor_type::mGeneral:
         return PID_SCALE(in_data, 0.5000);
     default:
-        ROS_ERROR("Motor Type SettingMotor type setting error");
+        RCLCPP_ERROR(node_->get_logger(), "Motor type setting error");
         exit(-1);
         return int16_t();
     }
@@ -285,12 +249,12 @@ inline int16_t motor::int16_limit(int32_t data)
 {
     if (data >= 32700)
     {
-        ROS_INFO("\033[1;32mPID output has reached the saturation limit.\033[0m");
+        RCLCPP_INFO(node_->get_logger(), "PID output has reached the saturation limit.");
         return (int16_t)32700;
     }
     else if (data <= -32700)
     {
-        ROS_INFO("\033[1;32mPID output has reached the saturation limit.\033[0m");
+        RCLCPP_INFO(node_->get_logger(), "PID output has reached the saturation limit.");
         return (int16_t)-32700;
     }
 
@@ -301,7 +265,7 @@ inline int16_t motor::int16_limit(int32_t data)
 inline int16_t motor::kp_float2int(float in_data, uint8_t type, motor_type motor_type)
 {
     in_data = pid_scale(in_data, motor_type);
-    
+
     int32_t tqe = 0;
     switch (type)
     {
@@ -325,7 +289,7 @@ inline int16_t motor::kp_float2int(float in_data, uint8_t type, motor_type motor
 inline int16_t motor::ki_float2int(float in_data, uint8_t type, motor_type motor_type)
 {
     in_data = pid_scale(in_data, motor_type);
-    
+
     int32_t tqe = 0;
     switch (type)
     {
@@ -349,7 +313,7 @@ inline int16_t motor::ki_float2int(float in_data, uint8_t type, motor_type motor
 inline int16_t motor::kd_float2int(float in_data, uint8_t type, motor_type motor_type)
 {
     in_data = pid_scale(in_data, motor_type);
-    
+
     int32_t tqe = 0;
     switch (type)
     {
@@ -424,10 +388,10 @@ void motor::fresh_cmd_int16(float position, float velocity, float torque, float 
         motor::pos_vel_MAXtqe(position, velocity, torque);
         break;
     case (7):
-        ROS_ERROR("This mode has beenThis mode is deprecated.");
+        RCLCPP_ERROR(node_->get_logger(), "This mode is deprecated.");
         exit(-1);
     case (8):
-        ROS_ERROR("This mode has beenThis mode is deprecated.");
+        RCLCPP_ERROR(node_->get_logger(), "This mode is deprecated.");
         exit(-1);
     case (9):
         motor::pos_vel_tqe_kp_kd(position, velocity, torque, kp, kd);
@@ -442,7 +406,7 @@ void motor::fresh_cmd_int16(float position, float velocity, float torque, float 
         motor::pos_vel_tqe_kp_kd2(position, velocity, torque, kp, kd);
         break;
     default:
-        ROS_ERROR("Incorrect setting of operation mode.");
+        RCLCPP_ERROR(node_->get_logger(), "Incorrect setting of operation mode.");
         exit(-3);
         break;
     }
@@ -601,7 +565,7 @@ void motor::pos_vel_tqe_kp_kd(float position, float velocity, float torque, floa
     p_cdc_tx_message->data.pos_val_tqe_rpd[MEM_INDEX_ID(id)].pos = pos_float2int(position, pos_vel_type);
     p_cdc_tx_message->data.pos_val_tqe_rpd[MEM_INDEX_ID(id)].val = vel_float2int(velocity, pos_vel_type);
     p_cdc_tx_message->data.pos_val_tqe_rpd[MEM_INDEX_ID(id)].tqe = tqe_float2int(torque, type_);
-    p_cdc_tx_message->data.pos_val_tqe_rpd[MEM_INDEX_ID(id)].rkp = kp_float2int(kp, pos_vel_type, type_); 
+    p_cdc_tx_message->data.pos_val_tqe_rpd[MEM_INDEX_ID(id)].rkp = kp_float2int(kp, pos_vel_type, type_);
     p_cdc_tx_message->data.pos_val_tqe_rpd[MEM_INDEX_ID(id)].rkd = kd_float2int(kd, pos_vel_type, type_);
 }
 
@@ -624,7 +588,7 @@ void motor::pos_vel_tqe_kp_kd2(float position, float velocity, float torque, flo
     p_cdc_tx_message->data.pos_val_tqe_rpd[MEM_INDEX_ID(id)].pos = pos_float2int(position, pos_vel_type);
     p_cdc_tx_message->data.pos_val_tqe_rpd[MEM_INDEX_ID(id)].val = vel_float2int(velocity, pos_vel_type);
     p_cdc_tx_message->data.pos_val_tqe_rpd[MEM_INDEX_ID(id)].tqe = tqe_float2int(torque, type_);
-    p_cdc_tx_message->data.pos_val_tqe_rpd[MEM_INDEX_ID(id)].rkp = kp_float2int(kp, pos_vel_type, type_); 
+    p_cdc_tx_message->data.pos_val_tqe_rpd[MEM_INDEX_ID(id)].rkp = kp_float2int(kp, pos_vel_type, type_);
     p_cdc_tx_message->data.pos_val_tqe_rpd[MEM_INDEX_ID(id)].rkd = kd_float2int(kd, pos_vel_type, type_);
 }
 
@@ -645,8 +609,8 @@ void motor::pos_vel_kp_kd(float position, float velocity, float kp, float kd)
     }
     p_cdc_tx_message->data.pos_val_rpd[MEM_INDEX_ID(id)].pos = pos_float2int(position, pos_vel_type);
     p_cdc_tx_message->data.pos_val_rpd[MEM_INDEX_ID(id)].val = vel_float2int(velocity, pos_vel_type);
-    p_cdc_tx_message->data.pos_val_rpd[MEM_INDEX_ID(id)].rkp = kp_float2int(kp, pos_vel_type, type_);  
-    p_cdc_tx_message->data.pos_val_rpd[MEM_INDEX_ID(id)].rkd = kd_float2int(kd, pos_vel_type, type_); 
+    p_cdc_tx_message->data.pos_val_rpd[MEM_INDEX_ID(id)].rkp = kp_float2int(kp, pos_vel_type, type_);
+    p_cdc_tx_message->data.pos_val_rpd[MEM_INDEX_ID(id)].rkd = kd_float2int(kd, pos_vel_type, type_);
 }
 
 
@@ -657,52 +621,44 @@ void motor::fresh_data(uint8_t mode, uint8_t fault, int16_t position, int16_t ve
     p_msg.pos = data.position = pos_int2float(position, pos_vel_type);
     p_msg.vel = data.velocity = vel_int2float(velocity, pos_vel_type);
     p_msg.tau = data.torque = tqe_int2float(torque, type_);
-    ros::Time now = ros::Time::now();
-    // 将时间转换为double类型
-    data.time = now.toSec();
-    if(pos_limit_enable)
+    data.time = std::chrono::duration<double>(
+        std::chrono::steady_clock::now().time_since_epoch()).count();
+
+    if (pos_limit_enable)
     {
-        // 判断是否超过电机限制角度
-        if(data.position > pos_upper)
+        if (data.position > pos_upper)
         {
-            ROS_ERROR("Motor %d exceed position upper limit.", id);
+            RCLCPP_ERROR(node_->get_logger(), "Motor %d exceeded position upper limit.", id);
             pos_limit_flag = 1;
         }
-        else if(data.position < pos_lower)
+        else if (data.position < pos_lower)
         {
-            ROS_ERROR("Motor %d exceed position lower limit.", id);
+            RCLCPP_ERROR(node_->get_logger(), "Motor %d exceeded position lower limit.", id);
             pos_limit_flag = -1;
         }
     }
-    
-    if(tor_limit_enable)
+
+    if (tor_limit_enable)
     {
-        // 判断是否超过电机扭矩限制
-        if(data.torque > tor_upper)
+        if (data.torque > tor_upper)
         {
-            ROS_ERROR("Motor %d exceed torque upper limit.", id);
+            RCLCPP_ERROR(node_->get_logger(), "Motor %d exceeded torque upper limit.", id);
             tor_limit_flag = 1;
         }
-        else if(data.torque < tor_lower)
+        else if (data.torque < tor_lower)
         {
-            ROS_ERROR("Motor %d exceed torque lower limit.", id);
+            RCLCPP_ERROR(node_->get_logger(), "Motor %d exceeded torque lower limit.", id);
             tor_limit_flag = -1;
         }
     }
-    
-    // std::cout << "test " << id << ": " << data.position << "  " << data.velocity << "  " << data.torque << std::endl;
-    _motor_pub.publish(p_msg);
+
+    motor_pub_->publish(p_msg);
 }
 
 
-/***
- * @brief setting motor type
- * @param type correspond to  different motor type 0~null 1~5046 2~5047_36减速比 3~5047_9减速比
- */
 void motor::set_motor_type(size_t type)
 {
     type_ = static_cast<motor_type>(type);
-    // std::cout << "type_:" << type_ << std::endl;
 }
 
 
@@ -712,39 +668,39 @@ void motor::set_motor_type(motor_type type)
 }
 
 
-int motor::get_motor_id() 
-{ 
-    return id; 
+int motor::get_motor_id()
+{
+    return id;
 }
 
 
-int motor::get_motor_type() 
-{ 
-    return type; 
+int motor::get_motor_type()
+{
+    return type;
 }
 
 
 motor_type motor::get_motor_enum_type()
-{ 
-    return type_; 
+{
+    return type_;
 }
 
 
-int motor::get_motor_num() 
-{ 
-    return num; 
+int motor::get_motor_num()
+{
+    return num;
 }
 
 
-int motor::get_motor_belong_canport() 
-{ 
-    return CANport_num; 
+int motor::get_motor_belong_canport()
+{
+    return CANport_num;
 }
 
 
-int motor::get_motor_belong_canboard() 
-{ 
-    return CANboard_num; 
+int motor::get_motor_belong_canboard()
+{
+    return CANboard_num;
 }
 
 motor_pos_val_tqe_rpd_s* motor::return_pos_val_tqe_rpd_p()
@@ -774,8 +730,6 @@ void motor::set_version(cdc_rx_motor_version_s &v)
     version.major = v.major;
     version.minor = v.minor;
     version.patch = v.patch;
-
-    // ROS_INFO("ID: %d, version = %d.%d.%d", version.id, version.major, version.minor, version.patch);
 }
 
 
@@ -787,7 +741,8 @@ cdc_rx_motor_version_s& motor::get_version()
 
 void motor::print_version()
 {
-    ROS_INFO("ID: %d, version = %d.%d.%d", version.id, version.major, version.minor, version.patch);
+    RCLCPP_INFO(node_->get_logger(), "ID: %d, version = %d.%d.%d",
+                version.id, version.major, version.minor, version.patch);
 }
 
 

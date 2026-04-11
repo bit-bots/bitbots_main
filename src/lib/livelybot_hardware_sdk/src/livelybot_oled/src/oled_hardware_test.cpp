@@ -5,8 +5,8 @@
 
 int main(int argc, char** argv)
 {
-    Sensor_actuator_status status(7, 6, 5, 5); // 人形23关节
-    // Sensor_actuator_status status(6, 6, 0, 0); // 小派12关节
+    Sensor_actuator_status status(7, 6, 5, 5); // humanoid robot, 23 joints
+    // Sensor_actuator_status status(6, 6, 0, 0); // small-pi robot, 12 joints
     float imu[3] = {1.23f, 2.45f, 5.6f};
     uint8_t motor_status[23] = {1,1,0,0,1,1,0,1,0,1,0,1,1,1,0,0,1,1,0,1,0,1,0};
     uint32_t ip_addr[3] = {345735, 837438, 998877};

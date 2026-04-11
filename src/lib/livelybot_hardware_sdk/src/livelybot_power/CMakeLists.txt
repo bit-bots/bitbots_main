@@ -1,50 +1,40 @@
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 3.8)
 project(livelybot_power)
 
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra)
+endif()
 
-find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  std_msgs
-  sensor_msgs
-  message_generation
+find_package(ament_cmake REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(std_msgs REQUIRED)
+
+rosidl_generate_interfaces(${PROJECT_NAME}
+  "msg/PowerSwitch.msg"
+  "msg/PowerDetect.msg"
+  DEPENDENCIES std_msgs
 )
 
-add_message_files(
-  FILES
-  Power_switch.msg
-  Power_detect.msg
+# Pure SocketCAN driver library (no ROS dependency)
+add_library(livelybot_can_driver STATIC src/livelybot_can_driver.cpp)
+target_include_directories(livelybot_can_driver PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
 )
+target_link_libraries(livelybot_can_driver pthread)
 
-generate_messages(
-  DEPENDENCIES
-  std_msgs
+# Power board ROS 2 node
+add_executable(power_node src/power_node.cpp)
+ament_target_dependencies(power_node rclcpp std_msgs)
+rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} "rosidl_typesupport_cpp")
+target_link_libraries(power_node livelybot_can_driver "${cpp_typesupport_target}")
+target_include_directories(power_node PRIVATE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
-
-catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES livelybot_power
- CATKIN_DEPENDS roscpp std_msgs sensor_msgs message_runtime
-#  DEPENDS system_lib
-)
-
-include_directories(
-  include
-  ${catkin_INCLUDE_DIRS}
-)
-
-## Declare a C++ library
-add_library(livelybot_can_power STATIC src/livelybot_can_driver.cpp src/livelybot_power.cpp)
-add_dependencies(livelybot_can_power ${catkin_EXPORTED_TARGETS} livelybot_power_gencpp)
-target_link_libraries(livelybot_can_power pthread ${catkin_LIBRARIES})
-
-add_executable(power_node src/power_class.cpp)
-add_dependencies(power_node ${catkin_EXPORTED_TARGETS} livelybot_power_gencpp)
-target_link_libraries(power_node livelybot_can_power pthread ${catkin_LIBRARIES} )
 
 install(TARGETS power_node
-    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+  RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 
-install(TARGETS livelybot_can_power
-   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-)
+ament_package()

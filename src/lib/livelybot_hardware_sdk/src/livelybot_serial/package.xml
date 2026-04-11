@@ -1,43 +1,28 @@
 <?xml version="1.0"?>
-<package format="2">
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
   <name>livelybot_serial</name>
   <version>0.0.0</version>
-  <description>The serial package</description>
-  <maintainer email="hpx@todo.todo">hpx</maintainer>
-  <license>TODO</license>
-  <buildtool_depend>catkin</buildtool_depend>
+  <description>
+    Core hardware communication library for Livelybot robots.
+    Manages serial CAN-over-USB protocol, motor control, and joint state publishing.
+  </description>
+  <maintainer email="info@hightorque-robotics.com">HighTorque Robotics</maintainer>
+  <license>Apache-2.0</license>
 
-  <build_depend>control_msgs</build_depend>
-  <build_depend>actionlib</build_depend>
-  <build_depend>actionlib_msgs</build_depend>
-  <build_depend>moveit_ros_planning_interface</build_depend>
-  <build_depend>moveit_ros_move_group</build_depend>
-  <build_depend>moveit_fake_controller_manager</build_depend>
-  <build_depend>moveit_kinematics</build_depend>
-  <build_depend>moveit_planners_ompl</build_depend>
-  <build_depend>moveit_ros_visualization</build_depend>
-  <build_depend>moveit_setup_assistant</build_depend>
-  <build_depend>moveit_simple_controller_manager</build_depend>
-  <build_depend>joint_state_publisher</build_depend>
-  <build_depend>joint_state_publisher_gui</build_depend>
-  <build_depend>robot_state_publisher</build_depend>
-  <build_depend>roscpp</build_depend>
-  <build_depend>rospy</build_depend>
-  <build_depend>std_msgs</build_depend>
-  <build_export_depend>roscpp</build_export_depend>
-  <build_export_depend>rospy</build_export_depend>
-  <build_export_depend>std_msgs</build_export_depend>
-  <exec_depend>roscpp</exec_depend>
-  <exec_depend>rospy</exec_depend>
-  <exec_depend>std_msgs</exec_depend>
-  <exec_depend>control_msgs</exec_depend>
-  <exec_depend>actionlib</exec_depend>
-  <exec_depend>actionlib_msgs</exec_depend>
-  <exec_depend>joint_state_publisher</exec_depend>
-  <exec_depend>joint_state_publisher_gui</exec_depend>
-  <exec_depend>robot_state_publisher</exec_depend>
-  <depend>serial</depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>rclcpp</depend>
+  <depend>std_msgs</depend>
+  <depend>sensor_msgs</depend>
   <depend>livelybot_msg</depend>
-  <depend>dynamic_reconfigure</depend>
+  <depend>serial</depend>
 
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+  <test_depend>ament_cmake_gtest</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
 </package>
