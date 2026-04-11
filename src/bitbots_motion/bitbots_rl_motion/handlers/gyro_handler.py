@@ -1,4 +1,5 @@
 import numpy as np
+from sensor_msgs.msg import Imu
 
 from handlers.handler import Handler
 
@@ -6,10 +7,13 @@ from handlers.handler import Handler
 class GyroHandler(Handler):
     def __init__(self, config):
         super().__init__(config)
+
         self._imu_data = None
 
+        self._imu_sub = self.create_subscription(Imu, "imu/data", self._imu_callback, 10)
+
     # Callables
-    def imu_callback(self, msg):
+    def _imu_callback(self, msg):
         self._imu_data = msg
 
     def has_data(self):

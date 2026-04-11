@@ -1,6 +1,9 @@
 from abc import ABC, abstractmethod
 
-class Handler(ABC):
+from rclpy.node import Node
+
+
+class Handler(ABC, Node):
     def __init__(self, config):
         self._config = config
 

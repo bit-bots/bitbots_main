@@ -1,4 +1,5 @@
 import numpy as np
+from geometry_msgs.msg import Twist
 
 from handlers.handler import Handler
 
@@ -9,6 +10,8 @@ class CommandHandler(Handler):
 
         self._cmd_vel = None
 
+        self._cmd_vel_sub = self.create_subscription(Twist, "cmd_vel", self._cmd_vel_callback, 10)
+
     def get_command(self):
         command = np.array([self._cmd_vel.linear.x, self._cmd_vel.linear.y, self._cmd_vel.angular.z], dtype=np.float32)
         return command
@@ -16,5 +19,5 @@ class CommandHandler(Handler):
     def has_data(self):
         return self._cmd_vel is not None
 
-    def cmd_vel_callback(self, msg):
+    def _cmd_vel_callback(self, msg):
         self._cmd_vel = msg

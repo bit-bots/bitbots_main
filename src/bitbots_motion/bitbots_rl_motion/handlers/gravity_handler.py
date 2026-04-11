@@ -1,4 +1,5 @@
 import numpy as np
+from sensor_msgs.msg import Imu
 from transforms3d.euler import euler2mat
 from transforms3d.quaternions import quat2mat
 
@@ -11,8 +12,10 @@ class GravityHandler(Handler):
 
         self._imu_data = None
 
+        self._imu_sub = self.create_subscription(Imu, "imu/data", self._imu_callback, 10)
+
     # Callables
-    def imu_callback(self, msg):
+    def _imu_callback(self, msg):
         self._imu_data = msg
 
     def has_data(self):

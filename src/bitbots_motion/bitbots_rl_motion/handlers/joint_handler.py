@@ -1,4 +1,5 @@
 import numpy as np
+from sensor_msgs.msg import JointState
 
 from bitbots_msgs.msg import JointCommand
 from handlers.handler import Handler
@@ -13,7 +14,9 @@ class JointHandler(Handler):
         self._previous_action: np.ndarray = np.zeros(len(self._ordered_relevant_joint_names), dtype=np.float32)
         self._joint_state = None
 
-    def joint_state_callback(self, msg):
+        self._joint_state_sub = self.create_subscription(JointState, "joint_states", self._joint_state_callback, 10)
+
+    def _joint_state_callback(self, msg):
         self._joint_state = msg
 
     def has_data(self):

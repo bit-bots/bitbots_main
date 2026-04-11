@@ -3,8 +3,6 @@ from handlers.ball_handler import BallHandler
 from handlers.gravity_handler import GravityHandler
 from handlers.gyro_handler import GyroHandler
 from handlers.joint_handler import JointHandler
-from sensor_msgs.msg import Imu, JointState
-from soccer_vision_3d_msgs.msg import BallArray
 
 from bitbots_msgs.msg import JointCommand
 from nodes.rl_node import RLNode
@@ -18,11 +16,6 @@ class KickNode(RLNode):
         # publishers
         self._joint_command_pub = self.create_publisher(JointCommand, "kick_motor_goals", 10)
 
-        # subscribers
-        self._imu_sub = self.create_subscription(Imu, "imu/data", self._imu_callback, 10)
-        self._joint_state_sub = self.create_subscription(JointState, "joint_states", self._joint_state_callback, 10)
-        self._ball_pos_sub = self.create_subscription(BallArray, "balls_relative", self._ball_pos_callback, 10)
-
         # handlers
         self._gyro_handler = GyroHandler(self._config)
         self._gravity_handler = GravityHandler(self._config)
@@ -32,17 +25,6 @@ class KickNode(RLNode):
         # loading model
         model = self._config["model"]
         self.load_model(model)
-
-    # callback functions
-    def _imu_callback(self, msg):
-        self._gyro_handler.imu_callback(msg)
-        self._gravity_handler.imu_callback(msg)
-
-    def _joint_state_callback(self, msg):
-        self._joint_handler.joint_state_callback(msg)
-
-    def _ball_pos_callback(self, msg):
-        self._ball_handler.ball_pos_callback(msg)
 
     # observations
     def obs(self):
