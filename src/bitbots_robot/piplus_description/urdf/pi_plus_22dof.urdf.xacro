@@ -1,1299 +1,851 @@
-<?xml version="1.0" encoding="utf-8"?>
- <robot name="pi_plus_24dof">
-   <link name="base_link">
-     <inertial>
-       <origin xyz="0.0005802 0.0000447 0.0564524" rpy="0 0 0" />
-       <mass value="2.7616497"/>
-       <inertia ixx="0.0216372" ixy="0.0000104" ixz="0.0000694" iyy="0.0185642" iyz="-0.0000113" izz="0.0075903" />
-     </inertial>
-     <visual>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/base_link.STL" />
-       </geometry>
-       <material name="">
-         <color rgba="0.75294 0.75294 0.75294 1" />
-       </material>
-     </visual>
-     <collision>
-       <origin xyz="0 0.0 0.07" rpy="0 0 0" />
-       <geometry>
-         <box size="0.154 0.09 0.14"/> <!-- 单位：米，格式为"长 宽 高" -->
-       </geometry>
-     </collision>
-     <collision>
-       <origin xyz="0 0.0 0.16" rpy="0 0 0" />
-       <geometry>
-         <!--mesh filename="package://piplus_description/urdf/meshes/base_link.STL" />-->
-         <box size="0.035 0.035 0.074"/> <!-- 单位：米，格式为"长 宽 高" -->
-       </geometry>
-     </collision>
-     <collision>
-       <origin xyz="-0.007 0.0 0.142" rpy="0 0 0" />
-       <geometry>
-         <box size="0.176 0.092 0.006"/> <!-- 单位：米，格式为"长 宽 高" -->
-       </geometry>
-     </collision>
-     <collision>
-       <origin xyz="0.000 0.0 0.003" rpy="0 0 0" />
-       <geometry>
-         <box size="0.162 0.092 0.006"/> <!-- 单位：米，格式为"长 宽 高" -->
-       </geometry>
-     </collision>
-     <collision>
-       <origin xyz="0 -0.075 0.118" rpy="0 0 0" />
-       <geometry>
-         <box size="0.045 0.055 0.045"/> <!-- 单位：米，格式为"长 宽 高" -->
-       </geometry>
-     </collision>
-     <collision>
-       <origin xyz="0 0.075 0.118" rpy="0 0 0" />
-       <geometry>
-         <box size="0.045 0.055 0.045"/> <!-- 单位：米，格式为"长 宽 高" -->
-       </geometry>
-     </collision>
-     <collision>
-       <origin xyz="0 0.0 -0.035" rpy="0 0 0" />
-       <geometry>
-         <box size="0.06 0.09 0.07"/> <!-- 单位：米，格式为"长 宽 高" -->
-       </geometry>
-     </collision>     
-   </link>
-   <link name="l_hip_pitch_link">
-     <inertial>
-       <origin xyz="0.0013686 0.0306252 0.0005611" rpy="0 0 0" />
-       <mass value="0.3985763" />
-       <inertia ixx=" 0.0001039" ixy=" -0.0000021" ixz="0.0000001" iyy=" 0.0000971" iyz=" -0.0000008" izz="0.0001242" />
-     </inertial>
-     <visual>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/l_hip_pitch_link.STL" />
-       </geometry>
-       <material name="">
-         <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
-       </material>
-     </visual>
-     <collision>
-       <origin xyz="0 0.0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/l_hip_pitch_link.STL" />
-         <!--box size="0.06 0.04 0.05"/>--> <!-- 单位：米，格式为"长 宽 高" -->
-       </geometry>
-     </collision>
-   </link>
-   <joint name="l_hip_pitch_joint" type="revolute">
-     <origin xyz="0 0.0475 -0.04379" rpy="0 0 0" />
-     <parent link="base_link" />
-     <child link="l_hip_pitch_link" />
-     <axis xyz="0 1 0" />
-     <limit lower="-1.45" upper="1.45" effort="20" velocity="5.45" />
-     <dynamics damping="0.08" friction="0.0"/> <!-- 即使很小的阻尼也能极大改善稳定性 -->
-   </joint>
-   <link name="l_hip_roll_link">
-     <inertial>
-       <origin xyz="0.0009844 0.0001364 -0.0612495" rpy="0 0 0" />
-       <mass value="0.4857183" />
-       <inertia ixx="0.0004833" ixy="-0.0000004" ixz="-0.0000210" iyy="0.0005742" iyz="0.0000008" izz="0.0002219" />
-     </inertial>
-     <visual>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/l_hip_roll_link.STL" />
-       </geometry>
-       <material name="">
-         <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
-       </material>
-     </visual>
-     <collision>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/l_hip_roll_link.STL" />
-       </geometry>
-     </collision>
-   </link>
-   <joint name="l_hip_roll_joint" type="revolute">
-     <origin xyz="0 0.034 0.00028984" rpy="0 0 0" />
-     <parent link="l_hip_pitch_link" />
-     <child link="l_hip_roll_link" />
-     <axis xyz="1 0 0" />
-     <limit lower="-0.31" upper="1.2" effort="20" velocity="5.45" />
-     <dynamics damping="0.08" friction="0.0"/> <!-- 即使很小的阻尼也能极大改善稳定性 -->
-   </joint>
-   <link name="l_thigh_link">
-     <inertial>
-       <origin xyz="0.0000000 -0.0009550 -0.0239847" rpy="0 0 0" />
-       <mass value="0.1093797" />
-       <inertia ixx=" 0.0001198" ixy=" 0.0000000" ixz=" 0.0000000" iyy=" 0.0000574" iyz="-0.0000043" izz="0.0000901" />
-     </inertial>
-     <visual>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/l_thigh_link.STL" />
-       </geometry>
-       <material name="">
-         <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
-       </material>
-     </visual>
-     <collision>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/l_thigh_link.STL" />
-       </geometry>
-     </collision>
-   </link>
-   <joint name="l_thigh_joint" type="revolute">
-     <origin xyz="-0.00025 0 -0.0974" rpy="0 0 0" />
-     <parent link="l_hip_roll_link" />
-     <child link="l_thigh_link" />
-     <axis xyz="0 0 1" />
-     <limit lower="-1.2" upper="0.6" effort="20" velocity="5.45" />
-     <dynamics damping="0.08" friction="0.0"/> <!-- 即使很小的阻尼也能极大改善稳定性 -->
-   </joint>
-   <link name="l_calf_link">
-     <inertial>
-       <origin xyz="-0.0000136 0.0027624 -0.0700557" rpy="0 0 0" />
-       <mass value="0.8028699" />
-       <inertia ixx=" 0.0037268" ixy="0.0000000" ixz="-0.0000149" iyy="0.0037147" iyz="-0.0000011" izz="0.0001840" />
-     </inertial>
-     <visual>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/l_calf_link.STL" />
-       </geometry>
-       <material name="">
-         <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
-       </material>
-     </visual>
-     <!-- <collision>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/l_calf_link_1.STL" />
-       </geometry>
-     </collision> -->
-     <collision>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/l_calf_link_2.STL" />
-       </geometry>
-     </collision>
-     <!-- <collision>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/l_calf_link_3.STL" />
-       </geometry>
-     </collision> -->
-     <!-- <collision>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/l_calf_link_4.STL" />
-       </geometry>
-     </collision> -->
-     <collision>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/l_calf_link_5.STL" />
-       </geometry>
-     </collision>
-     <collision>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/l_calf_link_6.STL" />
-       </geometry>
-     </collision>
-     <!-- <collision>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/l_calf_link_7.STL" />
-       </geometry>
-     </collision> -->
+ <robot name="PiPlus_S_12L8A0G2H0W">
+  <mujoco>
+    <compiler meshdir="../meshes/" balanceinertia="true" discardvisual="false" inertiafromgeom="false" fusestatic="false" />
+  </mujoco>
 
-     <!--collision>
-       <origin xyz="0 0 -0.0030" rpy="0 0 0" />
-       <geometry>
-         <box size="0.05 0.05 0.056"/>
-       </geometry>
-     </collision>-->
-     <collision>
-       <origin xyz="0 0 -0.055" rpy="0 0 0" />
-       <geometry>
-         <box size="0.01 0.02 0.055"/> 
-       </geometry>
-     </collision>
-     <!--collision>
-       <origin xyz="0 0 -0.138" rpy="0 0 0" />
-       <geometry>
-         <box size="0.046 0.046 0.045"/> 
-       </geometry>
-     </collision>-->
-   </link>
-   <joint name="l_calf_joint" type="revolute">
-     <origin xyz="0 0 -0.0453" rpy="0 0 0" />
-     <parent link="l_thigh_link" />
-     <child link="l_calf_link" />
-     <axis xyz="0 1 0" />
-     <limit lower="-0.05" upper="2.4" effort="20" velocity="5.45" />
-     <dynamics damping="0.08" friction="0.0"/> <!-- 即使很小的阻尼也能极大改善稳定性 -->
-   </joint>
-   <link name="l_ankle_pitch_link">
-     <inertial>
-       <origin xyz="0.0065537 -0.0021861 0.0000145" rpy="0 0 0" />
-       <mass value="0.1655827" />
-       <inertia ixx="0.0001202" ixy="-0.0000024" ixz="-0.0000001" iyy=" 0.0001846" iyz="0.0000000" izz="0.0002720" />
-     </inertial>
-     <visual>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/l_ankle_pitch_link.STL" />
-       </geometry>
-       <material name="">
-         <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
-       </material>
-     </visual>
-     <collision>
-       <origin xyz="0 0.03 0" rpy="0 0 0" />
-       <geometry>
-         <!--mesh filename="package://piplus_description/urdf/meshes/l_ankle_pitch_link.STL" /> -->
-         <box size="0.08 0.006 0.03"/> <!-- 单位：米，格式为"长 宽 高" -->
-       </geometry>
-     </collision>
-     <collision>
-       <origin xyz="0 -0.03 0" rpy="0 0 0" />
-       <geometry>
-         <box size="0.08 0.006 0.03"/> <!-- 单位：米，格式为"长 宽 高" -->
-       </geometry>
-     </collision>
-     <collision>
-       <origin xyz="-0.042 0.0 0" rpy="0 0 0" />
-       <geometry>
-         <box size="0.006 0.06 0.03"/> <!-- 单位：米，格式为"长 宽 高" -->
-       </geometry>
-     </collision>
-     <collision>
-       <origin xyz="0.042 0.0 0" rpy="0 0 0" />
-       <geometry>
-         <box size="0.006 0.06 0.03"/> <!-- 单位：米，格式为"长 宽 高" -->
-       </geometry>
-     </collision>
-   </link>
-   <joint name="l_ankle_pitch_joint" type="revolute">
-     <origin xyz="0 0 -0.14" rpy="0 0 0" />
-     <parent link="l_calf_link" />
-     <child link="l_ankle_pitch_link" />
-     <axis xyz="0 1 0" />
-     <limit lower="-0.5" upper="0.92" effort="20" velocity="5.45" />
-     <dynamics damping="0.08" friction="0.0"/> <!-- 即使很小的阻尼也能极大改善稳定性 -->
-   </joint>
-   <link name="l_ankle_roll_link">
-     <inertial>
-       <origin xyz="0.0026578 0.0001757 -0.0126664" rpy="0 0 0" />
-       <mass value="0.6223485" />
-       <inertia ixx="0.0004400" ixy="-0.0000023" ixz="-0.0002309" iyy="0.0014685" iyz="-0.0000008" izz="0.0012907" />
-     </inertial>
-     <visual>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/l_ankle_roll_link.STL" />
-       </geometry>
-       <material name="">
-         <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
-       </material>
-     </visual>
-     <!-- <collision>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/l_ankle_roll_link_1.STL" />
-       </geometry>
-     </collision>
-     <collision>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/l_ankle_roll_link_2.STL" />
-       </geometry>
-     </collision>
-     <collision>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/l_ankle_roll_link_3.STL" />
-       </geometry>
-     </collision>
-     <collision>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/l_ankle_roll_link_4.STL" />
-       </geometry>
-     </collision>
-     <collision>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/l_ankle_roll_link_5.STL" />
-       </geometry>
-     </collision>
-     <collision>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/l_ankle_roll_link_6.STL" />
-       </geometry>
-     </collision>
-     <collision>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/l_ankle_roll_link_7.STL" />
-       </geometry>
-     </collision> -->
-
-     <collision>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/ankle_roll_link_simplify.STL" />
-       </geometry>
-     </collision>
-     <!--collision>
-       <origin xyz="0.030 0 -0.01" rpy="0 0 0" />
-       <geometry>
-         <box size="0.05 0.06 0.06"/> 
-       </geometry>
-     </collision>
-     <collision>
-       <origin xyz="-0.028 0 -0.04470" rpy="0 0 0" />
-       <geometry>
-         <box size="0.17 0.07 0.0105"/>
-       </geometry>
-     </collision>
-     <collision>
-       <origin xyz="-0.1 0 -0.013" rpy="0 0 0" />
-       <geometry>
-         <box size="0.006 0.03 0.056"/> 
-       </geometry>
-     </collision>-->
-   </link>
-   <joint name="l_ankle_roll_joint" type="revolute">
-     <origin xyz="0.051 0 0" rpy="0 0 0" />
-     <parent link="l_ankle_pitch_link" />
-     <child link="l_ankle_roll_link" />
-     <axis xyz="1 0 0" />
-     <limit lower="-0.78" upper="0.78" effort="20" velocity="5.45" />
-     <dynamics damping="0.08" friction="0.0"/> <!-- 即使很小的阻尼也能极大改善稳定性 -->
-   </joint>
-   <link name="r_hip_pitch_link">
-     <inertial>
-       <origin xyz="0.0013698 -0.0311672 0.0005611" rpy="0 0 0" />
-       <mass value="0.3985763" />
-       <inertia ixx="0.0001052" ixy="0.0000018" ixz="0.0000001" iyy="0.0000971" iyz="-0.0000003" izz="0.0001256" />
-     </inertial>
-     <visual>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/r_hip_pitch_link.STL" />
-       </geometry>
-       <material name="">
-         <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
-       </material>
-     </visual>
-     <collision>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/r_hip_pitch_link.STL" />
-         <!--box size="0.06 0.04 0.05"/>--> <!-- 单位：米，格式为"长 宽 高" -->
-       </geometry>
-     </collision>
-   </link>
-   <joint name="r_hip_pitch_joint" type="revolute">
-     <origin xyz="0 -0.0475 -0.04379" rpy="0 0 0" />
-     <parent link="base_link" />
-     <child link="r_hip_pitch_link" />
-     <axis xyz="0 1 0" />
-     <limit lower="-1.45" upper="1.45" effort="20" velocity="5.45" />
-     <dynamics damping="0.08" friction="0.0"/> <!-- 即使很小的阻尼也能极大改善稳定性 -->
-   </joint>
-   <link name="r_hip_roll_link">
-     <inertial>
-       <origin xyz="0.0009844 0.0000542 -0.0612495" rpy="0 0 0" />
-       <mass value="0.4857183" />
-       <inertia ixx="0.0004833" ixy="-0.0000005" ixz="-0.0000210" iyy="0.0005742" iyz="-0.0000005" izz="0.0002219" />
-     </inertial>
-     <visual>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/r_hip_roll_link.STL" />
-       </geometry>
-       <material name="">
-         <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
-       </material>
-     </visual>
-     <collision>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/r_hip_roll_link.STL" />
-       </geometry>
-     </collision>
-   </link>
-   <joint name="r_hip_roll_joint" type="revolute">
-     <origin xyz="0 -0.034 0.00028984" rpy="0 0 0" />
-     <parent link="r_hip_pitch_link" />
-     <child link="r_hip_roll_link" />
-     <axis xyz="1 0 0" />
-     <limit lower="-1.2" upper="0.31" effort="20" velocity="5.45" />
-     <dynamics damping="0.08" friction="0.0"/> <!-- 即使很小的阻尼也能极大改善稳定性 -->
-   </joint>
-   <link name="r_thigh_link">
-     <inertial>
-       <origin xyz="0.0000000 0.0008801 -0.0236847" rpy="0 0 0" />
-       <mass value="0.1093797" />
-       <inertia ixx="0.0001194" ixy="0.0000000" ixz="0.0000000" iyy="0.0000574" iyz="0.0000041" izz="0.0000897" />
-     </inertial>
-     <visual>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/r_thigh_link.STL" />
-       </geometry>
-       <material name="">
-         <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
-       </material>
-     </visual>
-     <collision>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/r_thigh_link.STL" />
-       </geometry>
-     </collision>
-   </link>
-   <joint name="r_thigh_joint" type="revolute">
-     <origin xyz="-0.00025 0 -0.0977" rpy="0 0 0" />
-     <parent link="r_hip_roll_link" />
-     <child link="r_thigh_link" />
-     <axis xyz="0 0 1" />
-     <limit lower="-1.2" upper="1.2" effort="20" velocity="5.45" />
-     <dynamics damping="0.02" friction="0.0"/> <!-- 即使很小的阻尼也能极大改善稳定性 -->
-   </joint>
-   <link name="r_calf_link">
-     <inertial>
-       <origin xyz="-0.0000136 -0.0027531 -0.0700000" rpy="0 0 0" />
-       <mass value=" 0.8031826" />
-       <inertia ixx="0.0037320" ixy="0.0000000" ixz="0.0000149" iyy="0.0037196" iyz=" 0.0000000" izz="0.0001841" />
-     </inertial>
-     <visual>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/r_calf_link.STL" />
-       </geometry>
-       <material name="">
-         <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
-       </material>
-     </visual>
-     <!-- <collision>
-       <origin xyz="0 0 -0.0030" rpy="0 0 0" />
-       <geometry>
-         <box size="0.05 0.05 0.056"/> 
-       </geometry>
-     </collision> -->
-     <collision>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/r_calf_link_1.STL" />
-       </geometry>
-     </collision>
-     <collision>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/r_calf_link_5.STL" />
-       </geometry>
-     </collision>
-     <collision>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/r_calf_link_6.STL" />
-       </geometry>
-     </collision>
-
-     <collision>
-       <origin xyz="0 0 -0.055" rpy="0 0 0" />
-       <geometry>
-         <!--mesh filename="package://piplus_description/urdf/meshes/r_calf_link.STL" />-->
-         <box size="0.01 0.02 0.055"/> <!-- 单位：米，格式为"长 宽 高" -->
-       </geometry>
-     </collision>
-     <!--collision>
-       <origin xyz="0 0 -0.138" rpy="0 0 0" />
-       <geometry>
-         <box size="0.046 0.046 0.045"/> 
-       </geometry>
-     </collision>-->
-   </link>
-   <joint name="r_calf_joint" type="revolute">
-     <origin xyz="0 0 -0.045" rpy="0 0 0" />
-     <parent link="r_thigh_link" />
-     <child link="r_calf_link" />
-     <axis xyz="0 1 0" />
-     <limit lower="-0.05" upper="2.4" effort="20" velocity="5.45" />
-     <dynamics damping="0.08" friction="0.0"/> <!-- 即使很小的阻尼也能极大改善稳定性 -->
-   </joint>
-   <link name="r_ankle_pitch_link">
-     <inertial>
-       <origin xyz="0.0065537 0.0021861 -0.0000145" rpy="0 0 0" />
-       <mass value="0.1655827" />
-       <inertia ixx="0.0001202" ixy="0.0000024" ixz="0.0000001" iyy="0.0001846" iyz=" 0.0000000" izz="0.0002720" />
-     </inertial>
-     <visual>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/r_ankle_pitch_link.STL" />
-       </geometry>
-       <material name="">
-         <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
-       </material>
-     </visual>
-     <collision>
-       <origin xyz="0 -0.03 0" rpy="0 0 0" />
-       <geometry>
-         <!--mesh filename="package://piplus_description/urdf/meshes/r_ankle_pitch_link.STL" />-->
-         <box size="0.08 0.006 0.03"/> 
-       </geometry>
-     </collision>
-     <collision>
-       <origin xyz="0 0.03 0" rpy="0 0 0" />
-       <geometry>
-         <!--mesh filename="package://piplus_description/urdf/meshes/r_ankle_pitch_link.STL" />-->
-         <box size="0.08 0.006 0.03"/> 
-       </geometry>
-     </collision>
-     <collision>
-       <origin xyz="0 -0.03 0" rpy="0 0 0" />
-       <geometry>
-         <box size="0.08 0.006 0.03"/> <!-- 单位：米，格式为"长 宽 高" -->
-       </geometry>
-     </collision>
-     <collision>
-       <origin xyz="-0.042 0.0 0" rpy="0 0 0" />
-       <geometry>
-         <box size="0.006 0.06 0.03"/> <!-- 单位：米，格式为"长 宽 高" -->
-       </geometry>
-     </collision>
-     <collision>
-       <origin xyz="0.042 0.0 0" rpy="0 0 0" />
-       <geometry>
-         <box size="0.006 0.06 0.03"/> <!-- 单位：米，格式为"长 宽 高" -->
-       </geometry>
-     </collision>
-   </link>
-   <joint name="r_ankle_pitch_joint" type="revolute">
-     <origin xyz="0 0 -0.14" rpy="0 0 0" />
-     <parent link="r_calf_link" />
-     <child link="r_ankle_pitch_link" />
-     <axis xyz="0 1 0" />
-     <limit lower="-0.5" upper="0.92" effort="20" velocity="5.45" />
-     <dynamics damping="0.08" friction="0.0"/> <!-- 即使很小的阻尼也能极大改善稳定性 -->
-   </joint>
-   <link name="r_ankle_roll_link">
-     <inertial>
-       <origin xyz="0.0026578 0.0001757 -0.0126664" rpy="0 0 0" />
-       <mass value="0.6223485" />
-       <inertia ixx="0.0004400" ixy="-0.0000023" ixz="-0.0002309" iyy="0.0014685" iyz="-0.0000008" izz="0.0012907" />
-     </inertial>
-     <visual>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/r_ankle_roll_link.STL" />
-       </geometry>
-       <material name="">
-         <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
-       </material>
-     </visual>
-     <collision>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/ankle_roll_link_simplify.STL" />
-       </geometry>
-     </collision>
-
-     <!--collision>
-       <origin xyz="0.030 0 -0.01" rpy="0 0 0" />
-       <geometry>
-         <box size="0.05 0.06 0.06"/> 
-       </geometry>
-     </collision>
-     <collision>
-       <origin xyz="-0.028 0 -0.04470" rpy="0 0 0" />
-       <geometry>
-         <box size="0.17 0.07 0.0105"/>
-       </geometry>
-     </collision>
-     <collision>
-       <origin xyz="-0.1 0 -0.013" rpy="0 0 0" />
-       <geometry>
-         <box size="0.006 0.03 0.056"/> 
-       </geometry>
-     </collision>-->
-   </link>
-   <joint name="r_ankle_roll_joint" type="revolute">
-     <origin xyz="0.051 0 0" rpy="0 0 0" />
-     <parent link="r_ankle_pitch_link" />
-     <child link="r_ankle_roll_link" />
-     <axis xyz="1 0 0" />
-     <limit lower="-0.78" upper="0.78" effort="20" velocity="5.45" />
-     <dynamics damping="0.08" friction="0.0"/> <!-- 即使很小的阻尼也能极大改善稳定性 -->
-   </joint>
-   <link name="l_shoulder_pitch_link">
-     <inertial>
-       <origin xyz="0.0004620 0.0211803 0.0001949" rpy="0 0 0" />
-       <mass value="0.1084419"/>
-       <inertia ixx="0.0000487" ixy="0.0000008" ixz="-0.0000002" iyy="0.0000848" iyz="-0.0000002" izz=" 0.0001034" />
-     </inertial>
-     <visual>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/l_shoulder_pitch_link.STL" />
-       </geometry>
-       <material name="">
-         <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
-       </material>
-     </visual>
-     <collision>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/l_shoulder_pitch_link.STL" />
-       </geometry>
-     </collision>
-   </link>
-   <joint name="l_shoulder_pitch_joint" type="revolute">
-     <origin xyz="0 0.1069 0.11671" rpy="0 0 0" />
-     <parent link="base_link" />
-     <child link="l_shoulder_pitch_link" />
-     <axis xyz="0 1 0" />
-     <limit lower="-4.18" upper="1.04" effort="10" velocity="15.91" />
-     <dynamics damping="0.08" friction="0.0"/> <!-- 即使很小的阻尼也能极大改善稳定性 -->
-   </joint>
-   <link name="l_shoulder_roll_link">
-     <inertial>
-       <origin xyz="0.0012798 0.0000231 -0.0245659" rpy="0 0 0" />
-       <mass value="0.4468311" />
-       <inertia ixx="0.0003977" ixy="0.0000006" ixz="-0.0000147" iyy="0.0004072" iyz=" 0.0000045" izz=" 0.0001271" />
-     </inertial>
-     <visual>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/l_shoulder_roll_link.STL" />
-       </geometry>
-       <material name="">
-         <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
-       </material>
-     </visual>
-     <collision>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/l_shoulder_roll_link.STL" />
-       </geometry>
-     </collision>
-   </link>
-   <joint name="l_shoulder_roll_joint" type="revolute">
-     <origin xyz="0 0.038 0.00028984" rpy="0 0 0" />
-     <parent link="l_shoulder_pitch_link" />
-     <child link="l_shoulder_roll_link" />
-     <axis xyz="1 0 0" />
-     <limit lower="-0.36" upper="3.4" effort="10" velocity="15.91" />
-     <dynamics damping="0.08" friction="0.0"/> <!-- 即使很小的阻尼也能极大改善稳定性 -->
-   </joint>
-   <link name="l_upper_arm_link">
-     <inertial>
-       <origin xyz="-0.0000950 -0.0006519 -0.0208905" rpy="0 0 0" />
-       <mass value="0.1084419" />
-       <inertia ixx="0.0001033" ixy="-0.0000002" ixz=" 0.0000002" iyy="0.0000487" iyz="0.0000012" izz="0.0000847" />
-     </inertial>
-     <visual>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/l_upper_arm_link.STL" />
-       </geometry>
-       <material name="">
-         <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
-       </material>
-     </visual>
-     <collision>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/l_upper_arm_link.STL" />
-       </geometry>
-     </collision>
-   </link>
-   <joint name="l_upper_arm_joint" type="revolute">
-     <origin xyz="0 0 -0.07269" rpy="0 0 0" />
-     <parent link="l_shoulder_roll_link" />
-     <child link="l_upper_arm_link" />
-     <axis xyz="0 0 1" />
-     <limit lower="-2.61" upper="2.61" effort="10" velocity="15.91" />
-     <dynamics damping="0.08" friction="0.0"/> <!-- 即使很小的阻尼也能极大改善稳定性 -->
-   </joint>
-   <link name="l_elbow_link">
-     <inertial>
-       <origin xyz="0.0003008 -0.0012586 -0.0246987" rpy="0 0 0" />
-       <mass value="0.4461527" />
-       <inertia ixx="0.0004012" ixy="0.0000005" ixz="0.0000007" iyy="0.0003916" iyz="0.0000146" izz="0.0001267" />
-     </inertial>
-     <visual>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/l_elbow_link.STL" />
-       </geometry>
-       <material name="">
-         <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
-       </material>
-     </visual>
-     <collision>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/l_elbow_link.STL" />
-       </geometry>
-     </collision>
-   </link>
-   <joint name="l_elbow_joint" type="revolute">
-     <origin xyz="0 0 -0.03771" rpy="0 0 0" />
-     <parent link="l_upper_arm_link" />
-     <child link="l_elbow_link" />
-     <axis xyz="0 1 0" />
-     <limit lower="-1.91" upper="0.0" effort="10" velocity="15.91" />
-     <dynamics damping="0.08" friction="0.0"/> <!-- 即使很小的阻尼也能极大改善稳定性 -->
-   </joint>
-   <link name="l_wrist_link">
-     <inertial>
-       <origin xyz="0.0000000 0.0000000 -0.0234157" rpy="0 0 0" />
-       <mass value="0.0851827" />
-       <inertia ixx="0.0000368" ixy=" 0.0000000" ixz=" 0.0000000" iyy=" 0.0000368" iyz=" 0.0000000" izz="0.0000080" />
-     </inertial>
-     <visual>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/l_wrist_link.STL" />
-       </geometry>
-       <material name="">
-         <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
-       </material>
-     </visual>
-     <collision>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/l_wrist_link.STL" />
-       </geometry>
-     </collision>
-   </link>
-   <joint name="l_wrist_joint" type="fixed">
-     <origin xyz="0 0 -0.07269" rpy="0 0 0" />
-     <parent link="l_elbow_link" />
-     <child link="l_wrist_link" />
-     <axis xyz="0 0 1" />
-     <limit lower="-3.14" upper="3.14" effort="10" velocity="15.91" />
-     <dynamics damping="0.08" friction="0.0"/> <!-- 即使很小的阻尼也能极大改善稳定性 -->
-   </joint>
-   <link name="r_shoulder_pitch_link">
-     <inertial>
-       <origin xyz="0.0004620 -0.0211803 0.0001949" rpy="0 0 0" />
-       <mass value="0.1084419" />
-       <inertia ixx="0.0000487" ixy="-0.0000008" ixz="-0.0000002" iyy="0.0000848" iyz="0.0000002" izz="0.0001034" />
-     </inertial>
-     <visual>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/r_shoulder_pitch_link.STL" />
-       </geometry>
-       <material name="">
-         <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
-       </material>
-     </visual>
-     <collision>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/r_shoulder_pitch_link.STL" />
-       </geometry>
-     </collision>
-   </link>
-   <joint name="r_shoulder_pitch_joint" type="revolute">
-     <origin xyz="0 -0.1069 0.11671" rpy="0 0 0" />
-     <parent link="base_link" />
-     <child link="r_shoulder_pitch_link" />
-     <axis xyz="0 1 0" />
-     <limit lower="-4.18" upper="1.04" effort="10" velocity="15.91" />
-     <dynamics damping="0.08" friction="0.0"/> <!-- 即使很小的阻尼也能极大改善稳定性 -->
-   </joint>
-   <link name="r_shoulder_roll_link">
-     <inertial>
-       <origin xyz="0.0012798 -0.0000231 -0.0245659" rpy="0 0 0" />
-       <mass value="0.4468311" />
-       <inertia ixx="0.0003977" ixy="0.0000009" ixz="-0.0000147" iyy=" 0.0004072" iyz="0.0000036" izz="0.0001271" />
-     </inertial>
-     <visual>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/r_shoulder_roll_link.STL" />
-       </geometry>
-       <material name="">
-         <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
-       </material>
-     </visual>
-     <collision>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/r_shoulder_roll_link.STL" />
-       </geometry>
-     </collision>
-   </link>
-   <joint name="r_shoulder_roll_joint" type="revolute">
-     <origin xyz="0 -0.038 0.00028984" rpy="0 0 0" />
-     <parent link="r_shoulder_pitch_link" />
-     <child link="r_shoulder_roll_link" />
-     <axis xyz="1 0 0" />
-     <limit lower="-3.4" upper="0.36" effort="10" velocity="15.91" />
-     <dynamics damping="0.08" friction="0.0"/> <!-- 即使很小的阻尼也能极大改善稳定性 -->
-   </joint>
-   <link name="r_upper_arm_link">
-     <inertial>
-       <origin xyz="-0.0000950 0.0006519 -0.0211803" rpy="0 0 0" />
-       <mass value="0.1084419" />
-       <inertia ixx="0.0001033" ixy="0.0000002" ixz="0.0000002" iyy="0.0000487" iyz="-0.0000012" izz="0.0000847" />
-     </inertial>
-     <visual>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/r_upper_arm_link.STL" />
-       </geometry>
-       <material name="">
-         <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
-       </material>
-     </visual>
-     <collision>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/r_upper_arm_link.STL" />
-       </geometry>
-     </collision>
-   </link>
-   <joint name="r_upper_arm_joint" type="revolute">
-     <origin xyz="0 0 -0.0724" rpy="0 0 0" />
-     <parent link="r_shoulder_roll_link" />
-     <child link="r_upper_arm_link" />
-     <axis xyz="0 0 1" />
-     <limit lower="-2.61" upper="2.61" effort="10" velocity="15.91" />
-     <dynamics damping="0.08" friction="0.0"/> <!-- 即使很小的阻尼也能极大改善稳定性 -->
-   </joint>
-   <link name="r_elbow_link">
-     <inertial>
-       <origin xyz="-0.0003008 0.0012586 -0.0246987" rpy="0 0 0" />
-       <mass value="0.4461527" />
-       <inertia ixx="0.0004012" ixy="0.0000005" ixz="-0.0000007" iyy="0.0003916" iyz="-0.0000146" izz="0.0001267" />
-     </inertial>
-     <visual>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/r_elbow_link.STL" />
-       </geometry>
-       <material name="">
-         <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
-       </material>
-     </visual>
-     <collision>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/r_elbow_link.STL" />
-       </geometry>
-     </collision>
-   </link>
-   <joint name="r_elbow_joint" type="revolute">
-     <origin xyz="0 0 -0.038" rpy="0 0 0" />
-     <parent link="r_upper_arm_link" />
-     <child link="r_elbow_link" />
-     <axis xyz="0 1 0" />
-     <limit lower="-1.91" upper="0.0" effort="10" velocity="15.91" />
-     <dynamics damping="0.08" friction="0.0"/> <!-- 即使很小的阻尼也能极大改善稳定性 -->
-   </joint>
-   <link name="r_wrist_link">
-     <inertial>
-       <origin xyz="0.0000000 0.0000000 -0.0237055" rpy="0 0 0" />
-       <mass value="0.0851827" />
-       <inertia ixx="0.0000368" ixy="0.0000000" ixz="0.0000000" iyy="0.0000368" iyz="0.0000000" izz="0.0000080" />
-     </inertial>
-     <visual>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/r_wrist_link.STL" />
-       </geometry>
-       <material name="">
-         <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
-       </material>
-     </visual>
-     <collision>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/r_wrist_link.STL" />
-       </geometry>
-     </collision>
-   </link>
-   <joint name="r_wrist_joint" type="fixed">
-     <origin xyz="0 0 -0.0724" rpy="0 0 0" />
-     <parent link="r_elbow_link" />
-     <child link="r_wrist_link" />
-     <axis xyz="0 0 1" />
-     <limit lower="-3.14" upper="3.14" effort="10" velocity="15.91" />
-     <dynamics damping="0.08" friction="0.0"/> <!-- 即使很小的阻尼也能极大改善稳定性 -->
-   </joint>
-   <link name="head_yaw_link">
-     <inertial>
-       <origin xyz="-0.0000877 0.0001841 0.0230633" rpy="0 0 0" />
-       <mass value="0.1840460" />
-       <inertia ixx="0.0000397" ixy="0.0000004" ixz="0.0000001" iyy="0.0000352" iyz="-0.0000023" izz="0.0000334" />
-     </inertial>
-     <visual>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/head_yaw_link.STL" />
-       </geometry>
-       <material name="">
-         <color rgba="1 1 1 1" />
-       </material>
-     </visual>
-     <collision>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/head_yaw_link.STL" />
-         <!--box size="0.01 0.01 0.01" />-->
-       </geometry>
-     </collision>
-   </link>
-   <joint name="head_yaw_joint" type="revolute">
-     <origin xyz="0 0.00025 0.1981" rpy="0 0 0" />
-     <parent link="base_link" />
-     <child link="head_yaw_link" />
-     <axis xyz="0 0 1" />
-     <limit lower="-0.3" upper="0.3" effort="3" velocity="30.37" />
-     <dynamics damping="0.08" friction="0.0"/> <!-- 即使很小的阻尼也能极大改善稳定性 -->
-   </joint>
-   <link name="head_pitch_link">
-     <inertial>
-       <origin xyz="0.0323338 -0.0021962 0.0509378" rpy="0 0 0" />
-       <mass value="0.4951748" />
-       <inertia ixx="0.0010781" ixy="0.0000281" ixz="0.0000063" iyy="0.0010959" iyz="0.0000067" izz="0.0018268" />
-     </inertial>
-     <visual>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/head_pitch_link.STL" />
-       </geometry>
-       <material name="">
-         <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
-       </material>
-     </visual>
-     <collision>
-       <origin xyz="0 0 0" rpy="0 0 0" />
-       <geometry>
-         <mesh filename="package://piplus_description/urdf/meshes/head_pitch_link.STL" />
-       </geometry>
-     </collision>
-   </link>
-   <joint name="head_pitch_joint" type="revolute">
-     <origin xyz="0 0 0.0255" rpy="0 0 0" />
-     <parent link="head_yaw_link" />
-     <child link="head_pitch_link" />
-     <axis xyz="0 1 0" />
-     <limit lower="-0.34" upper="0.9" effort="3" velocity="30.37" />
-     <dynamics damping="0.08" friction="0.0"/> <!-- 即使很小的阻尼也能极大改善稳定性 -->
-   </joint>
-
-    <!-- Keyframe -->
-  <link name="keyframe_head_link">
-    <!-- <visual>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
-    <geometry>
-      <sphere radius="0.05"/>
-    </geometry>
-    </visual> -->
+  <link name="base_link">
+    <inertial>
+      <origin xyz="-0.00041617 7.079e-05 -0.03929986" rpy="0 0 0" />
+      <mass value="1.49469794" />
+      <inertia ixx="0.00181946" ixy="-2.85e-06" ixz="9.91e-06" iyy="0.00111608" iyz="3.9e-07" izz="0.00167502" />
+    </inertial>
     <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-      <!-- 定义几何形状，例如盒子 -->
-      <box size="0.01 0.01 0.01"/>
+        <mesh filename="package://piplus_description/urdf/meshes/base_link.STL" />
       </geometry>
-      <material name="white">
-      <color rgba="1.7 0.7 0.7 1"/>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0.0 -0.045" rpy="0 0 0" />
+      <geometry>
+        <box size="0.05 0.07 0.05"/>
+      </geometry>
+    </collision>
+  </link>
+  <link name="torso_link">
+    <inertial>
+      <origin xyz="0.00153764 -3.179e-05 0.09595541" rpy="0 0 0" />
+      <mass value="2.82493792" />
+      <inertia ixx="0.01591654" ixy="8.04e-06" ixz="-0.00011212" iyy="0.01340322" iyz="-2.99e-06" izz="0.01407319" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://piplus_description/urdf/meshes/torso_link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.09" rpy="0 0 0" />
+      <geometry>
+        <box size="0.155 0.155 0.155"/>
+
+      </geometry>
+    </collision>
+  </link>
+  <joint name="torso_joint" type="fixed">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <parent link="base_link" />
+    <child link="torso_link" />
+    <axis xyz="0 0 0" />
+    <dynamics damping="0.02" friction="0.0"/>
+  </joint>
+  <link name="imu_frame_uncalibrated"/>
+  <joint name="imu_frame_joint" type="fixed">
+    <origin xyz="0 0 0.1" rpy="0 0 0" />
+    <parent link="torso_link" />
+    <child link="imu_frame_uncalibrated" />
+  </joint>
+  <link name="r_shoulder_pitch_link">
+    <inertial>
+      <origin xyz="-0.0023165 -0.01720478 0.00020825" rpy="0 0 0" />
+      <mass value="0.13935188" />
+      <inertia ixx="7.568e-05" ixy="-3.2e-06" ixz="5e-08" iyy="0.00012196" iyz="-6.5e-07" izz="0.00014519" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://piplus_description/urdf/meshes/r_shoulder_pitch_link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
       </material>
     </visual>
   </link>
-  <joint name="keyframe_head_joint" type="fixed" dont_collapse="true">
-    <origin xyz="0 0 0.15" rpy="0 0 0"/>
-    <parent link="base_link"/>
-    <child link="keyframe_head_link"/>
+  <joint name="r_shoulder_pitch_joint" type="revolute">
+    <origin xyz="0 -0.1084 0.117" rpy="0 0 0" />
+    <parent link="torso_link" />
+    <child link="r_shoulder_pitch_link" />
+    <axis xyz="0 1 0" />
+    <limit lower="-4.18" upper="1.04" effort="10" velocity="15.91" />
+    <dynamics damping="0.02" friction="0.0"/>
   </joint>
-  <link name="keyframe_pelvis_link">
-    <!-- <visual>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
+  <link name="r_shoulder_roll_link">
+    <inertial>
+      <origin xyz="-0.00164862 -0.00020989 -0.02488799" rpy="0 0 0" />
+      <mass value="0.55615019" />
+      <inertia ixx="0.00051303" ixy="-2e-07" ixz="1.879e-05" iyy="0.00052161" iyz="-2.18e-06" izz="0.0001534" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <sphere radius="0.05"/>
+        <mesh filename="package://piplus_description/urdf/meshes/r_shoulder_roll_link.STL" />
       </geometry>
-    </visual> -->
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
   </link>
-  <joint name="keyframe_pelvis_joint" type="fixed" dont_collapse="true">
-    <origin xyz="0 0 -0.075" rpy="0 0 0"/>
-    <parent link="base_link"/>
-    <child link="keyframe_pelvis_link"/>
+  <joint name="r_shoulder_roll_joint" type="revolute">
+    <origin xyz="0 -0.038 0" rpy="0 0 0" />
+    <parent link="r_shoulder_pitch_link" />
+    <child link="r_shoulder_roll_link" />
+    <axis xyz="1 0 0" />
+    <limit lower="-3.34" upper="0.13" effort="10" velocity="15.91" />
+    <dynamics damping="0.02" friction="0.0"/>
   </joint>
-  <link name="keyframe_left_collar_link">
-    <!-- <visual>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
+  <link name="r_upper_arm_link">
+    <inertial>
+      <origin xyz="3.107e-05 -0.00138646 -0.01213494" rpy="0 0 0" />
+      <mass value="0.15318326" />
+      <inertia ixx="0.00017707" ixy="-2.7e-07" ixz="1.4e-07" iyy="0.00011359" iyz="-7.27e-06" izz="0.00014214" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <sphere radius="0.05"/>
+        <mesh filename="package://piplus_description/urdf/meshes/r_upper_arm_link.STL" />
       </geometry>
-    </visual> -->
-  </link>
-  <joint name="keyframe_left_collar_joint" type="fixed" dont_collapse="true">
-    <origin xyz="0 0 0.02" rpy="0 0 0"/>
-    <parent link="l_shoulder_pitch_link"/>
-    <child link="keyframe_left_collar_link"/>
-  </joint>
-  <link name="keyframe_right_collar_link">
-    <!-- <visual>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0.0 0.025" rpy="0 0 0" />
       <geometry>
-        <sphere radius="0.05"/>
+        <cylinder radius="0.035" length="0.095"/>
       </geometry>
-    </visual> -->
-  </link>
-  <joint name="keyframe_right_collar_joint" type="fixed" dont_collapse="true">
-    <origin xyz="0 0 0.02" rpy="0 0 0"/>
-    <parent link="r_shoulder_pitch_link"/>
-    <child link="keyframe_right_collar_link"/>
-  </joint>
-  <link name="keyframe_left_shoulder_link">
-    <!-- <visual>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
-      <geometry>
-        <sphere radius="0.05"/>
-      </geometry>
-    </visual> -->
-  </link>
-  <joint name="keyframe_left_shoulder_joint" type="fixed" dont_collapse="true">
-    <origin xyz="0 0 0" rpy="0 0 0"/>
-    <parent link="l_shoulder_roll_link"/>
-    <child link="keyframe_left_shoulder_link"/>
-  </joint>
-  <link name="keyframe_right_shoulder_link">
-    <!-- <visual>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
-      <geometry>
-        <sphere radius="0.05"/>
-      </geometry>
-    </visual> -->
-  </link>
-  <joint name="keyframe_right_shoulder_joint" type="fixed" dont_collapse="true">
-    <origin xyz="0 0 0" rpy="0 0 0"/>
-    <parent link="r_shoulder_roll_link"/>
-    <child link="keyframe_right_shoulder_link"/>
-  </joint>
-  <link name="keyframe_left_elbow_link">
-    <!-- <visual>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
-      <geometry>
-        <sphere radius="0.05"/>
-      </geometry>
-    </visual> -->
-  </link>
-  <joint name="keyframe_left_elbow_joint" type="fixed" dont_collapse="true">
-    <origin xyz="0 0 0" rpy="0 0 0"/>
-    <parent link="l_elbow_link"/>
-    <child link="keyframe_left_elbow_link"/>
-  </joint>
-  <link name="keyframe_right_elbow_link">
-    <!-- <visual>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
-      <geometry>
-        <sphere radius="0.05"/>
-      </geometry>
-    </visual> -->
-  </link>
-  <joint name="keyframe_right_elbow_joint" type="fixed" dont_collapse="true">
-    <origin xyz="0 0 0" rpy="0 0 0"/>
-    <parent link="r_elbow_link"/>
-    <child link="keyframe_right_elbow_link"/>
-  </joint>
-  <link name="keyframe_left_hip_link">
-    <!-- <visual>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
-      <geometry>
-        <sphere radius="0.05"/>
-      </geometry>
-    </visual> -->
-  </link>
-  <joint name="keyframe_left_hip_joint" type="fixed" dont_collapse="true">
-    <origin xyz="0 0 0" rpy="0 0 0"/>
-    <parent link="l_hip_roll_link"/>
-    <child link="keyframe_left_hip_link"/>
-  </joint>
-  <link name="keyframe_right_hip_link">
-    <!-- <visual>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
-      <geometry>
-        <sphere radius="0.05"/>
-      </geometry>
-    </visual> -->
-  </link>
-  <joint name="keyframe_right_hip_joint" type="fixed" dont_collapse="true">
-    <origin xyz="0 0 0" rpy="0 0 0"/>
-    <parent link="r_hip_roll_link"/>
-    <child link="keyframe_right_hip_link"/>
-  </joint>
-  <link name="keyframe_left_knee_link">
-    <!-- <visual>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
-      <geometry>
-        <sphere radius="0.05"/>
-      </geometry>
-    </visual> -->
-  </link>
-  <joint name="keyframe_left_knee_joint" type="fixed" dont_collapse="true">
-    <origin xyz="0 0 0" rpy="0 0 0"/>
-    <parent link="l_calf_link"/>
-    <child link="keyframe_left_knee_link"/>
-  </joint>
-  <link name="keyframe_right_knee_link">
-    <!-- <visual>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
-      <geometry>
-        <sphere radius="0.05"/>
-      </geometry>
-    </visual> -->
-  </link>
-  <joint name="keyframe_right_knee_joint" type="fixed" dont_collapse="true">
-    <origin xyz="0 0 0" rpy="0 0 0"/>
-    <parent link="r_calf_link"/>
-    <child link="keyframe_right_knee_link"/>
-  </joint>
-  <link name="keyframe_left_ankle_link">
-    <!-- <visual>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
-      <geometry>
-        <sphere radius="0.05"/>
-      </geometry>
-    </visual> -->
-  </link>
-  <joint name="keyframe_left_ankle_joint" type="fixed" dont_collapse="true">
-    <origin xyz="0 0 0" rpy="0 0 0"/>
-    <parent link="l_ankle_roll_link"/>
-    <child link="keyframe_left_ankle_link"/>
-  </joint>
-  <link name="keyframe_right_ankle_link">
-    <!-- <visual>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
-      <geometry>
-        <sphere radius="0.05"/>
-      </geometry>
-    </visual> -->
-  </link>
-  <joint name="keyframe_right_ankle_joint" type="fixed" dont_collapse="true">
-    <origin xyz="0 0 0" rpy="0 0 0"/>
-    <parent link="r_ankle_roll_link"/>
-    <child link="keyframe_right_ankle_link"/>
-  </joint>
+    </collision>
 
-     <!-- Auxiliary -->
-  <link name="auxiliary_r_ankle_roll_link1">
-    <visual>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
-    <geometry>
-      <sphere radius="0.01"/>
-    </geometry>
-    </visual>
-  </link>
-  <joint name="auxiliary_r_ankle_roll_joint1" type="fixed" dont_collapse="true">
-    <origin xyz="-0.04 0.1 0" rpy="0 0 0"/>
-    <parent link="r_ankle_roll_link"/>
-    <child link="auxiliary_r_ankle_roll_link1"/>
-  </joint>
-  <link name="auxiliary_r_ankle_roll_link2">
-    <visual>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
-    <geometry>
-      <sphere radius="0.01"/>
-    </geometry>
-    </visual>
-  </link>
-  <joint name="auxiliary_r_ankle_roll_joint2" type="fixed" dont_collapse="true">
-    <origin xyz="-0.04 -0.1 0" rpy="0 0 0"/>
-    <parent link="r_ankle_roll_link"/>
-    <child link="auxiliary_r_ankle_roll_link2"/>
-  </joint>
 
-  <link name="auxiliary_r_ankle_roll_link3">
+  </link>
+  <joint name="r_upper_arm_joint" type="revolute">
+    <origin xyz="0 0 -0.0724" rpy="0 0 0" />
+    <parent link="r_shoulder_roll_link" />
+    <child link="r_upper_arm_link" />
+    <axis xyz="0 0 1" />
+    <limit lower="-2.16" upper="2.16" effort="10" velocity="15.91" />
+    <dynamics damping="0.02" friction="0.0"/>
+  </joint>
+  <link name="r_elbow_link">
+    <inertial>
+      <origin xyz="5.69e-05 -0.00308341 -0.00211549" rpy="0 0 0" />
+      <mass value="0.31317542" />
+      <inertia ixx="0.00010775" ixy="5e-08" ixz="-3e-07" iyy="9.336e-05" iyz="-4.5e-07" izz="9.783e-05" />
+    </inertial>
     <visual>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
-    <geometry>
-      <sphere radius="0.01"/>
-    </geometry>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://piplus_description/urdf/meshes/r_elbow_link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
     </visual>
   </link>
-  <joint name="auxiliary_r_ankle_roll_joint3" type="fixed" dont_collapse="true">
-    <origin xyz="0.07 0 0" rpy="0 0 0"/>
-    <parent link="r_ankle_roll_link"/>
-    <child link="auxiliary_r_ankle_roll_link3"/>
+  <joint name="r_elbow_joint" type="revolute">
+    <origin xyz="0 0 -0.038" rpy="0 0 0" />
+    <parent link="r_upper_arm_link" />
+    <child link="r_elbow_link" />
+    <axis xyz="0 1 0" />
+    <limit lower="-2" upper="2" effort="10" velocity="15.91" />
+    <dynamics damping="0.02" friction="0.0"/>
   </joint>
-  <link name="auxiliary_r_ankle_roll_link4">
+  <link name="r_wrist_link">
+    <inertial>
+      <origin xyz="3.045e-05 4.83e-06 -0.04078253" rpy="0 0 0" />
+      <mass value="0.07518056" />
+      <inertia ixx="0.00011809" ixy="0.0" ixz="1.2e-07" iyy="0.00011823" iyz="2e-08" izz="1.105e-05" />
+    </inertial>
     <visual>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
-    <geometry>
-      <sphere radius="0.01"/>
-    </geometry>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://piplus_description/urdf/meshes/r_wrist_link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.0 0 -0.035" rpy="0 0 0" />
+      <geometry>
+        <cylinder radius="0.008" length="0.03"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0 0 -0.095" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.0175"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="r_wrist_joint" type="fixed">
+    <origin xyz="0 0 -0.029" rpy="0 0 0" />
+    <parent link="r_elbow_link" />
+    <child link="r_wrist_link" />
+    <axis xyz="0 0 0" />
+    <limit lower="0" upper="0" effort="0" velocity="0" />
+    <dynamics damping="0.02" friction="0.0"/>
+  </joint>
+  <link name="l_shoulder_pitch_link">
+    <inertial>
+      <origin xyz="-0.00215543 0.01720478 0.00022511" rpy="0 0 0" />
+      <mass value="0.13935188" />
+      <inertia ixx="7.568e-05" ixy="3.32e-06" ixz="1e-07" iyy="0.000122" iyz="6.7e-07" izz="0.00014523" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://piplus_description/urdf/meshes/l_shoulder_pitch_link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
     </visual>
   </link>
-  <joint name="auxiliary_r_ankle_roll_joint4" type="fixed" dont_collapse="true">
-    <origin xyz="-0.15 0 0" rpy="0 0 0"/>
-    <parent link="r_ankle_roll_link"/>
-    <child link="auxiliary_r_ankle_roll_link4"/>
+  <joint name="l_shoulder_pitch_joint" type="revolute">
+    <origin xyz="0 0.1084 0.11698" rpy="0 0 0" />
+    <parent link="torso_link" />
+    <child link="l_shoulder_pitch_link" />
+    <axis xyz="0 1 0" />
+    <limit lower="-4.18" upper="1.04" effort="10" velocity="15.91" />
+    <dynamics damping="0.02" friction="0.0"/>
   </joint>
+  <link name="l_shoulder_roll_link">
+    <inertial>
+      <origin xyz="-0.00140359 0.00022205 -0.02488799" rpy="0 0 0" />
+      <mass value="0.55615015" />
+      <inertia ixx="0.00051303" ixy="-1.08e-06" ixz="2.293e-05" iyy="0.00052202" iyz="8.2e-07" izz="0.00015381" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://piplus_description/urdf/meshes/l_shoulder_roll_link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+  </link>
+  <joint name="l_shoulder_roll_joint" type="revolute">
+    <origin xyz="0 0.038 0" rpy="0 0 0" />
+    <parent link="l_shoulder_pitch_link" />
+    <child link="l_shoulder_roll_link" />
+    <axis xyz="1 0 0" />
+    <limit lower="-0.13" upper="3.34" effort="10" velocity="15.91" />
+    <dynamics damping="0.02" friction="0.0"/>
+  </joint>
+  <link name="l_upper_arm_link">
+    <inertial>
+      <origin xyz="-0.00013535 0.00129534 -0.01213424" rpy="0 0 0" />
+      <mass value="0.15318327" />
+      <inertia ixx="0.00017715" ixy="-1.2e-07" ixz="5e-07" iyy="0.00011361" iyz="7.46e-06" izz="0.00014221" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://piplus_description/urdf/meshes/l_upper_arm_link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0.0 0.025" rpy="0 0 0" />
+      <geometry>
+        <cylinder radius="0.035" length="0.095"/>
+      </geometry>
+    </collision>
 
-  <link name="auxiliary_l_ankle_roll_link1">
-    <visual>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
-    <geometry>
-      <sphere radius="0.01"/>
-    </geometry>
-    </visual>
-  </link>
-  <joint name="auxiliary_l_ankle_roll_joint1" type="fixed" dont_collapse="true">
-    <origin xyz="-0.04 0.1 0" rpy="0 0 0"/>
-    <parent link="l_ankle_roll_link"/>
-    <child link="auxiliary_l_ankle_roll_link1"/>
-  </joint>
-  <link name="auxiliary_l_ankle_roll_link2">
-    <visual>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
-    <geometry>
-      <sphere radius="0.01"/>
-    </geometry>
-    </visual>
-  </link>
-  <joint name="auxiliary_l_ankle_roll_joint2" type="fixed" dont_collapse="true">
-    <origin xyz="-0.04 -0.1 0" rpy="0 0 0"/>
-    <parent link="l_ankle_roll_link"/>
-    <child link="auxiliary_l_ankle_roll_link2"/>
-  </joint>
 
-  <link name="auxiliary_l_ankle_roll_link3">
+  </link>
+  <joint name="l_upper_arm_joint" type="revolute">
+    <origin xyz="0 0 -0.0724" rpy="0 0 0" />
+    <parent link="l_shoulder_roll_link" />
+    <child link="l_upper_arm_link" />
+    <axis xyz="0 0 1" />
+    <limit lower="-2.16" upper="2.16" effort="10" velocity="15.91" />
+    <dynamics damping="0.02" friction="0.0"/>
+  </joint>
+  <link name="l_elbow_link">
+    <inertial>
+      <origin xyz="-5.422e-05 0.00312726 -0.00211549" rpy="0 0 0" />
+      <mass value="0.31317542" />
+      <inertia ixx="0.00010766" ixy="5e-08" ixz="2.9e-07" iyy="9.336e-05" iyz="-2e-08" izz="9.774e-05" />
+    </inertial>
     <visual>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
-    <geometry>
-      <sphere radius="0.01"/>
-    </geometry>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://piplus_description/urdf/meshes/l_elbow_link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
     </visual>
   </link>
-  <joint name="auxiliary_l_ankle_roll_joint3" type="fixed" dont_collapse="true">
-    <origin xyz="0.07 0 0" rpy="0 0 0"/>
-    <parent link="l_ankle_roll_link"/>
-    <child link="auxiliary_l_ankle_roll_link3"/>
+  <joint name="l_elbow_joint" type="revolute">
+    <origin xyz="0 0 -0.038" rpy="0 0 0" />
+    <parent link="l_upper_arm_link" />
+    <child link="l_elbow_link" />
+    <axis xyz="0 1 0" />
+    <limit lower="-2" upper="2" effort="10" velocity="15.91" />
+    <dynamics damping="0.02" friction="0.0"/>
   </joint>
-  <link name="auxiliary_l_ankle_roll_link4">
+  <link name="l_wrist_link">
+    <inertial>
+      <origin xyz="3.045e-05 4.83e-06 -0.04078253" rpy="0 0 0" />
+      <mass value="0.07518056" />
+      <inertia ixx="0.00011809" ixy="0.0" ixz="1.2e-07" iyy="0.00011823" iyz="2e-08" izz="1.105e-05" />
+    </inertial>
     <visual>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
-    <geometry>
-      <sphere radius="0.01"/>
-    </geometry>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://piplus_description/urdf/meshes/l_wrist_link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.0 0 -0.035" rpy="0 0 0" />
+      <geometry>
+        <cylinder radius="0.008" length="0.03"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0 0 -0.095" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.0175"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="l_wrist_joint" type="fixed">
+    <origin xyz="0 0 -0.029" rpy="0 0 0" />
+    <parent link="l_elbow_link" />
+    <child link="l_wrist_link" />
+    <axis xyz="0 0 0" />
+    <limit lower="0" upper="0" effort="0" velocity="0" />
+    <dynamics damping="0.02" friction="0.0"/>
+  </joint>
+  <link name="head_yaw_link">
+    <inertial>
+      <origin xyz="6.097e-05 0.00133898 0.02408163" rpy="0 0 0" />
+      <mass value="0.20966327" />
+      <inertia ixx="5.6e-05" ixy="0.0" ixz="2.4e-07" iyy="5.438e-05" iyz="-3.2e-07" izz="5.081e-05" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://piplus_description/urdf/meshes/head_yaw_link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.0195" rpy="0 0 0" />
+      <geometry>
+        <box size="0.035 0.04 0.035"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="head_yaw_joint" type="revolute">
+    <origin xyz="0.014 -0.00026667 0.1981" rpy="0 0 0" />
+    <parent link="torso_link" />
+    <child link="head_yaw_link" />
+    <axis xyz="0 0 1" />
+    <limit lower="-1.43" upper="1.43" effort="3" velocity="30.37" />
+    <dynamics damping="0.02" friction="0.0"/>
+  </joint>
+  <link name="head_pitch_link">
+    <inertial>
+      <origin xyz="0.02665464 -0.00167129 0.05552513" rpy="0 0 0" />
+      <mass value="0.33296951" />
+      <inertia ixx="0.00081268" ixy="4.65e-06" ixz="-3.311e-05" iyy="0.00055742" iyz="-2.41e-06" izz="0.00101639" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://piplus_description/urdf/meshes/head_pitch_link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.026 0 0.055" rpy="0 0 0" />
+      <geometry>
+        <box size="0.1 0.11 0.045"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="head_pitch_joint" type="revolute">
+    <origin xyz="0 0 0.0275" rpy="0 0 0" />
+    <parent link="head_yaw_link" />
+    <child link="head_pitch_link" />
+    <axis xyz="0 1 0" />
+    <limit lower="-1.23" upper="1.01" effort="3" velocity="30.37" />
+    <dynamics damping="0.02" friction="0.0"/>
+  </joint>
+  <link name="camera_link">
+    <inertial>
+      <origin xyz="0.00963743 0.00075253 0.00058537" rpy="0 0 0" />
+      <mass value="0.0584" />
+      <inertia ixx="7.259e-05" ixy="9.8e-07" ixz="0.0" iyy="5.53e-06" iyz="6e-08" izz="7.249e-05" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://piplus_description/urdf/meshes/camera_link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
     </visual>
   </link>
-  <joint name="auxiliary_l_ankle_roll_joint4" type="fixed" dont_collapse="true">
-    <origin xyz="-0.15 0 0" rpy="0 0 0"/>
-    <parent link="l_ankle_roll_link"/>
-    <child link="auxiliary_l_ankle_roll_link4"/>
+  <joint name="camera_joint" type="fixed">
+    <origin xyz="0.048925 0.0053519 0.058472" rpy="0 0 0" />
+    <parent link="head_pitch_link" />
+    <child link="camera_link" />
+    <axis xyz="0 0 0" />
+    <dynamics damping="0.02" friction="0.0"/>
   </joint>
- </robot>
+  <link name="camera_optical_frame_uncalibrated" /> <!-- left camera -->
+  <joint name="camera_joint_uncalibrated" type="fixed">
+    <origin xyz="0.03 -0.039 0.0" rpy="-1.57 0 -1.57" />
+    <parent link="camera_link" />
+    <child link="camera_optical_frame_uncalibrated" />
+  </joint>
+  <link name="camera_optical_frame_right_uncalibrated" /> <!-- right camera -->
+  <joint name="camera_joint_right_uncalibrated" type="fixed">
+    <origin xyz="0.03 0.024 0.0" rpy="-1.57 0 -1.57" />
+    <parent link="camera_link" />
+    <child link="camera_optical_frame_right_uncalibrated" />
+  </joint>
+  <link name="r_hip_pitch_link">
+    <inertial>
+      <origin xyz="7.92e-05 -0.03190261 9.097e-05" rpy="0 0 0" />
+      <mass value="0.45931392" />
+      <inertia ixx="0.00027163" ixy="1.14e-06" ixz="-6.6e-07" iyy="0.00026494" iyz="-4.1e-07" izz="0.00027956" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://piplus_description/urdf/meshes/r_hip_pitch_link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+  </link>
+  <joint name="r_hip_pitch_joint" type="revolute">
+    <origin xyz="0 -0.0475 -0.0435" rpy="0 0 0" />
+    <parent link="base_link" />
+    <child link="r_hip_pitch_link" />
+    <axis xyz="0 1 0" />
+    <limit lower="-1.76" upper="1.76" effort="20" velocity="5.45" />
+    <dynamics damping="0.02" friction="0.0"/>
+  </joint>
+  <link name="r_hip_roll_link">
+    <inertial>
+      <origin xyz="0.00102172 -0.00033797 -0.05845832" rpy="0 0 0" />
+      <mass value="0.55820116" />
+      <inertia ixx="0.00062111" ixy="-1.14e-06" ixz="-3.416e-05" iyy="0.00074025" iyz="-5.5e-07" izz="0.00041298" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://piplus_description/urdf/meshes/r_hip_roll_link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+  </link>
+  <joint name="r_hip_roll_joint" type="revolute">
+    <origin xyz="0 -0.034 0" rpy="0 0 0" />
+    <parent link="r_hip_pitch_link" />
+    <child link="r_hip_roll_link" />
+    <axis xyz="1 0 0" />
+    <limit lower="-2.46" upper="0.17" effort="20" velocity="5.45" />
+    <dynamics damping="0.02" friction="0.0"/>
+  </joint>
+  <link name="r_thigh_link">
+    <inertial>
+      <origin xyz="0.00064557 -0.00075206 -0.02084055" rpy="0 0 0" />
+      <mass value="0.15484273" />
+      <inertia ixx="0.00018778" ixy="4.5e-07" ixz="-8.8e-07" iyy="0.00010058" iyz="-5.6e-07" izz="0.00016124" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://piplus_description/urdf/meshes/r_thigh_link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0.0 0.065" rpy="0 0 0" />
+      <geometry>
+        <cylinder radius="0.035" length="0.055"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="r_thigh_joint" type="revolute">
+    <origin xyz="-0.00035 0 -0.0974" rpy="0 0 0" />
+    <parent link="r_hip_roll_link" />
+    <child link="r_thigh_link" />
+    <axis xyz="0 0 1" />
+    <limit lower="-2.87" upper="2.87" effort="20" velocity="5.45" />
+    <dynamics damping="0.02" friction="0.0"/>
+  </joint>
+  <link name="r_calf_link">
+    <inertial>
+      <origin xyz="-1.001e-05 -0.00237049 -0.06661243" rpy="0 0 0" />
+      <mass value="0.85852308" />
+      <inertia ixx="0.00416941" ixy="-6e-08" ixz="-9.9e-06" iyy="0.00414652" iyz="-5.94e-06" izz="0.00042931" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://piplus_description/urdf/meshes/r_calf_link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="1.57 0 0" />
+      <geometry>
+        <box size="0.055 0.055 0.055"/>
+
+        <!-- <cylinder radius="0.035" length="0.072"/> -->
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 -0.065" rpy="0 0 0" />
+      <geometry>
+        <box size="0.01 0.02 0.055"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="r_calf_joint" type="revolute">
+    <origin xyz="0 0 -0.045" rpy="0 0 0" />
+    <parent link="r_thigh_link" />
+    <child link="r_calf_link" />
+    <axis xyz="0 1 0" />
+    <limit lower="-2.14" upper="2.35" effort="20" velocity="5.45" />
+    <dynamics damping="0.02" friction="0.0"/>
+  </joint>
+  <link name="r_ankle_pitch_link">
+    <inertial>
+      <origin xyz="0.00503044 0.00051345 -0.00016685" rpy="0 0 0" />
+      <mass value="0.16352634" />
+      <inertia ixx="0.00011538" ixy="4.2e-07" ixz="1.65e-06" iyy="0.00020824" iyz="-6.3e-07" izz="0.00028929" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://piplus_description/urdf/meshes/r_ankle_pitch_link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.0035 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.07 0.07 0.042"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="r_ankle_pitch_joint" type="revolute">
+    <origin xyz="0 0 -0.14" rpy="0 0 0" />
+    <parent link="r_calf_link" />
+    <child link="r_ankle_pitch_link" />
+    <axis xyz="0 1 0" />
+    <limit lower="-0.97" upper="0.92" effort="20" velocity="5.45" />
+    <dynamics damping="0.02" friction="0.0"/>
+  </joint>
+  <link name="r_ankle_roll_link">
+    <inertial>
+      <origin xyz="0.0046213 8.211e-05 -0.01502099" rpy="0 0 0" />
+      <mass value="0.61662552" />
+      <inertia ixx="0.00054662" ixy="-8.4e-07" ixz="-0.00025529" iyy="0.00150792" iyz="8e-07" izz="0.0013343" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://piplus_description/urdf/meshes/r_ankle_roll_link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.028 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.06 0.06 0.042"/>
+
+        <!-- <mesh filename="package://PiPlus_S_12L8A0G2H1W/meshes/r_ankle_roll_link_simplify.STL" /> -->
+      </geometry>
+    </collision>
+
+    <collision>
+      <origin xyz="-0.017 -0.025 -0.04" rpy="0 1.5708 0"/>
+      <geometry>
+        <cylinder radius="0.01" length="0.13"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="-0.0272 -0.009 -0.04" rpy="0 -1.5708 0"/>
+      <geometry>
+        <cylinder radius="0.01" length="0.164"/>
+      </geometry>
+    </collision>
+
+
+
+    <collision>
+      <origin xyz="-0.0272 0.009 -0.04" rpy="0 -1.5708 0"/>
+      <geometry>
+        <cylinder radius="0.01" length="0.164"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="-0.017 0.025 -0.04" rpy="0 1.5708 0"/>
+      <geometry>
+        <cylinder radius="0.01" length="0.13"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="r_ankle_roll_joint" type="revolute">
+    <origin xyz="0.051 0 0" rpy="0 0 0" />
+    <parent link="r_ankle_pitch_link" />
+    <child link="r_ankle_roll_link" />
+    <axis xyz="1 0 0" />
+    <limit lower="-0.78" upper="0.78" effort="20" velocity="5.45" />
+    <dynamics damping="0.02" friction="0.0"/>
+  </joint>
+  <link name="l_hip_pitch_link">
+    <inertial>
+      <origin xyz="7.921e-05 0.03190246 -0.0001562" rpy="0 0 0" />
+      <mass value="0.45931808" />
+      <inertia ixx="0.00027163" ixy="-1.14e-06" ixz="-3.9e-07" iyy="0.00026494" iyz="-2.25e-06" izz="0.00027956" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://piplus_description/urdf/meshes/l_hip_pitch_link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+  </link>
+  <joint name="l_hip_pitch_joint" type="revolute">
+    <origin xyz="0 0.0475 -0.0435" rpy="0 0 0" />
+    <parent link="base_link" />
+    <child link="l_hip_pitch_link" />
+    <axis xyz="0 1 0" />
+    <limit lower="-1.76" upper="1.76" effort="20" velocity="5.45" />
+    <dynamics damping="0.02" friction="0.0"/>
+  </joint>
+  <link name="l_hip_roll_link">
+    <inertial>
+      <origin xyz="0.00087873 1.341e-05 -0.05845832" rpy="0 0 0" />
+      <mass value="0.55820115" />
+      <inertia ixx="0.00062117" ixy="-1.07e-06" ixz="-3.583e-05" iyy="0.00074046" iyz="-1.6e-06" izz="0.00041325" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://piplus_description/urdf/meshes/l_hip_roll_link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+  </link>
+  <joint name="l_hip_roll_joint" type="revolute">
+    <origin xyz="0 0.034 0" rpy="0 0 0" />
+    <parent link="l_hip_pitch_link" />
+    <child link="l_hip_roll_link" />
+    <axis xyz="1 0 0" />
+    <limit lower="-0.17" upper="2.46" effort="20" velocity="5.45" />
+    <dynamics damping="0.02" friction="0.0"/>
+  </joint>
+  <link name="l_thigh_link">
+    <inertial>
+      <origin xyz="0.00071587 0.00075215 -0.0208406" rpy="0 0 0" />
+      <mass value="0.15484236" />
+      <inertia ixx="0.00018778" ixy="-2.2e-07" ixz="-1.13e-06" iyy="0.00010057" iyz="5.6e-07" izz="0.00016122" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://piplus_description/urdf/meshes/l_thigh_link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0.0 0.065" rpy="0 0 0" />
+      <geometry>
+        <cylinder radius="0.035" length="0.055"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="l_thigh_joint" type="revolute">
+    <origin xyz="-0.00035 0 -0.0974" rpy="0 0 0" />
+    <parent link="l_hip_roll_link" />
+    <child link="l_thigh_link" />
+    <axis xyz="0 0 1" />
+    <limit lower="-2.87" upper="2.87" effort="20" velocity="5.45" />
+    <dynamics damping="0.02" friction="0.0"/> <!-- 即使很小的阻尼也能极大改善稳定性 -->
+  </joint>
+  <link name="l_calf_link">
+    <inertial>
+      <origin xyz="-1.001e-05 0.00237048 -0.06661245" rpy="0 0 0" />
+      <mass value="0.85852288" />
+      <inertia ixx="0.00416941" ixy="6e-08" ixz="9.73e-06" iyy="0.00414651" iyz="5.94e-06" izz="0.00042931" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://piplus_description/urdf/meshes/l_calf_link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="1.57 0 0" />
+      <geometry>
+        <box size="0.055 0.055 0.055"/>
+
+        <!-- <cylinder radius="0.035" length="0.072"/> -->
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 -0.065" rpy="0 0 0" />
+      <geometry>
+        <box size="0.01 0.02 0.055"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="l_calf_joint" type="revolute">
+    <origin xyz="0 0 -0.045" rpy="0 0 0" />
+    <parent link="l_thigh_link" />
+    <child link="l_calf_link" />
+    <axis xyz="0 1 0" />
+    <limit lower="-2.14" upper="2.35" effort="20" velocity="5.45" />
+    <dynamics damping="0.02" friction="0.0"/>
+  </joint>
+  <link name="l_ankle_pitch_link">
+    <inertial>
+      <origin xyz="0.00503044 -0.00051345 -0.00016685" rpy="0 0 0" />
+      <mass value="0.16352634" />
+      <inertia ixx="0.00011538" ixy="-4.2e-07" ixz="1.65e-06" iyy="0.00020824" iyz="6.3e-07" izz="0.00028929" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://piplus_description/urdf/meshes/l_ankle_pitch_link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.0035 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.07 0.07 0.042"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="l_ankle_pitch_joint" type="revolute">
+    <origin xyz="0 0 -0.14" rpy="0 0 0" />
+    <parent link="l_calf_link" />
+    <child link="l_ankle_pitch_link" />
+    <axis xyz="0 1 0" />
+    <limit lower="-0.97" upper="0.92" effort="20" velocity="5.45" />
+    <dynamics damping="0.02" friction="0.0"/>
+  </joint>
+  <link name="l_ankle_roll_link">
+    <inertial>
+      <origin xyz="0.00456214 8.211e-05 -0.01256536" rpy="0 0 0" />
+      <mass value="0.61662552" />
+      <inertia ixx="0.00054662" ixy="-8.4e-07" ixz="-0.00025529" iyy="0.00150792" iyz="8e-07" izz="0.0013343" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://piplus_description/urdf/meshes/l_ankle_roll_link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.028 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.06 0.06 0.042"/>
+
+        <!-- <mesh filename="package://PiPlus_S_12L8A0G2H1W/meshes/l_ankle_roll_link_simplify.STL" /> -->
+      </geometry>
+    </collision>
+
+    <collision>
+      <origin xyz="-0.017 -0.025 -0.04" rpy="0 1.5708 0"/>
+      <geometry>
+        <cylinder radius="0.01" length="0.13"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="-0.0272 -0.009 -0.04" rpy="0 -1.5708 0"/>
+      <geometry>
+        <cylinder radius="0.01" length="0.164"/>
+      </geometry>
+    </collision>
+
+
+
+    <collision>
+      <origin xyz="-0.0272 0.009 -0.04" rpy="0 -1.5708 0"/>
+      <geometry>
+        <cylinder radius="0.01" length="0.164"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="-0.017 0.025 -0.04" rpy="0 1.5708 0"/>
+      <geometry>
+        <cylinder radius="0.01" length="0.13"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="l_ankle_roll_joint" type="revolute">
+    <origin xyz="0.051 0 0" rpy="0 0 0" />
+    <parent link="l_ankle_pitch_link" />
+    <child link="l_ankle_roll_link" />
+    <axis xyz="1 0 0" />
+    <limit lower="-0.78" upper="0.78" effort="20" velocity="5.45" />
+    <dynamics damping="0.02" friction="0.0"/>
+  </joint>
+</robot>
