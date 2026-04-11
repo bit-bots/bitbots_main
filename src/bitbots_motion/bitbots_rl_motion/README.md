@@ -4,9 +4,7 @@ The package contains a framework which is a capsule for the application of polic
 
 ## Framework structure
 
-The code is divided in five sections: Configs, Handlers, Models, Nodes and rest.
-
-The Models-folder contains all policy models. Node, the framework expects that policies are in .onnx-format. 
+The code is divided in five sections: Configs, Handlers, Nodes, Launch and rest.
 
 The Nodes-folder contains all relevant ROS-Nodes regarding policy models. These nodes are responsible for starting the policies correctly, feeding them with correct data and publishing their outputs correctly.
 The name of the node describes for which kind of policy it is suitable. 
@@ -14,18 +12,16 @@ The RL Node is a special case. All other nodes are kids of the RL Node. It centr
 
 The Handlers-folder contains all handlers. A handler is a specific type of object which is responsible for processing external data such that they are comprehensible for the policy models. All handlers are kids of the Handler class.
 
-The Configs-folder contains all robot/policy specific configurations. Files in the Configs-folder should be in .yaml-format.
+The Configs-folder contains all robot/policy specific configurations. Files in the Configs-folder should be in .yaml-format. They also contain the paths to the onnx-policy models.
 
-phase.py, policy_nodes.py and previous_action.py are two files, which do not fall in any of the aforementioned categories. 
-phase.py defines a PhaseObject, which is responsible for the phase management. previous_action.py defindes a PreviousAction object, which is responsible for saving and provide the previous action. policy_nodes.py can be looked as the launch file. It defines, which nodes and policies will be used. 
+The Launch-folder contains a launch file which starts all relevant policy nodes.
+
+phase.py and previous_action.py are two files, which do not fall in any of the aforementioned categories. 
+phase.py defines a PhaseObject, which is responsible for the phase management. previous_action.py defindes a PreviousAction object, which is responsible for saving and provide the previous action.
 Both files are located in the bitbots_rl_motion folder. 
 
 ## Execution
 
-For proper starting you need a policy model and a config file. The config file should have the same structure as the wolfgang_config.yaml file.
+For proper starting you need a policy model and a config file. The config file should have the same structure as the wolfgang_dribbling_model_config.yaml file.
 Furthermore, you have to create or adjust a node file to your needs. walk_node.py can be used for orientation. If chages are conducted on the RL_Node class, it should be announced.
-Finally, you define which nodes and policies you wanna use in the policy_nodes.py file.  
-
-
-
-
+Finally, you define which nodes and policies you wanna use in the launch file.  
