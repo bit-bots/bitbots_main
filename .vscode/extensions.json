@@ -18,11 +18,11 @@
         "ms-vscode.cpptools-themes", // C++ support
         "ms-vscode.cpptools", // C++ support
         "njpwerner.autodocstring", // Generates docstrings
+        "Plex.vscode-protolint", // Protobuf support
         "streetsidesoftware.code-spell-checker-german", // Spell checker
         "streetsidesoftware.code-spell-checker", // Spell checker
         "tamasfe.even-better-toml", // TOML support
         "trond-snekvik.simple-rst", // Syntax highlighting for rst files
         "twxs.cmake", // CMake support
-        "zxh404.vscode-proto3", // Protobuf support
     ]
 }

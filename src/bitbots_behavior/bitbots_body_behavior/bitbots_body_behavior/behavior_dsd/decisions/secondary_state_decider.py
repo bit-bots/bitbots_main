@@ -1,6 +1,6 @@
 from bitbots_blackboard.body_blackboard import BodyBlackboard
 from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
-from game_controller_hl_interfaces.msg import GameState
+from game_controller_hsl_interfaces.msg import GameState
 
 
 class SecondaryStateDecider(AbstractDecisionElement):
@@ -15,28 +15,35 @@ class SecondaryStateDecider(AbstractDecisionElement):
         super().__init__(blackboard, dsd, parameters)
 
     def perform(self, reevaluate=False):
-        state_number = self.blackboard.gamestate.get_secondary_state()
+        set_play_number = self.blackboard.gamestate.get_set_play()
+        game_phase_number = self.blackboard.gamestate.get_game_phase()
+
         # todo this is a temporary hack to make GUI work
-        if state_number == GameState.STATE_NORMAL:
+        if game_phase_number == GameState.GAME_PHASE_NORMAL and set_play_number == GameState.SET_PLAY_NONE:
             return "NORMAL"
-        elif state_number == GameState.STATE_PENALTYSHOOT:
+        elif game_phase_number == GameState.GAME_PHASE_PENALTY_SHOOT_OUT and set_play_number == GameState.SET_PLAY_NONE:
             return "PENALTYSHOOT"
-        elif state_number == GameState.STATE_OVERTIME:
+        elif game_phase_number == GameState.GAME_PHASE_EXTRA_TIME and set_play_number == GameState.SET_PLAY_NONE:
             return "OVERTIME"
-        elif state_number == GameState.STATE_TIMEOUT:
+        elif game_phase_number == GameState.GAME_PHASE_TIMEOUT and set_play_number == GameState.SET_PLAY_NONE:
             return "TIMEOUT"
-        elif state_number == GameState.STATE_DIRECT_FREEKICK:
+        elif set_play_number == GameState.SET_PLAY_DIRECT_FREE_KICK:
             return "DIRECT_FREEKICK"
-        elif state_number == GameState.STATE_INDIRECT_FREEKICK:
+        elif set_play_number == GameState.SET_PLAY_INDIRECT_FREE_KICK:
             return "INDIRECT_FREEKICK"
-        elif state_number == GameState.STATE_PENALTYKICK:
+        elif set_play_number == GameState.SET_PLAY_PENALTY_KICK:
             return "PENALTYKICK"
-        elif state_number == GameState.STATE_CORNER_KICK:
+        elif set_play_number == GameState.SET_PLAY_CORNER_KICK:
             return "CORNER_KICK"
-        elif state_number == GameState.STATE_GOAL_KICK:
+        elif set_play_number == GameState.SET_PLAY_GOAL_KICK:
             return "GOAL_KICK"
-        elif state_number == GameState.STATE_THROW_IN:
+        elif set_play_number == GameState.SET_PLAY_THROW_IN:
             return "THROW_IN"
+        else:
+            self.blackboard.node.get_logger().error(
+                f"Unknown secondary state with game phase {game_phase_number} and set play {set_play_number}"
+            )
+            return "UNKNOWN"
 
     def get_reevaluate(self):
         """
@@ -57,42 +64,26 @@ class SecondaryStateTeamDecider(AbstractDecisionElement):
         self.team_id = self.blackboard.gamestate.get_team_id()
 
     def perform(self, reevaluate=False):
-        state_number = self.blackboard.gamestate.get_secondary_state()
+        game_phase_number = self.blackboard.gamestate.get_game_phase()
         # we have to handle penalty shoot differently because the message is strange
-        if state_number == GameState.STATE_PENALTYSHOOT:
+        if game_phase_number == GameState.GAME_PHASE_PENALTY_SHOOT_OUT:
             if self.blackboard.gamestate.has_kickoff():
                 return "OUR"
             return "OTHER"
         else:
             if self.blackboard.gamestate.get_secondary_team() == self.team_id:
                 return "OUR"
+            # @TODO: handle this better and potentially adapt KickOffTimeUp
+            elif (
+                self.blackboard.gamestate.get_secondary_team() == 255
+                or self.blackboard.gamestate.get_secondary_team() == 0
+            ):
+                return "NONE"
+
             return "OTHER"
 
     def get_reevaluate(self):
         """
         Secondary state Team can change during the game
         """
-        return True
-
-
-class SecondaryStateModeDecider(AbstractDecisionElement):
-    """
-    Decides which mode in the secondary state we are.
-    """
-
-    blackboard: BodyBlackboard
-
-    def __init__(self, blackboard, dsd, parameters):
-        super().__init__(blackboard, dsd, parameters)
-
-    def perform(self, reevaluate=False):
-        state_mode = self.blackboard.gamestate.get_secondary_state_mode()
-        if state_mode == GameState.MODE_PREPARATION:
-            return "PREPARATION"
-        elif state_mode == GameState.MODE_PLACING:
-            return "PLACING"
-        elif state_mode == GameState.MODE_END:
-            return "END"
-
-    def get_reevaluate(self):
         return True

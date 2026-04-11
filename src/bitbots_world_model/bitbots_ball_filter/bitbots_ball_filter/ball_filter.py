@@ -14,7 +14,7 @@ from rclpy.time import Time
 from ros2_numpy import msgify, numpify
 from sensor_msgs.msg import CameraInfo
 from soccer_vision_3d_msgs.msg import Ball, BallArray
-from std_msgs.msg import Header
+from std_msgs.msg import Float32, Header
 from std_srvs.srv import Trigger
 from tf2_geometry_msgs import PointStamped, PoseStamped
 
@@ -39,6 +39,7 @@ class BallFilter(Node):
         # Initialize parameters
         self.update_params()
         self.logger.info(f"Using frame '{self.config.filter.frame}' for ball filtering")
+        self.last_ball_time: Time = self.get_clock().now()
 
         self.camera_info: Optional[CameraInfo] = None
 
@@ -49,6 +50,10 @@ class BallFilter(Node):
         self.ball_pose_publisher = self.create_publisher(
             PoseWithCovarianceStamped, self.config.ros.ball_position_publish_topic, 1
         )
+        self.game_controller_ball_position_publisher = self.create_publisher(
+            PointStamped, "hsl_gamecontroller/ball_position", 1
+        )
+        self.ball_age_publisher = self.create_publisher(Float32, "hsl_gamecontroller/ball_age", 1)
 
         # Create callback group
         self.callback_group = MutuallyExclusiveCallbackGroup()
@@ -141,6 +146,8 @@ class BallFilter(Node):
                 # Store the ball measurement
                 self.ball_state_position = numpify(ball_measurement_map.point)
                 self.ball_state_covariance = covariance
+                # @TODO: actually give last ball time
+                self.last_ball_time = self.get_clock().now()
                 ball_measurement_updated = True
 
         # Get our estimate in the base footprint frame for easier distance calculation
@@ -258,6 +265,21 @@ class BallFilter(Node):
         pose_msg.pose.covariance = covariance.flatten()
         pose_msg.pose.pose.orientation.w = 1.0
         self.ball_pose_publisher.publish(pose_msg)
+
+        ball_position_msg = PointStamped()
+        ball_position_msg.point = msgify(Point, self.ball_state_position)
+        ball_position_msg.header = Header(
+            stamp=Time.to_msg(self.get_clock().now()),
+            frame_id=self.config.filter.frame,
+        )
+        self.game_controller_ball_position_publisher.publish(ball_position_msg)
+
+        # Build message for Ball age
+        ball_age_msg = Float32()
+        seconds_since_last_ball = (self.get_clock().now() - self.last_ball_time).nanoseconds / 1e9
+        ball_age_msg.data = seconds_since_last_ball
+
+        self.ball_age_publisher.publish(ball_age_msg)
 
 
 def main(args=None) -> None:

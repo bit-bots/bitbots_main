@@ -18,9 +18,7 @@ if(ipo_supported)
 endif()
 
 # Build with release optimizations and debug symbols by default
-if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE RelWithDebug)
-endif()
+set(CMAKE_BUILD_TYPE RelWithDebug)
 
 set(PYBIND11_PYTHON_VERSION 3)
 set(PYBIND11_FINDPYTHON ON)
@@ -58,7 +56,7 @@ rosidl_generate_interfaces(
 
 include_directories(include ${PYTHON_INCLUDE_DIRS})
 
-add_compile_options(-Wall -Werror -Wno-unused -Wextra -Wpedantic)
+add_compile_options(-Wall -Werror -Wno-unused -Wextra -Wpedantic -Wfatal-errors)
 
 set(SOURCES src/walk_visualizer.cpp src/walk_engine.cpp src/walk_stabilizer.cpp
             src/walk_ik.cpp src/walk_node.cpp)

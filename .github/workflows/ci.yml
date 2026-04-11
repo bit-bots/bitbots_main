@@ -1,7 +1,7 @@
 name: Build & Test
 on:
   schedule:
-    - cron: '0 0 * * *'
+    - cron: '12 3 * * *'
   push:
 
 jobs:
@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - name: Cancel outdated jobs
-        uses: fkirc/skip-duplicate-actions@v5
+        uses: fkirc/skip-duplicate-actions@v5.3.1
         with:
           cancel_others: 'true'
 
@@ -23,7 +23,7 @@ jobs:
       #     detached: true
 
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6.0.2
 
       - name: Configure git to trust repository
         run: git config --global --add safe.directory /__w/bitbots_main/bitbots_main
@@ -32,7 +32,7 @@ jobs:
         run: scripts/make_basler.sh --ci
 
       - name: Set up workspace
-        uses: prefix-dev/setup-pixi@v0.9.3
+        uses: prefix-dev/setup-pixi@v0.9.5
         with:
           pixi-version: v0.63.1
           cache: true
