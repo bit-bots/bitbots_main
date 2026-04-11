@@ -22,9 +22,8 @@ ask_question() {
 setup_pixi() {
     if ! type pixi &> /dev/null; then
         curl -fsSL https://pixi.sh/install.sh | sh
+        export PATH="$PATH:$HOME/.pixi/bin"
     fi
-}
-    curl -fsSL https://pixi.sh/install.sh | sh
 }
 
 setup_repo() {
@@ -56,7 +55,7 @@ setup_repo() {
     fi
 
     echo "Installing dependencies..."
-    $HOME/.pixi/bin/pixi install
+    install
 }
 
 setup_host() {
@@ -73,9 +72,9 @@ build_repository() {
 
     # Append "--packages-skip bitbots_basler_camera" to the build command if setup_host was skipped or failed
     if (( basler_installed )); then
-    $HOME/.pixi/bin/pixi run build
+    pixi run build
     else
-    $HOME/.pixi/bin/pixi run build --packages-skip bitbots_basler_camera
+    pixi run build --packages-skip bitbots_basler_camera
     fi
 }
 
