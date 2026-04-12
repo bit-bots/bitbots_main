@@ -160,11 +160,6 @@ robot::~robot()
             thread.join();
     }
 
-    if (pub_thread_.joinable())
-    {
-        pub_thread_.join();
-    }
-
     if (error_check_thread_.joinable())
     {
         error_check_thread_.join();
