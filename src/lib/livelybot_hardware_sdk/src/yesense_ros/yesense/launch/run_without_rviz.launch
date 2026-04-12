@@ -1,6 +1,6 @@
 <launch>
   <node pkg="yesense_imu" exec="yesense_imu_node" name="yesense_imu_node" output="screen">
-    <param name="yesense_port" value="/dev/ttyS7"/>
+    <param name="yesense_port" value="/dev/ttyUSB0"/>
     <param name="yesense_baudrate" value="460800"/>
   </node>
 </launch>
