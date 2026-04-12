@@ -49,7 +49,6 @@ private:
     std::vector<canboard> CANboards;
     std::vector<std::string> str;
     std::string SDK_version_str = "4.3.3";
-    std::atomic<bool> publish_joint_state{false};
     rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_state_pub_;
     rclcpp::Subscription<bitbots_msgs::msg::JointCommand>::SharedPtr joint_cmd_sub_;
     rclcpp::Subscription<bitbots_msgs::msg::JointTorque>::SharedPtr torque_sub_;

@@ -123,9 +123,7 @@ robot::robot(rclcpp::Node::SharedPtr node)
             });
     }
 
-    publish_joint_state = true;
     joint_state_pub_ = node_->create_publisher<sensor_msgs::msg::JointState>("joint_states", 10);
-    pub_thread_ = std::thread(&robot::publishJointStates, this);
 
     joint_cmd_sub_ = node_->create_subscription<bitbots_msgs::msg::JointCommand>(
         "joint_command", 1,
@@ -144,7 +142,7 @@ robot::robot(rclcpp::Node::SharedPtr node)
     // jointCommandCallback so neither corrupts the shared TX buffer.
     state_poll_timer_ = node_->create_wall_timer(
         std::chrono::milliseconds(10),
-        [this]() { send_get_motor_state_cmd(); });
+        [this]() { robot::publishJointStates(); });
 
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
@@ -156,7 +154,6 @@ robot::robot(rclcpp::Node::SharedPtr node)
 
 robot::~robot()
 {
-    publish_joint_state = false;
     set_stop();
     motor_send_2();
     motor_send_2();
@@ -180,33 +177,30 @@ robot::~robot()
 
 void robot::publishJointStates()
 {
-    rclcpp::Rate rate(100);
-    while (publish_joint_state && rclcpp::ok())
+    send_get_motor_state_cmd();
+
+    sensor_msgs::msg::JointState js;
+    js.header.stamp = node_->now();
+
+    //const double now_sec = std::chrono::duration<double>(
+    //    std::chrono::steady_clock::now().time_since_epoch()).count();
+
+    for (motor *m : Motors)
     {
-        sensor_msgs::msg::JointState js;
-        js.header.stamp = node_->now();
+        motor_back_t *data_ptr = m->get_current_motor_state();
 
-        const double now_sec = std::chrono::duration<double>(
-            std::chrono::steady_clock::now().time_since_epoch()).count();
+        // Drop motors with no recent data entirely — consumers must not
+        // assume every motor is always present in the message.
+        //if (data_ptr->time == 0.0 || now_sec - data_ptr->time > 0.1)
+        //    continue;
 
-        for (motor *m : Motors)
-        {
-            motor_back_t *data_ptr = m->get_current_motor_state();
-
-            // Drop motors with no recent data entirely — consumers must not
-            // assume every motor is always present in the message.
-            //if (data_ptr->time == 0.0 || now_sec - data_ptr->time > 0.1)
-            //    continue;
-
-            js.name.push_back(m->get_motor_name());
-            js.position.push_back(data_ptr->position);
-            js.velocity.push_back(data_ptr->velocity);
-            js.effort.push_back(data_ptr->torque);
-        }
-
-        joint_state_pub_->publish(js);
-        rate.sleep();
+        js.name.push_back(m->get_motor_name());
+        js.position.push_back(data_ptr->position);
+        js.velocity.push_back(data_ptr->velocity);
+        js.effort.push_back(data_ptr->torque);
     }
+
+    joint_state_pub_->publish(js);
 }
 
 
