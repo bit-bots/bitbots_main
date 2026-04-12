@@ -224,7 +224,7 @@ class JoyNode(Node):
                 self.denormalize_joy(self.config["head"]["gain_tilt"], self.config["head"]["stick_tilt"], msg, -1)
             )
 
-            self.head_msg.joint_names = ["HeadPan", "HeadTilt"]
+            self.head_msg.joint_names = ["head_yaw_joint", "head_pitch_joint"]
             self.head_msg.positions = [pan_goal, tilt_goal]
             self.head_pub.publish(self.head_msg)
 

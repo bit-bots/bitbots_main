@@ -95,35 +95,33 @@ class RecordUI(Plugin):
         # Motor hierarchy
         self._motor_hierarchy = {  # TODO this should be a parameter / loaded from the urdf
             "Body": {
-                "Head": ["HeadPan", "HeadTilt"],
+                "Head": ["head_yaw_joint", "head_pitch_joint"],
                 "Arms": {
                     "Left": [
-                        "LShoulderPitch",
-                        "LShoulderRoll",
-                        "LElbow",
+                        "l_shoulder_pitch_joint",
+                        "l_shoulder_roll_joint",
+                        "l_elbow_joint",
                     ],
                     "Right": [
-                        "RShoulderPitch",
-                        "RShoulderRoll",
-                        "RElbow",
+                        "r_shoulder_pitch_joint",
+                        "r_shoulder_roll_joint",
+                        "r_elbow_joint",
                     ],
                 },
                 "Legs": {
                     "Left": [
-                        "LHipYaw",
-                        "LHipRoll",
-                        "LHipPitch",
-                        "LKnee",
-                        "LAnklePitch",
-                        "LAnkleRoll",
+                        "l_hip_roll_joint",
+                        "l_hip_pitch_joint",
+                        "l_calf_joint",
+                        "l_ankle_pitch_joint",
+                        "l_ankle_roll_joint",
                     ],
                     "Right": [
-                        "RHipYaw",
-                        "RHipRoll",
-                        "RHipPitch",
-                        "RKnee",
-                        "RAnklePitch",
-                        "RAnkleRoll",
+                        "r_hip_roll_joint",
+                        "r_hip_pitch_joint",
+                        "r_calf_joint",
+                        "r_ankle_pitch_joint",
+                        "r_ankle_roll_joint",
                     ],
                 },
             }
@@ -301,8 +299,8 @@ class RecordUI(Plugin):
         self._widget.actionAnimation_until_Frame.triggered.connect(self.play_until)
         self._widget.actionDuplicate_Frame.triggered.connect(self.duplicate)
         self._widget.actionDelete_Frame.triggered.connect(self.delete)
-        self._widget.actionLeft.triggered.connect(lambda: self.mirror_frame("R"))
-        self._widget.actionRight.triggered.connect(lambda: self.mirror_frame("L"))
+        self._widget.actionLeft.triggered.connect(lambda: self.mirror_frame("r"))
+        self._widget.actionRight.triggered.connect(lambda: self.mirror_frame("l"))
         self._widget.actionInvert.triggered.connect(self.invert_frame)
         self._widget.actionUndo.triggered.connect(self.undo)
         self._widget.actionRedo.triggered.connect(self.redo)
@@ -588,12 +586,12 @@ class RecordUI(Plugin):
         self._widget.statusBar.showMessage(status)
         self.update_frames()
 
-    def mirror_frame(self, source: Literal["L", "R"]) -> None:
+    def mirror_frame(self, source: Literal["l", "r"]) -> None:
         """
         Copies all motor values from one side of the robot to the other. Inverts values, if necessary
         """
         # Get direction to mirror to
-        mirrored_source = {"R": "L", "L": "R"}[source]
+        mirrored_source = {"r": "l", "l": "r"}[source]
 
         # Go through all active motors
         for motor_name, angle in self._working_angles.items():
@@ -626,10 +624,10 @@ class RecordUI(Plugin):
         # Go through all active motors
         for motor_name, angle in self._working_angles.items():
             # Check if the motor is on the right or left side and get the mirrored motor name
-            if motor_name.startswith("R"):
-                mirrored_motor_name = "L" + motor_name[1:]
-            elif motor_name.startswith("L"):
-                mirrored_motor_name = "R" + motor_name[1:]
+            if motor_name.startswith("r"):
+                mirrored_motor_name = "l" + motor_name[1:]
+            elif motor_name.startswith("l"):
+                mirrored_motor_name = "r" + motor_name[1:]
             else:
                 # Just copy over if the motor is not on the left or right side
                 mirrored_motors[motor_name] = angle

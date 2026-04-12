@@ -144,7 +144,7 @@ class TeleopKeyboard(Node):
         self.head_msg.max_torques = [-1.0] * 2
         self.head_msg.velocities = [5.0] * 2
         self.head_msg.accelerations = [40.0] * 2
-        self.head_msg.joint_names = ["HeadPan", "HeadTilt"]
+        self.head_msg.joint_names = ["head_yaw_joint", "head_pitch_joint"]
         self.head_msg.positions = [0.0] * 2
 
         self.head_mode_msg = HeadMode(head_mode=HeadMode.DONT_MOVE)
@@ -194,9 +194,9 @@ class TeleopKeyboard(Node):
         return kick_goal
 
     def joint_state_cb(self, msg):
-        if "HeadPan" in msg.name and "HeadTilt" in msg.name:
-            self.head_pan_pos = msg.position[msg.name.index("HeadPan")]
-            self.head_tilt_pos = msg.position[msg.name.index("HeadTilt")]
+        if "head_yaw_joint" in msg.name and "head_pitch_joint" in msg.name:
+            self.head_pan_pos = msg.position[msg.name.index("head_yaw_joint")]
+            self.head_tilt_pos = msg.position[msg.name.index("head_pitch_joint")]
 
     def loop(self):
         try:

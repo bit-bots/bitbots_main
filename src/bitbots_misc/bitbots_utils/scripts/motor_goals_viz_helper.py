@@ -18,7 +18,7 @@ class MotorVizHelper(Node):
         # get rid of additional ROS args when used in launch file
 
         parser = argparse.ArgumentParser()
-        parser.add_argument("--robot-type", "-t", help="What type of robot to use", default="wolfgang")
+        parser.add_argument("--robot-type", "-t", help="What type of robot to use", default="piplus")
         parser.add_argument("--walking", "-w", help="Directly get walking motor goals", action="store_true")
         parser.add_argument("--animation", "-a", help="Directly get animation motor goals", action="store_true")
         parser.add_argument("--head", help="Directly get head motor goals", action="store_true")
@@ -100,28 +100,31 @@ class MotorVizHelper(Node):
                 "neckYaw",
                 "neckPitch",
             ]
-            self.joint_goals = [
-                float(0),
-                float(0),
-                float(0),
-                float(0),
-                float(0),
-                float(0),
-                float(0),
-                float(0),
-                float(0),
-                float(0),
-                float(0),
-                float(0),
-                float(0),
-                float(0),
-                float(0),
-                float(0),
-                float(0),
-                float(0),
-                float(0),
-                float(0),
+            self.joint_goals = [0.0] * 20
+        elif self.args.robot_type == "piplus":
+            self.joint_names = [
+                "head_yaw_joint",
+                "head_pitch_joint",
+                "l_shoulder_pitch_joint",
+                "l_shoulder_roll_joint",
+                "l_elbow_joint",
+                "r_shoulder_pitch_joint",
+                "r_shoulder_roll_joint",
+                "r_elbow_joint",
+                "l_hip_roll_joint",
+                "l_hip_roll_joint",
+                "l_hip_pitch_joint",
+                "l_calf_joint",
+                "l_ankle_pitch_joint",
+                "l_ankle_roll_joint",
+                "r_hip_roll_joint",
+                "r_hip_roll_joint",
+                "r_hip_pitch_joint",
+                "r_calf_joint",
+                "r_ankle_pitch_joint",
+                "r_ankle_roll_joint",
             ]
+            self.joint_goals = [0.0] * 22
         else:
             print(f"Unknown robot type {self.args.robot_type}")
             exit()

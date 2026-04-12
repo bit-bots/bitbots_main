@@ -377,7 +377,7 @@ class HeadMover {
     // Send the motor goals including the position, speed and acceleration
     bitbots_msgs::msg::JointCommand pos_msg;
     pos_msg.header.stamp = rclcpp::Clock().now();
-    pos_msg.joint_names = {"HeadPan", "HeadTilt"};
+    pos_msg.joint_names = {"head_yaw_joint", "head_pitch_joint"};
     pos_msg.positions = {goal_pan, goal_tilt};
     pos_msg.velocities = {pan_speed, tilt_speed};
     pos_msg.accelerations = {params_.max_acceleration_pan, params_.max_acceleration_pan};
@@ -395,9 +395,9 @@ class HeadMover {
 
     // Iterate over all joints and find the head pan and tilt joints
     for (size_t i = 0; i < current_joint_state_->name.size(); i++) {
-      if (current_joint_state_->name[i] == "HeadPan") {
+      if (current_joint_state_->name[i] == "head_yaw_joint") {
         head_pan = current_joint_state_->position[i];
-      } else if (current_joint_state_->name[i] == "HeadTilt") {
+      } else if (current_joint_state_->name[i] == "head_pitch_joint") {
         head_tilt = current_joint_state_->position[i];
       }
     }
