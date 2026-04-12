@@ -1,5 +1,5 @@
 <launch>
-
+  <arg name="js_pub" default="true" description="Whether to run the joint state publisher"/>
   <group>
     <include file="$(find-pkg-share piplus_description)/launch/rviz.launch"/>
     <include file="$(find-pkg-share bitbots_parameter_blackboard)/launch/parameter_blackboard.launch"/>
@@ -7,10 +7,12 @@
   </group>
 
   <!-- We do not have a robot connected, so publish fake joint states -->
-  <node name="joint_state_publisher_gui" pkg="joint_state_publisher_gui" exec="joint_state_publisher_gui">
-    <param name="rate" value="100"/>
-  </node>
-
+  <group if="$(var js_pub)">
+    <node name="joint_state_publisher_gui" pkg="joint_state_publisher_gui" exec="joint_state_publisher_gui">
+      <param name="rate" value="100"/>
+    </node>
   <node name="dummy_imu" pkg="bitbots_utils" exec="dummy_imu.py"/>
+  </group>
+
 
 </launch>
