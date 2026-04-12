@@ -32,7 +32,7 @@ class GameStateDecider(AbstractLocalizationDecisionElement):
         :param reevaluate:
         :return:
         """
-        game_state_number = self.blackboard.gamestate.get_game_state()
+        game_state_number = self.blackboard.gamestate.get_main_state()
         # todo this is a temporary hack to make GUI work
         if game_state_number == GameState.STATE_INITIAL:
             return "INITIAL"
@@ -116,17 +116,17 @@ class SecondaryStateTeamDecider(AbstractLocalizationDecisionElement):
         game_phase_number = self.blackboard.gamestate.get_game_phase()
         # we have to handle penalty shoot differently because the message is strange
         if game_phase_number == GameState.GAME_PHASE_PENALTY_SHOOT_OUT:
-            if self.blackboard.gamestate.has_kickoff():
+            if self.blackboard.gamestate.has_kick():
                 return "OUR"
 
             return "OTHER"
         else:
-            if self.blackboard.gamestate.get_secondary_team() == self.team_id:
+            if self.blackboard.gamestate.get_kicking_team() == self.team_id:
                 return "OUR"
             # @TODO: handle this better and potentially adapt KickOffTimeUp
             elif (
-                self.blackboard.gamestate.get_secondary_team() == 255
-                or self.blackboard.gamestate.get_secondary_team() == 0
+                self.blackboard.gamestate.get_kicking_team() == 255
+                or self.blackboard.gamestate.get_kicking_team() == 0
             ):
                 return "NONE"
 
@@ -164,11 +164,11 @@ class InitialToReady(AbstractLocalizationDecisionElement):
 
     def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
-        self.previous_game_state_number = self.blackboard.gamestate.get_game_state()
+        self.previous_game_state_number = self.blackboard.gamestate.get_main_state()
 
     def perform(self, reevaluate=False):
         previous_game_state_number = self.previous_game_state_number
-        game_state_number = self.blackboard.gamestate.get_game_state()
+        game_state_number = self.blackboard.gamestate.get_main_state()
         self.previous_game_state_number = game_state_number
 
         self.publish_debug_data("Previous game state", previous_game_state_number)
