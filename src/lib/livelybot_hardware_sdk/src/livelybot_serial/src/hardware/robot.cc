@@ -180,7 +180,6 @@ void robot::publishJointStates()
 
         for (motor *m : Motors)
         {
-            m->
             motor_back_t *data_ptr = m->get_current_motor_state();
 
             // Drop motors with no recent data entirely — consumers must not
