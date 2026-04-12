@@ -1,7 +1,7 @@
 bitbots_vision:
   ros__parameters:
     topics:
-      image: "camera/image_proc"
+      image: "zed/zed_node/left/image_rect_color"
       balls: "balls_in_image"
       robots: "robots_in_image"
       goalposts: "goal_posts_in_image"

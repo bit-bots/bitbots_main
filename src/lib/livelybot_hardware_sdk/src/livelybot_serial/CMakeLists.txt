@@ -77,4 +77,8 @@ ament_export_include_directories(include)
 ament_export_libraries(livelybot_serial)
 ament_export_dependencies(rclcpp sensor_msgs livelybot_msg bitbots_msgs std_srvs diagnostic_updater serial)
 
+install(DIRECTORY launch/
+  DESTINATION share/${PROJECT_NAME}/launch
+)
+
 ament_package()
