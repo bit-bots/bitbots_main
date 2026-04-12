@@ -125,7 +125,7 @@ class SecondaryStateTeamDecider(AbstractLocalizationDecisionElement):
                 return "OUR"
             # @TODO: handle this better and potentially adapt KickOffTimeUp
             elif (
-                self.blackboard.gamestate.get_kicking_team() == 255 or self.blackboard.gamestate.get_kicking_team() == 0
+                self.blackboard.gamestate.get_kicking_team() == 255
             ):
                 return "NONE"
 
