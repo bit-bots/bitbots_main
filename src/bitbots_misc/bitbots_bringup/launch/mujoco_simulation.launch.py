@@ -140,7 +140,7 @@ def launch_setup(context):
         ),
     )
 
-    for robot_domain in range(num_robots):
+    for robot_domain in range(num_robots + 11): # 11 is the standart starting id for our robots
         config_file = generate_domain_bridge_config(robot_domain, bridge_config_dir)
         actions.append(
             LogInfo(msg=f"Starting domain bridge for robot{robot_domain} (domain {robot_domain})"),
