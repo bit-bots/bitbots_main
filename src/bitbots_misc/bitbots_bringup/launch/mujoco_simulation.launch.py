@@ -92,26 +92,28 @@ def generate_domain_bridge_config(robot_domain: int, output_dir: Path) -> Path:
     return config_path
 
 
-def generate_world_xml(num_robots: int, package_share: str) -> Path:
+def generate_world_xml(num_robots: int, package_share: str, robot_type: str) -> Path:
     """Generate MuJoCo world XML with the correct number of robots."""
     template_path = Path(package_share) / "xml" / "adult_field.xml"
     output_path = Path(package_share) / "xml" / "generated_world.xml"
+    offset = 6 * (1/num_robots) # this makes the offset be the default value when there are 4 robots and increse the less robots there are
 
     with open(template_path) as f:
         template = f.read()
 
     # Replace placeholder with actual robot count
-    world_xml = template.replace("{{NUM_ROBOTS}}", str(num_robots))
+    world_xml = template.replace("{{NUM_ROBOTS}}", str(num_robots)).replace("{{OFFSET}}", str(offset)).replace("{{ROBOT_TYPE}}", robot_type)
+    
 
     with open(output_path, "w") as f:
         f.write(world_xml)
-
     return output_path
 
 
 def launch_setup(context):
     """Dynamically set up launches based on num_robots."""
     num_robots = int(LaunchConfiguration("num_robots").perform(context))
+    robot_type = str(LaunchConfiguration("robot_type").perform(context))
     package_share = get_package_share_directory("bitbots_mujoco_sim")
     bridge_config_dir = Path(package_share) / "config" / "domain_bridges"
 
@@ -122,7 +124,7 @@ def launch_setup(context):
         if value:  # Only pass if not empty string
             teamplayer_args.append(f"{arg_name}:={value}")
 
-    world_file = generate_world_xml(num_robots, package_share)
+    world_file = generate_world_xml(num_robots, package_share, robot_type)
 
     actions = []
 
@@ -188,7 +190,14 @@ def generate_launch_description():
             default_value="1",
             description="Number of robots in the simulation",
         ),
+        DeclareLaunchArgument(
+            "robot_type",
+            default_value="wolfgang",
+            description="Set the type of robot used (wolfgang, piplus, x02)",
+        ),
     ]
+
+
 
     # Add all teamplayer arguments with empty default (means use teamplayer's default)
     for arg_name, description in TEAMPLAYER_ARGS:
