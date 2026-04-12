@@ -135,6 +135,17 @@ robot::robot(rclcpp::Node::SharedPtr node)
         "set_torque_individual", 10,
         std::bind(&robot::torqueCallback, this, std::placeholders::_1));
 
+    if (fun_v == fun_v1 && control_type != 0)
+        RCLCPP_WARN(node_->get_logger(),
+            "Old firmware (fun_v1) detected — state polling will send velocity(0) commands "
+            "which may interfere with position control.");
+
+    // Poll motor state at 100 Hz from the spin thread — serialized with
+    // jointCommandCallback so neither corrupts the shared TX buffer.
+    state_poll_timer_ = node_->create_wall_timer(
+        std::chrono::milliseconds(10),
+        [this]() { send_get_motor_state_cmd(); });
+
     // Publish initial power-on status.
     std_msgs::msg::Bool status_msg;
     status_msg.data = true;
@@ -209,6 +220,13 @@ void robot::jointCommandCallback(bitbots_msgs::msg::JointCommand::ConstSharedPtr
     if (msg->joint_names.empty())
         return;
 
+    // All motors on the same CAN port share one TX buffer. The buffer is reset
+    // whenever the command mode changes, so mixing pos_vel_MAXtqe and position
+    // within one message would corrupt earlier writes. Pick one mode for the
+    // whole message: use pos_vel_MAXtqe if max_torques is fully populated,
+    // otherwise fall back to position-only.
+    const bool use_tqe = (msg->max_torques.size() == msg->joint_names.size());
+
     for (size_t i = 0; i < msg->joint_names.size(); ++i)
     {
         const std::string &name = msg->joint_names[i];
@@ -241,11 +259,9 @@ void robot::jointCommandCallback(bitbots_msgs::msg::JointCommand::ConstSharedPtr
         const float pos = static_cast<float>(msg->positions[i]);
         const float vel = (i < msg->velocities.size() && msg->velocities[i] > 0.0)
                           ? static_cast<float>(msg->velocities[i]) : 0.0f;
-        const float max_tqe = (i < msg->max_torques.size() && msg->max_torques[i] > 0.0)
-                               ? static_cast<float>(msg->max_torques[i]) : -1.0f;
 
-        if (max_tqe > 0.0f)
-            m->pos_vel_MAXtqe(pos, vel, max_tqe);
+        if (use_tqe && msg->max_torques[i] > 0.0)
+            m->pos_vel_MAXtqe(pos, vel, static_cast<float>(msg->max_torques[i]));
         else
             m->position(pos);
     }
