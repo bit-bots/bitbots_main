@@ -26,7 +26,7 @@ find_package(vision_msgs REQUIRED)
 find_package(yaml-cpp REQUIRED)
 
 # ---------- ONNX Runtime ----------
-find_package(onnxruntime CONFIG QUIET)
+#find_package(onnxruntime CONFIG QUIET)
 if(NOT onnxruntime_FOUND)
   message(STATUS "onnxruntime CMake config not found, searching manually...")
   # Search for the directory that contains onnxruntime/core/session/onnxruntime_cxx_api.h
@@ -37,8 +37,6 @@ if(NOT onnxruntime_FOUND)
     HINTS
       ENV CONDA_PREFIX
       ENV PIXI_PREFIX
-      /usr/local
-      /usr
     PATH_SUFFIXES include
   )
   find_library(ONNXRUNTIME_LIBRARY
@@ -46,8 +44,6 @@ if(NOT onnxruntime_FOUND)
     HINTS
       ENV CONDA_PREFIX
       ENV PIXI_PREFIX
-      /usr/local
-      /usr
     PATH_SUFFIXES lib lib64
   )
   if(ONNXRUNTIME_INCLUDE_DIR AND ONNXRUNTIME_LIBRARY)

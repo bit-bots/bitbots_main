@@ -188,12 +188,6 @@ construct = ">=2.10.56, <3"
 syrupy = ">=5.0.0, <6"
 exhale = ">=0.3.7, <0.4"
 
-[feature.ros.target.linux-64.pypi-dependencies]
-# onnxruntime-webgpu was removed: the vision package is now C++ and uses the conda onnxruntime
-
-[feature.ros.target.linux-aarch64.pypi-dependencies]
-# onnxruntime was removed: the vision package is now C++ and uses the conda onnxruntime
-
 [feature.robot.pypi-dependencies]
 # These are only needed on the robot
 pyamdgpuinfo = ">=2.1.7, <3"

@@ -180,12 +180,13 @@ void robot::publishJointStates()
 
         for (motor *m : Motors)
         {
+            m->
             motor_back_t *data_ptr = m->get_current_motor_state();
 
             // Drop motors with no recent data entirely — consumers must not
             // assume every motor is always present in the message.
-            if (data_ptr->time == 0.0 || now_sec - data_ptr->time > 0.1)
-                continue;
+            //if (data_ptr->time == 0.0 || now_sec - data_ptr->time > 0.1)
+            //    continue;
 
             js.name.push_back(m->get_motor_name());
             js.position.push_back(data_ptr->position);
