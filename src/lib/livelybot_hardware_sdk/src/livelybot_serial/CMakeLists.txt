@@ -80,5 +80,8 @@ ament_export_dependencies(rclcpp sensor_msgs livelybot_msg bitbots_msgs std_srvs
 install(DIRECTORY launch/
   DESTINATION share/${PROJECT_NAME}/launch
 )
+install(DIRECTORY config/
+  DESTINATION share/${PROJECT_NAME}/config
+)
 
 ament_package()
