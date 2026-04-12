@@ -59,7 +59,7 @@
                 motor4:
                     type: "5047_36_2"
                     id: 4
-                    name: "l_hip_pitch_joint"
+                    name: "l_thigh_joint"
                     num: 4
                     pos_limit_enable: false
                     pos_upper: 5.0
@@ -81,7 +81,7 @@
                 motor6:
                     type: "5047_36_2"
                     id: 6
-                    name: "l_thigh_joint"
+                    name: "l_hip_pitch_joint"
                     num: 6
                     pos_limit_enable: false
                     pos_upper: 5.0
@@ -129,7 +129,7 @@
                 motor4:
                     type: "5047_36_2"
                     id: 4
-                    name: "r_hip_pitch_joint"
+                    name: "r_thigh_joint"
                     num: 4
                     pos_limit_enable: false
                     pos_upper: 5.0
@@ -151,7 +151,7 @@
                 motor6:
                     type: "5047_36_2"
                     id: 6
-                    name: "r_thigh_joint"
+                    name: "r_hip_pitch_joint"
                     num: 6
                     pos_limit_enable: false
                     pos_upper: 5.0
