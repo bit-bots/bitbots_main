@@ -14,7 +14,11 @@
     <!-- Start the camera only when necessary -->
     <group if="$(var camera)">
         <group unless="$(var sim)">
-            <include file="$(find-pkg-share bitbots_basler_camera)/launch/basler_camera.launch" />
+            <include file="$(find-pkg-share zed_wrapper)/launch/zed_camera.launch.py">
+                <arg name="camera_model" value="zedm" />
+                <remap from="/zed/zed_node/left/image_rect_color" to="/camera/image_proc"/>
+            </include>
         </group>
     </group>
 </launch>
+

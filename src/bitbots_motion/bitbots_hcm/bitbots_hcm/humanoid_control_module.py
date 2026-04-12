@@ -160,8 +160,6 @@ class HardwareControlManager:
                 self.blackboard.servo_diag_error = status.level in (DiagnosticStatus.ERROR, DiagnosticStatus.STALE)
             elif "/IMU" in status.name:
                 self.blackboard.imu_diag_error = status.level in (DiagnosticStatus.ERROR, DiagnosticStatus.STALE)
-            elif "/Pressure" in status.name:
-                self.blackboard.pressure_diag_error = status.level in (DiagnosticStatus.ERROR, DiagnosticStatus.STALE)
 
     def get_state(self) -> T_RobotControlState:
         """Returns the current state of the HCM."""
