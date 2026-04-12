@@ -7,7 +7,7 @@
 -->HCM
 $StartHCM
     START_UP --> $Simulation
-        YES --> @RobotStateStartup, @PlayAnimationStartup, @PlayAnimationWalkReady
+        YES --> @RobotStateStartup, @PlayAnimationInit, @PlayAnimationWalkReady
         NO --> #INIT_PATTERN
     RUNNING --> $CheckMotors
         MOTORS_NOT_STARTED --> @RobotStateStartup, @Wait
