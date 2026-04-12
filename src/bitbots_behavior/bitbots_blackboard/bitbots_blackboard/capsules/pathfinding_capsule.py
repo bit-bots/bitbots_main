@@ -160,6 +160,7 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
             ball_x, ball_y = self._blackboard.world_model.get_ball_position_xy()
 
             # Play in any part of the opponents goal, not just the center
+            # Adjust for the goal post width (-0.06)
             if abs(ball_y) < self._blackboard.world_model.goal_width / 2 - 0.06:
                 goal_angle = 0
             # Play in the opposite direction if the ball is near the opponent goal back line
