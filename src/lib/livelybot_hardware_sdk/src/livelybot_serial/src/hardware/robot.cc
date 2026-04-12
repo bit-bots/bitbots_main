@@ -154,7 +154,6 @@ robot::robot(rclcpp::Node::SharedPtr node)
 
 robot::~robot()
 {
-    set_stop();
     for (auto &thread : ser_recv_threads)
     {
         if (thread.joinable())
@@ -175,7 +174,7 @@ robot::~robot()
 
 void robot::publishJointStates()
 {
-    send_get_motor_state_cmd();
+    //send_get_motor_state_cmd();
 
     sensor_msgs::msg::JointState js;
     js.header.stamp = node_->now();
@@ -390,11 +389,6 @@ void robot::detect_motor_limit()
 
 void robot::motor_send_2()
 {
-    for (motor *m : Motors)
-    {
-        m->pos_vel_tqe_kp_kd(m->get_current_motor_state()->position, 0, 0, 10, 1);
-    }
-
     if (!motor_position_limit_flag && !motor_torque_limit_flag)
     {
         for (canboard &cb : CANboards)
