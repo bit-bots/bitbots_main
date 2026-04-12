@@ -1,7 +1,7 @@
 from std_srvs.srv import SetBool
 
 from bitbots_hcm.hcm_dsd.actions import AbstractHCMActionElement
-from livelybot_power.msg import PowerSwitch
+from livelybot_msg.msg import PowerSwitch
 
 class AbstractChangeMotorPower(AbstractHCMActionElement):
     """

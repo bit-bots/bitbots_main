@@ -17,7 +17,7 @@ from bitbots_hcm.type_utils import T_RobotControlState
 from bitbots_msgs.action import Dynup, PlayAnimation
 from bitbots_msgs.msg import Audio, JointTorque, RobotControlState
 from bitbots_msgs.srv import SetTeachingMode
-from livelybot_power.msg import PowerSwitch
+from livelybot_msg.msg import PowerSwitch
 
 
 class HcmBlackboard:

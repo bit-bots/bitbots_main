@@ -33,7 +33,7 @@
   <depend>ros2_python_extension</depend>
   <depend>sensor_msgs</depend>
   <depend>std_msgs</depend>
-  <depend>livelybot_power</depend>
+  <depend>livelybot_msg</depend>
   <test_depend>ament_cmake_mypy</test_depend>
 
   <export>
