@@ -118,10 +118,18 @@ class SecondaryStateTeamDecider(AbstractLocalizationDecisionElement):
         if game_phase_number == GameState.GAME_PHASE_PENALTY_SHOOT_OUT:
             if self.blackboard.gamestate.has_kickoff():
                 return "OUR"
+
             return "OTHER"
         else:
             if self.blackboard.gamestate.get_secondary_team() == self.team_id:
                 return "OUR"
+            # @TODO: handle this better and potentially adapt KickOffTimeUp
+            elif (
+                self.blackboard.gamestate.get_secondary_team() == 255
+                or self.blackboard.gamestate.get_secondary_team() == 0
+            ):
+                return "NONE"
+
             return "OTHER"
 
     def get_reevaluate(self):

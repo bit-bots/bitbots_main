@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-    <arg name="audio" default="true" description="Whether the audio system should be started" />
+    <arg name="audio" default="false" description="Whether the audio system should be started" />
     <arg name="behavior" default="true" description="Whether the behavior control system should be started" />
     <arg name="behavior_dsd_file" default="main.dsd" description="The behavior dsd file that should be used" />
     <arg name="game_controller" default="true" description="Whether the Gamecontroller module should be started" />

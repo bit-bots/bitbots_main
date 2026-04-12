@@ -4,7 +4,8 @@ set -eEuo pipefail
 # static/global variables
 DIR="$(dirname "$(readlink -f "$0")")"
 BRANCH="${1:-main}"
-REPO_URL="git@github.com:bit-bots/bitbots_main.git"
+REPO_URL_SSH="git@github.com:bit-bots/bitbots_main.git"
+REPO_URL_HTTPS="https://github.com/bit-bots/bitbots_main.git"
 
 ask_question() {
     while true; do
@@ -19,40 +20,62 @@ ask_question() {
 }
 
 setup_pixi() {
-    curl -fsSL https://pixi.sh/install.sh | sh
+    if ! type pixi &> /dev/null; then
+        curl -fsSL https://pixi.sh/install.sh | sh
+        export PATH="$PATH:$HOME/.pixi/bin"
+    fi
 }
 
 setup_repo() {
     echo "Setting up bitbots_main repository..."
 
     if (( in_repo )); then
-        cd "$meta_dir" || exit
+        cd "$main_dir" || exit
         git checkout "$BRANCH"
     else
         if [[ ! -d "$PWD/bitbots_main" ]]; then
-            git clone "$REPO_URL"
+            echo "Cloning repository bitbots_main..."
+            # Try to clone via SSH first. If it fails, warn and ask user how to proceed.
+            if ! git clone "$REPO_URL_SSH"; then
+                echo "SSH clone failed. This may mean your SSH keys are not set up for GitHub."
+                echo "See: https://docs.github.com/en/authentication/connecting-to-github-with-ssh"
+                if ask_question "Do you want to continue with an HTTPS clone instead of fixing SSH keys now?"; then
+                    echo "Cloning via HTTPS..."
+                    git clone "$REPO_URL_HTTPS"
+                else
+                    echo "Please set up your SSH keys and re-run this script. Exiting."
+                    exit 1
+                fi
+            fi
             git checkout "$BRANCH"
         fi
 
-        meta_dir="$(realpath "$PWD/bitbots_main")"
-        cd "$meta_dir" || exit
+        main_dir="$(realpath "$PWD/bitbots_main")"
+        cd "$main_dir" || exit
     fi
 
     echo "Installing dependencies..."
-    $HOME/.pixi/bin/pixi install
+    install
 }
 
 setup_host() {
     echo "Setting up system dependencies not covered by pixi. This may require sudo rights. For non-Ubuntu systems, please install the required packages manually."
     if (( has_sudo )); then
-        $meta_dir/scripts/make_basler.sh
+        $main_dir/scripts/make_basler.sh
+        basler_installed=1
     fi
 }
 
 build_repository() {
-    echo "Running full colcon build..."
+    echo "Running full build..."
     set +u
-    $HOME/.pixi/bin/pixi run build
+
+    # Append "--packages-skip bitbots_basler_camera" to the build command if setup_host was skipped or failed
+    if (( basler_installed )); then
+    pixi run build
+    else
+    pixi run build --packages-skip bitbots_basler_camera
+    fi
 }
 
 has_sudo=0
@@ -63,13 +86,15 @@ if (( ! has_sudo )); then
     echo "Because, you don't have sudo rights, no host dependencies will be installed."
 fi
 
+basler_installed=0
+
 in_repo=1
-meta_dir="$(realpath "$DIR/../")"
-if [[ ! -d "$meta_dir/.git" ]]; then
+main_dir="$(realpath "$DIR/../")"
+if [[ ! -d "$main_dir/.git" ]]; then
     in_repo=0
 fi
 
-setup_ros
+setup_pixi
 setup_repo
 setup_host
 build_repository
