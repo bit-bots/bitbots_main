@@ -155,7 +155,7 @@ $IsPenalized
         SET --> $WhistleDetected
             DETECTED --> $SecondaryStateTeamDecider
                 OUR --> #PlayingBehavior
-                OTHER --> #StandAndLook
+                OTHER --> #PositioningReady
                 ELSE --> #PlayingBehavior
             NOT_DETECTED --> $SecondaryStateDecider
                 PENALTYSHOOT --> $SecondaryStateTeamDecider
