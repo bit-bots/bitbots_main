@@ -1,7 +1,0 @@
-<launch>
-  <!-- Select the robot parameter file based on hardware configuration -->
-  <arg name="dof_type"   default="22"/>
-  <arg name="mcu_type"   default="STM32H730"/>
-  <arg name="model_type" default="test"/>
-  <arg name="design"     default="Orin"/>
-</launch>
