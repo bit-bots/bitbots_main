@@ -135,11 +135,6 @@ robot::robot(rclcpp::Node::SharedPtr node)
         "set_torque_individual", 10,
         std::bind(&robot::torqueCallback, this, std::placeholders::_1));
 
-    // Publish initial power-on status.
-    std_msgs::msg::Bool status_msg;
-    status_msg.data = true;
-    power_status_pub_->publish(status_msg);
-
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     RCLCPP_INFO(node_->get_logger(),
