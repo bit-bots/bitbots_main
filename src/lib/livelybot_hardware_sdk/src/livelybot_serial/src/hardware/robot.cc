@@ -160,7 +160,7 @@ robot::~robot()
 
 void robot::publishJointStates()
 {
-    //send_get_motor_state_cmd();
+    send_get_motor_state_cmd();
 
     sensor_msgs::msg::JointState js;
     js.header.stamp = node_->now();
