@@ -14,6 +14,10 @@ class AbstractChangeMotorPower(AbstractHCMActionElement):
 
 
 class TurnMotorsOff(AbstractChangeMotorPower):
+    def __init__(self, blackboard, dsd, parameters):
+        super().__init__(blackboard, dsd, parameters)
+        self.do_not_reevaluate()
+
     def perform(self, reevaluate=False):
         if not self.blackboard.visualization_active and not self.blackboard.simulation_active:
             msg = PowerSwitch()
