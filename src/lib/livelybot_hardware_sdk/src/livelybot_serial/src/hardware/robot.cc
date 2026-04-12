@@ -161,11 +161,6 @@ robot::~robot()
             thread.join();
     }
 
-    if (pub_thread_.joinable())
-    {
-        pub_thread_.join();
-    }
-
     if (error_check_thread_.joinable())
     {
         error_check_thread_.join();
@@ -390,11 +385,6 @@ void robot::detect_motor_limit()
 
 void robot::motor_send_2()
 {
-    for (motor *m : Motors)
-    {
-        m->pos_vel_tqe_kp_kd(m->get_current_motor_state()->position, 0, 0, 10, 1);
-    }
-
     if (!motor_position_limit_flag && !motor_torque_limit_flag)
     {
         for (canboard &cb : CANboards)

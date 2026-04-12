@@ -67,7 +67,6 @@ private:
     double diag_connection_timeout_;
     double diag_torque_overload_threshold_;
     double diag_torque_overload_duration_;
-    std::thread pub_thread_;
     std::thread error_check_thread_;
     rclcpp::TimerBase::SharedPtr state_poll_timer_;
     fun_version fun_v = fun_v1;
