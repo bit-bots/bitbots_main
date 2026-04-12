@@ -44,6 +44,7 @@ breathe = ">=4.36.0,<5"
 cmake = "<3.30"  # Constraint to avoid issues with deprecated features in newer cmake versions
 colorama = ">=0.4.6,<0.5"
 compilers = ">=1.11.0,<2"
+construct = ">=2.10.70,<3"
 eigen = ">=3.4.0,<4"
 fabric = ">=3.2.2,<4"
 flask = ">=3.1.2,<4"
@@ -71,6 +72,7 @@ psutil = ">=7.1.3,<8"
 pthread-stubs = ">=0.4,<0.5"
 pybind11 = ">=3.0.1,<4"
 pyqt = ">=5.15.11,<6"
+pysoundcard = ">=0.4.5,<0.5"
 pytest = ">=9.0.1,<10"
 pytest-mock = ">=3.15.1,<4"
 pyyaml = ">=6.0.3,<7"
@@ -193,6 +195,7 @@ ros-jazzy-better-launch = ">=1.0.3,<2"
 # Neural network models / data packages
 bitbots_model_2023_04_04_philipp_yoeox_with_team_colors = ">=1.0.0,<2"
 bitbots_model_2022_10_07_flo_torso21_yoeox = ">=1.0.0,<2"
+tts-supertonic = ">=1.0.0,<2"
 
 # Local packages
 bitbots_rust_nav = { path = "src/bitbots_navigation/bitbots_rust_nav" }
@@ -222,8 +225,6 @@ pre-commit = ">=4.4.0,<5"
 construct = ">=2.10.56, <3"
 syrupy = ">=5.0.0, <6"
 exhale = ">=0.3.7, <0.4"
-mycroft-mimic3-tts = ">=0.2.4, <0.3"
-pyttsx3 = ">=2.99, <3"
 
 [feature.ros.target.linux-64.pypi-dependencies]
 onnxruntime-webgpu = ">=1.24.0.dev20251218001, <2"

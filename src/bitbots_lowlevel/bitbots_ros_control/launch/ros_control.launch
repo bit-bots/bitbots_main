@@ -4,7 +4,6 @@
     <arg name="torqueless_mode" default="false"/>
     <arg name="only_imu" default="false"/>
     <arg name="only_pressure" default="false"/>
-    <arg name="tts" default="true" description="Whether to speak" />
 
     <node pkg="bitbots_ros_control" exec="ros_control" output="screen" >
         <param from="$(find-pkg-share bitbots_ros_control)/config/wolfgang.yaml" />
@@ -25,9 +24,5 @@
         <include file="$(find-pkg-share bitbots_buttons)/launch/buttons.launch"/>
         <!--include file="$(find-pkg-share bitbots_ros_control)/launch/pressure_converter.launch"/-->
     </group>
-
-    <group if="$(var tts)">
-        <include file="$(find-pkg-share bitbots_tts)/launch/tts.launch"/>
-    </group >
 </launch>
 
