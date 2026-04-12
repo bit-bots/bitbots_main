@@ -57,38 +57,6 @@ robot::robot(rclcpp::Node::SharedPtr node)
         RCLCPP_ERROR(node_->get_logger(), "Failed to get params control_type");
     }
 
-    if (!node_->get_parameter("robot.imu_limit_flag", imu_limit_flag))
-    {
-        RCLCPP_ERROR(node_->get_logger(), "Failed to get params imu_limit_flag");
-        exit(-1);
-    }
-    if (imu_limit_flag)
-    {
-        RCLCPP_INFO(node_->get_logger(), "IMU limiting is enabled.");
-        imu_sub_ = node_->create_subscription<sensor_msgs::msg::Imu>(
-            "/imu/data", 100,
-            std::bind(&robot::imuCallback, this, std::placeholders::_1));
-    }
-
-    if (!node_->get_parameter("robot.imu_dir", imu_dir))
-    {
-        RCLCPP_ERROR(node_->get_logger(), "Failed to get params imu_dir");
-        exit(-1);
-    }
-
-    double imu_limit_num_d = 0.0;
-    if (!node_->get_parameter("robot.imu_limit_num", imu_limit_num_d))
-    {
-        RCLCPP_ERROR(node_->get_logger(), "Failed to get params imu_limit_num");
-        exit(-1);
-    }
-    imu_limit_num = static_cast<float>(imu_limit_num_d);
-    if (imu_limit_num > 1.57f)
-    {
-        RCLCPP_ERROR(node_->get_logger(), "imu_limit_num must not exceed 1.57");
-        exit(-1);
-    }
-
     RCLCPP_INFO(node_->get_logger(),
                 "\033[1;32mSDK version: v%s\033[0m", SDK_version_str.c_str());
     RCLCPP_INFO(node_->get_logger(),
@@ -206,29 +174,6 @@ robot::~robot()
     if (error_check_thread_.joinable())
     {
         error_check_thread_.join();
-    }
-}
-
-
-void robot::imuCallback(const sensor_msgs::msg::Imu::SharedPtr msg)
-{
-    const double w = msg->orientation.w;
-    const double x = msg->orientation.x;
-    const double y = msg->orientation.y;
-    const double z = msg->orientation.z;
-
-    const double sinr_cosp = 2 * (w * x + y * z);
-    const double cosr_cosp = 1 - 2 * (x * x + y * y);
-    roll = std::atan2(sinr_cosp, cosr_cosp);
-
-    const double sinp = 2 * (w * y - z * x);
-    if (std::abs(sinp) >= 1)
-    {
-        pitch = std::copysign(M_PI / 2, sinp);
-    }
-    else
-    {
-        pitch = std::asin(sinp);
     }
 }
 
@@ -475,48 +420,11 @@ void robot::detect_motor_limit()
 }
 
 
-bool robot::imu_limit()
-{
-    float roll_err = 0.0f;
-
-    if (!imu_limit_flag)
-    {
-        return true;
-    }
-
-    if (imu_dir)
-    {
-        roll_err = std::fabs(roll - 0.0f);
-    }
-    else
-    {
-        if (roll < 0)
-        {
-            roll_err = roll + 3.14f;
-        }
-        else
-        {
-            roll_err = 3.14f - roll;
-        }
-    }
-
-    if (roll_err > imu_limit_num || pitch > imu_limit_num)
-    {
-        return false;
-    }
-
-    return true;
-}
-
-
 void robot::motor_send_2()
 {
-    if (!imu_limit())
+    for (motor *m : Motors)
     {
-        for (motor *m : Motors)
-        {
-            m->pos_vel_tqe_kp_kd(m->get_current_motor_state()->position, 0, 0, 10, 1);
-        }
+        m->pos_vel_tqe_kp_kd(m->get_current_motor_state()->position, 0, 0, 10, 1);
     }
 
     if (!motor_position_limit_flag && !motor_torque_limit_flag)
