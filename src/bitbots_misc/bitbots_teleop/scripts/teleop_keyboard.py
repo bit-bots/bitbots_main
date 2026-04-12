@@ -23,15 +23,15 @@ from bitbots_msgs.msg import HeadMode, JointCommand
 from bitbots_msgs.srv import SimulatorPush
 
 msg = """
-BitBots Teleop
---------------
+Bit-Bots Teleop
+---------------
 Walk around:            Move head:
     q    w    e         u    i    o
     a    s    d         j    k    l
                         m    ,    .
 
 q/e: turn left/right    k: zero head position
-a/d: left/rigth         i/,: up/down
+a/d: left/right         i/,: up/down
 w/s: forward/back       j/l: left/right
                         u/o/m/.: combinations
 
@@ -60,7 +60,7 @@ Head Modes:
 
 Pushing:
 p: execute Push
-Shift-p: reset Power to 0
+P: reset Power to 0
 ü/ä: increase/decrease power forward (x axis)
 +/#: increase/decrease power left (y axis)
 SHIFT increases/decreases with factor 10
