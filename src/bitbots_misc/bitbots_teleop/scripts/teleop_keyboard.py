@@ -12,6 +12,7 @@ import tty
 import rclpy
 from bitbots_utils.transforms import quat_from_yaw
 from geometry_msgs.msg import Point, Twist, Vector3
+from livelybot_msg.msg import PowerSwitch
 from rclpy.action import ActionClient
 from rclpy.node import Node
 from sensor_msgs.msg import JointState
@@ -23,15 +24,15 @@ from bitbots_msgs.msg import HeadMode, JointCommand
 from bitbots_msgs.srv import SimulatorPush
 
 msg = """
-BitBots Teleop
---------------
+Bit-Bots Teleop
+---------------
 Walk around:            Move head:
     q    w    e         u    i    o
     a    s    d         j    k    l
                         m    ,    .
 
 q/e: turn left/right    k: zero head position
-a/d: left/rigth         i/,: up/down
+a/d: left/right         i/,: up/down
 w/s: forward/back       j/l: left/right
                         u/o/m/.: combinations
 
@@ -46,6 +47,7 @@ x: kick center forward X: kick center backward
 b: kick left backward  n: kick right backward
 B: kick left outward   N: kick right outward
 
+SPACE: EMERGENCY STOP!!!
 f: full stop           F: play walkready animation
 r: reset robot in simulation
 R: reset ball in simulation
@@ -60,7 +62,7 @@ Head Modes:
 
 Pushing:
 p: execute Push
-Shift-p: reset Power to 0
+P: reset Power to 0
 ü/ä: increase/decrease power forward (x axis)
 +/#: increase/decrease power left (y axis)
 SHIFT increases/decreases with factor 10
@@ -153,6 +155,7 @@ class TeleopKeyboard(Node):
         self.head_tilt_step = 0.05
 
         self.walk_kick_pub = self.create_publisher(Bool, "kick", 1)
+        self.power_switch_pub = self.create_publisher(PowerSwitch, "/power_switch_state", 1)
 
         self.reset_robot = self.create_client(Empty, "/reset_pose")
         self.reset_ball = self.create_client(Empty, "/reset_ball")
@@ -330,6 +333,13 @@ class TeleopKeyboard(Node):
                 elif key == "P":
                     self.push_force_x = 0.0
                     self.push_force_y = 0.0
+                elif key == " ":
+                    self.x = 0
+                    self.y = 0
+                    self.z = 0
+                    self.a_x = 0
+                    self.th = 0
+                    self.power_switch_pub.publish(PowerSwitch(control_switch=0, power_switch=0))
                 elif key == "ü":
                     self.push_force_x += 1
                 elif key == "Ü":
