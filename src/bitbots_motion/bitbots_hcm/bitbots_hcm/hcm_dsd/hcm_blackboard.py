@@ -119,12 +119,6 @@ class HcmBlackboard:
         self.previous_imu_msg: Optional[Imu] = None
         self.last_different_imu_state_time: Optional[Time] = None
 
-        # Pressure sensors
-        # Initialize values high to prevent wrongly thinking the robot is picked up during start or in simulation
-        self.pressures: list[float] = [100.0] * 8
-        self.previous_pressures: list[float] = self.pressures.copy()
-        self.last_different_pressure_state_time: Optional[Time] = None
-
         # Diagnostics state
         self.servo_diag_error: bool = False
         self.servo_overload: bool = False
