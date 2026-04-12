@@ -135,12 +135,6 @@ robot::robot(rclcpp::Node::SharedPtr node)
         "set_torque_individual", 10,
         std::bind(&robot::torqueCallback, this, std::placeholders::_1));
 
-    power_status_pub_ = node_->create_publisher<std_msgs::msg::Bool>("core/power_switch_status", 1);
-    switch_power_srv_ = node_->create_service<std_srvs::srv::SetBool>(
-        "core/switch_power",
-        std::bind(&robot::switchPowerCallback, this,
-                  std::placeholders::_1, std::placeholders::_2));
-
     // Publish initial power-on status.
     std_msgs::msg::Bool status_msg;
     status_msg.data = true;
@@ -212,9 +206,6 @@ void robot::publishJointStates()
 
 void robot::jointCommandCallback(bitbots_msgs::msg::JointCommand::ConstSharedPtr msg)
 {
-    if (!power_on_)
-        return;
-
     if (msg->joint_names.empty())
         return;
 
@@ -367,32 +358,6 @@ void robot::motorDiagnostic(const std::string &name, motor *m,
     stat.add("fault_code",     static_cast<int>(d->fault));
     stat.add("mode",           static_cast<int>(d->mode));
 }
-
-
-void robot::switchPowerCallback(
-    const std_srvs::srv::SetBool::Request::SharedPtr request,
-    std_srvs::srv::SetBool::Response::SharedPtr response)
-{
-    if (request->data)
-    {
-        power_on_ = true;
-        RCLCPP_INFO(node_->get_logger(), "Motor power ON");
-    }
-    else
-    {
-        power_on_ = false;
-        set_stop();
-        RCLCPP_INFO(node_->get_logger(), "Motor power OFF");
-    }
-
-    std_msgs::msg::Bool status_msg;
-    status_msg.data = power_on_.load();
-    power_status_pub_->publish(status_msg);
-
-    response->success = true;
-    response->message = power_on_ ? "motors on" : "motors off";
-}
-
 
 void robot::detect_motor_limit()
 {

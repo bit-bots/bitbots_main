@@ -55,10 +55,6 @@ private:
     std::unordered_set<std::string> torque_off_motors_;
     std::mutex torque_off_mutex_;
 
-    rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr switch_power_srv_;
-    rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr power_status_pub_;
-    std::atomic<bool> power_on_{true};
-
     // --- diagnostics ---
     /** Per-motor state used by the diagnostic task to detect sustained faults. */
     struct MotorDiagState {
@@ -103,17 +99,6 @@ public:
     /** Populate one motor's DiagnosticStatus (called by the updater timer). */
     void motorDiagnostic(const std::string &name, motor *m,
                          diagnostic_updater::DiagnosticStatusWrapper &stat);
-
-    /**
-     * Handle the `core/switch_power` SetBool service used by the HCM.
-     *
-     * data=false  sends MODE_STOP to all motors and blocks further commands.
-     * data=true   re-arms the driver so the next JointCommand restores control.
-     * Power status is published to `core/power_switch_status` after each change.
-     */
-    void switchPowerCallback(
-        const std_srvs::srv::SetBool::Request::SharedPtr request,
-        std_srvs::srv::SetBool::Response::SharedPtr response);
 
     /**
      * Enable or disable torque for individual motors.
