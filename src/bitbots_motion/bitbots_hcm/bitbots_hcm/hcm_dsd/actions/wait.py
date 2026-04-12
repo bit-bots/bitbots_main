@@ -36,15 +36,3 @@ class Wait(AbstractHCMActionElement):
         if self.blackboard.node.get_clock().now().nanoseconds / 1e9 > self.start_time + self.duration:
             self.pop()
 
-
-class WaitRosControlStartDelay(Wait):
-    """
-    The motors need some time to start up,
-    the time at which we start sending commands is defined in the config of the ros_control node.
-    This action waits for that time.
-    """
-
-    def __init__(self, blackboard, dsd, parameters):
-        super().__init__(blackboard, dsd, parameters)
-        self.duration = self.blackboard.motor_start_delay
-        self.blackboard.node.get_logger().info("Waiting for the motors to start up...")
