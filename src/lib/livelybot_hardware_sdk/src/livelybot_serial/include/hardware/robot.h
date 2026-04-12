@@ -11,7 +11,6 @@
 #include <algorithm>
 #include <atomic>
 #include <sensor_msgs/msg/joint_state.hpp>
-#include <sensor_msgs/msg/imu.hpp>
 #include <bitbots_msgs/msg/joint_command.hpp>
 #include <bitbots_msgs/msg/joint_torque.hpp>
 #include <std_msgs/msg/bool.hpp>
@@ -56,10 +55,6 @@ private:
     std::unordered_set<std::string> torque_off_motors_;
     std::mutex torque_off_mutex_;
 
-    rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr switch_power_srv_;
-    rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr power_status_pub_;
-    std::atomic<bool> power_on_{true};
-
     // --- diagnostics ---
     /** Per-motor state used by the diagnostic task to detect sustained faults. */
     struct MotorDiagState {
@@ -77,13 +72,6 @@ private:
     fun_version fun_v = fun_v1;
     float slave_v = 3.0f;
     int control_type = 0;
-
-    bool imu_limit_flag = false;
-    bool imu_dir = false;
-    float imu_limit_num = 0.0f;
-    float roll = 0.0f;
-    float pitch = 0.0f;
-    rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_sub_;
 
     /** Read USB Vendor ID and Product ID from the Linux sysfs. */
     static bool read_usb_vid_pid(const std::string &device, int &vid, int &pid);
@@ -111,17 +99,6 @@ public:
     /** Populate one motor's DiagnosticStatus (called by the updater timer). */
     void motorDiagnostic(const std::string &name, motor *m,
                          diagnostic_updater::DiagnosticStatusWrapper &stat);
-
-    /**
-     * Handle the `core/switch_power` SetBool service used by the HCM.
-     *
-     * data=false  sends MODE_STOP to all motors and blocks further commands.
-     * data=true   re-arms the driver so the next JointCommand restores control.
-     * Power status is published to `core/power_switch_status` after each change.
-     */
-    void switchPowerCallback(
-        const std_srvs::srv::SetBool::Request::SharedPtr request,
-        std_srvs::srv::SetBool::Response::SharedPtr response);
 
     /**
      * Enable or disable torque for individual motors.
@@ -160,11 +137,6 @@ public:
     void set_data_reset();
     void canboard_bootloader();
     void canboard_fdcan_reset();
-
-    /** @return true if IMU tilt is within limits (or IMU limiting is disabled). */
-    bool imu_limit();
-
-    void imuCallback(const sensor_msgs::msg::Imu::SharedPtr msg);
 };
 
 } /* namespace livelybot_serial */

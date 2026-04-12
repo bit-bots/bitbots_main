@@ -13,14 +13,12 @@ using bitbots_vision::DebugImage;
 // Helpers
 // ---------------------------------------------------------------------------
 
-static cv::Mat make_image(int h = 100, int w = 100)
-{
+static cv::Mat make_image(int h = 100, int w = 100) {
   cv::Mat img(h, w, CV_8UC3, cv::Scalar(128, 128, 128));
   return img;
 }
 
-static Candidate make_candidate(int x1, int y1, int x2, int y2, float rating = 0.9f)
-{
+static Candidate make_candidate(int x1, int y1, int x2, int y2, float rating = 0.9f) {
   return Candidate::from_x1y1x2y2(x1, y1, x2, y2, rating);
 }
 
@@ -28,28 +26,23 @@ static Candidate make_candidate(int x1, int y1, int x2, int y2, float rating = 0
 // Inactive DebugImage – all draw methods are no-ops
 // ---------------------------------------------------------------------------
 
-TEST(DebugImage, Inactive_GetImageIsEmpty)
-{
+TEST(DebugImage, Inactive_GetImageIsEmpty) {
   DebugImage di(false);
   EXPECT_TRUE(di.get_image().empty());
 }
 
-TEST(DebugImage, Inactive_DrawBallCandidates_NoOp)
-{
+TEST(DebugImage, Inactive_DrawBallCandidates_NoOp) {
   DebugImage di(false);
   // Should not crash even without set_image()
   EXPECT_NO_THROW(di.draw_ball_candidates({make_candidate(10, 10, 30, 30)}, DebugImage::kBall));
 }
 
-TEST(DebugImage, Inactive_DrawBoxCandidates_NoOp)
-{
+TEST(DebugImage, Inactive_DrawBoxCandidates_NoOp) {
   DebugImage di(false);
-  EXPECT_NO_THROW(
-    di.draw_box_candidates({make_candidate(10, 10, 30, 30)}, DebugImage::kGoalposts));
+  EXPECT_NO_THROW(di.draw_box_candidates({make_candidate(10, 10, 30, 30)}, DebugImage::kGoalposts));
 }
 
-TEST(DebugImage, Inactive_DrawMask_NoOp)
-{
+TEST(DebugImage, Inactive_DrawMask_NoOp) {
   DebugImage di(false);
   cv::Mat mask(100, 100, CV_8UC1, cv::Scalar(255));
   EXPECT_NO_THROW(di.draw_mask(mask, DebugImage::kLines));
@@ -59,8 +52,7 @@ TEST(DebugImage, Inactive_DrawMask_NoOp)
 // set_image – copies the input
 // ---------------------------------------------------------------------------
 
-TEST(DebugImage, SetImage_PreservesSize)
-{
+TEST(DebugImage, SetImage_PreservesSize) {
   DebugImage di(true);
   cv::Mat src = make_image(200, 300);
   di.set_image(src);
@@ -68,8 +60,7 @@ TEST(DebugImage, SetImage_PreservesSize)
   EXPECT_EQ(di.get_image().cols, 300);
 }
 
-TEST(DebugImage, SetImage_IsCopy)
-{
+TEST(DebugImage, SetImage_IsCopy) {
   DebugImage di(true);
   cv::Mat src = make_image(50, 50);
   di.set_image(src);
@@ -82,8 +73,7 @@ TEST(DebugImage, SetImage_IsCopy)
 // draw_ball_candidates
 // ---------------------------------------------------------------------------
 
-TEST(DebugImage, DrawBallCandidates_Empty_NoChange)
-{
+TEST(DebugImage, DrawBallCandidates_Empty_NoChange) {
   DebugImage di(true);
   cv::Mat src = make_image();
   di.set_image(src);
@@ -97,8 +87,7 @@ TEST(DebugImage, DrawBallCandidates_Empty_NoChange)
   EXPECT_EQ(cv::countNonZero(diff.reshape(1)), 0);
 }
 
-TEST(DebugImage, DrawBallCandidates_ModifiesImage)
-{
+TEST(DebugImage, DrawBallCandidates_ModifiesImage) {
   DebugImage di(true);
   di.set_image(make_image(200, 200));
 
@@ -110,15 +99,14 @@ TEST(DebugImage, DrawBallCandidates_ModifiesImage)
   EXPECT_GT(cv::countNonZero(diff.reshape(1)), 0);
 }
 
-TEST(DebugImage, DrawBallCandidates_MultipleNoThrow)
-{
+TEST(DebugImage, DrawBallCandidates_MultipleNoThrow) {
   DebugImage di(true);
   di.set_image(make_image(300, 400));
 
   std::vector<Candidate> cands = {
-    make_candidate(10, 10, 40, 40),
-    make_candidate(100, 100, 150, 150),
-    make_candidate(200, 50, 250, 100),
+      make_candidate(10, 10, 40, 40),
+      make_candidate(100, 100, 150, 150),
+      make_candidate(200, 50, 250, 100),
   };
   EXPECT_NO_THROW(di.draw_ball_candidates(cands, DebugImage::kBall, 1));
 }
@@ -127,8 +115,7 @@ TEST(DebugImage, DrawBallCandidates_MultipleNoThrow)
 // draw_box_candidates
 // ---------------------------------------------------------------------------
 
-TEST(DebugImage, DrawBoxCandidates_ModifiesImage)
-{
+TEST(DebugImage, DrawBoxCandidates_ModifiesImage) {
   DebugImage di(true);
   di.set_image(make_image(200, 200));
 
@@ -140,8 +127,7 @@ TEST(DebugImage, DrawBoxCandidates_ModifiesImage)
   EXPECT_GT(cv::countNonZero(diff.reshape(1)), 0);
 }
 
-TEST(DebugImage, DrawBoxCandidates_Empty_NoChange)
-{
+TEST(DebugImage, DrawBoxCandidates_Empty_NoChange) {
   DebugImage di(true);
   cv::Mat src = make_image();
   di.set_image(src);
@@ -158,8 +144,7 @@ TEST(DebugImage, DrawBoxCandidates_Empty_NoChange)
 // draw_mask
 // ---------------------------------------------------------------------------
 
-TEST(DebugImage, DrawMask_AllActive_BlendChangesPixels)
-{
+TEST(DebugImage, DrawMask_AllActive_BlendChangesPixels) {
   DebugImage di(true);
   // Use a uniform dark image so the green overlay is clearly visible
   di.set_image(cv::Mat(100, 100, CV_8UC3, cv::Scalar(0, 0, 0)));
@@ -167,15 +152,14 @@ TEST(DebugImage, DrawMask_AllActive_BlendChangesPixels)
   cv::Mat before = di.get_image().clone();
 
   cv::Mat mask(100, 100, CV_8UC1, cv::Scalar(255));  // fully active
-  di.draw_mask(mask, DebugImage::kLines);  // blue overlay
+  di.draw_mask(mask, DebugImage::kLines);            // blue overlay
 
   cv::Mat diff;
   cv::absdiff(di.get_image(), before, diff);
   EXPECT_GT(cv::countNonZero(diff.reshape(1)), 0);
 }
 
-TEST(DebugImage, DrawMask_AllZero_NoChange)
-{
+TEST(DebugImage, DrawMask_AllZero_NoChange) {
   DebugImage di(true);
   di.set_image(make_image());
   cv::Mat before = di.get_image().clone();
@@ -188,8 +172,7 @@ TEST(DebugImage, DrawMask_AllZero_NoChange)
   EXPECT_EQ(cv::countNonZero(diff.reshape(1)), 0);
 }
 
-TEST(DebugImage, DrawMask_PartialMask_OnlyActiveRegionChanged)
-{
+TEST(DebugImage, DrawMask_PartialMask_OnlyActiveRegionChanged) {
   DebugImage di(true);
   di.set_image(cv::Mat(100, 100, CV_8UC3, cv::Scalar(50, 50, 50)));
 
@@ -214,8 +197,7 @@ TEST(DebugImage, DrawMask_PartialMask_OnlyActiveRegionChanged)
 // Color constants sanity
 // ---------------------------------------------------------------------------
 
-TEST(DebugImage, ColorConstants_AreDistinct)
-{
+TEST(DebugImage, ColorConstants_AreDistinct) {
   // Just verify the constants are accessible and differ from each other
   EXPECT_NE(DebugImage::kBall, DebugImage::kGoalposts);
   EXPECT_NE(DebugImage::kRobotTeamMates, DebugImage::kRobotOpponents);

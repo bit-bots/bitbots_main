@@ -57,38 +57,6 @@ robot::robot(rclcpp::Node::SharedPtr node)
         RCLCPP_ERROR(node_->get_logger(), "Failed to get params control_type");
     }
 
-    if (!node_->get_parameter("robot.imu_limit_flag", imu_limit_flag))
-    {
-        RCLCPP_ERROR(node_->get_logger(), "Failed to get params imu_limit_flag");
-        exit(-1);
-    }
-    if (imu_limit_flag)
-    {
-        RCLCPP_INFO(node_->get_logger(), "IMU limiting is enabled.");
-        imu_sub_ = node_->create_subscription<sensor_msgs::msg::Imu>(
-            "/imu/data", 100,
-            std::bind(&robot::imuCallback, this, std::placeholders::_1));
-    }
-
-    if (!node_->get_parameter("robot.imu_dir", imu_dir))
-    {
-        RCLCPP_ERROR(node_->get_logger(), "Failed to get params imu_dir");
-        exit(-1);
-    }
-
-    double imu_limit_num_d = 0.0;
-    if (!node_->get_parameter("robot.imu_limit_num", imu_limit_num_d))
-    {
-        RCLCPP_ERROR(node_->get_logger(), "Failed to get params imu_limit_num");
-        exit(-1);
-    }
-    imu_limit_num = static_cast<float>(imu_limit_num_d);
-    if (imu_limit_num > 1.57f)
-    {
-        RCLCPP_ERROR(node_->get_logger(), "imu_limit_num must not exceed 1.57");
-        exit(-1);
-    }
-
     RCLCPP_INFO(node_->get_logger(),
                 "\033[1;32mSDK version: v%s\033[0m", SDK_version_str.c_str());
     RCLCPP_INFO(node_->get_logger(),
@@ -167,17 +135,6 @@ robot::robot(rclcpp::Node::SharedPtr node)
         "set_torque_individual", 10,
         std::bind(&robot::torqueCallback, this, std::placeholders::_1));
 
-    power_status_pub_ = node_->create_publisher<std_msgs::msg::Bool>("core/power_switch_status", 1);
-    switch_power_srv_ = node_->create_service<std_srvs::srv::SetBool>(
-        "core/switch_power",
-        std::bind(&robot::switchPowerCallback, this,
-                  std::placeholders::_1, std::placeholders::_2));
-
-    // Publish initial power-on status.
-    std_msgs::msg::Bool status_msg;
-    status_msg.data = true;
-    power_status_pub_->publish(status_msg);
-
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     RCLCPP_INFO(node_->get_logger(),
@@ -210,29 +167,6 @@ robot::~robot()
 }
 
 
-void robot::imuCallback(const sensor_msgs::msg::Imu::SharedPtr msg)
-{
-    const double w = msg->orientation.w;
-    const double x = msg->orientation.x;
-    const double y = msg->orientation.y;
-    const double z = msg->orientation.z;
-
-    const double sinr_cosp = 2 * (w * x + y * z);
-    const double cosr_cosp = 1 - 2 * (x * x + y * y);
-    roll = std::atan2(sinr_cosp, cosr_cosp);
-
-    const double sinp = 2 * (w * y - z * x);
-    if (std::abs(sinp) >= 1)
-    {
-        pitch = std::copysign(M_PI / 2, sinp);
-    }
-    else
-    {
-        pitch = std::asin(sinp);
-    }
-}
-
-
 void robot::publishJointStates()
 {
     rclcpp::Rate rate(100);
@@ -246,12 +180,13 @@ void robot::publishJointStates()
 
         for (motor *m : Motors)
         {
+            m->
             motor_back_t *data_ptr = m->get_current_motor_state();
 
             // Drop motors with no recent data entirely — consumers must not
             // assume every motor is always present in the message.
-            if (data_ptr->time == 0.0 || now_sec - data_ptr->time > 0.1)
-                continue;
+            //if (data_ptr->time == 0.0 || now_sec - data_ptr->time > 0.1)
+            //    continue;
 
             js.name.push_back(m->get_motor_name());
             js.position.push_back(data_ptr->position);
@@ -267,9 +202,6 @@ void robot::publishJointStates()
 
 void robot::jointCommandCallback(bitbots_msgs::msg::JointCommand::ConstSharedPtr msg)
 {
-    if (!power_on_)
-        return;
-
     if (msg->joint_names.empty())
         return;
 
@@ -423,32 +355,6 @@ void robot::motorDiagnostic(const std::string &name, motor *m,
     stat.add("mode",           static_cast<int>(d->mode));
 }
 
-
-void robot::switchPowerCallback(
-    const std_srvs::srv::SetBool::Request::SharedPtr request,
-    std_srvs::srv::SetBool::Response::SharedPtr response)
-{
-    if (request->data)
-    {
-        power_on_ = true;
-        RCLCPP_INFO(node_->get_logger(), "Motor power ON");
-    }
-    else
-    {
-        power_on_ = false;
-        set_stop();
-        RCLCPP_INFO(node_->get_logger(), "Motor power OFF");
-    }
-
-    std_msgs::msg::Bool status_msg;
-    status_msg.data = power_on_.load();
-    power_status_pub_->publish(status_msg);
-
-    response->success = true;
-    response->message = power_on_ ? "motors on" : "motors off";
-}
-
-
 void robot::detect_motor_limit()
 {
     if (!motor_position_limit_flag && !motor_torque_limit_flag)
@@ -475,48 +381,11 @@ void robot::detect_motor_limit()
 }
 
 
-bool robot::imu_limit()
-{
-    float roll_err = 0.0f;
-
-    if (!imu_limit_flag)
-    {
-        return true;
-    }
-
-    if (imu_dir)
-    {
-        roll_err = std::fabs(roll - 0.0f);
-    }
-    else
-    {
-        if (roll < 0)
-        {
-            roll_err = roll + 3.14f;
-        }
-        else
-        {
-            roll_err = 3.14f - roll;
-        }
-    }
-
-    if (roll_err > imu_limit_num || pitch > imu_limit_num)
-    {
-        return false;
-    }
-
-    return true;
-}
-
-
 void robot::motor_send_2()
 {
-    if (!imu_limit())
+    for (motor *m : Motors)
     {
-        for (motor *m : Motors)
-        {
-            m->pos_vel_tqe_kp_kd(m->get_current_motor_state()->position, 0, 0, 10, 1);
-        }
+        m->pos_vel_tqe_kp_kd(m->get_current_motor_state()->position, 0, 0, 10, 1);
     }
 
     if (!motor_position_limit_flag && !motor_torque_limit_flag)

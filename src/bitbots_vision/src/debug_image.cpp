@@ -4,39 +4,28 @@
 
 namespace bitbots_vision {
 
-void DebugImage::set_image(const cv::Mat & image)
-{
-  image_ = image.clone();
-}
+void DebugImage::set_image(const cv::Mat& image) { image_ = image.clone(); }
 
-void DebugImage::draw_ball_candidates(
-  const std::vector<Candidate> & candidates,
-  const cv::Scalar & color,
-  int thickness)
-{
+void DebugImage::draw_ball_candidates(const std::vector<Candidate>& candidates, const cv::Scalar& color,
+                                      int thickness) {
   if (!active_) {
     return;
   }
-  for (const auto & c : candidates) {
+  for (const auto& c : candidates) {
     cv::circle(image_, {c.center_x(), c.center_y()}, c.radius(), color, thickness);
   }
 }
 
-void DebugImage::draw_box_candidates(
-  const std::vector<Candidate> & candidates,
-  const cv::Scalar & color,
-  int thickness)
-{
+void DebugImage::draw_box_candidates(const std::vector<Candidate>& candidates, const cv::Scalar& color, int thickness) {
   if (!active_) {
     return;
   }
-  for (const auto & c : candidates) {
+  for (const auto& c : candidates) {
     cv::rectangle(image_, {c.x1, c.y1}, {c.x2(), c.y2()}, color, thickness);
   }
 }
 
-void DebugImage::draw_mask(const cv::Mat & mask, const cv::Scalar & color, double opacity)
-{
+void DebugImage::draw_mask(const cv::Mat& mask, const cv::Scalar& color, double opacity) {
   if (!active_ || mask.empty()) {
     return;
   }

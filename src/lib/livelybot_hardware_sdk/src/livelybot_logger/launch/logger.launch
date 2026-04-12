@@ -1,9 +1,0 @@
-<launch>
-  <arg name="log_dir" default="/tmp/livelybot_logs"/>
-
-  <node pkg="livelybot_power" exec="power_node" name="power_node" output="screen"/>
-
-  <node pkg="livelybot_logger" exec="livelybot_logger_node" name="livelybot_logger" output="screen">
-    <param name="log_dir" value="$(var log_dir)"/>
-  </node>
-</launch>

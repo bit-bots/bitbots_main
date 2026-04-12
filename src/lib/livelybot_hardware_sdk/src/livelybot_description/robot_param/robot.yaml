@@ -1,0 +1,283 @@
+/**:
+  ros__parameters:
+    robot:
+      SDK_version: 2
+      robot_name: "pi plus"
+      arm_dof: 6
+      leg_dof: 6
+      Serial_Type: "/dev/ttyACM"
+      serial_baudrate: 4000000
+      canport_error_output_flag: false
+      CAN_Type: "CAN-FD BRS" # "CAN-FD"\"CAN-FD BRS"\"CAN 2.0B"
+      control_type: 12  # 运行模式
+      imu_limit_flag: false  # 角度限制开关
+      imu_dir: false        # IMU安装方向
+      imu_limit_num: 1.0    # 角度限制值（幅度制, 范围：[0, 1.57)）
+      motor_timeout_ms: 0
+      CANboard_num: 1
+      CANboard:
+        No_1_CANboard:
+          CANport_num: 5
+          CANport:
+            CANport_1:
+              serial_id: 1
+              motor_num: 6
+              motor:
+                motor1:
+                    type: "5047_36_2"
+                    id: 1
+                    name: "l_ankle_roll_joint"
+                    num: 1
+                    pos_limit_enable: false
+                    pos_upper: 5.0
+                    pos_lower: -5.0
+                    tor_limit_enable: false
+                    tor_upper: 5.0
+                    tor_lower: -3.0
+                motor2:
+                    type: "5047_36_2"
+                    id: 2
+                    name: "l_ankle_pitch_joint"
+                    num: 2
+                    pos_limit_enable: false
+                    pos_upper: 5.0
+                    pos_lower: -5.0
+                    tor_limit_enable: false
+                    tor_upper: 5.0
+                    tor_lower: -3.0
+                motor3:
+                    type: "5047_36_2"
+                    id: 3
+                    name: "l_calf_joint"
+                    num: 3
+                    pos_limit_enable: false
+                    pos_upper: 5.0
+                    pos_lower: -5.0
+                    tor_limit_enable: false
+                    tor_upper: 5.0
+                    tor_lower: -3.0
+                motor4:
+                    type: "5047_36_2"
+                    id: 4
+                    name: "l_hip_pitch_joint"
+                    num: 4
+                    pos_limit_enable: false
+                    pos_upper: 5.0
+                    pos_lower: -5.0
+                    tor_limit_enable: false
+                    tor_upper: 5.0
+                    tor_lower: -3.0
+                motor5:
+                    type: "5047_36_2"
+                    id: 5
+                    name: "l_hip_roll_joint"
+                    num: 5
+                    pos_limit_enable: false
+                    pos_upper: 5.0
+                    pos_lower: -5.0
+                    tor_limit_enable: false
+                    tor_upper: 5.0
+                    tor_lower: -3.0
+                motor6:
+                    type: "5047_36_2"
+                    id: 6
+                    name: "l_thigh_joint"
+                    num: 6
+                    pos_limit_enable: false
+                    pos_upper: 5.0
+                    pos_lower: -5.0
+                    tor_limit_enable: false
+                    tor_upper: 5.0
+                    tor_lower: -3.0
+            CANport_2:
+              serial_id: 2
+              motor_num: 6
+              motor:
+                motor1:
+                    type: "5047_36_2"
+                    id: 1
+                    name: "r_ankle_roll_joint"
+                    num: 1
+                    pos_limit_enable: false
+                    pos_upper: 5.0
+                    pos_lower: -5.0
+                    tor_limit_enable: false
+                    tor_upper: 5.0
+                    tor_lower: -3.0
+                motor2:
+                    type: "5047_36_2"
+                    id: 2
+                    name: "r_ankle_pitch_joint"
+                    num: 2
+                    pos_limit_enable: false
+                    pos_upper: 5.0
+                    pos_lower: -5.0
+                    tor_limit_enable: false
+                    tor_upper: 5.0
+                    tor_lower: -3.0
+                motor3:
+                    type: "5047_36_2"
+                    id: 3
+                    name: "r_calf_joint"
+                    num: 3
+                    pos_limit_enable: false
+                    pos_upper: 5.0
+                    pos_lower: -5.0
+                    tor_limit_enable: false
+                    tor_upper: 5.0
+                    tor_lower: -3.0
+                motor4:
+                    type: "5047_36_2"
+                    id: 4
+                    name: "r_hip_pitch_joint"
+                    num: 4
+                    pos_limit_enable: false
+                    pos_upper: 5.0
+                    pos_lower: -5.0
+                    tor_limit_enable: false
+                    tor_upper: 5.0
+                    tor_lower: -3.0
+                motor5:
+                    type: "5047_36_2"
+                    id: 5
+                    name: "r_hip_roll_joint"
+                    num: 5
+                    pos_limit_enable: false
+                    pos_upper: 5.0
+                    pos_lower: -5.0
+                    tor_limit_enable: false
+                    tor_upper: 5.0
+                    tor_lower: -3.0
+                motor6:
+                    type: "5047_36_2"
+                    id: 6
+                    name: "r_thigh_joint"
+                    num: 6
+                    pos_limit_enable: false
+                    pos_upper: 5.0
+                    pos_lower: -5.0
+                    tor_limit_enable: false
+                    tor_upper: 5.0
+                    tor_lower: -3.0
+            CANport_3:
+              serial_id: 3
+              motor_num: 4
+              motor:
+                motor1:
+                    type: "4438_30"
+                    id: 1
+                    name: "l_shoulder_pitch_joint"
+                    num: 1
+                    pos_limit_enable: false
+                    pos_upper: 5.0
+                    pos_lower: -5.0
+                    tor_limit_enable: false
+                    tor_upper: 5.0
+                    tor_lower: -3.0
+                motor2:
+                    type: "4438_30"
+                    id: 2
+                    name: "l_shoulder_roll_joint"
+                    num: 2
+                    pos_limit_enable: false
+                    pos_upper: 5.0
+                    pos_lower: -5.0
+                    tor_limit_enable: false
+                    tor_upper: 5.0
+                    tor_lower: -3.0
+                motor3:
+                    type: "4438_30"
+                    id: 3
+                    name: "l_upper_arm_joint"
+                    num: 3
+                    pos_limit_enable: false
+                    pos_upper: 5.0
+                    pos_lower: -5.0
+                    tor_limit_enable: false
+                    tor_upper: 5.0
+                    tor_lower: -3.0
+                motor4:
+                    type: "4438_30"
+                    id: 4
+                    name: "l_elbow_joint"
+                    num: 4
+                    pos_limit_enable: false
+                    pos_upper: 5.0
+                    pos_lower: -5.0
+                    tor_limit_enable: false
+                    tor_upper: 5.0
+                    tor_lower: -3.0
+            CANport_4:
+              serial_id: 4
+              motor_num: 4
+              motor:
+                motor1:
+                    type: "4438_30"
+                    id: 1
+                    name: "r_shoulder_pitch_joint"
+                    num: 1
+                    pos_limit_enable: false
+                    pos_upper: 5.0
+                    pos_lower: -5.0
+                    tor_limit_enable: false
+                    tor_upper: 5.0
+                    tor_lower: -3.0
+                motor2:
+                    type: "4438_30"
+                    id: 2
+                    name: "r_shoulder_roll_joint"
+                    num: 2
+                    pos_limit_enable: false
+                    pos_upper: 5.0
+                    pos_lower: -5.0
+                    tor_limit_enable: false
+                    tor_upper: 5.0
+                    tor_lower: -3.0
+                motor3:
+                    type: "4438_30"
+                    id: 3
+                    name: "r_upper_arm_joint"
+                    num: 3
+                    pos_limit_enable: false
+                    pos_upper: 5.0
+                    pos_lower: -5.0
+                    tor_limit_enable: false
+                    tor_upper: 5.0
+                    tor_lower: -3.0
+                motor4:
+                    type: "4438_30"
+                    id: 4
+                    name: "r_elbow_joint"
+                    num: 4
+                    pos_limit_enable: false
+                    pos_upper: 5.0
+                    pos_lower: -5.0
+                    tor_limit_enable: false
+                    tor_upper: 5.0
+                    tor_lower: -3.0
+            CANport_5:
+              serial_id: 5
+              motor_num: 2
+              motor:
+                motor1:
+                    type: "3536_32"
+                    id: 1
+                    name: "head_yaw_joint"
+                    num: 1
+                    pos_limit_enable: false
+                    pos_upper: 5.0
+                    pos_lower: -5.0
+                    tor_limit_enable: false
+                    tor_upper: 5.0
+                    tor_lower: -3.0
+                motor2:
+                    type: "3536_32"
+                    id: 2
+                    name: "head_pitch_joint"
+                    num: 1
+                    pos_limit_enable: false
+                    pos_upper: 5.0
+                    pos_lower: -5.0
+                    tor_limit_enable: false
+                    tor_upper: 5.0
+                    tor_lower: -3.0

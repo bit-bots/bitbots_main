@@ -2,61 +2,51 @@ bitbots_vision:
   topics:
     image:
       type: string
-      default_value: "camera/image_proc"
       description: "ROS topic of the input image"
       read_only: true
     balls:
       type: string
-      default_value: "balls_in_image"
       description: "ROS topic to publish detected balls"
       read_only: true
     robots:
       type: string
-      default_value: "robots_in_image"
       description: "ROS topic to publish detected robots"
       read_only: true
     goalposts:
       type: string
-      default_value: "goal_posts_in_image"
       description: "ROS topic to publish detected goal posts"
       read_only: true
     line_mask:
       type: string
-      default_value: "line_mask_in_image"
       description: "ROS topic to publish the line segmentation mask"
       read_only: true
     field_mask:
       type: string
-      default_value: "field_mask"
       description: "ROS topic to publish the field segmentation mask"
       read_only: true
     debug_image:
       type: string
-      default_value: "debug_image"
       description: "ROS topic to publish the debug image"
       read_only: true
 
   model:
     path:
       type: string
-      default_value: ""
       description: >
         Path to the YOEO model directory.
         Must contain 'onnx/yoeo.onnx' and 'model_config.yaml'.
         If the path does not exist, we try to resolve it as
-        '$CONDA_PREFIX/share/bitbots_model_<value>' for backward compatibility.
+        '$CONDA_PREFIX/share/bitbots_model_<value>', resolving it as a conda package name instead.
 
   yoeo:
     conf_threshold:
       type: double
-      default_value: 0.5
       description: "Objectness confidence threshold; detections below this value are discarded"
       validation:
         bounds<>: [0.0, 1.0]
 
     nms_threshold:
       type: double
-      default_value: 0.4
       description: "Non-maximum suppression IoU threshold"
       validation:
         bounds<>: [0.0, 1.0]
@@ -64,45 +54,37 @@ bitbots_vision:
   components:
     ball_active:
       type: bool
-      default_value: true
       description: "Enable ball detection and publishing"
 
     robot_active:
       type: bool
-      default_value: true
       description: "Enable robot detection and publishing"
 
     goalpost_active:
       type: bool
-      default_value: false
       description: "Enable goal post detection and publishing"
 
     line_active:
       type: bool
-      default_value: true
       description: "Enable line segmentation mask publishing"
 
     field_active:
       type: bool
-      default_value: true
       description: "Enable field segmentation mask publishing"
 
     debug_active:
       type: bool
-      default_value: false
       description: "Enable debug image publishing"
 
   ball:
     rating_threshold:
       type: double
-      default_value: 0.5
       description: "Minimum confidence score to publish a ball candidate"
       validation:
         bounds<>: [0.0, 1.0]
 
     max_count:
       type: int
-      default_value: 1
       description: "Maximum number of ball candidates to publish (sorted by confidence)"
       validation:
         bounds<>: [0, 50]

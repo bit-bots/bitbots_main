@@ -1,9 +1,8 @@
 #include "bitbots_vision/yoeo_handler.hpp"
 
 #include <filesystem>
-#include <stdexcept>
-
 #include <rclcpp/logging.hpp>
+#include <stdexcept>
 
 #include "bitbots_vision/yoeo_processing.hpp"
 
@@ -13,15 +12,9 @@ namespace bitbots_vision {
 // Construction
 // ---------------------------------------------------------------------------
 
-YoeoHandler::YoeoHandler(
-  const std::string & model_path,
-  const ModelConfig & model_config,
-  const Config & cfg,
-  const rclcpp::Logger & logger)
-: env_(ORT_LOGGING_LEVEL_WARNING, "bitbots_vision"),
-  cfg_(cfg),
-  logger_(logger)
-{
+YoeoHandler::YoeoHandler(const std::string& model_path, const ModelConfig& model_config, const Config& cfg,
+                         const rclcpp::Logger& logger)
+    : env_(ORT_LOGGING_LEVEL_WARNING, "bitbots_vision"), cfg_(cfg), logger_(logger) {
   det_class_names_ = model_config.detection_classes();
   seg_class_names_ = model_config.segmentation_classes();
   robot_class_ids_ = model_config.robot_class_ids();
@@ -34,8 +27,7 @@ YoeoHandler::YoeoHandler(
 // init_session – builds the ONNX session with provider fallback chain
 // ---------------------------------------------------------------------------
 
-void YoeoHandler::init_session(const std::string & model_path)
-{
+void YoeoHandler::init_session(const std::string& model_path) {
   const std::string onnx_file = model_path + "/onnx/yoeo.onnx";
   if (!std::filesystem::exists(onnx_file)) {
     throw std::runtime_error("ONNX model file not found: " + onnx_file);
@@ -48,7 +40,7 @@ void YoeoHandler::init_session(const std::string & model_path)
   // Ort::GetAvailableProviders() returns providers compiled into this ORT build.
   // CUDA and TensorRT require typed registration APIs; other providers use the generic API.
   const auto available = Ort::GetAvailableProviders();
-  auto has_ep = [&](const std::string & name) {
+  auto has_ep = [&](const std::string& name) {
     return std::find(available.begin(), available.end(), name) != available.end();
   };
 
@@ -60,7 +52,7 @@ void YoeoHandler::init_session(const std::string & model_path)
       OrtTensorRTProviderOptions trt_opts{};
       session_options_.AppendExecutionProvider_TensorRT(trt_opts);
       RCLCPP_INFO(logger_, "ONNX Runtime: registered TensorrtExecutionProvider");
-    } catch (const Ort::Exception & e) {
+    } catch (const Ort::Exception& e) {
       RCLCPP_WARN(logger_, "TensorrtExecutionProvider unavailable: %s", e.what());
     }
   }
@@ -70,18 +62,24 @@ void YoeoHandler::init_session(const std::string & model_path)
       OrtCUDAProviderOptions cuda_opts{};
       session_options_.AppendExecutionProvider_CUDA(cuda_opts);
       RCLCPP_INFO(logger_, "ONNX Runtime: registered CUDAExecutionProvider");
-    } catch (const Ort::Exception & e) {
+    } catch (const Ort::Exception& e) {
       RCLCPP_WARN(logger_, "CUDAExecutionProvider unavailable: %s", e.what());
     }
   }
 
-  if (has_ep("WebGPUExecutionProvider")) {
+  if (has_ep("WebGpuExecutionProvider")) {
     try {
       session_options_.AppendExecutionProvider("WebGPU", {});
-      RCLCPP_INFO(logger_, "ONNX Runtime: registered WebGPUExecutionProvider");
-    } catch (const Ort::Exception & e) {
-      RCLCPP_WARN(logger_, "WebGPUExecutionProvider unavailable: %s", e.what());
+      RCLCPP_INFO(logger_, "ONNX Runtime: registered WebGpuExecutionProvider");
+    } catch (const Ort::Exception& e) {
+      RCLCPP_WARN(logger_, "WebGpuExecutionProvider unavailable: %s", e.what());
     }
+  }
+
+  // List available providers for debugging
+  RCLCPP_INFO(logger_, "Available ONNX Runtime execution providers:");
+  for (const auto& ep : available) {
+    RCLCPP_INFO(logger_, "  %s", ep.c_str());
   }
 
   // CPU is always the implicit fallback — no explicit registration needed.
@@ -116,34 +114,24 @@ void YoeoHandler::init_session(const std::string & model_path)
     output_names_.emplace_back(out_name_ptr.get());
   }
 
-  RCLCPP_INFO(
-    logger_,
-    "Model loaded – input '%s' [1, 3, %lld, %lld], %zu outputs",
-    input_name_.c_str(),
-    static_cast<long long>(input_shape_[2]),
-    static_cast<long long>(input_shape_[3]),
-    num_outputs);
+  RCLCPP_INFO(logger_, "Model loaded – input '%s' [1, 3, %lld, %lld], %zu outputs", input_name_.c_str(),
+              static_cast<long long>(input_shape_[2]), static_cast<long long>(input_shape_[3]), num_outputs);
 }
 
 // ---------------------------------------------------------------------------
 // Public interface
 // ---------------------------------------------------------------------------
 
-void YoeoHandler::reconfigure(const Config & cfg)
-{
-  cfg_ = cfg;
-}
+void YoeoHandler::reconfigure(const Config& cfg) { cfg_ = cfg; }
 
-void YoeoHandler::set_image(const cv::Mat & bgr_image)
-{
+void YoeoHandler::set_image(const cv::Mat& bgr_image) {
   det_results_.clear();
   seg_results_.clear();
   preprocess(bgr_image);
   prediction_is_fresh_ = false;
 }
 
-void YoeoHandler::predict()
-{
+void YoeoHandler::predict() {
   if (prediction_is_fresh_) {
     return;
   }
@@ -151,36 +139,27 @@ void YoeoHandler::predict()
   prediction_is_fresh_ = true;
 }
 
-std::vector<Candidate> YoeoHandler::get_detection_candidates_for(const std::string & class_name)
-{
+std::vector<Candidate> YoeoHandler::get_detection_candidates_for(const std::string& class_name) {
   predict();
   auto it = det_results_.find(class_name);
   return (it != det_results_.end()) ? it->second : std::vector<Candidate>{};
 }
 
-cv::Mat YoeoHandler::get_segmentation_mask_for(const std::string & class_name)
-{
+cv::Mat YoeoHandler::get_segmentation_mask_for(const std::string& class_name) {
   predict();
   auto it = seg_results_.find(class_name);
   return (it != seg_results_.end()) ? it->second : cv::Mat{};
 }
 
-const std::vector<std::string> & YoeoHandler::detection_class_names() const
-{
-  return det_class_names_;
-}
+const std::vector<std::string>& YoeoHandler::detection_class_names() const { return det_class_names_; }
 
-const std::vector<std::string> & YoeoHandler::segmentation_class_names() const
-{
-  return seg_class_names_;
-}
+const std::vector<std::string>& YoeoHandler::segmentation_class_names() const { return seg_class_names_; }
 
 // ---------------------------------------------------------------------------
 // Preprocessing  (BGR uint8 → RGB float32, padded to square, CHW)
 // ---------------------------------------------------------------------------
 
-void YoeoHandler::preprocess(const cv::Mat & bgr_image)
-{
+void YoeoHandler::preprocess(const cv::Mat& bgr_image) {
   const int net_h = static_cast<int>(input_shape_[2]);
   const int net_w = static_cast<int>(input_shape_[3]);
   input_data_ = processing::preprocess_image(bgr_image, net_h, net_w, preprocess_info_);
@@ -191,26 +170,20 @@ void YoeoHandler::preprocess(const cv::Mat & bgr_image)
 // Inference
 // ---------------------------------------------------------------------------
 
-void YoeoHandler::run_inference()
-{
-  auto memory_info =
-    Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
+void YoeoHandler::run_inference() {
+  auto memory_info = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
 
-  Ort::Value input_tensor = Ort::Value::CreateTensor<float>(
-    memory_info,
-    input_data_.data(), input_data_.size(),
-    input_shape_.data(), input_shape_.size());
+  Ort::Value input_tensor = Ort::Value::CreateTensor<float>(memory_info, input_data_.data(), input_data_.size(),
+                                                            input_shape_.data(), input_shape_.size());
 
-  const char * input_name_cstr = input_name_.c_str();
-  std::vector<const char *> out_name_cstrs;
-  for (const auto & n : output_names_) {
+  const char* input_name_cstr = input_name_.c_str();
+  std::vector<const char*> out_name_cstrs;
+  for (const auto& n : output_names_) {
     out_name_cstrs.push_back(n.c_str());
   }
 
-  auto outputs = session_->Run(
-    Ort::RunOptions{nullptr},
-    &input_name_cstr, &input_tensor, 1,
-    out_name_cstrs.data(), out_name_cstrs.size());
+  auto outputs = session_->Run(Ort::RunOptions{nullptr}, &input_name_cstr, &input_tensor, 1, out_name_cstrs.data(),
+                               out_name_cstrs.size());
 
   if (outputs.size() < 2) {
     RCLCPP_ERROR(logger_, "Expected at least 2 outputs from YOEO model, got %zu", outputs.size());
@@ -223,7 +196,7 @@ void YoeoHandler::run_inference()
   }
   {
     auto shape = outputs[1].GetTensorTypeAndShapeInfo().GetShape();
-    postprocess_segmentation(outputs[1].GetTensorMutableData<float>(), shape);
+    postprocess_segmentation(outputs[1].GetTensorMutableData<uint8_t>(), shape);
   }
 }
 
@@ -231,37 +204,24 @@ void YoeoHandler::run_inference()
 // Detection post-processing
 // ---------------------------------------------------------------------------
 
-void YoeoHandler::postprocess_detections(
-  const float * det_data,
-  const std::vector<int64_t> & shape)
-{
+void YoeoHandler::postprocess_detections(const float* det_data, const std::vector<int64_t>& shape) {
   if (shape.size() < 3) {
     return;
   }
-  det_results_ = processing::postprocess_detections(
-    det_data, shape[1], shape[2],
-    det_class_names_, robot_class_ids_,
-    cfg_.conf_threshold, cfg_.nms_threshold,
-    preprocess_info_);
+  det_results_ = processing::postprocess_detections(det_data, shape[1], shape[2], det_class_names_, robot_class_ids_,
+                                                    cfg_.conf_threshold, cfg_.nms_threshold, preprocess_info_);
 }
 
 // ---------------------------------------------------------------------------
 // Segmentation post-processing
 // ---------------------------------------------------------------------------
 
-void YoeoHandler::postprocess_segmentation(
-  const float * seg_data,
-  const std::vector<int64_t> & shape)
-{
+void YoeoHandler::postprocess_segmentation(const uint8_t* seg_data, const std::vector<int64_t>& shape) {
   if (shape.size() < 3) {
     return;
   }
-  seg_results_ = processing::postprocess_segmentation(
-    seg_data,
-    static_cast<int>(shape[1]),
-    static_cast<int>(shape[2]),
-    seg_class_names_,
-    preprocess_info_);
+  seg_results_ = processing::postprocess_segmentation(seg_data, static_cast<int>(shape[1]), static_cast<int>(shape[2]),
+                                                      seg_class_names_, preprocess_info_);
 }
 
 }  // namespace bitbots_vision
