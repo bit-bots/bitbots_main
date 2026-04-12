@@ -1,5 +1,3 @@
-from std_srvs.srv import SetBool
-
 from bitbots_hcm.hcm_dsd.actions import AbstractHCMActionElement
 from livelybot_msg.msg import PowerSwitch
 
@@ -20,5 +18,5 @@ class TurnMotorsOff(AbstractChangeMotorPower):
         if not self.blackboard.visualization_active and not self.blackboard.simulation_active:
             msg = PowerSwitch()
             msg.power_switch = 0
-            self.blackboard.motor_switch_pub.pub(msg)
+            self.blackboard.motor_switch_pub.publish(msg)
         return self.pop()
