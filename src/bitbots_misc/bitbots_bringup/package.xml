@@ -5,7 +5,6 @@
     <version>2.3.1</version>
     <description>The bitbots_bringup hosts the main launch files for the Hamburg Bit-Bots code base.</description>
 
-    <maintainer email="7sell@informatik.uni-hamburg.de">Finn-Thorben Sell</maintainer>
     <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
 
     <license>MIT</license>
@@ -18,7 +17,6 @@
 
     <exec_depend condition="$IS_ROBOT != True">bitbots_webots_sim</exec_depend>
     <exec_depend>audio_common</exec_depend>
-    <exec_depend>bitbots_basler_camera</exec_depend>
     <exec_depend>bitbots_body_behavior</exec_depend>
     <exec_depend>bitbots_diagnostic</exec_depend>
     <!-- <exec_depend>bitbots_dynamic_kick</exec_depend> -->
@@ -40,6 +38,7 @@
     <exec_depend>topic_tools</exec_depend>
     <exec_depend>udp_bridge</exec_depend>
     <exec_depend>piplus_description</exec_depend>
+    <exec_depend>zed_wrapper</exec_depend>
 
     <export>
         <bitbots_documentation>
