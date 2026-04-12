@@ -78,10 +78,10 @@
     </visual>
   </link>
   <joint name="r_shoulder_pitch_joint" type="revolute">
-    <origin xyz="0 -0.1084 0.117" rpy="0 0 0" />
+    <origin xyz="0 -0.1084 0.117" rpy="0 1.57079632679 0" />
     <parent link="torso_link" />
     <child link="r_shoulder_pitch_link" />
-    <axis xyz="0 1 0" />
+    <axis xyz="0 -1 0" />
     <limit lower="-4.18" upper="1.04" effort="10" velocity="15.91" />
     <dynamics damping="0.02" friction="0.0"/>
   </joint>
@@ -102,7 +102,7 @@
     </visual>
   </link>
   <joint name="r_shoulder_roll_joint" type="revolute">
-    <origin xyz="0 -0.038 0" rpy="0 0 0" />
+    <origin xyz="0 -0.038 0" rpy="-1.57079632679 0 0" />
     <parent link="r_shoulder_pitch_link" />
     <child link="r_shoulder_roll_link" />
     <axis xyz="1 0 0" />
@@ -137,7 +137,7 @@
     <origin xyz="0 0 -0.0724" rpy="0 0 0" />
     <parent link="r_shoulder_roll_link" />
     <child link="r_upper_arm_link" />
-    <axis xyz="0 0 1" />
+    <axis xyz="0 0 -1" />
     <limit lower="-2.16" upper="2.16" effort="10" velocity="15.91" />
     <dynamics damping="0.02" friction="0.0"/>
   </joint>
@@ -161,7 +161,7 @@
     <origin xyz="0 0 -0.038" rpy="0 0 0" />
     <parent link="r_upper_arm_link" />
     <child link="r_elbow_link" />
-    <axis xyz="0 1 0" />
+    <axis xyz="0 -1 0" />
     <limit lower="-2" upper="2" effort="10" velocity="15.91" />
     <dynamics damping="0.02" friction="0.0"/>
   </joint>
@@ -218,7 +218,7 @@
     </visual>
   </link>
   <joint name="l_shoulder_pitch_joint" type="revolute">
-    <origin xyz="0 0.1084 0.11698" rpy="0 0 0" />
+    <origin xyz="0 0.1084 0.11698" rpy="0 1.57079632679 0" />
     <parent link="torso_link" />
     <child link="l_shoulder_pitch_link" />
     <axis xyz="0 1 0" />
@@ -242,7 +242,7 @@
     </visual>
   </link>
   <joint name="l_shoulder_roll_joint" type="revolute">
-    <origin xyz="0 0.038 0" rpy="0 0 0" />
+    <origin xyz="0 0.038 0" rpy="1.57079632679 0 0" />
     <parent link="l_shoulder_pitch_link" />
     <child link="l_shoulder_roll_link" />
     <axis xyz="1 0 0" />
@@ -277,7 +277,7 @@
     <origin xyz="0 0 -0.0724" rpy="0 0 0" />
     <parent link="l_shoulder_roll_link" />
     <child link="l_upper_arm_link" />
-    <axis xyz="0 0 1" />
+    <axis xyz="0 0 -1" />
     <limit lower="-2.16" upper="2.16" effort="10" velocity="15.91" />
     <dynamics damping="0.02" friction="0.0"/>
   </joint>
@@ -456,7 +456,7 @@
     <origin xyz="0 -0.0475 -0.0435" rpy="0 0 0" />
     <parent link="base_link" />
     <child link="r_hip_pitch_link" />
-    <axis xyz="0 1 0" />
+    <axis xyz="0 -1 0" />
     <limit lower="-1.76" upper="1.76" effort="20" velocity="5.45" />
     <dynamics damping="0.02" friction="0.0"/>
   </joint>
@@ -510,7 +510,7 @@
     <origin xyz="-0.00035 0 -0.0974" rpy="0 0 0" />
     <parent link="r_hip_roll_link" />
     <child link="r_thigh_link" />
-    <axis xyz="0 0 1" />
+    <axis xyz="0 0 -1" />
     <limit lower="-2.87" upper="2.87" effort="20" velocity="5.45" />
     <dynamics damping="0.02" friction="0.0"/>
   </joint>
@@ -578,7 +578,7 @@
     <origin xyz="0 0 -0.14" rpy="0 0 0" />
     <parent link="r_calf_link" />
     <child link="r_ankle_pitch_link" />
-    <axis xyz="0 1 0" />
+    <axis xyz="0 -1 0" />
     <limit lower="-0.97" upper="0.92" effort="20" velocity="5.45" />
     <dynamics damping="0.02" friction="0.0"/>
   </joint>
@@ -716,7 +716,7 @@
     <origin xyz="-0.00035 0 -0.0974" rpy="0 0 0" />
     <parent link="l_hip_roll_link" />
     <child link="l_thigh_link" />
-    <axis xyz="0 0 1" />
+    <axis xyz="0 0 -1" />
     <limit lower="-2.87" upper="2.87" effort="20" velocity="5.45" />
     <dynamics damping="0.02" friction="0.0"/> <!-- 即使很小的阻尼也能极大改善稳定性 -->
   </joint>
@@ -754,7 +754,7 @@
     <origin xyz="0 0 -0.045" rpy="0 0 0" />
     <parent link="l_thigh_link" />
     <child link="l_calf_link" />
-    <axis xyz="0 1 0" />
+    <axis xyz="0 -1 0" />
     <limit lower="-2.14" upper="2.35" effort="20" velocity="5.45" />
     <dynamics damping="0.02" friction="0.0"/>
   </joint>

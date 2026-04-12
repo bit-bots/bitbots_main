@@ -10,7 +10,6 @@
 
   <license>MIT</license>
 
-  <author email="bestmann@informatik.uni-hamburg.de">Marc Bestmann</author>
   <author email="5guelden@informatik.uni-hamburg.de">Jasper Güldenstein</author>
   <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
 
@@ -19,6 +18,7 @@
 
   <depend>bitbots_docs</depend>
   <depend>bitbots_robot_description</depend>
+  <depend>bitbots_parameter_blackboard</depend>
   <depend>bitbots_utils</depend>
   <depend>joint_state_publisher_gui</depend>
   <depend>sensor_msgs</depend>
