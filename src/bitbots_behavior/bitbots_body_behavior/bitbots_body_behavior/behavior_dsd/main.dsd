@@ -108,6 +108,22 @@ $DoOnce
                 SECOND --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition + mode:freekick_second
                 THIRD --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition
 
+#PlacingWithoutTeamCom
+$DoOnce
+    NOT_DONE --> @ForgetBall, @LookAtFieldFeatures
+    DONE --> $ConfigRole
+        GOALIE --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToBlockPosition
+        ELSE --> $BallSeen
+            NO --> $SecondaryStateTeamDecider
+                OUR --> #SearchBall
+                OTHER --> @AvoidBallActive, @LookAtFieldFeatures, @WalkInPlace + duration:2, @GoToRelativePosition + x:1 + y:0 + t:0, @Stand
+            //TODO
+            YES --> $CountUnpenalizedRobots
+            YES --> $RankToBallNoGoalieWithoutTeamCom
+                FIRST --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition + mode:freekick_first
+                SECOND --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition + mode:freekick_second
+                THIRD --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition
+
 #Init
 @Stand + duration:0.1 + r:false, @ChangeAction + action:waiting, @LookForward, @Stand
 
@@ -130,15 +146,43 @@ $BallSeen
                     SECOND --> #SupporterRole
                     THIRD --> #DefensePositioning
 
+#NormalBehaviorWithoutTeamCom
+$BallSeen
+    NO --> $ConfigRole
+        GOALIE --> #RolePositionWithPause
+        ELSE --> #SearchBall
+    YES --> $KickOffTimeUp
+        NO_NORMAL --> #StandAndLook
+        NO_FREEKICK --> #PlacingWithoutTeamCom
+        YES --> $ConfigRole
+            GOALIE --> #GoalieBehavior
+            ELSE --> $CountActiveRobotsWithoutGoalie
+                ONE --> $RankToBallNoGoalie
+                    FIRST --> #StrikerRole
+                    SECOND --> #DefensePositioning
+                ELSE --> $RankToBallNoGoalie
+                    FIRST --> #StrikerRole
+                    SECOND --> #SupporterRole
+                    THIRD --> #DefensePositioning
+
 #PlayingBehavior
-$SecondaryStateDecider
-    PENALTYSHOOT --> #PenaltyShootoutBehavior
-    TIMEOUT --> #StandAndLook
-    ELSE --> $SecondaryStateTeamDecider
-        OUR --> #NormalBehavior
-        OTHER --> #Placing
-    NORMAL --> #NormalBehavior
-    OVERTIME --> #NormalBehavior
+$TeamComLimitReached
+    YES --> $SecondaryStateDecider
+        PENALTYSHOOT --> #PenaltyShootoutBehavior
+        TIMEOUT --> #StandAndLook
+        ELSE --> $SecondaryStateTeamDecider
+            OUR --> #NormalBehaviorWithoutTeamCom
+            OTHER --> #PlacingWithoutTeamCom
+        NORMAL --> #NormalBehaviorWithoutTeamCom
+        OVERTIME --> #NormalBehaviorWithoutTeamCom
+    NO --> $SecondaryStateDecider
+        PENALTYSHOOT --> #PenaltyShootoutBehavior
+        TIMEOUT --> #StandAndLook
+        ELSE --> $SecondaryStateTeamDecider
+            OUR --> #NormalBehavior
+            OTHER --> #Placing
+        NORMAL --> #NormalBehavior
+        OVERTIME --> #NormalBehavior
 
 -->BodyBehavior
 $IsPenalized
