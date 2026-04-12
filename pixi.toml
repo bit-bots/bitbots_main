@@ -15,6 +15,11 @@ deploy = {cmd = "scripts/deploy_robots.py", description = "Deploys the current e
 format = {cmd = "pre-commit run --all-files", description = "Runs code formatting and linting."}
 
 [tasks.build]
+# Skipping ZED-camera related packages as they require a local installation of the ZED SDK.
+cmd = "colcon build --symlink-install --cmake-args -G 'Unix Makefiles' --packages-skip zed_wrapper zed_components zed_msgs zed_ros2 "
+description = "Builds all ROS 2 packages. Add --packages-select <package names> to build specific packages."
+
+[feature.robot.tasks.build]
 cmd = "colcon build --symlink-install --cmake-args -G 'Unix Makefiles' "
 description = "Builds all ROS 2 packages. Add --packages-select <package names> to build specific packages."
 
@@ -168,10 +173,10 @@ curl = ">=8.17.0,<9"
 make = ">=4.4.1,<5"  # To avoid issues in the CI
 
 [feature.ros.target.linux-64.dependencies]
-libonnxruntime-webgpu = {path= "./libonnxruntime-webgpu-1.24.3-hb0f4dca_0.conda"}
+#libonnxruntime-webgpu = {path= "./libonnxruntime-webgpu-1.24.3-hb0f4dca_0.conda"}
 
 [feature.ros.target.linux-aarch64.dependencies]
-libonnxruntime-webgpu = {path= "./libonnxruntime-webgpu-1.24.3-he8cfe8b_0.conda"}
+#libonnxruntime-webgpu = {path= "./libonnxruntime-webgpu-1.24.3-he8cfe8b_0.conda"}
 
 [feature.format.dependencies]
 # Add git-subrepo to format dependencies as currently there are
