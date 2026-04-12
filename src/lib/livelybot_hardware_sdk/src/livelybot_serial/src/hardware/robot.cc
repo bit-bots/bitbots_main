@@ -155,16 +155,6 @@ robot::robot(rclcpp::Node::SharedPtr node)
 robot::~robot()
 {
     set_stop();
-    for (auto &thread : ser_recv_threads)
-    {
-        if (thread.joinable())
-            thread.join();
-    }
-
-    if (error_check_thread_.joinable())
-    {
-        error_check_thread_.join();
-    }
 }
 
 
