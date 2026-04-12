@@ -13,6 +13,8 @@
   <depend>sensor_msgs</depend>
   <depend>std_msgs</depend>
   <depend>livelybot_serial</depend>
+  <depend>livelybot_power</depend>
+  <depend>yesense_imu</depend>
 
   <export>
     <build_type>ament_cmake</build_type>

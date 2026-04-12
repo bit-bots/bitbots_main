@@ -5,7 +5,7 @@
 
     <group unless="$(var sim)">
         <group unless="$(var viz)">
-            <include file="$(find-pkg-share bitbots_ros_control)/launch/ros_control.launch" />
+            <include file="$(find-pkg-share livelybot_bringup)/launch/lowlevel.launch" />
         </group>
     </group>
 

@@ -6,6 +6,9 @@
     <arg name="torqueless_mode" default="false" description="start without torque, for example for testing the falling detection"/>
     <arg name="tts" default="true" description="Whether to speak" />
 
+    <!-- launch the hardware interface -->
+    <include file="$(find-pkg-share livelybot_bringup)/launch/lowlevel.launch" />
+
     <!-- launch the base footprint -->
     <!--
     <node pkg="humanoid_base_footprint" exec="base_footprint" output="screen">

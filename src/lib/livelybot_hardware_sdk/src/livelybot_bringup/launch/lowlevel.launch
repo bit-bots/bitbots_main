@@ -1,0 +1,10 @@
+<launch>
+  <!-- Communication with the battery management system (BMS) -->
+  <node pkg="livelybot_power" exec="power_node" name="power_node" output="screen"/>
+
+  <!-- Activate serial communication with the motor controllers -->
+  <include file="$(find-pkg-share livelybot_serial)/launch/serial.launch"/>
+
+  <!-- Start IMU driver -->
+  <include file="$(find-pkg-share yesense_imu)/launch/run_without_rviz.launch"/>
+</launch>
