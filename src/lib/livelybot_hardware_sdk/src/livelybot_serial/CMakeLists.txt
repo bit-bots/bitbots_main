@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.8)
 project(livelybot_serial)
 
+if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE RelWithDebInfo)
+endif()
+
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra)
 endif()
@@ -14,6 +18,7 @@ find_package(bitbots_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(diagnostic_updater REQUIRED)
 find_package(serial REQUIRED)
+find_package(backward_ros REQUIRED)
 
 set(serial_SRCS
   src/lively_serial.cc
@@ -61,6 +66,9 @@ install(TARGETS robot_node
   RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 install(DIRECTORY include/ DESTINATION include)
+install(PROGRAMS scripts/publish_joint_command.py
+  DESTINATION lib/${PROJECT_NAME}
+)
 
 if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
