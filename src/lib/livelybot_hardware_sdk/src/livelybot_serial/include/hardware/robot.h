@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include "canboard.h"
+#include "motor.h"
 #include <rclcpp/rclcpp.hpp>
 #include <thread>
 #include <initializer_list>

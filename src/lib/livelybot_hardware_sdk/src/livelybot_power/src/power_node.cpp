@@ -1,8 +1,8 @@
 #include <rclcpp/rclcpp.hpp>
 #include <std_msgs/msg/float32.hpp>
 #include <std_msgs/msg/int8.hpp>
-#include "livelybot_power/msg/power_switch.hpp"
-#include "livelybot_power/msg/power_detect.hpp"
+#include "livelybot_msg/msg/power_switch.hpp"
+#include "livelybot_msg/msg/power_detect.hpp"
 #include "livelybot_can_driver.hpp"
 
 #define CAN_DEVICE_NAME "can0"
@@ -18,8 +18,8 @@ static rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr g_battery_volt_pub;
 static rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr g_battery_curr_pub;
 static rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr g_battery_temp_pub;
 static rclcpp::Publisher<std_msgs::msg::Int8>::SharedPtr g_bms_error_pub;
-static rclcpp::Publisher<livelybot_power::msg::PowerSwitch>::SharedPtr g_power_switch_pub;
-static rclcpp::Publisher<livelybot_power::msg::PowerDetect>::SharedPtr g_power_detect_pub;
+static rclcpp::Publisher<livelybot_msg::msg::PowerSwitch>::SharedPtr g_power_switch_pub;
+static rclcpp::Publisher<livelybot_msg::msg::PowerDetect>::SharedPtr g_power_detect_pub;
 static livelybot_can::CAN_Driver *g_can_handler = nullptr;
 
 /** Parse incoming CAN frames and publish ROS 2 messages. */
@@ -56,14 +56,14 @@ void can_recv_parse(int can_id, unsigned char *data, unsigned char /*dlc*/)
     } else if (dev_addr == POWER_SWITCH_ADDR) {
         if (data_type == 0x01) {
             // Per-channel voltage and current from power switch board
-            livelybot_power::msg::PowerDetect detect_msg;
+            livelybot_msg::msg::PowerDetect detect_msg;
             detect_msg.voltage = static_cast<float>(*reinterpret_cast<int16_t *>(&data[0])) / 100.0f;
             detect_msg.current = static_cast<float>(*reinterpret_cast<int16_t *>(&data[2])) / 100.0f;
             detect_msg.power   = detect_msg.voltage * detect_msg.current;
             g_power_detect_pub->publish(detect_msg);
         } else if (data_type == 0x02) {
             // Switch status
-            livelybot_power::msg::PowerSwitch switch_msg;
+            livelybot_msg::msg::PowerSwitch switch_msg;
             switch_msg.control_switch = data[0];
             switch_msg.power_switch   = data[1];
             g_power_switch_pub->publish(switch_msg);
@@ -72,7 +72,7 @@ void can_recv_parse(int can_id, unsigned char *data, unsigned char /*dlc*/)
 }
 
 /** Subscriber callback: forward switch commands to the power board via CAN. */
-void power_switch_cmd_callback(const livelybot_power::msg::PowerSwitch::SharedPtr msg)
+void power_switch_cmd_callback(const livelybot_msg::msg::PowerSwitch::SharedPtr msg)
 {
     const uint32_t can_id = (ORANGEPI_ADDR << 7) | (1 << 1) | 0;
     uint8_t data[2] = {msg->control_switch, msg->power_switch};
@@ -88,10 +88,10 @@ int main(int argc, char **argv)
     g_battery_curr_pub  = node->create_publisher<std_msgs::msg::Float32>("battery_current", 1);
     g_battery_temp_pub  = node->create_publisher<std_msgs::msg::Float32>("battery_temperature", 1);
     g_bms_error_pub     = node->create_publisher<std_msgs::msg::Int8>("bms_error", 1);
-    g_power_switch_pub  = node->create_publisher<livelybot_power::msg::PowerSwitch>("power_switch_state", 1);
-    g_power_detect_pub  = node->create_publisher<livelybot_power::msg::PowerDetect>("power_detect_state", 1);
+    g_power_switch_pub  = node->create_publisher<livelybot_msg::msg::PowerSwitch>("power_switch_state", 1);
+    g_power_detect_pub  = node->create_publisher<livelybot_msg::msg::PowerDetect>("power_detect_state", 1);
 
-    auto power_switch_sub = node->create_subscription<livelybot_power::msg::PowerSwitch>(
+    auto power_switch_sub = node->create_subscription<livelybot_msg::msg::PowerSwitch>(
         "power_switch_control", 1, power_switch_cmd_callback);
 
     livelybot_can::CAN_Driver can_handler(CAN_DEVICE_NAME);

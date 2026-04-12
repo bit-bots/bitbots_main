@@ -7,6 +7,8 @@ environments:
     - url: https://conda.anaconda.org/conda-forge/
     indexes:
     - https://pypi.org/simple
+    options:
+      pypi-prerelease-mode: if-necessary-or-explicit
     packages:
       linux-64:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/_openmp_mutex-4.5-20_gnu.conda
@@ -963,8 +965,9 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/zlib-1.3.2-h25fd6f3_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/zstd-1.5.7-hb78ec9c_6.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/zziplib-0.13.69-he45264a_2.conda
-      - conda: /home/florian/Projekt/bitbots/pixi/bitbots_main/libonnxruntime-webgpu-1.24.3-hb0f4dca_0.conda
+      - conda: /home/nvidia/bitbots/flo/bitbots_main/libonnxruntime-webgpu-1.24.3-hb0f4dca_0.conda
       - conda: src/bitbots_navigation/bitbots_rust_nav
+        build: hb0f4dca_0
       - pypi: https://files.pythonhosted.org/packages/1a/39/47f9197bdd44df24d67ac8893641e16f386c984a0619ef2ee4c51fbbc019/beautifulsoup4-4.14.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ea/78/9a8a174011682d71cb4922f4014ebbeb9d3067922678e7059351fd9207cf/exhale-0.3.7-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/46/2c/1462b1d0a634697ae9e55b3cecdcb64788e8b7d63f54d923fcd0bb140aed/soupsieve-2.8.3-py3-none-any.whl
@@ -1915,8 +1918,9 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/zlib-1.3.2-hdc9db2a_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/zstd-1.5.7-h85ac4a6_6.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/zziplib-0.13.69-h650d8d0_2.conda
-      - conda: /home/florian/Projekt/bitbots/pixi/bitbots_main/libonnxruntime-webgpu-1.24.3-he8cfe8b_0.conda
+      - conda: /home/nvidia/bitbots/flo/bitbots_main/libonnxruntime-webgpu-1.24.3-he8cfe8b_0.conda
       - conda: src/bitbots_navigation/bitbots_rust_nav
+        build: he8cfe8b_0
       - pypi: https://files.pythonhosted.org/packages/1a/39/47f9197bdd44df24d67ac8893641e16f386c984a0619ef2ee4c51fbbc019/beautifulsoup4-4.14.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ea/78/9a8a174011682d71cb4922f4014ebbeb9d3067922678e7059351fd9207cf/exhale-0.3.7-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/46/2c/1462b1d0a634697ae9e55b3cecdcb64788e8b7d63f54d923fcd0bb140aed/soupsieve-2.8.3-py3-none-any.whl
@@ -1926,6 +1930,8 @@ environments:
     - url: https://data.bit-bots.de/conda-misc/output/
     - url: https://conda.anaconda.org/robostack-jazzy/
     - url: https://conda.anaconda.org/conda-forge/
+    options:
+      pypi-prerelease-mode: if-necessary-or-explicit
     packages:
       linux-64:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/_openmp_mutex-4.5-20_gnu.conda
@@ -2078,6 +2084,8 @@ environments:
     - url: https://conda.anaconda.org/conda-forge/
     indexes:
     - https://pypi.org/simple
+    options:
+      pypi-prerelease-mode: if-necessary-or-explicit
     packages:
       linux-64:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/_openmp_mutex-4.5-20_gnu.conda
@@ -3034,8 +3042,9 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/zlib-1.3.2-h25fd6f3_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/zstd-1.5.7-hb78ec9c_6.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/zziplib-0.13.69-he45264a_2.conda
-      - conda: /home/florian/Projekt/bitbots/pixi/bitbots_main/libonnxruntime-webgpu-1.24.3-hb0f4dca_0.conda
+      - conda: /home/nvidia/bitbots/flo/bitbots_main/libonnxruntime-webgpu-1.24.3-hb0f4dca_0.conda
       - conda: src/bitbots_navigation/bitbots_rust_nav
+        build: hb0f4dca_0
       - pypi: https://files.pythonhosted.org/packages/1a/39/47f9197bdd44df24d67ac8893641e16f386c984a0619ef2ee4c51fbbc019/beautifulsoup4-4.14.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ea/78/9a8a174011682d71cb4922f4014ebbeb9d3067922678e7059351fd9207cf/exhale-0.3.7-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/a7/af/1431c481ec0f52e3313773b0244c65081ccc18e40b485eabe846a494914d/pyamdgpuinfo-2.1.8-cp312-cp312-manylinux_2_28_x86_64.whl
@@ -3987,8 +3996,9 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/zlib-1.3.2-hdc9db2a_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/zstd-1.5.7-h85ac4a6_6.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/zziplib-0.13.69-h650d8d0_2.conda
-      - conda: /home/florian/Projekt/bitbots/pixi/bitbots_main/libonnxruntime-webgpu-1.24.3-he8cfe8b_0.conda
+      - conda: /home/nvidia/bitbots/flo/bitbots_main/libonnxruntime-webgpu-1.24.3-he8cfe8b_0.conda
       - conda: src/bitbots_navigation/bitbots_rust_nav
+        build: he8cfe8b_0
       - pypi: https://files.pythonhosted.org/packages/1a/39/47f9197bdd44df24d67ac8893641e16f386c984a0619ef2ee4c51fbbc019/beautifulsoup4-4.14.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ea/78/9a8a174011682d71cb4922f4014ebbeb9d3067922678e7059351fd9207cf/exhale-0.3.7-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/61/b1/399158002f4246d54d2757021544dea89038ecd320cc8ea1db36bdddac23/pyamdgpuinfo-2.1.8.tar.gz
@@ -4557,15 +4567,29 @@ packages:
 - conda: src/bitbots_navigation/bitbots_rust_nav
   name: bitbots_rust_nav
   version: 0.1.0
-  build: pyh4616a5c_0
-  subdir: noarch
+  build: hb0f4dca_0
+  subdir: linux-64
+  variants:
+    target_platform: linux-64
   depends:
   - python >=3.12
-  - python *
-  input:
-    hash: 0cd7151aa027f8a06b010419a8631dc454e822b74e1c6b45c66770a69fc085da
-    globs:
-    - pyproject.toml
+  - python_abi 3.12.* *_cp312
+  constrains:
+  - __glibc >=2.17
+  - __glibc >=2.17
+- conda: src/bitbots_navigation/bitbots_rust_nav
+  name: bitbots_rust_nav
+  version: 0.1.0
+  build: he8cfe8b_0
+  subdir: linux-aarch64
+  variants:
+    target_platform: linux-aarch64
+  depends:
+  - python >=3.12
+  - python_abi 3.12.* *_cp312
+  constrains:
+  - __glibc >=2.17
+  - __glibc >=2.17
 - conda: https://conda.anaconda.org/conda-forge/noarch/blinker-1.9.0-pyhff2d567_0.conda
   sha256: f7efd22b5c15b400ed84a996d777b6327e5c402e79e3c534a7e086236f1eb2dc
   md5: 42834439227a4551b939beeeb8a4b085
@@ -10626,17 +10650,15 @@ packages:
   purls: []
   size: 220653
   timestamp: 1745826021156
-- conda: /home/florian/Projekt/bitbots/pixi/bitbots_main/libonnxruntime-webgpu-1.24.3-hb0f4dca_0.conda
+- conda: /home/nvidia/bitbots/flo/bitbots_main/libonnxruntime-webgpu-1.24.3-hb0f4dca_0.conda
   subdir: linux-64
   depends:
   - python >=3.12,<3.13
   - python_abi 3.12.* *_cp312
-  file_name: file:///home/florian/Projekt/bitbots/pixi/bitbots_main/libonnxruntime-webgpu-1.24.3-hb0f4dca_0.conda
   license: MIT
   timestamp: 1775921730373
-- conda: /home/florian/Projekt/bitbots/pixi/bitbots_main/libonnxruntime-webgpu-1.24.3-he8cfe8b_0.conda
+- conda: /home/nvidia/bitbots/flo/bitbots_main/libonnxruntime-webgpu-1.24.3-he8cfe8b_0.conda
   subdir: linux-aarch64
-  file_name: file:///home/florian/Projekt/bitbots/pixi/bitbots_main/libonnxruntime-webgpu-1.24.3-he8cfe8b_0.conda
   license: MIT
   timestamp: 1775843854039
 - conda: https://conda.anaconda.org/conda-forge/linux-64/libopenblas-0.3.32-pthreads_h94d23a6_0.conda

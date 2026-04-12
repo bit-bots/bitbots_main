@@ -146,11 +146,6 @@ robot::robot(rclcpp::Node::SharedPtr node)
         std::chrono::milliseconds(10),
         [this]() { send_get_motor_state_cmd(); });
 
-    // Publish initial power-on status.
-    std_msgs::msg::Bool status_msg;
-    status_msg.data = true;
-    power_status_pub_->publish(status_msg);
-
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     RCLCPP_INFO(node_->get_logger(),
@@ -200,8 +195,8 @@ void robot::publishJointStates()
 
             // Drop motors with no recent data entirely — consumers must not
             // assume every motor is always present in the message.
-            if (data_ptr->time == 0.0 || now_sec - data_ptr->time > 0.1)
-                continue;
+            //if (data_ptr->time == 0.0 || now_sec - data_ptr->time > 0.1)
+            //    continue;
 
             js.name.push_back(m->get_motor_name());
             js.position.push_back(data_ptr->position);
