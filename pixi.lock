@@ -1915,6 +1915,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/zlib-1.3.2-hdc9db2a_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/zstd-1.5.7-h85ac4a6_6.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/zziplib-0.13.69-h650d8d0_2.conda
+      - conda: /home/florian/Projekt/bitbots/pixi/bitbots_main/libonnxruntime-webgpu-1.24.3-he8cfe8b_0.conda
       - conda: src/bitbots_navigation/bitbots_rust_nav
       - pypi: https://files.pythonhosted.org/packages/1a/39/47f9197bdd44df24d67ac8893641e16f386c984a0619ef2ee4c51fbbc019/beautifulsoup4-4.14.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ea/78/9a8a174011682d71cb4922f4014ebbeb9d3067922678e7059351fd9207cf/exhale-0.3.7-py3-none-any.whl
@@ -1986,7 +1987,6 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/pyyaml-6.0.3-py312h8a5da7c_1.conda
       - conda: https://data.bit-bots.de/conda-misc/output/noarch/readline-8.2.9999-h4616a5c_4.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/setuptools-82.0.1-pyh332efcf_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/six-1.17.0-pyhe01879c_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/tinyxml2-11.0.0-h3f2d84a_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/tk-8.6.13-noxft_h366c992_103.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/typing_extensions-4.15.0-pyhcf101f3_0.conda
@@ -2059,7 +2059,6 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/pyyaml-6.0.3-py312ha4530ae_1.conda
       - conda: https://data.bit-bots.de/conda-misc/output/noarch/readline-8.2.9999-h4616a5c_4.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/setuptools-82.0.1-pyh332efcf_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/six-1.17.0-pyhe01879c_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/tinyxml2-11.0.0-h5ad3122_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/tk-8.6.13-noxft_h0dc03b3_103.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/typing_extensions-4.15.0-pyhcf101f3_0.conda
@@ -3988,6 +3987,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/zlib-1.3.2-hdc9db2a_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/zstd-1.5.7-h85ac4a6_6.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/zziplib-0.13.69-h650d8d0_2.conda
+      - conda: /home/florian/Projekt/bitbots/pixi/bitbots_main/libonnxruntime-webgpu-1.24.3-he8cfe8b_0.conda
       - conda: src/bitbots_navigation/bitbots_rust_nav
       - pypi: https://files.pythonhosted.org/packages/1a/39/47f9197bdd44df24d67ac8893641e16f386c984a0619ef2ee4c51fbbc019/beautifulsoup4-4.14.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ea/78/9a8a174011682d71cb4922f4014ebbeb9d3067922678e7059351fd9207cf/exhale-0.3.7-py3-none-any.whl
@@ -10634,6 +10634,11 @@ packages:
   file_name: file:///home/florian/Projekt/bitbots/pixi/bitbots_main/libonnxruntime-webgpu-1.24.3-hb0f4dca_0.conda
   license: MIT
   timestamp: 1775921730373
+- conda: /home/florian/Projekt/bitbots/pixi/bitbots_main/libonnxruntime-webgpu-1.24.3-he8cfe8b_0.conda
+  subdir: linux-aarch64
+  file_name: file:///home/florian/Projekt/bitbots/pixi/bitbots_main/libonnxruntime-webgpu-1.24.3-he8cfe8b_0.conda
+  license: MIT
+  timestamp: 1775843854039
 - conda: https://conda.anaconda.org/conda-forge/linux-64/libopenblas-0.3.32-pthreads_h94d23a6_0.conda
   sha256: 6dc30b28f32737a1c52dada10c8f3a41bc9e021854215efca04a7f00487d09d9
   md5: 89d61bc91d3f39fda0ca10fcd3c68594
