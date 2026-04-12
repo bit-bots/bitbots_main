@@ -16,7 +16,6 @@
   <depend>std_msgs</depend>
   <depend>sensor_msgs</depend>
   <depend>livelybot_msg</depend>
-  <depend>livelybot_description</depend>
   <depend>bitbots_msgs</depend>
   <depend>std_srvs</depend>
   <depend>diagnostic_updater</depend>

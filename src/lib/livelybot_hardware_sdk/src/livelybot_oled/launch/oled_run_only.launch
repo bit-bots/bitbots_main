@@ -1,9 +1,8 @@
 <launch>
-  <include file="$(find-pkg-share livelybot_description)/launch/livelybot_description.launch"/>
 
   <node pkg="livelybot_power" exec="power_node" name="power_node" output="screen"/>
 
   <node pkg="livelybot_oled" exec="livelybot_oled_node" name="livelybot_oled_node" output="screen">
-    <param from="$(find-pkg-share livelybot_description)/robot_param/robot.yaml"/>
+    <param from="$(find-pkg-share livelybot_serial)/config/robot.yaml"/>
   </node>
 </launch>
