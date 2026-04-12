@@ -6,15 +6,9 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 find_package(ament_cmake REQUIRED)
-find_package(rosidl_default_generators REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
-
-rosidl_generate_interfaces(${PROJECT_NAME}
-  "msg/PowerSwitch.msg"
-  "msg/PowerDetect.msg"
-  DEPENDENCIES std_msgs
-)
+find_package(livelybot_msg REQUIRED)
 
 # Pure SocketCAN driver library (no ROS dependency)
 add_library(livelybot_can_driver STATIC src/livelybot_can_driver.cpp)
@@ -26,8 +20,7 @@ target_link_libraries(livelybot_can_driver pthread)
 
 # Power board ROS 2 node
 add_executable(power_node src/power_node.cpp)
-ament_target_dependencies(power_node rclcpp std_msgs)
-rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} "rosidl_typesupport_cpp")
+ament_target_dependencies(power_node rclcpp std_msgs livelybot_msg)
 target_link_libraries(power_node livelybot_can_driver "${cpp_typesupport_target}")
 target_include_directories(power_node PRIVATE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

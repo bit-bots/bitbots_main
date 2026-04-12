@@ -13,6 +13,8 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/HighState.msg"
   "msg/IMU.msg"
   "msg/LowCmd.msg"
+  "msg/PowerDetect.msg"
+  "msg/PowerSwitch.msg"
   DEPENDENCIES std_msgs geometry_msgs sensor_msgs
 )
 
