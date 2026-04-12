@@ -17,6 +17,7 @@ from bitbots_hcm.type_utils import T_RobotControlState
 from bitbots_msgs.action import Dynup, PlayAnimation
 from bitbots_msgs.msg import Audio, JointTorque, RobotControlState
 from bitbots_msgs.srv import SetTeachingMode
+from livelybot_power.msg import PowerSwitch
 
 
 class HcmBlackboard:
@@ -43,13 +44,11 @@ class HcmBlackboard:
             )["start_delay"]
 
         # Create service clients
-        self.foot_zero_service = self.node.create_client(EmptySrv, "set_foot_zero")
-        self.motor_switch_service = self.node.create_client(SetBool, "core/switch_power")
+        self.motor_switch_pub = self.node.create_publisher(PowerSwitch, "/power_switch_control")
 
         # Create action clients and corresponding goal handles
         self.animation_action_client: ActionClient = ActionClient(self.node, PlayAnimation, "animation")
         self.animation_action_current_goal: Optional[Future] = None
-        self.dynup_action_client: ActionClient = ActionClient(self.node, Dynup, "dynup")
         self.dynup_action_current_goal: Optional[Future] = None
 
         # Create publishers
@@ -83,6 +82,8 @@ class HcmBlackboard:
         self.animation_name_stand_up_back: str = self.node.get_parameter("animations.stand_up_back").value
         self.animation_name_stand_up_front: str = self.node.get_parameter("animations.stand_up_front").value
         self.animation_name_startup: str = self.node.get_parameter("animations.startup").value
+        self.animation_name_walk_ready: str = self.node.get_parameter("animations.walk_ready").value
+        self.animation_name_rise: str = self.node.get_parameter("animations.rise")
         self.animation_name_turning_front_left: str = self.node.get_parameter("animations.turning_front_left").value
         self.animation_name_turning_front_right: str = self.node.get_parameter("animations.turning_front_right").value
 

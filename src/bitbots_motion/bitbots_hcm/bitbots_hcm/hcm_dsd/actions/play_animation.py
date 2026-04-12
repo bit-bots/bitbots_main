@@ -154,109 +154,14 @@ class PlayAnimationInit(AbstractPlayAnimation):
 class PlayAnimationStartup(AbstractPlayAnimation):
     def choose_animation(self):
         return self.blackboard.animation_name_startup
-
-
-class PlayAnimationDynup(AbstractHCMActionElement):
-    def __init__(self, blackboard, dsd, parameters):
-        super().__init__(blackboard, dsd, parameters)
-        self.direction = parameters.get("direction")
-        assert self.direction in [
-            Dynup.Goal.DIRECTION_FRONT,
-            Dynup.Goal.DIRECTION_FRONT_ONLY,
-            Dynup.Goal.DIRECTION_BACK,
-            Dynup.Goal.DIRECTION_BACK_ONLY,
-            Dynup.Goal.DIRECTION_RISE,
-            Dynup.Goal.DIRECTION_DESCEND,
-            Dynup.Goal.DIRECTION_WALKREADY,
-        ]
-        self.first_perform = True
-
-    def perform(self, reevaluate=False):
-        # deactivate the falling/fallen detection when a standup animation is running
-        if self.direction in [
-            Dynup.Goal.DIRECTION_FRONT,
-            Dynup.Goal.DIRECTION_BACK,
-            Dynup.Goal.DIRECTION_FRONT_ONLY,
-            Dynup.Goal.DIRECTION_BACK_ONLY,
-        ]:
-            self.do_not_reevaluate()
-
-        # We only want to execute this once
-        if self.first_perform:
-            # get the animation that should be played
-            # defined by implementations of this abstract class
-
-            # try to start animation
-            success = self.start_animation()
-            # if we fail, we need to abort this action
-            if not success:
-                self.blackboard.node.get_logger().error("Could not start animation. Will abort play animation action!")
-                return self.pop()
-
-            self.first_perform = False
-            return
-
-        if self.animation_finished():
-            # we are finished playing this animation
-            return self.pop()
-
-    def on_pop(self):
-        """
-        Cancel the current goal when the action is popped
-        """
-        super().on_pop()
-        if self.blackboard.dynup_action_current_goal is not None and not self.animation_finished():
-            self.blackboard.dynup_action_current_goal.result().cancel_goal_async()
-
-    def start_animation(self):
-        """
-        This will NOT wait by itself. You have to check animation_finished() by yourself.
-        :return:
-        """
-
-        first_try = self.blackboard.dynup_action_client.wait_for_server(
-            timeout_sec=self.blackboard.node.get_parameter("hcm.anim_server_wait_time").value
-        )
-        if not first_try:
-            server_running = False
-            while not server_running and rclpy.ok():
-                self.blackboard.node.get_logger().warn(
-                    "Dynup Action Server not running! Dynup cannot work without dynup server! "
-                    "Will now wait until server is accessible!",
-                    throttle_duration_sec=10.0,
-                )
-                server_running = self.blackboard.dynup_action_client.wait_for_server(timeout_sec=1)
-            if server_running:
-                self.blackboard.node.get_logger().warn("Dynup server now running, hcm will go on.")
-            else:
-                self.blackboard.node.get_logger().warn("Dynup server did not start.")
-                return False
-
-        goal = Dynup.Goal()
-        goal.direction = self.direction
-        # This indicates that the goal is send from the hcm and therfore has prio,
-        # canceling other tasks. The published joint goals are also marked with this flag so they
-        # are handled differently in the HCM joint mutex
-        goal.from_hcm = True
-        self.blackboard.dynup_action_current_goal = self.blackboard.dynup_action_client.send_goal_async(
-            goal, feedback_callback=self.animation_feedback_cb
-        )
-        return True
-
-    def animation_feedback_cb(self, msg):
-        feedback: Dynup.Feedback = msg.feedback
-        self.publish_debug_data("Dynup Percent Done", str(feedback.percent_done))
-
-    def animation_finished(self):
-        assert self.blackboard.dynup_action_current_goal is not None, (
-            "No dynup action goal set, so we cannot check if it is finished"
-        )
-        return (
-            self.blackboard.dynup_action_current_goal.done()
-            and self.blackboard.dynup_action_current_goal.result().status
-            in [GoalStatus.STATUS_SUCCEEDED, GoalStatus.STATUS_CANCELED, GoalStatus.STATUS_ABORTED]
-        ) or self.blackboard.dynup_action_current_goal.cancelled()
-
+    
+class PlayAnimationWalkReady(AbstractPlayAnimation):
+    def choose_animation(self):
+        return self.blackboard.animation_name_walk_ready
+    
+class PlayAnimationRise(AbstractPlayAnimation):
+    def choose_animation(self):
+        return self.blackboard.animation_name_rise
 
 class CancelAnimation(AbstractHCMActionElement):
     """

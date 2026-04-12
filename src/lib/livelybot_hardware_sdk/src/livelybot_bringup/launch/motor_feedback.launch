@@ -1,6 +1,5 @@
 <launch>
-  <include file="$(find-pkg-share livelybot_description)/launch/livelybot_description.launch"/>
   <node pkg="livelybot_bringup" exec="motor_feedback" name="motor_feedback" output="screen">
-    <param from="$(find-pkg-share livelybot_description)/robot_param/robot.yaml"/>
+    <param from="$(find-pkg-share livelybot_serial)/config/robot.yaml"/>
   </node>
 </launch>
