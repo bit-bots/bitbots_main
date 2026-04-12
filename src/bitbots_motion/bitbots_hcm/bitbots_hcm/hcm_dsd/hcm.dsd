@@ -26,12 +26,7 @@ $StartHCM
                     FREE -->$CheckIMU
                         IMU_NOT_STARTED --> @RobotStateStartup, @WaitForIMUStartup
                         PROBLEM --> @RobotStateHardwareProblem, @WaitForIMU
-                        OKAY --> $CheckPressureSensor
-                            PRESSURE_NOT_STARTED --> @RobotStateStartup, @WaitForPressureStartup
-                            PROBLEM --> @RobotStateHardwareProblem, @WaitForPressure
-                            OKAY --> $PickedUp
-                                PICKED_UP --> @RobotStatePickedUp, @PlayAnimationDynup + direction:walkready + r:false, @Wait
-                                ON_GROUND --> $Fallen
+                        OKAY --> $Fallen
                                     FALLEN_FRONT --> $GameControllerStop
                                         STOPPED --> @RobotStateFallen, @CancelGoals, @StopWalking, @Wait
                                         FREE --> @RobotStateFallen, @CancelGoals, @StopWalking, @RobotStateGettingUp, @PlayAnimationStandupFront, @SetSquat + squat:true

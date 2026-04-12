@@ -43,13 +43,11 @@ class HcmBlackboard:
             )["start_delay"]
 
         # Create service clients
-        self.foot_zero_service = self.node.create_client(EmptySrv, "set_foot_zero")
-        self.motor_switch_service = self.node.create_client(SetBool, "core/switch_power")
+        self.motor_switch_pub = self.node.create_publisher(PowerSwitch, "/power_switch_control")
 
         # Create action clients and corresponding goal handles
         self.animation_action_client: ActionClient = ActionClient(self.node, PlayAnimation, "animation")
         self.animation_action_current_goal: Optional[Future] = None
-        self.dynup_action_client: ActionClient = ActionClient(self.node, Dynup, "dynup")
         self.dynup_action_current_goal: Optional[Future] = None
 
         # Create publishers

@@ -27,7 +27,6 @@ class AnimationCapsule(AbstractBlackboardCapsule):
             self._node, PlayAnimation, "animation", callback_group=ReentrantCallbackGroup()
         )
 
-        self.dynup_action_client = ActionClient(self._node, Dynup, "dynup", callback_group=ReentrantCallbackGroup())
 
         self.lookat_action_client = ActionClient(self._node, LookAt, "look_at_goal")
 
