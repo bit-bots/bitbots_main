@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include "canboard.h"
+#include "motor.h"
 #include <rclcpp/rclcpp.hpp>
 #include <thread>
 #include <initializer_list>
@@ -69,6 +70,7 @@ private:
     double diag_torque_overload_duration_;
     std::thread pub_thread_;
     std::thread error_check_thread_;
+    rclcpp::TimerBase::SharedPtr state_poll_timer_;
     fun_version fun_v = fun_v1;
     float slave_v = 3.0f;
     int control_type = 0;
