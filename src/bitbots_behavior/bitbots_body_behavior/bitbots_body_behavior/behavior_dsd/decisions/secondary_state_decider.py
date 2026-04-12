@@ -67,16 +67,15 @@ class SecondaryStateTeamDecider(AbstractDecisionElement):
         game_phase_number = self.blackboard.gamestate.get_game_phase()
         # we have to handle penalty shoot differently because the message is strange
         if game_phase_number == GameState.GAME_PHASE_PENALTY_SHOOT_OUT:
-            if self.blackboard.gamestate.has_kickoff():
+            if self.blackboard.gamestate.has_kick():
                 return "OUR"
             return "OTHER"
         else:
-            if self.blackboard.gamestate.get_secondary_team() == self.team_id:
+            if self.blackboard.gamestate.get_kicking_team() == self.team_id:
                 return "OUR"
             # @TODO: handle this better and potentially adapt KickOffTimeUp
             elif (
-                self.blackboard.gamestate.get_secondary_team() == 255
-                or self.blackboard.gamestate.get_secondary_team() == 0
+                self.blackboard.gamestate.get_kicking_team() == 255 or self.blackboard.gamestate.get_kicking_team() == 0
             ):
                 return "NONE"
 
