@@ -1,29 +1,13 @@
-User CL Simulation Testing Setup
+Webots Simulation Testing Setup
 ================================
 
-This setup is very similar to the tutorial on setting up a local environment for
-development documented in our `documentation <https://docs.bit-bots.de/meta/manual/tutorials/install_software_ros2.html>`_.
+**1. Software installation**
 
-As such you can lookup some of the needed requirements there.
+Follow our `software installation guide <installation.html>`_ to install the software on the CL.
 
-**0. Requirements**
+TODO: Install webots (see discussion in ansible issue)
 
-- have an LDAP mafiasi account for access to the CLs
-
-**1. Setup and download our software**
-
-- SSH into the ``cl0*`` with your mafiasi user
-- Add your SSH key to GitHub to access and sync our repositories
-   - If you don't know what I am talking about or you don't yet have a SSH key, follow this guide: https://docs.github.com/en/authentication/connecting-to-github-with-ssh/checking-for-existing-ssh-keys
-   - Go to your account settings and add your SSH key (the ``.pub`` file) to `GitHub <https://github.com/settings/keys>`_
-- Make sure you have [pixi](https://pixi.sh) installed for your user.
-- Setup bitbots_main in your home directory
-
-.. code-block:: bash
-  git clone git@github.com:bit-bots/bitbots_main.git && cd bitbots_main
-  pixi run build
-
-**3. Run Webots Simulation**
+**2. Run Webots Simulation**
 
 We can start the Webots simulator with the following command:
 ``pixi run ros2 launch bitbots_bringup simulator_teamplayer.launch game_controller:=false``
@@ -41,7 +25,7 @@ we will simulate the current gamestate by our own script (in another terminal):
 Which allows us to simulate the current gamestate and different phases of the game.
 Now everything is ready for some simulation testing.
 
-**4. Testing and Debugging**
+**3. Testing and Debugging**
 
 By changing the simulated gamestate and seeing how the robot reacts, we can test our behavior.
 If there are issues with the robots behavior, they most likely have to do with DSD configuration or different

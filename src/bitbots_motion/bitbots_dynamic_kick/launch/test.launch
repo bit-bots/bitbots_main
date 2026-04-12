@@ -3,8 +3,6 @@
     <arg name="sim" default="false"/>
     <arg name="viz" default="false"/>
 
-    <let if="$(env IS_ROBOT false)" name="taskset" value="taskset -c 3,4"/>
-    <let unless="$(env IS_ROBOT false)" name="taskset" value=""/>
 
     <include file="$(find-pkg-share bitbots_parameter_blackboard)/launch/parameter_blackboard.launch" >
         <arg name="sim" value="$(var sim)"/>
@@ -29,7 +27,7 @@
     <group unless="$(var sim)">
         <group unless="$(var viz)">
             <include file="$(find-pkg-share bitbots_ros_control)/launch/ros_control.launch" />
-            <node pkg="bitbots_dynamic_kick" exec="KickNode" output="screen" launch-prefix="$(var taskset)">
+            <node pkg="bitbots_dynamic_kick" exec="KickNode" output="screen" >
                 <remap from="/kick_motor_goals" to="/DynamixelController/command"/>
                 <param from="$(find-pkg-share bitbots_dynamic_kick)/config/kick_config.yaml" />
             </node>
@@ -37,14 +35,14 @@
     </group>
 
     <group if="$(var sim)">
-        <node pkg="bitbots_dynamic_kick" exec="KickNode" output="screen" launch-prefix="$(var taskset)">
+        <node pkg="bitbots_dynamic_kick" exec="KickNode" output="screen" >
             <remap from="/kick_motor_goals" to="/DynamixelController/command"/>
             <param from="$(find-pkg-share bitbots_dynamic_kick)/config/kick_sim_config.yaml" />
         </node>
     </group>
 
     <group if="$(var viz)">
-        <node pkg="bitbots_dynamic_kick" exec="KickNode" output="screen" launch-prefix="$(var taskset)">
+        <node pkg="bitbots_dynamic_kick" exec="KickNode" output="screen" >
             <param from="$(find-pkg-share bitbots_dynamic_kick)/config/kick_sim_config.yaml" />
         </node>
         <node pkg="bitbots_utils" exec="motor_goals_viz_helper.py" output="screen" args="--kick" />
