@@ -39,7 +39,7 @@ class HcmBlackboard:
         self.pressure_sensors_installed: bool = self.node.get_parameter("pressure_sensors_installed").value
 
         # Create service clients
-        self.motor_switch_pub = self.node.create_publisher(PowerSwitch, "/power_switch_control")
+        self.motor_switch_pub = self.node.create_publisher(PowerSwitch, "/power_switch_control", 10)
 
         # Create action clients and corresponding goal handles
         self.animation_action_client: ActionClient = ActionClient(self.node, PlayAnimation, "animation")
