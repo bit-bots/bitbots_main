@@ -39,14 +39,6 @@ class FootstepPlanner(ABC):
         pass
 
     @abstractmethod
-    def active(self) -> bool:
-        pass
-
-    @abstractmethod
-    def reset_counter(self) -> None:
-        pass
-
-    @abstractmethod
     def step(self) -> Path:
         pass
 
@@ -114,18 +106,6 @@ class VisibilityFinalstepPlanner(FootstepPlanner):
         self.goal = None
         self.path = None
 
-    def reset_counter(self) -> None:
-        """
-        Resets_counter when distance is to high for final steps
-        """
-        # self.published_steps = 0
-
-    def active(self) -> bool:
-        """
-        Determine if we have an active goal
-        """
-        return self.goal is not None
-
     def step(self, published_steps: int) -> npt.NDArray[np.float64]:
         """
         Computes the next step to the goal
@@ -190,8 +170,8 @@ class VisibilityFinalstepPlanner(FootstepPlanner):
             )
             return np.array([rot_vec[0], (rot_vec[1]), 0.0, 0.0])
         else:
-            if abs(goal[1] - start[1]) > 0.05:
-                if abs(goal[0] - start[0]) > 0.05:
+            if abs(rot_vec[1]) > 0.05:
+                if abs(rot_vec[0]) > 0.05:
                     self.node.get_logger().info(
                         "final_step published: overhead" + " x,y: " + str(0.1) + " , " + str(0.1)
                     )
@@ -201,7 +181,7 @@ class VisibilityFinalstepPlanner(FootstepPlanner):
                         "final_step published: overhead" + " x,y: " + str(0.0) + " , " + str(0.1)
                     )
                     return np.array([0.0, 0.1, 0.0, 0.0])
-            elif abs(goal[0] - start[0]) > 0.05:
+            elif abs(rot_vec[0]) > 0.05:
                 self.node.get_logger().info("final_step published: overhead" + " x,y: " + str(0.1) + " , " + str(0.0))
                 return np.array([0.1, 0.0, 0.0, 0.0])
             else:
