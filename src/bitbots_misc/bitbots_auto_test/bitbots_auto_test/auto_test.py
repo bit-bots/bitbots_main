@@ -7,7 +7,7 @@ from dataclasses import dataclass
 import rclpy
 import rclpy.executors
 from bitbots_localization.srv import ResetFilter
-from game_controller_hl_interfaces.msg import GameState
+from game_controller_hsl_interfaces.msg import GameState
 from gazebo_msgs.msg import ModelStates
 from geometry_msgs.msg import Pose, Twist
 from rclpy.clock import Duration
@@ -269,8 +269,8 @@ class AutoTest(Node):
         logger.info(f"Starting Test: id={self.current_test.test_id} name={self.current_test.__class__.__name__}")
         gs_msg = GameState()
         gs_msg.header.stamp = self.get_clock().now().to_msg()
-        gs_msg.secondary_state_team = TEAM_ID
-        gs_msg.game_state = 2  # 2=SET, force robot to stand still
+        gs_msg.kicking_team = TEAM_ID
+        gs_msg.main_state = 2  # 2=SET, force robot to stand still
         self.gamestate_publisher.publish(gs_msg)
 
         self.get_clock().sleep_for(Duration(seconds=2))  # Let robot react & simulation settle
@@ -279,7 +279,7 @@ class AutoTest(Node):
         self.get_clock().sleep_for(Duration(seconds=2))  # Let simulation settle
 
         gs_msg.header.stamp = self.get_clock().now().to_msg()
-        gs_msg.game_state = 3  # 3=PLAYING, make robot play ball
+        gs_msg.main_state = 3  # 3=PLAYING, make robot play ball
         self.gamestate_publisher.publish(gs_msg)
         self.current_test.start_recording()
         self.monitoring_node.write_event(
