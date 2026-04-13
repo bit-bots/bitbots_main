@@ -4,7 +4,7 @@ from typing import Callable, Optional
 import numpy as np
 import transforms3d
 from builtin_interfaces.msg import Time
-from game_controller_hl_interfaces.msg import GameState
+from game_controller_hsl_interfaces.msg import GameState
 from geometry_msgs.msg import PointStamped, PoseStamped, PoseWithCovarianceStamped, Quaternion, Twist
 from jaxtyping import Float64
 from soccer_vision_3d_msgs.msg import Robot, RobotArray

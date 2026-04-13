@@ -60,17 +60,24 @@ The next step is to check if the package actually starts without crashing instan
 A part of this is that a launch file exists.
 
 Testing in Simulation
-------------------------------------------------
+---------------------
 
 We can test with values closer to real data if we do not use random data from humans, but with simulated data.
 We mainly use Webots for simulation.
 It offers us two possibilities.
 
 
-:code:ros2 launch bitbots_bringup simulator_teamplayer.launch <param>:=false/true
+.. code-block:: bash
+
+ros2 launch bitbots_bringup simulator_teamplayer.launch <param>:=false/true
+
 Starts the simulator with designated params.
 
-:code:ros2 launch bitbots_bringup highlevel.launch <param>:=true/false
+
+.. code-block:: bash
+
+ros2 launch bitbots_bringup highlevel.launch <param>:=true/false
+
 Starts high-level software (Gamecontroller, Teamcomm, Behavior, Vision, Localization, Pathfinding)
 
 Testing on the robot (tested_robot)
@@ -88,7 +95,7 @@ By our definition software is considered stable if it has been used in multiple 
 
 
 What to do when changing a package?
-====================================================
+===================================
 Even when only small changes are applied to the master branch, the package has to be tested again to keep its test status.
 If the package is not tested again or only partially tested the test status has to be adapted to 'unknown' or the reached test state.
 

@@ -3,8 +3,9 @@ import os
 import rclpy
 from bitbots_blackboard.body_blackboard import BodyBlackboard
 from bitbots_tf_buffer import Buffer
+from builtin_interfaces.msg import Time as TimeMsg
 from dynamic_stack_decider.dsd import DSD
-from game_controller_hl_interfaces.msg import GameState
+from game_controller_hsl_interfaces.msg import GameState
 from geometry_msgs.msg import PoseWithCovarianceStamped, Twist
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.duration import Duration
@@ -72,6 +73,13 @@ class BodyDSD:
             Twist,
             "cmd_vel",
             blackboard.pathfinding.cmd_vel_cb,
+            qos_profile=1,
+            callback_group=MutuallyExclusiveCallbackGroup(),
+        )
+        node.create_subscription(
+            TimeMsg,
+            "whistle_detected",
+            blackboard.gamestate.whistle_detection_callback,
             qos_profile=1,
             callback_group=MutuallyExclusiveCallbackGroup(),
         )

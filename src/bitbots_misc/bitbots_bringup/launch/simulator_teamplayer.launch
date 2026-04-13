@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
 <launch>
+    <arg name="audio" default="false" description="Whether the audio system should be started" />
     <arg name="behavior" default="true" description="Whether the behavior control system should be started" />
     <arg name="behavior_dsd_file" default="main.dsd" description="The behavior dsd file that should be used" />
     <arg name="game_controller" default="true" description="Whether the Gamecontroller module should be started" />
@@ -16,6 +17,7 @@
 
     <!-- load teamplayer software stack -->
     <include file="$(find-pkg-share bitbots_bringup)/launch/teamplayer.launch">
+        <arg name="audio" value="$(var audio)" />
         <arg name="behavior" value="$(var behavior)" />
         <arg name="behavior_dsd_file" value="$(var behavior_dsd_file)" />
         <arg name="game_controller" value="$(var game_controller)"/>

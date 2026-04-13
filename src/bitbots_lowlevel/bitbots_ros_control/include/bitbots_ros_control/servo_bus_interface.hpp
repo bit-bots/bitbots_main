@@ -1,7 +1,7 @@
 #ifndef BITBOTS_ROS_CONTROL_INCLUDE_BITBOTS_ROS_CONTROL_SERVO_BUS_INTERFACE_H_
 #define BITBOTS_ROS_CONTROL_INCLUDE_BITBOTS_ROS_CONTROL_SERVO_BUS_INTERFACE_H_
 
-#include <dynamixel_driver.h>
+#include <dynamixel_workbench_toolbox/dynamixel_driver.h>
 
 #include <bitbots_msgs/msg/audio.hpp>
 #include <bitbots_msgs/msg/joint_torque.hpp>
