@@ -49,6 +49,9 @@ $AvoidBall
         YES --> @AvoidBallInactive
         NO --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:map + distance:%ball_far_approach_dist
 
+#LLMMapFreeKick
+    @LLMMapFreeKickAction 
+
 #PositioningReady
 $GoalScoreRecently
     YES --> $ConfigRole
@@ -104,7 +107,7 @@ $DoOnce
                 OUR --> #SearchBall
                 OTHER --> @AvoidBallActive, @LookAtFieldFeatures, @WalkInPlace + duration:2, @GoToRelativePosition + x:1 + y:0 + t:0, @Stand
             YES --> $RankToBallNoGoalie
-                FIRST --> @LLMMapFreeKick
+                FIRST --> #LLMMapFreeKick
                 SECOND --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition + mode:freekick_second
                 THIRD --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition
 

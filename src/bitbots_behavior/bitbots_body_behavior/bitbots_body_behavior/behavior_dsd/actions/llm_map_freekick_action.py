@@ -1,12 +1,12 @@
 from bitbots_blackboard.body_blackboard import BodyBlackboard
-from bitbots_llm_map.bitbots_llm_map.plan_executor import PlanExecutor
-from bitbots_llm_map.bitbots_llm_map.planner_interface import PlannerInterface
-from bitbots_llm_map.bitbots_llm_map.problem_generator import ProblemGenerator
+from bitbots_llm_map.plan_executor import PlanExecutor
+from bitbots_llm_map.planner_interface import PlannerInterface
+from bitbots_llm_map.problem_generator import ProblemGenerator
 from dynamic_stack_decider import AbstractActionElement
 from rclpy.logging import get_logger
 
 
-class LLMMapFreeKick(AbstractActionElement):
+class LLMMapFreeKickAction(AbstractActionElement):
     blackboard: BodyBlackboard
 
     def __init__(self, blackboard, dsd, parameters=None):

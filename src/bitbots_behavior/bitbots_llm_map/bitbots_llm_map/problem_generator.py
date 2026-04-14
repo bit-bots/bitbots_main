@@ -1,7 +1,10 @@
 import os
 
+from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from rclpy.logging import get_logger
+
+load_dotenv()
 
 
 class ProblemGenerator:
@@ -19,6 +22,6 @@ class ProblemGenerator:
     def _load_domain(self):
         path = os.path.join(os.path.dirname(__file__), "../pddl/domain.pddl")
         if not os.path.exists(path):
-            raise FileNotFoundError(f"domain.pddl nicht gefunden: {path}")
+            raise FileNotFoundError(f"domain.pddl not found: {path}")
         with open(path, encoding="utf-8") as f:
             return f.read()
