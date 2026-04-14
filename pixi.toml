@@ -88,6 +88,7 @@ sphinx-rtd-theme = ">=3.0.2,<4"
 sysroot_linux-64 = ">=2.28,<3"
 transforms3d = ">=0.4.2,<0.5"
 yaml-cpp = ">=0.8.0,<0.9"
+regex = ">=2026.4.4,<2027"
 
 # Official ROS 2 packages
 colcon-common-extensions = ">=0.3.0,<0.4"

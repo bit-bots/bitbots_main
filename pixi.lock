@@ -474,6 +474,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/rapidjson-1.1.0.post20240409-h3f2d84a_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/rav1e-0.7.1-h8fae777_3.conda
       - conda: https://data.bit-bots.de/conda-misc/output/noarch/readline-8.2.9999-h4616a5c_4.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/regex-2026.4.4-py312h4c3975b_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/requests-2.33.1-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/rhash-1.4.6-hb9d3cd8_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/rich-14.3.3-pyhcf101f3_0.conda
@@ -1425,6 +1426,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/rapidjson-1.1.0.post20240409-h5ad3122_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/rav1e-0.8.1-h9d4cc37_0.conda
       - conda: https://data.bit-bots.de/conda-misc/output/noarch/readline-8.2.9999-h4616a5c_4.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/regex-2026.4.4-py312hcd1a082_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/requests-2.33.1-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/rhash-1.4.6-h86ecc28_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/rich-14.3.3-pyhcf101f3_0.conda
@@ -2544,6 +2546,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/rapidjson-1.1.0.post20240409-h3f2d84a_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/rav1e-0.7.1-h8fae777_3.conda
       - conda: https://data.bit-bots.de/conda-misc/output/noarch/readline-8.2.9999-h4616a5c_4.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/regex-2026.4.4-py312h4c3975b_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/requests-2.33.1-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/rhash-1.4.6-hb9d3cd8_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/rich-14.3.3-pyhcf101f3_0.conda
@@ -3499,6 +3502,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/rapidjson-1.1.0.post20240409-h5ad3122_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/rav1e-0.8.1-h9d4cc37_0.conda
       - conda: https://data.bit-bots.de/conda-misc/output/noarch/readline-8.2.9999-h4616a5c_4.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/regex-2026.4.4-py312hcd1a082_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/requests-2.33.1-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-aarch64/rhash-1.4.6-h86ecc28_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/rich-14.3.3-pyhcf101f3_0.conda
@@ -15012,6 +15016,34 @@ packages:
   md5: 1b712720f0094de41b1d0482f117f66d
   size: 1075
   timestamp: 1771970041027
+- conda: https://conda.anaconda.org/conda-forge/linux-64/regex-2026.4.4-py312h4c3975b_0.conda
+  sha256: f2af90e06f2821c9bc9cc90e7346451586ddd08de7ad6bfd85b867f92e1e188e
+  md5: 83b5e0585164a81913418a4512f29175
+  depends:
+  - __glibc >=2.17,<3.0.a0
+  - libgcc >=14
+  - python >=3.12,<3.13.0a0
+  - python_abi 3.12.* *_cp312
+  license: Apache-2.0 AND CNRI-Python
+  license_family: PSF
+  purls:
+  - pkg:pypi/regex?source=hash-mapping
+  size: 411140
+  timestamp: 1775259323073
+- conda: https://conda.anaconda.org/conda-forge/linux-aarch64/regex-2026.4.4-py312hcd1a082_0.conda
+  sha256: c4974a073f6d12ee2e583e2700fdb4e7af47b16bb3a2260509bc0f7bd4f85f32
+  md5: 6bd7c5a9f95bd4ab738627331a8f9cdd
+  depends:
+  - libgcc >=14
+  - python >=3.12,<3.13.0a0
+  - python >=3.12,<3.13.0a0 *_cpython
+  - python_abi 3.12.* *_cp312
+  license: Apache-2.0 AND CNRI-Python
+  license_family: PSF
+  purls:
+  - pkg:pypi/regex?source=hash-mapping
+  size: 407471
+  timestamp: 1775259359390
 - conda: https://conda.anaconda.org/conda-forge/noarch/requests-2.33.1-pyhcf101f3_0.conda
   sha256: c0249bc4bf4c0e8e06d0e7b4d117a5d593cc4ab2144d5006d6d47c83cb0af18e
   md5: 10afbb4dbf06ff959ad25a92ccee6e59
