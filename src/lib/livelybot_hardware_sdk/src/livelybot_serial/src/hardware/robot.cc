@@ -280,6 +280,10 @@ void robot::torqueCallback(bitbots_msgs::msg::JointTorque::ConstSharedPtr msg)
             if (msg->on[i])
             {
                 torque_off_motors_.erase(name);
+                // Send a command to re-enable torque without moving the motor.
+                // TODO use torque and mode of the last command for this motor instead of position
+                m->position(m->get_current_motor_state()->position);
+                need_send = true;
             }
             else
             {
