@@ -1,7 +1,10 @@
 <launch>
     <arg name="sim" default="false" description="true: activates simulation time" />
+    <arg name="tf_prefix" default=""/>
 
     <node pkg="bitbots_path_planning" exec="path_planning" name="bitbots_path_planning" output="screen">
         <param name="use_sim_time" value="$(var sim)"/>
+        <param name="map.planning_frame" value="$(var tf_prefix)map"/>
+        <param name="base_footprint_frame" value="$(var tf_prefix)base_footprint"/>
     </node>
 </launch>

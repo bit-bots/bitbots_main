@@ -1,4 +1,4 @@
-bitbots_vision:
+/**/bitbots_vision:
   ros__parameters:
     # Defining the default vision parameters
     component_ball_detection_active: true # activate the ball detection

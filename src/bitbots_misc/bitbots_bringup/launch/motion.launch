@@ -5,16 +5,24 @@
     <arg name="walking" default="true" description="start the walking" />
     <arg name="torqueless_mode" default="false" description="start without torque, for example for testing the falling detection"/>
     <arg name="tts" default="true" description="Whether to speak" />
+    <arg name="tf_prefix" default=""/>
 
     <!-- launch the base footprint -->
     <node pkg="humanoid_base_footprint" exec="base_footprint" output="screen">
         <param name="support_state_topics" value="[walk_support_state, dynamic_kick_support_state]"/>
         <param name="use_sim_time" value="$(var sim)"/>
+
+        <param name="base_link_frame"      value="$(var tf_prefix)base_link"/>
+        <param name="base_footprint_frame" value="$(var tf_prefix)base_footprint"/>
+        <param name="r_sole_frame"         value="$(var tf_prefix)r_sole"/>
+        <param name="l_sole_frame"         value="$(var tf_prefix)l_sole"/>
+        <param name="odom_frame"           value="$(var tf_prefix)odom"/>
     </node>
 
     <!-- launch the odometry -->
     <include file="$(find-pkg-share bitbots_odometry)/launch/odometry.launch">
         <arg name="sim" value="$(var sim)"/>
+        <arg name="tf_prefix" value="$(var tf_prefix)"/>
     </include>
 
     <!-- if not in simulation or visualization, launch ros_control -->
@@ -43,6 +51,7 @@
         <include file="$(find-pkg-share bitbots_quintic_walk)/launch/quintic_walk.launch">
             <arg name="sim" value="$(var sim)"/>
             <arg name="viz" value="$(var viz)"/>
+            <arg name="tf_prefix" value="$(var tf_prefix)"/>
         </include>
     </group>
 

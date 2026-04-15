@@ -4,7 +4,7 @@
 
 # Settings for the RoboCup German Open 2026 field (with large goals)
 
-parameter_blackboard:
+/**/parameter_blackboard:
   ros__parameters:
     field:
       size:

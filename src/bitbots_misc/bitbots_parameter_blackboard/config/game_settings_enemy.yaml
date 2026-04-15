@@ -4,5 +4,5 @@
     monitoring_host_ip: 0.0.0.0
     position_number: 0
     role: offense
-    team_color: 0
-    team_id: 6
+    team_color: 1
+    team_id: 7

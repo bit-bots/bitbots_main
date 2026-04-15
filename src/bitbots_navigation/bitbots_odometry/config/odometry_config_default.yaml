@@ -1,4 +1,4 @@
-motion_odometry:
+/**/motion_odometry:
   ros__parameters:
     x_forward_scaling: 1.25
     x_backward_scaling: 0.95

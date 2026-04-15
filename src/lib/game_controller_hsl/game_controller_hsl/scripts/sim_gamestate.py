@@ -77,7 +77,7 @@ CTRL-C to quit
         # Try fetching team id from parameter blackboard or ask user for input
         try:
             self.team_id = get_parameters_from_other_node(self, "parameter_blackboard", ["team_id"])["team_id"]
-        except KeyError:
+        except (KeyError, RuntimeError):
             self.logger.error("No team id found in parameter blackboard")
             self.team_id = int(input("Please enter team id: "))
 

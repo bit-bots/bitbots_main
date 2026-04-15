@@ -242,6 +242,7 @@ ROS_AUTOMATIC_DISCOVERY_RANGE = "LOCALHOST"
 RCUTILS_COLORIZED_OUTPUT = "1"
 RCUTILS_CONSOLE_OUTPUT_FORMAT="[{severity}] [{name}]: {message} ({function_name}() at {file_name}:{line_number})"
 RMW_IMPLEMENTATION = "rmw_cyclonedds_cpp"
+CYCLONEDDS_URI = "file:///home/mark-oliver/git/bitbots/bitbots_main/cyclonedds.xml" #TODO: It has to be changed -> maybe script?
 COLCON_LOG_LEVEL = "30"
 PYTHONWARNINGS="ignore:::setuptools.command.install,ignore:::setuptools.command.easy_install,ignore:::pkg_resources,ignore:easy_install command is deprecated,ignore:setup.py install is deprecated"
 WEBOTS_HOME = "$CONDA_PREFIX/share/webots"

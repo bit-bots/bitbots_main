@@ -4,7 +4,7 @@
 
 # Settings for the f-015 test field
 
-parameter_blackboard:
+/**/parameter_blackboard:
   ros__parameters:
     field:
       size:

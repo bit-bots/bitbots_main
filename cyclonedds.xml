@@ -1,0 +1,11 @@
+<CycloneDDS>
+  <Domain>
+    <SharedMemory>
+      <Enable>false</Enable>
+    </SharedMemory>
+    <Discovery>
+      <ParticipantIndex>auto</ParticipantIndex>
+      <MaxAutoParticipantIndex>200</MaxAutoParticipantIndex>
+    </Discovery>
+  </Domain>
+</CycloneDDS>

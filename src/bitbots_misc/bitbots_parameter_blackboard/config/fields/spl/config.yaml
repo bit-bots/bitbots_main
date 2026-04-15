@@ -4,7 +4,7 @@
 
 # Settings for the standard platform league field
 
-parameter_blackboard:
+/**/parameter_blackboard:
   ros__parameters:
     field:
       size:

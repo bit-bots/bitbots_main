@@ -31,7 +31,7 @@ bitbots_ball_filter:
       description: 'Frame to filter the ball in'
       read_only: true
       validation:
-        one_of<>: [['map', 'odom']]
+        one_of<>: [['map', 'odom', 'amy/map', 'rory/map', "jack/map", "donna/map"]]
 
     rate:
       type: int

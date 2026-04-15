@@ -1,4 +1,4 @@
-bitbots_vision:
+/**/bitbots_vision:
   ros__parameters:
     # Defining the simulation parameters for YOEO vision
     component_ball_detection_active: true # activate the ball detection

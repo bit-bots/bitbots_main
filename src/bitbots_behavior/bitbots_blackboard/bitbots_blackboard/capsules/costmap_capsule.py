@@ -32,7 +32,7 @@ class CostmapCapsule(AbstractBlackboardCapsule):
         self.base_footprint_frame: str = self._node.get_parameter("base_footprint_frame").value
 
         parameters = get_parameters_from_other_node(
-            self._node, "/parameter_blackboard", ["field.size.x", "field.size.y", "field.goal.width"]
+            self._node, "parameter_blackboard", ["field.size.x", "field.size.y", "field.goal.width"]
         )
         self.field_length: float = parameters["field.size.x"]
         self.field_width: float = parameters["field.size.y"]

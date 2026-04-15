@@ -1,4 +1,4 @@
-body_behavior:
+/**/body_behavior:
   ros__parameters:
     # Data older than this is seen as non existent
     team_data_timeout: 2

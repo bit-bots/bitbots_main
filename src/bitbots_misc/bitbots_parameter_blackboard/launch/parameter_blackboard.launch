@@ -3,6 +3,7 @@
     <arg name="sim" default="false"/>
     <arg unless="$(var sim)" name="fieldname" default="german_open_2026" description="Loads field settings (labor, webots, gazebo, bangkok, spl, german_open_2026)." />
     <arg if="$(var sim)" name="fieldname" default="webots" description="Loads field settings (labor, webots, gazebo, bangkok, german_open_2024)." />
+    <arg name="game_settings_file" default="game_settings.yaml" />
 
     <!-- print bit-bot -->
     <include file="$(find-pkg-share bitbots_utils)/launch/welcome.launch" />
@@ -14,6 +15,6 @@
         <param name="field.name" value="$(var fieldname)"/>
         <param from="$(find-pkg-share bitbots_parameter_blackboard)/config/fields/$(var fieldname)/config.yaml" />
         <param from="$(find-pkg-share bitbots_parameter_blackboard)/config/global_parameters.yaml" />
-        <param from="$(find-pkg-share bitbots_parameter_blackboard)/config/game_settings.yaml" />
+        <param from="$(find-pkg-share bitbots_parameter_blackboard)/config/$(var game_settings_file)" />
     </node>
 </launch>

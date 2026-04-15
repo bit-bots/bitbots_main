@@ -13,6 +13,7 @@
     <arg name="workspace_status" default="true" description="Whether to publish the current workspace status"/>
     <arg name="world_model" default="true" description="Whether the world model should be started"/>
     <arg name="whistle_detector" default="true" description="Whether whistle detector should be started"/>
+    <arg name="tf_prefix" default=""/>
 
 
     <!-- launch game controller -->
@@ -51,9 +52,11 @@
     <group if="$(var world_model)">
         <include file="$(find-pkg-share bitbots_ball_filter)/launch/ball_filter.launch">
             <arg name="sim" value="$(var sim)"/>
+            <arg name="tf_prefix" value="$(var tf_prefix)"/>
         </include>
         <include file="$(find-pkg-share bitbots_robot_filter)/launch/robot_filter.launch">
             <arg name="sim" value="$(var sim)"/>
+            <arg name="tf_prefix" value="$(var tf_prefix)"/>
         </include>
     </group>
     <group if="$(var whistle_detector)">
@@ -63,11 +66,12 @@
     <group if="$(var localization)">
         <include file="$(find-pkg-share bitbots_localization)/launch/localization.launch">
             <arg name="sim" value="$(var sim)"/>
+            <arg name="tf_prefix" value="$(var tf_prefix)"/>
         </include>
     </group>
     <group unless="$(var localization)">
         <!-- simulate map frame -->
-        <node name="map_odom" pkg="tf2_ros" exec="static_transform_publisher" args="--x 0 --y 0 --z 0 --roll 0 --pitch 0 --yaw 0 --frame-id map --child-frame-id odom" />
+        <node name="map_odom" pkg="tf2_ros" exec="static_transform_publisher" args="--x 0 --y 0 --z 0 --roll 0 --pitch 0 --yaw 0 --frame-id $(var tf_prefix)map --child-frame-id $(var tf_prefix)odom" />
         <!-- publish perfect covariance -->
         <!--node name="localization_covariance" pkg="bitbots_localization" exec="rviz_localization_sim.py" output="screen" /-->
     </group>
@@ -76,6 +80,7 @@
     <group if="$(var path_planning)">
         <include file="$(find-pkg-share bitbots_path_planning)/launch/path_planning.launch">
             <arg name="sim" value="$(var sim)"/>
+            <arg name="tf_prefix" value="$(var tf_prefix)"/>
         </include>
     </group>
 
@@ -84,6 +89,7 @@
         <include file="$(find-pkg-share bitbots_body_behavior)/launch/behavior.launch">
             <arg name="dsd_file" value="$(var behavior_dsd_file)" />
             <arg name="sim" value="$(var sim)" />
+            <arg name="tf_prefix" value="$(var tf_prefix)"/>
         </include>
     </group>
 

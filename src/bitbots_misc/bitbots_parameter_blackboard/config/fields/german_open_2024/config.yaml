@@ -4,7 +4,7 @@
 
 # Settings for the RoboCup German Open 2024 field
 
-parameter_blackboard:
+/**/parameter_blackboard:
   ros__parameters:
     field:
       size:

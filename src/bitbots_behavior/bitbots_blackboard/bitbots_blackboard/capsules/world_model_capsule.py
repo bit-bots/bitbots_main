@@ -36,7 +36,7 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
         # Get global parameters
         parameters = get_parameters_from_other_node(
             self._node,
-            "/parameter_blackboard",
+            "parameter_blackboard",
             [
                 "field.goal.width",
                 "field.markings.penalty_area.size.x",

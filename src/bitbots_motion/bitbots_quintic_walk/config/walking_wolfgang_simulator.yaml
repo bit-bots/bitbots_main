@@ -1,8 +1,6 @@
 /**:
   ros__parameters:
     use_sim_time: true
-walking:
-  ros__parameters:
     engine:
       foot_put_down_z_offset: 0.0
       trunk_x_offset_p_coef_forward: 0.0

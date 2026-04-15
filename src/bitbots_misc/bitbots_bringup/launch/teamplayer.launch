@@ -16,14 +16,17 @@
     <arg name="record" default="false" description="Whether the ros bag recording should be started" />
     <arg name="tts" default="false" description="Whether to speak" />
     <arg name="whistle_detector" default="true" description="Whether to detect whistles"/>
+    <arg name="game_settings_file" default="game_settings.yaml"/>
     <arg unless="$(var sim)" name="fieldname" default="german_open_2026" description="Loads field settings (labor, webots, ...)." />
     <arg if="$(var sim)" name="fieldname" default="webots" description="Loads field settings (labor, webots, ...)." />
+    <arg name="tf_prefix" default=""/>
 
 
     <!-- load the global parameters -->
     <include file="$(find-pkg-share bitbots_parameter_blackboard)/launch/parameter_blackboard.launch">
         <arg name="sim" value="$(var sim)" />
         <arg name="fieldname" value="$(var fieldname)" />
+        <arg name="game_settings_file" value="$(var game_settings_file)" />
     </include>
 
     <!-- load the diagnostic aggregator -->
@@ -39,6 +42,7 @@
         <include file="$(find-pkg-share bitbots_bringup)/launch/motion.launch">
             <arg name="sim" value="$(var sim)"/>
             <arg name="tts" value="$(var tts)" />
+            <arg name="tf_prefix" value="$(var tf_prefix)"/>
         </include>
     </group>
 
@@ -56,6 +60,7 @@
         <arg name="vision" value="$(var vision)" />
         <arg name="world_model" value="$(var world_model)" />
         <arg name="whistle_detector" value="$(var whistle_detector)" />
+        <arg name="tf_prefix" value="$(var tf_prefix)"/>
     </include>
 
     <!-- load monitoring -->

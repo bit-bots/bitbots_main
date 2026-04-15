@@ -4,7 +4,8 @@
 
 # Settings for the webots simulator field
 
-parameter_blackboard:
+
+/**/parameter_blackboard:
   ros__parameters:
     field:
       size:
