@@ -56,6 +56,7 @@ rosidl_generate_interfaces(
   "srv/SetObjectPosition.srv"
   "srv/SetTeachingMode.srv"
   "srv/SimulatorPush.srv"
+  "srv/SimulatorRecord.srv"
   DEPENDENCIES
   action_msgs
   geometry_msgs

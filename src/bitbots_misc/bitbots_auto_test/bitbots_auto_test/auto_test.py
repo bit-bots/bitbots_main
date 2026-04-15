@@ -15,11 +15,10 @@ from rclpy.constants import S_TO_NS
 from rclpy.node import Node
 from rclpy.parameter import Parameter
 from rclpy.qos import DurabilityPolicy, QoSProfile
-from std_srvs.srv import Empty
-
+from tf_transformations import euler_from_quaternion, quaternion_from_euler
 
 from bitbots_auto_test.monitoring_node import Monitoring
-from bitbots_msgs.srv import SetObjectPose, SetObjectPosition
+from bitbots_msgs.srv import SetObjectPose, SetObjectPosition, SimulatorRecord
 
 
 class TestResult:
@@ -58,7 +57,7 @@ class TestCase:
         self.start_time = self.handle.get_clock().now()
 
     def judge(self) -> float:
-        pass
+        raise NotImplementedError(f"{self.__class__.__name__}.judge")
 
     def is_over(self) -> TestResult | None:
         if not self.is_pose_in(self.handle.robot_pose, self.FIELD_BOUNDS):
@@ -82,23 +81,33 @@ class TestCase:
         else:
             return self.judge()
 
-    def set_robot(self, x: float, y: float):
+    def set_robot(self, x: float, y: float, angle: float = 0.0):
         request = SetObjectPose.Request()
         request.object_name = "amy"
         request.pose.position.x = x
         request.pose.position.y = y
         request.pose.position.z = 0.42
-        request.pose.orientation.x = 0.0
-        request.pose.orientation.y = 0.0
-        request.pose.orientation.z = 0.0
-        request.pose.orientation.w = 0.0
+
+        old_orientation = self.handle.robot_pose.orientation
+        old_quat = [old_orientation.x, old_orientation.y, old_orientation.z, old_orientation.w]
+        try:
+            old_roll, old_pitch, _old_yaw = euler_from_quaternion(old_quat)
+        except ValueError:
+            old_roll, old_pitch, _old_yaw = 0.0, 0.0, 0.0
+
+        x_q, y_q, z_q, w_q = quaternion_from_euler(old_roll, old_pitch, angle)
+        request.pose.orientation.x = x_q
+        request.pose.orientation.y = y_q
+        request.pose.orientation.z = z_q
+        request.pose.orientation.w = w_q
+
         self.handle.set_robot_pose_service.call(request)
         if not self.handle.get_parameter("fake_localization").value:
             rf = ResetFilter.Request()
             rf.init_mode = ResetFilter.Request.POSE
             rf.x = x
             rf.y = y
-            rf.angle = 0.0
+            rf.angle = angle
             self.handle.reset_localization.call(rf)
 
     def set_ball(self, x: float, y: float):
@@ -222,7 +231,7 @@ class AutoTest(Node):
 
         self.set_robot_pose_service = self.create_client(SetObjectPose, "set_robot_pose")
         self.set_ball_pos_service = self.create_client(SetObjectPosition, "set_ball_position")
-        self.recording_service = self.create_client(Empty, "simulator_record")
+        self.recording_service = self.create_client(SimulatorRecord, "simulator_record")
         self.create_subscription(ModelStates, "/model_states", qos_profile=10, callback=self.model_states_callback)
         self.ball_pose = Pose()
         self.ball_twist = Twist()
@@ -274,15 +283,17 @@ class AutoTest(Node):
         gs_msg.header.stamp = self.get_clock().now().to_msg()
         gs_msg.kicking_team = TEAM_ID
         gs_msg.main_state = 2  # 2=SET, force robot to stand still
+        gs_msg.stopped = True
         self.gamestate_publisher.publish(gs_msg)
 
-        self.get_clock().sleep_for(Duration(seconds=2))  # Let robot react & simulation settle
+        self.get_clock().sleep_for(Duration(seconds=3))  # Let robot react & simulation settle
         self.current_test.setup()  # Teleport robot
 
-        self.get_clock().sleep_for(Duration(seconds=2))  # Let simulation settle
+        self.get_clock().sleep_for(Duration(seconds=3))  # Let simulation settle
 
         gs_msg.header.stamp = self.get_clock().now().to_msg()
         gs_msg.main_state = 3  # 3=PLAYING, make robot play ball
+        gs_msg.stopped = False
         self.gamestate_publisher.publish(gs_msg)
         self.current_test.start_recording()
         self.monitoring_node.write_event(
@@ -313,12 +324,13 @@ class AutoTest(Node):
         )
 
     def loop(self):
-        start = self.get_clock().now()
-        while self.get_clock().now() - start < Duration(seconds=1):
-            pass
+        for service in [self.set_robot_pose_service, self.set_ball_pos_service, self.recording_service]:
+            service.wait_for_service()
+        self.get_clock().sleep_for(Duration(seconds=1))
         self.get_logger().info("Starting main loop")
-        request = Empty.Request()
-        self.recording_service.call(request) # start
+        request = SimulatorRecord.Request()
+        request.start = True
+        self.recording_service.call(request)  # start
         self.next_test()
         self.setup_sequence()
         while True:
@@ -331,7 +343,9 @@ class AutoTest(Node):
                     self.get_logger().info("Done with all tests")
                     break
                 self.setup_sequence()
-        self.recording_service.call(request) # stop
+        stop_request = SimulatorRecord.Request()
+        stop_request.stop = True
+        self.recording_service.call(stop_request)  # stop
 
 
 def main():

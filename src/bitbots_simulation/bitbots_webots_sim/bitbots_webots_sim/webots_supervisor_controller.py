@@ -11,7 +11,7 @@ from rclpy.time import Time
 from rosgraph_msgs.msg import Clock
 from std_srvs.srv import Empty
 
-from bitbots_msgs.srv import SetObjectPose, SetObjectPosition, SimulatorPush
+from bitbots_msgs.srv import SetObjectPose, SetObjectPosition, SimulatorPush, SimulatorRecord
 
 G = 9.81
 
@@ -64,6 +64,7 @@ class SupervisorController:
         self.joint_nodes = {}
         self.link_nodes = {}
         self.currently_recording = False
+        self.current_recording_file_path = ""
 
         # set reset height based on the robot, so that we can reset different robots easily
         self.robot_type = robot
@@ -125,7 +126,7 @@ class SupervisorController:
                 SimulatorPush, base_ns + "simulator_push", self.simulator_push
             )
             self.simulator_record_service = self.ros_node.create_service(
-                Empty, base_ns + "simulator_record", self.simulator_record
+                SimulatorRecord, base_ns + "simulator_record", self.simulator_record
             )
 
         self.world_info = self.supervisor.getFromDef("world_info")
@@ -255,14 +256,31 @@ class SupervisorController:
         return response or Empty.Response()
 
     def simulator_record(self, request=None, response=None):
-        if not self.currently_recording:
-            file_path = str((Path.home() / "latest_run" /"latest_run.html").absolute())
+        if request is None:
+            request = SimulatorRecord.Request()
+
+        if request.start:
+            file_path = (
+                request.file_path
+                if request.file_path
+                else str((Path.home() / "latest_run" / "latest_run.html").absolute())
+            )
             self.ros_node.get_logger().info(f"Starting recording to file {file_path}")
             self.currently_recording = self.supervisor.animationStartRecording(file_path)
+            self.current_recording_file_path = file_path
+        elif request.stop:
+            if self.currently_recording:
+                self.ros_node.get_logger().info("Stopping recording")
+                self.currently_recording = not self.supervisor.animationStopRecording()
+            else:
+                self.ros_node.get_logger().info("Recording is not active")
         else:
-            self.ros_node.get_logger().info("Stopping recording")
-            self.currently_recording = not self.supervisor.animationStopRecording()
-        return response or Empty.Response()
+            self.ros_node.get_logger().info("Querying recording state")
+
+        response = response or SimulatorRecord.Response()
+        response.running = self.currently_recording
+        response.file_path = self.current_recording_file_path
+        return response
 
     def on_shutdown(self):
         if self.currently_recording:

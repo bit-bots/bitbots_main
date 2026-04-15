@@ -1,0 +1,6 @@
+bool start False
+bool stop False
+string file_path ""
+---
+bool running
+string file_path
