@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import threading
 from dataclasses import dataclass
+from pathlib import Path
 
 import rclpy
 import rclpy.executors
@@ -17,7 +18,7 @@ from rclpy.parameter import Parameter
 from rclpy.qos import DurabilityPolicy, QoSProfile
 from tf_transformations import euler_from_quaternion, quaternion_from_euler
 
-from bitbots_auto_test.monitoring_node import Monitoring
+from bitbots_auto_test.monitoring_node import Monitoring, generate_run_name
 from bitbots_msgs.srv import SetObjectPose, SetObjectPosition, SimulatorRecord
 
 
@@ -220,10 +221,12 @@ class AutoTest(Node):
         self.declare_parameter("loop", False)
         self.declare_parameter("repeats", 1)
         self.declare_parameter("test_cases", ["MakeGoalStraight"])
+        self.declare_parameter("run_name", "")
         use_sim_time_param = Parameter("use_sim_time", Parameter.Type.BOOL, True)
         self.set_parameters([use_sim_time_param])
 
         self.monitoring_node = monitoring_node
+        self.run_name = self.get_run_name()
 
         self.test_id = 0
         self.test_type_index = 0
@@ -244,6 +247,12 @@ class AutoTest(Node):
         )
         if not self.get_parameter("fake_localization").value:
             self.reset_localization = self.create_client(ResetFilter, "reset_localization")
+
+    def get_run_name(self) -> str:
+        run_name = self.get_parameter("run_name").value
+        if isinstance(run_name, str):
+            return generate_run_name(run_name)
+        return generate_run_name(None)
 
     def model_states_callback(self, model_state_msg: ModelStates):
         for i, name in enumerate(model_state_msg.name):
@@ -330,6 +339,10 @@ class AutoTest(Node):
         self.get_logger().info("Starting main loop")
         request = SimulatorRecord.Request()
         request.start = True
+        animation_folder = Path.home() / "monitoring_logs" / self.run_name
+        animation_folder.mkdir(exist_ok=True, parents=True)
+        request.file_path = str((animation_folder / f"{self.run_name}.html").absolute())
+        self.get_logger().info(f"Starting animation recording to {request.file_path}")
         self.recording_service.call(request)  # start
         self.next_test()
         self.setup_sequence()
@@ -352,6 +365,7 @@ def main():
     rclpy.init(args=None)
     monitoring = Monitoring()
     auto_test = AutoTest(monitoring)
+    monitoring.initialize_logging(auto_test.run_name)
     executor = rclpy.executors.MultiThreadedExecutor()
     executor.add_node(monitoring)
     executor.add_node(auto_test)
