@@ -17,12 +17,12 @@ yesense_imu:
 
   tf_frame_id:
     type: string
-    default_value: "imu_link"
+    default_value: "imu_frame"
     description: "Child frame ID used when broadcasting the IMU TF transform"
 
   frame_id:
     type: string
-    default_value: "imu_link"
+    default_value: "imu_frame"
     description: "Frame ID stamped on published sensor_msgs/Imu messages"
 
   time_offset_in_seconds:
