@@ -10,19 +10,15 @@
     <include file="$(find-pkg-share livelybot_bringup)/launch/lowlevel.launch" />
 
     <!-- launch the base footprint -->
-    <!--
     <node pkg="humanoid_base_footprint" exec="base_footprint" output="screen">
         <param name="support_state_topics" value="[walk_support_state, dynamic_kick_support_state]"/>
         <param name="use_sim_time" value="$(var sim)"/>
     </node>
-    -->
 
     <!-- launch the odometry -->
-    <!--
     <include file="$(find-pkg-share bitbots_odometry)/launch/odometry.launch">
         <arg name="sim" value="$(var sim)"/>
     </include>
-    -->
 
     <!-- launch the animation server -->
     <include file="$(find-pkg-share bitbots_animation_server)/launch/animation.launch">
