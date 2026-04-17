@@ -133,38 +133,48 @@ YesenseDriver::~YesenseDriver()
     {
         serial_.close();
     }
-    data_buffer_ptr_.reset();
 
     configured_ = false;
+    cv_data_.notify_all();
     deseralize_thread_.join();
+
+    data_buffer_ptr_.reset();
 }
 
 void YesenseDriver::run()
 {
     try
     {
-        rclcpp::Rate rate(100000);
-
         while(rclcpp::ok())
         {
-            //read data from serial
-            if (serial_.available())
+            size_t avail = serial_.available();
+            if (avail > 0)
             {
-                data_ = serial_.read(serial_.available());
+                data_ = serial_.read(avail);
 
+                if (!data_.empty())
                 {
-                    std::lock_guard<std::mutex> lock(m_mutex_);
-
-                    for(size_t i=0;i<data_.length();i++)
                     {
-                        data_buffer_ptr_->push_back(data_[i]);
+                        std::lock_guard<std::mutex> lock(m_mutex_);
+                        if (data_buffer_ptr_->size() + data_.size() > kMaxPendingBytes)
+                        {
+                            RCLCPP_WARN_THROTTLE(node_->get_logger(), *node_->get_clock(), 1000,
+                                "IMU parser falling behind, dropping %zu buffered bytes",
+                                data_buffer_ptr_->size());
+                            data_buffer_ptr_->clear();
+                        }
+                        for (char c : data_)
+                            data_buffer_ptr_->push_back(c);
                     }
+                    cv_data_.notify_one();
                 }
-
+            }
+            else
+            {
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
             }
 
             rclcpp::spin_some(node_);
-            rate.sleep();
         }
 
         RCLCPP_WARN(node_->get_logger(), "ROS Exited !");
@@ -1244,7 +1254,7 @@ void YesenseDriver::_spin()
 
 void YesenseDriver::spin()
 {
-    rclcpp::Rate rate(100000);
+    std::deque<char> local_buf;
 
     uint8_t data = 0x00;
     uint8_t prev_data = 0x00;
@@ -1256,13 +1266,18 @@ void YesenseDriver::spin()
 
     while(configured_)
     {
-        while(!data_buffer_ptr_->empty())
+        // Block until data is available, then swap the entire shared buffer at once.
+        // This eliminates both the 100kHz busy-wait and per-byte mutex acquisitions.
         {
-            {
-                std::lock_guard<std::mutex> lock(m_mutex_);
-                data = uint8_t(data_buffer_ptr_->front());
-                data_buffer_ptr_->pop_front();
-            }
+            std::unique_lock<std::mutex> lock(m_mutex_);
+            cv_data_.wait(lock, [this]{ return !data_buffer_ptr_->empty() || !configured_; });
+            std::swap(local_buf, *data_buffer_ptr_);
+        }
+
+        while(!local_buf.empty())
+        {
+            data = uint8_t(local_buf.front());
+            local_buf.pop_front();
 
             if (mode_ == MODE_MESSAGE)            /* message data being recieved */
             {
@@ -1553,8 +1568,6 @@ void YesenseDriver::spin()
                 bytes_ = 0;
             }
         }
-
-        rate.sleep();
     }
 }
 

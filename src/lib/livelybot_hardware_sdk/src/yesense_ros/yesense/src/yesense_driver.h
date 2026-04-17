@@ -3,6 +3,7 @@
 #include <serial/serial.h>
 #include <deque>
 #include <mutex>
+#include <condition_variable>
 #include <thread>
 #include <memory>
 
@@ -165,7 +166,9 @@ private:
     // Ring-buffer for storing data read from the serial port
     std::string data_;
     std::mutex m_mutex_;
+    std::condition_variable cv_data_;
     const int buffer_size_;
+    static constexpr size_t kMaxPendingBytes = 65536;
     std::unique_ptr<std::deque<char>> data_buffer_ptr_;
 
     // checksum bytes
