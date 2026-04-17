@@ -1653,7 +1653,7 @@ void YesenseDriver::publish_imu(const protocol_info_t &imu_data)
     if (imu_pose_pub_->get_subscription_count() > 0)
     {
         geometry_msgs::msg::PoseStamped pose;
-        pose.header.frame_id = "imu_link";
+        pose.header.frame_id = "imu_frame";
         pose.header.stamp = g_imu_.header.stamp;
         pose.pose.orientation = g_imu_.orientation;
         imu_pose_pub_->publish(pose);
@@ -1663,7 +1663,7 @@ void YesenseDriver::publish_imu(const protocol_info_t &imu_data)
         {
             static nav_msgs::msg::Path paths;
             static constexpr size_t kMaxPathPoses = 1000;
-            paths.header.frame_id = "imu_link";
+            paths.header.frame_id = "imu_frame";
             paths.header.stamp = g_imu_.header.stamp;
             paths.poses.push_back(pose);
             if (paths.poses.size() > kMaxPathPoses)
@@ -1676,7 +1676,7 @@ void YesenseDriver::publish_imu(const protocol_info_t &imu_data)
     if (imu_marker_pub_->get_subscription_count() > 0)
     {
         visualization_msgs::msg::Marker marker_info;
-        marker_info.header.frame_id = "imu_link";
+        marker_info.header.frame_id = "imu_frame";
         marker_info.header.stamp = g_imu_.header.stamp;
         marker_info.ns = "basic_shapes";
         marker_info.id = 0;
