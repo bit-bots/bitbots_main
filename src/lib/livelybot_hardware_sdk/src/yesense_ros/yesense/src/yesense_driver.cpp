@@ -1372,12 +1372,12 @@ void YesenseDriver::spin()
                         //maybe this byte is class id
                         if(param_class_ == data)
                         {
-                            RCLCPP_INFO(node_->get_logger(), "Almost param response");
+                            RCLCPP_DEBUG(node_->get_logger(), "Almost param response");
                             check_respose_flag_ = true;
                         }
                         else
                         {
-                            RCLCPP_INFO(node_->get_logger(), "Not param response");
+                            RCLCPP_DEBUG(node_->get_logger(), "Not param response");
 
                             check_respose_flag_ = false;
                             error_respose_cnt_++;
@@ -1402,7 +1402,8 @@ void YesenseDriver::spin()
 
                 if(prev_tid != 0 && tid > prev_tid && prev_tid != tid - 1)
                 {
-                    RCLCPP_INFO(node_->get_logger(), "Frame losed: prev_TID: %d, cur_TID: %d", prev_tid, tid);
+                    RCLCPP_WARN_THROTTLE(node_->get_logger(), *node_->get_clock(), 1000,
+                        "Frame lost: prev_TID: %d, cur_TID: %d", prev_tid, tid);
                 }
 
                 prev_tid = tid;
@@ -1418,12 +1419,12 @@ void YesenseDriver::spin()
                         length_low_ = data;
                         if(param_id_ == id)
                         {
-                            RCLCPP_INFO(node_->get_logger(), "Double check param response");
+                            RCLCPP_DEBUG(node_->get_logger(), "Double check param response");
                             check_respose_flag_ = true;
                         }
                         else
                         {
-                            RCLCPP_INFO(node_->get_logger(), "Double not param response");
+                            RCLCPP_DEBUG(node_->get_logger(), "Double not param response");
                             check_respose_flag_ = false;
                         }
                     }
@@ -1439,7 +1440,7 @@ void YesenseDriver::spin()
                 {
                     // length is 13-bit
                     bytes_ = (length_low_ | data << 8) >> 3;
-                    RCLCPP_INFO(node_->get_logger(), "package length: %d", bytes_);
+                    RCLCPP_DEBUG(node_->get_logger(), "package length: %d", bytes_);
                 }
                 else
                 {
@@ -1624,10 +1625,9 @@ void YesenseDriver::update_position_by_gps(const protocol_info_t &imu_data, geom
 
 void YesenseDriver::publish_imu(const protocol_info_t &imu_data)
 {
-    // publish imu message
+    // Always publish the primary IMU topic
     g_imu_.header.stamp = node_->now();
 
-    // Convert roll/pitch/yaw to quaternion using tf2
     tf2::Quaternion q;
     q.setRPY(
         imu_data.roll / 180.0 * M_PI,
@@ -1649,146 +1649,138 @@ void YesenseDriver::publish_imu(const protocol_info_t &imu_data)
 
     imu_pub_->publish(g_imu_);
 
-    // update imu pose
-    geometry_msgs::msg::PoseStamped pose;
-    pose.header.frame_id = "imu_link";
-    pose.header.stamp = g_imu_.header.stamp;
-    pose.pose.position.x = 0.0;
-    pose.pose.position.y = 0.0;
-    pose.pose.position.z = 0.0;
-    pose.pose.orientation.w = g_imu_.orientation.w;
-    pose.pose.orientation.x = g_imu_.orientation.x;
-    pose.pose.orientation.y = g_imu_.orientation.y;
-    pose.pose.orientation.z = g_imu_.orientation.z;
-
-    // update_position_by_gps(imu_data, pose);
-    imu_pose_pub_->publish(pose);
-
-    // update imu marker
-    visualization_msgs::msg::Marker marker_info;
-    marker_info.header.frame_id = "imu_link";
-    marker_info.header.stamp = node_->now();
-
-    // set namespace and id
-    marker_info.ns = "basic_shapes";
-    marker_info.id = 0;
-
-    // set marker's shape
-    marker_info.type = visualization_msgs::msg::Marker::CUBE;
-
-    // set action: ADD
-    marker_info.action = visualization_msgs::msg::Marker::ADD;
-
-    // set imu pose
-    marker_info.pose.position.x = pose.pose.position.x;
-    marker_info.pose.position.y = pose.pose.position.y;
-    marker_info.pose.position.z = pose.pose.position.z;
-    marker_info.pose.orientation.x = g_imu_.orientation.x;
-    marker_info.pose.orientation.y = g_imu_.orientation.y;
-    marker_info.pose.orientation.z = g_imu_.orientation.z;
-    marker_info.pose.orientation.w = g_imu_.orientation.w;
-
-    // set scale, unit: m
-    marker_info.scale.x = 4.0;
-    marker_info.scale.y = 4.0;
-    marker_info.scale.z = 3.0;
-
-    // set color
-    marker_info.color.r = 0.2f;
-    marker_info.color.g = 0.2f;
-    marker_info.color.b = 0.2f;
-    marker_info.color.a = 1.0;
-
-    marker_info.lifetime = rclcpp::Duration(0, 0);
-
-    imu_marker_pub_->publish(marker_info);
-
-    // publish original sensor data
-    yesense_imu::msg::YesenseImuAllData raw_data;
-
-    raw_data.temperature = imu_data.imu_temp;
-
-    raw_data.accel.linear.x = imu_data.accel_x;
-    raw_data.accel.linear.y = imu_data.accel_y;
-    raw_data.accel.linear.z = imu_data.accel_z;
-
-    raw_data.accel.angular.x = imu_data.angle_x;
-    raw_data.accel.angular.y = imu_data.angle_y;
-    raw_data.accel.angular.z = imu_data.angle_z;
-
-    raw_data.euler_angle.roll = imu_data.roll;
-    raw_data.euler_angle.pitch = imu_data.pitch;
-    raw_data.euler_angle.yaw = imu_data.yaw;
-
-    raw_data.quaternion.q0 = imu_data.quaternion_data0;
-    raw_data.quaternion.q1 = imu_data.quaternion_data1;
-    raw_data.quaternion.q2 = imu_data.quaternion_data2;
-    raw_data.quaternion.q3 = imu_data.quaternion_data3;
-
-    raw_data.location.longtidue = imu_data.longtidue;
-    raw_data.location.latitude = imu_data.latitude;
-    raw_data.location.altidue = imu_data.altidue;
-
-    raw_data.status.fusion_status = imu_data.status & 0x0f;
-    raw_data.status.gnss_status = (imu_data.status >> 4) & 0x0f;
-
-    // gnss data
-    raw_data.gnss.master.utc_time.year = imu_data.gnss.utc_time.year;
-    raw_data.gnss.master.utc_time.month = imu_data.gnss.utc_time.month;
-    raw_data.gnss.master.utc_time.date = imu_data.gnss.utc_time.date;
-    raw_data.gnss.master.utc_time.hour = imu_data.gnss.utc_time.hour;
-    raw_data.gnss.master.utc_time.min = imu_data.gnss.utc_time.min;
-    raw_data.gnss.master.utc_time.sec = imu_data.gnss.utc_time.sec;
-    raw_data.gnss.master.utc_time.ms = imu_data.gnss.utc_time.ms;
-
-    raw_data.gnss.master.location.longtidue = imu_data.gnss.location.lon;
-    raw_data.gnss.master.location.latitude = imu_data.gnss.location.lat;
-    raw_data.gnss.master.location.altidue = imu_data.gnss.location.alt;
-
-    raw_data.gnss.master.location_error.longtidue = imu_data.gnss.location_error.lon;
-    raw_data.gnss.master.location_error.latitude = imu_data.gnss.location_error.lat;
-    raw_data.gnss.master.location_error.altidue = imu_data.gnss.location_error.alt;
-
-    raw_data.gnss.master.speed = imu_data.gnss.speed;
-    raw_data.gnss.master.yaw = imu_data.gnss.yaw;
-    raw_data.gnss.master.status = imu_data.gnss.status;
-    raw_data.gnss.master.star_cnt = imu_data.gnss.star_cnt;
-    raw_data.gnss.master.p_dop = imu_data.gnss.p_dop;
-    raw_data.gnss.master.site_id = imu_data.gnss.site_id;
-
-    raw_data.gnss.slave.dual_ant_yaw = imu_data.gnss_slave.dual_ant_yaw;
-    raw_data.gnss.slave.dual_ant_yaw_error = imu_data.gnss_slave.dual_ant_yaw_error;
-    raw_data.gnss.slave.dual_ant_baseline_len = imu_data.gnss_slave.dual_ant_baseline_len;
-
-    for (auto it = gsp_raw.begin(); it != gsp_raw.end(); ++it)
+    // pose — cheap, publish if subscribed
+    if (imu_pose_pub_->get_subscription_count() > 0)
     {
-        raw_data.gps.raw_data.push_back(it->second);
+        geometry_msgs::msg::PoseStamped pose;
+        pose.header.frame_id = "imu_link";
+        pose.header.stamp = g_imu_.header.stamp;
+        pose.pose.orientation = g_imu_.orientation;
+        imu_pose_pub_->publish(pose);
+
+        // path — only if subscribed; capped to avoid ever-growing serialization cost
+        if (imu_path_pub_->get_subscription_count() > 0)
+        {
+            static nav_msgs::msg::Path paths;
+            static constexpr size_t kMaxPathPoses = 1000;
+            paths.header.frame_id = "imu_link";
+            paths.header.stamp = g_imu_.header.stamp;
+            paths.poses.push_back(pose);
+            if (paths.poses.size() > kMaxPathPoses)
+                paths.poses.erase(paths.poses.begin());
+            imu_path_pub_->publish(paths);
+        }
     }
 
-    imu_data_pub_->publish(raw_data);
-    imu_all_data_pub_->publish(raw_data);
+    // marker — only if subscribed
+    if (imu_marker_pub_->get_subscription_count() > 0)
+    {
+        visualization_msgs::msg::Marker marker_info;
+        marker_info.header.frame_id = "imu_link";
+        marker_info.header.stamp = g_imu_.header.stamp;
+        marker_info.ns = "basic_shapes";
+        marker_info.id = 0;
+        marker_info.type = visualization_msgs::msg::Marker::CUBE;
+        marker_info.action = visualization_msgs::msg::Marker::ADD;
+        marker_info.pose.orientation = g_imu_.orientation;
+        marker_info.scale.x = 4.0;
+        marker_info.scale.y = 4.0;
+        marker_info.scale.z = 3.0;
+        marker_info.color.r = 0.2f;
+        marker_info.color.g = 0.2f;
+        marker_info.color.b = 0.2f;
+        marker_info.color.a = 1.0;
+        marker_info.lifetime = rclcpp::Duration(0, 0);
+        imu_marker_pub_->publish(marker_info);
+    }
 
-    // publish sensor data (first fields of AllData)
-    yesense_imu::msg::YesenseImuSensorData sensor_data;
-    sensor_data.temperature = raw_data.temperature;
-    sensor_data.sample_timestamp = raw_data.sample_timestamp;
-    sensor_data.sync_timestamp = raw_data.sync_timestamp;
-    sensor_data.accel = raw_data.accel;
-    sensor_data.quaternion = raw_data.quaternion;
-    sensor_data.euler_angle = raw_data.euler_angle;
-    sensor_data.location = raw_data.location;
-    imu_sensor_data_pub_->publish(sensor_data);
+    // raw/all-data topics — build the message only if someone is listening
+    const bool need_raw = imu_data_pub_->get_subscription_count() > 0
+                       || imu_all_data_pub_->get_subscription_count() > 0
+                       || imu_sensor_data_pub_->get_subscription_count() > 0
+                       || imu_gps_data_pub_->get_subscription_count() > 0
+                       || imu_gnss_data_pub_->get_subscription_count() > 0
+                       || imu_status_pub_->get_subscription_count() > 0;
 
-    imu_gps_data_pub_->publish(raw_data.gps);
-    imu_gnss_data_pub_->publish(raw_data.gnss);
-    imu_status_pub_->publish(raw_data.status);
+    if (need_raw)
+    {
+        yesense_imu::msg::YesenseImuAllData raw_data;
 
-    // publish paths
-    static nav_msgs::msg::Path paths;
-    paths.header.frame_id = "imu_link";
-    paths.header.stamp = node_->now();
-    paths.poses.push_back(pose);
-    imu_path_pub_->publish(paths);
+        raw_data.temperature = imu_data.imu_temp;
+
+        raw_data.accel.linear.x = imu_data.accel_x;
+        raw_data.accel.linear.y = imu_data.accel_y;
+        raw_data.accel.linear.z = imu_data.accel_z;
+
+        raw_data.accel.angular.x = imu_data.angle_x;
+        raw_data.accel.angular.y = imu_data.angle_y;
+        raw_data.accel.angular.z = imu_data.angle_z;
+
+        raw_data.euler_angle.roll = imu_data.roll;
+        raw_data.euler_angle.pitch = imu_data.pitch;
+        raw_data.euler_angle.yaw = imu_data.yaw;
+
+        raw_data.quaternion.q0 = imu_data.quaternion_data0;
+        raw_data.quaternion.q1 = imu_data.quaternion_data1;
+        raw_data.quaternion.q2 = imu_data.quaternion_data2;
+        raw_data.quaternion.q3 = imu_data.quaternion_data3;
+
+        raw_data.location.longtidue = imu_data.longtidue;
+        raw_data.location.latitude = imu_data.latitude;
+        raw_data.location.altidue = imu_data.altidue;
+
+        raw_data.status.fusion_status = imu_data.status & 0x0f;
+        raw_data.status.gnss_status = (imu_data.status >> 4) & 0x0f;
+
+        raw_data.gnss.master.utc_time.year = imu_data.gnss.utc_time.year;
+        raw_data.gnss.master.utc_time.month = imu_data.gnss.utc_time.month;
+        raw_data.gnss.master.utc_time.date = imu_data.gnss.utc_time.date;
+        raw_data.gnss.master.utc_time.hour = imu_data.gnss.utc_time.hour;
+        raw_data.gnss.master.utc_time.min = imu_data.gnss.utc_time.min;
+        raw_data.gnss.master.utc_time.sec = imu_data.gnss.utc_time.sec;
+        raw_data.gnss.master.utc_time.ms = imu_data.gnss.utc_time.ms;
+
+        raw_data.gnss.master.location.longtidue = imu_data.gnss.location.lon;
+        raw_data.gnss.master.location.latitude = imu_data.gnss.location.lat;
+        raw_data.gnss.master.location.altidue = imu_data.gnss.location.alt;
+
+        raw_data.gnss.master.location_error.longtidue = imu_data.gnss.location_error.lon;
+        raw_data.gnss.master.location_error.latitude = imu_data.gnss.location_error.lat;
+        raw_data.gnss.master.location_error.altidue = imu_data.gnss.location_error.alt;
+
+        raw_data.gnss.master.speed = imu_data.gnss.speed;
+        raw_data.gnss.master.yaw = imu_data.gnss.yaw;
+        raw_data.gnss.master.status = imu_data.gnss.status;
+        raw_data.gnss.master.star_cnt = imu_data.gnss.star_cnt;
+        raw_data.gnss.master.p_dop = imu_data.gnss.p_dop;
+        raw_data.gnss.master.site_id = imu_data.gnss.site_id;
+
+        raw_data.gnss.slave.dual_ant_yaw = imu_data.gnss_slave.dual_ant_yaw;
+        raw_data.gnss.slave.dual_ant_yaw_error = imu_data.gnss_slave.dual_ant_yaw_error;
+        raw_data.gnss.slave.dual_ant_baseline_len = imu_data.gnss_slave.dual_ant_baseline_len;
+
+        for (auto it = gsp_raw.begin(); it != gsp_raw.end(); ++it)
+            raw_data.gps.raw_data.push_back(it->second);
+
+        if (imu_data_pub_->get_subscription_count() > 0)   imu_data_pub_->publish(raw_data);
+        if (imu_all_data_pub_->get_subscription_count() > 0) imu_all_data_pub_->publish(raw_data);
+        if (imu_status_pub_->get_subscription_count() > 0)  imu_status_pub_->publish(raw_data.status);
+        if (imu_gps_data_pub_->get_subscription_count() > 0) imu_gps_data_pub_->publish(raw_data.gps);
+        if (imu_gnss_data_pub_->get_subscription_count() > 0) imu_gnss_data_pub_->publish(raw_data.gnss);
+
+        if (imu_sensor_data_pub_->get_subscription_count() > 0)
+        {
+            yesense_imu::msg::YesenseImuSensorData sensor_data;
+            sensor_data.temperature = raw_data.temperature;
+            sensor_data.sample_timestamp = raw_data.sample_timestamp;
+            sensor_data.sync_timestamp = raw_data.sync_timestamp;
+            sensor_data.accel = raw_data.accel;
+            sensor_data.quaternion = raw_data.quaternion;
+            sensor_data.euler_angle = raw_data.euler_angle;
+            sensor_data.location = raw_data.location;
+            imu_sensor_data_pub_->publish(sensor_data);
+        }
+    }
 }
 
 }
