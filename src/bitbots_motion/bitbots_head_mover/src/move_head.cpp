@@ -381,7 +381,7 @@ class HeadMover {
     pos_msg.positions = {goal_pan, goal_tilt};
     pos_msg.velocities = {pan_speed, tilt_speed};
     pos_msg.accelerations = {params_.max_acceleration_pan, params_.max_acceleration_pan};
-    pos_msg.max_torques = {-1, -1};
+    pos_msg.max_torques = {10, 10};
 
     position_publisher_->publish(pos_msg);
   }
@@ -469,7 +469,7 @@ class HeadMover {
       }
 
       // Get the current tilt angle based on the current line we are on
-      double current_tilt = lineAngle(line, line_count, max_vertical_angle_down, max_vertical_angle_up);
+      double current_tilt = lineAngle(line, line_count, max_vertical_angle_up, max_vertical_angle_down);
 
       // Store the keyframe
       keyframes.push_back({current_pan, current_tilt});
