@@ -642,6 +642,12 @@
     <limit lower="-0.78" upper="0.78" effort="20" velocity="5.45" />
     <dynamics damping="0.02" friction="0.0"/>
   </joint>
+    <joint name="r_sole_joint" type="fixed">
+    <origin xyz="-0.051 0 -0.05" rpy="0 0 0" />
+    <parent link="r_ankle_roll_link" />
+    <child link="r_sole" />
+  </joint>
+  <link name="r_sole"></link>
   <link name="l_hip_pitch_link">
     <inertial>
       <origin xyz="7.921e-05 0.03190246 -0.0001562" rpy="0 0 0" />
@@ -848,4 +854,10 @@
     <limit lower="-0.78" upper="0.78" effort="20" velocity="5.45" />
     <dynamics damping="0.02" friction="0.0"/>
   </joint>
+  <joint name="l_sole_joint" type="fixed">
+    <origin xyz="-0.051 0 -0.05" rpy="0 0 0" />
+    <parent link="l_ankle_roll_link" />
+    <child link="l_sole" />
+  </joint>
+  <link name="l_sole"></link>
 </robot>
