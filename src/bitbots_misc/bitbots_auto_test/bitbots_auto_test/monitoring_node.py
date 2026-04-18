@@ -1,4 +1,5 @@
 import time
+from datetime import datetime
 from pathlib import Path
 from threading import Lock
 
@@ -17,8 +18,14 @@ SPEED_THRESHOLD = 0.05  # m/s
 BALL_DELTA_THRESHOLDS = ((SPEED_THRESHOLD * 0.95) ** 2, (SPEED_THRESHOLD / 0.98) ** 2)
 
 
+def generate_run_name(run_name: str | None = None) -> str:
+    if run_name is not None and run_name.strip():
+        return run_name.strip()
+    return datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+
+
 class Monitoring(Node):
-    def __init__(self, log_folder: Path = DEFAULT_LOG_FOLDER):
+    def __init__(self, log_folder: Path = DEFAULT_LOG_FOLDER, run_name: str | None = None):
         # create node
         super().__init__("monitoring")
         use_sim_time_param = Parameter("use_sim_time", Parameter.Type.BOOL, True)
@@ -28,9 +35,9 @@ class Monitoring(Node):
         self.create_subscription(PoseStamped, "/goal_pose", self.goal_pose_cb, 10)
         self.create_subscription(ModelStates, "/model_states", qos_profile=10, callback=self.model_states_cb)
 
-        log_folder.mkdir(exist_ok=True, parents=True)
-        self.csv_file = self.open_file(log_folder)
-        self.csv_file.write("index, time, event, data1, data2, data3\n")
+        self.base_log_folder = log_folder
+        self.run_name = None
+        self.csv_file = None
         self.lock = Lock()
         self.index = 1
 
@@ -40,8 +47,23 @@ class Monitoring(Node):
         self.last_ball_pose: Pose = Pose()
         self.ball_moving = False
 
-    def open_file(self, log_folder: Path):
-        base_name = time.strftime("%Y-%m-%dT%H:%M")
+        if run_name is not None:
+            self.initialize_logging(run_name)
+
+    def initialize_logging(self, run_name: str):
+        self.run_name = generate_run_name(run_name)
+        self.log_folder = self.base_log_folder / self.run_name
+        self.log_folder.mkdir(exist_ok=True, parents=True)
+        self.csv_file = self.open_file(self.log_folder, self.run_name)
+        self.csv_file.write("index, time, event, data1, data2, data3\n")
+
+        self.last_goal_pose: PoseStamped = PoseStamped()
+        self.last_model_states_time: Time = None
+        self.last_robot_pose: Pose = Pose()
+        self.last_ball_pose: Pose = Pose()
+        self.ball_moving = False
+
+    def open_file(self, log_folder: Path, base_name: str):
         i = 0
         while True:
             name = base_name if i == 0 else f"{base_name}-{i}"
@@ -53,6 +75,8 @@ class Monitoring(Node):
         return (log_folder / name).open("w")
 
     def write_event(self, event: str, data1: str = "", data2: str = "", data3: str = "", time: Time | None = None):
+        if self.csv_file is None:
+            self.initialize_logging(self.run_name)
         if time is None:
             time = self.get_clock().now()
         time = time.nanoseconds

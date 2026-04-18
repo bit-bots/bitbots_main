@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import os
+import signal
 import threading
 
 import rclpy
@@ -19,8 +20,11 @@ class SupervisorNode:
         self.node.get_logger().info("started webots ros supervisor")
 
     def run(self):
-        while rclpy.ok():
-            self.supervisor_controller.step()
+        try:
+            while rclpy.ok():
+                self.supervisor_controller.step()
+        finally:
+            self.supervisor_controller.on_shutdown()
 
 
 if __name__ == "__main__":
@@ -36,6 +40,8 @@ if __name__ == "__main__":
 
     thread = threading.Thread(target=executor.spin, args=(), daemon=True)
     thread.start()
+    # We need to reset the handler because the webots controller API overwrites it.
+    signal.signal(signal.SIGINT, signal.default_int_handler)
     supervisor.run()
 
     supervisor.node.destroy_node()

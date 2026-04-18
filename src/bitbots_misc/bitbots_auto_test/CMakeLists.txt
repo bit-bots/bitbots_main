@@ -4,6 +4,7 @@ project(bitbots_auto_test)
 find_package(ament_cmake REQUIRED)
 find_package(bitbots_docs REQUIRED)
 find_package(bitbots_msgs REQUIRED)
+find_package(game_controller_hsl REQUIRED)
 find_package(rclpy REQUIRED)
 
 enable_bitbots_docs()

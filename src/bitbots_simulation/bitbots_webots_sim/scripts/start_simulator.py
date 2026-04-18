@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 import argparse
+import os
+import signal
 import subprocess
 import sys
 import threading
+from time import sleep
 
 import rclpy
 from ament_index_python import get_package_share_directory
@@ -46,13 +49,23 @@ class WebotsSim(Node):
             cmd + list(extra_args) + [f"--mode={mode}", f"--port={sim_port}", f"{pkg_path}/worlds/{world_name}"]
         )
         print(f"running {' '.join(cmd_with_args)}")
-        self.sim_proc = subprocess.Popen(cmd_with_args)
+        # We move webots out of the current process group so that it doesn't receive CTRL+C early
+        self.sim_proc = subprocess.Popen(cmd_with_args, process_group=0)
 
     def run_simulation(self):
         # join with child process
         try:
             sys.exit(self.sim_proc.wait())
         except KeyboardInterrupt:
+            # We wait a bit before actually terminating WeBots
+            # This is such that cleanup actions, e.g. stopping the recording
+            # can happen. Otherwise webots completely throws away the animation file
+            sleep(1)
+            # When running headless we need to kill the process group, not just
+            # the xvfb-run process. This confuses webots for a bit because the
+            # x-server shuts down before it can. This shouldn't be an issue.
+            os.killpg(os.getpgid(self.sim_proc.pid), signal.SIGTERM)
+            self.sim_proc.wait()
             sys.exit(self.sim_proc.returncode)
 
 

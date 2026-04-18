@@ -4,6 +4,10 @@
     <arg name="behavior_dsd_file" default="main.dsd" description="The behavior dsd file that should be used" />
     <arg name="fake_localization" default="true" description="Whether to use the fake localizator"/>
     <arg name="test_series" default="straight_goal" description="Which tests to run"/>
+    <arg name="run_name_postfix" default="" description="Optional prefix added to generated run_name"/>
+    <arg name="run_name"
+         default="$(eval &quot;__import__('datetime').datetime.now().strftime('%Y-%m-%dT%H-%M-%S') + '$(var run_name_postfix)'&quot;)"
+         description="Name used for log files, animation, and rosbag output"/>
     <arg name="only_script" default="false"/>
     <arg name="no_script" default="false"/>
     <arg name="headless" default="false"/>
@@ -13,6 +17,7 @@
 
     <node pkg="bitbots_auto_test" exec="auto_test" output="screen" unless="$(var no_script)" on_exit="shutdown">
         <param name="fake_localization" value="$(var fake_localization)"/>
+        <param name="run_name" value="$(var run_name)"/>
         <param from="$(find-pkg-share bitbots_auto_test)/config/$(var test_series).yaml"/>
     </node>
 
@@ -40,6 +45,7 @@
     </include>
 
     <include file="$(find-pkg-share bitbots_auto_test)/launch/rosbag_record_test.launch.py" unless="$(var only_script)">
+        <arg name="run_name" value="$(var run_name)"/>
     </include>
 
 </launch>

@@ -1,8 +1,8 @@
 from datetime import datetime
 
 from launch import LaunchDescription
-from launch.actions import ExecuteProcess, OpaqueFunction
-from launch.substitutions import EnvironmentVariable, PathJoinSubstitution
+from launch.actions import DeclareLaunchArgument, ExecuteProcess, OpaqueFunction
+from launch.substitutions import EnvironmentVariable, FindExecutable, PathJoinSubstitution
 
 # from launch_ros.actions import Node
 
@@ -61,7 +61,9 @@ TOPICS_TO_RECORD: list[str] = [
 
 
 def generate_launch_arguments():
-    return []
+    return [
+        DeclareLaunchArgument("run_name", default_value="", description="Name used for log files, animation, and rosbag output"),
+    ]
 
 
 def generate_nodes():
@@ -69,13 +71,16 @@ def generate_nodes():
 
 
 def generate_action(context):
-    # Set output directory
-    # ~/monitoring_logs/rosbag_<datetime>
+    run_name = context.launch_configurations.get("run_name", "").strip()
+    if not run_name:
+        run_name = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+
+    # Set output directory to ~/monitoring_logs/<run_name>.rosbag
     output_directory = PathJoinSubstitution(
         [
             EnvironmentVariable("HOME"),
             "monitoring_logs",
-            "rosbag_" + datetime.now().isoformat(timespec="seconds"),
+            run_name + ".rosbag",
         ]
     )
 
@@ -85,7 +90,8 @@ def generate_action(context):
         # Constructing the complete command
         cmd=[
             # Main command to start recording ros2 bags
-            "ros2",
+            "python",
+            FindExecutable(name="ros2"),
             "bag",
             "record",
             "-o",
@@ -98,11 +104,12 @@ def generate_action(context):
             "--polling-interval",
             "1000",
             "--use-sim-time",
+            "--topics"
         ]
         + TOPICS_TO_RECORD,
         output="screen",
         name=node_name,
-        shell=True,
+        shell=False,
     )
     return [main_process]
 
