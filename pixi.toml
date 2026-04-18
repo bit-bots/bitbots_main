@@ -41,6 +41,7 @@ readline = ">=8.2.999"  # This is needed because we want to install an empty rea
 alsa-plugins = ">=1.2.12,<2"
 beartype = ">=0.22.6,<0.23"
 breathe = ">=4.36.0,<5"
+cbor2 = ">=5.9.0,<6"
 cmake = "<3.30"  # Constraint to avoid issues with deprecated features in newer cmake versions
 colorama = ">=0.4.6,<0.5"
 compilers = ">=1.11.0,<2"
