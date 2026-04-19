@@ -246,7 +246,7 @@ int main(int argc, char** argv) {
   std::thread thread_obj(thread_spin, exec);
 
   auto last_time = node->get_clock()->now();
-  rclcpp::Rate rate = rclcpp::Rate(125.0);
+  rclcpp::Rate rate = rclcpp::Rate(100.0);
   while (rclcpp::ok()) {
     // Check if time progressed
     auto current_time = node->get_clock()->now();
