@@ -115,8 +115,8 @@ class HcmBlackboard:
         self.last_different_imu_state_time: Optional[Time] = None
 
         # Battery state
-        self.battery_voltage_threshold: float = self.node.get_parameter("battery_voltage_threshold").value
-        self.battery_debounce_time: float = self.node.get_parameter("battery_debounce_time").value
+        self.battery_voltage_threshold: float = self.node.get_parameter("battery.voltage_threshold").value
+        self.battery_debounce_time: float = self.node.get_parameter("battery.debounce_time").value
         self.battery_voltage: Optional[float] = None
 
         # Diagnostics state

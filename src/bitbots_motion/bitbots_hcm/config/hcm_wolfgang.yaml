@@ -47,6 +47,6 @@
 
     # Battery
     battery:
-    voltage_threshold: 18.0 # Voltage under which the battery is considered low
-    debounce_time: 5.0 # Time the battery has to be under the threshold to be considered low [s]
+      voltage_threshold: 18.0 # Voltage under which the battery is considered low
+      debounce_time: 5.0 # Time the battery has to be under the threshold to be considered low [s]
 
