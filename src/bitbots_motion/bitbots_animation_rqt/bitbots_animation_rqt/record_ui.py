@@ -31,7 +31,7 @@ from std_srvs.srv import SetBool
 
 from bitbots_animation_rqt.animation_recording import Recorder
 from bitbots_animation_rqt.utils import DragDropList, JointStateCommunicate, flatten_dict_of_lists
-from bitbots_msgs.action import Dynup, PlayAnimation
+from bitbots_msgs.action import PlayAnimation
 from bitbots_msgs.msg import JointTorque
 from bitbots_msgs.srv import AddAnimation
 
@@ -56,9 +56,6 @@ class RecordUI(Plugin):
         self.animation_client: ActionClient = ActionClient(self._node, PlayAnimation, "animation")
         if not self.animation_client.wait_for_server(timeout_sec=5.0):
             self._node.get_logger().error("Animation action server not available after waiting 5 seconds")
-        self.dynup_client = ActionClient(self._node, Dynup, "dynup")
-        if not self.dynup_client.wait_for_server(timeout_sec=5.0):
-            self._node.get_logger().error("Dynup action server not available after waiting 5 seconds")
 
         # Create a service clients
         self.add_animation_client = self._node.create_client(AddAnimation, "add_temporary_animation")
@@ -318,9 +315,7 @@ class RecordUI(Plugin):
         """
         Plays the walkready animation on the robot
         """
-        result: Dynup.Result = self.dynup_client.send_goal(Dynup.Goal(direction=Dynup.Goal.DIRECTION_WALKREADY)).result
-        if not result.successful:
-            self._node.get_logger().error("Could not execute walkready animation")
+        raise NotImplementedError("This function is not implemented yet.")
 
     def help(self) -> None:
         """
