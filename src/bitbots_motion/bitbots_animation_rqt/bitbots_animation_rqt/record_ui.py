@@ -100,11 +100,13 @@ class RecordUI(Plugin):
                     "Left": [
                         "l_shoulder_pitch_joint",
                         "l_shoulder_roll_joint",
+                        "l_upper_arm_joint",
                         "l_elbow_joint",
                     ],
                     "Right": [
                         "r_shoulder_pitch_joint",
                         "r_shoulder_roll_joint",
+                        "r_upper_arm_joint",
                         "r_elbow_joint",
                     ],
                 },
