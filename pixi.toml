@@ -156,12 +156,12 @@ ros-jazzy-vision-opencv = ">=4.1.0,<5"
 ros-jazzy-visualization-msgs = ">=5.3.6,<6"
 ros-jazzy-web-video-server = ">=2.1.1,<3"
 ros-jazzy-xacro = ">=2.1.1,<3"
+ros-jazzy-rmw-zenoh-cpp = ">=0.2.9,<0.3"
 
 # Neural network models / data packages
 bitbots_model_2023_04_04_philipp_yoeox_with_team_colors = ">=1.0.0,<2"
 bitbots_model_2022_10_07_flo_torso21_yoeox = ">=1.0.0,<2"
 tts-supertonic = ">=1.0.0,<2"
-
 
 # Local packages
 bitbots_rust_nav = { path = "src/bitbots_navigation/bitbots_rust_nav" }
