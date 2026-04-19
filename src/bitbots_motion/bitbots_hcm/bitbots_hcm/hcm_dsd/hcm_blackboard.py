@@ -89,7 +89,7 @@ class HcmBlackboard:
         self.current_joint_state: Optional[JointState] = None
         self.previous_joint_state: Optional[JointState] = None
         self.last_different_joint_state_time: Optional[Time] = None
-        self.is_power_on: bool = False
+        self.is_power_on: bool = True
 
         # Motor Parameters
         self.motor_timeout_duration: float = self.node.get_parameter("motor_timeout_duration").value
@@ -113,6 +113,11 @@ class HcmBlackboard:
         self.imu_msg: Optional[Imu] = None
         self.previous_imu_msg: Optional[Imu] = None
         self.last_different_imu_state_time: Optional[Time] = None
+
+        # Battery state
+        self.battery_voltage_threshold: float = self.node.get_parameter("battery_voltage_threshold").value
+        self.battery_debounce_time: float = self.node.get_parameter("battery_debounce_time").value
+        self.battery_voltage: Optional[float] = None
 
         # Diagnostics state
         self.servo_diag_error: bool = False

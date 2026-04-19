@@ -1,3 +1,7 @@
+from typing import Optional
+
+from rclpy.time import Time
+
 from bitbots_hcm.hcm_dsd.decisions import AbstractHCMDecisionElement
 from bitbots_msgs.msg import RobotControlState
 
@@ -158,53 +162,24 @@ class CheckIMU(AbstractHCMDecisionElement):
         return True
 
 
-class CheckPressureSensor(AbstractHCMDecisionElement):
+class CheckBattery(AbstractHCMDecisionElement):
     """
-    Checks connection to pressure sensors.
+    Checks the battery level
     """
 
     def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
-        self.had_problem = False
+        self.last_battery_high_time: Optional[Time] = None
 
     def perform(self, reevaluate=False):
-        if self.blackboard.visualization_active:
-            # no pressure sensors is visualization, but thats okay
-            return "OKAY"
+        if self.blackboard.battery_voltage is None or self.blackboard.battery_voltage >= self.blackboard.battery_voltage_threshold:
+            self.last_battery_high_time = self.blackboard.node.get_clock().now()
 
-        if not self.blackboard.pressure_sensors_installed:
-            # no pressure sensors installed, no check necessary
-            return "OKAY"
-
-        # Check if we get no messages due to an error or always the exact same one (no connection)
-        if (
-            not self.blackboard.pressure_diag_error
-            and not self.blackboard.previous_pressures == self.blackboard.pressures
+        if self.last_battery_high_time is None or (
+            self.blackboard.node.get_clock().now().nanoseconds - self.last_battery_high_time.nanoseconds
+            > self.blackboard.battery_debounce_time * 1e9
         ):
-            self.blackboard.last_different_pressure_state_time = self.blackboard.node.get_clock().now()
-
-        # Check if we get no messages for a while
-        if (
-            self.blackboard.last_different_pressure_state_time is None
-            or self.blackboard.node.get_clock().now().nanoseconds
-            - self.blackboard.last_different_pressure_state_time.nanoseconds
-            > 0.1 * 1e9
-        ):
-            # Check if we are in the startup phase (not too long tho)
-            if (
-                self.blackboard.current_state == RobotControlState.STARTUP
-                and self.blackboard.node.get_clock().now().nanoseconds - self.blackboard.start_time.nanoseconds
-                < 10 * 1e9
-            ):
-                # wait for the pressure sensors to start
-                return "PRESSURE_NOT_STARTED"
-            else:
-                return "PROBLEM"
-
-        if self.had_problem:
-            # had problem before, just tell that this is solved now
-            self.blackboard.node.get_logger().info("Pressure sensors are now connected. Will resume.")
-            self.had_problem = False
+            return "LOW"
 
         return "OKAY"
 
