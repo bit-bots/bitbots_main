@@ -19,9 +19,8 @@ from rclpy.serialization import deserialize_message
 from rclpy.time import Time
 from ros2_numpy import numpify
 from sensor_msgs.msg import Imu, JointState
-from std_msgs.msg import Bool
+from std_msgs.msg import Bool, Float32
 from std_srvs.srv import SetBool
-from livelybot_msg.msg import PowerDetect
 
 from bitbots_hcm import hcm_dsd
 from bitbots_hcm.hcm_dsd.hcm_blackboard import HcmBlackboard
@@ -78,7 +77,7 @@ class HardwareControlManager:
         self.hcm_deactivated = False
 
         # Create subscribers
-        self.node.create_subscription(PowerDetect, "power_detect_state", self.power_detect_cb, 1)
+        self.node.create_subscription(Float32, "battery_voltage", self.voltage_cb, 1)
         self.node.create_subscription(Bool, "hcm_deactivate", self.deactivate_cb, 1)
         self.node.create_subscription(DiagnosticArray, "diagnostics_agg", self.diag_cb, 1)
         self.node.create_subscription(Bool, "game_controller/stop_msg", self.stop_cb, 1)
@@ -142,9 +141,9 @@ class HardwareControlManager:
         resp.success = True
         return resp
 
-    def power_detect_cb(self, msg: PowerDetect):
-        """Recives data send by the battery management system."""
-        self.blackboard.battery_voltage = msg.voltage
+    def voltage_cb(self, msg: Float32):
+        """Receives data sent by the battery management system."""
+        self.blackboard.battery_voltage = msg.data
 
     def diag_cb(self, msg: DiagnosticArray):
         """Updates the diagnostic state."""
