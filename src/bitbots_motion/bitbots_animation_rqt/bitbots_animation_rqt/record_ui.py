@@ -287,7 +287,7 @@ class RecordUI(Plugin):
         Connects the actions in the top bar to the corresponding functions, and sets their shortcuts
         :return:
         """
-        self._widget.actionNew.triggered.connect(self.new)
+        self._widget.actionNew.triggered.connect(self.new_animation)
         self._widget.actionOpen.triggered.connect(self.open)
         self._widget.actionSave.triggered.connect(self.save)
         self._widget.actionSave_as.triggered.connect(lambda: self.save(new_location=True))
@@ -342,7 +342,7 @@ class RecordUI(Plugin):
             Invert: Ctrl + Down Arrow"
         QMessageBox.about(self._widget, "About RecordUI", message)
 
-    def new(self) -> None:
+    def new_animation(self, _) -> None:
         """
         Deletes all currently recorded frames
         """
