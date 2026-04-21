@@ -1,0 +1,39 @@
+{
+    "author": "",
+    "description": "",
+    "keyframes": [
+        {
+            "duration": 2.0,
+            "goals": {
+                "l_elbow_joint": 0.0,
+                "l_shoulder_pitch_joint": 90.0,
+                "l_shoulder_roll_joint": 70.0,
+                "l_upper_arm_joint": 0.0,
+                "r_elbow_joint": 0.0,
+                "r_shoulder_pitch_joint": -90.0,
+                "r_shoulder_roll_joint": -70.0,
+                "r_upper_arm_joint": 0.0,
+                "l_hip_pitch_joint": -0.6,
+                "l_hip_roll_joint": 0.0,
+                "l_thigh_joint": 0.0,
+                "l_calf_joint": 1.2,
+                "l_ankle_pitch_joint": -0.6,
+                "l_ankle_roll_joint": 0.0,
+                "r_hip_pitch_joint": 0.0,
+                "r_hip_roll_joint": 0.0,
+                "r_thigh_joint": 0.0,
+                "r_calf_joint": 1.2,
+                "r_ankle_pitch_joint": -0.6,
+                "r_ankle_roll_joint": 0.0,
+                "head_yaw_joint": 0.0,
+                "head_pitch_joint": 0.0
+            },
+            "name": "start frame",
+            "pause": 0.0,
+            "torque": {}
+        }
+    ],
+    "last_edited": "2026-04-19 19:51:50.655755",
+    "name": "walkready",
+    "version": ""
+}
