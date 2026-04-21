@@ -23,7 +23,7 @@
       startup: "startup"
       turning_front_left: "turning_front_left"
       turning_front_right: "turning_front_right"
-      walk_ready: "walk_ready" # does not exist yet
+      walk_ready: "walkready" # does not exist yet
       rise: "rise" # does not exist yet
 
     # Falling
