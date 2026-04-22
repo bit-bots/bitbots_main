@@ -63,7 +63,7 @@ class RLNode(Node, ABC):
 
         # TODO consider IMU mounting offset
 
-        if self._phase.get_phase():
+        if self._phase.check_phase_set():
             self._phase.set_obs_phase(
                 np.array(
                     [np.cos(self._phase.get_phase()), np.sin(self._phase.get_phase())],
@@ -80,7 +80,7 @@ class RLNode(Node, ABC):
 
         self.publisher(onnx_pred)
 
-        if self._phase.get_phase():
+        if self._phase.check_phase_set():
             phase_tp1 = self._phase.get_phase() + self._phase.get_phase_dt()
             self._phase.set_phase(np.fmod(phase_tp1 + np.pi, 2 * np.pi) - np.pi)
 

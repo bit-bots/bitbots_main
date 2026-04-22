@@ -21,6 +21,12 @@ class PhaseObject(Node):
 
         self._obs_phase = None
 
+    def check_phase_set(self):
+        if self.get_phase():
+            return True
+
+        return False
+
     def set_phase(self, new_phase):
         self._phase = new_phase
 
