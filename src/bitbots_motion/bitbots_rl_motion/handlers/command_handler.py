@@ -5,12 +5,12 @@ from handlers.handler import Handler
 
 
 class CommandHandler(Handler):
-    def __init__(self, config):
-        super().__init__(config)
+    def __init__(self, node):
+        self._node = node
 
         self._cmd_vel = None
 
-        self._cmd_vel_sub = self.create_subscription(Twist, "cmd_vel", self._cmd_vel_callback, 10)
+        self._cmd_vel_sub = self._node.create_subscription(Twist, "cmd_vel", self._cmd_vel_callback, 10)
 
     def get_command(self):
         command = np.array([self._cmd_vel.linear.x, self._cmd_vel.linear.y, self._cmd_vel.angular.z], dtype=np.float32)

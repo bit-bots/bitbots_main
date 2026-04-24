@@ -1,12 +1,7 @@
 from abc import ABC, abstractmethod
 
-from rclpy.node import Node
 
-
-class Handler(ABC, Node):
-    def __init__(self, config):
-        self._config = config
-
+class Handler(ABC):
     @abstractmethod
     def has_data(self):
         pass

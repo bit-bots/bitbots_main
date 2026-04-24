@@ -5,25 +5,25 @@ from handlers.gyro_handler import GyroHandler
 from handlers.joint_handler import JointHandler
 
 from bitbots_msgs.msg import JointCommand
-from nodes.rl_node import RLNode
+from nodes.rl_node import RLNode, create_main
 
 
 class KickNode(RLNode):
-    def __init__(self, config_path: str):
-        # Configuring self._config, self._phase, self._previous_action
-        super().__init__(config_path, node_name="kick_node")
+    def __init__(self):
+        # Configuring self._phase, self._previous_action
+        super().__init__(node_name="kick_node")
 
         # publishers
         self._joint_command_pub = self.create_publisher(JointCommand, "kick_motor_goals", 10)
 
         # handlers
-        self._gyro_handler = GyroHandler(self._config)
-        self._gravity_handler = GravityHandler(self._config)
-        self._joint_handler = JointHandler(self._config)
-        self._ball_handler = BallHandler(self._config)
+        self._gyro_handler = GyroHandler(self)
+        self._gravity_handler = GravityHandler(self)
+        self._joint_handler = JointHandler(self)
+        self._ball_handler = BallHandler(self)
 
         # loading model
-        model = self._config["model"]
+        model = self.get_parameter("model").value
         self.load_model(model)
 
     # observations
@@ -50,3 +50,6 @@ class KickNode(RLNode):
     def publisher(self, onnx_pred):
         joint_command = self._joint_handler.get_joint_commands(onnx_pred)
         self._joint_command_pub.publish(joint_command)
+
+
+main = create_main(KickNode)

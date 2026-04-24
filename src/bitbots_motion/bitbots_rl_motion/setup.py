@@ -15,10 +15,8 @@ setup(
             "share/" + package_name + "/models",
             glob.glob("models/*.onnx"),
         ),
-        (
-            "share/" + package_name + "/configs", 
-            glob.glob("configs/*.yaml")
-        ),
+        ("share/" + package_name + "/configs", glob.glob("configs/*.yaml")),
+        ("share/" + package_name + "/launch", glob.glob("launch/*.launch")),
     ],
     install_requires=["setuptools"],
     zip_safe=True,
@@ -28,8 +26,6 @@ setup(
     license="TODO: License declaration",
     tests_require=["pytest"],
     entry_points={
-        "console_scripts": [
-            "run_policies = bitbots_rl_motion.policy_nodes:main",
-        ],
+        "console_scripts": ["walk_node = nodes.walk_node:main", "kick_node = nodes.kick_node:main"],
     },
 )

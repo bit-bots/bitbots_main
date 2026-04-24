@@ -21,11 +21,12 @@ from pathlib import Path
 import numpy as np
 import onnx
 import onnxruntime as rt
-import yaml
+import rclpy
 from ament_index_python import get_package_share_directory
 from bitbots_rl_motion.phase import PhaseObject
 from bitbots_rl_motion.previous_action import PreviousActionObject
 from handlers.handler import Handler
+from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
 from rclpy.subscription import Subscription
 
@@ -33,23 +34,27 @@ from rclpy.subscription import Subscription
 class RLNode(Node, ABC):
     """Node to control the wolfgang humanoid."""
 
-    def __init__(self, config_path: str, node_name: str):
+    def __init__(self, node_name: str):
         super().__init__(f"{node_name}")
 
-        self._config = self._load_config(config_path)
-        # Phase is optional - if phase shouldn't be used, than self._phase.get_phase() will return None
-        self._phase = PhaseObject(self._config)
-        self._previous_action = PreviousActionObject(self._config)
+        # Fallback values if paramtes don't exist in config file
+        self.declare_parameter("model", "")
+        self.declare_parameter("phase.control_dt", 0.0)
+        self.declare_parameter("phase.gait_frequency", 0.0)
+        self.declare_parameter("phase.use_phase", False)
+        self.declare_parameter("providers", ["CPUExecutionProvider"])
+        self.declare_parameter("joints.ordered_relevant_joint_names", [""])
+        self.declare_parameter("joints.walkready_state", [0.0])
 
-    def _load_config(self, path: str):
-        with open(path) as f:
-            return yaml.safe_load(f)
+        model = self.get_parameter("model").value
+        self.get_logger().info(f"Loaded model: {model}")
+
+        # Phase is optional - if phase shouldn't be used, than self._phase.get_phase() will return None
+        self._phase = PhaseObject(self)
+        self._previous_action = PreviousActionObject(self)
 
     def _timer_callback(self):
-        if not self._config:
-            raise ConfigError("Configuration is missing!")
-
-        # Prüfen ob alle Subscriber schon mindestens eine Nachricht hatten
+        # Check whether all subscribers hat at least on message
 
         sensors_ready, missing_handler = self._all_sensors_ready()
         if not sensors_ready:
@@ -58,8 +63,6 @@ class RLNode(Node, ABC):
                 throttle_duration_sec=1.0,
             )
             return
-        else:
-            self.get_logger().info("All sensors are available!")
 
         # TODO consider IMU mounting offset
 
@@ -97,7 +100,7 @@ class RLNode(Node, ABC):
         self._onnx_model_path = Path(path_to_model)
 
         # Load the ONNX model
-        self._onnx_session = rt.InferenceSession(self._onnx_model_path, providers=self._config["providers"])
+        self._onnx_session = rt.InferenceSession(self._onnx_model_path, providers=self.get_parameter("providers").value)
         self._onnx_model = onnx.load(self._onnx_model_path)
 
         self._onnx_input_name = [inp.name for inp in self._onnx_model.graph.input]
@@ -112,7 +115,7 @@ class RLNode(Node, ABC):
             if isinstance(value, Handler):
                 self._handlers.append(value)
 
-        self._timer = self.create_timer(self._config["phase"]["control_dt"], self._timer_callback)
+        self._timer = self.create_timer(self.get_parameter("phase.control_dt").value, self._timer_callback)
 
         self.load_phase()
 
@@ -129,5 +132,19 @@ class RLNode(Node, ABC):
         pass
 
 
-class ConfigError(Exception):
-    pass
+def create_main(input_node):
+    def main():
+        rclpy.init()
+
+        node = input_node()
+
+        executor = EventsExecutor()
+        executor.add_node(node)
+
+        try:
+            executor.spin()
+        finally:
+            node.destroy_node()
+            rclpy.shutdown()
+
+    return main

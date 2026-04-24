@@ -1,11 +1,15 @@
 <launch>
   <arg name="sim" default="false"/>
+  <arg name="walk" default="true"/>
+  <arg name="kick" default="true"/>
 
-  <group unless="$(var sim)">
+  <group if="$(var walk)">
     <node pkg="bitbots_rl_motion" exec="walk_node" output="screen">
       <param from="$(find-pkg-share bitbots_rl_motion)/configs/wolfgang_walking_model_config.yaml" />
     </node>
+  </group>
 
+  <group if="$(var kick)">
     <node pkg="bitbots_rl_motion" exec="kick_node" output="screen">
       <param from="$(find-pkg-share bitbots_rl_motion)/configs/wolfgang_dribbling_model_config.yaml" />
     </node>

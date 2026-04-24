@@ -7,12 +7,12 @@ from handlers.handler import Handler
 
 
 class GravityHandler(Handler):
-    def __init__(self, config):
-        super().__init__(config)
+    def __init__(self, node):
+        self._node = node
 
         self._imu_data = None
 
-        self._imu_sub = self.create_subscription(Imu, "imu/data", self._imu_callback, 10)
+        self._imu_sub = self._node.create_subscription(Imu, "imu/data", self._imu_callback, 10)
 
     # Callables
     def _imu_callback(self, msg):

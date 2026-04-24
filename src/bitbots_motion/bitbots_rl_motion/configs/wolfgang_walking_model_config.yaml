@@ -1,38 +1,41 @@
-model: wolfgang_walk_ppo.onnx
+walk_node:
+  ros__parameters:
+    model: wolfgang_walk_ppo.onnx
 
-joints:
-  ordered_relevant_joint_names: [
-    "RHipYaw",
-    "RHipRoll",
-    "RHipPitch",
-    "RKnee",
-    "RAnklePitch",
-    "RAnkleRoll",
-    "LHipYaw",
-    "LHipRoll",
-    "LHipPitch",
-    "LKnee",
-    "LAnklePitch",
-    "LAnkleRoll",
-  ] 
+    joints:
+      ordered_relevant_joint_names: [
+        "RHipYaw",
+        "RHipRoll",
+        "RHipPitch",
+        "RKnee",
+        "RAnklePitch",
+        "RAnkleRoll",
+        "LHipYaw",
+        "LHipRoll",
+        "LHipPitch",
+        "LKnee",
+        "LAnklePitch",
+        "LAnkleRoll",
+      ] 
 
-  walkready_state: [
-        0.023628265148262724,
-        -0.10401795710581162,
-        -0.7352626990449959,
-        -1.3228415184260092,
-        0.5495038397740458,
-        -0.12913515511895796,
-        -0.016441795868928723,
-        0.07253788412595062,
-        0.7420808433462046,
-        1.334527650998329,
-        -0.5537397918567754,
-        0.07437380704149316,
-    ]
+      walkready_state: [
+            0.023628265148262724,
+            -0.10401795710581162,
+            -0.7352626990449959,
+            -1.3228415184260092,
+            0.5495038397740458,
+            -0.12913515511895796,
+            -0.016441795868928723,
+            0.07253788412595062,
+            0.7420808433462046,
+            1.334527650998329,
+            -0.5537397918567754,
+            0.07437380704149316,
+        ]
 
-phase:
-  control_dt: 0.02
-  gait_frequency: 1.5
+    phase:
+      control_dt: 0.02
+      gait_frequency: 1.5
+      use_phase: True
 
-providers: ["CPUExecutionProvider"]
+    providers: ["CPUExecutionProvider"]

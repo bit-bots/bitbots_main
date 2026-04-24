@@ -5,12 +5,12 @@ from handlers.handler import Handler
 
 
 class BallHandler(Handler):
-    def __init__(self, config):
-        super().__init__(config)
+    def __init__(self, node):
+        self._node = node
 
         self._ball_pos = None
 
-        self._ball_pos_sub = self.create_subscription(BallArray, "balls_relative", self._ball_pos_callback, 10)
+        self._ball_pos_sub = self._node.create_subscription(BallArray, "balls_relative", self._ball_pos_callback, 10)
 
     def _ball_pos_callback(self, msg):
         if msg.balls:

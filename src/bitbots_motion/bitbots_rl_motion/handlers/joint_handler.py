@@ -6,15 +6,17 @@ from handlers.handler import Handler
 
 
 class JointHandler(Handler):
-    def __init__(self, config):
-        super().__init__(config)
+    def __init__(self, node):
+        self._node = node
 
-        self._ordered_relevant_joint_names = self._config["joints"]["ordered_relevant_joint_names"]
-        self._walkready_state = self._config["joints"]["walkready_state"]
+        self._ordered_relevant_joint_names = self._node.get_parameter("joints.ordered_relevant_joint_names").value
+        self._walkready_state = self._node.get_parameter("joints.walkready_state").value
         self._previous_action: np.ndarray = np.zeros(len(self._ordered_relevant_joint_names), dtype=np.float32)
         self._joint_state = None
 
-        self._joint_state_sub = self.create_subscription(JointState, "joint_states", self._joint_state_callback, 10)
+        self._joint_state_sub = self._node.create_subscription(
+            JointState, "joint_states", self._joint_state_callback, 10
+        )
 
     def _joint_state_callback(self, msg):
         self._joint_state = msg
