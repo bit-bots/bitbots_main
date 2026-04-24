@@ -1,3 +1,5 @@
+from typing import Optional
+
 import numpy as np
 from sensor_msgs.msg import JointState
 
@@ -12,7 +14,7 @@ class JointHandler(Handler):
         self._ordered_relevant_joint_names = self._node.get_parameter("joints.ordered_relevant_joint_names").value
         self._walkready_state = self._node.get_parameter("joints.walkready_state").value
         self._previous_action: np.ndarray = np.zeros(len(self._ordered_relevant_joint_names), dtype=np.float32)
-        self._joint_state = None
+        self._joint_state: Optional[JointState] = None
 
         self._joint_state_sub = self._node.create_subscription(
             JointState, "joint_states", self._joint_state_callback, 10
@@ -25,6 +27,7 @@ class JointHandler(Handler):
         return self._joint_state is not None
 
     def get_angle_data(self):
+        assert self._joint_state is not None
         joint_angles = (
             np.array(
                 [
@@ -39,6 +42,7 @@ class JointHandler(Handler):
         return joint_angles
 
     def get_velocity_data(self):
+        assert self._joint_state is not None
         joint_velocities = np.array(
             [
                 self._joint_state.velocity[self._joint_state.name.index(name)]
@@ -64,6 +68,7 @@ class JointHandler(Handler):
         return joint_command
 
     def get_joint_commands(self, onnx_pred):
+        assert self._joint_state is not None
         joint_command = JointCommand()
         joint_command.header.stamp = self._joint_state.header.stamp
         joint_command.joint_names = self._ordered_relevant_joint_names

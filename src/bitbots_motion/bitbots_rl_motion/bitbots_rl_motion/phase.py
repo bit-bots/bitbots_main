@@ -1,11 +1,11 @@
-import numpy as np
+from typing import Optional
 
-# Please pay attention to the code in rl_node.py if you wanna change here sth.
+import numpy as np
 
 
 class PhaseObject:
     _phase: np.ndarray = np.array([0.0, np.pi], dtype=np.float32)
-    _phase_dt: float
+    _phase_dt: Optional[float]
 
     def __init__(self, node):
         self._node = node

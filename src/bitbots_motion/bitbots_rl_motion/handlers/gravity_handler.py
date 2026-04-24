@@ -1,3 +1,5 @@
+from typing import Optional
+
 import numpy as np
 from sensor_msgs.msg import Imu
 from transforms3d.euler import euler2mat
@@ -10,7 +12,7 @@ class GravityHandler(Handler):
     def __init__(self, node):
         self._node = node
 
-        self._imu_data = None
+        self._imu_data: Optional[Imu] = None
 
         self._imu_sub = self._node.create_subscription(Imu, "imu/data", self._imu_callback, 10)
 
@@ -22,6 +24,7 @@ class GravityHandler(Handler):
         return self._imu_data is not None
 
     def get_gravity(self):
+        assert self._imu_data is not None
         gravity = (
             quat2mat(
                 [

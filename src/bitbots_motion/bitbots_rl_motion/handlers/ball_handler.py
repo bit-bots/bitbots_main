@@ -1,3 +1,5 @@
+from typing import Optional
+
 import numpy as np
 from soccer_vision_3d_msgs.msg import BallArray
 
@@ -8,7 +10,7 @@ class BallHandler(Handler):
     def __init__(self, node):
         self._node = node
 
-        self._ball_pos = None
+        self._ball_pos: Optional[BallArray] = None
 
         self._ball_pos_sub = self._node.create_subscription(BallArray, "balls_relative", self._ball_pos_callback, 10)
 
@@ -20,6 +22,7 @@ class BallHandler(Handler):
         return self._ball_pos is not None
 
     def get_ball_pos(self):
+        assert self._ball_pos is not None
         ball_pos = np.array(
             [
                 self._ball_pos.x,
