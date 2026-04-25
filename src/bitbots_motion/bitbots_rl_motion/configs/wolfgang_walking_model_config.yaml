@@ -1,6 +1,6 @@
 walk_node:
   ros__parameters:
-    model: wolfgang_walk_ppo.onnx
+    model: wolfgang_final_walking_ppo.onnx
 
     joints:
       ordered_relevant_joint_names: [

@@ -2,10 +2,10 @@
 @ChangeAction + action:searching, @LookAtFieldFeatures, @WalkInPlace + duration:3, @Turn
 
 #PerformKickLeft
-@ChangeAction + action:kicking, @LookAtFront, @WalkKick + foot:left + r:false, @WalkInPlace + duration:1 + r:false, @ForgetBall + r:false, @WalkInPlace + duration:1 + r:false, @LookAtFieldFeatures + r:false
+@ChangeAction + action:kicking, @LookAtFront, @RLKick + duration:3 + r:false, @WalkInPlace + duration:1 + r:false, @ForgetBall + r:false, @WalkInPlace + duration:1 + r:false, @LookAtFieldFeatures + r:false
 
 #PerformKickRight
-@ChangeAction + action:kicking, @LookAtFront, @WalkKick + foot:right + r:false, @WalkInPlace + duration:1 + r:false, @ForgetBall + r:false, @WalkInPlace + duration:1 + r:false, @LookAtFieldFeatures + r:false
+@ChangeAction + action:kicking, @LookAtFront, @RLKick + duration:3 + r:false, @WalkInPlace + duration:1 + r:false, @ForgetBall + r:false, @WalkInPlace + duration:1 + r:false, @LookAtFieldFeatures + r:false
 
 #KickWithAvoidance
 $AvoidBall

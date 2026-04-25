@@ -28,7 +28,6 @@ from bitbots_rl_motion.previous_action import PreviousActionObject
 from handlers.handler import Handler
 from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
-from rclpy.subscription import Subscription
 
 
 class RLNode(Node, ABC):
@@ -37,7 +36,7 @@ class RLNode(Node, ABC):
     def __init__(self, node_name: str):
         super().__init__(f"{node_name}")
 
-        # Fallback values if paramtes don't exist in config file
+        # Fallback values if paramters don't exist in config file
         self.declare_parameter("model", "")
         self.declare_parameter("phase.control_dt", 0.0)
         self.declare_parameter("phase.gait_frequency", 0.0)
@@ -77,11 +76,12 @@ class RLNode(Node, ABC):
         observation = self.obs()
 
         # Run the ONNX model
-        onnx_input = {self._onnx_input_name[0]: observation.reshape(1, -1)}  # TODO: Improve input
+        onnx_input = {self._onnx_input_name[0]: observation.reshape(1, -1)}
         onnx_pred = self._onnx_session.run(self._onnx_output_name, onnx_input)[0][0]
         self._previous_action.set_previous_action(onnx_pred)
 
-        self.publisher(onnx_pred)
+        if self.allowed_states():
+            self.publisher(onnx_pred)
 
         if self._phase.check_phase_set():
             phase_tp1 = self._phase.get_phase() + self._phase.get_phase_dt()
@@ -106,29 +106,24 @@ class RLNode(Node, ABC):
         self._onnx_input_name = [inp.name for inp in self._onnx_model.graph.input]
         self._onnx_output_name = [out.name for out in self._onnx_model.graph.output]
 
-        self._subs = []
         self._handlers = []
 
         for _, value in self.__dict__.items():
-            if isinstance(value, Subscription):
-                self._subs.append(value)
             if isinstance(value, Handler):
                 self._handlers.append(value)
 
         self._timer = self.create_timer(self.get_parameter("phase.control_dt").value, self._timer_callback)
-
-        self.load_phase()
 
     @abstractmethod
     def publisher(self, action):
         pass
 
     @abstractmethod
-    def load_phase(self):
+    def obs(self):
         pass
 
     @abstractmethod
-    def obs(self):
+    def allowed_states(self):
         pass
 
 

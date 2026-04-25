@@ -2,7 +2,7 @@ from bitbots_blackboard.body_blackboard import BodyBlackboard
 from bitbots_blackboard.capsules.kick_capsule import KickCapsule
 from bitbots_utils.transforms import quat_from_yaw
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
-from geometry_msgs.msg import PoseStamped
+from rclpy.duration import Duration
 
 from bitbots_msgs.action import Kick
 
@@ -126,31 +126,19 @@ class KickBallDynamic(AbstractKickAction):
                 self.pop()
 
 
-# TODO: Fix integration
+# Currently kicking in no specific direction
 class RLKick(AbstractKickAction):
     def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
-
-        self.kick_length = self.blackboard.config["kick_cost_kick_length"]
-        self.angular_range = self.blackboard.config["kick_cost_angular_range"]
-        self.max_kick_angle = self.blackboard.config["max_kick_angle"]
-        self.num_kick_angles = self.blackboard.config["num_kick_angles"]
-        self.penalty_kick_angle = self.blackboard.config["penalty_kick_angle"]
+        self._duration = parameters.get("duration", 3.0)
+        self._start_time = None
 
     def perform(self, reevaluate=False):
-        ball_pose = PoseStamped()
-        ball_pose.header.stamp = self.blackboard.node.get_clock().now().to_msg()
-        ball_pose.header.frame_id = self.blackboard.world_model.base_footprint_frame
+        if self._start_time is None:
+            self._start_time = self.blackboard.node.get_clock().now()
+            self.blackboard.kick.start_rl_kick()
 
-        ball_u, ball_v = self.blackboard.world_model.get_ball_position_uv()
-        ball_pose.pose.position.x = ball_u
-        ball_pose.pose.position.y = ball_v
-        ball_pose.pose.position.z = 0.0
-
-        ball_pose.pose.orientation.x = 0.0  # isn't used
-        ball_pose.pose.orientation.y = 0.0
-        ball_pose.pose.orientation.z = 0.0
-        ball_pose.pose.orientation.w = 1.0
-
-        self.blackboard.kick.rl_kick(ball_pose)
-        self.pop()
+        elapsed = self.blackboard.node.get_clock().now() - self._start_time
+        if elapsed >= Duration(seconds=self._duration):
+            self.blackboard.kick.stop_rl_kick()
+            self.pop()
