@@ -24,4 +24,9 @@ Both files are located in the bitbots_rl_motion folder.
 
 For proper starting you need a policy model and a config file. The config file should have the same structure as the wolfgang_dribbling_model_config.yaml file.
 Furthermore, you have to create or adjust a node file to your needs. walk_node.py can be used for orientation. If chages are conducted on the RL_Node class, it should be announced.
-Finally, you define which nodes and policies you wanna use in the launch file.  
+Finally, you define which nodes and policies you wanna use in the launch file.
+
+## Testing 
+
+Tests are designed to check basic functionality of the existing models and import correctness of the config files. 
+MyPi test checks whether type errors exist.
