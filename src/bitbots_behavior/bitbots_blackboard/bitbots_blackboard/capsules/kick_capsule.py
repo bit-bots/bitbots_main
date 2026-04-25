@@ -34,6 +34,7 @@ class KickCapsule(AbstractBlackboardCapsule):
         RIGHT = True
 
     walk_kick_pub: Publisher
+    rl_kick_active_pub: Publisher
 
     def __init__(self, node, blackboard):
         super().__init__(node, blackboard)
@@ -42,6 +43,7 @@ class KickCapsule(AbstractBlackboardCapsule):
         """
         self.walk_kick_pub = self._node.create_publisher(Bool, "/kick", 1)
         # self.connect_dynamic_kick()  Do not connect if dynamic_kick is disabled
+        self.rl_kick_active_pub = self._node.create_publisher(Bool, "rl_kick_active", 1)
 
     def walk_kick(self, target: WalkKickTargets) -> None:
         """
@@ -80,6 +82,12 @@ class KickCapsule(AbstractBlackboardCapsule):
 
         self.last_goal = goal
         self.last_goal_sent = self._node.get_clock().now()
+
+    def start_rl_kick(self):
+        self.rl_kick_active_pub.publish(Bool(data=True))
+
+    def stop_rl_kick(self):
+        self.rl_kick_active_pub.publish(Bool(data=False))
 
     def __feedback_cb(self, feedback):
         self.last_feedback: Kick.Feedback = feedback.feedback

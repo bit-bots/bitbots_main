@@ -2,7 +2,10 @@
 <launch>
     <arg name="sim" default="false"/>
     <arg name="viz" default="false"/>
-    <arg name="walking" default="true" description="start the walking" />
+    <arg name="quintic_walk" default="false" description="start quintic walking" /> 
+    <arg name="rl_policies" default="true" description="start the policies"/>
+    <arg name="walk_policy" default="true" description="start walk policy"/>
+    <arg name="kick_policy" default="true" description="start kick policy"/>
     <arg name="torqueless_mode" default="false" description="start without torque, for example for testing the falling detection"/>
     <arg name="tts" default="true" description="Whether to speak" />
 
@@ -38,8 +41,8 @@
         <arg name="sim" value="$(var sim)" />
     </include>
 
-    <!-- launch the walking -->
-    <group if="$(var walking)">
+    <!-- launch quintic walking -->
+    <group if="$(var quintic_walk)">
         <include file="$(find-pkg-share bitbots_quintic_walk)/launch/quintic_walk.launch">
             <arg name="sim" value="$(var sim)"/>
             <arg name="viz" value="$(var viz)"/>
@@ -57,6 +60,12 @@
             <arg name="sim" value="$(var sim)"/>
         </include>
     -->
+
+    <!--launch rl policies -->
+    <include file="$(find-pkg-share bitbots_rl_motion)/launch/rl_motion.launch">
+        <arg name="walk" value="$(var walk_policy)"/>
+        <arg name="kick" value="$(var kick_policy)"/>
+    </include>
 
     <!-- launch dynup -->
     <include file="$(find-pkg-share bitbots_dynup)/launch/dynup.launch">

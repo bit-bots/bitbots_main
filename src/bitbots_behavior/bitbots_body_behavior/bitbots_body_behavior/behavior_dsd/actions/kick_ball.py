@@ -2,6 +2,7 @@ from bitbots_blackboard.body_blackboard import BodyBlackboard
 from bitbots_blackboard.capsules.kick_capsule import KickCapsule
 from bitbots_utils.transforms import quat_from_yaw
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
+from rclpy.duration import Duration
 
 from bitbots_msgs.action import Kick
 
@@ -123,3 +124,21 @@ class KickBallDynamic(AbstractKickAction):
                 self._goal_sent = True
             else:
                 self.pop()
+
+
+# Currently kicking in no specific direction
+class RLKick(AbstractKickAction):
+    def __init__(self, blackboard, dsd, parameters):
+        super().__init__(blackboard, dsd, parameters)
+        self._duration = parameters.get("duration", 3.0)
+        self._start_time = None
+
+    def perform(self, reevaluate=False):
+        if self._start_time is None:
+            self._start_time = self.blackboard.node.get_clock().now()
+            self.blackboard.kick.start_rl_kick()
+
+        elapsed = self.blackboard.node.get_clock().now() - self._start_time
+        if elapsed >= Duration(seconds=self._duration):
+            self.blackboard.kick.stop_rl_kick()
+            self.pop()

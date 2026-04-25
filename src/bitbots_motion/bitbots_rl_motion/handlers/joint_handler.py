@@ -1,0 +1,83 @@
+from typing import Optional
+
+import numpy as np
+from sensor_msgs.msg import JointState
+
+from bitbots_msgs.msg import JointCommand
+from handlers.handler import Handler
+
+
+class JointHandler(Handler):
+    def __init__(self, node):
+        self._node = node
+
+        self._ordered_relevant_joint_names = self._node.get_parameter("joints.ordered_relevant_joint_names").value
+        self._walkready_state = self._node.get_parameter("joints.walkready_state").value
+        self._previous_action: np.ndarray = np.zeros(len(self._ordered_relevant_joint_names), dtype=np.float32)
+        self._joint_state: Optional[JointState] = None
+
+        self._joint_state_sub = self._node.create_subscription(
+            JointState, "joint_states", self._joint_state_callback, 10
+        )
+
+    def _joint_state_callback(self, msg):
+        self._joint_state = msg
+
+    def has_data(self):
+        return self._joint_state is not None
+
+    def get_angle_data(self):
+        assert self._joint_state is not None
+        joint_angles = (
+            np.array(
+                [
+                    self._joint_state.position[self._joint_state.name.index(name)]
+                    for name in self._ordered_relevant_joint_names
+                ],
+                dtype=np.float32,
+            )
+            - self._walkready_state
+        )
+
+        return joint_angles
+
+    def get_velocity_data(self):
+        assert self._joint_state is not None
+        joint_velocities = np.array(
+            [
+                self._joint_state.velocity[self._joint_state.name.index(name)]
+                for name in self._ordered_relevant_joint_names
+            ],
+            dtype=np.float32,
+        )
+
+        return joint_velocities
+
+    def get_data(self):
+        return self.get_angle_data(), self.get_velocity_data()
+
+    def get_walkready_joint_command(self, timestamp):
+        joint_command = JointCommand()
+        joint_command.joint_names = self._ordered_relevant_joint_names
+        joint_command.velocities = [0.2] * len(self._ordered_relevant_joint_names)
+        joint_command.accelerations = [-1.0] * len(self._ordered_relevant_joint_names)
+        joint_command.max_currents = [-1.0] * len(self._ordered_relevant_joint_names)  # -1.0 means no limit
+        joint_command.header.stamp = timestamp
+        joint_command.positions = self._walkready_state
+
+        return joint_command
+
+    def get_joint_commands(self, onnx_pred):
+        assert self._joint_state is not None
+        joint_command = JointCommand()
+        joint_command.header.stamp = self._joint_state.header.stamp
+        joint_command.joint_names = self._ordered_relevant_joint_names
+        joint_command.positions = onnx_pred * 0.5 + self._walkready_state
+        joint_command.velocities = [-1.0] * len(self._ordered_relevant_joint_names)
+        joint_command.accelerations = [-1.0] * len(self._ordered_relevant_joint_names)
+        joint_command.max_currents = [-1.0] * len(self._ordered_relevant_joint_names)
+
+        return joint_command
+
+    def get_previous_action_initial(self):
+        return self._previous_action
