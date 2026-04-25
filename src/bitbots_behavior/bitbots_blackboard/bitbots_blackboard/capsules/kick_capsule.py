@@ -83,10 +83,10 @@ class KickCapsule(AbstractBlackboardCapsule):
         self.last_goal = goal
         self.last_goal_sent = self._node.get_clock().now()
 
-    def start_rl_kick(self) -> None:
+    def start_rl_kick(self):
         self.rl_kick_active_pub.publish(Bool(data=True))
 
-    def stop_rl_kick(self) -> None:
+    def stop_rl_kick(self):
         self.rl_kick_active_pub.publish(Bool(data=False))
 
     def __feedback_cb(self, feedback):
