@@ -6,11 +6,11 @@ The package contains a framework which is a capsule for the application of polic
 
 The code is divided in five sections: Configs, Handlers, Nodes, Launch and rest.
 
-The Nodes-folder contains all relevant ROS-Nodes regarding policy models. These nodes are responsible for starting the policies correctly, feeding them with correct data and publishing their outputs correctly.
+The Nodes-folder contains all relevant ROS-Nodes regarding policy models. These nodes are responsible for starting the policies correctly, feeding them with correct data, defining in which robot states they are allowed to publish and publishing their outputs correctly.
 The name of the node describes for which kind of policy it is suitable. 
 The RL Node is a special case. All other nodes are kids of the RL Node. It centralizes the execution loop and minimizes boiler plate code. 
 
-The Handlers-folder contains all handlers. A handler is a specific type of object which is responsible for processing external data such that they are comprehensible for the policy models. All handlers are kids of the Handler class.
+The Handlers-folder contains all handlers. A handler is a specific type of object which is responsible for processing (subscribed) external data such that they are comprehensible for the policy models. All handlers are kids of the Handler class.
 
 The Configs-folder contains all robot/policy specific configurations. Files in the Configs-folder should be in .yaml-format. They also contain the paths to the onnx-policy models.
 
