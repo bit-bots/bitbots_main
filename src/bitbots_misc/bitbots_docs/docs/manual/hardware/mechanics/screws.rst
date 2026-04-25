@@ -1,11 +1,15 @@
-===============
+======
 Screws
-===============
+======
 
 Wolfgang
-===============
+========
+
+**NOTE: This is outdated and lacks some screws that were added later. Use with caution.**
+
 By Position
--------------
+-----------
+
 +----------------------------------------+----------+--------+------------+
 | Position                               | Type     | Amount | Per Robot  |
 |                                        |          |        |            |

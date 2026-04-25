@@ -9,7 +9,7 @@ class GoToRolePosition(AbstractActionElement):
     def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
         role_positions = self.blackboard.config["role_positions"]
-        kickoff_type = "active" if self.blackboard.gamestate.has_kickoff() else "passive"
+        kickoff_type = "active" if self.blackboard.gamestate.has_kick() else "passive"
         try:
             if self.blackboard.team_data.role == "goalie":
                 generalized_role_position = role_positions[self.blackboard.team_data.role]

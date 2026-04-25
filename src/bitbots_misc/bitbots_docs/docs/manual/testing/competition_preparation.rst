@@ -14,7 +14,7 @@ When Powered Off
 * Inspect for head wobbling
 * Check camera cables for hard bends
 * Check if shoulders are bent
-* Inspect NUC power connectors
+* Inspect PC power connectors
 
 Before Powering On
 ------------------

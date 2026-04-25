@@ -8,12 +8,12 @@ This tool is also callable via `pixi run deploy <arguments>`.
 
 Deploy, configure, and launch the Bit-Bots software remotely on a robot.
 This tool can target all, multiple, or single robots at once, specified by their hostname, robot name, or IP address.
-Five different tasks can be performed:
+These different tasks can be performed:
 
 1. Synchronize the local source code to the target workspace
-3. Configure game-settings and wifi on the target
-4. Build (compile) the workspace on the target
-5. Launch the teamplayer software on the target
+2. Configure game-settings and wifi on the target
+3. Build (compile) the workspace on the target
+4. Launch the teamplayer software on the target
 
 ### Example usage
 
