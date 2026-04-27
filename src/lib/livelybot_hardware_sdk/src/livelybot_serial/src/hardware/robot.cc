@@ -261,7 +261,7 @@ void robot::jointCommandCallback(bitbots_msgs::msg::JointCommand::ConstSharedPtr
         }
 
         const float pos = static_cast<float>(msg->positions[i]);
-        m->pos_vel_tqe_kp_kd(pos, velocity, max_torque, kp, kd);
+        m->pos_vel_tqe_kp_kd2(pos, velocity, max_torque, kp, kd);
     }
 
     motor_send_2();
@@ -307,12 +307,12 @@ void robot::torqueCallback(bitbots_msgs::msg::JointTorque::ConstSharedPtr msg)
             {
                 torque_off_motors_.erase(name);
                 // Send a command to re-enable torque without moving the motor.
-                m->pos_vel_tqe_kp_kd(m->get_current_motor_state()->position, default_velocity_, off_torque_, default_kp_, default_kd_);
+                m->pos_vel_tqe_kp_kd2(m->get_current_motor_state()->position, default_velocity_, off_torque_, default_kp_, default_kd_);
                 need_send = true;
             }
         } else {
             torque_off_motors_.insert(name);
-            m->pos_vel_tqe_kp_kd(m->get_current_motor_state()->position, default_velocity_, off_torque_, 0.1, 0.1);
+            m->pos_vel_tqe_kp_kd2(m->get_current_motor_state()->position, default_velocity_, off_torque_, 0.1, 0.1);
             need_send = true;
         }
     }
