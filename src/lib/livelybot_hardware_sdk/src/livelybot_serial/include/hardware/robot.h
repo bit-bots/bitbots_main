@@ -19,7 +19,6 @@
 #include <diagnostic_updater/diagnostic_updater.hpp>
 #include <mutex>
 #include <unordered_map>
-#include <unordered_set>
 #include <string>
 #include <cmath>
 #include <functional>
@@ -53,7 +52,7 @@ private:
     rclcpp::Subscription<bitbots_msgs::msg::JointCommand>::SharedPtr joint_cmd_sub_;
     rclcpp::Subscription<bitbots_msgs::msg::JointTorque>::SharedPtr torque_sub_;
     std::unordered_set<std::string> torque_off_motors_;
-    std::mutex torque_off_mutex_;
+    std::mutex cmd_mutex_;
 
     // --- diagnostics ---
     /** Per-motor state used by the diagnostic task to detect sustained faults. */
@@ -72,6 +71,14 @@ private:
     fun_version fun_v = fun_v1;
     float slave_v = 3.0f;
     int control_type = 0;
+
+    // Defaults
+    float default_velocity_ = 1.0f;
+    float default_max_torque_ = 1.0f;
+    float default_kp_       = 5.1f;
+    float default_kd_       = 0.66f;
+
+    const float off_torque_ = 0.1f;  /**< Torque value to use when "turning off" a motor (nonzero to avoid instability) */
 
     /** Read USB Vendor ID and Product ID from the Linux sysfs. */
     static bool read_usb_vid_pid(const std::string &device, int &vid, int &pid);

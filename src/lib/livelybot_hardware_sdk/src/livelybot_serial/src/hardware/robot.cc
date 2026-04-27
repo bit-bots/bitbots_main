@@ -192,23 +192,55 @@ void robot::jointCommandCallback(bitbots_msgs::msg::JointCommand::ConstSharedPtr
     if (msg->joint_names.empty())
         return;
 
+    // Check for mismatched lengths; the message is malformed if any of these are true.
+    if (msg->positions.size() != msg->joint_names.size())
+    {
+        RCLCPP_ERROR(node_->get_logger(),
+                     "JointCommand: joint_names length (%zu) != positions length (%zu) — ignoring",
+                     msg->joint_names.size(), msg->positions.size());
+        return;
+    }
+    if (msg->velocities.size() != 0 && msg->velocities.size() != msg->joint_names.size())
+    {
+        RCLCPP_ERROR(node_->get_logger(),
+                     "JointCommand: joint_names length (%zu) != velocities length (%zu) — ignoring",
+                     msg->joint_names.size(), msg->velocities.size());
+        return;
+    }
+    if (msg->max_torques.size() != 0 && msg->max_torques.size() != msg->joint_names.size())
+    {
+        RCLCPP_ERROR(node_->get_logger(),
+                     "JointCommand: joint_names length (%zu) != max_torques length (%zu) — ignoring",
+                     msg->joint_names.size(), msg->max_torques.size());
+        return;
+    }
+
     // All motors on the same CAN port share one TX buffer. The buffer is reset
     // whenever the command mode changes, so mixing pos_vel_MAXtqe and position
     // within one message would corrupt earlier writes. Pick one mode for the
-    // whole message: use pos_vel_MAXtqe if max_torques is fully populated,
-    // otherwise fall back to position-only.
-    const bool use_tqe = (msg->max_torques.size() == msg->joint_names.size());
+    // whole message
 
+    std::lock_guard<std::mutex> lock(cmd_mutex_);
     for (size_t i = 0; i < msg->joint_names.size(); ++i)
     {
         const std::string &name = msg->joint_names[i];
 
-        // Skip motors that are currently torque-off (puppeteering / teach mode).
-        {
-            std::lock_guard<std::mutex> lock(torque_off_mutex_);
-            if (torque_off_motors_.count(name))
-                continue;
-        }
+        auto velocity = default_velocity_;
+        if (msg->velocities.size() != 0 && msg->velocities[i] > 0.0)
+            velocity = static_cast<float>(msg->velocities[i]);
+
+        auto max_torque = default_max_torque_;
+        if (msg->max_torques.size() != 0 && msg->max_torques[i] > 0.0)
+            max_torque = static_cast<float>(msg->max_torques[i]);
+        if (torque_off_motors_.count(name))
+            max_torque = off_torque_;
+
+        auto kp = default_kp_;
+        if (msg->kp.size() != 0 && msg->kp[i] > 0.0)
+            kp = static_cast<float>(msg->kp[i]);
+        auto kd = default_kd_;
+        if (msg->kd.size() != 0 && msg->kd[i] > 0.0)
+            kd = static_cast<float>(msg->kd[i]);
 
         // Find the motor whose name matches this joint.
         motor *m = nullptr;
@@ -229,13 +261,7 @@ void robot::jointCommandCallback(bitbots_msgs::msg::JointCommand::ConstSharedPtr
         }
 
         const float pos = static_cast<float>(msg->positions[i]);
-        const float vel = (i < msg->velocities.size() && msg->velocities[i] > 0.0)
-                          ? static_cast<float>(msg->velocities[i]) : 0.0f;
-
-        if (use_tqe && msg->max_torques[i] > 0.0)
-            m->pos_vel_MAXtqe(pos, vel, static_cast<float>(msg->max_torques[i]));
-        else
-            m->position(pos);
+        m->pos_vel_tqe_kp_kd(pos, velocity, max_torque, kp, kd);
     }
 
     motor_send_2();
@@ -252,8 +278,8 @@ void robot::torqueCallback(bitbots_msgs::msg::JointTorque::ConstSharedPtr msg)
         return;
     }
 
+    std::lock_guard<std::mutex> lock(cmd_mutex_);
     bool need_send = false;
-
     for (size_t i = 0; i < msg->joint_names.size(); ++i)
     {
         const std::string &name = msg->joint_names[i];
@@ -275,23 +301,19 @@ void robot::torqueCallback(bitbots_msgs::msg::JointTorque::ConstSharedPtr msg)
             continue;
         }
 
+        if (msg->on[i])
         {
-            std::lock_guard<std::mutex> lock(torque_off_mutex_);
-            if (msg->on[i])
+            if (torque_off_motors_.count(name))
             {
                 torque_off_motors_.erase(name);
                 // Send a command to re-enable torque without moving the motor.
-                // TODO use torque and mode of the last command for this motor instead of position
-                m->position(m->get_current_motor_state()->position);
+                m->pos_vel_tqe_kp_kd(m->get_current_motor_state()->position, default_velocity_, off_torque_, default_kp_, default_kd_);
                 need_send = true;
             }
-            else
-            {
-                torque_off_motors_.insert(name);
-                // Send zero-torque so the motor is immediately back-driveable.
-                m->torque(0.0f);
-                need_send = true;
-            }
+        } else {
+            torque_off_motors_.insert(name);
+            m->pos_vel_tqe_kp_kd(m->get_current_motor_state()->position, default_velocity_, off_torque_, 0.1, 0.1);
+            need_send = true;
         }
     }
 
