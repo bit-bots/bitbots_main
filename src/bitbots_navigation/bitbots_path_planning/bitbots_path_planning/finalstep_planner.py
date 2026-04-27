@@ -175,18 +175,18 @@ class VisibilityFinalstepPlanner(FootstepPlanner):
                     self.node.get_logger().info(
                         "final_step published: overhead" + " x,y: " + str(0.1) + " , " + str(0.1)
                     )
-                    return np.array([0.1, 0.1, 0.0, 0.0])
+                    return np.array([np.sign(rot_vec[0])*0.1, np.sign(rot_vec[0])*0.1, 0.0, 0.0])
                 else:
                     self.node.get_logger().info(
                         "final_step published: overhead" + " x,y: " + str(0.0) + " , " + str(0.1)
                     )
-                    return np.array([0.0, 0.1, 0.0, 0.0])
+                    return np.array([0.0, np.sign(rot_vec[0])*0.1, 0.0, 0.0])
             elif abs(rot_vec[0]) > 0.05:
                 self.node.get_logger().info("final_step published: overhead" + " x,y: " + str(0.1) + " , " + str(0.0))
-                return np.array([0.1, 0.0, 0.0, 0.0])
+                return np.array([np.sign(rot_vec[0])*0.1, 0.0, 0.0, 0.0])
             else:
                 self.node.get_logger().info("final_step published: overhead" + " x,y: " + str(0.0) + " , " + str(0.0))
-                return np.array([0.0, 0.0, 0.0, 0.0])
+                return np.array([np.sign(rot_vec[0])*0.1, np.sign(rot_vec[0])*0.1, 0.0, 0.0])
 
     def rotate_vector_2d(self, x, y, a) -> npt.NDArray[np.float64]:
         return np.array([x * math.cos(a) - y * math.sin(a), x * math.sin(a) + y * math.cos(a)])
