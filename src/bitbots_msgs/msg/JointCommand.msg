@@ -10,3 +10,9 @@ float64[] positions
 float64[] velocities
 float64[] accelerations
 float64[] max_torques
+
+# Per-joint proportional gain. Empty or missing entries default to config default
+float64[] kp
+
+# Per-joint proportional gain. Empty or missing entries default to config default
+float64[] kd
