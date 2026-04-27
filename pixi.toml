@@ -11,6 +11,7 @@ preview = ["pixi-build"]
 version = "0.1.0"
 
 [tasks]
+zenoh = "ros2 run rmw_zenoh_cpp rmw_zenohd"
 deploy = {cmd = "scripts/deploy_robots.py", description = "Deploys the current environment."}
 format = {cmd = "pre-commit run --all-files", description = "Runs code formatting and linting."}
 
@@ -208,7 +209,7 @@ ros-jazzy-robot-localization = ">=3.8.3,<4"
 ROS_AUTOMATIC_DISCOVERY_RANGE = "LOCALHOST"
 RCUTILS_COLORIZED_OUTPUT = "1"
 RCUTILS_CONSOLE_OUTPUT_FORMAT="[{severity}] [{name}]: {message} ({function_name}() at {file_name}:{line_number})"
-RMW_IMPLEMENTATION = "rmw_cyclonedds_cpp"
+RMW_IMPLEMENTATION = "rmw_zenoh_cpp"
 COLCON_LOG_LEVEL = "30"
 PYTHONWARNINGS="ignore:::setuptools.command.install,ignore:::setuptools.command.easy_install,ignore:::pkg_resources,ignore:easy_install command is deprecated,ignore:setup.py install is deprecated"
 WEBOTS_HOME = "$CONDA_PREFIX/share/webots"
