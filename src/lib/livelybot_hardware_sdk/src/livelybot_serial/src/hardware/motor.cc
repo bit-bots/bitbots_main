@@ -78,12 +78,6 @@ motor::motor(int _motor_num, int _CANport_num, int _CANboard_num, cdc_tr_message
     if (!node_->get_parameter(base + ".controller_defaults.kd", default_kd_)) {
         RCLCPP_ERROR(node_->get_logger(), "Failed to get params controller_defaults.kd");
     }
-    if (!node_->get_parameter(base + ".controller_defaults.max_torque", default_max_torque_)) {
-        RCLCPP_ERROR(node_->get_logger(), "Failed to get params controller_defaults.max_torque");
-    }
-    if (!node_->get_parameter(base + ".controller_defaults.max_velocity", default_velocity_)) {
-        RCLCPP_ERROR(node_->get_logger(), "Failed to get params controller_defaults.max_velocity");
-    }
 
     set_motor_type(type);
     data.time = 0;
@@ -263,12 +257,12 @@ inline int16_t motor::int16_limit(int32_t data)
 {
     if (data >= 32700)
     {
-        RCLCPP_INFO(node_->get_logger(), "PID output has reached the saturation limit.");
+        RCLCPP_INFO(node_->get_logger(), "PID output has reached the upper saturation limit.");
         return (int16_t)32700;
     }
     else if (data <= -32700)
     {
-        RCLCPP_INFO(node_->get_logger(), "PID output has reached the saturation limit.");
+        RCLCPP_INFO(node_->get_logger(), "PID output has reached the lower saturation limit.");
         return (int16_t)-32700;
     }
 

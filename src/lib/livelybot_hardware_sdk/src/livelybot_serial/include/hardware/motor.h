@@ -117,8 +117,6 @@ public:
 
     float default_kp_ = 0.01f;
     float default_kd_ = 0.01f;
-    float default_max_torque_ = 1.0f;
-    float default_velocity_ = 1.0f;
 
     /**
      * @param motor_num  1-based motor index within the port.

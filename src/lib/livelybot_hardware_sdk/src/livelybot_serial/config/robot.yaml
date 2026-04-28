@@ -35,10 +35,8 @@
                     tor_upper: 5.0
                     tor_lower: -3.0
                     controller_defaults:
-                        kp: 60.0
-                        kd: 0.6
-                        max_torque: 20.0
-                        max_velocity: 10.0
+                        kp: 100.0
+                        kd: 1.0
                 motor2:
                     type: "5047_36_2"
                     id: 2
@@ -51,10 +49,8 @@
                     tor_upper: 5.0
                     tor_lower: -3.0
                     controller_defaults:
-                        kp: 60.0
-                        kd: 0.6
-                        max_torque: 20.0
-                        max_velocity: 10.0
+                        kp: 100.0
+                        kd: 1.0
                 motor3:
                     type: "5047_36_2"
                     id: 3
@@ -67,10 +63,8 @@
                     tor_upper: 5.0
                     tor_lower: -3.0
                     controller_defaults:
-                        kp: 60.0
-                        kd: 0.6
-                        max_torque: 20.0
-                        max_velocity: 10.0
+                        kp: 100.0
+                        kd: 1.0
                 motor4:
                     type: "5047_36_2"
                     id: 4
@@ -83,10 +77,8 @@
                     tor_upper: 5.0
                     tor_lower: -3.0
                     controller_defaults:
-                        kp: 60.0
-                        kd: 0.6
-                        max_torque: 20.0
-                        max_velocity: 10.0
+                        kp: 100.0
+                        kd: 1.0
                 motor5:
                     type: "5047_36_2"
                     id: 5
@@ -99,10 +91,8 @@
                     tor_upper: 5.0
                     tor_lower: -3.0
                     controller_defaults:
-                        kp: 60.0
-                        kd: 0.6
-                        max_torque: 20.0
-                        max_velocity: 10.0
+                        kp: 100.0
+                        kd: 1.0
                 motor6:
                     type: "5047_36_2"
                     id: 6
@@ -115,10 +105,8 @@
                     tor_upper: 5.0
                     tor_lower: -3.0
                     controller_defaults:
-                        kp: 60.0
-                        kd: 0.6
-                        max_torque: 20.0
-                        max_velocity: 10.0
+                        kp: 100.0
+                        kd: 1.0
             CANport_2:
               serial_id: 2
               motor_num: 6
@@ -135,10 +123,8 @@
                     tor_upper: 5.0
                     tor_lower: -3.0
                     controller_defaults:
-                        kp: 60.0
-                        kd: 0.6
-                        max_torque: 20.0
-                        max_velocity: 10.0
+                        kp: 100.0
+                        kd: 1.0
                 motor2:
                     type: "5047_36_2"
                     id: 2
@@ -151,10 +137,8 @@
                     tor_upper: 5.0
                     tor_lower: -3.0
                     controller_defaults:
-                        kp: 60.0
-                        kd: 0.6
-                        max_torque: 20.0
-                        max_velocity: 10.0
+                        kp: 100.0
+                        kd: 1.0
                 motor3:
                     type: "5047_36_2"
                     id: 3
@@ -167,10 +151,8 @@
                     tor_upper: 5.0
                     tor_lower: -3.0
                     controller_defaults:
-                        kp: 60.0
-                        kd: 0.6
-                        max_torque: 20.0
-                        max_velocity: 10.0
+                        kp: 100.0
+                        kd: 1.0
                 motor4:
                     type: "5047_36_2"
                     id: 4
@@ -183,10 +165,8 @@
                     tor_upper: 5.0
                     tor_lower: -3.0
                     controller_defaults:
-                        kp: 60.0
-                        kd: 0.6
-                        max_torque: 20.0
-                        max_velocity: 10.0
+                        kp: 100.0
+                        kd: 1.0
                 motor5:
                     type: "5047_36_2"
                     id: 5
@@ -199,10 +179,8 @@
                     tor_upper: 5.0
                     tor_lower: -3.0
                     controller_defaults:
-                        kp: 60.0
-                        kd: 0.6
-                        max_torque: 20.0
-                        max_velocity: 10.0
+                        kp: 100.0
+                        kd: 1.0
                 motor6:
                     type: "5047_36_2"
                     id: 6
@@ -215,10 +193,8 @@
                     tor_upper: 5.0
                     tor_lower: -3.0
                     controller_defaults:
-                        kp: 60.0
-                        kd: 0.6
-                        max_torque: 20.0
-                        max_velocity: 10.0
+                        kp: 100.0
+                        kd: 1.0
             CANport_3:
               serial_id: 3
               motor_num: 4
@@ -237,8 +213,6 @@
                     controller_defaults:
                         kp: 30.0
                         kd: 0.6
-                        max_torque: 10.0
-                        max_velocity: 10.0
                 motor2:
                     type: "4438_30"
                     id: 2
@@ -253,8 +227,6 @@
                     controller_defaults:
                         kp: 30.0
                         kd: 0.6
-                        max_torque: 10.0
-                        max_velocity: 10.0
                 motor3:
                     type: "4438_30"
                     id: 3
@@ -269,8 +241,6 @@
                     controller_defaults:
                         kp: 30.0
                         kd: 0.6
-                        max_torque: 10.0
-                        max_velocity: 10.0
                 motor4:
                     type: "4438_30"
                     id: 4
@@ -285,8 +255,6 @@
                     controller_defaults:
                         kp: 30.0
                         kd: 0.6
-                        max_torque: 10.0
-                        max_velocity: 10.0
             CANport_4:
               serial_id: 4
               motor_num: 4
@@ -305,8 +273,6 @@
                     controller_defaults:
                         kp: 30.0
                         kd: 0.6
-                        max_torque: 10.0
-                        max_velocity: 10.0
                 motor2:
                     type: "4438_30"
                     id: 2
@@ -321,8 +287,6 @@
                     controller_defaults:
                         kp: 30.0
                         kd: 0.6
-                        max_torque: 10.0
-                        max_velocity: 10.0
                 motor3:
                     type: "4438_30"
                     id: 3
@@ -337,8 +301,6 @@
                     controller_defaults:
                         kp: 30.0
                         kd: 0.6
-                        max_torque: 10.0
-                        max_velocity: 10.0
                 motor4:
                     type: "4438_30"
                     id: 4
@@ -353,8 +315,6 @@
                     controller_defaults:
                         kp: 30.0
                         kd: 0.6
-                        max_torque: 10.0
-                        max_velocity: 10.0
             CANport_5:
               serial_id: 5
               motor_num: 2
@@ -371,10 +331,8 @@
                     tor_upper: 5.0
                     tor_lower: -3.0
                     controller_defaults:
-                        kp: 5.0
+                        kp: 1.0
                         kd: 0.01
-                        max_torque: 1.0
-                        max_velocity: 5.0
                 motor2:
                     type: "3536_32"
                     id: 2
@@ -387,7 +345,6 @@
                     tor_upper: 5.0
                     tor_lower: -3.0
                     controller_defaults:
-                        kp: 5.0
+                        kp: 1.0
                         kd: 0.01
-                        max_torque: 1.0
-                        max_velocity: 5.0
+
