@@ -205,7 +205,6 @@ bitbots_docs_internal
 
 # Neural Network Model Path
 /src/bitbots_vision/models/
-/src/bitbots_motion/bitbots_rl_motion/rl_walk_models/
 
 **/.*.
 .idea/*
