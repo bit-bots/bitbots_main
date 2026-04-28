@@ -28,13 +28,13 @@ class JointCommandPublisher(Node):
         msg.header.stamp = self.get_clock().now().to_msg()
         msg.from_hcm = False
 
-        msg.joint_names = ['head_yaw_joint', 'head_pitch_joint']
-        msg.positions = [0.0, ]
-        msg.velocities = [0.0]
+        msg.joint_names = ['l_ankle_pitch_joint']
+        msg.positions = [0.0]
+        msg.velocities = [10.0]
         msg.accelerations = [-1.0]   # -1 means "use default" per convention
         msg.max_torques = [0.0]      # effort
-        msg.kp = [0.05]          # 0 means "use default" per convention  
-        msg.kd = [0.001]           # 0 means "use default" per convention
+        msg.kd = [0.0]              # 0 means "use default" per convention
+        msg.kp = [0.0]              # 0 means "use default" per convention
 
         self.publisher_.publish(msg)
         self.get_logger().debug('Published JointCommand')
