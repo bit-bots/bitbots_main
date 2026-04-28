@@ -174,6 +174,7 @@ setuptools = "==68.1.2"  # Pinning setuptools to avoid issues with colcon build
 git = ">=2.52.0,<3"  # Otherwise the system git might be used causing ABI issues
 curl = ">=8.17.0,<9"
 make = ">=4.4.1,<5"  # To avoid issues in the CI
+ros-jazzy-rqt-robot-monitor = ">=1.0.6,<2"
 
 [feature.ros.target.linux-64.dependencies]
 #libonnxruntime-webgpu = {path= "./libonnxruntime-webgpu-1.24.3-hb0f4dca_0.conda"}
@@ -206,7 +207,7 @@ ros-jazzy-robot-localization = ">=3.8.3,<4"
 
 
 [feature.ros.activation.env]
-ROS_AUTOMATIC_DISCOVERY_RANGE = "LOCALHOST"
+#ROS_AUTOMATIC_DISCOVERY_RANGE = "LOCALHOST"
 RCUTILS_COLORIZED_OUTPUT = "1"
 RCUTILS_CONSOLE_OUTPUT_FORMAT="[{severity}] [{name}]: {message} ({function_name}() at {file_name}:{line_number})"
 RMW_IMPLEMENTATION = "rmw_zenoh_cpp"
