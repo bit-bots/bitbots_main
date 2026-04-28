@@ -331,8 +331,8 @@
                     tor_upper: 5.0
                     tor_lower: -3.0
                     controller_defaults:
-                        kp: 1.0
-                        kd: 0.01
+                        kp: 0.05
+                        kd: 0.001
                 motor2:
                     type: "3536_32"
                     id: 2
@@ -345,6 +345,6 @@
                     tor_upper: 5.0
                     tor_lower: -3.0
                     controller_defaults:
-                        kp: 1.0
-                        kd: 0.01
+                        kp: 0.05
+                        kd: 0.001
 

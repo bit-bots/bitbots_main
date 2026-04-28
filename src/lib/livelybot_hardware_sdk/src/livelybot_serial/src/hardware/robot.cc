@@ -302,7 +302,7 @@ void robot::torqueCallback(bitbots_msgs::msg::JointTorque::ConstSharedPtr msg)
             }
         } else {
             torque_off_motors_.insert(name);
-            m->pos_vel_tqe_kp_kd2(m->get_current_motor_state()->position, 0.0, 0.0, 0.1, 0.1);
+            m->pos_vel_tqe_kp_kd2(m->get_current_motor_state()->position, 0.0, 0.0, 0.0000001, 0.0000001);
             need_send = true;
         }
     }

@@ -1,0 +1,37 @@
+{
+    "author": "",
+    "description": "",
+    "keyframes": [
+        {
+            "duration": 2.0,
+            "goals": {
+                "head_pitch_joint": 50.0,
+                "head_yaw_joint": 0.04,
+                "l_ankle_pitch_joint": -54.4,
+                "l_ankle_roll_joint": 1.87,
+                "l_calf_joint": -133.34,
+                "l_elbow_joint": 0.0,
+                "l_hip_pitch_joint": -94.54,
+                "l_hip_roll_joint": -2.59,
+                "l_shoulder_pitch_joint": 87.77,
+                "l_shoulder_roll_joint": 81.04,
+                "l_upper_arm_joint": 4.28,
+                "r_ankle_pitch_joint": 52.24,
+                "r_ankle_roll_joint": -0.18,
+                "r_calf_joint": 133.92,
+                "r_elbow_joint": 13.43,
+                "r_hip_pitch_joint": 96.12,
+                "r_hip_roll_joint": 0.79,
+                "r_shoulder_pitch_joint": -82.12,
+                "r_shoulder_roll_joint": -72.83,
+                "r_upper_arm_joint": 1.55
+            },
+            "name": "start frame",
+            "pause": 0.0,
+            "torque": {}
+        }
+    ],
+    "last_edited": "2026-04-28 13:01:53.683697",
+    "name": "sit",
+    "version": ""
+}

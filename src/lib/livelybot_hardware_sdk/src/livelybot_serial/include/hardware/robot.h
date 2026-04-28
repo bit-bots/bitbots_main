@@ -72,8 +72,6 @@ private:
     float slave_v = 3.0f;
     int control_type = 0;
 
-    const float off_torque_ = 0.01f;  /**< Torque value to use when "turning off" a motor (nonzero to avoid instability) */
-
     /** Read USB Vendor ID and Product ID from the Linux sysfs. */
     static bool read_usb_vid_pid(const std::string &device, int &vid, int &pid);
 
