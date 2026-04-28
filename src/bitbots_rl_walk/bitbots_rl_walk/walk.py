@@ -109,8 +109,7 @@ class WalkNode(Node):
         self._joint_state = msg
 
     def _cmd_vel_callback(self, msg: Twist):
-        if msg.angular.x == 0.0:
-            self._cmd_vel = msg
+        self._cmd_vel = msg
 
     def _imu_callback(self, msg: Imu):
         self._imu_data = msg
@@ -131,8 +130,6 @@ class WalkNode(Node):
                 self.get_logger().warning("Waiting for cmd_vel data", throttle_duration_sec=1.0)
 
             return
-
-        # TODO consider IMU mounting offset
 
         # Prepare the observation vector
         gyro = np.array([
@@ -196,8 +193,14 @@ class WalkNode(Node):
 
         self._joint_command_pub.publish(joint_command)
 
-        phase_tp1 = self._phase + self._phase_dt
-        self._phase = np.fmod(phase_tp1 + np.pi, 2 * np.pi) - np.pi
+        # Stop phase if the robot gets a !=0 cmd_vel.angular.x command, which is used as a stop signal for the walking
+        if not (self._cmd_vel.angular.x != 0.0 and \
+                abs(self._cmd_vel.linear.x) == 0.0 and \
+                abs(self._cmd_vel.linear.y) == 0.0 and \
+                abs(self._cmd_vel.angular.z) == 0.0 and \
+                np.linalg.norm(self._phase - np.array([0.0, np.pi], dtype=np.float32)) < 0.1):
+            phase_tp1 = self._phase + self._phase_dt
+            self._phase = np.fmod(phase_tp1 + np.pi, 2 * np.pi) - np.pi
 
 
 def main():
