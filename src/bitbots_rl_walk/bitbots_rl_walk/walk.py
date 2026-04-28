@@ -28,7 +28,6 @@ from bitbots_msgs.msg import JointCommand
 from geometry_msgs.msg import Twist, PoseStamped, Pose
 from transforms3d.quaternions import quat2mat
 from transforms3d.euler import euler2mat
-from gazebo_msgs.msg import ModelStates
 from ros2_numpy import numpify
 
 import numpy as np
@@ -36,12 +35,12 @@ import onnxruntime as rt
 from ament_index_python import get_package_share_directory
 
 ONNX_MODEL = os.path.join(
-    get_package_share_directory("bitbots_rl_walk"), "models", "wolfgang_grc_rand_bl.onnx"
+    get_package_share_directory("bitbots_rl_walk"), "models", "piplus_policy_fixed_joint_axis.onnx"
 )
 
 WALKREADY_STATE = np.array([
-    0.023, -0.1, -0.74, -1.33, 0.55, -0.12,
-  -0.023, 0.1, 0.74, 1.33, -0.55, 0.12
+    0.6, 0.0, 0.0,  1.2,  0.6, 0,
+   -0.6, 0.0, 0.0, -1.2, -0.6, 0
 ], dtype=np.float32)
 
 CONTROL_DT = 0.02  # Control loop frequency in seconds
@@ -49,18 +48,18 @@ CONTROL_DT = 0.02  # Control loop frequency in seconds
 GAIT_FREQUENCY = 1.5  # Gait frequency in Hz
 
 ORDERED_RELEVANT_JOINT_NAMES = [
-    "RHipYaw",
-    "RHipRoll",
-    "RHipPitch",
-    "RKnee",
-    "RAnklePitch",
-    "RAnkleRoll",
-    "LHipYaw",
-    "LHipRoll",
-    "LHipPitch",
-    "LKnee",
-    "LAnklePitch",
-    "LAnkleRoll"
+    "r_hip_pitch_joint",
+    "r_hip_roll_joint",
+    "r_thigh_joint",
+    "r_calf_joint",
+    "r_ankle_pitch_joint",
+    "r_ankle_roll_joint",
+    "l_hip_pitch_joint",
+    "l_hip_roll_joint",
+    "l_thigh_joint",
+    "l_calf_joint",
+    "l_ankle_pitch_joint",
+    "l_ankle_roll_joint",
 ]
 
 
@@ -106,23 +105,12 @@ class WalkNode(Node):
         self._timer = self.create_timer(CONTROL_DT, self._timer_callback)
 
 
-        # First send the walkready state to the robot for 100 iterations
-        joint_command = JointCommand()
-        joint_command.joint_names = ORDERED_RELEVANT_JOINT_NAMES
-        joint_command.positions = WALKREADY_STATE
-        joint_command.velocities = [0.2] * len(ORDERED_RELEVANT_JOINT_NAMES)
-        joint_command.accelerations = [-1.0] * len(ORDERED_RELEVANT_JOINT_NAMES)
-        joint_command.max_currents = [-1.0] * len(ORDERED_RELEVANT_JOINT_NAMES) # -1.0 means no limit
-        joint_command.header.stamp = self.get_clock().now().to_msg()
-        self._joint_command_pub.publish(joint_command)
-        time.sleep(10)
-
-
     def _joint_state_callback(self, msg: JointState):
         self._joint_state = msg
 
     def _cmd_vel_callback(self, msg: Twist):
-        self._cmd_vel = msg
+        if msg.angular.x == 0.0:
+            self._cmd_vel = msg
 
     def _imu_callback(self, msg: Imu):
         self._imu_data = msg
@@ -158,17 +146,17 @@ class WalkNode(Node):
              self._imu_data.orientation.x,
              self._imu_data.orientation.y,
              self._imu_data.orientation.z]
-        ) @ euler2mat(0, -0.1, 0)).T @ np.array([0, 0, -1], dtype=np.float32)
+        ) @ euler2mat(0, 0.0, 0)).T @ np.array([0, 0, -1], dtype=np.float32)
 
         joint_angles = np.array([
             self._joint_state.position[self._joint_state.name.index(name)]
             for name in ORDERED_RELEVANT_JOINT_NAMES
         ], dtype=np.float32) - WALKREADY_STATE
 
-        joint_velocities = np.zeros_like(np.array([
+        joint_velocities = np.array([
             self._joint_state.velocity[self._joint_state.name.index(name)]
             for name in ORDERED_RELEVANT_JOINT_NAMES
-        ], dtype=np.float32))
+        ], dtype=np.float32)
 
         phase = np.array([np.cos(self._phase), np.sin(self._phase)], dtype=np.float32).flatten()
 
@@ -202,7 +190,9 @@ class WalkNode(Node):
         joint_command.positions = onnx_pred * 0.5 + WALKREADY_STATE
         joint_command.velocities = [-1.0] * len(ORDERED_RELEVANT_JOINT_NAMES)
         joint_command.accelerations = [-1.0] * len(ORDERED_RELEVANT_JOINT_NAMES)
-        joint_command.max_currents = [-1.0] * len(ORDERED_RELEVANT_JOINT_NAMES)
+        joint_command.kp = [30.0] * len(ORDERED_RELEVANT_JOINT_NAMES)
+        joint_command.kd = [1.1] * len(ORDERED_RELEVANT_JOINT_NAMES)
+
 
         self._joint_command_pub.publish(joint_command)
 
