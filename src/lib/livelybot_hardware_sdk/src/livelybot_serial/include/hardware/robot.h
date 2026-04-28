@@ -72,12 +72,6 @@ private:
     float slave_v = 3.0f;
     int control_type = 0;
 
-    // Defaults
-    float default_velocity_ = 1.0f;
-    float default_max_torque_ = 1.0f;
-    float default_kp_       = 5.1f;
-    float default_kd_       = 0.66f;
-
     const float off_torque_ = 0.01f;  /**< Torque value to use when "turning off" a motor (nonzero to avoid instability) */
 
     /** Read USB Vendor ID and Product ID from the Linux sysfs. */

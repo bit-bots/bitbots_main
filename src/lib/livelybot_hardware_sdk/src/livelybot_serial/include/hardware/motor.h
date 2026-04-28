@@ -115,6 +115,11 @@ public:
     int pos_limit_flag = 0;  /**< Position limit status: 0=ok, 1=upper exceeded, -1=lower exceeded */
     int tor_limit_flag = 0;  /**< Torque limit status:   0=ok, 1=upper exceeded */
 
+    float default_kp_ = 0.01f;
+    float default_kd_ = 0.01f;
+    float default_max_torque_ = 1.0f;
+    float default_velocity_ = 1.0f;
+
     /**
      * @param motor_num  1-based motor index within the port.
      * @param port_num   1-based CAN port index.

@@ -71,6 +71,20 @@ motor::motor(int _motor_num, int _CANport_num, int _CANboard_num, cdc_tr_message
         RCLCPP_ERROR(node_->get_logger(), "Failed to get params control_type");
     }
 
+    // Controller defaults
+    if (!node_->get_parameter(base + ".controller_defaults.kp", default_kp_)) {
+        RCLCPP_ERROR(node_->get_logger(), "Failed to get params controller_defaults.kp");
+    }
+    if (!node_->get_parameter(base + ".controller_defaults.kd", default_kd_)) {
+        RCLCPP_ERROR(node_->get_logger(), "Failed to get params controller_defaults.kd");
+    }
+    if (!node_->get_parameter(base + ".controller_defaults.max_torque", default_max_torque_)) {
+        RCLCPP_ERROR(node_->get_logger(), "Failed to get params controller_defaults.max_torque");
+    }
+    if (!node_->get_parameter(base + ".controller_defaults.max_velocity", default_velocity_)) {
+        RCLCPP_ERROR(node_->get_logger(), "Failed to get params controller_defaults.max_velocity");
+    }
+
     set_motor_type(type);
     data.time = 0;
     data.ID = id;
