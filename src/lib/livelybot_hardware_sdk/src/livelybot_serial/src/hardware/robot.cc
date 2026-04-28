@@ -307,7 +307,7 @@ void robot::torqueCallback(bitbots_msgs::msg::JointTorque::ConstSharedPtr msg)
             {
                 torque_off_motors_.erase(name);
                 // Send a command to re-enable torque without moving the motor.
-                m->pos_vel_tqe_kp_kd2(m->get_current_motor_state()->position, default_velocity_, off_torque_, default_kp_, default_kd_);
+                m->pos_vel_tqe_kp_kd2(m->get_current_motor_state()->position, default_velocity_, default_max_torque_, default_kp_, default_kd_);
                 need_send = true;
             }
         } else {

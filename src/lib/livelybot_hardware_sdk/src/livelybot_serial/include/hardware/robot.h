@@ -78,7 +78,7 @@ private:
     float default_kp_       = 5.1f;
     float default_kd_       = 0.66f;
 
-    const float off_torque_ = 0.1f;  /**< Torque value to use when "turning off" a motor (nonzero to avoid instability) */
+    const float off_torque_ = 0.01f;  /**< Torque value to use when "turning off" a motor (nonzero to avoid instability) */
 
     /** Read USB Vendor ID and Product ID from the Linux sysfs. */
     static bool read_usb_vid_pid(const std::string &device, int &vid, int &pid);
