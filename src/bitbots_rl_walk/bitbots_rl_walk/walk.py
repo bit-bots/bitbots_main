@@ -90,7 +90,7 @@ class WalkNode(Node):
         )
 
         self._joint_command_pub = self.create_publisher(
-            JointCommand, "DynamixelController/command", 10
+            JointCommand, "walking_motor_goals", 10
         )
         self._imu_sub = self.create_subscription(
             Imu, "imu/data", self._imu_callback, 10
