@@ -118,8 +118,8 @@ class TeleopKeyboard(Node):
         # Walking Part
         self.pub = self.create_publisher(Twist, "cmd_vel", 1)
 
-        self.head_pan_pos = 0
-        self.head_tilt_pos = 0
+        self.head_yaw_pos = 0
+        self.head_pitch_pos = 0
 
         self.x_speed_step = 0.01
         self.y_speed_step = 0.01
@@ -198,8 +198,8 @@ class TeleopKeyboard(Node):
 
     def joint_state_cb(self, msg):
         if "head_yaw_joint" in msg.name and "head_pitch_joint" in msg.name:
-            self.head_pan_pos = msg.position[msg.name.index("head_yaw_joint")]
-            self.head_tilt_pos = msg.position[msg.name.index("head_pitch_joint")]
+            self.head_yaw_pos = msg.position[msg.name.index("head_yaw_joint")]
+            self.head_pitch_pos = msg.position[msg.name.index("head_pitch_joint")]
 
     def loop(self):
         try:
@@ -215,8 +215,8 @@ class TeleopKeyboard(Node):
                     self.th = round(self.th, 2)
                     self.a_x = 0
                 elif key in head_bindings.keys():
-                    self.head_msg.positions[0] = self.head_pan_pos + head_bindings[key][1] * self.head_pan_step
-                    self.head_msg.positions[1] = self.head_tilt_pos + head_bindings[key][0] * self.head_tilt_step
+                    self.head_msg.positions[0] = self.head_yaw_pos + head_bindings[key][1] * self.head_pan_step
+                    self.head_msg.positions[1] = self.head_pitch_pos + head_bindings[key][0] * self.head_tilt_step
                     self.head_pub.publish(self.head_msg)
                 elif key == "k" or key == "K":
                     # put head back in init
