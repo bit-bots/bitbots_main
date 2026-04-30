@@ -1,8 +1,8 @@
 from typing import Optional
 
 import numpy
-from bitbots_utils.utils import get_parameters_from_other_node_sync
 from geometry_msgs.msg import Twist
+from livelybot_msg.msg import PowerSwitch
 from rclpy.action import ActionClient
 from rclpy.node import Node
 from rclpy.task import Future
@@ -10,14 +10,11 @@ from rclpy.time import Time
 from sensor_msgs.msg import Imu, JointState
 from std_msgs.msg import Bool
 from std_msgs.msg import Empty as EmptyMsg
-from std_srvs.srv import Empty as EmptySrv
-from std_srvs.srv import SetBool
 
 from bitbots_hcm.type_utils import T_RobotControlState
-from bitbots_msgs.action import Dynup, PlayAnimation
+from bitbots_msgs.action import PlayAnimation
 from bitbots_msgs.msg import Audio, JointTorque, RobotControlState
 from bitbots_msgs.srv import SetTeachingMode
-from livelybot_msg.msg import PowerSwitch
 
 
 class HcmBlackboard:

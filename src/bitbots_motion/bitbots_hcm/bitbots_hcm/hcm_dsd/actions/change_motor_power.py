@@ -1,5 +1,7 @@
-from bitbots_hcm.hcm_dsd.actions import AbstractHCMActionElement
 from livelybot_msg.msg import PowerSwitch
+
+from bitbots_hcm.hcm_dsd.actions import AbstractHCMActionElement
+
 
 class AbstractChangeMotorPower(AbstractHCMActionElement):
     """

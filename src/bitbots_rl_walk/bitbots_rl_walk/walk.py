@@ -14,34 +14,25 @@
 # ==============================================================================
 """Deploy an MJX policy in ONNX format to C MuJoCo and play with it."""
 
-
-import time
 import os
-
 from typing import Optional
-from rclpy.node import Node
-from rclpy.time import Time
-from rclpy.parameter import Parameter
-from rclpy.duration import Duration
-from sensor_msgs.msg import JointState, Imu
-from bitbots_msgs.msg import JointCommand
-from geometry_msgs.msg import Twist, PoseStamped, Pose
-from transforms3d.quaternions import quat2mat
-from transforms3d.euler import euler2mat
-from ros2_numpy import numpify
 
 import numpy as np
 import onnxruntime as rt
 from ament_index_python import get_package_share_directory
+from geometry_msgs.msg import Twist
+from rclpy.node import Node
+from sensor_msgs.msg import Imu, JointState
+from transforms3d.euler import euler2mat
+from transforms3d.quaternions import quat2mat
+
+from bitbots_msgs.msg import JointCommand
 
 ONNX_MODEL = os.path.join(
     get_package_share_directory("bitbots_rl_walk"), "models", "piplus_policy_fixed_joint_axis.onnx"
 )
 
-WALKREADY_STATE = np.array([
-    0.6, 0.0, 0.0,  1.2,  0.6, 0,
-   -0.6, 0.0, 0.0, -1.2, -0.6, 0
-], dtype=np.float32)
+WALKREADY_STATE = np.array([0.6, 0.0, 0.0, 1.2, 0.6, 0, -0.6, 0.0, 0.0, -1.2, -0.6, 0], dtype=np.float32)
 
 CONTROL_DT = 0.02  # Control loop frequency in seconds
 
@@ -65,9 +56,8 @@ ORDERED_RELEVANT_JOINT_NAMES = [
 
 class WalkNode(Node):
     """Node to control the wolfgang humanoid."""
-    _previous_action: np.ndarray = np.zeros(
-        len(ORDERED_RELEVANT_JOINT_NAMES), dtype=np.float32
-    )
+
+    _previous_action: np.ndarray = np.zeros(len(ORDERED_RELEVANT_JOINT_NAMES), dtype=np.float32)
     _imu_data: Optional[Imu] = None
     _joint_state: Optional[JointState] = None
     _cmd_vel: Optional[Twist] = None
@@ -78,32 +68,20 @@ class WalkNode(Node):
         super().__init__("reinforcement_learning_walk_inference_node")
 
         # Set sim time parameter to true
-        #self.set_parameters([
+        # self.set_parameters([
         #    Parameter('use_sim_time', Parameter.Type.BOOL, True), ])
 
         self._phase_dt = 2 * np.pi * GAIT_FREQUENCY * CONTROL_DT
 
         # Load the ONNX model
-        self._onnx_session = rt.InferenceSession(
-            ONNX_MODEL,
-            providers=["CPUExecutionProvider"]
-        )
+        self._onnx_session = rt.InferenceSession(ONNX_MODEL, providers=["CPUExecutionProvider"])
 
-        self._joint_command_pub = self.create_publisher(
-            JointCommand, "walking_motor_goals", 10
-        )
-        self._imu_sub = self.create_subscription(
-            Imu, "imu/data", self._imu_callback, 10
-        )
-        self._joint_state_sub = self.create_subscription(
-            JointState, "joint_states", self._joint_state_callback, 10
-        )
-        self._cmd_vel_sub = self.create_subscription(
-            Twist, "cmd_vel", self._cmd_vel_callback, 10
-        )
+        self._joint_command_pub = self.create_publisher(JointCommand, "walking_motor_goals", 10)
+        self._imu_sub = self.create_subscription(Imu, "imu/data", self._imu_callback, 10)
+        self._joint_state_sub = self.create_subscription(JointState, "joint_states", self._joint_state_callback, 10)
+        self._cmd_vel_sub = self.create_subscription(Twist, "cmd_vel", self._cmd_vel_callback, 10)
 
         self._timer = self.create_timer(CONTROL_DT, self._timer_callback)
-
 
     def _joint_state_callback(self, msg: JointState):
         self._joint_state = msg
@@ -117,9 +95,7 @@ class WalkNode(Node):
     def _timer_callback(self):
         """Timer callback to publish joint commands based on the ONNX policy."""
         if self._imu_data is None or self._joint_state is None or self._cmd_vel is None:
-            self.get_logger().warning(
-                "Waiting for all sensors to be available", throttle_duration_sec=1.0
-            )
+            self.get_logger().warning("Waiting for all sensors to be available", throttle_duration_sec=1.0)
 
             # Print the sensor that we are still waiting for
             if self._imu_data is None:
@@ -132,52 +108,62 @@ class WalkNode(Node):
             return
 
         # Prepare the observation vector
-        gyro = np.array([
-            self._imu_data.angular_velocity.x,
-            self._imu_data.angular_velocity.y,
-            self._imu_data.angular_velocity.z,
-        ], dtype=np.float32)
+        gyro = np.array(
+            [
+                self._imu_data.angular_velocity.x,
+                self._imu_data.angular_velocity.y,
+                self._imu_data.angular_velocity.z,
+            ],
+            dtype=np.float32,
+        )
 
-        gravity = (quat2mat(
-            [self._imu_data.orientation.w,
-             self._imu_data.orientation.x,
-             self._imu_data.orientation.y,
-             self._imu_data.orientation.z]
-        ) @ euler2mat(0, 0.0, 0)).T @ np.array([0, 0, -1], dtype=np.float32)
+        gravity = (
+            quat2mat(
+                [
+                    self._imu_data.orientation.w,
+                    self._imu_data.orientation.x,
+                    self._imu_data.orientation.y,
+                    self._imu_data.orientation.z,
+                ]
+            )
+            @ euler2mat(0, 0.0, 0)
+        ).T @ np.array([0, 0, -1], dtype=np.float32)
 
-        joint_angles = np.array([
-            self._joint_state.position[self._joint_state.name.index(name)]
-            for name in ORDERED_RELEVANT_JOINT_NAMES
-        ], dtype=np.float32) - WALKREADY_STATE
+        joint_angles = (
+            np.array(
+                [
+                    self._joint_state.position[self._joint_state.name.index(name)]
+                    for name in ORDERED_RELEVANT_JOINT_NAMES
+                ],
+                dtype=np.float32,
+            )
+            - WALKREADY_STATE
+        )
 
-        joint_velocities = np.array([
-            self._joint_state.velocity[self._joint_state.name.index(name)]
-            for name in ORDERED_RELEVANT_JOINT_NAMES
-        ], dtype=np.float32)
+        joint_velocities = np.array(
+            [self._joint_state.velocity[self._joint_state.name.index(name)] for name in ORDERED_RELEVANT_JOINT_NAMES],
+            dtype=np.float32,
+        )
 
         phase = np.array([np.cos(self._phase), np.sin(self._phase)], dtype=np.float32).flatten()
 
-        command = np.array([
-            self._cmd_vel.linear.x,
-            self._cmd_vel.linear.y,
-            self._cmd_vel.angular.z
-        ], dtype=np.float32)
+        command = np.array([self._cmd_vel.linear.x, self._cmd_vel.linear.y, self._cmd_vel.angular.z], dtype=np.float32)
 
-        obs = np.hstack([
-            gyro,
-            gravity,
-            command,
-            joint_angles,
-            joint_velocities,
-            self._previous_action,  # Previous action
-            phase
-        ]).astype(np.float32)
+        obs = np.hstack(
+            [
+                gyro,
+                gravity,
+                command,
+                joint_angles,
+                joint_velocities,
+                self._previous_action,  # Previous action
+                phase,
+            ]
+        ).astype(np.float32)
 
         # Run the ONNX model
         onnx_input = {"obs": obs.reshape(1, -1)}
-        onnx_pred = self._onnx_session.run(
-            ["continuous_actions"], onnx_input
-        )[0][0]
+        onnx_pred = self._onnx_session.run(["continuous_actions"], onnx_input)[0][0]
         self._previous_action = onnx_pred
 
         # Publish the joint commands
@@ -190,15 +176,16 @@ class WalkNode(Node):
         joint_command.kp = [30.0] * len(ORDERED_RELEVANT_JOINT_NAMES)
         joint_command.kd = [1.1] * len(ORDERED_RELEVANT_JOINT_NAMES)
 
-
         self._joint_command_pub.publish(joint_command)
 
         # Stop phase if the robot gets a !=0 cmd_vel.angular.x command, which is used as a stop signal for the walking
-        if not (self._cmd_vel.angular.x != 0.0 and \
-                abs(self._cmd_vel.linear.x) == 0.0 and \
-                abs(self._cmd_vel.linear.y) == 0.0 and \
-                abs(self._cmd_vel.angular.z) == 0.0 and \
-                np.linalg.norm(self._phase - np.array([0.0, np.pi], dtype=np.float32)) < 0.1):
+        if not (
+            self._cmd_vel.angular.x != 0.0
+            and abs(self._cmd_vel.linear.x) == 0.0
+            and abs(self._cmd_vel.linear.y) == 0.0
+            and abs(self._cmd_vel.angular.z) == 0.0
+            and np.linalg.norm(self._phase - np.array([0.0, np.pi], dtype=np.float32)) < 0.1
+        ):
             phase_tp1 = self._phase + self._phase_dt
             self._phase = np.fmod(phase_tp1 + np.pi, 2 * np.pi) - np.pi
 

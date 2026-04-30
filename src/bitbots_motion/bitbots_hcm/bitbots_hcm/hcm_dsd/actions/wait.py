@@ -35,4 +35,3 @@ class Wait(AbstractHCMActionElement):
         # Pop if the time has elapsed
         if self.blackboard.node.get_clock().now().nanoseconds / 1e9 > self.start_time + self.duration:
             self.pop()
-

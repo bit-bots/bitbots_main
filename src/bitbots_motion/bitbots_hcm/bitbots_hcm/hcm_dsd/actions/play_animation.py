@@ -4,7 +4,7 @@ import rclpy
 from action_msgs.msg import GoalStatus
 
 from bitbots_hcm.hcm_dsd.actions import AbstractHCMActionElement
-from bitbots_msgs.action import Dynup, PlayAnimation
+from bitbots_msgs.action import PlayAnimation
 
 
 class AbstractPlayAnimation(AbstractHCMActionElement, ABC):
@@ -154,14 +154,17 @@ class PlayAnimationInit(AbstractPlayAnimation):
 class PlayAnimationStartup(AbstractPlayAnimation):
     def choose_animation(self):
         return self.blackboard.animation_name_startup
-    
+
+
 class PlayAnimationWalkReady(AbstractPlayAnimation):
     def choose_animation(self):
         return self.blackboard.animation_name_walk_ready
-    
+
+
 class PlayAnimationRise(AbstractPlayAnimation):
     def choose_animation(self):
         return self.blackboard.animation_name_rise
+
 
 class CancelAnimation(AbstractHCMActionElement):
     """

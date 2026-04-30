@@ -172,7 +172,10 @@ class CheckBattery(AbstractHCMDecisionElement):
         self.last_battery_high_time: Optional[Time] = None
 
     def perform(self, reevaluate=False):
-        if self.blackboard.battery_voltage is None or self.blackboard.battery_voltage >= self.blackboard.battery_voltage_threshold:
+        if (
+            self.blackboard.battery_voltage is None
+            or self.blackboard.battery_voltage >= self.blackboard.battery_voltage_threshold
+        ):
             self.last_battery_high_time = self.blackboard.node.get_clock().now()
 
         if self.last_battery_high_time is None or (
