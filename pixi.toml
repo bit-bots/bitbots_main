@@ -38,7 +38,7 @@ description = "Runs tests for all ROS 2 packages. Add --packages-select <package
 python = "==3.12"
 
 # Patches
-# readline = ">=8.2.999"  # This is needed because we want to install an empty readline package from our models channel that leads to the system version being used. Otherwise we might have a mismatch between bash (often accessed globally ignoring the env) and readline (provided by the env)  breaking everything.
+readline = ">=8.2.999"  # This is needed because we want to install an empty readline package from our models channel that leads to the system version being used. Otherwise we might have a mismatch between bash (often accessed globally ignoring the env) and readline (provided by the env)  breaking everything.
 
 [feature.ros.dependencies]
 # Misc dependencies for our ROS 2 packages
@@ -159,6 +159,8 @@ ros-jazzy-vision-msgs = ">=4.1.1,<5"
 ros-jazzy-vision-opencv = ">=4.1.0,<5"
 ros-jazzy-visualization-msgs = ">=5.3.6,<6"
 ros-jazzy-xacro = ">=2.1.1,<3"
+ros-jazzy-rqt-robot-monitor = ">=1.0.6,<2"
+ros-jazzy-web-video-server = ">=3.0.0,<4"
 ros-jazzy-rmw-zenoh-cpp = ">=0.2.9,<0.3"
 
 # Neural network models / data packages
@@ -175,8 +177,6 @@ setuptools = "==68.1.2"  # Pinning setuptools to avoid issues with colcon build
 git = ">=2.52.0,<3"  # Otherwise the system git might be used causing ABI issues
 curl = ">=8.17.0,<9"
 make = ">=4.4.1,<5"  # To avoid issues in the CI
-ros-jazzy-rqt-robot-monitor = ">=1.0.6,<2"
-ros2-distro-mutex = ">=0.14"
 
 [feature.format.dependencies]
 # Add git-subrepo to format dependencies as currently there are
