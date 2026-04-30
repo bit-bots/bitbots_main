@@ -26,6 +26,10 @@ setup(
     license="TODO: License declaration",
     tests_require=["pytest"],
     entry_points={
-        "console_scripts": ["walk_node = nodes.walk_node:main", "kick_node = nodes.kick_node:main"],
+        "console_scripts": [
+            "walk_node = nodes.walk_node:main",
+            "kick_node = nodes.kick_node:main",
+            "standup_back_node = nodes.standup_back_node:main",
+        ],
     },
 )
