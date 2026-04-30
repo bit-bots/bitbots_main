@@ -1,11 +1,10 @@
 #include <gtest/gtest.h>
 
+#include <bitbots_vision/model_config.hpp>
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <string>
-
-#include "bitbots_vision/model_config.hpp"
 
 using bitbots_vision::ModelConfig;
 

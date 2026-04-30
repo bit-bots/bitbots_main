@@ -2,16 +2,15 @@
 
 #include <onnxruntime/core/session/onnxruntime_cxx_api.h>
 
+#include <bitbots_vision/candidate.hpp>
+#include <bitbots_vision/model_config.hpp>
+#include <bitbots_vision/yoeo_processing.hpp>
 #include <memory>
 #include <opencv2/core.hpp>
 #include <rclcpp/logger.hpp>
 #include <string>
 #include <unordered_map>
 #include <vector>
-
-#include "bitbots_vision/candidate.hpp"
-#include "bitbots_vision/model_config.hpp"
-#include "bitbots_vision/yoeo_processing.hpp"
 
 namespace bitbots_vision {
 

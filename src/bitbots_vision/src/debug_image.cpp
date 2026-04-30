@@ -1,5 +1,4 @@
-#include "bitbots_vision/debug_image.hpp"
-
+#include <bitbots_vision/debug_image.hpp>
 #include <opencv2/imgproc.hpp>
 
 namespace bitbots_vision {

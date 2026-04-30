@@ -1,6 +1,5 @@
-#include "bitbots_vision/yoeo_processing.hpp"
-
 #include <algorithm>
+#include <bitbots_vision/yoeo_processing.hpp>
 #include <cstring>
 #include <opencv2/dnn.hpp>
 #include <opencv2/imgproc.hpp>

@@ -1,8 +1,7 @@
 #pragma once
 
+#include <bitbots_vision/candidate.hpp>
 #include <opencv2/core.hpp>
-
-#include "bitbots_vision/candidate.hpp"
 
 namespace bitbots_vision {
 

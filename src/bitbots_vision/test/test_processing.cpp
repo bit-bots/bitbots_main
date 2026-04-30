@@ -1,11 +1,10 @@
 #include <gtest/gtest.h>
 
+#include <bitbots_vision/candidate.hpp>
+#include <bitbots_vision/yoeo_processing.hpp>
 #include <cmath>
 #include <opencv2/core.hpp>
 #include <vector>
-
-#include "bitbots_vision/candidate.hpp"
-#include "bitbots_vision/yoeo_processing.hpp"
 
 using namespace bitbots_vision::processing;
 using bitbots_vision::Candidate;

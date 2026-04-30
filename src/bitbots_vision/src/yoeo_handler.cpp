@@ -1,10 +1,8 @@
-#include "bitbots_vision/yoeo_handler.hpp"
-
+#include <bitbots_vision/yoeo_handler.hpp>
+#include <bitbots_vision/yoeo_processing.hpp>
 #include <filesystem>
 #include <rclcpp/logging.hpp>
 #include <stdexcept>
-
-#include "bitbots_vision/yoeo_processing.hpp"
 
 namespace bitbots_vision {
 

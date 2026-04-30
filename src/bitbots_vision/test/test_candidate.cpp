@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "bitbots_vision/candidate.hpp"
+#include <bitbots_vision/candidate.hpp>
 
 using bitbots_vision::Candidate;
 

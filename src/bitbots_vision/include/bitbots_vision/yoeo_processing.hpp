@@ -1,11 +1,10 @@
 #pragma once
 
+#include <bitbots_vision/candidate.hpp>
 #include <opencv2/core.hpp>
 #include <string>
 #include <unordered_map>
 #include <vector>
-
-#include "bitbots_vision/candidate.hpp"
 
 /// Pure preprocessing / postprocessing functions for YOEO inference.
 ///

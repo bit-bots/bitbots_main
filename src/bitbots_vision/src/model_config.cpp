@@ -1,7 +1,6 @@
-#include "bitbots_vision/model_config.hpp"
-
 #include <yaml-cpp/yaml.h>
 
+#include <bitbots_vision/model_config.hpp>
 #include <filesystem>
 #include <stdexcept>
 

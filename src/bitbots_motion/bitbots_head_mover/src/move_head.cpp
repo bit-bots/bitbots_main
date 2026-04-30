@@ -159,6 +159,7 @@ class HeadMover {
     bool goal_not_in_range = check_head_collision(pan_tilt.first, pan_tilt.second);
 
     // Check whether the action goal is valid and can be executed
+    // cppcheck-suppress knownConditionTrueFalse
     if (action_running_ || goal_not_in_range ||
         !(params_.max_pan[0] < pan_tilt.first && pan_tilt.first < params_.max_pan[1]) ||
         !(params_.max_tilt[0] < pan_tilt.second && pan_tilt.second < params_.max_tilt[1])) {
@@ -332,6 +333,7 @@ class HeadMover {
 
     // Check if we have collisions on our path
     for (int i = 0; i < step_count; i++) {
+      // cppcheck-suppress knownConditionTrueFalse
       if (check_head_collision(pan_and_tilt_steps[i].first, pan_and_tilt_steps[i].second)) {
         // If we have a collision, try to move the head to an alternative position
         // The new position looks 10 degrees further up and is less likely to have a collision with the body

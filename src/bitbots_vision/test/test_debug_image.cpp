@@ -1,10 +1,9 @@
 #include <gtest/gtest.h>
 
+#include <bitbots_vision/candidate.hpp>
+#include <bitbots_vision/debug_image.hpp>
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
-
-#include "bitbots_vision/candidate.hpp"
-#include "bitbots_vision/debug_image.hpp"
 
 using bitbots_vision::Candidate;
 using bitbots_vision::DebugImage;
