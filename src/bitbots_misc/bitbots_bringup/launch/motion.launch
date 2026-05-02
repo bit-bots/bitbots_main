@@ -35,6 +35,9 @@
         <node pkg="bitbots_rl_walk" exec="walk" output="screen">
             <param name="use_sim_time" value="$(var sim)"/>
         </node>
+        <node pkg="bitbots_rl_walk" exec="phase_from_transform" output="screen">
+            <param name="use_sim_time" value="$(var sim)"/>
+        </node>
     </group>
 
     <!-- launch the hcm -->
