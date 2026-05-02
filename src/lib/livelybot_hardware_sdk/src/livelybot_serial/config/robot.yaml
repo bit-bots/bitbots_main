@@ -36,7 +36,7 @@
                     tor_lower: -3.0
                     controller_defaults:
                         kp: 100.0
-                        kd: 1.0
+                        kd: 2.0
                 motor2:
                     type: "5047_36_2"
                     id: 2
@@ -50,7 +50,7 @@
                     tor_lower: -3.0
                     controller_defaults:
                         kp: 100.0
-                        kd: 1.0
+                        kd: 2.0
                 motor3:
                     type: "5047_36_2"
                     id: 3
