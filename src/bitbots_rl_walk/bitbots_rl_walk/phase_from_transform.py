@@ -2,10 +2,9 @@
 
 import rclpy
 import tf2_ros
-from rclpy.node import Node
-from rclpy.duration import Duration
-
 from biped_interfaces.msg import Phase
+from rclpy.duration import Duration
+from rclpy.node import Node
 
 
 class PhaseFromTransform(Node):

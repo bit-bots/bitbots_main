@@ -29,7 +29,7 @@ from transforms3d.quaternions import quat2mat
 from bitbots_msgs.msg import JointCommand
 
 ONNX_MODEL = os.path.join(
-    get_package_share_directory("bitbots_rl_walk"), "models", "piplus_policy_fixed_joint_axis.onnx"
+    get_package_share_directory("bitbots_rl_walk"), "models", "policy_walk.onnx"
 )
 
 WALKREADY_STATE = np.array([0.6, 0.0, 0.0, 1.2, 0.6, 0, -0.6, 0.0, 0.0, -1.2, -0.6, 0], dtype=np.float32)
@@ -61,7 +61,7 @@ class WalkNode(Node):
     _imu_data: Optional[Imu] = None
     _joint_state: Optional[JointState] = None
     _cmd_vel: Optional[Twist] = None
-    _phase: np.ndarray = np.array([0.0, np.pi], dtype=np.float32)
+    _phase: np.ndarray = np.array([np.pi / 2, -np.pi / 2], dtype=np.float32)
     _phase_dt: float
 
     def __init__(self):
@@ -72,6 +72,9 @@ class WalkNode(Node):
         #    Parameter('use_sim_time', Parameter.Type.BOOL, True), ])
 
         self._phase_dt = 2 * np.pi * GAIT_FREQUENCY * CONTROL_DT
+
+        self._last_stop_signal = True
+        self._startup_counter = 0
 
         # Load the ONNX model
         self._onnx_session = rt.InferenceSession(ONNX_MODEL, providers=["CPUExecutionProvider"])
@@ -147,7 +150,22 @@ class WalkNode(Node):
 
         phase = np.array([np.cos(self._phase), np.sin(self._phase)], dtype=np.float32).flatten()
 
-        command = np.array([self._cmd_vel.linear.x, self._cmd_vel.linear.y, self._cmd_vel.angular.z], dtype=np.float32)
+        stop_signal = self._cmd_vel.angular.x != 0.0
+
+        # This is a hack to "jumpstart" the walking by perturbing the previous action for a few steps
+        if not stop_signal and self._last_stop_signal:
+            self._startup_counter = 1
+        if self._startup_counter > 0:
+            self._previous_action = np.ones_like(self._previous_action) * 0.2
+            self._startup_counter += 1
+        if self._startup_counter > 10:
+            self._startup_counter = 0
+        self._last_stop_signal = stop_signal
+
+        command = np.array(
+            [self._cmd_vel.linear.x, self._cmd_vel.linear.y, self._cmd_vel.angular.z, float(stop_signal)],
+            dtype=np.float32,
+        )
 
         obs = np.hstack(
             [
@@ -178,14 +196,11 @@ class WalkNode(Node):
 
         self._joint_command_pub.publish(joint_command)
 
-        # Stop phase if the robot gets a !=0 cmd_vel.angular.x command, which is used as a stop signal for the walking
-        if not (
-            self._cmd_vel.angular.x != 0.0
-            and abs(self._cmd_vel.linear.x) == 0.0
-            and abs(self._cmd_vel.linear.y) == 0.0
-            and abs(self._cmd_vel.angular.z) == 0.0
-            and np.linalg.norm(self._phase - np.array([0.0, np.pi], dtype=np.float32)) < 0.1
-        ):
+        if stop_signal and np.linalg.norm(self._phase - np.array([-np.pi / 2, np.pi / 2])) < 0.1:
+            self._phase = np.array([-np.pi / 2, np.pi / 2])
+        elif stop_signal and np.linalg.norm(self._phase - np.array([np.pi / 2, -np.pi / 2])) < 0.1:
+            self._phase = np.array([np.pi / 2, -np.pi / 2])
+        else:
             phase_tp1 = self._phase + self._phase_dt
             self._phase = np.fmod(phase_tp1 + np.pi, 2 * np.pi) - np.pi
 

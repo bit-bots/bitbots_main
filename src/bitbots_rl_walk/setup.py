@@ -23,7 +23,7 @@ setup(
     entry_points={
         "console_scripts": [
             "walk = bitbots_rl_walk.walk:main",
-            "phase_from_transform = bitbots_rl_walk.phase_from_transform:main"
+            "phase_from_transform = bitbots_rl_walk.phase_from_transform:main",
         ],
     },
 )
