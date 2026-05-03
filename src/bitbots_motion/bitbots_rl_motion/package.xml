@@ -2,10 +2,11 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>bitbots_rl_motion</name>
-  <version>0.0.0</version>
-  <description>TODO: Package description</description>
-  <maintainer email="git@bit-bots.de">florian</maintainer>
-  <license>TODO: License declaration</license>
+  <version>0.1.0</version>
+  <description>The bitbots_rl_motion package provides different reinforcement based motions like walking and standing up.</description>
+  <maintainer email="git@bit-bots.de">Hamburg Bit-Bots</maintainer>
+  <maintainer email="2krueger@studium.informatik.uni-hamburg.de">Mark Oliver Krüger</maintainer>
+  <license>MIT</license>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
