@@ -3,7 +3,6 @@
     <arg name="sim" default="false"/>
     <arg name="viz" default="false"/>
     <arg name="quintic_walk" default="false" description="start quintic walking" /> 
-    <arg name="rl_policies" default="true" description="start the policies"/>
     <arg name="walk_policy" default="true" description="start walk policy"/>
     <arg name="kick_policy" default="true" description="start kick policy"/>
     <arg name="torqueless_mode" default="false" description="start without torque, for example for testing the falling detection"/>
