@@ -4,6 +4,7 @@
     <arg name="behavior" default="true" description="Whether the behavior control system should be started" />
     <arg name="behavior_dsd_file" default="main.dsd" description="The behavior dsd file that should be used" />
     <arg name="game_controller" default="true" description="Whether the Gamecontroller module should be started" />
+    <arg name="emergency_button" default="false" description="Activate emergency button for potential emergency stop" />
     <arg name="ipm" default="true" description="Whether the inverse perspective mapping should be started"/>
     <arg name="localization" default="true" description="Whether the localization system should be started" />
     <arg name="motion" default="true" description="Whether the motion control system should be started" />
@@ -44,6 +45,7 @@
         <include file="$(find-pkg-share bitbots_bringup)/launch/motion.launch">
             <arg name="sim" value="$(var sim)"/>
             <arg name="tts" value="$(var tts)" />
+            <arg name="emergency_button" value="$(var emergency_button)" />
         </include>
     </group>
 

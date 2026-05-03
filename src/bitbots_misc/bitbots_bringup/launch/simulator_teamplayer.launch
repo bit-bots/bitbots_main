@@ -29,5 +29,6 @@
         <arg name="teamcom" value="$(var teamcom)" />
         <arg name="vision" value="$(var vision)"/>
         <arg name="world_model" value="$(var world_model)"/>
+        <arg name="emergency_button" value="$(var emergency_button)"/>
     </include>
 </launch>

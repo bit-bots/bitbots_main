@@ -5,15 +5,15 @@ find_package(ament_cmake REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
 
-set(SOURCES bitbots_emergency/emergency_node.cpp)
+set(SOURCES src/emergency_node.cpp)
 
 add_executable(EMERGENCY_BUTTON ${SOURCES})
 
-ament_target_dependencies(EMERGENCY_BUTTON ament_cmake rclcpp std_msgs)
+ament_target_dependencies(EMERGENCY_BUTTON rclcpp std_msgs)
 
 install(TARGETS EMERGENCY_BUTTON DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 
-ament_python_install_package(${PROJECT_NAME})
+ament_export_dependencies(rclcpp std_msgs)
 ament_package()

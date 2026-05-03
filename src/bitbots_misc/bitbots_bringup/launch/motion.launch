@@ -2,7 +2,7 @@
 <launch>
     <arg name="sim" default="false"/>
     <arg name="viz" default="false"/>
-    <arg nam="emergency_button" default="false"/>
+    <arg name="emergency_button" default="false"/>
     <arg name="walking" default="true" description="start the walking" />
     <arg name="torqueless_mode" default="false" description="start without torque, for example for testing the falling detection"/>
     <arg name="tts" default="true" description="Whether to speak" />
