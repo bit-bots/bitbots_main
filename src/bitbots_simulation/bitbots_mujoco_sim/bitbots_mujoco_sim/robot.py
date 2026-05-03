@@ -79,7 +79,7 @@ class Robot:
 
     @property
     def domain(self) -> int:
-        return self.index
+        return 11 + self.index
 
     @property
     def namespace(self) -> str:
