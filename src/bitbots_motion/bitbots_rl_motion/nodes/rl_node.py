@@ -37,7 +37,7 @@ class RLNode(Node, ABC):
         self._previous_action = PreviousAction(self)
 
     def _timer_callback(self):
-        # Check whether all subscribers hat at least on message
+        # Check whether all subscribers received at least one message
 
         sensors_ready, missing_handler = self._all_sensors_ready()
         if not sensors_ready:
