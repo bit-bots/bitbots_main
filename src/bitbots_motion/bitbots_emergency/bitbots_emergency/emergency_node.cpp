@@ -5,9 +5,7 @@
 #include <functional>
 #include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
 #include <rclcpp/rclcpp.hpp>
-
-// cppcheck-suppress missingInclude
-#include "std_msgs/msg/bool.hpp"
+#include <std_msgs/msg/bool.hpp>
 
 namespace bitbots_emergency {
 class EMERGENCY_NODE : public rclcpp::Node {
