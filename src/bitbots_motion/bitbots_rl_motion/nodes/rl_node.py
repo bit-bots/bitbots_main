@@ -7,8 +7,8 @@ import onnx
 import onnxruntime as rt
 import rclpy
 from ament_index_python import get_package_share_directory
-from bitbots_rl_motion.phase import PhaseObject
-from bitbots_rl_motion.previous_action import PreviousActionObject
+from bitbots_rl_motion.phase import Phase
+from bitbots_rl_motion.previous_action import PreviousAction
 from handlers.handler import Handler
 from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
@@ -33,8 +33,8 @@ class RLNode(Node, ABC):
         self.get_logger().info(f"Loaded model: {model}")
 
         # Phase is optional - if phase shouldn't be used, than self._phase.get_phase() will return None
-        self._phase = PhaseObject(self)
-        self._previous_action = PreviousActionObject(self)
+        self._phase = Phase(self)
+        self._previous_action = PreviousAction(self)
 
     def _timer_callback(self):
         # Check whether all subscribers hat at least on message

@@ -17,7 +17,7 @@ The Configs-folder contains all robot/policy specific configurations. Files in t
 The Launch-folder contains a launch file which starts all relevant policy nodes.
 
 phase.py and previous_action.py are two files, which do not fall in any of the aforementioned categories. 
-phase.py defines a PhaseObject, which is responsible for the phase management. previous_action.py defindes a PreviousAction object, which is responsible for saving and provide the previous action.
+phase.py defines a Phase object, which is responsible for the phase management. previous_action.py defindes a PreviousAction object, which is responsible for saving and provide the previous action.
 Both files are located in the bitbots_rl_motion folder. 
 
 ## Execution
