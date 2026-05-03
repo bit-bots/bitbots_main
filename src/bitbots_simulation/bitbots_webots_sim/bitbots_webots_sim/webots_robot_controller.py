@@ -644,8 +644,8 @@ class RobotController:
             self.pub_imu = self.ros_node.create_publisher(Imu, base_ns + "imu/data_raw", 1)
 
             self.pub_imu_head = self.ros_node.create_publisher(Imu, base_ns + "imu_head/data", 1)
-            self.pub_cam = self.ros_node.create_publisher(Image, base_ns + "camera/image_proc", 1)
-            self.pub_cam_info = self.ros_node.create_publisher(CameraInfo, base_ns + "camera/camera_info", 1)
+            self.pub_cam = self.ros_node.create_publisher(Image, base_ns + "zed/zed_node/left/image_rect_color", 1)
+            self.pub_cam_info = self.ros_node.create_publisher(CameraInfo, base_ns + "zed/zed_node/left/camera_info", 1)
 
             self.pub_pres_left = self.ros_node.create_publisher(FootPressure, base_ns + "foot_pressure_left/raw", 1)
             self.pub_pres_right = self.ros_node.create_publisher(FootPressure, base_ns + "foot_pressure_right/raw", 1)

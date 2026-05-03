@@ -24,7 +24,7 @@
     <group if="$(var full_image)">
         <node pkg="ipm_image_node" exec="ipm" name="ipm_image" output="screen">
             <remap to="/zed/zed_node/left/camera_info" from="camera_info"/>
-            <remap to="/camera/image_proc" from="input"/>
+            <remap to="/zed/zed_node/left/image_rect_color" from="input"/>
             <remap to="/projected_camera_image" from="projected_point_cloud"/>
             <param name="output_frame" value="base_footprint"/>
             <param name="scale" value="1.0"/>
