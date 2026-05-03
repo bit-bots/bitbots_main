@@ -150,11 +150,12 @@ class WalkNode(Node):
 
         stop_signal = self._cmd_vel.angular.x != 0.0
 
-        # This is a hack to "jumpstart" the walking by perturbing the previous action for a few steps
+        # This is a hack to start the policy in a stable state.
+        # Otherwise for some reason the policy is not committing to a first step
         if not stop_signal and self._last_stop_signal:
             self._startup_counter = 1
         if self._startup_counter > 0:
-            self._previous_action = np.ones_like(self._previous_action) * 0.1
+            self._previous_action = np.zeros_like(self._previous_action)
             self._startup_counter += 1
         if self._startup_counter > 10:
             self._startup_counter = 0
