@@ -15,4 +15,9 @@ install(TARGETS EMERGENCY_BUTTON DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 
+ament_export_dependencies(std_msgs)
+ament_export_dependencies(ament_cmake)
+ament_export_dependencies(std_msgs)
+ament_export_include_directories(${INCLUDE_DIRS})
+
 ament_package()
