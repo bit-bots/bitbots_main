@@ -3,6 +3,7 @@
 import rclpy
 import tf2_ros
 from biped_interfaces.msg import Phase
+from bitbots_tf_buffer import Buffer
 from rclpy.duration import Duration
 from rclpy.node import Node
 
@@ -21,8 +22,7 @@ class PhaseFromTransform(Node):
         self.base_frame = self.get_parameter("base_frame").value
 
         # TF2
-        self.tf_buffer = tf2_ros.Buffer(cache_time=Duration(seconds=1.0))
-        self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self)
+        self.tf_buffer = Buffer(Duration(seconds=1.0), self)
 
         # Publisher
         self.phase_pub = self.create_publisher(Phase, "walk_support_state", 1)
