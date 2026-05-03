@@ -20,10 +20,10 @@ setup(
     ],
     install_requires=["setuptools"],
     zip_safe=True,
-    maintainer="BitBots",
+    maintainer="Hamburg Bit-Bots",
     maintainer_email="git@bit-bots.de",
-    description="TODO: Package description",
-    license="TODO: License declaration",
+    description="The bitbots_rl_motion package provides different reinforcement based motions like walking and standing up.",
+    license="MIT",
     tests_require=["pytest"],
     entry_points={
         "console_scripts": ["walk_node = nodes.walk_node:main", "kick_node = nodes.kick_node:main"],
