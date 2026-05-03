@@ -156,7 +156,7 @@ class WalkNode(Node):
         if not stop_signal and self._last_stop_signal:
             self._startup_counter = 1
         if self._startup_counter > 0:
-            self._previous_action = np.ones_like(self._previous_action) * 0.2
+            self._previous_action = np.ones_like(self._previous_action) * 0.1
             self._startup_counter += 1
         if self._startup_counter > 10:
             self._startup_counter = 0
