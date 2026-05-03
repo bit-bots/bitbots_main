@@ -3,6 +3,7 @@
 
     <arg name="sim" default="false" description="Disables some checks for hardware, since we are in simulation."/>
     <arg name="viz" default="false" description="Disables all checks for hardware, since we are in visualization."/>
+    <arg name="emergency_button" default="false" description="Listens for pressed button as signal whether to hard stop robot"/>
     <arg name="wolfgang" default="true"/>
 
     <group if="$(var wolfgang)">
@@ -10,6 +11,7 @@
             <param name="use_sim_time" value="$(var sim)" />
             <param name="simulation_active" value="$(var sim)" />
             <param name="visualization_active" value="$(var viz)" />
+            <param name="emergency_button_active" value="$(var emergency_button)" />
         </node>
     </group>
 

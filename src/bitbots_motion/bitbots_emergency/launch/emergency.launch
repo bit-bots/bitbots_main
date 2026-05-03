@@ -1,0 +1,3 @@
+<group if="$(var emergency_button)">
+    <node pkg="bitbots_emergency" exec="EMERGENCY_NODE" output="screen"/>
+</group>
