@@ -28,9 +28,7 @@ from transforms3d.quaternions import quat2mat
 
 from bitbots_msgs.msg import JointCommand
 
-ONNX_MODEL = os.path.join(
-    get_package_share_directory("bitbots_rl_walk"), "models", "policy_walk.onnx"
-)
+ONNX_MODEL = os.path.join(get_package_share_directory("bitbots_rl_walk"), "models", "policy_walk.onnx")
 
 WALKREADY_STATE = np.array([0.6, 0.0, 0.0, 1.2, 0.6, 0, -0.6, 0.0, 0.0, -1.2, -0.6, 0], dtype=np.float32)
 
