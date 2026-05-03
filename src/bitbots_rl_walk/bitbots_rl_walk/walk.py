@@ -71,9 +71,6 @@ class WalkNode(Node):
 
         self._phase_dt = 2 * np.pi * GAIT_FREQUENCY * CONTROL_DT
 
-        self._last_stop_signal = True
-        self._startup_counter = 0
-
         # Load the ONNX model
         self._onnx_session = rt.InferenceSession(ONNX_MODEL, providers=["CPUExecutionProvider"])
 
@@ -149,17 +146,6 @@ class WalkNode(Node):
         phase = np.array([np.cos(self._phase), np.sin(self._phase)], dtype=np.float32).flatten()
 
         stop_signal = self._cmd_vel.angular.x != 0.0
-
-        # This is a hack to start the policy in a stable state.
-        # Otherwise for some reason the policy is not committing to a first step
-        if not stop_signal and self._last_stop_signal:
-            self._startup_counter = 1
-        if self._startup_counter > 0:
-            self._previous_action = np.ones_like(self._previous_action) * 0.2
-            self._startup_counter += 1
-        if self._startup_counter > 10:
-            self._startup_counter = 0
-        self._last_stop_signal = stop_signal
 
         command = np.array(
             [self._cmd_vel.linear.x, self._cmd_vel.linear.y, self._cmd_vel.angular.z, float(stop_signal)],
