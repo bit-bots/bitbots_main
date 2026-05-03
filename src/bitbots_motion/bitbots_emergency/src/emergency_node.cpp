@@ -1,3 +1,4 @@
+#include <fcntl.h>
 #include <termios.h>
 #include <unistd.h>
 
@@ -14,13 +15,21 @@ class EMERGENCY_NODE : public rclcpp::Node {
     // Create publishers
     pub_motor_switch_ = this->create_publisher<std_msgs::msg::Bool>("core/switch_power", 1);
 
-    timer_ =
-        this->create_wall_timer(std::chrono::milliseconds(100), std::bind(&EMERGENCY_NODE::_emergencyButtonLoop, this));
+    timer_ = this->create_wall_timer(std::chrono::milliseconds(100), std::bind(&EMERGENCY_NODE::_testPrint, this));
+
+    RCLCPP_INFO(this->get_logger(), "Listening for EmergencyButton");
   }
 
  private:
   rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pub_motor_switch_;
   rclcpp::TimerBase::SharedPtr timer_;
+
+  void _testPrint() {
+    RCLCPP_WARN(this->get_logger(), "Loop is active!");
+    char ch = '\0';
+    int tty_fd = open("/dev/tty", O_RDONLY | O_NONBLOCK);
+    read(tty_fd, &ch, 1);  // reading from terminal
+  }
 
   char _getKeyNonBlocking() {
     struct termios oldt, newt;
@@ -28,7 +37,7 @@ class EMERGENCY_NODE : public rclcpp::Node {
     tcgetattr(STDIN_FILENO, &oldt);
     newt = oldt;
     newt.c_lflag = newt.c_lflag & ~(ICANON | ECHO);
-    newt.c_cc[VMIN] = 1;
+    newt.c_cc[VMIN] = 0;
     newt.c_cc[VTIME] = 0;
     tcsetattr(STDIN_FILENO, TCSANOW, &newt);
 
@@ -40,11 +49,15 @@ class EMERGENCY_NODE : public rclcpp::Node {
   }
 
   void _emergencyButtonLoop() {
+    RCLCPP_INFO(this->get_logger(), "EmergencyButtonLoop");
+
     char emergencyButton = ' ';
 
     char ch = _getKeyNonBlocking();
 
     if (emergencyButton == ch) {
+      RCLCPP_WARN(this->get_logger(), "E-STOP!!!");
+
       auto msg = std_msgs::msg::Bool();
       msg.data = true;
       pub_motor_switch_->publish(msg);
