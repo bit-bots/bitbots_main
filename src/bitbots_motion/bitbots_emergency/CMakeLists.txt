@@ -15,5 +15,4 @@ install(TARGETS EMERGENCY_BUTTON DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 
-ament_export_dependencies(rclcpp std_msgs)
 ament_package()
