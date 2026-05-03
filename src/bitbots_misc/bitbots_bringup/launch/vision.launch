@@ -16,7 +16,8 @@
         <group unless="$(var sim)">
             <include file="$(find-pkg-share zed_wrapper)/launch/zed_camera.launch.py">
                 <arg name="camera_model" value="zedm" />
-                <!-- <remap from="/zed/zed_node/left/image_rect_color" to="/camera/image_proc"/> -->
+                <remap to="/zed/zed_node/left/image_rect_color" from="/camera/image_proc"/>
+                <remap to="/zed/zed_node/left/camera_info" from="camera_info"/>
             </include>
         </group>
     </group>
