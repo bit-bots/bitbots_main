@@ -6,61 +6,47 @@
 #include <functional>
 #include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <std_msgs/msg/bool.hpp>
+#include <std_srvs/srv/set_bool.hpp>
 
 namespace bitbots_emergency {
 class EMERGENCY_NODE : public rclcpp::Node {
  public:
   explicit EMERGENCY_NODE() : Node("emergency_node") {
     // Create publishers
-    pub_motor_switch_ = this->create_publisher<std_msgs::msg::Bool>("core/switch_power", 1);
+    client_motor_switch_ = this->create_client<std_srvs::srv::SetBool>("core/switch_power");
 
-    timer_ = this->create_wall_timer(std::chrono::milliseconds(100), std::bind(&EMERGENCY_NODE::_testPrint, this));
+    timer_ = this->create_wall_timer(std::chrono::milliseconds(100), std::bind(&EMERGENCY_NODE::_emergencyLoop, this));
 
     RCLCPP_INFO(this->get_logger(), "Listening for EmergencyButton");
   }
 
  private:
-  rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pub_motor_switch_;
+  rclcpp::Client<std_srvs::srv::SetBool>::SharedPtr client_motor_switch_;
   rclcpp::TimerBase::SharedPtr timer_;
 
-  void _testPrint() {
-    RCLCPP_WARN(this->get_logger(), "Loop is active!");
-    char ch = '\0';
-    int tty_fd = open("/dev/tty", O_RDONLY | O_NONBLOCK);
-    read(tty_fd, &ch, 1);  // reading from terminal
-  }
-
-  char _getKeyNonBlocking() {
+  void _emergencyLoop() {
     struct termios oldt, newt;
 
-    tcgetattr(STDIN_FILENO, &oldt);
+    RCLCPP_INFO(this->get_logger(), "Loop is active!");
+    char ch = '\0';
+
+    int tty_fd = open("/dev/tty", O_RDONLY | O_NONBLOCK);
+    tcgetattr(tty_fd, &oldt);
     newt = oldt;
     newt.c_lflag = newt.c_lflag & ~(ICANON | ECHO);
     newt.c_cc[VMIN] = 0;
     newt.c_cc[VTIME] = 0;
-    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+    tcsetattr(tty_fd, TCSANOW, &newt);
+    read(tty_fd, &ch, 1);
+    tcsetattr(tty_fd, TCSANOW, &oldt);
+    close(tty_fd);
 
-    char ch = '\0';
-    read(STDIN_FILENO, &ch, 1);
-    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
-
-    return ch;
-  }
-
-  void _emergencyButtonLoop() {
-    RCLCPP_INFO(this->get_logger(), "EmergencyButtonLoop");
-
-    char emergencyButton = ' ';
-
-    char ch = _getKeyNonBlocking();
-
-    if (emergencyButton == ch) {
+    if (ch == ' ') {
       RCLCPP_WARN(this->get_logger(), "E-STOP!!!");
 
-      auto msg = std_msgs::msg::Bool();
-      msg.data = true;
-      pub_motor_switch_->publish(msg);
+      auto request = std::make_shared<std_srvs::srv::SetBool::Request>();
+      request->data = false;
+      client_motor_switch_->async_send_request(request);
     }
   }
 };
