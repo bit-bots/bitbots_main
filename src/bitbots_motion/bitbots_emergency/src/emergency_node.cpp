@@ -41,7 +41,7 @@ class EMERGENCY_NODE : public rclcpp::Node {
     tcsetattr(tty_fd, TCSANOW, &oldt);
     close(tty_fd);
 
-    if (ch == ' ') {
+    if (ch != ' ') {
       RCLCPP_WARN(this->get_logger(), "E-STOP!!!");
 
       auto request = std::make_shared<std_srvs::srv::SetBool::Request>();
