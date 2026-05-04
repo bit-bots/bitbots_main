@@ -12,9 +12,10 @@ namespace bitbots_emergency {
 class EMERGENCY_NODE : public rclcpp::Node {
  public:
   explicit EMERGENCY_NODE() : Node("emergency_node") {
-    // Create publishers
+    // Create client
     client_motor_switch_ = this->create_client<std_srvs::srv::SetBool>("core/switch_power");
 
+    // repeatedly call loop function
     timer_ = this->create_wall_timer(std::chrono::milliseconds(100), std::bind(&EMERGENCY_NODE::_emergencyLoop, this));
 
     RCLCPP_INFO(this->get_logger(), "Listening for EmergencyButton");
@@ -30,12 +31,12 @@ class EMERGENCY_NODE : public rclcpp::Node {
     RCLCPP_INFO(this->get_logger(), "Loop is active!");
     char ch = '\0';
 
-    int tty_fd = open("/dev/tty", O_RDONLY | O_NONBLOCK);
+    int tty_fd = open("/dev/tty", O_RDONLY | O_NONBLOCK);  // terminal read only and non-blocking
     tcgetattr(tty_fd, &oldt);
     newt = oldt;
-    newt.c_lflag = newt.c_lflag & ~(ICANON | ECHO);
-    newt.c_cc[VMIN] = 0;
-    newt.c_cc[VTIME] = 0;
+    newt.c_lflag = newt.c_lflag & ~(ICANON | ECHO);  // Don't wait for enter and don't show key in terminal
+    newt.c_cc[VMIN] = 0;                             // Don't wait for input
+    newt.c_cc[VTIME] = 0;                            // No timeout
     tcsetattr(tty_fd, TCSANOW, &newt);
     read(tty_fd, &ch, 1);
     tcsetattr(tty_fd, TCSANOW, &oldt);
@@ -44,6 +45,7 @@ class EMERGENCY_NODE : public rclcpp::Node {
     if (ch != ' ') {
       RCLCPP_WARN(this->get_logger(), "E-STOP!!!");
 
+      // Request for shutting motors down
       auto request = std::make_shared<std_srvs::srv::SetBool::Request>();
       request->data = false;
       client_motor_switch_->async_send_request(request);
