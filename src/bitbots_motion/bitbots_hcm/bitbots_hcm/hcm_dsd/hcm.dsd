@@ -31,10 +31,10 @@ $StartHCM
                             OKAY --> $Fallen
                                 FALLEN_FRONT --> $GameControllerStop
                                     STOPPED --> @RobotStateFallen, @CancelGoals, @StopWalking, @Wait
-                                    FREE --> @RobotStateFallen, @CancelGoals, @StopWalking, @RobotStateGettingUp, @PlayAnimationStandupFront, @SetSquat + squat:true
+                                    FREE --> @RobotStateFallen, @CancelGoals, @StopWalking, @RobotStateGettingUp, @Complain, @PlayAnimationWalkReady
                                 FALLEN_BACK --> $GameControllerStop
                                     STOPPED --> @RobotStateFallen, @CancelGoals, @StopWalking, @Wait
-                                    FREE --> @RobotStateFallen, @CancelGoals, @StopWalking, @RobotStateGettingUp, @PlayAnimationFallingBack, @PlayAnimationStandupBack, @SetSquat + squat:true
+                                    FREE --> @RobotStateFallen, @CancelGoals, @StopWalking, @RobotStateGettingUp, @Complain, @PlayAnimationStandupBack
                                 FALLEN_RIGHT --> $GameControllerStop
                                     STOPPED --> @RobotStateFallen, @CancelGoals, @StopWalking, @Wait
                                     FREE --> @RobotStateFallen, @CancelGoals, @StopWalking, @PlayAnimationWalkReady
@@ -46,13 +46,11 @@ $StartHCM
                                     FALLING_RIGHT --> @RobotStateFalling, @CancelGoals, @StopWalking, @PlayAnimationWalkReady, @Wait
                                     FALLING_FRONT --> @RobotStateFalling, @CancelGoals, @StopWalking, @PlayAnimationWalkReady, @Wait
                                     FALLING_BACK --> @RobotStateFalling, @CancelGoals, @StopWalking, @PlayAnimationWalkReady, @Wait
-                                    NOT_FALLING --> $InSquat
-                                        YES --> @RobotStateGettingUp, @Complain, @PlayAnimationWalkReady, @SetSquat + squat:false
-                                        NO --> $PlayingExternalAnimation
-                                            ANIMATION_RUNNING --> @StopWalking, @RobotStateAnimationRunning, @Wait
-                                            ANIMATION_SERVER_TIMEOUT --> @CancelAnimation
-                                            FREE --> $RecentWalkingGoals
-                                                STAY_WALKING --> @RobotStateWalking, @Wait
-                                                NOT_WALKING --> $RecentKickGoals
-                                                    KICKING --> @RobotStateKicking, @Wait
-                                                    NOT_KICKING --> @RobotStateControllable, @Wait
+                                    NOT_FALLING --> $PlayingExternalAnimation
+                                        ANIMATION_RUNNING --> @StopWalking, @RobotStateAnimationRunning, @Wait
+                                        ANIMATION_SERVER_TIMEOUT --> @CancelAnimation
+                                        FREE --> $RecentWalkingGoals
+                                            STAY_WALKING --> @RobotStateWalking, @Wait
+                                            NOT_WALKING --> $RecentKickGoals
+                                                KICKING --> @RobotStateKicking, @Wait
+                                                NOT_KICKING --> @RobotStateControllable, @Wait
