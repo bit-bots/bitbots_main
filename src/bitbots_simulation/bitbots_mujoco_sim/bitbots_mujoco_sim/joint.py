@@ -16,7 +16,20 @@ class Joint:
         self.ros_name: str = ros_name
         self.name: str = name if name is not None else ros_name
         self.joint_instance: int = model.joint(self.name)
-        self.actuator_instance: int = model.actuator(self.name)
+        self.actuator_instance: int = model.actuator(self.name.replace("_joint_", "_"))
+
+        aid = self.actuator_instance.id
+        self._default_kp: float = float(model.actuator_gainprm[aid, 0])
+        self._default_kd: float = float(-model.actuator_biasprm[aid, 2])
+
+    def set_gains(self, kp: float | None = None, kd: float | None = None) -> None:
+        """Dynamically update actuator PD gains. Falls back to model defaults for None or non-positive values."""
+        aid = self.actuator_instance.id
+        kp = kp if (kp is not None and kp > 0) else self._default_kp
+        kd = kd if (kd is not None and kd > 0) else self._default_kd
+        self.model.actuator_gainprm[aid, 0] = kp
+        self.model.actuator_biasprm[aid, 1] = -kp
+        self.model.actuator_biasprm[aid, 2] = -kd
 
     @property
     def position(self) -> float:

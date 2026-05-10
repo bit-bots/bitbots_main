@@ -63,10 +63,6 @@ def generate_domain_bridge_config(robot_domain: int, output_dir: Path) -> Path:
         ("imu/data", "sensor_msgs/msg/Imu"),
         ("camera/image_proc", "sensor_msgs/msg/Image"),
         ("camera/camera_info", "sensor_msgs/msg/CameraInfo"),
-        ("foot_pressure_left/filtered", "bitbots_msgs/msg/FootPressure"),
-        ("foot_pressure_right/filtered", "bitbots_msgs/msg/FootPressure"),
-        ("foot_center_of_pressure_left", "geometry_msgs/msg/PointStamped"),
-        ("foot_center_of_pressure_right", "geometry_msgs/msg/PointStamped"),
     ]
 
     for topic_suffix, msg_type in sensor_topics:
@@ -78,11 +74,11 @@ def generate_domain_bridge_config(robot_domain: int, output_dir: Path) -> Path:
 
     # Command topic: robot domain → main (reversed direction)
     # Key is source topic in from_domain, remap is destination in to_domain
-    config["topics"]["DynamixelController/command"] = {
+    config["topics"]["joint_command"] = {
         "type": "bitbots_msgs/msg/JointCommand",
         "from_domain": robot_domain,
         "to_domain": main_domain,
-        "remap": f"{namespace}/DynamixelController/command",
+        "remap": f"{namespace}/joint_command",
     }
 
     config_path = output_dir / f"robot{robot_domain}_bridge.yaml"
@@ -192,8 +188,8 @@ def generate_launch_description():
         ),
         DeclareLaunchArgument(
             "robot_type",
-            default_value="wolfgang",
-            description="Set the type of robot used (wolfgang, piplus, x02)",
+            default_value="piplus",
+            description="Set the type of robot used (piplus, x02)",
         ),
     ]
 
