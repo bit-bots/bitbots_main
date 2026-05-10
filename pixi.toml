@@ -177,6 +177,7 @@ setuptools = "==68.1.2"  # Pinning setuptools to avoid issues with colcon build
 git = ">=2.52.0,<3"  # Otherwise the system git might be used causing ABI issues
 curl = ">=8.17.0,<9"
 make = ">=4.4.1,<5"  # To avoid issues in the CI
+adwaita-icon-theme = "<40"  # To avoid issues with missing icons, as non-symbolic icons have been removed in newer versions
 
 [feature.format.dependencies]
 # Add git-subrepo to format dependencies as currently there are
@@ -211,6 +212,7 @@ COLCON_LOG_LEVEL = "30"
 PYTHONWARNINGS="ignore:::setuptools.command.install,ignore:::setuptools.command.easy_install,ignore:::pkg_resources,ignore:easy_install command is deprecated,ignore:setup.py install is deprecated"
 WEBOTS_HOME = "$CONDA_PREFIX/share/webots"
 ALSA_PLUGIN_DIR = "/usr/lib/x86_64-linux-gnu/alsa-lib"
+
 
 [feature.ros.activation]
 scripts = [
