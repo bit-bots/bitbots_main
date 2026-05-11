@@ -1,6 +1,6 @@
 standup_back_node:
   ros__parameters:
-    model: pi_plus_standup_back_host.onnx
+    model: pi_supine_training7.onnx
 
     joints:
       # 22-DOF order as reported by Isaac Gym for the HoST pi_plus_ground task.

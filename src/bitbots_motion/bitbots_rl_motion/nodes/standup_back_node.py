@@ -29,6 +29,7 @@ from handlers.raw_joint_handler import RawJointHandler
 from handlers.robot_state_handler import RobotStateHandler
 from rclpy.action import ActionServer, CancelResponse, GoalResponse
 from rclpy.callback_groups import ReentrantCallbackGroup
+from rclpy.duration import Duration
 from rclpy.executors import MultiThreadedExecutor
 
 from bitbots_msgs.action import Dynup
@@ -53,6 +54,7 @@ class StandupBackNode(RLNode):
         self.declare_parameter("history.length", 6)
         self.declare_parameter("history.one_step_obs_dim", 73)
         self.declare_parameter("unactuated_steps", 30)
+        self.declare_parameter("goal_timeout_sec", 8.0)
 
         self._ang_vel_scale = float(self.get_parameter("obs_scales.ang_vel").value)
         self._dof_pos_scale = float(self.get_parameter("obs_scales.dof_pos").value)
@@ -62,6 +64,7 @@ class StandupBackNode(RLNode):
         self._history_length = int(self.get_parameter("history.length").value)
         self._one_step_obs_dim = int(self.get_parameter("history.one_step_obs_dim").value)
         self._unactuated_steps = int(self.get_parameter("unactuated_steps").value)
+        self._goal_timeout_sec = float(self.get_parameter("goal_timeout_sec").value)
 
         self._num_joints = len(self.get_parameter("joints.ordered_relevant_joint_names").value)
 
@@ -91,7 +94,7 @@ class StandupBackNode(RLNode):
 
         # Goal/episode state.
         self._goal_lock = threading.Lock()
-        self._active = True
+        self._active = False
         self._tick = 0
         self._was_getting_up = False
 
@@ -222,9 +225,14 @@ class StandupBackNode(RLNode):
             self._tick = 0
             self._active = True
 
-        # Hold the action open until the client cancels (the HCM action will
-        # cancel once the robot is upright again, mirroring how dynup is
-        # cancelled when no longer needed).
+        # Hold the action open until either:
+        #   - the client cancels (e.g. HCM detects the robot is upright again,
+        #     mirroring how dynup gets cancelled when no longer needed), or
+        #   - the hard timeout elapses. The policy has no built-in done signal,
+        #     so we cap each attempt so the DSD can re-evaluate (retry or move
+        #     on) instead of hanging on this action forever.
+        start_time = self.get_clock().now()
+        timeout = Duration(seconds=self._goal_timeout_sec)
         rate = self.create_rate(20)
         try:
             while rclpy.ok():
@@ -232,6 +240,13 @@ class StandupBackNode(RLNode):
                     goal_handle.canceled()
                     self.get_logger().info("Standup-back goal canceled.")
                     return Dynup.Result(successful=False)
+                if self.get_clock().now() - start_time >= timeout:
+                    self.get_logger().info(
+                        f"Standup-back goal hit {self._goal_timeout_sec:.1f}s timeout; "
+                        "returning control to HCM."
+                    )
+                    goal_handle.succeed()
+                    return Dynup.Result(successful=True)
                 rate.sleep()
         finally:
             with self._goal_lock:
