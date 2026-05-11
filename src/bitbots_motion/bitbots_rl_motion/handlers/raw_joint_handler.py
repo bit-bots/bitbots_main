@@ -69,9 +69,10 @@ class RawJointHandler(Handler):
 
         joint_command = JointCommand()
         joint_command.header.stamp = self._joint_state.header.stamp
+        joint_command.from_hcm = True
         joint_command.joint_names = list(self._ordered_relevant_joint_names)
         joint_command.positions = q_target.tolist()
         joint_command.velocities = [-1.0] * len(self._ordered_relevant_joint_names)
         joint_command.accelerations = [-1.0] * len(self._ordered_relevant_joint_names)
-        joint_command.max_currents = [-1.0] * len(self._ordered_relevant_joint_names)
+        joint_command.max_torques = [-1.0] * len(self._ordered_relevant_joint_names)
         return joint_command

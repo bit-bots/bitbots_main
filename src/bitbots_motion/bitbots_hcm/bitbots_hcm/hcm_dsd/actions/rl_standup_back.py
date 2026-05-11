@@ -88,19 +88,14 @@ class RLStandupBack(AbstractHCMActionElement):
         self.publish_debug_data("RL Standup Back Percent Done", str(feedback.percent_done))
 
     def _goal_finished(self) -> bool:
-        if self._goal_future is None:
+        if self._goal_future is None or not self._goal_future.done():
             return False
-        if not self._goal_future.done():
-            return False
-        result_future = self._goal_future.result()
-        if result_future is None:
-            return False
-        if hasattr(result_future, "cancelled") and result_future.cancelled():
+        if self._goal_future.cancelled():
             return True
-        if not hasattr(result_future, "result") or result_future.result() is None:
+        goal_handle = self._goal_future.result()
+        if goal_handle is None:
             return False
-        status = result_future.result().status
-        return status in (
+        return goal_handle.status in (
             GoalStatus.STATUS_SUCCEEDED,
             GoalStatus.STATUS_CANCELED,
             GoalStatus.STATUS_ABORTED,
