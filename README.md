@@ -26,9 +26,6 @@ A few optional proprietary dependencies will be needed for full functionality, s
 pixi run build
 ```
 
-The first build might fail due to missing dependencies.
-Run `pixi run basler` to install the Basler pylon camera driver.
-
 ## Using the workspace
 
 To activate the workspace run the following command in the terminal you want to use:
