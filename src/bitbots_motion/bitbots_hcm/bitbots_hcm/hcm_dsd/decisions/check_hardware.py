@@ -50,7 +50,7 @@ class CheckMotors(AbstractHCMDecisionElement):
 
         if self.blackboard.servo_overload:
             return "OVERLOAD"
-        # We comment this out for now, but maybe add this later again
+        # TODO: We comment this out for now, but maybe add this later again
         # elif self.blackboard.servo_overheat:
         #     return "OVERHEAT"
 
@@ -173,7 +173,7 @@ class CheckBattery(AbstractHCMDecisionElement):
 
     def perform(self, reevaluate=False):
         if (
-            self.blackboard.battery_voltage is None
+            self.blackboard.battery_voltage is None  # TODO: This becomes a problem if we never get a battery message. Create a separate state for that?
             or self.blackboard.battery_voltage >= self.blackboard.battery_voltage_threshold
         ):
             self.last_battery_high_time = self.blackboard.node.get_clock().now()
