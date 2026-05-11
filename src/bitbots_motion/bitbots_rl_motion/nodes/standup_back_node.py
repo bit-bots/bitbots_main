@@ -26,6 +26,7 @@ import rclpy
 from handlers.gravity_handler import GravityHandler
 from handlers.gyro_handler import GyroHandler
 from handlers.raw_joint_handler import RawJointHandler
+from handlers._robot_state_handler import RobotStateHandler
 from rclpy.action import ActionServer, CancelResponse, GoalResponse
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.executors import MultiThreadedExecutor
@@ -74,12 +75,13 @@ class StandupBackNode(RLNode):
             )
 
         # Publisher
-        self._joint_command_pub = self.create_publisher(JointCommand, "standup_back_motor_goals", 10)
+        self._joint_command_pub = self.create_publisher(JointCommand, "dynup_motor_goals", 10)
 
         # Handlers
         self._gyro_handler = GyroHandler(self)
         self._gravity_handler = GravityHandler(self)
         self._raw_joint_handler = RawJointHandler(self, action_scale=self._action_scale)
+        self._robot_state_handler = RobotStateHandler(self)
 
         # History buffer (stacked observations).
         self._history = ObservationHistory(
@@ -89,7 +91,7 @@ class StandupBackNode(RLNode):
 
         # Goal/episode state.
         self._goal_lock = threading.Lock()
-        self._active = False
+        self._active = True
         self._tick = 0
 
         # Action server (Dynup action type, same as the dynup pattern).
@@ -143,7 +145,8 @@ class StandupBackNode(RLNode):
 
     def allowed_states(self) -> bool:
         # Publishing is gated entirely by the active goal and warmup state.
-        return self._active and self._tick >= self._unactuated_steps
+        
+        return self._robot_state_handler.is_getting_up() and self._active and self._tick >= self._unactuated_steps
 
     # ----------------------------------------------- override timer callback
 
