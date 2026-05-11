@@ -38,6 +38,7 @@ class RLStandupBack(AbstractHCMActionElement):
     def perform(self, reevaluate=False):
         # Don't reevaluate while the policy is running — same pattern as
         # PlayAnimationDynup for FRONT/BACK directions.
+        self.blackboard.node.get_logger().info("RLStandupBack node Perform startet")
         self.do_not_reevaluate()
 
         if self.first_perform:
