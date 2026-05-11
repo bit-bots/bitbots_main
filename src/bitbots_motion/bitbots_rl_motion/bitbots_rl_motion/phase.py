@@ -3,7 +3,7 @@ from typing import Optional
 import numpy as np
 
 
-class PhaseObject:
+class Phase:
     _phase: np.ndarray = np.array([0.0, np.pi], dtype=np.float32)
     _phase_dt: Optional[float]
 

@@ -1,19 +1,3 @@
-# Copyright 2024 DeepMind Technologies Limited
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# ==============================================================================
-"""Deploy an MJX policy in ONNX format to C MuJoCo and play with it."""
-
 import os
 from abc import ABC, abstractmethod
 from pathlib import Path
@@ -23,8 +7,8 @@ import onnx
 import onnxruntime as rt
 import rclpy
 from ament_index_python import get_package_share_directory
-from bitbots_rl_motion.phase import PhaseObject
-from bitbots_rl_motion.previous_action import PreviousActionObject
+from bitbots_rl_motion.phase import Phase
+from bitbots_rl_motion.previous_action import PreviousAction
 from handlers.handler import Handler
 from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
@@ -49,11 +33,11 @@ class RLNode(Node, ABC):
         self.get_logger().info(f"Loaded model: {model}")
 
         # Phase is optional - if phase shouldn't be used, than self._phase.get_phase() will return None
-        self._phase = PhaseObject(self)
-        self._previous_action = PreviousActionObject(self)
+        self._phase = Phase(self)
+        self._previous_action = PreviousAction(self)
 
     def _timer_callback(self):
-        # Check whether all subscribers hat at least on message
+        # Check whether all subscribers received at least one message
 
         sensors_ready, missing_handler = self._all_sensors_ready()
         if not sensors_ready:

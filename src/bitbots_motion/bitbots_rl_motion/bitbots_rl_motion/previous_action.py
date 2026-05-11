@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class PreviousActionObject:
+class PreviousAction:
     def __init__(self, node):
         self._node = node
 
