@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING, Callable
 
 import mujoco
 from ament_index_python.packages import get_package_share_directory
-from bitbots_utils.perf_timer import set_sim_time, timed
 from mujoco import viewer
 from rclpy.node import Node
 from rclpy.time import Time
@@ -44,7 +43,8 @@ class Simulation(Node):
         self.time_message = Time(seconds=0, nanoseconds=0).to_msg()
         self.timestep = self.model.opt.timestep
         self.step_number = 0
-        self.real_time_factor = 1.0
+        self.real_time_factor = 1.0 / 0.94 # add a small buffer to try to achieve the requested RTF
+        self.measured_rtf = 1.0
         self.clock_publisher = self.create_publisher(Clock, "clock", 1)
         self.create_subscription(Float32, "real_time_factor", self.real_time_factor_callback, 1)
 
@@ -84,32 +84,32 @@ class Simulation(Node):
         print("Starting simulation viewer...")
         with viewer.launch_passive(self.model, self.data) as view:
             while view.is_running():
+                start_time = time.perf_counter()
                 self.step()
-                view.sync()
-
-    @timed
+                if self.step_number % 16 == 0:  # approx 30 fps
+                    view.set_texts((None, mujoco.mjtGridPos.mjGRID_TOPLEFT, f"RTF: {self.measured_rtf:.2f}x", ""))
+                view.sync(state_only=True)
+                stop_time = time.perf_counter()
+                elapsed = stop_time - start_time
+                expected_step_time = self.timestep / self.real_time_factor
+                time.sleep(max(0.0, expected_step_time - elapsed))
+                total_wall_time = time.perf_counter() - start_time
+                if total_wall_time > 0:
+                    # weighted ema so it does not fluctuate too much
+                    self.measured_rtf = 0.01 * (self.timestep / total_wall_time) + 0.99 * self.measured_rtf
+                
     def step(self) -> None:
-        real_start_time = time.time()
         self.step_number += 1
         self.time += self.timestep
         self.time_message = Time(seconds=int(self.time), nanoseconds=int(self.time % 1 * 1e9)).to_msg()
-
         mujoco.mj_step(self.model, self.data)
-
         for event_config in self.events:
             if self.step_number % event_config["frequency"] == 0:
                 event_config["handler"]()
 
-        real_end_time = time.time()
-        expected_step_time = self.timestep / self.real_time_factor
-        time.sleep(max(0.0, expected_step_time - (real_end_time - real_start_time)))
-
-        set_sim_time(self.time)
-
     def real_time_factor_callback(self, msg: Float32) -> None:
-        self.real_time_factor = msg.data
+        self.real_time_factor = msg.data / 0.94  # add a small buffer to try to achieve the requested RTF
 
-    @timed
     def publish_clock_event(self) -> None:
         clock_msg = Clock()
         clock_msg.clock = self.time_message
@@ -149,7 +149,6 @@ class RobotSimulation:
     def namespace(self) -> str:
         return self.robot.namespace
 
-    @timed
     def joint_command_callback(self, command: JointCommand) -> None:
         if not command.joint_names:
             return
@@ -162,7 +161,6 @@ class RobotSimulation:
             joint.set_gains(kp, kd)
             joint.position = command.positions[i]
 
-    @timed
     def publish_ros_joint_states_event(self) -> None:
         js = JointState()
         js.header.stamp = self.simulation.time_message
@@ -177,7 +175,6 @@ class RobotSimulation:
             js.effort.append(joint.effort)
         self.node_publishers["joint_states"].publish(js)
 
-    @timed
     def publish_imu_event(self) -> None:
         imu = Imu()
         imu.header.stamp = self.simulation.time_message
@@ -193,7 +190,6 @@ class RobotSimulation:
         imu.orientation.w, imu.orientation.x, imu.orientation.y, imu.orientation.z = self.robot.sensors.orientation.data
         self.node_publishers["imu"].publish(imu)
 
-    @timed
     def publish_camera_event(self) -> None:
         if not self.simulation.camera_active:
             return
