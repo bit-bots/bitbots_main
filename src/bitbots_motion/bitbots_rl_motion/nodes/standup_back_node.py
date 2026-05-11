@@ -26,7 +26,7 @@ import rclpy
 from handlers.gravity_handler import GravityHandler
 from handlers.gyro_handler import GyroHandler
 from handlers.raw_joint_handler import RawJointHandler
-from handlers._robot_state_handler import RobotStateHandler
+from handlers.robot_state_handler import RobotStateHandler
 from rclpy.action import ActionServer, CancelResponse, GoalResponse
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.executors import MultiThreadedExecutor
@@ -93,6 +93,7 @@ class StandupBackNode(RLNode):
         self._goal_lock = threading.Lock()
         self._active = True
         self._tick = 0
+        self._was_getting_up = False
 
         # Action server (Dynup action type, same as the dynup pattern).
         self._action_server_callback_group = ReentrantCallbackGroup()
@@ -167,18 +168,28 @@ class StandupBackNode(RLNode):
             )
             return
 
+        # Reset episode state on rising edge into GETTING_UP so the warmup,
+        # history, and previous_action match the per-episode setup HoST trained
+        # with.
+        is_getting_up = self._robot_state_handler.is_getting_up()
+        if is_getting_up and not self._was_getting_up:
+            self._history.reset()
+            self._previous_action.set_previous_action(np.zeros(self._num_joints, dtype=np.float32))
+            self._tick = 0
+        self._was_getting_up = is_getting_up
+
         observation = self.obs()
 
         onnx_input = {self._onnx_input_name[0]: observation.reshape(1, -1)}
         onnx_pred = self._onnx_session.run(self._onnx_output_name, onnx_input)[0][0]
 
-        if self._active and self._tick >= self._unactuated_steps:
+        if self.allowed_states():
             self._previous_action.set_previous_action(onnx_pred)
             self.publisher(onnx_pred)
         else:
             self._previous_action.set_previous_action(np.zeros_like(onnx_pred))
 
-        if self._active:
+        if is_getting_up:
             self._tick += 1
 
     # ----------------------------------------------------- action server cbs
