@@ -2,6 +2,6 @@
     <arg name="emergency_button" default="false"/>
 
     <group if="$(var emergency_button)">
-        <node pkg="bitbots_emergency" exec="EMERGENCY_BUTTON" output="screen" description="Whether to activate E-stop button"/>
+        <node pkg="bitbots_emergency" exec="EMERGENCY_BUTTON" output="screen"/>
     </group>
 </launch>

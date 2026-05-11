@@ -48,7 +48,7 @@
     </include>
 
     <!--launch emergency button-->
-    <include file="$(find-pkg-share bitbots_emergency)/launch/emergency.launch"/>
+    <include file="$(find-pkg-share bitbots_emergency)/launch/emergency.launch">
         <arg name="emergency_button" value="$(var emergency_button)"/>
     </include>
 </launch>
