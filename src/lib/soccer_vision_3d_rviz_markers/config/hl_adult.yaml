@@ -1,0 +1,3 @@
+SoccerVision3DMarkers:
+  ros__parameters:
+    ball_diameter: 0.223  # 70cm circumference

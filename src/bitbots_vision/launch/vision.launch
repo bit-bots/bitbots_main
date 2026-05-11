@@ -1,20 +1,19 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <launch>
-    <!-- Get launch params-->
-    <arg name="sim" default="false" description="true: activates simulation time and switches to simulation color settings" />
-    <arg name="debug" default="false" description="true: activates publishing of several debug images" />
+    <arg name="sim" default="false"
+         description="true: activates simulation time and switches to simulation config" />
+    <arg name="debug" default="false"
+         description="true: activates publishing of the debug image" />
 
 
     <group unless="$(var sim)">
         <node pkg="bitbots_vision" exec="vision" name="bitbots_vision" output="screen">
             <!-- Set vision config -->
             <param from="$(find-pkg-share bitbots_vision)/config/visionparams.yaml" />
-
-            <!-- Set debug params-->
-            <param name="component_debug_image_active" value="$(var debug)" />
+            <param name="components.debug_active" value="$(var debug)" />
         </node>
     </group>
-    <!-- Start the YOEO vision in sim configuration-->
+
     <group if="$(var sim)">
         <node pkg="bitbots_vision" exec="vision" name="bitbots_vision" output="screen">
             <!-- Set vision config -->

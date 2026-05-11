@@ -1,0 +1,5 @@
+<launch>
+  <node pkg="bitbots_mujoco_sim" exec="sim" name="sim_interface" output="screen">
+    <param name="use_namespace" value="false"/>
+  </node>
+</launch>

@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>particle_filter</name>
+  <version>0.0.1</version>
+  <description>This package provides a library for particle filters in ROS.</description>
+
+  <maintainer email="2hartfil@informatik.uni-hamburg.de">Judith Hartfill</maintainer>
+  <maintainer email="5fiedler@informatik.uni-hamburg.de">Niklas Fiedler</maintainer>
+  <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+
+  <license>MIT</license>
+
+  <author email="2hartfil@informatik.uni-hamburg.de">Judith Hartfill</author>
+  <author email="5fiedler@informatik.uni-hamburg.de">Niklas Fiedler</author>
+  <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>backward_ros</depend>
+  <depend>eigen3_cmake_module</depend>
+  <depend>geometry_msgs</depend>
+  <depend>rclcpp</depend>
+  <depend>std_msgs</depend>
+  <depend>tf2_eigen</depend>
+  <depend>visualization_msgs</depend>
+
+  <export>
+    <bitbots_documentation>
+      <status>unknown</status>
+      <language>c++</language>
+    </bitbots_documentation>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

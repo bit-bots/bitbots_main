@@ -10,7 +10,7 @@
     </include>
 
     <group unless="$(var sim)">
-        <include file="$(find-pkg-share bitbots_ros_control)/launch/ros_control.launch" />
+        <include file="$(find-pkg-share livelybot_bringup)/launch/lowlevel.launch" />
     </group>
 
     <include file="$(find-pkg-share bitbots_animation_server)/launch/animation.launch">

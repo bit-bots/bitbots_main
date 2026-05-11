@@ -108,6 +108,9 @@ class Speaker(Node):
                 speaker = sc.default_speaker()
                 with speaker.player(samplerate=self.text_to_speech_engine.sample_rate) as p:
                     p.play(wav)
+                self.get_logger().info(
+                    f"Finished speaking: {text} (Duration: {duration[0].item():.2f}s) Used device: {speaker.name}"
+                )
             except OSError:
                 self.get_logger().error(str(traceback.format_exc()))
 

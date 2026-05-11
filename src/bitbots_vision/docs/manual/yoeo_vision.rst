@@ -10,7 +10,7 @@ segmentations for field lines, the field itself and the background. Furthermore,
 
 Supported Neural Network Frameworks
 -----------------------------------
-YOEOs can be run with the following frameworks: PyTorch, Onnx, OpenVino and TVM.
+YOEOs can be run with the following frameworks: Onnx
 
 How to Add a New YOEO Variant to the Vision?
 --------------------------------------------

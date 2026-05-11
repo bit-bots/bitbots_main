@@ -1,0 +1,13 @@
+repositories:
+  ipm:
+    type: git
+    url: https://github.com/ros-sports/ipm.git
+    version: rolling
+  bitbots_tf_buffer:
+    type: git
+    url: https://github.com/bit-bots/bitbots_tf_buffer.git
+    version: main
+  ros2_python_extension:
+    type: git
+    url: https://github.com/bit-bots/ros2_python_extension.git
+    version: main

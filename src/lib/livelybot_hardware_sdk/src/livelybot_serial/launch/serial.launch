@@ -1,0 +1,6 @@
+
+<launch>
+  <node pkg="livelybot_serial" exec="robot_node" name="robot_node" output="screen">
+    <param from="$(find-pkg-share livelybot_serial)/config/robot.yaml"/>
+  </node>
+</launch>

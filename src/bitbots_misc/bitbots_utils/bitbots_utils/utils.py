@@ -7,8 +7,6 @@ import yaml
 from ament_index_python import get_package_share_directory
 from beartype import BeartypeConf, BeartypeStrategy, beartype
 from rcl_interfaces.msg import Parameter as ParameterMsg
-from rcl_interfaces.msg import ParameterType as ParameterTypeMsg
-from rcl_interfaces.msg import ParameterValue as ParameterValueMsg
 from rcl_interfaces.srv import GetParameters, SetParameters
 from rclpy.node import Node
 from rclpy.parameter import PARAMETER_SEPARATOR_STRING, Parameter, parameter_value_to_python
@@ -32,26 +30,6 @@ def read_urdf(robot_name: str) -> str:
         f"/urdf/robot.urdf use_fake_walk:=false sim_ns:=false"
     ).read()
     return urdf
-
-
-def load_moveit_parameter(robot_name: str) -> list[ParameterMsg]:
-    moveit_parameters = get_parameters_from_plain_yaml(
-        f"{get_package_share_directory(f'{robot_name}_moveit_config')}/config/kinematics.yaml",
-        "robot_description_kinematics.",
-    )
-    robot_description = ParameterMsg()
-    robot_description.name = "robot_description"
-    robot_description.value = ParameterValueMsg(
-        string_value=read_urdf(robot_name), type=ParameterTypeMsg.PARAMETER_STRING
-    )
-    moveit_parameters.append(robot_description)
-    robot_description_semantic = ParameterMsg()
-    robot_description_semantic.name = "robot_description_semantic"
-    with open(f"{get_package_share_directory(f'{robot_name}_moveit_config')}/config/{robot_name}.srdf") as file:
-        value = file.read()
-        robot_description_semantic.value = ParameterValueMsg(string_value=value, type=ParameterTypeMsg.PARAMETER_STRING)
-    moveit_parameters.append(robot_description_semantic)
-    return moveit_parameters
 
 
 def get_parameters_from_ros_yaml(node_name: str, parameter_file: str, use_wildcard: bool) -> list[ParameterMsg]:

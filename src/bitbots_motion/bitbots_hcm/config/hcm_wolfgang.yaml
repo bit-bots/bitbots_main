@@ -23,6 +23,8 @@
       startup: "startup"
       turning_front_left: "turning_front_left"
       turning_front_right: "turning_front_right"
+      walk_ready: "walkready" # does not exist yet
+      rise: "rise" # does not exist yet
 
     # Falling
     stand_up_active: true # Enables the robot to stand up automatically
@@ -42,3 +44,9 @@
 
     # Pick up
     pick_up_accel_threshold: 7.0
+
+    # Battery
+    battery:
+      voltage_threshold: 18.0 # Voltage under which the battery is considered low
+      debounce_time: 5.0 # Time the battery has to be under the threshold to be considered low [s]
+

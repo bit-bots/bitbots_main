@@ -17,7 +17,7 @@
     <arg name="tts" default="false" description="Whether to speak" />
     <arg name="whistle_detector" default="true" description="Whether to detect whistles"/>
     <arg unless="$(var sim)" name="fieldname" default="german_open_2026" description="Loads field settings (labor, webots, ...)." />
-    <arg if="$(var sim)" name="fieldname" default="webots" description="Loads field settings (labor, webots, ...)." />
+    <arg if="$(var sim)" name="fieldname" default="adult_go26" description="Loads field settings (labor, webots, ...)." />
 
 
     <!-- load the global parameters -->

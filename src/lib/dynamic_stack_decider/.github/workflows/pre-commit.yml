@@ -1,0 +1,16 @@
+name: Code style checks
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+      - name: Install cppcheck
+        run: sudo apt install cppcheck -y
+      - uses: pre-commit/action@v3.0.0

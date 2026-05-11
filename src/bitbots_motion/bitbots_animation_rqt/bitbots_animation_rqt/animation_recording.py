@@ -233,7 +233,7 @@ class Recorder:
             "last_edited": datetime.isoformat(datetime.now(), " "),
             "author": self.current_state.author,
             "description": self.current_state.description,
-            "keyframes": keyframes,
+            "keyframes": [kf.as_dict() for kf in keyframes],
         }
 
         # Save the animation to a file

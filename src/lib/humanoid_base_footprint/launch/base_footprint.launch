@@ -1,0 +1,13 @@
+<launch>
+    <arg name="tf_prefix" default="$(eval '\'$(env ROS_NAMESPACE /)\'')"/>
+    <arg name="sim" default="false"/>
+
+    <node pkg="humanoid_base_footprint" exec="base_footprint" output="screen">
+        <param name="base_link_frame" value="$(var tf_prefix)base_link"/>
+        <param name="base_footprint_frame" value="$(var tf_prefix)base_footprint"/>
+        <param name="r_sole_frame" value="$(var tf_prefix)r_sole"/>
+        <param name="l_sole_frame" value="$(var tf_prefix)l_sole"/>
+        <param name="odom_frame" value="$(var tf_prefix)odom"/>
+        <param name="use_sim_time" value="$(var sim)"/>
+    </node>
+</launch>

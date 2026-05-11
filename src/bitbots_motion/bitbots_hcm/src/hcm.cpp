@@ -42,7 +42,7 @@ class HCM_CPP : public rclcpp::Node {
     hcm_py_ = hcm_module.attr("HardwareControlManager")(use_sim_time, simulation_active, visualization_active);
 
     // Create publishers
-    pub_controller_command_ = this->create_publisher<bitbots_msgs::msg::JointCommand>("DynamixelController/command", 1);
+    pub_controller_command_ = this->create_publisher<bitbots_msgs::msg::JointCommand>("joint_command", 1);
     pub_robot_state_ = this->create_publisher<bitbots_msgs::msg::RobotControlState>("robot_state", 1);
 
     // Create subscribers for goals
@@ -246,7 +246,7 @@ int main(int argc, char** argv) {
   std::thread thread_obj(thread_spin, exec);
 
   auto last_time = node->get_clock()->now();
-  rclcpp::Rate rate = rclcpp::Rate(125.0);
+  rclcpp::Rate rate = rclcpp::Rate(100.0);
   while (rclcpp::ok()) {
     // Check if time progressed
     auto current_time = node->get_clock()->now();

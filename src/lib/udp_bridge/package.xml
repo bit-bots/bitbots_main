@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>udp_bridge</name>
+  <version>0.0.0</version>
+  <description>Bridge arbitrary ROS messages to a defined external IP-Address while only using UDP.</description>
+
+  <maintainer email="7sell@informatik.uni-hamburg.de">Finn-Thorben Sell</maintainer>
+  <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+
+  <license>MIT</license>
+
+  <author email="7sell@informatik.uni-hamburg.de">Finn-Thorben Sell</author>
+
+  <depend>rclpy</depend>
+
+  <depend>bitbots_docs</depend>
+  <depend>bitbots_utils</depend>
+  <depend>python3-cryptography</depend>
+
+  <test_depend>python3-pytest</test_depend>
+
+  <export>
+    <bitbots_documentation>
+      <status>unknown</status>
+      <language>python3</language>
+    </bitbots_documentation>
+    <build_type>ament_python</build_type>
+  </export>
+</package>
