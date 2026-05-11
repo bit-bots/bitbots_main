@@ -58,24 +58,11 @@ setup_repo() {
     install
 }
 
-setup_host() {
-    echo "Setting up system dependencies not covered by pixi. This may require sudo rights. For non-Ubuntu systems, please install the required packages manually."
-    if (( has_sudo )); then
-        $main_dir/scripts/make_basler.sh
-        basler_installed=1
-    fi
-}
-
 build_repository() {
     echo "Running full build..."
     set +u
 
-    # Append "--packages-skip bitbots_basler_camera" to the build command if setup_host was skipped or failed
-    if (( basler_installed )); then
     pixi run build
-    else
-    pixi run build --packages-skip bitbots_basler_camera
-    fi
 }
 
 has_sudo=0

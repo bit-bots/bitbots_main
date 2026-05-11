@@ -1,0 +1,3 @@
+float32 dual_ant_yaw
+float32 dual_ant_yaw_error
+float32 dual_ant_baseline_len

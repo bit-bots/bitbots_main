@@ -17,7 +17,6 @@ find_package(bitbots_docs REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(moveit_core REQUIRED)
-find_package(moveit_ros_planning REQUIRED)
 find_package(PkgConfig REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
@@ -51,7 +50,6 @@ ament_target_dependencies(
   geometry_msgs
   tf2_geometry_msgs
   moveit_core
-  moveit_ros_planning
   Eigen3
   PkgConfig)
 ament_python_install_package(bitbots_splines)

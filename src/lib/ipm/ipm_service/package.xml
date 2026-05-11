@@ -1,0 +1,24 @@
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>ipm_service</name>
+  <version>0.0.0</version>
+  <description>A ROS2 Inverse Perspective Mapping Service</description>
+  <maintainer email="git@flova.de">Florian Vahl</maintainer>
+  <license>Apache License 2.0</license>
+
+  <depend>ipm_interfaces</depend>
+  <depend>ipm_library</depend>
+  <depend>python3-numpy</depend>
+  <depend>rclpy</depend>
+  <depend>sensor_msgs</depend>
+  <depend>sensor_msgs_py</depend>
+
+  <test_depend>ament_copyright</test_depend>
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_pep257</test_depend>
+  <test_depend>python3-pytest</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

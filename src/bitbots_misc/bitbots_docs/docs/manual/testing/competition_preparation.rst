@@ -52,4 +52,4 @@ After Powering On
 * Check camera images for focus and proper transmission (10 Hz, low jitter)
    Run:
 
-   ``rl bitbots_bringup vision_standalone.launch`` and ``ros2 topic hz /camera/image_proc`` and in ``rqt`` open the image view plugin.
+   ``rl bitbots_bringup vision_standalone.launch`` and ``ros2 topic hz /zed/zed_node/left/image_rect_color`` and in ``rqt`` open the image view plugin.

@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/ingydotnet/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/ros-sports/soccer_vision_3d_rviz_markers.git
+	branch = rolling
+	commit = a07c0d4f88eff27a1cf6f29ccd2757d77926da8b
+	parent = 1e1f72b6c0fccfab1efd57fadb2a2789ac360775
+	method = merge
+	cmdver = 0.4.9

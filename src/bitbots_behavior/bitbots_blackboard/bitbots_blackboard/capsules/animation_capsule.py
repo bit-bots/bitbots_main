@@ -3,7 +3,7 @@ from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.duration import Duration
 
 from bitbots_blackboard.capsules import AbstractBlackboardCapsule
-from bitbots_msgs.action import Dynup, LookAt, PlayAnimation
+from bitbots_msgs.action import LookAt, PlayAnimation
 
 
 class AnimationCapsule(AbstractBlackboardCapsule):
@@ -26,8 +26,6 @@ class AnimationCapsule(AbstractBlackboardCapsule):
         self.animation_client = ActionClient(
             self._node, PlayAnimation, "animation", callback_group=ReentrantCallbackGroup()
         )
-
-        self.dynup_action_client = ActionClient(self._node, Dynup, "dynup", callback_group=ReentrantCallbackGroup())
 
         self.lookat_action_client = ActionClient(self._node, LookAt, "look_at_goal")
 

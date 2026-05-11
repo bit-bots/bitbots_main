@@ -1,4 +1,4 @@
 parameter_blackboard:
   ros__parameters:
 
-    robot_type_name: Wolfgang
+    robot_type_name: PiPlus

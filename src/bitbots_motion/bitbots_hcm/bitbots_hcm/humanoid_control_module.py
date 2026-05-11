@@ -19,7 +19,7 @@ from rclpy.serialization import deserialize_message
 from rclpy.time import Time
 from ros2_numpy import numpify
 from sensor_msgs.msg import Imu, JointState
-from std_msgs.msg import Bool
+from std_msgs.msg import Bool, Float32
 from std_srvs.srv import SetBool
 
 from bitbots_hcm import hcm_dsd
@@ -77,7 +77,7 @@ class HardwareControlManager:
         self.hcm_deactivated = False
 
         # Create subscribers
-        self.node.create_subscription(Bool, "core/power_switch_status", self.power_cb, 1)
+        self.node.create_subscription(Float32, "battery_voltage", self.voltage_cb, 1)
         self.node.create_subscription(Bool, "hcm_deactivate", self.deactivate_cb, 1)
         self.node.create_subscription(DiagnosticArray, "diagnostics_agg", self.diag_cb, 1)
         self.node.create_subscription(Bool, "game_controller/stop_msg", self.stop_cb, 1)
@@ -141,9 +141,9 @@ class HardwareControlManager:
         resp.success = True
         return resp
 
-    def power_cb(self, msg: Bool):
-        """Updates the power state."""
-        self.blackboard.is_power_on = msg.data
+    def voltage_cb(self, msg: Float32):
+        """Receives data sent by the battery management system."""
+        self.blackboard.battery_voltage = msg.data
 
     def diag_cb(self, msg: DiagnosticArray):
         """Updates the diagnostic state."""
@@ -160,8 +160,6 @@ class HardwareControlManager:
                 self.blackboard.servo_diag_error = status.level in (DiagnosticStatus.ERROR, DiagnosticStatus.STALE)
             elif "/IMU" in status.name:
                 self.blackboard.imu_diag_error = status.level in (DiagnosticStatus.ERROR, DiagnosticStatus.STALE)
-            elif "/Pressure" in status.name:
-                self.blackboard.pressure_diag_error = status.level in (DiagnosticStatus.ERROR, DiagnosticStatus.STALE)
 
     def get_state(self) -> T_RobotControlState:
         """Returns the current state of the HCM."""

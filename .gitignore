@@ -51,7 +51,6 @@ fabric.properties
 ### ROS template
 build/
 bin/
-lib/
 msg_gen/
 srv_gen/
 msg/*Action.msg
@@ -206,7 +205,6 @@ bitbots_docs_internal
 
 # Neural Network Model Path
 /src/bitbots_vision/models/
-/src/bitbots_motion/bitbots_rl_motion/models/
 
 **/.*.
 .idea/*

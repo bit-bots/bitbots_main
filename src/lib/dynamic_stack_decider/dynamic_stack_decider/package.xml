@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>dynamic_stack_decider</name>
+  <version>0.5.3</version>
+  <description>The bitbots dsd is an extended form
+    of a behaviour state machine. It works like a stack where
+    classes describing decisions or actions are pushed on top,
+    executed, and popped off again. In difference to a state
+    machine, the stack machine keeps track of the previously
+    executed behaviour classes and re-executes them whenever
+    the top class is popped off.
+  </description>
+
+  <maintainer email="7engelke@informatik.uni-hamburg.de">Timon Engelke</maintainer>
+  <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+  <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
+
+  <license>MIT</license>
+
+  <buildtool_depend>rosidl_default_generators</buildtool_depend>
+  <exec_depend>rosidl_default_runtime</exec_depend>
+
+  <depend>rclpy</depend>
+  <depend>std_msgs</depend>
+  <depend>python3-yaml</depend>
+  <test_depend>python3-pytest</test_depend>
+  <test_depend>python3-coverage</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

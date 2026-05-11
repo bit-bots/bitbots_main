@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/ingydotnet/git-subrepo#readme
+;
+[subrepo]
+	remote = git@github.com:stereolabs/zed-ros2-wrapper.git
+	branch = humble-v5.0.0
+	commit = a66e227e290fb26b9e21b0f45aedcbf93ace52b9
+	parent = 4550d69c730b27dcae9845e6b79eacfb586a2135
+	method = merge
+	cmdver = 0.4.9

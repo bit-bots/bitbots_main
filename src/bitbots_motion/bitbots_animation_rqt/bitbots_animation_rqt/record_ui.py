@@ -31,7 +31,7 @@ from std_srvs.srv import SetBool
 
 from bitbots_animation_rqt.animation_recording import Recorder
 from bitbots_animation_rqt.utils import DragDropList, JointStateCommunicate, flatten_dict_of_lists
-from bitbots_msgs.action import Dynup, PlayAnimation
+from bitbots_msgs.action import PlayAnimation
 from bitbots_msgs.msg import JointTorque
 from bitbots_msgs.srv import AddAnimation
 
@@ -56,9 +56,6 @@ class RecordUI(Plugin):
         self.animation_client: ActionClient = ActionClient(self._node, PlayAnimation, "animation")
         if not self.animation_client.wait_for_server(timeout_sec=5.0):
             self._node.get_logger().error("Animation action server not available after waiting 5 seconds")
-        self.dynup_client = ActionClient(self._node, Dynup, "dynup")
-        if not self.dynup_client.wait_for_server(timeout_sec=5.0):
-            self._node.get_logger().error("Dynup action server not available after waiting 5 seconds")
 
         # Create a service clients
         self.add_animation_client = self._node.create_client(AddAnimation, "add_temporary_animation")
@@ -95,35 +92,37 @@ class RecordUI(Plugin):
         # Motor hierarchy
         self._motor_hierarchy = {  # TODO this should be a parameter / loaded from the urdf
             "Body": {
-                "Head": ["HeadPan", "HeadTilt"],
+                "Head": ["head_yaw_joint", "head_pitch_joint"],
                 "Arms": {
                     "Left": [
-                        "LShoulderPitch",
-                        "LShoulderRoll",
-                        "LElbow",
+                        "l_shoulder_pitch_joint",
+                        "l_shoulder_roll_joint",
+                        "l_upper_arm_joint",
+                        "l_elbow_joint",
                     ],
                     "Right": [
-                        "RShoulderPitch",
-                        "RShoulderRoll",
-                        "RElbow",
+                        "r_shoulder_pitch_joint",
+                        "r_shoulder_roll_joint",
+                        "r_upper_arm_joint",
+                        "r_elbow_joint",
                     ],
                 },
                 "Legs": {
                     "Left": [
-                        "LHipYaw",
-                        "LHipRoll",
-                        "LHipPitch",
-                        "LKnee",
-                        "LAnklePitch",
-                        "LAnkleRoll",
+                        "l_hip_roll_joint",
+                        "l_hip_pitch_joint",
+                        "l_calf_joint",
+                        "l_thigh_joint",
+                        "l_ankle_pitch_joint",
+                        "l_ankle_roll_joint",
                     ],
                     "Right": [
-                        "RHipYaw",
-                        "RHipRoll",
-                        "RHipPitch",
-                        "RKnee",
-                        "RAnklePitch",
-                        "RAnkleRoll",
+                        "r_hip_roll_joint",
+                        "r_hip_pitch_joint",
+                        "r_calf_joint",
+                        "r_thigh_joint",
+                        "r_ankle_pitch_joint",
+                        "r_ankle_roll_joint",
                     ],
                 },
             }
@@ -290,7 +289,7 @@ class RecordUI(Plugin):
         Connects the actions in the top bar to the corresponding functions, and sets their shortcuts
         :return:
         """
-        self._widget.actionNew.triggered.connect(self.new)
+        self._widget.actionNew.triggered.connect(self.new_animation)
         self._widget.actionOpen.triggered.connect(self.open)
         self._widget.actionSave.triggered.connect(self.save)
         self._widget.actionSave_as.triggered.connect(lambda: self.save(new_location=True))
@@ -301,8 +300,8 @@ class RecordUI(Plugin):
         self._widget.actionAnimation_until_Frame.triggered.connect(self.play_until)
         self._widget.actionDuplicate_Frame.triggered.connect(self.duplicate)
         self._widget.actionDelete_Frame.triggered.connect(self.delete)
-        self._widget.actionLeft.triggered.connect(lambda: self.mirror_frame("R"))
-        self._widget.actionRight.triggered.connect(lambda: self.mirror_frame("L"))
+        self._widget.actionLeft.triggered.connect(lambda: self.mirror_frame("r"))
+        self._widget.actionRight.triggered.connect(lambda: self.mirror_frame("l"))
         self._widget.actionInvert.triggered.connect(self.invert_frame)
         self._widget.actionUndo.triggered.connect(self.undo)
         self._widget.actionRedo.triggered.connect(self.redo)
@@ -318,9 +317,7 @@ class RecordUI(Plugin):
         """
         Plays the walkready animation on the robot
         """
-        result: Dynup.Result = self.dynup_client.send_goal(Dynup.Goal(direction=Dynup.Goal.DIRECTION_WALKREADY)).result
-        if not result.successful:
-            self._node.get_logger().error("Could not execute walkready animation")
+        raise NotImplementedError("This function is not implemented yet.")
 
     def help(self) -> None:
         """
@@ -347,7 +344,7 @@ class RecordUI(Plugin):
             Invert: Ctrl + Down Arrow"
         QMessageBox.about(self._widget, "About RecordUI", message)
 
-    def new(self) -> None:
+    def new_animation(self, _) -> None:
         """
         Deletes all currently recorded frames
         """
@@ -414,7 +411,7 @@ class RecordUI(Plugin):
                 return
         # Open the file dialog in the animations build directory
         my_file = QFileDialog.getOpenFileName(
-            directory=os.path.join(get_package_share_directory("wolfgang_animations"), "animations"), filter="*.json"
+            directory=os.path.join(get_package_share_directory("piplus_animations"), "animations"), filter="*.json"
         )
 
         # Cancel the open if the user does not select a file
@@ -588,12 +585,12 @@ class RecordUI(Plugin):
         self._widget.statusBar.showMessage(status)
         self.update_frames()
 
-    def mirror_frame(self, source: Literal["L", "R"]) -> None:
+    def mirror_frame(self, source: Literal["l", "r"]) -> None:
         """
         Copies all motor values from one side of the robot to the other. Inverts values, if necessary
         """
         # Get direction to mirror to
-        mirrored_source = {"R": "L", "L": "R"}[source]
+        mirrored_source = {"r": "l", "l": "r"}[source]
 
         # Go through all active motors
         for motor_name, angle in self._working_angles.items():
@@ -626,10 +623,10 @@ class RecordUI(Plugin):
         # Go through all active motors
         for motor_name, angle in self._working_angles.items():
             # Check if the motor is on the right or left side and get the mirrored motor name
-            if motor_name.startswith("R"):
-                mirrored_motor_name = "L" + motor_name[1:]
-            elif motor_name.startswith("L"):
-                mirrored_motor_name = "R" + motor_name[1:]
+            if motor_name.startswith("r"):
+                mirrored_motor_name = "l" + motor_name[1:]
+            elif motor_name.startswith("l"):
+                mirrored_motor_name = "r" + motor_name[1:]
             else:
                 # Just copy over if the motor is not on the left or right side
                 mirrored_motors[motor_name] = angle

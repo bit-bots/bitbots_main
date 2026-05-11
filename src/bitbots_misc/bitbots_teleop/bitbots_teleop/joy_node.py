@@ -134,7 +134,7 @@ class JoyNode(Node):
         self.head_mode_pub = self.create_publisher(HeadMode, "head_mode", 1)
 
         self.head_msg = JointCommand()
-        self.head_msg.max_currents = [-1.0] * 2
+        self.head_msg.max_torques = [-1.0] * 2
         self.head_msg.velocities = [5.0] * 2
         self.head_msg.accelerations = [40.0] * 2
 
@@ -224,7 +224,7 @@ class JoyNode(Node):
                 self.denormalize_joy(self.config["head"]["gain_tilt"], self.config["head"]["stick_tilt"], msg, -1)
             )
 
-            self.head_msg.joint_names = ["HeadPan", "HeadTilt"]
+            self.head_msg.joint_names = ["head_yaw_joint", "head_pitch_joint"]
             self.head_msg.positions = [pan_goal, tilt_goal]
             self.head_pub.publish(self.head_msg)
 

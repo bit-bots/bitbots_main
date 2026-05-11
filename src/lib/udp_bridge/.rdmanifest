@@ -1,0 +1,15 @@
+---
+# See http://doku.bit-bots.de/meta/manual/software/ci.html#make-package-resolvable-in-ci
+check-presence-script: '#!/bin/bash
+
+  test -d $BITBOTS_CATKIN_WORKSPACE/src/udp_bridge'
+depends:
+- bitbots_docs
+- python3-cryptography
+- roslib
+- rospy
+exec-path: udp_bridge-master
+install-script: '#!/bin/bash
+
+  cp -r . $BITBOTS_CATKIN_WORKSPACE/src/udp_bridge'
+uri: https://github.com/bit-bots/udp_bridge/archive/refs/heads/master.tar.gz

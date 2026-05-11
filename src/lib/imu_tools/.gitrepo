@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/ingydotnet/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/CCNYRoboticsLab/imu_tools.git
+	branch = jazzy
+	commit = 69261f53be33cb489022cdedf217c7358905d888
+	parent = 391c63fe0cb6fe990143d3a1c2c7c9f16bb05baf
+	method = merge
+	cmdver = 0.4.9

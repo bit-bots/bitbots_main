@@ -1,22 +1,17 @@
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
 
-#include <bio_ik/bio_ik.hpp>
-#include <bio_ik_msgs/msg/ik_response.hpp>
 #include <bitbots_head_mover/head_parameters.hpp>
 #include <bitbots_msgs/action/look_at.hpp>
 #include <bitbots_msgs/msg/head_mode.hpp>
 #include <bitbots_msgs/msg/joint_command.hpp>
+#include <bitbots_splines/smooth_spline.hpp>
 #include <chrono>
 #include <cmath>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <iostream>
 #include <memory>
-#include <moveit/planning_scene/planning_scene.hpp>
-#include <moveit/planning_scene_monitor/planning_scene_monitor.hpp>
-#include <moveit/robot_model_loader/robot_model_loader.hpp>
-#include <moveit/robot_state/conversions.hpp>
 #include <rclcpp/clock.hpp>
 #include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
 #include <rclcpp/logger.hpp>
@@ -60,14 +55,6 @@ class HeadMover {
   std::optional<sensor_msgs::msg::JointState> current_joint_state_;
   geometry_msgs::msg::PoseWithCovarianceStamped tf_precision_pose_;
 
-  // Declare robot model and planning scene for moveit
-  robot_model_loader::RobotModelLoaderPtr loader_;
-  moveit::core::RobotModelPtr robot_model_;
-  moveit::core::RobotStatePtr robot_state_;
-  moveit::core::RobotStatePtr collision_state_;
-  planning_scene_monitor::PlanningSceneMonitorPtr planning_scene_monitor_;
-  planning_scene::PlanningScenePtr planning_scene_;
-
   // Declare parameters and parameter listener
   move_head::Params params_;
   std::shared_ptr<move_head::ParamListener> param_listener_;
@@ -80,11 +67,15 @@ class HeadMover {
   // Store previous head mode
   uint prev_head_mode_ = -1;
 
-  // Declare variables for the current search patterns parameters
-  double threshold_ = 0;
-  int index_ = 0;
-  double pan_speed_ = 0;
-  double tilt_speed_ = 0;
+  // Duration of one full search pattern cycle (seconds)
+  double cycle_time_ = 0.0;
+
+  // Spline trajectory for search patterns
+  bitbots_splines::SmoothSpline pan_spline_;
+  bitbots_splines::SmoothSpline tilt_spline_;
+  double spline_duration_ = 0.0;
+  rclcpp::Time spline_start_time_;
+  bool spline_valid_ = false;
 
   // World model state
   geometry_msgs::msg::PoseWithCovarianceStamped ball_position_;
@@ -128,64 +119,9 @@ class HeadMover {
     param_listener_ = std::make_shared<move_head::ParamListener>(node_);
     params_ = param_listener_->get_params();
 
-    // Create a seperate node for moveit, this way we can use rqt to change parameters,
-    // because some moveit parameters break the gui
-    auto moveit_node = std::make_shared<rclcpp::Node>("moveit_head_mover_node");
-
-    // Get the parameters from the move_group node
-    auto parameters_client = std::make_shared<rclcpp::SyncParametersClient>(node_, "/move_group");
-    while (!parameters_client->wait_for_service(1s)) {
-      if (!rclcpp::ok()) {
-        RCLCPP_ERROR(node_->get_logger(), "Interrupted while waiting for the service. Exiting.");
-        return;
-      }
-      RCLCPP_INFO(node_->get_logger(), "service not available, waiting again...");
-    }
-
-    // Extract the robot_description
-    rcl_interfaces::msg::ListParametersResult parameter_list =
-        parameters_client->list_parameters({"robot_description_kinematics"}, 10);
-
-    // Set the robot description parameters in the moveit node
-    auto copied_parameters = parameters_client->get_parameters(parameter_list.names);
-    for (auto& parameter : copied_parameters) {
-      moveit_node->declare_parameter(parameter.get_name(), parameter.get_type());
-      moveit_node->set_parameter(parameter);
-    }
-
-    // Load robot description / robot model into moveit
-    std::string robot_description = "robot_description";
-    loader_ = std::make_shared<robot_model_loader::RobotModelLoader>(
-        robot_model_loader::RobotModelLoader(moveit_node, robot_description, true));
-    robot_model_ = loader_->getModel();
-    if (!robot_model_) {
-      RCLCPP_ERROR(node_->get_logger(),
-                   "failed to load robot model %s. Did you start the "
-                   "blackboard (bitbots_bringup base.launch)?",
-                   robot_description.c_str());
-    }
-
-    // Recreate robot state
-    robot_state_.reset(new moveit::core::RobotState(robot_model_));
-    robot_state_->setToDefaultValues();
-
-    // Recreate collision state
-    collision_state_.reset(new moveit::core::RobotState(robot_model_));
-    collision_state_->setToDefaultValues();
-
-    // Get planning scene for collision checking
-    planning_scene_monitor_ = std::make_shared<planning_scene_monitor::PlanningSceneMonitor>(moveit_node, loader_);
-    planning_scene_ = planning_scene_monitor_->getPlanningScene();
-    if (!planning_scene_) {
-      RCLCPP_ERROR_ONCE(node_->get_logger(), "failed to connect to planning scene");
-    }
-
     // Create tf buffer and listener to update it
     tf_buffer_ = std::make_shared<tf2_ros::Buffer>(node_->get_clock());
     tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
-
-    // Initialize variables
-    threshold_ = params_.position_reached_threshold * DEG_TO_RAD;
 
     // Initialize action server for look at action
     action_server_ = rclcpp_action::create_server<LookAtGoal>(
@@ -212,8 +148,7 @@ class HeadMover {
     // Bring the goal point into the planning frame
     geometry_msgs::msg::PointStamped new_point;
     try {
-      new_point =
-          tf_buffer_->transform(goal->look_at_position, planning_scene_->getPlanningFrame(), tf2::durationFromSec(0.9));
+      new_point = tf_buffer_->transform(goal->look_at_position, "base_footprint", tf2::durationFromSec(0.9));
     } catch (tf2::TransformException& ex) {
       RCLCPP_ERROR(node_->get_logger(), "Could not transform goal point: %s", ex.what());
       return rclcpp_action::GoalResponse::REJECT;
@@ -226,6 +161,7 @@ class HeadMover {
     bool goal_not_in_range = check_head_collision(pan_tilt.first, pan_tilt.second);
 
     // Check whether the action goal is valid and can be executed
+    // cppcheck-suppress knownConditionTrueFalse
     if (action_running_ || goal_not_in_range ||
         !(params_.max_pan[0] < pan_tilt.first && pan_tilt.first < params_.max_pan[1]) ||
         !(params_.max_tilt[0] < pan_tilt.second && pan_tilt.second < params_.max_tilt[1])) {
@@ -399,6 +335,7 @@ class HeadMover {
 
     // Check if we have collisions on our path
     for (int i = 0; i < step_count; i++) {
+      // cppcheck-suppress knownConditionTrueFalse
       if (check_head_collision(pan_and_tilt_steps[i].first, pan_and_tilt_steps[i].second)) {
         // If we have a collision, try to move the head to an alternative position
         // The new position looks 10 degrees further up and is less likely to have a collision with the body
@@ -417,13 +354,9 @@ class HeadMover {
    * @brief Checks if the head collides with the body at a given pan and tilt position
    */
   bool check_head_collision(double pan, double tilt) {
-    collision_state_->setJointPositions("HeadPan", &pan);
-    collision_state_->setJointPositions("HeadTilt", &tilt);
-    collision_detection::CollisionRequest req;
-    collision_detection::CollisionResult res;
-    collision_detection::AllowedCollisionMatrix acm = planning_scene_->getAllowedCollisionMatrix();
-    planning_scene_->checkCollision(req, res, *collision_state_, acm);
-    return res.collision;
+    // TODO we do not have a collision model for the pi plus head yet, so we need to implement this function properly
+    RCLCPP_ERROR_STREAM(node_->get_logger(), "Collision checking for the pi plus head is not implemented yet");
+    return false;
   }
 
   /**
@@ -448,11 +381,11 @@ class HeadMover {
     // Send the motor goals including the position, speed and acceleration
     bitbots_msgs::msg::JointCommand pos_msg;
     pos_msg.header.stamp = rclcpp::Clock().now();
-    pos_msg.joint_names = {"HeadPan", "HeadTilt"};
+    pos_msg.joint_names = {"head_yaw_joint", "head_pitch_joint"};
     pos_msg.positions = {goal_pan, goal_tilt};
     pos_msg.velocities = {pan_speed, tilt_speed};
     pos_msg.accelerations = {params_.max_acceleration_pan, params_.max_acceleration_pan};
-    pos_msg.max_currents = {-1, -1};
+    pos_msg.max_torques = {10, 10};
 
     position_publisher_->publish(pos_msg);
   }
@@ -466,9 +399,9 @@ class HeadMover {
 
     // Iterate over all joints and find the head pan and tilt joints
     for (size_t i = 0; i < current_joint_state_->name.size(); i++) {
-      if (current_joint_state_->name[i] == "HeadPan") {
+      if (current_joint_state_->name[i] == "head_yaw_joint") {
         head_pan = current_joint_state_->position[i];
-      } else if (current_joint_state_->name[i] == "HeadTilt") {
+      } else if (current_joint_state_->name[i] == "head_pitch_joint") {
         head_tilt = current_joint_state_->position[i];
       }
     }
@@ -540,7 +473,7 @@ class HeadMover {
       }
 
       // Get the current tilt angle based on the current line we are on
-      double current_tilt = lineAngle(line, line_count, max_vertical_angle_down, max_vertical_angle_up);
+      double current_tilt = lineAngle(line, line_count, max_vertical_angle_up, max_vertical_angle_down);
 
       // Store the keyframe
       keyframes.push_back({current_pan, current_tilt});
@@ -588,35 +521,10 @@ class HeadMover {
    * @brief Calculates the motor goals that are needed to look at a given point using the inverse kinematics
    */
   std::pair<double, double> get_motor_goals_from_point(geometry_msgs::msg::Point point) {
-    // Create a new IK options object
-    bio_ik::BioIKKinematicsQueryOptions ik_options;
-    ik_options.return_approximate_solution = true;
-    ik_options.replace = true;
-
-    // Create a new look at goal and set the target point as the position the camera link should look at
-    ik_options.goals.emplace_back(new bio_ik::LookAtGoal("camera", {1.0, 0.0, 0.0}, {point.x, point.y, point.z}));
-
-    // Get the joint model group for the head
-    auto joint_model_group = robot_model_->getJointModelGroup("Head");
-
     // Try to calculate the inverse kinematics
-    double timeout_seconds = 1.0;
-    bool success = robot_state_->setFromIK(joint_model_group, EigenSTL::vector_Isometry3d(), std::vector<std::string>(),
-                                           timeout_seconds, moveit::core::GroupStateValidityCallbackFn(), ik_options);
-    robot_state_->update();
-
-    // Get the solution from the IK response
-    bio_ik_msgs::msg::IKResponse response;
-    moveit::core::robotStateToRobotStateMsg(*robot_state_, response.solution);
-    response.solution_fitness = ik_options.solution_fitness;
-    // Return the motor goals if the IK was successful
-    if (success) {
-      return {response.solution.joint_state.position[0], response.solution.joint_state.position[1]};
-    } else {
-      RCLCPP_ERROR_STREAM_THROTTLE(node_->get_logger(), *node_->get_clock(), 1000,
-                                   "BioIK failed with error code: " << response.error_code.val);
-      return {0.0, 0.0};
-    }
+    // TODO we do not have inverse kinematics for the pi plus setup yet, so we need to implement this function properly
+    RCLCPP_ERROR_STREAM(node_->get_logger(), "Inverse kinematics for the pi plus head is not implemented yet");
+    return {0.0, 0.0};
   }
 
   /**
@@ -626,7 +534,7 @@ class HeadMover {
     try {
       // Transform the point into the planning frame
       geometry_msgs::msg::PointStamped new_point =
-          tf_buffer_->transform(point, planning_scene_->getPlanningFrame(), tf2::durationFromSec(0.9));
+          tf_buffer_->transform(point, "base_footprint", tf2::durationFromSec(0.9));
 
       // Get the motor goals that are needed to look at the point from the inverse kinematics
       std::pair<double, double> pan_tilt = get_motor_goals_from_point(new_point.point);
@@ -652,62 +560,86 @@ class HeadMover {
   }
 
   /**
-   * @brief Returns the index of the pattern keypoint that is closest to the current head position
+   * @brief Builds an open-loop SmoothSpline trajectory from the current search pattern.
    *
-   * @param pattern The search pattern
-   * @param pan The current pan position
-   * @param tilt The current tilt position
-   * @return int The index of the pattern keypoint that is closest to the current head position
+   * Waypoint timestamps are distributed proportionally to Euclidean arc length so the
+   * total cycle takes exactly cycle_time_ seconds. The loop is closed by appending the
+   * first waypoint at the end.
    */
-  int get_near_pattern_position(const std::vector<std::pair<double, double>>& pattern, double pan, double tilt) {
-    // Store the index and distance of the closest keypoint
-    std::pair<double, int> min_distance_point = {10000.0, -1};
-    // Iterate over all keypoints and calculate the distance to the current head position
-    for (size_t i = 0; i < pattern.size(); i++) {
-      // Calculate the cartesian distance between the current head position and the keypoint
-      double distance = std::sqrt(std::pow(pattern[i].first - pan, 2) + std::pow(pattern[i].second - tilt, 2));
-      // Check if the distance is smaller than the current minimum distance
-      // and if so, update the minimum distance accordingly
-      if (distance < min_distance_point.first) {
-        min_distance_point.first = distance;
-        min_distance_point.second = i;
-      }
+  void build_spline_trajectory() {
+    pan_spline_ = bitbots_splines::SmoothSpline();
+    tilt_spline_ = bitbots_splines::SmoothSpline();
+    spline_valid_ = false;
+
+    if (pattern_.empty() || cycle_time_ <= 0.0) {
+      return;
     }
-    // Return the index of the closest keypoint
-    return min_distance_point.second;
+
+    // Convert all keypoints to radians and close the loop
+    std::vector<std::pair<double, double>> pts_rad;
+    pts_rad.reserve(pattern_.size() + 1);
+    for (const auto& kf : pattern_) {
+      pts_rad.emplace_back(kf.first * DEG_TO_RAD, kf.second * DEG_TO_RAD);
+    }
+    pts_rad.push_back(pts_rad[0]);
+
+    // Compute segment arc lengths and total
+    std::vector<double> lengths;
+    lengths.reserve(pts_rad.size() - 1);
+    double total_length = 0.0;
+    for (size_t i = 1; i < pts_rad.size(); i++) {
+      double dpan = pts_rad[i].first - pts_rad[i - 1].first;
+      double dtilt = pts_rad[i].second - pts_rad[i - 1].second;
+      double len = std::sqrt(dpan * dpan + dtilt * dtilt);
+      lengths.push_back(len);
+      total_length += len;
+    }
+
+    // Add waypoints with timestamps proportional to arc length
+    double t = 0.0;
+    pan_spline_.addPoint(t, pts_rad[0].first);
+    tilt_spline_.addPoint(t, pts_rad[0].second);
+    for (size_t i = 0; i < lengths.size(); i++) {
+      double fraction = (total_length > 0.0) ? lengths[i] / total_length : 1.0 / static_cast<double>(lengths.size());
+      t += fraction * cycle_time_;
+      pan_spline_.addPoint(t, pts_rad[i + 1].first);
+      tilt_spline_.addPoint(t, pts_rad[i + 1].second);
+    }
+
+    spline_duration_ = cycle_time_;
+    pan_spline_.computeSplines();
+    tilt_spline_.computeSplines();
+    spline_start_time_ = node_->now();
+    spline_valid_ = true;
   }
 
   /**
-   * @brief Performs the search pattern that is currently loaded
+   * @brief Evaluates the pre-built spline trajectory at the current time and publishes
+   * the resulting joint position and velocity as open-loop motor goals.
    */
   void perform_search_pattern() {
-    // Do not perform the search pattern if it is empty
-    if (pattern_.size() == 0) {
+    if (!spline_valid_ || spline_duration_ <= 0.0) {
       return;
     }
-    // Wrap the index that points to the current keypoint around if necessary
-    index_ = index_ % int(pattern_.size());
-    // Get the current keypoint and convert it to radians
-    double head_pan = pattern_[index_].first * DEG_TO_RAD;
-    double head_tilt = pattern_[index_].second * DEG_TO_RAD;
-    // Get the current head position
-    auto [current_head_pan, current_head_tilt] = get_head_position();
 
-    // Send the motor goals to the head motors
-    bool success =
-        send_motor_goals(head_pan, head_tilt, false, pan_speed_, tilt_speed_, current_head_pan, current_head_tilt);
+    double t = fmod((node_->now() - spline_start_time_).seconds(), spline_duration_);
 
-    if (success) {
-      // Check if we reached the current keypoint and if so, increase the index
-      double distance_to_goal =
-          std::sqrt(std::pow(head_pan - current_head_pan, 2) + std::pow(head_tilt - current_head_tilt, 2));
-      if (distance_to_goal <= threshold_) {
-        index_++;
-      }
-    } else {
-      // Skip the keypoint if we were not able to reach it (e.g. due to an unresolvable collision)
-      index_++;
-    }
+    double goal_pan = pan_spline_.pos(t);
+    double goal_tilt = tilt_spline_.pos(t);
+    std::tie(goal_pan, goal_tilt) = pre_clip(goal_pan, goal_tilt);
+
+    double pan_vel = std::abs(pan_spline_.vel(t));
+    double tilt_vel = std::abs(tilt_spline_.vel(t));
+
+    bitbots_msgs::msg::JointCommand pos_msg;
+    pos_msg.header.stamp = node_->get_clock()->now();
+    pos_msg.joint_names = {"head_yaw_joint", "head_pitch_joint"};
+    pos_msg.positions = {goal_pan, goal_tilt};
+    pos_msg.velocities = {pan_vel, tilt_vel};
+    pos_msg.accelerations = {params_.max_acceleration_pan, params_.max_acceleration_tilt};
+    pos_msg.max_torques = {10, 10};
+
+    position_publisher_->publish(pos_msg);
   }
 
   /**
@@ -733,8 +665,7 @@ class HeadMover {
           // Nothing to do if we go into track ball or dont move mode
           break;
         case bitbots_msgs::msg::HeadMode::SEARCH_BALL_PENALTY:
-          pan_speed_ = params_.search_patterns.search_ball_penalty.pan_speed;
-          tilt_speed_ = params_.search_patterns.search_ball_penalty.tilt_speed;
+          cycle_time_ = params_.search_patterns.search_ball_penalty.cycle_time;
           pattern_ = generatePattern(params_.search_patterns.search_ball_penalty.scan_lines,
                                      params_.search_patterns.search_ball_penalty.pan_max[0],
                                      params_.search_patterns.search_ball_penalty.pan_max[1],
@@ -744,8 +675,7 @@ class HeadMover {
           break;
 
         case bitbots_msgs::msg::HeadMode::SEARCH_FIELD_FEATURES:
-          pan_speed_ = params_.search_patterns.search_field_features.pan_speed;
-          tilt_speed_ = params_.search_patterns.search_field_features.tilt_speed;
+          cycle_time_ = params_.search_patterns.search_field_features.cycle_time;
           pattern_ = generatePattern(params_.search_patterns.search_field_features.scan_lines,
                                      params_.search_patterns.search_field_features.pan_max[0],
                                      params_.search_patterns.search_field_features.pan_max[1],
@@ -755,8 +685,7 @@ class HeadMover {
           break;
 
         case bitbots_msgs::msg::HeadMode::SEARCH_FRONT:
-          pan_speed_ = params_.search_patterns.search_front.pan_speed;
-          tilt_speed_ = params_.search_patterns.search_front.tilt_speed;
+          cycle_time_ = params_.search_patterns.search_front.cycle_time;
           pattern_ = generatePattern(
               params_.search_patterns.search_front.scan_lines, params_.search_patterns.search_front.pan_max[0],
               params_.search_patterns.search_front.pan_max[1], params_.search_patterns.search_front.tilt_max[0],
@@ -765,8 +694,7 @@ class HeadMover {
           break;
 
         case bitbots_msgs::msg::HeadMode::LOOK_FORWARD:
-          pan_speed_ = params_.search_patterns.look_forward.pan_speed;
-          tilt_speed_ = params_.search_patterns.look_forward.tilt_speed;
+          cycle_time_ = params_.search_patterns.look_forward.cycle_time;
           pattern_ = generatePattern(
               params_.search_patterns.look_forward.scan_lines, params_.search_patterns.look_forward.pan_max[0],
               params_.search_patterns.look_forward.pan_max[1], params_.search_patterns.look_forward.tilt_max[0],
@@ -778,11 +706,8 @@ class HeadMover {
           return;
       }
 
-      // Get the current head position
-      std::pair<double, double> head_position = get_head_position();
-
-      // Select the closest keypoint in the search pattern as a starting point
-      index_ = get_near_pattern_position(pattern_, head_position.first, head_position.second);
+      // Build the spline trajectory from the new pattern
+      build_spline_trajectory();
     }
     // Check if no look at action is running or if the head mode is DONT_MOVE
     // if this is not the case, perform the search pattern

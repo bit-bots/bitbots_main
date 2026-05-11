@@ -90,7 +90,7 @@ class ROSInterface:
 
         # subscriber
         self.joint_goal_subscriber = self.node.create_subscription(
-            JointCommand, self.namespace + "DynamixelController/command", self.joint_goal_cb, 1
+            JointCommand, self.namespace + "joint_command", self.joint_goal_cb, 1
         )
 
         self.reset_subscriber = self.node.create_subscription(Bool, self.namespace + "reset", self.reset_cb, 1)
