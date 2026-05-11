@@ -173,7 +173,8 @@ class CheckBattery(AbstractHCMDecisionElement):
 
     def perform(self, reevaluate=False):
         if (
-            self.blackboard.battery_voltage is None  # TODO: This becomes a problem if we never get a battery message. Create a separate state for that?
+            self.blackboard.battery_voltage
+            is None  # TODO: This becomes a problem if we never get a battery message. Create a separate state for that?
             or self.blackboard.battery_voltage >= self.blackboard.battery_voltage_threshold
         ):
             self.last_battery_high_time = self.blackboard.node.get_clock().now()

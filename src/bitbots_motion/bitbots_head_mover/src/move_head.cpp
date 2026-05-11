@@ -269,8 +269,8 @@ class HeadMover {
    *
    */
   bool send_motor_goals(double yaw_position, double pitch_position, bool resolve_collision, double yaw_speed = 1.5,
-                        double pitch_speed = 1.5, double current_yaw_position = 0.0, double current_pitch_position = 0.0,
-                        bool clip = true) {
+                        double pitch_speed = 1.5, double current_yaw_position = 0.0,
+                        double current_pitch_position = 0.0, bool clip = true) {
     // Debug log the target yaw and pitch position
     RCLCPP_DEBUG_STREAM(node_->get_logger(), "target yaw/pitch: " << yaw_position << "/" << pitch_position);
 
@@ -330,7 +330,7 @@ class HeadMover {
     std::vector<std::pair<double, double>> yaw_and_pitch_steps;
     for (int i = 0; i < step_count; i++) {
       yaw_and_pitch_steps.push_back({current_yaw + (goal_yaw - current_yaw) / step_count * i,
-                                    current_pitch + (goal_pitch - current_pitch) / step_count * i});
+                                     current_pitch + (goal_pitch - current_pitch) / step_count * i});
     }
 
     // Check if we have collisions on our path
@@ -346,7 +346,8 @@ class HeadMover {
     }
 
     // We do not have any collisions on our path, so we can move the head to the goal position
-    move_head_to_position_with_speed_adjustment(goal_yaw, goal_pitch, current_yaw, current_pitch, yaw_speed, pitch_speed);
+    move_head_to_position_with_speed_adjustment(goal_yaw, goal_pitch, current_yaw, current_pitch, yaw_speed,
+                                                pitch_speed);
     return true;
   }
 
@@ -481,8 +482,8 @@ class HeadMover {
       // Check if we move horizontally or vertically in the pattern
       if (right_side != right_direction) {
         // We move horizontally, so we might need to interpolate between the current and the next keyframe
-        std::vector<std::pair<double, double>> interpolated_points =
-            interpolatedSteps(interpolation_steps, current_pitch, max_horizontal_angle_right, max_horizontal_angle_left);
+        std::vector<std::pair<double, double>> interpolated_points = interpolatedSteps(
+            interpolation_steps, current_pitch, max_horizontal_angle_right, max_horizontal_angle_left);
         // Reverse the order of the interpolated points if we are moving to the right
         if (right_direction) {
           std::reverse(interpolated_points.begin(), interpolated_points.end());
@@ -545,7 +546,8 @@ class HeadMover {
       if (std::abs(yaw_pitch.first - current_yaw_pitch.first) > min_yaw_delta ||
           std::abs(yaw_pitch.second - current_yaw_pitch.second) > min_pitch_delta) {
         // Send the motor goals to the head motors
-        send_motor_goals(yaw_pitch.first, yaw_pitch.second, true, params_.look_at.yaw_speed, params_.look_at.pitch_speed);
+        send_motor_goals(yaw_pitch.first, yaw_pitch.second, true, params_.look_at.yaw_speed,
+                         params_.look_at.pitch_speed);
         // Return false as we did not reach the goal position yet
         return false;
       }
