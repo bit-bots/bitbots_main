@@ -219,7 +219,8 @@
         "future": "cpp",
         "*.ipp": "cpp",
         "span": "cpp",
-        "ranges": "cpp"
+        "ranges": "cpp",
+        "core": "cpp"
     },
     "ROS2.distro": "jazzy",
     "search.useIgnoreFiles": false,
