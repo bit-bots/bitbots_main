@@ -43,7 +43,7 @@ class Simulation(Node):
         self.time_message = Time(seconds=0, nanoseconds=0).to_msg()
         self.timestep = self.model.opt.timestep
         self.step_number = 0
-        self.real_time_factor = 1.0 / 0.94 # add a small buffer to try to achieve the requested RTF
+        self.real_time_factor = 1.0 / 0.94  # add a small buffer to try to achieve the requested RTF
         self.measured_rtf = 1.0
         self.clock_publisher = self.create_publisher(Clock, "clock", 1)
         self.create_subscription(Float32, "real_time_factor", self.real_time_factor_callback, 1)
@@ -97,7 +97,7 @@ class Simulation(Node):
                 if total_wall_time > 0:
                     # weighted ema so it does not fluctuate too much
                     self.measured_rtf = 0.01 * (self.timestep / total_wall_time) + 0.99 * self.measured_rtf
-                
+
     def step(self) -> None:
         self.step_number += 1
         self.time += self.timestep
