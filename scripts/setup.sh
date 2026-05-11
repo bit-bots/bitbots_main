@@ -73,7 +73,6 @@ if (( ! has_sudo )); then
     echo "Because, you don't have sudo rights, no host dependencies will be installed."
 fi
 
-basler_installed=0
 
 in_repo=1
 main_dir="$(realpath "$DIR/../")"
