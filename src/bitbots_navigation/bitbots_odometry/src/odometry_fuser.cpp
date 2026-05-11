@@ -302,7 +302,7 @@ class OdometryFuser : public rclcpp::Node {
 
         rotation_point_tf = base_to_l_sole_tf * l_to_center_tf;
         rotation_point_tf.setRotation(tf2::Quaternion::getIdentity());
-      } catch (tf2::TransformException &ex) {
+      } catch (tf2::TransformException& ex) {
         RCLCPP_ERROR(this->get_logger(), "%s", ex.what());
       }
     } else {

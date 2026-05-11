@@ -139,9 +139,7 @@ class RobotSimulation:
             "camera_info": self.simulation.create_publisher(CameraInfo, _topic("zed/zed_node/left/camera_info"), 1),
         }
 
-        self.simulation.create_subscription(
-            JointCommand, _topic("joint_command"), self.joint_command_callback, 1
-        )
+        self.simulation.create_subscription(JointCommand, _topic("joint_command"), self.joint_command_callback, 1)
 
     @property
     def domain(self) -> int:
@@ -192,9 +190,7 @@ class RobotSimulation:
             imu.linear_acceleration.z = 0.001
 
         imu.angular_velocity.x, imu.angular_velocity.y, imu.angular_velocity.z = self.robot.sensors.gyro.data
-        imu.orientation.w, imu.orientation.x, imu.orientation.y, imu.orientation.z = (
-            self.robot.sensors.orientation.data
-        )
+        imu.orientation.w, imu.orientation.x, imu.orientation.y, imu.orientation.z = self.robot.sensors.orientation.data
         self.node_publishers["imu"].publish(imu)
 
     @timed

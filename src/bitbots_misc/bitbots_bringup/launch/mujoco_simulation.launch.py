@@ -92,14 +92,19 @@ def generate_world_xml(num_robots: int, package_share: str, robot_type: str) -> 
     """Generate MuJoCo world XML with the correct number of robots."""
     template_path = Path(package_share) / "xml" / "adult_field.xml"
     output_path = Path(package_share) / "xml" / "generated_world.xml"
-    offset = 6 * (1/num_robots) # this makes the offset be the default value when there are 4 robots and increse the less robots there are
+    offset = 6 * (
+        1 / num_robots
+    )  # this makes the offset be the default value when there are 4 robots and increse the less robots there are
 
     with open(template_path) as f:
         template = f.read()
 
     # Replace placeholder with actual robot count
-    world_xml = template.replace("{{NUM_ROBOTS}}", str(num_robots)).replace("{{OFFSET}}", str(offset)).replace("{{ROBOT_TYPE}}", robot_type)
-    
+    world_xml = (
+        template.replace("{{NUM_ROBOTS}}", str(num_robots))
+        .replace("{{OFFSET}}", str(offset))
+        .replace("{{ROBOT_TYPE}}", robot_type)
+    )
 
     with open(output_path, "w") as f:
         f.write(world_xml)
@@ -138,7 +143,7 @@ def launch_setup(context):
         ),
     )
 
-    for robot_domain in range(11, num_robots + 11): # 11 is the standart starting id for our robots
+    for robot_domain in range(11, num_robots + 11):  # 11 is the standart starting id for our robots
         config_file = generate_domain_bridge_config(robot_domain, bridge_config_dir)
         actions.append(
             LogInfo(msg=f"Starting domain bridge for robot{robot_domain} (domain {robot_domain})"),
@@ -192,8 +197,6 @@ def generate_launch_description():
             description="Set the type of robot used (piplus, x02)",
         ),
     ]
-
-
 
     # Add all teamplayer arguments with empty default (means use teamplayer's default)
     for arg_name, description in TEAMPLAYER_ARGS:

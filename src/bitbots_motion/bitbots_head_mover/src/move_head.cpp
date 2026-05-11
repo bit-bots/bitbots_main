@@ -2,10 +2,10 @@
 #include <tf2_ros/transform_listener.h>
 
 #include <bitbots_head_mover/head_parameters.hpp>
-#include <bitbots_splines/smooth_spline.hpp>
 #include <bitbots_msgs/action/look_at.hpp>
 #include <bitbots_msgs/msg/head_mode.hpp>
 #include <bitbots_msgs/msg/joint_command.hpp>
+#include <bitbots_splines/smooth_spline.hpp>
 #include <chrono>
 #include <cmath>
 #include <geometry_msgs/msg/pose_stamped.hpp>
