@@ -4,16 +4,16 @@
 
 #include <chrono>
 #include <functional>
+#include <livelybot_msg/msg/power_switch.hpp>
 #include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <std_srvs/srv/set_bool.hpp>
 
 namespace bitbots_emergency {
 class EMERGENCY_NODE : public rclcpp::Node {
  public:
   explicit EMERGENCY_NODE() : Node("emergency_node") {
     // Create client
-    client_motor_switch_ = this->create_client<std_srvs::srv::SetBool>("core/switch_power");
+    motor_switch_publisher_ = this->create_publisher<livelybot_msg::msg::PowerSwitch>("/power_switch_state", 1);
 
     // repeatedly call loop function
     timer_ = this->create_wall_timer(std::chrono::milliseconds(100), std::bind(&EMERGENCY_NODE::_emergencyLoop, this));
@@ -22,7 +22,7 @@ class EMERGENCY_NODE : public rclcpp::Node {
   }
 
  private:
-  rclcpp::Client<std_srvs::srv::SetBool>::SharedPtr client_motor_switch_;
+  rclcpp::Publisher<livelybot_msg::msg::PowerSwitch>::SharedPtr motor_switch_publisher_;
   rclcpp::TimerBase::SharedPtr timer_;
 
   void _emergencyLoop() {
@@ -45,10 +45,9 @@ class EMERGENCY_NODE : public rclcpp::Node {
     if (ch != ' ') {
       RCLCPP_WARN(this->get_logger(), "E-STOP!!!");
 
-      // Request for shutting motors down
-      auto request = std::make_shared<std_srvs::srv::SetBool::Request>();
-      request->data = false;
-      client_motor_switch_->async_send_request(request);
+      auto msg = livelybot_msg::msg::PowerSwitch();
+      msg.power_switch = 0;
+      motor_switch_publisher_->publish(msg);
     }
   }
 };
