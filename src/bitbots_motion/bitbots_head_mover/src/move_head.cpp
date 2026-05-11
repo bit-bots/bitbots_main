@@ -2,6 +2,7 @@
 #include <tf2_ros/transform_listener.h>
 
 #include <bitbots_head_mover/head_parameters.hpp>
+#include <bitbots_splines/smooth_spline.hpp>
 #include <bitbots_msgs/action/look_at.hpp>
 #include <bitbots_msgs/msg/head_mode.hpp>
 #include <bitbots_msgs/msg/joint_command.hpp>
@@ -66,11 +67,15 @@ class HeadMover {
   // Store previous head mode
   uint prev_head_mode_ = -1;
 
-  // Declare variables for the current search patterns parameters
-  double threshold_ = 0;
-  int index_ = 0;
-  double pan_speed_ = 0;
-  double tilt_speed_ = 0;
+  // Duration of one full search pattern cycle (seconds)
+  double cycle_time_ = 0.0;
+
+  // Spline trajectory for search patterns
+  bitbots_splines::SmoothSpline pan_spline_;
+  bitbots_splines::SmoothSpline tilt_spline_;
+  double spline_duration_ = 0.0;
+  rclcpp::Time spline_start_time_;
+  bool spline_valid_ = false;
 
   // World model state
   geometry_msgs::msg::PoseWithCovarianceStamped ball_position_;
@@ -117,9 +122,6 @@ class HeadMover {
     // Create tf buffer and listener to update it
     tf_buffer_ = std::make_shared<tf2_ros::Buffer>(node_->get_clock());
     tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
-
-    // Initialize variables
-    threshold_ = params_.position_reached_threshold * DEG_TO_RAD;
 
     // Initialize action server for look at action
     action_server_ = rclcpp_action::create_server<LookAtGoal>(
@@ -558,62 +560,86 @@ class HeadMover {
   }
 
   /**
-   * @brief Returns the index of the pattern keypoint that is closest to the current head position
+   * @brief Builds an open-loop SmoothSpline trajectory from the current search pattern.
    *
-   * @param pattern The search pattern
-   * @param pan The current pan position
-   * @param tilt The current tilt position
-   * @return int The index of the pattern keypoint that is closest to the current head position
+   * Waypoint timestamps are distributed proportionally to Euclidean arc length so the
+   * total cycle takes exactly cycle_time_ seconds. The loop is closed by appending the
+   * first waypoint at the end.
    */
-  int get_near_pattern_position(const std::vector<std::pair<double, double>>& pattern, double pan, double tilt) {
-    // Store the index and distance of the closest keypoint
-    std::pair<double, int> min_distance_point = {10000.0, -1};
-    // Iterate over all keypoints and calculate the distance to the current head position
-    for (size_t i = 0; i < pattern.size(); i++) {
-      // Calculate the cartesian distance between the current head position and the keypoint
-      double distance = std::sqrt(std::pow(pattern[i].first - pan, 2) + std::pow(pattern[i].second - tilt, 2));
-      // Check if the distance is smaller than the current minimum distance
-      // and if so, update the minimum distance accordingly
-      if (distance < min_distance_point.first) {
-        min_distance_point.first = distance;
-        min_distance_point.second = i;
-      }
+  void build_spline_trajectory() {
+    pan_spline_ = bitbots_splines::SmoothSpline();
+    tilt_spline_ = bitbots_splines::SmoothSpline();
+    spline_valid_ = false;
+
+    if (pattern_.empty() || cycle_time_ <= 0.0) {
+      return;
     }
-    // Return the index of the closest keypoint
-    return min_distance_point.second;
+
+    // Convert all keypoints to radians and close the loop
+    std::vector<std::pair<double, double>> pts_rad;
+    pts_rad.reserve(pattern_.size() + 1);
+    for (const auto& kf : pattern_) {
+      pts_rad.emplace_back(kf.first * DEG_TO_RAD, kf.second * DEG_TO_RAD);
+    }
+    pts_rad.push_back(pts_rad[0]);
+
+    // Compute segment arc lengths and total
+    std::vector<double> lengths;
+    lengths.reserve(pts_rad.size() - 1);
+    double total_length = 0.0;
+    for (size_t i = 1; i < pts_rad.size(); i++) {
+      double dpan = pts_rad[i].first - pts_rad[i - 1].first;
+      double dtilt = pts_rad[i].second - pts_rad[i - 1].second;
+      double len = std::sqrt(dpan * dpan + dtilt * dtilt);
+      lengths.push_back(len);
+      total_length += len;
+    }
+
+    // Add waypoints with timestamps proportional to arc length
+    double t = 0.0;
+    pan_spline_.addPoint(t, pts_rad[0].first);
+    tilt_spline_.addPoint(t, pts_rad[0].second);
+    for (size_t i = 0; i < lengths.size(); i++) {
+      double fraction = (total_length > 0.0) ? lengths[i] / total_length : 1.0 / static_cast<double>(lengths.size());
+      t += fraction * cycle_time_;
+      pan_spline_.addPoint(t, pts_rad[i + 1].first);
+      tilt_spline_.addPoint(t, pts_rad[i + 1].second);
+    }
+
+    spline_duration_ = cycle_time_;
+    pan_spline_.computeSplines();
+    tilt_spline_.computeSplines();
+    spline_start_time_ = node_->now();
+    spline_valid_ = true;
   }
 
   /**
-   * @brief Performs the search pattern that is currently loaded
+   * @brief Evaluates the pre-built spline trajectory at the current time and publishes
+   * the resulting joint position and velocity as open-loop motor goals.
    */
   void perform_search_pattern() {
-    // Do not perform the search pattern if it is empty
-    if (pattern_.size() == 0) {
+    if (!spline_valid_ || spline_duration_ <= 0.0) {
       return;
     }
-    // Wrap the index that points to the current keypoint around if necessary
-    index_ = index_ % int(pattern_.size());
-    // Get the current keypoint and convert it to radians
-    double head_pan = pattern_[index_].first * DEG_TO_RAD;
-    double head_tilt = pattern_[index_].second * DEG_TO_RAD;
-    // Get the current head position
-    auto [current_head_pan, current_head_tilt] = get_head_position();
 
-    // Send the motor goals to the head motors
-    bool success =
-        send_motor_goals(head_pan, head_tilt, false, pan_speed_, tilt_speed_, current_head_pan, current_head_tilt);
+    double t = fmod((node_->now() - spline_start_time_).seconds(), spline_duration_);
 
-    if (success) {
-      // Check if we reached the current keypoint and if so, increase the index
-      double distance_to_goal =
-          std::sqrt(std::pow(head_pan - current_head_pan, 2) + std::pow(head_tilt - current_head_tilt, 2));
-      if (distance_to_goal <= threshold_) {
-        index_++;
-      }
-    } else {
-      // Skip the keypoint if we were not able to reach it (e.g. due to an unresolvable collision)
-      index_++;
-    }
+    double goal_pan = pan_spline_.pos(t);
+    double goal_tilt = tilt_spline_.pos(t);
+    std::tie(goal_pan, goal_tilt) = pre_clip(goal_pan, goal_tilt);
+
+    double pan_vel = std::abs(pan_spline_.vel(t));
+    double tilt_vel = std::abs(tilt_spline_.vel(t));
+
+    bitbots_msgs::msg::JointCommand pos_msg;
+    pos_msg.header.stamp = node_->get_clock()->now();
+    pos_msg.joint_names = {"head_yaw_joint", "head_pitch_joint"};
+    pos_msg.positions = {goal_pan, goal_tilt};
+    pos_msg.velocities = {pan_vel, tilt_vel};
+    pos_msg.accelerations = {params_.max_acceleration_pan, params_.max_acceleration_tilt};
+    pos_msg.max_torques = {10, 10};
+
+    position_publisher_->publish(pos_msg);
   }
 
   /**
@@ -639,8 +665,7 @@ class HeadMover {
           // Nothing to do if we go into track ball or dont move mode
           break;
         case bitbots_msgs::msg::HeadMode::SEARCH_BALL_PENALTY:
-          pan_speed_ = params_.search_patterns.search_ball_penalty.pan_speed;
-          tilt_speed_ = params_.search_patterns.search_ball_penalty.tilt_speed;
+          cycle_time_ = params_.search_patterns.search_ball_penalty.cycle_time;
           pattern_ = generatePattern(params_.search_patterns.search_ball_penalty.scan_lines,
                                      params_.search_patterns.search_ball_penalty.pan_max[0],
                                      params_.search_patterns.search_ball_penalty.pan_max[1],
@@ -650,8 +675,7 @@ class HeadMover {
           break;
 
         case bitbots_msgs::msg::HeadMode::SEARCH_FIELD_FEATURES:
-          pan_speed_ = params_.search_patterns.search_field_features.pan_speed;
-          tilt_speed_ = params_.search_patterns.search_field_features.tilt_speed;
+          cycle_time_ = params_.search_patterns.search_field_features.cycle_time;
           pattern_ = generatePattern(params_.search_patterns.search_field_features.scan_lines,
                                      params_.search_patterns.search_field_features.pan_max[0],
                                      params_.search_patterns.search_field_features.pan_max[1],
@@ -661,8 +685,7 @@ class HeadMover {
           break;
 
         case bitbots_msgs::msg::HeadMode::SEARCH_FRONT:
-          pan_speed_ = params_.search_patterns.search_front.pan_speed;
-          tilt_speed_ = params_.search_patterns.search_front.tilt_speed;
+          cycle_time_ = params_.search_patterns.search_front.cycle_time;
           pattern_ = generatePattern(
               params_.search_patterns.search_front.scan_lines, params_.search_patterns.search_front.pan_max[0],
               params_.search_patterns.search_front.pan_max[1], params_.search_patterns.search_front.tilt_max[0],
@@ -671,8 +694,7 @@ class HeadMover {
           break;
 
         case bitbots_msgs::msg::HeadMode::LOOK_FORWARD:
-          pan_speed_ = params_.search_patterns.look_forward.pan_speed;
-          tilt_speed_ = params_.search_patterns.look_forward.tilt_speed;
+          cycle_time_ = params_.search_patterns.look_forward.cycle_time;
           pattern_ = generatePattern(
               params_.search_patterns.look_forward.scan_lines, params_.search_patterns.look_forward.pan_max[0],
               params_.search_patterns.look_forward.pan_max[1], params_.search_patterns.look_forward.tilt_max[0],
@@ -684,11 +706,8 @@ class HeadMover {
           return;
       }
 
-      // Get the current head position
-      std::pair<double, double> head_position = get_head_position();
-
-      // Select the closest keypoint in the search pattern as a starting point
-      index_ = get_near_pattern_position(pattern_, head_position.first, head_position.second);
+      // Build the spline trajectory from the new pattern
+      build_spline_trajectory();
     }
     // Check if no look at action is running or if the head mode is DONT_MOVE
     // if this is not the case, perform the search pattern

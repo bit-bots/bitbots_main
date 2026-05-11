@@ -14,6 +14,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(backward_ros REQUIRED)
 find_package(bitbots_msgs REQUIRED)
+find_package(bitbots_splines REQUIRED)
 find_package(generate_parameter_library REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
@@ -32,6 +33,7 @@ ament_target_dependencies(
   move_head
   backward_ros
   bitbots_msgs
+  bitbots_splines
   generate_parameter_library
   rclcpp
   sensor_msgs

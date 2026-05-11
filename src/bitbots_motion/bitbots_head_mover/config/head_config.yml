@@ -46,15 +46,12 @@ move_head:
   # Search pattern for ball
   search_patterns:
     search_ball_penalty:
-      tilt_speed:
+      cycle_time:
         type: double
-        description: "Tilt speed for the search pattern"
-        default_value: 1.0
-
-      pan_speed:
-        type: double
-        description: "Pan speed for the search pattern"
-        default_value: 2.0
+        description: "Duration of one full search pattern cycle in seconds"
+        default_value: 5.0
+        validation:
+          gt<>: [0.0]
 
       pan_max:
         type: double_array
@@ -85,15 +82,12 @@ move_head:
           bounds<>: [0.0, 1.0]
 
     search_field_features:
-      tilt_speed:
+      cycle_time:
         type: double
-        description: "Tilt speed for the search pattern"
-        default_value: 1.5
-
-      pan_speed:
-        type: double
-        description: "Pan speed for the search pattern"
-        default_value: 1.5
+        description: "Duration of one full search pattern cycle in seconds"
+        default_value: 3.0
+        validation:
+          gt<>: [0.0]
 
       pan_max:
         type: double_array
@@ -124,15 +118,12 @@ move_head:
           bounds<>: [0.0, 1.0]
 
     search_front:
-      tilt_speed:
+      cycle_time:
         type: double
-        description: "Tilt speed for the search pattern"
-        default_value: 1.5
-
-      pan_speed:
-        type: double
-        description: "Pan speed for the search pattern"
-        default_value: 1.5
+        description: "Duration of one full search pattern cycle in seconds"
+        default_value: 2.0
+        validation:
+          gt<>: [0.0]
 
       pan_max:
         type: double_array
@@ -163,15 +154,12 @@ move_head:
           bounds<>: [0.0, 1.0]
 
     look_forward:
-      tilt_speed:
+      cycle_time:
         type: double
-        description: "Tilt speed for the search pattern"
+        description: "Duration of one full search pattern cycle in seconds"
         default_value: 3.0
-
-      pan_speed:
-        type: double
-        description: "Pan speed for the search pattern"
-        default_value: 3.0
+        validation:
+          gt<>: [0.0]
 
       pan_max:
         type: double_array
@@ -201,8 +189,3 @@ move_head:
         validation:
           bounds<>: [0.0, 1.0]
 
-  position_reached_threshold:
-    type: double
-    default_value: 5.0
-    description: "Threshold (in degrees) when a head position is reached and
-    the next position will be triggered"
