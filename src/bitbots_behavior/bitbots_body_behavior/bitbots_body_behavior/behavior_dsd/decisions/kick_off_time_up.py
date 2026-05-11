@@ -10,7 +10,7 @@ class KickOffTimeUp(AbstractDecisionElement):
         self.kickoff_min_ball_movement = self.blackboard.config["kickoff_min_ball_movement"]
 
     def perform(self, reevaluate=False):
-        if self.blackboard.gamestate.has_kickoff():
+        if self.blackboard.gamestate.has_kick():
             self.publish_debug_data("Reason", "Our kick off")
             return "YES"
         else:

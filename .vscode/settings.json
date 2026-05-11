@@ -101,6 +101,7 @@
         "rsyncignore",
         "rtype",
         "rviz",
+        "samplerate",
         "scipy",
         "sdev",
         "seaborn",

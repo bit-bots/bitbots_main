@@ -17,7 +17,7 @@ class Speak(AbstractHCMActionElement):
 
 
 class Complain(Speak):
-    unused_complaints = [
+    unused_complaints: list[str] = [
         "I'm not feeling well.",
         "I'm totally not satisfied.",
         "Referee!!! This was definitely against the rules.",
@@ -51,7 +51,7 @@ class Complain(Speak):
         "My fall detection system is offended by the frequency of these incidents.",
         "I protest this gravitational bias and request a more supportive planet.",
     ]
-    used_complaints = []
+    used_complaints: list[str] = []
 
     def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)

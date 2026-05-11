@@ -25,7 +25,7 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
         # publish stopped msg for hcm
         self.stop_pub = node.create_publisher(Bool, "game_controller/stop_msg", 1)
 
-    def get_game_state(self) -> int:
+    def get_main_state(self) -> int:
         # Init, ready, set, playing, finished
         return self.gamestate.main_state
 
@@ -37,11 +37,11 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
         # None, Direct Freekick, Indirect Freekick, Penalty, Throw in, Goalkick, Cornerkick,
         return self.gamestate.set_play
 
-    def get_secondary_team(self) -> int:
+    def get_kicking_team(self) -> int:
         # Team ID, wer in set Play den Ball hat
         return self.gamestate.kicking_team
 
-    def has_kickoff(self) -> bool:
+    def has_kick(self) -> bool:
         # vegelcih mit eigener Teamnummer
         return self.gamestate.kicking_team == self.team_id
 
@@ -53,10 +53,10 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
             self.gamestate.set_play == GameState.SET_PLAY_PENALTY_KICK and self.gamestate.kicking_team == self.team_id
         )
 
-    def get_our_goals(self) -> int:
+    def get_own_score(self) -> int:
         return self.gamestate.own_score
 
-    def get_opp_goals(self) -> int:
+    def get_rival_score(self) -> int:
         return self.gamestate.rival_score
 
     def get_seconds_since_own_goal(self) -> float:
@@ -124,7 +124,7 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
             self.free_kick_kickoff_team = None
 
         if self.free_kick_kickoff_team is not None:
-            gamestate_msg.has_kick_off = self.free_kick_kickoff_team == self.team_id
+            gamestate_msg.has_kick = self.free_kick_kickoff_team == self.team_id
         """
         self.last_update = self._node.get_clock().now().nanoseconds / 1e9
         self.gamestate = gamestate_msg

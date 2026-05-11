@@ -1,10 +1,9 @@
 Welcome Bit-Bots main documentation!
-================================================
+====================================
 
-This is the main page of `Hamburg Bit-Bots <https://bit-bots.de>`_ documentation. Feel free to poke around
-and see if you can find something.
+This is the main page of `Hamburg Bit-Bots <https://bit-bots.de>`_ documentation.
 
-If you want to take a look at the code, our Github Organisation is also named `Bit-Bots
+If you want to take a look at the code, our GitHub Organisation is also named `Bit-Bots
 <https://github.com/bit-bots>`_.
 The main repository is `bitbots_main <https://github.com/bit-bots/bitbots_main>`_.
 
@@ -34,7 +33,7 @@ The main repository is `bitbots_main <https://github.com/bit-bots/bitbots_main>`
 .. toctree::
     :maxdepth: 1
     :glob:
-    :caption: Electronics
+    :caption: Electronics Wolfgang
 
     manual/hardware/electronics/*
 
@@ -42,7 +41,7 @@ The main repository is `bitbots_main <https://github.com/bit-bots/bitbots_main>`
 .. toctree::
     :maxdepth: 1
     :glob:
-    :caption: Mechanics
+    :caption: Mechanics Wolfgang
 
     manual/hardware/mechanics/*
 
