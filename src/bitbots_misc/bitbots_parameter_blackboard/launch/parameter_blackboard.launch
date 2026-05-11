@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <launch>
     <arg name="sim" default="false"/>
-    <arg unless="$(var sim)" name="fieldname" default="german_open_2026" description="Loads field settings (labor, webots, gazebo, bangkok, spl, german_open_2026)." />
-    <arg if="$(var sim)" name="fieldname" default="webots" description="Loads field settings (labor, webots, gazebo, bangkok, german_open_2024)." />
+    <arg unless="$(var sim)" name="fieldname" default="labor" description="Loads field settings (labor, webots, gazebo, bangkok, spl, german_open_2026)." />
+    <arg if="$(var sim)" name="fieldname" default="hsl_kid" description="Loads field settings (labor, webots, gazebo, bangkok, german_open_2024)." />
 
     <!-- print bit-bot -->
     <include file="$(find-pkg-share bitbots_utils)/launch/welcome.launch" />

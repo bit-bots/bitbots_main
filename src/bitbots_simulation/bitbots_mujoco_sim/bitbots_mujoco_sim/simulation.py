@@ -60,7 +60,7 @@ class Simulation(Node):
         ]
 
     def _generate_default_world(self) -> str:
-        template_path = Path(self.package_path) / "xml" / "adult_field.xml"
+        template_path = Path(self.package_path) / "xml" / "kid_field.xml"
         output_path = Path(self.package_path) / "xml" / "generated_world.xml"
         with open(template_path) as f:
             template = f.read()
