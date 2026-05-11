@@ -85,7 +85,7 @@ class Simulation(Node):
         with viewer.launch_passive(self.model, self.data) as view:
             while view.is_running():
                 self.step()
-                view.sync()
+                view.sync(state_only=True)
 
     @timed
     def step(self) -> None:
