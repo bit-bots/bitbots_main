@@ -33,21 +33,21 @@ bitbots_dynup:
       trunk_height:
         type: double
         description: "End pose trunk height. Depends on walkready of walking."
-        default_value: 0.38
+        default_value: 0.372
         validation:
           bounds<>: [0.0, 1.0]
       trunk_pitch:
         type: double
         description: "End pose trunk pitch. Depends on walkready of walking."
-        default_value: 0.2
+        default_value: 11.459
         validation:
-          bounds<>: [0.0, 1.0]
+          bounds<>: [-40.0, 40.0]
       trunk_x_final:
         type: double
         description: "End pose position of the trunk in x direction. Depends on walkready of walking."
-        default_value: 0.001
+        default_value: -0.0839
         validation:
-          bounds<>: [0.0, 1.0]
+          bounds<>: [-0.2, 0.2]
       arm_side_offset_back:
         type: double
         description: "End pose arm side offset back. Depends on walkready of walking."
