@@ -36,7 +36,7 @@ class HardwareControlManager:
 
         # Load parameters from yaml file because this is a hacky cpp python hybrid node for performance reasons
         parameter_msgs: list[ParameterMsg] = get_parameters_from_ros_yaml(
-            node_name, f"{get_package_share_directory('bitbots_hcm')}/config/hcm_wolfgang.yaml", use_wildcard=True
+            node_name, f"{get_package_share_directory('bitbots_hcm')}/config/hcm_piplus.yaml", use_wildcard=True
         )
         parameters = [
             Parameter("use_sim_time", type_=Parameter.Type.BOOL, value=use_sim_time),

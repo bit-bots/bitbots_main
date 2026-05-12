@@ -1,20 +1,20 @@
 move_head:
   # Max values for the head position
-  max_acceleration_pan:
+  max_acceleration_yaw:
     type: double
     default_value: 14.0
-    description: "Max acceleration for pan"
+    description: "Max acceleration for yaw"
     validation:
       bounds<>: [-1, 20]
 
-  max_acceleration_tilt:
+  max_acceleration_pitch:
     type: double
     default_value: 14.0
-    description: "Max acceleration for tilt"
+    description: "Max acceleration for pitch"
     validation:
       bounds<>: [-1, 20]
 
-  max_pan:
+  max_yaw:
     type: double_array
     default_value: [-1.23, 1.23]
     description: "Max values for the head position (in radians)"
@@ -22,7 +22,7 @@ move_head:
       fixed_size<>: 2
       element_bounds<>: [-3.14, 3.14]
 
-  max_tilt:
+  max_pitch:
     type: double_array
     default_value: [-0.6, 0.79]
     description: "Max values for the head position (in radians)"
@@ -30,16 +30,16 @@ move_head:
       fixed_size<>: 2
 
   look_at:
-    tilt_speed:
+    pitch_speed:
       type: double
       default_value: 6.0
-      description: "Tilt speed for the look at action"
+      description: "pitch speed for the look at action"
       validation:
         bounds<>: [0.0, 8.0]
-    pan_speed:
+    yaw_speed:
       type: double
       default_value: 6.0
-      description: "Pan speed for the look at action"
+      description: "yaw speed for the look at action"
       validation:
         bounds<>: [0.0, 8.0]
 
@@ -53,17 +53,17 @@ move_head:
         validation:
           gt<>: [0.0]
 
-      pan_max:
+      yaw_max:
         type: double_array
         default_value: [-30.0, 30.0]
-        description: "Maximum pan values for the search pattern (in degrees)"
+        description: "Maximum yaw values for the search pattern (in degrees)"
         validation:
           fixed_size<>: 2
 
-      tilt_max:
+      pitch_max:
         type: double_array
         default_value: [-7.0, -30.0]
-        description: "Maximum tilt values for the search pattern (in degrees)"
+        description: "Maximum pitch values for the search pattern (in degrees)"
         validation:
           fixed_size<>: 2
 
@@ -89,17 +89,17 @@ move_head:
         validation:
           gt<>: [0.0]
 
-      pan_max:
+      yaw_max:
         type: double_array
         default_value: [-70.0, 70.0]
-        description: "Maximum pan values for the search pattern (in degrees)"
+        description: "Maximum yaw values for the search pattern (in degrees)"
         validation:
           fixed_size<>: 2
 
-      tilt_max:
+      pitch_max:
         type: double_array
         default_value: [0.0, 45.0]
-        description: "Maximum tilt values for the search pattern (in degrees)"
+        description: "Maximum pitch values for the search pattern (in degrees)"
         validation:
           fixed_size<>: 2
 
@@ -125,17 +125,17 @@ move_head:
         validation:
           gt<>: [0.0]
 
-      pan_max:
+      yaw_max:
         type: double_array
         default_value: [ 0.0, 0.0 ]
-        description: "Maximum pan values for the search pattern (in degrees)"
+        description: "Maximum yaw values for the search pattern (in degrees)"
         validation:
           fixed_size<>: 2
 
-      tilt_max:
+      pitch_max:
         type: double_array
         default_value: [ -10.0, 45.0 ]
-        description: "Maximum tilt values for the search pattern (in degrees)"
+        description: "Maximum pitch values for the search pattern (in degrees)"
         validation:
           fixed_size<>: 2
 
@@ -161,17 +161,17 @@ move_head:
         validation:
           gt<>: [0.0]
 
-      pan_max:
+      yaw_max:
         type: double_array
         default_value: [ 0.0, 0.0 ]
-        description: "Maximum pan values for the search pattern (in degrees)"
+        description: "Maximum yaw values for the search pattern (in degrees)"
         validation:
           fixed_size<>: 2
 
-      tilt_max:
+      pitch_max:
         type: double_array
         default_value: [ 7.0, 7.0 ]
-        description: "Maximum tilt values for the search pattern (in degrees)"
+        description: "Maximum pitch values for the search pattern (in degrees)"
         validation:
           fixed_size<>: 2
 
