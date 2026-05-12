@@ -82,9 +82,5 @@ ENV QT_X11_NO_MITSHM=1
 # Install pixi
 RUN curl -fsSL https://pixi.sh/install.sh | sh
 
-# Install basler SDK
-COPY scripts/make_basler.sh /tmp/make_basler.sh
-RUN /tmp/make_basler.sh --ci
-
 # Switch to the workspace directory
 WORKDIR /home/$user/bitbots_main
