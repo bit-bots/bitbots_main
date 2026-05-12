@@ -60,7 +60,7 @@ class Simulation(Node):
         ]
 
     def _generate_default_world(self) -> str:
-        template_path = Path(self.package_path) / "xml" / "adult_field.xml"
+        template_path = Path(self.package_path) / "xml" / "kid_field.xml"
         output_path = Path(self.package_path) / "xml" / "generated_world.xml"
         with open(template_path) as f:
             template = f.read()
@@ -82,7 +82,15 @@ class Simulation(Node):
 
     def run(self) -> None:
         print("Starting simulation viewer...")
-        with viewer.launch_passive(self.model, self.data) as view:
+        with viewer.launch_passive(self.model, self.data, show_left_ui=False, show_right_ui=False) as view:
+            # pos="7.709 -7.854 6.511" xyaxes="0.726 0.687 -0.000 -0.357 0.377 0.855
+            view.cam.type = mujoco.mjtCamera.mjCAMERA_FREE
+            view.cam.lookat[0] = 0.0
+            view.cam.lookat[1] = 0.0
+            view.cam.lookat[2] = 0.0
+            view.cam.distance = 12.0
+            view.cam.azimuth = 135.0
+            view.cam.elevation = -30.0
             while view.is_running():
                 start_time = time.perf_counter()
                 self.step()
