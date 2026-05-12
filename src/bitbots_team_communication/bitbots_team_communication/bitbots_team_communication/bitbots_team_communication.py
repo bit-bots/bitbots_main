@@ -50,6 +50,7 @@ class TeamCommunication:
         self.socket_communication = SocketCommunication(self.node, self.logger, self.team_id, self.player_id)
 
         self.rate: int = self.node.get_parameter("rate").value
+        self.reduced_rate: int = self.node.get_parameter("reduced_rate").value
         self.lifetime: int = self.node.get_parameter("lifetime").value
         self.avg_walking_speed: float = self.node.get_parameter("avg_walking_speed").value
         self.rate_is_reduced: bool = False
@@ -67,7 +68,7 @@ class TeamCommunication:
         self.run_spin_in_thread()
         self.try_to_establish_connection()
 
-        self.timer = self.node.create_timer(1 / self.rate, self.send_message, callback_group=MutuallyExclusiveCallbackGroup())
+        self.create_timer(self.rate)
         self.receive_forever()
 
     def spin(self):
@@ -311,10 +312,8 @@ class TeamCommunication:
         if self.gamestate is not None and not self.gamestate.penalized:
             return False
         #if we are close to our message budget, we dont want to continue publishing
-        if self.gamestate is not None and (self.gamestate.message_budget > 40):
-            return False
-        #we dont want to publish messages if only one robot is in a team. (this may never occure since this is the max team size, not the number of active players)
-        if self.gamestate is not None and self.gamestate.players_per_team == 1:
+        #the budget smaller 40 as stop definition makes sure we have 10 msg per robot left in case of some delay in the communication with the game controller 
+        if self.gamestate is not None and (self.gamestate.message_budget < 40):
             return False
         
         return True
@@ -331,12 +330,27 @@ class TeamCommunication:
         return transforms3d.euler.quat2euler([quaternion.w, quaternion.x, quaternion.y, quaternion.z])
     
     def reduce_rate(self):
-        self.rate = 1
         self.timer.cancel()
-        self.timer = self.node.create_timer(1 / self.rate, self.send_message, callback_group=MutuallyExclusiveCallbackGroup())
+        self.create_timer(self.reduced_rate)
         self.rate_is_reduced = True
+        self.logger.warning("Team communication: message sending rate is reduced now")
 
+    def create_timer(self, rate: int):
+        self.timer = self.node.create_timer(1 / rate, self.send_message, callback_group=MutuallyExclusiveCallbackGroup())
 
+    def should_reduce_rate(self):
+        # we are allowed to send 2.5 msg per second on average with each robot (12000 with 4 robots in a 1200 sekonds game)
+        # the msg_left_linear_rate is the amount of messages we would send if we send exactly with this 2.5 msg per sec per robot rate
+        # once our actual msg budget is below this linear rate we tend to send more msg then allowed and should reduce our sending rate
+        if self.game_started_recently():
+            return False
+        
+        msg_left_linear_rate = (self.gamestate.first_half * 600 + self.gamestate.secs_remaining) * 4 * 2.5
+        return msg_left_linear_rate > self.gamestate.message_budget
+    
+    def game_started_recently(self):
+        #true in the first 60 seconds of the game
+        return self.gamestate.first_half and self.gamestate.secs_remaining > 540
 
 def main():
     rclpy.init(args=None)
