@@ -22,39 +22,56 @@ class EMERGENCY_NODE : public rclcpp::Node {
 
     RCLCPP_WARN(this->get_logger(), "Listening for EmergencyButton!");
 
+    tty_fd_ = open("/dev/tty", O_RDONLY | O_NONBLOCK);  // terminal read only and non-blocking
+
     // repeatedly call loop function
     timer_ = this->create_wall_timer(std::chrono::milliseconds(100), std::bind(&EMERGENCY_NODE::_emergencyLoop, this));
+  }
+
+  ~EMERGENCY_NODE() {
+    close(tty_fd_);  // closing terminal
   }
 
  private:
   rclcpp::Publisher<livelybot_msg::msg::PowerSwitch>::SharedPtr motor_switch_publisher_;
   rclcpp::TimerBase::SharedPtr timer_;
+  int tty_fd_;
 
   void _emergencyLoop() {
     struct termios oldt, newt;
 
     RCLCPP_INFO(this->get_logger(), "Loop is active!");
-    char ch = '\0';
+    char buf[64];
 
-    int tty_fd = open("/dev/tty", O_RDONLY | O_NONBLOCK);  // terminal read only and non-blocking
-    tcgetattr(tty_fd, &oldt);
+    tcgetattr(tty_fd_, &oldt);
     newt = oldt;
     newt.c_lflag = newt.c_lflag & ~(ICANON | ECHO);  // Don't wait for enter and don't show key in terminal
     newt.c_cc[VMIN] = 0;                             // Don't wait for input
     newt.c_cc[VTIME] = 0;                            // No timeout
-    tcsetattr(tty_fd, TCSANOW, &newt);
-    read(tty_fd, &ch, 1);
-    tcsetattr(tty_fd, TCSANOW, &oldt);
-    close(tty_fd);
+    tcsetattr(tty_fd_, TCSANOW, &newt);
 
-    if (ch != 'g') {
-      RCLCPP_WARN(this->get_logger(), "E-STOP!!!");
-
-      auto msg = livelybot_msg::msg::PowerSwitch();
-      msg.power_switch = 0;
-      msg.control_switch = 1;
-      motor_switch_publisher_->publish(msg);
+    ssize_t n = read(tty_fd_, buf, sizeof(buf));
+    int cnt = 0;
+    for (ssize_t i = 0; i < n; i++) {
+      if (buf[i] != ' ') {
+        cnt = cnt + 1;
+      }
     }
+
+    if (cnt == n && n > 0) {
+      _estop();
+    }
+
+    tcsetattr(tty_fd_, TCSANOW, &oldt);
+  }
+
+  void _estop() {
+    RCLCPP_WARN(this->get_logger(), "E-STOP!!!");
+
+    auto msg = livelybot_msg::msg::PowerSwitch();
+    msg.power_switch = 0;
+    msg.control_switch = 1;
+    motor_switch_publisher_->publish(msg);
   }
 };
 }  // namespace bitbots_emergency
