@@ -58,7 +58,7 @@ class EMERGENCY_NODE : public rclcpp::Node {
       }
     }
 
-    if (cnt == n && n > 0) {
+    if (cnt == n) {
       _estop();
     }
 
