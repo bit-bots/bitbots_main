@@ -63,7 +63,7 @@ class Build(AbstractTask):
         """
         print_debug("Building packages")
 
-        cmd = f"cd {self._remote_workspace} && chrt -r 1 taskset -c 0-9 pixi run --environment robot build {self._package}"
+        cmd = f"cd {self._remote_workspace} && pixi run --environment robot build {self._package}"
 
         print_debug(f"Calling '{cmd}'")
         try:
