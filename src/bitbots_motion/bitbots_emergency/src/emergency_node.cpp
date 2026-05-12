@@ -7,6 +7,7 @@
 #include <livelybot_msg/msg/power_switch.hpp>
 #include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <thread>
 
 namespace bitbots_emergency {
 class EMERGENCY_NODE : public rclcpp::Node {
@@ -15,9 +16,9 @@ class EMERGENCY_NODE : public rclcpp::Node {
     // Create client
     motor_switch_publisher_ = this->create_publisher<livelybot_msg::msg::PowerSwitch>("/power_switch_control", 1);
 
-    RCLCPP_WARN(this->get_logger(), "Emergency button starting in 5s!");
+    RCLCPP_WARN(this->get_logger(), "Emergency button starting in 3s!");
 
-    std::chrono::milliseconds(5000);
+    std::this_thread::sleep_for(std::chrono::seconds(3));
 
     RCLCPP_WARN(this->get_logger(), "Listening for EmergencyButton!");
 
