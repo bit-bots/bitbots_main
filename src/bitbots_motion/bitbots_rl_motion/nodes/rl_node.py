@@ -24,9 +24,13 @@ class RLNode(Node, ABC):
         self.declare_parameter("phase.control_dt", 0.0)
         self.declare_parameter("phase.gait_frequency", 0.0)
         self.declare_parameter("phase.use_phase", False)
+        self.declare_parameter("phase.initial_phase", [0.0, 3.141592653589793])
         self.declare_parameter("providers", ["CPUExecutionProvider"])
         self.declare_parameter("joints.ordered_relevant_joint_names", [""])
         self.declare_parameter("joints.walkready_state", [0.0])
+        self.declare_parameter("joints.kp", [-1.0])
+        self.declare_parameter("joints.kd", [-1.0])
+        self.declare_parameter("command.include_stop_signal", False)
 
         model = self.get_parameter("model").value
         self.get_logger().info(f"Loaded model: {model}")
@@ -66,6 +70,9 @@ class RLNode(Node, ABC):
         if self.allowed_states():
             self.publisher(onnx_pred)
 
+        self._phase_update_hook()
+
+    def _phase_update_hook(self):
         if self._phase.check_phase_set():
             phase_tp1 = self._phase.get_phase() + self._phase.get_phase_dt()
             self._phase.set_phase(np.fmod(phase_tp1 + np.pi, 2 * np.pi) - np.pi)

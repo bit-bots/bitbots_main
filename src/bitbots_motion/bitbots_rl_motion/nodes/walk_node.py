@@ -47,6 +47,22 @@ class WalkNode(RLNode):
         joint_command = self._joint_handler.get_joint_commands(onnx_pred)
         self._joint_command_pub.publish(joint_command)
 
+    def _phase_update_hook(self):
+        if not self._phase.check_phase_set():
+            return
+        phase = self._phase.get_phase()
+        if self._command_handler.get_stop_signal():
+            anchors = [
+                np.array([-np.pi / 2, np.pi / 2], dtype=np.float32),
+                np.array([np.pi / 2, -np.pi / 2], dtype=np.float32),
+            ]
+            nearest = min(anchors, key=lambda a: np.linalg.norm(phase - a))
+            if np.linalg.norm(phase - nearest) < 0.1:
+                self._phase.set_phase(nearest)
+                return
+        phase_tp1 = phase + self._phase.get_phase_dt()
+        self._phase.set_phase(np.fmod(phase_tp1 + np.pi, 2 * np.pi) - np.pi)
+
     # states in which the policy executes
     def allowed_states(self):
         allowed_to_move = self._robot_state_handler.is_walkable() and np.any(self._command_handler.get_command() != 0.0)
