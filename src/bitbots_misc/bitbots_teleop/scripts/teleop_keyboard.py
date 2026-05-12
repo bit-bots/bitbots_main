@@ -155,7 +155,7 @@ class TeleopKeyboard(Node):
         self.head_tilt_step = 0.05
 
         self.walk_kick_pub = self.create_publisher(Bool, "kick", 1)
-        self.power_switch_pub = self.create_publisher(PowerSwitch, "/power_switch_state", 1)
+        self.power_switch_pub = self.create_publisher(PowerSwitch, "/power_switch_control", 1)
 
         self.reset_robot = self.create_client(Empty, "/reset_pose")
         self.reset_ball = self.create_client(Empty, "/reset_ball")
