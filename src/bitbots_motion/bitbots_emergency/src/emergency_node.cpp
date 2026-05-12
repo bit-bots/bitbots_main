@@ -15,9 +15,9 @@ class EMERGENCY_NODE : public rclcpp::Node {
     // Create client
     motor_switch_publisher_ = this->create_publisher<livelybot_msg::msg::PowerSwitch>("/power_switch_control", 1);
 
-    RCLCPP_WARN(this->get_logger(), "Emergency ");
+    RCLCPP_WARN(this->get_logger(), "Emergency button starting in 5s!");
 
-    std::chrono::milliseconds(1000);
+    std::chrono::milliseconds(5000);
 
     RCLCPP_WARN(this->get_logger(), "Listening for EmergencyButton!");
 
