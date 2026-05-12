@@ -47,7 +47,7 @@ class EMERGENCY_NODE : public rclcpp::Node {
     tcsetattr(tty_fd, TCSANOW, &oldt);
     close(tty_fd);
 
-    if (ch != ' ') {
+    if (ch != 'g') {
       RCLCPP_WARN(this->get_logger(), "E-STOP!!!");
 
       auto msg = livelybot_msg::msg::PowerSwitch();
