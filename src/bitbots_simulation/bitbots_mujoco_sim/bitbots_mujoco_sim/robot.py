@@ -1,19 +1,43 @@
 import mujoco
+import numpy as np
 
 from bitbots_mujoco_sim.camera import Camera
 from bitbots_mujoco_sim.joint import Joint
-from bitbots_mujoco_sim.sensor import Sensor
+from bitbots_mujoco_sim.sensor import NoisySensor, QuaternionNoisySensor, Sensor
 
 
 class Robot:
     """Represents the Pi Plus robot, holding all its components like the camera, joints, and sensors."""
 
-    def __init__(self, model: mujoco.MjModel, data: mujoco.MjData, index: int = 0):
+    def __init__(
+        self,
+        model: mujoco.MjModel,
+        data: mujoco.MjData,
+        index: int = 0,
+        noise_config: dict[str, float] | None = None,
+        rng: np.random.Generator | None = None,
+    ):
         self.index: int = index
+        self._rng = rng or np.random.default_rng()
+        self.noise_config = noise_config or {}
         self.camera = Camera(model, data, name=self._get_name("head_camera"))
 
         def j(ros_name: str) -> Joint:
             return Joint(model, data, ros_name=ros_name, name=self._get_name(ros_name))
+
+        def s(base_name: str, ros_name: str) -> Sensor:
+            return Sensor(model, data, name=self._get_name(base_name), ros_name=ros_name)
+
+        def n(base_name: str, ros_name: str, gaussian_key: str, bias_key: str) -> NoisySensor:
+            return NoisySensor(
+                model,
+                data,
+                name=self._get_name(base_name),
+                ros_name=ros_name,
+                gaussian_stddev=float(self.noise_config.get(gaussian_key, 0.0)),
+                bias_stddev=float(self.noise_config.get(bias_key, 0.0)),
+                rng=self._rng,
+            )
 
         self.joints = RobotJoints(
             [
@@ -48,14 +72,22 @@ class Robot:
         )
         self.sensors = RobotSensors(
             [
-                Sensor(model, data, name=self._get_name("gyro"), ros_name="IMU_gyro"),
-                Sensor(model, data, name=self._get_name("accelerometer"), ros_name="IMU_accelerometer"),
-                Sensor(model, data, name=self._get_name("orientation"), ros_name="IMU_orientation"),
-                Sensor(model, data, name=self._get_name("position"), ros_name="IMU_position"),
-                Sensor(model, data, name=self._get_name("l_foot_pos"), ros_name="left_foot_position"),
-                Sensor(model, data, name=self._get_name("r_foot_pos"), ros_name="right_foot_position"),
-                Sensor(model, data, name=self._get_name("l_foot_global_linvel"), ros_name="left_foot_velocity"),
-                Sensor(model, data, name=self._get_name("r_foot_global_linvel"), ros_name="right_foot_velocity"),
+                n("gyro", "IMU_gyro", "gyro_gaussian_stddev", "gyro_bias_stddev"),
+                n("accelerometer", "IMU_accelerometer", "accelerometer_gaussian_stddev", "accelerometer_bias_stddev"),
+                QuaternionNoisySensor(
+                    model,
+                    data,
+                    name=self._get_name("orientation"),
+                    ros_name="IMU_orientation",
+                    gaussian_stddev=float(self.noise_config.get("orientation_gaussian_stddev", 0.0)),
+                    bias_stddev=float(self.noise_config.get("orientation_bias_stddev", 0.0)),
+                    rng=self._rng,
+                ),
+                s("position", "IMU_position"),
+                s("l_foot_pos", "left_foot_position"),
+                s("r_foot_pos", "right_foot_position"),
+                s("l_foot_global_linvel", "left_foot_velocity"),
+                s("r_foot_global_linvel", "right_foot_velocity"),
             ]
         )
 
