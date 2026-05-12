@@ -15,10 +15,14 @@ class EMERGENCY_NODE : public rclcpp::Node {
     // Create client
     motor_switch_publisher_ = this->create_publisher<livelybot_msg::msg::PowerSwitch>("/power_switch_control", 1);
 
+    RCLCPP_WARN(this->get_logger(), "Emergency ")
+
+    std::chrono::milliseconds(1000);
+
+    RCLCPP_WARN(this->get_logger(), "Listening for EmergencyButton!");
+
     // repeatedly call loop function
     timer_ = this->create_wall_timer(std::chrono::milliseconds(100), std::bind(&EMERGENCY_NODE::_emergencyLoop, this));
-
-    RCLCPP_INFO(this->get_logger(), "Listening for EmergencyButton");
   }
 
  private:
@@ -47,7 +51,7 @@ class EMERGENCY_NODE : public rclcpp::Node {
 
       auto msg = livelybot_msg::msg::PowerSwitch();
       msg.power_switch = 0;
-      msg.control_switch = 0;
+      msg.control_switch = 1;
       motor_switch_publisher_->publish(msg);
     }
   }
