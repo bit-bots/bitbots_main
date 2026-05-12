@@ -2,11 +2,11 @@
   <arg name="sim" default="false"/>
   <arg name="walk" default="true"/>
   <arg name="kick" default="true"/>
-  <arg name="standup_back" default="false"/>
+  <arg name="standup_back" default="true"/>
 
   <group if="$(var walk)">
     <node pkg="bitbots_rl_motion" exec="walk_node" output="screen">
-      <param from="$(find-pkg-share bitbots_rl_motion)/configs/wolfgang_walking_model_config.yaml" />
+      <param from="$(find-pkg-share bitbots_rl_motion)/configs/pi_plus_walking_model_config.yaml" />
     </node>
   </group>
 
@@ -19,6 +19,7 @@
   <group if="$(var standup_back)">
     <node pkg="bitbots_rl_motion" exec="standup_back_node" output="screen">
       <param from="$(find-pkg-share bitbots_rl_motion)/configs/pi_plus_standup_back_model_config.yaml" />
+      <param name="use_sim_time" value="$(var sim)"/>
     </node>
   </group>
 </launch>

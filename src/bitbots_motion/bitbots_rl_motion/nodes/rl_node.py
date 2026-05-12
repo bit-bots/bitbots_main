@@ -3,7 +3,6 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 
 import numpy as np
-import onnx
 import onnxruntime as rt
 import rclpy
 from ament_index_python import get_package_share_directory
@@ -85,10 +84,9 @@ class RLNode(Node, ABC):
 
         # Load the ONNX model
         self._onnx_session = rt.InferenceSession(self._onnx_model_path, providers=self.get_parameter("providers").value)
-        self._onnx_model = onnx.load(self._onnx_model_path)
 
-        self._onnx_input_name = [inp.name for inp in self._onnx_model.graph.input]
-        self._onnx_output_name = [out.name for out in self._onnx_model.graph.output]
+        self._onnx_input_name = [inp.name for inp in self._onnx_session.get_inputs()]
+        self._onnx_output_name = [out.name for out in self._onnx_session.get_outputs()]
 
         self._handlers = []
 

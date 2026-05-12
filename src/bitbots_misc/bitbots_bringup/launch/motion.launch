@@ -42,6 +42,11 @@
         </node>
     </group>
 
+    <!-- launch rl motion nodes (standup etc.) -->
+    <include file="$(find-pkg-share bitbots_rl_motion)/launch/rl_motion.launch">
+        <arg name="sim" value="$(var sim)"/>
+    </include>
+
     <!-- launch the hcm -->
     <include file="$(find-pkg-share bitbots_hcm)/launch/hcm.launch">
         <arg name="sim" value="$(var sim)"/>
