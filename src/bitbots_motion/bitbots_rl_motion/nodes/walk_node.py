@@ -50,7 +50,7 @@ class WalkNode(RLNode):
     # states in which the policy executes
     def allowed_states(self):
         return self._robot_state_handler.is_walkable()
-    
+
     def _phase_update_hook(self):
         if not self._phase.check_phase_set():
             return
@@ -66,5 +66,6 @@ class WalkNode(RLNode):
                 return
         phase_tp1 = phase + self._phase.get_phase_dt()
         self._phase.set_phase(np.fmod(phase_tp1 + np.pi, 2 * np.pi) - np.pi)
+
 
 main = create_main(WalkNode)

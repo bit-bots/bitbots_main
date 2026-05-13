@@ -1,10 +1,10 @@
 import numpy as np
 from handlers.ball_handler import BallHandler
+from handlers.command_handler import CommandHandler
 from handlers.gravity_handler import GravityHandler
 from handlers.gyro_handler import GyroHandler
 from handlers.joint_handler import JointHandler
 from handlers.robot_state_handler import RobotStateHandler
-from handlers.command_handler import CommandHandler
 
 from bitbots_msgs.msg import JointCommand
 from nodes.rl_node import RLNode, create_main
@@ -54,5 +54,6 @@ class MjLabWalkNode(RLNode):
     def allowed_states(self):
         allowed_to_move = self._robot_state_handler.is_walkable() and np.any(self._command_handler.get_command() != 0.0)
         return allowed_to_move
+
 
 main = create_main(MjLabWalkNode)

@@ -28,9 +28,15 @@ class RLNode(Node, ABC):
         self.declare_parameter("providers", ["CPUExecutionProvider"])
         self.declare_parameter("joints.ordered_relevant_joint_names", [""])
         self.declare_parameter("joints.walkready_state", [0.0])
-        self.declare_parameter("joints.action_scales", [0.5] * len(self.get_parameter("joints.ordered_relevant_joint_names").value))
-        self.declare_parameter("joints.kp", [55.0] * len(self.get_parameter("joints.ordered_relevant_joint_names").value))
-        self.declare_parameter("joints.kd", [0.6] * len(self.get_parameter("joints.ordered_relevant_joint_names").value))
+        self.declare_parameter(
+            "joints.action_scales", [0.5] * len(self.get_parameter("joints.ordered_relevant_joint_names").value)
+        )
+        self.declare_parameter(
+            "joints.kp", [55.0] * len(self.get_parameter("joints.ordered_relevant_joint_names").value)
+        )
+        self.declare_parameter(
+            "joints.kd", [0.6] * len(self.get_parameter("joints.ordered_relevant_joint_names").value)
+        )
 
         model = self.get_parameter("model").value
         self.get_logger().info(f"Loaded model: {model}")

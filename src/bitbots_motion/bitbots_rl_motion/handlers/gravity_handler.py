@@ -2,7 +2,6 @@ from typing import Optional
 
 import numpy as np
 from sensor_msgs.msg import Imu
-from transforms3d.euler import euler2mat
 from transforms3d.quaternions import quat2mat
 
 from handlers.handler import Handler

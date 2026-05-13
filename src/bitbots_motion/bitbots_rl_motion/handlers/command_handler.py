@@ -12,7 +12,6 @@ class CommandHandler(Handler):
         self._cmd_vel: Optional[Twist] = None
         self._cmd_vel_sub = self._node.create_subscription(Twist, "cmd_vel", self._cmd_vel_callback, 10)
 
-
     def get_command(self):
         assert self._cmd_vel is not None
         return np.array(

@@ -1,10 +1,8 @@
-from typing import Optional
-from rclpy.node import Node
 import numpy as np
+from rclpy.node import Node
 
 
 class Phase:
-
     def __init__(self, node: Node):
         self._node = node
         self._use_phase = self._node.get_parameter("phase.use_phase").value
