@@ -1,0 +1,87 @@
+mjlab_walk_node:
+  ros__parameters:
+    model: walk_mjlab.onnx
+
+    joints:
+      ordered_relevant_joint_names: [
+        "r_hip_pitch_joint",
+        "l_hip_pitch_joint",
+        "r_hip_roll_joint",
+        "l_hip_roll_joint",
+        "r_thigh_joint",
+        "l_thigh_joint",
+        "r_calf_joint",
+        "l_calf_joint",
+        "r_ankle_pitch_joint",
+        "l_ankle_pitch_joint",
+        "r_ankle_roll_joint",
+        "l_ankle_roll_joint",
+        "r_shoulder_roll_joint",
+        "l_shoulder_roll_joint",
+        "r_shoulder_pitch_joint",
+        "l_shoulder_pitch_joint",
+        "r_upper_arm_joint",
+        "l_upper_arm_joint",
+        "r_elbow_joint",
+        "l_elbow_joint",
+      ] 
+      walkready_state: [
+        0.25, -0.25,
+        0.0, 0.0,
+        0.0, 0.0,
+        0.65, -0.65,
+        0.4, -0.4,
+        0.0, 0.0,
+        0.0, 0.0,
+        0.0, 0.0,
+        0.0, 0.0,
+        0.0, 0.0,
+      ]
+      kp: [
+        # legs
+        55.0, 55.0, 
+        55.0, 55.0, 
+        55.0, 55.0, 
+        55.0, 55.0, 
+        55.0, 55.0, 
+        55.0, 55.0, 
+        # arms
+        6.0, 6.0,
+        6.0, 6.0,
+        6.0, 6.0,
+        6.0, 6.0,
+      ]
+      kd: [
+        # legs
+        1.1, 1.1, 
+        1.4, 1.4,
+        1.1, 1.1,
+        1.1, 1.1,
+        1.1, 1.1,
+        1.1, 1.1,
+        # arms
+        0.6, 0.6,
+        0.6, 0.6,
+        0.6, 0.6,
+        0.6, 0.6,
+      ]
+      action_scales: [
+        # legs
+        0.5, 0.5,
+        0.5, 0.5,
+        0.5, 0.5,
+        0.5, 0.5,
+        0.5, 0.5,
+        0.5, 0.5,
+        # arms
+        0.5, 0.5,
+        0.5, 0.5,
+        0.5, 0.5,
+        0.5, 0.5
+      ]
+    phase:
+      control_dt: 0.02
+      gait_frequency: 99.99
+      use_phase: False
+
+    providers: ["CPUExecutionProvider"]
