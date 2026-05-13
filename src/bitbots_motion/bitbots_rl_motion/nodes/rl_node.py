@@ -46,7 +46,7 @@ class RLNode(Node, ABC):
         if not sensors_ready:
             self.get_logger().warning(
                 f"Waiting for all sensors to be available. Following handler hasn't got the needed information: {missing_handler}",
-                throttle_duration_sec=1.0,
+                throttle_duration_sec=10.0,
             )
             return
 
@@ -71,10 +71,9 @@ class RLNode(Node, ABC):
             self.publisher(onnx_pred)
         self._phase_update_hook()
 
+    @abstractmethod
     def _phase_update_hook(self):
-        if self._phase.check_phase_set():
-            phase_tp1 = self._phase.get_phase() + self._phase.get_phase_dt()
-            self._phase.set_phase(np.fmod(phase_tp1 + np.pi, 2 * np.pi) - np.pi)
+        pass
 
     def _all_sensors_ready(self):
         for handler in self._handlers:

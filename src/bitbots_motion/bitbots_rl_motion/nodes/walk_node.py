@@ -49,8 +49,7 @@ class WalkNode(RLNode):
 
     # states in which the policy executes
     def allowed_states(self):
-        allowed_to_move = self._robot_state_handler.is_walkable() and np.any(self._command_handler.get_command() != 0.0)
-        return allowed_to_move
+        return self._robot_state_handler.is_walkable()
     
     def _phase_update_hook(self):
         if not self._phase.check_phase_set():
