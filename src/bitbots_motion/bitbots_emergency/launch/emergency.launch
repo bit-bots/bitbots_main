@@ -1,5 +1,5 @@
 <launch>
-    <arg name="emergency_button" default="false"/>
+    <arg name="emergency_button" default="true"/>
 
     <group if="$(var emergency_button)">
         <node pkg="bitbots_emergency" exec="EMERGENCY_BUTTON" output="screen"/>
