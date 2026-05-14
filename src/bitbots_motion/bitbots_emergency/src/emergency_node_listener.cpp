@@ -8,7 +8,8 @@ namespace bitbots_emergency_listener {
 class EMERGENCY_NODE_LISTENER : public rclcpp::Node {
  public:
   explicit EMERGENCY_NODE_LISTENER() : Node("emergency_node_listener") {
-    e_stop_ = false;
+    e_stop_ = false;         // flag for reducing noise
+    start_trigger_ = false;  // starting trigger flag
 
     heartbeat_subscriber_ = this->create_subscription<std_msgs::msg::Bool>(
         "/heartbeat", 10, std::bind(&EMERGENCY_NODE_LISTENER::_emergency_callback, this, std::placeholders::_1));
@@ -29,21 +30,26 @@ class EMERGENCY_NODE_LISTENER : public rclcpp::Node {
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Time timestamp_;
   bool e_stop_;
+  bool start_trigger_;
 
   void _watchdog() {
     if (!e_stop_) {
       rclcpp::Time current_time = this->now();
 
-      rclcpp::Duration delta = current_time - timestamp_;
+      if (start_trigger_) {
+        rclcpp::Duration delta = current_time - timestamp_;
 
-      if (delta > rclcpp::Duration(std::chrono::milliseconds(500))) {
-        _estop();
+        if (delta > rclcpp::Duration(
+                        std::chrono::milliseconds(500))) {  // triggers e-stop if connectionloss is longer than 500ms
+          _estop();
+        }
       }
     }
   }
 
   void _emergency_callback(std_msgs::msg::Bool::SharedPtr msg) {
     if (msg->data == true) {
+      start_trigger_ = true;  // triggers start when first heartbeat arrives
       timestamp_ = this->now();
     } else if (msg->data == false) {
       _estop();
@@ -62,3 +68,21 @@ class EMERGENCY_NODE_LISTENER : public rclcpp::Node {
   }
 };
 }  // namespace bitbots_emergency_listener
+
+void thread_spin(rclcpp::experimental::executors::EventsExecutor::SharedPtr executor) { executor->spin(); }
+
+int main(int argc, char** argv) {
+  rclcpp::init(argc, argv);
+
+  auto node = std::make_shared<bitbots_emergency_listener::EMERGENCY_NODE_LISTENER>();
+
+  rclcpp::experimental::executors::EventsExecutor::SharedPtr exec =
+      std::make_shared<rclcpp::experimental::executors::EventsExecutor>();
+  exec->add_node(node);
+  std::thread thread_obj(thread_spin, exec);
+
+  // Join the thread
+  thread_obj.join();
+
+  rclcpp::shutdown();
+}
