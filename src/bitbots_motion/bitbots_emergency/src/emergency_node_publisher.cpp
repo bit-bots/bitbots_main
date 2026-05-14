@@ -2,6 +2,7 @@
 #include <termios.h>
 #include <unistd.h>
 
+#include <cerrno>
 #include <chrono>
 #include <functional>
 #include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
@@ -22,7 +23,10 @@ class EMERGENCY_NODE_PUBLISHER : public rclcpp::Node {
 
     RCLCPP_WARN(this->get_logger(), "Listening for EmergencyButton!");
 
-    tty_fd_ = open("/dev/tty", O_RDONLY | O_NONBLOCK);  // terminal read only and non-blocking
+    tty_fd_ = open("/dev/tty", O_RDONLY | O_NONBLOCK);
+    if (tty_fd_ == -1) {
+      throw std::runtime_error(std::string("Failed to open /dev/tty: ") + std::strerror(errno));
+    }
 
     struct termios newt;
     tcgetattr(tty_fd_, &oldt_);
