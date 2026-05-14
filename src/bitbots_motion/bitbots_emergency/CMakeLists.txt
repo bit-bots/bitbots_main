@@ -5,13 +5,16 @@ find_package(ament_cmake REQUIRED)
 find_package(livelybot_msg REQUIRED)
 find_package(rclcpp REQUIRED)
 
-set(SOURCES src/emergency_node.cpp)
+set(SOURCE_PUBLISHER src/emergency_node_publisher.cpp)
+set(SOURCE_LISTENER src/emergency_node_listener.cpp)
 
-add_executable(EMERGENCY_BUTTON ${SOURCES})
+add_executable(EMERGENCY_NODE_PUBLISHER ${SOURCE_PUBLISHER})
+add_executable(EMERGENCY_NODE_SUBSCRIBER ${SOURCE_LISTENER})
 
 ament_target_dependencies(EMERGENCY_BUTTON rclcpp livelybot_msg)
 
-install(TARGETS EMERGENCY_BUTTON DESTINATION lib/${PROJECT_NAME})
+install(TARGETS EMERGENCY_NODE_PUBLISHER DESTINATION lib/${PROJECT_NAME})
+install(TARGETS EMERGENCY_NODE_SUBSCRIBER DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 
