@@ -24,30 +24,33 @@ class EMERGENCY_NODE_PUBLISHER : public rclcpp::Node {
 
     tty_fd_ = open("/dev/tty", O_RDONLY | O_NONBLOCK);  // terminal read only and non-blocking
 
+    struct termios newt;
+    tcgetattr(tty_fd_, &oldt_);
+    newt = oldt_;
+    newt.c_lflag = newt.c_lflag & ~(ICANON | ECHO);  // Don't wait for enter and don't show key in terminal
+    newt.c_cc[VMIN] = 0;                             // Don't wait for input
+    newt.c_cc[VTIME] = 0;                            // No timeout
+    tcsetattr(tty_fd_, TCSANOW, &newt);
+
     // repeatedly call loop function
     timer_ = this->create_wall_timer(std::chrono::milliseconds(100),
                                      std::bind(&EMERGENCY_NODE_PUBLISHER::_emergencyLoop, this));
   }
 
-  ~EMERGENCY_NODE_PUBLISHER() { close(tty_fd_); }
+  ~EMERGENCY_NODE_PUBLISHER() {
+    tcsetattr(tty_fd_, TCSANOW, &oldt_);
+    close(tty_fd_);
+  }
 
  private:
   rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr heartbeat_publisher_;
   rclcpp::TimerBase::SharedPtr timer_;
+  struct termios oldt_;
   int tty_fd_;
 
   void _emergencyLoop() {
-    struct termios oldt, newt;
-
     RCLCPP_INFO(this->get_logger(), "Loop is active!");
     char buf[64];
-
-    tcgetattr(tty_fd_, &oldt);
-    newt = oldt;
-    newt.c_lflag = newt.c_lflag & ~(ICANON | ECHO);  // Don't wait for enter and don't show key in terminal
-    newt.c_cc[VMIN] = 0;                             // Don't wait for input
-    newt.c_cc[VTIME] = 0;                            // No timeout
-    tcsetattr(tty_fd_, TCSANOW, &newt);
 
     ssize_t n = read(tty_fd_, buf, sizeof(buf));
     int cnt = 0;
@@ -66,8 +69,6 @@ class EMERGENCY_NODE_PUBLISHER : public rclcpp::Node {
       msg.data = true;  // Robot should function
     }
     heartbeat_publisher_->publish(msg);
-
-    tcsetattr(tty_fd_, TCSANOW, &oldt);
   }
 };
 }  // namespace bitbots_emergency_publisher
