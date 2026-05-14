@@ -11,7 +11,8 @@ set(SOURCE_LISTENER src/emergency_node_listener.cpp)
 add_executable(EMERGENCY_NODE_PUBLISHER ${SOURCE_PUBLISHER})
 add_executable(EMERGENCY_NODE_SUBSCRIBER ${SOURCE_LISTENER})
 
-ament_target_dependencies(EMERGENCY_BUTTON rclcpp livelybot_msg)
+ament_target_dependencies(EMERGENCY_NODE_PUBLISHER EMERGENCY_NODE_SUBSCRIBER
+                          rclcpp livelybot_msg)
 
 install(TARGETS EMERGENCY_NODE_PUBLISHER DESTINATION lib/${PROJECT_NAME})
 install(TARGETS EMERGENCY_NODE_SUBSCRIBER DESTINATION lib/${PROJECT_NAME})
