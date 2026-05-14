@@ -339,7 +339,7 @@ class TeleopKeyboard(Node):
                     self.z = 0
                     self.a_x = 0
                     self.th = 0
-                    self.power_switch_pub.publish(PowerSwitch(control_switch=0, power_switch=0))
+                    self.power_switch_pub.publish(PowerSwitch(control_switch=1, power_switch=0))
                 elif key == "ü":
                     self.push_force_x += 1
                 elif key == "Ü":
