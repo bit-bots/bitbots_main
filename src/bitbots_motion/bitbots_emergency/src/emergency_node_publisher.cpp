@@ -4,17 +4,17 @@
 
 #include <chrono>
 #include <functional>
-#include <livelybot_msg/msg/power_switch.hpp>
 #include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <std_msgs/msg/bool.hpp>
 #include <thread>
 
-namespace bitbots_emergency {
-class EMERGENCY_NODE : public rclcpp::Node {
+namespace bitbots_emergency_publisher {
+class EMERGENCY_NODE_PUBLISHER : public rclcpp::Node {
  public:
-  explicit EMERGENCY_NODE() : Node("emergency_node") {
+  explicit EMERGENCY_NODE_PUBLISHER() : Node("emergency_node_publisher") {
     // Create client
-    motor_switch_publisher_ = this->create_publisher<livelybot_msg::msg::PowerSwitch>("/power_switch_control", 1);
+    heartbeat_publisher_ = this->create_publisher<std_msgs::msg::Bool>("/heartbeat", 1);
 
     RCLCPP_WARN(this->get_logger(), "Emergency button starting in 3s!");
 
@@ -25,15 +25,14 @@ class EMERGENCY_NODE : public rclcpp::Node {
     tty_fd_ = open("/dev/tty", O_RDONLY | O_NONBLOCK);  // terminal read only and non-blocking
 
     // repeatedly call loop function
-    timer_ = this->create_wall_timer(std::chrono::milliseconds(100), std::bind(&EMERGENCY_NODE::_emergencyLoop, this));
+    timer_ = this->create_wall_timer(std::chrono::milliseconds(100),
+                                     std::bind(&EMERGENCY_NODE_PUBLISHER::_emergencyLoop, this));
   }
 
-  ~EMERGENCY_NODE() {
-    close(tty_fd_);  // closing terminal
-  }
+  ~EMERGENCY_NODE_PUBLISHER() { close(tty_fd_); }
 
  private:
-  rclcpp::Publisher<livelybot_msg::msg::PowerSwitch>::SharedPtr motor_switch_publisher_;
+  rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr heartbeat_publisher_;
   rclcpp::TimerBase::SharedPtr timer_;
   int tty_fd_;
 
@@ -58,30 +57,25 @@ class EMERGENCY_NODE : public rclcpp::Node {
       }
     }
 
+    auto msg = std_msgs::msg::Bool();
     if (cnt == n) {
-      _estop();
+      msg.data = false;  // Robot should continue functioning
+    } else {
+      msg.data = true;  // E-stop!
     }
+    heartbeat_publisher_->publish(msg);
 
     tcsetattr(tty_fd_, TCSANOW, &oldt);
   }
-
-  void _estop() {
-    RCLCPP_WARN(this->get_logger(), "E-STOP!!!");
-
-    auto msg = livelybot_msg::msg::PowerSwitch();
-    msg.power_switch = 0;
-    msg.control_switch = 1;
-    motor_switch_publisher_->publish(msg);
-  }
 };
-}  // namespace bitbots_emergency
+}  // namespace bitbots_emergency_publisher
 
 void thread_spin(rclcpp::experimental::executors::EventsExecutor::SharedPtr executor) { executor->spin(); }
 
 int main(int argc, char** argv) {
   rclcpp::init(argc, argv);
 
-  auto node = std::make_shared<bitbots_emergency::EMERGENCY_NODE>();
+  auto node = std::make_shared<bitbots_emergency_publisher::EMERGENCY_NODE_PUBLISHER>();
 
   rclcpp::experimental::executors::EventsExecutor::SharedPtr exec =
       std::make_shared<rclcpp::experimental::executors::EventsExecutor>();
