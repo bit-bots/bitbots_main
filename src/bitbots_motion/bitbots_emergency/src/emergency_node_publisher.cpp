@@ -61,6 +61,8 @@ class EMERGENCY_NODE_PUBLISHER : public rclcpp::Node {
     if (cnt == n) {
       msg.data = false;  // Robot should continue functioning
     } else {
+      RCLCPP_WARN(this->get_logger(), "Sending E-STOP signal!!!");
+
       msg.data = true;  // E-stop!
     }
     heartbeat_publisher_->publish(msg);

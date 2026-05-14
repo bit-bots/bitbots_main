@@ -1,7 +1,14 @@
 <launch>
     <arg name="emergency_button" default="true"/>
+    <arg name="robot" default="false"/>
+    <arg name="remote" default="false"/>
 
     <group if="$(var emergency_button)">
-        <node pkg="bitbots_emergency" exec="EMERGENCY_BUTTON" output="screen"/>
+        <group if ="$(var robot)">
+            <node pkg="bitbots_emergency" exec="EMERGENCY_NODE_LISTENER" output="screen"/>
+        </group>
+        <group if="$(var remote)">
+            <node pkg="bitbots_emergency" exec="EMERGENCY_NODE_PUBLISHER" output="screen"/>
+        </group>
     </group>
 </launch>
