@@ -59,11 +59,11 @@ class EMERGENCY_NODE_PUBLISHER : public rclcpp::Node {
 
     auto msg = std_msgs::msg::Bool();
     if (cnt == n) {
-      msg.data = false;  // Robot should continue functioning
-    } else {
       RCLCPP_WARN(this->get_logger(), "Sending E-STOP signal!!!");
 
-      msg.data = true;  // E-stop!
+      msg.data = false;  // E-stop!
+    } else {
+      msg.data = true;  // Robot should function
     }
     heartbeat_publisher_->publish(msg);
 
