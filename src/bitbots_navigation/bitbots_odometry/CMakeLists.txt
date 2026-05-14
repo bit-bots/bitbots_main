@@ -32,8 +32,6 @@ find_package(tf2_ros REQUIRED)
 generate_parameter_library(odometry_parameters
                            config/odometry_config_template.yaml)
 
-include_directories(include)
-
 add_compile_options(-Wall -Werror -Wno-unused)
 
 add_executable(odometry_fuser src/odometry_fuser.cpp)
