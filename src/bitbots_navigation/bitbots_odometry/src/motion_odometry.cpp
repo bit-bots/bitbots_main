@@ -1,9 +1,10 @@
+#include <rot_conv/rot_conv.h>
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/transform_listener.h>
 #include <unistd.h>
+
 #include <Eigen/Geometry>
-#include <rot_conv/rot_conv.h>
 #include <biped_interfaces/msg/phase.hpp>
 #include <bitbots_odometry/odometry_parameters.hpp>
 #include <bitbots_utils/utils.hpp>
@@ -26,7 +27,9 @@ class MotionOdometry : public rclcpp::Node {
   void loop();
 
  private:
-  int previous_support_state_ = biped_interfaces::msg::Phase::LEFT_STANCE;  // Start in left support, as the robot starts standing on the left foot after the dynup
+  int previous_support_state_ =
+      biped_interfaces::msg::Phase::LEFT_STANCE;  // Start in left support, as the robot starts standing on the left
+                                                  // foot after the dynup
   tf2::Transform odometry_to_support_foot_, odom_to_base_link_, previous_odom_to_base_link_internal_;
   tf2::Quaternion previous_imu_orientation_in_base_link_;
   std::string base_link_frame_, r_sole_frame_, l_sole_frame_, odom_frame_, imu_frame_;
@@ -44,12 +47,11 @@ class MotionOdometry : public rclcpp::Node {
 
   // Returns {contact_corner_frame, sole_frame} of the foot with the lowest corner in IMU world space.
   std::tuple<std::string, std::string, int> detectSupportFoot(const tf2::Quaternion& imu_rotation,
-                                                        const rclcpp::Time& time);
+                                                              const rclcpp::Time& time);
   // Returns the corrected pose of sole_frame in the IMU frame, as if the foot were flat on the ground
   // pivoted around contact_corner_frame (which is assumed to be the fixed ground contact point).
   tf2::Transform getFootContactModelResult(const rclcpp::Time& time, const tf2::Quaternion& imu_orientation,
-                                           const std::string& sole_frame,
-                                           const std::string& contact_corner_frame);
+                                           const std::string& sole_frame, const std::string& contact_corner_frame);
   void imuCallback(const sensor_msgs::msg::Imu::SharedPtr msg);
   tf2::Quaternion dropYaw(tf2::Quaternion input);
 
@@ -96,8 +98,8 @@ MotionOdometry::MotionOdometry()
   this->declare_parameter<std::string>("odom_frame", "odom");
   this->get_parameter("odom_frame", odom_frame_);
 
-  imu_sub_ = this->create_subscription<sensor_msgs::msg::Imu>(
-      "imu/data", 1, std::bind(&MotionOdometry::imuCallback, this, _1));
+  imu_sub_ = this->create_subscription<sensor_msgs::msg::Imu>("imu/data", 1,
+                                                              std::bind(&MotionOdometry::imuCallback, this, _1));
 
   pub_odometry_ = this->create_publisher<nav_msgs::msg::Odometry>("motion_odometry", 1);
   pub_support_state_ = this->create_publisher<biped_interfaces::msg::Phase>("walk_support_state", 1);
@@ -137,8 +139,8 @@ void MotionOdometry::loop() {
        previous_support_state_ == biped_interfaces::msg::Phase::RIGHT_STANCE) ||
       (support_state == biped_interfaces::msg::Phase::RIGHT_STANCE &&
        previous_support_state_ == biped_interfaces::msg::Phase::LEFT_STANCE)) {
-
-    std::string previous_contact_corner_frame, current_contact_corner_frame, previous_support_link, current_support_link;
+    std::string previous_contact_corner_frame, current_contact_corner_frame, previous_support_link,
+        current_support_link;
 
     if (previous_support_state_ == biped_interfaces::msg::Phase::LEFT_STANCE) {
       previous_support_link = l_sole_frame_;
@@ -160,29 +162,21 @@ void MotionOdometry::loop() {
       tf2::fromMsg(previous_to_current_support_msg.transform, previous_to_current_support);
 
       // Correct for situations where e.g. only the tip of a foot is in contact
-      previous_to_current_support = 
-        getFootContactModelResult(
-          target_time, 
-          imu_rotation, 
-          previous_support_link, 
-          previous_contact_corner_frame
-        ).inverse() 
-        * previous_to_current_support 
-        * getFootContactModelResult(
-          target_time, 
-          imu_rotation, 
-          current_support_link, 
-          current_contact_corner_frame
-      );
+      previous_to_current_support =
+          getFootContactModelResult(target_time, imu_rotation, previous_support_link, previous_contact_corner_frame)
+              .inverse() *
+          previous_to_current_support *
+          getFootContactModelResult(target_time, imu_rotation, current_support_link, current_contact_corner_frame);
 
-      // Zero out z, to prevent the robot from drifting vertically 
+      // Zero out z, to prevent the robot from drifting vertically
       double x = previous_to_current_support.getOrigin().x();
       double y = previous_to_current_support.getOrigin().y();
       previous_to_current_support.setOrigin({x, y, 0});
       odometry_to_support_foot_ = odometry_to_support_foot_ * previous_to_current_support;
 
     } catch (tf2::TransformException& ex) {
-      RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 1000, "Could not get transform between support feet: %s", ex.what());
+      RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 1000,
+                           "Could not get transform between support feet: %s", ex.what());
       return;
     }
 
@@ -193,7 +187,6 @@ void MotionOdometry::loop() {
 
   // This part adds the odom during the step (single support)
   try {
-
     std::string current_support_link, current_contact_corner_frame;
     if (support_state == biped_interfaces::msg::Phase::LEFT_STANCE) {
       current_support_link = l_sole_frame_;
@@ -209,11 +202,10 @@ void MotionOdometry::loop() {
     tf2::fromMsg(current_support_to_base_msg.transform, current_support_to_base);
 
     // Correct with the foot contact model, as the foot might not be flat on the ground
-    current_support_to_base = getFootContactModelResult(
-      target_time, 
-      imu_rotation, 
-      current_support_link, 
-      current_contact_corner_frame).inverse() * current_support_to_base;
+    current_support_to_base =
+        getFootContactModelResult(target_time, imu_rotation, current_support_link, current_contact_corner_frame)
+            .inverse() *
+        current_support_to_base;
 
     tf2::Transform odom_to_base_link_internal = odometry_to_support_foot_ * current_support_to_base;
 
@@ -222,7 +214,6 @@ void MotionOdometry::loop() {
         tf_buffer_.lookupTransform(base_link_frame_, current_contact_corner_frame, rclcpp::Time(0));
     tf2::Transform rotation_point_in_base_link;
     tf2::fromMsg(rotation_point_in_base_link_msg.transform, rotation_point_in_base_link);
-
 
     tf2::Transform imu_mounting_offset;
     try {
@@ -239,12 +230,13 @@ void MotionOdometry::loop() {
     // Get how far we walked since the last time
     tf2::Transform previous_to_current =
         tf2::Transform(previous_imu_orientation_in_base_link_.inverse() * imu_orientation_in_base_link,
-                        ((previous_odom_to_base_link_internal_ * rotation_point_in_base_link).inverseTimes(odom_to_base_link_internal * rotation_point_in_base_link)).getOrigin());
+                       ((previous_odom_to_base_link_internal_ * rotation_point_in_base_link)
+                            .inverseTimes(odom_to_base_link_internal * rotation_point_in_base_link))
+                           .getOrigin());
 
     // Apply the walked amount to the current state
     // Go from odom to base_link, then to the rotation point and apply the movement since the last time there
-    tf2::Transform odom_to_rotation_point = 
-        odom_to_base_link_ * rotation_point_in_base_link * previous_to_current;
+    tf2::Transform odom_to_rotation_point = odom_to_base_link_ * rotation_point_in_base_link * previous_to_current;
 
     // Go back to the base_link frame as the odom is defined between odom and base_link
     odom_to_base_link_ = odom_to_rotation_point * rotation_point_in_base_link.inverse();
@@ -255,13 +247,12 @@ void MotionOdometry::loop() {
     // Update the previous states
     previous_imu_orientation_in_base_link_ = imu_orientation_in_base_link;
     previous_odom_to_base_link_internal_ = odom_to_base_link_internal;
-      
+
   } catch (tf2::TransformException& ex) {
     RCLCPP_WARN(this->get_logger(), "%s", ex.what());
     rclcpp::sleep_for(std::chrono::milliseconds(1000));
     return;
   }
-
 
   geometry_msgs::msg::TransformStamped odom_to_base_link_msg = geometry_msgs::msg::TransformStamped();
   odom_to_base_link_msg.transform = tf2::toMsg(odom_to_base_link_);
@@ -281,8 +272,8 @@ void MotionOdometry::loop() {
   pub_odometry_->publish(odom_msg);
 }
 
-std::tuple<std::string, std::string, int> MotionOdometry::detectSupportFoot(const tf2::Quaternion& imu_rotation, const rclcpp::Time& time) {
-
+std::tuple<std::string, std::string, int> MotionOdometry::detectSupportFoot(const tf2::Quaternion& imu_rotation,
+                                                                            const rclcpp::Time& time) {
   // Each corner frame paired with the sole it belongs to
   const std::vector<std::string> corner_r = {
       r_front_left_corner_frame_,
@@ -305,7 +296,7 @@ std::tuple<std::string, std::string, int> MotionOdometry::detectSupportFoot(cons
       // The corner with the smallest world-Z is the contact point.
       auto transform = tf_buffer_.lookupTransform(imu_frame_, corner_frame, rclcpp::Time(0));
       tf2::Vector3 corner_in_imu(transform.transform.translation.x, transform.transform.translation.y,
-                                  transform.transform.translation.z);
+                                 transform.transform.translation.z);
       tf2::Vector3 corner_in_world = tf2::quatRotate(imu_rotation, corner_in_imu);
       if (corner_in_world.z() < lowest_z_r) {
         lowest_z_r = corner_in_world.z();
@@ -324,7 +315,7 @@ std::tuple<std::string, std::string, int> MotionOdometry::detectSupportFoot(cons
       // The corner with the smallest world-Z is the contact point.
       auto transform = tf_buffer_.lookupTransform(imu_frame_, corner_frame, rclcpp::Time(0));
       tf2::Vector3 corner_in_imu(transform.transform.translation.x, transform.transform.translation.y,
-                                  transform.transform.translation.z);
+                                 transform.transform.translation.z);
       tf2::Vector3 corner_in_world = tf2::quatRotate(imu_rotation, corner_in_imu);
       if (corner_in_world.z() < lowest_z_l) {
         lowest_z_l = corner_in_world.z();
@@ -357,7 +348,7 @@ tf2::Transform MotionOdometry::getFootContactModelResult(const rclcpp::Time& tim
   // Remove the yaw component of the IMU orientation
   T_world_imu.setOrigin(tf2::Vector3(0, 0, 0));
   T_world_imu.setRotation(imu_orientation);
-  
+
   auto RotAtCorner = T_world_imu * T_imu_sole * T_sole_corner;
   RotAtCorner.setOrigin(tf2::Vector3(0, 0, 0));
   RotAtCorner.setRotation(dropYaw(RotAtCorner.getRotation()));
@@ -366,27 +357,25 @@ tf2::Transform MotionOdometry::getFootContactModelResult(const rclcpp::Time& tim
 }
 
 tf2::Quaternion MotionOdometry::dropYaw(const tf2::Quaternion input) {
-    // Convert tf to eigen quaternion
-    Eigen::Quaterniond eigen_quat, eigen_quat_out;
-    // actually we want to do this, but since the PR does not get merged, we do a workaround
-    // (see https://github.com/ros2/geometry2/pull/427)
-    // tf2::convert(imu_rotation, eigen_quat);
-    eigen_quat = Eigen::Quaterniond(input.w(), input.x(), input.y(), input.z());
+  // Convert tf to eigen quaternion
+  Eigen::Quaterniond eigen_quat, eigen_quat_out;
+  // actually we want to do this, but since the PR does not get merged, we do a workaround
+  // (see https://github.com/ros2/geometry2/pull/427)
+  // tf2::convert(imu_rotation, eigen_quat);
+  eigen_quat = Eigen::Quaterniond(input.w(), input.x(), input.y(), input.z());
 
-    // Remove yaw from quaternion
-    rot_conv::QuatNoEYaw(eigen_quat, eigen_quat_out);
+  // Remove yaw from quaternion
+  rot_conv::QuatNoEYaw(eigen_quat, eigen_quat_out);
 
-    // Convert eigen to tf quaternion
-    tf2::Quaternion tf_quat_out;
+  // Convert eigen to tf quaternion
+  tf2::Quaternion tf_quat_out;
 
-    tf2::convert(eigen_quat_out, tf_quat_out);
+  tf2::convert(eigen_quat_out, tf_quat_out);
 
-    return tf_quat_out;
+  return tf_quat_out;
 }
 
-void MotionOdometry::imuCallback(const sensor_msgs::msg::Imu::SharedPtr msg) {
-  imu_data_ = msg;
-}
+void MotionOdometry::imuCallback(const sensor_msgs::msg::Imu::SharedPtr msg) { imu_data_ = msg; }
 
 }  // namespace bitbots_odometry
 

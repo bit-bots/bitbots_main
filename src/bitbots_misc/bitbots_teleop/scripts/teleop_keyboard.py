@@ -19,7 +19,7 @@ from sensor_msgs.msg import JointState
 from std_msgs.msg import Bool
 from std_srvs.srv import Empty
 
-from bitbots_msgs.action import PlayAnimation, Kick
+from bitbots_msgs.action import Kick, PlayAnimation
 from bitbots_msgs.msg import HeadMode, JointCommand
 from bitbots_msgs.srv import SimulatorPush
 
