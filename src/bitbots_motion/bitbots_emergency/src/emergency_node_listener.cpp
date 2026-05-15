@@ -34,6 +34,8 @@ class EMERGENCY_NODE_LISTENER : public rclcpp::Node {
 
   void _watchdog() {
     if (!e_stop_) {
+      RCLCPP_INFO(this->get_logger(), "Loop");
+
       rclcpp::Time current_time = this->now();
 
       if (start_trigger_) {
