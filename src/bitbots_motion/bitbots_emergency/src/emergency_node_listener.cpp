@@ -37,6 +37,7 @@ class EMERGENCY_NODE_LISTENER : public rclcpp::Node {
       rclcpp::Time current_time = this->now();
 
       if (start_trigger_) {
+        RCLCPP_INFO(this->get_logger(), "Start is triggered!");
         rclcpp::Duration delta = current_time - timestamp_;
 
         if (delta > rclcpp::Duration(
