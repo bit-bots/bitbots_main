@@ -100,7 +100,7 @@ MotionOdometry::MotionOdometry()
       "imu/data", 1, std::bind(&MotionOdometry::imuCallback, this, _1));
 
   pub_odometry_ = this->create_publisher<nav_msgs::msg::Odometry>("motion_odometry", 1);
-  pub_support_state_ = this->create_publisher<biped_interfaces::msg::Phase>("motion_support_state", 1);
+  pub_support_state_ = this->create_publisher<biped_interfaces::msg::Phase>("walk_support_state", 1);
 }
 
 void MotionOdometry::loop() {
