@@ -6,8 +6,6 @@
 
     <node pkg="bitbots_body_behavior" exec="body_behavior" output="screen" respawn="true">
         <param name="dsd_file" value="$(var dsd_file)"/>
-        <param name="actionlib_client_sub_queue_size" value="-1"/>
-        <param name="actionlib_client_sub_queue_size" value="-1"/>
         <param name="actionlib_server_sub_queue_size" value="-1"/>
         <param from="$(find-pkg-share bitbots_body_behavior)/config/body_behavior.yaml"/>
         <param from="$(find-pkg-share bitbots_body_behavior)/config/animations.yaml"/>

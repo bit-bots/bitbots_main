@@ -9,11 +9,11 @@ from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
 from sensor_msgs.msg import Joy
 
-from bitbots_msgs.msg import Audio, HeadMode, JointCommand
+from bitbots_msgs.msg import TTS, HeadMode, JointCommand
 
 
 class JoyNode(Node):
-    """This node controls the roboter via Gamepad."""
+    """This node controls the robot via a gamepad."""
 
     # TODO read max values from config
 
@@ -111,8 +111,8 @@ class JoyNode(Node):
 
         # --- Initialize Topics ---
         self.create_subscription(Joy, "joy", self.joy_cb, 1)
-        self.speak_pub = self.create_publisher(Audio, "speak", 1)
-        self.speak_msg = Audio()
+        self.speak_pub = self.create_publisher(TTS, "speak", 1)
+        self.speak_msg = TTS()
 
         self.speak_msg.priority = 1
 

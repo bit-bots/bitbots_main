@@ -23,9 +23,7 @@ class MotorVizHelper(Node):
         parser.add_argument("--animation", "-a", help="Directly get animation motor goals", action="store_true")
         parser.add_argument("--head", help="Directly get head motor goals", action="store_true")
         parser.add_argument("--kick", help="Directly get kick motor goals", action="store_true")
-        parser.add_argument("--dynup", help="Directly get Dynup motor goals", action="store_true")
         parser.add_argument("--all", help="Directly get all motor goals", action="store_true")
-        parser.add_argument("--gazebo", help="Publish for Gazebo instead of rviz", action="store_true")
         parser.add_argument("--ros-args", help="just to filter ros args", action="store_true")
         parser.add_argument("-r", help="just to filter ros args", action="store_true")
         parser.add_argument("__node", help="just to filter ros args", action="store_true")
@@ -77,30 +75,6 @@ class MotorVizHelper(Node):
                 0.4,
                 float(0),
             ]
-        elif self.args.robot_type == "itandroids":
-            self.joint_names = [
-                "rightShoulderPitch[shoulder]",
-                "leftShoulderPitch[shoulder]",
-                "rightShoulderYaw",
-                "leftShoulderYaw",
-                "rightElbowYaw",
-                "leftElbowYaw",
-                "rightHipYaw",
-                "leftHipYaw",
-                "rightHipRoll[hip]",
-                "leftHipRoll[hip]",
-                "rightHipPitch",
-                "leftHipPitch",
-                "rightKneePitch",
-                "leftKneePitch",
-                "rightAnklePitch",
-                "leftAnklePitch",
-                "rightAnkleRoll",
-                "leftAnkleRoll",
-                "neckYaw",
-                "neckPitch",
-            ]
-            self.joint_goals = [0.0] * 20
         elif self.args.robot_type == "piplus":
             self.joint_names = [
                 "head_yaw_joint",
@@ -129,10 +103,7 @@ class MotorVizHelper(Node):
             print(f"Unknown robot type {self.args.robot_type}")
             exit()
 
-        if self.args.gazebo:
-            self.joint_publisher = self.create_publisher(Float64MultiArray, "JointGroupController/command", 10)
-        else:
-            self.joint_publisher = self.create_publisher(JointState, "joint_states", 10)
+        self.joint_publisher = self.create_publisher(JointState, "joint_states", 10)
 
         if self.args.walking or self.args.all:
             self.create_subscription(JointCommand, "walking_motor_goals", self.joint_command_cb, 10)
@@ -142,18 +113,13 @@ class MotorVizHelper(Node):
             self.create_subscription(JointCommand, "head_motor_goals", self.joint_command_cb, 10)
         if self.args.kick or self.args.all:
             self.create_subscription(JointCommand, "kick_motor_goals", self.joint_command_cb, 10)
-        if self.args.dynup or self.args.all:
-            self.create_subscription(JointCommand, "dynup_motor_goals", self.joint_command_cb, 10)
         self.create_subscription(JointCommand, "/joint_command", self.joint_command_cb, 10)
 
         self.joint_state_msg = JointState()
         self.joint_state_msg.header.stamp = self.get_clock().now().to_msg()
         self.joint_state_msg.name = self.joint_names
         self.joint_state_msg.position = self.joint_goals
-        if self.args.gazebo:
-            self.joint_publisher.publish(self.get_float_array())
-        else:
-            self.joint_publisher.publish(self.joint_state_msg)
+        self.joint_publisher.publish(self.joint_state_msg)
 
         self.joint_command_msg = JointCommand()
         self.joint_command_msg.joint_names = self.joint_names
@@ -164,10 +130,7 @@ class MotorVizHelper(Node):
     def loop(self):
         self.update_joint_states(self.joint_command_msg)
         self.joint_state_msg.header.stamp = self.get_clock().now().to_msg()
-        if self.args.gazebo:
-            self.joint_publisher.publish(self.get_float_array())
-        else:
-            self.joint_publisher.publish(self.joint_state_msg)
+        self.joint_publisher.publish(self.joint_state_msg)
 
     def joint_command_cb(self, msg: JointCommand):
         self.joint_command_msg.header.stamp = self.get_clock().now().to_msg()

@@ -154,7 +154,6 @@ ros-jazzy-tf2-ros = ">=0.36.14,<0.37"
 ros-jazzy-topic-tools = ">=1.3.3,<2"
 ros-jazzy-trajectory-msgs = ">=5.3.6,<6"
 ros-jazzy-transmission-interface = ">=4.37.0,<5"
-ros-jazzy-turtlesim = ">=1.8.3,<2"
 ros-jazzy-urdf = ">=2.10.0,<3"
 ros-jazzy-urdfdom-py = ">=1.2.1,<2"
 ros-jazzy-vision-msgs = ">=4.1.1,<5"
@@ -212,7 +211,6 @@ RCUTILS_CONSOLE_OUTPUT_FORMAT="[{severity}] [{name}]: {message} ({function_name}
 RMW_IMPLEMENTATION = "rmw_zenoh_cpp"
 COLCON_LOG_LEVEL = "30"
 PYTHONWARNINGS="ignore:::setuptools.command.install,ignore:::setuptools.command.easy_install,ignore:::pkg_resources,ignore:easy_install command is deprecated,ignore:setup.py install is deprecated"
-WEBOTS_HOME = "$CONDA_PREFIX/share/webots"
 ALSA_PLUGIN_DIR = "/usr/lib/x86_64-linux-gnu/alsa-lib"
 
 

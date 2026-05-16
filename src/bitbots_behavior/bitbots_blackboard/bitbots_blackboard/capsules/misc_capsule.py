@@ -5,7 +5,7 @@ from rclpy.duration import Duration
 from std_msgs.msg import Bool
 
 from bitbots_blackboard.capsules import AbstractBlackboardCapsule
-from bitbots_msgs.msg import Audio, HeadMode, RobotControlState
+from bitbots_msgs.msg import TTS, HeadMode, RobotControlState
 
 THeadMode: TypeAlias = Literal[  # type: ignore[valid-type]
     HeadMode.TRACK_BALL,
@@ -23,7 +23,7 @@ class MiscCapsule(AbstractBlackboardCapsule):
     def __init__(self, node, blackboard):
         super().__init__(node, blackboard)
         self.head_pub = self._node.create_publisher(HeadMode, "head_mode", 10)
-        self.speak_pub = self._node.create_publisher(Audio, "speak", 10)
+        self.speak_pub = self._node.create_publisher(TTS, "speak", 10)
 
         # Config
         gamestate_settings = get_parameters_from_other_node(

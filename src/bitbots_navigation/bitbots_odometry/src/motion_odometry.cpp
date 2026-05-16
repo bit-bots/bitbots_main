@@ -21,8 +21,6 @@ MotionOdometry::MotionOdometry()
 
   walk_support_state_sub_ = this->create_subscription<biped_interfaces::msg::Phase>(
       "walk_support_state", 1, std::bind(&MotionOdometry::supportCallback, this, _1));
-  kick_support_state_sub_ = this->create_subscription<biped_interfaces::msg::Phase>(
-      "dynamic_kick_support_state", 1, std::bind(&MotionOdometry::supportCallback, this, _1));
   odom_subscriber_ = this->create_subscription<nav_msgs::msg::Odometry>(
       "walk_engine_odometry", 1, std::bind(&MotionOdometry::odomCallback, this, _1));
 
