@@ -512,23 +512,23 @@ namespace rot_conv
 	namespace internal
 	{
 		// Compose: Rotation matrix
-		inline void ComposeRotmatHelper(Rotmat& Rout) {}
+		inline void ComposeRotmatHelper(Rotmat& Rout) { (void)Rout; }
 		template<typename... Types> void ComposeRotmatHelper(Rotmat& Rout, const Rotmat& R, Types&&... args);
 
 		// Compose: Quaternion
-		inline void ComposeQuatHelper(Quat& qout) {}
+		inline void ComposeQuatHelper(Quat& qout) { (void)qout; }
 		template<typename... Types> void ComposeQuatHelper(Quat& qout, const Quat& q, Types&&... args);
 
 		// Compose: Euler angles
-		inline void ComposeEulerHelper(Rotmat& Rout) {}
+		inline void ComposeEulerHelper(Rotmat& Rout) { (void)Rout; }
 		template<typename... Types> void ComposeEulerHelper(Rotmat& Rout, const EulerAngles& e, Types&&... args);
 
 		// Compose: Fused angles
-		inline void ComposeFusedHelper(Rotmat& Rout) {}
+		inline void ComposeFusedHelper(Rotmat& Rout) { (void)Rout; }
 		template<typename... Types> void ComposeFusedHelper(Rotmat& Rout, const FusedAngles& f, Types&&... args);
 
 		// Compose: Tilt angles
-		inline void ComposeTiltHelper(Rotmat& Rout) {}
+		inline void ComposeTiltHelper(Rotmat& Rout) { (void)Rout; }
 		template<typename... Types> void ComposeTiltHelper(Rotmat& Rout, const TiltAngles& t, Types&&... args);
 	}
 
@@ -1034,14 +1034,14 @@ namespace rot_conv
 	namespace internal
 	{
 		// Sum of tilt phases
-		inline void TiltPhaseSumHelper(TiltPhase2D& pout) {}
-		inline void TiltPhaseSumHelper(TiltPhase3D& pout) {}
+		inline void TiltPhaseSumHelper(TiltPhase2D& pout) { (void)pout; }
+		inline void TiltPhaseSumHelper(TiltPhase3D& pout) { (void)pout; }
 		template<typename... Types> void TiltPhaseSumHelper(TiltPhase2D& pout, const TiltPhase2D& p, Types&&... args);
 		template<typename... Types> void TiltPhaseSumHelper(TiltPhase3D& pout, const TiltPhase3D& p, Types&&... args);
 
 		// Sum of tilt phase velocities
-		inline void TiltPhaseVelSumHelper(TiltPhaseVel2D& pdotout) {}
-		inline void TiltPhaseVelSumHelper(TiltPhaseVel3D& pdotout) {}
+		inline void TiltPhaseVelSumHelper(TiltPhaseVel2D& pdotout) { (void)pdotout; }
+		inline void TiltPhaseVelSumHelper(TiltPhaseVel3D& pdotout) { (void)pdotout; }
 		template<typename... Types> void TiltPhaseVelSumHelper(TiltPhaseVel2D& pdotout, const TiltPhaseVel2D& pdot, Types&&... args);
 		template<typename... Types> void TiltPhaseVelSumHelper(TiltPhaseVel3D& pdotout, const TiltPhaseVel3D& pdot, Types&&... args);
 	}

@@ -1257,7 +1257,6 @@ void YesenseDriver::spin()
     std::deque<char> local_buf;
 
     uint8_t data = 0x00;
-    uint8_t prev_data = 0x00;
 
     uint16_t tid = 0x00;
     uint16_t prev_tid = 0x00;
@@ -1283,8 +1282,6 @@ void YesenseDriver::spin()
             {
                 ck1_ += data;
                 ck2_ += ck1_;
-
-                prev_data = data; // save prev data
 
                 if (index_ >= DATA_BUF_SIZE) {
                     RCLCPP_ERROR(node_->get_logger(), "'index_=%d' out of range !", index_);
@@ -1512,8 +1509,6 @@ void YesenseDriver::spin()
                     }
 
                     {
-                        std::lock_guard<std::mutex> lock(m_response_mutex_);
-                        wait_response_flag_ = false;
                         check_respose_flag_ = false;
                         error_respose_cnt_  = 0;
                     }

@@ -175,6 +175,13 @@ private:
     uint8_t ck1_;
     uint8_t ck2_;
 
+    // variables related to parameter query responses
+    std::mutex m_response_mutex_;
+    bool wait_response_flag_;
+    bool check_respose_flag_;
+    int error_respose_cnt_;
+    uint8_t length_low_;
+
     //State machine variables for spinOnce
     int mode_;
     int bytes_;
@@ -192,13 +199,6 @@ private:
     uint8_t  gps_buf[DATA_BUF_SIZE];
     uint32_t gps_buf_index;
     std::map<uint32_t, std::string> gsp_raw;
-
-    // variables related to parameter query responses
-    std::mutex m_response_mutex_;
-    bool wait_response_flag_;
-    bool check_respose_flag_;
-    int error_respose_cnt_;
-    uint8_t length_low_;
 
     uint8_t param_class_;
     uint8_t param_id_;
