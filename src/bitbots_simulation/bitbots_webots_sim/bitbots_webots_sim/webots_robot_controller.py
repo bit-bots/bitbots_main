@@ -882,7 +882,7 @@ class RobotController:
         self.last_img_saved = self.time
         annotation = ""
         img_stamp = f"{self.time:.2f}".replace(".", "_")
-        img_name = f"img_{os.getenv('WEBOTS_ROBOT_NAME')}_{img_stamp}.PNG"
+        img_name = f"img_{os.getenv('WEBOTS_ROBOT_NAME')}_{time.strftime('%Y-%m-%d-%H-%M-%S')}_{img_stamp}.PNG"
         recognized_objects = self.camera.getRecognitionObjects()
         # variables for saving not in image later
         found_ball = False
