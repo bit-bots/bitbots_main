@@ -25,6 +25,7 @@ from rclpy.node import Node
 from sensor_msgs.msg import Imu, JointState
 from transforms3d.euler import euler2mat
 from transforms3d.quaternions import quat2mat
+from rclpy.experimental.events_executor import EventsExecutor
 
 from bitbots_msgs.msg import JointCommand
 
@@ -64,10 +65,6 @@ class WalkNode(Node):
 
     def __init__(self):
         super().__init__("reinforcement_learning_walk_inference_node")
-
-        # Set sim time parameter to true
-        # self.set_parameters([
-        #    Parameter('use_sim_time', Parameter.Type.BOOL, True), ])
 
         self._phase_dt = 2 * np.pi * GAIT_FREQUENCY * CONTROL_DT
 
@@ -194,7 +191,9 @@ def main():
     import rclpy
 
     rclpy.init()
+    ex = EventsExecutor()
     node = WalkNode()
-    rclpy.spin(node)
+    ex.add_node(node)
+    ex.spin()
     node.destroy_node()
     rclpy.try_shutdown()

@@ -16,7 +16,7 @@ class WalkForward(AbstractActionElement):
 
             # Publish the walk command
             cmd_vel = Twist()
-            cmd_vel.linear.x = 0.2
+            cmd_vel.linear.x = 0.99
             self.blackboard.pathfinding.direct_cmd_vel_pub.publish(cmd_vel)
         else:
             self.pop()
