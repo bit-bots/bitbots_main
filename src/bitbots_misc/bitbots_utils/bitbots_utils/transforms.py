@@ -85,7 +85,7 @@ def fused2quat(fused_roll: float, fused_pitch: float, fused_yaw: float, hemi: bo
     # Calculate the sine sum criterion
     crit = sth * sth + sphi * sphi
 
-    # Calculate the tilt angle alpha
+    # Calculate the pitch angle alpha
     if crit >= 1.0:
         alpha = math.pi / 2
     else:
@@ -94,7 +94,7 @@ def fused2quat(fused_roll: float, fused_pitch: float, fused_yaw: float, hemi: bo
         else:
             alpha = math.acos(-math.sqrt(1.0 - crit))
 
-    # Calculate the tilt axis angle gamma
+    # Calculate the pitch axis angle gamma
     gamma = math.atan2(sth, sphi)
 
     # Evaluate the required intermediate angles

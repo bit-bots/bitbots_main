@@ -24,7 +24,6 @@ setup(
         "console_scripts": [
             "walk = bitbots_rl_walk.walk:main",
             "kick = bitbots_rl_walk.kick:main",
-            "phase_from_transform = bitbots_rl_walk.phase_from_transform:main",
         ],
     },
 )

@@ -83,8 +83,6 @@ def is_motion_started():
         "/animation",
         "/dynamic_kick",
         "/motion_odometry",
-        "/odometry_fuser",
-        "/DynupNode",
     }
     for node in nodes_in_motion:
         if node not in node_names:

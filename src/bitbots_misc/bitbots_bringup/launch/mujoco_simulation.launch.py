@@ -90,7 +90,7 @@ def generate_domain_bridge_config(robot_domain: int, output_dir: Path) -> Path:
 
 def generate_world_xml(num_robots: int, package_share: str, robot_type: str) -> Path:
     """Generate MuJoCo world XML with the correct number of robots."""
-    template_path = Path(package_share) / "xml" / "adult_field.xml"
+    template_path = Path(package_share) / "xml" / "kid_field.xml"
     output_path = Path(package_share) / "xml" / "generated_world.xml"
     offset = 6 * (
         1 / num_robots

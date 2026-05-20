@@ -41,7 +41,6 @@ class HcmBlackboard:
         # Create action clients and corresponding goal handles
         self.animation_action_client: ActionClient = ActionClient(self.node, PlayAnimation, "animation")
         self.animation_action_current_goal: Optional[Future] = None
-        self.dynup_action_current_goal: Optional[Future] = None
 
         # Create publishers
         self.walk_pub = self.node.create_publisher(Twist, "cmd_vel", 1)
@@ -75,7 +74,6 @@ class HcmBlackboard:
         self.animation_name_stand_up_front: str = self.node.get_parameter("animations.stand_up_front").value
         self.animation_name_startup: str = self.node.get_parameter("animations.startup").value
         self.animation_name_walk_ready: str = self.node.get_parameter("animations.walk_ready").value
-        self.animation_name_rise: str = self.node.get_parameter("animations.rise").value
         self.animation_name_turning_front_left: str = self.node.get_parameter("animations.turning_front_left").value
         self.animation_name_turning_front_right: str = self.node.get_parameter("animations.turning_front_right").value
 
@@ -86,7 +84,7 @@ class HcmBlackboard:
         self.current_joint_state: Optional[JointState] = None
         self.previous_joint_state: Optional[JointState] = None
         self.last_different_joint_state_time: Optional[Time] = None
-        self.is_power_on: bool = True
+        self.is_power_on: bool = True  # TODO: This never gets updated, but read in check_hardware.py.
 
         # Motor Parameters
         self.motor_timeout_duration: float = self.node.get_parameter("motor_timeout_duration").value
@@ -97,7 +95,7 @@ class HcmBlackboard:
         self.last_walking_goal_time: Optional[Time] = None
 
         # Falling
-        # Paramerters
+        # Parameters
         self.is_stand_up_active = self.node.get_parameter("stand_up_active").value
         self.falling_detection_active = self.node.get_parameter("falling_active").value
         self.in_squat: bool = False  # Needed for sequencing of the stand up motion

@@ -19,7 +19,7 @@ from sensor_msgs.msg import JointState
 from std_msgs.msg import Bool
 from std_srvs.srv import Empty
 
-from bitbots_msgs.action import Dynup, Kick
+from bitbots_msgs.action import Kick, PlayAnimation
 from bitbots_msgs.msg import HeadMode, JointCommand
 from bitbots_msgs.srv import SimulatorPush
 
@@ -151,8 +151,8 @@ class TeleopKeyboard(Node):
 
         self.head_mode_msg = HeadMode(head_mode=HeadMode.DONT_MOVE)
 
-        self.head_pan_step = 0.05
-        self.head_tilt_step = 0.05
+        self.head_yaw_step = 0.05
+        self.head_pitch_step = 0.05
 
         self.walk_kick_pub = self.create_publisher(Bool, "kick", 1)
         self.power_switch_pub = self.create_publisher(PowerSwitch, "/power_switch_state", 1)
@@ -163,9 +163,9 @@ class TeleopKeyboard(Node):
 
         self.frame_prefix = "" if os.environ.get("ROS_NAMESPACE") is None else os.environ.get("ROS_NAMESPACE") + "/"
 
-        self.dynup_client = ActionClient(self, Dynup, "dynup")
-        if not self.dynup_client.wait_for_server(timeout_sec=5.0):
-            self.get_logger().error("Dynup action server not available after waiting 5 seconds")
+        self.animation_client = ActionClient(self, PlayAnimation, "animation")
+        if not self.animation_client.wait_for_server(timeout_sec=5.0):
+            self.get_logger().error("Animation action server not available after waiting 5 seconds")
 
         # The kick is currently disabled
         # self.kick_client = ActionClient(self, Kick, "dynamic_kick")
@@ -182,10 +182,7 @@ class TeleopKeyboard(Node):
         return key
 
     def get_walkready(self):
-        result: Dynup.Result = self.dynup_client.send_goal(Dynup.Goal(direction=Dynup.Goal.DIRECTION_WALKREADY)).result
-        if not result.successful:
-            self.get_logger().error("Could not execute walkready animation")
-        return result.successful
+        self.animation_client.send_goal_async(PlayAnimation.Goal(animation="walkready"))
 
     def generate_kick_goal(self, x, y, direction):
         kick_goal = Kick.Goal()
@@ -215,8 +212,8 @@ class TeleopKeyboard(Node):
                     self.th = round(self.th, 2)
                     self.a_x = 0
                 elif key in head_bindings.keys():
-                    self.head_msg.positions[0] = self.head_yaw_pos + head_bindings[key][1] * self.head_pan_step
-                    self.head_msg.positions[1] = self.head_pitch_pos + head_bindings[key][0] * self.head_tilt_step
+                    self.head_msg.positions[0] = self.head_yaw_pos + head_bindings[key][1] * self.head_yaw_step
+                    self.head_msg.positions[1] = self.head_pitch_pos + head_bindings[key][0] * self.head_pitch_step
                     self.head_pub.publish(self.head_msg)
                 elif key == "k" or key == "K":
                     # put head back in init
