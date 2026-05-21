@@ -22,72 +22,74 @@ class Robot:
         self.noise_config = noise_config or {}
         self.camera = Camera(model, data, name=self._get_name("head_camera"))
 
-        def j(ros_name: str) -> Joint:
+        def joint(ros_name: str) -> Joint:
             return Joint(model, data, ros_name=ros_name, name=self._get_name(ros_name))
 
-        def s(base_name: str, ros_name: str) -> Sensor:
-            return Sensor(model, data, name=self._get_name(base_name), ros_name=ros_name)
+        def sensor(base_name: str, ros_name: str) -> Sensor:
+            return Sensor(model, data, ros_name=ros_name, name=self._get_name(base_name))
 
-        def n(base_name: str, ros_name: str, gaussian_key: str, bias_key: str) -> NoisySensor:
+        def noisy_sensor(base_name: str, ros_name: str) -> NoisySensor:
             return NoisySensor(
                 model,
                 data,
                 name=self._get_name(base_name),
                 ros_name=ros_name,
-                gaussian_stddev=float(self.noise_config.get(gaussian_key, 0.0)),
-                bias_stddev=float(self.noise_config.get(bias_key, 0.0)),
+                gaussian_stddev=float(self.noise_config.get(f"{base_name}_gaussian_stddev", 0.0)),
+                bias_stddev=float(self.noise_config.get(f"{base_name}_bias_stddev", 0.0)),
+                rng=self._rng,
+            )
+        def quaternion_noisy_sensor(base_name: str, ros_name: str) -> QuaternionNoisySensor:
+            return QuaternionNoisySensor(
+                model,
+                data,
+                name=self._get_name(base_name),
+                ros_name=ros_name,
+                gaussian_stddev=float(self.noise_config.get(f"{base_name}_gaussian_stddev", 0.0)),
+                bias_stddev=float(self.noise_config.get(f"{base_name}_bias_stddev", 0.0)),
                 rng=self._rng,
             )
 
         self.joints = RobotJoints(
             [
                 # --- Head ---
-                j("head_yaw_joint"),
-                j("head_pitch_joint"),
+                joint("head_yaw_joint"),
+                joint("head_pitch_joint"),
                 # --- Right Arm ---
-                j("r_shoulder_pitch_joint"),
-                j("r_shoulder_roll_joint"),
-                j("r_upper_arm_joint"),
-                j("r_elbow_joint"),
+                joint("r_shoulder_pitch_joint"),
+                joint("r_shoulder_roll_joint"),
+                joint("r_upper_arm_joint"),
+                joint("r_elbow_joint"),
                 # --- Left Arm ---
-                j("l_shoulder_pitch_joint"),
-                j("l_shoulder_roll_joint"),
-                j("l_upper_arm_joint"),
-                j("l_elbow_joint"),
+                joint("l_shoulder_pitch_joint"),
+                joint("l_shoulder_roll_joint"),
+                joint("l_upper_arm_joint"),
+                joint("l_elbow_joint"),
                 # --- Right Leg ---
-                j("r_hip_pitch_joint"),
-                j("r_hip_roll_joint"),
-                j("r_thigh_joint"),
-                j("r_calf_joint"),
-                j("r_ankle_pitch_joint"),
-                j("r_ankle_roll_joint"),
+                joint("r_hip_pitch_joint"),
+                joint("r_hip_roll_joint"),
+                joint("r_thigh_joint"),
+                joint("r_calf_joint"),
+                joint("r_ankle_pitch_joint"),
+                joint("r_ankle_roll_joint"),
                 # --- Left Leg ---
-                j("l_hip_pitch_joint"),
-                j("l_hip_roll_joint"),
-                j("l_thigh_joint"),
-                j("l_calf_joint"),
-                j("l_ankle_pitch_joint"),
-                j("l_ankle_roll_joint"),
+                joint("l_hip_pitch_joint"),
+                joint("l_hip_roll_joint"),
+                joint("l_thigh_joint"),
+                joint("l_calf_joint"),
+                joint("l_ankle_pitch_joint"),
+                joint("l_ankle_roll_joint"),
             ]
         )
         self.sensors = RobotSensors(
             [
-                n("gyro", "IMU_gyro", "gyro_gaussian_stddev", "gyro_bias_stddev"),
-                n("accelerometer", "IMU_accelerometer", "accelerometer_gaussian_stddev", "accelerometer_bias_stddev"),
-                QuaternionNoisySensor(
-                    model,
-                    data,
-                    name=self._get_name("orientation"),
-                    ros_name="IMU_orientation",
-                    gaussian_stddev=float(self.noise_config.get("orientation_gaussian_stddev", 0.0)),
-                    bias_stddev=float(self.noise_config.get("orientation_bias_stddev", 0.0)),
-                    rng=self._rng,
-                ),
-                s("position", "IMU_position"),
-                s("l_foot_pos", "left_foot_position"),
-                s("r_foot_pos", "right_foot_position"),
-                s("l_foot_global_linvel", "left_foot_velocity"),
-                s("r_foot_global_linvel", "right_foot_velocity"),
+                noisy_sensor("gyro", "IMU_gyro"),
+                noisy_sensor("accelerometer", "IMU_accelerometer"),
+                quaternion_noisy_sensor("orientation", "IMU_orientation"),
+                sensor("position", "IMU_position"),
+                sensor("l_foot_pos", "left_foot_position"),
+                sensor("r_foot_pos", "right_foot_position"),
+                sensor("l_foot_global_linvel", "left_foot_velocity"),
+                sensor("r_foot_global_linvel", "right_foot_velocity"),
             ]
         )
 

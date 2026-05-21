@@ -33,7 +33,7 @@ class Sensor:
 
 
 class NoisySensor(Sensor):
-    """Represents a sensor with per-start fixed bias and additive Gaussian noise."""
+    """Represents a sensor with fixed bias chosen on initialization and additive Gaussian noise."""
 
     def __init__(
         self,
@@ -47,16 +47,11 @@ class NoisySensor(Sensor):
         fixed_bias: np.ndarray | None = None,
     ):
         super().__init__(model, data, name, ros_name)
-        self.gaussian_stddev = float(gaussian_stddev)
-        self.bias_stddev = float(bias_stddev)
+        self.gaussian_stddev = gaussian_stddev
+        self.bias_stddev = bias_stddev
         self._rng = rng if rng is not None else np.random.default_rng()
 
-        if fixed_bias is not None:
-            self._fixed_bias = np.asarray(fixed_bias, dtype=float)
-        elif self.bias_stddev > 0:
-            self._fixed_bias = self._rng.normal(scale=self.bias_stddev, size=self.dim)
-        else:
-            self._fixed_bias = np.zeros(self.dim, dtype=float)
+        self.reset_fixed_bias(fixed_bias)
 
     @property
     def fixed_bias(self) -> np.ndarray:
