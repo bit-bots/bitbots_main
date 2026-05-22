@@ -80,15 +80,17 @@ class Simulation(Node):
             for name in body_names
             if name.startswith("robot_base_link_") and name.split("_")[-1].isdigit()
         )
-    
+
     def _key_callback(self, key: int) -> None:
         # Exceptions in this callback completly deadlock the process.
-        if key == ord(' '):
+        if key == ord(" "):
             self.paused = not self.paused
 
     def run(self) -> None:
         print("Starting simulation viewer...")
-        with viewer.launch_passive(self.model, self.data, key_callback=self._key_callback, show_left_ui=False, show_right_ui=False) as view:
+        with viewer.launch_passive(
+            self.model, self.data, key_callback=self._key_callback, show_left_ui=False, show_right_ui=False
+        ) as view:
             # pos="7.709 -7.854 6.511" xyaxes="0.726 0.687 -0.000 -0.357 0.377 0.855
             view.cam.type = mujoco.mjtCamera.mjCAMERA_FREE
             view.cam.lookat[0] = 0.0
