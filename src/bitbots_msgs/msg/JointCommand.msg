@@ -1,6 +1,6 @@
 std_msgs/Header header
 
-# Mark this message so it has prio
+# Mark this message so it has priority
 bool from_hcm
 
 string[] joint_names
@@ -14,5 +14,5 @@ float64[] max_torques
 # Per-joint proportional gain. Empty or missing entries default to config default
 float64[] kp
 
-# Per-joint proportional gain. Empty or missing entries default to config default
+# Per-joint derivative gain. Empty or missing entries default to config default
 float64[] kd
