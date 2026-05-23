@@ -38,6 +38,7 @@ class Robot:
                 bias_stddev=float(self.noise_config.get(f"{base_name}_bias_stddev", 0.0)),
                 rng=self._rng,
             )
+
         def quaternion_noisy_sensor(base_name: str, ros_name: str) -> QuaternionNoisySensor:
             return QuaternionNoisySensor(
                 model,

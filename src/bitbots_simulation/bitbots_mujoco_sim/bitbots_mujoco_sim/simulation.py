@@ -2,7 +2,6 @@ import math
 import time
 from collections.abc import Callable
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 import mujoco
 import numpy as np
@@ -49,11 +48,19 @@ class Simulation(Node):
             world_file = self._generate_default_world()
 
         self.use_namespace: bool = self.get_parameter("use_namespace").get_parameter_value().bool_value
-        self.imu_accelerometer_gaussian_stddev = self.get_parameter("imu_accelerometer_gaussian_stddev").get_parameter_value().double_value
-        self.imu_accelerometer_bias_stddev = self.get_parameter("imu_accelerometer_bias_stddev").get_parameter_value().double_value
-        self.imu_gyro_gaussian_stddev = self.get_parameter("imu_gyro_gaussian_stddev").get_parameter_value().double_value
+        self.imu_accelerometer_gaussian_stddev = (
+            self.get_parameter("imu_accelerometer_gaussian_stddev").get_parameter_value().double_value
+        )
+        self.imu_accelerometer_bias_stddev = (
+            self.get_parameter("imu_accelerometer_bias_stddev").get_parameter_value().double_value
+        )
+        self.imu_gyro_gaussian_stddev = (
+            self.get_parameter("imu_gyro_gaussian_stddev").get_parameter_value().double_value
+        )
         self.imu_gyro_bias_stddev = self.get_parameter("imu_gyro_bias_stddev").get_parameter_value().double_value
-        self.orientation_gaussian_stddev = self.get_parameter("orientation_gaussian_stddev").get_parameter_value().double_value
+        self.orientation_gaussian_stddev = (
+            self.get_parameter("orientation_gaussian_stddev").get_parameter_value().double_value
+        )
         self.orientation_bias_stddev = self.get_parameter("orientation_bias_stddev").get_parameter_value().double_value
         self._rng = np.random.default_rng()
 
