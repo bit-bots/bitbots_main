@@ -1,6 +1,6 @@
 #SearchBall
 $DoOnce
-    NOT_DONE --> @ChangeAction + action:searching, @LookAtFieldFeatures, @WalkInPlace + duration:3, @TurnLastSeenBallSide + duration:15, @GoToAbsolutePositionFieldFraction + x:0.5 + blocking:false
+    NOT_DONE --> @ChangeAction + action:searching, @LookAtFieldFeatures, @WalkInPlace + duration:1, @TurnLastSeenBallSide + duration:6, @GoToAbsolutePositionFieldFraction + x:0.5 + blocking:false
     DONE --> $ReachedAndAlignedToPathPlanningGoalPosition + threshold:0.5 + latch:true
         NO --> @LookAtFieldFeatures, @GoToAbsolutePositionFieldFraction + x:0.5
         YES --> $DoOnce
@@ -27,7 +27,7 @@ $DoOnce
 @ChangeAction + action:kicking, @LookAtFront, @WalkForward + time:1.0 + r:false, @LookAtFieldFeatures + r:false
 
 #Dribble
-@ChangeAction + action:going_to_ball, @CancelPathplanning, @LookAtFront, @DribbleForward
+@ChangeAction + action:going_to_ball, @CancelPathplanning, @LookAtFront, @RLKick2
 
 #RolePositionWithPause
 $DoOnce
@@ -37,17 +37,9 @@ $DoOnce
         NO --> @LookAtFieldFeatures, @GoToRolePosition
 
 #KickWithAvoidance
-$AvoidBall
-    NO --> $BallClose + distance:%ball_reapproach_dist + angle:%ball_reapproach_angle
-        YES --> $BallKickArea
-            NEAR --> $FootSelection
-                LEFT --> #PerformKickLeft
-                RIGHT --> #PerformKickRight
-            FAR --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:map
-        NO --> @ChangeAction + action:going_to_ball + r:false, @LookAtFieldFeatures + r:false, @AvoidBallActive + r:false, @GoToBall + target:map + blocking:false + distance:%ball_far_approach_dist
-    YES --> $ReachedPathPlanningGoalPosition + threshold:%ball_far_approach_position_thresh
-        YES --> @AvoidBallInactive
-        NO --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:map + distance:%ball_far_approach_dist
+$BallClose + distance:%ball_reapproach_dist + angle:%ball_reapproach_angle
+    YES --> #Dribble
+    NO --> @ChangeAction + action:going_to_ball + r:false, @LookAtFieldFeatures + r:false, @AvoidBallActive + r:false, @GoToBall + target:map + blocking:false + distance:%ball_far_approach_dist
 
 #PositioningReady
 $GoalScoreRecently

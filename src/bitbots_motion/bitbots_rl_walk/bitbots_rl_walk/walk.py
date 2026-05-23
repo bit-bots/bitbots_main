@@ -26,6 +26,9 @@ from sensor_msgs.msg import Imu, JointState
 from transforms3d.euler import euler2mat
 from transforms3d.quaternions import quat2mat
 from rclpy.experimental.events_executor import EventsExecutor
+from std_msgs.msg import Empty
+from geometry_msgs.msg import PoseStamped
+from std_msgs.msg import Float32
 
 from bitbots_msgs.msg import JointCommand
 
@@ -62,6 +65,8 @@ class WalkNode(Node):
     _cmd_vel: Optional[Twist] = None
     _phase: np.ndarray = np.array([np.pi / 2, -np.pi / 2], dtype=np.float32)
     _phase_dt: float
+    _kick_active: bool = False
+    _last_global_phase: Optional[float] = None
 
     def __init__(self):
         super().__init__("reinforcement_learning_walk_inference_node")
@@ -75,8 +80,23 @@ class WalkNode(Node):
         self._imu_sub = self.create_subscription(Imu, "imu/data", self._imu_callback, 10)
         self._joint_state_sub = self.create_subscription(JointState, "joint_states", self._joint_state_callback, 10)
         self._cmd_vel_sub = self.create_subscription(Twist, "cmd_vel", self._cmd_vel_callback, 10)
+        self._kick_direction_sub = self.create_subscription(PoseStamped, "kick_direction", self._kick_direction_callback, 10)
+        self._kick_stop_pub = self.create_subscription(Empty, "kick_stop", self._kick_stop_callback, 10)
+        self._phase_sub = self.create_subscription(Float32, "rl_phase", self._other_policy_phase_callback, 10)
+        self._phase_pub = self.create_publisher(Float32, "rl_phase", 10)
 
         self._timer = self.create_timer(CONTROL_DT, self._timer_callback)
+
+    def _kick_direction_callback(self, msg: PoseStamped):
+        self._kick_active = True
+    
+    def _kick_stop_callback(self, _: Empty):
+        self._kick_active = False
+        if self._last_global_phase is not None:
+            self._phase = np.array([self._last_global_phase, (self._last_global_phase + 2 * np.pi) % (2 * np.pi) - np.pi], dtype=np.float32)
+    
+    def _other_policy_phase_callback(self, msg: Float32):
+        self._last_global_phase = msg.data
 
     def _joint_state_callback(self, msg: JointState):
         self._joint_state = msg
@@ -89,8 +109,7 @@ class WalkNode(Node):
 
     def _timer_callback(self):
         """Timer callback to publish joint commands based on the ONNX policy."""
-        if self._imu_data is None or self._joint_state is None or self._cmd_vel is None:
-            self.get_logger().warning("Waiting for all sensors to be available", throttle_duration_sec=1.0)
+        if self._imu_data is None or self._joint_state is None or self._cmd_vel is None or self._kick_active:
 
             # Print the sensor that we are still waiting for
             if self._imu_data is None:
@@ -185,6 +204,7 @@ class WalkNode(Node):
         else:
             phase_tp1 = self._phase + self._phase_dt
             self._phase = np.fmod(phase_tp1 + np.pi, 2 * np.pi) - np.pi
+        self._phase_pub.publish(Float32(data=self._phase[0]))
 
 
 def main():

@@ -27,7 +27,7 @@ bitbots_ball_filter:
   filter:
     frame:
       type: string
-      default_value: 'map'
+      default_value: 'odom'
       description: 'Frame to filter the ball in'
       read_only: true
       validation:

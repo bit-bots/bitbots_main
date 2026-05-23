@@ -34,6 +34,9 @@
 
     <!-- launch the walking -->
     <group if="$(var walking)">
+        <node pkg="bitbots_rl_walk" exec="walk" output="screen">
+            <param name="use_sim_time" value="$(var sim)"/>
+        </node>
         <node pkg="bitbots_rl_walk" exec="kick" output="screen">
             <param name="use_sim_time" value="$(var sim)"/>
         </node>

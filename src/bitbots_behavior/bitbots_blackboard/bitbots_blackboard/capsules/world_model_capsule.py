@@ -156,17 +156,25 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
         """
         Handles incoming ball messages
         """
-        assert msg.header.frame_id == self.map_frame, "Ball needs to be in the map frame"
+        #assert msg.header.frame_id == self.map_frame, "Ball needs to be in the map frame"
 
         # Save ball
-        self._ball = PointStamped(
+        ball = PointStamped(
             header=Header(
                 # Set timestamps to zero to get the newest transform when this is transformed later
                 stamp=Time(clock_type=ClockType.ROS_TIME).to_msg(),
-                frame_id=self.map_frame,
+                frame_id=msg.header.frame_id,
             ),
             point=msg.pose.pose.position,
         )
+
+        # transform ball to map frame if it is not already in the map frame
+        try:
+            ball = self._blackboard.tf_buffer.transform(ball, self.map_frame)
+        except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
+            self._node.get_logger().warn(str(e))
+            return
+        self._ball = ball
 
         # Save covariance (only x and y parts)
         self._ball_covariance = msg.pose.covariance.reshape((6, 6))[:2, :2]

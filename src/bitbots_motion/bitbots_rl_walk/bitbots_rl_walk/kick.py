@@ -20,16 +20,21 @@ from typing import Optional
 import numpy as np
 import onnxruntime as rt
 from ament_index_python import get_package_share_directory
-from geometry_msgs.msg import PointStamped, PoseWithCovarianceStamped, Twist
+from geometry_msgs.msg import PointStamped, PoseStamped, PoseWithCovarianceStamped
 from rclpy.node import Node
 from rclpy.duration import Duration
 from sensor_msgs.msg import Imu, JointState
+from std_msgs.msg import Empty
 from transforms3d.euler import euler2mat
 from transforms3d.quaternions import quat2mat
 from rclpy.experimental.events_executor import EventsExecutor
 from bitbots_tf_buffer import Buffer
+from std_msgs.msg import Float32
 import tf2_geometry_msgs
 import tf2_ros as tf2
+from ros2_numpy import numpify
+from tf_transformations import euler_from_quaternion
+from rclpy.time import Time
 
 from bitbots_msgs.msg import JointCommand
 
@@ -64,9 +69,11 @@ class KickNode(Node):
     _imu_data: Optional[Imu] = None
     _joint_state: Optional[JointState] = None
     _ball_relative: Optional[PointStamped] = None
-    _kick_direction: PointStamped
     _phase: np.ndarray = np.array([np.pi / 2, -np.pi / 2], dtype=np.float32)
     _phase_dt: float
+    _kick_direction: Optional[PoseStamped] = None
+    _last_global_phase: Optional[float] = None
+    _last_point = None
 
     def __init__(self):
         super().__init__("reinforcement_learning_kick_inference_node")
@@ -79,21 +86,31 @@ class KickNode(Node):
         self._joint_command_pub = self.create_publisher(JointCommand, "walking_motor_goals", 10)
         self._imu_sub = self.create_subscription(Imu, "imu/data", self._imu_callback, 10)
         self._joint_state_sub = self.create_subscription(JointState, "joint_states", self._joint_state_callback, 10)
+        self._kick_direction_sub = self.create_subscription(PoseStamped, "kick_direction", self._kick_direction_callback, 10)
+        self._kick_stop_pub = self.create_subscription(Empty, "kick_stop", self._kick_stop_callback, 10)
+        self._global_phase_sub = self.create_subscription(Float32, "rl_phase", self._other_policy_phase_callback, 10)
+        self._global_phase_pub = self.create_publisher(Float32, "rl_phase", 10)
 
         self.tf_buffer = Buffer(Duration(seconds=1.0), self)
 
         # Sub to the filtered ball position
         self._ball_sub = self.create_subscription(PoseWithCovarianceStamped, "ball_position_relative_filtered", self._ball_callback, 10)
 
-        self._kick_direction = PointStamped()
-        self._kick_direction.header.frame_id = "map"
-        self._kick_direction.point.x = 1.0
-        self._kick_direction.point.y = 0.0
-
         self._timer = self.create_timer(CONTROL_DT, self._timer_callback)
+
+    def _kick_direction_callback(self, msg: PoseStamped):
+        if self._kick_direction is None and self._last_global_phase is not None:
+            self._phase = np.array([self._last_global_phase, (self._last_global_phase + 2 * np.pi) % (2 * np.pi) - np.pi], dtype=np.float32)
+        self._kick_direction = msg
+
+    def _kick_stop_callback(self, _: Empty):
+        self._kick_direction = None
 
     def _joint_state_callback(self, msg: JointState):
         self._joint_state = msg
+
+    def _other_policy_phase_callback(self, msg: Float32):
+        self._last_global_phase = msg.data
 
     def _ball_callback(self, ball: PoseWithCovarianceStamped):
         # Transform the ball position to the base_footprint frame
@@ -111,8 +128,7 @@ class KickNode(Node):
 
     def _timer_callback(self):
         """Timer callback to publish joint commands based on the ONNX policy."""
-        if self._imu_data is None or self._joint_state is None or self._ball_relative is None:
-            self.get_logger().warning("Waiting for all sensors to be available", throttle_duration_sec=1.0)
+        if self._imu_data is None or self._joint_state is None or self._ball_relative is None or self._kick_direction is None:
 
             # Print the sensor that we are still waiting for
             if self._imu_data is None:
@@ -124,13 +140,11 @@ class KickNode(Node):
 
         # Transform direction
         try:
-            target_local = self.tf_buffer.transform(self._kick_direction, "base_footprint")
-            ref = PointStamped()
-            ref.header.frame_id = self._kick_direction.header.frame_id
-            ref.header.stamp = self._kick_direction.header.stamp
-            ref_local = self.tf_buffer.transform(ref, "base_footprint")
-            kick_dir = np.array([target_local.point.x - ref_local.point.x, target_local.point.y - ref_local.point.y])
+            target_local = self.tf_buffer.transform(self._kick_direction, "base_link")
+            yaw = euler_from_quaternion(numpify(target_local.pose.orientation))[2]
+            kick_dir = np.array([np.cos(yaw), np.sin(yaw)])
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
+            self.get_logger().error("Dropped policy step")
             kick_dir = np.array([1.0, 0.0])
         kick_dir /= np.linalg.norm(kick_dir)
 
@@ -139,7 +153,8 @@ class KickNode(Node):
             point_now = PointStamped()
             point_now.header.frame_id = "odom"
             point_now.point = self._ball_relative.point
-            ball_pose = self.tf_buffer.transform(point_now, "base_footprint")
+            point_now.point.z = 0.075
+            ball_pose = self.tf_buffer.transform(point_now, "base_link")
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
             self.get_logger().error("Dropped policy step")
             self.get_logger().error(str(e))
@@ -186,11 +201,25 @@ class KickNode(Node):
 
         phase = np.array([np.cos(self._phase), np.sin(self._phase)], dtype=np.float32).flatten()
 
+        point = np.array([ball_pose.point.x, ball_pose.point.y], dtype=np.float32)
+        if self._last_point is not None:
+            diff = (point - self._last_point) / CONTROL_DT
+        else:
+            diff = np.array([0.0, 0.0], dtype=np.float32)
+        self._last_point = point
+
+        delta_t = (self.get_clock().now() - Time.from_msg(ball_pose.header.stamp)).nanoseconds / 1e9
+
+        offset = diff * delta_t * 1.5
+
+        self.get_logger().info(f"Ball position: {point}, velocity: {diff}, offset: {offset}, delta_t: {delta_t}")
+
+        point_corrected = point #+ offset
 
         obs = np.hstack(
             [
-                ball_pose.point.x,
-                ball_pose.point.y,
+                point_corrected[0],
+                point_corrected[1],
                 gyro,
                 gravity,
                 joint_angles,
@@ -213,13 +242,14 @@ class KickNode(Node):
         joint_command.positions = onnx_pred * 0.5 + WALKREADY_STATE
         joint_command.velocities = [-1.0] * len(ORDERED_RELEVANT_JOINT_NAMES)
         joint_command.accelerations = [-1.0] * len(ORDERED_RELEVANT_JOINT_NAMES)
-        joint_command.kp = [30.0] * len(ORDERED_RELEVANT_JOINT_NAMES)
-        joint_command.kd = [1.1] * len(ORDERED_RELEVANT_JOINT_NAMES)
+        joint_command.kp = [35.0] * len(ORDERED_RELEVANT_JOINT_NAMES)
+        joint_command.kd = [1.0] * len(ORDERED_RELEVANT_JOINT_NAMES)
 
         self._joint_command_pub.publish(joint_command)
 
         phase_tp1 = self._phase + self._phase_dt
         self._phase = np.fmod(phase_tp1 + np.pi, 2 * np.pi) - np.pi
+        self._global_phase_pub.publish(Float32(data=self._phase[0]))
 
 
 def main():
