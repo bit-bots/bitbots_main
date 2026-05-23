@@ -282,8 +282,11 @@ class TeamCommunication:
 
         message = self.protocol_converter.convert_to_message(self, msg, is_still_valid)
         proto_msg = message.SerializeToString()
-        self.logger.debug(f"Sending msg with size {len(proto_msg)} bytes")
-        self.socket_communication.send_message(proto_msg)
+        if(len(proto_msg) > 512):
+            self.logger.warning(f"Team_com msg not sended, because size {len(proto_msg)} bytes is above the maximum of 512 bytes")
+        else:
+            self.logger.debug(f"Sending msg with size {len(proto_msg)} bytes")
+            self.socket_communication.send_message(proto_msg)
 
     def create_empty_message(self, now: Time) -> Proto.Message:
         message = Proto.Message()
