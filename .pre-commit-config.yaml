@@ -12,6 +12,7 @@ repos:
         args:
           - "--fix"
           - "--exit-non-zero-on-fix"
+          - "--show-fixes"
       - id: ruff-format
   - repo: https://github.com/pocc/pre-commit-hooks
     rev: v1.3.5
