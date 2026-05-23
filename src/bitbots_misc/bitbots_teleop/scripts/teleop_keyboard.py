@@ -16,6 +16,7 @@ from rclpy.node import Node
 from sensor_msgs.msg import JointState
 from std_srvs.srv import Empty
 
+from bitbots_msgs.action import PlayAnimation
 from bitbots_msgs.msg import HeadMode, JointCommand
 from bitbots_msgs.srv import SimulatorPush
 
@@ -149,6 +150,15 @@ class TeleopKeyboard(Node):
 
         self.frame_prefix = "" if os.environ.get("ROS_NAMESPACE") is None else os.environ.get("ROS_NAMESPACE") + "/"
 
+        self.animation_client = ActionClient(self, PlayAnimation, "animation")
+        if not self.animation_client.wait_for_server(timeout_sec=5.0):
+            self.get_logger().error("Animation action server not available after waiting 5 seconds")
+
+        # The kick is currently disabled
+        # self.kick_client = ActionClient(self, Kick, "dynamic_kick")
+        # if not self.kick_client.wait_for_server(timeout_sec=0.1):
+        #    self.get_logger().error("Kick action server not available after waiting 5 seconds")
+
         print(msg)
 
     def get_key(self):
@@ -159,8 +169,16 @@ class TeleopKeyboard(Node):
         return key
 
     def get_walkready(self):
-        print("ERROR: CURRENTLY NOT IMPLEMENTED")
-        return False
+        self.animation_client.send_goal_async(PlayAnimation.Goal(animation="walkready"))
+
+    # def generate_kick_goal(self, x, y, direction):
+    #     kick_goal = Kick.Goal()
+    #     kick_goal.header.stamp = self.get_clock().now().to_msg()
+    #     kick_goal.header.frame_id = self.frame_prefix + "base_footprint"
+    #     kick_goal.ball_position = Point(x=float(x), y=float(y), z=0.0)
+    #     kick_goal.kick_direction = quat_from_yaw(direction)
+    #     kick_goal.kick_speed = 1.0
+    #     return kick_goal
 
     def joint_state_cb(self, msg):
         if "head_yaw_joint" in msg.name and "head_pitch_joint" in msg.name:

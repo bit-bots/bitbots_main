@@ -62,7 +62,7 @@ bitbots_path_planning:
         bounds<>: [0.0, 1.0]
     max_vel_x:
       type: double
-      default_value: 0.6
+      default_value: 0.99
       description: 'Maximum velocity we want to reach in different directions (base_footprint coordinate system)'
       validation:
         bounds<>: [0.0, 1.0]
@@ -74,7 +74,7 @@ bitbots_path_planning:
         bounds<>: [-1.0, 0.0]
     max_vel_y:
       type: double
-      default_value: 0.4
+      default_value: 0.5
       description: 'Maximum velocity we want to reach in different directions (base_footprint coordinate system)'
       validation:
         bounds<>: [0.0, 1.0]
@@ -92,16 +92,16 @@ bitbots_path_planning:
         bounds<>: [0.0, 1.0]
     rotation_slow_down_factor:
       type: double
-      default_value: 0.5
+      default_value: 1.5
       description: 'Clamped p gain of the rotation controller'
       validation:
-        bounds<>: [0.0, 1.0]
+        bounds<>: [0.0, 4.0]
     translation_slow_down_factor:
       type: double
-      default_value: 0.5
+      default_value: 1.5
       description: 'Clamped p gain of the translation controller'
       validation:
-        bounds<>: [0.0, 1.0]
+        bounds<>: [0.0, 4.0]
     orient_to_goal_distance:
       type: double
       default_value: 0.5

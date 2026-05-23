@@ -161,11 +161,6 @@ class PlayAnimationWalkReady(AbstractPlayAnimation):
         return self.blackboard.animation_name_walk_ready
 
 
-class PlayAnimationRise(AbstractPlayAnimation):
-    def choose_animation(self):
-        return self.blackboard.animation_name_rise
-
-
 class CancelAnimation(AbstractHCMActionElement):
     """
     This action is used to cancel an animation that is currently playing
