@@ -5,7 +5,6 @@
     <arg name="walking" default="true" description="start the walking" />
     <arg name="torqueless_mode" default="false" description="start without torque, for example for testing the falling detection"/>
     <arg name="tts" default="true" description="Whether to speak" />
-    <arg name="emergency_button" default="false" description="Whether to activate E-stop button" />
 
     <!-- launch the hardware interface -->
     <include file="$(find-pkg-share livelybot_bringup)/launch/lowlevel.launch" />
@@ -45,10 +44,5 @@
     <include file="$(find-pkg-share bitbots_hcm)/launch/hcm.launch">
         <arg name="sim" value="$(var sim)"/>
         <arg name="viz" value="$(var viz)"/>
-    </include>
-
-    <!--launch emergency button-->
-    <include file="$(find-pkg-share bitbots_emergency)/launch/emergency.launch">
-        <arg name="emergency_button" value="$(var emergency_button)"/>
     </include>
 </launch>
