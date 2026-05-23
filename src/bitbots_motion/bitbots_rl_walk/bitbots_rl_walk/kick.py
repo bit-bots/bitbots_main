@@ -226,7 +226,8 @@ class KickNode(Node):
                 joint_velocities,
                 self._previous_action,  # Previous action
                 phase,
-                kick_dir
+                kick_dir,
+                0.1
             ]
         ).astype(np.float32)
 
