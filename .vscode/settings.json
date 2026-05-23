@@ -113,6 +113,7 @@
         "srdf",
         "ssid",
         "std_srvs",
+        "subrepo",
         "teamcom",
         "teamcomm",
         "teamplayer",
