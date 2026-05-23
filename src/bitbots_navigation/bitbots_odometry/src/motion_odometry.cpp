@@ -45,12 +45,11 @@ class MotionOdometry : public rclcpp::Node {
   motion_odometry::ParamListener param_listener_;
   motion_odometry::Params config_;
 
-  // Returns {contact_corner_frame, sole_frame} of the foot with the lowest corner in IMU world space.
-  std::tuple<std::string, std::string, int> detectSupportFoot(const tf2::Quaternion& imu_rotation,
-                                                              const rclcpp::Time& time);
+  // Returns {lowest_corner_l, lowest_corner_r, support_state}, where support_state indicates the foot that is lower right now
+  std::tuple<std::string, std::string, int> detectSupportFoot(const tf2::Quaternion& imu_rotation);
   // Returns the corrected pose of sole_frame in the IMU frame, as if the foot were flat on the ground
   // pivoted around contact_corner_frame (which is assumed to be the fixed ground contact point).
-  tf2::Transform getFootContactModelResult(const rclcpp::Time& time, const tf2::Quaternion& imu_orientation,
+  tf2::Transform getFootContactModelResult(const tf2::Quaternion& imu_orientation,
                                            const std::string& sole_frame, const std::string& contact_corner_frame);
   void imuCallback(const sensor_msgs::msg::Imu::SharedPtr msg);
   tf2::Quaternion dropYaw(tf2::Quaternion input);
@@ -122,7 +121,7 @@ void MotionOdometry::loop() {
   tf2::fromMsg(imu_data_->orientation, imu_rotation);
 
   // Detect current support foot via corner frames and publish the result
-  auto [lowest_corner_l, lowest_corner_r, support_state] = detectSupportFoot(imu_rotation, target_time);
+  auto [lowest_corner_l, lowest_corner_r, support_state] = detectSupportFoot(imu_rotation);
   if (lowest_corner_l.empty() or lowest_corner_r.empty()) {
     RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(), 1000, "Could not detect support foot");
     return;
@@ -163,10 +162,10 @@ void MotionOdometry::loop() {
 
       // Correct for situations where e.g. only the tip of a foot is in contact
       previous_to_current_support =
-          getFootContactModelResult(target_time, imu_rotation, previous_support_link, previous_contact_corner_frame)
+          getFootContactModelResult(imu_rotation, previous_support_link, previous_contact_corner_frame)
               .inverse() *
           previous_to_current_support *
-          getFootContactModelResult(target_time, imu_rotation, current_support_link, current_contact_corner_frame);
+          getFootContactModelResult(imu_rotation, current_support_link, current_contact_corner_frame);
 
       // Zero out z, to prevent the robot from drifting vertically
       double x = previous_to_current_support.getOrigin().x();
@@ -201,9 +200,11 @@ void MotionOdometry::loop() {
     tf2::Transform current_support_to_base;
     tf2::fromMsg(current_support_to_base_msg.transform, current_support_to_base);
 
+    target_time = current_support_to_base_msg.header.stamp;
+
     // Correct with the foot contact model, as the foot might not be flat on the ground
     current_support_to_base =
-        getFootContactModelResult(target_time, imu_rotation, current_support_link, current_contact_corner_frame)
+        getFootContactModelResult(imu_rotation, current_support_link, current_contact_corner_frame)
             .inverse() *
         current_support_to_base;
 
@@ -272,8 +273,7 @@ void MotionOdometry::loop() {
   pub_odometry_->publish(odom_msg);
 }
 
-std::tuple<std::string, std::string, int> MotionOdometry::detectSupportFoot(const tf2::Quaternion& imu_rotation,
-                                                                            const rclcpp::Time& time) {
+std::tuple<std::string, std::string, int> MotionOdometry::detectSupportFoot(const tf2::Quaternion& imu_rotation) {
   // Each corner frame paired with the sole it belongs to
   const std::vector<std::string> corner_r = {
       r_front_left_corner_frame_,
@@ -336,11 +336,11 @@ std::tuple<std::string, std::string, int> MotionOdometry::detectSupportFoot(cons
   return {lowest_corner_l, lowest_corner_r, support_state};
 }
 
-tf2::Transform MotionOdometry::getFootContactModelResult(const rclcpp::Time& time,
-                                                         const tf2::Quaternion& imu_orientation,
+tf2::Transform MotionOdometry::getFootContactModelResult(const tf2::Quaternion& imu_orientation,
                                                          const std::string& sole_frame,
                                                          const std::string& contact_corner_frame) {
-  // Look up both frames relative to the IMU frame at the given time
+  // Look up both frames relative to the IMU frame at most recent available time.
+  // the minor timing mismatch is acceptable, the benefit of using up-to-date values outweights it
   tf2::Transform T_world_imu, T_sole_corner, T_imu_sole;
   tf2::fromMsg(tf_buffer_.lookupTransform(sole_frame, contact_corner_frame, rclcpp::Time(0)).transform, T_sole_corner);
   tf2::fromMsg(tf_buffer_.lookupTransform(imu_frame_, sole_frame, rclcpp::Time(0)).transform, T_imu_sole);
