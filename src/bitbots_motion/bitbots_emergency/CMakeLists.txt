@@ -17,6 +17,7 @@ ament_target_dependencies(EMERGENCY_NODE_LISTENER rclcpp std_msgs livelybot_msg)
 
 install(TARGETS EMERGENCY_NODE_PUBLISHER DESTINATION lib/${PROJECT_NAME})
 install(TARGETS EMERGENCY_NODE_LISTENER DESTINATION lib/${PROJECT_NAME})
+install(PROGRAMS scripts/publisher.sh DESTINATION share/${PROJECT_NAME}/scripts)
 
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 
