@@ -38,7 +38,6 @@ class RLStandupBack(AbstractHCMActionElement):
     def perform(self, reevaluate=False):
         # Don't reevaluate while the policy is running — same pattern as
         # PlayAnimationDynup for FRONT/BACK directions.
-        self.blackboard.node.get_logger().info("RLStandupBack node Perform startet")
         self.do_not_reevaluate()
 
         if self.first_perform:
@@ -69,13 +68,11 @@ class RLStandupBack(AbstractHCMActionElement):
     # ------------------------------------------------------------------ helpers
 
     def _start_goal(self) -> bool:
-        wait_param = self.blackboard.node.get_parameter("hcm.anim_server_wait_time").value
-        if not self._action_client.wait_for_server(timeout_sec=wait_param):
+        if not self._action_client.wait_for_server(timeout_sec=2):
             self.blackboard.node.get_logger().warn(
                 "RL standup-back action server not running; cannot start goal."
             )
-            return False
-
+            return False      
         goal = Dynup.Goal()
         goal.direction = GOAL_DIRECTION
         goal.from_hcm = True

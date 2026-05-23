@@ -16,11 +16,8 @@ class RawJointHandler(Handler):
       subtraction). HoST observations are built from raw ``dof_pos``.
     * ``get_joint_commands`` builds a ``JointCommand`` with
       ``q_target = q_current + action * action_scale`` (HoST control law,
-      ``host_ground.py:_compute_torques``), not the walking-style
-      ``action * scale + walkready_state``.
+      ``host_ground.py:_compute_torques``)
 
-    The existing ``JointHandler`` is left untouched so that walking and kick
-    policies keep their current behaviour.
     """
 
     def __init__(self, node, action_scale: float):
@@ -69,6 +66,7 @@ class RawJointHandler(Handler):
 
         joint_command = JointCommand()
         joint_command.header.stamp = self._joint_state.header.stamp
+        joint_command.from_hcm = True
         joint_command.from_hcm = True
         joint_command.joint_names = list(self._ordered_relevant_joint_names)
         joint_command.positions = q_target.tolist()

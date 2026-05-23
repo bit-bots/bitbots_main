@@ -69,6 +69,9 @@ class JointHandler(Handler):
         joint_command.max_torques = [-1.0] * len(self._ordered_relevant_joint_names)
         joint_command.kp = self._kp
         joint_command.kd = self._kd
+        joint_command.max_torques = [-1.0] * len(self._ordered_relevant_joint_names)
+        joint_command.kp = self._kp
+        joint_command.kd = self._kd
 
         return joint_command
 

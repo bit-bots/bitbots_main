@@ -11,6 +11,7 @@ class CommandHandler(Handler):
         self._node = node
 
         self._cmd_vel: Optional[Twist] = None
+        self._include_
 
         self._cmd_vel_sub = self._node.create_subscription(Twist, "cmd_vel", self._cmd_vel_callback, 10)
 
@@ -21,6 +22,10 @@ class CommandHandler(Handler):
             [self._cmd_vel.linear.x, self._cmd_vel.linear.y, self._cmd_vel.angular.z, stop_signal],
             dtype=np.float32,
         )
+
+    def get_stop_signal(self) -> bool:
+        assert self._cmd_vel is not None
+        return self._cmd_vel.angular.x != 0.0
 
     def get_stop_signal(self) -> bool:
         assert self._cmd_vel is not None
