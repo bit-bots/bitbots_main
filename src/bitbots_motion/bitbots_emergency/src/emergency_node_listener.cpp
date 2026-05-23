@@ -16,8 +16,6 @@ class EMERGENCY_NODE_LISTENER : public rclcpp::Node {
 
     motor_switch_publisher_ = this->create_publisher<livelybot_msg::msg::PowerSwitch>("/power_switch_control", 1);
 
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-
     timer_ =
         this->create_wall_timer(std::chrono::milliseconds(100), std::bind(&EMERGENCY_NODE_LISTENER::_watchdog, this));
 
