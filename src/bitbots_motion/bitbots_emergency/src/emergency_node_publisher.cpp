@@ -17,11 +17,11 @@ class EMERGENCY_NODE_PUBLISHER : public rclcpp::Node {
     // Create client
     heartbeat_publisher_ = this->create_publisher<std_msgs::msg::Bool>("/heartbeat", 1);
 
-    RCLCPP_WARN(this->get_logger(), "Emergency button starting in 3s!");
+    RCLCPP_WARN(this->get_logger(), "Emergency button [SPACE] starting in 3s!");
 
     std::this_thread::sleep_for(std::chrono::seconds(3));
 
-    RCLCPP_WARN(this->get_logger(), "Listening for EmergencyButton!");
+    RCLCPP_WARN(this->get_logger(), "Waiting for emergency button [SPACE]!");
 
     tty_fd_ = open("/dev/tty", O_RDONLY | O_NONBLOCK);
     if (tty_fd_ == -1) {
