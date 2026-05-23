@@ -30,11 +30,11 @@ args = [{ arg = "package", default = "" }]
 description = "Cleans build and install files for all ROS 2 packages or a specific one if given."
 
 [tasks.test]
-cmd = "colcon test --packages-ignore=\"audio_common zed_wrapper zed_components zed_msgs zed_ros2\" --event-handlers console_direct+ --return-code-on-test-failure "
+cmd = "colcon test --packages-skip audio_common zed_wrapper zed_components zed_msgs zed_ros2 --event-handlers console_direct+ --return-code-on-test-failure "
 description = "Runs tests for all ROS 2 packages. Add --packages-select <package names> to test specific packages."
 
 [feature.robot.tasks.test]
-cmd = "colcon test --packages-ignore=\"audio_common\" --event-handlers console_direct+ --return-code-on-test-failure "
+cmd = "colcon test --packages-skip audio_common --event-handlers console_direct+ --return-code-on-test-failure "
 description = "Runs tests for all ROS 2 packages. Add --packages-select <package names> to test specific packages."
 
 [dependencies]
