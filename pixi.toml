@@ -30,11 +30,11 @@ args = [{ arg = "package", default = "" }]
 description = "Cleans build and install files for all ROS 2 packages or a specific one if given."
 
 [tasks.test]
-cmd = "colcon test --packages-skip audio_common zed_wrapper zed_components zed_msgs zed_ros2 --event-handlers console_direct+ --return-code-on-test-failure "
+cmd = "colcon test --packages-skip audio_common domain_bridge zed_wrapper zed_components zed_msgs zed_ros2 --event-handlers console_direct+ --return-code-on-test-failure "
 description = "Runs tests for all ROS 2 packages. Add --packages-select <package names> to test specific packages."
 
 [feature.robot.tasks.test]
-cmd = "colcon test --packages-skip audio_common --event-handlers console_direct+ --return-code-on-test-failure "
+cmd = "colcon test --packages-skip audio_common domain_bridge --event-handlers console_direct+ --return-code-on-test-failure "
 description = "Runs tests for all ROS 2 packages. Add --packages-select <package names> to test specific packages."
 
 [dependencies]
@@ -58,6 +58,7 @@ eigen = ">=3.4.0,<4"
 fabric = ">=3.2.2,<4"
 flask = ">=3.1.2,<4"
 gitpython = ">=3.1.45,<4"
+git-subrepo = ">=0.4.9,<0.5"
 invoke = ">=2.2.1,<3"
 ipython = ">=9.7.0,<10"
 jaxtyping = ">=0.3.2,<0.4"
@@ -185,10 +186,6 @@ make = ">=4.4.1,<5"  # To avoid issues in the CI
 adwaita-icon-theme = "<40"  # To avoid issues with missing icons, as non-symbolic icons have been removed in newer versions
 
 [feature.format.dependencies]
-# Add git-subrepo to format dependencies as currently there are
-# sqlite conflicts in the default/ros environment preventing execution
-# of pre-commit hooks running after commits from the git-subrepo cli
-git-subrepo = ">=0.4.9,<0.5"
 clang-format = ">=21.1.0,<22"
 cppcheck = ">=2.18.3,<2.20"
 pre-commit = ">=4.4.0,<5"
