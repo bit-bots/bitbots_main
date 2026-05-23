@@ -53,7 +53,6 @@ class EMERGENCY_NODE_PUBLISHER : public rclcpp::Node {
   int tty_fd_;
 
   void _emergencyLoop() {
-    RCLCPP_INFO(this->get_logger(), "Loop is active!");
     char buf[64];
 
     ssize_t n = read(tty_fd_, buf, sizeof(buf));
