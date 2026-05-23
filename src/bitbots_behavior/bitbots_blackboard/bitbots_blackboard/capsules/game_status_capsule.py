@@ -22,6 +22,7 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
         self.free_kick_kickoff_team: bool | None = None
         self.game_controller_stop: bool = False
         self.last_timestep_whistle_detected: Time | None = None
+        self.team_com_limit_has_reached: bool = False
         # publish stopped msg for hcm
         self.stop_pub = node.create_publisher(Bool, "game_controller/stop_msg", 1)
 
@@ -96,6 +97,9 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
 
     def get_team_id(self) -> int:
         return self.team_id
+    
+    def get_team_com_limit_has_reached(self) -> bool:
+        return self.team_com_limit_has_reached
 
     def gamestate_callback(self, gamestate_msg: GameState) -> None:
         if self.gamestate.penalized and not gamestate_msg.penalized:
@@ -111,6 +115,8 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
         self.game_controller_stop = gamestate_msg.stopped
 
         self.stop_pub.publish(Bool(data=self.game_controller_stop))
+
+        self.team_com_limit_has_reached = gamestate_msg.message_budget < 40
 
         """Anstoß im Falle von Overtime jetzt erstmal nicht genauer geregelt
         if (

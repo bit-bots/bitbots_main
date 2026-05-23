@@ -28,9 +28,12 @@ class ClosestToBall(AbstractDecisionElement):
         super().__init__(blackboard, dsd, parameters)
 
     def perform(self, reevaluate=False):
-        my_time_to_ball = self.blackboard.team_data.get_own_time_to_ball()
-        rank = self.blackboard.team_data.team_rank_to_ball(my_time_to_ball, count_goalies=True, use_time_to_ball=True)
-        self.publish_debug_data("time to ball", my_time_to_ball)
+        if self.blackboard.gamstate.get_team_com_limit_has_reached():
+            rank = self.blackboard.team_data.get_last_rank_with_team_com()
+        else:
+            my_time_to_ball = self.blackboard.team_data.get_own_time_to_ball()
+            rank = self.blackboard.team_data.team_rank_to_ball(my_time_to_ball, count_goalies=True, use_time_to_ball=True)
+            self.publish_debug_data("time to ball", my_time_to_ball)
         self.publish_debug_data("Rank to ball", rank)
         if rank == 1:
             return "YES"
@@ -47,9 +50,12 @@ class RankToBallNoGoalie(AbstractDecisionElement):
         super().__init__(blackboard, dsd, parameters)
 
     def perform(self, reevaluate=False):
-        my_time_to_ball = self.blackboard.team_data.get_own_time_to_ball()
-        rank = self.blackboard.team_data.team_rank_to_ball(my_time_to_ball, count_goalies=False, use_time_to_ball=True)
-        self.publish_debug_data("time to ball", my_time_to_ball)
+        if self.blackboard.gamstate.get_team_com_limit_has_reached():
+            rank = self.blackboard.team_data.get_last_rank_with_team_com()
+        else:
+            my_time_to_ball = self.blackboard.team_data.get_own_time_to_ball()
+            rank = self.blackboard.team_data.team_rank_to_ball(my_time_to_ball, count_goalies=False, use_time_to_ball=True)
+            self.publish_debug_data("time to ball", my_time_to_ball)
         self.publish_debug_data("Rank to ball", rank)
         if rank == 1:
             return "FIRST"

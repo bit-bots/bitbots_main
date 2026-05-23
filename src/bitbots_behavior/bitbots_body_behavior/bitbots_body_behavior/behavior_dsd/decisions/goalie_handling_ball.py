@@ -12,10 +12,16 @@ class GoalieHandlingBall(AbstractDecisionElement):
         """
         It is determined if the goalie is currently going towards the ball
         """
-        if self.blackboard.team_data.is_goalie_handling_ball():
-            return "YES"
+        if self.blackboard.gamstate.get_team_com_limit_has_reached():
+            if self.blackboard.team_data.get_was_goalie_handling_ball():
+                return "YES"
+            else:
+                return "NO"
         else:
-            return "NO"
+            if self.blackboard.team_data.is_goalie_handling_ball():
+                return "YES"
+            else:
+                return "NO"
 
     def get_reevaluate(self):
         return True
