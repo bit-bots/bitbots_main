@@ -19,7 +19,7 @@ team_comm:
     # Rate of published messages in Hz
     rate: 2
     # Rate of published messages in Hz, when rate is reduced
-    reduced_rate: 2
+    reduced_rate: 1
 
     # average walking speed in [m/s]
     avg_walking_speed: 0.2
