@@ -43,6 +43,7 @@ class Simulation(Node):
         self.time_message = Time(seconds=0, nanoseconds=0).to_msg()
         self.timestep = self.model.opt.timestep
         self.step_number = 0
+        self.paused = False
         self.real_time_factor = 1.0 / 0.94  # add a small buffer to try to achieve the requested RTF
         self.measured_rtf = 1.0
         self.clock_publisher = self.create_publisher(Clock, "clock", 1)
@@ -80,9 +81,16 @@ class Simulation(Node):
             if name.startswith("robot_base_link_") and name.split("_")[-1].isdigit()
         )
 
+    def _key_callback(self, key: int) -> None:
+        # Exceptions in this callback completly deadlock the process.
+        if key == ord(" "):
+            self.paused = not self.paused
+
     def run(self) -> None:
         print("Starting simulation viewer...")
-        with viewer.launch_passive(self.model, self.data, show_left_ui=False, show_right_ui=False) as view:
+        with viewer.launch_passive(
+            self.model, self.data, key_callback=self._key_callback, show_left_ui=False, show_right_ui=False
+        ) as view:
             # pos="7.709 -7.854 6.511" xyaxes="0.726 0.687 -0.000 -0.357 0.377 0.855
             view.cam.type = mujoco.mjtCamera.mjCAMERA_FREE
             view.cam.lookat[0] = 0.0
@@ -92,19 +100,22 @@ class Simulation(Node):
             view.cam.azimuth = 135.0
             view.cam.elevation = -30.0
             while view.is_running():
-                start_time = time.perf_counter()
-                self.step()
-                if self.step_number % 16 == 0:  # approx 30 fps
-                    view.set_texts((None, mujoco.mjtGridPos.mjGRID_TOPLEFT, f"RTF: {self.measured_rtf:.2f}x", ""))
-                view.sync(state_only=True)
-                stop_time = time.perf_counter()
-                elapsed = stop_time - start_time
-                expected_step_time = self.timestep / self.real_time_factor
-                time.sleep(max(0.0, expected_step_time - elapsed))
-                total_wall_time = time.perf_counter() - start_time
-                if total_wall_time > 0:
-                    # weighted ema so it does not fluctuate too much
-                    self.measured_rtf = 0.01 * (self.timestep / total_wall_time) + 0.99 * self.measured_rtf
+                if not self.paused:
+                    start_time = time.perf_counter()
+                    self.step()
+                    if self.step_number % 16 == 0:  # approx 30 fps
+                        view.set_texts((None, mujoco.mjtGridPos.mjGRID_TOPLEFT, f"RTF: {self.measured_rtf:.2f}x", ""))
+                    view.sync(state_only=True)
+                    stop_time = time.perf_counter()
+                    elapsed = stop_time - start_time
+                    expected_step_time = self.timestep / self.real_time_factor
+                    time.sleep(max(0.0, expected_step_time - elapsed))
+                    total_wall_time = time.perf_counter() - start_time
+                    if total_wall_time > 0:
+                        # weighted ema so it does not fluctuate too much
+                        self.measured_rtf = 0.01 * (self.timestep / total_wall_time) + 0.99 * self.measured_rtf
+                else:
+                    view.sync()
 
     def step(self) -> None:
         self.step_number += 1
