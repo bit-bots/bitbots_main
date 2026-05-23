@@ -13,10 +13,10 @@
     # Animations
     anim_server_wait_time: 10.0 # time the hcm waits for animation server
     animations:
-      falling_back: "falling_back"
-      falling_front: "falling_front"
-      falling_left: "falling_left"
-      falling_right: "falling_right"
+      falling_back: "falling"
+      falling_front: "falling"
+      falling_left: "falling"
+      falling_right: "falling"
       init: "init"
       stand_up_back: "stand_up_back"
       stand_up_front: "stand_up_front"
@@ -30,8 +30,8 @@
     falling_active: true # Enables the check for falling and corresponding counter measurements
     # Threshold tighter --> earlier reaction but more false positives, e.g. while walking
     # Threshold softer --> too late reaction
-    falling_thresh_gyro_pitch: 7.0 # > gyroY
-    falling_thresh_gyro_roll: 7.0 # > gyroX
+    falling_thresh_gyro_pitch: 4.0 # > gyroY
+    falling_thresh_gyro_roll: 4.0 # > gyroX
     falling_thresh_orient_roll: 60.0 # > Point of no return in degrees
     falling_thresh_orient_pitch: 45.0 # > Point of no return in degrees
     # Duration in seconds in which the robot has to be in a falling state to trigger the fall
