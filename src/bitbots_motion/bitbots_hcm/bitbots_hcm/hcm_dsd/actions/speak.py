@@ -1,8 +1,7 @@
 import random
 
-from bitbots_tts.tts import speak
-
 from bitbots_hcm.hcm_dsd.actions import AbstractHCMActionElement
+from bitbots_tts.tts import speak
 
 
 class Speak(AbstractHCMActionElement):
