@@ -17,9 +17,6 @@ from std_msgs.msg import Float32
 from bitbots_msgs.msg import JointCommand
 from bitbots_mujoco_sim.robot import Robot
 
-if TYPE_CHECKING:
-    from bitbots_mujoco_sim.simulation import RobotSimulation
-
 
 class Simulation(Node):
     """Manages the MuJoCo simulation state and its components."""
