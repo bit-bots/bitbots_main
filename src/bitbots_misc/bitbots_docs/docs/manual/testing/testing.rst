@@ -63,7 +63,7 @@ Testing in Simulation
 ---------------------
 
 We can test with values closer to real data if we do not use random data from humans, but with simulated data.
-We mainly use Webots for simulation.
+We use Mujoco for simulation.
 It offers us two possibilities.
 
 

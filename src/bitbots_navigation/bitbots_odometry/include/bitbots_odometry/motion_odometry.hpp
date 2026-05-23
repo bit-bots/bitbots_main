@@ -33,7 +33,6 @@ class MotionOdometry : public rclcpp::Node {
   std::string base_link_frame_, r_sole_frame_, l_sole_frame_, odom_frame_;
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr pub_odometry_;
   rclcpp::Subscription<biped_interfaces::msg::Phase>::SharedPtr walk_support_state_sub_;
-  rclcpp::Subscription<biped_interfaces::msg::Phase>::SharedPtr kick_support_state_sub_;
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_subscriber_;
 
   // Declare parameter listener and struct from the generate_parameter_library

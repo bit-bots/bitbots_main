@@ -5,7 +5,6 @@ import threading
 
 import rclpy
 from ament_index_python import get_package_share_directory
-from bitbots_tts.tts import speak
 from bitbots_utils.utils import get_parameters_from_ros_yaml
 from builtin_interfaces.msg import Time as TimeMsg
 from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus
@@ -25,8 +24,9 @@ from std_srvs.srv import SetBool
 from bitbots_hcm import hcm_dsd
 from bitbots_hcm.hcm_dsd.hcm_blackboard import HcmBlackboard
 from bitbots_hcm.type_utils import T_RobotControlState
-from bitbots_msgs.msg import FootPressure, RobotControlState
+from bitbots_msgs.msg import RobotControlState
 from bitbots_msgs.srv import ManualPenalize, SetTeachingMode
+from bitbots_tts.tts import speak
 
 
 class HardwareControlManager:
@@ -244,22 +244,6 @@ class HardwareControlManager:
     def set_current_joint_state(self, joint_state_msg_serialized: bytes):
         self.blackboard.previous_joint_state = self.blackboard.current_joint_state
         self.blackboard.current_joint_state = deserialize_message(joint_state_msg_serialized, JointState)
-
-    def set_pressure_left(self, pressure_msg_serialized: bytes):
-        msg: FootPressure = deserialize_message(pressure_msg_serialized, FootPressure)
-        self.blackboard.previous_pressures = self.blackboard.pressures
-        self.blackboard.pressures[0] = msg.left_front
-        self.blackboard.pressures[1] = msg.left_back
-        self.blackboard.pressures[2] = msg.right_front
-        self.blackboard.pressures[3] = msg.right_back
-
-    def set_pressure_right(self, pressure_msg_serialized: bytes):
-        msg: FootPressure = deserialize_message(pressure_msg_serialized, FootPressure)
-        self.blackboard.previous_pressures = self.blackboard.pressures
-        self.blackboard.pressures[4] = msg.left_front
-        self.blackboard.pressures[5] = msg.left_back
-        self.blackboard.pressures[6] = msg.right_front
-        self.blackboard.pressures[7] = msg.right_back
 
     def set_imu(self, imu_msg_serialized: bytes):
         self.blackboard.previous_imu_msg = self.blackboard.imu_msg

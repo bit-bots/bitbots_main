@@ -1,6 +1,0 @@
-
----
-
-float32[] biases
-float32[] scales
-float32 threshold

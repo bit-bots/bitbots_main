@@ -3,12 +3,12 @@ import json
 import os
 
 import rclpy
-from bitbots_tts.tts import speak
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile
 from std_msgs.msg import String
 
-from bitbots_msgs.msg import Audio
+from bitbots_msgs.msg import TTS
+from bitbots_tts.tts import speak
 
 
 class WorkspaceStatusPublisher(Node):
@@ -41,7 +41,7 @@ class WorkspaceStatusPublisher(Node):
             String, self.publish_topic, qos_profile=QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL)
         )
         self.get_logger().info("Creating speak publisher...")
-        self.speak_pub = self.create_publisher(Audio, "/speak", 1)
+        self.speak_pub = self.create_publisher(TTS, "/speak", 1)
 
         # Publish workspace status
         self.get_logger().debug("Publishing workspace status...")
@@ -54,7 +54,7 @@ class WorkspaceStatusPublisher(Node):
         speak(f"Using software version: ~ {parsed_workspace_status['__WORKSPACE__']['name']}!", self.speak_pub, 30)
         self.get_logger().info("Spoke workspace status.")
 
-        # NOTE: We cannot destroy the node here, because we want to keep the publisher alive.
+        # NOTE: We cannot destroy the node here, because we want to keep the publisher alive for later rosbag recording.
 
 
 def main(args=None):

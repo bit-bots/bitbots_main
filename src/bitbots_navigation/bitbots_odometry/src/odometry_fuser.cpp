@@ -68,8 +68,6 @@ class OdometryFuser : public rclcpp::Node {
 
     walk_support_state_sub_ = this->create_subscription<biped_interfaces::msg::Phase>(
         "walk_support_state", 1, std::bind(&OdometryFuser::supportCallback, this, _1));
-    kick_support_state_sub_ = this->create_subscription<biped_interfaces::msg::Phase>(
-        "dynamic_kick_support_state", 1, std::bind(&OdometryFuser::supportCallback, this, _1));
 
     sync_.registerCallback(&OdometryFuser::imuCallback, this);
     start_time_ = this->now();
@@ -190,7 +188,6 @@ class OdometryFuser : public rclcpp::Node {
   bool imu_data_received_ = false;
 
   rclcpp::Subscription<biped_interfaces::msg::Phase>::SharedPtr walk_support_state_sub_;
-  rclcpp::Subscription<biped_interfaces::msg::Phase>::SharedPtr kick_support_state_sub_;
 
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub_;
 
