@@ -52,6 +52,8 @@ f: full stop           F: play walkready animation
 r: reset robot in simulation
 R: reset ball in simulation
 
+Not binded key i.e. g and h: let the robot walk on the same spot
+
 Head Modes:
 0: Track the last known ball position
 1: Look generally for all features on the field (ball, goals, corners, center point)
