@@ -10,7 +10,6 @@
         </group>
         <group if="$(var publisher)">
             <executable cmd="bash $(find-pkg-share bitbots_emergency)/scripts/publisher.sh $(var robot_ip)" output="screen"/>
-            <node pkg="bitbots_emergency" exec="EMERGENCY_NODE_PUBLISHER" output="screen"/>
         </group>
     </group>
 </launch>
