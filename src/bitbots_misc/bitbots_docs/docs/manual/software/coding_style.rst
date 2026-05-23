@@ -1,68 +1,29 @@
 Coding Style
 ============
 
-Because we value maintainability and readability of our codebase, we have chosen to program according to the following
-style guides.
+To maintain a consistent coding style throughout the codebase, we use automatic formatting tools.
+For this, we use `pre-commit <https://pre-commit.com/>`_ hooks that automatically format the code when a commit is made.
+Our configuration can be found in the ``.pre-commit-config.yaml`` file in the root of the repository.
+Continuous Integration (CI) also checks if the code is formatted correctly.
 
-Python
-------
+Setting up pre-commit
+---------------------
 
-Our Python guide is based on `Google's style <http://google.github.io/styleguide/pyguide.html>`_ with the following
-adaptions:
+.. code-block:: bash
 
-* **3.2** - Instead of an 80 character maximum line length we do 120 characters.
-* **3.8.2** - Since we have a _LICENSE_ file in every repository we refrain from including license boilerplate in every file.
-* as a docstring format we use `reST <https://www.python.org/dev/peps/pep-0287/>`_.
+  pre-commit install
 
-PyCharm Integration
-~~~~~~~~~~~~~~~~~~~
+Running pre-commit manually
+---------------------------
 
-* Go to File > Settings > Editor > Code Style. Click the gear icon and select Import Scheme > IntelliJ Idea code style XML.
-  Download :download:`our python style</_static/bitbots_python_style.xml>` and select it. Choose a name to store it.
-* Make sure to select all python code inspections in Editor > Inspections > Python.
+If you want to run pre-commit manually on all files, you can use the following command:
 
-VSCode Integration
-~~~~~~~~~~~~~~~~~~
-Install the Python extension.
-Add the following lines to your settings.json ($HOME/.config/Code/User/settings.json)
+.. code-block:: bash
 
-.. code-block:: json
+  pixi run format
 
-   "python.formatting.provider": "yapf",
-   "python.formatting.yapfArgs": [
-       "--style={based_on_style: google, column_limit: 120}"
-   ],
-   "editor.formatOnType": true,
-   "editor.formatOnPaste": true,
-
-
-
-C++
----
-
-Our C++ guide is based on the `ROS C++ Style Guide <http://wiki.ros.org/CppStyleGuide>`_ except that our ``{`` are not
-on a new line.
-
-CLion Integration
-~~~~~~~~~~~~~~~~~~~
-
-* Go to File > Settings > Editor > Code Style. Click the gear icon and select Import Scheme > IntelliJ Idea code style XML.
-  Download :download:`our cpp style</_static/bitbots_cpp_style.xml>` and select it. Choose a name to store it.
-* Make sure to select all python code inspections in Editor > Inspections > C/C++.
-
-VSCode Integration
-~~~~~~~~~~~~~~~~~~
-Install the C/C++ extension.
-Add the following lines to your settings.json ($HOME/.config/Code/User/settings.json)
-
-.. code-block:: json
-
-   "editor.formatOnType": true,
-   "editor.formatOnPaste": true,
-   "C_Cpp.clang_format_fallbackStyle": "{ BasedOnStyle: Google, AccessModifierOffset: -2, ConstructorInitializerIndentWidth: 2, AlignEscapedNewlinesLeft: false, AlignTrailingComments: true, AllowAllParametersOfDeclarationOnNextLine: false, AllowShortIfStatementsOnASingleLine: false, AllowShortLoopsOnASingleLine: false, AllowShortFunctionsOnASingleLine: None, AlwaysBreakTemplateDeclarations: true, AlwaysBreakBeforeMultilineStrings: true, BreakBeforeBinaryOperators: false, BreakBeforeTernaryOperators: false, BreakConstructorInitializersBeforeComma: false, BinPackParameters: true, ColumnLimit: 120, ConstructorInitializerAllOnOneLineOrOnePerLine: true, DerivePointerBinding: false, PointerBindsToType: true, ExperimentalAutoDetectBinPacking: false, IndentCaseLabels: true, MaxEmptyLinesToKeep: 1, NamespaceIndentation: None, ObjCSpaceBeforeProtocolList: true, PenaltyBreakBeforeFirstCallParameter: 19, PenaltyBreakComment: 60, PenaltyBreakString: 1, PenaltyBreakFirstLessLess: 1000, PenaltyExcessCharacter: 1000, PenaltyReturnTypeOnItsOwnLine: 90, SpacesBeforeTrailingComments: 2, Cpp11BracedListStyle: true, Standard: Auto, IndentWidth: 2, TabWidth: 2, UseTab: Never, IndentFunctionDeclarationAfterType: false, SpacesInParentheses: false, SpacesInAngles: false, SpaceInEmptyParentheses: false, SpacesInCStyleCastParentheses: false, SpaceAfterControlStatementKeyword: true, SpaceBeforeAssignmentOperators: true, ContinuationIndentWidth: 4, SortIncludes: false, SpaceAfterCStyleCast: false, BreakBeforeBraces: Custom, BraceWrapping: {AfterClass: 'false', AfterControlStatement: 'false', AfterEnum : 'false', AfterFunction : 'false', AfterNamespace : 'false', AfterStruct : 'false', AfterUnion : 'false', BeforeCatch : 'false', BeforeElse : 'false', IndentBraces : 'false'}}",
-
-Git
----
+Git Commit conventions
+======================
 
 We also have some conventions about how we want to use git. They are as follows:
 

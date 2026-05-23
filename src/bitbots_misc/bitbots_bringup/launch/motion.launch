@@ -2,12 +2,14 @@
 <launch>
     <arg name="sim" default="false"/>
     <arg name="viz" default="false"/>
-    <arg name="walking" default="true" description="start the walking" />
+    <arg name="walking" default="true" description="start walking" />
     <arg name="torqueless_mode" default="false" description="start without torque, for example for testing the falling detection"/>
     <arg name="tts" default="true" description="Whether to speak" />
 
     <!-- launch the hardware interface -->
-    <include file="$(find-pkg-share livelybot_bringup)/launch/lowlevel.launch" />
+    <group unless="$(var sim)">
+        <include file="$(find-pkg-share livelybot_bringup)/launch/lowlevel.launch" />
+    </group>
 
     <!-- launch the base footprint -->
     <node pkg="humanoid_base_footprint" exec="base_footprint" output="screen">

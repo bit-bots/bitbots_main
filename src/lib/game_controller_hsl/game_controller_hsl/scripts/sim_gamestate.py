@@ -81,7 +81,7 @@ CTRL-C to quit
             self.logger.error("No team id found in parameter blackboard")
             self.team_id = int(input("Please enter team id: "))
 
-        self.has_kick_off = True
+        self.has_kick = True
 
         self.settings = termios.tcgetattr(sys.stdin)
 

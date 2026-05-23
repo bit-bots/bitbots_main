@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-    <arg name="audio" default="true" description="Whether the audio system should be started" />
+    <arg name="audio" default="false" description="Whether the audio system should be started" />
     <arg name="behavior" default="true" description="Whether the behavior control system should be started" />
     <arg name="behavior_dsd_file" default="main.dsd" description="The behavior dsd file that should be used" />
     <arg name="game_controller" default="true" description="Whether the Gamecontroller module should be started" />
@@ -13,7 +13,7 @@
     <arg name="world_model" default="true" description="Whether the world model should be started"/>
 
     <!-- load the general simulator -->
-    <include file="$(find-pkg-share bitbots_webots_sim)/launch/simulation.launch" />
+    <include file="$(find-pkg-share bitbots_mujoco_sim)/launch/simulator.launch" />
 
     <!-- load teamplayer software stack -->
     <include file="$(find-pkg-share bitbots_bringup)/launch/teamplayer.launch">

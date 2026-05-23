@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
-import sys
 import math
+import sys
+
 import rclpy
 from rclpy.node import Node
 from tf2_msgs.msg import TFMessage
@@ -19,9 +20,7 @@ class TransformMonitor(Node):
 
     def tf_callback(self, msg):
         for transform in msg.transforms:
-            if (transform.header.frame_id == self.parent_frame and
-                transform.child_frame_id == self.child_frame):
-
+            if transform.header.frame_id == self.parent_frame and transform.child_frame_id == self.child_frame:
                 # Extract position
                 pos = transform.transform.translation
 

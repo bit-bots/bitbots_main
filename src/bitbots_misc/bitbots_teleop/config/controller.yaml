@@ -12,10 +12,10 @@
         gain_turn: -0.5
         btn_full_stop: 1
       head:
-        gain_tilt: 1.5
-        stick_tilt: 4
-        gain_pan: 2.0
-        stick_pan: 3
+        gain_pitch: 1.5
+        stick_pitch: 4
+        gain_yaw: 2.0
+        stick_yaw: 3
       kick:
         btn_left: 4
         btn_right: 5
@@ -34,10 +34,10 @@
         gain_turn: 0.8
         btn_full_stop: 1
       head:
-        gain_tilt: 1.5
-        stick_tilt: 4
-        gain_pan: 2.0
-        stick_pan: 3
+        gain_pitch: 1.5
+        stick_pitch: 4
+        gain_yaw: 2.0
+        stick_yaw: 3
       kick:
         btn_left: 4
         btn_right: 5

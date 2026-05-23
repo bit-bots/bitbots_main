@@ -33,10 +33,10 @@ class JoyNode(Node):
             self.declare_parameter(f"{controller_type}.walking.duo_turn", False)
             self.declare_parameter(f"{controller_type}.walking.gain_turn", 0.0)
             self.declare_parameter(f"{controller_type}.walking.btn_full_stop", 0)
-            self.declare_parameter(f"{controller_type}.head.gain_tilt", 0.0)
-            self.declare_parameter(f"{controller_type}.head.stick_tilt", 0)
-            self.declare_parameter(f"{controller_type}.head.gain_pan", 0.0)
-            self.declare_parameter(f"{controller_type}.head.stick_pan", 0)
+            self.declare_parameter(f"{controller_type}.head.gain_pitch", 0.0)
+            self.declare_parameter(f"{controller_type}.head.stick_pitch", 0)
+            self.declare_parameter(f"{controller_type}.head.gain_yaw", 0.0)
+            self.declare_parameter(f"{controller_type}.head.stick_yaw", 0)
             self.declare_parameter(f"{controller_type}.kick.btn_left", 0)
             self.declare_parameter(f"{controller_type}.kick.btn_right", 0)
             self.declare_parameter(f"{controller_type}.misc.btn_cheering", 0)
@@ -76,16 +76,16 @@ class JoyNode(Node):
         }
 
         self.config["head"] = {
-            "gain_tilt": self.get_parameter(f"{selected_controller_type}.head.gain_tilt")
+            "gain_pitch": self.get_parameter(f"{selected_controller_type}.head.gain_pitch")
             .get_parameter_value()
             .double_value,
-            "stick_tilt": self.get_parameter(f"{selected_controller_type}.head.stick_tilt")
+            "stick_pitch": self.get_parameter(f"{selected_controller_type}.head.stick_pitch")
             .get_parameter_value()
             .integer_value,
-            "gain_pan": self.get_parameter(f"{selected_controller_type}.head.gain_pan")
+            "gain_yaw": self.get_parameter(f"{selected_controller_type}.head.gain_yaw")
             .get_parameter_value()
             .double_value,
-            "stick_pan": self.get_parameter(f"{selected_controller_type}.head.stick_pan")
+            "stick_yaw": self.get_parameter(f"{selected_controller_type}.head.stick_yaw")
             .get_parameter_value()
             .integer_value,
         }
@@ -217,15 +217,15 @@ class JoyNode(Node):
 
         # head movement with right joystick
         if self.get_parameter("head").get_parameter_value().bool_value:
-            pan_goal = float(
-                self.denormalize_joy(self.config["head"]["gain_pan"], self.config["head"]["stick_pan"], msg, -1)
+            yaw_goal = float(
+                self.denormalize_joy(self.config["head"]["gain_yaw"], self.config["head"]["stick_yaw"], msg, -1)
             )
-            tilt_goal = float(
-                self.denormalize_joy(self.config["head"]["gain_tilt"], self.config["head"]["stick_tilt"], msg, -1)
+            pitch_goal = float(
+                self.denormalize_joy(self.config["head"]["gain_pitch"], self.config["head"]["stick_pitch"], msg, -1)
             )
 
             self.head_msg.joint_names = ["head_yaw_joint", "head_pitch_joint"]
-            self.head_msg.positions = [pan_goal, tilt_goal]
+            self.head_msg.positions = [yaw_goal, pitch_goal]
             self.head_pub.publish(self.head_msg)
 
         if msg.buttons[self.config["kick"]["btn_left"]]:

@@ -1,0 +1,35 @@
+from typing import Optional
+
+import numpy as np
+from sensor_msgs.msg import Imu
+
+from handlers.handler import Handler
+
+
+class GyroHandler(Handler):
+    def __init__(self, node):
+        self._node = node
+
+        self._imu_data: Optional[Imu] = None
+
+        self._imu_sub = self._node.create_subscription(Imu, "imu/data", self._imu_callback, 10)
+
+    # Callables
+    def _imu_callback(self, msg):
+        self._imu_data = msg
+
+    def has_data(self):
+        return self._imu_data is not None
+
+    def get_gyro(self):
+        assert self._imu_data is not None
+        gyro = np.array(
+            [
+                self._imu_data.angular_velocity.x,
+                self._imu_data.angular_velocity.y,
+                self._imu_data.angular_velocity.z,
+            ],
+            dtype=np.float32,
+        )
+
+        return gyro

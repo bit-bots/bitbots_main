@@ -12,7 +12,6 @@
         "bitbots",
         "bringup",
         "cartesian",
-        "chrt",
         "coef",
         "colcon",
         "conv",
@@ -101,6 +100,7 @@
         "rsyncignore",
         "rtype",
         "rviz",
+        "samplerate",
         "scipy",
         "sdev",
         "seaborn",
@@ -108,7 +108,6 @@
         "srdf",
         "ssid",
         "std_srvs",
-        "taskset",
         "teamcomm",
         "teamplayer",
         "teleop",
@@ -219,7 +218,8 @@
         "future": "cpp",
         "*.ipp": "cpp",
         "span": "cpp",
-        "ranges": "cpp"
+        "ranges": "cpp",
+        "core": "cpp"
     },
     "ROS2.distro": "jazzy",
     "search.useIgnoreFiles": false,

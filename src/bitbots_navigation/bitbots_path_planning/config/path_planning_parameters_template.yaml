@@ -1,0 +1,110 @@
+bitbots_path_planning:
+  base_footprint_frame:
+    type: string
+    default_value: base_footprint
+    description: 'The frame of the robot base'
+    read_only: true
+  tf_buffer_duration:
+    type: double
+    default_value: 5.0
+    description: '-'
+    validation:
+      bounds<>: [0.0, 10.0]
+  rate:
+    type: double
+    default_value: 20.0
+    description: 'The rate at which the path planning is executed'
+    validation:
+      bounds<>: [0.0, 100.0]
+  
+  map:
+    planning_frame:
+      type: string
+      default_value: map
+      description: 'The frame in which the path planning is done'
+    ball_update_topic:
+      type: string
+      default_value: ball_position_relative_filtered
+      description: 'The topic to subscribe to for ball detections'
+      read_only: true
+    robot_update_topic:
+      type: string
+      default_value: robots_relative_filtered
+      description: 'The topic to subscribe to for robot detections'
+      read_only: true
+    ball_diameter:
+      type: double
+      default_value: 0.13
+      description: 'The diameter of the ball'
+      read_only: true
+    inflation:
+      robot_radius:
+        type: double
+        default_value: 0.3
+        description: 'Radius of a circle on the ground that represents the space occupied by our robot. Instead of planning with both a robot polygon/circle and an obstacle polygon, we just inflate the obstacles and assume the robot is a point. This is faster and simpler.'
+      obstacle_margin:
+        type: double
+        default_value: 0.1
+        description: "Distance we want to keep to obstacles when planning a path around them. No immediate action is required if the robot is closer than this distance to an obstacle, but we don't consider paths this close during the visibility graph generation."
+
+  controller:
+    carrot_distance:
+      type: int
+      default_value: 1
+      description: 'The distance to the carrot that we want to reach on the path'
+      validation:
+        bounds<>: [0, 100]
+    max_rotation_vel:
+      type: double
+      default_value: 0.99
+      description: 'The maximum rotation velocity of the robot in rad/s around the z-axis'
+      validation:
+        bounds<>: [0.0, 1.0]
+    max_vel_x:
+      type: double
+      default_value: 0.6
+      description: 'Maximum velocity we want to reach in different directions (base_footprint coordinate system)'
+      validation:
+        bounds<>: [0.0, 1.0]
+    min_vel_x:
+      type: double
+      default_value: -0.6
+      description: 'Minimum velocity we want to reach in different directions (base_footprint coordinate system)'
+      validation:
+        bounds<>: [-1.0, 0.0]
+    max_vel_y:
+      type: double
+      default_value: 0.4
+      description: 'Maximum velocity we want to reach in different directions (base_footprint coordinate system)'
+      validation:
+        bounds<>: [0.0, 1.0]
+    smoothing_tau:
+      type: double
+      default_value: 0.1
+      description: 'This is the time constant of the exponential smoothing filter. The higher the value, the more smoothing is applied. It denotes the time after which a unit step function input signal reaches 63% (1-1/e) of its original strength. In other words, it denotes the time it takes for a new input to be 63% integrated into the output. It is update rate independent!'
+      validation:
+        bounds<>: [0.0, 1.0]
+    rotation_i_factor:
+      type: double
+      default_value: 0.0
+      description: 'Integral gain to counter constant disturbances (not really tested/used)'
+      validation:
+        bounds<>: [0.0, 1.0]
+    rotation_slow_down_factor:
+      type: double
+      default_value: 0.5
+      description: 'Clamped p gain of the rotation controller'
+      validation:
+        bounds<>: [0.0, 1.0]
+    translation_slow_down_factor:
+      type: double
+      default_value: 0.5
+      description: 'Clamped p gain of the translation controller'
+      validation:
+        bounds<>: [0.0, 1.0]
+    orient_to_goal_distance:
+      type: double
+      default_value: 0.5
+      description: 'Distance at which we switch from orienting towards the path to orienting towards the goal poses orientation (in meters)'
+      validation:
+        bounds<>: [0.0, 10.0]

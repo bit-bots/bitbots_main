@@ -151,11 +151,11 @@ class TeleopKeyboard(Node):
 
         self.head_mode_msg = HeadMode(head_mode=HeadMode.DONT_MOVE)
 
-        self.head_pan_step = 0.05
-        self.head_tilt_step = 0.05
+        self.head_yaw_step = 0.05
+        self.head_pitch_step = 0.05
 
         self.walk_kick_pub = self.create_publisher(Bool, "kick", 1)
-        self.power_switch_pub = self.create_publisher(PowerSwitch, "/power_switch_control", 1)
+        self.power_switch_pub = self.create_publisher(PowerSwitch, "/power_switch_control", 10)
 
         self.reset_robot = self.create_client(Empty, "/reset_pose")
         self.reset_ball = self.create_client(Empty, "/reset_ball")
@@ -215,8 +215,8 @@ class TeleopKeyboard(Node):
                     self.th = round(self.th, 2)
                     self.a_x = 0
                 elif key in head_bindings.keys():
-                    self.head_msg.positions[0] = self.head_yaw_pos + head_bindings[key][1] * self.head_pan_step
-                    self.head_msg.positions[1] = self.head_pitch_pos + head_bindings[key][0] * self.head_tilt_step
+                    self.head_msg.positions[0] = self.head_yaw_pos + head_bindings[key][1] * self.head_yaw_step
+                    self.head_msg.positions[1] = self.head_pitch_pos + head_bindings[key][0] * self.head_pitch_step
                     self.head_pub.publish(self.head_msg)
                 elif key == "k" or key == "K":
                     # put head back in init

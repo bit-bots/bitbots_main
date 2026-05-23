@@ -3,6 +3,7 @@
     <arg name="sim" default="false"/>
     <arg name="viz" default="false"/>
     <arg name="torqueless_mode" default="false" description="start without torque, for example for testing the falling detection"/>
+    <arg name="tts" default="true" description="Whether to enable text-to-speech"/>
 
     <include file="$(find-pkg-share bitbots_parameter_blackboard)/launch/parameter_blackboard.launch">
         <arg name="sim" value="$(var sim)"/>
@@ -12,7 +13,9 @@
         <arg name="sim" value="$(var sim)"/>
     </include>
 
-    <include file="$(find-pkg-share bitbots_tts)/launch/tts.launch"/>
+    <group if="$(var tts)">
+        <include file="$(find-pkg-share bitbots_tts)/launch/tts.launch"/>
+    </group>
 
     <group if="$(var viz)">
         <node pkg="bitbots_utils" exec="motor_goals_viz_helper.py" output="screen" args="--all"/>

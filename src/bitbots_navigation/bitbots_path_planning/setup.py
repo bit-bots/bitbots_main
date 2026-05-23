@@ -5,7 +5,7 @@ from setuptools import setup
 
 generate_parameter_module(
     "path_planning_parameters",  # python module name for parameter library
-    "config/path_planning_parameters.yaml",  # path to input yaml file
+    "config/path_planning_parameters_template.yaml",  # path to input yaml file
 )
 
 package_name = "bitbots_path_planning"
