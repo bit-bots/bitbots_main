@@ -17,14 +17,19 @@ from sensor_msgs.msg import JointState
 from std_srvs.srv import Empty
 
 from bitbots_msgs.msg import HeadMode, JointCommand
+from bitbots_msgs.srv import SimulatorPush
 
 msg = """
 Bit-Bots Teleop
 ---------------
+
+SPACE: EMERGENCY STOP (servo power off)
+f: full stop             F: play walkready animation
+
 Walk around:            Move head:
-    q    w    e         u    i    o
-    a    s    d         j    k    l
-                        m    ,    .
+q    w    e         u    i    o
+a    s    d         j    k    l
+                    m    ,    .
 
 q/e: turn left/right    k: zero head position
 a/d: left/right         i/,: up/down
@@ -33,9 +38,6 @@ w/s: forward/back       j/l: left/right
 
 Controls increase / decrease with multiple presses.
 SHIFT increases with factor 10
-
-SPACE: EMERGENCY STOP (servo power off)
-f: full stop             F: play walkready animation
 
 Head Modes:
 (Currently not implemented: 0: Track the last known ball position)
@@ -48,6 +50,11 @@ Head Modes:
 Simulation only:
 r: reset robot in simulation
 R: reset ball in simulation
+p: execute Push
+P: reset Power to 0
+ü/ä: increase/decrease power forward (x axis)
++/#: increase/decrease power left (y axis)
+SHIFT increases/decreases with factor 10
 
 CTRL-C to quit
 
@@ -138,6 +145,7 @@ class TeleopKeyboard(Node):
 
         self.reset_robot = self.create_client(Empty, "/reset_pose")
         self.reset_ball = self.create_client(Empty, "/reset_ball")
+        self.simulator_push = self.create_client(SimulatorPush, "/simulator_push")
 
         self.frame_prefix = "" if os.environ.get("ROS_NAMESPACE") is None else os.environ.get("ROS_NAMESPACE") + "/"
 
@@ -234,7 +242,35 @@ class TeleopKeyboard(Node):
                     self.z = 0
                     self.a_x = 0
                     self.th = 0
+                    self.push_force_x = 0.0
+                    self.push_force_y = 0.0
                     self.power_switch_pub.publish(PowerSwitch(control_switch=0, power_switch=0))
+                elif key == "p":
+                    # push robot in simulation
+                    push_request = SimulatorPush.Request()
+                    push_request.force.x = self.push_force_x
+                    push_request.force.y = self.push_force_y
+                    push_request.relative = True
+                    self.simulator_push.call_async(push_request)
+                elif key == "P":
+                    self.push_force_x = 0.0
+                    self.push_force_y = 0.0
+                elif key == "ü":
+                    self.push_force_x += 1
+                elif key == "Ü":
+                    self.push_force_x += 10
+                elif key == "ä":
+                    self.push_force_x -= 1
+                elif key == "Ä":
+                    self.push_force_x -= 10
+                elif key == "+":
+                    self.push_force_y += 1
+                elif key == "*":
+                    self.push_force_y += 10
+                elif key == "#":
+                    self.push_force_y -= 1
+                elif key == "'":
+                    self.push_force_y -= 10
                 else:
                     if key == "\x03":  # CTRL-C
                         self.a_x = -1
@@ -251,6 +287,8 @@ class TeleopKeyboard(Node):
                     f"y:    {self.y}     \n"
                     f"turn: {self.th}     \n"
                     f"head mode: {self.head_mode_msg.head_mode}     \n"
+                    f"push force x (+forward/-back): {self.push_force_x}     \n"
+                    f"push force y (+left/-right):   {self.push_force_y}     "
                 )
 
                 for _ in range(state_str.count("\n") + 1):

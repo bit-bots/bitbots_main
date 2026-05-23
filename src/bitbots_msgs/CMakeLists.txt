@@ -43,7 +43,11 @@ rosidl_generate_interfaces(
   "msg/TeamData.msg"
   "msg/TTS.msg"
   "srv/AddAnimation.srv"
+  "srv/ManualPenalize.srv"
+  "srv/SetObjectPose.srv"
+  "srv/SetObjectPosition.srv"
   "srv/SetTeachingMode.srv"
+  "srv/SimulatorPush.srv"
   DEPENDENCIES
   action_msgs
   geometry_msgs
