@@ -52,7 +52,7 @@ f: full stop           F: play walkready animation
 r: reset robot in simulation
 R: reset ball in simulation
 
-Not binded key i.e. g and h: let the robot walk on the same spot
+g: walk on the spot, clear speeds
 
 Head Modes:
 0: Track the last known ball position
@@ -355,15 +355,17 @@ class TeleopKeyboard(Node):
                     self.push_force_y -= 1
                 elif key == "'":
                     self.push_force_y -= 10
-                else:
+                elif key in ("g", "G"):
                     self.x = 0
                     self.y = 0
                     self.z = 0
                     self.a_x = 0
                     self.th = 0
-                    if key == "\x03":
-                        self.a_x = -1
-                        break
+                elif key == "\x03":  # CTRL-C
+                    self.a_x = -1
+                    break
+                else:
+                    print("unknown key: " + str(key))
 
                 self.head_mode_pub.publish(self.head_mode_msg)
 
