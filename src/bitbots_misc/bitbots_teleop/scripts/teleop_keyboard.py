@@ -26,6 +26,7 @@ Bit-Bots Teleop
 
 SPACE: EMERGENCY STOP (servo power off)
 f: full stop             F: play walkready animation
+g: walk on the spot, clear speeds
 
 Walk around:            Move head:
 q    w    e         u    i    o
@@ -289,10 +290,17 @@ class TeleopKeyboard(Node):
                     self.push_force_y -= 1
                 elif key == "'":
                     self.push_force_y -= 10
+                elif key in ("g", "G"):
+                    self.x = 0
+                    self.y = 0
+                    self.z = 0
+                    self.a_x = 0
+                    self.th = 0
+                elif key == "\x03":  # CTRL-C
+                    self.a_x = -1
+                    break
                 else:
-                    if key == "\x03":  # CTRL-C
-                        self.a_x = -1
-                        break
+                    print("unknown key: " + str(key))
 
                 self.head_mode_pub.publish(self.head_mode_msg)
 
