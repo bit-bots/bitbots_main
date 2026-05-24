@@ -136,7 +136,8 @@
         "xacro",
         "yoeo",
         "yolo",
-        "yolov"
+        "yolov",
+        "zenoh"
     ],
     "files.autoSave": "afterDelay",
     "files.autoSaveDelay": 500,
