@@ -7,8 +7,15 @@ from bitbots_msgs.msg import Cpu as CpuMsg
 _prev_total = defaultdict(int)
 _prev_busy = defaultdict(int)
 
+# store last reported usage per cpu to smooth sampling noise
+_prev_usage = defaultdict(float)
 
-def collect_all():
+# smoothing factor for exponential moving average (0..1)
+# higher = more responsive, lower = smoother
+_EMA_ALPHA = 0.5
+
+
+def collect_all() -> tuple[int, list[CpuMsg], float]:
     """
     parse /proc/stat and calculate total and busy time
 
@@ -50,7 +57,7 @@ def _get_cpu_stats():
     return timings
 
 
-def _calculate_usage(cpu_num, total, busy):
+def _calculate_usage(cpu_num, total, busy) -> float:
     """
     calculate usage percentage based on busy/total time
     """
@@ -60,7 +67,18 @@ def _calculate_usage(cpu_num, total, busy):
     _prev_total[cpu_num] = total
     _prev_busy[cpu_num] = busy
 
-    if diff_total == 0:
-        return 0
+    # compute raw usage and handle edge cases
+    if diff_total <= 0 or diff_busy <= 0:
+        raw_usage = 0.0
     else:
-        return float(int(diff_busy / diff_total * 100))
+        raw_usage = (diff_busy / diff_total) * 100.0
+
+    # smooth short-term sampling noise with exponential moving average
+    prev = _prev_usage[cpu_num]
+    if prev == 0.0:
+        smoothed = float(round(raw_usage, 2))
+    else:
+        smoothed = float(round((raw_usage * _EMA_ALPHA) + (prev * (1.0 - _EMA_ALPHA)), 2))
+
+    _prev_usage[cpu_num] = smoothed
+    return smoothed
