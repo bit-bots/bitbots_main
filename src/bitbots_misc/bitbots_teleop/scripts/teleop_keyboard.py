@@ -65,6 +65,8 @@ CTRL-C to quit
 
 
 
+
+
 """
 
 move_bindings = {
@@ -193,6 +195,7 @@ class TeleopKeyboard(Node):
     def loop(self):
         try:
             while True:
+                info: str = ""
                 key = self.get_key()
                 if key in move_bindings.keys():
                     self.x += move_bindings[key][0] * self.x_speed_step
@@ -216,7 +219,7 @@ class TeleopKeyboard(Node):
                     # Track the last known ball position
                     # self.head_mode_msg.head_mode = HeadMode.TRACK_BALL
                     # assert int(key) == HeadMode.TRACK_BALL
-                    print("ERROR: CURRENTLY NOT IMPLEMENTED")
+                    info = "ERROR: CURRENTLY NOT IMPLEMENTED"
                 elif key == "1":
                     # Look generally for all features on the field (ball, goals, corners, center point)
                     self.head_mode_msg.head_mode = HeadMode.SEARCH_FIELD_FEATURES
@@ -304,7 +307,7 @@ class TeleopKeyboard(Node):
                     self.a_x = -1
                     break
                 else:
-                    print("unknown key: " + str(key))
+                    info = f"unknown key: '{key}'"
 
                 self.head_mode_pub.publish(self.head_mode_msg)
 
@@ -318,9 +321,11 @@ class TeleopKeyboard(Node):
                     f"turn: {self.th}     \n"
                     f"head mode: {self.head_mode_msg.head_mode}     \n"
                     f"push force x (+forward/-back): {self.push_force_x}     \n"
-                    f"push force y (+left/-right):   {self.push_force_y}     "
+                    f"push force y (+left/-right):   {self.push_force_y}     \n"
+                    f"last key: '{key}'    {info + ' ' * 40 if info else ' ' * 40}"
                 )
 
+                # move cursor up to overwrite previous state output
                 for _ in range(state_str.count("\n") + 1):
                     sys.stdout.write("\x1b[A")
                 print(state_str)
