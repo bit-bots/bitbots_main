@@ -45,12 +45,13 @@ class MotionOdometry : public rclcpp::Node {
   motion_odometry::ParamListener param_listener_;
   motion_odometry::Params config_;
 
-  // Returns {lowest_corner_l, lowest_corner_r, support_state}, where support_state indicates the foot that is lower right now
+  // Returns {lowest_corner_l, lowest_corner_r, support_state}, where support_state indicates the foot that is lower
+  // right now
   std::tuple<std::string, std::string, int> detectSupportFoot(const tf2::Quaternion& imu_rotation);
   // Returns the corrected pose of sole_frame in the IMU frame, as if the foot were flat on the ground
   // pivoted around contact_corner_frame (which is assumed to be the fixed ground contact point).
-  tf2::Transform getFootContactModelResult(const tf2::Quaternion& imu_orientation,
-                                           const std::string& sole_frame, const std::string& contact_corner_frame);
+  tf2::Transform getFootContactModelResult(const tf2::Quaternion& imu_orientation, const std::string& sole_frame,
+                                           const std::string& contact_corner_frame);
   void imuCallback(const sensor_msgs::msg::Imu::SharedPtr msg);
   tf2::Quaternion dropYaw(tf2::Quaternion input);
 
@@ -162,8 +163,7 @@ void MotionOdometry::loop() {
 
       // Correct for situations where e.g. only the tip of a foot is in contact
       previous_to_current_support =
-          getFootContactModelResult(imu_rotation, previous_support_link, previous_contact_corner_frame)
-              .inverse() *
+          getFootContactModelResult(imu_rotation, previous_support_link, previous_contact_corner_frame).inverse() *
           previous_to_current_support *
           getFootContactModelResult(imu_rotation, current_support_link, current_contact_corner_frame);
 
@@ -204,8 +204,7 @@ void MotionOdometry::loop() {
 
     // Correct with the foot contact model, as the foot might not be flat on the ground
     current_support_to_base =
-        getFootContactModelResult(imu_rotation, current_support_link, current_contact_corner_frame)
-            .inverse() *
+        getFootContactModelResult(imu_rotation, current_support_link, current_contact_corner_frame).inverse() *
         current_support_to_base;
 
     tf2::Transform odom_to_base_link_internal = odometry_to_support_foot_ * current_support_to_base;

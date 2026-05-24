@@ -2,9 +2,8 @@ import os
 
 from ament_index_python import get_package_share_directory
 from bitbots_blackboard.body_blackboard import BodyBlackboard
-from dynamic_stack_decider.abstract_action_element import AbstractActionElement
-
 from bitbots_tts.tts import speak
+from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 
 class Speak(AbstractActionElement):

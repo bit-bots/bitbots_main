@@ -3,12 +3,12 @@ import json
 import os
 
 import rclpy
+from bitbots_tts.tts import speak
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile
 from std_msgs.msg import String
 
 from bitbots_msgs.msg import TTS
-from bitbots_tts.tts import speak
 
 
 class WorkspaceStatusPublisher(Node):
