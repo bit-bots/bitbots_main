@@ -9,8 +9,8 @@ Preliminaries
 
 Do the test in the provided order, to find out which part is faulty.
 
-#. Use robot compile to flash correct version on robot
-#. Put robot in a safe spot, on a rope hanging from the ceiling
+#. Deploy the latest software to the robot
+#. Put robot in a safe spot, e.g. on a rope hanging from the ceiling
 #. Check if all cables are correctly connected
 #. Open diagnostic view in rqt, it will provide a lot of information
 

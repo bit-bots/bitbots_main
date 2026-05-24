@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+
+    <name>rot_conv</name>
+    <version>1.0.0</version>
+    <description>Rotations Conversion Library</description>
+    <license>BSD-3-Clause</license>
+
+    <author email="pallgeuer@ais.uni-bonn.de">Philipp Allgeuer</author>
+
+    <maintainer email="7vahl@informatik.uni-hamburg.de">Florian Vahl</maintainer>
+
+    <export>
+        <build_type>ament_cmake</build_type>
+    </export>
+
+</package>

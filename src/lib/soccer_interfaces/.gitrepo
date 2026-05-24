@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/ingydotnet/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/ros-sports/soccer_interfaces.git
+	branch = rolling
+	commit = 25ff13414aed84d6c9595106a4e84e77453e5ecf
+	parent = 7d2155a246c0497e49da6ae706b296cbb7bb6d8f
+	method = merge
+	cmdver = 0.4.9

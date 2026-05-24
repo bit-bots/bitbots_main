@@ -14,7 +14,7 @@ When Powered Off
 * Inspect for head wobbling
 * Check camera cables for hard bends
 * Check if shoulders are bent
-* Inspect NUC power connectors
+* Inspect PC power connectors
 
 Before Powering On
 ------------------
@@ -52,4 +52,4 @@ After Powering On
 * Check camera images for focus and proper transmission (10 Hz, low jitter)
    Run:
 
-   ``rl bitbots_bringup vision_standalone.launch`` and ``ros2 topic hz /camera/image_proc`` and in ``rqt`` open the image view plugin.
+   ``rl bitbots_bringup vision_standalone.launch`` and ``ros2 topic hz /zed/zed_node/left/image_rect_color`` and in ``rqt`` open the image view plugin.

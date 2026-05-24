@@ -1,18 +1,16 @@
 #InitSet
 $SecondaryStateDecider
     PENALTYSHOOT --> $SecondaryStateTeamDecider
-        OTHER --> @InitGoal, @DoNothing   // Init as kicker
         OUR --> @InitPenaltyKick, @DoNothing   // Init as goalie
+        ELSE --> @InitGoal, @DoNothing   // Init as kicker
     ELSE --> $CheckPickup
         UP --> @WaitForPickupEnd + r:false, @InitSide, @DoNothing
         ELSE --> @DoNothing
 
 -->Localization
 $GettingUpState
-    YES --> @StoreCurrentIMUYaw, @LocalizationStop, @DoNothing
-    GOTUP --> $WalkedSinceLastInit + dist:%walking_moved_distance
-        YES --> @InitPoseAfterFall, @LocalizationStart, @DoNothing
-        NO --> @RedoLastInit, @LocalizationStart, @DoNothing
+    YES --> @LocalizationStop, @DoNothing
+    GOTUP --> @LocalizationStart, @DoNothing
     NO --> $CheckGameStateReceived
         NO_GAMESTATE_INIT --> @InitSide, @DoNothing
         DO_NOTHING --> @DoNothing

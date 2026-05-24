@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/ingydotnet/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/bit-bots/particle_filter.git
+	branch = fix/cpp20
+	commit = 45dac306a27e156e973977400eebc0f3155dc91f
+	parent = 57cf56b09d6e932f7f12b6a453ab0f1f0e1da1a3
+	method = merge
+	cmdver = 0.4.9

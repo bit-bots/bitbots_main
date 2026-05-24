@@ -5,7 +5,7 @@
 
     <group unless="$(var sim)">
         <group unless="$(var viz)">
-            <include file="$(find-pkg-share bitbots_ros_control)/launch/ros_control.launch" />
+            <include file="$(find-pkg-share livelybot_bringup)/launch/lowlevel.launch" />
         </group>
     </group>
 
@@ -19,7 +19,7 @@
 
     <!-- launch the base footprint -->
     <node pkg="humanoid_base_footprint" exec="base_footprint" output="screen">
-      <param name="support_state_topics" value="[walk_support_state, dynamic_kick_support_state]"/>
+      <param name="support_state_topics" value="[walk_support_state]"/>
       <param name="use_sim_time" value="$(var sim)"/>
     </node>
 

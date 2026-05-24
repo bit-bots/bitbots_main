@@ -1,22 +1,17 @@
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
 
-#include <bio_ik/bio_ik.hpp>
-#include <bio_ik_msgs/msg/ik_response.hpp>
 #include <bitbots_head_mover/head_parameters.hpp>
 #include <bitbots_msgs/action/look_at.hpp>
 #include <bitbots_msgs/msg/head_mode.hpp>
 #include <bitbots_msgs/msg/joint_command.hpp>
+#include <bitbots_splines/smooth_spline.hpp>
 #include <chrono>
 #include <cmath>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <iostream>
 #include <memory>
-#include <moveit/planning_scene/planning_scene.hpp>
-#include <moveit/planning_scene_monitor/planning_scene_monitor.hpp>
-#include <moveit/robot_model_loader/robot_model_loader.hpp>
-#include <moveit/robot_state/conversions.hpp>
 #include <rclcpp/clock.hpp>
 #include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
 #include <rclcpp/logger.hpp>
@@ -60,14 +55,6 @@ class HeadMover {
   std::optional<sensor_msgs::msg::JointState> current_joint_state_;
   geometry_msgs::msg::PoseWithCovarianceStamped tf_precision_pose_;
 
-  // Declare robot model and planning scene for moveit
-  robot_model_loader::RobotModelLoaderPtr loader_;
-  moveit::core::RobotModelPtr robot_model_;
-  moveit::core::RobotStatePtr robot_state_;
-  moveit::core::RobotStatePtr collision_state_;
-  planning_scene_monitor::PlanningSceneMonitorPtr planning_scene_monitor_;
-  planning_scene::PlanningScenePtr planning_scene_;
-
   // Declare parameters and parameter listener
   move_head::Params params_;
   std::shared_ptr<move_head::ParamListener> param_listener_;
@@ -80,11 +67,15 @@ class HeadMover {
   // Store previous head mode
   uint prev_head_mode_ = -1;
 
-  // Declare variables for the current search patterns parameters
-  double threshold_ = 0;
-  int index_ = 0;
-  double pan_speed_ = 0;
-  double tilt_speed_ = 0;
+  // Duration of one full search pattern cycle (seconds)
+  double cycle_time_ = 0.0;
+
+  // Spline trajectory for search patterns
+  bitbots_splines::SmoothSpline yaw_spline_;
+  bitbots_splines::SmoothSpline pitch_spline_;
+  double spline_duration_ = 0.0;
+  rclcpp::Time spline_start_time_;
+  bool spline_valid_ = false;
 
   // World model state
   geometry_msgs::msg::PoseWithCovarianceStamped ball_position_;
@@ -128,64 +119,9 @@ class HeadMover {
     param_listener_ = std::make_shared<move_head::ParamListener>(node_);
     params_ = param_listener_->get_params();
 
-    // Create a seperate node for moveit, this way we can use rqt to change parameters,
-    // because some moveit parameters break the gui
-    auto moveit_node = std::make_shared<rclcpp::Node>("moveit_head_mover_node");
-
-    // Get the parameters from the move_group node
-    auto parameters_client = std::make_shared<rclcpp::SyncParametersClient>(node_, "/move_group");
-    while (!parameters_client->wait_for_service(1s)) {
-      if (!rclcpp::ok()) {
-        RCLCPP_ERROR(node_->get_logger(), "Interrupted while waiting for the service. Exiting.");
-        return;
-      }
-      RCLCPP_INFO(node_->get_logger(), "service not available, waiting again...");
-    }
-
-    // Extract the robot_description
-    rcl_interfaces::msg::ListParametersResult parameter_list =
-        parameters_client->list_parameters({"robot_description_kinematics"}, 10);
-
-    // Set the robot description parameters in the moveit node
-    auto copied_parameters = parameters_client->get_parameters(parameter_list.names);
-    for (auto& parameter : copied_parameters) {
-      moveit_node->declare_parameter(parameter.get_name(), parameter.get_type());
-      moveit_node->set_parameter(parameter);
-    }
-
-    // Load robot description / robot model into moveit
-    std::string robot_description = "robot_description";
-    loader_ = std::make_shared<robot_model_loader::RobotModelLoader>(
-        robot_model_loader::RobotModelLoader(moveit_node, robot_description, true));
-    robot_model_ = loader_->getModel();
-    if (!robot_model_) {
-      RCLCPP_ERROR(node_->get_logger(),
-                   "failed to load robot model %s. Did you start the "
-                   "blackboard (bitbots_bringup base.launch)?",
-                   robot_description.c_str());
-    }
-
-    // Recreate robot state
-    robot_state_.reset(new moveit::core::RobotState(robot_model_));
-    robot_state_->setToDefaultValues();
-
-    // Recreate collision state
-    collision_state_.reset(new moveit::core::RobotState(robot_model_));
-    collision_state_->setToDefaultValues();
-
-    // Get planning scene for collision checking
-    planning_scene_monitor_ = std::make_shared<planning_scene_monitor::PlanningSceneMonitor>(moveit_node, loader_);
-    planning_scene_ = planning_scene_monitor_->getPlanningScene();
-    if (!planning_scene_) {
-      RCLCPP_ERROR_ONCE(node_->get_logger(), "failed to connect to planning scene");
-    }
-
     // Create tf buffer and listener to update it
     tf_buffer_ = std::make_shared<tf2_ros::Buffer>(node_->get_clock());
     tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
-
-    // Initialize variables
-    threshold_ = params_.position_reached_threshold * DEG_TO_RAD;
 
     // Initialize action server for look at action
     action_server_ = rclcpp_action::create_server<LookAtGoal>(
@@ -212,23 +148,23 @@ class HeadMover {
     // Bring the goal point into the planning frame
     geometry_msgs::msg::PointStamped new_point;
     try {
-      new_point =
-          tf_buffer_->transform(goal->look_at_position, planning_scene_->getPlanningFrame(), tf2::durationFromSec(0.9));
+      new_point = tf_buffer_->transform(goal->look_at_position, "base_footprint", tf2::durationFromSec(0.9));
     } catch (tf2::TransformException& ex) {
       RCLCPP_ERROR(node_->get_logger(), "Could not transform goal point: %s", ex.what());
       return rclcpp_action::GoalResponse::REJECT;
     }
 
     // Get the motor goals that are needed to look at the point
-    std::pair<double, double> pan_tilt = get_motor_goals_from_point(new_point.point);
+    std::pair<double, double> yaw_pitch = get_motor_goals_from_point(new_point.point);
 
-    // Check whether the goal is in range pan and tilt wise
-    bool goal_not_in_range = check_head_collision(pan_tilt.first, pan_tilt.second);
+    // Check whether the goal is in range yaw and pitch wise
+    bool goal_not_in_range = check_head_collision(yaw_pitch.first, yaw_pitch.second);
 
     // Check whether the action goal is valid and can be executed
+    // cppcheck-suppress knownConditionTrueFalse
     if (action_running_ || goal_not_in_range ||
-        !(params_.max_pan[0] < pan_tilt.first && pan_tilt.first < params_.max_pan[1]) ||
-        !(params_.max_tilt[0] < pan_tilt.second && pan_tilt.second < params_.max_tilt[1])) {
+        !(params_.max_yaw[0] < yaw_pitch.first && yaw_pitch.first < params_.max_yaw[1]) ||
+        !(params_.max_pitch[0] < yaw_pitch.second && yaw_pitch.second < params_.max_pitch[1])) {
       return rclcpp_action::GoalResponse::REJECT;
     }
     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
@@ -332,22 +268,22 @@ class HeadMover {
    * @brief Send the goal positions to the head motors, but resolve collisions with the body if necessary.
    *
    */
-  bool send_motor_goals(double pan_position, double tilt_position, bool resolve_collision, double pan_speed = 1.5,
-                        double tilt_speed = 1.5, double current_pan_position = 0.0, double current_tilt_position = 0.0,
-                        bool clip = true) {
-    // Debug log the target pan and tilt position
-    RCLCPP_DEBUG_STREAM(node_->get_logger(), "target pan/tilt: " << pan_position << "/" << tilt_position);
+  bool send_motor_goals(double yaw_position, double pitch_position, bool resolve_collision, double yaw_speed = 1.5,
+                        double pitch_speed = 1.5, double current_yaw_position = 0.0,
+                        double current_pitch_position = 0.0, bool clip = true) {
+    // Debug log the target yaw and pitch position
+    RCLCPP_DEBUG_STREAM(node_->get_logger(), "target yaw/pitch: " << yaw_position << "/" << pitch_position);
 
-    // Clip the target pan and tilt position at the maximum pan and tilt values as defined in the parameters
+    // Clip the target yaw and pitch position at the maximum yaw and pitch values as defined in the parameters
     if (clip) {
-      std::tie(pan_position, tilt_position) = pre_clip(pan_position, tilt_position);
+      std::tie(yaw_position, pitch_position) = pre_clip(yaw_position, pitch_position);
     }
 
     // Resolve collisions if necessary
     if (resolve_collision) {
-      // Call behavior that resolves collisions and might change the target pan and tilt position
-      bool success = avoid_collision_on_path(pan_position, tilt_position, current_pan_position, current_tilt_position,
-                                             pan_speed, tilt_speed);
+      // Call behavior that resolves collisions and might change the target yaw and pitch position
+      bool success = avoid_collision_on_path(yaw_position, pitch_position, current_yaw_position, current_pitch_position,
+                                             yaw_speed, pitch_speed);
       // Report error message of we were not able to move to an alternative collision free position
       if (!success) {
         RCLCPP_ERROR_STREAM_THROTTLE(node_->get_logger(), *node_->get_clock(), 1000,
@@ -356,103 +292,101 @@ class HeadMover {
       return success;
     } else {
       // Move the head to the target position but adjust the speed of the joints so both reach the goal at the same time
-      move_head_to_position_with_speed_adjustment(pan_position, tilt_position, current_pan_position,
-                                                  current_tilt_position, pan_speed, tilt_speed);
+      move_head_to_position_with_speed_adjustment(yaw_position, pitch_position, current_yaw_position,
+                                                  current_pitch_position, yaw_speed, pitch_speed);
       return true;
     }
   }
 
   /**
-   * @brief Applies clipping to the pan and tilt values based on the loaded config parameters
+   * @brief Applies clipping to the yaw and pitch values based on the loaded config parameters
    *
    */
-  std::pair<double, double> pre_clip(double pan, double tilt) {
-    double new_pan = std::clamp(pan, params_.max_pan[0], params_.max_pan[1]);
-    double new_tilt = std::clamp(tilt, params_.max_tilt[0], params_.max_tilt[1]);
-    return {new_pan, new_tilt};
+  std::pair<double, double> pre_clip(double yaw, double pitch) {
+    double new_yaw = std::clamp(yaw, params_.max_yaw[0], params_.max_yaw[1]);
+    double new_pitch = std::clamp(pitch, params_.max_pitch[0], params_.max_pitch[1]);
+    return {new_yaw, new_pitch};
   }
 
   /**
    * @brief Tries to move the head to the target position but resolves collisions with the body if necessary.
    *
    */
-  bool avoid_collision_on_path(double goal_pan, double goal_tilt, double current_pan, double current_tilt,
-                               double pan_speed, double tilt_speed, int max_depth = 4, int depth = 0) {
+  bool avoid_collision_on_path(double goal_yaw, double goal_pitch, double current_yaw, double current_pitch,
+                               double yaw_speed, double pitch_speed, int max_depth = 4, int depth = 0) {
     // Check if we reached the maximum depth of the recursion and if so, return false
     if (depth > max_depth) {
       return false;
     }
 
     // Calculate the distance between the current and the goal position
-    double distance = sqrt(pow(goal_pan - current_pan, 2) - pow(goal_tilt - current_tilt, 2));
+    double distance = sqrt(pow(goal_yaw - current_yaw, 2) - pow(goal_pitch - current_pitch, 2));
 
     // Calculate the number of steps we need to take to reach the goal position
     // This assumes that we move 3 degrees per step
     int step_count = distance / (3 * DEG_TO_RAD);
 
     // Calculate path by performing linear interpolation between the current and the goal position
-    std::vector<std::pair<double, double>> pan_and_tilt_steps;
+    std::vector<std::pair<double, double>> yaw_and_pitch_steps;
     for (int i = 0; i < step_count; i++) {
-      pan_and_tilt_steps.push_back({current_pan + (goal_pan - current_pan) / step_count * i,
-                                    current_tilt + (goal_tilt - current_tilt) / step_count * i});
+      yaw_and_pitch_steps.push_back({current_yaw + (goal_yaw - current_yaw) / step_count * i,
+                                     current_pitch + (goal_pitch - current_pitch) / step_count * i});
     }
 
     // Check if we have collisions on our path
     for (int i = 0; i < step_count; i++) {
-      if (check_head_collision(pan_and_tilt_steps[i].first, pan_and_tilt_steps[i].second)) {
+      // cppcheck-suppress knownConditionTrueFalse
+      if (check_head_collision(yaw_and_pitch_steps[i].first, yaw_and_pitch_steps[i].second)) {
         // If we have a collision, try to move the head to an alternative position
         // The new position looks 10 degrees further up and is less likely to have a collision with the body
         // Also increase the depth of the recursion as this is a new attempt to move the head to the goal position
-        return avoid_collision_on_path(goal_pan, goal_tilt + 10 * DEG_TO_RAD, current_pan, current_tilt, pan_speed,
-                                       tilt_speed, max_depth, depth + 1);
+        return avoid_collision_on_path(goal_yaw, goal_pitch + 10 * DEG_TO_RAD, current_yaw, current_pitch, yaw_speed,
+                                       pitch_speed, max_depth, depth + 1);
       }
     }
 
     // We do not have any collisions on our path, so we can move the head to the goal position
-    move_head_to_position_with_speed_adjustment(goal_pan, goal_tilt, current_pan, current_tilt, pan_speed, tilt_speed);
+    move_head_to_position_with_speed_adjustment(goal_yaw, goal_pitch, current_yaw, current_pitch, yaw_speed,
+                                                pitch_speed);
     return true;
   }
 
   /**
-   * @brief Checks if the head collides with the body at a given pan and tilt position
+   * @brief Checks if the head collides with the body at a given yaw and pitch position
    */
-  bool check_head_collision(double pan, double tilt) {
-    collision_state_->setJointPositions("HeadPan", &pan);
-    collision_state_->setJointPositions("HeadTilt", &tilt);
-    collision_detection::CollisionRequest req;
-    collision_detection::CollisionResult res;
-    collision_detection::AllowedCollisionMatrix acm = planning_scene_->getAllowedCollisionMatrix();
-    planning_scene_->checkCollision(req, res, *collision_state_, acm);
-    return res.collision;
+  bool check_head_collision(double yaw, double pitch) {
+    // TODO we do not have a collision model for the pi plus head yet, so we need to implement this function properly
+    RCLCPP_ERROR_STREAM(node_->get_logger(), "Collision checking for the pi plus head is not implemented yet");
+    return false;
   }
 
   /**
    * @brief Move the head to the target position but adjust the speed of the joints so both reach the goal at the same
    * time
    */
-  void move_head_to_position_with_speed_adjustment(double goal_pan, double goal_tilt, double current_pan,
-                                                   double current_tilt, double pan_speed, double tilt_speed) {
+  void move_head_to_position_with_speed_adjustment(double goal_yaw, double goal_pitch, double current_yaw,
+                                                   double current_pitch, double yaw_speed, double pitch_speed) {
     // Calculate the delta between the current and the goal positions
-    double delta_pan = std::abs(goal_pan - current_pan);
-    double delta_tilt = std::abs(goal_tilt - current_tilt);
+    double delta_yaw = std::abs(goal_yaw - current_yaw);
+    double delta_pitch = std::abs(goal_pitch - current_pitch);
     // Check which axis has to move further and adjust the speed of the other axis so both reach the goal at the same
     // time
-    if (delta_pan > delta_tilt) {
-      // Slow down the tilt axis to match the time it takes for the pan axis to reach the goal
-      tilt_speed = std::min(tilt_speed, calculate_lower_speed(delta_pan, delta_tilt, pan_speed));
+    if (delta_yaw > delta_pitch) {
+      // Slow down the pitch axis to match the time it takes for the yaw axis to reach the goal
+      pitch_speed = std::min(pitch_speed, calculate_lower_speed(delta_yaw, delta_pitch, yaw_speed));
     } else {
-      // Slow down the pan axis to match the time it takes for the tilt axis to reach the goal
-      pan_speed = std::min(pan_speed, calculate_lower_speed(delta_tilt, delta_pan, tilt_speed));
+      // Slow down the yaw axis to match the time it takes for the pitch axis to reach the goal
+      yaw_speed = std::min(yaw_speed, calculate_lower_speed(delta_pitch, delta_yaw, pitch_speed));
     }
 
     // Send the motor goals including the position, speed and acceleration
     bitbots_msgs::msg::JointCommand pos_msg;
     pos_msg.header.stamp = rclcpp::Clock().now();
-    pos_msg.joint_names = {"HeadPan", "HeadTilt"};
-    pos_msg.positions = {goal_pan, goal_tilt};
-    pos_msg.velocities = {pan_speed, tilt_speed};
-    pos_msg.accelerations = {params_.max_acceleration_pan, params_.max_acceleration_pan};
-    pos_msg.max_currents = {-1, -1};
+    pos_msg.joint_names = {"head_yaw_joint", "head_pitch_joint"};
+    pos_msg.positions = {goal_yaw, goal_pitch};
+    pos_msg.velocities = {yaw_speed, pitch_speed};
+    pos_msg.accelerations = {params_.max_acceleration_yaw, params_.max_acceleration_yaw};
+    pos_msg.max_torques = {10, 10};
 
     position_publisher_->publish(pos_msg);
   }
@@ -461,52 +395,52 @@ class HeadMover {
    * @brief Returns the current position of the head motors
    */
   std::pair<double, double> get_head_position() {
-    double head_pan = 0.0;
-    double head_tilt = 0.0;
+    double head_yaw = 0.0;
+    double head_pitch = 0.0;
 
-    // Iterate over all joints and find the head pan and tilt joints
+    // Iterate over all joints and find the head yaw and pitch joints
     for (size_t i = 0; i < current_joint_state_->name.size(); i++) {
-      if (current_joint_state_->name[i] == "HeadPan") {
-        head_pan = current_joint_state_->position[i];
-      } else if (current_joint_state_->name[i] == "HeadTilt") {
-        head_tilt = current_joint_state_->position[i];
+      if (current_joint_state_->name[i] == "head_yaw_joint") {
+        head_yaw = current_joint_state_->position[i];
+      } else if (current_joint_state_->name[i] == "head_pitch_joint") {
+        head_pitch = current_joint_state_->position[i];
       }
     }
-    return {head_pan, head_tilt};
+    return {head_yaw, head_pitch};
   }
 
   /**
-   * @brief Converts a scanline number to a tilt angle
+   * @brief Converts a scanline number to a pitch angle
    */
   double lineAngle(int line, int line_count, double min_angle, double max_angle) {
-    // Get the angular delta that is covered by the scanlines in the tilt axis
+    // Get the angular delta that is covered by the scanlines in the pitch axis
     double delta = std::abs(max_angle - min_angle);
     // Calculate the angular step size between two scanlines
     double steps = delta / (line_count - 1);
-    // Calculate the tilt angle of the given scanline
+    // Calculate the pitch angle of the given scanline
     return steps * line + min_angle;
   }
 
   /**
-   * @brief Performs a linear interpolation between the min and max pan values and returns the interpolated steps
+   * @brief Performs a linear interpolation between the min and max yaw values and returns the interpolated steps
    */
-  std::vector<std::pair<double, double>> interpolatedSteps(int steps, double tilt, double min_pan, double max_pan) {
+  std::vector<std::pair<double, double>> interpolatedSteps(int steps, double pitch, double min_yaw, double max_yaw) {
     // Handle edge case where we do not need to interpolate
     if (steps == 0) {
       return {};
     }
-    // Add one to the step count as we need to include the min and max pan values
+    // Add one to the step count as we need to include the min and max yaw values
     steps += 1;
     // Create a vector that stores the interpolated steps
     std::vector<std::pair<double, double>> output_points;
-    // Calculate the delta between the min and max pan values
-    double delta = std::abs(max_pan - min_pan);
+    // Calculate the delta between the min and max yaw values
+    double delta = std::abs(max_yaw - min_yaw);
     // Calculate the step size between two interpolated steps
     double step_size = delta / steps;
-    // Iterate over all steps and calculate the interpolated pan values
+    // Iterate over all steps and calculate the interpolated yaw values
     for (int i = 1; i <= steps; i++) {
-      double pan = min_pan + step_size * i;
-      output_points.emplace_back(pan, tilt);
+      double yaw = min_yaw + step_size * i;
+      output_points.emplace_back(yaw, pitch);
     }
     return output_points;
   }
@@ -530,26 +464,26 @@ class HeadMover {
     int iterations = std::max(line_count * 4 - 4, 2);
     // Iterate over all iterations and generate the search pattern
     for (int i = 0; i < iterations; i++) {
-      // Get the maximum pan values (left and right) for the current pan position
+      // Get the maximum yaw values (left and right) for the current yaw position
       // Select the relevant one based on the current side we are on
-      double current_pan;
+      double current_yaw;
       if (right_side) {
-        current_pan = max_horizontal_angle_right;
+        current_yaw = max_horizontal_angle_right;
       } else {
-        current_pan = max_horizontal_angle_left;
+        current_yaw = max_horizontal_angle_left;
       }
 
-      // Get the current tilt angle based on the current line we are on
-      double current_tilt = lineAngle(line, line_count, max_vertical_angle_down, max_vertical_angle_up);
+      // Get the current pitch angle based on the current line we are on
+      double current_pitch = lineAngle(line, line_count, max_vertical_angle_up, max_vertical_angle_down);
 
       // Store the keyframe
-      keyframes.push_back({current_pan, current_tilt});
+      keyframes.push_back({current_yaw, current_pitch});
 
       // Check if we move horizontally or vertically in the pattern
       if (right_side != right_direction) {
         // We move horizontally, so we might need to interpolate between the current and the next keyframe
-        std::vector<std::pair<double, double>> interpolated_points =
-            interpolatedSteps(interpolation_steps, current_tilt, max_horizontal_angle_right, max_horizontal_angle_left);
+        std::vector<std::pair<double, double>> interpolated_points = interpolatedSteps(
+            interpolation_steps, current_pitch, max_horizontal_angle_right, max_horizontal_angle_left);
         // Reverse the order of the interpolated points if we are moving to the right
         if (right_direction) {
           std::reverse(interpolated_points.begin(), interpolated_points.end());
@@ -588,56 +522,32 @@ class HeadMover {
    * @brief Calculates the motor goals that are needed to look at a given point using the inverse kinematics
    */
   std::pair<double, double> get_motor_goals_from_point(geometry_msgs::msg::Point point) {
-    // Create a new IK options object
-    bio_ik::BioIKKinematicsQueryOptions ik_options;
-    ik_options.return_approximate_solution = true;
-    ik_options.replace = true;
-
-    // Create a new look at goal and set the target point as the position the camera link should look at
-    ik_options.goals.emplace_back(new bio_ik::LookAtGoal("camera", {1.0, 0.0, 0.0}, {point.x, point.y, point.z}));
-
-    // Get the joint model group for the head
-    auto joint_model_group = robot_model_->getJointModelGroup("Head");
-
     // Try to calculate the inverse kinematics
-    double timeout_seconds = 1.0;
-    bool success = robot_state_->setFromIK(joint_model_group, EigenSTL::vector_Isometry3d(), std::vector<std::string>(),
-                                           timeout_seconds, moveit::core::GroupStateValidityCallbackFn(), ik_options);
-    robot_state_->update();
-
-    // Get the solution from the IK response
-    bio_ik_msgs::msg::IKResponse response;
-    moveit::core::robotStateToRobotStateMsg(*robot_state_, response.solution);
-    response.solution_fitness = ik_options.solution_fitness;
-    // Return the motor goals if the IK was successful
-    if (success) {
-      return {response.solution.joint_state.position[0], response.solution.joint_state.position[1]};
-    } else {
-      RCLCPP_ERROR_STREAM_THROTTLE(node_->get_logger(), *node_->get_clock(), 1000,
-                                   "BioIK failed with error code: " << response.error_code.val);
-      return {0.0, 0.0};
-    }
+    // TODO we do not have inverse kinematics for the pi plus setup yet, so we need to implement this function properly
+    RCLCPP_ERROR_STREAM(node_->get_logger(), "Inverse kinematics for the pi plus head is not implemented yet");
+    return {0.0, 0.0};
   }
 
   /**
    * @brief Looks at a given point and returns true if the goal position was reached
    */
-  bool look_at(geometry_msgs::msg::PointStamped point, double min_pan_delta = 0.02, double min_tilt_delta = 0.02) {
+  bool look_at(geometry_msgs::msg::PointStamped point, double min_yaw_delta = 0.02, double min_pitch_delta = 0.02) {
     try {
       // Transform the point into the planning frame
       geometry_msgs::msg::PointStamped new_point =
-          tf_buffer_->transform(point, planning_scene_->getPlanningFrame(), tf2::durationFromSec(0.9));
+          tf_buffer_->transform(point, "base_footprint", tf2::durationFromSec(0.9));
 
       // Get the motor goals that are needed to look at the point from the inverse kinematics
-      std::pair<double, double> pan_tilt = get_motor_goals_from_point(new_point.point);
+      std::pair<double, double> yaw_pitch = get_motor_goals_from_point(new_point.point);
       // Get the current head position
-      std::pair<double, double> current_pan_tilt = get_head_position();
+      std::pair<double, double> current_yaw_pitch = get_head_position();
 
       // Check if we reached the goal position
-      if (std::abs(pan_tilt.first - current_pan_tilt.first) > min_pan_delta ||
-          std::abs(pan_tilt.second - current_pan_tilt.second) > min_tilt_delta) {
+      if (std::abs(yaw_pitch.first - current_yaw_pitch.first) > min_yaw_delta ||
+          std::abs(yaw_pitch.second - current_yaw_pitch.second) > min_pitch_delta) {
         // Send the motor goals to the head motors
-        send_motor_goals(pan_tilt.first, pan_tilt.second, true, params_.look_at.pan_speed, params_.look_at.tilt_speed);
+        send_motor_goals(yaw_pitch.first, yaw_pitch.second, true, params_.look_at.yaw_speed,
+                         params_.look_at.pitch_speed);
         // Return false as we did not reach the goal position yet
         return false;
       }
@@ -652,62 +562,86 @@ class HeadMover {
   }
 
   /**
-   * @brief Returns the index of the pattern keypoint that is closest to the current head position
+   * @brief Builds an open-loop SmoothSpline trajectory from the current search pattern.
    *
-   * @param pattern The search pattern
-   * @param pan The current pan position
-   * @param tilt The current tilt position
-   * @return int The index of the pattern keypoint that is closest to the current head position
+   * Waypoint timestamps are distributed proportionally to Euclidean arc length so the
+   * total cycle takes exactly cycle_time_ seconds. The loop is closed by appending the
+   * first waypoint at the end.
    */
-  int get_near_pattern_position(const std::vector<std::pair<double, double>>& pattern, double pan, double tilt) {
-    // Store the index and distance of the closest keypoint
-    std::pair<double, int> min_distance_point = {10000.0, -1};
-    // Iterate over all keypoints and calculate the distance to the current head position
-    for (size_t i = 0; i < pattern.size(); i++) {
-      // Calculate the cartesian distance between the current head position and the keypoint
-      double distance = std::sqrt(std::pow(pattern[i].first - pan, 2) + std::pow(pattern[i].second - tilt, 2));
-      // Check if the distance is smaller than the current minimum distance
-      // and if so, update the minimum distance accordingly
-      if (distance < min_distance_point.first) {
-        min_distance_point.first = distance;
-        min_distance_point.second = i;
-      }
+  void build_spline_trajectory() {
+    yaw_spline_ = bitbots_splines::SmoothSpline();
+    pitch_spline_ = bitbots_splines::SmoothSpline();
+    spline_valid_ = false;
+
+    if (pattern_.empty() || cycle_time_ <= 0.0) {
+      return;
     }
-    // Return the index of the closest keypoint
-    return min_distance_point.second;
+
+    // Convert all keypoints to radians and close the loop
+    std::vector<std::pair<double, double>> pts_rad;
+    pts_rad.reserve(pattern_.size() + 1);
+    for (const auto& kf : pattern_) {
+      pts_rad.emplace_back(kf.first * DEG_TO_RAD, kf.second * DEG_TO_RAD);
+    }
+    pts_rad.push_back(pts_rad[0]);
+
+    // Compute segment arc lengths and total
+    std::vector<double> lengths;
+    lengths.reserve(pts_rad.size() - 1);
+    double total_length = 0.0;
+    for (size_t i = 1; i < pts_rad.size(); i++) {
+      double dyaw = pts_rad[i].first - pts_rad[i - 1].first;
+      double dpitch = pts_rad[i].second - pts_rad[i - 1].second;
+      double len = std::sqrt(dyaw * dyaw + dpitch * dpitch);
+      lengths.push_back(len);
+      total_length += len;
+    }
+
+    // Add waypoints with timestamps proportional to arc length
+    double t = 0.0;
+    yaw_spline_.addPoint(t, pts_rad[0].first);
+    pitch_spline_.addPoint(t, pts_rad[0].second);
+    for (size_t i = 0; i < lengths.size(); i++) {
+      double fraction = (total_length > 0.0) ? lengths[i] / total_length : 1.0 / static_cast<double>(lengths.size());
+      t += fraction * cycle_time_;
+      yaw_spline_.addPoint(t, pts_rad[i + 1].first);
+      pitch_spline_.addPoint(t, pts_rad[i + 1].second);
+    }
+
+    spline_duration_ = cycle_time_;
+    yaw_spline_.computeSplines();
+    pitch_spline_.computeSplines();
+    spline_start_time_ = node_->now();
+    spline_valid_ = true;
   }
 
   /**
-   * @brief Performs the search pattern that is currently loaded
+   * @brief Evaluates the pre-built spline trajectory at the current time and publishes
+   * the resulting joint position and velocity as open-loop motor goals.
    */
   void perform_search_pattern() {
-    // Do not perform the search pattern if it is empty
-    if (pattern_.size() == 0) {
+    if (!spline_valid_ || spline_duration_ <= 0.0) {
       return;
     }
-    // Wrap the index that points to the current keypoint around if necessary
-    index_ = index_ % int(pattern_.size());
-    // Get the current keypoint and convert it to radians
-    double head_pan = pattern_[index_].first * DEG_TO_RAD;
-    double head_tilt = pattern_[index_].second * DEG_TO_RAD;
-    // Get the current head position
-    auto [current_head_pan, current_head_tilt] = get_head_position();
 
-    // Send the motor goals to the head motors
-    bool success =
-        send_motor_goals(head_pan, head_tilt, false, pan_speed_, tilt_speed_, current_head_pan, current_head_tilt);
+    double t = fmod((node_->now() - spline_start_time_).seconds(), spline_duration_);
 
-    if (success) {
-      // Check if we reached the current keypoint and if so, increase the index
-      double distance_to_goal =
-          std::sqrt(std::pow(head_pan - current_head_pan, 2) + std::pow(head_tilt - current_head_tilt, 2));
-      if (distance_to_goal <= threshold_) {
-        index_++;
-      }
-    } else {
-      // Skip the keypoint if we were not able to reach it (e.g. due to an unresolvable collision)
-      index_++;
-    }
+    double goal_yaw = yaw_spline_.pos(t);
+    double goal_pitch = pitch_spline_.pos(t);
+    std::tie(goal_yaw, goal_pitch) = pre_clip(goal_yaw, goal_pitch);
+
+    double yaw_vel = std::abs(yaw_spline_.vel(t));
+    double pitch_vel = std::abs(pitch_spline_.vel(t));
+
+    bitbots_msgs::msg::JointCommand pos_msg;
+    pos_msg.header.stamp = node_->get_clock()->now();
+    pos_msg.joint_names = {"head_yaw_joint", "head_pitch_joint"};
+    pos_msg.positions = {goal_yaw, goal_pitch};
+    pos_msg.velocities = {yaw_vel, pitch_vel};
+    pos_msg.accelerations = {params_.max_acceleration_yaw, params_.max_acceleration_pitch};
+    pos_msg.max_torques = {10, 10};
+
+    position_publisher_->publish(pos_msg);
   }
 
   /**
@@ -733,44 +667,40 @@ class HeadMover {
           // Nothing to do if we go into track ball or dont move mode
           break;
         case bitbots_msgs::msg::HeadMode::SEARCH_BALL_PENALTY:
-          pan_speed_ = params_.search_patterns.search_ball_penalty.pan_speed;
-          tilt_speed_ = params_.search_patterns.search_ball_penalty.tilt_speed;
+          cycle_time_ = params_.search_patterns.search_ball_penalty.cycle_time;
           pattern_ = generatePattern(params_.search_patterns.search_ball_penalty.scan_lines,
-                                     params_.search_patterns.search_ball_penalty.pan_max[0],
-                                     params_.search_patterns.search_ball_penalty.pan_max[1],
-                                     params_.search_patterns.search_ball_penalty.tilt_max[0],
-                                     params_.search_patterns.search_ball_penalty.tilt_max[1],
+                                     params_.search_patterns.search_ball_penalty.yaw_max[0],
+                                     params_.search_patterns.search_ball_penalty.yaw_max[1],
+                                     params_.search_patterns.search_ball_penalty.pitch_max[0],
+                                     params_.search_patterns.search_ball_penalty.pitch_max[1],
                                      params_.search_patterns.search_ball_penalty.reduce_last_scanline);
           break;
 
         case bitbots_msgs::msg::HeadMode::SEARCH_FIELD_FEATURES:
-          pan_speed_ = params_.search_patterns.search_field_features.pan_speed;
-          tilt_speed_ = params_.search_patterns.search_field_features.tilt_speed;
+          cycle_time_ = params_.search_patterns.search_field_features.cycle_time;
           pattern_ = generatePattern(params_.search_patterns.search_field_features.scan_lines,
-                                     params_.search_patterns.search_field_features.pan_max[0],
-                                     params_.search_patterns.search_field_features.pan_max[1],
-                                     params_.search_patterns.search_field_features.tilt_max[0],
-                                     params_.search_patterns.search_field_features.tilt_max[1],
+                                     params_.search_patterns.search_field_features.yaw_max[0],
+                                     params_.search_patterns.search_field_features.yaw_max[1],
+                                     params_.search_patterns.search_field_features.pitch_max[0],
+                                     params_.search_patterns.search_field_features.pitch_max[1],
                                      params_.search_patterns.search_field_features.reduce_last_scanline);
           break;
 
         case bitbots_msgs::msg::HeadMode::SEARCH_FRONT:
-          pan_speed_ = params_.search_patterns.search_front.pan_speed;
-          tilt_speed_ = params_.search_patterns.search_front.tilt_speed;
+          cycle_time_ = params_.search_patterns.search_front.cycle_time;
           pattern_ = generatePattern(
-              params_.search_patterns.search_front.scan_lines, params_.search_patterns.search_front.pan_max[0],
-              params_.search_patterns.search_front.pan_max[1], params_.search_patterns.search_front.tilt_max[0],
-              params_.search_patterns.search_front.tilt_max[1],
+              params_.search_patterns.search_front.scan_lines, params_.search_patterns.search_front.yaw_max[0],
+              params_.search_patterns.search_front.yaw_max[1], params_.search_patterns.search_front.pitch_max[0],
+              params_.search_patterns.search_front.pitch_max[1],
               params_.search_patterns.search_front.reduce_last_scanline);
           break;
 
         case bitbots_msgs::msg::HeadMode::LOOK_FORWARD:
-          pan_speed_ = params_.search_patterns.look_forward.pan_speed;
-          tilt_speed_ = params_.search_patterns.look_forward.tilt_speed;
+          cycle_time_ = params_.search_patterns.look_forward.cycle_time;
           pattern_ = generatePattern(
-              params_.search_patterns.look_forward.scan_lines, params_.search_patterns.look_forward.pan_max[0],
-              params_.search_patterns.look_forward.pan_max[1], params_.search_patterns.look_forward.tilt_max[0],
-              params_.search_patterns.look_forward.tilt_max[1],
+              params_.search_patterns.look_forward.scan_lines, params_.search_patterns.look_forward.yaw_max[0],
+              params_.search_patterns.look_forward.yaw_max[1], params_.search_patterns.look_forward.pitch_max[0],
+              params_.search_patterns.look_forward.pitch_max[1],
               params_.search_patterns.look_forward.reduce_last_scanline);
           break;
 
@@ -778,11 +708,8 @@ class HeadMover {
           return;
       }
 
-      // Get the current head position
-      std::pair<double, double> head_position = get_head_position();
-
-      // Select the closest keypoint in the search pattern as a starting point
-      index_ = get_near_pattern_position(pattern_, head_position.first, head_position.second);
+      // Build the spline trajectory from the new pattern
+      build_spline_trajectory();
     }
     // Check if no look at action is running or if the head mode is DONT_MOVE
     // if this is not the case, perform the search pattern

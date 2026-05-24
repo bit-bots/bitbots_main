@@ -46,7 +46,7 @@ class AnimationNode(Node):
         self.goals_to_abort: set[UUID] = set()
 
         # Get robot type and create resource manager
-        self.declare_parameter("robot_type", "wolfgang")
+        self.declare_parameter("robot_type", "piplus")
         self.resource_manager = ResourceManager(self.get_parameter("robot_type").value)
 
         # Load all animations into memory
@@ -163,7 +163,7 @@ class AnimationNode(Node):
 
             # Send request to make the HCM to go into animation play mode
             num_tries = 0
-            while rclpy.ok() and (not (await self.hcm_animation_mode.call_async(SetBool.Request(data=True))).success):  # type: ignore[attr-defined]
+            while rclpy.ok() and (not (await self.hcm_animation_mode.call_async(SetBool.Request(data=True))).success):  # type: ignore[union-attr]
                 if num_tries >= 10:
                     self.get_logger().error("Failed to request HCM to go into animation play mode")
                     return finish(successful=False)
@@ -312,7 +312,7 @@ class AnimationNode(Node):
                     positions=pose.values(),
                     velocities=[-1.0] * len(pose),
                     accelerations=[-1.0] * len(pose),
-                    max_currents=[np.clip((torque[joint]), 0.0, 1.0) for joint in pose.keys()]  # type: ignore[index]
+                    max_torques=[np.clip((torque[joint]), 0.0, 1.0) for joint in pose.keys()]  # type: ignore[index]
                     if torque and False
                     else [-1.0] * len(pose),  # fmt: skip
                 ),

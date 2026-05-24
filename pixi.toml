@@ -1,7 +1,6 @@
 [workspace]
 authors = ["Florian Vahl <7vahl@informatik.uni-hamburg.de>"]
 channels = [
-    "https://data.bit-bots.de/conda/",  # For self hosted ROS / robostack packages
     "https://data.bit-bots.de/conda-misc/output/",  # For self hosted misc (non-ROS, neural network weights, ...) packages
     "robostack-jazzy", # Robostack jazzy channel for ROS packages
     "conda-forge"  # General conda-forge channel
@@ -12,10 +11,16 @@ preview = ["pixi-build"]
 version = "0.1.0"
 
 [tasks]
+zenoh = "ros2 run rmw_zenoh_cpp rmw_zenohd"
 deploy = {cmd = "scripts/deploy_robots.py", description = "Deploys the current environment."}
 format = {cmd = "pre-commit run --all-files", description = "Runs code formatting and linting."}
 
 [tasks.build]
+# Skipping ZED-camera related packages as they require a local installation of the ZED SDK.
+cmd = "colcon build --symlink-install --cmake-args -G 'Unix Makefiles' --packages-skip zed_wrapper zed_components zed_msgs zed_ros2 "
+description = "Builds all ROS 2 packages. Add --packages-select <package names> to build specific packages."
+
+[feature.robot.tasks.build]
 cmd = "colcon build --symlink-install --cmake-args -G 'Unix Makefiles' "
 description = "Builds all ROS 2 packages. Add --packages-select <package names> to build specific packages."
 
@@ -25,8 +30,9 @@ args = [{ arg = "package", default = "" }]
 description = "Cleans build and install files for all ROS 2 packages or a specific one if given."
 
 [tasks.test]
-cmd = "colcon test --packages-ignore=audio_common --event-handlers console_direct+ --return-code-on-test-failure "
-description = "Runs tests for all ROS 2 packages. Add --packages-select <package names> to test specific packages."
+description = "Runs tests for all ROS 2 packages. Pass additional colcon args (e.g. --packages-select)"
+# Skipping packages in the src/lib directory as they are not "our" responsibility. They should be tested separately in their own repositories.
+cmd = "colcon test --parallel-workers 1 --event-handlers console_direct+ --return-code-on-test-failure --packages-skip audio_common domain_bridge ipm_image_node soccer_ipm zed_wrapper zed_components zed_msgs zed_ros2 "
 
 [dependencies]
 # Base dependencies
@@ -40,13 +46,16 @@ readline = ">=8.2.999"  # This is needed because we want to install an empty rea
 alsa-plugins = ">=1.2.12,<2"
 beartype = ">=0.22.6,<0.23"
 breathe = ">=4.36.0,<5"
+cbor2 = ">=5.9.0,<6"
 cmake = "<3.30"  # Constraint to avoid issues with deprecated features in newer cmake versions
 colorama = ">=0.4.6,<0.5"
 compilers = ">=1.11.0,<2"
+construct = ">=2.10.70,<3"
 eigen = ">=3.4.0,<4"
 fabric = ">=3.2.2,<4"
 flask = ">=3.1.2,<4"
 gitpython = ">=3.1.45,<4"
+git-subrepo = ">=0.4.9,<0.5"
 invoke = ">=2.2.1,<3"
 ipython = ">=9.7.0,<10"
 jaxtyping = ">=0.3.2,<0.4"
@@ -57,6 +66,7 @@ libnuma = ">=2.0.18,<3"
 libopencv = ">=4.11.0,<5"
 libprotobuf = ">=6.31.1,<7"
 matplotlib = ">=3.10.8,<4"
+mujoco = ">=3.6.0,<4"
 mypy = ">=1.18.2,<2"
 ninja = ">=1.13.2,<2"
 numpy = ">=1.26.4,<2"
@@ -70,17 +80,22 @@ psutil = ">=7.1.3,<8"
 pthread-stubs = ">=0.4,<0.5"
 pybind11 = ">=3.0.1,<4"
 pyqt = ">=5.15.11,<6"
+pysoundcard = ">=0.4.5,<0.5"
 pytest = ">=9.0.1,<10"
 pytest-mock = ">=3.15.1,<4"
 pyyaml = ">=6.0.3,<7"
 rich = ">=14.2.0,<15"
 rospkg = ">=1.6.0,<2"
 ruff = ">=0.14.6,<0.15"
+scipy = ">=1.17.1,<2"
 simpleeval = ">=1.0.3,<2"
 sphinx-rtd-theme = ">=3.0.2,<4"
 sysroot_linux-64 = ">=2.28,<3"
 transforms3d = ">=0.4.2,<0.5"
 yaml-cpp = ">=0.8.0,<0.9"
+regex = ">=2026.4.4,<2027"
+onnxruntime = ">=1.24.2,<2"  # CPU Onnxruntime for python (motion, tts, ...)
+libonnxruntime-webgpu = ">=1.24.3,<2"  # GPU onnxruntime for cpp (self compiled)
 
 # Official ROS 2 packages
 colcon-common-extensions = ">=0.3.0,<0.4"
@@ -114,18 +129,9 @@ ros-jazzy-image-transport = ">=5.1.7,<6"
 ros-jazzy-joint-state-publisher = ">=2.4.0,<3"
 ros-jazzy-joint-state-publisher-gui = ">=2.4.0,<3"
 ros-jazzy-moveit-core = ">=2.12.3,<3"
-ros-jazzy-moveit-kinematics = ">=2.12.3,<3"
-ros-jazzy-moveit-planners-ompl = ">=2.12.3,<3"
-ros-jazzy-moveit-ros = ">=2.12.3,<3"
-ros-jazzy-moveit-ros-move-group = ">=2.12.3,<3"
-ros-jazzy-moveit-ros-planning = ">=2.12.3,<3"
-ros-jazzy-moveit-ros-planning-interface = ">=2.12.3,<3"
-ros-jazzy-moveit-ros-robot-interaction = ">=2.12.3,<3"
-ros-jazzy-moveit-ros-visualization = ">=2.12.3,<3"
-ros-jazzy-moveit-setup-assistant = ">=2.12.3,<3"
-ros-jazzy-moveit-simple-controller-manager = ">=2.12.3,<3"
 ros-jazzy-nav-msgs = ">=5.3.6,<6"
 ros-jazzy-plotjuggler = ">=3.10.11,<4"
+ros-jazzy-plotjuggler-ros = ">=2.3.1,<3"
 ros-jazzy-pluginlib = ">=5.4.2,<6"
 ros-jazzy-rclpy = ">=7.1.5,<8"
 ros-jazzy-robot-state-publisher = ">=3.3.3,<4"
@@ -150,48 +156,20 @@ ros-jazzy-tf2-ros = ">=0.36.14,<0.37"
 ros-jazzy-topic-tools = ">=1.3.3,<2"
 ros-jazzy-trajectory-msgs = ">=5.3.6,<6"
 ros-jazzy-transmission-interface = ">=4.37.0,<5"
-ros-jazzy-turtlesim = ">=1.8.3,<2"
 ros-jazzy-urdf = ">=2.10.0,<3"
 ros-jazzy-urdfdom-py = ">=1.2.1,<2"
+ros-jazzy-vision-msgs = ">=4.1.1,<5"
 ros-jazzy-vision-opencv = ">=4.1.0,<5"
 ros-jazzy-visualization-msgs = ">=5.3.6,<6"
-ros-jazzy-web-video-server = ">=2.1.1,<3"
 ros-jazzy-xacro = ">=2.1.1,<3"
-
-# Bit-Bots vendor packages
-ros-jazzy-imu-complementary-filter = ">=2.1.5,<3"
-ros-jazzy-pybind11-vendor = ">=3.1.3,<4"
-ros-jazzy-soccer-vision-3d-rviz-markers = ">=1.0.0,<2"
-ros-jazzy-soccer-vision-3d-msgs = ">=1.0.0,<2"
-ros-jazzy-soccer-vision-attribute-msgs = ">=1.0.0,<2"
-ros-jazzy-rot-conv = ">=1.1.0,<2"
-# ros-jazzy-bio-ik = ">=2.0.0,<3"
-ros-jazzy-bio-ik-msgs = ">=0.0.0,<0.0.1"
-ros-jazzy-biped-interfaces = ">=0.0.0,<0.0.1"
-ros-jazzy-bitbots-tf-buffer = ">=1.0.0,<2"
-ros-jazzy-ros2-python-extension = ">=1.0.0,<2"
-ros-jazzy-dynamic-stack-decider = ">=0.5.3,<0.6"
-ros-jazzy-dynamic-stack-decider-visualization = ">=0.2.1,<0.3"
-# To be replaced with ros-jazzy-game-controller-hsl once the new version is released upstream
-# ros-jazzy-game-controller-hl = ">=1.1.0,<2"
-# ros-jazzy-game-controller-hl-interfaces = ">=0.0.1,<0.0.2"
-ros-jazzy-humanoid-base-footprint = ">=0.1.2,<0.2"
-ros-jazzy-ipm-image-node = ">=0.0.0,<0.0.1"
-ros-jazzy-ipm-interfaces = ">=0.0.0,<0.0.1"
-ros-jazzy-ipm-library = ">=0.0.0,<0.0.1"
-ros-jazzy-soccer-ipm = ">=0.0.0,<0.0.1"
-ros-jazzy-soccer-field-map-generator = ">=0.0.0,<0.0.1"
-ros-jazzy-udp-bridge = ">=0.0.0,<0.0.1"
-ros-jazzy-particle-filter = ">=0.0.1,<0.0.2"
-ros-jazzy-ros2-numpy = ">=2.0.9,<3"
-ros-jazzy-gazebo-msgs = ">=3.8.0,<4"
-ros-jazzy-bitbots-dynamixel-sdk = ">=3.7.21,<4"
-ros-jazzy-dynamixel-workbench-toolbox = ">=0.1.8,<0.2"
-ros-jazzy-better-launch = ">=1.0.3,<2"
+ros-jazzy-rqt-robot-monitor = ">=1.0.6,<2"
+ros-jazzy-web-video-server = ">=3.0.0,<4"
+ros-jazzy-rmw-zenoh-cpp = ">=0.2.9,<0.3"
 
 # Neural network models / data packages
 bitbots_model_2023_04_04_philipp_yoeox_with_team_colors = ">=1.0.0,<2"
 bitbots_model_2022_10_07_flo_torso21_yoeox = ">=1.0.0,<2"
+tts-supertonic = ">=1.0.0,<2"
 
 # Local packages
 bitbots_rust_nav = { path = "src/bitbots_navigation/bitbots_rust_nav" }
@@ -202,16 +180,9 @@ setuptools = "==68.1.2"  # Pinning setuptools to avoid issues with colcon build
 git = ">=2.52.0,<3"  # Otherwise the system git might be used causing ABI issues
 curl = ">=8.17.0,<9"
 make = ">=4.4.1,<5"  # To avoid issues in the CI
-
-[feature.ros.target.linux-64.dependencies]
-# For now Webots is only packaged for x86-64 Linux
-webots = ">=2022b,<2023a"
+adwaita-icon-theme = "<40"  # To avoid issues with missing icons, as non-symbolic icons have been removed in newer versions
 
 [feature.format.dependencies]
-# Add git-subrepo to format dependencies as currently there are
-# sqlite conflicts in the default/ros environment preventing execution
-# of pre-commit hooks running after commits from the git-subrepo cli
-git-subrepo = ">=0.4.9,<0.5"
 clang-format = ">=21.1.0,<22"
 cppcheck = ">=2.18.3,<2.20"
 pre-commit = ">=4.4.0,<5"
@@ -221,29 +192,25 @@ pre-commit = ">=4.4.0,<5"
 construct = ">=2.10.56, <3"
 syrupy = ">=5.0.0, <6"
 exhale = ">=0.3.7, <0.4"
-mycroft-mimic3-tts = ">=0.2.4, <0.3"
-pyttsx3 = ">=2.99, <3"
-
-[feature.ros.target.linux-64.pypi-dependencies]
-onnxruntime-webgpu = ">=1.24.0.dev20251218001, <2"
-
-[feature.ros.target.linux-aarch64.pypi-dependencies]
-# Currently onnxruntime-webgpu is not available on ARM, so we fallback to CPU onnx for now
-onnxruntime = ">=1.23.2, <2"
 
 [feature.robot.pypi-dependencies]
+
+[feature.robot.dependencies]
+ros-jazzy-nmea-msgs = ">=2.1.0,<3"
+ros-jazzy-geographic-msgs = ">=1.0.6,<2"
+ros-jazzy-robot-localization = ">=3.8.3,<4"
 # These are only needed on the robot
-pyamdgpuinfo = ">=2.1.7, <3"
+
 
 [feature.ros.activation.env]
-ROS_AUTOMATIC_DISCOVERY_RANGE = "LOCALHOST"
+#ROS_AUTOMATIC_DISCOVERY_RANGE = "LOCALHOST"
 RCUTILS_COLORIZED_OUTPUT = "1"
 RCUTILS_CONSOLE_OUTPUT_FORMAT="[{severity}] [{name}]: {message} ({function_name}() at {file_name}:{line_number})"
-RMW_IMPLEMENTATION = "rmw_cyclonedds_cpp"
+RMW_IMPLEMENTATION = "rmw_zenoh_cpp"
 COLCON_LOG_LEVEL = "30"
-PYTHONWARNINGS="ignore:::setuptools.command.install,ignore:::setuptools.command.easy_install,ignore:::pkg_resources,ignore:easy_install command is deprecated,ignore:setup.py install is deprecated"
-WEBOTS_HOME = "$CONDA_PREFIX/share/webots"
+PYTHONWARNINGS="ignore:::setuptools.command.install,ignore:::setuptools.command.easy_install,ignore:::pkg_resources,ignore:easy_install command is deprecated,ignore:setup.py install is deprecated,ignore:pkg_resources:DeprecationWarning"
 ALSA_PLUGIN_DIR = "/usr/lib/x86_64-linux-gnu/alsa-lib"
+
 
 [feature.ros.activation]
 scripts = [

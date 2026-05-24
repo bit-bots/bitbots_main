@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/ingydotnet/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/bit-bots/bitbots_tf_buffer.git
+	branch = main
+	commit = 9ddce3f7f7434f762dd3d9ea8db85292eeca9d86
+	parent = b086a3aa1084b9f1eb378a1a1691b0b7787da6a6
+	method = merge
+	cmdver = 0.4.9

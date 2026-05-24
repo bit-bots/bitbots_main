@@ -27,12 +27,12 @@ struct FieldDimensions {
 
 /**
  * @class Map
- * @brief Stores a map for a messurement class (e.g. a map of the lines)
+ * @brief Stores a map for a measurement class (e.g. a map of the lines)
  */
 class Map {
  public:
   /**
-   * @param name of the environment. (E.g. webots)
+   * @param name of the environment.
    * @param type of the map. (E.g. lines)
    * @param out_of_map_value value used for padding the out of field area.
    */

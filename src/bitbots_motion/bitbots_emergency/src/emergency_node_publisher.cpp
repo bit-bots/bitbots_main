@@ -1,0 +1,95 @@
+#include <fcntl.h>
+#include <termios.h>
+#include <unistd.h>
+
+#include <cerrno>
+#include <chrono>
+#include <functional>
+#include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
+#include <rclcpp/rclcpp.hpp>
+#include <std_msgs/msg/bool.hpp>
+#include <thread>
+
+namespace bitbots_emergency_publisher {
+class EMERGENCY_NODE_PUBLISHER : public rclcpp::Node {
+ public:
+  explicit EMERGENCY_NODE_PUBLISHER() : Node("emergency_node_publisher") {
+    // Create client
+    heartbeat_publisher_ = this->create_publisher<std_msgs::msg::Bool>("/heartbeat", 1);
+
+    RCLCPP_WARN(this->get_logger(), "Emergency button [SPACE] starting in 3s!");
+
+    std::this_thread::sleep_for(std::chrono::seconds(3));
+
+    RCLCPP_WARN(this->get_logger(), "Waiting for emergency button [SPACE]!");
+
+    tty_fd_ = open("/dev/tty", O_RDONLY | O_NONBLOCK);
+    if (tty_fd_ == -1) {
+      throw std::runtime_error(std::string("Failed to open /dev/tty: ") + std::strerror(errno));
+    }
+
+    struct termios newt;
+    tcgetattr(tty_fd_, &oldt_);
+    newt = oldt_;
+    newt.c_lflag = newt.c_lflag & ~(ICANON | ECHO);  // Don't wait for enter and don't show key in terminal
+    newt.c_cc[VMIN] = 0;                             // Don't wait for input
+    newt.c_cc[VTIME] = 0;                            // No timeout
+    tcsetattr(tty_fd_, TCSANOW, &newt);
+
+    // repeatedly call loop function
+    timer_ = this->create_wall_timer(std::chrono::milliseconds(100),
+                                     std::bind(&EMERGENCY_NODE_PUBLISHER::_emergencyLoop, this));
+  }
+
+  ~EMERGENCY_NODE_PUBLISHER() {
+    tcsetattr(tty_fd_, TCSANOW, &oldt_);
+    close(tty_fd_);
+  }
+
+ private:
+  rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr heartbeat_publisher_;
+  rclcpp::TimerBase::SharedPtr timer_;
+  struct termios oldt_;
+  int tty_fd_;
+
+  void _emergencyLoop() {
+    char buf[64];
+
+    ssize_t n = read(tty_fd_, buf, sizeof(buf));
+    int cnt = 0;
+    for (ssize_t i = 0; i < n; i++) {
+      if (buf[i] != ' ') {
+        cnt = cnt + 1;
+      }
+    }
+
+    auto msg = std_msgs::msg::Bool();
+    if (cnt == n) {
+      RCLCPP_WARN(this->get_logger(), "Sending E-STOP signal!!!");
+
+      msg.data = false;  // E-stop!
+    } else {
+      msg.data = true;  // Robot should function
+    }
+    heartbeat_publisher_->publish(msg);
+  }
+};
+}  // namespace bitbots_emergency_publisher
+
+void thread_spin(rclcpp::experimental::executors::EventsExecutor::SharedPtr executor) { executor->spin(); }
+
+int main(int argc, char** argv) {
+  rclcpp::init(argc, argv);
+
+  auto node = std::make_shared<bitbots_emergency_publisher::EMERGENCY_NODE_PUBLISHER>();
+
+  rclcpp::experimental::executors::EventsExecutor::SharedPtr exec =
+      std::make_shared<rclcpp::experimental::executors::EventsExecutor>();
+  exec->add_node(node);
+  std::thread thread_obj(thread_spin, exec);
+
+  // Join the thread
+  thread_obj.join();
+
+  rclcpp::shutdown();
+}

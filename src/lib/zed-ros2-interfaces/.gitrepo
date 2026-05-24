@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/ingydotnet/git-subrepo#readme
+;
+[subrepo]
+	remote = git@github.com:stereolabs/zed-ros2-interfaces.git
+	branch = master
+	commit = b02e35e5d5e030d683b556a7ff02669b660e72d6
+	parent = 2ce7cbb097812888f8e92212e4dba1ce42c196b8
+	method = merge
+	cmdver = 0.4.9

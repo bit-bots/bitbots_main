@@ -32,7 +32,7 @@ class BallFilter(Node):
         """
         super().__init__("ball_filter")
         self.logger = self.get_logger()
-        self.tf_buffer = Buffer(Duration(seconds=2), self)
+        self.tf_buffer = Buffer(Duration(seconds=4), self)
         # Setup dynamic reconfigure config
         self.param_listener = parameters.ParamListener(self)
 

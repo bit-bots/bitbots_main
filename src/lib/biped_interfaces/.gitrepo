@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/ingydotnet/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/ros-sports/biped_interfaces.git
+	branch = rolling
+	commit = 5966d7813db77859759cca9d7e8075597551fc27
+	parent = 988ec967bc7b964b737b64a76cb9513b0bcfc5c8
+	method = merge
+	cmdver = 0.4.9
