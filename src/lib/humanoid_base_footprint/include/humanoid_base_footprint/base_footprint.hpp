@@ -31,7 +31,7 @@
 // The base_footprint is the representation of the robot position on the floor.
 // The floor is usually the level where the supporting leg rests,
 // i.e. z = min(l_sole_z, r_sole_z) where l_sole_z and r_sole_z are the left and right sole height
-// respecitvely.
+// respectively.
 // The translation component of the frame should be the barycenter of the feet projections on the
 // floor.
 // With respect to the odom frame, the roll and pitch angles should be zero and the yaw angle should
@@ -58,8 +58,6 @@ private:
   std::string base_link_frame_, base_footprint_frame_, r_sole_frame_, l_sole_frame_, odom_frame_;
   void supportFootCallback(const biped_interfaces::msg::Phase msg);
   rclcpp::Subscription<biped_interfaces::msg::Phase>::SharedPtr walking_support_foot_subscriber_;
-  rclcpp::Subscription<biped_interfaces::msg::Phase>::SharedPtr
-    dynamic_kick_support_foot_subscriber_;
 
   std::unique_ptr<tf2_ros::TransformBroadcaster> tfBroadcaster_;
   rclcpp::TimerBase::SharedPtr timer_;

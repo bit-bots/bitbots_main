@@ -6,6 +6,3 @@ string text
 
 # The higher the value, the higher the priority
 uint8 priority
-
-# If a file should be read, the path has to be specified here. Otherwise this string should be null
-string filename

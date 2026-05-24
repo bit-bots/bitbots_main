@@ -20,5 +20,4 @@
     <include file="$(find-pkg-share bitbots_hcm)/launch/hcm.launch">
         <arg name="sim" value="$(var sim)"/>
     </include>
-
 </launch>

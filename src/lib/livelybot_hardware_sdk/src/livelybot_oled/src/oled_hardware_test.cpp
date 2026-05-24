@@ -5,6 +5,8 @@
 
 int main(int argc, char** argv)
 {
+    (void)argc;
+    (void)argv;
     Sensor_actuator_status status(7, 6, 5, 5); // humanoid robot, 23 joints
     // Sensor_actuator_status status(6, 6, 0, 0); // small-pi robot, 12 joints
     float imu[3] = {1.23f, 2.45f, 5.6f};

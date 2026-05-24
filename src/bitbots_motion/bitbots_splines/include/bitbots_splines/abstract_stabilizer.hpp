@@ -16,7 +16,7 @@ class AbstractStabilizer {
    * Get a set inverse kinematics goals from cartesian positions. The inverse kinematics goals may contain
    * additional goals, especially for stabilizing.
    * @param positions An instance of Positions that contains the results of the engine's calculations.
-   * @return A pointer to BioIK Goals that can be passed to the AbstractIK.
+   * @return A pointer to IK Goals that can be passed to the AbstractIK.
    */
   virtual Positions stabilize(const Positions& positions, const rclcpp::Duration& dt) = 0;
 };
