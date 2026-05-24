@@ -30,8 +30,9 @@ args = [{ arg = "package", default = "" }]
 description = "Cleans build and install files for all ROS 2 packages or a specific one if given."
 
 [tasks.test]
-cmd = "colcon test --packages-ignore=audio_common --event-handlers console_direct+ --return-code-on-test-failure "
-description = "Runs tests for all ROS 2 packages. Add --packages-select <package names> to test specific packages."
+description = "Runs tests for all ROS 2 packages. Pass additional colcon args (e.g. --packages-select)"
+# Skipping packages in the src/lib directory as they are not "our" responsibility. They should be tested separately in their own repositories.
+cmd = "colcon test --parallel-workers 1 --event-handlers console_direct+ --return-code-on-test-failure --packages-skip audio_common domain_bridge ipm_image_node soccer_ipm zed_wrapper zed_components zed_msgs zed_ros2 "
 
 [dependencies]
 # Base dependencies
@@ -54,6 +55,7 @@ eigen = ">=3.4.0,<4"
 fabric = ">=3.2.2,<4"
 flask = ">=3.1.2,<4"
 gitpython = ">=3.1.45,<4"
+git-subrepo = ">=0.4.9,<0.5"
 invoke = ">=2.2.1,<3"
 ipython = ">=9.7.0,<10"
 jaxtyping = ">=0.3.2,<0.4"
@@ -154,7 +156,6 @@ ros-jazzy-tf2-ros = ">=0.36.14,<0.37"
 ros-jazzy-topic-tools = ">=1.3.3,<2"
 ros-jazzy-trajectory-msgs = ">=5.3.6,<6"
 ros-jazzy-transmission-interface = ">=4.37.0,<5"
-ros-jazzy-turtlesim = ">=1.8.3,<2"
 ros-jazzy-urdf = ">=2.10.0,<3"
 ros-jazzy-urdfdom-py = ">=1.2.1,<2"
 ros-jazzy-vision-msgs = ">=4.1.1,<5"
@@ -182,10 +183,6 @@ make = ">=4.4.1,<5"  # To avoid issues in the CI
 adwaita-icon-theme = "<40"  # To avoid issues with missing icons, as non-symbolic icons have been removed in newer versions
 
 [feature.format.dependencies]
-# Add git-subrepo to format dependencies as currently there are
-# sqlite conflicts in the default/ros environment preventing execution
-# of pre-commit hooks running after commits from the git-subrepo cli
-git-subrepo = ">=0.4.9,<0.5"
 clang-format = ">=21.1.0,<22"
 cppcheck = ">=2.18.3,<2.20"
 pre-commit = ">=4.4.0,<5"
@@ -211,8 +208,7 @@ RCUTILS_COLORIZED_OUTPUT = "1"
 RCUTILS_CONSOLE_OUTPUT_FORMAT="[{severity}] [{name}]: {message} ({function_name}() at {file_name}:{line_number})"
 RMW_IMPLEMENTATION = "rmw_zenoh_cpp"
 COLCON_LOG_LEVEL = "30"
-PYTHONWARNINGS="ignore:::setuptools.command.install,ignore:::setuptools.command.easy_install,ignore:::pkg_resources,ignore:easy_install command is deprecated,ignore:setup.py install is deprecated"
-WEBOTS_HOME = "$CONDA_PREFIX/share/webots"
+PYTHONWARNINGS="ignore:::setuptools.command.install,ignore:::setuptools.command.easy_install,ignore:::pkg_resources,ignore:easy_install command is deprecated,ignore:setup.py install is deprecated,ignore:pkg_resources:DeprecationWarning"
 ALSA_PLUGIN_DIR = "/usr/lib/x86_64-linux-gnu/alsa-lib"
 
 

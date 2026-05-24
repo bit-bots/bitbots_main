@@ -13,7 +13,7 @@ from std_msgs.msg import Empty as EmptyMsg
 
 from bitbots_hcm.type_utils import T_RobotControlState
 from bitbots_msgs.action import PlayAnimation
-from bitbots_msgs.msg import Audio, JointTorque, RobotControlState
+from bitbots_msgs.msg import TTS, JointTorque, RobotControlState
 from bitbots_msgs.srv import SetTeachingMode
 
 
@@ -32,8 +32,6 @@ class HcmBlackboard:
         # Get parameters
         self.simulation_active: bool = self.node.get_parameter("simulation_active").value
         self.visualization_active: bool = self.node.get_parameter("visualization_active").value
-        self.pickup_accel_threshold: float = self.node.get_parameter("pick_up_accel_threshold").value
-        self.pressure_sensors_installed: bool = self.node.get_parameter("pressure_sensors_installed").value
 
         # Create service clients
         self.motor_switch_pub = self.node.create_publisher(PowerSwitch, "/power_switch_control", 10)
@@ -45,7 +43,7 @@ class HcmBlackboard:
         # Create publishers
         self.walk_pub = self.node.create_publisher(Twist, "cmd_vel", 1)
         self.cancel_path_planning_pub = self.node.create_publisher(EmptyMsg, "pathfinding/cancel", 1)
-        self.speak_publisher = self.node.create_publisher(Audio, "speak", 1)
+        self.speak_publisher = self.node.create_publisher(TTS, "speak", 1)
         self.torque_publisher = self.node.create_publisher(JointTorque, "set_torque_individual", 10)
         self.is_fallen_publisher = self.node.create_publisher(Bool, "hsl_gamecontroller/is_fallen", 1)
 
@@ -84,7 +82,7 @@ class HcmBlackboard:
         self.current_joint_state: Optional[JointState] = None
         self.previous_joint_state: Optional[JointState] = None
         self.last_different_joint_state_time: Optional[Time] = None
-        self.is_power_on: bool = True  # TODO: This never gets updated, but read in check_hardware.py.
+        self.is_power_on: bool = True  # TODO: This never gets updated, but read in check_hardware decision
 
         # Motor Parameters
         self.motor_timeout_duration: float = self.node.get_parameter("motor_timeout_duration").value
