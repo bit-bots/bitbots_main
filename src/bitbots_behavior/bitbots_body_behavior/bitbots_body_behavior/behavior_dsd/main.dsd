@@ -176,6 +176,7 @@ $IsPenalized
     JUST_UNPENALIZED --> $GameStateDecider
         INITIAL --> #Init
         ELSE --> #GetWalkreadyAndLocalize
+    UNPENALIZED_AFTER_TEAM_COM_LIMIT --> #DoNothing
     NO --> $GameStateDecider
         INITIAL --> #Init
         READY --> $AnyGoalScoreRecently + time:50

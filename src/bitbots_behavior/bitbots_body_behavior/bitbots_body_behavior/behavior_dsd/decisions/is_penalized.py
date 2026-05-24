@@ -15,6 +15,9 @@ class IsPenalized(AbstractDecisionElement):
         self.publish_debug_data("Seconds since unpenalized", self.blackboard.gamestate.get_seconds_since_unpenalized())
         if self.blackboard.gamestate.get_is_penalized():
             return "YES"
+        elif self.blackboard.gamestate.get_upenalized_after_team_com_stop():
+            self.publish_debug_data("Reason", "Unpenalized after team com limit")
+            return "UNPENALIZED_AFTER_TEAM_COM_LIMIT"
         elif self.blackboard.gamestate.get_seconds_since_unpenalized() < 1:
             self.publish_debug_data("Reason", "Just unpenalized")
             return "JUST_UNPENALIZED"
