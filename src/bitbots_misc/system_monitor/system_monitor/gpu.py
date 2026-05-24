@@ -1,7 +1,19 @@
+from pathlib import Path
+
 from rclpy.node import Node
 
 # Detect available GPU backend (deferred until we have a node for logging)
 _gpu_backend = None
+
+_JETSON_GPU_LOAD_PATHS = (
+    Path("/sys/devices/gpu.0/load"),
+    Path("/sys/kernel/debug/gpu.0/load"),
+)
+_JETSON_DEVICE_TREE_PATHS = (
+    Path("/proc/device-tree/compatible"),
+    Path("/proc/device-tree/model"),
+)
+_JETSON_GPU_TEMPERATURE_TYPES = ("gpu",)
 
 
 def _detect_gpu_backend(node: Node):
@@ -11,28 +23,28 @@ def _detect_gpu_backend(node: Node):
     # Try NVIDIA first (most common in robotics)
     try:
         import pynvml
-
-        # nvmlInit can fail if the NVIDIA driver/ NVML library is not installed
-        try:
-            pynvml.nvmlInit()
-        except Exception as e:
-            node.get_logger().debug(f"pynvml present but nvmlInit failed: {e}")
-        else:
-            try:
-                device_count = pynvml.nvmlDeviceGetCount()
-                if device_count > 0:
-                    _gpu_backend = _collect_nvidia
-                    node.get_logger().info(f"Detected NVIDIA GPU (pynvml): {device_count} device(s)")
-                    return
-            except Exception as e:
-                node.get_logger().debug(f"NVIDIA GPU detection failed: {e}")
-            finally:
-                try:
-                    pynvml.nvmlShutdown()
-                except Exception:
-                    pass
     except ImportError:
         node.get_logger().debug("pynvml not available")
+    else:
+        try:
+            pynvml.nvmlInit()
+            device_count = pynvml.nvmlDeviceGetCount()
+            if device_count > 0:
+                _gpu_backend = _collect_nvidia
+                node.get_logger().info(f"Detected NVIDIA GPU (pynvml): {device_count} device(s)")
+                return
+        except Exception as e:
+            node.get_logger().debug(f"NVIDIA GPU detection failed (pynvml): {e}")
+        finally:
+            try:
+                pynvml.nvmlShutdown()
+            except Exception:
+                pass
+
+    if _detect_jetson_gpu():
+        _gpu_backend = _collect_jetson
+        node.get_logger().info("Detected NVIDIA Jetson GPU (sysfs)")
+        return
 
     # Try AMD next
     try:
@@ -78,6 +90,73 @@ def _collect_nvidia(node: Node) -> tuple[float, int, int, float]:
                 pass
     except Exception as e:
         node.get_logger().error(f"Error collecting NVIDIA GPU metrics: {e}")
+        return (0.0, 0, 0, 0.0)
+
+
+def _detect_jetson_gpu() -> bool:
+    """Detect NVIDIA Jetson GPUs, which often do not expose NVML devices."""
+    if any(_path_exists(path) for path in _JETSON_GPU_LOAD_PATHS):
+        return True
+
+    for path in _JETSON_DEVICE_TREE_PATHS:
+        try:
+            content = path.read_bytes().lower()
+        except OSError:
+            continue
+        if b"nvidia,tegra" in content or b"nvidia jetson" in content:
+            return True
+
+    return False
+
+
+def _path_exists(path: Path) -> bool:
+    try:
+        return path.exists()
+    except OSError:
+        return False
+
+
+def _read_float(path: Path) -> float | None:
+    try:
+        return float(path.read_text().strip())
+    except (OSError, ValueError):
+        return None
+
+
+def _collect_jetson_temperature() -> float:
+    for thermal_type_path in Path("/sys/devices/virtual/thermal").glob("thermal_zone*/type"):
+        try:
+            thermal_type = thermal_type_path.read_text().strip().lower()
+        except OSError:
+            continue
+
+        if not any(gpu_type in thermal_type for gpu_type in _JETSON_GPU_TEMPERATURE_TYPES):
+            continue
+
+        temperature = _read_float(thermal_type_path.with_name("temp"))
+        if temperature is None:
+            continue
+        return temperature / 1000.0 if temperature > 1000 else temperature
+
+    return 0.0
+
+
+def _collect_jetson(node: Node) -> tuple[float, int, int, float]:
+    """Collect GPU metrics from NVIDIA Jetson sysfs files."""
+    try:
+        load = 0.0
+        for path in _JETSON_GPU_LOAD_PATHS:
+            raw_load = _read_float(path)
+            if raw_load is None:
+                continue
+            # Jetson reports GPU load in permille on current L4T kernels.
+            load = raw_load / 10.0
+            break
+
+        temperature = _collect_jetson_temperature()
+        return (load, 0, 0, temperature)
+    except Exception as e:
+        node.get_logger().error(f"Error collecting NVIDIA Jetson GPU metrics: {e}")
         return (0.0, 0, 0, 0.0)
 
 
