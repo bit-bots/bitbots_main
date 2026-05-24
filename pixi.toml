@@ -211,7 +211,7 @@ RCUTILS_COLORIZED_OUTPUT = "1"
 RCUTILS_CONSOLE_OUTPUT_FORMAT="[{severity}] [{name}]: {message} ({function_name}() at {file_name}:{line_number})"
 RMW_IMPLEMENTATION = "rmw_zenoh_cpp"
 COLCON_LOG_LEVEL = "30"
-PYTHONWARNINGS="ignore:::setuptools.command.install,ignore:::setuptools.command.easy_install,ignore:::pkg_resources,ignore:easy_install command is deprecated,ignore:setup.py install is deprecated"
+PYTHONWARNINGS="ignore:::setuptools.command.install,ignore:::setuptools.command.easy_install,ignore:::pkg_resources,ignore:easy_install command is deprecated,ignore:setup.py install is deprecated,ignore:pkg_resources:DeprecationWarning"
 ALSA_PLUGIN_DIR = "/usr/lib/x86_64-linux-gnu/alsa-lib"
 
 
