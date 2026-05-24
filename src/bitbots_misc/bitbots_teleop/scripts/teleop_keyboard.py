@@ -12,6 +12,7 @@ import tty
 import rclpy
 from geometry_msgs.msg import Twist, Vector3
 from livelybot_msg.msg import PowerSwitch
+from rclpy.action import ActionClient
 from rclpy.node import Node
 from sensor_msgs.msg import JointState
 from std_srvs.srv import Empty
@@ -122,6 +123,9 @@ class TeleopKeyboard(Node):
         self.a_x = -1
         self.th = 0
         self.status = 0
+
+        self.push_force_x = 0.0
+        self.push_force_y = 0.0
 
         # Head Part
         self.create_subscription(JointState, "joint_states", self.joint_state_cb, 1)
