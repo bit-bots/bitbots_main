@@ -22,7 +22,7 @@ _JETSON_GPU_TEMPERATURE_TYPES = ("gpu",)
 
 def _detect_gpu_backend(node: Node):
     """Auto-detect available GPU and return appropriate backend function."""
-    global _gpu_backend
+    global _gpu_backend, _nvml_module, _nvml_handle, _nvml_shutdown_registered
 
     # Try NVIDIA first (most common in robotics)
     try:
@@ -34,7 +34,6 @@ def _detect_gpu_backend(node: Node):
             pynvml.nvmlInit()
             device_count = pynvml.nvmlDeviceGetCount()
             if device_count > 0:
-                global _nvml_module, _nvml_handle, _nvml_shutdown_registered
                 _nvml_module = pynvml
                 _nvml_handle = pynvml.nvmlDeviceGetHandleByIndex(0)
                 if not _nvml_shutdown_registered:
@@ -181,7 +180,7 @@ def _collect_amd(node: Node) -> tuple[float, int, int, float]:
 def collect_all(node: Node) -> tuple[float, int, int, float]:
     """Collect GPU metrics using the auto-detected backend.
 
-    node: ROS node for logging (required for backend detection and error logging)
+    :param node: ROS node for logging (required for backend detection and error logging)
     :return: (load, vram_used, vram_total, temperature)
     """
     if _gpu_backend is None:
