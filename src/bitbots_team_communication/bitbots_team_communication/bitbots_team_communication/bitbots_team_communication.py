@@ -314,13 +314,15 @@ class TeamCommunication:
         return is_own_message or is_message_from_oposite_team
 
     def is_robot_allowed_to_send_message(self) -> bool:
-        #a penalized robot doesn't need to publish
-        if self.gamestate is not None and not self.gamestate.penalized:
-            return False
-        #if we are close to our message budget, we dont want to continue publishing
-        #the budget smaller 40 as stop definition makes sure we have 10 msg per robot left in case of some delay in the communication with the game controller 
-        if self.gamestate is not None and (self.gamestate.message_budget < 40):
-            return False
+        
+        if self.gamestate is not None:
+            #a penalized robot doesn't need to publish
+            if self.gamestate.penalized:
+                return False
+            #if we are close to our message budget, we dont want to continue publishing
+            #the budget smaller 40 as stop definition makes sure we have 10 msg per robot left in case of some delay in the communication with the game controller 
+            if self.gamestate.message_budget < 40:
+                return False
         
         return True
 
