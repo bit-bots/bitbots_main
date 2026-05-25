@@ -191,12 +191,12 @@ def collect_all(node: Node) -> tuple[float, int, int, float]:
 
 
 def _fraction_from_percent(value: float) -> float:
-    """Convert percent [0..100] to clamped fraction [0.0..1.0]."""
+    """Convert percent to fraction and clamp to [0.0..1.0] defensively."""
     return min(max(value / 100.0, 0.0), 1.0)
 
 
 def _fraction_from_per_mille(value: float) -> float:
-    """Convert permille [0..1000] to clamped fraction [0.0..1.0]."""
+    """Convert permille to fraction and clamp to [0.0..1.0] defensively."""
     return min(max(value / 1000.0, 0.0), 1.0)
 
 
