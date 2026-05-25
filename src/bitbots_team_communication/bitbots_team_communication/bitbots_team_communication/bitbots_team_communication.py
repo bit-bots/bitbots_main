@@ -352,7 +352,7 @@ class TeamCommunication:
         team_size = 4
         msgs_per_second_per_robot = 2.5
 
-        # we are allowed to send 2.5 msg per second on average with each robot (12000 with 4 robots in a 1200 sekonds game)
+        # We are allowed to send 2.5 messages per second on average with each robot (12000 with 4 robots in a 1200 seconds game).
         # the msg_left_linear_rate is the amount of messages we would send if we send exactly with this 2.5 msg per sec per robot rate
         # once our actual msg budget is below this linear rate we tend to send more msg then allowed and should reduce our sending rate
         if self.game_started_recently():
@@ -367,7 +367,7 @@ class TeamCommunication:
         if self.gamestate is None:
             return False
 
-        #true in the first 60 seconds of the game
+        # True in the first 60 seconds of the game.
         return self.gamestate.first_half and self.gamestate.secs_remaining > 540
 
 def main():
