@@ -8,7 +8,7 @@ _prev_total = defaultdict(int)
 _prev_busy = defaultdict(int)
 
 # store last reported usage per cpu to smooth sampling noise
-_prev_usage: dict[str, float | None] = defaultdict(lambda: None)
+_prev_usage: dict[str, float] = {}
 
 # smoothing factor for exponential moving average (0..1)
 # higher = more responsive, lower = smoother
@@ -74,7 +74,7 @@ def _calculate_usage(cpu_num, total, busy) -> float:
         raw_usage = (diff_busy / diff_total) * 100.0
 
     # smooth short-term sampling noise with exponential moving average
-    prev = _prev_usage[cpu_num]
+    prev = _prev_usage.get(cpu_num)
     if prev is None:
         smoothed = float(round(raw_usage, 2))
     else:
