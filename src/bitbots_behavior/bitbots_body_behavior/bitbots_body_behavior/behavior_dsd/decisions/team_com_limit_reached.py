@@ -9,7 +9,7 @@ class TeamComLimitReached(AbstractDecisionElement):
         super().__init__(blackboard, dsd, parameters)
 
     def perform(self, reevaluate=False):
-        if self.blackboard.gamstate.get_team_com_limit_has_reached():
+        if self.blackboard.gamestate.get_team_com_limit_has_reached():
             return "YES"
         else:
             return "NO"
