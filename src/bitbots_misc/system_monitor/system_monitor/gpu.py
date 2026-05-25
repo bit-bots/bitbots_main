@@ -1,9 +1,13 @@
+import atexit
 from pathlib import Path
 
 from rclpy.node import Node
 
 # Detect available GPU backend (deferred until we have a node for logging)
 _gpu_backend = None
+_nvml_module = None
+_nvml_handle = None
+_nvml_shutdown_registered = False
 
 _JETSON_GPU_LOAD_PATHS = (
     Path("/sys/devices/gpu.0/load"),
@@ -30,16 +34,17 @@ def _detect_gpu_backend(node: Node):
             pynvml.nvmlInit()
             device_count = pynvml.nvmlDeviceGetCount()
             if device_count > 0:
+                global _nvml_module, _nvml_handle, _nvml_shutdown_registered
+                _nvml_module = pynvml
+                _nvml_handle = pynvml.nvmlDeviceGetHandleByIndex(0)
+                if not _nvml_shutdown_registered:
+                    atexit.register(_shutdown_nvml)
+                    _nvml_shutdown_registered = True
                 _gpu_backend = _collect_nvidia
                 node.get_logger().info(f"Detected NVIDIA GPU (pynvml): {device_count} device(s)")
                 return
         except Exception as e:
             node.get_logger().debug(f"NVIDIA GPU detection failed (pynvml): {e}")
-        finally:
-            try:
-                pynvml.nvmlShutdown()
-            except Exception:
-                pass
 
     if _detect_jetson_gpu():
         _gpu_backend = _collect_jetson
@@ -72,22 +77,15 @@ def _collect_none(node: Node) -> tuple[float, int, int, float]:
 def _collect_nvidia(node: Node) -> tuple[float, int, int, float]:
     """Collect GPU metrics from NVIDIA GPU using pynvml."""
     try:
-        import pynvml
+        if _nvml_module is None or _nvml_handle is None:
+            return (0.0, 0, 0, 0.0)
 
-        pynvml.nvmlInit()
-        try:
-            handle = pynvml.nvmlDeviceGetHandleByIndex(0)
-            load = float(pynvml.nvmlDeviceGetUtilizationRates(handle).gpu)
-            mem_info = pynvml.nvmlDeviceGetMemoryInfo(handle)
-            vram_used = mem_info.used
-            vram_total = mem_info.total
-            temperature = float(pynvml.nvmlDeviceGetTemperature(handle, 0))
-            return (load, vram_used, vram_total, temperature)
-        finally:
-            try:
-                pynvml.nvmlShutdown()
-            except Exception:
-                pass
+        load = _fraction_from_percent(float(_nvml_module.nvmlDeviceGetUtilizationRates(_nvml_handle).gpu))
+        mem_info = _nvml_module.nvmlDeviceGetMemoryInfo(_nvml_handle)
+        vram_used = mem_info.used
+        vram_total = mem_info.total
+        temperature = float(_nvml_module.nvmlDeviceGetTemperature(_nvml_handle, 0))
+        return (load, vram_used, vram_total, temperature)
     except Exception as e:
         node.get_logger().error(f"Error collecting NVIDIA GPU metrics: {e}")
         return (0.0, 0, 0, 0.0)
@@ -150,7 +148,7 @@ def _collect_jetson(node: Node) -> tuple[float, int, int, float]:
             if raw_load is None:
                 continue
             # Jetson reports GPU load in permille on current L4T kernels.
-            load = raw_load / 10.0
+            load = _fraction_from_per_mille(raw_load)
             break
 
         temperature = _collect_jetson_temperature()
@@ -169,7 +167,7 @@ def _collect_amd(node: Node) -> tuple[float, int, int, float]:
             return (0.0, 0, 0, 0.0)
 
         gpu = pyamdgpuinfo.get_gpu(0)
-        load = float(gpu.query_load())
+        load = _fraction_from_percent(float(gpu.query_load()))
         vram_total = gpu.memory_info["vram_size"]
         vram_used = gpu.query_vram_usage()
         temperature = float(gpu.query_temperature())
@@ -183,8 +181,6 @@ def _collect_amd(node: Node) -> tuple[float, int, int, float]:
 def collect_all(node: Node) -> tuple[float, int, int, float]:
     """Collect GPU metrics using the auto-detected backend.
 
-    If `node` is provided the ROS node's logger will be used for messages.
-
     node: ROS node for logging (required for backend detection and error logging)
     :return: (load, vram_used, vram_total, temperature)
     """
@@ -193,3 +189,20 @@ def collect_all(node: Node) -> tuple[float, int, int, float]:
     if _gpu_backend is None:
         return (0.0, 0, 0, 0.0)
     return _gpu_backend(node)
+
+
+def _fraction_from_percent(value: float) -> float:
+    return min(max(value / 100.0, 0.0), 1.0)
+
+
+def _fraction_from_per_mille(value: float) -> float:
+    return min(max(value / 1000.0, 0.0), 1.0)
+
+
+def _shutdown_nvml() -> None:
+    if _nvml_module is None:
+        return
+    try:
+        _nvml_module.nvmlShutdown()
+    except Exception:
+        pass
