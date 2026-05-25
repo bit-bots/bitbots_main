@@ -1,6 +1,5 @@
 from bitbots_blackboard.body_blackboard import BodyBlackboard
 from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElement
-from game_controller_hsl_interfaces.msg import GameState
 
 
 class NumberPenalizedTeamMates(AbstractDecisionElement):
@@ -33,7 +32,7 @@ class NumberPenalizedTeamMates(AbstractDecisionElement):
         Game state can change during the game
         """
         return True
-    
+
 class NumberPenalizedRivals(AbstractDecisionElement):
     blackboard: BodyBlackboard
 

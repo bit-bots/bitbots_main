@@ -123,7 +123,7 @@ $BallSeen
         YES --> $ConfigRole
             GOALIE --> #GoalieBehavior
             ELSE --> $TeamComLimitReached //this decision is only for better visualization
-                NO -- > $CountActiveRobotsWithoutGoalie
+                NO --> $CountActiveRobotsWithoutGoalie
                     ONE --> $RankToBallNoGoalie
                         FIRST --> #StrikerRole
                         SECOND --> #DefensePositioning
@@ -131,14 +131,7 @@ $BallSeen
                         FIRST --> #StrikerRole
                         SECOND --> #SupporterRole
                         THIRD --> #DefensePositioning
-                YES --> $CountActiveRobotsWithoutGoalie
-                    ONE --> $RankToBallNoGoalie
-                        FIRST --> #StrikerRole
-                        SECOND --> #DefensePositioning
-                    ELSE --> $RankToBallNoGoalie
-                        FIRST --> #StrikerRole
-                        SECOND --> #SupporterRole
-                        THIRD --> #DefensePositioning
+                YES --> #NormalBehaviorWithoutTeamCom
 
 #NormalBehaviorWithoutTeamCom
 $BallSeen

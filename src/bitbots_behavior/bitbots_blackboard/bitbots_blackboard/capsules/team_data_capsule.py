@@ -221,8 +221,9 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
             team_data_infos = filter(is_not_goalie, team_data_infos)  # type: ignore[assignment]
 
         # Count valid team data infos (aka robots with valid team data)
-        self.last_number_of_active_players = sum(map(self.is_valid, team_data_infos))
-        return sum(map(self.is_valid, team_data_infos))
+        active_players = sum(map(self.is_valid, team_data_infos))
+        self.last_number_of_active_players = active_players
+        return active_players
 
     @cached_capsule_function
     def get_is_goalie_active(self) -> bool:
@@ -236,8 +237,9 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
         team_data_infos = filter(is_a_goalie, team_data_infos)  # type: ignore[assignment]
 
         # Count valid team data infos (aka robots with valid team data)
-        self.was_goalie_active = sum(map(self.is_valid, team_data_infos)) == 1
-        return sum(map(self.is_valid, team_data_infos)) == 1
+        goalie_count = sum(map(self.is_valid, team_data_infos))
+        self.was_goalie_active = goalie_count == 1
+        return goalie_count == 1
 
     def get_own_time_to_ball(self) -> float:
         return self.own_time_to_ball

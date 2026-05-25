@@ -20,6 +20,8 @@ team_comm:
     rate: 2
     # Rate of published messages in Hz, when rate is reduced
     reduced_rate: 1
+    # Maximum allowed serialized message size in bytes
+    max_message_size: 512
 
     # average walking speed in [m/s]
     avg_walking_speed: 0.2

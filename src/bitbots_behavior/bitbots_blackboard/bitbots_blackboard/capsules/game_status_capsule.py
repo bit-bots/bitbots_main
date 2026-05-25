@@ -23,7 +23,7 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
         self.game_controller_stop: bool = False
         self.last_timestep_whistle_detected: Time | None = None
         self.team_com_limit_has_reached: bool = False
-        self.upenalized_after_team_com_stop: bool = False
+        self.unpenalized_after_team_com_stop: bool = False
         # publish stopped msg for hcm
         self.stop_pub = node.create_publisher(Bool, "game_controller/stop_msg", 1)
 
@@ -87,8 +87,8 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
     def get_is_penalized(self) -> bool:
         return self.gamestate.penalized
     
-    def get_upenalized_after_team_com_stop(self) -> bool:
-        return self.upenalized_after_team_com_stop
+    def get_unpenalized_after_team_com_stop(self) -> bool:
+        return self.unpenalized_after_team_com_stop
     
     def get_penalized_team_mates(self) -> int:
         return self.gamestate.team_mates_with_penalty
@@ -109,7 +109,7 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
         if self.gamestate.penalized and not gamestate_msg.penalized:
             self.unpenalized_time = self._node.get_clock().now().nanoseconds / 1e9
             if self.team_com_limit_has_reached:
-                self.upenalized_after_team_com_stop = True
+                self.unpenalized_after_team_com_stop = True
 
         if gamestate_msg.own_score > self.gamestate.own_score:
             self.last_goal_from_us_time = self._node.get_clock().now().nanoseconds / 1e9

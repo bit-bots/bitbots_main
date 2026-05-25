@@ -51,6 +51,7 @@ class TeamCommunication:
 
         self.rate: int = self.node.get_parameter("rate").value
         self.reduced_rate: int = self.node.get_parameter("reduced_rate").value
+        self.max_message_size: int = self.node.get_parameter("max_message_size").value
         self.lifetime: int = self.node.get_parameter("lifetime").value
         self.avg_walking_speed: float = self.node.get_parameter("avg_walking_speed").value
         self.rate_is_reduced: bool = False
@@ -265,10 +266,8 @@ class TeamCommunication:
         self.team_data_publisher.publish(team_data)
 
     def send_message(self):
-        
-        if not self.rate_is_reduced:
-            if self.gamestate is not None and self.gamestate.secs_remaining > 180 and (self.gamestate.message_budget / self.gamestate.secs_remaining) < 11.2:
-                self.reduce_rate()
+        if not self.rate_is_reduced and self.should_reduce_rate():
+            self.reduce_rate()
 
         if not self.is_robot_allowed_to_send_message():
             self.logger.debug("Robot is not allowed to send message")
@@ -282,10 +281,14 @@ class TeamCommunication:
 
         message = self.protocol_converter.convert_to_message(self, msg, is_still_valid)
         proto_msg = message.SerializeToString()
-        if(len(proto_msg) > 512):
-            self.logger.warning(f"Team_com msg not sended, because size {len(proto_msg)} bytes is above the maximum of 512 bytes")
+        message_size = len(proto_msg)
+        if message_size > self.max_message_size:
+            self.logger.warning(
+                f"Team_com msg not sent, because size {message_size} bytes is above the maximum of "
+                f"{self.max_message_size} bytes"
+            )
         else:
-            self.logger.debug(f"Sending msg with size {len(proto_msg)} bytes")
+            self.logger.debug(f"Sending msg with size {message_size} bytes")
             self.socket_communication.send_message(proto_msg)
 
     def create_empty_message(self, now: Time) -> Proto.Message:
@@ -342,16 +345,22 @@ class TeamCommunication:
         self.timer = self.node.create_timer(1 / rate, self.send_message, callback_group=MutuallyExclusiveCallbackGroup())
 
     def should_reduce_rate(self):
+        if self.gamestate is None:
+            return False
+
         # we are allowed to send 2.5 msg per second on average with each robot (12000 with 4 robots in a 1200 sekonds game)
         # the msg_left_linear_rate is the amount of messages we would send if we send exactly with this 2.5 msg per sec per robot rate
         # once our actual msg budget is below this linear rate we tend to send more msg then allowed and should reduce our sending rate
         if self.game_started_recently():
             return False
-        
+
         msg_left_linear_rate = (self.gamestate.first_half * 600 + self.gamestate.secs_remaining) * 4 * 2.5
         return msg_left_linear_rate > self.gamestate.message_budget
-    
+
     def game_started_recently(self):
+        if self.gamestate is None:
+            return False
+
         #true in the first 60 seconds of the game
         return self.gamestate.first_half and self.gamestate.secs_remaining > 540
 
