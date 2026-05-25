@@ -7,7 +7,7 @@
 namespace bitbots_localization {
 
 RobotStateDistributionStartLeft::RobotStateDistributionStartLeft(
-    particle_filter::CRandomNumberGenerator& random_number_generator, std::pair<double, double> field_size) {
+    particle_filter::CRandomNumberGenerator& random_number_generator, const std::pair<double, double>& field_size) {
   field_size = field_size;
 }
 
@@ -24,7 +24,7 @@ const RobotState RobotStateDistributionStartLeft::draw() const {
 }
 
 RobotStateDistributionOwnSideline::RobotStateDistributionOwnSideline(
-    particle_filter::CRandomNumberGenerator& random_number_generator, std::pair<double, double> field_size) {
+    particle_filter::CRandomNumberGenerator& random_number_generator, const std::pair<double, double>& field_size) {
   field_x = field_size.first;
   field_y = field_size.second;
 }
@@ -42,7 +42,7 @@ const RobotState RobotStateDistributionOwnSideline::draw() const {
 }
 
 RobotStateDistributionOpponentHalf::RobotStateDistributionOpponentHalf(
-    particle_filter::CRandomNumberGenerator& random_number_generator, std::pair<double, double> field_size)
+    particle_filter::CRandomNumberGenerator& random_number_generator, const std::pair<double, double>& field_size)
     : random_number_generator_(random_number_generator) {
   // only own half
   min_x_ = (field_size.first / 2.0) + 0.5;
@@ -58,7 +58,7 @@ const RobotState RobotStateDistributionOpponentHalf::draw() const {
 }
 
 RobotStateDistributionOwnHalf::RobotStateDistributionOwnHalf(
-    particle_filter::CRandomNumberGenerator& random_number_generator, std::pair<double, double> field_size)
+    particle_filter::CRandomNumberGenerator& random_number_generator, const std::pair<double, double>& field_size)
     : random_number_generator_(random_number_generator) {
   // only own half
   min_x_ = -field_size.first / 2.0;

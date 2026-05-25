@@ -64,8 +64,8 @@ std::vector<double> Map::provideRating(const RobotState& state,
   return rating;
 }
 
-std::pair<double, double> Map::getObservationCoordinatesInMapFrame(std::pair<double, double> observation, double stateX,
-                                                                   double stateY, double stateT) {
+std::pair<double, double> Map::getObservationCoordinatesInMapFrame(const std::pair<double, double>& observation,
+                                                                   double stateX, double stateY, double stateT) {
   // queries the Cartesian metric map coordinates for a given observation (in polar coordinates)
   // taken relative to a given state (in Cartesian coordinates)
   // Input: Observation coordinates in polar coordinates, state coordinates in Cartesian coordinates
@@ -75,8 +75,8 @@ std::pair<double, double> Map::getObservationCoordinatesInMapFrame(std::pair<dou
   std::pair<double, double> observationWithTheta = polarToCartesian(observation.first + stateT, observation.second);
 
   // add to particle
-  std::pair<double, double> observationRelative =
-      std::make_pair(stateX + observationWithTheta.first, stateY + observationWithTheta.second);
+  std::pair<double, double> observationRelative{
+      stateX + observationWithTheta.first, stateY + observationWithTheta.second};
 
   return observationRelative;  // in cartesian
 }
