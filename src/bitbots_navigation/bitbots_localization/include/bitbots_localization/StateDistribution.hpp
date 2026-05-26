@@ -32,8 +32,8 @@ class RobotStateDistribution : public particle_filter::StateDistribution<RobotSt
 
 class RobotStateDistributionStartLeft : public particle_filter::StateDistribution<RobotState> {
  public:
-  RobotStateDistributionStartLeft(particle_filter::CRandomNumberGenerator& random_number_generator,
-                                  double field_size_x, double field_size_y);
+  RobotStateDistributionStartLeft(particle_filter::CRandomNumberGenerator& random_number_generator, double field_size_x,
+                                  double field_size_y);
 
   const RobotState draw() const override;
 
