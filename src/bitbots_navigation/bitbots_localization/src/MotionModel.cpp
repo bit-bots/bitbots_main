@@ -20,7 +20,8 @@ RobotMotionModel::RobotMotionModel(const particle_filter::CRandomNumberGenerator
 void RobotMotionModel::drift(RobotState& state, geometry_msgs::msg::Vector3 linear_movement,
                              geometry_msgs::msg::Vector3 rotational_movement) const {
   // Convert cartesian coordinates to polarcoordinates with an orientation
-  auto [polar_rot, polar_dist] = cartesianToPolar(linear_movement.x, linear_movement.y);
+  double polar_rot, polar_dist;
+  cartesianToPolar(linear_movement.x, linear_movement.y, polar_rot, polar_dist);
   // get the minimal absolute
   double orientation = signedAngle(rotational_movement.z);
   // Apply sample drift for odom data
@@ -33,8 +34,9 @@ void RobotMotionModel::drift(RobotState& state, geometry_msgs::msg::Vector3 line
 
   // Convert polar coordinates with offset back to cartesian ones, while transforming it into the local frame of each
   // particle
-  auto [cartesian_with_offset_x, cartesian_with_offset_y] =
-      polarToCartesian(state.getTheta() + polar_rot_with_drift, polar_dist_with_drift);
+  double cartesian_with_offset_x, cartesian_with_offset_y;
+  polarToCartesian(state.getTheta() + polar_rot_with_drift, polar_dist_with_drift, cartesian_with_offset_x,
+                   cartesian_with_offset_y);
 
   // Apply new values onto state
   state.setXPos(state.getXPos() + cartesian_with_offset_x);

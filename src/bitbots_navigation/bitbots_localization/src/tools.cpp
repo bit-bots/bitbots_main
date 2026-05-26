@@ -2,19 +2,14 @@
 
 namespace bitbots_localization {
 
-std::pair<double, double> cartesianToPolar(double x, double y) {
-  double r = hypot(x, y);
-
-  double t = atan2(y, x);
-
-  return {t, r};
+void cartesianToPolar(double x, double y, double& angle, double& radius) {
+  radius = hypot(x, y);
+  angle = atan2(y, x);
 }
 
-std::pair<double, double> polarToCartesian(double t, double r) {
-  double x = r * std::cos(t);
-  double y = r * std::sin(t);
-
-  return {x, y};
+void polarToCartesian(double t, double r, double& x, double& y) {
+  x = r * std::cos(t);
+  y = r * std::sin(t);
 }
 
 double signedAngle(double angle) {

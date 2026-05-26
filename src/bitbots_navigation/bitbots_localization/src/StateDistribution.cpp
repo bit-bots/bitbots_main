@@ -7,17 +7,17 @@
 namespace bitbots_localization {
 
 RobotStateDistributionStartLeft::RobotStateDistributionStartLeft(
-    particle_filter::CRandomNumberGenerator& random_number_generator, const std::pair<double, double>& field_size)
-    : random_number_generator_(random_number_generator), field_size(field_size) {}
+    particle_filter::CRandomNumberGenerator& random_number_generator, double field_size_x, double field_size_y)
+    : random_number_generator_(random_number_generator), field_size_x_(field_size_x), field_size_y_(field_size_y) {}
 
 const RobotState RobotStateDistributionStartLeft::draw() const {
   if (random_number_generator_.getUniform(0, 1) > 0.5) {
-    return (RobotState(random_number_generator_.getUniform(field_size.first / 2, 0.0),
-                       random_number_generator_.getGaussian(0.1) - field_size.second / 2 - 0.1,
+    return (RobotState(random_number_generator_.getUniform(field_size_x_ / 2, 0.0),
+                       random_number_generator_.getGaussian(0.1) - field_size_y_ / 2 - 0.1,
                        random_number_generator_.getGaussian(0.2) - 1.57));
   } else {
-    return (RobotState(random_number_generator_.getUniform(field_size.first / 2, 0.0),
-                       random_number_generator_.getGaussian(0.1) + field_size.second / 2 + 0.1,
+    return (RobotState(random_number_generator_.getUniform(field_size_x_ / 2, 0.0),
+                       random_number_generator_.getGaussian(0.1) + field_size_y_ / 2 + 0.1,
                        random_number_generator_.getGaussian(0.2) + 1.57));
   }
 }

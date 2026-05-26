@@ -53,32 +53,32 @@ std::vector<double> Map::provideRating(const RobotState& state,
   std::vector<double> rating;
   for (const std::pair<double, double>& observation : observations) {
     // lines are in polar form!
-    std::pair<double, double> lineRelative;
+    double line_x, line_y;
 
     // get rating per line
-    lineRelative = getObservationCoordinatesInMapFrame(observation, state.getXPos(), state.getYPos(), state.getTheta());
-    double occupancy = get_occupancy(lineRelative.first, lineRelative.second);
+    getObservationCoordinatesInMapFrame(observation.first, observation.second, state.getXPos(), state.getYPos(),
+                                        state.getTheta(), line_x, line_y);
+    double occupancy = get_occupancy(line_x, line_y);
 
     rating.push_back(occupancy);
   }
   return rating;
 }
 
-std::pair<double, double> Map::getObservationCoordinatesInMapFrame(const std::pair<double, double>& observation,
-                                                                   double stateX, double stateY, double stateT) {
+void Map::getObservationCoordinatesInMapFrame(double obs_angle, double obs_radius, double stateX, double stateY,
+                                              double stateT, double& result_x, double& result_y) {
   // queries the Cartesian metric map coordinates for a given observation (in polar coordinates)
   // taken relative to a given state (in Cartesian coordinates)
   // Input: Observation coordinates in polar coordinates, state coordinates in Cartesian coordinates
   // Output: Observation coordinates in Cartesian coordinates in the map frame
 
   // add theta and convert back to cartesian
-  std::pair<double, double> observationWithTheta = polarToCartesian(observation.first + stateT, observation.second);
+  double cart_x, cart_y;
+  polarToCartesian(obs_angle + stateT, obs_radius, cart_x, cart_y);
 
   // add to particle
-  std::pair<double, double> observationRelative{
-      stateX + observationWithTheta.first, stateY + observationWithTheta.second};
-
-  return observationRelative;  // in cartesian
+  result_x = stateX + cart_x;
+  result_y = stateY + cart_y;
 }
 
 nav_msgs::msg::OccupancyGrid Map::get_map_msg(std::string frame_id, int threshold) {

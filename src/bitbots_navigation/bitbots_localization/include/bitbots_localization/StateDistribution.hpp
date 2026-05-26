@@ -33,13 +33,14 @@ class RobotStateDistribution : public particle_filter::StateDistribution<RobotSt
 class RobotStateDistributionStartLeft : public particle_filter::StateDistribution<RobotState> {
  public:
   RobotStateDistributionStartLeft(particle_filter::CRandomNumberGenerator& random_number_generator,
-                                  const std::pair<double, double>& field_size);
+                                  double field_size_x, double field_size_y);
 
   const RobotState draw() const override;
 
  private:
   particle_filter::CRandomNumberGenerator random_number_generator_;
-  std::pair<double, double> field_size;
+  double field_size_x_;
+  double field_size_y_;
 };
 
 class RobotStateDistributionOwnSideline : public particle_filter::StateDistribution<RobotState> {
