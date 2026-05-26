@@ -7,9 +7,8 @@
 namespace bitbots_localization {
 
 RobotStateDistributionStartLeft::RobotStateDistributionStartLeft(
-    particle_filter::CRandomNumberGenerator& random_number_generator, const std::pair<double, double>& field_size) {
-  field_size = field_size;
-}
+    particle_filter::CRandomNumberGenerator& random_number_generator, const std::pair<double, double>& field_size)
+    : random_number_generator_(random_number_generator), field_size(field_size) {}
 
 const RobotState RobotStateDistributionStartLeft::draw() const {
   if (random_number_generator_.getUniform(0, 1) > 0.5) {
