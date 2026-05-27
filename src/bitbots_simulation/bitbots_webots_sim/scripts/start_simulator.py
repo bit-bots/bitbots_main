@@ -11,7 +11,7 @@ from rclpy.node import Node
 
 
 class WebotsSim(Node):
-    def __init__(self, nogui, multi_robot, headless, sim_port, robot_type):
+    def __init__(self, nogui, multi_robot, one_versus_one, headless, sim_port, robot_type):
         super().__init__("webots_sim")
         pkg_path = get_package_share_directory("bitbots_webots_sim")
 
@@ -22,13 +22,16 @@ class WebotsSim(Node):
             mode = "fast"
             extra_args.update(["--batch", "--no-rendering"])
 
-        if robot_type == "wolfgang":
-            if multi_robot:
-                world_name = "4_bots.wbt"
-            else:
-                world_name = "1_bot.wbt"
+        if one_versus_one:
+            world_name = "2_bots.wbt"
         else:
-            world_name = f"robocup_{robot_type}.wbt"
+            if robot_type == "wolfgang":
+                if multi_robot:
+                    world_name = "4_bots.wbt"
+                else:
+                    world_name = "1_bot.wbt"
+            else:
+                world_name = f"robocup_{robot_type}.wbt"
 
         if headless:
             cmd = [
@@ -67,11 +70,12 @@ if __name__ == "__main__":
     group.add_argument("--nogui", help="Deactivate gui", action="store_true")
     parser.add_argument("--sim-port", help="port of the simulation", default="1234")
     parser.add_argument("--multi-robot", help="start world with a single robot", action="store_true")
+    parser.add_argument("--one_versus_one", help="start world with a 1vs1 match", action="store_true")
     parser.add_argument("--robot-type", help="which robot should be started", default="wolfgang")
     args, _ = parser.parse_known_args()
 
     rclpy.init()
-    node = WebotsSim(args.nogui, args.multi_robot, args.headless, args.sim_port, args.robot_type)
+    node = WebotsSim(args.nogui, args.multi_robot, args.one_versus_one, args.headless, args.sim_port, args.robot_type)
 
     executor = EventsExecutor()
     executor.add_node(node)

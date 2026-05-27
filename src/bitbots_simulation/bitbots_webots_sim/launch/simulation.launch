@@ -8,8 +8,10 @@
     <arg name="camera" default="true" description="Turn on or off the camera (to speed up if only motion is required)"/>
     <arg name="recognition" default="false" description="Turn on or off automatic recognition for collection of training data"/>
     <arg name="robot_type" default="wolfgang" description="What type of robot should be used"/>
+    <arg name="one_versus_one" default="false" description="Whether to run a world with a single robot or a 1vs1 match"/>
 
     <let name="multi_robot_flag" value="$(eval '\'--multi-robot\' if \'$(var multi_robot)\'==\'true\' else \'\'')"/>
+    <let name="one_versus_one_mode_flag" value="$(eval '\'--one_versus_one\' if \'$(var one_versus_one)\'==\'true\' else \'\'')"/>
     <let name="gui_flag" value="$(eval '\'\' if \'$(var gui)\'==\'true\' else \'--nogui\'')"/>
     <let name="headless_flag" value="$(eval '\'--headless\' if \'$(var headless)\'==\'true\' else \'\'')"/>
 
@@ -20,7 +22,7 @@
     <set_env name="PYTHONPATH" value="$(env PYTHONPATH):$(env WEBOTS_HOME)/lib/controller/python310"/>
 
     <!-- start simulation and supervisor either with or without gui -->
-    <node pkg="bitbots_webots_sim" exec="start_simulator.py" name="webots_sim" output="screen" args="$(var multi_robot_flag) $(var gui_flag) $(var headless_flag) --sim-port $(var sim_port) --robot-type $(var robot_type)"/>   
+    <node pkg="bitbots_webots_sim" exec="start_simulator.py" name="webots_sim" output="screen" args="$(var multi_robot_flag) $(var one_versus_one_mode_flag) $(var gui_flag) $(var headless_flag) --sim-port $(var sim_port) --robot-type $(var robot_type)"/>   
     <node pkg="bitbots_webots_sim" exec="start_webots_ros_supervisor.py" name="webots_ros_supervisor" output="screen" args="--sim-port $(var sim_port)"/>
 
     <include file="$(find-pkg-share bitbots_webots_sim)/launch/fake_localization.launch"/>
