@@ -1,0 +1,79 @@
+standup_back_node:
+  ros__parameters:
+    model: pi_supine_training7.onnx
+
+    joints:
+      # 22-DOF order as reported by Isaac Gym for the HoST pi_plus_ground task.
+      # The ONNX policy expects observations and produces actions in exactly
+      # this order, so do not reorder.
+      ordered_relevant_joint_names: [
+        "head_yaw_joint",
+        "head_pitch_joint",
+        "l_hip_pitch_joint",
+        "l_hip_roll_joint",
+        "l_thigh_joint",
+        "l_calf_joint",
+        "l_ankle_pitch_joint",
+        "l_ankle_roll_joint",
+        "l_shoulder_pitch_joint",
+        "l_shoulder_roll_joint",
+        "l_upper_arm_joint",
+        "l_elbow_joint",
+        "r_hip_pitch_joint",
+        "r_hip_roll_joint",
+        "r_thigh_joint",
+        "r_calf_joint",
+        "r_ankle_pitch_joint",
+        "r_ankle_roll_joint",
+        "r_shoulder_pitch_joint",
+        "r_shoulder_roll_joint",
+        "r_upper_arm_joint",
+        "r_elbow_joint",
+      ]
+
+      # walkready_state is unused by this policy (HoST builds q_target from the
+      # current joint position, not from a default pose). Declared as 22 zeros
+      # only to satisfy the parameter declaration in RLNode.
+      walkready_state: [
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+      ]
+    #kp: [
+    #  6.0, 6.0,
+    #  110.0, 110.0, 110.0, 110.0, 210.0, 110.0,
+    #  6.0, 6.0, 6.0, 6.0,
+    #  110.0, 110.0, 110.0, 110.0, 210.0, 110.0,
+    #  6.0, 6.0, 6.0, 6.0
+    #]
+    #kd: [
+    #  0.6, 0.6,
+    #  1.1, 1.4, 1.1, 1.1, 1.1, 1.1,
+    #  0.6, 0.6, 0.6, 0.6,
+    #  1.1, 1.4, 1.1, 1.1, 1.1, 1.1,
+    #  0.6, 0.6, 0.6, 0.6
+    #]
+    obs_scales:
+      ang_vel: 0.25
+      dof_pos: 1.0
+      dof_vel: 0.05
+
+    action_scale: 0.25
+    action_rescale_obs: 1.0   # constant slot in the HoST observation vector
+
+    history:
+      length: 6
+      one_step_obs_dim: 73
+
+    # Number of policy ticks at the start of each goal during which the policy
+    # observes a zero vector and no joint commands are published, mirroring the
+    # `unactuated_timesteps` warmup HoST uses during training. Set to 0 to
+    # disable.
+    unactuated_steps: 30
+
+    phase:
+      # HoST does not use a phase signal.
+      use_phase: False
+      control_dt: 0.02
+      gait_frequency: 0.0
+
+    providers: ["CPUExecutionProvider"]

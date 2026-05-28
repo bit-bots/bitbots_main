@@ -13,7 +13,12 @@ class JointHandler(Handler):
 
         self._ordered_relevant_joint_names = self._node.get_parameter("joints.ordered_relevant_joint_names").value
         self._walkready_state = self._node.get_parameter("joints.walkready_state").value
-        self._previous_action: np.ndarray = np.zeros(len(self._ordered_relevant_joint_names), dtype=np.float32)
+        n = len(self._ordered_relevant_joint_names)
+        kp_param = self._node.get_parameter("joints.kp").value
+        kd_param = self._node.get_parameter("joints.kd").value
+        self._kp = list(kp_param) if len(kp_param) > 1 else [kp_param[0]] * n
+        self._kd = list(kd_param) if len(kd_param) > 1 else [kd_param[0]] * n
+        self._previous_action: np.ndarray = np.zeros(n, dtype=np.float32)
         self._joint_state: Optional[JointState] = None
 
         self._joint_state_sub = self._node.create_subscription(
@@ -61,7 +66,12 @@ class JointHandler(Handler):
         joint_command.positions = onnx_pred * 0.5 + self._walkready_state
         joint_command.velocities = [-1.0] * len(self._ordered_relevant_joint_names)
         joint_command.accelerations = [-1.0] * len(self._ordered_relevant_joint_names)
-        joint_command.max_currents = [-1.0] * len(self._ordered_relevant_joint_names)
+        joint_command.max_torques = [-1.0] * len(self._ordered_relevant_joint_names)
+        joint_command.kp = self._kp
+        joint_command.kd = self._kd
+        joint_command.max_torques = [-1.0] * len(self._ordered_relevant_joint_names)
+        joint_command.kp = self._kp
+        joint_command.kd = self._kd
 
         return joint_command
 

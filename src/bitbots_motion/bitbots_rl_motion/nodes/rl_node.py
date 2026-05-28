@@ -3,7 +3,6 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 
 import numpy as np
-import onnx
 import onnxruntime as rt
 import rclpy
 from ament_index_python import get_package_share_directory
@@ -25,9 +24,13 @@ class RLNode(Node, ABC):
         self.declare_parameter("phase.control_dt", 0.0)
         self.declare_parameter("phase.gait_frequency", 0.0)
         self.declare_parameter("phase.use_phase", False)
+        self.declare_parameter("phase.initial_phase", [0.0, np.pi])
         self.declare_parameter("providers", ["CPUExecutionProvider"])
         self.declare_parameter("joints.ordered_relevant_joint_names", [""])
         self.declare_parameter("joints.walkready_state", [0.0])
+        self.declare_parameter("joints.kp", [-1.0, 0.0])
+        self.declare_parameter("joints.kd", [-1.0, 0.0])
+        self.declare_parameter("command.include_stop_signal", False)
 
         model = self.get_parameter("model").value
         self.get_logger().info(f"Loaded model: {model}")
@@ -67,10 +70,24 @@ class RLNode(Node, ABC):
         if self.allowed_states():
             self.publisher(onnx_pred)
 
-        if self._phase.check_phase_set():
-            phase_tp1 = self._phase.get_phase() + self._phase.get_phase_dt()
-            self._phase.set_phase(np.fmod(phase_tp1 + np.pi, 2 * np.pi) - np.pi)
+        self._phase_update_hook()
 
+    def _phase_update_hook(self):    
+        if not self._phase.check_phase_set():
+            return
+        phase = self._phase.get_phase()
+        if self._command_handler.get_stop_signal():
+            anchor = [
+                np.array([-np.pi / 2, np.pi / 2], dtype=np.float32),
+                np.array([np.pi / 2, -np.pi / 2], dtype=np.float32)
+            ]
+            nearest = min(anchor, key=lambda a: np.linalg.norm(phase - a))
+            if np.linalg.norm(phase - nearest) < 0.1:
+                self._phase.set_phase(nearest)
+                return
+        phase_tp1 = phase + self._phase.get_phase_dt()
+        self._phase.set_phase(np.fmod(phase_tp1 + np.pi, 2 * np.pi) - np.pi) 
+        
     def _all_sensors_ready(self):
         for handler in self._handlers:
             if not handler.has_data():
@@ -85,10 +102,9 @@ class RLNode(Node, ABC):
 
         # Load the ONNX model
         self._onnx_session = rt.InferenceSession(self._onnx_model_path, providers=self.get_parameter("providers").value)
-        self._onnx_model = onnx.load(self._onnx_model_path)
 
-        self._onnx_input_name = [inp.name for inp in self._onnx_model.graph.input]
-        self._onnx_output_name = [out.name for out in self._onnx_model.graph.output]
+        self._onnx_input_name = [inp.name for inp in self._onnx_session.get_inputs()]
+        self._onnx_output_name = [out.name for out in self._onnx_session.get_outputs()]
 
         self._handlers = []
 

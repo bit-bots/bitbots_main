@@ -29,6 +29,7 @@ setup(
         "console_scripts": [
             "walk_node = nodes.walk_node:main",
             "kick_node = nodes.kick_node:main",
+            "standup_back_node = nodes.standup_back_node:main",
         ],
     },
 )

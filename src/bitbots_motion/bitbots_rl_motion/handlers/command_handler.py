@@ -16,8 +16,15 @@ class CommandHandler(Handler):
 
     def get_command(self):
         assert self._cmd_vel is not None
-        command = np.array([self._cmd_vel.linear.x, self._cmd_vel.linear.y, self._cmd_vel.angular.z], dtype=np.float32)
-        return command
+        stop_signal = float(self.get_stop_signal())
+        return np.array(
+            [self._cmd_vel.linear.x, self._cmd_vel.linear.y, self._cmd_vel.angular.z, stop_signal],
+            dtype=np.float32,
+        )
+
+    def get_stop_signal(self) -> bool:
+        assert self._cmd_vel is not None
+        return self._cmd_vel.angular.x != 0.0
 
     def has_data(self):
         return self._cmd_vel is not None

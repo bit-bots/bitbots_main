@@ -7,6 +7,7 @@
     <arg name="ipm" default="true" description="Whether the inverse perspective mapping should be started"/>
     <arg name="localization" default="true" description="Whether the localization system should be started" />
     <arg name="motion" default="true" description="Whether the motion control system should be started" />
+    <arg name="walking" default="true" description="Whether the walking should be started" />
     <arg name="path_planning" default="true" description="Whether the path planning should be started"/>
     <arg name="sim" default="false" description="Whether the robot is running in simulation or on real hardware" />
     <arg name="teamcom" default="true" description="Whether the team communication system should be started" />
@@ -44,6 +45,7 @@
         <include file="$(find-pkg-share bitbots_bringup)/launch/motion.launch">
             <arg name="sim" value="$(var sim)"/>
             <arg name="tts" value="$(var tts)" />
+            <arg name="walking" value="$(var walking)" />
         </include>
     </group>
 
