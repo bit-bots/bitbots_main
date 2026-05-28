@@ -33,7 +33,9 @@ class JointHandler(Handler):
 
         self._joint_state_indices = None
 
-    def _joint_state_callback(self, msg):
+    def _joint_state_callback(self, msg : JointState):
+        if self._joint_state is not None and self._joint_state.name != msg.name:
+            self._joint_state_indices = None
         self._joint_state = msg
 
     def has_data(self):
