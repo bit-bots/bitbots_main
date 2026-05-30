@@ -40,9 +40,9 @@ $DoOnce
 $AvoidBall
     NO --> $BallClose + distance:%ball_reapproach_dist + angle:%ball_reapproach_angle
         YES --> $BallKickArea
-            NEAR --> $FootSelection
-                LEFT --> #PerformKickLeft
-                RIGHT --> #PerformKickRight
+            NEAR --> $DoOnce
+                NOT_DONE --> @StoreBallMovementDetectionStartPosition
+                DONE --> #Dribble
             FAR --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:map
         NO --> @ChangeAction + action:going_to_ball + r:false, @LookAtFieldFeatures + r:false, @AvoidBallActive + r:false, @GoToBall + target:map + blocking:false + distance:%ball_far_approach_dist
     YES --> $ReachedPathPlanningGoalPosition + threshold:%ball_far_approach_position_thresh
@@ -111,33 +111,41 @@ $DoOnce
 @Stand + duration:0.1 + r:false, @ChangeAction + action:waiting, @LookForward, @Stand
 
 #NormalBehavior
-$BallSeen
-    NO --> $ConfigRole
-        GOALIE --> #RolePositionWithPause
-        ELSE --> #SearchBall
-    YES --> $KickOffTimeUp
-        NO_NORMAL --> #StandAndLook
-        NO_FREEKICK --> #Placing
-        YES --> $ConfigRole
-            GOALIE --> #GoalieBehavior
-            ELSE --> $CountActiveRobotsWithoutGoalie
-                ONE --> $RankToBallNoGoalie
-                    FIRST --> #StrikerRole
-                    SECOND --> #DefensePositioning
-                ELSE --> $RankToBallNoGoalie
-                    FIRST --> #StrikerRole
-                    SECOND --> #SupporterRole
-                    THIRD --> #DefensePositioning
+$SecondBallTouchAllowed
+    NO --> @SetNoKickOffOrThrowInVariable + value:false + r:false, @LookAtFieldFeatures + r:false, @ChangeAction + action:passive + r:false, @AvoidBallActive + r:false, @GoToPassPreparePosition + blocking:true // TODO: Implement SetNoKickOffOrThowInVariable
+    YES --> $BallSeen
+        NO --> $ConfigRole
+            GOALIE --> #RolePositionWithPause
+            ELSE --> #SearchBall
+        YES --> $KickOffTimeUp
+            NO_NORMAL --> #StandAndLook
+            NO_FREEKICK --> #Placing
+            YES --> $ConfigRole
+                GOALIE --> #GoalieBehavior
+                ELSE --> $CountActiveRobotsWithoutGoalie
+                    ONE --> $RankToBallNoGoalie
+                        FIRST --> #StrikerRole
+                        SECOND --> #DefensePositioning
+                    ELSE --> $RankToBallNoGoalie
+                        FIRST --> #StrikerRole
+                        SECOND --> #SupporterRole
+                        THIRD --> #DefensePositioning
 
 #PlayingBehavior
-$SecondaryStateDecider
+$SecondaryStateDecider  // TODO add Decision for Throw in and change Variable if in Throw in State and rewrite this? TO fit better with the new game controller, 
     PENALTYSHOOT --> #PenaltyShootoutBehavior
     TIMEOUT --> #StandAndLook
+    THROWIN --> $DoOnce
+        NOT_DONE --> @SetNoKickOffOrThrowInVariable + value:true, @ForgetBallStartPosition + r:false
+        DONE --> $SecondaryStateTeamDecider
+            OUR --> #NormalBehavior
+            ELSE --> #Placing
     ELSE --> $SecondaryStateTeamDecider
         OUR --> #NormalBehavior
         ELSE --> #Placing
     NORMAL --> #NormalBehavior
     OVERTIME --> #NormalBehavior
+    
 
 -->BodyBehavior
 $IsPenalized
@@ -147,11 +155,13 @@ $IsPenalized
         ELSE --> #GetWalkreadyAndLocalize
     NO --> $GameStateDecider
         INITIAL --> #Init
-        READY --> $AnyGoalScoreRecently + time:50
-            YES --> #PositioningReady
-            NO --> $DoOnce
-                NOT_DONE --> @ChangeAction + action:waiting + r:false, @LookAtFieldFeatures + r:false, @Stand + duration:2
-                DONE --> #PositioningReady
+        READY --> $DoOnce
+            NOT_DONE --> @SetNoKickOffOrThrowInVariable + value:true + r:false, @ForgetBallStartPosition + r:false
+            DONE --> $AnyGoalScoreRecently + time:50
+                YES --> #PositioningReady
+                NO --> $DoOnce
+                    NOT_DONE --> @ChangeAction + action:waiting + r:false, @LookAtFieldFeatures + r:false, @Stand + duration:2
+                    DONE --> #PositioningReady
         SET --> $WhistleDetected
             DETECTED --> $SecondaryStateTeamDecider
                 OUR --> #PlayingBehavior

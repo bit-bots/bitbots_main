@@ -46,6 +46,10 @@ Run the deploy_robots script with the -c option to configure the robot and set p
 
         self.hcm_deactivate_pub = self._node.create_publisher(Bool, "hcm_deactivate", 1)
 
+        self.ball_movement_detection_start_ball_position: Optional[tuple[float, float]] = None
+
+        self.kickoff_or_throwin_kick: bool = False
+
     #####################
     # ## Tracking Part ##
     #####################
