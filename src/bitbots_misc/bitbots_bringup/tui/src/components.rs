@@ -126,8 +126,8 @@ pub static COMPONENT_DEFS: &[ComponentDef] = &[
         sim_component: true,
         cmds: |p| {
             vec![ros2_launch(
-                "bitbots_bringup",
-                "mujoco_simulation.launch.py",
+                "bitbots_mujoco_sim",
+                "simulator.launch",
                 &[&sim(p)],
             )]
         },
