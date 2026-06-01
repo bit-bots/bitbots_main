@@ -14,4 +14,5 @@ tokio = { version = "1", features = ["full"] }
 anyhow = "1"
 futures = "0.3"
 nix = { version = "0.27", features = ["signal", "process"] }
+ansi-to-tui = "3"
 clap = { version = "~4.4", features = ["derive"] }

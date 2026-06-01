@@ -2,7 +2,7 @@ use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
     text::{Line, Span},
-    widgets::{Block, Borders, Paragraph},
+    widgets::{Block, Borders, Paragraph, Wrap},
     Frame,
 };
 
@@ -389,31 +389,66 @@ fn tag_color(tag: &str) -> Color {
     PALETTE[h % PALETTE.len()]
 }
 
+/// Convert a raw log string (which may contain ANSI escape codes) into an owned ratatui Line.
+fn ansi_to_line(s: &str) -> Line<'static> {
+    use ansi_to_tui::IntoText;
+    match s.into_text() {
+        Ok(text) => Line::from(
+            text.lines
+                .into_iter()
+                .flat_map(|l| l.spans)
+                .map(|s| Span::styled(s.content.into_owned(), s.style))
+                .collect::<Vec<_>>(),
+        ),
+        Err(_) => Line::from(s.to_owned()),
+    }
+}
+
 fn draw_joint_logs(f: &mut Frame, app: &App, area: Rect) {
     let inner_h = area.height.saturating_sub(2) as usize;
-    let lines: Vec<Line> = {
+    let inner_w = area.width.saturating_sub(2) as usize;
+
+    let lines: Vec<Line<'static>> = {
         let logs = app.all_logs.lock().unwrap();
-        let skip = logs.len().saturating_sub(inner_h);
+        // Grab more entries than the panel height — wrapping will consume extra rows.
+        let skip = logs.len().saturating_sub(inner_h * 3);
         logs.iter()
             .skip(skip)
-            .map(|s| {
-                if let Some(close) = s.find("] ") {
-                    let tag = &s[..close + 1]; // "[CompName]"
-                    let rest = &s[close + 2..];
-                    Line::from(vec![
-                        Span::styled(tag.to_string(), Style::default().fg(tag_color(tag))),
+            .map(|entry| {
+                if let Some(close) = entry.find("] ") {
+                    let tag = &entry[..close + 1]; // "[CompName]"
+                    let rest = &entry[close + 2..];
+                    let mut spans: Vec<Span<'static>> = vec![
+                        Span::styled(
+                            tag.to_owned(),
+                            Style::default().fg(tag_color(tag)).add_modifier(Modifier::BOLD),
+                        ),
                         Span::raw(" "),
-                        Span::raw(rest.to_string()),
-                    ])
+                    ];
+                    spans.extend(ansi_to_line(rest).spans);
+                    Line::from(spans)
                 } else {
-                    Line::from(s.clone())
+                    ansi_to_line(entry)
                 }
             })
             .collect()
     };
+
+    // Estimate total visual rows so we can scroll to pin the view to the bottom.
+    let total_rows: usize = lines
+        .iter()
+        .map(|l| {
+            let chars: usize = l.spans.iter().map(|s| s.content.chars().count()).sum();
+            if inner_w > 0 { (chars + inner_w - 1) / inner_w } else { 1 }.max(1)
+        })
+        .sum();
+    let scroll = total_rows.saturating_sub(inner_h) as u16;
+
     f.render_widget(
         Paragraph::new(lines)
-            .block(Block::default().borders(Borders::ALL).title(" All Logs ")),
+            .block(Block::default().borders(Borders::ALL).title(" All Logs "))
+            .wrap(Wrap { trim: false })
+            .scroll((scroll, 0)),
         area,
     );
 }
@@ -438,22 +473,23 @@ pub fn draw_logs(f: &mut Frame, app: &App, comp_idx: usize) {
     );
 
     let log_height = chunks[1].height as usize;
-    let lines: Vec<Line> = {
+    let lines: Vec<Line<'static>> = {
         let logs = comp.logs.lock().unwrap();
         let total = logs.len();
         let max_scroll = if total > log_height { total - log_height } else { 0 };
         let scroll = app.log_scroll.min(max_scroll);
         logs.iter()
             .skip(scroll)
-            .take(log_height)
-            .map(|s| Line::from(s.clone()))
+            .take(log_height * 2) // extra entries so wrapped lines still fill the panel
+            .map(|s| ansi_to_line(s))
             .collect()
     };
 
     f.render_widget(
         Paragraph::new(lines)
             .block(Block::default().borders(Borders::ALL))
-            .style(Style::default().fg(Color::White)),
+            .style(Style::default().fg(Color::White))
+            .wrap(Wrap { trim: false }),
         chunks[1],
     );
 
