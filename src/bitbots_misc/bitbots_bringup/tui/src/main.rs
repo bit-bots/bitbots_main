@@ -148,7 +148,7 @@ async fn run_headless(app: &mut App) -> Result<()> {
 
     app.start_all_enabled().await;
 
-    let mut tick = time::interval(Duration::from_millis(500));
+    let mut tick = time::interval(Duration::from_millis(50));
     loop {
         tokio::select! {
             _ = tick.tick() => {
@@ -156,8 +156,14 @@ async fn run_headless(app: &mut App) -> Result<()> {
                 for idx in to_restart {
                     app.start_component(idx).await;
                 }
+                {
+                    let mut logs = app.all_logs.lock().unwrap();
+                    while let Some(entry) = logs.pop_front() {
+                        println!("{entry}");
+                    }
+                }
                 let any_running = app.components.iter().any(|c| {
-                    matches!(c.state, ProcState::Running | ProcState::Stopping)
+                    matches!(c.state, ProcState::Running | ProcState::Stopping | ProcState::Restarting)
                 });
                 if !any_running {
                     eprintln!("All components have stopped.");

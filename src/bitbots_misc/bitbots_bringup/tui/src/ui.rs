@@ -264,12 +264,25 @@ pub fn draw_runtime(f: &mut Frame, app: &App) {
         .split(area);
 
     draw_runtime_header(f, app, chunks[0]);
-    draw_runtime_list(f, app, chunks[1]);
+
+    if app.show_log_panel {
+        let cols = Layout::default()
+            .direction(Direction::Horizontal)
+            .constraints([Constraint::Percentage(35), Constraint::Percentage(65)])
+            .split(chunks[1]);
+        draw_runtime_list(f, app, cols[0]);
+        draw_joint_logs(f, app, cols[1]);
+    } else {
+        draw_runtime_list(f, app, chunks[1]);
+    }
+
+    let hint = if app.show_log_panel {
+        " ↑↓/jk: select  s: stop/start  r: restart  l: logs  a: start all  x: stop all  v: hide logs  Esc: config  q: quit"
+    } else {
+        " ↑↓/jk: select  s: stop/start  r: restart  l: logs  a: start all  x: stop all  v: show logs  Esc: config  q: quit"
+    };
     f.render_widget(
-        Paragraph::new(
-            " ↑↓/jk: select  s: start/stop  r: restart  l: logs  a: start all  x: stop all  Esc: config  q: quit",
-        )
-        .style(Style::default().fg(Color::DarkGray)),
+        Paragraph::new(hint).style(Style::default().fg(Color::DarkGray)),
         chunks[2],
     );
 }
@@ -359,6 +372,50 @@ fn draw_runtime_list(f: &mut Frame, app: &App, area: Rect) {
         ]);
         f.render_widget(Paragraph::new(line).style(row_style), row_chunks[vis_i]);
     }
+}
+
+fn tag_color(tag: &str) -> Color {
+    const PALETTE: &[Color] = &[
+        Color::Cyan,
+        Color::Green,
+        Color::Magenta,
+        Color::Yellow,
+        Color::LightBlue,
+        Color::LightGreen,
+        Color::LightMagenta,
+        Color::LightRed,
+    ];
+    let h = tag.bytes().fold(0usize, |a, b| a.wrapping_add(b as usize));
+    PALETTE[h % PALETTE.len()]
+}
+
+fn draw_joint_logs(f: &mut Frame, app: &App, area: Rect) {
+    let inner_h = area.height.saturating_sub(2) as usize;
+    let lines: Vec<Line> = {
+        let logs = app.all_logs.lock().unwrap();
+        let skip = logs.len().saturating_sub(inner_h);
+        logs.iter()
+            .skip(skip)
+            .map(|s| {
+                if let Some(close) = s.find("] ") {
+                    let tag = &s[..close + 1]; // "[CompName]"
+                    let rest = &s[close + 2..];
+                    Line::from(vec![
+                        Span::styled(tag.to_string(), Style::default().fg(tag_color(tag))),
+                        Span::raw(" "),
+                        Span::raw(rest.to_string()),
+                    ])
+                } else {
+                    Line::from(s.clone())
+                }
+            })
+            .collect()
+    };
+    f.render_widget(
+        Paragraph::new(lines)
+            .block(Block::default().borders(Borders::ALL).title(" All Logs ")),
+        area,
+    );
 }
 
 // ─── Logs screen ──────────────────────────────────────────────────────────────

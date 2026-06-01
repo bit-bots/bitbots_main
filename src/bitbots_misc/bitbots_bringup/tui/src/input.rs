@@ -124,6 +124,7 @@ pub async fn handle_runtime_key(app: &mut App, key: KeyCode, _modifiers: KeyModi
             }
         }
 
+        KeyCode::Char('v') => app.show_log_panel = !app.show_log_panel,
         KeyCode::Char('a') => app.start_all_enabled().await,
         KeyCode::Char('x') => app.stop_all().await,
         KeyCode::Esc => app.screen = Screen::Config,

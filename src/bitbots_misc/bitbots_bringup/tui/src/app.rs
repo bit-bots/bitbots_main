@@ -98,6 +98,8 @@ pub struct App {
     pub msg_tx: mpsc::UnboundedSender<AppMsg>,
     pub msg_rx: mpsc::UnboundedReceiver<AppMsg>,
     pub log_scroll: usize,
+    pub all_logs: Arc<Mutex<VecDeque<String>>>,
+    pub show_log_panel: bool,
 }
 
 impl App {
@@ -123,6 +125,8 @@ impl App {
             msg_tx,
             msg_rx,
             log_scroll: 0,
+            all_logs: Arc::new(Mutex::new(VecDeque::with_capacity(5000))),
+            show_log_panel: true,
         }
     }
 
@@ -237,8 +241,10 @@ impl App {
         let def = &COMPONENT_DEFS[comp_idx];
         let cmds = (def.cmds)(&self.params);
         let key = def.key.to_string();
+        let comp_name = def.name; // &'static str
 
         let logs = self.components[comp_idx].logs.clone();
+        let all_logs = self.all_logs.clone();
         self.components[comp_idx].state = ProcState::Running;
         self.components[comp_idx].pids.clear();
         self.components[comp_idx].task_handles.clear();
@@ -249,6 +255,7 @@ impl App {
             }
             let tx = self.msg_tx.clone();
             let logs = logs.clone();
+            let all_logs = all_logs.clone();
             let key = key.clone();
 
             let mut child = match Command::new(&cmd_args[0])
@@ -261,9 +268,9 @@ impl App {
             {
                 Ok(c) => c,
                 Err(e) => {
-                    let mut l = logs.lock().unwrap();
-                    l.push_back(format!("[ERROR] spawn failed: {e}"));
-                    drop(l);
+                    let entry = format!("[ERROR] spawn failed: {e}");
+                    logs.lock().unwrap().push_back(entry.clone());
+                    all_logs.lock().unwrap().push_back(format!("[{comp_name}] {entry}"));
                     let _ = tx.send(AppMsg::ProcessExited { key, code: -1 });
                     return;
                 }
@@ -280,7 +287,9 @@ impl App {
                 async fn pump<R: tokio::io::AsyncRead + Unpin>(
                     mut r: BufReader<R>,
                     logs: Arc<Mutex<VecDeque<String>>>,
-                    prefix: &str,
+                    all_logs: Arc<Mutex<VecDeque<String>>>,
+                    prefix: &'static str,
+                    comp_name: &'static str,
                 ) {
                     let mut line = String::new();
                     while let Ok(n) = r.read_line(&mut line).await {
@@ -288,20 +297,37 @@ impl App {
                             break;
                         }
                         let entry = format!("{}{}", prefix, line.trim_end_matches('\n'));
-                        let mut l = logs.lock().unwrap();
-                        if l.len() >= 2000 {
-                            l.pop_front();
+                        {
+                            let mut l = logs.lock().unwrap();
+                            if l.len() >= 2000 {
+                                l.pop_front();
+                            }
+                            l.push_back(entry.clone());
                         }
-                        l.push_back(entry);
+                        {
+                            let mut l = all_logs.lock().unwrap();
+                            if l.len() >= 5000 {
+                                l.pop_front();
+                            }
+                            l.push_back(format!("[{comp_name}] {entry}"));
+                        }
                         line.clear();
                     }
                 }
-                if let Some(r) = stdout {
-                    pump(r, logs.clone(), "").await;
-                }
-                if let Some(r) = stderr {
-                    pump(r, logs.clone(), "[ERR] ").await;
-                }
+                // Read stdout and stderr concurrently so neither blocks the other.
+                let (logs2, all2) = (logs.clone(), all_logs.clone());
+                tokio::join!(
+                    async move {
+                        if let Some(r) = stdout {
+                            pump(r, logs2, all2, "", comp_name).await;
+                        }
+                    },
+                    async move {
+                        if let Some(r) = stderr {
+                            pump(r, logs, all_logs, "[ERR] ", comp_name).await;
+                        }
+                    }
+                );
                 let code = child
                     .wait()
                     .await
