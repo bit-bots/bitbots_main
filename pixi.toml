@@ -14,6 +14,7 @@ version = "0.1.0"
 zenoh = "ros2 run rmw_zenoh_cpp rmw_zenohd"
 deploy = {cmd = "scripts/deploy_robots.py", description = "Deploys the current environment."}
 format = {cmd = "pre-commit run --all-files", description = "Runs code formatting and linting."}
+teamplayer = { cmd = "cargo run --release --manifest-path src/bitbots_misc/bitbots_bringup/tui/Cargo.toml", description = "Launch the teamplayer TUI (Rust/ratatui)" }
 
 [tasks.build]
 # Skipping ZED-camera related packages as they require a local installation of the ZED SDK.
