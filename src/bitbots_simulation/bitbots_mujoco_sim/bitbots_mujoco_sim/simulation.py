@@ -26,6 +26,7 @@ class Simulation(Node):
         super().__init__("sim_interface")
         self.declare_parameter("world_file", "")
         self.declare_parameter("use_namespace", True)
+        self.declare_parameter("web", False)
 
         self.package_path = get_package_share_directory("bitbots_mujoco_sim")
         world_file = self.get_parameter("world_file").get_parameter_value().string_value
@@ -81,6 +82,12 @@ class Simulation(Node):
         )
 
     def run(self) -> None:
+        if self.get_parameter("web").get_parameter_value().bool_value:
+            self._run_web_viewer()
+        else:
+            self._run_native_viewer()
+
+    def _run_native_viewer(self) -> None:
         print("Starting simulation viewer...")
         with viewer.launch_passive(self.model, self.data) as view:
             while view.is_running():
@@ -97,6 +104,12 @@ class Simulation(Node):
                 if total_wall_time > 0:
                     # weighted ema so it does not fluctuate too much
                     self.measured_rtf = 0.01 * (self.timestep / total_wall_time) + 0.99 * self.measured_rtf
+
+    def _run_web_viewer(self) -> None:
+        from mjviser import Viewer
+
+        print("Starting web simulation viewer (mjviser)...")
+        Viewer(self.model, self.data, step_fn=lambda model, data: self.step()).run()
 
     def step(self) -> None:
         self.step_number += 1
