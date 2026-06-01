@@ -15,7 +15,7 @@ void update_ip_addr(void)
 {
     int fd;
     struct ifreq ifr;
-    char* net_adapter[3] = {LO_NET, ETHERNET, WLAN};
+    const char* net_adapter[3] = {LO_NET, ETHERNET, WLAN};
 
     fd = socket(AF_INET, SOCK_DGRAM, 0);
 

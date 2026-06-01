@@ -3,7 +3,7 @@ from bitbots_hcm.hcm_dsd.actions import AbstractHCMActionElement
 
 class CancelGoals(AbstractHCMActionElement):
     """
-    Cancels all animation and move_base goals
+    Cancels all animation goals
     """
 
     def __init__(self, blackboard, dsd, parameters):
