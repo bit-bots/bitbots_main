@@ -20,6 +20,7 @@ from typing import Optional
 import numpy as np
 import onnxruntime as rt
 from ament_index_python import get_package_share_directory
+from rclpy.experimental.events_executor import EventsExecutor
 from geometry_msgs.msg import Twist
 from rclpy.node import Node
 from sensor_msgs.msg import Imu, JointState
@@ -195,6 +196,10 @@ def main():
 
     rclpy.init()
     node = WalkNode()
-    rclpy.spin(node)
-    node.destroy_node()
-    rclpy.try_shutdown()
+
+    executor = EventsExecutor()
+    executor.add_node(node)
+    try:
+        executor.spin()
+    except KeyboardInterrupt:
+        pass
