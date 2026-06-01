@@ -3,6 +3,7 @@
 import socket
 import struct
 import threading
+import time
 from typing import Optional
 
 import rclpy
@@ -63,24 +64,16 @@ class TeamCommunication:
 
         self.tf_buffer = Buffer(node=self.node)
 
-        self.run_spin_in_thread()
         self.try_to_establish_connection()
 
+        self.logger.info("Successfully established connection.")
+
         self.node.create_timer(1 / self.rate, self.send_message, callback_group=MutuallyExclusiveCallbackGroup())
-        self.receive_forever()
 
-    def spin(self):
-        executor = EventsExecutor()
-        executor.add_node(self.node)
-        try:
-            executor.spin()
-        except KeyboardInterrupt:
-            pass
+        receive_thread = threading.Thread(target=self.receive_forever, daemon=True)
+        receive_thread.start()
 
-    def run_spin_in_thread(self):
-        # Necessary in ROS2, else we are forever stuck receiving messages
-        thread = threading.Thread(target=self.spin, daemon=True)
-        thread.start()
+        self.logger.info("Initialization complete.")
 
     def set_state_defaults(self):
         self.gamestate: Optional[GameState] = None
@@ -100,8 +93,9 @@ class TeamCommunication:
     def try_to_establish_connection(self):
         # we will try multiple times till we manage to get a connection
         while rclpy.ok() and not self.socket_communication.is_setup():
+            self.logger.info("Trying to establish connection...")
             self.socket_communication.establish_connection()
-            self.node.get_clock().sleep_for(Duration(seconds=1))
+            time.sleep(1)
 
     def create_publishers(self):
         self.team_data_publisher = self.node.create_publisher(TeamData, self.topics["team_data_topic"], qos_profile=1)
@@ -317,8 +311,14 @@ class TeamCommunication:
 
 def main():
     rclpy.init(args=None)
-    TeamCommunication()
+    tc = TeamCommunication()
 
+    executor = EventsExecutor()
+    executor.add_node(tc.node)
+    try:
+        executor.spin()
+    except KeyboardInterrupt:
+        pass
 
 if __name__ == "__main__":
     main()
