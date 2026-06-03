@@ -14,7 +14,7 @@ version = "0.1.0"
 zenoh = "ros2 run rmw_zenoh_cpp rmw_zenohd"
 deploy = {cmd = "scripts/deploy_robots.py", description = "Deploys the current environment."}
 format = {cmd = "pre-commit run --all-files", description = "Runs code formatting and linting."}
-teamplayer = { cmd = "cargo run --release --manifest-path src/bitbots_misc/bitbots_bringup/tui/Cargo.toml --", description = "Launch the main software components" }
+teamplayer = { cmd = "ros2 run bitbots_bringup teamplayer", description = "Launch the main software components" }
 
 [tasks.build]
 # Skipping ZED-camera related packages as they require a local installation of the ZED SDK.
@@ -46,6 +46,7 @@ readline = ">=8.2.999"  # This is needed because we want to install an empty rea
 # Misc dependencies for our ROS 2 packages
 alsa-plugins = ">=1.2.12,<2"
 clang = ">=21.1.0,<22"  # Needed for r2r rust bindings generation
+rust = ">=1.88"
 beartype = ">=0.22.6,<0.23"
 breathe = ">=4.36.0,<5"
 cbor2 = ">=5.9.0,<6"

@@ -1,7 +1,7 @@
 [workspace]
 members = [
     "src/bitbots_misc/bitbots_extrinsic_calibration",
-    "src/bitbots_rust_test",
+    "src/bitbots_misc/bitbots_bringup/tui",
     "src/bitbots_navigation/bitbots_rust_nav"
 ]
 

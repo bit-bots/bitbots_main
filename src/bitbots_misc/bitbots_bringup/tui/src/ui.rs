@@ -52,7 +52,7 @@ pub fn draw(f: &mut Frame, app: &App) {
 // ─── Config screen ────────────────────────────────────────────────────────────
 
 pub fn draw_config(f: &mut Frame, app: &App) {
-    let area = f.size();
+    let area = f.area();
     let banner_lines = BANNER.lines().count() as u16;
 
     let chunks = Layout::default()
@@ -257,7 +257,7 @@ fn draw_start_button(f: &mut Frame, app: &App, area: Rect) {
 // ─── Runtime screen ───────────────────────────────────────────────────────────
 
 pub fn draw_runtime(f: &mut Frame, app: &App) {
-    let area = f.size();
+    let area = f.area();
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([Constraint::Length(3), Constraint::Min(0), Constraint::Length(1)])
@@ -456,7 +456,7 @@ fn draw_joint_logs(f: &mut Frame, app: &App, area: Rect) {
 // ─── Logs screen ──────────────────────────────────────────────────────────────
 
 pub fn draw_logs(f: &mut Frame, app: &App, comp_idx: usize) {
-    let area = f.size();
+    let area = f.area();
     let comp = &app.components[comp_idx];
     let name = COMPONENT_DEFS[comp_idx].name;
 
