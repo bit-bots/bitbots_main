@@ -21,3 +21,5 @@ src/bitbots_misc/bitbots_parameter_blackboard/config/game_settings.yaml
 
 __pycache__
 
+# Don't sync the simulation environments
+src/bitbots_simulation/bitbots_mujoco_sim/

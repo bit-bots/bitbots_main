@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+    <name>bitbots_emergency</name>
+    <version>0.1.0</version>
+    <description>
+    This package contains emergency measures.
+    </description>
+
+    <maintainer email="2krueger@studium.informatik.uni-hamburg.de">Mark Oliver Krüger</maintainer>
+    <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+
+    <license>MIT</license>
+
+    <buildtool_depend>ament_cmake</buildtool_depend>
+
+    <depend>rclcpp</depend>
+    <depend>livelybot_msg</depend>
+
+    <exec_depend>ros2launch</exec_depend>
+
+    <export>
+        <build_type>ament_cmake</build_type>
+    </export>
+</package>

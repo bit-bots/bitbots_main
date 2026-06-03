@@ -13,14 +13,14 @@ from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
 from rclpy.publisher import Publisher
 
-from bitbots_msgs.msg import Audio
+from bitbots_msgs.msg import TTS
 from bitbots_tts.supertonic.helper import load_text_to_speech, load_voice_style, timer
 
 
 def speak(text: str, publisher: Publisher, priority: int = 20, speaking_active: bool = True) -> None:
     """Utility method which can be used by other classes to easily publish a message."""
     if speaking_active:
-        msg = Audio()
+        msg = TTS()
         msg.priority = priority
         msg.text = text
         publisher.publish(msg)
@@ -53,7 +53,7 @@ class Speaker(Node):
         self.add_on_set_parameters_callback(self.on_set_parameters)
 
         # Subscribe to the speak topic
-        self.create_subscription(Audio, "speak", self.speak_cb, 10, callback_group=MutuallyExclusiveCallbackGroup())
+        self.create_subscription(TTS, "speak", self.speak_cb, 10, callback_group=MutuallyExclusiveCallbackGroup())
 
         # Load the tts model
         conda_prefix = os.environ.get("CONDA_PREFIX", "")
@@ -114,7 +114,7 @@ class Speaker(Node):
             except OSError:
                 self.get_logger().error(str(traceback.format_exc()))
 
-    def speak_cb(self, msg: Audio) -> None:
+    def speak_cb(self, msg: TTS) -> None:
         """Handles incoming msg on speak topic."""
         # First decide if it's a file or a text
         text = msg.text

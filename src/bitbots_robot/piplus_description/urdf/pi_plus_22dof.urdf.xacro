@@ -648,6 +648,30 @@
     <child link="r_sole" />
   </joint>
   <link name="r_sole"></link>
+  <joint name="r_sole_front_left_joint" type="fixed">
+    <origin xyz="0.10 0.035 0.0" rpy="0 0 0" />
+    <parent link="r_sole" />
+    <child link="r_sole_front_left" />
+  </joint>
+  <link name="r_sole_front_left"></link>
+  <joint name="r_sole_front_right_joint" type="fixed">
+    <origin xyz="0.10 -0.035 0.0" rpy="0 0 0" />
+    <parent link="r_sole" />
+    <child link="r_sole_front_right" />
+  </joint>
+  <link name="r_sole_front_right"></link>
+  <joint name="r_sole_back_left_joint" type="fixed">
+    <origin xyz="-0.06 0.035 0.0" rpy="0 0 0" />
+    <parent link="r_sole" />
+    <child link="r_sole_back_left" />
+  </joint>
+  <link name="r_sole_back_left"></link>
+  <joint name="r_sole_back_right_joint" type="fixed">
+    <origin xyz="-0.06 -0.035 0.0" rpy="0 0 0" />
+    <parent link="r_sole" />
+    <child link="r_sole_back_right" />
+  </joint>
+  <link name="r_sole_back_right"></link>
   <link name="l_hip_pitch_link">
     <inertial>
       <origin xyz="7.921e-05 0.03190246 -0.0001562" rpy="0 0 0" />
@@ -860,4 +884,28 @@
     <child link="l_sole" />
   </joint>
   <link name="l_sole"></link>
+  <joint name="l_sole_front_left_joint" type="fixed">
+    <origin xyz="0.10 0.035 0.0" rpy="0 0 0" />
+    <parent link="l_sole" />
+    <child link="l_sole_front_left" />
+  </joint>
+  <link name="l_sole_front_left"></link>
+  <joint name="l_sole_front_right_joint" type="fixed">
+    <origin xyz="0.10 -0.035 0.0" rpy="0 0 0" />
+    <parent link="l_sole" />
+    <child link="l_sole_front_right" />
+  </joint>
+  <link name="l_sole_front_right"></link>
+  <joint name="l_sole_back_left_joint" type="fixed">
+    <origin xyz="-0.06 0.035 0.0" rpy="0 0 0" />
+    <parent link="l_sole" />
+    <child link="l_sole_back_left" />
+  </joint>
+  <link name="l_sole_back_left"></link>
+  <joint name="l_sole_back_right_joint" type="fixed">
+    <origin xyz="-0.06 -0.035 0.0" rpy="0 0 0" />
+    <parent link="l_sole" />
+    <child link="l_sole_back_right" />
+  </joint>
+  <link name="l_sole_back_right"></link>
 </robot>

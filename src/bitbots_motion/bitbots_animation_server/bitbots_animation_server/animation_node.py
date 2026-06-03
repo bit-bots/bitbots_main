@@ -163,7 +163,7 @@ class AnimationNode(Node):
 
             # Send request to make the HCM to go into animation play mode
             num_tries = 0
-            while rclpy.ok() and (not (await self.hcm_animation_mode.call_async(SetBool.Request(data=True))).success):  # type: ignore[attr-defined]
+            while rclpy.ok() and (not (await self.hcm_animation_mode.call_async(SetBool.Request(data=True))).success):  # type: ignore[union-attr]
                 if num_tries >= 10:
                     self.get_logger().error("Failed to request HCM to go into animation play mode")
                     return finish(successful=False)
