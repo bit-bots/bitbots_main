@@ -200,10 +200,13 @@ async fn run_tui(
                 for idx in to_restart {
                     app.start_component(idx).await;
                 }
-                if let Screen::Logs(idx) = &app.screen {
-                    let idx = *idx;
-                    let len = app.components[idx].logs.lock().unwrap().len();
-                    if app.log_scroll + 5 >= len.saturating_sub(1) {
+                if app.log_follow {
+                    let len = match &app.screen {
+                        Screen::Logs(idx) => app.components[*idx].logs.lock().unwrap().len(),
+                        Screen::AllLogs => app.all_logs.lock().unwrap().len(),
+                        _ => 0,
+                    };
+                    if len > 0 {
                         app.log_scroll = len.saturating_sub(1);
                     }
                 }
@@ -212,15 +215,22 @@ async fn run_tui(
             maybe_event = event_stream.next() => {
                 let Some(Ok(event)) = maybe_event else { break };
                 if let Event::Key(key_event) = event {
-                    let quit = match app.screen.clone() {
-                        Screen::Config => {
-                            input::handle_config_key(app, key_event.code, key_event.modifiers).await
-                        }
-                        Screen::Runtime => {
-                            input::handle_runtime_key(app, key_event.code, key_event.modifiers).await
-                        }
-                        Screen::Logs(idx) => {
-                            input::handle_logs_key(app, key_event.code, key_event.modifiers, idx).await
+                    let quit = if app.confirm_action.is_some() {
+                        input::handle_confirm_key(app, key_event.code).await
+                    } else {
+                        match app.screen.clone() {
+                            Screen::Config => {
+                                input::handle_config_key(app, key_event.code, key_event.modifiers).await
+                            }
+                            Screen::Runtime => {
+                                input::handle_runtime_key(app, key_event.code, key_event.modifiers).await
+                            }
+                            Screen::Logs(idx) => {
+                                input::handle_logs_key(app, key_event.code, key_event.modifiers, idx).await
+                            }
+                            Screen::AllLogs => {
+                                input::handle_all_logs_key(app, key_event.code)
+                            }
                         }
                     };
                     if quit {

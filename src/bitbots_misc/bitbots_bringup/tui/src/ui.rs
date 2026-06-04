@@ -2,11 +2,11 @@ use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
     text::{Line, Span},
-    widgets::{Block, Borders, Paragraph, Wrap},
+    widgets::{Block, Borders, Clear, Paragraph, Scrollbar, ScrollbarOrientation, ScrollbarState, Wrap},
     Frame,
 };
 
-use crate::app::{App, ConfigFocus, ProcState, Screen};
+use crate::app::{App, ConfirmAction, ConfigFocus, ProcState, Screen};
 use crate::components::COMPONENT_DEFS;
 
 // ─── Banner ───────────────────────────────────────────────────────────────────
@@ -46,6 +46,10 @@ pub fn draw(f: &mut Frame, app: &App) {
         Screen::Config => draw_config(f, app),
         Screen::Runtime => draw_runtime(f, app),
         Screen::Logs(idx) => draw_logs(f, app, *idx),
+        Screen::AllLogs => draw_all_logs(f, app),
+    }
+    if app.confirm_action.is_some() {
+        draw_confirm_popup(f, app);
     }
 }
 
@@ -78,7 +82,7 @@ pub fn draw_config(f: &mut Frame, app: &App) {
     draw_start_button(f, app, chunks[3]);
 
     f.render_widget(
-        Paragraph::new(" Tab/↑↓: navigate  Space/Enter: toggle/activate  q: quit")
+        Paragraph::new(" Tab/↑↓/←→: navigate  Space/Enter: toggle/activate  q: exit (confirm)")
             .style(Style::default().fg(Color::DarkGray)),
         chunks[4],
     );
@@ -277,9 +281,9 @@ pub fn draw_runtime(f: &mut Frame, app: &App) {
     }
 
     let hint = if app.show_log_panel {
-        " ↑↓/jk: select  s: stop/start  r: restart  l: logs  a: start all  x: stop all  v: hide logs  Esc: config  q: quit"
+        " ↑↓/jk: select  l: comp logs  →: all logs  ←: hide logs  s: stop/start  r: restart  a: start all  x: stop all  Esc: config  q: quit"
     } else {
-        " ↑↓/jk: select  s: stop/start  r: restart  l: logs  a: start all  x: stop all  v: show logs  Esc: config  q: quit"
+        " ↑↓/jk: select  l: comp logs  →: show logs  s: stop/start  r: restart  a: start all  x: stop all  Esc: config  q: quit"
     };
     f.render_widget(
         Paragraph::new(hint).style(Style::default().fg(Color::DarkGray)),
@@ -472,30 +476,149 @@ pub fn draw_logs(f: &mut Frame, app: &App, comp_idx: usize) {
         chunks[0],
     );
 
-    let log_height = chunks[1].height as usize;
-    let lines: Vec<Line<'static>> = {
+    let log_height = chunks[1].height.saturating_sub(2) as usize; // inner height (minus borders)
+    let (lines, total, scroll) = {
         let logs = comp.logs.lock().unwrap();
         let total = logs.len();
-        let max_scroll = if total > log_height { total - log_height } else { 0 };
+        let max_scroll = total.saturating_sub(log_height);
         let scroll = app.log_scroll.min(max_scroll);
-        logs.iter()
+        let lines: Vec<Line<'static>> = logs
+            .iter()
             .skip(scroll)
-            .take(log_height * 2) // extra entries so wrapped lines still fill the panel
+            .take(log_height * 2)
             .map(|s| ansi_to_line(s))
-            .collect()
+            .collect();
+        (lines, total, scroll)
     };
 
+    let log_block = Block::default().borders(Borders::ALL);
+    let log_area = chunks[1];
     f.render_widget(
         Paragraph::new(lines)
-            .block(Block::default().borders(Borders::ALL))
+            .block(log_block)
             .style(Style::default().fg(Color::White))
             .wrap(Wrap { trim: false }),
-        chunks[1],
+        log_area,
     );
 
+    let mut scrollbar_state = ScrollbarState::new(total).position(scroll);
+    f.render_stateful_widget(
+        Scrollbar::new(ScrollbarOrientation::VerticalRight),
+        log_area,
+        &mut scrollbar_state,
+    );
+
+    let hint = if app.log_follow {
+        " ↑↓/jk/PgUp/PgDn: scroll  g: top  G/f: follow  Esc/q/l: back".to_string()
+    } else {
+        " ↑↓/jk/PgUp/PgDn: scroll  g: top  G/f: follow  Esc/q/l: back  [SCROLLED — f/G to re-follow]".to_string()
+    };
+    let hint_style = if app.log_follow {
+        Style::default().fg(Color::DarkGray)
+    } else {
+        Style::default().fg(Color::Yellow)
+    };
+    f.render_widget(Paragraph::new(hint).style(hint_style), chunks[2]);
+}
+
+// ─── All-logs screen ──────────────────────────────────────────────────────────
+
+pub fn draw_all_logs(f: &mut Frame, app: &App) {
+    let area = f.area();
+    let chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([Constraint::Min(0), Constraint::Length(1)])
+        .split(area);
+
+    let log_height = chunks[0].height.saturating_sub(2) as usize;
+    let (lines, total, scroll) = {
+        let logs = app.all_logs.lock().unwrap();
+        let total = logs.len();
+        let max_scroll = total.saturating_sub(log_height);
+        let scroll = app.log_scroll.min(max_scroll);
+        let lines: Vec<Line<'static>> = logs
+            .iter()
+            .skip(scroll)
+            .take(log_height * 2)
+            .map(|entry| {
+                if let Some(close) = entry.find("] ") {
+                    let tag = &entry[..close + 1];
+                    let rest = &entry[close + 2..];
+                    let mut spans: Vec<Span<'static>> = vec![
+                        Span::styled(
+                            tag.to_owned(),
+                            Style::default().fg(tag_color(tag)).add_modifier(Modifier::BOLD),
+                        ),
+                        Span::raw(" "),
+                    ];
+                    spans.extend(ansi_to_line(rest).spans);
+                    Line::from(spans)
+                } else {
+                    ansi_to_line(entry)
+                }
+            })
+            .collect();
+        (lines, total, scroll)
+    };
+
+    let log_area = chunks[0];
     f.render_widget(
-        Paragraph::new(" ↑↓/jk/PgUp/PgDn: scroll  g: top  G: bottom  Esc/q/l: back")
-            .style(Style::default().fg(Color::DarkGray)),
-        chunks[2],
+        Paragraph::new(lines)
+            .block(Block::default().borders(Borders::ALL).title(" All Logs "))
+            .style(Style::default().fg(Color::White))
+            .wrap(Wrap { trim: false }),
+        log_area,
+    );
+
+    let mut scrollbar_state = ScrollbarState::new(total).position(scroll);
+    f.render_stateful_widget(
+        Scrollbar::new(ScrollbarOrientation::VerticalRight),
+        log_area,
+        &mut scrollbar_state,
+    );
+
+    let hint = if app.log_follow {
+        " ↑↓/jk/PgUp/PgDn: scroll  g: top  G/f: follow  Esc/q/l/←: back"
+    } else {
+        " ↑↓/jk/PgUp/PgDn: scroll  g: top  G/f: follow  Esc/q/l/←: back  [SCROLLED — f/G to re-follow]"
+    };
+    let hint_style = if app.log_follow {
+        Style::default().fg(Color::DarkGray)
+    } else {
+        Style::default().fg(Color::Yellow)
+    };
+    f.render_widget(Paragraph::new(hint).style(hint_style), chunks[1]);
+}
+
+// ─── Confirmation popup ───────────────────────────────────────────────────────
+
+pub fn draw_confirm_popup(f: &mut Frame, app: &App) {
+    let (title, msg) = match &app.confirm_action {
+        Some(ConfirmAction::Quit) => (" Exit ", "Exit teamplayer?\nAll running components will be stopped."),
+        Some(ConfirmAction::StopAll) => (" Stop All ", "Stop all running components?"),
+        None => return,
+    };
+
+    let area = f.area();
+    let popup_w = 52u16.min(area.width.saturating_sub(4));
+    let popup_h = 6u16; // 2 border + question (1-2 lines) + blank + hint
+    let x = area.x + (area.width.saturating_sub(popup_w)) / 2;
+    let y = area.y + (area.height.saturating_sub(popup_h)) / 2;
+    let popup_area = Rect::new(x, y, popup_w, popup_h);
+
+    f.render_widget(Clear, popup_area);
+
+    let content = format!("{msg}\n\nY / Enter — confirm    N / Esc — cancel");
+    f.render_widget(
+        Paragraph::new(content)
+            .block(
+                Block::default()
+                    .borders(Borders::ALL)
+                    .title(title)
+                    .border_style(Style::default().fg(Color::Yellow)),
+            )
+            .style(Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD))
+            .alignment(Alignment::Center),
+        popup_area,
     );
 }

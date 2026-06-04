@@ -149,7 +149,7 @@ pub static COMPONENT_DEFS: &[ComponentDef] = &[
         infrastructure: false,
         hardware_only: false,
         sim_component: false,
-        cmds: |p| vec![ros2_launch("bitbots_bringup", "motion.launch", &[&sim(p)])],
+        cmds: |p| vec![ros2_launch("bitbots_bringup", "motion.launch", &[&sim(p), "lowlevel:=false"])],
     },
     ComponentDef {
         name: "Game Controller",

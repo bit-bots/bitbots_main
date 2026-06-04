@@ -77,6 +77,12 @@ pub enum Screen {
     Config,
     Runtime,
     Logs(usize),
+    AllLogs,
+}
+
+pub enum ConfirmAction {
+    Quit,
+    StopAll,
 }
 
 #[derive(Clone, PartialEq, Debug)]
@@ -103,10 +109,12 @@ pub struct App {
     pub msg_tx: mpsc::UnboundedSender<AppMsg>,
     pub msg_rx: mpsc::UnboundedReceiver<AppMsg>,
     pub log_scroll: usize,
+    pub log_follow: bool,
     pub all_logs: Arc<Mutex<VecDeque<String>>>,
     /// Interleaved stdout/stderr for headless mode; preserves ordering under load.
     pub headless_log: Arc<Mutex<VecDeque<HeadlessLine>>>,
     pub show_log_panel: bool,
+    pub confirm_action: Option<ConfirmAction>,
 }
 
 impl App {
@@ -132,9 +140,11 @@ impl App {
             msg_tx,
             msg_rx,
             log_scroll: 0,
+            log_follow: true,
             all_logs: Arc::new(Mutex::new(VecDeque::with_capacity(5000))),
             headless_log: Arc::new(Mutex::new(VecDeque::with_capacity(5000))),
             show_log_panel: true,
+            confirm_action: None,
         }
     }
 
@@ -201,16 +211,78 @@ impl App {
         items
     }
 
+    /// Down: flags row → first component; within a column move down one row; Start → flags.
     pub fn config_focus_next(&mut self) {
-        let items = self.config_focus_items();
-        let pos = items.iter().position(|f| f == &self.config_focus).unwrap_or(0);
-        self.config_focus = items[(pos + 1) % items.len()].clone();
+        let n = self.toggleable_indices().len();
+        let left_count = (n + 1) / 2;
+        self.config_focus = match self.config_focus.clone() {
+            // Flags row: jump straight into the component grid
+            ConfigFocus::Zenoh | ConfigFocus::Sim | ConfigFocus::Fieldname | ConfigFocus::DsdFile => {
+                if n > 0 { ConfigFocus::Component(0) } else { ConfigFocus::Start }
+            }
+            // Left column: move down or fall through to Start
+            ConfigFocus::Component(i) if i < left_count => {
+                if i + 1 < left_count { ConfigFocus::Component(i + 1) } else { ConfigFocus::Start }
+            }
+            // Right column: move down or fall through to Start
+            ConfigFocus::Component(i) => {
+                if i + 1 < n { ConfigFocus::Component(i + 1) } else { ConfigFocus::Start }
+            }
+            // Start wraps back to flags
+            ConfigFocus::Start => ConfigFocus::Zenoh,
+        };
     }
 
+    /// Up: top of left column → Zenoh; top of right column → DsdFile; Start → last component; flags → Start.
     pub fn config_focus_prev(&mut self) {
-        let items = self.config_focus_items();
-        let pos = items.iter().position(|f| f == &self.config_focus).unwrap_or(0);
-        self.config_focus = items[(pos + items.len() - 1) % items.len()].clone();
+        let n = self.toggleable_indices().len();
+        let left_count = (n + 1) / 2;
+        self.config_focus = match self.config_focus.clone() {
+            // Flags row wraps to Start
+            ConfigFocus::Zenoh | ConfigFocus::Sim | ConfigFocus::Fieldname | ConfigFocus::DsdFile => {
+                ConfigFocus::Start
+            }
+            // Top of left column → back to flags (left side)
+            ConfigFocus::Component(0) => ConfigFocus::Zenoh,
+            // Top of right column → back to flags (right side)
+            ConfigFocus::Component(i) if i == left_count => ConfigFocus::DsdFile,
+            // Move up within a column
+            ConfigFocus::Component(i) => ConfigFocus::Component(i - 1),
+            // Start → bottom of whichever column is longer
+            ConfigFocus::Start => {
+                if n > 0 { ConfigFocus::Component(n - 1) } else { ConfigFocus::Zenoh }
+            }
+        };
+    }
+
+    pub fn config_focus_right(&mut self) {
+        let n = self.toggleable_indices().len();
+        let left_count = (n + 1) / 2;
+        match self.config_focus.clone() {
+            ConfigFocus::Zenoh => self.config_focus = ConfigFocus::Sim,
+            ConfigFocus::Sim => self.config_focus = ConfigFocus::Fieldname,
+            ConfigFocus::Fieldname => self.config_focus = ConfigFocus::DsdFile,
+            ConfigFocus::Component(i) if i < left_count => {
+                let right = i + left_count;
+                if right < n {
+                    self.config_focus = ConfigFocus::Component(right);
+                }
+            }
+            _ => {}
+        }
+    }
+
+    pub fn config_focus_left(&mut self) {
+        let left_count = (self.toggleable_indices().len() + 1) / 2;
+        match self.config_focus.clone() {
+            ConfigFocus::Sim => self.config_focus = ConfigFocus::Zenoh,
+            ConfigFocus::Fieldname => self.config_focus = ConfigFocus::Sim,
+            ConfigFocus::DsdFile => self.config_focus = ConfigFocus::Fieldname,
+            ConfigFocus::Component(i) if i >= left_count => {
+                self.config_focus = ConfigFocus::Component(i - left_count);
+            }
+            _ => {}
+        }
     }
 
     pub fn runtime_visible_indices(&self) -> Vec<usize> {

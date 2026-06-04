@@ -5,10 +5,13 @@
     <arg name="walking" default="true" description="start walking" />
     <arg name="torqueless_mode" default="false" description="start without torque, for example for testing the falling detection"/>
     <arg name="tts" default="true" description="Whether to speak" />
+    <arg name="lowlevel" default="true" description="Whether to start the lowlevel hardware interface" />
 
     <!-- launch the hardware interface -->
     <group unless="$(var sim)">
-        <include file="$(find-pkg-share livelybot_bringup)/launch/lowlevel.launch" />
+        <group if="$(var lowlevel)">
+            <include file="$(find-pkg-share livelybot_bringup)/launch/lowlevel.launch" />
+        </group>
     </group>
 
     <!-- launch the base footprint -->

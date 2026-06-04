@@ -1,6 +1,6 @@
 use crossterm::event::{KeyCode, KeyModifiers};
 
-use crate::app::{App, ConfigFocus, ProcState, Screen};
+use crate::app::{App, ConfirmAction, ConfigFocus, ProcState, Screen};
 use crate::components::COMPONENT_DEFS;
 
 pub async fn handle_config_key(app: &mut App, key: KeyCode, modifiers: KeyModifiers) -> bool {
@@ -15,6 +15,8 @@ pub async fn handle_config_key(app: &mut App, key: KeyCode, modifiers: KeyModifi
         }
         (_, KeyCode::Down) => app.config_focus_next(),
         (_, KeyCode::Up) => app.config_focus_prev(),
+        (_, KeyCode::Right) => app.config_focus_right(),
+        (_, KeyCode::Left) => app.config_focus_left(),
 
         // Zenoh toggle
         (ConfigFocus::Zenoh, KeyCode::Char(' ') | KeyCode::Enter) => {
@@ -73,7 +75,9 @@ pub async fn handle_config_key(app: &mut App, key: KeyCode, modifiers: KeyModifi
         }
 
         // Quit
-        (_, KeyCode::Char('q') | KeyCode::Char('Q') | KeyCode::Esc) => return true,
+        (_, KeyCode::Char('q') | KeyCode::Char('Q') | KeyCode::Esc) => {
+            app.confirm_action = Some(ConfirmAction::Quit);
+        }
 
         _ => {}
     }
@@ -111,7 +115,7 @@ pub async fn handle_runtime_key(app: &mut App, key: KeyCode, _modifiers: KeyModi
             if let Some(idx) = comp_idx {
                 match app.components[idx].state {
                     ProcState::Running => app.restart_component(idx),
-                    ProcState::Stopping | ProcState::Restarting => {} // already terminating
+                    ProcState::Stopping | ProcState::Restarting => {}
                     _ => app.start_component(idx).await,
                 }
             }
@@ -120,15 +124,33 @@ pub async fn handle_runtime_key(app: &mut App, key: KeyCode, _modifiers: KeyModi
         KeyCode::Char('l') => {
             if let Some(idx) = comp_idx {
                 app.log_scroll = app.components[idx].logs.lock().unwrap().len().saturating_sub(1);
+                app.log_follow = true;
                 app.screen = Screen::Logs(idx);
             }
         }
 
-        KeyCode::Char('v') => app.show_log_panel = !app.show_log_panel,
+        // Right: show sidebar if hidden, open AllLogs if sidebar already visible
+        KeyCode::Right => {
+            if app.show_log_panel {
+                app.log_scroll = app.all_logs.lock().unwrap().len().saturating_sub(1);
+                app.log_follow = true;
+                app.screen = Screen::AllLogs;
+            } else {
+                app.show_log_panel = true;
+            }
+        }
+
+        // Left: hide sidebar
+        KeyCode::Left => {
+            app.show_log_panel = false;
+        }
+
         KeyCode::Char('a') => app.start_all_enabled().await,
-        KeyCode::Char('x') => app.stop_all().await,
+        KeyCode::Char('x') => app.confirm_action = Some(ConfirmAction::StopAll),
         KeyCode::Esc => app.screen = Screen::Config,
-        KeyCode::Char('q') | KeyCode::Char('Q') => return true,
+        KeyCode::Char('q') | KeyCode::Char('Q') => {
+            app.confirm_action = Some(ConfirmAction::Quit);
+        }
         _ => {}
     }
     false
@@ -141,25 +163,75 @@ pub async fn handle_logs_key(
     comp_idx: usize,
 ) -> bool {
     let log_len = app.components[comp_idx].logs.lock().unwrap().len();
+    scroll_keys(app, key, log_len);
     match key {
-        KeyCode::Down | KeyCode::Char('j') => {
-            app.log_scroll = (app.log_scroll + 1).min(log_len.saturating_sub(1));
-        }
-        KeyCode::Up | KeyCode::Char('k') => {
-            app.log_scroll = app.log_scroll.saturating_sub(1);
-        }
-        KeyCode::PageDown => {
-            app.log_scroll = (app.log_scroll + 20).min(log_len.saturating_sub(1));
-        }
-        KeyCode::PageUp => {
-            app.log_scroll = app.log_scroll.saturating_sub(20);
-        }
-        KeyCode::Char('G') => app.log_scroll = log_len.saturating_sub(1),
-        KeyCode::Char('g') => app.log_scroll = 0,
         KeyCode::Esc | KeyCode::Char('q') | KeyCode::Char('l') => {
             app.screen = Screen::Runtime;
         }
+        KeyCode::Char('Q') => app.confirm_action = Some(ConfirmAction::Quit),
         _ => {}
+    }
+    false
+}
+
+pub fn handle_all_logs_key(app: &mut App, key: KeyCode) -> bool {
+    let log_len = app.all_logs.lock().unwrap().len();
+    scroll_keys(app, key, log_len);
+    match key {
+        KeyCode::Esc | KeyCode::Char('q') | KeyCode::Char('l') | KeyCode::Left => {
+            app.screen = Screen::Runtime;
+        }
+        KeyCode::Char('Q') => app.confirm_action = Some(ConfirmAction::Quit),
+        _ => {}
+    }
+    false
+}
+
+/// Shared scroll key handling for both log views.
+fn scroll_keys(app: &mut App, key: KeyCode, log_len: usize) {
+    match key {
+        KeyCode::Down | KeyCode::Char('j') => {
+            let next = (app.log_scroll + 1).min(log_len.saturating_sub(1));
+            app.log_scroll = next;
+            app.log_follow = next >= log_len.saturating_sub(1);
+        }
+        KeyCode::Up | KeyCode::Char('k') => {
+            app.log_scroll = app.log_scroll.saturating_sub(1);
+            app.log_follow = false;
+        }
+        KeyCode::PageDown => {
+            let next = (app.log_scroll + 20).min(log_len.saturating_sub(1));
+            app.log_scroll = next;
+            app.log_follow = next >= log_len.saturating_sub(1);
+        }
+        KeyCode::PageUp => {
+            app.log_scroll = app.log_scroll.saturating_sub(20);
+            app.log_follow = false;
+        }
+        KeyCode::Char('G') | KeyCode::Char('f') => {
+            app.log_scroll = log_len.saturating_sub(1);
+            app.log_follow = true;
+        }
+        KeyCode::Char('g') => {
+            app.log_scroll = 0;
+            app.log_follow = false;
+        }
+        _ => {}
+    }
+}
+
+pub async fn handle_confirm_key(app: &mut App, key: KeyCode) -> bool {
+    match key {
+        KeyCode::Char('y') | KeyCode::Char('Y') | KeyCode::Enter => {
+            match app.confirm_action.take() {
+                Some(ConfirmAction::Quit) => return true,
+                Some(ConfirmAction::StopAll) => app.stop_all().await,
+                None => {}
+            }
+        }
+        _ => {
+            app.confirm_action = None;
+        }
     }
     false
 }
