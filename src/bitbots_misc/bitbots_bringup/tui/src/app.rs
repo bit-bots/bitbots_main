@@ -14,6 +14,11 @@ use crate::components::{COMPONENT_DEFS, FIELDNAME_DEFAULT_HW, FIELDNAME_DEFAULT_
 
 // ─── State types ──────────────────────────────────────────────────────────────
 
+pub enum HeadlessLine {
+    Stdout(String),
+    Stderr(String),
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub enum ProcState {
     Idle,
@@ -99,6 +104,8 @@ pub struct App {
     pub msg_rx: mpsc::UnboundedReceiver<AppMsg>,
     pub log_scroll: usize,
     pub all_logs: Arc<Mutex<VecDeque<String>>>,
+    /// Interleaved stdout/stderr for headless mode; preserves ordering under load.
+    pub headless_log: Arc<Mutex<VecDeque<HeadlessLine>>>,
     pub show_log_panel: bool,
 }
 
@@ -126,6 +133,7 @@ impl App {
             msg_rx,
             log_scroll: 0,
             all_logs: Arc::new(Mutex::new(VecDeque::with_capacity(5000))),
+            headless_log: Arc::new(Mutex::new(VecDeque::with_capacity(5000))),
             show_log_panel: true,
         }
     }
@@ -245,6 +253,7 @@ impl App {
 
         let logs = self.components[comp_idx].logs.clone();
         let all_logs = self.all_logs.clone();
+        let headless_log = self.headless_log.clone();
         self.components[comp_idx].state = ProcState::Running;
         self.components[comp_idx].pids.clear();
         self.components[comp_idx].task_handles.clear();
@@ -256,6 +265,7 @@ impl App {
             let tx = self.msg_tx.clone();
             let logs = logs.clone();
             let all_logs = all_logs.clone();
+            let headless_log = headless_log.clone();
             let key = key.clone();
 
             let mut child = match Command::new(&cmd_args[0])
@@ -288,43 +298,52 @@ impl App {
                     mut r: BufReader<R>,
                     logs: Arc<Mutex<VecDeque<String>>>,
                     all_logs: Arc<Mutex<VecDeque<String>>>,
-                    prefix: &'static str,
+                    headless_log: Arc<Mutex<VecDeque<HeadlessLine>>>,
+                    is_stderr: bool,
                     comp_name: &'static str,
                 ) {
+                    let tui_prefix = if is_stderr { "[ERR] " } else { "" };
                     let mut line = String::new();
                     while let Ok(n) = r.read_line(&mut line).await {
                         if n == 0 {
                             break;
                         }
-                        let entry = format!("{}{}", prefix, line.trim_end_matches('\n'));
+                        let raw = line.trim_end_matches('\n');
+                        let tui_entry = format!("{}{}", tui_prefix, raw);
                         {
                             let mut l = logs.lock().unwrap();
-                            if l.len() >= 2000 {
-                                l.pop_front();
-                            }
-                            l.push_back(entry.clone());
+                            if l.len() >= 2000 { l.pop_front(); }
+                            l.push_back(tui_entry.clone());
                         }
                         {
                             let mut l = all_logs.lock().unwrap();
-                            if l.len() >= 5000 {
-                                l.pop_front();
-                            }
-                            l.push_back(format!("[{comp_name}] {entry}"));
+                            if l.len() >= 5000 { l.pop_front(); }
+                            l.push_back(format!("[{comp_name}] {tui_entry}"));
+                        }
+                        {
+                            let tagged = format!("[{comp_name}] {raw}");
+                            let mut l = headless_log.lock().unwrap();
+                            if l.len() >= 5000 { l.pop_front(); }
+                            l.push_back(if is_stderr {
+                                HeadlessLine::Stderr(tagged)
+                            } else {
+                                HeadlessLine::Stdout(tagged)
+                            });
                         }
                         line.clear();
                     }
                 }
                 // Read stdout and stderr concurrently so neither blocks the other.
-                let (logs2, all2) = (logs.clone(), all_logs.clone());
+                let (logs2, all2, hl2) = (logs.clone(), all_logs.clone(), headless_log.clone());
                 tokio::join!(
                     async move {
                         if let Some(r) = stdout {
-                            pump(r, logs2, all2, "", comp_name).await;
+                            pump(r, logs2, all2, hl2, false, comp_name).await;
                         }
                     },
                     async move {
                         if let Some(r) = stderr {
-                            pump(r, logs, all_logs, "[ERR] ", comp_name).await;
+                            pump(r, logs, all_logs, headless_log, true, comp_name).await;
                         }
                     }
                 );

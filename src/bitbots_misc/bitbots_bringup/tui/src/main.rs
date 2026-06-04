@@ -157,9 +157,12 @@ async fn run_headless(app: &mut App) -> Result<()> {
                     app.start_component(idx).await;
                 }
                 {
-                    let mut logs = app.all_logs.lock().unwrap();
-                    while let Some(entry) = logs.pop_front() {
-                        println!("{entry}");
+                    let mut q = app.headless_log.lock().unwrap();
+                    while let Some(entry) = q.pop_front() {
+                        match entry {
+                            app::HeadlessLine::Stdout(s) => println!("{s}"),
+                            app::HeadlessLine::Stderr(s) => eprintln!("{s}"),
+                        }
                     }
                 }
                 let any_running = app.components.iter().any(|c| {
