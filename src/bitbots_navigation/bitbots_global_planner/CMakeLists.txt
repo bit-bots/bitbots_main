@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(bitbots_rust_nav)
+project(bitbots_global_planner)
 
 find_package(ament_cmake REQUIRED)
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development)

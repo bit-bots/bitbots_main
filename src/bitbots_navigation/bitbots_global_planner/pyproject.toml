@@ -3,7 +3,7 @@ requires = ["maturin>=1.7,<2.0"]
 build-backend = "maturin"
 
 [project]
-name = "bitbots_rust_nav"
+name = "bitbots_global_planner"
 requires-python = ">=3.12"
 classifiers = [
     "Programming Language :: Rust",

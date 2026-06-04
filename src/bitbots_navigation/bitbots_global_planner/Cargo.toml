@@ -1,10 +1,10 @@
 [package]
-name = "bitbots_rust_nav"
+name = "bitbots_global_planner"
 version = "0.1.2"
 edition = "2021"
 
 [lib]
-name = "bitbots_rust_nav"
+name = "bitbots_global_planner"
 crate-type = ["cdylib", "rlib"]
 
 [[bin]]

@@ -1,5 +1,5 @@
 [package]
-name = "bitbots_rust_nav"
+name = "bitbots_global_planner"
 version = "0.1.0"
 
 [package.build]

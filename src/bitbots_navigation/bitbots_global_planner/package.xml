@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-    <name>bitbots_rust_nav</name>
+    <name>bitbots_global_planner</name>
     <version>0.1.2</version>
     <description>Rust-based navigation primitives (obstacle map, visibility graph) exposed as a Python extension.</description>
 
