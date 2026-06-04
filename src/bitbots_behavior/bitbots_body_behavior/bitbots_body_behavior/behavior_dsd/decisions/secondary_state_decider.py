@@ -74,9 +74,7 @@ class SecondaryStateTeamDecider(AbstractDecisionElement):
             if self.blackboard.gamestate.get_kicking_team() == self.team_id:
                 return "OUR"
             # @TODO: handle this better and potentially adapt KickOffTimeUp
-            elif (
-                self.blackboard.gamestate.get_kicking_team() == 255 or self.blackboard.gamestate.get_kicking_team() == 0
-            ):
+            elif self.blackboard.gamestate.get_kicking_team() == 255:
                 return "NONE"
 
             return "OTHER"

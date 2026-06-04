@@ -28,17 +28,17 @@ jobs:
       - name: Configure git to trust repository
         run: git config --global --add safe.directory /__w/bitbots_main/bitbots_main
 
-      - name: Install host dependencies
-        run: scripts/make_basler.sh --ci
-
       - name: Set up workspace
-        uses: prefix-dev/setup-pixi@v0.9.5
+        uses: prefix-dev/setup-pixi@v0.9.6
         with:
-          pixi-version: v0.63.1
+          pixi-version: v0.69.0
           cache: true
 
       - name: Build
-        run: pixi run build
+        run: pixi run -e default build
+
+      - name: Start ZenohD
+        run: ros2 run rmw_zenoh_cpp rmw_zenohd &
 
       - name: Test
-        run: pixi run test --parallel-workers 1
+        run: pixi run -e default test

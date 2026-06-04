@@ -7,25 +7,34 @@ Robots
 ------
 
 We have multiple robots in our team, each with their own hostname and IP address.
+Pi Plus Cameras do not use IP addresses, but are connected via USB.
 
 .. note::
-   Current status as of September 2023:
+   Current status as of May 2026:
 
-+--------+----------+-------------+-------------+
-| Name   | Hostname | IP          | Camera IP   |
-+========+==========+=============+=============+
-| Amy    | nuc1     | 172.20.1.11 | 172.20.4.11 |
-+--------+----------+-------------+-------------+
-| Rory   | nuc2     | 172.20.1.12 | 172.20.4.12 |
-+--------+----------+-------------+-------------+
-| Jack   | nuc3     | 172.20.1.13 | 172.20.4.13 |
-+--------+----------+-------------+-------------+
-| Donna  | nuc4     | 172.20.1.14 | 172.20.4.14 |
-+--------+----------+-------------+-------------+
-| Melody | nuc5     | 172.20.1.15 | 172.20.4.15 |
-+--------+----------+-------------+-------------+
-| Rose   | nuc6     | 172.20.1.16 | 172.20.4.16 |
-+--------+----------+-------------+-------------+
++----------+----------+------- --+-------------+-------------+
+| Name     | Hostname | Username | IP          | Camera IP   |
++==========+==========+==========+=============+=============+
+| Kalliope | nvidia   | nvidia   | not defined | N/A         |
++----------+----------+----------+-------------+-------------+
+| Mickey   | nvidia   | nvidia   | not defined | N/A         |
++----------+----------+----------+-------------+-------------+
+| Pink     | nvidia   | nvidia   | not defined | N/A         |
++----------+----------+----------+-------------+-------------+
+| Romeo    | nvidia   | nvidia   | not defined | N/A         |
++----------+----------+----------+-------------+-------------+
+| Amy      | nuc1     | bitbots  | 172.20.1.11 | 172.20.4.11 |
++----------+----------+----------+-------------+-------------+
+| Rory     | nuc2     | bitbots  | 172.20.1.12 | 172.20.4.12 |
++----------+----------+----------+-------------+-------------+
+| Jack     | nuc3     | bitbots  | 172.20.1.13 | 172.20.4.13 |
++----------+----------+----------+-------------+-------------+
+| Donna    | nuc4     | bitbots  | 172.20.1.14 | 172.20.4.14 |
++----------+----------+----------+-------------+-------------+
+| Melody   | nuc5     | bitbots  | 172.20.1.15 | 172.20.4.15 |
++----------+----------+----------+-------------+-------------+
+| Rose     | nuc6     | bitbots  | 172.20.1.16 | 172.20.4.16 |
++----------+----------+----------+-------------+-------------+
 
 Configuration with Ansible
 --------------------------
@@ -47,7 +56,6 @@ Our Ansible setup is able to configure the following aspects of the robot:
 - Network/IP configuration including:
    - Configuration of competition Wi-Fi networks (see :doc:`competition_wifi`)
    - Configuration of USB-Ethernet adapter as slave of a bridge interface, to allow for removal without losing the interface utilized by ros/dds
-   - Configuration of custom MTU of 9000 (jumbo frames) for Ethernet connection to the basler camera
 - Installation and configuration of ROS and DDS
 - Configuration of Vulkan packages/drivers
 
@@ -55,14 +63,14 @@ To run the whole setup on a specific robot execute the following in the ansible 
 
 .. code-block:: bash
 
-  ansible-playbook ./playbooks/setup_robots.yml --ask-become-pass --limit <nuc*>
+  ansible-playbook ./playbooks/setup_robots.yml --ask-become-pass --limit <hostname>
 
 If you don't have access to the secret git-crypt data you can add ``--skip-tags git_crypt`` to the command.
 
 Ansible will execute the playbook with the ``bitbots`` user on the robots and will ask for its password to be able to utilize ``sudo``.
 
 .. note::
-   Does DNS not resolve ``nuc*``? See :doc:`configure_hostnames` to fix this.
+   Does DNS not resolve ``hostname``? See :doc:`configure_hostnames` to fix this.
 
 Deployment
 ----------

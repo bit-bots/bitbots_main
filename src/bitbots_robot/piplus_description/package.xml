@@ -5,7 +5,6 @@
   <version>2.1.2</version>
   <description>URDF description of the Pi Plus robot.</description>
   <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
-  <maintainer email="2krueger@studium.informatik.uni-hamburg.de">Mark Oliver Krüger</maintainer>
   <author email="info@bit-bots.de">Hamburg Bit-Bots</author>
   <license>MIT</license>  
 

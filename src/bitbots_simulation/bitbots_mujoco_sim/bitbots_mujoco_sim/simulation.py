@@ -1,9 +1,10 @@
 import math
 import time
+from collections.abc import Callable
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable
 
 import mujoco
+import numpy as np
 from ament_index_python.packages import get_package_share_directory
 from mujoco import viewer
 from rclpy.node import Node
@@ -15,9 +16,6 @@ from std_msgs.msg import Float32
 from bitbots_msgs.msg import JointCommand
 from bitbots_mujoco_sim.robot import Robot
 
-if TYPE_CHECKING:
-    from bitbots_mujoco_sim.simulation import RobotSimulation
-
 
 class Simulation(Node):
     """Manages the MuJoCo simulation state and its components."""
@@ -27,29 +25,80 @@ class Simulation(Node):
         self.declare_parameter("world_file", "")
         self.declare_parameter("use_namespace", True)
 
+        # These default value are oriented on some real world data in standstill.
+        # They are a bit worse than what was observed there.
+        # No systematic bias could be observed, so they are kept at zero as of now.
+        self.declare_parameter("imu_accelerometer_gaussian_stddev", 0.05)
+        self.declare_parameter("imu_gyro_gaussian_stddev", 0.005)
+
+        self.declare_parameter("imu_accelerometer_bias_stddev", 0.0)
+        self.declare_parameter("imu_gyro_bias_stddev", 0.0)
+
+        # The orientation noise IRL seems to be extremely close to 0 in standstill.
+        # Further measurements may reveal some larger deviations, but for now we just use 0.
+        self.declare_parameter("orientation_gaussian_stddev", 0.0)
+        self.declare_parameter("orientation_bias_stddev", 0.0)
+
+        self.declare_parameter("imu_frame", "imu_frame")
+        self.declare_parameter("camera_optical_frame", "zed_left_camera_optical_frame")
+
         self.package_path = get_package_share_directory("bitbots_mujoco_sim")
         world_file = self.get_parameter("world_file").get_parameter_value().string_value
         if not world_file:
             world_file = self._generate_default_world()
 
         self.use_namespace: bool = self.get_parameter("use_namespace").get_parameter_value().bool_value
+        self.imu_accelerometer_gaussian_stddev = (
+            self.get_parameter("imu_accelerometer_gaussian_stddev").get_parameter_value().double_value
+        )
+        self.imu_accelerometer_bias_stddev = (
+            self.get_parameter("imu_accelerometer_bias_stddev").get_parameter_value().double_value
+        )
+        self.imu_gyro_gaussian_stddev = (
+            self.get_parameter("imu_gyro_gaussian_stddev").get_parameter_value().double_value
+        )
+        self.imu_gyro_bias_stddev = self.get_parameter("imu_gyro_bias_stddev").get_parameter_value().double_value
+        self.orientation_gaussian_stddev = (
+            self.get_parameter("orientation_gaussian_stddev").get_parameter_value().double_value
+        )
+        self.orientation_bias_stddev = self.get_parameter("orientation_bias_stddev").get_parameter_value().double_value
+        self._rng = np.random.default_rng()
+
         self.model: mujoco.MjModel = mujoco.MjModel.from_xml_path(world_file)
         self.data: mujoco.MjData = mujoco.MjData(self.model)
         self.robots: list[RobotSimulation] = [
-            RobotSimulation(self, Robot(self.model, self.data, idx)) for idx in self._find_robot_indices()
+            RobotSimulation(
+                self,
+                Robot(
+                    self.model,
+                    self.data,
+                    idx,
+                    noise_config={
+                        "gyro_gaussian_stddev": self.imu_gyro_gaussian_stddev,
+                        "gyro_bias_stddev": self.imu_gyro_bias_stddev,
+                        "accelerometer_gaussian_stddev": self.imu_accelerometer_gaussian_stddev,
+                        "accelerometer_bias_stddev": self.imu_accelerometer_bias_stddev,
+                        "orientation_gaussian_stddev": self.orientation_gaussian_stddev,
+                        "orientation_bias_stddev": self.orientation_bias_stddev,
+                    },
+                    rng=self._rng,
+                ),
+            )
+            for idx in self._find_robot_indices()
         ]
 
         self.time = 0.0
         self.time_message = Time(seconds=0, nanoseconds=0).to_msg()
         self.timestep = self.model.opt.timestep
         self.step_number = 0
+        self.paused = False
         self.real_time_factor = 1.0 / 0.94  # add a small buffer to try to achieve the requested RTF
         self.measured_rtf = 1.0
         self.clock_publisher = self.create_publisher(Clock, "clock", 1)
         self.create_subscription(Float32, "real_time_factor", self.real_time_factor_callback, 1)
 
-        self.imu_frame_id = self.get_parameter_or("imu_frame", "imu_frame")
-        self.camera_optical_frame_id = self.get_parameter_or("camera_optical_frame", "zed_left_camera_optical_frame")
+        self.imu_frame_id = self.get_parameter("imu_frame").get_parameter_value().string_value
+        self.camera_optical_frame_id = self.get_parameter("camera_optical_frame").get_parameter_value().string_value
         self.camera_active = True
 
         self.events = [
@@ -80,9 +129,16 @@ class Simulation(Node):
             if name.startswith("robot_base_link_") and name.split("_")[-1].isdigit()
         )
 
+    def _key_callback(self, key: int) -> None:
+        # Exceptions in this callback completly deadlock the process.
+        if key == ord(" "):
+            self.paused = not self.paused
+
     def run(self) -> None:
         print("Starting simulation viewer...")
-        with viewer.launch_passive(self.model, self.data, show_left_ui=False, show_right_ui=False) as view:
+        with viewer.launch_passive(
+            self.model, self.data, key_callback=self._key_callback, show_left_ui=False, show_right_ui=False
+        ) as view:
             # pos="7.709 -7.854 6.511" xyaxes="0.726 0.687 -0.000 -0.357 0.377 0.855
             view.cam.type = mujoco.mjtCamera.mjCAMERA_FREE
             view.cam.lookat[0] = 0.0
@@ -92,19 +148,22 @@ class Simulation(Node):
             view.cam.azimuth = 135.0
             view.cam.elevation = -30.0
             while view.is_running():
-                start_time = time.perf_counter()
-                self.step()
-                if self.step_number % 16 == 0:  # approx 30 fps
-                    view.set_texts((None, mujoco.mjtGridPos.mjGRID_TOPLEFT, f"RTF: {self.measured_rtf:.2f}x", ""))
-                view.sync(state_only=True)
-                stop_time = time.perf_counter()
-                elapsed = stop_time - start_time
-                expected_step_time = self.timestep / self.real_time_factor
-                time.sleep(max(0.0, expected_step_time - elapsed))
-                total_wall_time = time.perf_counter() - start_time
-                if total_wall_time > 0:
-                    # weighted ema so it does not fluctuate too much
-                    self.measured_rtf = 0.01 * (self.timestep / total_wall_time) + 0.99 * self.measured_rtf
+                if not self.paused:
+                    start_time = time.perf_counter()
+                    self.step()
+                    if self.step_number % 16 == 0:  # approx 30 fps
+                        view.set_texts((None, mujoco.mjtGridPos.mjGRID_TOPLEFT, f"RTF: {self.measured_rtf:.2f}x", ""))
+                    view.sync(state_only=True)
+                    stop_time = time.perf_counter()
+                    elapsed = stop_time - start_time
+                    expected_step_time = self.timestep / self.real_time_factor
+                    time.sleep(max(0.0, expected_step_time - elapsed))
+                    total_wall_time = time.perf_counter() - start_time
+                    if total_wall_time > 0:
+                        # weighted ema so it does not fluctuate too much
+                        self.measured_rtf = 0.01 * (self.timestep / total_wall_time) + 0.99 * self.measured_rtf
+                else:
+                    view.sync()
 
     def step(self) -> None:
         self.step_number += 1
@@ -188,14 +247,16 @@ class RobotSimulation:
         imu.header.stamp = self.simulation.time_message
         imu.header.frame_id = self.simulation.imu_frame_id
         imu.linear_acceleration.x, imu.linear_acceleration.y, imu.linear_acceleration.z = (
-            self.robot.sensors.accelerometer.data
+            self.robot.sensors.accelerometer.noisy_data
         )
 
         if imu.linear_acceleration.x == 0 and imu.linear_acceleration.y == 0 and imu.linear_acceleration.z == 0:
             imu.linear_acceleration.z = 0.001
 
-        imu.angular_velocity.x, imu.angular_velocity.y, imu.angular_velocity.z = self.robot.sensors.gyro.data
-        imu.orientation.w, imu.orientation.x, imu.orientation.y, imu.orientation.z = self.robot.sensors.orientation.data
+        imu.angular_velocity.x, imu.angular_velocity.y, imu.angular_velocity.z = self.robot.sensors.gyro.noisy_data
+        imu.orientation.w, imu.orientation.x, imu.orientation.y, imu.orientation.z = (
+            self.robot.sensors.orientation.noisy_data
+        )
         self.node_publishers["imu"].publish(imu)
 
     def publish_camera_event(self) -> None:
