@@ -3,7 +3,7 @@
     <arg name="sim" default="false"/>
     <arg name="viz" default="false"/>
     <arg name="torqueless_mode" default="false" description="start without torque, for example for testing the falling detection"/>
-    <arg name="tts" default="false" description="Whether to enable text-to-speech"/>
+    <arg name="tts" default="true" description="Whether to enable text-to-speech"/>
 
     <include file="$(find-pkg-share bitbots_parameter_blackboard)/launch/parameter_blackboard.launch">
         <arg name="sim" value="$(var sim)"/>
