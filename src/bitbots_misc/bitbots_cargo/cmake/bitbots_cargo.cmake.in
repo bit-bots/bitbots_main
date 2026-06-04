@@ -83,3 +83,88 @@ function(r2r_cargo)
   )
 
 endfunction()
+
+# Private helper: resolve the cargo workspace target directory.
+function(_cargo_get_target_dir OUT_DIR)
+  execute_process(
+    COMMAND cargo metadata --no-deps --format-version=1
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE _METADATA_JSON
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+  string(JSON _TARGET_DIR GET "${_METADATA_JSON}" target_directory)
+  set(${OUT_DIR} "${_TARGET_DIR}" PARENT_SCOPE)
+endfunction()
+
+# Build a pyo3 Python extension and install it flat into site-packages so
+# `import <package>` works after sourcing install/setup.bash.
+#
+# Usage: cargo_pyo3_extension([PACKAGE <cargo_crate_name>])
+#   PACKAGE defaults to ${PROJECT_NAME}
+function(cargo_pyo3_extension)
+  cmake_parse_arguments(_ARGS "" "PACKAGE" "" ${ARGN})
+  if(NOT _ARGS_PACKAGE)
+    set(_ARGS_PACKAGE ${PROJECT_NAME})
+  endif()
+
+  find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
+  _cargo_get_target_dir(_CARGO_TARGET_DIR)
+
+  execute_process(
+    COMMAND ${Python3_EXECUTABLE} -c
+      "import sysconfig; print(sysconfig.get_config_var('EXT_SUFFIX'))"
+    OUTPUT_VARIABLE _PYTHON_EXT_SUFFIX
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+  set(_PYTHON_INSTALL_DIR
+    lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}/site-packages)
+
+  add_custom_target(cargo_${_ARGS_PACKAGE} ALL
+    COMMAND ${CMAKE_COMMAND} "-E" "env" "--unset=MAKEFLAGS" "--unset=MFLAGS"
+      "PYO3_PYTHON=${Python3_EXECUTABLE}"
+      cargo build --profile colcon --package ${_ARGS_PACKAGE}
+        --features pyo3/extension-module --quiet
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    USES_TERMINAL
+    VERBATIM
+  )
+
+  install(CODE "
+    file(COPY
+      \"${_CARGO_TARGET_DIR}/colcon/lib${_ARGS_PACKAGE}.so\"
+      DESTINATION \"\${CMAKE_INSTALL_PREFIX}/${_PYTHON_INSTALL_DIR}/\")
+    file(RENAME
+      \"\${CMAKE_INSTALL_PREFIX}/${_PYTHON_INSTALL_DIR}/lib${_ARGS_PACKAGE}.so\"
+      \"\${CMAKE_INSTALL_PREFIX}/${_PYTHON_INSTALL_DIR}/${_ARGS_PACKAGE}${_PYTHON_EXT_SUFFIX}\")
+  ")
+endfunction()
+
+# Build a standalone Rust binary and install it to lib/${PROJECT_NAME}/ so
+# it is launchable via `ros2 run ${PROJECT_NAME} <binary_name>`.
+#
+# Usage: cargo_binary(<binary_name> [PACKAGE <cargo_crate_name>])
+#   PACKAGE defaults to ${PROJECT_NAME}
+function(cargo_binary BINARY_NAME)
+  cmake_parse_arguments(_ARGS "" "PACKAGE" "" ${ARGN})
+  if(NOT _ARGS_PACKAGE)
+    set(_ARGS_PACKAGE ${BINARY_NAME})
+  endif()
+
+  _cargo_get_target_dir(_CARGO_TARGET_DIR)
+
+  if(WIN32)
+    set(_SUFFIX ".exe")
+  else()
+    set(_SUFFIX "")
+  endif()
+
+  add_custom_target(cargo_${BINARY_NAME} ALL
+    COMMAND ${CMAKE_COMMAND} "-E" "env" "--unset=MAKEFLAGS" "--unset=MFLAGS"
+      cargo build --profile colcon --package ${_ARGS_PACKAGE} --quiet
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    USES_TERMINAL
+    VERBATIM
+  )
+
+  install(PROGRAMS ${_CARGO_TARGET_DIR}/colcon/${BINARY_NAME}${_SUFFIX}
+    DESTINATION lib/${PROJECT_NAME})
+endfunction()
