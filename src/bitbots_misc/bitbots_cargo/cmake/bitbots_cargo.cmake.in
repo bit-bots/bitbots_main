@@ -82,6 +82,18 @@ function(r2r_cargo)
       VERBATIM
   )
 
+  if(BUILD_TESTING)
+    add_test(
+      NAME cargo_test
+      COMMAND ${CMAKE_COMMAND} "-E" "env" "--unset=MAKEFLAGS" "--unset=MFLAGS"
+        "RUSTFLAGS=$ENV{RUSTFLAGS}"
+        "CMAKE_IDL_PACKAGES=$ENV{CMAKE_IDL_PACKAGES}"
+        "CMAKE_INCLUDE_DIRS=$ENV{CMAKE_INCLUDE_DIRS}"
+        cargo test --package ${PROJECT_NAME}
+      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    )
+  endif()
+
 endfunction()
 
 # Private helper: resolve the cargo workspace target directory.
@@ -136,6 +148,16 @@ function(cargo_pyo3_extension)
       \"\${CMAKE_INSTALL_PREFIX}/${_PYTHON_INSTALL_DIR}/lib${_ARGS_PACKAGE}.so\"
       \"\${CMAKE_INSTALL_PREFIX}/${_PYTHON_INSTALL_DIR}/${_ARGS_PACKAGE}${_PYTHON_EXT_SUFFIX}\")
   ")
+
+  if(BUILD_TESTING)
+    add_test(
+      NAME cargo_test
+      COMMAND ${CMAKE_COMMAND} "-E" "env" "--unset=MAKEFLAGS" "--unset=MFLAGS"
+        "PYO3_PYTHON=${Python3_EXECUTABLE}"
+        cargo test --package ${_ARGS_PACKAGE} --features pyo3/extension-module
+      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    )
+  endif()
 endfunction()
 
 # Build a standalone Rust binary and install it to lib/${PROJECT_NAME}/ so
@@ -167,4 +189,13 @@ function(cargo_binary BINARY_NAME)
 
   install(PROGRAMS ${_CARGO_TARGET_DIR}/colcon/${BINARY_NAME}${_SUFFIX}
     DESTINATION lib/${PROJECT_NAME})
+
+  if(BUILD_TESTING)
+    add_test(
+      NAME cargo_test
+      COMMAND ${CMAKE_COMMAND} "-E" "env" "--unset=MAKEFLAGS" "--unset=MFLAGS"
+        cargo test --package ${_ARGS_PACKAGE}
+      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    )
+  endif()
 endfunction()
