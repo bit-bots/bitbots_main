@@ -25,7 +25,7 @@ execute_process(
 string(JSON CARGO_TARGET_DIR GET "${CARGO_METADATA_JSON}" target_directory)
 
 add_custom_target(cargo_teamplayer ALL
-    COMMAND ${CMAKE_COMMAND} "-E" "env" "cargo" "build" "--profile" "colcon" "--package" "teamplayer" "--quiet"
+    COMMAND ${CMAKE_COMMAND} "-E" "env" "--unset=MAKEFLAGS" "--unset=MFLAGS" "cargo" "build" "--profile" "colcon" "--package" "teamplayer" "--quiet"
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     USES_TERMINAL
     VERBATIM

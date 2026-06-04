@@ -23,7 +23,7 @@ set(PYTHON_INSTALL_DIR
     lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}/site-packages)
 
 add_custom_target(cargo_rust_nav ALL
-    COMMAND ${CMAKE_COMMAND} "-E" "env"
+    COMMAND ${CMAKE_COMMAND} "-E" "env" "--unset=MAKEFLAGS" "--unset=MFLAGS"
         "PYO3_PYTHON=${Python3_EXECUTABLE}"
         cargo build --profile colcon --package ${PROJECT_NAME}
             --features pyo3/extension-module --quiet
