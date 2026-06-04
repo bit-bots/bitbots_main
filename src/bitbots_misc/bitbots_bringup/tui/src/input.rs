@@ -189,27 +189,29 @@ pub fn handle_all_logs_key(app: &mut App, key: KeyCode) -> bool {
 
 /// Shared scroll key handling for both log views.
 fn scroll_keys(app: &mut App, key: KeyCode, log_len: usize) {
+    let vh = app.log_viewport_height.get();
+    let max_scroll = log_len.saturating_sub(vh.max(1));
     match key {
         KeyCode::Down | KeyCode::Char('j') => {
-            let next = (app.log_scroll + 1).min(log_len.saturating_sub(1));
+            let next = (app.log_scroll + 1).min(max_scroll);
             app.log_scroll = next;
-            app.log_follow = next >= log_len.saturating_sub(1);
+            app.log_follow = next >= max_scroll;
         }
         KeyCode::Up | KeyCode::Char('k') => {
             app.log_scroll = app.log_scroll.saturating_sub(1);
             app.log_follow = false;
         }
         KeyCode::PageDown => {
-            let next = (app.log_scroll + 20).min(log_len.saturating_sub(1));
+            let next = (app.log_scroll + 20).min(max_scroll);
             app.log_scroll = next;
-            app.log_follow = next >= log_len.saturating_sub(1);
+            app.log_follow = next >= max_scroll;
         }
         KeyCode::PageUp => {
             app.log_scroll = app.log_scroll.saturating_sub(20);
             app.log_follow = false;
         }
         KeyCode::Char('G') | KeyCode::Char('f') => {
-            app.log_scroll = log_len.saturating_sub(1);
+            app.log_scroll = max_scroll;
             app.log_follow = true;
         }
         KeyCode::Char('g') => {

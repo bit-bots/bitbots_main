@@ -110,6 +110,8 @@ pub struct App {
     pub msg_rx: mpsc::UnboundedReceiver<AppMsg>,
     pub log_scroll: usize,
     pub log_follow: bool,
+    /// Viewport height written by the draw function so scroll_keys can clamp correctly.
+    pub log_viewport_height: std::cell::Cell<usize>,
     pub all_logs: Arc<Mutex<VecDeque<String>>>,
     /// Interleaved stdout/stderr for headless mode; preserves ordering under load.
     pub headless_log: Arc<Mutex<VecDeque<HeadlessLine>>>,
@@ -141,6 +143,7 @@ impl App {
             msg_rx,
             log_scroll: 0,
             log_follow: true,
+            log_viewport_height: std::cell::Cell::new(0),
             all_logs: Arc::new(Mutex::new(VecDeque::with_capacity(5000))),
             headless_log: Arc::new(Mutex::new(VecDeque::with_capacity(5000))),
             show_log_panel: true,

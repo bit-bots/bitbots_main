@@ -477,6 +477,7 @@ pub fn draw_logs(f: &mut Frame, app: &App, comp_idx: usize) {
     );
 
     let log_height = chunks[1].height.saturating_sub(2) as usize; // inner height (minus borders)
+    app.log_viewport_height.set(log_height);
     let (lines, total, scroll) = {
         let logs = comp.logs.lock().unwrap();
         let total = logs.len();
@@ -501,7 +502,7 @@ pub fn draw_logs(f: &mut Frame, app: &App, comp_idx: usize) {
         log_area,
     );
 
-    let mut scrollbar_state = ScrollbarState::new(total).position(scroll);
+    let mut scrollbar_state = ScrollbarState::new(total.saturating_sub(log_height)).position(scroll);
     f.render_stateful_widget(
         Scrollbar::new(ScrollbarOrientation::VerticalRight),
         log_area,
@@ -531,6 +532,7 @@ pub fn draw_all_logs(f: &mut Frame, app: &App) {
         .split(area);
 
     let log_height = chunks[0].height.saturating_sub(2) as usize;
+    app.log_viewport_height.set(log_height);
     let (lines, total, scroll) = {
         let logs = app.all_logs.lock().unwrap();
         let total = logs.len();
@@ -570,7 +572,7 @@ pub fn draw_all_logs(f: &mut Frame, app: &App) {
         log_area,
     );
 
-    let mut scrollbar_state = ScrollbarState::new(total).position(scroll);
+    let mut scrollbar_state = ScrollbarState::new(total.saturating_sub(log_height)).position(scroll);
     f.render_stateful_widget(
         Scrollbar::new(ScrollbarOrientation::VerticalRight),
         log_area,
