@@ -33,5 +33,8 @@ message(STATUS "Cargo target dir: ${CARGO_TARGET_DIR}")
 install(PROGRAMS ${CARGO_TARGET_DIR}/colcon/${PROJECT_NAME}${SUFFIX}
         DESTINATION lib/${PROJECT_NAME})
 
+install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
+
 # we need this for ros/colcon
 ament_package()
