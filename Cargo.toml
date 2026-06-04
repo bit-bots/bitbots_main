@@ -12,3 +12,4 @@ resolver = "2"
 # separate from "normal" rust building.
 [profile.colcon]
 inherits = "release"
+debug = true
