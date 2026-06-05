@@ -200,20 +200,6 @@ impl App {
             .collect()
     }
 
-    pub fn config_focus_items(&self) -> Vec<ConfigFocus> {
-        let mut items = vec![
-            ConfigFocus::Zenoh,
-            ConfigFocus::Sim,
-            ConfigFocus::Fieldname,
-            ConfigFocus::DsdFile,
-        ];
-        for i in 0..self.toggleable_indices().len() {
-            items.push(ConfigFocus::Component(i));
-        }
-        items.push(ConfigFocus::Start);
-        items
-    }
-
     /// Down: flags row → first component; within a column move down one row; Start → flags.
     pub fn config_focus_next(&mut self) {
         let n = self.toggleable_indices().len();
