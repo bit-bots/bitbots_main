@@ -53,32 +53,30 @@ std::vector<double> Map::provideRating(const RobotState& state,
   std::vector<double> rating;
   for (const std::pair<double, double>& observation : observations) {
     // lines are in polar form!
-    double line_x, line_y;
+    const PolarCoordinates observation_polar{observation.first, observation.second};
 
     // get rating per line
-    getObservationCoordinatesInMapFrame(observation.first, observation.second, state.getXPos(), state.getYPos(),
-                                        state.getTheta(), line_x, line_y);
-    double occupancy = get_occupancy(line_x, line_y);
+    const CartesianCoordinates line_relative =
+        getObservationCoordinatesInMapFrame(observation_polar, state.getXPos(), state.getYPos(), state.getTheta());
+    double occupancy = get_occupancy(line_relative.x, line_relative.y);
 
     rating.push_back(occupancy);
   }
   return rating;
 }
 
-void Map::getObservationCoordinatesInMapFrame(double obs_angle, double obs_radius, double stateX, double stateY,
-                                              double stateT, double& result_x, double& result_y) {
+CartesianCoordinates Map::getObservationCoordinatesInMapFrame(PolarCoordinates observation, double stateX,
+                                                              double stateY, double stateT) {
   // queries the Cartesian metric map coordinates for a given observation (in polar coordinates)
   // taken relative to a given state (in Cartesian coordinates)
   // Input: Observation coordinates in polar coordinates, state coordinates in Cartesian coordinates
   // Output: Observation coordinates in Cartesian coordinates in the map frame
 
   // add theta and convert back to cartesian
-  double cart_x, cart_y;
-  polarToCartesian(obs_angle + stateT, obs_radius, cart_x, cart_y);
+  const CartesianCoordinates observation_with_theta = polarToCartesian(observation.angle + stateT, observation.radius);
 
   // add to particle
-  result_x = stateX + cart_x;
-  result_y = stateY + cart_y;
+  return {stateX + observation_with_theta.x, stateY + observation_with_theta.y};
 }
 
 nav_msgs::msg::OccupancyGrid Map::get_map_msg(std::string frame_id, int threshold) {

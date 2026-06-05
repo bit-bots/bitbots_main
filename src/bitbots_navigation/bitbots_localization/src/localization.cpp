@@ -517,15 +517,15 @@ void Localization::publish_debug_rating(const std::vector<std::pair<double, doub
 
   for (const std::pair<double, double>& measurement : measurements) {
     // lines are in polar form!
-    double obs_x, obs_y;
+    const PolarCoordinates measurement_polar{measurement.first, measurement.second};
 
-    map->getObservationCoordinatesInMapFrame(measurement.first, measurement.second, best_estimate.getXPos(),
-                                             best_estimate.getYPos(), best_estimate.getTheta(), obs_x, obs_y);
-    double occupancy = map->get_occupancy(obs_x, obs_y);
+    const CartesianCoordinates observation = map->getObservationCoordinatesInMapFrame(
+        measurement_polar, best_estimate.getXPos(), best_estimate.getYPos(), best_estimate.getTheta());
+    double occupancy = map->get_occupancy(observation.x, observation.y);
 
     geometry_msgs::msg::Point point;
-    point.x = obs_x;
-    point.y = obs_y;
+    point.x = observation.x;
+    point.y = observation.y;
 
     std_msgs::msg::ColorRGBA color;
     color.b = 1;

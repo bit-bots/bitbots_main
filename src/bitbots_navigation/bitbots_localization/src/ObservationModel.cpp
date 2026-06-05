@@ -68,18 +68,16 @@ double RobotPoseObservationModel::measure(const RobotState& state) const {
 void RobotPoseObservationModel::set_measurement_lines_pc(sm::msg::PointCloud2 measurement) {
   // convert to polar
   for (sm::PointCloud2ConstIterator<float> iter_xyz(measurement, "x"); iter_xyz != iter_xyz.end(); ++iter_xyz) {
-    double angle, radius;
-    cartesianToPolar(iter_xyz[0], iter_xyz[1], angle, radius);
-    last_measurement_lines_.emplace_back(angle, radius);
+    const PolarCoordinates measurement_polar = cartesianToPolar(iter_xyz[0], iter_xyz[1]);
+    last_measurement_lines_.emplace_back(measurement_polar.angle, measurement_polar.radius);
   }
 }
 
 void RobotPoseObservationModel::set_measurement_goalposts(sv3dm::msg::GoalpostArray measurement) {
   // convert to polar
   for (sv3dm::msg::Goalpost& post : measurement.posts) {
-    double angle, radius;
-    cartesianToPolar(post.bb.center.position.x, post.bb.center.position.y, angle, radius);
-    last_measurement_goal_.emplace_back(angle, radius);
+    const PolarCoordinates measurement_polar = cartesianToPolar(post.bb.center.position.x, post.bb.center.position.y);
+    last_measurement_goal_.emplace_back(measurement_polar.angle, measurement_polar.radius);
   }
 }
 
