@@ -38,7 +38,7 @@ jobs:
         run: pixi run -e default build
 
       - name: Start ZenohD
-        run: ros2 run rmw_zenoh_cpp rmw_zenohd &
+        run: pixi run -e default ros2 run rmw_zenoh_cpp rmw_zenohd &
 
       - name: Test
         run: pixi run -e default test
