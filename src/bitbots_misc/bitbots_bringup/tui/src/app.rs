@@ -126,7 +126,14 @@ impl App {
             .iter()
             .enumerate()
             .map(|(i, def)| {
-                ComponentState::new(i, if def.sim_component { false } else { def.default_enabled })
+                ComponentState::new(
+                    i,
+                    if def.sim_component {
+                        false
+                    } else {
+                        def.default_enabled
+                    },
+                )
             })
             .collect();
 
@@ -206,16 +213,31 @@ impl App {
         let left_count = (n + 1) / 2;
         self.config_focus = match self.config_focus.clone() {
             // Flags row: jump straight into the component grid
-            ConfigFocus::Zenoh | ConfigFocus::Sim | ConfigFocus::Fieldname | ConfigFocus::DsdFile => {
-                if n > 0 { ConfigFocus::Component(0) } else { ConfigFocus::Start }
+            ConfigFocus::Zenoh
+            | ConfigFocus::Sim
+            | ConfigFocus::Fieldname
+            | ConfigFocus::DsdFile => {
+                if n > 0 {
+                    ConfigFocus::Component(0)
+                } else {
+                    ConfigFocus::Start
+                }
             }
             // Left column: move down or fall through to Start
             ConfigFocus::Component(i) if i < left_count => {
-                if i + 1 < left_count { ConfigFocus::Component(i + 1) } else { ConfigFocus::Start }
+                if i + 1 < left_count {
+                    ConfigFocus::Component(i + 1)
+                } else {
+                    ConfigFocus::Start
+                }
             }
             // Right column: move down or fall through to Start
             ConfigFocus::Component(i) => {
-                if i + 1 < n { ConfigFocus::Component(i + 1) } else { ConfigFocus::Start }
+                if i + 1 < n {
+                    ConfigFocus::Component(i + 1)
+                } else {
+                    ConfigFocus::Start
+                }
             }
             // Start wraps back to flags
             ConfigFocus::Start => ConfigFocus::Zenoh,
@@ -228,9 +250,10 @@ impl App {
         let left_count = (n + 1) / 2;
         self.config_focus = match self.config_focus.clone() {
             // Flags row wraps to Start
-            ConfigFocus::Zenoh | ConfigFocus::Sim | ConfigFocus::Fieldname | ConfigFocus::DsdFile => {
-                ConfigFocus::Start
-            }
+            ConfigFocus::Zenoh
+            | ConfigFocus::Sim
+            | ConfigFocus::Fieldname
+            | ConfigFocus::DsdFile => ConfigFocus::Start,
             // Top of left column → back to flags (left side)
             ConfigFocus::Component(0) => ConfigFocus::Zenoh,
             // Top of right column → back to flags (right side)
@@ -239,7 +262,11 @@ impl App {
             ConfigFocus::Component(i) => ConfigFocus::Component(i - 1),
             // Start → bottom of whichever column is longer
             ConfigFocus::Start => {
-                if n > 0 { ConfigFocus::Component(n - 1) } else { ConfigFocus::Zenoh }
+                if n > 0 {
+                    ConfigFocus::Component(n - 1)
+                } else {
+                    ConfigFocus::Zenoh
+                }
             }
         };
     }
@@ -300,8 +327,12 @@ impl App {
                 self.components[i].enabled = !sim && def.default_enabled;
             }
         }
-        self.config_fieldname_input =
-            if sim { FIELDNAME_DEFAULT_SIM } else { FIELDNAME_DEFAULT_HW }.to_string();
+        self.config_fieldname_input = if sim {
+            FIELDNAME_DEFAULT_SIM
+        } else {
+            FIELDNAME_DEFAULT_HW
+        }
+        .to_string();
         self.params.fieldname = self.config_fieldname_input.clone();
         self.config_focus = ConfigFocus::Zenoh;
     }
@@ -341,7 +372,10 @@ impl App {
                 Err(e) => {
                     let entry = format!("[ERROR] spawn failed: {e}");
                     logs.lock().unwrap().push_back(entry.clone());
-                    all_logs.lock().unwrap().push_back(format!("[{comp_name}] {entry}"));
+                    all_logs
+                        .lock()
+                        .unwrap()
+                        .push_back(format!("[{comp_name}] {entry}"));
                     let _ = tx.send(AppMsg::ProcessExited { key, code: -1 });
                     return;
                 }
@@ -373,18 +407,24 @@ impl App {
                         let tui_entry = format!("{}{}", tui_prefix, raw);
                         {
                             let mut l = logs.lock().unwrap();
-                            if l.len() >= 2000 { l.pop_front(); }
+                            if l.len() >= 2000 {
+                                l.pop_front();
+                            }
                             l.push_back(tui_entry.clone());
                         }
                         {
                             let mut l = all_logs.lock().unwrap();
-                            if l.len() >= 5000 { l.pop_front(); }
+                            if l.len() >= 5000 {
+                                l.pop_front();
+                            }
                             l.push_back(format!("[{comp_name}] {tui_entry}"));
                         }
                         {
                             let tagged = format!("[{comp_name}] {raw}");
                             let mut l = headless_log.lock().unwrap();
-                            if l.len() >= 5000 { l.pop_front(); }
+                            if l.len() >= 5000 {
+                                l.pop_front();
+                            }
                             l.push_back(if is_stderr {
                                 HeadlessLine::Stderr(tagged)
                             } else {

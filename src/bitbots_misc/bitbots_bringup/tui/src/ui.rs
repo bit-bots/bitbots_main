@@ -2,11 +2,13 @@ use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
     text::{Line, Span},
-    widgets::{Block, Borders, Clear, Paragraph, Scrollbar, ScrollbarOrientation, ScrollbarState, Wrap},
+    widgets::{
+        Block, Borders, Clear, Paragraph, Scrollbar, ScrollbarOrientation, ScrollbarState, Wrap,
+    },
     Frame,
 };
 
-use crate::app::{App, ConfirmAction, ConfigFocus, ProcState, Screen};
+use crate::app::{App, ConfigFocus, ConfirmAction, ProcState, Screen};
 use crate::components::COMPONENT_DEFS;
 
 // ─── Banner ───────────────────────────────────────────────────────────────────
@@ -122,13 +124,17 @@ fn draw_config_flags(f: &mut Frame, app: &App, area: Rect) {
     let dsd_focused = app.config_focus == ConfigFocus::DsdFile;
 
     f.render_widget(
-        Paragraph::new(if app.params.zenoh { "[✓] Zenoh" } else { "[ ] Zenoh" })
-            .block(
-                Block::default()
-                    .borders(Borders::ALL)
-                    .border_style(focus_border(zenoh_focused)),
-            )
-            .style(focus_text(zenoh_focused)),
+        Paragraph::new(if app.params.zenoh {
+            "[✓] Zenoh"
+        } else {
+            "[ ] Zenoh"
+        })
+        .block(
+            Block::default()
+                .borders(Borders::ALL)
+                .border_style(focus_border(zenoh_focused)),
+        )
+        .style(focus_text(zenoh_focused)),
         chunks[0],
     );
 
@@ -264,7 +270,11 @@ pub fn draw_runtime(f: &mut Frame, app: &App) {
     let area = f.area();
     let chunks = Layout::default()
         .direction(Direction::Vertical)
-        .constraints([Constraint::Length(3), Constraint::Min(0), Constraint::Length(1)])
+        .constraints([
+            Constraint::Length(3),
+            Constraint::Min(0),
+            Constraint::Length(1),
+        ])
         .split(area);
 
     draw_runtime_header(f, app, chunks[0]);
@@ -304,7 +314,11 @@ fn draw_runtime_header(f: &mut Frame, app: &App, area: Rect) {
             " Bit-Bots Teamplayer  [{running}/{total_enabled} running]{sim_badge}"
         ))
         .block(Block::default().borders(Borders::ALL))
-        .style(Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)),
+        .style(
+            Style::default()
+                .fg(Color::Cyan)
+                .add_modifier(Modifier::BOLD),
+        ),
         area,
     );
 }
@@ -425,7 +439,9 @@ fn draw_joint_logs(f: &mut Frame, app: &App, area: Rect) {
                     let mut spans: Vec<Span<'static>> = vec![
                         Span::styled(
                             tag.to_owned(),
-                            Style::default().fg(tag_color(tag)).add_modifier(Modifier::BOLD),
+                            Style::default()
+                                .fg(tag_color(tag))
+                                .add_modifier(Modifier::BOLD),
                         ),
                         Span::raw(" "),
                     ];
@@ -443,7 +459,12 @@ fn draw_joint_logs(f: &mut Frame, app: &App, area: Rect) {
         .iter()
         .map(|l| {
             let chars: usize = l.spans.iter().map(|s| s.content.chars().count()).sum();
-            if inner_w > 0 { (chars + inner_w - 1) / inner_w } else { 1 }.max(1)
+            if inner_w > 0 {
+                (chars + inner_w - 1) / inner_w
+            } else {
+                1
+            }
+            .max(1)
         })
         .sum();
     let scroll = total_rows.saturating_sub(inner_h) as u16;
@@ -466,13 +487,21 @@ pub fn draw_logs(f: &mut Frame, app: &App, comp_idx: usize) {
 
     let chunks = Layout::default()
         .direction(Direction::Vertical)
-        .constraints([Constraint::Length(3), Constraint::Min(0), Constraint::Length(1)])
+        .constraints([
+            Constraint::Length(3),
+            Constraint::Min(0),
+            Constraint::Length(1),
+        ])
         .split(area);
 
     f.render_widget(
         Paragraph::new(format!(" Logs: {name} "))
             .block(Block::default().borders(Borders::ALL))
-            .style(Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)),
+            .style(
+                Style::default()
+                    .fg(Color::Cyan)
+                    .add_modifier(Modifier::BOLD),
+            ),
         chunks[0],
     );
 
@@ -502,7 +531,8 @@ pub fn draw_logs(f: &mut Frame, app: &App, comp_idx: usize) {
         log_area,
     );
 
-    let mut scrollbar_state = ScrollbarState::new(total.saturating_sub(log_height)).position(scroll);
+    let mut scrollbar_state =
+        ScrollbarState::new(total.saturating_sub(log_height)).position(scroll);
     f.render_stateful_widget(
         Scrollbar::new(ScrollbarOrientation::VerticalRight),
         log_area,
@@ -549,7 +579,9 @@ pub fn draw_all_logs(f: &mut Frame, app: &App) {
                     let mut spans: Vec<Span<'static>> = vec![
                         Span::styled(
                             tag.to_owned(),
-                            Style::default().fg(tag_color(tag)).add_modifier(Modifier::BOLD),
+                            Style::default()
+                                .fg(tag_color(tag))
+                                .add_modifier(Modifier::BOLD),
                         ),
                         Span::raw(" "),
                     ];
@@ -572,7 +604,8 @@ pub fn draw_all_logs(f: &mut Frame, app: &App) {
         log_area,
     );
 
-    let mut scrollbar_state = ScrollbarState::new(total.saturating_sub(log_height)).position(scroll);
+    let mut scrollbar_state =
+        ScrollbarState::new(total.saturating_sub(log_height)).position(scroll);
     f.render_stateful_widget(
         Scrollbar::new(ScrollbarOrientation::VerticalRight),
         log_area,
@@ -596,7 +629,10 @@ pub fn draw_all_logs(f: &mut Frame, app: &App) {
 
 pub fn draw_confirm_popup(f: &mut Frame, app: &App) {
     let (title, msg) = match &app.confirm_action {
-        Some(ConfirmAction::Quit) => (" Exit ", "Exit teamplayer?\nAll running components will be stopped."),
+        Some(ConfirmAction::Quit) => (
+            " Exit ",
+            "Exit teamplayer?\nAll running components will be stopped.",
+        ),
         Some(ConfirmAction::StopAll) => (" Stop All ", "Stop all running components?"),
         None => return,
     };
@@ -619,7 +655,11 @@ pub fn draw_confirm_popup(f: &mut Frame, app: &App) {
                     .title(title)
                     .border_style(Style::default().fg(Color::Yellow)),
             )
-            .style(Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD))
+            .style(
+                Style::default()
+                    .fg(Color::Yellow)
+                    .add_modifier(Modifier::BOLD),
+            )
             .alignment(Alignment::Center),
         popup_area,
     );

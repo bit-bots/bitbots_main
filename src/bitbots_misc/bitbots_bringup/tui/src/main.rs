@@ -66,22 +66,14 @@ fn setup_panic_hook() {
     let original = std::panic::take_hook();
     std::panic::set_hook(Box::new(move |info| {
         let _ = disable_raw_mode();
-        let _ = execute!(
-            std::io::stdout(),
-            LeaveAlternateScreen,
-            DisableMouseCapture
-        );
+        let _ = execute!(std::io::stdout(), LeaveAlternateScreen, DisableMouseCapture);
         original(info);
     }));
 }
 
 fn cleanup_terminal() {
     let _ = disable_raw_mode();
-    let _ = execute!(
-        std::io::stdout(),
-        LeaveAlternateScreen,
-        DisableMouseCapture
-    );
+    let _ = execute!(std::io::stdout(), LeaveAlternateScreen, DisableMouseCapture);
 }
 
 // ─── Entry point ──────────────────────────────────────────────────────────────
@@ -112,7 +104,13 @@ async fn main() -> Result<()> {
 
         let mut event_stream = EventStream::new();
         let mut tick_interval = time::interval(Duration::from_millis(100));
-        let r = run_tui(&mut terminal, &mut app, &mut event_stream, &mut tick_interval).await;
+        let r = run_tui(
+            &mut terminal,
+            &mut app,
+            &mut event_stream,
+            &mut tick_interval,
+        )
+        .await;
         cleanup_terminal();
         r
     };

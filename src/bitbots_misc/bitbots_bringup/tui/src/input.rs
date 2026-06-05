@@ -1,6 +1,6 @@
 use crossterm::event::{KeyCode, KeyModifiers};
 
-use crate::app::{App, ConfirmAction, ConfigFocus, ProcState, Screen};
+use crate::app::{App, ConfigFocus, ConfirmAction, ProcState, Screen};
 use crate::components::COMPONENT_DEFS;
 
 pub async fn handle_config_key(app: &mut App, key: KeyCode, modifiers: KeyModifiers) -> bool {
@@ -123,7 +123,12 @@ pub async fn handle_runtime_key(app: &mut App, key: KeyCode, _modifiers: KeyModi
 
         KeyCode::Char('l') => {
             if let Some(idx) = comp_idx {
-                app.log_scroll = app.components[idx].logs.lock().unwrap().len().saturating_sub(1);
+                app.log_scroll = app.components[idx]
+                    .logs
+                    .lock()
+                    .unwrap()
+                    .len()
+                    .saturating_sub(1);
                 app.log_follow = true;
                 app.screen = Screen::Logs(idx);
             }

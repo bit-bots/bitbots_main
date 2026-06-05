@@ -40,23 +40,13 @@ pub struct ComponentDef {
 // ─── Command helpers ──────────────────────────────────────────────────────────
 
 pub fn ros2_launch(pkg: &str, file: &str, extra: &[&str]) -> Vec<String> {
-    let mut v = vec![
-        "ros2".into(),
-        "launch".into(),
-        pkg.into(),
-        file.into(),
-    ];
+    let mut v = vec!["ros2".into(), "launch".into(), pkg.into(), file.into()];
     v.extend(extra.iter().map(|s| s.to_string()));
     v
 }
 
 pub fn ros2_run(pkg: &str, exec: &str, extra: &[&str]) -> Vec<String> {
-    let mut v = vec![
-        "ros2".into(),
-        "run".into(),
-        pkg.into(),
-        exec.into(),
-    ];
+    let mut v = vec!["ros2".into(), "run".into(), pkg.into(), exec.into()];
     v.extend(extra.iter().map(|s| s.to_string()));
     v
 }
@@ -149,7 +139,13 @@ pub static COMPONENT_DEFS: &[ComponentDef] = &[
         infrastructure: false,
         hardware_only: false,
         sim_component: false,
-        cmds: |p| vec![ros2_launch("bitbots_bringup", "motion.launch", &[&sim(p), "lowlevel:=false"])],
+        cmds: |p| {
+            vec![ros2_launch(
+                "bitbots_bringup",
+                "motion.launch",
+                &[&sim(p), "lowlevel:=false"],
+            )]
+        },
     },
     ComponentDef {
         name: "Game Controller",
