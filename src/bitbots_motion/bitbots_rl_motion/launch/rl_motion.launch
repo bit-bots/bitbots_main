@@ -21,8 +21,4 @@
       <param from="$(find-pkg-share bitbots_rl_motion)/configs/mjlab_walk_model.yaml" />
     </node>
   </group>
-
-  <node pkg="bitbots_rl_motion" exec="phase_from_transform" output="screen">
-    <param name="use_sim_time" value="$(var sim)"/>
-  </node>
 </launch>
