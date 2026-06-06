@@ -148,7 +148,10 @@ class CheckPenalized(AbstractLocalizationDecisionElement):
                 return "PENALIZED_IN_PLACE"
             else:
                 return "YES"
-        elif self.blackboard.gamestate.get_seconds_since_unpenalized() < 1 and not self.blackboard.gamestate.last_penalty_was_in_place:
+        elif (
+            self.blackboard.gamestate.get_seconds_since_unpenalized() < 1
+            and not self.blackboard.gamestate.last_penalty_was_in_place
+        ):
             self.publish_debug_data("Reason", "Just unpenalized")
             return "JUST_UNPENALIZED"
         else:
