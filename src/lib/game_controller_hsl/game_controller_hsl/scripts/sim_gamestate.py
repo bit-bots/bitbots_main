@@ -51,6 +51,8 @@ t:     toggle kicking team
 s:     toggle stopped state
 +:     increase own score by 1
 
+m: message_budget -= 5995
+
 
 
 
@@ -83,6 +85,10 @@ CTRL-C to quit
 
         self.has_kick = True
 
+        self.secs_remaining = 600
+        self.message_budget = 12000
+        self.first_half = True
+
         self.settings = termios.tcgetattr(sys.stdin)
 
         self.publisher = self.create_publisher(
@@ -97,6 +103,9 @@ CTRL-C to quit
 
         # Init kicking team to our teamID
         game_state_msg.kicking_team = self.team_id
+        game_state_msg.secs_remaining = self.secs_remaining
+        game_state_msg.message_budget = self.message_budget
+        game_state_msg.first_half = self.first_half
 
         try:
             print(self.msg)
@@ -116,6 +125,8 @@ CTRL-C to quit
                     game_state_msg.game_phase = ord(key) - ord("a")
                 elif key in [chr(ord("e") + x) for x in range(7)]:
                     game_state_msg.set_play = ord(key) - ord("e")
+                elif key == "m":  # penalize / unpenalize
+                    game_state_msg.message_budget = game_state_msg.message_budget - 5595
                 elif key == "t":
                     if game_state_msg.kicking_team == self.team_id:
                         game_state_msg.kicking_team = self.team_id + 1
@@ -155,6 +166,9 @@ Kicking Team:       {game_state_msg.kicking_team}
 
 Penalized:          {game_state_msg.penalized}
 Stopped:            {game_state_msg.stopped}
+
+Seconds remaining:  {game_state_msg.secs_remaining}
+Message Budget:     {game_state_msg.message_budget}
 
 Goals(Own : Rival): {game_state_msg.own_score} : {game_state_msg.rival_score}
 
