@@ -42,9 +42,12 @@ class JointHandler(Handler):
         return self._joint_state is not None
 
     def get_angle_data(self) -> np.ndarray:
-        assert self._joint_state is not None
         if self._joint_state_indices is None:
             self._cache_joint_state_indices()
+
+        assert self._joint_state is not None
+        assert self._joint_state_indices is not None
+
         joint_angles = (
             np.array(
                 [self._joint_state.position[idx] for idx in self._joint_state_indices],
@@ -56,9 +59,12 @@ class JointHandler(Handler):
         return joint_angles
 
     def get_velocity_data(self) -> np.ndarray:
-        assert self._joint_state is not None
         if self._joint_state_indices is None:
             self._cache_joint_state_indices()
+
+        assert self._joint_state is not None
+        assert self._joint_state_indices is not None
+
         joint_velocities = np.array(
             [self._joint_state.velocity[idx] for idx in self._joint_state_indices],
             dtype=np.float32,
@@ -66,6 +72,11 @@ class JointHandler(Handler):
         return joint_velocities
 
     def get_joint_commands(self, onnx_pred) -> JointCommand:
+        if self._joint_state_indices is None:
+            self._cache_joint_state_indices()
+
+        assert self._joint_state is not None
+
         self._joint_command.header.stamp = self._joint_state.header.stamp  # self._node.get_clock().now().to_msg()
         self._joint_command.positions = onnx_pred * self._action_scales + self._walkready_state
         return self._joint_command
@@ -74,4 +85,5 @@ class JointHandler(Handler):
         return self._previous_action
 
     def _cache_joint_state_indices(self):
+        assert self._joint_state is not None
         self._joint_state_indices = [self._joint_state.name.index(name) for name in self._ordered_relevant_joint_names]

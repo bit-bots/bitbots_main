@@ -26,7 +26,7 @@ class GravityHandler(Handler):
         """
         Returns the gravity vector in the robot's base frame computed from the IMU orientation.
         """
-        assert self.has_data(), "IMU data is not available yet"
+        assert self._imu_data is not None, "IMU data is not available yet"
         q = self._imu_data.orientation
         gravity = quat2mat([q.w, q.x, q.y, q.z]).T @ np.array([0, 0, -1], dtype=np.float32)
         return gravity
