@@ -13,7 +13,9 @@ version = "0.1.0"
 [tasks]
 zenoh = "ros2 run rmw_zenoh_cpp rmw_zenohd"
 deploy = {cmd = "scripts/deploy_robots.py", description = "Deploys the current environment."}
-format = {cmd = "pre-commit run --all-files", description = "Runs code formatting and linting."}
+
+# Default stage `pre-commit` enables ruff auto-formatting, stage `manual` disables ruff auto-formatting, only shows diff
+format = {cmd = "sh -c 'pre-commit run --all-files --hook-stage \"${PRE_COMMIT_STAGE:-pre-commit}\"'", description = "Runs code formatting and linting."}
 
 [tasks.build]
 # Skipping ZED-camera related packages as they require a local installation of the ZED SDK.
