@@ -140,7 +140,7 @@ class WalkNode(Node):
                     self._imu_data.orientation.z,
                 ]
             )
-            @ euler2mat(0, 0.0, 0)
+            @ euler2mat(0.0, -0.0, 0)
         ).T @ np.array([0, 0, -1], dtype=np.float32)
 
         joint_angles = (
@@ -174,7 +174,7 @@ class WalkNode(Node):
                 gravity,
                 command,
                 joint_angles,
-                joint_velocities,
+                np.zeros_like(joint_velocities),
                 self._previous_action,  # Previous action
                 phase,
             ]
@@ -192,8 +192,8 @@ class WalkNode(Node):
         joint_command.positions = onnx_pred * 0.5 + WALKREADY_STATE
         joint_command.velocities = [-1.0] * len(ORDERED_RELEVANT_JOINT_NAMES)
         joint_command.accelerations = [-1.0] * len(ORDERED_RELEVANT_JOINT_NAMES)
-        joint_command.kp = [30.0] * len(ORDERED_RELEVANT_JOINT_NAMES)
-        joint_command.kd = [1.1] * len(ORDERED_RELEVANT_JOINT_NAMES)
+        joint_command.kp = [30.0, 35.0, 30.0, 30.0, 30.0, 30.0, 30.0, 35.0, 30.0, 30.0, 30.0, 30.0]
+        joint_command.kd = [1.0, 1.4,1.0,1.0,1.0,1.0,1.0,1.4,1.0,1.0,1.0,1.0]
 
         self._joint_command_pub.publish(joint_command)
 
