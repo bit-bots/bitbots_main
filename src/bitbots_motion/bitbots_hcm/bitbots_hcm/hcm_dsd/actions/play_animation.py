@@ -121,6 +121,7 @@ class PlayAnimationFallingBack(AbstractPlayAnimation):
         self.blackboard.node.get_logger().info("PLAYING FALLING BACK ANIMATION")
         return self.blackboard.animation_name_falling_back
 
+
 class PlayAnimationFalling(AbstractPlayAnimation):
     def choose_animation(self):
         self.blackboard.node.get_logger().info("PLAYING FALLING ANIMATION")
@@ -143,8 +144,6 @@ class PlayAnimationStandupFront(AbstractPlayAnimation):
     def choose_animation(self):
         self.blackboard.node.get_logger().info("STANDUP FRONT ANIMATION")
         return self.blackboard.animation_name_stand_up_front
-
-
 
 
 class PlayAnimationStandupBack(AbstractPlayAnimation):
