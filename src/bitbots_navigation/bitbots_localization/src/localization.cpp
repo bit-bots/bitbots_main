@@ -120,12 +120,12 @@ void Localization::updateParams(bool force_reload) {
                                                  config_.particle_filter.diffusion.starting_multiplier, drift_cov));
 
   // Create standard particle probability distributions (e.g. for the initialization at the start of the game)
-  robot_state_distribution_own_sidelines.reset(new RobotStateDistributionOwnSideline(
-      random_number_generator_, std::pair<double, double>{field_dimensions_.x, field_dimensions_.y}));
-  robot_state_distribution_opponent_half.reset(new RobotStateDistributionOpponentHalf(
-      random_number_generator_, std::pair<double, double>{field_dimensions_.x, field_dimensions_.y}));
-  robot_state_distribution_own_half_.reset(new RobotStateDistributionOwnHalf(
-      random_number_generator_, std::pair<double, double>{field_dimensions_.x, field_dimensions_.y}));
+  robot_state_distribution_own_sidelines.reset(
+      new RobotStateDistributionOwnSideline(random_number_generator_, field_dimensions_.x, field_dimensions_.y));
+  robot_state_distribution_opponent_half.reset(
+      new RobotStateDistributionOpponentHalf(random_number_generator_, field_dimensions_.x, field_dimensions_.y));
+  robot_state_distribution_own_half_.reset(
+      new RobotStateDistributionOwnHalf(random_number_generator_, field_dimensions_.x, field_dimensions_.y));
 
   // Create the resampling strategy
   resampling_.reset(

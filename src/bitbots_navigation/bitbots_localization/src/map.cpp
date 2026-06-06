@@ -73,7 +73,8 @@ CartesianCoordinates Map::getObservationCoordinatesInMapFrame(PolarCoordinates o
   // Output: Observation coordinates in Cartesian coordinates in the map frame
 
   // add theta and convert back to cartesian
-  const CartesianCoordinates observation_with_theta = polarToCartesian(observation.angle + stateT, observation.radius);
+  const CartesianCoordinates observation_with_theta =
+      polarToCartesian({observation.angle + stateT, observation.radius});
 
   // add to particle
   return {stateX + observation_with_theta.x, stateY + observation_with_theta.y};

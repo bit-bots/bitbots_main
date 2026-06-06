@@ -46,19 +46,20 @@ class RobotStateDistributionStartLeft : public particle_filter::StateDistributio
 class RobotStateDistributionOwnSideline : public particle_filter::StateDistribution<RobotState> {
  public:
   RobotStateDistributionOwnSideline(particle_filter::CRandomNumberGenerator& random_number_generator,
-                                    const std::pair<double, double>& field_size);
+                                    double field_size_x, double field_size_y);
 
   const RobotState draw() const override;
 
  private:
   particle_filter::CRandomNumberGenerator random_number_generator_;
-  double field_x, field_y;
+  double field_size_x_;
+  double field_size_y_;
 };
 
 class RobotStateDistributionOpponentHalf : public particle_filter::StateDistribution<RobotState> {
  public:
   RobotStateDistributionOpponentHalf(particle_filter::CRandomNumberGenerator& random_number_generator,
-                                     const std::pair<double, double>& field_size);
+                                     double field_size_x, double field_size_y);
 
   const RobotState draw() const override;
 
@@ -72,8 +73,8 @@ class RobotStateDistributionOpponentHalf : public particle_filter::StateDistribu
 
 class RobotStateDistributionOwnHalf : public particle_filter::StateDistribution<RobotState> {
  public:
-  RobotStateDistributionOwnHalf(particle_filter::CRandomNumberGenerator& random_number_generator,
-                                const std::pair<double, double>& field_size);
+  RobotStateDistributionOwnHalf(particle_filter::CRandomNumberGenerator& random_number_generator, double field_size_x,
+                                double field_size_y);
 
   const RobotState draw() const override;
 

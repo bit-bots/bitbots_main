@@ -18,7 +18,9 @@ struct CartesianCoordinates {
   double y;
 };
 
+PolarCoordinates cartesianToPolar(CartesianCoordinates coordinates);
 PolarCoordinates cartesianToPolar(double x, double y);
+CartesianCoordinates polarToCartesian(PolarCoordinates coordinates);
 CartesianCoordinates polarToCartesian(double angle, double radius);
 double signedAngle(double angle_a, double angle_b);
 double signedAngle(double angle);
