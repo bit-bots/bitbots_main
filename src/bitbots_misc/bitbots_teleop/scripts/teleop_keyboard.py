@@ -272,7 +272,7 @@ class TeleopKeyboard(Node):
                     self.push_force_x = 0.0
                     self.push_force_y = 0.0
                 elif key == "\x1b":  # ESC
-                    self.power_switch_pub.publish(PowerSwitch(power_switch=0))
+                    self.power_switch_pub.publish(PowerSwitch(control_switch=1, power_switch=0))
                 elif key == "p":
                     # push robot in simulation
                     push_request = SimulatorPush.Request()
