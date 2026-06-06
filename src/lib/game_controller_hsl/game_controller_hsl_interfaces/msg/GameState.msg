@@ -45,6 +45,7 @@ int16 secs_remaining
 # Seconds remaining for things like kickoff
 int16 secondary_time
 bool penalized
+bool penalized_in_place
 uint16 seconds_till_unpenalized
 uint8 warnings
 uint8 cautions
