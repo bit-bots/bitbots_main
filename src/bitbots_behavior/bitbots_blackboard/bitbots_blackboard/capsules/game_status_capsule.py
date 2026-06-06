@@ -84,7 +84,7 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
 
     def get_is_penalized(self) -> bool:
         return self.gamestate.penalized
-    
+
     def get_is_penalized_in_place(self) -> bool:
         return self.gamestate.penalized_in_place
 
