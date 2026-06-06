@@ -47,6 +47,7 @@ j: SET_PLAY_GOAL_KICK = 5
 k: SET_PLAY_CORNER_KICK = 6
 
 p:     toggle penalized
+l:     toggle in place penalty
 t:     toggle kicking team
 s:     toggle stopped state
 +:     increase own score by 1
@@ -111,6 +112,9 @@ CTRL-C to quit
                     int_key = int(key)
                     game_state_msg.competition_type = int_key - 5
                 elif key == "p":  # penalize / unpenalize
+                    game_state_msg.penalized = not game_state_msg.penalized
+                elif key == "l":  # toggle in place penalty
+                    game_state_msg.penalized_in_place = not game_state_msg.penalized_in_place
                     game_state_msg.penalized = not game_state_msg.penalized
                 elif key in [chr(ord("a") + x) for x in range(4)]:
                     game_state_msg.game_phase = ord(key) - ord("a")
