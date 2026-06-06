@@ -104,7 +104,7 @@ body_behavior:
     goalpost_safety_distance: 0.05
 
     # Distance at which the ball is first approached before the ball obstacle is deactivated and we approach closer for the kick
-    ball_far_approach_dist: 0.8
+    ball_far_approach_dist: 0.3
 
     # Range in which the ball far approach point is counted as reached
     ball_far_approach_position_thresh: 0.2
@@ -113,7 +113,7 @@ body_behavior:
     ball_reapproach_dist: 1.0
 
     # Distance at which the ball is normally approached
-    ball_approach_dist: 0.7                                                          
+    ball_approach_dist: 0.2                                                          
 
     # Angle at which the ball is normally approached again
     ball_reapproach_angle: 0.9
@@ -136,9 +136,9 @@ body_behavior:
     kickoff_min_ball_movement: 0.5
 
     # dribble action
-    dribble_max_speed_x: 0.8
-    dribble_max_speed_y: 0.5
-    dribble_p: 1.5
+    dribble_max_speed_x: 0.3
+    dribble_max_speed_y: 0.3
+    dribble_p: 3.0
 
     # dribble decision
     dribble_orient_threshold: 0.5
