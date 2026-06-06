@@ -42,6 +42,7 @@ rosidl_generate_interfaces(
   "msg/Strategy.msg"
   "msg/TeamData.msg"
   "msg/TTS.msg"
+  "msg/Workload.msg"
   "srv/AddAnimation.srv"
   "srv/ManualPenalize.srv"
   "srv/SetObjectPose.srv"
