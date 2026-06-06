@@ -180,7 +180,7 @@ class KickNode(Node):
                     self._imu_data.orientation.z,
                 ]
             )
-            @ euler2mat(0, 0.0, 0)
+            @ euler2mat(0.0, 0.0, 0)
         ).T @ np.array([0, 0, -1], dtype=np.float32)
 
         joint_angles = (
@@ -194,11 +194,6 @@ class KickNode(Node):
             - WALKREADY_STATE
         )
 
-        joint_velocities = np.array(
-            [self._joint_state.velocity[self._joint_state.name.index(name)] for name in ORDERED_RELEVANT_JOINT_NAMES],
-            dtype=np.float32,
-        )
-
         phase = np.array([np.cos(self._phase), np.sin(self._phase)], dtype=np.float32).flatten()
 
         point = np.array([ball_pose.point.x, ball_pose.point.y], dtype=np.float32)
@@ -210,11 +205,11 @@ class KickNode(Node):
 
         delta_t = (self.get_clock().now() - Time.from_msg(ball_pose.header.stamp)).nanoseconds / 1e9
 
-        offset = diff * delta_t * 1.5
+        offset = diff * delta_t
 
         self.get_logger().info(f"Ball position: {point}, velocity: {diff}, offset: {offset}, delta_t: {delta_t}")
 
-        point_corrected = point #+ offset
+        point_corrected = point + offset
 
         obs = np.hstack(
             [
@@ -223,11 +218,10 @@ class KickNode(Node):
                 gyro,
                 gravity,
                 joint_angles,
-                joint_velocities,
                 self._previous_action,  # Previous action
                 phase,
                 kick_dir,
-                0.1
+                0.5
             ]
         ).astype(np.float32)
 
@@ -243,7 +237,7 @@ class KickNode(Node):
         joint_command.positions = onnx_pred * 0.5 + WALKREADY_STATE
         joint_command.velocities = [-1.0] * len(ORDERED_RELEVANT_JOINT_NAMES)
         joint_command.accelerations = [-1.0] * len(ORDERED_RELEVANT_JOINT_NAMES)
-        joint_command.kp = [35.0] * len(ORDERED_RELEVANT_JOINT_NAMES)
+        joint_command.kp = [30.0] * len(ORDERED_RELEVANT_JOINT_NAMES)
         joint_command.kd = [1.0] * len(ORDERED_RELEVANT_JOINT_NAMES)
 
         self._joint_command_pub.publish(joint_command)
