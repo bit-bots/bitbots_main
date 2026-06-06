@@ -1,0 +1,57 @@
+walk_node:
+  ros__parameters:
+    model: policy_walk.onnx
+
+    joints:
+      ordered_relevant_joint_names: [
+        "r_hip_pitch_joint",
+        "r_hip_roll_joint",
+        "r_thigh_joint",
+        "r_calf_joint",
+        "r_ankle_pitch_joint",
+        "r_ankle_roll_joint",
+        "l_hip_pitch_joint",
+        "l_hip_roll_joint",
+        "l_thigh_joint",
+        "l_calf_joint",
+        "l_ankle_pitch_joint",
+        "l_ankle_roll_joint"
+      ] 
+      walkready_state: [
+         0.6, 0.0, 0.0,  1.2,  0.6, 0.0,
+        -0.6, 0.0, 0.0, -1.2, -0.6, 0.0
+      ]
+      kp: [
+        # legs
+        30.0, 30.0, 
+        30.0, 30.0, 
+        30.0, 30.0, 
+        30.0, 30.0, 
+        30.0, 30.0, 
+        30.0, 30.0
+      ]
+      kd: [
+        # legs
+        1.1, 1.1, 
+        1.1, 1.1,
+        1.1, 1.1,
+        1.1, 1.1,
+        1.1, 1.1,
+        1.1, 1.1
+      ]
+      action_scales: [
+        # legs
+        0.5, 0.5,
+        0.5, 0.5,
+        0.5, 0.5,
+        0.5, 0.5,
+        0.5, 0.5,
+        0.5, 0.5
+      ]
+    phase:
+      use_phase: True
+      control_dt: 0.02
+      gait_frequency: 1.5
+      initial_phase: [1.5707963267948966, -1.5707963267948966]
+
+    providers: ["CPUExecutionProvider"]

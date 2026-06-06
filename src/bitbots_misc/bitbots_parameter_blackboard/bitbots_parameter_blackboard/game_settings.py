@@ -2,7 +2,7 @@
 
 import os
 from pydoc import locate
-from typing import Any, Optional
+from typing import Any
 
 import yaml
 
@@ -52,8 +52,8 @@ def ask_for_config_option(
     name: str,
     value_type: Any,
     current_value: Any = None,
-    valid_options: Optional[list[Any]] = None,
-    explanation: Optional[str] = None,
+    valid_options: list[Any] | None = None,
+    explanation: str | None = None,
 ) -> object:
     """
     :param name: name of the config-option-value e.g. robot number
@@ -90,7 +90,7 @@ def ask_for_config_option(
         return str(new_value)
 
 
-def check_new_value(new_value: str, value_type: Any, valid_options: Optional[list[Any]] = None) -> bool:
+def check_new_value(new_value: str, value_type: Any, valid_options: list[Any] | None = None) -> bool:
     """
     checks with definition if new value is a valid input
     :param new_value: input to set as new value
@@ -131,7 +131,8 @@ def main():
     is_config_correct = False
 
     default_settings = provide_config(DEFAULT_SETTING_PATH)
-    settings = default_settings | provide_config(SETTING_PATH)
+    settings = default_settings.copy()
+    settings.update(provide_config(SETTING_PATH))
     ros_parameters = settings["parameter_blackboard"]["ros__parameters"]
     if ros_parameters is None:
         ros_parameters = {}
