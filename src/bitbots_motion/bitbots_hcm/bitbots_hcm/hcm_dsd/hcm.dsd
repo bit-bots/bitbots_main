@@ -31,7 +31,7 @@ $StartHCM
                             OKAY --> $Fallen
                                 FALLEN_FRONT --> $GameControllerStop
                                     STOPPED --> @RobotStateFallen, @CancelGoals, @StopWalking, @Wait
-                                    FREE --> @RobotStateFallen, @CancelGoals, @StopWalking, @RobotStateGettingUp, @Complain, @PlayAnimationWalkReady
+                                    FREE --> @RobotStateFallen, @CancelGoals, @StopWalking, @RobotStateGettingUp, @Complain, @PlayAnimationStandupFront
                                 FALLEN_BACK --> $GameControllerStop
                                     STOPPED --> @RobotStateFallen, @CancelGoals, @StopWalking, @Wait
                                     FREE --> @RobotStateFallen, @CancelGoals, @StopWalking, @RobotStateGettingUp, @Complain, @PlayAnimationStandupBack
