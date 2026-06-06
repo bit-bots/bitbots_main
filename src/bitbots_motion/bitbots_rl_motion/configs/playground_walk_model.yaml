@@ -51,7 +51,7 @@ walk_node:
     phase:
       use_phase: True
       control_dt: 0.02
-      gait_frequency: 0.75
+      gait_frequency: 1.5
       initial_phase: [1.5707963267948966, -1.5707963267948966]
 
     providers: ["CPUExecutionProvider"]
