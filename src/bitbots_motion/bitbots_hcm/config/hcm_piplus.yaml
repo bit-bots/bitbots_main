@@ -17,6 +17,7 @@
       falling_front: "falling"
       falling_left: "falling"
       falling_right: "falling"
+      falling: "falling"
       init: "init"
       stand_up_back: "stand_up_back"
       stand_up_front: "stand_up_front"
