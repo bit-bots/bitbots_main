@@ -158,6 +158,7 @@ Main State:         {game_state_msg.main_state}
 Kicking Team:       {game_state_msg.kicking_team}
 
 Penalized:          {game_state_msg.penalized}
+In Place Penalized: {game_state_msg.penalized_in_place}
 Stopped:            {game_state_msg.stopped}
 
 Goals(Own : Rival): {game_state_msg.own_score} : {game_state_msg.rival_score}
