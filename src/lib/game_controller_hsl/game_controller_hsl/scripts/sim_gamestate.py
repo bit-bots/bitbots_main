@@ -125,7 +125,7 @@ CTRL-C to quit
                     game_state_msg.game_phase = ord(key) - ord("a")
                 elif key in [chr(ord("e") + x) for x in range(7)]:
                     game_state_msg.set_play = ord(key) - ord("e")
-                elif key == "m":  # penalize / unpenalize
+                elif key == "m":
                     game_state_msg.message_budget = game_state_msg.message_budget - 5595
                 elif key == "t":
                     if game_state_msg.kicking_team == self.team_id:
