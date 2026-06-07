@@ -89,12 +89,12 @@ class WalkNode(Node):
 
     def _kick_direction_callback(self, msg: PoseStamped):
         self._kick_active = True
-    
+
     def _kick_stop_callback(self, _: Empty):
         self._kick_active = False
         if self._last_global_phase is not None:
             self._phase = np.array([self._last_global_phase, (self._last_global_phase + 2 * np.pi) % (2 * np.pi) - np.pi], dtype=np.float32)
-    
+
     def _other_policy_phase_callback(self, msg: Float32):
         self._last_global_phase = msg.data
 
@@ -192,8 +192,8 @@ class WalkNode(Node):
         joint_command.positions = onnx_pred * 0.5 + WALKREADY_STATE
         joint_command.velocities = [-1.0] * len(ORDERED_RELEVANT_JOINT_NAMES)
         joint_command.accelerations = [-1.0] * len(ORDERED_RELEVANT_JOINT_NAMES)
-        joint_command.kp = [30.0, 35.0, 30.0, 30.0, 30.0, 30.0, 30.0, 35.0, 30.0, 30.0, 30.0, 30.0]
-        joint_command.kd = [1.0, 1.4,1.0,1.0,1.0,1.0,1.0,1.4,1.0,1.0,1.0,1.0]
+        joint_command.kp = [35.0] * len(ORDERED_RELEVANT_JOINT_NAMES)
+        joint_command.kd = [1.1] * len(ORDERED_RELEVANT_JOINT_NAMES)
 
         self._joint_command_pub.publish(joint_command)
 
