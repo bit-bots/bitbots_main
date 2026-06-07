@@ -202,8 +202,8 @@ class RobotSimulation:
         self.node_publishers = {
             "joint_states": self.simulation.create_publisher(JointState, _topic("joint_states"), 1),
             "imu": self.simulation.create_publisher(Imu, _topic("imu/data"), 1),
-            "camera_proc": self.simulation.create_publisher(Image, _topic("zed/zed_node/left/image_rect_color"), 1),
-            "camera_info": self.simulation.create_publisher(CameraInfo, _topic("zed/zed_node/left/camera_info"), 1),
+            "camera_proc": self.simulation.create_publisher(Image, _topic("zed/zed_node/rgb/image_rect_color"), 1),
+            "camera_info": self.simulation.create_publisher(CameraInfo, _topic("zed/zed_node/rgb/camera_info"), 1),
         }
 
         self.simulation.create_subscription(JointCommand, _topic("joint_command"), self.joint_command_callback, 1)
