@@ -112,7 +112,7 @@ $DoOnce
 
 #NormalBehavior
 $SecondBallTouchAllowed
-    NO --> @SetNoKickOffOrThrowInVariable + value:false + r:false, @LookAtFieldFeatures + r:false, @ChangeAction + action:passive + r:false, @AvoidBallActive + r:false, @GoToPassPreparePosition + blocking:true // TODO: Implement SetNoKickOffOrThowInVariable
+    NO --> @SetNoSecondBallContactVariable + value:false + r:false, @LookAtFieldFeatures + r:false, @ChangeAction + action:passive + r:false, @AvoidBallActive + r:false, @GoToPassPreparePosition + blocking:true 
     YES --> $BallSeen
         NO --> $ConfigRole
             GOALIE --> #RolePositionWithPause
@@ -135,8 +135,18 @@ $SecondBallTouchAllowed
 $SecondaryStateDecider  // TODO add Decision for Throw in and change Variable if in Throw in State and rewrite this? TO fit better with the new game controller, 
     PENALTYSHOOT --> #PenaltyShootoutBehavior
     TIMEOUT --> #StandAndLook
-    THROWIN --> $DoOnce
-        NOT_DONE --> @SetNoKickOffOrThrowInVariable + value:true, @ForgetBallStartPosition + r:false
+    THROW_IN --> $DoOnce
+        NOT_DONE --> @SetNoSecondBallContactVariable + value:true, @ForgetBallStartPosition + r:false
+        DONE --> $SecondaryStateTeamDecider
+            OUR --> #NormalBehavior
+            ELSE --> #Placing
+    CORNER_KICK --> $DoOnce
+        NOT_DONE --> @SetNoSecondBallContactVariabl + value:true, @ForgetBallStartPosition + r:false
+        DONE --> $SecondaryStateTeamDecider
+            OUR --> #NormalBehavior
+            ELSE --> #Placing
+    GOAL_KICK --> $DoOnce
+        NOT_DONE -->@SetNoSecondBallContactVariable + value:true, @ForgetBallStartPosition + r:false
         DONE --> $SecondaryStateTeamDecider
             OUR --> #NormalBehavior
             ELSE --> #Placing
@@ -156,7 +166,7 @@ $IsPenalized
     NO --> $GameStateDecider
         INITIAL --> #Init
         READY --> $DoOnce
-            NOT_DONE --> @SetNoKickOffOrThrowInVariable + value:true + r:false, @ForgetBallStartPosition + r:false
+            NOT_DONE --> @SetNoSecondBallContactVariable + value:true + r:false, @ForgetBallStartPosition + r:false
             DONE --> $AnyGoalScoreRecently + time:50
                 YES --> #PositioningReady
                 NO --> $DoOnce
