@@ -67,6 +67,7 @@ class HcmBlackboard:
         self.animation_name_falling_front: str = self.node.get_parameter("animations.falling_front").value
         self.animation_name_falling_left: str = self.node.get_parameter("animations.falling_left").value
         self.animation_name_falling_right: str = self.node.get_parameter("animations.falling_right").value
+        self.animation_name_falling: str = self.node.get_parameter("animations.falling").value
         self.animation_name_init: str = self.node.get_parameter("animations.init").value
         self.animation_name_stand_up_back: str = self.node.get_parameter("animations.stand_up_back").value
         self.animation_name_stand_up_front: str = self.node.get_parameter("animations.stand_up_front").value

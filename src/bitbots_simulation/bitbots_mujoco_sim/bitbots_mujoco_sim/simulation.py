@@ -24,6 +24,7 @@ class Simulation(Node):
         super().__init__("sim_interface")
         self.declare_parameter("world_file", "")
         self.declare_parameter("use_namespace", True)
+        self.declare_parameter("web", False)
 
         # These default value are oriented on some real world data in standstill.
         # They are a bit worse than what was observed there.
@@ -135,6 +136,12 @@ class Simulation(Node):
             self.paused = not self.paused
 
     def run(self) -> None:
+        if self.get_parameter("web").get_parameter_value().bool_value:
+            self._run_web_viewer()
+        else:
+            self._run_native_viewer()
+
+    def _run_native_viewer(self) -> None:
         print("Starting simulation viewer...")
         with viewer.launch_passive(
             self.model, self.data, key_callback=self._key_callback, show_left_ui=False, show_right_ui=False
@@ -164,6 +171,12 @@ class Simulation(Node):
                         self.measured_rtf = 0.01 * (self.timestep / total_wall_time) + 0.99 * self.measured_rtf
                 else:
                     view.sync()
+
+    def _run_web_viewer(self) -> None:
+        from mjviser import Viewer
+
+        print("Starting web simulation viewer (mjviser)...")
+        Viewer(self.model, self.data, step_fn=lambda model, data: self.step()).run()
 
     def step(self) -> None:
         self.step_number += 1
@@ -202,8 +215,8 @@ class RobotSimulation:
         self.node_publishers = {
             "joint_states": self.simulation.create_publisher(JointState, _topic("joint_states"), 1),
             "imu": self.simulation.create_publisher(Imu, _topic("imu/data"), 1),
-            "camera_proc": self.simulation.create_publisher(Image, _topic("zed/zed_node/left/image_rect_color"), 1),
-            "camera_info": self.simulation.create_publisher(CameraInfo, _topic("zed/zed_node/left/camera_info"), 1),
+            "camera_proc": self.simulation.create_publisher(Image, _topic("zed/zed_node/rgb/image_rect_color"), 1),
+            "camera_info": self.simulation.create_publisher(CameraInfo, _topic("zed/zed_node/rgb/camera_info"), 1),
         }
 
         self.simulation.create_subscription(JointCommand, _topic("joint_command"), self.joint_command_callback, 1)

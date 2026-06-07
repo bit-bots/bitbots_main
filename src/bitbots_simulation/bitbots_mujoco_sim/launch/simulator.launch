@@ -1,5 +1,7 @@
 <launch>
+  <arg name="web" default="false" description="Use web-based mjviser viewer instead of the native MuJoCo viewer"/>
   <node pkg="bitbots_mujoco_sim" exec="sim" name="sim_interface" output="screen">
     <param name="use_namespace" value="false"/>
+    <param name="web" value="$(var web)"/>
   </node>
 </launch>

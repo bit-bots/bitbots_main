@@ -1,17 +1,24 @@
 <launch>
   <arg name="sim" default="false"/>
   <arg name="walk" default="true"/>
-  <arg name="kick" default="true"/>
+  <arg name="kick" default="false"/>
+  <arg name="mjlab_walk" default="false"/>
+
 
   <group if="$(var walk)">
     <node pkg="bitbots_rl_motion" exec="walk_node" output="screen">
-      <param from="$(find-pkg-share bitbots_rl_motion)/configs/wolfgang_walking_model_config.yaml" />
+      <param from="$(find-pkg-share bitbots_rl_motion)/configs/playground_walk_model.yaml" />
     </node>
   </group>
 
   <group if="$(var kick)">
     <node pkg="bitbots_rl_motion" exec="kick_node" output="screen">
       <param from="$(find-pkg-share bitbots_rl_motion)/configs/wolfgang_dribbling_model_config.yaml" />
+    </node>
+  </group>
+  <group if="$(var mjlab_walk)">
+    <node pkg="bitbots_rl_motion" exec="mjlab_walk_node" output="screen">
+      <param from="$(find-pkg-share bitbots_rl_motion)/configs/mjlab_walk_model.yaml" />
     </node>
   </group>
 </launch>
