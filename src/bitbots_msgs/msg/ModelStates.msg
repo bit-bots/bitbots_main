@@ -1,4 +1,4 @@
-# Originally from the now deprecated gazebo msgs (we used it for webots and do not really care about gazebo).
+# Originally from the now deprecated gazebo msgs (we used it for our simulation and do not really care about gazebo).
 # Can be used for ground truth data from simulation.
 
 string[] name                 # model names

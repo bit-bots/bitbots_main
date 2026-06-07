@@ -82,7 +82,7 @@ $PassStarted
 
 #PenaltyShootoutBehavior
 $SecondaryStateTeamDecider
-    OUR --> @StandAndWaitRandom + min:10 + max:30, @KickBallDynamic + r:true + type:penalty, @Stand
+    OUR --> @StandAndWaitRandom + min:10 + max:25, @ChangeAction + action:kicking, @LookAtFieldFeatures, @WalkInPlace + duration:2, @RLKick + duration:3 + r:false, @WalkInPlace + duration:1 + r:false, @Stand
     ELSE --> $BallDangerous + radius:1.3
         LEFT --> @PlayAnimationGoalieFallLeft, @Stand
         RIGHT --> @PlayAnimationGoalieFallRight, @Stand

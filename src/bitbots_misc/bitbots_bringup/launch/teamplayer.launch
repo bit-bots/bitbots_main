@@ -16,8 +16,8 @@
     <arg name="record" default="false" description="Whether the ros bag recording should be started" />
     <arg name="tts" default="false" description="Whether to speak" />
     <arg name="whistle_detector" default="true" description="Whether to detect whistles"/>
-    <arg unless="$(var sim)" name="fieldname" default="labor" description="Loads field settings (labor, webots, ...)." />
-    <arg if="$(var sim)" name="fieldname" default="hsl_kid" description="Loads field settings (labor, webots, ...)." />
+    <arg unless="$(var sim)" name="fieldname" default="labor" description="Loads field settings" />
+    <arg if="$(var sim)" name="fieldname" default="hsl_kid" description="Loads field settings" />
 
 
     <!-- load the global parameters -->
@@ -28,7 +28,7 @@
 
     <!-- load the text to speech engine -->
     <group if="$(var tts)">
-        <include file="$(find-pkg-share bitbots_tts)/launch/tts.launch"/>
+        <include file="$(find-pkg-share bitbots_tts)/launch/tts.launch" />
     </group >
 
     <!-- load the diagnostic aggregator -->
@@ -42,8 +42,7 @@
     <!-- load the motion -->
     <group if="$(var motion)">
         <include file="$(find-pkg-share bitbots_bringup)/launch/motion.launch">
-            <arg name="sim" value="$(var sim)"/>
-            <arg name="tts" value="$(var tts)" />
+            <arg name="sim" value="$(var sim)" />
         </include>
     </group>
 

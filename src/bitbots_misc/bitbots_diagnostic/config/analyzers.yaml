@@ -11,7 +11,7 @@ analyzers:
     Servos:
       type: diagnostic_aggregator/GenericAnalyzer
       path: Servos
-      startswith: [ 'robot_node: DS']
+      startswith: ['robot_node: DS']
       timeout: 1.0
       find_and_remove_prefix: ['robot_node: DS']
     System:

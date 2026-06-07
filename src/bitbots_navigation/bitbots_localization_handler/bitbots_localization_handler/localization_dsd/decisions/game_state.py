@@ -142,9 +142,16 @@ class CheckPenalized(AbstractLocalizationDecisionElement):
         Determines if the robot is penalized by the game controller.
         """
         self.publish_debug_data("Seconds since unpenalized", self.blackboard.gamestate.get_seconds_since_unpenalized())
+        self.publish_debug_data("Last penalty was in place", self.blackboard.gamestate.get_last_penalty_was_in_place())
         if self.blackboard.gamestate.get_is_penalized():
-            return "YES"
-        elif self.blackboard.gamestate.get_seconds_since_unpenalized() < 1:
+            if self.blackboard.gamestate.get_is_penalized_in_place():
+                return "PENALIZED_IN_PLACE"
+            else:
+                return "YES"
+        elif (
+            self.blackboard.gamestate.get_seconds_since_unpenalized() < 1
+            and not self.blackboard.gamestate.get_last_penalty_was_in_place()
+        ):
             self.publish_debug_data("Reason", "Just unpenalized")
             return "JUST_UNPENALIZED"
         else:
