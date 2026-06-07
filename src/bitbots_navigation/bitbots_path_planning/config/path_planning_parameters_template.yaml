@@ -16,7 +16,7 @@ bitbots_path_planning:
     description: 'The rate at which the path planning is executed'
     validation:
       bounds<>: [0.0, 100.0]
-  
+
   map:
     planning_frame:
       type: string
@@ -62,19 +62,19 @@ bitbots_path_planning:
         bounds<>: [0.0, 1.0]
     max_vel_x:
       type: double
-      default_value: 0.5
+      default_value: 0.85
       description: 'Maximum velocity we want to reach in different directions (base_footprint coordinate system)'
       validation:
         bounds<>: [0.0, 1.0]
     min_vel_x:
       type: double
-      default_value: -0.5
+      default_value: -0.9
       description: 'Minimum velocity we want to reach in different directions (base_footprint coordinate system)'
       validation:
         bounds<>: [-1.0, 0.0]
     max_vel_y:
       type: double
-      default_value: 0.3
+      default_value: 0.45
       description: 'Maximum velocity we want to reach in different directions (base_footprint coordinate system)'
       validation:
         bounds<>: [0.0, 1.0]

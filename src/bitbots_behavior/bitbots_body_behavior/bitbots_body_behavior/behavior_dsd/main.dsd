@@ -20,12 +20,6 @@ $DoOnce
 #GetWalkreadyAndLocalize
 @ChangeAction + action:waiting + r:false, @PlayAnimationInitInSim + r:false, @LookAtFieldFeatures + r:false, @WalkInPlace
 
-#PerformKickLeft
-@ChangeAction + action:kicking, @LookAtFront, @WalkForward + time:1.0 + r:false, @LookAtFieldFeatures + r:false
-
-#PerformKickRight
-@ChangeAction + action:kicking, @LookAtFront, @WalkForward + time:1.0 + r:false, @LookAtFieldFeatures + r:false
-
 #Dribble
 @ChangeAction + action:going_to_ball, @CancelPathplanning, @LookAtFront, @DribbleForward
 
