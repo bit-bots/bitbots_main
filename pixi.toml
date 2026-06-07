@@ -225,3 +225,6 @@ scripts = [
 default = ["ros", "format"]  # Full development environment (excluding robot-only deps)
 format = ["format"]  # Format only environment
 robot = ["ros", "format", "robot"]  # Robot environment with additional robot-only dependencies
+
+[pypi-dependencies]
+mjviser = ">=0.0.12, <0.0.15"
