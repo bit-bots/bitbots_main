@@ -135,27 +135,21 @@ $SecondBallTouchAllowed
 $SecondaryStateDecider  // TODO add Decision for Throw in and change Variable if in Throw in State and rewrite this? TO fit better with the new game controller, 
     PENALTYSHOOT --> #PenaltyShootoutBehavior
     TIMEOUT --> #StandAndLook
-    THROW_IN --> $DoOnce
-        NOT_DONE --> @SetNoSecondBallContactVariable + value:true, @ForgetBallStartPosition + r:false
-        DONE --> $SecondaryStateTeamDecider
-            OUR --> #NormalBehavior
-            ELSE --> #Placing
-    CORNER_KICK --> $DoOnce
-        NOT_DONE --> @SetNoSecondBallContactVariabl + value:true, @ForgetBallStartPosition + r:false
-        DONE --> $SecondaryStateTeamDecider
-            OUR --> #NormalBehavior
-            ELSE --> #Placing
-    GOAL_KICK --> $DoOnce
-        NOT_DONE -->@SetNoSecondBallContactVariable + value:true, @ForgetBallStartPosition + r:false
-        DONE --> $SecondaryStateTeamDecider
-            OUR --> #NormalBehavior
-            ELSE --> #Placing
+    THROW_IN --> #ThrowinGoalKickCornerkickBehavior
+    CORNER_KICK --> #ThrowinGoalKickCornerkickBehavior
+    GOAL_KICK --> #ThrowinGoalKickCornerkickBehavior
     ELSE --> $SecondaryStateTeamDecider
         OUR --> #NormalBehavior
         ELSE --> #Placing
     NORMAL --> #NormalBehavior
     OVERTIME --> #NormalBehavior
-    
+
+#ThrowinGoalKickCornerkickBehavior
+$DoOnce
+    NOT_DONE --> @SetNoSecondBallContactVariable + value:true, @ForgetBallStartPosition + r:false
+    DONE --> $SecondaryStateTeamDecider
+        OUR --> #NormalBehavior
+        ELSE --> #Placing
 
 -->BodyBehavior
 $IsPenalized
