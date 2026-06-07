@@ -10,10 +10,13 @@
     <arg name="path_planning" default="true" description="Whether the path planning should be started"/>
     <arg name="teamcom" default="false" description="Whether the team communication system should be started" />
     <arg name="vision" default="true" description="Whether the vision system should be started" />
+    <arg name="web" default="false" description="Use web-based mjviser viewer instead of the native MuJoCo viewer"/>
     <arg name="world_model" default="true" description="Whether the world model should be started"/>
 
     <!-- load the general simulator -->
-    <include file="$(find-pkg-share bitbots_mujoco_sim)/launch/simulator.launch" />
+    <include file="$(find-pkg-share bitbots_mujoco_sim)/launch/simulator.launch">
+        <arg name="web" value="$(var web)"/>
+    </include>
 
     <!-- load teamplayer software stack -->
     <include file="$(find-pkg-share bitbots_bringup)/launch/teamplayer.launch">
