@@ -56,7 +56,7 @@ class Turn(AbstractActionElement):
         super().__init__(blackboard, dsd, parameters)
         self.blackboard: BodyBlackboard
         self.current_rotation_vel = 0.0
-        self.max_speed = parameters.get("max_speed", 0.4)
+        self.max_speed = parameters.get("max_speed", 0.99)
 
         # Check if the have a duration
         self.duration: Optional[float] = float(parameters["duration"]) if "duration" in parameters else None

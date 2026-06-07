@@ -24,7 +24,7 @@ move_head:
 
   max_pitch:
     type: double_array
-    default_value: [-0.6, 0.79]
+    default_value: [-0.6, 0.9]
     description: "Max values for the head position (in radians)"
     validation:
       fixed_size<>: 2
@@ -98,7 +98,7 @@ move_head:
 
       pitch_max:
         type: double_array
-        default_value: [0.0, 45.0]
+        default_value: [0.0, 50.0]
         description: "Maximum pitch values for the search pattern (in degrees)"
         validation:
           fixed_size<>: 2
@@ -134,7 +134,7 @@ move_head:
 
       pitch_max:
         type: double_array
-        default_value: [ -10.0, 45.0 ]
+        default_value: [ -10.0, 50.0 ]
         description: "Maximum pitch values for the search pattern (in degrees)"
         validation:
           fixed_size<>: 2

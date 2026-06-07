@@ -36,7 +36,7 @@ class WalkNode(RLNode):
                 self._gravity_handler.get_gravity(),
                 self._command_handler.get_command_with_stop(),
                 self._joint_handler.get_angle_data(),
-                self._joint_handler.get_velocity_data(),
+                np.zeros_like(self._joint_handler.get_angle_data()),
                 self._previous_action.get_previous_action(),
                 self._phase.get_obs_phase(),
             ]
