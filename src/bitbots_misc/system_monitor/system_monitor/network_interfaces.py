@@ -6,7 +6,7 @@ _prev_msgs = defaultdict(NetworkInterfaceMsg)
 _prev_msg_time = None
 
 
-def collect_all(clock):
+def collect_all(clock) -> list[NetworkInterfaceMsg]:
     global _prev_msg_time
     if _prev_msg_time is None:
         _prev_msg_time = clock.now()
@@ -15,7 +15,7 @@ def collect_all(clock):
     return list(msgs.values())
 
 
-def _get_interfaces():
+def _get_interfaces() -> dict[str, NetworkInterfaceMsg]:
     """@rtype: dict"""
     result = {}
     with open("/proc/net/dev") as file_obj:

@@ -25,7 +25,8 @@ msg = """
 Bit-Bots Teleop
 ---------------
 
-SPACE: EMERGENCY STOP (servo power off)
+ESC: EMERGENCY STOP (servo power off)
+SPACE: walk in place
 f: full stop             F: play walkready animation
 g: walk on the spot, clear speeds
 
@@ -270,7 +271,8 @@ class TeleopKeyboard(Node):
                     self.th = 0
                     self.push_force_x = 0.0
                     self.push_force_y = 0.0
-                    self.power_switch_pub.publish(PowerSwitch(control_switch=0, power_switch=0))
+                elif key == "\x1b":  # ESC
+                    self.power_switch_pub.publish(PowerSwitch(control_switch=1, power_switch=0))
                 elif key == "p":
                     # push robot in simulation
                     push_request = SimulatorPush.Request()
