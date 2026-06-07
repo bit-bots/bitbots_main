@@ -12,6 +12,7 @@ class SecondBallTouchAllowed(AbstractDecisionElement):
         self.after_kick_min_ball_movement = self.blackboard.config["after_kick_min_ball_movement"]
         self.other_took_the_first_kick = False
         self.latch = False
+        self.latch_start_time = None
 
     def perform(self, reevaluate=False):
         """
@@ -29,6 +30,8 @@ class SecondBallTouchAllowed(AbstractDecisionElement):
             self.other_took_the_first_kick or self.blackboard.team_data.is_team_mate_kicking()
         )
         ball_start_position = self.blackboard.misc.ball_movement_detection_start_ball_position
+        if self.latch:
+            duration_since_latch = (self.blackboard._node.get_clock().now() - self.latch_start_time).nanoseconds / 1e9
 
         self.publish_debug_data("other kicked", self.other_took_the_first_kick)
         self.publish_debug_data("kick off or throw in kick", kick_off_or_throwin_kick)
@@ -36,11 +39,16 @@ class SecondBallTouchAllowed(AbstractDecisionElement):
         self.publish_debug_data("is kicking team", is_kicking_team)
         self.publish_debug_data("ball position", ball_pos)
         self.publish_debug_data("ball start position", ball_start_position)
+        self.publish_debug_data("latch", self.latch)
+        self.publish_debug_data("duration since latch", duration_since_latch if self.latch else None)
+    
 
         if active_team_players < 2:
             return "YES"
         elif self.other_took_the_first_kick:
             self.latch = False
+            return "YES"
+        elif self.latch and duration_since_latch < 10.0:  # Latch for 10 seconds
             return "YES"
         elif self.latch:
             return "NO"
@@ -55,6 +63,7 @@ class SecondBallTouchAllowed(AbstractDecisionElement):
                 > self.after_kick_min_ball_movement
             ):
                 self.latch = True
+                self.latch_start_time = self.blackboard._node.get_clock().now()
                 return "NO"
             else:
                 return "YES"

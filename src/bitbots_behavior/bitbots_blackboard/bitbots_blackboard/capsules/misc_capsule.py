@@ -48,7 +48,7 @@ Run the deploy_robots script with the -c option to configure the robot and set p
 
         self.ball_movement_detection_start_ball_position: Optional[tuple[float, float]] = None
 
-        self.kickoff_or_throwin_kick: bool = False
+        self.no_second_ball_contact: bool = False
 
     #####################
     # ## Tracking Part ##

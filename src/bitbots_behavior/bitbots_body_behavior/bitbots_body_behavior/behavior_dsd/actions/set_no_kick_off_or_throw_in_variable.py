@@ -2,9 +2,9 @@ from bitbots_blackboard.body_blackboard import BodyBlackboard
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 
 
-class SetNoKickOffOrThrowInVariable(AbstractActionElement):
+class SetNoSecondBallContactVariable(AbstractActionElement):
     """
-    Sets the no_kick_off_or_throw_in variable.
+    Sets the no_second_ball_contact variable.
     """
 
     blackboard: BodyBlackboard
@@ -14,7 +14,7 @@ class SetNoKickOffOrThrowInVariable(AbstractActionElement):
         self.do_not_reevaluate()
         self.blackboard = blackboard
 
-        self.blackboard.misc.kickoff_or_throwin_kick = parameters.get("value", None)
+        self.blackboard.misc.no_second_ball_contact = parameters.get("value", None)
 
     def perform(self, reevaluate=False):
         self.pop()
