@@ -1,10 +1,5 @@
 <mujoco model="piplus">
-  <compiler angle="radian" meshdir="./assets/meshes/" autolimits="true"/>
-
-  <option iterations="3" ls_iterations="5" timestep="0.002" integrator="Euler">
-    <flag eulerdamp="disable"/>
-  </option>
-
+  <compiler angle="radian" meshdir="./assets/meshes/"/>
   <default>
     <default class="pi_joint_arm">
       <joint limited="false" damping="0.66" armature="0.008419" actuatorfrcrange="-10 10"/>
