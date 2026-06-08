@@ -10,7 +10,11 @@
             },
             "name": "start frame",
             "pause": 0.2,
-            "torque": {}
+            "torque": {},
+            "kp": {
+                "head_pitch_joint": 5.0,
+                "head_yaw_joint": 5.0
+            }
         }
     ],
     "last_edited": "2026-05-02 19:17:28.531941",

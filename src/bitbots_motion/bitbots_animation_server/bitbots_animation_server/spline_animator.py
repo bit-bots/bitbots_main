@@ -17,6 +17,8 @@ class SplineAnimator:
         self.animation_duration: float = 0.0
         self.spline_dict: dict[str, SmoothSpline] = {}
         self.torques = {}
+        self.kps = {}
+        self.kds = {}
         self.stabilizations = {}
         self.keyframe_times: list[float] = []
 
@@ -48,6 +50,8 @@ class SplineAnimator:
                 self.spline_dict[joint].add_point(current_point_time + keyframe.pause, keyframe.goals[joint])
             current_point_time += keyframe.pause
             self.torques[current_point_time] = keyframe.torque
+            self.kps[current_point_time] = keyframe.kp
+            self.kds[current_point_time] = keyframe.kd
 
         # Compute the splines
         for joint in self.spline_dict:
@@ -87,6 +91,25 @@ class SplineAnimator:
                 break
 
         return self.torques[keyframe_time]
+
+    def _value_at_time(self, values_by_time: dict[float, dict[str, float]], current_time: float) -> dict[str, float]:
+        if current_time < 0 or current_time > self.animation_duration:
+            return {}
+
+        # find previous time
+        sorted_keys = sorted(values_by_time.keys())
+        keyframe_time = sorted_keys[0]
+        for keyframe_time in reversed(sorted_keys):
+            if keyframe_time <= current_time:
+                break
+
+        return values_by_time[keyframe_time]
+
+    def get_kp(self, current_time) -> dict[str, float]:
+        return self._value_at_time(self.kps, current_time)
+
+    def get_kd(self, current_time) -> dict[str, float]:
+        return self._value_at_time(self.kds, current_time)
 
     def get_start_time(self):
         return self.start_time

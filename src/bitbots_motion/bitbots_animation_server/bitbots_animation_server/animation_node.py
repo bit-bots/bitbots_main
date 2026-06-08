@@ -33,6 +33,10 @@ UUID = tuple[np.uint8, ...]
 class AnimationNode(Node):
     """This node provides an action server for playing animations."""
 
+    # Gains used for joints that don't specify their own kp/kd in the animation
+    DEFAULT_KP = 60.0
+    DEFAULT_KD = 1.1
+
     def __init__(self):
         """Starts a simple action server and waits for requests."""
         super().__init__("animation_server")
@@ -271,7 +275,13 @@ class AnimationNode(Node):
                     goal.publish_feedback(PlayAnimation.Feedback(percent_done=100))
                     return finish(successful=True)
 
-                self.send_animation(from_hcm=request.hcm, pose=pose, torque=animator.get_torque(t))
+                self.send_animation(
+                    from_hcm=request.hcm,
+                    pose=pose,
+                    torque=animator.get_torque(t),
+                    kp=animator.get_kp(t),
+                    kd=animator.get_kd(t),
+                )
 
                 perc_done = int(
                     ((self.get_clock().now().nanoseconds / 1e9 - animator.get_start_time()) / animator.get_duration())
@@ -299,8 +309,17 @@ class AnimationNode(Node):
         """Callback for the IMU data."""
         self.imu_data = msg
 
-    def send_animation(self, from_hcm: bool, pose: dict[str, float], torque: Optional[dict[str, float]] = None) -> None:
+    def send_animation(
+        self,
+        from_hcm: bool,
+        pose: dict[str, float],
+        torque: Optional[dict[str, float]] = None,
+        kp: Optional[dict[str, float]] = None,
+        kd: Optional[dict[str, float]] = None,
+    ) -> None:
         """Sends an animation to the hcm"""
+        kp = kp or {}
+        kd = kd or {}
         self.hcm_publisher.publish(
             AnimationMsg(
                 from_hcm=from_hcm,
@@ -315,6 +334,8 @@ class AnimationNode(Node):
                     max_torques=[np.clip((torque[joint]), 0.0, 1.0) for joint in pose.keys()]  # type: ignore[index]
                     if torque and False
                     else [-1.0] * len(pose),  # fmt: skip
+                    kp=[kp.get(joint, self.DEFAULT_KP) for joint in pose.keys()],
+                    kd=[kd.get(joint, self.DEFAULT_KD) for joint in pose.keys()],
                 ),
             )
         )
