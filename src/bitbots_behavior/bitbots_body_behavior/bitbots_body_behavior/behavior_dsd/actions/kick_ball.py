@@ -7,9 +7,9 @@ from rclpy.duration import Duration
 class AbstractKickAction(AbstractActionElement):
     blackboard: BodyBlackboard
 
-    def pop(self):
+    def on_pop(self):
         self.blackboard.world_model.forget_ball()
-        super().pop()
+        super().on_pop()
 
 
 class WalkKick(AbstractKickAction):

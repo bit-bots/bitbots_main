@@ -2,7 +2,7 @@ bitbots_ball_filter:
   ros:
     camera_info_subscribe_topic:
       type: string
-      default_value: '/zed/zed_node/left/camera_info'
+      default_value: '/zed/zed_node/rgb/camera_info'
       description: 'Topic of the camera info'
       read_only: True
 
@@ -27,7 +27,7 @@ bitbots_ball_filter:
   filter:
     frame:
       type: string
-      default_value: 'map'
+      default_value: 'odom'
       description: 'Frame to filter the ball in'
       read_only: true
       validation:

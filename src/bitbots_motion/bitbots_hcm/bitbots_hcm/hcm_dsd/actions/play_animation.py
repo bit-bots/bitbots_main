@@ -122,6 +122,12 @@ class PlayAnimationFallingBack(AbstractPlayAnimation):
         return self.blackboard.animation_name_falling_back
 
 
+class PlayAnimationFalling(AbstractPlayAnimation):
+    def choose_animation(self):
+        self.blackboard.node.get_logger().info("PLAYING FALLING ANIMATION")
+        return self.blackboard.animation_name_falling
+
+
 class PlayAnimationTurningFrontLeft(AbstractPlayAnimation):
     def choose_animation(self):
         self.blackboard.node.get_logger().info("LYING ON THE LEFT SIDE AND TURNING TO THE BACK TO GET UP")

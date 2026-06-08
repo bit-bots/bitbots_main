@@ -239,6 +239,8 @@ class GameStateReceiver(Node):
             secs_remaining=state.secs_remaining,
             secondary_time=state.secondary_time,
             penalized=this_robot.penalty != 0,
+            #2 is the motion in set penalty
+            penalized_in_place=this_robot.penalty == 2,
             seconds_till_unpenalized=this_robot.secs_till_unpenalized,
             warings=this_robot.warnings,
             cautions=this_robot.cautions,

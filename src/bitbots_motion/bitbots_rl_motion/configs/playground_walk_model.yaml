@@ -16,23 +16,23 @@ walk_node:
         "l_calf_joint",
         "l_ankle_pitch_joint",
         "l_ankle_roll_joint"
-      ] 
+      ]
       walkready_state: [
          0.6, 0.0, 0.0,  1.2,  0.6, 0.0,
         -0.6, 0.0, 0.0, -1.2, -0.6, 0.0
       ]
       kp: [
         # legs
-        30.0, 30.0, 
-        30.0, 30.0, 
-        30.0, 30.0, 
-        30.0, 30.0, 
-        30.0, 30.0, 
-        30.0, 30.0
+        35.0, 35.0,
+        35.0, 35.0,
+        35.0, 35.0,
+        35.0, 35.0,
+        35.0, 35.0,
+        35.0, 35.0
       ]
       kd: [
         # legs
-        1.1, 1.1, 
+        1.1, 1.1,
         1.1, 1.1,
         1.1, 1.1,
         1.1, 1.1,
@@ -51,7 +51,7 @@ walk_node:
     phase:
       use_phase: True
       control_dt: 0.02
-      gait_frequency: 0.75
+      gait_frequency: 1.5
       initial_phase: [1.5707963267948966, -1.5707963267948966]
 
     providers: ["CPUExecutionProvider"]
