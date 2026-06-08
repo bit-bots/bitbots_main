@@ -50,7 +50,7 @@ class MjLabWalkNode(RLNode):
 
     # states in which the policy executes
     def allowed_states(self):
-        allowed_to_move = self._robot_state_handler.is_walkable() and np.any(self._command_handler.get_command() != 0.0)
+        allowed_to_move = self._robot_state_handler.is_walkable()
         return allowed_to_move
 
     def _phase_update_hook(self):
