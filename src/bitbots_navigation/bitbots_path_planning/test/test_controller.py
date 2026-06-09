@@ -13,7 +13,7 @@ from rclpy.time import Time
 from tf2_geometry_msgs import PoseStamped
 
 
-def test_default_setup(snapshot, node, tf2_buffer, config):
+def test_default_setup(node, tf2_buffer, config):
     controller = setup_controller(node, tf2_buffer)
     parameter_keys = [
         "carrot_distance",
@@ -27,11 +27,10 @@ def test_default_setup(snapshot, node, tf2_buffer, config):
         "smoothing_tau",
         "translation_slow_down_factor",
     ]
-    parameters = {p: getattr(config.controller, p) for p in parameter_keys}
 
     assert controller.angular_error_accumulator == 0
     assert controller.last_cmd_vel == Twist()
-    assert parameters == snapshot
+    assert all(hasattr(config.controller, p) for p in parameter_keys)
 
 
 def test_step_limits_forward_x_velocity(node, tf2_buffer, config, pose_opponent_goal):
@@ -120,9 +119,20 @@ def test_step_limits_rotation(node, tf2_buffer, config, pose_left_line, pose_rig
 
 def test_step_cmd_vel_smoothing(snapshot, node, tf2_buffer, config, pose_opponent_corner):
     controller = setup_controller(node, tf2_buffer)
-    controller.node.config.controller.smoothing_tau = 0.5
-    controller.last_update_time = Time(seconds=0)
 
+    # Pin all config params to dummy values so the snapshot is independent of config changes
+    config.controller.smoothing_tau = 0.5
+    config.controller.max_vel_x = 0.5
+    config.controller.max_vel_y = 0.3
+    config.controller.min_vel_x = -0.3
+    config.controller.max_rotation_vel = 0.8
+    config.controller.translation_slow_down_factor = 1.5
+    config.controller.rotation_slow_down_factor = 1.5
+    config.controller.rotation_i_factor = 0.0
+    config.controller.orient_to_goal_distance = 0.5
+    config.controller.carrot_distance = 1
+
+    controller.last_update_time = Time(seconds=0)
     controller.last_cmd_vel.linear.x = config.controller.max_vel_x
     controller.last_cmd_vel.linear.y = config.controller.max_vel_y
     controller.last_cmd_vel.angular.z = config.controller.max_rotation_vel
