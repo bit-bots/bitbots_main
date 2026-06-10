@@ -34,6 +34,11 @@ python = "==3.12"
 
 # Patches
 readline = ">=8.2.999"  # This is needed because we want to install an empty readline package from our models channel that leads to the system version being used. Otherwise we might have a mismatch between bash (often accessed globally ignoring the env) and readline (provided by the env)  breaking everything.
+pip = ">=26.1.2,<27"
+pytorch-gpu = ">=2.10.0,<3"
+torchvision = ">=0.26.0,<0.27"
+ultralytics = ">=8.4.63,<9"
+
 
 [feature.ros.dependencies]
 # Misc dependencies for our ROS 2 packages
@@ -255,3 +260,6 @@ scripts = [
 default = ["ros", "format"]  # Full development environment (excluding robot-only deps)
 format = ["format"]  # Format only environment
 robot = ["ros", "format", "robot"]  # Robot environment with additional robot-only dependencies
+
+[system-requirements]
+cuda = "12.1"
