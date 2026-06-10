@@ -99,10 +99,10 @@ def test_step_limits_backward_xy_velocities(node, tf2_buffer, config, pose_own_c
 
     assert goal_heading_angle == pytest.approx(walk_command_angle)
 
-    walk_command_speed = math.hypot(controller.last_cmd_vel.linear.x, controller.last_cmd_vel.linear.y)
-
-    assert walk_command_speed < abs(config.controller.min_vel_x)
-    assert walk_command_speed < config.controller.max_vel_y
+    # For diagonal movement the interpolated speed limit lies between the two axis limits,
+    # so checking the total magnitude against max_vel_y is wrong. Check each component instead.
+    assert abs(controller.last_cmd_vel.linear.x) < abs(config.controller.min_vel_x)
+    assert abs(controller.last_cmd_vel.linear.y) < config.controller.max_vel_y
     assert controller.last_cmd_vel.linear.z == 0
 
 
