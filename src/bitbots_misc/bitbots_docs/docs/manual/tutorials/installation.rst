@@ -8,7 +8,7 @@ In this tutorial, we will learn how to install all dependencies and build our so
 
 **Prerequisites**
 
-- Modern Linux distribution with a recent version of `curl` and `git` installed.
+- Modern Linux distribution with a recent version of ``curl`` and ``git`` installed.
 
 To install our software at your current directory, run the following command:
 
