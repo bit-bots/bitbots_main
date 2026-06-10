@@ -1,4 +1,5 @@
 #include <bitbots_localization/tools.hpp>
+#include <cmath>
 
 namespace bitbots_localization {
 
