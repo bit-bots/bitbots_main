@@ -1,0 +1,25 @@
+name: Setup script
+
+on:
+  schedule:
+    # Run approximately twice a month.
+    - cron: "17 4 1,15 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      PSModulePath: ""  # Otherwise colcon might think that PowerShell is being used
+
+    steps:
+      - name: Download and run setup script
+        run: |
+          cd "$(mktemp -d)"
+          curl -fsSL https://raw.githubusercontent.com/bit-bots/bitbots_main/main/scripts/bitbots_setup.sh \
+            --output "${RUNNER_TEMP}/bitbots_setup.sh"
+          bash "${RUNNER_TEMP}/bitbots_setup.sh" --https

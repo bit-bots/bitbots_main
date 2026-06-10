@@ -17,16 +17,27 @@ The workspace is managed using the [pixi](https://pixi.sh) package manager. This
 
 Full step-by-step instructions for installing the Bit-Bots software stack and ROS 2 can be found in our [documentation](https://docs.bit-bots.de/meta/manual/tutorials/install_software_ros2.html).
 
+We assume a modern Linux distribution with a recent version of `curl` and `git` installed. The setup script should work on any Linux distribution, but we only test on Ubuntu.
+
+From the directory where you want to clone `bitbots_main`, download and run the setup script:
+
+```shell
+curl -fsSL https://raw.githubusercontent.com/bit-bots/bitbots_main/main/scripts/bitbots_setup.sh \
+  --output /tmp/bitbots_setup.sh
+bash /tmp/bitbots_setup.sh
+```
+
+This clones the repository using SSH, installs Pixi and all dependencies, and builds the workspace.
+If cloning with SSH fails, the script offers to retry using HTTPS.
+Pass `--https` to clone with HTTPS immediately; `--ssh` explicitly selects the default SSH method.
+
+## Using the workspace
+
 Run the following command inside this repository to build the workspace.
-All dependencies will be installed automatically.
-Make sure you have [pixi](https://pixi.sh) installed.
-A few optional proprietary dependencies will be needed for full functionality, see the documentation for details.
 
 ``` shell
 pixi run build
 ```
-
-## Using the workspace
 
 To activate the workspace run the following command in the terminal you want to use:
 
