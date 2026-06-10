@@ -6,7 +6,10 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.os }}
     env:
       PSModulePath: ""  # Otherwise colcon might think that PowerShell is being used
 
