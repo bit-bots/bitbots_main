@@ -14,6 +14,14 @@ repos:
           - "--exit-non-zero-on-fix"
           - "--show-fixes"
       - id: ruff-format
+        stages:
+          - pre-commit
+      - id: ruff-format
+        name: ruff-format (diff)
+        args:
+          - "--diff"
+        stages:
+          - manual
   - repo: https://github.com/pocc/pre-commit-hooks
     rev: v1.3.5
     hooks:

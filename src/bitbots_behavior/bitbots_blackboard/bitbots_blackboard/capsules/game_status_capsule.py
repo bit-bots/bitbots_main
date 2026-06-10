@@ -17,6 +17,7 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
         self.gamestate = GameState()
         self.last_update: float = 0.0
         self.unpenalized_time: float = 0.0
+        self.last_penalty_was_in_place: bool = False
         self.last_goal_from_us_time = -86400.0
         self.last_goal_time = -86400.0
         self.free_kick_kickoff_team: bool | None = None
@@ -85,6 +86,12 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
     def get_is_penalized(self) -> bool:
         return self.gamestate.penalized
 
+    def get_is_penalized_in_place(self) -> bool:
+        return self.gamestate.penalized_in_place
+
+    def get_last_penalty_was_in_place(self) -> bool:
+        return self.last_penalty_was_in_place
+
     def received_gamestate(self) -> bool:
         return self.last_update != 0.0
 
@@ -94,6 +101,7 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
     def gamestate_callback(self, gamestate_msg: GameState) -> None:
         if self.gamestate.penalized and not gamestate_msg.penalized:
             self.unpenalized_time = self._node.get_clock().now().nanoseconds / 1e9
+            self.last_penalty_was_in_place = self.gamestate.penalized_in_place
 
         if gamestate_msg.own_score > self.gamestate.own_score:
             self.last_goal_from_us_time = self._node.get_clock().now().nanoseconds / 1e9

@@ -2,10 +2,9 @@
 <launch>
     <arg name="sim" default="false"/>
     <arg name="viz" default="false"/>
-    <arg name="walking" default="true" description="start walking" />
     <arg name="torqueless_mode" default="false" description="start without torque, for example for testing the falling detection"/>
-    <arg name="tts" default="true" description="Whether to speak" />
     <arg name="lowlevel" default="true" description="Whether to start the lowlevel hardware interface" />
+    <arg name="rl_motion" default="true" description="Whether to use the RL motion system instead of the regular one" />
 
     <!-- launch the hardware interface -->
     <group unless="$(var sim)">
@@ -35,11 +34,10 @@
         <arg name="sim" value="$(var sim)" />
     </include>
 
-    <!-- launch the walking -->
-    <group if="$(var walking)">
-        <node pkg="bitbots_rl_walk" exec="walk" output="screen">
-            <param name="use_sim_time" value="$(var sim)"/>
-        </node>
+    <group if="$(var rl_motion)">
+        <include file="$(find-pkg-share bitbots_rl_motion)/launch/rl_motion.launch">
+            <arg name="sim" value="$(var sim)"/>
+        </include>
     </group>
 
     <!-- launch the hcm -->
