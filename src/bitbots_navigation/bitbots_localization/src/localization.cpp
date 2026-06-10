@@ -120,12 +120,12 @@ void Localization::updateParams(bool force_reload) {
                                                  config_.particle_filter.diffusion.starting_multiplier, drift_cov));
 
   // Create standard particle probability distributions (e.g. for the initialization at the start of the game)
-  robot_state_distribution_own_sidelines.reset(new RobotStateDistributionOwnSideline(
-      random_number_generator_, std::make_pair(field_dimensions_.x, field_dimensions_.y)));
-  robot_state_distribution_opponent_half.reset(new RobotStateDistributionOpponentHalf(
-      random_number_generator_, std::make_pair(field_dimensions_.x, field_dimensions_.y)));
-  robot_state_distribution_own_half_.reset(new RobotStateDistributionOwnHalf(
-      random_number_generator_, std::make_pair(field_dimensions_.x, field_dimensions_.y)));
+  robot_state_distribution_own_sidelines.reset(
+      new RobotStateDistributionOwnSideline(random_number_generator_, field_dimensions_.x, field_dimensions_.y));
+  robot_state_distribution_opponent_half.reset(
+      new RobotStateDistributionOpponentHalf(random_number_generator_, field_dimensions_.x, field_dimensions_.y));
+  robot_state_distribution_own_half_.reset(
+      new RobotStateDistributionOwnHalf(random_number_generator_, field_dimensions_.x, field_dimensions_.y));
 
   // Create the resampling strategy
   resampling_.reset(
@@ -517,15 +517,15 @@ void Localization::publish_debug_rating(const std::vector<std::pair<double, doub
 
   for (const std::pair<double, double>& measurement : measurements) {
     // lines are in polar form!
-    std::pair<double, double> observationRelative;
+    const PolarCoordinates measurement_polar{measurement.first, measurement.second};
 
-    observationRelative = map->getObservationCoordinatesInMapFrame(measurement, best_estimate.getXPos(),
-                                                                   best_estimate.getYPos(), best_estimate.getTheta());
-    double occupancy = map->get_occupancy(observationRelative.first, observationRelative.second);
+    const CartesianCoordinates observation = map->getObservationCoordinatesInMapFrame(
+        measurement_polar, best_estimate.getXPos(), best_estimate.getYPos(), best_estimate.getTheta());
+    double occupancy = map->get_occupancy(observation.x, observation.y);
 
     geometry_msgs::msg::Point point;
-    point.x = observationRelative.first;
-    point.y = observationRelative.second;
+    point.x = observation.x;
+    point.y = observation.y;
 
     std_msgs::msg::ColorRGBA color;
     color.b = 1;

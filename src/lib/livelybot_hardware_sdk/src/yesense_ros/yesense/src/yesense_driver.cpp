@@ -1261,7 +1261,7 @@ void YesenseDriver::spin()
     uint16_t tid = 0x00;
     uint16_t prev_tid = 0x00;
 
-    uint32_t gps_header_sum;
+    uint32_t gps_header_sum = 0;
 
     while(configured_)
     {

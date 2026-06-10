@@ -8,8 +8,20 @@
 #include <vector>
 
 namespace bitbots_localization {
-std::pair<double, double> cartesianToPolar(double x, double y);
-std::pair<double, double> polarToCartesian(double t, double r);
+struct PolarCoordinates {
+  double angle;
+  double radius;
+};
+
+struct CartesianCoordinates {
+  double x;
+  double y;
+};
+
+PolarCoordinates cartesianToPolar(const CartesianCoordinates& coordinates);
+PolarCoordinates cartesianToPolar(double x, double y);
+CartesianCoordinates polarToCartesian(const PolarCoordinates& coordinates);
+CartesianCoordinates polarToCartesian(double angle, double radius);
 double signedAngle(double angle_a, double angle_b);
 double signedAngle(double angle);
 }  // namespace bitbots_localization
