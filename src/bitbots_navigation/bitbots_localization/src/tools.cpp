@@ -1,21 +1,19 @@
 #include <bitbots_localization/tools.hpp>
+#include <cmath>
 
 namespace bitbots_localization {
 
-std::pair<double, double> cartesianToPolar(double x, double y) {
-  double r = hypot(x, y);
-
-  double t = atan2(y, x);
-
-  return std::make_pair(t, r);
+PolarCoordinates cartesianToPolar(const CartesianCoordinates& coordinates) {
+  return {atan2(coordinates.y, coordinates.x), hypot(coordinates.x, coordinates.y)};
 }
 
-std::pair<double, double> polarToCartesian(double t, double r) {
-  double x = r * std::cos(t);
-  double y = r * std::sin(t);
+PolarCoordinates cartesianToPolar(double x, double y) { return cartesianToPolar({x, y}); }
 
-  return std::make_pair(x, y);
+CartesianCoordinates polarToCartesian(const PolarCoordinates& coordinates) {
+  return {coordinates.radius * std::cos(coordinates.angle), coordinates.radius * std::sin(coordinates.angle)};
 }
+
+CartesianCoordinates polarToCartesian(double angle, double radius) { return polarToCartesian({angle, radius}); }
 
 double signedAngle(double angle) {
   if (angle > M_PI) {
