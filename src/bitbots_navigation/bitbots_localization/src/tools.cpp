@@ -2,13 +2,13 @@
 
 namespace bitbots_localization {
 
-PolarCoordinates cartesianToPolar(CartesianCoordinates coordinates) {
+PolarCoordinates cartesianToPolar(const CartesianCoordinates& coordinates) {
   return {atan2(coordinates.y, coordinates.x), hypot(coordinates.x, coordinates.y)};
 }
 
 PolarCoordinates cartesianToPolar(double x, double y) { return cartesianToPolar({x, y}); }
 
-CartesianCoordinates polarToCartesian(PolarCoordinates coordinates) {
+CartesianCoordinates polarToCartesian(const PolarCoordinates& coordinates) {
   return {coordinates.radius * std::cos(coordinates.angle), coordinates.radius * std::sin(coordinates.angle)};
 }
 
