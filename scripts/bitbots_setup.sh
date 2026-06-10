@@ -82,7 +82,16 @@ clone_repo() {
             echo "Cannot clone: $target already exists and is not a Git repository." >&2
             exit 1
         }
-        git -C "$target" switch "$branch"
+
+        if git -C "$target" remote get-url origin >/dev/null 2>&1; then
+            git -C "$target" fetch --prune origin
+        fi
+
+        if git -C "$target" show-ref --verify --quiet "refs/heads/$branch"; then
+            git -C "$target" switch "$branch"
+        else
+            git -C "$target" switch --track -c "$branch" "origin/$branch"
+        fi
         return
     fi
 
