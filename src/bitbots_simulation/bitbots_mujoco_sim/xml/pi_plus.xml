@@ -1,5 +1,5 @@
 <mujoco model="piplus">
-  <compiler angle="radian" meshdir="./meshes/"/>
+  <compiler angle="radian" meshdir="./assets/meshes/"/>
   <default>
     <default class="pi_joint_arm">
       <joint damping="0.66" actuatorfrcrange="-10 10" armature="0.01317" frictionloss="0.2"/>
