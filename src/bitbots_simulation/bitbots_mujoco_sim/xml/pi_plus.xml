@@ -15,7 +15,7 @@
     </default>
     <default class="pi_actuator_arm">
       <!-- ctrllimited is false because policies should be able to set values outside the ranges to reach torques required -->
-      <position kp="6" kv="0.6" forcerange="-10 10" ctrllimited="false"/>
+      <position kp="30" kv="0.6" forcerange="-10 10" ctrllimited="false"/>
     </default>
     <default class="pi_actuator_leg">
       <position kp="30" kv="1.1" forcerange="-20 20" ctrllimited="false"/>
