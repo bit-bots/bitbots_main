@@ -55,6 +55,7 @@ class RankToBallNoGoalie(AbstractDecisionElement):
     def perform(self, reevaluate=False):
         if self.blackboard.gamestate.get_team_com_limit_has_reached():
             rank = self.blackboard.team_data.get_last_rank_with_team_com_no_goalie()
+            self.publish_debug_data("team com limit has reached: true")
         else:
             my_time_to_ball = self.blackboard.team_data.get_own_time_to_ball()
             rank = self.blackboard.team_data.team_rank_to_ball(
@@ -62,6 +63,7 @@ class RankToBallNoGoalie(AbstractDecisionElement):
             )
             self.publish_debug_data("time to ball", my_time_to_ball)
             self.blackboard.team_data.set_last_rank_to_ball_with_team_com_no_goalie(rank)
+            self.publish_debug_data("team com limit has reached: false")
 
         self.publish_debug_data("Rank to ball", rank)
         if rank == 1:

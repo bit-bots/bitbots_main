@@ -107,7 +107,7 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
                 return True
         return False
 
-    def set_was_goalie_handling_ball_with_team_com(self, was_handling: bool) -> None:
+    def set_was_goalie_handling_ball(self, was_handling: bool) -> None:
         self.was_goalie_handling_ball_with_team_com = was_handling
 
     @cached_capsule_function
@@ -157,7 +157,7 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
 
     def set_last_rank_to_ball_with_team_com(self, last_rank: int) -> None:
         self.last_rank_to_ball_with_team_com = last_rank
-    
+
     def set_last_rank_to_ball_with_team_com_no_goalie(self, last_rank: int) -> None:
         self.last_rank_to_ball_with_team_com_no_goalie = last_rank
 
@@ -181,10 +181,10 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
     def get_last_rank_with_team_com(self) -> int:
         return self.last_rank_to_ball_with_team_com
 
-    def get_last_rank_with_team_com(self) -> int:
+    def get_last_rank_with_team_com_no_goalie(self) -> int:
         return self.last_rank_to_ball_with_team_com_no_goalie
 
-    def get_last_number_active_player(self) -> int:
+    def get_last_number_of_active_players(self) -> int:
         return self.last_number_of_active_players
 
     def set_role(self, role: Literal["goalie", "offense", "defense"]) -> None:
@@ -230,9 +230,9 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
             team_data_infos = filter(is_not_goalie, team_data_infos)  # type: ignore[assignment]
 
         # Count valid team data infos (aka robots with valid team data)
-        return = sum(map(self.is_valid, team_data_infos))
+        return sum(map(self.is_valid, team_data_infos))
 
-    def set_last_number_of_active_players(self, active_players: int) -> None
+    def set_last_number_of_active_players(self, active_players: int) -> None:
         self.last_number_of_active_players = active_players
 
     @cached_capsule_function
@@ -252,7 +252,7 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
 
     def set_was_goalie_acive(self, was_active: bool) -> None:
         self.was_goalie_active = was_active
-    
+
     def get_own_time_to_ball(self) -> float:
         return self.own_time_to_ball
 

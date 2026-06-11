@@ -51,7 +51,7 @@ t:     toggle kicking team
 s:     toggle stopped state
 +:     increase own score by 1
 
-m: message_budget -= 5995
+m: message_budget = 50
 n: reset message_budget to 12000
 
 
@@ -127,7 +127,7 @@ CTRL-C to quit
                 elif key in [chr(ord("e") + x) for x in range(7)]:
                     game_state_msg.set_play = ord(key) - ord("e")
                 elif key == "m":
-                    game_state_msg.message_budget = game_state_msg.message_budget - 5595
+                    game_state_msg.message_budget = 50
                 elif key == "n":
                     game_state_msg.message_budget = 12000
                 elif key == "t":

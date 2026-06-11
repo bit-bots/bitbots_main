@@ -316,14 +316,11 @@ class TeamCommunication:
     def is_robot_allowed_to_send_message(self) -> bool:
         if self.gamestate is not None:
             # a penalized robot doesn't need to publish
-            if self.gamestate.penalized:
-                return False
             # if we are close to our message budget, we dont want to continue publishing
             # the budget smaller 40 as stop definition makes sure we have 10 msg per robot left in case of some delay in the communication with the game controller
-            if self.gamestate.message_budget < 40:
-                return False
+            return not (self.gamestate.penalized or self.gamestate.message_budget < 40)
 
-        return True
+        return False
 
     def get_current_time(self) -> Time:
         return self.node.get_clock().now()

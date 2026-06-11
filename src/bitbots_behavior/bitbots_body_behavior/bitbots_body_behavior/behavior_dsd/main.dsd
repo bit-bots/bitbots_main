@@ -122,23 +122,14 @@ $BallSeen
         NO_FREEKICK --> #Placing
         YES --> $ConfigRole
             GOALIE --> #GoalieBehavior
-            ELSE --> $TeamComLimitReached //this decision is only for better visualization in rqt
-                NO --> $CountActiveRobotsWithoutGoalie
-                    ONE --> $RankToBallNoGoalie
-                        FIRST --> #StrikerRole
-                        SECOND --> #DefensePositioning
-                    ELSE --> $RankToBallNoGoalie
-                        FIRST --> #StrikerRole
-                        SECOND --> #SupporterRole
-                        THIRD --> #DefensePositioning
-                YES --> $CountActiveRobotsWithoutGoalie
-                    ONE --> $RankToBallNoGoalie
-                        FIRST --> #StrikerRole
-                        SECOND --> #DefensePositioning
-                    ELSE --> $RankToBallNoGoalie
-                        FIRST --> #StrikerRole
-                        SECOND --> #SupporterRole
-                        THIRD --> #DefensePositioning
+            ELSE --> 
+                ONE --> $RankToBallNoGoalie
+                    FIRST --> #StrikerRole
+                    SECOND --> #DefensePositioning
+                ELSE --> $RankToBallNoGoalie
+                    FIRST --> #StrikerRole
+                    SECOND --> #SupporterRole
+                    THIRD --> #DefensePositioning
 
 #PlayingBehavior
 $SecondaryStateDecider
