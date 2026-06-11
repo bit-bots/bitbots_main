@@ -314,16 +314,15 @@ class TeamCommunication:
         return is_own_message or is_message_from_oposite_team
 
     def is_robot_allowed_to_send_message(self) -> bool:
-        
         if self.gamestate is not None:
-            #a penalized robot doesn't need to publish
+            # a penalized robot doesn't need to publish
             if self.gamestate.penalized:
                 return False
-            #if we are close to our message budget, we dont want to continue publishing
-            #the budget smaller 40 as stop definition makes sure we have 10 msg per robot left in case of some delay in the communication with the game controller 
+            # if we are close to our message budget, we dont want to continue publishing
+            # the budget smaller 40 as stop definition makes sure we have 10 msg per robot left in case of some delay in the communication with the game controller
             if self.gamestate.message_budget < 40:
                 return False
-        
+
         return True
 
     def get_current_time(self) -> Time:
@@ -336,7 +335,7 @@ class TeamCommunication:
 
     def convert_to_euler(self, quaternion: Quaternion):
         return transforms3d.euler.quat2euler([quaternion.w, quaternion.x, quaternion.y, quaternion.z])
-    
+
     def reduce_rate(self):
         self.timer.cancel()
         self.create_timer(self.reduced_rate)
@@ -344,7 +343,9 @@ class TeamCommunication:
         self.logger.warning("Team communication: message sending rate is reduced now")
 
     def create_timer(self, rate: int):
-        self.timer = self.node.create_timer(1 / rate, self.send_message, callback_group=MutuallyExclusiveCallbackGroup())
+        self.timer = self.node.create_timer(
+            1 / rate, self.send_message, callback_group=MutuallyExclusiveCallbackGroup()
+        )
 
     def should_reduce_rate(self):
         if self.gamestate is None:
@@ -361,8 +362,10 @@ class TeamCommunication:
             return False
 
         msg_left_linear_rate = (
-            self.gamestate.first_half * half_duration_seconds + self.gamestate.secs_remaining
-        ) * team_size * msgs_per_second_per_robot
+            (self.gamestate.first_half * half_duration_seconds + self.gamestate.secs_remaining)
+            * team_size
+            * msgs_per_second_per_robot
+        )
         return msg_left_linear_rate > self.gamestate.message_budget
 
     def game_started_recently(self):
@@ -371,6 +374,7 @@ class TeamCommunication:
 
         # True in the first 60 seconds of the game.
         return self.gamestate.first_half and self.gamestate.secs_remaining > 540
+
 
 def main():
     rclpy.init(args=None)

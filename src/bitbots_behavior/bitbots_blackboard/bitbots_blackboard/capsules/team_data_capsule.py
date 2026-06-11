@@ -71,6 +71,7 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
         # --- Save informations for handling decisions after team com has switched off ---
         # The last rank to ball result before team_com limit was reached
         self.last_rank_to_ball_with_team_com: int = -1
+        self.last_rank_to_ball_with_team_com_no_goalie: int = -1
         # Was goalie active before team_com limit was reached
         self.was_goalie_active: bool = True
         # Was goalie handling the ball before team_com limit was reached
@@ -103,10 +104,11 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
                 and data.strategy.role == Strategy.ROLE_GOALIE
                 and data.strategy.action in [Strategy.ACTION_GOING_TO_BALL, Strategy.ACTION_KICKING]
             ):
-                self.was_goalie_handling_ball_with_team_com = True
                 return True
-        self.was_goalie_handling_ball_with_team_com = False
         return False
+
+    def set_was_goalie_handling_ball_with_team_com(self, was_handling: bool) -> None:
+        self.was_goalie_handling_ball_with_team_com = was_handling
 
     @cached_capsule_function
     def is_team_mate_kicking(self) -> bool:
@@ -150,10 +152,14 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
                     )
         for rank, distance in enumerate(sorted(distances)):
             if own_ball_distance < distance:
-                self.last_rank_to_ball_with_team_com = rank + 1
                 return rank + 1
-        self.last_rank_to_ball_with_team_com = len(distances) + 1
         return len(distances) + 1
+
+    def set_last_rank_to_ball_with_team_com(self, last_rank: int) -> None:
+        self.last_rank_to_ball_with_team_com = last_rank
+    
+    def set_last_rank_to_ball_with_team_com_no_goalie(self, last_rank: int) -> None:
+        self.last_rank_to_ball_with_team_com_no_goalie = last_rank
 
     def set_action(self, action: int) -> None:
         """Set the action of this robot
@@ -165,16 +171,19 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
 
     def get_action(self) -> tuple[int, float]:
         return self.strategy.action, self.action_update
-    
+
     def get_was_goalie_handling_ball(self) -> bool:
         return self.was_goalie_handling_ball_with_team_com
-    
+
     def get_was_goalie_active(self) -> bool:
         return self.was_goalie_active
-    
+
     def get_last_rank_with_team_com(self) -> int:
         return self.last_rank_to_ball_with_team_com
-    
+
+    def get_last_rank_with_team_com(self) -> int:
+        return self.last_rank_to_ball_with_team_com_no_goalie
+
     def get_last_number_active_player(self) -> int:
         return self.last_number_of_active_players
 
@@ -221,9 +230,10 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
             team_data_infos = filter(is_not_goalie, team_data_infos)  # type: ignore[assignment]
 
         # Count valid team data infos (aka robots with valid team data)
-        active_players = sum(map(self.is_valid, team_data_infos))
+        return = sum(map(self.is_valid, team_data_infos))
+
+    def set_last_number_of_active_players(self, active_players: int) -> None
         self.last_number_of_active_players = active_players
-        return active_players
 
     @cached_capsule_function
     def get_is_goalie_active(self) -> bool:
@@ -238,9 +248,11 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
 
         # Count valid team data infos (aka robots with valid team data)
         goalie_count = sum(map(self.is_valid, team_data_infos))
-        self.was_goalie_active = goalie_count == 1
         return goalie_count == 1
 
+    def set_was_goalie_acive(self, was_active: bool) -> None:
+        self.was_goalie_active = was_active
+    
     def get_own_time_to_ball(self) -> float:
         return self.own_time_to_ball
 

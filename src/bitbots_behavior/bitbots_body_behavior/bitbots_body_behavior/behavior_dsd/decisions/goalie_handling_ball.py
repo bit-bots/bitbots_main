@@ -19,8 +19,10 @@ class GoalieHandlingBall(AbstractDecisionElement):
                 return "NO"
         else:
             if self.blackboard.team_data.is_goalie_handling_ball():
+                self.blackboard.team_data.set_was_goalie_handling_ball(True)
                 return "YES"
             else:
+                self.blackboard.team_data.set_was_goalie_handling_ball(False)
                 return "NO"
 
     def get_reevaluate(self):

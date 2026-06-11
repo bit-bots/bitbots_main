@@ -33,6 +33,7 @@ class NumberPenalizedTeamMates(AbstractDecisionElement):
         """
         return True
 
+
 class NumberPenalizedRivals(AbstractDecisionElement):
     blackboard: BodyBlackboard
 

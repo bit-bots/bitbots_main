@@ -86,13 +86,13 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
 
     def get_is_penalized(self) -> bool:
         return self.gamestate.penalized
-    
+
     def get_unpenalized_after_team_com_stop(self) -> bool:
         return self.unpenalized_after_team_com_stop
-    
+
     def get_penalized_team_mates(self) -> int:
         return self.gamestate.team_mates_with_penalty
-    
+
     def get_penalized_rivals(self) -> int:
         return self.gamestate.rivals_with_penalty
 
@@ -101,7 +101,7 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
 
     def get_team_id(self) -> int:
         return self.team_id
-    
+
     def get_team_com_limit_has_reached(self) -> bool:
         return self.team_com_limit_has_reached
 

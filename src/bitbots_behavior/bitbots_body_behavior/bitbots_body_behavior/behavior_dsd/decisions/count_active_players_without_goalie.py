@@ -17,6 +17,7 @@ class CountActiveRobotsWithoutGoalie(AbstractDecisionElement):
             number_of_active_teammates = self.blackboard.team_data.get_last_number_active_player()
         else:
             number_of_active_teammates = self.blackboard.team_data.get_number_of_active_field_players(False)
+            self.blackboard.team_data.set_last_number_active_player(number_of_active_teammates)
         self.publish_debug_data("Number of active Teammates", number_of_active_teammates)
         if number_of_active_teammates == 0:
             return "ZERO"
