@@ -91,28 +91,53 @@ At a competition, follow these steps:
    #. Check that you are on the ``main`` branch
    #. ``git pull`` to get the latest changes
 
-#. **Sync, configure, compile and launch software:**
-   In the ``bitbots_main`` directory run the deploy tool:
+#. **Prepare and deploy the software:**
+   While the deployment laptop has Internet access, prepare the offline package
+   cache for the locked robot environment:
 
    .. code-block:: bash
 
-      pixi run deploy <nuc* | robot_name | ALL>
+      pixi run deploy cache prepare
 
-   This does the following tasks:
-   - Synchronize/Copy the current state of your local bitbots_main directory to the robot(s)
-   - Install necessary dependencies on the robot(s)
-   - Configure game specific settings and the Wi-Fi connection on the robot(s)
-   - Build/Compile the source code you just synchronized to the robot(s)
-   - Launch the teamplayer software on the robot(s)
-
-   If you need help with this tool, or want other options, look at `this README <https://github.com/bit-bots/bitbots_main/blob/master/scripts/README.md#deploy_robotspy>`_ for example usages or call:
+   On the wired robot LAN, start the interactive supervisor:
 
    .. code-block:: bash
 
-      pixi run deploy -h
+      pixi run deploy
+
+   Select one or more robots, choose the match profile and components, and apply
+   the desired state. Existing teamplayer tmux sessions are adopted and can be
+   attached directly from the TUI. For batch operation use
+   ``pixi run deploy apply <targets>``.
+
+   The supervisor synchronizes ``pixi.toml`` and ``pixi.lock`` first, then serves
+   the locked packages from the deployment laptop while the robot runs
+   ``pixi install -e robot --frozen``. This creates or verifies the ordinary
+   ``.pixi/envs/robot`` environment. Deployment does not create a separate match
+   environment or permanently change Pixi's channel configuration.
+
+   For more options, see `the deployment README <https://github.com/bit-bots/bitbots_main/blob/master/scripts/README.md>`_
+   or call:
+
+   .. code-block:: bash
+
+      pixi run deploy --help
 
 #. **Optional: Connect to the robot:**
-   Simply copy-paste the command provided by the deploy-tool when its finished.
+   Select one robot and use the TUI's **Attach** action.
+
+   The deployed environment remains a normal Pixi environment. Manual
+   development and diagnostics can use commands such as:
+
+   .. code-block:: bash
+
+      pixi run -e robot build --packages-select <package>
+      pixi run -e robot test --packages-select <package>
+      pixi shell -e robot
+
+   These commands need no Internet while the manifest and lockfile remain
+   unchanged and the environment is complete. Dependency changes require a new
+   cache prepared on a network with Internet access.
 
 #. **CURRENTLY DISABLED: Reset foot pressure sensors:**
    Pick up the robot, so that the feet do not touch the ground.

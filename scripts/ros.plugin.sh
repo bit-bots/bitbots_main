@@ -62,11 +62,10 @@ setup_alises() {
 
   alias cca='pixi run clean'
 
-  # deploy_robots tool aliases
-  alias dp='pixi run deploy --sync --build --print-bit-bot'
-  alias dpfull='dp --install --configure'
-  alias dpclean='dp --clean'
-  alias dplo='dp --skip-local-repo-check'
+  # Deployment supervisor aliases
+  alias dp='pixi run deploy'
+  alias dpapply='pixi run deploy apply'
+  alias dpstatus='pixi run deploy status'
 
   # Overwrite some aliases in pixi shell to allow for tab completion
   # by directly using ros2/colcon instead of the pixi tasks

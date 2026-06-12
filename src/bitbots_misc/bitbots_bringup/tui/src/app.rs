@@ -6,11 +6,15 @@ use std::{
 use tokio::{
     io::{AsyncBufReadExt, BufReader},
     process::Command,
-    sync::mpsc,
+    sync::{broadcast, mpsc},
 };
 
 pub use crate::components::GlobalParams;
 use crate::components::{COMPONENT_DEFS, FIELDNAME_DEFAULT_HW, FIELDNAME_DEFAULT_SIM};
+use crate::control::{
+    ComponentSnapshot, ControlCommand, ControlEvent, ControlRequest, ControlResponse,
+    StatusSnapshot,
+};
 
 // ─── State types ──────────────────────────────────────────────────────────────
 
@@ -117,10 +121,15 @@ pub struct App {
     pub headless_log: Arc<Mutex<VecDeque<HeadlessLine>>>,
     pub show_log_panel: bool,
     pub confirm_action: Option<ConfirmAction>,
+    pub control_rx: mpsc::UnboundedReceiver<ControlCommand>,
+    pub event_tx: broadcast::Sender<ControlEvent>,
 }
 
 impl App {
-    pub fn new() -> Self {
+    pub fn new(
+        control_rx: mpsc::UnboundedReceiver<ControlCommand>,
+        event_tx: broadcast::Sender<ControlEvent>,
+    ) -> Self {
         let (msg_tx, msg_rx) = mpsc::unbounded_channel();
         let components: Vec<ComponentState> = COMPONENT_DEFS
             .iter()
@@ -155,6 +164,8 @@ impl App {
             headless_log: Arc::new(Mutex::new(VecDeque::with_capacity(5000))),
             show_log_panel: true,
             confirm_action: None,
+            control_rx,
+            event_tx,
         }
     }
 
@@ -164,6 +175,7 @@ impl App {
         no_zenoh: bool,
         fieldname: Option<&str>,
         dsd_file: &str,
+        game_settings: Option<&str>,
         enable: &[String],
         disable: &[String],
     ) {
@@ -176,6 +188,7 @@ impl App {
             self.config_fieldname_input = f.to_string();
         }
         self.params.dsd_file = dsd_file.to_string();
+        self.params.game_settings = game_settings.map(str::to_string);
         self.config_dsd_input = dsd_file.to_string();
 
         if no_zenoh {
@@ -347,6 +360,11 @@ impl App {
         let all_logs = self.all_logs.clone();
         let headless_log = self.headless_log.clone();
         self.components[comp_idx].state = ProcState::Running;
+        let _ = self.event_tx.send(ControlEvent::Component {
+            key: key.clone(),
+            state: "running".to_string(),
+            code: None,
+        });
         self.components[comp_idx].pids.clear();
         self.components[comp_idx].task_handles.clear();
 
@@ -358,6 +376,7 @@ impl App {
             let logs = logs.clone();
             let all_logs = all_logs.clone();
             let headless_log = headless_log.clone();
+            let event_tx = self.event_tx.clone();
             let key = key.clone();
 
             let mut child = match Command::new(&cmd_args[0])
@@ -396,6 +415,8 @@ impl App {
                     headless_log: Arc<Mutex<VecDeque<HeadlessLine>>>,
                     is_stderr: bool,
                     comp_name: &'static str,
+                    component_key: &str,
+                    event_tx: &broadcast::Sender<ControlEvent>,
                 ) {
                     let tui_prefix = if is_stderr { "[ERR] " } else { "" };
                     let mut line = String::new();
@@ -412,6 +433,11 @@ impl App {
                             }
                             l.push_back(tui_entry.clone());
                         }
+                        let _ = event_tx.send(ControlEvent::Log {
+                            component: component_key.to_string(),
+                            stream: if is_stderr { "stderr" } else { "stdout" }.to_string(),
+                            line: raw.to_string(),
+                        });
                         {
                             let mut l = all_logs.lock().unwrap();
                             if l.len() >= 5000 {
@@ -436,15 +462,28 @@ impl App {
                 }
                 // Read stdout and stderr concurrently so neither blocks the other.
                 let (logs2, all2, hl2) = (logs.clone(), all_logs.clone(), headless_log.clone());
+                let key2 = key.clone();
+                let key3 = key.clone();
+                let event_tx2 = event_tx.clone();
                 tokio::join!(
                     async move {
                         if let Some(r) = stdout {
-                            pump(r, logs2, all2, hl2, false, comp_name).await;
+                            pump(r, logs2, all2, hl2, false, comp_name, &key2, &event_tx2).await;
                         }
                     },
                     async move {
                         if let Some(r) = stderr {
-                            pump(r, logs, all_logs, headless_log, true, comp_name).await;
+                            pump(
+                                r,
+                                logs,
+                                all_logs,
+                                headless_log,
+                                true,
+                                comp_name,
+                                &key3,
+                                &event_tx,
+                            )
+                            .await;
                         }
                     }
                 );
@@ -508,6 +547,11 @@ impl App {
         while let Ok(msg) = self.msg_rx.try_recv() {
             match msg {
                 AppMsg::ProcessExited { key, code } => {
+                    let _ = self.event_tx.send(ControlEvent::Component {
+                        key: key.clone(),
+                        state: if code == 0 { "stopped" } else { "crashed" }.to_string(),
+                        code: Some(code),
+                    });
                     if let Some((idx, comp)) = self
                         .components
                         .iter_mut()
@@ -535,6 +579,146 @@ impl App {
             }
         }
         to_restart
+    }
+
+    pub async fn drain_control_commands(&mut self) {
+        while let Ok(command) = self.control_rx.try_recv() {
+            let response = match command.request {
+                ControlRequest::Status | ControlRequest::Watch => ControlResponse::Status {
+                    status: self.snapshot(),
+                },
+                ControlRequest::SetComponents { components } => {
+                    let mut to_stop = Vec::new();
+                    for (idx, def) in COMPONENT_DEFS.iter().enumerate() {
+                        if !def.infrastructure && !def.sim_component {
+                            let enabled = components.iter().any(|key| key == def.key);
+                            self.components[idx].enabled = enabled;
+                            if !enabled {
+                                to_stop.push(idx);
+                            }
+                        }
+                    }
+                    for idx in to_stop {
+                        self.stop_component(idx).await;
+                    }
+                    ControlResponse::Ok {
+                        message: "component selection updated".to_string(),
+                    }
+                }
+                ControlRequest::SetConfig {
+                    fieldname,
+                    game_settings,
+                } => {
+                    self.params.fieldname = fieldname.clone();
+                    self.params.game_settings = game_settings;
+                    self.config_fieldname_input = fieldname;
+                    ControlResponse::Ok {
+                        message: "runtime configuration updated".to_string(),
+                    }
+                }
+                ControlRequest::Start { target } => self.control_start(&target).await,
+                ControlRequest::Stop { target } => self.control_stop(&target).await,
+                ControlRequest::Restart { target } => self.control_restart(&target),
+            };
+            let _ = command.reply.send(response);
+        }
+    }
+
+    fn snapshot(&self) -> StatusSnapshot {
+        StatusSnapshot {
+            fieldname: self.params.fieldname.clone(),
+            sim: self.params.sim,
+            components: self
+                .components
+                .iter()
+                .map(|component| {
+                    let def = &COMPONENT_DEFS[component.comp_idx];
+                    ComponentSnapshot {
+                        key: def.key.to_string(),
+                        name: def.name.to_string(),
+                        enabled: component.enabled,
+                        state: match component.state {
+                            ProcState::Idle => "idle",
+                            ProcState::Running => "running",
+                            ProcState::Stopping => "stopping",
+                            ProcState::Restarting => "restarting",
+                            ProcState::Stopped => "stopped",
+                            ProcState::Crashed => "crashed",
+                        }
+                        .to_string(),
+                        pids: component.pids.clone(),
+                    }
+                })
+                .collect(),
+        }
+    }
+
+    fn matching_indices(&self, target: &str) -> Vec<usize> {
+        if target == "all" {
+            return self
+                .components
+                .iter()
+                .enumerate()
+                .filter(|(_, component)| component.enabled)
+                .map(|(idx, _)| idx)
+                .collect();
+        }
+        COMPONENT_DEFS
+            .iter()
+            .position(|def| def.key == target)
+            .into_iter()
+            .collect()
+    }
+
+    async fn control_start(&mut self, target: &str) -> ControlResponse {
+        let indices = self.matching_indices(target);
+        if indices.is_empty() {
+            return ControlResponse::Error {
+                message: format!("unknown or disabled component {target}"),
+            };
+        }
+        for idx in indices {
+            if !matches!(
+                self.components[idx].state,
+                ProcState::Running | ProcState::Stopping | ProcState::Restarting
+            ) {
+                self.components[idx].state = ProcState::Idle;
+                self.start_component(idx).await;
+            }
+        }
+        ControlResponse::Ok {
+            message: format!("started {target}"),
+        }
+    }
+
+    async fn control_stop(&mut self, target: &str) -> ControlResponse {
+        let indices = self.matching_indices(target);
+        if indices.is_empty() {
+            return ControlResponse::Error {
+                message: format!("unknown or disabled component {target}"),
+            };
+        }
+        for idx in indices {
+            self.stop_component(idx).await;
+        }
+        ControlResponse::Ok {
+            message: format!("stopped {target}"),
+        }
+    }
+
+    fn control_restart(&mut self, target: &str) -> ControlResponse {
+        let indices = self.matching_indices(target);
+        if indices.is_empty() {
+            return ControlResponse::Error {
+                message: format!("unknown or disabled component {target}"),
+            };
+        }
+        for idx in indices {
+            self.restart_component(idx);
+        }
+        ControlResponse::Ok {
+            message: format!("restarted {target}"),
+        }
     }
 }
 

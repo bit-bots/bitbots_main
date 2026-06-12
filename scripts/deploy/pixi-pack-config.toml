@@ -1,0 +1,5 @@
+[concurrency]
+# Keep cache preparation usable on development laptops. Package downloads are
+# mostly I/O-bound and do not benefit from Pixi's much higher default.
+downloads = 4
+solves = 1

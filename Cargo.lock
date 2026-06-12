@@ -4339,6 +4339,8 @@ dependencies = [
  "futures",
  "nix 0.27.1",
  "ratatui",
+ "serde",
+ "serde_json",
  "tokio",
 ]
 

@@ -7,4 +7,9 @@ install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
 
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 
+install(
+  PROGRAMS scripts/global_parameter_bridge.py
+  DESTINATION lib/${PROJECT_NAME}
+  RENAME global_parameter_bridge)
+
 ament_package()

@@ -3,6 +3,9 @@
     <arg name="sim" default="false"/>
     <arg unless="$(var sim)" name="fieldname" default="labor" description="Loads field settings" />
     <arg if="$(var sim)" name="fieldname" default="hsl_kid" description="Loads field settings" />
+    <arg name="game_settings_file"
+         default="$(find-pkg-share bitbots_parameter_blackboard)/config/game_settings.yaml"
+         description="Runtime game settings loaded into the global parameter blackboard" />
 
     <!-- print bit-bot -->
     <include file="$(find-pkg-share bitbots_utils)/launch/welcome.launch" />
@@ -14,6 +17,6 @@
         <param name="field.name" value="$(var fieldname)"/>
         <param from="$(find-pkg-share bitbots_parameter_blackboard)/config/fields/$(var fieldname)/config.yaml" />
         <param from="$(find-pkg-share bitbots_parameter_blackboard)/config/global_parameters.yaml" />
-        <param from="$(find-pkg-share bitbots_parameter_blackboard)/config/game_settings.yaml" />
+        <param from="$(var game_settings_file)" />
     </node>
 </launch>
