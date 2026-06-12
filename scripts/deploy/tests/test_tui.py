@@ -1,9 +1,9 @@
 import asyncio
 from pathlib import Path
 
-from deploy.models import RobotStatus, RobotTarget
+from deploy.models import RobotStatus, RobotTarget, Step, StepReport, StepState
 from deploy.profiles import ProfileStore
-from deploy.tui import DeployApp, RobotCard, visible_at_level
+from deploy.tui import DeployApp, RobotCard, task_timeline, visible_at_level
 from textual.widgets import Button, Checkbox
 
 
@@ -61,6 +61,7 @@ def test_mouse_selection_and_apply() -> None:
     async def run() -> None:
         async with app.run_test(size=(180, 50)) as pilot:
             await pilot.click("#select-nuc1")
+            assert app.query_one("#robot-nuc1", RobotCard).has_class("selected")
             await pilot.click("#apply")
             assert supervisor.applied
             assert supervisor.applied[0][0] == ["nuc1"]
@@ -77,31 +78,16 @@ def test_mouse_focus_and_show_all() -> None:
         async with app.run_test(size=(180, 50)) as pilot:
             await pilot.click("#select-nuc1")
             await pilot.click("#focus-toggle")
+            await pilot.pause()
             assert app.query_one("#robot-nuc1", RobotCard).display
             assert not app.query_one("#robot-nuc2", RobotCard).display
             assert str(app.query_one("#focus-toggle", Button).label) == "Show all"
 
             await pilot.click("#focus-toggle")
+            await pilot.pause()
             assert app.query_one("#robot-nuc1", RobotCard).display
             assert app.query_one("#robot-nuc2", RobotCard).display
             assert str(app.query_one("#focus-toggle", Button).label) == "Focus"
-
-    asyncio.run(run())
-
-
-def test_remove_is_enabled_only_with_robot_selection() -> None:
-    profiles = ProfileStore.load(Path(__file__).parents[1])
-    supervisor = FakeSupervisor()
-    app = DeployApp(profiles, supervisor, default_match="lab")
-
-    async def run() -> None:
-        async with app.run_test(size=(180, 50)) as pilot:
-            remove = app.query_one("#remove-selected", Button)
-            assert remove.disabled
-            await pilot.click("#select-nuc1")
-            assert not remove.disabled
-            await pilot.click("#select-nuc1")
-            assert remove.disabled
 
     asyncio.run(run())
 
@@ -121,7 +107,7 @@ def test_space_uses_focused_widget_native_behavior() -> None:
     asyncio.run(run())
 
 
-def test_robot_columns_fill_width_with_seventy_column_minimum() -> None:
+def test_robot_columns_fit_available_width_with_bounds() -> None:
     profiles = ProfileStore.load(Path(__file__).parents[1])
     supervisor = FakeSupervisor(("nuc1", "nuc2"))
     app = DeployApp(profiles, supervisor, default_match="lab")
@@ -131,26 +117,41 @@ def test_robot_columns_fill_width_with_seventy_column_minimum() -> None:
             first = app.query_one("#robot-nuc1", RobotCard)
             second = app.query_one("#robot-nuc2", RobotCard)
             assert first.size.width >= 70
+            assert first.size.width <= 110
             assert second.size.width >= 70
+            assert second.size.width <= 110
+            assert first.size.width + second.size.width <= app.query_one("#robots").size.width
             narrow_width = first.size.width
             await pilot.resize_terminal(240, 50)
-            assert first.size.width > narrow_width
+            assert first.size.width >= narrow_width
             assert first.size.width == second.size.width
 
     asyncio.run(run())
 
 
-def test_mouse_removes_selected_robot() -> None:
+def test_card_close_removes_only_that_robot() -> None:
     profiles = ProfileStore.load(Path(__file__).parents[1])
     supervisor = FakeSupervisor(("nuc1", "nuc2"))
     app = DeployApp(profiles, supervisor, default_match="lab")
 
     async def run() -> None:
         async with app.run_test(size=(180, 50)) as pilot:
-            await pilot.click("#select-nuc1")
-            await pilot.click("#remove-selected")
+            await pilot.click("#close-nuc1")
+            await pilot.pause()
             assert supervisor.removed == ["nuc1"]
             assert not app.query("#robot-nuc1")
             assert app.query_one("#robot-nuc2", RobotCard)
 
     asyncio.run(run())
+
+
+def test_task_timeline_hides_untouched_pending_steps() -> None:
+    status = RobotStatus(RobotTarget("nuc1", "127.0.0.1"))
+    assert task_timeline(status) == "No deployment requested"
+
+    status.steps[Step.CONNECT] = StepReport(StepState.SUCCEEDED, "Connected")
+    status.steps[Step.ENVIRONMENT] = StepReport(StepState.RUNNING, "Installing robot environment")
+    timeline = task_timeline(status)
+    assert "SUCCEEDED connect - Connected" in timeline
+    assert "RUNNING   environment - Installing robot environment" in timeline
+    assert "5 steps queued" in timeline

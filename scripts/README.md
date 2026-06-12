@@ -53,16 +53,16 @@ pixi run deploy
 The TUI continuously probes `scripts/deploy/known_targets.yaml`. Select robots,
 stage match, ball, component, source, and build changes, then apply them. Mouse
 and keyboard controls are equivalent. **Focus** temporarily hides unselected
-robot cards and changes to **Show all** while focused. **Remove** is available
-when at least one robot is selected; it stops local monitoring and closes those
-robots' SSH transports without stopping robot-side software. The corresponding
-keys are `F` and `Delete`. **Attach** suspends the deploy TUI and opens the
-selected robot's `teamplayer` tmux session.
+robot cards and changes to **Show all** while focused. Each robot card has its
+own **X** button, which stops local monitoring and closes that robot's SSH
+transport without stopping robot-side software. **Attach** suspends the deploy
+TUI and opens the selected robot's `teamplayer` tmux session.
 
-Robot columns share the available terminal width and grow evenly, with a
-minimum width of 70 columns. Space uses the focused widget's native behavior:
-it toggles robot checkboxes, component entries, and switches, and opens focused
-dropdowns. Buttons use Enter.
+Visible robot columns share the available terminal width, with widths bounded
+between 70 and 110 columns. Untouched deployment steps are collapsed into one
+idle message; the timeline expands as operations start or finish. Space uses the
+focused widget's native behavior: it toggles robot checkboxes, component
+entries, and switches, and opens focused dropdowns. Buttons use Enter.
 
 Enter an arbitrary hostname or `user@host` in the host field to add it manually.
 

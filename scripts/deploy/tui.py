@@ -3,7 +3,7 @@ from __future__ import annotations
 from deploy.models import DesiredState, RobotStatus, RobotTarget, Step
 from deploy.profiles import ProfileStore
 from deploy.reconcile import DeploymentSupervisor
-from textual import on
+from textual import events, on
 from textual.app import App, ComposeResult
 from textual.containers import Horizontal, HorizontalScroll, Vertical
 from textual.css.query import NoMatches
@@ -29,11 +29,18 @@ class StatusChanged(Message):
         super().__init__()
 
 
+class RobotCloseRequested(Message):
+    def __init__(self, name: str) -> None:
+        self.name = name
+        super().__init__()
+
+
 class RobotCard(Vertical):
     DEFAULT_CSS = """
     RobotCard {
-        width: 1fr;
+        width: 90;
         min-width: 70;
+        max-width: 110;
         height: 100%;
         border: round $primary;
         padding: 0 1;
@@ -42,12 +49,30 @@ class RobotCard(Vertical):
     RobotCard:focus-within {
         border: double $accent;
     }
+    RobotCard.selected {
+        border: double $success;
+    }
+    RobotCard .card-header {
+        width: 1fr;
+        height: auto;
+        align-vertical: middle;
+    }
+    RobotCard .selector {
+        width: 4;
+    }
     RobotCard .title {
+        width: 1fr;
         text-style: bold;
         color: $accent;
     }
+    RobotCard .close {
+        width: 5;
+        min-width: 5;
+        height: 3;
+    }
     RobotCard .steps {
         height: auto;
+        margin-bottom: 1;
     }
     RobotCard Log {
         height: 1fr;
@@ -60,12 +85,25 @@ class RobotCard(Vertical):
         self.status = status
 
     def compose(self) -> ComposeResult:
-        yield Checkbox(
-            f"{self.status.target.name} ({self.status.target.robot_name or self.status.target.host})",
-            value=False,
-            id=f"select-{self.status.target.name}",
-            classes="title",
-        )
+        with Horizontal(classes="card-header"):
+            yield Checkbox(
+                "",
+                value=False,
+                id=f"select-{self.status.target.name}",
+                classes="selector",
+                tooltip="Include this robot in fleet actions",
+            )
+            yield Static(
+                f"{self.status.target.name} ({self.status.target.robot_name or self.status.target.host})",
+                classes="title",
+            )
+            yield Button(
+                "X",
+                id=f"close-{self.status.target.name}",
+                classes="close",
+                variant="error",
+                tooltip="Close this robot column and its SSH connection",
+            )
         yield Label("offline", id=f"connection-{self.status.target.name}")
         yield Static("", id=f"steps-{self.status.target.name}", classes="steps")
         yield Log(id=f"log-{self.status.target.name}", highlight=True, auto_scroll=True)
@@ -79,16 +117,23 @@ class RobotCard(Vertical):
             f"{'  source stale' if status.stale else ''}"
             f"{teamplayer_summary(status)}"
         )
-        lines = []
-        for step in Step:
-            report = status.steps[step]
-            lines.append(f"{report.state.value[:4].upper():4} {step.value:<14} {report.summary}")
-        self.query_one(f"#steps-{status.target.name}", Static).update("\n".join(lines))
+        self.query_one(f"#steps-{status.target.name}", Static).update(task_timeline(status))
         log = self.query_one(f"#log-{status.target.name}", Log)
         log.clear()
         for line in status.logs:
             if visible_at_level(line, minimum_level):
                 log.write_line(line)
+
+    @on(Button.Pressed)
+    def close_button(self, event: Button.Pressed) -> None:
+        if event.button.id and event.button.id.startswith("close-"):
+            event.stop()
+            self.post_message(RobotCloseRequested(self.status.target.name))
+
+    @on(Checkbox.Changed)
+    def selection_changed(self, event: Checkbox.Changed) -> None:
+        if event.checkbox.id == f"select-{self.status.target.name}":
+            self.set_class(event.value, "selected")
 
 
 class DeployApp(App[None]):
@@ -99,7 +144,6 @@ class DeployApp(App[None]):
         ("c", "cancel", "Cancel"),
         ("t", "attach", "Attach"),
         ("f", "toggle_focus", "Focus"),
-        ("delete", "remove_selected", "Remove"),
         ("l", "cycle_log_level", "Log level"),
         ("q", "quit", "Quit"),
     ]
@@ -144,7 +188,6 @@ class DeployApp(App[None]):
         with Vertical():
             with Horizontal(id="controls"):
                 yield Button("Focus", id="focus-toggle", disabled=True)
-                yield Button("Remove", id="remove-selected", variant="error", disabled=True)
                 yield Select(
                     [(name, name) for name in self.profiles.matches],
                     value=self.default_match,
@@ -203,6 +246,7 @@ class DeployApp(App[None]):
             controller.on_status = self._status_callback
             controller.set_log_stream(True)
         self.supervisor.start()
+        self.call_after_refresh(self._resize_robot_cards)
 
     async def on_unmount(self) -> None:
         await self.supervisor.close()
@@ -261,9 +305,9 @@ class DeployApp(App[None]):
     def focus_toggle_button(self) -> None:
         self.action_toggle_focus()
 
-    @on(Button.Pressed, "#remove-selected")
-    async def remove_selected_button(self) -> None:
-        await self.action_remove_selected()
+    @on(RobotCloseRequested)
+    async def close_robot(self, event: RobotCloseRequested) -> None:
+        await self._remove_robot(event.name)
 
     @on(Checkbox.Changed)
     def robot_selection_changed(self, event: Checkbox.Changed) -> None:
@@ -286,6 +330,7 @@ class DeployApp(App[None]):
             self.focused_names.add(name)
             self._apply_card_filter()
         self._update_fleet_controls()
+        self.call_after_refresh(self._resize_robot_cards)
         self.query_one("#manual-host", Input).value = ""
 
     async def action_apply(self) -> None:
@@ -334,24 +379,20 @@ class DeployApp(App[None]):
         self._apply_card_filter()
         self._update_fleet_controls()
 
-    async def action_remove_selected(self) -> None:
-        names = self.selected_names()
-        if not names:
-            self.notify("Select at least one robot to remove", severity="warning")
+    async def _remove_robot(self, name: str) -> None:
+        try:
+            card = self.query_one(f"#robot-{name}", RobotCard)
+        except NoMatches:
             return
-        for name in names:
-            try:
-                card = self.query_one(f"#robot-{name}", RobotCard)
-            except NoMatches:
-                continue
-            await card.remove()
-            await self.supervisor.remove_target(name)
+        await card.remove()
+        await self.supervisor.remove_target(name)
         if self.focused_names is not None:
-            self.focused_names.difference_update(names)
+            self.focused_names.discard(name)
             if not self.focused_names:
                 self.focused_names = None
         self._apply_card_filter()
         self._update_fleet_controls()
+        self.call_after_refresh(self._resize_robot_cards)
 
     def action_cycle_log_level(self) -> None:
         levels = ["INFO", "DEBUG", "WARN", "ERROR"]
@@ -373,19 +414,47 @@ class DeployApp(App[None]):
             except NoMatches:
                 continue
             card.display = self.focused_names is None or name in self.focused_names
+        self.call_after_refresh(self._resize_robot_cards)
 
     def _update_fleet_controls(self) -> None:
         selected = bool(self.selected_names())
-        self.query_one("#remove-selected", Button).disabled = not selected
         focus = self.query_one("#focus-toggle", Button)
         focus.label = "Show all" if self.focused_names is not None else "Focus"
         focus.disabled = self.focused_names is None and not selected
+
+    def on_resize(self, event: events.Resize) -> None:
+        self.call_after_refresh(self._resize_robot_cards)
+
+    def _resize_robot_cards(self) -> None:
+        container = self.query_one("#robots", HorizontalScroll)
+        cards = [card for card in self.query("RobotCard") if card.display]
+        if not cards:
+            return
+        available = max(container.size.width - 2, 70)
+        width = max(70, min(110, (available - len(cards)) // len(cards)))
+        for card in cards:
+            card.styles.width = width
 
 
 def visible_at_level(line: str, minimum: str) -> bool:
     levels = {"DEBUG": 10, "INFO": 20, "WARN": 30, "WARNING": 30, "ERROR": 40, "FATAL": 50}
     detected = next((name for name in levels if f"[{name}]" in line.upper()), "INFO")
     return levels[detected] >= levels[minimum]
+
+
+def task_timeline(status: RobotStatus) -> str:
+    reports = [(step, status.steps[step]) for step in Step if status.steps[step].state.value != "pending"]
+    if not reports:
+        return "No deployment requested"
+    lines = []
+    for step, report in reports:
+        state = report.state.value.upper()
+        summary = f" - {report.summary}" if report.summary else ""
+        lines.append(f"{state:<9} {step.value}{summary}")
+    pending = sum(report.state.value == "pending" for report in status.steps.values())
+    if pending:
+        lines.append(f"{pending} step{'s' if pending != 1 else ''} queued")
+    return "\n".join(lines)
 
 
 def teamplayer_summary(status: RobotStatus) -> str:
