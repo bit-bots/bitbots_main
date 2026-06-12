@@ -35,7 +35,7 @@ bitbots_path_planning:
     ball_diameter:
       type: double
       default_value: 0.13
-      description: 'The diameter of the ball'
+      description: 'Fallback diameter of the ball; replaced from the global parameter blackboard at startup'
       read_only: true
     inflation:
       robot_radius:

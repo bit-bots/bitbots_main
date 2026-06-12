@@ -18,7 +18,6 @@
 
     <depend>bitbots_docs</depend>
     <depend>bitbots_utils</depend>
-    <depend>python3-yaml</depend>
     <depend>demo_nodes_cpp</depend>
 
     <export>

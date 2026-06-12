@@ -1,6 +1,7 @@
 import rclpy
 import soccer_vision_3d_msgs.msg as sv3dm
 from bitbots_tf_buffer import Buffer
+from bitbots_utils.utils import get_parameters_from_other_node
 from geometry_msgs.msg import PointStamped, PoseStamped, PoseWithCovarianceStamped, Twist
 from nav_msgs.msg import Path
 from rclpy.duration import Duration
@@ -20,6 +21,11 @@ class PathPlanning(NodeWithConfig):
 
     def __init__(self) -> None:
         super().__init__("bitbots_path_planning")
+        self.config.map.ball_diameter = get_parameters_from_other_node(
+            self,
+            "/parameter_blackboard",
+            ["ball.diameter"],
+        )["ball.diameter"]
 
         # We need to create a tf buffer
         self.tf_buffer = Buffer(Duration(seconds=self.config.tf_buffer_duration), self)
