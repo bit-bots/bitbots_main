@@ -2,6 +2,7 @@
 
 # Don't sync the pixi virtual environment
 .pixi/
+.deploy/
 
 # Ignore build, install, and log directories
 build/

@@ -1,0 +1,29 @@
+balls:
+  kid:
+    diameter: 0.14
+  adult:
+    diameter: 0.22
+
+matches:
+  lab:
+    field: labor
+    ball: kid
+    # Set this to the exact pre-provisioned NetworkManager connection name.
+    # Empty means that deployment leaves WiFi unchanged.
+    wifi_profile: ""
+    game_settings:
+      team_id: 6
+      team_color: 0
+      role: offense
+      position_number: 0
+      monitoring_host_ip: 172.20.0.10
+  german_open_2026:
+    field: german_open_2026
+    ball: adult
+    wifi_profile: ""
+    game_settings:
+      team_id: 6
+      team_color: 0
+      role: offense
+      position_number: 0
+      monitoring_host_ip: 172.20.0.10
