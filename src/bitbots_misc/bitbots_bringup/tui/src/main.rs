@@ -1,10 +1,11 @@
 mod app;
 mod components;
+mod control;
 mod input;
 mod ui;
 
 use anyhow::Result;
-use clap::Parser;
+use clap::{Args, Parser, Subcommand};
 use crossterm::{
     event::{DisableMouseCapture, EnableMouseCapture, Event, EventStream},
     execute,
@@ -13,6 +14,7 @@ use crossterm::{
 use futures::StreamExt;
 use ratatui::{backend::CrosstermBackend, Terminal};
 use std::time::Duration;
+use tokio::sync::{broadcast, mpsc};
 use tokio::time;
 
 use app::{App, ProcState, Screen};
@@ -27,6 +29,9 @@ use components::COMPONENT_DEFS;
     long_about = None,
 )]
 struct Cli {
+    #[command(subcommand)]
+    command: Option<Command>,
+
     /// Run without TUI: start all enabled components and block until Ctrl-C
     #[arg(long)]
     headless: bool,
@@ -43,6 +48,10 @@ struct Cli {
     #[arg(long, value_name = "FILE", default_value = "main.dsd")]
     dsd_file: String,
 
+    /// Runtime game-settings YAML loaded by the global parameter blackboard
+    #[arg(long, value_name = "PATH")]
+    game_settings: Option<String>,
+
     /// Disable the Zenoh daemon (useful when zenoh is already running externally)
     #[arg(long)]
     no_zenoh: bool,
@@ -58,6 +67,52 @@ struct Cli {
     /// Disable a component by key; may be specified multiple times
     #[arg(long = "disable", value_name = "KEY")]
     disable: Vec<String>,
+}
+
+#[derive(Subcommand)]
+enum Command {
+    /// Control a running teamplayer instance
+    Ctl(ControlArgs),
+}
+
+#[derive(Args)]
+struct ControlArgs {
+    #[command(subcommand)]
+    command: ControlSubcommand,
+}
+
+#[derive(Subcommand)]
+enum ControlSubcommand {
+    Status {
+        #[arg(long)]
+        json: bool,
+    },
+    Watch {
+        #[arg(long)]
+        jsonl: bool,
+    },
+    SetComponents {
+        #[arg(long = "enable")]
+        enable: Vec<String>,
+    },
+    SetConfig {
+        #[arg(long)]
+        fieldname: String,
+        #[arg(long)]
+        game_settings: Option<String>,
+    },
+    Start {
+        #[arg(default_value = "all")]
+        target: String,
+    },
+    Stop {
+        #[arg(default_value = "all")]
+        target: String,
+    },
+    Restart {
+        #[arg(default_value = "all")]
+        target: String,
+    },
 }
 
 // ─── Terminal helpers ─────────────────────────────────────────────────────────
@@ -82,12 +137,23 @@ fn cleanup_terminal() {
 async fn main() -> Result<()> {
     let cli = Cli::parse();
 
-    let mut app = App::new();
+    if let Some(Command::Ctl(args)) = &cli.command {
+        return run_control_client(args).await;
+    }
+
+    let (control_tx, control_rx) = mpsc::unbounded_channel();
+    let (event_tx, _) = broadcast::channel(2048);
+    let control_path = control::socket_path();
+    let control_server =
+        control::start_server(control_path.clone(), control_tx, event_tx.clone()).await?;
+
+    let mut app = App::new(control_rx, event_tx);
     app.apply_cli_presets(
         cli.sim,
         cli.no_zenoh,
         cli.fieldname.as_deref(),
         &cli.dsd_file,
+        cli.game_settings.as_deref(),
         &cli.enable,
         &cli.disable,
     );
@@ -125,8 +191,53 @@ async fn main() -> Result<()> {
             }
         }
     }
+    control_server.abort();
+    let _ = std::fs::remove_file(control_path);
 
     result
+}
+
+async fn run_control_client(args: &ControlArgs) -> Result<()> {
+    use control::ControlRequest;
+    let (request, watch) = match &args.command {
+        ControlSubcommand::Status { .. } => (ControlRequest::Status, false),
+        ControlSubcommand::Watch { .. } => (ControlRequest::Watch, true),
+        ControlSubcommand::SetComponents { enable } => (
+            ControlRequest::SetComponents {
+                components: enable.clone(),
+            },
+            false,
+        ),
+        ControlSubcommand::SetConfig {
+            fieldname,
+            game_settings,
+        } => (
+            ControlRequest::SetConfig {
+                fieldname: fieldname.clone(),
+                game_settings: game_settings.clone(),
+            },
+            false,
+        ),
+        ControlSubcommand::Start { target } => (
+            ControlRequest::Start {
+                target: target.clone(),
+            },
+            false,
+        ),
+        ControlSubcommand::Stop { target } => (
+            ControlRequest::Stop {
+                target: target.clone(),
+            },
+            false,
+        ),
+        ControlSubcommand::Restart { target } => (
+            ControlRequest::Restart {
+                target: target.clone(),
+            },
+            false,
+        ),
+    };
+    control::request(&control::socket_path(), &request, watch).await
 }
 
 // ─── Headless mode ────────────────────────────────────────────────────────────
@@ -154,6 +265,7 @@ async fn run_headless(app: &mut App) -> Result<()> {
                 for idx in to_restart {
                     app.start_component(idx).await;
                 }
+                app.drain_control_commands().await;
                 {
                     let mut q = app.headless_log.lock().unwrap();
                     while let Some(entry) = q.pop_front() {
@@ -198,6 +310,7 @@ async fn run_tui(
                 for idx in to_restart {
                     app.start_component(idx).await;
                 }
+                app.drain_control_commands().await;
                 if app.log_follow {
                     let len = match &app.screen {
                         Screen::Logs(idx) => app.components[*idx].logs.lock().unwrap().len(),

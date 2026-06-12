@@ -9,6 +9,7 @@ pub struct GlobalParams {
     pub zenoh: bool,
     pub fieldname: String,
     pub dsd_file: String,
+    pub game_settings: Option<String>,
 }
 
 impl Default for GlobalParams {
@@ -18,6 +19,7 @@ impl Default for GlobalParams {
             zenoh: true,
             fieldname: FIELDNAME_DEFAULT_HW.to_string(),
             dsd_file: "main.dsd".to_string(),
+            game_settings: None,
         }
     }
 }
@@ -76,10 +78,14 @@ pub static COMPONENT_DEFS: &[ComponentDef] = &[
         hardware_only: false,
         sim_component: false,
         cmds: |p| {
+            let mut extra = vec![sim(p), format!("fieldname:={}", p.fieldname)];
+            if let Some(path) = &p.game_settings {
+                extra.push(format!("game_settings_file:={path}"));
+            }
             vec![ros2_launch(
                 "bitbots_parameter_blackboard",
                 "parameter_blackboard.launch",
-                &[&sim(p), &format!("fieldname:={}", p.fieldname)],
+                &extra.iter().map(String::as_str).collect::<Vec<_>>(),
             )]
         },
     },
