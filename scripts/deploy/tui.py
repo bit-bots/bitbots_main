@@ -32,8 +32,8 @@ class StatusChanged(Message):
 class RobotCard(Vertical):
     DEFAULT_CSS = """
     RobotCard {
-        width: 38;
-        min-width: 32;
+        width: 1fr;
+        min-width: 70;
         height: 100%;
         border: round $primary;
         padding: 0 1;
@@ -98,10 +98,8 @@ class DeployApp(App[None]):
         ("r", "retry", "Retry"),
         ("c", "cancel", "Cancel"),
         ("t", "attach", "Attach"),
-        ("f", "focus_selected", "Focus"),
-        ("u", "show_all", "Show all"),
+        ("f", "toggle_focus", "Focus"),
         ("delete", "remove_selected", "Remove"),
-        ("space", "toggle_focused", "Select"),
         ("l", "cycle_log_level", "Log level"),
         ("q", "quit", "Quit"),
     ]
@@ -145,9 +143,8 @@ class DeployApp(App[None]):
         yield Header()
         with Vertical():
             with Horizontal(id="controls"):
-                yield Button("Focus", id="focus-selected")
-                yield Button("Show all", id="show-all")
-                yield Button("Remove", id="remove-selected", variant="error")
+                yield Button("Focus", id="focus-toggle", disabled=True)
+                yield Button("Remove", id="remove-selected", variant="error", disabled=True)
                 yield Select(
                     [(name, name) for name in self.profiles.matches],
                     value=self.default_match,
@@ -260,17 +257,18 @@ class DeployApp(App[None]):
     async def cancel_button(self) -> None:
         await self.action_cancel()
 
-    @on(Button.Pressed, "#focus-selected")
-    def focus_selected_button(self) -> None:
-        self.action_focus_selected()
-
-    @on(Button.Pressed, "#show-all")
-    def show_all_button(self) -> None:
-        self.action_show_all()
+    @on(Button.Pressed, "#focus-toggle")
+    def focus_toggle_button(self) -> None:
+        self.action_toggle_focus()
 
     @on(Button.Pressed, "#remove-selected")
     async def remove_selected_button(self) -> None:
         await self.action_remove_selected()
+
+    @on(Checkbox.Changed)
+    def robot_selection_changed(self, event: Checkbox.Changed) -> None:
+        if event.checkbox.id and event.checkbox.id.startswith("select-"):
+            self._update_fleet_controls()
 
     @on(Button.Pressed, "#connect")
     async def connect_button(self) -> None:
@@ -287,6 +285,7 @@ class DeployApp(App[None]):
         if self.focused_names is not None:
             self.focused_names.add(name)
             self._apply_card_filter()
+        self._update_fleet_controls()
         self.query_one("#manual-host", Input).value = ""
 
     async def action_apply(self) -> None:
@@ -323,17 +322,17 @@ class DeployApp(App[None]):
         with self.suspend():
             await self.supervisor.controllers[names[0]].attach()
 
-    def action_focus_selected(self) -> None:
-        names = self.selected_names()
-        if not names:
-            self.notify("Select at least one robot to focus", severity="warning")
-            return
-        self.focused_names = set(names)
+    def action_toggle_focus(self) -> None:
+        if self.focused_names is None:
+            names = self.selected_names()
+            if not names:
+                self.notify("Select at least one robot to focus", severity="warning")
+                return
+            self.focused_names = set(names)
+        else:
+            self.focused_names = None
         self._apply_card_filter()
-
-    def action_show_all(self) -> None:
-        self.focused_names = None
-        self._apply_card_filter()
+        self._update_fleet_controls()
 
     async def action_remove_selected(self) -> None:
         names = self.selected_names()
@@ -352,11 +351,7 @@ class DeployApp(App[None]):
             if not self.focused_names:
                 self.focused_names = None
         self._apply_card_filter()
-
-    def action_toggle_focused(self) -> None:
-        focused = self.focused
-        if isinstance(focused, Checkbox) and focused.id and focused.id.startswith("select-"):
-            focused.value = not focused.value
+        self._update_fleet_controls()
 
     def action_cycle_log_level(self) -> None:
         levels = ["INFO", "DEBUG", "WARN", "ERROR"]
@@ -378,6 +373,13 @@ class DeployApp(App[None]):
             except NoMatches:
                 continue
             card.display = self.focused_names is None or name in self.focused_names
+
+    def _update_fleet_controls(self) -> None:
+        selected = bool(self.selected_names())
+        self.query_one("#remove-selected", Button).disabled = not selected
+        focus = self.query_one("#focus-toggle", Button)
+        focus.label = "Show all" if self.focused_names is not None else "Focus"
+        focus.disabled = self.focused_names is None and not selected
 
 
 def visible_at_level(line: str, minimum: str) -> bool:

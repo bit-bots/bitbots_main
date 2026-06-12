@@ -4,6 +4,7 @@ from pathlib import Path
 from deploy.models import RobotStatus, RobotTarget
 from deploy.profiles import ProfileStore
 from deploy.tui import DeployApp, RobotCard, visible_at_level
+from textual.widgets import Button, Checkbox
 
 
 class FakeController:
@@ -75,13 +76,66 @@ def test_mouse_focus_and_show_all() -> None:
     async def run() -> None:
         async with app.run_test(size=(180, 50)) as pilot:
             await pilot.click("#select-nuc1")
-            await pilot.click("#focus-selected")
+            await pilot.click("#focus-toggle")
             assert app.query_one("#robot-nuc1", RobotCard).display
             assert not app.query_one("#robot-nuc2", RobotCard).display
+            assert str(app.query_one("#focus-toggle", Button).label) == "Show all"
 
-            await pilot.click("#show-all")
+            await pilot.click("#focus-toggle")
             assert app.query_one("#robot-nuc1", RobotCard).display
             assert app.query_one("#robot-nuc2", RobotCard).display
+            assert str(app.query_one("#focus-toggle", Button).label) == "Focus"
+
+    asyncio.run(run())
+
+
+def test_remove_is_enabled_only_with_robot_selection() -> None:
+    profiles = ProfileStore.load(Path(__file__).parents[1])
+    supervisor = FakeSupervisor()
+    app = DeployApp(profiles, supervisor, default_match="lab")
+
+    async def run() -> None:
+        async with app.run_test(size=(180, 50)) as pilot:
+            remove = app.query_one("#remove-selected", Button)
+            assert remove.disabled
+            await pilot.click("#select-nuc1")
+            assert not remove.disabled
+            await pilot.click("#select-nuc1")
+            assert remove.disabled
+
+    asyncio.run(run())
+
+
+def test_space_uses_focused_widget_native_behavior() -> None:
+    profiles = ProfileStore.load(Path(__file__).parents[1])
+    supervisor = FakeSupervisor()
+    app = DeployApp(profiles, supervisor, default_match="lab")
+
+    async def run() -> None:
+        async with app.run_test(size=(180, 50)) as pilot:
+            checkbox = app.query_one("#select-nuc1", Checkbox)
+            checkbox.focus()
+            await pilot.press("space")
+            assert checkbox.value
+
+    asyncio.run(run())
+
+
+def test_robot_columns_fill_width_with_seventy_column_minimum() -> None:
+    profiles = ProfileStore.load(Path(__file__).parents[1])
+    supervisor = FakeSupervisor(("nuc1", "nuc2"))
+    app = DeployApp(profiles, supervisor, default_match="lab")
+
+    async def run() -> None:
+        async with app.run_test(size=(180, 50)) as pilot:
+            first = app.query_one("#robot-nuc1", RobotCard)
+            second = app.query_one("#robot-nuc2", RobotCard)
+            assert first.size.width >= 70
+            assert second.size.width >= 70
+            narrow_width = first.size.width
+            await pilot.resize_terminal(240, 50)
+            assert first.size.width > narrow_width
+            assert first.size.width == second.size.width
 
     asyncio.run(run())
 
