@@ -10,8 +10,8 @@ parameter_blackboard:
   ros__parameters:
     field:
       size:
-        x: 100.0
-        y: 100.0
+        x: 1000.0
+        y: 1000.0
         padding: 0.1   # Padding (area outside of the lines) of the field in all directions
       markings:
         penalty_area:
