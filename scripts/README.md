@@ -52,8 +52,12 @@ pixi run deploy
 
 The TUI continuously probes `scripts/deploy/known_targets.yaml`. Select robots,
 stage match, ball, component, source, and build changes, then apply them. Mouse
-and keyboard controls are equivalent. **Attach** suspends the deploy TUI and
-opens the selected robot's `teamplayer` tmux session.
+and keyboard controls are equivalent. **Focus** temporarily hides unselected
+robot cards, while **Show all** restores the fleet view. **Remove** stops local
+monitoring and closes the selected robots' SSH transports without stopping
+software on the robots. The corresponding keys are `F`, `U`, and `Delete`.
+**Attach** suspends the deploy TUI and opens the selected robot's `teamplayer`
+tmux session.
 
 Enter an arbitrary hostname or `user@host` in the host field to add it manually.
 

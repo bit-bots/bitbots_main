@@ -632,6 +632,11 @@ class DeploymentSupervisor:
         controller.start()
         return controller
 
+    async def remove_target(self, name: str) -> None:
+        controller = self.controllers.pop(name, None)
+        if controller is not None:
+            await controller.close()
+
     async def close(self) -> None:
         if self._source_task is not None:
             self._source_task.cancel()
@@ -644,7 +649,7 @@ class DeploymentSupervisor:
     async def _monitor_source(self) -> None:
         while True:
             fingerprint = await asyncio.to_thread(source_fingerprint, self.workspace)
-            for controller in self.controllers.values():
+            for controller in list(self.controllers.values()):
                 if controller.status.source_fingerprint != fingerprint:
                     controller.status.source_fingerprint = fingerprint
                     controller._notify()

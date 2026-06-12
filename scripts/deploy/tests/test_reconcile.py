@@ -15,7 +15,7 @@ from deploy.models import (
     Step,
     StepState,
 )
-from deploy.reconcile import RobotReconciler, robot_id, shell_path, source_fingerprint
+from deploy.reconcile import DeploymentSupervisor, RobotReconciler, robot_id, shell_path, source_fingerprint
 
 
 class FakeTransport:
@@ -343,6 +343,24 @@ def test_connection_probe_retries_at_fixed_interval(tmp_path: Path) -> None:
         await reconciler.close()
 
     asyncio.run(asyncio.wait_for(run(), timeout=3))
+
+
+def test_remove_target_closes_controller() -> None:
+    class RemovableController:
+        def __init__(self) -> None:
+            self.closed = False
+
+        async def close(self) -> None:
+            self.closed = True
+
+    controller = RemovableController()
+    supervisor = object.__new__(DeploymentSupervisor)
+    supervisor.controllers = {"nuc1": controller}
+
+    asyncio.run(supervisor.remove_target("nuc1"))
+
+    assert controller.closed
+    assert "nuc1" not in supervisor.controllers
 
 
 def test_source_fingerprint_includes_dirty_file_contents(tmp_path: Path) -> None:

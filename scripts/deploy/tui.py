@@ -98,6 +98,9 @@ class DeployApp(App[None]):
         ("r", "retry", "Retry"),
         ("c", "cancel", "Cancel"),
         ("t", "attach", "Attach"),
+        ("f", "focus_selected", "Focus"),
+        ("u", "show_all", "Show all"),
+        ("delete", "remove_selected", "Remove"),
         ("space", "toggle_focused", "Select"),
         ("l", "cycle_log_level", "Log level"),
         ("q", "quit", "Quit"),
@@ -136,11 +139,15 @@ class DeployApp(App[None]):
         self.default_match = default_match
         self.generation = 0
         self.minimum_level = "INFO"
+        self.focused_names: set[str] | None = None
 
     def compose(self) -> ComposeResult:
         yield Header()
         with Vertical():
             with Horizontal(id="controls"):
+                yield Button("Focus", id="focus-selected")
+                yield Button("Show all", id="show-all")
+                yield Button("Remove", id="remove-selected", variant="error")
                 yield Select(
                     [(name, name) for name in self.profiles.matches],
                     value=self.default_match,
@@ -253,6 +260,18 @@ class DeployApp(App[None]):
     async def cancel_button(self) -> None:
         await self.action_cancel()
 
+    @on(Button.Pressed, "#focus-selected")
+    def focus_selected_button(self) -> None:
+        self.action_focus_selected()
+
+    @on(Button.Pressed, "#show-all")
+    def show_all_button(self) -> None:
+        self.action_show_all()
+
+    @on(Button.Pressed, "#remove-selected")
+    async def remove_selected_button(self) -> None:
+        await self.action_remove_selected()
+
     @on(Button.Pressed, "#connect")
     async def connect_button(self) -> None:
         value = self.query_one("#manual-host", Input).value.strip()
@@ -265,6 +284,9 @@ class DeployApp(App[None]):
         controller = self.supervisor.add_target(RobotTarget(name=name, host=host, user=user))
         await self.query_one("#robots", HorizontalScroll).mount(RobotCard(controller.status))
         controller.set_log_stream(self.query_one("#show-logs", Switch).value)
+        if self.focused_names is not None:
+            self.focused_names.add(name)
+            self._apply_card_filter()
         self.query_one("#manual-host", Input).value = ""
 
     async def action_apply(self) -> None:
@@ -301,6 +323,36 @@ class DeployApp(App[None]):
         with self.suspend():
             await self.supervisor.controllers[names[0]].attach()
 
+    def action_focus_selected(self) -> None:
+        names = self.selected_names()
+        if not names:
+            self.notify("Select at least one robot to focus", severity="warning")
+            return
+        self.focused_names = set(names)
+        self._apply_card_filter()
+
+    def action_show_all(self) -> None:
+        self.focused_names = None
+        self._apply_card_filter()
+
+    async def action_remove_selected(self) -> None:
+        names = self.selected_names()
+        if not names:
+            self.notify("Select at least one robot to remove", severity="warning")
+            return
+        for name in names:
+            try:
+                card = self.query_one(f"#robot-{name}", RobotCard)
+            except NoMatches:
+                continue
+            await card.remove()
+            await self.supervisor.remove_target(name)
+        if self.focused_names is not None:
+            self.focused_names.difference_update(names)
+            if not self.focused_names:
+                self.focused_names = None
+        self._apply_card_filter()
+
     def action_toggle_focused(self) -> None:
         focused = self.focused
         if isinstance(focused, Checkbox) and focused.id and focused.id.startswith("select-"):
@@ -318,6 +370,14 @@ class DeployApp(App[None]):
             if checkbox.value:
                 selected.append(name)
         return selected
+
+    def _apply_card_filter(self) -> None:
+        for name in self.supervisor.controllers:
+            try:
+                card = self.query_one(f"#robot-{name}", RobotCard)
+            except NoMatches:
+                continue
+            card.display = self.focused_names is None or name in self.focused_names
 
 
 def visible_at_level(line: str, minimum: str) -> bool:
