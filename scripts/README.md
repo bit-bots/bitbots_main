@@ -1,48 +1,51 @@
-# Scripts
+# Deployment Supervisor
 
-This directory contains scripts that are very useful for development, testing and deployment.
+The deployment supervisor discovers configured robots, maintains one shared
+OpenSSH connection per robot, and reconciles every selected robot independently.
+It supports both an interactive TUI and batch operation.
 
-This tool is also callable via `pixi run deploy <arguments>`.
+## Offline environment
 
-## `deploy_robots.py`
+Robot networks do not have Internet access. Prepare the exact `linux-aarch64`
+environment bundle while the deployment laptop can reach the package channels:
 
-Deploy, configure, and launch the Bit-Bots software remotely on a robot.
-This tool can target all, multiple, or single robots at once, specified by their hostname, robot name, or IP address.
-These different tasks can be performed:
+```shell
+pixi run deploy cache prepare
+```
 
-1. Synchronize the local source code to the target workspace
-2. Configure game-settings and wifi on the target
-3. Build (compile) the workspace on the target
-4. Launch the teamplayer software on the target
+The bundle is stored in the user's XDG cache and keyed by the locked `robot`
+environment. During deployment, the laptop serves it over the wired LAN and the
+robot verifies its SHA-256 digest before activation.
 
-### Example usage
+## Interactive operation
 
-- Get help and list all arguments:
+```shell
+pixi run deploy
+```
 
-    ```shell
-    ./deploy_robots.py --help
-    ```
+The TUI continuously probes `scripts/deploy/known_targets.yaml`. Select robots,
+stage match, ball, component, source, and build changes, then apply them. Mouse
+and keyboard controls are equivalent. **Attach** suspends the deploy TUI and
+opens the selected robot's `teamplayer` tmux session.
 
-- Default usage: Run all tasks on the `nuc1` host:
+Enter an arbitrary hostname or `user@host` in the host field to add it manually.
 
-    ```shell
-    ./deploy_robots.py nuc1
-    ```
+## Batch operation
 
-- Make all robots ready for games. This also launch the teamplayer software on all robots:
+```shell
+pixi run deploy apply --match german_open_2026 nuc1 nuc2
+pixi run deploy apply --no-build --no-launch nuc1
+pixi run deploy status ALL
+pixi run deploy status --json nuc1
+```
 
-    ```shell
-    ./deploy_robots.py ALL
-    ```
+Connection loss is retried indefinitely at a fixed two-second interval by
+default. Run `pixi run deploy --help` and the subcommand help for all options.
 
-- Only run the sync and build tasks on the `nuc1` and `nuc2` hosts:
+## Profiles
 
-    ```shell
-    ./deploy_robots.py --sync --build nuc1 nuc2
-    ```
-
-- Only build the `bitbots_utils` ROS package on the `nuc1` host:
-
-    ```shell
-    ./deploy_robots.py --package bitbots_utils nuc1
-    ```
+`scripts/deploy/profiles.yaml` contains fleet-wide match and ball profiles.
+Match profiles reference existing NetworkManager connection names; the tool
+never creates or distributes WiFi credentials. An empty profile leaves WiFi
+unchanged. Robot-specific settings are rendered to
+`.deploy/config/game_settings.yaml` in the remote workspace.
