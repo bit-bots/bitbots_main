@@ -26,6 +26,9 @@ class GoToBall(AbstractActionElement):
 
     def perform(self, reevaluate=False):
         pose_msg = self.blackboard.pathfinding.get_ball_goal(self.target, self.distance, self.side_offset)
+        if pose_msg is None:
+            # The goal could not be calculated (e.g. unknown target type), so we cannot publish a goal
+            return
         self.blackboard.pathfinding.publish(pose_msg)
 
         approach_marker = Marker()

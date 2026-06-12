@@ -158,7 +158,7 @@ class StateToMessageConverter:
             message = convert_current_pose(state.pose, message)
         if state.cmd_vel is not None:
             message = convert_walk_command(state.cmd_vel, state.cmd_vel_time, message)
-        if convert_target_position is not None:
+        if state.move_base_goal is not None:
             message = convert_target_position(state.move_base_goal, message)
         if state.ball is not None:
             message = convert_ball_position(state.ball, state.ball_velocity, state.ball_covariance, message)

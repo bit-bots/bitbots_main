@@ -112,7 +112,7 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
         if path_length < self.orient_to_ball_distance:
             _, _, start_theta = self._blackboard.world_model.get_current_position()
             goal_theta = euler_from_quaternion(numpify(goal_pose.pose.orientation))[2]
-            start_goal_theta_diff = (abs(start_theta - goal_theta) + math.tau / 2) % math.tau - math.tau / 2
+            start_goal_theta_diff = abs((start_theta - goal_theta + math.pi) % math.tau - math.pi)
             start_goal_theta_cost = (
                 start_goal_theta_diff * self._blackboard.config["time_to_ball_cost_start_to_goal_angle"]
             )
@@ -121,10 +121,10 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
             # calculate how much we need to turn to start walking along the path
             _, _, start_theta = self._blackboard.world_model.get_current_position()
             path_theta = math.atan2(end_point.y - start_point.y, end_point.x - start_point.x)
-            start_theta_diff = (abs(start_theta - path_theta) + math.tau / 2) % math.tau - math.tau / 2
+            start_theta_diff = abs((start_theta - path_theta + math.pi) % math.tau - math.pi)
             # calculate how much we need to turn to turn at the end of the path
             goal_theta = euler_from_quaternion(numpify(goal_pose.pose.orientation))[2]
-            goal_theta_diff = (abs(goal_theta - path_theta) + math.tau / 2) % math.tau - math.tau / 2
+            goal_theta_diff = abs((goal_theta - path_theta + math.pi) % math.tau - math.pi)
             start_theta_cost = start_theta_diff * self._blackboard.config["time_to_ball_cost_start_angle"]
             goal_theta_cost = goal_theta_diff * self._blackboard.config["time_to_ball_cost_goal_angle"]
             total_cost = (
@@ -134,7 +134,7 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
             )
         return total_cost
 
-    def get_ball_goal(self, target: BallGoalType, distance: float, side_offset: float = 0.0) -> PoseStamped:
+    def get_ball_goal(self, target: BallGoalType, distance: float, side_offset: float = 0.0) -> Optional[PoseStamped]:
         """
         This function returns a goal pose relative to the ball.
 
@@ -191,7 +191,7 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
 
         else:
             self._node.get_logger().error(f"Target {target} for go_to_ball action not implemented.")
-            return
+            return None
 
         # Create the goal pose message
         pose_msg = PoseStamped()

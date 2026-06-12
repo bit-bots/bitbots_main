@@ -320,7 +320,7 @@ class HeadMover {
     }
 
     // Calculate the distance between the current and the goal position
-    double distance = sqrt(pow(goal_yaw - current_yaw, 2) - pow(goal_pitch - current_pitch, 2));
+    double distance = sqrt(pow(goal_yaw - current_yaw, 2) + pow(goal_pitch - current_pitch, 2));
 
     // Calculate the number of steps we need to take to reach the goal position
     // This assumes that we move 3 degrees per step
@@ -385,7 +385,7 @@ class HeadMover {
     pos_msg.joint_names = {"head_yaw_joint", "head_pitch_joint"};
     pos_msg.positions = {goal_yaw, goal_pitch};
     pos_msg.velocities = {yaw_speed, pitch_speed};
-    pos_msg.accelerations = {params_.max_acceleration_yaw, params_.max_acceleration_yaw};
+    pos_msg.accelerations = {params_.max_acceleration_yaw, params_.max_acceleration_pitch};
     pos_msg.max_torques = {10, 10};
 
     position_publisher_->publish(pos_msg);
@@ -448,11 +448,11 @@ class HeadMover {
   /**
    * @brief Generates a parameterized search pattern
    */
-  std::vector<std::pair<double, double>> generatePattern(
-      int line_count, double max_horizontal_angle_left, double max_horizontal_angle_right, double max_vertical_angle_up,
-      double max_vertical_angle_down,
-      int reduce_last_scanline = 0.2,  // TODO: needs to be changed to 1
-      int interpolation_steps = 0) {
+  std::vector<std::pair<double, double>> generatePattern(int line_count, double max_horizontal_angle_left,
+                                                         double max_horizontal_angle_right,
+                                                         double max_vertical_angle_up, double max_vertical_angle_down,
+                                                         double reduce_last_scanline = 0.2,
+                                                         int interpolation_steps = 0) {
     // Store the keyframes of the search pattern
     std::vector<std::pair<double, double>> keyframes;
     // Store the state of the generation process
@@ -511,7 +511,7 @@ class HeadMover {
 
     // Reduce the last scanline by a given factor
     for (auto& keyframe : keyframes) {
-      if (keyframe.second == max_vertical_angle_down) {
+      if (std::abs(keyframe.second - max_vertical_angle_down) < 1e-6) {
         keyframe = {keyframe.first * reduce_last_scanline, max_vertical_angle_down};
       }
     }

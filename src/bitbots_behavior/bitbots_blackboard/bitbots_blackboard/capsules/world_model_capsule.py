@@ -137,9 +137,7 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
         """
         Returns the distance to the ball in meters.
         """
-        if not (ball_pos := self.get_ball_position_uv()):
-            return np.inf  # worst case (very far away)
-        u, v = ball_pos
+        u, v = self.get_ball_position_uv()
         return math.hypot(u, v)
 
     def get_ball_angle(self) -> float:
@@ -147,9 +145,7 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
         Returns the angle to the ball in radians.
         0 is straight ahead, positive is to the left, negative is to the right.
         """
-        if not (ball_pos := self.get_ball_position_uv()):
-            return -math.pi  # worst case (behind robot)
-        u, v = ball_pos
+        u, v = self.get_ball_position_uv()
         return math.atan2(v, u)
 
     def ball_filtered_callback(self, msg: PoseWithCovarianceStamped):
@@ -274,9 +270,10 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
         current_position = self.get_current_position()
         x2 = x - current_position[0]
         y2 = y - current_position[1]
-        theta = -1 * current_position[2]
+        theta = current_position[2]
+        # Rotate the difference vector from the map frame into the robot frame (rotation by -theta)
         u = math.cos(theta) * x2 + math.sin(theta) * y2
-        v = math.cos(theta) * y2 - math.sin(theta) * x2
+        v = -math.sin(theta) * x2 + math.cos(theta) * y2
         return u, v
 
     def get_xy_from_uv(self, u: float, v: float) -> tuple[float, float]:
@@ -284,7 +281,7 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
         pos_x, pos_y, theta = self.get_current_position()
         angle = math.atan2(v, u) + theta
         hypotenuse = math.hypot(u, v)
-        return pos_x + math.sin(angle) * hypotenuse, pos_y + math.cos(angle) * hypotenuse
+        return pos_x + math.cos(angle) * hypotenuse, pos_y + math.sin(angle) * hypotenuse
 
     def get_distance_to_xy(self, x: float, y: float) -> float:
         """Returns distance from robot to given position"""
