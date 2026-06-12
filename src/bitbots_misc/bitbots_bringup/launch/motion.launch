@@ -3,11 +3,14 @@
     <arg name="sim" default="false"/>
     <arg name="viz" default="false"/>
     <arg name="torqueless_mode" default="false" description="start without torque, for example for testing the falling detection"/>
+    <arg name="lowlevel" default="true" description="Whether to start the lowlevel hardware interface" />
     <arg name="rl_motion" default="true" description="Whether to use the RL motion system instead of the regular one" />
 
     <!-- launch the hardware interface -->
     <group unless="$(var sim)">
-        <include file="$(find-pkg-share livelybot_bringup)/launch/lowlevel.launch" />
+        <group if="$(var lowlevel)">
+            <include file="$(find-pkg-share livelybot_bringup)/launch/lowlevel.launch" />
+        </group>
     </group>
 
     <!-- launch the base footprint -->

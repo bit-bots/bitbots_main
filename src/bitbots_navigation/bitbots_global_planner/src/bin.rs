@@ -1,7 +1,7 @@
 #[cfg(feature = "gui")]
 mod gui {
-    use bitbots_rust_nav::map::{ObstacleMap, ObstacleMapConfig};
-    use bitbots_rust_nav::obstacle::RoundObstacle;
+    use bitbots_global_planner::map::{ObstacleMap, ObstacleMapConfig};
+    use bitbots_global_planner::obstacle::RoundObstacle;
     use eframe::egui;
 
     pub struct PathfindingApp {

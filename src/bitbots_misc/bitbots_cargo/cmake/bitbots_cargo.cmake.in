@@ -1,0 +1,201 @@
+
+# Need at least 3.21 for IMPORTED_TARGETS property that we rely on.
+# NOTE! Ubuntu 20.04 comes 3.16.3 by default, so to use this you need
+# to update cmake. This can be done by adding the kitware apt repo:
+# https://apt.kitware.com
+cmake_minimum_required(VERSION "3.21")
+
+# traverse dependencies for all message packages.
+function(get_idl_deps OUT_PKG_DIRS PKG)
+    find_package(${PKG} REQUIRED)
+    target_link_libraries(dummy INTERFACE ${${PKG}_LIBRARIES})
+    include_directories(dummy ${${PKG}_INCLUDE_DIRS})
+
+    list(APPEND VISITED_TARGETS ${PKG})
+
+    # only keep track of packages that include idl files
+    set(PKG_DIRS "")
+    if(DEFINED ${PKG}_IDL_FILES)
+        list(APPEND PKG_DIRS ${${PKG}_DIR})
+    endif()
+
+    foreach(LIB ${${PKG}_DEPENDENCIES})
+        list(FIND VISITED_TARGETS ${LIB} VISITED)
+        if (${VISITED} EQUAL -1)
+            get_idl_deps(NEW_PKG_DIRS ${LIB})
+            list(APPEND PKG_DIRS ${NEW_PKG_DIRS})
+            list(REMOVE_DUPLICATES PKG_DIRS)
+        endif()
+    endforeach()
+    set(VISITED_TARGETS ${VISITED_TARGETS} PARENT_SCOPE)
+    set(${OUT_PKG_DIRS} ${PKG_DIRS} PARENT_SCOPE)
+endfunction()
+
+function(r2r_cargo)
+  # pretend that we want to compile c code to get all library paths etc...
+  add_library(dummy INTERFACE)
+
+  # traverse list of wanted packages to add dependencies
+  foreach(f ${ARGN})
+    find_package(${f} REQUIRED)
+    set(REC_PKG_DIRS "")
+    get_idl_deps(REC_PKG_DIRS ${f})
+    list(APPEND CMAKE_IDL_PACKAGES "${REC_PKG_DIRS}")
+  endforeach()
+
+  list(REMOVE_DUPLICATES CMAKE_IDL_PACKAGES)
+  string (REPLACE ";" ":" CMAKE_IDL_PACKAGES_STR "${CMAKE_IDL_PACKAGES}")
+  set(ENV{CMAKE_IDL_PACKAGES} ${CMAKE_IDL_PACKAGES_STR})
+
+  # On OSX colcon eats the DYLD_LIBRARY_PATH... so we need to add the rpaths
+  # manually...
+  set(RUSTFLAGS "")
+
+  # get imported libs
+  get_property(importTargets DIRECTORY "${CMAKE_SOURCE_DIR}" PROPERTY IMPORTED_TARGETS)
+
+  foreach(p ${importTargets})
+    get_property(_LIBLOC TARGET "${p}" PROPERTY LOCATION)
+    if(DEFINED _LIBLOC)
+      list(APPEND CMAKE_LIBRARIES "${_LIBLOC}")
+      get_filename_component(_PARENT "${_LIBLOC}" DIRECTORY)
+      if(IS_DIRECTORY ${_PARENT})
+          list(APPEND RUSTFLAGS "-C link-arg=-Wl,-rpath,${_PARENT}")
+      endif()
+    endif()
+  endforeach()
+
+  list(REMOVE_DUPLICATES RUSTFLAGS)
+  string (REPLACE ";" " " RUSTFLAGS_STR "${RUSTFLAGS}")
+  set(ENV{RUSTFLAGS} ${RUSTFLAGS_STR})
+
+  # get include paths
+  get_property(includeDirs DIRECTORY "${CMAKE_SOURCE_DIR}" PROPERTY INCLUDE_DIRECTORIES)
+  list(REMOVE_DUPLICATES includeDirs)
+  string (REPLACE ";" ":" CMAKE_INCLUDE_DIRS_STR "${includeDirs}")
+  set(ENV{CMAKE_INCLUDE_DIRS} ${CMAKE_INCLUDE_DIRS_STR})
+
+  add_custom_target(cargo_target ALL
+      COMMAND ${CMAKE_COMMAND} "-E" "env" "--unset=MAKEFLAGS" "--unset=MFLAGS" "RUSTFLAGS=$ENV{RUSTFLAGS}" "CMAKE_IDL_PACKAGES=$ENV{CMAKE_IDL_PACKAGES}" "CMAKE_INCLUDE_DIRS=$ENV{CMAKE_INCLUDE_DIRS}" "cargo" "build" "--profile" "colcon" "--quiet"
+      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+      USES_TERMINAL
+      VERBATIM
+  )
+
+  if(BUILD_TESTING)
+    add_test(
+      NAME cargo_test
+      COMMAND ${CMAKE_COMMAND} "-E" "env" "--unset=MAKEFLAGS" "--unset=MFLAGS"
+        "RUSTFLAGS=$ENV{RUSTFLAGS}"
+        "CMAKE_IDL_PACKAGES=$ENV{CMAKE_IDL_PACKAGES}"
+        "CMAKE_INCLUDE_DIRS=$ENV{CMAKE_INCLUDE_DIRS}"
+        cargo test --package ${PROJECT_NAME}
+      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    )
+  endif()
+
+endfunction()
+
+# Private helper: resolve the cargo workspace target directory.
+function(_cargo_get_target_dir OUT_DIR)
+  execute_process(
+    COMMAND cargo metadata --no-deps --format-version=1
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE _METADATA_JSON
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+  string(JSON _TARGET_DIR GET "${_METADATA_JSON}" target_directory)
+  set(${OUT_DIR} "${_TARGET_DIR}" PARENT_SCOPE)
+endfunction()
+
+# Build a pyo3 Python extension and install it flat into site-packages so
+# `import <package>` works after sourcing install/setup.bash.
+#
+# Usage: cargo_pyo3_extension([PACKAGE <cargo_crate_name>])
+#   PACKAGE defaults to ${PROJECT_NAME}
+function(cargo_pyo3_extension)
+  cmake_parse_arguments(_ARGS "" "PACKAGE" "" ${ARGN})
+  if(NOT _ARGS_PACKAGE)
+    set(_ARGS_PACKAGE ${PROJECT_NAME})
+  endif()
+
+  find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
+  _cargo_get_target_dir(_CARGO_TARGET_DIR)
+
+  execute_process(
+    COMMAND ${Python3_EXECUTABLE} -c
+      "import sysconfig; print(sysconfig.get_config_var('EXT_SUFFIX'))"
+    OUTPUT_VARIABLE _PYTHON_EXT_SUFFIX
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+  set(_PYTHON_INSTALL_DIR
+    lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}/site-packages)
+
+  add_custom_target(cargo_${_ARGS_PACKAGE} ALL
+    COMMAND ${CMAKE_COMMAND} "-E" "env" "--unset=MAKEFLAGS" "--unset=MFLAGS"
+      "PYO3_PYTHON=${Python3_EXECUTABLE}"
+      cargo build --profile colcon --package ${_ARGS_PACKAGE}
+        --features pyo3/extension-module --quiet
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    USES_TERMINAL
+    VERBATIM
+  )
+
+  install(CODE "
+    file(COPY
+      \"${_CARGO_TARGET_DIR}/colcon/lib${_ARGS_PACKAGE}.so\"
+      DESTINATION \"\${CMAKE_INSTALL_PREFIX}/${_PYTHON_INSTALL_DIR}/\")
+    file(RENAME
+      \"\${CMAKE_INSTALL_PREFIX}/${_PYTHON_INSTALL_DIR}/lib${_ARGS_PACKAGE}.so\"
+      \"\${CMAKE_INSTALL_PREFIX}/${_PYTHON_INSTALL_DIR}/${_ARGS_PACKAGE}${_PYTHON_EXT_SUFFIX}\")
+  ")
+
+  if(BUILD_TESTING)
+    add_test(
+      NAME cargo_test
+      COMMAND ${CMAKE_COMMAND} "-E" "env" "--unset=MAKEFLAGS" "--unset=MFLAGS"
+        "PYO3_PYTHON=${Python3_EXECUTABLE}"
+        cargo test --package ${_ARGS_PACKAGE} --features pyo3/extension-module
+      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    )
+  endif()
+endfunction()
+
+# Build a standalone Rust binary and install it to lib/${PROJECT_NAME}/ so
+# it is launchable via `ros2 run ${PROJECT_NAME} <binary_name>`.
+#
+# Usage: cargo_binary(<binary_name> [PACKAGE <cargo_crate_name>])
+#   PACKAGE defaults to ${PROJECT_NAME}
+function(cargo_binary BINARY_NAME)
+  cmake_parse_arguments(_ARGS "" "PACKAGE" "" ${ARGN})
+  if(NOT _ARGS_PACKAGE)
+    set(_ARGS_PACKAGE ${BINARY_NAME})
+  endif()
+
+  _cargo_get_target_dir(_CARGO_TARGET_DIR)
+
+  if(WIN32)
+    set(_SUFFIX ".exe")
+  else()
+    set(_SUFFIX "")
+  endif()
+
+  add_custom_target(cargo_${BINARY_NAME} ALL
+    COMMAND ${CMAKE_COMMAND} "-E" "env" "--unset=MAKEFLAGS" "--unset=MFLAGS"
+      cargo build --profile colcon --package ${_ARGS_PACKAGE} --quiet
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    USES_TERMINAL
+    VERBATIM
+  )
+
+  install(PROGRAMS ${_CARGO_TARGET_DIR}/colcon/${BINARY_NAME}${_SUFFIX}
+    DESTINATION lib/${PROJECT_NAME})
+
+  if(BUILD_TESTING)
+    add_test(
+      NAME cargo_test
+      COMMAND ${CMAKE_COMMAND} "-E" "env" "--unset=MAKEFLAGS" "--unset=MFLAGS"
+        cargo test --package ${_ARGS_PACKAGE}
+      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    )
+  endif()
+endfunction()
