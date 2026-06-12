@@ -92,8 +92,8 @@ At a competition, follow these steps:
    #. ``git pull`` to get the latest changes
 
 #. **Prepare and deploy the software:**
-   While the deployment laptop has Internet access, prepare the locked,
-   portable robot environment:
+   While the deployment laptop has Internet access, prepare the offline package
+   cache for the locked robot environment:
 
    .. code-block:: bash
 
@@ -110,6 +110,12 @@ At a competition, follow these steps:
    attached directly from the TUI. For batch operation use
    ``pixi run deploy apply <targets>``.
 
+   The supervisor synchronizes ``pixi.toml`` and ``pixi.lock`` first, then serves
+   the locked packages from the deployment laptop while the robot runs
+   ``pixi install -e robot --frozen``. This creates or verifies the ordinary
+   ``.pixi/envs/robot`` environment. Deployment does not create a separate match
+   environment or permanently change Pixi's channel configuration.
+
    For more options, see `the deployment README <https://github.com/bit-bots/bitbots_main/blob/master/scripts/README.md>`_
    or call:
 
@@ -119,6 +125,19 @@ At a competition, follow these steps:
 
 #. **Optional: Connect to the robot:**
    Select one robot and use the TUI's **Attach** action.
+
+   The deployed environment remains a normal Pixi environment. Manual
+   development and diagnostics can use commands such as:
+
+   .. code-block:: bash
+
+      pixi run -e robot build --packages-select <package>
+      pixi run -e robot test --packages-select <package>
+      pixi shell -e robot
+
+   These commands need no Internet while the manifest and lockfile remain
+   unchanged and the environment is complete. Dependency changes require a new
+   cache prepared on a network with Internet access.
 
 #. **CURRENTLY DISABLED: Reset foot pressure sensors:**
    Pick up the robot, so that the feet do not touch the ground.
