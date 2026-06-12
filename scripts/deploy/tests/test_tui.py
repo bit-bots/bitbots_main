@@ -149,6 +149,32 @@ def test_robot_columns_scroll_only_when_minimum_widths_overflow() -> None:
     asyncio.run(run())
 
 
+def test_all_robot_view_uses_minimum_width_instead_of_full_viewports() -> None:
+    profiles = ProfileStore.load(Path(__file__).parents[1])
+    names = ("nuc1", "nuc2", "nuc3", "nuc4", "nuc5", "nuc6")
+    supervisor = FakeSupervisor(names)
+    app = DeployApp(profiles, supervisor, default_match="lab")
+
+    async def run() -> None:
+        async with app.run_test(size=(319, 75)) as pilot:
+            await pilot.pause()
+            cards = list(app.query(RobotCard))
+            assert all(card.region.width == 70 for card in cards)
+
+            await pilot.click("#select-nuc1")
+            await pilot.click("#select-nuc2")
+            await pilot.click("#select-nuc3")
+            await pilot.click("#focus-toggle")
+            await pilot.pause()
+            assert all(app.query_one(f"#robot-{name}", RobotCard).region.width > 70 for name in names[:3])
+
+            await pilot.click("#focus-toggle")
+            await pilot.pause()
+            assert all(card.region.width == 70 for card in cards)
+
+    asyncio.run(run())
+
+
 def test_focused_robot_uses_the_full_available_width() -> None:
     profiles = ProfileStore.load(Path(__file__).parents[1])
     supervisor = FakeSupervisor(("nuc1", "nuc2"))

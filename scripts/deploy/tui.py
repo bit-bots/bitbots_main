@@ -3,7 +3,7 @@ from __future__ import annotations
 from deploy.models import DesiredState, RobotStatus, RobotTarget, Step
 from deploy.profiles import ProfileStore
 from deploy.reconcile import DeploymentSupervisor
-from textual import on
+from textual import events, on
 from textual.app import App, ComposeResult
 from textual.containers import Horizontal, HorizontalScroll, Vertical
 from textual.css.query import NoMatches
@@ -36,6 +36,9 @@ class RobotCloseRequested(Message):
 
 
 class RobotCard(Vertical):
+    MINIMUM_WIDTH = 70
+    RIGHT_MARGIN = 1
+
     DEFAULT_CSS = """
     RobotCard {
         width: 1fr;
@@ -238,6 +241,7 @@ class DeployApp(App[None]):
             controller.on_status = self._status_callback
             controller.set_log_stream(True)
         self.supervisor.start()
+        self.call_after_refresh(self._update_card_widths)
 
     async def on_unmount(self) -> None:
         await self.supervisor.close()
@@ -321,6 +325,7 @@ class DeployApp(App[None]):
             self.focused_names.add(name)
             self._apply_card_filter()
         self._update_fleet_controls()
+        self.call_after_refresh(self._update_card_widths)
         self.query_one("#manual-host", Input).value = ""
 
     async def action_apply(self) -> None:
@@ -403,12 +408,27 @@ class DeployApp(App[None]):
             except NoMatches:
                 continue
             card.display = self.focused_names is None or name in self.focused_names
+        self._update_card_widths()
 
     def _update_fleet_controls(self) -> None:
         selected = bool(self.selected_names())
         focus = self.query_one("#focus-toggle", Button)
         focus.label = "Show all" if self.focused_names is not None else "Focus"
         focus.disabled = self.focused_names is None and not selected
+
+    def on_resize(self, event: events.Resize) -> None:
+        self._update_card_widths(event.size.width - 2)
+
+    def _update_card_widths(self, available_width: int | None = None) -> None:
+        cards = [card for card in self.query(RobotCard) if card.display]
+        if not cards:
+            return
+        if available_width is None:
+            available_width = self.query_one("#robots", HorizontalScroll).size.width
+        required_width = len(cards) * (RobotCard.MINIMUM_WIDTH + RobotCard.RIGHT_MARGIN)
+        width = RobotCard.MINIMUM_WIDTH if required_width > available_width else "1fr"
+        for card in cards:
+            card.styles.width = width
 
 
 def visible_at_level(line: str, minimum: str) -> bool:
