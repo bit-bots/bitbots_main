@@ -58,11 +58,14 @@ own **X** button, which stops local monitoring and closes that robot's SSH
 transport without stopping robot-side software. **Attach** suspends the deploy
 TUI and opens the selected robot's `teamplayer` tmux session.
 
-Visible robot columns share the available terminal width, with widths bounded
-between 70 and 110 columns. Untouched deployment steps are collapsed into one
-idle message; the timeline expands as operations start or finish. Space uses the
-focused widget's native behavior: it toggles robot checkboxes, component
-entries, and switches, and opens focused dropdowns. Buttons use Enter.
+Visible robot columns divide the full available terminal width while each can
+remain at least 70 columns wide. If they cannot, cards stay at the 70-column
+minimum and the fleet view scrolls horizontally. The full card title, except
+for its close button, selects the robot. Untouched deployment steps are
+collapsed into one idle message; the timeline expands as operations start or
+finish. Space uses the focused widget's native behavior: it toggles robot
+checkboxes, component entries, and switches, and opens focused dropdowns.
+Buttons use Enter.
 
 Enter an arbitrary hostname or `user@host` in the host field to add it manually.
 

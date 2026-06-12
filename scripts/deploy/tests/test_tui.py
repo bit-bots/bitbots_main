@@ -60,7 +60,9 @@ def test_mouse_selection_and_apply() -> None:
 
     async def run() -> None:
         async with app.run_test(size=(180, 50)) as pilot:
-            await pilot.click("#select-nuc1")
+            selector = app.query_one("#select-nuc1", Checkbox)
+            assert selector.region.width > 50
+            await pilot.click("#select-nuc1", offset=(selector.region.width - 2, 1))
             assert app.query_one("#robot-nuc1", RobotCard).has_class("selected")
             await pilot.click("#apply")
             assert supervisor.applied
@@ -107,24 +109,60 @@ def test_space_uses_focused_widget_native_behavior() -> None:
     asyncio.run(run())
 
 
-def test_robot_columns_fit_available_width_with_bounds() -> None:
+def test_robot_columns_fill_available_width_without_a_maximum() -> None:
     profiles = ProfileStore.load(Path(__file__).parents[1])
     supervisor = FakeSupervisor(("nuc1", "nuc2"))
     app = DeployApp(profiles, supervisor, default_match="lab")
 
     async def run() -> None:
         async with app.run_test(size=(180, 50)) as pilot:
+            await pilot.pause()
             first = app.query_one("#robot-nuc1", RobotCard)
             second = app.query_one("#robot-nuc2", RobotCard)
-            assert first.size.width >= 70
-            assert first.size.width <= 110
-            assert second.size.width >= 70
-            assert second.size.width <= 110
-            assert first.size.width + second.size.width <= app.query_one("#robots").size.width
-            narrow_width = first.size.width
+            robots = app.query_one("#robots")
+            assert first.region.width >= 70
+            assert first.region.width == second.region.width
+            assert first.region.width + second.region.width >= robots.size.width - 4
+            assert robots.virtual_size.width <= robots.size.width
+            narrow_width = first.region.width
             await pilot.resize_terminal(240, 50)
-            assert first.size.width >= narrow_width
-            assert first.size.width == second.size.width
+            await pilot.pause()
+            assert first.region.width > narrow_width
+            assert first.region.width == second.region.width
+
+    asyncio.run(run())
+
+
+def test_robot_columns_scroll_only_when_minimum_widths_overflow() -> None:
+    profiles = ProfileStore.load(Path(__file__).parents[1])
+    supervisor = FakeSupervisor(("nuc1", "nuc2", "nuc3"))
+    app = DeployApp(profiles, supervisor, default_match="lab")
+
+    async def run() -> None:
+        async with app.run_test(size=(180, 50)) as pilot:
+            await pilot.pause()
+            robots = app.query_one("#robots")
+            cards = list(app.query(RobotCard))
+            assert all(card.region.width >= 70 for card in cards)
+            assert robots.virtual_size.width > robots.size.width
+
+    asyncio.run(run())
+
+
+def test_focused_robot_uses_the_full_available_width() -> None:
+    profiles = ProfileStore.load(Path(__file__).parents[1])
+    supervisor = FakeSupervisor(("nuc1", "nuc2"))
+    app = DeployApp(profiles, supervisor, default_match="lab")
+
+    async def run() -> None:
+        async with app.run_test(size=(180, 50)) as pilot:
+            await pilot.pause()
+            await pilot.click("#select-nuc1")
+            await pilot.click("#focus-toggle")
+            await pilot.pause()
+            card = app.query_one("#robot-nuc1", RobotCard)
+            robots = app.query_one("#robots")
+            assert card.region.width >= robots.size.width - 3
 
     asyncio.run(run())
 
@@ -136,6 +174,7 @@ def test_card_close_removes_only_that_robot() -> None:
 
     async def run() -> None:
         async with app.run_test(size=(180, 50)) as pilot:
+            await pilot.pause()
             await pilot.click("#close-nuc1")
             await pilot.pause()
             assert supervisor.removed == ["nuc1"]

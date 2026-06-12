@@ -3,7 +3,7 @@ from __future__ import annotations
 from deploy.models import DesiredState, RobotStatus, RobotTarget, Step
 from deploy.profiles import ProfileStore
 from deploy.reconcile import DeploymentSupervisor
-from textual import events, on
+from textual import on
 from textual.app import App, ComposeResult
 from textual.containers import Horizontal, HorizontalScroll, Vertical
 from textual.css.query import NoMatches
@@ -38,9 +38,8 @@ class RobotCloseRequested(Message):
 class RobotCard(Vertical):
     DEFAULT_CSS = """
     RobotCard {
-        width: 90;
+        width: 1fr;
         min-width: 70;
-        max-width: 110;
         height: 100%;
         border: round $primary;
         padding: 0 1;
@@ -58,9 +57,6 @@ class RobotCard(Vertical):
         align-vertical: middle;
     }
     RobotCard .selector {
-        width: 4;
-    }
-    RobotCard .title {
         width: 1fr;
         text-style: bold;
         color: $accent;
@@ -87,15 +83,11 @@ class RobotCard(Vertical):
     def compose(self) -> ComposeResult:
         with Horizontal(classes="card-header"):
             yield Checkbox(
-                "",
+                f"{self.status.target.name} ({self.status.target.robot_name or self.status.target.host})",
                 value=False,
                 id=f"select-{self.status.target.name}",
                 classes="selector",
                 tooltip="Include this robot in fleet actions",
-            )
-            yield Static(
-                f"{self.status.target.name} ({self.status.target.robot_name or self.status.target.host})",
-                classes="title",
             )
             yield Button(
                 "X",
@@ -246,7 +238,6 @@ class DeployApp(App[None]):
             controller.on_status = self._status_callback
             controller.set_log_stream(True)
         self.supervisor.start()
-        self.call_after_refresh(self._resize_robot_cards)
 
     async def on_unmount(self) -> None:
         await self.supervisor.close()
@@ -330,7 +321,6 @@ class DeployApp(App[None]):
             self.focused_names.add(name)
             self._apply_card_filter()
         self._update_fleet_controls()
-        self.call_after_refresh(self._resize_robot_cards)
         self.query_one("#manual-host", Input).value = ""
 
     async def action_apply(self) -> None:
@@ -392,7 +382,6 @@ class DeployApp(App[None]):
                 self.focused_names = None
         self._apply_card_filter()
         self._update_fleet_controls()
-        self.call_after_refresh(self._resize_robot_cards)
 
     def action_cycle_log_level(self) -> None:
         levels = ["INFO", "DEBUG", "WARN", "ERROR"]
@@ -414,26 +403,12 @@ class DeployApp(App[None]):
             except NoMatches:
                 continue
             card.display = self.focused_names is None or name in self.focused_names
-        self.call_after_refresh(self._resize_robot_cards)
 
     def _update_fleet_controls(self) -> None:
         selected = bool(self.selected_names())
         focus = self.query_one("#focus-toggle", Button)
         focus.label = "Show all" if self.focused_names is not None else "Focus"
         focus.disabled = self.focused_names is None and not selected
-
-    def on_resize(self, event: events.Resize) -> None:
-        self.call_after_refresh(self._resize_robot_cards)
-
-    def _resize_robot_cards(self) -> None:
-        container = self.query_one("#robots", HorizontalScroll)
-        cards = [card for card in self.query("RobotCard") if card.display]
-        if not cards:
-            return
-        available = max(container.size.width - 2, 70)
-        width = max(70, min(110, (available - len(cards)) // len(cards)))
-        for card in cards:
-            card.styles.width = width
 
 
 def visible_at_level(line: str, minimum: str) -> bool:
