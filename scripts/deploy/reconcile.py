@@ -11,7 +11,7 @@ from collections.abc import Callable
 from pathlib import Path
 
 import yaml
-from deploy.artifacts import ArtifactServer, EnvironmentArtifact
+from deploy.artifacts import ArtifactServer, EnvironmentArtifact, environment_cache_key
 from deploy.models import (
     TEAMPLAYER_COMPONENTS,
     CommandFailedError,
@@ -227,11 +227,8 @@ class RobotReconciler:
             self.status.teamplayer = response.get("status", {})
 
     def _teamplayer_control_command(self, arguments: str) -> str:
-        if self.artifact is None:
-            return f"teamplayer ctl {arguments}"
         workspace = shell_path(self.target.workspace)
-        env = f"{workspace}/.deploy/envs/{self.artifact.key}"
-        return f"cd {workspace} && scripts/deploy/robot_env.sh {env} teamplayer ctl {arguments}"
+        return f"cd {workspace} && pixi run -e robot --as-is teamplayer ctl {arguments}"
 
     async def _wait(self, expected: DesiredState | None = None) -> None:
         self._wake.clear()
@@ -251,36 +248,6 @@ class RobotReconciler:
         if self._superseded(desired):
             return
 
-        env_changed = False
-        if self.artifact is not None:
-            env_changed = await self._ensure_environment()
-        else:
-            if desired.build or desired.launch:
-                self._set_step(
-                    Step.ENVIRONMENT,
-                    StepState.RUNNING,
-                    "Checking offline environment artifact",
-                )
-                raise CommandFailedError(
-                    CommandResult(
-                        ("environment-preflight",),
-                        2,
-                        stderr=(
-                            "No matching offline environment artifact. Run "
-                            "`pixi run deploy cache prepare` while Internet access is available."
-                        ),
-                    )
-                )
-            self._set_step(
-                Step.ENVIRONMENT,
-                StepState.SKIPPED,
-                "No offline environment artifact selected",
-            )
-        if self._superseded(desired):
-            return
-
-        previous = self._applied
-        configuration_changed = previous is None or previous.match != desired.match or previous.ball != desired.ball
         source_changed = desired.sync_source and self.status.stale
         if source_changed:
             await self._sync_source()
@@ -290,6 +257,36 @@ class RobotReconciler:
         if self._superseded(desired):
             return
 
+        env_changed = False
+        if self.artifact is not None:
+            env_changed = await self._ensure_environment()
+        else:
+            if desired.build or desired.launch:
+                self._set_step(
+                    Step.ENVIRONMENT,
+                    StepState.RUNNING,
+                    "Checking offline package cache",
+                )
+                raise CommandFailedError(
+                    CommandResult(
+                        ("environment-preflight",),
+                        2,
+                        stderr=(
+                            "No matching offline environment cache. Run "
+                            "`pixi run deploy cache prepare` while Internet access is available."
+                        ),
+                    )
+                )
+            self._set_step(
+                Step.ENVIRONMENT,
+                StepState.SKIPPED,
+                "Environment provisioning is not required",
+            )
+        if self._superseded(desired):
+            return
+
+        previous = self._applied
+        configuration_changed = previous is None or previous.match != desired.match or previous.ball != desired.ball
         if configuration_changed:
             await self._write_configuration(desired)
         else:
@@ -362,43 +359,59 @@ class RobotReconciler:
     async def _ensure_environment(self) -> bool:
         assert self.artifact is not None
         assert self.artifact_server is not None
+        if self.artifact.key != environment_cache_key(self.workspace):
+            raise CommandFailedError(
+                CommandResult(
+                    ("environment-preflight",),
+                    2,
+                    stderr=(
+                        "The robot lock changed after the offline cache was selected. Run "
+                        "`pixi run deploy cache prepare` with Internet access, then restart the deploy tool."
+                    ),
+                )
+            )
         workspace = shell_path(self.target.workspace)
         key = self.artifact.key
-        env = f"{workspace}/.deploy/envs/{key}"
-        marker = f"{env}/.complete"
+        marker = f"{workspace}/.deploy/environment/{key}.complete"
         result = await self.transport.run(f"test -f {marker}", check=False)
-        if result.ok:
-            self._set_step(Step.ENVIRONMENT, StepState.SKIPPED, f"Environment {key[:12]} present")
-            return False
-
-        url = self.artifact_server.url()
-        artifact_name = shlex.quote(self.artifact.path.name)
-        download = f"{workspace}/.deploy/downloads/{artifact_name}"
-        staging = f"{workspace}/.deploy/envs/{key}.staging"
-        command = (
-            "set -e; "
-            f"mkdir -p {workspace}/.deploy/downloads {workspace}/.deploy/envs; "
-            f"curl --fail --location --continue-at - --output {download} "
-            f"{shlex.quote(url)} || exit 75; "
-            f"actual=$(sha256sum {download} | cut -d' ' -f1); "
-            f'if test "$actual" != {shlex.quote(self.artifact.sha256)}; '
-            f"then rm -f {download}; exit 76; fi; "
-            f"rm -rf {staging}; mkdir -p {staging}; "
-            f"cd {staging}; chmod +x {download}; {download}; "
-            f"test -d env; touch env/.complete; "
-            f"rm -rf {env}; mv env {env}; cd /; rm -rf {staging}"
+        config = self.artifact_server.pixi_config()
+        config_path = f"{workspace}/.deploy/pixi-offline.toml"
+        install = (
+            f"cd {workspace} && "
+            f"pixi install -e robot --frozen --config-file {config_path} "
+            "--concurrent-downloads 4 --concurrent-solves 1; "
+            f"status=$?; rm -f {config_path}; exit $status"
         )
+
+        async def provision() -> CommandResult:
+            await self.transport.run(
+                f"mkdir -p {workspace}/.deploy/environment; "
+                f"cat > {config_path}.tmp && mv {config_path}.tmp {config_path}",
+                stdin=config,
+                output=self._log,
+            )
+            install_result = await self.transport.run(install, output=self._log)
+            await self.transport.run(
+                f"touch {marker}.tmp && mv {marker}.tmp {marker}",
+                output=self._log,
+            )
+            return install_result
+
         try:
             await self._step(
                 Step.ENVIRONMENT,
-                f"Installing environment {key[:12]}",
-                lambda: self.transport.run(command, output=self._log),
+                (
+                    f"Verifying normal Pixi robot environment {key[:12]}"
+                    if result.ok
+                    else f"Installing normal Pixi robot environment {key[:12]}"
+                ),
+                provision,
             )
         except CommandFailedError as exc:
-            if exc.result.returncode in {75, 76}:
+            if _environment_failure_is_transient(exc.result):
                 exc.transient = True
             raise
-        return True
+        return not result.ok
 
     async def _sync_source(self) -> None:
         await self._step(
@@ -413,7 +426,9 @@ class RobotReconciler:
         )
         workspace = shell_path(self.target.workspace)
         await self.transport.run(
-            f"printf '%s\\n' {shlex.quote(self.status.source_fingerprint)} > {workspace}/.deploy/source-fingerprint"
+            f"mkdir -p {workspace}/.deploy; "
+            f"printf '%s\\n' {shlex.quote(self.status.source_fingerprint)} > "
+            f"{workspace}/.deploy/source-fingerprint"
         )
 
     async def _write_configuration(self, desired: DesiredState) -> None:
@@ -433,8 +448,6 @@ class RobotReconciler:
 
     async def _build(self, desired: DesiredState) -> None:
         workspace = shell_path(self.target.workspace)
-        assert self.artifact is not None
-        env = f"{workspace}/.deploy/envs/{self.artifact.key}"
         clean = ""
         if desired.clean_build:
             if desired.build_packages:
@@ -449,11 +462,7 @@ class RobotReconciler:
         packages = ""
         if desired.build_packages:
             packages = " --packages-select " + " ".join(shlex.quote(package) for package in desired.build_packages)
-        command = (
-            f"cd {workspace}; {clean}"
-            f"scripts/deploy/robot_env.sh {env} colcon build --symlink-install "
-            f"--cmake-args -G 'Unix Makefiles'{packages}"
-        )
+        command = f"cd {workspace}; {clean}pixi run -e robot --as-is build{packages}"
         await self._step(
             Step.BUILD,
             "Building workspace",
@@ -480,8 +489,6 @@ class RobotReconciler:
 
     async def _teamplayer(self, desired: DesiredState, *, restart_components: bool) -> None:
         workspace = shell_path(self.target.workspace)
-        assert self.artifact is not None
-        env = f"{workspace}/.deploy/envs/{self.artifact.key}"
         component_args = " ".join(f"--enable {shlex.quote(component)}" for component in sorted(desired.components))
         disabled_args = " ".join(
             f"--disable {shlex.quote(component)}"
@@ -490,11 +497,11 @@ class RobotReconciler:
         )
         settings = f"{workspace}/.deploy/config/game_settings.yaml"
         launch = (
-            f"cd {workspace} && exec scripts/deploy/robot_env.sh {env} "
-            f"teamplayer --headless --fieldname {shlex.quote(desired.match.field)} "
+            f"cd {workspace} && exec pixi run -e robot --as-is teamplayer "
+            f"--headless --fieldname {shlex.quote(desired.match.field)} "
             f"--game-settings {settings} {component_args} {disabled_args}"
         )
-        ctl = f"scripts/deploy/robot_env.sh {env} teamplayer ctl"
+        ctl = "pixi run -e robot --as-is teamplayer ctl"
         update_config = f"{ctl} set-config --fieldname {shlex.quote(desired.match.field)} --game-settings {settings}"
         apply_components = f"{ctl} set-components {component_args}"
         control_action = f"{ctl} {'restart' if restart_components else 'start'} all"
@@ -680,3 +687,22 @@ def shell_path(path: str) -> str:
     if path.startswith("~/"):
         return '"$HOME"/' + shlex.quote(path[2:])
     return shlex.quote(path)
+
+
+def _environment_failure_is_transient(result: CommandResult) -> bool:
+    if result.returncode == 255:
+        return True
+    output = f"{result.stdout}\n{result.stderr}".lower()
+    transient_markers = (
+        "connection refused",
+        "connection reset",
+        "connection timed out",
+        "could not connect",
+        "download failed",
+        "error sending request",
+        "failed to download",
+        "network is unreachable",
+        "operation timed out",
+        "temporary failure",
+    )
+    return any(marker in output for marker in transient_markers)

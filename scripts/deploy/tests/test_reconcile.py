@@ -1,5 +1,6 @@
 import asyncio
 import subprocess
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -178,19 +179,25 @@ def test_new_generation_supersedes_pending_steps(tmp_path: Path, monkeypatch) ->
     asyncio.run(asyncio.wait_for(run(), timeout=3))
 
 
-def test_interrupted_artifact_download_is_transient(tmp_path: Path) -> None:
+def test_interrupted_offline_pixi_install_is_transient(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr("deploy.reconcile.environment_cache_key", lambda _: "key")
+
     class FailingTransport(FakeTransport):
         async def run(self, command: str, *, stdin=None, output=None, check=True):
             if command.startswith("test -f"):
                 return CommandResult(("ssh", command), 1)
-            raise CommandFailedError(CommandResult(("ssh", command), 75, stderr="download interrupted"))
+            if "cat >" in command:
+                return CommandResult(("ssh", command), 0)
+            raise CommandFailedError(
+                CommandResult(("ssh", command), 1, stderr="package download failed: connection reset")
+            )
 
     class FakeServer:
-        def url(self):
-            return "http://127.0.0.1/environment.sh"
+        def pixi_config(self):
+            return '[mirrors]\n"https://example.invalid" = ["http://127.0.0.1/cache"]\n'
 
-    artifact_path = tmp_path / "environment.sh"
-    artifact_path.write_text("artifact")
+    artifact_path = tmp_path / "artifact"
+    artifact_path.mkdir()
     reconciler = RobotReconciler(
         RobotTarget("nuc1", "127.0.0.1"),
         tmp_path,
@@ -205,6 +212,100 @@ def test_interrupted_artifact_download_is_transient(tmp_path: Path) -> None:
         assert error.value.transient
 
     asyncio.run(run())
+
+
+def test_environment_uses_normal_robot_pixi_environment(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr("deploy.reconcile.environment_cache_key", lambda _: "key")
+
+    class MissingEnvironmentTransport(FakeTransport):
+        async def run(self, command: str, *, stdin=None, output=None, check=True):
+            if command.startswith("test -f"):
+                self.commands.append((command, stdin))
+                return CommandResult(("ssh", command), 1)
+            return await super().run(command, stdin=stdin, output=output, check=check)
+
+    class FakeServer:
+        def pixi_config(self):
+            return "[concurrency]\ndownloads = 4\n"
+
+    artifact_path = tmp_path / "artifact"
+    artifact_path.mkdir()
+    transport = MissingEnvironmentTransport()
+    reconciler = RobotReconciler(
+        RobotTarget("nuc1", "127.0.0.1"),
+        tmp_path,
+        EnvironmentArtifact("key", artifact_path, "digest"),
+        FakeServer(),
+        transport=transport,
+    )
+
+    async def run() -> None:
+        changed = await reconciler._ensure_environment()
+        assert changed
+
+    asyncio.run(run())
+    commands = [command for command, _ in transport.commands]
+    assert any("pixi install -e robot --frozen" in command for command in commands)
+    assert not any(".deploy/envs" in command for command in commands)
+    assert not any("robot_env.sh" in command for command in commands)
+
+
+def test_environment_rejects_cache_after_robot_lock_changes(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr("deploy.reconcile.environment_cache_key", lambda _: "new-key")
+
+    class FakeServer:
+        def pixi_config(self):
+            raise AssertionError("stale cache must fail before serving packages")
+
+    artifact_path = tmp_path / "artifact"
+    artifact_path.mkdir()
+    reconciler = RobotReconciler(
+        RobotTarget("nuc1", "127.0.0.1"),
+        tmp_path,
+        EnvironmentArtifact("old-key", artifact_path, "digest"),
+        FakeServer(),
+        transport=FakeTransport(),
+    )
+
+    async def run() -> None:
+        with pytest.raises(CommandFailedError, match="robot lock changed"):
+            await reconciler._ensure_environment()
+
+    asyncio.run(run())
+
+
+def test_source_is_synchronized_before_environment_install(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr("deploy.reconcile.source_fingerprint", lambda _: "new-source")
+    monkeypatch.setattr("deploy.reconcile.environment_cache_key", lambda _: "key")
+
+    class FakeServer:
+        def pixi_config(self):
+            return "[concurrency]\ndownloads = 4\n"
+
+    artifact_path = tmp_path / "artifact"
+    artifact_path.mkdir()
+    transport = FakeTransport()
+    reconciler = RobotReconciler(
+        RobotTarget("nuc1", "127.0.0.1"),
+        tmp_path,
+        EnvironmentArtifact("key", artifact_path, "digest"),
+        FakeServer(),
+        retry_interval=0.01,
+        transport=transport,
+    )
+
+    async def run() -> None:
+        reconciler.start()
+        reconciler.apply(replace(desired(1, ""), sync_source=True))
+        while reconciler.status.applied_generation != 1:
+            await asyncio.sleep(0.01)
+        await reconciler.close()
+
+    asyncio.run(asyncio.wait_for(run(), timeout=3))
+    commands = [command for command, _ in transport.commands]
+    assert commands.index("rsync") < next(
+        index for index, command in enumerate(commands) if "pixi install -e robot --frozen" in command
+    )
 
 
 def test_connection_probe_retries_at_fixed_interval(tmp_path: Path) -> None:

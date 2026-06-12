@@ -35,9 +35,9 @@ def build_parser() -> argparse.ArgumentParser:
     add_target_arguments(status_parser)
     status_parser.add_argument("--json", action="store_true")
 
-    cache_parser = subparsers.add_parser("cache", help="Manage offline environment artifacts")
+    cache_parser = subparsers.add_parser("cache", help="Manage the offline robot package cache")
     cache_subparsers = cache_parser.add_subparsers(dest="cache_command", required=True)
-    cache_subparsers.add_parser("prepare", help="Create the linux-aarch64 robot artifact")
+    cache_subparsers.add_parser("prepare", help="Cache the locked linux-aarch64 robot packages")
     return parser
 
 
@@ -54,9 +54,9 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "cache":
         artifact = store.prepare()
-        print(f"Prepared {artifact.path}")
+        print(f"Prepared offline package cache at {artifact.path}")
         print(f"key: {artifact.key}")
-        print(f"sha256: {artifact.sha256}")
+        print(f"manifest sha256: {artifact.sha256}")
         return 0
 
     targets = profiles.resolve_targets(
@@ -67,7 +67,7 @@ def main(argv: list[str] | None = None) -> int:
     artifact = store.get()
     if args.command == "apply" and artifact is None:
         print(
-            "No matching offline robot environment artifact. "
+            "No matching offline robot package cache. "
             "Run `pixi run deploy cache prepare` while Internet access is available.",
             file=sys.stderr,
         )
