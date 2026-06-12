@@ -29,6 +29,13 @@ move_head:
     validation:
       fixed_size<>: 2
 
+  transition_speed:
+    type: double
+    default_value: 6.0
+    description: "Speed (in rad/s) used to smoothly transition from the current head position into a new search pattern when the head mode changes"
+    validation:
+      bounds<>: [0.1, 8.0]
+
   look_at:
     pitch_speed:
       type: double
