@@ -1,0 +1,12 @@
+fixed_exposure_auto_gain:
+  ros__parameters:
+    image_topic: "zed/zed_node/rgb/image_rect_color"
+    camera_node: "/zed/zed_node"
+    initial_gain: 40
+    update_rate: 2.0
+    target_brightness: 110.0
+    brightness_deadband: 8.0
+    gain_kp: 0.08
+    max_gain_step: 4
+    min_gain: 0
+    max_gain: 100
