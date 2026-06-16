@@ -2,19 +2,6 @@
   <compiler angle="radian" meshdir="./assets/meshes/"/>
   <default>
     <default class="pi_joint_arm">
-<<<<<<< HEAD
-      <joint damping="0.66" armature="0.008419" actuatorfrcrange="-10 10"/>
-      <position kp="6" kv="0.6"/>
-      <!-- damping = 10Nm / (155rpm - 10 rpm (in rad/s)) -->
-    </default>
-    <default class="pi_joint_leg">
-      <joint damping="2.94" armature="0.044277" actuatorfrcrange="-20 20"/>
-      <!-- damping = 20Nm / (75rpm - 10 rpm (in rad/s)) -->
-    </default>
-    <default class="pi_joint_head">
-      <joint damping="0.48" actuatorfrcrange="-2.5 2.5"/>
-      <!-- damping = 2.5Nm / (60rpm - 10 rpm (in rad/s)) -->
-=======
       <joint damping="0.66" actuatorfrcrange="-10 10" armature="0.01317" frictionloss="0.2"/>
       <!-- damping = 10Nm / (155rpm - 10 rpm (in rad/s)) -->
     </default>
@@ -36,7 +23,6 @@
     </default>
     <default class="pi_actuator_head">
       <position kp="6" kv="0.6" forcerange="-2.5 2.5" ctrllimited="false"/>
->>>>>>> a4246bd41 (Mjmodel fixes (#906))
     </default>
     <default class="collision">
       <geom group="3" contype="1" conaffinity="1"/>
@@ -135,11 +121,7 @@
             <geom type="mesh" class="visual" rgba="0.752941 0.752941 0.752941 1" mesh="l_shoulder_roll_link"/>
             <body name="l_upper_arm_link" pos="0 0 -0.0724">
               <inertial pos="-0.00013535 0.00129534 -0.0121342" quat="0.786804 0.617162 -0.00567645 0.00431653" mass="0.153183" diaginertia="0.000177157 0.000144033 0.00011178"/>
-<<<<<<< HEAD
-              <joint name="l_upper_arm_joint" class="pi_joint_arm" pos="0 0 0" axis="0 0 1" range="-2.16 2.16"/>
-=======
               <joint name="l_upper_arm_joint" class="pi_joint_arm" pos="0 0 0" axis="0 0 -1" range="-2.55 2.55"/>
->>>>>>> a4246bd41 (Mjmodel fixes (#906))
               <geom type="mesh" class="visual" rgba="0.752941 0.752941 0.752941 1" mesh="l_upper_arm_link"/>
               <geom name="l_upper_arm_link_collision0" class="collision" pos="0 0 0.025" type="cylinder" size="0.035 0.0475"/>
               <body name="l_elbow_link" pos="0 0 -0.038">
