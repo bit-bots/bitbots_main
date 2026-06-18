@@ -92,6 +92,10 @@ class HcmBlackboard:
 
         # Walking state
         self.last_walking_goal_time: Optional[Time] = None
+        # Time of the last walk motor goal that deviated >3° from the previous walk command
+        self.last_significant_walk_motion_time: Optional[Time] = None
+        # Seconds without significant walk motion before dropping from WALKING to CONTROLLABLE
+        self.standing_transition_delay: float = self.node.get_parameter("standing_transition_delay").value
 
         # Falling
         # Parameters

@@ -99,6 +99,19 @@ class HCM_CPP : public rclcpp::Node {
 
   void walking_goal_callback(bitbots_msgs::msg::JointCommand msg) {
     last_walking_time_ = msg.header.stamp;
+
+    // Detect significant motion: any joint moved >3° relative to the previous walk command
+    if (last_walk_command_ && msg.positions.size() == last_walk_command_->positions.size()) {
+      constexpr double kSignificantMotionThreshold = 3.0 * M_PI / 180.0;
+      for (size_t i = 0; i < msg.positions.size(); ++i) {
+        if (std::abs(msg.positions[i] - last_walk_command_->positions[i]) > kSignificantMotionThreshold) {
+          last_significant_walk_motion_time_ = msg.header.stamp;
+          break;
+        }
+      }
+    }
+    last_walk_command_ = msg;
+
     if (current_state_ == bitbots_msgs::msg::RobotControlState::CONTROLLABLE ||
         current_state_ == bitbots_msgs::msg::RobotControlState::WALKING) {
       pub_controller_command_->publish(msg);
@@ -122,6 +135,10 @@ class HCM_CPP : public rclcpp::Node {
     if (last_walking_time_) {
       hcm_py_.attr("set_last_walking_goal_time")(
           ros2_python_extension::toPython<builtin_interfaces::msg::Time>(last_walking_time_.value()));
+    }
+    if (last_significant_walk_motion_time_) {
+      hcm_py_.attr("set_last_significant_walk_motion_time")(
+          ros2_python_extension::toPython<builtin_interfaces::msg::Time>(last_significant_walk_motion_time_.value()));
     }
     if (last_animation_goal_time_) {
       hcm_py_.attr("set_last_animation_goal_time")(
@@ -156,6 +173,8 @@ class HCM_CPP : public rclcpp::Node {
 
   // Walking state
   std::optional<builtin_interfaces::msg::Time> last_walking_time_;
+  std::optional<builtin_interfaces::msg::Time> last_significant_walk_motion_time_;
+  std::optional<bitbots_msgs::msg::JointCommand> last_walk_command_;
 
   // Animation states
   std::optional<builtin_interfaces::msg::Time> last_animation_goal_time_;
