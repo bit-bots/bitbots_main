@@ -11,6 +11,7 @@ from bitbots_rl_motion.previous_action import PreviousAction
 from handlers.handler import Handler
 from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
+from std_msgs.msg import Float32MultiArray
 
 
 class RLNode(Node, ABC):
@@ -37,12 +38,18 @@ class RLNode(Node, ABC):
         self.declare_parameter(
             "joints.kd", [0.6] * len(self.get_parameter("joints.ordered_relevant_joint_names").value)
         )
+        self.declare_parameter("command.max_linear_velocity_forward", 999.0)
+        self.declare_parameter("command.max_linear_velocity_backward", -999.0)
+        self.declare_parameter("command.max_linear_velocity_sideways", 999.0)
+        self.declare_parameter("command.max_angular_velocity", 999.0)
 
         model = self.get_parameter("model").value
         self.get_logger().info(f"Loaded model: {model}")
 
         # Phase is optional - if phase shouldn't be used, than self._phase.get_phase() will return None
         self._phase = Phase(self)
+        self._phase_init_hook()
+
         self._previous_action = PreviousAction(self)
 
     def _timer_callback(self):
@@ -56,16 +63,6 @@ class RLNode(Node, ABC):
             )
             return
 
-        # TODO consider IMU mounting offset
-
-        if self._phase.check_phase_set():
-            self._phase.set_obs_phase(
-                np.array(
-                    [np.cos(self._phase.get_phase()), np.sin(self._phase.get_phase())],
-                    dtype=np.float32,
-                ).flatten()
-            )
-
         observation = self.obs()
 
         # Run the ONNX model
@@ -76,6 +73,10 @@ class RLNode(Node, ABC):
         if self.allowed_states():
             self.publisher(onnx_pred)
         self._phase_update_hook()
+
+    @abstractmethod
+    def _phase_init_hook(self):
+        pass
 
     @abstractmethod
     def _phase_update_hook(self):

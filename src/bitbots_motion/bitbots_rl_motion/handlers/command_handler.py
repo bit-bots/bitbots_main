@@ -9,6 +9,10 @@ from handlers.handler import Handler
 class CommandHandler(Handler):
     def __init__(self, node):
         self._node = node
+        max_vel_x = self._node.get_parameter("command.max_linear_velocity_forward").value
+        max_vel_x_back = self._node.get_parameter("command.max_linear_velocity_backward").value
+        max_vel_y = self._node.get_parameter("command.max_linear_velocity_sideways").value
+        max_vel_z = self._node.get_parameter("command.max_angular_velocity").value
         self._cmd_vel: Optional[Twist] = None
         self._cmd_vel_sub = self._node.create_subscription(Twist, "cmd_vel", self._cmd_vel_callback, 10)
 
@@ -35,4 +39,19 @@ class CommandHandler(Handler):
         return self._cmd_vel is not None
 
     def _cmd_vel_callback(self, msg):
+        msg.linear.x = np.clip(
+            msg.linear.x,
+            self._node.get_parameter("command.max_linear_velocity_backward").value,
+            self._node.get_parameter("command.max_linear_velocity_forward").value,
+        )
+        msg.linear.y = np.clip(
+            msg.linear.y,
+            -self._node.get_parameter("command.max_linear_velocity_sideways").value,
+            self._node.get_parameter("command.max_linear_velocity_sideways").value,
+        )
+        msg.angular.z = np.clip(
+            msg.angular.z,
+            -self._node.get_parameter("command.max_angular_velocity").value,
+            self._node.get_parameter("command.max_angular_velocity").value,
+        )
         self._cmd_vel = msg
