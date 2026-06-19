@@ -134,7 +134,7 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
             )
         return total_cost
 
-    def get_ball_goal(self, target: BallGoalType, distance: float, side_offset: float = 0.0) -> Optional[PoseStamped]:
+    def get_ball_goal(self, target: BallGoalType, distance: float, side_offset: float = 0.0) -> PoseStamped:
         """
         This function returns a goal pose relative to the ball.
 
@@ -190,8 +190,7 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
             ball_point = (goal_u, goal_v, angle, self._blackboard.world_model.base_footprint_frame)
 
         else:
-            self._node.get_logger().error(f"Target {target} for go_to_ball action not implemented.")
-            return None
+            raise ValueError(f"Target {target} for go_to_ball action not implemented.")
 
         # Create the goal pose message
         pose_msg = PoseStamped()
