@@ -1,5 +1,11 @@
 team_comm:
   ros__parameters:
+    # Which transport to use to exchange messages with other robots.
+    # "udp": broadcast/unicast over a UDP socket (default, used on real robots).
+    # "ros_topic": publish/subscribe serialized messages as ROS topics. Used in simulation,
+    # where each robot may run in its own ROS domain ID on the same host, making UDP communication with a fixed port impossible.
+    transport: udp
+
     # UDP broadcast address is the highest IP in the subnet e.g. 172.20.255.255
     # Sets local mode if set to loopback (127.0.0.1)
     target_ip: 10.0.6.255
@@ -15,6 +21,11 @@ team_comm:
       - 4002
       - 4003
       - 4004
+
+    # Only used when transport is "ros_topic". Messages are published and received on this
+    # single topic, bridged bidirectionally to other robots' domains (see mujoco_simulation
+    # domain bridge config). Like UDP broadcast, a robot also receives its own messages back.
+    ros_topic: team_comm_binary_transport
 
     # Rate of published messages in Hz
     rate: 2

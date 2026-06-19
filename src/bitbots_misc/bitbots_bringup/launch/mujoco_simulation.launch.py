@@ -81,6 +81,15 @@ def generate_domain_bridge_config(robot_domain: int, output_dir: Path) -> Path:
         "remap": f"{namespace}/joint_command",
     }
 
+    # Team communication: bridged bidirectionally on a single shared topic. Every robot's
+    # bridge mirrors this topic between its own domain and the shared main domain, merging
+    # all robots' traffic there and relaying it back out to everyone, including the sender
+    # (domain_bridge's bidirectional mode guards against the bridge looping on itself).
+    config["topics"]["team_comm_binary_transport"] = {
+        "type": "std_msgs/msg/UInt8MultiArray",
+        "bidirectional": True,
+    }
+
     config_path = output_dir / f"robot{robot_domain}_bridge.yaml"
     with open(config_path, "w") as f:
         yaml.dump(config, f, default_flow_style=False, sort_keys=False)

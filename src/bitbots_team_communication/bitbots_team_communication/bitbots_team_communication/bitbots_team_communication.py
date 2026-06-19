@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-import socket
-import struct
 import threading
 from typing import Optional
 
@@ -26,7 +24,7 @@ from tf2_ros import TransformException
 
 import bitbots_team_communication.robocup_extension_pb2 as Proto  # noqa: N812
 from bitbots_msgs.msg import Strategy, TeamData
-from bitbots_team_communication.communication import SocketCommunication
+from bitbots_team_communication.communication import CommunicationBackend, RosCommunication, SocketCommunication
 from bitbots_team_communication.converter.robocup_protocol_converter import RobocupProtocolConverter, TeamColor
 
 
@@ -47,7 +45,12 @@ class TeamCommunication:
         self.protocol_converter = RobocupProtocolConverter(TeamColor(self.team_color_id))
 
         self.logger.info(f"Starting for {self.player_id} in team {self.team_id}...")
-        self.socket_communication = SocketCommunication(self.node, self.logger, self.team_id, self.player_id)
+        transport: str = self.node.get_parameter("transport").value
+        self.communication: CommunicationBackend = (
+            RosCommunication(self.node, self.logger)
+            if transport == "ros_topic"
+            else SocketCommunication(self.node, self.logger, self.team_id, self.player_id)
+        )
 
         self.rate: int = self.node.get_parameter("rate").value
         self.lifetime: int = self.node.get_parameter("lifetime").value
@@ -67,7 +70,8 @@ class TeamCommunication:
         self.try_to_establish_connection()
 
         self.node.create_timer(1 / self.rate, self.send_message, callback_group=MutuallyExclusiveCallbackGroup())
-        self.receive_forever()
+        self.communication.start_receiving(self.handle_message)
+        self.block_until_shutdown()
 
     def spin(self):
         executor = EventsExecutor()
@@ -99,8 +103,12 @@ class TeamCommunication:
 
     def try_to_establish_connection(self):
         # we will try multiple times till we manage to get a connection
-        while rclpy.ok() and not self.socket_communication.is_setup():
-            self.socket_communication.establish_connection()
+        while rclpy.ok() and not self.communication.is_setup():
+            self.communication.establish_connection()
+            self.node.get_clock().sleep_for(Duration(seconds=1))
+
+    def block_until_shutdown(self):
+        while rclpy.ok():
             self.node.get_clock().sleep_for(Duration(seconds=1))
 
     def create_publishers(self):
@@ -238,16 +246,6 @@ class TeamCommunication:
     def transform_to_map_frame(self, field, timeout_in_s=0.3):
         return self.tf_buffer.transform(field, self.map_frame, timeout=Duration(seconds=timeout_in_s))
 
-    def receive_forever(self):
-        while rclpy.ok():
-            try:
-                message = self.socket_communication.receive_message()
-            except (struct.error, socket.timeout):
-                continue
-
-            if message:
-                self.handle_message(message)
-
     def handle_message(self, string_message: bytes):
         message = Proto.Message()
         message.ParseFromString(string_message)
@@ -276,7 +274,7 @@ class TeamCommunication:
         message = self.protocol_converter.convert_to_message(self, msg, is_still_valid)
         proto_msg = message.SerializeToString()
         self.logger.debug(f"Sending msg with size {len(proto_msg)} bytes")
-        self.socket_communication.send_message(proto_msg)
+        self.communication.send_message(proto_msg)
 
     def create_empty_message(self, now: Time) -> Proto.Message:
         message = Proto.Message()

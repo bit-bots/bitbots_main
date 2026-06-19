@@ -3,8 +3,19 @@
     <!-- Get launch params-->
     <arg name="sim" default="false" description="true: activates simulation time" />
 
-    <node pkg="bitbots_team_communication" exec="team_comm.py" output="screen">
-        <param from="$(find-pkg-share bitbots_team_communication)/config/team_communication_config.yaml"/>
-        <param name="use_sim_time" value="$(var sim)" />
-    </node>
+    <!-- In simulation, robots may run in separate ROS domain IDs on the same host, which a fixed UDP port can't
+         span, so team communication is exchanged over a domain-bridged ROS topic instead. -->
+    <group if="$(var sim)">
+        <node pkg="bitbots_team_communication" exec="team_comm.py" output="screen">
+            <param from="$(find-pkg-share bitbots_team_communication)/config/team_communication_config.yaml"/>
+            <param name="use_sim_time" value="true" />
+            <param name="transport" value="ros_topic" />
+        </node>
+    </group>
+    <group unless="$(var sim)">
+        <node pkg="bitbots_team_communication" exec="team_comm.py" output="screen">
+            <param from="$(find-pkg-share bitbots_team_communication)/config/team_communication_config.yaml"/>
+            <param name="use_sim_time" value="false" />
+        </node>
+    </group>
 </launch>
