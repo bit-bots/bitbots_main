@@ -26,8 +26,11 @@
   <depend>game_controller_hsl_interfaces</depend>
   <depend>geometry_msgs</depend>
   <depend>python3-protobuf</depend>
+  <depend>python3-psutil</depend>
   <depend>python3-transforms3d</depend>
   <depend>rclpy</depend>
+  <depend>soccer_vision_3d_msgs</depend>
+  <depend>soccer_vision_attribute_msgs</depend>
   <depend>std_msgs</depend>
   <depend>tf2_geometry_msgs</depend>
   <depend>tf2_ros</depend>

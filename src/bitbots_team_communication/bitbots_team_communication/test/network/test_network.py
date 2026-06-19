@@ -1,4 +1,6 @@
+import socket
 from ipaddress import IPv4Address
+from types import SimpleNamespace
 
 import pytest
 
@@ -89,6 +91,37 @@ def test_auto_target_ip_errors_for_multiple_connected_wifi_interfaces(tmp_path, 
 
     with pytest.raises(network.WifiInterfaceError, match="multiple connected Wi-Fi interfaces"):
         network.get_wifi_broadcast_address()
+
+
+def test_get_ipv4_broadcast_address_uses_psutil(mocker):
+    mocker.patch.object(
+        network.psutil,
+        "net_if_addrs",
+        return_value={
+            "wlan0": [
+                SimpleNamespace(family=socket.AF_INET6, broadcast=None),
+                SimpleNamespace(family=socket.AF_INET, broadcast="10.0.6.255"),
+            ]
+        },
+    )
+
+    assert network._get_ipv4_broadcast_address("wlan0") == IPv4Address("10.0.6.255")
+
+
+def test_get_ipv4_broadcast_address_ignores_unspecified_broadcast(mocker):
+    mocker.patch.object(
+        network.psutil,
+        "net_if_addrs",
+        return_value={"wlan0": [SimpleNamespace(family=socket.AF_INET, broadcast="0.0.0.0")]},
+    )
+
+    assert network._get_ipv4_broadcast_address("wlan0") is None
+
+
+def test_get_ipv4_broadcast_address_returns_none_without_matching_interface(mocker):
+    mocker.patch.object(network.psutil, "net_if_addrs", return_value={})
+
+    assert network._get_ipv4_broadcast_address("wlan0") is None
 
 
 def _create_wifi_interface(root, name: str, carrier: str):

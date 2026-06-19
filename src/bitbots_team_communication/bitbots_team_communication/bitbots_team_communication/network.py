@@ -1,11 +1,10 @@
-import fcntl
 import socket
-import struct
 from ipaddress import IPv4Address
 from pathlib import Path
 
+import psutil
+
 SYS_CLASS_NET = Path("/sys/class/net")
-SIOCGIFBRDADDR = 0x8919
 
 
 class WifiInterfaceError(RuntimeError):
@@ -65,12 +64,11 @@ def _has_carrier(interface_path: Path) -> bool:
 
 
 def _get_ipv4_broadcast_address(interface_name: str) -> IPv4Address | None:
-    if_request = struct.pack("256s", interface_name.encode()[:15])
-    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as ioctl_socket:
-        try:
-            response = fcntl.ioctl(ioctl_socket.fileno(), SIOCGIFBRDADDR, if_request)
-        except OSError:
-            return None
+    for address in psutil.net_if_addrs().get(interface_name, []):
+        if address.family != socket.AF_INET or address.broadcast is None:
+            continue
 
-    broadcast_address = IPv4Address(socket.inet_ntoa(response[20:24]))
-    return None if broadcast_address.is_unspecified else broadcast_address
+        broadcast_address = IPv4Address(address.broadcast)
+        return None if broadcast_address.is_unspecified else broadcast_address
+
+    return None
