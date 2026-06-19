@@ -322,7 +322,7 @@ class HeadMover {
     }
 
     // Calculate the distance between the current and the goal position
-    double distance = sqrt(pow(goal_yaw - current_yaw, 2) - pow(goal_pitch - current_pitch, 2));
+    double distance = sqrt(pow(goal_yaw - current_yaw, 2) + pow(goal_pitch - current_pitch, 2));
 
     // Calculate the number of steps we need to take to reach the goal position
     // This assumes that we move 3 degrees per step
@@ -453,14 +453,14 @@ class HeadMover {
   std::vector<std::pair<double, double>> generatePattern(
       int line_count, double max_horizontal_angle_left, double max_horizontal_angle_right, double max_vertical_angle_up,
       double max_vertical_angle_down,
-      int reduce_last_scanline = 0.2,  // TODO: needs to be changed to 1
+      double reduce_last_scanline = 1.0,
       int interpolation_steps = 0) {
     // Store the keyframes of the search pattern
     std::vector<std::pair<double, double>> keyframes;
     // Store the state of the generation process
-    bool down_direction = false;        // true = down, false = up
+    bool down_direction = true;         // true = decreasing line (toward top), false = increasing line (toward bottom)
     bool right_side = false;            // true = right, false = left
-    const bool right_direction = true;  // true = moving right, false = moving left
+    bool right_direction = true;  // true = moving right, false = moving left; alternates per scan line
     int line = line_count - 1;
     // Calculate the number of iterations that are needed to generate the search pattern
     int iterations = std::max(line_count * 4 - 4, 2);
@@ -496,24 +496,24 @@ class HeadMover {
         right_side = right_direction;
 
       } else {
-        // Change the horizontal direction we are moving in
-        right_side = !right_direction;
-        // Check if we reached the top or bottom of the pattern and need to change the direction
-        if (0 <= line && line <= line_count - 1) {
-          down_direction = !down_direction;
-        }
-        // Change the line we are on based on the direction we are moving in
+        // Flip the scan direction so the next line scans the opposite way (boustrophedon)
+        right_direction = !right_direction;
+        // Advance to the next scan line
         if (down_direction) {
           line -= 1;
         } else {
           line += 1;
+        }
+        // Flip vertical direction when we reach either edge
+        if (line <= 0 || line >= line_count - 1) {
+          down_direction = !down_direction;
         }
       }
     }
 
     // Reduce the last scanline by a given factor
     for (auto& keyframe : keyframes) {
-      if (keyframe.second == max_vertical_angle_down) {
+      if (std::abs(keyframe.second - max_vertical_angle_down) < 1e-6) {
         keyframe = {keyframe.first * reduce_last_scanline, max_vertical_angle_down};
       }
     }
