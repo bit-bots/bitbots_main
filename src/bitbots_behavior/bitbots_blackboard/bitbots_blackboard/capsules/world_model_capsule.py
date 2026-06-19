@@ -266,18 +266,18 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
     ##########
 
     def get_uv_from_xy(self, x: float, y: float) -> tuple[float, float]:
-        """Returns the relativ positions of the robot to this absolute position"""
+        """Transforms a map position in the map frame into a relative position to the robot in the base_footprint frame"""
         current_position = self.get_current_position()
         x2 = x - current_position[0]
         y2 = y - current_position[1]
         theta = current_position[2]
-        # Rotate the difference vector from the map frame into the robot frame (rotation by -theta)
+        # Rotate the difference vector from the map frame into the robot frame
         u = math.cos(theta) * x2 + math.sin(theta) * y2
         v = -math.sin(theta) * x2 + math.cos(theta) * y2
         return u, v
 
     def get_xy_from_uv(self, u: float, v: float) -> tuple[float, float]:
-        """Returns the absolute position from the given relative position to the robot"""
+        """Transforms a relative position to the robot in the base_footprint frame into an absolute position in the map frame"""
         pos_x, pos_y, theta = self.get_current_position()
         angle = math.atan2(v, u) + theta
         hypotenuse = math.hypot(u, v)
