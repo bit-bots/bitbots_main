@@ -6,9 +6,7 @@
 
 -->HCM
 $StartHCM
-    START_UP --> $Simulation
-        YES --> @RobotStateStartup, @PlayAnimationInit, @PlayAnimationWalkReady
-        NO --> #INIT_PATTERN
+    START_UP --> #INIT_PATTERN
     RUNNING --> $CheckBattery
         LOW --> @CancelGoals, @StopWalking, @Speak + text:Battery_low_so_please_power_me_off_gracefully, @Wait + time:10 + r:false
         OKAY --> $CheckMotors

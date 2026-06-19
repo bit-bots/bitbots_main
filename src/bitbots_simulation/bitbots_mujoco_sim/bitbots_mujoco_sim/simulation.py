@@ -88,6 +88,8 @@ class Simulation(Node):
             for idx in self._find_robot_indices()
         ]
 
+        self._apply_home_keyframe()
+
         self.time = 0.0
         self.time_message = Time(seconds=0, nanoseconds=0).to_msg()
         self.timestep = self.model.opt.timestep
@@ -108,6 +110,47 @@ class Simulation(Node):
             {"frequency": 4, "handler": lambda: self.publish(lambda robot: robot.publish_imu_event())},
             {"frequency": 32, "handler": lambda: self.publish(lambda robot: robot.publish_camera_event())},
         ]
+
+    def _apply_home_keyframe(self) -> None:
+        """Apply the 'home' keyframe joint values to all robots, leaving freejoints untouched.
+
+        The keyframe is defined in pi_plus.xml. Since attached sub-model keyframes are not
+        merged into the compiled world model, we load the robot model separately to read them.
+        """
+        robot_model_path = str(Path(self.package_path) / "xml" / "pi_plus.xml")
+        robot_model = mujoco.MjModel.from_xml_path(robot_model_path)
+        key_id = mujoco.mj_name2id(robot_model, mujoco.mjtObj.mjOBJ_KEY, "home")
+        if key_id < 0:
+            return
+
+        # Build a map from bare joint name → keyframe qpos value using the standalone robot model
+        home_qpos: dict[str, float] = {}
+        home_z: float | None = None
+        for i in range(robot_model.njnt):
+            jnt = robot_model.joint(i)
+            if jnt.type == mujoco.mjtJoint.mjJNT_FREE:
+                # qpos layout for freejoint: [x, y, z, qw, qx, qy, qz] — grab z (offset 2)
+                home_z = float(robot_model.key_qpos[key_id, jnt.qposadr[0] + 2])
+                continue
+            home_qpos[jnt.name] = robot_model.key_qpos[key_id, jnt.qposadr[0]]
+
+        for robot_sim in self.robots:
+            # Set z spawn height from keyframe while preserving x/y placement and orientation
+            if home_z is not None:
+                freejoint_name = f"robot_floating_base_joint_{robot_sim.robot.index}"
+                freejoint_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_JOINT, freejoint_name)
+                if freejoint_id >= 0:
+                    self.data.qpos[self.model.joint(freejoint_id).qposadr[0] + 2] = home_z
+
+            for joint in robot_sim.robot.joints:
+                # joint.ros_name is the bare name (e.g. "r_hip_pitch_joint") matching the robot model
+                value = home_qpos.get(joint.ros_name)
+                if value is None:
+                    continue
+                self.data.qpos[joint.joint_instance.qposadr[0]] = value
+                # For position actuators ctrl is the target position — same as the initial qpos
+                self.data.ctrl[joint.actuator_instance.id] = value
+        mujoco.mj_forward(self.model, self.data)
 
     def _generate_default_world(self) -> str:
         template_path = Path(self.package_path) / "xml" / "kid_field.xml"
