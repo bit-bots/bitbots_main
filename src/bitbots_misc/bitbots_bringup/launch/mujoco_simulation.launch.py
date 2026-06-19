@@ -84,6 +84,29 @@ def generate_domain_bridge_config(robot_domain: int, output_dir: Path) -> Path:
     config_path = output_dir / f"robot{robot_domain}_bridge.yaml"
     with open(config_path, "w") as f:
         yaml.dump(config, f, default_flow_style=False, sort_keys=False)
+        # Team communication: forwarded one-way in each direction, on two distinct topic names.
+        # Every robot's bridge mirrors its own "team_comm_binary_transport/out" into the shared
+        # main domain (where all robots' publishers merge into one topic), then relays that
+        # merged topic back out to "team_comm_binary_transport/in" in its own domain.
+        # A single `bidirectional: true` bridge of one shared topic name was tried instead and
+        # causes an unbounded forwarding loop once 3+ domains are bridged through the same hub
+        # domain (confirmed experimentally) - see RosCommunication in
+        # bitbots_team_communication/communication.py for the full explanation. Two distinct
+        # topic names make that loop structurally impossible.
+        # Written as raw YAML appended to the "topics" map (instead of via the `config` dict)
+        # because both entries need the literal key "team_comm_binary_transport/out", which a
+        # Python dict can't hold twice.
+        f.write(
+            "  team_comm_binary_transport/out:\n"
+            "    type: std_msgs/msg/UInt8MultiArray\n"
+            f"    from_domain: {robot_domain}\n"
+            f"    to_domain: {main_domain}\n"
+            "  team_comm_binary_transport/out:\n"
+            "    type: std_msgs/msg/UInt8MultiArray\n"
+            f"    from_domain: {main_domain}\n"
+            f"    to_domain: {robot_domain}\n"
+            "    remap: team_comm_binary_transport/in\n"
+        )
 
     return config_path
 

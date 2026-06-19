@@ -1,11 +1,39 @@
 import socket
+import struct
+import threading
+from abc import ABC, abstractmethod
+from collections.abc import Callable
 from ipaddress import IPv4Address
 from typing import Optional
 
+import rclpy
+from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.node import Node
+from rclpy.qos import QoSProfile, ReliabilityPolicy
+from std_msgs.msg import UInt8MultiArray
 
 
-class SocketCommunication:
+class CommunicationBackend(ABC):
+    """Transport used to exchange serialized team communication messages with other robots."""
+
+    @abstractmethod
+    def establish_connection(self) -> None: ...
+
+    @abstractmethod
+    def is_setup(self) -> bool: ...
+
+    @abstractmethod
+    def send_message(self, message: bytes) -> None: ...
+
+    @abstractmethod
+    def start_receiving(self, callback: Callable[[bytes], None]) -> None:
+        """Start delivering incoming messages to `callback`, called with the raw bytes of each message."""
+
+    @abstractmethod
+    def close_connection(self) -> None: ...
+
+
+class SocketCommunication(CommunicationBackend):
     def __init__(self, node: Node, logger, team_id, robot_id):
         self.logger = logger
 
@@ -23,6 +51,9 @@ class SocketCommunication:
             receive_port: int = node.get_parameter("receive_port").value
             self.target_ports = [target_port]
             self.receive_port = receive_port
+
+        self._running = False
+        self._receive_thread: Optional[threading.Thread] = None
 
     def __del__(self):
         self.close_connection()
@@ -42,9 +73,25 @@ class SocketCommunication:
         return sock
 
     def close_connection(self):
+        self._running = False
         if self.is_setup():
             self.socket.close()  # type: ignore[union-attr]
             self.logger.info("Connection closed.")
+
+    def start_receiving(self, callback: Callable[[bytes], None]) -> None:
+        self._running = True
+
+        def loop():
+            while self._running and rclpy.ok():
+                try:
+                    message = self.receive_message()
+                except (struct.error, socket.timeout):
+                    continue
+                if message:
+                    callback(message)
+
+        self._receive_thread = threading.Thread(target=loop, daemon=True)
+        self._receive_thread.start()
 
     def receive_message(self) -> Optional[bytes]:
         self.assert_is_setup()
@@ -71,3 +118,53 @@ class SocketCommunication:
 
     def assert_is_setup(self):
         assert self.is_setup(), "Socket is not yet initialized"
+
+
+class RosCommunication(CommunicationBackend):
+    """Exchanges team communication messages as serialized binary blobs over ROS topics.
+
+    Used instead of `SocketCommunication` in simulation, where each robot runs in its own ROS
+    domain ID (so a fixed UDP port can't be shared) and a `domain_bridge` instance per robot
+    mirrors `ros_topic_out`/`ros_topic_in` between that robot's domain and a shared hub domain,
+    emulating the UDP broadcast used between real robots.
+
+    The two topics are deliberately distinct rather than a single `bidirectional: true` bridge
+    of one topic: with more than two domains involved, a single shared topic name feeds back
+    into itself across bridges. E.g. bridge A forwards robot A's message into the hub, bridge B
+    relays it out to robot B - but robot B's bridge is *also* subscribed to that same hub-side
+    topic for its own outgoing forwarding, so it immediately re-publishes the message back into
+    the hub, where bridge A picks it up again, and so on: an unbounded loop (confirmed
+    experimentally). Separate names for the hub-bound and robot-bound directions make that
+    cycle structurally impossible.
+    """
+
+    def __init__(self, node: Node, logger):
+        self.logger = logger
+        self.node = node
+
+        out_topic: str = node.get_parameter("ros_topic_out").value
+        self.in_topic: str = node.get_parameter("ros_topic_in").value
+
+        self.qos = QoSProfile(depth=10, reliability=ReliabilityPolicy.BEST_EFFORT)
+        self.publisher = node.create_publisher(UInt8MultiArray, out_topic, self.qos)
+
+    def establish_connection(self) -> None:
+        pass
+
+    def is_setup(self) -> bool:
+        return True
+
+    def send_message(self, message: bytes) -> None:
+        self.publisher.publish(UInt8MultiArray(data=list(message)))
+
+    def start_receiving(self, callback: Callable[[bytes], None]) -> None:
+        self.node.create_subscription(
+            UInt8MultiArray,
+            self.in_topic,
+            lambda msg: callback(bytes(msg.data)),
+            qos_profile=self.qos,
+            callback_group=MutuallyExclusiveCallbackGroup(),
+        )
+
+    def close_connection(self) -> None:
+        pass
