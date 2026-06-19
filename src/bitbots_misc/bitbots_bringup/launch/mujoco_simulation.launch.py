@@ -61,8 +61,8 @@ def generate_domain_bridge_config(robot_domain: int, output_dir: Path) -> Path:
     sensor_topics = [
         ("joint_states", "sensor_msgs/msg/JointState"),
         ("imu/data", "sensor_msgs/msg/Imu"),
-        ("camera/image_proc", "sensor_msgs/msg/Image"),
-        ("camera/camera_info", "sensor_msgs/msg/CameraInfo"),
+        ("zed/zed_node/rgb/image_rect_color", "sensor_msgs/msg/Image"),
+        ("zed/zed_node/rgb/camera_info", "sensor_msgs/msg/CameraInfo"),
     ]
 
     for topic_suffix, msg_type in sensor_topics:
