@@ -57,7 +57,9 @@ class MjLabGetupNode(RLNode):
 
     # publisher function
     def publisher(self, onnx_pred):
-        joint_command = self._joint_handler.get_joint_commands(onnx_pred)
+        # The getup policy uses a relative-to-current action space
+        # (mjlab RelativeJointPositionAction): target = current_pos + action * scale.
+        joint_command = self._joint_handler.get_joint_commands(onnx_pred, relative_to_current=True)
         self._joint_command_pub.publish(joint_command)
 
     # states in which the policy executes
