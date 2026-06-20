@@ -34,8 +34,10 @@ mjlab_getup_node:
         "l_ankle_pitch_joint",
         "l_ankle_roll_joint",
       ]
-      # default_joint_pos (home pose). Actions are relative to this, and joint_pos
-      # observations are (current - default).
+      # default_joint_pos (home pose). Used ONLY for the joint_pos observation
+      # offset (obs = current - default). The getup ACTION space is relative to
+      # the *current* joint position (mjlab RelativeJointPositionAction), NOT to
+      # this default — see mjlab_getup_node.publisher (relative_to_current=True).
       walkready_state: [
         # arms (R, L)
         -1.5710, -1.2220, 0.0000, 0.0000,
