@@ -27,12 +27,12 @@ struct FieldDimensions {
 
 /**
  * @class Map
- * @brief Stores a map for a messurement class (e.g. a map of the lines)
+ * @brief Stores a map for a measurement class (e.g. a map of the lines)
  */
 class Map {
  public:
   /**
-   * @param name of the environment. (E.g. webots)
+   * @param name of the environment.
    * @param type of the map. (E.g. lines)
    * @param out_of_map_value value used for padding the out of field area.
    */
@@ -45,8 +45,8 @@ class Map {
 
   double get_occupancy(double x, double y);
 
-  std::pair<double, double> getObservationCoordinatesInMapFrame(std::pair<double, double> observation, double stateX,
-                                                                double stateY, double stateT);
+  CartesianCoordinates getObservationCoordinatesInMapFrame(PolarCoordinates observation, double stateX, double stateY,
+                                                           double stateT);
 
   nav_msgs::msg::OccupancyGrid get_map_msg(std::string frame_id, int threshold = -1);
 

@@ -17,6 +17,7 @@ $GettingUpState
         GAMESTATE_RECEIVED --> $CheckPenalized
             YES --> @LocalizationStop, @DoNothing
             JUST_UNPENALIZED --> @InitSide, @LocalizationStart, @DoNothing
+            PENALIZED_IN_PLACE --> @DoNothing
             NO --> $InitialToReady
                 YES --> @InitSide, @DoNothing
                 NO --> $GameStateDecider

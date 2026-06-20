@@ -10,26 +10,30 @@ import threading
 import tty
 
 import rclpy
-from bitbots_utils.transforms import quat_from_yaw
-from geometry_msgs.msg import Point, Twist, Vector3
+from geometry_msgs.msg import Twist, Vector3
 from livelybot_msg.msg import PowerSwitch
 from rclpy.action import ActionClient
 from rclpy.node import Node
 from sensor_msgs.msg import JointState
-from std_msgs.msg import Bool
 from std_srvs.srv import Empty
 
-from bitbots_msgs.action import Kick, PlayAnimation
+from bitbots_msgs.action import PlayAnimation
 from bitbots_msgs.msg import HeadMode, JointCommand
 from bitbots_msgs.srv import SimulatorPush
 
 msg = """
 Bit-Bots Teleop
 ---------------
+
+ESC: EMERGENCY STOP (servo power off)
+SPACE: walk in place
+f: full stop             F: play walkready animation
+g: walk on the spot, clear speeds
+
 Walk around:            Move head:
-    q    w    e         u    i    o
-    a    s    d         j    k    l
-                        m    ,    .
+q    w    e         u    i    o
+a    s    d         j    k    l
+                    m    ,    .
 
 q/e: turn left/right    k: zero head position
 a/d: left/right         i/,: up/down
@@ -39,28 +43,17 @@ w/s: forward/back       j/l: left/right
 Controls increase / decrease with multiple presses.
 SHIFT increases with factor 10
 
-y: kick left forward   Y: walk kick left forward
-c: kick right forward  C: walk kick right forward
-<: side kick left 1    >: side kick left 2
-v: side kick right 1   V: side kick right 2
-x: kick center forward X: kick center backward
-b: kick left backward  n: kick right backward
-B: kick left outward   N: kick right outward
-
-SPACE: EMERGENCY STOP!!!
-f: full stop           F: play walkready animation
-r: reset robot in simulation
-R: reset ball in simulation
-
 Head Modes:
-0: Track the last known ball position
+(Currently not implemented: 0: Track the last known ball position)
 1: Look generally for all features on the field (ball, goals, corners, center point)
 2: Simply look directly forward
 3: Don't move the head
 4: Ball Mode adapted for Penalty Kick
 5: Do a pattern which only looks in front of the robot
 
-Pushing:
+Simulation only:
+r: reset robot in simulation
+R: reset ball in simulation
 p: execute Push
 P: reset Power to 0
 ü/ä: increase/decrease power forward (x axis)
@@ -68,6 +61,9 @@ P: reset Power to 0
 SHIFT increases/decreases with factor 10
 
 CTRL-C to quit
+
+
+
 
 
 
@@ -154,8 +150,7 @@ class TeleopKeyboard(Node):
         self.head_yaw_step = 0.05
         self.head_pitch_step = 0.05
 
-        self.walk_kick_pub = self.create_publisher(Bool, "kick", 1)
-        self.power_switch_pub = self.create_publisher(PowerSwitch, "/power_switch_state", 1)
+        self.power_switch_pub = self.create_publisher(PowerSwitch, "/power_switch_control", 10)
 
         self.reset_robot = self.create_client(Empty, "/reset_pose")
         self.reset_ball = self.create_client(Empty, "/reset_ball")
@@ -184,14 +179,14 @@ class TeleopKeyboard(Node):
     def get_walkready(self):
         self.animation_client.send_goal_async(PlayAnimation.Goal(animation="walkready"))
 
-    def generate_kick_goal(self, x, y, direction):
-        kick_goal = Kick.Goal()
-        kick_goal.header.stamp = self.get_clock().now().to_msg()
-        kick_goal.header.frame_id = self.frame_prefix + "base_footprint"
-        kick_goal.ball_position = Point(x=float(x), y=float(y), z=0.0)
-        kick_goal.kick_direction = quat_from_yaw(direction)
-        kick_goal.kick_speed = 1.0
-        return kick_goal
+    # def generate_kick_goal(self, x, y, direction):
+    #     kick_goal = Kick.Goal()
+    #     kick_goal.header.stamp = self.get_clock().now().to_msg()
+    #     kick_goal.header.frame_id = self.frame_prefix + "base_footprint"
+    #     kick_goal.ball_position = Point(x=float(x), y=float(y), z=0.0)
+    #     kick_goal.kick_direction = quat_from_yaw(direction)
+    #     kick_goal.kick_speed = 1.0
+    #     return kick_goal
 
     def joint_state_cb(self, msg):
         if "head_yaw_joint" in msg.name and "head_pitch_joint" in msg.name:
@@ -201,6 +196,7 @@ class TeleopKeyboard(Node):
     def loop(self):
         try:
             while True:
+                info: str = ""
                 key = self.get_key()
                 if key in move_bindings.keys():
                     self.x += move_bindings[key][0] * self.x_speed_step
@@ -222,8 +218,9 @@ class TeleopKeyboard(Node):
                     self.head_pub.publish(self.head_msg)
                 elif key == "0":
                     # Track the last known ball position
-                    self.head_mode_msg.head_mode = HeadMode.TRACK_BALL
-                    assert int(key) == HeadMode.TRACK_BALL
+                    # self.head_mode_msg.head_mode = HeadMode.TRACK_BALL
+                    # assert int(key) == HeadMode.TRACK_BALL
+                    info = "ERROR: CURRENTLY NOT IMPLEMENTED"
                 elif key == "1":
                     # Look generally for all features on the field (ball, goals, corners, center point)
                     self.head_mode_msg.head_mode = HeadMode.SEARCH_FIELD_FEATURES
@@ -244,60 +241,6 @@ class TeleopKeyboard(Node):
                     # Do a pattern which only looks in front of the robot
                     self.head_mode_msg.head_mode = HeadMode.SEARCH_FRONT
                     assert int(key) == HeadMode.SEARCH_FRONT
-                elif key == "y":
-                    # kick left forward
-                    pass
-                    # self.kick_client.send_goal_async(self.generate_kick_goal(0.2, 0.1, 0))
-                elif key == "<":
-                    # kick left side ball left
-                    pass
-                    # self.kick_client.send_goal_async(self.generate_kick_goal(0.2, 0.1, -1.57))
-                elif key == ">":
-                    # kick left side ball center
-                    pass
-                    # self.kick_client.send_goal_async(self.generate_kick_goal(0.2, 0, -1.57))
-                elif key == "c":
-                    # kick right forward
-                    pass
-                    # self.kick_client.send_goal_async(self.generate_kick_goal(0.2, -0.1, 0))
-                elif key == "v":
-                    # kick right side ball right
-                    pass
-                    # self.kick_client.send_goal_async(self.generate_kick_goal(0.2, -0.1, 1.57))
-                elif key == "V":
-                    # kick right side ball center
-                    pass
-                    # self.kick_client.send_goal_async(self.generate_kick_goal(0.2, 0, 1.57))
-                elif key == "x":
-                    # kick center forward
-                    pass
-                    # self.kick_client.send_goal_async(self.generate_kick_goal(0.2, 0, 0))
-                elif key == "X":
-                    # kick center backwards
-                    pass
-                    # self.kick_client.send_goal_async(self.generate_kick_goal(-0.2, 0, 0))
-                elif key == "b":
-                    # kick left backwards
-                    pass
-                    # self.kick_client.send_goal_async(self.generate_kick_goal(-0.2, 0.1, 0))
-                elif key == "n":
-                    # kick right backwards
-                    pass
-                    # self.kick_client.send_goal_async(self.generate_kick_goal(-0.2, -0.1, 0))
-                elif key == "B":
-                    # kick left backwards
-                    pass
-                    # self.kick_client.send_goal_async(self.generate_kick_goal(0, 0.14, -1.57))
-                elif key == "N":
-                    # kick right backwards
-                    pass
-                    # self.kick_client.send_goal_async(self.generate_kick_goal(0, -0.14, 1.57))
-                elif key == "Y":
-                    # kick left walk
-                    self.walk_kick_pub.publish(Bool(data=False))
-                elif key == "C":
-                    # kick right walk
-                    self.walk_kick_pub.publish(Bool(data=True))
                 elif key == "F":
                     # play walkready animation
                     self.get_walkready()
@@ -320,6 +263,16 @@ class TeleopKeyboard(Node):
                     self.z = 0
                     self.a_x = -1
                     self.th = 0
+                elif key == " ":
+                    self.x = 0
+                    self.y = 0
+                    self.z = 0
+                    self.a_x = 0
+                    self.th = 0
+                    self.push_force_x = 0.0
+                    self.push_force_y = 0.0
+                elif key == "\x1b":  # ESC
+                    self.power_switch_pub.publish(PowerSwitch(control_switch=1, power_switch=0))
                 elif key == "p":
                     # push robot in simulation
                     push_request = SimulatorPush.Request()
@@ -330,13 +283,6 @@ class TeleopKeyboard(Node):
                 elif key == "P":
                     self.push_force_x = 0.0
                     self.push_force_y = 0.0
-                elif key == " ":
-                    self.x = 0
-                    self.y = 0
-                    self.z = 0
-                    self.a_x = 0
-                    self.th = 0
-                    self.power_switch_pub.publish(PowerSwitch(control_switch=0, power_switch=0))
                 elif key == "ü":
                     self.push_force_x += 1
                 elif key == "Ü":
@@ -353,15 +299,17 @@ class TeleopKeyboard(Node):
                     self.push_force_y -= 1
                 elif key == "'":
                     self.push_force_y -= 10
-                else:
+                elif key in ("g", "G"):
                     self.x = 0
                     self.y = 0
                     self.z = 0
                     self.a_x = 0
                     self.th = 0
-                    if key == "\x03":
-                        self.a_x = -1
-                        break
+                elif key == "\x03":  # CTRL-C
+                    self.a_x = -1
+                    break
+                else:
+                    info = f"unknown key: '{key}'"
 
                 self.head_mode_pub.publish(self.head_mode_msg)
 
@@ -375,9 +323,11 @@ class TeleopKeyboard(Node):
                     f"turn: {self.th}     \n"
                     f"head mode: {self.head_mode_msg.head_mode}     \n"
                     f"push force x (+forward/-back): {self.push_force_x}     \n"
-                    f"push force y (+left/-right):   {self.push_force_y}     "
+                    f"push force y (+left/-right):   {self.push_force_y}     \n"
+                    f"last key: '{key}'    {info + ' ' * 40 if info else ' ' * 40}"
                 )
 
+                # move cursor up to overwrite previous state output
                 for _ in range(state_str.count("\n") + 1):
                     sys.stdout.write("\x1b[A")
                 print(state_str)

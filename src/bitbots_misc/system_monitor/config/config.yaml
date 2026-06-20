@@ -1,7 +1,7 @@
 system_monitor:
   ros__parameters:
     # How many times per second should the system be queried for stats
-    update_frequency: 10.0
+    update_frequency: 2.0
 
     # These settings are quick_switches to completely disable certain parts of statistic collection
     do_cpu: true

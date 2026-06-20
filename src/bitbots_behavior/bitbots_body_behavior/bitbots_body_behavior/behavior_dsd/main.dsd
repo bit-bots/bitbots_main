@@ -20,12 +20,6 @@ $DoOnce
 #GetWalkreadyAndLocalize
 @ChangeAction + action:waiting + r:false, @PlayAnimationInitInSim + r:false, @LookAtFieldFeatures + r:false, @WalkInPlace
 
-#PerformKickLeft
-@ChangeAction + action:kicking, @LookAtFront, @WalkForward + time:1.0 + r:false, @LookAtFieldFeatures + r:false
-
-#PerformKickRight
-@ChangeAction + action:kicking, @LookAtFront, @WalkForward + time:1.0 + r:false, @LookAtFieldFeatures + r:false
-
 #Dribble
 @ChangeAction + action:going_to_ball, @CancelPathplanning, @LookAtFront, @DribbleForward
 
@@ -82,7 +76,7 @@ $PassStarted
 
 #PenaltyShootoutBehavior
 $SecondaryStateTeamDecider
-    OUR --> @StandAndWaitRandom + min:10 + max:30, @KickBallDynamic + r:true + type:penalty, @Stand
+    OUR --> @StandAndWaitRandom + min:10 + max:25, @ChangeAction + action:kicking, @LookAtFieldFeatures, @WalkInPlace + duration:2, @RLKick + duration:3 + r:false, @WalkInPlace + duration:1 + r:false, @Stand
     ELSE --> $BallDangerous + radius:1.3
         LEFT --> @PlayAnimationGoalieFallLeft, @Stand
         RIGHT --> @PlayAnimationGoalieFallRight, @Stand

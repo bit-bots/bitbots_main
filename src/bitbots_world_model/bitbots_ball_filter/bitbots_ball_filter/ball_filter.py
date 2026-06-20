@@ -160,8 +160,6 @@ class BallFilter(Node):
         if estimate_relative is None:
             return
 
-        distance_to_estimate = np.linalg.norm(numpify(estimate_relative.point))
-
         # If we did not get a ball measurement, we can check if we should have seen the ball
         # And increase the covariance if we did not see the ball
         # Due to vision issues with very close balls we don't do this for close balls  # TODO Remove with 558

@@ -156,7 +156,6 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
         """
         Handles incoming ball messages
         """
-        #assert msg.header.frame_id == self.map_frame, "Ball needs to be in the map frame"
 
         # Save ball
         ball = PointStamped(

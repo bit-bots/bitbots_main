@@ -89,13 +89,6 @@ body_behavior:
     # This is the radius in meters of a circle around the goalie in which he is able to block the ball.
     block_radius_robot: 0.25
 
-    # configurations for the use of bitbots_dynamic_kick package
-    dynamic_kick:
-      # time to wait for a dynamic_kick server
-      wait_time: 10.0
-      # base topic under which an actionserver listens for KickAction messages
-      topic: "dynamic_kick"
-
     # minimal difference between the current and the last path planning goal to actually send a new goal.
     pathfinding_position_threshold: 0.3
     pathfinding_orientation_threshold: 10.0
@@ -136,9 +129,9 @@ body_behavior:
     kickoff_min_ball_movement: 0.5
 
     # dribble action
-    dribble_max_speed_x: 0.3
-    dribble_max_speed_y: 0.3
-    dribble_p: 3.0
+    dribble_max_speed_x: 0.5
+    dribble_max_speed_y: 0.45
+    dribble_p: 4.0
 
     # dribble decision
     dribble_orient_threshold: 0.5

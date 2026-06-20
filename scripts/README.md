@@ -46,7 +46,3 @@ These different tasks can be performed:
     ```shell
     ./deploy_robots.py --package bitbots_utils nuc1
     ```
-
-## `make_basler.sh`
-
-Downloads and installs the Basler Pylon SDK for Linux. This is needed to communicate with our camera.

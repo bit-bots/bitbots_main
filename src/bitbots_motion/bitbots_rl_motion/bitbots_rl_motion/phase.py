@@ -1,26 +1,15 @@
-from typing import Optional
-
 import numpy as np
+from rclpy.node import Node
 
 
 class Phase:
-    _phase: np.ndarray = np.array([0.0, np.pi], dtype=np.float32)
-    _phase_dt: Optional[float]
-
-    def __init__(self, node):
+    def __init__(self, node: Node):
         self._node = node
-
-        if self._node.get_parameter("phase.use_phase").value:
-            self._control_dt = self._node.get_parameter("phase.control_dt").value
-            self._gait_frequency = self._node.get_parameter("phase.gait_frequency").value
-            self._phase_dt = 2 * np.pi * self._gait_frequency * self._control_dt
-            self._use_phase = True
-        else:
-            self._control_dt = None
-            self._gait_frequency = None
-            self._phase_dt = None
-            self._use_phase = False
-            self._node.get_logger().warning("No phase was found! Using policy without phase!")
+        self._use_phase = self._node.get_parameter("phase.use_phase").value
+        self._phase = np.array(self._node.get_parameter("phase.initial_phase").value)
+        self._control_dt = self._node.get_parameter("phase.control_dt").value
+        self._gait_frequency = self._node.get_parameter("phase.gait_frequency").value
+        self._phase_dt = 2 * np.pi * self._gait_frequency * self._control_dt
 
         self._obs_phase = None
 
