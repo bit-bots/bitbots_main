@@ -13,6 +13,9 @@ KICKABLE_STATES = (
     RobotControlState.KICKING,
 )
 
+# States during which the getup (standup) policy should produce motor goals.
+GETUP_STATES = (RobotControlState.GETTING_UP,)
+
 
 class RobotStateHandler(Handler):
     def __init__(self, node):
@@ -31,3 +34,6 @@ class RobotStateHandler(Handler):
 
     def is_kickable(self):
         return self._robot_state in KICKABLE_STATES
+
+    def is_getup(self):
+        return self._robot_state in GETUP_STATES
