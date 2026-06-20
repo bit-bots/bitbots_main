@@ -124,6 +124,13 @@ $SecondBallTouchAllowed
                         FIRST --> #StrikerRole
                         SECOND --> #SupporterRole
                         THIRD --> #DefensePositioning
+                        
+#ThrowinGoalKickCornerkickBehavior
+$DoOnce
+    NOT_DONE --> @SetNoSecondBallContactVariable + value:true, @ForgetBallStartPosition + r:false
+    DONE --> $SecondaryStateTeamDecider
+        OUR --> #NormalBehavior
+        ELSE --> #Placing
 
 #PlayingBehavior
 $SecondaryStateDecider  // TODO add Decision for Throw in and change Variable if in Throw in State and rewrite this? TO fit better with the new game controller, 
@@ -138,12 +145,6 @@ $SecondaryStateDecider  // TODO add Decision for Throw in and change Variable if
     NORMAL --> #NormalBehavior
     OVERTIME --> #NormalBehavior
 
-#ThrowinGoalKickCornerkickBehavior
-$DoOnce
-    NOT_DONE --> @SetNoSecondBallContactVariable + value:true, @ForgetBallStartPosition + r:false
-    DONE --> $SecondaryStateTeamDecider
-        OUR --> #NormalBehavior
-        ELSE --> #Placing
 
 -->BodyBehavior
 $IsPenalized

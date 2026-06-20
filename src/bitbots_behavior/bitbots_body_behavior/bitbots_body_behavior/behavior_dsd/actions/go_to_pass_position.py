@@ -29,10 +29,7 @@ class AbstractGoToPassPosition(AbstractActionElement):
         goal_x = min(self.max_x, goal_x)
 
         # Calculate the two possible y positions for the pass position
-        goal_y_options = [
-            ball_pos[1] + self.pass_pos_y,
-            ball_pos[1] - self.pass_pos_y
-        ]
+        goal_y_options = [ball_pos[1] + self.pass_pos_y, ball_pos[1] - self.pass_pos_y]
 
         # Filter out out of field positions
         def is_in_field(y):
@@ -47,6 +44,7 @@ class AbstractGoToPassPosition(AbstractActionElement):
 
         def distance_to_our_pose(y):
             return abs(y - our_pose[1])
+
         goal_y = min(goal_y_options_filtered, key=distance_to_our_pose)
         goal_yaw = 0.0
 
