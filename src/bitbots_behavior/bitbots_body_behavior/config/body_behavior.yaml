@@ -115,6 +115,8 @@ body_behavior:
     pass_position_x: 0.1
     pass_position_y: 1.0                                                                                                                                                                                                                                                                                                                                               
     supporter_max_x: 4.0
+    supporter_max_y: 2.0
+    supporter_min_y: -2.0
 
     # maximal angle of a ball kick
     max_kick_angle: 1.4  #  (radians)

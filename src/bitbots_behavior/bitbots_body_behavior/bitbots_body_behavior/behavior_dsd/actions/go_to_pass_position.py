@@ -10,6 +10,8 @@ class AbstractGoToPassPosition(AbstractActionElement):
     def __init__(self, blackboard, dsd, accept, parameters):
         super().__init__(blackboard, dsd, parameters)
         self.max_x = self.blackboard.config["supporter_max_x"]
+        self.max_y = self.blackboard.config["supporter_max_y"]
+        self.min_y = self.blackboard.config["supporter_min_y"]
         self.pass_pos_x = self.blackboard.config["pass_position_x"]
         self.pass_pos_y = self.blackboard.config["pass_position_y"]
         self.accept = accept
@@ -21,10 +23,12 @@ class AbstractGoToPassPosition(AbstractActionElement):
         our_pose = self.blackboard.world_model.get_current_position()
 
         # decide on side
-        if our_pose[1] < ball_pos[1]:
+        if our_pose[1] < ball_pos[1] and not our_pose[1] < self.min_y:
             side_sign = -1
-        else:
+        elif not our_pose[1] > self.max_y:
             side_sign = 1
+        else:
+            side_sign = -1
 
         # compute goal
         goal_x = ball_pos[0]

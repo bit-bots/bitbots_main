@@ -97,6 +97,7 @@ enum Action {
     ACTION_KICKING=5;
     ACTION_SEARCHING=6;
     ACTION_LOCALIZING=7;
+    ACTION_PASSIVE=8;
 }
 
 /// The offensive strategy of the robot
