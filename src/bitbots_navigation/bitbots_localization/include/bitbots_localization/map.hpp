@@ -45,8 +45,8 @@ class Map {
 
   double get_occupancy(double x, double y);
 
-  std::pair<double, double> getObservationCoordinatesInMapFrame(std::pair<double, double> observation, double stateX,
-                                                                double stateY, double stateT);
+  CartesianCoordinates getObservationCoordinatesInMapFrame(PolarCoordinates observation, double stateX, double stateY,
+                                                           double stateT);
 
   nav_msgs::msg::OccupancyGrid get_map_msg(std::string frame_id, int threshold = -1);
 
