@@ -12,16 +12,6 @@ class MjLabGetupNode(RLNode):
     """Runtime for the mjlab Pi Plus getup (standup) policy.
 
     The policy is driven whenever the HCM reports the GETTING_UP robot state.
-    Motor goals are published to a dedicated topic ("getup_motor_goals") which the
-    HCM C++ forwards to the joint controller only while in GETTING_UP — the HCM's
-    state-based joint mutex prevents this from fighting walking/head/animation
-    goals (which are only forwarded in their own states).
-
-    Observation layout matches the exported ONNX metadata exactly (no command, no
-    phase, unlike the walk policy):
-        [base_ang_vel(3), projected_gravity(3), joint_pos(22), joint_vel(22), actions(22)]
-    The actor was trained with obs_normalization=False, so observations are fed
-    raw — there is no separate normalization step here.
     """
 
     def __init__(self):
