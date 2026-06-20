@@ -29,12 +29,12 @@ $StartHCM
                             IMU_NOT_STARTED --> @RobotStateStartup, @WaitForIMUStartup
                             PROBLEM --> @RobotStateHardwareProblem, @WaitForIMU
                             OKAY --> $Fallen
-                                ELSE --> @RobotStateFallen, @CancelGoals, @StopWalking, @RobotStateGettingUp, @Complain, @Wait + time:2 + r:false
+                                ELSE --> @RobotStateFallen + r:false, @CancelGoals + r:false, @StopWalking + r:false, @RobotStateGettingUp + r:false, @Complain + r:false, @Wait + time:1.5 + r:false
                                 NOT_FALLEN --> $Falling
-                                    FALLING_LEFT --> @RobotStateFalling, @CancelGoals, @StopWalking, @PlayAnimationFalling, @Wait
-                                    FALLING_RIGHT --> @RobotStateFalling, @CancelGoals, @StopWalking, @PlayAnimationFalling, @Wait
-                                    FALLING_FRONT --> @RobotStateFalling, @CancelGoals, @StopWalking, @PlayAnimationFalling, @Wait
-                                    FALLING_BACK --> @RobotStateFalling, @CancelGoals, @StopWalking, @PlayAnimationFalling, @Wait
+                                    FALLING_LEFT --> @RobotStateFalling, @CancelGoals, @StopWalking, @PlayAnimationFalling, @PlayAnimationWalkReady, @Wait
+                                    FALLING_RIGHT --> @RobotStateFalling, @CancelGoals, @StopWalking, @PlayAnimationFalling, @PlayAnimationWalkReady, @Wait
+                                    FALLING_FRONT --> @RobotStateFalling, @CancelGoals, @StopWalking, @PlayAnimationFalling, @PlayAnimationWalkReady, @Wait
+                                    FALLING_BACK --> @RobotStateFalling, @CancelGoals, @StopWalking, @PlayAnimationFalling, @PlayAnimationWalkReady, @Wait
                                     NOT_FALLING --> $PlayingExternalAnimation
                                         ANIMATION_RUNNING --> @StopWalking, @RobotStateAnimationRunning, @Wait
                                         ANIMATION_SERVER_TIMEOUT --> @CancelAnimation
