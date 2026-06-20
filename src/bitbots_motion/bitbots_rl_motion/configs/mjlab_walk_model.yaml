@@ -27,11 +27,11 @@ mjlab_walk_node:
       ] 
       walkready_state: [
         # right
-        0.45, 0.0, 0.0, 0.9, 0.45, 0.0,
-        #0.6, 0.0, 0.0, 1.2, 0.6, 0.0,
+        #0.45, 0.0, 0.0, 0.9, 0.45, 0.0,
+        0.6, 0.0, 0.0, 1.2, 0.6, 0.0,
         # left
-        -0.45, 0.0, 0.0, -0.9, -0.45, 0.0,
-        #-0.6, 0.0, 0.0, -1.2, -0.6, 0.0,
+        #-0.45, 0.0, 0.0, -0.9, -0.45, 0.0,
+        -0.6, 0.0, 0.0, -1.2, -0.6, 0.0,
       ]
       kp: [
         # right
@@ -58,7 +58,7 @@ mjlab_walk_node:
       initial_phase: [0.0]
     
     command:
-      max_linear_velocity_forward: 1.0
+      max_linear_velocity_forward: 0.6
       max_linear_velocity_backward: -0.25
       max_linear_velocity_sideways: 0.25
       max_angular_velocity:  1.2 # pi/4
