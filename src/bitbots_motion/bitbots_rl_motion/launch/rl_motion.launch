@@ -3,6 +3,7 @@
   <arg name="walk" default="true"/>
   <arg name="kick" default="false"/>
   <arg name="mjlab_walk" default="false"/>
+  <arg name="mjlab_getup" default="false"/>
 
 
   <group if="$(var walk)">
@@ -19,6 +20,11 @@
   <group if="$(var mjlab_walk)">
     <node pkg="bitbots_rl_motion" exec="mjlab_walk_node" output="screen">
       <param from="$(find-pkg-share bitbots_rl_motion)/configs/mjlab_walk_model.yaml" />
+    </node>
+  </group>
+  <group if="$(var mjlab_getup)">
+    <node pkg="bitbots_rl_motion" exec="mjlab_getup_node" output="screen">
+      <param from="$(find-pkg-share bitbots_rl_motion)/configs/mjlab_getup_model.yaml" />
     </node>
   </group>
 </launch>
