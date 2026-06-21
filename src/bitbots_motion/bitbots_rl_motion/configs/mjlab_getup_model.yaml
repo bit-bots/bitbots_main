@@ -4,12 +4,13 @@ mjlab_getup_node:
 
     # NOTE: This policy's actor was trained with obs_normalization=False, so the
     # network consumes raw observations directly — there is no separate runtime
-    # normalization step. Joint order, defaults (default_joint_pos), kp/kd and
-    # action_scale below are taken 1:1 from the exported ONNX metadata and MUST
-    # match the training config; reordering these breaks the policy.
+    # normalization step. Head joints are excluded from the model. Joint order,
+    # defaults (default_joint_pos), kp/kd and action_scale below are taken 1:1
+    # from the exported ONNX metadata and MUST match the training config;
+    # reordering these breaks the policy.
     joints:
       # Order matches the getup model's joint_names metadata exactly:
-      # arms (R then L), head, then legs (R then L).
+      # arms (R then L), then legs (R then L).
       ordered_relevant_joint_names: [
         "r_shoulder_pitch_joint",
         "r_shoulder_roll_joint",
@@ -19,8 +20,6 @@ mjlab_getup_node:
         "l_shoulder_roll_joint",
         "l_upper_arm_joint",
         "l_elbow_joint",
-        "head_yaw_joint",
-        "head_pitch_joint",
         "r_hip_pitch_joint",
         "r_hip_roll_joint",
         "r_thigh_joint",
@@ -42,8 +41,6 @@ mjlab_getup_node:
         # arms (R, L)
         -1.5710, -1.2220, 0.0000, 0.0000,
         1.5710, 1.2220, 0.0000, 0.0000,
-        # head
-        0.0000, 0.0000,
         # right leg
         0.6000, 0.0000, 0.0000, 1.2000, 0.6000, 0.0000,
         # left leg
@@ -53,8 +50,6 @@ mjlab_getup_node:
         # arms (R, L)
         6.0, 6.0, 6.0, 6.0,
         6.0, 6.0, 6.0, 6.0,
-        # head
-        0.05, 0.05,
         # right leg
         35.0, 35.0, 35.0, 35.0, 35.0, 35.0,
         # left leg
@@ -64,8 +59,6 @@ mjlab_getup_node:
         # arms (R, L)
         0.6, 0.6, 0.6, 0.6,
         0.6, 0.6, 0.6, 0.6,
-        # head
-        0.001, 0.001,
         # right leg (hip_roll has kd=1.4, rest 1.1)
         1.1, 1.4, 1.1, 1.1, 1.1, 1.1,
         # left leg (hip_roll has kd=1.4, rest 1.1)
@@ -74,7 +67,6 @@ mjlab_getup_node:
       # Action scale (SettleRelativeJointPositionActionCfg scale=0.6 in training).
       action_scales: [
         0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6,
-        0.6, 0.6,
         0.6, 0.6, 0.6, 0.6, 0.6, 0.6,
         0.6, 0.6, 0.6, 0.6, 0.6, 0.6,
       ]
