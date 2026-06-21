@@ -53,14 +53,20 @@ class MjLabGetupNode(RLNode):
             onnx_pred, -1.5, 1.5
         )  # Ensure ONNX output is in expected range before scaling. Out-of-range values
         joint_command = self._joint_handler.get_joint_commands(onnx_pred, relative_to_current=True)
+
         # Clip the hip to [-0.5, 0.5] to prevent overextension in the getup pose.
         def clipping(current_pos, name, pos):
             if "hip_pitch" in name:
-                return np.clip(pos,-1.5, 1.5)
+                return np.clip(pos, -1.5, 1.5)
             else:
                 return pos
-        joint_command.positions = [clipping(i, name, pos) for i, name, pos in zip(
-            self._joint_handler.get_angle_data(), joint_command.joint_names, joint_command.positions)]
+
+        joint_command.positions = [
+            clipping(i, name, pos)
+            for i, name, pos in zip(
+                self._joint_handler.get_angle_data(), joint_command.joint_names, joint_command.positions
+            )
+        ]
         self.get_logger().info(f"Publishing getup joint command: {joint_command}")
         self._joint_command_pub.publish(joint_command)
 
