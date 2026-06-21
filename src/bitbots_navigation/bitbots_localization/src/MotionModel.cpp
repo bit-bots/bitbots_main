@@ -3,6 +3,7 @@
 //
 
 #include <bitbots_localization/MotionModel.hpp>
+#include <cmath>
 
 namespace bitbots_localization {
 
@@ -19,26 +20,27 @@ RobotMotionModel::RobotMotionModel(const particle_filter::CRandomNumberGenerator
 
 void RobotMotionModel::drift(RobotState& state, geometry_msgs::msg::Vector3 linear_movement,
                              geometry_msgs::msg::Vector3 rotational_movement) const {
-  // Convert cartesian coordinates to polarcoordinates with an orientation
-  auto [polar_rot, polar_dist] = cartesianToPolar(linear_movement.x, linear_movement.y);
+  // Convert cartesian coordinates to polar coordinates with an orientation
+  const PolarCoordinates polar_movement = cartesianToPolar({linear_movement.x, linear_movement.y});
   // get the minimal absolute
   double orientation = signedAngle(rotational_movement.z);
   // Apply sample drift for odom data
   // no need for abs polar distance, because its positive every time
-  double polar_rot_with_drift = polar_rot - sample(drift_cov_(0, 0) * polar_dist + drift_cov_(0, 1) * abs(orientation));
-  double polar_dist_with_drift =
-      polar_dist - sample(drift_cov_(1, 0) * polar_dist + drift_cov_(1, 1) * abs(orientation));
+  double polar_rot_with_drift = polar_movement.angle - sample(drift_cov_(0, 0) * polar_movement.radius +
+                                                              drift_cov_(0, 1) * std::abs(orientation));
+  double polar_dist_with_drift = polar_movement.radius - sample(drift_cov_(1, 0) * polar_movement.radius +
+                                                                drift_cov_(1, 1) * std::abs(orientation));
   double orientation_with_drift =
-      orientation - sample(drift_cov_(2, 0) * polar_dist + drift_cov_(2, 1) * abs(orientation));
+      orientation - sample(drift_cov_(2, 0) * polar_movement.radius + drift_cov_(2, 1) * std::abs(orientation));
 
   // Convert polar coordinates with offset back to cartesian ones, while transforming it into the local frame of each
   // particle
-  auto [cartesian_with_offset_x, cartesian_with_offset_y] =
-      polarToCartesian(state.getTheta() + polar_rot_with_drift, polar_dist_with_drift);
+  const CartesianCoordinates cartesian_with_offset =
+      polarToCartesian({state.getTheta() + polar_rot_with_drift, polar_dist_with_drift});
 
   // Apply new values onto state
-  state.setXPos(state.getXPos() + cartesian_with_offset_x);
-  state.setYPos(state.getYPos() + cartesian_with_offset_y);
+  state.setXPos(state.getXPos() + cartesian_with_offset.x);
+  state.setYPos(state.getYPos() + cartesian_with_offset.y);
   double theta = state.getTheta() + orientation_with_drift;
 
   state.setTheta(theta);

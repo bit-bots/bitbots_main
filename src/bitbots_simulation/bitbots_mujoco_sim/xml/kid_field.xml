@@ -1,6 +1,8 @@
 <mujoco>
   <compiler angle="radian" assetdir="assets"/>
-  <option timestep="0.002" density="1.2" viscosity="0.00002"/>
+  <option iterations="3" ls_iterations="5" timestep="0.002" density="1.2" viscosity="0.00002">
+    <flag eulerdamp="disable"/>
+  </option>
   <visual>
     <global offwidth="800" offheight="600"/>
   </visual>

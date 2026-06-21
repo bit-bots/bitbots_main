@@ -3,8 +3,8 @@ bitbots_localization:
     misc:
       init_mode: 0
       percentage_best_particles: 100
-      max_motion_linear: 1.5
-      max_motion_angular: 7.0
+      max_motion_linear: 3.0
+      max_motion_angular: 8.0
     ros:
       line_pointcloud_topic: 'line_mask_relative_pc'
       goal_topic: 'goals_simulated'

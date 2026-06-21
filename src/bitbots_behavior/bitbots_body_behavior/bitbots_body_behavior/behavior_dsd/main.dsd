@@ -1,6 +1,6 @@
 #SearchBall
 $DoOnce
-    NOT_DONE --> @ChangeAction + action:searching, @LookAtFieldFeatures, @WalkInPlace + duration:3, @TurnLastSeenBallSide + duration:15, @GoToAbsolutePositionFieldFraction + x:0.5 + blocking:false
+    NOT_DONE --> @ChangeAction + action:searching, @LookAtFieldFeatures, @WalkInPlace + duration:1, @TurnLastSeenBallSide + duration:6, @GoToAbsolutePositionFieldFraction + x:0.5 + blocking:false
     DONE --> $ReachedAndAlignedToPathPlanningGoalPosition + threshold:0.5 + latch:true
         NO --> @LookAtFieldFeatures, @GoToAbsolutePositionFieldFraction + x:0.5
         YES --> $DoOnce
@@ -20,12 +20,6 @@ $DoOnce
 #GetWalkreadyAndLocalize
 @ChangeAction + action:waiting + r:false, @PlayAnimationInitInSim + r:false, @LookAtFieldFeatures + r:false, @WalkInPlace
 
-#PerformKickLeft
-@ChangeAction + action:kicking, @LookAtFront, @RLKick + duration:3 + r:false, @WalkInPlace + duration:1 + r:false, @ForgetBall + r:false, @WalkInPlace + duration:1 + r:false, @LookAtFieldFeatures + r:false
-
-#PerformKickRight
-@ChangeAction + action:kicking, @LookAtFront, @RLKick + duration:3 + r:false, @WalkInPlace + duration:1 + r:false, @ForgetBall + r:false, @WalkInPlace + duration:1 + r:false, @LookAtFieldFeatures + r:false
-
 #Dribble
 @ChangeAction + action:going_to_ball, @CancelPathplanning, @LookAtFront, @DribbleForward
 
@@ -40,9 +34,7 @@ $DoOnce
 $AvoidBall
     NO --> $BallClose + distance:%ball_reapproach_dist + angle:%ball_reapproach_angle
         YES --> $BallKickArea
-            NEAR --> $FootSelection
-                LEFT --> #PerformKickLeft
-                RIGHT --> #PerformKickRight
+            NEAR --> #Dribble
             FAR --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:map
         NO --> @ChangeAction + action:going_to_ball + r:false, @LookAtFieldFeatures + r:false, @AvoidBallActive + r:false, @GoToBall + target:map + blocking:false + distance:%ball_far_approach_dist
     YES --> $ReachedPathPlanningGoalPosition + threshold:%ball_far_approach_position_thresh
