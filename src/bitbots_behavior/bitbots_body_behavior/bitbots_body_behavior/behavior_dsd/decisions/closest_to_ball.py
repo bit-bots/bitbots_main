@@ -47,20 +47,26 @@ class RankToBallNoGoalie(AbstractDecisionElement):
         super().__init__(blackboard, dsd, parameters)
 
     def perform(self, reevaluate=False):
-        my_time_to_ball = self.blackboard.team_data.get_own_time_to_ball()
-        rank = self.blackboard.team_data.team_rank_to_ball(my_time_to_ball, count_goalies=False, use_time_to_ball=True)
-        self.publish_debug_data("time to ball", my_time_to_ball)
-        self.publish_debug_data("Rank to ball", rank)
-        if rank == 1:
-            return "FIRST"
-        elif rank == 2:
-            return "SECOND"
-        elif rank == 3:
-            return "THIRD"
+        optimal_positioning = self.blackboard.positioning.get_formation_assignment()
+        own_position = optimal_positioning[self.blackboard.game_status.get_own_id()]
+        role = own_position["role"]
+        self.publish_debug_data("Role from positioning", role)
+        if role == "striker":
+            return "STRIKER"
+        elif role == "defender_0":
+            return "DEFENDER0"
+        elif role == "defender_1":
+            return "DEFENDER1"
+        elif role == "defender_2":
+            return "DEFENDER2"
+        elif role == "defender_3":
+            return "DEFENDER3"
+        elif role == "supporter":
+            return "SUPPORTER"
         else:
             # emergency fall back if something goes wrong
             self.blackboard.node.get_logger().warning("Rank to ball had some issues")
-            return "FIRST"
+            return "STRIKER"
 
     def get_reevaluate(self):
         return True

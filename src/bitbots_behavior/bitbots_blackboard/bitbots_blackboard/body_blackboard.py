@@ -10,6 +10,7 @@ from bitbots_blackboard.capsules.misc_capsule import MiscCapsule
 from bitbots_blackboard.capsules.pathfinding_capsule import PathfindingCapsule
 from bitbots_blackboard.capsules.team_data_capsule import TeamDataCapsule
 from bitbots_blackboard.capsules.world_model_capsule import WorldModelCapsule
+from bitbots_blackboard.capsules.positioning_capsule import PositioningCapsule
 
 
 class BodyBlackboard:
@@ -34,6 +35,7 @@ class BodyBlackboard:
         self.costmap = CostmapCapsule(self.node, self)
         self.pathfinding = PathfindingCapsule(self.node, self)
         self.team_data = TeamDataCapsule(self.node, self)
+        self.positioning = PositioningCapsule(self.node, self)
 
         self.capsules = [
             self.misc,
@@ -44,6 +46,7 @@ class BodyBlackboard:
             self.costmap,
             self.pathfinding,
             self.team_data,
+            self.positioning,
         ]
 
     def clear_cache(self):

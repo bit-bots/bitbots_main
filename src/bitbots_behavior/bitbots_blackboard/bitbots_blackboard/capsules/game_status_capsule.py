@@ -97,6 +97,9 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
 
     def get_team_id(self) -> int:
         return self.team_id
+    
+    def get_own_id(self) -> int:
+        return self.own_id
 
     def gamestate_callback(self, gamestate_msg: GameState) -> None:
         if self.gamestate.penalized and not gamestate_msg.penalized:

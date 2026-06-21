@@ -1,6 +1,7 @@
 from typing import Literal, Optional
 
 import numpy as np
+import math
 from bitbots_utils.utils import get_parameters_from_other_node
 from geometry_msgs.msg import PointStamped, Pose
 from rclpy.duration import Duration
@@ -182,6 +183,20 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
             if self.is_valid(data) and (data.strategy.role != Strategy.ROLE_GOALIE or count_goalies):
                 poses.append(data.robot_position.pose)
         return poses
+    
+    def quaternion_to_yaw(q) -> float:
+        """Extract yaw (theta) from a quaternion."""
+        return math.atan2(2.0 * (q.w * q.z + q.x * q.y), 1.0 - 2.0 * (q.y * q.y + q.z * q.z))
+
+    def get_robot_poses(self) -> dict[int, list[float]]:
+        """Returns a mapping of jersey_number -> [x, y, theta] for all active robots."""
+        robot_poses = {}
+        data: TeamData
+        for data in self.team_data.values():
+            if self.is_valid(data):
+                pose = data.robot_position.pose
+                robot_poses[data.robot_id] = [pose.point.x, pose.point.y, self.quaternion_to_yaw(pose.orientation)]
+        return robot_poses
 
     def get_number_of_active_field_players(self, count_goalie: bool = False) -> int:
         def is_not_goalie(team_data: TeamData) -> bool:
