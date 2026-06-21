@@ -522,10 +522,13 @@ class HeadMover {
    * @brief Calculates the motor goals that are needed to look at a given point using the inverse kinematics
    */
   std::pair<double, double> get_motor_goals_from_point(geometry_msgs::msg::Point point) {
-    // Try to calculate the inverse kinematics
-    // TODO we do not have inverse kinematics for the pi plus setup yet, so we need to implement this function properly
-    RCLCPP_ERROR_STREAM(node_->get_logger(), "Inverse kinematics for the pi plus head is not implemented yet");
-    return {0.0, 0.0};
+    // check limitations
+    // double current_head_yaw, double current_head_pitch = get_head_position();
+
+    double head_yaw = 0.0;
+    double head_pitch = 0.0;
+
+    return {head_yaw, head_pitch};
   }
 
   /**
