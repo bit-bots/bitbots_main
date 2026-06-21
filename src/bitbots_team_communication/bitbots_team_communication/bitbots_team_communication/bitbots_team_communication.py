@@ -275,8 +275,15 @@ class TeamCommunication:
 
         message = self.protocol_converter.convert_to_message(self, msg, is_still_valid)
         proto_msg = message.SerializeToString()
-        self.logger.debug(f"Sending msg with size {len(proto_msg)} bytes")
-        self.socket_communication.send_message(proto_msg)
+        message_size = len(proto_msg)
+        if message_size > self.max_message_size:
+            self.logger.warning(
+                f"Team_com msg not sent, because size {message_size} bytes is above the maximum of "
+                f"{self.max_message_size} bytes"
+            )
+        else:
+            self.logger.debug(f"Sending msg with size {message_size} bytes")
+            self.socket_communication.send_message(proto_msg)
 
     def create_empty_message(self, now: Time) -> Proto.Message:
         message = Proto.Message()
@@ -301,7 +308,7 @@ class TeamCommunication:
         return is_own_message or is_message_from_oposite_team
 
     def is_robot_allowed_to_send_message(self) -> bool:
-        return self.gamestate is not None and not self.gamestate.penalized
+        return self.gamestate is not None and not self.gamestate.penalized and not self.gamestate.message_budget < 40
 
     def get_current_time(self) -> Time:
         return self.node.get_clock().now()
