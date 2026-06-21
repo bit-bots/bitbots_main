@@ -523,10 +523,12 @@ class HeadMover {
    */
   std::pair<double, double> get_motor_goals_from_point(geometry_msgs::msg::Point point) {
     // check limitations
-    // double current_head_yaw, double current_head_pitch = get_head_position();
+    x = point.x;
+    y = point.y;
+    z = point.z;
 
-    double head_yaw = 0.0;
-    double head_pitch = 0.0;
+    double head_yaw = atan2(y, x);
+    double head_pitch = atan2(z, sqrt(x * x + y * y));
 
     return {head_yaw, head_pitch};
   }
