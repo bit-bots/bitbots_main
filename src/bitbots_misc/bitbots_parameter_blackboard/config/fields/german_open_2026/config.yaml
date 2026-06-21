@@ -17,3 +17,4 @@ parameter_blackboard:
             x: 1.93   # The distance from the goal line to the boundary of the penalty area
       goal:
         width: 1.8   # The width of the goal (center of one goal post to the other goal post)
+        depth: 0.75   # The depth of the goal (distance from the goal line to the back of the goal)
