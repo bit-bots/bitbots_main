@@ -29,6 +29,13 @@ move_head:
     validation:
       fixed_size<>: 2
 
+  transition_speed:
+    type: double
+    default_value: 6.0
+    description: "Speed (in rad/s) used to smoothly transition from the current head position into a new search pattern when the head mode changes"
+    validation:
+      bounds<>: [0.1, 10.0]
+
   look_at:
     pitch_speed:
       type: double
@@ -85,7 +92,7 @@ move_head:
       cycle_time:
         type: double
         description: "Duration of one full search pattern cycle in seconds"
-        default_value: 3.0
+        default_value: 2.0
         validation:
           gt<>: [0.0]
 
@@ -98,7 +105,7 @@ move_head:
 
       pitch_max:
         type: double_array
-        default_value: [0.0, 50.0]
+        default_value: [20.0, 45.0]
         description: "Maximum pitch values for the search pattern (in degrees)"
         validation:
           fixed_size<>: 2
@@ -112,7 +119,7 @@ move_head:
 
       reduce_last_scanline:
         type: double
-        default_value: 0.2
+        default_value: 0.4
         description: "Reduces last scanline by that factor so that robot does not collide"
         validation:
           bounds<>: [0.0, 1.0]
@@ -121,7 +128,7 @@ move_head:
       cycle_time:
         type: double
         description: "Duration of one full search pattern cycle in seconds"
-        default_value: 2.0
+        default_value: 1.0
         validation:
           gt<>: [0.0]
 
@@ -134,7 +141,7 @@ move_head:
 
       pitch_max:
         type: double_array
-        default_value: [ -10.0, 50.0 ]
+        default_value: [ 20.0, 50.0 ]
         description: "Maximum pitch values for the search pattern (in degrees)"
         validation:
           fixed_size<>: 2
