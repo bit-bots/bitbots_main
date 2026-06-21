@@ -28,3 +28,13 @@ uint8 SIDE_LEFT=1
 uint8 SIDE_MIDDLE=2
 uint8 SIDE_RIGHT=3
 uint8 offensive_side
+
+# Set play strategy
+uint8 STRATEGY_DEFAULT=0
+uint8 STRATEGY_ONE=1
+uint8 STRATEGY_TWO=2
+uint8 STRATEGY_THREE=3
+uint8 STRATEGY_FOUR=4
+uint8 STRATEGY_FIVE=5
+uint8 STRATEGY_SIX=6
+uint8 set_play_strategy

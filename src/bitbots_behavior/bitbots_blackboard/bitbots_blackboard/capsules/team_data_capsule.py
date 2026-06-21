@@ -57,12 +57,25 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
             Strategy.ACTION_LOCALIZING,
         }
 
+        # Possible set play strategies
+        self.set_play_strategy = {
+            Strategy.STRATEGY_DEFAULT,
+            Strategy.STRATEGY_ONE,
+            Strategy.STRATEGY_TWO,
+            Strategy.STRATEGY_THREE,
+            Strategy.STRATEGY_FOUR,
+            Strategy.STRATEGY_FIVE,
+            Strategy.STRATEGY_SIX,
+        }
+
         # The strategy which is communicated to the other robots
         self.strategy = Strategy()
         self.strategy.role = self.roles_mapping[self.role]
         self.role_update: float = 0.0
         self.strategy_update: float = 0.0
         self.action_update: float = 0.0
+        self.set_play_strategy_update: float = 0.0
+        
 
         # Config
         self.data_timeout: float = float(self._node.get_parameter("team_data_timeout").value)
@@ -149,6 +162,14 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
         self.strategy.action = action
         self.action_update = self._node.get_clock().now().nanoseconds / 1e9
 
+    def set_set_play_strategy(self, set_play_strategy: int) -> None:
+        """Set the ste play strategy of this robot
+
+        :param set_play_strategy: An set_play_strategy from bitbots_msgs/Strategy"""
+        assert set_play_strategy in self.set_play_strategy
+        self.strategy.set_play_strategy = set_play_strategy
+        self.set_play_strategy_update = self._node.get_clock().now().nanoseconds / 1e9
+
     def get_action(self) -> tuple[int, float]:
         return self.strategy.action, self.action_update
 
@@ -196,6 +217,15 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
 
         # Count valid team data infos (aka robots with valid team data)
         return sum(map(self.is_valid, team_data_infos))
+    
+    def get_team_set_play_strategy(self, count_goalie: bool = False) -> int:
+        # returns the actual set play strategy published by the striker
+        return_strategy = 1
+        for data in self.team_data.values():
+            if self.is_valid(data) and (data.strategy.set_play_strategy != 0):
+                return_strategy = data.strategy.set_play_strategy
+
+        return return_strategy
 
     @cached_capsule_function
     def get_is_goalie_active(self) -> bool:
