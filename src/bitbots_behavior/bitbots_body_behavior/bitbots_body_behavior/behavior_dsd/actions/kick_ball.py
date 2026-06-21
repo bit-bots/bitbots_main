@@ -1,3 +1,5 @@
+import math
+
 from bitbots_blackboard.body_blackboard import BodyBlackboard
 from bitbots_blackboard.capsules.kick_capsule import KickCapsule
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
@@ -46,17 +48,10 @@ class RLKick(AbstractKickAction):
         )
         self._direction = euler_from_quaternion(numpify(ball_goal.pose.orientation))[2]
         # Time spent looking down at the feet/ball before the kick motion is actually started.
-        self._prep_start_time = None
         self._kick_start_time = None
 
     def perform(self, reevaluate=False):
-        # Phase 1: look down at the feet/ball shortly before kicking
-        if self._prep_start_time is None:
-            self._prep_start_time = self.blackboard.node.get_clock().now()
-            self.blackboard.misc.set_head_duty(HeadMode.LOOK_AT_FEET)
-            return
-
-        # Phase 2: once the head had time to move down, request the kick
+        # Request the kick
         if self._kick_start_time is None:
             self._kick_start_time = self.blackboard.node.get_clock().now()
             self.blackboard.kick.start_rl_kick(self._direction)
