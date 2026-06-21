@@ -50,6 +50,11 @@ class WalkNode(RLNode):
     # states in which the policy executes
     def allowed_states(self):
         return self._robot_state_handler.is_walkable()
+    
+    def start(self):
+        super().start()
+        # Reset previous action to zeros so no leftover state from the last time we walked influences the first walk step.
+        self._previous_action.set_previous_action(np.zeros_like(self._previous_action.get_previous_action()))
 
     def _phase_update_hook(self):
         if not self._phase.check_phase_set():

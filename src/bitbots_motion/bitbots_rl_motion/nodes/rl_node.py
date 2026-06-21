@@ -41,6 +41,8 @@ class RLNode(Node, ABC):
         model = self.get_parameter("model").value
         self.get_logger().info(f"Loaded model: {model}")
 
+        self._last_step_active = False
+
         # Phase is optional - if phase shouldn't be used, than self._phase.get_phase() will return None
         self._phase = Phase(self)
         self._previous_action = PreviousAction(self)
@@ -67,8 +69,12 @@ class RLNode(Node, ABC):
             )
 
         active = self.allowed_states()
+
+        if active and not self._last_step_active:
+            self.start()
+
         if active:
-            
+            self._last_step_active = True
             observation = self.obs()
 
             # Run the ONNX model
@@ -130,6 +136,9 @@ class RLNode(Node, ABC):
 
     @abstractmethod
     def allowed_states(self):
+        pass
+
+    def start(self):
         pass
 
 

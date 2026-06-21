@@ -62,6 +62,11 @@ class KickNode(RLNode):
     # states in which the policy executes (requested/stopped by the behavior via the HCM)
     def allowed_states(self):
         return self._robot_state_handler.is_kickable()
+    
+    def start(self):
+        super().start()
+        # Reset previous action to zeros so no leftover state from the last kick influences the first kick step.
+        self._previous_action.set_previous_action(np.zeros_like(self._previous_action.get_previous_action()))
 
 
 main = create_main(KickNode)
