@@ -50,6 +50,10 @@ class MjLabGetupNode(RLNode):
         # The getup policy uses a relative-to-current action space
         # (mjlab RelativeJointPositionAction): target = current_pos + action * scale.
         joint_command = self._joint_handler.get_joint_commands(onnx_pred, relative_to_current=True)
+        # Null the head joints (by name)
+        for i, name in enumerate(joint_command.joint_names):
+            if "head" in name:
+                joint_command.positions[i] = 0.0
         self._joint_command_pub.publish(joint_command)
 
     # states in which the policy executes
