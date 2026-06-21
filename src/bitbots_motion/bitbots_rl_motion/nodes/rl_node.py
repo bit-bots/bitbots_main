@@ -66,20 +66,33 @@ class RLNode(Node, ABC):
                 ).flatten()
             )
 
-        observation = self.obs()
+        active = self.allowed_states()
+        if active:
+            
+            observation = self.obs()
 
-        # Run the ONNX model
-        onnx_input = {self._onnx_input_name[0]: observation.reshape(1, -1)}
-        onnx_pred = self._onnx_session.run(self._onnx_output_name, onnx_input)[0][0]
-        self._previous_action.set_previous_action(onnx_pred)
+            # Run the ONNX model
+            onnx_input = {self._onnx_input_name[0]: observation.reshape(1, -1)}
+            onnx_pred = self._onnx_session.run(self._onnx_output_name, onnx_input)[0][0]
+            self._previous_action.set_previous_action(onnx_pred)
 
-        if self.allowed_states():
             self.publisher(onnx_pred)
-        self._phase_update_hook()
 
-    @abstractmethod
+        if self._phase.check_phase_set():
+            if active:
+                # We are in control: advance our phase and broadcast it so the other
+                # (currently inactive) policy can pick up where we leave off on a hot swap.
+                self._phase_update_hook()
+                self._phase.publish_phase()
+            else:
+                # Another policy is in control: keep our phase aligned with it so that
+                # we can take over smoothly once we become active.
+                self._phase.sync_from_external()
+
     def _phase_update_hook(self):
-        pass
+        # Default behaviour: advance the phase by one control step.
+        # Subclasses may override this (e.g. the walk node anchors the phase on stop).
+        self._phase.advance()
 
     def _all_sensors_ready(self):
         for handler in self._handlers:

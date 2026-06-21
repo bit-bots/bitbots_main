@@ -703,6 +703,15 @@ class HeadMover {
               params_.search_patterns.look_forward.reduce_last_scanline);
           break;
 
+        case bitbots_msgs::msg::HeadMode::LOOK_AT_FEET:
+          cycle_time_ = params_.search_patterns.look_at_feet.cycle_time;
+          pattern_ = generatePattern(
+              params_.search_patterns.look_at_feet.scan_lines, params_.search_patterns.look_at_feet.yaw_max[0],
+              params_.search_patterns.look_at_feet.yaw_max[1], params_.search_patterns.look_at_feet.pitch_max[0],
+              params_.search_patterns.look_at_feet.pitch_max[1],
+              params_.search_patterns.look_at_feet.reduce_last_scanline);
+          break;
+
         default:
           return;
       }

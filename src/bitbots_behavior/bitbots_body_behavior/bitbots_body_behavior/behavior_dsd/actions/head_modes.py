@@ -107,3 +107,11 @@ class LookAtFront(AbstractHeadModeElement):
     def perform(self):
         self.blackboard.misc.set_head_duty(HeadMode.SEARCH_FRONT)
         return self.pop()
+
+
+class LookAtFeet(AbstractHeadModeElement):
+    """Look down at the feet/ball directly in front of the robot (e.g. shortly before a kick)"""
+
+    def perform(self):
+        self.blackboard.misc.set_head_duty(HeadMode.LOOK_AT_FEET)
+        return self.pop()

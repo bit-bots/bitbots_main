@@ -14,6 +14,7 @@ THeadMode: TypeAlias = Literal[  # type: ignore[valid-type]
     HeadMode.DONT_MOVE,
     HeadMode.SEARCH_BALL_PENALTY,
     HeadMode.SEARCH_FRONT,
+    HeadMode.LOOK_AT_FEET,
 ]
 
 

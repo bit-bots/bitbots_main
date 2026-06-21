@@ -8,10 +8,10 @@ WALKABLE_STATES = (
     RobotControlState.WALKING,
 )
 
-KICKABLE_STATES = (
-    RobotControlState.CONTROLLABLE,
-    RobotControlState.KICKING,
-)
+# The kick policy is only allowed to run in the dedicated KICKING state, which is
+# requested/stopped by the behavior via the HCM. This keeps it mutually exclusive with
+# the walk policy (which runs in CONTROLLABLE/WALKING).
+KICKABLE_STATES = (RobotControlState.KICKING,)
 
 
 class RobotStateHandler(Handler):

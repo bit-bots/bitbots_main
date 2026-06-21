@@ -189,3 +189,39 @@ move_head:
         validation:
           bounds<>: [0.0, 1.0]
 
+    look_at_feet:
+      cycle_time:
+        type: double
+        description: "Duration of one full search pattern cycle in seconds"
+        default_value: 1.0
+        validation:
+          gt<>: [0.0]
+
+      yaw_max:
+        type: double_array
+        default_value: [ 0.0, 0.0 ]
+        description: "Maximum yaw values for the search pattern (in degrees)"
+        validation:
+          fixed_size<>: 2
+
+      pitch_max:
+        type: double_array
+        default_value: [ 43.0, 45.0 ]
+        description: "Maximum pitch values for the search pattern (in degrees)"
+        validation:
+          fixed_size<>: 2
+
+      scan_lines:
+        type: int
+        default_value: 2
+        description: "Number of scan horizontal lines for the search pattern"
+        validation:
+          gt_eq<>: [1]
+
+      reduce_last_scanline:
+        type: double
+        default_value: 1.0
+        description: "Reduces last scanline by that factor so that robot does not collide"
+        validation:
+          bounds<>: [0.0, 1.0]
+

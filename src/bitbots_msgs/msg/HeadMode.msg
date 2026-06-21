@@ -13,6 +13,8 @@ uint8 DONT_MOVE=3
 uint8 SEARCH_BALL_PENALTY = 4
 # Do a pattern which only looks in front of the robot
 uint8 SEARCH_FRONT = 5
+# Look down at the feet/ball directly in front of the robot (e.g. shortly before a kick)
+uint8 LOOK_AT_FEET = 6
 
 
 uint8 head_mode

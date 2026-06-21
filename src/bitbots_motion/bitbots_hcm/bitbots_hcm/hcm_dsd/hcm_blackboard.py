@@ -102,6 +102,9 @@ class HcmBlackboard:
         # Kicking
         # State
         self.last_kick_goal_time: Optional[Time] = None
+        # Whether the behavior currently requests the (RL) kick motion. The HCM uses this to
+        # enter/leave the KICKING robot state, which in turn gates the RL kick node.
+        self.kick_requested: bool = False
 
         # IMU state
         self.imu_msg: Optional[Imu] = None

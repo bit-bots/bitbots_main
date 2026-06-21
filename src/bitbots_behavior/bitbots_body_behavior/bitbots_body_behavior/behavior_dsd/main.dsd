@@ -21,7 +21,7 @@ $DoOnce
 @ChangeAction + action:waiting + r:false, @PlayAnimationInitInSim + r:false, @LookAtFieldFeatures + r:false, @WalkInPlace
 
 #Dribble
-@ChangeAction + action:going_to_ball, @CancelPathplanning, @LookAtFront, @DribbleForward
+@ChangeAction + action:going_to_ball, @CancelPathplanning, @LookAtFeet, @WalkInPlace + duration:0.3, @RLKick + r:false, @LookAtFront
 
 #RolePositionWithPause
 $DoOnce
@@ -35,7 +35,7 @@ $AvoidBall
     NO --> $BallClose + distance:%ball_reapproach_dist + angle:%ball_reapproach_angle
         YES --> $BallKickArea
             NEAR --> #Dribble
-            FAR --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:map
+            FAR --> @ChangeAction + action:going_to_ball, @LookAtFeet, @GoToBall + target:map
         NO --> @ChangeAction + action:going_to_ball + r:false, @LookAtFieldFeatures + r:false, @AvoidBallActive + r:false, @GoToBall + target:map + blocking:false + distance:%ball_far_approach_dist
     YES --> $ReachedPathPlanningGoalPosition + threshold:%ball_far_approach_position_thresh
         YES --> @AvoidBallInactive

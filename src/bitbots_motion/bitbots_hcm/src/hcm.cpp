@@ -53,6 +53,8 @@ class HCM_CPP : public rclcpp::Node {
         "record_motor_goals", 1, std::bind(&HCM_CPP::record_goal_callback, this, _1));
     walk_sub_ = this->create_subscription<bitbots_msgs::msg::JointCommand>(
         "walking_motor_goals", 1, std::bind(&HCM_CPP::walking_goal_callback, this, _1));
+    kick_sub_ = this->create_subscription<bitbots_msgs::msg::JointCommand>(
+        "kick_motor_goals", 1, std::bind(&HCM_CPP::kicking_goal_callback, this, _1));
 
     // Create subscriber for high frequency sensor data
     joint_state_sub_ = this->create_subscription<sensor_msgs::msg::JointState>(
@@ -105,6 +107,13 @@ class HCM_CPP : public rclcpp::Node {
     }
   }
 
+  void kicking_goal_callback(bitbots_msgs::msg::JointCommand msg) {
+    last_kick_time_ = msg.header.stamp;
+    if (current_state_ == bitbots_msgs::msg::RobotControlState::KICKING) {
+      pub_controller_command_->publish(msg);
+    }
+  }
+
   void joint_state_callback(sensor_msgs::msg::JointState msg) { current_joint_state_ = msg; }
 
   void imu_callback(sensor_msgs::msg::Imu msg) { current_imu_ = msg; }
@@ -122,6 +131,10 @@ class HCM_CPP : public rclcpp::Node {
     if (last_walking_time_) {
       hcm_py_.attr("set_last_walking_goal_time")(
           ros2_python_extension::toPython<builtin_interfaces::msg::Time>(last_walking_time_.value()));
+    }
+    if (last_kick_time_) {
+      hcm_py_.attr("set_last_kick_goal_time")(
+          ros2_python_extension::toPython<builtin_interfaces::msg::Time>(last_kick_time_.value()));
     }
     if (last_animation_goal_time_) {
       hcm_py_.attr("set_last_animation_goal_time")(
@@ -157,6 +170,9 @@ class HCM_CPP : public rclcpp::Node {
   // Walking state
   std::optional<builtin_interfaces::msg::Time> last_walking_time_;
 
+  // Kicking state
+  std::optional<builtin_interfaces::msg::Time> last_kick_time_;
+
   // Animation states
   std::optional<builtin_interfaces::msg::Time> last_animation_goal_time_;
 
@@ -169,6 +185,7 @@ class HCM_CPP : public rclcpp::Node {
   rclcpp::Subscription<bitbots_msgs::msg::JointCommand>::SharedPtr head_sub_;
   rclcpp::Subscription<bitbots_msgs::msg::JointCommand>::SharedPtr record_sub_;
   rclcpp::Subscription<bitbots_msgs::msg::JointCommand>::SharedPtr walk_sub_;
+  rclcpp::Subscription<bitbots_msgs::msg::JointCommand>::SharedPtr kick_sub_;
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_sub_;
   rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_sub_;
 };
