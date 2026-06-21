@@ -27,7 +27,7 @@ class CountActiveRobotsWithoutGoalie(AbstractDecisionElement):
             # emergency fall back if something goes wrong
             self.blackboard.node.get_logger().error("Rank to ball had some issues")
             raise ValueError(
-                f"Count active Robots encountered to many robots on the field: {number_of_active_teammates}"
+                f"Count active Robots encountered too many robots on the field: {number_of_active_teammates}"
             )
 
     def get_reevaluate(self):
