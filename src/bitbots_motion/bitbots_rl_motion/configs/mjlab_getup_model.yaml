@@ -54,7 +54,7 @@ mjlab_getup_node:
         6.0, 6.0, 6.0, 6.0,
         6.0, 6.0, 6.0, 6.0,
         # head
-        1.0, 1.0,
+        0.05, 0.05,
         # right leg
         35.0, 35.0, 35.0, 35.0, 35.0, 35.0,
         # left leg
@@ -65,7 +65,7 @@ mjlab_getup_node:
         0.6, 0.6, 0.6, 0.6,
         0.6, 0.6, 0.6, 0.6,
         # head
-        0.0, 0.0,
+        0.001, 0.001,
         # right leg (hip_roll has kd=1.4, rest 1.1)
         1.1, 1.4, 1.1, 1.1, 1.1, 1.1,
         # left leg (hip_roll has kd=1.4, rest 1.1)
