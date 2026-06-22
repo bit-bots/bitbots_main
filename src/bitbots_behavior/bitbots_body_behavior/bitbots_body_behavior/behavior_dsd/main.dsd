@@ -89,10 +89,12 @@ $DoOnce
             NO --> $SecondaryStateTeamDecider
                 OUR --> #SearchBall
                 ELSE --> @AvoidBallActive, @LookAtFieldFeatures, @WalkInPlace + duration:2, @GoToRelativePosition + x:1 + y:0 + t:0, @Stand
-            YES --> $RankToBallNoGoalie
+            YES --> $RankToBallWithGoalie
                 STRIKER --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition + mode:freekick_first
                 DEFENDER0 --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition + mode:freekick_second
                 SUPPORTER --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition
+                GOALIE --> @GoToGoaliePosition
+                ELSE --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition + mode:freekick_second
 
 #Init
 @Stand + duration:0.1 + r:false, @ChangeAction + action:waiting, @LookForward, @Stand
@@ -105,13 +107,12 @@ $BallSeen
     YES --> $KickOffTimeUp
         NO_NORMAL --> #StandAndLook
         NO_FREEKICK --> #Placing
-        YES --> $ConfigRole
-            GOALIE --> #GoalieBehavior
-            ELSE --> $RankToBallNoGoalie
-                STRIKER --> #StrikerRole
-                DEFENDER0 --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @GoToDefensePosition
-                SUPPORTER --> #SupporterRole
-                ELSE --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @GoToDefensePosition //defender 1 bis 4 integrieren?
+        YES --> $RankToBallWithGoalie
+            STRIKER --> #StrikerRole
+            GOALIE --> @GoToGoaliePosition
+            DEFENDER_ZERO --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @GoToDefensePosition
+            SUPPORTER --> #SupporterRole
+            ELSE --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @GoToDefensePosition //defender 1 bis 4 integrieren?
 
 #PlayingBehavior
 $SecondaryStateDecider

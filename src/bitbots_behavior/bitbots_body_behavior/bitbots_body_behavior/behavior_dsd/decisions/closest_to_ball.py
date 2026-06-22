@@ -33,14 +33,14 @@ class ClosestToBall(AbstractDecisionElement):
         self.publish_debug_data("time to ball", my_time_to_ball)
         self.publish_debug_data("Rank to ball", rank)
         if rank == 1:
-            return "YES"
+            return "NO"  # only for testing remeber to REMOVE!
         return "NO"
 
     def get_reevaluate(self):
         return True
 
 
-class RankToBallNoGoalie(AbstractDecisionElement):
+class RankToBallWithGoalie(AbstractDecisionElement):
     blackboard: BodyBlackboard
 
     def __init__(self, blackboard, dsd, parameters):
@@ -53,8 +53,10 @@ class RankToBallNoGoalie(AbstractDecisionElement):
         self.publish_debug_data("Role from positioning", role)
         if role == "striker":
             return "STRIKER"
+        elif role == "goalie":
+            return "GOALIE"
         elif role == "defender_0":
-            return "DEFENDER0"
+            return "DEFENDER_ZERO"
         elif role == "defender_1":
             return "DEFENDER1"
         elif role == "defender_2":
@@ -65,7 +67,7 @@ class RankToBallNoGoalie(AbstractDecisionElement):
             return "SUPPORTER"
         else:
             # emergency fall back if something goes wrong
-            self.blackboard.node.get_logger().warning("Rank to ball had some issues")
+            self.blackboard.node.get_logger().warning("Rank to ball had some issues. Role" + role)
             return "STRIKER"
 
     def get_reevaluate(self):

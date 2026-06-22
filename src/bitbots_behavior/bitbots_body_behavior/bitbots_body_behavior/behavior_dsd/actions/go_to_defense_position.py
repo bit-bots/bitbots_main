@@ -84,7 +84,7 @@ class GoToDefensePosition(AbstractActionElement):
         else:
             # center point between ball and own goal
             optimal_positioning = self.blackboard.positioning.get_formation_assignment()
-            own_position = optimal_positioning[self.blackboard.game_status.get_own_id()]
+            own_position = optimal_positioning[self.blackboard.gamestate.get_own_id()]
             pose = own_position["goal_pose"]
             pose_msg.pose.position.x = pose[0]
             pose_msg.pose.position.y = pose[1]

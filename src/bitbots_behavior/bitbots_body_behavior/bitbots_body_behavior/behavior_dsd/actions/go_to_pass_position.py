@@ -40,9 +40,14 @@ class AbstractGoToPassPosition(AbstractActionElement):
         pose_msg = PoseStamped()
         pose_msg.header.stamp = self.blackboard.node.get_clock().now().to_msg()
         pose_msg.header.frame_id = self.blackboard.map_frame
-        pose_msg.pose.position.x = float(goal_x)
-        pose_msg.pose.position.y = float(goal_y)
-        pose_msg.pose.orientation = quat_from_yaw(goal_yaw)
+        
+        optimal_positioning = self.blackboard.positioning.get_formation_assignment()
+        own_position = optimal_positioning[self.blackboard.gamestate.get_own_id()]
+        pose = own_position["goal_pose"]
+        pose_msg.pose.position.x = pose[0]
+        pose_msg.pose.position.y = pose[1]
+        pose_msg.pose.orientation.w = pose[2]
+
         self.blackboard.pathfinding.publish(pose_msg)
 
         if not self.blocking:
