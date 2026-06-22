@@ -24,6 +24,7 @@ from rqt_gui.main import Main
 from rqt_gui_py.plugin import Plugin
 
 from bitbots_msgs.msg import Strategy, TeamData
+from geometry_msgs.msg import PoseWithCovariance
 
 
 class RobotWidget(QGroupBox):
@@ -31,7 +32,7 @@ class RobotWidget(QGroupBox):
         super().__init__(parent)
         self.setTitle("Robot")
         # Set maximum width
-        self.setMaximumWidth(350)
+        self.setMaximumWidth(450)
         self.setMinimumWidth(150)
         # Create layout
         self.main_layout = QVBoxLayout()
@@ -45,6 +46,10 @@ class RobotWidget(QGroupBox):
         self.main_layout.addWidget(self.state_box)
         self.time_to_position_box = TimeToPositionBox()
         self.main_layout.addWidget(self.time_to_position_box)
+        self.position_sliders_x = PositionCoordsX()
+        self.main_layout.addWidget(self.position_sliders_x)
+        self.position_sliders_y = PositionCoordsY()
+        self.main_layout.addWidget(self.position_sliders_y)
         self.strategy_box = StrategyBox()
         self.main_layout.addWidget(self.strategy_box)
         self.publish_button = PublishButton()
@@ -58,6 +63,8 @@ class RobotWidget(QGroupBox):
         self.time_to_position_box.setEnabled(enabled)
         self.strategy_box.setEnabled(enabled)
         self.publish_button.setEnabled(enabled)
+        self.position_sliders_x.setEnabled(enabled)
+        self.position_sliders_y.setEnabled(enabled)
 
     def get_robot_id(self) -> int:
         return self.id_spin_box.value()
@@ -119,6 +126,56 @@ class TimeToPositionBox(QGroupBox):
 
     def get_time(self) -> float:
         return float(self.time_spin_box.value())
+
+
+class PositionCoordsX(QGroupBox):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        # x position
+        self.setTitle("X position")
+        self.setEnabled(False)
+        # Create layout
+        self.main_layout = QHBoxLayout()
+        self.setLayout(self.main_layout)
+        # Create spin box
+        self.x_pos_spin_box = QSpinBox()
+        self.x_pos_spin_box.setRange(-550, 550)
+        self.main_layout.addWidget(self.x_pos_spin_box)
+        # Create slider
+        self.x_pos_slider = QSlider(Qt.Horizontal)  # type: ignore[attr-defined]
+        self.x_pos_slider.setRange(-550, 550)
+        self.main_layout.addWidget(self.x_pos_slider)
+        # Connect spin box and slider
+        self.x_pos_spin_box.valueChanged.connect(self.x_pos_slider.setValue)  # type: ignore[attr-defined]
+        self.x_pos_slider.valueChanged.connect(self.x_pos_spin_box.setValue)  # type: ignore[attr-defined]
+
+    def get_x_position(self) -> float:
+        return float(self.x_pos_spin_box.value() / 100)
+
+
+class PositionCoordsY(QGroupBox):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        # y position
+        self.setTitle("Y position")
+        self.setEnabled(False)
+        # Create layout
+        self.main_layout = QHBoxLayout()
+        self.setLayout(self.main_layout)
+        # Create spin box
+        self.y_pos_spin_box = QSpinBox()
+        self.y_pos_spin_box.setRange(-400, 400)
+        self.main_layout.addWidget(self.y_pos_spin_box)
+        # Create slider
+        self.y_pos_slider = QSlider(Qt.Horizontal)  # type: ignore[attr-defined]
+        self.y_pos_slider.setRange(-400, 400)
+        self.main_layout.addWidget(self.y_pos_slider)
+        # Connect spin box and slider
+        self.y_pos_spin_box.valueChanged.connect(self.y_pos_slider.setValue)  # type: ignore[attr-defined]
+        self.y_pos_slider.valueChanged.connect(self.y_pos_spin_box.setValue)  # type: ignore[attr-defined]
+
+    def get_y_position(self) -> float:
+        return float(self.y_pos_spin_box.value() / 100)
 
 
 class StrategyBox(QGroupBox):
@@ -250,6 +307,10 @@ class TeamDataSimulator(Plugin):
             if robot_widget.active():
                 team_data = TeamData()
                 team_data.robot_id = robot_widget.get_robot_id()
+                poseWithCov = PoseWithCovariance()
+                poseWithCov.pose.position.x = robot_widget.position_sliders_x.get_x_position()
+                poseWithCov.pose.position.y = robot_widget.position_sliders_y.get_y_position()
+                team_data.robot_position = poseWithCov
                 team_data.state = robot_widget.state_box.get_state()
                 team_data.time_to_position_at_ball = robot_widget.time_to_position_box.get_time()
                 team_data.strategy.role = robot_widget.strategy_box.get_role()
