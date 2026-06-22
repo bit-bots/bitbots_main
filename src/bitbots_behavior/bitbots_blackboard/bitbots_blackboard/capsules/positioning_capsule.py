@@ -1,6 +1,7 @@
 from dataclasses import dataclass
-from bitbots_utils.utils import get_parameters_from_other_node
+
 import numpy as np
+from bitbots_utils.utils import get_parameters_from_other_node
 
 from bitbots_blackboard.capsules import AbstractBlackboardCapsule, cached_capsule_function
 
@@ -8,10 +9,11 @@ from bitbots_blackboard.capsules import AbstractBlackboardCapsule, cached_capsul
 @dataclass
 class Field:
     """Field geometry. Populated from the parameter blackboard in __init__."""
-    length: float = 9.0       # x extent (own goal at -length/2, opp goal at +length/2)
-    width: float = 6.0        # y extent
-    goal_width: float = 1.5   # goal mouth
-    margin: float = 0.3       # keep field players this far inside the touchlines
+
+    length: float = 9.0  # x extent (own goal at -length/2, opp goal at +length/2)
+    width: float = 6.0  # y extent
+    goal_width: float = 1.5  # goal mouth
+    margin: float = 0.3  # keep field players this far inside the touchlines
 
 
 @dataclass
@@ -37,31 +39,32 @@ class Params:
     also what shoves the defenders sideways into clean flanking slots when they would
     otherwise pile onto the goalie -> the "wall next to the goalie" emerges for free.
     """
+
     # goalie
-    d_g: float = 0.55         # how far the goalie comes out of the goal (dist from goal centre)
+    d_g: float = 0.55  # how far the goalie comes out of the goal (dist from goal centre)
     # defenders
-    alpha: float = 0.42       # defender depth as a fraction of |ball-goal|  (push-up factor)
-    depth_bias: float = 0.0   # extra defender depth: + = further forward, - = further back
-    D_min: float = 0.9        # min defender depth from goal (never tuck behind this)
-    D_max: float = 3.8        # max defender depth from goal (high-line cap)
-    dz: float = 0.45          # keep defenders at least this far ahead of the goalie
-    standoff: float = 1.0     # keep defenders at least this far (goal-side) of the ball
-    gap: float = 1.1          # lateral spacing between adjacent defenders
-    def_side: float = 0.9     # lateral offset for a lone defender (so it's not on the axis)
+    alpha: float = 0.42  # defender depth as a fraction of |ball-goal|  (push-up factor)
+    depth_bias: float = 0.0  # extra defender depth: + = further forward, - = further back
+    D_min: float = 0.9  # min defender depth from goal (never tuck behind this)
+    D_max: float = 3.8  # max defender depth from goal (high-line cap)
+    dz: float = 0.45  # keep defenders at least this far ahead of the goalie
+    standoff: float = 1.0  # keep defenders at least this far (goal-side) of the ball
+    gap: float = 1.1  # lateral spacing between adjacent defenders
+    def_side: float = 0.9  # lateral offset for a lone defender (so it's not on the axis)
     # supporter
-    f: float = 1.6            # how far in front of the ball (toward opp goal) the supporter sits
-    supp_side: float = 1.2    # supporter lateral offset magnitude (auto-leans toward centre)
-    supp_max_x: float = 3.0   # supporter never goes past this x (keeps it out of the opp corner)
+    f: float = 1.6  # how far in front of the ball (toward opp goal) the supporter sits
+    supp_side: float = 1.2  # supporter lateral offset magnitude (auto-leans toward centre)
+    supp_max_x: float = 3.0  # supporter never goes past this x (keeps it out of the opp corner)
     # striker
-    kick_offset: float = 0.25 # striker stands this far behind the ball (to push it forward)
-    post_margin: float = 0.45 # safety margin inside each goal post for a straight shot
-    back_dist: float = 1.0    # within this x of the opp goal & not aligned -> play back to our side
+    kick_offset: float = 0.25  # striker stands this far behind the ball (to push it forward)
+    post_margin: float = 0.45  # safety margin inside each goal post for a straight shot
+    back_dist: float = 1.0  # within this x of the opp goal & not aligned -> play back to our side
     # separation
-    min_sep: float = 0.8      # no two robots closer than this
+    min_sep: float = 0.8  # no two robots closer than this
     sep_iters: int = 8
     # kick lane: keep teammates out of the corridor in front of the ball
-    kick_clear: float = 0.7   # half-width of the cleared corridor
-    kick_range: float = 3.0   # how far in front of the ball the corridor extends
+    kick_clear: float = 0.7  # half-width of the cleared corridor
+    kick_range: float = 3.0  # how far in front of the ball the corridor extends
 
 
 class PositioningCapsule(AbstractBlackboardCapsule):
@@ -124,10 +127,12 @@ class PositioningCapsule(AbstractBlackboardCapsule):
     def _clamp_field(p, fld, margin=None):
         """Clamp a point to the playable rectangle (continuous / C0)."""
         m = fld.margin if margin is None else margin
-        return np.array([
-            np.clip(p[0], -fld.length / 2 + m, fld.length / 2 - m),
-            np.clip(p[1], -fld.width / 2 + m, fld.width / 2 - m),
-        ])
+        return np.array(
+            [
+                np.clip(p[0], -fld.length / 2 + m, fld.length / 2 - m),
+                np.clip(p[1], -fld.width / 2 + m, fld.width / 2 - m),
+            ]
+        )
 
     # --------------------------------------------------------------------------- #
     #  Role allocation
@@ -147,10 +152,10 @@ class PositioningCapsule(AbstractBlackboardCapsule):
         n_def = 0
         has_support = False
         if n >= 3:
-            n_def += 1            # first defender
+            n_def += 1  # first defender
         if n >= 4:
-            has_support = True    # supporter
-        n_def += max(n - 4, 0)   # everyone past 4 is another defender
+            has_support = True  # supporter
+        n_def += max(n - 4, 0)  # everyone past 4 is another defender
 
         if has_support and n < 5 and ball is not None and field is not None:
             own_third = -field.length / 2 + field.length / 3.0
@@ -193,8 +198,7 @@ class PositioningCapsule(AbstractBlackboardCapsule):
         if aim is not None and ball is not None:
             perp = np.array([-aim[1], aim[0]])
             step = max(params.kick_clear * 0.7, 0.3)
-            lane_pts = [np.asarray(ball) + s * aim
-                        for s in np.arange(step, params.kick_range + 1e-9, step)]
+            lane_pts = [np.asarray(ball) + s * aim for s in np.arange(step, params.kick_range + 1e-9, step)]
         for _ in range(params.sep_iters):
             disp = {n: np.zeros(2) for n in names}
             for i in range(len(names)):
@@ -203,8 +207,7 @@ class PositioningCapsule(AbstractBlackboardCapsule):
                     diff = positions[a] - positions[b]
                     dist = np.linalg.norm(diff)
                     if dist < sep:
-                        dirv = self._normalize(diff, np.array([0.0, 1.0])) if dist > 1e-6 \
-                            else np.array([0.0, 1.0])
+                        dirv = self._normalize(diff, np.array([0.0, 1.0])) if dist > 1e-6 else np.array([0.0, 1.0])
                         overlap = sep - dist
                         a_fixed, b_fixed = a in fixed, b in fixed
                         if a_fixed and b_fixed:
@@ -261,8 +264,7 @@ class PositioningCapsule(AbstractBlackboardCapsule):
             for a, i in enumerate(rem_i):
                 for b, j in enumerate(rem_j):
                     op, npose = old_poses[i], new_items[j][1]
-                    cost[a, b] = (np.linalg.norm(op[:2] - npose[:2])
-                                + angle_w * self._angle_diff(op[2], npose[2]))
+                    cost[a, b] = np.linalg.norm(op[:2] - npose[:2]) + angle_w * self._angle_diff(op[2], npose[2])
             ri, ci = linear_sum_assignment(cost)
             for a, b in zip(ri, ci):
                 i, j = rem_i[a], rem_j[b]
@@ -275,17 +277,17 @@ class PositioningCapsule(AbstractBlackboardCapsule):
 
     def _compute_formation(self, ball, field: Field, n_players: int, params: Params):
         """Map a ball position -> {role_name: np.array([x, y, theta])}. Pure & deterministic."""
-        B = np.asarray(ball, dtype=float)
+        B = ball
         G = np.array([-field.length / 2.0, 0.0])
         opp = np.array([+field.length / 2.0, 0.0])
 
         d = np.linalg.norm(B - G)
-        to_ball = self._normalize(B - G)            # our-goal -> ball
+        to_ball = self._normalize(B - G)  # our-goal -> ball
         perp = np.array([-to_ball[1], to_ball[0]])
 
         roles = self._allocate_roles(n_players, B, field)
         out = {}
-        head = {}        # role -> heading (rad); filled lazily, completed after separation
+        head = {}  # role -> heading (rad); filled lazily, completed after separation
         kick_aim = None  # striker's kick direction; used to clear the kick lane
 
         # --- striker: stands behind the ball opposite the smoothly-chosen kick aim --- #
@@ -305,30 +307,35 @@ class PositioningCapsule(AbstractBlackboardCapsule):
             # the striker swings smoothly rather than whipping when the two aims oppose
             a0 = np.arctan2(aim_goal[1], aim_goal[0])
             a1 = np.arctan2(aim_back[1], aim_back[0])
-            da = (a1 - a0 + np.pi) % (2 * np.pi) - np.pi   # shortest signed turn
+            da = (a1 - a0 + np.pi) % (2 * np.pi) - np.pi  # shortest signed turn
             ang = a0 + w_back * da
             aim = np.array([np.cos(ang), np.sin(ang)])
             out["striker"] = B - params.kick_offset * aim
-            head["striker"] = ang   # striker faces where it kicks
+            head["striker"] = ang  # striker faces where it kicks
             kick_aim = aim
 
         # --- goalie: on the ball->goal axis, hugging the goal, clamped to the mouth -- #
         if "goalie" in roles:
             g = G + params.d_g * to_ball
-            g = np.array([
-                np.clip(g[0], -field.length / 2 + 0.05, -field.length / 2 + params.d_g),
-                np.clip(g[1], -field.goal_width / 2, field.goal_width / 2),
-            ])
+            g = np.array(
+                [
+                    np.clip(g[0], -field.length / 2 + 0.05, -field.length / 2 + params.d_g),
+                    np.clip(g[1], -field.goal_width / 2, field.goal_width / 2),
+                ]
+            )
             out["goalie"] = g
 
         # --- defenders: anchor on axis at push-up depth, spread along perp ---------- #
         defender_roles = [r for r in roles if r.startswith("defender_")]
         m = len(defender_roles)
         if m > 0:
-            D = np.clip(params.alpha * d + params.depth_bias,         # push up + fwd/back bias
-                        params.D_min, params.D_max)
-            D = min(D, max(d - params.standoff, 0.0))                 # stay goal-side of the ball
-            D = max(D, params.d_g + params.dz)                        # stay ahead of the goalie
+            D = np.clip(
+                params.alpha * d + params.depth_bias,  # push up + fwd/back bias
+                params.D_min,
+                params.D_max,
+            )
+            D = min(D, max(d - params.standoff, 0.0))  # stay goal-side of the ball
+            D = max(D, params.d_g + params.dz)  # stay ahead of the goalie
             anchor = G + D * to_ball
             if m == 1:
                 # a single defender: shade to the centre side so it doesn't sit on the
@@ -344,7 +351,7 @@ class PositioningCapsule(AbstractBlackboardCapsule):
         if "supporter" in roles:
             # always sit to the centre side of the ball; hard swap so it is never
             # directly in front of the striker, even when the ball is on the centre line
-            side_dir = -1.0 if B[1] >= 0 else 1.0   # points toward y=0 (default: centre-ward)
+            side_dir = -1.0 if B[1] >= 0 else 1.0  # points toward y=0 (default: centre-ward)
             sup = B + np.array([params.f, params.supp_side * side_dir])
             sup[0] = min(sup[0], params.supp_max_x)  # don't drift into the opponent corner
             out["supporter"] = self._clamp_field(sup, field)
@@ -355,7 +362,7 @@ class PositioningCapsule(AbstractBlackboardCapsule):
         # --- orientations (computed from the final positions) --------------------- #
         for role, p in out.items():
             if role in head:
-                continue                       # striker already set (faces its kick aim)
+                continue  # striker already set (faces its kick aim)
             if role == "supporter":
                 # face the bisector of (toward ball, toward opp goal): "watch both"
                 bis = self._normalize(B - p) + self._normalize(opp - p)
@@ -367,9 +374,11 @@ class PositioningCapsule(AbstractBlackboardCapsule):
 
     @cached_capsule_function
     def get_formation_assignment(self) -> dict:
-        ball = self._blackboard.world_model.get_best_ball_point_stamped()
+        ballPose = self._blackboard.world_model.get_best_ball_point_stamped()
+        ball = np.array([ballPose.point.x, ballPose.point.y])
         robot_poses = self._blackboard.team_data.get_robot_poses()
-        
+        self._node.get_logger().info(f"Length of robot_poses: {len(robot_poses)}")
+
         formation = self._compute_formation(ball, self._field, len(robot_poses), self._params)
         new_items = list(formation.items())
         ordered_jerseys = sorted(robot_poses.keys())

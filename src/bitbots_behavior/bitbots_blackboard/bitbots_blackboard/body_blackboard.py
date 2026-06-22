@@ -8,9 +8,9 @@ from bitbots_blackboard.capsules.game_status_capsule import GameStatusCapsule
 from bitbots_blackboard.capsules.kick_capsule import KickCapsule
 from bitbots_blackboard.capsules.misc_capsule import MiscCapsule
 from bitbots_blackboard.capsules.pathfinding_capsule import PathfindingCapsule
+from bitbots_blackboard.capsules.positioning_capsule import PositioningCapsule
 from bitbots_blackboard.capsules.team_data_capsule import TeamDataCapsule
 from bitbots_blackboard.capsules.world_model_capsule import WorldModelCapsule
-from bitbots_blackboard.capsules.positioning_capsule import PositioningCapsule
 
 
 class BodyBlackboard:

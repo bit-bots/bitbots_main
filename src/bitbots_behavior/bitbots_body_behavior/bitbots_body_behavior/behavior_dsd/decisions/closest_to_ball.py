@@ -48,7 +48,7 @@ class RankToBallNoGoalie(AbstractDecisionElement):
 
     def perform(self, reevaluate=False):
         optimal_positioning = self.blackboard.positioning.get_formation_assignment()
-        own_position = optimal_positioning[self.blackboard.game_status.get_own_id()]
+        own_position = optimal_positioning[self.blackboard.gamestate.get_own_id()]
         role = own_position["role"]
         self.publish_debug_data("Role from positioning", role)
         if role == "striker":
