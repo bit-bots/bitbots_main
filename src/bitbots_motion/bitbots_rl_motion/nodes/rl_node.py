@@ -26,6 +26,8 @@ class RLNode(Node, ABC):
         self.declare_parameter("phase.gait_frequency", 0.0)
         self.declare_parameter("phase.use_phase", False)
         self.declare_parameter("phase.initial_phase", [0.0, np.pi])
+        self.declare_parameter("gravity.roll_offset", 0.0)
+        self.declare_parameter("gravity.pitch_offset", 0.0)
         self.declare_parameter("providers", ["CPUExecutionProvider"])
         self.declare_parameter("joints.ordered_relevant_joint_names", [""])
         self.declare_parameter("joints.walkready_state", [0.0])
