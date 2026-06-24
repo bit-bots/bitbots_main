@@ -84,6 +84,7 @@ clone_repo() {
         }
 
         if git -C "$target" remote get-url origin >/dev/null 2>&1; then
+            git -C "$target" config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
             git -C "$target" fetch --prune origin
         fi
 
@@ -97,8 +98,8 @@ clone_repo() {
 
     echo "Cloning bitbots_main branch '$branch'..."
     if [[ "$clone_method" == "https" ]]; then
-        git clone --branch "$branch" --single-branch "$REPO_URL_HTTPS" "$target"
-    elif git clone --branch "$branch" --single-branch "$REPO_URL_SSH" "$target"; then
+        git clone --branch "$branch" "$REPO_URL_HTTPS" "$target"
+    elif git clone --branch "$branch" "$REPO_URL_SSH" "$target"; then
         :
     else
         echo "SSH clone failed. This may mean your SSH keys are not set up for GitHub."
@@ -109,7 +110,7 @@ clone_repo() {
             exit 1
         fi
         if ask_question "Continue with an HTTPS clone instead?"; then
-            git clone --branch "$branch" --single-branch "$REPO_URL_HTTPS" "$target"
+            git clone --branch "$branch" "$REPO_URL_HTTPS" "$target"
         else
             echo "Set up your SSH keys and re-run this script." >&2
             exit 1
@@ -132,7 +133,9 @@ main() {
     echo "Installing dependencies..."
     pixi install
     echo "Running full build..."
-    pixi run -e default build --parallel-workers 2
+    echo "If the build exhausts memory on this system, retry inside bitbots_main with:"
+    echo "pixi run -e default build --parallel-workers 2"
+    pixi run -e default build
 }
 
 main "$@"

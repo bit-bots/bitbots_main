@@ -19,7 +19,7 @@ jobs:
     steps:
       - name: Download and run setup script
         run: |
-          cd "$(mktemp -d)"
+          cd "$RUNNER_TEMP"
           curl -fsSL https://raw.githubusercontent.com/bit-bots/bitbots_main/main/scripts/bitbots_setup.sh \
-            --output "${RUNNER_TEMP}/bitbots_setup.sh"
-          bash "${RUNNER_TEMP}/bitbots_setup.sh" --https
+            --output bitbots_setup.sh
+          bash ./bitbots_setup.sh --https
