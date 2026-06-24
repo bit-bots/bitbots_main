@@ -450,16 +450,16 @@ class HeadMover {
   /**
    * @brief Generates a parameterized search pattern
    */
-  std::vector<std::pair<double, double>> generatePattern(
-      int line_count, double max_horizontal_angle_left, double max_horizontal_angle_right, double max_vertical_angle_up,
-      double max_vertical_angle_down,
-      double reduce_last_scanline = 1.0,
-      int interpolation_steps = 0) {
+  std::vector<std::pair<double, double>> generatePattern(int line_count, double max_horizontal_angle_left,
+                                                         double max_horizontal_angle_right,
+                                                         double max_vertical_angle_up, double max_vertical_angle_down,
+                                                         double reduce_last_scanline = 1.0,
+                                                         int interpolation_steps = 0) {
     // Store the keyframes of the search pattern
     std::vector<std::pair<double, double>> keyframes;
     // Store the state of the generation process
-    bool down_direction = true;         // true = decreasing line (toward top), false = increasing line (toward bottom)
-    bool right_side = false;            // true = right, false = left
+    bool down_direction = true;   // true = decreasing line (toward top), false = increasing line (toward bottom)
+    bool right_side = false;      // true = right, false = left
     bool right_direction = true;  // true = moving right, false = moving left; alternates per scan line
     int line = line_count - 1;
     // Calculate the number of iterations that are needed to generate the search pattern
