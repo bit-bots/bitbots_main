@@ -25,4 +25,4 @@ __pycache__
 src/bitbots_simulation/bitbots_mujoco_sim/
 
 # Don't sync the build bitbots_rust_nav target directory
-src/bitbots_navigation/bitbots_rust_nav/target
+src/bitbots_navigation/bitbots_rust_nav/target/

@@ -199,7 +199,7 @@ def _parse_target_candidates(targets: list[str]) -> list[tuple[str, list[str]]]:
             print_error(f"Could not determine IP address from input: '{target}'")
             sys.exit(1)
         if not target_ips_for_identifier:
-            print_error(f"Could not determine IP address from input:' {target}'")
+            print_error(f"Could not determine IP address from input: '{target}'")
             sys.exit(1)
         target_candidates.append((target, target_ips_for_identifier))
     return target_candidates
