@@ -12,7 +12,7 @@ Pi Plus Cameras do not use IP addresses, but are connected via USB.
 .. note::
    Current status as of May 2026:
 
-+----------+----------+------- --+-------------+
++----------+----------+----------+-------------+
 | Name     | Hostname | Username | IP          |
 +==========+==========+==========+=============+
 | Kalliope | kalliope | nvidia   | 172.20.1.11 |
@@ -25,7 +25,7 @@ Pi Plus Cameras do not use IP addresses, but are connected via USB.
 +----------+----------+----------+-------------+
 
 Old robots
-+----------+----------+------- --+-------------+-------------+
++----------+----------+----------+-------------+-------------+
 | Name     | Hostname | Username | IP          | Camera IP   |
 +==========+==========+==========+=============+=============+
 | Amy      | nuc1     | bitbots  | 172.20.1.11 | 172.20.4.11 |
