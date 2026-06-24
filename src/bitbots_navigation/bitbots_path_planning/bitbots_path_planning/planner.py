@@ -3,7 +3,8 @@ from typing import Optional
 
 import soccer_vision_3d_msgs.msg as sv3dm
 import tf2_ros as tf2
-from bitbots_rust_nav import ObstacleMap, ObstacleMapConfig, RoundObstacle
+from bitbots_rust_nav import ObstacleMap, ObstacleMapConfig, PolygonObstacle, RoundObstacle
+from bitbots_utils.utils import get_parameters_from_other_node
 from geometry_msgs.msg import PoseStamped
 from nav_msgs.msg import Path
 from rclpy.duration import Duration
@@ -55,6 +56,48 @@ class VisibilityPlanner(Planner):
         self.base_footprint_frame: str = self.node.config.base_footprint_frame
         self.ball_obstacle_active: bool = True
         self.frame: str = self.node.config.map.planning_frame
+
+        # Get the field dimensions from the global parameter blackboard
+        field_parameters = get_parameters_from_other_node(
+            self.node, "/parameter_blackboard", ["field.size.x", "field.goal.width", "field.goal.depth"]
+        )
+        # Create static obstacles for both goals, so we don't plan paths through them
+        self.goal_obstacles: list[PolygonObstacle] = self._create_goal_obstacles(
+            field_length=field_parameters["field.size.x"],
+            goal_width=field_parameters["field.goal.width"],
+            goal_depth=field_parameters["field.goal.depth"],
+        )
+
+    def _create_goal_obstacles(
+        self, field_length: float, goal_width: float, goal_depth: float
+    ) -> list[PolygonObstacle]:
+        """
+        Creates a U-shaped obstacle for each goal covering its sides and back.
+        The back wall is extended away from the field, so we don't plan paths through
+        the narrow space behind the goal.
+        """
+        wall_width = self.node.config.map.goal_obstacle.width
+        back_extension = self.node.config.map.goal_obstacle.back_extension
+
+        x_goal_line = field_length / 2
+        x_back_inner = x_goal_line + goal_depth
+        x_back_outer = x_back_inner + wall_width + back_extension
+        y_inner = goal_width / 2
+        y_outer = y_inner + wall_width
+
+        # U-shaped polygon opening towards the field (here for the goal in positive x direction)
+        vertices = [
+            (x_goal_line, -y_outer),
+            (x_back_outer, -y_outer),
+            (x_back_outer, y_outer),
+            (x_goal_line, y_outer),
+            (x_goal_line, y_inner),
+            (x_back_inner, y_inner),
+            (x_back_inner, -y_inner),
+            (x_goal_line, -y_inner),
+        ]
+        # Place one goal obstacle on each side of the field (mirrored in x)
+        return [PolygonObstacle([(side * x, y) for x, y in vertices]) for side in (-1, 1)]
 
     def set_robots(self, robots: sv3dm.RobotArray):
         new_buffer: list[RoundObstacle] = []
@@ -132,10 +175,12 @@ class VisibilityPlanner(Planner):
             num_vertices=12,
         )
         # Add robots to obstacles
-        obstacles = self.robots.copy()
+        obstacles: list[RoundObstacle | PolygonObstacle] = list(self.robots)
         # Add ball to obstacles if active
         if self.ball is not None:
             obstacles.append(self.ball)
+        # Add the static goal obstacles
+        obstacles.extend(self.goal_obstacles)
         obstacle_map = ObstacleMap(config, obstacles)
 
         # Calculate the shortest path

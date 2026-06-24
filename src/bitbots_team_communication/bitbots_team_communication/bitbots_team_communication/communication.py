@@ -2,7 +2,6 @@ import socket
 import struct
 import threading
 from abc import ABC, abstractmethod
-from ipaddress import IPv4Address
 from typing import Callable, Optional
 
 import rclpy
@@ -10,6 +9,8 @@ from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, ReliabilityPolicy
 from std_msgs.msg import UInt8MultiArray
+
+from bitbots_team_communication.network import resolve_target_ip
 
 
 class CommunicationBackend(ABC):
@@ -37,8 +38,13 @@ class SocketCommunication(CommunicationBackend):
         self.logger = logger
 
         self.buffer_size: int = 1024
-        self.socket: Optional[socket.socket] = None
-        self.target_ip: IPv4Address = IPv4Address(node.get_parameter("target_ip").value)
+        self.socket: socket.socket | None = None
+        configured_target_ip: str = node.get_parameter("target_ip").value
+        self.target_ip, wifi_interface = resolve_target_ip(configured_target_ip)
+        if wifi_interface is not None:
+            self.logger.info(
+                f"Using Wi-Fi broadcast address {self.target_ip} from interface {wifi_interface} for team communication"
+            )
 
         if self.target_ip.is_loopback:
             # local mode on loopback device, bind to port depending on bot id and team id
@@ -148,10 +154,13 @@ class RosCommunication(CommunicationBackend):
         self.publisher.publish(UInt8MultiArray(data=list(message)))
 
     def start_receiving(self, callback: Callable[[bytes], None]) -> None:
+        def handle_ros_message(msg: UInt8MultiArray) -> None:
+            callback(bytes(msg.data))
+
         self.node.create_subscription(
             UInt8MultiArray,
             self.topic,
-            lambda msg: callback(bytes(msg.data)),
+            handle_ros_message,
             qos_profile=self.qos,
             callback_group=MutuallyExclusiveCallbackGroup(),
         )

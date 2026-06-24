@@ -1,15 +1,17 @@
-#########
-# Labor #
-#########
+########
+# Demo #
+########
 
-# Settings for the f-015 test field
+# Settings for demos outside of a proper field.
+# The field is huge, so field based features like the goal obstacles
+# in the path planning are far away and don't interfere with the demo.
 
 parameter_blackboard:
   ros__parameters:
     field:
       size:
-        x: 5.45
-        y: 3.88
+        x: 1000.0
+        y: 1000.0
         padding: 0.1   # Padding (area outside of the lines) of the field in all directions
       markings:
         penalty_area:
@@ -18,4 +20,3 @@ parameter_blackboard:
       goal:
         width: 2.25   # The width of the goal (center of one goal post to the other goal post)
         depth: 0.6   # The depth of the goal (distance from the goal line to the back of the goal)
-
