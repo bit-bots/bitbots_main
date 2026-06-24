@@ -166,10 +166,11 @@ class StateToMessageConverter:
             message = convert_seen_robots(state.seen_robots, message)
         if state.strategy is not None:
             message = convert_strategy(state.strategy, state.strategy_time, message)
-        if state.time_to_ball is not None:
-            message = convert_time_to_ball(
-                state.time_to_ball, state.time_to_ball_time, state.ball, state.pose, state.avg_walking_speed, message
-            )
+        # Proto scalar fields have no presence here, so leaving this unset would
+        # serialize a plausible but invalid estimate for receivers.
+        message = convert_time_to_ball(
+            state.time_to_ball, state.time_to_ball_time, state.ball, state.pose, state.avg_walking_speed, message
+        )
 
         return message
 
