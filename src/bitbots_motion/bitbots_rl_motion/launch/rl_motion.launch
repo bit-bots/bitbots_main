@@ -1,8 +1,8 @@
 <launch>
   <arg name="sim" default="false"/>
-  <arg name="walk" default="true"/>
+  <arg name="walk" default="false"/>
   <arg name="kick" default="false"/>
-  <arg name="mjlab_walk" default="false"/>
+  <arg name="mjlab_walk" default="true"/>
 
 
   <group if="$(var walk)">

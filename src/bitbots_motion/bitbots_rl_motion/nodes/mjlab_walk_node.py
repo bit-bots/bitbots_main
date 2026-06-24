@@ -1,5 +1,4 @@
 import numpy as np
-from handlers.ball_handler import BallHandler
 from handlers.command_handler import CommandHandler
 from handlers.gravity_handler import GravityHandler
 from handlers.gyro_handler import GyroHandler
@@ -22,7 +21,6 @@ class MjLabWalkNode(RLNode):
         self._gyro_handler = GyroHandler(self)
         self._gravity_handler = GravityHandler(self)
         self._joint_handler = JointHandler(self)
-        self._ball_handler = BallHandler(self)
         self._robot_state_handler = RobotStateHandler(self)
         self._command_handler = CommandHandler(self)
 
@@ -39,6 +37,7 @@ class MjLabWalkNode(RLNode):
                 self._joint_handler.get_angle_data(),
                 self._joint_handler.get_velocity_data(),
                 self._previous_action.get_previous_action(),
+                self._phase.get_obs_phase(),
                 self._command_handler.get_command(),
             ]
         ).astype(np.float32)
@@ -52,8 +51,27 @@ class MjLabWalkNode(RLNode):
 
     # states in which the policy executes
     def allowed_states(self):
-        allowed_to_move = self._robot_state_handler.is_walkable() and np.any(self._command_handler.get_command() != 0.0)
+        allowed_to_move = self._robot_state_handler.is_walkable()
         return allowed_to_move
+
+    def _phase_init_hook(self):
+        self._phase.set_obs_phase(
+            np.array([np.sin(self._phase.get_phase()), np.cos(self._phase.get_phase())], dtype=np.float32).flatten()
+        )
+
+    def _phase_update_hook(self):
+        # get cmd, if less then threshold, set phase to 0 and obs to [0,0]
+        if np.linalg.norm(self._command_handler.get_command()) < 0.01:
+            self._phase.set_phase(np.array([0], dtype=np.float32))
+            self._phase.set_obs_phase(np.array([0,0], dtype=np.float32))
+        else:
+            phase = self._phase.get_phase()
+            new_phase = phase + self._phase.get_phase_dt()
+            self._phase.set_phase(np.fmod(new_phase + np.pi, 2 * np.pi) - np.pi)
+            self._phase.set_obs_phase(
+                np.array([np.sin(self._phase.get_phase()), np.cos(self._phase.get_phase())], dtype=np.float32).flatten()
+            )
+
 
 
 main = create_main(MjLabWalkNode)
