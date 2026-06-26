@@ -1,11 +1,11 @@
 import numpy as np
-from handlers.gravity_handler import GravityHandler
-from handlers.gyro_handler import GyroHandler
-from handlers.joint_handler import JointHandler
-from handlers.robot_state_handler import RobotStateHandler
 
 from bitbots_msgs.msg import JointCommand
-from nodes.rl_node import RLNode, create_main
+from bitbots_rl_motion.handlers.gravity_handler import GravityHandler
+from bitbots_rl_motion.handlers.gyro_handler import GyroHandler
+from bitbots_rl_motion.handlers.joint_handler import JointHandler
+from bitbots_rl_motion.handlers.robot_state_handler import RobotStateHandler
+from bitbots_rl_motion.nodes.rl_node import RLNode, create_main
 
 
 class MjLabGetupNode(RLNode):

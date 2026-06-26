@@ -1,8 +1,10 @@
 import numpy as np
 from rclpy.node import Node
 
+from bitbots_rl_motion.handlers import Handler
 
-class Phase:
+
+class PhaseHandler(Handler):
     def __init__(self, node: Node):
         self._node = node
         self._use_phase = self._node.get_parameter("phase.use_phase").value
@@ -12,6 +14,9 @@ class Phase:
         self._phase_dt = 2 * np.pi * self._gait_frequency * self._control_dt
 
         self._obs_phase = None
+
+    def has_data(self):
+        return True
 
     def set_phase(self, new_phase):
         self._phase = new_phase

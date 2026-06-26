@@ -1,22 +1,22 @@
 import numpy as np
-from handlers.ball_handler import BallHandler
-from handlers.command_handler import CommandHandler
-from handlers.gravity_handler import GravityHandler
-from handlers.gyro_handler import GyroHandler
-from handlers.joint_handler import JointHandler
-from handlers.robot_state_handler import RobotStateHandler
 
 from bitbots_msgs.msg import JointCommand
-from nodes.rl_node import RLNode, create_main
+from bitbots_rl_motion.handlers.ball_handler import BallHandler
+from bitbots_rl_motion.handlers.gravity_handler import GravityHandler
+from bitbots_rl_motion.handlers.gyro_handler import GyroHandler
+from bitbots_rl_motion.handlers.joint_handler import JointHandler
+from bitbots_rl_motion.handlers.kick_handler import KickHandler
+from bitbots_rl_motion.handlers.robot_state_handler import RobotStateHandler
+from bitbots_rl_motion.nodes.rl_node import RLNode, create_main
 
 
-class MjLabWalkNode(RLNode):
+class KickNode(RLNode):
     def __init__(self):
         # Configuring self._phase, self._previous_action
-        super().__init__(node_name="mjlab_walk_node")
+        super().__init__(node_name="kick_node")
 
         # publishers
-        self._joint_command_pub = self.create_publisher(JointCommand, "walking_motor_goals", 10)
+        self._joint_command_pub = self.create_publisher(JointCommand, "kick_motor_goals", 10)
 
         # handlers
         self._gyro_handler = GyroHandler(self)
@@ -24,7 +24,7 @@ class MjLabWalkNode(RLNode):
         self._joint_handler = JointHandler(self)
         self._ball_handler = BallHandler(self)
         self._robot_state_handler = RobotStateHandler(self)
-        self._command_handler = CommandHandler(self)
+        self._kick_handler = KickHandler(self)
 
         # loading model
         model = self.get_parameter("model").value
@@ -39,7 +39,8 @@ class MjLabWalkNode(RLNode):
                 self._joint_handler.get_angle_data(),
                 self._joint_handler.get_velocity_data(),
                 self._previous_action.get_previous_action(),
-                self._command_handler.get_command(),
+                self._phase.get_obs_phase(),
+                self._ball_handler.get_ball_pos(),
             ]
         ).astype(np.float32)
 
@@ -52,8 +53,7 @@ class MjLabWalkNode(RLNode):
 
     # states in which the policy executes
     def allowed_states(self):
-        allowed_to_move = self._robot_state_handler.is_walkable() and np.any(self._command_handler.get_command() != 0.0)
-        return allowed_to_move
+        return self._robot_state_handler.is_kickable() and self._kick_handler.is_active()
 
 
-main = create_main(MjLabWalkNode)
+main = create_main(KickNode)
