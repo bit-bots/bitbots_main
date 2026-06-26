@@ -78,17 +78,17 @@ class RLNode(Node, ABC):
         self._phase_update_hook()
 
     @abstractmethod
-    def _phase_update_hook(self):
+    def _phase_update_hook(self) -> None:
         pass
 
-    def _all_sensors_ready(self):
+    def _all_sensors_ready(self) -> tuple[bool, str]:
         for handler in self._handlers:
             if not handler.has_data():
                 return False, type(handler).__name__
 
         return True, "No missing handler"
 
-    def load_model(self, model):
+    def load_model(self, model) -> None:
         path_to_model = os.path.join(get_package_share_directory("bitbots_rl_motion"), "models", model)
 
         self._onnx_model_path = Path(path_to_model)
@@ -108,15 +108,15 @@ class RLNode(Node, ABC):
         self._timer = self.create_timer(self.get_parameter("phase.control_dt").value, self._timer_callback)
 
     @abstractmethod
-    def publisher(self, action):
+    def publisher(self, action: np.ndarray) -> None:
         pass
 
     @abstractmethod
-    def obs(self):
+    def obs(self) -> np.ndarray:
         pass
 
     @abstractmethod
-    def allowed_states(self):
+    def allowed_states(self) -> bool:
         pass
 
 
