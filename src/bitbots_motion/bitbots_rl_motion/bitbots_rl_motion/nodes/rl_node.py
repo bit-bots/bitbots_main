@@ -6,11 +6,12 @@ import numpy as np
 import onnxruntime as rt
 import rclpy
 from ament_index_python import get_package_share_directory
-from bitbots_rl_motion.phase import Phase
-from bitbots_rl_motion.previous_action import PreviousAction
-from handlers.handler import Handler
 from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
+
+from bitbots_rl_motion.handlers import Handler
+from bitbots_rl_motion.handlers.phase import PhaseHandler
+from bitbots_rl_motion.handlers.previous_action import PreviousActionHandler
 
 
 class RLNode(Node, ABC):
@@ -19,7 +20,7 @@ class RLNode(Node, ABC):
     def __init__(self, node_name: str):
         super().__init__(f"{node_name}")
 
-        # Fallback values if paramters don't exist in config file
+        # Fallback values if parameters don't exist in config file
         self.declare_parameter("model", "")
         self.declare_parameter("phase.control_dt", 0.0)
         self.declare_parameter("phase.gait_frequency", 0.0)
@@ -42,8 +43,8 @@ class RLNode(Node, ABC):
         self.get_logger().info(f"Loaded model: {model}")
 
         # Phase is optional - if phase shouldn't be used, than self._phase.get_phase() will return None
-        self._phase = Phase(self)
-        self._previous_action = PreviousAction(self)
+        self._phase = PhaseHandler(self)
+        self._previous_action = PreviousActionHandler(self)
 
     def _timer_callback(self):
         # Check whether all subscribers received at least one message

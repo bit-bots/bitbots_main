@@ -4,7 +4,7 @@ import numpy as np
 from sensor_msgs.msg import JointState
 
 from bitbots_msgs.msg import JointCommand
-from handlers.handler import Handler
+from bitbots_rl_motion.handlers import Handler
 
 
 class JointHandler(Handler):

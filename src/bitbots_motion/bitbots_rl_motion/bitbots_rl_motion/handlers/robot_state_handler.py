@@ -1,7 +1,7 @@
 from typing import Optional
 
 from bitbots_msgs.msg import RobotControlState
-from handlers.handler import Handler
+from bitbots_rl_motion.handlers import Handler
 
 WALKABLE_STATES = (
     RobotControlState.CONTROLLABLE,
