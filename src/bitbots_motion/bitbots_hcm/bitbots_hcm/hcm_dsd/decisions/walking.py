@@ -4,12 +4,6 @@ from bitbots_hcm.hcm_dsd.decisions import AbstractHCMDecisionElement
 class RecentWalkingGoals(AbstractHCMDecisionElement):
     """
     Decides if the robot is currently walking or just balancing in place.
-
-    Returns STAY_WALKING when the walk node is active and any joint moved more
-    than 3° relative to the previous walk command within standing_transition_delay.
-    Returns NOT_WALKING (→ CONTROLLABLE) when the walk node stopped or has been
-    sending only small corrections for longer than standing_transition_delay.
-    The walk node continues to run and balance in CONTROLLABLE state.
     """
 
     def perform(self, reevaluate=False):

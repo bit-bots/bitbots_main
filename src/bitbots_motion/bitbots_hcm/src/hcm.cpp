@@ -102,11 +102,10 @@ class HCM_CPP : public rclcpp::Node {
   void walking_goal_callback(bitbots_msgs::msg::JointCommand msg) {
     last_walking_time_ = msg.header.stamp;
 
-    // Detect significant motion: any joint moved >3° relative to the previous walk command
+    // Detect significant motion: any joint moved more than the threshold relative to the previous walk command
     if (last_walk_command_ && msg.positions.size() == last_walk_command_->positions.size()) {
-      constexpr double kSignificantMotionThreshold = 3.0 * M_PI / 180.0;
       for (size_t i = 0; i < msg.positions.size(); ++i) {
-        if (std::abs(msg.positions[i] - last_walk_command_->positions[i]) > kSignificantMotionThreshold) {
+        if (std::abs(msg.positions[i] - last_walk_command_->positions[i]) > significant_motion_threshold_) {
           last_significant_walk_motion_time_ = msg.header.stamp;
           break;
         }
@@ -183,6 +182,7 @@ class HCM_CPP : public rclcpp::Node {
   std::optional<sensor_msgs::msg::JointState> current_joint_state_;
 
   // Walking state
+  double significant_motion_threshold_ = 0.5 * M_PI / 180.0;  // default to 0.5 degrees in radians
   std::optional<builtin_interfaces::msg::Time> last_walking_time_;
   std::optional<builtin_interfaces::msg::Time> last_significant_walk_motion_time_;
   std::optional<bitbots_msgs::msg::JointCommand> last_walk_command_;
