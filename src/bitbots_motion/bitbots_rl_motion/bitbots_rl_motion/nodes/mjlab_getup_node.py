@@ -47,7 +47,7 @@ class MjLabGetupNode(RLNode):
     def publisher(self, onnx_pred: np.ndarray):
         # This is a hack to prevent the robot from shutting itself down right at the start of the getup policy.
         # The policy still works fine if we clip the actions as it is just a short peak load.
-        onnx_pred = np.clip(onnx_pred, -1.5, 1.5)
+        onnx_pred = np.clip(onnx_pred, -1.9, 1.9)
         # The getup policy uses a relative-to-current action space
         # (mjlab RelativeJointPositionAction): target = current_pos + action * scale.
         joint_command = self._joint_handler.get_joint_commands(onnx_pred, relative_to_current=True)
