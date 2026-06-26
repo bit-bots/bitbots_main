@@ -76,6 +76,7 @@ class JointHandler(Handler):
             self._cache_joint_state_indices()
 
         assert self._joint_state is not None
+        assert self._joint_state_indices is not None
 
         self._joint_command.header.stamp = self._joint_state.header.stamp  # self._node.get_clock().now().to_msg()
         if relative_to_current:
