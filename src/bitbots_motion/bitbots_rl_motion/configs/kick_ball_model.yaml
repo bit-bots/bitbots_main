@@ -31,6 +31,11 @@ kick_ball_node:
         "l_ankle_roll_joint",      # 20
         "r_ankle_roll_joint",      # 21
       ]
+      # Joints to OBSERVE but NOT publish, leaving them to other controllers
+      # (e.g. the head behavior). The head jitters under direct policy control,
+      # so it is excluded here; empty this list (or remove the head entries) to
+      # let the policy drive the head again.
+      uncontrolled_joint_names: ["head_yaw_joint", "head_pitch_joint"]
       # Default joint pose (action offset). From env.yaml scene.robot.init_state:
       # hip_pitch -0.25, calf 0.65, ankle_pitch -0.4, everything else 0.
       walkready_state: [

@@ -43,6 +43,10 @@ class RLNode(Node, ABC):
         self.declare_parameter(
             "joints.joint_signs", [1.0] * len(self.get_parameter("joints.ordered_relevant_joint_names").value)
         )
+        # Joints that are observed but excluded from the published JointCommand
+        # (left to other controllers, e.g. the head behavior). Default [""]
+        # matches no joint, so nothing is excluded.
+        self.declare_parameter("joints.uncontrolled_joint_names", [""])
 
         model = self.get_parameter("model").value
         self.get_logger().info(f"Loaded model: {model}")
