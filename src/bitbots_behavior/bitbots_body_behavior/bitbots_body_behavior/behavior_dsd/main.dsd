@@ -133,7 +133,7 @@ $DoOnce
         ELSE --> #Placing
 
 #PlayingBehavior
-$SecondaryStateDecider  // TODO add Decision for Throw in and change Variable if in Throw in State and rewrite this? TO fit better with the new game controller, 
+$SecondaryStateDecider 
     PENALTYSHOOT --> #PenaltyShootoutBehavior
     TIMEOUT --> #StandAndLook
     THROW_IN --> #ThrowinGoalKickCornerkickBehavior
