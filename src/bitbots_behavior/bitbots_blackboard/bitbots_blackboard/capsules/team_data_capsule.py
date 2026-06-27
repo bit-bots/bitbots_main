@@ -82,6 +82,7 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
         """
         return (
             self.time() - Time.from_msg(data.header.stamp) < Duration(seconds=self.data_timeout)
+            and self.time().nanoseconds / 1e9 > self.data_timeout  # Handle edge case at simulation start
             and data.state != TeamData.STATE_PENALIZED
         )
 
