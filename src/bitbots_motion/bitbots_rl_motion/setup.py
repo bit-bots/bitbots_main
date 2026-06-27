@@ -29,6 +29,7 @@ setup(
         "console_scripts": [
             "walk_node = nodes.walk_node:main",
             "kick_node = nodes.kick_node:main",
+            "kick_ball_node = nodes.kick_ball_node:main",
             "mjlab_walk_node = nodes.mjlab_walk_node:main",
             "phase_from_transform = nodes.phase_from_transform:main",
         ],

@@ -1,7 +1,8 @@
 <launch>
   <arg name="sim" default="false"/>
-  <arg name="walk" default="true"/>
+  <arg name="walk" default="false"/>
   <arg name="kick" default="false"/>
+  <arg name="kick_ball" default="true"/>
   <arg name="mjlab_walk" default="false"/>
 
 
@@ -14,6 +15,11 @@
   <group if="$(var kick)">
     <node pkg="bitbots_rl_motion" exec="kick_node" output="screen">
       <param from="$(find-pkg-share bitbots_rl_motion)/configs/wolfgang_dribbling_model_config.yaml" />
+    </node>
+  </group>
+  <group if="$(var kick_ball)">
+    <node pkg="bitbots_rl_motion" exec="kick_ball_node" output="screen">
+      <param from="$(find-pkg-share bitbots_rl_motion)/configs/kick_ball_model.yaml" />
     </node>
   </group>
   <group if="$(var mjlab_walk)">

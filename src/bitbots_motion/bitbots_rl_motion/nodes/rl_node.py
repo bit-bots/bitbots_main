@@ -37,6 +37,12 @@ class RLNode(Node, ABC):
         self.declare_parameter(
             "joints.kd", [0.6] * len(self.get_parameter("joints.ordered_relevant_joint_names").value)
         )
+        # Per-joint sign to convert between the robot's joint convention and the
+        # policy's joint convention. Applied to joint pos/vel on read and to the
+        # joint target on write. Default +1 (no flip) keeps existing nodes unchanged.
+        self.declare_parameter(
+            "joints.joint_signs", [1.0] * len(self.get_parameter("joints.ordered_relevant_joint_names").value)
+        )
 
         model = self.get_parameter("model").value
         self.get_logger().info(f"Loaded model: {model}")
@@ -68,11 +74,35 @@ class RLNode(Node, ABC):
 
         observation = self.obs()
 
+        # Guard against non-finite observations. A single NaN/inf would be fed
+        # through the network and, via the previous-action term, poison the
+        # feedback loop for every following step. Skip without updating
+        # previous_action and report where it is so the source can be found.
+        if not np.all(np.isfinite(observation)):
+            bad = np.where(~np.isfinite(observation))[0]
+            self.get_logger().error(
+                f"Non-finite observation: {bad.size} value(s), first indices {bad[:8].tolist()}. "
+                "Skipping inference.",
+                throttle_duration_sec=2.0,
+            )
+            return
+
         # Run the ONNX model
         onnx_input = {self._onnx_input_name[0]: observation.reshape(1, -1)}
         onnx_pred = self._onnx_session.run(self._onnx_output_name, onnx_input)[0][0]
-        self._previous_action.set_previous_action(onnx_pred)
 
+        # Guard against a non-finite action: do not feed it back into the
+        # observation history and do not publish it. Reset the previous action
+        # so the loop can recover instead of staying poisoned.
+        if not np.all(np.isfinite(onnx_pred)):
+            self.get_logger().error(
+                "Network produced a non-finite action; skipping publish and resetting previous action.",
+                throttle_duration_sec=2.0,
+            )
+            self._previous_action.set_previous_action(np.zeros_like(onnx_pred))
+            return
+
+        self._previous_action.set_previous_action(onnx_pred)
         if self.allowed_states():
             self.publisher(onnx_pred)
         self._phase_update_hook()
