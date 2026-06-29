@@ -1,5 +1,6 @@
 import math
-from typing import Callable, Optional
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any, Optional
 
 import numpy as np
 import transforms3d
@@ -12,6 +13,13 @@ from soccer_vision_3d_msgs.msg import Robot, RobotArray
 import bitbots_team_communication.robocup_extension_pb2 as Proto  # noqa: N812
 from bitbots_msgs.msg import Strategy
 
+if TYPE_CHECKING:
+    from bitbots_team_communication.bitbots_team_communication import TeamCommunication
+else:
+    TeamCommunication = Any
+
+Covariance = Float64[np.ndarray, "36"]
+
 
 class StateToMessageConverter:
     def __init__(self, team_mapping, role_mapping, action_mapping, side_mapping):
@@ -21,7 +29,10 @@ class StateToMessageConverter:
         self.side_mapping = side_mapping
 
     def convert(
-        self, state, message: Proto.Message, is_still_valid_checker: Callable[[Optional[Time]], bool]
+        self,
+        state: TeamCommunication,
+        message: Proto.Message,
+        is_still_valid_checker: Callable[[Optional[Time]], bool],
     ) -> Proto.Message:
         def convert_gamestate(gamestate: Optional[GameState], message: Proto.Message):
             if gamestate is not None and is_still_valid_checker(gamestate.header.stamp):
@@ -68,7 +79,7 @@ class StateToMessageConverter:
         def convert_ball_position(
             ball_position: Optional[PointStamped],
             ball_velocity: tuple[float, float, float],
-            ball_covariance: Float64[np.ndarray, "36"],
+            ball_covariance: Covariance,
             message,
         ):
             if ball_position is not None and is_still_valid_checker(ball_position.header.stamp):
@@ -158,7 +169,7 @@ class StateToMessageConverter:
             message = convert_current_pose(state.pose, message)
         if state.cmd_vel is not None:
             message = convert_walk_command(state.cmd_vel, state.cmd_vel_time, message)
-        if convert_target_position is not None:
+        if state.move_base_goal is not None:
             message = convert_target_position(state.move_base_goal, message)
         if state.ball is not None:
             message = convert_ball_position(state.ball, state.ball_velocity, state.ball_covariance, message)
@@ -187,17 +198,15 @@ class StateToMessageConverter:
     def convert_to_euler(self, quaternion: Quaternion):
         return transforms3d.euler.quat2euler([quaternion.w, quaternion.x, quaternion.y, quaternion.z])
 
-    def convert_to_covariance_matrix(
-        self, covariance_matrix: Proto.fmat3, row_major_covariance: Float64[np.ndarray, "36"]
-    ):
+    def convert_to_covariance_matrix(self, covariance_matrix: Proto.fmat3, row_major_covariance: Covariance):
         # ROS covariance is row-major 36 x float, while protobuf covariance
         # is column-major 9 x float [x, y, θ]
-        covariance_matrix.x.x = row_major_covariance[0]
-        covariance_matrix.y.x = row_major_covariance[1]
-        covariance_matrix.z.x = row_major_covariance[5]
-        covariance_matrix.x.y = row_major_covariance[6]
-        covariance_matrix.y.y = row_major_covariance[7]
-        covariance_matrix.z.y = row_major_covariance[11]
-        covariance_matrix.x.z = row_major_covariance[30]
-        covariance_matrix.y.z = row_major_covariance[31]
-        covariance_matrix.z.z = row_major_covariance[35]
+        covariance_matrix.x.x = float(row_major_covariance[0])
+        covariance_matrix.y.x = float(row_major_covariance[1])
+        covariance_matrix.z.x = float(row_major_covariance[5])
+        covariance_matrix.x.y = float(row_major_covariance[6])
+        covariance_matrix.y.y = float(row_major_covariance[7])
+        covariance_matrix.z.y = float(row_major_covariance[11])
+        covariance_matrix.x.z = float(row_major_covariance[30])
+        covariance_matrix.y.z = float(row_major_covariance[31])
+        covariance_matrix.z.z = float(row_major_covariance[35])

@@ -3,6 +3,7 @@
 import threading
 from typing import Optional
 
+import numpy as np
 import rclpy
 import transforms3d
 from ament_index_python.packages import get_package_share_directory
@@ -11,7 +12,7 @@ from bitbots_utils.utils import get_parameter_dict, get_parameters_from_other_no
 from builtin_interfaces.msg import Time as TimeMsg
 from game_controller_hsl_interfaces.msg import GameState, PlayerStatusPose
 from geometry_msgs.msg import PoseWithCovarianceStamped, Quaternion, Twist, TwistWithCovarianceStamped
-from numpy import double
+from jaxtyping import Float64
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.duration import Duration
 from rclpy.experimental.events_executor import EventsExecutor
@@ -93,7 +94,7 @@ class TeamCommunication:
         self.cmd_vel_time = Time(clock_type=self.node.get_clock().clock_type)
         self.ball: Optional[PointStamped] = None
         self.ball_velocity: tuple[float, float, float] = (0.0, 0.0, 0.0)
-        self.ball_covariance: list[double] = []
+        self.ball_covariance: Float64[np.ndarray, "36"] = np.zeros(36, dtype=np.float64)
         self.strategy: Optional[Strategy] = None
         self.strategy_time = Time(clock_type=self.node.get_clock().clock_type)
         self.time_to_ball: Optional[float] = None
@@ -232,7 +233,7 @@ class TeamCommunication:
         ball_point = PointStamped(header=msg.header, point=msg.pose.pose.position)
         try:
             self.ball = self.transform_to_map_frame(ball_point)
-            self.ball_covariance = msg.pose.covariance
+            self.ball_covariance = np.asarray(msg.pose.covariance, dtype=np.float64)
         except TransformException as err:
             self.logger.error(f"Could not transform ball to map frame: {err}")
 
