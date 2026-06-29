@@ -82,6 +82,7 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
         """
         return (
             self.time() - Time.from_msg(data.header.stamp) < Duration(seconds=self.data_timeout)
+            and self.time().nanoseconds / 1e9 > self.data_timeout  # Handle edge case at simulation start
             and data.state != TeamData.STATE_PENALIZED
         )
 
@@ -113,7 +114,8 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
         """
         Returns the rank of this robot compared to the team robots concerning ball distance.
 
-        Ignores the goalies distance, as it should not leave the goal, even if it is closer than field players.
+        If count_goalies is False, the goalies distance is ignored, as it should not leave the goal,
+        even if it is closer than field players.
         For example, we do not want our goalie to perform a throw in against our empty goal.
 
         :return the rank from 1 (nearest) to the number of robots

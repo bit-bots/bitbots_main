@@ -1,6 +1,6 @@
 [package]
 name = "bitbots_rust_nav"
-version = "0.1.2"
+version = "0.2.0"
 edition = "2021"
 
 [lib]
@@ -19,5 +19,5 @@ eframe = {version="0.31.0", optional = true}
 geo = "0.29.3"
 keyed_priority_queue = "0.4.2"
 ordered-float = "4.5.0"
-pyo3 = "0.24.1"
+pyo3 = "0.29.0"
 rand = "0.9.3"

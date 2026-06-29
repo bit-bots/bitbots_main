@@ -10,8 +10,6 @@ class AbstractGoToPassPosition(AbstractActionElement):
     def __init__(self, blackboard, dsd, accept, parameters):
         super().__init__(blackboard, dsd, parameters)
         self.max_x = self.blackboard.config["supporter_max_x"]
-        self.max_y = self.blackboard.config["supporter_max_y"]
-        self.min_y = self.blackboard.config["supporter_min_y"]
         self.pass_pos_x = self.blackboard.config["pass_position_x"]
         self.pass_pos_y = self.blackboard.config["pass_position_y"]
         self.accept = accept
@@ -22,14 +20,6 @@ class AbstractGoToPassPosition(AbstractActionElement):
         ball_pos = self.blackboard.world_model.get_ball_position_xy()
         our_pose = self.blackboard.world_model.get_current_position()
 
-        # decide on side
-        if our_pose[1] < ball_pos[1] and not our_pose[1] < self.min_y:
-            side_sign = -1
-        elif not our_pose[1] > self.max_y:
-            side_sign = 1
-        else:
-            side_sign = -1
-
         # compute goal
         goal_x = ball_pos[0]
         if self.accept:
@@ -38,7 +28,24 @@ class AbstractGoToPassPosition(AbstractActionElement):
         # Limit the x position, so that we are not running into the enemy goal
         goal_x = min(self.max_x, goal_x)
 
-        goal_y = ball_pos[1] + side_sign * self.pass_pos_y
+        # Calculate the two possible y positions for the pass position
+        goal_y_options = [ball_pos[1] + self.pass_pos_y, ball_pos[1] - self.pass_pos_y]
+
+        # Filter out out of field positions
+        def is_in_field(y):
+            field_width = self.blackboard.world_model.field_width
+            return -field_width / 2 <= y <= field_width / 2
+
+        goal_y_options_filtered = list(filter(is_in_field, goal_y_options))
+
+        # Fallback: choose the y position that is closest to us if both positions are out of the field (should not happen really, but just in case)
+        if len(goal_y_options_filtered) == 0:
+            goal_y_options_filtered = goal_y_options
+
+        def distance_to_our_pose(y):
+            return abs(y - our_pose[1])
+
+        goal_y = min(goal_y_options_filtered, key=distance_to_our_pose)
         goal_yaw = 0.0
 
         pose_msg = PoseStamped()

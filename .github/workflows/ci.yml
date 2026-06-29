@@ -6,7 +6,10 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.os }}
     env:
       PSModulePath: ""  # Otherwise colcon might think that PowerShell is being used
 
@@ -23,7 +26,7 @@ jobs:
       #     detached: true
 
       - name: Check out repository
-        uses: actions/checkout@v6.0.2
+        uses: actions/checkout@v7
 
       - name: Configure git to trust repository
         run: git config --global --add safe.directory /__w/bitbots_main/bitbots_main
@@ -31,7 +34,7 @@ jobs:
       - name: Set up workspace
         uses: prefix-dev/setup-pixi@v0.9.6
         with:
-          pixi-version: v0.70.1
+          pixi-version: v0.71.0
           cache: true
 
       - name: Build

@@ -150,16 +150,6 @@ class BallFilter(Node):
                 self.last_ball_time = self.get_clock().now()
                 ball_measurement_updated = True
 
-        # Get our estimate in the base footprint frame for easier distance calculation
-        # We use the 0 time to get the newest transform
-        estimate_relative = self._get_transform(
-            Header(stamp=Time(), frame_id=self.config.filter.frame),
-            msgify(Point, self.ball_state_position),
-            "base_footprint",
-        )
-        if estimate_relative is None:
-            return
-
         # If we did not get a ball measurement, we can check if we should have seen the ball
         # And increase the covariance if we did not see the ball
         # Due to vision issues with very close balls we don't do this for close balls  # TODO Remove with 558
