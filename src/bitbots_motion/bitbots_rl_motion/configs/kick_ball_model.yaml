@@ -115,38 +115,26 @@ kick_ball_node:
       # Per-joint sign mapping between the robot's joint convention and the
       # policy's (HighTorque/IsaacLab training URDF) convention, applied to
       # joint pos/vel on read and to the joint target on write.
-      #
-      # Derived by forward-kinematics axis comparison between
-      #   bitbots: piplus_description/urdf/pi_plus_22dof.urdf.xacro
-      #   train:   HighTorque Mini-Pi-Plus_BeyondMimic pi_plus_20dof.urdf
-      # at zero configuration (sign = +1 if the joint's base-frame rotation axis
-      # is aligned, -1 if anti-aligned).
-      #
-      # LEGS + shoulder_pitch: clean (rpy=0 chains / parent=torso), DEFINITIVE.
-      # shoulder_roll / upper_arm / elbow: the bitbots URDF rotates the arm
-      #   frames 90 deg at the shoulder while the training URDF is axis-aligned,
-      #   so the axes are not parallel and the sign (and likely an offset) cannot
-      #   be derived from the URDFs -> left +1, VERIFY on hardware.
-      # head_yaw / head_pitch: not present in the training URDF -> +1, VERIFY.
+      
       joint_signs: [
-        1.0,    # head_yaw          (verify: not in train URDF)
+        1.0,    # head_yaw          
         1.0,    # l_hip_pitch
         1.0,    # l_shoulder_pitch
         -1.0,   # r_hip_pitch
         -1.0,   # r_shoulder_pitch
-        1.0,    # head_pitch        (verify: not in train URDF)
+        1.0,    # head_pitch        
         1.0,    # l_hip_roll
-        -1.0,    # l_shoulder_roll   (verify: arm frame mismatch)
+        -1.0,    # l_shoulder_roll   
         1.0,    # r_hip_roll
-        -1.0,    # r_shoulder_roll   (verify: arm frame mismatch)
+        -1.0,    # r_shoulder_roll   
         -1.0,   # l_thigh
-        -1.0,    # l_upper_arm       (verify: arm frame mismatch)
+        -1.0,    # l_upper_arm     
         -1.0,   # r_thigh
-        -1.0,    # r_upper_arm       (verify: arm frame mismatch)
+        -1.0,    # r_upper_arm      
         -1.0,   # l_calf
-        -1.0,    # l_elbow           (verify: arm frame mismatch)
+        -1.0,    # l_elbow          
         1.0,    # r_calf
-        1.0,    # r_elbow           (verify: arm frame mismatch)
+        1.0,    # r_elbow          
         1.0,    # l_ankle_pitch
         -1.0,   # r_ankle_pitch
         1.0,    # l_ankle_roll
