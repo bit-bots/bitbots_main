@@ -41,7 +41,6 @@ class SecondBallTouchAllowed(AbstractDecisionElement):
         self.publish_debug_data("ball start position", ball_start_position)
         self.publish_debug_data("latch", self.latch)
         self.publish_debug_data("duration since latch", duration_since_latch if self.latch else None)
-    
 
         if active_team_players < 2:
             return "YES"
