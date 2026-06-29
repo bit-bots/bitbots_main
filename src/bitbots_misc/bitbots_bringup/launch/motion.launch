@@ -4,6 +4,7 @@
     <arg name="viz" default="false"/>
     <arg name="torqueless_mode" default="false" description="start without torque, for example for testing the falling detection"/>
     <arg name="rl_motion" default="true" description="Whether to use the RL motion system instead of the regular one" />
+    <arg name="cartwheel" default="false" description="Also start the cartwheel RL node alongside the walk node (HCM arbitrates the motor goals)" />
 
     <!-- launch the hardware interface -->
     <group unless="$(var sim)">
@@ -34,6 +35,7 @@
     <group if="$(var rl_motion)">
         <include file="$(find-pkg-share bitbots_rl_motion)/launch/rl_motion.launch">
             <arg name="sim" value="$(var sim)"/>
+            <arg name="cartwheel" value="$(var cartwheel)"/>
         </include>
     </group>
 

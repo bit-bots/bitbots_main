@@ -12,7 +12,7 @@ from std_msgs.msg import Bool
 from std_msgs.msg import Empty as EmptyMsg
 
 from bitbots_hcm.type_utils import T_RobotControlState
-from bitbots_msgs.action import PlayAnimation
+from bitbots_msgs.action import BeyondMimic, PlayAnimation
 from bitbots_msgs.msg import TTS, JointTorque, RobotControlState
 from bitbots_msgs.srv import SetTeachingMode
 
@@ -39,6 +39,10 @@ class HcmBlackboard:
         # Create action clients and corresponding goal handles
         self.animation_action_client: ActionClient = ActionClient(self.node, PlayAnimation, "animation")
         self.animation_action_current_goal: Optional[Future] = None
+        # Acrobatic RL motions (e.g. cartwheel) are triggered via the BeyondMimic action server
+        # hosted by the cartwheel_rl_node; the HCM owns the motors while the clip plays.
+        self.beyondmimic_action_client: ActionClient = ActionClient(self.node, BeyondMimic, "beyondmimic")
+        self.beyondmimic_action_current_goal: Optional[Future] = None
 
         # Create publishers
         self.walk_pub = self.node.create_publisher(Twist, "cmd_vel", 1)

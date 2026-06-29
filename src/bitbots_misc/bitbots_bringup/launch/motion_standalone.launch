@@ -4,6 +4,7 @@
     <arg name="viz" default="false"/>
     <arg name="torqueless_mode" default="false" description="start without torque, for example for testing the falling detection"/>
     <arg name="tts" default="true" description="Whether to enable text-to-speech"/>
+    <arg name="cartwheel" default="false" description="Also start the cartwheel RL node alongside the walk node (HCM arbitrates the motor goals)"/>
 
     <include file="$(find-pkg-share bitbots_parameter_blackboard)/launch/parameter_blackboard.launch">
         <arg name="sim" value="$(var sim)"/>
@@ -27,5 +28,6 @@
         <arg name="sim" value="$(var sim)"/>
         <arg name="viz" value="$(var viz)"/>
         <arg name="torqueless_mode" value="$(var torqueless_mode)" />
+        <arg name="cartwheel" value="$(var cartwheel)"/>
     </include>
 </launch>

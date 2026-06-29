@@ -2,7 +2,7 @@ cartwheel_rl_node:
   ros__parameters:
     # BeyondMimic Wo-variant, action-only ONNX export (input obs[109] -> output actions[20]).
     # Drop the exported model_XXXXX_action.onnx here and name it below.
-    model: beyondmimic_cartwheel_action.onnx
+    model: model_16000_action.onnx
 
     motion:
       file: tessa_rad.npz
@@ -10,8 +10,9 @@ cartwheel_rl_node:
     # "acrobatic_motor_goals" is the HCM-routed topic for the ACROBATIC state.
     # Set to "joint_command" for a standalone test that bypasses the HCM.
     publish_topic: acrobatic_motor_goals
-    # Bypass the robot-state gate until the HCM forwards acrobatic goals; set false then.
-    ignore_robot_state: true
+    # Gate publishing on the HCM ACROBATIC (or CONTROLLABLE) state.
+    # Set to true only for a standalone test that bypasses the HCM robot-state gate.
+    ignore_robot_state: false
 
     joints:
       # Policy joint order (ONNX metadata `joint_names`). JointHandler remaps by name,
