@@ -387,7 +387,7 @@ class HeadMover {
     pos_msg.joint_names = {"head_yaw_joint", "head_pitch_joint"};
     pos_msg.positions = {goal_yaw, goal_pitch};
     pos_msg.velocities = {yaw_speed, pitch_speed};
-    pos_msg.accelerations = {params_.max_acceleration_yaw, params_.max_acceleration_yaw};
+    pos_msg.accelerations = {params_.max_acceleration_yaw, params_.max_acceleration_pitch};
     pos_msg.max_torques = {10, 10};
 
     position_publisher_->publish(pos_msg);
@@ -450,16 +450,16 @@ class HeadMover {
   /**
    * @brief Generates a parameterized search pattern
    */
-  std::vector<std::pair<double, double>> generatePattern(
-      int line_count, double max_horizontal_angle_left, double max_horizontal_angle_right, double max_vertical_angle_up,
-      double max_vertical_angle_down,
-      double reduce_last_scanline = 1.0,
-      int interpolation_steps = 0) {
+  std::vector<std::pair<double, double>> generatePattern(int line_count, double max_horizontal_angle_left,
+                                                         double max_horizontal_angle_right,
+                                                         double max_vertical_angle_up, double max_vertical_angle_down,
+                                                         double reduce_last_scanline = 1.0,
+                                                         int interpolation_steps = 0) {
     // Store the keyframes of the search pattern
     std::vector<std::pair<double, double>> keyframes;
     // Store the state of the generation process
-    bool down_direction = true;         // true = decreasing line (toward top), false = increasing line (toward bottom)
-    bool right_side = false;            // true = right, false = left
+    bool down_direction = true;   // true = decreasing line (toward top), false = increasing line (toward bottom)
+    bool right_side = false;      // true = right, false = left
     bool right_direction = true;  // true = moving right, false = moving left; alternates per scan line
     int line = line_count - 1;
     // Calculate the number of iterations that are needed to generate the search pattern
