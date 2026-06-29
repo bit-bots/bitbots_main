@@ -140,7 +140,7 @@ class StateToMessageConverter:
             walking_speed: float,
             message: Proto.Message,
         ):
-            if time_to_ball is not None and is_still_valid_checker(time_to_ball_time):
+            if time_to_ball is not None and time_to_ball != 0.0 and is_still_valid_checker(time_to_ball_time):
                 message.time_to_ball = time_to_ball
             elif are_robot_and_ball_position_valid(current_pose, ball_position):
                 message.time_to_ball = calculate_time_to_ball(current_pose, ball_position, walking_speed)
@@ -166,8 +166,9 @@ class StateToMessageConverter:
             message = convert_seen_robots(state.seen_robots, message)
         if state.strategy is not None:
             message = convert_strategy(state.strategy, state.strategy_time, message)
-        # Proto scalar fields have no presence here, so leaving this unset would
-        # serialize a plausible but invalid estimate for receivers.
+
+        # We estimate the time to ball if we don't have a valid time to ball,
+        # so we want to do this either way
         message = convert_time_to_ball(
             state.time_to_ball, state.time_to_ball_time, state.ball, state.pose, state.avg_walking_speed, message
         )

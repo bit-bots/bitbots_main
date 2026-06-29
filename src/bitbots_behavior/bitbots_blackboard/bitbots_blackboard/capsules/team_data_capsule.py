@@ -131,10 +131,7 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
                 and data.ball_absolute.covariance[7] < self.ball_max_covariance
             ):
                 if use_time_to_ball:
-                    # Proto scalar fields and default ROS messages can look like a
-                    # best possible arrival time (0.0) even when no estimate was sent.
-                    if np.isfinite(data.time_to_position_at_ball) and data.time_to_position_at_ball > 0.0:
-                        distances.append(data.time_to_position_at_ball)
+                    distances.append(data.time_to_position_at_ball)
                 else:
                     distances.append(
                         np.linalg.norm(
