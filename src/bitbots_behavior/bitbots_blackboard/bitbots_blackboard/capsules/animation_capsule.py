@@ -1,6 +1,5 @@
 from rclpy.action import ActionClient
 from rclpy.callback_groups import ReentrantCallbackGroup
-from rclpy.duration import Duration
 
 from bitbots_blackboard.capsules import AbstractBlackboardCapsule
 from bitbots_msgs.action import LookAt, PlayAnimation
@@ -44,7 +43,7 @@ class AnimationCapsule(AbstractBlackboardCapsule):
             self._node.get_logger().warn("Tried to play an animation with an empty name!")
             return False
 
-        if not self.animation_client.wait_for_server(Duration(seconds=10)):
+        if not self.animation_client.wait_for_server(timeout_sec=10.0):
             self._node.get_logger().error(
                 "Animation Action Server not running! Motion can not work without animation action server."
             )

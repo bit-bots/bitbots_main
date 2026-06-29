@@ -1,3 +1,4 @@
+import math
 from typing import Optional
 from unittest.mock import Mock
 
@@ -32,12 +33,12 @@ validity_checker_valid = Mock(return_value=True)
 validity_checker_expired = Mock(return_value=False)
 
 
-def test_convert_empty_state(snapshot, state):
+def test_convert_empty_state(state):
     result = convert_to_message(state)
 
     assert result.current_pose.player_id == state.player_id
     assert result.current_pose.team == state.team_id
-    assert str(result) == snapshot
+    assert result.time_to_ball == pytest.approx(9999.0)
 
 
 def test_convert_gamestate(state_with_gamestate):
@@ -64,11 +65,15 @@ def test_convert_gamestate_expired_headers(state_with_gamestate):
     assert result.state == Proto.UNKNOWN_STATE
 
 
-def test_convert_current_pose(snapshot, state_with_current_pose):
+def test_convert_current_pose(state_with_current_pose):
     result = convert_to_message(state_with_current_pose)
 
-    assert str(result.current_pose.position) == snapshot
-    assert str(result.current_pose.covariance) == snapshot
+    assert result.current_pose.position.x == pytest.approx(3.6)
+    assert result.current_pose.position.y == pytest.approx(1.8)
+    assert result.current_pose.position.z == pytest.approx(1.2167989)
+    assert result.current_pose.covariance.x.x == pytest.approx(1.0)
+    assert result.current_pose.covariance.y.y == pytest.approx(5.0)
+    assert result.current_pose.covariance.z.z == pytest.approx(9.0)
 
     validity_checker_valid.assert_called_with(state_with_current_pose.pose.header.stamp)
 
@@ -106,10 +111,12 @@ def test_convert_walk_command_expired_headers(state_with_walk_command):
     assert result.walk_command.z == 0
 
 
-def test_convert_target_pose(snapshot, state_with_target_pose):
+def test_convert_target_pose(state_with_target_pose):
     result = convert_to_message(state_with_target_pose)
 
-    assert str(result.target_pose) == snapshot
+    assert result.target_pose.position.x == pytest.approx(2.6)
+    assert result.target_pose.position.y == pytest.approx(0.8)
+    assert result.target_pose.position.z == pytest.approx(1.2167989)
 
     validity_checker_valid.assert_called_with(state_with_target_pose.move_base_goal.header.stamp)
 
@@ -125,10 +132,18 @@ def test_convert_target_pose_expired_headers(state_with_target_pose):
     assert result.target_pose.position.z == 0
 
 
-def test_convert_ball_position(snapshot, state_with_ball_pose):
+def test_convert_ball_position(state_with_ball_pose):
     result = convert_to_message(state_with_ball_pose)
 
-    assert str(result.ball) == snapshot
+    assert result.ball.position.x == pytest.approx(4.6)
+    assert result.ball.position.y == pytest.approx(2.8)
+    assert result.ball.position.z == pytest.approx(2.9)
+    assert result.ball.velocity.x == pytest.approx(1.1)
+    assert result.ball.velocity.y == pytest.approx(0.2)
+    assert result.ball.velocity.z == pytest.approx(0.3)
+    assert result.ball.covariance.x.x == pytest.approx(1.0)
+    assert result.ball.covariance.y.y == pytest.approx(5.0)
+    assert result.ball.covariance.z.z == pytest.approx(9.0)
 
     validity_checker_valid.assert_called_with(state_with_ball_pose.ball.header.stamp)
 
@@ -141,11 +156,13 @@ def test_convert_ball_position_expired_headers(state_with_ball_pose):
     assert result.ball.covariance.z.z == 100
 
 
-def test_convert_seen_robots(snapshot, state_with_seen_robots):
+def test_convert_seen_robots(state_with_seen_robots):
     result = convert_to_message(state_with_seen_robots)
 
-    assert str(result.others) == snapshot
-    assert result.other_robot_confidence == snapshot
+    assert len(result.others) == 3
+    assert [robot.player_id for robot in result.others] == [2, 3, 4]
+    assert [robot.team for robot in result.others] == [Proto.BLUE, Proto.RED, Proto.UNKNOWN_TEAM]
+    assert result.other_robot_confidence == pytest.approx([0.8, 0.8, 0.8])
 
     validity_checker_valid.assert_called_with(state_with_seen_robots.seen_robots.header.stamp)
 
@@ -191,10 +208,10 @@ def test_convert_time_to_ball(state_with_time_to_ball):
     validity_checker_valid.assert_called_with(state_with_time_to_ball.time_to_ball_time)
 
 
-def test_convert_time_to_ball_calculated(snapshot, state_with_ball_and_robot_pose):
+def test_convert_time_to_ball_calculated(state_with_ball_and_robot_pose):
     result = convert_to_message(state_with_ball_and_robot_pose)
 
-    assert result.time_to_ball == snapshot
+    assert result.time_to_ball == pytest.approx(math.sqrt(2.0) / state_with_ball_and_robot_pose.avg_walking_speed)
 
     validity_checker_valid.assert_called_with(state_with_ball_and_robot_pose.pose.header.stamp)
     validity_checker_valid.assert_called_with(state_with_ball_and_robot_pose.ball.header.stamp)
