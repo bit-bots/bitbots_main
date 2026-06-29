@@ -532,21 +532,6 @@ class HeadMover {
     double head_yaw = atan2(y, x);
     double head_pitch = atan2(z, sqrt(x * x + y * y));
 
-    double head_yaw_negative_limitation = 0;
-    double head_yaw_positive_limitation = 0;
-    double head_pitch_negative_limitation = 0;
-    double head_pitch_positive_limitation = 0;
-
-    if (head_yaw > head_yaw_positive_limitation) {
-      head_yaw = head_yaw_positive_limitation;
-    } else if (head_yaw < head_yaw_negative_limitation) {
-      head_yaw = head_yaw_negative_limitation;
-    } else if (head_pitch > head_pitch_positive_limitation) {
-      head_pitch = head_pitch_positive_limitation;
-    } else if (head_pitch < head_pitch_negative_limitation) {
-      head_pitch = head_pitch_negative_limitation;
-    }
-
     return {head_yaw, head_pitch};
   }
 
