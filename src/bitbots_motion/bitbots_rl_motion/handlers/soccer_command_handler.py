@@ -173,6 +173,11 @@ class SoccerCommandHandler(Handler):
 
         return np.array([vx, vy, wz, ball_x, ball_y, kick_dir, kick_speed], dtype=np.float32)
 
+    def is_kick_active(self) -> bool:
+        """True while an rl_kick action goal is being held active (and not yet
+        timed out / canceled). Used to gate when the policy runs and publishes."""
+        return self._kick_active
+
     def reset(self) -> None:
         """Clear the command/ball histories so they are rebuilt on the next update.
 

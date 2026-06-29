@@ -31,8 +31,10 @@ class KickBallNode(RLNode):
         self._joint_vel_scale = self.get_parameter("obs.joint_vel_scale").value
         history_length = self.get_parameter("obs.history_length").value
 
-        # publishers
-        self._joint_command_pub = self.create_publisher(JointCommand, "walking_motor_goals", 10)
+        # publishers. This is a kick controller, so its goals go to
+        # kick_motor_goals (never the walk goals). The HCM tracks kick_motor_goals
+        # and reports RobotControlState.KICKING while they arrive.
+        self._joint_command_pub = self.create_publisher(JointCommand, "kick_motor_goals", 10)
 
         # handlers
         self._gyro_handler = GyroHandler(self)
@@ -83,9 +85,13 @@ class KickBallNode(RLNode):
         joint_command = self._joint_handler.get_joint_commands(onnx_pred)
         self._joint_command_pub.publish(joint_command)
 
-    # states in which the policy executes (it both walks and kicks)
+    # states in which the policy executes. It only runs while an rl_kick action
+    # is holding the kick active (like the legacy kick_node gates on its kick
+    # handler), and only in a kickable robot state. Outside an active kick the
+    # policy is dormant and publishes nothing, so kick_motor_goals go stale and
+    # the HCM drops out of KICKING back to CONTROLLABLE.
     def allowed_states(self):
-        return self._robot_state_handler.is_walkable() or self._robot_state_handler.is_kickable()
+        return self._robot_state_handler.is_kickable() and self._soccer_command_handler.is_kick_active()
 
     def initialize_observation(self):
         # Clear all 8-frame observation histories and the soccer command/ball
