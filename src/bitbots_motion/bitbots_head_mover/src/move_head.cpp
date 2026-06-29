@@ -453,7 +453,7 @@ class HeadMover {
   std::vector<std::pair<double, double>> generatePattern(int line_count, double max_horizontal_angle_left,
                                                          double max_horizontal_angle_right,
                                                          double max_vertical_angle_up, double max_vertical_angle_down,
-                                                         double reduce_last_scanline = 0.2,
+                                                         double reduce_last_scanline = 1.0,
                                                          int interpolation_steps = 0) {
     // Store the keyframes of the search pattern
     std::vector<std::pair<double, double>> keyframes;
