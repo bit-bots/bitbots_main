@@ -32,6 +32,7 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
             self.team_data[i] = TeamData()
         self.times_to_ball = dict()
         self.own_time_to_ball = 9999.0
+        self.last_time_team_mate_kicked = None
 
         # Mapping
         self.roles_mapping = {
@@ -55,6 +56,7 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
             Strategy.ACTION_SEARCHING,
             Strategy.ACTION_KICKING,
             Strategy.ACTION_LOCALIZING,
+            Strategy.ACTION_PASSIVE,
         }
 
         # The strategy which is communicated to the other robots
@@ -112,7 +114,8 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
         """
         Returns the rank of this robot compared to the team robots concerning ball distance.
 
-        Ignores the goalies distance, as it should not leave the goal, even if it is closer than field players.
+        If count_goalies is False, the goalies distance is ignored, as it should not leave the goal,
+        even if it is closer than field players.
         For example, we do not want our goalie to perform a throw in against our empty goal.
 
         :return the rank from 1 (nearest) to the number of robots
@@ -126,6 +129,7 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
             if (
                 self.is_valid(data)
                 and (data.strategy.role != Strategy.ROLE_GOALIE or count_goalies)
+                and data.strategy.action != Strategy.ACTION_PASSIVE
                 and data.ball_absolute.covariance[0] < self.ball_max_covariance
                 and data.ball_absolute.covariance[7] < self.ball_max_covariance
             ):
