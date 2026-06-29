@@ -387,7 +387,7 @@ class HeadMover {
     pos_msg.joint_names = {"head_yaw_joint", "head_pitch_joint"};
     pos_msg.positions = {goal_yaw, goal_pitch};
     pos_msg.velocities = {yaw_speed, pitch_speed};
-    pos_msg.accelerations = {params_.max_acceleration_yaw, params_.max_acceleration_yaw};
+    pos_msg.accelerations = {params_.max_acceleration_yaw, params_.max_acceleration_pitch};
     pos_msg.max_torques = {10, 10};
 
     position_publisher_->publish(pos_msg);
