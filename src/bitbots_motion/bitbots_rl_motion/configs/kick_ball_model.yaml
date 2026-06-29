@@ -185,15 +185,14 @@ kick_ball_node:
       history_length: 8
 
     # Soccer command wiring.
-    #   kick_speed       : constant kick-speed target sent while kicking + the
-    #                      cmd_vel heading is past the deadzone.
-    #   deadzone         : cmd_vel magnitude below which kick_speed is 0.
+    #   kick_timeout     : default seconds to keep the kick active when the
+    #                      `rl_kick` action goal leaves timeout < 0. The goal's
+    #                      x/y give the kick heading and strength the kick speed.
     #   pub_period       : push a fresh ball snapshot every N steps (5 -> 10 Hz
     #                      ball history on the 50 Hz loop). Must match training.
     #   history_samples  : stacked command/ball history length. Must match training.
     command:
-      kick_speed: 3.0
-      deadzone: 0.15
+      kick_timeout: 2.0
       pub_period: 5
       history_samples: 10
 

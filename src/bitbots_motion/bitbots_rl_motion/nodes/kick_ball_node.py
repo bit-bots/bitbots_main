@@ -1,13 +1,15 @@
 import numpy as np
+import rclpy
 from handlers.gravity_handler import GravityHandler
 from handlers.gyro_handler import GyroHandler
 from handlers.joint_handler import JointHandler
 from handlers.robot_state_handler import RobotStateHandler
 from handlers.soccer_command_handler import SoccerCommandHandler
+from rclpy.executors import MultiThreadedExecutor
 
 from bitbots_msgs.msg import JointCommand
 from bitbots_rl_motion.history_buffer import HistoryBuffer
-from nodes.rl_node import RLNode, create_main
+from nodes.rl_node import RLNode
 
 
 class KickBallNode(RLNode):
@@ -30,8 +32,7 @@ class KickBallNode(RLNode):
         self.declare_parameter("obs.history_length", 8)
 
         # soccer command parameters
-        self.declare_parameter("command.kick_speed", 1.0)
-        self.declare_parameter("command.deadzone", 0.15)
+        self.declare_parameter("command.kick_timeout", 2.0)
         self.declare_parameter("command.pub_period", 5)
         self.declare_parameter("command.history_samples", 10)
 
@@ -100,4 +101,18 @@ class KickBallNode(RLNode):
         pass
 
 
-main = create_main(KickBallNode)
+def main():
+    rclpy.init()
+
+    node = KickBallNode()
+
+    # MultiThreadedExecutor so the kick action's timed execute callback (its own
+    # reentrant callback group) runs concurrently with the 50 Hz control timer.
+    executor = MultiThreadedExecutor()
+    executor.add_node(node)
+
+    try:
+        executor.spin()
+    finally:
+        node.destroy_node()
+        rclpy.shutdown()
