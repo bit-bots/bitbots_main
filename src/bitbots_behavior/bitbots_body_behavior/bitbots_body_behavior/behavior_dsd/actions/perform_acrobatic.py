@@ -1,11 +1,13 @@
 import rclpy
 from action_msgs.msg import GoalStatus
 
-from bitbots_hcm.hcm_dsd.actions import AbstractHCMActionElement
+from bitbots_blackboard.body_blackboard import BodyBlackboard
+from dynamic_stack_decider.abstract_action_element import AbstractActionElement
+
 from bitbots_msgs.action import BeyondMimic
 
 
-class PerformAcrobatic(AbstractHCMActionElement):
+class PerformAcrobatic(AbstractActionElement):
     """
     Triggers an acrobatic RL motion (e.g. a cartwheel) via the BeyondMimic action server
     and stays in this action until the motion clip has finished.
@@ -18,6 +20,8 @@ class PerformAcrobatic(AbstractHCMActionElement):
     Usage in a .dsd file:
         @PerformAcrobatic + motion:tessa_rad
     """
+
+    blackboard: BodyBlackboard 
 
     def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
@@ -53,8 +57,8 @@ class PerformAcrobatic(AbstractHCMActionElement):
         :return: whether the goal could be sent
         """
         self.blackboard.node.get_logger().info(f"Performing acrobatic motion '{self.motion or '<default>'}'")
-        first_try = self.blackboard.beyondmimic_action_client.wait_for_server(
-            timeout_sec=self.blackboard.node.get_parameter("hcm.anim_server_wait_time").value
+        first_try = self.blackboard.misc.beyondmimic_action_client.wait_for_server(
+            timeout_sec=10.0
         )
         if not first_try:
             server_running = False
@@ -64,7 +68,7 @@ class PerformAcrobatic(AbstractHCMActionElement):
                     "Will now wait until the server is accessible!",
                     throttle_duration_sec=10.0,
                 )
-                server_running = self.blackboard.beyondmimic_action_client.wait_for_server(timeout_sec=1)
+                server_running = self.blackboard.misc.beyondmimic_action_client.wait_for_server(timeout_sec=1)
             if server_running:
                 self.blackboard.node.get_logger().warn("BeyondMimic server now running, hcm will go on.")
             else:
@@ -73,7 +77,7 @@ class PerformAcrobatic(AbstractHCMActionElement):
 
         goal = BeyondMimic.Goal()
         goal.motion = self.motion
-        self.blackboard.beyondmimic_action_current_goal = self.blackboard.beyondmimic_action_client.send_goal_async(
+        self.blackboard.misc.beyondmimic_action_current_goal = self.blackboard.misc.beyondmimic_action_client.send_goal_async(
             goal, feedback_callback=self.motion_feedback_cb
         )
         return True
@@ -83,11 +87,11 @@ class PerformAcrobatic(AbstractHCMActionElement):
         self.publish_debug_data("Acrobatic Progress", str(feedback.progress))
 
     def motion_finished(self) -> bool:
-        assert self.blackboard.beyondmimic_action_current_goal is not None, (
+        assert self.blackboard.misc.beyondmimic_action_current_goal is not None, (
             "No BeyondMimic action goal set, so we cannot check if it is finished"
         )
         return (
-            self.blackboard.beyondmimic_action_current_goal.done()
-            and self.blackboard.beyondmimic_action_current_goal.result().status
+            self.blackboard.misc.beyondmimic_action_current_goal.done()
+            and self.blackboard.misc.beyondmimic_action_current_goal.result().status
             in [GoalStatus.STATUS_SUCCEEDED, GoalStatus.STATUS_CANCELED, GoalStatus.STATUS_ABORTED]
-        ) or self.blackboard.beyondmimic_action_current_goal.cancelled()
+        ) or self.blackboard.mics.beyondmimic_action_current_goal.cancelled()

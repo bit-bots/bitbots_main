@@ -3,6 +3,9 @@ from typing import Literal, Optional, TypeAlias
 from bitbots_utils.utils import RobotNotConfiguredError, get_parameters_from_other_node
 from rclpy.duration import Duration
 from std_msgs.msg import Bool
+from rclpy.action import ActionClient
+from bitbots_msgs.action import BeyondMimic
+from rclpy.task import Future
 
 from bitbots_blackboard.capsules import AbstractBlackboardCapsule
 from bitbots_msgs.msg import TTS, HeadMode, RobotControlState
@@ -24,7 +27,11 @@ class MiscCapsule(AbstractBlackboardCapsule):
         super().__init__(node, blackboard)
         self.head_pub = self._node.create_publisher(HeadMode, "head_mode", 10)
         self.speak_pub = self._node.create_publisher(TTS, "speak", 10)
-
+        # Acrobatic RL motions (e.g. cartwheel) are triggered via the BeyondMimic action server
+        # hosted by the cartwheel_rl_node; the HCM owns the motors while the clip plays.
+        self.beyondmimic_action_client: ActionClient = ActionClient(self.node, BeyondMimic, "beyondmimic")
+        self.beyondmimic_action_current_goal: Optional[Future] = None
+        
         # Config
         gamestate_settings = get_parameters_from_other_node(
             self._node, "parameter_blackboard", ["bot_id", "position_number"]
