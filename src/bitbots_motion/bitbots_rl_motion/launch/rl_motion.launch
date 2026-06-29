@@ -3,6 +3,7 @@
   <arg name="walk" default="true"/>
   <arg name="kick" default="false"/>
   <arg name="mjlab_walk" default="false"/>
+  <arg name="cartwheel" default="false"/>
 
 
   <group if="$(var walk)">
@@ -19,6 +20,11 @@
   <group if="$(var mjlab_walk)">
     <node pkg="bitbots_rl_motion" exec="mjlab_walk_node" output="screen">
       <param from="$(find-pkg-share bitbots_rl_motion)/configs/mjlab_walk_model.yaml" />
+    </node>
+  </group>
+  <group if="$(var cartwheel)">
+    <node pkg="bitbots_rl_motion" exec="cartwheel_rl_node" output="screen">
+      <param from="$(find-pkg-share bitbots_rl_motion)/configs/cartwheel_model.yaml" />
     </node>
   </group>
 </launch>

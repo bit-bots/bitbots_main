@@ -1,0 +1,18 @@
+# Goal definition
+# Runs a BeyondMimic whole-body tracking policy that reproduces a recorded motion clip.
+# `motion` selects which reference clip / policy to play (e.g. a cartwheel); an empty
+# string uses the node's configured default.
+string motion
+
+---
+# Result definition
+uint8 SUCCESS=0
+uint8 ABORTED=1
+uint8 REJECTED=2
+
+uint8 result
+
+---
+# Feedback definition
+# Fraction of the motion clip that has been played, in [0.0, 1.0].
+float32 progress

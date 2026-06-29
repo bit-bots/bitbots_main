@@ -22,6 +22,7 @@ endif()
 
 rosidl_generate_interfaces(
   ${PROJECT_NAME}
+  "action/BeyondMimic.action"
   "action/Kick.action"
   "action/LookAt.action"
   "action/PlayAnimation.action"

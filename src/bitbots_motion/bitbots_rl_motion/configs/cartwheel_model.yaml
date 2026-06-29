@@ -1,0 +1,65 @@
+cartwheel_rl_node:
+  ros__parameters:
+    # BeyondMimic Wo-variant, action-only ONNX export (input obs[109] -> output actions[20]).
+    # Drop the exported model_XXXXX_action.onnx here and name it below.
+    model: beyondmimic_cartwheel_action.onnx
+
+    motion:
+      file: tessa_rad.npz
+
+    # "acrobatic_motor_goals" is the HCM-routed topic for the ACROBATIC state.
+    # Set to "joint_command" for a standalone test that bypasses the HCM.
+    publish_topic: acrobatic_motor_goals
+    # Bypass the robot-state gate until the HCM forwards acrobatic goals; set false then.
+    ignore_robot_state: true
+
+    joints:
+      # Policy joint order (ONNX metadata `joint_names`). JointHandler remaps by name,
+      # so this order must match the obs joint_pos/joint_vel and the action output.
+      ordered_relevant_joint_names: [
+        "l_hip_pitch_joint", "r_hip_pitch_joint",
+        "l_hip_roll_joint", "r_hip_roll_joint",
+        "l_shoulder_pitch_joint", "r_shoulder_pitch_joint",
+        "l_thigh_joint", "r_thigh_joint",
+        "l_shoulder_roll_joint", "r_shoulder_roll_joint",
+        "l_calf_joint", "r_calf_joint",
+        "l_upper_arm_joint", "r_upper_arm_joint",
+        "l_ankle_pitch_joint", "r_ankle_pitch_joint",
+        "l_elbow_joint", "r_elbow_joint",
+        "l_ankle_roll_joint", "r_ankle_roll_joint",
+      ]
+      # NOTE: this is the policy's default_joint_pos (the shared obs + action offset),
+      # NOT the physical walkready arm pose. Arms are 0 here; the motion itself commands
+      # the arms up at frame 0 (which equals the bitbots walkready pose).
+      walkready_state: [
+        -0.6,  0.6,
+         0.0,  0.0,
+         0.0,  0.0,
+         0.0,  0.0,
+         0.0,  0.0,
+        -1.2,  1.2,
+         0.0,  0.0,
+        -0.6,  0.6,
+         0.0,  0.0,
+         0.0,  0.0,
+      ]
+      kp: [
+        # legs 80 / arms 30, in policy joint order
+        80.0, 80.0,  80.0, 80.0,  30.0, 30.0,  80.0, 80.0,  30.0, 30.0,
+        80.0, 80.0,  30.0, 30.0,  80.0, 80.0,  30.0, 30.0,  80.0, 80.0,
+      ]
+      kd: [
+        1.1, 1.1,  1.1, 1.1,  0.6, 0.6,  1.1, 1.1,  0.6, 0.6,
+        1.1, 1.1,  0.6, 0.6,  1.1, 1.1,  0.6, 0.6,  1.1, 1.1,
+      ]
+      action_scales: [
+        # legs 0.094 / arms 0.167, in policy joint order
+        0.094, 0.094,  0.094, 0.094,  0.167, 0.167,  0.094, 0.094,  0.167, 0.167,
+        0.094, 0.094,  0.167, 0.167,  0.094, 0.094,  0.167, 0.167,  0.094, 0.094,
+      ]
+
+    phase:
+      use_phase: False
+      control_dt: 0.02
+
+    providers: ["CPUExecutionProvider"]

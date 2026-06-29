@@ -13,6 +13,11 @@ KICKABLE_STATES = (
     RobotControlState.KICKING,
 )
 
+ACROBATIC_STATES = (
+    RobotControlState.CONTROLLABLE,
+    RobotControlState.ACROBATIC,
+)
+
 
 class RobotStateHandler(Handler):
     def __init__(self, node):
@@ -31,3 +36,6 @@ class RobotStateHandler(Handler):
 
     def is_kickable(self):
         return self._robot_state in KICKABLE_STATES
+
+    def is_acrobatic(self):
+        return self._robot_state in ACROBATIC_STATES

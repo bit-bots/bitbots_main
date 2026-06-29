@@ -39,5 +39,8 @@ uint8 HARDWARE_PROBLEM=13
 uint8 PICKED_UP=14
 # Robot is currently kicking the ball
 uint8 KICKING=15
+# Robot is performing an acrobatic motion (e.g. cartwheel) driven by an RL policy.
+# Falling detection is deactivated so the HCM does not fight the policy mid-motion.
+uint8 ACROBATIC=16
 
 uint8 state
