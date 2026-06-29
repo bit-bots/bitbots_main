@@ -15,7 +15,7 @@ _inner = InnerPositioningCapsule()
 def run_gui():
     import matplotlib.pyplot as plt
     from matplotlib.patches import Circle, Rectangle
-    from matplotlib.widgets import Slider
+    from matplotlib.widgets import CheckButtons, Slider
 
     fld = Field()
     params = Params()
@@ -30,18 +30,20 @@ def run_gui():
         return plt.axes([0.18, b, 0.72, 0.015])
 
     s_n = Slider(_ax(0.470), "players", 1, 8, valinit=state["n"], valstep=1)
-    s_sep = Slider(_ax(0.435), "min_sep", 0.3, 2.0, valinit=params.min_sep)
-    s_alpha = Slider(_ax(0.400), "push α", 0.1, 0.8, valinit=params.alpha)
-    s_dbias = Slider(_ax(0.365), "def fwd/back", -2.0, 3.0, valinit=params.depth_bias)
-    s_dside = Slider(_ax(0.330), "def side", 0.0, 2.0, valinit=params.def_side)
-    s_gap = Slider(_ax(0.295), "def gap", 0.5, 2.0, valinit=params.gap)
-    s_f = Slider(_ax(0.260), "supp lead", 0.0, 3.0, valinit=params.f)
-    s_side = Slider(_ax(0.225), "supp side", 0.0, 2.5, valinit=params.supp_side)
-    s_smax = Slider(_ax(0.190), "supp max x", 0.0, 4.2, valinit=params.supp_max_x)
-    s_pmarg = Slider(_ax(0.155), "post margin", 0.0, 1.3, valinit=params.post_margin)
-    s_back = Slider(_ax(0.120), "back dist", 0.0, 3.0, valinit=params.back_dist)
-    s_kclr = Slider(_ax(0.085), "kick clear", 0.0, 1.5, valinit=params.kick_clear)
-    s_gout = Slider(_ax(0.050), "goalie out", 0.2, 2.0, valinit=params.d_g)
+    s_sep = Slider(_ax(0.440), "min_sep", 0.3, 2.0, valinit=params.min_sep)
+    s_alpha = Slider(_ax(0.410), "push α", 0.1, 0.8, valinit=params.alpha)
+    s_dbias = Slider(_ax(0.380), "def fwd/back", -2.0, 3.0, valinit=params.depth_bias)
+    s_dside = Slider(_ax(0.350), "def side", 0.0, 2.0, valinit=params.def_side)
+    s_gap = Slider(_ax(0.320), "def gap", 0.5, 2.0, valinit=params.gap)
+    s_f = Slider(_ax(0.290), "supp lead", 0.0, 3.0, valinit=params.f)
+    s_side = Slider(_ax(0.260), "supp side", 0.0, 2.5, valinit=params.supp_side)
+    s_smax = Slider(_ax(0.230), "supp max x", 0.0, 4.2, valinit=params.supp_max_x)
+    s_pmarg = Slider(_ax(0.200), "post margin", 0.0, 1.3, valinit=params.post_margin)
+    s_back = Slider(_ax(0.170), "back dist", 0.0, 3.0, valinit=params.back_dist)
+    s_kclr = Slider(_ax(0.140), "kick clear", 0.0, 1.5, valinit=params.kick_clear)
+    s_gout = Slider(_ax(0.110), "goalie out", 0.2, 2.0, valinit=params.d_g)
+    check_fk = CheckButtons(plt.axes([0.18, 0.073, 0.20, 0.022]), ["freekick"], [False])
+    s_fkcl = Slider(_ax(0.050), "fk clearance", 0.1, 2.0, valinit=params.freekick_clearance)
 
     def draw():
         ax.clear()
@@ -64,7 +66,12 @@ def run_gui():
         params.supp_max_x, params.def_side = s_smax.val, s_dside.val
         params.post_margin, params.back_dist = s_pmarg.val, s_back.val
         params.kick_clear = s_kclr.val
+        params.freekick = check_fk.get_status()[0]
+        params.freekick_clearance = s_fkcl.val
         n = int(s_n.val)
+
+        if params.freekick:
+            ax.add_patch(Circle(state["ball"], params.freekick_clearance, fill=False, color="yellow", lw=1.5, ls="--", zorder=2, alpha=0.7))
 
         form = _inner._compute_formation(state["ball"], fld, n, params)
         new_items = list(form.items())
@@ -132,8 +139,9 @@ def run_gui():
             state["ball"] = np.array([event.xdata, event.ydata])
             draw()
 
-    for s in (s_n, s_sep, s_alpha, s_dbias, s_dside, s_gap, s_f, s_side, s_smax, s_pmarg, s_back, s_kclr, s_gout):
+    for s in (s_n, s_sep, s_alpha, s_dbias, s_dside, s_gap, s_f, s_side, s_smax, s_pmarg, s_back, s_kclr, s_gout, s_fkcl):
         s.on_changed(lambda _v: draw())
+    check_fk.on_clicked(lambda _label: draw())
     fig.canvas.mpl_connect("button_press_event", on_click)
     draw()
     plt.show()

@@ -58,13 +58,16 @@ class Params:
     # striker
     kick_offset: float = 0.25  # striker stands this far behind the ball (to push it forward)
     post_margin: float = 0.45  # safety margin inside each goal post for a straight shot
-    back_dist: float = 1.0  # within this x of the opp goal & not aligned -> play back to our side
+    back_dist: float = 0.21  # within this x of the opp goal & not aligned -> play back to our side
     # separation
     min_sep: float = 0.8  # no two robots closer than this
     sep_iters: int = 8
     # kick lane: keep teammates out of the corridor in front of the ball
     kick_clear: float = 0.7  # half-width of the cleared corridor
     kick_range: float = 3.0  # how far in front of the ball the corridor extends
+    # opponent free kick / goal kick / penalty: keep all robots outside this radius
+    freekick: bool = False
+    freekick_clearance: float = 0.75
 
 
 class PositioningCapsule(AbstractBlackboardCapsule):
@@ -257,6 +260,16 @@ class InnerPositioningCapsule:
                     continue
                 positions[n] = self._clamp_field(positions[n] + disp[n], field)
 
+    def _clear_ball(self, positions: dict, ball, radius: float, field: Field):
+        """Push all robots to at least `radius` distance from `ball` (in-place)."""
+        ball = np.asarray(ball)
+        for name in positions:
+            diff = positions[name] - ball
+            dist = np.linalg.norm(diff)
+            if dist < radius:
+                dirv = self._normalize(diff, fallback=np.array([-1.0, 0.0]))
+                positions[name] = self._clamp_field(ball + radius * dirv, field)
+
     # --------------------------------------------------------------------------- #
     #  Assignment
     # --------------------------------------------------------------------------- #
@@ -309,33 +322,42 @@ class InnerPositioningCapsule:
         perp = np.array([-to_ball[1], to_ball[0]])
 
         roles = self._allocate_roles(n_players, B, field)
+        if params.freekick and "supporter" in roles:
+            n_def = sum(1 for r in roles if r.startswith("defender_"))
+            roles[roles.index("supporter")] = f"defender_{n_def}"
         out = {}
         head = {}  # role -> heading (rad); filled lazily, completed after separation
         kick_aim = None  # striker's kick direction; used to clear the kick lane
 
         # --- striker: stands behind the ball opposite the smoothly-chosen kick aim --- #
         if "striker" in roles:
-            h = max(field.goal_width / 2 - params.post_margin, 0.0)  # safe half-mouth
-            # aim at the goal, target clamped into the safe mouth: this gives a straight
-            # (+x) shot whenever the ball is aligned within the posts, angled otherwise
-            target = np.array([opp[0], np.clip(B[1], -h, h)])
-            aim_goal = self._normalize(target - B)
-            # fallback: play back toward our side (field centre)
-            aim_back = self._normalize(np.array([0.0, 0.0]) - B, fallback=np.array([-1.0, 0.0]))
-            # blend to back-pass only when close to the opp goal AND not aligned
-            near_goal = self._smoothstep(B[0], opp[0] - params.back_dist - 1.0, opp[0] - params.back_dist)
-            not_aligned = self._smoothstep(abs(B[1]), h, h + 1.0)
-            w_back = near_goal * not_aligned
-            # rotate the aim around the ball at constant angular rate (shortest path) so
-            # the striker swings smoothly rather than whipping when the two aims oppose
-            a0 = np.arctan2(aim_goal[1], aim_goal[0])
-            a1 = np.arctan2(aim_back[1], aim_back[0])
-            da = (a1 - a0 + np.pi) % (2 * np.pi) - np.pi  # shortest signed turn
-            ang = a0 + w_back * da
-            aim = np.array([np.cos(ang), np.sin(ang)])
-            out["striker"] = B - params.kick_offset * aim
-            head["striker"] = ang  # striker faces where it kicks
-            kick_aim = aim
+            if params.freekick:
+                # park at the clearance boundary on the goal side, facing the ball
+                dir_to_goal = self._normalize(G - B, fallback=np.array([-1.0, 0.0]))
+                out["striker"] = self._clamp_field(B + params.freekick_clearance * dir_to_goal, field)
+                # heading will be computed in the orientation pass (face ball)
+            else:
+                h = max(field.goal_width / 2 - params.post_margin, 0.0)  # safe half-mouth
+                # aim at the goal, target clamped into the safe mouth: this gives a straight
+                # (+x) shot whenever the ball is aligned within the posts, angled otherwise
+                target = np.array([opp[0], np.clip(B[1], -h, h)])
+                aim_goal = self._normalize(target - B)
+                # fallback: play back toward our side (field centre)
+                aim_back = self._normalize(np.array([0.0, 0.0]) - B, fallback=np.array([-1.0, 0.0]))
+                # blend to back-pass only when close to the opp goal AND not aligned
+                near_goal = self._smoothstep(B[0], opp[0] - params.back_dist - 1.0, opp[0] - params.back_dist)
+                not_aligned = self._smoothstep(abs(B[1]), h, h + 1.0)
+                w_back = near_goal * not_aligned
+                # rotate the aim around the ball at constant angular rate (shortest path) so
+                # the striker swings smoothly rather than whipping when the two aims oppose
+                a0 = np.arctan2(aim_goal[1], aim_goal[0])
+                a1 = np.arctan2(aim_back[1], aim_back[0])
+                da = (a1 - a0 + np.pi) % (2 * np.pi) - np.pi  # shortest signed turn
+                ang = a0 + w_back * da
+                aim = np.array([np.cos(ang), np.sin(ang)])
+                out["striker"] = B - params.kick_offset * aim
+                head["striker"] = ang  # striker faces where it kicks
+                kick_aim = aim
 
         # --- goalie: on the ball->goal axis, hugging the goal, clamped to the mouth -- #
         if "goalie" in roles:
@@ -381,6 +403,10 @@ class InnerPositioningCapsule:
 
         # --- min-separation repulsion + kick-lane clearance ----------------------- #
         self._separate(out, field, params, B, kick_aim)
+
+        # --- freekick: push every robot outside the mandatory clearance radius ---- #
+        if params.freekick:
+            self._clear_ball(out, B, params.freekick_clearance, field)
 
         # --- orientations (computed from the final positions) --------------------- #
         for role, p in out.items():
