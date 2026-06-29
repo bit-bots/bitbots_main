@@ -6,7 +6,6 @@ Click the field to move the ball; use the sliders to tweak params.
 """
 
 import numpy as np
-
 from bitbots_blackboard.capsules.positioning_capsule import Field, InnerPositioningCapsule, Params
 
 _inner = InnerPositioningCapsule()
@@ -71,7 +70,18 @@ def run_gui():
         n = int(s_n.val)
 
         if params.freekick:
-            ax.add_patch(Circle(state["ball"], params.freekick_clearance, fill=False, color="yellow", lw=1.5, ls="--", zorder=2, alpha=0.7))
+            ax.add_patch(
+                Circle(
+                    state["ball"],
+                    params.freekick_clearance,
+                    fill=False,
+                    color="yellow",
+                    lw=1.5,
+                    ls="--",
+                    zorder=2,
+                    alpha=0.7,
+                )
+            )
 
         form = _inner._compute_formation(state["ball"], fld, n, params)
         new_items = list(form.items())
@@ -140,7 +150,22 @@ def run_gui():
             state["ball"] = np.array([event.xdata, event.ydata])
             draw()
 
-    for s in (s_n, s_sep, s_alpha, s_dbias, s_dside, s_gap, s_f, s_side, s_smax, s_pmarg, s_back, s_kclr, s_gout, s_fkcl):
+    for s in (
+        s_n,
+        s_sep,
+        s_alpha,
+        s_dbias,
+        s_dside,
+        s_gap,
+        s_f,
+        s_side,
+        s_smax,
+        s_pmarg,
+        s_back,
+        s_kclr,
+        s_gout,
+        s_fkcl,
+    ):
         s.on_changed(lambda _v: draw())
     check_fk.on_clicked(lambda _label: draw())
     fig.canvas.mpl_connect("button_press_event", on_click)

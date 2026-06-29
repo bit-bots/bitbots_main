@@ -117,8 +117,8 @@ class PositioningCapsule(AbstractBlackboardCapsule):
 
     @cached_capsule_function
     def get_formation_assignment(self) -> dict[int, RobotAssignment]:
-        ballPose = self._blackboard.world_model.get_best_ball_point_stamped()
-        ball = np.array([ballPose.point.x, ballPose.point.y])
+        ball_pose = self._blackboard.world_model.get_best_ball_point_stamped()
+        ball = np.array([ball_pose.point.x, ball_pose.point.y])
         robot_poses = self._blackboard.team_data.get_robot_poses()
         self._node.get_logger().info(f"Length of robot_poses: {len(robot_poses)}")
 
@@ -159,7 +159,9 @@ class InnerPositioningCapsule:
     # --------------------------------------------------------------------------- #
 
     @staticmethod
-    def _normalize(v: NDArray[np.float64], fallback: NDArray[np.float64] = np.array([1.0, 0.0])) -> NDArray[np.float64]:
+    def _normalize(v: NDArray[np.float64], fallback: NDArray[np.float64] | None = None) -> NDArray[np.float64]:
+        if fallback is None:
+            fallback = np.array([1.0, 0.0])
         n = np.linalg.norm(v)
         return v / n if n > 1e-9 else fallback.copy()
 
@@ -300,7 +302,9 @@ class InnerPositioningCapsule:
                     continue
                 positions[n] = self._clamp_field(positions[n] + disp[n], field)
 
-    def _clear_ball(self, positions: dict[str, NDArray[np.float64]], ball: NDArray[np.float64], radius: float, field: Field) -> None:
+    def _clear_ball(
+        self, positions: dict[str, NDArray[np.float64]], ball: NDArray[np.float64], radius: float, field: Field
+    ) -> None:
         """Push all robots to at least `radius` distance from `ball` (in-place)."""
         ball = np.asarray(ball)
         for name in positions:
@@ -358,7 +362,9 @@ class InnerPositioningCapsule:
     #  Formation computation
     # --------------------------------------------------------------------------- #
 
-    def _compute_formation(self, ball: NDArray[np.float64], field: Field, n_players: int, params: Params) -> dict[str, NDArray[np.float64]]:
+    def _compute_formation(
+        self, ball: NDArray[np.float64], field: Field, n_players: int, params: Params
+    ) -> dict[str, NDArray[np.float64]]:
         """Map a ball position -> {role: np.array([x, y, yaw])}. Pure & deterministic.
 
         yaw is in radians, z-up ROS convention (counter-clockwise from +x).
@@ -367,15 +373,15 @@ class InnerPositioningCapsule:
         xyzw order (ROS/tf convention). Internally, transforms3d uses wxyz order;
         `bitbots_utils.transforms` handles the conversion.
         """
-        B = ball
-        G = np.array([-field.length / 2.0, 0.0])
+        b = ball
+        goal = np.array([-field.length / 2.0, 0.0])
         opp = np.array([+field.length / 2.0, 0.0])
 
-        d = np.linalg.norm(B - G)
-        to_ball = self._normalize(B - G)  # our-goal -> ball
+        d = np.linalg.norm(b - goal)
+        to_ball = self._normalize(b - goal)  # our-goal -> ball
         perp = np.array([-to_ball[1], to_ball[0]])
 
-        roles = self._allocate_roles(n_players, B, field)
+        roles = self._allocate_roles(n_players, b, field)
         if params.freekick and Role.SUPPORTER in roles:
             n_def = sum(1 for r in roles if r.startswith(Role.DEFENDER + "_"))
             roles[roles.index(Role.SUPPORTER)] = f"{Role.DEFENDER}_{n_def}"
@@ -387,20 +393,20 @@ class InnerPositioningCapsule:
         if Role.STRIKER in roles:
             if params.freekick:
                 # park at the clearance boundary on the goal side, facing the ball
-                dir_to_goal = self._normalize(G - B, fallback=np.array([-1.0, 0.0]))
-                out[Role.STRIKER] = self._clamp_field(B + params.freekick_clearance * dir_to_goal, field)
+                dir_to_goal = self._normalize(goal - b, fallback=np.array([-1.0, 0.0]))
+                out[Role.STRIKER] = self._clamp_field(b + params.freekick_clearance * dir_to_goal, field)
                 # heading will be computed in the orientation pass (face ball)
             else:
                 h = max(field.goal_width / 2 - params.post_margin, 0.0)  # safe half-mouth
                 # aim at the goal, target clamped into the safe mouth: this gives a straight
                 # (+x) shot whenever the ball is aligned within the posts, angled otherwise
-                target = np.array([opp[0], np.clip(B[1], -h, h)])
-                aim_goal = self._normalize(target - B)
+                target = np.array([opp[0], np.clip(b[1], -h, h)])
+                aim_goal = self._normalize(target - b)
                 # fallback: play back toward our side (field centre)
-                aim_back = self._normalize(np.array([0.0, 0.0]) - B, fallback=np.array([-1.0, 0.0]))
+                aim_back = self._normalize(np.array([0.0, 0.0]) - b, fallback=np.array([-1.0, 0.0]))
                 # blend to back-pass only when close to the opp goal AND not aligned
-                near_goal = self._smoothstep(B[0], opp[0] - params.back_dist - 1.0, opp[0] - params.back_dist)
-                not_aligned = self._smoothstep(abs(B[1]), h, h + 1.0)
+                near_goal = self._smoothstep(b[0], opp[0] - params.back_dist - 1.0, opp[0] - params.back_dist)
+                not_aligned = self._smoothstep(abs(b[1]), h, h + 1.0)
                 w_back = near_goal * not_aligned
                 # rotate the aim around the ball at constant angular rate (shortest path) so
                 # the striker swings smoothly rather than whipping when the two aims oppose
@@ -409,13 +415,13 @@ class InnerPositioningCapsule:
                 da = (a1 - a0 + np.pi) % (2 * np.pi) - np.pi  # shortest signed turn
                 ang = a0 + w_back * da
                 aim = np.array([np.cos(ang), np.sin(ang)])
-                out[Role.STRIKER] = B - params.kick_offset * aim
+                out[Role.STRIKER] = b - params.kick_offset * aim
                 head[Role.STRIKER] = ang  # striker faces where it kicks
                 kick_aim = aim
 
         # --- goalie: on the ball->goal axis, hugging the goal, clamped to the mouth -- #
         if Role.GOALIE in roles:
-            g = G + params.d_g * to_ball
+            g = goal + params.d_g * to_ball
             g = np.array(
                 [
                     np.clip(g[0], -field.length / 2 + 0.05, -field.length / 2 + params.d_g),
@@ -428,18 +434,18 @@ class InnerPositioningCapsule:
         defender_roles = [r for r in roles if r.startswith(Role.DEFENDER + "_")]
         m = len(defender_roles)
         if m > 0:
-            D = np.clip(
+            depth = np.clip(
                 params.alpha * d + params.depth_bias,  # push up + fwd/back bias
                 params.D_min,
                 params.D_max,
             )
-            D = min(D, max(d - params.standoff, 0.0))  # stay goal-side of the ball
-            D = max(D, params.d_g + params.dz)  # stay ahead of the goalie
-            anchor = G + D * to_ball
+            depth = min(depth, max(d - params.standoff, 0.0))  # stay goal-side of the ball
+            depth = max(depth, params.d_g + params.dz)  # stay ahead of the goalie
+            anchor = goal + depth * to_ball
             if m == 1:
                 # a single defender: shade to the centre side so it doesn't sit on the
                 # striker<->goalie line (otherwise all three are collinear)
-                side_dir = -1.0 if B[1] >= 0 else 1.0
+                side_dir = -1.0 if b[1] >= 0 else 1.0
                 offsets = [params.def_side * side_dir]
             else:
                 offsets = [(k - (m - 1) / 2.0) * params.gap for k in range(m)]
@@ -450,17 +456,17 @@ class InnerPositioningCapsule:
         if Role.SUPPORTER in roles:
             # always sit to the centre side of the ball; hard swap so it is never
             # directly in front of the striker, even when the ball is on the centre line
-            side_dir = -1.0 if B[1] >= 0 else 1.0  # points toward y=0 (default: centre-ward)
-            sup = B + np.array([params.f, params.supp_side * side_dir])
+            side_dir = -1.0 if b[1] >= 0 else 1.0  # points toward y=0 (default: centre-ward)
+            sup = b + np.array([params.f, params.supp_side * side_dir])
             sup[0] = min(sup[0], params.supp_max_x)  # don't drift into the opponent corner
             out[Role.SUPPORTER] = self._clamp_field(sup, field)
 
         # --- min-separation repulsion + kick-lane clearance ----------------------- #
-        self._separate(out, field, params, B, kick_aim)
+        self._separate(out, field, params, b, kick_aim)
 
         # --- freekick: push every robot outside the mandatory clearance radius ---- #
         if params.freekick:
-            self._clear_ball(out, B, params.freekick_clearance, field)
+            self._clear_ball(out, b, params.freekick_clearance, field)
 
         # --- orientations (computed from the final positions) --------------------- #
         for role, p in out.items():
@@ -468,9 +474,9 @@ class InnerPositioningCapsule:
                 continue  # striker already set (faces its kick aim)
             if role == Role.SUPPORTER:
                 # face the bisector of (toward ball, toward opp goal): "watch both"
-                bis = self._normalize(B - p) + self._normalize(opp - p)
+                bis = self._normalize(b - p) + self._normalize(opp - p)
                 head[role] = self._face(np.zeros(2), bis, fallback=self._face(p, opp))
             else:
-                head[role] = self._face(p, B)  # goalie + defenders face the ball
+                head[role] = self._face(p, b)  # goalie + defenders face the ball
 
         return {role: np.array([p[0], p[1], head[role]]) for role, p in out.items()}

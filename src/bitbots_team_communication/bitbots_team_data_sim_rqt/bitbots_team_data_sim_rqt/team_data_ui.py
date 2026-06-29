@@ -3,6 +3,7 @@ import os
 import sys
 
 from ament_index_python import get_package_share_directory
+from geometry_msgs.msg import PoseWithCovariance
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (
     QComboBox,
@@ -24,7 +25,6 @@ from rqt_gui.main import Main
 from rqt_gui_py.plugin import Plugin
 
 from bitbots_msgs.msg import Strategy, TeamData
-from geometry_msgs.msg import PoseWithCovariance
 
 
 class RobotWidget(QGroupBox):
@@ -307,10 +307,10 @@ class TeamDataSimulator(Plugin):
             if robot_widget.active():
                 team_data = TeamData()
                 team_data.robot_id = robot_widget.get_robot_id()
-                poseWithCov = PoseWithCovariance()
-                poseWithCov.pose.position.x = robot_widget.position_sliders_x.get_x_position()
-                poseWithCov.pose.position.y = robot_widget.position_sliders_y.get_y_position()
-                team_data.robot_position = poseWithCov
+                pose_with_cov = PoseWithCovariance()
+                pose_with_cov.pose.position.x = robot_widget.position_sliders_x.get_x_position()
+                pose_with_cov.pose.position.y = robot_widget.position_sliders_y.get_y_position()
+                team_data.robot_position = pose_with_cov
                 team_data.state = robot_widget.state_box.get_state()
                 team_data.time_to_position_at_ball = robot_widget.time_to_position_box.get_time()
                 team_data.strategy.role = robot_widget.strategy_box.get_role()

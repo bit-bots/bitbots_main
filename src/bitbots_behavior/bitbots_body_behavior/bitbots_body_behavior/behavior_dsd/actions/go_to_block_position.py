@@ -6,14 +6,14 @@ from bitbots_utils.transforms import quat_from_yaw
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 from tf2_geometry_msgs import PoseStamped
 
+
 class GoToGoaliePosition(AbstractActionElement):
     blackboard: BodyBlackboard
-    
+
     def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
 
     def perform(self, reevaluate=False):
-
         pose_msg = PoseStamped()
         pose_msg.header.stamp = self.blackboard.node.get_clock().now().to_msg()
         pose_msg.header.frame_id = self.blackboard.map_frame
@@ -26,6 +26,7 @@ class GoToGoaliePosition(AbstractActionElement):
         pose_msg.pose.orientation.w = pose[2]
 
         self.blackboard.pathfinding.publish(pose_msg)
+
 
 class GoToBlockPosition(AbstractActionElement):
     blackboard: BodyBlackboard

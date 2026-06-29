@@ -1,5 +1,4 @@
 from bitbots_blackboard.body_blackboard import BodyBlackboard
-from bitbots_utils.transforms import quat_from_yaw
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 from tf2_geometry_msgs import PoseStamped
 
@@ -34,13 +33,10 @@ class AbstractGoToPassPosition(AbstractActionElement):
         # Limit the x position, so that we are not running into the enemy goal
         goal_x = min(self.max_x, goal_x)
 
-        goal_y = ball_pos[1] + side_sign * self.pass_pos_y
-        goal_yaw = 0.0
-
         pose_msg = PoseStamped()
         pose_msg.header.stamp = self.blackboard.node.get_clock().now().to_msg()
         pose_msg.header.frame_id = self.blackboard.map_frame
-        
+
         optimal_positioning = self.blackboard.positioning.get_formation_assignment()
         own_position = optimal_positioning[self.blackboard.gamestate.get_own_id()]
         pose = own_position["goal_pose"]
