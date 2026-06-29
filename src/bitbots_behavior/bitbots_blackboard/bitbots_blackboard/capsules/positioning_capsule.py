@@ -1,9 +1,20 @@
+import random
 from dataclasses import dataclass
+from enum import StrEnum
+from typing import TypedDict
 
 import numpy as np
 from bitbots_utils.utils import get_parameters_from_other_node
+from numpy.typing import NDArray
 
 from bitbots_blackboard.capsules import AbstractBlackboardCapsule, cached_capsule_function
+
+
+class Role(StrEnum):
+    STRIKER = "striker"
+    GOALIE = "goalie"
+    DEFENDER = "defender"
+    SUPPORTER = "supporter"
 
 
 @dataclass
@@ -93,8 +104,11 @@ class PositioningCapsule(AbstractBlackboardCapsule):
             goal_width=parameters["field.goal.width"],
         )
         self._params = Params()
-
         self._inner = InnerPositioningCapsule(self._field, self._params)
+        self._own_locked_role: str | None = None
+        self._own_lock_until: float = 0.0
+        self._hysteresis_min: float = self._blackboard.config["role_hysteresis.min"]
+        self._hysteresis_max: float = self._blackboard.config["role_hysteresis.max"]
 
     @cached_capsule_function
     def get_formation_assignment(self) -> dict:
@@ -108,14 +122,28 @@ class PositioningCapsule(AbstractBlackboardCapsule):
         ordered_jerseys = sorted(robot_poses.keys())
         old_poses = [robot_poses[j] for j in ordered_jerseys]
         pairs = self._inner._match_assignment(old_poses, new_items, ball)
+        return {ordered_jerseys[old_idx]: {"role": role, "goal_pose": new_pose} for old_idx, new_pose, role in pairs}
 
-        result = {}
-        for jersey, old_pose in zip(ordered_jerseys, [robot_poses[j] for j in ordered_jerseys]):
-            for ap, new_pose, role in pairs:
-                if np.allclose(np.asarray(ap), np.asarray(old_pose)):
-                    result[jersey] = {"role": role, "goal_pose": np.asarray(new_pose)}
-                    break
-        return result
+    @cached_capsule_function
+    def get_own_role(self) -> str:
+        """Return our assigned role, locking it in for a random duration on each change.
+
+        Each robot runs this independently with slightly different world state, so
+        hysteresis is local: once we switch to a new role we commit to it for
+        Uniform(hysteresis_min, hysteresis_max) seconds before accepting another change.
+        """
+        own_jersey = self._blackboard.gamestate.get_own_id()
+        assigned_role = self.get_formation_assignment()[own_jersey]["role"]
+        now = self._node.get_clock().now().nanoseconds / 1e9
+
+        if now < self._own_lock_until:
+            return self._own_locked_role  # type: ignore[return-value]
+
+        if assigned_role != self._own_locked_role:
+            self._own_locked_role = assigned_role
+            self._own_lock_until = now + random.uniform(self._hysteresis_min, self._hysteresis_max)
+
+        return assigned_role
 
 
 class InnerPositioningCapsule:
@@ -190,12 +218,12 @@ class InnerPositioningCapsule:
 
         roles = []
         if n >= 1:
-            roles.append("striker")
+            roles.append(Role.STRIKER)
         if n >= 2:
-            roles.append("goalie")
-        roles += [f"defender_{i}" for i in range(n_def)]
+            roles.append(Role.GOALIE)
+        roles += [f"{Role.DEFENDER}_{i}" for i in range(n_def)]
         if has_support:
-            roles.append("supporter")
+            roles.append(Role.SUPPORTER)
         return roles
 
     # --------------------------------------------------------------------------- #
@@ -215,7 +243,7 @@ class InnerPositioningCapsule:
         (along the kick direction) are pushed sideways out of it so they don't block
         the kick; the push tapers in/out along the corridor to stay smooth.
         """
-        fixed = {"striker"}
+        fixed = {Role.STRIKER}
         names = list(positions.keys())
         sep = params.min_sep
         # model the kick corridor as a row of fixed repulsors along the aim, each with
@@ -279,7 +307,8 @@ class InnerPositioningCapsule:
 
         The robot closest to the ball always takes the striker target; the rest are
         matched optimally (Hungarian) to minimise total cost = distance + angle_w *
-        heading difference. Returns a list of (old_pose, new_pose, new_role).
+        heading difference. Returns a list of (old_idx, new_pose, new_role) where
+        old_idx is the index into `old_poses`.
         `old_poses`: list of [x, y, theta]; `new_items`: list of (role, [x, y, theta]).
         """
         from scipy.optimize import linear_sum_assignment
@@ -289,9 +318,9 @@ class InnerPositioningCapsule:
         n = len(old_poses)
 
         # striker target -> the old robot nearest the ball
-        s_j = next(j for j, (r, _) in enumerate(new_items) if r == "striker")
+        s_j = next(j for j, (r, _) in enumerate(new_items) if r == Role.STRIKER)
         s_i = min(range(n), key=lambda i: np.linalg.norm(old_poses[i][:2] - ball))
-        pairs = [(old_poses[s_i], new_items[s_j][1], new_items[s_j][0])]
+        pairs = [(s_i, new_items[s_j][1], new_items[s_j][0])]
 
         rem_i = [i for i in range(n) if i != s_i]
         rem_j = [j for j in range(len(new_items)) if j != s_j]
@@ -304,7 +333,7 @@ class InnerPositioningCapsule:
             ri, ci = linear_sum_assignment(cost)
             for a, b in zip(ri, ci):
                 i, j = rem_i[a], rem_j[b]
-                pairs.append((old_poses[i], new_items[j][1], new_items[j][0]))
+                pairs.append((i, new_items[j][1], new_items[j][0]))
         return pairs
 
     # --------------------------------------------------------------------------- #
@@ -312,7 +341,14 @@ class InnerPositioningCapsule:
     # --------------------------------------------------------------------------- #
 
     def _compute_formation(self, ball, field: Field, n_players: int, params: Params):
-        """Map a ball position -> {role_name: np.array([x, y, theta])}. Pure & deterministic."""
+        """Map a ball position -> {role: np.array([x, y, yaw])}. Pure & deterministic.
+
+        yaw is in radians, z-up ROS convention (counter-clockwise from +x).
+        To build a ROS PoseStamped use `quat_from_yaw(pose[2])` from
+        `bitbots_utils.transforms` which returns a geometry_msgs/Quaternion in
+        xyzw order (ROS/tf convention). Internally, transforms3d uses wxyz order;
+        `bitbots_utils.transforms` handles the conversion.
+        """
         B = ball
         G = np.array([-field.length / 2.0, 0.0])
         opp = np.array([+field.length / 2.0, 0.0])
@@ -322,19 +358,19 @@ class InnerPositioningCapsule:
         perp = np.array([-to_ball[1], to_ball[0]])
 
         roles = self._allocate_roles(n_players, B, field)
-        if params.freekick and "supporter" in roles:
-            n_def = sum(1 for r in roles if r.startswith("defender_"))
-            roles[roles.index("supporter")] = f"defender_{n_def}"
+        if params.freekick and Role.SUPPORTER in roles:
+            n_def = sum(1 for r in roles if r.startswith(Role.DEFENDER + "_"))
+            roles[roles.index(Role.SUPPORTER)] = f"{Role.DEFENDER}_{n_def}"
         out = {}
         head = {}  # role -> heading (rad); filled lazily, completed after separation
         kick_aim = None  # striker's kick direction; used to clear the kick lane
 
         # --- striker: stands behind the ball opposite the smoothly-chosen kick aim --- #
-        if "striker" in roles:
+        if Role.STRIKER in roles:
             if params.freekick:
                 # park at the clearance boundary on the goal side, facing the ball
                 dir_to_goal = self._normalize(G - B, fallback=np.array([-1.0, 0.0]))
-                out["striker"] = self._clamp_field(B + params.freekick_clearance * dir_to_goal, field)
+                out[Role.STRIKER] = self._clamp_field(B + params.freekick_clearance * dir_to_goal, field)
                 # heading will be computed in the orientation pass (face ball)
             else:
                 h = max(field.goal_width / 2 - params.post_margin, 0.0)  # safe half-mouth
@@ -355,12 +391,12 @@ class InnerPositioningCapsule:
                 da = (a1 - a0 + np.pi) % (2 * np.pi) - np.pi  # shortest signed turn
                 ang = a0 + w_back * da
                 aim = np.array([np.cos(ang), np.sin(ang)])
-                out["striker"] = B - params.kick_offset * aim
-                head["striker"] = ang  # striker faces where it kicks
+                out[Role.STRIKER] = B - params.kick_offset * aim
+                head[Role.STRIKER] = ang  # striker faces where it kicks
                 kick_aim = aim
 
         # --- goalie: on the ball->goal axis, hugging the goal, clamped to the mouth -- #
-        if "goalie" in roles:
+        if Role.GOALIE in roles:
             g = G + params.d_g * to_ball
             g = np.array(
                 [
@@ -368,10 +404,10 @@ class InnerPositioningCapsule:
                     np.clip(g[1], -field.goal_width / 2, field.goal_width / 2),
                 ]
             )
-            out["goalie"] = g
+            out[Role.GOALIE] = g
 
         # --- defenders: anchor on axis at push-up depth, spread along perp ---------- #
-        defender_roles = [r for r in roles if r.startswith("defender_")]
+        defender_roles = [r for r in roles if r.startswith(Role.DEFENDER + "_")]
         m = len(defender_roles)
         if m > 0:
             D = np.clip(
@@ -393,13 +429,13 @@ class InnerPositioningCapsule:
                 out[r] = self._clamp_field(anchor + off * perp, field)
 
         # --- supporter: slightly in front of the ball, kept inside the field -------- #
-        if "supporter" in roles:
+        if Role.SUPPORTER in roles:
             # always sit to the centre side of the ball; hard swap so it is never
             # directly in front of the striker, even when the ball is on the centre line
             side_dir = -1.0 if B[1] >= 0 else 1.0  # points toward y=0 (default: centre-ward)
             sup = B + np.array([params.f, params.supp_side * side_dir])
             sup[0] = min(sup[0], params.supp_max_x)  # don't drift into the opponent corner
-            out["supporter"] = self._clamp_field(sup, field)
+            out[Role.SUPPORTER] = self._clamp_field(sup, field)
 
         # --- min-separation repulsion + kick-lane clearance ----------------------- #
         self._separate(out, field, params, B, kick_aim)
@@ -412,7 +448,7 @@ class InnerPositioningCapsule:
         for role, p in out.items():
             if role in head:
                 continue  # striker already set (faces its kick aim)
-            if role == "supporter":
+            if role == Role.SUPPORTER:
                 # face the bisector of (toward ball, toward opp goal): "watch both"
                 bis = self._normalize(B - p) + self._normalize(opp - p)
                 head[role] = self._face(np.zeros(2), bis, fallback=self._face(p, opp))

@@ -78,7 +78,8 @@ def run_gui():
 
         prev = state["prev"]
         if prev is not None and len(prev) == len(new_items):
-            for old_pose, new_pose, role in _inner._match_assignment(prev, new_items, state["ball"]):
+            for old_idx, new_pose, role in _inner._match_assignment(prev, new_items, state["ball"]):
+                old_pose = prev[old_idx]
                 c = colors.get(role.split("_")[0], "#1f77b4")
                 ax.plot([old_pose[0], new_pose[0]], [old_pose[1], new_pose[1]], ls=":", color=c, lw=1.5, zorder=3)
                 ax.add_patch(Circle(old_pose[:2], 0.10, color=c, alpha=0.55, zorder=4))
