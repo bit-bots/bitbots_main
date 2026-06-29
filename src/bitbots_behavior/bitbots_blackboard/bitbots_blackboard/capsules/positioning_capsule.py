@@ -70,10 +70,6 @@ class Params:
 class PositioningCapsule(AbstractBlackboardCapsule):
     """Decides and communicates the optimal positions, based on the game situation."""
 
-    # --------------------------------------------------------------------------- #
-    #  Config
-    # --------------------------------------------------------------------------- #
-
     def __init__(self, node, blackboard):
         super().__init__(node, blackboard)
 
@@ -94,6 +90,33 @@ class PositioningCapsule(AbstractBlackboardCapsule):
             goal_width=parameters["field.goal.width"],
         )
         self._params = Params()
+
+        self._inner = InnerPositioningCapsule(self._field, self._params)
+
+    @cached_capsule_function
+    def get_formation_assignment(self) -> dict:
+        ballPose = self._blackboard.world_model.get_best_ball_point_stamped()
+        ball = np.array([ballPose.point.x, ballPose.point.y])
+        robot_poses = self._blackboard.team_data.get_robot_poses()
+        self._node.get_logger().info(f"Length of robot_poses: {len(robot_poses)}")
+
+        formation = self._inner._compute_formation(ball, self._field, len(robot_poses), self._params)
+        new_items = list(formation.items())
+        ordered_jerseys = sorted(robot_poses.keys())
+        old_poses = [robot_poses[j] for j in ordered_jerseys]
+        pairs = self._inner._match_assignment(old_poses, new_items, ball)
+
+        result = {}
+        for jersey, old_pose in zip(ordered_jerseys, [robot_poses[j] for j in ordered_jerseys]):
+            for ap, new_pose, role in pairs:
+                if np.allclose(np.asarray(ap), np.asarray(old_pose)):
+                    result[jersey] = {"role": role, "goal_pose": np.asarray(new_pose)}
+                    break
+        return result
+
+
+class InnerPositioningCapsule:
+    """Pure & deterministic formation computation, independent of ROS and the rest of the system."""
 
     # --------------------------------------------------------------------------- #
     #  Helpers
@@ -371,24 +394,3 @@ class PositioningCapsule(AbstractBlackboardCapsule):
                 head[role] = self._face(p, B)  # goalie + defenders face the ball
 
         return {role: np.array([p[0], p[1], head[role]]) for role, p in out.items()}
-
-    @cached_capsule_function
-    def get_formation_assignment(self) -> dict:
-        ballPose = self._blackboard.world_model.get_best_ball_point_stamped()
-        ball = np.array([ballPose.point.x, ballPose.point.y])
-        robot_poses = self._blackboard.team_data.get_robot_poses()
-        self._node.get_logger().info(f"Length of robot_poses: {len(robot_poses)}")
-
-        formation = self._compute_formation(ball, self._field, len(robot_poses), self._params)
-        new_items = list(formation.items())
-        ordered_jerseys = sorted(robot_poses.keys())
-        old_poses = [robot_poses[j] for j in ordered_jerseys]
-        pairs = self._match_assignment(old_poses, new_items, ball)
-
-        result = {}
-        for jersey, old_pose in zip(ordered_jerseys, [robot_poses[j] for j in ordered_jerseys]):
-            for ap, new_pose, role in pairs:
-                if np.allclose(np.asarray(ap), np.asarray(old_pose)):
-                    result[jersey] = {"role": role, "goal_pose": np.asarray(new_pose)}
-                    break
-        return result
