@@ -163,10 +163,13 @@ class RosCommunication(CommunicationBackend):
         self.publisher.publish(UInt8MultiArray(data=list(message)))
 
     def start_receiving(self, callback: Callable[[bytes], None]) -> None:
+        def receive_ros_message(message: UInt8MultiArray) -> None:
+            callback(bytes(message.data))
+
         self.node.create_subscription(
             UInt8MultiArray,
             self.in_topic,
-            lambda msg: callback(bytes(msg.data)),
+            receive_ros_message,
             qos_profile=self.qos,
             callback_group=MutuallyExclusiveCallbackGroup(),
         )
