@@ -6,7 +6,7 @@
 # node's configured default".
 float64 x
 float64 y
-float64 strength
+float64 strength # should be 1-5 to be in distribution for the current policy
 float64 timeout -1.0
 ---
 # Result definition

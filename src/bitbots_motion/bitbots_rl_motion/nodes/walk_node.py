@@ -51,6 +51,11 @@ class WalkNode(RLNode):
     def allowed_states(self):
         return self._robot_state_handler.is_walkable()
 
+    def initialize_observation(self):
+        # No observation history; just start the previous-action feedback term
+        # from zero on each (re)activation.
+        self._previous_action.set_previous_action(np.zeros_like(self._previous_action.get_previous_action()))
+
     def _phase_update_hook(self):
         if not self._phase.check_phase_set():
             return

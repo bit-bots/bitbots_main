@@ -1,5 +1,6 @@
 import numpy as np
 import rclpy
+from bitbots_rl_motion.history_buffer import HistoryBuffer
 from handlers.gravity_handler import GravityHandler
 from handlers.gyro_handler import GyroHandler
 from handlers.joint_handler import JointHandler
@@ -8,20 +9,10 @@ from handlers.soccer_command_handler import SoccerCommandHandler
 from rclpy.executors import MultiThreadedExecutor
 
 from bitbots_msgs.msg import JointCommand
-from bitbots_rl_motion.history_buffer import HistoryBuffer
 from nodes.rl_node import RLNode
 
 
 class KickBallNode(RLNode):
-    """Encoder/decoder soccer (walk + kick) policy for PiPlus_S_12L8A0G2H0W.
-
-    22-DOF full-body net running at 50 Hz. The 646-dim observation stacks an
-    8-frame history of base angular velocity, projected gravity, relative joint
-    position, relative joint velocity and the previous action, plus a 50-dim
-    soccer command and a 20-dim ball history (see SoccerCommandHandler). The net
-    outputs 22 joint targets as ``action * action_scale + default_joint_pos``.
-    """
-
     def __init__(self):
         # Configuring self._phase, self._previous_action
         super().__init__(node_name="kick_ball_node")
@@ -95,6 +86,19 @@ class KickBallNode(RLNode):
     # states in which the policy executes (it both walks and kicks)
     def allowed_states(self):
         return self._robot_state_handler.is_walkable() or self._robot_state_handler.is_kickable()
+
+    def initialize_observation(self):
+        # Clear all 8-frame observation histories and the soccer command/ball
+        # histories so the first observation after activation re-saturates them
+        # with fresh sensor data instead of stale pre-activation frames.
+        self._ang_vel_hist.reset()
+        self._gravity_hist.reset()
+        self._joint_pos_hist.reset()
+        self._joint_vel_hist.reset()
+        self._action_hist.reset()
+        self._soccer_command_handler.reset()
+        # Start the previous-action feedback term from zero on (re)activation.
+        self._previous_action.set_previous_action(np.zeros_like(self._previous_action.get_previous_action()))
 
     def _phase_update_hook(self):
         # This policy does not use a gait phase.

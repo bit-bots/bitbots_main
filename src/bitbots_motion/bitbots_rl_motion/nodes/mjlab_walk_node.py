@@ -55,5 +55,10 @@ class MjLabWalkNode(RLNode):
         allowed_to_move = self._robot_state_handler.is_walkable() and np.any(self._command_handler.get_command() != 0.0)
         return allowed_to_move
 
+    def initialize_observation(self):
+        # No observation history; just start the previous-action feedback term
+        # from zero on each (re)activation.
+        self._previous_action.set_previous_action(np.zeros_like(self._previous_action.get_previous_action()))
+
 
 main = create_main(MjLabWalkNode)

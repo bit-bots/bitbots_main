@@ -55,6 +55,11 @@ class RLNode(Node, ABC):
         self._phase = Phase(self)
         self._previous_action = PreviousAction(self)
 
+        # Tracks whether the policy was running on the previous step so that the
+        # transition from inactive -> active can be detected and the observation
+        # state (re)initialized exactly once per activation.
+        self._policy_active = False
+
     def _timer_callback(self):
         # Check whether all subscribers received at least one message
 
@@ -65,6 +70,20 @@ class RLNode(Node, ABC):
                 throttle_duration_sec=10.0,
             )
             return
+
+        # Only run the policy while it is in an allowed (active) state. When it is
+        # not active nothing is observed, inferred or published; the next
+        # activation starts from a clean observation state.
+        if not self.allowed_states():
+            self._policy_active = False
+            return
+
+        # First step of a (re)activation: let the node initialize its observation
+        # state (e.g. fill/clear history buffers) before any inference runs, so
+        # the history does not start saturated with stale pre-activation data.
+        if not self._policy_active:
+            self.initialize_observation()
+            self._policy_active = True
 
         # TODO consider IMU mounting offset
 
@@ -85,8 +104,7 @@ class RLNode(Node, ABC):
         if not np.all(np.isfinite(observation)):
             bad = np.where(~np.isfinite(observation))[0]
             self.get_logger().error(
-                f"Non-finite observation: {bad.size} value(s), first indices {bad[:8].tolist()}. "
-                "Skipping inference.",
+                f"Non-finite observation: {bad.size} value(s), first indices {bad[:8].tolist()}. Skipping inference.",
                 throttle_duration_sec=2.0,
             )
             return
@@ -107,12 +125,23 @@ class RLNode(Node, ABC):
             return
 
         self._previous_action.set_previous_action(onnx_pred)
-        if self.allowed_states():
-            self.publisher(onnx_pred)
+        self.publisher(onnx_pred)
         self._phase_update_hook()
 
     @abstractmethod
     def _phase_update_hook(self):
+        pass
+
+    @abstractmethod
+    def initialize_observation(self):
+        """Reset/seed the observation state at the start of each activation.
+
+        Called once on every inactive -> active transition, before the first
+        inference of that activation. Stateful nodes (e.g. ones with observation
+        history buffers) must clear their state here so the history is rebuilt
+        from fresh sensor data instead of stale pre-activation values. Stateless
+        nodes can implement this as a no-op.
+        """
         pass
 
     def _all_sensors_ready(self):

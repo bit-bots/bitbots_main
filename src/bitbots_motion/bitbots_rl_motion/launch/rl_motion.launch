@@ -1,6 +1,6 @@
 <launch>
   <arg name="sim" default="false"/>
-  <arg name="walk" default="false"/>
+  <arg name="walk" default="true"/>
   <arg name="kick" default="false"/>
   <arg name="kick_ball" default="true"/>
   <arg name="mjlab_walk" default="false"/>

@@ -173,6 +173,16 @@ class SoccerCommandHandler(Handler):
 
         return np.array([vx, vy, wz, ball_x, ball_y, kick_dir, kick_speed], dtype=np.float32)
 
+    def reset(self) -> None:
+        """Clear the command/ball histories so they are rebuilt on the next update.
+
+        Called when the policy (re)activates so the histories do not carry stale
+        pre-activation snapshots into the freshly started episode.
+        """
+        self._clean_hist = None
+        self._soccer_hist = None
+        self._pub_counter = 0
+
     def update(self) -> None:
         """Advance both history buffers by one control step. Call once per step."""
         cmd7 = self._build_soccer_cmd()
