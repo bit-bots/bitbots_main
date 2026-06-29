@@ -215,7 +215,8 @@ void MotionOdometry::loop() {
     tf2::Transform rotation_point_in_base_link;
     tf2::fromMsg(rotation_point_in_base_link_msg.transform, rotation_point_in_base_link);
 
-    tf2::Transform imu_mounting_offset;
+    // Initialize to identity, as the default constructor leaves the transform uninitialized
+    tf2::Transform imu_mounting_offset = tf2::Transform::getIdentity();
     try {
       geometry_msgs::msg::TransformStamped imu_mounting_transform =
           tf_buffer_.lookupTransform(imu_frame_, base_link_frame_, rclcpp::Time(0));

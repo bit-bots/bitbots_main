@@ -1,6 +1,6 @@
-=======
+========
 BitFoot
-=======
+========
 
 The BitFoot is the foot pressure sensor by the Hamburg Bit-Bots.
 It features a higher update rate and higher resolution than the Rhoban ForceFoot_ on which it is based.
