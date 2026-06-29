@@ -10,6 +10,11 @@ from numpy.typing import NDArray
 from bitbots_blackboard.capsules import AbstractBlackboardCapsule, cached_capsule_function
 
 
+class RobotAssignment(TypedDict):
+    role: str
+    goal_pose: NDArray[np.float64]
+
+
 class Role(StrEnum):
     STRIKER = "striker"
     GOALIE = "goalie"
@@ -104,14 +109,14 @@ class PositioningCapsule(AbstractBlackboardCapsule):
             goal_width=parameters["field.goal.width"],
         )
         self._params = Params()
-        self._inner = InnerPositioningCapsule(self._field, self._params)
+        self._inner = InnerPositioningCapsule()
         self._own_locked_role: str | None = None
         self._own_lock_until: float = 0.0
         self._hysteresis_min: float = self._blackboard.config["role_hysteresis.min"]
         self._hysteresis_max: float = self._blackboard.config["role_hysteresis.max"]
 
     @cached_capsule_function
-    def get_formation_assignment(self) -> dict:
+    def get_formation_assignment(self) -> dict[int, RobotAssignment]:
         ballPose = self._blackboard.world_model.get_best_ball_point_stamped()
         ball = np.array([ballPose.point.x, ballPose.point.y])
         robot_poses = self._blackboard.team_data.get_robot_poses()
@@ -154,31 +159,31 @@ class InnerPositioningCapsule:
     # --------------------------------------------------------------------------- #
 
     @staticmethod
-    def _normalize(v, fallback=np.array([1.0, 0.0])):
+    def _normalize(v: NDArray[np.float64], fallback: NDArray[np.float64] = np.array([1.0, 0.0])) -> NDArray[np.float64]:
         n = np.linalg.norm(v)
         return v / n if n > 1e-9 else fallback.copy()
 
     @staticmethod
-    def _face(frm, to, fallback=0.0):
+    def _face(frm: NDArray[np.float64], to: NDArray[np.float64], fallback: float = 0.0) -> float:
         """Heading (rad) to look from `frm` toward `to`."""
         d = np.asarray(to) - np.asarray(frm)
-        return np.arctan2(d[1], d[0]) if np.linalg.norm(d) > 1e-9 else fallback
+        return float(np.arctan2(d[1], d[0])) if np.linalg.norm(d) > 1e-9 else fallback
 
     @staticmethod
-    def _smoothstep(x, lo, hi):
+    def _smoothstep(x: float, lo: float, hi: float) -> float:
         """C1 ramp from 0 (x<=lo) to 1 (x>=hi)."""
         if hi <= lo:
             return float(x >= hi)
         t = np.clip((x - lo) / (hi - lo), 0.0, 1.0)
-        return t * t * (3 - 2 * t)
+        return float(t * t * (3 - 2 * t))
 
     @staticmethod
-    def _angle_diff(a, b):
+    def _angle_diff(a: float, b: float) -> float:
         """Smallest absolute angle between two headings (rad), in [0, pi]."""
-        return abs((a - b + np.pi) % (2 * np.pi) - np.pi)
+        return float(abs((a - b + np.pi) % (2 * np.pi) - np.pi))
 
     @staticmethod
-    def _clamp_field(p, fld, margin=None):
+    def _clamp_field(p: NDArray[np.float64], fld: Field, margin: float | None = None) -> NDArray[np.float64]:
         """Clamp a point to the playable rectangle (continuous / C0)."""
         m = fld.margin if margin is None else margin
         return np.array(
@@ -193,7 +198,7 @@ class InnerPositioningCapsule:
     # --------------------------------------------------------------------------- #
 
     @staticmethod
-    def _allocate_roles(n, ball=None, field=None):
+    def _allocate_roles(n: int, ball: NDArray[np.float64] | None = None, field: Field | None = None) -> list[str]:
         """Keep-priority as the count drops: striker > goalie > 1st defender > supporter
         > 2nd defender (and any further players are extra defenders).
 
@@ -230,7 +235,14 @@ class InnerPositioningCapsule:
     #  Separation / kick-lane clearance
     # --------------------------------------------------------------------------- #
 
-    def _separate(self, positions: dict, field: Field, params: Params, ball=None, aim=None):
+    def _separate(
+        self,
+        positions: dict[str, NDArray[np.float64]],
+        field: Field,
+        params: Params,
+        ball: NDArray[np.float64] | None = None,
+        aim: NDArray[np.float64] | None = None,
+    ) -> None:
         """In-place relaxation: pairwise min-sep + clearing the striker's kick lane.
 
         Only the striker is a fixed anchor (it must reach the ball); everyone else,
@@ -288,7 +300,7 @@ class InnerPositioningCapsule:
                     continue
                 positions[n] = self._clamp_field(positions[n] + disp[n], field)
 
-    def _clear_ball(self, positions: dict, ball, radius: float, field: Field):
+    def _clear_ball(self, positions: dict[str, NDArray[np.float64]], ball: NDArray[np.float64], radius: float, field: Field) -> None:
         """Push all robots to at least `radius` distance from `ball` (in-place)."""
         ball = np.asarray(ball)
         for name in positions:
@@ -302,7 +314,13 @@ class InnerPositioningCapsule:
     #  Assignment
     # --------------------------------------------------------------------------- #
 
-    def _match_assignment(self, old_poses, new_items, ball, angle_w=0.3):
+    def _match_assignment(
+        self,
+        old_poses: list[list[float] | NDArray[np.float64]],
+        new_items: list[tuple[str, NDArray[np.float64]]],
+        ball: NDArray[np.float64],
+        angle_w: float = 0.3,
+    ) -> list[tuple[int, NDArray[np.float64], str]]:
         """Assign physical robots (at `old_poses`) to the new target poses.
 
         The robot closest to the ball always takes the striker target; the rest are
@@ -340,7 +358,7 @@ class InnerPositioningCapsule:
     #  Formation computation
     # --------------------------------------------------------------------------- #
 
-    def _compute_formation(self, ball, field: Field, n_players: int, params: Params):
+    def _compute_formation(self, ball: NDArray[np.float64], field: Field, n_players: int, params: Params) -> dict[str, NDArray[np.float64]]:
         """Map a ball position -> {role: np.array([x, y, yaw])}. Pure & deterministic.
 
         yaw is in radians, z-up ROS convention (counter-clockwise from +x).
