@@ -48,7 +48,8 @@ class RankToBallWithGoalie(AbstractDecisionElement):
 
     def perform(self, reevaluate=False):
         role = self.blackboard.positioning.get_own_role()
-        return self.publish_debug_data("Role from positioning", role)
+        self.publish_debug_data("Role from positioning", role)
+        return role
         """if role == "STRIKER":
             return "STRIKER"
         elif role == 2:
