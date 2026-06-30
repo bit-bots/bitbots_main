@@ -47,11 +47,9 @@ class RankToBallWithGoalie(AbstractDecisionElement):
         super().__init__(blackboard, dsd, parameters)
 
     def perform(self, reevaluate=False):
-        optimal_positioning = self.blackboard.positioning.get_formation_assignment()
-        own_position = optimal_positioning[self.blackboard.gamestate.get_own_id()]
-        role = own_position["role"]
-        self.publish_debug_data("Role from positioning", role)
-        if role == 1:
+        role = self.blackboard.positioning.get_own_role()
+        return self.publish_debug_data("Role from positioning", role)
+        """if role == "STRIKER":
             return "STRIKER"
         elif role == 2:
             return "GOALIE"
@@ -68,7 +66,7 @@ class RankToBallWithGoalie(AbstractDecisionElement):
         else:
             # emergency fall back if something goes wrong
             self.blackboard.node.get_logger().warning("Rank to ball had some issues. Role" + role)
-            return "STRIKER"
+            return "STRIKER" """
 
     def get_reevaluate(self):
         return True
