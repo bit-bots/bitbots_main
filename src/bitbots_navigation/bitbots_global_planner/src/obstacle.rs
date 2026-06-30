@@ -23,7 +23,7 @@ fn regular_ngon(center: Coord, num_vertices: usize, radius: f64) -> Vec<Coord> {
 }
 
 /// A round obstacle
-#[pyclass(eq, str = "RoundObstacle(center={center:?} radius={radius:?})")]
+#[pyclass(eq, from_py_object, str = "RoundObstacle(center={center:?} radius={radius:?})")]
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct RoundObstacle {
     /// The center of the obstacle
@@ -70,7 +70,7 @@ impl Obstacle for RoundObstacle {
 }
 
 /// An obstacle with an arbitrary (also concave) polygon shape
-#[pyclass(eq, str = "PolygonObstacle(vertices={vertices:?})")]
+#[pyclass(eq, from_py_object, str = "PolygonObstacle(vertices={vertices:?})")]
 #[derive(Debug, Clone, PartialEq)]
 pub struct PolygonObstacle {
     /// The vertices of the polygon outline (without a closing duplicate of the first vertex)
