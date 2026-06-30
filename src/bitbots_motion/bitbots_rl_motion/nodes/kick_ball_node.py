@@ -17,13 +17,12 @@ class KickBallNode(RLNode):
         # Configuring self._phase, self._previous_action
         super().__init__(node_name="kick_ball_node")
 
-        # observation parameters (fixed by the trained policy)
         self.declare_parameter("obs.ang_vel_scale", 0.25)
         self.declare_parameter("obs.joint_vel_scale", 0.05)
         self.declare_parameter("obs.history_length", 8)
 
-        # soccer command parameters
         self.declare_parameter("command.kick_timeout", 2.0)
+        self.declare_parameter("command.post_kick_stand_duration", 0.5)
         self.declare_parameter("command.pub_period", 5)
         self.declare_parameter("command.history_samples", 10)
 
@@ -31,19 +30,15 @@ class KickBallNode(RLNode):
         self._joint_vel_scale = self.get_parameter("obs.joint_vel_scale").value
         history_length = self.get_parameter("obs.history_length").value
 
-        # publishers. This is a kick controller, so its goals go to
-        # kick_motor_goals (never the walk goals). The HCM tracks kick_motor_goals
-        # and reports RobotControlState.KICKING while they arrive.
+        # joint mutex handled by HCM
         self._joint_command_pub = self.create_publisher(JointCommand, "kick_motor_goals", 10)
 
-        # handlers
         self._gyro_handler = GyroHandler(self)
         self._gravity_handler = GravityHandler(self)
         self._joint_handler = JointHandler(self)
         self._robot_state_handler = RobotStateHandler(self)
         self._soccer_command_handler = SoccerCommandHandler(self)
 
-        # 8-frame observation histories
         self._ang_vel_hist = HistoryBuffer(history_length)
         self._gravity_hist = HistoryBuffer(history_length)
         self._joint_pos_hist = HistoryBuffer(history_length)
@@ -54,7 +49,6 @@ class KickBallNode(RLNode):
         model = self.get_parameter("model").value
         self.load_model(model)
 
-    # observations
     def obs(self):
         # scaled single-frame terms pushed into their 8-frame histories
         self._ang_vel_hist.append(self._gyro_handler.get_gyro() * self._ang_vel_scale)

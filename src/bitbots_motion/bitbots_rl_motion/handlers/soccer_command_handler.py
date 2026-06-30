@@ -61,6 +61,7 @@ class SoccerCommandHandler(Handler):
         self._node = node
 
         self._default_kick_timeout = float(node.get_parameter("command.kick_timeout").value)
+        self._post_kick_stand_duration = float(node.get_parameter("command.post_kick_stand_duration").value)
         self._pub_period = max(1, int(node.get_parameter("command.pub_period").value))
         self._history_samples = max(1, int(node.get_parameter("command.history_samples").value))
 
@@ -78,6 +79,7 @@ class SoccerCommandHandler(Handler):
 
         # kick state: set by the action (its own thread), read by the control loop
         self._kick_active = False
+        self._post_kick_stand = False
         self._kick_speed = 0.0
         # Requested heading in the body frame at goal receipt (atan2(y, x)); used
         # as the fallback if the kick could not be anchored to odom.
@@ -88,7 +90,6 @@ class SoccerCommandHandler(Handler):
         # lookup transiently fails so the command does not jump.
         self._last_kick_dir_b = 0.0
 
-        self._node.create_subscription(Twist, "cmd_vel", self._cmd_vel_callback, 1)
         self._node.create_subscription(BallArray, "balls_relative", self._ball_callback, 1)
 
         # The kick action runs in its own (reentrant) callback group so its
@@ -111,8 +112,6 @@ class SoccerCommandHandler(Handler):
     # ------------------------------------------------------------------ #
     # subscriptions
     # ------------------------------------------------------------------ #
-    def _cmd_vel_callback(self, msg: Twist) -> None:
-        self._cmd_vel = msg
 
     def _ball_callback(self, msg: BallArray) -> None:
         if msg.balls:
@@ -218,11 +217,26 @@ class SoccerCommandHandler(Handler):
             remaining = (end - self._node.get_clock().now()).nanoseconds / 1e9
             feedback.time_remaining = max(0.0, remaining)
             goal_handle.publish_feedback(feedback)
-            # Sleep on the node clock so the wait follows ROS time (e.g. sim time)
-            # rather than wall-clock time.
             self._node.get_clock().sleep_for(Duration(seconds=0.05))
 
+        # disable kick and set cmd_vel to 0 so the policy does not try to walk while the kick is finishing
         self._kick_active = False
+        self._cmd_vel.linear.x = 0.0
+        self._cmd_vel.linear.y = 0.0
+        self._cmd_vel.angular.z = 0.0
+
+        # Post-kick standing
+        if self._post_kick_stand_duration > 0.0:
+            self._post_kick_stand = True
+            post_kick_stand_end = self._node.get_clock().now() + Duration(seconds=self._post_kick_stand_duration)
+            while self._node.get_clock().now() < post_kick_stand_end:
+                remaining = (post_kick_stand_end - self._node.get_clock().now()).nanoseconds / 1e9
+                self._node.get_logger().warn(f"Post-kick stand active remaining {remaining:.2f} s")
+                feedback.time_remaining = max(0.0, remaining)
+                goal_handle.publish_feedback(feedback)
+                self._node.get_clock().sleep_for(Duration(seconds=0.05))
+            self._post_kick_stand = False
+
         goal_handle.succeed()
         result.result = Kick.Result.SUCCESS
         self._node.get_logger().info("Kick finished.")
@@ -259,6 +273,10 @@ class SoccerCommandHandler(Handler):
         """True while an rl_kick action goal is being held active (and not yet
         timed out / canceled). Used to gate when the policy runs and publishes."""
         return self._kick_active
+
+    def is_post_kick_stand(self) -> bool:
+        """True during the post-kick standup window after the kick motion completes."""
+        return self._post_kick_stand
 
     def reset(self) -> None:
         """Clear the command/ball histories so they are rebuilt on the next update.
