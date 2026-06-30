@@ -94,10 +94,10 @@ $BallSeen
         NO_FREEKICK --> #Placing
         YES --> $RankToBallWithGoalie
             STRIKER --> #KickWithAvoidance
-            GOALIE --> GoToFormationPosition
-            DEFENDER --> @LookAtFieldFeatures, @ChangeAction + action:positioning, GoToFormationPosition
+            GOALIE --> @GoToFormationPosition
+            DEFENDER --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @GoToFormationPosition
             SUPPORTER --> #SupporterRole
-            ELSE --> @LookAtFieldFeatures, @ChangeAction + action:positioning, GoToFormationPosition
+            ELSE --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @GoToFormationPosition
 
 #PlayingBehavior
 $SecondaryStateDecider
