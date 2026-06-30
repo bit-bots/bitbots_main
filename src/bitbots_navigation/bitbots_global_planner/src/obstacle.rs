@@ -23,7 +23,11 @@ fn regular_ngon(center: Coord, num_vertices: usize, radius: f64) -> Vec<Coord> {
 }
 
 /// A round obstacle
-#[pyclass(eq, from_py_object, str = "RoundObstacle(center={center:?} radius={radius:?})")]
+#[pyclass(
+    eq,
+    from_py_object,
+    str = "RoundObstacle(center={center:?} radius={radius:?})"
+)]
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct RoundObstacle {
     /// The center of the obstacle
@@ -112,7 +116,10 @@ impl PolygonObstacle {
                 result = result.union(&rectangle);
             }
             // Regular ngon rounding the corner at each vertex
-            let corner = Polygon::new(LineString::new(regular_ngon(a, num_vertices, offset)), vec![]);
+            let corner = Polygon::new(
+                LineString::new(regular_ngon(a, num_vertices, offset)),
+                vec![],
+            );
             result = result.union(&corner);
         }
         // All parts overlap the base polygon, so the union is a single polygon
@@ -177,8 +184,7 @@ mod tests {
 
     #[test]
     fn polygon_obstacle_is_inflated() {
-        let obstacle =
-            PolygonObstacle::new(vec![(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]);
+        let obstacle = PolygonObstacle::new(vec![(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]);
         // The polygon inflated by the robot radius contains points outside of the original polygon
         let critical = obstacle.as_polygon(&config(), false);
         assert!(critical.contains(&Coord::from((-0.25, 0.5))));
