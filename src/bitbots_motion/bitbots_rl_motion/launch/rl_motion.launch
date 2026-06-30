@@ -3,7 +3,7 @@
   <arg name="walk" default="true"/>
   <arg name="kick" default="false"/>
   <arg name="mjlab_walk" default="false"/>
-  <arg name="cartwheel" default="false"/>
+  <arg name="cartwheel" default="true"/>
 
 
   <group if="$(var walk)">
