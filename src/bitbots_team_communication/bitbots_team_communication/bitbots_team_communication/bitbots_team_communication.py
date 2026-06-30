@@ -51,6 +51,7 @@ class TeamCommunication:
 
         self.rate: int = self.node.get_parameter("rate").value
         self.lifetime: int = self.node.get_parameter("lifetime").value
+        self.max_message_size: int = self.node.get_parameter("max_message_size").value
         self.avg_walking_speed: float = self.node.get_parameter("avg_walking_speed").value
 
         self.topics = get_parameter_dict(self.node, "topics")
