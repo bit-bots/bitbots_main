@@ -85,6 +85,7 @@ class HardwareControlManager:
         # Create services
         self.node.create_service(SetBool, "record_mode", self.set_record_mode_callback)
         self.node.create_service(SetBool, "play_animation_mode", self.set_animation_mode_callback)
+        self.node.create_service(SetBool, "perform_acrobatic_mode", self.set_acrobatic_mode_callback)
         self.teaching_mode_service = self.node.create_service(
             SetTeachingMode, "teaching_mode", self.set_teaching_mode_callback
         )
@@ -188,6 +189,23 @@ class HardwareControlManager:
                 response.success = False
                 response.message = "Robot is not in a state where it is allowed to stop animations"
                 return response
+
+    def set_acrobatic_mode_callback(self, request: SetBool.Request, response: SetBool.Response):
+        if request.data:
+            if self.blackboard.current_state == RobotControlState.CONTROLLABLE:
+                self.blackboard.acrobatic_motion_running = True
+                response.success = True
+                response.message = "Robot is now in acrobatic mode"
+                return response
+            else:
+                response.success = False
+                response.message = f"Robot is not controllable (state={self.blackboard.current_state}), cannot start acrobatic motion"
+                return response
+        else:
+            self.blackboard.acrobatic_motion_running = False
+            response.success = True
+            response.message = "Acrobatic motion stopped"
+            return response
 
     def set_record_mode_callback(self, request: SetBool.Request, response: SetBool.Response):
         self.blackboard.record_active = request.data

@@ -90,3 +90,8 @@ class RobotStateHardwareProblem(AbstractRobotState):
 class RobotStateMotorOff(AbstractRobotState):
     def get_state(self) -> T_RobotControlState:
         return RobotControlState.MOTOR_OFF
+
+
+class RobotStateAcrobatic(AbstractRobotState):
+    def get_state(self) -> T_RobotControlState:
+        return RobotControlState.ACROBATIC

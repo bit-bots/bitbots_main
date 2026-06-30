@@ -58,6 +58,7 @@ class HcmBlackboard:
         # Animation
         # Animation states
         self.external_animation_running: bool = False
+        self.acrobatic_motion_running: bool = False
         self.last_animation_goal_time: Optional[Time] = None
         self.last_animation_start_time: Optional[Time] = None
         self.record_active: bool = False

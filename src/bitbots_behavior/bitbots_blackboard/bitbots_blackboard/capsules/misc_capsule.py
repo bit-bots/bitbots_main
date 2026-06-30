@@ -29,7 +29,7 @@ class MiscCapsule(AbstractBlackboardCapsule):
         self.speak_pub = self._node.create_publisher(TTS, "speak", 10)
         # Acrobatic RL motions (e.g. cartwheel) are triggered via the BeyondMimic action server
         # hosted by the cartwheel_rl_node; the HCM owns the motors while the clip plays.
-        self.beyondmimic_action_client: ActionClient = ActionClient(self.node, BeyondMimic, "beyondmimic")
+        self.beyondmimic_action_client: ActionClient = ActionClient(self._node, BeyondMimic, "beyondmimic")
         self.beyondmimic_action_current_goal: Optional[Future] = None
         
         # Config

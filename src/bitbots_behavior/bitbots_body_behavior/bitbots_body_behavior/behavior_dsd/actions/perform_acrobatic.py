@@ -94,4 +94,4 @@ class PerformAcrobatic(AbstractActionElement):
             self.blackboard.misc.beyondmimic_action_current_goal.done()
             and self.blackboard.misc.beyondmimic_action_current_goal.result().status
             in [GoalStatus.STATUS_SUCCEEDED, GoalStatus.STATUS_CANCELED, GoalStatus.STATUS_ABORTED]
-        ) or self.blackboard.mics.beyondmimic_action_current_goal.cancelled()
+        ) or self.blackboard.misc.beyondmimic_action_current_goal.cancelled()

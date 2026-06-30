@@ -1,3 +1,5 @@
+import asyncio
+
 import numpy as np
 import rclpy
 from handlers.gyro_handler import GyroHandler
@@ -8,6 +10,7 @@ from handlers.robot_state_handler import RobotStateHandler
 from rclpy.action import ActionServer, CancelResponse, GoalResponse
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.executors import MultiThreadedExecutor
+from std_srvs.srv import SetBool
 
 from bitbots_msgs.action import BeyondMimic
 from bitbots_msgs.msg import JointCommand
@@ -32,8 +35,7 @@ class CartwheelRLNode(RLNode):
         # Publish to the HCM-routed acrobatic goals by default; point this at
         # "joint_command" for a quick standalone test without the HCM.
         self.declare_parameter("publish_topic", "acrobatic_motor_goals")
-        # While the HCM ACROBATIC state does not yet forward our goals, bypass the
-        # robot-state gate so standalone tests can publish. Set to false once wired.
+        # Set to false once the HCM ACROBATIC decision is wired up.
         self.declare_parameter("ignore_robot_state", True)
 
         self._ignore_robot_state = self.get_parameter("ignore_robot_state").value
@@ -58,6 +60,9 @@ class CartwheelRLNode(RLNode):
         self._num_joints = len(self.get_parameter("joints.ordered_relevant_joint_names").value)
         self._control_dt = self.get_parameter("phase.control_dt").value
 
+        # Service client to signal the HCM to enter/exit ACROBATIC state
+        self._hcm_acrobatic_mode = self.create_client(SetBool, "perform_acrobatic_mode")
+
         self._action_server = ActionServer(
             self,
             BeyondMimic,
@@ -74,13 +79,32 @@ class CartwheelRLNode(RLNode):
         if not ready:
             self.get_logger().warning(f"Rejecting BeyondMimic goal, sensor not ready: {missing}")
             return GoalResponse.REJECT
+        if not self.allowed_states():
+            self.get_logger().warning("Rejecting BeyondMimic goal: robot not in an allowed state")
+            return GoalResponse.REJECT
         return GoalResponse.ACCEPT
 
     def _cancel_cb(self, goal_handle):
         return CancelResponse.ACCEPT
 
-    def _execute_cb(self, goal_handle):
+    async def _execute_cb(self, goal_handle):
         result = BeyondMimic.Result()
+
+        # Signal HCM to enter acrobatic mode (only succeeds if robot is CONTROLLABLE)
+        if not self._hcm_acrobatic_mode.wait_for_service(timeout_sec=5.0):
+            self.get_logger().error("perform_acrobatic_mode service not available, aborting")
+            goal_handle.abort()
+            result.result = BeyondMimic.Result.ABORTED
+            return result
+
+        hcm_response: SetBool.Response = await self._hcm_acrobatic_mode.call_async(
+            SetBool.Request(data=True)
+        )
+        if not hcm_response.success:
+            self.get_logger().warning(f"HCM refused acrobatic mode: {hcm_response.message}")
+            goal_handle.abort()
+            result.result = BeyondMimic.Result.ABORTED
+            return result
 
         # Start the clip at frame 0 and align the motion world frame to the robot's
         # current orientation, so the start heading is irrelevant.
@@ -88,16 +112,17 @@ class CartwheelRLNode(RLNode):
         self._motion_handler.start()
         self._orientation_handler.capture_alignment(self._motion_handler.get_ref_anchor_quat())
 
-        rate = self.create_rate(1.0 / self._control_dt)
         while rclpy.ok() and not self._motion_handler.finished():
             if goal_handle.is_cancel_requested:
                 self._motion_handler.stop()
+                await self._hcm_acrobatic_mode.call_async(SetBool.Request(data=False))
                 goal_handle.canceled()
                 result.result = BeyondMimic.Result.ABORTED
                 return result
             if not self.allowed_states():
                 self.get_logger().warning("BeyondMimic aborted: robot left an allowed state.")
                 self._motion_handler.stop()
+                await self._hcm_acrobatic_mode.call_async(SetBool.Request(data=False))
                 goal_handle.abort()
                 result.result = BeyondMimic.Result.ABORTED
                 return result
@@ -114,9 +139,10 @@ class CartwheelRLNode(RLNode):
             feedback.progress = float(self._motion_handler.progress())
             goal_handle.publish_feedback(feedback)
 
-            rate.sleep()
+            await asyncio.sleep(self._control_dt)
 
         self._motion_handler.stop()
+        await self._hcm_acrobatic_mode.call_async(SetBool.Request(data=False))
         goal_handle.succeed()
         result.result = BeyondMimic.Result.SUCCESS
         return result
@@ -153,7 +179,7 @@ class CartwheelRLNode(RLNode):
 def main():
     rclpy.init()
     node = CartwheelRLNode()
-    # MultiThreadedExecutor so the action execute callback (which blocks on a Rate while
+    # MultiThreadedExecutor so the action execute callback (which blocks on asyncio.sleep while
     # it plays the clip) runs concurrently with the sensor subscription callbacks.
     executor = MultiThreadedExecutor()
     executor.add_node(node)

@@ -28,7 +28,9 @@ $StartHCM
                         FREE -->$CheckIMU
                             IMU_NOT_STARTED --> @RobotStateStartup, @WaitForIMUStartup
                             PROBLEM --> @RobotStateHardwareProblem, @WaitForIMU
-                            OKAY --> $Fallen
+                            OKAY --> $AcrobaticMotionRunning
+                                YES --> @RobotStateAcrobatic, @Wait
+                                NO --> $Fallen
                                 FALLEN_FRONT --> $GameControllerStop
                                     STOPPED --> @RobotStateFallen, @CancelGoals, @StopWalking, @Wait
                                     FREE --> @RobotStateFallen, @CancelGoals, @StopWalking, @RobotStateGettingUp, @Complain, @PlayAnimationStandupFront

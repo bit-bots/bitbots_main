@@ -2,9 +2,9 @@ cartwheel_rl_node:
   ros__parameters:
     # BeyondMimic Wo-variant, action-only ONNX export (input obs[109] -> output actions[20]).
     # Drop the exported model_XXXXX_action.onnx here and name it below.
-    model: model_16000_action.onnx
+    model: beyondmimic_cartwheel.onnx
 
-    motion:
+    motion:                                   
       file: tessa_rad.npz
 
     # "acrobatic_motor_goals" is the HCM-routed topic for the ACROBATIC state.
