@@ -14,6 +14,7 @@ from sensor_msgs.msg import CameraInfo, Image, Imu, JointState
 from std_msgs.msg import Float32
 
 from bitbots_msgs.msg import JointCommand
+from bitbots_msgs.srv import SimulatorPush
 from bitbots_mujoco_sim.robot import Robot
 
 
@@ -101,7 +102,7 @@ class Simulation(Node):
         self.imu_frame_id = self.get_parameter("imu_frame").get_parameter_value().string_value
         self.camera_optical_frame_id = self.get_parameter("camera_optical_frame").get_parameter_value().string_value
         self.camera_active = True
-
+        self.early_events = []
         self.events = [
             {"frequency": 1, "handler": self.publish_clock_event},
             {"frequency": 4, "handler": lambda: self.publish(lambda robot: robot.publish_ros_joint_states_event())},
@@ -345,6 +346,9 @@ class Simulation(Node):
         self.step_number += 1
         self.time += self.timestep
         self.time_message = Time(seconds=int(self.time), nanoseconds=int(self.time % 1 * 1e9)).to_msg()
+        for event_config in self.early_events:
+            if self.step_number % event_config["frequency"] == 0:
+                event_config["handler"]()
         mujoco.mj_step(self.model, self.data)
         for event_config in self.events:
             if self.step_number % event_config["frequency"] == 0:
@@ -383,6 +387,7 @@ class RobotSimulation:
         }
 
         self.simulation.create_subscription(JointCommand, _topic("joint_command"), self.joint_command_callback, 1)
+        self.simulation.create_service(SimulatorPush, _topic("simulator_push"), self.simulator_push_callback)
 
     @property
     def domain(self) -> int:
@@ -471,3 +476,27 @@ class RobotSimulation:
         cam_info.k = [f_x, 0.0, cx, 0.0, f_y, cy, 0.0, 0.0, 1.0]
         cam_info.p = [f_x, 0.0, cx, 0.0, 0.0, f_y, cy, 0.0, 0.0, 0.0, 1.0, 0.0]
         self.node_publishers["camera_info"].publish(cam_info)
+
+    def simulator_push_callback(
+        self, request: SimulatorPush.Request, response: SimulatorPush.Response
+    ) -> SimulatorPush.Response:
+        force_vector = np.array([request.force.x, request.force.y, request.force.z], dtype=float)
+        if request.relative:
+            rotation_matrix = np.zeros((3, 3), dtype=float)
+            mujoco.mju_quat2Mat(rotation_matrix.reshape(9), self.data.xquat[self.robot.base_body_id])
+            force_vector = rotation_matrix @ force_vector
+
+        force = np.concatenate([force_vector, np.zeros(3, dtype=float)])
+        self.data.xfrc_applied[self.robot.base_body_id] = force
+
+        def apply_force() -> None:
+            self.data.xfrc_applied[self.robot.base_body_id] = force
+            if reset_event["end_time"] > self.simulation.time:
+                return
+            if np.all(self.data.xfrc_applied[self.robot.base_body_id] == force):
+                self.data.xfrc_applied[self.robot.base_body_id] = np.zeros(6)
+            self.simulation.early_events.remove(reset_event)
+
+        reset_event = {"frequency": 1, "handler": apply_force, "end_time": self.simulation.time + 0.5}
+        self.simulation.early_events.append(reset_event)
+        return response or SimulatorPush.Response()
