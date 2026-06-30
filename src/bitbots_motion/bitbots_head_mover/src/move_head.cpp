@@ -151,7 +151,7 @@ class HeadMover {
     // Bring the goal point into the planning frame
     geometry_msgs::msg::PointStamped head_yaw_point;
     try {
-      head_yaw_point = tf_buffer_->transform(goal->look_at_position, "head_yaw_joint", tf2::durationFromSec(0.9));
+      head_yaw_point = tf_buffer_->transform(goal->look_at_position, "head_yaw_link", tf2::durationFromSec(0.9));
     } catch (tf2::TransformException& ex) {
       RCLCPP_ERROR(node_->get_logger(), "Could not transform goal point: %s", ex.what());
       return rclcpp_action::GoalResponse::REJECT;
@@ -160,7 +160,7 @@ class HeadMover {
     // Bring the goal point into the planning frame
     geometry_msgs::msg::PointStamped head_pitch_point;
     try {
-      head_pitch_point = tf_buffer_->transform(goal->look_at_position, "head_pitch_joint", tf2::durationFromSec(0.9));
+      head_pitch_point = tf_buffer_->transform(goal->look_at_position, "head_pitch_link", tf2::durationFromSec(0.9));
     } catch (tf2::TransformException& ex) {
       RCLCPP_ERROR(node_->get_logger(), "Could not transform goal point: %s", ex.what());
       return rclcpp_action::GoalResponse::REJECT;
