@@ -28,7 +28,7 @@ def generate_launch_description() -> LaunchDescription:
 
     robot_domain = os.environ.get("ROS_DOMAIN_ID")
     if robot_domain is not None:
-        parameters.append(ParameterFile(PathJoinSubstitution([package_share, "config", f"sim_game_settings_{int(robot_domain) - 10}.yaml"])))
+        parameters.append(ParameterFile(PathJoinSubstitution([package_share, "config", f"sim_game_settings_{int(robot_domain)}.yaml"])))
     else:
         parameters.append(ParameterFile(PathJoinSubstitution([package_share, "config", "game_settings.yaml"])))
 
