@@ -278,6 +278,7 @@ class StrategyBox(QGroupBox):
         "Searching": Strategy.ACTION_SEARCHING,
         "Trying to Score": Strategy.ACTION_TRYING_TO_SCORE,
         "Waiting": Strategy.ACTION_WAITING,
+        "Passive": Strategy.ACTION_PASSIVE,
     }
 
     def __init__(self, parent=None):

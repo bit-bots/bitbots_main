@@ -6,7 +6,17 @@ platforms:
   - __linux=4.18
   - __glibc=2.28
   - __archspec=0=x86_64
+  virtual-packages:
+  - __unix=0=0
+  - __linux=4.18
+  - __glibc=2.28
+  - __archspec=0=x86_64
 - name: linux-aarch64
+  virtual-packages:
+  - __unix=0=0
+  - __linux=4.18
+  - __glibc=2.28
+  - __archspec=0=aarch64
   virtual-packages:
   - __unix=0=0
   - __linux=4.18
@@ -997,6 +1007,7 @@ environments:
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-zenoh-cpp-vendor-0.2.9-np2py312ha80d210_16.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-zstd-vendor-0.26.9-np2py312h2ed9cc7_16.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros2-distro-mutex-0.14.0-jazzy_16.conda
+      - conda: https://data.bit-bots.de/conda-misc/output/linux-64/libonnxruntime-webgpu-1.24.3-hb0f4dca_3.conda
       - conda: https://data.bit-bots.de/conda-misc/output/linux-64/libonnxruntime-webgpu-1.24.3-hb0f4dca_3.conda
       - conda: https://data.bit-bots.de/conda-misc/output/noarch/bitbots_model_2022_10_07_flo_torso21_yoeox-1.0.1-h4616a5c_3.conda
       - conda: https://data.bit-bots.de/conda-misc/output/noarch/bitbots_model_2023_04_04_philipp_yoeox_with_team_colors-1.0.1-h4616a5c_3.conda
@@ -3115,6 +3126,7 @@ environments:
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-zenoh-cpp-vendor-0.2.9-np2py312ha80d210_16.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-zstd-vendor-0.26.9-np2py312h2ed9cc7_16.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros2-distro-mutex-0.14.0-jazzy_16.conda
+      - conda: https://data.bit-bots.de/conda-misc/output/linux-64/libonnxruntime-webgpu-1.24.3-hb0f4dca_3.conda
       - conda: https://data.bit-bots.de/conda-misc/output/linux-64/libonnxruntime-webgpu-1.24.3-hb0f4dca_3.conda
       - conda: https://data.bit-bots.de/conda-misc/output/noarch/bitbots_model_2022_10_07_flo_torso21_yoeox-1.0.1-h4616a5c_3.conda
       - conda: https://data.bit-bots.de/conda-misc/output/noarch/bitbots_model_2023_04_04_philipp_yoeox_with_team_colors-1.0.1-h4616a5c_3.conda
@@ -18444,6 +18456,9 @@ packages:
   run_exports:
     strong:
     - __glibc >=2.28,<3.0.a0
+  run_exports:
+    strong:
+    - __glibc >=2.28,<3.0.a0
   size: 24008591
   timestamp: 1765578833462
 - conda: https://conda.anaconda.org/conda-forge/noarch/sysroot_linux-aarch64-2.28-h585391f_9.conda
@@ -18456,6 +18471,9 @@ packages:
   license: LGPL-2.0-or-later AND LGPL-2.0-or-later WITH exceptions AND GPL-2.0-or-later
   license_family: GPL
   purls: []
+  run_exports:
+    strong:
+    - __glibc >=2.28,<3.0.a0
   run_exports:
     strong:
     - __glibc >=2.28,<3.0.a0
@@ -34821,10 +34839,15 @@ packages:
 - conda: https://data.bit-bots.de/conda-misc/output/linux-64/libonnxruntime-webgpu-1.24.3-hb0f4dca_3.conda
   sha256: 8d6ce89805148cd661bb2f4406631c0251b2ded3a9b42b7d1160eff9b5778c9b
   md5: a5a82453b80fcb05372b42cab5c43204
+- conda: https://data.bit-bots.de/conda-misc/output/linux-64/libonnxruntime-webgpu-1.24.3-hb0f4dca_3.conda
+  sha256: 8d6ce89805148cd661bb2f4406631c0251b2ded3a9b42b7d1160eff9b5778c9b
+  md5: a5a82453b80fcb05372b42cab5c43204
   depends:
   - python >=3.12,<3.13
   - python_abi 3.12.* *_cp312
   license: MIT
+  size: 10651622
+  timestamp: 1782745906333
   size: 10651622
   timestamp: 1782745906333
 - conda: https://data.bit-bots.de/conda-misc/output/linux-aarch64/libonnxruntime-webgpu-1.24.3-he8cfe8b_0.conda
@@ -34863,6 +34886,7 @@ packages:
     target_platform: linux-aarch64
   depends:
   - python >=3.12
+  - __glibc >=2.28,<3.0.a0
   - __glibc >=2.28,<3.0.a0
   - python_abi 3.12.* *_cp312
   constrains:

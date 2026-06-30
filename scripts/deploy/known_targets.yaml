@@ -1,18 +1,60 @@
+# "172.20.1.11":
+#   hostname: "nuc1"
+#   robot_name: "amy"
+# "172.20.1.12":
+#   hostname: "nuc2"
+#   robot_name: "rory"
+# "172.20.1.13":
+#   hostname: "nuc3"
+#   robot_name: "jack"
+# "172.20.1.14":
+#   hostname: "nuc4"
+#   robot_name: "donna"
+# "172.20.1.15":
+#   hostname: "nuc5"
+#   robot_name: "melody"
+# "172.20.1.16":
+#   hostname: "nuc6"
+#   robot_name: "rose"
+
+# Lab
 "172.20.1.11":
-  hostname: "nuc1"
-  robot_name: "amy"
+  hostname: "kalliope"
+  robot_name: "Kalliope"
 "172.20.1.12":
-  hostname: "nuc2"
-  robot_name: "rory"
+  hostname: "mickey"
+  robot_name: "Mickey"
 "172.20.1.13":
-  hostname: "nuc3"
-  robot_name: "jack"
+  hostname: "pink"
+  robot_name: "Pink"
 "172.20.1.14":
-  hostname: "nuc4"
-  robot_name: "donna"
-"172.20.1.15":
-  hostname: "nuc5"
-  robot_name: "melody"
-"172.20.1.16":
-  hostname: "nuc6"
-  robot_name: "rose"
+  hostname: "romeo"
+  robot_name: "Romeo"
+
+# Field
+"10.0.6.1":
+  hostname: "kalliope"
+  robot_name: "Kalliope"
+"10.0.6.2":
+  hostname: "mickey"
+  robot_name: "Mickey"
+"10.0.6.3":
+  hostname: "pink"
+  robot_name: "Pink"
+"10.0.6.4":
+  hostname: "romeo"
+  robot_name: "Romeo"
+
+# HULKs
+"10.1.24.125":
+  hostname: "kalliope"
+  robot_name: "Kalliope"
+"10.1.24.153":
+  hostname: "mickey"
+  robot_name: "Mickey"
+# "10.0.6.3":
+#   hostname: "pink"
+#   robot_name: "Pink"
+# "10.0.6.4":
+#   hostname: "romeo"
+#   robot_name: "Romeo"

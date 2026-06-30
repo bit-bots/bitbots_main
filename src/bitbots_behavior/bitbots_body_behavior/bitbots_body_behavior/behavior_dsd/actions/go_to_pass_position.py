@@ -19,12 +19,6 @@ class AbstractGoToPassPosition(AbstractActionElement):
         ball_pos = self.blackboard.world_model.get_ball_position_xy()
         our_pose = self.blackboard.world_model.get_current_position()
 
-        # decide on side
-        if our_pose[1] < ball_pos[1]:
-            side_sign = -1
-        else:
-            side_sign = 1
-
         # compute goal
         goal_x = ball_pos[0]
         if self.accept:

@@ -8,6 +8,8 @@ from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
 from rclpy.qos import qos_profile_sensor_data
 
+from bitbots_whistle_detector.whistle_detector_parameters import bitbots_whistle_detector as parameters
+
 
 class WhistleDetector(Node):
     def __init__(self) -> None:
@@ -18,7 +20,8 @@ class WhistleDetector(Node):
         self.audio_buffer = np.array([], dtype=np.float32)
         self.sample_rate = 16000
 
-        self.chunk_size = 512
+        self.param_listener = parameters.ParamListener(self)
+        self.config = self.param_listener.get_params()
 
         self.whistle_publisher = self.create_publisher(TimeMsg, "whistle_detected", 1)
         self.audio_sub = self.create_subscription(
@@ -35,11 +38,15 @@ class WhistleDetector(Node):
         self.audio_received_time = msg.header.stamp
         self.audio_buffer = np.concatenate([self.audio_buffer, audio_np])
 
-        if len(self.audio_buffer) > self.chunk_size:
-            self.audio_buffer = self.audio_buffer[-self.chunk_size :]
+        if len(self.audio_buffer) > self.config.chunk_size:
+            self.audio_buffer = self.audio_buffer[-self.config.chunk_size :]
 
     def process_audio(self) -> None:
-        if len(self.audio_buffer) < self.chunk_size:
+        if self.param_listener.is_old(self.config):
+            self.param_listener.refresh_dynamic_parameters()
+            self.config = self.param_listener.get_params()
+
+        if len(self.audio_buffer) < self.config.chunk_size:
             return
 
         audio = self.audio_buffer.copy()
@@ -53,7 +60,7 @@ class WhistleDetector(Node):
         spectrum = np.abs(np.fft.rfft(audio))
         freqs = np.fft.rfftfreq(len(audio), 1 / sample_rate)
 
-        band = (freqs > 2000) & (freqs < 4500)  # Google: range of whistle frequencies
+        band = (freqs > self.config.whistle_frequency_min_hz) & (freqs < self.config.whistle_frequency_max_hz)
 
         whistle_energy = np.sum(spectrum[band])
         total_energy = np.sum(spectrum)
@@ -63,7 +70,7 @@ class WhistleDetector(Node):
 
         ratio = whistle_energy / total_energy
 
-        return ratio > 0.6
+        return ratio > self.config.whistle_energy_ratio_threshold
 
 
 def main(args=None) -> None:

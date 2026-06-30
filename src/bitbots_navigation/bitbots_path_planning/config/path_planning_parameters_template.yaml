@@ -46,6 +46,15 @@ bitbots_path_planning:
         type: double
         default_value: 0.1
         description: "Distance we want to keep to obstacles when planning a path around them. No immediate action is required if the robot is closer than this distance to an obstacle, but we don't consider paths this close during the visibility graph generation."
+    goal_obstacle:
+      width:
+        type: double
+        default_value: 0.1
+        description: 'Width of the goal frame obstacle walls. Like all obstacles they are additionally inflated by the robot radius during planning.'
+      back_extension:
+        type: double
+        default_value: 0.5
+        description: 'How far the back wall of the goal obstacle is extended away from the field, so we do not plan paths through the narrow space behind the goal.'
 
   controller:
     carrot_distance:
