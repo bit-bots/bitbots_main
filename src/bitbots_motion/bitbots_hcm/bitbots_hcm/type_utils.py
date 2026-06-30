@@ -18,4 +18,5 @@ T_RobotControlState: TypeAlias = Literal[  # type: ignore[valid-type]
     RobotControlState.HARDWARE_PROBLEM,
     RobotControlState.PICKED_UP,
     RobotControlState.KICKING,
+    RobotControlState.ACROBATIC,
 ]

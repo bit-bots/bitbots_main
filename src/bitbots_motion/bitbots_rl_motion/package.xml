@@ -15,6 +15,7 @@
   <exec_depend>python3-onnxruntime-pip</exec_depend>
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>bitbots_msgs</exec_depend>
+  <exec_depend>bitbots_utils</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>tf2_ros</exec_depend>

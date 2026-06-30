@@ -1,5 +1,3 @@
-import asyncio
-
 import numpy as np
 import rclpy
 from handlers.gyro_handler import GyroHandler
@@ -14,6 +12,7 @@ from std_srvs.srv import SetBool
 
 from bitbots_msgs.action import BeyondMimic
 from bitbots_msgs.msg import JointCommand
+from bitbots_utils.utils import async_wait_for
 from nodes.rl_node import RLNode
 
 
@@ -139,7 +138,7 @@ class CartwheelRLNode(RLNode):
             feedback.progress = float(self._motion_handler.progress())
             goal_handle.publish_feedback(feedback)
 
-            await asyncio.sleep(self._control_dt)
+            await async_wait_for(self, self._control_dt)
 
         self._motion_handler.stop()
         await self._hcm_acrobatic_mode.call_async(SetBool.Request(data=False))
@@ -179,8 +178,8 @@ class CartwheelRLNode(RLNode):
 def main():
     rclpy.init()
     node = CartwheelRLNode()
-    # MultiThreadedExecutor so the action execute callback (which blocks on asyncio.sleep while
-    # it plays the clip) runs concurrently with the sensor subscription callbacks.
+    # MultiThreadedExecutor so the action execute callback (which awaits between control steps
+    # while it plays the clip) runs concurrently with the sensor subscription callbacks.
     executor = MultiThreadedExecutor()
     executor.add_node(node)
     try:
