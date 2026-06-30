@@ -48,9 +48,9 @@ $GoalScoreRecently
     YES --> $ConfigRole
         GOALIE -->  $RobotInOwnPercentOfField + p:40
             YES --> @Stand + duration:1.0 + r:false, @PlayAnimationCheering + r:false, @Stand
-            NO -->  @ChangeAction + action:positioning, @PlaySound + file:ole.wav, @LookAtFieldFeatures, @Stand + duration:%ready_wait_time, @AvoidBallActive, @GoToFormationPosition
-        ELSE --> @ChangeAction + action:positioning, @PlaySound + file:ole.wav, @LookAtFieldFeatures, @Stand + duration:%ready_wait_time, @AvoidBallActive, @GoToFormationPosition
-    NO --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @Stand + duration:%ready_wait_time, @AvoidBallActive, @GoToFormationPosition
+            NO -->  @ChangeAction + action:positioning, @PlaySound + file:ole.wav, @LookAtFieldFeatures, @Stand + duration:%ready_wait_time, @AvoidBallActive, @GoToRolePosition
+        ELSE --> @ChangeAction + action:positioning, @PlaySound + file:ole.wav, @LookAtFieldFeatures, @Stand + duration:%ready_wait_time, @AvoidBallActive, @GoToRolePosition
+    NO --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @Stand + duration:%ready_wait_time, @AvoidBallActive, @GoToRolePosition
 
 #SupporterRole
 $BallSeen
@@ -88,7 +88,7 @@ $DoOnce
 
 #NormalBehavior
 $SecondBallTouchAllowed
-    NO --> @SetNoSecondBallContactVariable + value:false + r:false, @LookAtFieldFeatures + r:false, @ChangeAction + action:passive + r:false, @AvoidBallActive + r:false, @GoToPassPreparePosition + blocking:true 
+    NO --> @SetNoSecondBallContactVariable + value:false + r:false, @LookAtFieldFeatures + r:false, @ChangeAction + action:passive + r:false, @AvoidBallActive + r:false, @GoToFormationPosition + blocking:true 
     YES --> $BallSeen
         NO --> $ConfigRole
             STRIKER --> #SearchBall
