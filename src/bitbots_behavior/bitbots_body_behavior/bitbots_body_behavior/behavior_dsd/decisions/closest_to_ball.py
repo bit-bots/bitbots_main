@@ -33,7 +33,7 @@ class ClosestToBall(AbstractDecisionElement):
         self.publish_debug_data("time to ball", my_time_to_ball)
         self.publish_debug_data("Rank to ball", rank)
         if rank == 1:
-            return "NO"  # only for testing remeber to REMOVE!
+            return "YES"
         return "NO"
 
     def get_reevaluate(self):
@@ -51,20 +51,20 @@ class RankToBallWithGoalie(AbstractDecisionElement):
         own_position = optimal_positioning[self.blackboard.gamestate.get_own_id()]
         role = own_position["role"]
         self.publish_debug_data("Role from positioning", role)
-        if role == "striker":
+        if role == 1:
             return "STRIKER"
-        elif role == "goalie":
+        elif role == 2:
             return "GOALIE"
-        elif role == "defender_0":
-            return "DEFENDER_ZERO"
-        elif role == "defender_1":
-            return "DEFENDER1"
-        elif role == "defender_2":
-            return "DEFENDER2"
-        elif role == "defender_3":
-            return "DEFENDER3"
-        elif role == "supporter":
+        elif role == 3:
+            return "DEFENDER"
+        elif role == 4:
             return "SUPPORTER"
+        elif role == 5:
+            return "DEFENDER"
+        elif role == 6:
+            return "DEFENDER"
+        elif role == 7:
+            return "DEFENDER"
         else:
             # emergency fall back if something goes wrong
             self.blackboard.node.get_logger().warning("Rank to ball had some issues. Role" + role)

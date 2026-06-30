@@ -46,28 +46,15 @@ $GoalScoreRecently
     YES --> $ConfigRole
         GOALIE -->  $RobotInOwnPercentOfField + p:40
             YES --> @Stand + duration:1.0 + r:false, @PlayAnimationCheering + r:false, @Stand
-            NO -->  @ChangeAction + action:positioning, @PlaySound + file:ole.wav, @LookAtFieldFeatures, @Stand + duration:%ready_wait_time, @AvoidBallActive, @GoToRolePosition
-        ELSE --> @ChangeAction + action:positioning, @PlaySound + file:ole.wav, @LookAtFieldFeatures, @Stand + duration:%ready_wait_time, @AvoidBallActive, @GoToRolePosition
-    NO --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @Stand + duration:%ready_wait_time, @AvoidBallActive, @GoToRolePosition
-
-#GoalieBehavior
-$ClosestToBall
-    NO --> $BallInOwnPercent + p:40
-        YES --> @ChangeAction + action:positioning, @AvoidBallActive, @LookAtFieldFeatures, @GoToBlockPosition
-        NO --> #RolePositionWithPause
-    YES --> #KickWithAvoidance
-
-#StrikerRole
-$GoalieHandlingBall
-    YES --> @ChangeAction + action:positioning, @AvoidBallActive, @LookAtFieldFeatures, @GoToDefensePosition //quick fix for playing with two robots during GO
-    NO --> #KickWithAvoidance
+            NO -->  @ChangeAction + action:positioning, @PlaySound + file:ole.wav, @LookAtFieldFeatures, @Stand + duration:%ready_wait_time, @AvoidBallActive, @GoToFormationPosition
+        ELSE --> @ChangeAction + action:positioning, @PlaySound + file:ole.wav, @LookAtFieldFeatures, @Stand + duration:%ready_wait_time, @AvoidBallActive, @GoToFormationPosition
+    NO --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @Stand + duration:%ready_wait_time, @AvoidBallActive, @GoToFormationPosition
 
 #SupporterRole
-$PassStarted
-    YES --> $BallSeen
-        YES --> @TrackBall, @ChangeAction + action:positioning, @AvoidBallActive, @GoToPassAcceptPosition
-        NO --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @AvoidBallActive, @GoToPassAcceptPosition
-    NO --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @AvoidBallActive, @GoToPassPreparePosition
+$BallSeen
+    YES --> @TrackBall, @ChangeAction + action:positioning, @AvoidBallActive, @GoToFormationPosition
+    NO --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @AvoidBallActive, @GoToFormationPosition
+
 
 #PenaltyShootoutBehavior
 $SecondaryStateTeamDecider
@@ -84,17 +71,15 @@ $SecondaryStateTeamDecider
 $DoOnce
     NOT_DONE --> @ForgetBall, @LookAtFieldFeatures
     DONE --> $ConfigRole
-        GOALIE --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToBlockPosition
+        GOALIE --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToFormationPosition
         ELSE --> $BallSeen
-            NO --> $SecondaryStateTeamDecider
-                OUR --> #SearchBall
-                ELSE --> @AvoidBallActive, @LookAtFieldFeatures, @WalkInPlace + duration:2, @GoToRelativePosition + x:1 + y:0 + t:0, @Stand
+            NO --> #SearchBall
             YES --> $RankToBallWithGoalie
-                STRIKER --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition + mode:freekick_first
-                DEFENDER0 --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition + mode:freekick_second
+                STRIKER --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToFormationPosition
+                DEFENDER --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToFormationPosition
                 SUPPORTER --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition
                 GOALIE --> @GoToGoaliePosition
-                ELSE --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition + mode:freekick_second
+                ELSE --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToFormationPosition
 
 #Init
 @Stand + duration:0.1 + r:false, @ChangeAction + action:waiting, @LookForward, @Stand
@@ -102,17 +87,17 @@ $DoOnce
 #NormalBehavior
 $BallSeen
     NO --> $ConfigRole
-        GOALIE --> #RolePositionWithPause
-        ELSE --> #SearchBall
+        STRIKER --> #SearchBall
+        ELSE --> #RolePositionWithPause
     YES --> $KickOffTimeUp
         NO_NORMAL --> #StandAndLook
         NO_FREEKICK --> #Placing
         YES --> $RankToBallWithGoalie
-            STRIKER --> #StrikerRole
-            GOALIE --> @GoToGoaliePosition
-            DEFENDER_ZERO --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @GoToDefensePosition
+            STRIKER --> #KickWithAvoidance
+            GOALIE --> GoToFormationPosition
+            DEFENDER --> @LookAtFieldFeatures, @ChangeAction + action:positioning, GoToFormationPosition
             SUPPORTER --> #SupporterRole
-            ELSE --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @GoToDefensePosition //defender 1 bis 4 integrieren?
+            ELSE --> @LookAtFieldFeatures, @ChangeAction + action:positioning, GoToFormationPosition
 
 #PlayingBehavior
 $SecondaryStateDecider
