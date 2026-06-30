@@ -63,7 +63,7 @@ def generate_domain_bridge_config(robot_domain: int, output_dir: Path) -> Path:
         ("imu/data", "sensor_msgs/msg/Imu"),
         ("zed/zed_node/rgb/image_rect_color", "sensor_msgs/msg/Image"),
         ("zed/zed_node/rgb/camera_info", "sensor_msgs/msg/CameraInfo"),
-]
+    ]
 
     for topic_suffix, msg_type in sensor_topics:
         src_topic = f"{namespace}/{topic_suffix}"

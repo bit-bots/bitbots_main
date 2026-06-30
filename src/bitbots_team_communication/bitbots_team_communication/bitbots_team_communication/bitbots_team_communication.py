@@ -14,11 +14,12 @@ from builtin_interfaces.msg import Time as TimeMsg
 from game_controller_hsl_interfaces.msg import GameState, PlayerStatusPose
 from geometry_msgs.msg import PoseWithCovarianceStamped, Quaternion, Twist, TwistWithCovarianceStamped
 from numpy import double
-from rclpy.callback_groups import MutuallyExclusiveCallbackGroup, ReentrantCallbackGroup
+from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.duration import Duration
 from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
 from rclpy.time import Time
+from rosgraph_msgs.msg import Clock
 from soccer_vision_3d_msgs.msg import Robot, RobotArray
 from std_msgs.msg import Float32, Header
 from tf2_geometry_msgs import PointStamped, PoseStamped
@@ -28,7 +29,7 @@ import bitbots_team_communication.robocup_extension_pb2 as Proto  # noqa: N812
 from bitbots_msgs.msg import Strategy, TeamData
 from bitbots_team_communication.communication import SocketCommunication
 from bitbots_team_communication.converter.robocup_protocol_converter import RobocupProtocolConverter, TeamColor
-from rosgraph_msgs.msg import Clock
+
 
 class TeamCommunication:
     def __init__(self):
@@ -71,7 +72,9 @@ class TeamCommunication:
         # This can lead to breaks and bursts which is unacceptable for this usecase
         # Instead we manually implement a timer
         if self.node.get_parameter("use_sim_time").value:
-            self.node.create_subscription(Clock, "/clock", self.clock_cb, callback_group=MutuallyExclusiveCallbackGroup(), qos_profile=1)
+            self.node.create_subscription(
+                Clock, "/clock", self.clock_cb, callback_group=MutuallyExclusiveCallbackGroup(), qos_profile=1
+            )
             self.next_send_time = self.node.get_clock().now() + Duration(seconds=1 / self.rate)
         else:
             self.node.create_timer(1 / self.rate, self.send_message, callback_group=MutuallyExclusiveCallbackGroup())
