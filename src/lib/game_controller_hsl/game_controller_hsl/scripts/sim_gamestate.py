@@ -52,21 +52,19 @@ t:     toggle kicking team
 s:     toggle stopped state
 +:     increase own score by 1
 
+---start dynamic---
+Competition Type:
+Game Phase:
+Set Play:
+Main State:
 
+Kicking Team:
 
+Penalized:
+In Place Penalized:
+Stopped:
 
-
-
-
-
-
-
-
-
-
-
-
-
+Goals(Own : Rival):
 
 CTRL-C to quit
 """
@@ -100,7 +98,7 @@ CTRL-C to quit
         game_state_msg.kicking_team = self.team_id
 
         try:
-            print(self.msg)
+            print(self.msg.replace("---start dynamic---", ""))
             while True:
                 key = self.get_key()
                 if key == "\x03":
@@ -130,26 +128,12 @@ CTRL-C to quit
                 elif key == "+":
                     game_state_msg.own_score += 1
 
-                sys.stdout.write("\x1b[A")
-                sys.stdout.write("\x1b[A")
-                sys.stdout.write("\x1b[A")
-                sys.stdout.write("\x1b[A")
-                sys.stdout.write("\x1b[A")
-                sys.stdout.write("\x1b[A")
-                sys.stdout.write("\x1b[A")
-                sys.stdout.write("\x1b[A")
-                sys.stdout.write("\x1b[A")
-                sys.stdout.write("\x1b[A")
-                sys.stdout.write("\x1b[A")
-                sys.stdout.write("\x1b[A")
-                sys.stdout.write("\x1b[A")
-                sys.stdout.write("\x1b[A")
-                sys.stdout.write("\x1b[A")
-                sys.stdout.write("\x1b[A")
                 self.publisher.publish(game_state_msg)
+                # Override the lines: Each \n in the message + the extra \n from print
+                line_count = self.msg.count("\n", self.msg.index("---start dynamic---")) + 1
+                sys.stdout.write("\x1b[A\x1b[K" * line_count)
                 print(
                     f"""
-
 Competition Type:   {game_state_msg.competition_type}
 Game Phase:         {game_state_msg.game_phase}
 Set Play:           {game_state_msg.set_play}
