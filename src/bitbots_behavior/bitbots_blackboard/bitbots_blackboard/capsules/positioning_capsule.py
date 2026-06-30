@@ -112,8 +112,8 @@ class PositioningCapsule(AbstractBlackboardCapsule):
         self._inner = InnerPositioningCapsule()
         self._own_locked_role: str | None = None
         self._own_lock_until: float = 0.0
-        self._hysteresis_min: float = self._blackboard.config["role_hysteresis.min"]
-        self._hysteresis_max: float = self._blackboard.config["role_hysteresis.max"]
+        self._hysteresis_min: float = self._blackboard.config["role_hysteresis"]["min"]
+        self._hysteresis_max: float = self._blackboard.config["role_hysteresis"]["max"]
 
     @cached_capsule_function
     def get_formation_assignment(self) -> dict[int, RobotAssignment]:
