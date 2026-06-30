@@ -218,9 +218,8 @@ class TeleopKeyboard(Node):
                     self.head_pub.publish(self.head_msg)
                 elif key == "0":
                     # Track the last known ball position
-                    # self.head_mode_msg.head_mode = HeadMode.TRACK_BALL
-                    # assert int(key) == HeadMode.TRACK_BALL
-                    info = "ERROR: CURRENTLY NOT IMPLEMENTED"
+                    self.head_mode_msg.head_mode = HeadMode.TRACK_BALL
+                    assert int(key) == HeadMode.TRACK_BALL
                 elif key == "1":
                     # Look generally for all features on the field (ball, goals, corners, center point)
                     self.head_mode_msg.head_mode = HeadMode.SEARCH_FIELD_FEATURES
