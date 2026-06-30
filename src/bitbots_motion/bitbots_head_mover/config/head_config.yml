@@ -24,7 +24,7 @@ move_head:
 
   max_pitch:
     type: double_array
-    default_value: [-0.6, 0.9]
+    default_value: [-1.23, 1.01] 
     description: "Max values for the head position (in radians)"
     validation:
       fixed_size<>: 2

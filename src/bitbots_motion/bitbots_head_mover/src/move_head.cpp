@@ -31,6 +31,7 @@ using namespace std::chrono_literals;
 namespace move_head {
 
 #define DEG_TO_RAD M_PI / 180
+#define YAW_PITCH_JOINT_Z_DISTANCE 0.0275
 
 using LookAtGoal = bitbots_msgs::action::LookAt;
 using LookAtGoalHandle = rclcpp_action::ServerGoalHandle<LookAtGoal>;
@@ -529,7 +530,7 @@ class HeadMover {
     double z = point.z;
 
     double head_yaw = atan2(y, x);
-    double head_pitch = -atan2(z, sqrt(x * x + y * y));
+    double head_pitch = -atan2(z + YAW_PITCH_JOINT_Z_DISTANCE, sqrt(x * x + y * y));
 
     return {head_yaw, head_pitch};
   }
