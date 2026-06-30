@@ -149,16 +149,28 @@ class HeadMover {
     RCLCPP_DEBUG(node_->get_logger(), "Received goal request");
 
     // Bring the goal point into the planning frame
-    geometry_msgs::msg::PointStamped new_point;
+    geometry_msgs::msg::PointStamped head_yaw_point;
     try {
-      new_point = tf_buffer_->transform(goal->look_at_position, "base_footprint", tf2::durationFromSec(0.9));
+      head_yaw_point = tf_buffer_->transform(goal->look_at_position, "head_yaw_joint", tf2::durationFromSec(0.9));
     } catch (tf2::TransformException& ex) {
       RCLCPP_ERROR(node_->get_logger(), "Could not transform goal point: %s", ex.what());
       return rclcpp_action::GoalResponse::REJECT;
     }
 
+    // Bring the goal point into the planning frame
+    geometry_msgs::msg::PointStamped head_pitch_point;
+    try {
+      head_pitch_point = tf_buffer_->transform(goal->look_at_position, "head_pitch_joint", tf2::durationFromSec(0.9));
+    } catch (tf2::TransformException& ex) {
+      RCLCPP_ERROR(node_->get_logger(), "Could not transform goal point: %s", ex.what());
+      return rclcpp_action::GoalResponse::REJECT;
+    }
+
+    // RCLCPP_DEBUG(node_->get_logger(), "yaw point, pitch point" << head_yaw_point.point << " " <<
+    // head_pitch_point.point);
+
     // Get the motor goals that are needed to look at the point
-    std::pair<double, double> yaw_pitch = get_motor_goals_from_point(new_point.point);
+    std::pair<double, double> yaw_pitch = get_motor_goals_from_point(head_yaw_point.point, head_pitch_point.point);
 
     // Check whether the goal is in range yaw and pitch wise
     bool goal_not_in_range = check_head_collision(yaw_pitch.first, yaw_pitch.second);
@@ -524,14 +536,18 @@ class HeadMover {
   /**
    * @brief Calculates the motor goals that are needed to look at a given point using the inverse kinematics
    */
-  std::pair<double, double> get_motor_goals_from_point(geometry_msgs::msg::Point point) {
-    double x = point.x;
-    double y = point.y;
-    double z = point.z;
+  std::pair<double, double> get_motor_goals_from_point(geometry_msgs::msg::Point head_yaw_point,
+                                                       geometry_msgs::msg::Point head_pitch_point) {
+    double yaw_x = head_yaw_point.x;
+    double yaw_y = head_yaw_point.y;
 
-    double head_yaw = atan2(y, x);
+    double pitch_x = head_pitch_point.x;
+    double pitch_y = head_pitch_point.y;
+    double pitch_z = head_pitch_point.z;
 
-    double head_pitch = atan2(z - YAW_PITCH_JOINT_Z_DISTANCE, sqrt(x * x + y * y));
+    double head_yaw = atan2(yaw_y, yaw_x);
+
+    double head_pitch = -atan2(pitch_z, sqrt(pitch_x * pitch_x + pitch_y * pitch_y));
 
     return {head_yaw, head_pitch};
   }
@@ -542,11 +558,14 @@ class HeadMover {
   bool look_at(geometry_msgs::msg::PointStamped point, double min_yaw_delta = 0.02, double min_pitch_delta = 0.02) {
     try {
       // Transform the point into the planning frame
-      geometry_msgs::msg::PointStamped new_point =
-          tf_buffer_->transform(point, "base_footprint", tf2::durationFromSec(0.9));
+      geometry_msgs::msg::PointStamped yaw_point =
+          tf_buffer_->transform(point, "head_yaw_link", tf2::durationFromSec(0.9));
+
+      geometry_msgs::msg::PointStamped pitch_point =
+          tf_buffer_->transform(point, "head_pitch_link", tf2::durationFromSec(0.9));
 
       // Get the motor goals that are needed to look at the point from the inverse kinematics
-      std::pair<double, double> yaw_pitch = get_motor_goals_from_point(new_point.point);
+      std::pair<double, double> yaw_pitch = get_motor_goals_from_point(yaw_point.point, pitch_point.point);
       // Get the current head position
       std::pair<double, double> current_yaw_pitch = get_head_position();
 
