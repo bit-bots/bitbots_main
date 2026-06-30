@@ -18,7 +18,7 @@ class WhistleDetector(Node):
 
         self.audio_received_time: TimeMsg = TimeMsg()
         self.audio_buffer = np.array([], dtype=np.float32)
-        self.sample_rate = 16000
+        self.sample_rate = 48000
 
         self.param_listener = parameters.ParamListener(self)
         self.config = self.param_listener.get_params()
