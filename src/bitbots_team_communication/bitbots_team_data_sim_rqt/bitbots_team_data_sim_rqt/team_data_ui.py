@@ -50,6 +50,12 @@ class RobotWidget(QGroupBox):
         self.main_layout.addWidget(self.position_sliders_x)
         self.position_sliders_y = PositionCoordsY()
         self.main_layout.addWidget(self.position_sliders_y)
+        self.ball_position_sliders_y = BallPositionCoordsY()
+        self.main_layout.addWidget(self.ball_position_sliders_y)
+        self.ball_position_sliders_x = BallPositionCoordsX()
+        self.main_layout.addWidget(self.ball_position_sliders_x)
+        self.ball_covariance = BallCovariance()
+        self.main_layout.addWidget(self.ball_covariance)
         self.strategy_box = StrategyBox()
         self.main_layout.addWidget(self.strategy_box)
         self.publish_button = PublishButton()
@@ -65,6 +71,9 @@ class RobotWidget(QGroupBox):
         self.publish_button.setEnabled(enabled)
         self.position_sliders_x.setEnabled(enabled)
         self.position_sliders_y.setEnabled(enabled)
+        self.ball_position_sliders_x.setEnabled(enabled)
+        self.ball_position_sliders_y.setEnabled(enabled)
+        self.ball_covariance.setEnabled(enabled)
 
     def get_robot_id(self) -> int:
         return self.id_spin_box.value()
@@ -177,6 +186,78 @@ class PositionCoordsY(QGroupBox):
     def get_y_position(self) -> float:
         return float(self.y_pos_spin_box.value() / 100)
 
+class BallPositionCoordsX(QGroupBox):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        # x position
+        self.setTitle("Ball X position")
+        self.setEnabled(False)
+        # Create layout
+        self.main_layout = QHBoxLayout()
+        self.setLayout(self.main_layout)
+        # Create spin box
+        self.x_ball_pos_spin_box = QSpinBox()
+        self.x_ball_pos_spin_box.setRange(-550, 550)
+        self.main_layout.addWidget(self.x_ball_pos_spin_box)
+        # Create slider
+        self.x_ball_pos_slider = QSlider(Qt.Horizontal)  # type: ignore[attr-defined]
+        self.x_ball_pos_slider.setRange(-550, 550)
+        self.main_layout.addWidget(self.x_ball_pos_slider)
+        # Connect spin box and slider
+        self.x_ball_pos_spin_box.valueChanged.connect(self.x_ball_pos_slider.setValue)  # type: ignore[attr-defined]
+        self.x_ball_pos_slider.valueChanged.connect(self.x_ball_pos_spin_box.setValue)  # type: ignore[attr-defined]
+
+    def get_x_ball_position(self) -> float:
+        return float(self.x_ball_pos_spin_box.value() / 100)
+
+
+class PositionCoordsY(QGroupBox):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        # y position
+        self.setTitle("Y ball position")
+        self.setEnabled(False)
+        # Create layout
+        self.main_layout = QHBoxLayout()
+        self.setLayout(self.main_layout)
+        # Create spin box
+        self.y_ball_pos_spin_box = QSpinBox()
+        self.y_ball_pos_spin_box.setRange(-400, 400)
+        self.main_layout.addWidget(self.y_ball_pos_spin_box)
+        # Create slider
+        self.y_ball_pos_slider = QSlider(Qt.Horizontal)  # type: ignore[attr-defined]
+        self.y_ball_pos_slider.setRange(-400, 400)
+        self.main_layout.addWidget(self.y_ball_pos_slider)
+        # Connect spin box and slider
+        self.y_ball_pos_spin_box.valueChanged.connect(self.y_ball_pos_slider.setValue)  # type: ignore[attr-defined]
+        self.y_ball_pos_slider.valueChanged.connect(self.y_ball_pos_spin_box.setValue)  # type: ignore[attr-defined]
+
+    def get_y_ball_position(self) -> float:
+        return float(self.y_ball_pos_spin_box.value() / 100)
+
+class BallCovariance(QGroupBox):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        # y position
+        self.setTitle("Ball covariance in 0.1 sum")
+        self.setEnabled(False)
+        # Create layout
+        self.main_layout = QHBoxLayout()
+        self.setLayout(self.main_layout)
+        # Create spin box
+        self.ball_covariance_box = QSpinBox()
+        self.ball_covariance_box.setRange(-400, 400)
+        self.main_layout.addWidget(self.ball_covariance_box)
+        # Create slider
+        self.ball_covariance_slider = QSlider(Qt.Horizontal)  # type: ignore[attr-defined]
+        self.ball_covariance_slider.setRange(-400, 400)
+        self.main_layout.addWidget(self.ball_covariance_slider)
+        # Connect spin box and slider
+        self.ball_covariance_box.valueChanged.connect(self.ball_covariance_slider.setValue)  # type: ignore[attr-defined]
+        self.ball_covariance_slider.valueChanged.connect(self.ball_covariance_box.setValue)  # type: ignore[attr-defined]
+
+    def get_ball_covariance(self) -> float:
+        return float(self.ball_covariance_box.value() / 10)
 
 class StrategyBox(QGroupBox):
     _roles: dict[str, int] = {
@@ -310,6 +391,14 @@ class TeamDataSimulator(Plugin):
                 pose_with_cov = PoseWithCovariance()
                 pose_with_cov.pose.position.x = robot_widget.position_sliders_x.get_x_position()
                 pose_with_cov.pose.position.y = robot_widget.position_sliders_y.get_y_position()
+                pose_with_cov.covariance = [
+                    robot_widget.ball_covariance.get_ball_covariance() / 2, 0.0, 0.0, 0.0, 0.0, 0.0,
+                    0.0, robot_widget.ball_covariance.get_ball_covariance() / 2, 0.0, 0.0, 0.0, 0.0,
+                    0.0, 0.0, 0.01, 0.0, 0.0, 0.0,
+                    0.0, 0.0, 0.0, 0.01, 0.0, 0.0,
+                    0.0, 0.0, 0.0, 0.0, 0.01, 0.0,
+                    0.0, 0.0, 0.0, 0.0, 0.0, 0.05
+                ]
                 team_data.robot_position = pose_with_cov
                 team_data.state = robot_widget.state_box.get_state()
                 team_data.time_to_position_at_ball = robot_widget.time_to_position_box.get_time()
