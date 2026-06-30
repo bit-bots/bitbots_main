@@ -68,9 +68,7 @@ class SoccerCommandHandler(Handler):
         # Frames for anchoring the kick direction (REP-120). odom is the locally
         # consistent, drift-free-over-short-horizons world frame we anchor in.
         self._odom_frame = str(node.declare_parameter("odom_frame", "odom").value)
-        self._base_footprint_frame = str(
-            node.declare_parameter("base_footprint_frame", "base_footprint").value
-        )
+        self._base_footprint_frame = str(node.declare_parameter("base_footprint_frame", "base_footprint").value)
         # tf buffer to read the robot's yaw in odom (odom -> base_footprint).
         self._tf_buffer = Buffer(node=self._node)
 
@@ -193,9 +191,7 @@ class SoccerCommandHandler(Handler):
             self._kick_dir_odom = _wrap_to_pi(anchor_yaw + self._kick_dir_body)
         else:
             self._kick_dir_odom = None
-            self._node.get_logger().warning(
-                "Could not anchor kick to odom; using body-fixed kick direction."
-            )
+            self._node.get_logger().warning("Could not anchor kick to odom; using body-fixed kick direction.")
         self._last_kick_dir_b = self._kick_dir_body
         self._kick_active = True
         self._node.get_logger().info(
