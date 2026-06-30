@@ -524,13 +524,12 @@ class HeadMover {
    * @brief Calculates the motor goals that are needed to look at a given point using the inverse kinematics
    */
   std::pair<double, double> get_motor_goals_from_point(geometry_msgs::msg::Point point) {
-    // check limitations
     double x = point.x;
     double y = point.y;
     double z = point.z;
 
     double head_yaw = atan2(y, x);
-    double head_pitch = atan2(z, sqrt(x * x + y * y));
+    double head_pitch = -atan2(z, sqrt(x * x + y * y));
 
     return {head_yaw, head_pitch};
   }
