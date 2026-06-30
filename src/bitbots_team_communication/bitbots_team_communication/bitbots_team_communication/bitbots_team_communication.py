@@ -14,7 +14,7 @@ from builtin_interfaces.msg import Time as TimeMsg
 from game_controller_hsl_interfaces.msg import GameState, PlayerStatusPose
 from geometry_msgs.msg import PoseWithCovarianceStamped, Quaternion, Twist, TwistWithCovarianceStamped
 from numpy import double
-from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
+from rclpy.callback_groups import MutuallyExclusiveCallbackGroup, ReentrantCallbackGroup
 from rclpy.duration import Duration
 from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
@@ -28,7 +28,7 @@ import bitbots_team_communication.robocup_extension_pb2 as Proto  # noqa: N812
 from bitbots_msgs.msg import Strategy, TeamData
 from bitbots_team_communication.communication import SocketCommunication
 from bitbots_team_communication.converter.robocup_protocol_converter import RobocupProtocolConverter, TeamColor
-
+from rosgraph_msgs.msg import Clock
 
 class TeamCommunication:
     def __init__(self):
@@ -66,8 +66,21 @@ class TeamCommunication:
         self.run_spin_in_thread()
         self.try_to_establish_connection()
 
-        self.node.create_timer(1 / self.rate, self.send_message, callback_group=MutuallyExclusiveCallbackGroup())
+        # See https://github.com/ros2/rclcpp/issues/2535
+        # In sim, the builtin timers may not work correctly if there is a high load of callbacks
+        # This can lead to breaks and bursts which is unacceptable for this usecase
+        # Instead we manually implement a timer
+        if self.node.get_parameter("use_sim_time").value:
+            self.node.create_subscription(Clock, "/clock", self.clock_cb, callback_group=MutuallyExclusiveCallbackGroup())
+            self.next_send_time = self.node.get_clock().now() + Duration(seconds=1 / self.rate)
+        else:
+            self.node.create_timer(1 / self.rate, self.send_message, callback_group=MutuallyExclusiveCallbackGroup())
         self.receive_forever()
+
+    def clock_cb(self, msg):
+        if Time.from_msg(msg.clock) >= self.next_send_time:
+            self.send_message()
+            self.next_send_time = Time.from_msg(msg.clock) + Duration(seconds=1 / self.rate)
 
     def spin(self):
         executor = EventsExecutor()
