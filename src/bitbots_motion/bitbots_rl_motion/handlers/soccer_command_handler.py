@@ -2,14 +2,26 @@ import math
 from typing import Optional
 
 import numpy as np
+from bitbots_tf_buffer import Buffer
 from geometry_msgs.msg import Twist
 from rclpy.action import ActionServer, CancelResponse, GoalResponse
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.duration import Duration
+from rclpy.time import Time
 from soccer_vision_3d_msgs.msg import BallArray
 
 from bitbots_msgs.action import Kick
 from handlers.handler import Handler
+
+
+def _wrap_to_pi(angle: float) -> float:
+    """Wrap an angle to (-pi, pi]."""
+    return math.atan2(math.sin(angle), math.cos(angle))
+
+
+def _yaw_from_quat_xyzw(x: float, y: float, z: float, w: float) -> float:
+    """Extract yaw (rotation about z) from an xyzw quaternion."""
+    return math.atan2(2.0 * (w * z + x * y), 1.0 - 2.0 * (y * y + z * z))
 
 
 class SoccerCommandHandler(Handler):
@@ -31,13 +43,18 @@ class SoccerCommandHandler(Handler):
       * velocity ``[vx, vy, wz]`` comes from ``cmd_vel``.
       * the kick is triggered by the ``rl_kick`` action (``bitbots_msgs/Kick``).
         The goal gives the kick direction as an ``(x, y)`` vector in the robot
-        body frame (kick heading = ``atan2(y, x)``), a ``strength`` (kick-speed
-        target) and a ``timeout``. While the kick is active the velocity is
-        forced to 0 (as in training) and the ball offset comes from
-        ``balls_relative``; the kick clears automatically after ``timeout``
-        seconds (``timeout < 0`` -> the configured default). When not kicking
-        the ball is masked to 0, matching the walk role the policy was trained
-        with.
+        body frame AT THE TIME THE GOAL IS RECEIVED (kick heading =
+        ``atan2(y, x)``), a ``strength`` (kick-speed target) and a ``timeout``.
+        That body-frame heading is anchored into the ``odom`` frame on receipt
+        and re-expressed back into the current base frame every control step
+        (``kick_dir_b = wrap(kick_dir_odom - robot_yaw_odom)``), so the kick
+        keeps pointing at the same world direction even as the torso yaws during
+        the kick -- matching the training/runner semantics. While the kick is
+        active the velocity is forced to 0 (as in training) and the ball offset
+        comes from ``balls_relative``; the kick clears automatically after
+        ``timeout`` seconds (``timeout < 0`` -> the configured default). When not
+        kicking the ball is masked to 0, matching the walk role the policy was
+        trained with.
     """
 
     def __init__(self, node):
@@ -47,13 +64,29 @@ class SoccerCommandHandler(Handler):
         self._pub_period = max(1, int(node.get_parameter("command.pub_period").value))
         self._history_samples = max(1, int(node.get_parameter("command.history_samples").value))
 
+        # Frames for anchoring the kick direction (REP-120). odom is the locally
+        # consistent, drift-free-over-short-horizons world frame we anchor in.
+        self._odom_frame = str(node.declare_parameter("odom_frame", "odom").value)
+        self._base_footprint_frame = str(
+            node.declare_parameter("base_footprint_frame", "base_footprint").value
+        )
+        # tf buffer to read the robot's yaw in odom (odom -> base_footprint).
+        self._tf_buffer = Buffer(node=self._node)
+
         self._cmd_vel: Optional[Twist] = None
         self._ball_pos: Optional[np.ndarray] = None
 
         # kick state: set by the action (its own thread), read by the control loop
         self._kick_active = False
-        self._kick_dir = 0.0
         self._kick_speed = 0.0
+        # Requested heading in the body frame at goal receipt (atan2(y, x)); used
+        # as the fallback if the kick could not be anchored to odom.
+        self._kick_dir_body = 0.0
+        # The anchored heading in the odom frame (None if anchoring failed).
+        self._kick_dir_odom: Optional[float] = None
+        # Last successfully computed body-frame heading, held when a per-step tf
+        # lookup transiently fails so the command does not jump.
+        self._last_kick_dir_b = 0.0
 
         self._node.create_subscription(Twist, "cmd_vel", self._cmd_vel_callback, 1)
         self._node.create_subscription(BallArray, "balls_relative", self._ball_callback, 1)
@@ -103,6 +136,41 @@ class SoccerCommandHandler(Handler):
     def _cancel_callback(self, goal_handle) -> CancelResponse:
         return CancelResponse.ACCEPT
 
+    def _robot_yaw_odom(self, timeout_s: float) -> Optional[float]:
+        """Current robot yaw in the odom frame, or None if tf is unavailable.
+
+        Reads the ``odom -> base_footprint`` transform; its rotation about z is
+        the robot heading in odom.
+        """
+        try:
+            tf = self._tf_buffer.lookup_transform(
+                self._odom_frame,
+                self._base_footprint_frame,
+                Time(),
+                Duration(seconds=timeout_s),
+            )
+        except Exception as e:  # tf2 raises various Lookup/Extrapolation errors
+            self._node.get_logger().warning(f"Could not look up robot yaw in odom: {e}", throttle_duration_sec=1.0)
+            return None
+        q = tf.transform.rotation
+        return _yaw_from_quat_xyzw(q.x, q.y, q.z, q.w)
+
+    def _compute_kick_dir_b(self) -> float:
+        """Kick heading expressed in the current base frame.
+
+        Re-projects the odom-anchored heading into the current base frame each
+        step. Falls back to the body-frame heading recorded at receipt if the
+        kick was never anchored, and holds the last good value if a per-step
+        lookup transiently fails.
+        """
+        if self._kick_dir_odom is None:
+            return self._kick_dir_body  # never anchored -> body-fixed heading
+        yaw_now = self._robot_yaw_odom(timeout_s=0.0)
+        if yaw_now is None:
+            return self._last_kick_dir_b  # hold last good value on a transient miss
+        self._last_kick_dir_b = _wrap_to_pi(self._kick_dir_odom - yaw_now)
+        return self._last_kick_dir_b
+
     def _execute_kick(self, goal_handle):
         """Hold the kick active for the requested timeout, then clear it.
 
@@ -113,12 +181,26 @@ class SoccerCommandHandler(Handler):
         goal = goal_handle.request
         timeout = float(goal.timeout) if goal.timeout > 0.0 else self._default_kick_timeout
 
-        # (x, y) is the kick direction in the body frame -> heading angle.
-        self._kick_dir = math.atan2(float(goal.y), float(goal.x))
+        # (x, y) is the kick direction in the body frame at receipt -> heading.
+        self._kick_dir_body = math.atan2(float(goal.y), float(goal.x))
         self._kick_speed = float(goal.strength)
+
+        # Anchor the body-frame heading into odom so it stays world-fixed for the
+        # duration of the kick. If tf is unavailable, fall back to a body-fixed
+        # heading (kick_dir_odom = None). Set the anchor BEFORE marking the kick
+        # active so the control loop never reads a half-initialized anchor.
+        anchor_yaw = self._robot_yaw_odom(timeout_s=0.1)
+        if anchor_yaw is not None:
+            self._kick_dir_odom = _wrap_to_pi(anchor_yaw + self._kick_dir_body)
+        else:
+            self._kick_dir_odom = None
+            self._node.get_logger().warning(
+                "Could not anchor kick to odom; using body-fixed kick direction."
+            )
+        self._last_kick_dir_b = self._kick_dir_body
         self._kick_active = True
         self._node.get_logger().info(
-            f"Kick started: dir={math.degrees(self._kick_dir):.1f} deg, "
+            f"Kick started: dir={math.degrees(self._kick_dir_body):.1f} deg (body), "
             f"strength={self._kick_speed:.2f}, timeout={timeout:.2f} s"
         )
 
@@ -163,7 +245,7 @@ class SoccerCommandHandler(Handler):
                 ball_x, ball_y = float(self._ball_pos[0]), float(self._ball_pos[1])
             else:
                 ball_x, ball_y = 0.0, 0.0
-            kick_dir = self._kick_dir
+            kick_dir = self._compute_kick_dir_b()
             kick_speed = self._kick_speed
         else:
             vx, vy, wz = cmd_vx, cmd_vy, cmd_wz
