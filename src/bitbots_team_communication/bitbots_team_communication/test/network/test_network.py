@@ -10,7 +10,17 @@ from bitbots_team_communication import network
 def test_resolve_manual_target_ip(mocker):
     auto_detection = mocker.patch.object(network, "get_wifi_broadcast_address")
 
-    target_ip, interface = network.resolve_target_ip("10.0.6.255")
+    target_ip, interface = network.resolve_target_ip("10.0.6.255", in_sim=False)
+
+    assert target_ip == IPv4Address("10.0.6.255")
+    assert interface is None
+    auto_detection.assert_not_called()
+
+
+def test_resolve_manual_target_ip_ignores_sim(mocker):
+    auto_detection = mocker.patch.object(network, "get_wifi_broadcast_address")
+
+    target_ip, interface = network.resolve_target_ip("10.0.6.255", in_sim=True)
 
     assert target_ip == IPv4Address("10.0.6.255")
     assert interface is None
@@ -24,10 +34,20 @@ def test_resolve_auto_target_ip(mocker):
         return_value=(IPv4Address("10.0.6.255"), "wlp2s0"),
     )
 
-    target_ip, interface = network.resolve_target_ip("auto")
+    target_ip, interface = network.resolve_target_ip("auto", in_sim=False)
 
     assert target_ip == IPv4Address("10.0.6.255")
     assert interface == "wlp2s0"
+
+
+def test_resolve_auto_target_ip_in_sim_uses_localhost(mocker):
+    auto_detection = mocker.patch.object(network, "get_wifi_broadcast_address")
+
+    target_ip, interface = network.resolve_target_ip("auto", in_sim=True)
+
+    assert target_ip == IPv4Address("127.0.0.1")
+    assert interface is None
+    auto_detection.assert_not_called()
 
 
 def test_auto_target_ip_errors_without_wifi_interface(tmp_path, monkeypatch):
