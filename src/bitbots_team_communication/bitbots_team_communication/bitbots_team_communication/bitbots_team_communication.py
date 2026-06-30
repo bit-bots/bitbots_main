@@ -14,7 +14,7 @@ from builtin_interfaces.msg import Time as TimeMsg
 from game_controller_hsl_interfaces.msg import GameState, PlayerStatusPose
 from geometry_msgs.msg import PoseWithCovarianceStamped, Quaternion, Twist, TwistWithCovarianceStamped
 from numpy import double
-from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
+from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.duration import Duration
 from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
@@ -66,7 +66,7 @@ class TeamCommunication:
         self.run_spin_in_thread()
         self.try_to_establish_connection()
 
-        self.node.create_timer(1 / self.rate, self.send_message, callback_group=MutuallyExclusiveCallbackGroup())
+        self.node.create_timer(1 / self.rate, self.send_message, callback_group=ReentrantCallbackGroup())
         self.receive_forever()
 
     def spin(self):
@@ -264,9 +264,10 @@ class TeamCommunication:
 
     def send_message(self):
         if not self.is_robot_allowed_to_send_message():
-            self.logger.debug("Robot is not allowed to send message")
+            self.logger.warm("Robot is not allowed to send message")
             return
 
+        self.logger.warm("Send message called")
         now = self.get_current_time()
         msg = self.create_empty_message(now)
 

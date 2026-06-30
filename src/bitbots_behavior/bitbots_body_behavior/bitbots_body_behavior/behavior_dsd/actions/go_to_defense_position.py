@@ -83,8 +83,11 @@ class GoToDefensePosition(AbstractActionElement):
             pose_msg.pose.orientation = Quaternion(x=x, y=y, z=z, w=w)
         else:
             # center point between ball and own goal
-            pose_msg.pose.position.x = (goal_position[0] + ball_position[0]) / 2
-            pose_msg.pose.position.y = ball_position[1] / 2 + self.y_offset
-            pose_msg.pose.orientation.w = 1.0
+            optimal_positioning = self.blackboard.positioning.get_formation_assignment()
+            own_position = optimal_positioning[self.blackboard.gamestate.get_own_id()]
+            pose = own_position["goal_pose"]
+            pose_msg.pose.position.x = pose[0]
+            pose_msg.pose.position.y = pose[1]
+            pose_msg.pose.orientation.w = pose[2]
 
         self.blackboard.pathfinding.publish(pose_msg)

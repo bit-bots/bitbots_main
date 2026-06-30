@@ -1,3 +1,4 @@
+import math
 from typing import Literal, Optional
 
 import numpy as np
@@ -187,6 +188,28 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
             if self.is_valid(data) and (data.strategy.role != Strategy.ROLE_GOALIE or count_goalies):
                 poses.append(data.robot_position.pose)
         return poses
+
+    def quaternion_to_yaw(self, q) -> float:
+        """Extract yaw (theta) from a quaternion."""
+        return math.atan2(2.0 * (q.w * q.z + q.x * q.y), 1.0 - 2.0 * (q.y * q.y + q.z * q.z))
+
+    def get_robot_poses(self, include_own: bool = True) -> dict[int, list[float]]:
+        """Returns a mapping of jersey_number -> [x, y, theta] for all active robots."""
+        robot_poses = {}
+        data: TeamData
+        for data in self.team_data.values():
+            if self.is_valid(data):
+                pose = data.robot_position.pose
+                robot_poses[data.robot_id] = [
+                    pose.position.x,
+                    pose.position.y,
+                    self.quaternion_to_yaw(pose.orientation),
+                ]
+        if include_own:
+            robot_poses[self._blackboard.gamestate.get_own_id()] = list(
+                self._blackboard.world_model.get_current_position()
+            )
+        return robot_poses
 
     def get_number_of_active_field_players(self, count_goalie: bool = False) -> int:
         def is_not_goalie(team_data: TeamData) -> bool:

@@ -3,6 +3,14 @@ body_behavior:
     # Data older than this is seen as non existent
     team_data_timeout: 2
 
+    # Role hysteresis: when our assigned role changes, lock the new role for a
+    # random duration in [role_hysteresis_min, role_hysteresis_max] seconds to
+    # prevent rapid flickering between roles across distributed robot states.
+    role_hysteresis:
+      min: 0.0
+      max: 2.0
+
+    # The roles that are used in the initial role configuration.
     roles:
       - "goalie"
       - "offense"
@@ -46,7 +54,7 @@ body_behavior:
           2: [ -0.085, -0.33 ]
 
     # Time to wait in ready state before moving to role position to give the localization time to converge.
-    ready_wait_time: 4.0
+    ready_wait_time: 2.0
 
     # The orientation threshold defining which range (in Degrees) is acceptable as aligned to the goal (in each direction)
     goal_alignment_orientation_threshold: 5.0
