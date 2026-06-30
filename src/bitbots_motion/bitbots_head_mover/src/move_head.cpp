@@ -530,7 +530,14 @@ class HeadMover {
     double z = point.z;
 
     double head_yaw = atan2(y, x);
-    double head_pitch = -atan2(z + YAW_PITCH_JOINT_Z_DISTANCE, sqrt(x * x + y * y));
+
+    double head_pitch = 0;
+
+    if (z > 0) {
+      head_pitch = acos(x / sqrt(x * x + z * z));
+    } else {
+      head_pitch = -acos(x / sqrt(x * x + z * z));
+    }
 
     return {head_yaw, head_pitch};
   }
