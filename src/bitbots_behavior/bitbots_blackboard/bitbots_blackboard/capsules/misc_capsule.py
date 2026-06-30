@@ -46,6 +46,10 @@ Run the deploy_robots script with the -c option to configure the robot and set p
 
         self.hcm_deactivate_pub = self._node.create_publisher(Bool, "hcm_deactivate", 1)
 
+        self.ball_movement_detection_start_ball_position: Optional[tuple[float, float]] = None
+
+        self.no_second_ball_contact: bool = False
+
     #####################
     # ## Tracking Part ##
     #####################
@@ -99,7 +103,7 @@ Run the deploy_robots script with the -c option to configure the robot and set p
             return False
         return self._node.get_clock().now() < self.timers[timer_name]
 
-    def timer_remaining(self, timer_name: str) -> int:
+    def timer_remaining(self, timer_name: str) -> float:
         """
         Returns how much seconds are remaining on the Timer
         :param timer_name: Name of the timer
@@ -108,7 +112,7 @@ Run the deploy_robots script with the -c option to configure the robot and set p
 
         if timer_name not in self.timers:
             return -1
-        return (self.timers[timer_name] - self._node.get_clock().now()).to_sec()
+        return (self.timers[timer_name] - self._node.get_clock().now()).nanoseconds / 1e9
 
     def timer_ended(self, timer_name: str) -> bool:
         """

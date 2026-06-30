@@ -14,6 +14,7 @@ from sensor_msgs.msg import CameraInfo, Image, Imu, JointState
 from std_msgs.msg import Float32
 
 from bitbots_msgs.msg import JointCommand
+from bitbots_msgs.srv import SimulatorPush
 from bitbots_mujoco_sim.robot import Robot
 
 
@@ -101,7 +102,7 @@ class Simulation(Node):
         self.imu_frame_id = self.get_parameter("imu_frame").get_parameter_value().string_value
         self.camera_optical_frame_id = self.get_parameter("camera_optical_frame").get_parameter_value().string_value
         self.camera_active = True
-
+        self.early_events = []
         self.events = [
             {"frequency": 1, "handler": self.publish_clock_event},
             {"frequency": 4, "handler": lambda: self.publish(lambda robot: robot.publish_ros_joint_states_event())},
@@ -176,12 +177,178 @@ class Simulation(Node):
         from mjviser import Viewer
 
         print("Starting web simulation viewer (mjviser)...")
-        Viewer(self.model, self.data, step_fn=lambda model, data: self.step()).run()
+        # Holds the textured ball overlays, populated by _add_ball_textures below.
+        self._ball_overlays: list[tuple[object, int]] = []
+
+        def render(scene) -> None:
+            # Default mjviser rendering: push the latest MuJoCo state to the scene.
+            scene.update_from_mjdata(self.data)
+            # Then keep our textured ball overlays in sync with the simulated balls.
+            self._update_ball_overlays(scene)
+
+        viewer = Viewer(
+            self.model,
+            self.data,
+            step_fn=lambda model, data: self.step(),
+            render_fn=render,
+        )
+        self._add_field_textures(viewer.scene.server)
+        self._add_ball_textures(viewer.scene.server)
+        viewer.run()
+
+    def _add_field_textures(self, server) -> None:
+        """Render textured plane geoms (e.g. the soccer field) as flat images in viser.
+
+        mjviser draws plane geoms as a plain grid, which discards the field texture
+        defined in the world XML. We re-add each textured plane as a viser image lying
+        flat on the ground so the soccer field markings are visible in the web viewer.
+        """
+        for geom_id in range(self.model.ngeom):
+            if self.model.geom_type[geom_id] != mujoco.mjtGeom.mjGEOM_PLANE:
+                continue
+            matid = int(self.model.geom_matid[geom_id])
+            if matid < 0:
+                continue
+            texid = int(self.model.mat_texid[matid, int(mujoco.mjtTextureRole.mjTEXROLE_RGB)])
+            if texid < 0 or self.model.tex_type[texid] != mujoco.mjtTexture.mjTEXTURE_2D:
+                continue
+
+            image = self._extract_texture_rgb(texid)
+            if image is None:
+                continue
+
+            # Plane geom size is (x half-extent, y half-extent, grid spacing).
+            half_x = float(self.model.geom_size[geom_id, 0])
+            half_y = float(self.model.geom_size[geom_id, 1])
+            pos = self.model.geom_pos[geom_id]
+            geom_name = self.model.geom(geom_id).name or f"plane_{geom_id}"
+            # Parent under mjviser's "/fixed_bodies" frame so the image inherits the
+            # camera-tracking offset that frame carries; otherwise the texture stays at
+            # the world origin and appears glued to the tracked robot's base link.
+            server.scene.add_image(
+                f"/fixed_bodies/field_textures/{geom_name}",
+                image,
+                2 * half_x,
+                2 * half_y,
+                # Lift slightly above the plane to avoid z-fighting with the grid.
+                position=(float(pos[0]), float(pos[1]), float(pos[2]) + 0.001),
+                cast_shadow=False,
+            )
+
+    def _extract_texture_rgb(self, texid: int) -> np.ndarray | None:
+        """Read a MuJoCo 2D texture out of the model as an RGB(A) image array."""
+        width = int(self.model.tex_width[texid])
+        height = int(self.model.tex_height[texid])
+        channels = int(self.model.tex_nchannel[texid])
+        if channels not in (3, 4):
+            return None
+        adr = int(self.model.tex_adr[texid])
+        data = self.model.tex_data[adr : adr + width * height * channels]
+        # MuJoCo stores textures with a bottom-left origin; flip to the top-left
+        # origin expected by image consumers.
+        return np.flipud(data.reshape(height, width, channels)).astype(np.uint8)
+
+    def _add_ball_textures(self, server) -> None:
+        """Render cube-textured sphere geoms (e.g. the ball) with their texture in viser.
+
+        mjviser draws sphere primitives with a single flat color, so the ball's cube
+        texture is lost and it shows up as a plain sphere. For each such geom we add a
+        slightly larger sphere mesh whose vertices are colored by sampling the cube map,
+        and track its pose every frame via _update_ball_overlays.
+        """
+        import trimesh
+
+        for geom_id in range(self.model.ngeom):
+            if self.model.geom_type[geom_id] != mujoco.mjtGeom.mjGEOM_SPHERE:
+                continue
+            matid = int(self.model.geom_matid[geom_id])
+            if matid < 0:
+                continue
+            texid = int(self.model.mat_texid[matid, int(mujoco.mjtTextureRole.mjTEXROLE_RGB)])
+            if texid < 0 or self.model.tex_type[texid] != mujoco.mjtTexture.mjTEXTURE_CUBE:
+                continue
+
+            faces = self._extract_cube_faces(texid)
+            if faces is None:
+                continue
+
+            # Sit just outside mjviser's flat-colored sphere so it is fully covered.
+            radius = float(self.model.geom_size[geom_id, 0]) * 1.01
+            mesh = trimesh.creation.icosphere(subdivisions=4, radius=radius)
+            directions = mesh.vertices / np.linalg.norm(mesh.vertices, axis=1, keepdims=True)
+            colors = self._sample_cube(faces, directions)
+            mesh.visual = trimesh.visual.ColorVisuals(mesh=mesh, vertex_colors=colors)
+
+            geom_name = self.model.geom(geom_id).name or f"sphere_{geom_id}"
+            handle = server.scene.add_mesh_trimesh(f"/ball_textures/{geom_name}", mesh)
+            self._ball_overlays.append((handle, geom_id))
+
+    def _update_ball_overlays(self, scene) -> None:
+        """Move each textured ball overlay to follow its geom's current pose."""
+        for handle, geom_id in self._ball_overlays:
+            quat = np.zeros(4)
+            mujoco.mju_mat2Quat(quat, self.data.geom_xmat[geom_id])
+            # scene._scene_offset carries the camera-tracking shift mjviser applies to
+            # dynamic geoms, so adding it keeps the ball aligned when tracking is on.
+            handle.position = self.data.geom_xpos[geom_id] + scene._scene_offset
+            handle.wxyz = quat
+
+    def _extract_cube_faces(self, texid: int) -> np.ndarray | None:
+        """Read a MuJoCo cube texture as a (6, w, w, 3) array of RGB faces.
+
+        Faces follow MuJoCo's storage order (+X, -X, +Y, -Y, +Z, -Z).
+        """
+        width = int(self.model.tex_width[texid])
+        height = int(self.model.tex_height[texid])
+        channels = int(self.model.tex_nchannel[texid])
+        if channels < 3 or height != 6 * width:
+            return None
+        adr = int(self.model.tex_adr[texid])
+        data = self.model.tex_data[adr : adr + width * height * channels]
+        return data.reshape(6, width, width, channels)[..., :3].astype(np.uint8)
+
+    @staticmethod
+    def _sample_cube(faces: np.ndarray, directions: np.ndarray) -> np.ndarray:
+        """Sample a cube map (6, w, w, 3) at unit direction vectors -> (N, 3) colors."""
+        size = faces.shape[1]
+        x, y, z = directions[:, 0], directions[:, 1], directions[:, 2]
+        abs_x, abs_y, abs_z = np.abs(x), np.abs(y), np.abs(z)
+        n = directions.shape[0]
+        face = np.zeros(n, dtype=int)
+        s_coord = np.zeros(n)
+        t_coord = np.zeros(n)
+        major = np.ones(n)
+
+        # Standard cube-map projection: the dominant axis selects the face, the other
+        # two components give the in-face (s, t) coordinates.
+        x_dom = (abs_x >= abs_y) & (abs_x >= abs_z)
+        pos, neg = x_dom & (x > 0), x_dom & (x <= 0)
+        face[pos], s_coord[pos], t_coord[pos], major[pos] = 0, -z[pos], -y[pos], abs_x[pos]
+        face[neg], s_coord[neg], t_coord[neg], major[neg] = 1, z[neg], -y[neg], abs_x[neg]
+
+        y_dom = (~x_dom) & (abs_y >= abs_z)
+        pos, neg = y_dom & (y > 0), y_dom & (y <= 0)
+        face[pos], s_coord[pos], t_coord[pos], major[pos] = 2, x[pos], z[pos], abs_y[pos]
+        face[neg], s_coord[neg], t_coord[neg], major[neg] = 3, x[neg], -z[neg], abs_y[neg]
+
+        z_dom = (~x_dom) & (~y_dom)
+        pos, neg = z_dom & (z > 0), z_dom & (z <= 0)
+        face[pos], s_coord[pos], t_coord[pos], major[pos] = 4, x[pos], -y[pos], abs_z[pos]
+        face[neg], s_coord[neg], t_coord[neg], major[neg] = 5, -x[neg], -y[neg], abs_z[neg]
+
+        s = np.clip((s_coord / major + 1.0) * 0.5, 0.0, 1.0)
+        t = np.clip((t_coord / major + 1.0) * 0.5, 0.0, 1.0)
+        col = np.clip((s * (size - 1)).astype(int), 0, size - 1)
+        row = np.clip(((1.0 - t) * (size - 1)).astype(int), 0, size - 1)
+        return faces[face, row, col]
 
     def step(self) -> None:
         self.step_number += 1
         self.time += self.timestep
         self.time_message = Time(seconds=int(self.time), nanoseconds=int(self.time % 1 * 1e9)).to_msg()
+        for event_config in self.early_events:
+            if self.step_number % event_config["frequency"] == 0:
+                event_config["handler"]()
         mujoco.mj_step(self.model, self.data)
         for event_config in self.events:
             if self.step_number % event_config["frequency"] == 0:
@@ -220,6 +387,7 @@ class RobotSimulation:
         }
 
         self.simulation.create_subscription(JointCommand, _topic("joint_command"), self.joint_command_callback, 1)
+        self.simulation.create_service(SimulatorPush, _topic("simulator_push"), self.simulator_push_callback)
 
     @property
     def domain(self) -> int:
@@ -308,3 +476,27 @@ class RobotSimulation:
         cam_info.k = [f_x, 0.0, cx, 0.0, f_y, cy, 0.0, 0.0, 1.0]
         cam_info.p = [f_x, 0.0, cx, 0.0, 0.0, f_y, cy, 0.0, 0.0, 0.0, 1.0, 0.0]
         self.node_publishers["camera_info"].publish(cam_info)
+
+    def simulator_push_callback(
+        self, request: SimulatorPush.Request, response: SimulatorPush.Response
+    ) -> SimulatorPush.Response:
+        force_vector = np.array([request.force.x, request.force.y, request.force.z], dtype=float)
+        if request.relative:
+            rotation_matrix = np.zeros((3, 3), dtype=float)
+            mujoco.mju_quat2Mat(rotation_matrix.reshape(9), self.data.xquat[self.robot.base_body_id])
+            force_vector = rotation_matrix @ force_vector
+
+        force = np.concatenate([force_vector, np.zeros(3, dtype=float)])
+        self.data.xfrc_applied[self.robot.base_body_id] = force
+
+        def apply_force() -> None:
+            self.data.xfrc_applied[self.robot.base_body_id] = force
+            if reset_event["end_time"] > self.simulation.time:
+                return
+            if np.all(self.data.xfrc_applied[self.robot.base_body_id] == force):
+                self.data.xfrc_applied[self.robot.base_body_id] = np.zeros(6)
+            self.simulation.early_events.remove(reset_event)
+
+        reset_event = {"frequency": 1, "handler": apply_force, "end_time": self.simulation.time + 0.5}
+        self.simulation.early_events.append(reset_event)
+        return response or SimulatorPush.Response()

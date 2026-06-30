@@ -1,10 +1,11 @@
 team_comm:
   ros__parameters:
-    # UDP broadcast address is the highest IP in the subnet e.g. 172.20.255.255
+    # "auto" uses the IPv4 broadcast address of the connected Wi-Fi interface.
+    # Alternatively, set a specific UDP broadcast address, e.g. 172.20.255.255.
     # Sets local mode if set to loopback (127.0.0.1)
-    target_ip: 10.0.6.255
+    target_ip: auto
 
-    # Only used in non local mode with specific target_ip
+    # Only used in non-local mode
     target_port: 10006
     receive_port: 10006
 

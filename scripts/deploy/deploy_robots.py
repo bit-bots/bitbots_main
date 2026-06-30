@@ -106,7 +106,9 @@ class DeployRobots:
             dest="clean_build",
             help="Clean workspace before building. If --package is given, clean only that package.",
         )
-        parser.add_argument("--connection-timeout", default=10, help="Timeout to establish SSH connections in seconds.")
+        parser.add_argument(
+            "--connection-timeout", type=int, default=5, help="Timeout to establish SSH connections in seconds."
+        )
         parser.add_argument(
             "--print-bit-bot", action="store_true", default=False, help="Print our logo at script start."
         )

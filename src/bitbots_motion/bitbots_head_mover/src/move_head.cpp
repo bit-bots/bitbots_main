@@ -74,6 +74,8 @@ class HeadMover {
   bitbots_splines::SmoothSpline yaw_spline_;
   bitbots_splines::SmoothSpline pitch_spline_;
   double spline_duration_ = 0.0;
+  // Duration of the transition segment from the current head position into the pattern (prepended to the cycle)
+  double transition_duration_ = 0.0;
   rclcpp::Time spline_start_time_;
   bool spline_valid_ = false;
 
@@ -320,7 +322,7 @@ class HeadMover {
     }
 
     // Calculate the distance between the current and the goal position
-    double distance = sqrt(pow(goal_yaw - current_yaw, 2) - pow(goal_pitch - current_pitch, 2));
+    double distance = sqrt(pow(goal_yaw - current_yaw, 2) + pow(goal_pitch - current_pitch, 2));
 
     // Calculate the number of steps we need to take to reach the goal position
     // This assumes that we move 3 degrees per step
@@ -385,7 +387,7 @@ class HeadMover {
     pos_msg.joint_names = {"head_yaw_joint", "head_pitch_joint"};
     pos_msg.positions = {goal_yaw, goal_pitch};
     pos_msg.velocities = {yaw_speed, pitch_speed};
-    pos_msg.accelerations = {params_.max_acceleration_yaw, params_.max_acceleration_yaw};
+    pos_msg.accelerations = {params_.max_acceleration_yaw, params_.max_acceleration_pitch};
     pos_msg.max_torques = {10, 10};
 
     position_publisher_->publish(pos_msg);
@@ -448,17 +450,17 @@ class HeadMover {
   /**
    * @brief Generates a parameterized search pattern
    */
-  std::vector<std::pair<double, double>> generatePattern(
-      int line_count, double max_horizontal_angle_left, double max_horizontal_angle_right, double max_vertical_angle_up,
-      double max_vertical_angle_down,
-      int reduce_last_scanline = 0.2,  // TODO: needs to be changed to 1
-      int interpolation_steps = 0) {
+  std::vector<std::pair<double, double>> generatePattern(int line_count, double max_horizontal_angle_left,
+                                                         double max_horizontal_angle_right,
+                                                         double max_vertical_angle_up, double max_vertical_angle_down,
+                                                         double reduce_last_scanline = 1.0,
+                                                         int interpolation_steps = 0) {
     // Store the keyframes of the search pattern
     std::vector<std::pair<double, double>> keyframes;
     // Store the state of the generation process
-    bool down_direction = false;        // true = down, false = up
-    bool right_side = false;            // true = right, false = left
-    const bool right_direction = true;  // true = moving right, false = moving left
+    bool down_direction = true;   // true = decreasing line (toward top), false = increasing line (toward bottom)
+    bool right_side = false;      // true = right, false = left
+    bool right_direction = true;  // true = moving right, false = moving left; alternates per scan line
     int line = line_count - 1;
     // Calculate the number of iterations that are needed to generate the search pattern
     int iterations = std::max(line_count * 4 - 4, 2);
@@ -494,24 +496,24 @@ class HeadMover {
         right_side = right_direction;
 
       } else {
-        // Change the horizontal direction we are moving in
-        right_side = !right_direction;
-        // Check if we reached the top or bottom of the pattern and need to change the direction
-        if (0 <= line && line <= line_count - 1) {
-          down_direction = !down_direction;
-        }
-        // Change the line we are on based on the direction we are moving in
+        // Flip the scan direction so the next line scans the opposite way (boustrophedon)
+        right_direction = !right_direction;
+        // Advance to the next scan line
         if (down_direction) {
           line -= 1;
         } else {
           line += 1;
+        }
+        // Flip vertical direction when we reach either edge
+        if (line <= 0 || line >= line_count - 1) {
+          down_direction = !down_direction;
         }
       }
     }
 
     // Reduce the last scanline by a given factor
     for (auto& keyframe : keyframes) {
-      if (keyframe.second == max_vertical_angle_down) {
+      if (std::abs(keyframe.second - max_vertical_angle_down) < 1e-6) {
         keyframe = {keyframe.first * reduce_last_scanline, max_vertical_angle_down};
       }
     }
@@ -564,14 +566,17 @@ class HeadMover {
   /**
    * @brief Builds an open-loop SmoothSpline trajectory from the current search pattern.
    *
-   * Waypoint timestamps are distributed proportionally to Euclidean arc length so the
-   * total cycle takes exactly cycle_time_ seconds. The loop is closed by appending the
-   * first waypoint at the end.
+   * The trajectory starts at the current head position and smoothly transitions into the
+   * pattern, so switching head modes does not result in an abrupt movement. Waypoint
+   * timestamps are distributed proportionally to Euclidean arc length so the cycle
+   * (excluding the transition) takes exactly cycle_time_ seconds. The loop is closed by
+   * appending the first waypoint at the end.
    */
   void build_spline_trajectory() {
     yaw_spline_ = bitbots_splines::SmoothSpline();
     pitch_spline_ = bitbots_splines::SmoothSpline();
     spline_valid_ = false;
+    transition_duration_ = 0.0;
 
     if (pattern_.empty() || cycle_time_ <= 0.0) {
       return;
@@ -597,8 +602,22 @@ class HeadMover {
       total_length += len;
     }
 
-    // Add waypoints with timestamps proportional to arc length
     double t = 0.0;
+
+    // Prepend a transition segment from the current head position to the first waypoint
+    // of the pattern, so we don't jump there abruptly when the head mode changes.
+    // Its duration is based on the distance and the configured transition speed.
+    auto [current_yaw, current_pitch] = get_head_position();
+    double transition_distance =
+        std::sqrt(std::pow(pts_rad[0].first - current_yaw, 2) + std::pow(pts_rad[0].second - current_pitch, 2));
+    transition_duration_ = transition_distance / params_.transition_speed;
+    if (transition_duration_ > 0.0) {
+      yaw_spline_.addPoint(t, current_yaw);
+      pitch_spline_.addPoint(t, current_pitch);
+      t = transition_duration_;
+    }
+
+    // Add waypoints with timestamps proportional to arc length
     yaw_spline_.addPoint(t, pts_rad[0].first);
     pitch_spline_.addPoint(t, pts_rad[0].second);
     for (size_t i = 0; i < lengths.size(); i++) {
@@ -624,7 +643,14 @@ class HeadMover {
       return;
     }
 
-    double t = fmod((node_->now() - spline_start_time_).seconds(), spline_duration_);
+    // Play the transition from the previous head position once, then loop only over the cyclic part of the trajectory
+    double elapsed = (node_->now() - spline_start_time_).seconds();
+    double t;
+    if (elapsed <= transition_duration_) {
+      t = elapsed;
+    } else {
+      t = transition_duration_ + fmod(elapsed - transition_duration_, spline_duration_);
+    }
 
     double goal_yaw = yaw_spline_.pos(t);
     double goal_pitch = pitch_spline_.pos(t);
@@ -708,17 +734,22 @@ class HeadMover {
           return;
       }
 
-      // Build the spline trajectory from the new pattern
-      build_spline_trajectory();
+      // Store the current head mode as the previous head mode to detect changes
+      prev_head_mode_ = curr_head_mode;
+
+      // Build the spline trajectory from the new pattern. It starts with a smooth transition from
+      // the current head position, so we also rebuild it when we re-enter a search pattern from
+      // e.g. ball tracking instead of continuing the old trajectory with an abrupt movement.
+      if (curr_head_mode != bitbots_msgs::msg::HeadMode::TRACK_BALL &&
+          curr_head_mode != bitbots_msgs::msg::HeadMode::DONT_MOVE) {
+        build_spline_trajectory();
+      }
     }
     // Check if no look at action is running or if the head mode is DONT_MOVE
     // if this is not the case, perform the search pattern
     if (!action_running_ && curr_head_mode != bitbots_msgs::msg::HeadMode::DONT_MOVE)  // here DONT_MOVE
                                                                                        // is implemented
     {
-      // Store the current head mode as the previous head mode to detect changes
-      prev_head_mode_ = curr_head_mode;
-
       // If we are in search track mode look at the ball
       if (curr_head_mode == bitbots_msgs::msg::HeadMode::TRACK_BALL) {
         // Convert the ball position to a PointStamped
