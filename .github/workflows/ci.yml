@@ -45,3 +45,6 @@ jobs:
 
       - name: Test
         run: pixi run -e default test
+
+      - name: Test deploy scripts
+        run: pixi run -e default pytest scripts/deploy/tests
