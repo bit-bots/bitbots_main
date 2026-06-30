@@ -71,7 +71,7 @@ class TeamCommunication:
         # This can lead to breaks and bursts which is unacceptable for this usecase
         # Instead we manually implement a timer
         if self.node.get_parameter("use_sim_time").value:
-            self.node.create_subscription(Clock, "/clock", self.clock_cb, callback_group=MutuallyExclusiveCallbackGroup())
+            self.node.create_subscription(Clock, "/clock", self.clock_cb, callback_group=MutuallyExclusiveCallbackGroup(), qos_profile=1)
             self.next_send_time = self.node.get_clock().now() + Duration(seconds=1 / self.rate)
         else:
             self.node.create_timer(1 / self.rate, self.send_message, callback_group=MutuallyExclusiveCallbackGroup())
