@@ -56,7 +56,7 @@ TeamInfoStruct = "team" / Struct(
     "players" / Array(20, RobotInfoStruct) #always eleven fine?
 )
 
-GAME_CONTROLLER_RESPONSE_VERSION = 19
+GAME_CONTROLLER_RESPONSE_VERSION = 20
 
 GameStateStruct = "gamedata" / Struct(
     "header" / Const(b'RGme'),
