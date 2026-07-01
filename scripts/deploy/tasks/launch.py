@@ -1,9 +1,19 @@
-import re
-
-from deploy.misc import get_connections_from_succeeded, hide_output, print_debug, print_error, print_success
+from deploy.misc import (
+    CONSOLE,
+    get_connections_from_succeeded,
+    hide_output,
+    print_debug,
+    print_error,
+    print_success,
+    print_warning,
+)
 from deploy.tasks.abstract_task import AbstractTask
-from fabric import Group, GroupResult, Result
+from fabric import Group, GroupResult, Result, ThreadingGroup
 from fabric.exceptions import GroupException
+from rich import box
+from rich.console import Group as RichGroup
+from rich.prompt import Confirm
+from rich.table import Table
 
 
 class Launch(AbstractTask):
@@ -15,6 +25,7 @@ class Launch(AbstractTask):
         :param tmux_session_name: Name of the fresh tmux session to launch the teamplayer in
         """
         super().__init__()
+        self._show_status = False
 
         self._remote_workspace = remote_workspace
         self._tmux_session_name = tmux_session_name
@@ -31,20 +42,57 @@ class Launch(AbstractTask):
         :return: The results of the task.
         """
         # Check if ROS 2 nodes are already running
-        node_running_results = self._check_nodes_already_running(connections)
-        if not node_running_results.succeeded:
+        with CONSOLE.status("[bold blue] Checking if ROS 2 nodes are already running", spinner="point"):
+            node_running_results = self._check_nodes_already_running(connections)
+        if node_running_results.failed:
+            self._show_running_entries(node_running_results.failed, "Running ROS 2 nodes", "Nodes")
+            if not Confirm.ask("Kill running ROS 2 nodes on these hosts?", console=CONSOLE, default=False):
+                return node_running_results
+            kill_nodes_results = self._kill_running_ros_nodes(
+                self._connections_from_results(node_running_results.failed)
+            )
+            if kill_nodes_results.failed:
+                return kill_nodes_results
+            with CONSOLE.status("[bold blue] Checking if ROS 2 nodes stopped", spinner="point"):
+                node_running_results = self._check_nodes_already_running(connections)
+        if node_running_results.failed:
             return node_running_results
         # Some hosts have no ROS 2 nodes already running, continuing
 
         # Check if tmux session is already running
-        tmux_session_running_results = self._check_tmux_session_already_running(
-            get_connections_from_succeeded(node_running_results)
-        )
-        if not tmux_session_running_results.succeeded:
+        with CONSOLE.status(
+            f"[bold blue] Checking if tmux session '{self._tmux_session_name}' is already running",
+            spinner="point",
+        ):
+            tmux_session_running_results = self._check_tmux_session_already_running(
+                get_connections_from_succeeded(node_running_results)
+            )
+        if tmux_session_running_results.failed:
+            self._show_running_entries(tmux_session_running_results.failed, "Running tmux sessions", "Sessions")
+            if not Confirm.ask(
+                f"Kill tmux session '{self._tmux_session_name}' on these hosts?",
+                console=CONSOLE,
+                default=False,
+            ):
+                return tmux_session_running_results
+            kill_tmux_results = self._kill_running_tmux_session(
+                self._connections_from_results(tmux_session_running_results.failed)
+            )
+            if kill_tmux_results.failed:
+                return kill_tmux_results
+            with CONSOLE.status(
+                f"[bold blue] Checking if tmux session '{self._tmux_session_name}' stopped",
+                spinner="point",
+            ):
+                tmux_session_running_results = self._check_tmux_session_already_running(
+                    get_connections_from_succeeded(node_running_results)
+                )
+        if tmux_session_running_results.failed:
             return tmux_session_running_results
 
         # Some hosts are ready to launch teamplayer
-        launch_results = self._launch_teamplayer(get_connections_from_succeeded(tmux_session_running_results))
+        with CONSOLE.status("[bold blue] Launching teamplayer", spinner="point"):
+            launch_results = self._launch_teamplayer(get_connections_from_succeeded(tmux_session_running_results))
         return launch_results
 
     def _check_nodes_already_running(self, connections: Group) -> GroupResult:
@@ -55,7 +103,7 @@ class Launch(AbstractTask):
         :return: Results, with success if ROS 2 nodes are not already running
         """
         print_debug("Checking if ROS 2 nodes are already running")
-        cmd = f"cd {self._remote_workspace} && pixi run --environment robot ros2 node list -c"
+        cmd = f"cd {self._remote_workspace} && pixi run --environment robot ros2 node list"
 
         print_debug(f"Calling '{cmd}'")
         try:
@@ -68,15 +116,12 @@ class Launch(AbstractTask):
             else:
                 node_list_results = e.result
 
-        # Check if output was ^0$ (zero for no nodes running) for all remote machines
+        # Check if the node list output is empty for all remote machines
         # Create new group result with success if no nodes are running
         no_nodes_already_running_results = GroupResult()
         nodes_already_running: bool
         for connection, result in node_list_results.items():
-            if re.match(r"^0$", result.stdout):  # No nodes already running
-                nodes_already_running = False
-            else:  # Nodes already running
-                nodes_already_running = True
+            nodes_already_running = bool(result.stdout.strip())
 
             # Create new result and pass most of the data from the original result.
             # Exited is the exit code.
@@ -96,6 +141,33 @@ class Launch(AbstractTask):
         if no_nodes_already_running_results.failed:
             print_error(f"ROS 2 nodes are already running on {self._failed_hosts(no_nodes_already_running_results)}")
         return no_nodes_already_running_results
+
+    def _kill_running_ros_nodes(self, connections: Group) -> GroupResult:
+        print_debug("Killing running ROS 2 nodes")
+        script = (
+            'nodes="$(ros2 node list 2>/dev/null || true)"; '
+            "while IFS= read -r node; do "
+            '[ -n "$node" ] && ros2 lifecycle set "$node" shutdown >/dev/null 2>&1 || true; '
+            'done <<< "$nodes"; '
+            'pattern="ros""2|launch_""ros|component_""container|robot_state_""publisher"; '
+            'pgrep -u "$USER" -f "$pattern" | while read -r pid; do '
+            '[ "$pid" != "$$" ] && kill -INT "$pid" 2>/dev/null || true; '
+            "done; "
+            "sleep 2; "
+            'pgrep -u "$USER" -f "$pattern" | while read -r pid; do '
+            '[ "$pid" != "$$" ] && kill -TERM "$pid" 2>/dev/null || true; '
+            "done"
+        )
+        cmd = f"cd {self._remote_workspace} && pixi run --environment robot bash -lc '{script}'"
+
+        print_debug(f"Calling '{cmd}'")
+        try:
+            results = connections.run(cmd, hide=hide_output())
+            print_debug(f"Calling '{cmd}' succeeded on: {self._succeeded_hosts(results)}")
+        except GroupException as e:
+            print_error(f"Killing running ROS 2 nodes failed on: {self._failed_hosts(e.result)}")
+            return e.result
+        return results
 
     def _check_tmux_session_already_running(self, connections: Group) -> GroupResult:
         print_debug(f"Checking if tmux session with name '{self._tmux_session_name}' is already running")
@@ -148,6 +220,34 @@ class Launch(AbstractTask):
                 f"Tmux session called {self._tmux_session_name} has been found on hosts {self._failed_hosts(tmux_ls_results)}"
             )
         return tmux_session_already_running_results
+
+    def _kill_running_tmux_session(self, connections: Group) -> GroupResult:
+        print_debug(f"Killing tmux session with name '{self._tmux_session_name}'")
+        cmd = f"tmux kill-session -t {self._tmux_session_name}"
+
+        print_debug(f"Calling '{cmd}'")
+        try:
+            results = connections.run(cmd, hide=hide_output())
+            print_debug(f"Calling '{cmd}' succeeded on: {self._succeeded_hosts(results)}")
+        except GroupException as e:
+            print_error(
+                f"Killing tmux session called {self._tmux_session_name} failed on: {self._failed_hosts(e.result)}"
+            )
+            return e.result
+        return results
+
+    def _show_running_entries(self, results: GroupResult, title: str, value_column: str) -> None:
+        table = Table(style="yellow", box=box.SQUARE)
+        table.add_column("Host")
+        table.add_column(value_column)
+
+        for connection, result in results.items():
+            table.add_row(connection.original_host, result.stdout.strip())
+
+        print_warning(RichGroup(title, table))
+
+    def _connections_from_results(self, results: GroupResult) -> ThreadingGroup:
+        return ThreadingGroup.from_connections(results.keys())
 
     def _launch_teamplayer(self, connections: Group) -> GroupResult:
         print_debug("Launching teamplayer")
