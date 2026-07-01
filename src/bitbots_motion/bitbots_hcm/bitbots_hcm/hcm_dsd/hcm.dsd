@@ -49,8 +49,8 @@ $StartHCM
                                     NOT_FALLING --> $PlayingExternalAnimation
                                         ANIMATION_RUNNING --> @StopWalking, @RobotStateAnimationRunning, @Wait
                                         ANIMATION_SERVER_TIMEOUT --> @CancelAnimation
-                                        FREE --> $RecentKickGoals
-                                            KICKING --> @RobotStateKicking, @Wait
-                                            NOT_KICKING --> $RecentWalkingGoals
-                                                STAY_WALKING --> @RobotStateWalking, @Wait
-                                                NOT_WALKING -->  @RobotStateControllable, @Wait
+                                        FREE --> $RecentWalkingGoals
+                                            STAY_WALKING --> @RobotStateWalking, @Wait
+                                            NOT_WALKING --> $RecentKickGoals
+                                                KICKING --> @RobotStateKicking, @Wait
+                                                NOT_KICKING --> @RobotStateControllable, @Wait
