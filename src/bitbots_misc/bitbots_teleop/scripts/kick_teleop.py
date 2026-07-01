@@ -56,17 +56,17 @@ class KickTeleop(Node):
         self._kick_client = ActionClient(self, Kick, "rl_kick")
 
         # Direction — either xy or angle mode depending on what was edited last
-        self._mode = "angle"   # "xy" or "angle"
+        self._mode = "angle"  # "xy" or "angle"
         self._angle_deg = 0.0  # degrees; 0 = forward, 90 = left
-        self._x = 1.0          # always kept in sync with angle in angle mode
+        self._x = 1.0  # always kept in sync with angle in angle mode
         self._y = 0.0
 
         self._strength = 1.0
         self._kick_timeout = 1.5  # <0 means use the node's configured default
 
         # Post-kick delays
-        self._walk_delay = 0.1   # seconds after action returns before walk cmd
-        self._stop_delay = 2.5   # seconds after walk cmd before full stop
+        self._walk_delay = 0.1  # seconds after action returns before walk cmd
+        self._stop_delay = 2.5  # seconds after walk cmd before full stop
 
         self._kick_in_flight = False
         self._lock = threading.Lock()
@@ -115,10 +115,10 @@ class KickTeleop(Node):
         goal.strength = float(self._strength)
         goal.timeout = float(self._kick_timeout)
 
-        #self.get_logger().info(
+        # self.get_logger().info(
         #    f"Kick goal: x={goal.x:.3f}  y={goal.y:.3f}  "
         #    f"strength={goal.strength:.2f}  timeout={goal.timeout:.1f}s"
-        #)
+        # )
         self._kick_client.send_goal_async(goal)
 
         # Start the post-kick timer immediately using the same timeout sent to
@@ -139,7 +139,7 @@ class KickTeleop(Node):
             clock.sleep_for(Duration(seconds=walk_delay))
 
         self._cmd_vel_pub.publish(Twist())
-        #self.get_logger().info("Post-kick: published walk command")
+        # self.get_logger().info("Post-kick: published walk command")
 
         if stop_delay > 0.0:
             clock.sleep_for(Duration(seconds=stop_delay))
@@ -147,7 +147,7 @@ class KickTeleop(Node):
         stop_twist = Twist()
         stop_twist.angular.x = -1.0
         self._cmd_vel_pub.publish(stop_twist)
-        #self.get_logger().info("Post-kick: published full stop")
+        # self.get_logger().info("Post-kick: published full stop")
 
         with self._lock:
             self._kick_in_flight = False
