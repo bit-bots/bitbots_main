@@ -179,7 +179,7 @@ class SoccerCommandHandler(Handler):
         lookup transiently fails.
         """
         if self._kick_dir_odom is None:
-            return self._kick_dir_body  # never anchored -> body-fixed heading
+            return None # this means something is wrong, should kill the node TODO better solution
         yaw_now = self._robot_yaw_odom(timeout_s=0.0)
         if yaw_now is None:
             return self._last_kick_dir_b  # hold last good value on a transient miss
@@ -208,8 +208,12 @@ class SoccerCommandHandler(Handler):
         if anchor_yaw is not None:
             self._kick_dir_odom = _wrap_to_pi(anchor_yaw + self._kick_dir_body)
         else:
-            self._kick_dir_odom = None
-            self._node.get_logger().warning("Could not anchor kick to odom; using body-fixed kick direction.")
+            self._node.get_logger().warning("Could not anchor kick to odom; aborting")
+            goal_handle.abort()
+            result = Kick.Result()
+            result.result = Kick.Result.ABORTED
+            return result
+
         self._last_kick_dir_b = self._kick_dir_body
         self._kick_abort_requested = False
 
