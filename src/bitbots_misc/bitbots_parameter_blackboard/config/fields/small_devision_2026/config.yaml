@@ -1,20 +1,14 @@
-############################
-# RoboCup German Open 2026 #
-############################
-
-# Settings for the RoboCup Small Devision field 2026
-
 parameter_blackboard:
   ros__parameters:
     field:
       size:
-        x: 8.93
-        y: 5.93
+        x: 9.0
+        y: 6.0
         padding: 1.0   # Padding (area outside of the lines) of the field in all directions
       markings:
         penalty_area:
           size:
-            x: 1.93   # The distance from the goal line to the boundary of the penalty area
+            x: 2.0   # The distance from the goal line to the boundary of the penalty area
       goal:
-        width: 1.9   # The width of the goal (center of one goal post to the other goal post)
-        depth: 0.75   # The depth of the goal (distance from the goal line to the back of the goal)
+        width: 1.8   # The width of the goal (center of one goal post to the other goal post)
+        depth: 0.5   # The depth of the goal (distance from the goal line to the back of the goal)
