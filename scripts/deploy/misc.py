@@ -94,7 +94,7 @@ def hide_output() -> bool | str:
 _known_targets_path: str = os.path.join(os.path.dirname(__file__), "known_targets.yaml")
 try:
     with open(_known_targets_path) as f:
-        KNOWN_TARGETS: dict[str, dict[str, str]] = yaml.safe_load(f)
+        KNOWN_TARGETS: dict[str, dict[str, str | int]] = yaml.safe_load(f)
 except FileNotFoundError:
     print_error(f"Could not find known_targets.yaml in {_known_targets_path}")
     sys.exit(1)
@@ -104,18 +104,19 @@ def print_known_targets() -> None:
     table = Table()
     table.add_column("Hostname")
     table.add_column("Robot name")
+    table.add_column("Robot number")
     table.add_column("IP address")
 
     known_targets = get_known_targets()
-    table.add_row("ALL", "", "")
+    table.add_row("ALL", "", "", "")
     for ip, values in known_targets.items():
-        table.add_row(values.get("hostname", ""), values.get("robot_name", ""), ip)
+        table.add_row(values.get("hostname", ""), values.get("robot_name", ""), str(values.get("robot_number", "")), ip)
     print_info("You can enter the following values as targets:")
     CONSOLE.print(table)
     sys.exit(0)
 
 
-def get_known_targets() -> dict[str, dict[str, str]]:
+def get_known_targets() -> dict[str, dict[str, str | int]]:
     """
     Returns the known targets.
 
@@ -171,6 +172,16 @@ def _identify_ips(identifier: str) -> list[str]:
             else:
                 print_debug(f"Robot name '{known_robot_name}' does not match '{identifier}'.")
 
+        # Is the identifier a known robot number?
+        known_robot_number = values.get("robot_number", None)
+        if known_robot_number is not None:
+            print_debug(f"Comparing '{identifier}' with robot number '{known_robot_number}'.")
+            if str(known_robot_number).strip() == identifier.strip():
+                print_debug(f"Identified robot number '{known_robot_number}' for '{identifier}'. Using its IP {ip}.")
+                append_target_ip(target_ips, ip)
+            else:
+                print_debug(f"Robot number '{known_robot_number}' does not match '{identifier}'.")
+
     return target_ips
 
 
@@ -178,30 +189,53 @@ def _parse_targets(targets: list[str]) -> list[str]:
     """
     Parse target input into usable target IP addresses.
 
-    :param targets: Targets as a list of strings of either hostnames, robot names or IPs.
+    :param targets: Targets as a list of strings of either hostnames, robot names, robot numbers or IPs.
     :return: List of target IP addresses.
     """
     return [target_ip for _, target_ips in _parse_target_candidates(targets) for target_ip in target_ips]
+
+
+def _identify_ips_or_exit(target: str) -> list[str]:
+    """
+    Identifies IP addresses from an identifier or exits the program if no IP address could be identified
+
+    :param target: The identifier to identify the target from.
+    :return: IP addresses of the identified targets.
+    """
+    try:
+        target_ips = _identify_ips(target)
+    except ValueError:
+        print_error(f"Could not determine IP address from input: '{target}'")
+        sys.exit(1)
+
+    if not target_ips:
+        print_error(f"Could not determine IP address from input: '{target}'")
+        sys.exit(1)
+
+    return target_ips
 
 
 def _parse_target_candidates(targets: list[str]) -> list[tuple[str, list[str]]]:
     """
     Parse target input into candidate target IP addresses grouped by user input.
 
-    :param targets: Targets as a list of strings of either hostnames, robot names or IPs.
+    :param targets: Targets as a list of strings of either hostnames, robot names, robot numbers or IPs.
     :return: List of target names and their candidate IP addresses.
     """
     target_candidates: list[tuple[str, list[str]]] = []
+    seen_target_ips: set[str] = set()
     for target in targets:
-        try:
-            target_ips_for_identifier = _identify_ips(target)
-        except ValueError:
-            print_error(f"Could not determine IP address from input: '{target}'")
-            sys.exit(1)
-        if not target_ips_for_identifier:
-            print_error(f"Could not determine IP address from input: '{target}'")
-            sys.exit(1)
-        target_candidates.append((target, target_ips_for_identifier))
+        target_ips = []
+        for target_ip in _identify_ips_or_exit(target):
+            if target_ip in seen_target_ips:
+                continue
+            seen_target_ips.add(target_ip)
+            target_ips.append(target_ip)
+
+        if target_ips:
+            target_candidates.append((target, target_ips))
+        else:
+            print_debug(f"Target '{target}' only resolved to already requested IPs. Skipping it.")
     return target_candidates
 
 
@@ -246,6 +280,7 @@ def _get_connections_from_target_candidates(
             return target_ip, None, _concat_exception_args(e)
 
     open_connections: list[Connection] = []
+    connected_target_ips: set[str] = set()
     failed_targets: list[tuple[str, list[tuple[str, str]]]] = []
 
     for target, target_ips in target_candidates:
@@ -273,7 +308,12 @@ def _get_connections_from_target_candidates(
             selected_target_ip = successful_target_ips[0]
             selected_connection = results_by_ip[selected_target_ip][0]
             assert selected_connection is not None
-            open_connections.append(selected_connection)
+            if selected_target_ip in connected_target_ips:
+                print_debug(f"Already connected to {selected_target_ip}. Closing duplicate connection.")
+                selected_connection.close()
+            else:
+                open_connections.append(selected_connection)
+                connected_target_ips.add(selected_target_ip)
             for target_ip in successful_target_ips[1:]:
                 ignored_connection = results_by_ip[target_ip][0]
                 assert ignored_connection is not None

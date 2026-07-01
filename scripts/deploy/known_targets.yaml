@@ -2,29 +2,37 @@
 "172.20.1.11":
   hostname: "kalliope"
   robot_name: "Kalliope"
+  robot_number: 1
 "172.20.1.12":
   hostname: "mickey"
   robot_name: "Mickey"
+  robot_number: 2
 "172.20.1.13":
   hostname: "pink"
   robot_name: "Pink"
+  robot_number: 3
 "172.20.1.14":
   hostname: "romeo"
   robot_name: "Romeo"
+  robot_number: 4
 
 # Field
 "10.0.6.1":
   hostname: "kalliope"
   robot_name: "Kalliope"
+  robot_number: 1
 "10.0.6.2":
   hostname: "mickey"
   robot_name: "Mickey"
+  robot_number: 2
 "10.0.6.3":
   hostname: "pink"
   robot_name: "Pink"
+  robot_number: 3
 "10.0.6.4":
   hostname: "romeo"
   robot_name: "Romeo"
+  robot_number: 4
 
 # HULKs
 #"10.1.24.125":
