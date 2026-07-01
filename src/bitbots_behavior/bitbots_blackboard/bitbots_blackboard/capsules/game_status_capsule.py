@@ -69,7 +69,7 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
     def get_seconds_remaining(self) -> float:
         # Time from the message minus time passed since receiving it
         return max(
-            self.gamestate.secs_remaining - (self._node.get_clock().now().nanoseconds / 1e9 - self.last_update), 0.0
+            self.gamestate.seconds_remaining - (self._node.get_clock().now().nanoseconds / 1e9 - self.last_update), 0.0
         )
 
     def get_secondary_seconds_remaining(self) -> float:
