@@ -6,7 +6,7 @@
       <!-- damping = 10Nm / (155rpm - 10 rpm (in rad/s)) -->
     </default>
     <default class="pi_joint_leg">
-      <joint damping="0.8" actuatorfrcrange="-20 20" armature="0.01316"/>
+      <joint damping="1.5" actuatorfrcrange="-20 20" armature="0.01316"/>
       <!--<joint damping="2.94" actuatorfrcrange="-20 20" armature="0.01316" frictionloss="0.2"/>-->
       <!-- damping = 20Nm / (75rpm - 10 rpm (in rad/s)) -->
     </default>
