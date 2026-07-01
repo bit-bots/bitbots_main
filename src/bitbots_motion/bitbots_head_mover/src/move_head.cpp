@@ -553,7 +553,7 @@ class HeadMover {
     std::pair<double, double> current_yaw_pitch = get_head_position();
 
     double head_yaw = rel_head_yaw + current_yaw_pitch.first;
-    double head_pitch = rel_head_pitch + (current_yaw_pitch.second + RAD_CAMERA_ANGLE);
+    double head_pitch = rel_head_pitch + (current_yaw_pitch.second - RAD_CAMERA_ANGLE);
 
     return {head_yaw, head_pitch};
   }
