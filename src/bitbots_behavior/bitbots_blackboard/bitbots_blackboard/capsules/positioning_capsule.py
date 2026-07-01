@@ -120,13 +120,14 @@ class PositioningCapsule(AbstractBlackboardCapsule):
         ball_pose = self._blackboard.world_model.get_best_ball_point_stamped()
         ball = np.array([ball_pose.point.x, ball_pose.point.y])
         robot_poses = self._blackboard.team_data.get_robot_poses()
+        passive_robot = self._blackboard.team_data.get_index_of_passive_player()
         self._node.get_logger().info(f"Length of robot_poses: {len(robot_poses)}")
 
         formation = self._inner._compute_formation(ball, self._field, len(robot_poses), self._params)
         new_items = list(formation.items())
         ordered_jerseys = sorted(robot_poses.keys())
         old_poses = [robot_poses[j] for j in ordered_jerseys]
-        pairs = self._inner._match_assignment(old_poses, new_items, ball)
+        pairs = self._inner._match_assignment(old_poses, new_items, ball, passive_robot)
         return {ordered_jerseys[old_idx]: {"role": role, "goal_pose": new_pose} for old_idx, new_pose, role in pairs}
 
     @cached_capsule_function
@@ -251,12 +252,7 @@ class InnerPositioningCapsule:
         goalie included, gives way around it. In normal play the goalie is far from
         all teammates so it never moves; it only shifts off its line in the degenerate
         case where the ball sits right in the goal mouth. Continuous in the inputs,
-        so small ball moves -> small position moves.
-
-        If `ball`/`aim` are given, teammates inside the corridor in front of the ball
-        (along the kick direction) are pushed sideways out of it so they don't block
-        the kick; the push tapers in/out along the corridor to stay smooth.
-        """
+        so small ball moves -> small position moves."""
         fixed = {Role.STRIKER}
         names = list(positions.keys())
         sep = params.min_sep
@@ -318,45 +314,53 @@ class InnerPositioningCapsule:
     #  Assignment
     # --------------------------------------------------------------------------- #
 
-    def _match_assignment(
-        self,
-        old_poses: list[list[float] | NDArray[np.float64]],
-        new_items: list[tuple[str, NDArray[np.float64]]],
-        ball: NDArray[np.float64],
-        angle_w: float = 0.3,
-    ) -> list[tuple[int, NDArray[np.float64], str]]:
-        """Assign physical robots (at `old_poses`) to the new target poses.
+def _match_assignment(
+    self,
+    old_poses: list[list[float] | NDArray[np.float64]],
+    new_items: list[tuple[str, NDArray[np.float64]]],
+    ball: NDArray[np.float64],
+    passiv_player: int,
+    angle_w: float = 0.3,
+) -> list[tuple[int, NDArray[np.float64], str]]:
+    """Assign physical robots (at `old_poses`) to the new target poses.
+    The robot closest to the ball always takes the striker target; the rest are
+    matched optimally (Hungarian) to minimise total cost = distance + angle_w *
+    heading difference. Returns a list of (old_idx, new_pose, new_role) where
+    old_idx is the index into `old_poses`.
+    `old_poses`: list of [x, y, theta]; `new_items`: list of (role, [x, y, theta]).
+    """
+    from scipy.optimize import linear_sum_assignment
 
-        The robot closest to the ball always takes the striker target; the rest are
-        matched optimally (Hungarian) to minimise total cost = distance + angle_w *
-        heading difference. Returns a list of (old_idx, new_pose, new_role) where
-        old_idx is the index into `old_poses`.
-        `old_poses`: list of [x, y, theta]; `new_items`: list of (role, [x, y, theta]).
-        """
-        from scipy.optimize import linear_sum_assignment
+    old_poses = [np.asarray(p) for p in old_poses]
+    ball = np.asarray(ball)
+    n = len(old_poses)
 
-        old_poses = [np.asarray(p) for p in old_poses]
-        ball = np.asarray(ball)
-        n = len(old_poses)
+    # striker target -> the old robot nearest the ball
+    s_j = next(j for j, (r, _) in enumerate(new_items) if r == Role.STRIKER)
 
-        # striker target -> the old robot nearest the ball
-        s_j = next(j for j, (r, _) in enumerate(new_items) if r == Role.STRIKER)
-        s_i = min(range(n), key=lambda i: np.linalg.norm(old_poses[i][:2] - ball))
-        pairs = [(s_i, new_items[s_j][1], new_items[s_j][0])]
+    # Kandidaten nach Distanz zum Ball sortiert
+    candidates = sorted(range(n), key=lambda i: np.linalg.norm(old_poses[i][:2] - ball))
 
-        rem_i = [i for i in range(n) if i != s_i]
-        rem_j = [j for j in range(len(new_items)) if j != s_j]
-        if rem_i:
-            cost = np.empty((len(rem_i), len(rem_j)))
-            for a, i in enumerate(rem_i):
-                for b, j in enumerate(rem_j):
-                    op, npose = old_poses[i], new_items[j][1]
-                    cost[a, b] = np.linalg.norm(op[:2] - npose[:2]) + angle_w * self._angle_diff(op[2], npose[2])
-            ri, ci = linear_sum_assignment(cost)
-            for a, b in zip(ri, ci):
-                i, j = rem_i[a], rem_j[b]
-                pairs.append((i, new_items[j][1], new_items[j][0]))
-        return pairs
+    # Den passiven Spieler von der Striker-Wahl ausschließen, falls vorhanden
+    if passiv_player is not None:
+        s_i = next((i for i in candidates if i != passiv_player), candidates[0])
+    else:
+        s_i = candidates[0]
+
+    pairs = [(s_i, new_items[s_j][1], new_items[s_j][0])]
+    rem_i = [i for i in range(n) if i != s_i]
+    rem_j = [j for j in range(len(new_items)) if j != s_j]
+    if rem_i:
+        cost = np.empty((len(rem_i), len(rem_j)))
+        for a, i in enumerate(rem_i):
+            for b, j in enumerate(rem_j):
+                op, npose = old_poses[i], new_items[j][1]
+                cost[a, b] = np.linalg.norm(op[:2] - npose[:2]) + angle_w * self._angle_diff(op[2], npose[2])
+        ri, ci = linear_sum_assignment(cost)
+        for a, b in zip(ri, ci):
+            i, j = rem_i[a], rem_j[b]
+            pairs.append((i, new_items[j][1], new_items[j][0]))
+    return pairs
 
     # --------------------------------------------------------------------------- #
     #  Formation computation
@@ -388,6 +392,45 @@ class InnerPositioningCapsule:
         out = {}
         head = {}  # role -> heading (rad); filled lazily, completed after separation
         kick_aim = None  # striker's kick direction; used to clear the kick lane
+
+        
+        # --- defenders: anchor on axis at push-up depth, spread along perp ---------- #
+        defender_roles = [r for r in roles if r.startswith(Role.DEFENDER + "_")]
+        m = len(defender_roles)
+        if m > 0:
+            depth = np.clip(
+                params.alpha * d + params.depth_bias,  # push up + fwd/back bias
+                params.D_min,
+                params.D_max,
+            )
+            depth = min(depth, max(d - params.standoff, 0.0))  # stay goal-side of the ball
+            depth = max(depth, params.d_g + params.dz)  # stay ahead of the goalie
+            anchor = goal + depth * to_ball
+            if m == 1:
+                # a single defender: shade to the centre side so it doesn't sit on the
+                # striker<->goalie line (otherwise all three are collinear)
+                side_dir = -1.0 if b[1] >= 0 else 1.0
+                offsets = [params.def_side * side_dir]
+            else:
+                offsets = [(k - (m - 1) / 2.0) * params.gap for k in range(m)]
+            for r, off in zip(defender_roles, offsets):
+                out[r] = self._clamp_field(anchor + off * perp, field)
+
+        # --- supporter: slightly in front of the ball, kept inside the field -------- #
+        if Role.SUPPORTER in roles:
+            # always sit to the centre side of the ball; hard swap so it is never
+            # directly in front of the striker, even when the ball is on the centre line
+            side_dir = -1.0 if b[1] >= 0 else 1.0  # points toward y=0 (default: centre-ward)
+            sup = b + np.array([params.f, params.supp_side * side_dir])
+            sup[0] = min(sup[0], params.supp_max_x)  # don't drift into the opponent corner
+            out[Role.SUPPORTER] = self._clamp_field(sup, field)
+
+        # --- min-separation repulsion + kick-lane clearance ----------------------- #
+        self._separate(out, field, params, b, kick_aim)
+
+        # --- freekick: push every robot outside the mandatory clearance radius ---- #
+        if params.freekick:
+            self._clear_ball(out, b, params.freekick_clearance, field)
 
         # --- striker: stands behind the ball opposite the smoothly-chosen kick aim --- #
         if Role.STRIKER in roles:
@@ -429,44 +472,6 @@ class InnerPositioningCapsule:
                 ]
             )
             out[Role.GOALIE] = g
-
-        # --- defenders: anchor on axis at push-up depth, spread along perp ---------- #
-        defender_roles = [r for r in roles if r.startswith(Role.DEFENDER + "_")]
-        m = len(defender_roles)
-        if m > 0:
-            depth = np.clip(
-                params.alpha * d + params.depth_bias,  # push up + fwd/back bias
-                params.D_min,
-                params.D_max,
-            )
-            depth = min(depth, max(d - params.standoff, 0.0))  # stay goal-side of the ball
-            depth = max(depth, params.d_g + params.dz)  # stay ahead of the goalie
-            anchor = goal + depth * to_ball
-            if m == 1:
-                # a single defender: shade to the centre side so it doesn't sit on the
-                # striker<->goalie line (otherwise all three are collinear)
-                side_dir = -1.0 if b[1] >= 0 else 1.0
-                offsets = [params.def_side * side_dir]
-            else:
-                offsets = [(k - (m - 1) / 2.0) * params.gap for k in range(m)]
-            for r, off in zip(defender_roles, offsets):
-                out[r] = self._clamp_field(anchor + off * perp, field)
-
-        # --- supporter: slightly in front of the ball, kept inside the field -------- #
-        if Role.SUPPORTER in roles:
-            # always sit to the centre side of the ball; hard swap so it is never
-            # directly in front of the striker, even when the ball is on the centre line
-            side_dir = -1.0 if b[1] >= 0 else 1.0  # points toward y=0 (default: centre-ward)
-            sup = b + np.array([params.f, params.supp_side * side_dir])
-            sup[0] = min(sup[0], params.supp_max_x)  # don't drift into the opponent corner
-            out[Role.SUPPORTER] = self._clamp_field(sup, field)
-
-        # --- min-separation repulsion + kick-lane clearance ----------------------- #
-        self._separate(out, field, params, b, kick_aim)
-
-        # --- freekick: push every robot outside the mandatory clearance radius ---- #
-        if params.freekick:
-            self._clear_ball(out, b, params.freekick_clearance, field)
 
         # --- orientations (computed from the final positions) --------------------- #
         for role, p in out.items():

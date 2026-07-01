@@ -188,6 +188,15 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
             if self.is_valid(data) and (data.strategy.role != Strategy.ROLE_GOALIE or count_goalies):
                 poses.append(data.robot_position.pose)
         return poses
+    
+    def get_index_of_passive_player(self) -> int:
+        """Returns the poses of all playing robots"""
+        index_list = []
+        data: TeamData
+        for data in self.team_data.values():
+            if self.is_valid(data) and (data.strategy.action is Strategy.ACTION_PASSIVE):
+                return data.robot_id
+        return None
 
     def quaternion_to_yaw(self, q) -> float:
         """Extract yaw (theta) from a quaternion."""
