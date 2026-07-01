@@ -120,7 +120,7 @@ def check_ssh_configuration(user: str, host: str) -> None:
 _known_targets_path: str = os.path.join(os.path.dirname(__file__), "known_targets.yaml")
 try:
     with open(_known_targets_path) as f:
-        KNOWN_TARGETS: dict[str, dict[str, str]] = yaml.safe_load(f)
+        KNOWN_TARGETS: dict[str, dict[str, str | int]] = yaml.safe_load(f)
 except FileNotFoundError:
     print_error(f"Could not find known_targets.yaml in {_known_targets_path}")
     sys.exit(1)
@@ -130,18 +130,19 @@ def print_known_targets() -> None:
     table = Table()
     table.add_column("Hostname")
     table.add_column("Robot name")
+    table.add_column("Robot number")
     table.add_column("IP address")
 
     known_targets = get_known_targets()
-    table.add_row("ALL", "", "")
+    table.add_row("ALL", "", "", "")
     for ip, values in known_targets.items():
-        table.add_row(values.get("hostname", ""), values.get("robot_name", ""), ip)
+        table.add_row(values.get("hostname", ""), values.get("robot_name", ""), str(values.get("robot_number", "")), ip)
     print_info("You can enter the following values as targets:")
     CONSOLE.print(table)
     sys.exit(0)
 
 
-def get_known_targets() -> dict[str, dict[str, str]]:
+def get_known_targets() -> dict[str, dict[str, str | int]]:
     """
     Returns the known targets.
 
@@ -150,10 +151,18 @@ def get_known_targets() -> dict[str, dict[str, str]]:
     return KNOWN_TARGETS
 
 
+# Keys of a known target that can be used to identify it, with a human readable label
+_TARGET_IDENTIFIER_KEYS: tuple[tuple[str, str], ...] = (
+    ("hostname", "hostname"),
+    ("robot_name", "robot name"),
+    ("robot_number", "robot number"),
+)
+
+
 def _identify_ips(identifier: str) -> list[str]:
     """
     Identifies IP addresses from an identifier.
-    The identifier can be a hostname, IP address or a robot name.
+    The identifier can be an IP address, a hostname, a robot name or a robot number.
 
     :param identifier: The identifier to identify the target from.
     :return: IP addresses of the identified targets.
@@ -177,25 +186,15 @@ def _identify_ips(identifier: str) -> list[str]:
     # It was not an IP address, so we try to find a known target
     target_ips: list[str] = []
     for ip, values in KNOWN_TARGETS.items():
-        # Is the identifier a known hostname?
-        known_hostname = values.get("hostname", None)
-        if known_hostname:
-            print_debug(f"Comparing {identifier} with {known_hostname}")
-            if known_hostname.strip() == identifier.strip():
-                print_debug(f"Identified hostname '{known_hostname}' for '{identifier}'. Using its IP {ip}.")
+        for key, label in _TARGET_IDENTIFIER_KEYS:
+            known_value = values.get(key, None)
+            if known_value is None:
+                continue
+            if str(known_value).strip() == identifier.strip():
+                print_debug(f"Identified {label} '{known_value}' for '{identifier}'. Using its IP {ip}.")
                 append_target_ip(target_ips, ip)
             else:
-                print_debug(f"Hostname '{known_hostname}' does not match identifier '{identifier}'.")
-
-        # Is the identifier a known robot name?
-        known_robot_name = values.get("robot_name", None)
-        if known_robot_name:
-            print_debug(f"Comparing '{identifier}' with '{known_robot_name}'.")
-            if known_robot_name.strip() == identifier.strip():
-                print_debug(f"Identified robot name '{known_robot_name}' for '{identifier}'. Using its IP {ip}.")
-                append_target_ip(target_ips, ip)
-            else:
-                print_debug(f"Robot name '{known_robot_name}' does not match '{identifier}'.")
+                print_debug(f"{label.capitalize()} '{known_value}' does not match identifier '{identifier}'.")
 
     return target_ips
 
@@ -204,7 +203,7 @@ def _parse_targets(targets: list[str]) -> list[str]:
     """
     Parse target input into usable target IP addresses.
 
-    :param targets: Targets as a list of strings of either hostnames, robot names or IPs.
+    :param targets: Targets as a list of strings of either hostnames, robot names, robot numbers or IPs.
     :return: List of target IP addresses.
     """
     return [target_ip for _, target_ips in _parse_target_candidates(targets) for target_ip in target_ips]
@@ -213,21 +212,28 @@ def _parse_targets(targets: list[str]) -> list[str]:
 def _parse_target_candidates(targets: list[str]) -> list[tuple[str, list[str]]]:
     """
     Parse target input into candidate target IP addresses grouped by user input.
+    Targets that resolve to an IP address of an already given target refer to the same robot and are skipped.
 
-    :param targets: Targets as a list of strings of either hostnames, robot names or IPs.
+    :param targets: Targets as a list of strings of either hostnames, robot names, robot numbers or IPs.
     :return: List of target names and their candidate IP addresses.
     """
     target_candidates: list[tuple[str, list[str]]] = []
+    requested_target_ips: set[str] = set()
     for target in targets:
         try:
-            target_ips_for_identifier = _identify_ips(target)
+            target_ips = _identify_ips(target)
         except ValueError:
+            target_ips = []
+        if not target_ips:
             print_error(f"Could not determine IP address from input: '{target}'")
             sys.exit(1)
-        if not target_ips_for_identifier:
-            print_error(f"Could not determine IP address from input: '{target}'")
-            sys.exit(1)
-        target_candidates.append((target, target_ips_for_identifier))
+
+        if requested_target_ips.intersection(target_ips):
+            print_info(f"Target '{target}' refers to an already given target. Skipping it.")
+            continue
+
+        requested_target_ips.update(target_ips)
+        target_candidates.append((target, target_ips))
     return target_candidates
 
 
@@ -372,7 +378,7 @@ def get_connections_from_targets(targets: list[str], user: str, connection_timeo
     Parses the given targets, then creates connections to the parsed hosts.
     NOTE: If targets is 'ALL', all known targets will be used and failed connections will be ignored.
 
-    :param targets: List of target strings (either hostnames, robot names or IPs, or 'ALL'). If 'ALL' is included, it will be expanded to all known targets.
+    :param targets: List of target strings (either hostnames, robot names, robot numbers or IPs, or 'ALL'). If 'ALL' is included, it will be expanded to all known targets.
     :param user: The username to connect with
     :param connection_timeout: Timeout for establishing the connection
     :return: The connections to the targets
