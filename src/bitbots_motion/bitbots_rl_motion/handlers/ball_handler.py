@@ -9,10 +9,7 @@ from rclpy.time import Time
 
 from handlers.handler import Handler
 
-try:
-    from bitbots_tf_buffer import Buffer, TransformListener
-except ImportError:
-    from tf2_ros import Buffer, TransformListener
+from bitbots_tf_buffer import Buffer, TransformListener
 
 
 class BallHandler(Handler):
