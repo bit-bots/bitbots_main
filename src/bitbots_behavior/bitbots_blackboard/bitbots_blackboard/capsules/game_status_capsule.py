@@ -25,6 +25,8 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
         self.last_timestep_whistle_detected: Time | None = None
         # publish stopped msg for hcm
         self.stop_pub = node.create_publisher(Bool, "game_controller/stop_msg", 1)
+        # last kicking team
+        self.last_kicking_team: int | None = None
 
     def get_main_state(self) -> int:
         # Init, ready, set, playing, finished
@@ -45,6 +47,9 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
     def has_kick(self) -> bool:
         # vegelcih mit eigener Teamnummer
         return self.gamestate.kicking_team == self.team_id
+
+    def was_last_kicking_team(self) -> bool:
+        return self.last_kicking_team == self.team_id
 
     def is_stopped(self) -> bool:
         return self.gamestate.stopped
@@ -113,6 +118,9 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
         self.game_controller_stop = gamestate_msg.stopped
 
         self.stop_pub.publish(Bool(data=self.game_controller_stop))
+
+        if gamestate_msg.kicking_team != 255:
+            self.last_kicking_team = gamestate_msg.kicking_team
 
         """Anstoß im Falle von Overtime jetzt erstmal nicht genauer geregelt
         if (
