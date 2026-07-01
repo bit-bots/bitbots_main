@@ -2,13 +2,14 @@ import math
 from typing import Optional
 
 import numpy as np
+import tf2_geometry_msgs  # noqa: F401 - registers PoseStamped transform support
+import tf2_ros
 from bitbots_tf_buffer import Buffer
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped
 from rclpy.action import ActionServer, CancelResponse, GoalResponse
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.duration import Duration
 from rclpy.time import Time
-from soccer_vision_3d_msgs.msg import BallArray
 
 from bitbots_msgs.action import Kick
 from handlers.handler import Handler
@@ -51,7 +52,7 @@ class SoccerCommandHandler(Handler):
         keeps pointing at the same world direction even as the torso yaws during
         the kick -- matching the training/runner semantics. While the kick is
         active the velocity is forced to 0 (as in training) and the ball offset
-        comes from ``balls_relative``; the kick clears automatically after
+        comes from ``ball_position_relative_filtered`` (transformed to base_footprint); the kick clears automatically after
         ``timeout`` seconds (``timeout < 0`` -> the configured default). When not
         kicking the ball is masked to 0, matching the walk role the policy was
         trained with.
@@ -74,11 +75,12 @@ class SoccerCommandHandler(Handler):
         # tf buffer to read the robot's yaw in odom (odom -> base_footprint).
         self._tf_buffer = Buffer(node=self._node)
 
-        self._ball_pos: Optional[np.ndarray] = None
+        self._ball_pose: Optional[PoseWithCovarianceStamped] = None
 
         # kick state: set by the action (its own thread), read by the control loop
         self._warm_start_active = False
         self._kick_active = False
+        self._kick_abort_requested = False
         self._post_kick_stand = False
         self._kick_speed = 0.0
         # Requested heading in the body frame at goal receipt (atan2(y, x)); used
@@ -90,7 +92,9 @@ class SoccerCommandHandler(Handler):
         # lookup transiently fails so the command does not jump.
         self._last_kick_dir_b = 0.0
 
-        self._node.create_subscription(BallArray, "balls_relative", self._ball_callback, 1)
+        self._node.create_subscription(
+            PoseWithCovarianceStamped, "ball_position_relative_filtered", self._ball_callback, 1
+        )
 
         # The kick action runs in its own (reentrant) callback group so its
         # timed execute callback can run concurrently with the control loop.
@@ -113,10 +117,22 @@ class SoccerCommandHandler(Handler):
     # subscriptions
     # ------------------------------------------------------------------ #
 
-    def _ball_callback(self, msg: BallArray) -> None:
-        if msg.balls:
-            center = msg.balls[0].center
-            self._ball_pos = np.array([center.x, center.y], dtype=np.float32)
+    def _ball_callback(self, msg: PoseWithCovarianceStamped) -> None:
+        self._ball_pose = msg
+
+    def _get_ball_pos(self) -> Optional[np.ndarray]:
+        if self._ball_pose is None:
+            return None
+        pose_stamped = PoseStamped()
+        pose_stamped.header.frame_id = self._ball_pose.header.frame_id
+        pose_stamped.header.stamp = Time(seconds=0).to_msg()
+        pose_stamped.pose = self._ball_pose.pose.pose
+        try:
+            transformed = self._tf_buffer.transform(pose_stamped, "base_footprint", timeout=Duration(seconds=0.1))
+            return np.array([transformed.pose.position.x, transformed.pose.position.y], dtype=np.float32)
+        except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException) as e:
+            self._node.get_logger().warn(f"Ball TF transform to base_footprint failed: {e}", throttle_duration_sec=1.0)
+            return None
 
     def has_data(self) -> bool:
         # Non-blocking: missing cmd_vel/ball just yield zeros, so the policy can
@@ -195,6 +211,7 @@ class SoccerCommandHandler(Handler):
             self._kick_dir_odom = None
             self._node.get_logger().warning("Could not anchor kick to odom; using body-fixed kick direction.")
         self._last_kick_dir_b = self._kick_dir_body
+        self._kick_abort_requested = False
 
         # Warm start: run the policy with a zero command so it can settle into a
         # neutral stance before the kick command becomes visible in the observation.
@@ -228,6 +245,12 @@ class SoccerCommandHandler(Handler):
                 self._node.get_logger().info("Kick canceled.")
                 result.result = Kick.Result.ABORTED
                 return result
+            if self._kick_abort_requested:
+                self._kick_active = False
+                goal_handle.abort()
+                self._node.get_logger().warning("Kick aborted: ball unavailable.")
+                result.result = Kick.Result.ABORTED
+                return result
             remaining = (end - self._node.get_clock().now()).nanoseconds / 1e9
             feedback.time_remaining = max(0.0, remaining)
             goal_handle.publish_feedback(feedback)
@@ -259,10 +282,12 @@ class SoccerCommandHandler(Handler):
     def _build_soccer_cmd(self) -> np.ndarray:
         if self._kick_active:
             vx, vy, wz = 0.0, 0.0, 0.0
-            if self._ball_pos is not None:
-                ball_x, ball_y = float(self._ball_pos[0]), float(self._ball_pos[1])
+            ball = self._get_ball_pos()
+            if ball is not None:
+                ball_x, ball_y = float(ball[0]), float(ball[1])
             else:
                 ball_x, ball_y = 0.0, 0.0
+                self._kick_abort_requested = True
             kick_dir = self._compute_kick_dir_b()
             kick_speed = self._kick_speed
         elif self._warm_start_active:
