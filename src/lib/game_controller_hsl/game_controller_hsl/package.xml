@@ -5,11 +5,10 @@
   <version>1.1.0</version>
   <description>
       The game_controller_hsl packages receives packets from the GameController and
-      republishes them as GameState ROS messages. It sends response packets
-      back to the GameController.
+      republishes them as GameState ROS messages. It sends response packets based on the
+      PlayerStateResponse ROS messages back to the GameController.
   </description>
 
-  <maintainer email="7engelke@informatik.uni-hamburg.de">Timon Engelke</maintainer>
   <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
 
   <license>Apache License 2.0</license>
@@ -19,11 +18,14 @@
   <buildtool_depend>rosidl_default_generators</buildtool_depend>
   <exec_depend>rosidl_default_runtime</exec_depend>
 
-  <depend>diagnostic_msgs</depend>
   <depend>game_controller_hsl_interfaces</depend>
+  <depend>tf_transformations</depend>
   <depend>python3-construct</depend>
+  <depend>ros2-numpy</depend>
   <depend>rclpy</depend>
   <depend>std_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>diagnostic_msgs</depend>
 
   <export>
     <build_type>ament_python</build_type>
