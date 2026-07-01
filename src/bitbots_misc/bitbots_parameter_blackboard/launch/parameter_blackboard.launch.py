@@ -17,7 +17,7 @@ def generate_launch_description() -> LaunchDescription:
 
     def create_node(context, *args, **kwargs):
         in_sim = LaunchConfiguration("sim").perform(context) == "true"
-        field_name = LaunchConfiguration("field").perform(context)
+        field_name = LaunchConfiguration("fieldname").perform(context)
 
         parameters = [
             {"simulation_active": in_sim},
@@ -51,7 +51,7 @@ def generate_launch_description() -> LaunchDescription:
         [
             DeclareLaunchArgument("sim", default_value="false"),
             DeclareLaunchArgument(
-                "field",
+                "fieldname",
                 default_value=PythonExpression(["'hsl_kid' if '", sim, "' == 'true' else 'labor'"]),
                 description="Field name to load parameters for.",
             ),
