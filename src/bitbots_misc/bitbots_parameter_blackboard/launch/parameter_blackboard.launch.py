@@ -24,6 +24,7 @@ def generate_launch_description() -> LaunchDescription:
         {"field.name": field_name},
         ParameterFile(PathJoinSubstitution([package_share, "config", "fields", field_name, "config.yaml"])),
         ParameterFile(PathJoinSubstitution([package_share, "config", "global_parameters.yaml"])),
+        ParameterFile(PathJoinSubstitution([package_share, "config", "game_settings.yaml"])),
     ]
 
     robot_domain = os.environ.get("ROS_DOMAIN_ID")
@@ -33,8 +34,6 @@ def generate_launch_description() -> LaunchDescription:
                 PathJoinSubstitution([package_share, "config", f"sim_game_settings_{int(robot_domain)}.yaml"])
             )
         )
-    else:
-        parameters.append(ParameterFile(PathJoinSubstitution([package_share, "config", "game_settings.yaml"])))
 
     return LaunchDescription(
         [
