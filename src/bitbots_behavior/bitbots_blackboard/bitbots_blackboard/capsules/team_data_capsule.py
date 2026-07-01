@@ -189,7 +189,7 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
                 poses.append(data.robot_position.pose)
         return poses
     
-    def get_index_of_passive_player(self) -> int:
+    def get_index_of_passive_player(self) -> int | None:
         """Returns the poses of all playing robots"""
         index_list = []
         data: TeamData
