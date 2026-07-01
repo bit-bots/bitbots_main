@@ -1,0 +1,196 @@
+kick_ball_node:
+  ros__parameters:
+    model: policy_kick_ball.onnx
+
+    joints:
+      # IsaacSim joint order for PiPlus_S_12L8A0G2H0W (22-DOF, no waist).
+      # This order is authoritative for the obs and the action output; do NOT
+      # reorder it. joint_states are looked up by name, so the names just have to
+      # match the robot's /joint_states.
+      ordered_relevant_joint_names: [
+        "head_yaw_joint",          # 0
+        "l_hip_pitch_joint",       # 1
+        "l_shoulder_pitch_joint",  # 2
+        "r_hip_pitch_joint",       # 3
+        "r_shoulder_pitch_joint",  # 4
+        "head_pitch_joint",        # 5
+        "l_hip_roll_joint",        # 6
+        "l_shoulder_roll_joint",   # 7
+        "r_hip_roll_joint",        # 8
+        "r_shoulder_roll_joint",   # 9
+        "l_thigh_joint",           # 10
+        "l_upper_arm_joint",       # 11
+        "r_thigh_joint",           # 12
+        "r_upper_arm_joint",       # 13
+        "l_calf_joint",            # 14
+        "l_elbow_joint",           # 15
+        "r_calf_joint",            # 16
+        "r_elbow_joint",           # 17
+        "l_ankle_pitch_joint",     # 18
+        "r_ankle_pitch_joint",     # 19
+        "l_ankle_roll_joint",      # 20
+        "r_ankle_roll_joint",      # 21
+      ]
+      # Joints to OBSERVE but NOT publish, leaving them to other controllers
+      # (e.g. the head behavior). The head jitters under direct policy control,
+      # so it is excluded here; empty this list (or remove the head entries) to
+      # let the policy drive the head again.
+      uncontrolled_joint_names: ["head_yaw_joint", "head_pitch_joint"]
+      # Default joint pose (action offset). From env.yaml scene.robot.init_state:
+      # hip_pitch -0.25, calf 0.65, ankle_pitch -0.4, everything else 0.
+      walkready_state: [
+        0.0,    # head_yaw
+        -0.25,  # l_hip_pitch
+        1.57,    # l_shoulder_pitch
+        -0.25,  # r_hip_pitch
+        1.57,    # r_shoulder_pitch
+        0.0,    # head_pitch
+        0.0,    # l_hip_roll
+        -1.57,    # l_shoulder_roll
+        0.0,    # r_hip_roll
+        1.57,    # r_shoulder_roll
+        0.0,    # l_thigh
+        0.0,    # l_upper_arm
+        0.0,    # r_thigh
+        0.0,    # r_upper_arm
+        0.65,   # l_calf
+        0.0,    # l_elbow
+        0.65,   # r_calf
+        0.0,    # r_elbow
+        -0.4,   # l_ankle_pitch
+        -0.4,   # r_ankle_pitch
+        0.0,    # l_ankle_roll
+        0.0,    # r_ankle_roll
+      ]
+      # Stiffness (legs/feet 50.97, head 7.80, arms 32.51).
+      kp: [
+        7.800935318175095,   # head_yaw
+        50.96663712431198,   # l_hip_pitch
+        32.50652905356971,   # l_shoulder_pitch
+        50.96663712431198,   # r_hip_pitch
+        32.50652905356971,   # r_shoulder_pitch
+        7.800935318175095,   # head_pitch
+        50.96663712431198,   # l_hip_roll
+        32.50652905356971,   # l_shoulder_roll
+        50.96663712431198,   # r_hip_roll
+        32.50652905356971,   # r_shoulder_roll
+        50.96663712431198,   # l_thigh
+        32.50652905356971,   # l_upper_arm
+        50.96663712431198,   # r_thigh
+        32.50652905356971,   # r_upper_arm
+        50.96663712431198,   # l_calf
+        32.50652905356971,   # l_elbow
+        50.96663712431198,   # r_calf
+        32.50652905356971,   # r_elbow
+        50.96663712431198,   # l_ankle_pitch
+        50.96663712431198,   # r_ankle_pitch
+        50.96663712431198,   # l_ankle_roll
+        50.96663712431198,   # r_ankle_roll
+      ]
+      # Damping (legs/feet 3.24, head 0.50, arms 2.07).
+      kd: [
+        0.49662296666528,   # head_yaw
+        3.2446368925348,    # l_hip_pitch
+        2.06942991271352,   # l_shoulder_pitch
+        3.2446368925348,    # r_hip_pitch
+        2.06942991271352,   # r_shoulder_pitch
+        0.49662296666528,   # head_pitch
+        3.2446368925348,    # l_hip_roll
+        2.06942991271352,   # l_shoulder_roll
+        3.2446368925348,    # r_hip_roll
+        2.06942991271352,   # r_shoulder_roll
+        3.2446368925348,    # l_thigh
+        2.06942991271352,   # l_upper_arm
+        3.2446368925348,    # r_thigh
+        2.06942991271352,   # r_upper_arm
+        3.2446368925348,    # l_calf
+        2.06942991271352,   # l_elbow
+        3.2446368925348,    # r_calf
+        2.06942991271352,   # r_elbow
+        3.2446368925348,    # l_ankle_pitch
+        3.2446368925348,    # r_ankle_pitch
+        3.2446368925348,    # l_ankle_roll
+        3.2446368925348,    # r_ankle_roll
+      ]
+      # Per-joint sign mapping between the robot's joint convention and the
+      # policy's (HighTorque/IsaacLab training URDF) convention, applied to
+      # joint pos/vel on read and to the joint target on write.
+      
+      joint_signs: [
+        1.0,    # head_yaw          
+        1.0,    # l_hip_pitch
+        1.0,    # l_shoulder_pitch
+        -1.0,   # r_hip_pitch
+        -1.0,   # r_shoulder_pitch
+        1.0,    # head_pitch        
+        1.0,    # l_hip_roll
+        -1.0,    # l_shoulder_roll   
+        1.0,    # r_hip_roll
+        -1.0,    # r_shoulder_roll   
+        -1.0,   # l_thigh
+        -1.0,    # l_upper_arm     
+        -1.0,   # r_thigh
+        -1.0,    # r_upper_arm      
+        -1.0,   # l_calf
+        -1.0,    # l_elbow          
+        1.0,    # r_calf
+        1.0,    # r_elbow          
+        1.0,    # l_ankle_pitch
+        -1.0,   # r_ankle_pitch
+        1.0,    # l_ankle_roll
+        1.0,    # r_ankle_roll
+      ]
+      # Per-joint action scale (legs/feet 0.0981, head 0.0961, arms 0.1538).
+      action_scales: [
+        0.09614231747988017,  # head_yaw
+        0.09810339237812715,  # l_hip_pitch
+        0.15381525329142837,  # l_shoulder_pitch
+        0.09810339237812715,  # r_hip_pitch
+        0.15381525329142837,  # r_shoulder_pitch
+        0.09614231747988017,  # head_pitch
+        0.09810339237812715,  # l_hip_roll
+        0.15381525329142837,  # l_shoulder_roll
+        0.09810339237812715,  # r_hip_roll
+        0.15381525329142837,  # r_shoulder_roll
+        0.09810339237812715,  # l_thigh
+        0.15381525329142837,  # l_upper_arm
+        0.09810339237812715,  # r_thigh
+        0.15381525329142837,  # r_upper_arm
+        0.09810339237812715,  # l_calf
+        0.15381525329142837,  # l_elbow
+        0.09810339237812715,  # r_calf
+        0.15381525329142837,  # r_elbow
+        0.09810339237812715,  # l_ankle_pitch
+        0.09810339237812715,  # r_ankle_pitch
+        0.09810339237812715,  # l_ankle_roll
+        0.09810339237812715,  # r_ankle_roll
+      ]
+
+    # Observation scales (fixed by the trained policy).
+    obs:
+      ang_vel_scale: 0.25
+      joint_vel_scale: 0.05
+      history_length: 8
+
+    # Soccer command wiring.
+    #   kick_timeout     : default seconds to keep the kick active when the
+    #                      `rl_kick` action goal leaves timeout < 0. The goal's
+    #                      x/y give the kick heading and strength the kick speed.
+    #   pub_period       : push a fresh ball snapshot every N steps (5 -> 10 Hz
+    #                      ball history on the 50 Hz loop). Must match training.
+    #   history_samples  : stacked command/ball history length. Must match training.
+    command:
+      kick_timeout: 2.0
+      warm_start_duration: 0.5
+      warm_start_command: [0.2, 0.0, 0.0]
+      post_kick_stand_duration: 0.0
+      pub_period: 5
+      history_samples: 10
+
+    # This policy does not use a gait phase, but control_dt sets the 50 Hz loop.
+    phase:
+      use_phase: False
+      control_dt: 0.02
+      gait_frequency: 0.0
+
+    providers: ["CPUExecutionProvider"]

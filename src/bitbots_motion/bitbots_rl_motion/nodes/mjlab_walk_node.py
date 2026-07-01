@@ -1,5 +1,4 @@
 import numpy as np
-from handlers.ball_handler import BallHandler
 from handlers.command_handler import CommandHandler
 from handlers.gravity_handler import GravityHandler
 from handlers.gyro_handler import GyroHandler
@@ -22,7 +21,6 @@ class MjLabWalkNode(RLNode):
         self._gyro_handler = GyroHandler(self)
         self._gravity_handler = GravityHandler(self)
         self._joint_handler = JointHandler(self)
-        self._ball_handler = BallHandler(self)
         self._robot_state_handler = RobotStateHandler(self)
         self._command_handler = CommandHandler(self)
 
@@ -54,6 +52,11 @@ class MjLabWalkNode(RLNode):
     def allowed_states(self):
         allowed_to_move = self._robot_state_handler.is_walkable() and np.any(self._command_handler.get_command() != 0.0)
         return allowed_to_move
+
+    def initialize_observation(self):
+        # No observation history; just start the previous-action feedback term
+        # from zero on each (re)activation.
+        self._previous_action.set_previous_action(np.zeros_like(self._previous_action.get_previous_action()))
 
 
 main = create_main(MjLabWalkNode)
