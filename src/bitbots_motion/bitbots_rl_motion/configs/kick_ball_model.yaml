@@ -181,7 +181,7 @@ kick_ball_node:
     #   history_samples  : stacked command/ball history length. Must match training.
     command:
       kick_timeout: 2.0
-      post_kick_stand_duration: 0.5
+      post_kick_stand_duration: 0.0
       pub_period: 5
       history_samples: 10
 

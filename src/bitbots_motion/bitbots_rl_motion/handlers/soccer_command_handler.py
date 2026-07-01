@@ -72,7 +72,6 @@ class SoccerCommandHandler(Handler):
         # tf buffer to read the robot's yaw in odom (odom -> base_footprint).
         self._tf_buffer = Buffer(node=self._node)
 
-        self._cmd_vel: Optional[Twist] = None
         self._ball_pos: Optional[np.ndarray] = None
 
         # kick state: set by the action (its own thread), read by the control loop
@@ -217,9 +216,6 @@ class SoccerCommandHandler(Handler):
 
         # disable kick and set cmd_vel to 0 so the policy does not try to walk while the kick is finishing
         self._kick_active = False
-        self._cmd_vel.linear.x = 0.0
-        self._cmd_vel.linear.y = 0.0
-        self._cmd_vel.angular.z = 0.0
 
         # Post-kick standing
         if self._post_kick_stand_duration > 0.0:
@@ -242,13 +238,6 @@ class SoccerCommandHandler(Handler):
     # per-step command construction
     # ------------------------------------------------------------------ #
     def _build_soccer_cmd(self) -> np.ndarray:
-        if self._cmd_vel is not None:
-            cmd_vx = float(self._cmd_vel.linear.x)
-            cmd_vy = float(self._cmd_vel.linear.y)
-            cmd_wz = float(self._cmd_vel.angular.z)
-        else:
-            cmd_vx = cmd_vy = cmd_wz = 0.0
-
         if self._kick_active:
             vx, vy, wz = 0.0, 0.0, 0.0
             if self._ball_pos is not None:
@@ -258,7 +247,7 @@ class SoccerCommandHandler(Handler):
             kick_dir = self._compute_kick_dir_b()
             kick_speed = self._kick_speed
         else:
-            vx, vy, wz = cmd_vx, cmd_vy, cmd_wz
+            vx, vy, wz = 0.0, 0.0, 0.0
             ball_x, ball_y = 0.0, 0.0
             kick_dir = 0.0
             kick_speed = 0.0
