@@ -267,7 +267,6 @@ class TeamCommunication:
             self.logger.debug("Robot is not allowed to send message")
             return
 
-        self.logger.warm("Send message called")
         now = self.get_current_time()
         msg = self.create_empty_message(now)
 
