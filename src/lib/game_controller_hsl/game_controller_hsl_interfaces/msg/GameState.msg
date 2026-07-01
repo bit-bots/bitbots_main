@@ -1,10 +1,16 @@
-# This message provides all information from the game controller
-# for additional information see documentation of the game controller
-# https://github.com/bhuman/GameController
-
+# This message defines a GameState extracted  from the RoboCupGameControlData packet received by the game controller.
+# While the game controller provides info about both teams and all players this message represents the
+# state for the currently running team/player combination.
+#
+# For the packet defition for RoboCupGameControlData see:
+# https://github.com/RoboCup-HumanoidSoccerLeague/GameController/blob/master/game_controller_msgs/headers/RoboCupGameControlData.h
+#
+# For additional documentation of the underlying meaning of fields have a look at:
+# https://github.com/RoboCup-HumanoidSoccerLeague/HSL-Rules
 
 std_msgs/Header header
 
+##### Game State
 uint8 players_per_team
 
 uint8 COMPETITION_TYPE_SMALL = 0
@@ -34,21 +40,18 @@ uint8 SET_PLAY_GOAL_KICK = 5
 uint8 SET_PLAY_CORNER_KICK = 6
 uint8 set_play
 
-uint8 kicking_team
 bool first_half
 bool stopped
+uint8 kicking_team
 uint8 own_score
 uint8 rival_score
 
 # Seconds remaining for the game half
-int16 secs_remaining
-# Seconds remaining for things like kickoff
+int16 seconds_remaining
+# Seconds remaining for current game action (e.g. kickoff)
 int16 secondary_time
-bool penalized
-bool penalized_in_place
-uint16 seconds_till_unpenalized
-uint8 warnings
-uint8 cautions
+
+##### TeamInfo
 
 uint8 TEAM_BLUE = 0
 uint8 TEAM_RED = 1
@@ -70,5 +73,41 @@ uint8 penalty_shot
 # a binary pattern indicating the successful penalty shots (1 for successful, 0 for unsuccessful)
 uint16 single_shots
 
-uint8 message_budget
+# Number of remaining messages, that can be sent by the team
+uint16 message_budget
+
+# Extra fields to make decisions based on number of active or cautioned players.
+# The indexes represent the players in order.
 bool[] team_mates_with_penalty
+bool[] team_mates_with_yellow_card
+bool[] team_mates_with_red_card
+
+##### RobotInfo
+
+uint8 PENALTY_NONE = 0
+uint8 PENALTY_ILLEGAL_POSITIONING = 1
+uint8 PENALTY_MOTION_IN_SET = 2
+uint8 PENALTY_MOTION_IN_STOP = 3
+uint8 PENALTY_LOCAL_GAME_STUCK = 4
+uint8 PENALTY_INCAPABLE_ROBOT = 5
+uint8 PENALTY_PICK_UP = 6
+uint8 PENALTY_BALL_HOLDING = 7
+uint8 PENALTY_LEAVING_THE_FIELD = 8
+uint8 PENALTY_PLAYING_WITH_ARMS_HANDS = 9
+uint8 PENALTY_PUSHING = 10
+uint8 PENALTY_CAUTIONED = 11
+uint8 PENALTY_SENT_OFF = 12
+uint8 PENALTY_SUBSTITUTE = 13
+uint8 penalty
+
+bool penalized
+# Extra fields to differentiate between penalties, which will have the robot
+# removed from the game to the sideline and penalties that happen in place
+# on the field (e.g. MOTION_IN_SET)
+bool penalized_in_place
+uint8 seconds_till_unpenalized
+
+# Number of yellow cards the player has received
+uint8 cautions
+bool has_yellow_card
+bool has_red_card

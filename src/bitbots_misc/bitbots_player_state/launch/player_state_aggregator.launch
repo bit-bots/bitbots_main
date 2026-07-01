@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<launch>
+    <arg name="sim" default="false" description="Whether to use simulation time" />
+    <arg name="config" default="$(find-pkg-share bitbots_player_state)/config/player_state_aggregator.yaml"
+         description="Player state aggregator configuration file" />
+
+    <node pkg="bitbots_player_state" exec="player_state_aggregator" output="screen">
+        <param from="$(var config)" />
+        <param name="use_sim_time" value="$(var sim)" />
+    </node>
+</launch>
