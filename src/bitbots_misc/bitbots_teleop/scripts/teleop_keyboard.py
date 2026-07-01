@@ -44,7 +44,7 @@ Controls increase / decrease with multiple presses.
 SHIFT increases with factor 10
 
 Head Modes:
-(Currently not implemented: 0: Track the last known ball position)
+0: Track the last known ball position
 1: Look generally for all features on the field (ball, goals, corners, center point)
 2: Simply look directly forward
 3: Don't move the head

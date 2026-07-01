@@ -31,7 +31,7 @@ using namespace std::chrono_literals;
 namespace move_head {
 
 #define DEG_TO_RAD M_PI / 180
-#define DEG_CAMERA_ANGLE 30
+#define RAD_CAMERA_ANGLE DEG_TO_RAD * 30
 
 using LookAtGoal = bitbots_msgs::action::LookAt;
 using LookAtGoalHandle = rclcpp_action::ServerGoalHandle<LookAtGoal>;
@@ -372,7 +372,7 @@ class HeadMover {
    */
   bool check_head_collision(double yaw, double pitch) {
     // TODO we do not have a collision model for the pi plus head yet, so we need to implement this function properly
-    RCLCPP_ERROR_STREAM(node_->get_logger(), "Collision checking for the pi plus head is not implemented yet");
+    RCLCPP_ERROR_STREAM_THROTTLE(node_->get_logger(), *node_->get_clock(), 1000, "Do not have a collision model!");
     return false;
   }
 
@@ -553,7 +553,7 @@ class HeadMover {
     std::pair<double, double> current_yaw_pitch = get_head_position();
 
     double head_yaw = rel_head_yaw + current_yaw_pitch.first;
-    double head_pitch = rel_head_pitch + (current_yaw_pitch.second + DEG_CAMERA_ANGLE * DEG_TO_RAD);
+    double head_pitch = rel_head_pitch + (current_yaw_pitch.second + RAD_CAMERA_ANGLE);
 
     return {head_yaw, head_pitch};
   }
