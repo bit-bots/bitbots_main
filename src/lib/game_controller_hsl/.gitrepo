@@ -5,8 +5,8 @@
 ;
 [subrepo]
 	remote = git@github.com:bit-bots/game_controller_hsl.git
-	branch = rolling
-	commit = b92a2693616b8ca4849eca14363dda06e8e1f3d8
-	parent = 21a107e9266bd5711d75963818a3c364c50a180b
+	branch = feature/abstract-for-open-source
+	commit = 7c48f279e21d6cad9d280e8c46056a061f435a2d
+	parent = 6a3c87d724cbb1dad813fabb55ef94248ac4a1b7
 	method = merge
 	cmdver = 0.4.9
