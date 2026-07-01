@@ -242,7 +242,6 @@ class GameStateReceiver(Node):
             #2 is the motion in set penalty
             penalized_in_place=this_robot.penalty == 2,
             seconds_till_unpenalized=this_robot.secs_till_unpenalized,
-            warings=this_robot.warnings,
             cautions=this_robot.cautions,
             own_player_color=own_team.field_player_color.intvalue,
             own_goalie_color=own_team.goalkeeper_color.intvalue,
