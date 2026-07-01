@@ -1,4 +1,3 @@
-import math
 import time
 from collections.abc import Callable
 from pathlib import Path
@@ -459,22 +458,12 @@ class RobotSimulation:
         cam_info.height = self.robot.camera.height
         cam_info.width = self.robot.camera.width
 
-        @staticmethod
-        def focal_length_from_fov(fov: float, resolution: int) -> float:
-            return 0.5 * resolution * (math.cos(fov / 2) / math.sin(fov / 2))
-
-        @staticmethod
-        def h_fov_to_v_fov(h_fov: float, height: int, width: int) -> float:
-            return 2 * math.atan(math.tan(h_fov * 0.5) * (height / width))
-
         camera = self.robot.camera
-        h_fov = camera.fov
-        v_fov = h_fov_to_v_fov(h_fov, camera.height, camera.width)
-        f_x = focal_length_from_fov(h_fov, camera.width)
-        f_y = focal_length_from_fov(v_fov, camera.height)
-        cx, cy = camera.width / 2.0, camera.height / 2.0
-        cam_info.k = [f_x, 0.0, cx, 0.0, f_y, cy, 0.0, 0.0, 1.0]
-        cam_info.p = [f_x, 0.0, cx, 0.0, 0.0, f_y, cy, 0.0, 0.0, 0.0, 1.0, 0.0]
+        cam_info.distortion_model = "plumb_bob"
+        cam_info.d = [0.0, 0.0, 0.0, 0.0, 0.0]
+        cam_info.k = [camera.fx, 0.0, camera.cx, 0.0, camera.fy, camera.cy, 0.0, 0.0, 1.0]
+        cam_info.r = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
+        cam_info.p = [camera.fx, 0.0, camera.cx, 0.0, 0.0, camera.fy, camera.cy, 0.0, 0.0, 0.0, 1.0, 0.0]
         self.node_publishers["camera_info"].publish(cam_info)
 
     def simulator_push_callback(
