@@ -45,13 +45,16 @@ def generate_launch_description() -> LaunchDescription:
                 parameters=parameters,
             )
         ]
+
     sim = LaunchConfiguration("sim")
     return LaunchDescription(
         [
             DeclareLaunchArgument("sim", default_value="false"),
-            DeclareLaunchArgument("field",
-                                  default_value=PythonExpression(["'hsl_kid' if '", sim, "' == 'true' else 'labor'"]),
-                                  description="Field name to load parameters for."),
+            DeclareLaunchArgument(
+                "field",
+                default_value=PythonExpression(["'hsl_kid' if '", sim, "' == 'true' else 'labor'"]),
+                description="Field name to load parameters for.",
+            ),
             IncludeLaunchDescription(
                 AnyLaunchDescriptionSource(
                     PathJoinSubstitution([get_package_share_directory("bitbots_utils"), "launch", "welcome.launch"])
