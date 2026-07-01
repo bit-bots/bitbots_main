@@ -6,7 +6,7 @@ from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction
 from launch.launch_description_sources import AnyLaunchDescriptionSource
-from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
+from launch.substitutions import LaunchConfiguration, PathJoinSubstitution, PythonExpression
 from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterFile
 
@@ -17,7 +17,7 @@ def generate_launch_description() -> LaunchDescription:
 
     def create_node(context, *args, **kwargs):
         in_sim = LaunchConfiguration("sim").perform(context) == "true"
-        field_name = "hsl_kid" if in_sim else "labor"
+        field_name = LaunchConfiguration("field").perform(context)
 
         parameters = [
             {"simulation_active": in_sim},
@@ -45,10 +45,13 @@ def generate_launch_description() -> LaunchDescription:
                 parameters=parameters,
             )
         ]
-
+    sim = LaunchConfiguration("sim")
     return LaunchDescription(
         [
             DeclareLaunchArgument("sim", default_value="false"),
+            DeclareLaunchArgument("field",
+                                  default_value=PythonExpression(["'hsl_kid' if '", sim, "' == 'true' else 'labor'"]),
+                                  description="Field name to load parameters for."),
             IncludeLaunchDescription(
                 AnyLaunchDescriptionSource(
                     PathJoinSubstitution([get_package_share_directory("bitbots_utils"), "launch", "welcome.launch"])
