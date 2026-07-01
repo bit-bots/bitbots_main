@@ -61,9 +61,11 @@ class SoccerCommandHandler(Handler):
         self._node = node
 
         self._default_kick_timeout = float(node.get_parameter("command.kick_timeout").value)
+        self._warm_start_duration = float(node.get_parameter("command.warm_start_duration").value)
         self._post_kick_stand_duration = float(node.get_parameter("command.post_kick_stand_duration").value)
         self._pub_period = max(1, int(node.get_parameter("command.pub_period").value))
         self._history_samples = max(1, int(node.get_parameter("command.history_samples").value))
+        self._warm_start_cmd = np.array(node.get_parameter("command.warm_start_command").value, dtype=np.float32)
 
         # Frames for anchoring the kick direction (REP-120). odom is the locally
         # consistent, drift-free-over-short-horizons world frame we anchor in.
@@ -75,6 +77,7 @@ class SoccerCommandHandler(Handler):
         self._ball_pos: Optional[np.ndarray] = None
 
         # kick state: set by the action (its own thread), read by the control loop
+        self._warm_start_active = False
         self._kick_active = False
         self._post_kick_stand = False
         self._kick_speed = 0.0
@@ -124,7 +127,7 @@ class SoccerCommandHandler(Handler):
     # kick action
     # ------------------------------------------------------------------ #
     def _goal_callback(self, goal_request) -> GoalResponse:
-        if self._kick_active:
+        if self._warm_start_active or self._kick_active:
             self._node.get_logger().warning("A kick is already active; rejecting new kick goal.")
             return GoalResponse.REJECT
         return GoalResponse.ACCEPT
@@ -192,6 +195,22 @@ class SoccerCommandHandler(Handler):
             self._kick_dir_odom = None
             self._node.get_logger().warning("Could not anchor kick to odom; using body-fixed kick direction.")
         self._last_kick_dir_b = self._kick_dir_body
+
+        # Warm start: run the policy with a zero command so it can settle into a
+        # neutral stance before the kick command becomes visible in the observation.
+        if self._warm_start_duration > 0.0:
+            self._warm_start_active = True
+            warm_end = self._node.get_clock().now() + Duration(seconds=self._warm_start_duration)
+            while self._node.get_clock().now() < warm_end:
+                if goal_handle.is_cancel_requested:
+                    self._warm_start_active = False
+                    goal_handle.canceled()
+                    result = Kick.Result()
+                    result.result = Kick.Result.ABORTED
+                    return result
+                self._node.get_clock().sleep_for(Duration(seconds=0.02))
+            self._warm_start_active = False
+
         self._kick_active = True
         self._node.get_logger().info(
             f"Kick started: dir={math.degrees(self._kick_dir_body):.1f} deg (body), "
@@ -246,6 +265,11 @@ class SoccerCommandHandler(Handler):
                 ball_x, ball_y = 0.0, 0.0
             kick_dir = self._compute_kick_dir_b()
             kick_speed = self._kick_speed
+        elif self._warm_start_active:
+            vx, vy, wz = self._warm_start_cmd[0], self._warm_start_cmd[1], self._warm_start_cmd[2]
+            ball_x, ball_y = 0.0, 0.0
+            kick_dir = 0.0
+            kick_speed = 0.0
         else:
             vx, vy, wz = 0.0, 0.0, 0.0
             ball_x, ball_y = 0.0, 0.0
@@ -255,9 +279,9 @@ class SoccerCommandHandler(Handler):
         return np.array([vx, vy, wz, ball_x, ball_y, kick_dir, kick_speed], dtype=np.float32)
 
     def is_kick_active(self) -> bool:
-        """True while an rl_kick action goal is being held active (and not yet
-        timed out / canceled). Used to gate when the policy runs and publishes."""
-        return self._kick_active
+        """True while an rl_kick action goal is live (warm start, kick, or post-kick stand).
+        Used to gate when the policy runs and publishes."""
+        return self._warm_start_active or self._kick_active or self._post_kick_stand
 
     def is_post_kick_stand(self) -> bool:
         """True during the post-kick standup window after the kick motion completes."""

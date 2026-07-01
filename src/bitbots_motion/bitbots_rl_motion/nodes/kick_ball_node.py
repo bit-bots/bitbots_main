@@ -22,9 +22,11 @@ class KickBallNode(RLNode):
         self.declare_parameter("obs.history_length", 8)
 
         self.declare_parameter("command.kick_timeout", 2.0)
+        self.declare_parameter("command.warm_start_duration", 0.3)
         self.declare_parameter("command.post_kick_stand_duration", 0.5)
         self.declare_parameter("command.pub_period", 5)
         self.declare_parameter("command.history_samples", 10)
+        self.declare_parameter("command.warm_start_command", [0.2, 0.0, 0.0])
 
         self._ang_vel_scale = self.get_parameter("obs.ang_vel_scale").value
         self._joint_vel_scale = self.get_parameter("obs.joint_vel_scale").value
