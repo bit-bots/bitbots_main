@@ -24,6 +24,9 @@
             <arg name="team_id_param_name" value="team_id" />
             <arg name="bot_id_param_name" value="bot_id" />
         </include>
+        <include file="$(find-pkg-share bitbots_player_state)/launch/player_state_aggregator.launch">
+            <arg name="sim" value="$(var sim)" />
+        </include>
     </group>
 
     <!-- launch vision -->
