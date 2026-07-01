@@ -1,9 +1,11 @@
 import re
 
-from deploy.misc import get_connections_from_succeeded, hide_output, print_debug, print_error, print_success
-from deploy.tasks.abstract_task import AbstractTask
 from fabric import Group, GroupResult, Result
 from fabric.exceptions import GroupException
+
+from deploy.misc import get_connections_from_succeeded, hide_output, print_debug, print_error, print_success
+from deploy.pixi import pixi_run_command, run_for_connections
+from deploy.tasks.abstract_task import AbstractTask
 
 
 class Launch(AbstractTask):
@@ -55,18 +57,16 @@ class Launch(AbstractTask):
         :return: Results, with success if ROS 2 nodes are not already running
         """
         print_debug("Checking if ROS 2 nodes are already running")
-        cmd = f"cd {self._remote_workspace} && pixi run --environment robot ros2 node list -c"
-
-        print_debug(f"Calling '{cmd}'")
-        try:
-            node_list_results = connections.run(cmd, hide=hide_output())
-            print_debug(f"Calling '{cmd}' succeeded on: {self._succeeded_hosts(node_list_results)}")
-        except GroupException as e:
-            print_error(f"Calling '{cmd}' failed on: {self._failed_hosts(e.result)}")
-            if not e.result.succeeded:  # TODO: Does run immediately fail if one host fails? Do we even get here?
-                return e.result
-            else:
-                node_list_results = e.result
+        node_list_results = run_for_connections(
+            connections,
+            lambda connection: pixi_run_command(connection, self._remote_workspace, "ros2 node list -c"),
+        )
+        if node_list_results.succeeded:
+            print_debug(f"Checking ROS 2 nodes succeeded on: {self._succeeded_hosts(node_list_results)}")
+        if node_list_results.failed:
+            print_error(f"Checking ROS 2 nodes failed on: {self._failed_hosts(node_list_results)}")
+            if not node_list_results.succeeded:
+                return node_list_results
 
         # Check if output was ^0$ (zero for no nodes running) for all remote machines
         # Create new group result with success if no nodes are running
@@ -151,12 +151,8 @@ class Launch(AbstractTask):
 
     def _launch_teamplayer(self, connections: Group) -> GroupResult:
         print_debug("Launching teamplayer")
-        # Create tmux session
-        cmd = f"tmux new-session -d -s {self._tmux_session_name} && tmux send-keys -t {self._tmux_session_name} 'cd {self._remote_workspace} && pixi run --environment robot ros2 launch bitbots_bringup teamplayer.launch record:=true tts:=false' Enter"
-
-        print_debug(f"Calling '{cmd}'")
-        try:
-            results = connections.run(cmd, hide=hide_output())
+        results = run_for_connections(connections, self._launch_command)
+        if results.succeeded:
             # Print commands to connect to teamplayer tmux session
             help_cmds = ""
             for connection in results.succeeded:
@@ -164,9 +160,19 @@ class Launch(AbstractTask):
             print_success(
                 f"Teamplayer launched successfully on {self._succeeded_hosts(results)}!\nTo attach to the tmux session, run:\n\n{help_cmds}"
             )
-        except GroupException as e:
+        if results.failed:
             print_error(
-                f"Creating tmux session called {self._tmux_session_name} failed OR launching teamplayer failed on the following hosts: {self._failed_hosts(e.result)}"
+                f"Creating tmux session called {self._tmux_session_name} failed OR launching teamplayer failed on the following hosts: {self._failed_hosts(results)}"
             )
-            return e.result
         return results
+
+    def _launch_command(self, connection) -> str:
+        pixi_cmd = pixi_run_command(
+            connection,
+            self._remote_workspace,
+            "ros2 launch bitbots_bringup teamplayer.launch record:=true tts:=false",
+        )
+        return (
+            f"tmux new-session -d -s {self._tmux_session_name} && "
+            f"tmux send-keys -t {self._tmux_session_name} '{pixi_cmd}' Enter"
+        )
