@@ -82,8 +82,8 @@ class Params:
     kick_clear: float = 0.7  # half-width of the cleared corridor
     kick_range: float = 3.0  # how far in front of the ball the corridor extends
     # opponent free kick / goal kick / penalty: keep all robots outside this radius
-    freekick: bool = False
-    freekick_clearance: float = 0.75
+    opp_freekick: bool = False
+    opp_freekick_clearance: float = 0.8
 
 
 class PositioningCapsule(AbstractBlackboardCapsule):
@@ -114,6 +114,9 @@ class PositioningCapsule(AbstractBlackboardCapsule):
         self._own_lock_until: float = 0.0
         self._hysteresis_min: float = self._blackboard.config["role_hysteresis"]["min"]
         self._hysteresis_max: float = self._blackboard.config["role_hysteresis"]["max"]
+
+    def set_opp_freekick_active(self, b: bool) -> None:
+        self._params.opp_freekick = b
 
     @cached_capsule_function
     def get_formation_assignment(self) -> dict[int, RobotAssignment]:
@@ -386,7 +389,7 @@ def _match_assignment(
         perp = np.array([-to_ball[1], to_ball[0]])
 
         roles = self._allocate_roles(n_players, b, field)
-        if params.freekick and Role.SUPPORTER in roles:
+        if params.opp_freekick and Role.SUPPORTER in roles:
             n_def = sum(1 for r in roles if r.startswith(Role.DEFENDER + "_"))
             roles[roles.index(Role.SUPPORTER)] = f"{Role.DEFENDER}_{n_def}"
         out = {}
@@ -429,15 +432,15 @@ def _match_assignment(
         self._separate(out, field, params, b, kick_aim)
 
         # --- freekick: push every robot outside the mandatory clearance radius ---- #
-        if params.freekick:
-            self._clear_ball(out, b, params.freekick_clearance, field)
+        if params.opp_freekick:
+            self._clear_ball(out, b, params.opp_freekick_clearance, field)
 
         # --- striker: stands behind the ball opposite the smoothly-chosen kick aim --- #
         if Role.STRIKER in roles:
-            if params.freekick:
+            if params.opp_freekick:
                 # park at the clearance boundary on the goal side, facing the ball
                 dir_to_goal = self._normalize(goal - b, fallback=np.array([-1.0, 0.0]))
-                out[Role.STRIKER] = self._clamp_field(b + params.freekick_clearance * dir_to_goal, field)
+                out[Role.STRIKER] = self._clamp_field(b + params.opp_freekick_clearance * dir_to_goal, field)
                 # heading will be computed in the orientation pass (face ball)
             else:
                 h = max(field.goal_width / 2 - params.post_margin, 0.0)  # safe half-mouth
