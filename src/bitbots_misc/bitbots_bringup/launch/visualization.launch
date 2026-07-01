@@ -8,7 +8,7 @@
     <arg name="fieldname" default="labor" description="Loads field settings" />
 
     <!-- load the global parameters -->
-    <include file="$(find-pkg-share bitbots_parameter_blackboard)/launch/parameter_blackboard.launch" />
+    <include file="$(find-pkg-share bitbots_parameter_blackboard)/launch/parameter_blackboard.launch.py" />
 
     <!-- publish dummy imu -->
     <node name="dummy_imu" pkg="bitbots_utils" exec="dummy_imu.py" />

@@ -11,9 +11,12 @@ class WifiInterfaceError(RuntimeError):
     pass
 
 
-def resolve_target_ip(configured_target_ip: str) -> tuple[IPv4Address, str | None]:
+def resolve_target_ip(configured_target_ip: str, in_sim: bool) -> tuple[IPv4Address, str | None]:
     if configured_target_ip.strip().lower() != "auto":
         return IPv4Address(configured_target_ip), None
+
+    if in_sim:
+        return IPv4Address("127.0.0.1"), None
 
     return get_wifi_broadcast_address()
 

@@ -8,7 +8,7 @@
     <arg if="$(var sim)" name="fieldname" default="hsl_kid" description="Loads field settings" />
 
     <!-- Load the global parameters-->
-    <include file="$(find-pkg-share bitbots_parameter_blackboard)/launch/parameter_blackboard.launch">
+    <include file="$(find-pkg-share bitbots_parameter_blackboard)/launch/parameter_blackboard.launch.py">
         <arg name="sim" value="$(var sim)" />
         <arg name="fieldname" value="$(var fieldname)" />
     </include>
