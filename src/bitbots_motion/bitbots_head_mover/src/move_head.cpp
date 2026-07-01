@@ -532,9 +532,14 @@ class HeadMover {
     double y = head_yaw_point.y;
     double z = head_yaw_point.z;
 
-    double head_yaw = atan2(y, x);
+    double rel_head_yaw = atan2(y, x);
 
-    double head_pitch = -atan2(z - YAW_PITCH_JOINT_Z_DISTANCE, sqrt(x * x + y * y));
+    double rel_head_pitch = -atan2(z - YAW_PITCH_JOINT_Z_DISTANCE, sqrt(x * x + y * y));
+
+    std::pair<double, double> current_yaw_pitch = get_head_position();
+
+    double head_yaw = rel_head_yaw + current_yaw_pitch.first;
+    double head_pitch = rel_head_pitch + current_yaw_pitch.second;
 
     return {head_yaw, head_pitch};
   }
