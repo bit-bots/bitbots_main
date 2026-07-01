@@ -317,53 +317,53 @@ class InnerPositioningCapsule:
     #  Assignment
     # --------------------------------------------------------------------------- #
 
-def _match_assignment(
-    self,
-    old_poses: list[list[float] | NDArray[np.float64]],
-    new_items: list[tuple[str, NDArray[np.float64]]],
-    ball: NDArray[np.float64],
-    passiv_player: int,
-    angle_w: float = 0.3,
-) -> list[tuple[int, NDArray[np.float64], str]]:
-    """Assign physical robots (at `old_poses`) to the new target poses.
-    The robot closest to the ball always takes the striker target; the rest are
-    matched optimally (Hungarian) to minimise total cost = distance + angle_w *
-    heading difference. Returns a list of (old_idx, new_pose, new_role) where
-    old_idx is the index into `old_poses`.
-    `old_poses`: list of [x, y, theta]; `new_items`: list of (role, [x, y, theta]).
-    """
-    from scipy.optimize import linear_sum_assignment
+    def _match_assignment(
+        self,
+        old_poses: list[list[float] | NDArray[np.float64]],
+        new_items: list[tuple[str, NDArray[np.float64]]],
+        ball: NDArray[np.float64],
+        passiv_player: int | None,
+        angle_w: float = 0.3,
+    ) -> list[tuple[int, NDArray[np.float64], str]]:
+        """Assign physical robots (at `old_poses`) to the new target poses.
+        The robot closest to the ball always takes the striker target; the rest are
+        matched optimally (Hungarian) to minimise total cost = distance + angle_w *
+        heading difference. Returns a list of (old_idx, new_pose, new_role) where
+        old_idx is the index into `old_poses`.
+        `old_poses`: list of [x, y, theta]; `new_items`: list of (role, [x, y, theta]).
+        """
+        from scipy.optimize import linear_sum_assignment
 
-    old_poses = [np.asarray(p) for p in old_poses]
-    ball = np.asarray(ball)
-    n = len(old_poses)
+        old_poses = [np.asarray(p) for p in old_poses]
+        ball = np.asarray(ball)
+        n = len(old_poses)
 
-    # striker target -> the old robot nearest the ball
-    s_j = next(j for j, (r, _) in enumerate(new_items) if r == Role.STRIKER)
+        # striker target -> the old robot nearest the ball
+        s_j = next(j for j, (r, _) in enumerate(new_items) if r == Role.STRIKER)
 
-    # Kandidaten nach Distanz zum Ball sortiert
-    candidates = sorted(range(n), key=lambda i: np.linalg.norm(old_poses[i][:2] - ball))
+        # Kandidaten nach Distanz zum Ball sortiert
+        candidates = sorted(range(n), key=lambda i: np.linalg.norm(old_poses[i][:2] - ball))
 
-    # Den passiven Spieler von der Striker-Wahl ausschließen, falls vorhanden
-    if passiv_player is not None:
-        s_i = next((i for i in candidates if i != passiv_player), candidates[0])
-    else:
-        s_i = candidates[0]
+        # Den passiven Spieler von der Striker-Wahl ausschließen, falls vorhanden
+        if passiv_player is not None:
+            s_i = next((i for i in candidates if i != passiv_player), candidates[0])
+        else:
+            s_i = candidates[0]
 
-    pairs = [(s_i, new_items[s_j][1], new_items[s_j][0])]
-    rem_i = [i for i in range(n) if i != s_i]
-    rem_j = [j for j in range(len(new_items)) if j != s_j]
-    if rem_i:
-        cost = np.empty((len(rem_i), len(rem_j)))
-        for a, i in enumerate(rem_i):
-            for b, j in enumerate(rem_j):
-                op, npose = old_poses[i], new_items[j][1]
-                cost[a, b] = np.linalg.norm(op[:2] - npose[:2]) + angle_w * self._angle_diff(op[2], npose[2])
-        ri, ci = linear_sum_assignment(cost)
-        for a, b in zip(ri, ci):
-            i, j = rem_i[a], rem_j[b]
-            pairs.append((i, new_items[j][1], new_items[j][0]))
-    return pairs
+        pairs = [(s_i, new_items[s_j][1], new_items[s_j][0])]
+        rem_i = [i for i in range(n) if i != s_i]
+        rem_j = [j for j in range(len(new_items)) if j != s_j]
+        if rem_i:
+            cost = np.empty((len(rem_i), len(rem_j)))
+            for a, i in enumerate(rem_i):
+                for b, j in enumerate(rem_j):
+                    op, npose = old_poses[i], new_items[j][1]
+                    cost[a, b] = np.linalg.norm(op[:2] - npose[:2]) + angle_w * self._angle_diff(op[2], npose[2])
+            ri, ci = linear_sum_assignment(cost)
+            for a, b in zip(ri, ci):
+                i, j = rem_i[a], rem_j[b]
+                pairs.append((i, new_items[j][1], new_items[j][0]))
+        return pairs
 
     # --------------------------------------------------------------------------- #
     #  Formation computation
