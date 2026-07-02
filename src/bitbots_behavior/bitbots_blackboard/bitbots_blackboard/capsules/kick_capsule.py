@@ -2,7 +2,9 @@ from enum import Flag
 
 from rclpy.publisher import Publisher
 from std_msgs.msg import Bool
-
+from rclpy.action import ActionClient
+import math
+from bitbots_msgs.action import Kick
 from bitbots_blackboard.capsules import AbstractBlackboardCapsule
 
 
@@ -28,7 +30,9 @@ class KickCapsule(AbstractBlackboardCapsule):
         :param blackboard: Global blackboard instance
         """
         self.walk_kick_pub = self._node.create_publisher(Bool, "/kick", 1)
-        self.rl_kick_active_pub = self._node.create_publisher(Bool, "rl_kick_active", 1)
+        self._timeout = blackboard.config["rl_kick"]["timeout"]
+        self._rl_kick_client = ActionClient(self._node, Kick, "rl_kick")
+        self._is_currently_kicking = False
 
     def walk_kick(self, target: WalkKickTargets) -> None:
         """
@@ -37,8 +41,31 @@ class KickCapsule(AbstractBlackboardCapsule):
         """
         self.walk_kick_pub.publish(Bool(data=target.value))
 
-    def start_rl_kick(self):
-        self.rl_kick_active_pub.publish(Bool(data=True))
+    def start_rl_kick(self, direction_deg_map, strength):
+        if not self._rl_kick_client.wait_for_server(timeout_sec=1.0):
+            self._node.get_logger().error(
+                "RL Kick Action Server not running!"
+            )
+            return False
+        
+        direction_rad_map = math.radians(direction_deg_map)
+        _, _, robot_theta = self._blackboard.world_model.get_current_position()
+        direction_rad_robot = direction_rad_map - robot_theta
+        goal = Kick.Goal()
+        goal.x = math.cos(direction_rad_robot)
+        goal.y = math.sin(direction_rad_robot)
+        goal.strength = strength
+        goal.timeout = self._timeout
+        self._rl_kick_client.send_goal_async(goal).add_done_callback(
+            lambda future: future.result().get_result_async().add_done_callback(lambda _: self.__done_cb())
+        )
+        self.is_currently_kicking = True
+        return True
+        # TODO add logic to walk in place after for specific duration after kick is finished
+        # alternative: let the kick policy handle it itself with post kick timeout and post kick cmd
 
+    def __done_cb(self):
+        self.is_currently_kicking = False
+    
     def stop_rl_kick(self):
-        self.rl_kick_active_pub.publish(Bool(data=False))
+        pass

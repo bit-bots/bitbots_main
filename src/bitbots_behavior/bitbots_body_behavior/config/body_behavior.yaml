@@ -146,6 +146,11 @@ body_behavior:
 
     kick_decision_smoothing: 10.0
 
+    rl_kick:
+      timeout: 1.5 # how long the kick policy is active
+      walk_timeout: 0.1 # how long to wait until activating walk in place after kicking
+      walk_delay: 1.5  # how long to let the robot walk in place
+
     ##################
     # costmap params #
     ##################

@@ -35,15 +35,17 @@ class WalkKick(AbstractKickAction):
 class RLKick(AbstractKickAction):
     def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
-        self._duration = parameters.get("duration", 3.0)
+        self._direction_deg_map = parameters.get("direction_deg_map", 0.0)
+        self._strength = parameters.get("strength", 2.0)
         self._start_time = None
 
     def perform(self, reevaluate=False):
+        # transform map to robot relative
         if self._start_time is None:
             self._start_time = self.blackboard.node.get_clock().now()
-            self.blackboard.kick.start_rl_kick()
+            self.blackboard.kick.start_rl_kick(self._direction_deg_map, self._strength)
 
         elapsed = self.blackboard.node.get_clock().now() - self._start_time
-        if elapsed >= Duration(seconds=self._duration):
+        if elapsed >= Duration(seconds=self.blackboard.config["rl_kick"]["timeout"]):
             self.blackboard.kick.stop_rl_kick()
             self.pop()

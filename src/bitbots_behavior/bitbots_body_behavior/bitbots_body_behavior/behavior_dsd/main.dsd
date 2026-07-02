@@ -36,7 +36,7 @@ $AvoidBall
         YES --> $BallKickArea
             NEAR --> $DoOnce
                 NOT_DONE --> @StoreBallMovementDetectionStartPosition
-                DONE --> #Dribble
+                DONE --> @ChangeAction + action:going_to_ball + r:false, @Stand + duration:0.3 + r:false, @LookAtBallPenalty + r:false, @RLKick + direction_deg_map:0.0 + strength:2.0 + r:false
             FAR --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:map
         NO --> @ChangeAction + action:going_to_ball + r:false, @LookAtFieldFeatures + r:false, @AvoidBallActive + r:false, @GoToBall + target:map + blocking:false + distance:%ball_far_approach_dist
     YES --> $ReachedPathPlanningGoalPosition + threshold:%ball_far_approach_position_thresh
