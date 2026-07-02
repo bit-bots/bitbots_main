@@ -68,11 +68,7 @@ class KickCapsule(AbstractBlackboardCapsule):
         # alternative: let the kick policy handle it itself with post kick timeout and post kick cmd
 
     def __done_cb(self):
-        self._node.get_clock().sleep_for(Duration(seconds=self._post_kick_timeout))
-        self.blackboard.pathfinding.direct_cmd_vel_pub.publish(Twist())
-        ## sleep for timeout
-        self._node.get_clock().sleep_for(Duration(seconds=self._walk_delay))
-        self.blackboard.pathfinding.direct_cmd_vel_pub.publish(Twist(angular=Vector3(x=-1.0)))
+        pass
 
 
         self.is_currently_kicking = False

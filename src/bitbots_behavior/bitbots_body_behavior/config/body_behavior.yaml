@@ -148,7 +148,7 @@ body_behavior:
 
     rl_kick:
       timeout: 2.0 # how long the kick policy is active
-      walk_timeout: 0.05 # how long to wait until activating walk in place after kicking
+      post_kick_timeout: 0.05 # how long to wait until activating walk in place after kicking
       walk_delay: 1.5  # how long to let the robot walk in place
 
     ##################
