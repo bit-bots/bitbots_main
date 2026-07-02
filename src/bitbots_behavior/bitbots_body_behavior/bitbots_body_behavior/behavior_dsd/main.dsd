@@ -35,7 +35,7 @@ $ReachedAndAlignedToPathPlanningGoalPosition + threshold:%ball_far_approach_posi
     NO --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:map + distance:%ball_far_approach_dist
     YES --> $DoOnce
         NOT_DONE --> @StoreBallMovementDetectionStartPosition
-        DONE --> @ChangeAction + action:going_to_ball + r:false, @Stand + duration:0.1 + r:false, @LookAtBallPenalty + r:false, @RLKick + direction_deg_map:0.0 + strength:2.0 + r:false
+        DONE --> @ChangeAction + action:going_to_ball + r:false, @Stand + duration:0.1 + r:false, @LookAtBallPenalty + r:false, @RLKickTowardsGoal + strength:3.0 + r:false
 
 #PositioningReady
 $GoalScoreRecently
