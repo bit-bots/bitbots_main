@@ -163,7 +163,10 @@ $IsPenalized
                     DONE --> #PositioningReady
         SET --> $WhistleDetected
             DETECTED --> $SecondaryStateTeamDecider
-                OUR --> #PlayingBehavior
+                OUR --> $WaitingForFirstKick
+                    YES --> #PositioningReady
+                    NO --> #PlayingBehavior
+                STRIKER --> #PlayingBehavior
                 OTHER --> #PositioningReady
                 ELSE --> #PlayingBehavior
             NOT_DETECTED --> $SecondaryStateDecider
