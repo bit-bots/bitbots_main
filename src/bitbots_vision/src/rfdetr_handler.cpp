@@ -1,11 +1,22 @@
 #include <algorithm>
 #include <bitbots_vision/rfdetr_handler.hpp>
 #include <bitbots_vision/rfdetr_processing.hpp>
+#include <cstdlib>
 #include <filesystem>
 #include <rclcpp/logging.hpp>
 #include <stdexcept>
+#include <string>
 
 namespace bitbots_vision {
+
+namespace {
+// Allows forcing CPU-only inference at runtime (no rebuild needed), e.g. for
+// dev-machine debugging or to work around a flaky/unavailable GPU EP on the robot.
+bool cpu_fallback_forced() {
+  const char* val = std::getenv("BITBOTS_VISION_FORCE_CPU");
+  return val != nullptr && std::string(val) != "0" && std::string(val) != "";
+}
+}  // namespace
 
 // ---------------------------------------------------------------------------
 // Construction
@@ -23,14 +34,10 @@ RfdetrHandler::RfdetrHandler(const std::string& model_path, const ModelConfig& m
 // init_session – builds the ONNX session with provider fallback chain
 // ---------------------------------------------------------------------------
 
-void RfdetrHandler::init_session(const std::string& model_path) {
-  const std::string onnx_file = model_path + "/onnx/rfdetr.onnx";
-  if (!std::filesystem::exists(onnx_file)) {
-    throw std::runtime_error("ONNX model file not found: " + onnx_file);
-  }
-
-  session_options_.SetIntraOpNumThreads(1);
-  session_options_.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_ALL);
+Ort::SessionOptions RfdetrHandler::build_session_options(bool force_cpu) const {
+  Ort::SessionOptions session_options;
+  session_options.SetIntraOpNumThreads(1);
+  session_options.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_ALL);
 
   // Register execution providers in priority order.
   // Ort::GetAvailableProviders() returns providers compiled into this ORT build.
@@ -40,35 +47,39 @@ void RfdetrHandler::init_session(const std::string& model_path) {
     return std::find(available.begin(), available.end(), name) != available.end();
   };
 
-  // TRT and CUDA use typed registration APIs and dynamically load their provider shared
-  // libraries at registration time. Wrap in try/catch so a missing system library
-  // (e.g. libcublasLt.so) causes graceful fallback rather than a crash.
-  if (has_ep("TensorrtExecutionProvider")) {
-    try {
-      OrtTensorRTProviderOptions trt_opts{};
-      session_options_.AppendExecutionProvider_TensorRT(trt_opts);
-      RCLCPP_INFO(logger_, "ONNX Runtime: registered TensorrtExecutionProvider");
-    } catch (const Ort::Exception& e) {
-      RCLCPP_WARN(logger_, "TensorrtExecutionProvider unavailable: %s", e.what());
+  if (force_cpu) {
+    RCLCPP_WARN(logger_, "Skipping all GPU execution providers, using CPU only");
+  } else {
+    // TRT and CUDA use typed registration APIs and dynamically load their provider shared
+    // libraries at registration time. Wrap in try/catch so a missing system library
+    // (e.g. libcublasLt.so) causes graceful fallback rather than a crash.
+    if (has_ep("TensorrtExecutionProvider")) {
+      try {
+        OrtTensorRTProviderOptions trt_opts{};
+        session_options.AppendExecutionProvider_TensorRT(trt_opts);
+        RCLCPP_INFO(logger_, "ONNX Runtime: registered TensorrtExecutionProvider");
+      } catch (const Ort::Exception& e) {
+        RCLCPP_WARN(logger_, "TensorrtExecutionProvider unavailable: %s", e.what());
+      }
     }
-  }
 
-  if (has_ep("CUDAExecutionProvider")) {
-    try {
-      OrtCUDAProviderOptions cuda_opts{};
-      session_options_.AppendExecutionProvider_CUDA(cuda_opts);
-      RCLCPP_INFO(logger_, "ONNX Runtime: registered CUDAExecutionProvider");
-    } catch (const Ort::Exception& e) {
-      RCLCPP_WARN(logger_, "CUDAExecutionProvider unavailable: %s", e.what());
+    if (has_ep("CUDAExecutionProvider")) {
+      try {
+        OrtCUDAProviderOptions cuda_opts{};
+        session_options.AppendExecutionProvider_CUDA(cuda_opts);
+        RCLCPP_INFO(logger_, "ONNX Runtime: registered CUDAExecutionProvider");
+      } catch (const Ort::Exception& e) {
+        RCLCPP_WARN(logger_, "CUDAExecutionProvider unavailable: %s", e.what());
+      }
     }
-  }
 
-  if (has_ep("WebGpuExecutionProvider")) {
-    try {
-      session_options_.AppendExecutionProvider("WebGPU", {});
-      RCLCPP_INFO(logger_, "ONNX Runtime: registered WebGpuExecutionProvider");
-    } catch (const Ort::Exception& e) {
-      RCLCPP_WARN(logger_, "WebGpuExecutionProvider unavailable: %s", e.what());
+    if (has_ep("WebGpuExecutionProvider")) {
+      try {
+        session_options.AppendExecutionProvider("WebGPU", {});
+        RCLCPP_INFO(logger_, "ONNX Runtime: registered WebGpuExecutionProvider");
+      } catch (const Ort::Exception& e) {
+        RCLCPP_WARN(logger_, "WebGpuExecutionProvider unavailable: %s", e.what());
+      }
     }
   }
 
@@ -79,9 +90,37 @@ void RfdetrHandler::init_session(const std::string& model_path) {
   }
 
   // CPU is always the implicit fallback — no explicit registration needed.
+  return session_options;
+}
+
+void RfdetrHandler::init_session(const std::string& model_path) {
+  const std::string onnx_file = model_path + "/onnx/rfdetr.onnx";
+  if (!std::filesystem::exists(onnx_file)) {
+    throw std::runtime_error("ONNX model file not found: " + onnx_file);
+  }
+
+  const bool force_cpu = cpu_fallback_forced();
+  if (force_cpu) {
+    RCLCPP_WARN(logger_, "BITBOTS_VISION_FORCE_CPU is set — forcing CPU-only inference");
+  }
 
   RCLCPP_INFO(logger_, "Loading ONNX model: %s", onnx_file.c_str());
-  session_ = std::make_unique<Ort::Session>(env_, onnx_file.c_str(), session_options_);
+  try {
+    Ort::SessionOptions session_options = build_session_options(force_cpu);
+    session_ = std::make_unique<Ort::Session>(env_, onnx_file.c_str(), session_options);
+  } catch (const Ort::Exception& e) {
+    if (force_cpu) {
+      throw;  // Already CPU-only — nothing left to fall back to.
+    }
+    // A registered GPU EP can fail not just at registration time but also
+    // later, when ORT actually compiles the graph for it during session
+    // creation (e.g. a WebGPU shader requiring f16 on a device without f16
+    // support). That failure throws out of the Session constructor itself,
+    // so it has to be caught here rather than around AppendExecutionProvider.
+    RCLCPP_ERROR(logger_, "Session creation with GPU execution providers failed (%s) — retrying CPU-only", e.what());
+    Ort::SessionOptions cpu_only_options = build_session_options(true);
+    session_ = std::make_unique<Ort::Session>(env_, onnx_file.c_str(), cpu_only_options);
+  }
 
   // ---- Introspect model I/O ----
   Ort::AllocatorWithDefaultOptions allocator;
