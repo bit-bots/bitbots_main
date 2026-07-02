@@ -23,10 +23,12 @@ class KickBallNode(RLNode):
 
         self.declare_parameter("command.kick_timeout", 2.0)
         self.declare_parameter("command.warm_start_duration", 0.3)
-        self.declare_parameter("command.post_kick_stand_duration", 0.5)
+        self.declare_parameter("command.post_kick_command_duration", 0.5)
+        self.declare_parameter("command.post_stabilization_stop_duration", 0.2)
         self.declare_parameter("command.pub_period", 5)
         self.declare_parameter("command.history_samples", 10)
         self.declare_parameter("command.warm_start_command", [0.2, 0.0, 0.0])
+        self.declare_parameter("command.post_kick_command", [0.4, 0.0, 0.0])
 
         self._ang_vel_scale = self.get_parameter("obs.ang_vel_scale").value
         self._joint_vel_scale = self.get_parameter("obs.joint_vel_scale").value
@@ -81,11 +83,6 @@ class KickBallNode(RLNode):
         joint_command = self._joint_handler.get_joint_commands(onnx_pred)
         self._joint_command_pub.publish(joint_command)
 
-    # states in which the policy executes. It only runs while an rl_kick action
-    # is holding the kick active (like the legacy kick_node gates on its kick
-    # handler), and only in a kickable robot state. Outside an active kick the
-    # policy is dormant and publishes nothing, so kick_motor_goals go stale and
-    # the HCM drops out of KICKING back to CONTROLLABLE.
     def allowed_states(self):
         return self._robot_state_handler.is_kickable() and self._soccer_command_handler.is_kick_active()
 
