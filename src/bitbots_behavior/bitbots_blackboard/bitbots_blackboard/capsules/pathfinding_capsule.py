@@ -136,16 +136,15 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
         return total_cost
 
     def _publish_rl_kick_arc_markers(
-        self, left_point: tuple[float, float, float], right_point: tuple[float, float, float], use_left: bool
+        self, arc_point: tuple[float, float, float]
     ) -> None:
         """
         Publishes debug markers for the two candidate approach points of the RL kick arcs,
         highlighting which one was chosen.
         """
         stamp = self._node.get_clock().now().to_msg()
-        for marker_id, point, chosen, color in (
-            (2, left_point, use_left, ColorRGBA(r=0.0, g=0.0, b=1.0, a=1.0)),
-            (3, right_point, not use_left, ColorRGBA(r=0.0, g=1.0, b=0.0, a=1.0)),
+        for marker_id, point, color in (
+            (2, arc_point, ColorRGBA(r=0.0, g=0.0, b=1.0, a=1.0)),
         ):
             marker = Marker()
             marker.header.stamp = stamp
@@ -155,7 +154,7 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
             marker.id = marker_id
             marker.pose.position = Point(x=point[0], y=point[1], z=0.0)
             marker.pose.orientation = quat_from_yaw(point[2])
-            scale = 0.15 if chosen else 0.1
+            scale = 0.15
             marker.scale = Vector3(x=scale, y=scale, z=scale)
             marker.color = color
             self.approach_marker_pub.publish(marker)
@@ -219,16 +218,11 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
             ball_x, ball_y = self._blackboard.world_model.get_ball_position_xy()
             goal_line_offset = self._blackboard.config["rl_kick"]["goal_line_offset"]
             goal_post_y_offset = self._blackboard.config["rl_kick"]["goal_post_y_offset"]
-            vec_ball_to_goal_left = np.array([
+            vec_ball_to_goal = np.array([
                 self._blackboard.world_model.field_length / 2 + goal_line_offset - ball_x,
-                self._blackboard.world_model.goal_width / 2 - goal_post_y_offset - ball_y
+                self._blackboard.world_model.goal_width / 2 - ball_y
             ])
-            vec_ball_to_goal_right = np.array([
-                self._blackboard.world_model.field_length / 2 + goal_line_offset - ball_x,
-                -self._blackboard.world_model.goal_width / 2 + goal_post_y_offset - ball_y
-            ])
-            angle_left = math.atan2(vec_ball_to_goal_left[1], vec_ball_to_goal_left[0])
-            angle_right = math.atan2(vec_ball_to_goal_right[1], vec_ball_to_goal_right[0])
+            angle_to_goal = math.atan2(vec_ball_to_goal[1], vec_ball_to_goal[0])
 
             robot_x, robot_y, robot_theta = self._blackboard.world_model.get_current_position()
 
@@ -251,16 +245,11 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
                 orientation = theta + math.pi
                 return point_x, point_y, orientation
 
-            left_point = closest_point_on_arc(angle_left)
-            right_point = closest_point_on_arc(angle_right)
+            arc_point = closest_point_on_arc(angle_to_goal)
 
-            dist_left = math.hypot(left_point[0] - robot_x, left_point[1] - robot_y)
-            dist_right = math.hypot(right_point[0] - robot_x, right_point[1] - robot_y)
+            #self._publish_rl_kick_arc_markers(arc_point)
 
-            self._publish_rl_kick_arc_markers(left_point, right_point, use_left=dist_left <= dist_right)
-
-            chosen_point = left_point if dist_left <= dist_right else right_point
-            ball_point = (chosen_point[0], chosen_point[1], chosen_point[2], self._blackboard.map_frame)
+            ball_point = (arc_point[0], arc_point[1], arc_point[2], self._blackboard.map_frame)
 
 
         else:
