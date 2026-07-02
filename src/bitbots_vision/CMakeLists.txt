@@ -161,8 +161,18 @@ if(BITBOTS_VISION_HAS_TENSORRT)
   # headers are still found first for anything that exists in both places,
   # and only TensorRT/CUDA-specific headers (found nowhere else) fall
   # through to this directory.
-  target_compile_options(bitbots_vision_lib PUBLIC -idirafter ${TENSORRT_INCLUDE_DIR} -idirafter
-                          ${CUDA_INCLUDE_DIR})
+  #
+  # Each flag+path is glued into a single token ("-idirafterPATH", no space)
+  # rather than passed as two separate list elements ("-idirafter" "PATH").
+  # CMake's compile-options accumulation can silently drop a *repeated
+  # identical flag string* (a second bare "-idirafter") when flattening the
+  # option list across targets, stranding the path that followed it as a
+  # bare argument -- GCC then warns it's an "unused linker input file" and
+  # the include never takes effect. GCC accepts both "-idirafter dir" and
+  # the glued "-idirafterdir" form; gluing avoids the pitfall entirely since
+  # there's no repeated flag string left to collide on.
+  target_compile_options(bitbots_vision_lib PUBLIC
+                          "-idirafter${TENSORRT_INCLUDE_DIR}" "-idirafter${CUDA_INCLUDE_DIR}")
   target_link_libraries(bitbots_vision_lib PUBLIC ${TENSORRT_NVINFER_LIBRARY}
                                                   ${TENSORRT_NVONNXPARSER_LIBRARY} ${CUDA_CUDART_LIBRARY})
   # PUBLIC so vision_node.cpp (compiled into the `vision` executable, which
