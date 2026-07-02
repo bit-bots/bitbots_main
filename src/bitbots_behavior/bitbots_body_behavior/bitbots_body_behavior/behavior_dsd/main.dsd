@@ -54,7 +54,9 @@ $GoalScoreRecently
 
 #SupporterRole
 $BallSeen
-    YES --> @TrackBall, @ChangeAction + action:positioning, @AvoidBallActive, @GoToFormationPosition
+    YES --> $PassStarted
+        YES --> @TrackBall, @ChangeAction + action:positioning, @AvoidBallActive, @GoToFormationPosition
+        NO --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @AvoidBallActive, @GoToFormationPosition
     NO --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @AvoidBallActive, @GoToFormationPosition
 
 
@@ -72,16 +74,8 @@ $SecondaryStateTeamDecider
 #Placing
 $DoOnce
     NOT_DONE --> @ForgetBall, @LookAtFieldFeatures
-    DONE --> $ConfigRole
-        GOALIE --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToFormationPosition
-        ELSE --> $BallSeen
-            NO --> #SearchBall
-            YES --> $RankToBallWithGoalie
-                STRIKER --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToFormationPosition //ugly yet
-                DEFENDER --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToFormationPosition
-                SUPPORTER --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToDefensePosition
-                GOALIE --> @GoToGoaliePosition
-                ELSE --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @AvoidBallActive, @GoToFormationPosition
+    DONE -->  @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToFormationPosition
+
 
 #Init
 @Stand + duration:0.1 + r:false, @ChangeAction + action:waiting, @LookForward, @Stand
@@ -96,10 +90,9 @@ $SecondBallTouchAllowed
         YES --> $KickOffTimeUp
             NO_NORMAL --> #StandAndLook
             NO_FREEKICK --> #Placing
-            YES --> $RankToBallWithGoalie
+            YES --> $AssignedRole
                 STRIKER --> #KickWithAvoidance
-                GOALIE --> @GoToFormationPosition
-                DEFENDER --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @GoToFormationPosition
+                GOALIE --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @GoToFormationPosition
                 SUPPORTER --> #SupporterRole
                 ELSE --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @GoToFormationPosition
 
@@ -142,7 +135,7 @@ $IsPenalized
         SET --> $WhistleDetected
             DETECTED --> $SecondaryStateTeamDecider
                 OUR --> #PlayingBehavior
-                OTHER --> @GoToFormationPosition
+                OTHER --> #PositioningReady
                 ELSE --> #PlayingBehavior
             NOT_DETECTED --> $SecondaryStateDecider
                 PENALTYSHOOT --> $SecondaryStateTeamDecider

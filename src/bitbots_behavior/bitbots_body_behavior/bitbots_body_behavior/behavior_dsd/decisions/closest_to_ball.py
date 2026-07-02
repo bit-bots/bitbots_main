@@ -40,7 +40,7 @@ class ClosestToBall(AbstractDecisionElement):
         return True
 
 
-class RankToBallWithGoalie(AbstractDecisionElement):
+class AssignedRole(AbstractDecisionElement):
     blackboard: BodyBlackboard
 
     def __init__(self, blackboard, dsd, parameters):
