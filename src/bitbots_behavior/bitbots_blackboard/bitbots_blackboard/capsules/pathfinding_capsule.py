@@ -5,9 +5,9 @@ from typing import Optional
 import numpy as np
 from bitbots_utils.transforms import quat_from_yaw
 from bitbots_utils.utils import get_parameters_from_other_node
-from geometry_msgs.msg import Point, PoseStamped, Twist
+from geometry_msgs.msg import Point, PoseStamped, Twist, Vector3
 from ros2_numpy import numpify
-from std_msgs.msg import Bool, Empty
+from std_msgs.msg import Bool, ColorRGBA, Empty
 from tf_transformations import euler_from_quaternion
 from visualization_msgs.msg import Marker
 
@@ -19,6 +19,7 @@ class BallGoalType(str, Enum):
     GRADIENT = "gradient"
     MAP = "map"
     CLOSE = "close"
+    RL_KICK = "rl_kick"
 
 
 class PathfindingCapsule(AbstractBlackboardCapsule):
@@ -134,6 +135,31 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
             )
         return total_cost
 
+    def _publish_rl_kick_arc_markers(
+        self, left_point: tuple[float, float, float], right_point: tuple[float, float, float], use_left: bool
+    ) -> None:
+        """
+        Publishes debug markers for the two candidate approach points of the RL kick arcs,
+        highlighting which one was chosen.
+        """
+        stamp = self._node.get_clock().now().to_msg()
+        for marker_id, point, chosen, color in (
+            (2, left_point, use_left, ColorRGBA(r=0.0, g=0.0, b=1.0, a=1.0)),
+            (3, right_point, not use_left, ColorRGBA(r=0.0, g=1.0, b=0.0, a=1.0)),
+        ):
+            marker = Marker()
+            marker.header.stamp = stamp
+            marker.header.frame_id = self._blackboard.map_frame
+            marker.type = Marker.SPHERE
+            marker.action = Marker.MODIFY
+            marker.id = marker_id
+            marker.pose.position = Point(x=point[0], y=point[1], z=0.0)
+            marker.pose.orientation = quat_from_yaw(point[2])
+            scale = 0.15 if chosen else 0.1
+            marker.scale = Vector3(x=scale, y=scale, z=scale)
+            marker.color = color
+            self.approach_marker_pub.publish(marker)
+
     def get_ball_goal(self, target: BallGoalType, distance: float, side_offset: float = 0.0) -> PoseStamped:
         """
         This function returns a goal pose relative to the ball.
@@ -142,6 +168,7 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
         - gradient: The goal pose chosen so the ball is 'distance' meters in the direction indicated by the gradient of the costmap.
         - map: The goal pose chosen so the ball is 'distance' meters in the direction of the opponent goal.
         - close: The goal is inside the ball with us facing the ball.
+        - rl_kick: The goal pose is chosen in an arc around the ball opposide to the direction of the opponent goal.
         """
 
         if BallGoalType.GRADIENT == target:
@@ -188,6 +215,53 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
             goal_u = ball_u - math.cos(angle) * distance
             goal_v = ball_v - math.sin(angle) * distance + side_offset
             ball_point = (goal_u, goal_v, angle, self._blackboard.world_model.base_footprint_frame)
+        elif BallGoalType.RL_KICK == target:
+            ball_x, ball_y = self._blackboard.world_model.get_ball_position_xy()
+            goal_line_offset = self._blackboard.config["rl_kick"]["goal_line_offset"]
+            goal_post_y_offset = self._blackboard.config["rl_kick"]["goal_post_y_offset"]
+            vec_ball_to_goal_left = np.array([
+                self._blackboard.world_model.field_length / 2 + goal_line_offset - ball_x,
+                self._blackboard.world_model.goal_width / 2 - goal_post_y_offset - ball_y
+            ])
+            vec_ball_to_goal_right = np.array([
+                self._blackboard.world_model.field_length / 2 + goal_line_offset - ball_x,
+                -self._blackboard.world_model.goal_width / 2 + goal_post_y_offset - ball_y
+            ])
+            angle_left = math.atan2(vec_ball_to_goal_left[1], vec_ball_to_goal_left[0])
+            angle_right = math.atan2(vec_ball_to_goal_right[1], vec_ball_to_goal_right[0])
+
+            robot_x, robot_y, robot_theta = self._blackboard.world_model.get_current_position()
+
+            approach_dist = self._blackboard.config["rl_kick"]["approach_dist"]
+            arc_half_angle = math.radians(self._blackboard.config["rl_kick"]["approach_arc_degree"])
+
+            # For a given kick direction (angle from ball towards the target point in the goal), the arc of
+            # possible approach points is centered opposite of that kick direction (i.e. behind the ball) and
+            # spans +-arc_half_angle around that center.
+            def closest_point_on_arc(kick_angle: float) -> tuple[float, float, float]:
+                center_angle = kick_angle + math.pi
+                angle_to_robot = math.atan2(robot_y - ball_y, robot_x - ball_x)
+                # Clamp the angle towards the robot into the arc, which gives the closest point on the arc
+                offset = (angle_to_robot - center_angle + math.pi) % math.tau - math.pi
+                offset = max(-arc_half_angle, min(arc_half_angle, offset))
+                theta = center_angle + offset
+                point_x = ball_x + math.cos(theta) * approach_dist
+                point_y = ball_y + math.sin(theta) * approach_dist
+                # Orientation to face back towards the ball and kick along the original kick direction
+                orientation = theta + math.pi
+                return point_x, point_y, orientation
+
+            left_point = closest_point_on_arc(angle_left)
+            right_point = closest_point_on_arc(angle_right)
+
+            dist_left = math.hypot(left_point[0] - robot_x, left_point[1] - robot_y)
+            dist_right = math.hypot(right_point[0] - robot_x, right_point[1] - robot_y)
+
+            self._publish_rl_kick_arc_markers(left_point, right_point, use_left=dist_left <= dist_right)
+
+            chosen_point = left_point if dist_left <= dist_right else right_point
+            ball_point = (chosen_point[0], chosen_point[1], chosen_point[2], self._blackboard.map_frame)
+
 
         else:
             raise ValueError(f"Target {target} for go_to_ball action not implemented.")

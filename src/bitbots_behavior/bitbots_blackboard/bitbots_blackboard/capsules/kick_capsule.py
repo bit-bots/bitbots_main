@@ -64,13 +64,8 @@ class KickCapsule(AbstractBlackboardCapsule):
         )
         self.is_currently_kicking = True
         return True
-        # TODO add logic to walk in place after for specific duration after kick is finished
-        # alternative: let the kick policy handle it itself with post kick timeout and post kick cmd
 
     def __done_cb(self):
-        pass
-
-
         self.is_currently_kicking = False
     
     def stop_rl_kick(self):
