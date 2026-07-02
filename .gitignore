@@ -220,6 +220,9 @@ doku/*
 /src/bitbots_team_communication/bitbots_team_communication/bitbots_team_communication/robocup_extension_pb2.py
 /src/bitbots_team_communication/bitbots_team_communication/bitbots_team_communication/robocup_extension_pb2.pyi
 
+# Parameters generated file
+/src/bitbots_misc/bitbots_whistle_detector/bitbots_whistle_detector/whistle_detector_parameters.py
+
 # Workspace git status file from the deploy tool
 **/workspace_status.json
 
@@ -241,4 +244,5 @@ doku/*
 CMakeFiles/
 CMakeCache.txt
 
-
+# Mujoco log file
+MUJOCO_LOG.TXT

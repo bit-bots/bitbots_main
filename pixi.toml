@@ -84,7 +84,7 @@ pthread-stubs = ">=0.4,<0.5"
 pybind11 = ">=3.0.1,<4"
 pyqt = ">=5.15.11,<6"
 pysoundcard = ">=0.4.5,<0.5"
-pytest = ">=9.0.1,<10"
+pytest = ">=9.0.1,<9.1"  # Constraint to avoid issues with pytest 9.1 and newer, which breaks some of our ROS tests due to changes in the pytest API.
 pytest-mock = ">=3.15.1,<4"
 pyyaml = ">=6.0.3,<7"
 rich = ">=14.2.0,<15"

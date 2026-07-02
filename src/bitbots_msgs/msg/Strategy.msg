@@ -20,6 +20,7 @@ uint8 ACTION_WAITING=4
 uint8 ACTION_KICKING=5
 uint8 ACTION_SEARCHING=6
 uint8 ACTION_LOCALIZING=7
+uint8 ACTION_PASSIVE=8
 uint8 action
 
 # Offensive strategy

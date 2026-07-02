@@ -6,3 +6,4 @@ game_controller_hsl:
     listen_host: '0.0.0.0'
     listen_port: 3838
     answer_port: 3939
+    lost_timeout: 5

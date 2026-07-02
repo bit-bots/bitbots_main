@@ -6,6 +6,7 @@
     <!-- load teamplayer software stack without some unnecessary stuff, that is not needed in the demo -->
     <include file="$(find-pkg-share bitbots_bringup)/launch/teamplayer.launch">
         <arg name="behavior_dsd_file" value="$(var behavior_dsd_file)" />
+        <arg name="fieldname" value="demo" />
         <arg name="game_controller" value="false"/>
         <arg name="localization" value="false" />
         <arg name="sim" value="$(var sim)" />

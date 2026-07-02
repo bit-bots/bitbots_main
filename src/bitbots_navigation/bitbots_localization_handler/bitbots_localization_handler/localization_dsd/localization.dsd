@@ -3,9 +3,7 @@ $SecondaryStateDecider
     PENALTYSHOOT --> $SecondaryStateTeamDecider
         OUR --> @InitPenaltyKick, @DoNothing   // Init as goalie
         ELSE --> @InitGoal, @DoNothing   // Init as kicker
-    ELSE --> $CheckPickup
-        UP --> @WaitForPickupEnd + r:false, @InitSide, @DoNothing
-        ELSE --> @DoNothing
+    ELSE --> @DoNothing
 
 -->Localization
 $GettingUpState

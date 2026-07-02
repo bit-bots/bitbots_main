@@ -33,6 +33,12 @@ update_argcompletes() {
 }
 
 setup_alises() {
+  if [ -n "$IS_ROBOT" ]; then
+    local PIXI_ENVIRONMENT="robot"
+  else
+    local PIXI_ENVIRONMENT="default"
+  fi
+
   # check if we are in subdir of $ROS_WORKSPACE and switch to it otherwise
   alias cdc='[[ "$PWD" = "$ROS_WORKSPACE"* ]] || cd "$ROS_WORKSPACE"'
 
@@ -53,7 +59,7 @@ setup_alises() {
 
   # colcon aliases
   alias colcon='cdc && pixi run colcon'
-  alias cba='cdc && pixi run build'
+  alias cba="cdc && pixi run -e $PIXI_ENVIRONMENT build"
   alias cbs='cba --packages-select'
   alias cb='cba --packages-up-to'
 

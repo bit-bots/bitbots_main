@@ -39,6 +39,9 @@ package's manifests and nearby code before choosing tools or patterns.
   applicable before changing a package's build, dependencies, or entry points.
 - Update documentation, configuration examples, and tests when changing public
   behavior, parameters, interfaces, or developer workflows.
+- When working on code comments or documentation, do not write down concrete values,
+  as they might change later, thus making the documentation outdated.
+  Instead, describe the expected behavior or refer to the relevant code sections.
 
 ## Development Environment
 

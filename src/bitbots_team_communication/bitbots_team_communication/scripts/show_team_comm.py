@@ -71,6 +71,7 @@ class TeamCommPrinter(Node):
             Strategy.ACTION_POSITIONING: "Positioning",
             Strategy.ACTION_TRYING_TO_SCORE: "Trying to score",
             Strategy.ACTION_UNDEFINED: "Undefined",
+            Strategy.ACTION_PASSIVE: "Passive",
         }
         self.sides = {
             Strategy.SIDE_LEFT: "Left",

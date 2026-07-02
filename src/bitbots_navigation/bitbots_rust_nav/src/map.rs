@@ -2,7 +2,7 @@ use geo::{BooleanOps, Coord, LineString, MultiPolygon, Polygon};
 use pyo3::prelude::*;
 
 use crate::{
-    obstacle::{Obstacle, RoundObstacle},
+    obstacle::{AnyObstacle, Obstacle},
     planner::PathPlanner,
 };
 
@@ -44,13 +44,13 @@ pub struct ObstacleMap {
     #[pyo3(get, set)]
     config: ObstacleMapConfig,
     #[pyo3(get, set)]
-    obstacles: Vec<RoundObstacle>,
+    obstacles: Vec<AnyObstacle>,
 }
 
 #[pymethods]
 impl ObstacleMap {
     #[new]
-    pub fn new(config: ObstacleMapConfig, obstacles: Vec<RoundObstacle>) -> Self {
+    pub fn new(config: ObstacleMapConfig, obstacles: Vec<AnyObstacle>) -> Self {
         Self { config, obstacles }
     }
 

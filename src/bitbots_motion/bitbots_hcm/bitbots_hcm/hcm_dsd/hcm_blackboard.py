@@ -8,7 +8,6 @@ from rclpy.node import Node
 from rclpy.task import Future
 from rclpy.time import Time
 from sensor_msgs.msg import Imu, JointState
-from std_msgs.msg import Bool
 from std_msgs.msg import Empty as EmptyMsg
 
 from bitbots_hcm.type_utils import T_RobotControlState
@@ -45,7 +44,6 @@ class HcmBlackboard:
         self.cancel_path_planning_pub = self.node.create_publisher(EmptyMsg, "pathfinding/cancel", 1)
         self.speak_publisher = self.node.create_publisher(TTS, "speak", 1)
         self.torque_publisher = self.node.create_publisher(JointTorque, "set_torque_individual", 10)
-        self.is_fallen_publisher = self.node.create_publisher(Bool, "hsl_gamecontroller/is_fallen", 1)
 
         # Latest imu data
         self.accel = numpy.array([0, 0, 0])
@@ -92,6 +90,10 @@ class HcmBlackboard:
 
         # Walking state
         self.last_walking_goal_time: Optional[Time] = None
+        # Time of the last walk motor goal that deviated significantly
+        self.last_significant_walk_motion_time: Optional[Time] = None
+        # Seconds without significant walk motion before dropping from WALKING to CONTROLLABLE
+        self.standing_transition_delay: float = self.node.get_parameter("standing_transition_delay").value
 
         # Falling
         # Parameters

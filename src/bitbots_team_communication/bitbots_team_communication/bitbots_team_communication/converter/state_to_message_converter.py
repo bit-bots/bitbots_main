@@ -140,7 +140,7 @@ class StateToMessageConverter:
             walking_speed: float,
             message: Proto.Message,
         ):
-            if time_to_ball is not None and is_still_valid_checker(time_to_ball_time):
+            if time_to_ball is not None and time_to_ball != 0.0 and is_still_valid_checker(time_to_ball_time):
                 message.time_to_ball = time_to_ball
             elif are_robot_and_ball_position_valid(current_pose, ball_position):
                 message.time_to_ball = calculate_time_to_ball(current_pose, ball_position, walking_speed)
@@ -158,7 +158,7 @@ class StateToMessageConverter:
             message = convert_current_pose(state.pose, message)
         if state.cmd_vel is not None:
             message = convert_walk_command(state.cmd_vel, state.cmd_vel_time, message)
-        if convert_target_position is not None:
+        if state.move_base_goal is not None:
             message = convert_target_position(state.move_base_goal, message)
         if state.ball is not None:
             message = convert_ball_position(state.ball, state.ball_velocity, state.ball_covariance, message)
@@ -166,10 +166,12 @@ class StateToMessageConverter:
             message = convert_seen_robots(state.seen_robots, message)
         if state.strategy is not None:
             message = convert_strategy(state.strategy, state.strategy_time, message)
-        if state.time_to_ball is not None:
-            message = convert_time_to_ball(
-                state.time_to_ball, state.time_to_ball_time, state.ball, state.pose, state.avg_walking_speed, message
-            )
+
+        # We estimate the time to ball if we don't have a valid time to ball,
+        # so we want to do this either way
+        message = convert_time_to_ball(
+            state.time_to_ball, state.time_to_ball_time, state.ball, state.pose, state.avg_walking_speed, message
+        )
 
         return message
 

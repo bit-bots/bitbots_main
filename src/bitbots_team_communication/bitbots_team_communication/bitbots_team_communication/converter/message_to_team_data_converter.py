@@ -29,18 +29,16 @@ class MessageToTeamDataConverter:
         return self.convert_optional_fields(message, team_data)
 
     def convert_optional_fields(self, message: Proto.Message, team_data: TeamData) -> TeamData:
-        if hasattr(message, "time_to_ball"):
-            team_data.time_to_position_at_ball = message.time_to_ball
+        # Note: these are non-optional proto3 scalar/enum fields, so they are always present
+        # (fields that were not set by the sender simply contain the default value)
+        team_data.time_to_position_at_ball = message.time_to_ball
 
         return self.convert_strategy(message, team_data)
 
     def convert_strategy(self, message: Proto.Message, team_data: TeamData) -> TeamData:
-        if hasattr(message, "role"):
-            team_data.strategy.role = self.role_mapping[message.role]
-        if hasattr(message, "action"):
-            team_data.strategy.action = self.action_mapping[message.action]
-        if hasattr(message, "offensive_side"):
-            team_data.strategy.offensive_side = self.side_mapping[message.offensive_side]
+        team_data.strategy.role = self.role_mapping[message.role]
+        team_data.strategy.action = self.action_mapping[message.action]
+        team_data.strategy.offensive_side = self.side_mapping[message.offensive_side]
 
         return team_data
 

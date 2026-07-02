@@ -61,8 +61,8 @@ def generate_domain_bridge_config(robot_domain: int, output_dir: Path) -> Path:
     sensor_topics = [
         ("joint_states", "sensor_msgs/msg/JointState"),
         ("imu/data", "sensor_msgs/msg/Imu"),
-        ("camera/image_proc", "sensor_msgs/msg/Image"),
-        ("camera/camera_info", "sensor_msgs/msg/CameraInfo"),
+        ("zed/zed_node/rgb/image_rect_color", "sensor_msgs/msg/Image"),
+        ("zed/zed_node/rgb/camera_info", "sensor_msgs/msg/CameraInfo"),
     ]
 
     for topic_suffix, msg_type in sensor_topics:
@@ -92,7 +92,7 @@ def generate_world_xml(num_robots: int, package_share: str, robot_type: str) -> 
     """Generate MuJoCo world XML with the correct number of robots."""
     template_path = Path(package_share) / "xml" / "kid_field.xml"
     output_path = Path(package_share) / "xml" / "generated_world.xml"
-    offset = 6 * (
+    offset = 4 * (
         1 / num_robots
     )  # this makes the offset be the default value when there are 4 robots and increse the less robots there are
 

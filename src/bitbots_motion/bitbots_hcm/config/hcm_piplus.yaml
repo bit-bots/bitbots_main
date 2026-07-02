@@ -8,6 +8,7 @@
 
     # Motors
     motor_off_time: 30000000.0 # time of no use or updates when the hcm goes to soft off
+    standing_transition_delay: 1.0 # seconds without significant walk motion before transitioning from WALKING to CONTROLLABLE
     motor_timeout_duration: 0.5 # time without messages from the servos till error is produced [s]
 
     # Animations

@@ -1,0 +1,7 @@
+player_state_aggregator:
+  ros__parameters:
+    robot_state_topic: robot_state
+    pose_topic: pose_with_covariance
+    ball_topic: ball_position_relative_filtered
+    response_topic: player_state_response
+    publish_rate: 1.0
