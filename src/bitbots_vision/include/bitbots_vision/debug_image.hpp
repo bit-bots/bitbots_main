@@ -15,6 +15,7 @@ class DebugImage {
   inline static const cv::Scalar kRobotUnknown{160, 160, 160};    // grey
   inline static const cv::Scalar kGoalposts{255, 255, 255};       // white
   inline static const cv::Scalar kLines{255, 0, 0};               // blue
+  inline static const cv::Scalar kField{0, 140, 255};              // orange -- distinct from the green turf itself
 
   explicit DebugImage(bool active = false) : active_(active) {}
 
@@ -29,6 +30,16 @@ class DebugImage {
   /// Blend a segmentation mask over the debug image.
   /// @param mask  CV_8UC1 binary mask (non-zero = active)
   void draw_mask(const cv::Mat& mask, const cv::Scalar& color, double opacity = 0.5);
+
+  /// Blend a segmentation mask over the debug image using a diagonal hatch
+  /// pattern instead of a solid fill -- useful for large-area masks (e.g.
+  /// the field) where a solid tint would obscure the underlying image or be
+  /// hard to distinguish from a similarly-colored real object.
+  /// @param mask          CV_8UC1 binary mask (non-zero = active)
+  /// @param stripe_period Spacing in pixels between diagonal stripes
+  /// @param stripe_width  Thickness in pixels of each stripe
+  void draw_mask_hatched(const cv::Mat& mask, const cv::Scalar& color, int stripe_period = 16, int stripe_width = 4,
+                        double opacity = 0.6);
 
   const cv::Mat& get_image() const { return image_; }
 

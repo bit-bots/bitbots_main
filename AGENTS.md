@@ -56,6 +56,9 @@ directly from the host shell.
 - Prefer `pixi run -e <environment> <command>` over `pixi shell`.
   A persistent shell can become stale after environment changes.
 - Use `pixi task list` to inspect available repository tasks.
+- Do not manually `source install/setup.bash` (or `local_setup.bash`) inside a
+  Pixi environment. Pixi's shell activation already sources the workspace
+  overlay, so `ros2`, built executables, and package resolution work directly.
 
 Common commands:
 

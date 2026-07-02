@@ -5,8 +5,9 @@
   <version>2.0.0</version>
 
   <description>
-    YOEO-based vision for the Hamburg Bit-Bots.
-    Detects balls, goal posts, robots, and segments field/lines using an ONNX model.
+    RF-DETR-based vision for the Hamburg Bit-Bots.
+    Detects balls, goal posts, and robots using an ONNX object-detection model,
+    and segments field lines using classical HSV-based color segmentation.
     Runs inference via ONNX Runtime with TensorRT, CUDA, WebGPU, or CPU execution providers.
   </description>
 

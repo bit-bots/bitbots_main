@@ -193,6 +193,62 @@ TEST(DebugImage, DrawMask_PartialMask_OnlyActiveRegionChanged) {
 }
 
 // ---------------------------------------------------------------------------
+// draw_mask_hatched
+// ---------------------------------------------------------------------------
+
+TEST(DebugImage, Inactive_DrawMaskHatched_NoOp) {
+  DebugImage di(false);
+  cv::Mat mask(100, 100, CV_8UC1, cv::Scalar(255));
+  EXPECT_NO_THROW(di.draw_mask_hatched(mask, DebugImage::kField));
+}
+
+TEST(DebugImage, DrawMaskHatched_AllZero_NoChange) {
+  DebugImage di(true);
+  di.set_image(make_image());
+  cv::Mat before = di.get_image().clone();
+
+  cv::Mat mask(100, 100, CV_8UC1, cv::Scalar(0));
+  di.draw_mask_hatched(mask, DebugImage::kField);
+
+  cv::Mat diff;
+  cv::absdiff(di.get_image(), before, diff);
+  EXPECT_EQ(cv::countNonZero(diff.reshape(1)), 0);
+}
+
+TEST(DebugImage, DrawMaskHatched_FullyActiveMask_OnlyStripesChanged) {
+  DebugImage di(true);
+  di.set_image(cv::Mat(100, 100, CV_8UC3, cv::Scalar(0, 0, 0)));
+
+  cv::Mat mask(100, 100, CV_8UC1, cv::Scalar(255));  // fully active
+  di.draw_mask_hatched(mask, DebugImage::kField);
+
+  cv::Mat diff;
+  cv::absdiff(di.get_image(), cv::Mat(100, 100, CV_8UC3, cv::Scalar(0, 0, 0)), diff);
+  int changed = cv::countNonZero(diff.reshape(1));
+
+  // A hatch pattern must tint only a fraction of the mask -- strictly less
+  // than a solid fill would, proving it's a pattern, not a solid overlay.
+  EXPECT_GT(changed, 0);
+  EXPECT_LT(changed, 100 * 100 * 3);
+}
+
+TEST(DebugImage, DrawMaskHatched_RespectsMaskBounds) {
+  DebugImage di(true);
+  di.set_image(cv::Mat(100, 100, CV_8UC3, cv::Scalar(50, 50, 50)));
+
+  cv::Mat mask(100, 100, CV_8UC1, cv::Scalar(0));
+  mask(cv::Rect(0, 0, 50, 100)).setTo(255);  // only left half active
+
+  cv::Mat before = di.get_image().clone();
+  di.draw_mask_hatched(mask, DebugImage::kField);
+
+  cv::Mat diff;
+  cv::absdiff(di.get_image(), before, diff);
+  cv::Mat right_half_diff = diff(cv::Rect(50, 0, 50, 100));
+  EXPECT_EQ(cv::countNonZero(right_half_diff.reshape(1)), 0);
+}
+
+// ---------------------------------------------------------------------------
 // Color constants sanity
 // ---------------------------------------------------------------------------
 
@@ -201,4 +257,5 @@ TEST(DebugImage, ColorConstants_AreDistinct) {
   EXPECT_NE(DebugImage::kBall, DebugImage::kGoalposts);
   EXPECT_NE(DebugImage::kRobotTeamMates, DebugImage::kRobotOpponents);
   EXPECT_NE(DebugImage::kLines, DebugImage::kBall);
+  EXPECT_NE(DebugImage::kField, DebugImage::kBall);
 }
