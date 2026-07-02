@@ -54,9 +54,11 @@ $GoalScoreRecently
 
 #SupporterRole
 $BallSeen
-    YES --> $PassStarted
-        YES --> @TrackBall, @ChangeAction + action:positioning, @AvoidBallActive, @GoToFormationPosition
-        NO --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @AvoidBallActive, @GoToFormationPosition
+    YES --> $ReachedAndAlignedToPathPlanningGoalPosition + threshold:0.2 + latch:true
+        YES --> #StandAndLook
+        NO --> $PassStarted
+            YES --> @TrackBall, @ChangeAction + action:positioning, @AvoidBallActive, @GoToFormationPosition
+            NO --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @AvoidBallActive, @GoToFormationPosition
     NO --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @AvoidBallActive, @GoToFormationPosition
 
 
@@ -74,7 +76,9 @@ $SecondaryStateTeamDecider
 #Placing
 $DoOnce
     NOT_DONE --> @ForgetBall, @LookAtFieldFeatures
-    DONE -->  @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToFormationPosition
+    DONE -->  $ReachedAndAlignedToPathPlanningGoalPosition + threshold:0.2 + latch:true
+        YES --> #StandAndLook
+        NO --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToFormationPosition
 
 
 #Init
@@ -82,7 +86,9 @@ $DoOnce
 
 #NormalBehavior
 $SecondBallTouchAllowed
-    NO --> @SetNoSecondBallContactVariable + value:false + r:false, @LookAtFieldFeatures + r:false, @ChangeAction + action:passive + r:false, @AvoidBallActive + r:false, @GoToFormationPosition + blocking:true 
+    NO --> $ReachedAndAlignedToPathPlanningGoalPosition + threshold:0.2 + latch:true
+        YES --> #StandAndLook
+        NO --> @SetNoSecondBallContactVariable + value:false + r:false, @LookAtFieldFeatures + r:false, @ChangeAction + action:passive + r:false, @AvoidBallActive + r:false, @GoToFormationPosition + blocking:true 
     YES --> $BallSeen
         NO --> $ConfigRole
             STRIKER --> #SearchBall
@@ -92,9 +98,10 @@ $SecondBallTouchAllowed
             NO_FREEKICK --> #Placing
             YES --> $AssignedRole
                 STRIKER --> #KickWithAvoidance
-                GOALIE --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @GoToFormationPosition
                 SUPPORTER --> #SupporterRole
-                ELSE --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @GoToFormationPosition
+                ELSE --> $ReachedAndAlignedToPathPlanningGoalPosition + threshold:0.2 + latch:true
+                    YES --> StandAndLook 
+                    NO --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @GoToFormationPosition
 
 #ThrowinGoalKickCornerkickBehavior
 $DoOnce
