@@ -46,7 +46,7 @@ int16 secs_remaining
 int16 secondary_time
 bool penalized
 bool penalized_in_place
-uint8 seconds_till_unpenalized
+uint16 seconds_till_unpenalized
 uint8 warnings
 uint8 cautions
 
@@ -70,5 +70,5 @@ uint8 penalty_shot
 # a binary pattern indicating the successful penalty shots (1 for successful, 0 for unsuccessful)
 uint16 single_shots
 
-uint16 message_budget
+uint8 message_budget
 bool[] team_mates_with_penalty

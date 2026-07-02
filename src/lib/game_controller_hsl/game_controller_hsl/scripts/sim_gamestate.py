@@ -65,8 +65,6 @@ In Place Penalized:
 Stopped:
 
 Goals(Own : Rival):
-Seconds remaining:
-Message Budget:
 
 CTRL-C to quit
 """
@@ -98,9 +96,6 @@ CTRL-C to quit
 
         # Init kicking team to our teamID
         game_state_msg.kicking_team = self.team_id
-        game_state_msg.secs_remaining = 600
-        game_state_msg.message_budget = 12000
-        game_state_msg.first_half = True
 
         try:
             print(self.msg.replace("---start dynamic---", ""))
@@ -132,10 +127,6 @@ CTRL-C to quit
                     game_state_msg.stopped = not game_state_msg.stopped
                 elif key == "+":
                     game_state_msg.own_score += 1
-                elif key == "m":
-                    game_state_msg.message_budget = 30
-                elif key == "n":
-                    game_state_msg.message_budget = 12000
 
                 self.publisher.publish(game_state_msg)
                 # Override the lines: Each \n in the message + the extra \n from print
@@ -155,8 +146,6 @@ In Place Penalized: {game_state_msg.penalized_in_place}
 Stopped:            {game_state_msg.stopped}
 
 Goals(Own : Rival): {game_state_msg.own_score} : {game_state_msg.rival_score}
-Seconds remaining:  {game_state_msg.secs_remaining}
-Message Budget:     {game_state_msg.message_budget}
 
 CTRL-C to quit
 """
