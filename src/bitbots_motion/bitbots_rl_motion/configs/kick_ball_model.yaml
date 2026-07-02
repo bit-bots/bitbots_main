@@ -183,7 +183,8 @@ kick_ball_node:
       kick_timeout: 2.0
       warm_start_duration: 0.3
       warm_start_command: [0.2, 0.0, 0.0]
-      post_kick_command_duration: 0.5
+      post_kick_command_duration: 5.0
+      post_stabilization_stop_duration: 4.0
       post_kick_command: [0.4, 0.0, 0.0]
       pub_period: 5
       history_samples: 10

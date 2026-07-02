@@ -85,6 +85,8 @@ class SoccerCommandHandler(Handler):
         self._kick_active = False
         self._kick_abort_requested = False
         self._post_kick_command_active = False
+        self._post_stabilization_stop_active = False
+        
         self._kick_speed = 0.0
         # Requested heading in the body frame at goal receipt (atan2(y, x)); used
         # as the fallback if the kick could not be anchored to odom.

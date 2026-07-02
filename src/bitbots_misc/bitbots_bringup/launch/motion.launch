@@ -3,7 +3,7 @@
     <arg name="sim" default="false"/>
     <arg name="viz" default="false"/>
     <arg name="torqueless_mode" default="false" description="start without torque, for example for testing the falling detection"/>
-    <arg name="rl_motion" default="true" description="Whether to use the RL motion system instead of the regular one" />
+    <arg name="rl_motion" default="false" description="Whether to use the RL motion system instead of the regular one" />
 
     <!-- launch the hardware interface -->
     <group unless="$(var sim)">
