@@ -12,16 +12,16 @@
     <arg name="teamcom" default="true" description="Whether the team communication system should be started" />
     <arg name="vision" default="true" description="Whether the vision system should be started" />
     <arg name="world_model" default="true" description="Whether the world model should be started"/>
-    <arg name="monitoring" default="true" description="Whether the system monitor and udp bridge should be started" />
+    <arg name="monitoring" default="false" description="Whether the system monitor and udp bridge should be started" />
     <arg name="record" default="false" description="Whether the ros bag recording should be started" />
     <arg name="tts" default="false" description="Whether to speak" />
     <arg name="whistle_detector" default="true" description="Whether to detect whistles"/>
-    <arg unless="$(var sim)" name="fieldname" default="labor" description="Loads field settings" />
+    <arg unless="$(var sim)" name="fieldname" default="small_devision_2026" description="Loads field settings" />
     <arg if="$(var sim)" name="fieldname" default="hsl_kid" description="Loads field settings" />
 
 
     <!-- load the global parameters -->
-    <include file="$(find-pkg-share bitbots_parameter_blackboard)/launch/parameter_blackboard.launch">
+    <include file="$(find-pkg-share bitbots_parameter_blackboard)/launch/parameter_blackboard.launch.py">
         <arg name="sim" value="$(var sim)" />
         <arg name="fieldname" value="$(var fieldname)" />
     </include>
