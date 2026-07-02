@@ -1,5 +1,8 @@
 import concurrent.futures
 
+from fabric import Group, GroupResult, Result
+from rich.prompt import Prompt
+
 from deploy.misc import (
     CONSOLE,
     Connection,
@@ -9,9 +12,8 @@ from deploy.misc import (
     print_error,
     print_info,
 )
+from deploy.pixi import clear_robot_internet_status, pixi_run_command
 from deploy.tasks.abstract_task import AbstractTaskWhichRequiresSudo
-from fabric import Group, GroupResult, Result
-from rich.prompt import Prompt
 
 
 class Configure(AbstractTaskWhichRequiresSudo):
@@ -59,7 +61,11 @@ class Configure(AbstractTaskWhichRequiresSudo):
             :return: The result of the task.
             """
             print_info(f"Configuring game settings on {connection.host}...")
-            cmd = f"cd {self._remote_workspace} && pixi run --environment robot python3 {self._remote_workspace}/src/bitbots_misc/bitbots_parameter_blackboard/bitbots_parameter_blackboard/game_settings.py"
+            cmd = pixi_run_command(
+                connection,
+                self._remote_workspace,
+                f"python3 {self._remote_workspace}/src/bitbots_misc/bitbots_parameter_blackboard/bitbots_parameter_blackboard/game_settings.py",
+            )
 
             print_debug(f"Calling '{cmd}'")
             results = connection.run(
@@ -183,6 +189,8 @@ class Configure(AbstractTaskWhichRequiresSudo):
                     print_error(
                         f"Could not set priority of connection {answered_connection_id} to 100 on {connection.host}"
                     )
+                else:
+                    clear_robot_internet_status(connection)
                 return set_priority_result
 
         # Get wifi UUID to enable from user
