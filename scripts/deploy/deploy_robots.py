@@ -52,7 +52,7 @@ class DeployRobots:
     def _parse_arguments(self) -> argparse.Namespace:
         parser = ArgumentParserShowTargets(
             description="Deploy the Bit-Bots software on a robot. "
-            "This script provides 4 tasks: sync, configure, build, launch. "
+            "This script provides these tasks: sync, configure, build, launch. "
             "By default, it runs all tasks. You can select a subset of tasks by using the corresponding flags. "
             "For example, to only run the sync and build task, use the -sb."
         )
@@ -62,7 +62,7 @@ class DeployRobots:
             "targets",
             type=str,
             nargs="+",
-            help="The targets to deploy to. Multiple targets can be specified. 'ALL' can be used to target all known robots.",
+            help="The targets to deploy to. Multiple targets can be specified (SPACE separated). 'ALL' can be used to target all known robots. Examples: 'kalliope', '1', '<IP_ADDRESS>', 'ALL'",
         )
 
         parser.add_argument("--show-targets", action="store_true", help="Show all known targets and exit.")

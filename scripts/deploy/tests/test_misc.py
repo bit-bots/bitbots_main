@@ -17,10 +17,11 @@ _SPEC.loader.exec_module(misc)
 @pytest.fixture
 def known_targets(monkeypatch):
     targets = {
-        "172.20.1.11": {"hostname": "kalliope", "robot_name": "Kalliope"},
-        "10.0.6.1": {"hostname": "kalliope", "robot_name": "Kalliope"},
-        "10.1.24.125": {"hostname": "kalliope", "robot_name": "Kalliope"},
-        "172.20.1.12": {"hostname": "mickey", "robot_name": "mickey"},
+        "172.20.1.11": {"hostname": "kalliope", "robot_name": "Kalliope", "robot_number": 1},
+        "10.0.6.1": {"hostname": "kalliope", "robot_name": "Kalliope", "robot_number": 1},
+        "10.1.24.125": {"hostname": "kalliope", "robot_name": "Kalliope", "robot_number": 1},
+        "172.20.1.12": {"hostname": "mickey", "robot_name": "mickey", "robot_number": 2},
+        "172.20.1.14": {"hostname": "romeo", "robot_name": "Romeo", "robot_number": 4},
     }
     monkeypatch.setattr(misc, "KNOWN_TARGETS", targets)
     return targets
@@ -34,12 +35,34 @@ def test_parse_targets_returns_all_ips_for_duplicate_robot_name(known_targets):
     assert misc._parse_targets(["Kalliope"]) == ["172.20.1.11", "10.0.6.1", "10.1.24.125"]
 
 
+def test_parse_targets_returns_all_ips_for_duplicate_robot_number(known_targets):
+    assert misc._parse_targets(["1"]) == ["172.20.1.11", "10.0.6.1", "10.1.24.125"]
+
+
 def test_parse_targets_keeps_literal_ip_as_single_target(known_targets):
     assert misc._parse_targets(["10.0.6.1"]) == ["10.0.6.1"]
 
 
 def test_parse_targets_does_not_duplicate_ip_when_hostname_and_robot_name_match(known_targets):
     assert misc._parse_targets(["mickey"]) == ["172.20.1.12"]
+
+
+def test_parse_targets_handles_space_separated_mixed_targets(known_targets):
+    assert misc._parse_targets(["1", "romeo", "2"]) == [
+        "172.20.1.11",
+        "10.0.6.1",
+        "10.1.24.125",
+        "172.20.1.14",
+        "172.20.1.12",
+    ]
+
+
+def test_parse_targets_deduplicates_resolved_ips(known_targets):
+    assert misc._parse_targets(["1", "kalliope", "172.20.1.11"]) == [
+        "172.20.1.11",
+        "10.0.6.1",
+        "10.1.24.125",
+    ]
 
 
 def test_parse_targets_exits_for_unknown_target(known_targets):
