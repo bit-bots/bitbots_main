@@ -119,6 +119,7 @@ class GameStateReceiver(Node):
                 seconds=self.game_controller_lost_timeout
             )
             self.publish_diagnostics(received_message_lately)
+            rclpy.spin_once(self, timeout_sec=0.1)
 
     def receive_and_answer_once(self):
         """
