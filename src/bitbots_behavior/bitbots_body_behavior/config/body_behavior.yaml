@@ -49,7 +49,7 @@ body_behavior:
     ready_wait_time: 4.0
 
     # The orientation threshold defining which range (in Degrees) is acceptable as aligned to the goal (in each direction)
-    goal_alignment_orientation_threshold: 25.0
+    goal_alignment_orientation_threshold: 10.0
 
     # When the ball is closer than `ball_close_distance` meters
     # it is in a reachable area of the robot
@@ -100,7 +100,7 @@ body_behavior:
     ball_far_approach_dist: 0.3
 
     # Range in which the ball far approach point is counted as reached
-    ball_far_approach_position_thresh: 0.4
+    ball_far_approach_position_thresh: 0.1
 
     # We reapproach the ball after it has moved further away than this distance. This includes moving to the far approach position.
     ball_reapproach_dist: 1.0
@@ -150,7 +150,7 @@ body_behavior:
       timeout: 2.0 # how long the kick policy is active
       post_kick_timeout: 0.05 # how long to wait until activating walk in place after kicking
       walk_delay: 0.5  # how long to let the robot walk in place
-      approach_dist: 0.2 # distance from the ball to the approach point on the arc
+      approach_dist: 0.3  # distance from the ball to the approach point on the arc
       approach_arc_degree: 30.0 # half opening angle (in degrees) of the arc around the point opposite the kick direction
       goal_line_offset: 0.25 # distance beyond the goal line used for the left/right kick target points
       goal_post_y_offset: 0.5 # inset (in y) from the goal posts used for the left/right kick target points

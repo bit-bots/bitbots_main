@@ -50,7 +50,7 @@ class KickCapsule(AbstractBlackboardCapsule):
                 "RL Kick Action Server not running!"
             )
             return False
-        
+
         direction_rad_map = math.radians(direction_deg_map)
         _, _, robot_theta = self._blackboard.world_model.get_current_position()
         direction_rad_robot = direction_rad_map - robot_theta
@@ -67,6 +67,6 @@ class KickCapsule(AbstractBlackboardCapsule):
 
     def __done_cb(self):
         self.is_currently_kicking = False
-    
+
     def stop_rl_kick(self):
         pass

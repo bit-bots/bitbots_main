@@ -4,6 +4,7 @@ from bitbots_blackboard.body_blackboard import BodyBlackboard
 from bitbots_blackboard.capsules.kick_capsule import KickCapsule
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 from rclpy.duration import Duration
+from geometry_msgs.msg import Twist
 
 
 class AbstractKickAction(AbstractActionElement):
@@ -54,26 +55,30 @@ class RLKick(AbstractKickAction):
 
 
 class RLKickTowardsGoal(AbstractKickAction):
-
     def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
         self._strength = parameters.get("strength", 2.0)
         self._start_time = None
 
     def perform(self, reevaluate=False):
-        x_dir, y_dir = self.blackboard.costmap.get_gradient_at_field_position(*self.blackboard.world_model.get_ball_position_xy())
-        costmap_direction_deg_in_world = (math.degrees(math.atan2(y_dir, x_dir)))
+        x_dir, y_dir = self.blackboard.costmap.get_gradient_at_field_position(
+            *self.blackboard.world_model.get_ball_position_xy()
+        )
+        costmap_direction_deg_in_world = math.degrees(math.atan2(y_dir, x_dir))
         # transform map to robot relative
         if self._start_time is None:
             self._start_time = self.blackboard.node.get_clock().now()
-            self.blackboard.kick.start_rl_kick(costmap_direction_deg_in_world,
-                                               self._strength)
+            self.blackboard.kick.start_rl_kick(costmap_direction_deg_in_world, self._strength)
 
         elapsed = self.blackboard.node.get_clock().now() - self._start_time
-        if elapsed >= Duration(seconds=self.blackboard.config["rl_kick"]["timeout"]) and \
-           elapsed <= Duration(seconds=self.blackboard.config["rl_kick"]["timeout"] + self.blackboard.config["rl_kick"]["post_kick_timeout"]):
+        if elapsed >= Duration(seconds=self.blackboard.config["rl_kick"]["timeout"]) and elapsed <= Duration(
+            seconds=self.blackboard.config["rl_kick"]["timeout"]
+            + self.blackboard.config["rl_kick"]["post_kick_timeout"]
+        ):
             self.blackboard.pathfinding.direct_cmd_vel_pub.publish(Twist())
-        elif elapsed >= Duration(seconds=self.blackboard.config["rl_kick"]["timeout"] + \
-                                 self.blackboard.config["rl_kick"]["post_kick_timeout"] + \
-                                 self.blackboard.config["rl_kick"]["walk_delay"]):
+        elif elapsed >= Duration(
+            seconds=self.blackboard.config["rl_kick"]["timeout"]
+            + self.blackboard.config["rl_kick"]["post_kick_timeout"]
+            + self.blackboard.config["rl_kick"]["walk_delay"]
+        ):
             self.pop()
