@@ -26,6 +26,9 @@ team_comm:
     # lifetime of data [s]
     lifetime: 1
 
+    # Maximum allowed serialized message size in bytes
+    max_message_size: 512
+
     # ROS Topics
     topics:
       team_data_topic: "team_data"
