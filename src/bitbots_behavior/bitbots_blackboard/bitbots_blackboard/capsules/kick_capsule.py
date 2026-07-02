@@ -1,12 +1,12 @@
 from enum import Flag
 
-from rclpy.publisher import Publisher
+from rclpy.publisher import Duration, Publisher
 from std_msgs.msg import Bool
 from rclpy.action import ActionClient
 import math
 from bitbots_msgs.action import Kick
 from bitbots_blackboard.capsules import AbstractBlackboardCapsule
-
+from geometry_msgs.msg import Twist, Vector3
 
 class KickCapsule(AbstractBlackboardCapsule):
     """Communicates with the  action server to kick the ball."""
@@ -31,6 +31,9 @@ class KickCapsule(AbstractBlackboardCapsule):
         """
         self.walk_kick_pub = self._node.create_publisher(Bool, "/kick", 1)
         self._timeout = blackboard.config["rl_kick"]["timeout"]
+        self._post_kick_timeout = blackboard.config["rl_kick"]["post_kick_timeout"]
+        self._walk_delay = blackboard.config["rl_kick"]["walk_delay"]
+
         self._rl_kick_client = ActionClient(self._node, Kick, "rl_kick")
         self._is_currently_kicking = False
 
@@ -65,6 +68,13 @@ class KickCapsule(AbstractBlackboardCapsule):
         # alternative: let the kick policy handle it itself with post kick timeout and post kick cmd
 
     def __done_cb(self):
+        self._node.get_clock().sleep_for(Duration(seconds=self._post_kick_timeout))
+        self.blackboard.pathfinding.direct_cmd_vel_pub.publish(Twist())
+        ## sleep for timeout
+        self._node.get_clock().sleep_for(Duration(seconds=self._walk_delay))
+        self.blackboard.pathfinding.direct_cmd_vel_pub.publish(Twist(angular=Vector3(x=-1.0)))
+
+
         self.is_currently_kicking = False
     
     def stop_rl_kick(self):
