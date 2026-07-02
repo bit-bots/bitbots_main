@@ -145,7 +145,24 @@ target_link_libraries(
                             onnxruntime::onnxruntime)
 
 if(BITBOTS_VISION_HAS_TENSORRT)
-  target_include_directories(bitbots_vision_lib PUBLIC ${TENSORRT_INCLUDE_DIR} ${CUDA_INCLUDE_DIR})
+  # Deliberately NOT target_include_directories() (-I/-isystem) here: on
+  # Jetson, apt-installed TensorRT dumps its headers into
+  # /usr/include/<arch>-linux-gnu -- the SAME directory as the system's own
+  # glibc headers, which are for a different/older glibc than the one this
+  # conda-forge cross-compiler's libstdc++ was built against. -I/-isystem
+  # are searched BEFORE the compiler's own bundled sysroot, so adding that
+  # directory that way lets the system's mismatched <bits/pthreadtypes.h>
+  # (etc.) shadow the toolchain's own matching version, breaking
+  # <mutex>/<memory> for every translation unit in this target (e.g.
+  # "'__PTHREAD_SPINS' was not declared in this scope" deep inside
+  # libstdc++'s <mutex> -- happens even in code that never touches
+  # TensorRT). -idirafter is only consulted as a last resort, after the
+  # compiler's built-in system directories, so the toolchain's own glibc
+  # headers are still found first for anything that exists in both places,
+  # and only TensorRT/CUDA-specific headers (found nowhere else) fall
+  # through to this directory.
+  target_compile_options(bitbots_vision_lib PUBLIC -idirafter ${TENSORRT_INCLUDE_DIR} -idirafter
+                          ${CUDA_INCLUDE_DIR})
   target_link_libraries(bitbots_vision_lib PUBLIC ${TENSORRT_NVINFER_LIBRARY}
                                                   ${TENSORRT_NVONNXPARSER_LIBRARY} ${CUDA_CUDART_LIBRARY})
   # PUBLIC so vision_node.cpp (compiled into the `vision` executable, which

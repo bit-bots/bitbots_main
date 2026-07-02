@@ -61,10 +61,22 @@ TensorRT/driver upgrade or a GPU swap. FP16 is enabled automatically whenever th
 whether FP16 or FP32 is used.
 
 This backend was written and code-reviewed without access to TensorRT/CUDA hardware (not available in the dev
-environment) -- it has not been build- or runtime-tested. If it doesn't build or misbehaves on the robot, the
-error messages are logged verbosely (including ONNX parser errors and CUDA error strings) to aid debugging;
-falling back to deleting the TensorRT include/library detection results (or simply not having TensorRT
-installed) always leaves the ONNX Runtime backend as a working fallback.
+environment) -- it has not been runtime-tested. If it doesn't build or misbehaves on the robot, the error
+messages are logged verbosely (including ONNX parser errors and CUDA error strings) to aid debugging; falling
+back to deleting the TensorRT include/library detection results (or simply not having TensorRT installed)
+always leaves the ONNX Runtime backend as a working fallback.
+
+**Jetson header collision gotcha**: apt-installed TensorRT on JetPack dumps its headers into
+``/usr/include/<arch>-linux-gnu`` -- the *same* directory as the system's own glibc headers, which are for a
+different/older glibc than the one the pixi/conda-forge cross-compiler's libstdc++ was built against. The
+TensorRT/CUDA include directories are therefore added via ``target_compile_options(... -idirafter ...)``
+rather than ``target_include_directories()`` (which would emit ``-I``/``-isystem``, both searched *before* the
+compiler's own bundled sysroot). ``-idirafter`` is only consulted as a last resort, after the compiler's
+built-in system directories, so the toolchain's own glibc headers still win for anything that exists in both
+places, and only TensorRT/CUDA-specific headers (found nowhere else) fall through to that directory. Getting
+this wrong manifests as build failures deep inside ``<mutex>``/``<memory>`` (e.g. "'__PTHREAD_SPINS' was not
+declared in this scope") in *any* translation unit in this target, not just ones touching TensorRT -- a
+surprising failure mode if you don't know to look for it.
 
 Model directory layout
 -----------------------
