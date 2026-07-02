@@ -106,7 +106,9 @@ $DoOnce
 
 #NormalBehavior
 $SecondBallTouchAllowed
-    NO --> @SetNoSecondBallContactVariable + value:false + r:false, @LookAtFieldFeatures + r:false, @ChangeAction + action:passive + r:false, @AvoidBallActive + r:false, @GoToPassPreparePosition + blocking:true 
+    NO --> $ConfigRole
+        GOALIE --> @SetNoSecondBallContactVariable + value:false + r:false, @LookAtFieldFeatures + r:false, @ChangeAction + action:passive + r:false, @AvoidBallActive + r:false, @GoToBlockPosition
+        ELSE --> @SetNoSecondBallContactVariable + value:false + r:false, @LookAtFieldFeatures + r:false, @ChangeAction + action:passive + r:false, @AvoidBallActive + r:false, @GoToDefensePosition
     YES --> $BallSeen
         NO --> $ConfigRole
             GOALIE --> #RolePositionWithPause
