@@ -55,7 +55,7 @@ $GoalScoreRecently
 #SupporterRole
 $BallSeen
     YES --> $ReachedAndAlignedToPathPlanningGoalPosition + threshold:0.2 + latch:true
-        YES --> #StandAndLook
+        YES --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @Stand
         NO --> $PassStarted
             YES --> @TrackBall, @ChangeAction + action:positioning, @AvoidBallActive, @GoToFormationPosition
             NO --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @AvoidBallActive, @GoToFormationPosition
@@ -77,7 +77,7 @@ $SecondaryStateTeamDecider
 $DoOnce
     NOT_DONE --> @ForgetBall, @LookAtFieldFeatures
     DONE -->  $ReachedAndAlignedToPathPlanningGoalPosition + threshold:0.2 + latch:true
-        YES --> #StandAndLook
+        YES --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @Stand
         NO --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToFormationPosition
 
 
@@ -87,7 +87,7 @@ $DoOnce
 #NormalBehavior
 $SecondBallTouchAllowed
     NO --> $ReachedAndAlignedToPathPlanningGoalPosition + threshold:0.2 + latch:true
-        YES --> #StandAndLook
+        YES --> @ChangeAction + action:passive, @LookAtFieldFeatures, @Stand
         NO --> @SetNoSecondBallContactVariable + value:false + r:false, @LookAtFieldFeatures + r:false, @ChangeAction + action:passive + r:false, @AvoidBallActive + r:false, @GoToFormationPosition + blocking:true 
     YES --> $BallSeen
         NO --> $ConfigRole
@@ -100,7 +100,7 @@ $SecondBallTouchAllowed
                 STRIKER --> #KickWithAvoidance
                 SUPPORTER --> #SupporterRole
                 ELSE --> $ReachedAndAlignedToPathPlanningGoalPosition + threshold:0.2 + latch:true
-                    YES --> StandAndLook 
+                    YES --> #StandAndLook 
                     NO --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @GoToFormationPosition
 
 #ThrowinGoalKickCornerkickBehavior

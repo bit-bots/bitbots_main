@@ -189,12 +189,11 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
                 poses.append(data.robot_position.pose)
         return poses
     
-    def get_in_of_passive_player(self) -> int | None:
+    def get_id_of_passive_player(self) -> int | None:
         """Returns the poses of all playing robots"""
         index_list = []
         data: TeamData
         for data in self.team_data.values():
-            self._node.getLogger
             if self.is_valid(data) and (data.strategy.action is Strategy.ACTION_PASSIVE):
                 return data.robot_id          
         if self.strategy.action is Strategy.ACTION_PASSIVE:
