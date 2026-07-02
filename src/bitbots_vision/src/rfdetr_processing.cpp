@@ -95,4 +95,38 @@ std::unordered_map<std::string, std::vector<Candidate>> postprocess_detections_r
   return result;
 }
 
+// ---------------------------------------------------------------------------
+// postprocess_line_mask_rfdetr
+// ---------------------------------------------------------------------------
+
+cv::Mat postprocess_line_mask_rfdetr(const float* line_mask_logits, int mask_h, int mask_w, float threshold,
+                                    int orig_h, int orig_w) {
+  cv::Mat logits_mat(mask_h, mask_w, CV_32FC1, const_cast<float*>(line_mask_logits));
+
+  cv::Mat exp_neg;
+  cv::exp(-logits_mat, exp_neg);
+  cv::Mat probs;
+  cv::divide(1.0, exp_neg + 1.0, probs);  // sigmoid
+
+  cv::Mat resized;
+  cv::resize(probs, resized, cv::Size(orig_w, orig_h), 0, 0, cv::INTER_LINEAR);
+
+  return resized > threshold;  // CV_8UC1, 0/255
+}
+
+// ---------------------------------------------------------------------------
+// suppress_candidates
+// ---------------------------------------------------------------------------
+
+void suppress_candidates(cv::Mat& mask, const std::vector<Candidate>& candidates, int margin_px) {
+  const cv::Rect image_bounds(0, 0, mask.cols, mask.rows);
+  for (const auto& c : candidates) {
+    cv::Rect box(c.x1 - margin_px, c.y1 - margin_px, c.width + 2 * margin_px, c.height + 2 * margin_px);
+    box &= image_bounds;
+    if (box.width > 0 && box.height > 0) {
+      cv::rectangle(mask, box, cv::Scalar(0), cv::FILLED);
+    }
+  }
+}
+
 }  // namespace bitbots_vision::processing

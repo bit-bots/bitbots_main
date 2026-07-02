@@ -21,13 +21,21 @@ namespace bitbots_vision {
 ///
 /// The model must expose:
 ///   - one input named "input"  shape [1, 3, H, W]
-///   - two outputs, read POSITIONALLY (not by name, matching the reference
-///     Python implementation's `session.run(None, ...)`):
-///       [0] dets    shape [1, N, 4]              normalized (cx, cy, w, h)
-///       [1] logits  shape [1, N, num_classes]     raw class logits
+///   - outputs read BY NAME (not position, since the output count/order can
+///     vary between model exports):
+///       "dets"       shape [1, N, 4]              normalized (cx, cy, w, h)
+///       "labels"     shape [1, N, num_classes]     raw class logits
+///       "line_mask"  shape [1, 1, Hd, Wd]          raw line-segmentation logits (optional)
 ///
 /// RF-DETR is NMS-free (a fixed number of object queries N, e.g. 300), so
-/// unlike YOEO there is no NMS step and no segmentation output.
+/// unlike YOEO there is no NMS step. Field lines are read directly from the
+/// model's own learned segmentation head (if present) rather than a
+/// classical color-based heuristic.
+///
+/// FP16-weight model exports keep the same float32 input/output tensor
+/// contract as the fp32 export (only internal weights differ), so no
+/// handler code needs to change to use one -- just point `model_path` at a
+/// model directory containing the fp16-weight onnx file.
 class RfdetrHandler {
  public:
   struct Config {
@@ -35,6 +43,8 @@ class RfdetrHandler {
     /// Classes not present here fall back to `default_conf_threshold`.
     std::unordered_map<std::string, float> class_conf_thresholds;
     float default_conf_threshold{0.99f};
+    /// Post-sigmoid probability threshold for the line-segmentation head.
+    float line_mask_threshold{0.5f};
   };
 
   RfdetrHandler(const std::string& model_path, const ModelConfig& model_config, const Config& cfg,
@@ -52,6 +62,10 @@ class RfdetrHandler {
 
   std::vector<Candidate> get_detection_candidates_for(const std::string& class_name);
 
+  /// Line-segmentation mask (CV_8UC1, 0/255) at original image resolution.
+  /// Empty if the loaded model has no "line_mask" output.
+  cv::Mat get_line_mask();
+
   const std::vector<std::string>& detection_class_names() const;
 
  private:
@@ -66,6 +80,12 @@ class RfdetrHandler {
   std::vector<std::string> output_names_;
   std::vector<std::string> det_class_names_;
 
+  // Indices into output_names_/the Run() result vector, resolved by name at
+  // load time (-1 if not present, only valid for line_mask_idx_).
+  int dets_idx_{-1};
+  int labels_idx_{-1};
+  int line_mask_idx_{-1};
+
   // ----- Runtime state -----
   Config cfg_;
   rclcpp::Logger logger_;
@@ -78,6 +98,7 @@ class RfdetrHandler {
 
   // Cached results
   std::unordered_map<std::string, std::vector<Candidate>> det_results_;
+  cv::Mat line_mask_result_;
 
   // ----- Helpers -----
   void init_session(const std::string& model_path);

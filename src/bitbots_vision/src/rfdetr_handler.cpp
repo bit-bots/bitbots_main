@@ -101,16 +101,32 @@ void RfdetrHandler::init_session(const std::string& model_path) {
     }
   }
 
-  // Outputs — accessed positionally later (dets, then logits), matching the reference
-  // Python implementation's session.run(None, ...) behaviour.
+  // Outputs — resolved by name (not position), since the output set/order
+  // can vary between model exports (e.g. an older export without a
+  // "line_mask" output).
   const size_t num_outputs = session_->GetOutputCount();
   for (size_t i = 0; i < num_outputs; ++i) {
     auto out_name_ptr = session_->GetOutputNameAllocated(i, allocator);
     output_names_.emplace_back(out_name_ptr.get());
+    if (output_names_.back() == "dets") {
+      dets_idx_ = static_cast<int>(i);
+    } else if (output_names_.back() == "labels") {
+      labels_idx_ = static_cast<int>(i);
+    } else if (output_names_.back() == "line_mask") {
+      line_mask_idx_ = static_cast<int>(i);
+    }
   }
 
-  RCLCPP_INFO(logger_, "Model loaded – input '%s' [1, 3, %lld, %lld], %zu outputs", input_name_.c_str(),
-              static_cast<long long>(input_shape_[2]), static_cast<long long>(input_shape_[3]), num_outputs);
+  if (dets_idx_ < 0 || labels_idx_ < 0) {
+    throw std::runtime_error("RF-DETR model is missing a required 'dets' or 'labels' output");
+  }
+  if (line_mask_idx_ < 0) {
+    RCLCPP_WARN(logger_, "RF-DETR model has no 'line_mask' output — line segmentation will be empty");
+  }
+
+  RCLCPP_INFO(logger_, "Model loaded – input '%s' [1, 3, %lld, %lld], %zu outputs (line_mask: %s)",
+              input_name_.c_str(), static_cast<long long>(input_shape_[2]), static_cast<long long>(input_shape_[3]),
+              num_outputs, line_mask_idx_ >= 0 ? "yes" : "no");
 }
 
 // ---------------------------------------------------------------------------
@@ -121,6 +137,7 @@ void RfdetrHandler::reconfigure(const Config& cfg) { cfg_ = cfg; }
 
 void RfdetrHandler::set_image(const cv::Mat& bgr_image) {
   det_results_.clear();
+  line_mask_result_ = cv::Mat();
   preprocess(bgr_image);
   prediction_is_fresh_ = false;
 }
@@ -137,6 +154,11 @@ std::vector<Candidate> RfdetrHandler::get_detection_candidates_for(const std::st
   predict();
   auto it = det_results_.find(class_name);
   return (it != det_results_.end()) ? it->second : std::vector<Candidate>{};
+}
+
+cv::Mat RfdetrHandler::get_line_mask() {
+  predict();
+  return line_mask_result_;
 }
 
 const std::vector<std::string>& RfdetrHandler::detection_class_names() const { return det_class_names_; }
@@ -174,25 +196,35 @@ void RfdetrHandler::run_inference() {
   auto outputs = session_->Run(Ort::RunOptions{nullptr}, &input_name_cstr, &input_tensor, 1, out_name_cstrs.data(),
                                out_name_cstrs.size());
 
-  if (outputs.size() < 2) {
-    RCLCPP_ERROR(logger_, "Expected at least 2 outputs from RF-DETR model, got %zu", outputs.size());
-    return;
-  }
+  const auto& dets_out = outputs[static_cast<size_t>(dets_idx_)];
+  const auto& labels_out = outputs[static_cast<size_t>(labels_idx_)];
 
-  // Positional: outputs[0] = dets [1, N, 4], outputs[1] = logits [1, N, num_classes]
-  const auto dets_shape = outputs[0].GetTensorTypeAndShapeInfo().GetShape();
-  const auto logits_shape = outputs[1].GetTensorTypeAndShapeInfo().GetShape();
-  if (dets_shape.size() < 3 || logits_shape.size() < 3) {
+  const auto dets_shape = dets_out.GetTensorTypeAndShapeInfo().GetShape();
+  const auto labels_shape = labels_out.GetTensorTypeAndShapeInfo().GetShape();
+  if (dets_shape.size() < 3 || labels_shape.size() < 3) {
     RCLCPP_ERROR(logger_, "Unexpected RF-DETR output tensor rank");
     return;
   }
 
   const int64_t num_dets = dets_shape[1];
-  const int64_t num_classes = logits_shape[2];
+  const int64_t num_classes = labels_shape[2];
 
   det_results_ = processing::postprocess_detections_rfdetr(
-      outputs[0].GetTensorData<float>(), outputs[1].GetTensorData<float>(), num_dets, num_classes, det_class_names_,
+      dets_out.GetTensorData<float>(), labels_out.GetTensorData<float>(), num_dets, num_classes, det_class_names_,
       cfg_.class_conf_thresholds, cfg_.default_conf_threshold, orig_h_, orig_w_);
+
+  if (line_mask_idx_ >= 0) {
+    const auto& line_mask_out = outputs[static_cast<size_t>(line_mask_idx_)];
+    const auto line_mask_shape = line_mask_out.GetTensorTypeAndShapeInfo().GetShape();
+    if (line_mask_shape.size() == 4) {
+      const int mask_h = static_cast<int>(line_mask_shape[2]);
+      const int mask_w = static_cast<int>(line_mask_shape[3]);
+      line_mask_result_ = processing::postprocess_line_mask_rfdetr(
+          line_mask_out.GetTensorData<float>(), mask_h, mask_w, cfg_.line_mask_threshold, orig_h_, orig_w_);
+    } else {
+      RCLCPP_ERROR(logger_, "Unexpected 'line_mask' output tensor rank");
+    }
+  }
 }
 
 }  // namespace bitbots_vision

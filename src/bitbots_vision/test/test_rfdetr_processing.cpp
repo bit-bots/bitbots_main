@@ -214,3 +214,70 @@ TEST(PostprocessDetectionsRfdetr, PerClassThreshold_UnlistedClassUsesDefault) {
   ASSERT_TRUE(result.count("goalpost") > 0);
   EXPECT_EQ(result.at("goalpost").size(), 1u);
 }
+
+// ===========================================================================
+// postprocess_line_mask_rfdetr
+// ===========================================================================
+
+TEST(PostprocessLineMaskRfdetr, HighLogit_AboveThreshold_Kept) {
+  // A large positive logit -> sigmoid close to 1.0, well above threshold.
+  std::vector<float> logits(4 * 4, 10.f);
+  auto mask = postprocess_line_mask_rfdetr(logits.data(), 4, 4, 0.5f, 16, 16);
+
+  EXPECT_EQ(mask.rows, 16);
+  EXPECT_EQ(mask.cols, 16);
+  EXPECT_EQ(cv::countNonZero(mask), 16 * 16);
+}
+
+TEST(PostprocessLineMaskRfdetr, LowLogit_BelowThreshold_Rejected) {
+  // A large negative logit -> sigmoid close to 0.0, well below threshold.
+  std::vector<float> logits(4 * 4, -10.f);
+  auto mask = postprocess_line_mask_rfdetr(logits.data(), 4, 4, 0.5f, 16, 16);
+
+  EXPECT_EQ(cv::countNonZero(mask), 0);
+}
+
+TEST(PostprocessLineMaskRfdetr, MixedLogits_ResizedAndThresholdedCorrectly) {
+  // Left half of the 2x2 logit grid is confidently positive, right half
+  // confidently negative -> after resize to 20x20, left half should be kept.
+  std::vector<float> logits = {10.f, -10.f, 10.f, -10.f};
+  auto mask = postprocess_line_mask_rfdetr(logits.data(), 2, 2, 0.5f, 20, 20);
+
+  EXPECT_EQ(mask.rows, 20);
+  EXPECT_EQ(mask.cols, 20);
+  EXPECT_GT(cv::countNonZero(mask(cv::Rect(0, 0, 8, 20))), 0);
+  EXPECT_EQ(cv::countNonZero(mask(cv::Rect(12, 0, 8, 20))), 0);
+}
+
+TEST(PostprocessLineMaskRfdetr, OutputTypeIsCV_8UC1) {
+  std::vector<float> logits(4 * 4, 0.f);
+  auto mask = postprocess_line_mask_rfdetr(logits.data(), 4, 4, 0.5f, 8, 8);
+  EXPECT_EQ(mask.type(), CV_8UC1);
+}
+
+// ===========================================================================
+// suppress_candidates
+// ===========================================================================
+
+TEST(SuppressCandidates, InflatesAndBlacksOutRegion) {
+  cv::Mat mask(50, 50, CV_8UC1, cv::Scalar(255));
+  std::vector<Candidate> candidates = {Candidate::from_x1y1x2y2(20, 20, 30, 30, 0.9f)};
+
+  suppress_candidates(mask, candidates, /*margin_px=*/2);
+
+  // Inside inflated box -> zeroed
+  EXPECT_EQ(mask.at<uint8_t>(25, 25), 0);
+  EXPECT_EQ(mask.at<uint8_t>(19, 19), 0);  // just inside the 2px margin
+  // Outside inflated box -> untouched
+  EXPECT_EQ(mask.at<uint8_t>(0, 0), 255);
+  EXPECT_EQ(mask.at<uint8_t>(45, 45), 255);
+}
+
+TEST(SuppressCandidates, ClampsAtImageBorder_NoCrash) {
+  cv::Mat mask(20, 20, CV_8UC1, cv::Scalar(255));
+  // Candidate box mostly outside the image bounds.
+  std::vector<Candidate> candidates = {Candidate::from_x1y1x2y2(-10, -10, 5, 5, 0.9f)};
+
+  EXPECT_NO_THROW(suppress_candidates(mask, candidates, 5));
+  EXPECT_EQ(mask.at<uint8_t>(0, 0), 0);
+}

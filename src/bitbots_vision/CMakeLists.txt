@@ -66,7 +66,7 @@ generate_parameter_library(vision_parameters config/vision_parameters.yaml)
 # Processing library (no ONNX dependency) – used by tests and the handler
 # ---------------------------------------------------------------------------
 add_library(bitbots_vision_processing SHARED
-            src/rfdetr_processing.cpp src/line_segmentation.cpp src/debug_image.cpp src/model_config.cpp)
+            src/rfdetr_processing.cpp src/debug_image.cpp src/model_config.cpp)
 
 target_include_directories(
   bitbots_vision_processing
@@ -127,9 +127,6 @@ if(BUILD_TESTING)
 
   ament_add_gtest(test_rfdetr_processing test/test_rfdetr_processing.cpp)
   target_link_libraries(test_rfdetr_processing bitbots_vision_processing)
-
-  ament_add_gtest(test_line_segmentation test/test_line_segmentation.cpp)
-  target_link_libraries(test_line_segmentation bitbots_vision_processing)
 
   ament_add_gtest(test_rfdetr_handler test/test_rfdetr_handler.cpp)
   target_link_libraries(test_rfdetr_handler bitbots_vision_lib)

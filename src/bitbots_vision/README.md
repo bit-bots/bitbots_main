@@ -8,7 +8,7 @@ Bit-Bots Vision
 
 This is the vision ROS package of the Hamburg Bit-Bots.
 
-The vision is able to detect balls, goal posts, and robots (via an RF-DETR object-detection model), and detects field lines using classical HSV-based color segmentation.
+The vision is able to detect balls, goal posts, obstacles, and robots, and detects field lines, using a single RF-DETR ONNX model with separate detection and segmentation heads.
 
 For further information and getting started, see the documentation of this package at our website: [docs.bit-bots.de](https://docs.bit-bots.de/package/bitbots_vision/latest/index.html)
 

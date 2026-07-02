@@ -40,24 +40,4 @@ void DebugImage::draw_mask(const cv::Mat& mask, const cv::Scalar& color, double 
   blend.copyTo(image_, mask_bool);
 }
 
-void DebugImage::draw_mask_hatched(const cv::Mat& mask, const cv::Scalar& color, int stripe_period, int stripe_width,
-                                   double opacity) {
-  if (!active_ || mask.empty()) {
-    return;
-  }
-
-  // Diagonal stripes drawn as a handful of thick lines (not a per-pixel
-  // loop), then intersected with the mask so only the striped sub-region
-  // gets tinted.
-  cv::Mat hatch = cv::Mat::zeros(mask.size(), CV_8UC1);
-  for (int offset = -mask.rows; offset < mask.cols; offset += stripe_period) {
-    cv::line(hatch, cv::Point(offset, 0), cv::Point(offset + mask.rows, mask.rows), cv::Scalar(255), stripe_width);
-  }
-
-  cv::Mat hatched_mask;
-  cv::bitwise_and(mask, hatch, hatched_mask);
-
-  draw_mask(hatched_mask, color, opacity);
-}
-
 }  // namespace bitbots_vision

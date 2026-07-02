@@ -65,4 +65,30 @@ std::unordered_map<std::string, std::vector<Candidate>> postprocess_detections_r
     const std::vector<std::string>& class_names, const std::unordered_map<std::string, float>& class_conf_thresholds,
     float default_conf_thresh, int orig_h, int orig_w);
 
+// ---------------------------------------------------------------------------
+// Line-mask postprocessing
+// ---------------------------------------------------------------------------
+
+/// Decode RF-DETR's learned line-segmentation head output: sigmoid over the
+/// raw logits, resize to the original image resolution, then threshold.
+///
+/// @param line_mask_logits  Pointer to [mask_h, mask_w] raw logits (single batch/channel)
+/// @param mask_h            Segmentation output height (e.g. 96)
+/// @param mask_w            Segmentation output width (e.g. 96)
+/// @param threshold         Post-sigmoid probability threshold to keep a pixel
+/// @param orig_h            Original image height (pixels)
+/// @param orig_w            Original image width (pixels)
+/// @return                  CV_8UC1 binary mask (0 / 255) at original image resolution
+cv::Mat postprocess_line_mask_rfdetr(const float* line_mask_logits, int mask_h, int mask_w, float threshold,
+                                    int orig_h, int orig_w);
+
+// ---------------------------------------------------------------------------
+// Candidate suppression
+// ---------------------------------------------------------------------------
+
+/// Paint out (set to 0) the regions covered by the given candidates, each
+/// inflated by `margin_px` on all sides and clamped to the mask bounds.
+/// Modifies `mask` in place.
+void suppress_candidates(cv::Mat& mask, const std::vector<Candidate>& candidates, int margin_px);
+
 }  // namespace bitbots_vision::processing

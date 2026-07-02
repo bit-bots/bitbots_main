@@ -74,7 +74,7 @@ bitbots_vision:
 
     line_active:
       type: bool
-      description: "Enable HSV line segmentation mask publishing"
+      description: "Enable line segmentation mask publishing"
 
     debug_active:
       type: bool
@@ -94,91 +94,13 @@ bitbots_vision:
         bounds<>: [0, 50]
 
   line:
-    white_h_low:
-      type: int
-      description: "HSV Hue lower bound for the white line-color threshold"
-      validation:
-        bounds<>: [0, 179]
-    white_h_high:
-      type: int
-      description: "HSV Hue upper bound for the white line-color threshold"
-      validation:
-        bounds<>: [0, 179]
-    white_s_low:
-      type: int
-      description: "HSV Saturation lower bound for the white line-color threshold"
-      validation:
-        bounds<>: [0, 255]
-    white_s_high:
-      type: int
-      description: "HSV Saturation upper bound for the white line-color threshold"
-      validation:
-        bounds<>: [0, 255]
-    white_v_low:
-      type: int
-      description: "HSV Value lower bound for the white line-color threshold"
-      validation:
-        bounds<>: [0, 255]
-    white_v_high:
-      type: int
-      description: "HSV Value upper bound for the white line-color threshold"
-      validation:
-        bounds<>: [0, 255]
-
-    green_h_low:
-      type: int
-      description: "HSV Hue lower bound for the field-green threshold"
-      validation:
-        bounds<>: [0, 179]
-    green_h_high:
-      type: int
-      description: "HSV Hue upper bound for the field-green threshold"
-      validation:
-        bounds<>: [0, 179]
-    green_s_low:
-      type: int
-      description: "HSV Saturation lower bound for the field-green threshold"
-      validation:
-        bounds<>: [0, 255]
-    green_s_high:
-      type: int
-      description: "HSV Saturation upper bound for the field-green threshold"
-      validation:
-        bounds<>: [0, 255]
-    green_v_low:
-      type: int
-      description: "HSV Value lower bound for the field-green threshold"
-      validation:
-        bounds<>: [0, 255]
-    green_v_high:
-      type: int
-      description: "HSV Value upper bound for the field-green threshold"
-      validation:
-        bounds<>: [0, 255]
-
-    morph_kernel_size:
-      type: int
-      description: "Size of the morphological opening kernel used to remove noise from the line mask"
-      validation:
-        bounds<>: [1, 25]
-
-    min_contour_area:
-      type: int
-      description: "Minimum contour area (in pixels^2) to keep in the line mask; 0 disables this filter"
-      validation:
-        bounds<>: [0, 100000]
-
-    field_border_margin_px:
-      type: int
+    mask_threshold:
+      type: double
       description: >
-        Pixels to erode the field's convex hull inward by before looking for
-        line pixels inside it. A convex hull can bulge slightly past the true
-        field boundary at concave points (e.g. an occluded edge), so
-        background just outside the real edge can end up just inside the
-        hull; eroding trades a small strip of near-boundary line detection
-        for suppressing those artifacts. 0 disables this erosion.
+        Post-sigmoid probability threshold for RF-DETR's learned line-segmentation
+        head; pixels above this value are kept as line pixels.
       validation:
-        bounds<>: [0, 100]
+        bounds<>: [0.0, 1.0]
 
     suppress_margin_px:
       type: int

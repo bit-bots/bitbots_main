@@ -36,25 +36,6 @@ bitbots_vision:
       rating_threshold: 0.5
       max_count: 1
 
-    # NOTE: these HSV defaults are unvalidated placeholders (no live camera
-    # was available to calibrate against) and need on-field/rosbag
-    # recalibration before real use.
     line:
-      white_h_low: 0
-      white_h_high: 179
-      white_s_low: 0
-      white_s_high: 60
-      white_v_low: 180
-      white_v_high: 255
-
-      green_h_low: 35
-      green_h_high: 85
-      green_s_low: 40
-      green_s_high: 255
-      green_v_low: 40
-      green_v_high: 255
-
-      morph_kernel_size: 3
-      min_contour_area: 20
-      field_border_margin_px: 5
+      mask_threshold: 0.5
       suppress_margin_px: 10

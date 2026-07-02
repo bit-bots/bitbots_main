@@ -6,8 +6,8 @@
 
   <description>
     RF-DETR-based vision for the Hamburg Bit-Bots.
-    Detects balls, goal posts, and robots using an ONNX object-detection model,
-    and segments field lines using classical HSV-based color segmentation.
+    Detects balls, goal posts, obstacles, and robots and segments field lines
+    using a single ONNX model with separate detection and segmentation heads.
     Runs inference via ONNX Runtime with TensorRT, CUDA, WebGPU, or CPU execution providers.
   </description>
 
