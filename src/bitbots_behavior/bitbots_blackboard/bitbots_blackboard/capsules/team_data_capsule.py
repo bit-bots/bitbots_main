@@ -129,22 +129,35 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
             if (
                 self.is_valid(data)
                 and (data.strategy.role != Strategy.ROLE_GOALIE or count_goalies)
-                and data.strategy.action != Strategy.ACTION_PASSIVE
                 and data.ball_absolute.covariance[0] < self.ball_max_covariance
                 and data.ball_absolute.covariance[7] < self.ball_max_covariance
             ):
                 if use_time_to_ball:
-                    distances.append(data.time_to_position_at_ball)
+                    distances.append((data.time_to_position_at_ball, data.strategy.action == Strategy.ACTION_PASSIVE))
                 else:
                     distances.append(
-                        np.linalg.norm(
-                            numpify(data.ball_absolute.pose.position) - numpify(data.robot_position.pose.position)
+                        (
+                            np.linalg.norm(
+                                numpify(data.ball_absolute.pose.position) - numpify(data.robot_position.pose.position)
+                            ),
+                            data.strategy.action == Strategy.ACTION_PASSIVE,
                         )
                     )
-        for rank, distance in enumerate(sorted(distances)):
-            if own_ball_distance < distance:
-                return rank + 1
-        return len(distances) + 1
+
+        # Calculate the rank of this robot based on how many are closer than it
+        # If there is a passive robot, it is going to go on the support position
+        # Ignore it when figuring out if we are the striker
+        for rank, (distance, is_passive) in enumerate(sorted(distances)):
+            if own_ball_distance < distance and is_passive:
+                result = rank + 1
+                break
+        else:
+            result = len(distances) + 1
+        if any(is_passive for _, is_passive in distances) and result > 1:
+            result += 1
+        if result > len(distances) + 1:
+            result = len(distances) + 1
+        return result
 
     def set_action(self, action: int) -> None:
         """Set the action of this robot
