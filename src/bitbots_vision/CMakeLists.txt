@@ -110,6 +110,12 @@ ament_target_dependencies(
   std_msgs
   vision_msgs)
 
+add_executable(bitbots_vision_yoeo_autolabel src/yoeo_autolabel.cpp)
+
+target_link_libraries(bitbots_vision_yoeo_autolabel bitbots_vision_lib)
+
+ament_target_dependencies(bitbots_vision_yoeo_autolabel rclcpp)
+
 # ---------------------------------------------------------------------------
 # Tests
 # ---------------------------------------------------------------------------
@@ -132,7 +138,9 @@ if(BUILD_TESTING)
   target_link_libraries(test_yoeo_handler bitbots_vision_lib)
 endif()
 
-install(TARGETS vision bitbots_vision_lib bitbots_vision_processing
+install(TARGETS vision bitbots_vision_yoeo_autolabel bitbots_vision_lib bitbots_vision_processing
+        DESTINATION lib/${PROJECT_NAME})
+install(PROGRAMS scripts/autolabel_false_balls.py scripts/rfdetr_autolabel.py
         DESTINATION lib/${PROJECT_NAME})
 install(DIRECTORY include/ DESTINATION include)
 install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
