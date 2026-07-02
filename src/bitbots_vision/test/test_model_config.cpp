@@ -34,11 +34,6 @@ detection:
     - ball
     - goalpost
     - robot
-segmentation:
-  classes:
-    - background
-    - field
-    - lines
 )";
   auto dir = make_temp_model_dir(yaml);
   auto cfg = ModelConfig::load_from(dir);
@@ -47,75 +42,6 @@ segmentation:
   EXPECT_EQ(cfg.detection_classes()[0], "ball");
   EXPECT_EQ(cfg.detection_classes()[1], "goalpost");
   EXPECT_EQ(cfg.detection_classes()[2], "robot");
-}
-
-TEST(ModelConfig, SegmentationClasses) {
-  const std::string yaml = R"(
-detection:
-  classes:
-    - ball
-segmentation:
-  classes:
-    - background
-    - field
-    - lines
-)";
-  auto dir = make_temp_model_dir(yaml);
-  auto cfg = ModelConfig::load_from(dir);
-
-  ASSERT_EQ(cfg.segmentation_classes().size(), 3u);
-  EXPECT_EQ(cfg.segmentation_classes()[0], "background");
-  EXPECT_EQ(cfg.segmentation_classes()[1], "field");
-  EXPECT_EQ(cfg.segmentation_classes()[2], "lines");
-}
-
-// ---------------------------------------------------------------------------
-// team_colors_provided
-// ---------------------------------------------------------------------------
-
-TEST(ModelConfig, TeamColorsProvidedFalse_WhenKeyAbsent) {
-  const std::string yaml = R"(
-detection:
-  classes:
-    - ball
-segmentation:
-  classes:
-    - background
-)";
-  auto dir = make_temp_model_dir(yaml);
-  auto cfg = ModelConfig::load_from(dir);
-  EXPECT_FALSE(cfg.team_colors_provided());
-}
-
-TEST(ModelConfig, TeamColorsProvidedTrue) {
-  const std::string yaml = R"(
-detection:
-  classes:
-    - robot_blue
-    - robot_red
-  team_colors: true
-segmentation:
-  classes:
-    - background
-)";
-  auto dir = make_temp_model_dir(yaml);
-  auto cfg = ModelConfig::load_from(dir);
-  EXPECT_TRUE(cfg.team_colors_provided());
-}
-
-TEST(ModelConfig, TeamColorsProvidedFalse_WhenExplicitFalse) {
-  const std::string yaml = R"(
-detection:
-  classes:
-    - robot
-  team_colors: false
-segmentation:
-  classes:
-    - background
-)";
-  auto dir = make_temp_model_dir(yaml);
-  auto cfg = ModelConfig::load_from(dir);
-  EXPECT_FALSE(cfg.team_colors_provided());
 }
 
 // ---------------------------------------------------------------------------
@@ -129,9 +55,6 @@ detection:
     - ball
     - goalpost
     - robot
-segmentation:
-  classes:
-    - background
 )";
   auto dir = make_temp_model_dir(yaml);
   auto cfg = ModelConfig::load_from(dir);
@@ -149,9 +72,6 @@ detection:
     - robot_blue
     - robot_red
     - robot_unknown
-segmentation:
-  classes:
-    - background
 )";
   auto dir = make_temp_model_dir(yaml);
   auto cfg = ModelConfig::load_from(dir);
@@ -169,9 +89,6 @@ detection:
   classes:
     - ball
     - goalpost
-segmentation:
-  classes:
-    - background
 )";
   auto dir = make_temp_model_dir(yaml);
   auto cfg = ModelConfig::load_from(dir);
@@ -184,4 +101,21 @@ segmentation:
 
 TEST(ModelConfig, ThrowsOnMissingFile) {
   EXPECT_THROW(ModelConfig::load_from("/nonexistent/path"), std::runtime_error);
+}
+
+TEST(ModelConfig, ThrowsOnMissingDetectionClasses) {
+  const std::string yaml = R"(
+some_other_key: true
+)";
+  auto dir = make_temp_model_dir(yaml);
+  EXPECT_THROW(ModelConfig::load_from(dir), std::runtime_error);
+}
+
+TEST(ModelConfig, ThrowsOnEmptyDetectionClasses) {
+  const std::string yaml = R"(
+detection:
+  classes: []
+)";
+  auto dir = make_temp_model_dir(yaml);
+  EXPECT_THROW(ModelConfig::load_from(dir), std::runtime_error);
 }

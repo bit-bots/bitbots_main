@@ -42,7 +42,7 @@ TEST(GetAvailableProviders, KnownProviderNames) {
 }
 
 // ---------------------------------------------------------------------------
-// Provider priority selection helper (mirrors yoeo_handler.cpp logic)
+// Provider priority selection helper (mirrors rfdetr_handler.cpp logic)
 // ---------------------------------------------------------------------------
 
 static std::vector<std::string> select_providers(const std::vector<std::string>& available,
