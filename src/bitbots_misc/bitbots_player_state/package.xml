@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>bitbots_player_state</name>
+  <version>0.0.0</version>
+  <description>Aggregates robot state for the RoboCup GameController return message.</description>
+
+  <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>ament_python</buildtool_depend>
+
+  <depend>bitbots_msgs</depend>
+  <depend>game_controller_hsl_interfaces</depend>
+  <depend>geometry_msgs</depend>
+  <depend>rclpy</depend>
+
+  <test_depend>python3-pytest</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

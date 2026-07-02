@@ -2,7 +2,7 @@
   <arg name="js_pub" default="true" description="Whether to run the joint state publisher"/>
   <group>
     <include file="$(find-pkg-share piplus_description)/launch/rviz.launch"/>
-    <include file="$(find-pkg-share bitbots_parameter_blackboard)/launch/parameter_blackboard.launch"/>
+    <include file="$(find-pkg-share bitbots_parameter_blackboard)/launch/parameter_blackboard.launch.py"/>
     <include file="$(find-pkg-share bitbots_robot_description)/launch/load_robot_description.launch"/>
   </group>
 
