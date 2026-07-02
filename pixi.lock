@@ -999,11 +999,10 @@ environments:
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-zstd-vendor-0.26.9-np2py312h2ed9cc7_16.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros2-distro-mutex-0.14.0-jazzy_16.conda
       - conda: https://data.bit-bots.de/conda-misc/output/linux-64/libonnxruntime-webgpu-1.24.3-hb0f4dca_3.conda
-      - conda: https://data.bit-bots.de/conda-misc/output/noarch/bitbots_model_2022_10_07_flo_torso21_yoeox-1.0.1-h4616a5c_3.conda
-      - conda: https://data.bit-bots.de/conda-misc/output/noarch/bitbots_model_2023_04_04_philipp_yoeox_with_team_colors-1.0.1-h4616a5c_3.conda
+      - conda: https://data.bit-bots.de/conda-misc/output/noarch/bitbots_model_2026_07_02_flo_yoeo_rf_detr_wm_torso_extension-1.0.0-h4616a5c_1.conda
       - conda: https://data.bit-bots.de/conda-misc/output/noarch/readline-8.3-h4616a5c_1.conda
       - conda: https://data.bit-bots.de/conda-misc/output/noarch/tts-supertonic-1.0.0-h4616a5c_1.conda
-      - conda_source: bitbots_rust_nav[61906921] @ src/bitbots_navigation/bitbots_rust_nav
+      - conda_source: bitbots_rust_nav[109ee8d5] @ src/bitbots_navigation/bitbots_rust_nav
       - pypi: https://files.pythonhosted.org/packages/05/98/716a473cfb24750858ddd5d14e6527539dd206583a46408d08eeb2844a75/trimesh-4.12.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/0d/de/0880cf8af64b225bc8fde0924f76ea5e6cd8d8dc50c6dd61232beb54327f/mjviser-0.0.12-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/18/29/71729b4671f21e1eaa5d6573031ab810ad2936c8175f03f97f3ff164c802/websockets-16.0-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl
@@ -1986,11 +1985,10 @@ environments:
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-aarch64/ros-jazzy-zstd-vendor-0.26.9-np2py312h61f2ce4_16.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-aarch64/ros2-distro-mutex-0.14.0-jazzy_16.conda
       - conda: https://data.bit-bots.de/conda-misc/output/linux-aarch64/libonnxruntime-webgpu-1.24.3-he8cfe8b_0.conda
-      - conda: https://data.bit-bots.de/conda-misc/output/noarch/bitbots_model_2022_10_07_flo_torso21_yoeox-1.0.1-h4616a5c_3.conda
-      - conda: https://data.bit-bots.de/conda-misc/output/noarch/bitbots_model_2023_04_04_philipp_yoeox_with_team_colors-1.0.1-h4616a5c_3.conda
+      - conda: https://data.bit-bots.de/conda-misc/output/noarch/bitbots_model_2026_07_02_flo_yoeo_rf_detr_wm_torso_extension-1.0.0-h4616a5c_1.conda
       - conda: https://data.bit-bots.de/conda-misc/output/noarch/readline-8.3-h4616a5c_1.conda
       - conda: https://data.bit-bots.de/conda-misc/output/noarch/tts-supertonic-1.0.0-h4616a5c_1.conda
-      - conda_source: bitbots_rust_nav[70abafa3] @ src/bitbots_navigation/bitbots_rust_nav
+      - conda_source: bitbots_rust_nav[d6de160d] @ src/bitbots_navigation/bitbots_rust_nav
       - pypi: https://files.pythonhosted.org/packages/05/98/716a473cfb24750858ddd5d14e6527539dd206583a46408d08eeb2844a75/trimesh-4.12.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/0d/de/0880cf8af64b225bc8fde0924f76ea5e6cd8d8dc50c6dd61232beb54327f/mjviser-0.0.12-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/1e/15/efef5a2f204a64bdb5571e6161d49f7ef0fffdbca953a615efbec045f60f/zstandard-0.25.0-cp312-cp312-manylinux2014_aarch64.manylinux_2_17_aarch64.whl
@@ -3119,11 +3117,10 @@ environments:
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-zstd-vendor-0.26.9-np2py312h2ed9cc7_16.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros2-distro-mutex-0.14.0-jazzy_16.conda
       - conda: https://data.bit-bots.de/conda-misc/output/linux-64/libonnxruntime-webgpu-1.24.3-hb0f4dca_3.conda
-      - conda: https://data.bit-bots.de/conda-misc/output/noarch/bitbots_model_2022_10_07_flo_torso21_yoeox-1.0.1-h4616a5c_3.conda
-      - conda: https://data.bit-bots.de/conda-misc/output/noarch/bitbots_model_2023_04_04_philipp_yoeox_with_team_colors-1.0.1-h4616a5c_3.conda
+      - conda: https://data.bit-bots.de/conda-misc/output/noarch/bitbots_model_2026_07_02_flo_yoeo_rf_detr_wm_torso_extension-1.0.0-h4616a5c_1.conda
       - conda: https://data.bit-bots.de/conda-misc/output/noarch/readline-8.3-h4616a5c_1.conda
       - conda: https://data.bit-bots.de/conda-misc/output/noarch/tts-supertonic-1.0.0-h4616a5c_1.conda
-      - conda_source: bitbots_rust_nav[61906921] @ src/bitbots_navigation/bitbots_rust_nav
+      - conda_source: bitbots_rust_nav[109ee8d5] @ src/bitbots_navigation/bitbots_rust_nav
       - pypi: https://files.pythonhosted.org/packages/05/98/716a473cfb24750858ddd5d14e6527539dd206583a46408d08eeb2844a75/trimesh-4.12.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/0d/de/0880cf8af64b225bc8fde0924f76ea5e6cd8d8dc50c6dd61232beb54327f/mjviser-0.0.12-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/18/29/71729b4671f21e1eaa5d6573031ab810ad2936c8175f03f97f3ff164c802/websockets-16.0-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl
@@ -4110,11 +4107,10 @@ environments:
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-aarch64/ros-jazzy-zstd-vendor-0.26.9-np2py312h61f2ce4_16.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-aarch64/ros2-distro-mutex-0.14.0-jazzy_16.conda
       - conda: https://data.bit-bots.de/conda-misc/output/linux-aarch64/libonnxruntime-webgpu-1.24.3-he8cfe8b_0.conda
-      - conda: https://data.bit-bots.de/conda-misc/output/noarch/bitbots_model_2022_10_07_flo_torso21_yoeox-1.0.1-h4616a5c_3.conda
-      - conda: https://data.bit-bots.de/conda-misc/output/noarch/bitbots_model_2023_04_04_philipp_yoeox_with_team_colors-1.0.1-h4616a5c_3.conda
+      - conda: https://data.bit-bots.de/conda-misc/output/noarch/bitbots_model_2026_07_02_flo_yoeo_rf_detr_wm_torso_extension-1.0.0-h4616a5c_1.conda
       - conda: https://data.bit-bots.de/conda-misc/output/noarch/readline-8.3-h4616a5c_1.conda
       - conda: https://data.bit-bots.de/conda-misc/output/noarch/tts-supertonic-1.0.0-h4616a5c_1.conda
-      - conda_source: bitbots_rust_nav[70abafa3] @ src/bitbots_navigation/bitbots_rust_nav
+      - conda_source: bitbots_rust_nav[d6de160d] @ src/bitbots_navigation/bitbots_rust_nav
       - pypi: https://files.pythonhosted.org/packages/05/98/716a473cfb24750858ddd5d14e6527539dd206583a46408d08eeb2844a75/trimesh-4.12.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/0d/de/0880cf8af64b225bc8fde0924f76ea5e6cd8d8dc50c6dd61232beb54327f/mjviser-0.0.12-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/1e/15/efef5a2f204a64bdb5571e6161d49f7ef0fffdbca953a615efbec045f60f/zstandard-0.25.0-cp312-cp312-manylinux2014_aarch64.manylinux_2_17_aarch64.whl
@@ -37139,18 +37135,12 @@ packages:
   license: MIT
   size: 10037490
   timestamp: 1775843854039
-- conda: https://data.bit-bots.de/conda-misc/output/noarch/bitbots_model_2022_10_07_flo_torso21_yoeox-1.0.1-h4616a5c_3.conda
-  sha256: c7e06d8d5d681cc5b81f9a4d509bb412f2d245dc4bdd2fd302bd0d219654e58a
-  md5: a0f49046115d86bbfe733d8db08f1f33
+- conda: https://data.bit-bots.de/conda-misc/output/noarch/bitbots_model_2026_07_02_flo_yoeo_rf_detr_wm_torso_extension-1.0.0-h4616a5c_1.conda
+  sha256: 7161eb7107c446093de0ef91d44da93ab78e62f7f502e33594ad0308681bab86
+  md5: 037f128eb9cb87e648060d13a436659a
   license: MIT
-  size: 77978901
-  timestamp: 1771970041024
-- conda: https://data.bit-bots.de/conda-misc/output/noarch/bitbots_model_2023_04_04_philipp_yoeox_with_team_colors-1.0.1-h4616a5c_3.conda
-  sha256: a0705abc5b5c1e9287035689e7bc376fc43aaf1343fc51b2778c7cef370f8fde
-  md5: a2d01391ee0428da150da2e02916cceb
-  license: MIT
-  size: 51676316
-  timestamp: 1771970041024
+  size: 49775693
+  timestamp: 1783018145142
 - conda: https://data.bit-bots.de/conda-misc/output/noarch/readline-8.3-h4616a5c_1.conda
   sha256: 9ca6362aa54ac5f2b250d0c8d65669ebe232cdac0a43b863e7b7bf1e6ea35051
   md5: df015055df3aca7763f7a1eb1334e9ec
@@ -37162,7 +37152,7 @@ packages:
   license: LicenseRef-openrail
   size: 244991335
   timestamp: 1771976595791
-- conda_source: bitbots_rust_nav[61906921] @ src/bitbots_navigation/bitbots_rust_nav
+- conda_source: bitbots_rust_nav[109ee8d5] @ src/bitbots_navigation/bitbots_rust_nav
   variants:
     c_stdlib: sysroot
     c_stdlib_version: '2.28'
@@ -37231,7 +37221,7 @@ packages:
   - conda: https://conda.anaconda.org/conda-forge/noarch/tomli-2.4.1-pyhcf101f3_0.conda
   - conda: https://conda.anaconda.org/conda-forge/noarch/tzdata-2025c-hc9c84f9_1.conda
   - conda: https://data.bit-bots.de/conda-misc/output/noarch/readline-8.3-h4616a5c_1.conda
-- conda_source: bitbots_rust_nav[70abafa3] @ src/bitbots_navigation/bitbots_rust_nav
+- conda_source: bitbots_rust_nav[d6de160d] @ src/bitbots_navigation/bitbots_rust_nav
   variants:
     c_stdlib: sysroot
     c_stdlib_version: '2.28'
