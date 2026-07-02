@@ -49,7 +49,7 @@ body_behavior:
     ready_wait_time: 4.0
 
     # The orientation threshold defining which range (in Degrees) is acceptable as aligned to the goal (in each direction)
-    goal_alignment_orientation_threshold: 5.0
+    goal_alignment_orientation_threshold: 25.0
 
     # When the ball is closer than `ball_close_distance` meters
     # it is in a reachable area of the robot
@@ -100,7 +100,7 @@ body_behavior:
     ball_far_approach_dist: 0.3
 
     # Range in which the ball far approach point is counted as reached
-    ball_far_approach_position_thresh: 0.2
+    ball_far_approach_position_thresh: 0.4
 
     # We reapproach the ball after it has moved further away than this distance. This includes moving to the far approach position.
     ball_reapproach_dist: 1.0

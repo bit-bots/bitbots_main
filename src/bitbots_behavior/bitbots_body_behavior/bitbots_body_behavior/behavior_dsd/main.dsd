@@ -31,7 +31,7 @@ $DoOnce
         NO --> @LookAtFieldFeatures, @GoToRolePosition
 
 #KickWithAvoidance
-$ReachedPathPlanningGoalPosition + threshold:%ball_far_approach_position_thresh
+$ReachedAndAlignedToPathPlanningGoalPosition + threshold:%ball_far_approach_position_thresh
     NO --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:map + distance:%ball_far_approach_dist
     YES --> $DoOnce
         NOT_DONE --> @StoreBallMovementDetectionStartPosition
