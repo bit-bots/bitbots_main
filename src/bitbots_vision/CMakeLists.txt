@@ -60,6 +60,55 @@ if(NOT onnxruntime_FOUND)
 endif()
 # ----------------------------------
 
+# ---------- TensorRT (optional; preferred over ONNX Runtime when found) ----------
+# TensorRT ships no CMake config package on JetPack, so this is a manual
+# find, mirroring the onnxruntime search above. Not present in the x86 dev
+# environment -- if not found here, only the ONNX Runtime backend is built
+# and nothing else about the build changes.
+find_path(
+  TENSORRT_INCLUDE_DIR
+  NAMES NvInfer.h
+  HINTS ENV CONDA_PREFIX ENV PIXI_PREFIX ENV CUDA_HOME ENV CUDA_PATH
+  PATHS /usr/include/aarch64-linux-gnu /usr/include/x86_64-linux-gnu /usr/local/cuda/include /usr/local/cuda-11.4/include
+  PATH_SUFFIXES include)
+find_library(
+  TENSORRT_NVINFER_LIBRARY
+  NAMES nvinfer
+  HINTS ENV CONDA_PREFIX ENV PIXI_PREFIX
+  PATHS /usr/lib/aarch64-linux-gnu /usr/lib/x86_64-linux-gnu
+  PATH_SUFFIXES lib lib64)
+find_library(
+  TENSORRT_NVONNXPARSER_LIBRARY
+  NAMES nvonnxparser
+  HINTS ENV CONDA_PREFIX ENV PIXI_PREFIX
+  PATHS /usr/lib/aarch64-linux-gnu /usr/lib/x86_64-linux-gnu
+  PATH_SUFFIXES lib lib64)
+find_path(
+  CUDA_INCLUDE_DIR
+  NAMES cuda_runtime_api.h
+  HINTS ENV CUDA_HOME ENV CUDA_PATH
+  PATHS /usr/local/cuda /usr/local/cuda-11.4
+  PATH_SUFFIXES include)
+find_library(
+  CUDA_CUDART_LIBRARY
+  NAMES cudart
+  HINTS ENV CUDA_HOME ENV CUDA_PATH
+  PATHS /usr/local/cuda /usr/local/cuda-11.4 /usr/lib/aarch64-linux-gnu /usr/lib/x86_64-linux-gnu
+  PATH_SUFFIXES lib64 lib)
+
+if(TENSORRT_INCLUDE_DIR
+   AND TENSORRT_NVINFER_LIBRARY
+   AND TENSORRT_NVONNXPARSER_LIBRARY
+   AND CUDA_INCLUDE_DIR
+   AND CUDA_CUDART_LIBRARY)
+  set(BITBOTS_VISION_HAS_TENSORRT TRUE)
+  message(STATUS "Found TensorRT: ${TENSORRT_NVINFER_LIBRARY} -- TensorRtHandler will be built and preferred at runtime")
+else()
+  set(BITBOTS_VISION_HAS_TENSORRT FALSE)
+  message(STATUS "TensorRT not found -- only the ONNX Runtime backend will be built")
+endif()
+# -----------------------------------------------------------------------------
+
 generate_parameter_library(vision_parameters config/vision_parameters.yaml)
 
 # ---------------------------------------------------------------------------
@@ -76,10 +125,15 @@ target_include_directories(
 target_link_libraries(bitbots_vision_processing PUBLIC yaml-cpp ${OpenCV_LIBS})
 
 # ---------------------------------------------------------------------------
-# Full vision library (includes ONNX handler) – used by the node and handler
-# tests
+# Full vision library (includes the inference handler(s)) – used by the node
+# and handler tests
 # ---------------------------------------------------------------------------
-add_library(bitbots_vision_lib SHARED src/rfdetr_handler.cpp)
+set(BITBOTS_VISION_LIB_SOURCES src/rfdetr_handler.cpp)
+if(BITBOTS_VISION_HAS_TENSORRT)
+  list(APPEND BITBOTS_VISION_LIB_SOURCES src/tensorrt_handler.cpp)
+endif()
+
+add_library(bitbots_vision_lib SHARED ${BITBOTS_VISION_LIB_SOURCES})
 
 target_include_directories(
   bitbots_vision_lib
@@ -89,6 +143,15 @@ target_include_directories(
 target_link_libraries(
   bitbots_vision_lib PUBLIC bitbots_vision_processing vision_parameters
                             onnxruntime::onnxruntime)
+
+if(BITBOTS_VISION_HAS_TENSORRT)
+  target_include_directories(bitbots_vision_lib PUBLIC ${TENSORRT_INCLUDE_DIR} ${CUDA_INCLUDE_DIR})
+  target_link_libraries(bitbots_vision_lib PUBLIC ${TENSORRT_NVINFER_LIBRARY}
+                                                  ${TENSORRT_NVONNXPARSER_LIBRARY} ${CUDA_CUDART_LIBRARY})
+  # PUBLIC so vision_node.cpp (compiled into the `vision` executable, which
+  # links this library) also sees this define and prefers TensorRtHandler.
+  target_compile_definitions(bitbots_vision_lib PUBLIC BITBOTS_VISION_HAS_TENSORRT)
+endif()
 
 ament_target_dependencies(bitbots_vision_lib PUBLIC rclcpp)
 

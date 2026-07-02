@@ -11,7 +11,7 @@ namespace bitbots_vision {
 // Construction
 // ---------------------------------------------------------------------------
 
-RfdetrHandler::RfdetrHandler(const std::string& model_path, const ModelConfig& model_config, const Config& cfg,
+RfdetrHandler::RfdetrHandler(const std::string& model_path, const ModelConfig& model_config, const RfdetrConfig& cfg,
                              const rclcpp::Logger& logger)
     : env_(ORT_LOGGING_LEVEL_WARNING, "bitbots_vision"), cfg_(cfg), logger_(logger) {
   det_class_names_ = model_config.detection_classes();
@@ -133,7 +133,7 @@ void RfdetrHandler::init_session(const std::string& model_path) {
 // Public interface
 // ---------------------------------------------------------------------------
 
-void RfdetrHandler::reconfigure(const Config& cfg) { cfg_ = cfg; }
+void RfdetrHandler::reconfigure(const RfdetrConfig& cfg) { cfg_ = cfg; }
 
 void RfdetrHandler::set_image(const cv::Mat& bgr_image) {
   det_results_.clear();

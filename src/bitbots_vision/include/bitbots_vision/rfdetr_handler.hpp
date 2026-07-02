@@ -4,6 +4,8 @@
 
 #include <bitbots_vision/candidate.hpp>
 #include <bitbots_vision/model_config.hpp>
+#include <bitbots_vision/rfdetr_config.hpp>
+#include <bitbots_vision/rfdetr_handler_interface.hpp>
 #include <bitbots_vision/rfdetr_processing.hpp>
 #include <memory>
 #include <opencv2/core.hpp>
@@ -18,6 +20,10 @@ namespace bitbots_vision {
 ///
 /// Execution providers are tried in priority order:
 ///   TensorRT → CUDA → WebGPU → CPU (always available as fallback)
+///
+/// This is the portable, always-built backend. When TensorRT was found at
+/// build time, `TensorRtHandler` (native nvinfer1, no ONNX Runtime) is
+/// preferred instead -- see CMakeLists.txt and vision_node.cpp.
 ///
 /// The model must expose:
 ///   - one input named "input"  shape [1, 3, H, W]
@@ -36,37 +42,28 @@ namespace bitbots_vision {
 /// contract as the fp32 export (only internal weights differ), so no
 /// handler code needs to change to use one -- just point `model_path` at a
 /// model directory containing the fp16-weight onnx file.
-class RfdetrHandler {
+class RfdetrHandler : public RfdetrHandlerInterface {
  public:
-  struct Config {
-    /// Per-class-name softmax-confidence thresholds (e.g. "ball" -> 0.98).
-    /// Classes not present here fall back to `default_conf_threshold`.
-    std::unordered_map<std::string, float> class_conf_thresholds;
-    float default_conf_threshold{0.99f};
-    /// Post-sigmoid probability threshold for the line-segmentation head.
-    float line_mask_threshold{0.5f};
-  };
-
-  RfdetrHandler(const std::string& model_path, const ModelConfig& model_config, const Config& cfg,
+  RfdetrHandler(const std::string& model_path, const ModelConfig& model_config, const RfdetrConfig& cfg,
                 const rclcpp::Logger& logger);
 
   /// Update thresholds without reloading the model.
-  void reconfigure(const Config& cfg);
+  void reconfigure(const RfdetrConfig& cfg) override;
 
   /// Set the image to be processed by the next call to predict().
   /// The image must be in BGR8 format (as delivered by cv_bridge).
-  void set_image(const cv::Mat& bgr_image);
+  void set_image(const cv::Mat& bgr_image) override;
 
   /// Run the network on the current image (no-op if already up to date).
-  void predict();
+  void predict() override;
 
-  std::vector<Candidate> get_detection_candidates_for(const std::string& class_name);
+  std::vector<Candidate> get_detection_candidates_for(const std::string& class_name) override;
 
   /// Line-segmentation mask (CV_8UC1, 0/255) at original image resolution.
   /// Empty if the loaded model has no "line_mask" output.
-  cv::Mat get_line_mask();
+  cv::Mat get_line_mask() override;
 
-  const std::vector<std::string>& detection_class_names() const;
+  const std::vector<std::string>& detection_class_names() const override;
 
  private:
   // ----- ONNX Runtime objects -----
@@ -87,7 +84,7 @@ class RfdetrHandler {
   int line_mask_idx_{-1};
 
   // ----- Runtime state -----
-  Config cfg_;
+  RfdetrConfig cfg_;
   rclcpp::Logger logger_;
 
   std::vector<float> input_data_;
