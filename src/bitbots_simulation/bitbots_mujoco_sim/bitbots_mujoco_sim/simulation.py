@@ -5,6 +5,7 @@ from pathlib import Path
 import mujoco
 import numpy as np
 from ament_index_python.packages import get_package_share_directory
+from geometry_msgs.msg import PoseStamped
 from mujoco import viewer
 from rclpy.node import Node
 from rclpy.time import Time
@@ -106,6 +107,7 @@ class Simulation(Node):
             {"frequency": 1, "handler": self.publish_clock_event},
             {"frequency": 4, "handler": lambda: self.publish(lambda robot: robot.publish_ros_joint_states_event())},
             {"frequency": 4, "handler": lambda: self.publish(lambda robot: robot.publish_imu_event())},
+            {"frequency": 4, "handler": lambda: self.publish(lambda robot: robot.publish_true_pose_event())},
             {"frequency": 32, "handler": lambda: self.publish(lambda robot: robot.publish_camera_event())},
         ]
 
@@ -383,6 +385,10 @@ class RobotSimulation:
             "imu": self.simulation.create_publisher(Imu, _topic("imu/data"), 1),
             "camera_proc": self.simulation.create_publisher(Image, _topic("zed/zed_node/rgb/image_rect_color"), 1),
             "camera_info": self.simulation.create_publisher(CameraInfo, _topic("zed/zed_node/rgb/camera_info"), 1),
+            # Ground-truth base_link pose, published only in the sim's (base) domain and
+            # intentionally NOT added to the domain bridge, so a robot's own stack cannot
+            # see it. Used by scripts/robot_overview.py to compute the localization error.
+            "true_pose": self.simulation.create_publisher(PoseStamped, _topic("true_pose"), 1),
         }
 
         self.simulation.create_subscription(JointCommand, _topic("joint_command"), self.joint_command_callback, 1)
@@ -438,6 +444,25 @@ class RobotSimulation:
             self.robot.sensors.orientation.noisy_data
         )
         self.node_publishers["imu"].publish(imu)
+
+    def publish_true_pose_event(self) -> None:
+        """Publish the noise-free base_link pose straight from the MuJoCo state.
+
+        MuJoCo's world frame is the field-centered frame, which matches the ``map`` frame
+        the localization estimate is expressed in, so the two are directly comparable.
+        """
+        pose = PoseStamped()
+        pose.header.stamp = self.simulation.time_message
+        pose.header.frame_id = "map"
+
+        position = self.data.xpos[self.robot.base_body_id]
+        orientation = self.data.xquat[self.robot.base_body_id]  # MuJoCo order: (w, x, y, z)
+        pose.pose.position.x, pose.pose.position.y, pose.pose.position.z = (float(v) for v in position)
+        pose.pose.orientation.w = float(orientation[0])
+        pose.pose.orientation.x = float(orientation[1])
+        pose.pose.orientation.y = float(orientation[2])
+        pose.pose.orientation.z = float(orientation[3])
+        self.node_publishers["true_pose"].publish(pose)
 
     def publish_camera_event(self) -> None:
         if not self.simulation.camera_active:
