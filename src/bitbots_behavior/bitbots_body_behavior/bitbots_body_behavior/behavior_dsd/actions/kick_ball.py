@@ -61,7 +61,7 @@ class RLKickTowardsGoal(AbstractKickAction):
         self._start_time = None
 
     def perform(self, reevaluate=False):
-        x_dir, y_dir = self.blackboard.costmap.get_gradient_at_field_position(self.blackboard.world_model.get_ball_position_xy())
+        x_dir, y_dir = self.blackboard.costmap.get_gradient_at_field_position(*self.blackboard.world_model.get_ball_position_xy())
         costmap_direction_deg_in_world = (math.degrees(math.atan2(y_dir, x_dir)))
         # transform map to robot relative
         if self._start_time is None:
