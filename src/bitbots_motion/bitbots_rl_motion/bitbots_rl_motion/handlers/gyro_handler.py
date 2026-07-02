@@ -3,7 +3,7 @@ from typing import Optional
 import numpy as np
 from sensor_msgs.msg import Imu
 
-from handlers.handler import Handler
+from bitbots_rl_motion.handlers import Handler
 
 
 class GyroHandler(Handler):

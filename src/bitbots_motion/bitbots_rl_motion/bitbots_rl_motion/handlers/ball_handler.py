@@ -3,7 +3,7 @@ from typing import Optional
 import numpy as np
 from soccer_vision_3d_msgs.msg import BallArray
 
-from handlers.handler import Handler
+from bitbots_rl_motion.handlers import Handler
 
 
 class BallHandler(Handler):

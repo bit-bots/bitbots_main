@@ -53,6 +53,8 @@ class HCM_CPP : public rclcpp::Node {
         "record_motor_goals", 1, std::bind(&HCM_CPP::record_goal_callback, this, _1));
     walk_sub_ = this->create_subscription<bitbots_msgs::msg::JointCommand>(
         "walking_motor_goals", 1, std::bind(&HCM_CPP::walking_goal_callback, this, _1));
+    getup_sub_ = this->create_subscription<bitbots_msgs::msg::JointCommand>(
+        "getup_motor_goals", 1, std::bind(&HCM_CPP::getup_goal_callback, this, _1));
 
     // Create subscriber for high frequency sensor data
     joint_state_sub_ = this->create_subscription<sensor_msgs::msg::JointState>(
@@ -113,6 +115,15 @@ class HCM_CPP : public rclcpp::Node {
 
     if (current_state_ == bitbots_msgs::msg::RobotControlState::CONTROLLABLE ||
         current_state_ == bitbots_msgs::msg::RobotControlState::WALKING) {
+      pub_controller_command_->publish(msg);
+    }
+  }
+
+  void getup_goal_callback(const bitbots_msgs::msg::JointCommand msg) {
+    // Forward the RL getup policy's motor goals only while the robot is getting
+    // up. The state-based gate is the joint mutex that keeps the getup policy
+    // from fighting walking/head/animation goals (which forward in other states).
+    if (current_state_ == bitbots_msgs::msg::RobotControlState::GETTING_UP) {
       pub_controller_command_->publish(msg);
     }
   }
@@ -188,6 +199,7 @@ class HCM_CPP : public rclcpp::Node {
   rclcpp::Subscription<bitbots_msgs::msg::JointCommand>::SharedPtr head_sub_;
   rclcpp::Subscription<bitbots_msgs::msg::JointCommand>::SharedPtr record_sub_;
   rclcpp::Subscription<bitbots_msgs::msg::JointCommand>::SharedPtr walk_sub_;
+  rclcpp::Subscription<bitbots_msgs::msg::JointCommand>::SharedPtr getup_sub_;
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_sub_;
   rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_sub_;
 };

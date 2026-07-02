@@ -1,7 +1,7 @@
 from typing import Optional
 
 from bitbots_msgs.msg import RobotControlState
-from handlers.handler import Handler
+from bitbots_rl_motion.handlers import Handler
 
 WALKABLE_STATES = (
     RobotControlState.CONTROLLABLE,
@@ -12,6 +12,9 @@ KICKABLE_STATES = (
     RobotControlState.CONTROLLABLE,
     RobotControlState.KICKING,
 )
+
+# States during which the getup (standup) policy should produce motor goals.
+GETUP_STATES = (RobotControlState.GETTING_UP,)
 
 
 class RobotStateHandler(Handler):
@@ -31,3 +34,6 @@ class RobotStateHandler(Handler):
 
     def is_kickable(self):
         return self._robot_state in KICKABLE_STATES
+
+    def is_getup(self):
+        return self._robot_state in GETUP_STATES

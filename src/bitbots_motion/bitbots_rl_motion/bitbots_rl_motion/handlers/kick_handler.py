@@ -1,6 +1,6 @@
 from std_msgs.msg import Bool
 
-from handlers.handler import Handler
+from bitbots_rl_motion.handlers import Handler
 
 
 class KickHandler(Handler):

@@ -5318,7 +5318,7 @@ packages:
   license: Apache-2.0
   license_family: APACHE
   purls:
-  - pkg:pypi/frozenlist?source=hash-mapping
+  - pkg:pypi/frozenlist?source=compressed-mapping
   run_exports: {}
   size: 55016
   timestamp: 1779999817627
@@ -9481,7 +9481,7 @@ packages:
   license: Apache-2.0
   license_family: APACHE
   purls:
-  - pkg:pypi/propcache?source=compressed-mapping
+  - pkg:pypi/propcache?source=hash-mapping
   run_exports: {}
   size: 51586
   timestamp: 1780037816755
@@ -20534,7 +20534,7 @@ packages:
   license: BSD-3-Clause
   license_family: BSD
   purls:
-  - pkg:pypi/smmap?source=hash-mapping
+  - pkg:pypi/smmap?source=compressed-mapping
   run_exports: {}
   size: 27262
   timestamp: 1781021238494

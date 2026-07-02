@@ -6,11 +6,12 @@ import numpy as np
 import onnxruntime as rt
 import rclpy
 from ament_index_python import get_package_share_directory
-from bitbots_rl_motion.phase import Phase
-from bitbots_rl_motion.previous_action import PreviousAction
-from handlers.handler import Handler
 from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
+
+from bitbots_rl_motion.handlers import Handler
+from bitbots_rl_motion.handlers.phase import PhaseHandler
+from bitbots_rl_motion.handlers.previous_action import PreviousActionHandler
 
 
 class RLNode(Node, ABC):
@@ -19,7 +20,7 @@ class RLNode(Node, ABC):
     def __init__(self, node_name: str):
         super().__init__(f"{node_name}")
 
-        # Fallback values if paramters don't exist in config file
+        # Fallback values if parameters don't exist in config file
         self.declare_parameter("model", "")
         self.declare_parameter("phase.control_dt", 0.0)
         self.declare_parameter("phase.gait_frequency", 0.0)
@@ -42,8 +43,8 @@ class RLNode(Node, ABC):
         self.get_logger().info(f"Loaded model: {model}")
 
         # Phase is optional - if phase shouldn't be used, than self._phase.get_phase() will return None
-        self._phase = Phase(self)
-        self._previous_action = PreviousAction(self)
+        self._phase = PhaseHandler(self)
+        self._previous_action = PreviousActionHandler(self)
 
     def _timer_callback(self):
         # Check whether all subscribers received at least one message
@@ -78,17 +79,17 @@ class RLNode(Node, ABC):
         self._phase_update_hook()
 
     @abstractmethod
-    def _phase_update_hook(self):
+    def _phase_update_hook(self) -> None:
         pass
 
-    def _all_sensors_ready(self):
+    def _all_sensors_ready(self) -> tuple[bool, str]:
         for handler in self._handlers:
             if not handler.has_data():
                 return False, type(handler).__name__
 
         return True, "No missing handler"
 
-    def load_model(self, model):
+    def load_model(self, model) -> None:
         path_to_model = os.path.join(get_package_share_directory("bitbots_rl_motion"), "models", model)
 
         self._onnx_model_path = Path(path_to_model)
@@ -108,15 +109,15 @@ class RLNode(Node, ABC):
         self._timer = self.create_timer(self.get_parameter("phase.control_dt").value, self._timer_callback)
 
     @abstractmethod
-    def publisher(self, action):
+    def publisher(self, action: np.ndarray) -> None:
         pass
 
     @abstractmethod
-    def obs(self):
+    def obs(self) -> np.ndarray:
         pass
 
     @abstractmethod
-    def allowed_states(self):
+    def allowed_states(self) -> bool:
         pass
 
 
