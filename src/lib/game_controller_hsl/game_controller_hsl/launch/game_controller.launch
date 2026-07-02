@@ -28,7 +28,7 @@
         <param name="use_sim_time" value="$(var sim)" />
 
         <param name="parameter_blackboard_name" value="$(var parameter_blackboard_name)" />
-        <param name="team_id_param_name" value="$(var team_id_param_name)" /> 
+        <param name="team_id_param_name" value="$(var team_id_param_name)" />
         <param name="bot_id_param_name" value="$(var bot_id_param_name)" />
     </node>
 </launch>
