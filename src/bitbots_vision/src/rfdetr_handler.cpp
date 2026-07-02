@@ -124,9 +124,9 @@ void RfdetrHandler::init_session(const std::string& model_path) {
     RCLCPP_WARN(logger_, "RF-DETR model has no 'line_mask' output — line segmentation will be empty");
   }
 
-  RCLCPP_INFO(logger_, "Model loaded – input '%s' [1, 3, %lld, %lld], %zu outputs (line_mask: %s)",
-              input_name_.c_str(), static_cast<long long>(input_shape_[2]), static_cast<long long>(input_shape_[3]),
-              num_outputs, line_mask_idx_ >= 0 ? "yes" : "no");
+  RCLCPP_INFO(logger_, "Model loaded – input '%s' [1, 3, %lld, %lld], %zu outputs (line_mask: %s)", input_name_.c_str(),
+              static_cast<long long>(input_shape_[2]), static_cast<long long>(input_shape_[3]), num_outputs,
+              line_mask_idx_ >= 0 ? "yes" : "no");
 }
 
 // ---------------------------------------------------------------------------
@@ -219,8 +219,8 @@ void RfdetrHandler::run_inference() {
     if (line_mask_shape.size() == 4) {
       const int mask_h = static_cast<int>(line_mask_shape[2]);
       const int mask_w = static_cast<int>(line_mask_shape[3]);
-      line_mask_result_ = processing::postprocess_line_mask_rfdetr(
-          line_mask_out.GetTensorData<float>(), mask_h, mask_w, cfg_.line_mask_threshold, orig_h_, orig_w_);
+      line_mask_result_ = processing::postprocess_line_mask_rfdetr(line_mask_out.GetTensorData<float>(), mask_h, mask_w,
+                                                                   cfg_.line_mask_threshold, orig_h_, orig_w_);
     } else {
       RCLCPP_ERROR(logger_, "Unexpected 'line_mask' output tensor rank");
     }

@@ -50,7 +50,7 @@ TEST(PreprocessImageRfdetr, ImageNetNormalization_KnownColor) {
   cv::Mat bgr(2, 2, CV_8UC3, cv::Scalar(0, 128, 255));
   auto tensor = preprocess_image_rfdetr(bgr, 2, 2);
 
-  const float r = 255.f / 255.f;
+  const float r = 1.f;  // 255.f / 255.f
   const float g = 128.f / 255.f;
   const float b = 0.f / 255.f;
   const float expected_r = (r - 0.485f) / 0.229f;
@@ -70,8 +70,8 @@ TEST(PreprocessImageRfdetr, ImageNetNormalization_KnownColor) {
 // ===========================================================================
 
 TEST(PostprocessDetectionsRfdetr, Empty_ReturnsEmptyMap) {
-  auto result = postprocess_detections_rfdetr(nullptr, nullptr, 0, 4, {"ball", "unknown", "goalpost", "robot"}, {}, 0.5f,
-                                              416, 416);
+  auto result = postprocess_detections_rfdetr(nullptr, nullptr, 0, 4, {"ball", "unknown", "goalpost", "robot"}, {},
+                                              0.5f, 416, 416);
   EXPECT_TRUE(result.empty());
 }
 
@@ -134,12 +134,12 @@ TEST(PostprocessDetectionsRfdetr, NoNms_OverlappingSameClassDetections_BothKept)
   // Two nearly-identical high-confidence ball detections — RF-DETR does no
   // NMS, so both must be kept (unlike the old YOEO pipeline).
   std::vector<float> dets = {
-      0.5f, 0.5f, 0.2f, 0.2f,     //
+      0.5f,  0.5f,  0.2f, 0.2f,  //
       0.51f, 0.51f, 0.2f, 0.2f,  //
   };
   std::vector<float> logits = {
       10.f, -10.f, -10.f, -10.f,  //
-      9.f, -10.f, -10.f, -10.f,   //
+      9.f,  -10.f, -10.f, -10.f,  //
   };
 
   auto result = postprocess_detections_rfdetr(dets.data(), logits.data(), 2, 4,
@@ -177,14 +177,14 @@ TEST(PostprocessDetectionsRfdetr, PerClassThreshold_DifferentCutoffsPerClass) {
   // Other-class logits are 0 (not a large negative number) so the dominant
   // logit alone controls the resulting confidence: softmax = e^L / (e^L + 3).
   std::vector<float> logits = {
-      4.5f, 0.f, 0.f, 0.f,  // dominant class 0 ("ball")
-      0.f, 0.f, 0.f, 4.5f,  // dominant class 3 ("robot")
+      4.5f, 0.f, 0.f, 0.f,   // dominant class 0 ("ball")
+      0.f,  0.f, 0.f, 4.5f,  // dominant class 3 ("robot")
   };
   std::unordered_map<std::string, float> class_conf_thresholds = {{"ball", 0.98f}, {"robot", 0.9f}};
 
-  auto result = postprocess_detections_rfdetr(dets.data(), logits.data(), 2, 4,
-                                              {"ball", "unknown", "goalpost", "robot"}, class_conf_thresholds, 0.5f,
-                                              416, 416);
+  auto result =
+      postprocess_detections_rfdetr(dets.data(), logits.data(), 2, 4, {"ball", "unknown", "goalpost", "robot"},
+                                    class_conf_thresholds, 0.5f, 416, 416);
 
   EXPECT_TRUE(result["ball"].empty());
   ASSERT_FALSE(result["robot"].empty());
@@ -196,8 +196,7 @@ TEST(PostprocessDetectionsRfdetr, PerClassThreshold_UnlistedClassUsesDefault) {
   // fall back to default_conf_thresh (0.5 here). Confidence ~0.475 is
   // rejected, ~0.870 is kept.
   std::vector<float> dets = {
-      0.5f, 0.5f, 0.1f, 0.1f,
-      0.5f, 0.5f, 0.1f, 0.1f,
+      0.5f, 0.5f, 0.1f, 0.1f, 0.5f, 0.5f, 0.1f, 0.1f,
   };
   // Other-class logits are 0 so softmax = e^L / (e^L + 3), matching the
   // confidences noted above.
@@ -207,9 +206,9 @@ TEST(PostprocessDetectionsRfdetr, PerClassThreshold_UnlistedClassUsesDefault) {
   };
   std::unordered_map<std::string, float> class_conf_thresholds = {{"ball", 0.98f}, {"robot", 0.9f}};
 
-  auto result = postprocess_detections_rfdetr(dets.data(), logits.data(), 2, 4,
-                                              {"ball", "unknown", "goalpost", "robot"}, class_conf_thresholds, 0.5f,
-                                              416, 416);
+  auto result =
+      postprocess_detections_rfdetr(dets.data(), logits.data(), 2, 4, {"ball", "unknown", "goalpost", "robot"},
+                                    class_conf_thresholds, 0.5f, 416, 416);
 
   ASSERT_TRUE(result.count("goalpost") > 0);
   EXPECT_EQ(result.at("goalpost").size(), 1u);

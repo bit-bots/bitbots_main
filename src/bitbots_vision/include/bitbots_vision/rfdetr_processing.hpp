@@ -79,8 +79,8 @@ std::unordered_map<std::string, std::vector<Candidate>> postprocess_detections_r
 /// @param orig_h            Original image height (pixels)
 /// @param orig_w            Original image width (pixels)
 /// @return                  CV_8UC1 binary mask (0 / 255) at original image resolution
-cv::Mat postprocess_line_mask_rfdetr(const float* line_mask_logits, int mask_h, int mask_w, float threshold,
-                                    int orig_h, int orig_w);
+cv::Mat postprocess_line_mask_rfdetr(const float* line_mask_logits, int mask_h, int mask_w, float threshold, int orig_h,
+                                     int orig_w);
 
 // ---------------------------------------------------------------------------
 // Candidate suppression
