@@ -151,7 +151,7 @@
             <body name="camera_link" pos="0.048925 0.0053519 0.058472">
               <inertial pos="0.00963743 0.00075253 0.00058537" quat="0.70738 0.706786 0.00245222 0.00788061" mass="0.0584" diaginertia="7.26043e-05 7.249e-05 5.51563e-06"/>
               <geom type="mesh" class="visual" rgba="0.752941 0.752941 0.752941 1" mesh="camera_link"/>
-              <camera name="head_camera" fovy="60" pos="0.02 0 0" xyaxes="0 -1 0 0 0 1"/>
+              <camera name="head_camera" focalpixel="362.6533508300781 362.6533508300781" resolution="672 376" sensorsize="672 376" pos="0.03 0.024 0.0" xyaxes="0.0 -1.0 0.0 0.5 0.0 0.866"/>
             </body>
           </body>
         </body>
