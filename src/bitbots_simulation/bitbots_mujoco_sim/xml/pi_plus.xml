@@ -19,7 +19,7 @@
       <position kp="30" kv="0.6" forcerange="-10 10" ctrllimited="false"/>
     </default>
     <default class="pi_actuator_leg">
-      <position kp="30" kv="1.1" forcerange="-20 20" ctrllimited="false"/>
+      <position kp="100" kv="1.0" forcerange="-20 20" ctrllimited="false"/>
     </default>
     <default class="pi_actuator_head">
       <position kp="6" kv="0.6" forcerange="-2.5 2.5" ctrllimited="false"/>
@@ -285,4 +285,11 @@
     <framepos objtype="site" objname="l_foot" name="l_foot_pos"/>
     <framepos objtype="site" objname="r_foot" name="r_foot_pos"/>
   </sensor>
+
+  <keyframe>
+    <!-- Sit pose -->
+    <key name="home"
+         qpos="0 0 0.25 1 0 0 0  -1.4333 -1.2711 0.0271 0.2344  1.5319 1.4144 0.0747 0.0  0.0007 0.8727  1.6776 0.0138 0 2.3373 0.9118 -0.0031  -1.65 -0.0452 0 -2.3272 -0.9495 0.0326"
+         ctrl="-1.4333 -1.2711 0.0271 0.2344  1.5319 1.4144 0.0747 0.0  1.6776 0.0138 0 2.3373 0.9118 -0.0031  -1.65 -0.0452 0 -2.3272 -0.9495 0.0326  0.0007 0.8727"/>
+  </keyframe>
 </mujoco>
