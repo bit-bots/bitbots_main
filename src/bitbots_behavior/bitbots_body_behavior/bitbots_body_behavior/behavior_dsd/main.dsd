@@ -72,9 +72,7 @@ $SecondaryStateTeamDecider
             NO --> @LookAtFieldFeatures, @Stand
 
 #Placing
-$DoOnce
-    NOT_DONE --> @ForgetBall, @LookAtFieldFeatures
-    DONE --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToFormationPosition + stand:true + enter_position:%placing_enter_position + leave_position:%placing_leave_position + enter_orientation:%placing_enter_orientation + leave_orientation:%placing_leave_orientation
+@ChangeAction + action:positioning, @ForgetBall, @LookAtFieldFeatures, @GoToFormationPosition + set_play:true + stand:true + enter_position:%placing_enter_position + leave_position:%placing_leave_position + enter_orientation:%placing_enter_orientation + leave_orientation:%placing_leave_orientation
 
 
 #Init
@@ -87,9 +85,9 @@ $SecondBallTouchAllowed
         NO --> $ConfigRole
             STRIKER --> #SearchBall
             ELSE --> #RolePositionWithPause
-        YES --> $KickOffTimeUp
+        YES --> $KickOffTimeUp  // TODO ASK Clemens regarding rules
             NO_NORMAL --> #StandAndLook
-            NO_FREEKICK --> #Placing
+            NO_FREEKICK --> #Placing   // I think this is unreachable
             YES --> $AssignedRole
                 STRIKER --> #KickWithAvoidance
                 SUPPORTER --> #SupporterRole
@@ -105,7 +103,7 @@ $DoOnce
         ELSE --> #Placing
 
 #PlayingBehavior
-$SecondaryStateDecider 
+$SecondaryStateDecider
     PENALTYSHOOT --> #PenaltyShootoutBehavior
     TIMEOUT --> #StandAndLook
     THROW_IN --> #ThrowinGoalKickCornerkickBehavior
@@ -140,7 +138,7 @@ $IsPenalized
                 ELSE --> #PlayingBehavior
             NOT_DETECTED --> $SecondaryStateDecider
                 PENALTYSHOOT --> $SecondaryStateTeamDecider
-                    OUR --> @Stand + duration:0.1 + r:false, @DeactivateHCM + r:false, @LookForward + r:false, @Stand // we need to also see the goalie
+                    OUR --> @Stand + duration:0.1 + r:false, @LookForward + r:false, @Stand // we need to also see the goalie
                     OTHER --> $BallSeen
                         YES --> @Stand + duration:0.1 + r:false, @DeactivateHCM + r:false, @LookForward + r:false, @TrackBall + r:false, @PlayAnimationGoalieArms + r:false, @Stand // goalie only needs to care about the ball
                         NO --> @Stand + duration:0.1 + r:false, @DeactivateHCM + r:false, @LookForward + r:false, @LookAtFieldFeatures + r:false, @PlayAnimationGoalieArms + r:false, @Stand
