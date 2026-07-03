@@ -12,6 +12,7 @@
 #include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/image.hpp>
+#include <thread>
 #include <soccer_vision_2d_msgs/msg/ball.hpp>
 #include <soccer_vision_2d_msgs/msg/ball_array.hpp>
 #include <soccer_vision_2d_msgs/msg/goalpost.hpp>
@@ -92,11 +93,26 @@ class VisionNode : public rclcpp::Node {
     debug_image_pub_ = create_publisher<sensor_msgs::msg::Image>(params_.topics.debug_image, rclcpp::QoS(1));
 
     // ---------- Image subscriber ----------
+    // Runs in its own callback group, kept off the executor that services the
+    // node's default group (parameter services included). Image processing is
+    // the slow part of this node, and if it shared a thread/executor with the
+    // parameter services, a backlog of images would starve `~/set_parameters`
+    // requests until the image stream stopped. `automatically_add_to_executor_
+    // with_node = false` keeps this group from being picked up by whichever
+    // executor later calls `add_node()`; it is instead added explicitly to a
+    // dedicated executor in `main()`.
+    image_cb_group_ = create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive,
+                                             /*automatically_add_to_executor_with_node=*/false);
+    rclcpp::SubscriptionOptions image_sub_opts;
+    image_sub_opts.callback_group = image_cb_group_;
     image_sub_ = create_subscription<sensor_msgs::msg::Image>(
-        params_.topics.image, rclcpp::QoS(1), std::bind(&VisionNode::image_callback, this, std::placeholders::_1));
+        params_.topics.image, rclcpp::QoS(1), std::bind(&VisionNode::image_callback, this, std::placeholders::_1),
+        image_sub_opts);
 
     RCLCPP_INFO(get_logger(), "bitbots_vision ready");
   }
+
+  rclcpp::CallbackGroup::SharedPtr get_image_callback_group() const { return image_cb_group_; }
 
  private:
   // ---- Parameters ----
@@ -116,6 +132,7 @@ class VisionNode : public rclcpp::Node {
   rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr debug_image_pub_;
 
   // ---- Subscriber ----
+  rclcpp::CallbackGroup::SharedPtr image_cb_group_;
   rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr image_sub_;
 
   // ---- Debug image ----
@@ -333,9 +350,21 @@ int main(int argc, char** argv) {
 
   rclcpp::init(argc, argv);
   auto node = std::make_shared<bitbots_vision::VisionNode>();
+
+  // The image callback group runs on its own executor/thread so that a
+  // backlog of image processing can never starve the node's default group
+  // (parameter services, etc.) — see the comment at image_cb_group_'s
+  // creation in the constructor for details.
+  rclcpp::experimental::executors::EventsExecutor image_executor;
+  image_executor.add_callback_group(node->get_image_callback_group(), node->get_node_base_interface());
+  std::thread image_thread([&image_executor]() { image_executor.spin(); });
+
   rclcpp::experimental::executors::EventsExecutor executor;
   executor.add_node(node);
   executor.spin();
+
+  image_executor.cancel();
+  image_thread.join();
   rclcpp::shutdown();
   return 0;
 }
