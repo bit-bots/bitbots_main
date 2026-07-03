@@ -53,6 +53,21 @@ body_behavior:
           1: [ -0.085, 0.33 ]
           2: [ -0.085, -0.33 ]
 
+    support_enter_position: 0.1
+    support_leave_position: 0.3
+    support_enter_orientation: 0.1
+    support_leave_orientation: 0.3
+
+    defender_enter_position: 0.2
+    defender_leave_position: 0.5
+    defender_enter_orientation: 0.1
+    defender_leave_orientation: 0.3
+
+    placing_enter_position: 0.05
+    placing_leave_position: 0.2
+    placing_enter_orientation: 0.05
+    placing_leave_orientation: 0.1
+
     # Time to wait in ready state before moving to role position to give the localization time to converge.
     ready_wait_time: 2.0
 
