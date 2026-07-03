@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import StrEnum
-from typing import TypedDict
+from typing import Sequence, TypedDict
 
 import numpy as np
 from bitbots_utils.utils import get_parameters_from_other_node
@@ -20,6 +20,14 @@ class Role(StrEnum):
     GOALIE = "goalie"
     DEFENDER = "defender"
     SUPPORTER = "supporter"
+
+    DEFENDER_0 = "defender_0"
+    DEFENDER_1 = "defender_1"
+    DEFENDER_2 = "defender_2"
+    DEFENDER_3 = "defender_3"
+    DEFENDER_4 = "defender_4"
+    DEFENDER_5 = "defender_5"
+    DEFENDER_6 = "defender_6"
 
 
 @dataclass
@@ -190,7 +198,7 @@ class InnerPositioningCapsule:
     # --------------------------------------------------------------------------- #
 
     @staticmethod
-    def _allocate_roles(n: int, ball: NDArray[np.float64] | None = None, field: Field | None = None) -> list[str]:
+    def _allocate_roles(n: int, ball: NDArray[np.float64] | None = None, field: Field | None = None) -> list[Role]:
         """Keep-priority as the count drops: striker > goalie > 1st defender > supporter
         > 2nd defender (and any further players are extra defenders).
 
@@ -218,7 +226,7 @@ class InnerPositioningCapsule:
             roles.append(Role.STRIKER)
         if n >= 2:
             roles.append(Role.GOALIE)
-        roles += [f"{Role.DEFENDER}_{i}" for i in range(n_def)]
+        roles += [Role(f"{Role.DEFENDER}_{i}") for i in range(n_def)]
         if has_support:
             roles.append(Role.SUPPORTER)
         return roles
@@ -229,7 +237,7 @@ class InnerPositioningCapsule:
 
     def _separate(
         self,
-        positions: dict[str, NDArray[np.float64]],
+        positions: dict[Role, NDArray[np.float64]],
         field: Field,
         params: Params,
         ball: NDArray[np.float64] | None = None,
@@ -304,7 +312,7 @@ class InnerPositioningCapsule:
             self._clear_ball(positions, ball, clear_radius, field)
 
     def _clear_ball(
-        self, positions: dict[str, NDArray[np.float64]], ball: NDArray[np.float64], radius: float, field: Field
+        self, positions: dict[Role, NDArray[np.float64]], ball: NDArray[np.float64], radius: float, field: Field
     ) -> None:
         """Push all robots to at least `radius` distance from `ball` (in-place)."""
         ball = np.asarray(ball)
@@ -321,9 +329,9 @@ class InnerPositioningCapsule:
 
     def _match_assignment(
         self,
-        old_poses: list[list[float] | NDArray[np.float64]],
+        old_poses: Sequence[list[float] | NDArray[np.float64]],
         new_items: list[tuple[str, NDArray[np.float64]]],
-        ball: NDArray[np.float64],
+        ball: NDArray[np.float64] | tuple[float, float],
         passive_indices: list[int],
         angle_w: float = 0.3,
     ) -> list[tuple[int, NDArray[np.float64], str]]:
@@ -371,7 +379,7 @@ class InnerPositioningCapsule:
     # --------------------------------------------------------------------------- #
 
     def _compute_formation(
-        self, ball: NDArray[np.float64], field: Field, n_players: int, params: Params, opp_set_play: bool = False
+        self, ball: NDArray[np.float64] | tuple[float, float], field: Field, n_players: int, params: Params, opp_set_play: bool = False
     ) -> dict[str, NDArray[np.float64]]:
         """Map a ball position -> {role: np.array([x, y, yaw])}. Pure & deterministic.
 
@@ -381,7 +389,7 @@ class InnerPositioningCapsule:
         xyzw order (ROS/tf convention). Internally, transforms3d uses wxyz order;
         `bitbots_utils.transforms` handles the conversion.
         """
-        b = ball
+        b = np.asarray(ball)
         goal = np.array([-field.length / 2.0, 0.0])
         opp = np.array([+field.length / 2.0, 0.0])
 
@@ -392,7 +400,7 @@ class InnerPositioningCapsule:
         roles = self._allocate_roles(n_players, b, field)
         if opp_set_play and Role.SUPPORTER in roles:
             n_def = sum(1 for r in roles if r.startswith(Role.DEFENDER + "_"))
-            roles[roles.index(Role.SUPPORTER)] = f"{Role.DEFENDER}_{n_def}"
+            roles[roles.index(Role.SUPPORTER)] = Role(f"{Role.DEFENDER}_{n_def}")
         out = {}
         head = {}  # role -> heading (rad); filled lazily, completed after separation
         kick_aim = None  # striker's kick direction; used to clear the kick lane
@@ -457,7 +465,7 @@ class InnerPositioningCapsule:
                 offsets = [params.def_side * side_dir]
             else:
                 offsets = [(k - (m - 1) / 2.0) * params.gap for k in range(m)]
-            for r, off in zip(defender_roles, offsets):
+            for r, off in zip(defender_roles, offsets, strict=True):
                 out[r] = self._clamp_field(anchor + off * perp, field)
 
         # --- supporter: slightly in front of the ball, kept inside the field -------- #

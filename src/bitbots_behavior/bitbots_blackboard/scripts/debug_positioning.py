@@ -5,10 +5,17 @@ Exercises the exact capsule code without starting the full stack.
 Click the field to move the ball; use the sliders to tweak params.
 """
 
+from typing import TypedDict
+
 import numpy as np
 from bitbots_blackboard.capsules.positioning_capsule import Field, InnerPositioningCapsule, Params
 
 _inner = InnerPositioningCapsule()
+
+class State(TypedDict):
+    ball: tuple[float, float]
+    n: int
+    robots: list[np.ndarray]
 
 
 def run_gui():
@@ -22,7 +29,7 @@ def run_gui():
     # updated in place every frame via `_match_assignment` - unlike the formation targets
     # (which are recomputed from scratch each frame), this gives "robot i" a stable
     # identity across ball moves, so marking one passive keeps referring to the same robot.
-    state = {"ball": np.array([1.0, 0.5]), "n": 5, "robots": None}
+    state: State = {"ball": (1.0, 0.5), "n": 5, "robots": []}
 
     colors = {"goalie": "#e6b800", "striker": "#d62728", "supporter": "#2ca02c"}
 
@@ -30,7 +37,7 @@ def run_gui():
     plt.subplots_adjust(left=0.08, right=0.97, top=0.98, bottom=0.50)
 
     def _ax(b):
-        return plt.axes([0.18, b, 0.72, 0.015])
+        return plt.axes((0.18, b, 0.72, 0.015))
 
     s_n = Slider(_ax(0.470), "players", 1, 8, valinit=state["n"], valstep=1)
     s_sep = Slider(_ax(0.440), "min_sep", 0.3, 2.0, valinit=params.min_sep)
@@ -45,14 +52,14 @@ def run_gui():
     s_back = Slider(_ax(0.170), "back dist", 0.0, 3.0, valinit=params.back_dist)
     s_kclr = Slider(_ax(0.140), "kick clear", 0.0, 1.5, valinit=params.kick_clear)
     s_gout = Slider(_ax(0.110), "goalie out", 0.2, 2.0, valinit=params.d_g)
-    check_sp = CheckButtons(plt.axes([0.18, 0.073, 0.20, 0.022]), ["set play"], [False])
+    check_sp = CheckButtons(plt.axes((0.18, 0.073, 0.20, 0.022)), ["set play"], [False])
     s_spcl = Slider(_ax(0.050), "set play clearance", 0.1, 2.0, valinit=params.opp_set_play_clearance)
     # one checkbox per possible robot identity (0..max players - 1); checkboxes beyond the
     # current player count are simply ignored. CheckButtons (unlike TextBox) doesn't hook
     # resize_event, so it doesn't hit the matplotlib bug where TextBox crashes on any
     # window resize (ResizeEvent has no .inaxes, but TextBox._resize assumes it does).
     max_players = 8
-    ax_passive = plt.axes([0.915, 0.05, 0.07, 0.40])  # right of the sliders, below the plot
+    ax_passive = plt.axes((0.915, 0.05, 0.07, 0.40))  # right of the sliders, below the plot
     ax_passive.set_title("passive\nrobot", fontsize=9)
     check_passive = CheckButtons(ax_passive, [str(i) for i in range(max_players)], [False] * max_players)
 
@@ -147,9 +154,9 @@ def run_gui():
             # (role colors like the green defender/supporter vanish against the pitch), with
             # a hollow ring marking the start so the direction of travel is clear
             ax.plot([old_pose[0], p[0]], [old_pose[1], p[1]], ls=(0, (4, 2)), color="white", lw=1.7, alpha=0.95, zorder=3)
-            ax.add_patch(Circle(old_pose[:2], 0.07, fill=False, ec="white", lw=1.2, alpha=0.8, zorder=3))
-            ax.add_patch(Circle(p, params.min_sep / 2, color=c, alpha=0.18, zorder=2))
-            ax.add_patch(Circle(p, 0.16, color=c, ec="black", zorder=6))
+            ax.add_patch(Circle(tuple(old_pose[:2]), 0.07, fill=False, ec="white", lw=1.2, alpha=0.8, zorder=3))
+            ax.add_patch(Circle(tuple(p), params.min_sep / 2, color=c, alpha=0.18, zorder=2))
+            ax.add_patch(Circle(tuple(p), 0.16, color=c, ec="black", zorder=6))
             ax.plot(
                 [p[0], p[0] + 0.45 * np.cos(th)],
                 [p[1], p[1] + 0.45 * np.sin(th)],
@@ -177,7 +184,7 @@ def run_gui():
 
     def on_click(event):
         if event.inaxes is ax and event.xdata is not None:
-            state["ball"] = np.array([event.xdata, event.ydata])
+            state["ball"] = (event.xdata, event.ydata)
             draw()
 
     for s in (
