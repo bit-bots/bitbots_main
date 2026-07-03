@@ -1,6 +1,7 @@
+from collections.abc import Sequence
 from dataclasses import dataclass
 from enum import StrEnum
-from typing import Sequence, TypedDict
+from typing import TypedDict
 
 import numpy as np
 from bitbots_utils.utils import get_parameters_from_other_node
@@ -379,7 +380,12 @@ class InnerPositioningCapsule:
     # --------------------------------------------------------------------------- #
 
     def _compute_formation(
-        self, ball: NDArray[np.float64] | tuple[float, float], field: Field, n_players: int, params: Params, opp_set_play: bool = False
+        self,
+        ball: NDArray[np.float64] | tuple[float, float],
+        field: Field,
+        n_players: int,
+        params: Params,
+        opp_set_play: bool = False,
     ) -> dict[str, NDArray[np.float64]]:
         """Map a ball position -> {role: np.array([x, y, yaw])}. Pure & deterministic.
 
