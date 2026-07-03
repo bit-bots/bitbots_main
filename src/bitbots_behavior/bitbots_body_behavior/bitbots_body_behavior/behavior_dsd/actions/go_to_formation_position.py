@@ -1,7 +1,11 @@
+import math
 
+import numpy as np
 from bitbots_blackboard.body_blackboard import BodyBlackboard
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 from tf2_geometry_msgs import PoseStamped
+from ros2_numpy import numpify
+from tf_transformations import euler_from_quaternion
 
 
 class GoToFormationPosition(AbstractActionElement):
@@ -22,27 +26,25 @@ class GoToFormationPosition(AbstractActionElement):
         pose_msg.pose.position.y = pose[1]
         pose_msg.pose.orientation.w = pose[2]
 
-        if self.latched:
-            # Cancel the path planning if it is running
-            self.blackboard.pathfinding.cancel_goal()
-            # need to keep publishing this since path planning publishes a few more messages
-            self.blackboard.pathfinding.stop_walk()
-
         current_pose = self.blackboard.world_model.get_current_position_pose_stamped()
 
-        if current_pose is None or pose is None:
-            return self.blackboard.pathfinding.publish(pose_msg)
+        #Dont try the check without current_pose, we dont want to stop a robot while going to ball, or kicking
+        if current_pose is None or self.blackboard.team_data.strategy.action == 2 or self.blackboard.team_data.strategy.action == 6:
+            self.blackboard.pathfinding.publish(pose_msg)
+            return
 
         current_orientation = euler_from_quaternion(numpify(current_pose.pose.orientation))
-        goal_orientation = euler_from_quaternion(numpify(goal_pose.pose.orientation))
+        goal_orientation = euler_from_quaternion(numpify(pose.pose.orientation))
         angle_to_goal_orientation = abs(math.remainder(current_orientation[2] - goal_orientation[2], math.tau))
         self.publish_debug_data("current_orientation", current_orientation[2])
         self.publish_debug_data("goal_orientation", goal_orientation[2])
         self.publish_debug_data("angle_to_goal_orientation", angle_to_goal_orientation)
 
-        distance = np.linalg.norm(numpify(goal_pose.pose.position) - numpify(current_pose.pose.position))
+        distance = np.linalg.norm(numpify(pose.pose.position) - numpify(current_pose.pose.position))
         self.publish_debug_data("distance", distance)
-        if distance < self.threshold and angle_to_goal_orientation < self.orientation_threshold:
-            self.latched = self.latch  # Set it to true if we always want to return YES in the future
-            return "YES"
-        return "NO"
+        if distance < 0.2 and angle_to_goal_orientation < 0.2:
+            # Cancel the path planning if it is running
+            self.blackboard.pathfinding.cancel_goal()
+            # need to keep publishing this since path planning publishes a few more messages
+            self.blackboard.pathfinding.stop_walk()
+        self.blackboard.pathfinding.publish(pose_msg)
