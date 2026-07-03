@@ -155,6 +155,7 @@ body_behavior:
       approach_arc_half_degree: 120.0 # half opening angle (in degrees) of the arc around the point opposite the kick direction
       goal_line_offset: 0.25 # distance beyond the goal line used for the left/right kick target points
       kick_target_y_offset: 0.5 # inset (in y) from the goal posts used for the left/right kick target points
+      goal_kick_dir_inset: 0.5
 
     ##################
     # costmap params #
