@@ -188,14 +188,14 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
             if self.is_valid(data) and (data.strategy.role != Strategy.ROLE_GOALIE or count_goalies):
                 poses.append(data.robot_position.pose)
         return poses
-    
+
     def get_id_of_passive_player(self) -> list[int]:
         """Returns the poses of all playing robots"""
         index_list = []
         data: TeamData
         for data in self.team_data.values():
             if self.is_valid(data) and (data.strategy.action is Strategy.ACTION_PASSIVE):
-                index_list.append(data.robot_id)          
+                index_list.append(data.robot_id)
         if self.strategy.action is Strategy.ACTION_PASSIVE:
             index_list.append(self._blackboard.gamestate.get_own_id())
         return index_list

@@ -1,12 +1,11 @@
-import random
 from dataclasses import dataclass
 from enum import StrEnum
 from typing import TypedDict
-from scipy.optimize import linear_sum_assignment
 
 import numpy as np
 from bitbots_utils.utils import get_parameters_from_other_node
 from numpy.typing import NDArray
+from scipy.optimize import linear_sum_assignment
 
 from bitbots_blackboard.capsules import AbstractBlackboardCapsule, cached_capsule_function
 
@@ -430,7 +429,6 @@ class InnerPositioningCapsule:
                 ]
             )
             out[Role.GOALIE] = g
-
 
         # --- defenders: anchor on axis at push-up depth, spread along perp ---------- #
         defender_roles = [r for r in roles if r.startswith(Role.DEFENDER + "_")]

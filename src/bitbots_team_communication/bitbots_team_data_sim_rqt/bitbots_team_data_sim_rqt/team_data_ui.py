@@ -186,6 +186,7 @@ class PositionCoordsY(QGroupBox):
     def get_y_position(self) -> float:
         return float(self.y_pos_spin_box.value() / 100)
 
+
 class BallPositionCoordsX(QGroupBox):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -211,7 +212,7 @@ class BallPositionCoordsX(QGroupBox):
         return float(self.x_ball_pos_spin_box.value() / 100)
 
 
-class PositionCoordsY(QGroupBox):
+class BallPositionCoordsY(QGroupBox):
     def __init__(self, parent=None):
         super().__init__(parent)
         # y position
@@ -234,6 +235,7 @@ class PositionCoordsY(QGroupBox):
 
     def get_y_ball_position(self) -> float:
         return float(self.y_ball_pos_spin_box.value() / 100)
+
 
 class BallCovariance(QGroupBox):
     def __init__(self, parent=None):
@@ -258,6 +260,7 @@ class BallCovariance(QGroupBox):
 
     def get_ball_covariance(self) -> float:
         return float(self.ball_covariance_box.value() / 10)
+
 
 class StrategyBox(QGroupBox):
     _roles: dict[str, int] = {
@@ -393,12 +396,42 @@ class TeamDataSimulator(Plugin):
                 pose_with_cov.pose.position.x = robot_widget.position_sliders_x.get_x_position()
                 pose_with_cov.pose.position.y = robot_widget.position_sliders_y.get_y_position()
                 pose_with_cov.covariance = [
-                    robot_widget.ball_covariance.get_ball_covariance() / 2, 0.0, 0.0, 0.0, 0.0, 0.0,
-                    0.0, robot_widget.ball_covariance.get_ball_covariance() / 2, 0.0, 0.0, 0.0, 0.0,
-                    0.0, 0.0, 0.01, 0.0, 0.0, 0.0,
-                    0.0, 0.0, 0.0, 0.01, 0.0, 0.0,
-                    0.0, 0.0, 0.0, 0.0, 0.01, 0.0,
-                    0.0, 0.0, 0.0, 0.0, 0.0, 0.05
+                    robot_widget.ball_covariance.get_ball_covariance() / 2,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    robot_widget.ball_covariance.get_ball_covariance() / 2,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.01,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.01,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.01,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.05,
                 ]
                 team_data.robot_position = pose_with_cov
                 team_data.state = robot_widget.state_box.get_state()
