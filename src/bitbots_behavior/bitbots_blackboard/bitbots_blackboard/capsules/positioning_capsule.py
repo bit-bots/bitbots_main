@@ -229,6 +229,7 @@ class InnerPositioningCapsule:
         params: Params,
         ball: NDArray[np.float64] | None = None,
         aim: NDArray[np.float64] | None = None,
+        clear_radius: float | None = None,
     ) -> None:
         """In-place relaxation: pairwise min-sep + clearing the striker's kick lane.
 
@@ -236,7 +237,13 @@ class InnerPositioningCapsule:
         goalie included, gives way around it. In normal play the goalie is far from
         all teammates so it never moves; it only shifts off its line in the degenerate
         case where the ball sits right in the goal mouth. Continuous in the inputs,
-        so small ball moves -> small position moves."""
+        so small ball moves -> small position moves.
+
+        `clear_radius` (opponent set play) is re-enforced at the *start* of every
+        iteration, so the pairwise pass that follows always gets the last word and
+        can re-separate robots that the clearance push just bunched together. A
+        final clearance pass after the loop is the hard guarantee (it's a
+        referee-enforced rule), even though separation wins within the loop."""
         fixed = {Role.STRIKER}
         names = list(positions.keys())
         sep = params.min_sep
@@ -248,6 +255,11 @@ class InnerPositioningCapsule:
             step = max(params.kick_clear * 0.7, 0.3)
             lane_pts = [np.asarray(ball) + s * aim for s in np.arange(step, params.kick_range + 1e-9, step)]
         for _ in range(params.sep_iters):
+            # enforce set-play clearance first so this iteration's pairwise pass gets the
+            # last word - otherwise robots bunched by the clearance push in the final
+            # iteration would have no chance to be re-separated
+            if clear_radius is not None and ball is not None:
+                self._clear_ball(positions, ball, clear_radius, field)
             disp = {n: np.zeros(2) for n in names}
             for i in range(len(names)):
                 for j in range(i + 1, len(names)):
@@ -281,6 +293,10 @@ class InnerPositioningCapsule:
                 if n in fixed:
                     continue
                 positions[n] = self._clamp_field(positions[n] + disp[n], field)
+        # hard guarantee: the set-play clearance is a referee-enforced rule, so it always
+        # wins in the end, even though separation gets the last word during the loop above
+        if clear_radius is not None and ball is not None:
+            self._clear_ball(positions, ball, clear_radius, field)
 
     def _clear_ball(
         self, positions: dict[str, NDArray[np.float64]], ball: NDArray[np.float64], radius: float, field: Field
@@ -450,12 +466,10 @@ class InnerPositioningCapsule:
             sup[0] = min(sup[0], params.supp_max_x)  # don't drift into the opponent corner
             out[Role.SUPPORTER] = self._clamp_field(sup, field)
 
-        # --- min-separation repulsion + kick-lane clearance ----------------------- #
-        self._separate(out, field, params, b, kick_aim)
-
-        # --- set play: push every robot outside the mandatory clearance radius ---- #
-        if opp_set_play:
-            self._clear_ball(out, b, params.opp_set_play_clearance, field)
+        # --- min-separation repulsion + kick-lane clearance + set-play clearance -- #
+        self._separate(
+            out, field, params, b, kick_aim, clear_radius=params.opp_set_play_clearance if opp_set_play else None
+        )
 
         # --- orientations (computed from the final positions) --------------------- #
         for role, p in out.items():
