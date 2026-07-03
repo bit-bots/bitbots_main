@@ -66,15 +66,5 @@ class RLKickTowardsGoal(AbstractKickAction):
             self._start_time = self.blackboard.node.get_clock().now()
             self.blackboard.kick.start_rl_kick(kick_dir_deg_in_map, self._strength)
 
-        elapsed = self.blackboard.node.get_clock().now() - self._start_time
-        if elapsed >= Duration(seconds=self.blackboard.config["rl_kick"]["timeout"]) and elapsed <= Duration(
-            seconds=self.blackboard.config["rl_kick"]["timeout"]
-            + self.blackboard.config["rl_kick"]["post_kick_timeout"]
-        ):
-            self.blackboard.pathfinding.direct_cmd_vel_pub.publish(Twist())
-        elif elapsed >= Duration(
-            seconds=self.blackboard.config["rl_kick"]["timeout"]
-            + self.blackboard.config["rl_kick"]["post_kick_timeout"]
-            + self.blackboard.config["rl_kick"]["walk_delay"]
-        ):
+        if not self.blackboard.kick.is_currently_kicking:
             self.pop()
