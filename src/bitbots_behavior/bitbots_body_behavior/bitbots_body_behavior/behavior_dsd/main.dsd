@@ -37,7 +37,7 @@ $KickOrDribble + map_goal_distance:%ball_approach_dist // should be same as belo
         YES --> $DoOnce
             NOT_DONE --> @StoreBallMovementDetectionStartPosition
             DONE --> @ChangeAction + action:going_to_ball + r:false, @Stand + duration:0.1 + r:false, @LookAtBallPenalty + r:false, @RLKickTowardsGoal + strength:3.5 + r:false
-    DRIBBLE --> $AvoidBall // old behavior before kick when we want to kick the ball in 
+    DRIBBLE --> $AvoidBall // old behavior before kick when we want to kick the ball in
         NO --> $BallClose + distance:%ball_reapproach_dist + angle:%ball_reapproach_angle
             YES --> $BallKickArea
                 NEAR --> $DoOnce
@@ -48,6 +48,7 @@ $KickOrDribble + map_goal_distance:%ball_approach_dist // should be same as belo
         YES --> $ReachedPathPlanningGoalPosition + threshold:%ball_far_approach_position_thresh
             YES --> @AvoidBallInactive
             NO --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:map + distance:%ball_far_approach_dist
+
 #PositioningReady
 $GoalScoreRecently
     YES --> $ConfigRole
@@ -133,7 +134,7 @@ $SecondBallTouchAllowed
                         FIRST --> #StrikerRole
                         SECOND --> #SupporterRole
                         THIRD --> #DefensePositioning
-                        
+
 #ThrowinGoalKickCornerkickBehavior
 $DoOnce
     NOT_DONE --> @SetNoSecondBallContactVariable + value:true, @ForgetBallStartPosition + r:false
@@ -142,7 +143,7 @@ $DoOnce
         ELSE --> #Placing
 
 #PlayingBehavior
-$SecondaryStateDecider 
+$SecondaryStateDecider
     PENALTYSHOOT --> #PenaltyShootoutBehavior
     TIMEOUT --> #StandAndLook
     THROW_IN --> #ThrowinGoalKickCornerkickBehavior

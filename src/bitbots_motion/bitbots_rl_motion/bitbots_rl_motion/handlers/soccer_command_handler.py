@@ -66,7 +66,9 @@ class SoccerCommandHandler(Handler):
         self._warm_start_cmd = np.array(node.get_parameter("command.warm_start_command").value, dtype=np.float32)
         self._post_kick_command_duration = float(node.get_parameter("command.post_kick_command_duration").value)
         self._post_kick_command = np.array(node.get_parameter("command.post_kick_command").value, dtype=np.float32)
-        self._post_stabilization_stop_duration = float(node.get_parameter("command.post_stabilization_stop_duration").value)
+        self._post_stabilization_stop_duration = float(
+            node.get_parameter("command.post_stabilization_stop_duration").value
+        )
 
         self._pub_period = max(1, int(node.get_parameter("command.pub_period").value))
         self._history_samples = max(1, int(node.get_parameter("command.history_samples").value))
@@ -87,7 +89,7 @@ class SoccerCommandHandler(Handler):
         self._kick_abort_requested = False
         self._post_kick_command_active = False
         self._post_stabilization_stop_active = False
-        
+
         self._kick_speed = 0.0
         # Requested heading in the body frame at goal receipt (atan2(y, x)); used
         # as the fallback if the kick could not be anchored to odom.
@@ -185,7 +187,7 @@ class SoccerCommandHandler(Handler):
         lookup transiently fails.
         """
         if self._kick_dir_odom is None:
-            return None # this means something is wrong, should kill the node TODO better solution
+            return None  # this means something is wrong, should kill the node TODO better solution
         yaw_now = self._robot_yaw_odom(timeout_s=0.0)
         if yaw_now is None:
             return self._last_kick_dir_b  # hold last good value on a transient miss
@@ -235,7 +237,6 @@ class SoccerCommandHandler(Handler):
             else:
                 self._node.get_logger().warn("Waiting for robot to be controllable before starting kick...")
                 self._node.get_clock().sleep_for(Duration(seconds=0.02))
-
 
         # Warm start: run the policy with a defined command so it can settle into a
         # in domain pose and the observation history fills
@@ -295,7 +296,9 @@ class SoccerCommandHandler(Handler):
 
         if self._post_stabilization_stop_duration > 0.0:
             self._post_stabilization_stop_active = True
-            post_stabilization_stop_end = self._node.get_clock().now() + Duration(seconds=self._post_stabilization_stop_duration)
+            post_stabilization_stop_end = self._node.get_clock().now() + Duration(
+                seconds=self._post_stabilization_stop_duration
+            )
             while self._node.get_clock().now() < post_stabilization_stop_end:
                 remaining = (post_stabilization_stop_end - self._node.get_clock().now()).nanoseconds / 1e9
                 self._node.get_logger().warn(f"Post-stabilization stop active remaining {remaining:.2f} s")
@@ -344,8 +347,12 @@ class SoccerCommandHandler(Handler):
     def is_kick_active(self) -> bool:
         """True while an rl_kick action goal is live (warm start, kick, or post-kick stand).
         Used to gate when the policy runs and publishes."""
-        return self._warm_start_active or self._kick_active or \
-               self._post_kick_command_active or self._post_stabilization_stop_active
+        return (
+            self._warm_start_active
+            or self._kick_active
+            or self._post_kick_command_active
+            or self._post_stabilization_stop_active
+        )
 
     def is_post_kick_command_active(self) -> bool:
         """True during the post-kick standup window after the kick motion completes."""

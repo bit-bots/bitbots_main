@@ -5,9 +5,9 @@ from typing import Optional
 import numpy as np
 from bitbots_utils.transforms import quat_from_yaw
 from bitbots_utils.utils import get_parameters_from_other_node
-from geometry_msgs.msg import Point, PoseStamped, Twist, Vector3
+from geometry_msgs.msg import Point, PoseStamped, Twist
 from ros2_numpy import numpify
-from std_msgs.msg import Bool, ColorRGBA, Empty
+from std_msgs.msg import Bool, Empty
 from tf_transformations import euler_from_quaternion
 from visualization_msgs.msg import Marker
 
@@ -172,23 +172,23 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
             approach_arc_half_rad = math.radians(self._blackboard.config["rl_kick"]["approach_arc_half_degree"])
             ball_x, ball_y = self._blackboard.world_model.get_ball_position_xy()
 
-            vec_ball_to_goal = np.array([
-                self._blackboard.world_model.field_length / 2 + 2* goal_line_offset - ball_x,
-                0 - ball_y
-            ])
+            vec_ball_to_goal = np.array(
+                [self._blackboard.world_model.field_length / 2 + 2 * goal_line_offset - ball_x, 0 - ball_y]
+            )
             robot_x, robot_y, robot_theta = self._blackboard.world_model.get_current_position()
 
-            
             angle_to_goal = math.atan2(vec_ball_to_goal[1], vec_ball_to_goal[0])
             arc_start_angle = angle_to_goal - approach_arc_half_rad
             arc_end_angle = angle_to_goal + approach_arc_half_rad
 
             position_in_kick_arc = self.is_point_in_arc(
-                robot_x, robot_y,
-                ball_x, ball_y,
-                approach_dist, # we take approach_dist as radius instead of tolerance_dist for hysteresis
+                robot_x,
+                robot_y,
+                ball_x,
+                ball_y,
+                approach_dist,  # we take approach_dist as radius instead of tolerance_dist for hysteresis
                 arc_start_angle,
-                arc_end_angle
+                arc_end_angle,
             )
 
             if position_in_kick_arc:
@@ -207,7 +207,7 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
                     ball_x - math.cos(angle_robot_ball) * approach_dist,
                     ball_y - math.sin(angle_robot_ball) * approach_dist,
                     angle_robot_ball,
-                    self._blackboard.map_frame
+                    self._blackboard.map_frame,
                 )
         else:
             raise ValueError(f"Target {target} for go_to_ball action not implemented.")
@@ -222,7 +222,6 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
         pose_msg = self._blackboard.tf_buffer.transform(pose_msg, self._blackboard.map_frame)
 
         return pose_msg
-
 
     def get_map_goal(self, distance, side_offset: float = 0.0, goal_offset: float = 0.0):
         goal_angle = self._blackboard.world_model.get_map_based_opp_goal_angle_from_ball()
@@ -250,12 +249,12 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
         goal_y = ball_y - approach_offset_y + side_offset_y
 
         return (goal_x, goal_y, goal_angle, self._blackboard.map_frame)
-        
+
     def is_point_in_arc(self, p_x, p_y, c_x, c_y, radius, start_angle_rad, end_angle_rad) -> bool:
         distance = math.sqrt((p_x - c_x) ** 2 + (p_y - c_y) ** 2)
         if distance > radius:
             return False
-        
+
         angle_to_center_point = math.atan2(p_y - c_y, p_x - c_x)
         start_angle_rad = start_angle_rad % (2 * math.pi)
         end_angle_rad = end_angle_rad % (2 * math.pi)
