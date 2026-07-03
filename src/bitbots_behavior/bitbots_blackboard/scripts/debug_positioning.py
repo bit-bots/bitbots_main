@@ -18,7 +18,11 @@ def run_gui():
 
     fld = Field()
     params = Params()
-    state = {"ball": np.array([1.0, 0.5]), "n": 5, "prev": None}
+    # `robots` holds the *persistent* physical robot positions (index = robot identity),
+    # updated in place every frame via `_match_assignment` - unlike the formation targets
+    # (which are recomputed from scratch each frame), this gives "robot i" a stable
+    # identity across ball moves, so marking one passive keeps referring to the same robot.
+    state = {"ball": np.array([1.0, 0.5]), "n": 5, "robots": None}
 
     colors = {"goalie": "#e6b800", "striker": "#d62728", "supporter": "#2ca02c"}
 
@@ -43,6 +47,17 @@ def run_gui():
     s_gout = Slider(_ax(0.110), "goalie out", 0.2, 2.0, valinit=params.d_g)
     check_sp = CheckButtons(plt.axes([0.18, 0.073, 0.20, 0.022]), ["set play"], [False])
     s_spcl = Slider(_ax(0.050), "set play clearance", 0.1, 2.0, valinit=params.opp_set_play_clearance)
+    # one checkbox per possible robot identity (0..max players - 1); checkboxes beyond the
+    # current player count are simply ignored. CheckButtons (unlike TextBox) doesn't hook
+    # resize_event, so it doesn't hit the matplotlib bug where TextBox crashes on any
+    # window resize (ResizeEvent has no .inaxes, but TextBox._resize assumes it does).
+    max_players = 8
+    ax_passive = plt.axes([0.915, 0.05, 0.07, 0.40])  # right of the sliders, below the plot
+    ax_passive.set_title("passive\nrobot", fontsize=9)
+    check_passive = CheckButtons(ax_passive, [str(i) for i in range(max_players)], [False] * max_players)
+
+    def get_passive_indices(n_robots):
+        return [i for i, checked in enumerate(check_passive.get_status()) if checked and i < n_robots]
 
     def draw():
         ax.clear()
@@ -86,16 +101,20 @@ def run_gui():
         form = _inner._compute_formation(state["ball"], fld, n, params, opp_set_play=opp_set_play)
         new_items = list(form.items())
 
-        prev = state["prev"]
-        if prev is not None and len(prev) == len(new_items):
-            for old_idx, new_pose, role in _inner._match_assignment(prev, new_items, state["ball"], None):
-                old_pose = prev[old_idx]
-                c = colors.get(role.split("_")[0], "#1f77b4")
-                ax.plot([old_pose[0], new_pose[0]], [old_pose[1], new_pose[1]], ls=":", color=c, lw=1.5, zorder=3)
-                ax.add_patch(Circle(old_pose[:2], 0.10, color=c, alpha=0.55, zorder=4))
-        state["prev"] = [pose for _role, pose in new_items]
+        # (re)seed robot identities from scratch whenever the player count changes, since
+        # there's no sensible way to carry old identities over a different-sized roster
+        if state["robots"] is None or len(state["robots"]) != len(new_items):
+            state["robots"] = [pose for _role, pose in new_items]
 
+        passive_idxs = get_passive_indices(len(state["robots"]))
+        robots = state["robots"]
+        # assign each persistent robot (by index) to a role target for this frame
+        assignments = _inner._match_assignment(robots, new_items, state["ball"], passive_idxs)
+
+        # ball
         ax.add_patch(Circle(state["ball"], 0.12, color="white", ec="black", zorder=5))
+
+        # striker kick lane + aim arrow
         if "striker" in form:
             th = form["striker"][2]
             aim = np.array([np.cos(th), np.sin(th)])
@@ -115,10 +134,20 @@ def run_gui():
                 zorder=8,
                 alpha=0.9,
             )
-        for role, pose in form.items():
-            p, th = pose[:2], pose[2]
-            base = role.split("_")[0]
-            c = colors.get(base, "#1f77b4")
+
+        # draw each robot at its assigned position, colored by its current role. The robot's
+        # identity (its index) and its passive 'x' stay glued to the same marker even when
+        # its role - and therefore its color - changes from frame to frame.
+        new_robots = list(robots)
+        for old_idx, new_pose, role in assignments:
+            old_pose = robots[old_idx]
+            p, th = new_pose[:2], new_pose[2]
+            c = colors.get(role.split("_")[0], "#1f77b4")
+            # dashed trail from where this robot was last frame; fixed high-contrast white
+            # (role colors like the green defender/supporter vanish against the pitch), with
+            # a hollow ring marking the start so the direction of travel is clear
+            ax.plot([old_pose[0], p[0]], [old_pose[1], p[1]], ls=(0, (4, 2)), color="white", lw=1.7, alpha=0.95, zorder=3)
+            ax.add_patch(Circle(old_pose[:2], 0.07, fill=False, ec="white", lw=1.2, alpha=0.8, zorder=3))
             ax.add_patch(Circle(p, params.min_sep / 2, color=c, alpha=0.18, zorder=2))
             ax.add_patch(Circle(p, 0.16, color=c, ec="black", zorder=6))
             ax.plot(
@@ -129,20 +158,21 @@ def run_gui():
                 zorder=7,
                 solid_capstyle="round",
             )
-            ax.annotate(
-                role.replace("defender_", "D").replace("supporter", "supp"),
-                p,
-                color="white",
-                fontsize=8,
-                ha="center",
-                va="center",
-                zorder=8,
-            )
+            short = role.replace("defender_", "D").replace("supporter", "supp")
+            ax.annotate(f"{old_idx}:{short}", (p[0], p[1] - 0.30), color="white", fontsize=8, ha="center", zorder=8)
+            if old_idx in passive_idxs:
+                ax.plot(p[0], p[1], marker="x", color="black", markersize=13, mew=2.5, zorder=9)
+            new_robots[old_idx] = new_pose
+        state["robots"] = new_robots
 
         ax.set_xlim(-fld.length / 2 - 0.5, fld.length / 2 + 0.5)
         ax.set_ylim(-fld.width / 2 - 0.5, fld.width / 2 + 0.5)
         ax.set_aspect("equal")
-        ax.set_title("click to move the ball  ·  dots = previous assignment (dotted = who moves where)", color="black")
+        ax.set_title(
+            "click to move the ball  ·  label = robot#:role  ·  dotted trail = movement since last frame  ·  "
+            "'x' = passive (never assigned striker)",
+            color="black",
+        )
         fig.canvas.draw_idle()
 
     def on_click(event):
@@ -168,6 +198,7 @@ def run_gui():
     ):
         s.on_changed(lambda _v: draw())
     check_sp.on_clicked(lambda _label: draw())
+    check_passive.on_clicked(lambda _label: draw())
     fig.canvas.mpl_connect("button_press_event", on_click)
     draw()
     plt.show()
