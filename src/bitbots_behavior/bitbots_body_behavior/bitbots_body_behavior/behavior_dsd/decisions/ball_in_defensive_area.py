@@ -52,7 +52,8 @@ class BallInOwnPercent(AbstractDecisionElement):
 
     def get_reevaluate(self):
         return True
-    
+
+
 class BallInGoalieZone(AbstractDecisionElement):
     blackboard: BodyBlackboard
 
@@ -75,10 +76,15 @@ class BallInGoalieZone(AbstractDecisionElement):
         defensive_y_left = (self.goalie_zone_y * self.blackboard.world_model.field_width) - (
             self.blackboard.world_model.field_width / 2
         )
-        defensive_y_right = - ((self.goalie_zone_y * self.blackboard.world_model.field_width) - (
-            self.blackboard.world_model.field_width / 2)
+        defensive_y_right = -(
+            (self.goalie_zone_y * self.blackboard.world_model.field_width)
+            - (self.blackboard.world_model.field_width / 2)
         )
-        if ball_position[0] <= defensive_x and ball_position[1] <= defensive_y_right and ball_position[1] >= defensive_y_left:
+        if (
+            ball_position[0] <= defensive_x
+            and ball_position[1] <= defensive_y_right
+            and ball_position[1] >= defensive_y_left
+        ):
             return "YES"
         return "NO"
 
