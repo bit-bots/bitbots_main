@@ -110,6 +110,28 @@ pixi run -e default python src/bitbots_vision/scripts/autolabel_false_balls.py \
 
 The UI shows the image, candidate boxes, confidences, and available mask overlays. Use the threshold filter to narrow review to higher-confidence candidates first.
 
+### Review UI
+
+The review screen is for deciding whether the detector candidate is actually a real ball. Only images tagged as false positives are exported by default.
+
+Buttons:
+
+- `False positive, keep`: no real ball is visible. The image is kept for export as negative ball data.
+- `Real ball, discard`: a real ball is visible. The image remains in the intermediate data, but is excluded from false-positive export.
+- `Unsure, skip`: use this when the image is ambiguous. It is excluded from export by default.
+- `Overlay`: toggles candidate boxes, confidence labels, and available mask overlays on the preview image.
+- `Previous` / `Next`: navigate within the current confidence-filtered list.
+
+Shortcuts:
+
+- `F`: tag as false positive and move to the next image.
+- `R`: tag as real ball and move to the next image.
+- `U`: tag as unsure and move to the next image.
+- `O`: toggle overlays.
+- Left/right arrow: previous/next image.
+
+The confidence input filters the review list by maximum detector confidence. The tag dropdown filters by current review tag, which is useful for verifying a first pass. For example, select `false positives` to re-check images marked for export, or `unsure` to resolve ambiguous cases. Changing either filter resets the review position to the beginning of the filtered list.
+
 Export reviewed false positives:
 
 ```bash
@@ -117,14 +139,39 @@ pixi run -e default python src/bitbots_vision/scripts/autolabel_false_balls.py \
   --config "$CONFIG" export
 ```
 
-Export shows progress for the TORSO-21 and COCO train/test writers.
+Include images tagged as unsure as well:
+
+```bash
+pixi run -e default python src/bitbots_vision/scripts/autolabel_false_balls.py \
+  --config "$CONFIG" export --tag false_positive --tag unsure
+```
+
+Export only one specific tag:
+
+```bash
+pixi run -e default python src/bitbots_vision/scripts/autolabel_false_balls.py \
+  --config "$CONFIG" export --tag unsure
+```
+
+Export shows progress for the TORSO-21 train/test writers and the combined COCO writer.
 
 The export writes both:
 
 - `dataset/torso21/data/reality/{train,test}/`
-- `dataset/coco/{train,test}/`
+- `dataset/coco/`
 
-Use `--clean` to replace a previous export directory. Use `--include-unreviewed` only for quick experiments; it can add unverified images to the exported dataset.
+Use `--clean` to replace a previous export directory. Use `--tag` to choose which review tag to export; pass it multiple times to combine tags. Without `--tag`, export uses `false_positive`. Use `--include-unreviewed` only for quick experiments; it can add unverified images to the exported dataset.
+
+CVAT requires the COCO category names to match labels registered in the task or project. The default COCO labels are configured for the TORSO CVAT project:
+
+- field masks: `football field`
+- line masks: `field lines`
+
+If a CVAT task uses different label names, change `export.coco_labels` in the config or pass `--coco-field-label` and `--coco-lines-label` during export. Use `--coco-skip-masks` when the export should contain images only and no mask annotations.
+
+False-positive ball candidates are not exported as `soccer ball` annotations or categories. They are detector mistakes, so creating a ball label for them would be wrong. Their boxes and confidences remain in the intermediate detector metadata and in the TORSO-21 image metadata for traceability.
+
+If true ball or robot annotations are added to this exporter later, they should be exported as bounding boxes, not masks or polygons.
 
 ## Detector Backends
 
@@ -151,7 +198,7 @@ The exported TORSO-21 data is negative ball data. A selected image means:
 - The exported annotation says no real ball is in the image.
 - Detector boxes and confidences remain available as metadata.
 
-The COCO export contains a `false_ball_candidate` category for detector candidate regions and mask categories for available segmentation masks. These annotations are intended as CVAT preparation data, not as final cleaned labels.
+The COCO export contains the selected images plus field and line masks when available. It does not label false-positive detector candidates as balls. These annotations are intended as CVAT preparation data, not as final cleaned labels.
 
 ## Notes
 

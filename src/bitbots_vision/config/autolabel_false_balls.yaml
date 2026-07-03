@@ -29,3 +29,6 @@ export:
   test_fraction: 0.3
   seed: 23
   include_unreviewed: false
+  coco_labels:
+    field: "football field"
+    lines: "field lines"

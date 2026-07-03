@@ -50,6 +50,10 @@ DEFAULT_CONFIG = {
         "test_fraction": 0.3,
         "seed": 23,
         "include_unreviewed": False,
+        "coco_labels": {
+            "field": "football field",
+            "lines": "field lines",
+        },
     },
 }
 
@@ -337,19 +341,30 @@ def cmd_gui(args):
 
     def filtered_records():
         threshold = float(request.args.get("threshold", args.threshold))
-        records = [record for record in load_index(paths) if record.get("max_confidence", 0.0) >= threshold]
+        tag_filter = request.args.get("tag", "all")
+        tags = load_tags(paths)
+        records = []
+        for record in load_index(paths):
+            review_tag = tags.get(record["image"], {}).get("tag", "unreviewed")
+            if record.get("max_confidence", 0.0) < threshold:
+                continue
+            if tag_filter != "all" and review_tag != tag_filter:
+                continue
+            record = dict(record)
+            record["review_tag"] = review_tag
+            records.append(record)
         records.sort(key=lambda item: item.get("max_confidence", 0.0), reverse=True)
-        return records, threshold
+        return records, threshold, tag_filter
 
     @app.route("/")
     def index():
-        records, threshold = filtered_records()
+        records, threshold, tag_filter = filtered_records()
         tags = load_tags(paths)
         idx = int(request.args.get("idx", 0))
         if records:
             idx = max(0, min(idx, len(records) - 1))
             record = records[idx]
-            tag = tags.get(record["image"], {}).get("tag", "unreviewed")
+            tag = record["review_tag"]
         else:
             record = None
             tag = "unreviewed"
@@ -360,6 +375,7 @@ def cmd_gui(args):
             total=len(records),
             threshold=threshold,
             tag=tag,
+            tag_filter=tag_filter,
             tags=tags,
         )
 
@@ -369,38 +385,42 @@ def cmd_gui(args):
         selected_tag = request.form["tag"]
         idx = int(request.form["idx"])
         threshold = request.form["threshold"]
+        overlay = request.form.get("overlay", "1")
+        tag_filter = request.form.get("tag_filter", "all")
         tags = load_tags(paths)
         tags[image] = {"tag": selected_tag, "updated_at": utc_now()}
         save_tags(paths, tags)
-        return redirect(url_for("index", idx=idx + 1, threshold=threshold))
+        return redirect(url_for("index", idx=idx + 1, threshold=threshold, overlay=overlay, tag=tag_filter))
 
     @app.route("/preview/<path:image>")
     def preview(image):
         records = {record["image"]: record for record in load_index(paths)}
         record = records[image]
         img = cv2.imread(str(paths["images"] / image), cv2.IMREAD_COLOR)
-        overlay = img.copy()
-        for mask_key, color in [("field", (0, 90, 0)), ("lines", (255, 255, 255))]:
-            mask_rel = record.get("masks", {}).get(mask_key)
-            if not mask_rel:
-                continue
-            mask = cv2.imread(str(paths["detection_dir"] / mask_rel), cv2.IMREAD_GRAYSCALE)
-            if mask is None:
-                continue
-            overlay[mask > 0] = color
-        img = cv2.addWeighted(overlay, 0.35, img, 0.65, 0.0)
-        for det in record.get("detections", []):
-            x, y, w, h = [int(v) for v in det["bbox"]]
-            cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 255), 2)
-            cv2.putText(
-                img,
-                f"{det.get('confidence', 0.0):.3f}",
-                (x, max(20, y - 6)),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                0.6,
-                (0, 255, 255),
-                2,
-            )
+        show_overlay = request.args.get("overlay", "1") != "0"
+        if show_overlay:
+            overlay = img.copy()
+            for mask_key, color in [("field", (0, 90, 0)), ("lines", (255, 255, 255))]:
+                mask_rel = record.get("masks", {}).get(mask_key)
+                if not mask_rel:
+                    continue
+                mask = cv2.imread(str(paths["detection_dir"] / mask_rel), cv2.IMREAD_GRAYSCALE)
+                if mask is None:
+                    continue
+                overlay[mask > 0] = color
+            img = cv2.addWeighted(overlay, 0.35, img, 0.65, 0.0)
+            for det in record.get("detections", []):
+                x, y, w, h = [int(v) for v in det["bbox"]]
+                cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 255), 2)
+                cv2.putText(
+                    img,
+                    f"{det.get('confidence', 0.0):.3f}",
+                    (x, max(20, y - 6)),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.6,
+                    (0, 255, 255),
+                    2,
+                )
         ok, encoded = cv2.imencode(".jpg", img)
         if not ok:
             raise RuntimeError("Could not encode preview image")
@@ -419,51 +439,85 @@ GUI_TEMPLATE = """
 <head>
   <title>False ball review</title>
   <style>
-    body { font-family: sans-serif; margin: 0; background: #202124; color: #f1f3f4; }
-    header { display: flex; gap: 16px; align-items: center; padding: 10px 16px; background: #111; }
-    main { display: grid; grid-template-columns: minmax(0, 1fr) 320px; min-height: calc(100vh - 50px); }
-    .preview { display: flex; align-items: center; justify-content: center; overflow: hidden; }
-    .preview img { max-width: 100%; max-height: calc(100vh - 58px); object-fit: contain; }
-    aside { padding: 16px; background: #2b2c30; border-left: 1px solid #444; }
-    button, input, a.nav { font-size: 16px; padding: 8px 10px; margin: 4px 0; }
-    button { width: 100%; cursor: pointer; border: 0; color: #111; }
+    * { box-sizing: border-box; }
+    body { font-family: sans-serif; margin: 0; background: #17181b; color: #f1f3f4; overflow: hidden; }
+    header { display: flex; gap: 14px; align-items: center; padding: 8px 12px; background: #101114; min-height: 46px; }
+    main { display: grid; grid-template-columns: minmax(0, 1fr) 300px; height: calc(100vh - 46px); }
+    .preview { display: flex; align-items: center; justify-content: center; overflow: hidden; background: #050607; }
+    .preview img { width: 100%; height: 100%; object-fit: contain; display: block; }
+    aside { padding: 12px; background: #25272d; border-left: 1px solid #444; overflow-y: auto; }
+    button, input, a.nav { font-size: 15px; padding: 7px 9px; margin: 3px 0; border-radius: 4px; }
+    button { width: 100%; cursor: pointer; border: 0; color: #111; font-weight: 600; }
+    header button { width: auto; }
     .keep { background: #8fd694; }
     .discard { background: #ffb3a7; }
     .unsure { background: #ffe28a; }
+    .secondary { background: #d7dbe5; color: #111; }
+    .danger { background: #f4a3a3; }
     a { color: #8ab4f8; }
+    .status { font-weight: 700; padding: 4px 8px; background: #3a3d45; border-radius: 4px; }
+    .controls { display: grid; gap: 8px; }
+    .hint { color: #c8ccd3; font-size: 13px; line-height: 1.35; }
+    .shortcut { display: inline-block; min-width: 24px; padding: 1px 5px; margin-right: 4px; border: 1px solid #7c828d; border-radius: 3px; text-align: center; color: #fff; }
     code { word-break: break-all; }
-    .meta { line-height: 1.5; }
+    pre { white-space: pre-wrap; word-break: break-word; font-size: 12px; }
+    .meta { line-height: 1.45; font-size: 14px; }
+    .filter { display: flex; gap: 6px; align-items: center; }
+    .filter input { width: 80px; }
+    .filter select { max-width: 150px; padding: 7px 9px; border-radius: 4px; }
   </style>
 </head>
 <body>
 <header>
-  <form method="get">
-    Confidence threshold
+  <form class="filter" method="get">
+    <label for="threshold">Confidence</label>
     <input name="threshold" type="number" min="0" max="1" step="0.01" value="{{ threshold }}">
+    <label for="tag-filter">Tag</label>
+    <select id="tag-filter" name="tag">
+      <option value="all" {{ 'selected' if tag_filter == 'all' else '' }}>all</option>
+      <option value="false_positive" {{ 'selected' if tag_filter == 'false_positive' else '' }}>false positives</option>
+      <option value="unsure" {{ 'selected' if tag_filter == 'unsure' else '' }}>unsure</option>
+      <option value="real_ball" {{ 'selected' if tag_filter == 'real_ball' else '' }}>real balls</option>
+      <option value="unreviewed" {{ 'selected' if tag_filter == 'unreviewed' else '' }}>unreviewed</option>
+    </select>
     <input name="idx" type="hidden" value="0">
+    <input id="overlay-input-header" name="overlay" type="hidden" value="{{ request.args.get('overlay', '1') }}">
     <button type="submit">Apply</button>
   </form>
   {% if record %}
-    <a class="nav" href="/?idx={{ idx - 1 }}&threshold={{ threshold }}">Previous</a>
-    <a class="nav" href="/?idx={{ idx + 1 }}&threshold={{ threshold }}">Next</a>
-    <span>{{ idx + 1 }} / {{ total }}</span>
+    <a class="nav" id="previous-link" href="/?idx={{ idx - 1 }}&threshold={{ threshold }}&overlay={{ request.args.get('overlay', '1') }}&tag={{ tag_filter }}">Previous</a>
+    <a class="nav" id="next-link" href="/?idx={{ idx + 1 }}&threshold={{ threshold }}&overlay={{ request.args.get('overlay', '1') }}&tag={{ tag_filter }}">Next</a>
+    <button class="secondary" id="overlay-toggle" type="button">Overlay: {{ 'on' if request.args.get('overlay', '1') != '0' else 'off' }}</button>
+    <span class="status">{{ idx + 1 }} / {{ total }} - {{ tag }} - filter {{ tag_filter }}</span>
   {% else %}
     <span>No records match the filter.</span>
   {% endif %}
 </header>
 {% if record %}
 <main>
-  <section class="preview"><img src="/preview/{{ record.image }}"></section>
+  <section class="preview"><img id="preview-image" src="/preview/{{ record.image }}?overlay={{ request.args.get('overlay', '1') }}"></section>
   <aside>
-    <h2>{{ tag }}</h2>
-    <form method="post" action="/tag">
+    <h2>Review</h2>
+    <form class="controls" method="post" action="/tag">
       <input type="hidden" name="image" value="{{ record.image }}">
       <input type="hidden" name="idx" value="{{ idx }}">
       <input type="hidden" name="threshold" value="{{ threshold }}">
-      <button class="keep" name="tag" value="false_positive">False positive, keep</button>
-      <button class="discard" name="tag" value="real_ball">Real ball, discard</button>
-      <button class="unsure" name="tag" value="unsure">Unsure</button>
+      <input type="hidden" name="tag_filter" value="{{ tag_filter }}">
+      <input id="overlay-input-tag" type="hidden" name="overlay" value="{{ request.args.get('overlay', '1') }}">
+      <button class="keep" id="false-positive-button" name="tag" value="false_positive">False positive, keep (F)</button>
+      <button class="discard" id="real-ball-button" name="tag" value="real_ball">Real ball, discard (R)</button>
+      <button class="unsure" id="unsure-button" name="tag" value="unsure">Unsure, skip (U)</button>
     </form>
+    <p class="hint">
+      Use this screen to decide whether the detector candidate is actually a ball. Keep only images where no real ball is visible.
+    </p>
+    <p class="hint">
+      <span class="shortcut">F</span>false positive, keep for export<br>
+      <span class="shortcut">R</span>real ball, exclude from export<br>
+      <span class="shortcut">U</span>unsure, exclude for now<br>
+      <span class="shortcut">O</span>toggle overlay<br>
+      <span class="shortcut">←</span>/<span class="shortcut">→</span>previous/next
+    </p>
     <div class="meta">
       <p><strong>Image</strong><br><code>{{ record.image }}</code></p>
       <p><strong>Backend</strong> {{ record.backend }}</p>
@@ -477,18 +531,67 @@ GUI_TEMPLATE = """
     </div>
   </aside>
 </main>
+<script>
+  const params = new URLSearchParams(window.location.search);
+  let overlay = params.get("overlay") ?? "1";
+  const threshold = "{{ threshold }}";
+  const tagFilter = "{{ tag_filter }}";
+  const idx = {{ idx }};
+
+  function setOverlay(value) {
+    overlay = value;
+    params.set("overlay", overlay);
+    params.set("threshold", threshold);
+    params.set("tag", tagFilter);
+    params.set("idx", idx);
+    history.replaceState(null, "", "?" + params.toString());
+    document.getElementById("preview-image").src = "/preview/{{ record.image }}?overlay=" + overlay + "&t=" + Date.now();
+    document.getElementById("overlay-input-header").value = overlay;
+    document.getElementById("overlay-input-tag").value = overlay;
+    document.getElementById("overlay-toggle").textContent = "Overlay: " + (overlay === "0" ? "off" : "on");
+    document.getElementById("previous-link").href = "/?idx={{ idx - 1 }}&threshold=" + threshold + "&overlay=" + overlay + "&tag=" + tagFilter;
+    document.getElementById("next-link").href = "/?idx={{ idx + 1 }}&threshold=" + threshold + "&overlay=" + overlay + "&tag=" + tagFilter;
+  }
+
+  document.getElementById("overlay-toggle").addEventListener("click", () => {
+    setOverlay(overlay === "0" ? "1" : "0");
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.target.tagName === "INPUT") {
+      return;
+    }
+    const key = event.key.toLowerCase();
+    if (key === "f") {
+      document.getElementById("false-positive-button").click();
+    } else if (key === "r") {
+      document.getElementById("real-ball-button").click();
+    } else if (key === "u") {
+      document.getElementById("unsure-button").click();
+    } else if (key === "o") {
+      setOverlay(overlay === "0" ? "1" : "0");
+    } else if (event.key === "ArrowLeft") {
+      window.location.href = document.getElementById("previous-link").href;
+    } else if (event.key === "ArrowRight") {
+      window.location.href = document.getElementById("next-link").href;
+    }
+  });
+</script>
 {% endif %}
 </body>
 </html>
 """
 
 
-def selected_records(paths, include_unreviewed):
+def selected_records(paths, selected_tags, include_unreviewed):
     tags = load_tags(paths)
     records = []
+    selected_tags = set(selected_tags)
+    if include_unreviewed:
+        selected_tags.add("unreviewed")
     for record in load_index(paths):
         tag = tags.get(record["image"], {}).get("tag", "unreviewed")
-        if tag == "false_positive" or (include_unreviewed and tag == "unreviewed"):
+        if tag in selected_tags:
             record = dict(record)
             record["review_tag"] = tag
             records.append(record)
@@ -568,27 +671,23 @@ def mask_to_rle(mask):
     return rle, area
 
 
-def bbox_to_mask(bbox, height, width):
-    x, y, w, h = [int(v) for v in bbox]
-    mask = np.zeros((height, width), dtype="uint8")
-    mask[max(0, y) : min(height, y + h), max(0, x) : min(width, x + w)] = 1
-    return mask
-
-
-def write_coco_split(records, split_dir, image_dir, detection_dir, split_name):
-    images_dir = split_dir / "images"
+def write_coco_dataset(records, dataset_dir, image_dir, detection_dir, include_masks, label_names):
+    images_dir = dataset_dir / "images"
     images_dir.mkdir(parents=True, exist_ok=True)
     coco = {
         "images": [],
         "annotations": [],
-        "categories": [
-            {"id": 1, "name": "false_ball_candidate", "supercategory": "detector_metadata"},
-            {"id": 2, "name": "field", "supercategory": "segmentation"},
-            {"id": 3, "name": "lines", "supercategory": "segmentation"},
-        ],
+        "categories": [],
     }
+    if include_masks:
+        coco["categories"].extend(
+            [
+                {"id": 1, "name": label_names["field"], "supercategory": "segmentation"},
+                {"id": 2, "name": label_names["lines"], "supercategory": "segmentation"},
+            ]
+        )
     annotation_id = 1
-    for image_id, record in enumerate(progress(records, desc=f"COCO {split_name}", unit="img"), start=1):
+    for image_id, record in enumerate(progress(records, desc="COCO", unit="img"), start=1):
         image_name = copy_image(record, image_dir, images_dir)
         coco["images"].append(
             {
@@ -598,45 +697,30 @@ def write_coco_split(records, split_dir, image_dir, detection_dir, split_name):
                 "height": int(record["height"]),
             }
         )
-        for det in record.get("detections", []):
-            mask = bbox_to_mask(det["bbox"], record["height"], record["width"])
-            rle, area = mask_to_rle(mask)
-            coco["annotations"].append(
-                {
-                    "id": annotation_id,
-                    "image_id": image_id,
-                    "category_id": 1,
-                    "bbox": det["bbox"],
-                    "segmentation": rle,
-                    "area": area,
-                    "iscrowd": 0,
-                    "attributes": {"confidence": det.get("confidence"), "false_positive": True},
-                }
-            )
-            annotation_id += 1
-        for mask_name, category_id in [("field", 2), ("lines", 3)]:
-            mask_rel = record.get("masks", {}).get(mask_name)
-            if not mask_rel:
-                continue
-            mask = cv2.imread(str(detection_dir / mask_rel), cv2.IMREAD_GRAYSCALE)
-            if mask is None:
-                continue
-            rle, area = mask_to_rle(mask)
-            if area == 0:
-                continue
-            coco["annotations"].append(
-                {
-                    "id": annotation_id,
-                    "image_id": image_id,
-                    "category_id": category_id,
-                    "bbox": [0, 0, int(record["width"]), int(record["height"])],
-                    "segmentation": rle,
-                    "area": area,
-                    "iscrowd": 1,
-                }
-            )
-            annotation_id += 1
-    annotations_dir = split_dir / "annotations"
+        if include_masks:
+            for mask_name, category_id in [("field", 1), ("lines", 2)]:
+                mask_rel = record.get("masks", {}).get(mask_name)
+                if not mask_rel:
+                    continue
+                mask = cv2.imread(str(detection_dir / mask_rel), cv2.IMREAD_GRAYSCALE)
+                if mask is None:
+                    continue
+                rle, area = mask_to_rle(mask)
+                if area == 0:
+                    continue
+                coco["annotations"].append(
+                    {
+                        "id": annotation_id,
+                        "image_id": image_id,
+                        "category_id": category_id,
+                        "bbox": [0, 0, int(record["width"]), int(record["height"])],
+                        "segmentation": rle,
+                        "area": area,
+                        "iscrowd": 1,
+                    }
+                )
+                annotation_id += 1
+    annotations_dir = dataset_dir / "annotations"
     annotations_dir.mkdir(parents=True, exist_ok=True)
     with open(annotations_dir / "instances_default.json", "w") as f:
         json.dump(coco, f)
@@ -648,8 +732,14 @@ def cmd_export(args):
     test_fraction = args.test_fraction if args.test_fraction is not None else float(config["export"]["test_fraction"])
     seed = args.seed if args.seed is not None else int(config["export"]["seed"])
     include_unreviewed = args.include_unreviewed or bool(config["export"]["include_unreviewed"])
-    records = selected_records(paths, include_unreviewed)
+    selected_tags = args.tag or ["false_positive"]
+    records = selected_records(paths, selected_tags, include_unreviewed)
     train, test = deterministic_split(records, test_fraction, seed)
+    label_names = dict(config["export"]["coco_labels"])
+    if args.coco_field_label is not None:
+        label_names["field"] = args.coco_field_label
+    if args.coco_lines_label is not None:
+        label_names["lines"] = args.coco_lines_label
 
     dataset_dir = paths["out"] / "dataset"
     torso_dir = dataset_dir / "torso21" / "data" / "reality"
@@ -659,9 +749,11 @@ def cmd_export(args):
 
     next_id = write_torso_split(train, torso_dir / "train", paths["images"], paths["detection_dir"], 1, "train")
     write_torso_split(test, torso_dir / "test", paths["images"], paths["detection_dir"], next_id, "test")
-    write_coco_split(train, coco_dir / "train", paths["images"], paths["detection_dir"], "train")
-    write_coco_split(test, coco_dir / "test", paths["images"], paths["detection_dir"], "test")
-    print(f"Exported {len(train)} train and {len(test)} test images to {dataset_dir}")
+    write_coco_dataset(
+        records, coco_dir, paths["images"], paths["detection_dir"], not args.coco_skip_masks, label_names
+    )
+    print(f"Exported {len(train)} train and {len(test)} test TORSO-21 images to {dataset_dir}")
+    print(f"Exported {len(records)} combined COCO images to {coco_dir}")
 
 
 def build_parser():
@@ -706,7 +798,20 @@ def build_parser():
     export.add_argument("--out")
     export.add_argument("--test-fraction", type=float)
     export.add_argument("--seed", type=int)
+    export.add_argument(
+        "--tag",
+        action="append",
+        choices=["false_positive", "unsure", "real_ball", "unreviewed"],
+        help="Review tag to export. Can be passed multiple times. Defaults to false_positive.",
+    )
     export.add_argument("--include-unreviewed", action="store_true")
+    export.add_argument(
+        "--coco-skip-masks",
+        action="store_true",
+        help="Only export images to COCO, without field/line mask annotations.",
+    )
+    export.add_argument("--coco-field-label", help="COCO label name for field masks")
+    export.add_argument("--coco-lines-label", help="COCO label name for line masks")
     export.add_argument("--clean", action="store_true")
     export.set_defaults(func=cmd_export)
     return parser
