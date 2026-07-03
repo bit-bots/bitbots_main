@@ -53,11 +53,13 @@ $GoalScoreRecently
     NO --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @Stand + duration:%ready_wait_time, @AvoidBallActive, @GoToRolePosition
 
 #GoalieBehavior
-$ClosestToBall
-    NO --> $BallInOwnPercent + p:40
-        YES --> @ChangeAction + action:positioning, @AvoidBallActive, @LookAtFieldFeatures, @GoToBlockPosition
-        NO --> #RolePositionWithPause
-    YES --> #KickWithAvoidance
+$CountActiveRobotsWithoutGoalie
+    ZERO --> #KickWithAvoidance
+    ELSE --> $ClosestToBall
+        NO --> @ChangeAction + action:positioning, @AvoidBallActive, @LookAtFieldFeatures, @GoToBlockPosition
+        YES --> $BallInGoalieZone
+                YES --> #KickWithAvoidance
+                NO --> @ChangeAction + action:positioning, @AvoidBallActive, @LookAtFieldFeatures, @GoToBlockPosition
 
 #StrikerRole
 $GoalieHandlingBall
