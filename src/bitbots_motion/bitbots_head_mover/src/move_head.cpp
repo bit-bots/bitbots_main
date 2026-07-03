@@ -371,9 +371,12 @@ class HeadMover {
    * @brief Checks if the head collides with the body at a given yaw and pitch position
    */
   bool check_head_collision(double yaw, double pitch) {
-    // TODO we do not have a collision model for the pi plus head yet, so we need to implement this function properly
-    RCLCPP_ERROR_STREAM_THROTTLE(node_->get_logger(), *node_->get_clock(), 1000, "Do not have a collision model!");
-    return false;
+    // Checks whether head position is higher than torso.
+    if (params_.max_pitch[0] < pitch && pitch < params_.max_pitch[1] && params_.max_yaw[0] < yaw &&
+        yaw < params_.max_yaw[1]) {
+      return false;
+    }
+    return true;
   }
 
   /**
