@@ -121,7 +121,8 @@ body_behavior:
     # The position where the supporter robot should place itself in order to accept a pass
     pass_position_x: -0.2
     pass_position_y: 0.8
-    supporter_max_x: 4.0
+    supporter_max_x: 1.0 # Relative to the field length / 2
+    supporter_min_x: -0.9 # Relative to the field length / 2
     supporter_max_y: 2.0
     supporter_min_y: -2.0
 

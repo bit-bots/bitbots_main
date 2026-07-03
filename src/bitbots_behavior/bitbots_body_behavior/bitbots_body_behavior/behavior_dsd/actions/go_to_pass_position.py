@@ -9,7 +9,8 @@ class AbstractGoToPassPosition(AbstractActionElement):
 
     def __init__(self, blackboard, dsd, accept, parameters):
         super().__init__(blackboard, dsd, parameters)
-        self.max_x = self.blackboard.config["supporter_max_x"]
+        self.max_x = self.blackboard.config["supporter_max_x"] * self.blackboard.world_model.field_length / 2
+        self.min_x = self.blackboard.config["supporter_min_x"] * self.blackboard.world_model.field_length / 2
         self.pass_pos_x = self.blackboard.config["pass_position_x"]
         self.pass_pos_y = self.blackboard.config["pass_position_y"]
         self.accept = accept
@@ -26,7 +27,7 @@ class AbstractGoToPassPosition(AbstractActionElement):
             goal_x += self.pass_pos_x
 
         # Limit the x position, so that we are not running into the enemy goal
-        goal_x = min(self.max_x, goal_x)
+        goal_x = min(self.max_x, max(self.min_x, goal_x))
 
         # Calculate the two possible y positions for the pass position
         goal_y_options = [ball_pos[1] + self.pass_pos_y, ball_pos[1] - self.pass_pos_y]
