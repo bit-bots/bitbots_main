@@ -36,12 +36,11 @@ from pathlib import Path
 
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
+from bitbots_blackboard.capsules.pathfinding_capsule import BallGoalType, PathfindingCapsule
 from matplotlib.patches import Arc, Circle, FancyArrow
 from matplotlib.widgets import RadioButtons
 from ros2_numpy import numpify
 from tf_transformations import euler_from_quaternion
-
-from bitbots_blackboard.capsules.pathfinding_capsule import BallGoalType, PathfindingCapsule
 
 # --------------------------------------------------------------------------- #
 # Field / behavior parameters (mirrors config, so no ROS param server needed). #
@@ -131,9 +130,8 @@ class FakeTfBuffer:
         self.wm = world_model
 
     def transform(self, pose_stamped, target_frame):
-        from geometry_msgs.msg import Point, PoseStamped
-
         from bitbots_utils.transforms import quat_from_yaw
+        from geometry_msgs.msg import Point, PoseStamped
 
         src = pose_stamped.header.frame_id
         px = pose_stamped.pose.position.x
@@ -275,10 +273,16 @@ class Visualizer:
     def _arrow(self, x, y, theta, length, color, zorder=5):
         return self.ax.add_patch(
             FancyArrow(
-                x, y,
-                math.cos(theta) * length, math.sin(theta) * length,
-                width=0.03, head_width=0.15, head_length=0.15,
-                length_includes_head=True, color=color, zorder=zorder,
+                x,
+                y,
+                math.cos(theta) * length,
+                math.sin(theta) * length,
+                width=0.03,
+                head_width=0.15,
+                head_length=0.15,
+                length_includes_head=True,
+                color=color,
+                zorder=zorder,
             )
         )
 
@@ -291,12 +295,12 @@ class Visualizer:
         gx = FIELD_LENGTH / 2
         for sign in (-1, 1):
             self._dynamic.append(
-                self.ax.plot([gx, gx], [sign * GOAL_WIDTH / 2, sign * GOAL_WIDTH / 2],
-                             marker="s", color="red", zorder=3)[0]
+                self.ax.plot(
+                    [gx, gx], [sign * GOAL_WIDTH / 2, sign * GOAL_WIDTH / 2], marker="s", color="red", zorder=3
+                )[0]
             )
         self._dynamic.append(
-            self.ax.plot([gx, gx], [-GOAL_WIDTH / 2, GOAL_WIDTH / 2],
-                         color="red", lw=2, zorder=3, label="left goal")[0]
+            self.ax.plot([gx, gx], [-GOAL_WIDTH / 2, GOAL_WIDTH / 2], color="red", lw=2, zorder=3, label="left goal")[0]
         )
 
         # --- ball ---
@@ -331,16 +335,24 @@ class Visualizer:
             max_app = math.radians(RL_KICK["max_approach_angle_deg"])
             # aim point: goal center, shifted 2*goal_line_offset beyond the goal line
             tgt = (FIELD_LENGTH / 2 + 2 * RL_KICK["goal_line_offset"], 0.0)
-            angle_to_goal = math.atan2( self.ball.y - tgt[1],  self.ball.x - tgt[0])
+            angle_to_goal = math.atan2(self.ball.y - tgt[1], self.ball.x - tgt[0])
             arc_start = angle_to_goal - half
             arc_end = angle_to_goal + half
             in_arc = self.capsule.is_point_in_arc(
                 self.robot.x, self.robot.y, self.ball.x, self.ball.y, approach, arc_start, arc_end
             )
             # kick arc: radius=approach_dist (used for the in-arc / hysteresis check)
-            kick_arc = Arc((self.ball.x, self.ball.y), 2 * approach, 2 * approach, angle=0,
-                           theta1=math.degrees(arc_start), theta2=math.degrees(arc_end),
-                           color="purple", lw=2, zorder=4)
+            kick_arc = Arc(
+                (self.ball.x, self.ball.y),
+                2 * approach,
+                2 * approach,
+                angle=0,
+                theta1=math.degrees(arc_start),
+                theta2=math.degrees(arc_end),
+                color="purple",
+                lw=2,
+                zorder=4,
+            )
             self.ax.add_patch(kick_arc)
             self._dynamic.append(kick_arc)
             # approach clamp cone: allowed approach-point directions (behind the
@@ -351,13 +363,15 @@ class Visualizer:
                     self.ax.plot(
                         [self.ball.x, self.ball.x + math.cos(edge) * approach * 1.3],
                         [self.ball.y, self.ball.y + math.sin(edge) * approach * 1.3],
-                        "--", color="teal", lw=1.5, zorder=4,
+                        "--",
+                        color="teal",
+                        lw=1.5,
+                        zorder=4,
                     )[0]
                 )
             # aim line: ball -> goal target point
             self._dynamic.append(
-                self.ax.plot([self.ball.x, tgt[0]], [self.ball.y, tgt[1]],
-                             ":", color="purple", zorder=3)[0]
+                self.ax.plot([self.ball.x, tgt[0]], [self.ball.y, tgt[1]], ":", color="purple", zorder=3)[0]
             )
             state = "IN ARC (kick!)" if in_arc else "approaching"
             title = f"rl_kick — robot {state}"

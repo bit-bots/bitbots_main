@@ -3,8 +3,6 @@ import math
 from bitbots_blackboard.body_blackboard import BodyBlackboard
 from bitbots_blackboard.capsules.kick_capsule import KickCapsule
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
-from rclpy.duration import Duration
-from geometry_msgs.msg import Twist
 
 
 class AbstractKickAction(AbstractActionElement):
@@ -59,7 +57,9 @@ class RLKickTowardsGoal(AbstractKickAction):
         self._start_time = None
 
     def perform(self, reevaluate=False):
-        _, _, kick_dir_rad_in_map, _ = self.blackboard.pathfinding.get_map_goal(distance=0.5, side_offset=0.0, goal_offset=self.blackboard.config["rl_kick"]["goal_kick_dir_inset"])
+        _, _, kick_dir_rad_in_map, _ = self.blackboard.pathfinding.get_map_goal(
+            distance=0.5, side_offset=0.0, goal_offset=self.blackboard.config["rl_kick"]["goal_kick_dir_inset"]
+        )
         kick_dir_deg_in_map = math.degrees(kick_dir_rad_in_map)
         # transform map to robot relative
         if self._start_time is None:

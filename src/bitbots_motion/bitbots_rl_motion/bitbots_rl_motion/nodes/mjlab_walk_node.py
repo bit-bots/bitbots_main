@@ -6,7 +6,6 @@ from handlers.joint_handler import JointHandler
 from handlers.robot_state_handler import RobotStateHandler
 
 from bitbots_msgs.msg import JointCommand
-from bitbots_rl_motion.handlers.ball_handler import BallHandler
 from bitbots_rl_motion.handlers.command_handler import CommandHandler
 from bitbots_rl_motion.handlers.gravity_handler import GravityHandler
 from bitbots_rl_motion.handlers.gyro_handler import GyroHandler

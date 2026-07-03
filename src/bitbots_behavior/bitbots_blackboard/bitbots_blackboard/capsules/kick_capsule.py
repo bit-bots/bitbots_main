@@ -1,12 +1,13 @@
+import math
 from enum import Flag
 
-from rclpy.publisher import Duration, Publisher
-from std_msgs.msg import Bool
 from rclpy.action import ActionClient
-import math
-from bitbots_msgs.action import Kick
+from rclpy.publisher import Publisher
+from std_msgs.msg import Bool
+
 from bitbots_blackboard.capsules import AbstractBlackboardCapsule
-from geometry_msgs.msg import Twist, Vector3
+from bitbots_msgs.action import Kick
+
 
 class KickCapsule(AbstractBlackboardCapsule):
     """Communicates with the  action server to kick the ball."""
@@ -44,9 +45,7 @@ class KickCapsule(AbstractBlackboardCapsule):
 
     def start_rl_kick(self, direction_deg_map, strength):
         if not self._rl_kick_client.wait_for_server(timeout_sec=1.0):
-            self._node.get_logger().error(
-                "RL Kick Action Server not running!"
-            )
+            self._node.get_logger().error("RL Kick Action Server not running!")
             return False
 
         direction_rad_map = math.radians(direction_deg_map)
