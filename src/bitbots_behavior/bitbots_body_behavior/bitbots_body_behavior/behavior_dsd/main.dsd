@@ -21,7 +21,7 @@ $DoOnce
 @ChangeAction + action:waiting + r:false, @PlayAnimationInitInSim + r:false, @LookAtFieldFeatures + r:false, @WalkInPlace
 
 #Dribble
-@ChangeAction + action:going_to_ball, @CancelPathplanning, @LookAtFront, @DribbleForward
+@ChangeAction + action:kicking, @CancelPathplanning, @LookAtFront, @DribbleForward
 
 #RolePositionWithPause
 $DoOnce

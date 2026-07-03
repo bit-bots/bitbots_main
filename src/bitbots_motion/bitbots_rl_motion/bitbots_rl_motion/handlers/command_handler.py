@@ -3,7 +3,7 @@ from typing import Optional
 import numpy as np
 from geometry_msgs.msg import Twist
 
-from handlers.handler import Handler
+from bitbots_rl_motion.handlers import Handler
 
 
 class CommandHandler(Handler):
