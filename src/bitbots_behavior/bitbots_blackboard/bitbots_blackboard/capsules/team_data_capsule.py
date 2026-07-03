@@ -190,15 +190,15 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
         return poses
 
     def get_id_of_passive_player(self) -> list[int]:
-        """Returns the poses of all playing robots"""
-        index_list = []
+        """Returns the robot ids of all robots (including this one) that are currently marked passive."""
+        passive_robot_ids = []
         data: TeamData
         for data in self.team_data.values():
             if self.is_valid(data) and (data.strategy.action is Strategy.ACTION_PASSIVE):
-                index_list.append(data.robot_id)
+                passive_robot_ids.append(data.robot_id)
         if self.strategy.action is Strategy.ACTION_PASSIVE:
-            index_list.append(self._blackboard.gamestate.get_own_id())
-        return index_list
+            passive_robot_ids.append(self._blackboard.gamestate.get_own_id())
+        return passive_robot_ids
 
     def quaternion_to_yaw(self, q) -> float:
         """Extract yaw (theta) from a quaternion."""

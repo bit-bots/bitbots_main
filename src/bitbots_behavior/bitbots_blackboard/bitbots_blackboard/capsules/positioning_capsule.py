@@ -125,14 +125,19 @@ class PositioningCapsule(AbstractBlackboardCapsule):
         ball_pose = self._blackboard.world_model.get_best_ball_point_stamped()
         ball = np.array([ball_pose.point.x, ball_pose.point.y])
         robot_poses = self._blackboard.team_data.get_robot_poses()
-        passive_robot = self._blackboard.team_data.get_id_of_passive_player()
+        passive_robot_ids = self._blackboard.team_data.get_id_of_passive_player()
         self._node.get_logger().info(f"Length of robot_poses: {len(robot_poses)}")
 
-        formation = self._inner._compute_formation(ball, self._field, len(robot_poses), self._params)
+        formation = self._inner._compute_formation(
+            ball, self._field, len(robot_poses), self._params, opp_set_play=set_play
+        )
         new_items = list(formation.items())
         ordered_jerseys = sorted(robot_poses.keys())
         old_poses = [robot_poses[j] for j in ordered_jerseys]
-        pairs = self._inner._match_assignment(old_poses, new_items, ball, passive_robot)
+        # `_match_assignment` identifies robots by their index into `old_poses`, not by
+        # jersey/robot id, so translate every passive robot id we know about into its index
+        passive_indices = [ordered_jerseys.index(rid) for rid in passive_robot_ids if rid in ordered_jerseys]
+        pairs = self._inner._match_assignment(old_poses, new_items, ball, passive_indices)
         return {ordered_jerseys[old_idx]: {"role": role, "goal_pose": new_pose} for old_idx, new_pose, role in pairs}
 
 
@@ -319,28 +324,31 @@ class InnerPositioningCapsule:
         old_poses: list[list[float] | NDArray[np.float64]],
         new_items: list[tuple[str, NDArray[np.float64]]],
         ball: NDArray[np.float64],
-        passiv_player: list[int],
+        passive_indices: list[int],
         angle_w: float = 0.3,
     ) -> list[tuple[int, NDArray[np.float64], str]]:
         """Assign physical robots (at `old_poses`) to the new target poses.
         The robot closest to the ball always takes the striker target; the rest are
-        matched optimally (Hungarian) to minimise total cost = distance + angle_w *
+        matched optimally (Hungarian) to minimize total cost = distance + angle_w *
         heading difference. Returns a list of (old_idx, new_pose, new_role) where
         old_idx is the index into `old_poses`.
         `old_poses`: list of [x, y, theta]; `new_items`: list of (role, [x, y, theta]).
-        `passiv_player`: list of robot indices that must never be assigned the striker role.
-        Pass an empty list if there are no passive players.
+        `passive_indices`: indices into `old_poses` of robots that should not be assigned
+        the striker role. Pass an empty list if there are no passive robots. If every
+        robot is passive, the striker slot must still be filled, so the closest passive
+        robot is assigned it anyway.
         """
+        assert len(passive_indices) <= len(new_items), "more passive robots reported than robots to assign"
         old_poses = [np.asarray(p) for p in old_poses]
         ball = np.asarray(ball)
         n = len(old_poses)
         # striker target -> the old robot nearest the ball
         s_j = next(j for j, (r, _) in enumerate(new_items) if r == Role.STRIKER)
-        # Kandidaten nach Distanz zum Ball sortiert
+        # candidates sorted by distance to the ball
         candidates = sorted(range(n), key=lambda i: np.linalg.norm(old_poses[i][:2] - ball))
-        # Alle passiven Spieler von der Striker-Wahl ausschließen, falls vorhanden
-        if passiv_player:
-            s_i = next((i for i in candidates if i not in passiv_player), candidates[0])
+        # exclude passive robots from the striker choice, unless that would leave no candidate
+        if passive_indices:
+            s_i = next((i for i in candidates if i not in passive_indices), candidates[0])
         else:
             s_i = candidates[0]
         pairs = [(s_i, new_items[s_j][1], new_items[s_j][0])]
