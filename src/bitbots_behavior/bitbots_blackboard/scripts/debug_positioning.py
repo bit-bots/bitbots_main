@@ -41,8 +41,8 @@ def run_gui():
     s_back = Slider(_ax(0.170), "back dist", 0.0, 3.0, valinit=params.back_dist)
     s_kclr = Slider(_ax(0.140), "kick clear", 0.0, 1.5, valinit=params.kick_clear)
     s_gout = Slider(_ax(0.110), "goalie out", 0.2, 2.0, valinit=params.d_g)
-    check_fk = CheckButtons(plt.axes([0.18, 0.073, 0.20, 0.022]), ["freekick"], [False])
-    s_fkcl = Slider(_ax(0.050), "fk clearance", 0.1, 2.0, valinit=params.opp_freekick_clearance)
+    check_sp = CheckButtons(plt.axes([0.18, 0.073, 0.20, 0.022]), ["set play"], [False])
+    s_spcl = Slider(_ax(0.050), "set play clearance", 0.1, 2.0, valinit=params.opp_set_play_clearance)
 
     def draw():
         ax.clear()
@@ -65,15 +65,15 @@ def run_gui():
         params.supp_max_x, params.def_side = s_smax.val, s_dside.val
         params.post_margin, params.back_dist = s_pmarg.val, s_back.val
         params.kick_clear = s_kclr.val
-        params.freekick = check_fk.get_status()[0]
-        params.opp_freekick_clearance = s_fkcl.val
+        opp_set_play = check_sp.get_status()[0]
+        params.opp_set_play_clearance = s_spcl.val
         n = int(s_n.val)
 
-        if params.freekick:
+        if opp_set_play:
             ax.add_patch(
                 Circle(
                     state["ball"],
-                    params.freekick_clearance,
+                    params.opp_set_play_clearance,
                     fill=False,
                     color="yellow",
                     lw=1.5,
@@ -83,7 +83,7 @@ def run_gui():
                 )
             )
 
-        form = _inner._compute_formation(state["ball"], fld, n, params)
+        form = _inner._compute_formation(state["ball"], fld, n, params, opp_set_play=opp_set_play)
         new_items = list(form.items())
 
         prev = state["prev"]
@@ -164,10 +164,10 @@ def run_gui():
         s_back,
         s_kclr,
         s_gout,
-        s_fkcl,
+        s_spcl,
     ):
         s.on_changed(lambda _v: draw())
-    check_fk.on_clicked(lambda _label: draw())
+    check_sp.on_clicked(lambda _label: draw())
     fig.canvas.mpl_connect("button_press_event", on_click)
     draw()
     plt.show()
