@@ -31,8 +31,6 @@ class KickCapsule(AbstractBlackboardCapsule):
         """
         self.walk_kick_pub = self._node.create_publisher(Bool, "/kick", 1)
         self._timeout = blackboard.config["rl_kick"]["timeout"]
-        self._post_kick_timeout = blackboard.config["rl_kick"]["post_kick_timeout"]
-        self._walk_delay = blackboard.config["rl_kick"]["walk_delay"]
 
         self._rl_kick_client = ActionClient(self._node, Kick, "rl_kick")
         self._is_currently_kicking = False
