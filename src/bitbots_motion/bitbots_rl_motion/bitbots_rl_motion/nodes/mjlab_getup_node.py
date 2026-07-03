@@ -74,5 +74,10 @@ class MjLabGetupNode(RLNode):
     def _phase_update_hook(self):
         pass
 
+    def initialize_observation(self):
+        # No observation history; just start the previous-action feedback term
+        # from zero on each (re)activation.
+        self._previous_action.set_previous_action(np.zeros_like(self._previous_action.get_previous_action()))
+
 
 main = create_main(MjLabGetupNode)

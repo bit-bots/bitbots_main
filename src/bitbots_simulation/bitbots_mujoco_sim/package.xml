@@ -18,6 +18,8 @@
 
   <depend>rclpy</depend>
   <depend>sensor_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>std_srvs</depend>
   <depend>rosgraph_msgs</depend>
   <depend>bitbots_msgs</depend>
   <depend>ament_index_python</depend>

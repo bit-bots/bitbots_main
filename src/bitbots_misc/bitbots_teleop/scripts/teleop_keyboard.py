@@ -19,7 +19,7 @@ from std_srvs.srv import Empty
 
 from bitbots_msgs.action import PlayAnimation
 from bitbots_msgs.msg import HeadMode, JointCommand
-from bitbots_msgs.srv import SimulatorPush
+from bitbots_msgs.srv import MoveBall, SimulatorPush
 
 msg = """
 Bit-Bots Teleop
@@ -54,6 +54,8 @@ Head Modes:
 Simulation only:
 r: reset robot in simulation
 R: reset ball in simulation
+Move ball by 1m:
+t/b: x +/-           h/n: y +/-
 p: execute Push
 P: reset Power to 0
 ü/ä: increase/decrease power forward (x axis)
@@ -101,6 +103,13 @@ head_bindings = {
     "M": (-10, 10),
     ";": (-10, 0),
     ":": (-10, -10),
+}
+# Simulation only: move the ball by 1m along world x/y (dx, dy).
+ball_move_bindings = {
+    "t": (1, 0),
+    "b": (-1, 0),
+    "h": (0, 1),
+    "n": (0, -1),
 }
 
 
@@ -154,6 +163,7 @@ class TeleopKeyboard(Node):
 
         self.reset_robot = self.create_client(Empty, "/reset_pose")
         self.reset_ball = self.create_client(Empty, "/reset_ball")
+        self.move_ball = self.create_client(MoveBall, "/move_ball")
         self.simulator_push = self.create_client(SimulatorPush, "/simulator_push")
 
         self.frame_prefix = "" if os.environ.get("ROS_NAMESPACE") is None else os.environ.get("ROS_NAMESPACE") + "/"
@@ -253,6 +263,15 @@ class TeleopKeyboard(Node):
                     # reset ball in sim
                     try:
                         self.reset_ball.call_async(Empty.Request())
+                    except Exception:
+                        pass
+                elif key in ball_move_bindings.keys():
+                    # move ball by 1m along world x/y in sim
+                    try:
+                        move_request = MoveBall.Request()
+                        move_request.offset.x = float(ball_move_bindings[key][0])
+                        move_request.offset.y = float(ball_move_bindings[key][1])
+                        self.move_ball.call_async(move_request)
                     except Exception:
                         pass
                 elif key == "f":

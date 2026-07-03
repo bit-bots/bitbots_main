@@ -153,6 +153,18 @@ body_behavior:
 
     kick_decision_smoothing: 10.0
 
+    rl_kick_approach_tolerance_pos: 0.25
+    rl_kick_approach_tolerance_rad: 0.2
+
+    rl_kick:
+      timeout: 2.0 # how long the kick policy is active
+      approach_dist: 0.5  # distance from the ball to the approach point on the arc
+      approach_arc_half_degree: 100.0 # half opening angle (in degrees) of the arc around the point opposite the kick direction
+      goal_line_offset: 0.25 # distance beyond the goal line used for the left/right kick target points
+      kick_target_y_offset: 0.5 # inset (in y) from the goal posts used for the left/right kick target points
+      goal_kick_dir_inset: 0.5
+      max_approach_angle_deg: 70
+
     ##################
     # costmap params #
     ##################

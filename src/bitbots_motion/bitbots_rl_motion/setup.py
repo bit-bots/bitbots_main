@@ -27,7 +27,6 @@ setup(
     tests_require=["pytest"],
     entry_points={
         "console_scripts": [
-            "walk_node = nodes.walk_node:main",
             f"walk_node = {package_name}.nodes.walk_node:main",
             f"mjlab_walk_node = {package_name}.nodes.mjlab_walk_node:main",
             f"mjlab_getup_node = {package_name}.nodes.mjlab_getup_node:main",
