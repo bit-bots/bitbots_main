@@ -112,8 +112,8 @@ body_behavior:
     ball_reapproach_angle: 0.9
 
     # The position where the supporter robot should place itself in order to accept a pass
-    pass_position_x: 0.1
-    pass_position_y: 1.0
+    pass_position_x: -0.2
+    pass_position_y: 0.8
     supporter_max_x: 4.0
     supporter_max_y: 2.0
     supporter_min_y: -2.0
