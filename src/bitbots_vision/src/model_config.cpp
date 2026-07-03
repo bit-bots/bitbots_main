@@ -20,12 +20,8 @@ ModelConfig ModelConfig::load_from(const std::string& model_dir) {
     cfg.detection_classes_.push_back(name.as<std::string>());
   }
 
-  for (const auto& name : root["segmentation"]["classes"]) {
-    cfg.segmentation_classes_.push_back(name.as<std::string>());
-  }
-
-  if (root["detection"]["team_colors"]) {
-    cfg.team_colors_provided_ = root["detection"]["team_colors"].as<bool>();
+  if (cfg.detection_classes_.empty()) {
+    throw std::runtime_error("model_config.yaml at '" + path + "' has no (or empty) detection.classes");
   }
 
   return cfg;

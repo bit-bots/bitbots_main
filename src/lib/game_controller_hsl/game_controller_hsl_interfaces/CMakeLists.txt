@@ -14,7 +14,7 @@ endif()
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/GameState.msg"
-  "msg/PlayerStatusPose.msg"
+  "msg/PlayerStateResponse.msg"
   DEPENDENCIES
   std_msgs
   geometry_msgs

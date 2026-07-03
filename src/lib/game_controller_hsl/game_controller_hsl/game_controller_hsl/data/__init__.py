@@ -1,0 +1,2 @@
+from game_controller_hsl.data.game_control_data import GameControlDataStruct
+from game_controller_hsl.data.game_control_return_data import GameControlReturnDataStruct

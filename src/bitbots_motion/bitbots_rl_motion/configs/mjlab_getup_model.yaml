@@ -1,0 +1,79 @@
+mjlab_getup_node:
+  ros__parameters:
+    model: getup_mjlab.onnx
+
+    # NOTE: This policy's actor was trained with obs_normalization=False, so the
+    # network consumes raw observations directly — there is no separate runtime
+    # normalization step. Head joints are excluded from the model. Joint order,
+    # defaults (default_joint_pos), kp/kd and action_scale below are taken 1:1
+    # from the exported ONNX metadata and MUST match the training config;
+    # reordering these breaks the policy.
+    joints:
+      # Order matches the getup model's joint_names metadata exactly:
+      # arms (R then L), then legs (R then L).
+      ordered_relevant_joint_names: [
+        "r_shoulder_pitch_joint",
+        "r_shoulder_roll_joint",
+        "r_upper_arm_joint",
+        "r_elbow_joint",
+        "l_shoulder_pitch_joint",
+        "l_shoulder_roll_joint",
+        "l_upper_arm_joint",
+        "l_elbow_joint",
+        "r_hip_pitch_joint",
+        "r_hip_roll_joint",
+        "r_thigh_joint",
+        "r_calf_joint",
+        "r_ankle_pitch_joint",
+        "r_ankle_roll_joint",
+        "l_hip_pitch_joint",
+        "l_hip_roll_joint",
+        "l_thigh_joint",
+        "l_calf_joint",
+        "l_ankle_pitch_joint",
+        "l_ankle_roll_joint",
+      ]
+      # default_joint_pos (home pose). Used ONLY for the joint_pos observation
+      # offset (obs = current - default). The getup ACTION space is relative to
+      # the *current* joint position (mjlab RelativeJointPositionAction), NOT to
+      # this default — see mjlab_getup_node.publisher (relative_to_current=True).
+      walkready_state: [
+        # arms (R, L)
+        -1.5710, -1.2220, 0.0000, 0.0000,
+        1.5710, 1.2220, 0.0000, 0.0000,
+        # right leg
+        0.6000, 0.0000, 0.0000, 1.2000, 0.6000, 0.0000,
+        # left leg
+        -0.6000, 0.0000, 0.0000, -1.2000, -0.6000, 0.0000,
+      ]
+      kp: [
+        # arms (R, L)
+        6.0, 6.0, 6.0, 6.0,
+        6.0, 6.0, 6.0, 6.0,
+        # right leg
+        35.0, 35.0, 35.0, 35.0, 35.0, 35.0,
+        # left leg
+        35.0, 35.0, 35.0, 35.0, 35.0, 35.0,
+      ]
+      kd: [
+        # arms (R, L)
+        0.6, 0.6, 0.6, 0.6,
+        0.6, 0.6, 0.6, 0.6,
+        # right leg (hip_roll has kd=1.4, rest 1.1)
+        1.1, 1.4, 1.1, 1.1, 1.1, 1.1,
+        # left leg (hip_roll has kd=1.4, rest 1.1)
+        1.1, 1.4, 1.1, 1.1, 1.1, 1.1,
+      ]
+      # Action scale (SettleRelativeJointPositionActionCfg scale=0.6 in training).
+      action_scales: [
+        0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6,
+        0.6, 0.6, 0.6, 0.6, 0.6, 0.6,
+        0.6, 0.6, 0.6, 0.6, 0.6, 0.6,
+      ]
+    phase:
+      # getup uses no gait phase; control runs at 50 Hz (sim timestep 0.005 * decimation 4).
+      control_dt: 0.02
+      gait_frequency: 0.0
+      use_phase: False
+
+    providers: ["CPUExecutionProvider"]

@@ -25,7 +25,7 @@ class SecondBallTouchAllowed(AbstractDecisionElement):
             self.blackboard.misc.no_second_ball_contact is None or self.blackboard.misc.no_second_ball_contact
         )
         active_team_players = self.blackboard.team_data.get_number_of_active_field_players(count_goalie=True)
-        is_kicking_team = self.blackboard.gamestate.has_kick()
+        is_kicking_team = self.blackboard.gamestate.was_last_kicking_team()
         self.other_took_the_first_kick = (
             self.other_took_the_first_kick or self.blackboard.team_data.is_team_mate_kicking()
         )
@@ -48,7 +48,7 @@ class SecondBallTouchAllowed(AbstractDecisionElement):
             self.latch = False
             self.latch_start_time = None
             return "YES"
-        elif self.latch and duration_since_latch > 20.0:  # Latch for x seconds
+        elif self.latch and duration_since_latch > 8.0:  # Latch for x seconds
             self.latch = False
             self.latch_start_time = None
             return "YES"
