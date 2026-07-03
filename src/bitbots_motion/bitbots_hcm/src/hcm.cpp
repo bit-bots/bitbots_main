@@ -5,6 +5,7 @@
 #include <bitbots_msgs/msg/robot_control_state.hpp>
 #include <builtin_interfaces/msg/time.hpp>
 #include <chrono>
+#include <cmath>
 #include <geometry_msgs/msg/point_stamped.hpp>
 #include <iostream>
 #include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
@@ -30,6 +31,8 @@ class HCM_CPP : public rclcpp::Node {
     this->get_parameter("use_sim_time", use_sim_time);
     this->get_parameter("simulation_active", simulation_active);
     this->get_parameter("visualization_active", visualization_active);
+    this->get_parameter_or("head_pitch_motor_offset_deg", head_pitch_motor_offset_, 0.0);
+    head_pitch_motor_offset_ *= M_PI / 180.0;
 
     // Initialize HCM logic
     // Import Python module
@@ -82,20 +85,20 @@ class HCM_CPP : public rclcpp::Node {
           current_state_ == bitbots_msgs::msg::RobotControlState::RECORD) or
          msg.from_hcm)) {
       // We can forward the animation goal to the motors
-      pub_controller_command_->publish(msg.joint_command);
+      publish_controller_command(msg.joint_command);
     }
   }
 
   void head_goal_callback(const bitbots_msgs::msg::JointCommand msg) {
     if (current_state_ == bitbots_msgs::msg::RobotControlState::CONTROLLABLE ||
         current_state_ == bitbots_msgs::msg::RobotControlState::WALKING) {
-      pub_controller_command_->publish(msg);
+      publish_controller_command(msg);
     }
   }
 
   void record_goal_callback(const bitbots_msgs::msg::JointCommand msg) {
     if (msg.joint_names.size() == 0 && current_state_ == bitbots_msgs::msg::RobotControlState::RECORD) {
-      pub_controller_command_->publish(msg);
+      publish_controller_command(msg);
     }
   }
 
@@ -115,7 +118,7 @@ class HCM_CPP : public rclcpp::Node {
 
     if (current_state_ == bitbots_msgs::msg::RobotControlState::CONTROLLABLE ||
         current_state_ == bitbots_msgs::msg::RobotControlState::WALKING) {
-      pub_controller_command_->publish(msg);
+      publish_controller_command(msg);
     }
   }
 
@@ -124,7 +127,7 @@ class HCM_CPP : public rclcpp::Node {
     // up. The state-based gate is the joint mutex that keeps the getup policy
     // from fighting walking/head/animation goals (which forward in other states).
     if (current_state_ == bitbots_msgs::msg::RobotControlState::GETTING_UP) {
-      pub_controller_command_->publish(msg);
+      publish_controller_command(msg);
     }
   }
 
@@ -170,6 +173,24 @@ class HCM_CPP : public rclcpp::Node {
   }
 
  private:
+  void publish_controller_command(bitbots_msgs::msg::JointCommand msg) {
+    apply_head_pitch_motor_offset(msg);
+    pub_controller_command_->publish(msg);
+  }
+
+  // TODO: Remove this temporary hardware workaround after the affected head motor zero point is fixed.
+  void apply_head_pitch_motor_offset(bitbots_msgs::msg::JointCommand& msg) {
+    if (head_pitch_motor_offset_ == 0.0 || msg.positions.empty()) {
+      return;
+    }
+
+    for (size_t i = 0; i < msg.joint_names.size() && i < msg.positions.size(); i++) {
+      if (msg.joint_names[i] == "head_pitch_joint") {
+        msg.positions[i] += head_pitch_motor_offset_;
+      }
+    }
+  }
+
   // Python interpreter
   py::scoped_interpreter python_;
   // Python hcm module
@@ -183,6 +204,7 @@ class HCM_CPP : public rclcpp::Node {
 
   // Walking state
   double significant_motion_threshold_ = 0.5 * M_PI / 180.0;  // default to 0.5 degrees in radians
+  double head_pitch_motor_offset_ = 0.0;
   std::optional<builtin_interfaces::msg::Time> last_walking_time_;
   std::optional<builtin_interfaces::msg::Time> last_significant_walk_motion_time_;
   std::optional<bitbots_msgs::msg::JointCommand> last_walk_command_;

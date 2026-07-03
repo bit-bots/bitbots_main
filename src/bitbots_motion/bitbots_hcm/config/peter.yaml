@@ -1,0 +1,4 @@
+/hcm_cpp:
+  ros__parameters:
+    # TODO: Remove this temporary hardware workaround after the affected head motor zero point is fixed.
+    head_pitch_motor_offset_deg: 10.0

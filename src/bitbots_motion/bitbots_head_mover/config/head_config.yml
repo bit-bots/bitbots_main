@@ -24,7 +24,7 @@ move_head:
 
   max_pitch:
     type: double_array
-    default_value: [-1.23, 1.01] 
+    default_value: [-1.23, 1.01]
     description: "Max values for the head position (in radians)"
     validation:
       fixed_size<>: 2
@@ -195,4 +195,3 @@ move_head:
         description: "Reduces last scanline by that factor so that robot does not collide"
         validation:
           bounds<>: [0.0, 1.0]
-
