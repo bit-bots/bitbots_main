@@ -1,0 +1,5 @@
+parameter_blackboard:
+  ros__parameters:
+    bot_id: 3
+    position_number: 0
+    role: defense

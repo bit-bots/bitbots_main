@@ -1,29 +1,14 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <launch>
     <arg name="sim" default="false"
-         description="true: activates simulation time and switches to simulation config" />
+         description="true: activates simulation time" />
     <arg name="debug" default="false"
          description="true: activates publishing of the debug image" />
 
-
-    <group unless="$(var sim)">
-        <node pkg="bitbots_vision" exec="vision" name="bitbots_vision" output="screen">
-            <!-- Set vision config -->
-            <param from="$(find-pkg-share bitbots_vision)/config/visionparams.yaml" />
-            <param name="components.debug_active" value="$(var debug)" />
-        </node>
-    </group>
-
-    <group if="$(var sim)">
-        <node pkg="bitbots_vision" exec="vision" name="bitbots_vision" output="screen">
-            <!-- Set vision config -->
-            <param from="$(find-pkg-share bitbots_vision)/config/visionparams_sim.yaml"/>
-
-            <!-- Set debug params-->
-            <param name="component_debug_image_active" value="$(var debug)" />
-
-            <!-- Use sim time-->
-            <param name="use_sim_time" value="true"/>
-        </node>
-    </group>
+    <node pkg="bitbots_vision" exec="vision" name="bitbots_vision" output="screen">
+        <!-- Set vision config -->
+        <param from="$(find-pkg-share bitbots_vision)/config/visionparams.yaml" />
+        <param name="components.debug_active" value="$(var debug)" />
+        <param name="use_sim_time" value="$(var sim)" />
+    </node>
 </launch>

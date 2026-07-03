@@ -21,7 +21,7 @@ $DoOnce
 @ChangeAction + action:waiting + r:false, @PlayAnimationInitInSim + r:false, @LookAtFieldFeatures + r:false, @WalkInPlace
 
 #Dribble
-@ChangeAction + action:going_to_ball, @CancelPathplanning, @LookAtFront, @DribbleForward
+@ChangeAction + action:kicking, @CancelPathplanning, @LookAtFront, @DribbleForward
 
 #RolePositionWithPause
 $DoOnce
@@ -53,21 +53,13 @@ $GoalScoreRecently
     NO --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @Stand + duration:%ready_wait_time, @AvoidBallActive, @GoToRolePosition
 
 #GoalieBehavior
-$ClosestToBall
-    NO --> $BallInOwnPercent + p:40
-        YES --> @ChangeAction + action:positioning, @AvoidBallActive, @LookAtFieldFeatures, @GoToBlockPosition
-        NO --> #RolePositionWithPause
-    YES --> #KickWithAvoidance
-
-#StrikerRole
-$GoalieHandlingBall
-    YES --> @ChangeAction + action:positioning, @AvoidBallActive, @LookAtFieldFeatures, @GoToDefensePosition //quick fix for playing with two robots during GO
-    NO --> #KickWithAvoidance
-
-#DefensePositioning
-$GoalieActive
-    YES --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @GoToDefensePosition
-    NO --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @GoToBlockPosition
+$CountActiveRobotsWithoutGoalie
+    ZERO --> #KickWithAvoidance
+    ELSE --> $ClosestToBall
+        NO --> @ChangeAction + action:positioning, @AvoidBallActive, @LookAtFieldFeatures, @GoToBlockPosition
+        YES --> $BallInGoalieZone
+                YES --> #KickWithAvoidance
+                NO --> @ChangeAction + action:positioning, @AvoidBallActive, @LookAtFieldFeatures, @GoToBlockPosition
 
 #SupporterRole
 $PassStarted
@@ -75,6 +67,16 @@ $PassStarted
         YES --> @TrackBall, @ChangeAction + action:positioning, @AvoidBallActive, @GoToPassAcceptPosition
         NO --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @AvoidBallActive, @GoToPassAcceptPosition
     NO --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @AvoidBallActive, @GoToPassPreparePosition
+
+#StrikerRole
+$GoalieHandlingBall
+    YES --> #SupporterRole
+    NO --> #KickWithAvoidance
+
+#DefensePositioning
+$GoalieActive
+    YES --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @GoToDefensePosition
+    NO --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @GoToBlockPosition
 
 #PenaltyShootoutBehavior
 $SecondaryStateTeamDecider
@@ -106,7 +108,9 @@ $DoOnce
 
 #NormalBehavior
 $SecondBallTouchAllowed
-    NO --> @SetNoSecondBallContactVariable + value:false + r:false, @LookAtFieldFeatures + r:false, @ChangeAction + action:passive + r:false, @AvoidBallActive + r:false, @GoToPassPreparePosition + blocking:true 
+    NO --> $ConfigRole
+        GOALIE --> @SetNoSecondBallContactVariable + value:false + r:false, @LookAtFieldFeatures + r:false, @ChangeAction + action:passive + r:false, @AvoidBallActive + r:false, @GoToBlockPosition
+        ELSE --> @SetNoSecondBallContactVariable + value:false + r:false, @LookAtFieldFeatures + r:false, @ChangeAction + action:passive + r:false, @AvoidBallActive + r:false, @GoToDefensePosition
     YES --> $BallSeen
         NO --> $ConfigRole
             GOALIE --> #RolePositionWithPause

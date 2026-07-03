@@ -32,9 +32,9 @@ jobs:
         run: git config --global --add safe.directory /__w/bitbots_main/bitbots_main
 
       - name: Set up workspace
-        uses: prefix-dev/setup-pixi@v0.9.6
+        uses: prefix-dev/setup-pixi@v0.10.0
         with:
-          pixi-version: v0.71.0
+          pixi-version: v0.72.0
           cache: true
 
       - name: Build
