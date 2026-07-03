@@ -374,9 +374,9 @@ class HeadMover {
     // Checks whether head position is higher than torso.
     if (params_.max_pitch[0] < pitch && pitch < params_.max_pitch[1] && params_.max_yaw[0] < yaw &&
         yaw < params_.max_yaw[1]) {
-      return true;
+      return false;
     }
-    return false;
+    return true;
   }
 
   /**
