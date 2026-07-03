@@ -8,6 +8,8 @@ class WaitingForFirstKick(AbstractDecisionElement):
     def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
         self.strikerKicked = False
+        self.role = self.blackboard.team_data.role
+        self.role_position = self.blackboard.misc.position_number
 
     def perform(self, reevaluate=False):
         """
@@ -15,13 +17,15 @@ class WaitingForFirstKick(AbstractDecisionElement):
         :param reevaluate:
         :return:
         """
-
+        self.publish_debug_data("strikerKicked", self.strikerKicked)
+        self.publish_debug_data("role", self.role)
+        self.publish_debug_data("role_position", self.role_position)
         self.strikerKicked = (
             self.strikerKicked or self.blackboard.team_data.is_team_mate_kicking()
         )
-        if self.blackboard.team_data.role == "striker" or self.strikerKicked:
-            return False
-        return True
+        if (self.role == "offense" and self.role_position == 0) or self.strikerKicked:
+            return "NO"
+        return "YES"
 
     def get_reevaluate(self):
         return True
