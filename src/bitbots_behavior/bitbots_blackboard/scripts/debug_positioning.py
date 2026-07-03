@@ -42,7 +42,7 @@ def run_gui():
     s_kclr = Slider(_ax(0.140), "kick clear", 0.0, 1.5, valinit=params.kick_clear)
     s_gout = Slider(_ax(0.110), "goalie out", 0.2, 2.0, valinit=params.d_g)
     check_fk = CheckButtons(plt.axes([0.18, 0.073, 0.20, 0.022]), ["freekick"], [False])
-    s_fkcl = Slider(_ax(0.050), "fk clearance", 0.1, 2.0, valinit=params.freekick_clearance)
+    s_fkcl = Slider(_ax(0.050), "fk clearance", 0.1, 2.0, valinit=params.opp_freekick_clearance)
 
     def draw():
         ax.clear()
@@ -66,7 +66,7 @@ def run_gui():
         params.post_margin, params.back_dist = s_pmarg.val, s_back.val
         params.kick_clear = s_kclr.val
         params.freekick = check_fk.get_status()[0]
-        params.freekick_clearance = s_fkcl.val
+        params.opp_freekick_clearance = s_fkcl.val
         n = int(s_n.val)
 
         if params.freekick:
@@ -88,7 +88,7 @@ def run_gui():
 
         prev = state["prev"]
         if prev is not None and len(prev) == len(new_items):
-            for old_idx, new_pose, role in _inner._match_assignment(prev, new_items, state["ball"]):
+            for old_idx, new_pose, role in _inner._match_assignment(prev, new_items, state["ball"], None):
                 old_pose = prev[old_idx]
                 c = colors.get(role.split("_")[0], "#1f77b4")
                 ax.plot([old_pose[0], new_pose[0]], [old_pose[1], new_pose[1]], ls=":", color=c, lw=1.5, zorder=3)

@@ -396,45 +396,6 @@ class InnerPositioningCapsule:
         head = {}  # role -> heading (rad); filled lazily, completed after separation
         kick_aim = None  # striker's kick direction; used to clear the kick lane
 
-        
-        # --- defenders: anchor on axis at push-up depth, spread along perp ---------- #
-        defender_roles = [r for r in roles if r.startswith(Role.DEFENDER + "_")]
-        m = len(defender_roles)
-        if m > 0:
-            depth = np.clip(
-                params.alpha * d + params.depth_bias,  # push up + fwd/back bias
-                params.D_min,
-                params.D_max,
-            )
-            depth = min(depth, max(d - params.standoff, 0.0))  # stay goal-side of the ball
-            depth = max(depth, params.d_g + params.dz)  # stay ahead of the goalie
-            anchor = goal + depth * to_ball
-            if m == 1:
-                # a single defender: shade to the centre side so it doesn't sit on the
-                # striker<->goalie line (otherwise all three are collinear)
-                side_dir = -1.0 if b[1] >= 0 else 1.0
-                offsets = [params.def_side * side_dir]
-            else:
-                offsets = [(k - (m - 1) / 2.0) * params.gap for k in range(m)]
-            for r, off in zip(defender_roles, offsets):
-                out[r] = self._clamp_field(anchor + off * perp, field)
-
-        # --- supporter: slightly in front of the ball, kept inside the field -------- #
-        if Role.SUPPORTER in roles:
-            # always sit to the centre side of the ball; hard swap so it is never
-            # directly in front of the striker, even when the ball is on the centre line
-            side_dir = -1.0 if b[1] >= 0 else 1.0  # points toward y=0 (default: centre-ward)
-            sup = b + np.array([params.f, params.supp_side * side_dir])
-            sup[0] = min(sup[0], params.supp_max_x)  # don't drift into the opponent corner
-            out[Role.SUPPORTER] = self._clamp_field(sup, field)
-
-        # --- min-separation repulsion + kick-lane clearance ----------------------- #
-        self._separate(out, field, params, b, kick_aim)
-
-        # --- freekick: push every robot outside the mandatory clearance radius ---- #
-        if params.opp_freekick:
-            self._clear_ball(out, b, params.opp_freekick_clearance, field)
-
         # --- striker: stands behind the ball opposite the smoothly-chosen kick aim --- #
         if Role.STRIKER in roles:
             if params.opp_freekick:
@@ -475,6 +436,45 @@ class InnerPositioningCapsule:
                 ]
             )
             out[Role.GOALIE] = g
+
+        
+        # --- defenders: anchor on axis at push-up depth, spread along perp ---------- #
+        defender_roles = [r for r in roles if r.startswith(Role.DEFENDER + "_")]
+        m = len(defender_roles)
+        if m > 0:
+            depth = np.clip(
+                params.alpha * d + params.depth_bias,  # push up + fwd/back bias
+                params.D_min,
+                params.D_max,
+            )
+            depth = min(depth, max(d - params.standoff, 0.0))  # stay goal-side of the ball
+            depth = max(depth, params.d_g + params.dz)  # stay ahead of the goalie
+            anchor = goal + depth * to_ball
+            if m == 1:
+                # a single defender: shade to the centre side so it doesn't sit on the
+                # striker<->goalie line (otherwise all three are collinear)
+                side_dir = -1.0 if b[1] >= 0 else 1.0
+                offsets = [params.def_side * side_dir]
+            else:
+                offsets = [(k - (m - 1) / 2.0) * params.gap for k in range(m)]
+            for r, off in zip(defender_roles, offsets):
+                out[r] = self._clamp_field(anchor + off * perp, field)
+
+        # --- supporter: slightly in front of the ball, kept inside the field -------- #
+        if Role.SUPPORTER in roles:
+            # always sit to the centre side of the ball; hard swap so it is never
+            # directly in front of the striker, even when the ball is on the centre line
+            side_dir = -1.0 if b[1] >= 0 else 1.0  # points toward y=0 (default: centre-ward)
+            sup = b + np.array([params.f, params.supp_side * side_dir])
+            sup[0] = min(sup[0], params.supp_max_x)  # don't drift into the opponent corner
+            out[Role.SUPPORTER] = self._clamp_field(sup, field)
+
+        # --- min-separation repulsion + kick-lane clearance ----------------------- #
+        self._separate(out, field, params, b, kick_aim)
+
+        # --- freekick: push every robot outside the mandatory clearance radius ---- #
+        if params.opp_freekick:
+            self._clear_ball(out, b, params.opp_freekick_clearance, field)
 
         # --- orientations (computed from the final positions) --------------------- #
         for role, p in out.items():
