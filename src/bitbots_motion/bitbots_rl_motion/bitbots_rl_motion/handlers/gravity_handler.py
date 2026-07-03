@@ -4,7 +4,7 @@ import numpy as np
 from sensor_msgs.msg import Imu
 from transforms3d.quaternions import quat2mat
 
-from handlers.handler import Handler
+from bitbots_rl_motion.handlers import Handler
 
 
 class GravityHandler(Handler):

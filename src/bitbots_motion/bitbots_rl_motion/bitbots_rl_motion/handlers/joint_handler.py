@@ -4,7 +4,7 @@ import numpy as np
 from sensor_msgs.msg import JointState
 
 from bitbots_msgs.msg import JointCommand
-from handlers.handler import Handler
+from bitbots_rl_motion.handlers import Handler
 
 
 class JointHandler(Handler):
@@ -85,18 +85,28 @@ class JointHandler(Handler):
         )
         return joint_velocities
 
-    def get_joint_commands(self, onnx_pred) -> JointCommand:
+    def get_joint_commands(self, onnx_pred, relative_to_current: bool = False) -> JointCommand:
         if self._joint_state_indices is None:
             self._cache_joint_state_indices()
 
         assert self._joint_state is not None
+        assert self._joint_state_indices is not None
 
         self._joint_command.header.stamp = self._joint_state.header.stamp  # self._node.get_clock().now().to_msg()
-        # Target is built in the policy's joint convention, then converted back to
-        # the robot's convention with joint_signs (inverse of the read mapping).
-        # Uncontrolled joints (e.g. the head) are dropped from the published command.
-        positions = (onnx_pred * self._action_scales + self._walkready_state) * self._joint_signs
-        self._joint_command.positions = positions[self._publish_indices]
+
+        if relative_to_current:
+            # Relative-to-current action space (mjlab RelativeJointPositionAction):
+            # target = current_joint_position + action * scale.
+            # Used by the getup policy. Do NOT offset by the default pose here.
+            current = np.array(
+                [self._joint_state.position[idx] for idx in self._joint_state_indices],
+                dtype=np.float32,
+            )
+            self._joint_command.positions = onnx_pred * self._action_scales + current
+        else:
+            # Default-pose-relative action space (e.g. the walk policy):
+            # target = default_pose + action * scale.
+            self._joint_command.positions = onnx_pred * self._action_scales + self._walkready_state * self._joint_signs
         return self._joint_command
 
     def get_previous_action_initial(self) -> np.ndarray:

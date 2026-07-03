@@ -12,7 +12,7 @@ from rclpy.duration import Duration
 from rclpy.time import Time
 
 from bitbots_msgs.action import Kick
-from handlers.handler import Handler
+from bitbots_rl_motion.handlers import Handler
 
 
 def _wrap_to_pi(angle: float) -> float:

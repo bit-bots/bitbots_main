@@ -55,6 +55,8 @@ class HCM_CPP : public rclcpp::Node {
         "walking_motor_goals", 1, std::bind(&HCM_CPP::walking_goal_callback, this, _1));
     kick_sub_ = this->create_subscription<bitbots_msgs::msg::JointCommand>(
         "kick_motor_goals", 1, std::bind(&HCM_CPP::kick_goal_callback, this, _1));
+    getup_sub_ = this->create_subscription<bitbots_msgs::msg::JointCommand>(
+        "getup_motor_goals", 1, std::bind(&HCM_CPP::getup_goal_callback, this, _1));
 
     // Create subscriber for high frequency sensor data
     joint_state_sub_ = this->create_subscription<sensor_msgs::msg::JointState>(
@@ -127,8 +129,18 @@ class HCM_CPP : public rclcpp::Node {
     // Forward the kick goal to the motors if we are in a state that allows it.
     // CONTROLLABLE lets the first goal through (which then transitions us to
     // KICKING), and KICKING keeps the following goals flowing.
+
     if (current_state_ == bitbots_msgs::msg::RobotControlState::CONTROLLABLE ||
         current_state_ == bitbots_msgs::msg::RobotControlState::KICKING) {
+      pub_controller_command_->publish(msg);
+    }
+  }
+
+  void getup_goal_callback(const bitbots_msgs::msg::JointCommand msg) {
+    // Forward the RL getup policy's motor goals only while the robot is getting
+    // up. The state-based gate is the joint mutex that keeps the getup policy
+    // from fighting walking/head/animation goals (which forward in other states).
+    if (current_state_ == bitbots_msgs::msg::RobotControlState::GETTING_UP) {
       pub_controller_command_->publish(msg);
     }
   }
@@ -212,6 +224,7 @@ class HCM_CPP : public rclcpp::Node {
   rclcpp::Subscription<bitbots_msgs::msg::JointCommand>::SharedPtr record_sub_;
   rclcpp::Subscription<bitbots_msgs::msg::JointCommand>::SharedPtr walk_sub_;
   rclcpp::Subscription<bitbots_msgs::msg::JointCommand>::SharedPtr kick_sub_;
+  rclcpp::Subscription<bitbots_msgs::msg::JointCommand>::SharedPtr getup_sub_;
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_sub_;
   rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_sub_;
 };

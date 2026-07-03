@@ -11,10 +11,13 @@ from rclpy.time import Time
 from rosgraph_msgs.msg import Clock
 from sensor_msgs.msg import CameraInfo, Image, Imu, JointState
 from std_msgs.msg import Float32
+from std_srvs.srv import Empty
 
 from bitbots_msgs.msg import JointCommand
-from bitbots_msgs.srv import SimulatorPush
+from bitbots_msgs.srv import MoveBall, SimulatorPush
 from bitbots_mujoco_sim.robot import Robot
+
+BALL_JOINT_NAME = "ball-root"
 
 
 class Simulation(Node):
@@ -97,6 +100,13 @@ class Simulation(Node):
         self.measured_rtf = 1.0
         self.clock_publisher = self.create_publisher(Clock, "clock", 1)
         self.create_subscription(Float32, "real_time_factor", self.real_time_factor_callback, 1)
+
+        # The ball is a free-floating body shared by all robots, so its reset lives on the
+        # simulation node rather than per-robot. Use a global topic so the teleop keyboard
+        # script reaches it regardless of any node namespace.
+        self.ball_joint_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_JOINT, BALL_JOINT_NAME)
+        self.create_service(Empty, "/reset_ball", self.reset_ball_callback)
+        self.create_service(MoveBall, "/move_ball", self.move_ball_callback)
 
         self.imu_frame_id = self.get_parameter("imu_frame").get_parameter_value().string_value
         self.camera_optical_frame_id = self.get_parameter("camera_optical_frame").get_parameter_value().string_value
@@ -355,6 +365,47 @@ class Simulation(Node):
 
     def real_time_factor_callback(self, msg: Float32) -> None:
         self.real_time_factor = msg.data / 0.94  # add a small buffer to try to achieve the requested RTF
+
+    def reset_ball_callback(self, request: Empty.Request, response: Empty.Response) -> Empty.Response:
+        """Reset the ball to its initial pose and zero its velocity."""
+        if self.ball_joint_id < 0:
+            self.get_logger().warn(f"No '{BALL_JOINT_NAME}' joint in the world; cannot reset ball.")
+            return response
+
+        qpos_adr = int(self.model.jnt_qposadr[self.ball_joint_id])
+        qvel_adr = int(self.model.jnt_dofadr[self.ball_joint_id])
+
+        def reset() -> None:
+            # A free joint has 7 position (3 translation + 4 quaternion) and 6 velocity values.
+            self.data.qpos[qpos_adr : qpos_adr + 7] = self.model.qpos0[qpos_adr : qpos_adr + 7]
+            self.data.qvel[qvel_adr : qvel_adr + 6] = 0.0
+            self.early_events.remove(reset_event)
+
+        # Run the state write inside the simulation loop so it does not race with mj_step.
+        reset_event = {"frequency": 1, "handler": reset}
+        self.early_events.append(reset_event)
+        return response
+
+    def move_ball_callback(self, request: MoveBall.Request, response: MoveBall.Response) -> MoveBall.Response:
+        """Move the ball by a relative offset (world frame) and zero its velocity."""
+        if self.ball_joint_id < 0:
+            self.get_logger().warn(f"No '{BALL_JOINT_NAME}' joint in the world; cannot move ball.")
+            return response
+
+        qpos_adr = int(self.model.jnt_qposadr[self.ball_joint_id])
+        qvel_adr = int(self.model.jnt_dofadr[self.ball_joint_id])
+        offset = np.array([request.offset.x, request.offset.y, request.offset.z], dtype=float)
+
+        def move() -> None:
+            # The first 3 free-joint qpos entries are the world-frame translation.
+            self.data.qpos[qpos_adr : qpos_adr + 3] += offset
+            self.data.qvel[qvel_adr : qvel_adr + 6] = 0.0
+            self.early_events.remove(move_event)
+
+        # Run the state write inside the simulation loop so it does not race with mj_step.
+        move_event = {"frequency": 1, "handler": move}
+        self.early_events.append(move_event)
+        return response
 
     def publish_clock_event(self) -> None:
         clock_msg = Clock()
