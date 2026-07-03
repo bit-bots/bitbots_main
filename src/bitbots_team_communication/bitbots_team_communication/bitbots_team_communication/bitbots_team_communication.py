@@ -51,6 +51,8 @@ class TeamCommunication:
         self.socket_communication = SocketCommunication(self.node, self.logger, self.team_id, self.player_id)
 
         self.rate: int = self.node.get_parameter("rate").value
+        self.increase_kicking_rate: int = self.node.get_parameter("increase_kicking_rate").value
+        self.always_publish_during_kick: bool = self.node.get_parameter("always_publish_during_kick").value
         self.lifetime: int = self.node.get_parameter("lifetime").value
         self.max_message_size: int = self.node.get_parameter("max_message_size").value
         self.avg_walking_speed: float = self.node.get_parameter("avg_walking_speed").value
@@ -68,6 +70,10 @@ class TeamCommunication:
         self.run_spin_in_thread()
         self.try_to_establish_connection()
 
+        self.actual_rate = self.rate * self.increase_kicking_rate
+        self.counter = 0
+        self.last_action = None
+
         # See https://github.com/ros2/rclcpp/issues/2535
         # In sim, the builtin timers may not work correctly if there is a high load of callbacks
         # This can lead to breaks and bursts which is unacceptable for this usecase
@@ -76,15 +82,31 @@ class TeamCommunication:
             self.node.create_subscription(
                 Clock, "/clock", self.clock_cb, callback_group=MutuallyExclusiveCallbackGroup(), qos_profile=1
             )
-            self.next_send_time = self.node.get_clock().now() + Duration(seconds=1 / self.rate)
+            self.next_send_time = self.node.get_clock().now() + Duration(seconds=1 / self.actual_rate)
         else:
-            self.node.create_timer(1 / self.rate, self.send_message, callback_group=MutuallyExclusiveCallbackGroup())
+            self.node.create_timer(
+                1 / self.actual_rate, self.send_message, callback_group=MutuallyExclusiveCallbackGroup()
+            )
         self.receive_forever()
 
     def clock_cb(self, msg):
         if Time.from_msg(msg.clock) >= self.next_send_time:
+            self.high_rate_cb()
+            self.next_send_time = Time.from_msg(msg.clock) + Duration(seconds=1 / self.actual_rate)
+
+    def high_rate_cb(self):
+        # Gets called at actual_rate
+        self.counter += 1
+        if self.counter >= self.increase_kicking_rate:
+            # Gets called at rate
             self.send_message()
-            self.next_send_time = Time.from_msg(msg.clock) + Duration(seconds=1 / self.rate)
+            self.counter = 0
+        elif self.strategy:
+            if self.always_publish_during_kick and self.strategy.action == Strategy.ACTION_KICKING:
+                self.send_message()
+            elif self.last_action != self.strategy.action and self.strategy.action == Strategy.ACTION_KICKING:
+                self.send_message()
+            self.last_action = self.strategy.action
 
     def spin(self):
         executor = EventsExecutor()

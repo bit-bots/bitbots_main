@@ -19,6 +19,10 @@ team_comm:
 
     # Rate of published messages in Hz
     rate: 2
+    # Increase rate by this factor when kicking
+    increase_kicking_rate: 10
+    # Always publish during kick instead of only on switch to kicking
+    always_publish_during_kick: false
 
     # average walking speed in [m/s]
     avg_walking_speed: 0.2
