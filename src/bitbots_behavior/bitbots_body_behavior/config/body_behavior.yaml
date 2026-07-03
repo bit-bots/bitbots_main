@@ -156,6 +156,7 @@ body_behavior:
       goal_line_offset: 0.25 # distance beyond the goal line used for the left/right kick target points
       kick_target_y_offset: 0.5 # inset (in y) from the goal posts used for the left/right kick target points
       goal_kick_dir_inset: 0.5
+      max_approach_angle_deg: 90
 
     ##################
     # costmap params #
