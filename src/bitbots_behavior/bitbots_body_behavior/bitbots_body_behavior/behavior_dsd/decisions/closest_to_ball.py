@@ -49,7 +49,7 @@ class AssignedRole(AbstractDecisionElement):
     def perform(self, reevaluate=False):
         role = self.blackboard.positioning.get_own_role()
         self.publish_debug_data("Role from positioning", role)
-        return role
+        return role.upper()
         """if role == "STRIKER":
             return "STRIKER"
         elif role == 2:

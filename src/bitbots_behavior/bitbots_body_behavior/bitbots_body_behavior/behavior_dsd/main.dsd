@@ -56,8 +56,8 @@ $GoalScoreRecently
 $BallSeen
     YES --> $PassStarted
         YES --> @TrackBall, @ChangeAction + action:positioning, @AvoidBallActive, @GoToFormationPosition
-        NO --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @AvoidBallActive, @GoToFormationPosition + enter_position:%support_enter_position + leave_position:%support_leave_position + enter_orientation:%support_enter_orientation + leave_orientation:%support_leave_orientation
-    NO --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @AvoidBallActive, @GoToFormationPosition + enter_position:%support_enter_position + leave_position:%support_leave_position + enter_orientation:%support_enter_orientation + leave_orientation:%support_leave_orientation
+        NO --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @AvoidBallActive, @GoToFormationPosition + stand:true + enter_position:%support_enter_position + leave_position:%support_leave_position + enter_orientation:%support_enter_orientation + leave_orientation:%support_leave_orientation
+    NO --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @AvoidBallActive, @GoToFormationPosition + stand:true + enter_position:%support_enter_position + leave_position:%support_leave_position + enter_orientation:%support_enter_orientation + leave_orientation:%support_leave_orientation
 
 
 #PenaltyShootoutBehavior
@@ -74,7 +74,7 @@ $SecondaryStateTeamDecider
 #Placing
 $DoOnce
     NOT_DONE --> @ForgetBall, @LookAtFieldFeatures
-    DONE --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToFormationPosition + enter_position:%placing_enter_position + leave_position:%placing_leave_position + enter_orientation:%placing_enter_orientation + leave_orientation:%placing_leave_orientation
+    DONE --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToFormationPosition + stand:true + enter_position:%placing_enter_position + leave_position:%placing_leave_position + enter_orientation:%placing_enter_orientation + leave_orientation:%placing_leave_orientation
 
 
 #Init
@@ -93,9 +93,9 @@ $SecondBallTouchAllowed
             YES --> $AssignedRole
                 STRIKER --> #KickWithAvoidance
                 SUPPORTER --> #SupporterRole
-                ELSE --> $BallInOwnPercentOfField + p:40 
-                    YES --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @GoToFormationPosition 
-                    NO --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @GoToFormationPosition + enter_position:%defender_enter_position + leave_position:%defender_leave_position + enter_orientation:%defender_enter_orientation + leave_orientation:%defender_leave_orientation
+                ELSE --> $BallInOwnPercent + p:40
+                    YES --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @GoToFormationPosition
+                    NO --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @GoToFormationPosition + stand:true + enter_position:%defender_enter_position + leave_position:%defender_leave_position + enter_orientation:%defender_enter_orientation + leave_orientation:%defender_leave_orientation
 
 #ThrowinGoalKickCornerkickBehavior
 $DoOnce
