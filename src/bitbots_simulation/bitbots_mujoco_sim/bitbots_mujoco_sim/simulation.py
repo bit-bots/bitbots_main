@@ -5,7 +5,7 @@ from pathlib import Path
 import mujoco
 import numpy as np
 from ament_index_python.packages import get_package_share_directory
-from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import PointStamped, PoseStamped
 from mujoco import viewer
 from rclpy.node import Node
 from rclpy.time import Time
@@ -101,6 +101,13 @@ class Simulation(Node):
         self.clock_publisher = self.create_publisher(Clock, "clock", 1)
         self.create_subscription(Float32, "real_time_factor", self.real_time_factor_callback, 1)
 
+        # Ground-truth ball position, published only in the sim's (base) domain and, like
+        # true_pose, intentionally NOT bridged into any robot domain. Used by
+        # scripts/robot_overview.py to compare against the behavior's ball estimate.
+        body_names = {self.model.body(i).name for i in range(self.model.nbody)}
+        self.ball_body_id = self.model.body("ball").id if "ball" in body_names else None
+        self.true_ball_publisher = self.create_publisher(PointStamped, "true_ball", 1)
+
         self.imu_frame_id = self.get_parameter("imu_frame").get_parameter_value().string_value
         self.camera_optical_frame_id = self.get_parameter("camera_optical_frame").get_parameter_value().string_value
         self.camera_active = True
@@ -110,6 +117,7 @@ class Simulation(Node):
             {"frequency": 4, "handler": lambda: self.publish(lambda robot: robot.publish_ros_joint_states_event())},
             {"frequency": 4, "handler": lambda: self.publish(lambda robot: robot.publish_imu_event())},
             {"frequency": 4, "handler": lambda: self.publish(lambda robot: robot.publish_true_pose_event())},
+            {"frequency": 4, "handler": self.publish_true_ball_event},
             {"frequency": 32, "handler": lambda: self.publish(lambda robot: robot.publish_camera_event())},
         ]
 
@@ -405,6 +413,16 @@ class Simulation(Node):
         clock_msg = Clock()
         clock_msg.clock = self.time_message
         self.clock_publisher.publish(clock_msg)
+
+    def publish_true_ball_event(self) -> None:
+        if self.ball_body_id is None:
+            return
+        pos = self.data.xpos[self.ball_body_id]
+        msg = PointStamped()
+        msg.header.stamp = self.time_message
+        msg.header.frame_id = "map"
+        msg.point.x, msg.point.y, msg.point.z = float(pos[0]), float(pos[1]), float(pos[2])
+        self.true_ball_publisher.publish(msg)
 
     def publish(self, executor: Callable[["RobotSimulation"], None]) -> None:
         for robot in self.robots:

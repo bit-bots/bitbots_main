@@ -29,13 +29,17 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 import rclpy
+import tf2_geometry_msgs  # noqa: F401 -- registers the PointStamped transform used below
+import tf2_ros
 import transforms3d
 from game_controller_hsl_interfaces.msg import GameState
-from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped, Twist
+from geometry_msgs.msg import PointStamped, PoseStamped, PoseWithCovarianceStamped, Twist
 from rclpy.context import Context
+from rclpy.duration import Duration
 from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
-from std_msgs.msg import Float32
+from rclpy.time import Time
+from std_msgs.msg import Float32, Header
 
 from bitbots_msgs.msg import Strategy
 
@@ -98,6 +102,7 @@ class RobotState:
     time_to_ball: Stamped = field(default_factory=Stamped)
     cmd_vel: Stamped = field(default_factory=Stamped)
     true_pose: Stamped = field(default_factory=Stamped)  # ground truth (main domain)
+    ball_map: Stamped = field(default_factory=Stamped)  # filtered ball, transformed to map by us
 
 
 class _MonitorBase:
@@ -133,21 +138,45 @@ class _MonitorBase:
 class DomainMonitor(_MonitorBase):
     """Reads one robot's own-domain state topics into the given shared RobotState."""
 
-    def __init__(self, state: RobotState):
+    def __init__(self, state: RobotState, map_frame: str = "map"):
         super().__init__(state.domain, f"robot_overview_probe_{state.domain}")
         self.state = state
+        self.map_frame = map_frame
         self.node.create_subscription(Strategy, "strategy", self._store(state.strategy), 1)
         self.node.create_subscription(PoseWithCovarianceStamped, "pose_with_covariance", self._store(state.pose), 1)
         self.node.create_subscription(GameState, "gamestate", self._store(state.gamestate), 1)
         self.node.create_subscription(Float32, "time_to_ball", self._store(state.time_to_ball), 1)
         self.node.create_subscription(Twist, "cmd_vel", self._store(state.cmd_vel), 1)
 
+        # The filtered ball is published in the odom frame; we hold this domain's TF tree
+        # ourselves and transform each ball into the map frame so it is comparable to the
+        # ground-truth ball. The listener feeds off this domain's /tf and /tf_static.
+        self.tf_buffer = tf2_ros.Buffer()
+        self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self.node)
+        self.node.create_subscription(
+            PoseWithCovarianceStamped, "ball_position_relative_filtered", self._ball_filtered_cb, 1
+        )
+
+    def _ball_filtered_cb(self, msg: PoseWithCovarianceStamped) -> None:
+        # Stamp 0 -> use the latest available transform (avoids sim-time extrapolation issues).
+        point = PointStamped(
+            header=Header(stamp=Time().to_msg(), frame_id=msg.header.frame_id),
+            point=msg.pose.pose.position,
+        )
+        try:
+            self.state.ball_map.set(self.tf_buffer.transform(point, self.map_frame, timeout=Duration()))
+        except tf2_ros.TransformException:
+            pass  # TF not ready yet / frame missing — keep the previous value
+
 
 class GroundTruthMonitor(_MonitorBase):
-    """Reads every robot's ``robotN/true_pose`` from the main domain (never bridged)."""
+    """Reads the sim's ground truth from the main domain (never bridged): per-robot
+    ``robotN/true_pose`` and the single global ``true_ball``."""
 
     def __init__(self, states: list[RobotState], main_domain: int):
         super().__init__(main_domain, "robot_overview_truth")
+        self.true_ball = Stamped()  # single global ball, shared across robots
+        self.node.create_subscription(PointStamped, "true_ball", self._store(self.true_ball), 1)
         for state in states:
             self.node.create_subscription(
                 PoseStamped, f"robot{state.domain}/true_pose", self._store(state.true_pose), 1
@@ -181,13 +210,6 @@ def _rotate_180_about_origin(pose: Optional[tuple[float, float, float]]) -> Opti
     return (-x, -y, (yaw + 2 * math.pi) % (2 * math.pi) - math.pi)  # == wrap(yaw + 180°)
 
 
-def _fmt_pose(pose: Optional[tuple[float, float, float]]) -> str:
-    if pose is None:
-        return "       -        "
-    x, y, yaw = pose
-    return f"({x:+5.2f},{y:+5.2f}) {math.degrees(yaw):+4.0f}°"
-
-
 def _fmt_error(est: Optional[tuple[float, float, float]], true: Optional[tuple[float, float, float]]) -> str:
     if est is None or true is None:
         return "     -     "
@@ -195,6 +217,16 @@ def _fmt_error(est: Optional[tuple[float, float, float]], true: Optional[tuple[f
     # wrap yaw error into (-180, 180]
     yaw_err = math.degrees((est[2] - true[2] + math.pi) % (2 * math.pi) - math.pi)
     return f"{dist:4.2f}m {yaw_err:+4.0f}°"
+
+
+def _ball_xy(msg: Optional[PointStamped]) -> Optional[tuple[float, float]]:
+    return None if msg is None else (msg.point.x, msg.point.y)
+
+
+def _fmt_dist(a: Optional[tuple[float, float]], b: Optional[tuple[float, float]]) -> str:
+    if a is None or b is None:
+        return "   -  "
+    return f"{math.hypot(a[0] - b[0], a[1] - b[1]):5.2f}m"
 
 
 def _fmt_age(age: Optional[float]) -> str:
@@ -205,10 +237,12 @@ def _fmt_age(age: Optional[float]) -> str:
     return f"{age:4.1f}s"
 
 
-def render(states: list[RobotState], rotate_180: bool = True) -> str:
+def render(states: list[RobotState], true_ball: Optional[tuple[float, float]] = None, rotate_180: bool = True) -> str:
+    # true_ball is the sim ground-truth ball (map frame). ball_err is the distance between
+    # the filtered ball (transformed to map) and the ground-truth ball (position only).
     header = (
-        f"{'robot':>6} | {'role':>8} | {'action':>15} | {'est (x,y) yaw':^17} | "
-        f"{'true (x,y) yaw':^17} | {'err (m,°)':^11} | {'ttb':>6} | {'game':>8} | {'pen':>3} | {'age':>5}"
+        f"{'robot':>6} | {'role':>8} | {'action':>15} | {'pose err (m,°)':^14} | "
+        f"{'ball err':>8} | {'ttb':>6} | {'game':>8} | {'pen':>3} | {'age':>5}"
     )
     lines = [header, "-" * len(header)]
     for s in states:
@@ -222,6 +256,7 @@ def render(states: list[RobotState], rotate_180: bool = True) -> str:
 
         role = ROLE.get(strat.role, "?") if strat else "-"
         action = ACTION.get(strat.action, "?") if strat else "-"
+        ball_err = _fmt_dist(_ball_xy(s.ball_map.value), true_ball)
         ttb_str = f"{ttb.data:5.1f}s" if ttb else "   -  "
         game = GAME_STATE.get(gs.main_state, "?") if gs else "-"
         pen = ("Y" if gs.penalized else "n") if gs and hasattr(gs, "penalized") else "-"
@@ -230,8 +265,8 @@ def render(states: list[RobotState], rotate_180: bool = True) -> str:
         age = _fmt_age(min(ages) if ages else None)
 
         lines.append(
-            f"{s.domain:>6} | {role:>8} | {action:>15} | {_fmt_pose(est):^17} | "
-            f"{_fmt_pose(true):^17} | {_fmt_error(est, true):^11} | "
+            f"{s.domain:>6} | {role:>8} | {action:>15} | {_fmt_error(est, true):^14} | "
+            f"{ball_err:>8} | "
             f"{ttb_str:>6} | {game:>8} | {pen:>3} | {age:>5}"
         )
     return "\n".join(lines)
@@ -271,15 +306,22 @@ def main():
         domains = [11, 12, 13, 14]
 
     states = [RobotState(domain=d) for d in domains]
+    truth = GroundTruthMonitor(states, args.main_domain)
     monitors: list[_MonitorBase] = [DomainMonitor(s) for s in states]
-    monitors.append(GroundTruthMonitor(states, args.main_domain))
+    monitors.append(truth)
     for m in monitors:
         m.start()
+
+    def true_ball_xy() -> Optional[tuple[float, float]]:
+        xy = _ball_xy(truth.true_ball.value)
+        if xy is None or not args.rotate_180:
+            return xy
+        return (-xy[0], -xy[1])  # same 180° realignment as the ground-truth pose
 
     try:
         if args.once:
             time.sleep(1.0)  # let subscriptions match and receive
-            print(render(states, args.rotate_180))
+            print(render(states, true_ball_xy(), args.rotate_180))
         else:
             period = 1.0 / args.rate
             while True:
@@ -289,8 +331,9 @@ def main():
                 print(
                     f"Robot overview  domains={domains}  truth@{args.main_domain}{rot}  "
                     f"({time.strftime('%H:%M:%S')})\n"
+                    "ball err = filtered ball (transformed odom->map) vs true ball\n"
                 )
-                print(render(states, args.rotate_180))
+                print(render(states, true_ball_xy(), args.rotate_180))
                 time.sleep(period)
     except KeyboardInterrupt:
         pass
