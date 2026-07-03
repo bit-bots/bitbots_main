@@ -18,7 +18,7 @@ $DoOnce
 @ChangeAction + action:waiting, @LookAtFieldFeatures, @Stand
 
 #GetWalkreadyAndLocalize
-@ChangeAction + action:waiting + r:false, @PlayAnimationInitInSim + r:false, @LookAtFieldFeatures + r:false, @WalkInPlace
+@ChangeAction + action:waiting + r:false, @LookAtFieldFeatures + r:false, @WalkInPlace
 
 #Dribble
 @ChangeAction + action:kicking, @CancelPathplanning, @LookAtFront, @DribbleForward
