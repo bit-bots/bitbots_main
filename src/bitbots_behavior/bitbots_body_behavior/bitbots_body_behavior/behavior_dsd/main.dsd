@@ -31,12 +31,23 @@ $DoOnce
         NO --> @LookAtFieldFeatures, @GoToRolePosition
 
 #KickWithAvoidance
-$ReachedAndAlignedToPathPlanningGoalPosition + threshold:%ball_far_approach_position_thresh
-    NO --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:rl_kick
-    YES --> $DoOnce
-        NOT_DONE --> @StoreBallMovementDetectionStartPosition
-        DONE --> @ChangeAction + action:going_to_ball + r:false, @Stand + duration:0.1 + r:false, @LookAtBallPenalty + r:false, @RLKickTowardsGoal + strength:1.5 + r:false
-
+$KickOrDribble + map_goal_distance:%ball_approach_dist // should be same as below $GoToBall + target:map action
+    KICK --> $ReachedAndAlignedToPathPlanningGoalPosition + threshold:%rl_kick_approach_tolerance_pos + orientation_threshold:%rl_kick_approach_tolerance_rad + latch:true
+        NO --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:rl_kick
+        YES --> $DoOnce
+            NOT_DONE --> @StoreBallMovementDetectionStartPosition
+            DONE --> @ChangeAction + action:going_to_ball + r:false, @Stand + duration:0.1 + r:false, @LookAtBallPenalty + r:false, @RLKickTowardsGoal + strength:3.5 + r:false
+    DRIBBLE --> $AvoidBall // old behavior before kick when we want to kick the ball in 
+        NO --> $BallClose + distance:%ball_reapproach_dist + angle:%ball_reapproach_angle
+            YES --> $BallKickArea
+                NEAR --> $DoOnce
+                    NOT_DONE --> @StoreBallMovementDetectionStartPosition
+                    DONE --> #Dribble
+                FAR --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:map
+            NO --> @ChangeAction + action:going_to_ball + r:false, @LookAtFieldFeatures + r:false, @AvoidBallActive + r:false, @GoToBall + target:map + blocking:false + distance:%ball_far_approach_dist
+        YES --> $ReachedPathPlanningGoalPosition + threshold:%ball_far_approach_position_thresh
+            YES --> @AvoidBallInactive
+            NO --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:map + distance:%ball_far_approach_dist
 #PositioningReady
 $GoalScoreRecently
     YES --> $ConfigRole

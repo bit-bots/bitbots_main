@@ -135,30 +135,6 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
             )
         return total_cost
 
-    def _publish_rl_kick_arc_markers(
-        self, arc_point: tuple[float, float, float]
-    ) -> None:
-        """
-        Publishes debug markers for the two candidate approach points of the RL kick arcs,
-        highlighting which one was chosen.
-        """
-        stamp = self._node.get_clock().now().to_msg()
-        for marker_id, point, color in (
-            (2, arc_point, ColorRGBA(r=0.0, g=0.0, b=1.0, a=1.0)),
-        ):
-            marker = Marker()
-            marker.header.stamp = stamp
-            marker.header.frame_id = self._blackboard.map_frame
-            marker.type = Marker.SPHERE
-            marker.action = Marker.MODIFY
-            marker.id = marker_id
-            marker.pose.position = Point(x=point[0], y=point[1], z=0.0)
-            marker.pose.orientation = quat_from_yaw(point[2])
-            scale = 0.15
-            marker.scale = Vector3(x=scale, y=scale, z=scale)
-            marker.color = color
-            self.approach_marker_pub.publish(marker)
-
     def get_ball_goal(self, target: BallGoalType, distance: float, side_offset: float = 0.0) -> PoseStamped:
         """
         This function returns a goal pose relative to the ball.
@@ -181,31 +157,7 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
             ball_point = (goal_x, goal_y, goal_angle, self._blackboard.map_frame)
 
         elif BallGoalType.MAP == target:
-            goal_angle = self._blackboard.world_model.get_map_based_opp_goal_angle_from_ball()
-
-            ball_x, ball_y = self._blackboard.world_model.get_ball_position_xy()
-
-            # Play in any part of the opponents goal, not just the center
-            # Adjust for the goal post width (-0.06)
-            if abs(ball_y) < self._blackboard.world_model.goal_width / 2 - 0.06:
-                goal_angle = 0
-            # Play in the opposite direction if the ball is near the opponent goal back line
-            elif ball_x > self._blackboard.world_model.field_length / 2 - 0.2:
-                goal_angle = math.pi + np.copysign(math.pi / 4, ball_y)
-
-            # We don't want to walk into the ball, so we add an offset to stop before the ball
-            approach_offset_x = math.cos(goal_angle) * distance
-            approach_offset_y = math.sin(goal_angle) * distance
-
-            # We also want to kick the ball with one foot instead of the center between the feet
-            side_offset_x = math.cos(goal_angle - math.pi / 2) * side_offset
-            side_offset_y = math.sin(goal_angle - math.pi / 2) * side_offset
-
-            # Calculate the goal position (has nothing to do with the soccer goal)
-            goal_x = ball_x - approach_offset_x + side_offset_x
-            goal_y = ball_y - approach_offset_y + side_offset_y
-
-            ball_point = (goal_x, goal_y, goal_angle, self._blackboard.map_frame)
+            ball_point = self.get_map_goal(distance, side_offset)
 
         elif BallGoalType.CLOSE == target:
             ball_u, ball_v = self._blackboard.world_model.get_ball_position_uv()
@@ -215,43 +167,48 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
             goal_v = ball_v - math.sin(angle) * distance + side_offset
             ball_point = (goal_u, goal_v, angle, self._blackboard.world_model.base_footprint_frame)
         elif BallGoalType.RL_KICK == target:
-            ball_x, ball_y = self._blackboard.world_model.get_ball_position_xy()
             goal_line_offset = self._blackboard.config["rl_kick"]["goal_line_offset"]
-            goal_post_y_offset = self._blackboard.config["rl_kick"]["goal_post_y_offset"]
-            vec_ball_to_goal = np.array([
-                self._blackboard.world_model.field_length / 2 + goal_line_offset - ball_x,
-                self._blackboard.world_model.goal_width / 2 - ball_y
-            ])
-            angle_to_goal = math.atan2(vec_ball_to_goal[1], vec_ball_to_goal[0])
+            approach_dist = self._blackboard.config["rl_kick"]["approach_dist"]
+            approach_arc_half_rad = math.radians(self._blackboard.config["rl_kick"]["approach_arc_half_degree"])
+            ball_x, ball_y = self._blackboard.world_model.get_ball_position_xy()
 
+            vec_ball_to_goal = np.array([
+                self._blackboard.world_model.field_length / 2 + 2* goal_line_offset - ball_x,
+                0 - ball_y
+            ])
             robot_x, robot_y, robot_theta = self._blackboard.world_model.get_current_position()
 
-            approach_dist = self._blackboard.config["rl_kick"]["approach_dist"]
-            arc_half_angle = math.radians(self._blackboard.config["rl_kick"]["approach_arc_degree"])
+            
+            angle_to_goal = math.atan2(vec_ball_to_goal[1], vec_ball_to_goal[0])
+            arc_start_angle = angle_to_goal - approach_arc_half_rad
+            arc_end_angle = angle_to_goal + approach_arc_half_rad
 
-            # For a given kick direction (angle from ball towards the target point in the goal), the arc of
-            # possible approach points is centered opposite of that kick direction (i.e. behind the ball) and
-            # spans +-arc_half_angle around that center.
-            def closest_point_on_arc(kick_angle: float) -> tuple[float, float, float]:
-                center_angle = kick_angle + math.pi
-                angle_to_robot = math.atan2(robot_y - ball_y, robot_x - ball_x)
-                # Clamp the angle towards the robot into the arc, which gives the closest point on the arc
-                offset = (angle_to_robot - center_angle + math.pi) % math.tau - math.pi
-                offset = max(-arc_half_angle, min(arc_half_angle, offset))
-                theta = center_angle + offset
-                point_x = ball_x + math.cos(theta) * approach_dist
-                point_y = ball_y + math.sin(theta) * approach_dist
-                # Orientation to face back towards the ball and kick along the original kick direction
-                orientation = theta + math.pi
-                return point_x, point_y, orientation
+            position_in_kick_arc = self.is_point_in_arc(
+                robot_x, robot_y,
+                ball_x, ball_y,
+                approach_dist, # we take approach_dist as radius instead of tolerance_dist for hysteresis
+                arc_start_angle,
+                arc_end_angle
+            )
 
-            arc_point = closest_point_on_arc(angle_to_goal)
-
-            #self._publish_rl_kick_arc_markers(arc_point)
-
-            ball_point = (arc_point[0], arc_point[1], arc_point[2], self._blackboard.map_frame)
-
-
+            if position_in_kick_arc:
+                theta_towards_ball = math.atan2(ball_y - robot_y, ball_x - robot_x)
+                ball_point = (robot_x, robot_y, theta_towards_ball, self._blackboard.map_frame)
+            else:
+                angle_robot_ball = math.atan2(ball_y - robot_y, ball_x - robot_x)
+                ball_approach_start_angle = math.radians(self._blackboard.config["rl_kick"]["max_approach_angle_deg"])
+                if abs(self.angle_distance(angle_robot_ball, angle_to_goal)) > ball_approach_start_angle:
+                    # If the robot is outside the approach arc, we want to approach from the edge of the arc
+                    if self.angle_distance(angle_robot_ball, angle_to_goal) > 0:
+                        angle_robot_ball = angle_to_goal - ball_approach_start_angle
+                    else:
+                        angle_robot_ball = angle_to_goal + ball_approach_start_angle
+                ball_point = (
+                    ball_x - math.cos(angle_robot_ball) * approach_dist,
+                    ball_y - math.sin(angle_robot_ball) * approach_dist,
+                    angle_robot_ball,
+                    self._blackboard.map_frame
+                )
         else:
             raise ValueError(f"Target {target} for go_to_ball action not implemented.")
 
@@ -265,3 +222,48 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
         pose_msg = self._blackboard.tf_buffer.transform(pose_msg, self._blackboard.map_frame)
 
         return pose_msg
+
+
+    def get_map_goal(self, distance, side_offset: float = 0.0):
+        goal_angle = self._blackboard.world_model.get_map_based_opp_goal_angle_from_ball()
+
+        ball_x, ball_y = self._blackboard.world_model.get_ball_position_xy()
+
+        # Play in any part of the opponents goal, not just the center
+        # Adjust for the goal post width (-0.06)
+        if abs(ball_y) < self._blackboard.world_model.goal_width / 2 - 0.06:
+            goal_angle = 0
+        # Play in the opposite direction if the ball is near the opponent goal back line
+        elif ball_x > self._blackboard.world_model.field_length / 2 - 0.2:
+            goal_angle = math.pi + np.copysign(math.pi / 4, ball_y)
+
+        # We don't want to walk into the ball, so we add an offset to stop before the ball
+        approach_offset_x = math.cos(goal_angle) * distance
+        approach_offset_y = math.sin(goal_angle) * distance
+
+        # We also want to kick the ball with one foot instead of the center between the feet
+        side_offset_x = math.cos(goal_angle - math.pi / 2) * side_offset
+        side_offset_y = math.sin(goal_angle - math.pi / 2) * side_offset
+
+        # Calculate the goal position (has nothing to do with the soccer goal)
+        goal_x = ball_x - approach_offset_x + side_offset_x
+        goal_y = ball_y - approach_offset_y + side_offset_y
+
+        return (goal_x, goal_y, goal_angle, self._blackboard.map_frame)
+        
+    def is_point_in_arc(self, p_x, p_y, c_x, c_y, radius, start_angle_rad, end_angle_rad) -> bool:
+        distance = math.sqrt((p_x - c_x) ** 2 + (p_y - c_y) ** 2)
+        if distance > radius:
+            return False
+        
+        angle_to_center_point = math.atan2(p_y - c_y, p_x - c_x)
+        start_angle_rad = start_angle_rad % (2 * math.pi)
+        end_angle_rad = end_angle_rad % (2 * math.pi)
+
+        if start_angle_rad < end_angle_rad:
+            return start_angle_rad <= angle_to_center_point <= end_angle_rad
+        else:
+            return angle_to_center_point >= start_angle_rad or angle_to_center_point <= end_angle_rad
+
+    def angle_distance(self, x, y) -> float:
+        return math.atan2(math.sin(y - x), math.cos(y - x))

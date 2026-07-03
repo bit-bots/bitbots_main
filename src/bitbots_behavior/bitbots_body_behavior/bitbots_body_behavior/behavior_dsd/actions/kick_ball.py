@@ -59,14 +59,12 @@ class RLKickTowardsGoal(AbstractKickAction):
         self._start_time = None
 
     def perform(self, reevaluate=False):
-        x_dir, y_dir = self.blackboard.costmap.get_gradient_at_field_position(
-            *self.blackboard.world_model.get_ball_position_xy()
-        )
-        costmap_direction_deg_in_world = math.degrees(math.atan2(y_dir, x_dir))
+        _, _, kick_dir_rad_in_map, _ = self.blackboard.pathfinding.get_map_goal(0.5, 0.0)
+        kick_dir_deg_in_map = math.degrees(kick_dir_rad_in_map)
         # transform map to robot relative
         if self._start_time is None:
             self._start_time = self.blackboard.node.get_clock().now()
-            self.blackboard.kick.start_rl_kick(costmap_direction_deg_in_world, self._strength)
+            self.blackboard.kick.start_rl_kick(kick_dir_deg_in_map, self._strength)
 
         elapsed = self.blackboard.node.get_clock().now() - self._start_time
         if elapsed >= Duration(seconds=self.blackboard.config["rl_kick"]["timeout"]) and elapsed <= Duration(
