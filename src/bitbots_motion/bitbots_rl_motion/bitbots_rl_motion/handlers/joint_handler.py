@@ -102,11 +102,15 @@ class JointHandler(Handler):
                 [self._joint_state.position[idx] for idx in self._joint_state_indices],
                 dtype=np.float32,
             )
-            self._joint_command.positions = onnx_pred * self._action_scales + current
+            positions = onnx_pred * self._action_scales + current
         else:
             # Default-pose-relative action space (e.g. the walk policy):
             # target = default_pose + action * scale.
-            self._joint_command.positions = onnx_pred * self._action_scales + self._walkready_state * self._joint_signs
+            # Target is built in the policy's joint convention, then converted back to
+            # the robot's convention with joint_signs (inverse of the read mapping).
+            positions = (onnx_pred * self._action_scales + self._walkready_state) * self._joint_signs
+        # Uncontrolled joints (e.g. the head) are dropped from the published command.
+        self._joint_command.positions = positions[self._publish_indices]
         return self._joint_command
 
     def get_previous_action_initial(self) -> np.ndarray:
