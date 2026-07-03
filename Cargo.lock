@@ -2996,8 +2996,6 @@ dependencies = [
 [[package]]
 name = "r2r_msg_gen"
 version = "0.9.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "03d5e77385a6b959014c14c45a444e1fbff99afad70912e120c21c30e7a65488"
 dependencies = [
  "bindgen",
  "force-send-sync",
