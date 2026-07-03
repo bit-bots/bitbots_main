@@ -2,6 +2,7 @@ import random
 from dataclasses import dataclass
 from enum import StrEnum
 from typing import TypedDict
+from scipy.optimize import linear_sum_assignment
 
 import numpy as np
 from bitbots_utils.utils import get_parameters_from_other_node
@@ -322,7 +323,7 @@ class InnerPositioningCapsule:
         old_poses: list[list[float] | NDArray[np.float64]],
         new_items: list[tuple[str, NDArray[np.float64]]],
         ball: NDArray[np.float64],
-        passiv_player: int | None,
+        passiv_player: list[int],
         angle_w: float = 0.3,
     ) -> list[tuple[int, NDArray[np.float64], str]]:
         """Assign physical robots (at `old_poses`) to the new target poses.
@@ -331,25 +332,21 @@ class InnerPositioningCapsule:
         heading difference. Returns a list of (old_idx, new_pose, new_role) where
         old_idx is the index into `old_poses`.
         `old_poses`: list of [x, y, theta]; `new_items`: list of (role, [x, y, theta]).
+        `passiv_player`: list of robot indices that must never be assigned the striker role.
+        Pass an empty list if there are no passive players.
         """
-        from scipy.optimize import linear_sum_assignment
-
         old_poses = [np.asarray(p) for p in old_poses]
         ball = np.asarray(ball)
         n = len(old_poses)
-
         # striker target -> the old robot nearest the ball
         s_j = next(j for j, (r, _) in enumerate(new_items) if r == Role.STRIKER)
-
         # Kandidaten nach Distanz zum Ball sortiert
         candidates = sorted(range(n), key=lambda i: np.linalg.norm(old_poses[i][:2] - ball))
-
-        # Den passiven Spieler von der Striker-Wahl ausschließen, falls vorhanden
-        if passiv_player is not None:
-            s_i = next((i for i in candidates if i != passiv_player), candidates[0])
+        # Alle passiven Spieler von der Striker-Wahl ausschließen, falls vorhanden
+        if passiv_player:
+            s_i = next((i for i in candidates if i not in passiv_player), candidates[0])
         else:
             s_i = candidates[0]
-
         pairs = [(s_i, new_items[s_j][1], new_items[s_j][0])]
         rem_i = [i for i in range(n) if i != s_i]
         rem_j = [j for j in range(len(new_items)) if j != s_j]
