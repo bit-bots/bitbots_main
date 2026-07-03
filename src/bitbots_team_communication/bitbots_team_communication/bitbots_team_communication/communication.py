@@ -12,7 +12,8 @@ class SocketCommunication:
         self.buffer_size: int = 1024
         self.socket: socket.socket | None = None
         configured_target_ip: str = node.get_parameter("target_ip").value
-        self.target_ip, wifi_interface = resolve_target_ip(configured_target_ip)
+        in_sim: bool = node.get_parameter("use_sim_time").value
+        self.target_ip, wifi_interface = resolve_target_ip(configured_target_ip, in_sim)
         if wifi_interface is not None:
             self.logger.info(
                 f"Using Wi-Fi broadcast address {self.target_ip} from interface {wifi_interface} for team communication"

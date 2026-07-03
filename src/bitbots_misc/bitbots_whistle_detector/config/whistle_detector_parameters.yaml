@@ -1,0 +1,29 @@
+bitbots_whistle_detector:
+  whistle_energy_ratio_threshold:
+    type: double
+    default_value: 0.6
+    description: "Ratio of whistle-band energy to total energy required to trigger detection"
+    validation:
+      bounds<>: [0.0, 1.0]
+
+  whistle_frequency_min_hz:
+    type: int
+    default_value: 2000
+    description: "Lower bound of the whistle frequency band in Hz"
+    validation:
+      bounds<>: [0, 22000]
+
+  whistle_frequency_max_hz:
+    type: int
+    default_value: 4500
+    description: "Upper bound of the whistle frequency band in Hz"
+    validation:
+      bounds<>: [0, 22000]
+
+  chunk_size:
+    type: int
+    default_value: 512
+    description: "Number of audio samples per processing chunk"
+    read_only: True
+    validation:
+      bounds<>: [64, 8192]

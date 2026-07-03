@@ -33,6 +33,7 @@ class RobocupProtocolConverter:
             (Proto.ACTION_KICKING, Strategy.ACTION_KICKING),
             (Proto.ACTION_SEARCHING, Strategy.ACTION_SEARCHING),
             (Proto.ACTION_LOCALIZING, Strategy.ACTION_LOCALIZING),
+            (Proto.ACTION_PASSIVE, Strategy.ACTION_PASSIVE),
         )
         self.side_mapping = (
             (Proto.SIDE_UNDEFINED, Strategy.SIDE_UNDEFINED),

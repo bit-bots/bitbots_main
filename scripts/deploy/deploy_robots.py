@@ -106,19 +106,21 @@ class DeployRobots:
             dest="clean_build",
             help="Clean workspace before building. If --package is given, clean only that package.",
         )
-        parser.add_argument("--connection-timeout", default=10, help="Timeout to establish SSH connections in seconds.")
+        parser.add_argument(
+            "--connection-timeout", type=int, default=5, help="Timeout to establish SSH connections in seconds."
+        )
         parser.add_argument(
             "--print-bit-bot", action="store_true", default=False, help="Print our logo at script start."
         )
         parser.add_argument("-v", "--verbose", action="count", default=0, help="More output.")
         parser.add_argument("-q", "--quiet", action="count", default=0, help="Less output.")
         parser.add_argument(
-            "-u", "--user", default="nvidia", help="The SSH user to connect to the target machines with"
+            "-u", "--user", default="bitbots", help="The SSH user to connect to the target machines with"
         )
         parser.add_argument(
             "-w",
             "--workspace",
-            default="~/bitbots/bitbots_main",
+            default="~/bitbots_main",
             help="Path to the workspace directory to deploy to. Defaults to 'bitbots_main' in $HOME dir.",
         )
         parser.add_argument("--skip-local-repo-check", action="store_true", help="Skip the local repository check.")

@@ -1,4 +1,5 @@
 import argparse
+import concurrent.futures
 import ipaddress
 import os
 import subprocess
@@ -123,26 +124,32 @@ def get_known_targets() -> dict[str, dict[str, str]]:
     return KNOWN_TARGETS
 
 
-def _identify_ip(identifier: str) -> str | None:
+def _identify_ips(identifier: str) -> list[str]:
     """
-    Identifies an IP address from an identifier.
+    Identifies IP addresses from an identifier.
     The identifier can be a hostname, IP address or a robot name.
 
     :param identifier: The identifier to identify the target from.
-    :return: IP address of the identified target.
+    :return: IP addresses of the identified targets.
     """
     print_debug(f"Identifying IP address from identifier: '{identifier}'.")
+
+    def append_target_ip(target_ips: list[str], ip: str) -> None:
+        target_ip = str(ipaddress.ip_address(ip))
+        if target_ip not in target_ips:
+            target_ips.append(target_ip)
 
     # Is the identifier an IP address?
     try:
         print_debug(f"Checking if {identifier} is an IP address")
         ip = ipaddress.ip_address(identifier)
         print_debug(f"Identified {ip} as an IP address")
-        return str(ip)
+        return [str(ip)]
     except ValueError:
         print_debug("Entered target is not an IP-address.")
 
     # It was not an IP address, so we try to find a known target
+    target_ips: list[str] = []
     for ip, values in KNOWN_TARGETS.items():
         # Is the identifier a known hostname?
         known_hostname = values.get("hostname", None)
@@ -150,7 +157,7 @@ def _identify_ip(identifier: str) -> str | None:
             print_debug(f"Comparing {identifier} with {known_hostname}")
             if known_hostname.strip() == identifier.strip():
                 print_debug(f"Identified hostname '{known_hostname}' for '{identifier}'. Using its IP {ip}.")
-                return str(ipaddress.ip_address(ip))
+                append_target_ip(target_ips, ip)
             else:
                 print_debug(f"Hostname '{known_hostname}' does not match identifier '{identifier}'.")
 
@@ -160,9 +167,11 @@ def _identify_ip(identifier: str) -> str | None:
             print_debug(f"Comparing '{identifier}' with '{known_robot_name}'.")
             if known_robot_name.strip() == identifier.strip():
                 print_debug(f"Identified robot name '{known_robot_name}' for '{identifier}'. Using its IP {ip}.")
-                return str(ipaddress.ip_address(ip))
+                append_target_ip(target_ips, ip)
             else:
                 print_debug(f"Robot name '{known_robot_name}' does not match '{identifier}'.")
+
+    return target_ips
 
 
 def _parse_targets(targets: list[str]) -> list[str]:
@@ -172,27 +181,37 @@ def _parse_targets(targets: list[str]) -> list[str]:
     :param targets: Targets as a list of strings of either hostnames, robot names or IPs.
     :return: List of target IP addresses.
     """
-    target_ips: list[str] = []
+    return [target_ip for _, target_ips in _parse_target_candidates(targets) for target_ip in target_ips]
+
+
+def _parse_target_candidates(targets: list[str]) -> list[tuple[str, list[str]]]:
+    """
+    Parse target input into candidate target IP addresses grouped by user input.
+
+    :param targets: Targets as a list of strings of either hostnames, robot names or IPs.
+    :return: List of target names and their candidate IP addresses.
+    """
+    target_candidates: list[tuple[str, list[str]]] = []
     for target in targets:
         try:
-            target_ip = _identify_ip(target)
+            target_ips_for_identifier = _identify_ips(target)
         except ValueError:
             print_error(f"Could not determine IP address from input: '{target}'")
             sys.exit(1)
-        if target_ip is None:
-            print_error(f"Could not determine IP address from input:' {target}'")
+        if not target_ips_for_identifier:
+            print_error(f"Could not determine IP address from input: '{target}'")
             sys.exit(1)
-        target_ips.append(target_ip)
-    return target_ips
+        target_candidates.append((target, target_ips_for_identifier))
+    return target_candidates
 
 
-def _get_connections_from_targets(
-    target_ips: list[str], user: str, connection_timeout: int | None = 10
+def _get_connections_from_target_candidates(
+    target_candidates: list[tuple[str, list[str]]], user: str, connection_timeout: int | None = 10
 ) -> ThreadingGroup:
     """
-    Get connections to the given target IP addresses using the given username.
+    Get connections to the given target IP address candidates using the given username.
 
-    :param target_ips: The target IP addresses to connect to
+    :param target_candidates: The target names and candidate IP addresses to connect to
     :param user: The username to connect with
     :param connection_timeout: Timeout for establishing the connection
     :return: The connections
@@ -206,9 +225,8 @@ def _get_connections_from_targets(
                 reason += f"{arg} "
         return reason
 
-    connections = ThreadingGroup(*target_ips, user=user, connect_timeout=connection_timeout)
-    failures: list[tuple[Connection, str]] = []  # List of tuples of failed connections and their error message
-    for connection in connections:
+    def _try_connect(target_ip: str) -> tuple[str, Connection | None, str | None]:
+        connection = Connection(target_ip, user=user, connect_timeout=connection_timeout)
         try:
             print_debug(f"Connecting to {connection.user}@{connection.host}...")
             connection.open()
@@ -217,24 +235,76 @@ def _get_connections_from_targets(
             hostname: str = connection.run("hostname", hide=hide_output()).stdout.strip()
             print_debug(f"Got hostname of {connection.host}: {hostname}. Setting is as original hostname.")
             connection.original_host = hostname
+            return target_ip, connection, None
         except AuthenticationException as e:
-            failures.append(
-                (
-                    connection,
-                    _concat_exception_args(e)
-                    + f"Did you add your SSH key to the target? Run '[bold blue]ssh-copy-id {user}@{connection.host}[/bold blue]' manually to do so.",
-                )
+            reason = (
+                _concat_exception_args(e)
+                + f"Did you add your SSH key to the target? Run '[bold blue]ssh-copy-id {user}@{connection.host}[/bold blue]' manually to do so."
             )
+            return target_ip, None, reason
         except Exception as e:
-            failures.append((connection, _concat_exception_args(e)))
-    if failures:
-        failure_table = Table(style="bold red", box=box.HEAVY)
-        failure_table.add_column("Host")
+            return target_ip, None, _concat_exception_args(e)
+
+    open_connections: list[Connection] = []
+    failed_targets: list[tuple[str, list[tuple[str, str]]]] = []
+
+    for target, target_ips in target_candidates:
+        if len(target_ips) > 1:
+            print_debug(f"Target '{target}' resolved to multiple candidate IPs: {', '.join(target_ips)}.")
+
+        results_by_ip: dict[str, tuple[Connection | None, str | None]] = {}
+        with concurrent.futures.ThreadPoolExecutor(max_workers=len(target_ips)) as executor:
+            futures = [executor.submit(_try_connect, target_ip) for target_ip in target_ips]
+            for future in concurrent.futures.as_completed(futures):
+                target_ip, connection, reason = future.result()
+                results_by_ip[target_ip] = (connection, reason)
+
+        successful_target_ips = [target_ip for target_ip in target_ips if results_by_ip[target_ip][0] is not None]
+        failures = [
+            (target_ip, results_by_ip[target_ip][1] or "")
+            for target_ip in target_ips
+            if results_by_ip[target_ip][0] is None
+        ]
+
+        for target_ip, reason in failures:
+            print_debug(f"Could not connect to candidate IP {target_ip} for target '{target}': {reason}")
+
+        if successful_target_ips:
+            selected_target_ip = successful_target_ips[0]
+            selected_connection = results_by_ip[selected_target_ip][0]
+            assert selected_connection is not None
+            open_connections.append(selected_connection)
+            for target_ip in successful_target_ips[1:]:
+                ignored_connection = results_by_ip[target_ip][0]
+                assert ignored_connection is not None
+                ignored_connection.close()
+
+            ignored_target_ips = [target_ip for target_ip, _ in failures] + successful_target_ips[1:]
+            if ignored_target_ips:
+                print_info(
+                    f"Connected to target '{target}' via {selected_connection.host}. "
+                    f"Ignoring other candidate IPs: {', '.join(ignored_target_ips)}."
+                )
+            elif len(target_ips) > 1:
+                print_debug(f"Connected to target '{target}' via first candidate IP {selected_connection.host}.")
+        else:
+            failed_targets.append((target, failures))
+
+    if failed_targets:
+        failure_table = Table(style="yellow", box=box.SQUARE)
+        failure_table.add_column("Target")
+        failure_table.add_column("IP address")
         failure_table.add_column("Reason")
-        [failure_table.add_row(connection.host, reason) for connection, reason in failures]
-        print_error(RichGroup("Could not connect to the following hosts:", failure_table))
+        [
+            failure_table.add_row(target, target_ip, reason)
+            for target, failures in failed_targets
+            for target_ip, reason in failures
+        ]
+        print_warning(RichGroup("Could not connect to the following targets:", failure_table))
+    if len(open_connections) == 0:
+        print_error("Could not establish any connection to the given targets. Exiting...")
         sys.exit(1)
-    return connections
+    return ThreadingGroup.from_connections(open_connections)
 
 
 def _get_connections_from_all_known_targets(user: str, connection_timeout: int | None = 10) -> ThreadingGroup:
@@ -285,8 +355,8 @@ def get_connections_from_targets(targets: list[str], user: str, connection_timeo
         print_info(f"Connecting to targets: {KNOWN_TARGETS.keys()}")
         return _get_connections_from_all_known_targets(user=user, connection_timeout=connection_timeout)
 
-    return _get_connections_from_targets(
-        target_ips=_parse_targets(targets), user=user, connection_timeout=connection_timeout
+    return _get_connections_from_target_candidates(
+        target_candidates=_parse_target_candidates(targets), user=user, connection_timeout=connection_timeout
     )
 
 

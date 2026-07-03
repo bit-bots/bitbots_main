@@ -28,11 +28,12 @@ setup(
     tests_require=["pytest"],
     entry_points={
         "console_scripts": [
-            "walk_node = nodes.walk_node:main",
-            "kick_node = nodes.kick_node:main",
-            "mjlab_walk_node = nodes.mjlab_walk_node:main",
-            "cartwheel_rl_node = nodes.cartwheel_rl_node:main",
-            "phase_from_transform = nodes.phase_from_transform:main",
+            f"walk_node = {package_name}.nodes.walk_node:main",
+            f"kick_node = {package_name}.nodes.kick_node:main",
+            f"mjlab_walk_node = {package_name}.nodes.mjlab_walk_node:main",
+            f"mjlab_getup_node = {package_name}.nodes.mjlab_getup_node:main",
+            f"phase_from_transform = {package_name}.nodes.phase_from_transform:main",
+            f"cartwheel_rl_node = {package_name}.nodes.cartwheel_rl_node:main",
         ],
     },
 )

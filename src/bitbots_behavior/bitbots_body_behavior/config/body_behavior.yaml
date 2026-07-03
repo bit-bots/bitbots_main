@@ -82,6 +82,13 @@ body_behavior:
     # A value of 0.25 means, that the quarter in front of the own goal is the defensive area.
     defensive_area: 0.5
 
+    # GoalieZone is the area the goalie should start kick the ball away
+    # X realtive from 0 to 1 measured from the own goal
+    # Y A symetrical offset to both sides from 0 to 1
+    # Y = 0.3 -> Defense Area ist in between 0.3 and 0.7 y
+    goalie_zone_x: 0.2
+    goalie_zone_y: 0.2
+
     # This is the offset the goalie keeps to avoid crashes with poles when blocking balls.
     # The value describes the offset in meters from the goal line.
     block_position_goal_offset: 0.2
@@ -112,9 +119,11 @@ body_behavior:
     ball_reapproach_angle: 0.9
 
     # The position where the supporter robot should place itself in order to accept a pass
-    pass_position_x: 0.1
-    pass_position_y: 1.0
+    pass_position_x: -0.2
+    pass_position_y: 0.8
     supporter_max_x: 4.0
+    supporter_max_y: 2.0
+    supporter_min_y: -2.0
 
     # maximal angle of a ball kick
     max_kick_angle: 1.4  #  (radians)
@@ -127,6 +136,9 @@ body_behavior:
 
     # distance from center point, that the ball must be during an opponent kickoff to think that it moved
     kickoff_min_ball_movement: 0.5
+
+    # distance from other ball position, that the ball must be traveled after a kick to think that it moved
+    after_kick_min_ball_movement: 0.2
 
     # dribble action
     dribble_max_speed_x: 0.5

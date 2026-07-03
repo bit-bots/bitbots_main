@@ -66,7 +66,7 @@ generate_parameter_library(vision_parameters config/vision_parameters.yaml)
 # Processing library (no ONNX dependency) – used by tests and the handler
 # ---------------------------------------------------------------------------
 add_library(bitbots_vision_processing SHARED
-            src/yoeo_processing.cpp src/debug_image.cpp src/model_config.cpp)
+            src/rfdetr_processing.cpp src/debug_image.cpp src/model_config.cpp)
 
 target_include_directories(
   bitbots_vision_processing
@@ -79,7 +79,7 @@ target_link_libraries(bitbots_vision_processing PUBLIC yaml-cpp ${OpenCV_LIBS})
 # Full vision library (includes ONNX handler) – used by the node and handler
 # tests
 # ---------------------------------------------------------------------------
-add_library(bitbots_vision_lib SHARED src/yoeo_handler.cpp)
+add_library(bitbots_vision_lib SHARED src/rfdetr_handler.cpp)
 
 target_include_directories(
   bitbots_vision_lib
@@ -125,11 +125,11 @@ if(BUILD_TESTING)
   ament_add_gtest(test_debug_image test/test_debug_image.cpp)
   target_link_libraries(test_debug_image bitbots_vision_processing)
 
-  ament_add_gtest(test_processing test/test_processing.cpp)
-  target_link_libraries(test_processing bitbots_vision_processing)
+  ament_add_gtest(test_rfdetr_processing test/test_rfdetr_processing.cpp)
+  target_link_libraries(test_rfdetr_processing bitbots_vision_processing)
 
-  ament_add_gtest(test_yoeo_handler test/test_yoeo_handler.cpp)
-  target_link_libraries(test_yoeo_handler bitbots_vision_lib)
+  ament_add_gtest(test_rfdetr_handler test/test_rfdetr_handler.cpp)
+  target_link_libraries(test_rfdetr_handler bitbots_vision_lib)
 endif()
 
 install(TARGETS vision bitbots_vision_lib bitbots_vision_processing

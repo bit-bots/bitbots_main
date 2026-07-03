@@ -1,6 +1,12 @@
 import glob
 
+from generate_parameter_library_py.setup_helper import generate_parameter_module
 from setuptools import find_packages, setup
+
+generate_parameter_module(
+    "whistle_detector_parameters",
+    "config/whistle_detector_parameters.yaml",
+)
 
 package_name = "bitbots_whistle_detector"
 

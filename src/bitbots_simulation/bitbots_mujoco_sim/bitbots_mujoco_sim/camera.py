@@ -1,34 +1,48 @@
+import math
+
 import mujoco
 import numpy as np
+
+# Camera parameters match the ZED mini config
+CAMERA_WIDTH = 672
+CAMERA_HEIGHT = 376
+CAMERA_FX = 362.6533508300781
+CAMERA_FY = 362.6533508300781
+CAMERA_CX = 329.59454345703125
+CAMERA_CY = 182.3579864501953
 
 
 class Camera:
     """Represents a camera in the MuJoCo simulation, providing image rendering capabilities."""
 
-    def __init__(self, model: mujoco.MjModel, data: mujoco.MjData, name: str, width: int = 800, height: int = 600):
+    def __init__(
+        self,
+        model: mujoco.MjModel,
+        data: mujoco.MjData,
+        name: str,
+        width: int = CAMERA_WIDTH,
+        height: int = CAMERA_HEIGHT,
+    ):
         self.model: mujoco.MjModel = model
         self.data: mujoco.MjData = data
         self.name: str = name
         self.instance = model.camera(name)
         self.width: int = width
         self.height: int = height
+        self.fx: float = CAMERA_FX
+        self.fy: float = CAMERA_FY
+        self.cx: float = CAMERA_CX
+        self.cy: float = CAMERA_CY
+        self._fov: float | None = None
         self.renderer = mujoco.Renderer(self.model, height=self.height, width=self.width)
 
     @property
     def fov(self) -> float:
         """Returns the camera's horizontal field of view in radians."""
-        if hasattr(self, "_fov") and self._fov is not None:
+        if self._fov is not None:
             return self._fov
 
-        # MuJoCo uses fovy (vertical field of view in degrees)
-        fovy_deg = self.instance.fovy[0] if hasattr(self.instance.fovy, "__iter__") else self.instance.fovy
-        fovy_rad = np.deg2rad(fovy_deg)
-
-        # Convert vertical FOV to horizontal FOV using aspect ratio
-        aspect_ratio = self.width / self.height
-        fovx_rad = 2 * np.arctan(np.tan(fovy_rad / 2) * aspect_ratio)
-
-        self._fov = fovx_rad
+        self._fov = 2 * math.atan(self.width / (2 * self.fx))
         return self._fov
 
     def render(self) -> bytes:

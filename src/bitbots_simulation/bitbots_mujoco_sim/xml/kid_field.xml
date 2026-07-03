@@ -4,7 +4,7 @@
     <flag eulerdamp="disable"/>
   </option>
   <visual>
-    <global offwidth="800" offheight="600"/>
+    <global offwidth="672" offheight="376"/>
   </visual>
 
   <include file="goal_kid.xml"/>

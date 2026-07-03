@@ -84,12 +84,12 @@ class CostmapCapsule(AbstractBlackboardCapsule):
         Publishes the costmap for rviz
         """
         assert self.costmap is not None, "Costmap is not initialized"
-        # Normalize costmap to match the rviz color scheme in a good way
-        normalized_costmap = (
-            (255 - ((self.costmap - np.min(self.costmap)) / (np.max(self.costmap) - np.min(self.costmap))) * 255 / 2.1)
-            .astype(np.int8)
-            .T
-        )
+        # Normalize costmap to the valid OccupancyGrid range [0, 100] (the message uses int8)
+        costmap_range = np.max(self.costmap) - np.min(self.costmap)
+        if costmap_range == 0:
+            normalized_costmap = np.zeros_like(self.costmap, dtype=np.int8).T
+        else:
+            normalized_costmap = (((self.costmap - np.min(self.costmap)) / costmap_range) * 100).astype(np.int8).T
         # Build the OccupancyGrid message
         msg: OccupancyGrid = msgify(
             OccupancyGrid,

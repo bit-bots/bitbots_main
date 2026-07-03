@@ -79,7 +79,7 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        camera_optical_frame_uncalibrated:
+        camera_optical_frame_left_uncalibrated:
           Alpha: 1
           Show Axes: false
           Show Trail: false
