@@ -87,7 +87,7 @@ body_behavior:
     # Y A symetrical offset to both sides from 0 to 1
     # Y = 0.3 -> Defense Area ist in between 0.3 and 0.7 y
     goalie_zone_x: 0.2
-    goalie_zone_y: 0.3
+    goalie_zone_y: 0.35
 
     # This is the offset the goalie keeps to avoid crashes with poles when blocking balls.
     # The value describes the offset in meters from the goal line.

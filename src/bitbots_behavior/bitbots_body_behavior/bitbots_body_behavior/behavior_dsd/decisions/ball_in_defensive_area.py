@@ -69,16 +69,16 @@ class BallInGoalieZone(AbstractDecisionElement):
         """
         ball_position = self.blackboard.world_model.get_ball_position_xy()
         # calculate the x value of the boundary of the defensive area
-        defensive_x = (self.defensive_area * self.blackboard.world_model.field_length) - (
+        defensive_x = (self.goalie_zone_x * self.blackboard.world_model.field_length) - (
             self.blackboard.world_model.field_length / 2
         )
-        defensive_y_left = (self.defensive_area * self.blackboard.world_model.field_width) - (
-            self.blackboard.world_model.field_length / 2
+        defensive_y_left = (self.goalie_zone_y * self.blackboard.world_model.field_width) - (
+            self.blackboard.world_model.field_width / 2
         )
-        defensive_y_right = - ((self.defensive_area * self.blackboard.world_model.field_width) - (
-            self.blackboard.world_model.field_length / 2)
+        defensive_y_right = - ((self.goalie_zone_y * self.blackboard.world_model.field_width) - (
+            self.blackboard.world_model.field_width / 2)
         )
-        if ball_position[0] <= defensive_x and ball_position[1] >= defensive_y_right and ball_position[1] <= defensive_y_left:
+        if ball_position[0] <= defensive_x and ball_position[1] <= defensive_y_right and ball_position[1] >= defensive_y_left:
             return "YES"
         return "NO"
 
