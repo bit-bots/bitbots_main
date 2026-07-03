@@ -14,6 +14,8 @@ class GoToFormationPosition(AbstractActionElement):
     def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
 
+        self.set_play = parameters.get("set_play", False)
+
         self.stand = parameters.get("stand", False)
         if self.stand:
             self.on_position_threshold = parameters["enter_position"]
@@ -28,8 +30,11 @@ class GoToFormationPosition(AbstractActionElement):
         self.standing_on_target = False
 
     def perform(self, reevaluate=False):
+        if self.set_play:
+            optimal_positioning = self.blackboard.positioning.get_set_play_formation_assignment()
+        else:
+            optimal_positioning = self.blackboard.positioning.get_formation_assignment()
 
-        optimal_positioning = self.blackboard.positioning.get_formation_assignment()
         own_target = optimal_positioning[self.blackboard.gamestate.get_own_id()]
         goal_pose = own_target["goal_pose"] # [x, y, orientation]
 
@@ -62,7 +67,7 @@ class GoToFormationPosition(AbstractActionElement):
             pose_msg = PoseStamped()
             pose_msg.header.stamp = self.blackboard.node.get_clock().now().to_msg()
             pose_msg.header.frame_id = self.blackboard.map_frame
-                
+
             goal_pose = own_target["goal_pose"]
             pose_msg.pose.position.x = goal_pose[0]
             pose_msg.pose.position.y = goal_pose[1]

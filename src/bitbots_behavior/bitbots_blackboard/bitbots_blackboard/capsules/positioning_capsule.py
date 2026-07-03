@@ -81,9 +81,8 @@ class Params:
     # kick lane: keep teammates out of the corridor in front of the ball
     kick_clear: float = 0.7  # half-width of the cleared corridor
     kick_range: float = 3.0  # how far in front of the ball the corridor extends
-    # opponent free kick / goal kick / penalty: keep all robots outside this radius
-    opp_freekick: bool = False
-    opp_freekick_clearance: float = 0.8
+    # opponent set play: keep all robots outside this radius
+    opp_set_play_clearance: float = 1.1
 
 
 class PositioningCapsule(AbstractBlackboardCapsule):
@@ -110,16 +109,19 @@ class PositioningCapsule(AbstractBlackboardCapsule):
         )
         self._params = Params()
         self._inner = InnerPositioningCapsule()
-        self._own_locked_role: str | None = None
-        self._own_lock_until: float = 0.0
-        self._hysteresis_min: float = self._blackboard.config["role_hysteresis"]["min"]
-        self._hysteresis_max: float = self._blackboard.config["role_hysteresis"]["max"]
 
-    def set_opp_freekick_active(self, b: bool) -> None:
-        self._params.opp_freekick = b
-
+    # Cached capsule functions can not have parameters or side effects,
+    # so we have two separate functions for normal and set play formation assignment,
+    # that are cached separately.
     @cached_capsule_function
     def get_formation_assignment(self) -> dict[int, RobotAssignment]:
+        return self._get_formation_assignment(set_play=False)
+
+    @cached_capsule_function
+    def get_set_play_formation_assignment(self) -> dict[int, RobotAssignment]:
+        return self._get_formation_assignment(set_play=True)
+
+    def _get_formation_assignment(self, set_play=False) -> dict[int, RobotAssignment]:
         ball_pose = self._blackboard.world_model.get_best_ball_point_stamped()
         ball = np.array([ball_pose.point.x, ball_pose.point.y])
         robot_poses = self._blackboard.team_data.get_robot_poses()
@@ -132,27 +134,6 @@ class PositioningCapsule(AbstractBlackboardCapsule):
         old_poses = [robot_poses[j] for j in ordered_jerseys]
         pairs = self._inner._match_assignment(old_poses, new_items, ball, passive_robot)
         return {ordered_jerseys[old_idx]: {"role": role, "goal_pose": new_pose} for old_idx, new_pose, role in pairs}
-
-    @cached_capsule_function
-    def get_own_role(self) -> str:
-        """Return our assigned role, locking it in for a random duration on each change.
-
-        Each robot runs this independently with slightly different world state, so
-        hysteresis is local: once we switch to a new role we commit to it for
-        Uniform(hysteresis_min, hysteresis_max) seconds before accepting another change.
-        """
-        own_jersey = self._blackboard.gamestate.get_own_id()
-        assigned_role = self.get_formation_assignment()[own_jersey]["role"]
-        now = self._node.get_clock().now().nanoseconds / 1e9
-
-        if now < self._own_lock_until:
-            return self._own_locked_role  # type: ignore[return-value]
-
-        if assigned_role != self._own_locked_role:
-            self._own_locked_role = assigned_role
-            self._own_lock_until = now + random.uniform(self._hysteresis_min, self._hysteresis_max)
-
-        return assigned_role
 
 
 class InnerPositioningCapsule:
@@ -370,7 +351,7 @@ class InnerPositioningCapsule:
     # --------------------------------------------------------------------------- #
 
     def _compute_formation(
-        self, ball: NDArray[np.float64], field: Field, n_players: int, params: Params
+        self, ball: NDArray[np.float64], field: Field, n_players: int, params: Params, opp_set_play: bool = False
     ) -> dict[str, NDArray[np.float64]]:
         """Map a ball position -> {role: np.array([x, y, yaw])}. Pure & deterministic.
 
@@ -389,7 +370,7 @@ class InnerPositioningCapsule:
         perp = np.array([-to_ball[1], to_ball[0]])
 
         roles = self._allocate_roles(n_players, b, field)
-        if params.opp_freekick and Role.SUPPORTER in roles:
+        if opp_set_play and Role.SUPPORTER in roles:
             n_def = sum(1 for r in roles if r.startswith(Role.DEFENDER + "_"))
             roles[roles.index(Role.SUPPORTER)] = f"{Role.DEFENDER}_{n_def}"
         out = {}
@@ -398,10 +379,10 @@ class InnerPositioningCapsule:
 
         # --- striker: stands behind the ball opposite the smoothly-chosen kick aim --- #
         if Role.STRIKER in roles:
-            if params.opp_freekick:
+            if opp_set_play:
                 # park at the clearance boundary on the goal side, facing the ball
                 dir_to_goal = self._normalize(goal - b, fallback=np.array([-1.0, 0.0]))
-                out[Role.STRIKER] = self._clamp_field(b + params.opp_freekick_clearance * dir_to_goal, field)
+                out[Role.STRIKER] = self._clamp_field(b + params.opp_set_play_clearance * dir_to_goal, field)
                 # heading will be computed in the orientation pass (face ball)
             else:
                 h = max(field.goal_width / 2 - params.post_margin, 0.0)  # safe half-mouth
@@ -437,7 +418,7 @@ class InnerPositioningCapsule:
             )
             out[Role.GOALIE] = g
 
-        
+
         # --- defenders: anchor on axis at push-up depth, spread along perp ---------- #
         defender_roles = [r for r in roles if r.startswith(Role.DEFENDER + "_")]
         m = len(defender_roles)
@@ -472,9 +453,9 @@ class InnerPositioningCapsule:
         # --- min-separation repulsion + kick-lane clearance ----------------------- #
         self._separate(out, field, params, b, kick_aim)
 
-        # --- freekick: push every robot outside the mandatory clearance radius ---- #
-        if params.opp_freekick:
-            self._clear_ball(out, b, params.opp_freekick_clearance, field)
+        # --- set play: push every robot outside the mandatory clearance radius ---- #
+        if opp_set_play:
+            self._clear_ball(out, b, params.opp_set_play_clearance, field)
 
         # --- orientations (computed from the final positions) --------------------- #
         for role, p in out.items():
