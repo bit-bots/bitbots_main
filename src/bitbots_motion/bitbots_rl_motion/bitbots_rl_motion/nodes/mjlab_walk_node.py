@@ -1,9 +1,4 @@
 import numpy as np
-from handlers.command_handler import CommandHandler
-from handlers.gravity_handler import GravityHandler
-from handlers.gyro_handler import GyroHandler
-from handlers.joint_handler import JointHandler
-from handlers.robot_state_handler import RobotStateHandler
 
 from bitbots_msgs.msg import JointCommand
 from bitbots_rl_motion.handlers.command_handler import CommandHandler
