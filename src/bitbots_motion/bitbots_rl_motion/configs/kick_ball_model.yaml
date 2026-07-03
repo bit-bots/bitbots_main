@@ -181,11 +181,11 @@ kick_ball_node:
     #   history_samples  : stacked command/ball history length. Must match training.
     command:
       kick_timeout: 2.0
-      warm_start_duration: 0.3
-      warm_start_command: [0.2, 0.0, 0.0]
-      post_kick_command_duration: 5.0
-      post_stabilization_stop_duration: 4.0
-      post_kick_command: [0.4, 0.0, 0.0]
+      warm_start_duration: 1.0
+      warm_start_command: [0.0, 0.0, 0.0]
+      post_kick_command_duration: 1.0
+      post_stabilization_stop_duration: 1.0
+      post_kick_command: [0.3, 0.0, 0.0]
       pub_period: 5
       history_samples: 10
 

@@ -48,9 +48,7 @@ class RLKick(AbstractKickAction):
             self._start_time = self.blackboard.node.get_clock().now()
             self.blackboard.kick.start_rl_kick(self._direction_deg_map, self._strength)
 
-        elapsed = self.blackboard.node.get_clock().now() - self._start_time
-        if elapsed >= Duration(seconds=self.blackboard.config["rl_kick"]["timeout"]):
-            self.blackboard.kick.stop_rl_kick()
+        if not self.blackboard.kick.is_currently_kicking:
             self.pop()
 
 
