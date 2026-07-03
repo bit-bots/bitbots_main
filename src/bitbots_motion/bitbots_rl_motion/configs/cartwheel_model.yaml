@@ -2,7 +2,7 @@ cartwheel_rl_node:
   ros__parameters:
     # BeyondMimic Wo-variant, action-only ONNX export (input obs[109] -> output actions[20]).
     # Drop the exported model_XXXXX_action.onnx here and name it below.
-    model: beyondmimic_cartwheel.onnx
+    model: model_49999_action.onnx
 
     motion:                                   
       file: tessa_rad.npz
