@@ -54,6 +54,7 @@ def run_gui():
     s_kclr = Slider(_ax(0.140), "kick clear", 0.0, 1.5, valinit=params.kick_clear)
     s_gout = Slider(_ax(0.110), "goalie out", 0.2, 2.0, valinit=params.d_g)
     check_sp = CheckButtons(plt.axes((0.18, 0.073, 0.20, 0.022)), ["set play"], [False])
+    check_supp = CheckButtons(plt.axes((0.42, 0.073, 0.20, 0.022)), ["supporter"], [params.include_supporter])
     s_spcl = Slider(_ax(0.050), "set play clearance", 0.1, 2.0, valinit=params.opp_set_play_clearance)
     # one checkbox per possible robot identity (0..max players - 1); checkboxes beyond the
     # current player count are simply ignored. CheckButtons (unlike TextBox) doesn't hook
@@ -89,6 +90,7 @@ def run_gui():
         params.post_margin, params.back_dist = s_pmarg.val, s_back.val
         params.kick_clear = s_kclr.val
         opp_set_play = check_sp.get_status()[0]
+        params.include_supporter = check_supp.get_status()[0]
         params.opp_set_play_clearance = s_spcl.val
         n = int(s_n.val)
 
@@ -208,6 +210,7 @@ def run_gui():
     ):
         s.on_changed(lambda _v: draw())
     check_sp.on_clicked(lambda _label: draw())
+    check_supp.on_clicked(lambda _label: draw())
     check_passive.on_clicked(lambda _label: draw())
     fig.canvas.mpl_connect("button_press_event", on_click)
     draw()

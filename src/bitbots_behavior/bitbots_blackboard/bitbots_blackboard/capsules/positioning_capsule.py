@@ -77,6 +77,7 @@ class Params:
     gap: float = 1.1  # lateral spacing between adjacent defenders
     def_side: float = 0.9  # lateral offset for a lone defender (so it's not on the axis)
     # supporter
+    include_supporter: bool = False  # if False, no supporter is assigned; its slot becomes an extra defender
     f: float = 1.6  # how far in front of the ball (toward opp goal) the supporter sits
     supp_side: float = 1.2  # supporter lateral offset magnitude (auto-leans toward centre)
     supp_max_x: float = 3.0  # supporter never goes past this x (keeps it out of the opp corner)
@@ -117,6 +118,9 @@ class PositioningCapsule(AbstractBlackboardCapsule):
             goal_width=parameters["field.goal.width"],
         )
         self._params = Params()
+        # Whether the formation includes a supporter. Off by default; enabling it lets one
+        # field player push up as a supporter instead of being an extra defender.
+        self._params.include_supporter = bool(blackboard.config.get("formation_include_supporter", False))
         self._inner = InnerPositioningCapsule()
 
     # Cached capsule functions can not have parameters or side effects,
@@ -205,7 +209,12 @@ class InnerPositioningCapsule:
     # --------------------------------------------------------------------------- #
 
     @staticmethod
-    def _allocate_roles(n: int, ball: NDArray[np.float64] | None = None, field: Field | None = None) -> list[Role]:
+    def _allocate_roles(
+        n: int,
+        ball: NDArray[np.float64] | None = None,
+        field: Field | None = None,
+        include_supporter: bool = True,
+    ) -> list[Role]:
         """Keep-priority as the count drops: striker > goalie > 1st defender > supporter
         > 2nd defender (and any further players are extra defenders).
 
@@ -214,6 +223,9 @@ class InnerPositioningCapsule:
 
         Short-handed (n < 5) with the ball in our own defensive third, the supporter
         is reassigned as an extra defender (note: this is a discrete role switch).
+
+        When `include_supporter` is False, no supporter is allocated at all; its slot
+        becomes an extra defender instead.
         """
         n_def = 0
         has_support = False
@@ -227,6 +239,10 @@ class InnerPositioningCapsule:
             own_third = -field.length / 2 + field.length / 3.0
             if ball[0] < own_third:
                 has_support, n_def = False, n_def + 1
+
+        # supporter disabled by config: reassign its slot as an extra defender
+        if has_support and not include_supporter:
+            has_support, n_def = False, n_def + 1
 
         roles = []
         if n >= 1:
@@ -420,7 +436,7 @@ class InnerPositioningCapsule:
         to_ball = self._normalize(b - goal)  # our-goal -> ball
         perp = np.array([-to_ball[1], to_ball[0]])
 
-        roles = self._allocate_roles(n_players, b, field)
+        roles = self._allocate_roles(n_players, b, field, include_supporter=params.include_supporter)
         if opp_set_play and Role.SUPPORTER in roles:
             n_def = sum(1 for r in roles if r.startswith(Role.DEFENDER + "_"))
             roles[roles.index(Role.SUPPORTER)] = Role(f"{Role.DEFENDER}_{n_def}")
