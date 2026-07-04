@@ -12,7 +12,6 @@
 #include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/image.hpp>
-#include <thread>
 #include <soccer_vision_2d_msgs/msg/ball.hpp>
 #include <soccer_vision_2d_msgs/msg/ball_array.hpp>
 #include <soccer_vision_2d_msgs/msg/goalpost.hpp>
@@ -22,6 +21,7 @@
 #include <soccer_vision_attribute_msgs/msg/robot.hpp>
 #include <std_msgs/msg/header.hpp>
 #include <string>
+#include <thread>
 #include <vision_msgs/msg/bounding_box2_d.hpp>
 #include <vision_msgs/msg/point2_d.hpp>
 
@@ -102,7 +102,7 @@ class VisionNode : public rclcpp::Node {
     // executor later calls `add_node()`; it is instead added explicitly to a
     // dedicated executor in `main()`.
     image_cb_group_ = create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive,
-                                             /*automatically_add_to_executor_with_node=*/false);
+                                            /*automatically_add_to_executor_with_node=*/false);
     rclcpp::SubscriptionOptions image_sub_opts;
     image_sub_opts.callback_group = image_cb_group_;
     image_sub_ = create_subscription<sensor_msgs::msg::Image>(
