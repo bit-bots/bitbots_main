@@ -44,3 +44,15 @@ class GameStateDecider(AbstractDecisionElement):
         Game state can change during the game
         """
         return True
+    
+class WasKickoff(AbstractDecisionElement):
+    blackboard: BodyBlackboard
+
+    def __init__(self, blackboard, dsd, parameters):
+        super().__init__(blackboard, dsd, parameters)
+
+    def perform(self, reevaluate=False):
+        if self.blackboard.gamestate.get_seconds_since_kickoff() < 5.0:
+            return "YES"
+        else:
+            return "NO"

@@ -20,3 +20,21 @@ class WalkForward(AbstractActionElement):
             self.blackboard.pathfinding.direct_cmd_vel_pub.publish(cmd_vel)
         else:
             self.pop()
+
+class WalkBackward(AbstractActionElement):
+    def __init__(self, blackboard, dsd, parameters):
+        super().__init__(blackboard, dsd, parameters)
+        self.time = parameters.get("time", 0.5)
+        self.start_time = self.blackboard.node.get_clock().now()
+
+    def perform(self, reevaluate=False):
+        if self.blackboard.node.get_clock().now() - self.start_time < Duration(seconds=self.time):
+            # Cancel the path planning if it is running
+            self.blackboard.pathfinding.cancel_goal()
+
+            # Publish the walk command
+            cmd_vel = Twist()
+            cmd_vel.linear.x = -0.8
+            self.blackboard.pathfinding.direct_cmd_vel_pub.publish(cmd_vel)
+        else:
+            self.pop()

@@ -42,7 +42,7 @@ body_behavior:
           1: [ -0.2, 0.33 ]
           2: [ -0.2, -0.33 ]
         active:
-          0: [ -0.1, 0.0 ]
+          0: [ 0.07, -0.04, 2.53]
           1: [ -0.085, 0.33 ]
           2: [ -0.085, -0.33 ]
 
@@ -238,3 +238,11 @@ body_behavior:
 
     # factor by which the difference in starting and goal angle is weighted (only if not turning to ball i.e. <1m)
     time_to_ball_cost_start_to_goal_angle: 3.82
+
+    #############################
+    # waiting for kick-off params 
+    #############################
+
+    wait_after_kick_off_bool: true
+    wait_after_kick_off_time: 15
+    wait_after_kick_off_effective_radius: 0.5 

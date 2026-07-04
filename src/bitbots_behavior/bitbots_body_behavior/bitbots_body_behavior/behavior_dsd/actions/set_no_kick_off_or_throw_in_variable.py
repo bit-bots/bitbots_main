@@ -18,3 +18,20 @@ class SetNoSecondBallContactVariable(AbstractActionElement):
 
     def perform(self, reevaluate=False):
         self.pop()
+
+class SetTimerKickoff(AbstractActionElement):
+    """
+    Sets the no_second_ball_contact variable.
+    """
+
+    blackboard: BodyBlackboard
+
+    def __init__(self, blackboard, dsd, parameters):
+        super().__init__(blackboard, dsd, parameters)
+        self.do_not_reevaluate()
+        self.blackboard = blackboard
+
+        self.blackboard.gamestate.set_set_timestep()
+
+    def perform(self, reevaluate=False):
+        self.pop()

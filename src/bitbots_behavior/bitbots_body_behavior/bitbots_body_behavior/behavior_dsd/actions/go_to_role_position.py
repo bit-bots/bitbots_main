@@ -1,6 +1,7 @@
 from bitbots_blackboard.body_blackboard import BodyBlackboard
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 from tf2_geometry_msgs import PoseStamped
+from tf_transformations import euler_from_quaternion, quaternion_from_euler
 
 
 class GoToRolePosition(AbstractActionElement):
@@ -23,9 +24,15 @@ class GoToRolePosition(AbstractActionElement):
 
         # Adapt position to field size
         # TODO know where map frame is located
+        try:
+            rotation = generalized_role_position[2]
+        except IndexError:
+            rotation = 0.0
+
         self.role_position = [
             generalized_role_position[0] * self.blackboard.world_model.field_length / 2,
             generalized_role_position[1] * self.blackboard.world_model.field_width / 2,
+            rotation
         ]
 
         self.blocking = parameters.get("blocking", True)
@@ -37,7 +44,12 @@ class GoToRolePosition(AbstractActionElement):
 
         pose_msg.pose.position.x = self.role_position[0]
         pose_msg.pose.position.y = self.role_position[1]
-        pose_msg.pose.orientation.w = 1.0
+        self.blackboard.node.get_logger().info(f"Going to role position: {self.role_position[0]}, {self.role_position[1]}, {self.role_position[2]}")
+        x,y,z,w = quaternion_from_euler(0, 0, self.role_position[2])
+        pose_msg.pose.orientation.x = x
+        pose_msg.pose.orientation.y = y
+        pose_msg.pose.orientation.z = z
+        pose_msg.pose.orientation.w = w
 
         self.blackboard.pathfinding.publish(pose_msg)
 
