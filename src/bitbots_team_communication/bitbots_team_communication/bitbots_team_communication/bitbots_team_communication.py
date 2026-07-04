@@ -85,7 +85,7 @@ class TeamCommunication:
             self.next_send_time = self.node.get_clock().now() + Duration(seconds=1 / self.actual_rate)
         else:
             self.node.create_timer(
-                1 / self.actual_rate, self.send_message, callback_group=MutuallyExclusiveCallbackGroup()
+                1 / self.actual_rate, self.high_rate_cb, callback_group=MutuallyExclusiveCallbackGroup()
             )
         self.receive_forever()
 
