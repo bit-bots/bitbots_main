@@ -184,7 +184,9 @@ $IsPenalized
                     OTHER --> $BallSeen
                         YES --> @Stand + duration:0.1 + r:false, @DeactivateHCM + r:false, @LookForward + r:false, @TrackBall + r:false, @PlayAnimationGoalieArms + r:false, @Stand // goalie only needs to care about the ball
                         NO --> @Stand + duration:0.1 + r:false, @DeactivateHCM + r:false, @LookForward + r:false, @LookAtFieldFeatures + r:false, @PlayAnimationGoalieArms + r:false, @Stand
-                ELSE --> @ChangeAction + action:waiting, @LookAtFieldFeatures, @Stand + duration:0.1, @SetTimerKickoff
+                ELSE --> $SecondaryStateTeamDecider
+                    OUR --> @ChangeAction + action:waiting, @LookAtFieldFeatures, @Stand + duration:0.1, @SetTimerKickoff
+                    ELSE --> #StandAndLook
         FINISHED --> $CurrentScore
             AHEAD --> @Stand + duration:0.5 + r:false, @PlaySound + file:fanfare.wav, @PlayAnimationCheering + r:false, @LookForward, @Stand
             ELSE --> #Init
