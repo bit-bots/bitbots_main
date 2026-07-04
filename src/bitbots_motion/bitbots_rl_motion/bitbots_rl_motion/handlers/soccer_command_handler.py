@@ -89,6 +89,10 @@ class SoccerCommandHandler(Handler):
         self._kick_abort_requested = False
         self._post_kick_command_active = False
         self._post_stabilization_stop_active = False
+        # True only while the final linear walkready interpolation is running. The
+        # policy is intentionally NOT gated on this (is_kick_active stays False so
+        # the policy loop is quiet and the transition owns the command stream).
+        self._walkready_transition_active = False
 
         self._kick_speed = 0.0
         # Requested heading in the body frame at goal receipt (atan2(y, x)); used
@@ -151,7 +155,12 @@ class SoccerCommandHandler(Handler):
     # kick action
     # ------------------------------------------------------------------ #
     def _goal_callback(self, goal_request) -> GoalResponse:
-        if self._warm_start_active or self._kick_active or self._post_kick_command_active:
+        if (
+            self._warm_start_active
+            or self._kick_active
+            or self._post_kick_command_active
+            or self._walkready_transition_active
+        ):
             self._node.get_logger().warning("A kick is already active; rejecting new kick goal.")
             return GoalResponse.REJECT
         return GoalResponse.ACCEPT
@@ -306,6 +315,18 @@ class SoccerCommandHandler(Handler):
                 goal_handle.publish_feedback(feedback)
                 self._node.get_clock().sleep_for(Duration(seconds=0.05))
         self._post_stabilization_stop_active = False
+
+        # Smoothly blend from the policy's last pose into the walkready pose. This
+        # runs after is_kick_active() has gone False (the policy no longer
+        # publishes), so the transition owns the joint command stream; publishing
+        # at the control rate keeps the HCM in KICKING for its duration.
+        self._walkready_transition_active = True
+        completed = self._node.run_walkready_transition(goal_handle, feedback)
+        self._walkready_transition_active = False
+        if not completed:
+            goal_handle.canceled()
+            result.result = Kick.Result.ABORTED
+            return result
 
         goal_handle.succeed()
         result.result = Kick.Result.SUCCESS

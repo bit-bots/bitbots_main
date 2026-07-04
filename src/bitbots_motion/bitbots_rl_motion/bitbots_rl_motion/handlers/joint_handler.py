@@ -28,6 +28,11 @@ class JointHandler(Handler):
             i for i, name in enumerate(self._ordered_relevant_joint_names) if name not in uncontrolled
         ]
         published_joint_names = [self._ordered_relevant_joint_names[i] for i in self._publish_indices]
+        # Names of the joints that actually appear in the published JointCommand
+        # (i.e. relevant joints minus the uncontrolled ones), in publish order.
+        # Exposed so the walkready transition can build an absolute command over
+        # exactly these joints.
+        self.published_joint_names = published_joint_names
 
         self._joint_state_sub = self._node.create_subscription(
             JointState, "joint_states", self._joint_state_callback, 10
@@ -111,6 +116,32 @@ class JointHandler(Handler):
             positions = (onnx_pred * self._action_scales + self._walkready_state) * self._joint_signs
         # Uncontrolled joints (e.g. the head) are dropped from the published command.
         self._joint_command.positions = positions[self._publish_indices]
+        return self._joint_command
+
+    def get_measured_positions(self, names: list[str]) -> np.ndarray:
+        """Current measured positions (radians, robot convention) of the given joints.
+
+        Looks the joints up by name in the latest ``joint_states`` message, so the
+        returned array is in the same order as ``names``. Used to capture the pose
+        the walkready transition should interpolate away from.
+        """
+        assert self._joint_state is not None
+        return np.array(
+            [self._joint_state.position[self._joint_state.name.index(name)] for name in names],
+            dtype=np.float32,
+        )
+
+    def get_absolute_joint_command(self, positions: np.ndarray) -> JointCommand:
+        """Build a JointCommand for absolute target positions of the published joints.
+
+        ``positions`` must be in radians in the robot's joint convention and in the
+        same order as :attr:`published_joint_names` (no action scaling, joint-sign
+        flip or default-pose offset is applied). Unlike :meth:`get_joint_commands`
+        this stamps with the current time so downstream consumers keep treating the
+        command stream as fresh during the walkready transition.
+        """
+        self._joint_command.header.stamp = self._node.get_clock().now().to_msg()
+        self._joint_command.positions = positions.tolist()
         return self._joint_command
 
     def get_previous_action_initial(self) -> np.ndarray:

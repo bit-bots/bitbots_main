@@ -10,6 +10,7 @@ from bitbots_rl_motion.handlers.robot_state_handler import RobotStateHandler
 from bitbots_rl_motion.handlers.soccer_command_handler import SoccerCommandHandler
 from bitbots_rl_motion.history_buffer import HistoryBuffer
 from bitbots_rl_motion.nodes.rl_node import RLNode
+from bitbots_rl_motion.walkready_transition import WalkreadyTransition
 
 
 class KickBallNode(RLNode):
@@ -29,6 +30,12 @@ class KickBallNode(RLNode):
         self.declare_parameter("command.history_samples", 10)
         self.declare_parameter("command.warm_start_command", [0.2, 0.0, 0.0])
         self.declare_parameter("command.post_kick_command", [0.4, 0.0, 0.0])
+        # Walkready transition run at the very end of the kick: how long to blend
+        # into the walkready pose and which animation defines that pose.
+        self.declare_parameter("command.walkready_transition_duration", 1.0)
+        self.declare_parameter("command.walkready_animation", "walkready")
+        # Robot type used to locate the <robot_type>_animations package.
+        self.declare_parameter("robot_type", "piplus")
 
         self._ang_vel_scale = self.get_parameter("obs.ang_vel_scale").value
         self._joint_vel_scale = self.get_parameter("obs.joint_vel_scale").value
@@ -42,6 +49,9 @@ class KickBallNode(RLNode):
         self._joint_handler = JointHandler(self)
         self._robot_state_handler = RobotStateHandler(self)
         self._soccer_command_handler = SoccerCommandHandler(self)
+
+        # Smoothly returns the robot to the walkready pose once the kick is done.
+        self._walkready_transition = WalkreadyTransition(self, self._joint_handler, self._joint_command_pub)
 
         self._ang_vel_hist = HistoryBuffer(history_length)
         self._gravity_hist = HistoryBuffer(history_length)
@@ -102,6 +112,15 @@ class KickBallNode(RLNode):
     def _phase_update_hook(self):
         # This policy does not use a gait phase.
         pass
+
+    def run_walkready_transition(self, goal_handle=None, feedback=None) -> bool:
+        """Linearly interpolate from the current pose into the walkready pose.
+
+        Called from the kick action thread after the policy has stopped so the
+        robot ends the kick in a defined walk-ready stance instead of holding the
+        policy's last commanded pose.
+        """
+        return self._walkready_transition.run(goal_handle, feedback)
 
 
 def main():
