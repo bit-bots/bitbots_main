@@ -52,7 +52,7 @@ walk_node:
       use_phase: True
       control_dt: 0.02
       gait_frequency: 1.5
-      initial_phase: [1.5707963267948966, -1.5707963267948966]
+      initial_phase: [0.0, 3.14159]
       # Shared with the dribble node so walk and dribble hand over mid-gait.
       sync_topic: rl_gait_phase
 

@@ -69,8 +69,8 @@ class WalkNode(RLNode):
         phase = self._phase.get_phase()
         if self._command_handler.get_stop_signal():
             anchors = [
-                np.array([-np.pi / 2, np.pi / 2], dtype=np.float32),
-                np.array([np.pi / 2, -np.pi / 2], dtype=np.float32),
+                np.array([0.0, np.pi], dtype=np.float32),
+                np.array([np.pi, 0.0], dtype=np.float32),
             ]
             nearest = min(anchors, key=lambda a: np.linalg.norm(phase - a))
             if np.linalg.norm(phase - nearest) < 0.1:
