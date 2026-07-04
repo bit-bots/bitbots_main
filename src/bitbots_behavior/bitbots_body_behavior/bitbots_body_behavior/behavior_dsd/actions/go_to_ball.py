@@ -37,24 +37,24 @@ class GoToBall(AbstractActionElement):
         pose_msg.pose.orientation.w = pose[2]
         self.blackboard.pathfinding.publish(pose_msg)
 
-        approach_marker = Marker()
-        approach_marker.pose.position.x = self.distance
-        approach_marker.pose.position.y = self.side_offset
-        approach_marker.type = Marker.SPHERE
-        approach_marker.action = Marker.MODIFY
-        approach_marker.id = 1
-        color = ColorRGBA()
-        color.r = 1.0
-        color.g = 1.0
-        color.b = 1.0
-        color.a = 1.0
-        approach_marker.color = color
-        scale = Vector3(x=0.2, y=0.2, z=0.2)
-        approach_marker.scale = scale
-        approach_marker.header.stamp = self.blackboard.node.get_clock().now().to_msg()
-        approach_marker.header.frame_id = self.blackboard.world_model.base_footprint_frame
-
-        self.blackboard.pathfinding.approach_marker_pub.publish(approach_marker)
+        if self.target != BallGoalType.RL_KICK:
+            approach_marker = Marker()
+            approach_marker.pose.position.x = self.distance
+            approach_marker.pose.position.y = self.side_offset
+            approach_marker.type = Marker.SPHERE
+            approach_marker.action = Marker.MODIFY
+            approach_marker.id = 1
+            color = ColorRGBA()
+            color.r = 1.0
+            color.g = 1.0
+            color.b = 1.0
+            color.a = 1.0
+            approach_marker.color = color
+            scale = Vector3(x=0.2, y=0.2, z=0.2)
+            approach_marker.scale = scale
+            approach_marker.header.stamp = self.blackboard.node.get_clock().now().to_msg()
+            approach_marker.header.frame_id = self.blackboard.world_model.base_footprint_frame
+            self.blackboard.pathfinding.approach_marker_pub.publish(approach_marker)
 
         if not self.blocking:
             self.pop()
