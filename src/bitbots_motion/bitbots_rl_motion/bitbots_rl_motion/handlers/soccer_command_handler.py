@@ -83,7 +83,6 @@ class SoccerCommandHandler(Handler):
         self._ball_pose: Optional[PoseWithCovarianceStamped] = None
 
         # kick state: set by the action (its own thread), read by the control loop
-        self._wait_for_controllable = False
         self._warm_start_active = False
         self._kick_active = False
         self._kick_abort_requested = False
@@ -224,19 +223,6 @@ class SoccerCommandHandler(Handler):
 
         self._last_kick_dir_b = self._kick_dir_body
         self._kick_abort_requested = False
-
-        self._wait_for_controllable = True
-        while self._wait_for_controllable:
-            if goal_handle.is_cancel_requested:
-                goal_handle.canceled()
-                result = Kick.Result()
-                result.result = Kick.Result.ABORTED
-                return result
-            if self._node._robot_state_handler.is_kickable():
-                self._wait_for_controllable = False
-            else:
-                self._node.get_logger().warn("Waiting for robot to be controllable before starting kick...")
-                self._node.get_clock().sleep_for(Duration(seconds=0.02))
 
         # Warm start: run the policy with a defined command so it can settle into a
         # in domain pose and the observation history fills
