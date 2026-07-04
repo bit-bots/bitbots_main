@@ -41,8 +41,8 @@ class CostmapCapsule(AbstractBlackboardCapsule):
         self.map_margin: float = self.body_config["map_margin"]
         self.obstacle_costmap_smoothing_sigma: float = self.body_config["obstacle_costmap_smoothing_sigma"]
         self.obstacle_cost: float = self.body_config["obstacle_cost"]
-        self.closest_robot_infront_dist: float = 10000
-        self.closest_robot_behind_dist: float = 10000
+        self.closest_robot_infront_dist: float = 10000.0
+        self.closest_robot_behind_dist: float = 10000.0
 
         # Publisher for visualization in RViZ
         self.costmap_publisher = self._node.create_publisher(OccupancyGrid, "debug/costmap", 1)
@@ -63,8 +63,8 @@ class CostmapCapsule(AbstractBlackboardCapsule):
         """
         # Init a new obstacle costmap
         obstacle_map = np.zeros_like(self.costmap)
-        self.closest_robot_infront_dist = 10000
-        self.closest_robot_behind_dist = 10000
+        self.closest_robot_infront_dist = 10000.0
+        self.closest_robot_behind_dist = 10000.0
         # Iterate over all robots
         robot: Robot
         for robot in msg.robots:
