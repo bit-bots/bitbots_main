@@ -188,6 +188,12 @@ $IsPenalized
         FINISHED --> $CurrentScore
             AHEAD --> @Stand + duration:0.5 + r:false, @PlaySound + file:fanfare.wav, @PlayAnimationCheering + r:false, @LookForward, @Stand
             ELSE --> #Init
-        PLAYING --> #PlayingBehavior
+        PLAYING --> $DoOnce //replace PlayingBehavior to fix
+            NOT_DONE --> $ConfigRole
+                STRIKER --> $SecondaryStateTeamDecider
+                    OUR --> @Stand + duration:10.0 + r:false, @WalkForward + time:2 + r:false, @ChangeAction + action:passive + r:false, @WalkBackward + time:1 + r:false
+                    ELSE --> #PlayingBehavior
+                ELSE --> #PlayingBehavior
+            DONE --> #PlayingBehavior
         STANDBY --> #StandAndLook
         STOPPED --> #DoNothing

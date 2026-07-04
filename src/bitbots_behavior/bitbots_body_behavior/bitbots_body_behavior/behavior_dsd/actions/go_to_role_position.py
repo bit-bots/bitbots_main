@@ -23,9 +23,15 @@ class GoToRolePosition(AbstractActionElement):
 
         # Adapt position to field size
         # TODO know where map frame is located
+        try:
+            rotation = generalized_role_position[2]
+        except: 
+            rotation = 1.0
+
         self.role_position = [
             generalized_role_position[0] * self.blackboard.world_model.field_length / 2,
             generalized_role_position[1] * self.blackboard.world_model.field_width / 2,
+            rotation
         ]
 
         self.blocking = parameters.get("blocking", True)
@@ -37,7 +43,7 @@ class GoToRolePosition(AbstractActionElement):
 
         pose_msg.pose.position.x = self.role_position[0]
         pose_msg.pose.position.y = self.role_position[1]
-        pose_msg.pose.orientation.w = 1.0
+        pose_msg.pose.orientation.w = self.role_position[2]
 
         self.blackboard.pathfinding.publish(pose_msg)
 
