@@ -74,7 +74,7 @@ class CostmapCapsule(AbstractBlackboardCapsule):
             # Draw obstacle with smoothing independent weight on obstacle costmap
             obstacle_map[idx_x, idx_y] = self.obstacle_cost * self.obstacle_costmap_smoothing_sigma
             
-            dist_to_robot = np.linalg.norm(np.array[self._blackboard.world_model.get_current_position()[0], self._blackboard.world_model.get_current_position()[1]]) - np.array([robot.bb.center.position.x,robot.bb.center.position.y])
+            dist_to_robot = np.linalg.norm(np.array([self._blackboard.world_model.get_current_position()[0], self._blackboard.world_model.get_current_position()[1]]) - np.array([robot.bb.center.position.x,robot.bb.center.position.y]))
             if robot.bb.center.position.x > self._blackboard.world_model.get_current_position()[0]:
                 if dist_to_robot < self.closest_robot_infront_dist:
                     self.closest_robot_infront_dist = dist_to_robot
