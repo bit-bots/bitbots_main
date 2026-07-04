@@ -33,12 +33,12 @@ $DoOnce
 #KickWithAvoidance
 $KickOrDribble + map_goal_distance:%ball_approach_dist // should be same as below $GoToBall + target:map action
     KICK --> $DoOnce
-        NOT_DONE --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:rl_kick
+        NOT_DONE --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:rl_kick + blocking:false
         DONE --> $ReachedAndAlignedToPathPlanningGoalPosition + threshold:%rl_kick_approach_tolerance_pos + orientation_threshold:%rl_kick_approach_tolerance_rad + latch:true
             NO --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:rl_kick
             YES --> $DoOnce
                 NOT_DONE --> @StoreBallMovementDetectionStartPosition
-                DONE --> @ChangeAction + action:going_to_ball + r:false, @Stand + duration:0.1 + r:false, @LookAtBallPenalty + r:false, @RLKickTowardsGoal + strength:3.5 + r:false, @ForgetBall
+                DONE --> @ChangeAction + action:kicking, @Stand + duration:0.1 + r:false, @LookAtBallPenalty + r:false, @RLKickTowardsGoal + strength:3.5 + r:false, @ForgetBall
     DRIBBLE --> $AvoidBall // old behavior before kick when we want to kick the ball in
         NO --> $BallClose + distance:%ball_reapproach_dist + angle:%ball_reapproach_angle
             YES --> $BallKickArea
