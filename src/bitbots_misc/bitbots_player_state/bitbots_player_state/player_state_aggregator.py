@@ -86,7 +86,7 @@ class PlayerStateAggregator(Node):
             try:
                 response.ball = self._tf_buffer.transform(self._relative_ball, self.ball_frame_out)
             except Exception as e:
-                self._node.get_logger().warn(str(e))
+                self.get_logger().warn(str(e), throttle_duration_sec=10.0)
                 pass
 
         return response
