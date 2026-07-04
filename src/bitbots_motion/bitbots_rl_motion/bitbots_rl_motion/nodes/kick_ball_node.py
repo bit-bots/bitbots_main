@@ -86,18 +86,30 @@ class KickBallNode(RLNode):
     def allowed_states(self):
         return self._robot_state_handler.is_kickable() and self._soccer_command_handler.is_kick_active()
 
+    def passive_update(self):
+        # Keep the observation histories warm while the kick is NOT running, so
+        # that when it activates the policy already sees a saturated history
+        # instead of a cold one -- without paying for network inference.
+        #
+        # Every observation term is filled from the real sensors as usual. The
+        # one term that has no real value while the policy is idle is the
+        # previous action; we mock it by reconstructing the action that would
+        # have produced the joint command the robot is currently executing
+        # (published by another controller via the HCM). Feeding that into the
+        # previous-action term lets the shared obs() build the action history
+        # identically to the active path, and also gives the first active step a
+        # continuous previous action to feed back.
+        self._previous_action.set_previous_action(self._joint_handler.reconstruct_previous_action())
+        # Advance all histories (and the soccer command/ball histories) by one
+        # step. The returned observation is intentionally discarded: no inference.
+        self.obs()
+
     def initialize_observation(self):
-        # Clear all 8-frame observation histories and the soccer command/ball
-        # histories so the first observation after activation re-saturates them
-        # with fresh sensor data instead of stale pre-activation frames.
-        self._ang_vel_hist.reset()
-        self._gravity_hist.reset()
-        self._joint_pos_hist.reset()
-        self._joint_vel_hist.reset()
-        self._action_hist.reset()
-        self._soccer_command_handler.reset()
-        # Start the previous-action feedback term from zero on (re)activation.
-        self._previous_action.set_previous_action(np.zeros_like(self._previous_action.get_previous_action()))
+        # Nothing to reset: the observation histories are kept continuously warm
+        # by passive_update() while the kick is inactive, so on activation they
+        # already hold fresh sensor data (and a reconstructed previous action)
+        # rather than stale or zeroed frames.
+        pass
 
     def _phase_update_hook(self):
         # This policy does not use a gait phase.

@@ -12,7 +12,7 @@ class JointHandler(Handler):
         self._node = node
 
         self._ordered_relevant_joint_names = self._node.get_parameter("joints.ordered_relevant_joint_names").value
-        self._walkready_state = self._node.get_parameter("joints.walkready_state").value
+        self._walkready_state = np.array(self._node.get_parameter("joints.walkready_state").value, dtype=np.float32)
         self._action_scales = np.array(self._node.get_parameter("joints.action_scales").value, dtype=np.float32)
         self._joint_signs = np.array(self._node.get_parameter("joints.joint_signs").value, dtype=np.float32)
         self._kp = np.array(self._node.get_parameter("joints.kp").value, dtype=np.float32)
@@ -32,6 +32,16 @@ class JointHandler(Handler):
         self._joint_state_sub = self._node.create_subscription(
             JointState, "joint_states", self._joint_state_callback, 10
         )
+
+        # Latest joint command actually being executed by the robot (combined
+        # motor goals published by the HCM). Used to reconstruct what action the
+        # policy would have produced while it is not running, so the action
+        # history can be kept warm. Keyed by joint name; a message may carry only
+        # a subset of joints (e.g. head-only), so entries persist across updates.
+        self._latest_command: dict[str, float] = {}
+        self._joint_command_sub = self._node.create_subscription(
+            JointCommand, "joint_command", self._joint_command_callback, 10
+        )
         self._joint_command = JointCommand()
         self._joint_command.joint_names = published_joint_names
 
@@ -47,6 +57,10 @@ class JointHandler(Handler):
         if self._joint_state is not None and self._joint_state.name != msg.name:
             self._joint_state_indices = None
         self._joint_state = msg
+
+    def _joint_command_callback(self, msg: JointCommand):
+        for name, position in zip(msg.joint_names, msg.positions):
+            self._latest_command[name] = position
 
     def has_data(self):
         return self._joint_state is not None
@@ -112,6 +126,30 @@ class JointHandler(Handler):
         # Uncontrolled joints (e.g. the head) are dropped from the published command.
         self._joint_command.positions = positions[self._publish_indices]
         return self._joint_command
+
+    def reconstruct_previous_action(self) -> np.ndarray:
+        """Infer the action that would have produced the currently executed joint command.
+
+        While the policy is not running, its action-history term has no real
+        previous action to feed back. This reconstructs a plausible one by
+        inverting the default-pose-relative mapping used in ``get_joint_commands``
+        (``positions = (action * action_scales + walkready_state) * joint_signs``)
+        applied to the joint command the robot is actually executing:
+
+            ``action = (positions * joint_signs - walkready_state) / action_scales``
+
+        (``joint_signs`` is +-1, so multiplying by it inverts it.) Joints for
+        which no command has been observed yet fall back to the action that
+        reproduces the measured joint angle, i.e. "hold the current pose".
+        """
+        # Fallback per joint: action reproducing the measured joint angle.
+        # get_angle_data() already returns measured * joint_signs - walkready_state.
+        action = self.get_angle_data() / self._action_scales
+        for i, name in enumerate(self._ordered_relevant_joint_names):
+            position = self._latest_command.get(name)
+            if position is not None:
+                action[i] = (position * self._joint_signs[i] - self._walkready_state[i]) / self._action_scales[i]
+        return action.astype(np.float32)
 
     def get_previous_action_initial(self) -> np.ndarray:
         return self._previous_action

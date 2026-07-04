@@ -72,11 +72,13 @@ class RLNode(Node, ABC):
             )
             return
 
-        # Only run the policy while it is in an allowed (active) state. When it is
-        # not active nothing is observed, inferred or published; the next
-        # activation starts from a clean observation state.
+        # Only run the policy (inference + publish) while it is in an allowed
+        # (active) state. When it is not active the expensive network is skipped,
+        # but nodes may still keep their observation history warm via
+        # passive_update() so a later activation starts from a saturated history.
         if not self.allowed_states():
             self._policy_active = False
+            self.passive_update()
             return
 
         # First step of a (re)activation: let the node initialize its observation
@@ -131,6 +133,18 @@ class RLNode(Node, ABC):
 
     @abstractmethod
     def _phase_update_hook(self) -> None:
+        pass
+
+    def passive_update(self) -> None:
+        """Per-step update while the policy is inactive. Default: no-op.
+
+        Called once per control tick (after the sensor-ready check) whenever the
+        node is not in an allowed state, i.e. when no inference/publish happens.
+        Nodes that need their observation history buffers to stay warm while
+        inactive override this to advance those histories -- without running the
+        network -- so activation starts from a saturated history instead of a
+        cold one.
+        """
         pass
 
     @abstractmethod

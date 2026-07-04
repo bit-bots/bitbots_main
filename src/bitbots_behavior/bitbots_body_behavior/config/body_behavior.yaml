@@ -152,9 +152,9 @@ body_behavior:
     dribble_kick_angle: 0.6
 
     kick_decision_smoothing: 10.0
-
-    rl_kick_approach_tolerance_pos: 0.20
-    rl_kick_approach_tolerance_rad: 0.3
+    
+    rl_kick_approach_tolerance_pos: 0.04
+    rl_kick_approach_tolerance_deg: 10.0
 
     rl_kick:
       timeout: 2.0  # how long the kick policy is active
