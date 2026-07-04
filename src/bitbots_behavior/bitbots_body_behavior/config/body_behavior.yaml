@@ -154,8 +154,8 @@ body_behavior:
     kick_decision_smoothing: 10.0
 
 
-    rl_kick_approach_tolerance_pos: 0.1
-    rl_kick_approach_tolerance_deg: 20.0
+    rl_kick_approach_tolerance_pos: 0.04
+    rl_kick_approach_tolerance_deg: 10.0
 
     rl_kick:
       timeout: 2.0 # how long the kick policy is active
