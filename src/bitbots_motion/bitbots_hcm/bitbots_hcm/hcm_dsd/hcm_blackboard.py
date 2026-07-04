@@ -105,6 +105,9 @@ class HcmBlackboard:
         # State
         self.last_kick_goal_time: Optional[Time] = None
 
+        # Dribbling
+        self.last_dribble_goal_time: Optional[Time] = None
+
         # IMU state
         self.imu_msg: Optional[Imu] = None
         self.previous_imu_msg: Optional[Imu] = None

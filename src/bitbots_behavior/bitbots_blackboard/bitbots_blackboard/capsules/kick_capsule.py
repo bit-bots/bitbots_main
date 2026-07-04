@@ -1,6 +1,7 @@
 import math
 from enum import Flag
 
+from geometry_msgs.msg import Vector3Stamped
 from rclpy.action import ActionClient
 from rclpy.publisher import Publisher
 from std_msgs.msg import Bool
@@ -36,6 +37,10 @@ class KickCapsule(AbstractBlackboardCapsule):
         self._rl_kick_client = ActionClient(self._node, Kick, "rl_kick")
         self._is_currently_kicking = False
 
+        # Learned dribble policy (weak directional kicks out of the walk).
+        self.rl_dribble_active_pub = self._node.create_publisher(Bool, "rl_dribble_active", 1)
+        self.rl_dribble_command_pub = self._node.create_publisher(Vector3Stamped, "rl_dribble_command", 1)
+
     def walk_kick(self, target: WalkKickTargets) -> None:
         """
         Kick the ball while walking
@@ -67,3 +72,24 @@ class KickCapsule(AbstractBlackboardCapsule):
 
     def stop_rl_kick(self):
         pass
+
+    def dribble(self, direction_rad_map: float, speed: float) -> None:
+        """Command the learned dribble policy and keep it active.
+
+        The command is the desired ball velocity: the kick direction (a map
+        frame heading) scaled by the target ball speed. It is published as a
+        map-frame vector; the dribble node transforms it into its own base
+        frame every control step, so localization updates keep flowing in
+        while the dribble runs. Call this every behavior tick while dribbling.
+        """
+        command = Vector3Stamped()
+        command.header.stamp = self._node.get_clock().now().to_msg()
+        command.header.frame_id = self._blackboard.map_frame
+        command.vector.x = math.cos(direction_rad_map) * speed
+        command.vector.y = math.sin(direction_rad_map) * speed
+        self.rl_dribble_command_pub.publish(command)
+        self.rl_dribble_active_pub.publish(Bool(data=True))
+
+    def stop_dribble(self) -> None:
+        """Stop the learned dribble policy (the walk takes over again)."""
+        self.rl_dribble_active_pub.publish(Bool(data=False))

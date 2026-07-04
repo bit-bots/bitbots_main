@@ -1,6 +1,6 @@
-walk_node:
+dribble_node:
   ros__parameters:
-    model: policy_walk.onnx
+    model: policy_dribble.onnx
 
     joints:
       ordered_relevant_joint_names: [
@@ -53,7 +53,13 @@ walk_node:
       control_dt: 0.02
       gait_frequency: 1.5
       initial_phase: [1.5707963267948966, -1.5707963267948966]
-      # Shared with the dribble node so walk and dribble hand over mid-gait.
+      # Shared with the walk node so walk and dribble hand over mid-gait.
       sync_topic: rl_gait_phase
+
+    dribble:
+      base_frame: base_link
+      # Control steps between the current and the past ball observation; must
+      # match the offset the policy was trained with.
+      ball_prev_offset: 5
 
     providers: ["CPUExecutionProvider"]

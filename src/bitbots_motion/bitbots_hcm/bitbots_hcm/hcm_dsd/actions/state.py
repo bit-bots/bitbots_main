@@ -82,6 +82,11 @@ class RobotStateKicking(AbstractRobotState):
         return RobotControlState.KICKING
 
 
+class RobotStateDribbling(AbstractRobotState):
+    def get_state(self) -> T_RobotControlState:
+        return RobotControlState.DRIBBLING
+
+
 class RobotStateHardwareProblem(AbstractRobotState):
     def get_state(self) -> T_RobotControlState:
         return RobotControlState.HARDWARE_PROBLEM

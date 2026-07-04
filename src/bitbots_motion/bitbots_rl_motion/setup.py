@@ -28,6 +28,7 @@ setup(
     entry_points={
         "console_scripts": [
             f"walk_node = {package_name}.nodes.walk_node:main",
+            f"dribble_node = {package_name}.nodes.dribble_node:main",
             f"mjlab_walk_node = {package_name}.nodes.mjlab_walk_node:main",
             f"mjlab_getup_node = {package_name}.nodes.mjlab_getup_node:main",
             f"kick_ball_node = {package_name}.nodes.kick_ball_node:main",

@@ -13,6 +13,15 @@ KICKABLE_STATES = (
     RobotControlState.KICKING,
 )
 
+# States during which the dribble policy may produce motor goals: it takes
+# over from the walk (CONTROLLABLE/WALKING) and then keeps running while the
+# HCM reports the dribble state.
+DRIBBLEABLE_STATES = (
+    RobotControlState.CONTROLLABLE,
+    RobotControlState.WALKING,
+    RobotControlState.DRIBBLING,
+)
+
 # States during which the getup (standup) policy should produce motor goals.
 GETUP_STATES = (RobotControlState.GETTING_UP,)
 
@@ -34,6 +43,9 @@ class RobotStateHandler(Handler):
 
     def is_kickable(self):
         return self._robot_state in KICKABLE_STATES
+
+    def is_dribbleable(self):
+        return self._robot_state in DRIBBLEABLE_STATES
 
     def is_getup(self):
         return self._robot_state in GETUP_STATES

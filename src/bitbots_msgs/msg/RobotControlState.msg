@@ -39,5 +39,7 @@ uint8 HARDWARE_PROBLEM=13
 uint8 PICKED_UP=14
 # Robot is currently kicking the ball
 uint8 KICKING=15
+# The learned dribble policy is controlling the robot instead of the walk
+uint8 DRIBBLING=16
 
 uint8 state

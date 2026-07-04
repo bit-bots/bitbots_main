@@ -53,6 +53,8 @@ class HCM_CPP : public rclcpp::Node {
         "record_motor_goals", 1, std::bind(&HCM_CPP::record_goal_callback, this, _1));
     walk_sub_ = this->create_subscription<bitbots_msgs::msg::JointCommand>(
         "walking_motor_goals", 1, std::bind(&HCM_CPP::walking_goal_callback, this, _1));
+    dribble_sub_ = this->create_subscription<bitbots_msgs::msg::JointCommand>(
+        "dribble_motor_goals", 1, std::bind(&HCM_CPP::dribble_goal_callback, this, _1));
     kick_sub_ = this->create_subscription<bitbots_msgs::msg::JointCommand>(
         "kick_motor_goals", 1, std::bind(&HCM_CPP::kick_goal_callback, this, _1));
     getup_sub_ = this->create_subscription<bitbots_msgs::msg::JointCommand>(
@@ -90,7 +92,8 @@ class HCM_CPP : public rclcpp::Node {
 
   void head_goal_callback(const bitbots_msgs::msg::JointCommand msg) {
     if (current_state_ == bitbots_msgs::msg::RobotControlState::CONTROLLABLE ||
-        current_state_ == bitbots_msgs::msg::RobotControlState::WALKING) {
+        current_state_ == bitbots_msgs::msg::RobotControlState::WALKING ||
+        current_state_ == bitbots_msgs::msg::RobotControlState::DRIBBLING) {
       pub_controller_command_->publish(msg);
     }
   }
@@ -117,6 +120,23 @@ class HCM_CPP : public rclcpp::Node {
 
     if (current_state_ == bitbots_msgs::msg::RobotControlState::CONTROLLABLE ||
         current_state_ == bitbots_msgs::msg::RobotControlState::WALKING) {
+      pub_controller_command_->publish(msg);
+    }
+  }
+
+  void dribble_goal_callback(bitbots_msgs::msg::JointCommand msg) {
+    // The dribble policy is sending us joint goals; remember when the last one
+    // arrived so the DSD (RecentDribbleGoals) can tell whether the dribble is
+    // currently active and switch to the DRIBBLING state, which mutes the
+    // regular walking goals.
+    last_dribble_goal_time_ = msg.header.stamp;
+
+    // CONTROLLABLE and WALKING let the first goals through (which then
+    // transition us to DRIBBLING), and DRIBBLING keeps the following goals
+    // flowing.
+    if (current_state_ == bitbots_msgs::msg::RobotControlState::CONTROLLABLE ||
+        current_state_ == bitbots_msgs::msg::RobotControlState::WALKING ||
+        current_state_ == bitbots_msgs::msg::RobotControlState::DRIBBLING) {
       pub_controller_command_->publish(msg);
     }
   }
@@ -175,6 +195,10 @@ class HCM_CPP : public rclcpp::Node {
       hcm_py_.attr("set_last_kick_goal_time")(
           ros2_python_extension::toPython<builtin_interfaces::msg::Time>(last_kick_goal_time_.value()));
     }
+    if (last_dribble_goal_time_) {
+      hcm_py_.attr("set_last_dribble_goal_time")(
+          ros2_python_extension::toPython<builtin_interfaces::msg::Time>(last_dribble_goal_time_.value()));
+    }
 
     // Run HCM Python DSD code
     hcm_py_.attr("tick")();
@@ -214,6 +238,9 @@ class HCM_CPP : public rclcpp::Node {
   // Kicking states
   std::optional<builtin_interfaces::msg::Time> last_kick_goal_time_;
 
+  // Dribbling states
+  std::optional<builtin_interfaces::msg::Time> last_dribble_goal_time_;
+
   // Publishers
   rclcpp::Publisher<bitbots_msgs::msg::JointCommand>::SharedPtr pub_controller_command_;
   rclcpp::Publisher<bitbots_msgs::msg::RobotControlState>::SharedPtr pub_robot_state_;
@@ -223,6 +250,7 @@ class HCM_CPP : public rclcpp::Node {
   rclcpp::Subscription<bitbots_msgs::msg::JointCommand>::SharedPtr head_sub_;
   rclcpp::Subscription<bitbots_msgs::msg::JointCommand>::SharedPtr record_sub_;
   rclcpp::Subscription<bitbots_msgs::msg::JointCommand>::SharedPtr walk_sub_;
+  rclcpp::Subscription<bitbots_msgs::msg::JointCommand>::SharedPtr dribble_sub_;
   rclcpp::Subscription<bitbots_msgs::msg::JointCommand>::SharedPtr kick_sub_;
   rclcpp::Subscription<bitbots_msgs::msg::JointCommand>::SharedPtr getup_sub_;
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_sub_;

@@ -246,6 +246,9 @@ class HardwareControlManager:
     def set_last_kick_goal_time(self, time_msg_serialized: bytes):
         self.blackboard.last_kick_goal_time = Time.from_msg(deserialize_message(time_msg_serialized, TimeMsg))
 
+    def set_last_dribble_goal_time(self, time_msg_serialized: bytes):
+        self.blackboard.last_dribble_goal_time = Time.from_msg(deserialize_message(time_msg_serialized, TimeMsg))
+
     def set_current_joint_state(self, joint_state_msg_serialized: bytes):
         self.blackboard.previous_joint_state = self.blackboard.current_joint_state
         self.blackboard.current_joint_state = deserialize_message(joint_state_msg_serialized, JointState)

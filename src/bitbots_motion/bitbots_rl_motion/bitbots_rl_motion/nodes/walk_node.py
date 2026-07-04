@@ -2,6 +2,7 @@ import numpy as np
 
 from bitbots_msgs.msg import JointCommand
 from bitbots_rl_motion.handlers.command_handler import CommandHandler
+from bitbots_rl_motion.handlers.dribble_active_handler import DribbleActiveHandler
 from bitbots_rl_motion.handlers.gravity_handler import GravityHandler
 from bitbots_rl_motion.handlers.gyro_handler import GyroHandler
 from bitbots_rl_motion.handlers.joint_handler import JointHandler
@@ -23,6 +24,7 @@ class WalkNode(RLNode):
         self._joint_handler = JointHandler(self)
         self._command_handler = CommandHandler(self)
         self._robot_state_handler = RobotStateHandler(self)
+        self._dribble_active_handler = DribbleActiveHandler(self)
 
         # loading model
         model = self.get_parameter("model").value
@@ -49,9 +51,14 @@ class WalkNode(RLNode):
 
     # states in which the policy executes
     def allowed_states(self):
-        return self._robot_state_handler.is_walkable()
+        # Yield to the dribble policy while it is active: both publish to the
+        # same motor goal topic, so exactly one of them may run at a time.
+        return self._robot_state_handler.is_walkable() and not self._dribble_active_handler.is_active()
 
     def initialize_observation(self):
+        # Continue the gait from the phase the previously active policy (e.g.
+        # the dribble) published, for a seamless hand-back.
+        self._phase.adopt_external_phase()
         # No observation history; just start the previous-action feedback term
         # from zero on each (re)activation.
         self._previous_action.set_previous_action(np.zeros_like(self._previous_action.get_previous_action()))
@@ -68,9 +75,11 @@ class WalkNode(RLNode):
             nearest = min(anchors, key=lambda a: np.linalg.norm(phase - a))
             if np.linalg.norm(phase - nearest) < 0.1:
                 self._phase.set_phase(nearest)
+                self._phase.publish_phase()
                 return
         phase_tp1 = phase + self._phase.get_phase_dt()
         self._phase.set_phase(np.fmod(phase_tp1 + np.pi, 2 * np.pi) - np.pi)
+        self._phase.publish_phase()
 
 
 main = create_main(WalkNode)
