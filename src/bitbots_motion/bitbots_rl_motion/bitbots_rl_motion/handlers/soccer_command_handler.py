@@ -187,7 +187,9 @@ class SoccerCommandHandler(Handler):
         lookup transiently fails.
         """
         if self._kick_dir_odom is None:
-            return None  # this means something is wrong, should kill the node TODO better solution
+            self._kick_abort_requested = True
+            self._node.get_logger().warning("Kick direction was never anchored to odom; aborting kick.")
+            return self._last_kick_dir_b
         yaw_now = self._robot_yaw_odom(timeout_s=0.0)
         if yaw_now is None:
             return self._last_kick_dir_b  # hold last good value on a transient miss
@@ -376,6 +378,8 @@ class SoccerCommandHandler(Handler):
             self._clean_hist = np.tile(cmd7, (self._history_samples, 1)).astype(np.float32)
             self._soccer_hist = np.tile(cmd7, (self._history_samples, 1)).astype(np.float32)
             self._pub_counter = 0
+        assert self._clean_hist is not None
+        assert self._soccer_hist is not None
 
         # vel/kick (cols 0:3, 5:7): 50 Hz real history, shift+push every step
         self._clean_hist[:-1] = self._clean_hist[1:]

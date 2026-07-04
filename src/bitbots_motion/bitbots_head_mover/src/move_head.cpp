@@ -292,7 +292,7 @@ class HeadMover {
 
     // Clip the target yaw and pitch position at the maximum yaw and pitch values as defined in the parameters
     if (clip) {
-      std::tie(yaw_position, pitch_position) = pre_clip(yaw_position, pitch_position);
+      pre_clip(yaw_position, pitch_position);
     }
 
     // Resolve collisions if necessary
@@ -318,10 +318,9 @@ class HeadMover {
    * @brief Applies clipping to the yaw and pitch values based on the loaded config parameters
    *
    */
-  std::pair<double, double> pre_clip(double yaw, double pitch) {
-    double new_yaw = std::clamp(yaw, params_.max_yaw[0], params_.max_yaw[1]);
-    double new_pitch = std::clamp(pitch, params_.max_pitch[0], params_.max_pitch[1]);
-    return {new_yaw, new_pitch};
+  void pre_clip(double& yaw, double& pitch) {
+    yaw = std::clamp(yaw, params_.max_yaw[0], params_.max_yaw[1]);
+    pitch = std::clamp(pitch, params_.max_pitch[0], params_.max_pitch[1]);
   }
 
   /**
@@ -689,7 +688,7 @@ class HeadMover {
 
     double goal_yaw = yaw_spline_.pos(t);
     double goal_pitch = pitch_spline_.pos(t);
-    std::tie(goal_yaw, goal_pitch) = pre_clip(goal_yaw, goal_pitch);
+    pre_clip(goal_yaw, goal_pitch);
 
     double yaw_vel = std::abs(yaw_spline_.vel(t));
     double pitch_vel = std::abs(pitch_spline_.vel(t));

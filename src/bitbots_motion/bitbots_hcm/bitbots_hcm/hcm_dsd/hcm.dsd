@@ -39,4 +39,4 @@ $StartHCM
                                     ELSE --> @RobotStateFalling, @CancelGoals, @StopWalking, @PlayAnimationFalling, @Wait
                                 ELSE --> $GameControllerStop
                                     STOPPED --> @RobotStateFallen, @CancelGoals, @StopWalking, @Wait
-                                    FREE --> @RobotStateFallen, @CancelGoals, @StopWalking, @RobotStateGettingUp, @PlayAnimationStandupFront, @SetSquat + squat:true
+                                    FREE --> @RobotStateFallen + r:false, @CancelGoals + r:false, @StopWalking + r:false, @RobotStateGettingUp + r:false, @Complain + r:false, @Wait + time:1.5 + r:false
