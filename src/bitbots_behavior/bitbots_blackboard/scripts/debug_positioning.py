@@ -41,20 +41,21 @@ def run_gui():
         return plt.axes((0.18, b, 0.72, 0.015))
 
     s_n = Slider(_ax(0.470), "players", 1, 8, valinit=state["n"], valstep=1)
-    s_sep = Slider(_ax(0.440), "min_sep", 0.3, 2.0, valinit=params.min_sep)
-    s_alpha = Slider(_ax(0.410), "push α", 0.1, 0.8, valinit=params.alpha)
-    s_dbias = Slider(_ax(0.380), "def fwd/back", -2.0, 3.0, valinit=params.depth_bias)
-    s_dside = Slider(_ax(0.350), "def side", 0.0, 2.0, valinit=params.def_side)
-    s_gap = Slider(_ax(0.320), "def gap", 0.5, 2.0, valinit=params.gap)
-    s_f = Slider(_ax(0.290), "supp lead", 0.0, 3.0, valinit=params.f)
-    s_side = Slider(_ax(0.260), "supp side", 0.0, 2.5, valinit=params.supp_side)
-    s_smax = Slider(_ax(0.230), "supp max x", 0.0, 4.2, valinit=params.supp_max_x)
-    s_pmarg = Slider(_ax(0.200), "post margin", 0.0, 1.3, valinit=params.post_margin)
-    s_back = Slider(_ax(0.170), "back dist", 0.0, 3.0, valinit=params.back_dist)
-    s_kclr = Slider(_ax(0.140), "kick clear", 0.0, 1.5, valinit=params.kick_clear)
-    s_gout = Slider(_ax(0.110), "goalie out", 0.2, 2.0, valinit=params.d_g)
-    check_sp = CheckButtons(plt.axes((0.18, 0.073, 0.20, 0.022)), ["set play"], [False])
-    check_supp = CheckButtons(plt.axes((0.42, 0.073, 0.20, 0.022)), ["supporter"], [params.include_supporter])
+    s_sep = Slider(_ax(0.442), "min_sep", 0.3, 2.0, valinit=params.min_sep)
+    s_alpha = Slider(_ax(0.414), "push α", 0.1, 0.8, valinit=params.alpha)
+    s_dbias = Slider(_ax(0.386), "def fwd/back", -2.0, 3.0, valinit=params.depth_bias)
+    s_dside = Slider(_ax(0.358), "def side", 0.0, 2.0, valinit=params.def_side)
+    s_gap = Slider(_ax(0.330), "def gap", 0.5, 2.0, valinit=params.gap)
+    s_gapc = Slider(_ax(0.302), "def gap @goal", 0.2, 2.0, valinit=params.gap_close)
+    s_f = Slider(_ax(0.274), "supp lead", 0.0, 3.0, valinit=params.f)
+    s_side = Slider(_ax(0.246), "supp side", 0.0, 2.5, valinit=params.supp_side)
+    s_smax = Slider(_ax(0.218), "supp max x", 0.0, 4.2, valinit=params.supp_max_x)
+    s_pmarg = Slider(_ax(0.190), "post margin", 0.0, 1.3, valinit=params.post_margin)
+    s_back = Slider(_ax(0.162), "back dist", 0.0, 3.0, valinit=params.back_dist)
+    s_kclr = Slider(_ax(0.134), "kick clear", 0.0, 1.5, valinit=params.kick_clear)
+    s_gout = Slider(_ax(0.106), "goalie out", 0.2, 2.0, valinit=params.d_g)
+    check_sp = CheckButtons(plt.axes((0.18, 0.078, 0.20, 0.022)), ["set play"], [False])
+    check_supp = CheckButtons(plt.axes((0.42, 0.078, 0.20, 0.022)), ["supporter"], [params.include_supporter])
     s_spcl = Slider(_ax(0.050), "set play clearance", 0.1, 2.0, valinit=params.opp_set_play_clearance)
     # one checkbox per possible robot identity (0..max players - 1); checkboxes beyond the
     # current player count are simply ignored. CheckButtons (unlike TextBox) doesn't hook
@@ -85,6 +86,7 @@ def run_gui():
         ax.set_facecolor("#2e7d32")
 
         params.min_sep, params.alpha, params.gap, params.f = s_sep.val, s_alpha.val, s_gap.val, s_f.val
+        params.gap_close = s_gapc.val
         params.depth_bias, params.supp_side, params.d_g = s_dbias.val, s_side.val, s_gout.val
         params.supp_max_x, params.def_side = s_smax.val, s_dside.val
         params.post_margin, params.back_dist = s_pmarg.val, s_back.val
@@ -199,6 +201,7 @@ def run_gui():
         s_dbias,
         s_dside,
         s_gap,
+        s_gapc,
         s_f,
         s_side,
         s_smax,

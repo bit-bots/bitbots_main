@@ -74,7 +74,8 @@ class Params:
     D_max: float = 3.8  # max defender depth from goal (high-line cap)
     dz: float = 0.45  # keep defenders at least this far ahead of the goalie
     standoff: float = 1.0  # keep defenders at least this far (goal-side) of the ball
-    gap: float = 1.1  # lateral spacing between adjacent defenders
+    gap: float = 1.7  # lateral spacing between adjacent defenders (ball at/beyond the centre circle)
+    gap_close: float = 0.6  # lateral spacing when the ball is at our goal (defenders tuck in)
     def_side: float = 0.9  # lateral offset for a lone defender (so it's not on the axis)
     # supporter
     include_supporter: bool = False  # if False, no supporter is assigned; its slot becomes an extra defender
@@ -503,7 +504,11 @@ class InnerPositioningCapsule:
                 side_dir = -1.0 if b[1] >= 0 else 1.0
                 offsets = [params.def_side * side_dir]
             else:
-                offsets = [(k - (m - 1) / 2.0) * params.gap for k in range(m)]
+                # tighten the defender line as the ball nears our goal: full `gap` at the
+                # centre circle (and beyond), shrinking smoothly to `gap_close` at the goal
+                t = self._smoothstep(d, 0.0, field.length / 2.0)
+                gap = params.gap_close + t * (params.gap - params.gap_close)
+                offsets = [(k - (m - 1) / 2.0) * gap for k in range(m)]
             for r, off in zip(defender_roles, offsets, strict=True):
                 out[r] = self._clamp_field(anchor + off * perp, field)
 
