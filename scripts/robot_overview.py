@@ -39,6 +39,7 @@ from rclpy.duration import Duration
 from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
 from rclpy.time import Time
+from rosgraph_msgs.msg import Clock
 from std_msgs.msg import Float32, Header
 
 from bitbots_msgs.msg import Strategy
@@ -87,6 +88,10 @@ class Stamped:
         self.value = value
         self.at = time.monotonic()
 
+    def clear(self):
+        self.value = None
+        self.at = 0.0
+
     def age(self) -> Optional[float]:
         return None if self.value is None else time.monotonic() - self.at
 
@@ -123,10 +128,23 @@ class _MonitorBase:
         # Graph counts (nodes/topics in this domain, excluding ourselves), refreshed on a timer.
         self.n_nodes: Optional[int] = None
         self.n_topics: Optional[int] = None
+        # Watch the clock so we can drop stale state/transforms when the sim restarts.
+        self._last_clock: Optional[float] = None
+        self.node.create_subscription(Clock, "/clock", self._clock_cb, 1)
 
     @staticmethod
     def _store(slot: Stamped):
         return lambda msg: slot.set(msg)
+
+    def _clock_cb(self, msg: Clock) -> None:
+        t = msg.clock.sec + msg.clock.nanosec * 1e-9
+        # A large backward jump landing near zero means the simulation was restarted.
+        if self._last_clock is not None and t < self._last_clock - 1.0 and t < 5.0:
+            self._on_reset()
+        self._last_clock = t
+
+    def _on_reset(self) -> None:
+        """Hook: drop cached data that is invalid after a sim restart. Overridden below."""
 
     def refresh_counts(self) -> None:
         """Recount the nodes and topics in this domain, excluding our own monitoring node.
@@ -201,6 +219,25 @@ class DomainMonitor(_MonitorBase):
         except tf2_ros.TransformException:
             pass  # TF not ready yet / frame missing — keep the previous value
 
+    def _on_reset(self) -> None:
+        # Clear the TF buffer so pre-restart transforms (stamped at the old, high sim time)
+        # cannot shadow the fresh ones, and drop the cached per-robot state.
+        try:
+            self.tf_buffer.clear()
+        except AttributeError:
+            # Bindings without BufferCore.clear(): rebuild buffer + listener instead.
+            self.tf_buffer = tf2_ros.Buffer()
+            self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self.node)
+        for slot in (
+            self.state.strategy,
+            self.state.pose,
+            self.state.gamestate,
+            self.state.time_to_ball,
+            self.state.cmd_vel,
+            self.state.ball_map,
+        ):
+            slot.clear()
+
 
 class GroundTruthMonitor(_MonitorBase):
     """Reads the sim's ground truth from the main domain (never bridged): per-robot
@@ -208,12 +245,18 @@ class GroundTruthMonitor(_MonitorBase):
 
     def __init__(self, states: list[RobotState], main_domain: int):
         super().__init__(main_domain, "robot_overview_truth")
+        self.states = states
         self.true_ball = Stamped()  # single global ball, shared across robots
         self.node.create_subscription(PointStamped, "true_ball", self._store(self.true_ball), 1)
         for state in states:
             self.node.create_subscription(
                 PoseStamped, f"robot{state.domain}/true_pose", self._store(state.true_pose), 1
             )
+
+    def _on_reset(self) -> None:
+        self.true_ball.clear()
+        for state in self.states:
+            state.true_pose.clear()
 
 
 # ---- Rendering --------------------------------------------------------------------
