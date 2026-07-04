@@ -1,14 +1,15 @@
 import rclpy
+import tf2_geometry_msgs  # noqa: F401
 from bitbots_tf_buffer import Buffer
 from game_controller_hsl_interfaces.msg import PlayerStateResponse
 from geometry_msgs.msg import PointStamped, PoseStamped, PoseWithCovarianceStamped
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
+from rclpy.duration import Duration
 from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
-from rclpy.duration import Duration
 
 from bitbots_msgs.msg import RobotControlState
-import tf2_geometry_msgs
+
 
 class PlayerStateAggregator(Node):
     """Aggregate native robot state into the GameController response interface."""
@@ -85,6 +86,7 @@ class PlayerStateAggregator(Node):
             try:
                 response.ball = self._tf_buffer.transform(self._relative_ball, self.ball_frame_out)
             except Exception as e:
+                self._node.get_logger().warn(str(e))
                 pass
 
         return response
