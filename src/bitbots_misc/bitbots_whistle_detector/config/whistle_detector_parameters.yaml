@@ -1,7 +1,7 @@
 bitbots_whistle_detector:
   whistle_energy_ratio_threshold:
     type: double
-    default_value: 0.4
+    default_value: 0.15
     description: "Ratio of whistle-band energy to total energy required to trigger detection"
     validation:
       bounds<>: [0.0, 1.0]
