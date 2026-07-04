@@ -10,9 +10,9 @@ class WaitAfterKickOff(AbstractActionElement):
         super().__init__(blackboard, dsd, parameters)
         self.blackboard: BodyBlackboard
 
-        self.wait_after_kick_time = self.blackboard.config["waiting_after_kick_time"]
-        self.wait_after_kick_effective_radius = self.blackboard.config["waiting_after_kick_effective_radius"]
-        self.wait_after_kick_bool = self.blackboard.config["waiting_after_kick_bool"]
+        self.wait_after_kick_time = self.blackboard.config["wait_after_kick_off_time"]
+        self.wait_after_kick_effective_radius = self.blackboard.config["wait_after_kick_off_effective_radius"]
+        self.wait_after_kick_bool = self.blackboard.config["wait_after_kick_off_bool"]
 
     def perform(self, reevaluate=False) -> int:
         """If activated: Waits till a ball is out of the efffective zone or the waiting time is over."""
