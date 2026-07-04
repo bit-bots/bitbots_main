@@ -152,7 +152,7 @@ class PositioningCapsule(AbstractBlackboardCapsule):
         # `_match_assignment` identifies robots by their index into `old_poses`, not by
         # jersey/robot id, so translate every passive robot id we know about into its index
         passive_indices = [ordered_jerseys.index(rid) for rid in passive_robot_ids if rid in ordered_jerseys]
-        pairs = self._inner._match_assignment(old_poses, new_items, ball, passive_indices)
+        pairs = self._inner._match_assignment(ordered_jerseys, old_poses, new_items, ball, passive_indices)
         return {ordered_jerseys[old_idx]: {"role": role, "goal_pose": new_pose} for old_idx, new_pose, role in pairs}
 
 
@@ -336,36 +336,47 @@ class InnerPositioningCapsule:
 
     def _match_assignment(
         self,
+        player_ids: Sequence[int],
         old_poses: Sequence[list[float] | NDArray[np.float64]],
         new_items: list[tuple[str, NDArray[np.float64]]],
         ball: NDArray[np.float64] | tuple[float, float],
         passive_indices: list[int],
         angle_w: float = 0.3,
+        striker_deadband: float = 0.2,
     ) -> list[tuple[int, NDArray[np.float64], str]]:
         """Assign physical robots (at `old_poses`) to the new target poses.
-        The robot closest to the ball always takes the striker target; the rest are
+        The striker target goes to the robot with the lowest player number among all
+        robots whose distance to the ball is within `striker_deadband` metres of the
+        robot closest to the ball. Grouping the near-equidistant robots and breaking
+        the tie on the player number keeps two robots from both deferring to each other
+        when their ball-distance estimates disagree by a few centimetres. The rest are
         matched optimally (Hungarian) to minimize total cost = distance + angle_w *
         heading difference. Returns a list of (old_idx, new_pose, new_role) where
         old_idx is the index into `old_poses`.
+        `player_ids`: player number of each robot, aligned with `old_poses`.
         `old_poses`: list of [x, y, theta]; `new_items`: list of (role, [x, y, theta]).
         `passive_indices`: indices into `old_poses` of robots that should not be assigned
         the striker role. Pass an empty list if there are no passive robots. If every
-        robot is passive, the striker slot must still be filled, so the closest passive
-        robot is assigned it anyway.
+        robot is passive, the striker slot must still be filled, so a passive robot is
+        assigned it anyway.
         """
         assert len(passive_indices) <= len(new_items), "more passive robots reported than robots to assign"
+        assert len(player_ids) == len(old_poses), "player_ids must be aligned with old_poses"
         old_poses = [np.asarray(p) for p in old_poses]
         ball = np.asarray(ball)
         n = len(old_poses)
-        # striker target -> the old robot nearest the ball
+        # striker target -> chosen from the robots nearest the ball
         s_j = next(j for j, (r, _) in enumerate(new_items) if r == Role.STRIKER)
-        # candidates sorted by distance to the ball
-        candidates = sorted(range(n), key=lambda i: np.linalg.norm(old_poses[i][:2] - ball))
-        # exclude passive robots from the striker choice, unless that would leave no candidate
-        if passive_indices:
-            s_i = next((i for i in candidates if i not in passive_indices), candidates[0])
-        else:
-            s_i = candidates[0]
+        # distance of every robot to the ball
+        ball_dists = [float(np.linalg.norm(old_poses[i][:2] - ball)) for i in range(n)]
+        # exclude passive robots from the striker choice, unless every robot is passive
+        eligible = [i for i in range(n) if i not in passive_indices] or list(range(n))
+        # treat every eligible robot within the deadband of the closest one as equally
+        # close to the ball, then take the lowest player number as a deterministic
+        # tie-break so both robots agree on who becomes striker
+        closest_dist = min(ball_dists[i] for i in eligible)
+        group = [i for i in eligible if ball_dists[i] <= closest_dist + striker_deadband]
+        s_i = min(group, key=lambda i: player_ids[i])
         pairs = [(s_i, new_items[s_j][1], new_items[s_j][0])]
         rem_i = [i for i in range(n) if i != s_i]
         rem_j = [j for j in range(len(new_items)) if j != s_j]

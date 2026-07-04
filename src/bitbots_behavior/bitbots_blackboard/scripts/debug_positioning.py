@@ -117,7 +117,7 @@ def run_gui():
         passive_idxs = get_passive_indices(len(state["robots"]))
         robots = state["robots"]
         # assign each persistent robot (by index) to a role target for this frame
-        assignments = _inner._match_assignment(robots, new_items, state["ball"], passive_idxs)
+        assignments = _inner._match_assignment(list(range(len(robots))), robots, new_items, state["ball"], passive_idxs)
 
         # ball
         ax.add_patch(Circle(state["ball"], 0.12, color="white", ec="black", zorder=5))
