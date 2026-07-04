@@ -69,6 +69,7 @@ class RLKickTowardsGoal(AbstractKickAction):
         if not self.blackboard.kick.is_currently_kicking:
             self.pop()
 
+
 class RLKickAngleRobot(AbstractKickAction):
     def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
