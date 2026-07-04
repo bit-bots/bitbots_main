@@ -14,8 +14,8 @@
 # limitations under the License.
 
 import rclpy
-from rclpy.node import Node
 from rclpy.experimental.events_executor import EventsExecutor
+from rclpy.node import Node
 
 from soccer_vision_3d_msgs.msg import (
     BallArray, FieldBoundary, GoalpostArray, MarkingArray, ObstacleArray, RobotArray)
@@ -98,7 +98,7 @@ def main(args=None):
         executor.spin()
     except KeyboardInterrupt:
         pass
-    
+
 
 if __name__ == '__main__':
     main()
