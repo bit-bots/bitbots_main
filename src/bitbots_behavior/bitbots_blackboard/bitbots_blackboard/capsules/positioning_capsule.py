@@ -130,6 +130,12 @@ class PositioningCapsule(AbstractBlackboardCapsule):
     def get_set_play_formation_assignment(self) -> dict[int, RobotAssignment]:
         return self._get_formation_assignment(set_play=True)
 
+    def get_own_role(self) -> Role:
+        """Return the role of the robot with the own_id."""
+        own_id = self._blackboard.gamestate.get_own_id()
+        assignment = self.get_formation_assignment()
+        return Role(assignment[own_id]["role"])
+
     def _get_formation_assignment(self, set_play=False) -> dict[int, RobotAssignment]:
         ball_pose = self._blackboard.world_model.get_best_ball_point_stamped()
         ball = np.array([ball_pose.point.x, ball_pose.point.y])

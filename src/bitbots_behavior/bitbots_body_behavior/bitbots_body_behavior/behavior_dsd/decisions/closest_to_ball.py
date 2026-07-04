@@ -50,24 +50,6 @@ class AssignedRole(AbstractDecisionElement):
         role = self.blackboard.positioning.get_own_role()
         self.publish_debug_data("Role from positioning", role)
         return role.upper()
-        """if role == "STRIKER":
-            return "STRIKER"
-        elif role == 2:
-            return "GOALIE"
-        elif role == 3:
-            return "DEFENDER"
-        elif role == 4:
-            return "SUPPORTER"
-        elif role == 5:
-            return "DEFENDER"
-        elif role == 6:
-            return "DEFENDER"
-        elif role == 7:
-            return "DEFENDER"
-        else:
-            # emergency fall back if something goes wrong
-            self.blackboard.node.get_logger().warning("Rank to ball had some issues. Role" + role)
-            return "STRIKER" """
 
     def get_reevaluate(self):
         return True
