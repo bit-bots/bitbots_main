@@ -85,15 +85,12 @@ $SecondBallTouchAllowed
         NO --> $ConfigRole
             STRIKER --> #SearchBall
             ELSE --> #RolePositionWithPause
-        YES --> $KickOffTimeUp  // TODO ASK Clemens regarding rules
-            NO_NORMAL --> #StandAndLook
-            NO_FREEKICK --> #Placing   // I think this is unreachable
-            YES --> $AssignedRole
-                STRIKER --> #KickWithAvoidance
-                SUPPORTER --> #SupporterRole
-                ELSE --> $BallInOwnPercent + p:40
-                    YES --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @GoToFormationPosition
-                    NO --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @GoToFormationPosition + stand:true + enter_position:%defender_enter_position + leave_position:%defender_leave_position + enter_orientation:%defender_enter_orientation + leave_orientation:%defender_leave_orientation
+        YES --> $AssignedRole
+            STRIKER --> #KickWithAvoidance
+            SUPPORTER --> #SupporterRole
+            ELSE --> $BallInOwnPercent + p:40
+                YES --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @GoToFormationPosition
+                NO --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @GoToFormationPosition + stand:true + enter_position:%defender_enter_position + leave_position:%defender_leave_position + enter_orientation:%defender_enter_orientation + leave_orientation:%defender_leave_orientation
 
 #ThrowinGoalKickCornerkickBehavior
 $DoOnce
