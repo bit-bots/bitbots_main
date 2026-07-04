@@ -51,7 +51,7 @@ class TeamCommunication:
         self.socket_communication = SocketCommunication(self.node, self.logger, self.team_id, self.player_id)
 
         self.rate: int = self.node.get_parameter("rate").value
-        self.increase_kicking_rate: int = self.node.get_parameter("increase_kicking_rate").value
+        self.increase_rate_during_kick_factor: int = self.node.get_parameter("increase_rate_during_kick_factor").value
         self.always_publish_during_kick: bool = self.node.get_parameter("always_publish_during_kick").value
         self.lifetime: int = self.node.get_parameter("lifetime").value
         self.max_message_size: int = self.node.get_parameter("max_message_size").value
@@ -70,7 +70,7 @@ class TeamCommunication:
         self.run_spin_in_thread()
         self.try_to_establish_connection()
 
-        self.actual_rate = self.rate * self.increase_kicking_rate
+        self.actual_rate = self.rate * self.increase_rate_during_kick_factor
         self.counter = 0
         self.last_action = None
 
@@ -97,7 +97,7 @@ class TeamCommunication:
     def high_rate_cb(self):
         # Gets called at actual_rate
         self.counter += 1
-        if self.counter >= self.increase_kicking_rate:
+        if self.counter >= self.increase_rate_during_kick_factor:
             # Gets called at rate
             self.send_message()
             self.counter = 0
