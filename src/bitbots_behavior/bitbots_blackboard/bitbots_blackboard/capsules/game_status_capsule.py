@@ -23,11 +23,15 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
         self.free_kick_kickoff_team: bool | None = None
         self.game_controller_stop: bool = False
         self.last_timestep_whistle_detected: Time | None = None
+        self.last_timestep_in_set: float = 0.0
         # publish stopped msg for hcm
         self.stop_pub = node.create_publisher(Bool, "game_controller/stop_msg", 1)
         # last kicking team
         self.last_kicking_team: int | None = None
 
+    def set_set_timestep(self):
+        self.last_timestep_in_set = self._node.get_clock().now().nanoseconds / 1e9
+    
     def get_main_state(self) -> int:
         # Init, ready, set, playing, finished
         return self.gamestate.main_state
@@ -67,6 +71,9 @@ class GameStatusCapsule(AbstractBlackboardCapsule):
 
     def get_seconds_since_own_goal(self) -> float:
         return self._node.get_clock().now().nanoseconds / 1e9 - self.last_goal_from_us_time
+    
+    def get_seconds_since_kickoff(self) -> float:
+        return self._node.get_clock().now().nanoseconds / 1e9 - self.last_timestep_in_set
 
     def get_seconds_since_any_goal(self) -> float:
         return self._node.get_clock().now().nanoseconds / 1e9 - self.last_goal_time

@@ -184,15 +184,15 @@ $IsPenalized
                     OTHER --> $BallSeen
                         YES --> @Stand + duration:0.1 + r:false, @DeactivateHCM + r:false, @LookForward + r:false, @TrackBall + r:false, @PlayAnimationGoalieArms + r:false, @Stand // goalie only needs to care about the ball
                         NO --> @Stand + duration:0.1 + r:false, @DeactivateHCM + r:false, @LookForward + r:false, @LookAtFieldFeatures + r:false, @PlayAnimationGoalieArms + r:false, @Stand
-                ELSE --> #StandAndLook
+                ELSE --> @ChangeAction + action:waiting, @LookAtFieldFeatures, @Stand + duration:0.1, @SetTimerKickoff
         FINISHED --> $CurrentScore
             AHEAD --> @Stand + duration:0.5 + r:false, @PlaySound + file:fanfare.wav, @PlayAnimationCheering + r:false, @LookForward, @Stand
             ELSE --> #Init
         PLAYING --> $DoOnce //replace PlayingBehavior to fix
             NOT_DONE --> $ConfigRole
-                STRIKER --> $SecondaryStateTeamDecider
-                    OUR --> @Stand + duration:10.0 + r:false, @WalkForward + time:2 + r:false, @ChangeAction + action:passive + r:false, @WalkBackward + time:1 + r:false
-                    ELSE --> #PlayingBehavior
+                STRIKER --> $WasKickoff
+                    YES --> @Stand + duration:10.0 + r:false, @WalkForward + time:2 + r:false, @ChangeAction + action:passive + r:false, @WalkBackward + time:1 + r:false, @Stand + duration:5.0
+                    NO --> #PlayingBehavior
                 ELSE --> #PlayingBehavior
             DONE --> #PlayingBehavior
         STANDBY --> #StandAndLook
