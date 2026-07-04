@@ -153,7 +153,7 @@ $IsPenalized
         PLAYING --> $DoOnce //replace PlayingBehavior to fix
             NOT_DONE --> $ConfigRole
                 OFFENSE --> $WasKickoff
-                    YES --> @Stand + duration:10.0 + r:false, @WalkForward + time:2 + r:false, @ChangeAction + action:passive + r:false, @WalkBackward + time:1 + r:false, @Stand + duration:5.0
+                    YES --> @Stand + duration:8.0 + r:false, @WalkForward + time:2 + r:false, @ChangeAction + action:passive + r:false, @WalkBackward + time:2 + r:false, @Stand + duration:5.0
                     NO --> #PlayingBehavior
                 ELSE --> #PlayingBehavior
             DONE --> #PlayingBehavior
