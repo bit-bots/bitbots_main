@@ -105,6 +105,11 @@ class RobotState:
     ball_map: Stamped = field(default_factory=Stamped)  # filtered ball, transformed to map by us
 
 
+def _fq(namespace: str, name: str) -> str:
+    """Fully-qualified node name from a (namespace, name) pair, e.g. ('/', 'foo') -> '/foo'."""
+    return f"{namespace.rstrip('/')}/{name}"
+
+
 class _MonitorBase:
     """A rclpy context + node + executor bound to a single ROS domain, spun in a thread."""
 
@@ -115,10 +120,38 @@ class _MonitorBase:
         self.executor = SingleThreadedExecutor(context=self.context)
         self.executor.add_node(self.node)
         self._thread = threading.Thread(target=self._spin, daemon=True)
+        # Graph counts (nodes/topics in this domain, excluding ourselves), refreshed on a timer.
+        self.n_nodes: Optional[int] = None
+        self.n_topics: Optional[int] = None
 
     @staticmethod
     def _store(slot: Stamped):
         return lambda msg: slot.set(msg)
+
+    def refresh_counts(self) -> None:
+        """Recount the nodes and topics in this domain, excluding our own monitoring node.
+
+        A topic is skipped only if the sole participant is us; a node/topic that anyone else
+        publishes, subscribes to, or hosts is counted.
+        """
+        node = self.node
+        our = node.get_fully_qualified_name()
+        try:
+            self.n_nodes = sum(
+                1 for name, ns in node.get_node_names_and_namespaces() if _fq(ns, name) != our
+            )
+            topics = 0
+            for topic, _types in node.get_topic_names_and_types():
+                endpoints = {
+                    _fq(info.node_namespace, info.node_name)
+                    for info in node.get_publishers_info_by_topic(topic)
+                    + node.get_subscriptions_info_by_topic(topic)
+                }
+                if endpoints - {our}:  # someone other than us is on this topic
+                    topics += 1
+            self.n_topics = topics
+        except Exception:  # noqa: BLE001 - graph queries can race with shutdown; keep last values
+            pass
 
     def _spin(self):
         try:
@@ -237,15 +270,21 @@ def _fmt_age(age: Optional[float]) -> str:
     return f"{age:4.1f}s"
 
 
-def render(states: list[RobotState], true_ball: Optional[tuple[float, float]] = None, rotate_180: bool = True) -> str:
+def render(
+    domain_monitors: list["DomainMonitor"],
+    true_ball: Optional[tuple[float, float]] = None,
+    rotate_180: bool = True,
+) -> str:
     # true_ball is the sim ground-truth ball (map frame). ball_err is the distance between
     # the filtered ball (transformed to map) and the ground-truth ball (position only).
+    # nodes/topics count the other participants discovered in each robot's domain.
     header = (
         f"{'robot':>6} | {'role':>8} | {'action':>15} | {'pose err (m,°)':^14} | "
-        f"{'ball err':>8} | {'ttb':>6} | {'game':>8} | {'pen':>3} | {'age':>5}"
+        f"{'ball err':>8} | {'ttb':>6} | {'game':>8} | {'pen':>3} | {'nds':>4} | {'tpc':>4} | {'age':>5}"
     )
     lines = [header, "-" * len(header)]
-    for s in states:
+    for m in domain_monitors:
+        s = m.state
         strat: Optional[Strategy] = s.strategy.value
         gs: Optional[GameState] = s.gamestate.value
         ttb: Optional[Float32] = s.time_to_ball.value
@@ -260,14 +299,15 @@ def render(states: list[RobotState], true_ball: Optional[tuple[float, float]] = 
         ttb_str = f"{ttb.data:5.1f}s" if ttb else "   -  "
         game = GAME_STATE.get(gs.main_state, "?") if gs else "-"
         pen = ("Y" if gs.penalized else "n") if gs and hasattr(gs, "penalized") else "-"
+        nds = "-" if m.n_nodes is None else str(m.n_nodes)
+        tpc = "-" if m.n_topics is None else str(m.n_topics)
         # freshest signal we have from this robot -> its liveness
         ages = [a for a in (s.strategy.age(), s.pose.age(), s.gamestate.age()) if a is not None]
         age = _fmt_age(min(ages) if ages else None)
 
         lines.append(
             f"{s.domain:>6} | {role:>8} | {action:>15} | {_fmt_error(est, true):^14} | "
-            f"{ball_err:>8} | "
-            f"{ttb_str:>6} | {game:>8} | {pen:>3} | {age:>5}"
+            f"{ball_err:>8} | {ttb_str:>6} | {game:>8} | {pen:>3} | {nds:>4} | {tpc:>4} | {age:>5}"
         )
     return "\n".join(lines)
 
@@ -285,6 +325,12 @@ def parse_args():
         help="Domain the sim runs in, where robotN/true_pose is published (default: $ROS_DOMAIN_ID or 0)",
     )
     ap.add_argument("--once", action="store_true", help="Collect briefly, print one snapshot, then exit")
+    ap.add_argument(
+        "--count-interval",
+        type=float,
+        default=3.0,
+        help="How often (seconds) to recount nodes/topics per domain (default: 3)",
+    )
     ap.add_argument(
         "--rotate-180",
         action=argparse.BooleanOptionalAction,
@@ -306,9 +352,9 @@ def main():
         domains = [11, 12, 13, 14]
 
     states = [RobotState(domain=d) for d in domains]
+    domain_monitors = [DomainMonitor(s) for s in states]
     truth = GroundTruthMonitor(states, args.main_domain)
-    monitors: list[_MonitorBase] = [DomainMonitor(s) for s in states]
-    monitors.append(truth)
+    monitors: list[_MonitorBase] = [*domain_monitors, truth]
     for m in monitors:
         m.start()
 
@@ -318,22 +364,42 @@ def main():
             return xy
         return (-xy[0], -xy[1])  # same 180° realignment as the ground-truth pose
 
+    last_count = 0.0
+
+    def maybe_refresh_counts() -> None:
+        nonlocal last_count
+        now = time.monotonic()
+        if now - last_count >= args.count_interval:
+            for m in monitors:
+                m.refresh_counts()
+            last_count = now
+
+    def global_line() -> str:
+        nds = "-" if truth.n_nodes is None else truth.n_nodes
+        tpc = "-" if truth.n_topics is None else truth.n_topics
+        return f"global namespace (domain {args.main_domain}):  nodes={nds}  topics={tpc}"
+
     try:
         if args.once:
             time.sleep(1.0)  # let subscriptions match and receive
-            print(render(states, true_ball_xy(), args.rotate_180))
+            maybe_refresh_counts()
+            print(render(domain_monitors, true_ball_xy(), args.rotate_180))
+            print("\n" + global_line())
         else:
             period = 1.0 / args.rate
             while True:
+                maybe_refresh_counts()
                 # clear screen + home cursor, then redraw the table in place
                 print("\033[2J\033[H", end="")
                 rot = "  (truth rotated 180°)" if args.rotate_180 else ""
                 print(
                     f"Robot overview  domains={domains}  truth@{args.main_domain}{rot}  "
                     f"({time.strftime('%H:%M:%S')})\n"
-                    "ball err = filtered ball (transformed odom->map) vs true ball\n"
+                    "ball err = filtered ball (transformed odom->map) vs true ball | "
+                    "nds/tpc = other nodes/topics in domain\n"
                 )
-                print(render(states, true_ball_xy(), args.rotate_180))
+                print(render(domain_monitors, true_ball_xy(), args.rotate_180))
+                print("\n" + global_line())
                 time.sleep(period)
     except KeyboardInterrupt:
         pass
