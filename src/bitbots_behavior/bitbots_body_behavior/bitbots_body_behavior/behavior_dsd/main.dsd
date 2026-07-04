@@ -31,7 +31,7 @@ $DoOnce
         NO --> @LookAtFieldFeatures, @GoToRolePosition
 
 #KickWithAvoidance
-$KickOrDribble + map_goal_distance:%ball_approach_dist // should be same as below $GoToBall + target:map action
+$KickOrDribble + map_goal_distance:%ball_approach_dist + threshold_front:1.5 + threshold_behind:1 // should be same as below $GoToBall + target:map action
     KICK --> $DoOnce
         NOT_DONE --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:rl_kick + blocking:false
         DONE --> $ReachedAndAlignedToPathPlanningGoalPosition + threshold:%rl_kick_approach_tolerance_pos + orientation_threshold:%rl_kick_approach_tolerance_deg + latch:true

@@ -17,6 +17,8 @@ class DribbleOrKick(AbstractDecisionElement):
         self.num_kick_angles = self.blackboard.config["num_kick_angles"]
 
         self.dribble_kick_angle = self.blackboard.config["dribble_kick_angle"]
+        self.threshold_front = parameters.get("threshold_front", 10)
+        self.threshold_behind = parameters.get("threshold_behind", 10)
 
     def perform(self, reevaluate=False):
         """
@@ -50,7 +52,12 @@ class DribbleOrKick(AbstractDecisionElement):
         ball_near = ball_distance < self.ball_distance_threshold
         self.publish_debug_data(f"Ball distance (needs <{self.ball_distance_threshold})", ball_distance)
 
-        if oriented_to_goal and front_free and goal_far and ball_near:
+        # no other robots to close
+        other_robots_close = self.blackboard.costmap.is_other_robot_close(self.threshold_front, self.threshold_behind)
+        # actual set play situation
+        set_play_state = self.blackboard.gamestate.get_set_play()
+
+        if other_robots_close and set_play_state == 0:
             return "DRIBBLE"
         else:
             return "KICK"

@@ -41,6 +41,8 @@ class CostmapCapsule(AbstractBlackboardCapsule):
         self.map_margin: float = self.body_config["map_margin"]
         self.obstacle_costmap_smoothing_sigma: float = self.body_config["obstacle_costmap_smoothing_sigma"]
         self.obstacle_cost: float = self.body_config["obstacle_cost"]
+        self.closest_robot_infront_dist: float = 10000
+        self.closest_robot_behind_dist: float = 10000
 
         # Publisher for visualization in RViZ
         self.costmap_publisher = self._node.create_publisher(OccupancyGrid, "debug/costmap", 1)
@@ -61,6 +63,8 @@ class CostmapCapsule(AbstractBlackboardCapsule):
         """
         # Init a new obstacle costmap
         obstacle_map = np.zeros_like(self.costmap)
+        self.closest_robot_infront_dist = 10000
+        self.closest_robot_behind_dist = 10000
         # Iterate over all robots
         robot: Robot
         for robot in msg.robots:
@@ -69,6 +73,16 @@ class CostmapCapsule(AbstractBlackboardCapsule):
             # TODO inflate
             # Draw obstacle with smoothing independent weight on obstacle costmap
             obstacle_map[idx_x, idx_y] = self.obstacle_cost * self.obstacle_costmap_smoothing_sigma
+            
+            dist_to_robot = np.linalg.norm(np.array[self._blackboard.world_model.get_current_position()[0], self._blackboard.world_model.get_current_position()[1]]) - np.array([robot.bb.center.position.x,robot.bb.center.position.y])
+            if robot.bb.center.position.x > self._blackboard.world_model.get_current_position()[0]:
+                if dist_to_robot < self.closest_robot_infront_dist:
+                    self.closest_robot_infront_dist = dist_to_robot
+            else:
+                if dist_to_robot < self.closest_robot_behind_dist:
+                    self.closest_robot_behind_dist = dist_to_robot
+
+
         # Smooth obstacle map
         obstacle_map = gaussian_filter(obstacle_map, self.obstacle_costmap_smoothing_sigma)
         # Get pass offsets
@@ -432,3 +446,11 @@ class CostmapCapsule(AbstractBlackboardCapsule):
             )
         ]
         return kick_direction
+    
+    def is_other_robot_close(self, threshold_front: float, threshold_behind: float) -> bool:
+        if threshold_front > self.closest_robot_infront_dist:
+            return True
+        elif threshold_behind > self.closest_robot_behind_dist:
+            return True
+        else:
+            return False
