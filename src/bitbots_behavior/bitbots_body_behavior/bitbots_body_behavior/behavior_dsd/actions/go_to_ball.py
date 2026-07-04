@@ -3,7 +3,6 @@ from bitbots_blackboard.capsules.pathfinding_capsule import BallGoalType
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 from geometry_msgs.msg import Vector3
 from std_msgs.msg import ColorRGBA
-from tf2_geometry_msgs import PoseStamped
 from visualization_msgs.msg import Marker
 
 
@@ -26,15 +25,7 @@ class GoToBall(AbstractActionElement):
         self.side_offset = parameters.get("side_offset", 0.00)
 
     def perform(self, reevaluate=False):
-        pose_msg = PoseStamped()
-        pose_msg.header.stamp = self.blackboard.node.get_clock().now().to_msg()
-        pose_msg.header.frame_id = self.blackboard.map_frame
-        optimal_positioning = self.blackboard.positioning.get_formation_assignment()
-        own_position = optimal_positioning[self.blackboard.gamestate.get_own_id()]
-        pose = own_position["goal_pose"]
-        pose_msg.pose.position.x = pose[0]
-        pose_msg.pose.position.y = pose[1]
-        pose_msg.pose.orientation.w = pose[2]
+        pose_msg = self.blackboard.pathfinding.get_ball_goal(self.target, self.distance, self.side_offset)
         self.blackboard.pathfinding.publish(pose_msg)
 
         if self.target != BallGoalType.RL_KICK:
