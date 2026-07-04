@@ -1,7 +1,10 @@
 import rclpy
+import tf2_geometry_msgs  # noqa: F401
+from bitbots_tf_buffer import Buffer
 from game_controller_hsl_interfaces.msg import PlayerStateResponse
 from geometry_msgs.msg import PointStamped, PoseStamped, PoseWithCovarianceStamped
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
+from rclpy.duration import Duration
 from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
 
@@ -23,6 +26,7 @@ class PlayerStateAggregator(Node):
         robot_state_topic = self.declare_parameter("robot_state_topic", "robot_state").value
         pose_topic = self.declare_parameter("pose_topic", "pose_with_covariance").value
         ball_topic = self.declare_parameter("ball_topic", "ball_position_relative_filtered").value
+        self.ball_frame_out = self.declare_parameter("ball_frame_out", "base_footprint").value
         response_topic = self.declare_parameter("response_topic", "player_state_response").value
         publish_rate = self.declare_parameter("publish_rate", 1.0).value
 
@@ -32,6 +36,7 @@ class PlayerStateAggregator(Node):
         self._fallen = False
         self._pose: PoseStamped | None = None
         self._relative_ball: PointStamped | None = None
+        self._tf_buffer = Buffer(Duration(seconds=30), self)
 
         self._publisher = self.create_publisher(
             PlayerStateResponse, response_topic, 1, callback_group=MutuallyExclusiveCallbackGroup()
@@ -78,7 +83,11 @@ class PlayerStateAggregator(Node):
             response.pose = self._pose
 
         if self._relative_ball is not None:
-            response.ball = self._relative_ball
+            try:
+                response.ball = self._tf_buffer.transform(self._relative_ball, self.ball_frame_out)
+            except Exception as e:
+                self.get_logger().warn(str(e), throttle_duration_sec=10.0)
+                pass
 
         return response
 
