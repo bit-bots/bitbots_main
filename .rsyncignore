@@ -24,5 +24,6 @@ __pycache__
 # Don't sync the simulation environments
 src/bitbots_simulation/bitbots_mujoco_sim/
 
-# Don't sync the build bitbots_rust_nav target directory
-src/bitbots_navigation/bitbots_rust_nav/target
+# Don't sync the rust build target directory
+target/
+src/bitbots_navigation/bitbots_rust_nav/target/
