@@ -33,6 +33,7 @@ import math
 import os
 from dataclasses import dataclass
 from pathlib import Path
+from typing import TYPE_CHECKING, cast
 
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
@@ -41,6 +42,9 @@ from matplotlib.patches import Arc, Circle, FancyArrow
 from matplotlib.widgets import RadioButtons
 from ros2_numpy import numpify
 from tf_transformations import euler_from_quaternion
+
+if TYPE_CHECKING:
+    from bitbots_blackboard.body_blackboard import BodyBlackboard
 
 # --------------------------------------------------------------------------- #
 # Field / behavior parameters (mirrors config, so no ROS param server needed). #
@@ -171,7 +175,7 @@ class FakeBlackboard:
 def make_capsule(robot: Pose, ball: Pose) -> PathfindingCapsule:
     """Build the real capsule without running __init__ (which needs a ROS node)."""
     capsule = PathfindingCapsule.__new__(PathfindingCapsule)
-    capsule._blackboard = FakeBlackboard(robot, ball)
+    capsule._blackboard = cast("BodyBlackboard", FakeBlackboard(robot, ball))
     return capsule
 
 
@@ -211,7 +215,7 @@ class Visualizer:
         self.ax.set_ylabel("y (down)")
 
         # Radio buttons to pick the target type.
-        rax = self.fig.add_axes([0.01, 0.5, 0.15, 0.18])
+        rax = self.fig.add_axes((0.01, 0.5, 0.15, 0.18))
         self._targets = list(BallGoalType)
         self.radio = RadioButtons(rax, [t.value for t in self._targets], active=self._targets.index(self.target))
         self.radio.on_clicked(self._on_target)
