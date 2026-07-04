@@ -158,7 +158,7 @@ body_behavior:
 
     rl_kick:
       timeout: 2.0  # how long the kick policy is active
-      approach_dist: 0.9  # distance from the ball to the approach point on the arc
+      approach_dist: 0.6  # distance from the ball to the approach point on the arc
       approach_arc_half_degree: 60.0  # half opening angle (in degrees) of the arc around the point opposite the kick direction
       goal_line_offset: 0.25  # distance beyond the goal line used for the left/right kick target points
       goal_kick_dir_inset: 0.5
