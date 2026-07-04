@@ -11,6 +11,7 @@ WALKABLE_STATES = (
 KICKABLE_STATES = (
     RobotControlState.CONTROLLABLE,
     RobotControlState.KICKING,
+    RobotControlState.WALKING,
 )
 
 # States during which the getup (standup) policy should produce motor goals.
