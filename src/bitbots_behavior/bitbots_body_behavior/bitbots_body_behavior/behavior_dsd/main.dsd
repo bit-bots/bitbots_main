@@ -71,10 +71,6 @@ $SecondaryStateTeamDecider
             YES --> @TrackBall, @Stand
             NO --> @LookAtFieldFeatures, @Stand
 
-#Placing
-@ChangeAction + action:positioning, @ForgetBall, @LookAtFieldFeatures, @GoToFormationPosition + set_play:true + stand:true + enter_position:%placing_enter_position + leave_position:%placing_leave_position + enter_orientation:%placing_enter_orientation + leave_orientation:%placing_leave_orientation
-
-
 #Init
 @Stand + duration:0.1 + r:false, @ChangeAction + action:waiting, @LookForward, @Stand
 
@@ -92,23 +88,18 @@ $SecondBallTouchAllowed
                 YES --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @GoToFormationPosition
                 NO --> @LookAtFieldFeatures, @ChangeAction + action:positioning, @GoToFormationPosition + stand:true + enter_position:%defender_enter_position + leave_position:%defender_leave_position + enter_orientation:%defender_enter_orientation + leave_orientation:%defender_leave_orientation
 
-#ThrowinGoalKickCornerkickBehavior
+#SetPlaySituation
 $DoOnce
     NOT_DONE --> @SetNoSecondBallContactVariable + value:true, @ForgetBallStartPosition + r:false
     DONE --> $SecondaryStateTeamDecider
         OUR --> #NormalBehavior
-        ELSE --> #Placing
+        ELSE --> @ChangeAction + action:positioning, @ForgetBall, @LookAtFieldFeatures, @GoToFormationPosition + set_play:true + stand:true + enter_position:%placing_enter_position + leave_position:%placing_leave_position + enter_orientation:%placing_enter_orientation + leave_orientation:%placing_leave_orientation
 
 #PlayingBehavior
 $SecondaryStateDecider
     PENALTYSHOOT --> #PenaltyShootoutBehavior
     TIMEOUT --> #StandAndLook
-    THROW_IN --> #ThrowinGoalKickCornerkickBehavior
-    CORNER_KICK --> #ThrowinGoalKickCornerkickBehavior
-    GOAL_KICK --> #ThrowinGoalKickCornerkickBehavior
-    ELSE --> $SecondaryStateTeamDecider
-        OUR --> #NormalBehavior
-        ELSE --> #Placing
+    ELSE --> #SetPlaySituation
     NORMAL --> #NormalBehavior
     OVERTIME --> #NormalBehavior
 
