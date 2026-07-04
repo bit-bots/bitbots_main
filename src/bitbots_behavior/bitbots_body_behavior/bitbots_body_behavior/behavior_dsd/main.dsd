@@ -31,17 +31,25 @@ $DoOnce
         NO --> @LookAtFieldFeatures, @GoToRolePosition
 
 #KickWithAvoidance
-$AvoidBall
-    NO --> $BallClose + distance:%ball_reapproach_dist + angle:%ball_reapproach_angle
-        YES --> $BallKickArea
-            NEAR --> $DoOnce
+$KickOrDribble + map_goal_distance:%ball_approach_dist // should be same as below $GoToBall + target:map action
+    KICK --> $DoOnce
+        NOT_DONE --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:rl_kick + blocking:false
+        DONE --> $ReachedAndAlignedToPathPlanningGoalPosition + threshold:%rl_kick_approach_tolerance_pos + orientation_threshold:%rl_kick_approach_tolerance_deg + latch:true
+            NO --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:rl_kick
+            YES --> $DoOnce
                 NOT_DONE --> @StoreBallMovementDetectionStartPosition
-                DONE --> #Dribble
-            FAR --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:map
-        NO --> @ChangeAction + action:going_to_ball + r:false, @LookAtFieldFeatures + r:false, @AvoidBallActive + r:false, @GoToBall + target:map + blocking:false + distance:%ball_far_approach_dist
-    YES --> $ReachedPathPlanningGoalPosition + threshold:%ball_far_approach_position_thresh
-        YES --> @AvoidBallInactive
-        NO --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:map + distance:%ball_far_approach_dist
+                DONE --> @ChangeAction + action:kicking, @Stand + duration:0.1 + r:false, @LookAtBallPenalty + r:false, @RLKickTowardsGoal + strength:3.0 + r:false, @ForgetBall
+    DRIBBLE --> $AvoidBall // old behavior before kick when we want to kick the ball in
+        NO --> $BallClose + distance:%ball_reapproach_dist + angle:%ball_reapproach_angle
+            YES --> $BallKickArea
+                NEAR --> $DoOnce
+                    NOT_DONE --> @StoreBallMovementDetectionStartPosition
+                    DONE --> #Dribble
+                FAR --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:map
+            NO --> @ChangeAction + action:going_to_ball + r:false, @LookAtFieldFeatures + r:false, @AvoidBallActive + r:false, @GoToBall + target:map + blocking:false + distance:%ball_far_approach_dist
+        YES --> $ReachedPathPlanningGoalPosition + threshold:%ball_far_approach_position_thresh
+            YES --> @AvoidBallInactive
+            NO --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:map + distance:%ball_far_approach_dist
 
 #PositioningReady
 $GoalScoreRecently
@@ -128,7 +136,7 @@ $SecondBallTouchAllowed
                         FIRST --> #StrikerRole
                         SECOND --> #SupporterRole
                         THIRD --> #DefensePositioning
-                        
+
 #ThrowinGoalKickCornerkickBehavior
 $DoOnce
     NOT_DONE --> @SetNoSecondBallContactVariable + value:true, @ForgetBallStartPosition + r:false
@@ -137,7 +145,7 @@ $DoOnce
         ELSE --> #Placing
 
 #PlayingBehavior
-$SecondaryStateDecider 
+$SecondaryStateDecider
     PENALTYSHOOT --> #PenaltyShootoutBehavior
     TIMEOUT --> #StandAndLook
     THROW_IN --> #ThrowinGoalKickCornerkickBehavior

@@ -1,12 +1,12 @@
 import numpy as np
-from handlers.command_handler import CommandHandler
-from handlers.gravity_handler import GravityHandler
-from handlers.gyro_handler import GyroHandler
-from handlers.joint_handler import JointHandler
-from handlers.robot_state_handler import RobotStateHandler
 
 from bitbots_msgs.msg import JointCommand
-from nodes.rl_node import RLNode, create_main
+from bitbots_rl_motion.handlers.command_handler import CommandHandler
+from bitbots_rl_motion.handlers.gravity_handler import GravityHandler
+from bitbots_rl_motion.handlers.gyro_handler import GyroHandler
+from bitbots_rl_motion.handlers.joint_handler import JointHandler
+from bitbots_rl_motion.handlers.robot_state_handler import RobotStateHandler
+from bitbots_rl_motion.nodes.rl_node import RLNode, create_main
 
 
 class WalkNode(RLNode):
@@ -50,6 +50,11 @@ class WalkNode(RLNode):
     # states in which the policy executes
     def allowed_states(self):
         return self._robot_state_handler.is_walkable()
+
+    def initialize_observation(self):
+        # No observation history; just start the previous-action feedback term
+        # from zero on each (re)activation.
+        self._previous_action.set_previous_action(np.zeros_like(self._previous_action.get_previous_action()))
 
     def _phase_update_hook(self):
         if not self._phase.check_phase_set():

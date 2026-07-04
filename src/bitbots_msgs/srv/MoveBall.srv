@@ -1,0 +1,3 @@
+# Move the simulated ball by a relative offset (in meters, world frame).
+geometry_msgs/Vector3 offset
+---

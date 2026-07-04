@@ -84,7 +84,9 @@ class ReachedAndAlignedToPathPlanningGoalPosition(AbstractDecisionElement):
         super().__init__(blackboard, dsd, parameters)
         self.frame_id = parameters.get("frame_id", self.blackboard.map_frame)
         self.threshold = parameters.get("threshold")
-        self.orientation_threshold = math.radians(self.blackboard.config["goal_alignment_orientation_threshold"])
+        self.orientation_threshold = math.radians(
+            parameters.get("orientation_threshold", self.blackboard.config["goal_alignment_orientation_threshold"])
+        )
         self.latch = parameters.get("latch", False)
         self.latched = False
 
