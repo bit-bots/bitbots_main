@@ -45,6 +45,7 @@ rosidl_generate_interfaces(
   "msg/Workload.msg"
   "srv/AddAnimation.srv"
   "srv/ManualPenalize.srv"
+  "srv/MoveBall.srv"
   "srv/SetObjectPose.srv"
   "srv/SetObjectPosition.srv"
   "srv/SetTeachingMode.srv"
