@@ -1,6 +1,14 @@
 cmake_minimum_required(VERSION 3.8)
 project(zed_components)
 
+if(POLICY CMP0146)
+    cmake_policy(SET CMP0146 OLD)
+endif()
+
+if(POLICY CMP0153)
+    cmake_policy(SET CMP0153 OLD)
+endif()
+
 ################################################
 ## Generate symbols for IDE indexer (VSCode)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -83,7 +91,11 @@ endif()
 # Dependencies
 find_package(ZED REQUIRED)
 
-exec_program(uname ARGS -p OUTPUT_VARIABLE CMAKE_SYSTEM_NAME2)
+execute_process(
+    COMMAND uname -p
+    OUTPUT_VARIABLE CMAKE_SYSTEM_NAME2
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
 if(CMAKE_SYSTEM_NAME2 MATCHES "aarch64") # Jetson TX
     set(CUDA_USE_STATIC_CUDA_RUNTIME OFF)
 endif()
