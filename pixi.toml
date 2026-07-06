@@ -19,11 +19,11 @@ format = {cmd = "sh -c 'pre-commit run --all-files --hook-stage \"${PRE_COMMIT_S
 
 [tasks.build]
 # Skipping ZED-camera related packages as they require a local installation of the ZED SDK.
-cmd = "colcon build --symlink-install --cmake-args -G 'Unix Makefiles' --packages-skip zed_wrapper zed_components zed_msgs zed_ros2 "
+cmd = "colcon build --symlink-install --cmake-args -G 'Unix Makefiles' -DCMAKE_C_FLAGS='-Wall -Wextra -Wpedantic' -DCMAKE_CXX_FLAGS='-Wall -Wextra -Wpedantic' --packages-skip zed_wrapper zed_components zed_msgs zed_ros2 "
 description = "Builds all ROS 2 packages. Add --packages-select <package names> to build specific packages."
 
 [feature.robot.tasks.build]
-cmd = "colcon build --symlink-install --cmake-args -G 'Unix Makefiles' "
+cmd = "colcon build --symlink-install --cmake-args -G 'Unix Makefiles' -DCMAKE_C_FLAGS='-Wall -Wextra -Wpedantic' -DCMAKE_CXX_FLAGS='-Wall -Wextra -Wpedantic' "
 description = "Builds all ROS 2 packages. Add --packages-select <package names> to build specific packages."
 
 [tasks.clean]
