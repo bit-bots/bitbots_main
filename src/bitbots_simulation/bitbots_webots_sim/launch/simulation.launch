@@ -47,7 +47,7 @@
                 <arg name="robot_name" value="amy"/>
                 <arg name="tf_prefix" value="amy/"/>
                 <arg name="sim_port" value="$(var sim_port)"/>
-                <arg name="void_controller" value="$(eval '\'$(var num_robots)\' &lt; 1')"/>
+                <arg name="void_controller" value="$(eval 'int($(var num_robots) &lt; 1)')"/>
                 <arg name="camera" value="$(var camera)"/>
                 <arg name="recognition" value="$(var recognition)"/>
             </include>
@@ -59,7 +59,7 @@
                 <arg name="robot_name" value="rory"/>
                 <arg name="tf_prefix" value="rory/"/>
                 <arg name="sim_port" value="$(var sim_port)"/>
-                <arg name="void_controller" value="$(eval '\'$(var num_robots)\' &lt; 2')"/>
+                <arg name="void_controller" value="$(eval 'int($(var num_robots) &lt; 2)')"/>
                 <arg name="camera" value="$(var camera)"/>
                 <arg name="recognition" value="$(var recognition)"/>
             </include>
@@ -71,7 +71,7 @@
                 <arg name="robot_name" value="jack"/>
                 <arg name="tf_prefix" value="jack/"/>
                 <arg name="sim_port" value="$(var sim_port)"/>
-                <arg name="void_controller" value="$(eval '\'$(var num_robots)\' &lt; 3')"/>
+                <arg name="void_controller" value="$(eval 'int($(var num_robots) &lt; 3)')"/>
                 <arg name="camera" value="$(var camera)"/>
                 <arg name="recognition" value="$(var recognition)"/>
             </include>
@@ -83,7 +83,7 @@
                 <arg name="robot_name" value="donna"/>
                 <arg name="tf_prefix" value="donna/"/>
                 <arg name="sim_port" value="$(var sim_port)"/>
-                <arg name="void_controller" value="$(eval '\'$(var num_robots)\' &lt; 4')"/>
+                <arg name="void_controller" value="$(eval 'int($(var num_robots) &lt; 4)')"/>
                 <arg name="camera" value="$(var camera)"/>
                 <arg name="recognition" value="$(var recognition)"/>
             </include>
