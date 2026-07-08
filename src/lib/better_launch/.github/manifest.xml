@@ -1,0 +1,37 @@
+<package>
+  <name>better_launch</name>
+  <description brief="A better replacement for the ROS2 launch system: intuitive, simple, memorable.">
+    A replacement for the cumbersome ROS2 launch system, allowing you to write short and convenient launch files without dozens of imports and nested classes. 
+  </description>
+  <author>Nikolas Dahn/nikolas.dahn@dfki.de</author>
+  <maintainer>Nikolas Dahn/nikolas.dahn@dfki.de</maintainer>
+  <!-- Use the short version name from: https://spdx.org/licenses/ -->
+  <license>MIT</license>
+  <url>https://git.hb.dfki.de/ric-maritime/solutions/tools/better_launch</url>
+  <logo>docs/assets/images/logo.png</logo>
+
+  <depend package="rclpy"/>
+
+  <keywords>
+    <keyword>middleware</keyword>
+    <keyword>ros2</keyword>
+    <keyword>launch</keyword>
+  </keywords>
+
+  <stage>0</stage>
+  <use>single project</use>
+  <!-- <use>multi project</use> -->
+  <!-- <use>external</use> -->
+  <activity>active</activity>
+  <!-- <activity>pending</activity> -->
+  <!-- <activity>discontinued</activity> -->
+  <classifiers> <!--optional -->
+    <!-- The idea of "classifiers" is to provide additional meta data about the software,
+         for example, which programming language has been used, what is the target platform,
+         is it compatible with any robotic middleware. The idea is similar to classifiers
+         in the Python package index (https://packaging.python.org/tutorials/distributing-packages/#classifiers) but we don't have a predefined list of allowed classifiers. -->
+    <classifier>python</classifier>
+    <classifier>ros2</classifier>
+    <classifier>gui</classifier>
+  </classifiers>
+</package>
