@@ -1,8 +1,0 @@
-<launch>
-    <arg name="tf_prefix" default=""/>
-    <arg name="sim" default="false" />
-
-    <node pkg="bitbots_head_mover" exec="move_head" output="screen" respawn="true">
-        <param name="use_sim_time" value="$(var sim)" />
-    </node>
-</launch>

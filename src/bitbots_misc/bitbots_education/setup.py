@@ -22,7 +22,7 @@ setup(
     data_files=[
         ("share/ament_index/resource_index/packages", ["resource/" + package_name]),
         ("share/" + package_name, ["package.xml"]),
-        ("share/" + package_name + "/launch", glob.glob("launch/*.launch")),
+        ("share/" + package_name + "/launch", glob.glob("launch/*.launch.py")),
     ]
     + generate_data_files("share/" + package_name + "/", "templates/")
     + generate_data_files("share/" + package_name + "/", "static/"),

@@ -12,7 +12,7 @@ setup(
         ("share/ament_index/resource_index/packages", ["resource/" + package_name]),
         ("share/" + package_name, ["package.xml"]),
         ("share/" + package_name + "/config", glob.glob("config/*.yaml")),
-        ("share/" + package_name + "/launch", glob.glob("launch/*.launch")),
+        ("share/" + package_name + "/launch", glob.glob("launch/*.launch.py")),
     ],
     scripts=["scripts/teleop_keyboard.py", "scripts/kick_teleop.py"],
     install_requires=[

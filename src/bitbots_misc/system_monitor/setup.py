@@ -13,7 +13,7 @@ setup(
         ("share/" + package_name + "/config", glob.glob("config/*.yaml")),
         ("share/" + package_name + "/config", glob.glob("config/*.rviz")),
         ("share/" + package_name + "/config", glob.glob("config/*.xml")),
-        ("share/" + package_name + "/launch", glob.glob("launch/*.launch")),
+        ("share/" + package_name + "/launch", glob.glob("launch/*.launch.py")),
     ],
     install_requires=[
         "setuptools",

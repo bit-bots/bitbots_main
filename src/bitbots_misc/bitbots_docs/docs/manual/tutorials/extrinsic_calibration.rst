@@ -15,7 +15,7 @@ Setup
 
 .. code-block:: bash
 
-   ros2 launch bitbots_extrinsic_calibration viz_extrinsic_calibration.launch
+   bl bitbots_extrinsic_calibration viz_extrinsic_calibration.launch.py
 
 2. In Dynamic Reconfigure open the parameters (left panel) for the nodes: :code:`bitbots_extrinsic_imu_calibration` and :code:`bitbots_extrinsic_camera_calibration`.
 

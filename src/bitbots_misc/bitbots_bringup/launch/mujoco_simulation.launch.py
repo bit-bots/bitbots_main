@@ -1,18 +1,10 @@
+#!/usr/bin/env python3
 import os
 from pathlib import Path
 
 import yaml
-from ament_index_python.packages import get_package_share_directory
-from launch import LaunchDescription
-from launch.actions import (
-    DeclareLaunchArgument,
-    ExecuteProcess,
-    LogInfo,
-    OpaqueFunction,
-    TimerAction,
-)
-from launch.substitutions import LaunchConfiguration
-from launch_ros.actions import Node
+
+from better_launch import BetterLaunch, launch_this
 
 # Teamplayer arguments to expose (name, description)
 # Empty string default means "not set" - will use teamplayer's default
@@ -111,107 +103,90 @@ def generate_world_xml(num_robots: int, package_share: str, robot_type: str) -> 
     return output_path
 
 
-def launch_setup(context):
-    """Dynamically set up launches based on num_robots."""
-    num_robots = int(LaunchConfiguration("num_robots").perform(context))
-    robot_type = str(LaunchConfiguration("robot_type").perform(context))
-    package_share = get_package_share_directory("bitbots_mujoco_sim")
+@launch_this
+def mujoco_simulation(
+    num_robots: int = 1,
+    robot_type: str = "piplus",
+    audio: str = "",
+    behavior: str = "",
+    behavior_dsd_file: str = "",
+    game_controller: str = "",
+    ipm: str = "",
+    localization: str = "",
+    motion: str = "",
+    path_planning: str = "",
+    teamcom: str = "",
+    vision: str = "",
+    world_model: str = "",
+    monitoring: str = "",
+    record: str = "",
+    tts: str = "",
+):
+    """Launch MuJoCo simulation with domain bridge for multi-robot support.
+
+    Parameters
+    ----------
+    num_robots : int
+        Number of robots in the simulation
+    robot_type : str
+        Set the type of robot used (piplus, x02)
+    """
+    bl = BetterLaunch()
+
+    # Only forwarded to the per-robot teamplayer stack if explicitly set (not empty)
+    teamplayer_values = {
+        "audio": audio,
+        "behavior": behavior,
+        "behavior_dsd_file": behavior_dsd_file,
+        "game_controller": game_controller,
+        "ipm": ipm,
+        "localization": localization,
+        "motion": motion,
+        "path_planning": path_planning,
+        "teamcom": teamcom,
+        "vision": vision,
+        "world_model": world_model,
+        "monitoring": monitoring,
+        "record": record,
+        "tts": tts,
+    }
+
+    package_share = bl.find("bitbots_mujoco_sim")
     bridge_config_dir = Path(package_share) / "config" / "domain_bridges"
 
-    # Get teamplayer argument values - only pass if explicitly set (not empty)
-    teamplayer_args = ["sim:=true"]  # sim is always true for mujoco simulation
-    for arg_name, _ in TEAMPLAYER_ARGS:
-        value = LaunchConfiguration(arg_name).perform(context)
+    teamplayer_args = ["--sim", "true"]  # sim is always true for mujoco simulation
+    for arg_name, value in teamplayer_values.items():
         if value:  # Only pass if not empty string
-            teamplayer_args.append(f"{arg_name}:={value}")
+            teamplayer_args += [f"--{arg_name}", value]
 
     world_file = generate_world_xml(num_robots, package_share, robot_type)
 
-    actions = []
-
-    actions.append(
-        LogInfo(msg=f"Starting MuJoCo simulation with {num_robots} robot(s)"),
-    )
-    actions.append(
-        Node(
-            package="bitbots_mujoco_sim",
-            executable="sim",
-            name="sim_interface",
-            output="screen",
-            emulate_tty=True,
-            parameters=[{"world_file": str(world_file)}],
-        ),
+    bl.logger.info(f"Starting MuJoCo simulation with {num_robots} robot(s)")
+    bl.node(
+        "bitbots_mujoco_sim",
+        "sim",
+        "sim_interface",
+        params={"world_file": str(world_file)},
     )
 
-    for robot_domain in range(11, num_robots + 11):  # 11 is the standart starting id for our robots
+    for robot_domain in range(11, num_robots + 11):  # 11 is the standard starting id for our robots
         config_file = generate_domain_bridge_config(robot_domain, bridge_config_dir)
-        actions.append(
-            LogInfo(msg=f"Starting domain bridge for robot{robot_domain} (domain {robot_domain})"),
+
+        bl.logger.info(f"Starting domain bridge for robot{robot_domain} (domain {robot_domain})")
+        bl.node(
+            "domain_bridge",
+            "domain_bridge",
+            f"domain_bridge_robot{robot_domain}",
+            cmd_args=[str(config_file)],
         )
-        actions.append(
-            Node(
-                package="domain_bridge",
-                executable="domain_bridge",
-                name=f"domain_bridge_robot{robot_domain}",
-                arguments=[str(config_file)],
+
+        def start_teamplayer(robot_domain=robot_domain):
+            bl.logger.info(f"Launching teamplayer stack for robot{robot_domain} in domain {robot_domain}")
+            bl.process(
+                ["bl", "bitbots_bringup", "teamplayer.launch.py"] + teamplayer_args,
+                name=f"teamplayer_robot{robot_domain}",
                 output="screen",
-                emulate_tty=True,
-            ),
-        )
-
-        actions.append(
-            TimerAction(
-                period=3.0,
-                actions=[
-                    LogInfo(msg=f"Launching teamplayer stack for robot{robot_domain} in domain {robot_domain}"),
-                    ExecuteProcess(
-                        cmd=[
-                            "ros2",
-                            "launch",
-                            "bitbots_bringup",
-                            "teamplayer.launch",
-                        ]
-                        + teamplayer_args,
-                        output="screen",
-                        additional_env={"ROS_DOMAIN_ID": str(robot_domain)},
-                    ),
-                ],
+                env={"ROS_DOMAIN_ID": str(robot_domain)},
             )
-        )
 
-    return actions
-
-
-def generate_launch_description():
-    """Launch MuJoCo simulation with domain bridge for multi-robot support."""
-
-    declared_args = [
-        DeclareLaunchArgument(
-            "num_robots",
-            default_value="1",
-            description="Number of robots in the simulation",
-        ),
-        DeclareLaunchArgument(
-            "robot_type",
-            default_value="piplus",
-            description="Set the type of robot used (piplus, x02)",
-        ),
-    ]
-
-    # Add all teamplayer arguments with empty default (means use teamplayer's default)
-    for arg_name, description in TEAMPLAYER_ARGS:
-        declared_args.append(
-            DeclareLaunchArgument(
-                arg_name,
-                default_value="",
-                description=description,
-            )
-        )
-
-    return LaunchDescription(
-        declared_args
-        + [
-            # All setup happens in OpaqueFunction to ensure proper ordering
-            OpaqueFunction(function=launch_setup),
-        ]
-    )
+        bl.run_later(3.0, start_teamplayer)

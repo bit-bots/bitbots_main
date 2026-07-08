@@ -62,11 +62,11 @@ Sensor data is not influenced by the HCM, since it does not need to be mutexed.
 How the HCM is started
 ----------------------
 
-The easiest way to start the HCM is to launch the complete motion (`ros2 launch bitbots_bringup motion_standalone.launch`).
+The easiest way to start the HCM is to launch the complete motion (`bl bitbots_bringup motion_standalone.launch.py`).
 For debugging it is sometimes better to launch the single parts by themselves.
-The HCM needs the animation server (`ros2 launch bitbots_animation_server animation.launch`) to work because it is needed to perform falling and stand up animations.
+The HCM needs the animation server (`bl bitbots_animation_server animation.launch.py`) to work because it is needed to perform falling and stand up animations.
 To be able to actually control the hardware, ros_control needs to run (`ros2 launch bitbots_ros_control ros_control_standalone.launch`).
-Finally launch the HCM itself (`ros2 launch bitbots_hcm hcm_standalone.launch`).
+Finally launch the HCM itself (`bl bitbots_hcm hcm_standalone.launch.py`).
 
 
 What to do when it does not work

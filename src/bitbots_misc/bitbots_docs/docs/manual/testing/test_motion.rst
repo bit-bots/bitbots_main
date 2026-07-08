@@ -9,13 +9,13 @@ Test Motion in Visualization
 #. Test Animation:
     .. code-block:: bash
 
-        ros2 launch bitbots_animation_server viz.launch
+        bl bitbots_animation_server viz.launch.py
         ros2 run bitbots_animation_server run_animation.py cheering
 
 #. Test Walk:
     .. code-block:: bash
 
-        ros2 launch bitbots_bringup motion_standalone.launch
+        bl bitbots_bringup motion_standalone.launch.py
         # TODO Start RL motions
         ros2 run bitbots_teleop teleop_keyboard.py
 
@@ -27,13 +27,13 @@ Test Motion on Robot
 #. Test Animation on Robot:
     .. code-block:: bash
 
-        ros2 launch bitbots_animation_server test.launch
+        bl bitbots_animation_server test.launch.py
         ros2 run bitbots_animation_server run_animation.py cheering
 
 #. Test Walk on Robot:
     .. code-block:: bash
 
-        ros2 launch bitbots_bringup motion_standalone.launch
+        bl bitbots_bringup motion_standalone.launch.py
         # TODO Start RL motions
         ros2 run bitbots_teleop teleop_keyboard.py
 

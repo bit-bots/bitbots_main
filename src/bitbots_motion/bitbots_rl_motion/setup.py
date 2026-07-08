@@ -16,7 +16,7 @@ setup(
             glob.glob("models/*.onnx"),
         ),
         ("share/" + package_name + "/configs", glob.glob("configs/*.yaml")),
-        ("share/" + package_name + "/launch", glob.glob("launch/*.launch")),
+        ("share/" + package_name + "/launch", glob.glob("launch/*.launch.py")),
     ],
     install_requires=["setuptools"],
     zip_safe=True,
