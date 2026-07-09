@@ -137,6 +137,7 @@ class BetterLaunch(metaclass=BetterLaunchMeta):
         launch_args: dict[str, Any] = None,
         root_namespace: str = "/",
         *,
+        pass_launch_func_default: bool = True,
         short_unique_names: bool = False,
     ):
         """Note that BetterLaunch is a singleton: only the first invocation to `__init__` will succeed. All subsequent calls will return the previous instance. If you need access to the BetterLaunch instance outside your launch function, consider using one of the following classmethods instead:
@@ -191,6 +192,7 @@ class BetterLaunch(metaclass=BetterLaunchMeta):
         self._shutdown_callbacks = []
 
         self.short_unique_names = short_unique_names
+        self.pass_launch_func_default = pass_launch_func_default
 
         self.hello()
 
@@ -1522,7 +1524,7 @@ Please fasten your seatbelts and secure all baggage underneath your chair.
             .decode()
             .rstrip("\n")
         )
-        logger.info(ret)
+        logger.debug(ret)
 
         return ret
 
@@ -2105,7 +2107,7 @@ Please fasten your seatbelts and secure all baggage underneath your chair.
         launchfile: str,
         subdir: str = None,
         *,
-        pass_launch_func_args: bool = True,
+        pass_launch_func_args: bool = None,
         **kwargs,
     ) -> None:
         """Include another launch file, resolving its path using [find][].
@@ -2134,7 +2136,7 @@ Please fasten your seatbelts and secure all baggage underneath your chair.
 
         # Pass additional arguments, e.g. launch args
         include_args = {}
-        if pass_launch_func_args:
+        if pass_launch_func_args or (pass_launch_func_args is None and self.pass_launch_func_default):
             include_args.update(self.launch_args)
         include_args.update(**kwargs)
 

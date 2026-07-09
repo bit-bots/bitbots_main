@@ -60,7 +60,7 @@ def teamplayer(
     fieldname : str
         Loads field settings. Defaults to "hsl_kid" in simulation, "small_division_2026" otherwise.
     """
-    bl = BetterLaunch()
+    bl = BetterLaunch(pass_launch_func_default=False)
 
     # TODO: use better_launch's own use_sim_time mechanism (bl.group(use_sim_time=...) /
     # Settings().use_sim_time / BL_USE_SIM_TIME) instead of manually threading `sim` through

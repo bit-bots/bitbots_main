@@ -10,7 +10,7 @@ def aggregator():
     bl.node(
         "diagnostic_aggregator",
         "aggregator_node",
-        "",
-        params="analyzers.yaml",
+        "analyzers",
+        param_files=bl.find("bitbots_diagnostic", "analyzers.yaml", "config"),
         log_level=logging.WARNING,
     )

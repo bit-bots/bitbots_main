@@ -7,4 +7,4 @@ def emergency_listener(emergency_button: bool = True):
     bl = BetterLaunch()
 
     if emergency_button:
-        bl.node("bitbots_emergency", "EMERGENCY_NODE_LISTENER", "")
+        bl.node("bitbots_emergency", "EMERGENCY_NODE_LISTENER", "emergency_node_listener")

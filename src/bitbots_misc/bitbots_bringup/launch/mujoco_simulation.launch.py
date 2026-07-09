@@ -151,7 +151,7 @@ def mujoco_simulation(
         "tts": tts,
     }
 
-    package_share = bl.find("bitbots_mujoco_sim")
+    package_share = Path(bl.find("bitbots_mujoco_sim")) / "share" / "bitbots_mujoco_sim"
     bridge_config_dir = Path(package_share) / "config" / "domain_bridges"
 
     teamplayer_args = ["--sim", "true"]  # sim is always true for mujoco simulation

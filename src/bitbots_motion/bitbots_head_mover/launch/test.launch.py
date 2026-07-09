@@ -16,7 +16,7 @@ def test(sim: bool = False, viz: bool = False, tf_prefix: str = ""):
     bl.node(
         "humanoid_base_footprint",
         "base_footprint",
-        "",
+        "base_footprint",
         params={"support_state_topics": ["walk_support_state"]},
         use_sim_time=sim,
     )
@@ -28,9 +28,9 @@ def test(sim: bool = False, viz: bool = False, tf_prefix: str = ""):
 
     if viz:
         # translate joint goals to joint states
-        bl.node("bitbots_utils", "motor_goals_viz_helper.py", "", cmd_args=["--head"])
+        bl.node("bitbots_utils", "motor_goals_viz_helper.py", "MotorGoalsVizHelper", cmd_args=["--head"])
         # fake IMU needed for odometry
-        bl.node("bitbots_utils", "dummy_imu.py", "")
+        bl.node("bitbots_utils", "dummy_imu.py", "DummyImu")
         # create fake tf from map to robot
         bl.node(
             "tf2_ros",

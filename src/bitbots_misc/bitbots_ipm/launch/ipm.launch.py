@@ -91,7 +91,6 @@ def ipm(
         bl.node(
             "rviz2",
             "rviz2",
-            "",
             cmd_args=["-d", bl.find("bitbots_ipm", "ipm.rviz", "config")],
             log_level=None,
         )

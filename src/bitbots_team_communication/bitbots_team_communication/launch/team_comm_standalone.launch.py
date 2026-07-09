@@ -17,7 +17,7 @@ def team_comm_standalone(sim: bool = False):
     bl.node(
         "bitbots_team_communication",
         "team_comm.py",
-        "",
+        "team_comm",
         param_files=bl.find("bitbots_team_communication", "team_communication_config.yaml", "config"),
         use_sim_time=sim,
     )

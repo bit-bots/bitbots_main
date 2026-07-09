@@ -29,7 +29,7 @@ def localization(tf_prefix: str = "", sim: bool = False):
     bl.node(
         "bitbots_localization_handler",
         "localization_handler",
-        "",
+        "bitbots_localization_handler",
         params={
             "odom_frame": f"{tf_prefix}odom",
             "base_footprint_frame": f"{tf_prefix}base_footprint",

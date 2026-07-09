@@ -8,7 +8,7 @@ def head_mover(tf_prefix: str = "", sim: bool = False):
     bl.node(
         "bitbots_head_mover",
         "move_head",
-        "",
+        "head_mover",
         use_sim_time=sim,
         max_respawns=-1,
     )

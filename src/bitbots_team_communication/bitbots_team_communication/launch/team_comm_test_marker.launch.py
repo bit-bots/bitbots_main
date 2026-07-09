@@ -10,7 +10,6 @@ def team_comm_test_marker(rviz: bool = True):
         bl.node(
             "rviz2",
             "rviz2",
-            "",
             cmd_args=["-d", bl.find("bitbots_team_communication", "team_comm_marker.rviz", "config")],
             log_level=None,
         )

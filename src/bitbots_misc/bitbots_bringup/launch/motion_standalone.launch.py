@@ -26,9 +26,9 @@ def motion_standalone(
         bl.include("bitbots_tts", "tts.launch.py")
 
     if viz:
-        bl.node("bitbots_utils", "motor_goals_viz_helper.py", "", cmd_args=["--all"])
-        bl.node("rviz2", "rviz2", "")
-        bl.node("bitbots_utils", "dummy_imu.py", "")
+        bl.node("bitbots_utils", "motor_goals_viz_helper.py", "MotorGoalsVizHelper", cmd_args=["--all"])
+        bl.node("rviz2", "rviz2")
+        bl.node("bitbots_utils", "dummy_imu.py", "DummyImu")
 
     bl.include(
         "bitbots_bringup",

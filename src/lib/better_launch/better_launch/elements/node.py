@@ -119,6 +119,8 @@ class Node(AbstractNode, LiveParamsMixin):
         self.node_log_level = (
             logging.getLevelName(log_level) if isinstance(log_level, int) else log_level
         )
+        if self.node_log_level == "WARNING":
+            self.node_log_level = "WARN"  # ROS2 uses WARN instead of WARNING
         self.use_shell = use_shell
         self.max_respawns = max_respawns
         self.respawn_delay = respawn_delay
@@ -264,7 +266,10 @@ class Node(AbstractNode, LiveParamsMixin):
             #     print_cmd.append(s)
 
             env_str = pformat(self.env, compact=True)
-            self.logger.info(f"Starting process '{' '.join(print_cmd)}', env={env_str}")
+            joint = " ".join(print_cmd)
+            if joint and len(joint) > 200:
+                joint = joint[:200] + "..."
+            self.logger.info(f"Starting process '{joint}', env={env_str}")
 
             # Start the node process
             self._process = subprocess.Popen(

@@ -9,7 +9,7 @@ def behavior(dsd_file: str = "main.dsd", tf_prefix: str = "", sim: bool = False)
     bl.node(
         "bitbots_body_behavior",
         "body_behavior",
-        "",
+        "body_behavior",
         params={
             "dsd_file": dsd_file,
             "actionlib_server_sub_queue_size": -1,

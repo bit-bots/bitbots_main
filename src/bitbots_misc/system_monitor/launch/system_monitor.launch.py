@@ -8,6 +8,6 @@ def system_monitor():
     bl.node(
         "system_monitor",
         "monitor",
-        "",
+        "system_monitor",
         param_files=bl.find("system_monitor", "config.yaml", "config"),
     )

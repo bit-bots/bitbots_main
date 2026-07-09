@@ -27,7 +27,7 @@ def motion(
     bl.node(
         "humanoid_base_footprint",
         "base_footprint",
-        "",
+        "base_footprint",
         params={"support_state_topics": ["walk_support_state"]},
         use_sim_time=sim,
     )

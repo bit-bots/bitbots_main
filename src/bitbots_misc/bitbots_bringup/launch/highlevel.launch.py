@@ -124,7 +124,7 @@ def highlevel(
         bl.node(
             "bitbots_utils",
             "publish_workspace_status.py",
-            "",
+            "WorkspaceStatusPublisher",
             params={
                 "workspace_status_path": bl.find("bitbots_utils", "workspace_status.json", "config"),
                 "publish_topic": "/workspace_status",

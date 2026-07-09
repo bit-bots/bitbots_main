@@ -14,6 +14,6 @@ def animation(sim: bool = False):
     bl.node(
         "bitbots_animation_server",
         "animation_node",
-        "",
+        "animation_server",
         use_sim_time=sim,
     )

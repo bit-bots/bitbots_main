@@ -48,7 +48,7 @@ def simulator_teamplayer(
     web : bool
         Use web-based mjviser viewer instead of the native MuJoCo viewer
     """
-    bl = BetterLaunch()
+    bl = BetterLaunch(pass_launch_func_default=False)
 
     # load the general simulator
     bl.include("bitbots_mujoco_sim", "simulator.launch.py", web=web)

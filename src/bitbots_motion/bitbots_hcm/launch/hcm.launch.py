@@ -18,7 +18,7 @@ def hcm(sim: bool = False, viz: bool = False, wolfgang: bool = True):
         bl.node(
             "bitbots_hcm",
             "HCM",
-            "",
+            "hcm_cpp",
             params={
                 "simulation_active": sim,
                 "visualization_active": viz,

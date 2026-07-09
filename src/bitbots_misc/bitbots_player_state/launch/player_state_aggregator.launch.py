@@ -20,7 +20,7 @@ def player_state_aggregator(sim: bool = False, config: str = None):
     bl.node(
         "bitbots_player_state",
         "player_state_aggregator",
-        "",
+        "player_state_aggregator",
         param_files=config,
         use_sim_time=sim,
     )
