@@ -6,9 +6,7 @@
 
 -->HCM
 $StartHCM
-    START_UP --> $Simulation
-        YES --> @RobotStateStartup, @PlayAnimationInit, @PlayAnimationWalkReady
-        NO --> #INIT_PATTERN
+    START_UP --> #INIT_PATTERN
     RUNNING --> $CheckBattery
         LOW --> @CancelGoals, @StopWalking, @Speak + text:Battery_low_so_please_power_me_off_gracefully, @Wait + time:10 + r:false
         OKAY --> $CheckMotors
@@ -41,4 +39,4 @@ $StartHCM
                                     ELSE --> @RobotStateFalling, @CancelGoals, @StopWalking, @PlayAnimationFalling, @Wait
                                 ELSE --> $GameControllerStop
                                     STOPPED --> @RobotStateFallen, @CancelGoals, @StopWalking, @Wait
-                                    FREE --> @RobotStateFallen, @CancelGoals, @StopWalking, @RobotStateGettingUp, @PlayAnimationStandupFront, @SetSquat + squat:true
+                                    FREE --> @RobotStateFallen + r:false, @CancelGoals + r:false, @StopWalking + r:false, @RobotStateGettingUp + r:false, @Complain + r:false, @Wait + time:1.5 + r:false
