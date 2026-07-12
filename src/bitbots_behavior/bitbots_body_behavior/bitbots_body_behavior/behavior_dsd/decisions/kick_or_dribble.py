@@ -24,7 +24,9 @@ class KickOrDribble(AbstractDecisionElement):
         # actual set play situation
         set_play_state = self.blackboard.gamestate.get_set_play()
 
-        if abs(map_goal[2]) > math.pi / 2 or (other_robots_close and set_play_state == 0):  # point away from opponent goal, so we should dribble
+        if abs(map_goal[2]) > math.pi / 2 or (
+            other_robots_close and set_play_state == 0
+        ):  # point away from opponent goal, so we should dribble
             return "DRIBBLE"
         else:
             return "KICK"

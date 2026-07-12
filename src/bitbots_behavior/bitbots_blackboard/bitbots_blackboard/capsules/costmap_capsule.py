@@ -73,15 +73,22 @@ class CostmapCapsule(AbstractBlackboardCapsule):
             # TODO inflate
             # Draw obstacle with smoothing independent weight on obstacle costmap
             obstacle_map[idx_x, idx_y] = self.obstacle_cost * self.obstacle_costmap_smoothing_sigma
-            
-            dist_to_robot = np.linalg.norm(np.array([self._blackboard.world_model.get_current_position()[0], self._blackboard.world_model.get_current_position()[1]]) - np.array([robot.bb.center.position.x,robot.bb.center.position.y]))
+
+            dist_to_robot = np.linalg.norm(
+                np.array(
+                    [
+                        self._blackboard.world_model.get_current_position()[0],
+                        self._blackboard.world_model.get_current_position()[1],
+                    ]
+                )
+                - np.array([robot.bb.center.position.x, robot.bb.center.position.y])
+            )
             if robot.bb.center.position.x > self._blackboard.world_model.get_current_position()[0]:
                 if dist_to_robot < self.closest_robot_infront_dist:
                     self.closest_robot_infront_dist = dist_to_robot
             else:
                 if dist_to_robot < self.closest_robot_behind_dist:
                     self.closest_robot_behind_dist = dist_to_robot
-
 
         # Smooth obstacle map
         obstacle_map = gaussian_filter(obstacle_map, self.obstacle_costmap_smoothing_sigma)
@@ -446,6 +453,6 @@ class CostmapCapsule(AbstractBlackboardCapsule):
             )
         ]
         return kick_direction
-    
+
     def is_other_robot_close(self, threshold_front: float, threshold_behind: float) -> bool:
-        return threshold_front > self.closest_robot_infront_dist or if threshold_behind > self.closest_robot_behind_dist
+        return threshold_front > self.closest_robot_infront_dist or threshold_behind > self.closest_robot_behind_dist
