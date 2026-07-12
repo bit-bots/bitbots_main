@@ -19,11 +19,14 @@ format = {cmd = "sh -c 'pre-commit run --all-files --hook-stage \"${PRE_COMMIT_S
 
 [tasks.build]
 # Skipping ZED-camera related packages as they require a local installation of the ZED SDK.
-cmd = "colcon build --symlink-install --packages-skip zed_wrapper zed_components zed_msgs zed_ros2 --cmake-args -G 'Unix Makefiles' -DCMAKE_C_FLAGS='-Wall -Wextra -Wpedantic -Werror' -DCMAKE_CXX_FLAGS='-Wall -Wextra -Wpedantic -Werror' "
+# Use broad warnings and treat them as errors for repository code.
+# C++ also enables pedantic diagnostics. C keeps pedantic diagnostics non-fatal because ROS generators emit C code
+# that is not pedantic-clean.
+cmd = "colcon build --symlink-install --packages-skip zed_wrapper zed_components zed_msgs zed_ros2 --cmake-args -G 'Unix Makefiles' -DCMAKE_C_FLAGS='-Wall -Wextra -Werror -Wno-error=pedantic' -DCMAKE_CXX_FLAGS='-Wall -Wextra -Wpedantic -Werror' "
 description = "Builds all ROS 2 packages. Add --packages-select <package names> to build specific packages."
 
 [feature.robot.tasks.build]
-cmd = "colcon build --symlink-install --cmake-args -G 'Unix Makefiles' -DCMAKE_C_FLAGS='-Wall -Wextra -Wpedantic -Werror' -DCMAKE_CXX_FLAGS='-Wall -Wextra -Wpedantic -Werror' "
+cmd = "colcon build --symlink-install --cmake-args -G 'Unix Makefiles' -DCMAKE_C_FLAGS='-Wall -Wextra -Werror -Wno-error=pedantic' -DCMAKE_CXX_FLAGS='-Wall -Wextra -Wpedantic -Werror' "
 description = "Builds all ROS 2 packages. Add --packages-select <package names> to build specific packages."
 
 [tasks.clean]
