@@ -7,7 +7,7 @@
 [subrepo]
 	remote = https://github.com/bit-bots/particle_filter.git
 	branch = master
-	commit = fbf89a745d22940492484e8fcc6009ec2a866f6b
+	commit = 2c894e777d57c7acafb0ce07eb43912fb2891b43
 	parent = 57cf56b09d6e932f7f12b6a453ab0f1f0e1da1a3
 	method = merge
 	cmdver = git-include/0.1.0-alpha.3
