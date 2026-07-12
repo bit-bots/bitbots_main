@@ -448,9 +448,4 @@ class CostmapCapsule(AbstractBlackboardCapsule):
         return kick_direction
     
     def is_other_robot_close(self, threshold_front: float, threshold_behind: float) -> bool:
-        if threshold_front > self.closest_robot_infront_dist:
-            return True
-        elif threshold_behind > self.closest_robot_behind_dist:
-            return True
-        else:
-            return False
+        return threshold_front > self.closest_robot_infront_dist or if threshold_behind > self.closest_robot_behind_dist

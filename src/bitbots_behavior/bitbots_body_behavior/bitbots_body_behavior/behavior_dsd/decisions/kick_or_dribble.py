@@ -19,7 +19,7 @@ class KickOrDribble(AbstractDecisionElement):
         Determines whether to kick or dribble based on the angle of the map goal
         """
         map_goal = self.blackboard.pathfinding.get_map_goal(self.target_distance, self.side_offset)
-        # no other robots to close
+        # no other robots too close
         other_robots_close = self.blackboard.costmap.is_other_robot_close(self.threshold_front, self.threshold_behind)
         # actual set play situation
         set_play_state = self.blackboard.gamestate.get_set_play()
