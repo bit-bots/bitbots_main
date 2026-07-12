@@ -2,10 +2,12 @@ cmake_minimum_required(VERSION 3.8)
 project(zed_components)
 
 if(POLICY CMP0146)
+    # CMP0146: keep compatibility with projects that still use the deprecated FindCUDA module.
     cmake_policy(SET CMP0146 OLD)
 endif()
 
 if(POLICY CMP0153)
+    # CMP0153: keep compatibility with projects that still call the deprecated exec_program() command.
     cmake_policy(SET CMP0153 OLD)
 endif()
 
