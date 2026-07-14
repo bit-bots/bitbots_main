@@ -7,6 +7,6 @@
 	remote = git@github.com:stereolabs/zed-ros2-wrapper.git
 	branch = humble-v5.0.0
 	commit = a66e227e290fb26b9e21b0f45aedcbf93ace52b9
-	parent = 4550d69c730b27dcae9845e6b79eacfb586a2135
+	parent = 3bed41276b697dec42d00880b43d5bcbfbe89703
 	method = merge
 	cmdver = 0.4.9
