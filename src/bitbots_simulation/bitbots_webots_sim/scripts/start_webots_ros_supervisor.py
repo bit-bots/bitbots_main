@@ -10,12 +10,16 @@ from rclpy.node import Node
 
 
 class SupervisorNode:
-    def __init__(self, simulator_port):
+    def __init__(self, simulator_port, multi_robot=False):
         self.node = Node("supervisor_node")
 
         os.environ["WEBOTS_CONTROLLER_URL"] = f"ipc://{simulator_port}/supervisor_robot"
 
-        self.supervisor_controller = SupervisorController(ros_active=True, ros_node=self.node)
+        if multi_robot == False:
+            self.supervisor_controller = SupervisorController(ros_active=True, ros_node=self.node, domains=1)
+        else:
+            self.supervisor_controller = SupervisorController(ros_active=True, ros_node=self.node, domains=2)
+            
         self.node.get_logger().info("started webots ros supervisor")
 
     def run(self):
@@ -26,10 +30,11 @@ class SupervisorNode:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--sim-port", help="port of the simulation", default="1234")
+    parser.add_argument("--multi_robot", help="True if a real match is supposed to be simulated. Starts world with two robots.", default=False, type=bool)
     args, _ = parser.parse_known_args()
 
     rclpy.init()
-    supervisor = SupervisorNode(args.sim_port)
+    supervisor = SupervisorNode(args.sim_port, multi_robot=args.multi_robot)
 
     executor = EventsExecutor()
     executor.add_node(supervisor.node)

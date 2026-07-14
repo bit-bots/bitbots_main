@@ -1,5 +1,6 @@
 from typing import Optional
 
+from multiprocessing import Queue, Process, get_context
 import numpy as np
 import transforms3d
 from controller import Keyboard, Node, Supervisor
@@ -11,6 +12,8 @@ from rosgraph_msgs.msg import Clock
 from std_srvs.srv import Empty
 
 from bitbots_msgs.srv import SetObjectPose, SetObjectPosition, SimulatorPush
+
+from bitbots_webots_sim.auxiliary_publisher import clock_publisher
 
 G = 9.81
 
@@ -24,6 +27,7 @@ class SupervisorController:
         base_ns="/",
         model_states_active=True,
         robot="wolfgang",
+        domains=1,
     ):
         """
         The SupervisorController, a Webots controller that can control the world.
@@ -32,6 +36,7 @@ class SupervisorController:
         :param ros_active: Whether to publish ROS messages
         :param mode: Webots mode, one of 'normal', 'paused', or 'fast'
         :param base_ns: The namespace of this node, can normally be left empty
+        :param domains: The number of domains to use for simulation 
         """
         if ros_node is None:
             ros_node = RclpyNode("supervisor_controller")
@@ -43,6 +48,7 @@ class SupervisorController:
         self.clock_msg = Clock()
         self.supervisor = Supervisor()
         self.keyboard_activated = False
+        self.multi_domain = domains > 1
 
         if mode == "normal":
             self.supervisor.simulationSetMode(Supervisor.SIMULATION_MODE_REAL_TIME)
@@ -106,8 +112,26 @@ class SupervisorController:
             else:
                 clock_topic = base_ns + "clock"
                 model_topic = base_ns + "model_states"
-            self.clock_publisher = self.ros_node.create_publisher(Clock, clock_topic, 1)
-            self.model_state_publisher = self.ros_node.create_publisher(ModelStates, model_topic, 1)
+            # this is for multi domain simulation, where we have two ROS domains that need to get the same clock
+            if self.multi_domain:
+                
+                ctx = get_context("spawn")
+                
+                self.queue_1 = ctx.Queue()
+                self.queue_2 = ctx.Queue()
+                ctx.Process(
+                    target=clock_publisher,
+                    args=(self.queue_1, clock_topic, model_topic, 1),
+                ).start()
+
+                ctx.Process(
+                    target=clock_publisher,
+                    args=(self.queue_2, clock_topic, model_topic, 2),
+                ).start()
+            else:
+                self.clock_publisher = self.ros_node.create_publisher(Clock, clock_topic, 1)
+                self.model_state_publisher = self.ros_node.create_publisher(ModelStates, model_topic, 1)
+            
             self.reset_service = self.ros_node.create_service(Empty, base_ns + "reset", self.reset)
             self.reset_pose_service = self.ros_node.create_service(
                 Empty, base_ns + "reset_pose", self.set_initial_poses
@@ -194,7 +218,13 @@ class SupervisorController:
 
     def publish_clock(self):
         self.clock_msg.clock = Time(seconds=int(self.time), nanoseconds=int(self.time % 1 * 1e9)).to_msg()
-        self.clock_publisher.publish(self.clock_msg)
+        
+        if not self.multi_domain:
+            self.clock_publisher.publish(self.clock_msg)
+        else:
+            # publish current sim time to both domains
+            self.queue_1.put(self.clock_msg)
+            self.queue_2.put(self.clock_msg)
 
     def set_gravity(self, active):
         if active:
@@ -345,7 +375,7 @@ class SupervisorController:
         return velocity[:3], velocity[3:]
 
     def publish_model_states(self):
-        if self.model_state_publisher.get_subscription_count() != 0:
+        if self.multi_domain or self.model_state_publisher.get_subscription_count() != 0:
             msg = ModelStates()
             for robot_name, robot_node in self.robot_nodes.items():
                 position, orientation = self.get_robot_pose_quat(name=robot_name)
@@ -389,4 +419,8 @@ class SupervisorController:
                 msg.name.append("ball")
                 msg.pose.append(ball_pose)
 
-            self.model_state_publisher.publish(msg)
+            if self.multi_domain:
+                self.queue_1.put(msg)
+                self.queue_2.put(msg)
+            else:
+                self.model_state_publisher.publish(msg)

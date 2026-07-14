@@ -89,7 +89,7 @@ DEF rory Wolfgang {
   translation 1.0 -3.14 0.4274
   rotation 0.0 0.0 1.0 1.5869763401625028
   name "rory"
-  controller ""
+  controller "<extern>"
 }
 DEF supervisor_robot hl_supervisor {
   name "supervisor_robot"
