@@ -11,7 +11,7 @@ from sensor_msgs.msg import Imu, JointState
 from std_msgs.msg import Empty as EmptyMsg
 
 from bitbots_hcm.type_utils import T_RobotControlState
-from bitbots_msgs.action import PlayAnimation
+from bitbots_msgs.action import BeyondMimic, PlayAnimation
 from bitbots_msgs.msg import TTS, JointTorque, RobotControlState
 from bitbots_msgs.srv import SetTeachingMode
 
@@ -38,6 +38,13 @@ class HcmBlackboard:
         # Create action clients and corresponding goal handles
         self.animation_action_client: ActionClient = ActionClient(self.node, PlayAnimation, "animation")
         self.animation_action_current_goal: Optional[Future] = None
+
+        # BeyondMimic RL standup (getup) action, hosted by bitbots_rl_motion's
+        # beyondmimic_standup node and triggered from the fallen branch of hcm.dsd.
+        self.beyondmimic_standup_action_client: ActionClient = ActionClient(
+            self.node, BeyondMimic, "beyondmimic_standup"
+        )
+        self.beyondmimic_standup_action_current_goal: Optional[Future] = None
 
         # Create publishers
         self.walk_pub = self.node.create_publisher(Twist, "cmd_vel", 1)

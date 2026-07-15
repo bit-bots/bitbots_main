@@ -34,6 +34,7 @@ setup(
             f"mjlab_getup_node = {package_name}.nodes.mjlab_getup_node:main",
             f"phase_from_transform = {package_name}.nodes.phase_from_transform:main",
             f"cartwheel_rl_node = {package_name}.nodes.cartwheel_rl_node:main",
+            f"beyondmimic_standup_node = {package_name}.nodes.beyondmimic_standup_node:main",
         ],
     },
 )

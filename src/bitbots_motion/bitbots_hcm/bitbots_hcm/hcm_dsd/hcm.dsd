@@ -31,6 +31,8 @@ $StartHCM
                             OKAY --> $AcrobaticMotionRunning
                                 YES --> @RobotStateAcrobatic, @Wait
                                 NO --> $Fallen
+                                    FALLEN_FRONT --> @RobotStateFallen + r:false, @CancelGoals + r:false, @StopWalking + r:false, @RobotStateGettingUp + r:false, @Complain + r:false, @PerformStandup + variant:front + r:false
+                                    FALLEN_BACK --> @RobotStateFallen + r:false, @CancelGoals + r:false, @StopWalking + r:false, @RobotStateGettingUp + r:false, @Complain + r:false, @PerformStandup + variant:back + r:false
                                     NOT_FALLEN --> $Falling
                                         NOT_FALLING --> $PlayingExternalAnimation
                                             ANIMATION_RUNNING --> @StopWalking, @RobotStateAnimationRunning, @Wait
@@ -41,4 +43,4 @@ $StartHCM
                                                     KICKING --> @RobotStateKicking, @Wait
                                                     NOT_KICKING --> @RobotStateControllable, @Wait
                                         ELSE --> @RobotStateFalling, @CancelGoals, @StopWalking, @PlayAnimationFalling, @Wait
-                                    ELSE --> @RobotStateFallen + r:false, @CancelGoals + r:false, @StopWalking + r:false, @RobotStateGettingUp + r:false, @Complain + r:false, @Wait + time:1.5 + r:false
+                                    ELSE --> @RobotStateFallen, @CancelGoals, @StopWalking, @Wait

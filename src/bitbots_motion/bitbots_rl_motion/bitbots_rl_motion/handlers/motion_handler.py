@@ -1,4 +1,5 @@
 import os
+from typing import Optional
 
 import numpy as np
 from ament_index_python import get_package_share_directory
@@ -16,10 +17,14 @@ class MotionHandler(Handler):
     clip. The clip length is read from the npz, so nothing is hardcoded.
     """
 
-    def __init__(self, node):
+    def __init__(self, node, motion_file: Optional[str] = None):
         self._node = node
 
-        motion_file = self._node.get_parameter("motion.file").value
+        # A node that plays several clips (e.g. a front/back standup) passes the clip name
+        # explicitly so it can build one handler per clip; nodes with a single clip fall
+        # back to the ``motion.file`` parameter.
+        if motion_file is None:
+            motion_file = self._node.get_parameter("motion.file").value
         path = os.path.join(get_package_share_directory("bitbots_rl_motion"), "motions", motion_file)
         data = np.load(path)
 

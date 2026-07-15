@@ -4,7 +4,8 @@
   <arg name="kick" default="false"/>
   <arg name="mjlab_walk" default="false"/>
   <arg name="cartwheel" default="true"/>
-  <arg name="mjlab_getup" default="true"/>
+  <arg name="mjlab_getup" default="false"/>
+  <arg name="beyondmimic_standup" default="true"/>
 
 
   <group if="$(var walk)">
@@ -35,6 +36,12 @@
   <group if="$(var cartwheel)">
     <node pkg="bitbots_rl_motion" exec="cartwheel_rl_node" output="screen">
       <param from="$(find-pkg-share bitbots_rl_motion)/configs/cartwheel_model.yaml" />
+    </node>
+  </group>
+  <group if="$(var beyondmimic_standup)">
+    <node pkg="bitbots_rl_motion" exec="beyondmimic_standup_node" output="screen">
+      <param from="$(find-pkg-share bitbots_rl_motion)/configs/beyondmimic_standup_model.yaml" />
+      <param name="use_sim_time" value="$(var sim)"/>
     </node>
   </group>
 </launch>
