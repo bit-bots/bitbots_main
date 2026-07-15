@@ -10,8 +10,9 @@ class KickOrDribble(AbstractDecisionElement):
 
     def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
-        self.threshold_front = parameters.get("threshold_front", 10)
-        self.threshold_behind = parameters.get("threshold_behind", 10)
+        # upfield is towards the opponent goal, downfield is towards our own goal
+        self.threshold_upfield = parameters.get("threshold_upfield", 10)
+        self.threshold_downfield = parameters.get("threshold_downfield", 10)
 
     def perform(self, reevaluate=False):
         """
@@ -22,7 +23,9 @@ class KickOrDribble(AbstractDecisionElement):
         map_goal = self.blackboard.pathfinding.get_map_goal(distance=0.0, side_offset=0.0)
 
         # Are no other robots too close?
-        other_robots_close = self.blackboard.costmap.is_other_robot_close(self.threshold_front, self.threshold_behind)
+        other_robots_close = self.blackboard.costmap.is_other_robot_close(
+            self.threshold_upfield, self.threshold_downfield
+        )
         # Get actual set play situation
         set_play_state = self.blackboard.gamestate.get_set_play()
 
