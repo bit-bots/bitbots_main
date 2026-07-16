@@ -36,6 +36,7 @@ jobs:
         with:
           pixi-version: v0.72.0
           cache: true
+          cache-key: pixi-${{ hashFiles('pixi.toml', 'pixi.lock') }}-
 
       - name: Build
         run: pixi run -e default build
