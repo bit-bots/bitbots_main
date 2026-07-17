@@ -22,11 +22,11 @@ format = {cmd = "sh -c 'pre-commit run --all-files --hook-stage \"${PRE_COMMIT_S
 # Use broad warnings and treat them as errors for repository code.
 # C++ also enables pedantic diagnostics. C keeps pedantic diagnostics non-fatal because ROS generators emit C code
 # that is not pedantic-clean.
-cmd = "colcon build --symlink-install --packages-skip zed_wrapper zed_components zed_msgs zed_ros2 --cmake-args -G Ninja -DCMAKE_C_FLAGS='-Wall -Wextra -Werror -Wno-error=pedantic' -DCMAKE_CXX_FLAGS='-Wall -Wextra -Wpedantic -Werror' "
+cmd = "colcon build --symlink-install --packages-skip zed_wrapper zed_components zed_msgs zed_ros2 --cmake-args -G Ninja -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_FLAGS='-Wall -Wextra -Werror -Wno-error=pedantic' -DCMAKE_CXX_FLAGS='-Wall -Wextra -Wpedantic -Werror' "
 description = "Builds all ROS 2 packages. Add --packages-select <package names> to build specific packages."
 
 [feature.robot.tasks.build]
-cmd = "colcon build --symlink-install --cmake-args -G Ninja -DCMAKE_C_FLAGS='-Wall -Wextra -Werror -Wno-error=pedantic' -DCMAKE_CXX_FLAGS='-Wall -Wextra -Wpedantic -Werror' "
+cmd = "colcon build --symlink-install --cmake-args -G Ninja -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_FLAGS='-Wall -Wextra -Werror -Wno-error=pedantic' -DCMAKE_CXX_FLAGS='-Wall -Wextra -Wpedantic -Werror' "
 description = "Builds all ROS 2 packages. Add --packages-select <package names> to build specific packages."
 
 [tasks.clean]
@@ -51,6 +51,7 @@ readline = ">=8.2.999"  # This is needed because we want to install an empty rea
 alsa-plugins = ">=1.2.12,<2"
 beartype = ">=0.22.6,<0.23"
 breathe = ">=4.36.0,<5"
+ccache = ">=4.13.6,<5"
 cbor2 = ">=5.9.0,<6"
 cmake = "<3.30"  # Constraint to avoid issues with deprecated features in newer cmake versions
 colorama = ">=0.4.6,<0.5"

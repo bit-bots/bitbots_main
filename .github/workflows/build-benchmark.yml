@@ -12,6 +12,7 @@ jobs:
         os: [ubuntu-latest, ubuntu-24.04-arm]
     runs-on: ${{ matrix.os }}
     env:
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
       PSModulePath: ""
 
     steps:
@@ -28,10 +29,23 @@ jobs:
           cache: true
           cache-key: pixi-${{ hashFiles('pixi.toml', 'pixi.lock') }}-
 
+      - name: Restore compiler cache
+        uses: actions/cache@v5
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('pixi.lock') }}-${{ github.sha }}
+          restore-keys: |
+            ccache-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('pixi.lock') }}-
+            ccache-${{ runner.os }}-${{ runner.arch }}-
+
       - name: Measure clean and incremental builds
         run: >-
           python3 scripts/benchmark_build.py
           --output build-benchmark-${{ runner.arch }}.json
+
+      - name: Show compiler cache statistics
+        if: always()
+        run: pixi run -e default ccache --show-stats
 
       - name: Upload benchmark results
         if: always()
