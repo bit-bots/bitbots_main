@@ -37,6 +37,7 @@ def append_github_summary(results: dict[str, object], summary_path: Path) -> Non
         summary.write("| --- | ---: | ---: |\n")
         summary.write(f"| Clean | {clean['duration_seconds']:.2f} s | {clean['return_code']} |\n")
         summary.write(f"| Incremental | {incremental['duration_seconds']:.2f} s | {incremental['return_code']} |\n\n")
+        summary.write(f"Pixi task: `{results['task']}`\n\n")
         summary.write(f"Touched source: `{results['touched_source']}`\n")
 
 
@@ -52,6 +53,11 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         default=Path("build-benchmark.json"),
         help="JSON file that receives the benchmark results.",
+    )
+    parser.add_argument(
+        "--task",
+        default="build",
+        help="Pixi task used for both measured builds.",
     )
     parser.add_argument(
         "--source",
@@ -71,16 +77,18 @@ def main() -> int:
         ["pixi", "run", "-e", args.environment, "clean"],
         check=True,
     )
-    clean_build = run_timed(["pixi", "run", "-e", args.environment, "build"])
+    build_command = ["pixi", "run", "-e", args.environment, args.task]
+    clean_build = run_timed(build_command)
 
     # Updating the timestamp makes the build system reconsider one translation unit.
     # The file content stays unchanged, allowing compiler caches to reuse their output.
     os.utime(args.source)
-    incremental_build = run_timed(["pixi", "run", "-e", args.environment, "build"])
+    incremental_build = run_timed(build_command)
 
     results = {
         "created_at": datetime.now(UTC).isoformat(),
         "environment": args.environment,
+        "task": args.task,
         "touched_source": str(args.source),
         "clean_build": clean_build,
         "incremental_build": incremental_build,

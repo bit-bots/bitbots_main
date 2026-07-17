@@ -41,6 +41,7 @@ jobs:
       - name: Measure clean and incremental builds
         run: >-
           python3 scripts/benchmark_build.py
+          --task build-robot-profile
           --output build-benchmark-${{ runner.arch }}.json
 
       - name: Show compiler cache statistics
