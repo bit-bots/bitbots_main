@@ -74,7 +74,13 @@ add_executable(${PROJECT_NAME}_exec
 ament_target_dependencies(${PROJECT_NAME}_exec
   "rclcpp_components")
 
-set_target_properties(${PROJECT_NAME}_exec PROPERTIES OUTPUT_NAME ${PROJECT_NAME} PREFIX "")
+# Keep the executable output separate from the interface generation target.
+# Ninja requires every generated path to have a single rule.
+set_target_properties(${PROJECT_NAME}_exec PROPERTIES
+  OUTPUT_NAME ${PROJECT_NAME}
+  PREFIX ""
+  RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin"
+)
 
 target_link_libraries(${PROJECT_NAME}_exec
   ${PROJECT_NAME}_lib
