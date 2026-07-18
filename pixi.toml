@@ -25,8 +25,13 @@ format = {cmd = "sh -c 'pre-commit run --all-files --hook-stage \"${PRE_COMMIT_S
 cmd = "colcon build --symlink-install --packages-skip zed_wrapper zed_components zed_msgs zed_ros2 --cmake-args -G Ninja -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_FLAGS='-Wall -Wextra -Werror -Wno-error=pedantic' -DCMAKE_CXX_FLAGS='-Wall -Wextra -Wpedantic -Werror' "
 description = "Builds all ROS 2 packages. Add --packages-select <package names> to build specific packages."
 
+[tasks.build-robot-profile]
+# Keep the package selection aligned with the default build so CI benchmark results remain comparable.
+cmd = "colcon build --symlink-install --packages-skip zed_wrapper zed_components zed_msgs zed_ros2 --cmake-args -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_TESTING=OFF -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_FLAGS='-Wall -Wextra -Werror -Wno-error=pedantic' -DCMAKE_CXX_FLAGS='-Wall -Wextra -Wpedantic -Werror' "
+description = "Builds the CI-compatible package set with the production robot profile."
+
 [feature.robot.tasks.build]
-cmd = "colcon build --symlink-install --cmake-args -G Ninja -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_FLAGS='-Wall -Wextra -Werror -Wno-error=pedantic' -DCMAKE_CXX_FLAGS='-Wall -Wextra -Wpedantic -Werror' "
+cmd = "colcon build --symlink-install --cmake-args -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_TESTING=OFF -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_FLAGS='-Wall -Wextra -Werror -Wno-error=pedantic' -DCMAKE_CXX_FLAGS='-Wall -Wextra -Wpedantic -Werror' "
 description = "Builds all ROS 2 packages. Add --packages-select <package names> to build specific packages."
 
 [tasks.clean]
