@@ -14,7 +14,7 @@
 #     the room: with [90, 0, -90] the face points along -x, with [90, 0, 90]
 #     along +x, with [90, 0, 0] along -y and with [90, 0, 180] along +y.
 tag_family: "tag36h11"
-default_tag_size: 0.17
+default_tag_size: 0.136
 
 # Bundles: rigid arrangements of tags (e.g. printed on one board) that are
 # solved jointly. The bundle pose is the pose of the bundle frame in the map

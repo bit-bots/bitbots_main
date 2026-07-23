@@ -59,7 +59,6 @@ class AprilTagLocalization(Node):
             tag_map_path = Path(get_package_share_directory("bitbots_apriltag_localization")) / "config" / tag_map_path
         tag_map = load_tag_map(tag_map_path)
         num_tags = sum(len(bundle.tags) for bundle in tag_map.bundles)
-        self.get_logger().info(f"Loaded {len(tag_map.bundles)} bundles with {num_tags} tags from {tag_map_path}")
 
         self._detector = AprilTagBundleDetector(
             tag_map,
@@ -76,6 +75,15 @@ class AprilTagLocalization(Node):
 
         self._assume_rectified = bool(self.declare_parameter("camera.assume_rectified", True).value)
         self._max_reprojection_error = float(self.declare_parameter("max_reprojection_error", 5.0).value)
+        # Detections that place the robot further than this from where odometry
+        # predicts it (relative to the last correction) are rejected as outliers,
+        # e.g. from a corrupt / split camera frame. After this many rejections in
+        # a row the current reference is assumed stale and the detection is
+        # accepted anyway, so a single bad reference cannot lock localization out.
+        self._max_position_jump = float(self.declare_parameter("max_position_jump", 0.5).value)
+        self._max_orientation_jump = float(np.radians(self.declare_parameter("max_orientation_jump_deg", 30.0).value))
+        self._max_consecutive_rejections = int(self.declare_parameter("max_consecutive_rejections", 5).value)
+        self._rejected_in_a_row = 0
         self._publish_tf = bool(self.declare_parameter("publish_tf", True).value)
         self._transform_tolerance = Duration(seconds=float(self.declare_parameter("transform_tolerance", 0.2).value))
         tf_publish_rate = float(self.declare_parameter("tf_publish_rate", 20.0).value)
@@ -133,7 +141,6 @@ class AprilTagLocalization(Node):
         gray = self._cv_bridge.imgmsg_to_cv2(msg, desired_encoding="mono8")
         detections = self._detector.detect(gray)
         good = [d for d in detections if d.reprojection_error <= self._max_reprojection_error]
-
         self._publish_debug(msg, gray, detections)
         if not good:
             return
@@ -146,9 +153,22 @@ class AprilTagLocalization(Node):
             return
         map_t_base = map_t_camera @ camera_t_base
 
+        odom_t_base = self._lookup_matrix(self._odom_frame, self._base_frame, stamp)
+        if self._is_outlier(map_t_base, odom_t_base):
+            self._rejected_in_a_row += 1
+            if self._rejected_in_a_row <= self._max_consecutive_rejections:
+                self.get_logger().warning(
+                    "Rejecting apriltag detection: pose jumps away from odometry (likely a corrupt frame)",
+                    throttle_duration_sec=2.0,
+                )
+                return
+            # Too many rejections in a row: the reference itself is probably the
+            # outlier, so accept this detection and re-anchor on it.
+        self._rejected_in_a_row = 0
+
         self._publish_pose(map_t_base, msg.header.stamp)
-        if self._publish_tf:
-            self._update_map_to_odom(map_t_base, stamp)
+        if self._publish_tf and odom_t_base is not None:
+            self._update_map_to_odom(map_t_base, odom_t_base)
 
     # ------------------------------------------------------------------ #
     # outputs
@@ -164,12 +184,32 @@ class AprilTagLocalization(Node):
         pose.pose.covariance = self._covariance
         self._pose_pub.publish(pose)
 
-    def _update_map_to_odom(self, map_t_base: np.ndarray, stamp: Time) -> None:
+    def _is_outlier(self, map_t_base: np.ndarray, odom_t_base: Optional[np.ndarray]) -> bool:
+        """Whether a detection jumps too far from the odometry-predicted pose.
+
+        The last correction plus current odometry predicts where the robot
+        should be; a detection landing far from it is treated as spurious (e.g.
+        from a corrupt or split camera frame). Without a reference or odometry
+        no check is possible, so the detection passes.
+        """
+        if self._map_t_odom is None or odom_t_base is None:
+            return False
+        predicted_map_t_base = self._map_t_odom @ odom_t_base
+        position_jump = float(np.linalg.norm(map_t_base[:3, 3] - predicted_map_t_base[:3, 3]))
+        orientation_jump = float(
+            Rotation.from_matrix(map_t_base[:3, :3].T @ predicted_map_t_base[:3, :3]).magnitude()
+        )
+        return position_jump > self._max_position_jump or orientation_jump > self._max_orientation_jump
+
+    def _update_map_to_odom(self, map_t_base: np.ndarray, odom_t_base: np.ndarray) -> None:
         """Recomputes the map -> odom correction from a fresh detection."""
-        odom_t_base = self._lookup_matrix(self._odom_frame, self._base_frame, stamp)
-        if odom_t_base is None:
-            return
-        self._map_t_odom = map_t_base @ np.linalg.inv(odom_t_base)
+        map_t_odom = map_t_base @ np.linalg.inv(odom_t_base)
+        # Both map and odom are ground frames, so the correction is planar: keep
+        # only the x/y translation and the yaw, dropping any z, roll and pitch.
+        yaw = Rotation.from_matrix(map_t_odom[:3, :3]).as_euler("xyz")[2]
+        self._map_t_odom = np.eye(4)
+        self._map_t_odom[:3, :3] = Rotation.from_euler("z", yaw).as_matrix()
+        self._map_t_odom[:2, 3] = map_t_odom[:2, 3]
         # Broadcast right away instead of waiting for the next timer tick.
         self._broadcast_map_to_odom()
 

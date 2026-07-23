@@ -19,12 +19,7 @@ apriltag_localization:
 
     detector:
       nthreads: 2
-      # Detect on a downscaled image (full resolution is still used for the
-      # corner refinement); 2.0 roughly quarters the detection time. The ZED
-      # publishes VGA (672x376, see zed_wrapper's zedm.yaml), where distant
-      # tags are only a few tens of pixels across and would not survive
-      # downscaling, so detect at full resolution.
-      quad_decimate: 1.0
+      quad_decimate: 2.0
       quad_sigma: 0.0
       refine_edges: true
       decode_sharpening: 0.25
@@ -50,7 +45,7 @@ apriltag_localization:
     debug:
       # Broadcast each detected bundle as a tf frame (apriltag_<name>) under
       # the camera frame. Useful to verify the tag map in RViz.
-      publish_detection_tf: true
+      publish_detection_tf: false
       # Publish an image with the detections drawn into it (only rendered
       # while someone is subscribed to apriltag_debug_image).
-      publish_debug_image: true
+      publish_debug_image: false
