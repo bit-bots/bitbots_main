@@ -1,7 +1,9 @@
+import math
 from abc import ABC, abstractmethod
 from typing import Optional
 
 import soccer_vision_3d_msgs.msg as sv3dm
+import tf2_geometry_msgs
 import tf2_ros as tf2
 from bitbots_rust_nav import ObstacleMap, ObstacleMapConfig, PolygonObstacle, RoundObstacle
 from bitbots_utils.utils import get_parameters_from_other_node
@@ -12,6 +14,8 @@ from rclpy.time import Time
 from ros2_numpy import numpify
 from std_msgs.msg import Header
 from tf2_geometry_msgs import PointStamped, PoseWithCovarianceStamped
+from tf_transformations import euler_from_quaternion
+from visualization_msgs.msg import Marker, MarkerArray
 
 from bitbots_path_planning import NodeWithConfig
 
@@ -34,6 +38,10 @@ class Planner(ABC):
         pass
 
     @abstractmethod
+    def set_obstacle_map(self, obstacle_map: MarkerArray) -> None:
+        pass
+
+    @abstractmethod
     def avoid_ball(self, state: bool) -> None:
         pass
 
@@ -52,6 +60,11 @@ class VisibilityPlanner(Planner):
         self.buffer = buffer
         self.robots: list[RoundObstacle] = []
         self.ball: Optional[RoundObstacle] = None
+        # Static box/cylinder obstacles from a MarkerArray (e.g. the obstacle_map
+        # node). Kept in their own frame and transformed into the planning frame
+        # at planning time, so a map defined in a world frame stays put even when
+        # the planning frame differs (e.g. odom).
+        self.obstacle_markers: list[Marker] = []
         self.goal: Optional[PoseStamped] = None
         self.base_footprint_frame: str = self.node.config.base_footprint_frame
         self.ball_obstacle_active: bool = True
@@ -129,6 +142,57 @@ class VisibilityPlanner(Planner):
             self.ball = None
             self.node.get_logger().warn(str(e))
 
+    def set_obstacle_map(self, obstacle_map: MarkerArray) -> None:
+        """
+        Stores a set of static obstacles given as a MarkerArray. CUBE markers
+        become rectangular obstacles (respecting their yaw), CYLINDER markers
+        become round obstacles. Markers with a DELETE/DELETEALL action are
+        ignored. The markers are transformed into the planning frame lazily in
+        :meth:`_obstacle_map_obstacles`.
+        """
+        self.obstacle_markers = [marker for marker in obstacle_map.markers if marker.action == Marker.ADD]
+
+    def _obstacle_map_obstacles(self) -> list[RoundObstacle | PolygonObstacle]:
+        """
+        Converts the stored obstacle markers into planner obstacles in the
+        planning frame. Each marker is transformed individually using its own
+        frame, so a map may even mix frames. Markers whose transform is
+        currently unavailable are skipped for this step.
+        """
+        obstacles: list[RoundObstacle | PolygonObstacle] = []
+        for marker in self.obstacle_markers:
+            frame = marker.header.frame_id or self.frame
+            try:
+                transform = self.buffer.lookup_transform(self.frame, frame, Time())
+            except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
+                self.node.get_logger().warn(f"Could not transform obstacle from '{frame}' to '{self.frame}': {e}")
+                continue
+            center = tf2_geometry_msgs.do_transform_pose(marker.pose, transform)
+            x, y = center.position.x, center.position.y
+            if marker.type == Marker.CYLINDER:
+                # Marker scale x/y is the diameter; a cylinder is round, so the
+                # larger semi-axis is a safe radius even for a squashed one.
+                radius = max(marker.scale.x, marker.scale.y) / 2.0
+                obstacles.append(RoundObstacle(center=(x, y), radius=radius))
+            elif marker.type == Marker.CUBE:
+                yaw = euler_from_quaternion(numpify(center.orientation))[2]
+                half_x, half_y = marker.scale.x / 2.0, marker.scale.y / 2.0
+                cos_yaw, sin_yaw = math.cos(yaw), math.sin(yaw)
+                corners = [
+                    (
+                        x + cos_yaw * local_x - sin_yaw * local_y,
+                        y + sin_yaw * local_x + cos_yaw * local_y,
+                    )
+                    for local_x, local_y in ((-half_x, -half_y), (half_x, -half_y), (half_x, half_y), (-half_x, half_y))
+                ]
+                obstacles.append(PolygonObstacle(corners))
+            else:
+                self.node.get_logger().warn(
+                    f"Ignoring obstacle marker with unsupported type {marker.type} "
+                    "(only CUBE and CYLINDER are supported).",
+                )
+        return obstacles
+
     def set_goal(self, pose: PoseStamped) -> None:
         """
         Updates the goal pose
@@ -181,6 +245,8 @@ class VisibilityPlanner(Planner):
             obstacles.append(self.ball)
         # Add the static goal obstacles
         obstacles.extend(self.goal_obstacles)
+        # Add the static box/cylinder obstacles from the obstacle map
+        obstacles.extend(self._obstacle_map_obstacles())
         obstacle_map = ObstacleMap(config, obstacles)
 
         # Calculate the shortest path

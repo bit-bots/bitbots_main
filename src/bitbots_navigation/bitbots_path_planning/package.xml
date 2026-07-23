@@ -13,8 +13,10 @@
   <depend>generate_parameter_library</depend>
   <depend>geometry_msgs</depend>
   <depend>nav_msgs</depend>
+  <depend>python3-matplotlib</depend>
   <depend>python3-numpy</depend>
   <depend>python3-opencv</depend>
+  <depend>python3-yaml</depend>
   <depend>rclpy</depend>
   <depend>ros2_numpy</depend>
   <depend>soccer_vision_3d_msgs</depend>
@@ -23,6 +25,7 @@
   <depend>tf2_geometry_msgs</depend>
   <depend>tf2_ros</depend>
   <depend>tf2</depend>
+  <depend>visualization_msgs</depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>

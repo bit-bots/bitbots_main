@@ -30,6 +30,7 @@ class PathPlanning(NodeWithConfig):
         # Subscriber
         self.create_subscription(PoseWithCovarianceStamped, self.config.map.ball_update_topic, self.planner.set_ball, 5)
         self.create_subscription(sv3dm.RobotArray, self.config.map.robot_update_topic, self.planner.set_robots, 5)
+        self.create_subscription(MarkerArray, self.config.map.obstacle_map_topic, self.planner.set_obstacle_map, 5)
         self.goal_sub = self.create_subscription(PoseStamped, "goal_pose", self.planner.set_goal, 5)
         self.create_subscription(Empty, "pathfinding/cancel", lambda _: self.planner.cancel_goal(), 5)
         self.create_subscription(

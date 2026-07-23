@@ -1,0 +1,20 @@
+# Example static obstacle map for the obstacle_map node.
+#
+# Each obstacle is a box or a cylinder standing on the ground, given by its
+# center position in `frame`. Boxes keep their shape and yaw when the planner
+# avoids them; cylinders are round.
+#
+#   box:      x, y, size_x, size_y   (+ optional yaw [rad], height [m])
+#   cylinder: x, y, radius           (+ optional height [m])
+#
+# `frame` is optional; when omitted the node's `frame` parameter (default "map")
+# is used. It should be a world frame the robot is localized in (e.g. map or
+# odom), so the obstacles stay put as the robot walks.
+
+frame: map
+
+obstacles:
+  - {type: box, x: 1.5, y: 0.0, size_x: 0.6, size_y: 0.4, yaw: 0.0, height: 1.0}
+  - {type: box, x: 3.0, y: 1.0, size_x: 0.4, size_y: 0.35, yaw: 0.79, height: 1.0}
+  - {type: cylinder, x: 2.5, y: -1.0, radius: 0.165, height: 1.0}
+  - {type: cylinder, x: 4.0, y: -0.5, radius: 0.165, height: 1.0}

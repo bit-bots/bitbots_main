@@ -1,0 +1,56 @@
+apriltag_localization:
+  ros__parameters:
+    # The tag map file describing which tags are placed where in the world.
+    # A relative path is resolved inside this package's config directory.
+    tag_map: "tag_map.yaml"
+
+    camera:
+      image_topic: "zed/zed_node/left/image_rect_color"
+      camera_info_topic: "zed/zed_node/left/camera_info"
+      # Rectified input: the intrinsics are taken from the projection matrix
+      # and the distortion is assumed to be compensated already. Set to false
+      # to use the raw intrinsics and distortion coefficients instead.
+      assume_rectified: true
+
+    frames:
+      map: "map"
+      odom: "odom"
+      base: "base_footprint"
+
+    detector:
+      nthreads: 2
+      # Detect on a downscaled image (full resolution is still used for the
+      # corner refinement); 2.0 roughly quarters the detection time. The ZED
+      # publishes VGA (672x376, see zed_wrapper's zedm.yaml), where distant
+      # tags are only a few tens of pixels across and would not survive
+      # downscaling, so detect at full resolution.
+      quad_decimate: 1.0
+      quad_sigma: 0.0
+      refine_edges: true
+      decode_sharpening: 0.25
+
+    # Bundle detections with a higher RMS reprojection error (pixels) are dropped.
+    max_reprojection_error: 5.0
+
+    # Diagonal entries of the published pose covariance.
+    position_variance: 0.05
+    orientation_variance: 0.02
+
+    # Broadcast the map->odom transform. It is derived from the most recent
+    # detection and re-broadcast continuously (it stays valid while the robot
+    # only accumulates odometry drift), so tf keeps working when no tag is
+    # currently visible.
+    publish_tf: true
+    # Rate (Hz) at which the last map->odom transform is re-broadcast.
+    tf_publish_rate: 20.0
+    # The map->odom transform is stamped this far into the future so that it
+    # stays valid between the periodic broadcasts.
+    transform_tolerance: 0.1
+
+    debug:
+      # Broadcast each detected bundle as a tf frame (apriltag_<name>) under
+      # the camera frame. Useful to verify the tag map in RViz.
+      publish_detection_tf: true
+      # Publish an image with the detections drawn into it (only rendered
+      # while someone is subscribed to apriltag_debug_image).
+      publish_debug_image: true

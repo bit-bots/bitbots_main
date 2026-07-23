@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
 <launch>
+    <arg name="apriltag_localization" default="false" description="Whether the AprilTag localization should be started instead of the particle filter localization" />
     <arg name="audio" default="true" description="Whether the audio system should be started"/>
     <arg name="behavior_dsd_file" default="main.dsd" description="The behavior dsd file that should be used" />
     <arg name="behavior" default="true" description="Whether the behavior control system should be started" />
@@ -62,17 +63,25 @@
     <group if="$(var whistle_detector)">
         <include file="$(find-pkg-share bitbots_whistle_detector)/launch/whistle_detector.launch"/>
     </group>
-    <!-- launch localization or fake localization -->
-    <group if="$(var localization)">
-        <include file="$(find-pkg-share bitbots_localization)/launch/localization.launch">
+    <!-- launch apriltag localization, particle filter localization or fake localization.
+         Only one of them may run, they all publish the map -> odom transform. -->
+    <group if="$(var apriltag_localization)">
+        <include file="$(find-pkg-share bitbots_apriltag_localization)/launch/apriltag_localization.launch">
             <arg name="sim" value="$(var sim)"/>
         </include>
     </group>
-    <group unless="$(var localization)">
-        <!-- simulate map frame -->
-        <node name="map_odom" pkg="tf2_ros" exec="static_transform_publisher" args="--x 0 --y 0 --z 0 --roll 0 --pitch 0 --yaw 0 --frame-id map --child-frame-id odom" />
-        <!-- publish perfect covariance -->
-        <!--node name="localization_covariance" pkg="bitbots_localization" exec="rviz_localization_sim.py" output="screen" /-->
+    <group unless="$(var apriltag_localization)">
+        <group if="$(var localization)">
+            <include file="$(find-pkg-share bitbots_localization)/launch/localization.launch">
+                <arg name="sim" value="$(var sim)"/>
+            </include>
+        </group>
+        <group unless="$(var localization)">
+            <!-- simulate map frame -->
+            <node name="map_odom" pkg="tf2_ros" exec="static_transform_publisher" args="--x 0 --y 0 --z 0 --roll 0 --pitch 0 --yaw 0 --frame-id map --child-frame-id odom" />
+            <!-- publish perfect covariance -->
+            <!--node name="localization_covariance" pkg="bitbots_localization" exec="rviz_localization_sim.py" output="screen" /-->
+        </group>
     </group>
 
     <!-- launch path planning -->

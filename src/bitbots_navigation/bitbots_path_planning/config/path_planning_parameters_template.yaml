@@ -32,6 +32,11 @@ bitbots_path_planning:
       default_value: robots_relative_filtered
       description: 'The topic to subscribe to for robot detections'
       read_only: true
+    obstacle_map_topic:
+      type: string
+      default_value: obstacle_map
+      description: 'The topic to subscribe to for a MarkerArray of static box/cylinder obstacles (e.g. from the obstacle_map node)'
+      read_only: true
     ball_diameter:
       type: double
       default_value: 0.13

@@ -1,0 +1,65 @@
+# AprilTag map: which tags (and rigid tag bundles) are placed where in the
+# world, i.e. in the map frame.
+#
+# Conventions:
+#   - position: [x, y, z] in meters.
+#   - orientation: either rpy_deg: [roll, pitch, yaw] in degrees (extrinsic,
+#     around the fixed x/y/z axes) or quat_xyzw: [x, y, z, w].
+#   - size: edge length of the (outer) black square of the tag in meters,
+#     without the white margin around it. Tags without a size use
+#     default_tag_size.
+#   - Tag frame: looking at the printed tag, x points right, y up and z out
+#     of the tag face towards the observer. A tag hanging upright on a wall
+#     therefore has rpy_deg [90, 0, yaw], where yaw turns the tag face into
+#     the room: with [90, 0, -90] the face points along -x, with [90, 0, 90]
+#     along +x, with [90, 0, 0] along -y and with [90, 0, 180] along +y.
+tag_family: "tag36h11"
+default_tag_size: 0.17
+
+# Bundles: rigid arrangements of tags (e.g. printed on one board) that are
+# solved jointly. The bundle pose is the pose of the bundle frame in the map
+# frame; each member tag pose is relative to that bundle frame. A bundle is
+# detected as soon as one of its member tags is visible.
+bundles:
+  # 5x5 ground grid: ids 52-76 in an S pattern with 1 m spacing on the
+  # coordinates {-2, -1, 0, 1, 2} of both axes. One rigid bundle, so all
+  # visible grid tags contribute their corners to a single joint pose solve.
+  # The bundle frame is the map frame itself (identity pose), so the member
+  # tag poses below are directly map coordinates. All tags lie flat on the
+  # ground, face up, with the top edge of the printed tag pointing along +y
+  # (that is the default orientation, rpy_deg [0, 0, 0]).
+  #   y= 2:   72 73 74 75 76
+  #   y= 1:   67 68 69 70 71
+  #   y= 0:   62 63 64 65 66
+  #   y=-1:   57 58 59 60 61
+  #   y=-2:   52 53 54 55 56
+  #        x= -2 -1  0  1  2
+  - name: "ground_grid"
+    pose: { position: [0.0, 0.0, 0.0] }
+    tags:
+      - { id: 52, pose: { position: [-2.0, -2.0, 0.0] } }
+      - { id: 53, pose: { position: [-1.0, -2.0, 0.0] } }
+      - { id: 54, pose: { position: [0.0, -2.0, 0.0] } }
+      - { id: 55, pose: { position: [1.0, -2.0, 0.0] } }
+      - { id: 56, pose: { position: [2.0, -2.0, 0.0] } }
+      - { id: 57, pose: { position: [-2.0, -1.0, 0.0] } }
+      - { id: 58, pose: { position: [-1.0, -1.0, 0.0] } }
+      - { id: 59, pose: { position: [0.0, -1.0, 0.0] } }
+      - { id: 60, pose: { position: [1.0, -1.0, 0.0] } }
+      - { id: 61, pose: { position: [2.0, -1.0, 0.0] } }
+      - { id: 62, pose: { position: [-2.0, 0.0, 0.0] } }
+      - { id: 63, pose: { position: [-1.0, 0.0, 0.0] } }
+      - { id: 64, pose: { position: [0.0, 0.0, 0.0] } }
+      - { id: 65, pose: { position: [1.0, 0.0, 0.0] } }
+      - { id: 66, pose: { position: [2.0, 0.0, 0.0] } }
+      - { id: 67, pose: { position: [-2.0, 1.0, 0.0] } }
+      - { id: 68, pose: { position: [-1.0, 1.0, 0.0] } }
+      - { id: 69, pose: { position: [0.0, 1.0, 0.0] } }
+      - { id: 70, pose: { position: [1.0, 1.0, 0.0] } }
+      - { id: 71, pose: { position: [2.0, 1.0, 0.0] } }
+      - { id: 72, pose: { position: [-2.0, 2.0, 0.0] } }
+      - { id: 73, pose: { position: [-1.0, 2.0, 0.0] } }
+      - { id: 74, pose: { position: [0.0, 2.0, 0.0] } }
+      - { id: 75, pose: { position: [1.0, 2.0, 0.0] } }
+      - { id: 76, pose: { position: [2.0, 2.0, 0.0] } }
+

@@ -33,6 +33,8 @@ setup(
     entry_points={
         "console_scripts": [
             "path_planning = bitbots_path_planning.path_planning:main",
+            "obstacle_map = bitbots_path_planning.obstacle_map:main",
+            "obstacle_map_editor = bitbots_path_planning.obstacle_map_editor:main",
         ],
     },
 )

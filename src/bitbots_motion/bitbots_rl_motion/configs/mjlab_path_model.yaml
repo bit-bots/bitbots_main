@@ -1,0 +1,90 @@
+mjlab_path_node:
+  ros__parameters:
+    model: path_mjlab.onnx
+
+    joints:
+      # mjlab joint order (the order the joints appear in the MJCF): the right
+      # leg chain first, then the left one. This order is authoritative for the
+      # observation and the action; joint_states are looked up by name.
+      # The arms are not actuated by this policy and are left to other
+      # controllers, so they do not appear here at all.
+      ordered_relevant_joint_names: [
+        "r_hip_pitch_joint",
+        "r_hip_roll_joint",
+        "r_thigh_joint",
+        "r_calf_joint",
+        "r_ankle_pitch_joint",
+        "r_ankle_roll_joint",
+        "l_hip_pitch_joint",
+        "l_hip_roll_joint",
+        "l_thigh_joint",
+        "l_calf_joint",
+        "l_ankle_pitch_joint",
+        "l_ankle_roll_joint",
+      ]
+      # Default joint pose (the action offset), from the mjlab HOME_KEYFRAME.
+      walkready_state: [
+        0.5,   # r_hip_pitch
+        0.0,   # r_hip_roll
+        0.0,   # r_thigh
+        1.0,   # r_calf
+        0.5,   # r_ankle_pitch
+        0.0,   # r_ankle_roll
+        -0.5,  # l_hip_pitch
+        0.0,   # l_hip_roll
+        0.0,   # l_thigh
+        -1.0,  # l_calf
+        -0.5,  # l_ankle_pitch
+        0.0,   # l_ankle_roll
+      ]
+      # Position actuator gains of the training model (pi_actuator_leg).
+      kp: [
+        50.0, 50.0, 50.0, 50.0, 50.0, 50.0,
+        50.0, 50.0, 50.0, 50.0, 50.0, 50.0,
+      ]
+      kd: [
+        1.1, 1.1, 1.1, 1.1, 1.1, 1.1,
+        1.1, 1.1, 1.1, 1.1, 1.1, 1.1,
+      ]
+      # JointPositionActionCfg.scale of the training env.
+      action_scales: [
+        0.1, 0.1, 0.1, 0.1, 0.1, 0.1,
+        0.1, 0.1, 0.1, 0.1, 0.1, 0.1,
+      ]
+
+    # The mjlab gait phase is built by the node itself (use_phase drives the
+    # per-leg phase pair of the playground walk policy, which this one does not
+    # use). gait_frequency must match WALK_FREQUENCY of the training env.
+    #
+    # freeze_at_goal zeroes the phase observation on the goal pose, which mjlab
+    # does through the stand flag of the hidden twist command. Only enable it for
+    # a policy that was trained with that stand: in the normalizer of an export
+    # that used it, the two phase entries have a variance clearly below 0.5
+    # (path_mjlab.onnx, run 2026-07-21_18-14-18_without-stop, has ~0.51, i.e. an
+    # unfrozen, uniformly distributed phase).
+    phase:
+      control_dt: 0.02
+      gait_frequency: 1.75
+      use_phase: False
+      freeze_at_goal: False
+
+    path:
+      # nav_msgs/Path input. A path in a different frame is transformed into
+      # path.frame on receipt; an empty path stops the policy.
+      topic: "path"
+      frame: "odom"
+      # Training expresses the path in the root link frame, projected to the
+      # ground, so the base link is used here (not the base footprint).
+      base_frame: "base_link"
+      # Observation layout, fixed by the trained policy (PathCommandCfg):
+      # 8 points, 15 * 0.01 m = 0.15 m of arc length apart.
+      num_observations: 8
+      observation_spacing: 15
+      point_spacing: 0.01
+      # Distance/orientation gate at which the gait is frozen on the goal pose.
+      near_goal_threshold: 0.3
+      near_goal_yaw_threshold: 0.3
+      # Age above which the tf pose counts as lost and the policy is stopped.
+      max_pose_age: 0.5
+
+    providers: ["CPUExecutionProvider"]

@@ -39,7 +39,7 @@
             saturation: 4 # [DYNAMIC]
             sharpness: 4 # [DYNAMIC]
             gamma: 8 # [DYNAMIC]
-            auto_exposure_gain: false # [DYNAMIC]
+            auto_exposure_gain: true # [DYNAMIC]
             exposure: 15 # [DYNAMIC]
             gain: 100 # [DYNAMIC]
             auto_whitebalance: true # [DYNAMIC]
