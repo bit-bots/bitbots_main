@@ -4,8 +4,15 @@ cartwheel_rl_node:
     # Drop the exported model_XXXXX_action.onnx here and name it below.
     model: model_49999_action.onnx
 
-    motion:                                   
+    motion:
       file: tessa_rad.npz
+      # Abort when the robot base orientation drifts more than this many degrees from the
+      # reference clip for `tracking_error_debounce` consecutive control steps (the policy
+      # lost the trajectory). The cartwheel is very dynamic, so keep this higher than the
+      # standup threshold to avoid false aborts during the fast rotation; tune on robot/sim.
+      # Set max_tracking_error_deg <= 0 to disable the check.
+      max_tracking_error_deg: 60.0
+      tracking_error_debounce: 5
 
     # "acrobatic_motor_goals" is the HCM-routed topic for the ACROBATIC state.
     # Set to "joint_command" for a standalone test that bypasses the HCM.

@@ -39,6 +39,19 @@ class CartwheelRLNode(RLNode):
 
         self._ignore_robot_state = self.get_parameter("ignore_robot_state").value
 
+        # Abort the motion when the robot's base orientation drifts too far from the
+        # reference clip for `debounce` consecutive control steps (the policy has lost the
+        # trajectory and is no longer tracking). The error is *relative* between reference
+        # and robot base, so a well-tracked cartwheel keeps it small even while both spin
+        # through large absolute angles; it only grows on real divergence. Because the
+        # cartwheel is far more dynamic than a getup, a small tracking lag maps to a larger
+        # angular error during the fast rotation, so this threshold wants to sit higher than
+        # the standup's. Tune on the robot/sim. Set max_tracking_error_deg <= 0 to disable.
+        self.declare_parameter("motion.max_tracking_error_deg", 60.0)
+        self.declare_parameter("motion.tracking_error_debounce", 5)
+        self._max_tracking_error = np.radians(self.get_parameter("motion.max_tracking_error_deg").value)
+        self._tracking_error_debounce = int(self.get_parameter("motion.tracking_error_debounce").value)
+
         # publisher
         self._joint_command_pub = self.create_publisher(
             JointCommand, self.get_parameter("publish_topic").value, 10
@@ -110,6 +123,7 @@ class CartwheelRLNode(RLNode):
         self._previous_action.set_previous_action(np.zeros(self._num_joints, dtype=np.float32))
         self._motion_handler.start()
         self._orientation_handler.capture_alignment(self._motion_handler.get_ref_anchor_quat())
+        tracking_error_streak = 0
 
         while rclpy.ok() and not self._motion_handler.finished():
             if goal_handle.is_cancel_requested:
@@ -125,6 +139,29 @@ class CartwheelRLNode(RLNode):
                 goal_handle.abort()
                 result.result = BeyondMimic.Result.ABORTED
                 return result
+
+            # Abort a diverging motion: the robot base orientation has drifted too far from
+            # the reference clip for too long (the policy lost the trajectory).
+            if self._max_tracking_error > 0.0:
+                tracking_error = self._orientation_handler.get_anchor_ori_error(
+                    self._motion_handler.get_ref_anchor_quat()
+                )
+                if tracking_error > self._max_tracking_error:
+                    tracking_error_streak += 1
+                    if tracking_error_streak >= self._tracking_error_debounce:
+                        self.get_logger().warning(
+                            f"BeyondMimic aborted: reference tracking error "
+                            f"{np.degrees(tracking_error):.0f}° exceeded "
+                            f"{np.degrees(self._max_tracking_error):.0f}° for "
+                            f"{tracking_error_streak} steps (frame {self._motion_handler.time_step()})."
+                        )
+                        self._motion_handler.stop()
+                        await self._hcm_acrobatic_mode.call_async(SetBool.Request(data=False))
+                        goal_handle.abort()
+                        result.result = BeyondMimic.Result.ABORTED
+                        return result
+                else:
+                    tracking_error_streak = 0
 
             observation = self.obs()
             onnx_input = {self._onnx_input_name[0]: observation.reshape(1, -1)}
