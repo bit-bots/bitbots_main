@@ -17,6 +17,14 @@ beyondmimic_standup_node:
         model: standup_back.onnx
         motion: standup_back.npz
 
+      # Abort the getup when the robot base orientation drifts more than this many degrees
+      # from the reference clip for `tracking_error_debounce` consecutive control steps
+      # (a failed getup that flops on the ground instead of tracking the clip toward
+      # upright). Tune on the robot/sim: lower = aborts sooner but risks false aborts during
+      # fast rotation phases. Set max_tracking_error_deg <= 0 to disable the check.
+      max_tracking_error_deg: 45.0
+      tracking_error_debounce: 5
+
     # hcm.cpp forwards this topic to the motors only while the robot is getting up.
     # Set to "joint_command" for a standalone test that bypasses the HCM.
     publish_topic: getup_motor_goals

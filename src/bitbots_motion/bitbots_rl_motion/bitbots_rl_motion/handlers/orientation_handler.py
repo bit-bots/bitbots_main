@@ -47,3 +47,18 @@ class OrientationHandler(Handler):
         q12 = qmult(qinverse(self._robot_quat()), q_ref_w)  # ref expressed in robot base frame
         rot = quat2mat(q12)  # (3, 3)
         return rot[:, :2].reshape(6).astype(np.float32)  # first two columns -> 6D
+
+    def get_anchor_ori_error(self, ref_quat: np.ndarray) -> float:
+        """Angle in radians between the robot base and the (aligned) reference anchor.
+
+        This is the scalar tracking error underlying ``motion_anchor_ori_b``: 0 == the
+        robot base orientation matches the reference clip, and it grows as the posture
+        diverges. Because the start alignment is baked into ``self._align`` (captured at
+        motion start), it is 0 at frame 0 regardless of the fallen heading and only
+        reflects drift accumulated since then. Used as an early-abort signal when a getup
+        diverges (robot fails to rise and flops on the ground instead of tracking the clip
+        toward upright).
+        """
+        q_ref_w = qmult(self._align, np.asarray(ref_quat, dtype=np.float64))  # ref in robot world
+        q12 = qmult(qinverse(self._robot_quat()), q_ref_w)  # ref relative to robot base
+        return float(2.0 * np.arccos(min(1.0, abs(q12[0]))))  # quaternion angle

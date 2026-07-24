@@ -47,6 +47,17 @@ class BeyondMimicStandupNode(RLNode):
         self._variants = list(self.get_parameter("standup.variants").value)
         self._default_variant = self.get_parameter("standup.default_variant").value
 
+        # Abort the getup when the robot's base orientation drifts too far from the reference
+        # clip: a failed getup keeps its base lying flat while the reference tracks toward
+        # upright, so the anchor tracking error runs away instead of staying near 0. The
+        # error must exceed the threshold for `debounce` consecutive control steps to abort,
+        # which filters IMU noise and brief tracking transients during fast phases.
+        # Set max_tracking_error_deg <= 0 to disable the check.
+        self.declare_parameter("standup.max_tracking_error_deg", 45.0)
+        self.declare_parameter("standup.tracking_error_debounce", 5)
+        self._max_tracking_error = np.radians(self.get_parameter("standup.max_tracking_error_deg").value)
+        self._tracking_error_debounce = int(self.get_parameter("standup.tracking_error_debounce").value)
+
         # hcm.cpp forwards this topic to the motors only while the robot is getting up.
         # Point this at "joint_command" for a quick standalone test without the HCM.
         self.declare_parameter("publish_topic", "getup_motor_goals")
@@ -171,6 +182,7 @@ class BeyondMimicStandupNode(RLNode):
         self._previous_action.set_previous_action(np.zeros(self._num_joints, dtype=np.float32))
         self._motion_handler.start()
         self._orientation_handler.capture_alignment(self._motion_handler.get_ref_anchor_quat())
+        tracking_error_streak = 0
 
         while rclpy.ok() and not self._motion_handler.finished():
             if goal_handle.is_cancel_requested:
@@ -184,6 +196,29 @@ class BeyondMimicStandupNode(RLNode):
                 goal_handle.abort()
                 result.result = BeyondMimic.Result.ABORTED
                 return result
+
+            # Abort a diverging getup: the robot base orientation has drifted too far from
+            # the reference clip for too long (e.g. the getup failed and the robot is
+            # flopping on the ground instead of tracking the clip toward upright).
+            if self._max_tracking_error > 0.0:
+                tracking_error = self._orientation_handler.get_anchor_ori_error(
+                    self._motion_handler.get_ref_anchor_quat()
+                )
+                if tracking_error > self._max_tracking_error:
+                    tracking_error_streak += 1
+                    if tracking_error_streak >= self._tracking_error_debounce:
+                        self.get_logger().warning(
+                            f"Standup aborted: reference tracking error "
+                            f"{np.degrees(tracking_error):.0f}° exceeded "
+                            f"{np.degrees(self._max_tracking_error):.0f}° for "
+                            f"{tracking_error_streak} steps (frame {self._motion_handler.time_step()})."
+                        )
+                        self._motion_handler.stop()
+                        goal_handle.abort()
+                        result.result = BeyondMimic.Result.ABORTED
+                        return result
+                else:
+                    tracking_error_streak = 0
 
             observation = self.obs()
             onnx_input = {self._onnx_input_name[0]: observation.reshape(1, -1)}
