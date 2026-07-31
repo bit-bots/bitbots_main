@@ -146,7 +146,6 @@ class PositioningCapsule(AbstractBlackboardCapsule):
         ball = np.array([ball_pose.point.x, ball_pose.point.y])
         robot_poses = self._blackboard.team_data.get_robot_poses()
         passive_robot_ids = self._blackboard.team_data.get_id_of_passive_player()
-        self._node.get_logger().info(f"Length of robot_poses: {len(robot_poses)}")
 
         formation = self._inner._compute_formation(
             ball, self._field, len(robot_poses), self._params, opp_set_play=set_play

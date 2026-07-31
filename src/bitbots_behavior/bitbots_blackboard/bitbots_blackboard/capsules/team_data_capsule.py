@@ -194,9 +194,9 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
         passive_robot_ids = []
         data: TeamData
         for data in self.team_data.values():
-            if self.is_valid(data) and (data.strategy.action is Strategy.ACTION_PASSIVE):
+            if self.is_valid(data) and (data.strategy.action == Strategy.ACTION_PASSIVE):
                 passive_robot_ids.append(data.robot_id)
-        if self.strategy.action is Strategy.ACTION_PASSIVE:
+        if self.strategy.action == Strategy.ACTION_PASSIVE:
             passive_robot_ids.append(self._blackboard.gamestate.get_own_id())
         return passive_robot_ids
 
