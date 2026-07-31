@@ -3,6 +3,7 @@
 from enum import Enum
 from typing import Optional
 
+import os
 import numpy as np
 import rclpy
 import tf2_ros
@@ -13,6 +14,8 @@ from rclpy.duration import Duration
 from rclpy.node import Node
 from rclpy.parameter import Parameter
 
+import argparse
+
 
 class Side(Enum):
     LEFT = 1
@@ -20,7 +23,7 @@ class Side(Enum):
 
 
 class LocalizationFaker(Node):
-    def __init__(self):
+    def __init__(self, robot_name):
         super().__init__("localization_faker")
         self.create_subscription(ModelStates, "/model_states", self.model_state_to_tf, 10)
         self.tf_buffer = tf2_ros.Buffer(cache_time=Duration(seconds=10.0))
@@ -29,11 +32,13 @@ class LocalizationFaker(Node):
         use_sim_time_param = Parameter("use_sim_time", Parameter.Type.BOOL, True)
         self.set_parameters([use_sim_time_param])
         self.side: Optional[Side] = None
+        
+        self.robot_name = robot_name
 
     def model_state_to_tf(self, model_state_msg):
         t = TransformStamped()
         for i, name in enumerate(model_state_msg.name):
-            if name not in ["amy", "rory", "blue player 1", "red player 1"]:
+            if name not in [self.robot_name]:
                 continue
             t.header.frame_id = "map"
             t.child_frame_id = "odom"
@@ -108,8 +113,14 @@ class LocalizationFaker(Node):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    
+    parser.add_argument("--robot_name", help="which robot is considered for the localization", default="amy")
+    
+    args, unknown = parser.parse_known_args()    
+    
     rclpy.init(args=None)
-    node = LocalizationFaker()
+    node = LocalizationFaker(args.robot_name)
     rclpy.spin(node)
     node.destroy_node()
     rclpy.shutdown()
