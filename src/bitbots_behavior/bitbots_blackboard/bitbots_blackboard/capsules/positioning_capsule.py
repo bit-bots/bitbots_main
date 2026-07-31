@@ -432,7 +432,7 @@ class InnerPositioningCapsule:
         goal = np.array([-field.length / 2.0, 0.0])
         opp = np.array([+field.length / 2.0, 0.0])
 
-        d = np.linalg.norm(b - goal)
+        d = float(np.linalg.norm(b - goal))
         to_ball = self._normalize(b - goal)  # our-goal -> ball
         perp = np.array([-to_ball[1], to_ball[0]])
 
