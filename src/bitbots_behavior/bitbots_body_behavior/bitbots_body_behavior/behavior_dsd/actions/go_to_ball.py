@@ -3,7 +3,6 @@ from bitbots_blackboard.capsules.pathfinding_capsule import BallGoalType
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
 from geometry_msgs.msg import Vector3
 from std_msgs.msg import ColorRGBA
-from tf2_geometry_msgs import PoseStamped
 from visualization_msgs.msg import Marker
 
 
