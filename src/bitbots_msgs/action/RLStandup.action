@@ -1,0 +1,16 @@
+# Goal definition
+
+# Which standup policy to run. A policy node only accepts goals whose direction
+# matches the direction it was configured for.
+string direction
+
+string DIRECTION_FRONT = "front"
+string DIRECTION_BACK = "back"
+
+---
+# Result definition
+bool successful
+
+---
+# Feedback
+uint8 percent_done

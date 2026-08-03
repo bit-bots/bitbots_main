@@ -25,6 +25,7 @@ rosidl_generate_interfaces(
   "action/Kick.action"
   "action/LookAt.action"
   "action/PlayAnimation.action"
+  "action/RLStandup.action"
   "msg/Animation.msg"
   "msg/Buttons.msg"
   "msg/Cpu.msg"

@@ -37,6 +37,12 @@ $StartHCM
                                                 KICKING --> @RobotStateKicking, @Wait
                                                 NOT_KICKING --> @RobotStateControllable, @Wait
                                     ELSE --> @RobotStateFalling, @CancelGoals, @StopWalking, @PlayAnimationFalling, @Wait
+                                FALLEN_FRONT --> $GameControllerStop
+                                    STOPPED --> @RobotStateFallen, @CancelGoals, @StopWalking, @Wait
+                                    FREE --> @RobotStateFallen + r:false, @CancelGoals + r:false, @StopWalking + r:false, @RobotStateGettingUp + r:false, @RLStandupFront + r:false
+                                FALLEN_BACK --> $GameControllerStop
+                                    STOPPED --> @RobotStateFallen, @CancelGoals, @StopWalking, @Wait
+                                    FREE --> @RobotStateFallen + r:false, @CancelGoals + r:false, @StopWalking + r:false, @RobotStateGettingUp + r:false, @RLStandupBack + r:false
                                 ELSE --> $GameControllerStop
                                     STOPPED --> @RobotStateFallen, @CancelGoals, @StopWalking, @Wait
-                                    FREE --> @RobotStateFallen + r:false, @CancelGoals + r:false, @StopWalking + r:false, @RobotStateGettingUp + r:false, @Complain + r:false, @Wait + time:1.5 + r:false
+                                    FREE --> @RobotStateFallen + r:false, @CancelGoals + r:false, @StopWalking + r:false, @RobotStateGettingUp + r:false, @Wait + time:1.5 + r:false

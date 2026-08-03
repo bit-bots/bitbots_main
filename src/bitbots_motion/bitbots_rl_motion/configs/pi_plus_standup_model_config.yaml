@@ -1,0 +1,128 @@
+standup_node:
+  ros__parameters:
+    # HoST standup policies (input obs[438] -> output actions[22]), one policy
+    # per fall direction. The action goal's `direction` field selects the
+    # variant; an empty direction falls back to `default_variant`.
+    standup:
+      variants: ["front", "back"]
+      default_variant: "back"
+      # Lying on the front (prone) -> stand up from prone.
+      front:
+        model: pi_prone_training8.onnx
+      # Lying on the back (supine) -> stand up from supine.
+      back:
+        model: supine_actuator1_12000.onnx
+
+    joints:
+      # 22-DOF order as reported by Isaac Gym for the HoST pi_plus_ground task.
+      # The ONNX policy expects observations and produces actions in exactly
+      # this order, so do not reorder.
+      # NOTE: assumed to be shared by both variants. Verify against each
+      # policy's training config; if a variant was trained with a different
+      # joint order, this block has to be split per variant.
+      ordered_relevant_joint_names: [
+        "head_yaw_joint",
+        "head_pitch_joint",
+        "l_hip_pitch_joint",
+        "l_hip_roll_joint",
+        "l_thigh_joint",
+        "l_calf_joint",
+        "l_ankle_pitch_joint",
+        "l_ankle_roll_joint",
+        "l_shoulder_pitch_joint",
+        "l_shoulder_roll_joint",
+        "l_upper_arm_joint",
+        "l_elbow_joint",
+        "r_hip_pitch_joint",
+        "r_hip_roll_joint",
+        "r_thigh_joint",
+        "r_calf_joint",
+        "r_ankle_pitch_joint",
+        "r_ankle_roll_joint",
+        "r_shoulder_pitch_joint",
+        "r_shoulder_roll_joint",
+        "r_upper_arm_joint",
+        "r_elbow_joint",
+      ]
+      # PD gains, 1:1 from the HoST training config
+      # (HoST/legged_gym/legged_gym/envs/pi_plus/pi_plus_config_ground.py,
+      # `control.stiffness` / `control.damping`). Identical in the prone config,
+      # so both variants share this block. Legs 80/1.1 and arms 30/0.6 come from
+      # the BeyondMimic sim2real setup, the head keeps the bitbots MuJoCo values.
+      kp: [
+        # head
+        6.0, 6.0,
+        # left leg
+        80.0, 80.0, 80.0, 80.0, 80.0, 80.0,
+        # left arm
+        30.0, 30.0, 30.0, 30.0,
+        # right leg
+        80.0, 80.0, 80.0, 80.0, 80.0, 80.0,
+        # right arm
+        30.0, 30.0, 30.0, 30.0,
+      ]
+      kd: [
+        # head
+        0.6, 0.6,
+        # left leg
+        1.1, 1.1, 1.1, 1.1, 1.1, 1.1,
+        # left arm
+        0.6, 0.6, 0.6, 0.6,
+        # right leg
+        1.1, 1.1, 1.1, 1.1, 1.1, 1.1,
+        # right arm
+        0.6, 0.6, 0.6, 0.6,
+      ]
+      # NOTE: joints.walkready_state, joints.action_scales and joints.joint_signs
+      # are intentionally not set. HoST builds q_target from the *current* joint
+      # position and applies a single scalar scale (see RawJointHandler).
+
+    # The observation/action configuration below is shared by all variants.
+    obs_scales:
+      ang_vel: 0.25
+      dof_pos: 1.0
+      dof_vel: 0.05
+
+    # HoST's `action_rescale`: it is BOTH the action scale
+    # (host_ground.py:_compute_torques -> `dof_pos + actions * action_rescale`)
+    # and the last slot of the observation vector
+    # (host_ground.py:compute_observations). The two must therefore hold the
+    # same value. It is a curriculum variable that starts at
+    # `control.action_scale` (1.0) and decays by 0.02 per curriculum step down
+    # to a floor of 0.25; both deployed runs converged to that floor
+    # (tensorboard `Episode/action_scale`), so 0.25 it is.
+    action_scale: 0.25
+    action_rescale_obs: 0.25
+
+    # 6 * 73 = 438, matching the policies' 'obs' input.
+    history:
+      length: 6
+      one_step_obs_dim: 73
+
+    # Number of policy ticks at the start of each goal during which the policy
+    # observes a zero vector and no joint commands are published, mirroring the
+    # `unactuated_timesteps` warmup HoST uses during training. Set to 0 to
+    # disable.
+    unactuated_steps: 30
+
+    # The policy has no done signal of its own, so the goal ends once the base
+    # orientation says the robot stands: the tilt away from vertical has to
+    # stay below max_tilt_deg for debounce_steps consecutive control steps
+    # (25 steps at control_dt 0.02 = 0.5 s). Publishing stops on the step this
+    # is reached and the goal returns successful.
+    upright:
+      max_tilt_deg: 30.0
+      debounce_steps: 65
+
+    # Failure case: the robot did not get upright within this time. The goal is
+    # aborted so the DSD gets control back and can re-evaluate (retry or move
+    # on) instead of the policy running forever.
+    goal_timeout_sec: 8.0
+
+    phase:
+      # HoST does not use a phase signal. control_dt is still the policy rate.
+      use_phase: False
+      control_dt: 0.02
+      gait_frequency: 0.0
+
+    providers: ["CPUExecutionProvider"]
