@@ -78,7 +78,7 @@ pub static COMPONENT_DEFS: &[ComponentDef] = &[
         cmds: |p| {
             vec![ros2_launch(
                 "bitbots_parameter_blackboard",
-                "parameter_blackboard.launch",
+                "parameter_blackboard.launch.py",
                 &[&sim(p), &format!("fieldname:={}", p.fieldname)],
             )]
         },
