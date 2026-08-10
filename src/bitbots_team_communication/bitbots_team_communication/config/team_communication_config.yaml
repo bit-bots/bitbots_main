@@ -1,10 +1,11 @@
 team_comm:
   ros__parameters:
-    # UDP broadcast address is the highest IP in the subnet e.g. 172.20.255.255
+    # "auto" uses the IPv4 broadcast address of the connected Wi-Fi interface.
+    # Alternatively, set a specific UDP broadcast address, e.g. 172.20.255.255.
     # Sets local mode if set to loopback (127.0.0.1)
-    target_ip: 10.0.6.255
+    target_ip: auto
 
-    # Only used in non local mode with specific target_ip
+    # Only used in non-local mode
     target_port: 10006
     receive_port: 10006
 
@@ -18,12 +19,19 @@ team_comm:
 
     # Rate of published messages in Hz
     rate: 2
+    # Increase rate by this factor when kicking
+    increase_rate_during_kick_factor: 10
+    # Always publish during kick instead of only on switch to kicking
+    always_publish_during_kick: false
 
     # average walking speed in [m/s]
     avg_walking_speed: 0.2
 
     # lifetime of data [s]
     lifetime: 1
+
+    # Maximum allowed serialized message size in bytes
+    max_message_size: 512
 
     # ROS Topics
     topics:

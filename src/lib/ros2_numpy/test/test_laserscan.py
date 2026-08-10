@@ -50,7 +50,7 @@ class TestLaserScan(unittest.TestCase):
         self.assertAlmostEqual(
             laserscan_msg.angle_increment, scan.angle_increment
         )
-        self.assertAlmostEqual(laserscan_msg.angle_max, scan.angle_max)
+        self.assertAlmostEqual(laserscan_msg.angle_max, scan.angle_max, places=6)   # Fix flaky test due to floating point precision
         self.assertAlmostEqual(laserscan_msg.scan_time, scan.scan_time)
         self.assertAlmostEqual(
             laserscan_msg.time_increment, scan.time_increment

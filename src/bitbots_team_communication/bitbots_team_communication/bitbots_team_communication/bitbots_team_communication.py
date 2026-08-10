@@ -12,7 +12,7 @@ from ament_index_python.packages import get_package_share_directory
 from bitbots_tf_buffer import Buffer
 from bitbots_utils.utils import get_parameter_dict, get_parameters_from_other_node
 from builtin_interfaces.msg import Time as TimeMsg
-from game_controller_hsl_interfaces.msg import GameState, PlayerStatusPose
+from game_controller_hsl_interfaces.msg import GameState
 from geometry_msgs.msg import PoseWithCovarianceStamped, Quaternion, Twist, TwistWithCovarianceStamped
 from numpy import double
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
@@ -20,6 +20,7 @@ from rclpy.duration import Duration
 from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
 from rclpy.time import Time
+from rosgraph_msgs.msg import Clock
 from soccer_vision_3d_msgs.msg import Robot, RobotArray
 from std_msgs.msg import Float32, Header
 from tf2_geometry_msgs import PointStamped, PoseStamped
@@ -51,7 +52,10 @@ class TeamCommunication:
         self.socket_communication = SocketCommunication(self.node, self.logger, self.team_id, self.player_id)
 
         self.rate: int = self.node.get_parameter("rate").value
+        self.increase_rate_during_kick_factor: int = self.node.get_parameter("increase_rate_during_kick_factor").value
+        self.always_publish_during_kick: bool = self.node.get_parameter("always_publish_during_kick").value
         self.lifetime: int = self.node.get_parameter("lifetime").value
+        self.max_message_size: int = self.node.get_parameter("max_message_size").value
         self.avg_walking_speed: float = self.node.get_parameter("avg_walking_speed").value
 
         self.topics = get_parameter_dict(self.node, "topics")
@@ -66,12 +70,51 @@ class TeamCommunication:
 
         self.try_to_establish_connection()
 
-        self.logger.info("Successfully established connection.")
+        self.actual_rate = self.rate * self.increase_rate_during_kick_factor
+        self.counter = 0
+        self.last_action = None
 
-        self.node.create_timer(1 / self.rate, self.send_message, callback_group=MutuallyExclusiveCallbackGroup())
+        # See https://github.com/ros2/rclcpp/issues/2535
+        # In sim, the builtin timers may not work correctly if there is a high load of callbacks
+        # This can lead to breaks and bursts which is unacceptable for this usecase
+        # Instead we manually implement a timer
+        if self.node.get_parameter("use_sim_time").value:
+            self.node.create_subscription(
+                Clock, "/clock", self.clock_cb, callback_group=MutuallyExclusiveCallbackGroup(), qos_profile=1
+            )
+            self.next_send_time = self.node.get_clock().now() + Duration(seconds=1 / self.actual_rate)
+        else:
+            self.node.create_timer(
+                1 / self.actual_rate, self.high_rate_cb, callback_group=MutuallyExclusiveCallbackGroup()
+            )
+        self.receive_forever()
 
-        receive_thread = threading.Thread(target=self.receive_forever, daemon=True)
-        receive_thread.start()
+    def clock_cb(self, msg):
+        if Time.from_msg(msg.clock) >= self.next_send_time:
+            self.high_rate_cb()
+            self.next_send_time = Time.from_msg(msg.clock) + Duration(seconds=1 / self.actual_rate)
+
+    def high_rate_cb(self):
+        # Gets called at actual_rate
+        self.counter += 1
+        if self.counter >= self.increase_rate_during_kick_factor:
+            # Gets called at rate
+            self.send_message()
+            self.counter = 0
+        elif self.strategy:
+            if self.always_publish_during_kick and self.strategy.action == Strategy.ACTION_KICKING:
+                self.send_message()
+            elif self.last_action != self.strategy.action and self.strategy.action == Strategy.ACTION_KICKING:
+                self.send_message()
+            self.last_action = self.strategy.action
+
+    def spin(self):
+        executor = EventsExecutor()
+        executor.add_node(self.node)
+        try:
+            executor.spin()
+        except KeyboardInterrupt:
+            pass
 
         self.logger.info("Initialization complete.")
 
@@ -79,14 +122,14 @@ class TeamCommunication:
         self.gamestate: Optional[GameState] = None
         self.pose: Optional[PoseWithCovarianceStamped] = None
         self.cmd_vel: Optional[Twist] = None
-        self.cmd_vel_time = Time(clock_type=self.node.get_clock().clock_type)
+        self.cmd_vel_time: Optional[TimeMsg] = None
         self.ball: Optional[PointStamped] = None
         self.ball_velocity: tuple[float, float, float] = (0.0, 0.0, 0.0)
         self.ball_covariance: list[double] = []
         self.strategy: Optional[Strategy] = None
-        self.strategy_time = Time(clock_type=self.node.get_clock().clock_type)
+        self.strategy_time: Optional[TimeMsg] = None
         self.time_to_ball: Optional[float] = None
-        self.time_to_ball_time = Time(clock_type=self.node.get_clock().clock_type)
+        self.time_to_ball_time: Optional[TimeMsg] = None
         self.seen_robots: Optional[RobotArray] = None
         self.move_base_goal: Optional[PoseStamped] = None
 
@@ -99,9 +142,6 @@ class TeamCommunication:
 
     def create_publishers(self):
         self.team_data_publisher = self.node.create_publisher(TeamData, self.topics["team_data_topic"], qos_profile=1)
-        self.game_controller_player_pose_publisher = self.node.create_publisher(
-            PlayerStatusPose, "hsl_gamecontroller/pose_stamped", 1
-        )
 
     def create_subscribers(self):
         self.node.create_subscription(
@@ -173,15 +213,6 @@ class TeamCommunication:
 
     def pose_cb(self, msg: PoseWithCovarianceStamped):
         self.pose = msg
-
-        player_pose_msg = PlayerStatusPose()
-        player_pose_msg.header = msg.header
-        player_pose_msg.pose = [
-            msg.pose.pose.position.x,
-            msg.pose.pose.position.y,
-            self.extract_orientation_yaw_angle(msg.pose.pose.orientation),
-        ]
-        self.game_controller_player_pose_publisher.publish(player_pose_msg)
 
     def cmd_vel_cb(self, msg: Twist):
         self.cmd_vel = msg
@@ -269,8 +300,15 @@ class TeamCommunication:
 
         message = self.protocol_converter.convert_to_message(self, msg, is_still_valid)
         proto_msg = message.SerializeToString()
-        self.logger.debug(f"Sending msg with size {len(proto_msg)} bytes")
-        self.socket_communication.send_message(proto_msg)
+        message_size = len(proto_msg)
+        if message_size > self.max_message_size:
+            self.logger.warning(
+                f"Team_com msg not sent, because size {message_size} bytes is above the maximum of "
+                f"{self.max_message_size} bytes"
+            )
+        else:
+            self.logger.debug(f"Sending msg with size {message_size} bytes")
+            self.socket_communication.send_message(proto_msg)
 
     def create_empty_message(self, now: Time) -> Proto.Message:
         message = Proto.Message()
@@ -295,7 +333,7 @@ class TeamCommunication:
         return is_own_message or is_message_from_oposite_team
 
     def is_robot_allowed_to_send_message(self) -> bool:
-        return self.gamestate is not None and not self.gamestate.penalized
+        return self.gamestate is not None and not self.gamestate.penalized and not self.gamestate.message_budget < 40
 
     def get_current_time(self) -> Time:
         return self.node.get_clock().now()

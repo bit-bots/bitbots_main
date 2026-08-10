@@ -41,6 +41,9 @@ class CostmapCapsule(AbstractBlackboardCapsule):
         self.map_margin: float = self.body_config["map_margin"]
         self.obstacle_costmap_smoothing_sigma: float = self.body_config["obstacle_costmap_smoothing_sigma"]
         self.obstacle_cost: float = self.body_config["obstacle_cost"]
+        # upfield is towards the opponent goal, downfield is towards our own goal
+        self.closest_robot_upfield_dist: float = 10000.0
+        self.closest_robot_downfield_dist: float = 10000.0
 
         # Publisher for visualization in RViZ
         self.costmap_publisher = self._node.create_publisher(OccupancyGrid, "debug/costmap", 1)
@@ -61,6 +64,8 @@ class CostmapCapsule(AbstractBlackboardCapsule):
         """
         # Init a new obstacle costmap
         obstacle_map = np.zeros_like(self.costmap)
+        self.closest_robot_upfield_dist = 10000.0
+        self.closest_robot_downfield_dist = 10000.0
         # Iterate over all robots
         robot: Robot
         for robot in msg.robots:
@@ -69,6 +74,25 @@ class CostmapCapsule(AbstractBlackboardCapsule):
             # TODO inflate
             # Draw obstacle with smoothing independent weight on obstacle costmap
             obstacle_map[idx_x, idx_y] = self.obstacle_cost * self.obstacle_costmap_smoothing_sigma
+
+            dist_to_robot = float(
+                np.linalg.norm(
+                    np.array(
+                        [
+                            self._blackboard.world_model.get_current_position()[0],
+                            self._blackboard.world_model.get_current_position()[1],
+                        ]
+                    )
+                    - np.array([robot.bb.center.position.x, robot.bb.center.position.y])
+                )
+            )
+            if robot.bb.center.position.x > self._blackboard.world_model.get_current_position()[0]:
+                if dist_to_robot < self.closest_robot_upfield_dist:
+                    self.closest_robot_upfield_dist = dist_to_robot
+            else:
+                if dist_to_robot < self.closest_robot_downfield_dist:
+                    self.closest_robot_downfield_dist = dist_to_robot
+
         # Smooth obstacle map
         obstacle_map = gaussian_filter(obstacle_map, self.obstacle_costmap_smoothing_sigma)
         # Get pass offsets
@@ -84,12 +108,12 @@ class CostmapCapsule(AbstractBlackboardCapsule):
         Publishes the costmap for rviz
         """
         assert self.costmap is not None, "Costmap is not initialized"
-        # Normalize costmap to match the rviz color scheme in a good way
-        normalized_costmap = (
-            (255 - ((self.costmap - np.min(self.costmap)) / (np.max(self.costmap) - np.min(self.costmap))) * 255 / 2.1)
-            .astype(np.int8)
-            .T
-        )
+        # Normalize costmap to the valid OccupancyGrid range [0, 100] (the message uses int8)
+        costmap_range = np.max(self.costmap) - np.min(self.costmap)
+        if costmap_range == 0:
+            normalized_costmap = np.zeros_like(self.costmap, dtype=np.int8).T
+        else:
+            normalized_costmap = (((self.costmap - np.min(self.costmap)) / costmap_range) * 100).astype(np.int8).T
         # Build the OccupancyGrid message
         msg: OccupancyGrid = msgify(
             OccupancyGrid,
@@ -432,3 +456,9 @@ class CostmapCapsule(AbstractBlackboardCapsule):
             )
         ]
         return kick_direction
+
+    def is_other_robot_close(self, threshold_upfield: float, threshold_downfield: float) -> bool:
+        return (
+            threshold_upfield > self.closest_robot_upfield_dist
+            or threshold_downfield > self.closest_robot_downfield_dist
+        )

@@ -27,6 +27,7 @@ class ChangeAction(AbstractActionElement):
             "localizing": Strategy.ACTION_LOCALIZING,
             "trying_to_score": Strategy.ACTION_TRYING_TO_SCORE,
             "waiting": Strategy.ACTION_WAITING,
+            "passive": Strategy.ACTION_PASSIVE,
         }
 
     def perform(self, reevaluate=False):

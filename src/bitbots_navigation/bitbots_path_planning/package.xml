@@ -8,6 +8,7 @@
   <license>MIT</license>
 
   <depend>bitbots_tf_buffer</depend>
+  <depend>bitbots_utils</depend>
   <depend>cargo</depend>
   <depend>generate_parameter_library</depend>
   <depend>geometry_msgs</depend>

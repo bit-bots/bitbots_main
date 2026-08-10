@@ -31,6 +31,7 @@ using namespace std::chrono_literals;
 namespace move_head {
 
 #define DEG_TO_RAD M_PI / 180
+#define RAD_CAMERA_ANGLE DEG_TO_RAD * 30
 
 using LookAtGoal = bitbots_msgs::action::LookAt;
 using LookAtGoalHandle = rclcpp_action::ServerGoalHandle<LookAtGoal>;
@@ -74,6 +75,8 @@ class HeadMover {
   bitbots_splines::SmoothSpline yaw_spline_;
   bitbots_splines::SmoothSpline pitch_spline_;
   double spline_duration_ = 0.0;
+  // Duration of the transition segment from the current head position into the pattern (prepended to the cycle)
+  double transition_duration_ = 0.0;
   rclcpp::Time spline_start_time_;
   bool spline_valid_ = false;
 
@@ -146,25 +149,38 @@ class HeadMover {
     RCLCPP_DEBUG(node_->get_logger(), "Received goal request");
 
     // Bring the goal point into the planning frame
-    geometry_msgs::msg::PointStamped new_point;
+    geometry_msgs::msg::PointStamped rel_head_yaw_point;
     try {
-      new_point = tf_buffer_->transform(goal->look_at_position, "base_footprint", tf2::durationFromSec(0.9));
+      rel_head_yaw_point = tf_buffer_->transform(goal->look_at_position, "head_yaw_link", tf2::durationFromSec(0.9));
     } catch (tf2::TransformException& ex) {
       RCLCPP_ERROR(node_->get_logger(), "Could not transform goal point: %s", ex.what());
       return rclcpp_action::GoalResponse::REJECT;
     }
 
+    geometry_msgs::msg::PointStamped rel_head_pitch_point;
+    try {
+      rel_head_pitch_point =
+          tf_buffer_->transform(goal->look_at_position, "head_pitch_link", tf2::durationFromSec(0.9));
+    } catch (tf2::TransformException& ex) {
+      RCLCPP_ERROR(node_->get_logger(), "Could not transform goal point: %s", ex.what());
+      return rclcpp_action::GoalResponse::REJECT;
+    }
+
+    // RCLCPP_DEBUG(node_->get_logger(), "yaw point, pitch point" << head_yaw_point.point << " " <<
+    // head_pitch_point.point);
+
     // Get the motor goals that are needed to look at the point
-    std::pair<double, double> yaw_pitch = get_motor_goals_from_point(new_point.point);
+    double goal_yaw = 0.0;
+    double goal_pitch = 0.0;
+    get_motor_goals_from_point(rel_head_yaw_point.point, rel_head_pitch_point.point, goal_yaw, goal_pitch);
 
     // Check whether the goal is in range yaw and pitch wise
-    bool goal_not_in_range = check_head_collision(yaw_pitch.first, yaw_pitch.second);
+    bool goal_not_in_range = check_head_collision(goal_yaw, goal_pitch);
 
     // Check whether the action goal is valid and can be executed
     // cppcheck-suppress knownConditionTrueFalse
-    if (action_running_ || goal_not_in_range ||
-        !(params_.max_yaw[0] < yaw_pitch.first && yaw_pitch.first < params_.max_yaw[1]) ||
-        !(params_.max_pitch[0] < yaw_pitch.second && yaw_pitch.second < params_.max_pitch[1])) {
+    if (action_running_ || goal_not_in_range || !(params_.max_yaw[0] < goal_yaw && goal_yaw < params_.max_yaw[1]) ||
+        !(params_.max_pitch[0] < goal_pitch && goal_pitch < params_.max_pitch[1])) {
       return rclcpp_action::GoalResponse::REJECT;
     }
     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
@@ -276,7 +292,7 @@ class HeadMover {
 
     // Clip the target yaw and pitch position at the maximum yaw and pitch values as defined in the parameters
     if (clip) {
-      std::tie(yaw_position, pitch_position) = pre_clip(yaw_position, pitch_position);
+      pre_clip(yaw_position, pitch_position);
     }
 
     // Resolve collisions if necessary
@@ -302,10 +318,9 @@ class HeadMover {
    * @brief Applies clipping to the yaw and pitch values based on the loaded config parameters
    *
    */
-  std::pair<double, double> pre_clip(double yaw, double pitch) {
-    double new_yaw = std::clamp(yaw, params_.max_yaw[0], params_.max_yaw[1]);
-    double new_pitch = std::clamp(pitch, params_.max_pitch[0], params_.max_pitch[1]);
-    return {new_yaw, new_pitch};
+  void pre_clip(double& yaw, double& pitch) {
+    yaw = std::clamp(yaw, params_.max_yaw[0], params_.max_yaw[1]);
+    pitch = std::clamp(pitch, params_.max_pitch[0], params_.max_pitch[1]);
   }
 
   /**
@@ -320,7 +335,7 @@ class HeadMover {
     }
 
     // Calculate the distance between the current and the goal position
-    double distance = sqrt(pow(goal_yaw - current_yaw, 2) - pow(goal_pitch - current_pitch, 2));
+    double distance = sqrt(pow(goal_yaw - current_yaw, 2) + pow(goal_pitch - current_pitch, 2));
 
     // Calculate the number of steps we need to take to reach the goal position
     // This assumes that we move 3 degrees per step
@@ -355,9 +370,12 @@ class HeadMover {
    * @brief Checks if the head collides with the body at a given yaw and pitch position
    */
   bool check_head_collision(double yaw, double pitch) {
-    // TODO we do not have a collision model for the pi plus head yet, so we need to implement this function properly
-    RCLCPP_ERROR_STREAM(node_->get_logger(), "Collision checking for the pi plus head is not implemented yet");
-    return false;
+    // Checks whether head position is higher than torso.
+    if (params_.max_pitch[0] < pitch && pitch < params_.max_pitch[1] && params_.max_yaw[0] < yaw &&
+        yaw < params_.max_yaw[1]) {
+      return false;
+    }
+    return true;
   }
 
   /**
@@ -385,7 +403,7 @@ class HeadMover {
     pos_msg.joint_names = {"head_yaw_joint", "head_pitch_joint"};
     pos_msg.positions = {goal_yaw, goal_pitch};
     pos_msg.velocities = {yaw_speed, pitch_speed};
-    pos_msg.accelerations = {params_.max_acceleration_yaw, params_.max_acceleration_yaw};
+    pos_msg.accelerations = {params_.max_acceleration_yaw, params_.max_acceleration_pitch};
     pos_msg.max_torques = {10, 10};
 
     position_publisher_->publish(pos_msg);
@@ -394,10 +412,9 @@ class HeadMover {
   /**
    * @brief Returns the current position of the head motors
    */
-  std::pair<double, double> get_head_position() {
-    double head_yaw = 0.0;
-    double head_pitch = 0.0;
-
+  void get_head_position(double& head_yaw, double& head_pitch) {
+    head_yaw = 0.0;
+    head_pitch = 0.0;
     // Iterate over all joints and find the head yaw and pitch joints
     for (size_t i = 0; i < current_joint_state_->name.size(); i++) {
       if (current_joint_state_->name[i] == "head_yaw_joint") {
@@ -406,7 +423,6 @@ class HeadMover {
         head_pitch = current_joint_state_->position[i];
       }
     }
-    return {head_yaw, head_pitch};
   }
 
   /**
@@ -448,17 +464,17 @@ class HeadMover {
   /**
    * @brief Generates a parameterized search pattern
    */
-  std::vector<std::pair<double, double>> generatePattern(
-      int line_count, double max_horizontal_angle_left, double max_horizontal_angle_right, double max_vertical_angle_up,
-      double max_vertical_angle_down,
-      int reduce_last_scanline = 0.2,  // TODO: needs to be changed to 1
-      int interpolation_steps = 0) {
+  std::vector<std::pair<double, double>> generatePattern(int line_count, double max_horizontal_angle_left,
+                                                         double max_horizontal_angle_right,
+                                                         double max_vertical_angle_up, double max_vertical_angle_down,
+                                                         double reduce_last_scanline = 1.0,
+                                                         int interpolation_steps = 0) {
     // Store the keyframes of the search pattern
     std::vector<std::pair<double, double>> keyframes;
     // Store the state of the generation process
-    bool down_direction = false;        // true = down, false = up
-    bool right_side = false;            // true = right, false = left
-    const bool right_direction = true;  // true = moving right, false = moving left
+    bool down_direction = true;   // true = decreasing line (toward top), false = increasing line (toward bottom)
+    bool right_side = false;      // true = right, false = left
+    bool right_direction = true;  // true = moving right, false = moving left; alternates per scan line
     int line = line_count - 1;
     // Calculate the number of iterations that are needed to generate the search pattern
     int iterations = std::max(line_count * 4 - 4, 2);
@@ -494,24 +510,24 @@ class HeadMover {
         right_side = right_direction;
 
       } else {
-        // Change the horizontal direction we are moving in
-        right_side = !right_direction;
-        // Check if we reached the top or bottom of the pattern and need to change the direction
-        if (0 <= line && line <= line_count - 1) {
-          down_direction = !down_direction;
-        }
-        // Change the line we are on based on the direction we are moving in
+        // Flip the scan direction so the next line scans the opposite way (boustrophedon)
+        right_direction = !right_direction;
+        // Advance to the next scan line
         if (down_direction) {
           line -= 1;
         } else {
           line += 1;
+        }
+        // Flip vertical direction when we reach either edge
+        if (line <= 0 || line >= line_count - 1) {
+          down_direction = !down_direction;
         }
       }
     }
 
     // Reduce the last scanline by a given factor
     for (auto& keyframe : keyframes) {
-      if (keyframe.second == max_vertical_angle_down) {
+      if (std::abs(keyframe.second - max_vertical_angle_down) < 1e-6) {
         keyframe = {keyframe.first * reduce_last_scanline, max_vertical_angle_down};
       }
     }
@@ -521,11 +537,25 @@ class HeadMover {
   /**
    * @brief Calculates the motor goals that are needed to look at a given point using the inverse kinematics
    */
-  std::pair<double, double> get_motor_goals_from_point(geometry_msgs::msg::Point point) {
-    // Try to calculate the inverse kinematics
-    // TODO we do not have inverse kinematics for the pi plus setup yet, so we need to implement this function properly
-    RCLCPP_ERROR_STREAM(node_->get_logger(), "Inverse kinematics for the pi plus head is not implemented yet");
-    return {0.0, 0.0};
+  void get_motor_goals_from_point(geometry_msgs::msg::Point head_yaw_point, geometry_msgs::msg::Point head_pitch_point,
+                                  double& head_yaw, double& head_pitch) {
+    double yaw_x = head_yaw_point.x;
+    double yaw_y = head_yaw_point.y;
+
+    double rel_head_yaw = atan2(yaw_y, yaw_x);
+
+    double pitch_x = head_pitch_point.x;
+    double pitch_y = head_pitch_point.y;
+    double pitch_z = head_pitch_point.z;
+
+    double rel_head_pitch = -atan2(pitch_z, sqrt(pitch_x * pitch_x + pitch_y * pitch_y));
+
+    double current_yaw = 0.0;
+    double current_pitch = 0.0;
+    get_head_position(current_yaw, current_pitch);
+
+    head_yaw = rel_head_yaw + current_yaw;
+    head_pitch = rel_head_pitch + (current_pitch - RAD_CAMERA_ANGLE);
   }
 
   /**
@@ -534,20 +564,25 @@ class HeadMover {
   bool look_at(geometry_msgs::msg::PointStamped point, double min_yaw_delta = 0.02, double min_pitch_delta = 0.02) {
     try {
       // Transform the point into the planning frame
-      geometry_msgs::msg::PointStamped new_point =
-          tf_buffer_->transform(point, "base_footprint", tf2::durationFromSec(0.9));
+      geometry_msgs::msg::PointStamped rel_head_yaw_point =
+          tf_buffer_->transform(point, "head_yaw_link", tf2::durationFromSec(0.9));
+
+      geometry_msgs::msg::PointStamped rel_head_pitch_point =
+          tf_buffer_->transform(point, "head_pitch_link", tf2::durationFromSec(0.9));
 
       // Get the motor goals that are needed to look at the point from the inverse kinematics
-      std::pair<double, double> yaw_pitch = get_motor_goals_from_point(new_point.point);
+      double goal_yaw = 0.0;
+      double goal_pitch = 0.0;
+      get_motor_goals_from_point(rel_head_yaw_point.point, rel_head_pitch_point.point, goal_yaw, goal_pitch);
       // Get the current head position
-      std::pair<double, double> current_yaw_pitch = get_head_position();
+      double current_yaw = 0.0;
+      double current_pitch = 0.0;
+      get_head_position(current_yaw, current_pitch);
 
       // Check if we reached the goal position
-      if (std::abs(yaw_pitch.first - current_yaw_pitch.first) > min_yaw_delta ||
-          std::abs(yaw_pitch.second - current_yaw_pitch.second) > min_pitch_delta) {
+      if (std::abs(goal_yaw - current_yaw) > min_yaw_delta || std::abs(goal_pitch - current_pitch) > min_pitch_delta) {
         // Send the motor goals to the head motors
-        send_motor_goals(yaw_pitch.first, yaw_pitch.second, true, params_.look_at.yaw_speed,
-                         params_.look_at.pitch_speed);
+        send_motor_goals(goal_yaw, goal_pitch, true, params_.look_at.yaw_speed, params_.look_at.pitch_speed);
         // Return false as we did not reach the goal position yet
         return false;
       }
@@ -564,14 +599,17 @@ class HeadMover {
   /**
    * @brief Builds an open-loop SmoothSpline trajectory from the current search pattern.
    *
-   * Waypoint timestamps are distributed proportionally to Euclidean arc length so the
-   * total cycle takes exactly cycle_time_ seconds. The loop is closed by appending the
-   * first waypoint at the end.
+   * The trajectory starts at the current head position and smoothly transitions into the
+   * pattern, so switching head modes does not result in an abrupt movement. Waypoint
+   * timestamps are distributed proportionally to Euclidean arc length so the cycle
+   * (excluding the transition) takes exactly cycle_time_ seconds. The loop is closed by
+   * appending the first waypoint at the end.
    */
   void build_spline_trajectory() {
     yaw_spline_ = bitbots_splines::SmoothSpline();
     pitch_spline_ = bitbots_splines::SmoothSpline();
     spline_valid_ = false;
+    transition_duration_ = 0.0;
 
     if (pattern_.empty() || cycle_time_ <= 0.0) {
       return;
@@ -597,8 +635,24 @@ class HeadMover {
       total_length += len;
     }
 
-    // Add waypoints with timestamps proportional to arc length
     double t = 0.0;
+
+    // Prepend a transition segment from the current head position to the first waypoint
+    // of the pattern, so we don't jump there abruptly when the head mode changes.
+    // Its duration is based on the distance and the configured transition speed.
+    double current_yaw = 0.0;
+    double current_pitch = 0.0;
+    get_head_position(current_yaw, current_pitch);
+    double transition_distance =
+        std::sqrt(std::pow(pts_rad[0].first - current_yaw, 2) + std::pow(pts_rad[0].second - current_pitch, 2));
+    transition_duration_ = transition_distance / params_.transition_speed;
+    if (transition_duration_ > 0.0) {
+      yaw_spline_.addPoint(t, current_yaw);
+      pitch_spline_.addPoint(t, current_pitch);
+      t = transition_duration_;
+    }
+
+    // Add waypoints with timestamps proportional to arc length
     yaw_spline_.addPoint(t, pts_rad[0].first);
     pitch_spline_.addPoint(t, pts_rad[0].second);
     for (size_t i = 0; i < lengths.size(); i++) {
@@ -624,11 +678,18 @@ class HeadMover {
       return;
     }
 
-    double t = fmod((node_->now() - spline_start_time_).seconds(), spline_duration_);
+    // Play the transition from the previous head position once, then loop only over the cyclic part of the trajectory
+    double elapsed = (node_->now() - spline_start_time_).seconds();
+    double t;
+    if (elapsed <= transition_duration_) {
+      t = elapsed;
+    } else {
+      t = transition_duration_ + fmod(elapsed - transition_duration_, spline_duration_);
+    }
 
     double goal_yaw = yaw_spline_.pos(t);
     double goal_pitch = pitch_spline_.pos(t);
-    std::tie(goal_yaw, goal_pitch) = pre_clip(goal_yaw, goal_pitch);
+    pre_clip(goal_yaw, goal_pitch);
 
     double yaw_vel = std::abs(yaw_spline_.vel(t));
     double pitch_vel = std::abs(pitch_spline_.vel(t));
@@ -708,17 +769,22 @@ class HeadMover {
           return;
       }
 
-      // Build the spline trajectory from the new pattern
-      build_spline_trajectory();
+      // Store the current head mode as the previous head mode to detect changes
+      prev_head_mode_ = curr_head_mode;
+
+      // Build the spline trajectory from the new pattern. It starts with a smooth transition from
+      // the current head position, so we also rebuild it when we re-enter a search pattern from
+      // e.g. ball tracking instead of continuing the old trajectory with an abrupt movement.
+      if (curr_head_mode != bitbots_msgs::msg::HeadMode::TRACK_BALL &&
+          curr_head_mode != bitbots_msgs::msg::HeadMode::DONT_MOVE) {
+        build_spline_trajectory();
+      }
     }
     // Check if no look at action is running or if the head mode is DONT_MOVE
     // if this is not the case, perform the search pattern
     if (!action_running_ && curr_head_mode != bitbots_msgs::msg::HeadMode::DONT_MOVE)  // here DONT_MOVE
                                                                                        // is implemented
     {
-      // Store the current head mode as the previous head mode to detect changes
-      prev_head_mode_ = curr_head_mode;
-
       // If we are in search track mode look at the ball
       if (curr_head_mode == bitbots_msgs::msg::HeadMode::TRACK_BALL) {
         // Convert the ball position to a PointStamped

@@ -19,6 +19,7 @@ class BallGoalType(str, Enum):
     GRADIENT = "gradient"
     MAP = "map"
     CLOSE = "close"
+    RL_KICK = "rl_kick"
 
 
 class PathfindingCapsule(AbstractBlackboardCapsule):
@@ -112,7 +113,7 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
         if path_length < self.orient_to_ball_distance:
             _, _, start_theta = self._blackboard.world_model.get_current_position()
             goal_theta = euler_from_quaternion(numpify(goal_pose.pose.orientation))[2]
-            start_goal_theta_diff = (abs(start_theta - goal_theta) + math.tau / 2) % math.tau - math.tau / 2
+            start_goal_theta_diff = abs((start_theta - goal_theta + math.pi) % math.tau - math.pi)
             start_goal_theta_cost = (
                 start_goal_theta_diff * self._blackboard.config["time_to_ball_cost_start_to_goal_angle"]
             )
@@ -121,10 +122,10 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
             # calculate how much we need to turn to start walking along the path
             _, _, start_theta = self._blackboard.world_model.get_current_position()
             path_theta = math.atan2(end_point.y - start_point.y, end_point.x - start_point.x)
-            start_theta_diff = (abs(start_theta - path_theta) + math.tau / 2) % math.tau - math.tau / 2
+            start_theta_diff = abs((start_theta - path_theta + math.pi) % math.tau - math.pi)
             # calculate how much we need to turn to turn at the end of the path
             goal_theta = euler_from_quaternion(numpify(goal_pose.pose.orientation))[2]
-            goal_theta_diff = (abs(goal_theta - path_theta) + math.tau / 2) % math.tau - math.tau / 2
+            goal_theta_diff = abs((goal_theta - path_theta + math.pi) % math.tau - math.pi)
             start_theta_cost = start_theta_diff * self._blackboard.config["time_to_ball_cost_start_angle"]
             goal_theta_cost = goal_theta_diff * self._blackboard.config["time_to_ball_cost_goal_angle"]
             total_cost = (
@@ -142,6 +143,7 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
         - gradient: The goal pose chosen so the ball is 'distance' meters in the direction indicated by the gradient of the costmap.
         - map: The goal pose chosen so the ball is 'distance' meters in the direction of the opponent goal.
         - close: The goal is inside the ball with us facing the ball.
+        - rl_kick: The goal pose is chosen in an arc around the ball opposide to the direction of the opponent goal.
         """
 
         if BallGoalType.GRADIENT == target:
@@ -155,31 +157,7 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
             ball_point = (goal_x, goal_y, goal_angle, self._blackboard.map_frame)
 
         elif BallGoalType.MAP == target:
-            goal_angle = self._blackboard.world_model.get_map_based_opp_goal_angle_from_ball()
-
-            ball_x, ball_y = self._blackboard.world_model.get_ball_position_xy()
-
-            # Play in any part of the opponents goal, not just the center
-            # Adjust for the goal post width (-0.06)
-            if abs(ball_y) < self._blackboard.world_model.goal_width / 2 - 0.06:
-                goal_angle = 0
-            # Play in the opposite direction if the ball is near the opponent goal back line
-            elif ball_x > self._blackboard.world_model.field_length / 2 - 0.2:
-                goal_angle = math.pi + np.copysign(math.pi / 4, ball_y)
-
-            # We don't want to walk into the ball, so we add an offset to stop before the ball
-            approach_offset_x = math.cos(goal_angle) * distance
-            approach_offset_y = math.sin(goal_angle) * distance
-
-            # We also want to kick the ball with one foot instead of the center between the feet
-            side_offset_x = math.cos(goal_angle - math.pi / 2) * side_offset
-            side_offset_y = math.sin(goal_angle - math.pi / 2) * side_offset
-
-            # Calculate the goal position (has nothing to do with the soccer goal)
-            goal_x = ball_x - approach_offset_x + side_offset_x
-            goal_y = ball_y - approach_offset_y + side_offset_y
-
-            ball_point = (goal_x, goal_y, goal_angle, self._blackboard.map_frame)
+            ball_point = self.get_map_goal(distance, side_offset)
 
         elif BallGoalType.CLOSE == target:
             ball_u, ball_v = self._blackboard.world_model.get_ball_position_uv()
@@ -188,10 +166,51 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
             goal_u = ball_u - math.cos(angle) * distance
             goal_v = ball_v - math.sin(angle) * distance + side_offset
             ball_point = (goal_u, goal_v, angle, self._blackboard.world_model.base_footprint_frame)
+        elif BallGoalType.RL_KICK == target:
+            goal_line_offset = self._blackboard.config["rl_kick"]["goal_line_offset"]
+            approach_dist = self._blackboard.config["rl_kick"]["approach_dist"]
+            approach_arc_half_rad = math.radians(self._blackboard.config["rl_kick"]["approach_arc_half_degree"])
+            ball_x, ball_y = self._blackboard.world_model.get_ball_position_xy()
 
+            vec_ball_to_goal = np.array(
+                [self._blackboard.world_model.field_length / 2 + 2 * goal_line_offset - ball_x, 0 - ball_y]
+            )
+            robot_x, robot_y, robot_theta = self._blackboard.world_model.get_current_position()
+
+            angle_to_goal = math.atan2(vec_ball_to_goal[1], vec_ball_to_goal[0])
+            arc_start_angle = angle_to_goal - approach_arc_half_rad
+            arc_end_angle = angle_to_goal + approach_arc_half_rad
+
+            position_in_kick_arc = self.is_point_in_arc(
+                robot_x,
+                robot_y,
+                ball_x,
+                ball_y,
+                approach_dist,  # we take approach_dist as radius instead of tolerance_dist for hysteresis
+                arc_start_angle,
+                arc_end_angle,
+            )
+
+            if position_in_kick_arc:
+                theta_towards_ball = math.atan2(ball_y - robot_y, ball_x - robot_x)
+                ball_point = (robot_x, robot_y, theta_towards_ball, self._blackboard.map_frame)
+            else:
+                angle_robot_ball = math.atan2(ball_y - robot_y, ball_x - robot_x)
+                ball_approach_start_angle = math.radians(self._blackboard.config["rl_kick"]["max_approach_angle_deg"])
+                if abs(self.angle_distance(angle_robot_ball, angle_to_goal)) > ball_approach_start_angle:
+                    # If the robot is outside the approach arc, we want to approach from the edge of the arc
+                    if self.angle_distance(angle_robot_ball, angle_to_goal) > 0:
+                        angle_robot_ball = angle_to_goal - ball_approach_start_angle
+                    else:
+                        angle_robot_ball = angle_to_goal + ball_approach_start_angle
+                ball_point = (
+                    ball_x - math.cos(angle_robot_ball) * approach_dist,
+                    ball_y - math.sin(angle_robot_ball) * approach_dist,
+                    angle_robot_ball,
+                    self._blackboard.map_frame,
+                )
         else:
-            self._node.get_logger().error(f"Target {target} for go_to_ball action not implemented.")
-            return
+            raise ValueError(f"Target {target} for go_to_ball action not implemented.")
 
         # Create the goal pose message
         pose_msg = PoseStamped()
@@ -203,3 +222,47 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
         pose_msg = self._blackboard.tf_buffer.transform(pose_msg, self._blackboard.map_frame)
 
         return pose_msg
+
+    def get_map_goal(self, distance, side_offset: float = 0.0, goal_offset: float = 0.0):
+        goal_angle = self._blackboard.world_model.get_map_based_opp_goal_angle_from_ball()
+
+        ball_x, ball_y = self._blackboard.world_model.get_ball_position_xy()
+
+        # Play in any part of the opponents goal, not just the center
+        # Adjust for the goal post width (-0.06)
+        if abs(ball_y) < self._blackboard.world_model.goal_width / 2 - 0.06 - goal_offset:
+            goal_angle = 0
+        # Play in the opposite direction if the ball is near the opponent goal back line
+        elif ball_x > self._blackboard.world_model.field_length / 2 - 0.2:
+            goal_angle = math.pi + np.copysign(math.pi / 4, ball_y)
+
+        # We don't want to walk into the ball, so we add an offset to stop before the ball
+        approach_offset_x = math.cos(goal_angle) * distance
+        approach_offset_y = math.sin(goal_angle) * distance
+
+        # We also want to kick the ball with one foot instead of the center between the feet
+        side_offset_x = math.cos(goal_angle - math.pi / 2) * side_offset
+        side_offset_y = math.sin(goal_angle - math.pi / 2) * side_offset
+
+        # Calculate the goal position (has nothing to do with the soccer goal)
+        goal_x = ball_x - approach_offset_x + side_offset_x
+        goal_y = ball_y - approach_offset_y + side_offset_y
+
+        return (goal_x, goal_y, goal_angle, self._blackboard.map_frame)
+
+    def is_point_in_arc(self, p_x, p_y, c_x, c_y, radius, start_angle_rad, end_angle_rad) -> bool:
+        distance = math.sqrt((p_x - c_x) ** 2 + (p_y - c_y) ** 2)
+        if distance > radius:
+            return False
+
+        angle_to_center_point = math.atan2(p_y - c_y, p_x - c_x)
+        start_angle_rad = start_angle_rad % (2 * math.pi)
+        end_angle_rad = end_angle_rad % (2 * math.pi)
+
+        if start_angle_rad < end_angle_rad:
+            return start_angle_rad <= angle_to_center_point <= end_angle_rad
+        else:
+            return angle_to_center_point >= start_angle_rad or angle_to_center_point <= end_angle_rad
+
+    def angle_distance(self, x, y) -> float:
+        return math.atan2(math.sin(y - x), math.cos(y - x))

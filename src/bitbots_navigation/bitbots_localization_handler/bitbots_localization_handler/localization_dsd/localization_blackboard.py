@@ -44,10 +44,6 @@ class LocalizationBlackboard:
         self.accel: Float[np.ndarray, "3"] = np.zeros(3)
         self.imu_orientation = Quaternion(w=1.0)
 
-        # Picked up
-        self.pickup_accel_buffer: list[Float[np.ndarray, "3"]] = []
-        self.pickup_accel_buffer_long: list[Float[np.ndarray, "3"]] = []
-
         # Last time we have detected a whistle
         self.last_timestep_whistle_detected: Time | None = None
 
@@ -57,42 +53,9 @@ class LocalizationBlackboard:
     def _callback_robot_control_state(self, msg: RobotControlState):
         self.robot_control_state = msg.state
 
-        # Reset pickup buffer if we fall down
-        if self.robot_control_state in [
-            RobotControlState.FALLEN,
-            RobotControlState.FALLING,
-            RobotControlState.GETTING_UP,
-        ]:
-            self.pickup_accel_buffer = []
-            self.pickup_accel_buffer_long = []
-
     def _callback_imu(self, msg: Imu):
         self.accel = numpify(msg.linear_acceleration)
         self.imu_orientation = msg.orientation
-
-        if self.robot_control_state is not None and self.robot_control_state not in [
-            RobotControlState.FALLEN,
-            RobotControlState.FALLING,
-            RobotControlState.GETTING_UP,
-        ]:
-            self.pickup_accel_buffer.append(self.accel)
-            self.pickup_accel_buffer_long.append(self.accel)
-            if len(self.pickup_accel_buffer) > 200:
-                self.pickup_accel_buffer.pop(0)
-            if len(self.pickup_accel_buffer_long) > 10000:
-                self.pickup_accel_buffer_long.pop(0)
-
-    def picked_up(self) -> bool:
-        """Naive check if the robot is picked up. Only works if the robot is standing still."""
-        if len(self.pickup_accel_buffer) == 0:
-            return False
-        buffer = np.vstack(self.pickup_accel_buffer)
-        mean = np.mean(buffer[..., 2])
-        buffer_long = np.vstack(self.pickup_accel_buffer_long)
-        mean_long = np.mean(buffer_long[..., 2])
-        absolute_diff = abs(mean_long - mean)
-
-        return bool(absolute_diff > 1.0)
 
     def whistle_detection_callback(self, msg: TimeMsg) -> None:
         self.last_timestep_whistle_detected = Time.from_msg(msg)

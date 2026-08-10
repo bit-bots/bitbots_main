@@ -53,6 +53,10 @@ class HCM_CPP : public rclcpp::Node {
         "record_motor_goals", 1, std::bind(&HCM_CPP::record_goal_callback, this, _1));
     walk_sub_ = this->create_subscription<bitbots_msgs::msg::JointCommand>(
         "walking_motor_goals", 1, std::bind(&HCM_CPP::walking_goal_callback, this, _1));
+    kick_sub_ = this->create_subscription<bitbots_msgs::msg::JointCommand>(
+        "kick_motor_goals", 1, std::bind(&HCM_CPP::kick_goal_callback, this, _1));
+    getup_sub_ = this->create_subscription<bitbots_msgs::msg::JointCommand>(
+        "getup_motor_goals", 1, std::bind(&HCM_CPP::getup_goal_callback, this, _1));
 
     // Create subscriber for high frequency sensor data
     joint_state_sub_ = this->create_subscription<sensor_msgs::msg::JointState>(
@@ -99,8 +103,44 @@ class HCM_CPP : public rclcpp::Node {
 
   void walking_goal_callback(bitbots_msgs::msg::JointCommand msg) {
     last_walking_time_ = msg.header.stamp;
+
+    // Detect significant motion: any joint moved more than the threshold relative to the previous walk command
+    if (last_walk_command_ && msg.positions.size() == last_walk_command_->positions.size()) {
+      for (size_t i = 0; i < msg.positions.size(); ++i) {
+        if (std::abs(msg.positions[i] - last_walk_command_->positions[i]) > significant_motion_threshold_) {
+          last_significant_walk_motion_time_ = msg.header.stamp;
+          break;
+        }
+      }
+    }
+    last_walk_command_ = msg;
+
     if (current_state_ == bitbots_msgs::msg::RobotControlState::CONTROLLABLE ||
         current_state_ == bitbots_msgs::msg::RobotControlState::WALKING) {
+      pub_controller_command_->publish(msg);
+    }
+  }
+
+  void kick_goal_callback(bitbots_msgs::msg::JointCommand msg) {
+    // The kick is sending us joint goals; remember when the last one arrived so
+    // the DSD (RecentKickGoals) can tell whether a kick is currently active.
+    last_kick_goal_time_ = msg.header.stamp;
+
+    // Forward the kick goal to the motors if we are in a state that allows it.
+    // CONTROLLABLE lets the first goal through (which then transitions us to
+    // KICKING), and KICKING keeps the following goals flowing.
+
+    if (current_state_ == bitbots_msgs::msg::RobotControlState::CONTROLLABLE ||
+        current_state_ == bitbots_msgs::msg::RobotControlState::KICKING) {
+      pub_controller_command_->publish(msg);
+    }
+  }
+
+  void getup_goal_callback(const bitbots_msgs::msg::JointCommand msg) {
+    // Forward the RL getup policy's motor goals only while the robot is getting
+    // up. The state-based gate is the joint mutex that keeps the getup policy
+    // from fighting walking/head/animation goals (which forward in other states).
+    if (current_state_ == bitbots_msgs::msg::RobotControlState::GETTING_UP) {
       pub_controller_command_->publish(msg);
     }
   }
@@ -123,9 +163,17 @@ class HCM_CPP : public rclcpp::Node {
       hcm_py_.attr("set_last_walking_goal_time")(
           ros2_python_extension::toPython<builtin_interfaces::msg::Time>(last_walking_time_.value()));
     }
+    if (last_significant_walk_motion_time_) {
+      hcm_py_.attr("set_last_significant_walk_motion_time")(
+          ros2_python_extension::toPython<builtin_interfaces::msg::Time>(last_significant_walk_motion_time_.value()));
+    }
     if (last_animation_goal_time_) {
       hcm_py_.attr("set_last_animation_goal_time")(
           ros2_python_extension::toPython<builtin_interfaces::msg::Time>(last_animation_goal_time_.value()));
+    }
+    if (last_kick_goal_time_) {
+      hcm_py_.attr("set_last_kick_goal_time")(
+          ros2_python_extension::toPython<builtin_interfaces::msg::Time>(last_kick_goal_time_.value()));
     }
 
     // Run HCM Python DSD code
@@ -155,10 +203,16 @@ class HCM_CPP : public rclcpp::Node {
   std::optional<sensor_msgs::msg::JointState> current_joint_state_;
 
   // Walking state
+  double significant_motion_threshold_ = 0.5 * M_PI / 180.0;  // default to 0.5 degrees in radians
   std::optional<builtin_interfaces::msg::Time> last_walking_time_;
+  std::optional<builtin_interfaces::msg::Time> last_significant_walk_motion_time_;
+  std::optional<bitbots_msgs::msg::JointCommand> last_walk_command_;
 
   // Animation states
   std::optional<builtin_interfaces::msg::Time> last_animation_goal_time_;
+
+  // Kicking states
+  std::optional<builtin_interfaces::msg::Time> last_kick_goal_time_;
 
   // Publishers
   rclcpp::Publisher<bitbots_msgs::msg::JointCommand>::SharedPtr pub_controller_command_;
@@ -169,6 +223,8 @@ class HCM_CPP : public rclcpp::Node {
   rclcpp::Subscription<bitbots_msgs::msg::JointCommand>::SharedPtr head_sub_;
   rclcpp::Subscription<bitbots_msgs::msg::JointCommand>::SharedPtr record_sub_;
   rclcpp::Subscription<bitbots_msgs::msg::JointCommand>::SharedPtr walk_sub_;
+  rclcpp::Subscription<bitbots_msgs::msg::JointCommand>::SharedPtr kick_sub_;
+  rclcpp::Subscription<bitbots_msgs::msg::JointCommand>::SharedPtr getup_sub_;
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_sub_;
   rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_sub_;
 };

@@ -49,7 +49,7 @@ body_behavior:
     ready_wait_time: 4.0
 
     # The orientation threshold defining which range (in Degrees) is acceptable as aligned to the goal (in each direction)
-    goal_alignment_orientation_threshold: 5.0
+    goal_alignment_orientation_threshold: 10.0
 
     # When the ball is closer than `ball_close_distance` meters
     # it is in a reachable area of the robot
@@ -82,6 +82,13 @@ body_behavior:
     # A value of 0.25 means, that the quarter in front of the own goal is the defensive area.
     defensive_area: 0.5
 
+    # GoalieZone is the area the goalie should start kick the ball away
+    # X realtive from 0 to 1 measured from the own goal
+    # Y A symetrical offset to both sides from 0 to 1
+    # Y = 0.3 -> Defense Area ist in between 0.3 and 0.7 y
+    goalie_zone_x: 0.2
+    goalie_zone_y: 0.2
+
     # This is the offset the goalie keeps to avoid crashes with poles when blocking balls.
     # The value describes the offset in meters from the goal line.
     block_position_goal_offset: 0.2
@@ -100,7 +107,7 @@ body_behavior:
     ball_far_approach_dist: 0.3
 
     # Range in which the ball far approach point is counted as reached
-    ball_far_approach_position_thresh: 0.2
+    ball_far_approach_position_thresh: 0.1
 
     # We reapproach the ball after it has moved further away than this distance. This includes moving to the far approach position.
     ball_reapproach_dist: 1.0
@@ -112,9 +119,11 @@ body_behavior:
     ball_reapproach_angle: 0.9
 
     # The position where the supporter robot should place itself in order to accept a pass
-    pass_position_x: 0.1
-    pass_position_y: 1.0
+    pass_position_x: -0.2
+    pass_position_y: 0.8
     supporter_max_x: 4.0
+    supporter_max_y: 2.0
+    supporter_min_y: -2.0
 
     # maximal angle of a ball kick
     max_kick_angle: 1.4  #  (radians)
@@ -128,6 +137,9 @@ body_behavior:
     # distance from center point, that the ball must be during an opponent kickoff to think that it moved
     kickoff_min_ball_movement: 0.5
 
+    # distance from other ball position, that the ball must be traveled after a kick to think that it moved
+    after_kick_min_ball_movement: 0.2
+
     # dribble action
     dribble_max_speed_x: 0.5
     dribble_max_speed_y: 0.45
@@ -140,6 +152,17 @@ body_behavior:
     dribble_kick_angle: 0.6
 
     kick_decision_smoothing: 10.0
+
+    rl_kick_approach_tolerance_pos: 0.12
+    rl_kick_approach_tolerance_deg: 20.0
+
+    rl_kick:
+      timeout: 2.0  # how long the kick policy is active
+      approach_dist: 0.6  # distance from the ball to the approach point on the arc
+      approach_arc_half_degree: 60.0  # half opening angle (in degrees) of the arc around the point opposite the kick direction
+      goal_line_offset: 0.25  # distance beyond the goal line used for the left/right kick target points
+      goal_kick_dir_inset: 0.5
+      max_approach_angle_deg: 90
 
     ##################
     # costmap params #

@@ -26,16 +26,17 @@ jobs:
       #     detached: true
 
       - name: Check out repository
-        uses: actions/checkout@v6.0.2
+        uses: actions/checkout@v7
 
       - name: Configure git to trust repository
         run: git config --global --add safe.directory /__w/bitbots_main/bitbots_main
 
       - name: Set up workspace
-        uses: prefix-dev/setup-pixi@v0.9.6
+        uses: prefix-dev/setup-pixi@v0.10.0
         with:
-          pixi-version: v0.70.1
+          pixi-version: v0.72.0
           cache: true
+          cache-key: pixi-${{ hashFiles('pixi.toml', 'pixi.lock') }}-
 
       - name: Build
         run: pixi run -e default build
@@ -45,3 +46,6 @@ jobs:
 
       - name: Test
         run: pixi run -e default test
+
+      - name: Test deploy scripts
+        run: pixi run -e default pytest scripts/deploy/tests

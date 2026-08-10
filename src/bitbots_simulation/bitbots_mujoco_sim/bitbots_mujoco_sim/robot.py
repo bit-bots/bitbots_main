@@ -21,6 +21,7 @@ class Robot:
         self._rng = rng or np.random.default_rng()
         self.noise_config = noise_config or {}
         self.camera = Camera(model, data, name=self._get_name("head_camera"))
+        self.base_body_id = model.body(self._get_name("base_link")).id
 
         def joint(ros_name: str) -> Joint:
             return Joint(model, data, ros_name=ros_name, name=self._get_name(ros_name))

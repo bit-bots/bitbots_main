@@ -2,13 +2,14 @@ use geo::{BooleanOps, Coord, LineString, MultiPolygon, Polygon};
 use pyo3::prelude::*;
 
 use crate::{
-    obstacle::{Obstacle, RoundObstacle},
+    obstacle::{AnyObstacle, Obstacle},
     planner::PathPlanner,
 };
 
 /// Configuration values for the ObstacleMap, these should be given by ROS parameters
 #[pyclass(
     eq,
+    from_py_object,
     str = "ObstacleMapConfig(robot_radius={robot_radius:?}, margin={margin:?}, num_vertices={num_vertices:?})"
 )]
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -38,19 +39,19 @@ impl ObstacleMapConfig {
     }
 }
 
-#[pyclass(eq, str = "ObstacleMap(obstacles={obstacles:?})")]
+#[pyclass(eq, from_py_object, str = "ObstacleMap(obstacles={obstacles:?})")]
 #[derive(Debug, Clone, PartialEq)]
 pub struct ObstacleMap {
     #[pyo3(get, set)]
     config: ObstacleMapConfig,
     #[pyo3(get, set)]
-    obstacles: Vec<RoundObstacle>,
+    obstacles: Vec<AnyObstacle>,
 }
 
 #[pymethods]
 impl ObstacleMap {
     #[new]
-    pub fn new(config: ObstacleMapConfig, obstacles: Vec<RoundObstacle>) -> Self {
+    pub fn new(config: ObstacleMapConfig, obstacles: Vec<AnyObstacle>) -> Self {
         Self { config, obstacles }
     }
 

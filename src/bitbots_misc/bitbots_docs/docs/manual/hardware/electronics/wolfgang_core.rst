@@ -170,7 +170,7 @@ If only RS485 is used, it is recommended to leave R5-R8 unpopulated.
 .. _Jumpers:
 
 Jumpers
-=======
+========
 
 Two jumpers exist on the Wolfgang CORE.
 
