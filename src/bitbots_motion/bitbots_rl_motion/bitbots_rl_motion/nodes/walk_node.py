@@ -51,14 +51,19 @@ class WalkNode(RLNode):
     def allowed_states(self):
         return self._robot_state_handler.is_walkable()
 
+    def initialize_observation(self):
+        # No observation history; just start the previous-action feedback term
+        # from zero on each (re)activation.
+        self._previous_action.set_previous_action(np.zeros_like(self._previous_action.get_previous_action()))
+
     def _phase_update_hook(self):
         if not self._phase.check_phase_set():
             return
         phase = self._phase.get_phase()
         if self._command_handler.get_stop_signal():
             anchors = [
-                np.array([-np.pi / 2, np.pi / 2], dtype=np.float32),
-                np.array([np.pi / 2, -np.pi / 2], dtype=np.float32),
+                np.array([0.0, np.pi], dtype=np.float32),
+                np.array([np.pi, 0.0], dtype=np.float32),
             ]
             nearest = min(anchors, key=lambda a: np.linalg.norm(phase - a))
             if np.linalg.norm(phase - nearest) < 0.1:

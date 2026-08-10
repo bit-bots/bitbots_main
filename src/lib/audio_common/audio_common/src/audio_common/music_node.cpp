@@ -165,6 +165,7 @@ void MusicNode::play_callback(
 void MusicNode::pause_callback(
     const std::shared_ptr<std_srvs::srv::Trigger::Request> request,
     std::shared_ptr<std_srvs::srv::Trigger::Response> response) {
+  (void)request;
 
   if (this->is_thread_alive_) {
     this->pause_music_ = true;
@@ -180,6 +181,7 @@ void MusicNode::pause_callback(
 void MusicNode::resume_callback(
     const std::shared_ptr<std_srvs::srv::Trigger::Request> request,
     std::shared_ptr<std_srvs::srv::Trigger::Response> response) {
+  (void)request;
 
   if (this->is_thread_alive_) {
     this->pause_music_ = false;
@@ -196,6 +198,7 @@ void MusicNode::resume_callback(
 void MusicNode::stop_callback(
     const std::shared_ptr<std_srvs::srv::Trigger::Request> request,
     std::shared_ptr<std_srvs::srv::Trigger::Response> response) {
+  (void)request;
 
   if (this->is_thread_alive_) {
     this->stop_music_ = true;

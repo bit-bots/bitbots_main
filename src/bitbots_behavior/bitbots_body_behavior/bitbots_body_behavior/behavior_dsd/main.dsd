@@ -31,17 +31,25 @@ $DoOnce
         NO --> @LookAtFieldFeatures, @GoToRolePosition
 
 #KickWithAvoidance
-$AvoidBall
-    NO --> $BallClose + distance:%ball_reapproach_dist + angle:%ball_reapproach_angle
-        YES --> $BallKickArea
-            NEAR --> $DoOnce
+$KickOrDribble + threshold_upfield:2.0 + threshold_downfield:0.5
+    KICK --> $DoOnce
+        NOT_DONE --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:rl_kick + blocking:false
+        DONE --> $ReachedAndAlignedToPathPlanningGoalPosition + threshold:%rl_kick_approach_tolerance_pos + orientation_threshold:%rl_kick_approach_tolerance_deg + latch:true
+            NO --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:rl_kick
+            YES --> $DoOnce
                 NOT_DONE --> @StoreBallMovementDetectionStartPosition
-                DONE --> #Dribble
-            FAR --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:map
-        NO --> @ChangeAction + action:going_to_ball + r:false, @LookAtFieldFeatures + r:false, @AvoidBallActive + r:false, @GoToBall + target:map + blocking:false + distance:%ball_far_approach_dist
-    YES --> $ReachedPathPlanningGoalPosition + threshold:%ball_far_approach_position_thresh
-        YES --> @AvoidBallInactive
-        NO --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:map + distance:%ball_far_approach_dist
+                DONE --> @ChangeAction + action:kicking, @Stand + duration:0.1 + r:false, @LookAtBallPenalty + r:false, @RLKickTowardsGoal + strength:3.0 + r:false, @ForgetBall
+    DRIBBLE --> $AvoidBall // old behavior before kick when we want to kick the ball in
+        NO --> $BallClose + distance:%ball_reapproach_dist + angle:%ball_reapproach_angle
+            YES --> $BallKickArea
+                NEAR --> $DoOnce
+                    NOT_DONE --> @StoreBallMovementDetectionStartPosition
+                    DONE --> #Dribble
+                FAR --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:map
+            NO --> @ChangeAction + action:going_to_ball + r:false, @LookAtFieldFeatures + r:false, @AvoidBallActive + r:false, @GoToBall + target:map + blocking:false + distance:%ball_far_approach_dist
+        YES --> $ReachedPathPlanningGoalPosition + threshold:%ball_far_approach_position_thresh
+            YES --> @AvoidBallInactive
+            NO --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:map + distance:%ball_far_approach_dist
 
 #PositioningReady
 $GoalScoreRecently
@@ -80,7 +88,7 @@ $GoalieActive
 
 #PenaltyShootoutBehavior
 $SecondaryStateTeamDecider
-    OUR --> @StandAndWaitRandom + min:10 + max:25, @ChangeAction + action:kicking, @LookAtFieldFeatures, @WalkInPlace + duration:2, @RLKick + duration:3 + r:false, @WalkInPlace + duration:1 + r:false, @Stand
+    OUR --> @StandAndWaitRandom + min:10 + max:25, @ChangeAction + action:kicking, @LookAtFieldFeatures, @WalkInPlace + duration:2, @RLKickAngleRobot + angle_deg_in_map:30.0 + strength:3.0 + r:false, @WalkInPlace + duration:1 + r:false, @Stand
     ELSE --> $BallDangerous + radius:1.3
         LEFT --> @PlayAnimationGoalieFallLeft, @Stand
         RIGHT --> @PlayAnimationGoalieFallRight, @Stand
@@ -128,7 +136,7 @@ $SecondBallTouchAllowed
                         FIRST --> #StrikerRole
                         SECOND --> #SupporterRole
                         THIRD --> #DefensePositioning
-                        
+
 #ThrowinGoalKickCornerkickBehavior
 $DoOnce
     NOT_DONE --> @SetNoSecondBallContactVariable + value:true, @ForgetBallStartPosition + r:false
@@ -137,7 +145,7 @@ $DoOnce
         ELSE --> #Placing
 
 #PlayingBehavior
-$SecondaryStateDecider 
+$SecondaryStateDecider
     PENALTYSHOOT --> #PenaltyShootoutBehavior
     TIMEOUT --> #StandAndLook
     THROW_IN --> #ThrowinGoalKickCornerkickBehavior
@@ -172,7 +180,7 @@ $IsPenalized
                 ELSE --> #PlayingBehavior
             NOT_DETECTED --> $SecondaryStateDecider
                 PENALTYSHOOT --> $SecondaryStateTeamDecider
-                    OUR --> @Stand + duration:0.1 + r:false, @DeactivateHCM + r:false, @LookForward + r:false, @Stand // we need to also see the goalie
+                    OUR --> @Stand + duration:5.0 + r:false, @LookForward + r:false, @RLKickAngleRobot + angle_deg_in_map:30.0 + strength:3.0 + r:false, @Stand
                     OTHER --> $BallSeen
                         YES --> @Stand + duration:0.1 + r:false, @DeactivateHCM + r:false, @LookForward + r:false, @TrackBall + r:false, @PlayAnimationGoalieArms + r:false, @Stand // goalie only needs to care about the ball
                         NO --> @Stand + duration:0.1 + r:false, @DeactivateHCM + r:false, @LookForward + r:false, @LookAtFieldFeatures + r:false, @PlayAnimationGoalieArms + r:false, @Stand

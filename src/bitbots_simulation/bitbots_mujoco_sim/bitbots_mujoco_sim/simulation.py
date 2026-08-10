@@ -11,10 +11,13 @@ from rclpy.time import Time
 from rosgraph_msgs.msg import Clock
 from sensor_msgs.msg import CameraInfo, Image, Imu, JointState
 from std_msgs.msg import Float32
+from std_srvs.srv import Empty
 
 from bitbots_msgs.msg import JointCommand
-from bitbots_msgs.srv import SimulatorPush
+from bitbots_msgs.srv import MoveBall, SimulatorPush
 from bitbots_mujoco_sim.robot import Robot
+
+BALL_JOINT_NAME = "ball-root"
 
 
 class Simulation(Node):
@@ -88,6 +91,8 @@ class Simulation(Node):
             for idx in self._find_robot_indices()
         ]
 
+        self._apply_home_keyframe()
+
         self.time = 0.0
         self.time_message = Time(seconds=0, nanoseconds=0).to_msg()
         self.timestep = self.model.opt.timestep
@@ -97,6 +102,13 @@ class Simulation(Node):
         self.measured_rtf = 1.0
         self.clock_publisher = self.create_publisher(Clock, "clock", 1)
         self.create_subscription(Float32, "real_time_factor", self.real_time_factor_callback, 1)
+
+        # The ball is a free-floating body shared by all robots, so its reset lives on the
+        # simulation node rather than per-robot. Use a global topic so the teleop keyboard
+        # script reaches it regardless of any node namespace.
+        self.ball_joint_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_JOINT, BALL_JOINT_NAME)
+        self.create_service(Empty, "/reset_ball", self.reset_ball_callback)
+        self.create_service(MoveBall, "/move_ball", self.move_ball_callback)
 
         self.imu_frame_id = self.get_parameter("imu_frame").get_parameter_value().string_value
         self.camera_optical_frame_id = self.get_parameter("camera_optical_frame").get_parameter_value().string_value
@@ -108,6 +120,47 @@ class Simulation(Node):
             {"frequency": 4, "handler": lambda: self.publish(lambda robot: robot.publish_imu_event())},
             {"frequency": 32, "handler": lambda: self.publish(lambda robot: robot.publish_camera_event())},
         ]
+
+    def _apply_home_keyframe(self) -> None:
+        """Apply the 'home' keyframe joint values to all robots, leaving freejoints untouched.
+
+        The keyframe is defined in pi_plus.xml. Since attached sub-model keyframes are not
+        merged into the compiled world model, we load the robot model separately to read them.
+        """
+        robot_model_path = str(Path(self.package_path) / "xml" / "pi_plus.xml")
+        robot_model = mujoco.MjModel.from_xml_path(robot_model_path)
+        key_id = mujoco.mj_name2id(robot_model, mujoco.mjtObj.mjOBJ_KEY, "home")
+        if key_id < 0:
+            return
+
+        # Build a map from bare joint name → keyframe qpos value using the standalone robot model
+        home_qpos: dict[str, float] = {}
+        home_z: float | None = None
+        for i in range(robot_model.njnt):
+            jnt = robot_model.joint(i)
+            if jnt.type == mujoco.mjtJoint.mjJNT_FREE:
+                # qpos layout for freejoint: [x, y, z, qw, qx, qy, qz] — grab z (offset 2)
+                home_z = float(robot_model.key_qpos[key_id, jnt.qposadr[0] + 2])
+                continue
+            home_qpos[jnt.name] = robot_model.key_qpos[key_id, jnt.qposadr[0]]
+
+        for robot_sim in self.robots:
+            # Set z spawn height from keyframe while preserving x/y placement and orientation
+            if home_z is not None:
+                freejoint_name = f"robot_floating_base_joint_{robot_sim.robot.index}"
+                freejoint_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_JOINT, freejoint_name)
+                if freejoint_id >= 0:
+                    self.data.qpos[self.model.joint(freejoint_id).qposadr[0] + 2] = home_z
+
+            for joint in robot_sim.robot.joints:
+                # joint.ros_name is the bare name (e.g. "r_hip_pitch_joint") matching the robot model
+                value = home_qpos.get(joint.ros_name)
+                if value is None:
+                    continue
+                self.data.qpos[joint.joint_instance.qposadr[0]] = value
+                # For position actuators ctrl is the target position — same as the initial qpos
+                self.data.ctrl[joint.actuator_instance.id] = value
+        mujoco.mj_forward(self.model, self.data)
 
     def _generate_default_world(self) -> str:
         template_path = Path(self.package_path) / "xml" / "kid_field.xml"
@@ -355,6 +408,47 @@ class Simulation(Node):
 
     def real_time_factor_callback(self, msg: Float32) -> None:
         self.real_time_factor = msg.data / 0.94  # add a small buffer to try to achieve the requested RTF
+
+    def reset_ball_callback(self, request: Empty.Request, response: Empty.Response) -> Empty.Response:
+        """Reset the ball to its initial pose and zero its velocity."""
+        if self.ball_joint_id < 0:
+            self.get_logger().warn(f"No '{BALL_JOINT_NAME}' joint in the world; cannot reset ball.")
+            return response
+
+        qpos_adr = int(self.model.jnt_qposadr[self.ball_joint_id])
+        qvel_adr = int(self.model.jnt_dofadr[self.ball_joint_id])
+
+        def reset() -> None:
+            # A free joint has 7 position (3 translation + 4 quaternion) and 6 velocity values.
+            self.data.qpos[qpos_adr : qpos_adr + 7] = self.model.qpos0[qpos_adr : qpos_adr + 7]
+            self.data.qvel[qvel_adr : qvel_adr + 6] = 0.0
+            self.early_events.remove(reset_event)
+
+        # Run the state write inside the simulation loop so it does not race with mj_step.
+        reset_event = {"frequency": 1, "handler": reset}
+        self.early_events.append(reset_event)
+        return response
+
+    def move_ball_callback(self, request: MoveBall.Request, response: MoveBall.Response) -> MoveBall.Response:
+        """Move the ball by a relative offset (world frame) and zero its velocity."""
+        if self.ball_joint_id < 0:
+            self.get_logger().warn(f"No '{BALL_JOINT_NAME}' joint in the world; cannot move ball.")
+            return response
+
+        qpos_adr = int(self.model.jnt_qposadr[self.ball_joint_id])
+        qvel_adr = int(self.model.jnt_dofadr[self.ball_joint_id])
+        offset = np.array([request.offset.x, request.offset.y, request.offset.z], dtype=float)
+
+        def move() -> None:
+            # The first 3 free-joint qpos entries are the world-frame translation.
+            self.data.qpos[qpos_adr : qpos_adr + 3] += offset
+            self.data.qvel[qvel_adr : qvel_adr + 6] = 0.0
+            self.early_events.remove(move_event)
+
+        # Run the state write inside the simulation loop so it does not race with mj_step.
+        move_event = {"frequency": 1, "handler": move}
+        self.early_events.append(move_event)
+        return response
 
     def publish_clock_event(self) -> None:
         clock_msg = Clock()
