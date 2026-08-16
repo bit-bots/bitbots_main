@@ -82,8 +82,10 @@ nothing. Never invent a value to keep going.
 ## Development Environment
 
 This ROS 2 workspace is managed by Pixi. Run development commands through the
-repository's Pixi environments; do not invoke `colcon`, ROS 2 tools, or formatters
-directly from the host shell.
+repository's Pixi tasks; do not invoke `colcon`, ROS 2 tools, or formatters
+directly from the host shell, and do not build, clean, or format by hand when a
+task exists for it. The tasks carry flags the workspace depends on, and hand
+written equivalents silently drop them.
 
 - Use the `default` environment for normal development.
   It contains the `ros` and `format` features.
@@ -112,6 +114,12 @@ Common commands:
 - Run one-off tools with `pixi run -e default <command>`.
 - Clean all workspace build artifacts with `pixi run -e default clean`.
 - Clean one package with `pixi run -e default clean <package>`.
+  Prefer this over cleaning everything, because a full clean forces a rebuild of
+  the entire workspace.
+- Never remove `build/`, `install/`, or `log/` by hand, for example with `rm -rf`.
+  Removing the install space breaks every package that is not rebuilt with it,
+  including ones outside the selection being worked on, and recovering requires a
+  full workspace rebuild. Use the clean task, which scopes the removal correctly.
 - Use `pixi clean` only to reset Pixi's local environment data.
   This requires downloading dependencies and rebuilding afterward.
 
