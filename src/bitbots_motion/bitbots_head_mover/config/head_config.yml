@@ -196,3 +196,238 @@ move_head:
         validation:
           bounds<>: [0.0, 1.0]
 
+
+  # Sampling based head control used by the ACTIVE_VISION head mode
+  active_vision:
+    root_link:
+      type: string
+      default_value: "base_link"
+      description: "Link the sampled camera poses are resolved against. The map to this link transform places the robot on the field."
+
+    tip_link:
+      type: string
+      default_value: "camera_optical_frame_left_uncalibrated"
+      description: "Optical frame at the end of the head chain, as named in the robot description"
+
+    calibrated_optical_frame:
+      type: string
+      default_value: "zed_left_camera_optical_frame"
+      description: "Optical frame the vision pipeline reports detections in. The offset from tip_link is the extrinsic calibration and is looked up via tf."
+
+    map_frame:
+      type: string
+      default_value: "map"
+      description: "Frame the field, the coverage map and all stored detections live in"
+
+    command_lookahead:
+      type: double
+      default_value: 0.1
+      description: "How far along the selected trajectory the commanded setpoint is taken. Must be greater than zero, as the trajectory starts at the current head position."
+      validation:
+        gt<>: [0.0]
+
+    max_velocity_yaw:
+      type: double
+      default_value: 4.0
+      description: "Maximum yaw speed a sampled trajectory may reach. Deliberately below the motor's mechanical limit."
+      validation:
+        gt<>: [0.0]
+
+    max_velocity_pitch:
+      type: double
+      default_value: 4.0
+      description: "Maximum pitch speed a sampled trajectory may reach"
+      validation:
+        gt<>: [0.0]
+
+    sampling:
+      sample_count:
+        type: int
+        default_value: 64
+        description: "Number of candidate trajectories drawn per planning cycle"
+        validation:
+          gt_eq<>: [1]
+
+      horizon:
+        type: double
+        default_value: 1.0
+        description: "How far into the future a candidate trajectory reaches"
+        validation:
+          gt<>: [0.0]
+
+      midpoint_time:
+        type: double
+        default_value: 0.5
+        description: "When the intermediate waypoint of a candidate sits. Must be strictly inside the horizon."
+        validation:
+          gt<>: [0.0]
+
+      evaluation_points:
+        type: int
+        default_value: 2
+        description: "Number of points along a candidate that are scored. They are spread evenly over the horizon and end at the endpoint, never including the shared start, so two points score the midpoint and the goal point. This is the main cost driver together with the sample count and the coverage cell size."
+        validation:
+          gt_eq<>: [1]
+
+      feasibility_points:
+        type: int
+        default_value: 21
+        description: "Number of points at which a candidate is checked against the joint and dynamic limits"
+        validation:
+          gt_eq<>: [2]
+
+      max_attempts_per_sample:
+        type: int
+        default_value: 8
+        description: "How often a single candidate is redrawn before it is given up on"
+        validation:
+          gt_eq<>: [1]
+
+      midpoint_deviation:
+        type: double
+        default_value: 0.3
+        description: "How far (in radians) the intermediate waypoint may deviate from the straight path to the endpoint. Larger values allow more curved sweeps but get rejected by the acceleration limit more often."
+        validation:
+          gt_eq<>: [0.0]
+
+      random_seed:
+        type: int
+        default_value: 42
+        description: "Seed of the sampling random number generator, so runs are reproducible"
+
+    visibility:
+      center_fraction:
+        type: double
+        default_value: 0.5
+        description: "Fraction of the image around its center that counts as perfectly framed"
+        validation:
+          bounds<>: [0.0, 1.0]
+
+      border_score:
+        type: double
+        default_value: 0.3
+        description: "Score of a target sitting exactly on the image border. Targets outside the image always score zero."
+        validation:
+          bounds<>: [0.0, 1.0]
+
+    coverage:
+      margin:
+        type: double
+        default_value: 1.0
+        description: "How far beyond the field lines the coverage map extends. This area carries the out of field penalty."
+        validation:
+          gt_eq<>: [0.0]
+
+      cell_size:
+        type: double
+        default_value: 1.0
+        description: "Edge length of a coverage map cell. Smaller cells are more precise but cost planning time, as every cell is projected into the camera for every evaluated point of every candidate."
+        validation:
+          gt<>: [0.0]
+
+      half_life:
+        type: double
+        default_value: 8.0
+        description: "Time after which having observed a part of the field counts for half as much, making it worth revisiting"
+        validation:
+          gt<>: [0.0]
+
+      distance_half_weight:
+        type: double
+        default_value: 3.0
+        description: "Ground distance at which a field cell counts half as much for coverage. A patch twice as far away covers about a quarter of the image, so without this falloff the coverage term would reward distant overview poses where a ball is barely detectable."
+        validation:
+          gt<>: [0.0]
+
+    timeouts:
+      filtered_ball:
+        type: double
+        default_value: 5.0
+        description: "How long the filtered ball estimate stays relevant"
+        validation:
+          gt<>: [0.0]
+
+      raw_ball:
+        type: double
+        default_value: 0.5
+        description: "How long a raw ball detection stays relevant"
+        validation:
+          gt<>: [0.0]
+
+      team_ball:
+        type: double
+        default_value: 3.0
+        description: "How long a ball reported by a teammate stays relevant"
+        validation:
+          gt<>: [0.0]
+
+      robot:
+        type: double
+        default_value: 1.0
+        description: "How long a robot detection stays relevant"
+        validation:
+          gt<>: [0.0]
+
+    covariance_half_weight:
+      type: double
+      default_value: 0.5
+      description: "Covariance at which a filtered estimate's contribution has dropped to half"
+      validation:
+        gt<>: [0.0]
+
+    weights:
+      filtered_ball:
+        type: double
+        default_value: 4.0
+        description: "Importance of keeping the filtered ball estimate in view"
+        validation:
+          gt_eq<>: [0.0]
+
+      raw_balls:
+        type: double
+        default_value: 2.0
+        description: "Importance of keeping the raw ball detections in view"
+        validation:
+          gt_eq<>: [0.0]
+
+      team_ball:
+        type: double
+        default_value: 1.0
+        description: "Importance of keeping a ball reported by a teammate in view"
+        validation:
+          gt_eq<>: [0.0]
+
+      field_coverage:
+        type: double
+        default_value: 1.5
+        description: "Importance of looking at parts of the field that were not observed recently"
+        validation:
+          gt_eq<>: [0.0]
+
+      robots:
+        type: double
+        default_value: 0.5
+        description: "Importance of keeping detected robots in view"
+        validation:
+          gt_eq<>: [0.0]
+
+
+      commitment:
+        type: double
+        default_value: 1.5
+        description: "Importance of agreeing with the previously selected trajectory. This is the knob that trades reactivity against steady head motion."
+        validation:
+          gt_eq<>: [0.0]
+
+    debug:
+      enabled:
+        type: bool
+        default_value: false
+        description: "Publish the coverage grid, candidate markers and the joint space score image"
+
+      image_size:
+        type: int
+        default_value: 400
+        description: "Edge length in pixels of the joint space debug image"
+        validation:
+          gt_eq<>: [64]
