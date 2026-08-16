@@ -8,7 +8,7 @@ endif()
 
 # Build with release optimizations and debug symbols by default
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE RelWithDebug)
+  set(CMAKE_BUILD_TYPE RelWithDebInfo)
 endif()
 
 find_package(bitbots_docs REQUIRED)
