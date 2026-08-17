@@ -27,9 +27,9 @@
     </include>
 
     <!-- launch the head mover -->
-    <include file="$(find-pkg-share bitbots_head_mover)/launch/head_mover.launch">
+    <!--<include file="$(find-pkg-share bitbots_head_mover)/launch/head_mover.launch">
         <arg name="sim" value="$(var sim)" />
-    </include>
+    </include>-->
 
     <group if="$(var rl_motion)">
         <include file="$(find-pkg-share bitbots_rl_motion)/launch/rl_motion.launch">

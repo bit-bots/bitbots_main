@@ -7,7 +7,8 @@ from geometry_msgs.msg import PoseStamped
 from nav_msgs.msg import Path
 from rclpy.qos import DurabilityPolicy, QoSProfile
 from rclpy.time import Time
-from std_msgs.msg import Bool
+from std_msgs.msg import Bool, Header
+from visualization_msgs.msg import Marker, MarkerArray
 
 from bitbots_rl_motion.handlers import Handler
 
@@ -126,6 +127,8 @@ class PathHandler(Handler):
 
         node.create_subscription(Path, topic, self._path_callback, 1)
         self._lookahead_pub = node.create_publisher(Path, "path_lookahead", 1)
+        # The same lookahead samples as red sphere markers for RViz.
+        self._lookahead_marker_pub = node.create_publisher(MarkerArray, "path_lookahead_markers", 1)
         # Latched so a subscriber that starts late still learns the current state.
         self._goal_reached_pub = node.create_publisher(
             Bool, "path_goal_reached", QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL)
@@ -281,19 +284,40 @@ class PathHandler(Handler):
     def _publish_debug(self) -> None:
         self._publish_goal_reached()
 
-        if self._lookahead_pub.get_subscription_count() == 0:
-            return
-        path = Path()
-        path.header.frame_id = self._frame
-        path.header.stamp = self._node.get_clock().now().to_msg()
-        for x, y in self._lookahead:
-            pose = PoseStamped()
-            pose.header = path.header
-            pose.pose.position.x = float(x)
-            pose.pose.position.y = float(y)
-            pose.pose.orientation.w = 1.0
-            path.poses.append(pose)
-        self._lookahead_pub.publish(path)
+        header = Header(frame_id=self._frame, stamp=self._node.get_clock().now().to_msg())
+
+        if self._lookahead_pub.get_subscription_count() > 0:
+            path = Path(header=header)
+            for x, y in self._lookahead:
+                pose = PoseStamped()
+                pose.header = header
+                pose.pose.position.x = float(x)
+                pose.pose.position.y = float(y)
+                pose.pose.orientation.w = 1.0
+                path.poses.append(pose)
+            self._lookahead_pub.publish(path)
+
+        if self._lookahead_marker_pub.get_subscription_count() > 0:
+            self._lookahead_marker_pub.publish(self._lookahead_markers(header))
+
+    def _lookahead_markers(self, header: Header) -> MarkerArray:
+        """The 8 path observation points as red sphere markers."""
+        markers = MarkerArray()
+        for i, (x, y) in enumerate(self._lookahead):
+            marker = Marker()
+            marker.header = header
+            marker.ns = "path_lookahead"
+            marker.id = i
+            marker.type = Marker.SPHERE
+            marker.action = Marker.ADD
+            marker.pose.position.x = float(x)
+            marker.pose.position.y = float(y)
+            marker.pose.orientation.w = 1.0
+            marker.scale.x = marker.scale.y = marker.scale.z = 0.08
+            marker.color.r = 1.0
+            marker.color.a = 1.0
+            markers.markers.append(marker)
+        return markers
 
     # ------------------------------------------------------------------ #
     # accessors

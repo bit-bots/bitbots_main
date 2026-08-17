@@ -2,7 +2,7 @@ import rclpy
 import soccer_vision_3d_msgs.msg as sv3dm
 from bitbots_tf_buffer import Buffer
 from geometry_msgs.msg import PointStamped, PoseStamped, PoseWithCovarianceStamped, Twist
-from nav_msgs.msg import Path
+from nav_msgs.msg import OccupancyGrid, Path
 from rclpy.duration import Duration
 from rclpy.experimental.events_executor import EventsExecutor
 from std_msgs.msg import Bool, Empty
@@ -45,9 +45,25 @@ class PathPlanning(NodeWithConfig):
         self.path_pub = self.create_publisher(Path, "path", 1)
         self.carrot_pub = self.create_publisher(PointStamped, "carrot", 1)
         self.graph_pub = self.create_publisher(MarkerArray, "visibility_graph", 1)
+        self.costmap_pub = self.create_publisher(OccupancyGrid, "costmap", 1)
 
         # Timer that updates the path and command velocity at a given rate
         self.create_timer(1 / self.config.rate, self.step, clock=self.get_clock())
+
+        # Low-rate timer that publishes an occupancy grid visualization of the
+        # obstacles the planner currently considers (rasterization is too
+        # expensive to run at the planning rate)
+        if self.config.map.costmap.publish_rate > 0.0:
+            self.create_timer(1 / self.config.map.costmap.publish_rate, self.publish_costmap, clock=self.get_clock())
+
+    def publish_costmap(self) -> None:
+        """
+        Publishes the costmap visualization of the planner's current obstacles
+        """
+        try:
+            self.costmap_pub.publish(self.planner.get_costmap())
+        except Exception as e:
+            self.get_logger().warn(f"Could not publish costmap: {e}", throttle_duration_sec=5.0)
 
     def step(self) -> None:
         """

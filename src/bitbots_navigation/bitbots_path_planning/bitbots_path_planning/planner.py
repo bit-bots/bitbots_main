@@ -1,17 +1,19 @@
 import math
 from abc import ABC, abstractmethod
-from typing import Optional
 
+import numpy as np
 import soccer_vision_3d_msgs.msg as sv3dm
 import tf2_geometry_msgs
 import tf2_ros as tf2
 from bitbots_rust_nav import ObstacleMap, ObstacleMapConfig, PolygonObstacle, RoundObstacle
 from bitbots_utils.utils import get_parameters_from_other_node
 from geometry_msgs.msg import PoseStamped
-from nav_msgs.msg import Path
+from matplotlib.path import Path as MplPath
+from nav_msgs.msg import OccupancyGrid, Path
 from rclpy.duration import Duration
 from rclpy.time import Time
 from ros2_numpy import numpify
+from scipy import ndimage
 from std_msgs.msg import Header
 from tf2_geometry_msgs import PointStamped, PoseWithCovarianceStamped
 from tf_transformations import euler_from_quaternion
@@ -59,21 +61,25 @@ class VisibilityPlanner(Planner):
         self.node = node
         self.buffer = buffer
         self.robots: list[RoundObstacle] = []
-        self.ball: Optional[RoundObstacle] = None
+        self.ball: RoundObstacle | None = None
         # Static box/cylinder obstacles from a MarkerArray (e.g. the obstacle_map
         # node). Kept in their own frame and transformed into the planning frame
         # at planning time, so a map defined in a world frame stays put even when
         # the planning frame differs (e.g. odom).
         self.obstacle_markers: list[Marker] = []
-        self.goal: Optional[PoseStamped] = None
+        self.goal: PoseStamped | None = None
         self.base_footprint_frame: str = self.node.config.base_footprint_frame
         self.ball_obstacle_active: bool = True
         self.frame: str = self.node.config.map.planning_frame
 
         # Get the field dimensions from the global parameter blackboard
         field_parameters = get_parameters_from_other_node(
-            self.node, "/parameter_blackboard", ["field.size.x", "field.goal.width", "field.goal.depth"]
+            self.node,
+            "/parameter_blackboard",
+            ["field.size.x", "field.size.y", "field.goal.width", "field.goal.depth"],
         )
+        # Kept for sizing the costmap visualization
+        self.field_size: tuple[float, float] = (field_parameters["field.size.x"], field_parameters["field.size.y"])
         # Create static obstacles for both goals, so we don't plan paths through them
         self.goal_obstacles: list[PolygonObstacle] = self._create_goal_obstacles(
             field_length=field_parameters["field.size.x"],
@@ -193,6 +199,67 @@ class VisibilityPlanner(Planner):
                 )
         return obstacles
 
+    def _gather_obstacles(self) -> list[RoundObstacle | PolygonObstacle]:
+        """
+        Collects all obstacles the planner currently knows about: detected
+        robots, the ball (if active), the static goal obstacles and the static
+        obstacles from the obstacle map.
+        """
+        obstacles: list[RoundObstacle | PolygonObstacle] = list(self.robots)
+        if self.ball is not None and self.ball_obstacle_active:
+            obstacles.append(self.ball)
+        obstacles.extend(self.goal_obstacles)
+        obstacles.extend(self._obstacle_map_obstacles())
+        return obstacles
+
+    def get_costmap(self) -> OccupancyGrid:
+        """
+        Rasterizes the current obstacle set into an OccupancyGrid for
+        visualization. Cells inside an obstacle are 100, cells within the
+        inflation radius (robot radius + obstacle margin) are 50, free cells
+        are 0. The grid covers the field plus a configurable padding.
+        """
+        resolution = self.node.config.map.costmap.resolution
+        half_w = self.field_size[0] / 2.0 + self.node.config.map.costmap.padding
+        half_h = self.field_size[1] / 2.0 + self.node.config.map.costmap.padding
+        width = max(1, int(round(2.0 * half_w / resolution)))
+        height = max(1, int(round(2.0 * half_h / resolution)))
+
+        # Cell center coordinates in the planning frame (row-major, y = rows)
+        xs = (np.arange(width) + 0.5) * resolution - half_w
+        ys = (np.arange(height) + 0.5) * resolution - half_h
+        grid_x, grid_y = np.meshgrid(xs, ys)
+        points = np.column_stack((grid_x.ravel(), grid_y.ravel()))
+
+        # Rasterize the raw obstacle shapes
+        occupied = np.zeros(height * width, dtype=bool)
+        for obstacle in self._gather_obstacles():
+            if isinstance(obstacle, RoundObstacle):
+                center_x, center_y = obstacle.center
+                occupied |= (points[:, 0] - center_x) ** 2 + (points[:, 1] - center_y) ** 2 <= obstacle.radius**2
+            else:
+                occupied |= MplPath(obstacle.vertices).contains_points(points)
+        occupied = occupied.reshape(height, width)
+
+        # Dilate by the inflation radius the planner also applies (disk kernel)
+        inflation = self.node.config.map.inflation.robot_radius + self.node.config.map.inflation.obstacle_margin
+        cells = int(math.ceil(inflation / resolution))
+        offsets = np.arange(-cells, cells + 1)
+        disk = offsets[:, None] ** 2 + offsets[None, :] ** 2 <= cells**2
+        inflated = ndimage.binary_dilation(occupied, structure=disk)
+
+        data = np.where(occupied, 100, np.where(inflated, 50, 0)).astype(np.int8)
+
+        msg = OccupancyGrid()
+        msg.header = Header(frame_id=self.frame, stamp=self.node.get_clock().now().to_msg())
+        msg.info.resolution = resolution
+        msg.info.width = width
+        msg.info.height = height
+        msg.info.origin.position.x = -half_w
+        msg.info.origin.position.y = -half_h
+        msg.data = data.ravel().tolist()
+        return msg
+
     def set_goal(self, pose: PoseStamped) -> None:
         """
         Updates the goal pose
@@ -238,16 +305,7 @@ class VisibilityPlanner(Planner):
             margin=self.node.config.map.inflation.obstacle_margin,
             num_vertices=12,
         )
-        # Add robots to obstacles
-        obstacles: list[RoundObstacle | PolygonObstacle] = list(self.robots)
-        # Add ball to obstacles if active
-        if self.ball is not None:
-            obstacles.append(self.ball)
-        # Add the static goal obstacles
-        obstacles.extend(self.goal_obstacles)
-        # Add the static box/cylinder obstacles from the obstacle map
-        obstacles.extend(self._obstacle_map_obstacles())
-        obstacle_map = ObstacleMap(config, obstacles)
+        obstacle_map = ObstacleMap(config, self._gather_obstacles())
 
         # Calculate the shortest path
         path = obstacle_map.shortest_path(start, goal)
