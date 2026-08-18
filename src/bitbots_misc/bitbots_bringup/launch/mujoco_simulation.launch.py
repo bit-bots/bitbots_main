@@ -201,7 +201,7 @@ def generate_launch_description():
             "web",
             default_value="true",
             description="Use web-based mjviser viewer instead of the native MuJoCo viewer",
-        )
+        ),
     ]
 
     # Add all teamplayer arguments with empty default (means use teamplayer's default)
