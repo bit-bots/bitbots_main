@@ -1,3 +1,4 @@
+import re
 import time
 from collections.abc import Callable
 from pathlib import Path
@@ -16,6 +17,7 @@ from std_srvs.srv import Empty
 from bitbots_msgs.msg import JointCommand
 from bitbots_msgs.srv import MoveBall, SimulatorPush
 from bitbots_mujoco_sim.robot import Robot
+from bitbots_mujoco_sim.world import generate_world_xml
 
 BALL_JOINT_NAME = "ball-root"
 
@@ -147,7 +149,7 @@ class Simulation(Node):
         for robot_sim in self.robots:
             # Set z spawn height from keyframe while preserving x/y placement and orientation
             if home_z is not None:
-                freejoint_name = f"robot_floating_base_joint_{robot_sim.robot.index}"
+                freejoint_name = f"robot_{robot_sim.robot.index}_floating_base_joint"
                 freejoint_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_JOINT, freejoint_name)
                 if freejoint_id >= 0:
                     self.data.qpos[self.model.joint(freejoint_id).qposadr[0] + 2] = home_z
@@ -163,25 +165,13 @@ class Simulation(Node):
         mujoco.mj_forward(self.model, self.data)
 
     def _generate_default_world(self) -> str:
-        template_path = Path(self.package_path) / "xml" / "kid_field.xml"
-        output_path = Path(self.package_path) / "xml" / "generated_world.xml"
-        with open(template_path) as f:
-            template = f.read()
-        world_xml = (
-            template.replace("{{NUM_ROBOTS}}", "1").replace("{{OFFSET}}", "6.0").replace("{{ROBOT_TYPE}}", "piplus")
-        )
-        with open(output_path, "w") as f:
-            f.write(world_xml)
-        return str(output_path)
+        return str(generate_world_xml("1", self.package_path, "piplus"))
 
     def _find_robot_indices(self) -> list[int]:
-        """Find all robot instances by looking for bodies named 'robot_base_link_X'."""
+        """Find all robot instances by looking for bodies named 'robot_<index>_base_link'."""
         body_names = [self.model.body(i).name for i in range(self.model.nbody)]
-        return sorted(
-            int(name.split("_")[-1])
-            for name in body_names
-            if name.startswith("robot_base_link_") and name.split("_")[-1].isdigit()
-        )
+        pattern = re.compile(r"^robot_(\d+)_base_link$")
+        return sorted(int(match.group(1)) for name in body_names if (match := pattern.match(name)))
 
     def _key_callback(self, key: int) -> None:
         # Exceptions in this callback completly deadlock the process.

@@ -3,6 +3,7 @@ from pathlib import Path
 
 import yaml
 from ament_index_python.packages import get_package_share_directory
+from bitbots_mujoco_sim.world import generate_world_xml, parse_num_robots
 from launch import LaunchDescription
 from launch.actions import (
     DeclareLaunchArgument,
@@ -88,32 +89,10 @@ def generate_domain_bridge_config(robot_domain: int, output_dir: Path) -> Path:
     return config_path
 
 
-def generate_world_xml(num_robots: int, package_share: str, robot_type: str) -> Path:
-    """Generate MuJoCo world XML with the correct number of robots."""
-    template_path = Path(package_share) / "xml" / "kid_field.xml"
-    output_path = Path(package_share) / "xml" / "generated_world.xml"
-    offset = 4 * (
-        1 / num_robots
-    )  # this makes the offset be the default value when there are 4 robots and increse the less robots there are
-
-    with open(template_path) as f:
-        template = f.read()
-
-    # Replace placeholder with actual robot count
-    world_xml = (
-        template.replace("{{NUM_ROBOTS}}", str(num_robots))
-        .replace("{{OFFSET}}", str(offset))
-        .replace("{{ROBOT_TYPE}}", robot_type)
-    )
-
-    with open(output_path, "w") as f:
-        f.write(world_xml)
-    return output_path
-
-
 def launch_setup(context):
     """Dynamically set up launches based on num_robots."""
-    num_robots = int(LaunchConfiguration("num_robots").perform(context))
+    num_robots_spec = LaunchConfiguration("num_robots").perform(context)
+    num_robots = sum(parse_num_robots(num_robots_spec))  # total robots across all teams
     robot_type = str(LaunchConfiguration("robot_type").perform(context))
     package_share = get_package_share_directory("bitbots_mujoco_sim")
     bridge_config_dir = Path(package_share) / "config" / "domain_bridges"
@@ -125,7 +104,7 @@ def launch_setup(context):
         if value:  # Only pass if not empty string
             teamplayer_args.append(f"{arg_name}:={value}")
 
-    world_file = generate_world_xml(num_robots, package_share, robot_type)
+    world_file = generate_world_xml(num_robots_spec, package_share, robot_type)
 
     actions = []
 
@@ -189,7 +168,10 @@ def generate_launch_description():
         DeclareLaunchArgument(
             "num_robots",
             default_value="1",
-            description="Number of robots in the simulation",
+            description=(
+                "Robot setup in the simulation. Either a single number for one team "
+                "(e.g. '3') or a colon separated team setup (e.g. '2:2' for a 2 vs 2)."
+            ),
         ),
         DeclareLaunchArgument(
             "robot_type",
