@@ -9,41 +9,48 @@ The main repository is `bitbots_main <https://github.com/bit-bots/bitbots_main>`
 
 .. toctree::
     :maxdepth: 1
-    :glob:
-    :caption: Tutorials:
+    :caption: Getting Started:
 
-    manual/tutorials/*
-
-.. toctree::
-    :maxdepth: 1
-    :glob:
-    :caption: Testing:
-
-    manual/testing/*
-
+    manual/getting_started/setup
+    manual/getting_started/software_overview
+    manual/getting_started/simulation_testing
 
 .. toctree::
     :maxdepth: 1
-    :glob:
-    :caption: Software
+    :caption: Physical Robot:
 
-    manual/software/*
-
+    manual/physical_robot/robots
+    manual/physical_robot/setup_robot
+    manual/physical_robot/competition_wifi
+    manual/physical_robot/piplus_hardware
+    manual/physical_robot/starting_robot
+    manual/physical_robot/connecting
+    manual/physical_robot/testing_robot
+    manual/physical_robot/extrinsic_calibration
+    manual/physical_robot/hardware_checklist
+    manual/physical_robot/configure_launch
+    manual/physical_robot/test_robot_hardware
+    manual/physical_robot/lowlevel
 
 .. toctree::
     :maxdepth: 1
-    :glob:
-    :caption: Electronics Wolfgang
+    :caption: Development:
 
-    manual/hardware/electronics/*
-
+    manual/development/development_guidelines
+    manual/development/how_to_document
+    manual/development/testing
+    manual/development/rl_models
 
 .. toctree::
     :maxdepth: 1
-    :glob:
-    :caption: Mechanics Wolfgang
+    :caption: Glossary:
 
-    manual/hardware/mechanics/*
+    manual/glossary
+
+.. todo::
+   Rework of the public documentation (see issue #1037): replace the plain link
+   to the default package directory index below with a curated list of all
+   packages that have non-empty documentation.
 
 `Package Documentations <https://docs.bit-bots.de/package/>`_
 
