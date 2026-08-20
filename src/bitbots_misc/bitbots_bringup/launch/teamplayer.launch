@@ -19,11 +19,23 @@
     <arg unless="$(var sim)" name="fieldname" default="small_division_2026" description="Loads field settings" />
     <arg if="$(var sim)" name="fieldname" default="hsl_kid" description="Loads field settings" />
 
+    <!-- per-robot game settings, empty means use the default from the config for the robot -->
+    <arg name="bot_id" default="" description="Per-robot override for the bot_id game setting" />
+    <arg name="team_id" default="" description="Per-robot override for the team_id game setting" />
+    <arg name="team_color" default="" description="Per-robot override for the team_color game setting" />
+    <arg name="role" default="" description="Per-robot override for the role game setting" />
+    <arg name="position_number" default="" description="Per-robot override for the position_number game setting" />
+
 
     <!-- load the global parameters -->
     <include file="$(find-pkg-share bitbots_parameter_blackboard)/launch/parameter_blackboard.launch.py">
         <arg name="sim" value="$(var sim)" />
         <arg name="fieldname" value="$(var fieldname)" />
+        <arg name="bot_id" value="$(var bot_id)" />
+        <arg name="team_id" value="$(var team_id)" />
+        <arg name="team_color" value="$(var team_color)" />
+        <arg name="role" value="$(var role)" />
+        <arg name="position_number" value="$(var position_number)" />
     </include>
 
     <!-- load the text to speech engine -->

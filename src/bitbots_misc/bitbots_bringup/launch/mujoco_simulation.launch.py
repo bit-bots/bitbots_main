@@ -35,6 +35,52 @@ TEAMPLAYER_ARGS = [
     ("tts", "Whether to speak"),
 ]
 
+# Role assigned to a robot based on its position within a team (0-based). A team
+# has at most 3 offense, 3 defense and 1 goalie players (7 players total). Roles
+# are filled in this fixed order, and the position_number within each of the
+# offense/defense groups is assigned in the order the robots appear (0, 1, 2).
+TEAM_ROLE_ORDER = ["offense", "goalie", "defense", "defense", "defense", "offense", "offense"]
+# team_id used for the first team. Every additional team increments from here.
+# The value stays within the allowed team_id range (see game_settings_options.yaml).
+BASE_TEAM_ID = 6
+
+
+def compute_game_settings(teams: list[int]) -> list[dict]:
+    """Compute the per-robot game settings for a team setup.
+
+    Given the per-team robot counts (e.g. ``[2, 2]`` for a 2 vs 2), this returns
+    one dict of game settings per robot, ordered team by team. ``bot_id`` is unique
+    within a team (1-based) while ``team_id``/``team_color`` identify the team, so
+    any team layout works without hand-maintained per-robot config files.
+
+    Roles are assigned per team following ``TEAM_ROLE_ORDER`` and the
+    ``position_number`` is counted separately per role group so that it is never
+    duplicated within a team (e.g. the three offense players get positions 0, 1, 2).
+    """
+    settings: list[dict] = []
+    for team_index, count in enumerate(teams):
+        if count > len(TEAM_ROLE_ORDER):
+            raise ValueError(
+                f"Team {team_index} has {count} robots, but at most {len(TEAM_ROLE_ORDER)} players per team are supported"
+            )
+        # Count how many robots of each role were already assigned within this team
+        # to derive a unique position_number per role group.
+        role_position_counters: dict[str, int] = {}
+        for robot_in_team in range(count):
+            role = TEAM_ROLE_ORDER[robot_in_team]
+            position_number = role_position_counters.get(role, 0)
+            role_position_counters[role] = position_number + 1
+            settings.append(
+                {
+                    "bot_id": robot_in_team + 1,
+                    "team_id": BASE_TEAM_ID + team_index,
+                    "team_color": team_index % 2,
+                    "role": role,
+                    "position_number": position_number,
+                }
+            )
+    return settings
+
 
 def generate_domain_bridge_config(robot_domain: int, output_dir: Path) -> Path:
     """Generate domain bridge config file for a single robot.
@@ -106,6 +152,11 @@ def launch_setup(context):
 
     world_file = generate_world_xml(num_robots_spec, package_share, robot_type)
 
+    # Compute individual game settings for every robot so that each robot gets its
+    # own team affiliation, bot id and role instead of relying on hand-written
+    # per-domain config files. Ordered the same as the robot domains below.
+    game_settings = compute_game_settings(parse_num_robots(num_robots_spec))
+
     actions = []
 
     actions.append(
@@ -122,7 +173,8 @@ def launch_setup(context):
         ),
     )
 
-    for robot_domain in range(11, num_robots + 11):  # 11 is the standart starting id for our robots
+    # 11 is the standard starting id for our robots
+    for robot_index, robot_domain in enumerate(range(11, num_robots + 11)):
         config_file = generate_domain_bridge_config(robot_domain, bridge_config_dir)
         actions.append(
             LogInfo(msg=f"Starting domain bridge for robot{robot_domain} (domain {robot_domain})"),
@@ -138,6 +190,11 @@ def launch_setup(context):
             ),
         )
 
+        # Pass this robot's individual game settings down to the teamplayer stack,
+        # where parameter_blackboard.launch.py applies them on top of the shared
+        # game_settings.yaml defaults.
+        robot_game_settings_args = [f"{key}:={value}" for key, value in game_settings[robot_index].items()]
+
         actions.append(
             TimerAction(
                 period=3.0,
@@ -150,7 +207,8 @@ def launch_setup(context):
                             "bitbots_bringup",
                             "teamplayer.launch",
                         ]
-                        + teamplayer_args,
+                        + teamplayer_args
+                        + robot_game_settings_args,
                         output="screen",
                         additional_env={"ROS_DOMAIN_ID": str(robot_domain)},
                     ),
