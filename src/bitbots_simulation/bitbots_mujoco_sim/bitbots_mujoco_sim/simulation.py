@@ -281,7 +281,7 @@ class Simulation(Node):
                 2 * half_x,
                 2 * half_y,
                 # Lift slightly above the plane to avoid z-fighting with the grid.
-                position=(float(pos[0]), float(pos[1]), float(pos[2]) + 0.001),
+                position=(float(pos[0]), float(pos[1]), float(pos[2]) + 0.010),
                 cast_shadow=False,
             )
 

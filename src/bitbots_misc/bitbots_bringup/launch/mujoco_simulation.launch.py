@@ -95,6 +95,7 @@ def launch_setup(context):
     num_robots = sum(parse_num_robots(num_robots_spec))  # total robots across all teams
     robot_type = str(LaunchConfiguration("robot_type").perform(context))
     use_web = LaunchConfiguration("web").perform(context).lower() == "true"
+    start_teamplayer = LaunchConfiguration("teamplayer").perform(context).lower() == "true"
     package_share = get_package_share_directory("bitbots_mujoco_sim")
     bridge_config_dir = Path(package_share) / "config" / "domain_bridges"
 
@@ -150,26 +151,27 @@ def launch_setup(context):
         # game_settings.yaml defaults.
         robot_game_settings_args = [f"{key}:={value}" for key, value in game_settings[robot_index].items()]
 
-        actions.append(
-            TimerAction(
-                period=3.0,
-                actions=[
-                    LogInfo(msg=f"Launching teamplayer stack for robot{robot_domain} in domain {robot_domain}"),
-                    ExecuteProcess(
-                        cmd=[
-                            "ros2",
-                            "launch",
-                            "bitbots_bringup",
-                            "teamplayer.launch",
-                        ]
-                        + teamplayer_args
-                        + robot_game_settings_args,
-                        output="screen",
-                        additional_env={"ROS_DOMAIN_ID": str(robot_domain)},
-                    ),
-                ],
+        if start_teamplayer:
+            actions.append(
+                TimerAction(
+                    period=3.0,
+                    actions=[
+                        LogInfo(msg=f"Launching teamplayer stack for robot{robot_domain} in domain {robot_domain}"),
+                        ExecuteProcess(
+                            cmd=[
+                                "ros2",
+                                "launch",
+                                "bitbots_bringup",
+                                "teamplayer.launch",
+                            ]
+                            + teamplayer_args
+                            + robot_game_settings_args,
+                            output="screen",
+                            additional_env={"ROS_DOMAIN_ID": str(robot_domain)},
+                        ),
+                    ],
+                )
             )
-        )
 
     return actions
 
@@ -178,6 +180,11 @@ def generate_launch_description():
     """Launch MuJoCo simulation with domain bridge for multi-robot support."""
 
     declared_args = [
+        DeclareLaunchArgument(
+            "teamplayer",
+            default_value="true",
+            description="Whether to launch the teamplayer software stack for the simulated robots",
+        ),
         DeclareLaunchArgument(
             "num_robots",
             default_value="1",
