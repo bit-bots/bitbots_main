@@ -57,6 +57,7 @@ def generate_launch_description() -> LaunchDescription:
                 name="parameter_blackboard",
                 arguments=["--ros-args", "--log-level", "WARN"],
                 parameters=parameters,
+                namespace="/",
             )
         ]
 
