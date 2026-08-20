@@ -19,6 +19,9 @@ TEAM_LINE_Y = SIDELINE_Y
 # Half dimensions of the field (length 9m -> half length 4.5m).
 HALF_FIELD_LENGTH = 4.5
 
+# Clearance from the borders of the half (goal line at -4.5m/4.5m and midfield at 0.0m).
+BORDER_CLEARANCE = 0.5
+
 # Yaw (rotation about z) to make a robot face inward towards the field center.
 # A robot on the negative-y sideline faces +y; on the positive-y sideline it faces -y.
 FACING_YAW = 1.57
@@ -31,26 +34,6 @@ TEAM_ROLE_ORDER = ["offense", "goalie", "defense", "defense", "defense", "offens
 
 # Default team ID for the first team. Additional teams increment from here.
 BASE_TEAM_ID = 6
-
-# Fixed placement along the sideline for team 0 (defending x in [-4.5, 0], facing +x).
-# Offense is placed at the front (near x=0), goalie at the back (near x=-4.5), and
-# defenders in the middle. Position 1 (left) goes to the left sideline (+y),
-# position 2 (right) goes to the right sideline (-y), and center (position 0)
-# positions are distributed across sides (offense/goalie right, defense left).
-# All positions leave >= 0.5m space from the borders of the half (-4.5 and 0.0).
-# Formatted as: (role, position_number) -> (x_pos, side) where side is "left" or "right".
-_ROLE_PLACEMENTS_TEAM_0: dict[tuple[str, int], tuple[float, str]] = {
-    # Offense (front): position 0 = center (right side), 1 = left, 2 = right
-    ("offense", 0): (-0.6, "right"),
-    ("offense", 1): (-0.6, "left"),
-    ("offense", 2): (-1.2, "right"),
-    # Goalie (back): position 0 = right side
-    ("goalie", 0): (-3.9, "right"),
-    # Defense (middle): position 0 = center (left side), 1 = left, 2 = right
-    ("defense", 0): (-2.6, "left"),
-    ("defense", 1): (-2.3, "left"),
-    ("defense", 2): (-2.0, "right"),
-}
 
 
 def parse_num_robots(num_robots: str | int) -> list[int]:
@@ -104,11 +87,14 @@ def compute_game_settings(teams: list[int]) -> list[dict]:
 def compute_robot_poses(teams: list[int]) -> list[tuple[float, float, float]]:
     """Compute the ``(x, y, yaw)`` placement for every robot.
 
-    Robots are positioned on the sidelines of their own half. Offense players are
-    placed to the front (near midfield), the goalie to the back (near goal line),
-    and defenders in the middle. Role position 1 is left and position 2 is right
-    (relative to local team orientation), while position 0 is placed on the side.
-    All positions keep at least 0.5m clearance from the borders of the half.
+    Robots are dynamically distributed evenly along the available sideline space
+    of their own half, keeping at least 0.5m clearance from borders.
+    - Position 1 is placed on the left sideline, position 2 on the right sideline.
+    - Unassigned / center positions are balanced across both sides so player
+      counts per sideline are as even as possible.
+    - On each sideline, robots are sorted from back to front according to role:
+      goalie at the back, offense at the front, with center defense/offense
+      positioned in front of side defense/offense.
 
     For team 0 (defending negative x half, facing +x), left is +y and right is -y.
     For team 1 (defending positive x half, facing -x), poses are mirrored across
@@ -117,28 +103,85 @@ def compute_robot_poses(teams: list[int]) -> list[tuple[float, float, float]]:
     poses: list[tuple[float, float, float]] = []
     game_settings = compute_game_settings(teams)
 
+    x_min = -(HALF_FIELD_LENGTH - BORDER_CLEARANCE)
+    x_max = -BORDER_CLEARANCE
+
+    def compute_x_positions(k: int) -> list[float]:
+        if k <= 0:
+            return []
+        if k == 1:
+            return [(x_min + x_max) / 2.0]
+        return [x_min + i * (x_max - x_min) / (k - 1) for i in range(k)]
+
+    def role_sort_key(item: tuple[int, dict]) -> int:
+        _idx, setting = item
+        role = setting["role"]
+        pos = setting["position_number"]
+        if role == "goalie":
+            return 0
+        elif role == "defense":
+            return 2 if pos == 0 else 1
+        elif role == "offense":
+            return 4 if pos == 0 else 3
+        return 0
+
     for team_index, count in enumerate(teams):
-        # Determine team offset in the flat game_settings list
         team_start = sum(teams[:team_index])
-        for robot_in_team in range(count):
-            setting = game_settings[team_start + robot_in_team]
-            role = setting["role"]
+        team_settings = game_settings[team_start : team_start + count]
+        team_robots = list(enumerate(team_settings))
+
+        left_robots: list[tuple[int, dict]] = []
+        right_robots: list[tuple[int, dict]] = []
+        unassigned_robots: list[tuple[int, dict]] = []
+
+        for idx, setting in team_robots:
             pos_num = setting["position_number"]
-
-            x_base, side = _ROLE_PLACEMENTS_TEAM_0[(role, pos_num)]
-
-            if team_index % 2 == 0:
-                # Team 0: defending -x half, facing +x
-                x = x_base
-                y = SIDELINE_Y if side == "left" else -SIDELINE_Y
+            if pos_num == 1:
+                left_robots.append((idx, setting))
+            elif pos_num == 2:
+                right_robots.append((idx, setting))
             else:
-                # Team 1: defending +x half, facing -x (mirrored across origin)
-                x = -x_base
-                y = -SIDELINE_Y if side == "left" else SIDELINE_Y
+                unassigned_robots.append((idx, setting))
 
-            # Facing angle: turn towards field center (y = 0)
+        # Fill up unassigned so that left and right are about even
+        for idx, setting in unassigned_robots:
+            if len(left_robots) < len(right_robots):
+                left_robots.append((idx, setting))
+            elif len(right_robots) < len(left_robots):
+                right_robots.append((idx, setting))
+            else:
+                right_robots.append((idx, setting))
+
+        # Sort according to role from back to front
+        left_robots.sort(key=role_sort_key)
+        right_robots.sort(key=role_sort_key)
+
+        left_x = compute_x_positions(len(left_robots))
+        right_x = compute_x_positions(len(right_robots))
+
+        team_poses: list[tuple[float, float, float]] = [None] * count  # type: ignore[list-item]
+
+        for (idx, _setting), x_base in zip(left_robots, left_x):
+            if team_index % 2 == 0:
+                x = x_base
+                y = SIDELINE_Y
+            else:
+                x = -x_base
+                y = -SIDELINE_Y
             yaw = FACING_YAW if y < 0 else -FACING_YAW
-            poses.append((x, y, yaw))
+            team_poses[idx] = (x, y, yaw)
+
+        for (idx, _setting), x_base in zip(right_robots, right_x):
+            if team_index % 2 == 0:
+                x = x_base
+                y = -SIDELINE_Y
+            else:
+                x = -x_base
+                y = SIDELINE_Y
+            yaw = FACING_YAW if y < 0 else -FACING_YAW
+            team_poses[idx] = (x, y, yaw)
+
+        poses.extend(team_poses)
 
     return poses
 
