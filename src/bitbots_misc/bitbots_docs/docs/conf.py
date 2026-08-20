@@ -43,7 +43,7 @@ def count_files():
 # -- Project information -----------------------------------------------------
 
 project = catkin_package.name
-copyright = "2019, Bit-Bots"
+copyright = "2026, Bit-Bots"
 author = ", ".join([a.name for a in catkin_package.authors])
 
 # The short X.Y version
@@ -172,7 +172,7 @@ html_favicon = os.path.join("_static", "logo.png")
 # -- Options for intersphinx extension ---------------------------------------
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {"https://docs.python.org/": None}
+intersphinx_mapping = {"python": ("https://docs.python.org/3", None)}
 
 # -- Options for todo extension ----------------------------------------------
 

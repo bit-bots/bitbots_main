@@ -94,6 +94,7 @@ def launch_setup(context):
     num_robots_spec = LaunchConfiguration("num_robots").perform(context)
     num_robots = sum(parse_num_robots(num_robots_spec))  # total robots across all teams
     robot_type = str(LaunchConfiguration("robot_type").perform(context))
+    use_web = LaunchConfiguration("web").perform(context).lower() == "true"
     package_share = get_package_share_directory("bitbots_mujoco_sim")
     bridge_config_dir = Path(package_share) / "config" / "domain_bridges"
 
@@ -123,7 +124,7 @@ def launch_setup(context):
             name="sim_interface",
             output="screen",
             emulate_tty=True,
-            parameters=[{"world_file": str(world_file)}],
+            parameters=[{"world_file": str(world_file), "web": use_web}],
         ),
     )
 
@@ -189,6 +190,11 @@ def generate_launch_description():
             "robot_type",
             default_value="piplus",
             description="Set the type of robot used (piplus, x02)",
+        ),
+        DeclareLaunchArgument(
+            "web",
+            default_value="true",
+            description="Use web-based mjviser viewer instead of the native MuJoCo viewer",
         ),
     ]
 
