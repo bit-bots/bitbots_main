@@ -71,6 +71,7 @@ class Simulation(Node):
         self._rng = np.random.default_rng()
 
         self.model: mujoco.MjModel = mujoco.MjModel.from_xml_path(world_file)
+        self._apply_jersey_overrides()
         self.data: mujoco.MjData = mujoco.MjData(self.model)
         self.robots: list[RobotSimulation] = [
             RobotSimulation(
@@ -122,6 +123,17 @@ class Simulation(Node):
             {"frequency": 4, "handler": lambda: self.publish(lambda robot: robot.publish_imu_event())},
             {"frequency": 32, "handler": lambda: self.publish(lambda robot: robot.publish_camera_event())},
         ]
+
+    def _apply_jersey_overrides(self) -> None:
+        """Replace default robot materials with dynamically generated jersey overrides if present."""
+        for geom_id in range(self.model.ngeom):
+            cur_mat_id = self.model.geom_matid[geom_id]
+            if cur_mat_id >= 0:
+                cur_mat_name = mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_MATERIAL, cur_mat_id)
+                override_mat_name = f"{cur_mat_name}_override"
+                override_mat_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_MATERIAL, override_mat_name)
+                if override_mat_id != -1:
+                    self.model.geom_matid[geom_id] = override_mat_id
 
     def _apply_home_keyframe(self) -> None:
         """Apply the 'home' keyframe joint values to all robots, leaving freejoints untouched.

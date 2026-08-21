@@ -8,8 +8,11 @@ insert one ``<frame>`` per robot so that every robot can be positioned
 individually.
 """
 
+import tempfile
 import xml.etree.ElementTree as ET
 from pathlib import Path
+
+from PIL import Image, ImageDraw, ImageFont
 
 # Sideline offset from the field center along the y-axis.
 SIDELINE_Y = 3.25
@@ -34,6 +37,67 @@ TEAM_ROLE_ORDER = ["offense", "goalie", "defense", "defense", "defense", "offens
 
 # Default team ID for the first team. Additional teams increment from here.
 BASE_TEAM_ID = 6
+
+# RGB color palettes for teams and goalies.
+DEFAULT_TEAM_COLORS: list[tuple[int, int, int]] = [
+    (0, 70, 200),  # Team 0: Blue
+    (200, 30, 30),  # Team 1: Red
+]
+
+DEFAULT_GOALIE_COLORS: list[tuple[int, int, int]] = [
+    (230, 190, 20),  # Goalie 0: Yellow
+    (30, 180, 60),  # Goalie 1: Green
+]
+
+# Directory where generated jersey textures are cached to avoid re-generating.
+JERSEY_CACHE_DIR: Path = Path(tempfile.gettempdir()) / "bitbots_mujoco_sim_jerseys"
+
+
+def get_robot_jersey_color(
+    team_color: int,
+    is_goalie: bool = False,
+) -> tuple[int, int, int]:
+    """Return the RGB jersey color for a robot based on its team and role."""
+    if is_goalie:
+        return DEFAULT_GOALIE_COLORS[team_color % len(DEFAULT_GOALIE_COLORS)]
+    return DEFAULT_TEAM_COLORS[team_color % len(DEFAULT_TEAM_COLORS)]
+
+
+def get_jersey_texture(
+    color: tuple[int, int, int],
+    number: int | str,
+    cache_dir: Path = JERSEY_CACHE_DIR,
+    size: int = 256,
+) -> Path:
+    """Generate and cache a jersey texture image with the specified color and number.
+
+    The texture is cached in ``cache_dir`` (placed in a temporary directory without
+    automatic deletion) and reused across simulation launches for performance.
+    """
+    hex_color = f"{color[0]:02x}{color[1]:02x}{color[2]:02x}"
+    output_path = cache_dir / f"jersey_{hex_color}_{number}.png"
+
+    if output_path.exists():
+        return output_path
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    img = Image.new("RGB", (size, size), color=color)
+    draw = ImageDraw.Draw(img)
+
+    # Choose contrasting text color based on background luminance
+    r, g, b = color
+    luminance = 0.299 * r + 0.587 * g + 0.114 * b
+    text_color = (0, 0, 0) if luminance > 140 else (255, 255, 255)
+
+    font_size = int(size * 0.6)
+    try:
+        font = ImageFont.load_default(size=font_size)
+    except TypeError:
+        font = ImageFont.load_default()
+
+    draw.text((size // 2, size // 2), str(number), fill=text_color, font=font, anchor="mm")
+    img.save(output_path)
+    return output_path
 
 
 def parse_num_robots(num_robots: str | int) -> list[int]:
@@ -161,7 +225,7 @@ def compute_robot_poses(teams: list[int]) -> list[tuple[float, float, float]]:
 
         team_poses: list[tuple[float, float, float]] = [None] * count  # type: ignore[list-item]
 
-        for (idx, _setting), x_base in zip(left_robots, left_x):
+        for (idx, _setting), x_base in zip(left_robots, left_x, strict=True):
             if team_index % 2 == 0:
                 x = x_base
                 y = SIDELINE_Y
@@ -171,7 +235,7 @@ def compute_robot_poses(teams: list[int]) -> list[tuple[float, float, float]]:
             yaw = FACING_YAW if y < 0 else -FACING_YAW
             team_poses[idx] = (x, y, yaw)
 
-        for (idx, _setting), x_base in zip(right_robots, right_x):
+        for (idx, _setting), x_base in zip(right_robots, right_x, strict=True):
             if team_index % 2 == 0:
                 x = x_base
                 y = -SIDELINE_Y
@@ -195,7 +259,11 @@ def _find_replicate(root: ET.Element) -> tuple[ET.Element, ET.Element]:
     raise ValueError("No <replicate> element found in world template")
 
 
-def generate_world_xml(num_robots: str | int, package_share: str, robot_type: str) -> Path:
+def generate_world_xml(
+    num_robots: str | int,
+    package_share: str,
+    robot_type: str,
+) -> Path:
     """Generate the MuJoCo world XML positioning every robot individually.
 
     The ``<replicate>`` element of the template is replaced by one ``<frame>`` per
@@ -203,19 +271,44 @@ def generate_world_xml(num_robots: str | int, package_share: str, robot_type: st
     unique attach prefix (``robot_<index>_``) so that the resulting body names stay
     unique and can be discovered by the simulation.
 
+    Additionally, per-robot jersey textures and materials are dynamically generated,
+    cached in a temporary directory, and registered in the model assets so that each
+    robot displays its team/goalie color and player number in both the visualizer and
+    camera images.
+
     Returns the path of the generated world file.
     """
     template_path = Path(package_share) / "xml" / "kid_field.xml"
     output_path = Path(package_share) / "xml" / "generated_world.xml"
 
-    poses = compute_robot_poses(parse_num_robots(num_robots))
+    teams = parse_num_robots(num_robots)
+    poses = compute_robot_poses(teams)
+    game_settings = compute_game_settings(teams)
 
     tree = ET.parse(template_path)
-    replicate_parent, replicate = _find_replicate(tree.getroot())
+    root = tree.getroot()
+
+    asset = root.find("asset")
+    if asset is None:
+        asset = ET.SubElement(root, "asset")
+
+    replicate_parent, replicate = _find_replicate(root)
     insert_index = list(replicate_parent).index(replicate)
     replicate_parent.remove(replicate)
 
-    for robot_index, (x, y, yaw) in enumerate(poses):
+    for robot_index, ((x, y, yaw), setting) in enumerate(zip(poses, game_settings, strict=False)):
+        is_goalie = setting["role"] == "goalie"
+        color = get_robot_jersey_color(
+            setting["team_color"],
+            is_goalie=is_goalie,
+        )
+        texture_path = get_jersey_texture(color, setting["bot_id"])
+
+        tex_name = f"robot_{robot_index}_jersey_override"
+        mat_name = f"robot_{robot_index}_jersey_override"
+        ET.SubElement(asset, "texture", {"name": tex_name, "type": "2d", "file": str(texture_path)})
+        ET.SubElement(asset, "material", {"name": mat_name, "texture": tex_name})
+
         frame = ET.Element("frame", {"pos": f"{x} {y} 0.0", "euler": f"0 0 {yaw}"})
         ET.SubElement(frame, "attach", {"model": robot_type, "prefix": f"robot_{robot_index}_"})
         replicate_parent.insert(insert_index, frame)
