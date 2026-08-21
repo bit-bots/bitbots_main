@@ -35,22 +35,7 @@
   <asset>
     <texture name="jersey" type="2d" builtin="flat" rgb1="0.8 0.1 0.1" rgb2="0.8 0.1 0.1" width="128" height="128"/>
     <material name="jersey" texture="jersey" texrepeat="1 1"/>
-    <mesh name="open_tube" scale="0.21 0.21 0.21" refpos="0 0 -0.5"
-          vertex="
-            -0.5 -0.5 -0.5   0.5 -0.5 -0.5   0.5 -0.5  0.5  -0.5 -0.5  0.5
-             0.5 -0.5 -0.5   0.5  0.5 -0.5   0.5  0.5  0.5   0.5 -0.5  0.5
-             0.5  0.5 -0.5  -0.5  0.5 -0.5  -0.5  0.5  0.5   0.5  0.5  0.5
-            -0.5  0.5 -0.5  -0.5 -0.5 -0.5  -0.5 -0.5  0.5  -0.5  0.5  0.5"
-          texcoord="
-            0 1   1 1   1 0  0 0
-            0 1   1 1   1 0  0 0
-            0 1   1 1   1 0  0 0
-            0 1   1 1   1 0  0 0 "
-          face="
-            0 1 2   0 2 3
-            4 5 6   4 6 7
-            8 9 10  8 10 11
-            12 13 14 12 14 15" />
+    <mesh name="trikot" file="trikot.OBJ"/>
     <mesh name="base_link" file="base_link.STL"/>
     <mesh name="torso_link" file="torso_link.STL"/>
     <mesh name="torso_link_simplify" file="torso_link_simplify.STL"/>
@@ -101,7 +86,7 @@
       <body name="torso_link">
         <inertial pos="0.00153764 -3.179e-05 0.0959554" quat="0.705415 0.708147 0.0225102 -0.0202894" mass="2.82494" diaginertia="0.0159234 0.0140664 0.0134032"/>
         <geom type="mesh" class="visual" rgba="0.1 0.1 0.1 1" mesh="torso_link"/>
-        <geom name="jersey" class="visual" type="mesh" mesh="open_tube" material="jersey"/>
+        <geom name="jersey" class="visual" type="mesh" mesh="trikot" material="jersey"/>
         <geom name="torso_link_collision0" class="collision" pos="0 0 0.09" type="box" size="0.0775 0.0775 0.0775"/>
         <body name="r_shoulder_pitch_link" pos="0 -0.1084 0.117">
           <inertial pos="-0.0023165 -0.0172048 0.00020825" quat="-0.034283 0.706989 0.0142854 0.706249" mass="0.139352" diaginertia="0.000145208 0.000122162 7.54598e-05"/>
