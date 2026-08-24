@@ -149,7 +149,24 @@ ActiveVisionResult ActiveVision::plan(const ActiveVisionInput& input) {
     }
   }
 
-  result.candidates = sampler_.sample(input.head_position, input.head_velocity, limits_, dynamics_);
+  // Continue the motion the previous cycle committed to rather than trusting
+  // whatever the actuators report right now: the measured velocity can be
+  // noisy, lagged by a control period, or simply wrong for a moment after a
+  // new position command lands, and the sampler builds its candidates as a
+  // tangent from this value. A bad start velocity makes the near-term part of
+  // every candidate bend away from where the debug view shows it heading,
+  // which is exactly the part that gets commanded, before the spline
+  // corrects itself further along, where it is never actually executed.
+  // What we ourselves commanded a moment ago is known exactly, so it is used
+  // once a previous plan exists; only the very first cycle has nothing to
+  // fall back on but the measurement.
+  HeadVelocity start_velocity = input.head_velocity;
+  if (has_previous_) {
+    const double offset = std::clamp(input.now - previous_plan_time_, 0.0, previous_trajectory_.duration());
+    start_velocity = previous_trajectory_.velocity(offset);
+  }
+
+  result.candidates = sampler_.sample(input.head_position, start_velocity, limits_, dynamics_);
   if (result.candidates.empty()) {
     result.failure = ActiveVisionFailure::NoFeasibleCandidate;
     return result;

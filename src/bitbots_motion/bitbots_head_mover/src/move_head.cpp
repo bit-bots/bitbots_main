@@ -185,7 +185,7 @@ class HeadMover {
         [this](const std_msgs::msg::String::SharedPtr msg) { handle_robot_description(msg->data); });
 
     camera_info_subscriber_ = node_->create_subscription<sensor_msgs::msg::CameraInfo>(
-        "camera_info", 1, [this](const sensor_msgs::msg::CameraInfo::SharedPtr msg) {
+        "/zed/zed_node/rgb/camera_info", 1, [this](const sensor_msgs::msg::CameraInfo::SharedPtr msg) {
           if (!active_vision_.setCameraInfo(*msg)) {
             RCLCPP_WARN_THROTTLE(node_->get_logger(), *node_->get_clock(), 5000,
                                  "Received camera info without usable intrinsics, active vision stays disabled");
