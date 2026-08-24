@@ -1,0 +1,19 @@
+[workspace]
+members = [
+    "src/bitbots_misc/bitbots_extrinsic_calibration",
+    "src/bitbots_navigation/bitbots_global_planner"
+]
+exclude = ["src/patches/r2r_msg_gen-0.9.5"]
+
+# Optional but recommended for modern Cargo
+resolver = "2"
+
+# We use a custom profile to keep colcon
+# separate from "normal" rust building.
+[profile.colcon]
+inherits = "release"
+debug = true
+
+[patch.crates-io]
+# Keep message generation working when bindgen emits the ROS type support handle as opaque.
+r2r_msg_gen = { path = "src/patches/r2r_msg_gen-0.9.5" }

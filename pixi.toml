@@ -42,6 +42,7 @@ cmd = "colcon test --parallel-workers 1 --event-handlers console_direct+ --retur
 [dependencies]
 # Base dependencies
 python = "==3.12.1, <3.13"
+rust = ">=1.88"
 
 # Patches
 readline = ">=8.2.999"  # This is needed because we want to install an empty readline package from our models channel that leads to the system version being used. Otherwise we might have a mismatch between bash (often accessed globally ignoring the env) and readline (provided by the env)  breaking everything.
@@ -49,6 +50,7 @@ readline = ">=8.2.999"  # This is needed because we want to install an empty rea
 [feature.ros.dependencies]
 # Misc dependencies for our ROS 2 packages
 alsa-plugins = ">=1.2.12,<2"
+clang = ">=21.1.0,<22"  # Needed for r2r rust bindings generation
 beartype = ">=0.22.6,<0.23"
 breathe = ">=4.36.0,<5"
 cbor2 = ">=5.9.0,<6"
@@ -59,6 +61,7 @@ construct = ">=2.10.70,<3"
 eigen = ">=3.4.0,<4"
 fabric = ">=3.2.2,<4"
 flask = ">=3.1.2,<4"
+fmt = ">=12.1.0,<13"
 gitpython = ">=3.1.45,<4"
 git-subrepo = ">=0.4.9,<0.5"
 invoke = ">=2.2.1,<3"
@@ -103,6 +106,8 @@ yaml-cpp = ">=0.8.0,<0.9"
 regex = ">=2026.4.4,<2027"
 onnxruntime = ">=1.24.2,<2"  # CPU Onnxruntime for python (motion, tts, ...)
 libonnxruntime-webgpu = ">=1.24.3,<2"  # GPU onnxruntime for cpp (self compiled)
+libclang = ">=22.1.8,<23"  # Needed for r2r rust bindings
+libllvm21 = ">=21.1.8,<22"  # Needed for r2r rust bindings
 
 # Official ROS 2 packages
 colcon-common-extensions = ">=0.3.0,<0.4"
@@ -177,9 +182,6 @@ ros-jazzy-rmw-zenoh-cpp = ">=0.2.9,<0.3"
 bitbots_model_2026_07_02_flo_yoeo_rf_detr_wm_torso_extension = ">=1.0.0,<2"
 tts-supertonic = ">=1.0.0,<2"
 
-# Local packages
-bitbots_rust_nav = { path = "src/bitbots_navigation/bitbots_rust_nav" }
-
 # Patches
 pillow = "<12" # this constraint is needed as yoeo specifies the 11 major version and otherwise uv fails to solve given the constrains from the conda ecosystem.
 setuptools = "==68.1.2"  # Pinning setuptools to avoid issues with colcon build
@@ -207,12 +209,17 @@ ros-jazzy-robot-localization = ">=3.8.3,<4"
 # These are only needed on the robot
 
 
+[activation.env]
+CARGO_TARGET_DIR = "$PIXI_PROJECT_ROOT/build/cargo_target"
+
+
 [feature.ros.activation.env]
 #ROS_AUTOMATIC_DISCOVERY_RANGE = "LOCALHOST"
 RCUTILS_COLORIZED_OUTPUT = "1"
 RCUTILS_CONSOLE_OUTPUT_FORMAT="[{severity}] [{name}]: {message} ({function_name}() at {file_name}:{line_number})"
 RMW_IMPLEMENTATION = "rmw_zenoh_cpp"
 COLCON_LOG_LEVEL = "30"
+LIBCLANG_PATH="$CONDA_PREFIX/lib"  # Needed for r2r rust bindings on some systems
 PYTHONWARNINGS="ignore:::setuptools.command.install,ignore:::setuptools.command.easy_install,ignore:::pkg_resources,ignore:easy_install command is deprecated,ignore:setup.py install is deprecated,ignore:pkg_resources:DeprecationWarning"
 ALSA_PLUGIN_DIR = "/usr/lib/x86_64-linux-gnu/alsa-lib"
 

@@ -14,12 +14,12 @@
 
     <buildtool_depend>ament_cmake</buildtool_depend>
 
-    <depend>backward_ros</depend>
-    <depend>bitbots_docs</depend>
-    <depend>rot_conv</depend>
-    <depend>std_msgs</depend>
-    <depend>tf2_ros</depend>
-    <depend>tf2</depend>
+    <build_depend>rcl</build_depend>
+    <build_depend>bitbots_cargo</build_depend>
+    <build_depend>geometry_msgs</build_depend>
+    <build_depend>rosgraph_msgs</build_depend>
+
+    <exec_depend>rcl</exec_depend>
 
     <export>
         <bitbots_documentation>

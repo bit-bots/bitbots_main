@@ -7,7 +7,7 @@ pub mod obstacle;
 pub mod planner;
 
 #[pymodule]
-fn bitbots_rust_nav(m: &Bound<'_, PyModule>) -> PyResult<()> {
+fn bitbots_global_planner(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<RoundObstacle>()?;
     m.add_class::<PolygonObstacle>()?;
     m.add_class::<ObstacleMap>()?;

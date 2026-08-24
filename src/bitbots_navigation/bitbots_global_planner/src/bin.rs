@@ -1,7 +1,7 @@
 #[cfg(feature = "gui")]
 mod gui {
-    use bitbots_rust_nav::map::{ObstacleMap, ObstacleMapConfig};
-    use bitbots_rust_nav::obstacle::{AnyObstacle, RoundObstacle};
+    use bitbots_global_planner::map::{ObstacleMap, ObstacleMapConfig};
+    use bitbots_global_planner::obstacle::RoundObstacle;
     use eframe::egui;
 
     pub struct PathfindingApp {
@@ -115,10 +115,7 @@ mod gui {
                 }
 
                 if let (Some(start), Some(goal)) = (self.start, self.goal) {
-                    let omap = ObstacleMap::new(
-                        self.config,
-                        self.obstacles.iter().cloned().map(AnyObstacle::Round).collect(),
-                    );
+                    let omap = ObstacleMap::new(self.config, self.obstacles.clone());
                     let time1 = std::time::Instant::now();
                     self.path = omap.shortest_path(start, goal);
                     let time2 = std::time::Instant::now();
