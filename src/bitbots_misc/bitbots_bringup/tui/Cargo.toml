@@ -1,0 +1,18 @@
+[package]
+name = "teamplayer"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "teamplayer"
+path = "src/main.rs"
+
+[dependencies]
+ratatui = "0.30"
+crossterm = { version = "0.28", features = ["event-stream"] }
+tokio = { version = "1", features = ["full"] }
+anyhow = "1"
+futures = "0.3"
+nix = { version = "0.27", features = ["signal", "process"] }
+ansi-to-tui = "3"
+clap = { version = "~4.4", features = ["derive"] }

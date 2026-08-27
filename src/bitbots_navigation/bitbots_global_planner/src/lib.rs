@@ -1,0 +1,17 @@
+use map::{ObstacleMap, ObstacleMapConfig};
+use obstacle::{PolygonObstacle, RoundObstacle};
+use pyo3::prelude::*;
+
+pub mod map;
+pub mod obstacle;
+pub mod planner;
+
+#[pymodule]
+fn bitbots_global_planner(m: &Bound<'_, PyModule>) -> PyResult<()> {
+    m.add_class::<RoundObstacle>()?;
+    m.add_class::<PolygonObstacle>()?;
+    m.add_class::<ObstacleMap>()?;
+    m.add_class::<ObstacleMapConfig>()?;
+    // Further classes and functions can be added here
+    Ok(())
+}
