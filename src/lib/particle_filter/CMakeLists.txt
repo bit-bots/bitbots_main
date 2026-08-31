@@ -6,9 +6,12 @@ if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
 endif()
 
-# Build with release optimizations and debug symbols by default
+# Build with -O3 optimizations and debug symbols by default, without disabling
+# assertions (unlike CMake's built-in RelWithDebInfo, which defines NDEBUG).
+# This filter uses -O3 rather than the -O2 other packages default to, since
+# it's written and tuned specifically for that optimization level.
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE RelWithDebInfo)
+  add_compile_options(-O3 -g)
 endif()
 
 find_package(ament_cmake REQUIRED)
