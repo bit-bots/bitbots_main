@@ -231,6 +231,13 @@ class Simulation(Node):
         print("Starting web simulation viewer (mjviser)...")
         # Holds the textured ball overlays, populated by _add_ball_textures below.
         self._ball_overlays: list[tuple[object, int]] = []
+        # Active x-y drag targets, keyed by (qpos_adr, qvel_adr) of a free joint.
+        # Each maps to the world-frame (x, y) the joint should be pinned to while
+        # the user drags its overlay. Applied inside the sim loop by _apply_drag_targets.
+        self._drag_targets: dict[tuple[int, int], np.ndarray] = {}
+        # Pin dragged bodies to their target every step so they follow the cursor
+        # instead of racing with mj_step (mirrors the reset/move_ball early events).
+        self.early_events.append({"frequency": 1, "handler": self._apply_drag_targets})
 
         def render(scene) -> None:
             # Default mjviser rendering: push the latest MuJoCo state to the scene.
@@ -246,6 +253,7 @@ class Simulation(Node):
         )
         self._add_field_textures(viewer.scene.server)
         self._add_ball_textures(viewer.scene.server)
+        self._add_body_drag(viewer.scene)
         viewer.run()
 
     def _add_field_textures(self, server) -> None:
@@ -334,6 +342,92 @@ class Simulation(Node):
             geom_name = self.model.geom(geom_id).name or f"sphere_{geom_id}"
             handle = server.scene.add_mesh_trimesh(f"/ball_textures/{geom_name}", mesh)
             self._ball_overlays.append((handle, geom_id))
+            self._make_ball_draggable(handle, geom_id)
+
+    def _make_ball_draggable(self, handle, geom_id: int) -> None:
+        """Let the user drag a textured ball overlay in the world x-y plane."""
+        # The ball body carries its own free joint, so resolve directly from the geom.
+        body_id = int(self.model.geom_bodyid[geom_id])
+        self._register_free_joint_drag(handle, lambda _event, _b=body_id: self._free_joint_key_for_body(_b))
+
+    def _add_body_drag(self, scene) -> None:
+        """Let the user drag any dynamic body (robots, ball) in the world x-y plane.
+
+        mjviser renders each moving body as a batched mesh handle grouped by shared
+        geometry (``scene._mesh_groups``); dragging one instance reports which body
+        was grabbed via ``event.instance_index``. We resolve that body up to the
+        free joint of its kinematic root (a robot's floating base, or the ball
+        itself) and drag that whole articulated system as a rigid unit.
+        """
+        for mesh_group in scene._mesh_groups:
+            body_ids = mesh_group.body_ids
+
+            def resolve(event, _body_ids=body_ids) -> tuple[int, int] | None:
+                idx = event.instance_index or 0
+                # Instances are laid out env-major; a single-env sim keeps idx in range,
+                # but modulo keeps us safe if the batched layout ever spans envs.
+                body_id = int(_body_ids[idx % len(_body_ids)])
+                return self._free_joint_key_for_body(body_id)
+
+            self._register_free_joint_drag(mesh_group.handle, resolve)
+
+    def _free_joint_key_for_body(self, body_id: int) -> tuple[int, int] | None:
+        """Return (qpos_adr, qvel_adr) of the nearest free joint at or above a body.
+
+        Walks up the kinematic tree so grabbing any link of a robot resolves to the
+        floating base that actually moves the whole robot. Returns None for bodies
+        that have no free joint in their ancestry (e.g. world-fixed geometry).
+        """
+        bid = int(body_id)
+        while bid > 0:
+            jnt_adr = int(self.model.body_jntadr[bid])
+            for j in range(jnt_adr, jnt_adr + int(self.model.body_jntnum[bid])):
+                if int(self.model.jnt_type[j]) == int(mujoco.mjtJoint.mjJNT_FREE):
+                    return int(self.model.jnt_qposadr[j]), int(self.model.jnt_dofadr[j])
+            bid = int(self.model.body_parentid[bid])
+        return None
+
+    def _register_free_joint_drag(self, handle, resolve_key: Callable[[object], tuple[int, int] | None]) -> None:
+        """Wire a scene node's left-drag to x-y repositioning of a free joint.
+
+        Follows viser's scene_node_drag example: a left-drag fires start/update/end
+        events, and we map the cursor motion onto the ground plane by taking only its
+        x-y component. ``resolve_key`` maps a drag-start event to the target free
+        joint's (qpos_adr, qvel_adr). The joint is pinned to the cursor inside the sim
+        loop (see _apply_drag_targets) so it tracks without racing with mj_step;
+        vertical cursor motion is ignored, keeping the object on the ground.
+        """
+        # Per-drag state, frozen at "start" and read on every "update"/"end".
+        state: dict[str, object] = {}
+
+        @handle.on_drag
+        async def _(event) -> None:
+            if event.phase == "start":
+                key = resolve_key(event)
+                if key is None:
+                    return
+                state["key"] = key
+                # start_position and end_position share the same (camera-tracking)
+                # frame, so their x-y difference is a pure ground-plane displacement.
+                state["grab_xy"] = np.array(event.start_position[:2], dtype=float)
+                state["obj_xy"] = self.data.qpos[key[0] : key[0] + 2].copy()
+            elif event.phase == "update":
+                if "key" not in state:
+                    return
+                delta_xy = np.array(event.end_position[:2], dtype=float) - state["grab_xy"]
+                self._drag_targets[state["key"]] = state["obj_xy"] + delta_xy
+            elif event.phase == "end":
+                if "key" in state:
+                    self._drag_targets.pop(state["key"], None)
+                state.clear()
+
+    def _apply_drag_targets(self) -> None:
+        """Pin each actively dragged free joint to its x-y target, on the ground."""
+        # Snapshot: drag callbacks run on viser's thread and may add/remove keys.
+        for (qpos_adr, qvel_adr), xy in list(self._drag_targets.items()):
+            self.data.qpos[qpos_adr : qpos_adr + 2] = xy
+            # Zero the joint's velocity so the dragged body does not drift or topple.
+            self.data.qvel[qvel_adr : qvel_adr + 6] = 0.0
 
     def _update_ball_overlays(self, scene) -> None:
         """Move each textured ball overlay to follow its geom's current pose."""
