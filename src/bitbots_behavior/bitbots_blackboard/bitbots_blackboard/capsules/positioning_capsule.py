@@ -1,3 +1,4 @@
+import math
 from collections.abc import Sequence
 from dataclasses import dataclass
 from enum import StrEnum
@@ -189,9 +190,14 @@ class InnerPositioningCapsule:
         return float(t * t * (3 - 2 * t))
 
     @staticmethod
+    def _wrap_to_pi(angle: float) -> float:
+        """Wrap an angle (rad) into the signed range [-pi, pi)."""
+        return float(math.remainder(angle, 2 * math.pi))
+
+    @staticmethod
     def _angle_diff(a: float, b: float) -> float:
         """Smallest absolute angle between two headings (rad), in [0, pi]."""
-        return float(abs((a - b + np.pi) % (2 * np.pi) - np.pi))
+        return abs(InnerPositioningCapsule._wrap_to_pi(a - b))
 
     @staticmethod
     def _clamp_field(p: NDArray[np.float64], fld: Field, margin: float | None = None) -> NDArray[np.float64]:
@@ -303,7 +309,7 @@ class InnerPositioningCapsule:
                     diff = positions[a] - positions[b]
                     dist = np.linalg.norm(diff)
                     if dist < sep:
-                        dirv = self._normalize(diff, np.array([0.0, 1.0])) if dist > 1e-6 else np.array([0.0, 1.0])
+                        dirv = self._normalize(diff, np.array([0.0, 1.0]))
                         overlap = sep - dist
                         a_fixed, b_fixed = a in fixed, b in fixed
                         if a_fixed and b_fixed:
@@ -467,7 +473,7 @@ class InnerPositioningCapsule:
                 # the striker swings smoothly rather than whipping when the two aims oppose
                 a0 = np.arctan2(aim_goal[1], aim_goal[0])
                 a1 = np.arctan2(aim_back[1], aim_back[0])
-                da = (a1 - a0 + np.pi) % (2 * np.pi) - np.pi  # shortest signed turn
+                da = self._wrap_to_pi(a1 - a0)  # shortest signed turn
                 ang = a0 + w_back * da
                 aim = np.array([np.cos(ang), np.sin(ang)])
                 out[Role.STRIKER] = b - params.kick_offset * aim
@@ -534,6 +540,6 @@ class InnerPositioningCapsule:
                 bis = self._normalize(b - p) + self._normalize(opp - p)
                 head[role] = self._face(np.zeros(2), bis, fallback=self._face(p, opp))
             else:
-                head[role] = self._face(p, b)  # goalie + defenders face the ball
+                head[role] = self._face(p, b)  # goalie, defenders (and the striker if opp_set_play) face the ball
 
         return {role: np.array([p[0], p[1], head[role]]) for role, p in out.items()}

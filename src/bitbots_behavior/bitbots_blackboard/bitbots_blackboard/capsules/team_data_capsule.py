@@ -205,7 +205,7 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
         return math.atan2(2.0 * (q.w * q.z + q.x * q.y), 1.0 - 2.0 * (q.y * q.y + q.z * q.z))
 
     def get_robot_poses(self, include_own: bool = True) -> dict[int, list[float]]:
-        """Returns a mapping of jersey_number -> [x, y, theta] for all active robots."""
+        """Returns a mapping of robot id -> [x, y, theta] for all active robots."""
         robot_poses = {}
         data: TeamData
         for data in self.team_data.values():
