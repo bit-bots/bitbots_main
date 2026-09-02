@@ -442,10 +442,9 @@ class InnerPositioningCapsule:
         to_ball = self._normalize(b - goal)  # our-goal -> ball
         perp = np.array([-to_ball[1], to_ball[0]])
 
-        roles = self._allocate_roles(n_players, b, field, include_supporter=params.include_supporter)
-        if opp_set_play and Role.SUPPORTER in roles:
-            n_def = sum(1 for r in roles if r.startswith(Role.DEFENDER + "_"))
-            roles[roles.index(Role.SUPPORTER)] = Role(f"{Role.DEFENDER}_{n_def}")
+        roles = self._allocate_roles(
+            n_players, b, field, include_supporter=params.include_supporter and not opp_set_play
+        )
         out = {}
         head = {}  # role -> heading (rad); filled lazily, completed after separation
         kick_aim = None  # striker's kick direction; used to clear the kick lane
