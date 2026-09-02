@@ -14,7 +14,7 @@ class StoreBallMovementDetectionStartPosition(AbstractActionElement):
 
     def perform(self, reevaluate=False):
         self.blackboard.misc.ball_movement_detection_start_ball_position = (
-            self.blackboard.world_model.get_ball_position_xy()
+            self.blackboard.world_model.get_team_ball_position_xy()
         )
         self.pop()
 

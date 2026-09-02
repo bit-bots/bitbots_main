@@ -24,8 +24,17 @@ class GoToBall(AbstractActionElement):
         # Offset so we kick the ball with one foot instead of the center between the feet
         self.side_offset = parameters.get("side_offset", 0.00)
 
+        # Approach the ball fused from the observations of the whole team instead of the ball this
+        # robot observed itself. This is used while we are still too far away to play the ball.
+        ball_source = parameters.get("ball", "own")
+        if ball_source not in ("own", "team"):
+            raise ValueError(f"Invalid ball source specified for go to ball: {ball_source}")
+        self.use_team_ball = ball_source == "team"
+
     def perform(self, reevaluate=False):
-        pose_msg = self.blackboard.pathfinding.get_ball_goal(self.target, self.distance, self.side_offset)
+        pose_msg = self.blackboard.pathfinding.get_ball_goal(
+            self.target, self.distance, self.side_offset, use_team_ball=self.use_team_ball
+        )
         self.blackboard.pathfinding.publish(pose_msg)
 
         if self.target != BallGoalType.RL_KICK:

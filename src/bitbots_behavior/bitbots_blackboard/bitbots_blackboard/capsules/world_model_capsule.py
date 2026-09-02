@@ -1,4 +1,5 @@
 import math
+from typing import Optional
 
 import numpy as np
 import tf2_ros as tf2
@@ -58,15 +59,17 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
         self.map_margin: float = self._node.get_parameter("map_margin").value
 
         # Ball state
-        # The ball in the map frame (default to the center of the field if ball is not seen yet)
-        self._ball: PointStamped = PointStamped(
-            header=Header(stamp=Time(clock_type=ClockType.ROS_TIME).to_msg(), frame_id=self.map_frame)
-        )
-        self._ball_covariance: np.ndarray = np.zeros((2, 2))  # Covariance of the ball
+        # The ball this robot observed itself and the ball that is fused from the observations of
+        # the whole team. Both are stored in the map frame and default to the center of the field
+        # with an unknown covariance, as we did not see any ball yet.
+        self._ball: PointStamped = self._unknown_ball()
+        self._ball_covariance: np.ndarray = self._unknown_ball_covariance()
+        self._team_ball: PointStamped = self._unknown_ball()
+        self._team_ball_covariance: np.ndarray = self._unknown_ball_covariance()
 
         # Publisher for visualization in RViZ
-        self.debug_publisher_used_ball = self._node.create_publisher(PointStamped, "debug/behavior/used_ball", 1)
-        self.debug_publisher_which_ball = self._node.create_publisher(Header, "debug/behavior/which_ball_is_used", 1)
+        self.debug_publisher_own_ball = self._node.create_publisher(PointStamped, "debug/behavior/own_ball", 1)
+        self.debug_publisher_team_ball = self._node.create_publisher(PointStamped, "debug/behavior/team_ball", 1)
 
         # Services
         self.reset_ball_filter = self._node.create_client(Trigger, "ball_filter_reset")
@@ -75,51 +78,59 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
     ### Ball ###
     ############
 
-    @cached_capsule_function
-    def ball_seen_self(self) -> bool:
-        """Returns true we are reasonably sure that we have seen the ball"""
-        return all(np.diag(self._ball_covariance) < self.ball_max_covariance)
+    # The behavior distinguishes two balls. The ball this robot observed itself is precise enough
+    # to play it, but it is only available while we actually look at the ball. The team ball is
+    # fused from the observations of all robots of our team, so it is available far more often,
+    # but it may be based on the observation of a robot that stands somewhere else on the field.
+    # Therefore the team ball is used to decide who plays the ball, where the other robots position
+    # themselves and whether the team needs to search for the ball, while everything that moves the
+    # robot relative to the ball uses the ball this robot observed itself.
+
+    def _unknown_ball(self) -> PointStamped:
+        """Returns a ball in the center of the field, used as long as we do not know better"""
+        return PointStamped(header=Header(stamp=Time(clock_type=ClockType.ROS_TIME).to_msg(), frame_id=self.map_frame))
+
+    def _unknown_ball_covariance(self) -> np.ndarray:
+        """Returns the covariance of a ball we know nothing about"""
+        return np.eye(2) * self.ball_max_covariance * 1000
 
     @cached_capsule_function
-    def ball_has_been_seen(self) -> bool:
-        """Returns true if we or a teammate are reasonably sure that we have seen the ball"""
-        return self.ball_seen_self() or self._blackboard.team_data.teammate_ball_is_valid()
+    def ball_seen(self) -> bool:
+        """Returns true if this robot is reasonably sure that it observed the ball itself"""
+        return bool(np.all(np.diag(self._ball_covariance) < self.ball_max_covariance))
+
+    @cached_capsule_function
+    def team_ball_seen(self) -> bool:
+        """Returns true if anybody in our team is reasonably sure where the ball is"""
+        return bool(np.all(np.diag(self._team_ball_covariance) < self.ball_max_covariance))
 
     def get_ball_position_xy(self) -> tuple[float, float]:
-        """Return the ball saved in the map frame, meaning the absolute position of the ball on the field"""
-        ball = self.get_best_ball_point_stamped()
-        return ball.point.x, ball.point.y
+        """Returns the absolute position of the ball this robot observed itself on the field"""
+        return self._ball.point.x, self._ball.point.y
 
-    @cached_capsule_function
-    def get_best_ball_point_stamped(self) -> PointStamped:
-        """
-        Returns the best ball, either its own ball has been in the ball_lost_lost time
-        or from teammate if the robot itself has lost it and teamcomm is available
-        """
-        # Get balls
-        own_ball = self._ball
-        teammate_ball = self._blackboard.team_data.get_teammate_ball()
-
-        # If the robot has lost the ball and the teammate has seen it, use the teammate's ball
-        if not self.ball_seen_self() and teammate_ball is not None and teammate_ball.header.frame_id == self.map_frame:
-            self.debug_publisher_used_ball.publish(teammate_ball)
-            self.debug_publisher_which_ball.publish(Header(stamp=teammate_ball.header.stamp, frame_id="teammate_ball"))
-            return teammate_ball
-
-        # Otherwise, use the own ball even if it is bad
-        if not self.ball_seen_self():
-            self._node.get_logger().warn("Using own ball even though it is bad, as no teammate ball is available")
-        self.debug_publisher_used_ball.publish(own_ball)
-        self.debug_publisher_which_ball.publish(Header(stamp=own_ball.header.stamp, frame_id="own_ball_map"))
-        return own_ball
+    def get_team_ball_position_xy(self) -> tuple[float, float]:
+        """Returns the absolute position of the team ball on the field"""
+        return self._team_ball.point.x, self._team_ball.point.y
 
     @cached_capsule_function
     def get_ball_position_uv(self) -> tuple[float, float]:
         """
-        Returns the ball position relative to the robot in the base_footprint frame.
+        Returns the position of the ball this robot observed itself relative to the robot
+        in the base_footprint frame.
         U and V are returned, where positive U is forward, positive V is to the left.
         """
-        ball = self.get_best_ball_point_stamped()
+        return self._get_position_uv(self._ball)
+
+    @cached_capsule_function
+    def get_team_ball_position_uv(self) -> tuple[float, float]:
+        """
+        Returns the position of the team ball relative to the robot in the base_footprint frame.
+        U and V are returned, where positive U is forward, positive V is to the left.
+        """
+        return self._get_position_uv(self._team_ball)
+
+    def _get_position_uv(self, ball: PointStamped) -> tuple[float, float]:
+        """Transforms a ball in the map frame into a position relative to the robot"""
         assert ball.header.frame_id == self.map_frame, "Ball needs to be in the map frame"
         our_pose = self.get_current_position_transform()
         assert our_pose.header.frame_id == self.map_frame, "Our pose needs to be in the map frame"
@@ -135,25 +146,62 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
 
     def get_ball_distance(self) -> float:
         """
-        Returns the distance to the ball in meters.
+        Returns the distance to the ball this robot observed itself in meters.
         """
         u, v = self.get_ball_position_uv()
         return math.hypot(u, v)
 
+    def get_team_ball_distance(self) -> float:
+        """
+        Returns the distance to the team ball in meters.
+        """
+        u, v = self.get_team_ball_position_uv()
+        return math.hypot(u, v)
+
     def get_ball_angle(self) -> float:
         """
-        Returns the angle to the ball in radians.
+        Returns the angle to the ball this robot observed itself in radians.
         0 is straight ahead, positive is to the left, negative is to the right.
         """
         u, v = self.get_ball_position_uv()
         return math.atan2(v, u)
 
+    def get_team_ball_angle(self) -> float:
+        """
+        Returns the angle to the team ball in radians.
+        0 is straight ahead, positive is to the left, negative is to the right.
+        """
+        u, v = self.get_team_ball_position_uv()
+        return math.atan2(v, u)
+
     def ball_filtered_callback(self, msg: PoseWithCovarianceStamped):
         """
-        Handles incoming ball messages
+        Handles incoming messages about the ball this robot observed itself
         """
+        ball = self._ball_to_map_frame(msg)
+        if ball is None:
+            return
+        self._ball = ball
+        # Save covariance (only x and y parts)
+        self._ball_covariance = msg.pose.covariance.reshape((6, 6))[:2, :2]
+        self.debug_publisher_own_ball.publish(ball)
 
-        # Save ball
+    def team_ball_filtered_callback(self, msg: PoseWithCovarianceStamped):
+        """
+        Handles incoming messages about the ball that is fused from all observations of our team
+        """
+        ball = self._ball_to_map_frame(msg)
+        if ball is None:
+            return
+        self._team_ball = ball
+        # Save covariance (only x and y parts)
+        self._team_ball_covariance = msg.pose.covariance.reshape((6, 6))[:2, :2]
+        self.debug_publisher_team_ball.publish(ball)
+
+    def _ball_to_map_frame(self, msg: PoseWithCovarianceStamped) -> Optional[PointStamped]:
+        """
+        Converts an incoming ball message into a point in the map frame
+        """
         ball = PointStamped(
             header=Header(
                 # Set timestamps to zero to get the newest transform when this is transformed later
@@ -165,18 +213,14 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
 
         # transform ball to map frame if it is not already in the map frame
         try:
-            ball = self._blackboard.tf_buffer.transform(ball, self.map_frame)
+            return self._blackboard.tf_buffer.transform(ball, self.map_frame)
         except (tf2.ConnectivityException, tf2.LookupException, tf2.ExtrapolationException) as e:
             self._node.get_logger().warn(str(e))
-            return
-        self._ball = ball
-
-        # Save covariance (only x and y parts)
-        self._ball_covariance = msg.pose.covariance.reshape((6, 6))[:2, :2]
+            return None
 
     def forget_ball(self) -> None:
         """
-        Forget that we saw a ball
+        Forget that we saw a ball, both our own and the team ball
         """
         self.reset_ball_filter.call_async(Trigger.Request())
 
@@ -197,11 +241,6 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
 
     def get_map_based_own_goal_center_xy(self) -> tuple[float, float]:
         return -self.field_length / 2, 0.0
-
-    def get_map_based_opp_goal_angle_from_ball(self) -> float:
-        ball_x, ball_y = self.get_ball_position_xy()
-        goal_x, goal_y = self.get_map_based_opp_goal_center_xy()
-        return math.atan2(goal_y - ball_y, goal_x - ball_x)
 
     def get_map_based_opp_goal_distance(self) -> float:
         x, y = self.get_map_based_opp_goal_center_xy()

@@ -12,26 +12,68 @@ bitbots_ball_filter:
       read_only: true
       description: 'Topic to subscribe to for ball detections'
 
+    team_data_subscribe_topic:
+      type: string
+      default_value: 'team_data'
+      read_only: true
+      description: 'Topic to subscribe to for the ball observations of our teammates'
+
     ball_position_publish_topic:
       type: string
       default_value: 'ball_position_relative_filtered'
       read_only: true
-      description: 'Topic to publish the filtered ball position'
+      description: 'Topic to publish the position of the ball as observed by this robot alone'
+
+    ball_movement_publish_topic:
+      type: string
+      default_value: 'ball_relative_movement'
+      read_only: true
+      description: 'Topic to publish the velocity of the ball as observed by this robot alone'
+
+    team_ball_position_publish_topic:
+      type: string
+      default_value: 'team_ball_position_filtered'
+      read_only: true
+      description: 'Topic to publish the position of the ball fused from all observations in the team'
+
+    team_ball_movement_publish_topic:
+      type: string
+      default_value: 'team_ball_movement'
+      read_only: true
+      description: 'Topic to publish the velocity of the ball fused from all observations in the team'
+
+    team_ball_source_publish_topic:
+      type: string
+      default_value: 'debug/team_ball_source'
+      read_only: true
+      description: 'Topic to publish the id of the robot that currently provides the team ball observation'
 
     ball_filter_reset_service_name:
       type: string
       default_value: 'ball_filter_reset'
       read_only: true
-      description: 'Service to reset the ball filter'
+      description: 'Service to reset both the own and the team ball filter'
 
   filter:
     frame:
       type: string
       default_value: 'odom'
-      description: 'Frame to filter the ball in'
+      description: 'Frame the ball observed by this robot is filtered in'
       read_only: true
       validation:
         one_of<>: [['map', 'odom']]
+
+    team_frame:
+      type: string
+      default_value: 'map'
+      description: 'Frame the team ball is filtered in. It needs to be shared between all robots, so the observations of our teammates can be fused.'
+      read_only: true
+
+    base_footprint_frame:
+      type: string
+      default_value: 'base_footprint'
+      description: 'Frame of the robot on the ground. It is used to determine how far away our own ball observation is.'
+      read_only: true
 
     rate:
       type: int
@@ -45,7 +87,7 @@ bitbots_ball_filter:
       process_noise:
         type: double
         default_value: 0.002
-        description: 'Noise which is added to the estimated position without new measurements'
+        description: 'Noise which is added to the estimated position in every filter step without new measurements'
         validation:
           bounds<>: [0.0, 1.0]
 
@@ -85,3 +127,60 @@ bitbots_ball_filter:
         description: 'We calculate a distance around our filter state over which we ignore measurements. This threshold is based on the covariance of the filter scaled by this factor. This is used to ignore false positives if we already have a good estimation.'
         validation:
           bounds<>: [0.0, 10.0]
+
+      alpha:
+        type: double
+        default_value: 0.4
+        description: 'Alpha gain of the alpha-beta filter. It defines how much of the difference between measurement and prediction is applied to the position estimate.'
+        validation:
+          bounds<>: [0.0, 1.0]
+
+      beta:
+        type: double
+        default_value: 0.05
+        description: 'Beta gain of the alpha-beta filter. It defines how much of the difference between measurement and prediction is applied to the velocity estimate.'
+        validation:
+          bounds<>: [0.0, 1.0]
+
+      max_measurement_gap:
+        type: double
+        default_value: 1.0
+        description: 'Maximum time in seconds between two measurements that are still considered consecutive. If the gap is larger, we lost track of the ball and the filter is reinitialized from the measurement instead of being corrected.'
+        validation:
+          bounds<>: [0.0, 30.0]
+
+    team:
+      max_covariance:
+        type: double
+        default_value: 2.0
+        description: 'Observations with a larger positional covariance than this are not considered as a source for the team ball.'
+        validation:
+          bounds<>: [0.0, 100.0]
+
+      observation_timeout:
+        type: double
+        default_value: 2.0
+        description: 'Team data older than this is not considered as a source for the team ball anymore.'
+        validation:
+          bounds<>: [0.0, 60.0]
+
+      covariance_weight:
+        type: double
+        default_value: 1.0
+        description: 'Weight of the observation covariance in the score that selects the source of the team ball. A lower score is better.'
+        validation:
+          bounds<>: [0.0, 100.0]
+
+      distance_weight:
+        type: double
+        default_value: 0.5
+        description: 'Weight of the distance between the observing robot and its ball observation in the score that selects the source of the team ball. A lower score is better.'
+        validation:
+          bounds<>: [0.0, 100.0]
+
+      source_switch_margin:
+        type: double
+        default_value: 0.5
+        description: 'A new source needs to beat the score of the current source by this margin before the team ball is taken over. This hysteresis avoids switching back and forth between two similarly good sources, which would prevent any velocity estimation.'
+        validation:
+          bounds<>: [0.0, 100.0]

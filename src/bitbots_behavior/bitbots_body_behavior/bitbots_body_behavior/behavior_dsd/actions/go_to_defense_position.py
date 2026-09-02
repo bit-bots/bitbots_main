@@ -44,7 +44,7 @@ class GoToDefensePosition(AbstractActionElement):
         #                         0
 
         goal_position = (-self.blackboard.world_model.field_length / 2, 0)  # position of the own goal
-        ball_position = self.blackboard.world_model.get_ball_position_xy()
+        ball_position = self.blackboard.world_model.get_team_ball_position_xy()
         robot_x, robot_y, _ = np.array(self.blackboard.world_model.get_current_position())
         our_pose = [robot_x, robot_y]
 

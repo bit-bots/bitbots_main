@@ -17,7 +17,7 @@ class AbstractGoToPassPosition(AbstractActionElement):
 
     def perform(self, reevaluate=False):
         # get ball pos
-        ball_pos = self.blackboard.world_model.get_ball_position_xy()
+        ball_pos = self.blackboard.world_model.get_team_ball_position_xy()
         our_pose = self.blackboard.world_model.get_current_position()
 
         # compute goal

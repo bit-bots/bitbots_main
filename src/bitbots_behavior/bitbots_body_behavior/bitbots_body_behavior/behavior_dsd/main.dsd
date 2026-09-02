@@ -30,7 +30,9 @@ $DoOnce
         YES -->  #StandAndLook
         NO --> @LookAtFieldFeatures, @GoToRolePosition
 
-#KickWithAvoidance
+// Everything in here moves the robot relative to the ball, so it uses the ball this robot
+// observed itself. It is only entered once we are sure that we see the ball.
+#PlayBall
 $KickOrDribble + threshold_upfield:2.0 + threshold_downfield:0.5
     KICK --> $DoOnce
         NOT_DONE --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:rl_kick + blocking:false
@@ -39,17 +41,25 @@ $KickOrDribble + threshold_upfield:2.0 + threshold_downfield:0.5
             YES --> $DoOnce
                 NOT_DONE --> @StoreBallMovementDetectionStartPosition
                 DONE --> @ChangeAction + action:kicking, @Stand + duration:0.1 + r:false, @LookAtBallPenalty + r:false, @RLKickTowardsGoal + strength:3.0 + r:false, @ForgetBall
-    DRIBBLE --> $AvoidBall // old behavior before kick when we want to kick the ball in
-        NO --> $BallClose + distance:%ball_reapproach_dist + angle:%ball_reapproach_angle
-            YES --> $BallKickArea
-                NEAR --> $DoOnce
-                    NOT_DONE --> @StoreBallMovementDetectionStartPosition
-                    DONE --> #Dribble
-                FAR --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:map
-            NO --> @ChangeAction + action:going_to_ball + r:false, @LookAtFieldFeatures + r:false, @AvoidBallActive + r:false, @GoToBall + target:map + blocking:false + distance:%ball_far_approach_dist
-        YES --> $ReachedPathPlanningGoalPosition + threshold:%ball_far_approach_position_thresh
-            YES --> @AvoidBallInactive
-            NO --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:map + distance:%ball_far_approach_dist
+    DRIBBLE --> $BallKickArea
+        NEAR --> $DoOnce
+            NOT_DONE --> @StoreBallMovementDetectionStartPosition
+            DONE --> #Dribble
+        FAR --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:map
+
+// We walk towards the ball as long as anybody in our team knows where it is, but we only play it
+// once we observe it ourselves. Playing a ball we do not see would push it in an arbitrary
+// direction, so we walk in place and search for it instead.
+#KickWithAvoidance
+$AvoidBall // old behavior before kick when we want to kick the ball in
+    YES --> $ReachedPathPlanningGoalPosition + threshold:%ball_far_approach_position_thresh
+        YES --> @AvoidBallInactive
+        NO --> @ChangeAction + action:going_to_ball, @LookAtFieldFeatures, @GoToBall + target:map + ball:team + distance:%ball_far_approach_dist
+    NO --> $TeamBallClose + distance:%ball_reapproach_dist + angle:%ball_reapproach_angle
+        NO --> @ChangeAction + action:going_to_ball + r:false, @LookAtFieldFeatures + r:false, @AvoidBallActive + r:false, @GoToBall + target:map + ball:team + blocking:false + distance:%ball_far_approach_dist
+        YES --> $BallSeen
+            NO --> @ChangeAction + action:searching, @LookAtFieldFeatures, @WalkInPlace
+            YES --> #PlayBall
 
 #PositioningReady
 $GoalScoreRecently
@@ -102,7 +112,7 @@ $DoOnce
     NOT_DONE --> @ForgetBall, @LookAtFieldFeatures
     DONE --> $ConfigRole
         GOALIE --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToBlockPosition
-        ELSE --> $BallSeen
+        ELSE --> $TeamBallSeen
             NO --> $SecondaryStateTeamDecider
                 OUR --> #SearchBall
                 ELSE --> @AvoidBallActive, @LookAtFieldFeatures, @WalkInPlace + duration:2, @GoToRelativePosition + x:1 + y:0 + t:0, @Stand
@@ -119,7 +129,7 @@ $SecondBallTouchAllowed
     NO --> $ConfigRole
         GOALIE --> @SetNoSecondBallContactVariable + value:false + r:false, @LookAtFieldFeatures + r:false, @ChangeAction + action:passive + r:false, @AvoidBallActive + r:false, @GoToBlockPosition
         ELSE --> @SetNoSecondBallContactVariable + value:false + r:false, @LookAtFieldFeatures + r:false, @ChangeAction + action:passive + r:false, @AvoidBallActive + r:false, @GoToDefensePosition
-    YES --> $BallSeen
+    YES --> $TeamBallSeen
         NO --> $ConfigRole
             GOALIE --> #RolePositionWithPause
             ELSE --> #SearchBall

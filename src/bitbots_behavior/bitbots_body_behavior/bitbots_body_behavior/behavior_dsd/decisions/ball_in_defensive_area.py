@@ -15,7 +15,7 @@ class BallInDefensiveArea(AbstractDecisionElement):
         :param reevaluate:
         :return:
         """
-        ball_position = self.blackboard.world_model.get_ball_position_xy()
+        ball_position = self.blackboard.world_model.get_team_ball_position_xy()
         # calculate the x value of the boundary of the defensive area
         defensive_x = (self.defensive_area * self.blackboard.world_model.field_length) - (
             self.blackboard.world_model.field_length / 2
@@ -41,7 +41,7 @@ class BallInOwnPercent(AbstractDecisionElement):
         :param reevaluate:
         :return:
         """
-        ball_position = self.blackboard.world_model.get_ball_position_xy()
+        ball_position = self.blackboard.world_model.get_team_ball_position_xy()
         # calculate the x value of the boundary of the defensive area
         defensive_x = ((self.percent / 100.0) * self.blackboard.world_model.field_length) - (
             self.blackboard.world_model.field_length / 2.0
@@ -68,7 +68,7 @@ class BallInGoalieZone(AbstractDecisionElement):
         :param reevaluate:
         :return:
         """
-        ball_position = self.blackboard.world_model.get_ball_position_xy()
+        ball_position = self.blackboard.world_model.get_team_ball_position_xy()
         # calculate the x value of the boundary of the defensive area
         defensive_x = (self.goalie_zone_x * self.blackboard.world_model.field_length) - (
             self.blackboard.world_model.field_length / 2

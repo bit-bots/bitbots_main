@@ -39,7 +39,7 @@ class GoToBlockPosition(AbstractActionElement):
         #      |
         #      +------------------+--------------> x
         #                         0
-        ball_position = self.blackboard.world_model.get_ball_position_xy()
+        ball_position = self.blackboard.world_model.get_team_ball_position_xy()
 
         ball_to_line_distance = ball_position[0] - self.left_goalpost_position[0]
 

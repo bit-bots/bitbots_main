@@ -42,6 +42,13 @@ class BodyDSD:
             callback_group=MutuallyExclusiveCallbackGroup(),
         )
         node.create_subscription(
+            PoseWithCovarianceStamped,
+            "team_ball_position_filtered",
+            blackboard.world_model.team_ball_filtered_callback,
+            qos_profile=1,
+            callback_group=MutuallyExclusiveCallbackGroup(),
+        )
+        node.create_subscription(
             GameState,
             "gamestate",
             blackboard.gamestate.gamestate_callback,

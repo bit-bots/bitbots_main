@@ -14,6 +14,9 @@ class BallDangerous(AbstractDecisionElement):
     def perform(self, reevaluate=False):
         """ "
         Determines whether the position is in the dangerous area (in a radius close to the goal)
+
+        The goalie has to react to the ball immediately here, so this is based on the ball
+        the goalie observed itself and not on the team ball.
         """
         ball_position = self.blackboard.world_model.get_ball_position_xy()
         if self._in_dangerous_area(ball_position):

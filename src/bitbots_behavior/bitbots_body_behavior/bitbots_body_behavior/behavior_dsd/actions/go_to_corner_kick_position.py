@@ -35,7 +35,7 @@ class GoToCornerKickPosition(AbstractActionElement):
         #      +------------------+--------------> x
         #                         0
 
-        ball_position = self.blackboard.world_model.get_ball_position_xy()
+        ball_position = self.blackboard.world_model.get_team_ball_position_xy()
         field_length = self.blackboard.world_model.field_length
         field_width = self.blackboard.world_model.field_width
 

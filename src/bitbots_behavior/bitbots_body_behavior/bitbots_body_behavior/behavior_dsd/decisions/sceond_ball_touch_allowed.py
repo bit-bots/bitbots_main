@@ -20,7 +20,7 @@ class SecondBallTouchAllowed(AbstractDecisionElement):
         :param reevaluate:
         :return:
         """
-        ball_pos = self.blackboard.world_model.get_ball_position_xy()
+        ball_pos = self.blackboard.world_model.get_team_ball_position_xy()
         no_second_ball_contact = (
             self.blackboard.misc.no_second_ball_contact is None or self.blackboard.misc.no_second_ball_contact
         )

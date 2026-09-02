@@ -10,7 +10,7 @@ class ClosestToBallNoGoalie(AbstractDecisionElement):
 
     def perform(self, reevaluate=False):
         my_time_to_ball = self.blackboard.team_data.get_own_time_to_ball()
-        rank = self.blackboard.team_data.team_rank_to_ball(my_time_to_ball, count_goalies=False, use_time_to_ball=True)
+        rank = self.blackboard.team_data.team_rank_to_ball(my_time_to_ball, count_goalies=False)
         self.publish_debug_data("time to ball", my_time_to_ball)
         self.publish_debug_data("Rank to ball", rank)
         if rank == 1:
@@ -29,7 +29,7 @@ class ClosestToBall(AbstractDecisionElement):
 
     def perform(self, reevaluate=False):
         my_time_to_ball = self.blackboard.team_data.get_own_time_to_ball()
-        rank = self.blackboard.team_data.team_rank_to_ball(my_time_to_ball, count_goalies=True, use_time_to_ball=True)
+        rank = self.blackboard.team_data.team_rank_to_ball(my_time_to_ball, count_goalies=True)
         self.publish_debug_data("time to ball", my_time_to_ball)
         self.publish_debug_data("Rank to ball", rank)
         if rank == 1:
@@ -48,7 +48,7 @@ class RankToBallNoGoalie(AbstractDecisionElement):
 
     def perform(self, reevaluate=False):
         my_time_to_ball = self.blackboard.team_data.get_own_time_to_ball()
-        rank = self.blackboard.team_data.team_rank_to_ball(my_time_to_ball, count_goalies=False, use_time_to_ball=True)
+        rank = self.blackboard.team_data.team_rank_to_ball(my_time_to_ball, count_goalies=False)
         self.publish_debug_data("time to ball", my_time_to_ball)
         self.publish_debug_data("Rank to ball", rank)
         if rank == 1:

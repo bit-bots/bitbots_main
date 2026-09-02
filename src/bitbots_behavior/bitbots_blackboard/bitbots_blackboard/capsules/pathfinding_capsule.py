@@ -12,6 +12,7 @@ from tf_transformations import euler_from_quaternion
 from visualization_msgs.msg import Marker
 
 from bitbots_blackboard.capsules import AbstractBlackboardCapsule
+from bitbots_blackboard.capsules.team_data_capsule import TIME_TO_BALL_UNKNOWN
 
 
 # Type of pathfinding goal relative to the ball
@@ -90,16 +91,22 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
     def calculate_time_to_ball(self) -> None:
         """
         Calculates the time to ball and saves it in the team data capsule.
+
+        This is used to decide which robot of our team plays the ball, so it is based on the team
+        ball. Otherwise only the robots that currently look at the ball would take part in that
+        decision.
         """
         # only send new request if previous request is finished or first update
         # also verify that the ball and the localization are reasonably recent/accurate
-        if self._blackboard.world_model.ball_has_been_seen():
-            ball_target = self.get_ball_goal(BallGoalType.MAP, self._blackboard.config["ball_approach_dist"])
+        if self._blackboard.world_model.team_ball_seen():
+            ball_target = self.get_ball_goal(
+                BallGoalType.MAP, self._blackboard.config["ball_approach_dist"], use_team_ball=True
+            )
             own_position = self._blackboard.world_model.get_current_position_pose_stamped()
             self._blackboard.team_data.own_time_to_ball = self.time_from_pose_to_pose(own_position, ball_target)
         else:
             # since we can not get a reasonable estimate, we are lost and set the time_to_ball to a very high value
-            self._blackboard.team_data.own_time_to_ball = 9999.0
+            self._blackboard.team_data.own_time_to_ball = TIME_TO_BALL_UNKNOWN
 
     def time_from_pose_to_pose(self, own_pose: PoseStamped, goal_pose: PoseStamped) -> float:
         """
@@ -135,7 +142,17 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
             )
         return total_cost
 
-    def get_ball_goal(self, target: BallGoalType, distance: float, side_offset: float = 0.0) -> PoseStamped:
+    def get_ball_position_xy(self, use_team_ball: bool) -> tuple[float, float]:
+        """
+        Returns the absolute position of either the team ball or the ball we observed ourselves.
+        """
+        if use_team_ball:
+            return self._blackboard.world_model.get_team_ball_position_xy()
+        return self._blackboard.world_model.get_ball_position_xy()
+
+    def get_ball_goal(
+        self, target: BallGoalType, distance: float, side_offset: float = 0.0, use_team_ball: bool = False
+    ) -> PoseStamped:
         """
         This function returns a goal pose relative to the ball.
 
@@ -144,10 +161,13 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
         - map: The goal pose chosen so the ball is 'distance' meters in the direction of the opponent goal.
         - close: The goal is inside the ball with us facing the ball.
         - rl_kick: The goal pose is chosen in an arc around the ball opposide to the direction of the opponent goal.
+
+        Set 'use_team_ball' to approach the ball fused from the observations of the whole team
+        instead of the ball this robot observed itself.
         """
 
         if BallGoalType.GRADIENT == target:
-            ball_x, ball_y = self._blackboard.world_model.get_ball_position_xy()
+            ball_x, ball_y = self.get_ball_position_xy(use_team_ball)
 
             goal_angle = self._blackboard.costmap.get_gradient_direction_at_field_position(ball_x, ball_y)
 
@@ -157,10 +177,13 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
             ball_point = (goal_x, goal_y, goal_angle, self._blackboard.map_frame)
 
         elif BallGoalType.MAP == target:
-            ball_point = self.get_map_goal(distance, side_offset)
+            ball_point = self.get_map_goal(distance, side_offset, use_team_ball=use_team_ball)
 
         elif BallGoalType.CLOSE == target:
-            ball_u, ball_v = self._blackboard.world_model.get_ball_position_uv()
+            if use_team_ball:
+                ball_u, ball_v = self._blackboard.world_model.get_team_ball_position_uv()
+            else:
+                ball_u, ball_v = self._blackboard.world_model.get_ball_position_uv()
             ball_v_from_kick_foot = ball_v + side_offset
             angle = math.atan2(ball_v_from_kick_foot, ball_u)
             goal_u = ball_u - math.cos(angle) * distance
@@ -170,7 +193,7 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
             goal_line_offset = self._blackboard.config["rl_kick"]["goal_line_offset"]
             approach_dist = self._blackboard.config["rl_kick"]["approach_dist"]
             approach_arc_half_rad = math.radians(self._blackboard.config["rl_kick"]["approach_arc_half_degree"])
-            ball_x, ball_y = self._blackboard.world_model.get_ball_position_xy()
+            ball_x, ball_y = self.get_ball_position_xy(use_team_ball)
 
             vec_ball_to_goal = np.array(
                 [self._blackboard.world_model.field_length / 2 + 2 * goal_line_offset - ball_x, 0 - ball_y]
@@ -223,10 +246,11 @@ class PathfindingCapsule(AbstractBlackboardCapsule):
 
         return pose_msg
 
-    def get_map_goal(self, distance, side_offset: float = 0.0, goal_offset: float = 0.0):
-        goal_angle = self._blackboard.world_model.get_map_based_opp_goal_angle_from_ball()
+    def get_map_goal(self, distance, side_offset: float = 0.0, goal_offset: float = 0.0, use_team_ball: bool = False):
+        ball_x, ball_y = self.get_ball_position_xy(use_team_ball)
 
-        ball_x, ball_y = self._blackboard.world_model.get_ball_position_xy()
+        goal_x, goal_y = self._blackboard.world_model.get_map_based_opp_goal_center_xy()
+        goal_angle = math.atan2(goal_y - ball_y, goal_x - ball_x)
 
         # Play in any part of the opponents goal, not just the center
         # Adjust for the goal post width (-0.06)

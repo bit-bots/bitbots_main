@@ -1,15 +1,16 @@
-from typing import Literal, Optional
+from typing import Literal
 
-import numpy as np
 from bitbots_utils.utils import get_parameters_from_other_node
-from geometry_msgs.msg import PointStamped, Pose
+from geometry_msgs.msg import Pose
 from rclpy.duration import Duration
 from rclpy.time import Time
-from ros2_numpy import numpify
 from std_msgs.msg import Float32
 
 from bitbots_blackboard.capsules import AbstractBlackboardCapsule, cached_capsule_function
 from bitbots_msgs.msg import Strategy, TeamData
+
+# Time to ball that is reported by a robot which does not know where the ball is
+TIME_TO_BALL_UNKNOWN = 9999.0
 
 
 class TeamDataCapsule(AbstractBlackboardCapsule):
@@ -31,7 +32,7 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
         for i in range(1, 7):
             self.team_data[i] = TeamData()
         self.times_to_ball = dict()
-        self.own_time_to_ball = 9999.0
+        self.own_time_to_ball = TIME_TO_BALL_UNKNOWN
         self.last_time_team_mate_kicked = None
 
         # Mapping
@@ -68,7 +69,6 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
 
         # Config
         self.data_timeout: float = float(self._node.get_parameter("team_data_timeout").value)
-        self.ball_max_covariance: float = float(self._node.get_parameter("ball_max_covariance").value)
 
     @cached_capsule_function
     def time(self) -> Time:
@@ -108,43 +108,35 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
                 return True
         return False
 
-    def team_rank_to_ball(
-        self, own_ball_distance: float, count_goalies: bool = True, use_time_to_ball: bool = False
-    ) -> int:
+    def team_rank_to_ball(self, own_time_to_ball: float, count_goalies: bool = True) -> int:
         """
-        Returns the rank of this robot compared to the team robots concerning ball distance.
+        Returns the rank of this robot compared to the team robots concerning the time it takes
+        them to reach the ball. Every robot estimates this time based on its own team ball, so all
+        robots that know where the ball is take part in this comparison, no matter if they observed
+        the ball themselves or if a teammate told them about it.
 
-        If count_goalies is False, the goalies distance is ignored, as it should not leave the goal,
+        If count_goalies is False, the goalie is ignored, as it should not leave the goal,
         even if it is closer than field players.
         For example, we do not want our goalie to perform a throw in against our empty goal.
 
         :return the rank from 1 (nearest) to the number of robots
         """
-        distances = []
+        times_to_ball = []
         data: TeamData
         for data in self.team_data.values():
             # data should not be outdated, from a robot in play, only goalie if desired,
-            # x and y covariance values should be below threshold. orientation covariance of ball does not matter
-            # covariance is a 6x6 matrix as array. 0 is x, 7 is y
+            # and the robot needs to know where the ball is
             if (
                 self.is_valid(data)
                 and (data.strategy.role != Strategy.ROLE_GOALIE or count_goalies)
                 and data.strategy.action != Strategy.ACTION_PASSIVE
-                and data.ball_absolute.covariance[0] < self.ball_max_covariance
-                and data.ball_absolute.covariance[7] < self.ball_max_covariance
+                and data.time_to_position_at_ball < TIME_TO_BALL_UNKNOWN
             ):
-                if use_time_to_ball:
-                    distances.append(data.time_to_position_at_ball)
-                else:
-                    distances.append(
-                        np.linalg.norm(
-                            numpify(data.ball_absolute.pose.position) - numpify(data.robot_position.pose.position)
-                        )
-                    )
-        for rank, distance in enumerate(sorted(distances)):
-            if own_ball_distance < distance:
+                times_to_ball.append(data.time_to_position_at_ball)
+        for rank, time_to_ball in enumerate(sorted(times_to_ball)):
+            if own_time_to_ball < time_to_ball:
                 return rank + 1
-        return len(distances) + 1
+        return len(times_to_ball) + 1
 
     def set_action(self, action: int) -> None:
         """Set the action of this robot
@@ -229,36 +221,3 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
 
     def publish_time_to_ball(self):
         self.time_to_ball_publisher.publish(Float32(data=self.own_time_to_ball))
-
-    def teammate_ball_is_valid(self) -> bool:
-        """Returns true if a teammate has seen the ball accurately enough"""
-        return self.get_teammate_ball() is not None
-
-    @cached_capsule_function
-    def get_teammate_ball(self) -> Optional[PointStamped]:
-        """Returns the best ball from all teammates that satisfies a minimum ball precision"""
-
-        # Get the team data infos for all valid robots (ignoring the robot id)
-        team_data_infos = filter(self.is_valid, self.team_data.values())
-
-        def is_ball_good_enough(team_data: TeamData) -> bool:
-            return bool(
-                team_data.ball_absolute.covariance[0] < self.ball_max_covariance
-                and team_data.ball_absolute.covariance[7] < self.ball_max_covariance
-            )
-
-        # Filter robots with too high ball covariance
-        team_data_infos = filter(is_ball_good_enough, team_data_infos)
-
-        def get_ball_max_covariance(team_data: TeamData) -> float:
-            return max(team_data.ball_absolute.covariance[0], team_data.ball_absolute.covariance[7])
-
-        # Get robot with lowest maximum ball covariance
-        team_data_with_best_ball = min(team_data_infos, key=get_ball_max_covariance, default=None)
-
-        # Convert ball to PointStamped if a ball was found
-        if team_data_with_best_ball is not None:
-            return PointStamped(
-                header=team_data_with_best_ball.header, point=team_data_with_best_ball.ball_absolute.pose.position
-            )
-        return None

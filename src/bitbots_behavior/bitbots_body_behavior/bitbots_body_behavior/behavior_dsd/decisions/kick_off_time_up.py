@@ -18,7 +18,7 @@ class KickOffTimeUp(AbstractDecisionElement):
                 self.publish_debug_data("Reason", "Opp kick off time ended")
                 # time is up for the other team
                 return "YES"
-            ball_pos = self.blackboard.world_model.get_ball_position_xy()
+            ball_pos = self.blackboard.world_model.get_team_ball_position_xy()
             # check if this is a normal kickoff
             if self.blackboard.gamestate.free_kick_kickoff_team is None:
                 # if we know where the ball is and that it moved, we can play too
