@@ -202,7 +202,7 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
 
     def get_robot_poses(self, include_own: bool = True) -> dict[int, list[float]]:
         """Returns a mapping of robot id -> [x, y, theta] for all playing robots
-           of whom we have up-to-date information."""
+        of whom we have up-to-date information."""
         robot_poses = {}
         data: TeamData
         for data in self.team_data.values():
