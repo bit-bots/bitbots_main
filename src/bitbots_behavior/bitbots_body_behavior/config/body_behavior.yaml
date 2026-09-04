@@ -50,6 +50,7 @@ body_behavior:
     # If false, the supporter's slot is filled by an extra defender instead.
     formation_include_supporter: false
 
+    # Hysteresis for being considered at role pose
     support_enter_position: 0.1
     support_leave_position: 0.3
     support_enter_orientation: 0.1

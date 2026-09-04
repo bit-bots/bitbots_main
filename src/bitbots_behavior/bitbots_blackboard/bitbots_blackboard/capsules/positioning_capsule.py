@@ -1,3 +1,34 @@
+"""
+This file calculates the positions and role assignments for a full team.
+A single pure function `compute_formation(ball, field, n_players, params)` maps a
+ball position to positions for every role (goalie, defenders, supporter, striker).
+This function is designed to be smooth so that small changes in the ball or robot
+positions do not result in sudden jumps in the calculated positions. This is
+especially important because different robots may have slightly different worldviews
+If the function wasn't smooth, the robots may not fill a particular role.
+
+Note that there is one notable exception to this smoothness: The side on which the
+supporter positions itself.
+
+Core idea
+---------
+Everything keys off two vectors derived from the ball B and our goal centre G:
+
+    to_ball = normalize(B - G)         # axis pointing from our goal out to the ball
+    perp    = (-to_ball.y, to_ball.x)  # perpendicular to that axis
+
+Defenders sit ON the axis (at a controlled depth from goal) and spread ALONG perp.
+As the ball moves the axis rotates, so the same construction continuously morphs
+from a horizontal defensive line (ball far/central) into a goal-line wall beside
+the goalie (ball close & frontal). No special-casing -> automatically smooth.
+
+A short pairwise-repulsion pass at the end enforces a minimum separation; it is
+also what shoves the defenders sideways into clean flanking slots when they would
+otherwise pile onto the goalie. This pass is intermix and concluded by a push away
+from the ball if we need to keep our distance from it because the opponent has set ball.
+"""
+
+import math
 from collections.abc import Sequence
 from dataclasses import dataclass
 from enum import StrEnum
@@ -43,28 +74,6 @@ class Field:
 
 @dataclass
 class Params:
-    """
-    A single pure function `compute_formation(ball, field, n_players, params)` maps a
-    ball position to positions for every non-... well, *every* role (goalie, defenders,
-    supporter, striker), and a small matplotlib GUI to click a ball and watch the result.
-
-    Core idea
-    ---------
-    Everything keys off two vectors derived from the ball B and our goal centre G:
-
-        to_ball = normalize(B - G)         # axis pointing from our goal out to the ball
-        perp    = (-to_ball.y, to_ball.x)  # perpendicular to that axis
-
-    Defenders sit ON the axis (at a controlled depth from goal) and spread ALONG perp.
-    As the ball moves the axis rotates, so the same construction continuously morphs
-    from a horizontal defensive line (ball far/central) into a goal-line wall beside
-    the goalie (ball close & frontal). No special-casing -> automatically smooth.
-
-    A short pairwise-repulsion pass at the end enforces a minimum separation; it is
-    also what shoves the defenders sideways into clean flanking slots when they would
-    otherwise pile onto the goalie -> the "wall next to the goalie" emerges for free.
-    """
-
     # goalie
     d_g: float = 0.55  # how far the goalie comes out of the goal (dist from goal centre)
     # defenders
@@ -146,7 +155,6 @@ class PositioningCapsule(AbstractBlackboardCapsule):
         ball = np.array([ball_pose.point.x, ball_pose.point.y])
         robot_poses = self._blackboard.team_data.get_robot_poses()
         passive_robot_ids = self._blackboard.team_data.get_id_of_passive_player()
-        self._node.get_logger().info(f"Length of robot_poses: {len(robot_poses)}")
 
         formation = self._inner._compute_formation(
             ball, self._field, len(robot_poses), self._params, opp_set_play=set_play
@@ -190,9 +198,14 @@ class InnerPositioningCapsule:
         return float(t * t * (3 - 2 * t))
 
     @staticmethod
+    def _wrap_to_pi(angle: float) -> float:
+        """Wrap an angle (rad) into the signed range [-pi, pi)."""
+        return float(math.remainder(angle, 2 * math.pi))
+
+    @staticmethod
     def _angle_diff(a: float, b: float) -> float:
         """Smallest absolute angle between two headings (rad), in [0, pi]."""
-        return float(abs((a - b + np.pi) % (2 * np.pi) - np.pi))
+        return abs(InnerPositioningCapsule._wrap_to_pi(a - b))
 
     @staticmethod
     def _clamp_field(p: NDArray[np.float64], fld: Field, margin: float | None = None) -> NDArray[np.float64]:
@@ -304,7 +317,7 @@ class InnerPositioningCapsule:
                     diff = positions[a] - positions[b]
                     dist = np.linalg.norm(diff)
                     if dist < sep:
-                        dirv = self._normalize(diff, np.array([0.0, 1.0])) if dist > 1e-6 else np.array([0.0, 1.0])
+                        dirv = self._normalize(diff, np.array([0.0, 1.0]))
                         overlap = sep - dist
                         a_fixed, b_fixed = a in fixed, b in fixed
                         if a_fixed and b_fixed:
@@ -433,14 +446,13 @@ class InnerPositioningCapsule:
         goal = np.array([-field.length / 2.0, 0.0])
         opp = np.array([+field.length / 2.0, 0.0])
 
-        d = np.linalg.norm(b - goal)
+        d = float(np.linalg.norm(b - goal))
         to_ball = self._normalize(b - goal)  # our-goal -> ball
         perp = np.array([-to_ball[1], to_ball[0]])
 
-        roles = self._allocate_roles(n_players, b, field, include_supporter=params.include_supporter)
-        if opp_set_play and Role.SUPPORTER in roles:
-            n_def = sum(1 for r in roles if r.startswith(Role.DEFENDER + "_"))
-            roles[roles.index(Role.SUPPORTER)] = Role(f"{Role.DEFENDER}_{n_def}")
+        roles = self._allocate_roles(
+            n_players, b, field, include_supporter=params.include_supporter and not opp_set_play
+        )
         out = {}
         head = {}  # role -> heading (rad); filled lazily, completed after separation
         kick_aim = None  # striker's kick direction; used to clear the kick lane
@@ -468,7 +480,7 @@ class InnerPositioningCapsule:
                 # the striker swings smoothly rather than whipping when the two aims oppose
                 a0 = np.arctan2(aim_goal[1], aim_goal[0])
                 a1 = np.arctan2(aim_back[1], aim_back[0])
-                da = (a1 - a0 + np.pi) % (2 * np.pi) - np.pi  # shortest signed turn
+                da = self._wrap_to_pi(a1 - a0)  # shortest signed turn
                 ang = a0 + w_back * da
                 aim = np.array([np.cos(ang), np.sin(ang)])
                 out[Role.STRIKER] = b - params.kick_offset * aim
@@ -535,6 +547,6 @@ class InnerPositioningCapsule:
                 bis = self._normalize(b - p) + self._normalize(opp - p)
                 head[role] = self._face(np.zeros(2), bis, fallback=self._face(p, opp))
             else:
-                head[role] = self._face(p, b)  # goalie + defenders face the ball
+                head[role] = self._face(p, b)  # goalie, defenders (and the striker if opp_set_play) face the ball
 
         return {role: np.array([p[0], p[1], head[role]]) for role, p in out.items()}

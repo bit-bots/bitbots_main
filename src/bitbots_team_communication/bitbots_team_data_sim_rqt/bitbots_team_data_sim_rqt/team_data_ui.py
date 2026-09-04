@@ -248,11 +248,11 @@ class BallCovariance(QGroupBox):
         self.setLayout(self.main_layout)
         # Create spin box
         self.ball_covariance_box = QSpinBox()
-        self.ball_covariance_box.setRange(-400, 400)
+        self.ball_covariance_box.setRange(0, 100)
         self.main_layout.addWidget(self.ball_covariance_box)
         # Create slider
         self.ball_covariance_slider = QSlider(Qt.Horizontal)  # type: ignore[attr-defined]
-        self.ball_covariance_slider.setRange(-400, 400)
+        self.ball_covariance_slider.setRange(0, 100)
         self.main_layout.addWidget(self.ball_covariance_slider)
         # Connect spin box and slider
         self.ball_covariance_box.valueChanged.connect(self.ball_covariance_slider.setValue)  # type: ignore[attr-defined]
@@ -395,6 +395,7 @@ class TeamDataSimulator(Plugin):
                 pose_with_cov = PoseWithCovariance()
                 pose_with_cov.pose.position.x = robot_widget.position_sliders_x.get_x_position()
                 pose_with_cov.pose.position.y = robot_widget.position_sliders_y.get_y_position()
+                pose_with_cov.pose.orientation.w = 1.0
                 pose_with_cov.covariance = [
                     robot_widget.ball_covariance.get_ball_covariance() / 2,
                     0.0,
@@ -434,6 +435,14 @@ class TeamDataSimulator(Plugin):
                     0.05,
                 ]
                 team_data.robot_position = pose_with_cov
+
+                ball_with_cov = PoseWithCovariance()
+                ball_with_cov.pose.position.x = robot_widget.ball_position_sliders_x.get_x_ball_position()
+                ball_with_cov.pose.position.y = robot_widget.ball_position_sliders_y.get_y_ball_position()
+                ball_with_cov.pose.orientation.w = 1.0
+                ball_with_cov.covariance = pose_with_cov.covariance
+                team_data.ball_absolute = ball_with_cov
+
                 team_data.state = robot_widget.state_box.get_state()
                 team_data.time_to_position_at_ball = robot_widget.time_to_position_box.get_time()
                 team_data.strategy.role = robot_widget.strategy_box.get_role()

@@ -1,4 +1,3 @@
-import math
 from typing import Literal, Optional
 
 import numpy as np
@@ -8,6 +7,7 @@ from rclpy.duration import Duration
 from rclpy.time import Time
 from ros2_numpy import numpify
 from std_msgs.msg import Float32
+from tf_transformations import euler_from_quaternion
 
 from bitbots_blackboard.capsules import AbstractBlackboardCapsule, cached_capsule_function
 from bitbots_msgs.msg import Strategy, TeamData
@@ -194,18 +194,15 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
         passive_robot_ids = []
         data: TeamData
         for data in self.team_data.values():
-            if self.is_valid(data) and (data.strategy.action is Strategy.ACTION_PASSIVE):
+            if self.is_valid(data) and (data.strategy.action == Strategy.ACTION_PASSIVE):
                 passive_robot_ids.append(data.robot_id)
-        if self.strategy.action is Strategy.ACTION_PASSIVE:
+        if self.strategy.action == Strategy.ACTION_PASSIVE:
             passive_robot_ids.append(self._blackboard.gamestate.get_own_id())
         return passive_robot_ids
 
-    def quaternion_to_yaw(self, q) -> float:
-        """Extract yaw (theta) from a quaternion."""
-        return math.atan2(2.0 * (q.w * q.z + q.x * q.y), 1.0 - 2.0 * (q.y * q.y + q.z * q.z))
-
     def get_robot_poses(self, include_own: bool = True) -> dict[int, list[float]]:
-        """Returns a mapping of jersey_number -> [x, y, theta] for all active robots."""
+        """Returns a mapping of robot id -> [x, y, theta] for all playing robots
+        of whom we have up-to-date information."""
         robot_poses = {}
         data: TeamData
         for data in self.team_data.values():
@@ -214,7 +211,7 @@ class TeamDataCapsule(AbstractBlackboardCapsule):
                 robot_poses[data.robot_id] = [
                     pose.position.x,
                     pose.position.y,
-                    self.quaternion_to_yaw(pose.orientation),
+                    euler_from_quaternion(numpify(pose.orientation))[2],
                 ]
         if include_own:
             robot_poses[self._blackboard.gamestate.get_own_id()] = list(
