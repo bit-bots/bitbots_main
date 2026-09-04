@@ -1,3 +1,33 @@
+"""
+This file calculates the positions and role assignments for a full team.
+A single pure function `compute_formation(ball, field, n_players, params)` maps a
+ball position to positions for every role (goalie, defenders, supporter, striker).
+This function is designed to be smooth so that small changes in the ball or robot
+positions do not result in sudden jumps in the calculated positions. This is
+especially important because different robots may have slightly different worldviews
+If the function wasn't smooth, the robots may not fill a particular role.
+
+Note that there is one notable exception to this smoothness: The side on which the
+supporter positions itself.
+
+Core idea
+---------
+Everything keys off two vectors derived from the ball B and our goal centre G:
+
+    to_ball = normalize(B - G)         # axis pointing from our goal out to the ball
+    perp    = (-to_ball.y, to_ball.x)  # perpendicular to that axis
+
+Defenders sit ON the axis (at a controlled depth from goal) and spread ALONG perp.
+As the ball moves the axis rotates, so the same construction continuously morphs
+from a horizontal defensive line (ball far/central) into a goal-line wall beside
+the goalie (ball close & frontal). No special-casing -> automatically smooth.
+
+A short pairwise-repulsion pass at the end enforces a minimum separation; it is
+also what shoves the defenders sideways into clean flanking slots when they would
+otherwise pile onto the goalie. This pass is intermix and concluded by a push away
+from the ball if we need to keep our distance from it because the opponent has set ball.
+"""
+
 import math
 from collections.abc import Sequence
 from dataclasses import dataclass
@@ -44,28 +74,6 @@ class Field:
 
 @dataclass
 class Params:
-    """
-    A single pure function `compute_formation(ball, field, n_players, params)` maps a
-    ball position to positions for every non-... well, *every* role (goalie, defenders,
-    supporter, striker), and a small matplotlib GUI to click a ball and watch the result.
-
-    Core idea
-    ---------
-    Everything keys off two vectors derived from the ball B and our goal centre G:
-
-        to_ball = normalize(B - G)         # axis pointing from our goal out to the ball
-        perp    = (-to_ball.y, to_ball.x)  # perpendicular to that axis
-
-    Defenders sit ON the axis (at a controlled depth from goal) and spread ALONG perp.
-    As the ball moves the axis rotates, so the same construction continuously morphs
-    from a horizontal defensive line (ball far/central) into a goal-line wall beside
-    the goalie (ball close & frontal). No special-casing -> automatically smooth.
-
-    A short pairwise-repulsion pass at the end enforces a minimum separation; it is
-    also what shoves the defenders sideways into clean flanking slots when they would
-    otherwise pile onto the goalie -> the "wall next to the goalie" emerges for free.
-    """
-
     # goalie
     d_g: float = 0.55  # how far the goalie comes out of the goal (dist from goal centre)
     # defenders
