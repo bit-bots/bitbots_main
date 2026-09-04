@@ -2,11 +2,77 @@ bitbots_robot_filter:
   ros__parameters:
     # Topics
     robot_observation_topic: 'robots_relative'
+    robot_image_observation_topic: 'robots_in_image'
+    camera_info_topic: '/zed/zed_node/rgb/camera_info'
     team_data_topic: 'team_data'
     robots_publish_topic: 'robots_relative_filtered'
+    debug_marker_topic: 'debug/robot_filter/markers'
 
+    # Frames
     filter_frame: 'map'
+    base_footprint_frame: 'base_footprint'
+
     robot_dummy_size: 0.6
-    robot_merge_distance: 0.5
     robot_storage_time: 10e9
     team_data_timeout: 1e9
+
+    # Uncertainty of a single detection. Projecting a robot onto the field plane is imprecise
+    # along the line of sight, because a few pixels of error in the foot point move it a lot,
+    # while the direction we saw the robot in stays accurate.
+    measurement_uncertainty: 0.05
+    # How fast the uncertainty along the line of sight grows with the distance of the robot
+    distance_factor: 0.02
+    # Angular uncertainty in radians, which turns into the uncertainty across the line of sight
+    heading_uncertainty: 0.05
+
+    # Uncertainty which is added in every filter step, because the robots move around
+    # while we do not observe them
+    process_noise: 0.005
+    # Robots that are further away degrade faster, because their projection onto the field plane
+    # reacts much stronger to our own movement and to small errors in the detection
+    process_noise_distance_factor: 0.0005
+
+    # Estimates that got more uncertain than this are dropped
+    max_covariance: 1.0
+
+    tracking:
+      # How much of the difference between a detection and our estimate is applied to the
+      # position of a robot
+      alpha: 0.4
+      # How much of it is applied to its velocity
+      beta: 0.1
+      # Two detections that are further apart than this in seconds are not consecutive.
+      # We lost track of the robot in between, so we do not know its velocity anymore.
+      max_measurement_gap: 0.5
+      # Robots do not walk faster than this in m/s
+      max_velocity: 1.0
+
+    matching:
+      # Maximum angle in radians between a robot we track and a detection that we still consider
+      # to be the same robot
+      heading: 0.25
+      # Maximum difference in meters between the distance of a robot we track and the distance of
+      # a detection that we still consider to be the same robot
+      range: 0.4
+      # How much the accepted difference in distance grows per meter the robot is away from us.
+      # The projection of a far away robot is a lot less precise than the direction we saw it in,
+      # so we have to be a lot more generous about its distance.
+      range_distance_factor: 0.15
+      # Maximum angle in radians between a robot we track and a detection in the image that we
+      # still consider to be the same robot
+      image_heading: 0.25
+
+    negative_observation:
+      # Factor by which the uncertainty grows if we do not detect a robot we should have seen.
+      # This is applied per camera frame, so it needs to be a lot smaller than the equivalent
+      # value of the ball filter, because the robot detection misses robots more often.
+      value: 1.05
+      # Border as a fraction of the image height and width. We do not consider a missing
+      # detection close to the border of the image, as robots are only partially visible there.
+      ignore_border: 0.05
+
+    positive_observation:
+      # Factor by which the uncertainty shrinks if we detect a robot in the image but can not
+      # project it onto the field plane. Such a detection does not tell us where the robot is,
+      # so this only slows down how fast we get uncertain about it and has to stay close to one.
+      value: 0.98

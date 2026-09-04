@@ -13,11 +13,14 @@
   <depend>python3-numpy</depend>
   <depend>rclpy</depend>
   <depend>ros2_numpy</depend>
+  <depend>sensor_msgs</depend>
+  <depend>soccer_vision_2d_msgs</depend>
   <depend>soccer_vision_3d_msgs</depend>
   <depend>soccer_vision_attribute_msgs</depend>
   <depend>std_msgs</depend>
   <depend>tf2_geometry_msgs</depend>
   <depend>tf2_ros</depend>
+  <depend>visualization_msgs</depend>
 
   <test_depend>ament_mypy</test_depend>
   <test_depend>ament_copyright</test_depend>

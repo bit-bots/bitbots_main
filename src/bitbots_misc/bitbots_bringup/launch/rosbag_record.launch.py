@@ -36,6 +36,7 @@ TOPICS_TO_RECORD: list[str] = [
     "/debug/behavior/own_ball",
     "/debug/behavior/team_ball",
     "/debug/team_ball_source",
+    "/debug/robot_filter/markers",
     "/diagnostics_agg",
     "/diagnostics",
     "/joint_command",
