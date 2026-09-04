@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 import numpy as np
-from rclpy.time import Time
-
 from bitbots_ball_filter.ball_filter import AlphaBetaFilter
+from rclpy.time import Time
 
 ALPHA = 0.5
 BETA = 0.5
