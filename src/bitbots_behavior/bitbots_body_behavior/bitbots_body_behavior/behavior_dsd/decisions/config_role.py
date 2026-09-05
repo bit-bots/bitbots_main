@@ -4,7 +4,7 @@ from dynamic_stack_decider.abstract_decision_element import AbstractDecisionElem
 
 class ConfigRole(AbstractDecisionElement):
     """
-    Decides what kind of behaviour the robot performs
+    Decides what kind of behavior the robot performs
     """
 
     blackboard: BodyBlackboard

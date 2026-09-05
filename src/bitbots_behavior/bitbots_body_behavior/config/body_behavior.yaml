@@ -3,6 +3,7 @@ body_behavior:
     # Data older than this is seen as non existent
     team_data_timeout: 2
 
+    # The roles that are used in the initial role configuration.
     roles:
       - "goalie"
       - "offense"
@@ -24,17 +25,17 @@ body_behavior:
     # To be useful for different field sizes, use values in [-1, 1] for x and y
 
     role_positions:
-      goalie: [ -0.7, 0.0 ]
+      goalie: [ -0.9, 0.0 ]
       defense:
         passive: # passive: opponent has kickoff, active: we have kickoff
           # position number 0 = center, 1 = left, 2 = right
           0: [ -0.5, 0.0 ]
-          1: [ -0.45, 0.5 ]
-          2: [ -0.45, -0.5 ]
+          1: [ -0.6, 0.2 ]
+          2: [ -0.6, -0.2 ]
         active:
           0: [ -0.5, 0.0 ]
-          1: [ -0.45, 0.5 ]
-          2: [ -0.45, -0.5 ]
+          1: [ -0.6, 0.2 ]
+          2: [ -0.6, -0.2 ]
       offense:
         passive:
           0: [ -0.27, 0.0 ]
@@ -45,8 +46,28 @@ body_behavior:
           1: [ -0.085, 0.33 ]
           2: [ -0.085, -0.33 ]
 
+    # Whether the formation assignment includes a supporter role.
+    # If false, the supporter's slot is filled by an extra defender instead.
+    formation_include_supporter: false
+
+    # Hysteresis for being considered at role pose
+    support_enter_position: 0.1
+    support_leave_position: 0.3
+    support_enter_orientation: 0.1
+    support_leave_orientation: 0.3
+
+    defender_enter_position: 0.2
+    defender_leave_position: 0.5
+    defender_enter_orientation: 0.1
+    defender_leave_orientation: 0.3
+
+    placing_enter_position: 0.05
+    placing_leave_position: 0.2
+    placing_enter_orientation: 0.05
+    placing_leave_orientation: 0.1
+
     # Time to wait in ready state before moving to role position to give the localization time to converge.
-    ready_wait_time: 4.0
+    ready_wait_time: 2.0
 
     # The orientation threshold defining which range (in Degrees) is acceptable as aligned to the goal (in each direction)
     goal_alignment_orientation_threshold: 10.0
