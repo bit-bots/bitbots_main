@@ -8,16 +8,19 @@ In this tutorial, we will learn how to install all dependencies and build our so
 
 **Prerequisites**
 
-- You have an existing GitHub account and added a SSH key to your account.
+- Modern Linux distribution with a recent version of ``curl`` and ``git`` installed.
 
-If you have not previously set up any of our software stack, you can use the following command to install and setup everything in one go:
+To install our software at your current directory, run the following command:
 
 .. code-block:: bash
 
-  mkdir -p ~/git/bitbots \
-    && cd ~/git/bitbots \
-    && curl -fsSL https://raw.githubusercontent.com/bit-bots/bitbots_main/main/scripts/setup.sh > /tmp/setup.sh \
-    && bash /tmp/setup.sh
+  curl -fsSL https://raw.githubusercontent.com/bit-bots/bitbots_main/main/scripts/bitbots_setup.sh \
+    --output /tmp/bitbots_setup.sh
+  bash /tmp/bitbots_setup.sh
+
+This clones the repository using SSH, installs Pixi and all dependencies, and builds the workspace.
+If cloning with SSH fails, the script offers to retry using HTTPS.
+Pass ``--https`` to clone with HTTPS immediately; ``--ssh`` explicitly selects the default SSH method.
 
 Manual steps with in depth explanation
 --------------------------------------
