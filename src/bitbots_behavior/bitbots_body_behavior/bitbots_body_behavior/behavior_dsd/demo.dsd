@@ -14,7 +14,7 @@ $AvoidBall
             NO --> @ChangeAction + action:going_to_ball, @TrackBall, @GoToBall + target:rl_kick
             YES --> $DoOnce
                 NOT_DONE --> @StoreBallMovementDetectionStartPosition
-                DONE --> @ChangeAction + action:kicking, @Stand + duration:0.1 + r:false, @LookAtBallPenalty + r:false, @RLKickForward + strength:3.0 + r:false, @ForgetBall
+                DONE --> @ChangeAction + action:kicking, @Stand + duration:0.1 + r:false, @LookAtBallPenalty + r:false, @RLKickForward + strength:3.0, @ForgetBall
 
 -->BodyBehavior
 $DoOnce
