@@ -69,6 +69,22 @@ class RLKickTowardsGoal(AbstractKickAction):
         if not self.blackboard.kick.is_currently_kicking:
             self.pop()
 
+class RLKickForward(AbstractKickAction):
+    def __init__(self, blackboard, dsd, parameters):
+        super().__init__(blackboard, dsd, parameters)
+        self._strength = parameters.get("strength", 2.0)
+        self._start_time = None
+
+    def perform(self, reevaluate=False):
+        kick_dir_deg_in_map = 0.0
+        # transform map to robot relative
+        if self._start_time is None:
+            self._start_time = self.blackboard.node.get_clock().now()
+            self.blackboard.kick.start_rl_kick(kick_dir_deg_in_map, self._strength)
+
+        if not self.blackboard.kick.is_currently_kicking:
+            self.pop()
+
 
 class RLKickAngleRobot(AbstractKickAction):
     def __init__(self, blackboard, dsd, parameters):
