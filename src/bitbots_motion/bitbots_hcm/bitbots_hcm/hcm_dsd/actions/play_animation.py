@@ -152,11 +152,6 @@ class PlayAnimationStandupBack(AbstractPlayAnimation):
         return self.blackboard.animation_name_stand_up_back
 
 
-class PlayAnimationInit(AbstractPlayAnimation):
-    def choose_animation(self):
-        return self.blackboard.animation_name_init
-
-
 class PlayAnimationStartup(AbstractPlayAnimation):
     def choose_animation(self):
         return self.blackboard.animation_name_startup

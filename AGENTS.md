@@ -153,6 +153,8 @@ commands may use incompatible installations or incomplete environment state.
 - Reuse existing launch patterns and substitutions. Keep launch argument,
   parameter, topic, and namespace names consistent across launch files, config
   files, and node declarations.
+- When editing or creating launch files, consider whether there is a need for passing
+  through the `use_sim_time` parameter. Most packages should support simulation time.
 
 ## Configuration
 

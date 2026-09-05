@@ -6,9 +6,12 @@ if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
 endif()
 
-# Build with release optimizations and debug symbols by default
+# Build with -O3 optimizations and debug symbols by default, without disabling
+# assertions (unlike CMake's built-in RelWithDebInfo, which defines NDEBUG).
+# This filter uses -O3 rather than the -O2 other packages default to, since
+# it's written and tuned specifically for that optimization level.
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE RelWithDebug)
+  add_compile_options(-O3 -g)
 endif()
 
 find_package(ament_cmake REQUIRED)
@@ -57,6 +60,11 @@ else(MSVC)
   set(CMAKE_CXX_FLAGS "-O3 ${CMAKE_CXX_FLAGS} ${SSE_FLAGS}")
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -O0 -g ${SSE_FLAGS}")
   set(CMAKE_CXX_FLAGS_RELEASE " ${CMAKE_CXX_FLAGS} -O3 ${SSE_FLAGS}")
+  # Keep the -O3 this filter is written for in RelWithDebInfo builds too. CMake
+  # appends the per configuration flags after CMAKE_CXX_FLAGS, so the -O2 that
+  # configuration carries would otherwise be the last -O on the command line and
+  # win over the -O3 set above.
+  set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -O3")
 endif(MSVC)
 
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")

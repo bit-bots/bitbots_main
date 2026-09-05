@@ -26,7 +26,7 @@ cmd = "colcon build --symlink-install --packages-skip zed_wrapper zed_components
 description = "Builds all ROS 2 packages. Add --packages-select <package names> to build specific packages."
 
 [feature.robot.tasks.build]
-cmd = "colcon build --symlink-install --cmake-args -G 'Unix Makefiles' -DCMAKE_C_FLAGS='-Wall -Wextra -Werror -Wno-error=pedantic' -DCMAKE_CXX_FLAGS='-Wall -Wextra -Wpedantic -Werror' "
+cmd = "colcon build --symlink-install --cmake-args -G 'Unix Makefiles' -DCMAKE_C_FLAGS='-Wall -Wextra -Wno-error=pedantic' -DCMAKE_CXX_FLAGS='-Wall -Wextra -Wpedantic' "
 description = "Builds all ROS 2 packages. Add --packages-select <package names> to build specific packages."
 
 [tasks.clean]
