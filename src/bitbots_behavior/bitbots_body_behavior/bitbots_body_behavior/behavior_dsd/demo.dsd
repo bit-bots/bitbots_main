@@ -8,13 +8,21 @@
 @ChangeAction + action:kicking, @LookAtFront, @RLKick + duration:3 + r:false, @WalkInPlace + duration:1 + r:false, @ForgetBall + r:false, @WalkInPlace + duration:1 + r:false, @LookAtFieldFeatures + r:false
 
 #KickWithAvoidance
-$AvoidBall
+$DoOnce
     NOT_DONE --> @ChangeAction + action:going_to_ball, @TrackBall, @GoToBall + target:rl_kick + blocking:false
+<<<<<<< HEAD
+    DONE --> $ReachedAndAlignedToPathPlanningGoalPosition + threshold:%rl_kick_approach_tolerance_pos + orientation_threshold:%rl_kick_approach_tolerance_deg + latch:true
+        NO --> @ChangeAction + action:going_to_ball, @TrackBall, @GoToBall + target:rl_kick
+        YES --> $DoOnce
+            NOT_DONE --> @StoreBallMovementDetectionStartPosition
+            DONE --> @ChangeAction + action:kicking, @Stand + duration:0.1 + r:false, @LookAtBallPenalty + r:false, @RLKickForward + strength:3.0 + r:false, @ForgetBall
+=======
         DONE --> $ReachedAndAlignedToPathPlanningGoalPosition + threshold:%rl_kick_approach_tolerance_pos + orientation_threshold:%rl_kick_approach_tolerance_deg + latch:true
             NO --> @ChangeAction + action:going_to_ball, @TrackBall, @GoToBall + target:rl_kick
             YES --> $DoOnce
                 NOT_DONE --> @StoreBallMovementDetectionStartPosition
-                DONE --> @ChangeAction + action:kicking, @Stand + duration:0.1 + r:false, @LookAtBallPenalty + r:false, @RLKickForward + strength:3.0 + r:false, @ForgetBall
+                DONE --> @ChangeAction + action:kicking, @Stand + duration:0.1 + r:false, @LookAtBallPenalty + r:false, @RLKickForward + strength:3.0, @ForgetBall
+>>>>>>> 9a1168a43c02eac269c858c85f672d2bb717b6fc
 
 -->BodyBehavior
 $DoOnce
