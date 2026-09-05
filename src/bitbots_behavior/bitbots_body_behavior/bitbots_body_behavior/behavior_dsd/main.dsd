@@ -87,8 +87,10 @@ $SecondBallTouchAllowed
     NO --> @SetNoSecondBallContactVariable + value:false + r:false, @LookAtFieldFeatures + r:false, @ChangeAction + action:passive + r:false, @AvoidBallActive + r:false, @GoToFormationPosition //defender variables
     YES --> $BallSeen
         NO --> $ConfigRole
-            STRIKER --> #SearchBall
-            ELSE --> #RolePositionWithPause
+            GOALIE --> $CountActiveRobotsWithoutGoalie
+                ZERO --> #SearchBall
+                ELSE --> #RolePositionWithPause
+            ELSE --> #SearchBall
         YES --> $AssignedRole
             STRIKER --> #KickWithAvoidance
             SUPPORTER --> #SupporterRole
