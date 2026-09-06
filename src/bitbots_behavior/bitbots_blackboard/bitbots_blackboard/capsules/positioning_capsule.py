@@ -69,7 +69,6 @@ class Field:
     length: float = 9.0  # x extent (own goal at -length/2, opp goal at +length/2)
     width: float = 6.0  # y extent
     goal_width: float = 1.5  # goal mouth
-    center_circle_diameter: float = 1.5
     margin: float = 0.3  # keep field players this far inside the touchlines
 
 
@@ -117,7 +116,6 @@ class PositioningCapsule(AbstractBlackboardCapsule):
             "/parameter_blackboard",
             [
                 "field.goal.width",
-                "field.markings.center_circle.diameter",
                 "field.markings.penalty_area.size.x",
                 "field.size.x",
                 "field.size.y",
@@ -128,7 +126,6 @@ class PositioningCapsule(AbstractBlackboardCapsule):
             length=parameters["field.size.x"],
             width=parameters["field.size.y"],
             goal_width=parameters["field.goal.width"],
-            center_circle_diameter=parameters["field.markings.center_circle.diameter"],
         )
         self._params = Params()
         # Whether the formation includes a supporter. Off by default; enabling it lets one
@@ -458,7 +455,6 @@ class InnerPositioningCapsule:
         )
         out = {}
         head = {}  # role -> heading (rad); filled lazily, completed after separation
-        set_play_clearance = max(params.opp_set_play_clearance, field.center_circle_diameter / 2)
         kick_aim = None  # striker's kick direction; used to clear the kick lane
 
         # --- striker: stands behind the ball opposite the smoothly-chosen kick aim --- #
@@ -466,7 +462,7 @@ class InnerPositioningCapsule:
             if opp_set_play:
                 # park at the clearance boundary on the goal side, facing the ball
                 dir_to_goal = self._normalize(goal - b, fallback=np.array([-1.0, 0.0]))
-                out[Role.STRIKER] = self._clamp_field(b + set_play_clearance * dir_to_goal, field)
+                out[Role.STRIKER] = self._clamp_field(b + params.opp_set_play_clearance * dir_to_goal, field)
                 # heading will be computed in the orientation pass (face ball)
             else:
                 h = max(field.goal_width / 2 - params.post_margin, 0.0)  # safe half-mouth
@@ -538,7 +534,9 @@ class InnerPositioningCapsule:
             out[Role.SUPPORTER] = self._clamp_field(sup, field)
 
         # --- min-separation repulsion + kick-lane clearance + set-play clearance -- #
-        self._separate(out, field, params, b, kick_aim, clear_radius=set_play_clearance if opp_set_play else None)
+        self._separate(
+            out, field, params, b, kick_aim, clear_radius=params.opp_set_play_clearance if opp_set_play else None
+        )
 
         # --- orientations (computed from the final positions) --------------------- #
         for role, p in out.items():
