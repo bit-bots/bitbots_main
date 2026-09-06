@@ -112,51 +112,72 @@ visualization_msgs::msg::MarkerArray candidateMarkers(const ActiveVisionResult& 
   const ActiveVisionScorer scorer(active_vision.kinematics(), active_vision.camera(), active_vision.world(),
                                   active_vision.coverage(), robot_pose);
 
+  // All candidates share one sphere list, so a single marker carries the whole
+  // sampled distribution instead of one marker per candidate
+  visualization_msgs::msg::Marker points;
+  points.header.frame_id = frame_id;
+  points.header.stamp = stamp;
+  points.ns = "active_vision_candidates";
+  points.id = 0;
+  points.type = visualization_msgs::msg::Marker::SPHERE_LIST;
+  points.action = visualization_msgs::msg::Marker::ADD;
+  points.pose.orientation.w = 1.0;
+  points.scale.x = points.scale.y = points.scale.z = 0.08;
+
   for (size_t index = 0; index < result.candidates.size(); index++) {
-    visualization_msgs::msg::Marker marker;
-    marker.header.frame_id = frame_id;
-    marker.header.stamp = stamp;
-    marker.ns = "active_vision_candidates";
-    marker.id = static_cast<int>(index);
-    marker.type = visualization_msgs::msg::Marker::LINE_STRIP;
-    marker.action = visualization_msgs::msg::Marker::ADD;
-    marker.pose.orientation.w = 1.0;
-    marker.scale.x = index == result.selected ? 0.04 : 0.015;
+    const auto camera_pose = scorer.cameraPoseInMap(result.candidates[index].target, robot_pose);
+    Eigen::Vector3d point;
+    // A pose the kinematics could not resolve simply has no ground point to
+    // draw; the planner reports that failure itself
+    if (!camera_pose || !groundIntersection(*camera_pose, point)) {
+      continue;
+    }
+    geometry_msgs::msg::Point message_point;
+    message_point.x = point.x();
+    message_point.y = point.y();
+    message_point.z = point.z();
+    points.points.push_back(message_point);
 
     const cv::Scalar color = scoreColor(normalized[index]);
-    marker.color.b = static_cast<float>(color[0] / 255.0);
-    marker.color.g = static_cast<float>(color[1] / 255.0);
-    marker.color.r = static_cast<float>(color[2] / 255.0);
-    marker.color.a = index == result.selected ? 1.0f : 0.35f;
+    std_msgs::msg::ColorRGBA rgba;
+    rgba.b = static_cast<float>(color[0] / 255.0);
+    rgba.g = static_cast<float>(color[1] / 255.0);
+    rgba.r = static_cast<float>(color[2] / 255.0);
+    rgba.a = 0.6f;
+    points.colors.push_back(rgba);
+  }
 
-    const HeadTrajectory& trajectory = result.candidates[index].trajectory;
-    const int steps = 12;
-    for (int step = 0; step <= steps; step++) {
-      const double t = trajectory.duration() * static_cast<double>(step) / static_cast<double>(steps);
-      const auto camera_pose = scorer.cameraPoseInMap(trajectory.position(t), robot_pose);
-      Eigen::Vector3d point;
-      // A pose the kinematics could not resolve simply has no ground track to
-      // draw; the planner reports that failure itself
-      if (!camera_pose || !groundIntersection(*camera_pose, point)) {
-        continue;
-      }
-      geometry_msgs::msg::Point message_point;
-      message_point.x = point.x();
-      message_point.y = point.y();
-      message_point.z = point.z();
-      marker.points.push_back(message_point);
-    }
+  if (!points.points.empty()) {
+    markers.markers.push_back(points);
+  }
 
-    // A line strip needs at least two points to be a valid marker
-    if (marker.points.size() >= 2) {
-      markers.markers.push_back(marker);
+  // Draw the selected target on top as a larger, distinct sphere
+  if (result.selected < result.candidates.size()) {
+    const auto camera_pose = scorer.cameraPoseInMap(result.candidates[result.selected].target, robot_pose);
+    Eigen::Vector3d point;
+    if (camera_pose && groundIntersection(*camera_pose, point)) {
+      visualization_msgs::msg::Marker selected;
+      selected.header.frame_id = frame_id;
+      selected.header.stamp = stamp;
+      selected.ns = "active_vision_selected";
+      selected.id = 0;
+      selected.type = visualization_msgs::msg::Marker::SPHERE;
+      selected.action = visualization_msgs::msg::Marker::ADD;
+      selected.pose.orientation.w = 1.0;
+      selected.pose.position.x = point.x();
+      selected.pose.position.y = point.y();
+      selected.pose.position.z = point.z();
+      selected.scale.x = selected.scale.y = selected.scale.z = 0.2;
+      selected.color.r = selected.color.g = selected.color.b = 1.0f;
+      selected.color.a = 1.0f;
+      markers.markers.push_back(selected);
     }
   }
 
   return markers;
 }
 
-cv::Mat jointSpaceDebugImage(const ActiveVisionResult& result, const HeadLimits& limits, double horizon, int size) {
+cv::Mat jointSpaceDebugImage(const ActiveVisionResult& result, const HeadLimits& limits, int size) {
   cv::Mat image(size, size, CV_8UC3, cv::Scalar(30, 30, 30));
 
   const double yaw_span = limits.yaw.upper - limits.yaw.lower;
@@ -182,7 +203,6 @@ cv::Mat jointSpaceDebugImage(const ActiveVisionResult& result, const HeadLimits&
   }
 
   const std::vector<double> normalized = normalizedScores(result);
-  const int steps = 16;
 
   // Draw the selected candidate last so it ends up on top of the others
   std::vector<size_t> order;
@@ -197,19 +217,9 @@ cv::Mat jointSpaceDebugImage(const ActiveVisionResult& result, const HeadLimits&
   }
 
   for (size_t index : order) {
-    const HeadTrajectory& trajectory = result.candidates[index].trajectory;
     const bool selected = index == result.selected;
     const cv::Scalar color = selected ? cv::Scalar(255, 255, 255) : scoreColor(normalized[index]);
-
-    cv::Point previous = toPixel(trajectory.position(0.0));
-    for (int step = 1; step <= steps; step++) {
-      const double t = horizon * static_cast<double>(step) / static_cast<double>(steps);
-      const cv::Point current = toPixel(trajectory.position(t));
-      cv::line(image, previous, current, color, selected ? 2 : 1, cv::LINE_AA);
-      previous = current;
-    }
-    // Mark where the candidate comes to rest
-    cv::circle(image, previous, selected ? 4 : 2, color, cv::FILLED, cv::LINE_AA);
+    cv::circle(image, toPixel(result.candidates[index].target), selected ? 5 : 2, color, cv::FILLED, cv::LINE_AA);
   }
 
   return image;

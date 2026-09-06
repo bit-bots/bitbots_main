@@ -1,9 +1,9 @@
 #include <gtest/gtest.h>
-#include <opencv2/imgproc.hpp>
 
 #include <bitbots_head_mover/active_vision.hpp>
 #include <bitbots_head_mover/active_vision_debug.hpp>
 #include <cmath>
+#include <opencv2/imgproc.hpp>
 
 using bitbots_head_mover::ActiveVision;
 using bitbots_head_mover::ActiveVisionInput;
@@ -72,12 +72,12 @@ FieldCoverageConfig makeCoverageConfig() {
 
 SamplerConfig makeSamplerConfig() {
   SamplerConfig config;
-  // A smaller sample count keeps the tests quick without changing the behavior
-  config.sample_count = 24;
-  config.horizon = 1.0;
-  config.midpoint_time = 0.5;
-  config.evaluation_points = 5;
-  config.feasibility_points = 11;
+  config.sample_count = 64;
+  config.last_target_weight = 0.4;
+  config.current_position_weight = 0.3;
+  config.uniform_weight = 0.3;
+  config.last_target_std = 0.3;
+  config.current_position_std = 0.5;
   return config;
 }
 
@@ -94,10 +94,15 @@ ActiveVision makeReadyPlanner() {
 ActiveVisionInput makeInput(double now = 0.0) {
   ActiveVisionInput input;
   input.head_position = {0.0, 0.0};
-  input.head_velocity = {0.0, 0.0};
   input.robot_pose = Eigen::Isometry3d::Identity();
   input.now = now;
   return input;
+}
+
+/// Whether a position lies within the inclusive joint bounds.
+bool withinLimits(const HeadPosition& position, const bitbots_head_mover::HeadLimits& limits) {
+  return position.yaw >= limits.yaw.lower && position.yaw <= limits.yaw.upper && position.pitch >= limits.pitch.lower &&
+         position.pitch <= limits.pitch.upper;
 }
 
 }  // namespace
@@ -162,7 +167,7 @@ TEST(ActiveVision, CalibrationSurvivesALateRobotDescription) {
 // Planning
 // ---------------------------------------------------------------------------
 
-TEST(ActiveVision, PlansAFeasibleTrajectory) {
+TEST(ActiveVision, PlansACommand) {
   ActiveVision planner = makeReadyPlanner();
   const ActiveVisionResult result = planner.plan(makeInput());
 
@@ -170,7 +175,8 @@ TEST(ActiveVision, PlansAFeasibleTrajectory) {
   EXPECT_FALSE(result.candidates.empty());
   EXPECT_EQ(result.scores.size(), result.candidates.size());
   EXPECT_LT(result.selected, result.candidates.size());
-  EXPECT_TRUE(planner.headLimits().contains(result.position));
+  EXPECT_TRUE(withinLimits(result.position, planner.headLimits()));
+  EXPECT_TRUE(withinLimits(result.target, planner.headLimits()));
 }
 
 TEST(ActiveVision, SelectsTheHighestScoringCandidate) {
@@ -183,19 +189,30 @@ TEST(ActiveVision, SelectsTheHighestScoringCandidate) {
   }
 }
 
-TEST(ActiveVision, CommandsAPositionAheadOfTheCurrentOne) {
+TEST(ActiveVision, TheSelectedTargetIsTheSelectedCandidate) {
   ActiveVision planner = makeReadyPlanner();
-  planner.setCommandLookahead(0.1);
+  const ActiveVisionResult result = planner.plan(makeInput());
+
+  ASSERT_TRUE(result.valid);
+  const HeadPosition& selected = result.candidates[result.selected].target;
+  EXPECT_NEAR(result.target.yaw, selected.yaw, 1e-9);
+  EXPECT_NEAR(result.target.pitch, selected.pitch, 1e-9);
+}
+
+TEST(ActiveVision, StepsTowardsTheTargetWithoutOvershooting) {
+  ActiveVision planner = makeReadyPlanner();
   // A ball far to the side gives the planner a clear reason to turn the head
   planner.world().setFilteredBall({3.0, 3.0, 0.0}, 0.0, 0.0);
 
   const ActiveVisionResult result = planner.plan(makeInput());
   ASSERT_TRUE(result.valid);
+  ASSERT_GT(std::abs(result.target.yaw), 0.0);
 
-  // Commanding the trajectory's start would mean commanding the position the
-  // head is already in, and the head would never move
-  const double distance = std::hypot(result.position.yaw, result.position.pitch);
-  EXPECT_GT(distance, 0.0);
+  // The proportional controller commands a setpoint that has moved from the
+  // current position towards the target, but not past it
+  EXPECT_GT(result.position.yaw * result.target.yaw, 0.0);
+  EXPECT_LE(std::abs(result.position.yaw), std::abs(result.target.yaw));
+  EXPECT_GT(std::abs(result.position.yaw), 0.0);
 }
 
 TEST(ActiveVision, TurnsTowardsTheBall) {
@@ -203,7 +220,7 @@ TEST(ActiveVision, TurnsTowardsTheBall) {
   ScoringWeights weights;
   // Isolate the ball term so the coverage sweep cannot outvote it
   weights.field_coverage = 0.0;
-  weights.commitment = 0.0;
+  weights.smoothness = 0.0;
   planner.setScoringWeights(weights);
 
   // A ball clearly off to the robot's left
@@ -211,21 +228,21 @@ TEST(ActiveVision, TurnsTowardsTheBall) {
 
   const ActiveVisionResult result = planner.plan(makeInput());
   ASSERT_TRUE(result.valid);
-  EXPECT_GT(result.position.yaw, 0.0);
+  EXPECT_GT(result.target.yaw, 0.0);
 }
 
 TEST(ActiveVision, TurnsTheOtherWayForABallOnTheOtherSide) {
   ActiveVision planner = makeReadyPlanner();
   ScoringWeights weights;
   weights.field_coverage = 0.0;
-  weights.commitment = 0.0;
+  weights.smoothness = 0.0;
   planner.setScoringWeights(weights);
 
   planner.world().setFilteredBall({2.0, -2.0, 0.0}, 0.0, 0.0);
 
   const ActiveVisionResult result = planner.plan(makeInput());
   ASSERT_TRUE(result.valid);
-  EXPECT_LT(result.position.yaw, 0.0);
+  EXPECT_LT(result.target.yaw, 0.0);
 }
 
 TEST(ActiveVision, AgesOutDetectionsWhilePlanning) {
@@ -267,41 +284,41 @@ TEST(ActiveVision, CoverageRecoversOverTime) {
   EXPECT_GT(planner.coverage().totalInterest(), after_looking);
 }
 
-TEST(ActiveVision, CommitmentKeepsConsecutivePlansTogether) {
-  ActiveVision committed = makeReadyPlanner();
+TEST(ActiveVision, SmoothnessKeepsConsecutiveTargetsTogether) {
+  ActiveVision steady = makeReadyPlanner();
   ScoringWeights strong;
-  strong.commitment = 50.0;
-  committed.setScoringWeights(strong);
+  strong.smoothness = 50.0;
+  steady.setScoringWeights(strong);
 
   ActiveVision flighty = makeReadyPlanner();
   ScoringWeights none;
-  none.commitment = 0.0;
+  none.smoothness = 0.0;
   flighty.setScoringWeights(none);
 
-  double committed_travel = 0.0;
+  double steady_travel = 0.0;
   double flighty_travel = 0.0;
-  HeadPosition committed_previous{0.0, 0.0};
+  HeadPosition steady_previous{0.0, 0.0};
   HeadPosition flighty_previous{0.0, 0.0};
 
   for (int step = 1; step <= 20; step++) {
     ActiveVisionInput input = makeInput(step * 0.05);
 
-    input.head_position = committed_previous;
-    const auto a = committed.plan(input);
+    input.head_position = steady_previous;
+    const auto a = steady.plan(input);
     ASSERT_TRUE(a.valid);
-    committed_travel += std::hypot(a.position.yaw - committed_previous.yaw, a.position.pitch - committed_previous.pitch);
-    committed_previous = a.position;
+    steady_travel += std::hypot(a.target.yaw - steady_previous.yaw, a.target.pitch - steady_previous.pitch);
+    steady_previous = a.target;
 
     input.head_position = flighty_previous;
     const auto b = flighty.plan(input);
     ASSERT_TRUE(b.valid);
-    flighty_travel += std::hypot(b.position.yaw - flighty_previous.yaw, b.position.pitch - flighty_previous.pitch);
-    flighty_previous = b.position;
+    flighty_travel += std::hypot(b.target.yaw - flighty_previous.yaw, b.target.pitch - flighty_previous.pitch);
+    flighty_previous = b.target;
   }
 
-  // This is the whole point of the commitment term: without it the head chases
-  // whichever candidate happens to win this cycle and jitters
-  EXPECT_LT(committed_travel, flighty_travel);
+  // This is the whole point of the smoothness cost: without it the head chases
+  // whichever target happens to win this cycle and jitters
+  EXPECT_LT(steady_travel, flighty_travel);
 }
 
 TEST(ActiveVision, ResetForgetsTheHistory) {
@@ -361,8 +378,7 @@ TEST(ActiveVisionDebug, CandidateMarkersClearThePreviousCycle) {
 TEST(ActiveVisionDebug, JointSpaceImageHasTheRequestedSize) {
   ActiveVision planner = makeReadyPlanner();
   const auto result = planner.plan(makeInput());
-  const cv::Mat image =
-      bitbots_head_mover::jointSpaceDebugImage(result, planner.headLimits(), makeSamplerConfig().horizon, 400);
+  const cv::Mat image = bitbots_head_mover::jointSpaceDebugImage(result, planner.headLimits(), 400);
 
   EXPECT_EQ(image.rows, 400);
   EXPECT_EQ(image.cols, 400);
@@ -372,10 +388,9 @@ TEST(ActiveVisionDebug, JointSpaceImageHasTheRequestedSize) {
 TEST(ActiveVisionDebug, JointSpaceImageDrawsTheCandidates) {
   ActiveVision planner = makeReadyPlanner();
   const auto result = planner.plan(makeInput());
-  const cv::Mat with_candidates =
-      bitbots_head_mover::jointSpaceDebugImage(result, planner.headLimits(), makeSamplerConfig().horizon, 400);
+  const cv::Mat with_candidates = bitbots_head_mover::jointSpaceDebugImage(result, planner.headLimits(), 400);
   const cv::Mat without_candidates =
-      bitbots_head_mover::jointSpaceDebugImage(ActiveVisionResult(), planner.headLimits(), 1.0, 400);
+      bitbots_head_mover::jointSpaceDebugImage(ActiveVisionResult(), planner.headLimits(), 400);
 
   // The plot has to actually show something, otherwise it is useless for tuning
   cv::Mat difference;
@@ -387,7 +402,6 @@ TEST(ActiveVisionDebug, JointSpaceImageDrawsTheCandidates) {
 
 TEST(ActiveVisionDebug, JointSpaceImageHandlesAnEmptyResult) {
   ActiveVision planner = makeReadyPlanner();
-  const cv::Mat image =
-      bitbots_head_mover::jointSpaceDebugImage(ActiveVisionResult(), planner.headLimits(), 1.0, 128);
+  const cv::Mat image = bitbots_head_mover::jointSpaceDebugImage(ActiveVisionResult(), planner.headLimits(), 128);
   EXPECT_EQ(image.rows, 128);
 }

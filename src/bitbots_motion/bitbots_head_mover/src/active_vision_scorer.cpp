@@ -4,16 +4,6 @@
 
 namespace bitbots_head_mover {
 
-namespace {
-
-/// The joint space distance at which two trajectories count as unrelated.
-///
-/// Used to normalize the commitment term. Roughly the width of the reachable
-/// head range, so that agreeing to within a few degrees scores close to one.
-constexpr double kCommitmentScale = 2.0;
-
-}  // namespace
-
 double targetVisibility(const std::vector<TimedTarget>& targets, const Eigen::Isometry3d& map_to_camera,
                         const CameraModel& camera, const VisibilityWeighting& weighting) {
   if (targets.empty()) {
@@ -112,76 +102,61 @@ void ActiveVisionScorer::prepare(const Eigen::Isometry3d& robot_pose) {
   }
 }
 
-ScoreBreakdown ActiveVisionScorer::score(const HeadTrajectory& candidate, const ScoringContext& context) const {
+ScoreBreakdown ActiveVisionScorer::score(const HeadPosition& target, const ScoringContext& context) const {
   ScoreBreakdown breakdown;
-  if (!candidate.valid() || context.evaluation_times.empty() || !camera_.valid()) {
+  if (!camera_.valid()) {
     return breakdown;
   }
 
+  const auto camera_pose = cameraPoseInMap(target, context.robot_pose);
+  if (!camera_pose) {
+    // A pose the kinematics could not resolve leaves the candidate unscorable
+    // rather than merely unattractive, so it is reported as such
+    return ScoreBreakdown{};
+  }
+  // Only the inverse is ever needed, so the forward pose is never formed
+  const Eigen::Isometry3d map_to_camera = camera_pose->inverse();
+
+  breakdown.filtered_ball = targetVisibility(filtered_ball_, map_to_camera, camera_, visibility_);
+  breakdown.raw_balls = targetVisibility(world_.rawBalls(), map_to_camera, camera_, visibility_);
+  breakdown.team_ball = targetVisibility(team_balls_, map_to_camera, camera_, visibility_);
+  breakdown.robots = targetVisibility(world_.robots(), map_to_camera, camera_, visibility_);
+
+  // Walk the coverage grid and accumulate how much outstanding attention this
+  // view would satisfy. Cells off the field carry no interest, so aiming at
+  // them earns nothing; no separate penalty is needed, and unlike one it also
+  // covers aiming at the sky, where no cell projects at all.
   const auto& centers = coverage_.cellCenters();
-
-  const double point_count = static_cast<double>(context.evaluation_times.size());
-
-  for (size_t step = 0; step < context.evaluation_times.size(); step++) {
-    const HeadPosition position = candidate.position(context.evaluation_times[step]);
-    const auto camera_pose = cameraPoseInMap(position, context.robot_pose);
-    if (!camera_pose) {
-      // Partially accumulated terms would understate the candidate rather than
-      // reject it, so the whole candidate is reported as unscorable
-      return ScoreBreakdown{};
+  double covered_interest = 0.0;
+  for (size_t index = 0; index < centers.size(); index++) {
+    const double interest = coverage_.interest(index);
+    if (interest <= 0.0) {
+      continue;
     }
-    // Only the inverse is ever needed, so the forward pose is never formed
-    const Eigen::Isometry3d map_to_camera = camera_pose->inverse();
-
-    breakdown.filtered_ball += targetVisibility(filtered_ball_, map_to_camera, camera_, visibility_);
-    breakdown.raw_balls += targetVisibility(world_.rawBalls(), map_to_camera, camera_, visibility_);
-    breakdown.team_ball += targetVisibility(team_balls_, map_to_camera, camera_, visibility_);
-    breakdown.robots += targetVisibility(world_.robots(), map_to_camera, camera_, visibility_);
-
-    // Walk the coverage grid and accumulate how much outstanding attention this
-    // view would satisfy. Cells off the field carry no interest, so aiming at
-    // them earns nothing; no separate penalty is needed, and unlike one it also
-    // covers aiming at the sky, where no cell projects at all.
-    double covered_interest = 0.0;
-    for (size_t index = 0; index < centers.size(); index++) {
-      const double interest = coverage_.interest(index);
-      if (interest <= 0.0) {
-        continue;
-      }
-      const double quality = camera_.visibility(map_to_camera * centers[index], visibility_);
-      if (quality <= 0.0) {
-        continue;
-      }
-      covered_interest += quality * interest * cell_distance_weights_[index];
+    const double quality = camera_.visibility(map_to_camera * centers[index], visibility_);
+    if (quality <= 0.0) {
+      continue;
     }
-
-    if (available_interest_ > 0.0) {
-      // Numerator and denominator carry the same distance weighting, so the term
-      // is the fraction of the reachable outstanding attention this view
-      // satisfies rather than the raw ground area it happens to cover
-      breakdown.field_coverage += std::min(covered_interest / available_interest_, 1.0);
-    }
-
-    // Agreement with the previous selection, evaluated at the same times
-    if (step < context.previous_positions.size()) {
-      const HeadPosition& previous = context.previous_positions[step];
-      const double distance = std::hypot(position.yaw - previous.yaw, position.pitch - previous.pitch);
-      breakdown.commitment += std::max(0.0, 1.0 - distance / kCommitmentScale);
-    }
+    covered_interest += quality * interest * cell_distance_weights_[index];
   }
 
-  // Every term is an average over the evaluated points, which keeps it in [0, 1]
-  // and makes a trajectory that stays on target beat one that only passes over it
-  breakdown.filtered_ball /= point_count;
-  breakdown.raw_balls /= point_count;
-  breakdown.team_ball /= point_count;
-  breakdown.robots /= point_count;
-  breakdown.field_coverage /= point_count;
-  breakdown.commitment /= point_count;
+  if (available_interest_ > 0.0) {
+    // Numerator and denominator carry the same distance weighting, so the term
+    // is the fraction of the reachable outstanding attention this view
+    // satisfies rather than the raw ground area it happens to cover
+    breakdown.field_coverage = std::min(covered_interest / available_interest_, 1.0);
+  }
+
+  // The joint space distance to the previous target. Left at zero on the first
+  // cycle, where there is nothing to stay close to.
+  if (context.previous_target) {
+    breakdown.smoothness_cost =
+        std::hypot(target.yaw - context.previous_target->yaw, target.pitch - context.previous_target->pitch);
+  }
 
   breakdown.total = weights_.filtered_ball * breakdown.filtered_ball + weights_.raw_balls * breakdown.raw_balls +
                     weights_.team_ball * breakdown.team_ball + weights_.field_coverage * breakdown.field_coverage +
-                    weights_.robots * breakdown.robots + weights_.commitment * breakdown.commitment;
+                    weights_.robots * breakdown.robots - weights_.smoothness * breakdown.smoothness_cost;
   breakdown.valid = true;
 
   return breakdown;

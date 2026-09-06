@@ -57,7 +57,7 @@ add_library(
   src/head_trajectory.cpp
   src/look_at.cpp
   src/search_pattern.cpp
-  src/trajectory_sampler.cpp
+  src/target_sampler.cpp
   src/world_model.cpp)
 
 target_include_directories(
@@ -137,8 +137,8 @@ if(BUILD_TESTING)
   ament_add_gtest(test_field_coverage_map test/test_field_coverage_map.cpp)
   target_link_libraries(test_field_coverage_map bitbots_head_mover_lib)
 
-  ament_add_gtest(test_trajectory_sampler test/test_trajectory_sampler.cpp)
-  target_link_libraries(test_trajectory_sampler bitbots_head_mover_lib)
+  ament_add_gtest(test_target_sampler test/test_target_sampler.cpp)
+  target_link_libraries(test_target_sampler bitbots_head_mover_lib)
 
   ament_add_gtest(test_active_vision_scorer test/test_active_vision_scorer.cpp)
   target_link_libraries(test_active_vision_scorer bitbots_head_mover_lib)

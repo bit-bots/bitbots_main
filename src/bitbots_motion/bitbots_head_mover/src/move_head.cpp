@@ -19,6 +19,7 @@
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <memory>
+#include <mutex>
 #include <nav_msgs/msg/occupancy_grid.hpp>
 #include <rclcpp/clock.hpp>
 #include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
@@ -36,6 +37,7 @@
 #include <tf2/convert.hpp>
 #include <tf2_eigen/tf2_eigen.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#include <thread>
 #include <vector>
 #include <visualization_msgs/msg/marker_array.hpp>
 
@@ -112,6 +114,16 @@ class HeadMover {
   rclcpp::Subscription<soccer_vision_3d_msgs::msg::RobotArray>::SharedPtr robots_subscriber_;
   rclcpp::Subscription<bitbots_msgs::msg::TeamData>::SharedPtr team_data_subscriber_;
 
+  // The detection callbacks do blocking tf lookups. They run on their own
+  // callback group, spun by a second executor on a dedicated thread, so a lookup
+  // that waits for a not-yet-available transform never stalls the main executor
+  // and the search pattern timer it drives.
+  rclcpp::CallbackGroup::SharedPtr detection_callback_group_;
+  // Guards the state the detection callbacks write and the main loop reads: the
+  // world model and the latest filtered ball. Held only around those accesses,
+  // never across a tf lookup, so the two threads never serialize on the wait.
+  std::mutex world_mutex_;
+
   // Debug publishers, only created when the debug output is enabled
   rclcpp::Publisher<nav_msgs::msg::OccupancyGrid>::SharedPtr coverage_publisher_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr candidate_publisher_;
@@ -124,6 +136,13 @@ class HeadMover {
 
  public:
   HeadMover() : node_(std::make_shared<rclcpp::Node>("head_mover")) {
+    // The detection callbacks block on tf lookups, so they get their own callback
+    // group that a second executor spins on a dedicated thread. auto_add=false
+    // keeps the main executor from also picking it up.
+    detection_callback_group_ = node_->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive, false);
+    rclcpp::SubscriptionOptions detection_options;
+    detection_options.callback_group = detection_callback_group_;
+
     // Initialize publisher for head motor goals
     position_publisher_ = node_->create_publisher<bitbots_msgs::msg::JointCommand>("head_motor_goals", 10);
 
@@ -142,14 +161,19 @@ class HeadMover {
           current_joint_state_ = *msg;
         });
 
-    // Initialize subscriber for the ball filter
+    // Initialize subscriber for the ball filter. It does a blocking tf lookup and
+    // writes shared state, so it belongs on the detection callback group too.
     ball_filter_subscriber_ = node_->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
         "ball_position_relative_filtered", 10,
         [this](const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg) {
-          // cppcheck-suppress useInitializationList
-          ball_position_ = *msg;
+          {
+            std::lock_guard<std::mutex> lock(world_mutex_);
+            // cppcheck-suppress useInitializationList
+            ball_position_ = *msg;
+          }
           handle_filtered_ball(*msg);
-        });
+        },
+        detection_options);
 
     // Initialize with a valid frame
     ball_position_.header.frame_id = "base_footprint";
@@ -192,16 +216,23 @@ class HeadMover {
           }
         });
 
+    // The detection callbacks do blocking tf lookups, so they run on the
+    // dedicated callback group rather than the main executor.
+    rclcpp::SubscriptionOptions detection_options;
+    detection_options.callback_group = detection_callback_group_;
+
     balls_subscriber_ = node_->create_subscription<soccer_vision_3d_msgs::msg::BallArray>(
-        "balls_relative", 1,
-        [this](const soccer_vision_3d_msgs::msg::BallArray::SharedPtr msg) { handle_balls(*msg); });
+        "balls_relative", 1, [this](const soccer_vision_3d_msgs::msg::BallArray::SharedPtr msg) { handle_balls(*msg); },
+        detection_options);
 
     robots_subscriber_ = node_->create_subscription<soccer_vision_3d_msgs::msg::RobotArray>(
         "robots_relative", 1,
-        [this](const soccer_vision_3d_msgs::msg::RobotArray::SharedPtr msg) { handle_robots(*msg); });
+        [this](const soccer_vision_3d_msgs::msg::RobotArray::SharedPtr msg) { handle_robots(*msg); },
+        detection_options);
 
     team_data_subscriber_ = node_->create_subscription<bitbots_msgs::msg::TeamData>(
-        "team_data", 10, [this](const bitbots_msgs::msg::TeamData::SharedPtr msg) { handle_team_data(*msg); });
+        "team_data", 10, [this](const bitbots_msgs::msg::TeamData::SharedPtr msg) { handle_team_data(*msg); },
+        detection_options);
 
     apply_active_vision_parameters();
 
@@ -315,21 +346,20 @@ class HeadMover {
 
     bitbots_head_mover::SamplerConfig sampler;
     sampler.sample_count = static_cast<int>(config.sampling.sample_count);
-    sampler.horizon = config.sampling.horizon;
-    sampler.midpoint_time = config.sampling.midpoint_time;
-    sampler.evaluation_points = static_cast<int>(config.sampling.evaluation_points);
-    sampler.feasibility_points = static_cast<int>(config.sampling.feasibility_points);
-    sampler.max_attempts_per_sample = static_cast<int>(config.sampling.max_attempts_per_sample);
-    sampler.midpoint_deviation = config.sampling.midpoint_deviation;
+    sampler.last_target_weight = config.sampling.last_target_weight;
+    sampler.current_position_weight = config.sampling.current_position_weight;
+    sampler.uniform_weight = config.sampling.uniform_weight;
+    sampler.last_target_std = config.sampling.last_target_std;
+    sampler.current_position_std = config.sampling.current_position_std;
     active_vision_.setSamplerConfig(sampler);
 
-    bitbots_head_mover::DynamicLimits dynamics;
-    dynamics.max_velocity = {config.max_velocity_yaw, config.max_velocity_pitch};
-    dynamics.max_acceleration = {params_.max_acceleration_yaw, params_.max_acceleration_pitch};
-    active_vision_.setDynamicLimits(dynamics);
+    bitbots_head_mover::HeadController controller;
+    controller.approach_distance = config.controller.approach_distance;
+    controller.control_period = config.controller.control_period;
+    controller.max_velocity = {config.max_velocity_yaw, config.max_velocity_pitch};
+    active_vision_.setController(controller);
 
     active_vision_.setHeadLimits(get_head_limits());
-    active_vision_.setCommandLookahead(config.command_lookahead);
     active_vision_.setVisibilityWeighting({config.visibility.center_fraction, config.visibility.border_score});
     active_vision_.setCoverageDistanceHalfWeight(config.coverage.distance_half_weight);
 
@@ -339,7 +369,12 @@ class HeadMover {
     world.team_ball_timeout = config.timeouts.team_ball;
     world.robot_timeout = config.timeouts.robot;
     world.covariance_half_weight = config.covariance_half_weight;
-    active_vision_.setWorldModelConfig(world);
+    {
+      // Applied from the main loop on a parameter change, while the detection
+      // thread may be writing detections into the same world model
+      std::lock_guard<std::mutex> lock(world_mutex_);
+      active_vision_.setWorldModelConfig(world);
+    }
 
     bitbots_head_mover::ScoringWeights weights;
     weights.filtered_ball = config.weights.filtered_ball;
@@ -347,7 +382,7 @@ class HeadMover {
     weights.team_ball = config.weights.team_ball;
     weights.field_coverage = config.weights.field_coverage;
     weights.robots = config.weights.robots;
-    weights.commitment = config.weights.commitment;
+    weights.smoothness = config.weights.smoothness;
     active_vision_.setScoringWeights(weights);
   }
 
@@ -577,43 +612,6 @@ class HeadMover {
   }
 
   /**
-   * @brief Returns the current velocity of the head motors
-   *
-   * Sampling starts from the measured velocity, so a replanned trajectory
-   * continues the motion the head is already performing instead of assuming it
-   * stands still. Joint states without a velocity field report rest.
-   */
-  std::optional<HeadVelocity> get_head_velocity() const {
-    HeadVelocity velocity;
-    bool found_yaw = false;
-    bool found_pitch = false;
-    for (size_t i = 0; i < current_joint_state_->name.size(); i++) {
-      const bool is_yaw = current_joint_state_->name[i] == "head_yaw_joint";
-      const bool is_pitch = current_joint_state_->name[i] == "head_pitch_joint";
-      if (!is_yaw && !is_pitch) {
-        continue;
-      }
-      // A joint state that names the joint but carries no velocity for it must
-      // not be read as the head standing still: sampling would then plan from a
-      // standstill while the head is actually moving
-      if (i >= current_joint_state_->velocity.size()) {
-        return std::nullopt;
-      }
-      if (is_yaw) {
-        velocity.yaw = current_joint_state_->velocity[i];
-        found_yaw = true;
-      } else {
-        velocity.pitch = current_joint_state_->velocity[i];
-        found_pitch = true;
-      }
-    }
-    if (!found_yaw || !found_pitch) {
-      return std::nullopt;
-    }
-    return velocity;
-  }
-
-  /**
    * @brief Returns the current position of the head motors
    *
    * Returns nothing if the joint state does not carry both head joints. Falling
@@ -759,6 +757,11 @@ class HeadMover {
    */
   bool lookup_to_map(const std_msgs::msg::Header& header, Eigen::Isometry3d& transform) {
     try {
+      // This runs in the detection callbacks, which are spun on their own executor
+      // thread, so waiting a short while for a transform that is still on its way
+      // does not stall the main loop timer. The wait is not self defeating either:
+      // the transform listener fills the buffer from its own dedicated thread, so
+      // the awaited transform can still arrive while we block here.
       transform = tf2::transformToEigen(tf_buffer_->lookupTransform(params_.active_vision.map_frame, header.frame_id,
                                                                     header.stamp, tf2::durationFromSec(0.1)));
       return true;
@@ -790,6 +793,9 @@ class HeadMover {
     // taking the larger of them treats an estimate that is uncertain in any
     // direction as uncertain
     const double covariance = std::max(msg.pose.covariance[0], msg.pose.covariance[7]);
+    // Guard only the world write, never the lookup above, so the main loop is not
+    // serialized behind a blocking transform wait
+    std::lock_guard<std::mutex> lock(world_mutex_);
     active_vision_.world().setFilteredBall(position, covariance, rclcpp::Time(msg.header.stamp).seconds());
   }
 
@@ -810,6 +816,7 @@ class HeadMover {
       // they carry no covariance of their own
       balls.push_back({transform_point(to_map, ball.center), static_cast<double>(ball.confidence.confidence), stamp});
     }
+    std::lock_guard<std::mutex> lock(world_mutex_);
     active_vision_.world().setRawBalls(std::move(balls));
   }
 
@@ -829,6 +836,7 @@ class HeadMover {
       robots.push_back(
           {transform_point(to_map, robot.bb.center.position), static_cast<double>(robot.confidence.confidence), stamp});
     }
+    std::lock_guard<std::mutex> lock(world_mutex_);
     active_vision_.world().setRobots(std::move(robots));
   }
 
@@ -845,6 +853,7 @@ class HeadMover {
     // The covariance is a full 6x6 matrix, of which the two planar variances are
     // what tells us how well the teammate knows where the ball is
     const double covariance = std::max(ball.covariance[0], ball.covariance[7]);
+    std::lock_guard<std::mutex> lock(world_mutex_);
     active_vision_.world().setTeamBall(
         msg.robot_id, Eigen::Vector3d(ball.pose.position.x, ball.pose.position.y, ball.pose.position.z), covariance,
         rclcpp::Time(msg.header.stamp).seconds());
@@ -880,8 +889,7 @@ class HeadMover {
         bitbots_head_mover::candidateMarkers(result, active_vision_, robot_pose, map_frame, stamp));
 
     const cv::Mat plot = bitbots_head_mover::jointSpaceDebugImage(
-        result, active_vision_.headLimits(), active_vision_.samplerConfig().horizon,
-        static_cast<int>(params_.active_vision.debug.image_size));
+        result, active_vision_.headLimits(), static_cast<int>(params_.active_vision.debug.image_size));
 
     std_msgs::msg::Header header;
     header.stamp = stamp;
@@ -929,20 +937,18 @@ class HeadMover {
       return;
     }
 
-    const auto head_velocity = get_head_velocity();
-    if (!head_velocity) {
-      hold_active_vision_position(
-          "the joint states carry no head joint velocities, which sampling needs to continue the current motion");
-      return;
-    }
-
     bitbots_head_mover::ActiveVisionInput input;
     input.head_position = *head_position;
-    input.head_velocity = *head_velocity;
     input.robot_pose = robot_pose;
     input.now = node_->now().seconds();
 
-    const bitbots_head_mover::ActiveVisionResult result = active_vision_.plan(input);
+    bitbots_head_mover::ActiveVisionResult result;
+    {
+      // The detection thread writes the world model concurrently; hold it steady
+      // for the duration of the planning cycle that reads and prunes it
+      std::lock_guard<std::mutex> lock(world_mutex_);
+      result = active_vision_.plan(input);
+    }
     if (!result.valid) {
       hold_active_vision_position(bitbots_head_mover::describe(result.failure));
       return;
@@ -952,15 +958,20 @@ class HeadMover {
     // the planner chose from fewer options than it sampled
     if (result.unscorable_candidates > 0) {
       RCLCPP_WARN_THROTTLE(node_->get_logger(), *node_->get_clock(), 5000,
-                           "Discarded %zu of %zu head trajectory candidates because they could not be scored",
+                           "Discarded %zu of %zu head target candidates because they could not be scored",
                            result.unscorable_candidates, result.candidates.size());
     }
 
     active_vision_hold_position_ = result.position;
-    // The motor goals carry joint speeds, so the direction of travel is dropped
+    // The planner's proportional controller already produced the setpoint one
+    // step towards the selected target and the speed to reach it; the motor goals
+    // carry joint speeds, so the direction of travel is dropped
     publish_motor_goals(result.position, {std::abs(result.velocity.yaw), std::abs(result.velocity.pitch)});
 
     if (params_.active_vision.debug.enabled) {
+      // The debug markers rebuild a scorer over the world model, so this read has
+      // to be guarded against the detection thread as well
+      std::lock_guard<std::mutex> lock(world_mutex_);
       publish_active_vision_debug(result, robot_pose);
     }
   }
@@ -1077,10 +1088,17 @@ class HeadMover {
     {
       // If we are in search track mode look at the ball
       if (curr_head_mode == bitbots_msgs::msg::HeadMode::TRACK_BALL) {
+        // The filtered ball is written by the detection thread, so take a
+        // consistent snapshot of it under the lock before using it
+        geometry_msgs::msg::PoseWithCovarianceStamped ball_snapshot;
+        {
+          std::lock_guard<std::mutex> lock(world_mutex_);
+          ball_snapshot = ball_position_;
+        }
         // Convert the ball position to a PointStamped
         geometry_msgs::msg::PointStamped look_at_point;
-        look_at_point.header = ball_position_.header;
-        look_at_point.point = ball_position_.pose.pose.position;
+        look_at_point.header = ball_snapshot.header;
+        look_at_point.point = ball_snapshot.pose.pose.position;
         // Try to look at the ball
         look_at(look_at_point);
       } else if (curr_head_mode == bitbots_msgs::msg::HeadMode::ACTIVE_VISION) {
@@ -1097,6 +1115,14 @@ class HeadMover {
    * @brief A getter that returns the node
    */
   std::shared_ptr<rclcpp::Node> get_node() { return node_; }
+
+  /**
+   * @brief The callback group carrying the blocking detection callbacks
+   *
+   * Spun by a second executor on its own thread so their tf waits do not stall
+   * the main executor that drives the search pattern timer.
+   */
+  rclcpp::CallbackGroup::SharedPtr get_detection_callback_group() { return detection_callback_group_; }
 };
 }  // namespace move_head
 
@@ -1105,7 +1131,20 @@ int main(int argc, char* argv[]) {
   rclcpp::experimental::executors::EventsExecutor exec;
   auto head_mover = std::make_shared<move_head::HeadMover>();
   exec.add_node(head_mover->get_node());
+
+  // The detection callbacks block on tf lookups. Spinning them on a second
+  // executor on a dedicated thread keeps that wait off the main executor, so the
+  // search pattern timer keeps ticking at a steady rate. The detection callback
+  // group was created with auto_add=false, so add_node above did not pick it up.
+  rclcpp::executors::SingleThreadedExecutor detection_exec;
+  detection_exec.add_callback_group(head_mover->get_detection_callback_group(),
+                                    head_mover->get_node()->get_node_base_interface());
+  std::thread detection_thread([&detection_exec]() { detection_exec.spin(); });
+
   exec.spin();
+
+  detection_exec.cancel();
+  detection_thread.join();
   rclcpp::shutdown();
 
   return 0;

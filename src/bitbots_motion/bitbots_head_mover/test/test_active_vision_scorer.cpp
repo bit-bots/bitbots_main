@@ -1,19 +1,18 @@
 #include <gtest/gtest.h>
 
+#include <algorithm>
 #include <bitbots_head_mover/active_vision_scorer.hpp>
-#include <bitbots_head_mover/trajectory_sampler.hpp>
 #include <cmath>
+#include <memory>
+#include <optional>
 
 using bitbots_head_mover::ActiveVisionScorer;
-using bitbots_head_mover::buildCandidateTrajectory;
 using bitbots_head_mover::CameraModel;
-using bitbots_head_mover::DynamicLimits;
 using bitbots_head_mover::FieldCoverageConfig;
 using bitbots_head_mover::FieldCoverageMap;
 using bitbots_head_mover::HeadChainConfig;
 using bitbots_head_mover::HeadKinematics;
 using bitbots_head_mover::HeadPosition;
-using bitbots_head_mover::HeadTrajectory;
 using bitbots_head_mover::ScoringContext;
 using bitbots_head_mover::ScoringWeights;
 using bitbots_head_mover::TimedTarget;
@@ -79,16 +78,10 @@ FieldCoverageConfig makeCoverageConfig() {
   return config;
 }
 
-/// A trajectory that holds a single head position for the whole horizon.
-HeadTrajectory holdAt(const HeadPosition& position) {
-  return buildCandidateTrajectory(position, {}, position, position, 0.5, 1.0, DynamicLimits{});
-}
-
 ScoringContext makeContext() {
   ScoringContext context;
   // The robot stands in the center of the field looking down the long axis
   context.robot_pose = Eigen::Isometry3d::Identity();
-  context.evaluation_times = {0.0, 0.25, 0.5, 0.75, 1.0};
   return context;
 }
 
@@ -116,19 +109,9 @@ TEST(ActiveVisionScorer, ScoresZeroWithoutIntrinsics) {
   Fixture fixture;
   CameraModel blind;
   ActiveVisionScorer scorer(*fixture.kinematics, blind, fixture.world, fixture.coverage, Eigen::Isometry3d::Identity());
-  EXPECT_DOUBLE_EQ(scorer.score(holdAt({0.0, 0.0}), makeContext()).total, 0.0);
-}
-
-TEST(ActiveVisionScorer, ScoresZeroForAnInvalidCandidate) {
-  Fixture fixture;
-  EXPECT_DOUBLE_EQ(fixture.scorer().score(HeadTrajectory(), makeContext()).total, 0.0);
-}
-
-TEST(ActiveVisionScorer, ScoresZeroWithoutEvaluationTimes) {
-  Fixture fixture;
-  ScoringContext context = makeContext();
-  context.evaluation_times.clear();
-  EXPECT_DOUBLE_EQ(fixture.scorer().score(holdAt({0.0, 0.0}), context).total, 0.0);
+  const auto breakdown = scorer.score({0.0, 0.0}, makeContext());
+  EXPECT_FALSE(breakdown.valid);
+  EXPECT_DOUBLE_EQ(breakdown.total, 0.0);
 }
 
 // ---------------------------------------------------------------------------
@@ -142,8 +125,8 @@ TEST(ActiveVisionScorer, PrefersLookingAtTheFilteredBall) {
   auto scorer = fixture.scorer();
 
   // Looking down towards the ball beats looking away from it
-  const double towards = scorer.score(holdAt({0.0, 0.45}), makeContext()).filtered_ball;
-  const double away = scorer.score(holdAt({-1.2, 0.0}), makeContext()).filtered_ball;
+  const double towards = scorer.score({0.0, 0.45}, makeContext()).filtered_ball;
+  const double away = scorer.score({-1.2, 0.0}, makeContext()).filtered_ball;
   EXPECT_GT(towards, 0.0);
   EXPECT_GT(towards, away);
 }
@@ -151,24 +134,24 @@ TEST(ActiveVisionScorer, PrefersLookingAtTheFilteredBall) {
 TEST(ActiveVisionScorer, AnUncertainBallContributesLess) {
   Fixture fixture;
   fixture.world.setFilteredBall({2.0, 0.0, 0.0}, 0.0, 0.0);
-  const double certain = fixture.scorer().score(holdAt({0.0, 0.45}), makeContext()).filtered_ball;
+  const double certain = fixture.scorer().score({0.0, 0.45}, makeContext()).filtered_ball;
 
   // The very same ball, but the filter is far less sure about it
   fixture.world.setFilteredBall({2.0, 0.0, 0.0}, 5.0, 0.0);
-  const double uncertain = fixture.scorer().score(holdAt({0.0, 0.45}), makeContext()).filtered_ball;
+  const double uncertain = fixture.scorer().score({0.0, 0.45}, makeContext()).filtered_ball;
 
   EXPECT_GT(certain, uncertain);
 }
 
 TEST(ActiveVisionScorer, NoBallMeansNoBallScore) {
   Fixture fixture;
-  EXPECT_DOUBLE_EQ(fixture.scorer().score(holdAt({0.0, 0.45}), makeContext()).filtered_ball, 0.0);
+  EXPECT_DOUBLE_EQ(fixture.scorer().score({0.0, 0.45}, makeContext()).filtered_ball, 0.0);
 }
 
 TEST(ActiveVisionScorer, RawBallDetectionsAreScoredSeparately) {
   Fixture fixture;
   fixture.world.setRawBalls({TimedTarget{{2.0, 0.0, 0.0}, 1.0, 0.0}});
-  auto breakdown = fixture.scorer().score(holdAt({0.0, 0.45}), makeContext());
+  auto breakdown = fixture.scorer().score({0.0, 0.45}, makeContext());
   EXPECT_GT(breakdown.raw_balls, 0.0);
   EXPECT_DOUBLE_EQ(breakdown.filtered_ball, 0.0);
 }
@@ -176,7 +159,7 @@ TEST(ActiveVisionScorer, RawBallDetectionsAreScoredSeparately) {
 TEST(ActiveVisionScorer, TeamBallsAreScoredSeparately) {
   Fixture fixture;
   fixture.world.setTeamBall(2, {2.0, 0.0, 0.0}, 0.0, 0.0);
-  auto breakdown = fixture.scorer().score(holdAt({0.0, 0.45}), makeContext());
+  auto breakdown = fixture.scorer().score({0.0, 0.45}, makeContext());
   EXPECT_GT(breakdown.team_ball, 0.0);
   EXPECT_DOUBLE_EQ(breakdown.raw_balls, 0.0);
 }
@@ -184,7 +167,7 @@ TEST(ActiveVisionScorer, TeamBallsAreScoredSeparately) {
 TEST(ActiveVisionScorer, RobotDetectionsAreScoredSeparately) {
   Fixture fixture;
   fixture.world.setRobots({TimedTarget{{2.0, 0.0, 0.3}, 1.0, 0.0}});
-  auto breakdown = fixture.scorer().score(holdAt({0.0, 0.4}), makeContext());
+  auto breakdown = fixture.scorer().score({0.0, 0.4}, makeContext());
   EXPECT_GT(breakdown.robots, 0.0);
 }
 
@@ -196,7 +179,7 @@ TEST(ActiveVisionScorer, CenteringABallBeatsCatchingItAtTheEdge) {
   double best = 0.0;
   double best_pitch = 0.0;
   for (double pitch = 0.0; pitch < 1.0; pitch += 0.02) {
-    const double score = scorer.score(holdAt({0.0, pitch}), makeContext()).filtered_ball;
+    const double score = scorer.score({0.0, pitch}, makeContext()).filtered_ball;
     if (score > best) {
       best = score;
       best_pitch = pitch;
@@ -213,17 +196,16 @@ TEST(ActiveVisionScorer, CenteringABallBeatsCatchingItAtTheEdge) {
 
 TEST(ActiveVisionScorer, UnobservedFieldIsWorthLookingAt) {
   Fixture fixture;
-  EXPECT_GT(fixture.scorer().score(holdAt({0.0, 0.4}), makeContext()).field_coverage, 0.0);
+  EXPECT_GT(fixture.scorer().score({0.0, 0.4}, makeContext()).field_coverage, 0.0);
 }
 
 TEST(ActiveVisionScorer, AlreadyObservedFieldIsWorthLess) {
   Fixture fixture;
-  const auto candidate = holdAt({0.0, 0.4});
-  const double before = fixture.scorer().score(candidate, makeContext()).field_coverage;
+  const double before = fixture.scorer().score({0.0, 0.4}, makeContext()).field_coverage;
 
   // Record what that very head position sees, then ask again
   fixture.scorer().recordObservation(fixture.coverage, {0.0, 0.4}, makeContext().robot_pose);
-  const double after = fixture.scorer().score(candidate, makeContext()).field_coverage;
+  const double after = fixture.scorer().score({0.0, 0.4}, makeContext()).field_coverage;
 
   EXPECT_GT(before, 0.0);
   EXPECT_LT(after, before);
@@ -231,15 +213,14 @@ TEST(ActiveVisionScorer, AlreadyObservedFieldIsWorthLess) {
 
 TEST(ActiveVisionScorer, ObservationsDecayBackIntoInterest) {
   Fixture fixture;
-  const auto candidate = holdAt({0.0, 0.4});
-  const double fresh = fixture.scorer().score(candidate, makeContext()).field_coverage;
+  const double fresh = fixture.scorer().score({0.0, 0.4}, makeContext()).field_coverage;
 
   fixture.scorer().recordObservation(fixture.coverage, {0.0, 0.4}, makeContext().robot_pose);
-  const double observed = fixture.scorer().score(candidate, makeContext()).field_coverage;
+  const double observed = fixture.scorer().score({0.0, 0.4}, makeContext()).field_coverage;
 
   // After a long while the same part of the field is interesting again
   fixture.coverage.decay(60.0);
-  const double stale = fixture.scorer().score(candidate, makeContext()).field_coverage;
+  const double stale = fixture.scorer().score({0.0, 0.4}, makeContext()).field_coverage;
 
   EXPECT_LT(observed, fresh);
   EXPECT_GT(stale, observed);
@@ -254,8 +235,8 @@ TEST(ActiveVisionScorer, LookingOffTheFieldEarnsNoCoverage) {
   context.robot_pose.translation() = Eigen::Vector3d(0.0, 2.5, 0.0);
   auto scorer = fixture.scorer(context.robot_pose);
 
-  const double towards_field = scorer.score(holdAt({-1.2, 0.4}), context).field_coverage;
-  const double away_from_field = scorer.score(holdAt({1.2, 0.4}), context).field_coverage;
+  const double towards_field = scorer.score({-1.2, 0.4}, context).field_coverage;
+  const double away_from_field = scorer.score({1.2, 0.4}, context).field_coverage;
 
   // Off field cells carry no interest, so aiming at them simply earns nothing.
   // That opportunity cost is what replaces the former explicit penalty.
@@ -270,8 +251,8 @@ TEST(ActiveVisionScorer, LookingAtTheSkyEarnsNoCoverage) {
   // field penalty measured as a share of visible cells would score this as
   // perfectly clean, which made staring at the sky better than glancing past
   // the touch line. Earning no coverage is the behavior that ranks it last.
-  const double sky = scorer.score(holdAt({0.0, -1.2}), makeContext()).field_coverage;
-  const double field = scorer.score(holdAt({0.0, 0.4}), makeContext()).field_coverage;
+  const double sky = scorer.score({0.0, -1.2}, makeContext()).field_coverage;
+  const double field = scorer.score({0.0, 0.4}, makeContext()).field_coverage;
 
   EXPECT_DOUBLE_EQ(sky, 0.0);
   EXPECT_GT(field, sky);
@@ -280,15 +261,14 @@ TEST(ActiveVisionScorer, LookingAtTheSkyEarnsNoCoverage) {
 TEST(ActiveVisionScorer, DistantFieldCountsForLessThanNearField) {
   Fixture fixture;
 
-  // Two cells of field, one close to the robot and one far away, both unseen.
-  // A view of the far one sweeps up more ground area simply because distance
-  // packs more of it into the same image, so without a falloff it would win.
+  // A view of far ground sweeps up more area simply because distance packs more
+  // of it into the same image, so without a falloff it would win
   ScoringContext context = makeContext();
   auto scorer = fixture.scorer(context.robot_pose);
 
   // Looking down sees the near ground, looking towards the horizon sees far ground
-  const double near_view = scorer.score(holdAt({0.0, 0.8}), context).field_coverage;
-  const double far_view = scorer.score(holdAt({0.0, 0.1}), context).field_coverage;
+  const double near_view = scorer.score({0.0, 0.8}, context).field_coverage;
+  const double far_view = scorer.score({0.0, 0.1}, context).field_coverage;
 
   // Both see field, but the near view must not be dwarfed by the far one
   EXPECT_GT(near_view, 0.0);
@@ -308,59 +288,74 @@ TEST(ActiveVisionScorer, TheDistanceFalloffDampensFarViewpoints) {
   flat.prepare(context.robot_pose);
 
   // A view aimed towards the horizon, which is where the far cells are
-  const auto far_view = holdAt({0.0, 0.1});
-  const auto near_view = holdAt({0.0, 0.8});
-
-  const double sharp_ratio = sharp.score(far_view, context).field_coverage /
-                             std::max(sharp.score(near_view, context).field_coverage, 1e-12);
-  const double flat_ratio = flat.score(far_view, context).field_coverage /
-                            std::max(flat.score(near_view, context).field_coverage, 1e-12);
+  const double sharp_ratio = sharp.score({0.0, 0.1}, context).field_coverage /
+                             std::max(sharp.score({0.0, 0.8}, context).field_coverage, 1e-12);
+  const double flat_ratio =
+      flat.score({0.0, 0.1}, context).field_coverage / std::max(flat.score({0.0, 0.8}, context).field_coverage, 1e-12);
 
   // Discounting distance more sharply has to move the balance towards the near view
   EXPECT_LT(sharp_ratio, flat_ratio);
 }
 
 // ---------------------------------------------------------------------------
-// Commitment
+// Smoothness cost
 // ---------------------------------------------------------------------------
 
-TEST(ActiveVisionScorer, AgreeingWithThePreviousSelectionScoresHigher) {
+TEST(ActiveVisionScorer, SmoothnessCostIsTheDistanceToThePreviousTarget) {
   Fixture fixture;
   auto scorer = fixture.scorer();
 
   ScoringContext context = makeContext();
-  context.previous_positions.assign(context.evaluation_times.size(), HeadPosition{0.5, 0.2});
+  context.previous_target = HeadPosition{0.5, 0.2};
 
-  const double same = scorer.score(holdAt({0.5, 0.2}), context).commitment;
-  const double different = scorer.score(holdAt({-0.5, -0.2}), context).commitment;
-  EXPECT_DOUBLE_EQ(same, 1.0);
-  EXPECT_LT(different, same);
+  // The cost is exactly the joint space distance to the previous target
+  EXPECT_DOUBLE_EQ(scorer.score({0.5, 0.2}, context).smoothness_cost, 0.0);
+  EXPECT_NEAR(scorer.score({0.5, 0.5}, context).smoothness_cost, 0.3, 1e-12);
+  EXPECT_NEAR(scorer.score({-0.5, 0.2}, context).smoothness_cost, 1.0, 1e-12);
 }
 
-TEST(ActiveVisionScorer, NoPreviousSelectionMeansNoCommitment) {
-  Fixture fixture;
-  // Without a previous trajectory the term must not favour any candidate
-  EXPECT_DOUBLE_EQ(fixture.scorer().score(holdAt({0.5, 0.2}), makeContext()).commitment, 0.0);
-}
-
-TEST(ActiveVisionScorer, CommitmentStaysWithinTheUnitInterval) {
+TEST(ActiveVisionScorer, ADistantTargetCostsMoreThanANearOne) {
   Fixture fixture;
   auto scorer = fixture.scorer();
-  ScoringContext context = makeContext();
-  context.previous_positions.assign(context.evaluation_times.size(), HeadPosition{1.2, 1.0});
 
-  for (double yaw = -1.2; yaw <= 1.2; yaw += 0.2) {
-    const double commitment = scorer.score(holdAt({yaw, 0.0}), context).commitment;
-    EXPECT_GE(commitment, 0.0);
-    EXPECT_LE(commitment, 1.0);
-  }
+  ScoringContext context = makeContext();
+  context.previous_target = HeadPosition{0.0, 0.0};
+
+  const double near = scorer.score({0.1, 0.1}, context).smoothness_cost;
+  const double far = scorer.score({1.0, 0.5}, context).smoothness_cost;
+  EXPECT_LT(near, far);
+}
+
+TEST(ActiveVisionScorer, NoPreviousTargetMeansNoSmoothnessCost) {
+  Fixture fixture;
+  // Without a previous target the cost must not penalize any candidate
+  EXPECT_DOUBLE_EQ(fixture.scorer().score({0.5, 0.2}, makeContext()).smoothness_cost, 0.0);
+}
+
+TEST(ActiveVisionScorer, TheSmoothnessCostLowersTheTotal) {
+  Fixture fixture;
+  fixture.world.setFilteredBall({2.0, 0.0, 0.0}, 0.0, 0.0);
+  auto scorer = fixture.scorer();
+  ScoringWeights weights = scorer.weights();
+  weights.smoothness = 2.0;
+  scorer.setWeights(weights);
+
+  // The same candidate scored with and without a previous target far away
+  const double without_previous = scorer.score({0.0, 0.45}, makeContext()).total;
+
+  ScoringContext committed = makeContext();
+  committed.previous_target = HeadPosition{-1.0, -1.0};
+  const auto breakdown = scorer.score({0.0, 0.45}, committed);
+
+  EXPECT_GT(breakdown.smoothness_cost, 0.0);
+  EXPECT_LT(breakdown.total, without_previous);
 }
 
 // ---------------------------------------------------------------------------
 // Aggregation
 // ---------------------------------------------------------------------------
 
-TEST(ActiveVisionScorer, EveryTermStaysWithinTheUnitInterval) {
+TEST(ActiveVisionScorer, EveryRewardTermStaysWithinTheUnitInterval) {
   Fixture fixture;
   fixture.world.setFilteredBall({2.0, 0.5, 0.0}, 0.2, 0.0);
   fixture.world.setRawBalls({TimedTarget{{2.0, 0.5, 0.0}, 1.0, 0.0}});
@@ -369,35 +364,38 @@ TEST(ActiveVisionScorer, EveryTermStaysWithinTheUnitInterval) {
   auto scorer = fixture.scorer();
 
   ScoringContext context = makeContext();
-  context.previous_positions.assign(context.evaluation_times.size(), HeadPosition{0.0, 0.3});
+  context.previous_target = HeadPosition{0.0, 0.3};
 
   for (double yaw = -1.2; yaw <= 1.2; yaw += 0.3) {
     for (double pitch = -1.0; pitch <= 1.0; pitch += 0.25) {
-      const auto breakdown = scorer.score(holdAt({yaw, pitch}), context);
+      const auto breakdown = scorer.score({yaw, pitch}, context);
       for (double term : {breakdown.filtered_ball, breakdown.raw_balls, breakdown.team_ball, breakdown.field_coverage,
-                          breakdown.robots, breakdown.commitment}) {
+                          breakdown.robots}) {
         EXPECT_GE(term, 0.0);
         EXPECT_LE(term, 1.0);
       }
+      EXPECT_GE(breakdown.smoothness_cost, 0.0);
     }
   }
 }
 
-TEST(ActiveVisionScorer, TheTotalIsTheWeightedSumOfTheTerms) {
+TEST(ActiveVisionScorer, TheTotalIsTheWeightedSumMinusTheSmoothnessCost) {
   Fixture fixture;
   fixture.world.setFilteredBall({2.0, 0.0, 0.0}, 0.1, 0.0);
   auto scorer = fixture.scorer();
   const ScoringWeights& weights = scorer.weights();
 
-  const auto breakdown = scorer.score(holdAt({0.0, 0.4}), makeContext());
+  ScoringContext context = makeContext();
+  context.previous_target = HeadPosition{0.3, 0.0};
+
+  const auto breakdown = scorer.score({0.0, 0.4}, context);
   const double expected = weights.filtered_ball * breakdown.filtered_ball + weights.raw_balls * breakdown.raw_balls +
-                          weights.team_ball * breakdown.team_ball +
-                          weights.field_coverage * breakdown.field_coverage + weights.robots * breakdown.robots +
-                          weights.commitment * breakdown.commitment;
+                          weights.team_ball * breakdown.team_ball + weights.field_coverage * breakdown.field_coverage +
+                          weights.robots * breakdown.robots - weights.smoothness * breakdown.smoothness_cost;
   EXPECT_NEAR(breakdown.total, expected, 1e-12);
 }
 
-TEST(ActiveVisionScorer, ZeroWeightsDisableATerm) {
+TEST(ActiveVisionScorer, ZeroWeightsDisableEveryTerm) {
   Fixture fixture;
   fixture.world.setFilteredBall({2.0, 0.0, 0.0}, 0.0, 0.0);
   auto scorer = fixture.scorer();
@@ -408,10 +406,12 @@ TEST(ActiveVisionScorer, ZeroWeightsDisableATerm) {
   weights.team_ball = 0.0;
   weights.field_coverage = 0.0;
   weights.robots = 0.0;
-  weights.commitment = 0.0;
+  weights.smoothness = 0.0;
   scorer.setWeights(weights);
 
-  EXPECT_DOUBLE_EQ(scorer.score(holdAt({0.0, 0.4}), makeContext()).total, 0.0);
+  ScoringContext context = makeContext();
+  context.previous_target = HeadPosition{-1.0, -1.0};
+  EXPECT_DOUBLE_EQ(scorer.score({0.0, 0.4}, context).total, 0.0);
 }
 
 TEST(ActiveVisionScorer, TheRobotPoseMovesWhatIsVisible) {
@@ -430,8 +430,8 @@ TEST(ActiveVisionScorer, TheRobotPoseMovesWhatIsVisible) {
 
   // The very same head position sees very different things depending on how the
   // robot stands, which is exactly why the map frame is used throughout
-  const double towards = scorer.score(holdAt({0.0, 0.5}), facing).filtered_ball;
-  const double away = scorer.score(holdAt({0.0, 0.5}), turned_away).filtered_ball;
+  const double towards = scorer.score({0.0, 0.5}, facing).filtered_ball;
+  const double away = scorer.score({0.0, 0.5}, turned_away).filtered_ball;
   EXPECT_GT(towards, 0.0);
   EXPECT_DOUBLE_EQ(away, 0.0);
 }

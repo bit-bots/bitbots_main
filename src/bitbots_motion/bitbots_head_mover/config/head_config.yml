@@ -24,7 +24,7 @@ move_head:
 
   max_pitch:
     type: double_array
-    default_value: [-1.23, 1.01] 
+    default_value: [-1.23, 1.01]
     description: "Max values for the head position (in radians)"
     validation:
       fixed_size<>: 2
@@ -219,76 +219,77 @@ move_head:
       default_value: "map"
       description: "Frame the field, the coverage map and all stored detections live in"
 
-    command_lookahead:
-      type: double
-      default_value: 0.5
-      description: "How far along the selected trajectory the commanded setpoint is taken. Must be greater than zero, as the trajectory starts at the current head position."
-      validation:
-        gt<>: [0.0]
-
     max_velocity_yaw:
       type: double
-      default_value: 7.0
-      description: "Maximum yaw speed a sampled trajectory may reach. Deliberately below the motor's mechanical limit."
+      default_value: 4.0
+      description: "Maximum yaw speed the controller commands while steering the head towards the target. Deliberately below the motor's mechanical limit."
       validation:
         gt<>: [0.0]
 
     max_velocity_pitch:
       type: double
-      default_value: 7.0
-      description: "Maximum pitch speed a sampled trajectory may reach"
+      default_value: 4.0
+      description: "Maximum pitch speed the controller commands while steering the head towards the target"
       validation:
         gt<>: [0.0]
+
+    controller:
+      approach_distance:
+        type: double
+        default_value: 0.3
+        description: "Joint space distance (radians) within which the controller ramps the head speed down linearly from the maximum to zero, so the head glides to a stop on the target. Beyond it the head travels at full speed."
+        validation:
+          gt<>: [0.0]
+
+      control_period:
+        type: double
+        default_value: 0.05
+        description: "Time step (seconds) the controller advances the setpoint by each cycle. Should match the control loop period."
+        validation:
+          gt<>: [0.0]
 
     sampling:
       sample_count:
         type: int
         default_value: 64
-        description: "Number of candidate trajectories drawn per planning cycle"
+        description: "Number of candidate targets drawn per planning cycle"
         validation:
           gt_eq<>: [1]
 
-      horizon:
+      last_target_weight:
         type: double
-        default_value: 1.0
-        description: "How far into the future a candidate trajectory reaches"
-        validation:
-          gt<>: [0.0]
-
-      midpoint_time:
-        type: double
-        default_value: 0.5
-        description: "When the intermediate waypoint of a candidate sits. Must be strictly inside the horizon."
-        validation:
-          gt<>: [0.0]
-
-      evaluation_points:
-        type: int
-        default_value: 2
-        description: "Number of points along a candidate that are scored. They are spread evenly over the horizon and end at the endpoint, never including the shared start, so two points score the midpoint and the goal point. This is the main cost driver together with the sample count and the coverage cell size."
-        validation:
-          gt_eq<>: [1]
-
-      feasibility_points:
-        type: int
-        default_value: 21
-        description: "Number of points at which a candidate is checked against the joint and dynamic limits"
-        validation:
-          gt_eq<>: [2]
-
-      max_attempts_per_sample:
-        type: int
-        default_value: 8
-        description: "How often a single candidate is redrawn before it is given up on"
-        validation:
-          gt_eq<>: [1]
-
-      midpoint_deviation:
-        type: double
-        default_value: 0.3
-        description: "How far (in radians) the intermediate waypoint may deviate from the straight path to the endpoint. Larger values allow more curved sweeps but get rejected by the acceleration limit more often."
+        default_value: 0.1
+        description: "Relative share of the samples drawn from a gaussian around the previously selected target. Folded into the current position share until a first target exists. The three sampling weights are normalized, so only their ratio matters."
         validation:
           gt_eq<>: [0.0]
+
+      current_position_weight:
+        type: double
+        default_value: 0.3
+        description: "Relative share of the samples drawn from a gaussian around the current head position"
+        validation:
+          gt_eq<>: [0.0]
+
+      uniform_weight:
+        type: double
+        default_value: 0.3
+        description: "Relative share of the samples drawn uniformly over the reachable range, which keeps the search exploring the rest of the field"
+        validation:
+          gt_eq<>: [0.0]
+
+      last_target_std:
+        type: double
+        default_value: 0.3
+        description: "Standard deviation (radians) of the gaussian drawn around the last target"
+        validation:
+          gt<>: [0.0]
+
+      current_position_std:
+        type: double
+        default_value: 0.5
+        description: "Standard deviation (radians) of the gaussian drawn around the current head position"
+        validation:
+          gt<>: [0.0]
 
       random_seed:
         type: int
@@ -327,7 +328,7 @@ move_head:
 
       half_life:
         type: double
-        default_value: 4.0
+        default_value: 0.5
         description: "Time after which having observed a part of the field counts for half as much, making it worth revisiting"
         validation:
           gt<>: [0.0]
@@ -378,7 +379,7 @@ move_head:
     weights:
       filtered_ball:
         type: double
-        default_value: 4.0
+        default_value: 1.5
         description: "Importance of keeping the filtered ball estimate in view"
         validation:
           gt_eq<>: [0.0]
@@ -399,23 +400,23 @@ move_head:
 
       field_coverage:
         type: double
-        default_value: 1.0
+        default_value: 2.0
         description: "Importance of looking at parts of the field that were not observed recently"
         validation:
           gt_eq<>: [0.0]
 
       robots:
         type: double
-        default_value: 0.5
+        default_value: 0.1
         description: "Importance of keeping detected robots in view"
         validation:
           gt_eq<>: [0.0]
 
 
-      commitment:
+      smoothness:
         type: double
         default_value: 0.1
-        description: "Importance of agreeing with the previously selected trajectory. This is the knob that trades reactivity against steady head motion."
+        description: "Cost per radian of joint space distance between a candidate target and the previously selected one, subtracted from the score. This is the knob that trades reactivity against steady head motion: a larger value keeps the head from jumping between equally attractive parts of the field."
         validation:
           gt_eq<>: [0.0]
 

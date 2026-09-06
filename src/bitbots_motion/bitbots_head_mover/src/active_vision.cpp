@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <bitbots_head_mover/active_vision.hpp>
 #include <cmath>
+#include <limits>
 
 namespace bitbots_head_mover {
 
@@ -12,12 +13,10 @@ const char* describe(ActiveVisionFailure failure) {
       return "no failure";
     case ActiveVisionFailure::NotReady:
       return "an input the planner needs has not arrived yet";
-    case ActiveVisionFailure::NoFeasibleCandidate:
-      return "no sampled head trajectory respects the joint and dynamic limits";
     case ActiveVisionFailure::KinematicsFailed:
       return "the head chain could not resolve a camera pose for any candidate";
     case ActiveVisionFailure::InvalidSamplerConfig:
-      return "the sampling horizon and midpoint time cannot describe a trajectory";
+      return "the sampler cannot draw any candidate with its current configuration";
   }
   return "unknown failure";
 }
@@ -77,21 +76,6 @@ ActiveVisionReadiness ActiveVision::readiness() const {
   return ActiveVisionReadiness::Ready;
 }
 
-std::vector<double> ActiveVision::evaluationTimes() const {
-  const SamplerConfig& config = sampler_.config();
-  std::vector<double> times;
-  const int count = std::max(config.evaluation_points, 1);
-  times.reserve(static_cast<size_t>(count));
-  for (int i = 1; i <= count; i++) {
-    // Spread over the horizon, ending at the endpoint. The start is deliberately
-    // not evaluated: every candidate begins at the measured head position, so
-    // that point scores identically for all of them and can only waste time.
-    // With two points this evaluates the midpoint and the goal point.
-    times.push_back(config.horizon * static_cast<double>(i) / static_cast<double>(count));
-  }
-  return times;
-}
-
 ActiveVisionResult ActiveVision::plan(const ActiveVisionInput& input) {
   ActiveVisionResult result;
   if (!ready()) {
@@ -99,11 +83,13 @@ ActiveVisionResult ActiveVision::plan(const ActiveVisionInput& input) {
     return result;
   }
 
-  // Catch a sampling configuration that cannot describe a trajectory here, so it
-  // is reported as such instead of surfacing as "every candidate was rejected"
+  // A sampler that cannot draw is reported as such instead of surfacing as
+  // "every candidate was rejected"
   const SamplerConfig& sampler_config = sampler_.config();
-  if (!(sampler_config.horizon > 0.0) || !(sampler_config.midpoint_time > 0.0) ||
-      sampler_config.midpoint_time >= sampler_config.horizon) {
+  const double weight_sum = std::max(0.0, sampler_config.last_target_weight) +
+                            std::max(0.0, sampler_config.current_position_weight) +
+                            std::max(0.0, sampler_config.uniform_weight);
+  if (sampler_config.sample_count < 0 || !(weight_sum > 0.0)) {
     result.failure = ActiveVisionFailure::InvalidSamplerConfig;
     return result;
   }
@@ -135,40 +121,15 @@ ActiveVisionResult ActiveVision::plan(const ActiveVisionInput& input) {
 
   ScoringContext context;
   context.robot_pose = input.robot_pose;
-  context.evaluation_times = evaluationTimes();
+  context.previous_target = previous_target_;
 
-  // Measure commitment against where the previous selection would be at the very
-  // same moments in time, not against its raw parameterization, because that
-  // trajectory started one cycle earlier
-  if (has_previous_) {
-    const double offset = input.now - previous_plan_time_;
-    context.previous_positions.reserve(context.evaluation_times.size());
-    for (double time : context.evaluation_times) {
-      context.previous_positions.push_back(
-          previous_trajectory_.position(std::min(offset + time, previous_trajectory_.duration())));
-    }
-  }
-
-  // Continue the motion the previous cycle committed to rather than trusting
-  // whatever the actuators report right now: the measured velocity can be
-  // noisy, lagged by a control period, or simply wrong for a moment after a
-  // new position command lands, and the sampler builds its candidates as a
-  // tangent from this value. A bad start velocity makes the near-term part of
-  // every candidate bend away from where the debug view shows it heading,
-  // which is exactly the part that gets commanded, before the spline
-  // corrects itself further along, where it is never actually executed.
-  // What we ourselves commanded a moment ago is known exactly, so it is used
-  // once a previous plan exists; only the very first cycle has nothing to
-  // fall back on but the measurement.
-  HeadVelocity start_velocity = input.head_velocity;
-  if (has_previous_) {
-    const double offset = std::clamp(input.now - previous_plan_time_, 0.0, previous_trajectory_.duration());
-    start_velocity = previous_trajectory_.velocity(offset);
-  }
-
-  result.candidates = sampler_.sample(input.head_position, start_velocity, limits_, dynamics_);
+  // The current position and the previous target seed the sampling distribution,
+  // so the search stays concentrated where the head is and where it was heading
+  result.candidates = sampler_.sample(input.head_position, previous_target_, limits_);
   if (result.candidates.empty()) {
-    result.failure = ActiveVisionFailure::NoFeasibleCandidate;
+    // The sampler always offers the current position unless it is misconfigured,
+    // which the check above already ruled out; guard anyway
+    result.failure = ActiveVisionFailure::InvalidSamplerConfig;
     return result;
   }
 
@@ -176,7 +137,7 @@ ActiveVisionResult ActiveVision::plan(const ActiveVisionInput& input) {
   double best_score = -std::numeric_limits<double>::infinity();
   bool have_selection = false;
   for (size_t index = 0; index < result.candidates.size(); index++) {
-    ScoreBreakdown breakdown = scorer.score(result.candidates[index].trajectory, context);
+    ScoreBreakdown breakdown = scorer.score(result.candidates[index].target, context);
     // A candidate that could not be scored is discarded rather than compared:
     // its zeroed total would look like a merely unattractive candidate and could
     // still win if every real candidate scores negative
@@ -196,22 +157,47 @@ ActiveVisionResult ActiveVision::plan(const ActiveVisionInput& input) {
     return result;
   }
 
-  const HeadTrajectory& selected = result.candidates[result.selected].trajectory;
+  result.target = limits_.clamp(result.candidates[result.selected].target);
 
-  // Command a point a little way along the selected trajectory rather than its
-  // start. The trajectory starts at the measured head position, so commanding
-  // its start would ask the head to stay exactly where it already is and it
-  // would never move. Only this leading segment is ever executed before the next
-  // cycle replans, which is what lets the head react immediately while the
-  // commitment term keeps it from flickering.
-  const double lookahead = std::clamp(command_lookahead_, 0.0, selected.duration());
-  result.position = limits_.clamp(selected.position(lookahead));
-  result.velocity = selected.velocity(lookahead);
+  // Rate limited controller: step the setpoint straight towards the target in
+  // joint space, at the maximum speed until the head comes within the approach
+  // distance, then ramp the speed down linearly so it glides to a stop on the
+  // target instead of snapping to it. This is what replaces the planned
+  // trajectory; the smoothness cost keeps the target itself from jumping between
+  // cycles.
+  const HeadPosition& current = input.head_position;
+  const double error_yaw = result.target.yaw - current.yaw;
+  const double error_pitch = result.target.pitch - current.pitch;
+  const double distance = std::hypot(error_yaw, error_pitch);
+
+  // Below this the head is on the target; moving would only chase sampling noise.
+  constexpr double kAtTargetEpsilon = 1e-6;
+  if (distance < kAtTargetEpsilon) {
+    result.velocity = {0.0, 0.0};
+    result.position = result.target;
+  } else {
+    // Unit direction towards the target, so the head travels in a straight line.
+    const double dir_yaw = error_yaw / distance;
+    const double dir_pitch = error_pitch / distance;
+
+    // Full speed along this direction that still respects both per-axis speed
+    // caps: scale the unit direction up until the first axis hits its own limit.
+    const double speed_cap = std::min(controller_.max_velocity.yaw / std::max(std::abs(dir_yaw), kAtTargetEpsilon),
+                                      controller_.max_velocity.pitch / std::max(std::abs(dir_pitch), kAtTargetEpsilon));
+
+    // Travel at full speed until within the approach distance, then ramp down
+    // linearly to zero as the remaining distance shrinks.
+    const double ramp = std::clamp(distance / std::max(controller_.approach_distance, kAtTargetEpsilon), 0.0, 1.0);
+    const double speed = speed_cap * ramp;
+
+    // Advance the setpoint by one control period, never stepping past the target.
+    const double step = std::min(speed * controller_.control_period, distance);
+    result.velocity = {dir_yaw * speed, dir_pitch * speed};
+    result.position = limits_.clamp({current.yaw + dir_yaw * step, current.pitch + dir_pitch * step});
+  }
   result.valid = true;
 
-  previous_trajectory_ = selected;
-  previous_plan_time_ = input.now;
-  has_previous_ = true;
+  previous_target_ = result.target;
   last_plan_time_ = input.now;
   has_planned_ = true;
 
@@ -223,7 +209,7 @@ void ActiveVision::reset() {
   if (coverage_) {
     coverage_->reset();
   }
-  has_previous_ = false;
+  previous_target_.reset();
   has_planned_ = false;
 }
 

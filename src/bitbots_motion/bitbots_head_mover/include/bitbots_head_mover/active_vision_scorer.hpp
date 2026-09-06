@@ -4,18 +4,20 @@
 #include <bitbots_head_mover/camera_model.hpp>
 #include <bitbots_head_mover/field_coverage_map.hpp>
 #include <bitbots_head_mover/head_kinematics.hpp>
-#include <bitbots_head_mover/head_trajectory.hpp>
+#include <bitbots_head_mover/types.hpp>
 #include <bitbots_head_mover/world_model.hpp>
+#include <optional>
 #include <vector>
 
-/// Scoring of candidate head trajectories.
+/// Scoring of candidate head targets.
 namespace bitbots_head_mover {
 
 /// Relative importance of the individual scoring terms.
 ///
-/// Every term is normalized to [0, 1] on its own, so these weights are directly
-/// comparable and the total is a plain weighted sum. Raising a weight makes the
-/// head care more about that aspect, and setting it to zero disables the term.
+/// The reward terms are each normalized to [0, 1] on their own, so their weights
+/// are directly comparable. The smoothness weight is different in kind: it is a
+/// cost per radian subtracted from the total, not a normalized reward, so it is
+/// expressed in the same units as the reward weights but multiplies a distance.
 struct ScoringWeights {
   /// Keeping the filtered ball estimate in view. Weighted highest because losing
   /// the ball is the most expensive thing the head can do.
@@ -35,9 +37,11 @@ struct ScoringWeights {
   double field_coverage = 1.5;
   /// Keeping detected robots in view, so the obstacle information stays fresh.
   double robots = 0.5;
-  /// Agreeing with the previously selected trajectory. This is what keeps the
-  /// head from flicking between equally good options every cycle.
-  double commitment = 1.5;
+  /// Cost per radian of joint space distance between a target and the previously
+  /// selected one. This is subtracted from the score, so a larger value makes the
+  /// head prefer targets close to the last one and keeps it from jumping between
+  /// equally attractive parts of the field every cycle.
+  double smoothness = 1.5;
 };
 
 /// The individual contributions to a candidate's score.
@@ -50,8 +54,11 @@ struct ScoreBreakdown {
   double team_ball = 0.0;
   double field_coverage = 0.0;
   double robots = 0.0;
-  double commitment = 0.0;
-  /// The weighted sum of the terms above.
+  /// Joint space distance, in radians, to the previously selected target. Zero
+  /// when there is no previous target. Enters the total as a cost, weighted by
+  /// ScoringWeights::smoothness.
+  double smoothness_cost = 0.0;
+  /// The weighted sum of the reward terms minus the weighted smoothness cost.
   double total = 0.0;
   /// Whether the candidate could be scored at all.
   ///
@@ -69,18 +76,17 @@ struct ScoringContext {
   /// The robot's pose on the field, i.e. the map to root link transform. The
   /// root link is whichever link the kinematics resolve the camera against.
   Eigen::Isometry3d robot_pose = Eigen::Isometry3d::Identity();
-  /// The times along a candidate at which it is evaluated.
-  std::vector<double> evaluation_times;
-  /// The previously selected trajectory, evaluated at the same times. Empty if
-  /// there is no previous selection, which disables the commitment term.
-  std::vector<HeadPosition> previous_positions;
+  /// The previously selected target. Empty if there is no previous selection,
+  /// which disables the smoothness cost.
+  std::optional<HeadPosition> previous_target;
 };
 
-/// Scores candidate head trajectories against the current world state.
+/// Scores candidate head targets against the current world state.
 ///
-/// A candidate is evaluated at several points in time rather than as a single
-/// pose, so that a trajectory which sweeps across something interesting is
-/// preferred over one that merely ends up pointing at it.
+/// A candidate is a single head position and is evaluated as the one camera pose
+/// it points at, rather than as a motion over time: the head is driven towards
+/// the selected target by a separate controller, so the planner only has to
+/// decide where to look, not how to get there.
 class ActiveVisionScorer {
  public:
   /// The robot pose is required rather than defaulted: the coverage distance
@@ -119,11 +125,11 @@ class ActiveVisionScorer {
   /// for every candidate, which is what makes their scores comparable.
   void prepare(const Eigen::Isometry3d& robot_pose);
 
-  /// Score a single candidate.
+  /// Score a single candidate target.
   ///
   /// The result carries a valid flag; an invalid result means the candidate
   /// could not be scored and must be discarded rather than compared.
-  ScoreBreakdown score(const HeadTrajectory& candidate, const ScoringContext& context) const;
+  ScoreBreakdown score(const HeadPosition& target, const ScoringContext& context) const;
 
   /// The camera pose in the map frame for a given head configuration.
   ///
