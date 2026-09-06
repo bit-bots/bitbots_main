@@ -42,6 +42,65 @@ class ReachedPathPlanningGoalPosition(AbstractDecisionElement):
     def get_reevaluate(self):
         return True
 
+class ReachedAndAlignedToConfigRolePosition(AbstractDecisionElement):
+    blackboard: BodyBlackboard
+
+    def __init__(self, blackboard, dsd, parameters):
+        super().__init__(blackboard, dsd, parameters)
+        self.frame_id = parameters.get("frame_id", self.blackboard.map_frame)
+        self.threshold = self.blackboard.config["role_position_approach_position_thresh"]
+        self.orientation_threshold = math.radians(self.blackboard.config["role_position_approach_orientation_thresh"])
+        self.latch = parameters.get("latch", False)
+        self.latched = False
+
+    def perform(self, reevaluate=False):
+        """
+        Determines whether we are near the path planning goal
+        :param reevaluate:
+        :return:
+        """
+        # We return that reached it forever if we reached it once if latching is enabled
+        if self.latched:
+            return "YES"
+
+        current_pose = self.blackboard.world_model.get_current_position_pose_stamped()
+        role_positions = self.blackboard.config["role_positions"]
+        kickoff_type = "active" if self.blackboard.gamestate.has_kick() else "passive"
+        try:
+            if self.blackboard.team_data.role == "goalie":
+                generalized_role_position = role_positions[self.blackboard.team_data.role]
+            else:
+                # players other than the goalie have multiple possible positions
+                generalized_role_position = role_positions[self.blackboard.team_data.role][kickoff_type][
+                    str(self.blackboard.misc.position_number)
+                ]
+        except KeyError as e:
+            raise KeyError(f"Role position for {self.blackboard.team_data.role} not specified in config") from e
+        
+        goal_pose = [
+            generalized_role_position[0] * self.blackboard.world_model.field_length / 2,
+            generalized_role_position[1] * self.blackboard.world_model.field_width / 2,
+        ]
+
+        if current_pose is None or goal_pose is None:
+            return "NO"
+
+        current_orientation = euler_from_quaternion(numpify(current_pose.pose.orientation))
+        goal_orientation = euler_from_quaternion(numpify(goal_pose.pose.orientation))
+        angle_to_goal_orientation = abs(math.remainder(current_orientation[2] - goal_orientation[2], math.tau))
+        #self.publish_debug_data("current_orientation", current_orientation[2])
+        #self.publish_debug_data("goal_orientation", goal_orientation[2])
+        #self.publish_debug_data("angle_to_goal_orientation", angle_to_goal_orientation)
+
+        distance = np.linalg.norm(numpify(goal_pose.pose.position) - numpify(current_pose.pose.position))
+        self.publish_debug_data("distance", distance)
+        if distance < self.threshold and angle_to_goal_orientation < self.orientation_threshold:
+            self.latched = self.latch  # Set it to true if we always want to return YES in the future
+            return "YES"
+        return "NO"
+
+    def get_reevaluate(self):
+        return True
 
 class AlignedToPathPlanningGoal(AbstractDecisionElement):
     blackboard: BodyBlackboard

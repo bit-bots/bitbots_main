@@ -130,6 +130,10 @@ body_behavior:
     # Range in which the ball far approach point is counted as reached
     ball_far_approach_position_thresh: 0.1
 
+    # Range in which the role position point is counted as reached
+    role_position_approach_position_thresh: 0.2
+    role_position_approach_orientation_thresh: 10.0
+
     # We reapproach the ball after it has moved further away than this distance. This includes moving to the far approach position.
     ball_reapproach_dist: 1.0
 
