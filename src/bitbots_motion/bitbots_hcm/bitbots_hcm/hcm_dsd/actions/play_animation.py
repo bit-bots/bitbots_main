@@ -98,6 +98,12 @@ class AbstractPlayAnimation(AbstractHCMActionElement, ABC):
         ) or self.blackboard.animation_action_current_goal.cancelled()
 
 
+class PlayAnimationSit(AbstractPlayAnimation):
+    def choose_animation(self):
+        self.blackboard.node.get_logger().info("PLAYING SIT ANIMATION")
+        return self.blackboard.animation_name_sit
+
+
 class PlayAnimationFallingLeft(AbstractPlayAnimation):
     def choose_animation(self):
         self.blackboard.node.get_logger().info("PLAYING FALLING LEFT ANIMATION")
