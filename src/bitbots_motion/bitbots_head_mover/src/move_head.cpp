@@ -1,37 +1,59 @@
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
 
+#include <bitbots_head_mover/active_vision.hpp>
+#include <bitbots_head_mover/active_vision_debug.hpp>
 #include <bitbots_head_mover/head_parameters.hpp>
+#include <bitbots_head_mover/head_trajectory.hpp>
+#include <bitbots_head_mover/look_at.hpp>
+#include <bitbots_head_mover/search_pattern.hpp>
+#include <bitbots_head_mover/types.hpp>
 #include <bitbots_msgs/action/look_at.hpp>
 #include <bitbots_msgs/msg/head_mode.hpp>
 #include <bitbots_msgs/msg/joint_command.hpp>
-#include <bitbots_splines/smooth_spline.hpp>
+#include <bitbots_msgs/msg/team_data.hpp>
+#include <bitbots_utils/utils.hpp>
 #include <chrono>
 #include <cmath>
+#include <cv_bridge/cv_bridge.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
-#include <iostream>
 #include <memory>
+#include <mutex>
+#include <nav_msgs/msg/occupancy_grid.hpp>
 #include <rclcpp/clock.hpp>
 #include <rclcpp/experimental/executors/events_executor/events_executor.hpp>
 #include <rclcpp/logger.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/time.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
+#include <sensor_msgs/msg/camera_info.hpp>
+#include <sensor_msgs/msg/image.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
+#include <soccer_vision_3d_msgs/msg/ball_array.hpp>
+#include <soccer_vision_3d_msgs/msg/robot_array.hpp>
 #include <std_msgs/msg/string.hpp>
 #include <string>
 #include <tf2/convert.hpp>
+#include <tf2_eigen/tf2_eigen.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#include <thread>
 #include <vector>
+#include <visualization_msgs/msg/marker_array.hpp>
 
 using std::placeholders::_1;
 using namespace std::chrono_literals;
 
 namespace move_head {
 
-#define DEG_TO_RAD M_PI / 180
-#define RAD_CAMERA_ANGLE DEG_TO_RAD * 30
+using bitbots_head_mover::HeadLimits;
+using bitbots_head_mover::HeadPosition;
+using bitbots_head_mover::HeadVelocity;
+
+/// Angular step size used when checking a path for collisions.
+constexpr double kCollisionCheckStep = M_PI / 180.0 * 3.0;
+/// Pitch offset applied when retrying a colliding goal further up.
+constexpr double kCollisionAvoidancePitchStep = M_PI / 180.0 * 10.0;
 
 using LookAtGoal = bitbots_msgs::action::LookAt;
 using LookAtGoalHandle = rclcpp_action::ServerGoalHandle<LookAtGoal>;
@@ -62,9 +84,11 @@ class HeadMover {
 
   // Declare timer that executes the main loop
   rclcpp::TimerBase::SharedPtr timer_;
+  // Retries fetching the field dimensions until the parameter blackboard answers
+  rclcpp::TimerBase::SharedPtr field_dimension_retry_timer_;
 
   // Declare variable for the current search pattern
-  std::vector<std::pair<double, double>> pattern_;
+  std::vector<HeadPosition> pattern_;
   // Store previous head mode
   uint prev_head_mode_ = -1;
 
@@ -72,13 +96,8 @@ class HeadMover {
   double cycle_time_ = 0.0;
 
   // Spline trajectory for search patterns
-  bitbots_splines::SmoothSpline yaw_spline_;
-  bitbots_splines::SmoothSpline pitch_spline_;
-  double spline_duration_ = 0.0;
-  // Duration of the transition segment from the current head position into the pattern (prepended to the cycle)
-  double transition_duration_ = 0.0;
+  bitbots_head_mover::SearchPatternTrajectory search_trajectory_;
   rclcpp::Time spline_start_time_;
-  bool spline_valid_ = false;
 
   // World model state
   geometry_msgs::msg::PoseWithCovarianceStamped ball_position_;
@@ -87,8 +106,43 @@ class HeadMover {
   rclcpp_action::Server<LookAtGoal>::SharedPtr action_server_;
   bool action_running_ = false;
 
+  // Active vision planner and everything that feeds it
+  bitbots_head_mover::ActiveVision active_vision_;
+  rclcpp::Subscription<std_msgs::msg::String>::SharedPtr robot_description_subscriber_;
+  rclcpp::Subscription<sensor_msgs::msg::CameraInfo>::SharedPtr camera_info_subscriber_;
+  rclcpp::Subscription<soccer_vision_3d_msgs::msg::BallArray>::SharedPtr balls_subscriber_;
+  rclcpp::Subscription<soccer_vision_3d_msgs::msg::RobotArray>::SharedPtr robots_subscriber_;
+  rclcpp::Subscription<bitbots_msgs::msg::TeamData>::SharedPtr team_data_subscriber_;
+
+  // The detection callbacks do blocking tf lookups. They run on their own
+  // callback group, spun by a second executor on a dedicated thread, so a lookup
+  // that waits for a not-yet-available transform never stalls the main executor
+  // and the search pattern timer it drives.
+  rclcpp::CallbackGroup::SharedPtr detection_callback_group_;
+  // Guards the state the detection callbacks write and the main loop reads: the
+  // world model and the latest filtered ball. Held only around those accesses,
+  // never across a tf lookup, so the two threads never serialize on the wait.
+  std::mutex world_mutex_;
+
+  // Debug publishers, only created when the debug output is enabled
+  rclcpp::Publisher<nav_msgs::msg::OccupancyGrid>::SharedPtr coverage_publisher_;
+  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr candidate_publisher_;
+  rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr joint_space_publisher_;
+  bool debug_publishers_created_ = false;
+
+  // The last position commanded by the active vision mode, which is what the
+  // head holds on to while an input is missing
+  std::optional<HeadPosition> active_vision_hold_position_;
+
  public:
   HeadMover() : node_(std::make_shared<rclcpp::Node>("head_mover")) {
+    // The detection callbacks block on tf lookups, so they get their own callback
+    // group that a second executor spins on a dedicated thread. auto_add=false
+    // keeps the main executor from also picking it up.
+    detection_callback_group_ = node_->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive, false);
+    rclcpp::SubscriptionOptions detection_options;
+    detection_options.callback_group = detection_callback_group_;
+
     // Initialize publisher for head motor goals
     position_publisher_ = node_->create_publisher<bitbots_msgs::msg::JointCommand>("head_motor_goals", 10);
 
@@ -107,13 +161,19 @@ class HeadMover {
           current_joint_state_ = *msg;
         });
 
-    // Initialize subscriber for the ball filter
+    // Initialize subscriber for the ball filter. It does a blocking tf lookup and
+    // writes shared state, so it belongs on the detection callback group too.
     ball_filter_subscriber_ = node_->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
         "ball_position_relative_filtered", 10,
         [this](const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg) {
-          // cppcheck-suppress useInitializationList
-          ball_position_ = *msg;
-        });
+          {
+            std::lock_guard<std::mutex> lock(world_mutex_);
+            // cppcheck-suppress useInitializationList
+            ball_position_ = *msg;
+          }
+          handle_filtered_ball(*msg);
+        },
+        detection_options);
 
     // Initialize with a valid frame
     ball_position_.header.frame_id = "base_footprint";
@@ -132,8 +192,205 @@ class HeadMover {
         std::bind(&HeadMover::handle_cancel, this, std::placeholders::_1),
         std::bind(&HeadMover::handle_accepted, this, std::placeholders::_1));
 
+    setup_active_vision();
+
     // Initialize timer for main loop
     timer_ = rclcpp::create_timer(node_, node_->get_clock(), 50ms, [this] { behave(); });
+  }
+
+  /**
+   * @brief Sets up the inputs of the active vision head mode
+   */
+  void setup_active_vision() {
+    // The robot description is latched by the robot state publisher, so a
+    // transient local subscription still receives it when we start later
+    robot_description_subscriber_ = node_->create_subscription<std_msgs::msg::String>(
+        "/robot_description", rclcpp::QoS(1).transient_local().reliable(),
+        [this](const std_msgs::msg::String::SharedPtr msg) { handle_robot_description(msg->data); });
+
+    camera_info_subscriber_ = node_->create_subscription<sensor_msgs::msg::CameraInfo>(
+        "/zed/zed_node/rgb/camera_info", 1, [this](const sensor_msgs::msg::CameraInfo::SharedPtr msg) {
+          if (!active_vision_.setCameraInfo(*msg)) {
+            RCLCPP_WARN_THROTTLE(node_->get_logger(), *node_->get_clock(), 5000,
+                                 "Received camera info without usable intrinsics, active vision stays disabled");
+          }
+        });
+
+    // The detection callbacks do blocking tf lookups, so they run on the
+    // dedicated callback group rather than the main executor.
+    rclcpp::SubscriptionOptions detection_options;
+    detection_options.callback_group = detection_callback_group_;
+
+    balls_subscriber_ = node_->create_subscription<soccer_vision_3d_msgs::msg::BallArray>(
+        "balls_relative", 1, [this](const soccer_vision_3d_msgs::msg::BallArray::SharedPtr msg) { handle_balls(*msg); },
+        detection_options);
+
+    robots_subscriber_ = node_->create_subscription<soccer_vision_3d_msgs::msg::RobotArray>(
+        "robots_relative", 1,
+        [this](const soccer_vision_3d_msgs::msg::RobotArray::SharedPtr msg) { handle_robots(*msg); },
+        detection_options);
+
+    team_data_subscriber_ = node_->create_subscription<bitbots_msgs::msg::TeamData>(
+        "team_data", 10, [this](const bitbots_msgs::msg::TeamData::SharedPtr msg) { handle_team_data(*msg); },
+        detection_options);
+
+    apply_active_vision_parameters();
+
+    // Try once at startup, and otherwise keep retrying until it works. Giving up
+    // after a single attempt would disable the mode for the rest of the run
+    // because of a startup race with the parameter blackboard.
+    //
+    // The retry lives on its own slow timer rather than in the control loop: the
+    // parameter call blocks for up to a second, which would stall the 20 Hz loop
+    // on every tick for as long as the blackboard is unreachable.
+    if (!try_fetch_field_dimensions()) {
+      field_dimension_retry_timer_ = rclcpp::create_timer(node_, node_->get_clock(), 2s, [this] {
+        if (try_fetch_field_dimensions()) {
+          field_dimension_retry_timer_->cancel();
+        }
+      });
+    }
+  }
+
+  /**
+   * @brief Pulls the field dimensions from the global parameter server
+   *
+   * They are not part of this node's schema, they live on the parameter
+   * blackboard the way the localization reads them as well.
+   */
+  bool try_fetch_field_dimensions() {
+    try {
+      auto global_params = bitbots_utils::get_parameters_from_other_node(node_, "/parameter_blackboard",
+                                                                         {"field.size.x", "field.size.y"}, 1s);
+      bitbots_head_mover::FieldCoverageConfig coverage;
+      coverage.field_length = global_params.at("field.size.x").as_double();
+      coverage.field_width = global_params.at("field.size.y").as_double();
+
+      // A degenerate field would build an empty or nonsensical coverage map,
+      // which is worth saying out loud rather than quietly steering the head
+      if (!(coverage.field_length > 0.0) || !(coverage.field_width > 0.0)) {
+        RCLCPP_ERROR_THROTTLE(node_->get_logger(), *node_->get_clock(), 10000,
+                              "The parameter blackboard reports a field of %.2f x %.2f m, which is not usable",
+                              coverage.field_length, coverage.field_width);
+        return false;
+      }
+
+      coverage.margin = params_.active_vision.coverage.margin;
+      coverage.cell_size = params_.active_vision.coverage.cell_size;
+      coverage.half_life = params_.active_vision.coverage.half_life;
+      active_vision_.setFieldCoverageConfig(coverage);
+      RCLCPP_INFO(node_->get_logger(), "Active vision uses a %.2f x %.2f m field", coverage.field_length,
+                  coverage.field_width);
+      return true;
+    } catch (const std::exception& ex) {
+      RCLCPP_ERROR_THROTTLE(node_->get_logger(), *node_->get_clock(), 10000,
+                            "Could not get the field dimensions from the parameter blackboard, active vision cannot "
+                            "run yet: %s",
+                            ex.what());
+      return false;
+    }
+  }
+
+  /**
+   * @brief Builds the head chain from a received robot description
+   */
+  void handle_robot_description(const std::string& urdf) {
+    bitbots_head_mover::HeadChainConfig chain;
+    chain.root_link = params_.active_vision.root_link;
+    chain.tip_link = params_.active_vision.tip_link;
+
+    if (!active_vision_.setRobotDescription(urdf, chain)) {
+      RCLCPP_ERROR(node_->get_logger(),
+                   "Could not build the head chain from '%s' to '%s', active vision stays disabled",
+                   chain.root_link.c_str(), chain.tip_link.c_str());
+      return;
+    }
+    RCLCPP_INFO(node_->get_logger(), "Built the head chain from '%s' to '%s'", chain.root_link.c_str(),
+                chain.tip_link.c_str());
+
+    // The extrinsic calibration is published as its own transform rather than
+    // being part of the robot description, so it has to be composed onto the
+    // chain's tip. It does not depend on the head position, so one lookup is
+    // enough, but it is only available once that publisher is up.
+    update_camera_calibration();
+  }
+
+  /**
+   * @brief Looks up the extrinsic camera calibration and hands it to the planner
+   */
+  bool update_camera_calibration() {
+    const std::string& uncalibrated = params_.active_vision.tip_link;
+    const std::string& calibrated = params_.active_vision.calibrated_optical_frame;
+    if (uncalibrated == calibrated) {
+      return true;
+    }
+
+    try {
+      const auto transform =
+          tf_buffer_->lookupTransform(uncalibrated, calibrated, tf2::TimePointZero, tf2::durationFromSec(0.1));
+      active_vision_.setCameraCalibration(tf2::transformToEigen(transform));
+      return true;
+    } catch (const tf2::TransformException& ex) {
+      RCLCPP_WARN_THROTTLE(node_->get_logger(), *node_->get_clock(), 5000,
+                           "Could not look up the extrinsic camera calibration from '%s' to '%s': %s",
+                           uncalibrated.c_str(), calibrated.c_str(), ex.what());
+      return false;
+    }
+  }
+
+  /**
+   * @brief Pushes the current parameters into the active vision planner
+   */
+  void apply_active_vision_parameters() {
+    const auto& config = params_.active_vision;
+
+    bitbots_head_mover::SamplerConfig sampler;
+    sampler.sample_count = static_cast<int>(config.sampling.sample_count);
+    sampler.last_target_weight = config.sampling.last_target_weight;
+    sampler.current_position_weight = config.sampling.current_position_weight;
+    sampler.uniform_weight = config.sampling.uniform_weight;
+    sampler.last_target_std = config.sampling.last_target_std;
+    sampler.current_position_std = config.sampling.current_position_std;
+    active_vision_.setSamplerConfig(sampler);
+
+    bitbots_head_mover::HeadController controller;
+    controller.approach_distance = config.controller.approach_distance;
+    controller.control_period = config.controller.control_period;
+    controller.max_velocity = {config.max_velocity_yaw, config.max_velocity_pitch};
+    active_vision_.setController(controller);
+
+    active_vision_.setHeadLimits(get_head_limits());
+    active_vision_.setVisibilityWeighting({config.visibility.center_fraction, config.visibility.border_score});
+    active_vision_.setCoverageDistanceHalfWeight(config.coverage.distance_half_weight);
+
+    bitbots_head_mover::WorldModelConfig world;
+    world.filtered_ball_timeout = config.timeouts.filtered_ball;
+    world.raw_ball_timeout = config.timeouts.raw_ball;
+    world.team_ball_timeout = config.timeouts.team_ball;
+    world.robot_timeout = config.timeouts.robot;
+    world.covariance_half_weight = config.covariance_half_weight;
+    {
+      // Applied from the main loop on a parameter change, while the detection
+      // thread may be writing detections into the same world model
+      std::lock_guard<std::mutex> lock(world_mutex_);
+      active_vision_.setWorldModelConfig(world);
+    }
+
+    bitbots_head_mover::ScoringWeights weights;
+    weights.filtered_ball = config.weights.filtered_ball;
+    weights.raw_balls = config.weights.raw_balls;
+    weights.team_ball = config.weights.team_ball;
+    weights.field_coverage = config.weights.field_coverage;
+    weights.robots = config.weights.robots;
+    weights.smoothness = config.weights.smoothness;
+    active_vision_.setScoringWeights(weights);
+  }
+
+  /**
+   * @brief Returns the head joint limits as defined in the parameters
+   */
+  HeadLimits get_head_limits() const {
+    return {{params_.max_yaw[0], params_.max_yaw[1]}, {params_.max_pitch[0], params_.max_pitch[1]}};
   }
 
   /***
@@ -166,21 +423,21 @@ class HeadMover {
       return rclcpp_action::GoalResponse::REJECT;
     }
 
-    // RCLCPP_DEBUG(node_->get_logger(), "yaw point, pitch point" << head_yaw_point.point << " " <<
-    // head_pitch_point.point);
+    // The goal is computed relative to where the head is, so an unknown head
+    // position means the goal cannot be judged and the action has to be rejected
+    const auto current = require_head_position("a look at goal request");
+    if (!current) {
+      return rclcpp_action::GoalResponse::REJECT;
+    }
 
     // Get the motor goals that are needed to look at the point
-    double goal_yaw = 0.0;
-    double goal_pitch = 0.0;
-    get_motor_goals_from_point(rel_head_yaw_point.point, rel_head_pitch_point.point, goal_yaw, goal_pitch);
+    HeadPosition goal_position =
+        bitbots_head_mover::motorGoalsFromPoint(rel_head_yaw_point.point, rel_head_pitch_point.point, *current);
 
-    // Check whether the goal is in range yaw and pitch wise
-    bool goal_not_in_range = check_head_collision(goal_yaw, goal_pitch);
-
-    // Check whether the action goal is valid and can be executed
-    // cppcheck-suppress knownConditionTrueFalse
-    if (action_running_ || goal_not_in_range || !(params_.max_yaw[0] < goal_yaw && goal_yaw < params_.max_yaw[1]) ||
-        !(params_.max_pitch[0] < goal_pitch && goal_pitch < params_.max_pitch[1])) {
+    // Check whether the action goal is valid and can be executed. The head
+    // limits are checked twice by the original implementation, once as a
+    // collision check and once directly, which is equivalent to a single check.
+    if (action_running_ || !get_head_limits().contains(goal_position)) {
       return rclcpp_action::GoalResponse::REJECT;
     }
     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
@@ -262,44 +519,23 @@ class HeadMover {
   }
 
   /**
-   * @brief Slows down the speed of the joint that needs to travel less distance so both joints reach the goal at the
-   * same time
-   *
-   * @param delta_faster_joint The delta of the joint that needs to travel less distance and therefore reaches the goal
-   * faster
-   * @param delta_joint The delta of the joint that needs to travel more distance and therefore reaches the goal slower
-   * @param speed The maximum speed of the faster joint (the joint that needs to travel less distance)
-   * @return double The adjusted speed of the faster joint
-   */
-  double calculate_lower_speed(double delta_faster_joint, double delta_joint, double speed) {
-    double estimated_time = delta_faster_joint / speed;
-    if (estimated_time != 0) {
-      return delta_joint / estimated_time;
-    } else {
-      return 0;
-    }
-  }
-
-  /**
    * @brief Send the goal positions to the head motors, but resolve collisions with the body if necessary.
    *
    */
-  bool send_motor_goals(double yaw_position, double pitch_position, bool resolve_collision, double yaw_speed = 1.5,
-                        double pitch_speed = 1.5, double current_yaw_position = 0.0,
-                        double current_pitch_position = 0.0, bool clip = true) {
+  bool send_motor_goals(HeadPosition goal, bool resolve_collision, const HeadVelocity& speeds = {1.5, 1.5},
+                        const HeadPosition& current = {}, bool clip = true) {
     // Debug log the target yaw and pitch position
-    RCLCPP_DEBUG_STREAM(node_->get_logger(), "target yaw/pitch: " << yaw_position << "/" << pitch_position);
+    RCLCPP_DEBUG_STREAM(node_->get_logger(), "target yaw/pitch: " << goal.yaw << "/" << goal.pitch);
 
     // Clip the target yaw and pitch position at the maximum yaw and pitch values as defined in the parameters
     if (clip) {
-      pre_clip(yaw_position, pitch_position);
+      goal = get_head_limits().clamp(goal);
     }
 
     // Resolve collisions if necessary
     if (resolve_collision) {
       // Call behavior that resolves collisions and might change the target yaw and pitch position
-      bool success = avoid_collision_on_path(yaw_position, pitch_position, current_yaw_position, current_pitch_position,
-                                             yaw_speed, pitch_speed);
+      bool success = avoid_collision_on_path(goal, current, speeds);
       // Report error message of we were not able to move to an alternative collision free position
       if (!success) {
         RCLCPP_ERROR_STREAM_THROTTLE(node_->get_logger(), *node_->get_clock(), 1000,
@@ -308,73 +544,45 @@ class HeadMover {
       return success;
     } else {
       // Move the head to the target position but adjust the speed of the joints so both reach the goal at the same time
-      move_head_to_position_with_speed_adjustment(yaw_position, pitch_position, current_yaw_position,
-                                                  current_pitch_position, yaw_speed, pitch_speed);
+      move_head_to_position_with_speed_adjustment(goal, current, speeds);
       return true;
     }
-  }
-
-  /**
-   * @brief Applies clipping to the yaw and pitch values based on the loaded config parameters
-   *
-   */
-  void pre_clip(double& yaw, double& pitch) {
-    yaw = std::clamp(yaw, params_.max_yaw[0], params_.max_yaw[1]);
-    pitch = std::clamp(pitch, params_.max_pitch[0], params_.max_pitch[1]);
   }
 
   /**
    * @brief Tries to move the head to the target position but resolves collisions with the body if necessary.
    *
    */
-  bool avoid_collision_on_path(double goal_yaw, double goal_pitch, double current_yaw, double current_pitch,
-                               double yaw_speed, double pitch_speed, int max_depth = 4, int depth = 0) {
+  bool avoid_collision_on_path(HeadPosition goal, const HeadPosition& current, const HeadVelocity& speeds,
+                               int max_depth = 4, int depth = 0) {
     // Check if we reached the maximum depth of the recursion and if so, return false
     if (depth > max_depth) {
       return false;
     }
 
     // Calculate the distance between the current and the goal position
-    double distance = sqrt(pow(goal_yaw - current_yaw, 2) + pow(goal_pitch - current_pitch, 2));
+    double distance = std::sqrt(std::pow(goal.yaw - current.yaw, 2) + std::pow(goal.pitch - current.pitch, 2));
 
     // Calculate the number of steps we need to take to reach the goal position
-    // This assumes that we move 3 degrees per step
-    int step_count = distance / (3 * DEG_TO_RAD);
+    int step_count = distance / kCollisionCheckStep;
 
-    // Calculate path by performing linear interpolation between the current and the goal position
-    std::vector<std::pair<double, double>> yaw_and_pitch_steps;
+    // Check if we have collisions on our path by performing linear interpolation
+    // between the current and the goal position
+    const HeadLimits limits = get_head_limits();
     for (int i = 0; i < step_count; i++) {
-      yaw_and_pitch_steps.push_back({current_yaw + (goal_yaw - current_yaw) / step_count * i,
-                                     current_pitch + (goal_pitch - current_pitch) / step_count * i});
-    }
-
-    // Check if we have collisions on our path
-    for (int i = 0; i < step_count; i++) {
-      // cppcheck-suppress knownConditionTrueFalse
-      if (check_head_collision(yaw_and_pitch_steps[i].first, yaw_and_pitch_steps[i].second)) {
+      HeadPosition step = {current.yaw + (goal.yaw - current.yaw) / step_count * i,
+                           current.pitch + (goal.pitch - current.pitch) / step_count * i};
+      if (!limits.contains(step)) {
         // If we have a collision, try to move the head to an alternative position
-        // The new position looks 10 degrees further up and is less likely to have a collision with the body
+        // The new position looks further up and is less likely to have a collision with the body
         // Also increase the depth of the recursion as this is a new attempt to move the head to the goal position
-        return avoid_collision_on_path(goal_yaw, goal_pitch + 10 * DEG_TO_RAD, current_yaw, current_pitch, yaw_speed,
-                                       pitch_speed, max_depth, depth + 1);
+        goal.pitch += kCollisionAvoidancePitchStep;
+        return avoid_collision_on_path(goal, current, speeds, max_depth, depth + 1);
       }
     }
 
     // We do not have any collisions on our path, so we can move the head to the goal position
-    move_head_to_position_with_speed_adjustment(goal_yaw, goal_pitch, current_yaw, current_pitch, yaw_speed,
-                                                pitch_speed);
-    return true;
-  }
-
-  /**
-   * @brief Checks if the head collides with the body at a given yaw and pitch position
-   */
-  bool check_head_collision(double yaw, double pitch) {
-    // Checks whether head position is higher than torso.
-    if (params_.max_pitch[0] < pitch && pitch < params_.max_pitch[1] && params_.max_yaw[0] < yaw &&
-        yaw < params_.max_yaw[1]) {
-      return false;
-    }
+    move_head_to_position_with_speed_adjustment(goal, current, speeds);
     return true;
   }
 
@@ -382,27 +590,21 @@ class HeadMover {
    * @brief Move the head to the target position but adjust the speed of the joints so both reach the goal at the same
    * time
    */
-  void move_head_to_position_with_speed_adjustment(double goal_yaw, double goal_pitch, double current_yaw,
-                                                   double current_pitch, double yaw_speed, double pitch_speed) {
-    // Calculate the delta between the current and the goal positions
-    double delta_yaw = std::abs(goal_yaw - current_yaw);
-    double delta_pitch = std::abs(goal_pitch - current_pitch);
-    // Check which axis has to move further and adjust the speed of the other axis so both reach the goal at the same
-    // time
-    if (delta_yaw > delta_pitch) {
-      // Slow down the pitch axis to match the time it takes for the yaw axis to reach the goal
-      pitch_speed = std::min(pitch_speed, calculate_lower_speed(delta_yaw, delta_pitch, yaw_speed));
-    } else {
-      // Slow down the yaw axis to match the time it takes for the pitch axis to reach the goal
-      yaw_speed = std::min(yaw_speed, calculate_lower_speed(delta_pitch, delta_yaw, pitch_speed));
-    }
+  void move_head_to_position_with_speed_adjustment(const HeadPosition& goal, const HeadPosition& current,
+                                                   const HeadVelocity& speeds) {
+    publish_motor_goals(goal, bitbots_head_mover::adjustSpeeds(goal, current, speeds));
+  }
 
+  /**
+   * @brief Publishes the given head position and joint speeds as motor goals
+   */
+  void publish_motor_goals(const HeadPosition& goal, const HeadVelocity& speeds) {
     // Send the motor goals including the position, speed and acceleration
     bitbots_msgs::msg::JointCommand pos_msg;
-    pos_msg.header.stamp = rclcpp::Clock().now();
+    pos_msg.header.stamp = node_->get_clock()->now();
     pos_msg.joint_names = {"head_yaw_joint", "head_pitch_joint"};
-    pos_msg.positions = {goal_yaw, goal_pitch};
-    pos_msg.velocities = {yaw_speed, pitch_speed};
+    pos_msg.positions = {goal.yaw, goal.pitch};
+    pos_msg.velocities = {speeds.yaw, speeds.pitch};
     pos_msg.accelerations = {params_.max_acceleration_yaw, params_.max_acceleration_pitch};
     pos_msg.max_torques = {10, 10};
 
@@ -411,151 +613,55 @@ class HeadMover {
 
   /**
    * @brief Returns the current position of the head motors
+   *
+   * Returns nothing if the joint state does not carry both head joints. Falling
+   * back to zero here would be indistinguishable from the head genuinely looking
+   * straight ahead, and every goal computed relative to it would be wrong by
+   * however far the head actually is from center.
    */
-  void get_head_position(double& head_yaw, double& head_pitch) {
-    head_yaw = 0.0;
-    head_pitch = 0.0;
+  std::optional<HeadPosition> get_head_position() const {
+    HeadPosition position;
+    bool found_yaw = false;
+    bool found_pitch = false;
     // Iterate over all joints and find the head yaw and pitch joints
     for (size_t i = 0; i < current_joint_state_->name.size(); i++) {
-      if (current_joint_state_->name[i] == "head_yaw_joint") {
-        head_yaw = current_joint_state_->position[i];
-      } else if (current_joint_state_->name[i] == "head_pitch_joint") {
-        head_pitch = current_joint_state_->position[i];
+      const bool is_yaw = current_joint_state_->name[i] == "head_yaw_joint";
+      const bool is_pitch = current_joint_state_->name[i] == "head_pitch_joint";
+      if (!is_yaw && !is_pitch) {
+        continue;
       }
-    }
-  }
-
-  /**
-   * @brief Converts a scanline number to a pitch angle
-   */
-  double lineAngle(int line, int line_count, double min_angle, double max_angle) {
-    // Get the angular delta that is covered by the scanlines in the pitch axis
-    double delta = std::abs(max_angle - min_angle);
-    // Calculate the angular step size between two scanlines
-    double steps = delta / (line_count - 1);
-    // Calculate the pitch angle of the given scanline
-    return steps * line + min_angle;
-  }
-
-  /**
-   * @brief Performs a linear interpolation between the min and max yaw values and returns the interpolated steps
-   */
-  std::vector<std::pair<double, double>> interpolatedSteps(int steps, double pitch, double min_yaw, double max_yaw) {
-    // Handle edge case where we do not need to interpolate
-    if (steps == 0) {
-      return {};
-    }
-    // Add one to the step count as we need to include the min and max yaw values
-    steps += 1;
-    // Create a vector that stores the interpolated steps
-    std::vector<std::pair<double, double>> output_points;
-    // Calculate the delta between the min and max yaw values
-    double delta = std::abs(max_yaw - min_yaw);
-    // Calculate the step size between two interpolated steps
-    double step_size = delta / steps;
-    // Iterate over all steps and calculate the interpolated yaw values
-    for (int i = 1; i <= steps; i++) {
-      double yaw = min_yaw + step_size * i;
-      output_points.emplace_back(yaw, pitch);
-    }
-    return output_points;
-  }
-
-  /**
-   * @brief Generates a parameterized search pattern
-   */
-  std::vector<std::pair<double, double>> generatePattern(int line_count, double max_horizontal_angle_left,
-                                                         double max_horizontal_angle_right,
-                                                         double max_vertical_angle_up, double max_vertical_angle_down,
-                                                         double reduce_last_scanline = 1.0,
-                                                         int interpolation_steps = 0) {
-    // Store the keyframes of the search pattern
-    std::vector<std::pair<double, double>> keyframes;
-    // Store the state of the generation process
-    bool down_direction = true;   // true = decreasing line (toward top), false = increasing line (toward bottom)
-    bool right_side = false;      // true = right, false = left
-    bool right_direction = true;  // true = moving right, false = moving left; alternates per scan line
-    int line = line_count - 1;
-    // Calculate the number of iterations that are needed to generate the search pattern
-    int iterations = std::max(line_count * 4 - 4, 2);
-    // Iterate over all iterations and generate the search pattern
-    for (int i = 0; i < iterations; i++) {
-      // Get the maximum yaw values (left and right) for the current yaw position
-      // Select the relevant one based on the current side we are on
-      double current_yaw;
-      if (right_side) {
-        current_yaw = max_horizontal_angle_right;
+      // The parallel arrays are only required to be as long as the caller filled
+      // them, so a name without a matching position must not be indexed
+      if (i >= current_joint_state_->position.size()) {
+        return std::nullopt;
+      }
+      if (is_yaw) {
+        position.yaw = current_joint_state_->position[i];
+        found_yaw = true;
       } else {
-        current_yaw = max_horizontal_angle_left;
-      }
-
-      // Get the current pitch angle based on the current line we are on
-      double current_pitch = lineAngle(line, line_count, max_vertical_angle_up, max_vertical_angle_down);
-
-      // Store the keyframe
-      keyframes.push_back({current_yaw, current_pitch});
-
-      // Check if we move horizontally or vertically in the pattern
-      if (right_side != right_direction) {
-        // We move horizontally, so we might need to interpolate between the current and the next keyframe
-        std::vector<std::pair<double, double>> interpolated_points = interpolatedSteps(
-            interpolation_steps, current_pitch, max_horizontal_angle_right, max_horizontal_angle_left);
-        // Reverse the order of the interpolated points if we are moving to the right
-        if (right_direction) {
-          std::reverse(interpolated_points.begin(), interpolated_points.end());
-        }
-        // Add the interpolated points to the keyframes
-        keyframes.insert(keyframes.end(), interpolated_points.begin(), interpolated_points.end());
-        // Change the direction we are moving in
-        right_side = right_direction;
-
-      } else {
-        // Flip the scan direction so the next line scans the opposite way (boustrophedon)
-        right_direction = !right_direction;
-        // Advance to the next scan line
-        if (down_direction) {
-          line -= 1;
-        } else {
-          line += 1;
-        }
-        // Flip vertical direction when we reach either edge
-        if (line <= 0 || line >= line_count - 1) {
-          down_direction = !down_direction;
-        }
+        position.pitch = current_joint_state_->position[i];
+        found_pitch = true;
       }
     }
-
-    // Reduce the last scanline by a given factor
-    for (auto& keyframe : keyframes) {
-      if (std::abs(keyframe.second - max_vertical_angle_down) < 1e-6) {
-        keyframe = {keyframe.first * reduce_last_scanline, max_vertical_angle_down};
-      }
+    if (!found_yaw || !found_pitch) {
+      return std::nullopt;
     }
-    return keyframes;
+    return position;
   }
 
   /**
-   * @brief Calculates the motor goals that are needed to look at a given point using the inverse kinematics
+   * @brief Returns the head position, reporting loudly if it is unavailable
+   *
+   * Used by the paths that cannot proceed without knowing where the head is.
    */
-  void get_motor_goals_from_point(geometry_msgs::msg::Point head_yaw_point, geometry_msgs::msg::Point head_pitch_point,
-                                  double& head_yaw, double& head_pitch) {
-    double yaw_x = head_yaw_point.x;
-    double yaw_y = head_yaw_point.y;
-
-    double rel_head_yaw = atan2(yaw_y, yaw_x);
-
-    double pitch_x = head_pitch_point.x;
-    double pitch_y = head_pitch_point.y;
-    double pitch_z = head_pitch_point.z;
-
-    double rel_head_pitch = -atan2(pitch_z, sqrt(pitch_x * pitch_x + pitch_y * pitch_y));
-
-    double current_yaw = 0.0;
-    double current_pitch = 0.0;
-    get_head_position(current_yaw, current_pitch);
-
-    head_yaw = rel_head_yaw + current_yaw;
-    head_pitch = rel_head_pitch + (current_pitch - RAD_CAMERA_ANGLE);
+  std::optional<HeadPosition> require_head_position(const char* what) const {
+    const auto position = get_head_position();
+    if (!position) {
+      RCLCPP_ERROR_THROTTLE(node_->get_logger(), *node_->get_clock(), 5000,
+                            "Joint states carry no usable head_yaw_joint and head_pitch_joint position, skipping %s",
+                            what);
+    }
+    return position;
   }
 
   /**
@@ -570,19 +676,21 @@ class HeadMover {
       geometry_msgs::msg::PointStamped rel_head_pitch_point =
           tf_buffer_->transform(point, "head_pitch_link", tf2::durationFromSec(0.9));
 
-      // Get the motor goals that are needed to look at the point from the inverse kinematics
-      double goal_yaw = 0.0;
-      double goal_pitch = 0.0;
-      get_motor_goals_from_point(rel_head_yaw_point.point, rel_head_pitch_point.point, goal_yaw, goal_pitch);
       // Get the current head position
-      double current_yaw = 0.0;
-      double current_pitch = 0.0;
-      get_head_position(current_yaw, current_pitch);
+      const auto maybe_current = require_head_position("a look at update");
+      if (!maybe_current) {
+        return false;
+      }
+      const HeadPosition current = *maybe_current;
+
+      // Get the motor goals that are needed to look at the point from the inverse kinematics
+      HeadPosition goal =
+          bitbots_head_mover::motorGoalsFromPoint(rel_head_yaw_point.point, rel_head_pitch_point.point, current);
 
       // Check if we reached the goal position
-      if (std::abs(goal_yaw - current_yaw) > min_yaw_delta || std::abs(goal_pitch - current_pitch) > min_pitch_delta) {
+      if (std::abs(goal.yaw - current.yaw) > min_yaw_delta || std::abs(goal.pitch - current.pitch) > min_pitch_delta) {
         // Send the motor goals to the head motors
-        send_motor_goals(goal_yaw, goal_pitch, true, params_.look_at.yaw_speed, params_.look_at.pitch_speed);
+        send_motor_goals(goal, true, {params_.look_at.yaw_speed, params_.look_at.pitch_speed});
         // Return false as we did not reach the goal position yet
         return false;
       }
@@ -597,76 +705,27 @@ class HeadMover {
   }
 
   /**
-   * @brief Builds an open-loop SmoothSpline trajectory from the current search pattern.
-   *
-   * The trajectory starts at the current head position and smoothly transitions into the
-   * pattern, so switching head modes does not result in an abrupt movement. Waypoint
-   * timestamps are distributed proportionally to Euclidean arc length so the cycle
-   * (excluding the transition) takes exactly cycle_time_ seconds. The loop is closed by
-   * appending the first waypoint at the end.
+   * @brief Builds an open-loop trajectory from the current search pattern, starting at the
+   * current head position.
    */
   void build_spline_trajectory() {
-    yaw_spline_ = bitbots_splines::SmoothSpline();
-    pitch_spline_ = bitbots_splines::SmoothSpline();
-    spline_valid_ = false;
-    transition_duration_ = 0.0;
-
-    if (pattern_.empty() || cycle_time_ <= 0.0) {
+    // The trajectory transitions out of the current head position, so building
+    // it without knowing that position would start the pattern with a jump from
+    // wherever the head happens to be to the assumed center
+    const auto start = require_head_position("building a search pattern trajectory");
+    if (!start) {
+      search_trajectory_ = {};
       return;
     }
-
-    // Convert all keypoints to radians and close the loop
-    std::vector<std::pair<double, double>> pts_rad;
-    pts_rad.reserve(pattern_.size() + 1);
-    for (const auto& kf : pattern_) {
-      pts_rad.emplace_back(kf.first * DEG_TO_RAD, kf.second * DEG_TO_RAD);
+    search_trajectory_ =
+        bitbots_head_mover::buildSearchPatternTrajectory(pattern_, cycle_time_, *start, params_.transition_speed);
+    if (!search_trajectory_.valid()) {
+      RCLCPP_ERROR_THROTTLE(node_->get_logger(), *node_->get_clock(), 5000,
+                            "Could not build a search pattern trajectory from %zu keyframes with a cycle time of %.2fs",
+                            pattern_.size(), cycle_time_);
+      return;
     }
-    pts_rad.push_back(pts_rad[0]);
-
-    // Compute segment arc lengths and total
-    std::vector<double> lengths;
-    lengths.reserve(pts_rad.size() - 1);
-    double total_length = 0.0;
-    for (size_t i = 1; i < pts_rad.size(); i++) {
-      double dyaw = pts_rad[i].first - pts_rad[i - 1].first;
-      double dpitch = pts_rad[i].second - pts_rad[i - 1].second;
-      double len = std::sqrt(dyaw * dyaw + dpitch * dpitch);
-      lengths.push_back(len);
-      total_length += len;
-    }
-
-    double t = 0.0;
-
-    // Prepend a transition segment from the current head position to the first waypoint
-    // of the pattern, so we don't jump there abruptly when the head mode changes.
-    // Its duration is based on the distance and the configured transition speed.
-    double current_yaw = 0.0;
-    double current_pitch = 0.0;
-    get_head_position(current_yaw, current_pitch);
-    double transition_distance =
-        std::sqrt(std::pow(pts_rad[0].first - current_yaw, 2) + std::pow(pts_rad[0].second - current_pitch, 2));
-    transition_duration_ = transition_distance / params_.transition_speed;
-    if (transition_duration_ > 0.0) {
-      yaw_spline_.addPoint(t, current_yaw);
-      pitch_spline_.addPoint(t, current_pitch);
-      t = transition_duration_;
-    }
-
-    // Add waypoints with timestamps proportional to arc length
-    yaw_spline_.addPoint(t, pts_rad[0].first);
-    pitch_spline_.addPoint(t, pts_rad[0].second);
-    for (size_t i = 0; i < lengths.size(); i++) {
-      double fraction = (total_length > 0.0) ? lengths[i] / total_length : 1.0 / static_cast<double>(lengths.size());
-      t += fraction * cycle_time_;
-      yaw_spline_.addPoint(t, pts_rad[i + 1].first);
-      pitch_spline_.addPoint(t, pts_rad[i + 1].second);
-    }
-
-    spline_duration_ = cycle_time_;
-    yaw_spline_.computeSplines();
-    pitch_spline_.computeSplines();
     spline_start_time_ = node_->now();
-    spline_valid_ = true;
   }
 
   /**
@@ -674,35 +733,259 @@ class HeadMover {
    * the resulting joint position and velocity as open-loop motor goals.
    */
   void perform_search_pattern() {
-    if (!spline_valid_ || spline_duration_ <= 0.0) {
+    if (!search_trajectory_.valid()) {
       return;
     }
 
     // Play the transition from the previous head position once, then loop only over the cyclic part of the trajectory
-    double elapsed = (node_->now() - spline_start_time_).seconds();
-    double t;
-    if (elapsed <= transition_duration_) {
-      t = elapsed;
-    } else {
-      t = transition_duration_ + fmod(elapsed - transition_duration_, spline_duration_);
+    double t = search_trajectory_.phase((node_->now() - spline_start_time_).seconds());
+
+    HeadPosition goal = get_head_limits().clamp(search_trajectory_.trajectory.position(t));
+    HeadVelocity velocity = search_trajectory_.trajectory.velocity(t);
+
+    // The motor goals carry joint speeds, so the direction of travel is dropped here
+    publish_motor_goals(goal, {std::abs(velocity.yaw), std::abs(velocity.pitch)});
+  }
+
+  /**
+   * @brief Looks up the transform that brings a message's frame into the map frame
+   *
+   * A detection array shares one header, so the transform is looked up once per
+   * message and then applied to every point in it. Transforming each point on
+   * its own would repeat the same buffer lookup for every ball or robot in the
+   * message.
+   */
+  bool lookup_to_map(const std_msgs::msg::Header& header, Eigen::Isometry3d& transform) {
+    try {
+      // This runs in the detection callbacks, which are spun on their own executor
+      // thread, so waiting a short while for a transform that is still on its way
+      // does not stall the main loop timer. The wait is not self defeating either:
+      // the transform listener fills the buffer from its own dedicated thread, so
+      // the awaited transform can still arrive while we block here.
+      transform = tf2::transformToEigen(tf_buffer_->lookupTransform(params_.active_vision.map_frame, header.frame_id,
+                                                                    header.stamp, tf2::durationFromSec(0.1)));
+      return true;
+    } catch (const tf2::TransformException& ex) {
+      RCLCPP_WARN_THROTTLE(node_->get_logger(), *node_->get_clock(), 5000,
+                           "Could not transform a detection from '%s' into '%s': %s", header.frame_id.c_str(),
+                           params_.active_vision.map_frame.c_str(), ex.what());
+      return false;
+    }
+  }
+
+  /**
+   * @brief Applies a transform to a point from a message
+   */
+  static Eigen::Vector3d transform_point(const Eigen::Isometry3d& transform, const geometry_msgs::msg::Point& point) {
+    return transform * Eigen::Vector3d(point.x, point.y, point.z);
+  }
+
+  /**
+   * @brief Stores the filtered ball estimate in the map frame
+   */
+  void handle_filtered_ball(const geometry_msgs::msg::PoseWithCovarianceStamped& msg) {
+    Eigen::Isometry3d to_map;
+    if (!lookup_to_map(msg.header, to_map)) {
+      return;
+    }
+    const Eigen::Vector3d position = transform_point(to_map, msg.pose.pose.position);
+    // The two planar variances are what says how well the filter knows the ball,
+    // taking the larger of them treats an estimate that is uncertain in any
+    // direction as uncertain
+    const double covariance = std::max(msg.pose.covariance[0], msg.pose.covariance[7]);
+    // Guard only the world write, never the lookup above, so the main loop is not
+    // serialized behind a blocking transform wait
+    std::lock_guard<std::mutex> lock(world_mutex_);
+    active_vision_.world().setFilteredBall(position, covariance, rclcpp::Time(msg.header.stamp).seconds());
+  }
+
+  /**
+   * @brief Stores the raw ball detections in the map frame
+   */
+  void handle_balls(const soccer_vision_3d_msgs::msg::BallArray& msg) {
+    Eigen::Isometry3d to_map;
+    if (!lookup_to_map(msg.header, to_map)) {
+      return;
     }
 
-    double goal_yaw = yaw_spline_.pos(t);
-    double goal_pitch = pitch_spline_.pos(t);
-    pre_clip(goal_yaw, goal_pitch);
+    const double stamp = rclcpp::Time(msg.header.stamp).seconds();
+    std::vector<bitbots_head_mover::TimedTarget> balls;
+    balls.reserve(msg.balls.size());
+    for (const auto& ball : msg.balls) {
+      // The detection confidence is what the raw detections are weighted by,
+      // they carry no covariance of their own
+      balls.push_back({transform_point(to_map, ball.center), static_cast<double>(ball.confidence.confidence), stamp});
+    }
+    std::lock_guard<std::mutex> lock(world_mutex_);
+    active_vision_.world().setRawBalls(std::move(balls));
+  }
 
-    double yaw_vel = std::abs(yaw_spline_.vel(t));
-    double pitch_vel = std::abs(pitch_spline_.vel(t));
+  /**
+   * @brief Stores the robot detections in the map frame
+   */
+  void handle_robots(const soccer_vision_3d_msgs::msg::RobotArray& msg) {
+    Eigen::Isometry3d to_map;
+    if (!lookup_to_map(msg.header, to_map)) {
+      return;
+    }
 
-    bitbots_msgs::msg::JointCommand pos_msg;
-    pos_msg.header.stamp = node_->get_clock()->now();
-    pos_msg.joint_names = {"head_yaw_joint", "head_pitch_joint"};
-    pos_msg.positions = {goal_yaw, goal_pitch};
-    pos_msg.velocities = {yaw_vel, pitch_vel};
-    pos_msg.accelerations = {params_.max_acceleration_yaw, params_.max_acceleration_pitch};
-    pos_msg.max_torques = {10, 10};
+    const double stamp = rclcpp::Time(msg.header.stamp).seconds();
+    std::vector<bitbots_head_mover::TimedTarget> robots;
+    robots.reserve(msg.robots.size());
+    for (const auto& robot : msg.robots) {
+      robots.push_back(
+          {transform_point(to_map, robot.bb.center.position), static_cast<double>(robot.confidence.confidence), stamp});
+    }
+    std::lock_guard<std::mutex> lock(world_mutex_);
+    active_vision_.world().setRobots(std::move(robots));
+  }
 
-    position_publisher_->publish(pos_msg);
+  /**
+   * @brief Stores the ball a teammate reports
+   */
+  void handle_team_data(const bitbots_msgs::msg::TeamData& msg) {
+    // Teammates report in the map frame already, and a penalized robot's ball is
+    // not worth turning the head for
+    if (msg.state == bitbots_msgs::msg::TeamData::STATE_PENALIZED) {
+      return;
+    }
+    const auto& ball = msg.ball_absolute;
+    // The covariance is a full 6x6 matrix, of which the two planar variances are
+    // what tells us how well the teammate knows where the ball is
+    const double covariance = std::max(ball.covariance[0], ball.covariance[7]);
+    std::lock_guard<std::mutex> lock(world_mutex_);
+    active_vision_.world().setTeamBall(
+        msg.robot_id, Eigen::Vector3d(ball.pose.position.x, ball.pose.position.y, ball.pose.position.z), covariance,
+        rclcpp::Time(msg.header.stamp).seconds());
+  }
+
+  /**
+   * @brief Creates the debug publishers on demand
+   */
+  void ensure_debug_publishers() {
+    if (debug_publishers_created_) {
+      return;
+    }
+    coverage_publisher_ =
+        node_->create_publisher<nav_msgs::msg::OccupancyGrid>("debug/active_vision/field_coverage", 1);
+    candidate_publisher_ =
+        node_->create_publisher<visualization_msgs::msg::MarkerArray>("debug/active_vision/candidates", 1);
+    joint_space_publisher_ = node_->create_publisher<sensor_msgs::msg::Image>("debug/active_vision/joint_space", 1);
+    debug_publishers_created_ = true;
+  }
+
+  /**
+   * @brief Publishes the coverage grid, the candidate markers and the joint space plot
+   */
+  void publish_active_vision_debug(const bitbots_head_mover::ActiveVisionResult& result,
+                                   const Eigen::Isometry3d& robot_pose) {
+    ensure_debug_publishers();
+
+    const auto stamp = node_->get_clock()->now();
+    const std::string& map_frame = params_.active_vision.map_frame;
+
+    coverage_publisher_->publish(bitbots_head_mover::coverageGrid(active_vision_.coverage(), map_frame, stamp));
+    candidate_publisher_->publish(
+        bitbots_head_mover::candidateMarkers(result, active_vision_, robot_pose, map_frame, stamp));
+
+    const cv::Mat plot = bitbots_head_mover::jointSpaceDebugImage(
+        result, active_vision_.headLimits(), static_cast<int>(params_.active_vision.debug.image_size));
+
+    std_msgs::msg::Header header;
+    header.stamp = stamp;
+    header.frame_id = map_frame;
+    joint_space_publisher_->publish(*cv_bridge::CvImage(header, "bgr8", plot).toImageMsg());
+  }
+
+  /**
+   * @brief Runs one cycle of the active vision head mode
+   *
+   * Holds the last commanded position when an input is missing, so a missing
+   * transform or a camera that has not come up yet is visible as a head that
+   * stops rather than one that silently falls back to a sweep.
+   */
+  void perform_active_vision() {
+    // Inputs that can arrive late are retried by their own subscriptions and by
+    // the field dimension retry timer, so this only has to report the wait
+    const auto readiness = active_vision_.readiness();
+    if (readiness != bitbots_head_mover::ActiveVisionReadiness::Ready) {
+      hold_active_vision_position(bitbots_head_mover::describe(readiness));
+      return;
+    }
+
+    // The calibration may only become available after the description did
+    if (!active_vision_.kinematics().hasCameraCalibration() && !update_camera_calibration()) {
+      hold_active_vision_position("the extrinsic camera calibration is unavailable");
+      return;
+    }
+
+    // Where the robot stands on the field, including the orientation the IMU
+    // contributes, which is what decides what the head can actually see
+    Eigen::Isometry3d robot_pose;
+    try {
+      robot_pose = tf2::transformToEigen(tf_buffer_->lookupTransform(params_.active_vision.map_frame,
+                                                                     params_.active_vision.root_link,
+                                                                     tf2::TimePointZero, tf2::durationFromSec(0.1)));
+    } catch (const tf2::TransformException& ex) {
+      hold_active_vision_position(ex.what());
+      return;
+    }
+
+    const auto head_position = require_head_position("an active vision cycle");
+    if (!head_position) {
+      hold_active_vision_position("the current head position is unknown");
+      return;
+    }
+
+    bitbots_head_mover::ActiveVisionInput input;
+    input.head_position = *head_position;
+    input.robot_pose = robot_pose;
+    input.now = node_->now().seconds();
+
+    bitbots_head_mover::ActiveVisionResult result;
+    {
+      // The detection thread writes the world model concurrently; hold it steady
+      // for the duration of the planning cycle that reads and prunes it
+      std::lock_guard<std::mutex> lock(world_mutex_);
+      result = active_vision_.plan(input);
+    }
+    if (!result.valid) {
+      hold_active_vision_position(bitbots_head_mover::describe(result.failure));
+      return;
+    }
+
+    // A partially unscorable candidate set still yields a decision, but it means
+    // the planner chose from fewer options than it sampled
+    if (result.unscorable_candidates > 0) {
+      RCLCPP_WARN_THROTTLE(node_->get_logger(), *node_->get_clock(), 5000,
+                           "Discarded %zu of %zu head target candidates because they could not be scored",
+                           result.unscorable_candidates, result.candidates.size());
+    }
+
+    active_vision_hold_position_ = result.position;
+    // The planner's proportional controller already produced the setpoint one
+    // step towards the selected target and the speed to reach it; the motor goals
+    // carry joint speeds, so the direction of travel is dropped
+    publish_motor_goals(result.position, {std::abs(result.velocity.yaw), std::abs(result.velocity.pitch)});
+
+    if (params_.active_vision.debug.enabled) {
+      // The debug markers rebuild a scorer over the world model, so this read has
+      // to be guarded against the detection thread as well
+      std::lock_guard<std::mutex> lock(world_mutex_);
+      publish_active_vision_debug(result, robot_pose);
+    }
+  }
+
+  /**
+   * @brief Keeps the head where it is because the active vision mode cannot plan
+   */
+  void hold_active_vision_position(const std::string& reason) {
+    RCLCPP_WARN_THROTTLE(node_->get_logger(), *node_->get_clock(), 5000, "Active vision is holding position: %s",
+                         reason.c_str());
+    // Publishing nothing is what holds the head: the motors keep the last goal
+    // they were given. Sending a goal with a zero speed instead would depend on
+    // how the hardware interface reads a zero velocity, which is exactly the
+    // ambiguity this mode should not rely on. This mirrors how DONT_MOVE works.
   }
 
   /**
@@ -713,7 +996,10 @@ class HeadMover {
     uint curr_head_mode = head_mode_;
 
     // Pull the parameters from the parameter server
-    params_ = param_listener_->get_params();
+    if (param_listener_->is_old(params_)) {
+      params_ = param_listener_->get_params();
+      apply_active_vision_parameters();
+    }
 
     // Check if we received the joint states yet and if not, return
     if (!current_joint_state_) {
@@ -727,29 +1013,37 @@ class HeadMover {
         case bitbots_msgs::msg::HeadMode::DONT_MOVE:
           // Nothing to do if we go into track ball or dont move mode
           break;
+
+        case bitbots_msgs::msg::HeadMode::ACTIVE_VISION:
+          // Entering active vision starts from wherever the head currently is,
+          // there is no pattern to precompute
+          active_vision_hold_position_.reset();
+          break;
         case bitbots_msgs::msg::HeadMode::SEARCH_BALL_PENALTY:
           cycle_time_ = params_.search_patterns.search_ball_penalty.cycle_time;
-          pattern_ = generatePattern(params_.search_patterns.search_ball_penalty.scan_lines,
-                                     params_.search_patterns.search_ball_penalty.yaw_max[0],
-                                     params_.search_patterns.search_ball_penalty.yaw_max[1],
-                                     params_.search_patterns.search_ball_penalty.pitch_max[0],
-                                     params_.search_patterns.search_ball_penalty.pitch_max[1],
-                                     params_.search_patterns.search_ball_penalty.reduce_last_scanline);
+          pattern_ =
+              bitbots_head_mover::generatePattern(params_.search_patterns.search_ball_penalty.scan_lines,
+                                                  params_.search_patterns.search_ball_penalty.yaw_max[0],
+                                                  params_.search_patterns.search_ball_penalty.yaw_max[1],
+                                                  params_.search_patterns.search_ball_penalty.pitch_max[0],
+                                                  params_.search_patterns.search_ball_penalty.pitch_max[1],
+                                                  params_.search_patterns.search_ball_penalty.reduce_last_scanline);
           break;
 
         case bitbots_msgs::msg::HeadMode::SEARCH_FIELD_FEATURES:
           cycle_time_ = params_.search_patterns.search_field_features.cycle_time;
-          pattern_ = generatePattern(params_.search_patterns.search_field_features.scan_lines,
-                                     params_.search_patterns.search_field_features.yaw_max[0],
-                                     params_.search_patterns.search_field_features.yaw_max[1],
-                                     params_.search_patterns.search_field_features.pitch_max[0],
-                                     params_.search_patterns.search_field_features.pitch_max[1],
-                                     params_.search_patterns.search_field_features.reduce_last_scanline);
+          pattern_ =
+              bitbots_head_mover::generatePattern(params_.search_patterns.search_field_features.scan_lines,
+                                                  params_.search_patterns.search_field_features.yaw_max[0],
+                                                  params_.search_patterns.search_field_features.yaw_max[1],
+                                                  params_.search_patterns.search_field_features.pitch_max[0],
+                                                  params_.search_patterns.search_field_features.pitch_max[1],
+                                                  params_.search_patterns.search_field_features.reduce_last_scanline);
           break;
 
         case bitbots_msgs::msg::HeadMode::SEARCH_FRONT:
           cycle_time_ = params_.search_patterns.search_front.cycle_time;
-          pattern_ = generatePattern(
+          pattern_ = bitbots_head_mover::generatePattern(
               params_.search_patterns.search_front.scan_lines, params_.search_patterns.search_front.yaw_max[0],
               params_.search_patterns.search_front.yaw_max[1], params_.search_patterns.search_front.pitch_max[0],
               params_.search_patterns.search_front.pitch_max[1],
@@ -758,7 +1052,7 @@ class HeadMover {
 
         case bitbots_msgs::msg::HeadMode::LOOK_FORWARD:
           cycle_time_ = params_.search_patterns.look_forward.cycle_time;
-          pattern_ = generatePattern(
+          pattern_ = bitbots_head_mover::generatePattern(
               params_.search_patterns.look_forward.scan_lines, params_.search_patterns.look_forward.yaw_max[0],
               params_.search_patterns.look_forward.yaw_max[1], params_.search_patterns.look_forward.pitch_max[0],
               params_.search_patterns.look_forward.pitch_max[1],
@@ -766,6 +1060,12 @@ class HeadMover {
           break;
 
         default:
+          // An unknown mode means the sender and this node disagree about the
+          // HeadMode message. Silently doing nothing would look exactly like a
+          // head that was told to hold still.
+          RCLCPP_ERROR_THROTTLE(node_->get_logger(), *node_->get_clock(), 5000,
+                                "Received unknown head mode %u, ignoring it and keeping the previous mode",
+                                curr_head_mode);
           return;
       }
 
@@ -776,7 +1076,8 @@ class HeadMover {
       // the current head position, so we also rebuild it when we re-enter a search pattern from
       // e.g. ball tracking instead of continuing the old trajectory with an abrupt movement.
       if (curr_head_mode != bitbots_msgs::msg::HeadMode::TRACK_BALL &&
-          curr_head_mode != bitbots_msgs::msg::HeadMode::DONT_MOVE) {
+          curr_head_mode != bitbots_msgs::msg::HeadMode::DONT_MOVE &&
+          curr_head_mode != bitbots_msgs::msg::HeadMode::ACTIVE_VISION) {
         build_spline_trajectory();
       }
     }
@@ -787,12 +1088,22 @@ class HeadMover {
     {
       // If we are in search track mode look at the ball
       if (curr_head_mode == bitbots_msgs::msg::HeadMode::TRACK_BALL) {
+        // The filtered ball is written by the detection thread, so take a
+        // consistent snapshot of it under the lock before using it
+        geometry_msgs::msg::PoseWithCovarianceStamped ball_snapshot;
+        {
+          std::lock_guard<std::mutex> lock(world_mutex_);
+          ball_snapshot = ball_position_;
+        }
         // Convert the ball position to a PointStamped
         geometry_msgs::msg::PointStamped look_at_point;
-        look_at_point.header = ball_position_.header;
-        look_at_point.point = ball_position_.pose.pose.position;
+        look_at_point.header = ball_snapshot.header;
+        look_at_point.point = ball_snapshot.pose.pose.position;
         // Try to look at the ball
         look_at(look_at_point);
+      } else if (curr_head_mode == bitbots_msgs::msg::HeadMode::ACTIVE_VISION) {
+        // Decide where to look by sampling and scoring head trajectories
+        perform_active_vision();
       } else {
         // Execute the search pattern
         perform_search_pattern();
@@ -804,6 +1115,14 @@ class HeadMover {
    * @brief A getter that returns the node
    */
   std::shared_ptr<rclcpp::Node> get_node() { return node_; }
+
+  /**
+   * @brief The callback group carrying the blocking detection callbacks
+   *
+   * Spun by a second executor on its own thread so their tf waits do not stall
+   * the main executor that drives the search pattern timer.
+   */
+  rclcpp::CallbackGroup::SharedPtr get_detection_callback_group() { return detection_callback_group_; }
 };
 }  // namespace move_head
 
@@ -812,7 +1131,20 @@ int main(int argc, char* argv[]) {
   rclcpp::experimental::executors::EventsExecutor exec;
   auto head_mover = std::make_shared<move_head::HeadMover>();
   exec.add_node(head_mover->get_node());
+
+  // The detection callbacks block on tf lookups. Spinning them on a second
+  // executor on a dedicated thread keeps that wait off the main executor, so the
+  // search pattern timer keeps ticking at a steady rate. The detection callback
+  // group was created with auto_add=false, so add_node above did not pick it up.
+  rclcpp::executors::SingleThreadedExecutor detection_exec;
+  detection_exec.add_callback_group(head_mover->get_detection_callback_group(),
+                                    head_mover->get_node()->get_node_base_interface());
+  std::thread detection_thread([&detection_exec]() { detection_exec.spin(); });
+
   exec.spin();
+
+  detection_exec.cancel();
+  detection_thread.join();
   rclcpp::shutdown();
 
   return 0;

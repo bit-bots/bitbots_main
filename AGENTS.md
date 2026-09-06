@@ -43,11 +43,49 @@ package's manifests and nearby code before choosing tools or patterns.
   as they might change later, thus making the documentation outdated.
   Instead, describe the expected behavior or refer to the relevant code sections.
 
+## Failure Handling
+
+Handle unexpected states explicitly and loudly. A robot that behaves subtly
+wrong is far harder to debug than one that says what is missing and does
+nothing. Never invent a value to keep going.
+
+- Never substitute a made up default for missing or malformed input. A
+  fabricated value is indistinguishable from a real one, both to the rest of the
+  system and to whoever debugs it later. Zero, identity, and empty are the most
+  dangerous of these, because they are frequently valid readings.
+- Prefer making the failure unrepresentable. Return `std::optional`, a status,
+  or a validity flag rather than a plausible looking value, so that callers have
+  to acknowledge the failure instead of silently inheriting it.
+- Log at the point where enough context exists to say what is actually wrong,
+  and name the missing input. Prefer throttled logging in periodic code so a
+  persistent fault does not flood the log. Use a warning when the node can
+  continue degraded, an error when it cannot do its job at all.
+- Drop the affected update rather than the whole process. Skipping one cycle and
+  reporting why is almost always better than crashing, and always better than
+  publishing a command derived from data that was not there.
+- Fail early. Validate inputs, parameters and transforms where they enter the
+  system, not at the point where the bad value finally produces a visible
+  symptom.
+- Keep retrying inputs that legitimately arrive late, such as transforms,
+  parameters from other nodes, and latched topics. Do not disable a feature for
+  the rest of the run because of a startup race, and keep reporting the wait.
+- Distinguish "not available yet" from "broken". The first is expected during
+  startup and should be reported as a wait, the second should be reported as an
+  error.
+- Do not let a fallback path quietly replace the intended one. If a degraded
+  mode exists, make entering it visible in the logs and say which mode is
+  running.
+- Treat contract violations, such as an out of range index or a precondition a
+  caller must uphold, as programming errors and assert on them, rather than
+  clamping the input into a range that hides the bug.
+
 ## Development Environment
 
 This ROS 2 workspace is managed by Pixi. Run development commands through the
-repository's Pixi environments; do not invoke `colcon`, ROS 2 tools, or formatters
-directly from the host shell.
+repository's Pixi tasks; do not invoke `colcon`, ROS 2 tools, or formatters
+directly from the host shell, and do not build, clean, or format by hand when a
+task exists for it. The tasks carry flags the workspace depends on, and hand
+written equivalents silently drop them.
 
 - Use the `default` environment for normal development.
   It contains the `ros` and `format` features.
@@ -76,6 +114,12 @@ Common commands:
 - Run one-off tools with `pixi run -e default <command>`.
 - Clean all workspace build artifacts with `pixi run -e default clean`.
 - Clean one package with `pixi run -e default clean <package>`.
+  Prefer this over cleaning everything, because a full clean forces a rebuild of
+  the entire workspace.
+- Never remove `build/`, `install/`, or `log/` by hand, for example with `rm -rf`.
+  Removing the install space breaks every package that is not rebuilt with it,
+  including ones outside the selection being worked on, and recovering requires a
+  full workspace rebuild. Use the clean task, which scopes the removal correctly.
 - Use `pixi clean` only to reset Pixi's local environment data.
   This requires downloading dependencies and rebuilding afterward.
 
