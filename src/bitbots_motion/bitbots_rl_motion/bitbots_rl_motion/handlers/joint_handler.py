@@ -17,6 +17,17 @@ class JointHandler(Handler):
         self._joint_signs = np.array(self._node.get_parameter("joints.joint_signs").value, dtype=np.float32)
         self._kp = np.array(self._node.get_parameter("joints.kp").value, dtype=np.float32)
         self._kd = np.array(self._node.get_parameter("joints.kd").value, dtype=np.float32)
+
+        # Range the commanded position is clamped to. The configured limits are shrunk
+        # around their center, so a policy is never asked for a pose the joint can not
+        # reach and the joint is not driven against its end stop.
+        limits_lower = np.array(self._node.get_parameter("joints.position_limits_lower").value, dtype=np.float32)
+        limits_upper = np.array(self._node.get_parameter("joints.position_limits_upper").value, dtype=np.float32)
+        factor = float(self._node.get_parameter("joints.soft_limit_factor").value)
+        center = (limits_upper + limits_lower) / 2
+        half_range = (limits_upper - limits_lower) / 2 * factor
+        self._limit_lower = center - half_range
+        self._limit_upper = center + half_range
         self._previous_action: np.ndarray = np.zeros(len(self._ordered_relevant_joint_names), dtype=np.float32)
         self._joint_state: Optional[JointState] = None
 
@@ -109,6 +120,7 @@ class JointHandler(Handler):
             # Target is built in the policy's joint convention, then converted back to
             # the robot's convention with joint_signs (inverse of the read mapping).
             positions = (onnx_pred * self._action_scales + self._walkready_state) * self._joint_signs
+        positions = np.clip(positions, self._limit_lower, self._limit_upper)
         # Uncontrolled joints (e.g. the head) are dropped from the published command.
         self._joint_command.positions = positions[self._publish_indices]
         return self._joint_command

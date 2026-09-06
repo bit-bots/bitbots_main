@@ -7,7 +7,6 @@ The runners rebuild the history on every activation, so they have to do the same
 """
 
 import numpy as np
-
 from bitbots_rl_motion.history_buffer import HistoryBuffer
 
 

@@ -124,6 +124,57 @@ amp_kick_node:
         0.10,  # l_ankle_pitch_joint
         0.10,  # l_ankle_roll_joint
       ]
+      # Hard joint limits of the robot. The commanded position is clamped to them, so a
+      # policy that asks for a pose the joint can not reach drives the joint against its
+      # end stop instead of being commanded past it. The simulation does not clamp the
+      # target either, but there the joint range stops the joint in the physics, which a
+      # real robot only does mechanically. The factor shrinks the allowed range around
+      # its center, matching how the training penalized leaving the range.
+      soft_limit_factor: 1.0
+      position_limits_lower: [
+        -2.5500,  # r_shoulder_pitch_joint
+        -1.6500,  # r_shoulder_roll_joint
+        -2.5500,  # r_upper_arm_joint
+        -1.8000,  # r_elbow_joint
+        -2.5500,  # l_shoulder_pitch_joint
+        -1.4000,  # l_shoulder_roll_joint
+        -2.5500,  # l_upper_arm_joint
+        -2.0400,  # l_elbow_joint
+        -2.8400,  # r_hip_pitch_joint
+        -3.1000,  # r_hip_roll_joint
+        -2.7700,  # r_thigh_joint
+        -1.9700,  # r_calf_joint
+        -0.9500,  # r_ankle_pitch_joint
+        -0.7200,  # r_ankle_roll_joint
+        -2.8400,  # l_hip_pitch_joint
+        -0.1500,  # l_hip_roll_joint
+        -2.7700,  # l_thigh_joint
+        -2.2100,  # l_calf_joint
+        -0.8500,  # l_ankle_pitch_joint
+        -0.7200,  # l_ankle_roll_joint
+      ]
+      position_limits_upper: [
+        2.5500,  # r_shoulder_pitch_joint
+        1.4000,  # r_shoulder_roll_joint
+        2.5500,  # r_upper_arm_joint
+        2.0400,  # r_elbow_joint
+        2.5500,  # l_shoulder_pitch_joint
+        1.6500,  # l_shoulder_roll_joint
+        2.5500,  # l_upper_arm_joint
+        1.8000,  # l_elbow_joint
+        2.8400,  # r_hip_pitch_joint
+        0.1500,  # r_hip_roll_joint
+        2.4500,  # r_thigh_joint
+        2.2100,  # r_calf_joint
+        0.8500,  # r_ankle_pitch_joint
+        0.7200,  # r_ankle_roll_joint
+        2.8400,  # l_hip_pitch_joint
+        3.1000,  # l_hip_roll_joint
+        2.4500,  # l_thigh_joint
+        1.9700,  # l_calf_joint
+        0.9500,  # l_ankle_pitch_joint
+        0.7200,  # l_ankle_roll_joint
+      ]
 
     phase:
       # The policy is run at 50 Hz, matching the control rate of the training task

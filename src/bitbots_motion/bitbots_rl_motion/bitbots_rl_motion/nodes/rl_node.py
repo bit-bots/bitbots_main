@@ -44,6 +44,18 @@ class RLNode(Node, ABC):
         self.declare_parameter(
             "joints.joint_signs", [1.0] * len(self.get_parameter("joints.ordered_relevant_joint_names").value)
         )
+        # Hard joint limits the commanded position is clamped to, shrunk around their
+        # center by the soft limit factor. Defaulting to a range no policy can reach
+        # keeps the clamp inactive for nodes that do not configure their limits.
+        self.declare_parameter(
+            "joints.position_limits_lower",
+            [-1e6] * len(self.get_parameter("joints.ordered_relevant_joint_names").value),
+        )
+        self.declare_parameter(
+            "joints.position_limits_upper",
+            [1e6] * len(self.get_parameter("joints.ordered_relevant_joint_names").value),
+        )
+        self.declare_parameter("joints.soft_limit_factor", 1.0)
         # Joints that are observed but excluded from the published JointCommand
         # (left to other controllers, e.g. the head behavior). Default [""]
         # matches no joint, so nothing is excluded.

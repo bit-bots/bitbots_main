@@ -5,7 +5,6 @@ import numpy as np
 from rclpy.action import ActionServer, CancelResponse, GoalResponse
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.duration import Duration
-from rclpy.time import Time
 
 from bitbots_msgs.action import Kick
 from bitbots_rl_motion.handlers import Handler
