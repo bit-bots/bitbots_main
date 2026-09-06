@@ -4,6 +4,8 @@
   <arg name="kick" default="true"/>
   <arg name="mjlab_walk" default="false"/>
   <arg name="mjlab_getup" default="true"/>
+  <arg name="amp_walk" default="false"/>
+  <arg name="amp_kick" default="false"/>
 
 
   <group if="$(var walk)">
@@ -21,6 +23,18 @@
   <group if="$(var mjlab_walk)">
     <node pkg="bitbots_rl_motion" exec="mjlab_walk_node" output="screen">
       <param from="$(find-pkg-share bitbots_rl_motion)/configs/mjlab_walk_model.yaml" />
+      <param name="use_sim_time" value="$(var sim)"/>
+    </node>
+  </group>
+  <group if="$(var amp_walk)">
+    <node pkg="bitbots_rl_motion" exec="amp_walk_node" output="screen">
+      <param from="$(find-pkg-share bitbots_rl_motion)/configs/amp_walk_model.yaml" />
+      <param name="use_sim_time" value="$(var sim)"/>
+    </node>
+  </group>
+  <group if="$(var amp_kick)">
+    <node pkg="bitbots_rl_motion" exec="amp_kick_node" output="screen">
+      <param from="$(find-pkg-share bitbots_rl_motion)/configs/amp_kick_model.yaml" />
       <param name="use_sim_time" value="$(var sim)"/>
     </node>
   </group>

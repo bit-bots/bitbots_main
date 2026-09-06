@@ -1,0 +1,162 @@
+# Configuration of the AMP soccer kick policy, trained with mjlab on the HighTorque Pi Plus.
+#
+# The joint order, the default pose, the gains and the action scale are the ones of
+# the training task. The policy observes the joints relative to the default pose and
+# its action is added on top of the same pose, scaled by the action scale.
+#
+# The shipped policy was exported from the AMP_mjlab run
+# piplus_amp_kick/2026-09-05_07-52-00 (15000 iterations), from the
+# AMP_mjlab-kick-noballvel checkout, in which the ball velocity is critic only.
+# Every value below was taken from the env.yaml that run recorded for itself.
+amp_kick_node:
+  ros__parameters:
+    model: amp_kick.onnx
+
+    joints:
+      ordered_relevant_joint_names: [
+        "r_shoulder_pitch_joint",
+        "r_shoulder_roll_joint",
+        "r_upper_arm_joint",
+        "r_elbow_joint",
+        "l_shoulder_pitch_joint",
+        "l_shoulder_roll_joint",
+        "l_upper_arm_joint",
+        "l_elbow_joint",
+        "r_hip_pitch_joint",
+        "r_hip_roll_joint",
+        "r_thigh_joint",
+        "r_calf_joint",
+        "r_ankle_pitch_joint",
+        "r_ankle_roll_joint",
+        "l_hip_pitch_joint",
+        "l_hip_roll_joint",
+        "l_thigh_joint",
+        "l_calf_joint",
+        "l_ankle_pitch_joint",
+        "l_ankle_roll_joint",
+      ]
+      # Default pose of the training task, which is the mean pose of the motion dataset
+      walkready_state: [
+        1.2902,  # r_shoulder_pitch_joint
+        1.1479,  # r_shoulder_roll_joint
+        -0.1694,  # r_upper_arm_joint
+        1.8082,  # r_elbow_joint
+        -1.3218,  # l_shoulder_pitch_joint
+        -1.0850,  # l_shoulder_roll_joint
+        0.1584,  # l_upper_arm_joint
+        -1.9507,  # l_elbow_joint
+        0.6691,  # r_hip_pitch_joint
+        -0.1417,  # r_hip_roll_joint
+        0.1645,  # r_thigh_joint
+        1.0644,  # r_calf_joint
+        0.1619,  # r_ankle_pitch_joint
+        0.0000,  # r_ankle_roll_joint
+        -0.6540,  # l_hip_pitch_joint
+        0.1116,  # l_hip_roll_joint
+        -0.1363,  # l_thigh_joint
+        -1.0866,  # l_calf_joint
+        -0.1045,  # l_ankle_pitch_joint
+        0.0000,  # l_ankle_roll_joint
+      ]
+      kp: [
+        6.0,  # r_shoulder_pitch_joint
+        6.0,  # r_shoulder_roll_joint
+        6.0,  # r_upper_arm_joint
+        6.0,  # r_elbow_joint
+        6.0,  # l_shoulder_pitch_joint
+        6.0,  # l_shoulder_roll_joint
+        6.0,  # l_upper_arm_joint
+        6.0,  # l_elbow_joint
+        50.0,  # r_hip_pitch_joint
+        50.0,  # r_hip_roll_joint
+        50.0,  # r_thigh_joint
+        50.0,  # r_calf_joint
+        50.0,  # r_ankle_pitch_joint
+        50.0,  # r_ankle_roll_joint
+        50.0,  # l_hip_pitch_joint
+        50.0,  # l_hip_roll_joint
+        50.0,  # l_thigh_joint
+        50.0,  # l_calf_joint
+        50.0,  # l_ankle_pitch_joint
+        50.0,  # l_ankle_roll_joint
+      ]
+      kd: [
+        0.6,  # r_shoulder_pitch_joint
+        0.6,  # r_shoulder_roll_joint
+        0.6,  # r_upper_arm_joint
+        0.6,  # r_elbow_joint
+        0.6,  # l_shoulder_pitch_joint
+        0.6,  # l_shoulder_roll_joint
+        0.6,  # l_upper_arm_joint
+        0.6,  # l_elbow_joint
+        1.1,  # r_hip_pitch_joint
+        1.4,  # r_hip_roll_joint
+        1.1,  # r_thigh_joint
+        1.1,  # r_calf_joint
+        1.1,  # r_ankle_pitch_joint
+        1.1,  # r_ankle_roll_joint
+        1.1,  # l_hip_pitch_joint
+        1.4,  # l_hip_roll_joint
+        1.1,  # l_thigh_joint
+        1.1,  # l_calf_joint
+        1.1,  # l_ankle_pitch_joint
+        1.1,  # l_ankle_roll_joint
+      ]
+      action_scales: [
+        0.10,  # r_shoulder_pitch_joint
+        0.10,  # r_shoulder_roll_joint
+        0.10,  # r_upper_arm_joint
+        0.10,  # r_elbow_joint
+        0.10,  # l_shoulder_pitch_joint
+        0.10,  # l_shoulder_roll_joint
+        0.10,  # l_upper_arm_joint
+        0.10,  # l_elbow_joint
+        0.10,  # r_hip_pitch_joint
+        0.10,  # r_hip_roll_joint
+        0.10,  # r_thigh_joint
+        0.10,  # r_calf_joint
+        0.10,  # r_ankle_pitch_joint
+        0.10,  # r_ankle_roll_joint
+        0.10,  # l_hip_pitch_joint
+        0.10,  # l_hip_roll_joint
+        0.10,  # l_thigh_joint
+        0.10,  # l_calf_joint
+        0.10,  # l_ankle_pitch_joint
+        0.10,  # l_ankle_roll_joint
+      ]
+
+    phase:
+      # The policy is run at 50 Hz, matching the control rate of the training task
+      control_dt: 0.02
+      gait_frequency: 0.0
+      use_phase: False
+
+    obs:
+      # Number of stacked frames the policy observes, matching the history length of
+      # the observation group of the training task
+      history_length: 4
+
+
+    ball:
+      topic: ball_position_relative_filtered
+      # Frame the ball is observed in, which is the anchor body of the training task
+      anchor_frame: torso_link
+      # A ball older than this is considered lost and ends the kick
+      timeout: 0.5
+      # The ball filter keeps publishing after it lost the ball, with a growing
+      # covariance, so the estimate is only trusted below this. Matches the
+      # ball_max_covariance the behavior uses to decide that it sees the ball.
+      max_covariance: 2.0
+
+    command:
+      action_name: rl_kick
+      # Duration in seconds a kick goal is held if it does not bring its own timeout
+      kick_timeout: 4.0
+      # Requested strengths below this are asked of the policy as a weak kick
+      strong_kick_min_strength: 2.5
+      # The kick direction is anchored in this frame, so it stays fixed in the world
+      # while the robot turns towards the ball
+      odom_frame: odom
+      base_frame: base_link
+
+    providers: ["CPUExecutionProvider"]
