@@ -4,8 +4,6 @@ The workspace root `Cargo.toml` temporarily overrides r2r's binding-generation
 crates with a pinned fork commit. The fork updates their bindgen dependency to
 handle Clang type definitions correctly, allowing ROS type-support fields to be
 generated without a local message-generator workaround.
-The dependency update is tracked in the
-[upstream r2r pull request](https://github.com/sequenceplanner/r2r/pull/135).
 
 The override covers every r2r crate that directly depends on bindgen so they use
 compatible builder and bindings types. See the

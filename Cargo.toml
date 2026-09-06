@@ -16,7 +16,7 @@ debug = true
 [patch.crates-io]
 # Use the Clang-compatible bindgen release until r2r updates its dependency.
 # Remove these overrides once an r2r release includes the update.
-r2r_common = { git = "https://github.com/jaagut/r2r", rev = "3e07ff276092c326ca8f835ed8ded3361083ca58" }
-r2r_rcl = { git = "https://github.com/jaagut/r2r", rev = "3e07ff276092c326ca8f835ed8ded3361083ca58" }
-r2r_msg_gen = { git = "https://github.com/jaagut/r2r", rev = "3e07ff276092c326ca8f835ed8ded3361083ca58" }
-r2r_actions = { git = "https://github.com/jaagut/r2r", rev = "3e07ff276092c326ca8f835ed8ded3361083ca58" }
+r2r_common = { git = "https://github.com/bit-bots/r2r", rev = "3e07ff276092c326ca8f835ed8ded3361083ca58" }
+r2r_rcl = { git = "https://github.com/bit-bots/r2r", rev = "3e07ff276092c326ca8f835ed8ded3361083ca58" }
+r2r_msg_gen = { git = "https://github.com/bit-bots/r2r", rev = "3e07ff276092c326ca8f835ed8ded3361083ca58" }
+r2r_actions = { git = "https://github.com/bit-bots/r2r", rev = "3e07ff276092c326ca8f835ed8ded3361083ca58" }

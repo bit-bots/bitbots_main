@@ -2952,7 +2952,7 @@ dependencies = [
 [[package]]
 name = "r2r_actions"
 version = "0.9.5"
-source = "git+https://github.com/jaagut/r2r?rev=3e07ff276092c326ca8f835ed8ded3361083ca58#3e07ff276092c326ca8f835ed8ded3361083ca58"
+source = "git+https://github.com/bit-bots/r2r?rev=3e07ff276092c326ca8f835ed8ded3361083ca58#3e07ff276092c326ca8f835ed8ded3361083ca58"
 dependencies = [
  "bindgen",
  "r2r_common",
@@ -2963,7 +2963,7 @@ dependencies = [
 [[package]]
 name = "r2r_common"
 version = "0.9.5"
-source = "git+https://github.com/jaagut/r2r?rev=3e07ff276092c326ca8f835ed8ded3361083ca58#3e07ff276092c326ca8f835ed8ded3361083ca58"
+source = "git+https://github.com/bit-bots/r2r?rev=3e07ff276092c326ca8f835ed8ded3361083ca58#3e07ff276092c326ca8f835ed8ded3361083ca58"
 dependencies = [
  "bindgen",
  "os_str_bytes",
@@ -2985,7 +2985,7 @@ dependencies = [
 [[package]]
 name = "r2r_msg_gen"
 version = "0.9.5"
-source = "git+https://github.com/jaagut/r2r?rev=3e07ff276092c326ca8f835ed8ded3361083ca58#3e07ff276092c326ca8f835ed8ded3361083ca58"
+source = "git+https://github.com/bit-bots/r2r?rev=3e07ff276092c326ca8f835ed8ded3361083ca58#3e07ff276092c326ca8f835ed8ded3361083ca58"
 dependencies = [
  "bindgen",
  "force-send-sync",
@@ -3002,7 +3002,7 @@ dependencies = [
 [[package]]
 name = "r2r_rcl"
 version = "0.9.5"
-source = "git+https://github.com/jaagut/r2r?rev=3e07ff276092c326ca8f835ed8ded3361083ca58#3e07ff276092c326ca8f835ed8ded3361083ca58"
+source = "git+https://github.com/bit-bots/r2r?rev=3e07ff276092c326ca8f835ed8ded3361083ca58#3e07ff276092c326ca8f835ed8ded3361083ca58"
 dependencies = [
  "bindgen",
  "paste",
