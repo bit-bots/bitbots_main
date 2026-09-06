@@ -8,6 +8,7 @@ import rclpy
 from ament_index_python import get_package_share_directory
 from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
+from std_msgs.msg import Float32MultiArray
 
 from bitbots_rl_motion.handlers import Handler
 from bitbots_rl_motion.handlers.phase import PhaseHandler
@@ -56,10 +57,18 @@ class RLNode(Node, ABC):
             [1e6] * len(self.get_parameter("joints.ordered_relevant_joint_names").value),
         )
         self.declare_parameter("joints.soft_limit_factor", 1.0)
+        # Bound on a single action. The action is fed back into the observation of the
+        # next step, so an action far outside what the policy produced during training
+        # makes the next one worse still, and the loop runs away within a few steps.
+        # Bounding it keeps a bad observation from escalating into a diverging one.
+        self.declare_parameter("joints.action_limit", 1e6)
         # Joints that are observed but excluded from the published JointCommand
         # (left to other controllers, e.g. the head behavior). Default [""]
         # matches no joint, so nothing is excluded.
         self.declare_parameter("joints.uncontrolled_joint_names", [""])
+        # Publishes what the policy sees and what it answers, so a policy that misbehaves
+        # on the robot can be compared against the distribution it was trained on
+        self.declare_parameter("debug.publish_observation", False)
 
         model = self.get_parameter("model").value
         self.get_logger().info(f"Loaded model: {model}")
@@ -72,6 +81,12 @@ class RLNode(Node, ABC):
         # transition from inactive -> active can be detected and the observation
         # state (re)initialized exactly once per activation.
         self._policy_active = False
+
+        self._observation_publisher = None
+        self._action_publisher = None
+        if self.get_parameter("debug.publish_observation").value:
+            self._observation_publisher = self.create_publisher(Float32MultiArray, f"debug/{node_name}/observation", 1)
+            self._action_publisher = self.create_publisher(Float32MultiArray, f"debug/{node_name}/action", 1)
 
     def _timer_callback(self):
         # Check whether all subscribers received at least one message
@@ -137,9 +152,26 @@ class RLNode(Node, ABC):
             self._previous_action.set_previous_action(np.zeros_like(onnx_pred))
             return
 
+        # Bound before the action is fed back, so the feedback loop can not run away
+        action_limit = self.get_parameter("joints.action_limit").value
+        if np.any(np.abs(onnx_pred) > action_limit):
+            self.get_logger().warning(
+                f"Action of {np.abs(onnx_pred).max():.1f} exceeds the limit of {action_limit}, "
+                "which means the policy is seeing something it was not trained on.",
+                throttle_duration_sec=2.0,
+            )
+            onnx_pred = np.clip(onnx_pred, -action_limit, action_limit)
+
         self._previous_action.set_previous_action(onnx_pred)
         self.publisher(onnx_pred)
+        self._publish_debug(observation, onnx_pred)
         self._phase_update_hook()
+
+    def _publish_debug(self, observation: np.ndarray, action: np.ndarray) -> None:
+        if self._observation_publisher is None or self._action_publisher is None:
+            return
+        self._observation_publisher.publish(Float32MultiArray(data=observation.astype(float).tolist()))
+        self._action_publisher.publish(Float32MultiArray(data=action.astype(float).tolist()))
 
     @abstractmethod
     def _phase_update_hook(self) -> None:

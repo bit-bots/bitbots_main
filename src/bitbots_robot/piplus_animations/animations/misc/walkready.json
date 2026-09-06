@@ -1,29 +1,29 @@
 {
     "author": "",
-    "description": "",
+    "description": "Pose the RL motion policies are referenced against. It is the default pose of the AMP tasks, which the policies observe the joints relative to and add their action on top of, so the robot has to be in it before a policy takes over.",
     "keyframes": [
         {
             "duration": 2.0,
             "goals": {
-                "l_elbow_joint": 0.0,
-                "l_shoulder_pitch_joint": 90.0,
-                "l_shoulder_roll_joint": 70.0,
-                "l_upper_arm_joint": 0.0,
-                "r_elbow_joint": 0.0,
-                "r_shoulder_pitch_joint": -90.0,
-                "r_shoulder_roll_joint": -70.0,
-                "r_upper_arm_joint": 0.0,
-                "l_hip_pitch_joint": -34.38,
-                "l_hip_roll_joint": 0.0,
-                "l_thigh_joint": 0.0,
-                "l_calf_joint": -68.75,
-                "l_ankle_pitch_joint": -34.38,
+                "l_elbow_joint": -111.77,
+                "l_shoulder_pitch_joint": -75.73,
+                "l_shoulder_roll_joint": -62.17,
+                "l_upper_arm_joint": 9.08,
+                "r_elbow_joint": 103.6,
+                "r_shoulder_pitch_joint": 73.92,
+                "r_shoulder_roll_joint": 65.77,
+                "r_upper_arm_joint": -9.71,
+                "l_hip_pitch_joint": -37.47,
+                "l_hip_roll_joint": 6.39,
+                "l_thigh_joint": -7.81,
+                "l_calf_joint": -62.26,
+                "l_ankle_pitch_joint": -5.99,
                 "l_ankle_roll_joint": 0.0,
-                "r_hip_pitch_joint": 34.38,
-                "r_hip_roll_joint": 0.0,
-                "r_thigh_joint": 0.0,
-                "r_calf_joint": 68.75,
-                "r_ankle_pitch_joint": 34.38,
+                "r_hip_pitch_joint": 38.34,
+                "r_hip_roll_joint": -8.12,
+                "r_thigh_joint": 9.43,
+                "r_calf_joint": 60.99,
+                "r_ankle_pitch_joint": 9.28,
                 "r_ankle_roll_joint": 0.0,
                 "head_yaw_joint": 0.0,
                 "head_pitch_joint": 0.0
@@ -33,7 +33,7 @@
             "torque": {}
         }
     ],
-    "last_edited": "2026-04-19 19:51:50.655755",
+    "last_edited": "2026-09-06 14:29:56.708628",
     "name": "walkready",
     "version": ""
 }

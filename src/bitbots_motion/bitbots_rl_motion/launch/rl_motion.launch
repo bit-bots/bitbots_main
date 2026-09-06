@@ -8,23 +8,31 @@
   <arg name="amp_kick" default="false"/>
 
 
-  <group if="$(var walk)">
-    <node pkg="bitbots_rl_motion" exec="walk_node" output="screen">
-      <param from="$(find-pkg-share bitbots_rl_motion)/configs/playground_walk_model.yaml" />
-      <param name="use_sim_time" value="$(var sim)"/>
-    </node>
+  <!-- Every walk policy publishes to walking_motor_goals and every kick policy to
+       kick_motor_goals, so only one of each may run. Enabling an AMP policy therefore
+       disables the one it replaces, instead of letting two policies fight over the
+       same joints. -->
+  <group unless="$(var amp_walk)">
+    <group if="$(var walk)">
+      <node pkg="bitbots_rl_motion" exec="walk_node" output="screen">
+        <param from="$(find-pkg-share bitbots_rl_motion)/configs/playground_walk_model.yaml" />
+        <param name="use_sim_time" value="$(var sim)"/>
+      </node>
+    </group>
+    <group if="$(var mjlab_walk)">
+      <node pkg="bitbots_rl_motion" exec="mjlab_walk_node" output="screen">
+        <param from="$(find-pkg-share bitbots_rl_motion)/configs/mjlab_walk_model.yaml" />
+        <param name="use_sim_time" value="$(var sim)"/>
+      </node>
+    </group>
   </group>
-  <group if="$(var kick)">
-    <node pkg="bitbots_rl_motion" exec="kick_ball_node" output="screen">
-      <param from="$(find-pkg-share bitbots_rl_motion)/configs/kick_ball_model.yaml" />
-      <param name="use_sim_time" value="$(var sim)"/>
-    </node>
-  </group>
-  <group if="$(var mjlab_walk)">
-    <node pkg="bitbots_rl_motion" exec="mjlab_walk_node" output="screen">
-      <param from="$(find-pkg-share bitbots_rl_motion)/configs/mjlab_walk_model.yaml" />
-      <param name="use_sim_time" value="$(var sim)"/>
-    </node>
+  <group unless="$(var amp_kick)">
+    <group if="$(var kick)">
+      <node pkg="bitbots_rl_motion" exec="kick_ball_node" output="screen">
+        <param from="$(find-pkg-share bitbots_rl_motion)/configs/kick_ball_model.yaml" />
+        <param name="use_sim_time" value="$(var sim)"/>
+      </node>
+    </group>
   </group>
   <group if="$(var amp_walk)">
     <node pkg="bitbots_rl_motion" exec="amp_walk_node" output="screen">

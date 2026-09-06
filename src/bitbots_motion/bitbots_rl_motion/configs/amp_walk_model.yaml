@@ -130,6 +130,9 @@ amp_walk_node:
       # real robot only does mechanically. The factor shrinks the allowed range around
       # its center, matching how the training penalized leaving the range.
       soft_limit_factor: 1.0
+      # The policy produced actions of about unit scale during training, so this only
+      # binds when it is fed something it has never seen
+      action_limit: 10.0
       position_limits_lower: [
         -2.5500,  # r_shoulder_pitch_joint
         -1.6500,  # r_shoulder_roll_joint
@@ -185,5 +188,10 @@ amp_walk_node:
       # Number of stacked frames the policy observes, matching the history length of
       # the observation group of the training task
       history_length: 4
+
+    debug:
+      # Publish the observation and the action for offline comparison against the
+      # distribution the policy was trained on
+      publish_observation: true
 
     providers: ["CPUExecutionProvider"]
