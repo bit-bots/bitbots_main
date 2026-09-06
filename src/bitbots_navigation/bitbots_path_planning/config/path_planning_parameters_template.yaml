@@ -34,7 +34,7 @@ bitbots_path_planning:
       read_only: true
     ball_diameter:
       type: double
-      default_value: 0.187
+      default_value: 0.13
       description: 'The diameter of the ball'
       read_only: true
     inflation:

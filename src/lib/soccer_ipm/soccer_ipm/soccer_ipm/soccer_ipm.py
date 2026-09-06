@@ -42,7 +42,7 @@ class SoccerIPM(Node):
     def __init__(self) -> None:
         super().__init__('soccer_ipm')
         # Declare params
-        self.declare_parameter('balls.ball_diameter', 0.187)
+        self.declare_parameter('balls.ball_diameter', 0.153)
         self.declare_parameter('goalposts.footpoint_out_of_image_threshold', 0.8)
         self.declare_parameter('goalposts.object_default_dimensions.x', 0.1)
         self.declare_parameter('goalposts.object_default_dimensions.y', 0.1)

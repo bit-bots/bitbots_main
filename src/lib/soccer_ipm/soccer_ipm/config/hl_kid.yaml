@@ -1,7 +1,7 @@
 soccer_ipm:
   ros__parameters:
     balls:
-      ball_diameter: 0.187
+      ball_diameter: 0.153
 
     goalposts:
       footpoint_out_of_image_threshold: 0.8
