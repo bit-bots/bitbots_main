@@ -42,6 +42,7 @@ class ReachedPathPlanningGoalPosition(AbstractDecisionElement):
     def get_reevaluate(self):
         return True
 
+
 class ReachedAndAlignedToConfigRolePosition(AbstractDecisionElement):
     blackboard: BodyBlackboard
 
@@ -76,7 +77,7 @@ class ReachedAndAlignedToConfigRolePosition(AbstractDecisionElement):
                 ]
         except KeyError as e:
             raise KeyError(f"Role position for {self.blackboard.team_data.role} not specified in config") from e
-        
+
         goal_pose = [
             generalized_role_position[0] * self.blackboard.world_model.field_length / 2,
             generalized_role_position[1] * self.blackboard.world_model.field_width / 2,
@@ -86,13 +87,13 @@ class ReachedAndAlignedToConfigRolePosition(AbstractDecisionElement):
             return "NO"
 
         current_orientation = euler_from_quaternion(numpify(current_pose.pose.orientation))
-        goal_orientation = euler_from_quaternion(numpify(goal_pose.pose.orientation))
+        goal_orientation = [0, 0, 0]
         angle_to_goal_orientation = abs(math.remainder(current_orientation[2] - goal_orientation[2], math.tau))
-        #self.publish_debug_data("current_orientation", current_orientation[2])
-        #self.publish_debug_data("goal_orientation", goal_orientation[2])
-        #self.publish_debug_data("angle_to_goal_orientation", angle_to_goal_orientation)
+        self.publish_debug_data("current_orientation", current_orientation[2])
+        self.publish_debug_data("goal_orientation", goal_orientation[2])
+        self.publish_debug_data("angle_to_goal_orientation", angle_to_goal_orientation)
 
-        distance = np.linalg.norm(numpify(goal_pose.pose.position) - numpify(current_pose.pose.position))
+        distance = np.linalg.norm(np.array(goal_pose[:2]) - numpify(current_pose.pose.position)[:2])
         self.publish_debug_data("distance", distance)
         if distance < self.threshold and angle_to_goal_orientation < self.orientation_threshold:
             self.latched = self.latch  # Set it to true if we always want to return YES in the future
@@ -101,6 +102,7 @@ class ReachedAndAlignedToConfigRolePosition(AbstractDecisionElement):
 
     def get_reevaluate(self):
         return True
+
 
 class AlignedToPathPlanningGoal(AbstractDecisionElement):
     blackboard: BodyBlackboard
