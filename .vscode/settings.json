@@ -108,6 +108,7 @@
         "rtype",
         "rviz",
         "samplerate",
+        "scanline",
         "scipy",
         "sdev",
         "seaborn",

@@ -69,7 +69,7 @@ move_head:
 
       pitch_max:
         type: double_array
-        default_value: [-5.0, 35.0]
+        default_value: [20.0, 60.0]
         description: "Maximum pitch values for the search pattern (in degrees)"
         validation:
           fixed_size<>: 2
@@ -105,7 +105,7 @@ move_head:
 
       pitch_max:
         type: double_array
-        default_value: [-5.0, 35.0]
+        default_value: [20.0, 60.0]
         description: "Maximum pitch values for the search pattern (in degrees)"
         validation:
           fixed_size<>: 2
@@ -141,7 +141,7 @@ move_head:
 
       pitch_max:
         type: double_array
-        default_value: [-5.0, 35.0]
+        default_value: [20.0, 60.0]
         description: "Maximum pitch values for the search pattern (in degrees)"
         validation:
           fixed_size<>: 2
@@ -177,14 +177,14 @@ move_head:
 
       pitch_max:
         type: double_array
-        default_value: [0.0, 0.0]
+        default_value: [30.0, 30.0]
         description: "Maximum pitch values for the search pattern (in degrees)"
         validation:
           fixed_size<>: 2
 
       scan_lines:
         type: int
-        default_value: 2
+        default_value: 1
         description: "Number of scan horizontal lines for the search pattern"
         validation:
           gt_eq<>: [1]
