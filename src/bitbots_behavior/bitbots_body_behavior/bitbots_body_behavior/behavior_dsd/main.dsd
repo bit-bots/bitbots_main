@@ -131,14 +131,20 @@ $IsPenalized
         READY --> $DoOnce
             NOT_DONE --> #ActivateDoubleTouchProtection
             DONE --> $AnyGoalScoreRecently + time:50
-                YES --> #PositioningReady
+                YES --> $ReachedAndAlignedToConfigRolePosition
+                    YES --> #StandAndLook
+                    NO --> #PositioningReady
                 NO --> $DoOnce
                     NOT_DONE --> @ChangeAction + action:waiting + r:false, @ActiveVisionHeadMove + r:false, @Stand + duration:2
-                    DONE --> #PositioningReady
+                    DONE --> $ReachedAndAlignedToConfigRolePosition
+                        YES --> #StandAndLook
+                        NO --> #PositioningReady
         SET --> $WhistleDetected
             DETECTED --> $SecondaryStateTeamDecider
                 OUR --> #PlayingBehavior
-                OTHER --> #PositioningReady
+                OTHER --> $ReachedAndAlignedToConfigRolePosition
+                    YES --> #StandAndLook
+                    NO --> #PositioningReady
                 ELSE --> #PlayingBehavior
             NOT_DETECTED --> $SecondaryStateDecider
                 PENALTYSHOOT --> $SecondaryStateTeamDecider
