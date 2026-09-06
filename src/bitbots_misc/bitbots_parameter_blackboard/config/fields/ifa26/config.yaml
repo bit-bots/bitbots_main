@@ -12,6 +12,8 @@ parameter_blackboard:
         y: 5.01
         padding: 0.8   # Padding (area outside of the lines) of the field in all directions
       markings:
+        center_circle:
+          diameter: 1.3
         penalty_area:
           size:
             x: 1.65   # The distance from the goal line to the boundary of the penalty area

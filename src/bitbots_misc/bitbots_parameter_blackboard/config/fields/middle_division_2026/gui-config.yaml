@@ -27,3 +27,5 @@ parameters:
   distance_map: true
   distance_decay: 0.0
   invert: true
+  grayscale_min: 0
+  grayscale_max: 255
