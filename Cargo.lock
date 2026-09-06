@@ -441,14 +441,14 @@ checksum = "f2032f911046de80f0a198e0901378627c33f59ea0ac00e363d481118bd70a53"
 
 [[package]]
 name = "bindgen"
-version = "0.71.1"
+version = "0.72.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5f58bf3d7db68cfbac37cfc485a8d711e87e064c3d0fe0435b92f7a407f9d6b3"
+checksum = "993776b509cfb49c750f11b8f07a46fa23e0a1386ffc01fb1e7d343efc387895"
 dependencies = [
  "bitflags 2.13.0",
  "cexpr",
  "clang-sys",
- "itertools 0.13.0",
+ "itertools 0.10.5",
  "log",
  "prettyplease",
  "proc-macro2",
@@ -1866,15 +1866,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "itertools"
-version = "0.13.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "413ee7dfc52ee1a4949ceeb7dbc8a33f2d6c088194d9f922fb8318faf1f01186"
-dependencies = [
- "either",
-]
-
-[[package]]
 name = "itoa"
 version = "1.0.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2961,8 +2952,7 @@ dependencies = [
 [[package]]
 name = "r2r_actions"
 version = "0.9.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5ca8488195951aaadef421b470c823cd095848bebf2004ff96ef5d351067eac1"
+source = "git+https://github.com/jaagut/r2r?rev=3e07ff276092c326ca8f835ed8ded3361083ca58#3e07ff276092c326ca8f835ed8ded3361083ca58"
 dependencies = [
  "bindgen",
  "r2r_common",
@@ -2973,8 +2963,7 @@ dependencies = [
 [[package]]
 name = "r2r_common"
 version = "0.9.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9838c2f88c9fd088f188eadbf9459371b1e576affd7b2df04c45cd1e44b79b99"
+source = "git+https://github.com/jaagut/r2r?rev=3e07ff276092c326ca8f835ed8ded3361083ca58#3e07ff276092c326ca8f835ed8ded3361083ca58"
 dependencies = [
  "bindgen",
  "os_str_bytes",
@@ -2996,6 +2985,7 @@ dependencies = [
 [[package]]
 name = "r2r_msg_gen"
 version = "0.9.5"
+source = "git+https://github.com/jaagut/r2r?rev=3e07ff276092c326ca8f835ed8ded3361083ca58#3e07ff276092c326ca8f835ed8ded3361083ca58"
 dependencies = [
  "bindgen",
  "force-send-sync",
@@ -3012,8 +3002,7 @@ dependencies = [
 [[package]]
 name = "r2r_rcl"
 version = "0.9.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9e5c208b2fbe64a00a42a70391f708298b6765769d39987286f4b7c82539561e"
+source = "git+https://github.com/jaagut/r2r?rev=3e07ff276092c326ca8f835ed8ded3361083ca58#3e07ff276092c326ca8f835ed8ded3361083ca58"
 dependencies = [
  "bindgen",
  "paste",
