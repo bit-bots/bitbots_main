@@ -124,10 +124,9 @@ TEST(GeneratePattern, VisitsEveryScanLine) {
   auto pattern = generatePattern(line_count, -30.0, 30.0, -5.0, 35.0);
   for (int line = 0; line < line_count; line++) {
     const double expected = lineAngle(line, line_count, -5.0, 35.0);
-    EXPECT_TRUE(std::any_of(pattern.begin(), pattern.end(), [&](const HeadPosition& keyframe) {
-      return std::abs(keyframe.pitch - expected) < 1e-9;
-    })) << "scan line "
-        << line << " at pitch " << expected << " was never visited";
+    EXPECT_TRUE(std::any_of(pattern.begin(), pattern.end(),
+                            [&](const HeadPosition& keyframe) { return std::abs(keyframe.pitch - expected) < 1e-9; }))
+        << "scan line " << line << " at pitch " << expected << " was never visited";
   }
 }
 

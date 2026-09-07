@@ -108,6 +108,7 @@ class LookAtFront(AbstractHeadModeElement):
         self.blackboard.misc.set_head_duty(HeadMode.SEARCH_FRONT)
         return self.pop()
 
+
 class ActiveVisionHeadMove(AbstractHeadModeElement):
     """Uses the active vision (has nothing to do with the vision node itself) to look for objects in the environment"""
 

@@ -19,7 +19,7 @@ const std::vector<HeadPosition> kPattern = {{-30.0, 35.0}, {30.0, 35.0}, {30.0, 
 
 /// The first pattern keyframe as a head position, i.e. converted to radians.
 /// Starting there means there is no transition segment to play.
-const HeadPosition kPatternStart{kPattern[0].yaw * kDegToRad, kPattern[0].pitch * kDegToRad};
+const HeadPosition kPatternStart{kPattern[0].yaw * kDegToRad, kPattern[0].pitch* kDegToRad};
 }  // namespace
 
 // ---------------------------------------------------------------------------

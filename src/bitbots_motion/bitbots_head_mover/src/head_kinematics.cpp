@@ -1,7 +1,8 @@
+#include <urdf/model.h>
+
 #include <bitbots_head_mover/head_kinematics.hpp>
 #include <kdl/tree.hpp>
 #include <kdl_parser/kdl_parser.hpp>
-#include <urdf/model.h>
 #include <vector>
 
 namespace bitbots_head_mover {
