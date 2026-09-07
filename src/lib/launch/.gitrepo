@@ -1,0 +1,13 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-include command (compatible with git-subrepo).
+; See https://github.com/flova/git-include
+;
+[subrepo]
+	remote = https://github.com/ros2/launch.git
+	branch = jazzy
+	commit = e74fa72f5c64bedd9ce252bf3846e7442b45c791
+	parent = 48142d57127678664778584280df6791a43a0592
+	method = merge
+	cmdver = git-include/0.1.3
