@@ -79,7 +79,7 @@ move_head:
         default_value: 2
         description: "Number of scan horizontal lines for the search pattern"
         validation:
-          gt_eq<>: [1]
+          gt_eq<>: [2]
 
       reduce_last_scanline:
         type: double
@@ -115,7 +115,7 @@ move_head:
         default_value: 2
         description: "Number of scan horizontal lines for the search pattern"
         validation:
-          gt_eq<>: [1]
+          gt_eq<>: [2]
 
       reduce_last_scanline:
         type: double
@@ -151,7 +151,7 @@ move_head:
         default_value: 2
         description: "Number of scan horizontal lines for the search pattern"
         validation:
-          gt_eq<>: [1]
+          gt_eq<>: [2]
 
       reduce_last_scanline:
         type: double
@@ -184,10 +184,10 @@ move_head:
 
       scan_lines:
         type: int
-        default_value: 1
+        default_value: 2
         description: "Number of scan horizontal lines for the search pattern"
         validation:
-          gt_eq<>: [1]
+          gt_eq<>: [2]
 
       reduce_last_scanline:
         type: double
