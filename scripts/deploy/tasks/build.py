@@ -42,7 +42,7 @@ class Build(AbstractTask):
         :return: The results of the task.
         """
         print_debug(f"Cleaning the following packages before building: {self._package}")
-        cmd_clean = f"cd {self._remote_workspace} && pixi run --environment robot clean {self._package}"
+        cmd_clean = f"cd {self._remote_workspace} && pixi run --environment {self.ENVIRONMENT} clean {self._package}"
 
         print_debug(f"Calling '{cmd_clean}'")
         try:
@@ -63,7 +63,7 @@ class Build(AbstractTask):
         """
         print_debug("Building packages")
 
-        cmd = f"cd {self._remote_workspace} && pixi run --environment robot build {self._package}"
+        cmd = f"cd {self._remote_workspace} && pixi run --environment {self.ENVIRONMENT} build {self._package}"
 
         print_debug(f"Calling '{cmd}'")
         try:
