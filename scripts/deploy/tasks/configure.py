@@ -15,13 +15,13 @@ from rich.prompt import Prompt
 
 
 class Configure(AbstractTaskWhichRequiresSudo):
-    def __init__(self, remote_workspace: str) -> None:
+    def __init__(self, remote_workspace: str, container: bool) -> None:
         """
         Configure the game settings and WiFi on the given Targets with user input.
 
         :param remote_workspace: Path to the remote workspace to run rosdep in
         """
-        super().__init__()
+        super().__init__(container=container)
         self._show_status = False
 
         self._remote_workspace = remote_workspace

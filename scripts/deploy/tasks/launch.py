@@ -7,14 +7,14 @@ from fabric.exceptions import GroupException
 
 
 class Launch(AbstractTask):
-    def __init__(self, remote_workspace: str, tmux_session_name: str) -> None:
+    def __init__(self, remote_workspace: str, tmux_session_name: str, container: bool) -> None:
         """
         Launch the teamplayer ROS software on a remote machine in a new tmux session.
 
         :param remote_workspace: Path to the remote workspace to run colcon in
         :param tmux_session_name: Name of the fresh tmux session to launch the teamplayer in
         """
-        super().__init__()
+        super().__init__(container=container)
 
         self._remote_workspace = remote_workspace
         self._tmux_session_name = tmux_session_name
@@ -151,7 +151,10 @@ class Launch(AbstractTask):
 
     def _launch_teamplayer(self, connections: Group) -> GroupResult:
         print_debug("Launching teamplayer")
-        teamplayer_options = "record:=true tts:=false sim:=true"
+        if self._container:
+            teamplayer_options = "record:=true tts:=false sim:=true"
+        else:
+            teamplayer_options = "record:=true tts:=false"
         # Create tmux session
         cmd = f"tmux new-session -d -s {self._tmux_session_name} && tmux send-keys -t {self._tmux_session_name} 'cd {self._remote_workspace} && pixi run --environment {self.ENVIRONMENT} ros2 launch bitbots_bringup teamplayer.launch {teamplayer_options}' Enter"
 

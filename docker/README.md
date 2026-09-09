@@ -54,7 +54,7 @@ Run the target image (mapped to port 2223):
 
 To run containers with their own IP addresses (avoiding port mapping), first create a Podman network:
 ```bash
-./docker/manage.sh create-network 10.66.6.0/16
+./docker/manage.sh create-network 10.66.0.0/16
 ```
 
 Then run containers with a specific IP:
@@ -62,9 +62,9 @@ Then run containers with a specific IP:
 ./docker/manage.sh run-target 10.66.6.1
 ```
 
-Or use the convenience command to launch a "robot" by name (resolves IP from `scripts/deploy/known_targets.yaml`):
+Or launch by robot name (resolves IP from `scripts/deploy/known_targets.yaml`):
 ```bash
-./docker/manage.sh run-robot mickey
+./docker/manage.sh run-target mickey
 ```
 
 ### Connecting via SSH
@@ -87,7 +87,7 @@ Running Podman as root allows it to create a real bridge interface on your host,
    ```
 3. **Run a container**:
    ```bash
-   sudo ./docker/manage.sh run-robot mickey
+   sudo ./docker/manage.sh run-target mickey
    ```
 4. **Connect directly**:
    ```bash
@@ -135,6 +135,13 @@ Host 10.66.*
 - **Rootful Mode (`sudo`):** Provides full network transparency. The host will have a bridge interface (e.g., `podman1`) and can communicate with containers via their IPs for all protocols (TCP/UDP/Zenoh). Recommended for complex network testing.
 - **Rootless Mode:** Containers can talk to each other on the `bitbots-net` network, but the host cannot reach them by IP (except via the SSH proxy above). For other services like Zenoh, you should use port mapping (`-p`) or run Zenoh routers inside the container network.
 
+### GPU Access and Acceleration
+Containers automatically pass available GPU devices (DRI nodes via `--device /dev/dri`, AMD `/dev/kfd`, and NVIDIA GPUs via `--gpus all` / NVIDIA Container Toolkit) into the container when started via `manage.sh` or `manage_docker.sh`.
+You can customize or override the GPU flags by setting the `GPU_ARGS` environment variable:
+```bash
+GPU_ARGS="--gpus all --device /dev/dri" ./docker/manage.sh run-target mickey
+```
+
 ### X11 Forwarding
 If you want to run GUI applications (like RViz or MuJoCo viewer) from within the container, use the `-X` or `-Y` flag with SSH:
 ```bash
@@ -144,7 +151,7 @@ Note: This requires an X server running on your host machine.
 
 ### Using with the Deploy Tool
 With static IPs, the deploy tool can interact with containers just like real robots:
-1. Start a container: `./docker/manage.sh run-robot mickey`
+1. Start a container: `./docker/manage.sh run-target mickey`
 2. Deploy: `pixi run deploy mickey` (it will resolve the IP `10.66.6.2` from `known_targets.yaml`)
 
 Alternatively, if using port mapping:

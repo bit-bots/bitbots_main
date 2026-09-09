@@ -5,7 +5,7 @@ from fabric.exceptions import GroupException
 
 
 class Build(AbstractTask):
-    def __init__(self, remote_workspace: str, package: str = "", pre_clean: bool = False) -> None:
+    def __init__(self, remote_workspace: str, package: str = "", pre_clean: bool = False, container: bool = False) -> None:
         """
         Task to build using colcon in the remote workspace.
 
@@ -13,7 +13,7 @@ class Build(AbstractTask):
         :param package: Limit compilation to file from this package, if empty, all packages will be build
         :param pre_clean: Whether to clean the source directory before building
         """
-        super().__init__()
+        super().__init__(container=container)
 
         self._remote_workspace = remote_workspace
         self._package = package

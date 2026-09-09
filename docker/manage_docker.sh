@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Hamburg Bit-Bots Podman Management Script
-# This script helps building and running the Docker/Podman images.
+# Hamburg Bit-Bots Docker Management Script
+# This script helps building and running the Docker images.
 
 set -e
 
@@ -112,11 +112,11 @@ show_help() {
     echo "  build-project  Build the project image"
     echo "  build-target   Build the target image"
     echo "  build-all      Build all three images"
-    echo "  create-network [subnet]  Create Podman network (default: $DEFAULT_SUBNET)"
+    echo "  create-network [subnet]  Create Docker network (default: $DEFAULT_SUBNET)"
     echo "  run-project [id]         Run project container (uses port $SSH_PORT_PROJECT or specified IP/robot name)"
     echo "  run-target [id]          Run target container (uses port $SSH_PORT_TARGET or specified IP/robot name)"
     echo "  ssh <id>                 SSH into a running container (handles host keys and networking automatically)"
-    echo "  net-shell                Enter network namespace shell (direct IP access, rootless)"
+    echo "  net-shell                Enter network namespace shell"
     echo "  stop-all                 Stop all Bit-Bots containers"
     echo "  help                     Show this help message"
     echo ""
@@ -124,7 +124,7 @@ show_help() {
     echo "  SSH_PUB_KEY_PATH         Path to your SSH public key (default: auto-detect)"
     echo "  GPU_ARGS                 Override GPU flags passed to container (default: auto-detect)"
     echo ""
-    echo "Note: To make container IPs reachable from the host, run this script with sudo."
+    echo "Note: To make container IPs reachable from the host, ensure the Docker bridge network is accessible or use SSH port mapping."
 }
 
 build_common() {
@@ -140,7 +140,7 @@ build_common() {
     fi
 
     echo "Building common base image..."
-    podman build -t "$IMAGE_NAME_COMMON" \
+    docker build -t "$IMAGE_NAME_COMMON" \
         "${build_args[@]}" \
         -f "$SCRIPT_DIR/Containerfile.common" \
         "$REPO_ROOT"
@@ -148,7 +148,7 @@ build_common() {
 
 build_project() {
     echo "Building project image..."
-    podman build -t "$IMAGE_NAME_PROJECT" \
+    docker build -t "$IMAGE_NAME_PROJECT" \
         --build-arg BASE_IMAGE="$IMAGE_NAME_COMMON" \
         -f "$SCRIPT_DIR/Containerfile.project" \
         "$REPO_ROOT"
@@ -156,7 +156,7 @@ build_project() {
 
 build_target() {
     echo "Building target image..."
-    podman build -t "$IMAGE_NAME_TARGET" \
+    docker build -t "$IMAGE_NAME_TARGET" \
         --build-arg BASE_IMAGE="$IMAGE_NAME_COMMON" \
         -f "$SCRIPT_DIR/Containerfile.target" \
         "$REPO_ROOT"
@@ -164,9 +164,9 @@ build_target() {
 
 create_network() {
     local subnet=${1:-$DEFAULT_SUBNET}
-    if ! podman network inspect "$NETWORK_NAME" >/dev/null 2>&1; then
+    if ! docker network inspect "$NETWORK_NAME" >/dev/null 2>&1; then
         echo "Creating network $NETWORK_NAME with subnet $subnet..."
-        podman network create --subnet "$subnet" "$NETWORK_NAME"
+        docker network create --subnet "$subnet" "$NETWORK_NAME"
     else
         echo "Network $NETWORK_NAME already exists."
     fi
@@ -197,7 +197,7 @@ run_project() {
 
     local gpu_args=($(get_gpu_args))
 
-    podman run -d --name "$name" \
+    docker run -d --name "$name" \
         "${net_args[@]}" \
         "${gpu_args[@]}" \
         "$IMAGE_NAME_PROJECT"
@@ -228,7 +228,7 @@ run_target() {
 
     local gpu_args=($(get_gpu_args))
 
-    podman run -d --name "$name" \
+    docker run -d --name "$name" \
         "${net_args[@]}" \
         "${gpu_args[@]}" \
         "$IMAGE_NAME_TARGET"
@@ -236,58 +236,40 @@ run_target() {
 
 stop_all() {
     echo "Stopping Bit-Bots containers..."
-    local containers=$(podman ps -a --format "{{.Names}}" | grep "^bitbots-")
+    local containers=$(docker ps -a --format "{{.Names}}" | grep "^bitbots-")
     if [ -n "$containers" ]; then
-        podman stop $containers
-        podman rm $containers
+        docker stop $containers
+        docker rm $containers
     else
         echo "No Bit-Bots containers found."
     fi
 }
 
 net_shell() {
-    if ! command -v podman >/dev/null; then
-        echo "Error: podman not found."
+    if ! command -v docker >/dev/null; then
+        echo "Error: docker not found."
         exit 1
     fi
 
-    echo "Entering rootless network namespace..."
-    echo "Hiding problematic system SSH config files to avoid permission errors..."
-    
-    # We use podman unshare to enter the user namespace and join the network namespace.
-    # We then mask problematic configuration files that trigger SSH security checks.
-    # Note: Using 'exec' to replace the intermediate shell.
-    podman unshare --rootless-netns bash -c "
-        # Mask /etc/ssh/ssh_config.d if it exists
-        if [ -d /etc/ssh/ssh_config.d ]; then
-            mount -t tmpfs tmpfs /etc/ssh/ssh_config.d
-        fi
-        # Mask /etc/ssh/ssh_config if it is not owned by root (us)
-        if [ -f /etc/ssh/ssh_config ] && [ \"\$(stat -c %u /etc/ssh/ssh_config)\" != \"0\" ]; then
-            # Bind mount /dev/null over it to make it look like an empty config
-            mount --bind /dev/null /etc/ssh/ssh_config
-        fi
-
-        # Make /root accessible and link user's SSH keys
-        # ssh as root (uid 0) looks in /root/.ssh, which is normally inaccessible rootlessly.
-        mount -t tmpfs tmpfs /root
-        if [ -d \"$HOME/.ssh\" ]; then
-            mkdir -p /root/.ssh
-            mount --bind \"$HOME/.ssh\" /root/.ssh
-        fi
-        
-        echo '---------------------------------------------------------'
-        echo '  BIT-BOTS NETWORK SHELL'
-        echo '---------------------------------------------------------'
-        echo 'You are now in the container network namespace.'
-        echo 'Container IPs (e.g., mickey at 10.66.6.2) are directly reachable.'
-        echo 'System SSH configs have been masked to fix permission issues.'
-        echo 'Type \"exit\" to return to your normal host shell.'
-        echo '---------------------------------------------------------'
-        
+    echo "Entering Docker network environment..."
+    if [ -f "$XDG_RUNTIME_DIR/docker.netns" ]; then
+        echo "Entering rootless Docker network namespace..."
+        nsenter --net="$XDG_RUNTIME_DIR/docker.netns" bash
+    elif [ -f "$XDG_RUNTIME_DIR/docker.pid" ] && command -v nsenter >/dev/null 2>&1; then
+        local pid=$(cat "$XDG_RUNTIME_DIR/docker.pid")
+        echo "Entering rootless Docker network namespace (PID: $pid)..."
+        nsenter -t "$pid" -n bash
+    else
+        echo "---------------------------------------------------------"
+        echo "  BIT-BOTS NETWORK SHELL"
+        echo "---------------------------------------------------------"
+        echo "In Docker, containers on '$NETWORK_NAME' are directly reachable"
+        echo "from the host network namespace (e.g., mickey at 10.66.6.2)."
+        echo "Type 'exit' to return to your normal shell."
+        echo "---------------------------------------------------------"
         export BITBOTS_NET_SHELL=1
-        exec \${SHELL:-bash}
-    "
+        ${SHELL:-bash}
+    fi
 }
 
 ssh_container() {
@@ -306,21 +288,21 @@ ssh_container() {
     # Common SSH options to prevent host key warnings for the virtual network
     local ssh_opts=(-o "StrictHostKeyChecking=no" -o "UserKnownHostsFile=/dev/null" -o "LogLevel=ERROR")
 
-    if [ "$BITBOTS_NET_SHELL" = "1" ] || [ "$(id -u)" = "0" ]; then
-        # Direct connection if in net-shell or running as root
+    if [ "$BITBOTS_NET_SHELL" = "1" ] || [ "$(id -u)" = "0" ] || ping -c 1 -W 1 "$ip" >/dev/null 2>&1; then
+        # Direct connection if in net-shell, running as root, or if IP is directly reachable
         ssh "${ssh_opts[@]}" "bitbots@$ip"
     else
-        # Try to find container ID for proxying in rootless mode
+        # Try to find container ID for proxying in case IP is not directly routed
         # Match by name which contains the IP (e.g., bitbots-target-10-66-6-2)
         local ip_slug=${ip//./-}
-        local cid=$(podman ps --format "{{.ID}} {{.Names}}" | grep "bitbots" | grep "$ip_slug" | head -n 1 | cut -d' ' -f1)
+        local cid=$(docker ps --format "{{.ID}} {{.Names}}" | grep "bitbots" | grep "$ip_slug" | head -n 1 | cut -d' ' -f1)
         if [ -n "$cid" ]; then
             ssh "${ssh_opts[@]}" \
-                -o "ProxyCommand=podman exec -i $cid nc localhost 22" \
+                -o "ProxyCommand=docker exec -i $cid nc localhost 22" \
                 "bitbots@$ip"
         else
             echo "Error: Container with IP $ip not found or not running."
-            echo "Ensure the container is started and attached to 'bitbots-net'."
+            echo "Ensure the container is started and attached to '$NETWORK_NAME'."
             exit 1
         fi
     fi

@@ -6,6 +6,8 @@ ARG gid=1000
 
 # Basic Utilities
 ENV DEBIAN_FRONTEND=noninteractive
+ENV NVIDIA_VISIBLE_DEVICES=all
+ENV NVIDIA_DRIVER_CAPABILITIES=all
 RUN apt-get update -y \
   && apt-get install -y \
     apt-utils \

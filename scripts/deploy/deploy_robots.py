@@ -124,6 +124,7 @@ class DeployRobots:
             help="Path to the workspace directory to deploy to. Defaults to 'bitbots_main' in $HOME dir.",
         )
         parser.add_argument("--skip-local-repo-check", action="store_true", help="Skip the local repository check.")
+        parser.add_argument("--container", action="store_true", help="Use containerized deployment.")
 
         args = parser.parse_args()
 
@@ -149,7 +150,7 @@ class DeployRobots:
         tasks_with_sudo: list[AbstractTaskWhichRequiresSudo] = [
             task for task in self._tasks if isinstance(task, AbstractTaskWhichRequiresSudo)
         ]
-        if tasks_with_sudo:
+        if tasks_with_sudo and not self._args.container:
             sudo_password = Prompt.ask(
                 f"Please enter the sudo password for the remote machine (required for {[task.__class__.__name__ for task in tasks_with_sudo]})",
                 password=True,
@@ -172,11 +173,12 @@ class DeployRobots:
                 Sync(
                     self._bitbots_main_path,
                     self._args.workspace,
+                    self._args.container,
                 )
             )
 
         if self._args.configure:
-            tasks.append(Configure(self._args.workspace))
+            tasks.append(Configure(self._args.workspace, self._args.container))
 
         if self._args.build:
             tasks.append(
@@ -184,11 +186,12 @@ class DeployRobots:
                     self._args.workspace,
                     self._args.package,
                     self._args.clean_build,
+                    self._args.container,
                 )
             )
 
         if self._args.launch:
-            tasks.append(Launch(self._args.workspace, "teamplayer"))
+            tasks.append(Launch(self._args.workspace, "teamplayer", self._args.container))
 
         return tasks
 

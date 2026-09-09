@@ -5,13 +5,16 @@ from fabric import Group, GroupResult
 
 
 class AbstractTask(abc.ABC):
-    ENVIRONMENT = "default"
+    ENVIRONMENT = "robot"
 
-    def __init__(self) -> None:
+    def __init__(self, container: bool = False) -> None:
         """
         Abstract task class that all tasks should inherit from.
         """
         self._show_status = True
+        self._container = container
+        if self._container:
+            self.ENVIRONMENT = "default"
 
     def run(self, task_prefix: str, connections: Group) -> GroupResult:
         """
@@ -66,8 +69,8 @@ class AbstractTask(abc.ABC):
 
 
 class AbstractTaskWhichRequiresSudo(AbstractTask):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
         self._sudo_password: str | None = None
 
     def set_sudo_password(self, sudo_password: str) -> None:

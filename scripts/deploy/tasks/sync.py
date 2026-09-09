@@ -7,15 +7,16 @@ from fabric import Group, GroupResult, Result
 
 
 class Sync(AbstractTask):
-    def __init__(self, local_workspace: str, remote_workspace: str) -> None:
+    def __init__(self, local_workspace: str, remote_workspace: str, container: bool) -> None:
         """
         Sync task that synchronizes (copies) the local workspace directory to the remote server.
         Excludes files and directories as specified in the .rsyncignore file in the local workspace.
 
         :param local_workspace: Path to the local workspace to sync
         :param remote_workspace: Path to the remote workspace to sync to
+        :param container: Whether we are taregtting a container
         """
-        super().__init__()
+        super().__init__(container=container)
         self._local_workspace = local_workspace
         self._remote_workspace = remote_workspace
 
