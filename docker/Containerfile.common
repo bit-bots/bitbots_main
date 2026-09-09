@@ -21,6 +21,7 @@ RUN apt-get update -y \
     gnupg2 \
     htop \
     iproute2 \
+    iptables \
     iputils-ping \
     jq \
     less \

@@ -5,7 +5,9 @@ from fabric.exceptions import GroupException
 
 
 class Build(AbstractTask):
-    def __init__(self, remote_workspace: str, package: str = "", pre_clean: bool = False, container: bool = False) -> None:
+    def __init__(
+        self, remote_workspace: str, package: str = "", pre_clean: bool = False, container: bool = False
+    ) -> None:
         """
         Task to build using colcon in the remote workspace.
 
