@@ -37,3 +37,23 @@
 "10.0.6.6":
   hostname: "peter"
   robot_name: "Peter"
+
+# Virtual (Containers)
+"10.66.6.1":
+  hostname: "kalliope"
+  robot_name: "Kalliope"
+"10.66.6.2":
+  hostname: "mickey"
+  robot_name: "Mickey"
+"10.66.6.3":
+  hostname: "pink"
+  robot_name: "Pink"
+"10.66.6.4":
+  hostname: "romeo"
+  robot_name: "Romeo"
+"10.66.6.5":
+  hostname: "carrie"
+  robot_name: "Carrie"
+"10.66.6.6":
+  hostname: "peter"
+  robot_name: "Peter"

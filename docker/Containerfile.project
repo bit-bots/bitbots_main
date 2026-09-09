@@ -1,0 +1,17 @@
+ARG BASE_IMAGE=bitbots-common:latest
+FROM ${BASE_IMAGE}
+
+ARG user=bitbots
+USER $user
+WORKDIR /home/$user/bitbots_main
+
+# Copy project files (respecting .dockerignore if present in context)
+COPY --chown=$user:$user . .
+
+# Install dependencies and build workspace
+# This will take a while and produce a large image as requested.
+RUN /home/$user/.pixi/bin/pixi run --environment default build
+
+# Switch back to root to run sshd
+USER root
+CMD ["/usr/sbin/sshd", "-D"]

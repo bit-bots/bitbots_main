@@ -1,0 +1,13 @@
+ARG BASE_IMAGE=bitbots-common:latest
+FROM ${BASE_IMAGE}
+
+ARG user=bitbots
+USER $user
+RUN mkdir -p /home/$user/bitbots_main
+
+# The target image is intended to be empty of project source code initially.
+# The bitbots deploy tool will sync the code to ~/bitbots_main.
+
+# Switch back to root to run sshd
+USER root
+CMD ["/usr/sbin/sshd", "-D"]

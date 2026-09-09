@@ -1,0 +1,30 @@
+#!/usr/bin/zsh
+
+# Set base environment variables
+export DEFAULT_USER="bitbots"
+export VISUAL="vim"
+export EDITOR="vim"
+export TERM="xterm-256color"
+export PATH=$PATH:$HOME/.local/bin
+
+# Ignore some deprecation warnings
+export PYTHONWARNINGS="ignore:::setuptools.command.install,ignore:::setuptools.command.easy_install,ignore:::pkg_resources,ignore:easy_install command is deprecated,ignore:setup.py install is deprecated"
+
+# Set the default colcon workspace
+export COLCON_WS="$HOME/colcon_ws"
+
+# Set the default log level for colcon
+export COLCON_LOG_LEVEL=30
+
+# Define a log layout
+export RCUTILS_COLORIZED_OUTPUT=1
+export RCUTILS_CONSOLE_OUTPUT_FORMAT="[{severity}] [{name}]: {message} ({function_name}() at {file_name}:{line_number})"
+
+# Skip global completion initialization in /etc/zsh/zshrc as it is done in zim
+skip_global_compinit=1
+
+: ${ZIM_HOME=${ZDOTDIR:-${HOME}}/.zim}
+
+if [[ -d "$HOME/.pixi" ]]; then
+  export PATH="$HOME/.pixi/bin:$PATH"
+fi

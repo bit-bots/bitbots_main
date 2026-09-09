@@ -1,0 +1,42 @@
+#!/usr/bin/zsh
+
+zmodule environment
+zmodule fzf
+zmodule git
+zmodule git-info
+zmodule input
+zmodule utility
+zmodule prompt-pwd
+zmodule zsh-users/zsh-completions
+zmodule completion
+zmodule zsh-users/zsh-autosuggestions
+zmodule zsh-users/zsh-syntax-highlighting
+zmodule zsh-users/zsh-history-substring-search
+
+# prompt
+zmodule eriner
+
+
+
+# Set your desired prompt here
+zprompt_theme='eriner'
+
+
+# Set the string below to the desired terminal title format string.
+# The terminal title is redrawn upon directory change, however, variables like
+# ${PWD} are only evaluated once. Use prompt expansion strings for dynamic data:
+#   http://zsh.sourceforge.net/Doc/Release/Prompt-Expansion.html#Simple-Prompt-Escapes
+# The example below uses the following format: 'username@host:/current/directory'
+ztermtitle='%n@%m:%~'
+
+
+# Set to vi or emacs
+zinput_mode='emacs'
+
+
+# This determines what highlighters will be used with the syntax-highlighting module.
+# Documentation of the highlighters can be found here:
+#   https://github.com/zsh-users/zsh-syntax-highlighting/blob/master/docs/highlighters.md
+# For (u)rxvt, termite and gnome-terminal users,
+# removing the 'cursor' highlighter will fix the disappearing cursor problem
+ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets)

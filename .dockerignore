@@ -1,0 +1,17 @@
+.pixi/
+build/
+install/
+log/
+target/
+__pycache__/
+*.pyc
+*.bag
+.git/
+.github/
+.idea/
+.vscode/
+.devcontainer/
+# Allow docker configuration files for build
+docker/
+!docker/ansible_files/
+MUJOCO_LOG.TXT

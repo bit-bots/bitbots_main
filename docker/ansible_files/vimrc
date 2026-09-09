@@ -1,0 +1,14 @@
+set autoindent
+set expandtab
+set ignorecase
+set linebreak
+set number
+set shiftwidth=4
+set softtabstop=4
+set tabstop=4
+set undodir=~/.config/vim/undodir
+set undofile
+set wildmenu
+syntax on
+
+autocmd FileType cpp setlocal shiftwidth=2 tabstop=2 softtabstop=2

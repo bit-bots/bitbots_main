@@ -1,0 +1,55 @@
+#!/usr/bin/zsh
+
+# Set aliases
+alias man='LC_ALL=C LANG=C man'
+
+# zim setup (theming + zsh extensions)
+# Update static initialization script if it's outdated, before sourcing it
+ZIM_HOME=${ZDOTDIR:-${HOME}}/.zim
+# Install missing modules and update ${ZIM_HOME}/init.zsh if missing or outdated.
+if [[ ! ${ZIM_HOME}/init.zsh -nt ${ZIM_CONFIG_FILE:-${ZDOTDIR:-${HOME}}/.zimrc} ]]; then
+  source /usr/share/zimfw/zimfw.zsh init
+fi
+# Initialize modules.
+source ${ZIM_HOME}/init.zsh
+
+bindkey '^[[A' history-substring-search-up
+bindkey '^[[B' history-substring-search-down
+
+# Bind up and down keys
+zmodload -F zsh/terminfo +p:terminfo
+if [[ -n ${terminfo[kcuu1]} && -n ${terminfo[kcud1]} ]]; then
+  bindkey ${terminfo[kcuu1]} history-substring-search-up
+  bindkey ${terminfo[kcud1]} history-substring-search-down
+fi
+
+bindkey '^P' history-substring-search-up
+bindkey '^N' history-substring-search-down
+bindkey -M vicmd 'k' history-substring-search-up
+bindkey -M vicmd 'j' history-substring-search-down
+
+if [[ -d /usr/share/doc/fzf/examples ]]; then
+  source /usr/share/doc/fzf/examples/completion.zsh
+  source /usr/share/doc/fzf/examples/key-bindings.zsh
+fi
+
+function fix() {
+    mv .zhistory .zhistory_bad
+    strings .zhistory_bad > .zhistory
+    rm .zhistory_bad
+    fc -R .zhistory
+}
+
+function run_with_taskset() {
+  local cpus="$(grep -Po 'isolcpus=\K([\d-]+)' /proc/cmdline)"
+  chrt -r 1 taskset -c ${cpus:-0-15} $@
+}
+
+# Check for additional configuration files in HOME/.config/zsh and source them.
+config_dir="${ZDOTDIR:-${HOME}}/.config/zsh"
+if [[ -d "$config_dir" ]]; then
+  config_files=($(find "$config_dir" -maxdepth 1 -name "*.zsh"))
+  for file in "${config_files[@]}"; do
+    source "$file"
+  done
+fi
