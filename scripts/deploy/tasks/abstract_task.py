@@ -5,6 +5,8 @@ from fabric import Group, GroupResult
 
 
 class AbstractTask(abc.ABC):
+    ENVIRONMENT = "default"
+
     def __init__(self) -> None:
         """
         Abstract task class that all tasks should inherit from.

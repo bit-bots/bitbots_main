@@ -68,7 +68,7 @@ class Sync(AbstractTask):
                 return
 
             # Verify syncing succeeded and system architectures matches by running "pixi install --environment robot"
-            cmd = f"cd {self._remote_workspace} && pixi install --environment robot"
+            cmd = f"cd {self._remote_workspace} && pixi install --environment {self.ENVIRONMENT}"
             print_debug("Installing dependencies on remote host to verify synchronization and architecture match.")
             print_debug(f"Calling '{cmd}' on: {connection.host}")
             verify_result = connection.run(cmd, hide=hide_output())
