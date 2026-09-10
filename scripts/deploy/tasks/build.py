@@ -1,7 +1,8 @@
-from deploy.misc import get_connections_from_succeeded, hide_output, print_debug, print_error
-from deploy.tasks.abstract_task import AbstractTask
 from fabric import Group, GroupResult
-from fabric.exceptions import GroupException
+
+from deploy.misc import get_connections_from_succeeded, print_debug, print_error
+from deploy.pixi import pixi_run_command, run_for_connections
+from deploy.tasks.abstract_task import AbstractTask
 
 
 class Build(AbstractTask):
@@ -42,16 +43,15 @@ class Build(AbstractTask):
         :return: The results of the task.
         """
         print_debug(f"Cleaning the following packages before building: {self._package}")
-        cmd_clean = f"cd {self._remote_workspace} && pixi run --environment robot clean {self._package}"
-
-        print_debug(f"Calling '{cmd_clean}'")
-        try:
-            results = connections.run(cmd_clean, hide=hide_output())
+        results = run_for_connections(
+            connections,
+            lambda connection: pixi_run_command(connection, self._remote_workspace, f"clean {self._package}"),
+        )
+        if results.succeeded:
             print_debug(f"Clean succeeded on the following hosts: {self._succeeded_hosts(results)}")
-        except GroupException as e:
-            for connection, result in e.result.failed.items():
+        if results.failed:
+            for connection, result in results.failed.items():
                 print_error(f"Clean on {connection.host} failed with the following errors: {result.stderr}")
-            return e.result
         return results
 
     def _build(self, connections: Group) -> GroupResult:
@@ -63,14 +63,13 @@ class Build(AbstractTask):
         """
         print_debug("Building packages")
 
-        cmd = f"cd {self._remote_workspace} && pixi run --environment robot build {self._package}"
-
-        print_debug(f"Calling '{cmd}'")
-        try:
-            results = connections.run(cmd, hide=hide_output())
+        results = run_for_connections(
+            connections,
+            lambda connection: pixi_run_command(connection, self._remote_workspace, f"build {self._package}"),
+        )
+        if results.succeeded:
             print_debug(f"Build succeeded on the following hosts: {self._succeeded_hosts(results)}")
-        except GroupException as e:
-            for connection in e.result.failed.keys():
+        if results.failed:
+            for connection in results.failed.keys():
                 print_error(f"Build on {connection.host} failed!")
-            return e.result
         return results
