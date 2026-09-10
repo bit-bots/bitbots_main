@@ -98,9 +98,35 @@ get_gpu_args() {
     if [ -e /dev/kfd ]; then
         args+=(--device /dev/kfd)
     fi
-    if command -v nvidia-smi >/dev/null 2>&1 || [ -e /dev/nvidia0 ] || [ -e /dev/nvidiactl ]; then
+
+    # For NVIDIA GPUs:
+    # Podman uses CDI for --gpus all. If CDI is configured (e.g. nvidia.com/gpu=all), use --gpus all.
+    # Otherwise, pass available NVIDIA character devices directly via --device to avoid CDI unresolvable device errors.
+    local has_cdi=false
+    for cdi_dir in /etc/cdi /var/run/cdi /etc/containers/cdi /var/run/containers/cdi "$HOME/.config/cdi" "$HOME/.config/containers/cdi"; do
+        if [ -d "$cdi_dir" ] && grep -rq "nvidia.com/gpu" "$cdi_dir" 2>/dev/null; then
+            has_cdi=true
+            break
+        fi
+    done
+
+    if [ "$has_cdi" = true ]; then
         args+=(--gpus all)
+    else
+        for dev in /dev/nvidia*; do
+            if [ -e "$dev" ]; then
+                args+=(--device "$dev")
+            fi
+        done
+        if [ -d /dev/nvidia-caps ]; then
+            for dev in /dev/nvidia-caps/*; do
+                if [ -e "$dev" ]; then
+                    args+=(--device "$dev")
+                fi
+            done
+        fi
     fi
+
     echo "${args[@]}"
 }
 

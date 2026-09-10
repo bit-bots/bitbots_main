@@ -1,20 +1,24 @@
 {
   "name": "Bit-Bots Jazzy Dev",
-
-  "build": { "dockerfile": "Dockerfile", "context": ".." },
-
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
   "containerEnv": {
     "DISPLAY": "${localEnv:DISPLAY}",
     "LIBGL_ALWAYS_SOFTWARE": "1",
     "QT_X11_NO_MITSHM": "1",
     "DOCKER": "1"
   },
-
   "customizations": {
     "vscode": {
       "settings": {
         "terminal.integrated.defaultProfile.linux": "zsh",
-        "terminal.integrated.profiles.linux": { "zsh": { "path": "/bin/zsh" } },
+        "terminal.integrated.profiles.linux": {
+          "zsh": {
+            "path": "/bin/zsh"
+          }
+        },
         "dev.containers.copyGitConfig": false,
         "dev.containers.gitCredentialHelperConfigLocation": "none"
       },
@@ -39,25 +43,22 @@
       ]
     }
   },
-
   "workspaceMount": "type=bind,source=${localWorkspaceFolder},target=/home/bitbots/bitbots_main",
   "workspaceFolder": "/home/bitbots/bitbots_main",
-
   "mounts": [
     "type=bind,source=${localEnv:HOME},target=/srv/host_home,consistency=cached"
   ],
-
   "runArgs": [
     "--tmpfs",
     "/tmp:exec,mode=01777",
     "--privileged",
-    "--net=host",
-    "--device=/dev/dri:/dev/dri",
+    "--device=/dev/dri:/dev/dri",con
     "--volume=/tmp/.X11-unix:/tmp/.X11-unix",
     "--cap-add=SYS_PTRACE",
+    "--network=bitbots-net",
+    "--ip=10.66.0.2",
     "--security-opt",
     "seccomp=unconfined"
   ],
-
-  "postCreateCommand": "git config --global --add safe.directory '*' && $HOME/.pixi/bin/pixi run build"
+  "postCreateCommand": "git config --global --add safe.directory '*' && $HOME/.pixi/bin/pixi run -e default build"
 }

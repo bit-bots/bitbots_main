@@ -1,5 +1,6 @@
 {
-    "autoDocstring.docstringFormat": "sphinx-notypes",
+    "auto
+    string.docstringFormat": "sphinx-notypes",
     "autoDocstring.startOnNewLine": true,
     "cSpell.language": "en,de-de,lorem",
     "cSpell.words": [
