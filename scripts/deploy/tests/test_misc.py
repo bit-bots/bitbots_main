@@ -1,4 +1,5 @@
 import importlib.util
+import subprocess
 import sys
 import time
 from pathlib import Path
@@ -142,3 +143,52 @@ def _fake_connection_factory(failing_hosts: set[str], failing_host_delay: float 
 class _FakeRunResult:
     def __init__(self, stdout: str):
         self.stdout = stdout
+
+
+def test_check_ssh_configuration_accepts_valid_configuration(monkeypatch):
+    monkeypatch.setattr(
+        misc.subprocess,
+        "run",
+        lambda *args, **kwargs: subprocess.CompletedProcess(args[0], returncode=0, stdout="configuration", stderr=""),
+    )
+
+    misc.check_ssh_configuration("bitbots", "robot")
+
+
+def test_check_ssh_configuration_explains_unsafe_permissions(monkeypatch):
+    config_path = "/home/user/.ssh/config"
+    errors = []
+    monkeypatch.setattr(
+        misc.subprocess,
+        "run",
+        lambda *args, **kwargs: subprocess.CompletedProcess(
+            args[0], returncode=255, stdout="", stderr=f"Bad owner or permissions on {config_path}\n"
+        ),
+    )
+    monkeypatch.setattr(misc, "print_error", errors.append)
+
+    with pytest.raises(subprocess.CalledProcessError):
+        misc.check_ssh_configuration("bitbots", "robot")
+
+    assert errors == [
+        f"OpenSSH rejected the configuration file '{config_path}' because its owner or permissions are unsafe. "
+        "Ensure that you own the file and remove write permissions for group and others, for example with "
+        f"'chmod go-w {config_path}'."
+    ]
+
+
+def test_check_ssh_configuration_reports_other_errors(monkeypatch):
+    errors = []
+    monkeypatch.setattr(
+        misc.subprocess,
+        "run",
+        lambda *args, **kwargs: subprocess.CompletedProcess(
+            args[0], returncode=255, stdout="", stderr="Could not resolve hostname robot"
+        ),
+    )
+    monkeypatch.setattr(misc, "print_error", errors.append)
+
+    with pytest.raises(subprocess.CalledProcessError):
+        misc.check_ssh_configuration("bitbots", "robot")
+
+    assert errors == ["OpenSSH could not read the SSH configuration:\nCould not resolve hostname robot"]
