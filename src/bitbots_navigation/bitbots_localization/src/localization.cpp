@@ -530,7 +530,7 @@ void Localization::publish_debug_rating(const std::vector<std::pair<double, doub
     std_msgs::msg::ColorRGBA color;
     color.b = 1;
     if (occupancy >= 0) {
-      color.r = occupancy / 100;
+      color.r = occupancy;
     } else {
       color.g = 1;
     }

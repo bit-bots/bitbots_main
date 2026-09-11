@@ -43,7 +43,7 @@ double Map::get_occupancy(double x, double y) {
   double occupancy = out_of_map_value_;  // punish points outside the map
 
   if (x < mapWidth && x >= 0 && y < mapHeight && y >= 0) {
-    occupancy = 100 - map.at<uchar>(y, x);
+    return (255 - map.at<uchar>(y, x)) / 255.0;
   }
   return occupancy / 100.0;
 }
@@ -96,7 +96,7 @@ nav_msgs::msg::OccupancyGrid Map::get_map_msg(std::string frame_id, int threshol
   map_msg.data.resize(map.rows * map.cols);
   for (int i = 0; i < map.rows; i++) {
     for (int j = 0; j < map.cols; j++) {
-      map_msg.data[i * map.cols + j] = 100 - map.at<uchar>(i, j);
+      map_msg.data[i * map.cols + j] = std::lround((255 - map.at<uchar>(i, j)) * 100.0 / 255.0);
     }
   }
   return map_msg;

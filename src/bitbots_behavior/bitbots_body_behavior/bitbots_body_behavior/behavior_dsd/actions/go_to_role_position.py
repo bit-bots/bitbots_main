@@ -1,5 +1,6 @@
 from bitbots_blackboard.body_blackboard import BodyBlackboard
 from dynamic_stack_decider.abstract_action_element import AbstractActionElement
+from game_controller_hsl_interfaces.msg import GameState
 from tf2_geometry_msgs import PoseStamped
 
 
@@ -27,6 +28,22 @@ class GoToRolePosition(AbstractActionElement):
             generalized_role_position[0] * self.blackboard.world_model.field_length / 2,
             generalized_role_position[1] * self.blackboard.world_model.field_width / 2,
         ]
+
+        # The central striker waits behind the circle at an opponent kickoff.
+        if (
+            self.blackboard.gamestate.get_main_state() in (GameState.STATE_READY, GameState.STATE_SET)
+            and self.blackboard.gamestate.get_set_play() == GameState.SET_PLAY_NONE
+            and self.blackboard.gamestate.get_game_phase()
+            in (GameState.GAME_PHASE_NORMAL, GameState.GAME_PHASE_EXTRA_TIME)
+            and kickoff_type == "passive"
+            and self.blackboard.team_data.role == "offense"
+            and self.blackboard.misc.position_number == 0
+        ):
+            kickoff_striker_distance = (
+                self.blackboard.world_model.center_circle_diameter / 2
+                + self.blackboard.config["kickoff_striker_circle_margin"]
+            )
+            self.role_position = [-kickoff_striker_distance, 0.0]
 
         self.blocking = parameters.get("blocking", True)
 

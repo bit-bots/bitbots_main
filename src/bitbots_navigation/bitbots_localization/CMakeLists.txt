@@ -122,4 +122,22 @@ install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 install(TARGETS localization DESTINATION lib/${PROJECT_NAME})
 
+if(BUILD_TESTING)
+  enable_testing()
+  add_executable(test_map test/test_map.cpp src/map.cpp src/RobotState.cpp
+                          src/tools.cpp)
+  ament_target_dependencies(
+    test_map
+    ament_index_cpp
+    bitbots_utils
+    Boost
+    nav_msgs
+    OpenCV
+    particle_filter
+    rclcpp
+    tf2
+    tf2_geometry_msgs)
+  add_test(NAME map_grayscale COMMAND test_map)
+endif()
+
 ament_package()

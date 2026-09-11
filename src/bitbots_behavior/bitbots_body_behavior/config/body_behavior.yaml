@@ -24,6 +24,9 @@ body_behavior:
     #                         0
     # To be useful for different field sizes, use values in [-1, 1] for x and y
 
+    # Distance behind the center-circle boundary for the central striker at an opponent kickoff, in meters.
+    kickoff_striker_circle_margin: 0.4
+
     role_positions:
       goalie: [ -0.9, 0.0 ]
       defense:
