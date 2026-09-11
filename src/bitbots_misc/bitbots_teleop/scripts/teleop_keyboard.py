@@ -50,6 +50,7 @@ Head Modes:
 3: Don't move the head
 4: Ball Mode adapted for Penalty Kick
 5: Do a pattern which only looks in front of the robot
+6: Active vision (ball tracking, field coverage, ...)
 
 Simulation only:
 r: reset robot in simulation
@@ -250,6 +251,10 @@ class TeleopKeyboard(Node):
                     # Do a pattern which only looks in front of the robot
                     self.head_mode_msg.head_mode = HeadMode.SEARCH_FRONT
                     assert int(key) == HeadMode.SEARCH_FRONT
+                elif key == "6":
+                    # Active vision (ball tracking, field coverage, ...)
+                    self.head_mode_msg.head_mode = HeadMode.ACTIVE_VISION
+                    assert int(key) == HeadMode.ACTIVE_VISION
                 elif key == "F":
                     # play walkready animation
                     self.get_walkready()
