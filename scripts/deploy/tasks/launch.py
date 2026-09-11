@@ -152,7 +152,7 @@ class Launch(AbstractTask):
     def _launch_teamplayer(self, connections: Group) -> GroupResult:
         print_debug("Launching teamplayer")
         # Create tmux session
-        cmd = f"tmux new-session -d -s {self._tmux_session_name} && tmux send-keys -t {self._tmux_session_name} 'cd {self._remote_workspace} && pixi run --environment robot ros2 launch bitbots_bringup teamplayer.launch record:=true tts:=false' Enter"
+        cmd = f"tmux new-session -d -s {self._tmux_session_name} && tmux send-keys -t {self._tmux_session_name} 'cd {self._remote_workspace} && pixi run --environment robot bl bitbots_bringup teamplayer.launch.py --record true --tts false' Enter"
 
         print_debug(f"Calling '{cmd}'")
         try:

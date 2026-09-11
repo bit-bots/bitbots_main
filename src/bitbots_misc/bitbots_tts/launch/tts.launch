@@ -1,5 +1,0 @@
-<launch>
-    <node name="bitbots_tts" pkg="bitbots_tts" exec="tts" output="screen">
-        <param from="$(find-pkg-share bitbots_tts)/config/tts_config.yaml"/>
-    </node>
-</launch>
