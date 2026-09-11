@@ -71,7 +71,7 @@ def teamplayer(
     # group stack, so they'd likely still need sim/use_sim_time passed explicitly.
 
     if fieldname is None:
-        fieldname = "hsl_kid" if sim else "small_division_2026"
+        fieldname = "hsl_kid" if sim else "ifa26"
 
     # load the global parameters
     bl.include("bitbots_parameter_blackboard", "parameter_blackboard.launch.py", sim=sim, fieldname=fieldname)

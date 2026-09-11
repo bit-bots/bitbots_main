@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Cancel outdated jobs
-        uses: fkirc/skip-duplicate-actions@v5.3.1
+        uses: fkirc/skip-duplicate-actions@v5.3.2
         with:
           cancel_others: 'true'
 
@@ -32,10 +32,11 @@ jobs:
         run: git config --global --add safe.directory /__w/bitbots_main/bitbots_main
 
       - name: Set up workspace
-        uses: prefix-dev/setup-pixi@v0.10.0
+        uses: prefix-dev/setup-pixi@v0.10.2
         with:
-          pixi-version: v0.72.0
+          pixi-version: v0.79.0
           cache: true
+          cache-key: pixi-${{ hashFiles('pixi.toml', 'pixi.lock') }}-
 
       - name: Build
         run: pixi run -e default build

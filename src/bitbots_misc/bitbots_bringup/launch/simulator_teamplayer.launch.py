@@ -16,7 +16,7 @@ def simulator_teamplayer(
     vision: bool = True,
     world_model: bool = True,
     rl_motion: bool = True,
-    web: bool = False,
+    web: bool = True,
 ):
     """
     Parameters

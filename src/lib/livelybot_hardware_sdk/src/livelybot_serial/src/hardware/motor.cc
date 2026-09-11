@@ -1,5 +1,10 @@
 #include "motor.h"
 #include <chrono>
+#include <limits>
+
+namespace {
+constexpr int16_t MOTOR_POSITION_UNSET = std::numeric_limits<int16_t>::min();
+}
 
 motor::motor(int _motor_num, int _CANport_num, int _CANboard_num, cdc_tr_message_s *_p_cdc_tx_message, int _id_max,
              rclcpp::Node::SharedPtr node)
@@ -429,7 +434,7 @@ void motor::position(float position)
         p_cdc_tx_message->head.s.len = id_max * sizeof(int16_t);
         for (uint8_t i = 0; i < id_max; i++)
         {
-            p_cdc_tx_message->data.position[i] = 0x8000;
+            p_cdc_tx_message->data.position[i] = MOTOR_POSITION_UNSET;
         }
     }
 
@@ -525,7 +530,7 @@ void motor::pos_vel_MAXtqe(float position, float velocity, float torque_max)
         p_cdc_tx_message->head.s.len = id_max * sizeof(motor_pos_val_tqe_s);
         for (uint8_t i = 0; i < id_max; i++)
         {
-            p_cdc_tx_message->data.pos_val_tqe[i].pos = 0x8000;
+            p_cdc_tx_message->data.pos_val_tqe[i].pos = MOTOR_POSITION_UNSET;
             p_cdc_tx_message->data.pos_val_tqe[i].val = 0x0000;
             p_cdc_tx_message->data.pos_val_tqe[i].tqe = 0x0000;
         }
@@ -544,7 +549,7 @@ void motor::pos_vel_acc(float position, float velocity, float acc)
         p_cdc_tx_message->head.s.len = id_max * sizeof(motor_pos_val_tqe_rpd_s);
         for (uint8_t i = 0; i < id_max; i++)
         {
-            p_cdc_tx_message->data.pos_val_acc[i].pos = 0x8000;
+            p_cdc_tx_message->data.pos_val_acc[i].pos = MOTOR_POSITION_UNSET;
             p_cdc_tx_message->data.pos_val_acc[i].val = 0x0000;
             p_cdc_tx_message->data.pos_val_acc[i].acc = 0x0000;
         }
@@ -563,7 +568,7 @@ void motor::pos_vel_tqe_kp_kd(float position, float velocity, float torque, floa
         p_cdc_tx_message->head.s.len = id_max * sizeof(motor_pos_val_tqe_rpd_s);
         for (uint8_t i = 0; i < id_max; i++)
         {
-            p_cdc_tx_message->data.pos_val_tqe_rpd[i].pos = 0x8000;
+            p_cdc_tx_message->data.pos_val_tqe_rpd[i].pos = MOTOR_POSITION_UNSET;
             p_cdc_tx_message->data.pos_val_tqe_rpd[i].val = 0x0000;
             p_cdc_tx_message->data.pos_val_tqe_rpd[i].tqe = 0x0000;
             p_cdc_tx_message->data.pos_val_tqe_rpd[i].rkp = 0x0000;
@@ -586,7 +591,7 @@ void motor::pos_vel_tqe_kp_kd2(float position, float velocity, float torque, flo
         p_cdc_tx_message->head.s.len = id_max * sizeof(motor_pos_val_tqe_rpd_s);
         for (uint8_t i = 0; i < id_max; i++)
         {
-            p_cdc_tx_message->data.pos_val_tqe_rpd[i].pos = 0x8000;
+            p_cdc_tx_message->data.pos_val_tqe_rpd[i].pos = MOTOR_POSITION_UNSET;
             p_cdc_tx_message->data.pos_val_tqe_rpd[i].val = 0x0000;
             p_cdc_tx_message->data.pos_val_tqe_rpd[i].tqe = 0x0000;
             p_cdc_tx_message->data.pos_val_tqe_rpd[i].rkp = 0x0000;
@@ -609,7 +614,7 @@ void motor::pos_vel_kp_kd(float position, float velocity, float kp, float kd)
         p_cdc_tx_message->head.s.len = id_max * sizeof(motor_pos_val_rpd_s);
         for (uint8_t i = 0; i < id_max; i++)
         {
-            p_cdc_tx_message->data.pos_val_rpd[i].pos = 0x8000;
+            p_cdc_tx_message->data.pos_val_rpd[i].pos = MOTOR_POSITION_UNSET;
             p_cdc_tx_message->data.pos_val_rpd[i].val = 0x0000;
             p_cdc_tx_message->data.pos_val_rpd[i].rkp = 0x0000;
             p_cdc_tx_message->data.pos_val_rpd[i].rkd = 0x0000;

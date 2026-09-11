@@ -5,12 +5,13 @@ from better_launch import BetterLaunch, launch_this
 
 
 @launch_this
-def aggregator():
+def aggregator(sim: bool = False):
     bl = BetterLaunch()
     bl.node(
         "diagnostic_aggregator",
         "aggregator_node",
         "analyzers",
         param_files=bl.find("bitbots_diagnostic", "analyzers.yaml", "config"),
+        params={"use_sim_time": sim},
         log_level=logging.WARNING,
     )

@@ -20,7 +20,6 @@ class AnimationCapsule(AbstractBlackboardCapsule):
         self.goalie_falling_left_animation: str = self._node.get_parameter("Animations.Goalie.fallLeft").value
         self.goalie_falling_center_animation: str = self._node.get_parameter("Animations.Goalie.fallCenter").value
         self.cheering_animation: str = self._node.get_parameter("Animations.Misc.cheering").value
-        self.init_animation: str = self._node.get_parameter("Animations.Misc.init").value
 
         self.animation_client = ActionClient(
             self._node, PlayAnimation, "animation", callback_group=ReentrantCallbackGroup()

@@ -81,7 +81,7 @@ def highlevel(
         bl.include("bitbots_robot_filter", "robot_filter.launch.py", sim=sim)
 
     if whistle_detector:
-        bl.include("bitbots_whistle_detector", "whistle_detector.launch.py")
+        bl.include("bitbots_whistle_detector", "whistle_detector.launch.py", sim=sim)
 
     # launch localization or fake localization
     if localization:

@@ -85,16 +85,3 @@ class PlayAnimationThrow(AbstractPlayAnimation):
     def get_animation_name(self):
         self.blackboard.node.get_logger().info("PLAYING THROW-IN ANIMATION")
         return self.blackboard.animation.throw_animation
-
-
-class PlayAnimationInit(AbstractPlayAnimation):
-    def get_animation_name(self):
-        return self.blackboard.animation.init_animation
-
-
-class PlayAnimationInitInSim(PlayAnimationInit):
-    def perform(self, reevaluate=False):
-        if self.blackboard.in_sim:
-            return super().perform(reevaluate)
-        else:
-            return self.pop()

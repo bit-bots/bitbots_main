@@ -12,7 +12,7 @@ def load_robot_description(sim: bool = False):
         description,
         node_name="robot_state_publisher",
         anonymous=False,
-        params={"publish_frequency": 100.0},
+        params={"publish_frequency": 100.0, "use_sim_time": sim},
     )
 
     bl.include("bitbots_extrinsic_calibration", "calibration.launch.py", sim=sim)

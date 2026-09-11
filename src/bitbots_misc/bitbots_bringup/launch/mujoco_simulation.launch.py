@@ -107,6 +107,7 @@ def generate_world_xml(num_robots: int, package_share: str, robot_type: str) -> 
 def mujoco_simulation(
     num_robots: int = 1,
     robot_type: str = "piplus",
+    web: bool = True,
     audio: str = "",
     behavior: str = "",
     behavior_dsd_file: str = "",
@@ -130,6 +131,8 @@ def mujoco_simulation(
         Number of robots in the simulation
     robot_type : str
         Set the type of robot used (piplus, x02)
+    web : bool
+        Use web-based mjviser viewer instead of the native MuJoCo viewer
     """
     bl = BetterLaunch()
 
@@ -166,7 +169,7 @@ def mujoco_simulation(
         "bitbots_mujoco_sim",
         "sim",
         "sim_interface",
-        params={"world_file": str(world_file)},
+        params={"world_file": str(world_file), "web": web},
     )
 
     for robot_domain in range(11, num_robots + 11):  # 11 is the standard starting id for our robots
