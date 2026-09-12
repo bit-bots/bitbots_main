@@ -1,0 +1,545 @@
+#!/usr/bin/env python3
+
+"""
+This script should be used as follows:
+
+bl <package> <launchfile> <launch-args>
+
+- Autocomplete after bl will list available ROS2 packages.
+- Automcplate after <package> will list launch files (.py, .xml, .yaml, .yml) and executable files in the package.
+- A dash ("-") followed by autocomplete after <launchfile> should list launch args for better_launch launch files and declared args for ROS2 launch files.
+
+See --help and readme for further details.
+"""
+
+from typing import Any
+import sys
+import os
+import ast
+import yaml
+from xml.etree import ElementTree
+import click
+from click.shell_completion import CompletionItem
+from docstring_parser import parse as parse_docstring
+
+from ament_index_python.packages import (
+    get_packages_with_prefixes,
+    get_package_prefix,
+    get_package_share_directory,
+)
+
+try:
+    # Jazzy
+    from rclpy.parameter import get_parameter_value, parameter_value_to_python
+except ImportError:
+    # Humble
+    from ros2param.api import (
+        get_parameter_value as get_parameter_value_humble,
+        get_value as get_value_humble,
+    )
+
+    get_parameter_value = lambda s: get_parameter_value_humble(string_value=s)
+    parameter_value_to_python = lambda p: get_value_humble(parameter_value=p)
+
+
+from better_launch import __version__
+from better_launch.utils.introspection import get_launchfunc_signature_from_file
+from better_launch.utils.click import (
+    get_click_options,
+    get_click_bl_options,
+)
+
+
+class LaunchFile:
+    @classmethod
+    def from_file(cls, filepath: str) -> "LaunchFile":
+        """Returns a LaunchFile subclass that can handle the provided launch file.
+
+        Parameters
+        ----------
+        filepath : str
+            The path to the launch file.
+
+        Returns
+        -------
+        LaunchFile
+            An instance that can handle the provided launch file.
+
+        Raises
+        ------
+        ValueError
+            If no subclass could be found that can handle the provided launch file.
+        """
+        # Handles only immediate subclasses.
+        # NOTE: by using __subclasses__ the order subclasses are defined in actually matters
+        for launch_cls in LaunchFile.__subclasses__():
+            try:
+                return launch_cls(filepath)
+            except Exception:
+                # May throw a variety of errors like FileNotFound (dead symlinks), parsing
+                # errors, permission errors... we just don't want to interrupt the autocomplete
+                pass
+
+        raise ValueError(f"{filepath} is not a valid launch file")
+
+    def __init__(
+        self,
+        filepath: str,
+        params: list[click.Option],
+        doc: str,
+    ):
+        """Create a representation describing the most important information about a launch file.
+
+        Parameters
+        ----------
+        launchfile : str
+            The filename of the launch file.
+        filepath : str
+            The full path to the launch file.
+        params : list[click.Option]
+            ROS2 parameters that have been identified for the launch file, represented as click options.
+        doc : str
+            A docstring describing the launch file, if any.
+        """
+        self.filepath = filepath
+        self.name = os.path.basename(filepath)
+        self.params = params
+        self.doc = doc or filepath
+
+    def run(self, ctx: click.Context, **kwargs) -> None:
+        """Execute this launch file."""
+        raise NotImplementedError()
+
+
+class BetterLaunchPython(LaunchFile):
+    """This LaunchFile will handle better_launch python launch files."""
+
+    @classmethod
+    def _get_launch_params_and_doc_bl_python(
+        cls, filepath: str
+    ) -> tuple[list[click.Option], str]:
+        from better_launch.wrapper import _get_declared_args
+
+        _, signature, func_doc = get_launchfunc_signature_from_file(filepath)
+        if not signature:
+            raise ValueError("Not a better_launch launch file")
+
+        launch_args = _get_declared_args(signature, func_doc)
+
+        options = get_click_options(launch_args)
+        options.extend(get_click_bl_options(expose=True))
+
+        doc = ""
+        if func_doc:
+            parsed_doc = parse_docstring(func_doc)
+            doc = parsed_doc.short_description
+            if parsed_doc.long_description:
+                doc += "\n\n" + parsed_doc.long_description
+
+        return options, doc
+
+    def __init__(self, filepath: str):
+        params, doc = BetterLaunchPython._get_launch_params_and_doc_bl_python(filepath)
+        super().__init__(filepath, params, doc)
+
+    def run(self, ctx: click.Context, **kwargs) -> None:
+        print(
+            f"Delegating to better_launch: {self.name}, args={kwargs}",
+            flush=True,
+        )
+
+        # First argument becomes argv[0], so should be the program name
+        args = ["python3", self.filepath]
+        for key, arg in kwargs.items():
+            if arg is not None:
+                args.extend([f"--{key}", arg])
+
+        # This does NOT return and will replace our executable with the new executable 
+        # in the same process
+        os.execvp("python3", [str(a) for a in args])
+
+
+class BetterLaunchToml(LaunchFile):
+    """This LaunchFile will handle better_launch TOML launch files."""
+
+    @classmethod
+    def _get_launch_params_and_doc_bl_toml(
+        cls, filepath: str
+    ) -> tuple[list[click.Option], str]:
+        from better_launch.declarative import _get_toml_args
+        from better_launch.toml import load as load_toml
+
+        toml = load_toml(filepath)
+        doc = toml.get("__comment__")
+        declared_args = _get_toml_args(toml)
+
+        options = get_click_options(declared_args)
+        # We'll stay in the same process, so there's no need to expose these on the CLI
+        options.extend(get_click_bl_options(expose=False))
+
+        return options, doc
+
+    def __init__(self, filepath: str):
+        params, doc = BetterLaunchToml._get_launch_params_and_doc_bl_toml(filepath)
+        super().__init__(filepath, params, doc)
+
+    def run(self, ctx: click.Context, **kwargs) -> None:
+        from better_launch.declarative import launch_toml
+
+        print(
+            f"Calling launch_toml: {self.name}, args={kwargs}",
+            flush=True,
+        )
+
+        # Since the toml files are not executable, we need something else to run them. We
+        # could create another script with a main function, but I don't think there's much
+        # of a point to this.
+        launch_toml(self.filepath, launch_args=kwargs)
+
+
+class Ros2LaunchFile(LaunchFile):
+    """A LaunchFile that can handle regular ROS2 launch files (python, XML, and YAML)."""
+
+    @classmethod
+    def _option_from_ros2_kwargs(cls, kwargs: dict[str, Any]) -> click.Option:
+        def eval_arg(arg: Any) -> Any:
+            try:
+                return ast.literal_eval(arg)
+            except Exception:
+                return None
+
+        name = eval_arg(kwargs.get("name", None))
+        description = eval_arg(kwargs.get("description", None))
+        default = eval_arg(kwargs.get("default_value", None))
+        choices = eval_arg(kwargs.get("choices", None))
+
+        if default:
+            # Yes ROS2, I also think that simple things are boring and uninspiring...
+            default = parameter_value_to_python(get_parameter_value(str(default)))
+
+        if choices:
+            ptype = click.Choice(choices)
+        else:
+            ptype = type(default) if default is not None else None
+
+        return click.Option(
+            [f"--{name}"],
+            type=ptype,
+            help=description,
+            default=default,
+        )
+
+    @classmethod
+    def _get_launch_params_and_doc_ros2_python(
+        cls, filepath: str
+    ) -> tuple[list[click.Option], str]:
+        try:
+            with open(filepath, "r", encoding="utf-8") as f:
+                source = f.read()
+
+            tree = ast.parse(source)
+        except Exception:
+            raise ValueError("Not valid python code")
+
+        has_launch_func = False
+        doc = None
+        options = []
+
+        for node in ast.walk(tree):
+            if (
+                isinstance(node, ast.FunctionDef)
+                and node.name == "generate_launch_description"
+            ):
+                doc = ast.get_docstring(node)
+                has_launch_func = True
+
+            elif isinstance(node, ast.Call):
+                call_name = getattr(node.func, "id", getattr(node.func, "attr", None))
+                if call_name == "DeclareLaunchArgument":
+                    kwargs = {key.arg: key.value for key in node.keywords if key}
+
+                    if node.args:
+                        # Passed as a positional argument
+                        kwargs["name"] = node.args[0]
+
+                    # XML and YAML are very consistent here, but DeclareLaunchArgument is... not
+                    kwargs["default"] = kwargs.get("default_value", None)
+
+                    option = cls._option_from_ros2_kwargs(kwargs)
+                    options.append(option)
+
+        if not has_launch_func:
+            raise ValueError("Not a ROS2 launch file")
+
+        return options, doc
+
+    @classmethod
+    def _get_launch_params_and_doc_ros2_xml(
+        cls, filepath: str
+    ) -> tuple[list[click.Option], str]:
+        tree = ElementTree.parse(filepath)
+        root = tree.getroot()
+
+        if root.tag != "launch":
+            raise ValueError("Not an xml launch file")
+
+        args = [arg.attrib for arg in root.findall("arg")]
+
+        options = []
+        doc = ""  # Not clear how to get a comment above the root element
+
+        for kwargs in args:
+            option = cls._option_from_ros2_kwargs(kwargs)
+            options.append(option)
+
+        return options, doc
+
+    @classmethod
+    def _get_launch_params_and_doc_ros2_yaml(
+        cls, filepath: str
+    ) -> tuple[list[click.Option], str]:
+        if not filepath.lower().endswith((".launch.yml", ".launch.yaml")):
+            raise ValueError("Not a yaml file")
+
+        with open(filepath) as f:
+            content = yaml.safe_load(f)
+
+        if "launch" not in content:
+            raise ValueError("Not a yaml launch file")
+
+        definitions: list[dict] = content["launch"]
+        options = []
+        doc = ""  # PyYAML does not preserve comments
+
+        for item in definitions:
+            if "arg" in item:
+                # YAML might only support name and default, but who knows!
+                option = cls._option_from_ros2_kwargs(item["arg"])
+                options.append(option)
+
+        return options, doc
+
+    def __init__(self, filepath: str):
+        for func in [
+            Ros2LaunchFile._get_launch_params_and_doc_ros2_python,
+            Ros2LaunchFile._get_launch_params_and_doc_ros2_xml,
+            Ros2LaunchFile._get_launch_params_and_doc_ros2_yaml,
+        ]:
+            try:
+                params, doc = func(filepath)
+                break
+            except ValueError:
+                pass
+        else:
+            raise ValueError("Not a ROS2 launch file")
+
+        super().__init__(filepath, params, doc)
+
+    def run(self, ctx: click.Context, **kwargs) -> None:
+        print(
+            f"Delegating to ROS2 launch: {self.name}, args={kwargs}",
+            flush=True,
+        )
+
+        # First argument becomes argv[0], so should be the program name
+        args = ["ros2", "launch", self.filepath]
+        args.extend([f"{key}:={arg}" for key, arg in kwargs.items()])
+
+        # This does NOT return and will replace our executable with the new executable in the same process
+        os.execvp("ros2", [str(a) for a in args])
+
+
+class ExecutableLaunchFile(LaunchFile):
+    """A LaunchFile that handles executable files."""
+
+    def __init__(self, filepath: str):
+        if not os.access(filepath, os.X_OK):
+            raise ValueError("Not executable")
+
+        params = []
+        doc = None
+        super().__init__(filepath, params, doc)
+
+    def run(self, ctx: click.Context, **kwargs) -> None:
+        print(
+            f"Directly executing launch file: {self.name}, args={kwargs}",
+            flush=True,
+        )
+
+        # First argument becomes argv[0], so should be the program name
+        args = sys.argv[2:]
+
+        # This does NOT return and will replace our executable with the new executable in the same process
+        os.execvp(self.filepath, [str(a) for a in args])
+
+
+def get_launchfile_command(launchfile: LaunchFile, ctx: click.Context) -> click.Command:
+    # return a launchfile command with launch args as its Options
+    ctx.obj = {
+        "launchfile": launchfile,
+    }
+
+    cmd = click.Command(
+        launchfile.name,
+        callback=click.pass_context(launchfile.run),
+        params=launchfile.params,
+        help=launchfile.doc,
+    )
+
+    # In case the launch file accepts additional arguments. Unfortunately, in ROS2 this not only depends on the launch file, but also on the ROS2 node itself, specifically the allow_undeclared_parameters argument.
+    cmd.ignore_unknown_options = True
+    cmd.allow_extra_args = True
+
+    return cmd
+
+
+class LaunchfileSelectionCLI(click.Group):
+    def __init__(self, package: str, **kwargs):
+        """This subcommand will handle selecting a launch file from the provided ROS package.
+
+        Parameters
+        ----------
+        package : str
+            The ROS package to search for launch files.
+        """
+        super().__init__(**kwargs)
+        self._package = package
+        self._package_path = get_package_prefix(package)
+
+    def list_commands(self, ctx: click.Context) -> list[str]:
+        executables = self._get_executables()
+        executables.sort()
+        return list(map(os.path.basename, executables))
+
+    def get_command(self, ctx: click.Context, name: str) -> click.Command:
+        executables = self._get_executables()
+        candidates = [ex for ex in executables if os.path.basename(ex) == name]
+
+        if not candidates:
+            print(f"Launchfile {name} not found in package {self._package}")
+            return None
+
+        if len(candidates) > 1:
+            print(
+                f"Multiple executable files named {name} found in package {self._package}"
+            )
+            return None
+
+        try:
+            launchfile = LaunchFile.from_file(candidates[0])
+        except ValueError:
+            return None
+
+        return get_launchfile_command(launchfile, ctx)
+
+    def _get_executables(self, include_launchfiles: bool = True) -> list[str]:
+        # list executable files inside our package
+        if not self._package_path:
+            print(f"Packge {self._package} could not be found")
+            return []
+
+        package_paths = [
+            os.path.join(self._package_path, "lib", self._package),
+            get_package_share_directory(self._package),
+        ]
+        executables = []
+
+        for base_path in package_paths:
+            for dirpath, dirnames, filenames in os.walk(base_path):
+                dirnames[:] = [d for d in dirnames if not d.startswith(".")]
+                dirnames.sort()
+
+                # Look for executable files
+                for filename in sorted(filenames):
+                    path = os.path.join(dirpath, filename)
+                    if os.access(path, os.X_OK):
+                        executables.append(path)
+                    elif include_launchfiles and (
+                        filename.endswith(
+                            (
+                                ".launch.py",
+                                ".launch.xml",
+                                ".launch.yaml",
+                                ".launch.yml",
+                                ".launch.toml",
+                            )
+                        )
+                    ):
+                        executables.append(path)
+
+        return executables
+
+
+class PackageSelectionCLI(click.Group):
+    def __init__(self, **kwargs):
+        """This subcommand will help in selecting a ROS package."""
+        options = [
+            click.Option(
+                ["-v", "--version"],
+                is_flag=True,
+                callback=self.print_version,
+                expose_value=False,
+                is_eager=True,
+            )
+        ]
+
+        super().__init__(
+            params=options,
+            subcommand_metavar="<package> <launchfile> [args]",
+            help="""\
+The better_launch launcher.
+
+This script allows you to run both better_launch and ROS2 launch files. While using ROS2 launch should work, it would mean having an additional launch system instance running (worst case: ros2launch -> better_launch -> ros2_launch). 
+
+In contrast to ROS2 launch, it also generates useful shell completion suggestions for packages, launch files and arguments. Launch args declared in your launch files are also recognized and will be completed (you need to type at least one dash though).
+""",
+            epilog="Bugs, ideas, feedback, questions? Find me at https://github.com/ndahn",
+            **kwargs,
+        )
+
+    def print_version(
+        self, ctx: click.Context, param: click.Parameter, value: Any
+    ) -> None:
+        if not value or ctx.resilient_parsing:
+            return
+
+        click.echo(__version__)
+        ctx.exit()
+
+    def shell_complete(self, ctx: click.Context, incomplete: str):
+        if incomplete.startswith(".") or os.path.isabs(incomplete):
+            return [CompletionItem(incomplete, type="file")]
+
+        return super().shell_complete(ctx, incomplete)
+
+    def list_commands(self, ctx: click.Context) -> list[str]:
+        # list ROS2 packages
+        return sorted(get_packages_with_prefixes().keys())
+
+    def get_command(self, ctx: click.Context, name: str) -> click.Command:
+        if name.startswith(".") or os.path.isabs(name):
+            if not os.path.isfile(name):
+                raise ValueError(f"{name} is not a file")
+
+            # The user has directly provided a file, assume it's a launchfile and run it directly
+            launchfile = LaunchFile.from_file(name)
+            return get_launchfile_command(launchfile, ctx)
+
+        try:
+            # Return a command that will handle selecting launch files from the package
+            return LaunchfileSelectionCLI(name)
+        except Exception:
+            # The LaunchfileSelectionCLI will throw a PackageNotFoundError if colcon failed
+            # to install a package, and ValueError if the package name is invalid
+            return None
+
+    def format_commands(
+        self, ctx: click.Context, formatter: click.HelpFormatter
+    ) -> None:
+        # Prevent listing ALL packages when calling without args
+        pass
+
+
+if __name__ == "__main__":
+    # Start by selecting a package. Currently we don't provide a solution for directly executing a launch file by its path. This may be supported in the future though.
+    PackageSelectionCLI().main()
