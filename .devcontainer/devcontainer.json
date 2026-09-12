@@ -57,6 +57,7 @@
     "--cap-add=SYS_PTRACE",
     "--network=bitbots-net",
     "--ip=10.66.0.2",
+    "--gpus=all",
     "--security-opt",
     "seccomp=unconfined"
   ],
