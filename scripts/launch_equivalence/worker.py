@@ -651,6 +651,7 @@ def main():
     evaluator = Evaluator(options.root, options.scratch, options.engine)
     contain(options.scratch)
     logging.disable(logging.CRITICAL)
+    print(json.dumps({"ready": True}), flush=True)
     for line in sys.stdin:
         try:
             result = evaluator.evaluate(json.loads(line))

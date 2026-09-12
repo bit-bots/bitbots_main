@@ -9,6 +9,14 @@ pixi run -e default python scripts/launch_equivalence/verify.py \
   --base <old-ref> --head <migrated-ref> --plan
 ```
 
+Check whether the current host permits the required containment before running experiments:
+
+```sh
+pixi run -e default python scripts/launch_equivalence/verify.py --check-sandbox
+```
+
+This checks Landlock and installs the seccomp filter in a disposable subprocess without importing launch files. A failed check reports the detected ABI or syscall error. Older kernels, disabled Landlock, and outer container policies can prevent containment. Use a host with the required Landlock support enabled and its syscalls permitted; there is no unsafe bypass. The check covers containment only, not launch dependencies or resources.
+
 Use the entrypoint identifiers printed in that plan to select a smaller comparison:
 
 ```sh
@@ -92,6 +100,8 @@ The worker uses the real launch libraries, resets their known state between case
 - Finding JSON files: example inputs and a reference to the shared manifests under `examples/`, including source chains and diagnostic traces.
 
 Finding deduplication changes presentation only: it does not suppress later experiments. Exit status is successful only when every evaluated case is equivalent; differences and unresolved cases have distinct non-success statuses. A successful result still applies only to the declared domains and supported launch instructions.
+
+Workers must acknowledge successful containment before any cases are submitted. Worker startup failures, exits, protocol failures and timeouts abort the run immediately instead of becoming repeated per-case findings. An aborted report records `aborted`, `failure` and `completed_cases` in `summary.json`, and marks `differences.diff` as incomplete. Completed cases remain available; unevaluated cases are excluded from result counts.
 
 Run the focused tests and format checks through Pixi:
 

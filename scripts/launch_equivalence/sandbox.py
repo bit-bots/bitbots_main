@@ -11,15 +11,29 @@ class UnsafeOperation(BaseException):
     """Escape ordinary launch exception handlers when an operation is forbidden."""
 
 
-def contain(scratch: Path) -> None:
+def contain(scratch: Path) -> int:
     """Restrict filesystem writes and deny process creation, networking and device control."""
     libc = ctypes.CDLL(None, use_errno=True)
     libc.syscall.restype = ctypes.c_long
     # Landlock syscall numbers are shared by the supported Linux architectures.
     create, add, restrict = 444, 445, 446
     abi = libc.syscall(create, 0, 0, 1)
+    if abi < 0:
+        error = ctypes.get_errno()
+        reason = {
+            errno.ENOSYS: "the kernel does not implement Landlock, or an outer sandbox hides its syscalls",
+            errno.EOPNOTSUPP: "Landlock is disabled in the running kernel",
+            errno.EPERM: "the syscall is denied, possibly by an outer container or sandbox",
+        }.get(error, "the kernel rejected the Landlock ABI query")
+        raise RuntimeError(
+            f"Landlock unavailable: {errno.errorcode.get(error, error)} ({os.strerror(error)}); {reason}. "
+            "Run on a host with Landlock enabled and its syscalls permitted. No launch files were evaluated."
+        )
     if abi < 3:
-        raise RuntimeError("The verifier requires Linux Landlock with truncate protection")
+        raise RuntimeError(
+            f"Landlock ABI {abi} detected; ABI >= 3 is required for file truncation protection. "
+            "Use a newer kernel with Landlock enabled. No launch files were evaluated."
+        )
 
     class Ruleset(ctypes.Structure):
         _fields_ = [("handled_access_fs", ctypes.c_uint64)]
@@ -123,3 +137,14 @@ def contain(scratch: Path) -> None:
             raise UnsafeOperation(f"Blocked during launch evaluation: {event}")
 
     sys.addaudithook(audit)
+    return abi
+
+
+if __name__ == "__main__":
+    # The controller owns scratch cleanup; containment applies only to this subprocess.
+    try:
+        abi = contain(Path(sys.argv[1]))
+    except Exception as exception:
+        print(f"Sandbox check failed: {exception}", file=sys.stderr)
+        raise SystemExit(2) from None
+    print(f"Sandbox check passed: Landlock ABI {abi}; seccomp installed.")

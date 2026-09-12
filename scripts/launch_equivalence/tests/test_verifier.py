@@ -1,8 +1,109 @@
+import ctypes
+import errno
 import json
 
 import pytest
+import sandbox
+import verify
 from manifest import Normalizer, differences, semantic
-from verify import REPO, Worker, assignments, domains_for
+from verify import REPO, Worker, WorkerError, assignments, domains_for
+
+
+@pytest.mark.parametrize(
+    ("abi", "error", "message"),
+    [(2, 0, "ABI 2 detected"), (-1, errno.ENOSYS, "ENOSYS"), (-1, errno.EOPNOTSUPP, "disabled")],
+)
+def test_landlock_failure_diagnostics(monkeypatch, tmp_path, abi, error, message):
+    class Libc:
+        class Syscall:
+            def __call__(self, *args):
+                ctypes.set_errno(error)
+                return abi
+
+        syscall = Syscall()
+
+    monkeypatch.setattr(sandbox.ctypes, "CDLL", lambda *args, **kwargs: Libc())
+    with pytest.raises(RuntimeError, match=message):
+        sandbox.contain(tmp_path)
+
+
+def test_worker_startup_failure_preserves_cause(monkeypatch, tmp_path):
+    (tmp_path / "worker.py").write_text('raise RuntimeError("Landlock unavailable: test failure")\n')
+    monkeypatch.setattr(verify, "HERE", tmp_path)
+    with pytest.raises(WorkerError, match="Landlock unavailable: test failure"):
+        Worker(tmp_path, tmp_path, "ros", 5)
+
+
+@pytest.mark.parametrize(
+    ("response", "message"),
+    [
+        ('raise RuntimeError("worker crashed")', "worker crashed"),
+        ('print("invalid", flush=True)', "invalid JSON"),
+        ('print("{}", flush=True)', "invalid evaluation"),
+        ('print("{", end="", flush=True); time.sleep(30)', "timed out"),
+    ],
+)
+def test_worker_transport_failure_is_fatal(monkeypatch, tmp_path, response, message):
+    (tmp_path / "worker.py").write_text(
+        "import sys, time\nprint('{\"ready\": true}', flush=True)\nsys.stdin.readline()\n" + response + "\n"
+    )
+    monkeypatch.setattr(verify, "HERE", tmp_path)
+    worker = Worker(tmp_path, tmp_path, "ros", 5)
+    worker.timeout = 0.2
+    try:
+        with pytest.raises(WorkerError, match=message):
+            worker.evaluate({"file": "unused"})
+    finally:
+        worker.close()
+    assert worker.process.poll() is not None
+
+
+@pytest.mark.parametrize("completed", [0, 1])
+def test_controller_aborts_without_counting_unattempted_cases(monkeypatch, tmp_path, completed):
+    workers = []
+
+    class FailingWorker:
+        def __init__(self, root, scratch, engine, timeout):
+            if not completed and engine == "better":
+                raise WorkerError("startup failure")
+            self.calls = 0
+            self.closed = False
+            workers.append(self)
+
+        def evaluate(self, request):
+            self.calls += 1
+            if self.calls > completed:
+                raise WorkerError("evaluation failure")
+            return {"records": [], "errors": []}
+
+        def close(self):
+            self.closed = True
+
+    monkeypatch.setattr(verify, "Worker", FailingWorker)
+    monkeypatch.setattr(verify, "export", lambda *args: None)
+    monkeypatch.setattr(verify, "discover", lambda *args: [{"entrypoint": "p/f", "old": "old", "new": "new"}])
+    monkeypatch.setattr(
+        verify,
+        "git",
+        lambda *args: (
+            '<launch><arg name="sim" default="false"/></launch>'
+            if args[-1].endswith(":old")
+            else "@launch_this\ndef entry(sim: bool = False):\n    pass\n"
+        )
+        if args[0] == "show"
+        else "revision",
+    )
+    report = tmp_path / "report"
+    monkeypatch.setattr(verify.sys, "argv", ["verify.py", "--output", str(report)])
+    assert verify.main() == 2
+    summary = json.loads((report / "summary.json").read_text())
+    assert summary["aborted"] is True
+    assert summary["completed_cases"] == completed
+    assert summary["planned_cases"] == 2
+    assert summary["results"] == {"equivalent": completed, "different": 0, "unresolved": 0}
+    assert (report / "differences.diff").read_text().startswith("ABORTED")
+    assert all(worker.closed for worker in workers)
+    assert all(worker.calls <= completed + 1 for worker in workers)
 
 
 def test_default_reduction_preserves_different_defaults_and_conditional_arguments():

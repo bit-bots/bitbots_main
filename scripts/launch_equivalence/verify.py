@@ -6,6 +6,7 @@ import ast
 import itertools
 import json
 import math
+import os
 import selectors
 import subprocess
 import sys
@@ -188,9 +189,15 @@ def export(revision, path):
             tar.extractall(path, filter="data")
 
 
+class WorkerError(RuntimeError):
+    """The evaluator infrastructure failed; further cases cannot be compared."""
+
+
 class Worker:
     def __init__(self, root, scratch, engine, timeout):
         self.timeout = timeout
+        self.engine = engine
+        self.pending = b""
         self.stderr = tempfile.TemporaryFile(mode="w+")
         self.process = subprocess.Popen(
             [
@@ -212,6 +219,36 @@ class Worker:
         )
         self.selector = selectors.DefaultSelector()
         self.selector.register(self.process.stdout, selectors.EVENT_READ)
+        try:
+            if self.receive() != {"ready": True}:
+                raise WorkerError(f"{self.engine} worker sent an invalid startup response")
+        except WorkerError:
+            self.close()
+            raise
+
+    def fail(self, message):
+        if self.process.poll() is None:
+            self.process.kill()
+        self.process.wait()
+        self.stderr.seek(0)
+        detail = self.stderr.read()[-6000:].strip()
+        raise WorkerError(f"{self.engine} worker {message}" + (f":\n{detail}" if detail else ""))
+
+    def receive(self):
+        deadline = time.monotonic() + self.timeout
+        while b"\n" not in self.pending:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0 or not self.selector.select(remaining):
+                self.fail(f"timed out after {self.timeout:g}s")
+            chunk = os.read(self.process.stdout.fileno(), 65536)
+            if not chunk:
+                self.fail("stopped")
+            self.pending += chunk
+        line, self.pending = self.pending.split(b"\n", 1)
+        try:
+            return json.loads(line)
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            self.fail("sent an invalid JSON response")
 
     def evaluate(self, request, ancestors=()):
         identity = stable(request)
@@ -220,14 +257,9 @@ class Worker:
         try:
             self.process.stdin.write(stable(request) + "\n")
             self.process.stdin.flush()
-            if not self.selector.select(self.timeout):
-                self.process.kill()
-                raise TimeoutError("Offline evaluator timed out")
-            line = self.process.stdout.readline()
-            if not line:
-                self.stderr.seek(0)
-                raise RuntimeError("Worker stopped: " + self.stderr.read()[-6000:])
-            result = json.loads(line)
+            result = self.receive()
+            if not isinstance(result, dict) or not all(isinstance(result.get(k), list) for k in ("records", "errors")):
+                self.fail("sent an invalid evaluation response")
             for child in result.pop("children", []):
                 nested = self.evaluate(child["request"], ancestors + (identity,))
                 result["records"].extend(
@@ -237,8 +269,8 @@ class Worker:
                 result["errors"].extend(error | {"process_boundary": child["boundary"]} for error in nested["errors"])
                 result["cache"] = nested.get("cache", result.get("cache", {}))
             return result
-        except (BrokenPipeError, TimeoutError, RuntimeError, json.JSONDecodeError) as exception:
-            return {"records": [], "errors": [{"type": type(exception).__name__, "message": str(exception)}]}
+        except BrokenPipeError:
+            self.fail("closed its input pipe")
 
     def close(self):
         try:
@@ -251,6 +283,7 @@ class Worker:
             self.process.kill()
             self.process.wait()
         self.selector.close()
+        self.process.stdout.close()
         self.stderr.close()
 
 
@@ -269,9 +302,21 @@ def main():
     )
     parser.add_argument("--max-cases", type=int, default=100000, help="Refuse larger matrices; never silently truncate")
     parser.add_argument("--timeout", type=float, default=30, help="Worker response timeout")
+    parser.add_argument(
+        "--check-sandbox", action="store_true", help="Check containment without evaluating launch files"
+    )
     options = parser.parse_args()
     if options.timeout <= 0 or options.max_cases < 1:
         parser.error("Timeout and case limit must be positive")
+    if options.check_sandbox:
+        with tempfile.TemporaryDirectory(prefix="launch-equivalence-check-") as scratch:
+            try:
+                return subprocess.run(
+                    [sys.executable, "-B", str(HERE / "sandbox.py"), scratch], timeout=options.timeout
+                ).returncode
+            except subprocess.TimeoutExpired:
+                print("Sandbox check timed out", file=sys.stderr)
+                return 2
     base, head = git("rev-parse", f"{options.base}^{{commit}}"), git("rev-parse", f"{options.head}^{{commit}}")
     specification = json.loads(options.domains.read_text()) if options.domains else {}
     profiles = specification.get("environments", {"unset_robot": {}})
@@ -336,16 +381,16 @@ def main():
     cache_hits = 0
     process_cache = {}
     started = time.monotonic()
+    failure = None
     with tempfile.TemporaryDirectory(prefix="launch-equivalence-") as temporary:
         temporary = Path(temporary)
         old_root, new_root = temporary / "old", temporary / "new"
         export(base, old_root)
         export(head, new_root)
-        workers = [
-            Worker(old_root, temporary / "old-worker", "ros", options.timeout),
-            Worker(new_root, temporary / "new-worker", "better", options.timeout),
-        ]
+        workers = []
         try:
+            workers.append(Worker(old_root, temporary / "old-worker", "ros", options.timeout))
+            workers.append(Worker(new_root, temporary / "new-worker", "better", options.timeout))
             with (options.output / "cases.jsonl").open("w") as cases, ThreadPoolExecutor(max_workers=2) as executor:
                 for pair in plan:
                     print(f"Comparing {pair['entrypoint']} ({pair['cases']} cases)", flush=True)
@@ -417,11 +462,17 @@ def main():
                                 + "\n"
                             )
                     print(f"  totals: {counts}", flush=True)
+        except WorkerError as exception:
+            failure = str(exception)
+            print(f"ABORTED: {failure}", file=sys.stderr)
         finally:
             for worker in workers:
                 worker.close()
     summary = metadata | {
         "results": counts,
+        "completed_cases": sum(counts.values()),
+        "aborted": failure is not None,
+        "failure": failure,
         "cache_hits": cache_hits,
         "process_cache": process_cache,
         "elapsed_seconds": time.monotonic() - started,
@@ -430,6 +481,10 @@ def main():
     }
     (options.output / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")
     with (options.output / "differences.diff").open("w") as report:
+        if failure:
+            report.write(
+                f"ABORTED after {sum(counts.values())} of {planned} cases; incomplete comparison.\n{failure}\n"
+            )
         for signature, group in groups.items():
             example = group["example"]
             report.write(f"\n{example['entrypoint']} | {group['count']} cases | group {signature}\n")
@@ -438,7 +493,7 @@ def main():
             if example["errors"]:
                 report.write("UNRESOLVED: " + stable(example["errors"]) + "\n")
     print(f"{counts}; report: {options.output}")
-    return 2 if counts["unresolved"] else 1 if counts["different"] else 0
+    return 2 if failure or counts["unresolved"] else 1 if counts["different"] else 0
 
 
 if __name__ == "__main__":
