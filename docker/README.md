@@ -1,6 +1,6 @@
-# Hamburg Bit-Bots Podman Images
+# Hamburg Bit-Bots Container Images
 
-This directory contains `Containerfile`s and helper scripts to create and run Podman containers for the Bit-Bots software stack.
+This directory contains `Containerfile`s and helper scripts to create and run Docker/Podman containers for the Bit-Bots software stack.
 
 ## Image Overview
 
@@ -17,61 +17,63 @@ The containers are designed to closely match the environment of real robots mana
 
 ## Prerequisites
 
-- **Podman**: Ensure Podman is installed on your host system.
+- **Docker or Podman**: Ensure Docker (default) or Podman is installed on your host system.
 - **SSH Key**: By default, the build script looks for your public SSH key in `~/.ssh/id_ed25519.pub` or `~/.ssh/id_rsa.pub` to authorize it for the `bitbots` user in the container.
 
 ## Usage
 
-A helper script `manage.sh` is provided to simplify common tasks.
+A helper script `manage.py` is provided to simplify common tasks. It supports both Docker (default) and Podman via the `-e/--engine` flag or the `CONTAINER_ENGINE` environment variable.
 
 ### Building Images
 
 Build all images (common, project, and target):
 ```bash
-./docker/manage.sh build-all
+./docker/manage.py build-all
+# Or with Podman:
+./docker/manage.py -e podman build-all
 ```
 
 Or build them individually:
 ```bash
-./docker/manage.sh build-common
-./docker/manage.sh build-project
-./docker/manage.sh build-target
+./docker/manage.py build-common
+./docker/manage.py build-project
+./docker/manage.py build-target
 ```
 
 ### Running Containers
 
 Run the project image (mapped to port 2222):
 ```bash
-./docker/manage.sh run-project
+./docker/manage.py run-project
 ```
 
 Run the target image (mapped to port 2223):
 ```bash
-./docker/manage.sh run-target
+./docker/manage.py run-target
 ```
 
 Run the simulator container (named `simulator`, starts Zenoh router and SSH server, and exposes port 8080 for web visualizer/tools):
 ```bash
-./docker/manage.sh run-simulator
+./docker/manage.py run-simulator
 # Or with a specific IP / robot identifier:
-./docker/manage.sh run-simulator 10.66.6.10
+./docker/manage.py run-simulator 10.66.6.10
 ```
 
 ### Advanced: Multiple Containers & Static IPs
 
-To run containers with their own IP addresses (avoiding port mapping), first create a Podman network:
+To run containers with their own IP addresses (avoiding port mapping), first create the network:
 ```bash
-./docker/manage.sh create-network 10.66.0.0/16
+./docker/manage.py create-network 10.66.0.0/16
 ```
 
 Then run containers with a specific IP:
 ```bash
-./docker/manage.sh run-target 10.66.6.1
+./docker/manage.py run-target 10.66.6.1
 ```
 
 Or launch by robot name (resolves IP from `scripts/deploy/known_targets.yaml`):
 ```bash
-./docker/manage.sh run-target mickey
+./docker/manage.py run-target mickey
 ```
 
 ### Connecting via SSH
@@ -82,19 +84,19 @@ ssh -p 2222 bitbots@localhost
 ```
 
 **Using Static IP (Rootful/Sudo):**
-Running Podman as root allows it to create a real bridge interface on your host, making container IPs directly routable.
+Running as root allows creation of a bridge interface on your host, making container IPs directly routable.
 
 1. **Build the images as root** (Note: images built as user are not visible to sudo):
    ```bash
-   sudo SSH_PUB_KEY_PATH=$HOME/.ssh/id_ed25519.pub ./docker/manage.sh build-all
+   sudo SSH_PUB_KEY_PATH=$HOME/.ssh/id_ed25519.pub ./docker/manage.py build-all
    ```
 2. **Create the network**:
    ```bash
-   sudo ./docker/manage.sh create-network
+   sudo ./docker/manage.py create-network
    ```
 3. **Run a container**:
    ```bash
-   sudo ./docker/manage.sh run-target mickey
+   sudo ./docker/manage.py run-target mickey
    ```
 4. **Connect directly**:
    ```bash
@@ -105,7 +107,7 @@ Running Podman as root allows it to create a real bridge interface on your host,
 In rootless mode (running without `sudo`), container IPs are not directly reachable from your normal host shell. You can use the `net-shell` command to enter the container network namespace:
 
 ```bash
-./docker/manage.sh net-shell
+./docker/manage.py net-shell
 ```
 
 Once inside this special shell:
@@ -116,7 +118,7 @@ Once inside this special shell:
 **Convenience SSH Command:**
 Alternatively, you can use the management script to SSH into a container from any shell. This command automatically handles networking (tunneling or direct) and suppresses host key warnings for the virtual network:
 ```bash
-./docker/manage.sh ssh mickey
+./docker/manage.py ssh mickey
 ```
 
 **Using Static IP (Rootless + Proxy):**
@@ -144,39 +146,39 @@ Host 10.66.*
   - All non-simulator robot/project/target containers run the Zenoh router in **peer** mode targeting the simulator router (`tcp/simulator:7447`).
 - **ROS Domain IDs:** Target and robot containers have their `ROS_DOMAIN_ID` automatically configured based on `scripts/deploy/known_targets.yaml` (domain IDs 11 to 16 for Kalliope, Mickey, Pink, Romeo, Carrie, and Peter). The simulator container defaults to `ROS_DOMAIN_ID=0`.
 - **Direct Host Routing (`connect-host` / `sudo`):** Provides full network transparency. The host has a virtual interface on `10.66.0.0/16` (e.g., `veth-bb-host` with IP `10.66.0.254` in Docker, or `podman1` in Podman) and can communicate directly with all containers via their IPs for all protocols (SSH, TCP, UDP, Zenoh, ROS 2). Recommended for testing and deployment.
-- **Rootless / Namespace Mode:** Containers can talk to each other on the `bitbots-net` network. To access them from the host, you can use `./docker/manage_docker.sh connect-host` (or `./docker/manage.sh net-shell`), the SSH proxy above, or port mapping (`-p`).
+- **Rootless / Namespace Mode:** Containers can talk to each other on the `bitbots-net` network. To access them from the host, you can use `./docker/manage.py connect-host` (or `./docker/manage.py net-shell`), the SSH proxy above, or port mapping (`-p`).
 
 ### Multi-PC Networking with Docker Swarm Overlays
 
 When running multiple robot containers across different physical PCs, Docker Swarm attachable overlay networks connect all containers into the same virtual subnet (`10.66.0.0/16`).
 
-Use `docker/manage_docker.sh` on the participating machines:
+Use `docker/manage.py` on the participating machines:
 
 1. **Initialize Docker Swarm on the Manager PC:**
    ```bash
-   ./docker/manage_docker.sh swarm-init
+   ./docker/manage.py swarm-init
    ```
    This will initialize Swarm and print the join command for other PCs.
 
 2. **Create the Attachable Overlay Network on the Manager PC:**
    ```bash
-   ./docker/manage_docker.sh create-network 10.66.0.0/16
+   ./docker/manage.py create-network 10.66.0.0/16
    ```
 
 3. **Join Other PCs to the Swarm:**
    Run the `swarm-join` command on each worker PC using the token and manager IP:
    ```bash
-   ./docker/manage_docker.sh swarm-join <worker-token> <manager-ip>:2377
+   ./docker/manage.py swarm-join <worker-token> <manager-ip>:2377
    ```
 
 4. **Launch Containers on Any Connected PC:**
-   - On PC 1: `./docker/manage_docker.sh run-target mickey` (assigns `10.66.6.2`)
-   - On PC 2: `./docker/manage_docker.sh run-target minnie` (assigns `10.66.6.1`)
+   - On PC 1: `./docker/manage.py run-target mickey` (assigns `10.66.6.2`)
+   - On PC 2: `./docker/manage.py run-target minnie` (assigns `10.66.6.1`)
 
 5. **Connect the Host PC Directly to the Overlay Network:**
    To make the host PC itself part of the `10.66.0.0/16` network (allowing direct `ssh bitbots@10.66.6.x` and `pixi run deploy <robot>` from your host shell to local and remote containers), run on each PC:
    ```bash
-   ./docker/manage_docker.sh connect-host
+   ./docker/manage.py connect-host
    ```
    This launches a lightweight gateway container on `bitbots-net` and configures local point-to-point host routing. Because the gateway container is a native Docker Swarm overlay endpoint, Docker Swarm's SDN control plane synchronizes routing tables across all connected PCs, enabling bidirectional communication with containers on other PCs as well as the local PC.
 
@@ -188,10 +190,10 @@ Containers and host machines across different PCs can communicate directly over 
 - `UDP 4789`: VXLAN overlay data traffic
 
 ### GPU Access and Acceleration
-Containers automatically pass available GPU devices (DRI nodes via `--device /dev/dri`, AMD `/dev/kfd`, and NVIDIA GPUs via `--gpus all` / NVIDIA Container Toolkit) into the container when started via `manage.sh` or `manage_docker.sh`.
-You can customize or override the GPU flags by setting the `GPU_ARGS` environment variable:
+Containers automatically pass available GPU devices (DRI nodes via `--device /dev/dri`, AMD `/dev/kfd`, and NVIDIA GPUs via `--gpus all` / NVIDIA Container Toolkit) into the container when started via `manage.py`.
+You can customize or override the GPU flags by setting the `GPU_ARGS` environment variable or the `--gpu-args` flag:
 ```bash
-GPU_ARGS="--gpus all --device /dev/dri" ./docker/manage.sh run-target mickey
+./docker/manage.py --gpu-args "--gpus all --device /dev/dri" run-target mickey
 ```
 
 ### X11 Forwarding
@@ -203,7 +205,7 @@ Note: This requires an X server running on your host machine.
 
 ### Using with the Deploy Tool
 With static IPs, the deploy tool can interact with containers just like real robots:
-1. Start a container: `./docker/manage.sh run-target mickey`
+1. Start a container: `./docker/manage.py run-target mickey`
 2. Deploy: `pixi run deploy mickey` (it will resolve the IP `10.66.6.2` from `known_targets.yaml`)
 
 Alternatively, if using port mapping:
@@ -215,24 +217,24 @@ pixi run deploy bitbots@localhost:2223 --workspace /home/bitbots/bitbots_main
 
 Stop and remove the running Bit-Bots containers:
 ```bash
-./docker/manage.sh stop-all
+./docker/manage.py stop-all
 ```
 
 ## Manual Commands
 
-If you prefer to run Podman commands manually, ensure you are in the repository root:
+If you prefer to run container engine commands manually, ensure you are in the repository root:
 
 **Build Common:**
 ```bash
-podman build -t bitbots-common --build-arg ssh_pub_key="$(cat ~/.ssh/id_ed25519.pub)" -f docker/Containerfile.common .
+docker build -t bitbots-common --build-arg ssh_pub_key="$(cat ~/.ssh/id_ed25519.pub)" -f docker/Containerfile.common .
 ```
 
 **Build Project:**
 ```bash
-podman build -t bitbots-project -f docker/Containerfile.project .
+docker build -t bitbots-project -f docker/Containerfile.project .
 ```
 
 **Run:**
 ```bash
-podman run -d --name bitbots-project-run -p 2222:22 bitbots-project
+docker run -d --name bitbots-project-run -p 2222:22 bitbots-project
 ```
