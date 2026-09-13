@@ -2,58 +2,94 @@
 "172.20.1.11":
   hostname: "kalliope"
   robot_name: "Kalliope"
+  domain_id: 11
+  ros_domain_id: 11
 "172.20.1.12":
   hostname: "mickey"
   robot_name: "Mickey"
+  domain_id: 12
+  ros_domain_id: 12
 "172.20.1.13":
   hostname: "pink"
   robot_name: "Pink"
+  domain_id: 13
+  ros_domain_id: 13
 "172.20.1.14":
   hostname: "romeo"
   robot_name: "Romeo"
+  domain_id: 14
+  ros_domain_id: 14
 "172.20.1.15":
   hostname: "carrie"
   robot_name: "Carrie"
+  domain_id: 15
+  ros_domain_id: 15
 "172.20.1.16":
   hostname: "peter"
   robot_name: "Peter"
+  domain_id: 16
+  ros_domain_id: 16
 
 # Field
 "10.0.6.1":
   hostname: "kalliope"
   robot_name: "Kalliope"
+  domain_id: 11
+  ros_domain_id: 11
 "10.0.6.2":
   hostname: "mickey"
   robot_name: "Mickey"
+  domain_id: 12
+  ros_domain_id: 12
 "10.0.6.3":
   hostname: "pink"
   robot_name: "Pink"
+  domain_id: 13
+  ros_domain_id: 13
 "10.0.6.4":
   hostname: "romeo"
   robot_name: "Romeo"
+  domain_id: 14
+  ros_domain_id: 14
 "10.0.6.5":
   hostname: "carrie"
   robot_name: "Carrie"
+  domain_id: 15
+  ros_domain_id: 15
 "10.0.6.6":
   hostname: "peter"
   robot_name: "Peter"
+  domain_id: 16
+  ros_domain_id: 16
 
 # Virtual (Containers)
 "10.66.6.1":
   hostname: "kalliope"
   robot_name: "Kalliope"
+  domain_id: 11
+  ros_domain_id: 11
 "10.66.6.2":
   hostname: "mickey"
   robot_name: "Mickey"
+  domain_id: 12
+  ros_domain_id: 12
 "10.66.6.3":
   hostname: "pink"
   robot_name: "Pink"
+  domain_id: 13
+  ros_domain_id: 13
 "10.66.6.4":
   hostname: "romeo"
   robot_name: "Romeo"
+  domain_id: 14
+  ros_domain_id: 14
 "10.66.6.5":
   hostname: "carrie"
   robot_name: "Carrie"
+  domain_id: 15
+  ros_domain_id: 15
 "10.66.6.6":
   hostname: "peter"
   robot_name: "Peter"
+  domain_id: 16
+  ros_domain_id: 16

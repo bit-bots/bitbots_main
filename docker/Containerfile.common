@@ -101,6 +101,10 @@ RUN mkdir -p /home/${user}/.ssh \
   && if [ -f /home/${user}/.ssh/authorized_keys ]; then chmod 600 /home/${user}/.ssh/authorized_keys; fi
 
 USER root
+COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
 EXPOSE 22
 
-CMD ["/usr/sbin/sshd", "-D"]
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+CMD ["default"]

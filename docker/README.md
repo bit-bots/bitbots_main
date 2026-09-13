@@ -50,6 +50,13 @@ Run the target image (mapped to port 2223):
 ./docker/manage.sh run-target
 ```
 
+Run the simulator container (named `simulator`, starts Zenoh router and SSH server, and exposes port 8080 for web visualizer/tools):
+```bash
+./docker/manage.sh run-simulator
+# Or with a specific IP / robot identifier:
+./docker/manage.sh run-simulator 10.66.6.10
+```
+
 ### Advanced: Multiple Containers & Static IPs
 
 To run containers with their own IP addresses (avoiding port mapping), first create a Podman network:
@@ -130,8 +137,12 @@ Host 10.66.*
 ```
 *Note: This configuration allows `ssh 10.66.6.x` and the `deploy` script to work seamlessly across direct host routing (`connect-host`), rootless proxying, and `net-shell` environments.*
 
-### Network Connectivity (Zenoh, etc.)
+### Network Connectivity (Zenoh, ROS Domain IDs, etc.)
 
+- **Zenoh Routers:** All containers automatically start a Zenoh router (`rmw_zenohd`) via the entrypoint.
+  - The `simulator` container runs the Zenoh router in **router** mode on `tcp/simulator:7447` (and exposes port 8080 for web visualizer/tools).
+  - All non-simulator robot/project/target containers run the Zenoh router in **peer** mode targeting the simulator router (`tcp/simulator:7447`).
+- **ROS Domain IDs:** Target and robot containers have their `ROS_DOMAIN_ID` automatically configured based on `scripts/deploy/known_targets.yaml` (domain IDs 11 to 16 for Kalliope, Mickey, Pink, Romeo, Carrie, and Peter). The simulator container defaults to `ROS_DOMAIN_ID=0`.
 - **Direct Host Routing (`connect-host` / `sudo`):** Provides full network transparency. The host has a virtual interface on `10.66.0.0/16` (e.g., `veth-bb-host` with IP `10.66.0.254` in Docker, or `podman1` in Podman) and can communicate directly with all containers via their IPs for all protocols (SSH, TCP, UDP, Zenoh, ROS 2). Recommended for testing and deployment.
 - **Rootless / Namespace Mode:** Containers can talk to each other on the `bitbots-net` network. To access them from the host, you can use `./docker/manage_docker.sh connect-host` (or `./docker/manage.sh net-shell`), the SSH proxy above, or port mapping (`-p`).
 

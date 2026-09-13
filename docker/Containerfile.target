@@ -3,11 +3,13 @@ FROM ${BASE_IMAGE}
 
 ARG user=bitbots
 USER $user
-RUN mkdir -p /home/$user/bitbots_main
+WORKDIR /home/$user/bitbots_main
 
 # The target image is intended to be empty of project source code initially.
-# The bitbots deploy tool will sync the code to ~/bitbots_main.
+# We copy pixi manifests and install the environment so ROS 2 and rmw_zenohd are available.
+COPY --chown=$user:$user pixi.toml pixi.lock ./
+RUN /home/$user/.pixi/bin/pixi install
 
-# Switch back to root to run sshd
+# Switch back to root
 USER root
-CMD ["/usr/sbin/sshd", "-D"]
+CMD ["default"]

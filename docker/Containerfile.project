@@ -12,6 +12,7 @@ COPY --chown=$user:$user . .
 # This will take a while and produce a large image as requested.
 RUN /home/$user/.pixi/bin/pixi run --environment default build
 
-# Switch back to root to run sshd
+# Switch back to root
 USER root
-CMD ["/usr/sbin/sshd", "-D"]
+EXPOSE 8080
+CMD ["default"]

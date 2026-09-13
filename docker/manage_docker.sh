@@ -85,6 +85,52 @@ except Exception as e:
     fi
 }
 
+# Function to resolve robot domain ID from identifier
+resolve_robot_domain_id() {
+    local identifier=$1
+    if [ -z "$identifier" ]; then
+        return
+    fi
+
+    local domain_id
+    domain_id=$(python3 -c "
+import yaml
+import sys
+import ipaddress
+try:
+    with open('$REPO_ROOT/scripts/deploy/known_targets.yaml', 'r') as f:
+        data = yaml.safe_load(f)
+    ident = '$identifier'.lower()
+    net = ipaddress.ip_network('$DEFAULT_SUBNET')
+    
+    matches = []
+    for ip_str, info in data.items():
+        if info.get('hostname', '').lower() == ident or info.get('robot_name', '').lower() == ident or ip_str == ident:
+            matches.append((ip_str, info))
+    
+    found_info = None
+    for m_ip, m_info in matches:
+        try:
+            if ipaddress.ip_address(m_ip) in net:
+                found_info = m_info
+                break
+        except ValueError:
+            pass
+    
+    if not found_info and matches:
+        found_info = matches[0][1]
+        
+    if found_info and ('domain_id' in found_info or 'ros_domain_id' in found_info):
+        print(found_info.get('domain_id') or found_info.get('ros_domain_id'))
+except Exception as e:
+    sys.stderr.write(f'Error parsing YAML: {e}\n')
+")
+
+    if [ -n "$domain_id" ]; then
+        echo "$domain_id"
+    fi
+}
+
 # Function to get GPU flags for container run
 get_gpu_args() {
     if [ -n "$GPU_ARGS" ]; then
@@ -121,6 +167,7 @@ show_help() {
     echo "  disconnect-host          Disconnect host interface from overlay network"
     echo "  run-project [id]         Run project container (uses port $SSH_PORT_PROJECT or specified IP/robot name)"
     echo "  run-target [id]          Run target container (uses port $SSH_PORT_TARGET or specified IP/robot name)"
+    echo "  run-simulator [id]       Run simulator container with Zenoh router, SSH server, and port 8080 exposed"
     echo "  ssh <id>                 SSH into a running container (handles host keys and networking automatically)"
     echo "  net-shell                Enter network namespace shell"
     echo "  stop-all                 Stop all Bit-Bots containers and clean up host interface"
@@ -259,11 +306,14 @@ create_network() {
 run_project() {
     local target=$1
     local ip=""
+    local domain_id=""
     local name="bitbots-project-run"
     local net_args=()
+    local env_args=()
 
     if [ -n "$target" ]; then
         ip=$(resolve_robot_ip "$target")
+        domain_id=$(resolve_robot_domain_id "$target")
         if [ -z "$ip" ]; then
             echo "Error: Could not find IP for target: $target"
             exit 1
@@ -279,10 +329,16 @@ run_project() {
         echo "You can connect via: ssh -p $SSH_PORT_PROJECT $DEFAULT_USER@localhost"
     fi
 
+    if [ -n "$domain_id" ]; then
+        env_args+=(-e "ROS_DOMAIN_ID=$domain_id")
+        echo "ROS_DOMAIN_ID set to $domain_id"
+    fi
+
     local gpu_args=($(get_gpu_args))
 
     docker run -d --name "$name" \
         "${net_args[@]}" \
+        "${env_args[@]}" \
         "${gpu_args[@]}" \
         "$IMAGE_NAME_PROJECT"
 }
@@ -290,11 +346,14 @@ run_project() {
 run_target() {
     local target=$1
     local ip=""
+    local domain_id=""
     local name="bitbots-target-run"
     local net_args=()
+    local env_args=()
 
     if [ -n "$target" ]; then
         ip=$(resolve_robot_ip "$target")
+        domain_id=$(resolve_robot_domain_id "$target")
         if [ -z "$ip" ]; then
             echo "Error: Could not find IP for target: $target"
             exit 1
@@ -310,17 +369,57 @@ run_target() {
         echo "You can connect via: ssh -p $SSH_PORT_TARGET $DEFAULT_USER@localhost"
     fi
 
+    if [ -n "$domain_id" ]; then
+        env_args+=(-e "ROS_DOMAIN_ID=$domain_id")
+        echo "ROS_DOMAIN_ID set to $domain_id"
+    fi
+
     local gpu_args=($(get_gpu_args))
 
     docker run -d --name "$name" \
         "${net_args[@]}" \
+        "${env_args[@]}" \
         "${gpu_args[@]}" \
         "$IMAGE_NAME_TARGET"
 }
 
+run_simulator() {
+    local target=$1
+    local ip=""
+    local name="simulator"
+    local net_args=()
+    local env_args=(-e "SIMULATOR=1" -e "ZENOH_MODE=router" -e "ROS_DOMAIN_ID=0")
+
+    if [ -n "$target" ]; then
+        ip=$(resolve_robot_ip "$target")
+        if [ -z "$ip" ]; then
+            echo "Error: Could not find IP for target: $target"
+            exit 1
+        fi
+        net_args=(--network "$NETWORK_NAME" --ip "$ip" -p 8080:8080)
+        create_network
+        echo "Running simulator container $name with IP $ip..."
+        echo "You can connect via: ssh $DEFAULT_USER@$ip"
+        echo "Port 8080 is exposed on localhost:8080"
+    else
+        net_args=(--network "$NETWORK_NAME" -p 8080:8080)
+        create_network
+        echo "Running simulator container $name on network $NETWORK_NAME..."
+        echo "Port 8080 is exposed on localhost:8080"
+    fi
+
+    local gpu_args=($(get_gpu_args))
+
+    docker run -d --name "$name" \
+        "${net_args[@]}" \
+        "${env_args[@]}" \
+        "${gpu_args[@]}" \
+        "$IMAGE_NAME_PROJECT"
+}
+
 stop_all() {
     echo "Stopping Bit-Bots containers..."
-    local containers=$(docker ps -a --format "{{.Names}}" | grep "^bitbots-")
+    local containers=$(docker ps -a --format "{{.Names}}" | grep -E "^(bitbots-|simulator$)")
     if [ -n "$containers" ]; then
         docker stop $containers
         docker rm $containers
@@ -602,6 +701,11 @@ ssh_container() {
 
     local ip=$(resolve_robot_ip "$target")
     if [ -z "$ip" ]; then
+        if docker inspect "$target" >/dev/null 2>&1; then
+            ip=$(docker inspect -f "{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}" "$target" 2>/dev/null || true)
+        fi
+    fi
+    if [ -z "$ip" ]; then
         echo "Error: Could not find IP for target: $target"
         exit 1
     fi
@@ -615,7 +719,7 @@ ssh_container() {
     else
         # Try to find container ID for proxying in case IP is not directly routed
         local ip_slug=${ip//./-}
-        local cid=$(docker ps --format "{{.ID}} {{.Names}}" | grep "bitbots" | grep "$ip_slug" | head -n 1 | cut -d' ' -f1)
+        local cid=$(docker ps --format "{{.ID}} {{.Names}}" | grep -E "bitbots|simulator" | grep "$ip_slug" | head -n 1 | cut -d' ' -f1)
         if [ -z "$cid" ]; then
             # If target container is on another Swarm node, proxy through any local container on the overlay network
             cid=$(docker ps --filter "network=$NETWORK_NAME" -q | head -n 1)
@@ -665,6 +769,9 @@ case "$1" in
         ;;
     run-project)
         run_project "$2"
+        ;;
+    run-simulator|simulator)
+        run_simulator "$2"
         ;;
     create-network)
         create_network "$2"
