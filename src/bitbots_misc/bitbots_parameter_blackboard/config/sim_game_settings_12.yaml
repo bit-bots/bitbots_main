@@ -1,5 +1,0 @@
-parameter_blackboard:
-  ros__parameters:
-    bot_id: 2
-    position_number: 0
-    role: goalie

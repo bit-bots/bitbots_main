@@ -25,6 +25,7 @@
   <depend>ament_index_python</depend>
   <depend>python3-numpy</depend>
   <depend>python3-mujoco</depend>
+  <depend>python3-pil</depend>
 
   <test_depend>ament_cmake_mypy</test_depend>
 

@@ -8,6 +8,7 @@
 .idea/workspace.xml
 .idea/tasks.xml
 .idea/*
+.junie/
 
 **/.idea/
 **/cmake-build-debug/
