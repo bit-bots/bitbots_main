@@ -104,6 +104,55 @@ class ReachedAndAlignedToConfigRolePosition(AbstractDecisionElement):
         return True
 
 
+class ReachedAndAlignedToDemoPenaltyPosition(AbstractDecisionElement):
+    blackboard: BodyBlackboard
+
+    def __init__(self, blackboard, dsd, parameters):
+        super().__init__(blackboard, dsd, parameters)
+        self.threshold = self.blackboard.config["role_position_approach_position_thresh"]
+        self.orientation_threshold = math.radians(self.blackboard.config["role_position_approach_orientation_thresh"])
+        self.latch = parameters.get("latch", False)
+        self.latched = False
+
+    def perform(self, reevaluate=False):
+        """
+        Determines whether we are near the path planning goal
+        :param reevaluate:
+        :return:
+        """
+        # We return that reached it forever if we reached it once if latching is enabled
+        if self.latched:
+            return "YES"
+
+        current_pose = self.blackboard.world_model.get_current_position_pose_stamped()
+        generalized_demo_penalty_position = self.blackboard.config["demo_penalty_position"]
+
+        goal_pose = [
+            generalized_demo_penalty_position[0] * self.blackboard.world_model.field_length / 2,
+            generalized_demo_penalty_position[1] * self.blackboard.world_model.field_width / 2,
+        ]
+
+        if current_pose is None or goal_pose is None:
+            return "NO"
+
+        current_orientation = euler_from_quaternion(numpify(current_pose.pose.orientation))
+        goal_orientation = [0, 0, 0]
+        angle_to_goal_orientation = abs(math.remainder(current_orientation[2] - goal_orientation[2], math.tau))
+        self.publish_debug_data("current_orientation", current_orientation[2])
+        self.publish_debug_data("goal_orientation", goal_orientation[2])
+        self.publish_debug_data("angle_to_goal_orientation", angle_to_goal_orientation)
+
+        distance = np.linalg.norm(np.array(goal_pose[:2]) - numpify(current_pose.pose.position)[:2])
+        self.publish_debug_data("distance", distance)
+        if distance < self.threshold and angle_to_goal_orientation < self.orientation_threshold:
+            self.latched = self.latch  # Set it to true if we always want to return YES in the future
+            return "YES"
+        return "NO"
+
+    def get_reevaluate(self):
+        return True
+
+
 class AlignedToPathPlanningGoal(AbstractDecisionElement):
     blackboard: BodyBlackboard
 
