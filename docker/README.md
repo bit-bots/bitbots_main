@@ -4,9 +4,8 @@ This directory contains `Containerfile`s and helper scripts to create and run Do
 
 ## Image Overview
 
-1.  **bitbots-common**: A common base image based on Ubuntu 24.04. It includes basic utilities, an SSH server, rsync, and the Pixi package manager. It is configured to match the robot's Ansible setup, including Zsh configuration (ZimFW) and environment variables.
-2.  **bitbots-project**: Built on top of `bitbots-common`, this image contains the full source code of the project and has the ROS 2 workspace pre-built using `pixi run build`.
-3.  **bitbots-target**: Built on top of `bitbots-common`, this is a clean environment intended to be used as a target for the Bit-Bots deploy tool.
+1.  **bitbots-base**: A base image based on Ubuntu 24.04. It includes basic utilities, an SSH server, rsync, the Pixi package manager, and a pre-built workspace of the project. It is configured to match the robot's Ansible setup, including Zsh configuration (ZimFW) and environment variables.
+2.  **bitbots-project**: Built on top of `bitbots-base`, this image configures SSH access and entrypoint scripts, and copies and incrementally rebuilds the ROS 2 workspace.
 
 ## Ansible Alignment
 
@@ -26,7 +25,7 @@ A helper script `manage.py` is provided to simplify common tasks. It supports bo
 
 ### Building Images
 
-Build all images (common, project, and target):
+Build all images (base and project):
 ```bash
 ./docker/manage.py build-all
 # Or with Podman:
@@ -35,9 +34,8 @@ Build all images (common, project, and target):
 
 Or build them individually:
 ```bash
-./docker/manage.py build-common
+./docker/manage.py build-base
 ./docker/manage.py build-project
-./docker/manage.py build-target
 ```
 
 ### Running Containers
@@ -45,11 +43,6 @@ Or build them individually:
 Run the project image (mapped to port 2222):
 ```bash
 ./docker/manage.py run-project
-```
-
-Run the target image (mapped to port 2223):
-```bash
-./docker/manage.py run-target
 ```
 
 Run the simulator container (named `simulator`, exposes port 8080 for web visualizer/tools; optionally pass `-z`/`--zenoh-router` to start the Zenoh router):
@@ -70,12 +63,12 @@ To run containers with their own IP addresses (avoiding port mapping), first cre
 
 Then run containers with a specific IP:
 ```bash
-./docker/manage.py run-target 10.66.6.1
+./docker/manage.py run-project 10.66.6.1
 ```
 
 Or launch by robot name (resolves IP from `scripts/deploy/known_targets.yaml`):
 ```bash
-./docker/manage.py run-target mickey
+./docker/manage.py run-project mickey
 ```
 
 ### Connecting via SSH
@@ -98,7 +91,7 @@ Running as root allows creation of a bridge interface on your host, making conta
    ```
 3. **Run a container**:
    ```bash
-   sudo ./docker/manage.py run-target mickey
+   sudo ./docker/manage.py run-project mickey
    ```
 4. **Connect directly**:
    ```bash
@@ -174,8 +167,8 @@ Use `docker/manage.py` on the participating machines:
    ```
 
 4. **Launch Containers on Any Connected PC:**
-   - On PC 1: `./docker/manage.py run-target mickey` (assigns `10.66.6.2`)
-   - On PC 2: `./docker/manage.py run-target minnie` (assigns `10.66.6.1`)
+   - On PC 1: `./docker/manage.py run-project mickey` (assigns `10.66.6.2`)
+   - On PC 2: `./docker/manage.py run-project minnie` (assigns `10.66.6.1`)
 
 5. **Connect the Host PC Directly to the Overlay Network:**
    To make the host PC itself part of the `10.66.0.0/16` network (allowing direct `ssh bitbots@10.66.6.x` and `pixi run deploy <robot>` from your host shell to local and remote containers), run on each PC:
@@ -195,7 +188,7 @@ Containers and host machines across different PCs can communicate directly over 
 Containers automatically pass available GPU devices (DRI nodes via `--device /dev/dri`, AMD `/dev/kfd`, and NVIDIA GPUs via `--gpus all` / NVIDIA Container Toolkit) into the container when started via `manage.py`.
 You can customize or override the GPU flags by setting the `GPU_ARGS` environment variable or the `--gpu-args` flag:
 ```bash
-./docker/manage.py --gpu-args "--gpus all --device /dev/dri" run-target mickey
+./docker/manage.py --gpu-args "--gpus all --device /dev/dri" run-project mickey
 ```
 
 ### X11 Forwarding
@@ -207,12 +200,12 @@ Note: This requires an X server running on your host machine.
 
 ### Using with the Deploy Tool
 With static IPs, the deploy tool can interact with containers just like real robots:
-1. Start a container: `./docker/manage.py run-target mickey`
+1. Start a container: `./docker/manage.py run-project mickey`
 2. Deploy: `pixi run deploy mickey` (it will resolve the IP `10.66.6.2` from `known_targets.yaml`)
 
 Alternatively, if using port mapping:
 ```bash
-pixi run deploy bitbots@localhost:2223 --workspace /home/bitbots/bitbots_main
+pixi run deploy bitbots@localhost:2222 --workspace /home/bitbots/bitbots_main
 ```
 
 ### Stopping Containers
@@ -226,14 +219,14 @@ Stop and remove the running Bit-Bots containers:
 
 If you prefer to run container engine commands manually, ensure you are in the repository root:
 
-**Build Common:**
+**Build Base:**
 ```bash
-docker build -t bitbots-common --build-arg ssh_pub_key="$(cat ~/.ssh/id_ed25519.pub)" -f docker/Containerfile.common .
+docker build -t bitbots-base -f docker/Containerfile.base .
 ```
 
 **Build Project:**
 ```bash
-docker build -t bitbots-project -f docker/Containerfile.project .
+docker build -t bitbots-project --build-arg ssh_pub_key="$(cat ~/.ssh/id_ed25519.pub)" -f docker/Containerfile.project .
 ```
 
 **Run:**

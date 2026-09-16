@@ -92,19 +92,9 @@ COPY --chown=$user:$user docker/ansible_files/htoprc /home/${user}/.config/htop/
 USER $user
 RUN zsh /usr/share/zimfw/zimfw.zsh install
 
-# Setup SSH key for bitbots user
-ARG ssh_pub_key
-RUN mkdir -p /home/${user}/.ssh \
-  && if [ -n "$ssh_pub_key" ]; then echo "${ssh_pub_key}" > /home/${user}/.ssh/authorized_keys; fi \
-  && chown -R ${user}:${user} /home/${user}/.ssh \
-  && chmod 700 /home/${user}/.ssh \
-  && if [ -f /home/${user}/.ssh/authorized_keys ]; then chmod 600 /home/${user}/.ssh/authorized_keys; fi
+# Copy project files (respecting .dockerignore if present in context)
+WORKDIR /home/$user/bitbots_main
+COPY --chown=$user:$user . .
 
-USER root
-COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
-
-EXPOSE 22
-
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-CMD ["default"]
+# Install dependencies and build workspace
+RUN /home/$user/.pixi/bin/pixi run --environment default build

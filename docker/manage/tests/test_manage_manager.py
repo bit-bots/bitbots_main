@@ -23,11 +23,46 @@ def test_manager_select_podman_env(monkeypatch):
     assert isinstance(cm.engine, PodmanEngine)
 
 
-def test_manager_dispatch_build_common(monkeypatch):
-    mock_build_common = MagicMock()
-    monkeypatch.setattr(ContainerManager, "build_common", mock_build_common)
-    ContainerManager(["build-common"])
-    mock_build_common.assert_called_once()
+def test_manager_dispatch_build_base(monkeypatch):
+    mock_build_base = MagicMock()
+    monkeypatch.setattr(ContainerManager, "build_base", mock_build_base)
+    ContainerManager(["build-base"])
+    mock_build_base.assert_called_once()
+
+
+def test_manager_build_methods(monkeypatch, tmp_path):
+    monkeypatch.setattr(ContainerManager, "execute_command", lambda self: None)
+    cm = ContainerManager(["build-all"])
+    mock_build_image = MagicMock()
+    cm.engine.build_image = mock_build_image
+
+    # test build_base
+    cm.build_base()
+    mock_build_image.assert_called_with(
+        "bitbots-base", cm.engine.build_image.call_args[0][1], cm.engine.build_image.call_args[0][2]
+    )
+
+    # test build_project with SSH key
+    key_file = tmp_path / "id_ed25519.pub"
+    key_file.write_text("ssh-ed25519 AAAAC3NzaC1lZDI1NTE5 test")
+    monkeypatch.setattr("manage.manager.find_ssh_key", lambda: key_file)
+    mock_build_image.reset_mock()
+    cm.build_project()
+    mock_build_image.assert_called_with(
+        "bitbots-project",
+        cm.engine.build_image.call_args[0][1],
+        cm.engine.build_image.call_args[0][2],
+        build_args={"BASE_IMAGE": "bitbots-base", "ssh_pub_key": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5 test"},
+    )
+
+    # test build_all
+    mock_base = MagicMock()
+    mock_proj = MagicMock()
+    cm.build_base = mock_base
+    cm.build_project = mock_proj
+    cm.build_all()
+    mock_base.assert_called_once()
+    mock_proj.assert_called_once()
 
 
 def test_manager_dispatch_run_project(monkeypatch):
@@ -42,20 +77,6 @@ def test_manager_dispatch_run_project_zenoh(monkeypatch):
     monkeypatch.setattr(ContainerManager, "run_project", mock_run_project)
     ContainerManager(["run-project", "mickey", "--zenoh-router"])
     mock_run_project.assert_called_once_with("mickey", zenoh_router=True)
-
-
-def test_manager_dispatch_run_target(monkeypatch):
-    mock_run_target = MagicMock()
-    monkeypatch.setattr(ContainerManager, "run_target", mock_run_target)
-    ContainerManager(["run-target", "minnie"])
-    mock_run_target.assert_called_once_with("minnie", zenoh_router=False)
-
-
-def test_manager_dispatch_run_target_zenoh(monkeypatch):
-    mock_run_target = MagicMock()
-    monkeypatch.setattr(ContainerManager, "run_target", mock_run_target)
-    ContainerManager(["run-target", "minnie", "-z"])
-    mock_run_target.assert_called_once_with("minnie", zenoh_router=True)
 
 
 def test_manager_dispatch_run_simulator(monkeypatch):

@@ -10,12 +10,10 @@ from rich.panel import Panel
 CONSOLE = Console()
 
 # Constants
-IMAGE_NAME_COMMON = "bitbots-common"
+IMAGE_NAME_BASE = "bitbots-base"
 IMAGE_NAME_PROJECT = "bitbots-project"
-IMAGE_NAME_TARGET = "bitbots-target"
 DEFAULT_USER = "bitbots"
 SSH_PORT_PROJECT = 2222
-SSH_PORT_TARGET = 2223
 NETWORK_NAME = "bitbots-net"
 DEFAULT_SUBNET = "10.66.0.0/16"
 

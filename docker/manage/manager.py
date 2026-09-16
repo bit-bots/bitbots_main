@@ -9,14 +9,12 @@ from manage.misc import (
     DEFAULT_SUBNET,
     DEFAULT_USER,
     DOCKER_DIR,
-    IMAGE_NAME_COMMON,
+    IMAGE_NAME_BASE,
     IMAGE_NAME_PROJECT,
-    IMAGE_NAME_TARGET,
     LOGLEVEL,
     NETWORK_NAME,
     REPO_ROOT,
     SSH_PORT_PROJECT,
-    SSH_PORT_TARGET,
     find_ssh_key,
     print_bit_bot,
     print_debug,
@@ -81,16 +79,15 @@ class ContainerManager:
         subparsers = parser.add_subparsers(dest="command", help="Command to execute")
 
         # Build commands
-        subparsers.add_parser("build-common", help="Build the common base image")
+        subparsers.add_parser("build-base", help="Build the base image")
         subparsers.add_parser("build-project", help="Build the project image")
-        subparsers.add_parser("build-target", help="Build the target image")
-        subparsers.add_parser("build-all", help="Build all three images")
+        subparsers.add_parser("build-all", help="Build all images")
 
         build_parser = subparsers.add_parser("build", help="Build container images")
         build_parser.add_argument(
             "target_image",
             nargs="?",
-            choices=["common", "project", "target", "all"],
+            choices=["base", "project", "all"],
             default="all",
             help="Image to build (default: all)",
         )
@@ -123,13 +120,6 @@ class ContainerManager:
         )
         run_proj_parser.add_argument("target_id", nargs="?", default=None, help="Target hostname, robot name, or IP")
 
-        run_tgt_parser = subparsers.add_parser(
-            "run-target",
-            parents=[run_parent_parser],
-            help="Run target container",
-        )
-        run_tgt_parser.add_argument("target_id", nargs="?", default=None, help="Target hostname, robot name, or IP")
-
         run_sim_parser = subparsers.add_parser(
             "run-simulator",
             parents=[run_parent_parser],
@@ -147,7 +137,7 @@ class ContainerManager:
         run_parser = subparsers.add_parser("run", parents=[run_parent_parser], help="Run container by type")
         run_parser.add_argument(
             "run_type",
-            choices=["project", "target", "simulator"],
+            choices=["project", "simulator"],
             help="Type of container to run",
         )
         run_parser.add_argument("target_id", nargs="?", default=None, help="Target hostname, robot name, or IP")
@@ -193,12 +183,10 @@ class ContainerManager:
     def execute_command(self) -> None:
         cmd = self._args.command
 
-        if cmd == "build-common" or (cmd == "build" and self._args.target_image == "common"):
-            self.build_common()
+        if cmd == "build-base" or (cmd == "build" and self._args.target_image == "base"):
+            self.build_base()
         elif cmd == "build-project" or (cmd == "build" and self._args.target_image == "project"):
             self.build_project()
-        elif cmd == "build-target" or (cmd == "build" and self._args.target_image == "target"):
-            self.build_target()
         elif cmd in ["build-all", "build"] and (
             not hasattr(self._args, "target_image") or self._args.target_image == "all"
         ):
@@ -208,8 +196,6 @@ class ContainerManager:
             self.create_network(subnet)
         elif cmd == "run-project" or (cmd == "run" and self._args.run_type == "project"):
             self.run_project(self._args.target_id, zenoh_router=self._args.zenoh_router)
-        elif cmd == "run-target" or (cmd == "run" and self._args.run_type == "target"):
-            self.run_target(self._args.target_id, zenoh_router=self._args.zenoh_router)
         elif cmd in ["run-simulator", "simulator"] or (cmd == "run" and self._args.run_type == "simulator"):
             self.run_simulator(self._args.target_id, zenoh_router=self._args.zenoh_router)
         elif cmd in ["stop-all", "stop"]:
@@ -232,43 +218,33 @@ class ContainerManager:
             print_error(f"Unknown command '{cmd}'")
             sys.exit(1)
 
-    def build_common(self) -> None:
+    def build_base(self) -> None:
+        self.engine.build_image(
+            IMAGE_NAME_BASE,
+            DOCKER_DIR / "Containerfile.base",
+            REPO_ROOT,
+        )
+
+    def build_project(self) -> None:
         key_path = find_ssh_key()
-        build_args = None
+        build_args = {"BASE_IMAGE": IMAGE_NAME_BASE}
         if key_path and key_path.is_file():
             print_info(f"Using SSH key from {key_path}")
-            build_args = {"ssh_pub_key": key_path.read_text().strip()}
+            build_args["ssh_pub_key"] = key_path.read_text().strip()
         else:
             print_warning("No SSH public key found in ~/.ssh/id_ed25519.pub or ~/.ssh/id_rsa.pub")
             print_warning("SSH access will not be possible without manual configuration.")
 
         self.engine.build_image(
-            IMAGE_NAME_COMMON,
-            DOCKER_DIR / "Containerfile.common",
+            IMAGE_NAME_PROJECT,
+            DOCKER_DIR / "Containerfile.project",
             REPO_ROOT,
             build_args=build_args,
         )
 
-    def build_project(self) -> None:
-        self.engine.build_image(
-            IMAGE_NAME_PROJECT,
-            DOCKER_DIR / "Containerfile.project",
-            REPO_ROOT,
-            build_args={"BASE_IMAGE": IMAGE_NAME_COMMON},
-        )
-
-    def build_target(self) -> None:
-        self.engine.build_image(
-            IMAGE_NAME_TARGET,
-            DOCKER_DIR / "Containerfile.target",
-            REPO_ROOT,
-            build_args={"BASE_IMAGE": IMAGE_NAME_COMMON},
-        )
-
     def build_all(self) -> None:
-        self.build_common()
+        self.build_base()
         self.build_project()
-        self.build_target()
 
     def create_network(self, subnet: str | None = None) -> None:
         sub = subnet or self._args.subnet
@@ -304,37 +280,6 @@ class ContainerManager:
 
         gpu_args = self.engine.get_gpu_args(self._args.gpu_args)
         self.engine.run_container(IMAGE_NAME_PROJECT, name, net_args, env_args, gpu_args, detached=True)
-
-    def run_target(self, target: str | None = None, zenoh_router: bool = False) -> None:
-        subnet = self._args.subnet
-        domain_id = None
-        if target:
-            ip = resolve_robot_ip(target, subnet)
-            domain_id = resolve_robot_domain_id(target, subnet)
-            if not ip:
-                print_error(f"Could not find IP for target: {target}")
-                sys.exit(1)
-            name = f"bitbots-target-{ip.replace('.', '-')}"
-            net_args = ["--network", NETWORK_NAME, "--ip", ip]
-            self.create_network(subnet)
-            print_info(f"Running target container {name} with IP {ip}...")
-            print_info(f"You can connect via: ssh {DEFAULT_USER}@{ip}")
-        else:
-            name = "bitbots-target-run"
-            net_args = ["-p", f"{SSH_PORT_TARGET}:22"]
-            print_info(f"Running target container {name} on port {SSH_PORT_TARGET}...")
-            print_info(f"You can connect via: ssh -p {SSH_PORT_TARGET} {DEFAULT_USER}@localhost")
-
-        env_args = []
-        if domain_id:
-            env_args.extend(["-e", f"ROS_DOMAIN_ID={domain_id}"])
-            print_info(f"ROS_DOMAIN_ID set to {domain_id}")
-        if zenoh_router:
-            env_args.extend(["-e", "START_ZENOH_ROUTER=1", "-e", "ZENOH_ROUTER=1"])
-            print_info("Zenoh router enabled")
-
-        gpu_args = self.engine.get_gpu_args(self._args.gpu_args)
-        self.engine.run_container(IMAGE_NAME_TARGET, name, net_args, env_args, gpu_args, detached=True)
 
     def run_simulator(self, target: str | None = None, zenoh_router: bool = False) -> None:
         subnet = self._args.subnet

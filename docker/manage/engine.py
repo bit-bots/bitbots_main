@@ -11,9 +11,8 @@ from pathlib import Path
 from manage.misc import (
     DEFAULT_SUBNET,
     DEFAULT_USER,
-    IMAGE_NAME_COMMON,
+    IMAGE_NAME_BASE,
     IMAGE_NAME_PROJECT,
-    IMAGE_NAME_TARGET,
     NETWORK_NAME,
     print_debug,
     print_error,
@@ -324,12 +323,12 @@ class DockerEngine(ContainerEngine):
             sys.exit(1)
 
         # Determine image
-        image = IMAGE_NAME_COMMON
+        image = IMAGE_NAME_BASE
         try:
             self.run_cmd(["image", "inspect", image], capture_output=True)
         except subprocess.CalledProcessError:
             found = False
-            for cand in [IMAGE_NAME_TARGET, IMAGE_NAME_PROJECT, "ubuntu:24.04"]:
+            for cand in [IMAGE_NAME_PROJECT, "ubuntu:24.04"]:
                 try:
                     self.run_cmd(["image", "inspect", cand], capture_output=True)
                     image = cand
@@ -338,15 +337,11 @@ class DockerEngine(ContainerEngine):
                 except subprocess.CalledProcessError:
                     continue
             if not found:
-                print_info(f"Building common image '{IMAGE_NAME_COMMON}' first...")
-                from manage.misc import DOCKER_DIR, REPO_ROOT, find_ssh_key
+                print_info(f"Building base image '{IMAGE_NAME_BASE}' first...")
+                from manage.misc import DOCKER_DIR, REPO_ROOT
 
-                ssh_key = find_ssh_key()
-                build_args = {"ssh_pub_key": ssh_key.read_text().strip()} if ssh_key else None
-                self.build_image(
-                    IMAGE_NAME_COMMON, DOCKER_DIR / "Containerfile.common", REPO_ROOT, build_args=build_args
-                )
-                image = IMAGE_NAME_COMMON
+                self.build_image(IMAGE_NAME_BASE, DOCKER_DIR / "Containerfile.base", REPO_ROOT)
+                image = IMAGE_NAME_BASE
 
         # Cleanup existing bitbots-host-gateway
         self.run_cmd(["rm", "-f", "bitbots-host-gateway"], check=False, capture_output=True)
@@ -576,8 +571,8 @@ class DockerEngine(ContainerEngine):
         print_info("---------------------------------------------------------")
         print_info(f"No running container found on '{NETWORK_NAME}'.")
         print_info("Start a container or connect the host first:")
-        print_info("  - Connect host: manage.py connect-host")
-        print_info("  - Run target:   manage.py run-target <name>")
+        print_info("  - Connect host:  manage.py connect-host")
+        print_info("  - Run project:   manage.py run-project <name>")
         print_info("---------------------------------------------------------")
         env = os.environ.copy()
         env["BITBOTS_NET_SHELL"] = "1"
