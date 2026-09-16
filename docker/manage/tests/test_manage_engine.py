@@ -55,6 +55,8 @@ def test_docker_run_container(monkeypatch):
     monkeypatch.setattr(engine, "check_available", lambda: True)
     mock_run = MagicMock()
     monkeypatch.setattr(engine, "run_cmd", mock_run)
+    mock_copy_ssh = MagicMock()
+    monkeypatch.setattr(engine, "copy_ssh_keys_to_container", mock_copy_ssh)
 
     engine.run_container(
         "test-img",
@@ -81,6 +83,26 @@ def test_docker_run_container(monkeypatch):
         ],
         check=True,
     )
+    mock_copy_ssh.assert_called_once_with("test-container")
+
+
+def test_copy_ssh_keys_to_container(monkeypatch, tmp_path):
+    engine = DockerEngine()
+    priv_key = tmp_path / "id_ed25519"
+    pub_key = tmp_path / "id_ed25519.pub"
+    priv_key.write_text("dummy-private-key")
+    pub_key.write_text("dummy-public-key ssh-key-comment")
+
+    monkeypatch.setattr("manage.engine.get_or_create_ssh_key_pair", lambda: (priv_key, pub_key))
+    mock_run = MagicMock()
+    monkeypatch.setattr(engine, "run_cmd", mock_run)
+
+    engine.copy_ssh_keys_to_container("test-container")
+
+    assert mock_run.call_count == 4
+    mock_run.assert_any_call(["exec", "-u", "root", "test-container", "mkdir", "-p", "/home/bitbots/.ssh"], check=True)
+    mock_run.assert_any_call(["cp", str(priv_key), "test-container:/home/bitbots/.ssh/id_ed25519"], check=True)
+    mock_run.assert_any_call(["cp", str(pub_key), "test-container:/home/bitbots/.ssh/id_ed25519.pub"], check=True)
 
 
 def test_stop_and_remove_containers(monkeypatch):

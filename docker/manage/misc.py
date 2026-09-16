@@ -1,4 +1,6 @@
+import getpass
 import os
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -199,3 +201,68 @@ def find_ssh_key(custom_path: str | Path | None = None) -> Path | None:
             return candidate
 
     return None
+
+
+def get_ssh_temp_dir() -> Path:
+    """Returns a user-specific temporary directory for SSH keys."""
+    try:
+        username = getpass.getuser()
+    except Exception:
+        username = str(os.getuid()) if hasattr(os, "getuid") else "default"
+    temp_dir = Path(tempfile.gettempdir()) / f"bitbots_ssh_{username}"
+    temp_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
+    try:
+        temp_dir.chmod(0o700)
+    except Exception:
+        pass
+    return temp_dir
+
+
+def get_or_create_ssh_key_pair(temp_dir: Path | None = None) -> tuple[Path, Path]:
+    """Ensures an SSH pub/priv key pair exists in the user-specific temp directory and returns their paths."""
+    if temp_dir is None:
+        target_dir = get_ssh_temp_dir()
+    else:
+        target_dir = Path(temp_dir)
+        target_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
+        try:
+            target_dir.chmod(0o700)
+        except Exception:
+            pass
+
+    priv_key = target_dir / "id_ed25519"
+    pub_key = target_dir / "id_ed25519.pub"
+
+    if not (priv_key.is_file() and pub_key.is_file()):
+        import subprocess
+
+        try:
+            username = getpass.getuser()
+        except Exception:
+            username = "container"
+        print_info(f"Generating container SSH key pair in {target_dir}...")
+        priv_key.unlink(missing_ok=True)
+        pub_key.unlink(missing_ok=True)
+        subprocess.run(
+            [
+                "ssh-keygen",
+                "-t",
+                "ed25519",
+                "-N",
+                "",
+                "-f",
+                str(priv_key),
+                "-C",
+                f"bitbots-container-{username}",
+            ],
+            check=True,
+            capture_output=True,
+        )
+
+    try:
+        priv_key.chmod(0o600)
+        pub_key.chmod(0o644)
+    except Exception:
+        pass
+
+    return priv_key, pub_key

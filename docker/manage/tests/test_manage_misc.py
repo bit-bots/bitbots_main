@@ -76,3 +76,40 @@ def test_find_ssh_key_not_found(monkeypatch, tmp_path):
 
     found = misc.find_ssh_key()
     assert found is None
+
+
+def test_get_ssh_temp_dir(monkeypatch, tmp_path):
+    monkeypatch.setattr("tempfile.gettempdir", lambda: str(tmp_path))
+    monkeypatch.setattr("getpass.getuser", lambda: "testuser")
+
+    temp_dir = misc.get_ssh_temp_dir()
+    assert temp_dir == tmp_path / "bitbots_ssh_testuser"
+    assert temp_dir.is_dir()
+
+
+def test_get_or_create_ssh_key_pair(monkeypatch, tmp_path):
+    # Test generation when keys do not exist
+    call_args = []
+
+    def mock_run(cmd, check=True, capture_output=True):
+        call_args.append(cmd)
+        # Create dummy key files
+        Path(cmd[6]).write_text("dummy-private-key")
+        Path(f"{cmd[6]}.pub").write_text("dummy-public-key")
+
+    monkeypatch.setattr("subprocess.run", mock_run)
+    priv_key, pub_key = misc.get_or_create_ssh_key_pair(temp_dir=tmp_path)
+
+    assert priv_key == tmp_path / "id_ed25519"
+    assert pub_key == tmp_path / "id_ed25519.pub"
+    assert priv_key.read_text() == "dummy-private-key"
+    assert pub_key.read_text() == "dummy-public-key"
+    assert len(call_args) == 1
+    assert call_args[0][0] == "ssh-keygen"
+
+    # Test re-use when keys already exist
+    call_args.clear()
+    priv_key2, pub_key2 = misc.get_or_create_ssh_key_pair(temp_dir=tmp_path)
+    assert priv_key2 == priv_key
+    assert pub_key2 == pub_key
+    assert len(call_args) == 0

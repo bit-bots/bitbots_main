@@ -14,6 +14,7 @@ from manage.misc import (
     IMAGE_NAME_BASE,
     IMAGE_NAME_PROJECT,
     NETWORK_NAME,
+    get_or_create_ssh_key_pair,
     print_debug,
     print_error,
     print_info,
@@ -81,6 +82,35 @@ class ContainerEngine(abc.ABC):
         """Creates container network."""
         pass
 
+    def copy_ssh_keys_to_container(self, container_name: str, user: str = DEFAULT_USER) -> None:
+        """Copies the shared SSH key pair into the container and sets up authorized_keys and SSH config."""
+        try:
+            priv_key, pub_key = get_or_create_ssh_key_pair()
+            pub_key_content = pub_key.read_text().strip()
+
+            # Ensure .ssh directory exists in container
+            self.run_cmd(["exec", "-u", "root", container_name, "mkdir", "-p", f"/home/{user}/.ssh"], check=True)
+
+            # Copy private and public keys into container
+            self.run_cmd(["cp", str(priv_key), f"{container_name}:/home/{user}/.ssh/id_ed25519"], check=True)
+            self.run_cmd(["cp", str(pub_key), f"{container_name}:/home/{user}/.ssh/id_ed25519.pub"], check=True)
+
+            # Configure authorized_keys, ssh config, and permissions
+            setup_script = (
+                f"mkdir -p /home/{user}/.ssh && "
+                f"touch /home/{user}/.ssh/authorized_keys && "
+                f"(grep -qxF '{pub_key_content}' /home/{user}/.ssh/authorized_keys 2>/dev/null || echo '{pub_key_content}' >> /home/{user}/.ssh/authorized_keys) && "
+                f"printf 'Host *\\n    StrictHostKeyChecking no\\n    UserKnownHostsFile /dev/null\\n    LogLevel ERROR\\n' > /home/{user}/.ssh/config && "
+                f"chmod 700 /home/{user}/.ssh && "
+                f"chmod 600 /home/{user}/.ssh/id_ed25519 /home/{user}/.ssh/authorized_keys /home/{user}/.ssh/config && "
+                f"chmod 644 /home/{user}/.ssh/id_ed25519.pub && "
+                f"chown -R {user}:{user} /home/{user}/.ssh"
+            )
+            self.run_cmd(["exec", "-u", "root", container_name, "sh", "-c", setup_script], check=True)
+            print_debug(f"SSH keys copied and configured in container '{container_name}'.")
+        except Exception as e:
+            print_warning(f"Failed to copy SSH keys into container '{container_name}': {e}")
+
     def run_container(
         self,
         image_name: str,
@@ -105,6 +135,8 @@ class ContainerEngine(abc.ABC):
 
         print_info(f"Starting container '{container_name}' using image '{image_name}' with {self.name}...")
         self.run_cmd(args, check=True)
+        if detached:
+            self.copy_ssh_keys_to_container(container_name)
         print_success(f"Container '{container_name}' started successfully.")
 
     def find_containers(self, regex_pattern: str = r"^(bitbots-|simulator$)") -> list[str]:
