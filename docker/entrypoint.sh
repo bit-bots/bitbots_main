@@ -14,17 +14,21 @@ if [ "$#" -gt 0 ] && [ "$1" != "default" ] && [ "$1" != "/usr/sbin/sshd" ] && [ 
     exec "$@"
 fi
 
-# Run Zenoh router if pixi workspace is available
-if [ -f "/home/bitbots/bitbots_main/pixi.toml" ]; then
-    if [ "$SIMULATOR" = "1" ] || [ "$ZENOH_MODE" = "router" ]; then
-        echo "Starting Zenoh router (mode=router)..."
-        exec su - bitbots -c "cd /home/bitbots/bitbots_main && /home/bitbots/.pixi/bin/pixi run -e default ros2 run rmw_zenoh_cpp rmw_zenohd"
+# Run Zenoh router only if explicitly requested
+if [ "$START_ZENOH_ROUTER" = "1" ] || [ "$START_ZENOH_ROUTER" = "true" ] || [ "$ZENOH_ROUTER" = "1" ] || [ "$ZENOH_ROUTER" = "true" ]; then
+    if [ -f "/home/bitbots/bitbots_main/pixi.toml" ]; then
+        if [ "$SIMULATOR" = "1" ] || [ "$ZENOH_MODE" = "router" ]; then
+            echo "Starting Zenoh router (mode=router)..."
+            exec su - bitbots -c "cd /home/bitbots/bitbots_main && /home/bitbots/.pixi/bin/pixi run -e default ros2 run rmw_zenoh_cpp rmw_zenohd"
+        else
+            SIMULATOR_ENDPOINT="${SIMULATOR_ENDPOINT:-tcp/simulator:7447}"
+            echo "Starting Zenoh router (mode=peer, target=$SIMULATOR_ENDPOINT)..."
+            exec su - bitbots -c "cd /home/bitbots/bitbots_main && ZENOH_CONFIG_OVERRIDE='mode=\"peer\";connect/endpoints=[\"${SIMULATOR_ENDPOINT}\"]' /home/bitbots/.pixi/bin/pixi run -e default ros2 run rmw_zenoh_cpp rmw_zenohd"
+        fi
     else
-        SIMULATOR_ENDPOINT="${SIMULATOR_ENDPOINT:-tcp/simulator:7447}"
-        echo "Starting Zenoh router (mode=peer, target=$SIMULATOR_ENDPOINT)..."
-        exec su - bitbots -c "cd /home/bitbots/bitbots_main && ZENOH_CONFIG_OVERRIDE='mode=\"peer\";connect/endpoints=[\"${SIMULATOR_ENDPOINT}\"]' /home/bitbots/.pixi/bin/pixi run -e default ros2 run rmw_zenoh_cpp rmw_zenohd"
+        echo "Workspace /home/bitbots/bitbots_main/pixi.toml not found; keeping container alive..."
     fi
-else
-    echo "Workspace /home/bitbots/bitbots_main/pixi.toml not found; keeping container alive..."
-    exec tail -f /dev/null
 fi
+
+# Keep container alive if no foreground process is running
+exec tail -f /dev/null

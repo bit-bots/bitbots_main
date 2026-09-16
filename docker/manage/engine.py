@@ -630,7 +630,9 @@ class DockerEngine(ContainerEngine):
                 cmd = ["ssh"] + ssh_opts + ["-o", f"ProxyCommand={proxy_cmd}", f"{user}@{ip}"]
                 subprocess.run(cmd)
             else:
-                print_error(f"Container with IP {ip} not reachable and no local proxy container found on '{NETWORK_NAME}'.")
+                print_error(
+                    f"Container with IP {ip} not reachable and no local proxy container found on '{NETWORK_NAME}'."
+                )
                 print_info("Options to enable connectivity:")
                 print_info("  1. Run 'manage.py connect-host' with sudo to connect host directly.")
                 print_info("  2. Run 'manage.py net-shell' to open a shell inside the overlay network.")
@@ -770,7 +772,10 @@ class PodmanEngine(ContainerEngine):
 
             if not cid:
                 try:
-                    res = self.run_cmd(["ps", "--filter", f"network={NETWORK_NAME}", "--filter", f"name={target}", "-q"], capture_output=True)
+                    res = self.run_cmd(
+                        ["ps", "--filter", f"network={NETWORK_NAME}", "--filter", f"name={target}", "-q"],
+                        capture_output=True,
+                    )
                     cids = res.stdout.strip().splitlines()
                     if cids:
                         cid = cids[0]

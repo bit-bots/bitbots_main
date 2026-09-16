@@ -105,19 +105,46 @@ class ContainerManager:
         )
 
         # Run commands
-        run_proj_parser = subparsers.add_parser("run-project", help="Run project container")
+        run_parent_parser = argparse.ArgumentParser(add_help=False)
+        run_parent_parser.add_argument(
+            "-z",
+            "--zenoh-router",
+            "--zenoh",
+            action="store_true",
+            default=False,
+            dest="zenoh_router",
+            help="Start Zenoh router in container",
+        )
+
+        run_proj_parser = subparsers.add_parser(
+            "run-project",
+            parents=[run_parent_parser],
+            help="Run project container",
+        )
         run_proj_parser.add_argument("target_id", nargs="?", default=None, help="Target hostname, robot name, or IP")
 
-        run_tgt_parser = subparsers.add_parser("run-target", help="Run target container")
+        run_tgt_parser = subparsers.add_parser(
+            "run-target",
+            parents=[run_parent_parser],
+            help="Run target container",
+        )
         run_tgt_parser.add_argument("target_id", nargs="?", default=None, help="Target hostname, robot name, or IP")
 
-        run_sim_parser = subparsers.add_parser("run-simulator", help="Run simulator container")
+        run_sim_parser = subparsers.add_parser(
+            "run-simulator",
+            parents=[run_parent_parser],
+            help="Run simulator container",
+        )
         run_sim_parser.add_argument("target_id", nargs="?", default=None, help="Target hostname, robot name, or IP")
 
-        sim_parser = subparsers.add_parser("simulator", help="Alias for run-simulator")
+        sim_parser = subparsers.add_parser(
+            "simulator",
+            parents=[run_parent_parser],
+            help="Alias for run-simulator",
+        )
         sim_parser.add_argument("target_id", nargs="?", default=None, help="Target hostname, robot name, or IP")
 
-        run_parser = subparsers.add_parser("run", help="Run container by type")
+        run_parser = subparsers.add_parser("run", parents=[run_parent_parser], help="Run container by type")
         run_parser.add_argument(
             "run_type",
             choices=["project", "target", "simulator"],
@@ -139,7 +166,9 @@ class ContainerManager:
 
         # Host connect commands (Docker Swarm overlay)
         conn_parser = subparsers.add_parser("connect-host", help="Connect host directly to overlay network (Docker)")
-        conn_parser.add_argument("host_ip", nargs="?", default=None, help="Host IP on container network (default: 10.66.0.254)")
+        conn_parser.add_argument(
+            "host_ip", nargs="?", default=None, help="Host IP on container network (default: 10.66.0.254)"
+        )
 
         subparsers.add_parser("disconnect-host", help="Disconnect host from overlay network (Docker)")
 
@@ -148,7 +177,9 @@ class ContainerManager:
         swarm_init_parser.add_argument("advertise_addr", nargs="?", default=None, help="Optional advertise address")
 
         swarm_join_parser = subparsers.add_parser("swarm-join", help="Join Docker Swarm cluster (Docker)")
-        swarm_join_parser.add_argument("swarm_args", nargs=argparse.REMAINDER, help="Arguments passed to docker swarm join")
+        swarm_join_parser.add_argument(
+            "swarm_args", nargs=argparse.REMAINDER, help="Arguments passed to docker swarm join"
+        )
 
         subparsers.add_parser("swarm-leave", help="Leave Docker Swarm cluster (Docker)")
 
@@ -168,17 +199,19 @@ class ContainerManager:
             self.build_project()
         elif cmd == "build-target" or (cmd == "build" and self._args.target_image == "target"):
             self.build_target()
-        elif cmd in ["build-all", "build"] and (not hasattr(self._args, "target_image") or self._args.target_image == "all"):
+        elif cmd in ["build-all", "build"] and (
+            not hasattr(self._args, "target_image") or self._args.target_image == "all"
+        ):
             self.build_all()
         elif cmd == "create-network":
             subnet = self._args.net_subnet or self._args.subnet
             self.create_network(subnet)
         elif cmd == "run-project" or (cmd == "run" and self._args.run_type == "project"):
-            self.run_project(self._args.target_id)
+            self.run_project(self._args.target_id, zenoh_router=self._args.zenoh_router)
         elif cmd == "run-target" or (cmd == "run" and self._args.run_type == "target"):
-            self.run_target(self._args.target_id)
+            self.run_target(self._args.target_id, zenoh_router=self._args.zenoh_router)
         elif cmd in ["run-simulator", "simulator"] or (cmd == "run" and self._args.run_type == "simulator"):
-            self.run_simulator(self._args.target_id)
+            self.run_simulator(self._args.target_id, zenoh_router=self._args.zenoh_router)
         elif cmd in ["stop-all", "stop"]:
             self.stop_all()
         elif cmd == "ssh":
@@ -241,7 +274,7 @@ class ContainerManager:
         sub = subnet or self._args.subnet
         self.engine.create_network(NETWORK_NAME, sub)
 
-    def run_project(self, target: str | None = None) -> None:
+    def run_project(self, target: str | None = None, zenoh_router: bool = False) -> None:
         subnet = self._args.subnet
         domain_id = None
         if target:
@@ -265,11 +298,14 @@ class ContainerManager:
         if domain_id:
             env_args.extend(["-e", f"ROS_DOMAIN_ID={domain_id}"])
             print_info(f"ROS_DOMAIN_ID set to {domain_id}")
+        if zenoh_router:
+            env_args.extend(["-e", "START_ZENOH_ROUTER=1", "-e", "ZENOH_ROUTER=1"])
+            print_info("Zenoh router enabled")
 
         gpu_args = self.engine.get_gpu_args(self._args.gpu_args)
         self.engine.run_container(IMAGE_NAME_PROJECT, name, net_args, env_args, gpu_args, detached=True)
 
-    def run_target(self, target: str | None = None) -> None:
+    def run_target(self, target: str | None = None, zenoh_router: bool = False) -> None:
         subnet = self._args.subnet
         domain_id = None
         if target:
@@ -293,14 +329,20 @@ class ContainerManager:
         if domain_id:
             env_args.extend(["-e", f"ROS_DOMAIN_ID={domain_id}"])
             print_info(f"ROS_DOMAIN_ID set to {domain_id}")
+        if zenoh_router:
+            env_args.extend(["-e", "START_ZENOH_ROUTER=1", "-e", "ZENOH_ROUTER=1"])
+            print_info("Zenoh router enabled")
 
         gpu_args = self.engine.get_gpu_args(self._args.gpu_args)
         self.engine.run_container(IMAGE_NAME_TARGET, name, net_args, env_args, gpu_args, detached=True)
 
-    def run_simulator(self, target: str | None = None) -> None:
+    def run_simulator(self, target: str | None = None, zenoh_router: bool = False) -> None:
         subnet = self._args.subnet
         name = "simulator"
-        env_args = ["-e", "SIMULATOR=1", "-e", "ZENOH_MODE=router", "-e", "ROS_DOMAIN_ID=0"]
+        env_args = ["-e", "SIMULATOR=1", "-e", "ROS_DOMAIN_ID=0"]
+        if zenoh_router:
+            env_args.extend(["-e", "START_ZENOH_ROUTER=1", "-e", "ZENOH_ROUTER=1", "-e", "ZENOH_MODE=router"])
+            print_info("Zenoh router enabled")
 
         if target:
             ip = resolve_robot_ip(target, subnet)

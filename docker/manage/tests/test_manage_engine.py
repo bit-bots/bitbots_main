@@ -2,6 +2,7 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
+
 from manage.engine import DockerEngine, PodmanEngine, get_engine
 
 
@@ -65,7 +66,19 @@ def test_docker_run_container(monkeypatch):
     )
 
     mock_run.assert_called_once_with(
-        ["run", "-d", "--name", "test-container", "--network", "bitbots-net", "-e", "VAR=1", "--device", "/dev/dri", "test-img"],
+        [
+            "run",
+            "-d",
+            "--name",
+            "test-container",
+            "--network",
+            "bitbots-net",
+            "-e",
+            "VAR=1",
+            "--device",
+            "/dev/dri",
+            "test-img",
+        ],
         check=True,
     )
 
