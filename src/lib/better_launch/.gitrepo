@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/ingydotnet/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/dfki-ric/better_launch.git
+	branch = main
+	commit = 99aea170405745f342df1fa83a1a92810598c9ec
+	parent = dadf36c3e27f3a8ada153c8bb6d867e852c41c07
+	method = merge
+	cmdver = 0.4.9

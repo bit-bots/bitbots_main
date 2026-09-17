@@ -46,8 +46,9 @@ setup_alises() {
 
   # ros aliases
   alias ros2='cdc && pixi run ros2'
+  alias bl='cdc && pixi run bl'
   alias rr='ros2 run'
-  alias rl='ros2 launch'
+  alias rl='bl'
 
   alias rte='ros2 topic echo'
   alias rtl='ros2 topic list'
@@ -81,8 +82,9 @@ setup_alises() {
 
     # ros aliases
     unalias ros2
+    unalias bl
     alias rr='ros2 run'
-    alias rl='ros2 launch'
+    alias rl='bl'
 
     alias rte='ros2 topic echo'
     alias rtl='ros2 topic list'
