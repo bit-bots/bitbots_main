@@ -29,7 +29,22 @@ pixi run -e default python scripts/launch_equivalence/verify.py \
 
 `--max-cases` refuses an oversized matrix before evaluation; it never truncates a run. `--timeout` bounds each worker response. Select entrypoints or supply narrower domains when needed. Unknown entrypoint selectors and malformed domains fail instead of yielding an empty success.
 
-Choose a fresh output directory for each run. Nonempty report directories are not overwritten.
+Choose a fresh output directory for each new comparison. Use `--resume` to continue an existing report.
+
+## Interrupting and resuming
+
+Stop with Ctrl+C, then continue using the same output directory:
+
+```sh
+pixi run -e default python scripts/launch_equivalence/verify.py \
+  --resume --output <existing-report-directory>
+```
+
+Resume reads the original revisions, selected entrypoints, domains and environment profiles from `plan.json`. Do not repeat revision, entrypoint or domain options. The saved matrix is already approved, so its case limit does not need to be repeated. You can change `--timeout`. Keep the same Pixi environment, dependencies and inherited environment when continuing; resume validates saved case identities and findings but cannot detect every external environment change.
+
+Each completed case is flushed to `cases.jsonl` after its finding artifacts have been published. Resume rebuilds result totals and finding counts from that journal and skips those cases, including completed unresolved cases. The unfinished case is repeated. Ctrl+C and SIGTERM produce a partial summary and diff after workers finish or reach their timeout. A forced kill cannot produce those reports, but resume can recover the saved journal and discard an incomplete final line. This protects progress across process termination, not power loss or filesystem failure. Keep reports outside temporary storage if they must survive a reboot or cleanup.
+
+Older interrupted reports can be resumed when their `plan.json`, complete journal lines and referenced finding files remain intact; a summary is not required. Corrupt completed records or missing referenced artifacts are rejected. Reports containing the old repeated worker-startup failures should be rerun in a fresh directory because those unresolved cases were recorded as completed. A directory lock prevents concurrent writers. Resuming an already complete report regenerates its summary and diff without running workers. Cache and timing statistics describe the current invocation; result totals cover all completed cases.
 
 ## Input domains
 
