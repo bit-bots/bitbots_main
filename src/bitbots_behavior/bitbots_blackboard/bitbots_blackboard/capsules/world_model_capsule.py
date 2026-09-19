@@ -14,6 +14,7 @@ from rclpy.time import Time
 from ros2_numpy import msgify, numpify
 from std_msgs.msg import Header
 from std_srvs.srv import Trigger
+from soccer_vision_3d_msgs.msg import Robot, RobotArray
 from tf2_geometry_msgs import Point, PointStamped
 from tf_transformations import euler_from_quaternion
 
@@ -63,6 +64,11 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
             header=Header(stamp=Time(clock_type=ClockType.ROS_TIME).to_msg(), frame_id=self.map_frame)
         )
         self._ball_covariance: np.ndarray = np.zeros((2, 2))  # Covariance of the ball
+
+        # Distance to other robots
+        # upfield is towards the opponent goal, downfield is towards our own goal
+        self.closest_robot_upfield_dist: float = 10000.0
+        self.closest_robot_downfield_dist: float = 10000.0
 
         # Publisher for visualization in RViZ
         self.debug_publisher_used_ball = self._node.create_publisher(PointStamped, "debug/behavior/used_ball", 1)
@@ -260,6 +266,44 @@ class WorldModelCapsule(AbstractBlackboardCapsule):
         except (tf2.LookupException, tf2.ConnectivityException, tf2.ExtrapolationException) as e:
             self._node.get_logger().warn(str(e))
             raise WorldModelPositionTFError("Could not get current position transform") from e
+
+    ################
+    # Other Robots #
+    ################
+
+    def robot_callback(self, msg: RobotArray) -> None:
+        """
+        Callback with new robot detections
+        """
+        self.closest_robot_upfield_dist = 10000.0
+        self.closest_robot_downfield_dist = 10000.0
+        # Iterate over all robots
+        robot: Robot
+        for robot in msg.robots:
+            dist_to_robot = float(
+                np.linalg.norm(
+                    np.array(
+                        [
+                            self.get_current_position()[0],
+                            self.get_current_position()[1],
+                        ]
+                    )
+                    - np.array([robot.bb.center.position.x, robot.bb.center.position.y])
+                )
+            )
+            if robot.bb.center.position.x > self.get_current_position()[0]:
+                if dist_to_robot < self.closest_robot_upfield_dist:
+                    self.closest_robot_upfield_dist = dist_to_robot
+            else:
+                if dist_to_robot < self.closest_robot_downfield_dist:
+                    self.closest_robot_downfield_dist = dist_to_robot
+
+    def is_other_robot_close(self, threshold_upfield: float, threshold_downfield: float) -> bool:
+        """Returns wether the closest robot is near then the thresholds"""
+        return (
+            threshold_upfield > self.closest_robot_upfield_dist
+            or threshold_downfield > self.closest_robot_downfield_dist
+        )
 
     ##########
     # Common #
