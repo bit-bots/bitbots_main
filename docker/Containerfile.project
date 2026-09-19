@@ -25,10 +25,18 @@ COPY --chown=$user:$user . .
 # This will take a while and produce a large image as requested.
 RUN /home/$user/.pixi/bin/pixi run --environment default build
 
+RUN mkdir -p /home/${user}/zenoh_test
+WORKDIR /home/${user}/zenoh_test
+RUN /home/$user/.pixi/bin/pixi init
+RUN /home/$user/.pixi/bin/pixi add python
+RUN /home/$user/.pixi/bin/pixi add --pypi zenoh-cli
+
 # Switch back to root
 USER root
 EXPOSE 22
 EXPOSE 8080
+
+WORKDIR /home/${user}/bitbots_main
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD ["default"]
