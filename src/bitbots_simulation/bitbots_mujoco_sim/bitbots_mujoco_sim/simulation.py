@@ -235,6 +235,8 @@ class Simulation(Node):
         # Each maps to the world-frame (x, y) the joint should be pinned to while
         # the user drags its overlay. Applied inside the sim loop by _apply_drag_targets.
         self._drag_targets: dict[tuple[int, int], np.ndarray] = {}
+        # Full free-joint poses for robots rotated in place with Shift + drag.
+        self._rotation_targets: dict[tuple[int, int], np.ndarray] = {}
         # Pin dragged bodies to their target every step so they follow the cursor
         # instead of racing with mj_step (mirrors the reset/move_ball early events).
         self.early_events.append({"frequency": 1, "handler": self._apply_drag_targets})
@@ -351,7 +353,7 @@ class Simulation(Node):
         self._register_free_joint_drag(handle, lambda _event, _b=body_id: self._free_joint_key_for_body(_b))
 
     def _add_body_drag(self, scene) -> None:
-        """Let the user drag any dynamic body (robots, ball) in the world x-y plane.
+        """Drag dynamic bodies in x-y, or Shift-drag robots to rotate in place.
 
         mjviser renders each moving body as a batched mesh handle grouped by shared
         geometry (``scene._mesh_groups``); dragging one instance reports which body
@@ -359,6 +361,11 @@ class Simulation(Node):
         free joint of its kinematic root (a robot's floating base, or the ball
         itself) and drag that whole articulated system as a rigid unit.
         """
+        robot_keys = {
+            self._free_joint_key_for_body(self.model.body(f"robot_base_link_{robot_sim.robot.index}").id)
+            for robot_sim in self.robots
+        }
+        robot_keys.discard(None)
         for mesh_group in scene._mesh_groups:
             body_ids = mesh_group.body_ids
 
@@ -369,7 +376,7 @@ class Simulation(Node):
                 body_id = int(_body_ids[idx % len(_body_ids)])
                 return self._free_joint_key_for_body(body_id)
 
-            self._register_free_joint_drag(mesh_group.handle, resolve)
+            self._register_free_joint_drag(mesh_group.handle, resolve, rotation_keys=robot_keys)
 
     def _free_joint_key_for_body(self, body_id: int) -> tuple[int, int] | None:
         """Return (qpos_adr, qvel_adr) of the nearest free joint at or above a body.
@@ -387,8 +394,14 @@ class Simulation(Node):
             bid = int(self.model.body_parentid[bid])
         return None
 
-    def _register_free_joint_drag(self, handle, resolve_key: Callable[[object], tuple[int, int] | None]) -> None:
-        """Wire a scene node's left-drag to x-y repositioning of a free joint.
+    def _register_free_joint_drag(
+        self,
+        handle,
+        resolve_key: Callable[[object], tuple[int, int] | None],
+        *,
+        rotation_keys: set[tuple[int, int]] | None = None,
+    ) -> None:
+        """Wire left-drag to translation and Shift-left-drag to robot rotation.
 
         Follows viser's scene_node_drag example: a left-drag fires start/update/end
         events, and we map the cursor motion onto the ground plane by taking only its
@@ -396,6 +409,9 @@ class Simulation(Node):
         joint's (qpos_adr, qvel_adr). The joint is pinned to the cursor inside the sim
         loop (see _apply_drag_targets) so it tracks without racing with mj_step;
         vertical cursor motion is ignored, keeping the object on the ground.
+        For joints in ``rotation_keys``, Shift-drag instead holds the initial
+        position and tilt while turning the robot's heading toward the x-y drag
+        direction. Modifier changes end the old segment and start a new one.
         """
         # Per-drag state, frozen at "start" and read on every "update"/"end".
         state: dict[str, object] = {}
@@ -421,12 +437,54 @@ class Simulation(Node):
                     self._drag_targets.pop(state["key"], None)
                 state.clear()
 
+        if not rotation_keys:
+            return
+
+        rotation_state: dict[str, object] = {}
+
+        @handle.on_drag("left", modifier="shift")
+        async def _(event) -> None:
+            if event.phase == "start":
+                key = resolve_key(event)
+                if key not in rotation_keys:
+                    return
+                rotation_state["key"] = key
+                rotation_state["grab_xy"] = np.array(event.start_position[:2], dtype=float)
+                pose = self.data.qpos[key[0] : key[0] + 7].copy()
+                rotation_state["pose"] = pose
+                # MuJoCo free-joint quaternions use (w, x, y, z); forward is +x.
+                w, x, y, z = pose[3:7]
+                rotation_state["yaw"] = np.arctan2(2 * (w * z + x * y), 1 - 2 * (y * y + z * z))
+                self._rotation_targets[key] = pose.copy()
+            elif event.phase == "update":
+                if "key" not in rotation_state:
+                    return
+                delta_xy = np.array(event.end_position[:2], dtype=float) - rotation_state["grab_xy"]
+                # A zero-length drag has no heading: keep the last orientation.
+                if np.linalg.norm(delta_xy) < 1e-6:
+                    return
+                yaw = np.arctan2(delta_xy[1], delta_xy[0])
+                half_angle = 0.5 * (yaw - rotation_state["yaw"])
+                c, s = np.cos(half_angle), np.sin(half_angle)
+                pose = rotation_state["pose"].copy()
+                w, x, y, z = pose[3:7]
+                # Left-multiply by a world-z rotation, preserving roll and pitch.
+                pose[3:7] = (c * w - s * z, c * x - s * y, c * y + s * x, c * z + s * w)
+                self._rotation_targets[rotation_state["key"]] = pose
+            elif event.phase == "end":
+                if "key" in rotation_state:
+                    self._rotation_targets.pop(rotation_state["key"], None)
+                rotation_state.clear()
+
     def _apply_drag_targets(self) -> None:
-        """Pin each actively dragged free joint to its x-y target, on the ground."""
+        """Pin dragged joints to their x-y targets or their rotation poses."""
         # Snapshot: drag callbacks run on viser's thread and may add/remove keys.
         for (qpos_adr, qvel_adr), xy in list(self._drag_targets.items()):
             self.data.qpos[qpos_adr : qpos_adr + 2] = xy
             # Zero the joint's velocity so the dragged body does not drift or topple.
+            self.data.qvel[qvel_adr : qvel_adr + 6] = 0.0
+        for (qpos_adr, qvel_adr), pose in list(self._rotation_targets.items()):
+            self.data.qpos[qpos_adr : qpos_adr + 7] = pose
             self.data.qvel[qvel_adr : qvel_adr + 6] = 0.0
 
     def _update_ball_overlays(self, scene) -> None:
