@@ -151,6 +151,17 @@ def launch_setup(context):
         # game_settings.yaml defaults.
         robot_game_settings_args = [f"{key}:={value}" for key, value in game_settings[robot_index].items()]
 
+        teamplayer_cmd = (
+            [
+                "ros2",
+                "launch",
+                "bitbots_bringup",
+                "teamplayer.launch",
+            ]
+            + teamplayer_args
+            + robot_game_settings_args
+        )
+
         if start_teamplayer:
             actions.append(
                 TimerAction(
@@ -158,19 +169,17 @@ def launch_setup(context):
                     actions=[
                         LogInfo(msg=f"Launching teamplayer stack for robot{robot_domain} in domain {robot_domain}"),
                         ExecuteProcess(
-                            cmd=[
-                                "ros2",
-                                "launch",
-                                "bitbots_bringup",
-                                "teamplayer.launch",
-                            ]
-                            + teamplayer_args
-                            + robot_game_settings_args,
+                            cmd=teamplayer_cmd,
                             output="screen",
                             additional_env={"ROS_DOMAIN_ID": str(robot_domain)},
                         ),
                     ],
                 )
+            )
+        else:
+            teamplayer_cmd_str = f"ROS_DOMAIN_ID={robot_domain} {' '.join(teamplayer_cmd)}"
+            actions.append(
+                LogInfo(msg=f"Launch command for robot{robot_domain} (domain {robot_domain}): {teamplayer_cmd_str}"),
             )
 
     return actions
