@@ -12,6 +12,8 @@ from rosgraph_msgs.msg import Clock
 from sensor_msgs.msg import CameraInfo, Image, Imu, JointState
 from std_msgs.msg import Float32
 from std_srvs.srv import Empty
+from transforms3d.euler import euler2quat, quat2euler
+from transforms3d.quaternions import qmult
 
 from bitbots_msgs.msg import JointCommand
 from bitbots_msgs.srv import MoveBall, SimulatorPush
@@ -453,8 +455,7 @@ class Simulation(Node):
                 pose = self.data.qpos[key[0] : key[0] + 7].copy()
                 rotation_state["pose"] = pose
                 # MuJoCo free-joint quaternions use (w, x, y, z); forward is +x.
-                w, x, y, z = pose[3:7]
-                rotation_state["yaw"] = np.arctan2(2 * (w * z + x * y), 1 - 2 * (y * y + z * z))
+                _, _, rotation_state["yaw"] = quat2euler(pose[3:7])
                 self._rotation_targets[key] = pose.copy()
             elif event.phase == "update":
                 if "key" not in rotation_state:
@@ -464,12 +465,11 @@ class Simulation(Node):
                 if np.linalg.norm(delta_xy) < 1e-6:
                     return
                 yaw = np.arctan2(delta_xy[1], delta_xy[0])
-                half_angle = 0.5 * (yaw - rotation_state["yaw"])
-                c, s = np.cos(half_angle), np.sin(half_angle)
+                delta_yaw = yaw - rotation_state["yaw"]
+                delta_quat = euler2quat(0, 0, delta_yaw)
                 pose = rotation_state["pose"].copy()
-                w, x, y, z = pose[3:7]
                 # Left-multiply by a world-z rotation, preserving roll and pitch.
-                pose[3:7] = (c * w - s * z, c * x - s * y, c * y + s * x, c * z + s * w)
+                pose[3:7] = qmult(delta_quat, pose[3:7])
                 self._rotation_targets[rotation_state["key"]] = pose
             elif event.phase == "end":
                 if "key" in rotation_state:
