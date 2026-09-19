@@ -61,7 +61,7 @@ class CostmapCapsule(AbstractBlackboardCapsule):
         """
         # Init a new obstacle costmap
         obstacle_map = np.zeros_like(self.costmap)
-        
+
         # Iterate over all robots
         robot: Robot
         for robot in msg.robots:

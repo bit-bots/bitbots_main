@@ -12,9 +12,9 @@ from geometry_msgs.msg import (
 from rclpy.clock import ClockType
 from rclpy.time import Time
 from ros2_numpy import msgify, numpify
+from soccer_vision_3d_msgs.msg import Robot, RobotArray
 from std_msgs.msg import Header
 from std_srvs.srv import Trigger
-from soccer_vision_3d_msgs.msg import Robot, RobotArray
 from tf2_geometry_msgs import Point, PointStamped
 from tf_transformations import euler_from_quaternion
 
