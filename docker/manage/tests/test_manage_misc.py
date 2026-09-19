@@ -113,3 +113,39 @@ def test_get_or_create_ssh_key_pair(monkeypatch, tmp_path):
     assert priv_key2 == priv_key
     assert pub_key2 == pub_key
     assert len(call_args) == 0
+
+
+def test_zenoh_json5_configs():
+    import re
+
+    import yaml
+
+    def parse_json5(text: str):
+        cleaned = re.sub(r"//.*", "", text)
+        cleaned = re.sub(r"/\*[\s\S]*?\*/", "", cleaned)
+        return yaml.safe_load(cleaned)
+
+    router_path = Path(__file__).resolve().parents[2] / "ansible_files" / "zenoh_router.json5"
+    session_path = Path(__file__).resolve().parents[2] / "ansible_files" / "zenoh_session.json5"
+
+    assert router_path.is_file()
+    assert session_path.is_file()
+
+    router_text = router_path.read_text()
+    assert "// __SIMULATOR_ENDPOINT__" in router_text
+
+    router_cfg = parse_json5(router_text)
+    assert router_cfg["mode"] == "router"
+    assert "tcp/[::]:7447" in router_cfg["listen"]["endpoints"]
+    assert router_cfg["connect"]["endpoints"] == []
+    assert router_cfg["scouting"]["multicast"]["enabled"] is False
+
+    # Test replacing marker as entrypoint.sh does with sed
+    replaced_router_text = router_text.replace("// __SIMULATOR_ENDPOINT__", '"tcp/10.66.6.10:7447",')
+    replaced_router_cfg = parse_json5(replaced_router_text)
+    assert replaced_router_cfg["connect"]["endpoints"] == ["tcp/10.66.6.10:7447"]
+
+    session_cfg = parse_json5(session_path.read_text())
+    assert session_cfg["mode"] == "peer"
+    assert "tcp/localhost:7447" in session_cfg["connect"]["endpoints"]
+    assert session_cfg["scouting"]["multicast"]["enabled"] is False

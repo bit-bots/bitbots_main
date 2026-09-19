@@ -112,6 +112,14 @@ class ContainerManager:
             dest="zenoh_router",
             help="Start Zenoh router in container",
         )
+        run_parent_parser.add_argument(
+            "--simulator-ip",
+            "--sim-ip",
+            type=str,
+            default=None,
+            dest="simulator_ip",
+            help="IP address of the simulator for the Zenoh router to connect to (optional)",
+        )
 
         run_proj_parser = subparsers.add_parser(
             "run-project",
@@ -195,7 +203,11 @@ class ContainerManager:
             subnet = self._args.net_subnet or self._args.subnet
             self.create_network(subnet)
         elif cmd == "run-project" or (cmd == "run" and self._args.run_type == "project"):
-            self.run_project(self._args.target_id, zenoh_router=self._args.zenoh_router)
+            self.run_project(
+                self._args.target_id,
+                zenoh_router=self._args.zenoh_router,
+                simulator_ip=getattr(self._args, "simulator_ip", None),
+            )
         elif cmd in ["run-simulator", "simulator"] or (cmd == "run" and self._args.run_type == "simulator"):
             self.run_simulator(self._args.target_id, zenoh_router=self._args.zenoh_router)
         elif cmd in ["stop-all", "stop"]:
@@ -250,9 +262,15 @@ class ContainerManager:
         sub = subnet or self._args.subnet
         self.engine.create_network(NETWORK_NAME, sub)
 
-    def run_project(self, target: str | None = None, zenoh_router: bool = False) -> None:
+    def run_project(
+        self,
+        target: str | None = None,
+        zenoh_router: bool = False,
+        simulator_ip: str | None = None,
+    ) -> None:
         subnet = self._args.subnet
         domain_id = None
+        sim_ip = simulator_ip if simulator_ip is not None else getattr(self._args, "simulator_ip", None)
         if target:
             ip = resolve_robot_ip(target, subnet)
             domain_id = resolve_robot_domain_id(target, subnet)
@@ -277,6 +295,9 @@ class ContainerManager:
         if zenoh_router:
             env_args.extend(["-e", "START_ZENOH_ROUTER=1", "-e", "ZENOH_ROUTER=1"])
             print_info("Zenoh router enabled")
+        if sim_ip:
+            env_args.extend(["-e", f"SIMULATOR_IP={sim_ip}"])
+            print_info(f"Simulator target IP set to {sim_ip}")
 
         gpu_args = self.engine.get_gpu_args(self._args.gpu_args)
         self.engine.run_container(IMAGE_NAME_PROJECT, name, net_args, env_args, gpu_args, detached=True)

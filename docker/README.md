@@ -136,8 +136,11 @@ Host 10.66.*
 
 ### Network Connectivity (Zenoh, ROS Domain IDs, etc.)
 
+- **Zenoh Configuration Files & Environment:** Containers are preconfigured with `ZENOH_SESSION_CONFIG_URI` (pointing to `~/.config/zenoh/session.json5`) and `ZENOH_ROUTER_CONFIG_URI` (pointing to `~/.config/zenoh/router.json5`).
+  - **Zenoh Sessions:** Configured in `peer` mode directed at `localhost:7447` with multicast scouting disabled.
+  - **Zenoh Routers:** Configured in `router` mode listening on `tcp/[::]:7447` with multicast scouting disabled. When connecting to a simulator, the router config can be configured with the simulator IP as target (e.g. via `--simulator-ip <IP>` or `SIMULATOR_IP=<IP>`), or run without any target IP.
 - **Zenoh Routers:** Containers only start a Zenoh router (`rmw_zenohd`) when explicitly requested (via `-z`/`--zenoh-router` in `manage.py` or by setting `START_ZENOH_ROUTER=1`).
-  - When enabled in the `simulator` container, it runs the Zenoh router in **router** mode on `tcp/simulator:7447` (and exposes port 8080 for web visualizer/tools).
+  - When enabled in the `simulator` container, it runs the Zenoh router in **router** mode listening on port 7447 (and exposes port 8080 for web visualizer/tools).
   - Other containers run without the Zenoh router by default unless explicitly started.
 - **ROS Domain IDs:** Target and robot containers have their `ROS_DOMAIN_ID` automatically configured based on `scripts/deploy/known_targets.yaml` (domain IDs 11 to 16 for Kalliope, Mickey, Pink, Romeo, Carrie, and Peter). The simulator container defaults to `ROS_DOMAIN_ID=0`.
 - **Direct Host Routing (`connect-host` / `sudo`):** Provides full network transparency. The host has a virtual interface on `10.66.0.0/16` (e.g., `veth-bb-host` with IP `10.66.0.254` in Docker, or `podman1` in Podman) and can communicate directly with all containers via their IPs for all protocols (SSH, TCP, UDP, Zenoh, ROS 2). Recommended for testing and deployment.

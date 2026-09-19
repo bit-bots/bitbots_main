@@ -69,14 +69,21 @@ def test_manager_dispatch_run_project(monkeypatch):
     mock_run_project = MagicMock()
     monkeypatch.setattr(ContainerManager, "run_project", mock_run_project)
     ContainerManager(["run-project", "mickey"])
-    mock_run_project.assert_called_once_with("mickey", zenoh_router=False)
+    mock_run_project.assert_called_once_with("mickey", zenoh_router=False, simulator_ip=None)
 
 
 def test_manager_dispatch_run_project_zenoh(monkeypatch):
     mock_run_project = MagicMock()
     monkeypatch.setattr(ContainerManager, "run_project", mock_run_project)
     ContainerManager(["run-project", "mickey", "--zenoh-router"])
-    mock_run_project.assert_called_once_with("mickey", zenoh_router=True)
+    mock_run_project.assert_called_once_with("mickey", zenoh_router=True, simulator_ip=None)
+
+
+def test_manager_dispatch_run_project_simulator_ip(monkeypatch):
+    mock_run_project = MagicMock()
+    monkeypatch.setattr(ContainerManager, "run_project", mock_run_project)
+    ContainerManager(["run-project", "mickey", "--zenoh-router", "--simulator-ip", "10.66.6.10"])
+    mock_run_project.assert_called_once_with("mickey", zenoh_router=True, simulator_ip="10.66.6.10")
 
 
 def test_manager_dispatch_run_simulator(monkeypatch):
@@ -97,7 +104,7 @@ def test_manager_dispatch_run_type_project(monkeypatch):
     mock_run_project = MagicMock()
     monkeypatch.setattr(ContainerManager, "run_project", mock_run_project)
     ContainerManager(["run", "project", "mickey", "--zenoh-router"])
-    mock_run_project.assert_called_once_with("mickey", zenoh_router=True)
+    mock_run_project.assert_called_once_with("mickey", zenoh_router=True, simulator_ip=None)
 
 
 def test_manager_dispatch_stop_all(monkeypatch):
@@ -131,6 +138,12 @@ def test_manager_run_project_env_zenoh(monkeypatch):
     cm.run_project(zenoh_router=True)
     env_args = mock_run_container.call_args[0][3]
     assert "START_ZENOH_ROUTER=1" in env_args
+
+    # With Simulator IP
+    mock_run_container.reset_mock()
+    cm.run_project(zenoh_router=True, simulator_ip="10.66.6.10")
+    env_args = mock_run_container.call_args[0][3]
+    assert "SIMULATOR_IP=10.66.6.10" in env_args
 
 
 def test_manager_run_simulator_env_zenoh(monkeypatch):

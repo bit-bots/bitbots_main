@@ -85,8 +85,14 @@ COPY --chown=$user:$user docker/ansible_files/zimrc /home/${user}/.zimrc
 COPY --chown=$user:$user docker/ansible_files/vimrc /home/${user}/.vimrc
 COPY --chown=$user:$user docker/ansible_files/tmux.conf /home/${user}/.tmux.conf
 COPY --chown=$user:$user docker/ansible_files/screenrc /home/${user}/.screenrc
-RUN mkdir -p /home/${user}/.zim /home/${user}/.config/htop && chown -R $user:$user /home/${user}/.zim /home/${user}/.config
+RUN mkdir -p /home/${user}/.zim /home/${user}/.config/htop /home/${user}/.config/zenoh && chown -R $user:$user /home/${user}/.zim /home/${user}/.config
 COPY --chown=$user:$user docker/ansible_files/htoprc /home/${user}/.config/htop/htoprc
+COPY --chown=$user:$user docker/ansible_files/zenoh_router.json5 /home/${user}/.config/zenoh/router.json5
+COPY --chown=$user:$user docker/ansible_files/zenoh_session.json5 /home/${user}/.config/zenoh/session.json5
+
+# Setup Zenoh environment variables
+ENV ZENOH_ROUTER_CONFIG_URI=/home/${user}/.config/zenoh/router.json5
+ENV ZENOH_SESSION_CONFIG_URI=/home/${user}/.config/zenoh/session.json5
 
 # Install zim modules
 USER $user

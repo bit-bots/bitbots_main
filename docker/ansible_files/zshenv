@@ -28,3 +28,7 @@ skip_global_compinit=1
 if [[ -d "$HOME/.pixi" ]]; then
   export PATH="$HOME/.pixi/bin:$PATH"
 fi
+
+# Zenoh configuration URIs
+export ZENOH_ROUTER_CONFIG_URI="$HOME/.config/zenoh/router.json5"
+export ZENOH_SESSION_CONFIG_URI="$HOME/.config/zenoh/session.json5"
