@@ -42,18 +42,18 @@ def run_gui():
 
     s_n = Slider(_ax(0.470), "players", 1, 8, valinit=state["n"], valstep=1)
     s_sep = Slider(_ax(0.442), "min_sep", 0.3, 2.0, valinit=params.min_sep)
-    s_alpha = Slider(_ax(0.414), "push α", 0.1, 0.8, valinit=params.alpha)
-    s_dbias = Slider(_ax(0.386), "def fwd/back", -2.0, 3.0, valinit=params.depth_bias)
-    s_dside = Slider(_ax(0.358), "def side", 0.0, 2.0, valinit=params.def_side)
-    s_gap = Slider(_ax(0.330), "def gap", 0.5, 2.0, valinit=params.gap)
-    s_gapc = Slider(_ax(0.302), "def gap @goal", 0.2, 2.0, valinit=params.gap_close)
-    s_f = Slider(_ax(0.274), "supp lead", 0.0, 3.0, valinit=params.f)
+    s_alpha = Slider(_ax(0.414), "def depth rel", 0.1, 0.8, valinit=params.relativ_def_depth)
+    s_dbias = Slider(_ax(0.386), "def depth bias", -2.0, 3.0, valinit=params.def_depth_bias)
+    s_dside = Slider(_ax(0.358), "def side", 0.0, 2.0, valinit=params.solo_def_side_gap)
+    s_gap = Slider(_ax(0.330), "def side gap", 0.5, 2.0, valinit=params.def_side_gap)
+    s_gapc = Slider(_ax(0.302), "def side gap @goal", 0.2, 2.0, valinit=params.def_side_gap_close)
+    s_f = Slider(_ax(0.274), "supp lead", 0.0, 1.0, valinit=params.supp_forward_offset)
     s_side = Slider(_ax(0.246), "supp side", 0.0, 2.5, valinit=params.supp_side)
-    s_smax = Slider(_ax(0.218), "supp max x", 0.0, 4.2, valinit=params.supp_max_x)
+    s_smax = Slider(_ax(0.218), "supp max x", 0.0, 4.2, valinit=params.relativ_supp_max_x)
     s_pmarg = Slider(_ax(0.190), "post margin", 0.0, 1.3, valinit=params.post_margin)
     s_back = Slider(_ax(0.162), "back dist", 0.0, 3.0, valinit=params.back_dist)
     s_kclr = Slider(_ax(0.134), "kick clear", 0.0, 1.5, valinit=params.kick_clear)
-    s_gout = Slider(_ax(0.106), "goalie out", 0.2, 2.0, valinit=params.d_g)
+    s_gout = Slider(_ax(0.106), "goalie out", 0.2, 2.0, valinit=params.goalie_forward_dist)
     check_sp = CheckButtons(plt.axes((0.18, 0.078, 0.20, 0.022)), ["set play"], [False])
     check_supp = CheckButtons(plt.axes((0.42, 0.078, 0.20, 0.022)), ["supporter"], [params.include_supporter])
     s_spcl = Slider(_ax(0.050), "set play clearance", 0.1, 2.0, valinit=params.opp_set_play_clearance)
@@ -85,10 +85,15 @@ def run_gui():
             )
         ax.set_facecolor("#2e7d32")
 
-        params.min_sep, params.alpha, params.gap, params.f = s_sep.val, s_alpha.val, s_gap.val, s_f.val
-        params.gap_close = s_gapc.val
-        params.depth_bias, params.supp_side, params.d_g = s_dbias.val, s_side.val, s_gout.val
-        params.supp_max_x, params.def_side = s_smax.val, s_dside.val
+        params.min_sep, params.relativ_def_depth, params.def_side_gap, params.relativ_supp_max_x = (
+            s_sep.val,
+            s_alpha.val,
+            s_gap.val,
+            s_smax.val,
+        )
+        params.def_side_gap_close = s_gapc.val
+        params.def_depth_bias, params.supp_side, params.goalie_forward_dist = s_dbias.val, s_side.val, s_gout.val
+        params.relativ_supp_max_x, params.solo_def_side_gap = s_f.val, s_dside.val
         params.post_margin, params.back_dist = s_pmarg.val, s_back.val
         params.kick_clear = s_kclr.val
         opp_set_play = check_sp.get_status()[0]
