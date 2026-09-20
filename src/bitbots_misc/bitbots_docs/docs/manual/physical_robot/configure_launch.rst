@@ -33,7 +33,7 @@ At a competition, follow these steps:
 
    .. code-block:: bash
 
-      pixi run deploy <nuc* | robot_name | ALL>
+      pixi run deploy <robot_name | ALL>
 
    This does the following tasks:
    - Synchronize/Copy the current state of your local bitbots_main directory to the robot(s)
@@ -62,5 +62,6 @@ Cleanup
    Rework of the public documentation (see issue #1037): describe the cleanup
    after a game/session:
 
+   - Sit down the robot.
    - Closing the tmux session.
    - Copying and then deleting the recorded rosbag from the robot.

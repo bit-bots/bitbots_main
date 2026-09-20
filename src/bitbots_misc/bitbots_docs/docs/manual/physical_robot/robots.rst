@@ -5,7 +5,7 @@ We have multiple robots in our team, each with their own hostname and IP address
 Pi Plus Cameras do not use IP addresses, but are connected via USB.
 
 .. note::
-   Current status as of May 2026:
+   Current status as of May 2026 (Martyn does not exist yet):
 
 +----------+----------+-----------+-------------+
 | Name     | Hostname | Username  | IP          |

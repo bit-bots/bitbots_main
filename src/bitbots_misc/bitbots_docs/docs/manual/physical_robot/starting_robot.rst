@@ -9,7 +9,7 @@ Starting the Robot
       The steps to power on the robot.
 
    Motor power safety
-      Only enable motor power when the joints are in a normal position and no
+      Only enable motor power when the joints are in a normal position (note and photo of T-pose AND markers to identify normal position) and no
       motion is running.
 
    Deploy tool sync & build

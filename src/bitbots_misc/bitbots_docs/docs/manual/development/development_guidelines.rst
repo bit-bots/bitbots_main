@@ -34,7 +34,7 @@ Setting up pre-commit
   pre-commit install
 
 Running pre-commit manually
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If you want to run pre-commit manually on all files, you can use the following command:
 
