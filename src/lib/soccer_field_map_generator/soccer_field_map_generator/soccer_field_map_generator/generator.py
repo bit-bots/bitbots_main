@@ -208,7 +208,7 @@ def generate_map_image(parameters):
             if mark_type == MarkTypes.POINT:
                 img = cv2.circle(img, middle_point, stroke_width * 2, color, -1)
             elif mark_type == MarkTypes.CROSS:
-                drawCross(img, middle_point, color, stroke_width)
+                drawCross(img, middle_point, color, stroke_width, field_feature_size)
             else:
                 raise NotImplementedError('Mark type not implemented')
 
@@ -218,8 +218,8 @@ def generate_map_image(parameters):
                 img = cv2.circle(img, penalty_mark_left, stroke_width * 2, color, -1)
                 img = cv2.circle(img, penalty_mark_right, stroke_width * 2, color, -1)
             elif mark_type == MarkTypes.CROSS:
-                drawCross(img, penalty_mark_left, color, stroke_width)
-                drawCross(img, penalty_mark_right, color, stroke_width)
+                drawCross(img, penalty_mark_left, color, stroke_width, field_feature_size)
+                drawCross(img, penalty_mark_right, color, stroke_width, field_feature_size)
             else:
                 raise NotImplementedError('Mark type not implemented')
 
