@@ -42,8 +42,14 @@ class Buffer {
     rcl_node_t *node_handle =
         static_cast<rcl_node_t *>(reinterpret_cast<void *>(node.attr("handle").attr("pointer").cast<size_t>()));
     const char *node_name = rcl_node_get_name(node_handle);
+
+    // inherit the use_sim_time parameter from the outer node
+    const bool use_sim_time = node.attr("get_parameter")("use_sim_time").attr("value").cast<bool>();
+    rclcpp::NodeOptions node_options;
+    node_options.parameter_overrides({rclcpp::Parameter("use_sim_time", use_sim_time)});
+
     // create node with name <python_node_name>_tf
-    node_ = std::make_shared<rclcpp::Node>((std::string(node_name) + "_tf").c_str());
+    node_ = std::make_shared<rclcpp::Node>((std::string(node_name) + "_tf").c_str(), node_options);
 
     // Get buffer duration from python duration
     auto duration =

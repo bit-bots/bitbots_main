@@ -23,6 +23,12 @@ class CountActiveRobotsWithoutGoalie(AbstractDecisionElement):
             return "TWO"
         elif number_of_active_teammates == 3:
             return "THREE"
+        elif number_of_active_teammates == 4:
+            return "FOUR"
+        elif number_of_active_teammates == 5:
+            return "FIVE"
+        elif number_of_active_teammates == 6:
+            return "SIX"
         else:
             # emergency fall back if something goes wrong
             self.blackboard.node.get_logger().error("Rank to ball had some issues")
