@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>better_launch</name>
+  <version>1.0.2</version>
+
+  <description>
+    A better replacement for the ROS2 launch system: intuitive, simple, memorable.
+  </description>
+
+  <url type="website">https://dfki-ric.github.io/better_launch/</url>
+  <url type="repository">https://github.com/dfki-ric/better_launch</url>
+  <url type="bugtracker">https://github.com/dfki-ric/better_launch/issues</url>
+
+  <author email="nikolas.dahn@gmail.com">Nikolas Dahn</author>
+  <maintainer email="nikolas.dahn@gmail.com">Nikolas Dahn</maintainer>
+
+  <license>MIT</license>
+
+  <buildtool_depend>ament_cmake_python</buildtool_depend>
+  <test_depend>ament_cmake_pytest</test_depend>
+
+  <depend>ament_index_python</depend>
+  <depend>rcl_interfaces</depend>
+  <depend>lifecycle_msgs</depend>
+  <depend>composition_interfaces</depend>
+  <depend>rclpy</depend>
+
+  <depend>python3-click</depend>
+  <depend>python3-docstring-parser</depend>
+  <depend>python3-osrf-pycommon</depend>
+  <depend>python3-yaml</depend>
+  <depend>python3-setproctitle</depend>
+  <depend>python3-prompt-toolkit</depend>
+  <depend>python3-psutil</depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

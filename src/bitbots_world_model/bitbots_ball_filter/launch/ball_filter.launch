@@ -1,6 +1,0 @@
-<launch>
-    <arg name="sim" default="false"/>
-    <node pkg="bitbots_ball_filter" exec="ball_filter" name="bitbots_ball_filter" output="screen">
-        <param name="use_sim_time" value="$(var sim)"/>
-    </node>
-</launch>

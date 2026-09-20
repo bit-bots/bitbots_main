@@ -1,11 +1,8 @@
+#!/usr/bin/env python3
 import os
 from datetime import datetime
 
-from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, ExecuteProcess, OpaqueFunction
-from launch.substitutions import EnvironmentVariable, LaunchConfiguration, PathJoinSubstitution
-
-# from launch_ros.actions import Node
+from better_launch import BetterLaunch, launch_this
 
 TOPICS_TO_RECORD: list[str] = [
     "/animation",
@@ -65,83 +62,45 @@ TOPICS_TO_RECORD: list[str] = [
 ]
 
 
-def generate_launch_arguments():
-    return [
-        DeclareLaunchArgument(
-            "sim", default_value="false", description="true: Use simulation time", choices=["true", "false"]
-        ),
-        DeclareLaunchArgument(
-            "max_image_frequency", default_value="1.0", description="Max frequency [hz] for recording images"
-        ),
-    ]
+@launch_this
+def rosbag_record(sim: bool = False, max_image_frequency: float = 1.0):
+    """
+    Parameters
+    ----------
+    sim : bool
+        Use simulation time
+    max_image_frequency : float
+        Max frequency [hz] for recording images
+    """
+    bl = BetterLaunch()
 
-
-def generate_nodes():
-    return [
-        # Node(
-        #     package="topic_tools",
-        #     executable="throttle",
-        #     output="screen",
-        #     name="record_rosbag_drop_images",
-        #     arguments=[
-        #         "messages",
-        #         "/zed/zed_node/rgb/image_rect_color",
-        #         LaunchConfiguration("max_image_frequency"),
-        #         "/camera/image_to_record",
-        #     ],
-        # )
-    ]
-
-
-def generate_action(context):
-    robot_name = os.getenv("ROBOCUP_ROBOT_ID", default=os.getenv("ROBOT_NAME", default="unknown_robot"))
+    robot_name = os.getenv("ROBOCUP_ROBOT_ID", os.getenv("ROBOT_NAME", "unknown_robot"))
 
     # Set output directory
     # ~/rosbags/ID_<robot_id>_<datetime>
-    output_directory = PathJoinSubstitution(
-        [
-            EnvironmentVariable("HOME"),
-            "rosbags",
-            "ID_" + robot_name + "_" + datetime.now().isoformat(timespec="seconds"),
-        ]
+    output_directory = os.path.join(
+        os.environ["HOME"],
+        "rosbags",
+        f"ID_{robot_name}_{datetime.now().isoformat(timespec='seconds')}",
     )
 
-    sim_value = LaunchConfiguration("sim").perform(context)
-    sim_time = ["--use-sim-time"] if sim_value == "true" else []
+    cmd = [
+        "ros2",
+        "bag",
+        "record",
+        "-o",
+        output_directory,
+        "--node-name",
+        "ros2_bag_record",
+        "--include-hidden-topics",
+        "--include-unpublished-topics",
+        "--polling-interval",
+        "1000",
+    ]
 
-    node_name = "ros2_bag_record"
+    if sim:
+        cmd.append("--use-sim-time")
 
-    main_process = ExecuteProcess(
-        # Constructing the complete command
-        cmd=[
-            # Main command to start recording ros2 bags
-            "ros2",
-            "bag",
-            "record",
-            "-o",
-            output_directory,
-            # Other options
-            "--node-name",
-            node_name,
-            "--include-hidden-topics",
-            "--include-unpublished-topics",
-            "--polling-interval",
-            "1000",
-        ]
-        + sim_time
-        + TOPICS_TO_RECORD,
-        output="screen",
-        name=node_name,
-        shell=True,
-    )
-    return [main_process]
+    cmd.extend(TOPICS_TO_RECORD)
 
-
-def generate_launch_description():
-    launch_arguments = generate_launch_arguments()
-    nodes = generate_nodes()
-
-    action = OpaqueFunction(function=generate_action)
-
-    # Construct LaunchDescription from parts
-    return LaunchDescription(launch_arguments + nodes + [action])
+    bl.process(cmd, name="ros2_bag_record", output="screen", use_shell=True)

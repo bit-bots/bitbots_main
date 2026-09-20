@@ -2,6 +2,8 @@
 
 This directory contains scripts that are very useful for development, testing and deployment.
 
+The [offline launch comparison tool](launch_equivalence/README.md) checks the ROS launch to better-launch migration without starting robot processes.
+
 This tool is also callable via `pixi run deploy <arguments>`.
 
 ## `deploy_robots.py`

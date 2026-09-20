@@ -12,7 +12,7 @@ setup(
     data_files=[
         ("share/ament_index/resource_index/packages", ["resource/" + package_name]),
         ("share/" + package_name, ["package.xml"]),
-        ("share/" + package_name + "/launch", glob.glob("launch/*.launch.py") + glob.glob("launch/*.launch")),
+        ("share/" + package_name + "/launch", glob.glob("launch/*.launch.py")),
         ("share/" + package_name + "/xml", glob.glob("xml/*.xml")),
         ("share/" + package_name + "/xml/assets", glob.glob("xml/assets/*.png")),
         ("share/" + package_name + "/xml/assets/ball", glob.glob("xml/assets/ball/*.png")),

@@ -6,8 +6,8 @@ Test Motion
 
 .. code-block:: bash
 
-    ros2 launch bitbots_mujoco_sim simulation.launch
-    ros2 launch bitbots_bringup motion_standalone.launch sim:=true
+    bl bitbots_mujoco_sim simulator.launch.py
+    bl bitbots_bringup motion_standalone.launch.py --sim true
 
 To control walking of the robot, teleop needs to be startet as well:
 
@@ -30,11 +30,11 @@ Test the complete software stack in simulation
 
     .. code-block:: bash
 
-        ros2 launch bitbots_bringup simulator_teamplayer.launch game_controller:=false
+        bl bitbots_bringup simulator_teamplayer.launch.py --game_controller false
 
 - Start simulator_teamplayer *with* game controller (you can control the current game state):
 
     .. code-block:: bash
 
-        ros2 launch bitbots_bringup simulator_teamplayer.launch
+        bl bitbots_bringup simulator_teamplayer.launch.py
         ros2 run game_controller_hsl sim_gamestate.py
