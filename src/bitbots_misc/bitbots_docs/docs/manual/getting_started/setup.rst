@@ -20,15 +20,6 @@ In this tutorial, we will learn how to install all dependencies and build our so
 
 - You have an existing GitHub account and added a SSH key to your account.
 
-If you have not previously set up any of our software stack, you can use the following command to install and setup everything in one go:
-
-.. code-block:: bash
-
-  mkdir -p ~/git/bitbots \
-    && cd ~/git/bitbots \
-    && curl -fsSL https://raw.githubusercontent.com/bit-bots/bitbots_main/main/scripts/setup.sh > /tmp/setup.sh \
-    && bash /tmp/setup.sh
-
 Manual steps with in depth explanation
 --------------------------------------
 
