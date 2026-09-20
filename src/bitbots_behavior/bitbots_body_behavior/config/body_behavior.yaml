@@ -105,10 +105,22 @@ body_behavior:
 
     # GoalieZone is the area the goalie should start kick the ball away
     # X realtive from 0 to 1 measured from the own goal
-    # Y A symetrical offset to both sides from 0 to 1
+    # Y A symetrical offset to both sides from 0 to 0.5
     # Y = 0.3 -> Defense Area ist in between 0.3 and 0.7 y
     goalie_zone_x: 0.2
     goalie_zone_y: 0.2
+
+    # Demo penalty aera is the area where the ball should be placed in for the penalty demo
+    # x is the ball position realtive from 0 to 0.5 measured from Midleline to oppoent goal
+    # x_range is the relative distance to x where the ball counts a "inside" demo penalty area
+    # y is the ball position realtive from -1 to 1 measured from sideline to sideline
+    # y_range is the relative distance to y where the ball counts a "inside" demo penalty area
+    demo_penalty_area_x: 0.32
+    demo_penalty_area_x_range: 0.05
+    demo_penalty_area_y: 0
+    demo_penalty_area_y_range: 0.05
+    # Waiting position of the robot in penalty demo
+    demo_penalty_position: [ 0.4, 0.0 ]
 
     # This is the offset the goalie keeps to avoid crashes with poles when blocking balls.
     # The value describes the offset in meters from the goal line.
