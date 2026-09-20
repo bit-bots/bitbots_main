@@ -1,0 +1,27 @@
+# Just a slightly more complex example
+
+turtlesim_ns = "turtlesim1"
+use_provided_red = false
+new_background_r = 200
+new_r = 100
+
+[turtle_group]
+func = "group"
+namespace = "${turtlesim_ns}"
+
+[turtle_group.children.turtle_node]
+func = "node"
+package="turtlesim"
+executable="turtlesim_node"
+name="sim"
+params={background_r = 120}
+
+[snooze]
+func = "sleep"
+seconds = 1.5
+
+[spawn_turtle]
+func = "call_service"
+topic = "/${turtlesim_ns}/spawn"
+service_type = "turtlesim/srv/Spawn"
+request_args = {x = 2.0, y = 2.0, theta = 0.2}

@@ -14,7 +14,7 @@ To start the vision, use
 
 ::
 
-   ros2 launch bitbots_vision vision.launch
+   bl bitbots_vision vision.launch.py
 
 The following parameters are available:
 
