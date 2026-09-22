@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>bitbots_auto_referee</name>
+  <version>0.1.0</version>
+  <description>Independent automatic referee infrastructure for the MuJoCo soccer simulation.</description>
+  <maintainer email="info@bit-bots.de">Hamburg Bit-Bots</maintainer>
+  <license>MIT</license>
+  <buildtool_depend>ament_python</buildtool_depend>
+  <exec_depend>game_controller_hsl</exec_depend>
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>rcl_interfaces</exec_depend>
+  <exec_depend>python3-construct</exec_depend>
+  <exec_depend>python3-setuptools</exec_depend>
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>
