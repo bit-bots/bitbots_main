@@ -9,10 +9,13 @@ The existing `game_controller_hsl` binary schemas are reused unchanged.
 ## Scope
 
 The launch file starts the referee process and composes the implemented match
-state and UDP adapter. It does not start the simulator or duplicate a robot's
-receiver. Simulation observations, automatic decisions, countdowns, placement
-and referee UI are not implemented yet. The initial state and remaining
-time are repeated until a future rule engine replaces the match snapshot.
+state, opening sequence and UDP adapter. It does not start the simulator or
+duplicate a robot's receiver. The opening sequence automatically advances from
+INITIAL through READY and SET to PLAYING. The phase durations are defined in
+`rules/startup.py`; READY and SET publish their remaining preparation time in
+`secondary_time`. Transitions are sent immediately, in addition to the heartbeat.
+Simulation observations, event-based decisions, placement and referee UI are not
+implemented yet. The remaining half time does not count down yet.
 The league and lineup mode determine the per-team player limit transmitted to the
 robot; they do not yet place or spawn robots in the simulator.
 
@@ -73,11 +76,17 @@ Team message budgets initially remain empty until a rule engine manages them.
 | `target_host`, `target_port` | IPv4 unicast receiver endpoint |
 | `bind_host`, `return_port` | Local interface and return packet port |
 | `send_rate`, `response_timeout` | Wall-clock heartbeat and connection timeout |
-| `use_sim_time` | Simulator clock for future rule processing |
+| `use_sim_time` | Simulator clock for the opening sequence and referee decisions |
 
 Match and network settings are startup-only ROS parameters. Restart the process
-to change them. The initial match state is INITIAL; there is no automatic start.
-`use_sim_time` follows normal ROS clock handling and is enabled by the launch file.
+to change them. Starting the AutoRef automatically prepares and starts play, which
+can activate the connected robot's behavior when it receives the state changes.
+`use_sim_time` is enabled by the launch file: preparation starts with the first
+available nonzero simulator-clock sample, independently of the simulator's
+absolute uptime. Pausing simulation pauses preparation. With `use_sim_time`
+disabled, preparation uses monotonic wall time from node initialization.
+A backward clock jump during preparation restarts the opening sequence. After
+PLAYING is reached, the opening sequence stops modifying the match state.
 
 ## Robot receiver configuration
 
@@ -123,7 +132,7 @@ bitbots_auto_referee/
   adapters/game_controller.py  Wire encoding, UDP transport and robot replies
   adapters/simulation/      Reserved for ROS simulation observations/commands
   events/                   Reserved for observation-to-event detectors
-  rules/                    Reserved for the match state machine
+  rules/startup.py           Clock-driven opening sequence
   ui/                       Reserved for referee status and operator commands
 launch/
   auto_referee.launch.py     Central entry point for referee components

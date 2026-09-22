@@ -40,7 +40,7 @@ PARAMETERS = {
     "return_port": ParameterSpec(3939, "Must match the receiver's answer_port."),
     "send_rate": ParameterSpec(2.0, "Packet frequency in wall-clock hertz, including while simulation is paused."),
     "response_timeout": ParameterSpec(5.0, "Wall-clock seconds without a reply before reporting a lost connection."),
-    "use_sim_time": ParameterSpec(True, "Use the running simulator's clock for future referee decisions."),
+    "use_sim_time": ParameterSpec(True, "Use the simulator's clock for the opening sequence and referee decisions."),
 }
 
 

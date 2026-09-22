@@ -11,6 +11,7 @@ from rclpy.node import Node
 from bitbots_auto_referee.adapters.game_controller import GameControllerUDPAdapter
 from bitbots_auto_referee.config import PARAMETERS, RefereeConfig
 from bitbots_auto_referee.core.state import MatchState
+from bitbots_auto_referee.rules.startup import StartupSequence
 
 
 class AutoReferee(Node):
@@ -33,6 +34,9 @@ class AutoReferee(Node):
             self._connected: bool | None = None
             self._rejected_packets = 0
             self._network_clock = Clock(clock_type=ClockType.STEADY_TIME)
+            self._startup = StartupSequence()
+            self._advance_startup()
+            self.create_timer(0.05, self._advance_startup, clock=self._network_clock)
             self.create_timer(1.0 / self.config.send_rate, self._send, clock=self._network_clock)
             self.create_timer(0.05, self._receive, clock=self._network_clock)
             self.get_logger().info(
@@ -41,11 +45,29 @@ class AutoReferee(Node):
                 f"Home {self.config.home_team_id}, away {self.config.away_team_id}; "
                 f"league {self.config.league_size}, lineup {self.config.lineup_mode}, "
                 f"maximum players per team {self.config.players_per_team}. "
-                "Simulation observation, robot placement and automatic rule transitions are not implemented yet."
+                "The opening sequence advances automatically to PLAYING. "
+                "Simulation observation and robot placement are not implemented yet."
             )
         except Exception:
             self.destroy_node()
             raise
+
+    def _advance_startup(self) -> None:
+        if self.adapter is None or self._startup.finished:
+            return
+        if self.get_parameter("use_sim_time").value:
+            now_ns = self.get_clock().now().nanoseconds
+            if now_ns == 0:
+                return
+        else:
+            now_ns = self._network_clock.now().nanoseconds
+        previous = self.adapter.state
+        updated = self._startup.advance(previous, now_ns)
+        if updated != previous:
+            self.adapter.set_state(updated)
+            if updated.state != previous.state:
+                self.get_logger().info(f"Opening sequence: {previous.state} -> {updated.state}")
+                self._send()
 
     def _send(self) -> None:
         if self.adapter is None:
