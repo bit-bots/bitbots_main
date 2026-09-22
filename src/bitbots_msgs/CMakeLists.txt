@@ -40,6 +40,8 @@ rosidl_generate_interfaces(
   "msg/RobotControlState.msg"
   "msg/RobotRelative.msg"
   "msg/RobotRelativeArray.msg"
+  "msg/SimulationRobotState.msg"
+  "msg/SimulationState.msg"
   "msg/Strategy.msg"
   "msg/TeamData.msg"
   "msg/TTS.msg"
@@ -51,6 +53,7 @@ rosidl_generate_interfaces(
   "srv/SetObjectPosition.srv"
   "srv/SetTeachingMode.srv"
   "srv/SimulatorPush.srv"
+  "srv/Teleport.srv"
   DEPENDENCIES
   action_msgs
   geometry_msgs

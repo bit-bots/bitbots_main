@@ -1,6 +1,7 @@
 """Shared launch defaults and validated startup configuration."""
 
 import ipaddress
+import json
 import math
 from dataclasses import dataclass
 
@@ -30,6 +31,7 @@ PARAMETERS = {
     ),
     "home_team_id": ParameterSpec(1, "Home team number; must match the home receiver's team_id."),
     "away_team_id": ParameterSpec(2, "Away team number; must differ from home_team_id."),
+    "robot_team_mapping": ParameterSpec('{"0":"home"}', "JSON object mapping simulator robot indices to home or away."),
     "home_color": ParameterSpec("blue", "Home field-player jersey color.", COLORS),
     "away_color": ParameterSpec("red", "Away field-player jersey color.", COLORS),
     "home_goalkeeper_color": ParameterSpec("blue", "Home goalkeeper jersey color.", COLORS),
@@ -40,6 +42,9 @@ PARAMETERS = {
     "return_port": ParameterSpec(3939, "Must match the receiver's answer_port."),
     "send_rate": ParameterSpec(2.0, "Packet frequency in wall-clock hertz, including while simulation is paused."),
     "response_timeout": ParameterSpec(5.0, "Wall-clock seconds without a reply before reporting a lost connection."),
+    "ui_enabled": ParameterSpec(True, "Serve the read-only AutoRef dashboard."),
+    "ui_host": ParameterSpec("127.0.0.1", "IPv4 interface for the read-only dashboard."),
+    "ui_port": ParameterSpec(8081, "HTTP port for the read-only dashboard."),
     "use_sim_time": ParameterSpec(True, "Use the simulator's clock for the opening sequence and referee decisions."),
 }
 
@@ -50,6 +55,7 @@ class RefereeConfig:
     lineup_mode: str
     home_team_id: int
     away_team_id: int
+    robot_team_mapping: str
     home_color: str
     away_color: str
     home_goalkeeper_color: str
@@ -60,6 +66,30 @@ class RefereeConfig:
     return_port: int
     send_rate: float
     response_timeout: float
+    ui_enabled: bool
+    ui_host: str
+    ui_port: int
+
+    @property
+    def robot_teams(self) -> dict[int, int]:
+        """Resolve explicit simulator assignments against the configured team identities."""
+        mapping = json.loads(self.robot_team_mapping)
+        if not isinstance(mapping, dict):
+            raise ValueError("robot_team_mapping must be a JSON object")
+        teams = {"home": self.home_team_id, "away": self.away_team_id}
+        result = {}
+        for index, side in mapping.items():
+            if not index.isascii() or not index.isdecimal() or str(int(index)) != index:
+                raise ValueError("Robot indices must be canonical nonnegative integers")
+            if int(index) > 0xFFFFFFFF:
+                raise ValueError("Robot index exceeds the simulation message range")
+            if not isinstance(side, str) or side not in teams:
+                raise ValueError("Robot team assignments must be home or away")
+            result[int(index)] = teams[side]
+        for team_id in teams.values():
+            if sum(team == team_id for team in result.values()) > self.players_per_team:
+                raise ValueError("Robot team mapping exceeds the per-team player limit")
+        return result
 
     @property
     def players_per_team(self) -> int:
@@ -85,12 +115,12 @@ class RefereeConfig:
             raise ValueError("Home and away team IDs must be different")
         if values["home_color"] == values["away_color"]:
             raise ValueError("Home and away field-player colors must be different")
-        for name in ("target_port", "return_port"):
+        for name in ("target_port", "return_port", "ui_port"):
             if not 1 <= values[name] <= 65535:
-                raise ValueError(f"{name} must be a valid UDP port")
+                raise ValueError(f"{name} must be a valid port")
         if values["target_port"] == values["return_port"]:
             raise ValueError("Receiver and return ports must be different")
-        for name in ("target_host", "bind_host"):
+        for name in ("target_host", "bind_host", "ui_host"):
             address = ipaddress.IPv4Address(values[name])
             if address.is_multicast or int(address) == 0xFFFFFFFF:
                 raise ValueError(f"{name} must be a unicast IPv4 address")
@@ -103,4 +133,6 @@ class RefereeConfig:
             raise ValueError("send_rate is too high for a GameController heartbeat")
 
         fields = {name: value for name, value in values.items() if name not in ("leagueSize", "use_sim_time")}
-        return cls(league_size=values["leagueSize"], **fields)
+        config = cls(league_size=values["leagueSize"], **fields)
+        _ = config.robot_teams
+        return config

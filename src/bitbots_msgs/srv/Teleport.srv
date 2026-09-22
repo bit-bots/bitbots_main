@@ -1,0 +1,13 @@
+# Absolute planar pose in the simulation world frame; yaw is in radians.
+uint8 ROBOT=0
+uint8 BALL=1
+uint8 target_type
+uint32 robot_index
+float64 x
+float64 y
+float64 yaw
+---
+# Success is reported after application in the simulation thread.
+bool success
+string message
+uint64 applied_step

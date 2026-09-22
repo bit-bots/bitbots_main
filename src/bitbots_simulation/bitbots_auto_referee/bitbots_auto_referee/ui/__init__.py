@@ -1,1 +1,1 @@
-"""Future referee status and operator commands, independent of the simulator UI."""
+"""Read-only referee dashboard, independent of the simulator UI."""

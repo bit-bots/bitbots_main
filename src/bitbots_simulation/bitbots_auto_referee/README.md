@@ -14,8 +14,19 @@ duplicate a robot's receiver. The opening sequence automatically advances from
 INITIAL through READY and SET to PLAYING. The phase durations are defined in
 `rules/startup.py`; READY and SET publish their remaining preparation time in
 `secondary_time`. Transitions are sent immediately, in addition to the heartbeat.
-Simulation observations, event-based decisions, placement and referee UI are not
-implemented yet. The remaining half time does not count down yet.
+Robot and ball positions and ball contacts are observed. The remaining half time
+counts down using simulation timestamps only during PLAYING with `stopped=false`.
+Fractional seconds accumulate across updates and are preserved across stops;
+preparation and paused intervals are not charged. Clock resets or an external
+remaining-time correction discard an old fractional remainder. The clock stops
+at zero and records expiry, without automatically changing half or game phase.
+Event-based penalties and automatic placement rules are not implemented yet.
+Rules can explicitly request robot and ball teleports through the simulator command adapter.
+After each completed physics step, the simulator publishes `/simulation/step`.
+The AutoRef calls `rules/check_rules.py:RuleChecker.check_rules()` for each received
+update, in every game phase and independently of `use_sim_time`. It updates the
+playing clock and observes contacts; no penalties are issued yet. A changed
+return value is validated, stored and immediately sent through the UDP adapter.
 The league and lineup mode determine the per-team player limit transmitted to the
 robot; they do not yet place or spawn robots in the simulator.
 
@@ -25,8 +36,12 @@ Use the repository's supported Linux Pixi environment. Build the new package
 and its workspace dependencies:
 
 ```sh
-pixi run -e default build --packages-up-to bitbots_auto_referee
+pixi run -e default build --packages-up-to bitbots_auto_referee bitbots_mujoco_sim
 ```
+
+This rebuilds the shared `bitbots_msgs` interfaces and both consumers. Restart
+both the simulator and AutoRef after building: `/simulation/step` now uses
+`bitbots_msgs/SimulationState` instead of the former clock-only message.
 
 Start the referee independently of the already running simulation:
 
@@ -71,12 +86,14 @@ Team message budgets initially remain empty until a rule engine manages them.
 | `leagueSize` | Competition size; combined with lineup mode determines the per-team player limit |
 | `lineup_mode` | `foundation` or `advanced`; combined with league size determines the per-team player limit |
 | `home_team_id`, `away_team_id` | Distinct protocol team identities |
+| `robot_team_mapping` | JSON object mapping simulator robot indices to `home` or `away` |
 | `home_color`, `away_color` | Distinct field-player jersey colors |
 | `home_goalkeeper_color`, `away_goalkeeper_color` | Independently selected goalkeeper colors |
 | `target_host`, `target_port` | IPv4 unicast receiver endpoint |
 | `bind_host`, `return_port` | Local interface and return packet port |
 | `send_rate`, `response_timeout` | Wall-clock heartbeat and connection timeout |
 | `use_sim_time` | Simulator clock for the opening sequence and referee decisions |
+| `ui_enabled`, `ui_host`, `ui_port` | Enable and bind the read-only HTTP dashboard |
 
 Match and network settings are startup-only ROS parameters. Restart the process
 to change them. Starting the AutoRef automatically prepares and starts play, which
@@ -87,6 +104,27 @@ absolute uptime. Pausing simulation pauses preparation. With `use_sim_time`
 disabled, preparation uses monotonic wall time from node initialization.
 A backward clock jump during preparation restarts the opening sequence. After
 PLAYING is reached, the opening sequence stops modifying the match state.
+The playing clock always uses the simulation timestamps in the observation
+stream, even if the opening sequence uses wall time.
+
+## Read-only dashboard
+
+The dashboard starts inside the AutoRef process using Python's standard library.
+Open the HTTP address logged at startup in a browser; its defaults are defined
+by the `ui_host` and `ui_port` launch parameters. It shows team scores, match and
+game phases, remaining time, stopped status, preparation time, kicking team, the
+last ball-contact team and robot connectivity. A bounded event list records
+opening transitions, ball contacts, clock expiry and connection changes. Ordinary
+clock ticks update the display without flooding the event list.
+
+The page has no controls or state-changing endpoints. Browser requests read a
+copied snapshot under a lock; the HTTP thread never modifies the referee. The
+display marks a lost connection or stale snapshot instead of presenting it as
+live. When the simulation timestamp stops advancing, the clock indicator reports
+that it is waiting for simulation progress. There is no automatic browser launch.
+Set `ui_enabled` to false to disable the dashboard. Failure to bind the HTTP port
+is logged and does not stop the referee. The bundled HTML is installed with the
+Python package; there are no external fonts, scripts or services.
 
 ## Robot receiver configuration
 
@@ -130,10 +168,12 @@ bitbots_auto_referee/
   node.py                   Process lifecycle and component composition
   core/state.py             Immutable complete match state
   adapters/game_controller.py  Wire encoding, UDP transport and robot replies
-  adapters/simulation/      Reserved for ROS simulation observations/commands
+  adapters/simulation/      ROS simulation snapshot conversion
+  core/observations.py      Copied world-frame positions and contacts
   events/                   Reserved for observation-to-event detectors
   rules/startup.py           Clock-driven opening sequence
-  ui/                       Reserved for referee status and operator commands
+  rules/check_rules.py       Rule evaluation entry point for simulation updates
+  ui/                       Read-only dashboard server and bundled HTML
 launch/
   auto_referee.launch.py     Central entry point for referee components
 test/                       Offline regression tests
@@ -144,16 +184,89 @@ Future rules should create a new immutable `MatchState` and call
 occurs before replacing the current snapshot. Socket operations are nonblocking;
 receive work is bounded so a stream of packets cannot monopolize the executor.
 
-Because the simulator is a separate process, its future adapter must consume
-timestamped ROS observations instead of accessing MuJoCo memory. Contacts must
-be captured inside the simulator at physics-step frequency and transferred
-without silently dropping events. Placement commands need execution
-acknowledgements and reset identifiers to avoid false boundary-crossing events.
-Those simulator interfaces are a subsequent implementation step.
+Because the simulator is a separate process, its adapter consumes timestamped ROS
+observations instead of accessing MuJoCo memory. Robot root and ball positions are
+copied from free-joint coordinates after each physics step. Contacts come from
+the completed physics solve, with ball geometry and robot ancestry resolved from
+the MuJoCo model. Multiple contact points and robot links collapse into a per-robot
+touch flag. Only touching, solver-active contacts are included, not proximity
+contacts. AutoRef teleports are acknowledged and marked in the observation stream
+to suppress artificial ball-contact callbacks. Other repositioning mechanisms,
+including viewer dragging, do not yet carry these markers.
+
+The simulation-step signal carries the timestamp, step counter, ball presence,
+ball position, robot indices, root positions and ball-contact flags. It uses reliable, volatile KEEP_ALL QoS
+on publisher and subscriber so pending updates are not deliberately replaced by
+newer samples. Delivery remains subject to middleware resource limits. Evaluation
+is asynchronous and does not wait for a referee response before the next physics
+step. A late-joining referee processes future updates, not the simulation history;
+start the AutoRef before the simulator to observe the opening step. The separate
+`/clock` topic keeps its existing clock-synchronization purpose and settings.
+
+### Rule checker state and ball contacts
+
+`AutoReferee.rule_checker` owns the current observations as instance attributes:
+
+- `robot_positions`: simulation robot index to world-frame position tuple.
+- `ball_position`: world-frame position tuple, or `None` if the model has no ball.
+- `simulation_time_ns` and `step_number`: the latest processed simulation step.
+- `last_touch_team_id`: team passed to the most recent ball-contact callback.
+
+Positions use meters and are replaced before callbacks execute. Removed robots
+do not leave stale entries. Keeping attributes on each instance prevents separate
+referees from sharing mutable state.
+
+`on_robot_ball_contact(team_id)` runs when a robot starts touching the ball.
+A continuing contact does not retrigger it; release followed by renewed contact
+does. Simultaneous touching robots each receive a callback, ordered by simulator
+index for determinism. That ordering does not establish physical precedence;
+the stored last team reflects callback order for simultaneous touches. The default
+handler records the team and does not yet change scores or penalties.
+
+`robot_team_mapping` supplies explicit simulator-index assignments to `home` or
+`away`; those names resolve to the configured team IDs. The default maps the first
+simulated robot to home. Use the default in `config.py` as the JSON template for
+additional assignments. The mapping does not create robots or imply that they
+are connected; empty mappings and partial teams are allowed, up to the team limit.
+Positions of unmapped robots are still recorded, but their contact callbacks are
+skipped with a warning instead of guessing a team. A backwards timestamp or step
+counter clears contact history when the simulator restarts.
 
 Future event and rule components should be composed in `node.py`; components
 requiring separate processes should be added to the central launch file. Empty
 placeholder nodes are deliberately not launched.
+
+### Teleports from rules
+
+Inside `RuleChecker.check_rules()`, call:
+
+```python
+robot_result = self.teleport_robot(robot_id, x, y, yaw)
+ball_result = self.teleport_ball(x, y, yaw)
+```
+
+`robot_id` is the simulator index used by `robot_positions`, not a team or
+GameController player number. Coordinates are absolute world-frame meters;
+`yaw` is in radians. Height and articulated joint positions are preserved, the
+root is oriented upright with the requested yaw, and velocities of the target
+are cleared. The ball's yaw controls its orientation, including its texture.
+
+Both calls return a future containing `TeleportResult` with `success`, `message`
+and `applied_step`. Do not block on `result()` inside a rule callback. Check
+`done()` on subsequent updates before reading the result, and issue each command
+once per decision rather than on every simulation update. Cancelling the returned
+future does not cancel an already submitted teleport.
+
+The `/simulation/teleport` service queues the command and acknowledges actual
+application before physics in the simulation thread. While simulation is paused,
+an accepted request waits until stepping resumes. An unavailable service or an
+unknown target yields a failure; there is no automatic retry. The dashboard logs
+execution results. Cached rule-checker positions update from subsequent simulation
+observations, not optimistically when submitting a command.
+
+Rebuild `bitbots_msgs` and both consumers and restart both processes after this
+interface change. Manual viewer dragging can subsequently override placement;
+teleports do not disable ongoing robot control or freeze the target in place.
 
 ## Review and tests
 

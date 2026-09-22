@@ -6,7 +6,9 @@ import mujoco
 import numpy as np
 from ament_index_python.packages import get_package_share_directory
 from mujoco import viewer
+from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.node import Node
+from rclpy.qos import DurabilityPolicy, HistoryPolicy, QoSProfile, ReliabilityPolicy
 from rclpy.time import Time
 from rosgraph_msgs.msg import Clock
 from sensor_msgs.msg import CameraInfo, Image, Imu, JointState
@@ -15,9 +17,11 @@ from std_srvs.srv import Empty
 from transforms3d.euler import euler2quat, quat2euler
 from transforms3d.quaternions import qmult
 
-from bitbots_msgs.msg import JointCommand
-from bitbots_msgs.srv import MoveBall, SimulatorPush
+from bitbots_msgs.msg import JointCommand, SimulationState
+from bitbots_msgs.srv import MoveBall, SimulatorPush, Teleport
+from bitbots_mujoco_sim.referee import RefereeObservationBuilder
 from bitbots_mujoco_sim.robot import Robot
+from bitbots_mujoco_sim.teleport import TeleportController
 
 BALL_JOINT_NAME = "ball-root"
 
@@ -103,12 +107,37 @@ class Simulation(Node):
         self.real_time_factor = 1.0 / 0.94  # add a small buffer to try to achieve the requested RTF
         self.measured_rtf = 1.0
         self.clock_publisher = self.create_publisher(Clock, "clock", 1)
+        self.referee_step_publisher = self.create_publisher(
+            SimulationState,
+            "/simulation/step",
+            QoSProfile(
+                history=HistoryPolicy.KEEP_ALL,
+                reliability=ReliabilityPolicy.RELIABLE,
+                durability=DurabilityPolicy.VOLATILE,
+            ),
+        )
         self.create_subscription(Float32, "real_time_factor", self.real_time_factor_callback, 1)
 
         # The ball is a free-floating body shared by all robots, so its reset lives on the
         # simulation node rather than per-robot. Use a global topic so the teleop keyboard
         # script reaches it regardless of any node namespace.
         self.ball_joint_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_JOINT, BALL_JOINT_NAME)
+        self.referee_observations = RefereeObservationBuilder(
+            self.model,
+            {robot.robot.index: robot.robot.base_body_id for robot in self.robots},
+            self.ball_joint_id,
+        )
+        self.teleports = TeleportController(
+            self.model,
+            {robot.robot.index: robot.robot.base_body_id for robot in self.robots},
+            self.ball_joint_id,
+        )
+        self._teleported_robots: set[int] = set()
+        self._ball_teleported = False
+        self._teleport_callback_group = ReentrantCallbackGroup()
+        self.create_service(
+            Teleport, "/simulation/teleport", self.teleports.callback, callback_group=self._teleport_callback_group
+        )
         self.create_service(Empty, "/reset_ball", self.reset_ball_callback)
         self.create_service(MoveBall, "/move_ball", self.move_ball_callback)
 
@@ -553,10 +582,20 @@ class Simulation(Node):
         for event_config in self.early_events:
             if self.step_number % event_config["frequency"] == 0:
                 event_config["handler"]()
+        self._teleported_robots, self._ball_teleported = self.teleports.apply_pending(self.data, self.step_number)
         mujoco.mj_step(self.model, self.data)
+        self.publish_referee_step()
         for event_config in self.events:
             if self.step_number % event_config["frequency"] == 0:
                 event_config["handler"]()
+
+    def publish_referee_step(self) -> None:
+        """Notify the separate referee after each completed physics step."""
+        self.referee_step_publisher.publish(
+            self.referee_observations.build(
+                self.data, self.time_message, self.step_number, self._teleported_robots, self._ball_teleported
+            )
+        )
 
     def real_time_factor_callback(self, msg: Float32) -> None:
         self.real_time_factor = msg.data / 0.94  # add a small buffer to try to achieve the requested RTF

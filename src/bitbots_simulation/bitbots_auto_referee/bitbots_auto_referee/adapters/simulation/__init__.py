@@ -1,5 +1,5 @@
-"""Future ROS transport to the separately running simulator.
+"""ROS observation transport to the separately running simulator.
 
-The simulator must export consistent observations and acknowledge placement
-commands. MuJoCo data cannot be accessed directly across this process boundary.
+Positions and contacts arrive together in simulation snapshots. Future placement
+commands need acknowledgements; MuJoCo memory is not shared across processes.
 """

@@ -12,6 +12,7 @@
   <exec_depend>launch_ros</exec_depend>
   <exec_depend>rclpy</exec_depend>
   <exec_depend>rcl_interfaces</exec_depend>
+  <exec_depend>bitbots_msgs</exec_depend>
   <exec_depend>python3-construct</exec_depend>
   <exec_depend>python3-setuptools</exec_depend>
   <export>

@@ -3,21 +3,28 @@
 import time
 
 import rclpy
+from bitbots_msgs.msg import SimulationState
 from rcl_interfaces.msg import ParameterDescriptor
 from rclpy.clock import Clock, ClockType
 from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
+from rclpy.qos import DurabilityPolicy, HistoryPolicy, QoSProfile, ReliabilityPolicy
 
 from bitbots_auto_referee.adapters.game_controller import GameControllerUDPAdapter
+from bitbots_auto_referee.adapters.simulation.commands import SimulationCommands
+from bitbots_auto_referee.adapters.simulation.observations import decode_observation
 from bitbots_auto_referee.config import PARAMETERS, RefereeConfig
 from bitbots_auto_referee.core.state import MatchState
+from bitbots_auto_referee.rules.check_rules import RuleChecker
 from bitbots_auto_referee.rules.startup import StartupSequence
+from bitbots_auto_referee.ui.dashboard import Dashboard
 
 
 class AutoReferee(Node):
     def __init__(self):
         super().__init__("auto_referee")
         self.adapter: GameControllerUDPAdapter | None = None
+        self.dashboard: Dashboard | None = None
         try:
             for name, spec in PARAMETERS.items():
                 if name != "use_sim_time":
@@ -35,6 +42,30 @@ class AutoReferee(Node):
             self._rejected_packets = 0
             self._network_clock = Clock(clock_type=ClockType.STEADY_TIME)
             self._startup = StartupSequence()
+            self.simulation_commands = SimulationCommands(self, self._record_event)
+            self.rule_checker = RuleChecker(
+                self.config.robot_teams, event_callback=self._record_event, teleport_commands=self.simulation_commands
+            )
+            if self.config.ui_enabled:
+                try:
+                    self.dashboard = Dashboard(self.config.ui_host, self.config.ui_port)
+                    self.get_logger().info(f"Read-only dashboard: http://{self.config.ui_host}:{self.config.ui_port}")
+                except OSError as error:
+                    self.get_logger().error(f"Dashboard could not start; referee continues without UI: {error}")
+            self._record_event("AutoRef gestartet: INITIAL")
+            self._refresh_dashboard()
+            self.create_timer(0.25, self._refresh_dashboard, clock=self._network_clock)
+            self._unmapped_robot_indices: set[int] = set()
+            self.create_subscription(
+                SimulationState,
+                "/simulation/step",
+                self._on_simulation_step,
+                QoSProfile(
+                    history=HistoryPolicy.KEEP_ALL,
+                    reliability=ReliabilityPolicy.RELIABLE,
+                    durability=DurabilityPolicy.VOLATILE,
+                ),
+            )
             self._advance_startup()
             self.create_timer(0.05, self._advance_startup, clock=self._network_clock)
             self.create_timer(1.0 / self.config.send_rate, self._send, clock=self._network_clock)
@@ -46,11 +77,30 @@ class AutoReferee(Node):
                 f"league {self.config.league_size}, lineup {self.config.lineup_mode}, "
                 f"maximum players per team {self.config.players_per_team}. "
                 "The opening sequence advances automatically to PLAYING. "
-                "Simulation observation and robot placement are not implemented yet."
+                "Robot and ball positions and contacts are observed; robot placement is not implemented yet."
             )
         except Exception:
             self.destroy_node()
             raise
+
+    def _on_simulation_step(self, message: SimulationState) -> None:
+        """Evaluate rules in every phase whenever the simulator completes a step."""
+        if self.adapter is None:
+            return
+        previous = self.adapter.state
+        updated = self.rule_checker.check_rules(previous, decode_observation(message))
+        unmapped = self.rule_checker.unmapped_robot_indices
+        if unmapped != self._unmapped_robot_indices:
+            if unmapped:
+                self.get_logger().warning(
+                    f"No team mapping for robot indices {sorted(unmapped)}; their ball-contact callbacks are skipped."
+                )
+            self._unmapped_robot_indices = set(unmapped)
+        if updated != previous:
+            self.adapter.set_state(updated)
+            if updated.state != previous.state or updated.stopped != previous.stopped:
+                self._record_event(f"Regelentscheidung: {updated.state}, stopped={updated.stopped}")
+            self._send()
 
     def _advance_startup(self) -> None:
         if self.adapter is None or self._startup.finished:
@@ -66,8 +116,22 @@ class AutoReferee(Node):
         if updated != previous:
             self.adapter.set_state(updated)
             if updated.state != previous.state:
-                self.get_logger().info(f"Opening sequence: {previous.state} -> {updated.state}")
+                self._record_event(f"Startablauf: {previous.state} → {updated.state}")
                 self._send()
+
+    def _record_event(self, message: str) -> None:
+        self.get_logger().info(message)
+        if self.dashboard is not None:
+            self.dashboard.record(message, self.rule_checker.simulation_time_ns)
+
+    def _refresh_dashboard(self) -> None:
+        if self.dashboard is not None and self.adapter is not None:
+            self.dashboard.update(
+                self.adapter.state,
+                self.rule_checker.simulation_time_ns,
+                self.rule_checker.last_touch_team_id,
+                self._connected,
+            )
 
     def _send(self) -> None:
         if self.adapter is None:
@@ -99,14 +163,18 @@ class AutoReferee(Node):
             return
         if connected != self._connected:
             if connected:
-                self.get_logger().info("Receiving GameController robot status replies.")
+                self._record_event("Roboterantworten werden empfangen.")
             elif last_reply is None:
-                self.get_logger().info("No robot connected yet; continuing without a minimum player count.")
+                self._record_event("Noch kein Roboter verbunden; AutoRef läuft weiter.")
             else:
                 self.get_logger().warning("Robot replies timed out; continuing to send the match state.")
+                self._record_event("Roboterverbindung unterbrochen; AutoRef läuft weiter.")
             self._connected = connected
 
     def destroy_node(self):
+        if self.dashboard is not None:
+            self.dashboard.close()
+            self.dashboard = None
         if self.adapter is not None:
             self.adapter.close()
             self.adapter = None
