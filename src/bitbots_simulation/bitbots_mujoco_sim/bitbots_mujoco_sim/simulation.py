@@ -1,6 +1,7 @@
 import time
 from collections.abc import Callable
 from pathlib import Path
+from threading import Lock
 
 import mujoco
 import numpy as np
@@ -268,6 +269,8 @@ class Simulation(Node):
         self._drag_targets: dict[tuple[int, int], np.ndarray] = {}
         # Full free-joint poses for robots rotated in place with Shift + drag.
         self._rotation_targets: dict[tuple[int, int], np.ndarray] = {}
+        self._drag_versions: dict[tuple[int, int], int] = {}
+        self._drag_lock = Lock()
         # Pin dragged bodies to their target every step so they follow the cursor
         # instead of racing with mj_step (mirrors the reset/move_ball early events).
         self.early_events.append({"frequency": 1, "handler": self._apply_drag_targets})
@@ -449,24 +452,29 @@ class Simulation(Node):
 
         @handle.on_drag
         async def _(event) -> None:
-            if event.phase == "start":
-                key = resolve_key(event)
-                if key is None:
-                    return
-                state["key"] = key
-                # start_position and end_position share the same (camera-tracking)
-                # frame, so their x-y difference is a pure ground-plane displacement.
-                state["grab_xy"] = np.array(event.start_position[:2], dtype=float)
-                state["obj_xy"] = self.data.qpos[key[0] : key[0] + 2].copy()
-            elif event.phase == "update":
-                if "key" not in state:
-                    return
-                delta_xy = np.array(event.end_position[:2], dtype=float) - state["grab_xy"]
-                self._drag_targets[state["key"]] = state["obj_xy"] + delta_xy
-            elif event.phase == "end":
-                if "key" in state:
-                    self._drag_targets.pop(state["key"], None)
-                state.clear()
+            with self._drag_lock:
+                if event.phase == "start":
+                    key = resolve_key(event)
+                    if key is None:
+                        return
+                    state["key"] = key
+                    state["version"] = self._drag_versions.get(key, 0)
+                    # start_position and end_position share the same (camera-tracking)
+                    # frame, so their x-y difference is a pure ground-plane displacement.
+                    state["grab_xy"] = np.array(event.start_position[:2], dtype=float)
+                    state["obj_xy"] = self.data.qpos[key[0] : key[0] + 2].copy()
+                elif event.phase == "update":
+                    if "key" not in state:
+                        return
+                    if state["version"] != self._drag_versions.get(state["key"], 0):
+                        state.clear()
+                        return
+                    delta_xy = np.array(event.end_position[:2], dtype=float) - state["grab_xy"]
+                    self._drag_targets[state["key"]] = state["obj_xy"] + delta_xy
+                elif event.phase == "end":
+                    if "key" in state:
+                        self._drag_targets.pop(state["key"], None)
+                    state.clear()
 
         if not rotation_keys:
             return
@@ -475,35 +483,54 @@ class Simulation(Node):
 
         @handle.on_drag("left", modifier="shift")
         async def _(event) -> None:
-            if event.phase == "start":
-                key = resolve_key(event)
-                if key not in rotation_keys:
-                    return
-                rotation_state["key"] = key
-                rotation_state["grab_xy"] = np.array(event.start_position[:2], dtype=float)
-                pose = self.data.qpos[key[0] : key[0] + 7].copy()
-                rotation_state["pose"] = pose
-                # MuJoCo free-joint quaternions use (w, x, y, z); forward is +x.
-                _, _, rotation_state["yaw"] = quat2euler(pose[3:7])
-                self._rotation_targets[key] = pose.copy()
-            elif event.phase == "update":
-                if "key" not in rotation_state:
-                    return
-                delta_xy = np.array(event.end_position[:2], dtype=float) - rotation_state["grab_xy"]
-                # A zero-length drag has no heading: keep the last orientation.
-                if np.linalg.norm(delta_xy) < 1e-6:
-                    return
-                yaw = np.arctan2(delta_xy[1], delta_xy[0])
-                delta_yaw = yaw - rotation_state["yaw"]
-                delta_quat = euler2quat(0, 0, delta_yaw)
-                pose = rotation_state["pose"].copy()
-                # Left-multiply by a world-z rotation, preserving roll and pitch.
-                pose[3:7] = qmult(delta_quat, pose[3:7])
-                self._rotation_targets[rotation_state["key"]] = pose
-            elif event.phase == "end":
-                if "key" in rotation_state:
-                    self._rotation_targets.pop(rotation_state["key"], None)
-                rotation_state.clear()
+            with self._drag_lock:
+                if event.phase == "start":
+                    key = resolve_key(event)
+                    if key not in rotation_keys:
+                        return
+                    rotation_state["key"] = key
+                    rotation_state["version"] = self._drag_versions.get(key, 0)
+                    rotation_state["grab_xy"] = np.array(event.start_position[:2], dtype=float)
+                    pose = self.data.qpos[key[0] : key[0] + 7].copy()
+                    rotation_state["pose"] = pose
+                    # MuJoCo free-joint quaternions use (w, x, y, z); forward is +x.
+                    _, _, rotation_state["yaw"] = quat2euler(pose[3:7])
+                    self._rotation_targets[key] = pose.copy()
+                elif event.phase == "update":
+                    if "key" not in rotation_state:
+                        return
+                    if rotation_state["version"] != self._drag_versions.get(rotation_state["key"], 0):
+                        rotation_state.clear()
+                        return
+                    delta_xy = np.array(event.end_position[:2], dtype=float) - rotation_state["grab_xy"]
+                    # A zero-length drag has no heading: keep the last orientation.
+                    if np.linalg.norm(delta_xy) < 1e-6:
+                        return
+                    yaw = np.arctan2(delta_xy[1], delta_xy[0])
+                    delta_yaw = yaw - rotation_state["yaw"]
+                    delta_quat = euler2quat(0, 0, delta_yaw)
+                    pose = rotation_state["pose"].copy()
+                    # Left-multiply by a world-z rotation, preserving roll and pitch.
+                    pose[3:7] = qmult(delta_quat, pose[3:7])
+                    self._rotation_targets[rotation_state["key"]] = pose
+                elif event.phase == "end":
+                    if "key" in rotation_state:
+                        self._rotation_targets.pop(rotation_state["key"], None)
+                    rotation_state.clear()
+
+    def _release_teleported_drag_targets(self) -> None:
+        """Let referee teleports end active drags, including subsequent stale mouse updates."""
+        if not hasattr(self, "_drag_versions"):
+            return
+        with self._drag_lock:
+            joints = [self.teleports.robot_joints[index] for index in self._teleported_robots]
+            if self._ball_teleported:
+                joints.append(self.ball_joint_id)
+            for joint in joints:
+                key = (int(self.model.jnt_qposadr[joint]), int(self.model.jnt_dofadr[joint]))
+                self._drag_versions[key] = self._drag_versions.get(key, 0) + 1
+                self._drag_targets.pop(key, None)
+                self._rotation_targets.pop(key, None)
 
     def _apply_drag_targets(self) -> None:
         """Pin dragged joints to their x-y targets or their rotation poses."""
@@ -583,6 +610,7 @@ class Simulation(Node):
             if self.step_number % event_config["frequency"] == 0:
                 event_config["handler"]()
         self._teleported_robots, self._ball_teleported = self.teleports.apply_pending(self.data, self.step_number)
+        self._release_teleported_drag_targets()
         mujoco.mj_step(self.model, self.data)
         self.publish_referee_step()
         for event_config in self.events:

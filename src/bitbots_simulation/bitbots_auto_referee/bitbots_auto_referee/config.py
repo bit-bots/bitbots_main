@@ -50,7 +50,7 @@ PARAMETERS = {
     "goal_area_length": ParameterSpec(1.0, "Goal area depth in metres."),
     "goal_area_width": ParameterSpec(3.0, "Goal area width in metres."),
     "ball_radius": ParameterSpec(0.07, "Simulated ball radius in metres."),
-    "home_defends_negative_x": ParameterSpec(True, "Home defends negative X in the first half; sides swap at halftime."),
+    "home_defends_negative_x": ParameterSpec(False, "Home defends negative X in the first half; sides swap at halftime."),
     "ui_enabled": ParameterSpec(True, "Launch the native read-only AutoRef window."),
     "use_sim_time": ParameterSpec(True, "Use the simulator's clock for the opening sequence and referee decisions."),
 }

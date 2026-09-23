@@ -209,7 +209,10 @@ class RuleChecker:
         self.last_touch_team_id = None
         self._touching_ball = frozenset()
         self._last_check_ball_outside = self.ballOutside()
-        return self._advance_restart(game_state)
+        updated = self._advance_restart(game_state)
+        self._clock_was_running = updated.state == "STATE_PLAYING" and not updated.stopped
+        self._event(f"Ball platziert: {updated.state}, stopped={updated.stopped}")
+        return updated
 
     def _advance_restart(self, game_state: MatchState) -> MatchState:
         assert self.simulation_time_ns is not None and self._restart_at is not None

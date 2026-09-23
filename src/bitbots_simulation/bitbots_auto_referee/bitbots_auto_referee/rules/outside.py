@@ -28,7 +28,7 @@ class FieldGeometry:
     goal_area_length: float = 1.0
     goal_area_width: float = 3.0
     ball_radius: float = 0.07
-    home_defends_negative_x: bool = True
+    home_defends_negative_x: bool = False
 
     @classmethod
     def from_config(cls, config: RefereeConfig) -> "FieldGeometry":

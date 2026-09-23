@@ -331,5 +331,14 @@ Geometry is explicitly configurable through launch arguments `field_length`,
 line centers; goal dimensions refer to the clear opening. Defaults match the
 current MuJoCo kid field and ball. These dimensions must match the loaded simulator
 scene; `leagueSize` does not resize that scene or choose a different geometry.
-`home_defends_negative_x` sets the home goal side in the first half; the side
-reverses when `first_half` changes. Robot placement remains unchanged.
+`home_defends_negative_x` sets the home goal side in the first half. By default,
+Home defends positive X and Away negative X; the sides reverse when `first_half`
+changes. Robot placement remains unchanged.
+
+The simulator uses the regular ROS executor so the asynchronous teleport service
+can await completion by the physics thread without interrupting ROS processing.
+Referee teleports release any active Viser drag for that object. Successful ball
+placement is logged with the resumed state: set plays resume PLAYING immediately,
+while goals enter their READY/SET preparation. Restart both simulator and referee
+after rebuilding these changes. A manually paused viewer must be resumed in the
+viewer before queued teleports can be applied.
