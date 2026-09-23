@@ -20,7 +20,7 @@ Fractional seconds accumulate across updates and are preserved across stops;
 preparation and paused intervals are not charged. Clock resets or an external
 remaining-time correction discard an old fractional remainder. The clock stops
 at zero and records expiry, without automatically changing half or game phase.
-Event-based penalties and automatic placement rules are not implemented yet.
+Ball exits trigger goals or set plays and automatic ball placement; player penalties are not implemented yet.
 Rules can explicitly request robot and ball teleports through the simulator command adapter.
 After each completed physics step, the simulator publishes `/simulation/step`.
 The AutoRef calls `rules/check_rules.py:RuleChecker.check_rules()` for each received
@@ -299,3 +299,37 @@ pixi run -e default python -m unittest discover \
 
 Their presence does not imply they have been executed; see the accompanying
 change report for validation performed.
+
+## Ball exits and restarts
+
+The referee detects complete ball exits over the outer edge of the field markings
+while PLAYING and not stopped. It interpolates the first crossing between consecutive
+observations, including height for a goal, and freezes the decision and last-touch
+team at that instant. The decision delay and set-play duration are defined in
+`rules/outside.py` and use simulation time. A ball already outside on the first
+observation, or moved outside by teleport, does not create a fictitious crossing.
+
+Goals increment the scoring team's score, give kickoff to the conceding team,
+and place the ball at the center before repeating READY, SET and PLAYING using
+the opening sequence's phase durations. Throw-ins go to the team opposite the
+last touch, corners to the attacking team after a defending touch, and goal kicks
+to the defending team after an attacking touch. Throw-ins use the crossing's
+nearest touchline point; corners and goal kicks use the corresponding field or
+goal-area corner. Unknown last-touch teams are reported without inventing a restart.
+
+The match is stopped while waiting for ball placement acknowledgement and its
+corresponding simulation observation. A placement failure leaves it stopped and
+records an event. After successful placement, set plays remain PLAYING with
+`stopped=false`, the awarded `kicking_team`, and a simulation-driven `secondary_time`.
+On expiry, the set play clears. Early completion on a kick is not implemented yet.
+Further boundary crossings are still detected during a set play. Goals and set
+plays are recorded in the native dashboard's decision history.
+
+Geometry is explicitly configurable through launch arguments `field_length`,
+`field_width`, `line_width`, `goal_width`, `goal_height`, `goal_area_length`,
+`goal_area_width`, and `ball_radius`, all in metres. Length and width refer to
+line centers; goal dimensions refer to the clear opening. Defaults match the
+current MuJoCo kid field and ball. These dimensions must match the loaded simulator
+scene; `leagueSize` does not resize that scene or choose a different geometry.
+`home_defends_negative_x` sets the home goal side in the first half; the side
+reverses when `first_half` changes. Robot placement remains unchanged.

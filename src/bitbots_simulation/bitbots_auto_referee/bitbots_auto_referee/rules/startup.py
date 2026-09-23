@@ -7,7 +7,7 @@ from bitbots_auto_referee.core.state import MatchState
 NANOSECONDS_PER_SECOND = 1_000_000_000
 STARTUP_PHASES = (
     ("STATE_INITIAL", 5),
-    ("STATE_READY", 15),
+    ("STATE_READY", 25),
     ("STATE_SET", 5),
 )
 

@@ -42,6 +42,15 @@ PARAMETERS = {
     "return_port": ParameterSpec(3939, "Must match the receiver's answer_port."),
     "send_rate": ParameterSpec(2.0, "Packet frequency in wall-clock hertz, including while simulation is paused."),
     "response_timeout": ParameterSpec(5.0, "Wall-clock seconds without a reply before reporting a lost connection."),
+    "field_length": ParameterSpec(9.0, "Distance between goal-line centers in metres."),
+    "field_width": ParameterSpec(6.0, "Distance between touchline centers in metres."),
+    "line_width": ParameterSpec(0.05, "Field marking width in metres."),
+    "goal_width": ParameterSpec(1.75, "Clear goal opening width in metres."),
+    "goal_height": ParameterSpec(1.2, "Clear goal opening height in metres."),
+    "goal_area_length": ParameterSpec(1.0, "Goal area depth in metres."),
+    "goal_area_width": ParameterSpec(3.0, "Goal area width in metres."),
+    "ball_radius": ParameterSpec(0.07, "Simulated ball radius in metres."),
+    "home_defends_negative_x": ParameterSpec(True, "Home defends negative X in the first half; sides swap at halftime."),
     "ui_enabled": ParameterSpec(True, "Launch the native read-only AutoRef window."),
     "use_sim_time": ParameterSpec(True, "Use the simulator's clock for the opening sequence and referee decisions."),
 }
@@ -65,6 +74,15 @@ class RefereeConfig:
     send_rate: float
     response_timeout: float
     ui_enabled: bool
+    field_length: float
+    field_width: float
+    line_width: float
+    goal_width: float
+    goal_height: float
+    goal_area_length: float
+    goal_area_width: float
+    ball_radius: float
+    home_defends_negative_x: bool
 
     @property
     def robot_teams(self) -> dict[int, int]:
@@ -127,6 +145,19 @@ class RefereeConfig:
                 raise ValueError(f"{name} must be finite and positive")
         if values["send_rate"] > 100:
             raise ValueError("send_rate is too high for a GameController heartbeat")
+
+        for name in ("field_length", "field_width", "line_width", "goal_width", "goal_height",
+                     "goal_area_length", "goal_area_width", "ball_radius"):
+            if not math.isfinite(values[name]) or values[name] <= 0:
+                raise ValueError(f"{name} must be finite and positive")
+        if not values["goal_width"] <= values["goal_area_width"] <= values["field_width"]:
+            raise ValueError("Goal and goal area widths must fit inside the field")
+        if values["goal_area_length"] >= values["field_length"] / 2:
+            raise ValueError("Goal area must fit inside its half")
+        if 2 * values["ball_radius"] >= min(values["goal_width"], values["goal_height"]):
+            raise ValueError("Ball must fit through the goal opening")
+        if values["line_width"] >= min(values["field_length"], values["field_width"]):
+            raise ValueError("Line width must be smaller than the field dimensions")
 
         fields = {name: value for name, value in values.items() if name not in ("leagueSize", "use_sim_time")}
         config = cls(league_size=values["leagueSize"], **fields)

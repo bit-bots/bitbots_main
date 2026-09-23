@@ -20,11 +20,11 @@ class StartupTest(unittest.TestCase):
         cases = (
             (0, "STATE_INITIAL", True, 0),
             (4_999_999_999, "STATE_INITIAL", True, 0),
-            (5_000_000_000, "STATE_READY", False, 15),
-            (19_999_999_999, "STATE_READY", False, 1),
-            (20_000_000_000, "STATE_SET", False, 5),
-            (24_999_999_999, "STATE_SET", False, 1),
-            (25_000_000_000, "STATE_PLAYING", False, 0),
+            (5_000_000_000, "STATE_READY", False, 25),
+            (29_999_999_999, "STATE_READY", False, 1),
+            (30_000_000_000, "STATE_SET", False, 5),
+            (34_999_999_999, "STATE_SET", False, 1),
+            (35_000_000_000, "STATE_PLAYING", False, 0),
         )
         for elapsed, phase, stopped, remaining in cases:
             with self.subTest(elapsed=elapsed):
@@ -40,7 +40,7 @@ class StartupTest(unittest.TestCase):
         self.assertEqual(self.sequence.advance(ready, self.origin + 5_000_000_000), ready)
 
     def test_delayed_callback_uses_elapsed_time(self):
-        state = self.sequence.advance(self.state, self.origin + 22_000_000_000)
+        state = self.sequence.advance(self.state, self.origin + 32_000_000_000)
         self.assertEqual(state.state, "STATE_SET")
         self.assertEqual(state.secondary_time, 3)
 
@@ -52,11 +52,11 @@ class StartupTest(unittest.TestCase):
 
     def test_empty_teams_do_not_block_start(self):
         empty = replace(self.state, teams=tuple(replace(team, players=()) for team in self.state.teams))
-        playing = self.sequence.advance(empty, self.origin + 25_000_000_000)
+        playing = self.sequence.advance(empty, self.origin + 35_000_000_000)
         self.assertEqual(playing.state, "STATE_PLAYING")
         self.assertEqual(playing.teams, empty.teams)
 
     def test_finished_sequence_does_not_override_later_rules(self):
-        playing = self.sequence.advance(self.state, self.origin + 25_000_000_000)
+        playing = self.sequence.advance(self.state, self.origin + 35_000_000_000)
         finished = replace(playing, state="STATE_FINISHED", stopped=True)
-        self.assertIs(self.sequence.advance(finished, self.origin + 30_000_000_000), finished)
+        self.assertIs(self.sequence.advance(finished, self.origin + 40_000_000_000), finished)

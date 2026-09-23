@@ -7,6 +7,8 @@ from dataclasses import replace
 from bitbots_auto_referee.core.observations import Position, SimulationObservation
 from bitbots_auto_referee.core.state import MatchState
 from bitbots_auto_referee.core.teleport import TeleportCommands, TeleportResult
+from bitbots_auto_referee.rules.outside import OUTSIDE_DELAY_NS, SET_PLAY_SECONDS, FieldGeometry, OutsideDecision
+from bitbots_auto_referee.rules.startup import NANOSECONDS_PER_SECOND, STARTUP_PHASES
 
 
 class RuleChecker:
@@ -17,6 +19,7 @@ class RuleChecker:
         robot_teams: dict[int, int],
         event_callback: Callable[[str], None] | None = None,
         teleport_commands: TeleportCommands | None = None,
+        field: FieldGeometry | None = None,
     ):
         self._teleport_commands = teleport_commands
         self._event_callback = event_callback
@@ -31,7 +34,14 @@ class RuleChecker:
         self._clock_was_running = False
         self._fractional_time_ns = 0
         self._expected_seconds: int | None = None
-        self._last_check_ball_outside: bool = False 
+        self.field = field or FieldGeometry()
+        self._last_check_ball_outside = False
+        self._previous_ball_position: Position | None = None
+        self._pending_outside: OutsideDecision | None = None
+        self._placement: Future[TeleportResult] | None = None
+        self._restart_at: int | None = None
+        self._restart_is_goal = False
+        self._placement_failed = False
 
     def _update_clock(self, game_state: MatchState, observation: SimulationObservation) -> MatchState:
         """Accumulate only active simulation intervals, retaining fractions across stops."""
@@ -63,6 +73,8 @@ class RuleChecker:
         ):
             self._touching_ball = frozenset()
             self.last_touch_team_id = None
+            self._reset_outside()
+        self._previous_ball_position = self.ball_position
         self.robot_positions = dict(observation.robot_positions)
         self.ball_position = observation.ball_position
         self.simulation_time_ns = observation.time_ns
@@ -85,25 +97,141 @@ class RuleChecker:
             if team_id is not None:
                 self.on_robot_ball_contact(team_id)
 
-        """Checking game rules"""
-        if(not self._last_check_ball_outside and self.ballOutside()):
-            game_state = self.handleBalloutside(game_state)
-            self._last_check_ball_outside = True
+        contact_teams = {self.robot_teams.get(index) for index in new_contacts}
+        if None in contact_teams or len(contact_teams) > 1:
+            self.last_touch_team_id = None
+        if observation.ball_teleported:
+            if self._placement is None and not self._placement_failed:
+                self._pending_outside = None
+            self._previous_ball_position = None
+            self._last_check_ball_outside = self.ballOutside()
+        return self._check_outside(game_state)
 
+    def _event(self, message: str) -> None:
+        if self._event_callback is not None:
+            self._event_callback(message)
+
+    def _reset_outside(self) -> None:
+        self._pending_outside = None
+        self._placement = None
+        self._restart_at = None
+        self._placement_failed = False
+        self._previous_ball_position = None
+        self.ball_position = None
+        self._last_check_ball_outside = False
+
+    def ballOutside(self) -> bool:  # noqa: N802 - retain the rule hook name
+        """The ball is out only after its full sphere has cleared the outer marking edge."""
+        return self.ball_position is not None and self.field.outside(self.ball_position)
+
+    def _check_outside(self, game_state: MatchState) -> MatchState:
+        assert self.simulation_time_ns is not None
+        if self._pending_outside is not None:
+            return self.handleBalloutside(game_state)
+        if self._restart_at is not None:
+            game_state = self._advance_restart(game_state)
+            if game_state.state != "STATE_PLAYING":
+                self._last_check_ball_outside = self.ballOutside()
+                return game_state
+        outside = self.ballOutside()
+        if (
+            outside
+            and not self._last_check_ball_outside
+            and self._previous_ball_position is not None
+            and game_state.state == "STATE_PLAYING"
+            and not game_state.stopped
+        ):
+            self._pending_outside = self.field.classify(
+                self._previous_ball_position,
+                self.ball_position,
+                game_state,
+                self.last_touch_team_id,
+                self.simulation_time_ns,
+            )
+            if self._pending_outside is None:
+                self._event("Ball im Aus: keine eindeutige Entscheidung ohne Grenzübertritt und Teamberührung.")
+            else:
+                self._restart_at = None
+                decision = self._pending_outside
+                self._event(f"Erkannt: {decision.kind}, Team {decision.team_id}; verzögerte Spielfortsetzung.")
+        self._last_check_ball_outside = outside
         return game_state
 
-    def ballOutside(self) -> bool:
-        #prüft ob ball außerhalb der feld linien gemäß config
-        return False
+    def handleBalloutside(self, game_state: MatchState) -> MatchState:  # noqa: N802
+        """Apply the captured decision once, then wait for acknowledged ball placement."""
+        decision = self._pending_outside
+        assert self.simulation_time_ns is not None
+        if decision is None or self.simulation_time_ns - decision.detected_at < OUTSIDE_DELAY_NS:
+            return game_state
+        if self._placement is None and not self._placement_failed:
+            if game_state.state != "STATE_PLAYING" or game_state.stopped:
+                self._pending_outside = None
+                return game_state
+            self._restart_is_goal = decision.kind == "GOAL"
+            if self._restart_is_goal:
+                teams = tuple(
+                    replace(team, score=min(255, team.score + 1)) if team.team_number == decision.team_id else team
+                    for team in game_state.teams
+                )
+                conceding = next(team.team_number for team in teams if team.team_number != decision.team_id)
+                game_state = replace(
+                    game_state, teams=teams, kicking_team=conceding, stopped=True,
+                    set_play="SET_PLAY_NONE", secondary_time=0,
+                )
+            else:
+                game_state = replace(
+                    game_state, set_play=decision.kind, kicking_team=decision.team_id,
+                    secondary_time=SET_PLAY_SECONDS, stopped=True,
+                )
+            self._clock_was_running = False
+            self._event(f"Entscheidung: {decision.kind}, Team {decision.team_id}")
+            try:
+                self._placement = self.teleport_ball(*decision.position, 0.0)
+            except Exception as error:
+                self._placement_failed = True
+                self._event(f"Ballplatzierung fehlgeschlagen; Spiel bleibt angehalten: {error}")
+        if self._placement_failed or self._placement is None or not self._placement.done():
+            return game_state
+        try:
+            result = self._placement.result()
+            if not result.success:
+                raise RuntimeError(result.message)
+        except Exception as error:
+            self._placement_failed = True
+            self._event(f"Ballplatzierung fehlgeschlagen; Spiel bleibt angehalten: {error}")
+            return game_state
+        # Wait until observations have caught up with the service acknowledgement.
+        if self.step_number < result.applied_step:
+            return game_state
+        self._placement = None
+        self._pending_outside = None
+        self._restart_at = self.simulation_time_ns
+        self.last_touch_team_id = None
+        self._touching_ball = frozenset()
+        self._last_check_ball_outside = self.ballOutside()
+        return self._advance_restart(game_state)
 
-    def handleBalloutside(self, game_state: MatchState) -> MatchState:
-        #prüft wo der ball ins ausgegangen ist (Tor, Torlinie, Seitenaus)
-        # gibt je anch letzter berührung Tor, Einwurf, Ecke oder goal_kick (abstoß), lässt aber zunächst noch 2 sekunden das Spiel laufen
-        # bei Tor wird im gamesate das Tor bei den teams ergenzt und die sequenz von ready set playing startet ernert, dabei geht der anstoß an die Team ID die das tor kassiert hat
-        # bei einwurf ecke oder goal kick wechselt der set_play zur entsprechenden ID (siehe gamecontroler), die secondary_time wird auf 45 sekunden gestellt
-        # replatziert den Ball entweder auf dem anstoßpunkt (Tor), an der Ecke, an der fünf Meter raum ecke (goal kick), am nähesten Punkt der seitenauslinie (einwurf)
-        return game_state
-
+    def _advance_restart(self, game_state: MatchState) -> MatchState:
+        assert self.simulation_time_ns is not None and self._restart_at is not None
+        elapsed = self.simulation_time_ns - self._restart_at
+        if self._restart_is_goal:
+            boundary = 0
+            for phase, duration in STARTUP_PHASES:
+                if phase == "STATE_INITIAL":
+                    continue
+                boundary += duration * NANOSECONDS_PER_SECOND
+                if elapsed < boundary:
+                    remaining = (boundary - elapsed + NANOSECONDS_PER_SECOND - 1) // NANOSECONDS_PER_SECOND
+                    return replace(game_state, state=phase, stopped=False, secondary_time=remaining)
+        else:
+            remaining = max(0, SET_PLAY_SECONDS - elapsed // NANOSECONDS_PER_SECOND)
+            if remaining:
+                return replace(game_state, secondary_time=remaining, stopped=False)
+        self._restart_at = None
+        if self._restart_is_goal:
+            self._clock_was_running = False
+        self._event("Spielfortsetzung: PLAYING")
+        return replace(game_state, state="STATE_PLAYING", stopped=False, set_play="SET_PLAY_NONE", secondary_time=0)
 
     def teleport_robot(self, robot_id: int, x: float, y: float, yaw: float) -> Future[TeleportResult]:
         """Request an absolute planar teleport by simulator index; never wait inside check_rules."""

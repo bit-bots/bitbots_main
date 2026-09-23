@@ -16,6 +16,7 @@ from bitbots_auto_referee.adapters.simulation.observations import decode_observa
 from bitbots_auto_referee.config import PARAMETERS, RefereeConfig
 from bitbots_auto_referee.core.state import MatchState
 from bitbots_auto_referee.rules.check_rules import RuleChecker
+from bitbots_auto_referee.rules.outside import FieldGeometry
 from bitbots_auto_referee.rules.startup import StartupSequence
 from bitbots_auto_referee.ui.dashboard import Dashboard
 
@@ -44,7 +45,10 @@ class AutoReferee(Node):
             self._startup = StartupSequence()
             self.simulation_commands = SimulationCommands(self, self._record_event)
             self.rule_checker = RuleChecker(
-                self.config.robot_teams, event_callback=self._record_event, teleport_commands=self.simulation_commands
+                self.config.robot_teams,
+                event_callback=self._record_event,
+                teleport_commands=self.simulation_commands,
+                field=FieldGeometry.from_config(self.config),
             )
             self.dashboard = Dashboard(self)
             self._record_event("AutoRef gestartet: INITIAL")
