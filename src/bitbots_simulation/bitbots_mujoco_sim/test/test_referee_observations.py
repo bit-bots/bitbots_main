@@ -3,6 +3,8 @@
 import unittest
 from types import SimpleNamespace
 
+import mujoco
+
 from bitbots_msgs.msg import SimulationState
 from bitbots_mujoco_sim.referee import RefereeObservationBuilder
 
@@ -11,6 +13,10 @@ class RefereeObservationTest(unittest.TestCase):
     def setUp(self):
         self.model = SimpleNamespace(
             ngeom=4,
+            njnt=3,
+            jnt_type=[mujoco.mjtJoint.mjJNT_FREE] * 3,
+            jnt_dofadr=[0, 6, 12],
+            qpos0=[1, 2, 3, 0, 0, 0, 0, 4, 5, 6, 0, 0, 0, 0, 7, 8, 9],
             geom_bodyid=[2, 4, 5, 0],
             body_parentid=[0, 0, 1, 0, 3, 0],
             body_jntadr=[-1, 0, -1, 1, -1, 2],
@@ -18,6 +24,8 @@ class RefereeObservationTest(unittest.TestCase):
             jnt_bodyid=[1, 3, 5],
         )
         self.data = SimpleNamespace(qpos=[1, 2, 3, 0, 0, 0, 0, 4, 5, 6, 0, 0, 0, 0, 7, 8, 9], contact=[], ncon=0)
+        self.data.qvel = [0.0] * 18
+        self.data.xmat = [[1, 0, 0, 0, 1, 0, 0, 0, 1]] * 6
         self.builder = RefereeObservationBuilder(self.model, {0: 1, 1: 3}, 2)
         self.stamp = SimulationState().header.stamp
 
@@ -55,3 +63,34 @@ class RefereeObservationTest(unittest.TestCase):
         message = builder.build(self.data, self.stamp, 1)
         self.assertFalse(message.ball_present)
         self.assertEqual(message.robots, [])
+
+    def test_motion_is_copied_from_root_velocity_and_torso_orientation(self):
+        self.data.qvel[0] = 0.4
+        self.data.qvel[3] = 0.8
+        message = self.builder.build(self.data, self.stamp, 10)
+        robot = message.robots[0]
+        self.assertTrue(robot.motion_valid)
+        self.assertEqual(robot.linear_speed, 0.4)
+        self.assertEqual(robot.angular_speed, 0.8)
+        self.assertEqual(robot.upright, 1.0)
+        self.assertEqual(robot.relative_height, 1.0)
+
+    def test_head_and_body_joint_speeds_are_separate(self):
+        model = mujoco.MjModel.from_xml_string('''
+            <mujoco><worldbody>
+              <body name="robot" pos="0 0 1"><freejoint/><geom size="0.1"/>
+                <body><joint name="head_yaw"/><geom size="0.05"/></body>
+                <body><joint name="knee"/><geom size="0.05"/></body>
+              </body>
+            </worldbody></mujoco>
+        ''')
+        data = mujoco.MjData(model)
+        mujoco.mj_forward(model, data)
+        head = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, "head_yaw")
+        knee = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, "knee")
+        data.qvel[model.jnt_dofadr[head]] = 0.8
+        data.qvel[model.jnt_dofadr[knee]] = -0.4
+        builder = RefereeObservationBuilder(model, {0: 1}, -1)
+        robot = builder.build(data, self.stamp, 1).robots[0]
+        self.assertEqual(robot.head_joint_speed, 0.8)
+        self.assertEqual(robot.body_joint_speed, 0.4)

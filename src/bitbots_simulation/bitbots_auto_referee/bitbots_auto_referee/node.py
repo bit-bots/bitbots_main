@@ -49,6 +49,7 @@ class AutoReferee(Node):
                 event_callback=self._record_event,
                 teleport_commands=self.simulation_commands,
                 field=FieldGeometry.from_config(self.config),
+                robot_players=self.config.robot_players,
             )
             self.dashboard = Dashboard(self)
             self._record_event("AutoRef gestartet: INITIAL")

@@ -27,6 +27,7 @@ class FieldGeometry:
     goal_height: float = 1.2
     goal_area_length: float = 1.0
     goal_area_width: float = 3.0
+    penalty_area_length: float = 2.0
     ball_radius: float = 0.07
     home_defends_negative_x: bool = False
 

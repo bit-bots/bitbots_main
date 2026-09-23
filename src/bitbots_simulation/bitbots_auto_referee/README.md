@@ -20,12 +20,13 @@ Fractional seconds accumulate across updates and are preserved across stops;
 preparation and paused intervals are not charged. Clock resets or an external
 remaining-time correction discard an old fractional remainder. The clock stops
 at zero and records expiry, without automatically changing half or game phase.
-Ball exits trigger goals or set plays and automatic ball placement; player penalties are not implemented yet.
+Ball exits trigger goals or set plays and automatic ball placement. Motion in SET
+and STOP triggers player penalties with simulation-time expiry.
 Rules can explicitly request robot and ball teleports through the simulator command adapter.
 After each completed physics step, the simulator publishes `/simulation/step`.
 The AutoRef calls `rules/check_rules.py:RuleChecker.check_rules()` for each received
 update, in every game phase and independently of `use_sim_time`. It updates the
-playing clock and observes contacts; no penalties are issued yet. A changed
+playing clock, observes contacts, and checks motion penalties. A changed
 return value is validated, stored and immediately sent through the UDP adapter.
 The league and lineup mode determine the per-team player limit transmitted to the
 robot; they do not yet place or spawn robots in the simulator.
@@ -87,6 +88,8 @@ Team message budgets initially remain empty until a rule engine manages them.
 | `lineup_mode` | `foundation` or `advanced`; combined with league size determines the per-team player limit |
 | `home_team_id`, `away_team_id` | Distinct protocol team identities |
 | `robot_team_mapping` | JSON object mapping simulator robot indices to `home` or `away` |
+| `robot_player_mapping` | Optional simulator-index to protocol player-number overrides |
+| `penalty_area_length` | Penalty area depth used for motion-in-stop placement |
 | `home_color`, `away_color` | Distinct field-player jersey colors |
 | `home_goalkeeper_color`, `away_goalkeeper_color` | Independently selected goalkeeper colors |
 | `target_host`, `target_port` | IPv4 unicast receiver endpoint |
@@ -321,13 +324,14 @@ The match is stopped while waiting for ball placement acknowledgement and its
 corresponding simulation observation. A placement failure leaves it stopped and
 records an event. After successful placement, set plays remain PLAYING with
 `stopped=false`, the awarded `kicking_team`, and a simulation-driven `secondary_time`.
-On expiry, the set play clears. Early completion on a kick is not implemented yet.
+The set play clears on expiry or on a new ball contact by the awarded team after
+acknowledged placement. Opponent contacts and teleport contacts do not end it.
 Further boundary crossings are still detected during a set play. Goals and set
 plays are recorded in the native dashboard's decision history.
 
 Geometry is explicitly configurable through launch arguments `field_length`,
 `field_width`, `line_width`, `goal_width`, `goal_height`, `goal_area_length`,
-`goal_area_width`, and `ball_radius`, all in metres. Length and width refer to
+`goal_area_width`, `penalty_area_length`, and `ball_radius`, all in metres. Length and width refer to
 line centers; goal dimensions refer to the clear opening. Defaults match the
 current MuJoCo kid field and ball. These dimensions must match the loaded simulator
 scene; `leagueSize` does not resize that scene or choose a different geometry.
@@ -342,3 +346,38 @@ placement is logged with the resumed state: set plays resume PLAYING immediately
 while goals enter their READY/SET preparation. Restart both simulator and referee
 after rebuilding these changes. A manually paused viewer must be resumed in the
 viewer before queued teleports can be applied.
+
+## Motion penalties
+
+`rules/motion.py` defines the grace interval, sustained-motion filter, numerical
+motion thresholds and penalty durations. The referee evaluates each observed robot.
+SET allows head motion and getting up, but penalizes other sustained motion.
+STOP also checks the head and takes precedence over SET. Each mode transition,
+newly observed robot, penalty expiry and robot teleport grants a settling interval.
+Brief solver jitter does not immediately cause a penalty.
+
+Getting up is approximated from torso inclination and height relative to the
+model's initial pose. A tilted or low torso is exempt during SET, with a settling
+interval after it becomes upright. This is a ground-truth heuristic, not an
+animation classifier; crawling while low can also satisfy that exemption.
+The simulator reports root linear/angular speed and maximum head/body joint speed.
+Head hinges are identified by the model joint names containing `head`. Missing
+or nonfinite motion telemetry is not interpreted as a movement violation.
+
+Penalties apply to protocol players, not simulator indices. Within each team,
+ascending configured robot indices map to ascending player numbers by default.
+Use `robot_player_mapping` to override that mapping to match each receiver's
+`player_id`. Numbers must be unique within their team and fit the roster.
+Existing penalties are not overwritten. Only penalties issued by these motion
+rules are cleared by their deadlines; repeated motion does not extend them.
+Deadlines use simulation time even when the match clock is stopped. A simulation
+clock reset clears owned motion penalties and restarts observation grace periods.
+
+Motion in STOP teleports the robot to the nearest touchline at the front edge of
+its own penalty area, facing toward the field center. Team side and half determine
+the own-goal direction. Teleport failure is logged without clearing the penalty.
+Expiry releases the penalty without teleporting the robot back onto the field.
+
+`SimulationRobotState` now includes motion telemetry. Rebuild `bitbots_msgs` and
+all consumers with the documented `--packages-up-to` build command, and restart
+simulator and referee together; old and new generated messages are incompatible.

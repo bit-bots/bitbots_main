@@ -31,6 +31,8 @@ PARAMETERS = {
     ),
     "home_team_id": ParameterSpec(1, "Home team number; must match the home receiver's team_id."),
     "away_team_id": ParameterSpec(2, "Away team number; must differ from home_team_id."),
+    "robot_player_mapping": ParameterSpec("{}", "Optional JSON robot-index to player-number overrides; otherwise ordered within each team."),
+    "penalty_area_length": ParameterSpec(2.0, "Penalty area depth in metres."),
     "robot_team_mapping": ParameterSpec('{"0":"home"}', "JSON object mapping simulator robot indices to home or away."),
     "home_color": ParameterSpec("blue", "Home field-player jersey color.", COLORS),
     "away_color": ParameterSpec("red", "Away field-player jersey color.", COLORS),
@@ -62,6 +64,8 @@ class RefereeConfig:
     lineup_mode: str
     home_team_id: int
     away_team_id: int
+    robot_player_mapping: str
+    penalty_area_length: float
     robot_team_mapping: str
     home_color: str
     away_color: str
@@ -106,6 +110,28 @@ class RefereeConfig:
         return result
 
     @property
+    def robot_players(self) -> dict[int, int]:
+        teams = self.robot_teams
+        result = {}
+        for team in (self.home_team_id, self.away_team_id):
+            indices = sorted(index for index, team_id in teams.items() if team_id == team)
+            result.update({index: number for number, index in enumerate(indices, 1)})
+        overrides = json.loads(self.robot_player_mapping)
+        if not isinstance(overrides, dict):
+            raise ValueError("robot_player_mapping must be a JSON object")
+        for index, number in overrides.items():
+            if not index.isascii() or not index.isdecimal() or str(int(index)) != index or int(index) not in teams:
+                raise ValueError("Player mapping requires a configured robot index")
+            if type(number) is not int or not 1 <= number <= self.players_per_team:
+                raise ValueError("Player number must fit the team roster")
+            result[int(index)] = number
+        for team in (self.home_team_id, self.away_team_id):
+            numbers = [number for index, number in result.items() if teams[index] == team]
+            if len(numbers) != len(set(numbers)):
+                raise ValueError("Player numbers must be unique within each team")
+        return result
+
+    @property
     def players_per_team(self) -> int:
         """Derive the per-team upper limit, independently of connected robots."""
         return PLAYERS_PER_TEAM[self.league_size][self.lineup_mode]
@@ -147,7 +173,7 @@ class RefereeConfig:
             raise ValueError("send_rate is too high for a GameController heartbeat")
 
         for name in ("field_length", "field_width", "line_width", "goal_width", "goal_height",
-                     "goal_area_length", "goal_area_width", "ball_radius"):
+                     "goal_area_length", "goal_area_width", "ball_radius", "penalty_area_length"):
             if not math.isfinite(values[name]) or values[name] <= 0:
                 raise ValueError(f"{name} must be finite and positive")
         if not values["goal_width"] <= values["goal_area_width"] <= values["field_width"]:
@@ -161,5 +187,7 @@ class RefereeConfig:
 
         fields = {name: value for name, value in values.items() if name not in ("leagueSize", "use_sim_time")}
         config = cls(league_size=values["leagueSize"], **fields)
-        _ = config.robot_teams
+        if not values["goal_area_length"] <= values["penalty_area_length"] < values["field_length"] / 2:
+            raise ValueError("Penalty area must contain the goal area and fit its half")
+        _ = config.robot_players
         return config

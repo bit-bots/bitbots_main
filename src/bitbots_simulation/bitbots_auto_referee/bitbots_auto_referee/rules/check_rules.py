@@ -7,6 +7,7 @@ from dataclasses import replace
 from bitbots_auto_referee.core.observations import Position, SimulationObservation
 from bitbots_auto_referee.core.state import MatchState
 from bitbots_auto_referee.core.teleport import TeleportCommands, TeleportResult
+from bitbots_auto_referee.rules.motion import MotionRules
 from bitbots_auto_referee.rules.outside import OUTSIDE_DELAY_NS, SET_PLAY_SECONDS, FieldGeometry, OutsideDecision
 from bitbots_auto_referee.rules.startup import NANOSECONDS_PER_SECOND, STARTUP_PHASES
 
@@ -20,6 +21,7 @@ class RuleChecker:
         event_callback: Callable[[str], None] | None = None,
         teleport_commands: TeleportCommands | None = None,
         field: FieldGeometry | None = None,
+        robot_players: dict[int, int] | None = None,
     ):
         self._teleport_commands = teleport_commands
         self._event_callback = event_callback
@@ -41,6 +43,12 @@ class RuleChecker:
         self._placement: Future[TeleportResult] | None = None
         self._restart_at: int | None = None
         self._restart_is_goal = False
+        if robot_players is None:
+            robot_players = {}
+            for team in set(self.robot_teams.values()):
+                indices = sorted(index for index, team_id in self.robot_teams.items() if team_id == team)
+                robot_players.update({index: number for number, index in enumerate(indices, 1)})
+        self.motion_rules = MotionRules(self.robot_teams, robot_players, self.field, self.teleport_robot, self._event)
         self._placement_failed = False
 
     def _update_clock(self, game_state: MatchState, observation: SimulationObservation) -> MatchState:
@@ -105,7 +113,23 @@ class RuleChecker:
                 self._pending_outside = None
             self._previous_ball_position = None
             self._last_check_ball_outside = self.ballOutside()
-        return self._check_outside(game_state)
+        # Only contacts observed after a previously acknowledged placement can end a restart.
+        restart_active = self._restart_at is not None and not self._restart_is_goal and self._pending_outside is None
+        game_state = self._check_outside(game_state)
+        if (
+            restart_active
+            and self._restart_at is not None
+            and self._pending_outside is None
+            and game_state.state == "STATE_PLAYING"
+            and not game_state.stopped
+            and game_state.secondary_time > 0
+            and game_state.set_play != "SET_PLAY_NONE"
+            and game_state.kicking_team in contact_teams
+        ):
+            self._restart_at = None
+            game_state = replace(game_state, set_play="SET_PLAY_NONE", secondary_time=0)
+            self._event(f"Standardsituation ausgeführt: Ballkontakt durch Team {game_state.kicking_team}")
+        return self.motion_rules.check(game_state, observation)
 
     def _event(self, message: str) -> None:
         if self._event_callback is not None:

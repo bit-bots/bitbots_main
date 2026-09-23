@@ -2,7 +2,7 @@
 
 from bitbots_msgs.msg import SimulationState
 
-from bitbots_auto_referee.core.observations import SimulationObservation
+from bitbots_auto_referee.core.observations import RobotMotion, SimulationObservation
 
 
 def decode_observation(message: SimulationState) -> SimulationObservation:
@@ -18,4 +18,10 @@ def decode_observation(message: SimulationState) -> SimulationObservation:
         touching_ball=frozenset(robot.robot_index for robot in message.robots if robot.touching_ball),
         teleported_robots=frozenset(message.teleported_robots),
         ball_teleported=message.ball_teleported,
+        robot_motion={
+            robot.robot_index: RobotMotion(
+                robot.linear_speed, robot.angular_speed, robot.body_joint_speed,
+                robot.head_joint_speed, robot.upright, robot.relative_height,
+            ) for robot in message.robots if robot.motion_valid
+        },
     )
