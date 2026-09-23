@@ -243,11 +243,7 @@ body_behavior:
     #####################
     # positioning prams #
     #####################
-
-    # Whether the formation assignment includes a supporter role.
-    # If false, the supporter's slot is filled by an extra defender instead.
-    formation_include_supporter: false
-
+    
     # Goalie
     # How far the goalie comes out of the goal (dist from goal centre)
     goalie_forward_dist: 0.55

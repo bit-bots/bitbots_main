@@ -34,35 +34,73 @@ def run_gui():
 
     colors = {"goalie": "#e6b800", "striker": "#d62728", "supporter": "#2ca02c"}
 
-    fig, ax = plt.subplots(figsize=(9, 9))
-    plt.subplots_adjust(left=0.08, right=0.97, top=0.98, bottom=0.50)
+    fig, ax = plt.subplots(figsize=(11, 13))
+    slider_axes = []
 
-    def _ax(b):
-        return plt.axes((0.18, b, 0.72, 0.015))
+    def _ax():
+        # Assign positions together below, preserving slider declaration order.
+        slider_ax = fig.add_axes((0.24, 0.05, 0.48, 0.015))
+        slider_axes.append(slider_ax)
+        return slider_ax
 
-    s_n = Slider(_ax(0.470), "players", 1, 8, valinit=state["n"], valstep=1)
-    s_sep = Slider(_ax(0.442), "min_sep", 0.3, 2.0, valinit=params.min_sep)
-    s_alpha = Slider(_ax(0.414), "def depth rel", 0.1, 0.8, valinit=params.relativ_def_depth)
-    s_dbias = Slider(_ax(0.386), "def depth bias", -2.0, 3.0, valinit=params.def_depth_bias)
-    s_dside = Slider(_ax(0.358), "def side", 0.0, 2.0, valinit=params.solo_def_side_gap)
-    s_gap = Slider(_ax(0.330), "def side gap", 0.5, 2.0, valinit=params.def_side_gap)
-    s_gapc = Slider(_ax(0.302), "def side gap @goal", 0.2, 2.0, valinit=params.def_side_gap_close)
-    s_f = Slider(_ax(0.274), "supp lead", 0.0, 1.0, valinit=params.supp_forward_offset)
-    s_side = Slider(_ax(0.246), "supp side", 0.0, 2.5, valinit=params.supp_side)
-    s_smax = Slider(_ax(0.218), "supp max x", 0.0, 4.2, valinit=params.relativ_supp_max_x)
-    s_pmarg = Slider(_ax(0.190), "post margin", 0.0, 1.3, valinit=params.post_margin)
-    s_back = Slider(_ax(0.162), "back dist", 0.0, 3.0, valinit=params.back_dist)
-    s_kclr = Slider(_ax(0.134), "kick clear", 0.0, 1.5, valinit=params.kick_clear)
-    s_gout = Slider(_ax(0.106), "goalie out", 0.2, 2.0, valinit=params.goalie_forward_dist)
-    check_sp = CheckButtons(plt.axes((0.18, 0.078, 0.20, 0.022)), ["set play"], [False])
-    check_supp = CheckButtons(plt.axes((0.42, 0.078, 0.20, 0.022)), ["supporter"], [params.include_supporter])
-    s_spcl = Slider(_ax(0.050), "set play clearance", 0.1, 2.0, valinit=params.opp_set_play_clearance)
+    s_players = Slider(_ax(), "players", 1, 8, valinit=state["n"], valstep=1)
+    # goalie
+    s_goalie_forward_dist = Slider(_ax(), "goalie forward dist", 0.0, 2.0, valinit=params.goalie_forward_dist)
+    # defender
+    s_relativ_def_depth = Slider(_ax(), "relativ def depth", 0.1, 0.8, valinit=params.relativ_def_depth)
+    s_def_depth_bias = Slider(_ax(), "def depth bias", -2.0, 3.0, valinit=params.def_depth_bias)
+    s_def_min_depth = Slider(_ax(), "def min depth ", 0.0, 2.0, valinit=params.def_min_depth)
+    s_def_max_depth = Slider(_ax(), "def max depth ", 2.0, 8.0, valinit=params.def_max_depth)
+    s_def_to_goalie_depth = Slider(_ax(), "def to goalie depth ", 0.0, 2.0, valinit=params.def_to_goalie_depth)
+    s_standoff = Slider(_ax(), "standoff", 0.0, 2.0, valinit=params.standoff)
+    s_def_side_gap = Slider(_ax(), "def side gap", 0.5, 2.0, valinit=params.def_side_gap)
+    s_def_side_gap_close = Slider(_ax(), "def side gap @goal", 0.2, 2.0, valinit=params.def_side_gap_close)
+    s_solo_def_side_gap = Slider(_ax(), "solo def side gap", 0.0, 2.0, valinit=params.solo_def_side_gap)
+    # supporter
+    check_supp = CheckButtons(fig.add_axes((0.83, 0.05, 0.14, 0.025)), ["supporter"], [params.include_supporter])
+    s_supp_forward_offset = Slider(_ax(), "supp forward offset", 0.0, 3.0, valinit=params.supp_forward_offset)
+    s_supp_side = Slider(_ax(), "supp side", 0.0, 2.5, valinit=params.supp_side)
+    s_relativ_supp_max_x = Slider(_ax(), "relativ supp max x", 0.0, 4.2, valinit=params.relativ_supp_max_x)
+    # striker
+    # kickoffset
+    s_kick_offset = Slider(_ax(), "kick offset", 0.0, 2.0, valinit=params.kick_offset)
+    s_post_margin = Slider(_ax(), "post margin", 0.0, 1.3, valinit=params.post_margin)
+    s_back_dist = Slider(_ax(), "back dist", 0.0, 3.0, valinit=params.back_dist)
+    # other
+    s_min_sep = Slider(_ax(), "min_sep", 0.3, 2.0, valinit=params.min_sep)
+
+    s_kick_clear = Slider(_ax(), "kick clear", 0.0, 1.5, valinit=params.kick_clear)
+    # kick range
+    s_kick_range = Slider(_ax(), "kick range", 0.0, 5.0, valinit=params.kick_range)
+    check_sp = CheckButtons(fig.add_axes((0.83, 0.09, 0.14, 0.025)), ["set play"], [False])
+    s_set_play_clearance = Slider(_ax(), "set play clearance", 0.1, 2.0, valinit=params.opp_set_play_clearance)
+
     # one checkbox per possible robot identity (0..max players - 1); checkboxes beyond the
     # current player count are simply ignored. CheckButtons (unlike TextBox) doesn't hook
     # resize_event, so it doesn't hit the matplotlib bug where TextBox crashes on any
     # window resize (ResizeEvent has no .inaxes, but TextBox._resize assumes it does).
     max_players = 8
-    ax_passive = plt.axes((0.915, 0.05, 0.07, 0.40))  # right of the sliders, below the plot
+    # Keep a fixed physical row height as more sliders are added. The plot has
+    # its own area above the controls; checkboxes have a separate right column.
+    row_height = 0.34  # inches
+    bottom_margin = 0.35
+    controls_height = len(slider_axes) * row_height
+    figure_height = bottom_margin + controls_height + 5.2
+    fig.set_size_inches(11, figure_height, forward=True)
+    fig.subplots_adjust(
+        left=0.08,
+        right=0.97,
+        top=1 - 0.55 / figure_height,
+        bottom=(bottom_margin + controls_height + 0.5) / figure_height,
+    )
+    for row, slider_ax in enumerate(slider_axes):
+        bottom = bottom_margin + (len(slider_axes) - 1 - row) * row_height
+        slider_ax.set_position((0.24, bottom / figure_height, 0.48, 0.17 / figure_height))
+
+    controls_top = bottom_margin + controls_height
+    check_supp.ax.set_position((0.83, (controls_top - 0.4) / figure_height, 0.14, 0.3 / figure_height))
+    check_sp.ax.set_position((0.83, (controls_top - 0.85) / figure_height, 0.14, 0.3 / figure_height))
+    ax_passive = fig.add_axes((0.83, (controls_top - 4.2) / figure_height, 0.14, 2.8 / figure_height))
     ax_passive.set_title("passive\nrobot", fontsize=9)
     check_passive = CheckButtons(ax_passive, [str(i) for i in range(max_players)], [False] * max_players)
 
@@ -86,20 +124,30 @@ def run_gui():
         ax.set_facecolor("#2e7d32")
 
         params.min_sep, params.relativ_def_depth, params.def_side_gap, params.relativ_supp_max_x = (
-            s_sep.val,
-            s_alpha.val,
-            s_gap.val,
-            s_smax.val,
+            s_min_sep.val,
+            s_relativ_def_depth.val,
+            s_def_side_gap.val,
+            s_relativ_supp_max_x.val,
         )
-        params.def_side_gap_close = s_gapc.val
-        params.def_depth_bias, params.supp_side, params.goalie_forward_dist = s_dbias.val, s_side.val, s_gout.val
-        params.relativ_supp_max_x, params.solo_def_side_gap = s_f.val, s_dside.val
-        params.post_margin, params.back_dist = s_pmarg.val, s_back.val
-        params.kick_clear = s_kclr.val
+        params.def_side_gap_close = s_def_side_gap_close.val
+        params.def_depth_bias, params.supp_side, params.goalie_forward_dist = (
+            s_def_depth_bias.val,
+            s_supp_side.val,
+            s_goalie_forward_dist.val,
+        )
+        params.relativ_supp_max_x, params.solo_def_side_gap = s_relativ_supp_max_x.val, s_solo_def_side_gap.val
+        params.post_margin, params.back_dist = s_post_margin.val, s_back_dist.val
+        params.kick_clear, params.kick_range, params.kick_offset = s_kick_clear.val, s_kick_range.val, s_kick_offset.val
+        params.standoff = s_standoff.val
+        params.def_min_depth, params.def_max_depth, params.def_to_goalie_depth = (
+            s_def_min_depth.val,
+            s_def_max_depth.val,
+            s_def_to_goalie_depth.val,
+        )
         opp_set_play = check_sp.get_status()[0]
         params.include_supporter = check_supp.get_status()[0]
-        params.opp_set_play_clearance = s_spcl.val
-        n = int(s_n.val)
+        params.opp_set_play_clearance = s_set_play_clearance.val
+        n = int(s_players.val)
 
         if opp_set_play:
             ax.add_patch(
@@ -188,7 +236,8 @@ def run_gui():
         ax.set_ylim(-fld.width / 2 - 0.5, fld.width / 2 + 0.5)
         ax.set_aspect("equal")
         ax.set_title(
-            "click to move the ball  ·  label = robot#:role  ·  dotted trail = movement since last frame  ·  "
+            "click to move the ball  ·  label = robot#:role\n"
+            "dotted trail = movement since last frame  ·  "
             "'x' = passive (never assigned striker)",
             color="black",
         )
@@ -200,21 +249,27 @@ def run_gui():
             draw()
 
     for s in (
-        s_n,
-        s_sep,
-        s_alpha,
-        s_dbias,
-        s_dside,
-        s_gap,
-        s_gapc,
-        s_f,
-        s_side,
-        s_smax,
-        s_pmarg,
-        s_back,
-        s_kclr,
-        s_gout,
-        s_spcl,
+        s_players,
+        s_min_sep,
+        s_relativ_def_depth,
+        s_def_depth_bias,
+        s_solo_def_side_gap,
+        s_def_side_gap,
+        s_def_side_gap_close,
+        s_supp_forward_offset,
+        s_supp_side,
+        s_relativ_supp_max_x,
+        s_post_margin,
+        s_back_dist,
+        s_kick_clear,
+        s_goalie_forward_dist,
+        s_set_play_clearance,
+        s_def_min_depth,
+        s_def_max_depth,
+        s_def_to_goalie_depth,
+        s_standoff,
+        s_kick_offset,
+        s_kick_range,
     ):
         s.on_changed(lambda _v: draw())
     check_sp.on_clicked(lambda _label: draw())
