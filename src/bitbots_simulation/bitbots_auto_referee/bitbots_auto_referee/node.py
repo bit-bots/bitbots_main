@@ -46,12 +46,7 @@ class AutoReferee(Node):
             self.rule_checker = RuleChecker(
                 self.config.robot_teams, event_callback=self._record_event, teleport_commands=self.simulation_commands
             )
-            if self.config.ui_enabled:
-                try:
-                    self.dashboard = Dashboard(self.config.ui_host, self.config.ui_port)
-                    self.get_logger().info(f"Read-only dashboard: http://{self.config.ui_host}:{self.config.ui_port}")
-                except OSError as error:
-                    self.get_logger().error(f"Dashboard could not start; referee continues without UI: {error}")
+            self.dashboard = Dashboard(self)
             self._record_event("AutoRef gestartet: INITIAL")
             self._refresh_dashboard()
             self.create_timer(0.25, self._refresh_dashboard, clock=self._network_clock)

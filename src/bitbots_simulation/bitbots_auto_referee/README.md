@@ -93,7 +93,7 @@ Team message budgets initially remain empty until a rule engine manages them.
 | `bind_host`, `return_port` | Local interface and return packet port |
 | `send_rate`, `response_timeout` | Wall-clock heartbeat and connection timeout |
 | `use_sim_time` | Simulator clock for the opening sequence and referee decisions |
-| `ui_enabled`, `ui_host`, `ui_port` | Enable and bind the read-only HTTP dashboard |
+| `ui_enabled` | Launch the native read-only application alongside the referee |
 
 Match and network settings are startup-only ROS parameters. Restart the process
 to change them. Starting the AutoRef automatically prepares and starts play, which
@@ -107,24 +107,40 @@ PLAYING is reached, the opening sequence stops modifying the match state.
 The playing clock always uses the simulation timestamps in the observation
 stream, even if the opening sequence uses wall time.
 
-## Read-only dashboard
+## Native read-only application
 
-The dashboard starts inside the AutoRef process using Python's standard library.
-Open the HTTP address logged at startup in a browser; its defaults are defined
-by the `ui_host` and `ui_port` launch parameters. It shows team scores, match and
-game phases, remaining time, stopped status, preparation time, kicking team, the
-last ball-contact team and robot connectivity. A bounded event list records
-opening transitions, ball contacts, clock expiry and connection changes. Ordinary
-clock ticks update the display without flooding the event list.
+The launch file starts `auto_referee_ui` in its own process. Like the positioning
+capsule's `debug_positioning.py`, it uses Matplotlib with a native Qt window.
+The required Matplotlib and Qt packages are already part of the workspace's Pixi
+environment. A graphical desktop session is required for the window.
 
-The page has no controls or state-changing endpoints. Browser requests read a
-copied snapshot under a lock; the HTTP thread never modifies the referee. The
-display marks a lost connection or stale snapshot instead of presenting it as
-live. When the simulation timestamp stops advancing, the clock indicator reports
-that it is waiting for simulation progress. There is no automatic browser launch.
-Set `ui_enabled` to false to disable the dashboard. Failure to bind the HTTP port
-is logged and does not stop the referee. The bundled HTML is installed with the
-Python package; there are no external fonts, scripts or services.
+The application displays team scores, match and game phases, remaining time,
+stopped status, preparation time, kicking team, the last ball-contact team and
+robot connectivity. The most recent decisions and events are shown below the
+scoreboard. Long entries wrap; entries that do not fit in the current window
+are indicated as older events outside the view. A bounded history is retained
+by the referee and included in each snapshot. Ordinary clock ticks update the
+display without flooding that history.
+
+There are no match controls, sliders or plot toolbar. Closing the window ends
+only the UI process; the referee continues. The application subscribes to the
+relative ROS topic `dashboard`, which resolves to `/auto_referee/dashboard` under
+the supplied launch file. Full snapshots include state and event history so a
+newly opened window immediately receives the latest retained snapshot. Only the
+referee publishes this topic; the UI never commands robots or changes match state.
+
+For headless operation, launch with `ui_enabled:=false`. The referee keeps
+publishing snapshots, so the window can be opened separately later:
+
+```sh
+pixi run -e default ros2 run bitbots_auto_referee auto_referee_ui \
+  --ros-args -r __ns:=/auto_referee
+```
+
+Use the same ROS domain and namespace as the running referee. A missing or stale
+snapshot is indicated without extrapolating the game clock. If simulation time
+stops advancing, the display reports that it is waiting for simulation progress.
+The former web server, HTML page and `ui_host`/`ui_port` parameters were removed.
 
 ## Robot receiver configuration
 
@@ -173,7 +189,8 @@ bitbots_auto_referee/
   events/                   Reserved for observation-to-event detectors
   rules/startup.py           Clock-driven opening sequence
   rules/check_rules.py       Rule evaluation entry point for simulation updates
-  ui/                       Read-only dashboard server and bundled HTML
+  ui/dashboard.py           ROS state and event snapshot publisher
+  ui/application.py         Native Matplotlib/Qt application
 launch/
   auto_referee.launch.py     Central entry point for referee components
 test/                       Offline regression tests

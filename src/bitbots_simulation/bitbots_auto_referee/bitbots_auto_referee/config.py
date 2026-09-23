@@ -42,9 +42,7 @@ PARAMETERS = {
     "return_port": ParameterSpec(3939, "Must match the receiver's answer_port."),
     "send_rate": ParameterSpec(2.0, "Packet frequency in wall-clock hertz, including while simulation is paused."),
     "response_timeout": ParameterSpec(5.0, "Wall-clock seconds without a reply before reporting a lost connection."),
-    "ui_enabled": ParameterSpec(True, "Serve the read-only AutoRef dashboard."),
-    "ui_host": ParameterSpec("127.0.0.1", "IPv4 interface for the read-only dashboard."),
-    "ui_port": ParameterSpec(8081, "HTTP port for the read-only dashboard."),
+    "ui_enabled": ParameterSpec(True, "Launch the native read-only AutoRef window."),
     "use_sim_time": ParameterSpec(True, "Use the simulator's clock for the opening sequence and referee decisions."),
 }
 
@@ -67,8 +65,6 @@ class RefereeConfig:
     send_rate: float
     response_timeout: float
     ui_enabled: bool
-    ui_host: str
-    ui_port: int
 
     @property
     def robot_teams(self) -> dict[int, int]:
@@ -115,12 +111,12 @@ class RefereeConfig:
             raise ValueError("Home and away team IDs must be different")
         if values["home_color"] == values["away_color"]:
             raise ValueError("Home and away field-player colors must be different")
-        for name in ("target_port", "return_port", "ui_port"):
+        for name in ("target_port", "return_port"):
             if not 1 <= values[name] <= 65535:
                 raise ValueError(f"{name} must be a valid port")
         if values["target_port"] == values["return_port"]:
             raise ValueError("Receiver and return ports must be different")
-        for name in ("target_host", "bind_host", "ui_host"):
+        for name in ("target_host", "bind_host"):
             address = ipaddress.IPv4Address(values[name])
             if address.is_multicast or int(address) == 0xFFFFFFFF:
                 raise ValueError(f"{name} must be a unicast IPv4 address")

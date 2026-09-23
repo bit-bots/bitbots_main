@@ -2,6 +2,7 @@
 
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
+from launch.conditions import IfCondition
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
@@ -35,6 +36,14 @@ def generate_launch_description():
                 parameters=[parameters],
                 output="screen",
                 emulate_tty=True,
+            ),
+            Node(
+                package="bitbots_auto_referee",
+                executable="auto_referee_ui",
+                name="auto_referee_ui",
+                namespace="auto_referee",
+                condition=IfCondition(LaunchConfiguration("ui_enabled")),
+                output="screen",
             ),
         ]
     )

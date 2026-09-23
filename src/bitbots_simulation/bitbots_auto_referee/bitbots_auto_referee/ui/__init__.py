@@ -1,1 +1,1 @@
-"""Read-only referee dashboard, independent of the simulator UI."""
+"""Native read-only referee application and its ROS snapshot publisher."""
