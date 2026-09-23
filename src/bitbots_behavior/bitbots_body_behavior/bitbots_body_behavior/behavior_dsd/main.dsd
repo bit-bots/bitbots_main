@@ -102,7 +102,13 @@ $SecondBallTouchAllowed
 @SetNoSecondBallContactVariable + value:true + r:false, @ForgetBallStartPosition + r:false
 
 #DefensiveSetPlay
-@ChangeAction + action:positioning, @ForgetBall, @LookAtFieldFeatures, @GoToFormationPosition + set_play:true + stand:true + enter_position:%placing_enter_position + leave_position:%placing_leave_position + enter_orientation:%placing_enter_orientation + leave_orientation:%placing_leave_orientation
+$BallSeen
+    NO --> $ConfigRole
+        GOALIE --> $CountActiveRobotsWithoutGoalie
+            ZERO --> #SearchBall
+            ELSE --> #RolePositionWithPause
+        ELSE --> #SearchBall
+    YES --> @ChangeAction + action:positioning, @LookAtFieldFeatures, @GoToFormationPosition + set_play:true + stand:true + enter_position:%placing_enter_position + leave_position:%placing_leave_position + enter_orientation:%placing_enter_orientation + leave_orientation:%placing_leave_orientation
 
 #SetPlaySituation
 $DoOnce
