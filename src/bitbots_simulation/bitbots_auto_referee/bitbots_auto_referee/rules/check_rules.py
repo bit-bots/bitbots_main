@@ -31,6 +31,7 @@ class RuleChecker:
         self._clock_was_running = False
         self._fractional_time_ns = 0
         self._expected_seconds: int | None = None
+        self._last_check_ball_outside: bool = False 
 
     def _update_clock(self, game_state: MatchState, observation: SimulationObservation) -> MatchState:
         """Accumulate only active simulation intervals, retaining fractions across stops."""
@@ -83,7 +84,26 @@ class RuleChecker:
             team_id = self.robot_teams.get(robot_index)
             if team_id is not None:
                 self.on_robot_ball_contact(team_id)
+
+        """Checking game rules"""
+        if(not self._last_check_ball_outside and self.ballOutside()):
+            game_state = self.handleBalloutside(game_state)
+            self._last_check_ball_outside = True
+
         return game_state
+
+    def ballOutside(self) -> bool:
+        #prüft ob ball außerhalb der feld linien gemäß config
+        return False
+
+    def handleBalloutside(self, game_state: MatchState) -> MatchState:
+        #prüft wo der ball ins ausgegangen ist (Tor, Torlinie, Seitenaus)
+        # gibt je anch letzter berührung Tor, Einwurf, Ecke oder goal_kick (abstoß), lässt aber zunächst noch 2 sekunden das Spiel laufen
+        # bei Tor wird im gamesate das Tor bei den teams ergenzt und die sequenz von ready set playing startet ernert, dabei geht der anstoß an die Team ID die das tor kassiert hat
+        # bei einwurf ecke oder goal kick wechselt der set_play zur entsprechenden ID (siehe gamecontroler), die secondary_time wird auf 45 sekunden gestellt
+        # replatziert den Ball entweder auf dem anstoßpunkt (Tor), an der Ecke, an der fünf Meter raum ecke (goal kick), am nähesten Punkt der seitenauslinie (einwurf)
+        return game_state
+
 
     def teleport_robot(self, robot_id: int, x: float, y: float, yaw: float) -> Future[TeleportResult]:
         """Request an absolute planar teleport by simulator index; never wait inside check_rules."""
