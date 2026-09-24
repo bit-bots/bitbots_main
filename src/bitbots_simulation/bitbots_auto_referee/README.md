@@ -21,7 +21,8 @@ preparation and paused intervals are not charged. Clock resets or an external
 remaining-time correction discard an old fractional remainder. The clock stops
 at zero and records expiry, without automatically changing half or game phase.
 Ball exits trigger goals or set plays and automatic ball placement. Motion in SET
-and STOP triggers player penalties with simulation-time expiry.
+and STOP, illegal positioning and leaving the field trigger player penalties
+with simulation-time expiry.
 Rules can explicitly request robot and ball teleports through the simulator command adapter.
 After each completed physics step, the simulator publishes `/simulation/step`.
 The AutoRef calls `rules/check_rules.py:RuleChecker.check_rules()` for each received
@@ -331,7 +332,8 @@ plays are recorded in the native dashboard's decision history.
 
 Geometry is explicitly configurable through launch arguments `field_length`,
 `field_width`, `line_width`, `goal_width`, `goal_height`, `goal_area_length`,
-`goal_area_width`, `penalty_area_length`, and `ball_radius`, all in metres. Length and width refer to
+`goal_area_width`, `penalty_area_length`, `penalty_area_width`,
+`center_circle_radius`, and `ball_radius`, all in metres. Length and width refer to
 line centers; goal dimensions refer to the clear opening. Defaults match the
 current MuJoCo kid field and ball. These dimensions must match the loaded simulator
 scene; `leagueSize` does not resize that scene or choose a different geometry.
@@ -368,8 +370,8 @@ Penalties apply to protocol players, not simulator indices. Within each team,
 ascending configured robot indices map to ascending player numbers by default.
 Use `robot_player_mapping` to override that mapping to match each receiver's
 `player_id`. Numbers must be unique within their team and fit the roster.
-Existing penalties are not overwritten. Only penalties issued by these motion
-rules are cleared by their deadlines; repeated motion does not extend them.
+Existing penalties are not overwritten. Only penalties issued by the motion or position
+rules are cleared by their shared deadlines; repeated motion does not extend them.
 Deadlines use simulation time even when the match clock is stopped. A simulation
 clock reset clears owned motion penalties and restarts observation grace periods.
 
@@ -381,3 +383,196 @@ Expiry releases the penalty without teleporting the robot back onto the field.
 `SimulationRobotState` now includes motion telemetry. Rebuild `bitbots_msgs` and
 all consumers with the documented `--packages-up-to` build command, and restart
 simulator and referee together; old and new generated messages are incompatible.
+
+## Robot position rules
+
+`robot_position_rules.check` runs after motion rules on each simulation update.
+It uses world-aligned horizontal bounds covering the robot's collision geometry,
+including limbs, rather than just the torso center. These bounds are conservative:
+they can include empty space between limbs and around rotated shapes. Missing or
+invalid bounds skip position decisions for that robot. The extended
+`SimulationRobotState` requires rebuilding the shared messages and both consumers.
+
+In SET, the complete robot must be in its own half and inside the field. The
+kicking team may have one robot touching or intersecting the center circle,
+including its marking, even when the rest of that robot crosses the halfway line.
+If several candidates enter together, the closest torso to the center is selected,
+with simulator index as tie breaker; the selection remains until that robot leaves
+the circle or is no longer eligible. Other attacking robots in the circle are illegal.
+
+During an active, non-stopped PLAYING set play, defenders must keep the center-circle
+diameter as distance between their body bounds and the ball center. Moving away,
+or moving tangentially without appreciable inward progress, is exempt. Standing
+still and approaching are violations after a short continuous grace interval.
+Robot displacement is measured in world coordinates so ball movement alone does
+not count as retreat. For goal kicks, defenders must also be completely outside
+the opponent penalty area, including the markings; this requirement remains even
+while moving away from the ball. SET positioning also uses a continuous grace
+interval to avoid penalties on a single observation.
+
+Leaving-the-field detection runs in every phase once the complete bounds are
+beyond `LEAVING_MARGIN` from the outer field markings. At corners it uses planar
+distance to the field rectangle. A teleport observation itself is exempt; an
+illegal position persisting afterward is evaluated normally.
+
+Both rules use their protocol penalty names, the durations in
+`rules/motion.py:PENALTY_SECONDS`, and the same own-penalty-area touchline placement
+as motion in STOP. Existing player penalties are preserved and no duplicate
+placement is requested. Deadlines use simulation time, and clock resets clear
+owned penalties and position history. The center-circle radius and penalty-area
+width are configurable launch parameters and must match the simulator field.
+
+## Game flow rules
+
+`game_flow_rules.check` runs after movement and position checks. Its durations,
+movement tolerance and recovery thresholds are defined in `rules/game_flow.py`.
+Local Gamestuck, Incapable Robot and Ball Holding share the existing penalty
+expiry and sideline-placement mechanism; existing penalties are never replaced.
+
+Stuck-play timers run only in non-stopped PLAYING without a set play. Meaningful
+ball displacement resets them; small physics jitter does not. This deliberately
+uses observed movement rather than assuming every touch moved the ball. Any real
+movement is treated as progress, including movement with unknown attribution.
+Ball teleports and clock resets discard old timers. Local Gamestuck additionally
+requires an eligible, upright robot close to and facing the ball for the local
+interval. On expiry, the nearest currently eligible robot able to play the ball
+is penalized. This ability check is a pose heuristic, not a behavioral intention
+signal from the robot.
+
+Global Gamestuck starts a neutral restart with the protocol's no-team kickoff
+value. The first observed pose and heading of each robot are retained as its
+initial placement. Starts inside the field are projected to the nearest touchline;
+existing sideline spawns are preserved. Robots currently present are returned to
+those placements and the ball is placed at center. The referee waits for all
+service acknowledgements and corresponding observations before READY, SET and
+PLAYING. Preparation uses the existing phase durations. Scores and remaining match
+time are preserved, as are penalties, whose normal simulation-time expiry continues.
+Missing initial headings or failed teleports leave the restart stopped with a
+logged reason. A simulator reset re-captures initial placements and retries an
+interrupted global restart.
+
+Incapable Robot tracks a fallen torso by inclination and relative height. A
+partial rise followed by another fall counts as a failed attempt; stable upright
+posture clears the history. Sustained failure to regain upright posture or repeated
+failed attempts triggers the penalty. This is a hysteresis-based posture heuristic,
+not an animation-state classifier. Teleported or already penalized robots do not
+accumulate recovery failures.
+
+Ball Holding is intentionally conservative. Only an upright robot enclosing the
+ball's horizontal location is considered. The simulator samples horizontal rays
+from the ball and reports how many hit that robot's collision geometry nearby.
+Only near-complete, sustained enclosure of an essentially stationary ball during
+free play qualifies. Incidental contacts, partial coverage and lying on the ball
+are not holding violations. The ray test is a geometric approximation of blocked
+access, not proof that another robot could or could not execute a specific kick.
+
+Robot headings and ball blockage are new `SimulationRobotState` fields. Rebuild
+the message package, simulator and referee together and restart both processes.
+
+## Pushing
+
+`pushing_check` runs after the game-flow rules. The simulator aggregates the force
+magnitudes of active robot-to-robot contacts per robot pair and reports contact-point
+approach speeds. The actor is inferred from one-sided approach, with observed root
+displacement as an additional signal. Equal-and-opposite contact forces alone cannot
+identify an actor. Ambiguous contacts without an identifiable initiator are not
+penalized. An established initiator is retained through continuous pressure.
+
+A sufficiently strong contact must also visibly destabilize a previously upright
+victim: decreased upright projection, a fall in relative height, or increased
+angular speed within the configured effect window. Weaker contact must persist
+continuously for `SUSTAINED_NS` in `rules/pushing.py`. Contact gaps reset that timer.
+Mutual approach and an upright, ball-facing duel with the ball centrally between
+both robots are exempt. Teleports and simulation resets discard old episodes.
+This remains a tunable physical heuristic, not proof of intent or causality.
+
+Violations issue `PENALTY_PUSHING` using the shared penalty duration and sideline
+placement. Existing penalties are preserved. Decision events include the actor,
+victim, reason and peak force; current pair forces are also exposed in
+`rule_checker.pushing_rules.contact_forces`. The complete force and approach
+measurements are carried in `/simulation/step` for tuning even without a penalty.
+
+All tuning arguments are declared and validated in `config.py` and passed through
+by the launch script:
+
+| Parameter | Meaning |
+| --- | --- |
+| `pushing_force_threshold` | Minimum force for a destabilizing single push, in newtons |
+| `pushing_sustained_force_threshold` | Minimum force counted as sustained pressure, in newtons |
+| `pushing_approach_speed` | Actor attribution threshold, in metres per second |
+| `pushing_tilt_drop` | Minimum decrease in victim upright projection |
+| `pushing_angular_speed` | Minimum increase in victim angular speed, in radians per second |
+| `pushing_effect_window` | Time allowed between strong contact and destabilization |
+| `pushing_ball_center_tolerance` | Allowed ball offset from the robot-pair midpoint |
+| `pushing_ball_reach` | Maximum distance from each robot to the ball for the duel exemption |
+
+These defaults are initial tuning values, not calibrated referee thresholds.
+`SimulationRobotContact` is a new message embedded in `SimulationState`; rebuild
+`bitbots_msgs` and both consumers, then restart simulator and referee together.
+
+## Direct and indirect free kicks
+
+`RuleChecker.award_direct_free_kick(state, team_id, x, y)` and
+`award_indirect_free_kick(state, team_id, x, y)` award a restart during active
+PLAYING and return the updated match snapshot. Callers must apply that returned
+state. Both use the supplied incident location without relocating it to a field
+marking, set `kicking_team`, and initialize `secondary_time` to the shared set-play
+duration. They stop play while awaiting acknowledged ball placement, then resume
+PLAYING and count down. The awarded team's first new ball contact ends `set_play`
+and `secondary_time` as for the other set plays. Invalid teams/coordinates or an
+outstanding placement are rejected. Double-touch detection uses this interface to award the opponent an indirect free kick at the ball position.
+
+Pushing during active play awards a direct free kick to the victim's team in
+addition to penalizing the actor. The simulator reports the strongest contact's
+world location per pair; the rule retains the latest incident location even if
+destabilization is detected after contact ends. If contact location is unavailable,
+the pair midpoint is used as a fallback. Fouls detected outside active PLAYING
+still incur their player penalty but do not interrupt preparation with a free kick.
+If several fouls are detected in one update, the first recorded foul determines
+the restart while all corresponding player penalties remain applied.
+
+Indirect free kicks and throw-ins arm a separate goal restriction after placement.
+The first touching robot from the awarded team is remembered by simulator index.
+A second contact onset removes the restriction, including a renewed touch by the
+same robot after releasing the ball. Continuous contact counts only once; contacts
+by another robot count regardless of its team. Teleport contacts are excluded. Ending or timing out `set_play` does not remove the restriction.
+Before it is lifted, a ball entering the opponent goal produces a goal kick;
+a ball entering the restarting team's own goal produces a corner for the opponent.
+Neither increments the score. The decision is captured at the goal-line crossing,
+so later contacts during the outside-decision delay cannot turn it into a goal.
+
+A new restart replaces this restriction; direct free kicks, goal kicks, corners
+and kickoffs permit direct goals through the existing goal logic. Simulator resets,
+external ball teleports and neutral global restarts discard stale restrictions.
+The contact-location extension changes `SimulationRobotContact`: rebuild the shared
+messages and both consumers and restart simulator and referee together.
+
+
+### Double touch after restarts
+
+All set plays and the transition from SET to PLAYING for a team kickoff arm the
+restart taker's double-touch restriction. It persists after the set-play timer
+ends, until another robot makes a significant contact or a new restart begins.
+A repeated significant contact by the taker awards the opposing team an indirect
+free kick at the current ball position, using the standard restart countdown.
+No additional player penalty is imposed.
+
+At each potential violation, the rule counts currently observed, unpenalized
+players separately for each team. Only players on the field count; full robot
+bounds are used when available, otherwise the root position must be inside the
+field. Duplicate player slots do not increase the count. The executing team must
+meet `MIN_ACTIVE_PLAYERS` in `rules/double_touch.py`; the configured roster size
+and the opponent's player count do not determine eligibility.
+
+Significant contact episodes must satisfy both `double_touch_min_force` and
+`double_touch_min_impulse`. MuJoCo publishes summed robot-ball contact forces;
+the referee integrates these over simulation time. `double_touch_release_time`
+separates distinct episodes, avoiding repeated triggers from continuous contact
+or short contact gaps. Teleport and stopped-play contacts are excluded. Without
+force telemetry, contacts cannot qualify as significant. These thresholds are
+ROS parameters and may require tuning for the robot model.
+
+The indirect goal restriction still permits a renewed touch by the same robot,
+but the double-touch rule takes precedence whenever its eligibility and
+significance conditions are met. Rebuild the shared messages, simulator and
+referee together before restarting them after this interface change.

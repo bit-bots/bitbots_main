@@ -14,7 +14,16 @@ ANGULAR_SPEED_LIMIT = 0.2
 JOINT_SPEED_LIMIT = 0.3
 UPRIGHT_LIMIT = 0.7
 HEIGHT_LIMIT = 0.7
-PENALTY_SECONDS = {"PENALTY_MOTION_IN_SET": 15, "PENALTY_MOTION_IN_STOP": 45}
+PENALTY_SECONDS = {
+    "PENALTY_MOTION_IN_SET": 15,
+    "PENALTY_MOTION_IN_STOP": 45,
+    "PENALTY_ILLEGAL_POSITIONING": 45,
+    "PENALTY_LEAVING_THE_FIELD": 45,
+    "PENALTY_LOCAL_GAME_STUCK": 45,
+    "PENALTY_INCAPABLE_ROBOT": 45,
+    "PENALTY_BALL_HOLDING": 45,
+    "PENALTY_PUSHING": 45,
+}
 
 
 class MotionRules:
@@ -119,6 +128,26 @@ class MotionRules:
             if mode == "PENALTY_MOTION_IN_STOP":
                 self._relocate(robot, team_id, state, observation)
         return replace(state, teams=tuple(teams)) if tuple(teams) != state.teams else state
+
+    def penalize(self, state: MatchState, observation: SimulationObservation, robot: int, penalty: str) -> MatchState:
+        """Share penalty ownership and expiry with the position rules; never replace an existing penalty."""
+        team_id = self.robot_teams.get(robot)
+        number = self.robot_players.get(robot)
+        for index, team in enumerate(state.teams):
+            if team.team_number != team_id or number is None or not 1 <= number <= len(team.players):
+                continue
+            if team.players[number - 1].penalty != "PENALTY_NONE":
+                return state
+            duration = PENALTY_SECONDS[penalty]
+            players = list(team.players)
+            players[number - 1] = replace(players[number - 1], penalty=penalty, secs_till_unpenalized=duration)
+            teams = list(state.teams)
+            teams[index] = replace(team, players=tuple(players))
+            self._penalties[(team_id, number)] = (penalty, observation.time_ns + duration * NANOSECONDS_PER_SECOND)
+            self.event(f"{penalty}: Team {team_id}, Spieler {number}, Roboter {robot}")
+            self._relocate(robot, team_id, state, observation)
+            return replace(state, teams=tuple(teams))
+        return state
 
     def _relocate(self, robot, team_id, state, observation):
         home_negative = self.field.home_defends_negative_x == state.first_half

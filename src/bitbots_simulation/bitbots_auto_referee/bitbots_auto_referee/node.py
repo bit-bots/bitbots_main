@@ -16,7 +16,9 @@ from bitbots_auto_referee.adapters.simulation.observations import decode_observa
 from bitbots_auto_referee.config import PARAMETERS, RefereeConfig
 from bitbots_auto_referee.core.state import MatchState
 from bitbots_auto_referee.rules.check_rules import RuleChecker
+from bitbots_auto_referee.rules.double_touch import DoubleTouchConfig
 from bitbots_auto_referee.rules.outside import FieldGeometry
+from bitbots_auto_referee.rules.pushing import PushingConfig
 from bitbots_auto_referee.rules.startup import StartupSequence
 from bitbots_auto_referee.ui.dashboard import Dashboard
 
@@ -50,6 +52,8 @@ class AutoReferee(Node):
                 teleport_commands=self.simulation_commands,
                 field=FieldGeometry.from_config(self.config),
                 robot_players=self.config.robot_players,
+                pushing_config=PushingConfig.from_config(self.config),
+                double_touch_config=DoubleTouchConfig.from_config(self.config),
             )
             self.dashboard = Dashboard(self)
             self._record_event("AutoRef gestartet: INITIAL")

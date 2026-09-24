@@ -23,6 +23,19 @@ PLAYERS_PER_TEAM = {
 }
 
 PARAMETERS = {
+    "double_touch_min_force": ParameterSpec(2.0, "Minimum peak robot-ball contact force in newtons for a significant touch."),
+    "double_touch_min_impulse": ParameterSpec(0.02, "Minimum robot-ball contact impulse in newton-seconds for a significant touch."),
+    "double_touch_release_time": ParameterSpec(0.05, "Minimum separation in simulation seconds before a new touch can count."),
+
+    "pushing_force_threshold": ParameterSpec(20.0, "Minimum contact force in newtons for a destabilizing single push."),
+    "pushing_sustained_force_threshold": ParameterSpec(2.0, "Minimum contact force in newtons for sustained pushing."),
+    "pushing_approach_speed": ParameterSpec(0.03, "Minimum approach speed in m/s for assigning a pushing actor."),
+    "pushing_tilt_drop": ParameterSpec(0.15, "Minimum decrease in torso upright projection after contact."),
+    "pushing_angular_speed": ParameterSpec(1.0, "Minimum increase in victim angular speed in rad/s after contact."),
+    "pushing_effect_window": ParameterSpec(0.5, "Seconds after contact during which destabilization is attributed."),
+    "pushing_ball_center_tolerance": ParameterSpec(0.25, "Maximum ball offset from the pair midpoint in metres for a legal duel."),
+    "pushing_ball_reach": ParameterSpec(0.7, "Maximum robot-ball distance in metres for a legal duel."),
+
     "leagueSize": ParameterSpec("small", "Competition size; together with lineup_mode sets the per-team limit.", LEAGUES),
     "lineup_mode": ParameterSpec(
         "foundation",
@@ -32,6 +45,8 @@ PARAMETERS = {
     "home_team_id": ParameterSpec(1, "Home team number; must match the home receiver's team_id."),
     "away_team_id": ParameterSpec(2, "Away team number; must differ from home_team_id."),
     "robot_player_mapping": ParameterSpec("{}", "Optional JSON robot-index to player-number overrides; otherwise ordered within each team."),
+    "center_circle_radius": ParameterSpec(0.75, "Center circle radius to the marking center in metres."),
+    "penalty_area_width": ParameterSpec(4.0, "Penalty area width in metres."),
     "penalty_area_length": ParameterSpec(2.0, "Penalty area depth in metres."),
     "robot_team_mapping": ParameterSpec('{"0":"home"}', "JSON object mapping simulator robot indices to home or away."),
     "home_color": ParameterSpec("blue", "Home field-player jersey color.", COLORS),
@@ -60,11 +75,24 @@ PARAMETERS = {
 
 @dataclass(frozen=True)
 class RefereeConfig:
+    double_touch_min_force: float
+    double_touch_min_impulse: float
+    double_touch_release_time: float
+    pushing_force_threshold: float
+    pushing_sustained_force_threshold: float
+    pushing_approach_speed: float
+    pushing_tilt_drop: float
+    pushing_angular_speed: float
+    pushing_effect_window: float
+    pushing_ball_center_tolerance: float
+    pushing_ball_reach: float
     league_size: str
     lineup_mode: str
     home_team_id: int
     away_team_id: int
     robot_player_mapping: str
+    center_circle_radius: float
+    penalty_area_width: float
     penalty_area_length: float
     robot_team_mapping: str
     home_color: str
@@ -173,7 +201,7 @@ class RefereeConfig:
             raise ValueError("send_rate is too high for a GameController heartbeat")
 
         for name in ("field_length", "field_width", "line_width", "goal_width", "goal_height",
-                     "goal_area_length", "goal_area_width", "ball_radius", "penalty_area_length"):
+                     "goal_area_length", "goal_area_width", "ball_radius", "penalty_area_length", "penalty_area_width", "center_circle_radius"):
             if not math.isfinite(values[name]) or values[name] <= 0:
                 raise ValueError(f"{name} must be finite and positive")
         if not values["goal_width"] <= values["goal_area_width"] <= values["field_width"]:
@@ -185,9 +213,20 @@ class RefereeConfig:
         if values["line_width"] >= min(values["field_length"], values["field_width"]):
             raise ValueError("Line width must be smaller than the field dimensions")
 
+        for name in (name for name in PARAMETERS if name.startswith(("pushing_", "double_touch_"))):
+            if not math.isfinite(values[name]) or values[name] <= 0:
+                raise ValueError(f"{name} must be finite and positive")
+        if values["pushing_sustained_force_threshold"] > values["pushing_force_threshold"]:
+            raise ValueError("Sustained pushing force must not exceed the single-push threshold")
+        if values["pushing_tilt_drop"] > 2:
+            raise ValueError("Pushing tilt drop exceeds the upright projection range")
         fields = {name: value for name, value in values.items() if name not in ("leagueSize", "use_sim_time")}
         config = cls(league_size=values["leagueSize"], **fields)
         if not values["goal_area_length"] <= values["penalty_area_length"] < values["field_length"] / 2:
             raise ValueError("Penalty area must contain the goal area and fit its half")
+        if not values["goal_area_width"] <= values["penalty_area_width"] <= values["field_width"]:
+            raise ValueError("Penalty area width must contain the goal area and fit the field")
+        if 2 * values["center_circle_radius"] >= min(values["field_length"], values["field_width"]):
+            raise ValueError("Center circle must fit inside the field")
         _ = config.robot_players
         return config

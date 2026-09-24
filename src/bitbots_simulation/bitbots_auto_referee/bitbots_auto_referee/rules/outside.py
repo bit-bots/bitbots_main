@@ -27,6 +27,8 @@ class FieldGeometry:
     goal_height: float = 1.2
     goal_area_length: float = 1.0
     goal_area_width: float = 3.0
+    center_circle_radius: float = 0.75
+    penalty_area_width: float = 4.0
     penalty_area_length: float = 2.0
     ball_radius: float = 0.07
     home_defends_negative_x: bool = False
@@ -45,7 +47,8 @@ class FieldGeometry:
         return abs(position[0]) > x_limit or abs(position[1]) > y_limit
 
     def classify(
-        self, previous: Position, current: Position, state: MatchState, last_touch: int | None, now_ns: int
+        self, previous: Position, current: Position, state: MatchState, last_touch: int | None, now_ns: int,
+        allow_goal: bool = True,
     ) -> OutsideDecision | None:
         """Interpolate the first crossed boundary, including height at the goal opening."""
         crossings = []
@@ -65,7 +68,7 @@ class FieldGeometry:
         defender = home if (sign < 0) == home_negative else away
         attacker = away if defender == home else home
         half_length, half_width = self.field_length / 2, self.field_width / 2
-        if axis == 0 and abs(y) + self.ball_radius < self.goal_width / 2 and z + self.ball_radius < self.goal_height:
+        if allow_goal and axis == 0 and abs(y) + self.ball_radius < self.goal_width / 2 and z + self.ball_radius < self.goal_height:
             return OutsideDecision("GOAL", attacker, (0.0, 0.0), now_ns)
         if last_touch not in (home, away):
             return None

@@ -7,3 +7,4 @@ SimulationRobotState[] robots
 # Discontinuities applied before this step, for suppressing artificial ball touches.
 uint32[] teleported_robots
 bool ball_teleported
+SimulationRobotContact[] robot_contacts

@@ -41,6 +41,7 @@ rosidl_generate_interfaces(
   "msg/RobotRelative.msg"
   "msg/RobotRelativeArray.msg"
   "msg/SimulationRobotState.msg"
+  "msg/SimulationRobotContact.msg"
   "msg/SimulationState.msg"
   "msg/Strategy.msg"
   "msg/TeamData.msg"

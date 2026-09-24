@@ -1,5 +1,6 @@
 """Entry point for rule evaluation after a simulation update."""
 
+import math
 from collections.abc import Callable
 from concurrent.futures import Future
 from dataclasses import replace
@@ -7,8 +8,12 @@ from dataclasses import replace
 from bitbots_auto_referee.core.observations import Position, SimulationObservation
 from bitbots_auto_referee.core.state import MatchState
 from bitbots_auto_referee.core.teleport import TeleportCommands, TeleportResult
+from bitbots_auto_referee.rules.double_touch import DoubleTouchConfig, DoubleTouchRules
+from bitbots_auto_referee.rules.game_flow import GameFlowRules
 from bitbots_auto_referee.rules.motion import MotionRules
 from bitbots_auto_referee.rules.outside import OUTSIDE_DELAY_NS, SET_PLAY_SECONDS, FieldGeometry, OutsideDecision
+from bitbots_auto_referee.rules.pushing import PushingConfig, PushingRules
+from bitbots_auto_referee.rules.robot_position import RobotPositionRules
 from bitbots_auto_referee.rules.startup import NANOSECONDS_PER_SECOND, STARTUP_PHASES
 
 
@@ -22,6 +27,8 @@ class RuleChecker:
         teleport_commands: TeleportCommands | None = None,
         field: FieldGeometry | None = None,
         robot_players: dict[int, int] | None = None,
+        pushing_config: PushingConfig | None = None,
+        double_touch_config: DoubleTouchConfig | None = None,
     ):
         self._teleport_commands = teleport_commands
         self._event_callback = event_callback
@@ -31,6 +38,8 @@ class RuleChecker:
         self.simulation_time_ns: int | None = None
         self.step_number: int | None = None
         self.last_touch_team_id: int | None = None
+        self._indirect_team: int | None = None
+        self._indirect_first_robot: int | None = None
         self.unmapped_robot_indices: set[int] = set()
         self._touching_ball: frozenset[int] = frozenset()
         self._clock_was_running = False
@@ -48,8 +57,16 @@ class RuleChecker:
             for team in set(self.robot_teams.values()):
                 indices = sorted(index for index, team_id in self.robot_teams.items() if team_id == team)
                 robot_players.update({index: number for number, index in enumerate(indices, 1)})
+        self.double_touch_rules = DoubleTouchRules(
+            self.robot_teams, robot_players, self.field, self._event, double_touch_config
+        )
         self.motion_rules = MotionRules(self.robot_teams, robot_players, self.field, self.teleport_robot, self._event)
+        self.robot_position_rules = RobotPositionRules(self.robot_teams, robot_players, self.field, self.motion_rules)
         self._placement_failed = False
+        self.pushing_rules = PushingRules(self.motion_rules, self._event, pushing_config)
+        self.game_flow_rules = GameFlowRules(
+            self.motion_rules, self.field, self.teleport_robot, self.teleport_ball, self._event
+        )
 
     def _update_clock(self, game_state: MatchState, observation: SimulationObservation) -> MatchState:
         """Accumulate only active simulation intervals, retaining fractions across stops."""
@@ -72,6 +89,8 @@ class RuleChecker:
 
     def check_rules(self, game_state: MatchState, observation: SimulationObservation) -> MatchState:
         """Update the playing clock and positions before handling new ball contacts."""
+        if game_state.state != "STATE_PLAYING":
+            self._clear_indirect()
         previous_seconds = game_state.secs_remaining
         game_state = self._update_clock(game_state, observation)
         if (
@@ -111,8 +130,16 @@ class RuleChecker:
         if observation.ball_teleported:
             if self._placement is None and not self._placement_failed:
                 self._pending_outside = None
+                self._clear_indirect()
+                self.double_touch_rules.clear()
             self._previous_ball_position = None
             self._last_check_ball_outside = self.ballOutside()
+        if game_state.state == "STATE_PLAYING" and not game_state.stopped and self._pending_outside is None:
+            self._track_indirect_contacts(new_contacts)
+        double_touch_enabled = (
+            game_state.state == "STATE_PLAYING" and not game_state.stopped
+            and self._pending_outside is None and self._placement is None
+        )
         # Only contacts observed after a previously acknowledged placement can end a restart.
         restart_active = self._restart_at is not None and not self._restart_is_goal and self._pending_outside is None
         game_state = self._check_outside(game_state)
@@ -129,13 +156,82 @@ class RuleChecker:
             self._restart_at = None
             game_state = replace(game_state, set_play="SET_PLAY_NONE", secondary_time=0)
             self._event(f"Standardsituation ausgeführt: Ballkontakt durch Team {game_state.kicking_team}")
-        return self.motion_rules.check(game_state, observation)
+        game_state = self.motion_rules.check(game_state, observation)
+        game_state = self.robot_position_rules.check(game_state, observation)
+        fouling_team = self.double_touch_rules.check(game_state, observation, enabled=double_touch_enabled)
+        if fouling_team is not None:
+            opponent = next(team.team_number for team in game_state.teams if team.team_number != fouling_team)
+            game_state = self.award_indirect_free_kick(game_state, opponent, *observation.ball_position[:2])
+        before_flow = game_state
+        game_state = self.game_flow_rules.check(game_state, observation)
+        if game_state.kicking_team == 255 and game_state != before_flow:
+            self._clear_indirect()
+            self.double_touch_rules.clear()
+        return self.pushing_check(game_state, observation)
+
+    def pushing_check(self, game_state: MatchState, observation: SimulationObservation) -> MatchState:
+        game_state = self.pushing_rules.check(game_state, observation)
+        if game_state.state == "STATE_PLAYING" and not game_state.stopped:
+            for foul in self.pushing_rules.fouls:
+                team_id = self.robot_teams.get(foul.victim)
+                if team_id is not None:
+                    return self.award_direct_free_kick(game_state, team_id, *foul.position)
+        return game_state
+
+    def award_direct_free_kick(self, game_state: MatchState, team_id: int, x: float, y: float) -> MatchState:
+        """Award a direct free kick at the incident location during active play."""
+        return self._award_free_kick(game_state, team_id, x, y, "SET_PLAY_DIRECT_FREE_KICK")
+
+    def award_indirect_free_kick(self, game_state: MatchState, team_id: int, x: float, y: float) -> MatchState:
+        """Award the opponent an indirect restart, including for a detected double touch."""
+        return self._award_free_kick(game_state, team_id, x, y, "SET_PLAY_INDIRECT_FREE_KICK")
+
+    def _award_free_kick(self, game_state, team_id, x, y, kind):
+        if team_id not in {team.team_number for team in game_state.teams}:
+            raise ValueError("Free kick requires a configured team")
+        if not all(math.isfinite(value) for value in (x, y)):
+            raise ValueError("Free-kick position must be finite")
+        if self.simulation_time_ns is None:
+            raise RuntimeError("A simulation observation is required before awarding a free kick")
+        if game_state.state != "STATE_PLAYING" or game_state.stopped:
+            raise ValueError("Free kicks can only be awarded during active PLAYING")
+        if self._placement is not None or self._placement_failed:
+            raise RuntimeError("Cannot replace an outstanding or failed ball placement")
+        self._restart_at = None
+        self._clear_indirect()
+        self.double_touch_rules.clear()
+        # Foul restarts start immediately; the outside-ball decision delay does not apply.
+        self._pending_outside = OutsideDecision(
+            kind, team_id, (float(x), float(y)), self.simulation_time_ns - OUTSIDE_DELAY_NS
+        )
+        return self.handleBalloutside(game_state)
+
+    def _clear_indirect(self) -> None:
+        self._indirect_team = None
+        self._indirect_first_robot = None
+
+    def _track_indirect_contacts(self, robot_indices: frozenset[int]) -> None:
+        if self._indirect_team is None:
+            return
+        if self._indirect_first_robot is None:
+            takers = sorted(robot for robot in robot_indices if self.robot_teams.get(robot) == self._indirect_team)
+            if not takers:
+                return
+            self._indirect_first_robot = takers[0]
+            if len(robot_indices) == 1:
+                return
+        # Inputs contain contact onsets only, so renewed contact by the taker also counts.
+        if robot_indices:
+            self._event("Indirekte Torsperre aufgehoben: Zweite Ballberührung erkannt.")
+            self._clear_indirect()
 
     def _event(self, message: str) -> None:
         if self._event_callback is not None:
             self._event_callback(message)
 
     def _reset_outside(self) -> None:
+        self._clear_indirect()
+        self.double_touch_rules.clear()
         self._pending_outside = None
         self._placement = None
         self._restart_at = None
@@ -172,6 +268,13 @@ class RuleChecker:
                 self.last_touch_team_id,
                 self.simulation_time_ns,
             )
+            if self._pending_outside is not None and self._pending_outside.kind == "GOAL" and self._indirect_team is not None:
+                self._pending_outside = self.field.classify(
+                    self._previous_ball_position, self.ball_position, game_state,
+                    self.last_touch_team_id if self.last_touch_team_id is not None else self._indirect_team,
+                    self.simulation_time_ns, allow_goal=False,
+                )
+                self._event("Kein Tor: Indirekte Spielfortsetzung ohne zweite Ballberührung.")
             if self._pending_outside is None:
                 self._event("Ball im Aus: keine eindeutige Entscheidung ohne Grenzübertritt und Teamberührung.")
             else:
@@ -192,6 +295,8 @@ class RuleChecker:
                 self._pending_outside = None
                 return game_state
             self._restart_is_goal = decision.kind == "GOAL"
+            self._clear_indirect()
+            self.double_touch_rules.clear()
             if self._restart_is_goal:
                 teams = tuple(
                     replace(team, score=min(255, team.score + 1)) if team.team_number == decision.team_id else team
@@ -229,6 +334,11 @@ class RuleChecker:
             return game_state
         self._placement = None
         self._pending_outside = None
+        self._clear_indirect()
+        if decision.kind != "GOAL":
+            self.double_touch_rules.arm(decision.team_id)
+        if decision.kind in ("SET_PLAY_INDIRECT_FREE_KICK", "SET_PLAY_THROW_IN"):
+            self._indirect_team = decision.team_id
         self._restart_at = self.simulation_time_ns
         self.last_touch_team_id = None
         self._touching_ball = frozenset()
