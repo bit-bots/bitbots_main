@@ -5,8 +5,6 @@ import unittest
 from dataclasses import replace
 from unittest.mock import Mock, patch
 
-from game_controller_hsl.data import GameControlDataStruct
-
 from bitbots_auto_referee.adapters.game_controller import (
     GameControllerUDPAdapter,
     decode_robot_status,
@@ -14,6 +12,7 @@ from bitbots_auto_referee.adapters.game_controller import (
 )
 from bitbots_auto_referee.config import PARAMETERS, RefereeConfig
 from bitbots_auto_referee.core.state import MatchState
+from game_controller_hsl.data import GameControlDataStruct
 
 ROSTER_CASES = (
     ("small", "foundation", 4),

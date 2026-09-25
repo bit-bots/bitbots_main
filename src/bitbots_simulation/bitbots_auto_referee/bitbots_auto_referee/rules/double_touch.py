@@ -58,7 +58,8 @@ class DoubleTouchRules:
         number = self.robot_players.get(robot)
         return any(
             team.team_number == self.robot_teams.get(robot)
-            and number is not None and 1 <= number <= len(team.players)
+            and number is not None
+            and 1 <= number <= len(team.players)
             and team.players[number - 1].penalty == "PENALTY_NONE"
             for team in state.teams
         )
@@ -138,13 +139,21 @@ class DoubleTouchRules:
             episode.released_at = None
             episode.peak_force = max(episode.peak_force, force)
             episode.impulse += force * dt
-            if not episode.counted and episode.peak_force >= self.config.min_force and episode.impulse >= self.config.min_impulse:
+            if (
+                not episode.counted
+                and episode.peak_force >= self.config.min_force
+                and episode.impulse >= self.config.min_impulse
+            ):
                 episode.counted = True
                 significant.add(robot)
         if not significant:
             return None
         if self.first_robot is None:
-            takers = {robot for robot in significant if self.robot_teams.get(robot) == self.team_id and self._eligible(state, robot)}
+            takers = {
+                robot
+                for robot in significant
+                if self.robot_teams.get(robot) == self.team_id and self._eligible(state, robot)
+            }
             if len(significant) != 1 or len(takers) != 1:
                 self.clear()
                 return None
@@ -155,7 +164,9 @@ class DoubleTouchRules:
             return None
         team = self.team_id
         if self._eligible(state, self.first_robot) and self.active_players.get(team, 0) >= MIN_ACTIVE_PLAYERS:
-            self.event(f"Double Touch: Roboter {self.first_robot}, Team {team}, {self.active_players[team]} aktive Spieler.")
+            self.event(
+                f"Double Touch: Roboter {self.first_robot}, Team {team}, {self.active_players[team]} aktive Spieler."
+            )
             self.clear()
             return team
         return None

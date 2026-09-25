@@ -60,7 +60,8 @@ class PushingRules:
         number = self.penalties.robot_players.get(robot)
         return any(
             team.team_number == self.penalties.robot_teams.get(robot)
-            and number is not None and 1 <= number <= len(team.players)
+            and number is not None
+            and 1 <= number <= len(team.players)
             and team.players[number - 1].penalty == "PENALTY_NONE"
             for team in state.teams
         )
@@ -109,19 +110,29 @@ class PushingRules:
             ):
                 continue
             self.contact_forces[pair] = contact.force
-            if any(robot not in observation.robot_positions or robot in observation.teleported_robots
-                   or not self._eligible(state, robot) for robot in pair):
+            if any(
+                robot not in observation.robot_positions
+                or robot in observation.teleported_robots
+                or not self._eligible(state, robot)
+                for robot in pair
+            ):
                 self._episodes.pop(pair, None)
                 continue
             approach = [contact.approach_a, contact.approach_b]
-            if previous is not None and now > previous.time_ns and all(robot in previous.robot_positions for robot in pair):
+            if (
+                previous is not None
+                and now > previous.time_ns
+                and all(robot in previous.robot_positions for robot in pair)
+            ):
                 a, b = (observation.robot_positions[robot][:2] for robot in pair)
                 length = math.dist(a, b)
                 if length > 0 and not any(robot in previous.teleported_robots for robot in pair):
                     direction = ((b[0] - a[0]) / length, (b[1] - a[1]) / length)
                     dt = (now - previous.time_ns) / 1e9
                     for index, robot in enumerate(pair):
-                        displacement = [observation.robot_positions[robot][i] - previous.robot_positions[robot][i] for i in (0, 1)]
+                        displacement = [
+                            observation.robot_positions[robot][i] - previous.robot_positions[robot][i] for i in (0, 1)
+                        ]
                         speed = sum(displacement[i] * direction[i] for i in (0, 1)) / dt
                         approach[index] = max(approach[index], speed if index == 0 else -speed)
             moving = [speed >= self.config.approach_speed for speed in approach]
@@ -145,11 +156,16 @@ class PushingRules:
             if episode is None or episode.actor != actor:
                 baseline = previous.robot_motion.get(victim) if previous is not None else None
                 episode = PushEpisode(
-                    actor, victim, now, now,
+                    actor,
+                    victim,
+                    now,
+                    now,
                     baseline.upright if baseline else None,
                     baseline.relative_height if baseline else None,
                     baseline.angular_speed if baseline else None,
-                    contact.force, None, position,
+                    contact.force,
+                    None,
+                    position,
                 )
                 self._episodes[pair] = episode
             if episode.sustained_since is None:
@@ -167,11 +183,12 @@ class PushingRules:
                 episode.strong_at = now
             active.add(pair)
         for pair, episode in list(self._episodes.items()):
-            if (
-                any(robot not in observation.robot_positions or robot in observation.teleported_robots
-                    or not self._eligible(state, robot) for robot in pair)
-                or self._ball_duel(pair, observation)
-            ):
+            if any(
+                robot not in observation.robot_positions
+                or robot in observation.teleported_robots
+                or not self._eligible(state, robot)
+                for robot in pair
+            ) or self._ball_duel(pair, observation):
                 del self._episodes[pair]
                 continue
             if pair not in active:
@@ -179,7 +196,10 @@ class PushingRules:
             motion = observation.robot_motion.get(episode.victim)
             recent_strong = episode.strong_at is not None and now - episode.strong_at <= self.config.effect_window * 1e9
             destabilized = (
-                recent_strong and motion is not None and episode.upright is not None and episode.upright >= 0.7
+                recent_strong
+                and motion is not None
+                and episode.upright is not None
+                and episode.upright >= 0.7
                 and (
                     episode.upright - motion.upright >= self.config.tilt_drop
                     or (episode.height >= 0.7 and motion.relative_height < 0.5)

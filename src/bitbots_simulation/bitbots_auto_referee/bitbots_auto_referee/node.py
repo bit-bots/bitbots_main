@@ -3,7 +3,6 @@
 import time
 
 import rclpy
-from bitbots_msgs.msg import SimulationState
 from rcl_interfaces.msg import ParameterDescriptor
 from rclpy.clock import Clock, ClockType
 from rclpy.executors import ExternalShutdownException
@@ -21,6 +20,7 @@ from bitbots_auto_referee.rules.outside import FieldGeometry
 from bitbots_auto_referee.rules.pushing import PushingConfig
 from bitbots_auto_referee.rules.startup import StartupSequence
 from bitbots_auto_referee.ui.dashboard import Dashboard
+from bitbots_msgs.msg import SimulationState
 
 
 class AutoReferee(Node):

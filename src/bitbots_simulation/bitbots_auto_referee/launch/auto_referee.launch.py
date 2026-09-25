@@ -1,13 +1,12 @@
 """Launch the referee separately from the simulator and robot processes."""
 
+from bitbots_auto_referee.config import PARAMETERS
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.conditions import IfCondition
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
-
-from bitbots_auto_referee.config import PARAMETERS
 
 
 def generate_launch_description():

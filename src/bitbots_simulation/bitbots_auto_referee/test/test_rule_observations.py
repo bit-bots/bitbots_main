@@ -81,7 +81,7 @@ class ObservationTest(unittest.TestCase):
         self.assertEqual(RefereeConfig.from_parameters(values).robot_teams, {0: 8, 1: 9})
 
     def test_invalid_mappings_are_rejected(self):
-        for mapping in ('[]', '{"-1":"home"}', '{"0":"unknown"}', '{"00":"home"}', '{"0":8}'):
+        for mapping in ("[]", '{"-1":"home"}', '{"0":"unknown"}', '{"00":"home"}', '{"0":8}'):
             with self.subTest(mapping=mapping), self.assertRaises(ValueError):
                 values = {name: spec.default for name, spec in PARAMETERS.items()}
                 values["robot_team_mapping"] = mapping

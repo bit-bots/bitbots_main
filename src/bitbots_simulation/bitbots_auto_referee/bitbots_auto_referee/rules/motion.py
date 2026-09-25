@@ -42,12 +42,12 @@ class MotionRules:
 
     def check(self, state: MatchState, observation: SimulationObservation) -> MatchState:
         now = observation.time_ns
-        reset = self._last_time is not None and (
-            now < self._last_time or observation.step_number < self._last_step
-        )
+        reset = self._last_time is not None and (now < self._last_time or observation.step_number < self._last_step)
         self._last_time, self._last_step = now, observation.step_number
-        mode = "PENALTY_MOTION_IN_STOP" if state.stopped else (
-            "PENALTY_MOTION_IN_SET" if state.state == "STATE_SET" else None
+        mode = (
+            "PENALTY_MOTION_IN_STOP"
+            if state.stopped
+            else ("PENALTY_MOTION_IN_SET" if state.state == "STATE_SET" else None)
         )
         if reset or mode != self._mode:
             self._grace.clear()
@@ -65,7 +65,9 @@ class MotionRules:
                 if player.penalty != penalty:
                     del self._penalties[key]
                     continue
-                remaining = 0 if reset else max(0, (deadline - now + NANOSECONDS_PER_SECOND - 1) // NANOSECONDS_PER_SECOND)
+                remaining = (
+                    0 if reset else max(0, (deadline - now + NANOSECONDS_PER_SECOND - 1) // NANOSECONDS_PER_SECOND)
+                )
                 players[player_index] = replace(
                     player, penalty=penalty if remaining else "PENALTY_NONE", secs_till_unpenalized=remaining
                 )

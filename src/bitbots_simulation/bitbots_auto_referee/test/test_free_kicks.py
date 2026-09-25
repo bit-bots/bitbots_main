@@ -13,8 +13,12 @@ from bitbots_auto_referee.rules.check_rules import RuleChecker
 
 def sample(time, ball=(0.0, 0.0, 0.1), touches=(), **changes):
     return SimulationObservation(
-        int(time * 1e9), int(time * 1000), ball,
-        {0: (1, 1, 0.4), 1: (2, 1, 0.4), 2: (-1, 1, 0.4)}, frozenset(touches), **changes,
+        int(time * 1e9),
+        int(time * 1000),
+        ball,
+        {0: (1, 1, 0.4), 1: (2, 1, 0.4), 2: (-1, 1, 0.4)},
+        frozenset(touches),
+        **changes,
     )
 
 
@@ -113,9 +117,14 @@ def test_pushing_awards_direct_free_kick_at_contact_location():
     upright = RobotMotion(0, 0, 0, 0, 1, 1)
     state = checker.check_rules(state, sample(0.1, robot_motion={0: upright, 2: upright}))
     contact = RobotContact(0, 2, 30, 0.2, 0, (0.4, 0.7, 0.2))
-    state = checker.check_rules(state, sample(
-        0.2, robot_motion={0: upright, 2: replace(upright, upright=0.5)}, robot_contacts=(contact,),
-    ))
+    state = checker.check_rules(
+        state,
+        sample(
+            0.2,
+            robot_motion={0: upright, 2: replace(upright, upright=0.5)},
+            robot_contacts=(contact,),
+        ),
+    )
     assert state.teams[0].players[0].penalty == "PENALTY_PUSHING"
     assert state.set_play == "SET_PLAY_DIRECT_FREE_KICK" and state.kicking_team == 2
     assert state.secondary_time == 45

@@ -28,9 +28,15 @@ def setup(config=None):
 
 def sample(time, contacts=(), victim=UP, **changes):
     return SimulationObservation(
-        int(time * 1e9), int(time * 1000), changes.pop("ball_position", (3, 2, 0.1)),
-        {0: (-0.25, 0, 0.4), 1: (0.25, 0, 0.4)}, frozenset(),
-        robot_motion={0: UP, 1: victim}, robot_yaws={0: 0, 1: math.pi}, robot_contacts=contacts, **changes,
+        int(time * 1e9),
+        int(time * 1000),
+        changes.pop("ball_position", (3, 2, 0.1)),
+        {0: (-0.25, 0, 0.4), 1: (0.25, 0, 0.4)},
+        frozenset(),
+        robot_motion={0: UP, 1: victim},
+        robot_yaws={0: 0, 1: math.pi},
+        robot_contacts=contacts,
+        **changes,
     )
 
 
@@ -73,9 +79,9 @@ def test_mutual_pushing_and_central_ball_duels_are_exempt():
         state, checker, commands = setup()
         contact = RobotContact(0, 1, 30, 0.2, 0.2 if mutual else 0)
         for time in (0, 1, 6):
-            state = checker.check_rules(state, sample(
-                time, (contact,), ball_position=(3, 2, 0.1) if mutual else (0, 0, 0.1)
-            ))
+            state = checker.check_rules(
+                state, sample(time, (contact,), ball_position=(3, 2, 0.1) if mutual else (0, 0, 0.1))
+            )
         assert penalty(state) == "PENALTY_NONE"
         commands.teleport_robot.assert_not_called()
 

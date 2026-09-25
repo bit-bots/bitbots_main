@@ -23,20 +23,28 @@ PLAYERS_PER_TEAM = {
 }
 
 PARAMETERS = {
-    "double_touch_min_force": ParameterSpec(2.0, "Minimum peak robot-ball contact force in newtons for a significant touch."),
-    "double_touch_min_impulse": ParameterSpec(0.02, "Minimum robot-ball contact impulse in newton-seconds for a significant touch."),
-    "double_touch_release_time": ParameterSpec(0.05, "Minimum separation in simulation seconds before a new touch can count."),
-
+    "double_touch_min_force": ParameterSpec(
+        2.0, "Minimum peak robot-ball contact force in newtons for a significant touch."
+    ),
+    "double_touch_min_impulse": ParameterSpec(
+        0.02, "Minimum robot-ball contact impulse in newton-seconds for a significant touch."
+    ),
+    "double_touch_release_time": ParameterSpec(
+        0.05, "Minimum separation in simulation seconds before a new touch can count."
+    ),
     "pushing_force_threshold": ParameterSpec(20.0, "Minimum contact force in newtons for a destabilizing single push."),
     "pushing_sustained_force_threshold": ParameterSpec(2.0, "Minimum contact force in newtons for sustained pushing."),
     "pushing_approach_speed": ParameterSpec(0.03, "Minimum approach speed in m/s for assigning a pushing actor."),
     "pushing_tilt_drop": ParameterSpec(0.15, "Minimum decrease in torso upright projection after contact."),
     "pushing_angular_speed": ParameterSpec(1.0, "Minimum increase in victim angular speed in rad/s after contact."),
     "pushing_effect_window": ParameterSpec(0.5, "Seconds after contact during which destabilization is attributed."),
-    "pushing_ball_center_tolerance": ParameterSpec(0.25, "Maximum ball offset from the pair midpoint in metres for a legal duel."),
+    "pushing_ball_center_tolerance": ParameterSpec(
+        0.25, "Maximum ball offset from the pair midpoint in metres for a legal duel."
+    ),
     "pushing_ball_reach": ParameterSpec(0.7, "Maximum robot-ball distance in metres for a legal duel."),
-
-    "leagueSize": ParameterSpec("small", "Competition size; together with lineup_mode sets the per-team limit.", LEAGUES),
+    "leagueSize": ParameterSpec(
+        "small", "Competition size; together with lineup_mode sets the per-team limit.", LEAGUES
+    ),
     "lineup_mode": ParameterSpec(
         "foundation",
         "Together with leagueSize sets the per-team limit; fewer or no connected robots are allowed.",
@@ -44,7 +52,9 @@ PARAMETERS = {
     ),
     "home_team_id": ParameterSpec(1, "Home team number; must match the home receiver's team_id."),
     "away_team_id": ParameterSpec(2, "Away team number; must differ from home_team_id."),
-    "robot_player_mapping": ParameterSpec("{}", "Optional JSON robot-index to player-number overrides; otherwise ordered within each team."),
+    "robot_player_mapping": ParameterSpec(
+        "{}", "Optional JSON robot-index to player-number overrides; otherwise ordered within each team."
+    ),
     "center_circle_radius": ParameterSpec(0.75, "Center circle radius to the marking center in metres."),
     "penalty_area_width": ParameterSpec(4.0, "Penalty area width in metres."),
     "penalty_area_length": ParameterSpec(2.0, "Penalty area depth in metres."),
@@ -67,7 +77,9 @@ PARAMETERS = {
     "goal_area_length": ParameterSpec(1.0, "Goal area depth in metres."),
     "goal_area_width": ParameterSpec(3.0, "Goal area width in metres."),
     "ball_radius": ParameterSpec(0.07, "Simulated ball radius in metres."),
-    "home_defends_negative_x": ParameterSpec(False, "Home defends negative X in the first half; sides swap at halftime."),
+    "home_defends_negative_x": ParameterSpec(
+        False, "Home defends negative X in the first half; sides swap at halftime."
+    ),
     "ui_enabled": ParameterSpec(True, "Launch the native read-only AutoRef window."),
     "use_sim_time": ParameterSpec(True, "Use the simulator's clock for the opening sequence and referee decisions."),
 }
@@ -200,8 +212,19 @@ class RefereeConfig:
         if values["send_rate"] > 100:
             raise ValueError("send_rate is too high for a GameController heartbeat")
 
-        for name in ("field_length", "field_width", "line_width", "goal_width", "goal_height",
-                     "goal_area_length", "goal_area_width", "ball_radius", "penalty_area_length", "penalty_area_width", "center_circle_radius"):
+        for name in (
+            "field_length",
+            "field_width",
+            "line_width",
+            "goal_width",
+            "goal_height",
+            "goal_area_length",
+            "goal_area_width",
+            "ball_radius",
+            "penalty_area_length",
+            "penalty_area_width",
+            "center_circle_radius",
+        ):
             if not math.isfinite(values[name]) or values[name] <= 0:
                 raise ValueError(f"{name} must be finite and positive")
         if not values["goal_width"] <= values["goal_area_width"] <= values["field_width"]:

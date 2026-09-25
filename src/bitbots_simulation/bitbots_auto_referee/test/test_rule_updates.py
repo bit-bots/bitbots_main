@@ -4,12 +4,12 @@ import unittest
 from dataclasses import replace
 from unittest.mock import Mock, patch
 
-from bitbots_msgs.msg import SimulationState
-
 from bitbots_auto_referee.config import PARAMETERS, RefereeConfig
 from bitbots_auto_referee.core.state import MatchState
 from bitbots_auto_referee.node import AutoReferee
 from bitbots_auto_referee.rules.check_rules import RuleChecker
+
+from bitbots_msgs.msg import SimulationState
 
 
 class RuleUpdateTest(unittest.TestCase):

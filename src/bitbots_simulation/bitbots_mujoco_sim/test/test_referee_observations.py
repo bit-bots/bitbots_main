@@ -6,9 +6,9 @@ from unittest.mock import patch
 
 import mujoco
 import numpy as np
+from bitbots_mujoco_sim.referee import RefereeObservationBuilder
 
 from bitbots_msgs.msg import SimulationState
-from bitbots_mujoco_sim.referee import RefereeObservationBuilder
 
 
 class RefereeObservationTest(unittest.TestCase):
@@ -52,6 +52,7 @@ class RefereeObservationTest(unittest.TestCase):
             SimpleNamespace(geom1=0, geom2=2, dist=-0.02, efc_address=2),
         ]
         self.data.ncon = len(self.data.contact)
+
         def contact_force(model, data, index, result):
             result[0] = 3.0
 
@@ -88,14 +89,14 @@ class RefereeObservationTest(unittest.TestCase):
         self.assertEqual(robot.relative_height, 1.0)
 
     def test_head_and_body_joint_speeds_are_separate(self):
-        model = mujoco.MjModel.from_xml_string('''
+        model = mujoco.MjModel.from_xml_string("""
             <mujoco><worldbody>
               <body name="robot" pos="0 0 1"><freejoint/><geom size="0.1"/>
                 <body><joint name="head_yaw"/><geom size="0.05"/></body>
                 <body><joint name="knee"/><geom size="0.05"/></body>
               </body>
             </worldbody></mujoco>
-        ''')
+        """)
         data = mujoco.MjData(model)
         mujoco.mj_forward(model, data)
         head = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, "head_yaw")
@@ -118,7 +119,7 @@ class RefereeObservationTest(unittest.TestCase):
         self.assertAlmostEqual(robot.max_y, 2.1)
 
     def test_ball_blockage_uses_actual_surrounding_geometry(self):
-        model = mujoco.MjModel.from_xml_string('''
+        model = mujoco.MjModel.from_xml_string("""
             <mujoco><worldbody>
               <body name="robot" pos="0 0 1"><freejoint/><geom size="0.05"/>
                 <geom type="box" pos="0.2 0 -0.9" size="0.01 0.2 0.1"/>
@@ -128,7 +129,7 @@ class RefereeObservationTest(unittest.TestCase):
               </body>
               <body name="ball" pos="0 0 0.1"><freejoint/><geom size="0.07"/></body>
             </worldbody></mujoco>
-        ''')
+        """)
         data = mujoco.MjData(model)
         mujoco.mj_forward(model, data)
         builder = RefereeObservationBuilder(model, {0: 1}, 1)
@@ -142,10 +143,12 @@ class RefereeObservationTest(unittest.TestCase):
 
     def test_robot_contact_forces_aggregate_independent_of_geom_order(self):
         self.data.contact = [
-            SimpleNamespace(geom1=0, geom2=1, dist=-0.01, efc_address=0,
-                            pos=np.zeros(3), frame=[1, 0, 0, 0, 1, 0, 0, 0, 1]),
-            SimpleNamespace(geom1=1, geom2=0, dist=-0.01, efc_address=1,
-                            pos=np.zeros(3), frame=[-1, 0, 0, 0, 1, 0, 0, 0, -1]),
+            SimpleNamespace(
+                geom1=0, geom2=1, dist=-0.01, efc_address=0, pos=np.zeros(3), frame=[1, 0, 0, 0, 1, 0, 0, 0, 1]
+            ),
+            SimpleNamespace(
+                geom1=1, geom2=0, dist=-0.01, efc_address=1, pos=np.zeros(3), frame=[-1, 0, 0, 0, 1, 0, 0, 0, -1]
+            ),
         ]
         self.data.ncon = len(self.data.contact)
 
@@ -155,8 +158,9 @@ class RefereeObservationTest(unittest.TestCase):
         def velocity(model, data, kind, geom, output, local):
             output[3] = 0.1 if geom == 0 else 0.0
 
-        with patch("bitbots_mujoco_sim.referee.mujoco.mj_contactForce", side_effect=force), patch(
-            "bitbots_mujoco_sim.referee.mujoco.mj_objectVelocity", side_effect=velocity
+        with (
+            patch("bitbots_mujoco_sim.referee.mujoco.mj_contactForce", side_effect=force),
+            patch("bitbots_mujoco_sim.referee.mujoco.mj_objectVelocity", side_effect=velocity),
         ):
             message = self.builder.build(self.data, self.stamp, 1)
         self.assertEqual(len(message.robot_contacts), 1)

@@ -46,6 +46,7 @@ class MatchState:
     @classmethod
     def initial(cls, config: RefereeConfig) -> "MatchState":
         """Prepare permitted player slots without assuming any robot is connected."""
+
         def team(team_id: int, color: str, goalkeeper_color: str) -> TeamState:
             return TeamState(
                 team_number=team_id,

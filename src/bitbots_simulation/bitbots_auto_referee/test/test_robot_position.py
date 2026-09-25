@@ -18,9 +18,12 @@ def match(**changes):
 
 def sample(time, positions, ball=(0.0, 0.0, 0.1)):
     return SimulationObservation(
-        int(time * 1e9), int(time * 1000), ball, positions, frozenset(),
-        robot_bounds={robot: RobotBounds(x - 0.1, x + 0.1, y - 0.1, y + 0.1)
-                      for robot, (x, y, z) in positions.items()},
+        int(time * 1e9),
+        int(time * 1000),
+        ball,
+        positions,
+        frozenset(),
+        robot_bounds={robot: RobotBounds(x - 0.1, x + 0.1, y - 0.1, y + 0.1) for robot, (x, y, z) in positions.items()},
     )
 
 

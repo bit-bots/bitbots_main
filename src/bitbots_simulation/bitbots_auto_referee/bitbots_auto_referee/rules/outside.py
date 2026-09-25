@@ -47,7 +47,12 @@ class FieldGeometry:
         return abs(position[0]) > x_limit or abs(position[1]) > y_limit
 
     def classify(
-        self, previous: Position, current: Position, state: MatchState, last_touch: int | None, now_ns: int,
+        self,
+        previous: Position,
+        current: Position,
+        state: MatchState,
+        last_touch: int | None,
+        now_ns: int,
         allow_goal: bool = True,
     ) -> OutsideDecision | None:
         """Interpolate the first crossed boundary, including height at the goal opening."""
@@ -68,22 +73,34 @@ class FieldGeometry:
         defender = home if (sign < 0) == home_negative else away
         attacker = away if defender == home else home
         half_length, half_width = self.field_length / 2, self.field_width / 2
-        if allow_goal and axis == 0 and abs(y) + self.ball_radius < self.goal_width / 2 and z + self.ball_radius < self.goal_height:
+        if (
+            allow_goal
+            and axis == 0
+            and abs(y) + self.ball_radius < self.goal_width / 2
+            and z + self.ball_radius < self.goal_height
+        ):
             return OutsideDecision("GOAL", attacker, (0.0, 0.0), now_ns)
         if last_touch not in (home, away):
             return None
         other = away if last_touch == home else home
         if axis == 1:
             return OutsideDecision(
-                "SET_PLAY_THROW_IN", other,
-                (max(-half_length, min(half_length, x)), sign * half_width), now_ns,
+                "SET_PLAY_THROW_IN",
+                other,
+                (max(-half_length, min(half_length, x)), sign * half_width),
+                now_ns,
             )
         y_sign = 1 if y >= 0 else -1
         if last_touch == defender:
             return OutsideDecision(
-                "SET_PLAY_CORNER_KICK", attacker, (sign * half_length, y_sign * half_width), now_ns,
+                "SET_PLAY_CORNER_KICK",
+                attacker,
+                (sign * half_length, y_sign * half_width),
+                now_ns,
             )
         return OutsideDecision(
-            "SET_PLAY_GOAL_KICK", defender,
-            (sign * (half_length - self.goal_area_length), y_sign * self.goal_area_width / 2), now_ns,
+            "SET_PLAY_GOAL_KICK",
+            defender,
+            (sign * (half_length - self.goal_area_length), y_sign * self.goal_area_width / 2),
+            now_ns,
         )

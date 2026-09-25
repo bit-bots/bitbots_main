@@ -107,7 +107,9 @@ class RuleChecker:
         self.simulation_time_ns = observation.time_ns
         self.step_number = observation.step_number
         if previous_seconds > 0 and game_state.secs_remaining == 0 and self._event_callback is not None:
-            self._event_callback("Spielzeit abgelaufen. Ein automatischer Halbzeitwechsel ist noch nicht implementiert.")
+            self._event_callback(
+                "Spielzeit abgelaufen. Ein automatischer Halbzeitwechsel ist noch nicht implementiert."
+            )
         self.unmapped_robot_indices = self.robot_positions.keys() - self.robot_teams.keys()
         touching = (
             observation.touching_ball.intersection(self.robot_positions)
@@ -137,8 +139,10 @@ class RuleChecker:
         if game_state.state == "STATE_PLAYING" and not game_state.stopped and self._pending_outside is None:
             self._track_indirect_contacts(new_contacts)
         double_touch_enabled = (
-            game_state.state == "STATE_PLAYING" and not game_state.stopped
-            and self._pending_outside is None and self._placement is None
+            game_state.state == "STATE_PLAYING"
+            and not game_state.stopped
+            and self._pending_outside is None
+            and self._placement is None
         )
         # Only contacts observed after a previously acknowledged placement can end a restart.
         restart_active = self._restart_at is not None and not self._restart_is_goal and self._pending_outside is None
@@ -268,11 +272,18 @@ class RuleChecker:
                 self.last_touch_team_id,
                 self.simulation_time_ns,
             )
-            if self._pending_outside is not None and self._pending_outside.kind == "GOAL" and self._indirect_team is not None:
+            if (
+                self._pending_outside is not None
+                and self._pending_outside.kind == "GOAL"
+                and self._indirect_team is not None
+            ):
                 self._pending_outside = self.field.classify(
-                    self._previous_ball_position, self.ball_position, game_state,
+                    self._previous_ball_position,
+                    self.ball_position,
+                    game_state,
                     self.last_touch_team_id if self.last_touch_team_id is not None else self._indirect_team,
-                    self.simulation_time_ns, allow_goal=False,
+                    self.simulation_time_ns,
+                    allow_goal=False,
                 )
                 self._event("Kein Tor: Indirekte Spielfortsetzung ohne zweite Ballberührung.")
             if self._pending_outside is None:
@@ -304,13 +315,20 @@ class RuleChecker:
                 )
                 conceding = next(team.team_number for team in teams if team.team_number != decision.team_id)
                 game_state = replace(
-                    game_state, teams=teams, kicking_team=conceding, stopped=True,
-                    set_play="SET_PLAY_NONE", secondary_time=0,
+                    game_state,
+                    teams=teams,
+                    kicking_team=conceding,
+                    stopped=True,
+                    set_play="SET_PLAY_NONE",
+                    secondary_time=0,
                 )
             else:
                 game_state = replace(
-                    game_state, set_play=decision.kind, kicking_team=decision.team_id,
-                    secondary_time=SET_PLAY_SECONDS, stopped=True,
+                    game_state,
+                    set_play=decision.kind,
+                    kicking_team=decision.team_id,
+                    secondary_time=SET_PLAY_SECONDS,
+                    stopped=True,
                 )
             self._clock_was_running = False
             self._event(f"Entscheidung: {decision.kind}, Team {decision.team_id}")

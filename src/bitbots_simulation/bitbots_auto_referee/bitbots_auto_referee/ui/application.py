@@ -105,10 +105,7 @@ def run_window(node: DashboardSubscriber) -> None:
         phase = center_axis.text(0.5, 0.9, "–", ha="center", fontsize=17, color="#08734f")
         clock = center_axis.text(0.5, 0.4, "–:–", ha="center", fontsize=44, fontweight="bold")
         status = center_axis.text(0.5, 0.07, "Warte auf AutoRef …", ha="center", fontsize=10, color="#805c17")
-        details = [
-            panel(grid[1, index]).text(0, 0.85, "", va="top", fontsize=10, linespacing=2)
-            for index in range(3)
-        ]
+        details = [panel(grid[1, index]).text(0, 0.85, "", va="top", fontsize=10, linespacing=2) for index in range(3)]
         events_axis = panel(grid[2, :])
         events_axis.set_title("AutoRef-Entscheidungen und Ereignisse · neueste zuerst", loc="left", fontsize=12)
         events = events_axis.text(0, 1, "Noch keine Ereignisse", va="top", fontsize=10, linespacing=1.6, clip_on=True)

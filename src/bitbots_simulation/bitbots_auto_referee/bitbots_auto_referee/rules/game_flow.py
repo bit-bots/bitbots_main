@@ -39,7 +39,9 @@ class GameFlowRules:
         team_id = self.penalties.robot_teams.get(robot)
         number = self.penalties.robot_players.get(robot)
         return any(
-            team.team_number == team_id and number is not None and 1 <= number <= len(team.players)
+            team.team_number == team_id
+            and number is not None
+            and 1 <= number <= len(team.players)
             and team.players[number - 1].penalty == "PENALTY_NONE"
             for team in state.teams
         )
@@ -72,8 +74,10 @@ class GameFlowRules:
         for robot in observation.robot_positions:
             motion = observation.robot_motion.get(robot)
             if (
-                not self._eligible(state, robot) or robot in observation.teleported_robots
-                or motion is None or not all(math.isfinite(value) for value in vars(motion).values())
+                not self._eligible(state, robot)
+                or robot in observation.teleported_robots
+                or motion is None
+                or not all(math.isfinite(value) for value in vars(motion).values())
             ):
                 self._fallen.pop(robot, None)
                 continue
@@ -200,8 +204,11 @@ class GameFlowRules:
         for robot in observation.robot_positions:
             motion = observation.robot_motion.get(robot)
             holding = (
-                self._eligible(state, robot) and robot not in observation.teleported_robots
-                and motion is not None and motion.upright > 0.85 and motion.relative_height > 0.8
+                self._eligible(state, robot)
+                and robot not in observation.teleported_robots
+                and motion is not None
+                and motion.upright > 0.85
+                and motion.relative_height > 0.8
                 and observation.ball_blockage.get(robot, 0.0) >= 0.875
             )
             if holding:
@@ -212,8 +219,10 @@ class GameFlowRules:
             else:
                 self._holding.pop(robot, None)
         near = {
-            robot for robot in observation.robot_positions
-            if self._eligible(state, robot) and robot not in observation.teleported_robots
+            robot
+            for robot in observation.robot_positions
+            if self._eligible(state, robot)
+            and robot not in observation.teleported_robots
             and self._playable(robot, observation)
         }
         self._local_since = {robot: since for robot, since in self._local_since.items() if robot in near}

@@ -45,8 +45,11 @@ class RefereeObservationBuilder:
                 body = int(model.body_parentid[body])
 
         self.robot_geoms = {
-            index: [geom for geom, owner in self.geom_robots.items() if owner == index
-                    and (model.geom_contype[geom] or model.geom_conaffinity[geom])]
+            index: [
+                geom
+                for geom, owner in self.geom_robots.items()
+                if owner == index and (model.geom_contype[geom] or model.geom_conaffinity[geom])
+            ]
             for index in robot_body_ids
         }
 
@@ -86,7 +89,9 @@ class RefereeObservationBuilder:
                 if magnitude > entry[3]:
                     entry[3] = magnitude
                     entry[4] = tuple(float(value) for value in contact.pos)
-                approaches = (approach_first, approach_second) if first == pair[0] else (approach_second, approach_first)
+                approaches = (
+                    (approach_first, approach_second) if first == pair[0] else (approach_second, approach_first)
+                )
                 entry[1] = max(entry[1], approaches[0])
                 entry[2] = max(entry[2], approaches[1])
             if contact.geom1 in self.ball_geoms:
@@ -108,8 +113,12 @@ class RefereeObservationBuilder:
         message.step_number = step_number
         for pair, values in sorted(robot_contacts.items()):
             contact_message = SimulationRobotContact(
-                robot_a=pair[0], robot_b=pair[1], force=values[0],
-                approach_a=values[1], approach_b=values[2], position_valid=True,
+                robot_a=pair[0],
+                robot_b=pair[1],
+                force=values[0],
+                approach_a=values[1],
+                approach_b=values[2],
+                position_valid=True,
             )
             contact_message.position.x, contact_message.position.y, contact_message.position.z = values[4]
             message.robot_contacts.append(contact_message)
@@ -150,9 +159,13 @@ class RefereeObservationBuilder:
         if self.ball_qpos is not None:
             point = np.asarray(data.qpos[self.ball_qpos : self.ball_qpos + 3], dtype=float)
             candidates = {
-                robot.robot_index for robot in message.robots
-                if robot.bounds_valid and robot.upright > 0.85 and robot.relative_height > 0.8
-                and robot.min_x <= point[0] <= robot.max_x and robot.min_y <= point[1] <= robot.max_y
+                robot.robot_index
+                for robot in message.robots
+                if robot.bounds_valid
+                and robot.upright > 0.85
+                and robot.relative_height > 0.8
+                and robot.min_x <= point[0] <= robot.max_x
+                and robot.min_y <= point[1] <= robot.max_y
             }
             if candidates:
                 counts = {index: 0 for index in candidates}

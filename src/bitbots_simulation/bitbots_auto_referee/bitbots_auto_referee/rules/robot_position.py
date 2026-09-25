@@ -30,7 +30,9 @@ class RobotPositionRules:
         team_id = self.robot_teams.get(robot)
         number = self.robot_players.get(robot)
         return any(
-            team.team_number == team_id and number is not None and 1 <= number <= len(team.players)
+            team.team_number == team_id
+            and number is not None
+            and 1 <= number <= len(team.players)
             and team.players[number - 1].penalty == "PENALTY_NONE"
             for team in state.teams
         )
@@ -67,19 +69,27 @@ class RobotPositionRules:
             self._kicker = None
         self._context = context
         bounds = {
-            robot: box for robot, box in observation.robot_bounds.items()
+            robot: box
+            for robot, box in observation.robot_bounds.items()
             if robot in observation.robot_positions
             and all(math.isfinite(value) for value in vars(box).values())
-            and box.min_x <= box.max_x and box.min_y <= box.max_y
+            and box.min_x <= box.max_x
+            and box.min_y <= box.max_y
         }
         circle = self.field.center_circle_radius + self.field.line_width / 2
         candidates = [
-            robot for robot, box in bounds.items()
+            robot
+            for robot, box in bounds.items()
             if self.robot_teams.get(robot) == state.kicking_team
-            and self._eligible(state, robot) and distance(box, 0, 0) <= circle
+            and self._eligible(state, robot)
+            and distance(box, 0, 0) <= circle
         ]
         if self._kicker not in candidates:
-            self._kicker = min(candidates, key=lambda robot: (math.hypot(*observation.robot_positions[robot][:2]), robot)) if candidates else None
+            self._kicker = (
+                min(candidates, key=lambda robot: (math.hypot(*observation.robot_positions[robot][:2]), robot))
+                if candidates
+                else None
+            )
         half_x, half_y = self.field.field_length / 2, self.field.field_width / 2
         for robot, box in sorted(bounds.items()):
             if not self._eligible(state, robot):
@@ -105,17 +115,25 @@ class RobotPositionRules:
                     illegal = robot != self._kicker or not on_field
                 else:
                     illegal = not own_half or not on_field
-            elif state.state == "STATE_PLAYING" and not state.stopped and state.set_play != "SET_PLAY_NONE" and team_id != state.kicking_team:
+            elif (
+                state.state == "STATE_PLAYING"
+                and not state.stopped
+                and state.set_play != "SET_PLAY_NONE"
+                and team_id != state.kicking_team
+            ):
                 if observation.ball_position is not None:
                     bx, by, _ = observation.ball_position
-                    illegal = distance(box, bx, by) < 2 * self.field.center_circle_radius and not self._escaping(robot, observation)
+                    illegal = distance(box, bx, by) < 2 * self.field.center_circle_radius and not self._escaping(
+                        robot, observation
+                    )
                 if state.set_play == "SET_PLAY_GOAL_KICK":
                     opponent_negative = not self._own_negative(state, team_id)
                     line = self.field.line_width / 2
                     area_min = -half_x - line if opponent_negative else half_x - self.field.penalty_area_length - line
                     area_max = -half_x + self.field.penalty_area_length + line if opponent_negative else half_x + line
                     overlaps = (
-                        box.max_x >= area_min and box.min_x <= area_max
+                        box.max_x >= area_min
+                        and box.min_x <= area_max
                         and box.max_y >= -self.field.penalty_area_width / 2 - line
                         and box.min_y <= self.field.penalty_area_width / 2 + line
                     )

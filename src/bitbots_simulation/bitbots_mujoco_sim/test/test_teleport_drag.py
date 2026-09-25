@@ -6,7 +6,6 @@ from types import SimpleNamespace
 from unittest.mock import Mock
 
 import numpy as np
-
 from bitbots_mujoco_sim.simulation import Simulation
 
 

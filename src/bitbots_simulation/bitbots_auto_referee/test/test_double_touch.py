@@ -21,9 +21,12 @@ def setup():
 
 def sample(time, touches=(), force=10.0, positions=None):
     return SimulationObservation(
-        time_ns=int(time * 1e9), step_number=int(time * 1000), ball_position=(0, 0, 0.1),
+        time_ns=int(time * 1e9),
+        step_number=int(time * 1000),
+        ball_position=(0, 0, 0.1),
         robot_positions=positions if positions is not None else {i: (i * 0.5, 1, 0.4) for i in range(4)},
-        touching_ball=frozenset(touches), ball_contact_forces={robot: force for robot in touches},
+        touching_ball=frozenset(touches),
+        ball_contact_forces={robot: force for robot in touches},
     )
 
 

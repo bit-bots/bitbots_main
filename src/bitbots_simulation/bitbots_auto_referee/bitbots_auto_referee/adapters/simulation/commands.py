@@ -4,10 +4,10 @@ import math
 from collections.abc import Callable
 from concurrent.futures import Future
 
-from bitbots_msgs.srv import Teleport
 from rclpy.node import Node
 
 from bitbots_auto_referee.core.teleport import TeleportResult
+from bitbots_msgs.srv import Teleport
 
 
 class SimulationCommands:
@@ -43,7 +43,9 @@ class SimulationCommands:
                 outcome = TeleportResult(False, str(error))
             if not result.cancelled():
                 result.set_result(outcome)
-            self._event_callback(f"{label}: Teleport {'ausgeführt' if outcome.success else 'fehlgeschlagen'} – {outcome.message}")
+            self._event_callback(
+                f"{label}: Teleport {'ausgeführt' if outcome.success else 'fehlgeschlagen'} – {outcome.message}"
+            )
 
         try:
             self._client.call_async(request).add_done_callback(completed)

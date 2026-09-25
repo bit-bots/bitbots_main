@@ -5,12 +5,11 @@ import unittest
 from dataclasses import replace
 from unittest.mock import Mock
 
-from std_msgs.msg import String
-
 from bitbots_auto_referee.config import PARAMETERS, RefereeConfig
 from bitbots_auto_referee.core.state import MatchState
 from bitbots_auto_referee.ui.application import DashboardSubscriber, format_snapshot
 from bitbots_auto_referee.ui.dashboard import Dashboard
+from std_msgs.msg import String
 
 
 class DashboardTest(unittest.TestCase):

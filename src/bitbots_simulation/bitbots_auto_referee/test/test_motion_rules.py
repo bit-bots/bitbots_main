@@ -20,8 +20,12 @@ def initial(**changes):
 
 def sample(seconds, motion=STILL, contacts=(), **changes):
     observation = SimulationObservation(
-        int(seconds * 1e9), int(seconds * 1000), (0.0, 0.0, 0.1),
-        {0: (0.0, 1.0, 0.4)}, frozenset(contacts), robot_motion={0: motion},
+        int(seconds * 1e9),
+        int(seconds * 1000),
+        (0.0, 0.0, 0.1),
+        {0: (0.0, 1.0, 0.4)},
+        frozenset(contacts),
+        robot_motion={0: motion},
     )
     return replace(observation, **changes)
 

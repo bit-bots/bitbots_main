@@ -28,8 +28,15 @@ def setup():
 
 def sample(time, motion=UP, position=(0.3, 0, 0.4), ball=(0, 0, 0.1), blockage=0.0, **changes):
     return SimulationObservation(
-        int(time * 1e9), int(time * 1000), ball, {0: position}, frozenset(),
-        robot_motion={0: motion}, robot_yaws={0: math.pi}, ball_blockage={0: blockage}, **changes,
+        int(time * 1e9),
+        int(time * 1000),
+        ball,
+        {0: position},
+        frozenset(),
+        robot_motion={0: motion},
+        robot_yaws={0: math.pi},
+        ball_blockage={0: blockage},
+        **changes,
     )
 
 
