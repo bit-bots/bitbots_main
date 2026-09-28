@@ -3,15 +3,16 @@ import os
 import threading
 from hashlib import md5
 
-from deploy.misc import be_quiet, hide_output, print_debug, print_info, print_success, print_warning
-from deploy.tasks import INTERNET_TIMEOUT
-from deploy.tasks.abstract_task import AbstractTask
 from fabric import Connection, Group, GroupResult, Result
 from git import Repo
 from git.exc import GitCommandError
 from invoke.exceptions import UnexpectedExit
 from rich.console import Group as RichGroup
 from rich.table import Table
+
+from deploy.misc import be_quiet, hide_output, print_debug, print_info, print_success, print_warning
+from deploy.tasks import INTERNET_TIMEOUT
+from deploy.tasks.abstract_task import AbstractTask
 
 
 class OurRepo(Repo):

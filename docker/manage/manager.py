@@ -11,6 +11,7 @@ from manage.misc import (
     DOCKER_DIR,
     IMAGE_NAME_BASE,
     IMAGE_NAME_PROJECT,
+    IMAGE_NAME_UDP_BRIDGE,
     LOGLEVEL,
     NETWORK_NAME,
     REPO_ROOT,
@@ -145,10 +146,80 @@ class ContainerManager:
         run_parser = subparsers.add_parser("run", parents=[run_parent_parser], help="Run container by type")
         run_parser.add_argument(
             "run_type",
-            choices=["project", "simulator"],
+            choices=["project", "simulator", "config", "config-sim", "config-robot"],
             help="Type of container to run",
         )
         run_parser.add_argument("target_id", nargs="?", default=None, help="Target hostname, robot name, or IP")
+        run_parser.add_argument("run_extra_arg", nargs="?", default=None, help="Optional simulator IP or argument")
+
+        # Config container commands
+        config_run_parent = argparse.ArgumentParser(add_help=False)
+        config_run_parent.add_argument(
+            "--name",
+            type=str,
+            default=None,
+            help="Custom container name (default: bitbots-config-<type>)",
+        )
+        config_run_parent.add_argument(
+            "--image",
+            type=str,
+            default=None,
+            help=f"Custom image name (default: {IMAGE_NAME_UDP_BRIDGE})",
+        )
+        config_run_parent.add_argument(
+            "--simulator-ip",
+            "--sim-ip",
+            type=str,
+            default=None,
+            dest="opt_simulator_ip",
+            help="IP address of the simulator",
+        )
+
+        run_config_parser = subparsers.add_parser(
+            "run-config",
+            parents=[config_run_parent],
+            help="Run host UDP bridge configuration container (udp_via_zenoh with config_sim.toml / config_robot.toml)",
+        )
+        run_config_parser.add_argument(
+            "config_type",
+            choices=["sim", "simulator", "robot", "config_sim", "config_robot", "config_sim.toml", "config_robot.toml"],
+            help="Type of config container: 'sim'/'config_sim.toml' or 'robot'/'config_robot.toml'",
+        )
+        run_config_parser.add_argument(
+            "hostname",
+            nargs="?",
+            default=None,
+            help="Host name to pass to container (default: system hostname)",
+        )
+        run_config_parser.add_argument(
+            "simulator_ip",
+            nargs="?",
+            default=None,
+            help="IP address of the simulator",
+        )
+
+        subparsers.add_parser(
+            "config",
+            parents=[run_config_parser],
+            conflict_handler="resolve",
+            help="Alias for run-config",
+        )
+
+        run_config_sim_parser = subparsers.add_parser(
+            "run-config-sim",
+            parents=[config_run_parent],
+            help="Run simulator host configuration container (udp_via_zenoh config_sim.toml)",
+        )
+        run_config_sim_parser.add_argument("hostname", nargs="?", default=None, help="Host name")
+        run_config_sim_parser.add_argument("simulator_ip", nargs="?", default=None, help="Simulator IP")
+
+        run_config_robot_parser = subparsers.add_parser(
+            "run-config-robot",
+            parents=[config_run_parent],
+            help="Run robot host configuration container (udp_via_zenoh config_robot.toml)",
+        )
+        run_config_robot_parser.add_argument("hostname", nargs="?", default=None, help="Host name")
+        run_config_robot_parser.add_argument("simulator_ip", nargs="?", default=None, help="Simulator IP")
 
         # Stop command
         subparsers.add_parser("stop-all", help="Stop and remove all Bit-Bots containers")
@@ -210,6 +281,47 @@ class ContainerManager:
             )
         elif cmd in ["run-simulator", "simulator"] or (cmd == "run" and self._args.run_type == "simulator"):
             self.run_simulator(self._args.target_id, zenoh_router=self._args.zenoh_router)
+        elif cmd in ["run-config", "config"]:
+            sim_ip = (
+                self._args.simulator_ip
+                or getattr(self._args, "opt_simulator_ip", None)
+                or getattr(self._args, "simulator_ip", None)
+            )
+            self.run_config(
+                self._args.config_type,
+                hostname=self._args.hostname,
+                simulator_ip=sim_ip,
+                custom_name=getattr(self._args, "name", None),
+                custom_image=getattr(self._args, "image", None),
+            )
+        elif cmd == "run-config-sim" or (cmd == "run" and self._args.run_type == "config-sim"):
+            sim_ip = self._args.simulator_ip or getattr(self._args, "opt_simulator_ip", None)
+            self.run_config(
+                "sim",
+                hostname=self._args.hostname if hasattr(self._args, "hostname") else self._args.target_id,
+                simulator_ip=sim_ip,
+                custom_name=getattr(self._args, "name", None),
+                custom_image=getattr(self._args, "image", None),
+            )
+        elif cmd == "run-config-robot" or (cmd == "run" and self._args.run_type == "config-robot"):
+            sim_ip = self._args.simulator_ip or getattr(self._args, "opt_simulator_ip", None)
+            self.run_config(
+                "robot",
+                hostname=self._args.hostname if hasattr(self._args, "hostname") else self._args.target_id,
+                simulator_ip=sim_ip,
+                custom_name=getattr(self._args, "name", None),
+                custom_image=getattr(self._args, "image", None),
+            )
+        elif cmd == "run" and self._args.run_type == "config":
+            config_type = self._args.target_id or "sim"
+            sim_ip = getattr(self._args, "run_extra_arg", None) or getattr(self._args, "opt_simulator_ip", None)
+            self.run_config(
+                config_type,
+                hostname=None,
+                simulator_ip=sim_ip,
+                custom_name=getattr(self._args, "name", None),
+                custom_image=getattr(self._args, "image", None),
+            )
         elif cmd in ["stop-all", "stop"]:
             self.stop_all()
         elif cmd == "ssh":
@@ -328,6 +440,56 @@ class ContainerManager:
 
         gpu_args = self.engine.get_gpu_args(self._args.gpu_args)
         self.engine.run_container(IMAGE_NAME_PROJECT, name, net_args, env_args, gpu_args, detached=True)
+
+    def run_config(
+        self,
+        config_type: str,
+        hostname: str | None = None,
+        simulator_ip: str | None = None,
+        custom_name: str | None = None,
+        custom_image: str | None = None,
+    ) -> None:
+        subnet = self._args.subnet
+        self.create_network(subnet)
+
+        norm = str(config_type).lower()
+        if "sim" in norm:
+            config_file = "config_sim.toml"
+            default_name = "bitbots-config-sim"
+        else:
+            config_file = "config_robot.toml"
+            default_name = "bitbots-config-robot"
+
+        image = custom_image or IMAGE_NAME_UDP_BRIDGE
+        name = custom_name or default_name
+
+        import socket
+
+        host = hostname or socket.gethostname()
+        sim_ip = (
+            simulator_ip or getattr(self._args, "opt_simulator_ip", None) or getattr(self._args, "simulator_ip", None)
+        )
+
+        cmd_args = [config_file, host]
+        if sim_ip:
+            cmd_args.append(sim_ip)
+
+        net_args = ["--network", NETWORK_NAME]
+        env_args: list[str] = []
+        gpu_args: list[str] = []
+
+        print_info(f"Running UDP bridge container '{name}' using image '{image}' on network {NETWORK_NAME}...")
+        print_info(f"Arguments: config='{config_file}', hostname='{host}', simulator_ip='{sim_ip}'")
+        self.engine.run_container(
+            image,
+            name,
+            net_args,
+            env_args,
+            gpu_args,
+            detached=True,
+            command_args=cmd_args,
+            copy_ssh_keys=False,
+        )
 
     def stop_all(self) -> None:
         self.engine.stop_and_remove_containers()

@@ -46,3 +46,22 @@ These different tasks can be performed:
     ```shell
     ./deploy_robots.py --package bitbots_utils nuc1
     ```
+
+## `deploy_game.py`
+
+Deploy and orchestrate a multi-robot simulation game setup across multiple host machines.
+This script takes a configuration file specifying the game setup (e.g. `4:4`, `2:2`) and available hosts, assigns robot roles and domain IDs (allocating 2 fewer robots to the simulator host for equal load distribution), triggers deployment on the hosts, and outputs the commands to start host UDP bridge configuration containers (`udp_via_zenoh` with `config_sim.toml` / `config_robot.toml`), robot containers with Zenoh, and launch teamplayer instances.
+
+### Example usage
+
+- Deploy a game using a configuration file:
+
+    ```shell
+    ./deploy_game.py game_config.yaml
+    ```
+
+- Display the deployment plan and required host commands without executing the deploy step:
+
+    ```shell
+    ./deploy_game.py game_config.yaml --dry-run
+    ```

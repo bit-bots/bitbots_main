@@ -1,7 +1,8 @@
-from deploy.misc import get_connections_from_succeeded, hide_output, print_debug, print_error
-from deploy.tasks.abstract_task import AbstractTask
 from fabric import Group, GroupResult
 from fabric.exceptions import GroupException
+
+from deploy.misc import get_connections_from_succeeded, hide_output, print_debug, print_error
+from deploy.tasks.abstract_task import AbstractTask
 
 
 class Build(AbstractTask):

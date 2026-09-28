@@ -1,0 +1,26 @@
+# Example game deployment configuration
+# Game setup (e.g. "4:4" for a 4 vs 4 match, or "2:2", "3", etc.)
+game: "4:4"
+
+# List of available host machines (hostnames, IPs, or robot hostnames)
+hosts:
+  - "cl05"
+  - "cl06"
+  - "cl07"
+
+# Optional: IP address or hostname of the machine running the simulator
+# simulator_ip: "10.66.0.254"
+
+# Optional: Dedicated host running the simulator (allocated 2 fewer robots for load balance)
+simulator_host: "cl06"
+
+# Optional: Remote workspace path (defaults to ~/bitbots_main)
+workspace: "~/git/bitbots/bitbots_main"
+
+# Optional: SSH user (defaults to bitbots)
+user: "20krupp"
+
+# Optional: Additional ROS 2 launch arguments for teamplayer.launch
+# teamplayer_args:
+#   record: "false"
+#   tts: "false"

@@ -14,6 +14,7 @@ CONSOLE = Console()
 # Constants
 IMAGE_NAME_BASE = "bitbots-base"
 IMAGE_NAME_PROJECT = "bitbots-project"
+IMAGE_NAME_UDP_BRIDGE = "udp_via_zenoh"
 DEFAULT_USER = "bitbots"
 SSH_PORT_PROJECT = 2222
 NETWORK_NAME = "bitbots-net"

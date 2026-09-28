@@ -167,3 +167,77 @@ def test_manager_run_simulator_env_zenoh(monkeypatch):
     assert "START_ZENOH_ROUTER=1" in env_args
     assert "ZENOH_MODE=router" in env_args
     assert "SIMULATOR=1" in env_args
+
+
+def test_manager_dispatch_run_config_sim(monkeypatch):
+    mock_run_config = MagicMock()
+    monkeypatch.setattr(ContainerManager, "run_config", mock_run_config)
+    ContainerManager(["run-config", "sim", "host1", "10.66.0.15"])
+    mock_run_config.assert_called_once_with(
+        "sim",
+        hostname="host1",
+        simulator_ip="10.66.0.15",
+        custom_name=None,
+        custom_image=None,
+    )
+
+
+def test_manager_dispatch_run_config_robot(monkeypatch):
+    mock_run_config = MagicMock()
+    monkeypatch.setattr(ContainerManager, "run_config", mock_run_config)
+    ContainerManager(["run-config", "robot", "host2", "10.66.0.15"])
+    mock_run_config.assert_called_once_with(
+        "robot",
+        hostname="host2",
+        simulator_ip="10.66.0.15",
+        custom_name=None,
+        custom_image=None,
+    )
+
+
+def test_manager_dispatch_config_alias(monkeypatch):
+    mock_run_config = MagicMock()
+    monkeypatch.setattr(ContainerManager, "run_config", mock_run_config)
+    ContainerManager(["config", "config_sim", "host1", "10.66.0.15"])
+    mock_run_config.assert_called_once_with(
+        "config_sim",
+        hostname="host1",
+        simulator_ip="10.66.0.15",
+        custom_name=None,
+        custom_image=None,
+    )
+
+
+def test_manager_run_config_execution(monkeypatch):
+    monkeypatch.setattr(ContainerManager, "execute_command", lambda self: None)
+    cm = ContainerManager(["run-config", "sim"])
+    monkeypatch.setattr(cm, "create_network", lambda subnet=None: None)
+    mock_run_container = MagicMock()
+    cm.engine.run_container = mock_run_container
+
+    # Test sim config
+    cm.run_config("sim", hostname="simhost", simulator_ip="10.66.0.15")
+    mock_run_container.assert_called_with(
+        "udp_via_zenoh",
+        "bitbots-config-sim",
+        ["--network", "bitbots-net"],
+        [],
+        [],
+        detached=True,
+        command_args=["config_sim.toml", "simhost", "10.66.0.15"],
+        copy_ssh_keys=False,
+    )
+
+    # Test robot config
+    mock_run_container.reset_mock()
+    cm.run_config("robot", hostname="robothost", simulator_ip="10.66.0.15")
+    mock_run_container.assert_called_with(
+        "udp_via_zenoh",
+        "bitbots-config-robot",
+        ["--network", "bitbots-net"],
+        [],
+        [],
+        detached=True,
+        command_args=["config_robot.toml", "robothost", "10.66.0.15"],
+        copy_ssh_keys=False,
+    )

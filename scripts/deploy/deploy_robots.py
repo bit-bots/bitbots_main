@@ -2,6 +2,8 @@ import argparse
 import os
 import sys
 
+from rich.prompt import Prompt
+
 from deploy.misc import (
     CONSOLE,
     LOGLEVEL,
@@ -22,7 +24,6 @@ from deploy.tasks import (
     Launch,
     Sync,
 )
-from rich.prompt import Prompt
 
 
 class DeployRobots:

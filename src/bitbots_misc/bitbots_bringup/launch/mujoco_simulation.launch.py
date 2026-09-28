@@ -177,7 +177,7 @@ def launch_setup(context):
                 )
             )
         else:
-            teamplayer_cmd_str = f"ROS_DOMAIN_ID={robot_domain} {' '.join(teamplayer_cmd)}"
+            teamplayer_cmd_str = f"ROS_DOMAIN_ID={robot_domain} pixi run {' '.join(teamplayer_cmd)}"
             actions.append(
                 LogInfo(msg=f"Launch command for robot{robot_domain} (domain {robot_domain}): {teamplayer_cmd_str}"),
             )

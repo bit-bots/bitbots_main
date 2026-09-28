@@ -119,6 +119,8 @@ class ContainerEngine(abc.ABC):
         env_args: list[str],
         gpu_args: list[str],
         detached: bool = True,
+        command_args: list[str] | None = None,
+        copy_ssh_keys: bool = True,
     ) -> None:
         """Runs a container with the given settings."""
         if not self.check_available():
@@ -132,14 +134,18 @@ class ContainerEngine(abc.ABC):
         args.extend(env_args)
         args.extend(gpu_args)
         args.append(image_name)
+        if command_args:
+            args.extend(command_args)
 
         print_info(f"Starting container '{container_name}' using image '{image_name}' with {self.name}...")
         self.run_cmd(args, check=True)
-        if detached:
+        if detached and copy_ssh_keys:
             self.copy_ssh_keys_to_container(container_name)
         print_success(f"Container '{container_name}' started successfully.")
 
-    def find_containers(self, regex_pattern: str = r"^(bitbots-|simulator$)") -> list[str]:
+    def find_containers(
+        self, regex_pattern: str = r"^(bitbots-|simulator$|config_sim|config_robot|udp_via_zenoh)"
+    ) -> list[str]:
         """Finds container names matching the regex pattern."""
         if not self.check_available():
             return []
@@ -155,7 +161,9 @@ class ContainerEngine(abc.ABC):
             print_debug(f"Failed to list containers: {e}")
             return []
 
-    def stop_and_remove_containers(self, regex_pattern: str = r"^(bitbots-|simulator$)") -> None:
+    def stop_and_remove_containers(
+        self, regex_pattern: str = r"^(bitbots-|simulator$|config_sim|config_robot|udp_via_zenoh)"
+    ) -> None:
         """Stops and removes all containers matching the regex pattern."""
         if not self.check_available():
             sys.exit(1)
@@ -490,7 +498,9 @@ class DockerEngine(ContainerEngine):
         else:
             print_info(f"Host interface {ifname} is not connected.")
 
-    def stop_and_remove_containers(self, regex_pattern: str = r"^(bitbots-|simulator$)") -> None:
+    def stop_and_remove_containers(
+        self, regex_pattern: str = r"^(bitbots-|simulator$|config_sim|config_robot|udp_via_zenoh)"
+    ) -> None:
         super().stop_and_remove_containers(regex_pattern)
         ifname = "veth-bb-host"
         res = subprocess.run(["ip", "link", "show", ifname], capture_output=True)

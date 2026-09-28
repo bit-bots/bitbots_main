@@ -54,6 +54,20 @@ Run the simulator container (named `simulator`, exposes port 8080 for web visual
 ./docker/manage.py run-simulator 10.66.6.10
 ```
 
+Run host UDP bridge configuration containers (`udp_via_zenoh` with `config_sim.toml` on simulator host, `config_robot.toml` on robot hosts):
+```bash
+# On simulator host:
+./docker/manage.py run-config sim $(hostname) 10.66.0.15
+
+# On robot hosts:
+./docker/manage.py run-config robot $(hostname) 10.66.0.15
+```
+Or with raw Docker:
+```bash
+docker run -d --name bitbots-config-sim --net=bitbots-net udp_via_zenoh config_sim.toml $(hostname) 10.66.0.15
+docker run -d --name bitbots-config-robot --net=bitbots-net udp_via_zenoh config_robot.toml $(hostname) 10.66.0.15
+```
+
 ### Advanced: Multiple Containers & Static IPs
 
 To run containers with their own IP addresses (avoiding port mapping), first create the network:

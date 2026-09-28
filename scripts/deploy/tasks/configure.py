@@ -1,5 +1,8 @@
 import concurrent.futures
 
+from fabric import Group, GroupResult, Result
+from rich.prompt import Prompt
+
 from deploy.misc import (
     CONSOLE,
     Connection,
@@ -10,8 +13,6 @@ from deploy.misc import (
     print_info,
 )
 from deploy.tasks.abstract_task import AbstractTaskWhichRequiresSudo
-from fabric import Group, GroupResult, Result
-from rich.prompt import Prompt
 
 
 class Configure(AbstractTaskWhichRequiresSudo):

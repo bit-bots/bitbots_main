@@ -1,7 +1,8 @@
 import abc
 
-from deploy.misc import CONSOLE
 from fabric import Group, GroupResult
+
+from deploy.misc import CONSOLE
 
 
 class AbstractTask(abc.ABC):

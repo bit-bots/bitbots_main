@@ -1,9 +1,10 @@
 import concurrent.futures
 import os
 
+from fabric import Group, GroupResult, Result
+
 from deploy.misc import Connection, be_quiet, hide_output, print_debug, print_error
 from deploy.tasks.abstract_task import AbstractTask
-from fabric import Group, GroupResult, Result
 
 
 class Sync(AbstractTask):

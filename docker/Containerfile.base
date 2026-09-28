@@ -26,6 +26,7 @@ RUN apt-get update -y \
     jq \
     less \
     libncurses5-dev \
+    ibwebkit2gtk-4.1-0 \
     locales \
     netcat-openbsd \
     openssh-server \
@@ -93,6 +94,9 @@ COPY --chown=$user:$user docker/ansible_files/zenoh_session.json5 /home/${user}/
 # Setup Zenoh environment variables
 ENV ZENOH_ROUTER_CONFIG_URI=/home/${user}/.config/zenoh/router.json5
 ENV ZENOH_SESSION_CONFIG_URI=/home/${user}/.config/zenoh/session.json5
+
+# Setup MuJoCo environment variables
+ENV MUJOCO_GL=egl
 
 # Install zim modules
 USER $user
