@@ -87,6 +87,18 @@ class GoToAbsolutePositionFieldFraction(GoToAbsolutePosition):
         )
 
 
+class GoToDemoPenalty(GoToAbsolutePosition):
+    def __init__(self, blackboard, dsd, parameters):
+        """Go to an absolute position of the field, specified by the fraction of the field size"""
+        super().__init__(blackboard, dsd, parameters)
+        point = self.blackboard.config["demo_penalty_position"]
+        self.point = (
+            point[0] * self.blackboard.world_model.field_length / 2,
+            point[1] * self.blackboard.world_model.field_width / 2,
+            self.point[2],
+        )
+
+
 class GoToOwnGoal(GoToAbsolutePosition):
     def __init__(self, blackboard, dsd, parameters):
         """Go to the own goal"""
