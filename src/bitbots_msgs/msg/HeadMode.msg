@@ -13,6 +13,8 @@ uint8 DONT_MOVE=3
 uint8 SEARCH_BALL_PENALTY = 4
 # Do a pattern which only looks in front of the robot
 uint8 SEARCH_FRONT = 5
+# Continuously decide where to look by sampling and scoring head trajectories
+uint8 ACTIVE_VISION = 6
 
 
 uint8 head_mode
