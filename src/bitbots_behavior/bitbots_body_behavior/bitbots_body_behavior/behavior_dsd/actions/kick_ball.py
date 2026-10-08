@@ -74,14 +74,16 @@ class RLKickAngleRobot(AbstractKickAction):
     def __init__(self, blackboard, dsd, parameters):
         super().__init__(blackboard, dsd, parameters)
         self._strength = parameters.get("strength", 2.0)
-        self._angle_deg_in_map = parameters.get("angle_deg_in_map", 0.0)
+        self.angle_deg_robot = parameters.get("angle_deg_robot", 0.0)
         self._start_time = None
 
     def perform(self, reevaluate=False):
-        # transform map to robot relative
+        # transform robot to map relative
+        _, _, robot_facing = self.blackboard.world_model.get_current_position()
+        angle_deg_map = math.degrees(robot_facing) + self.angle_deg_robot
         if self._start_time is None:
             self._start_time = self.blackboard.node.get_clock().now()
-            self.blackboard.kick.start_rl_kick(self._angle_deg_in_map, self._strength)
+            self.blackboard.kick.start_rl_kick(angle_deg_map, self._strength)
 
         if not self.blackboard.kick.is_currently_kicking:
             self.pop()
