@@ -35,7 +35,7 @@ from enum import StrEnum
 from typing import TypedDict
 
 import numpy as np
-from bitbots_utils.utils import get_parameters_from_other_node
+from bitbots_utils.utils import get_parameter_dict, get_parameters_from_other_node
 from numpy.typing import NDArray
 from scipy.optimize import linear_sum_assignment
 
@@ -74,35 +74,37 @@ class Field:
 
 @dataclass
 class Params:
+    """Positioning params. Defalut vaules will be updated in __init__."""
+
     # goalie
-    d_g: float = 0.55  # how far the goalie comes out of the goal (dist from goal centre)
+    goalie_forward_dist: float = 0.5  # how far the goalie comes out of the goal (dist from goal centre)
     # defenders
-    alpha: float = 0.42  # defender depth as a fraction of |ball-goal|  (push-up factor)
-    depth_bias: float = 0.0  # extra defender depth: + = further forward, - = further back
-    D_min: float = 0.9  # min defender depth from goal (never tuck behind this)
-    D_max: float = 3.8  # max defender depth from goal (high-line cap)
-    dz: float = 0.45  # keep defenders at least this far ahead of the goalie
+    relativ_def_depth: float = 0.5  # defender depth as a fraction of |ball-goal|  (push-up factor)
+    def_depth_bias: float = 0.0  # extra defender depth: + = further forward, - = further back
+    def_min_depth: float = 1.0  # min defender depth from goal (never tuck behind this)
+    def_max_depth: float = 4.5  # max defender depth from goal (high-line cap)
+    def_to_goalie_depth: float = 0.5  # keep defenders at least this far ahead of the goalie
     standoff: float = 1.0  # keep defenders at least this far (goal-side) of the ball
-    gap: float = 1.7  # lateral spacing between adjacent defenders (ball at/beyond the centre circle)
-    gap_close: float = 0.6  # lateral spacing when the ball is at our goal (defenders tuck in)
-    def_side: float = 0.9  # lateral offset for a lone defender (so it's not on the axis)
+    def_side_gap: float = 1.0  # lateral spacing between adjacent defenders (ball at/beyond the centre circle)
+    def_side_gap_close: float = 0.5  # lateral spacing when the ball is at our goal (defenders tuck in)
+    solo_def_side_gap: float = 0.0  # lateral offset for a lone defender (so it's not on the axis)
     # supporter
     include_supporter: bool = False  # if False, no supporter is assigned; its slot becomes an extra defender
-    f: float = 1.6  # how far in front of the ball (toward opp goal) the supporter sits
-    supp_side: float = 1.2  # supporter lateral offset magnitude (auto-leans toward centre)
-    supp_max_x: float = 3.0  # supporter never goes past this x (keeps it out of the opp corner)
+    supp_forward_offset: float = 1.0  # how far in front of the ball (toward opp goal) the supporter sits
+    supp_side: float = 1.0  # supporter lateral offset magnitude (auto-leans toward centre)
+    relativ_supp_max_x: float = 0.7  # supporter never goes past this x (keeps it out of the opp corner)
     # striker
     kick_offset: float = 0.25  # striker stands this far behind the ball (to push it forward)
     post_margin: float = 0.45  # safety margin inside each goal post for a straight shot
-    back_dist: float = 0.21  # within this x of the opp goal & not aligned -> play back to our side
+    back_dist: float = 200  # within this x of the opp goal & not aligned -> play back to our side
     # separation
-    min_sep: float = 0.8  # no two robots closer than this
+    min_sep: float = 1.0  # no two robots closer than this
     sep_iters: int = 8
     # kick lane: keep teammates out of the corridor in front of the ball
     kick_clear: float = 0.7  # half-width of the cleared corridor
     kick_range: float = 3.0  # how far in front of the ball the corridor extends
     # opponent set play: keep all robots outside this radius
-    opp_set_play_clearance: float = 1.1
+    opp_set_play_clearance: float = 1.0
 
 
 class PositioningCapsule(AbstractBlackboardCapsule):
@@ -122,15 +124,37 @@ class PositioningCapsule(AbstractBlackboardCapsule):
             ],
         )
 
+        self.behavior_config = get_parameter_dict(self._node, "")
+
         self._field = Field(
             length=parameters["field.size.x"],
             width=parameters["field.size.y"],
             goal_width=parameters["field.goal.width"],
         )
         self._params = Params()
-        # Whether the formation includes a supporter. Off by default; enabling it lets one
-        # field player push up as a supporter instead of being an extra defender.
-        self._params.include_supporter = bool(blackboard.config.get("formation_include_supporter", False))
+        self._params.goalie_forward_dist = float(self.behavior_config["goalie_forward_dist"])
+        self._params.relativ_def_depth = float(self.behavior_config["relativ_def_depth"])
+        self._params.def_depth_bias = float(self.behavior_config["def_depth_bias"])
+        self._params.def_min_depth = float(self.behavior_config["def_min_depth"])
+        self._params.def_max_depth = float(self.behavior_config["def_max_depth"])
+        self._params.def_to_goalie_depth = float(self.behavior_config["def_to_goalie_depth"])
+        self._params.standoff = float(self.behavior_config["standoff"])
+        self._params.def_side_gap = float(self.behavior_config["def_side_gap"])
+        self._params.def_side_gap_close = float(self.behavior_config["def_side_gap_close"])
+        self._params.solo_def_side_gap = float(self.behavior_config["solo_def_side_gap"])
+        self._params.include_supporter = bool(self.behavior_config["include_supporter"])
+        self._params.supp_forward_offset = float(self.behavior_config["supp_forward_offset"])
+        self._params.supp_side = float(self.behavior_config["supp_side"])
+        self._params.relativ_supp_max_x = float(self.behavior_config["relativ_supp_max_x"])
+        self._params.kick_offset = float(self.behavior_config["kick_offset"])
+        self._params.post_margin = float(self.behavior_config["post_margin"])
+        self._params.back_dist = float(self.behavior_config["back_dist"])
+        self._params.min_sep = float(self.behavior_config["min_sep"])
+        self._params.sep_iters = int(self.behavior_config["sep_iters"])
+        self._params.kick_clear = float(self.behavior_config["kick_clear"])
+        self._params.kick_range = float(self.behavior_config["kick_range"])
+        self._params.opp_set_play_clearance = float(self.behavior_config["opp_set_play_clearance"])
+
         self._inner = InnerPositioningCapsule()
 
     # Cached capsule functions can not have parameters or side effects,
@@ -489,10 +513,10 @@ class InnerPositioningCapsule:
 
         # --- goalie: on the ball->goal axis, hugging the goal, clamped to the mouth -- #
         if Role.GOALIE in roles:
-            g = goal + params.d_g * to_ball
+            g = goal + params.goalie_forward_dist * to_ball
             g = np.array(
                 [
-                    np.clip(g[0], -field.length / 2 + 0.05, -field.length / 2 + params.d_g),
+                    np.clip(g[0], -field.length / 2 + 0.05, -field.length / 2 + params.goalie_forward_dist),
                     np.clip(g[1], -field.goal_width / 2, field.goal_width / 2),
                 ]
             )
@@ -503,23 +527,23 @@ class InnerPositioningCapsule:
         m = len(defender_roles)
         if m > 0:
             depth = np.clip(
-                params.alpha * d + params.depth_bias,  # push up + fwd/back bias
-                params.D_min,
-                params.D_max,
+                params.relativ_def_depth * d + params.def_depth_bias,  # push up + fwd/back bias
+                params.def_min_depth,
+                params.def_max_depth,
             )
             depth = min(depth, max(d - params.standoff, 0.0))  # stay goal-side of the ball
-            depth = max(depth, params.d_g + params.dz)  # stay ahead of the goalie
+            depth = max(depth, params.goalie_forward_dist + params.def_to_goalie_depth)  # stay ahead of the goalie
             anchor = goal + depth * to_ball
             if m == 1:
                 # a single defender: shade to the centre side so it doesn't sit on the
                 # striker<->goalie line (otherwise all three are collinear)
                 side_dir = -1.0 if b[1] >= 0 else 1.0
-                offsets = [params.def_side * side_dir]
+                offsets = [params.solo_def_side_gap * side_dir]
             else:
                 # tighten the defender line as the ball nears our goal: full `gap` at the
                 # centre circle (and beyond), shrinking smoothly to `gap_close` at the goal
                 t = self._smoothstep(d, 0.0, field.length / 2.0)
-                gap = params.gap_close + t * (params.gap - params.gap_close)
+                gap = params.def_side_gap_close + t * (params.def_side_gap - params.def_side_gap_close)
                 offsets = [(k - (m - 1) / 2.0) * gap for k in range(m)]
             for r, off in zip(defender_roles, offsets, strict=True):
                 out[r] = self._clamp_field(anchor + off * perp, field)
@@ -529,8 +553,8 @@ class InnerPositioningCapsule:
             # always sit to the centre side of the ball; hard swap so it is never
             # directly in front of the striker, even when the ball is on the centre line
             side_dir = -1.0 if b[1] >= 0 else 1.0  # points toward y=0 (default: centre-ward)
-            sup = b + np.array([params.f, params.supp_side * side_dir])
-            sup[0] = min(sup[0], params.supp_max_x)  # don't drift into the opponent corner
+            sup = b + np.array([params.supp_forward_offset, params.supp_side * side_dir])
+            sup[0] = min(sup[0], field.length * params.relativ_supp_max_x)  # don't drift into the opponent corner
             out[Role.SUPPORTER] = self._clamp_field(sup, field)
 
         # --- min-separation repulsion + kick-lane clearance + set-play clearance -- #
