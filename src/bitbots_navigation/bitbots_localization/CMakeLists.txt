@@ -125,10 +125,10 @@ install(TARGETS localization DESTINATION lib/${PROJECT_NAME})
 if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
 
-  ament_add_gtest(test_map_scaling test/test_map_scaling.cpp src/map.cpp
+  ament_add_gtest(test_map_validation test/test_map_validation.cpp src/map.cpp
                   src/RobotState.cpp src/tools.cpp)
   ament_target_dependencies(
-    test_map_scaling
+    test_map_validation
     ament_index_cpp
     Boost
     nav_msgs
