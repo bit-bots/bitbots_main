@@ -5,10 +5,28 @@
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <bitbots_localization/map.hpp>
 #include <boost/filesystem.hpp>
+#include <sstream>
+#include <stdexcept>
 
 namespace fs = boost::filesystem;
 
 namespace bitbots_localization {
+
+namespace {
+constexpr double kExpectedMaxIntensity = 100.0;
+}  // namespace
+
+void validate_map_value_range(const cv::Mat& map, const std::string& map_path) {
+  double max_intensity = 0.0;
+  cv::minMaxLoc(map, nullptr, &max_intensity);
+  if (max_intensity > kExpectedMaxIntensity) {
+    std::stringstream message;
+    message << "Map '" << map_path << "' contains pixel intensities up to " << static_cast<int>(max_intensity)
+            << ", but the localization expects values within [0, " << static_cast<int>(kExpectedMaxIntensity)
+            << "]. If the map comes from the field map generator, convert it to the expected range.";
+    throw std::invalid_argument(message.str());
+  }
+}
 
 Map::Map(const std::string& name, const std::string& type, const double out_of_map_value) {
   // Set config
@@ -25,6 +43,7 @@ Map::Map(const std::string& name, const std::string& type, const double out_of_m
     RCLCPP_ERROR(rclcpp::get_logger("bitbots_localization"), "No image data '%s'", map_path.c_str());
     return;
   }
+  validate_map_value_range(map, absolute_map_path.string());
 }
 
 double Map::get_occupancy(double x, double y) {
