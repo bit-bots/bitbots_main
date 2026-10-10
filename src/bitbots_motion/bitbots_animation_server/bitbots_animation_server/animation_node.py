@@ -16,7 +16,7 @@ from rclpy.node import Node
 from sensor_msgs.msg import Imu, JointState
 from simpleeval import simple_eval
 from std_msgs.msg import Header
-from std_srvs.srv import SetBool
+from std_srvs.srv import SetBool, Trigger
 
 from bitbots_animation_server.animation import Animation, parse
 from bitbots_animation_server.resource_manager import ResourceManager
@@ -50,20 +50,7 @@ class AnimationNode(Node):
         self.resource_manager = ResourceManager(self.get_parameter("robot_type").value)
 
         # Load all animations into memory
-        all_animations = self.resource_manager.find_all_animations_by_name(self)
-        for animation_name, animation_file in all_animations.items():
-            try:
-                with open(animation_file) as fp:
-                    self.animation_cache[animation_name] = parse(json.load(fp))
-            except OSError:
-                self.get_logger().error(f"Animation '{animation_name}' could not be loaded")
-            except ValueError:
-                self.get_logger().error(
-                    f"Animation '{animation_name}' had a ValueError. "
-                    "Probably there is a syntax error in the animation file. "
-                    "See traceback"
-                )
-                traceback.print_exc()
+        self.load_animations()
 
         # Subscribers
         self.create_subscription(JointState, "joint_states", self.update_current_pose, 1)
@@ -82,6 +69,50 @@ class AnimationNode(Node):
 
         # Service to temporarily add an animation to the cache
         self.add_animation_service = self.create_service(AddAnimation, "add_temporary_animation", self.add_animation)
+
+        # Service to reload all animation files into the cache
+        self.reload_animations_service = self.create_service(Trigger, "reload_animations", self.reload_animations)
+
+    def load_animations(self, force_reload: bool = False) -> tuple[int, list[str]]:
+        """
+        Loads all animations found by the resource manager into the cache.
+
+        :param force_reload: re-scan the animations directory instead of using the cached file list
+        :return: the number of loaded animations and the names of the animations that failed to load
+        """
+        self.animation_cache.clear()
+        failed: list[str] = []
+        all_animations = self.resource_manager.find_all_animations_by_name(force_reload)
+        for animation_name, animation_file in all_animations.items():
+            try:
+                with open(animation_file) as fp:
+                    self.animation_cache[animation_name] = parse(json.load(fp))
+            except OSError:
+                self.get_logger().error(f"Animation '{animation_name}' could not be loaded")
+                failed.append(animation_name)
+            except ValueError:
+                self.get_logger().error(
+                    f"Animation '{animation_name}' had a ValueError. "
+                    "Probably there is a syntax error in the animation file. "
+                    "See traceback"
+                )
+                traceback.print_exc()
+                failed.append(animation_name)
+        return len(self.animation_cache), failed
+
+    def reload_animations(self, request: Trigger.Request, response: Trigger.Response) -> Trigger.Response:
+        """
+        Reloads all animation files into the cache,
+        so that animations created or edited while the server is running can be used without a restart.
+        """
+        loaded, failed = self.load_animations(force_reload=True)
+        response.success = not failed
+        response.message = f"Reloaded {loaded} animations"
+        if failed:
+            response.message += f". Failed to load: {', '.join(failed)}"
+        else:
+            self.get_logger().info(response.message)
+        return response
 
     def goal_cb(self, request: PlayAnimation.Goal) -> GoalResponse:
         """This checks whether the goal is acceptable."""

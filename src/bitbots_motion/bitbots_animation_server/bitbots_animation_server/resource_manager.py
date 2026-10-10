@@ -134,6 +134,8 @@ class ResourceManager:
         returns a list of all animation-paths in the system.
         """
         if not self.files or force_reload:
+            self.files = []
+            self.names = []
             path = self.find_resource("animations/")
             for root, _, filenames in os.walk(path):
                 for f in filenames:
