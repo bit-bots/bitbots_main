@@ -7,27 +7,29 @@ This script subscribes to the topic "animation" and publishes the received joint
 import rclpy
 from rclpy.node import Node
 
-# List of all joint names. Do not change the order as it is important for Gazebo
 from bitbots_msgs.msg import Animation, JointCommand
 
+# List of all actuated joints of the pi_plus robot.
 JOINT_NAMES = [
     "head_yaw_joint",
     "head_pitch_joint",
     "l_shoulder_pitch_joint",
     "l_shoulder_roll_joint",
+    "l_upper_arm_joint",
     "l_elbow_joint",
     "r_shoulder_pitch_joint",
     "r_shoulder_roll_joint",
+    "r_upper_arm_joint",
     "r_elbow_joint",
     "l_hip_roll_joint",
-    "l_hip_roll_joint",
     "l_hip_pitch_joint",
+    "l_thigh_joint",
     "l_calf_joint",
     "l_ankle_pitch_joint",
     "l_ankle_roll_joint",
     "r_hip_roll_joint",
-    "r_hip_roll_joint",
     "r_hip_pitch_joint",
+    "r_thigh_joint",
     "r_calf_joint",
     "r_ankle_pitch_joint",
     "r_ankle_roll_joint",
