@@ -2,53 +2,41 @@
 Testing the robot hardware and lowlevel software
 ================================================
 
-.. todo::
-   Rework of the public documentation (see issue #1037): fully rework this page
-   for the PiPlus platform. The current steps assume the Wolfgang low level stack
-   and need to be revised for the livelybot hardware.
-
 Do the test in the provided order, to find out which part is faulty.
 
 Preliminaries
 -------------
 
-Do the test in the provided order, to find out which part is faulty.
-
 #. Deploy the latest software to the robot
 #. Put robot in a safe spot, e.g. on a rope hanging from the ceiling
 #. Check if all cables are correctly connected
-#. Open diagnostic view in rqt, it will provide a lot of information
-
+#. Open the runtime monitor in rqt, it will provide a lot of information
 
 Manual procedure
 ~~~~~~~~~~~~~~~~
 
 #. Test IMU
-    ``ros2 launch bitbots_ros_control ros_control_standalone.launch only_imu:=true``
-        - start on your laptop ``ros2 launch bitbots_ros_control viz_imu.launch`` you should see the filtered orientation and an arrow showing the sum of acceleration forces
-        - maybe use plotjuggler to verify raw values
+    Start the lowlevel software on the robot.
+    Check that ``/imu/data`` is published and contains plausible values, e.g. with ``ros2 topic echo /imu/data`` or plotjuggler.
 
-#. Test pressure sensors
-    motor power on and ``ros2 launch bitbots_ros_control ros_control_standalone.launch only_pressure:=true``
-        - start on your laptop ``ros2 launch bitbots_ros_control viz_pressure.launch``
-            - you should see the pressure values as arrows in rviz as well as the center of pressures
-            - press on the sensors to see if they behave correctly
-        - maybe use plotjuggler to get more details and see eventual drift
+#. Test servos without torque
+    Start the motion stack without torque:
 
-#. Test servos
-    motor power off and ``ros2 launch bitbots_ros_control ros_control_standalone.launch torqueless_mode:=true``
-        - it should give you an error because the motor power is off
-    motor power on and ``ros2 launch bitbots_ros_control ros_control_standalone.launch torqueless_mode:=true``
-        - it should start without any errors
-        - servos should be torqueless (not stiff)
-        - start on your laptop ``ros2 launch bitbots_ros_control viz_servos.launch`` you should see the the robot, the TF tree and the efforts
-            - move the robot around to see if it behaves correctly
-            - start rqt robot monitor, check "Alternative view" and you should see all servos on OK
-            - start the runtime monitor in rqt and you can get voltage, temperature and error status
-            - maybe use plotjuggler to see the values in more detail
+    ``ros2 launch bitbots_bringup motion_standalone.launch torqueless_mode:=true``
 
-    turn motor power on and ``ros2 launch bitbots_ros_control ros_control_standalone.launch``
-        - it should start without any errors
-        - servos should be half stiff, but still moveable
-        - start on your laptop ``ros2 launch bitbots_ros_control viz_servos.launch`` you should see the robot and the TF tree
-            - run ``ros2 run bitbots_ros_control send_joint_command.py``, the robot should go into init pose and be completly stiff
+    - the servos should be torqueless (not stiff)
+    - start the visualization on your laptop
+      ``ros2 launch piplus_description standalone.launch js_pub:=false``
+      you should see the robot model follow the actual joint states
+    - move the robot around to see if it behaves correctly
+    - start the runtime monitor in rqt to check voltage, temperature and error status
+    - maybe use plotjuggler to see the joint values in more detail
+
+#. Test servos with torque
+    Start the motion stack with torque:
+
+    ``ros2 launch bitbots_bringup motion_standalone.launch``
+
+    - it should start without any errors
+    - the robot should reach its walk-ready position and hold it stiffly
+    - run a short animation, e.g. ``ros2 run bitbots_animation_server run_animation.py cheering``, to verify that the joints are controlled correctly

@@ -21,7 +21,8 @@ Test Motion in Visualization
 #. Test Animation:
     .. code-block:: bash
 
-        ros2 launch bitbots_animation_server viz.launch
+        ros2 launch bitbots_animation_server test.launch sim:=true
+        ros2 launch piplus_description standalone.launch js_pub:=false
         ros2 run bitbots_animation_server run_animation.py cheering
 
 #. Test Walk:

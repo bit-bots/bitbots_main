@@ -65,14 +65,14 @@ How the HCM is started
 The easiest way to start the HCM is to launch the complete motion (`ros2 launch bitbots_bringup motion_standalone.launch`).
 For debugging it is sometimes better to launch the single parts by themselves.
 The HCM needs the animation server (`ros2 launch bitbots_animation_server animation.launch`) to work because it is needed to perform falling and stand up animations.
-To be able to actually control the hardware, ros_control needs to run (`ros2 launch bitbots_ros_control ros_control_standalone.launch`).
-Finally launch the HCM itself (`ros2 launch bitbots_hcm hcm_standalone.launch`).
+To be able to actually control the hardware, the low-level driver needs to run (`ros2 launch livelybot_bringup lowlevel.launch`).
+Finally launch the HCM itself (`ros2 launch bitbots_hcm hcm.launch`).
 
 
 What to do when it does not work
 --------------------------------
 
-1. Is `ros_control` running? Do you recieve joint states (`/joint_states`) or IMU data (`/imu/data_raw`)?
+1. Is the low-level driver running? Do you recieve joint states (`/joint_states`) or IMU data (`/imu/data`)?
 2. What is the state of the HCM (`ros2 topic echo /robot_state`)? The number has to be matched with the message
    description (`ros2 interface show bitbots_msgs/msg/RobotControlState`).
 3. The visualization of the DSD is possible with the standard DSD visualization using the rqt plugin.

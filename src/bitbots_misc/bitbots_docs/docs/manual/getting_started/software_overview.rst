@@ -57,8 +57,9 @@ This script starts the simulator and the robot software stack in simulation conf
 
 This script starts RViz and visualizes the robot's sensor data.
 
-``receive.launch``
-~~~~~~~~~~~~~~~~~~
+``receive.launch`` (``udp_bridge`` package)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To receive debugging data via the UDP Bridge, this launch script must be started locally on a laptop.
+It is part of the ``udp_bridge`` package, not of ``bitbots_bringup``.
 This can be used together with the `visualization.launch` script to visualize the data.

@@ -2,44 +2,31 @@
 How to document
 ===============
 
-Our documentation is published under `doku.bit-bots.de <https://doku.bit-bots.de>`_ and `docs.bit-bots.de <https://docs.bit-bots.de>`_ and will automatically be regenerated from the package `bitbots_main/bitbots_misc/bitbots_docs <https://github.com/bit-bots/bitbots_main/tree/master/bitbots_misc/bitbots_docs>`_.
+Our documentation is published under `docs.bit-bots.de <https://docs.bit-bots.de>`_ and is automatically regenerated from the packages in the `bitbots_main repository <https://github.com/bit-bots/bitbots_main>`_.
 
-Installation of dependencies
-============================
+Dependencies
+============
 
-We are using `Sphinx <https://www.sphinx-doc.org/>`_ and the following extentions to generate our documentation: `breathe`, `exhale`.
-The correct version of the extentions must be installed.
-
-.. code-block:: bash
-
-        sudo apt install python3-sphinx python3-sphinx-rtd-theme python3-breathe
-        pip3 install exhale --user
-
+The documentation is generated with `Sphinx <https://www.sphinx-doc.org/>`_ and the extensions `breathe` and `exhale`.
+The Pixi development environment provides all of them, so no additional installation is necessary.
 
 .. _build_documentation:
 
 How to build the documentation
 ==============================
 
-1. Go to the package with the general documentation (tutorials etc. including this one). Said package is called  ``bitbots_docs``.
+1. Change to the package with the documentation to build.
+   The general documentation (tutorials etc. including this one) is in ``src/bitbots_misc/bitbots_docs``.
+
+2. Build the Sphinx docs from the package root:
 
   .. code-block:: bash
 
-        cd bitbots_main/bitbots_misc/bitbots_docs
+        pixi run -e default sphinx-build docs docs/_out -b html
 
-2. Build the sphinx docs for the given package.
+3. Open ``docs/_out/index.html`` in a browser.
 
-  .. code-block:: bash
-
-        sphinx-build docs docs/_out -b html
-
-3. Open the docs with firefox.
-
-  .. code-block:: bash
-
-        firefox docs/_out/index.html
-
-To build and view documentation for another package go to the ROS package (e.g. ``bitbots_vision``) and run steps 2. and 3. there.
+To build the documentation of another package, go to that package (e.g. ``bitbots_vision``) and run steps 2. and 3. there.
 
 How to write documentation for a package
 ========================================

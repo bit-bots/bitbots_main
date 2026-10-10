@@ -16,12 +16,16 @@ To control walking of the robot, teleop needs to be startet as well:
     ros2 run bitbots_teleop teleop_keyboard.py
 
 
-Test Imu in RViz
-----------------
+Test the IMU in RViz
+--------------------
+
+Start the simulation and motion as described above, then start the visualization on your laptop:
 
 .. code-block:: bash
 
-    ros2 launch bitbots_ros_control rviz_interactive_imu.launch
+    ros2 launch piplus_description standalone.launch js_pub:=false
+
+The robot model follows the simulated joint states and the IMU orientation is shown through the ``imu_frame`` in the TF display.
 
 Test the complete software stack in simulation
 ----------------------------------------------
