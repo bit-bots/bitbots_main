@@ -15,7 +15,8 @@
   <include file="$(find-pkg-share bitbots_animation_server)/launch/animation.launch">
     <arg name="sim" value="$(var sim)"/>
   </include>
-  <node name="animation_hcm_bridge" pkg="bitbots_animation_server" exec="animation_hcm_bridge.py" output="screen">
-    <param name="use_sim_time" value="$(var sim)"/>
-  </node>
+  <!-- the animation node requires the HCM to enter and leave the animation play mode -->
+  <include file="$(find-pkg-share bitbots_hcm)/launch/hcm.launch">
+    <arg name="sim" value="$(var sim)"/>
+  </include>
 </launch>
