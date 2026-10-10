@@ -10,6 +10,18 @@ namespace fs = boost::filesystem;
 
 namespace bitbots_localization {
 
+namespace {
+constexpr double kExpectedMaxIntensity = 100.0;
+}  // namespace
+
+void scale_map_to_expected_range(cv::Mat& map) {
+  double max_intensity = 0.0;
+  cv::minMaxLoc(map, nullptr, &max_intensity);
+  if (max_intensity > kExpectedMaxIntensity) {
+    map.convertTo(map, -1, kExpectedMaxIntensity / max_intensity);
+  }
+}
+
 Map::Map(const std::string& name, const std::string& type, const double out_of_map_value) {
   // Set config
   out_of_map_value_ = out_of_map_value;
@@ -25,6 +37,7 @@ Map::Map(const std::string& name, const std::string& type, const double out_of_m
     RCLCPP_ERROR(rclcpp::get_logger("bitbots_localization"), "No image data '%s'", map_path.c_str());
     return;
   }
+  scale_map_to_expected_range(map);
 }
 
 double Map::get_occupancy(double x, double y) {

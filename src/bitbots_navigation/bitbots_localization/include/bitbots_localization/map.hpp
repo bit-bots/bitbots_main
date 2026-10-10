@@ -19,6 +19,14 @@ namespace bl = bitbots_localization;
 
 namespace bitbots_localization {
 
+/**
+ * Scales the intensities of the given grayscale map to the expected [0, 100] range.
+ * Maps from the field map generator use the full [0, 255] range, while the
+ * localization expects at most 100. Maps that are already within the expected
+ * range are left untouched.
+ */
+void scale_map_to_expected_range(cv::Mat& map);
+
 struct FieldDimensions {
   double x = 0;        // in m, x is the length of the field from goal to goal
   double y = 0;        // in m, y is the width of the field
