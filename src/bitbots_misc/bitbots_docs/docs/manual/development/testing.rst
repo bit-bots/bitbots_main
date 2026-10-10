@@ -55,9 +55,8 @@ Compile (compiles)
 ------------------
 
 The first step is to test if the package compiles.
-Obviously this should preferably be tested on the same system that is used on the robot (Ubuntu 24.04 with the jazzy distribution).
+Obviously this should preferably be tested in the same Pixi environment that is used on the robot.
 A part of this is to check if all dependencies are correct in the package.xml.
-This is important so they can be installed with rosdep.
 
 Starting (starts)
 ------------------
@@ -102,7 +101,7 @@ By our definition software is considered stable if it has been used in multiple 
 
 What to do when changing a package?
 ===================================
-Even when only small changes are applied to the master branch, the package has to be tested again to keep its test status.
+Even when only small changes are applied to the main branch, the package has to be tested again to keep its test status.
 If the package is not tested again or only partially tested the test status has to be adapted to 'unknown' or the reached test state.
 
 

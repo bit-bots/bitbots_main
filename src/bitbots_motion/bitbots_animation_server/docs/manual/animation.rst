@@ -7,9 +7,9 @@ The Animation Server is a ROS Action Server. For an action a message is sent to 
 
 Actively running animations, can be interrupted by the HCM. This ensures that, should the robot fall while shooting, the shooting animation is stopped and the robot stands up instead. An additional flag in the action is used to determine if a request/message comes from the HCM.
 
-Animations consist of a series of keyframes. Each keyframe is a snapshot of motor positions at a certain point in time. During playback a file containing the recorded keyframes is read and each frame is played one after the other at a given interval. To achieve a fluid motion the frequency of interpolation is set to 200 Hz with the help of quintic splines. This interpolation is done in the 'Joint Space' (inbetween the motor positions, not inbetween the actual positions of the robot's extremities in the Cartesian space), due to the development of the project and better usability.
+Animations consist of a series of keyframes. Each keyframe is a snapshot of motor positions at a certain point in time. During playback a file containing the recorded keyframes is read and each frame is played one after the other at a given interval. To achieve a fluid motion, positions are interpolated between the keyframes with quintic (fifth-order) splines. This interpolation is done in the 'Joint Space' (inbetween the motor positions, not inbetween the actual positions of the robot's extremities in the Cartesian space).
 
-Animations can be run manually with `ros2 run bitbots_animation_server run_animation <name>`.
+Animations can be run manually with `ros2 run bitbots_animation_server run_animation.py <name>`.
 All animations can be found in the package `piplus_animations`.
 
 If an animation fails to run, the first thing to check is, if the HCM outputs a different 'Robot State' than 'Controllable' or 'Walking'.

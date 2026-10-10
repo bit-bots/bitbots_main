@@ -42,7 +42,7 @@ At a competition, follow these steps:
    - Build/Compile the source code you just synchronized to the robot(s)
    - Launch the teamplayer software on the robot(s)
 
-   If you need help with this tool, or want other options, look at `this README <https://github.com/bit-bots/bitbots_main/blob/master/scripts/README.md#deploy_robotspy>`_ for example usages or call:
+   If you need help with this tool, or want other options, look at `this README <https://github.com/bit-bots/bitbots_main/blob/main/scripts/README.md#deploy_robotspy>`_ for example usages or call:
 
    .. code-block:: bash
 

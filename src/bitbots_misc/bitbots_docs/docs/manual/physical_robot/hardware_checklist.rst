@@ -27,34 +27,39 @@ Before Powering On
 
 After Powering On
 -----------------
-* Verify ROS control torqueless and check robot model in RViz
-   Run:
+* Verify torqueless mode and check the robot model in RViz
+   Run on the robot:
 
-   ``rl bitbots_ros_control ros_control_standalone.launch torqueless_mode:=true`` and ``rl bitbots_ros_control viz_servos.launch``
+   ``ros2 launch bitbots_bringup motion_standalone.launch torqueless_mode:=true``
 
-* Connect hands to legs while watching the robot mode in RViz
-   Run the same commands as above.
+   Run on the laptop:
+
+   ``ros2 launch piplus_description standalone.launch js_pub:=false``
+
+   The robot model in RViz should follow the actual joint states.
 * Check for motor communication issues during startup and afterwards in the terminal
-* Run T-pose script
+* Verify stiff control
    Run:
 
-   ``rl bitbots_ros_control ros_control_standalone.launch`` and ``rr bitbots_ros_control pose_check.py``
+   ``ros2 launch bitbots_bringup motion_standalone.launch``
+
+   The robot should reach its walk-ready position and hold it stiffly.
 
 * Test teleop walking
    Run:
 
-   ``rl bitbots_bringup motion_standalone.launch`` and ``rr bitbots_teleop teleop_keyboard.py``
+   ``ros2 launch bitbots_bringup motion_standalone.launch`` and ``ros2 run bitbots_teleop teleop_keyboard.py``
 
 * Test getting up
    Run:
 
-   ``rl bitbots_bringup motion_standalone.launch``
+   ``ros2 launch bitbots_bringup motion_standalone.launch``
 
 * Verify robot-specific walking parameters
 * Perform extrinsic calibration
-  Do the steps as described in `this documentation <https://docs.bit-bots.de/meta/manual/tutorials/extrinsic_calibration.html>`_.
+  Do the steps as described in :doc:`extrinsic_calibration`.
 
 * Check camera images for focus and proper transmission (10 Hz, low jitter)
    Run:
 
-   ``rl bitbots_bringup vision_standalone.launch`` and ``ros2 topic hz /zed/zed_node/rgb/image_rect_color`` and in ``rqt`` open the image view plugin.
+   ``ros2 launch bitbots_bringup vision_standalone.launch`` and ``ros2 topic hz /zed/zed_node/rgb/image_rect_color`` and in ``rqt`` open the image view plugin.
