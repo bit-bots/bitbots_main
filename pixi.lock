@@ -935,6 +935,7 @@ environments:
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-rqt-service-caller-1.2.2-np2py312h2ed9cc7_16.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-rqt-shell-1.2.3-np2py312h2ed9cc7_16.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-rqt-srv-1.2.3-np2py312h2ed9cc7_16.conda
+      - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-rqt-tf-tree-1.0.5-np2py312h2ed9cc7_16.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-rqt-topic-1.7.5-np2py312h2ed9cc7_16.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-rsl-1.2.0-np2py312h88103e5_16.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-rti-connext-dds-cmake-module-0.22.3-np2py312h2ed9cc7_16.conda
@@ -1931,6 +1932,7 @@ environments:
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-aarch64/ros-jazzy-rqt-service-caller-1.2.2-np2py312h61f2ce4_16.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-aarch64/ros-jazzy-rqt-shell-1.2.3-np2py312h61f2ce4_16.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-aarch64/ros-jazzy-rqt-srv-1.2.3-np2py312h61f2ce4_16.conda
+      - conda: https://conda.anaconda.org/robostack-jazzy/linux-aarch64/ros-jazzy-rqt-tf-tree-1.0.5-np2py312h61f2ce4_16.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-aarch64/ros-jazzy-rqt-topic-1.7.5-np2py312h61f2ce4_16.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-aarch64/ros-jazzy-rsl-1.2.0-np2py312hcab10f8_16.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-aarch64/ros-jazzy-rti-connext-dds-cmake-module-0.22.3-np2py312h61f2ce4_16.conda
@@ -3070,6 +3072,7 @@ environments:
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-rqt-service-caller-1.2.2-np2py312h2ed9cc7_16.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-rqt-shell-1.2.3-np2py312h2ed9cc7_16.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-rqt-srv-1.2.3-np2py312h2ed9cc7_16.conda
+      - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-rqt-tf-tree-1.0.5-np2py312h2ed9cc7_16.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-rqt-topic-1.7.5-np2py312h2ed9cc7_16.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-rsl-1.2.0-np2py312h88103e5_16.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-rti-connext-dds-cmake-module-0.22.3-np2py312h2ed9cc7_16.conda
@@ -4070,6 +4073,7 @@ environments:
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-aarch64/ros-jazzy-rqt-service-caller-1.2.2-np2py312h61f2ce4_16.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-aarch64/ros-jazzy-rqt-shell-1.2.3-np2py312h61f2ce4_16.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-aarch64/ros-jazzy-rqt-srv-1.2.3-np2py312h61f2ce4_16.conda
+      - conda: https://conda.anaconda.org/robostack-jazzy/linux-aarch64/ros-jazzy-rqt-tf-tree-1.0.5-np2py312h61f2ce4_16.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-aarch64/ros-jazzy-rqt-topic-1.7.5-np2py312h61f2ce4_16.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-aarch64/ros-jazzy-rsl-1.2.0-np2py312hcab10f8_16.conda
       - conda: https://conda.anaconda.org/robostack-jazzy/linux-aarch64/ros-jazzy-rti-connext-dds-cmake-module-0.22.3-np2py312h61f2ce4_16.conda
@@ -4371,7 +4375,7 @@ packages:
   license: Apache-2.0
   license_family: APACHE
   purls:
-  - pkg:pypi/bcrypt?source=compressed-mapping
+  - pkg:pypi/bcrypt?source=hash-mapping
   run_exports: {}
   size: 283491
   timestamp: 1788505779281
@@ -4855,7 +4859,7 @@ packages:
   license: Apache-2.0 AND BSD-3-Clause AND PSF-2.0 AND MIT
   license_family: BSD
   purls:
-  - pkg:pypi/cryptography?source=compressed-mapping
+  - pkg:pypi/cryptography?source=hash-mapping
   run_exports: {}
   size: 1896245
   timestamp: 1788356239006
@@ -6254,7 +6258,7 @@ packages:
   license: BSD-3-Clause
   license_family: BSD
   purls:
-  - pkg:pypi/kiwisolver?source=compressed-mapping
+  - pkg:pypi/kiwisolver?source=hash-mapping
   run_exports: {}
   size: 75215
   timestamp: 1788505643992
@@ -10047,7 +10051,7 @@ packages:
   license: MIT
   license_family: MIT
   purls:
-  - pkg:pypi/librt?source=compressed-mapping
+  - pkg:pypi/librt?source=hash-mapping
   run_exports: {}
   size: 169277
   timestamp: 1788524688833
@@ -12003,7 +12007,7 @@ packages:
   license: MIT
   license_family: MIT
   purls:
-  - pkg:pypi/brotli?source=compressed-mapping
+  - pkg:pypi/brotli?source=hash-mapping
   run_exports: {}
   size: 366485
   timestamp: 1788480367792
@@ -12134,7 +12138,7 @@ packages:
   license: MIT
   license_family: MIT
   purls:
-  - pkg:pypi/cffi?source=compressed-mapping
+  - pkg:pypi/cffi?source=hash-mapping
   run_exports: {}
   size: 325201
   timestamp: 1788485261662
@@ -17646,7 +17650,7 @@ packages:
   license: BSD-2-Clause
   license_family: BSD
   purls:
-  - pkg:pypi/sip?source=compressed-mapping
+  - pkg:pypi/sip?source=hash-mapping
   run_exports:
     weak:
     - sip >=6.16.1,<6.17.0a0
@@ -19669,7 +19673,7 @@ packages:
   license: BSD-3-Clause
   license_family: BSD
   purls:
-  - pkg:pypi/gitpython?source=compressed-mapping
+  - pkg:pypi/gitpython?source=hash-mapping
   run_exports: {}
   size: 178869
   timestamp: 1788802794188
@@ -19759,7 +19763,7 @@ packages:
   license: MIT
   license_family: MIT
   purls:
-  - pkg:pypi/imagesize?source=compressed-mapping
+  - pkg:pypi/imagesize?source=hash-mapping
   run_exports: {}
   size: 21467
   timestamp: 1787649248672
@@ -20615,7 +20619,7 @@ packages:
   license: MPL-2.0
   license_family: OTHER
   purls:
-  - pkg:pypi/pytest-rerunfailures?source=compressed-mapping
+  - pkg:pypi/pytest-rerunfailures?source=hash-mapping
   run_exports: {}
   size: 26527
   timestamp: 1788434181061
@@ -20643,7 +20647,7 @@ packages:
   license: MIT
   license_family: MIT
   purls:
-  - pkg:pypi/python-discovery?source=compressed-mapping
+  - pkg:pypi/python-discovery?source=hash-mapping
   run_exports: {}
   size: 38928
   timestamp: 1787953569064
@@ -20767,7 +20771,7 @@ packages:
   license: BSD-3-Clause
   license_family: BSD
   purls:
-  - pkg:pypi/rospkg?source=compressed-mapping
+  - pkg:pypi/rospkg?source=hash-mapping
   run_exports: {}
   size: 32453
   timestamp: 1788606519349
@@ -21247,7 +21251,7 @@ packages:
   license: MIT
   license_family: MIT
   purls:
-  - pkg:pypi/wcwidth?source=compressed-mapping
+  - pkg:pypi/wcwidth?source=hash-mapping
   run_exports: {}
   size: 146490
   timestamp: 1788174996551
@@ -28018,6 +28022,30 @@ packages:
   license: BSD-3-Clause
   size: 21495
   timestamp: 1771188207163
+- conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-rqt-tf-tree-1.0.5-np2py312h2ed9cc7_16.conda
+  sha256: 9b7462795c9fdfbc7029fd51333ee6196e23f49b926ce0bf34f17c18605613d4
+  md5: 8e6d6d2b3a8d3561f1764bfe4992226d
+  depends:
+  - python
+  - ros-jazzy-python-qt-binding
+  - ros-jazzy-qt-dotgraph
+  - ros-jazzy-rclpy
+  - ros-jazzy-ros-workspace
+  - ros-jazzy-rqt-graph
+  - ros-jazzy-rqt-gui
+  - ros-jazzy-rqt-gui-py
+  - ros-jazzy-tf2-msgs
+  - ros-jazzy-tf2-ros
+  - ros2-distro-mutex 0.14.* jazzy_*
+  - libstdcxx >=14
+  - libgcc >=14
+  - __glibc >=2.17,<3.0.a0
+  - numpy >=1.23,<3
+  - ros2-distro-mutex >=0.14.0,<0.15.0a0
+  - python_abi 3.12.* *_cp312
+  license: BSD-3-Clause
+  size: 30226
+  timestamp: 1771187726137
 - conda: https://conda.anaconda.org/robostack-jazzy/linux-64/ros-jazzy-rqt-topic-1.7.5-np2py312h2ed9cc7_16.conda
   sha256: 57e9bfc0cfed05fdc914069150c868924647039551dbccf69fdac4b8e03c5e15
   md5: 7c84a1bdf3c5f1acc0522eceaa116d8d
@@ -35967,6 +35995,29 @@ packages:
   license: BSD-3-Clause
   size: 21646
   timestamp: 1771211336109
+- conda: https://conda.anaconda.org/robostack-jazzy/linux-aarch64/ros-jazzy-rqt-tf-tree-1.0.5-np2py312h61f2ce4_16.conda
+  sha256: 448f71b6abd24c5ca0fe07bf885afb368e20c4d5271076663529fb9b239c6e5e
+  md5: ef5ead61e607300ff78dce12ffa0db80
+  depends:
+  - python
+  - ros-jazzy-python-qt-binding
+  - ros-jazzy-qt-dotgraph
+  - ros-jazzy-rclpy
+  - ros-jazzy-ros-workspace
+  - ros-jazzy-rqt-graph
+  - ros-jazzy-rqt-gui
+  - ros-jazzy-rqt-gui-py
+  - ros-jazzy-tf2-msgs
+  - ros-jazzy-tf2-ros
+  - ros2-distro-mutex 0.14.* jazzy_*
+  - libstdcxx >=14
+  - libgcc >=14
+  - python_abi 3.12.* *_cp312
+  - numpy >=1.23,<3
+  - ros2-distro-mutex >=0.14.0,<0.15.0a0
+  license: BSD-3-Clause
+  size: 30364
+  timestamp: 1771210941896
 - conda: https://conda.anaconda.org/robostack-jazzy/linux-aarch64/ros-jazzy-rqt-topic-1.7.5-np2py312h61f2ce4_16.conda
   sha256: e689d45cbf2189c1b46ed37fe518aafd9712f7fdde9db033355927b7470de557
   md5: 9bb548914fb6d144f100e75ad9176e48
