@@ -3,7 +3,6 @@ project(bitbots_team_communication)
 
 find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_python REQUIRED)
-find_package(bitbots_docs REQUIRED)
 find_package(Protobuf REQUIRED)
 
 add_custom_target(
@@ -22,7 +21,6 @@ add_custom_command(
     ${CMAKE_SOURCE_DIR}/${PROTO_FILES}
   COMMENT "Generating protobuf python interface including stubs")
 
-enable_bitbots_docs()
 ament_python_install_package(${PROJECT_NAME})
 
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})

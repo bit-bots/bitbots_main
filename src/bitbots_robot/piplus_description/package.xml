@@ -11,7 +11,6 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <depend>bitbots_docs</depend>
   <depend>bitbots_robot_description</depend>
   <depend>bitbots_parameter_blackboard</depend>
   <depend>bitbots_utils</depend>
@@ -22,10 +21,6 @@
   <depend>xacro</depend>
 
   <export>
-    <bitbots_documentation>
-      <status>stable</status>
-      <language>xacro</language>
-    </bitbots_documentation>
     <build_type>ament_cmake</build_type>
   </export>
 </package>

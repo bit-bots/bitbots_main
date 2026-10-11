@@ -14,7 +14,6 @@ endif()
 
 find_package(ament_cmake REQUIRED)
 find_package(backward_ros REQUIRED)
-find_package(bitbots_docs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rot_conv REQUIRED)
@@ -30,7 +29,6 @@ add_executable(extrinsic_calibration src/extrinsic_calibration.cpp)
 ament_target_dependencies(
   extrinsic_calibration
   ament_cmake
-  bitbots_docs
   rclcpp
   std_msgs
   tf2
@@ -38,7 +36,6 @@ ament_target_dependencies(
   tf2_ros
   rot_conv)
 
-enable_bitbots_docs()
 
 install(TARGETS extrinsic_calibration DESTINATION lib/${PROJECT_NAME})
 

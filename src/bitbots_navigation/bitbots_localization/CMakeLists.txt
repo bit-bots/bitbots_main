@@ -62,8 +62,6 @@ find_package(OpenCV)
 
 # Generate added messages and services with any dependencies listed here
 
-include(${CMAKE_BINARY_DIR}/../bitbots_docs/enable_bitbots_docs.cmake)
-enable_bitbots_docs()
 
 # ##############################################################################
 # Build ##

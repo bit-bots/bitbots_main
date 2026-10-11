@@ -10,7 +10,6 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(action_msgs REQUIRED)
-find_package(bitbots_docs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
@@ -58,7 +57,5 @@ rosidl_generate_interfaces(
   std_msgs
   trajectory_msgs)
 
-include(${CMAKE_BINARY_DIR}/../bitbots_docs/enable_bitbots_docs.cmake)
-enable_bitbots_docs()
 
 ament_package()

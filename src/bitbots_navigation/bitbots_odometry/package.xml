@@ -16,7 +16,6 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
   <depend>backward_ros</depend>
   <depend>biped_interfaces</depend>
-  <depend>bitbots_docs</depend>
   <depend>bitbots_utils</depend>
   <depend>generate_parameter_library</depend>
   <depend>message_filters</depend>
@@ -28,10 +27,6 @@
   <depend>tf2</depend>
 
   <export>
-    <bitbots_documentation>
-      <status>tested_robot</status>
-      <language>c++</language>
-    </bitbots_documentation>
     <build_type>ament_cmake</build_type>
   </export>
 

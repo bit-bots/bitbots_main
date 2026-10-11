@@ -14,7 +14,6 @@ endif()
 
 find_package(ament_cmake REQUIRED)
 find_package(backward_ros REQUIRED)
-find_package(bitbots_docs REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(moveit_core REQUIRED)
@@ -28,7 +27,6 @@ include_directories(${INCLUDE_DIRS})
 
 add_compile_options(-Wall -Werror -Wno-unused)
 
-enable_bitbots_docs()
 
 set(SOURCES
     src/Spline/polynom.cpp
@@ -45,7 +43,6 @@ ament_target_dependencies(
   ${PROJECT_NAME}
   ament_cmake
   backward_ros
-  bitbots_docs
   rclcpp
   std_msgs
   geometry_msgs
@@ -65,7 +62,6 @@ install(
   DESTINATION include)
 
 ament_export_dependencies(ament_cmake)
-ament_export_dependencies(bitbots_docs)
 ament_export_dependencies(rclcpp)
 ament_export_dependencies(std_msgs)
 ament_export_include_directories(${INCLUDE_DIRS})

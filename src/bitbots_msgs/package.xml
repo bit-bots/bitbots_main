@@ -17,7 +17,6 @@
   <buildtool_depend>rosidl_default_generators</buildtool_depend>
 
   <depend>action_msgs</depend>
-  <depend>bitbots_docs</depend>
   <depend>geometry_msgs</depend>
   <depend>sensor_msgs</depend>
   <depend>std_msgs</depend>
@@ -29,8 +28,5 @@
 
   <export>
     <build_type>ament_cmake</build_type>
-    <bitbots_documentation>
-      <status>starts</status>
-    </bitbots_documentation>
 </export>
 </package>

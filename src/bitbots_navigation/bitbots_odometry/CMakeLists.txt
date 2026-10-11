@@ -15,7 +15,6 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(backward_ros REQUIRED)
 find_package(biped_interfaces REQUIRED)
-find_package(bitbots_docs REQUIRED)
 find_package(bitbots_utils REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(generate_parameter_library REQUIRED)
@@ -45,7 +44,6 @@ ament_target_dependencies(
   ament_cmake
   backward_ros
   biped_interfaces
-  bitbots_docs
   bitbots_utils
   generate_parameter_library
   geometry_msgs
@@ -59,7 +57,6 @@ ament_target_dependencies(
   tf2_geometry_msgs
   tf2_ros)
 
-enable_bitbots_docs()
 
 install(TARGETS motion_odometry DESTINATION lib/${PROJECT_NAME})
 

@@ -13,7 +13,6 @@
 
     <buildtool_depend>ament_cmake</buildtool_depend>
 
-    <depend>bitbots_docs</depend>
 
     <exec_depend condition="$IS_ROBOT != True">bitbots_mujoco_sim</exec_depend>
     <exec_depend>audio_common</exec_depend>
@@ -41,9 +40,6 @@
     <exec_depend>udp_bridge</exec_depend>
 
     <export>
-        <bitbots_documentation>
-            <status>unknown</status>
-        </bitbots_documentation>
         <build_type>ament_cmake</build_type>
     </export>
 </package>

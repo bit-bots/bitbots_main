@@ -12,7 +12,6 @@ set(PYBIND11_FINDPYTHON ON)
 find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_python REQUIRED)
 find_package(backward_ros REQUIRED)
-find_package(bitbots_docs REQUIRED)
 find_package(bitbots_msgs REQUIRED)
 find_package(builtin_interfaces REQUIRED)
 find_package(geometry_msgs REQUIRED)
@@ -46,7 +45,6 @@ ament_target_dependencies(
 
 target_link_libraries(HCM Python3::Python)
 
-enable_bitbots_docs()
 
 install(TARGETS HCM DESTINATION lib/${PROJECT_NAME})
 
