@@ -59,8 +59,20 @@ void ActiveVision::setCameraCalibration(const Eigen::Isometry3d& calibration) {
   }
 }
 
-void ActiveVision::setFieldCoverageConfig(const FieldCoverageConfig& config) {
+bool ActiveVision::setFieldCoverageConfig(const FieldCoverageConfig& config) {
+  if (coverage_ && coverage_->config() == config) {
+    return false;
+  }
   coverage_ = std::make_unique<FieldCoverageMap>(config);
+  return true;
+}
+
+bool ActiveVision::setSamplerSeed(uint32_t seed) {
+  if (sampler_.seed() == seed) {
+    return false;
+  }
+  sampler_.setSeed(seed);
+  return true;
 }
 
 ActiveVisionReadiness ActiveVision::readiness() const {

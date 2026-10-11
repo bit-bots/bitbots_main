@@ -59,6 +59,16 @@ class TargetSampler {
   void setConfig(const SamplerConfig& config) { config_ = config; }
   const SamplerConfig& config() const { return config_; }
 
+  /// Restart the random number generator from the given seed.
+  ///
+  /// The draws that follow are the same as those of a sampler constructed with
+  /// this seed.
+  void setSeed(uint32_t seed) {
+    seed_ = seed;
+    rng_.seed(seed);
+  }
+  uint32_t seed() const { return seed_; }
+
   /// Draw candidate targets around the current position and the last target.
   ///
   /// last_target is empty on the first cycle, which folds its mixture share into
@@ -73,6 +83,7 @@ class TargetSampler {
   double sampleUniform(const JointLimit& limit);
 
   SamplerConfig config_;
+  uint32_t seed_;
   std::mt19937 rng_;
 };
 

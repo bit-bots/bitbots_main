@@ -4,7 +4,7 @@
 
 namespace bitbots_head_mover {
 
-TargetSampler::TargetSampler(const SamplerConfig& config, uint32_t seed) : config_(config), rng_(seed) {}
+TargetSampler::TargetSampler(const SamplerConfig& config, uint32_t seed) : config_(config), seed_(seed), rng_(seed) {}
 
 double TargetSampler::sampleGaussian(double center, double std, const JointLimit& limit) {
   // A non positive spread would make the normal distribution ill defined, so it

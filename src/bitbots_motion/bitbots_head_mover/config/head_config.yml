@@ -291,7 +291,7 @@ move_head:
       random_seed:
         type: int
         default_value: 42
-        description: "Seed of the sampling random number generator, so runs are reproducible"
+        description: "Seed of the sampling random number generator, so runs are reproducible. Changing it restarts the generator from the new seed."
 
     visibility:
       center_fraction:
@@ -312,21 +312,21 @@ move_head:
       margin:
         type: double
         default_value: 1.0
-        description: "How far beyond the field lines the coverage map extends. This area carries the out of field penalty."
+        description: "How far beyond the field lines the coverage map extends. This area carries the out of field penalty. Changing it rebuilds the coverage map, which forgets what was observed so far."
         validation:
           gt_eq<>: [0.0]
 
       cell_size:
         type: double
         default_value: 1.0
-        description: "Edge length of a coverage map cell. Smaller cells are more precise but cost planning time, as every cell is projected into the camera for every evaluated point of every candidate."
+        description: "Edge length of a coverage map cell. Smaller cells are more precise but cost planning time, as every cell is projected into the camera for every evaluated point of every candidate. Changing it rebuilds the coverage map, which forgets what was observed so far."
         validation:
           gt<>: [0.0]
 
       half_life:
         type: double
         default_value: 0.5
-        description: "Time after which having observed a part of the field counts for half as much, making it worth revisiting"
+        description: "Time after which having observed a part of the field counts for half as much, making it worth revisiting. Changing it rebuilds the coverage map, which forgets what was observed so far."
         validation:
           gt<>: [0.0]
 

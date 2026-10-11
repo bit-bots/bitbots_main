@@ -22,6 +22,12 @@ struct FieldCoverageConfig {
   double cell_size = 1.0;
   /// Time after which an observation has faded to half its value.
   double half_life = 8.0;
+
+  bool operator==(const FieldCoverageConfig& other) const {
+    return field_length == other.field_length && field_width == other.field_width && margin == other.margin &&
+           cell_size == other.cell_size && half_life == other.half_life;
+  }
+  bool operator!=(const FieldCoverageConfig& other) const { return !(*this == other); }
 };
 
 /// Tracks how recently each part of the field was seen.

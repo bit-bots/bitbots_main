@@ -337,6 +337,72 @@ TEST(ActiveVision, ResetForgetsTheHistory) {
   EXPECT_NEAR(planner.coverage().totalInterest(), fresh_interest, 1e-9);
 }
 
+TEST(ActiveVision, ReapplyingTheCoverageConfigKeepsTheRecord) {
+  ActiveVision planner = makeReadyPlanner();
+  ActiveVisionInput input = makeInput();
+  input.head_position = {0.0, 0.4};
+  planner.plan(input);
+  const double after_looking = planner.coverage().totalInterest();
+
+  EXPECT_FALSE(planner.setFieldCoverageConfig(makeCoverageConfig()));
+  EXPECT_DOUBLE_EQ(planner.coverage().totalInterest(), after_looking);
+}
+
+TEST(ActiveVision, ChangingTheCoverageConfigRebuildsTheMap) {
+  ActiveVision planner = makeReadyPlanner();
+  ActiveVisionInput input = makeInput();
+  input.head_position = {0.0, 0.4};
+  planner.plan(input);
+  const size_t old_size = planner.coverage().size();
+
+  FieldCoverageConfig finer = makeCoverageConfig();
+  finer.cell_size /= 2.0;
+  EXPECT_TRUE(planner.setFieldCoverageConfig(finer));
+  EXPECT_GT(planner.coverage().size(), old_size);
+  EXPECT_EQ(planner.coverage().config(), finer);
+
+  // The new grid starts without a record, as no cell of it was observed yet
+  ActiveVision untouched;
+  untouched.setFieldCoverageConfig(finer);
+  EXPECT_NEAR(planner.coverage().totalInterest(), untouched.coverage().totalInterest(), 1e-9);
+
+  // A config that only changes how fast observations fade applies as well
+  FieldCoverageConfig slower = finer;
+  slower.half_life *= 2.0;
+  EXPECT_TRUE(planner.setFieldCoverageConfig(slower));
+  EXPECT_DOUBLE_EQ(planner.coverage().config().half_life, slower.half_life);
+}
+
+TEST(ActiveVision, ReseedingOnlyAppliesToANewSeed) {
+  ActiveVision planner = makeReadyPlanner();
+  const uint32_t initial = planner.samplerSeed();
+  EXPECT_FALSE(planner.setSamplerSeed(initial));
+  EXPECT_TRUE(planner.setSamplerSeed(initial + 1));
+  EXPECT_EQ(planner.samplerSeed(), initial + 1);
+}
+
+TEST(ActiveVision, TheSamplerSeedMakesPlansReproducible) {
+  ActiveVision first = makeReadyPlanner();
+  ActiveVision second = makeReadyPlanner();
+  // Different seeds first, so equal results below come from the reseed alone
+  first.setSamplerSeed(1);
+  second.setSamplerSeed(2);
+  first.plan(makeInput(0.0));
+  first.reset();
+  first.setSamplerSeed(7);
+  second.setSamplerSeed(7);
+
+  const auto a = first.plan(makeInput(1.0));
+  const auto b = second.plan(makeInput(1.0));
+  ASSERT_TRUE(a.valid);
+  ASSERT_TRUE(b.valid);
+  ASSERT_EQ(a.candidates.size(), b.candidates.size());
+  for (size_t i = 0; i < a.candidates.size(); i++) {
+    EXPECT_DOUBLE_EQ(a.candidates[i].target.yaw, b.candidates[i].target.yaw);
+    EXPECT_DOUBLE_EQ(a.candidates[i].target.pitch, b.candidates[i].target.pitch);
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Debug rendering
 // ---------------------------------------------------------------------------

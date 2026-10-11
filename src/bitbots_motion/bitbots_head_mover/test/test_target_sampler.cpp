@@ -128,6 +128,24 @@ TEST(TargetSampler, IsDeterministicForAGivenSeed) {
   }
 }
 
+TEST(TargetSampler, ReseedingReplaysTheDrawsOfThatSeed) {
+  TargetSampler reseeded(makeConfig(), 1);
+  // Advance the generator so the reseed has something to reset
+  reseeded.sample({0.0, 0.0}, std::nullopt, kLimits);
+  reseeded.setSeed(1234);
+  EXPECT_EQ(reseeded.seed(), 1234u);
+
+  TargetSampler fresh(makeConfig(), 1234);
+  auto a = reseeded.sample({0.0, 0.0}, HeadPosition{0.3, 0.1}, kLimits);
+  auto b = fresh.sample({0.0, 0.0}, HeadPosition{0.3, 0.1}, kLimits);
+
+  ASSERT_EQ(a.size(), b.size());
+  for (size_t i = 0; i < a.size(); i++) {
+    EXPECT_DOUBLE_EQ(a[i].target.yaw, b[i].target.yaw);
+    EXPECT_DOUBLE_EQ(a[i].target.pitch, b[i].target.pitch);
+  }
+}
+
 TEST(TargetSampler, DifferentSeedsExploreDifferently) {
   TargetSampler first(makeConfig(), 1);
   TargetSampler second(makeConfig(), 2);

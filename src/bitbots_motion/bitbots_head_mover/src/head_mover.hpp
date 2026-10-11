@@ -270,8 +270,9 @@ class HeadMover {
   /**
    * @brief Builds the coverage map from the field dimensions and the coverage parameters
    *
-   * The field dimensions are not part of this node's schema, they live on the
-   * parameter blackboard the way the localization reads them as well.
+   * Called whenever either of them changes. Only an actual change rebuilds the
+   * map, which drops what was observed so far, because the old cells no longer
+   * line up with the new grid.
    */
   void apply_coverage_config() {
     if (!field_dimensions_) {
@@ -283,7 +284,10 @@ class HeadMover {
     coverage.margin = params_.active_vision.coverage.margin;
     coverage.cell_size = params_.active_vision.coverage.cell_size;
     coverage.half_life = params_.active_vision.coverage.half_life;
-    active_vision_.setFieldCoverageConfig(coverage);
+    if (active_vision_.setFieldCoverageConfig(coverage)) {
+      RCLCPP_INFO(node_->get_logger(), "Built the active vision coverage map with %zu cells",
+                  active_vision_.coverage().size());
+    }
   }
 
   /**
@@ -347,6 +351,9 @@ class HeadMover {
     sampler.last_target_std = config.sampling.last_target_std;
     sampler.current_position_std = config.sampling.current_position_std;
     active_vision_.setSamplerConfig(sampler);
+    // Reseeding only on an actual change keeps an unrelated parameter update
+    // from replaying the same draws
+    active_vision_.setSamplerSeed(static_cast<uint32_t>(config.sampling.random_seed));
 
     bitbots_head_mover::HeadController controller;
     controller.approach_distance = config.controller.approach_distance;
@@ -379,6 +386,8 @@ class HeadMover {
     weights.robots = config.weights.robots;
     weights.smoothness = config.weights.smoothness;
     active_vision_.setScoringWeights(weights);
+
+    apply_coverage_config();
   }
 
   /**

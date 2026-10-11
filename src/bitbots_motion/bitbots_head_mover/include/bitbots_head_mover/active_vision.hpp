@@ -125,9 +125,18 @@ class ActiveVision {
   void setCameraCalibration(const Eigen::Isometry3d& calibration);
 
   /// Build the coverage map once the field dimensions are known.
-  void setFieldCoverageConfig(const FieldCoverageConfig& config);
+  ///
+  /// A config that differs from the current one rebuilds the map, which drops
+  /// the coverage record because its cells no longer line up. Passing the
+  /// current config again keeps the record. Returns whether the map was rebuilt.
+  bool setFieldCoverageConfig(const FieldCoverageConfig& config);
 
   void setSamplerConfig(const SamplerConfig& config) { sampler_.setConfig(config); }
+  /// Restart the sampler from a new seed. Passing the current seed again keeps
+  /// the generator running, so reapplying unchanged parameters does not replay
+  /// the same draws. Returns whether the sampler was reseeded.
+  bool setSamplerSeed(uint32_t seed);
+  uint32_t samplerSeed() const { return sampler_.seed(); }
   void setHeadLimits(const HeadLimits& limits) { limits_ = limits; }
   void setController(const HeadController& controller) { controller_ = controller; }
   void setScoringWeights(const ScoringWeights& weights) { weights_ = weights; }
