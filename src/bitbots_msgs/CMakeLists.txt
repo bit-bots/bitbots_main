@@ -57,5 +57,4 @@ rosidl_generate_interfaces(
   std_msgs
   trajectory_msgs)
 
-
 ament_package()

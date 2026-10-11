@@ -57,7 +57,6 @@ ament_target_dependencies(
   tf2_geometry_msgs
   tf2_ros)
 
-
 install(TARGETS motion_odometry DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})

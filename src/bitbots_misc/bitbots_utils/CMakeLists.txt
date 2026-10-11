@@ -20,7 +20,6 @@ find_package(std_msgs REQUIRED)
 find_package(tf2_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 
-
 # Define include directories for cpp library headers
 set(INCLUDE_DIRS include)
 include_directories(${INCLUDE_DIRS})

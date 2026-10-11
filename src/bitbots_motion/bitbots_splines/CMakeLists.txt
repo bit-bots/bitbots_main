@@ -27,7 +27,6 @@ include_directories(${INCLUDE_DIRS})
 
 add_compile_options(-Wall -Werror -Wno-unused)
 
-
 set(SOURCES
     src/Spline/polynom.cpp
     src/Spline/smooth_spline.cpp

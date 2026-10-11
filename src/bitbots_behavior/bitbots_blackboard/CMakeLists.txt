@@ -4,7 +4,6 @@ project(bitbots_blackboard)
 find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_python REQUIRED)
 
-
 if(BUILD_TESTING)
   find_package(ament_cmake_mypy REQUIRED)
   ament_mypy(CONFIG_FILE "${CMAKE_CURRENT_LIST_DIR}/mypy.ini")

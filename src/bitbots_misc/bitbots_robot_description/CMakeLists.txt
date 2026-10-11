@@ -3,7 +3,6 @@ project(bitbots_robot_description)
 
 find_package(ament_cmake REQUIRED)
 
-
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 
 ament_package()

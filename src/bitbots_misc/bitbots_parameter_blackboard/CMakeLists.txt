@@ -4,7 +4,6 @@ project(bitbots_parameter_blackboard)
 find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_python REQUIRED)
 
-
 # Python install
 ament_python_install_package(${PROJECT_NAME})
 

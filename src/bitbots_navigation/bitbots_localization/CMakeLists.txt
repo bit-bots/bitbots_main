@@ -62,7 +62,6 @@ find_package(OpenCV)
 
 # Generate added messages and services with any dependencies listed here
 
-
 # ##############################################################################
 # Build ##
 # ##############################################################################
