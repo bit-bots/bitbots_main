@@ -19,7 +19,6 @@ find_package(ament_cmake REQUIRED)
 find_package(backward_ros REQUIRED)
 find_package(bitbots_msgs REQUIRED)
 find_package(bitbots_splines REQUIRED)
-find_package(bitbots_utils REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(generate_parameter_library REQUIRED)
@@ -29,6 +28,7 @@ find_package(kdl_parser REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(orocos_kdl_vendor REQUIRED)
+find_package(rcl_interfaces REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(soccer_vision_3d_msgs REQUIRED)
 find_package(tf2_eigen REQUIRED)
@@ -53,6 +53,7 @@ add_library(
   src/active_vision_scorer.cpp
   src/camera_model.cpp
   src/field_coverage_map.cpp
+  src/field_dimension_client.cpp
   src/head_kinematics.cpp
   src/head_trajectory.cpp
   src/look_at.cpp
@@ -77,6 +78,8 @@ ament_target_dependencies(
   kdl_parser
   nav_msgs
   orocos_kdl_vendor
+  rcl_interfaces
+  rclcpp
   sensor_msgs
   urdf
   visualization_msgs)
@@ -93,7 +96,6 @@ ament_target_dependencies(
   backward_ros
   bitbots_msgs
   bitbots_splines
-  bitbots_utils
   cv_bridge
   generate_parameter_library
   geometry_msgs
@@ -145,6 +147,10 @@ if(BUILD_TESTING)
 
   ament_add_gtest(test_active_vision test/test_active_vision.cpp)
   target_link_libraries(test_active_vision bitbots_head_mover_lib)
+
+  ament_add_gtest(test_field_dimension_client
+                  test/test_field_dimension_client.cpp)
+  target_link_libraries(test_field_dimension_client bitbots_head_mover_lib)
 endif()
 
 install(TARGETS move_head DESTINATION lib/${PROJECT_NAME})

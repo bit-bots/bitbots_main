@@ -5,6 +5,7 @@
 
 #include <bitbots_head_mover/active_vision.hpp>
 #include <bitbots_head_mover/active_vision_debug.hpp>
+#include <bitbots_head_mover/field_dimension_client.hpp>
 #include <bitbots_head_mover/head_parameters.hpp>
 #include <bitbots_head_mover/head_trajectory.hpp>
 #include <bitbots_head_mover/look_at.hpp>
@@ -14,7 +15,6 @@
 #include <bitbots_msgs/msg/head_mode.hpp>
 #include <bitbots_msgs/msg/joint_command.hpp>
 #include <bitbots_msgs/msg/team_data.hpp>
-#include <bitbots_utils/utils.hpp>
 #include <chrono>
 #include <cmath>
 #include <cv_bridge/cv_bridge.hpp>
@@ -54,6 +54,8 @@ using bitbots_head_mover::HeadVelocity;
 constexpr double kCollisionCheckStep = M_PI / 180.0 * 3.0;
 /// Pitch offset applied when retrying a colliding goal further up.
 constexpr double kCollisionAvoidancePitchStep = M_PI / 180.0 * 10.0;
+/// How often the field dimensions are requested until the blackboard answers.
+constexpr std::chrono::seconds kFieldDimensionRetryPeriod{2};
 
 using LookAtGoal = bitbots_msgs::action::LookAt;
 using LookAtGoalHandle = rclcpp_action::ServerGoalHandle<LookAtGoal>;
@@ -84,8 +86,6 @@ class HeadMover {
 
   // Declare timer that executes the main loop
   rclcpp::TimerBase::SharedPtr timer_;
-  // Retries fetching the field dimensions until the parameter blackboard answers
-  rclcpp::TimerBase::SharedPtr field_dimension_retry_timer_;
 
   // Declare variable for the current search pattern
   std::vector<HeadPosition> pattern_;
@@ -108,6 +108,9 @@ class HeadMover {
 
   // Active vision planner and everything that feeds it
   bitbots_head_mover::ActiveVision active_vision_;
+  // Requests the field dimensions from the parameter blackboard until it answers
+  std::unique_ptr<bitbots_head_mover::FieldDimensionClient> field_dimension_client_;
+  std::optional<bitbots_head_mover::FieldDimensions> field_dimensions_;
   rclcpp::Subscription<std_msgs::msg::String>::SharedPtr robot_description_subscriber_;
   rclcpp::Subscription<sensor_msgs::msg::CameraInfo>::SharedPtr camera_info_subscriber_;
   rclcpp::Subscription<soccer_vision_3d_msgs::msg::BallArray>::SharedPtr balls_subscriber_;
@@ -236,59 +239,36 @@ class HeadMover {
 
     apply_active_vision_parameters();
 
-    // Try once at startup, and otherwise keep retrying until it works. Giving up
-    // after a single attempt would disable the mode for the rest of the run
-    // because of a startup race with the parameter blackboard.
-    //
-    // The retry lives on its own slow timer rather than in the control loop: the
-    // parameter call blocks for up to a second, which would stall the 20 Hz loop
-    // on every tick for as long as the blackboard is unreachable.
-    if (!try_fetch_field_dimensions()) {
-      field_dimension_retry_timer_ = rclcpp::create_timer(node_, node_->get_clock(), 2s, [this] {
-        if (try_fetch_field_dimensions()) {
-          field_dimension_retry_timer_->cancel();
-        }
-      });
-    }
+    // The parameter blackboard may start after this node, so the client keeps
+    // asking until it answers. Its requests are asynchronous and answered on the
+    // main executor, so the wait never stalls the control loop.
+    field_dimension_client_ = std::make_unique<bitbots_head_mover::FieldDimensionClient>(
+        node_, "/parameter_blackboard", kFieldDimensionRetryPeriod,
+        [this](const bitbots_head_mover::FieldDimensions& dimensions) {
+          RCLCPP_INFO(node_->get_logger(), "Active vision uses a %.2f x %.2f m field", dimensions.length,
+                      dimensions.width);
+          field_dimensions_ = dimensions;
+          apply_coverage_config();
+        });
   }
 
   /**
-   * @brief Pulls the field dimensions from the global parameter server
+   * @brief Builds the coverage map from the field dimensions and the coverage parameters
    *
-   * They are not part of this node's schema, they live on the parameter
-   * blackboard the way the localization reads them as well.
+   * The field dimensions are not part of this node's schema, they live on the
+   * parameter blackboard the way the localization reads them as well.
    */
-  bool try_fetch_field_dimensions() {
-    try {
-      auto global_params = bitbots_utils::get_parameters_from_other_node(node_, "/parameter_blackboard",
-                                                                         {"field.size.x", "field.size.y"}, 1s);
-      bitbots_head_mover::FieldCoverageConfig coverage;
-      coverage.field_length = global_params.at("field.size.x").as_double();
-      coverage.field_width = global_params.at("field.size.y").as_double();
-
-      // A degenerate field would build an empty or nonsensical coverage map,
-      // which is worth saying out loud rather than quietly steering the head
-      if (!(coverage.field_length > 0.0) || !(coverage.field_width > 0.0)) {
-        RCLCPP_ERROR_THROTTLE(node_->get_logger(), *node_->get_clock(), 10000,
-                              "The parameter blackboard reports a field of %.2f x %.2f m, which is not usable",
-                              coverage.field_length, coverage.field_width);
-        return false;
-      }
-
-      coverage.margin = params_.active_vision.coverage.margin;
-      coverage.cell_size = params_.active_vision.coverage.cell_size;
-      coverage.half_life = params_.active_vision.coverage.half_life;
-      active_vision_.setFieldCoverageConfig(coverage);
-      RCLCPP_INFO(node_->get_logger(), "Active vision uses a %.2f x %.2f m field", coverage.field_length,
-                  coverage.field_width);
-      return true;
-    } catch (const std::exception& ex) {
-      RCLCPP_ERROR_THROTTLE(node_->get_logger(), *node_->get_clock(), 10000,
-                            "Could not get the field dimensions from the parameter blackboard, active vision cannot "
-                            "run yet: %s",
-                            ex.what());
-      return false;
+  void apply_coverage_config() {
+    if (!field_dimensions_) {
+      return;
     }
+    bitbots_head_mover::FieldCoverageConfig coverage;
+    coverage.field_length = field_dimensions_->length;
+    coverage.field_width = field_dimensions_->width;
+    coverage.margin = params_.active_vision.coverage.margin;
+    coverage.cell_size = params_.active_vision.coverage.cell_size;
+    coverage.half_life = params_.active_vision.coverage.half_life;
+    active_vision_.setFieldCoverageConfig(coverage);
   }
 
   /**
@@ -906,7 +886,7 @@ class HeadMover {
    */
   void perform_active_vision() {
     // Inputs that can arrive late are retried by their own subscriptions and by
-    // the field dimension retry timer, so this only has to report the wait
+    // the field dimension client, so this only has to report the wait
     const auto readiness = active_vision_.readiness();
     if (readiness != bitbots_head_mover::ActiveVisionReadiness::Ready) {
       hold_active_vision_position(bitbots_head_mover::describe(readiness));
