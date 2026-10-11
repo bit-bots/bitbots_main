@@ -34,10 +34,6 @@ cmd = "rm -rf 'build/{{ package }}' 'install/{{ package }}' {{ 'log' if not pack
 args = [{ arg = "package", default = "" }]
 description = "Cleans build and install files for all ROS 2 packages or a specific one if given."
 
-[tasks.docs]
-cmd = "sphinx-build -b html src/bitbots_misc/bitbots_docs/docs src/bitbots_misc/bitbots_docs/docs/_build && sphinx-build -b html src/bitbots_vision/docs src/bitbots_vision/docs/_build"
-description = "Builds the Sphinx documentation into the _build directory of each docs package."
-
 [tasks.test]
 description = "Runs tests for all ROS 2 packages. Pass additional colcon args (e.g. --packages-select)"
 # Skipping packages in the src/lib directory as they are not "our" responsibility. They should be tested separately in their own repositories.
@@ -105,7 +101,6 @@ rsync = ">=3.4.3,<4"
 ruff = ">=0.14.6,<0.15"
 scipy = ">=1.17.1,<2"
 simpleeval = ">=1.0.3,<2"
-sphinx-rtd-theme = ">=3.0.2,<4"
 sysroot_linux-64 = ">=2.28,<3"
 transforms3d = ">=0.4.2,<0.5"
 yaml-cpp = ">=0.8.0,<0.9"
@@ -202,11 +197,18 @@ clang-format = ">=21.1.0,<22"
 cppcheck = ">=2.18.3,<2.20"
 pre-commit = ">=4.4.0,<5"
 
+[feature.docs.dependencies]
+sphinx = ">=8.2,<9"
+sphinx-rtd-theme = ">=3.0.2,<4"
+
+[feature.docs.tasks.docs]
+cmd = "sphinx-build -b html docs docs/_build"
+description = "Builds the Sphinx documentation into docs/_build."
+
 [feature.ros.pypi-dependencies]
 # These are are pypi dependencies needed for our ROS 2 packages
 construct = ">=2.10.56, <3"
 syrupy = ">=5.0.0, <6"
-exhale = ">=0.3.7, <0.4"
 mjviser = ">=0.0.12, <0.0.15"
 
 [feature.robot.dependencies]
@@ -236,3 +238,4 @@ scripts = [
 default = ["ros", "format"]  # Full development environment (excluding robot-only deps)
 format = ["format"]  # Format only environment
 robot = ["ros", "format", "robot"]  # Robot environment with additional robot-only dependencies
+docs = ["docs"]  # Documentation build environment (no ROS dependencies)
