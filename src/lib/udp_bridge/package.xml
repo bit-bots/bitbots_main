@@ -13,8 +13,6 @@
   <author email="7sell@informatik.uni-hamburg.de">Finn-Thorben Sell</author>
 
   <depend>rclpy</depend>
-
-  <depend>bitbots_docs</depend>
   <depend>bitbots_utils</depend>
   <depend>python3-cryptography</depend>
 
