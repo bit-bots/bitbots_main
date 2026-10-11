@@ -2,6 +2,7 @@
 #include <bitbots_head_mover/active_vision_debug.hpp>
 #include <cmath>
 #include <opencv2/imgproc.hpp>
+#include <optional>
 
 namespace bitbots_head_mover {
 
@@ -91,7 +92,7 @@ nav_msgs::msg::OccupancyGrid coverageGrid(const FieldCoverageMap& coverage, cons
 }
 
 visualization_msgs::msg::MarkerArray candidateMarkers(const ActiveVisionResult& result,
-                                                      const ActiveVision& active_vision,
+                                                      const HeadKinematics& kinematics,
                                                       const Eigen::Isometry3d& robot_pose, const std::string& frame_id,
                                                       const builtin_interfaces::msg::Time& stamp) {
   visualization_msgs::msg::MarkerArray markers;
@@ -109,8 +110,16 @@ visualization_msgs::msg::MarkerArray candidateMarkers(const ActiveVisionResult& 
   }
 
   const std::vector<double> normalized = normalizedScores(result);
-  const ActiveVisionScorer scorer(active_vision.kinematics(), active_vision.camera(), active_vision.world(),
-                                  active_vision.coverage(), robot_pose);
+
+  // The kinematics resolve the camera against the robot's root link, the robot
+  // pose puts that root link onto the field
+  const auto camera_pose_in_map = [&](const HeadPosition& position) -> std::optional<Eigen::Isometry3d> {
+    const auto camera_in_root = kinematics.cameraPose(position);
+    if (!camera_in_root) {
+      return std::nullopt;
+    }
+    return robot_pose * *camera_in_root;
+  };
 
   // All candidates share one sphere list, so a single marker carries the whole
   // sampled distribution instead of one marker per candidate
@@ -125,7 +134,7 @@ visualization_msgs::msg::MarkerArray candidateMarkers(const ActiveVisionResult& 
   points.scale.x = points.scale.y = points.scale.z = 0.08;
 
   for (size_t index = 0; index < result.candidates.size(); index++) {
-    const auto camera_pose = scorer.cameraPoseInMap(result.candidates[index].target, robot_pose);
+    const auto camera_pose = camera_pose_in_map(result.candidates[index].target);
     Eigen::Vector3d point;
     // A pose the kinematics could not resolve simply has no ground point to
     // draw; the planner reports that failure itself
@@ -153,7 +162,7 @@ visualization_msgs::msg::MarkerArray candidateMarkers(const ActiveVisionResult& 
 
   // Draw the selected target on top as a larger, distinct sphere
   if (result.selected < result.candidates.size()) {
-    const auto camera_pose = scorer.cameraPoseInMap(result.candidates[result.selected].target, robot_pose);
+    const auto camera_pose = camera_pose_in_map(result.candidates[result.selected].target);
     Eigen::Vector3d point;
     if (camera_pose && groundIntersection(*camera_pose, point)) {
       visualization_msgs::msg::Marker selected;

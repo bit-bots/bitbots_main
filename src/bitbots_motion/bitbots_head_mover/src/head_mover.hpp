@@ -146,10 +146,6 @@ class HeadMover {
   rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr joint_space_publisher_;
   bool debug_publishers_created_ = false;
 
-  // The last position commanded by the active vision mode, which is what the
-  // head holds on to while an input is missing
-  std::optional<HeadPosition> active_vision_hold_position_;
-
  public:
   HeadMover() : node_(std::make_shared<rclcpp::Node>("head_mover")) {
     // The detection callbacks block on tf lookups, so they get their own callback
@@ -893,7 +889,7 @@ class HeadMover {
 
     coverage_publisher_->publish(bitbots_head_mover::coverageGrid(active_vision_.coverage(), map_frame, stamp));
     candidate_publisher_->publish(
-        bitbots_head_mover::candidateMarkers(result, active_vision_, robot_pose, map_frame, stamp));
+        bitbots_head_mover::candidateMarkers(result, active_vision_.kinematics(), robot_pose, map_frame, stamp));
 
     const cv::Mat plot = bitbots_head_mover::jointSpaceDebugImage(
         result, active_vision_.headLimits(), static_cast<int>(params_.active_vision.debug.image_size));
@@ -968,16 +964,14 @@ class HeadMover {
                            result.unscorable_candidates, result.candidates.size());
     }
 
-    active_vision_hold_position_ = result.position;
     // The planner's proportional controller already produced the setpoint one
     // step towards the selected target and the speed to reach it; the motor goals
     // carry joint speeds, so the direction of travel is dropped
     publish_motor_goals(result.position, {std::abs(result.velocity.yaw), std::abs(result.velocity.pitch)});
 
+    // The debug output only reads the coverage map and the kinematics, which
+    // are touched by the main loop alone, so it needs no world lock
     if (params_.active_vision.debug.enabled) {
-      // The debug markers rebuild a scorer over the world model, so this read has
-      // to be guarded against the detection thread as well
-      std::lock_guard<std::mutex> lock(world_mutex_);
       publish_active_vision_debug(result, robot_pose);
     }
   }
@@ -1017,13 +1011,9 @@ class HeadMover {
       switch (curr_head_mode) {
         case bitbots_msgs::msg::HeadMode::TRACK_BALL:
         case bitbots_msgs::msg::HeadMode::DONT_MOVE:
-          // Nothing to do if we go into track ball or dont move mode
-          break;
-
         case bitbots_msgs::msg::HeadMode::ACTIVE_VISION:
-          // Entering active vision starts from wherever the head currently is,
-          // there is no pattern to precompute
-          active_vision_hold_position_.reset();
+          // Nothing to precompute for these modes. Active vision starts from
+          // wherever the head currently is.
           break;
         case bitbots_msgs::msg::HeadMode::SEARCH_BALL_PENALTY:
           cycle_time_ = params_.search_patterns.search_ball_penalty.cycle_time;
@@ -1111,7 +1101,7 @@ class HeadMover {
         // Try to look at the ball
         look_at(look_at_point);
       } else if (curr_head_mode == bitbots_msgs::msg::HeadMode::ACTIVE_VISION) {
-        // Decide where to look by sampling and scoring head trajectories
+        // Decide where to look by sampling and scoring candidate head targets
         perform_active_vision();
       } else {
         // Execute the search pattern

@@ -24,7 +24,7 @@ nav_msgs::msg::OccupancyGrid coverageGrid(const FieldCoverageMap& coverage, cons
 /// planner is considering the right part of the field. The selected candidate is
 /// drawn on top as a larger, distinct marker.
 visualization_msgs::msg::MarkerArray candidateMarkers(const ActiveVisionResult& result,
-                                                      const ActiveVision& active_vision,
+                                                      const HeadKinematics& kinematics,
                                                       const Eigen::Isometry3d& robot_pose, const std::string& frame_id,
                                                       const builtin_interfaces::msg::Time& stamp);
 

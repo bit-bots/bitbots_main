@@ -434,7 +434,7 @@ TEST(ActiveVisionDebug, CandidateMarkersClearThePreviousCycle) {
   const auto result = planner.plan(makeInput());
   builtin_interfaces::msg::Time stamp;
   const auto markers =
-      bitbots_head_mover::candidateMarkers(result, planner, Eigen::Isometry3d::Identity(), "map", stamp);
+      bitbots_head_mover::candidateMarkers(result, planner.kinematics(), Eigen::Isometry3d::Identity(), "map", stamp);
 
   ASSERT_FALSE(markers.markers.empty());
   // Without a delete all, candidates from a cycle with more samples would linger

@@ -420,7 +420,7 @@ move_head:
     debug:
       enabled:
         type: bool
-        default_value: true
+        default_value: false
         description: "Publish the coverage grid, candidate markers and the joint space score image"
 
       image_size:
