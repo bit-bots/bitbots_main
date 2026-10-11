@@ -106,7 +106,7 @@ std::optional<Eigen::Isometry3d> HeadKinematics::cameraPose(const HeadPosition& 
     return std::nullopt;
   }
 
-  return toEigen(frame) * calibration_;
+  return toEigen(frame);
 }
 
 }  // namespace bitbots_head_mover

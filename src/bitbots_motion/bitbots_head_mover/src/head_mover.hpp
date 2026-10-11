@@ -120,7 +120,6 @@ class HeadMover {
   struct ActiveVisionFrames {
     std::string root_link;
     std::string tip_link;
-    std::string calibrated_optical_frame;
     std::string map_frame;
   };
   ActiveVisionFrames frames_;
@@ -193,8 +192,7 @@ class HeadMover {
     // Create parameter listener and load initial set of parameters
     param_listener_ = std::make_shared<move_head::ParamListener>(node_);
     params_ = param_listener_->get_params();
-    frames_ = {params_.active_vision.root_link, params_.active_vision.tip_link,
-               params_.active_vision.calibrated_optical_frame, params_.active_vision.map_frame};
+    frames_ = {params_.active_vision.root_link, params_.active_vision.tip_link, params_.active_vision.map_frame};
 
     // Create tf buffer and listener to update it
     tf_buffer_ = std::make_shared<tf2_ros::Buffer>(node_->get_clock());
@@ -302,35 +300,6 @@ class HeadMover {
     }
     RCLCPP_INFO(node_->get_logger(), "Built the head chain from '%s' to '%s'", chain.root_link.c_str(),
                 chain.tip_link.c_str());
-
-    // The extrinsic calibration is published as its own transform rather than
-    // being part of the robot description, so it has to be composed onto the
-    // chain's tip. It does not depend on the head position, so one lookup is
-    // enough, but it is only available once that publisher is up.
-    update_camera_calibration();
-  }
-
-  /**
-   * @brief Looks up the extrinsic camera calibration and hands it to the planner
-   */
-  bool update_camera_calibration() {
-    const std::string& uncalibrated = frames_.tip_link;
-    const std::string& calibrated = frames_.calibrated_optical_frame;
-    if (uncalibrated == calibrated) {
-      return true;
-    }
-
-    try {
-      const auto transform =
-          tf_buffer_->lookupTransform(uncalibrated, calibrated, tf2::TimePointZero, tf2::durationFromSec(0.1));
-      active_vision_.setCameraCalibration(tf2::transformToEigen(transform));
-      return true;
-    } catch (const tf2::TransformException& ex) {
-      RCLCPP_WARN_THROTTLE(node_->get_logger(), *node_->get_clock(), 5000,
-                           "Could not look up the extrinsic camera calibration from '%s' to '%s': %s",
-                           uncalibrated.c_str(), calibrated.c_str(), ex.what());
-      return false;
-    }
   }
 
   /**
@@ -913,12 +882,6 @@ class HeadMover {
     const auto readiness = active_vision_.readiness();
     if (readiness != bitbots_head_mover::ActiveVisionReadiness::Ready) {
       hold_active_vision_position(bitbots_head_mover::describe(readiness));
-      return;
-    }
-
-    // The calibration may only become available after the description did
-    if (!active_vision_.kinematics().hasCameraCalibration() && !update_camera_calibration()) {
-      hold_active_vision_position("the extrinsic camera calibration is unavailable");
       return;
     }
 

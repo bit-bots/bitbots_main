@@ -121,9 +121,6 @@ class ActiveVision {
   /// Adopt the camera intrinsics. Returns whether they were usable.
   bool setCameraInfo(const sensor_msgs::msg::CameraInfo& info);
 
-  /// Adopt the extrinsic camera calibration, which is not part of the URDF.
-  void setCameraCalibration(const Eigen::Isometry3d& calibration);
-
   /// Build the coverage map once the field dimensions are known.
   ///
   /// A config that differs from the current one rebuilds the map, which drops
@@ -194,11 +191,6 @@ class ActiveVision {
   ScoringWeights weights_;
   VisibilityWeighting visibility_;
   double coverage_distance_half_weight_ = 3.0;
-
-  /// The extrinsic camera calibration, kept here as well so it survives the
-  /// robot description arriving after it.
-  Eigen::Isometry3d calibration_ = Eigen::Isometry3d::Identity();
-  bool has_calibration_ = false;
 
   /// The target selected in the previous cycle, which is what the smoothness
   /// cost is measured against and what the sampler concentrates its search on.

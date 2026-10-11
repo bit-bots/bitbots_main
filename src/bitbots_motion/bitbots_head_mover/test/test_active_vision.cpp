@@ -148,22 +148,6 @@ TEST(ActiveVision, DoesNotPlanWhileUnready) {
 }
 
 // ---------------------------------------------------------------------------
-// Calibration handling
-// ---------------------------------------------------------------------------
-
-TEST(ActiveVision, CalibrationSurvivesALateRobotDescription) {
-  ActiveVision planner;
-  Eigen::Isometry3d calibration = Eigen::Isometry3d::Identity();
-  calibration.translation() = Eigen::Vector3d(0.0, 0.0, 0.05);
-
-  // The calibration transform can be available before the description is
-  planner.setCameraCalibration(calibration);
-  ASSERT_TRUE(planner.setRobotDescription(kHeadUrdf, HeadChainConfig{}));
-
-  EXPECT_TRUE(planner.kinematics().hasCameraCalibration());
-}
-
-// ---------------------------------------------------------------------------
 // Planning
 // ---------------------------------------------------------------------------
 

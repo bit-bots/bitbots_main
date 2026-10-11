@@ -40,24 +40,11 @@ bool ActiveVision::setRobotDescription(const std::string& urdf, const HeadChainC
   if (!kinematics) {
     return false;
   }
-  // Carry an already known calibration over to the new chain, so a robot
-  // description arriving after the calibration does not silently drop it
-  if (has_calibration_) {
-    kinematics->setCameraCalibration(calibration_);
-  }
   kinematics_ = std::move(kinematics);
   return true;
 }
 
 bool ActiveVision::setCameraInfo(const sensor_msgs::msg::CameraInfo& info) { return camera_.update(info); }
-
-void ActiveVision::setCameraCalibration(const Eigen::Isometry3d& calibration) {
-  calibration_ = calibration;
-  has_calibration_ = true;
-  if (kinematics_) {
-    kinematics_->setCameraCalibration(calibration);
-  }
-}
 
 bool ActiveVision::setFieldCoverageConfig(const FieldCoverageConfig& config) {
   if (coverage_ && coverage_->config() == config) {

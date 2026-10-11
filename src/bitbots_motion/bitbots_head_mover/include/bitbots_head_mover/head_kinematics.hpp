@@ -16,6 +16,10 @@ struct HeadChainConfig {
   /// The link the resulting camera pose is expressed in.
   std::string root_link = "base_link";
   /// The optical frame at the end of the chain, as it appears in the robot description.
+  ///
+  /// This is the uncalibrated optical frame. The extrinsic calibration only
+  /// shifts the camera by a small offset, which does not matter for judging
+  /// where a candidate head position looks, so it is deliberately not applied.
   std::string tip_link = "camera_optical_frame_left_uncalibrated";
   std::string yaw_joint = "head_yaw_joint";
   std::string pitch_joint = "head_pitch_joint";
@@ -44,10 +48,10 @@ class HeadKinematics {
 
   /// The camera pose relative to the root link for a given head configuration.
   ///
-  /// Includes the camera calibration if one was set. Returns nullopt if the
-  /// solver fails, rather than an identity pose: an identity would silently
-  /// place the camera at the robot's origin looking along its x axis, which is a
-  /// perfectly plausible pose that would be scored as if it were real.
+  /// Returns nullopt if the solver fails, rather than an identity pose: an
+  /// identity would silently place the camera at the robot's origin looking
+  /// along its x axis, which is a perfectly plausible pose that would be scored
+  /// as if it were real.
   std::optional<Eigen::Isometry3d> cameraPose(const HeadPosition& position) const;
 
   /// The head joint limits as declared in the robot description.
@@ -55,21 +59,6 @@ class HeadKinematics {
   /// These are the mechanical limits of the joints. The head mover additionally
   /// applies its own, usually tighter, configured limits.
   const HeadLimits& urdfLimits() const { return urdf_limits_; }
-
-  /// Append a fixed transform to every camera pose.
-  ///
-  /// The extrinsic camera calibration is published as a separate transform
-  /// instead of being part of the robot description, so it has to be composed
-  /// onto the chain's tip to arrive at the optical frame that the vision
-  /// pipeline reports its detections in. The transform does not depend on the
-  /// head configuration, so looking it up once is enough.
-  void setCameraCalibration(const Eigen::Isometry3d& calibration) {
-    calibration_ = calibration;
-    has_calibration_ = true;
-  }
-
-  /// Whether a camera calibration was set.
-  bool hasCameraCalibration() const { return has_calibration_; }
 
  private:
   HeadKinematics() = default;
@@ -87,8 +76,6 @@ class HeadKinematics {
   unsigned int yaw_index_ = 0;
   unsigned int pitch_index_ = 0;
   HeadLimits urdf_limits_;
-  Eigen::Isometry3d calibration_ = Eigen::Isometry3d::Identity();
-  bool has_calibration_ = false;
 };
 
 }  // namespace bitbots_head_mover

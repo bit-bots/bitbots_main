@@ -208,13 +208,7 @@ move_head:
     tip_link:
       type: string
       default_value: "camera_optical_frame_left_uncalibrated"
-      description: "Optical frame at the end of the head chain, as named in the robot description. Only read at startup."
-      read_only: true
-
-    calibrated_optical_frame:
-      type: string
-      default_value: "zed_left_camera_optical_frame"
-      description: "Optical frame the vision pipeline reports detections in. The offset from tip_link is the extrinsic calibration and is looked up via tf. Only read at startup."
+      description: "Optical frame at the end of the head chain, as named in the robot description. The extrinsic camera calibration is deliberately not applied, as its small offset does not matter for judging where the head looks. Only read at startup."
       read_only: true
 
     map_frame:
