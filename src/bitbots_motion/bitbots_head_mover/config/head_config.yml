@@ -245,13 +245,6 @@ move_head:
         validation:
           gt<>: [0.0]
 
-      control_period:
-        type: double
-        default_value: 0.05
-        description: "Time step (seconds) the controller advances the setpoint by each cycle. Should match the control loop period."
-        validation:
-          gt<>: [0.0]
-
     sampling:
       sample_count:
         type: int

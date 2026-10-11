@@ -44,8 +44,6 @@
 
 namespace move_head {
 
-using namespace std::chrono_literals;
-
 using bitbots_head_mover::HeadLimits;
 using bitbots_head_mover::HeadPosition;
 using bitbots_head_mover::HeadVelocity;
@@ -54,6 +52,9 @@ using bitbots_head_mover::HeadVelocity;
 constexpr double kCollisionCheckStep = M_PI / 180.0 * 3.0;
 /// Pitch offset applied when retrying a colliding goal further up.
 constexpr double kCollisionAvoidancePitchStep = M_PI / 180.0 * 10.0;
+/// Period of the main loop. The active vision controller advances its setpoint
+/// by exactly this step, so both are derived from this one value.
+constexpr std::chrono::milliseconds kControlPeriod{50};
 /// How often the field dimensions are requested until the blackboard answers.
 constexpr std::chrono::seconds kFieldDimensionRetryPeriod{2};
 
@@ -212,7 +213,7 @@ class HeadMover {
     setup_active_vision();
 
     // Initialize timer for main loop
-    timer_ = rclcpp::create_timer(node_, node_->get_clock(), 50ms, [this] { behave(); });
+    timer_ = rclcpp::create_timer(node_, node_->get_clock(), kControlPeriod, [this] { behave(); });
   }
 
   /**
@@ -349,7 +350,7 @@ class HeadMover {
 
     bitbots_head_mover::HeadController controller;
     controller.approach_distance = config.controller.approach_distance;
-    controller.control_period = config.controller.control_period;
+    controller.control_period = std::chrono::duration<double>(kControlPeriod).count();
     controller.max_velocity = {config.max_velocity_yaw, config.max_velocity_pitch};
     active_vision_.setController(controller);
 
