@@ -45,7 +45,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let now = match ros_clock.lock().unwrap().get_now() {
                 Ok(now) => now,
                 Err(err) => {
-                    r2r::log_err!(&nl, &format!("Failed to get current time: {err}"));
+                    r2r::log_error!(&nl, "Failed to get current time: {err}");
                     continue;
                 }
             };
@@ -74,7 +74,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }],
             };
             if let Err(err) = tf_static_broadcaster.publish(&message) {
-                r2r::log_err!(&nl, &format!("Failed to publish updated transform: {err}"));
+                r2r::log_error!(&nl, "Failed to publish updated transform: {err}");
             }
         }
     });
