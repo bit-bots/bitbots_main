@@ -15,18 +15,21 @@ The Pixi development environment provides all of them, so no additional installa
 How to build the documentation
 ==============================
 
-1. Change to the package with the documentation to build.
-   The general documentation (tutorials etc. including this one) is in ``src/bitbots_misc/bitbots_docs``.
-
-2. Build the Sphinx docs from the package root:
+Build all documentation from the workspace root:
 
   .. code-block:: bash
 
-        pixi run -e default sphinx-build docs docs/_out -b html
+        pixi run -e default docs
 
-3. Open ``docs/_out/index.html`` in a browser.
+The general documentation (tutorials etc. including this one) is written to
+``src/bitbots_misc/bitbots_docs/docs/_build/index.html``, which can be opened in a browser.
 
-To build the documentation of another package, go to that package (e.g. ``bitbots_vision``) and run steps 2. and 3. there.
+To build only a single package, run Sphinx from that package's root instead
+(e.g. ``src/bitbots_misc/bitbots_docs`` or ``src/bitbots_vision``):
+
+  .. code-block:: bash
+
+        pixi run -e default sphinx-build docs docs/_build -b html
 
 How to write documentation for a package
 ========================================
