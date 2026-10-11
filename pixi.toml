@@ -197,12 +197,16 @@ cppcheck = ">=2.18.3,<2.20"
 pre-commit = ">=4.4.0,<5"
 
 [feature.docs.dependencies]
-sphinx = ">=8.2,<9"
-sphinx-rtd-theme = ">=3.0.2,<4"
+mkdocs = ">=1.6,<2"
+pymdown-extensions = ">=10.0,<11"  # superfences etc. for the docs markdown
+
+[feature.docs.pypi-dependencies]
+# The Read the Docs style theme for MkDocs is only available on PyPI
+mkdocs_rtd_dropdown = ">=1.0, <2"  # Latest available on the index
 
 [feature.docs.tasks.docs]
-cmd = "sphinx-build -b html docs docs/_build"
-description = "Builds the Sphinx documentation into docs/_build."
+cmd = "mkdocs build"
+description = "Builds the MkDocs documentation into _build."
 
 [feature.ros.pypi-dependencies]
 # These are are pypi dependencies needed for our ROS 2 packages

@@ -1,0 +1,47 @@
+site_name: Bit-Bots Documentation
+docs_dir: docs
+site_dir: _build
+repo_url: https://github.com/bit-bots/bitbots_main
+
+theme:
+  name: rtd-dropdown
+  logo: _static/logo.png
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Setup: manual/getting_started/setup.md
+      - Software Overview: manual/getting_started/software_overview.md
+      - Testing in Simulation: manual/getting_started/simulation_testing.md
+  - Physical Robot:
+      - Robots: manual/physical_robot/robots.md
+      - Setting up a Robot: manual/physical_robot/setup_robot.md
+      - Competition Wi-Fi: manual/physical_robot/competition_wifi.md
+      - PiPlus Hardware: manual/physical_robot/piplus_hardware.md
+      - Starting a Robot: manual/physical_robot/starting_robot.md
+      - Connecting to a Robot: manual/physical_robot/connecting.md
+      - Testing a Robot: manual/physical_robot/testing_robot.md
+      - Extrinsic Calibration: manual/physical_robot/extrinsic_calibration.md
+      - Hardware Checklist: manual/physical_robot/hardware_checklist.md
+      - Configure and Launch a Robot: manual/physical_robot/configure_launch.md
+      - Test Robot Hardware: manual/physical_robot/test_robot_hardware.md
+      - Lowlevel: manual/physical_robot/lowlevel.md
+  - Development:
+      - Development Guidelines: manual/development/development_guidelines.md
+      - How to Document: manual/development/how_to_document.md
+      - How to Test: manual/development/testing.md
+      - RL Models: manual/development/rl_models.md
+  - Packages:
+      - Human Control Module: manual/development/hcm.md
+      - Animation Server: manual/development/animation.md
+      - Vision: manual/development/vision.md
+      - Localization: manual/development/localization.md
+  - Glossary: manual/glossary.md
+
+markdown_extensions:
+  - admonition
+  - def_list
+  - pymdownx.superfences
+  - tables
+  - toc:
+      permalink: true

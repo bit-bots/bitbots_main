@@ -55,7 +55,7 @@ directly from the host shell.
 - Use the `format` environment only for formatting-only work.
 - Use the `robot` environment only when robot-specific dependencies are needed.
 - Use the `docs` environment only for building the documentation.
-  It contains only Sphinx and needs no ROS dependencies.
+  It contains only MkDocs and needs no ROS dependencies.
 - Prefer `pixi run -e <environment> <command>` over `pixi shell`.
   A persistent shell can become stale after environment changes.
 - Use `pixi task list` to inspect available repository tasks.
@@ -77,7 +77,7 @@ Common commands:
 - Run formatting and linting with `pixi run -e default format`.
   Review the resulting diff because this task may modify files.
 - Build the documentation with `pixi run -e docs docs`.
-  The generated HTML pages are placed in `docs/_build`.
+  The generated HTML pages are placed in `_build`.
 - Run one-off tools with `pixi run -e default <command>`.
 - Clean all workspace build artifacts with `pixi run -e default clean`.
 - Clean one package with `pixi run -e default clean <package>`.
