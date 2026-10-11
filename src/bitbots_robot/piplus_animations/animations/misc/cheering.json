@@ -34,7 +34,7 @@
         },
         {
             "name": "arms up",
-            "duration": 0.7,
+            "duration": 1.4,
             "pause": 0.2,
             "goals": {
                 "l_elbow_joint": 0.0,
@@ -64,7 +64,7 @@
         },
         {
             "name": "wave left",
-            "duration": 0.35,
+            "duration": 0.45,
             "pause": 0.1,
             "goals": {
                 "l_elbow_joint": 0.0,
@@ -94,7 +94,7 @@
         },
         {
             "name": "arms up",
-            "duration": 0.3,
+            "duration": 0.35,
             "pause": 0.0,
             "goals": {
                 "l_elbow_joint": 0.0,
@@ -124,7 +124,7 @@
         },
         {
             "name": "wave right",
-            "duration": 0.35,
+            "duration": 0.45,
             "pause": 0.15,
             "goals": {
                 "l_elbow_joint": 0.0,
@@ -154,7 +154,7 @@
         },
         {
             "name": "arms up",
-            "duration": 0.3,
+            "duration": 0.35,
             "pause": 0.0,
             "goals": {
                 "l_elbow_joint": 0.0,
@@ -184,7 +184,7 @@
         },
         {
             "name": "wave left",
-            "duration": 0.3,
+            "duration": 0.4,
             "pause": 0.0,
             "goals": {
                 "l_elbow_joint": 0.0,
@@ -214,7 +214,7 @@
         },
         {
             "name": "arms up",
-            "duration": 0.3,
+            "duration": 0.35,
             "pause": 0.0,
             "goals": {
                 "l_elbow_joint": 0.0,
@@ -244,7 +244,7 @@
         },
         {
             "name": "wave right",
-            "duration": 0.3,
+            "duration": 0.4,
             "pause": 0.15,
             "goals": {
                 "l_elbow_joint": 0.0,
@@ -274,7 +274,7 @@
         },
         {
             "name": "arms up",
-            "duration": 0.3,
+            "duration": 0.4,
             "pause": 0.2,
             "goals": {
                 "l_elbow_joint": 0.0,
@@ -304,7 +304,7 @@
         },
         {
             "name": "end frame",
-            "duration": 0.8,
+            "duration": 1.5,
             "pause": 0.0,
             "goals": {
                 "l_elbow_joint": 0.0,
