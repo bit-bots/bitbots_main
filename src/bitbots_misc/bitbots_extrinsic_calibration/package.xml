@@ -21,7 +21,6 @@
     <depend>tf2</depend>
 
     <export>
-        <rosdoc config="rosdoc.yaml"/>
         <build_type>ament_cmake</build_type>
     </export>
 </package>

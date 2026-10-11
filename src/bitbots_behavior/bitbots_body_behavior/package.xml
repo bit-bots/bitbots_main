@@ -36,7 +36,6 @@
     <test_depend>python3-pytest</test_depend>
 
     <export>
-      <rosdoc config="rosdoc.yaml"/>
       <build_type>ament_python</build_type>
     </export>
   </package>

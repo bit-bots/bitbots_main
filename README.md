@@ -15,7 +15,7 @@ All code is written as individual ROS 2 packages.
 
 The workspace is managed using the [pixi](https://pixi.sh) package manager. This allows us to have reproducible builds and easy user space dependency management similar to tools like `uv` or `cargo`. This also means that no system wide ROS installation or superuser privileges are required to install or run the code.
 
-Full step-by-step instructions for installing the Bit-Bots software stack and ROS 2 can be found in our [documentation](https://docs.bit-bots.de/meta/manual/tutorials/install_software_ros2.html).
+Full step-by-step instructions for installing the Bit-Bots software stack and ROS 2 can be found in our [documentation](https://docs.bit-bots.de/).
 
 Run the following command inside this repository to build the workspace.
 All dependencies will be installed automatically.

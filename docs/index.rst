@@ -48,6 +48,7 @@ The main repository is `bitbots_main <https://github.com/bit-bots/bitbots_main>`
     manual/development/hcm
     manual/development/animation
     manual/development/vision
+    manual/development/localization
 
 .. toctree::
     :maxdepth: 1
@@ -55,11 +56,10 @@ The main repository is `bitbots_main <https://github.com/bit-bots/bitbots_main>`
 
     manual/glossary
 
-.. todo::
-   Rework of the public documentation (see issue #1037): replace the plain link
-   to the default package directory index below with a curated list of all
-   packages that have non-empty documentation.
-
-`Package Documentations <https://docs.bit-bots.de/package/>`_
-
 `Internal Documentation <https://docs.bit-bots.de/private/>`_
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`search`

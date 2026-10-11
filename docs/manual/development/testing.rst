@@ -27,9 +27,7 @@ Moreover, lots of mistakes can be found with this.
 But it is essential to know that not all mistakes can be found with this method.
 
 Our software is organized in packages.
-Each one has a status tag which shows the current test status.
-The test status of all packages is visualized in the architecture diagram.
-Through the different levels an orientation is given about what has to be tested and which software already works well.
+The different test levels below give an orientation about what has to be tested and which software already works well.
 In the following, this will be explained in more detail.
 
 
@@ -49,16 +47,16 @@ With this approach the whole software stack is started right at the beginning.
 Testing of a Single Package
 ===================================
 
-At first we will look at how we can test a single package and to which status we can then set that part in the architecture diagram if this test was successful.
+At first we will look at how we can test a single package.
 
-Compile (compiles)
+Compile
 ------------------
 
 The first step is to test if the package compiles.
 Obviously this should preferably be tested in the same Pixi environment that is used on the robot.
 A part of this is to check if all dependencies are correct in the package.xml.
 
-Starting (starts)
+Starting
 ------------------
 
 The next step is to check if the package actually starts without crashing instantly with an obvious error.
@@ -85,24 +83,24 @@ ros2 launch bitbots_bringup highlevel.launch <param>:=true/false
 
 Starts high-level software (Gamecontroller, Teamcomm, Behavior, Vision, Localization, Pathfinding)
 
-Testing on the robot (tested_robot)
+Testing on the robot
 --------------------------------------
 
 If the other test phases are completed it is time to get the real robot.
 For testing this it is especially important to explicitly test the edge cases.
 
-Integration Testing (tested_integration)
+Integration Testing
 ========================================
 
-Stable Software (stable)
+Stable Software
 -------------------------
 By our definition software is considered stable if it has been used in multiple games without changes since then.
 
 
 What to do when changing a package?
 ===================================
-Even when only small changes are applied to the main branch, the package has to be tested again to keep its test status.
-If the package is not tested again or only partially tested the test status has to be adapted to 'unknown' or the reached test state.
+Even when only small changes are applied to the main branch, the affected parts of the package have to be tested again.
+If a test was not performed or only partially performed, the result has to be communicated clearly.
 
 
 Conclusion

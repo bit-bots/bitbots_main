@@ -38,9 +38,6 @@ language = "en"
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ["_build", "_out", "Thumbs.db", ".DS_Store"]
 
-# The name of the Pygments (syntax highlighting) style to use.
-pygments_style = None
-
 # -- Options for HTML output -------------------------------------------------
 
 html_theme = "sphinx_rtd_theme"
