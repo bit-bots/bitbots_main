@@ -15,18 +15,12 @@
     <buildtool_depend>ament_cmake</buildtool_depend>
 
     <depend>backward_ros</depend>
-    <depend>bitbots_docs</depend>
     <depend>rot_conv</depend>
     <depend>std_msgs</depend>
     <depend>tf2_ros</depend>
     <depend>tf2</depend>
 
     <export>
-        <bitbots_documentation>
-            <language>c++</language>
-            <status>tested_robot</status>
-        </bitbots_documentation>
-        <rosdoc config="rosdoc.yaml"/>
         <build_type>ament_cmake</build_type>
     </export>
 </package>

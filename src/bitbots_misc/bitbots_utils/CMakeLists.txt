@@ -12,7 +12,6 @@ if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   add_compile_options(-O2 -g)
 endif()
 
-find_package(bitbots_docs REQUIRED)
 find_package(backward_ros REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_python REQUIRED)
@@ -20,8 +19,6 @@ find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(tf2_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
-
-enable_bitbots_docs()
 
 # Define include directories for cpp library headers
 set(INCLUDE_DIRS include)

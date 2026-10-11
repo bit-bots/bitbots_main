@@ -17,15 +17,11 @@
 
     <buildtool_depend>ament_cmake</buildtool_depend>
 
-    <depend>bitbots_docs</depend>
     <depend>bitbots_extrinsic_calibration</depend>
     <depend>robot_state_publisher</depend>
     <depend>xacro</depend>
 
     <export>
-        <bitbots_documentation>
-            <status>unknown</status>
-        </bitbots_documentation>
         <build_type>ament_cmake</build_type>
     </export>
 </package>

@@ -16,15 +16,11 @@
 
     <buildtool_depend>ament_cmake</buildtool_depend>
 
-    <depend>bitbots_docs</depend>
     <depend>bitbots_utils</depend>
     <depend>python3-yaml</depend>
     <depend>demo_nodes_cpp</depend>
 
     <export>
-        <bitbots_documentation>
-            <status>unknown</status>
-        </bitbots_documentation>
         <build_type>ament_cmake</build_type>
     </export>
 </package>

@@ -17,7 +17,6 @@
     <buildtool_depend>ament_cmake</buildtool_depend>
 
     <depend>backward_ros</depend>
-    <depend>bitbots_docs</depend>
     <depend>python3-yaml</depend>
     <depend>python3-transforms3d</depend>
     <depend>demo_nodes_cpp</depend>
@@ -26,9 +25,6 @@
     <depend>ros2_numpy</depend>
 
     <export>
-        <bitbots_documentation>
-            <status>unknown</status>
-        </bitbots_documentation>
         <build_type>ament_cmake</build_type>
     </export>
 </package>

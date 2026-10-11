@@ -1,8 +1,6 @@
 # auto-generated documentation
 **/docs/_build
 **/docs/_out
-**/docs/cppapi
-**/docs/pyapi
 
 # User-specific stuff:
 .idea/workspace.xml
@@ -193,7 +191,6 @@ ENV/
 ansible_robots
 ansible_labor
 ansible
-bitbots_docs_internal
 
 **/.ideacache
 

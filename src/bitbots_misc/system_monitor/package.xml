@@ -17,7 +17,6 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
   <depend>std_msgs</depend>
   <depend>python3-psutil</depend>
-  <depend>bitbots_docs</depend>
   <depend>rclpy</depend>
   <depend>bitbots_msgs</depend>
 

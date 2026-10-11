@@ -17,7 +17,6 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
   <depend>backward_ros</depend>
-  <depend>bitbots_docs</depend>
   <depend>eigen</depend>
   <depend>geometry_msgs</depend>
   <depend>moveit_core</depend>
@@ -27,10 +26,6 @@
   <depend>tf2_geometry_msgs</depend>
 
   <export>
-    <bitbots_documentation>
-      <status>stable</status>
-      <language>c++</language>
-    </bitbots_documentation>
     <build_type>ament_cmake</build_type>
   </export>
 </package>
