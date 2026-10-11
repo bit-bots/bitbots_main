@@ -1,7 +1,10 @@
 <?xml version="1.0"?>
 <launch>
+    <arg name="sim" default="false" description="Whether to use simulation time" />
+
     <node pkg="diagnostic_aggregator" exec="aggregator_node" args="--ros-args --log-level WARN">
         <param from="$(find-pkg-share bitbots_diagnostic)/config/analyzers.yaml" />
+        <param name="use_sim_time" value="$(var sim)" />
     </node>
 </launch>
 
