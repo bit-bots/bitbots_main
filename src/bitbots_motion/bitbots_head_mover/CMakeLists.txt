@@ -30,6 +30,7 @@ find_package(OpenCV REQUIRED)
 find_package(orocos_kdl_vendor REQUIRED)
 find_package(rcl_interfaces REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(rclcpp_action REQUIRED)
 find_package(soccer_vision_3d_msgs REQUIRED)
 find_package(tf2_eigen REQUIRED)
 find_package(urdf REQUIRED)
@@ -87,27 +88,31 @@ ament_target_dependencies(
 # ---------------------------------------------------------------------------
 # move_head node
 # ---------------------------------------------------------------------------
+# The node class lives in a private header, so the node level tests can build it
+# as well
+set(MOVE_HEAD_NODE_DEPENDENCIES
+    backward_ros
+    bitbots_msgs
+    bitbots_splines
+    cv_bridge
+    generate_parameter_library
+    geometry_msgs
+    nav_msgs
+    rclcpp
+    rclcpp_action
+    sensor_msgs
+    soccer_vision_3d_msgs
+    std_msgs
+    tf2_eigen
+    tf2_geometry_msgs
+    tf2_ros
+    visualization_msgs)
+
 add_executable(move_head src/move_head.cpp)
 target_link_libraries(move_head rclcpp::rclcpp head_parameters
                       bitbots_head_mover_lib)
 
-ament_target_dependencies(
-  move_head
-  backward_ros
-  bitbots_msgs
-  bitbots_splines
-  cv_bridge
-  generate_parameter_library
-  geometry_msgs
-  nav_msgs
-  rclcpp
-  sensor_msgs
-  soccer_vision_3d_msgs
-  std_msgs
-  tf2_eigen
-  tf2_geometry_msgs
-  tf2_ros
-  visualization_msgs)
+ament_target_dependencies(move_head ${MOVE_HEAD_NODE_DEPENDENCIES})
 
 # ---------------------------------------------------------------------------
 # Tests
@@ -151,6 +156,11 @@ if(BUILD_TESTING)
   ament_add_gtest(test_field_dimension_client
                   test/test_field_dimension_client.cpp)
   target_link_libraries(test_field_dimension_client bitbots_head_mover_lib)
+
+  ament_add_gtest(test_head_mover test/test_head_mover.cpp)
+  target_link_libraries(test_head_mover rclcpp::rclcpp head_parameters
+                        bitbots_head_mover_lib)
+  ament_target_dependencies(test_head_mover ${MOVE_HEAD_NODE_DEPENDENCIES})
 endif()
 
 install(TARGETS move_head DESTINATION lib/${PROJECT_NAME})

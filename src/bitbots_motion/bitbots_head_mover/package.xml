@@ -30,6 +30,7 @@
   <depend>orocos_kdl_vendor</depend>
   <depend>rcl_interfaces</depend>
   <depend>rclcpp</depend>
+  <depend>rclcpp_action</depend>
   <depend>sensor_msgs</depend>
   <depend>soccer_vision_3d_msgs</depend>
   <depend>std_msgs</depend>

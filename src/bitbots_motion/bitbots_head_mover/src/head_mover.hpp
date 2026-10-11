@@ -711,15 +711,17 @@ class HeadMover {
   /**
    * @brief Builds an open-loop trajectory from the current search pattern, starting at the
    * current head position.
+   *
+   * @return Whether a valid trajectory was built
    */
-  void build_spline_trajectory() {
+  bool build_spline_trajectory() {
     // The trajectory transitions out of the current head position, so building
     // it without knowing that position would start the pattern with a jump from
     // wherever the head happens to be to the assumed center
     const auto start = require_head_position("building a search pattern trajectory");
     if (!start) {
       search_trajectory_ = {};
-      return;
+      return false;
     }
     search_trajectory_ =
         bitbots_head_mover::buildSearchPatternTrajectory(pattern_, cycle_time_, *start, params_.transition_speed);
@@ -727,9 +729,10 @@ class HeadMover {
       RCLCPP_ERROR_THROTTLE(node_->get_logger(), *node_->get_clock(), 5000,
                             "Could not build a search pattern trajectory from %zu keyframes with a cycle time of %.2fs",
                             pattern_.size(), cycle_time_);
-      return;
+      return false;
     }
     spline_start_time_ = node_->now();
+    return true;
   }
 
   /**
@@ -1072,16 +1075,19 @@ class HeadMover {
           return;
       }
 
-      // Store the current head mode as the previous head mode to detect changes
-      prev_head_mode_ = curr_head_mode;
-
       // Build the spline trajectory from the new pattern. It starts with a smooth transition from
       // the current head position, so we also rebuild it when we re-enter a search pattern from
       // e.g. ball tracking instead of continuing the old trajectory with an abrupt movement.
-      if (curr_head_mode != bitbots_msgs::msg::HeadMode::TRACK_BALL &&
-          curr_head_mode != bitbots_msgs::msg::HeadMode::DONT_MOVE &&
-          curr_head_mode != bitbots_msgs::msg::HeadMode::ACTIVE_VISION) {
-        build_spline_trajectory();
+      const bool is_search_pattern = curr_head_mode != bitbots_msgs::msg::HeadMode::TRACK_BALL &&
+                                     curr_head_mode != bitbots_msgs::msg::HeadMode::DONT_MOVE &&
+                                     curr_head_mode != bitbots_msgs::msg::HeadMode::ACTIVE_VISION;
+
+      // Only a mode whose trajectory could be built counts as entered. Otherwise,
+      // e.g. while the joint states lack a head joint, the next tick retries the
+      // build instead of leaving the head without a trajectory until the mode
+      // changes again.
+      if (!is_search_pattern || build_spline_trajectory()) {
+        prev_head_mode_ = curr_head_mode;
       }
     }
     // Check if no look at action is running or if the head mode is DONT_MOVE
