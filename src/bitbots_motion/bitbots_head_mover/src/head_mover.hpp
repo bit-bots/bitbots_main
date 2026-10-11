@@ -111,6 +111,18 @@ class HeadMover {
   // Requests the field dimensions from the parameter blackboard until it answers
   std::unique_ptr<bitbots_head_mover::FieldDimensionClient> field_dimension_client_;
   std::optional<bitbots_head_mover::FieldDimensions> field_dimensions_;
+
+  // The frames active vision works with. They are read-only parameters, copied
+  // once at startup before any callback runs. The detection callbacks read the
+  // map frame from here and must not touch params_, which the main loop replaces
+  // on every parameter update.
+  struct ActiveVisionFrames {
+    std::string root_link;
+    std::string tip_link;
+    std::string calibrated_optical_frame;
+    std::string map_frame;
+  };
+  ActiveVisionFrames frames_;
   rclcpp::Subscription<std_msgs::msg::String>::SharedPtr robot_description_subscriber_;
   rclcpp::Subscription<sensor_msgs::msg::CameraInfo>::SharedPtr camera_info_subscriber_;
   rclcpp::Subscription<soccer_vision_3d_msgs::msg::BallArray>::SharedPtr balls_subscriber_;
@@ -184,6 +196,8 @@ class HeadMover {
     // Create parameter listener and load initial set of parameters
     param_listener_ = std::make_shared<move_head::ParamListener>(node_);
     params_ = param_listener_->get_params();
+    frames_ = {params_.active_vision.root_link, params_.active_vision.tip_link,
+               params_.active_vision.calibrated_optical_frame, params_.active_vision.map_frame};
 
     // Create tf buffer and listener to update it
     tf_buffer_ = std::make_shared<tf2_ros::Buffer>(node_->get_clock());
@@ -276,8 +290,8 @@ class HeadMover {
    */
   void handle_robot_description(const std::string& urdf) {
     bitbots_head_mover::HeadChainConfig chain;
-    chain.root_link = params_.active_vision.root_link;
-    chain.tip_link = params_.active_vision.tip_link;
+    chain.root_link = frames_.root_link;
+    chain.tip_link = frames_.tip_link;
 
     if (!active_vision_.setRobotDescription(urdf, chain)) {
       RCLCPP_ERROR(node_->get_logger(),
@@ -299,8 +313,8 @@ class HeadMover {
    * @brief Looks up the extrinsic camera calibration and hands it to the planner
    */
   bool update_camera_calibration() {
-    const std::string& uncalibrated = params_.active_vision.tip_link;
-    const std::string& calibrated = params_.active_vision.calibrated_optical_frame;
+    const std::string& uncalibrated = frames_.tip_link;
+    const std::string& calibrated = frames_.calibrated_optical_frame;
     if (uncalibrated == calibrated) {
       return true;
     }
@@ -742,13 +756,13 @@ class HeadMover {
       // does not stall the main loop timer. The wait is not self defeating either:
       // the transform listener fills the buffer from its own dedicated thread, so
       // the awaited transform can still arrive while we block here.
-      transform = tf2::transformToEigen(tf_buffer_->lookupTransform(params_.active_vision.map_frame, header.frame_id,
-                                                                    header.stamp, tf2::durationFromSec(0.1)));
+      transform = tf2::transformToEigen(
+          tf_buffer_->lookupTransform(frames_.map_frame, header.frame_id, header.stamp, tf2::durationFromSec(0.1)));
       return true;
     } catch (const tf2::TransformException& ex) {
       RCLCPP_WARN_THROTTLE(node_->get_logger(), *node_->get_clock(), 5000,
                            "Could not transform a detection from '%s' into '%s': %s", header.frame_id.c_str(),
-                           params_.active_vision.map_frame.c_str(), ex.what());
+                           frames_.map_frame.c_str(), ex.what());
       return false;
     }
   }
@@ -862,7 +876,7 @@ class HeadMover {
     ensure_debug_publishers();
 
     const auto stamp = node_->get_clock()->now();
-    const std::string& map_frame = params_.active_vision.map_frame;
+    const std::string& map_frame = frames_.map_frame;
 
     coverage_publisher_->publish(bitbots_head_mover::coverageGrid(active_vision_.coverage(), map_frame, stamp));
     candidate_publisher_->publish(
@@ -903,8 +917,7 @@ class HeadMover {
     // contributes, which is what decides what the head can actually see
     Eigen::Isometry3d robot_pose;
     try {
-      robot_pose = tf2::transformToEigen(tf_buffer_->lookupTransform(params_.active_vision.map_frame,
-                                                                     params_.active_vision.root_link,
+      robot_pose = tf2::transformToEigen(tf_buffer_->lookupTransform(frames_.map_frame, frames_.root_link,
                                                                      tf2::TimePointZero, tf2::durationFromSec(0.1)));
     } catch (const tf2::TransformException& ex) {
       hold_active_vision_position(ex.what());

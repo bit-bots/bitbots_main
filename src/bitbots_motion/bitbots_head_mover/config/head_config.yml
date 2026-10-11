@@ -202,22 +202,26 @@ move_head:
     root_link:
       type: string
       default_value: "base_link"
-      description: "Link the sampled camera poses are resolved against. The map to this link transform places the robot on the field."
+      description: "Link the sampled camera poses are resolved against. The transform from the map frame to this link places the robot on the field. Only read at startup."
+      read_only: true
 
     tip_link:
       type: string
       default_value: "camera_optical_frame_left_uncalibrated"
-      description: "Optical frame at the end of the head chain, as named in the robot description"
+      description: "Optical frame at the end of the head chain, as named in the robot description. Only read at startup."
+      read_only: true
 
     calibrated_optical_frame:
       type: string
       default_value: "zed_left_camera_optical_frame"
-      description: "Optical frame the vision pipeline reports detections in. The offset from tip_link is the extrinsic calibration and is looked up via tf."
+      description: "Optical frame the vision pipeline reports detections in. The offset from tip_link is the extrinsic calibration and is looked up via tf. Only read at startup."
+      read_only: true
 
     map_frame:
       type: string
       default_value: "map"
-      description: "Frame the field, the coverage map and all stored detections live in"
+      description: "Frame the field, the coverage map and all stored detections live in. Only read at startup."
+      read_only: true
 
     max_velocity_yaw:
       type: double
