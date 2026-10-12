@@ -1,14 +1,10 @@
 .wy-side-nav-search > a img.logo {
   display: block;
-  margin: 0 auto;
+  margin: 2.5em auto 1.5em auto;
   height: auto;
   width: auto;
   border-radius: 0;
-  max-width: 100%;
+  max-width: 50%;
   background: transparent;
   padding: 0;
-}
-
-.wy-side-nav-search > a.icon img.logo {
-  margin-top: 0.85em;
 }
