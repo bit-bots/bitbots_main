@@ -2,7 +2,7 @@
 
 {% block site_name %}
 <a href="{{ nav.homepage.url|url }}" class="icon icon-home">
-  <img src="{{ base_url }}_static/logo.png" alt="Bit-Bots logo" width="150" style="display: block; margin: 0 auto 10px auto;" />
+  <img src="{{ '_static/logo.png' | url }}" alt="Bit-Bots logo" width="150" style="display: block; margin: 0 auto 10px auto;" />
   {{ config.site_name }}
 </a>
 {% endblock %}
