@@ -6,6 +6,9 @@ repo_url: https://github.com/bit-bots/bitbots_main
 theme:
   name: rtd-dropdown
   custom_dir: docs/overrides
+  favicon: _static/logo.png
+extra_css:
+  - _static/css/bitbots.css
 
 nav:
   - Home: index.md
