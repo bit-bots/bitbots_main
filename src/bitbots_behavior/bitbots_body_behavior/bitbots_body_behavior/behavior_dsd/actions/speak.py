@@ -27,6 +27,7 @@ class PlaySound(AbstractActionElement):
     def perform(self, reevaluate=False):
         try:
             import playsound3
+
             playsound3.prefer_backends("ffplay")
         except ImportError:
             self.blackboard.node.get_logger().error("Failed to import playsound3")
@@ -35,6 +36,6 @@ class PlaySound(AbstractActionElement):
         try:
             playsound3.playsound(self.audio_file, block=False)
         except playsound3.playsound3.PlaysoundException:
-            self.blackboard.node.get_logger().error("Failed to play sound file: {}".format(self.audio_file))
+            self.blackboard.node.get_logger().error(f"Failed to play sound file: {self.audio_file}")
 
         return self.pop()
