@@ -5,7 +5,7 @@ repo_url: https://github.com/bit-bots/bitbots_main
 
 theme:
   name: rtd-dropdown
-  logo: _static/logo.png
+  custom_dir: docs/overrides
 
 nav:
   - Home: index.md

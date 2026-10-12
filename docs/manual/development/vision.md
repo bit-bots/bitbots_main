@@ -2,7 +2,7 @@
 
 ## Description
 
-The Bit-Bots vision uses [RF-DETR](https://github.com/roboflow/rf-detr), a transformer-based, NMS-free object detector, for detecting balls, goal posts, obstacles, and robots. Unlike the previous YOEO-based pipeline, the object-detection and line-segmentation heads are two separate outputs of the same RF-DETR model rather than a single combined network: field lines come from the model's own learned line-segmentation head, not a classical color-based heuristic. The head outputs a low-resolution probability map, which is resized to the original image resolution and thresholded to produce the line mask. Any region covered by a detected ball, robot, or goal post is additionally painted out of the line mask as a safety net against the segmentation head misclassifying part of an object as a line.
+The Bit-Bots vision uses an extended version of [RF-DETR](https://github.com/roboflow/rf-detr) ([bit-bots/rf-detr](https://github.com/bit-bots/rf-detr)), a transformer-based, NMS-free object detector, for detecting balls, goal posts, obstacles, and robots. The extension adds a segmentation head similar to the one used by YOEO (which itself is conceptually similar, just with a bigger decoder) to predict field lines. This head outputs a low-resolution probability map, which is resized to the original image resolution and thresholded to produce the line mask. Any region covered by a detected ball, robot, or goal post is additionally painted out of the line mask as a safety net against the segmentation head misclassifying part of an object as a line.
 
 ## FP16 model exports
 
