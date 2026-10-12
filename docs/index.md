@@ -1,4 +1,4 @@
-Welcome to the Bit-Bots main documentation!
+# Welcome to the Bit-Bots main documentation!
 
 This is the main page of the [Hamburg Bit-Bots](https://bit-bots.de) documentation.
 
