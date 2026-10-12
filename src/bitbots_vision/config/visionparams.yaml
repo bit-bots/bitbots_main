@@ -6,6 +6,7 @@ bitbots_vision:
       robots: "robots_in_image"
       goalposts: "goal_posts_in_image"
       line_mask: "line_mask_in_image"
+      label_info: "vision_label_info"
       debug_image: "debug_image"
 
     model:

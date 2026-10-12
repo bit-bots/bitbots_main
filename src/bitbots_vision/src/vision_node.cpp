@@ -23,9 +23,24 @@
 #include <string>
 #include <thread>
 #include <vision_msgs/msg/bounding_box2_d.hpp>
+#include <vision_msgs/msg/label_info.hpp>
 #include <vision_msgs/msg/point2_d.hpp>
+#include <vision_msgs/msg/vision_class.hpp>
 
 namespace bitbots_vision {
+
+// ---------------------------------------------------------------------------
+// Segmentation class encoding
+// ---------------------------------------------------------------------------
+
+// Class ids used in the published segmentation masks, matching the class map
+// announced in the `LabelInfo` message. Pixel value 0 marks background.
+// The maximum uint8 value stays free, as `vision_msgs` reserves it for the
+// "UNLABELED" class.
+static constexpr uint8_t kBackgroundClassId = 0;
+static constexpr uint8_t kLineClassId = 1;
+static constexpr std::string_view kBackgroundClassName = "background";
+static constexpr std::string_view kLineClassName = "line";
 
 // ---------------------------------------------------------------------------
 // Helpers for building ROS messages from Candidates
@@ -89,8 +104,14 @@ class VisionNode : public rclcpp::Node {
         create_publisher<soccer_vision_2d_msgs::msg::GoalpostArray>(params_.topics.goalposts, rclcpp::QoS(1));
     // Line mask
     line_mask_pub_ = create_publisher<sensor_msgs::msg::Image>(params_.topics.line_mask, rclcpp::QoS(1));
+    // Label info: pipeline metadata describing the class ids used in the
+    // segmentation masks. Like CameraInfo it rarely changes, so it is latched.
+    label_info_pub_ = create_publisher<vision_msgs::msg::LabelInfo>(
+        params_.topics.label_info, rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable());
     // Debug image
     debug_image_pub_ = create_publisher<sensor_msgs::msg::Image>(params_.topics.debug_image, rclcpp::QoS(1));
+
+    publish_label_info();
 
     // ---------- Image subscriber ----------
     // Runs in its own callback group, kept off the executor that services the
@@ -129,6 +150,7 @@ class VisionNode : public rclcpp::Node {
   rclcpp::Publisher<soccer_vision_2d_msgs::msg::RobotArray>::SharedPtr robot_pub_;
   rclcpp::Publisher<soccer_vision_2d_msgs::msg::GoalpostArray>::SharedPtr goalpost_pub_;
   rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr line_mask_pub_;
+  rclcpp::Publisher<vision_msgs::msg::LabelInfo>::SharedPtr label_info_pub_;
   rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr debug_image_pub_;
 
   // ---- Subscriber ----
@@ -173,6 +195,32 @@ class VisionNode : public rclcpp::Node {
 
     handler_ = std::make_unique<RfdetrHandler>(model_path, model_config_, rfdetr_config(), get_logger());
     loaded_model_path_ = model_path;
+
+    publish_label_info();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Label info publishing
+  // ---------------------------------------------------------------------------
+
+  /// Announce the class ids used in the published segmentation masks, so
+  /// subscribers can interpret mask pixel values without hard-coded knowledge
+  /// of this pipeline (see vision_msgs LabelInfo, published like CameraInfo).
+  void publish_label_info() {
+    if (!label_info_pub_) {
+      return;
+    }
+    vision_msgs::msg::LabelInfo msg;
+    msg.header.stamp = now();
+    vision_msgs::msg::VisionClass background;
+    background.class_id = kBackgroundClassId;
+    background.class_name = std::string(kBackgroundClassName);
+    vision_msgs::msg::VisionClass line;
+    line.class_id = kLineClassId;
+    line.class_name = std::string(kLineClassName);
+    msg.class_map = {background, line};
+    msg.threshold = static_cast<float>(params_.line.mask_threshold);
+    label_info_pub_->publish(msg);
   }
 
   RfdetrHandler::Config rfdetr_config() const {
@@ -326,7 +374,14 @@ class VisionNode : public rclcpp::Node {
 
     debug_image_.draw_mask(mask, DebugImage::kLines);
 
-    auto img_msg = cv_bridge::CvImage(header, "8UC1", mask).toImageMsg();
+    // Encode the mask with the class ids announced on the label info topic
+    // instead of the raw 0/255 thresholding result — 255 would collide with
+    // the "UNLABELED" id reserved by vision_msgs.
+    cv::Mat binary = mask > 0;  // CV_8UC1, 0/255
+    cv::Mat class_mask;
+    binary.convertTo(class_mask, CV_8UC1, static_cast<double>(kLineClassId) / 255.0);
+
+    auto img_msg = cv_bridge::CvImage(header, "8UC1", class_mask).toImageMsg();
     line_mask_pub_->publish(*img_msg);
   }
 

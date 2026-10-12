@@ -20,6 +20,10 @@ bitbots_vision:
       type: string
       description: "ROS topic to publish the line segmentation mask"
       read_only: true
+    label_info:
+      type: string
+      description: "ROS topic to publish the vision_msgs LabelInfo describing the class ids used in segmentation masks"
+      read_only: true
     debug_image:
       type: string
       description: "ROS topic to publish the debug image"

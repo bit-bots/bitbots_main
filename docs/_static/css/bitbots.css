@@ -1,7 +1,14 @@
-.wy-side-nav-search .icon-home img.logo {
-  width: 100%;
+.wy-side-nav-search > a img.logo {
+  display: block;
+  margin: 0 auto;
   height: auto;
-  background-color: transparent;
+  width: auto;
   border-radius: 0;
+  max-width: 100%;
+  background: transparent;
   padding: 0;
+}
+
+.wy-side-nav-search > a.icon img.logo {
+  margin-top: 0.85em;
 }
