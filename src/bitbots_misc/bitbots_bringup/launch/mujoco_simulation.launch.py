@@ -24,6 +24,7 @@ TEAMPLAYER_ARGS = [
     ("game_controller", "Whether the Gamecontroller module should be started"),
     ("ipm", "Whether the inverse perspective mapping should be started"),
     ("localization", "Whether the localization system should be started"),
+    ("fake_localization", "Whether to fake the localization with the ground truth if localization is not started"),
     ("motion", "Whether the motion control system should be started"),
     ("path_planning", "Whether the path planning should be started"),
     ("teamcom", "Whether the team communication system should be started"),
@@ -63,6 +64,7 @@ def generate_domain_bridge_config(robot_domain: int, output_dir: Path) -> Path:
         ("imu/data", "sensor_msgs/msg/Imu"),
         ("zed/zed_node/rgb/image_rect_color", "sensor_msgs/msg/Image"),
         ("zed/zed_node/rgb/camera_info", "sensor_msgs/msg/CameraInfo"),
+        ("ground_truth/pose", "geometry_msgs/msg/PoseStamped"),
     ]
 
     for topic_suffix, msg_type in sensor_topics:

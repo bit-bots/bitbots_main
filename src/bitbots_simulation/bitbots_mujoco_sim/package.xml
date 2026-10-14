@@ -22,11 +22,18 @@
   <depend>std_srvs</depend>
   <depend>rosgraph_msgs</depend>
   <depend>bitbots_msgs</depend>
+  <depend>bitbots_utils</depend>
+  <depend>geometry_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>tf2_ros</depend>
   <depend>ament_index_python</depend>
   <depend>python3-numpy</depend>
   <depend>python3-mujoco</depend>
+  <depend>python3-opencv</depend>
+  <depend>python3-transforms3d</depend>
 
   <test_depend>ament_cmake_mypy</test_depend>
+  <test_depend>python3-pytest</test_depend>
 
   <export>
     <bitbots_documentation>

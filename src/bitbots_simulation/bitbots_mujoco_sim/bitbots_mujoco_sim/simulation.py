@@ -5,6 +5,7 @@ from pathlib import Path
 import mujoco
 import numpy as np
 from ament_index_python.packages import get_package_share_directory
+from geometry_msgs.msg import PoseStamped
 from mujoco import viewer
 from rclpy.node import Node
 from rclpy.time import Time
@@ -120,6 +121,7 @@ class Simulation(Node):
             {"frequency": 1, "handler": self.publish_clock_event},
             {"frequency": 4, "handler": lambda: self.publish(lambda robot: robot.publish_ros_joint_states_event())},
             {"frequency": 4, "handler": lambda: self.publish(lambda robot: robot.publish_imu_event())},
+            {"frequency": 4, "handler": lambda: self.publish(lambda robot: robot.publish_ground_truth_event())},
             {"frequency": 32, "handler": lambda: self.publish(lambda robot: robot.publish_camera_event())},
         ]
 
@@ -629,6 +631,7 @@ class RobotSimulation:
             "imu": self.simulation.create_publisher(Imu, _topic("imu/data"), 1),
             "camera_proc": self.simulation.create_publisher(Image, _topic("zed/zed_node/rgb/image_rect_color"), 1),
             "camera_info": self.simulation.create_publisher(CameraInfo, _topic("zed/zed_node/rgb/camera_info"), 1),
+            "ground_truth": self.simulation.create_publisher(PoseStamped, _topic("ground_truth/pose"), 1),
         }
 
         self.simulation.create_subscription(JointCommand, _topic("joint_command"), self.joint_command_callback, 1)
@@ -684,6 +687,17 @@ class RobotSimulation:
             self.robot.sensors.orientation.noisy_data
         )
         self.node_publishers["imu"].publish(imu)
+
+    def publish_ground_truth_event(self) -> None:
+        """Publish the true pose of the robot's base link in the simulation world frame."""
+        pose = PoseStamped()
+        pose.header.stamp = self.simulation.time_message
+        pose.header.frame_id = "world"
+        pose.pose.position.x, pose.pose.position.y, pose.pose.position.z = self.data.xpos[self.robot.base_body_id]
+        pose.pose.orientation.w, pose.pose.orientation.x, pose.pose.orientation.y, pose.pose.orientation.z = (
+            self.data.xquat[self.robot.base_body_id]
+        )
+        self.node_publishers["ground_truth"].publish(pose)
 
     def publish_camera_event(self) -> None:
         if not self.simulation.camera_active:
