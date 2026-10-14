@@ -1,5 +1,6 @@
 import importlib.util
 import os
+import threading
 import traceback
 from pathlib import Path
 from typing import Callable
@@ -95,6 +96,9 @@ class BodyBehaviorBase:
     def _run_behavior_step(self) -> None:
         raise NotImplementedError
 
+    def shutdown(self) -> None:
+        pass
+
     def loop(self):
         try:
             self._run_behavior_step()
@@ -125,12 +129,35 @@ class BodyDSD(BodyBehaviorBase):
 
 
 class BodySimpleBehavior(BodyBehaviorBase):
+    _THREAD_JOIN_TIMEOUT_SECONDS = 0.5
+
     def __init__(self, node: Node):
         super().__init__(node)
         self._main_function: Callable[[], None] | None = None
-        self._script_executed = False
+        self._main_thread: threading.Thread | None = None
+        self._state_lock = threading.Lock()
+        self._thread_state = "not_started"
+        self._thread_failure_traceback: str | None = None
+        self._thread_failure_supervised = False
         simple_behavior.configure_runtime(simple_behavior.SimpleBehaviorRuntime(node, self.blackboard))
         self._load_script()
+
+    def _run_user_main(self) -> None:
+        main_function = self._main_function
+        if main_function is None:
+            return
+
+        try:
+            main_function()
+        except Exception:
+            error_traceback = traceback.format_exc()
+            with self._state_lock:
+                self._thread_state = "failed"
+                self._thread_failure_traceback = error_traceback
+            return
+
+        with self._state_lock:
+            self._thread_state = "finished"
 
     def _load_script(self) -> None:
         script_path = str(self.node.get_parameter("simple_behavior_script").value)
@@ -163,12 +190,53 @@ class BodySimpleBehavior(BodyBehaviorBase):
         self.node.get_logger().info(f"Loaded simple behavior script: {resolved_script_path}")
 
     def _run_behavior_step(self) -> None:
-        if self._script_executed or self._main_function is None:
+        if self._main_function is None:
             return
 
-        self._script_executed = True
-        self.node.get_logger().info("Executing simple behavior script main()")
-        self._main_function()
+        should_start = False
+        should_log_failed = False
+        failure_traceback: str | None = None
+        with self._state_lock:
+            if self._thread_state == "not_started":
+                self._thread_state = "running"
+                should_start = True
+            elif self._thread_state == "failed" and not self._thread_failure_supervised:
+                self._thread_failure_supervised = True
+                should_log_failed = True
+                failure_traceback = self._thread_failure_traceback
+
+        if should_log_failed:
+            self.node.get_logger().error("Simple behavior script main() thread failed. It will not be restarted automatically.")
+            if failure_traceback:
+                self.node.get_logger().error(failure_traceback)
+            return
+
+        if not should_start:
+            return
+
+        self.node.get_logger().info("Starting simple behavior script main() in background thread.")
+        self._main_thread = threading.Thread(target=self._run_user_main, daemon=True, name="simple_behavior_main")
+        self._main_thread.start()
+        self.node.get_logger().info("Simple behavior script main() thread started.")
+
+    def shutdown(self) -> None:
+        with self._state_lock:
+            main_thread = self._main_thread
+            thread_state = self._thread_state
+
+        if main_thread is None or not main_thread.is_alive():
+            if thread_state == "finished":
+                self.node.get_logger().info("Simple behavior script main() thread completed.")
+            return
+
+        self.node.get_logger().info(
+            f"Waiting up to {self._THREAD_JOIN_TIMEOUT_SECONDS:.1f}s for simple behavior script thread to stop."
+        )
+        main_thread.join(timeout=self._THREAD_JOIN_TIMEOUT_SECONDS)
+        if main_thread.is_alive():
+            self.node.get_logger().warn("Simple behavior script thread is still running. Continuing shutdown.")
+        else:
+            self.node.get_logger().info("Simple behavior script main() thread completed.")
 
 
 def main(args=None):
@@ -177,6 +245,7 @@ def main(args=None):
 
     body_behavior: BodyBehaviorBase
     behavior_mode = str(node.get_parameter("behavior_mode").value).lower()
+    node.get_logger().info(f"Behavior mode: {behavior_mode}")
     if behavior_mode == "simple":
         body_behavior = BodySimpleBehavior(node)
     elif behavior_mode == "dsd":
@@ -193,5 +262,6 @@ def main(args=None):
         executor.spin()
     except KeyboardInterrupt:
         pass
-
-    node.destroy_node()
+    finally:
+        body_behavior.shutdown()
+        node.destroy_node()
