@@ -131,7 +131,7 @@ class BodyDSD(BodyBehaviorBase):
 class BodySimpleBehavior(BodyBehaviorBase):
     _THREAD_JOIN_TIMEOUT_SECONDS = 0.5
 
-    def __init__(self, node: Node):
+    def __init__(self, node: Node, load_script: bool = True):
         super().__init__(node)
         self._main_function: Callable[[], None] | None = None
         self._main_thread: threading.Thread | None = None
@@ -140,7 +140,41 @@ class BodySimpleBehavior(BodyBehaviorBase):
         self._thread_failure_traceback: str | None = None
         self._thread_failure_supervised = False
         simple_behavior.configure_runtime(simple_behavior.SimpleBehaviorRuntime(node, self.blackboard))
-        self._load_script()
+        if load_script:
+            self._load_script()
+
+    def get_thread_state(self) -> str:
+        with self._state_lock:
+            return self._thread_state
+
+    def submit_script(self, script_source: str, source_name: str = "simple_behavior_submitted.py") -> tuple[bool, str]:
+        if not script_source.strip():
+            return False, "Submitted script is empty."
+
+        try:
+            compiled_script = compile(script_source, source_name, "exec")
+            module_globals: dict[str, object] = {"__name__": "bitbots_user_simple_behavior"}
+            exec(compiled_script, module_globals)  # noqa: S102 - required to run user-provided behavior script
+        except Exception:
+            return False, traceback.format_exc()
+
+        main_function = module_globals.get("main")
+        if main_function is None or not callable(main_function):
+            return False, "Simple behavior script must provide a callable main() function."
+
+        with self._state_lock:
+            if self._thread_state == "running":
+                return (
+                    False,
+                    "Simple behavior main() is already running. Restart body behavior to run a different script.",
+                )
+            self._main_function = main_function
+            self._main_thread = None
+            self._thread_state = "not_started"
+            self._thread_failure_traceback = None
+            self._thread_failure_supervised = False
+
+        return True, "Script accepted."
 
     def _run_user_main(self) -> None:
         main_function = self._main_function
@@ -186,7 +220,12 @@ class BodySimpleBehavior(BodyBehaviorBase):
             self.node.get_logger().error("Simple behavior script must provide a callable main() function.")
             return
 
-        self._main_function = main_function
+        with self._state_lock:
+            self._main_function = main_function
+            self._main_thread = None
+            self._thread_state = "not_started"
+            self._thread_failure_traceback = None
+            self._thread_failure_supervised = False
         self.node.get_logger().info(f"Loaded simple behavior script: {resolved_script_path}")
 
     def _run_behavior_step(self) -> None:

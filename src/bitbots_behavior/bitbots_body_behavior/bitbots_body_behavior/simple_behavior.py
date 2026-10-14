@@ -1,6 +1,7 @@
 import builtins
 import math
 import time
+from typing import NamedTuple
 
 from bitbots_utils.transforms import quat_from_yaw
 from geometry_msgs.msg import PoseStamped
@@ -22,6 +23,17 @@ _HEAD_MODE_LOOKUP = {
     HEAD_MODE_SEARCH_BALL_PENALTY: HeadMode.SEARCH_BALL_PENALTY,
     HEAD_MODE_SEARCH_FRONT: HeadMode.SEARCH_FRONT,
 }
+
+
+class CurrentPose(NamedTuple):
+    x: float
+    y: float
+    yaw_rad: float
+
+
+class BallPose(NamedTuple):
+    x: float
+    y: float
 
 
 class SimpleBehaviorRuntime:
@@ -66,20 +78,23 @@ class SimpleBehaviorRuntime:
         """Stop walking and cancel the current pathfinding goal."""
         self._blackboard.pathfinding.stop_walk()
 
-    def get_current_pose(self) -> tuple[float, float, float] | None:
-        """Get the current robot pose as `(x, y, yaw_rad)` in map frame."""
+    def get_current_pose(self) -> CurrentPose | None:
+        """Get the current robot pose as named fields in map frame."""
         try:
-            return self._blackboard.world_model.get_current_position()
+            current_pose = self._blackboard.world_model.get_current_position()
+            if current_pose is None:
+                return None
+            return CurrentPose(float(current_pose[0]), float(current_pose[1]), float(current_pose[2]))
         except Exception as error:
             self._node.get_logger().warn(f"Could not get current pose: {error}")
             return None
 
-    def get_ball_pose(self) -> tuple[float, float] | None:
-        """Get the ball position as `(x, y)` in map frame."""
+    def get_ball_pose(self) -> BallPose | None:
+        """Get the ball position as named fields in map frame."""
         ball_pose = self._blackboard.world_model.get_ball_position_xy()
         if ball_pose is None:
             return None
-        return float(ball_pose[0]), float(ball_pose[1])
+        return BallPose(float(ball_pose[0]), float(ball_pose[1]))
 
     def print(self, *args, sep=" ", end="\n"):
         self._node.get_logger().info(sep.join(map(str, args)))
@@ -120,13 +135,13 @@ def stop() -> None:
     _require_runtime().stop()
 
 
-def get_current_pose() -> tuple[float, float, float] | None:
-    """Get the current robot pose as `(x, y, yaw_rad)` in map frame."""
+def get_current_pose() -> CurrentPose | None:
+    """Get the current robot pose as named fields in map frame."""
     return _require_runtime().get_current_pose()
 
 
-def get_ball_pose() -> tuple[float, float] | None:
-    """Get the ball position as `(x, y)` in map frame."""
+def get_ball_pose() -> BallPose | None:
+    """Get the ball position as named fields in map frame."""
     return _require_runtime().get_ball_pose()
 
 def print(*args, **kwargs):
@@ -137,6 +152,8 @@ def print(*args, **kwargs):
 
 
 __all__ = [
+    "CurrentPose",
+    "BallPose",
     "set_goal_pose",
     "kick_ball",
     "set_head_mode",

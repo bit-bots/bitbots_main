@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simple Behavior Blockly (Dev)</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: sans-serif;
+        display: grid;
+        grid-template-rows: 60vh 40vh;
+      }
+
+      #blocklyDiv {
+        width: 100%;
+        height: 100%;
+      }
+
+      #outputPanel {
+        border-top: 1px solid #ccc;
+        display: grid;
+        grid-template-rows: auto 1fr;
+      }
+
+      #outputHeader {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        padding: 0.5rem;
+      }
+
+      #pythonOutput {
+        width: 100%;
+        height: 100%;
+        border: 0;
+        padding: 0.75rem;
+        box-sizing: border-box;
+        font-family: monospace;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="blocklyDiv"></div>
+    <section id="outputPanel">
+      <div id="outputHeader">
+        <strong>Generated Python script</strong>
+        <label for="runEndpoint">Run endpoint</label>
+        <input id="runEndpoint" type="text" value="http://127.0.0.1:8765/run" size="34" />
+        <button id="runButton" type="button">Run on robot</button>
+        <button id="copyButton" type="button">Copy</button>
+        <button id="downloadButton" type="button">Download</button>
+        <span id="runStatus"></span>
+      </div>
+      <textarea id="pythonOutput" readonly></textarea>
+    </section>
+
+    <script src="vendor/blockly_compressed.js"></script>
+    <script src="vendor/blocks_compressed.js"></script>
+    <script src="vendor/python_compressed.js"></script>
+    <script src="vendor/msg/en.js"></script>
+    <script src="simple_behavior_blocks.js"></script>
+  </body>
+</html>

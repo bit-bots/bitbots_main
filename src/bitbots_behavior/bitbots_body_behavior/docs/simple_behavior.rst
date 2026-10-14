@@ -28,8 +28,11 @@ Create a Python script with this pattern:
        stop()
        kick_ball(0.0)
 
-Launch body behavior with ``behavior_mode`` set to ``simple`` and provide the
-script path with ``simple_behavior_script``.
+Launch body behavior with one of these modes:
+
+- ``behavior_mode: simple``: run a script from ``simple_behavior_script``.
+- ``behavior_mode: simple_web``: start the local wrapper endpoint that accepts
+  scripts from the Blockly page and restarts simple behavior on each submit.
 
 Threaded execution
 ------------------
@@ -56,6 +59,44 @@ Example
 A short "go to ball and kick" example script is available at:
 
 ``docs/simple_behavior_go_to_ball_and_kick.py``
+
+Blockly dev interface
+---------------------
+
+For quick experimentation, there is a self-contained Blockly page at:
+
+``docs/blockly/simple_behavior_blockly.html``
+
+Run it with a local static file server from the package directory, for example:
+
+.. code-block:: bash
+
+   cd src/bitbots_behavior/bitbots_body_behavior/docs/blockly
+   python3 -m http.server 8000
+
+Then open ``http://localhost:8000/simple_behavior_blockly.html`` in a browser.
+
+To run scripts directly from Blockly, start body behavior in ``simple_web`` mode.
+In that mode, a dedicated wrapper runs the web endpoint and starts
+``body_behavior`` in ``simple`` mode for each submitted script.
+By default it listens on ``http://127.0.0.1:8765`` and accepts:
+
+- ``GET /health`` for status checks.
+- ``POST /run`` with JSON body ``{"script": "...", "name": "..."}``.
+
+When you submit a new script, the wrapper stops the currently running simple
+behavior process and starts a new one with the new script.
+
+The Blockly page's default run endpoint is set to ``/run`` on that host/port.
+
+Practical notes:
+
+- This interface is only intended as a lightweight development helper.
+- It is intentionally minimal and not hardened for production deployment.
+- The web endpoint is unauthenticated and should only be exposed in trusted
+  local development setups.
+- Use it to generate starter scripts, then compare/refine with the hand-written
+  example in ``docs/simple_behavior_go_to_ball_and_kick.py``.
 
 Available functions
 -------------------

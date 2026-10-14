@@ -26,6 +26,7 @@ setup(
     entry_points={
         "console_scripts": [
             "body_behavior = bitbots_body_behavior.body_behavior:main",
+            "simple_behavior_web_wrapper = bitbots_body_behavior.simple_behavior_web_wrapper:main",
         ],
     },
 )

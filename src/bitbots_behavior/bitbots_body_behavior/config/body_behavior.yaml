@@ -6,6 +6,7 @@ body_behavior:
     # Select the body behavior implementation.
     # dsd: uses the Dynamic Stack Decider behavior tree
     # simple: executes a user-provided Python script with the simple behavior API
+    # simple_web: starts a wrapper endpoint that submits/restarts simple behavior scripts
     behavior_mode: "dsd"
 
     # Path to the user script when behavior_mode is set to simple.
@@ -264,3 +265,9 @@ body_behavior:
 
     # factor by which the difference in starting and goal angle is weighted (only if not turning to ball i.e. <1m)
     time_to_ball_cost_start_to_goal_angle: 3.82
+
+simple_behavior_web_wrapper:
+  ros__parameters:
+    # Host and port for the local script-submission endpoint used in simple_web mode.
+    simple_behavior_web_host: "127.0.0.1"
+    simple_behavior_web_port: 8765
