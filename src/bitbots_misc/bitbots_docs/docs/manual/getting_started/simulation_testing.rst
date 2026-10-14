@@ -38,3 +38,12 @@ Test the complete software stack in simulation
 
         ros2 launch bitbots_bringup simulator_teamplayer.launch
         ros2 run game_controller_hsl sim_gamestate.py
+
+- Start simulator_teamplayer with a *fake localization* (the map frame is computed from the ground truth pose of the simulator instead of running the particle filter):
+
+    .. code-block:: bash
+
+        ros2 launch bitbots_bringup simulator_teamplayer.launch localization:=false fake_localization:=true
+
+  The fake localization assumes the robot starts on its own half and orients the map frame accordingly.
+  The same arguments can be passed to ``mujoco_simulation.launch.py``, where the ground truth is bridged into each robot's domain.
