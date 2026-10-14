@@ -35,6 +35,12 @@ TEAMPLAYER_ARGS = [
     ("tts", "Whether to speak"),
 ]
 
+# The practical course uses the fake localization by default, so the students can focus on the behavior
+PRAKTIKUM_DEFAULTS = {
+    "localization": "false",
+    "fake_localization": "true",
+}
+
 
 def generate_domain_bridge_config(robot_domain: int, output_dir: Path) -> Path:
     """Generate domain bridge config file for a single robot.
@@ -90,13 +96,19 @@ def generate_domain_bridge_config(robot_domain: int, output_dir: Path) -> Path:
     return config_path
 
 
-def generate_world_xml(num_robots: int, package_share: str, robot_type: str) -> Path:
+def generate_world_xml(num_robots: int, package_share: str, robot_type: str, one_versus_one: bool) -> Path:
     """Generate MuJoCo world XML with the correct number of robots."""
     template_path = Path(package_share) / "xml" / "kid_field.xml"
     output_path = Path(package_share) / "xml" / "generated_world.xml"
-    offset = 4 * (
-        1 / num_robots
-    )  # this makes the offset be the default value when there are 4 robots and increse the less robots there are
+    if one_versus_one:
+        # Place the two robots mirrored at the center line, so each one starts on its own half
+        start_x = -1.0
+        offset = 2.0
+    else:
+        start_x = 1.0
+        offset = 4 * (
+            1 / num_robots
+        )  # this makes the offset be the default value when there are 4 robots and increse the less robots there are
 
     with open(template_path) as f:
         template = f.read()
@@ -105,6 +117,7 @@ def generate_world_xml(num_robots: int, package_share: str, robot_type: str) -> 
     world_xml = (
         template.replace("{{NUM_ROBOTS}}", str(num_robots))
         .replace("{{OFFSET}}", str(offset))
+        .replace("{{START_X}}", str(start_x))
         .replace("{{ROBOT_TYPE}}", robot_type)
     )
 
@@ -116,8 +129,13 @@ def generate_world_xml(num_robots: int, package_share: str, robot_type: str) -> 
 def launch_setup(context):
     """Dynamically set up launches based on num_robots."""
     num_robots = int(LaunchConfiguration("num_robots").perform(context))
+    one_versus_one = LaunchConfiguration("one_versus_one").perform(context).lower() == "true"
+    if one_versus_one:
+        num_robots = 2
     robot_type = str(LaunchConfiguration("robot_type").perform(context))
     use_web = LaunchConfiguration("web").perform(context).lower() == "true"
+    start_teamplayer = LaunchConfiguration("teamplayer").perform(context).lower() == "true"
+    fake_localization = LaunchConfiguration("fake_localization").perform(context).lower() == "true"
     package_share = get_package_share_directory("bitbots_mujoco_sim")
     bridge_config_dir = Path(package_share) / "config" / "domain_bridges"
 
@@ -128,7 +146,7 @@ def launch_setup(context):
         if value:  # Only pass if not empty string
             teamplayer_args.append(f"{arg_name}:={value}")
 
-    world_file = generate_world_xml(num_robots, package_share, robot_type)
+    world_file = generate_world_xml(num_robots, package_share, robot_type, one_versus_one)
 
     actions = []
 
@@ -161,6 +179,18 @@ def launch_setup(context):
                 emulate_tty=True,
             ),
         )
+
+        if not start_teamplayer:
+            # The teamplayer would start the fake localization, so it needs to be started here instead
+            if fake_localization:
+                actions.append(
+                    ExecuteProcess(
+                        cmd=["ros2", "launch", "bitbots_mujoco_sim", "fake_localization.launch"],
+                        output="screen",
+                        additional_env={"ROS_DOMAIN_ID": str(robot_domain)},
+                    )
+                )
+            continue
 
         actions.append(
             TimerAction(
@@ -195,6 +225,17 @@ def generate_launch_description():
             description="Number of robots in the simulation",
         ),
         DeclareLaunchArgument(
+            "one_versus_one",
+            default_value="false",
+            description="Start a 1vs1 match with one robot on each half (overrides num_robots)",
+        ),
+        DeclareLaunchArgument(
+            "teamplayer",
+            # The practical course starts the motion and its own nodes separately for each robot
+            default_value="false",
+            description="Whether to start the teamplayer stack for each robot",
+        ),
+        DeclareLaunchArgument(
             "robot_type",
             default_value="piplus",
             description="Set the type of robot used (piplus, x02)",
@@ -211,7 +252,7 @@ def generate_launch_description():
         declared_args.append(
             DeclareLaunchArgument(
                 arg_name,
-                default_value="",
+                default_value=PRAKTIKUM_DEFAULTS.get(arg_name, ""),
                 description=description,
             )
         )

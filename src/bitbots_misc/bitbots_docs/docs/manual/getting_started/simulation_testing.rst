@@ -55,3 +55,27 @@ Test the complete software stack in simulation
 
   The fake localization assumes the robot starts on its own half and orients the map frame accordingly.
   The same arguments can be passed to ``mujoco_simulation.launch.py``, where the ground truth is bridged into each robot's domain.
+
+Practical course
+----------------
+
+On the practical course branch, the simulator starts the fake localization by default.
+Pass ``fake_localization:=false`` to disable it.
+
+- Start a single robot:
+
+    .. code-block:: bash
+
+        ros2 launch bitbots_mujoco_sim simulator.launch
+        ros2 launch bitbots_bringup motion_standalone.launch sim:=true
+
+- Start a 1vs1 match with one robot on each half.
+  Each robot runs in its own ROS domain, so the motion and your own nodes need to be started once per robot domain:
+
+    .. code-block:: bash
+
+        ros2 launch bitbots_bringup mujoco_simulation.launch.py one_versus_one:=true
+        ROS_DOMAIN_ID=11 ros2 launch bitbots_bringup motion_standalone.launch sim:=true
+        ROS_DOMAIN_ID=12 ros2 launch bitbots_bringup motion_standalone.launch sim:=true
+
+  Pass ``teamplayer:=true`` to start the complete software stack for each robot instead.

@@ -1,6 +1,6 @@
 <launch>
   <arg name="web" default="false" description="Use web-based mjviser viewer instead of the native MuJoCo viewer"/>
-  <arg name="fake_localization" default="false" description="Publish the map frame from the ground truth instead of running the localization"/>
+  <arg name="fake_localization" default="true" description="Publish the map frame from the ground truth instead of running the localization"/>
 
   <!-- The web viewer runs headless (no X server), so MuJoCo needs to render the cameras via EGL instead of GLFW -->
   <set_env name="MUJOCO_GL" value="egl" if="$(var web)"/>

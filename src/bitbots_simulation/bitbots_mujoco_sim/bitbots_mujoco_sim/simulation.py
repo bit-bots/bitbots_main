@@ -172,7 +172,10 @@ class Simulation(Node):
         with open(template_path) as f:
             template = f.read()
         world_xml = (
-            template.replace("{{NUM_ROBOTS}}", "1").replace("{{OFFSET}}", "6.0").replace("{{ROBOT_TYPE}}", "piplus")
+            template.replace("{{NUM_ROBOTS}}", "1")
+            .replace("{{OFFSET}}", "6.0")
+            .replace("{{START_X}}", "1")
+            .replace("{{ROBOT_TYPE}}", "piplus")
         )
         with open(output_path, "w") as f:
             f.write(world_xml)
