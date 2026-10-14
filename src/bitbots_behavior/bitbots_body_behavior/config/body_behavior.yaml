@@ -3,6 +3,15 @@ body_behavior:
     # Data older than this is seen as non existent
     team_data_timeout: 2
 
+    # Select the body behavior implementation.
+    # dsd: uses the Dynamic Stack Decider behavior tree
+    # simple: executes a user-provided Python script with the simple behavior API
+    behavior_mode: "dsd"
+
+    # Path to the user script when behavior_mode is set to simple.
+    # The script must define a callable main() function.
+    simple_behavior_script: ""
+
     # The roles that are used in the initial role configuration.
     roles:
       - "goalie"
