@@ -6,6 +6,7 @@ import rclpy
 from ament_index_python.packages import get_package_share_directory
 from bitbots_utils.utils import get_parameters_from_other_node
 from nav_msgs.msg import OccupancyGrid
+from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile
 
@@ -35,7 +36,7 @@ class FieldPublisher(Node):
         super().__init__("field_publisher")
         map_frame = self.declare_parameter("map_frame", "map").value
 
-        field_name = get_parameters_from_other_node(self, "/parameter_blackboard", ["field.name"])["field.name"]
+        field_name = self.get_field_name()
         map_path = os.path.join(
             get_package_share_directory("bitbots_parameter_blackboard"), "config", "fields", field_name, "lines.png"
         )
@@ -48,12 +49,21 @@ class FieldPublisher(Node):
         )
         publisher.publish(field_map_msg(field_map, map_frame))
 
+    def get_field_name(self) -> str:
+        """Get the field name from the parameter blackboard, which might be started after this node."""
+        while rclpy.ok():
+            try:
+                return get_parameters_from_other_node(self, "/parameter_blackboard", ["field.name"])["field.name"]
+            except RuntimeError:
+                self.get_logger().info("Waiting for the parameter blackboard...", throttle_duration_sec=10.0)
+        raise RuntimeError("Shutdown while waiting for the parameter blackboard")
+
 
 def main(args=None) -> None:
     rclpy.init(args=args)
     node = FieldPublisher()
     try:
         rclpy.spin(node)
-    except KeyboardInterrupt:
+    except (ExternalShutdownException, KeyboardInterrupt):
         pass
     node.destroy_node()

@@ -3,6 +3,7 @@ import rclpy
 import tf2_ros
 from geometry_msgs.msg import Pose, PoseStamped, TransformStamped
 from rclpy.duration import Duration
+from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
 from rclpy.time import Time
 from transforms3d.euler import euler2quat, quat2euler
@@ -106,6 +107,6 @@ def main(args=None) -> None:
     node = LocalizationFaker()
     try:
         rclpy.spin(node)
-    except KeyboardInterrupt:
+    except (ExternalShutdownException, KeyboardInterrupt):
         pass
     node.destroy_node()

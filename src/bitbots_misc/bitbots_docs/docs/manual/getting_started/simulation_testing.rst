@@ -9,6 +9,14 @@ Test Motion
     ros2 launch bitbots_mujoco_sim simulator.launch
     ros2 launch bitbots_bringup motion_standalone.launch sim:=true
 
+To get a map frame without running the localization, the simulator can publish it from the ground truth pose of the robot.
+The fake localization needs the odometry and the parameter blackboard, which are started by the motion launch file:
+
+.. code-block:: bash
+
+    ros2 launch bitbots_mujoco_sim simulator.launch fake_localization:=true
+    ros2 launch bitbots_bringup motion_standalone.launch sim:=true
+
 To control walking of the robot, teleop needs to be startet as well:
 
 .. code-block:: bash
