@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
 
+import signal
 import threading
 import time
 from typing import cast
 
 import pytest
-from bitbots_msgs.msg import HeadMode
+from bitbots_body_behavior import body_behavior, simple_behavior, simple_behavior_web_wrapper
 from rclpy.node import Node
 
-from bitbots_body_behavior import body_behavior
-from bitbots_body_behavior import simple_behavior
-from bitbots_body_behavior import simple_behavior_web_wrapper
+from bitbots_msgs.msg import HeadMode
 
 
 class DummyLogger:
@@ -210,6 +209,27 @@ def test_simple_behavior_api_forwards_to_runtime(monkeypatch):
     assert ball_pose.y == 5.0
 
 
+def test_get_current_pose_raises_when_pose_is_unavailable(monkeypatch):
+    runtime = simple_behavior.SimpleBehaviorRuntime(DummyNode(), DummyBlackboard())
+    monkeypatch.setattr(runtime._blackboard.world_model, "get_current_position", lambda: None)
+    monkeypatch.setattr(simple_behavior, "_runtime", runtime)
+
+    with pytest.raises(RuntimeError, match="Current robot pose is not available"):
+        simple_behavior.get_current_pose()
+
+
+def test_pose_math_helpers():
+    origin = simple_behavior.make_pose(0, 0)
+    target = simple_behavior.make_pose(3, 4)
+    current_pose = simple_behavior.CurrentPose(1.0, 2.0, 0.5)
+
+    assert origin == simple_behavior.BallPose(0.0, 0.0)
+    assert simple_behavior.pose_distance(origin, target) == pytest.approx(5.0)
+    assert simple_behavior.pose_add(current_pose, target) == simple_behavior.BallPose(4.0, 6.0)
+    assert simple_behavior.pose_subtract(target, current_pose) == simple_behavior.BallPose(2.0, 2.0)
+    assert simple_behavior.pose_direction(origin, target) == pytest.approx(53.130102)
+
+
 def test_simple_behavior_requires_runtime(monkeypatch):
     monkeypatch.setattr(simple_behavior, "_runtime", None)
 
@@ -366,32 +386,151 @@ def test_simple_behavior_process_manager_restarts_running_process(monkeypatch, t
             return self.return_code
 
     started_processes = []
+    started_commands = []
+    started_in_new_sessions = []
+    process_group_signals = []
 
     def fake_popen(command, start_new_session, text, env):
-        del command, start_new_session, text, env
+        del text, env
+        started_commands.append(command)
+        started_in_new_sessions.append(start_new_session)
         process = FakeProcess()
         started_processes.append(process)
         return process
 
-    monkeypatch.setattr(simple_behavior_web_wrapper.subprocess, "Popen", fake_popen)
+    def fake_killpg(process_group_id, sent_signal):
+        process = next(process for process in started_processes if process.pid == process_group_id)
+        if sent_signal == 0:
+            if process.return_code is not None:
+                raise ProcessLookupError
+            return
+        process_group_signals.append((process_group_id, sent_signal))
+        process.return_code = -sent_signal
 
-    manager = simple_behavior_web_wrapper.SimpleBehaviorProcessManager(cast(Node, DummyNode()))
+    monkeypatch.setattr(simple_behavior_web_wrapper.subprocess, "Popen", fake_popen)
+    monkeypatch.setattr(simple_behavior_web_wrapper.os, "killpg", fake_killpg)
+    monkeypatch.setattr(
+        simple_behavior_web_wrapper,
+        "get_package_share_directory",
+        lambda package_name: f"/share/{package_name}",
+        raising=False,
+    )
+
+    manager = simple_behavior_web_wrapper.SimpleBehaviorProcessManager(
+        cast(
+            Node,
+            DummyNode(
+                {
+                    "dsd_file": "custom.dsd",
+                    "behavior_mode": "simple_web",
+                    "simple_behavior_script": "/ignored/launch-script.py",
+                    "odom_frame": "robot/odom",
+                    "map_frame": "robot/map",
+                    "base_footprint_frame": "robot/base_footprint",
+                    "use_sim_time": True,
+                }
+            ),
+        )
+    )
     manager._script_path = tmp_path / "simple_behavior_script.py"
 
     accepted, _ = manager.submit_script("def main():\n    pass\n", "first.py")
     assert accepted
     assert len(started_processes) == 1
+    assert started_in_new_sessions == [True]
+    assert started_commands[0] == [
+        "ros2",
+        "run",
+        "bitbots_body_behavior",
+        "body_behavior",
+        "--ros-args",
+        "--params-file",
+        "/share/bitbots_body_behavior/config/body_behavior.yaml",
+        "--params-file",
+        "/share/bitbots_body_behavior/config/animations.yaml",
+        "-p",
+        "dsd_file:=custom.dsd",
+        "-p",
+        "behavior_mode:=simple_web",
+        "-p",
+        "simple_behavior_script:=/ignored/launch-script.py",
+        "-p",
+        "odom_frame:=robot/odom",
+        "-p",
+        "map_frame:=robot/map",
+        "-p",
+        "base_footprint_frame:=robot/base_footprint",
+        "-p",
+        "use_sim_time:=true",
+        "-p",
+        "behavior_mode:=simple",
+        "-p",
+        f"simple_behavior_script:={manager._script_path}",
+    ]
     first_process = started_processes[0]
     assert manager.get_state() == "running"
 
     accepted, _ = manager.submit_script("def main():\n    pass\n", "second.py")
     assert accepted
     assert len(started_processes) == 2
-    assert first_process.terminated
+    assert process_group_signals == [(first_process.pid, signal.SIGTERM)]
     assert manager.get_state() == "running"
 
     manager.shutdown()
-    assert started_processes[1].terminated
+    assert process_group_signals == [
+        (first_process.pid, signal.SIGTERM),
+        (started_processes[1].pid, signal.SIGTERM),
+    ]
+
+
+def test_simple_behavior_process_manager_kills_unresponsive_process_group(monkeypatch):
+    class UnresponsiveProcess:
+        pid = 200
+        return_code = None
+
+        def poll(self):
+            return self.return_code
+
+        def wait(self, timeout=None):
+            if self.return_code is None:
+                raise simple_behavior_web_wrapper.subprocess.TimeoutExpired("body_behavior", timeout)
+            return self.return_code
+
+    sent_signals = []
+    process = UnresponsiveProcess()
+
+    def fake_killpg(process_group_id, sent_signal):
+        sent_signals.append((process_group_id, sent_signal))
+        if sent_signal == signal.SIGKILL:
+            process.return_code = -signal.SIGKILL
+
+    monkeypatch.setattr(simple_behavior_web_wrapper.os, "killpg", fake_killpg)
+
+    manager = simple_behavior_web_wrapper.SimpleBehaviorProcessManager(
+        cast(
+            Node,
+            DummyNode(
+                {
+                    "dsd_file": "behavior.dsd",
+                    "behavior_mode": "simple_web",
+                    "simple_behavior_script": "",
+                    "odom_frame": "odom",
+                    "map_frame": "map",
+                    "base_footprint_frame": "base_footprint",
+                    "use_sim_time": False,
+                }
+            ),
+        )
+    )
+    manager._STOP_TIMEOUT_SECONDS = 0.0
+    manager._process = process
+
+    manager.shutdown()
+
+    assert sent_signals == [
+        (process.pid, signal.SIGTERM),
+        (process.pid, signal.SIGKILL),
+    ]
 
 
 def test_simple_web_wrapper_starts_and_stops_http_server(monkeypatch):

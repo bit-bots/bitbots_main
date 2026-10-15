@@ -45,6 +45,8 @@ Practical notes:
 
 - Keep your loop lightweight and include short sleeps, so callbacks and ROS
   communication stay responsive.
+- ``get_current_pose()`` raises an exception if the robot pose is unavailable.
+  ``get_ball_pose()`` returns ``None`` while no ball position is known.
 - If ``main()`` raises an exception, the error is logged and the behavior does
   not restart ``main()`` automatically.
 - Calls to helper functions are intended to be simple and frequent, but shared
@@ -97,6 +99,23 @@ Practical notes:
   local development setups.
 - Use it to generate starter scripts, then compare/refine with the hand-written
   example in ``docs/simple_behavior_go_to_ball_and_kick.py``.
+- Blockly uses one pose-attribute block for ``x``, ``y``, and ``yaw_rad``.
+  Selecting ``yaw_rad`` for a ball pose raises an attribute error because ball
+  poses only contain coordinates.
+
+Pose operations
+---------------
+
+Robot poses provide ``x``, ``y``, and ``yaw_rad`` fields. Ball poses and poses
+created with ``make_pose()`` provide ``x`` and ``y`` fields. The pose math
+helpers accept either kind and operate on the map-frame coordinates:
+
+- ``pose_distance(first, second)`` returns the distance in meters.
+- ``pose_add(first, second)`` adds coordinates and returns a ball pose.
+- ``pose_subtract(first, second)`` subtracts coordinates and returns a ball
+  pose.
+- ``pose_direction(first, second)`` returns the map-frame direction from the
+  first pose to the second in degrees.
 
 Available functions
 -------------------
@@ -107,3 +126,8 @@ Available functions
 - ``stop()``
 - ``get_current_pose()``
 - ``get_ball_pose()``
+- ``make_pose(x, y)``
+- ``pose_distance(first, second)``
+- ``pose_add(first, second)``
+- ``pose_subtract(first, second)``
+- ``pose_direction(first, second)``

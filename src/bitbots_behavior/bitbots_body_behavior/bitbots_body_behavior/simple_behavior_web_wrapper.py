@@ -1,25 +1,47 @@
 import json
 import os
+import signal
 import subprocess
 import tempfile
 import threading
+import time
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 import rclpy
+from ament_index_python import get_package_share_directory
 from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
 
 
 class SimpleBehaviorProcessManager:
     _STOP_TIMEOUT_SECONDS = 1.0
+    _FORWARDED_PARAMETER_NAMES = (
+        "dsd_file",
+        "behavior_mode",
+        "simple_behavior_script",
+        "odom_frame",
+        "map_frame",
+        "base_footprint_frame",
+        "use_sim_time",
+    )
 
     def __init__(self, node):
         self._node = node
         self._lock = threading.Lock()
         self._process = None
         self._script_path = Path(tempfile.gettempdir()) / "bitbots_simple_behavior_web_script.py"
+        self._forwarded_parameters = [
+            (parameter_name, node.get_parameter(parameter_name).value)
+            for parameter_name in self._FORWARDED_PARAMETER_NAMES
+        ]
+
+    @staticmethod
+    def _format_parameter_value(value: object) -> str:
+        if isinstance(value, bool):
+            return str(value).lower()
+        return str(value) or "''"
 
     def _validate_script(self, script_source: str, source_name: str) -> tuple[bool, str]:
         if not script_source.strip():
@@ -43,29 +65,62 @@ class SimpleBehaviorProcessManager:
         if process is None:
             return
 
-        if process.poll() is not None:
+        process_group_id = process.pid
+        try:
+            os.killpg(process_group_id, signal.SIGTERM)
+        except ProcessLookupError:
             self._process = None
             return
 
-        process.terminate()
+        deadline = time.monotonic() + self._STOP_TIMEOUT_SECONDS
         try:
             process.wait(timeout=self._STOP_TIMEOUT_SECONDS)
         except subprocess.TimeoutExpired:
-            self._node.get_logger().warn("Timed out while stopping previous simple behavior process. Sending SIGKILL.")
-            process.kill()
-            process.wait(timeout=self._STOP_TIMEOUT_SECONDS)
+            pass
+
+        while time.monotonic() < deadline:
+            try:
+                os.killpg(process_group_id, 0)
+            except ProcessLookupError:
+                break
+            time.sleep(0.05)
+        else:
+            self._node.get_logger().warn(
+                "Timed out while stopping previous simple behavior process group. Sending SIGKILL."
+            )
+            try:
+                os.killpg(process_group_id, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+
+            if process.poll() is None:
+                process.wait(timeout=self._STOP_TIMEOUT_SECONDS)
 
         self._process = None
 
     def _start_process_locked(self) -> None:
+        config_directory = Path(get_package_share_directory("bitbots_body_behavior")) / "config"
         command = [
             "ros2",
-            "launch",
+            "run",
             "bitbots_body_behavior",
-            "behavior.launch",
-            "behavior_mode:=simple",
-            f"simple_behavior_script:={self._script_path}",
+            "body_behavior",
+            "--ros-args",
+            "--params-file",
+            str(config_directory / "body_behavior.yaml"),
+            "--params-file",
+            str(config_directory / "animations.yaml"),
         ]
+        for parameter_name, parameter_value in self._forwarded_parameters:
+            command.extend(["-p", f"{parameter_name}:={self._format_parameter_value(parameter_value)}"])
+        command.extend(
+            [
+                "-p",
+                "behavior_mode:=simple",
+                "-p",
+                f"simple_behavior_script:={self._script_path}",
+            ]
+        )
         self._process = subprocess.Popen(command, start_new_session=True, text=True, env=os.environ.copy())
         self._node.get_logger().info(f"Started simple behavior process with PID {self._process.pid}.")
 

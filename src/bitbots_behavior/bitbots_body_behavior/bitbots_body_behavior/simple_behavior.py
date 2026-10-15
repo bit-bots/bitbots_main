@@ -36,6 +36,9 @@ class BallPose(NamedTuple):
     y: float
 
 
+Pose = CurrentPose | BallPose
+
+
 class SimpleBehaviorRuntime:
     def __init__(self, node, blackboard):
         self._node = node
@@ -78,16 +81,12 @@ class SimpleBehaviorRuntime:
         """Stop walking and cancel the current pathfinding goal."""
         self._blackboard.pathfinding.stop_walk()
 
-    def get_current_pose(self) -> CurrentPose | None:
+    def get_current_pose(self) -> CurrentPose:
         """Get the current robot pose as named fields in map frame."""
-        try:
-            current_pose = self._blackboard.world_model.get_current_position()
-            if current_pose is None:
-                return None
-            return CurrentPose(float(current_pose[0]), float(current_pose[1]), float(current_pose[2]))
-        except Exception as error:
-            self._node.get_logger().warn(f"Could not get current pose: {error}")
-            return None
+        current_pose = self._blackboard.world_model.get_current_position()
+        if current_pose is None:
+            raise RuntimeError("Current robot pose is not available.")
+        return CurrentPose(float(current_pose[0]), float(current_pose[1]), float(current_pose[2]))
 
     def get_ball_pose(self) -> BallPose | None:
         """Get the ball position as named fields in map frame."""
@@ -115,14 +114,14 @@ def _require_runtime() -> SimpleBehaviorRuntime:
     return _runtime
 
 
-def set_goal_pose(x: float, y: float, yaw_deg: float = 0.0) -> None:
+def set_goal_pose(x: float | int, y: float | int, yaw_deg: float | int = 0.0) -> None:
     """Set a navigation goal pose in map coordinates."""
-    _require_runtime().set_goal_pose(x, y, yaw_deg)
+    _require_runtime().set_goal_pose(float(x), float(y), float(yaw_deg))
 
 
-def kick_ball(direction_deg: float, strength: float = 3.0) -> bool:
+def kick_ball(direction_deg: float | int, strength: float | int = 3.0) -> bool:
     """Kick the ball in a map-frame direction in degrees and wait for completion."""
-    return _require_runtime().kick_ball(direction_deg, strength)
+    return _require_runtime().kick_ball(float(direction_deg), float(strength))
 
 
 def set_head_mode(mode: str | int) -> None:
@@ -135,7 +134,7 @@ def stop() -> None:
     _require_runtime().stop()
 
 
-def get_current_pose() -> CurrentPose | None:
+def get_current_pose() -> CurrentPose:
     """Get the current robot pose as named fields in map frame."""
     return _require_runtime().get_current_pose()
 
@@ -143,6 +142,32 @@ def get_current_pose() -> CurrentPose | None:
 def get_ball_pose() -> BallPose | None:
     """Get the ball position as named fields in map frame."""
     return _require_runtime().get_ball_pose()
+
+
+def make_pose(x: float | int, y: float | int) -> BallPose:
+    """Create a pose from map-frame coordinates."""
+    return BallPose(float(x), float(y))
+
+
+def pose_distance(first: Pose, second: Pose) -> float:
+    """Calculate the distance in meters between two poses."""
+    return math.hypot(second.x - first.x, second.y - first.y)
+
+
+def pose_add(first: Pose, second: Pose) -> BallPose:
+    """Add the coordinates of two poses."""
+    return BallPose(first.x + second.x, first.y + second.y)
+
+
+def pose_subtract(first: Pose, second: Pose) -> BallPose:
+    """Subtract the second pose coordinates from the first."""
+    return BallPose(first.x - second.x, first.y - second.y)
+
+
+def pose_direction(first: Pose, second: Pose) -> float:
+    """Calculate the map-frame direction from the first pose to the second in degrees."""
+    return math.degrees(math.atan2(second.y - first.y, second.x - first.x))
+
 
 def print(*args, **kwargs):
     if _runtime is not None:
@@ -154,12 +179,18 @@ def print(*args, **kwargs):
 __all__ = [
     "CurrentPose",
     "BallPose",
+    "Pose",
     "set_goal_pose",
     "kick_ball",
     "set_head_mode",
     "stop",
     "get_current_pose",
     "get_ball_pose",
+    "make_pose",
+    "pose_distance",
+    "pose_add",
+    "pose_subtract",
+    "pose_direction",
     "HEAD_MODE_TRACK_BALL",
     "HEAD_MODE_SEARCH_FIELD_FEATURES",
     "HEAD_MODE_LOOK_FORWARD",

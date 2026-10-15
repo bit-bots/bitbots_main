@@ -22,11 +22,12 @@ const SIMPLE_BEHAVIOR_TOOLBOX = {
         {kind: "block", type: "sb_kick_ball"},
         {kind: "block", type: "sb_get_current_pose"},
         {kind: "block", type: "sb_get_ball_pose"},
-        {kind: "block", type: "sb_current_pose_x"},
-        {kind: "block", type: "sb_current_pose_y"},
-        {kind: "block", type: "sb_current_pose_yaw"},
-        {kind: "block", type: "sb_ball_pose_x"},
-        {kind: "block", type: "sb_ball_pose_y"},
+        {kind: "block", type: "sb_make_pose"},
+        {kind: "block", type: "sb_pose_attribute"},
+        {kind: "block", type: "sb_pose_distance"},
+        {kind: "block", type: "sb_pose_add"},
+        {kind: "block", type: "sb_pose_subtract"},
+        {kind: "block", type: "sb_pose_direction"},
       ],
     },
     {
@@ -150,44 +151,78 @@ Blockly.defineBlocksWithJsonArray([
     tooltip: "Get ball pose with fields x and y",
   },
   {
-    type: "sb_current_pose_x",
-    message0: "current pose x of %1",
-    args0: [{type: "input_value", name: "POSE"}],
-    output: "Number",
+    type: "sb_make_pose",
+    message0: "make pose x %1 y %2",
+    args0: [
+      {type: "input_value", name: "X", check: "Number"},
+      {type: "input_value", name: "Y", check: "Number"},
+    ],
+    output: null,
     colour: 160,
-    tooltip: "Read x from a current pose object",
+    tooltip: "Create a pose from field coordinates",
   },
   {
-    type: "sb_current_pose_y",
-    message0: "current pose y of %1",
-    args0: [{type: "input_value", name: "POSE"}],
+    type: "sb_pose_attribute",
+    message0: "pose %1 of %2",
+    args0: [
+      {
+        type: "field_dropdown",
+        name: "ATTRIBUTE",
+        options: [
+          ["x", "x"],
+          ["y", "y"],
+          ["yaw rad", "yaw_rad"],
+        ],
+      },
+      {type: "input_value", name: "POSE"},
+    ],
     output: "Number",
     colour: 160,
-    tooltip: "Read y from a current pose object",
+    tooltip: "Read a field from a pose; ball poses do not have yaw",
   },
   {
-    type: "sb_current_pose_yaw",
-    message0: "current pose yaw rad of %1",
-    args0: [{type: "input_value", name: "POSE"}],
+    type: "sb_pose_distance",
+    message0: "distance from pose %1 to %2",
+    args0: [
+      {type: "input_value", name: "FIRST"},
+      {type: "input_value", name: "SECOND"},
+    ],
     output: "Number",
     colour: 160,
-    tooltip: "Read yaw in radians from a current pose object",
+    tooltip: "Calculate the distance in meters between two poses",
   },
   {
-    type: "sb_ball_pose_x",
-    message0: "ball pose x of %1",
-    args0: [{type: "input_value", name: "POSE"}],
-    output: "Number",
+    type: "sb_pose_add",
+    message0: "add poses %1 and %2",
+    args0: [
+      {type: "input_value", name: "FIRST"},
+      {type: "input_value", name: "SECOND"},
+    ],
+    output: null,
     colour: 160,
-    tooltip: "Read x from a ball pose object",
+    tooltip: "Add the x and y coordinates of two poses",
   },
   {
-    type: "sb_ball_pose_y",
-    message0: "ball pose y of %1",
-    args0: [{type: "input_value", name: "POSE"}],
+    type: "sb_pose_subtract",
+    message0: "subtract pose %2 from %1",
+    args0: [
+      {type: "input_value", name: "FIRST"},
+      {type: "input_value", name: "SECOND"},
+    ],
+    output: null,
+    colour: 160,
+    tooltip: "Subtract the second pose coordinates from the first",
+  },
+  {
+    type: "sb_pose_direction",
+    message0: "direction from pose %1 to %2",
+    args0: [
+      {type: "input_value", name: "FIRST"},
+      {type: "input_value", name: "SECOND"},
+    ],
     output: "Number",
     colour: 160,
-    tooltip: "Read y from a ball pose object",
+    tooltip: "Calculate the direction in degrees from one pose to another",
   },
 ]);
 
@@ -234,30 +269,39 @@ pythonGenerator.forBlock["sb_get_ball_pose"] = function () {
   return ["get_ball_pose()", pythonGenerator.ORDER_FUNCTION_CALL];
 };
 
-pythonGenerator.forBlock["sb_current_pose_x"] = function (block, generator) {
-  const pose = generator.valueToCode(block, "POSE", pythonGenerator.ORDER_NONE) || "get_current_pose()";
-  return [`(${pose}).x if ${pose} is not None else 0.0`, pythonGenerator.ORDER_CONDITIONAL];
+pythonGenerator.forBlock["sb_make_pose"] = function (block, generator) {
+  const x = generator.valueToCode(block, "X", pythonGenerator.ORDER_NONE) || "0.0";
+  const y = generator.valueToCode(block, "Y", pythonGenerator.ORDER_NONE) || "0.0";
+  return [`make_pose(${x}, ${y})`, pythonGenerator.ORDER_FUNCTION_CALL];
 };
 
-pythonGenerator.forBlock["sb_current_pose_y"] = function (block, generator) {
-  const pose = generator.valueToCode(block, "POSE", pythonGenerator.ORDER_NONE) || "get_current_pose()";
-  return [`(${pose}).y if ${pose} is not None else 0.0`, pythonGenerator.ORDER_CONDITIONAL];
+pythonGenerator.forBlock["sb_pose_attribute"] = function (block, generator) {
+  const attribute = block.getFieldValue("ATTRIBUTE");
+  const pose = generator.valueToCode(block, "POSE", pythonGenerator.ORDER_MEMBER) || "get_current_pose()";
+  return [`(${pose}).${attribute}`, pythonGenerator.ORDER_MEMBER];
 };
 
-pythonGenerator.forBlock["sb_current_pose_yaw"] = function (block, generator) {
-  const pose = generator.valueToCode(block, "POSE", pythonGenerator.ORDER_NONE) || "get_current_pose()";
-  return [`(${pose}).yaw_rad if ${pose} is not None else 0.0`, pythonGenerator.ORDER_CONDITIONAL];
-};
+function poseOperationGenerator(functionName, resultOrder) {
+  return function (block, generator) {
+    const first = generator.valueToCode(block, "FIRST", pythonGenerator.ORDER_NONE) || "make_pose(0.0, 0.0)";
+    const second = generator.valueToCode(block, "SECOND", pythonGenerator.ORDER_NONE) || "make_pose(0.0, 0.0)";
+    return [`${functionName}(${first}, ${second})`, resultOrder];
+  };
+}
 
-pythonGenerator.forBlock["sb_ball_pose_x"] = function (block, generator) {
-  const pose = generator.valueToCode(block, "POSE", pythonGenerator.ORDER_NONE) || "get_ball_pose()";
-  return [`(${pose}).x if ${pose} is not None else 0.0`, pythonGenerator.ORDER_CONDITIONAL];
-};
-
-pythonGenerator.forBlock["sb_ball_pose_y"] = function (block, generator) {
-  const pose = generator.valueToCode(block, "POSE", pythonGenerator.ORDER_NONE) || "get_ball_pose()";
-  return [`(${pose}).y if ${pose} is not None else 0.0`, pythonGenerator.ORDER_CONDITIONAL];
-};
+pythonGenerator.forBlock["sb_pose_distance"] = poseOperationGenerator(
+  "pose_distance",
+  pythonGenerator.ORDER_FUNCTION_CALL,
+);
+pythonGenerator.forBlock["sb_pose_add"] = poseOperationGenerator("pose_add", pythonGenerator.ORDER_FUNCTION_CALL);
+pythonGenerator.forBlock["sb_pose_subtract"] = poseOperationGenerator(
+  "pose_subtract",
+  pythonGenerator.ORDER_FUNCTION_CALL,
+);
+pythonGenerator.forBlock["sb_pose_direction"] = poseOperationGenerator(
+  "pose_direction",
+  pythonGenerator.ORDER_FUNCTION_CALL,
+);
 
 function buildDefaultWorkspaceXml() {
   return `
@@ -283,7 +327,8 @@ function buildDefaultWorkspaceXml() {
                 <next>
                   <block type="sb_set_goal_pose">
                     <value name="X">
-                      <block type="sb_ball_pose_x">
+                      <block type="sb_pose_attribute">
+                        <field name="ATTRIBUTE">x</field>
                         <value name="POSE">
                           <block type="variables_get">
                             <field name="VAR">ball_pose</field>
@@ -292,7 +337,8 @@ function buildDefaultWorkspaceXml() {
                       </block>
                     </value>
                     <value name="Y">
-                      <block type="sb_ball_pose_y">
+                      <block type="sb_pose_attribute">
+                        <field name="ATTRIBUTE">y</field>
                         <value name="POSE">
                           <block type="variables_get">
                             <field name="VAR">ball_pose</field>

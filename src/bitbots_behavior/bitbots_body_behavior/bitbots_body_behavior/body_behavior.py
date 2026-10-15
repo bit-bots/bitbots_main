@@ -279,6 +279,8 @@ class BodySimpleBehavior(BodyBehaviorBase):
 
 
 def main(args=None):
+    import sys
+    print(sys.argv, args, file=sys.stderr)
     rclpy.init(args=args)
     node = Node("body_behavior", automatically_declare_parameters_from_overrides=True)
 
