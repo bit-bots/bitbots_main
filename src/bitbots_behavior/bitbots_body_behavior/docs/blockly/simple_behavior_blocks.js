@@ -372,6 +372,32 @@ function buildDefaultWorkspaceXml() {
 </xml>`;
 }
 
+const WORKSPACE_STORAGE_KEY = "bitbots-simple-behavior-blockly-workspace";
+
+function loadWorkspace(workspace) {
+  try {
+    const savedWorkspace = window.localStorage.getItem(WORKSPACE_STORAGE_KEY);
+    if (savedWorkspace) {
+      Blockly.Xml.domToWorkspace(Blockly.utils.xml.textToDom(savedWorkspace), workspace);
+      return;
+    }
+  } catch (error) {
+    console.warn("Could not restore the saved Blockly workspace.", error);
+  }
+
+  const defaultXml = Blockly.utils.xml.textToDom(buildDefaultWorkspaceXml());
+  Blockly.Xml.domToWorkspace(defaultXml, workspace);
+}
+
+function saveWorkspace(workspace) {
+  try {
+    const workspaceXml = Blockly.Xml.workspaceToDom(workspace);
+    window.localStorage.setItem(WORKSPACE_STORAGE_KEY, Blockly.Xml.domToText(workspaceXml));
+  } catch (error) {
+    console.warn("Could not save the Blockly workspace.", error);
+  }
+}
+
 function initializeBlocklyPage() {
   const workspace = Blockly.inject("blocklyDiv", {
     toolbox: SIMPLE_BEHAVIOR_TOOLBOX,
@@ -380,8 +406,7 @@ function initializeBlocklyPage() {
     trashcan: true,
   });
 
-  const defaultXml = Blockly.utils.xml.textToDom(buildDefaultWorkspaceXml());
-  Blockly.Xml.domToWorkspace(defaultXml, workspace);
+  loadWorkspace(workspace);
 
   const output = document.getElementById("pythonOutput");
   const runStatus = document.getElementById("runStatus");
@@ -393,7 +418,12 @@ function initializeBlocklyPage() {
     }
   };
 
-  workspace.addChangeListener(updateCode);
+  workspace.addChangeListener((event) => {
+    updateCode();
+    if (!event.isUiEvent) {
+      saveWorkspace(workspace);
+    }
+  });
   updateCode();
 
   document.getElementById("copyButton").addEventListener("click", async () => {

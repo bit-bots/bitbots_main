@@ -78,6 +78,13 @@ Run it with a local static file server from the package directory, for example:
 
 Then open ``http://localhost:8000/simple_behavior_blockly.html`` in a browser.
 
+The field coordinate lookup next to the workspace shows the coordinate system
+used by pose and goal functions. Select the same named field preset that was
+passed to the parameter blackboard, then drag the yellow point to read its
+``x`` and ``y`` coordinates. The arrow keys provide fine movement when the
+point has keyboard focus. The displayed field bounds, padding, penalty-area
+depth, and goal dimensions mirror the parameter-blackboard field configs.
+
 To run scripts directly from Blockly, start body behavior in ``simple_web`` mode.
 In that mode, a dedicated wrapper runs the web endpoint and starts
 ``body_behavior`` in ``simple`` mode for each submitted script.

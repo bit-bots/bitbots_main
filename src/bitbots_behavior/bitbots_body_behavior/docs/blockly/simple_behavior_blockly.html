@@ -12,9 +12,73 @@
         grid-template-rows: 60vh 40vh;
       }
 
+      #workspacePanel {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(320px, 36vw);
+        min-height: 0;
+      }
+
       #blocklyDiv {
         width: 100%;
         height: 100%;
+      }
+
+      #fieldPanel {
+        padding: 0.75rem;
+        background: #f4f4f4;
+        border-left: 1px solid #ccc;
+        overflow: auto;
+      }
+
+      #fieldHeader {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+      }
+
+      #fieldHeader h2 {
+        margin: 0;
+        font-size: 1rem;
+      }
+
+      #fieldDiagram {
+        display: block;
+        width: 100%;
+        min-width: 290px;
+        background: #16743a;
+        border-radius: 0.25rem;
+        touch-action: none;
+        user-select: none;
+      }
+
+      #fieldPointer {
+        cursor: grab;
+        outline: none;
+      }
+
+      #fieldPointer:active {
+        cursor: grabbing;
+      }
+
+      #fieldPointer:focus circle {
+        stroke: #111;
+        stroke-width: 4;
+      }
+
+      #fieldReadout {
+        margin: 0.5rem 0 0;
+        text-align: center;
+        font-family: monospace;
+        font-size: 1rem;
+      }
+
+      #fieldHelp {
+        margin: 0.35rem 0 0;
+        color: #444;
+        font-size: 0.8rem;
+        text-align: center;
       }
 
       #outputPanel {
@@ -41,7 +105,26 @@
     </style>
   </head>
   <body>
-    <div id="blocklyDiv"></div>
+    <section id="workspacePanel">
+      <div id="blocklyDiv"></div>
+      <aside id="fieldPanel">
+        <div id="fieldHeader">
+          <h2>Field coordinate lookup</h2>
+          <label>
+            Field
+            <select id="fieldPreset"></select>
+          </label>
+        </div>
+        <svg
+          id="fieldDiagram"
+          viewBox="0 0 800 520"
+          role="img"
+          aria-label="Football field coordinate reference with a draggable point"
+        ></svg>
+        <p id="fieldReadout" aria-live="polite">x = 0.00 m, y = 0.00 m</p>
+        <p id="fieldHelp">Drag the yellow point. Arrow keys move it by 0.1 m. Positive x points right; positive y points up.</p>
+      </aside>
+    </section>
     <section id="outputPanel">
       <div id="outputHeader">
         <strong>Generated Python script</strong>
@@ -59,6 +142,7 @@
     <script src="vendor/blocks_compressed.js"></script>
     <script src="vendor/python_compressed.js"></script>
     <script src="vendor/msg/en.js"></script>
+    <script src="field_reference.js"></script>
     <script src="simple_behavior_blocks.js"></script>
   </body>
 </html>
