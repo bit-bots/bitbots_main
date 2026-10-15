@@ -86,7 +86,8 @@ body_behavior:
     # it is in a reachable area of the robot
     ball_close_distance: 1.5
 
-    # the maximal allowed standard deviation of the ball position
+    # The maximal allowed ball-position covariance. Above this confidence
+    # threshold, get_ball_pose() in simple behavior returns no result.
     ball_max_covariance: 2.0
 
     # An area in which the ball can be kicked

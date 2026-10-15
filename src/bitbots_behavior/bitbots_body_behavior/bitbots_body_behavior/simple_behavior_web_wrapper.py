@@ -243,7 +243,9 @@ class SimpleBehaviorWebWrapper:
             name="simple_behavior_web_server",
         )
         self._http_server_thread.start()
-        self._node.get_logger().info(f"Simple behavior web server listening on http://{self._web_host}:{self._web_port}")
+        self._node.get_logger().info(
+            f"Simple behavior web server listening on http://{self._web_host}:{self._web_port}"
+        )
 
     def shutdown(self) -> None:
         http_server = self._http_server

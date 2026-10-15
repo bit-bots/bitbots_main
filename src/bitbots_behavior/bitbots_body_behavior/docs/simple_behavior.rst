@@ -98,6 +98,15 @@ behavior process and starts a new one with the new script.
 
 The Blockly page's default run endpoint is set to ``/run`` on that host/port.
 
+The toolbox separates the pupil-facing operations by purpose. Robot commands
+are grouped under movement, ball actions, and head control; observations are
+under sensing; and pose construction and calculations are under poses and
+field. General program flow, control, logic, math, variables, and output have
+their own categories. Less commonly needed loop controls are kept under
+advanced. Pose blocks use typed connections, and the dedicated ball-position
+known block can guard access to a ball pose when the ball is not currently
+visible.
+
 Practical notes:
 
 - This interface is only intended as a lightweight development helper.
@@ -106,14 +115,15 @@ Practical notes:
   local development setups.
 - Use it to generate starter scripts, then compare/refine with the hand-written
   example in ``docs/simple_behavior_go_to_ball_and_kick.py``.
-- Blockly uses one pose-attribute block for ``x``, ``y``, and ``yaw_rad``.
-  Selecting ``yaw_rad`` for a ball pose raises an attribute error because ball
+- Blockly uses one pose-attribute block for ``x``, ``y``, and ``yew_deg``.
+  Selecting ``yew_deg`` for a ball pose raises an attribute error because ball
   poses only contain coordinates.
 
 Pose operations
 ---------------
 
-Robot poses provide ``x``, ``y``, and ``yaw_rad`` fields. Ball poses and poses
+Robot poses provide ``x``, ``y``, and ``yew_deg`` fields. The orientation is
+expressed in degrees. Ball poses and poses
 created with ``make_pose()`` provide ``x`` and ``y`` fields. The pose math
 helpers accept either kind and operate on the map-frame coordinates:
 
@@ -123,11 +133,18 @@ helpers accept either kind and operate on the map-frame coordinates:
   pose.
 - ``pose_direction(first, second)`` returns the map-frame direction from the
   first pose to the second in degrees.
+- ``pose_from_direction(origin, distance, direction_deg)`` returns a point at
+  the requested distance and map-frame direction from an origin pose.
+
+``get_ball_pose()`` returns ``None`` when the world model's ball confidence is
+below the threshold configured by ``ball_max_covariance``. This applies to both
+the robot's own ball estimate and ball information received from teammates.
 
 Available functions
 -------------------
 
 - ``set_goal_pose(x, y, yaw_deg=0.0)``
+- ``set_goal_pose_from_pose(pose, yaw_deg=0.0)``
 - ``kick_ball(direction_deg, strength=3.0)``
 - ``set_head_mode(mode)``
 - ``stop()``
@@ -138,3 +155,4 @@ Available functions
 - ``pose_add(first, second)``
 - ``pose_subtract(first, second)``
 - ``pose_direction(first, second)``
+- ``pose_from_direction(origin, distance, direction_deg)``

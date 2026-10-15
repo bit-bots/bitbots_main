@@ -7,37 +7,74 @@ const SIMPLE_BEHAVIOR_TOOLBOX = {
       colour: "#4C97FF",
       contents: [
         {kind: "block", type: "sb_main"},
-        {kind: "block", type: "controls_whileUntil"},
+        {kind: "block", type: "sb_forever"},
+        {kind: "block", type: "controls_repeat_ext"},
         {kind: "block", type: "time_sleep"},
       ],
     },
     {
       kind: "category",
-      name: "Simple Behavior",
+      name: "Movement",
       colour: "#0FBD8C",
       contents: [
-        {kind: "block", type: "sb_set_head_mode"},
         {kind: "block", type: "sb_set_goal_pose"},
+        {kind: "block", type: "sb_set_goal_pose_from_pose"},
         {kind: "block", type: "sb_stop"},
+      ],
+    },
+    {
+      kind: "category",
+      name: "Ball actions",
+      colour: "#E65C5C",
+      contents: [
         {kind: "block", type: "sb_kick_ball"},
+      ],
+    },
+    {
+      kind: "category",
+      name: "Head control",
+      colour: "#8E5CB7",
+      contents: [{kind: "block", type: "sb_set_head_mode"}],
+    },
+    {
+      kind: "category",
+      name: "Sensing",
+      colour: "#2D9CDB",
+      contents: [
         {kind: "block", type: "sb_get_current_pose"},
         {kind: "block", type: "sb_get_ball_pose"},
+        {kind: "block", type: "sb_ball_pose_known"},
+      ],
+    },
+    {
+      kind: "category",
+      name: "Poses and field",
+      colour: "#D98E2B",
+      contents: [
         {kind: "block", type: "sb_make_pose"},
         {kind: "block", type: "sb_pose_attribute"},
         {kind: "block", type: "sb_pose_distance"},
+        {kind: "block", type: "sb_pose_direction"},
         {kind: "block", type: "sb_pose_add"},
         {kind: "block", type: "sb_pose_subtract"},
-        {kind: "block", type: "sb_pose_direction"},
+        {kind: "block", type: "sb_pose_from_direction"},
       ],
+    },
+    {
+      kind: "category",
+      name: "Control",
+      colour: "#FFAB19",
+      contents: [{kind: "block", type: "controls_if"}],
     },
     {
       kind: "category",
       name: "Logic",
       colour: "#9966FF",
       contents: [
-        {kind: "block", type: "controls_if"},
         {kind: "block", type: "logic_compare"},
         {kind: "block", type: "logic_operation"},
+        {kind: "block", type: "logic_negate"},
+        {kind: "block", type: "logic_boolean"},
       ],
     },
     {
@@ -47,19 +84,32 @@ const SIMPLE_BEHAVIOR_TOOLBOX = {
       contents: [
         {kind: "block", type: "math_number"},
         {kind: "block", type: "math_arithmetic"},
+        {kind: "block", type: "math_single"},
       ],
-    },
-    {
-      kind: "category",
-      name: "Text",
-      colour: "#FF8C1A",
-      contents: [{kind: "block", type: "text_print"}],
     },
     {
       kind: "category",
       name: "Variables",
       custom: "VARIABLE",
       colour: "#FF6680",
+    },
+    {
+      kind: "category",
+      name: "Output",
+      colour: "#FF8C1A",
+      contents: [
+        {kind: "block", type: "text_print"},
+        {kind: "block", type: "text"},
+      ],
+    },
+    {
+      kind: "category",
+      name: "Advanced",
+      colour: "#777777",
+      contents: [
+        {kind: "block", type: "controls_whileUntil"},
+        {kind: "block", type: "controls_flow_statements"},
+      ],
     },
   ],
 };
@@ -80,6 +130,15 @@ Blockly.defineBlocksWithJsonArray([
     nextStatement: null,
     colour: 210,
     tooltip: "Pause execution for a short time",
+  },
+  {
+    type: "sb_forever",
+    message0: "repeat forever %1",
+    args0: [{type: "input_statement", name: "BODY"}],
+    previousStatement: null,
+    nextStatement: null,
+    colour: 210,
+    tooltip: "Repeat these blocks until the program is stopped",
   },
   {
     type: "sb_set_head_mode",
@@ -117,6 +176,15 @@ Blockly.defineBlocksWithJsonArray([
     tooltip: "Walk to a goal position on the field",
   },
   {
+    type: "sb_set_goal_pose_from_pose",
+    message0: "walk to pose %1",
+    args0: [{type: "input_value", name: "POSE", check: "Pose"}],
+    previousStatement: null,
+    nextStatement: null,
+    colour: 160,
+    tooltip: "Walk to the x and y coordinates of a pose",
+  },
+  {
     type: "sb_stop",
     message0: "stop walking",
     previousStatement: null,
@@ -139,16 +207,23 @@ Blockly.defineBlocksWithJsonArray([
   {
     type: "sb_get_current_pose",
     message0: "current pose",
-    output: null,
+    output: "Pose",
     colour: 160,
-    tooltip: "Get robot pose with fields x, y, yaw_rad",
+    tooltip: "Get robot pose with fields x, y, yew_deg",
   },
   {
     type: "sb_get_ball_pose",
     message0: "ball pose",
-    output: null,
+    output: "Pose",
     colour: 160,
     tooltip: "Get ball pose with fields x and y",
+  },
+  {
+    type: "sb_ball_pose_known",
+    message0: "ball position is known",
+    output: "Boolean",
+    colour: 200,
+    tooltip: "True when the robot currently knows where the ball is",
   },
   {
     type: "sb_make_pose",
@@ -157,7 +232,7 @@ Blockly.defineBlocksWithJsonArray([
       {type: "input_value", name: "X", check: "Number"},
       {type: "input_value", name: "Y", check: "Number"},
     ],
-    output: null,
+    output: "Pose",
     colour: 160,
     tooltip: "Create a pose from field coordinates",
   },
@@ -171,10 +246,10 @@ Blockly.defineBlocksWithJsonArray([
         options: [
           ["x", "x"],
           ["y", "y"],
-          ["yaw rad", "yaw_rad"],
+          ["yaw deg", "yew_deg"],
         ],
       },
-      {type: "input_value", name: "POSE"},
+      {type: "input_value", name: "POSE", check: "Pose"},
     ],
     output: "Number",
     colour: 160,
@@ -184,8 +259,8 @@ Blockly.defineBlocksWithJsonArray([
     type: "sb_pose_distance",
     message0: "distance from pose %1 to %2",
     args0: [
-      {type: "input_value", name: "FIRST"},
-      {type: "input_value", name: "SECOND"},
+      {type: "input_value", name: "FIRST", check: "Pose"},
+      {type: "input_value", name: "SECOND", check: "Pose"},
     ],
     output: "Number",
     colour: 160,
@@ -195,10 +270,10 @@ Blockly.defineBlocksWithJsonArray([
     type: "sb_pose_add",
     message0: "add poses %1 and %2",
     args0: [
-      {type: "input_value", name: "FIRST"},
-      {type: "input_value", name: "SECOND"},
+      {type: "input_value", name: "FIRST", check: "Pose"},
+      {type: "input_value", name: "SECOND", check: "Pose"},
     ],
-    output: null,
+    output: "Pose",
     colour: 160,
     tooltip: "Add the x and y coordinates of two poses",
   },
@@ -206,10 +281,10 @@ Blockly.defineBlocksWithJsonArray([
     type: "sb_pose_subtract",
     message0: "subtract pose %2 from %1",
     args0: [
-      {type: "input_value", name: "FIRST"},
-      {type: "input_value", name: "SECOND"},
+      {type: "input_value", name: "FIRST", check: "Pose"},
+      {type: "input_value", name: "SECOND", check: "Pose"},
     ],
-    output: null,
+    output: "Pose",
     colour: 160,
     tooltip: "Subtract the second pose coordinates from the first",
   },
@@ -217,12 +292,24 @@ Blockly.defineBlocksWithJsonArray([
     type: "sb_pose_direction",
     message0: "direction from pose %1 to %2",
     args0: [
-      {type: "input_value", name: "FIRST"},
-      {type: "input_value", name: "SECOND"},
+      {type: "input_value", name: "FIRST", check: "Pose"},
+      {type: "input_value", name: "SECOND", check: "Pose"},
     ],
     output: "Number",
     colour: 160,
     tooltip: "Calculate the direction in degrees from one pose to another",
+  },
+  {
+    type: "sb_pose_from_direction",
+    message0: "point from pose %1 distance %2 direction deg %3",
+    args0: [
+      {type: "input_value", name: "ORIGIN", check: "Pose"},
+      {type: "input_value", name: "DISTANCE", check: "Number"},
+      {type: "input_value", name: "DIRECTION", check: "Number"},
+    ],
+    output: "Pose",
+    colour: 160,
+    tooltip: "Create a pose at a distance and direction from another pose",
   },
 ]);
 
@@ -239,6 +326,11 @@ pythonGenerator.forBlock["time_sleep"] = function (block, generator) {
   return `sleep(${seconds})\n`;
 };
 
+pythonGenerator.forBlock["sb_forever"] = function (block, generator) {
+  const body = generator.statementToCode(block, "BODY") || "    pass\n";
+  return `while True:\n${body}`;
+};
+
 pythonGenerator.forBlock["sb_set_head_mode"] = function (block) {
   const mode = block.getFieldValue("MODE");
   return `set_head_mode(${mode})\n`;
@@ -249,6 +341,11 @@ pythonGenerator.forBlock["sb_set_goal_pose"] = function (block, generator) {
   const y = generator.valueToCode(block, "Y", pythonGenerator.ORDER_NONE) || "0.0";
   const yaw = generator.valueToCode(block, "YAW", pythonGenerator.ORDER_NONE) || "0.0";
   return `set_goal_pose(${x}, ${y}, ${yaw})\n`;
+};
+
+pythonGenerator.forBlock["sb_set_goal_pose_from_pose"] = function (block, generator) {
+  const pose = generator.valueToCode(block, "POSE", pythonGenerator.ORDER_NONE) || "make_pose(0.0, 0.0)";
+  return `set_goal_pose_from_pose(${pose})\n`;
 };
 
 pythonGenerator.forBlock["sb_stop"] = function () {
@@ -267,6 +364,10 @@ pythonGenerator.forBlock["sb_get_current_pose"] = function () {
 
 pythonGenerator.forBlock["sb_get_ball_pose"] = function () {
   return ["get_ball_pose()", pythonGenerator.ORDER_FUNCTION_CALL];
+};
+
+pythonGenerator.forBlock["sb_ball_pose_known"] = function () {
+  return ["get_ball_pose() is not None", pythonGenerator.ORDER_RELATIONAL];
 };
 
 pythonGenerator.forBlock["sb_make_pose"] = function (block, generator) {
@@ -303,6 +404,13 @@ pythonGenerator.forBlock["sb_pose_direction"] = poseOperationGenerator(
   pythonGenerator.ORDER_FUNCTION_CALL,
 );
 
+pythonGenerator.forBlock["sb_pose_from_direction"] = function (block, generator) {
+  const origin = generator.valueToCode(block, "ORIGIN", pythonGenerator.ORDER_NONE) || "make_pose(0.0, 0.0)";
+  const distance = generator.valueToCode(block, "DISTANCE", pythonGenerator.ORDER_NONE) || "0.0";
+  const direction = generator.valueToCode(block, "DIRECTION", pythonGenerator.ORDER_NONE) || "0.0";
+  return [`pose_from_direction(${origin}, ${distance}, ${direction})`, pythonGenerator.ORDER_FUNCTION_CALL];
+};
+
 function buildDefaultWorkspaceXml() {
   return `
 <xml xmlns="https://developers.google.com/blockly/xml">
@@ -311,55 +419,56 @@ function buildDefaultWorkspaceXml() {
       <block type="sb_set_head_mode">
         <field name="MODE">HEAD_MODE_TRACK_BALL</field>
         <next>
-          <block type="controls_whileUntil">
-            <field name="MODE">WHILE</field>
-            <value name="BOOL">
-              <shadow type="logic_boolean">
-                <field name="BOOL">TRUE</field>
-              </shadow>
-            </value>
-            <statement name="DO">
-              <block type="variables_set">
-                <field name="VAR">ball_pose</field>
-                <value name="VALUE">
-                  <block type="sb_get_ball_pose"></block>
+          <block type="sb_forever">
+            <statement name="BODY">
+              <block type="controls_if">
+                <value name="IF0">
+                  <block type="sb_ball_pose_known"></block>
                 </value>
-                <next>
-                  <block type="sb_set_goal_pose">
-                    <value name="X">
-                      <block type="sb_pose_attribute">
-                        <field name="ATTRIBUTE">x</field>
-                        <value name="POSE">
-                          <block type="variables_get">
-                            <field name="VAR">ball_pose</field>
-                          </block>
-                        </value>
-                      </block>
-                    </value>
-                    <value name="Y">
-                      <block type="sb_pose_attribute">
-                        <field name="ATTRIBUTE">y</field>
-                        <value name="POSE">
-                          <block type="variables_get">
-                            <field name="VAR">ball_pose</field>
-                          </block>
-                        </value>
-                      </block>
-                    </value>
-                    <value name="YAW">
-                      <shadow type="math_number">
-                        <field name="NUM">0</field>
-                      </shadow>
+                <statement name="DO0">
+                  <block type="variables_set">
+                    <field name="VAR">ball_pose</field>
+                    <value name="VALUE">
+                      <block type="sb_get_ball_pose"></block>
                     </value>
                     <next>
-                      <block type="time_sleep">
-                        <value name="SECONDS">
+                      <block type="sb_set_goal_pose">
+                        <value name="X">
+                          <block type="sb_pose_attribute">
+                            <field name="ATTRIBUTE">x</field>
+                            <value name="POSE">
+                              <block type="variables_get">
+                                <field name="VAR">ball_pose</field>
+                              </block>
+                            </value>
+                          </block>
+                        </value>
+                        <value name="Y">
+                          <block type="sb_pose_attribute">
+                            <field name="ATTRIBUTE">y</field>
+                            <value name="POSE">
+                              <block type="variables_get">
+                                <field name="VAR">ball_pose</field>
+                              </block>
+                            </value>
+                          </block>
+                        </value>
+                        <value name="YAW">
                           <shadow type="math_number">
-                            <field name="NUM">0.1</field>
+                            <field name="NUM">0</field>
                           </shadow>
                         </value>
                       </block>
                     </next>
+                  </block>
+                </statement>
+                <next>
+                  <block type="time_sleep">
+                    <value name="SECONDS">
+                      <shadow type="math_number">
+                        <field name="NUM">0.1</field>
+                      </shadow>
+                    </value>
                   </block>
                 </next>
               </block>

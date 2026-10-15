@@ -18,8 +18,7 @@ from rclpy.experimental.events_executor import EventsExecutor
 from rclpy.node import Node
 from soccer_vision_3d_msgs.msg import RobotArray
 
-from bitbots_body_behavior import behavior_dsd
-from bitbots_body_behavior import simple_behavior
+from bitbots_body_behavior import behavior_dsd, simple_behavior
 from bitbots_msgs.msg import RobotControlState, TeamData
 
 
@@ -196,7 +195,9 @@ class BodySimpleBehavior(BodyBehaviorBase):
     def _load_script(self) -> None:
         script_path = str(self.node.get_parameter("simple_behavior_script").value)
         if not script_path:
-            self.node.get_logger().error("No simple behavior script configured. Set parameter 'simple_behavior_script'.")
+            self.node.get_logger().error(
+                "No simple behavior script configured. Set parameter 'simple_behavior_script'."
+            )
             return
 
         resolved_script_path = Path(script_path).expanduser()
@@ -245,7 +246,9 @@ class BodySimpleBehavior(BodyBehaviorBase):
                 failure_traceback = self._thread_failure_traceback
 
         if should_log_failed:
-            self.node.get_logger().error("Simple behavior script main() thread failed. It will not be restarted automatically.")
+            self.node.get_logger().error(
+                "Simple behavior script main() thread failed. It will not be restarted automatically."
+            )
             if failure_traceback:
                 self.node.get_logger().error(failure_traceback)
             return
@@ -280,6 +283,7 @@ class BodySimpleBehavior(BodyBehaviorBase):
 
 def main(args=None):
     import sys
+
     print(sys.argv, args, file=sys.stderr)
     rclpy.init(args=args)
     node = Node("body_behavior", automatically_declare_parameters_from_overrides=True)
@@ -295,7 +299,9 @@ def main(args=None):
         node.get_logger().warn(f"Unknown behavior_mode '{behavior_mode}'. Falling back to 'dsd'.")
         body_behavior = BodyDSD(node)
 
-    node.create_timer(1 / 60.0, body_behavior.loop, callback_group=MutuallyExclusiveCallbackGroup(), clock=node.get_clock())
+    node.create_timer(
+        1 / 60.0, body_behavior.loop, callback_group=MutuallyExclusiveCallbackGroup(), clock=node.get_clock()
+    )
 
     executor = EventsExecutor()
     executor.add_node(node)

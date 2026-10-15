@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import math
 import signal
 import threading
 import time
@@ -114,6 +115,10 @@ class DummyWorldModel:
         return 4.0, 5.0
 
     @staticmethod
+    def ball_has_been_seen():
+        return True
+
+    @staticmethod
     def forget_ball():
         pass
 
@@ -196,11 +201,11 @@ def test_simple_behavior_api_forwards_to_runtime(monkeypatch):
     assert runtime._blackboard.pathfinding.stopped
 
     current_pose = simple_behavior.get_current_pose()
-    assert current_pose == (1.0, 2.0, 3.0)
+    assert current_pose == pytest.approx((1.0, 2.0, math.degrees(3.0)))
     assert current_pose is not None
     assert current_pose.x == 1.0
     assert current_pose.y == 2.0
-    assert current_pose.yaw_rad == 3.0
+    assert current_pose.yew_deg == pytest.approx(math.degrees(3.0))
 
     ball_pose = simple_behavior.get_ball_pose()
     assert ball_pose == (4.0, 5.0)
@@ -218,6 +223,14 @@ def test_get_current_pose_raises_when_pose_is_unavailable(monkeypatch):
         simple_behavior.get_current_pose()
 
 
+def test_get_ball_pose_returns_none_below_confidence_threshold(monkeypatch):
+    runtime = simple_behavior.SimpleBehaviorRuntime(DummyNode(), DummyBlackboard())
+    monkeypatch.setattr(runtime._blackboard.world_model, "ball_has_been_seen", lambda: False)
+    monkeypatch.setattr(simple_behavior, "_runtime", runtime)
+
+    assert simple_behavior.get_ball_pose() is None
+
+
 def test_pose_math_helpers():
     origin = simple_behavior.make_pose(0, 0)
     target = simple_behavior.make_pose(3, 4)
@@ -228,6 +241,18 @@ def test_pose_math_helpers():
     assert simple_behavior.pose_add(current_pose, target) == simple_behavior.BallPose(4.0, 6.0)
     assert simple_behavior.pose_subtract(target, current_pose) == simple_behavior.BallPose(2.0, 2.0)
     assert simple_behavior.pose_direction(origin, target) == pytest.approx(53.130102)
+    assert simple_behavior.pose_from_direction(origin, 2, 90) == pytest.approx(simple_behavior.BallPose(0.0, 2.0))
+
+
+def test_set_goal_pose_from_pose_forwards_coordinates(monkeypatch):
+    runtime = simple_behavior.SimpleBehaviorRuntime(DummyNode(), DummyBlackboard())
+    monkeypatch.setattr(simple_behavior, "_runtime", runtime)
+
+    simple_behavior.set_goal_pose_from_pose(simple_behavior.make_pose(1.5, -0.5))
+
+    goal = runtime._blackboard.pathfinding.last_goal
+    assert goal.pose.position.x == 1.5
+    assert goal.pose.position.y == -0.5
 
 
 def test_simple_behavior_requires_runtime(monkeypatch):
@@ -555,7 +580,9 @@ def test_simple_web_wrapper_starts_and_stops_http_server(monkeypatch):
     monkeypatch.setattr(simple_behavior_web_wrapper, "ThreadingHTTPServer", FakeServer)
 
     wrapper = object.__new__(simple_behavior_web_wrapper.SimpleBehaviorWebWrapper)
-    wrapper._node = cast(Node, DummyNode(parameters={"simple_behavior_web_host": "127.0.0.1", "simple_behavior_web_port": 8765}))
+    wrapper._node = cast(
+        Node, DummyNode(parameters={"simple_behavior_web_host": "127.0.0.1", "simple_behavior_web_port": 8765})
+    )
     wrapper._process_manager = simple_behavior_web_wrapper.SimpleBehaviorProcessManager(wrapper._node)
     wrapper._web_host = "127.0.0.1"
     wrapper._web_port = 8765
