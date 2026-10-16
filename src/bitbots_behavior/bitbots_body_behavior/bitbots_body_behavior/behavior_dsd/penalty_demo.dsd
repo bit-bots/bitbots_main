@@ -19,7 +19,7 @@ $DoOnce
 
 -->BodyBehavior
 $DoOnce
-    NOT_DONE --> @ChangeAction + action:waiting + r:false, @LookAtFieldFeatures + r:false, @Stand + duration:5
+    NOT_DONE --> @ChangeAction + action:waiting + r:false, @LookAtFieldFeatures + r:false, @Stand + duration:10
     DONE --> $BallSeen
         YES --> $BallInDemoPenaltyArea
             YES --> #KickWithAvoidance 
