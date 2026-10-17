@@ -2,6 +2,8 @@
     <arg name="dsd_file" default="main.dsd" />
     <arg name="behavior_mode" default="simple" />
     <arg name="simple_behavior_script" default="" />
+    <arg name="simple_behavior_web_host" default="127.0.0.1" />
+    <arg name="simple_behavior_web_port" default="0" />
     <arg name="tf_prefix" default=""/>
     <arg name="sim" default="false" />
 
@@ -24,6 +26,8 @@
         <param name="dsd_file" value="$(var dsd_file)"/>
         <param name="behavior_mode" value="$(var behavior_mode)"/>
         <param name="simple_behavior_script" value="$(var simple_behavior_script)"/>
+        <param name="simple_behavior_web_host" value="$(var simple_behavior_web_host)"/>
+        <param name="simple_behavior_web_port" value="$(var simple_behavior_web_port)"/>
         <param name="odom_frame" value="$(var tf_prefix)odom"/>
         <param name="map_frame" value="$(var tf_prefix)map"/>
         <param name="base_footprint_frame" value="$(var tf_prefix)base_footprint"/>

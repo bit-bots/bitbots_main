@@ -153,15 +153,22 @@ class SimpleBehaviorProcessManager:
 
 class SimpleBehaviorWebWrapper:
     _SERVER_THREAD_JOIN_TIMEOUT_SECONDS = 0.5
+    _WEB_PORT_BASE = 7500
 
     def __init__(self, node):
         self._node = node
         self._process_manager = SimpleBehaviorProcessManager(node)
         self._web_host = str(node.get_parameter("simple_behavior_web_host").value)
-        self._web_port = int(node.get_parameter("simple_behavior_web_port").value)
+        self._web_port = self._resolve_web_port(int(node.get_parameter("simple_behavior_web_port").value))
         self._http_server: ThreadingHTTPServer | None = None
         self._http_server_thread: threading.Thread | None = None
         self._start_web_server()
+
+    @classmethod
+    def _resolve_web_port(cls, configured_port: int) -> int:
+        if configured_port:
+            return configured_port
+        return cls._WEB_PORT_BASE + int(os.getenv("ROS_DOMAIN_ID", "0"))
 
     def _start_web_server(self) -> None:
         wrapper = self

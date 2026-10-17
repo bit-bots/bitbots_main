@@ -2,6 +2,10 @@
 <launch>
     <arg name="audio" default="true" description="Whether the audio system should be started"/>
     <arg name="behavior_dsd_file" default="main.dsd" description="The behavior dsd file that should be used" />
+    <arg name="behavior_mode" default="dsd" description="The body behavior implementation that should be used" />
+    <arg name="simple_behavior_script" default="" description="The script used by simple behavior mode" />
+    <arg name="simple_behavior_web_host" default="127.0.0.1" description="The host used by simple web behavior mode" />
+    <arg name="simple_behavior_web_port" default="0" description="The port used by simple web behavior mode" />
     <arg name="behavior" default="true" description="Whether the behavior control system should be started" />
     <arg name="game_controller" default="true" description="Whether the Gamecontroller module should be started" />
     <arg name="ipm" default="true" description="Whether the inverse perspective mapping should be started"/>
@@ -97,6 +101,10 @@
     <group if="$(var behavior)">
         <include file="$(find-pkg-share bitbots_body_behavior)/launch/behavior.launch">
             <arg name="dsd_file" value="$(var behavior_dsd_file)" />
+            <arg name="behavior_mode" value="$(var behavior_mode)" />
+            <arg name="simple_behavior_script" value="$(var simple_behavior_script)" />
+            <arg name="simple_behavior_web_host" value="$(var simple_behavior_web_host)" />
+            <arg name="simple_behavior_web_port" value="$(var simple_behavior_web_port)" />
             <arg name="sim" value="$(var sim)" />
         </include>
     </group>

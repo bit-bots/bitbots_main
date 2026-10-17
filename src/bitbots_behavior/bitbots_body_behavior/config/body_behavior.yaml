@@ -271,4 +271,4 @@ simple_behavior_web_wrapper:
   ros__parameters:
     # Host and port for the local script-submission endpoint used in simple_web mode.
     simple_behavior_web_host: "127.0.0.1"
-    simple_behavior_web_port: 8765
+    simple_behavior_web_port: 0

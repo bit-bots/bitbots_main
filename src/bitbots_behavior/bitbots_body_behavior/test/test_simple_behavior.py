@@ -558,6 +558,23 @@ def test_simple_behavior_process_manager_kills_unresponsive_process_group(monkey
     ]
 
 
+@pytest.mark.parametrize(
+    ("configured_port", "ros_domain_id", "expected_port"),
+    [
+        (8123, "42", 8123),
+        (0, "42", 7542),
+        (0, None, 7500),
+    ],
+)
+def test_simple_web_wrapper_resolves_web_port(monkeypatch, configured_port, ros_domain_id, expected_port):
+    if ros_domain_id is None:
+        monkeypatch.delenv("ROS_DOMAIN_ID", raising=False)
+    else:
+        monkeypatch.setenv("ROS_DOMAIN_ID", ros_domain_id)
+
+    assert simple_behavior_web_wrapper.SimpleBehaviorWebWrapper._resolve_web_port(configured_port) == expected_port
+
+
 def test_simple_web_wrapper_starts_and_stops_http_server(monkeypatch):
     class FakeServer:
         def __init__(self, address, handler):
