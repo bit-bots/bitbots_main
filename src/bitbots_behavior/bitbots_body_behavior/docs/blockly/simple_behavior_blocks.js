@@ -318,7 +318,7 @@ const pythonGenerator = Blockly.Python;
 pythonGenerator.forBlock["sb_main"] = function (block, generator) {
   const body = generator.statementToCode(block, "BODY");
   const content = body || "    pass\n";
-  return `from time import sleep\nfrom bitbots_body_behavior.simple_behavior import *\n\n\ndef main():\n${content}`;
+  return `from bitbots_body_behavior.simple_behavior import *\n\n\ndef main():\n${content}`;
 };
 
 pythonGenerator.forBlock["time_sleep"] = function (block, generator) {

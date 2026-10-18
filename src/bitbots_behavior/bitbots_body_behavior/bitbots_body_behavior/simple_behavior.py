@@ -1,10 +1,10 @@
 import builtins
 import math
-import time
 from typing import NamedTuple
 
 from bitbots_utils.transforms import quat_from_yaw
 from geometry_msgs.msg import PoseStamped
+from rclpy.duration import Duration
 
 from bitbots_msgs.msg import HeadMode
 
@@ -44,6 +44,13 @@ class SimpleBehaviorRuntime:
         self._node = node
         self._blackboard = blackboard
 
+    def sleep(self, seconds: float | int) -> None:
+        """Sleep for a specified duration in seconds based on simulation time."""
+        if seconds <= 0:
+            return
+        duration = Duration(seconds=float(seconds))
+        self._node.get_clock().sleep_for(duration)
+
     def set_goal_pose(self, x: float, y: float, yaw_deg: float = 0.0) -> None:
         """Set a navigation goal pose in map coordinates."""
         goal = PoseStamped()
@@ -57,13 +64,13 @@ class SimpleBehaviorRuntime:
     def kick_ball(self, direction_deg: float, strength: float = 3.0) -> bool:
         """Kick the ball in a map-frame direction in degrees and wait for completion."""
         self.stop()
-        time.sleep(0.1)
+        self.sleep(0.1)
         kick_started = self._blackboard.kick.start_rl_kick(float(direction_deg), float(strength))
         if not kick_started:
             return False
 
         while self._blackboard.kick.is_currently_kicking:
-            time.sleep(0.01)
+            self.sleep(0.01)
         self._blackboard.world_model.forget_ball()
         return True
 
@@ -116,6 +123,11 @@ def _require_runtime() -> SimpleBehaviorRuntime:
     if _runtime is None:
         raise RuntimeError("Simple behavior runtime is not configured.")
     return _runtime
+
+
+def sleep(seconds: float | int) -> None:
+    """Sleep for a specified duration in seconds based on simulation time."""
+    _require_runtime().sleep(seconds)
 
 
 def set_goal_pose(x: float | int, y: float | int, yaw_deg: float | int = 0.0) -> None:
@@ -198,6 +210,7 @@ __all__ = [
     "CurrentPose",
     "BallPose",
     "Pose",
+    "sleep",
     "set_goal_pose",
     "set_goal_pose_from_pose",
     "kick_ball",
