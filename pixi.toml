@@ -136,11 +136,40 @@ args = [
 
 [tasks.behavior-send-script]
 description = "Send a simple behavior Python script file to a running simple behavior web server."
-cmd = 'python -c "import json,pathlib,urllib.request; script_path = pathlib.Path(r\"{{ script }}\"); payload = json.dumps({\"script\": script_path.read_text(), \"name\": script_path.name}).encode(); request = urllib.request.Request(\"http://{{ host }}:{{ port }}/run\", data=payload, headers={\"Content-Type\": \"application/json\"}); print(urllib.request.urlopen(request).read().decode())"'
+cmd = '''
+python -c '
+import json, pathlib, sys, urllib.error, urllib.parse, urllib.request
+
+url = "{{ url }}"
+aliases = {"robo1": "http://localhost:7511", "robo2": "http://localhost:7512"}
+url = aliases.get(url.lower(), url)
+if not (url.startswith("http://") or url.startswith("https://")):
+    url = f"http://{url}"
+parsed = urllib.parse.urlparse(url)
+if parsed.path in ("", "/"):
+    url = url.rstrip("/") + "/run"
+
+script_path = pathlib.Path(r"{{ script }}".strip())
+if not script_path.is_file():
+    sys.exit(f"Error: Script file not found: {script_path}")
+
+payload = json.dumps({"script": script_path.read_text(), "name": script_path.name}).encode()
+request = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"})
+
+try:
+    with urllib.request.urlopen(request) as response:
+        print(response.read().decode())
+except urllib.error.HTTPError as error:
+    print(error.read().decode(), file=sys.stderr)
+    sys.exit(1)
+except urllib.error.URLError as error:
+    print(f"Error connecting to {url}: {error.reason}", file=sys.stderr)
+    sys.exit(1)
+'
+'''
 args = [
-    { arg = "script", default = "" },
-    { arg = "host", default = "127.0.0.1" },
-    { arg = "port", default = "8765" },
+    { arg = "script" },
+    { arg = "url", default = "robo1" },
 ]
 
 [tasks.behavior-opponent]
