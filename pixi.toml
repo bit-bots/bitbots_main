@@ -141,7 +141,12 @@ python -c '
 import json, pathlib, sys, urllib.error, urllib.parse, urllib.request
 
 url = "{{ url }}"
-aliases = {"robo1": "http://localhost:7511", "robo2": "http://localhost:7512"}
+aliases = {
+    "robo1": "http://localhost:7511",
+    "robo2": "http://localhost:7512",
+    "robot1": "http://localhost:7511",
+    "robot2": "http://localhost:7512",
+}
 url = aliases.get(url.lower(), url)
 if not (url.startswith("http://") or url.startswith("https://")):
     url = f"http://{url}"
@@ -179,6 +184,22 @@ args = [
     { arg = "sim", default = "true" },
     { arg = "behavior_dsd_file", default = "main.dsd" },
 ]
+
+[tasks.behavior-send-opponent-basic]
+description = "Send basic opponent behavior script to robot2."
+depends-on = [{task = "behavior-send-script", args = [{script = "opponents/basic.py"}, {url = "robo2"}]}]
+
+[tasks.behavior-send-opponent-advanced]
+description = "Send advanced opponent behavior script to robot2."
+depends-on = [{task = "behavior-send-script", args = [{script = "opponents/advanced.py"}, {url = "robo2"}]}]
+
+[tasks.opponent-basic]
+description = "Send basic opponent behavior script to robot2."
+depends-on = [{task = "behavior-send-script", args = [{script = "opponents/basic.py"}, {url = "robo2"}]}]
+
+[tasks.opponent-advanced]
+description = "Send advanced opponent behavior script to robot2."
+depends-on = [{task = "behavior-send-script", args = [{script = "opponents/advanced.py"}, {url = "robo2"}]}]
 
 [tasks.blockly-server]
 description = "Start a simple Blockly static file server."

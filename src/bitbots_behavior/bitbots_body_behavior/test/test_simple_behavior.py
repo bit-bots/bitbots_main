@@ -662,3 +662,27 @@ def test_simple_web_wrapper_starts_and_stops_http_server(monkeypatch):
     wrapper.shutdown()
     assert fake_server.shutdown_called
     assert fake_server.server_close_called
+
+
+def test_opponents_basic_script():
+    from pathlib import Path
+
+    script_path = Path(__file__).parents[4] / "opponents" / "basic.py"
+    assert script_path.is_file()
+
+    code = script_path.read_text()
+    behavior, _, _ = create_simple_behavior_for_test(lambda: None)
+    accepted, message = behavior.submit_script(code)
+    assert accepted, f"Script rejected: {message}"
+
+
+def test_opponents_advanced_script():
+    from pathlib import Path
+
+    script_path = Path(__file__).parents[4] / "opponents" / "advanced.py"
+    assert script_path.is_file()
+
+    code = script_path.read_text()
+    behavior, _, _ = create_simple_behavior_for_test(lambda: None)
+    accepted, message = behavior.submit_script(code)
+    assert accepted, f"Script rejected: {message}"
