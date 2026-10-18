@@ -43,8 +43,8 @@ timer loop of body behavior.
 
 Practical notes:
 
-- Keep your loop lightweight and include short sleeps, so callbacks and ROS
-  communication stay responsive.
+- Keep your loop lightweight and include short sleeps with ``sleep()`` (which is
+  based on simulation time), so callbacks and ROS communication stay responsive.
 - ``get_current_pose()`` raises an exception if the robot pose is unavailable.
   ``get_ball_pose()`` returns ``None`` while no ball position is known.
 - If ``main()`` raises an exception, the error is logged and the behavior does
@@ -143,6 +143,7 @@ the robot's own ball estimate and ball information received from teammates.
 Available functions
 -------------------
 
+- ``sleep(seconds)``
 - ``set_goal_pose(x, y, yaw_deg=0.0)``
 - ``set_goal_pose_from_pose(pose, yaw_deg=0.0)``
 - ``kick_ball(direction_deg, strength=3.0)``

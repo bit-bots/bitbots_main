@@ -1,6 +1,4 @@
-from time import sleep
-
-from bitbots_body_behavior.simple_behavior import *  # ignore[r
+from bitbots_body_behavior.simple_behavior import *
 
 KICK_DISTANCE = 0.6
 KICK_DIRECTION_DEG = 0.0

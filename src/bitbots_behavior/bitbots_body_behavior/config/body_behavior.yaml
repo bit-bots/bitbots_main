@@ -126,12 +126,12 @@ body_behavior:
     # x_range is the relative distance to x where the ball counts a "inside" demo penalty area
     # y is the ball position realtive from -1 to 1 measured from sideline to sideline
     # y_range is the relative distance to y where the ball counts a "inside" demo penalty area
-    demo_penalty_area_x: 0.32
-    demo_penalty_area_x_range: 0.05
+    demo_penalty_area_x: 0
+    demo_penalty_area_x_range: 0.1
     demo_penalty_area_y: 0
-    demo_penalty_area_y_range: 0.05
+    demo_penalty_area_y_range: 0.4
     # Waiting position of the robot in penalty demo
-    demo_penalty_position: [ 0.4, 0.0 ]
+    demo_penalty_position: [ -0.4, 0.0 ]
 
     # This is the offset the goalie keeps to avoid crashes with poles when blocking balls.
     # The value describes the offset in meters from the goal line.
@@ -271,4 +271,4 @@ simple_behavior_web_wrapper:
   ros__parameters:
     # Host and port for the local script-submission endpoint used in simple_web mode.
     simple_behavior_web_host: "127.0.0.1"
-    simple_behavior_web_port: 8765
+    simple_behavior_web_port: 0

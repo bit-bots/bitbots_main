@@ -36,19 +36,28 @@ class DummyClockNow:
 
 
 class DummyClock:
+    def __init__(self):
+        self.slept_durations = []
+
     @staticmethod
     def now():
         return DummyClockNow()
+
+    def sleep_for(self, duration):
+        self.slept_durations.append(duration)
+        if duration.nanoseconds > 0:
+            time.sleep(min(duration.nanoseconds / 1e9, 0.05))
+        return True
 
 
 class DummyNode:
     def __init__(self, parameters=None):
         self.logger = DummyLogger()
         self.parameters = parameters or {}
+        self.clock = DummyClock()
 
-    @staticmethod
-    def get_clock():
-        return DummyClock()
+    def get_clock(self):
+        return self.clock
 
     def get_logger(self):
         return self.logger
@@ -213,6 +222,39 @@ def test_simple_behavior_api_forwards_to_runtime(monkeypatch):
     assert ball_pose.x == 4.0
     assert ball_pose.y == 5.0
 
+    simple_behavior.sleep(0.5)
+    clock = runtime._node.get_clock()
+    assert [duration.nanoseconds for duration in clock.slept_durations] == [100_000_000, 500_000_000]
+
+
+def test_simple_behavior_sleep_ignores_non_positive_duration(monkeypatch):
+    runtime = simple_behavior.SimpleBehaviorRuntime(DummyNode(), DummyBlackboard())
+    monkeypatch.setattr(simple_behavior, "_runtime", runtime)
+
+    simple_behavior.sleep(0)
+    simple_behavior.sleep(-1.5)
+    assert len(runtime._node.get_clock().slept_durations) == 0
+
+
+def test_simple_behavior_sleep_with_real_node():
+    import rclpy
+    from rclpy.node import Node as RclpyNode
+
+    if not rclpy.ok():
+        rclpy.init()
+    node = RclpyNode("test_simple_behavior_sleep_node")
+    try:
+        runtime = simple_behavior.SimpleBehaviorRuntime(node, DummyBlackboard())
+        simple_behavior.configure_runtime(runtime)
+        start = time.monotonic()
+        simple_behavior.sleep(0.05)
+        elapsed = time.monotonic() - start
+        assert elapsed >= 0.04
+    finally:
+        node.destroy_node()
+        if rclpy.ok():
+            rclpy.shutdown()
+
 
 def test_get_current_pose_raises_when_pose_is_unavailable(monkeypatch):
     runtime = simple_behavior.SimpleBehaviorRuntime(DummyNode(), DummyBlackboard())
@@ -260,6 +302,9 @@ def test_simple_behavior_requires_runtime(monkeypatch):
 
     with pytest.raises(RuntimeError):
         simple_behavior.get_current_pose()
+
+    with pytest.raises(RuntimeError):
+        simple_behavior.sleep(0.1)
 
 
 def test_kick_ball_waits_for_kick_to_finish(monkeypatch):
@@ -558,6 +603,23 @@ def test_simple_behavior_process_manager_kills_unresponsive_process_group(monkey
     ]
 
 
+@pytest.mark.parametrize(
+    ("configured_port", "ros_domain_id", "expected_port"),
+    [
+        (8123, "42", 8123),
+        (0, "42", 7542),
+        (0, None, 7500),
+    ],
+)
+def test_simple_web_wrapper_resolves_web_port(monkeypatch, configured_port, ros_domain_id, expected_port):
+    if ros_domain_id is None:
+        monkeypatch.delenv("ROS_DOMAIN_ID", raising=False)
+    else:
+        monkeypatch.setenv("ROS_DOMAIN_ID", ros_domain_id)
+
+    assert simple_behavior_web_wrapper.SimpleBehaviorWebWrapper._resolve_web_port(configured_port) == expected_port
+
+
 def test_simple_web_wrapper_starts_and_stops_http_server(monkeypatch):
     class FakeServer:
         def __init__(self, address, handler):
@@ -600,3 +662,27 @@ def test_simple_web_wrapper_starts_and_stops_http_server(monkeypatch):
     wrapper.shutdown()
     assert fake_server.shutdown_called
     assert fake_server.server_close_called
+
+
+def test_opponents_basic_script():
+    from pathlib import Path
+
+    script_path = Path(__file__).parents[4] / "opponents" / "basic.py"
+    assert script_path.is_file()
+
+    code = script_path.read_text()
+    behavior, _, _ = create_simple_behavior_for_test(lambda: None)
+    accepted, message = behavior.submit_script(code)
+    assert accepted, f"Script rejected: {message}"
+
+
+def test_opponents_advanced_script():
+    from pathlib import Path
+
+    script_path = Path(__file__).parents[4] / "opponents" / "advanced.py"
+    assert script_path.is_file()
+
+    code = script_path.read_text()
+    behavior, _, _ = create_simple_behavior_for_test(lambda: None)
+    accepted, message = behavior.submit_script(code)
+    assert accepted, f"Script rejected: {message}"

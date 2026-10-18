@@ -43,6 +43,190 @@ cmd = "colcon test --parallel-workers 1 --event-handlers console_direct+ --retur
 description = "Sits the robot down."
 cmd = "ros2 service call /sit std_srvs/srv/Empty"
 
+[tasks.sim]
+description = "Start MuJoCo simulation with configurable robot/teamplayer/behavior settings."
+cmd = "ros2 launch bitbots_bringup mujoco_simulation.launch.py num_robots:={{ num_robots }} one_versus_one:={{ one_versus_one }} teamplayer:={{ teamplayer }} audio:={{ audio }} behavior:={{ behavior }} behavior_mode:={{ behavior_mode }} {% if simple_behavior_script %} simple_behavior_script:={{ simple_behavior_script }} {% endif %} simple_behavior_web_host:={{ simple_behavior_web_host }} simple_behavior_web_port:={{ simple_behavior_web_port }} motion:={{ motion }} game_controller:={{ game_controller }} localization:={{ localization }} fake_localization:={{ fake_localization }} path_planning:={{ path_planning }} teamcom:={{ teamcom }} vision:={{ vision }} ipm:={{ ipm }} world_model:={{ world_model }} web:={{ web }}"
+args = [
+    { arg = "num_robots", default = "1" },
+    { arg = "one_versus_one", default = "false" },
+    { arg = "teamplayer", default = "true" },
+    { arg = "audio", default = "true" },
+    { arg = "behavior", default = "true" },
+    { arg = "behavior_mode", default = "dsd" },
+    { arg = "simple_behavior_script", default = "" },
+    { arg = "simple_behavior_web_host", default = "127.0.0.1" },
+    { arg = "simple_behavior_web_port", default = "0" },
+    { arg = "motion", default = "true" },
+    { arg = "game_controller", default = "true" },
+    { arg = "localization", default = "false" },
+    { arg = "fake_localization", default = "true" },
+    { arg = "path_planning", default = "true" },
+    { arg = "teamcom", default = "false" },
+    { arg = "vision", default = "true" },
+    { arg = "ipm", default = "true" },
+    { arg = "world_model", default = "true" },
+    { arg = "web", default = "true" },
+]
+
+[tasks.sim-one]
+description = "Start one robot in simulator with default teamplayer behavior stack."
+depends-on = [{task="sim", args=[{num_robots="1"}, {one_versus_one="false"}, {teamplayer="true"}]}]
+
+[tasks.sim-one-simple-script]
+description = "Start one robot in simulator and run a simple behavior Python script."
+depends-on = [{task="sim", args=[{num_robots="1"}, {one_versus_one="false"}, {teamplayer="true"}, {audio="false"}, {behavior="true"}, {behavior_mode="simple"}, {simple_behavior_script="{{ script }}"}, {game_controller="false"}, {teamcom="false"}]}]
+args = [{ arg = "script", default = "" }]
+
+[tasks.sim-one-simple-server]
+description = "Start one robot in simulator with simple behavior web server mode."
+depends-on = [{task="sim", args=[{num_robots="1"}, {one_versus_one="false"}, {teamplayer="true"}, {audio="false"}, {behavior="true"}, {behavior_mode="simple_web"}, {simple_behavior_web_host="{{ host }}"}, {simple_behavior_web_port="{{ port }}"}, {game_controller="false"}, {teamcom="false"}]}]
+args = [
+    { arg = "host", default = "127.0.0.1" },
+    { arg = "port", default = "7511" },
+]
+
+[tasks.sim-one-no-behavior]
+description = "Start one robot in simulator with teamplayer but behavior disabled."
+depends-on = [{task="sim", args=[{num_robots="1"}, {one_versus_one="false"}, {teamplayer="true"}, {behavior="false"}]}]
+
+[tasks.sim-one-motion-teleop]
+description = "Start one robot in simulator with motion and perception, but without behavior for teleop."
+depends-on = [{task="sim", args=[{num_robots="1"}, {one_versus_one="false"}, {teamplayer="true"}, {behavior="false"}, {game_controller="false"}, {path_planning="false"}]}]
+
+[tasks.sim-1v1-no-teamplayer]
+description = "Start one-vs-one simulator without teamplayer stacks."
+depends-on = [{task="sim", args=[{one_versus_one="true"}, {teamplayer="false"}]}]
+
+[tasks.sim-1v1-no-behavior]
+description = "Start one-vs-one simulator with teamplayer but behavior disabled."
+depends-on = [{task="sim", args=[{one_versus_one="true"}, {teamplayer="true"}, {behavior="false"}]}]
+
+[tasks.sim-1v1-simple-servers]
+description = "Start one-vs-one simulator with separate simple behavior web servers for each robot domain."
+depends-on = [{task="sim", args=[{one_versus_one="true"}, {teamplayer="true"}, {audio="false"}, {behavior="true"}, {behavior_mode="simple_web"}, {simple_behavior_web_host="{{ host }}"}, {simple_behavior_web_port="{{ port }}"}, {game_controller="false"}, {teamcom="false"}]}]
+args = [
+    { arg = "host", default = "127.0.0.1" },
+    { arg = "port", default = "0" },
+]
+
+[tasks.behavior-teamplayer]
+description = "Start teamplayer directly (defaults to simulation mode)."
+cmd = "ros2 launch bitbots_bringup teamplayer.launch sim:={{ sim }} behavior_dsd_file:={{ behavior_dsd_file }}"
+args = [
+    { arg = "sim", default = "true" },
+    { arg = "behavior_dsd_file", default = "main.dsd" },
+]
+
+[tasks.behavior-teamplayer-simple-script]
+description = "Start teamplayer and run a simple behavior Python script."
+cmd = "ros2 launch bitbots_bringup teamplayer.launch sim:={{ sim }} behavior_mode:=simple simple_behavior_script:={{ script }} audio:=false game_controller:=false teamcom:=false"
+args = [
+    { arg = "sim", default = "true" },
+    { arg = "script", default = "" },
+]
+
+[tasks.behavior-server]
+description = "Start teamplayer with simple behavior web server mode."
+cmd = "ros2 launch bitbots_bringup teamplayer.launch sim:={{ sim }} behavior_mode:=simple_web simple_behavior_web_host:={{ host }} simple_behavior_web_port:={{ port }} audio:=false game_controller:=false teamcom:=false"
+args = [
+    { arg = "sim", default = "true" },
+    { arg = "host", default = "127.0.0.1" },
+    { arg = "port", default = "8765" },
+]
+
+[tasks.behavior-send-script]
+description = "Send a simple behavior Python script file to a running simple behavior web server."
+cmd = '''
+python -c '
+import json, pathlib, sys, urllib.error, urllib.parse, urllib.request
+
+url = "{{ url }}"
+aliases = {
+    "robo1": "http://localhost:7511",
+    "robo2": "http://localhost:7512",
+    "robot1": "http://localhost:7511",
+    "robot2": "http://localhost:7512",
+}
+url = aliases.get(url.lower(), url)
+if not (url.startswith("http://") or url.startswith("https://")):
+    url = f"http://{url}"
+parsed = urllib.parse.urlparse(url)
+if parsed.path in ("", "/"):
+    url = url.rstrip("/") + "/run"
+
+script_path = pathlib.Path(r"{{ script }}".strip())
+if not script_path.is_file():
+    sys.exit(f"Error: Script file not found: {script_path}")
+
+payload = json.dumps({"script": script_path.read_text(), "name": script_path.name}).encode()
+request = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"})
+
+try:
+    with urllib.request.urlopen(request) as response:
+        print(response.read().decode())
+except urllib.error.HTTPError as error:
+    print(error.read().decode(), file=sys.stderr)
+    sys.exit(1)
+except urllib.error.URLError as error:
+    print(f"Error connecting to {url}: {error.reason}", file=sys.stderr)
+    sys.exit(1)
+'
+'''
+args = [
+    { arg = "script" },
+    { arg = "url", default = "robo1" },
+]
+
+[tasks.behavior-opponent]
+description = "Start teamplayer with a selectable behavior DSD file (for different opponent strategies)."
+cmd = "ros2 launch bitbots_bringup teamplayer.launch sim:={{ sim }} behavior_dsd_file:={{ behavior_dsd_file }}"
+args = [
+    { arg = "sim", default = "true" },
+    { arg = "behavior_dsd_file", default = "main.dsd" },
+]
+
+[tasks.behavior-send-opponent-basic]
+description = "Send basic opponent behavior script to robot2."
+depends-on = [{task = "behavior-send-script", args = [{script = "opponents/basic.py"}, {url = "robo2"}]}]
+
+[tasks.behavior-send-opponent-advanced]
+description = "Send advanced opponent behavior script to robot2."
+depends-on = [{task = "behavior-send-script", args = [{script = "opponents/advanced.py"}, {url = "robo2"}]}]
+
+[tasks.opponent-basic]
+description = "Send basic opponent behavior script to robot2."
+depends-on = [{task = "behavior-send-script", args = [{script = "opponents/basic.py"}, {url = "robo2"}]}]
+
+[tasks.opponent-advanced]
+description = "Send advanced opponent behavior script to robot2."
+depends-on = [{task = "behavior-send-script", args = [{script = "opponents/advanced.py"}, {url = "robo2"}]}]
+
+[tasks.blockly-server]
+description = "Start a simple Blockly static file server."
+cmd = "python -m http.server {{ port }} --bind {{ host }} --directory src/bitbots_behavior/bitbots_body_behavior/docs/blockly"
+args = [
+    { arg = "host", default = "0.0.0.0" },
+    { arg = "port", default = "8000" },
+]
+
+[tasks.teleop]
+description = "Start the keyboard teleop script."
+cmd = "ros2 run bitbots_teleop teleop_keyboard.py"
+
+[tasks.sim-gamestate]
+description = "Start the simulation gamestate script."
+cmd = "ros2 run game_controller_hsl sim_gamestate.py"
+
+[tasks.robot-demo]
+description = "Start the real-robot demo launch."
+default-environment = "robot"
+cmd = "ros2 launch bitbots_bringup demo.launch sim:=false behavior_dsd_file:=demo.dsd"
+
+[tasks.robot-penalty-demo]
+description = "Start the real-robot penalty demo launch."
+default-environment = "robot"
+cmd = "ros2 launch bitbots_bringup demo.launch sim:=false behavior_dsd_file:=penalty_demo.dsd"
+
 [dependencies]
 # Base dependencies
 python = "==3.12.1, <3.13"
