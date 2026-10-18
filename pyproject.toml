@@ -21,3 +21,4 @@ select = ["F", "E", "B", "W", "I001", "N", "UP"]
 [tool.ruff.lint.per-file-ignores]
 # This is an example of the simple_behavior mini-DSL, so we want to use star imports
 "src/bitbots_behavior/bitbots_body_behavior/docs/simple_behavior_go_to_ball_and_kick.py" = ["F403", "F405"]
+"opponents/*.py" = ["F403", "F405"]
